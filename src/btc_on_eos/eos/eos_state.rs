@@ -1,6 +1,7 @@
 use crate::btc_on_eos::{
     types::Result,
     errors::AppError,
+    traits::DatabaseInterface,
     eos::eos_types::EosSignedTransactions,
     utils::{
         get_not_in_state_err,
@@ -8,14 +9,17 @@ use crate::btc_on_eos::{
     },
 };
 
-pub struct EosState {
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EosState<D: DatabaseInterface> {
+    pub db: D,
     pub eos_signed_txs: Option<EosSignedTransactions>,
 }
 
-impl EosState {
-    pub fn init() -> Result<EosState> {
+impl<D> EosState<D> where D: DatabaseInterface {
+    pub fn init(db: D) -> Result<EosState<D>> {
         Ok(
             EosState {
+                db,
                 eos_signed_txs: None,
             }
         )
@@ -24,7 +28,9 @@ impl EosState {
     pub fn add_eos_signed_txs(
         mut self,
         eos_signed_txs: EosSignedTransactions,
-    ) -> Result<EosState> {
+    ) -> Result<EosState<D>>
+        where D: DatabaseInterface
+    {
         match self.eos_signed_txs {
             Some(_) => Err(AppError::Custom(
                 get_no_overwrite_state_err("eos_signed_txs"))
