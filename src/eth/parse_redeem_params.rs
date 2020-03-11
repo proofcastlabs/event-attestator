@@ -106,7 +106,7 @@ fn parse_amount_and_address_tuples_from_receipt(
         .collect::<Result<Vec<RedeemParams>>>()
 }
 
-fn parse_redeem_params_from_block(
+pub fn parse_redeem_params_from_block(
     eth_block_and_receipts: EthBlockAndReceipts
 ) -> Result<Vec<RedeemParams>> {
     info!("✔ Parsing redeem params from block...");

@@ -1,7 +1,4 @@
-use ethereum_types::{
-    U256,
-    Address as EthAddress,
-};
+use ethereum_types::U256;
 use crate::{
     traits::DatabaseInterface,
     types::{
@@ -13,22 +10,16 @@ use crate::{
         btc_database_utils::get_btc_canon_block_from_db,
     },
     eth::{
-        eth_types::EthTransactions,
-        eth_crypto::{
-            eth_private_key::EthPrivateKey,
-            eth_transaction::get_signed_minting_tx,
-        },
-        eth_database_utils::{
-            get_eth_chain_id_from_db,
-            get_eth_gas_price_from_db,
-            get_eth_private_key_from_db,
-            get_eth_account_nonce_from_db,
-            get_eth_smart_contract_address_from_db,
+        eth_database_utils::get_signing_params_from_db,
+        eth_crypto::eth_transaction::get_signed_minting_tx,
+        eth_types::{
+            EthTransactions,
+            EthSigningParams,
         },
     },
 };
 
-fn get_eth_signed_txs(
+pub fn get_eth_signed_txs(
     signing_params: &EthSigningParams,
     minting_params: &MintingParams,
 ) -> Result<EthTransactions> {
@@ -53,37 +44,6 @@ fn get_eth_signed_txs(
             )
         })
         .collect::<Result<EthTransactions>>()
-}
-
-#[derive(Debug)]
-pub struct EthSigningParams {
-    chain_id: u8,
-    gas_price: u64,
-    eth_account_nonce: u64,
-    eth_private_key: EthPrivateKey,
-    ptoken_contract_address: EthAddress,
-}
-
-fn get_signing_params_from_db<D>(
-    db: &D,
-) -> Result<EthSigningParams>
-    where D: DatabaseInterface
-{
-    trace!("✔ Getting signing params from db...");
-    Ok(
-        EthSigningParams {
-            chain_id:
-                get_eth_chain_id_from_db(db)?,
-            gas_price:
-                get_eth_gas_price_from_db(db)?,
-            eth_private_key:
-                get_eth_private_key_from_db(db)?,
-            eth_account_nonce:
-                get_eth_account_nonce_from_db(db)?,
-            ptoken_contract_address:
-                get_eth_smart_contract_address_from_db(db)?,
-        }
-    )
 }
 
 pub fn maybe_sign_canon_block_transactions_and_add_to_state<D>(
@@ -121,6 +81,7 @@ mod tests {
             btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
         },
         eth::{
+            eth_types::EthAddress,
             eth_test_utils::{
                 get_sample_eth_address,
                 get_sample_eth_private_key,

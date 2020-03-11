@@ -18,15 +18,15 @@ use crate::{
 };
 
 #[derive(Debug, Serialize, Deserialize)]
-struct BtcTxInfo {
-    btc_tx_hex: String,
-    btc_tx_hash: String,
-    btc_tx_amount: u64,
-    btc_account_nonce: u64,
-    btc_tx_recipient: String,
-    signature_timestamp: u64,
-    originating_tx_hash: String,
-    originating_address: String,
+pub struct BtcTxInfo {
+    pub btc_tx_hex: String,
+    pub btc_tx_hash: String,
+    pub btc_tx_amount: u64,
+    pub btc_account_nonce: u64,
+    pub btc_tx_recipient: String,
+    pub signature_timestamp: u64,
+    pub originating_tx_hash: String,
+    pub originating_address: String,
 }
 
 impl BtcTxInfo {
@@ -59,12 +59,12 @@ impl BtcTxInfo {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct EthOutput {
-    eth_latest_block_number: usize,
-    btc_signed_transactions: Vec<BtcTxInfo>,
+pub struct EthOutput {
+    pub eth_latest_block_number: usize,
+    pub btc_signed_transactions: Vec<BtcTxInfo>,
 }
 
-fn get_btc_signed_tx_info_from_btc_txs(
+pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_account_nonce: u64,
     btc_txs: Vec<BtcTransaction>,
     redeem_params: &Vec<RedeemParams>,

@@ -9,7 +9,10 @@ use crate::{
     types::Bytes,
     eth::{
         trie_nodes::Node,
-        eth_crypto::eth_transaction::EthTransaction,
+        eth_crypto::{
+            eth_private_key::EthPrivateKey,
+            eth_transaction::EthTransaction,
+        },
     },
 };
 
@@ -25,6 +28,15 @@ pub type EthSignedTransaction = String;
 pub type ChildNodes = [Option<Bytes>; 16];
 pub type TrieHashMap = HashMap<H256, Bytes>;
 pub type EthTransactions = Vec<EthTransaction>;
+
+#[derive(Debug)]
+pub struct EthSigningParams {
+    pub chain_id: u8,
+    pub gas_price: u64,
+    pub eth_account_nonce: u64,
+    pub eth_private_key: EthPrivateKey,
+    pub ptoken_contract_address: EthAddress,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RedeemParams {

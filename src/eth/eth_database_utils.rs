@@ -22,8 +22,11 @@ use crate::{
     },
     eth::{
         eth_state::EthState,
-        eth_types::EthBlockAndReceipts,
         eth_crypto::eth_private_key::EthPrivateKey,
+        eth_types::{
+            EthSigningParams,
+            EthBlockAndReceipts,
+        },
         eth_constants::{
             ETH_ADDRESS_KEY,
             ETH_CHAIN_ID_KEY,
@@ -44,6 +47,28 @@ use crate::{
         },
     },
 };
+
+pub fn get_signing_params_from_db<D>(
+    db: &D,
+) -> Result<EthSigningParams>
+    where D: DatabaseInterface
+{
+    trace!("✔ Getting signing params from db...");
+    Ok(
+        EthSigningParams {
+            chain_id:
+                get_eth_chain_id_from_db(db)?,
+            gas_price:
+                get_eth_gas_price_from_db(db)?,
+            eth_private_key:
+                get_eth_private_key_from_db(db)?,
+            eth_account_nonce:
+                get_eth_account_nonce_from_db(db)?,
+            ptoken_contract_address:
+                get_eth_smart_contract_address_from_db(db)?,
+        }
+    )
+}
 
 pub fn start_eth_db_transaction<D>(
     state: EthState<D>,

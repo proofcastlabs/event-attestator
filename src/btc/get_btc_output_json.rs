@@ -25,15 +25,15 @@ use crate::{
 };
 
 #[derive(Debug, Serialize, Deserialize)]
-struct EthTxInfo {
-    eth_tx_hex: String,
-    eth_tx_hash: String,
-    eth_tx_amount: String,
-    eth_account_nonce: u64,
-    eth_tx_recipient: String,
-    signature_timestamp: u64,
-    originating_tx_hash: String,
-    originating_address: String,
+pub struct EthTxInfo {
+    pub eth_tx_hex: String,
+    pub eth_tx_hash: String,
+    pub eth_tx_amount: String,
+    pub eth_account_nonce: u64,
+    pub eth_tx_recipient: String,
+    pub signature_timestamp: u64,
+    pub originating_tx_hash: String,
+    pub originating_address: String,
 }
 
 impl EthTxInfo {
@@ -48,7 +48,7 @@ impl EthTxInfo {
             .to_string();
         let address_string = match default_address == retrieved_address {
             false => retrieved_address,
-            true => "could not retrieve sender address".to_string(),
+            true => "✘ Could not retrieve sender address".to_string(),
         };
         Ok(
             EthTxInfo {
@@ -72,12 +72,12 @@ impl EthTxInfo {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct BtcOutput {
-    btc_latest_block_number: u64,
-    eth_signed_transactions: Vec<EthTxInfo>,
+pub struct BtcOutput {
+    pub btc_latest_block_number: u64,
+    pub eth_signed_transactions: Vec<EthTxInfo>,
 }
 
-fn get_eth_signed_tx_info_from_eth_txs(
+pub fn get_eth_signed_tx_info_from_eth_txs(
     eth_txs: &EthTransactions,
     minting_params: &MintingParams,
     eth_account_nonce: u64,
