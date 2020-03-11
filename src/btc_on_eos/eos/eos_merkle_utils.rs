@@ -1,27 +1,28 @@
-#![allow(dead_code)] //  TODO FIXME: Rm!
 use crate::btc_on_eos::errors::AppError;
 use bitcoin_hashes::{
     Hash,
     sha256,
 };
-use crate::btc_on_eos::types::{
-    Byte,
-    Bytes,
-    Result,
+use crate::btc_on_eos::{
+    eos::eos_types::MerkleProof,
+    types::{
+        Byte,
+        Bytes,
+        Result,
+    },
 };
 
 pub type CanonicalLeft = Bytes;
 pub type CanonicalRight = Bytes;
-pub type MerkleProof = Vec<String>;
 pub type Sha256Hash = bitcoin_hashes::sha256::Hash;
 pub type CanonicalPair = (CanonicalLeft, CanonicalRight);
 
-fn set_first_bit_of_byte_to_zero(mut byte: Byte) -> Byte { // Left
+fn set_first_bit_of_byte_to_zero(mut byte: Byte) -> Byte {
     byte &= 0b0111_1111;
     byte
 }
 
-fn set_first_bit_of_byte_to_one(mut byte: Byte) -> Byte { // Right
+fn set_first_bit_of_byte_to_one(mut byte: Byte) -> Byte {
     byte |= 0b1000_0000;
     byte
 }
@@ -74,7 +75,7 @@ fn make_and_hash_canonical_pair(l: Bytes, r: Bytes) -> Bytes {
 
 fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
     if leaves.len() == 0 {
-        return vec![0x00] // TODO Need a type for this!
+        return vec![0x00]
     }
     while leaves.len() > 1 {
         if leaves.len() % 2 != 0 {
@@ -144,7 +145,7 @@ fn generate_merkle_proof(
     }
 }
 
-fn verify_merkle_proof(merkle_proof: MerkleProof) -> Result<bool> {
+pub fn verify_merkle_proof(merkle_proof: MerkleProof) -> Result<bool> {
     let mut leaves = Vec::new();
     for i in 0..merkle_proof.len() {
         leaves.push(hex::decode(merkle_proof[i].clone())?)

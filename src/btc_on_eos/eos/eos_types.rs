@@ -8,6 +8,7 @@ use crate::btc_on_eos::eos::eos_crypto::eos_signature::EosSignature;
 
 pub type EosAmount = String;
 pub type EosAddress = String;
+pub type MerkleProof = Vec<String>;
 pub type EosAddresses = Vec<String>;
 pub type EosAmounts = Vec<EosAmount>;
 pub type EosSignatures = Vec<EosSignature>;
