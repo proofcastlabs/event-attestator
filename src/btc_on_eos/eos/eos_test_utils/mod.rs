@@ -45,10 +45,6 @@ use crate::btc_on_eos::{
     },
 };
 
-pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_0: &str = // TODO Switch all to new EosBlockAndAction
-    "src/eos/eos_test_utils/sample-eos-json"; // TODO Remove!
-    //"src/eos/eos_test_utils/eos-block-73165491.json";
-
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1: &str =
     "src/eos/eos_test_utils/eos-block-73202313.json";
 
@@ -88,7 +84,6 @@ pub fn get_sample_eos_submission_material_string_n(
     num: usize,
 ) -> Result<String> {
     let path = match num {
-        0 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_0),
         1 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1),
         _ => Err(AppError::Custom(
             format!("Cannot find sample block num: {}", num)
@@ -213,13 +208,6 @@ pub fn get_sample_eos_signatures() -> EosSignedTransactions {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn should_get_sample_eos_block_and_action_json_string() {
-        let res = get_sample_eos_submission_material_string_n(0)
-            .unwrap();
-        assert!(res.contains("provabletokn"));
-    }
 
     #[test]
     fn should_get_sample_eos_blocks_n() {
