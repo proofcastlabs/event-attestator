@@ -10,11 +10,15 @@ use crate::btc_on_eos::{
     },
     eos::{
         eos_state::EosState,
-        eos_types::EosNetwork,
         eos_crypto::eos_private_key::EosPrivateKey,
+        eos_types::{
+            EosNetwork,
+            ProcessedTxIds,
+        },
         eos_constants::{
             EOS_NETWORK_KEY,
             EOS_CHAIN_ID_DB_KEY,
+            PROCESSED_TX_IDS_KEY,
             EOS_PRIVATE_KEY_DB_KEY,
         },
         eos_utils::{
@@ -31,6 +35,28 @@ fn put_bytes_in_db(k: Bytes, v: Bytes) -> Result<()> { // TODO REINSTATE!
 // TODO pass in the db to all functions herein!
 fn get_bytes_from_db(k: Bytes) -> Result<Bytes> { // TODO REINSTATE!
     Ok(vec![0u8])
+}
+
+pub fn get_processed_tx_ids_from_db<D>(
+    db: &D,
+) -> Result<ProcessedTxIds>
+    where D: DatabaseInterface
+{
+    db.get(PROCESSED_TX_IDS_KEY.to_vec(), None)
+        .and_then(|bytes| Ok(serde_json::from_slice(&bytes[..])?))
+}
+
+pub fn put_processed_tx_ids_in_db<D>(
+    db: &D,
+    processed_tx_ids: &ProcessedTxIds,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    db.put(
+        PROCESSED_TX_IDS_KEY.to_vec(),
+        serde_json::to_vec(processed_tx_ids)?,
+        None,
+    )
 }
 
 pub fn start_eos_db_transaction<D>(
