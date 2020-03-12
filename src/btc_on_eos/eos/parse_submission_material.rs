@@ -17,6 +17,7 @@ use eos_primitives::{
 };
 use crate::btc_on_eos::{
     errors::AppError,
+    traits::DatabaseInterface,
     utils::convert_hex_to_checksum256,
     types::{
         Bytes,
@@ -37,7 +38,7 @@ use crate::btc_on_eos::{
 pub fn parse_eos_submission_material_string_to_json(
     submission_material_string: &String
 ) -> Result<EosSubmissionMaterialJson> {
-    match serde_json::from_str(&submission_material_string) {
+    match serde_json::from_str(submission_material_string) {
         Ok(result) => Ok(result),
         Err(e) => Err(AppError::Custom(e.to_string()))
     }
@@ -150,17 +151,34 @@ pub fn parse_eos_block_header_from_json(
     )
 }
 
-pub fn parse_eos_submission_material_json_to_struct(
-    submission_material_json: &EosSubmissionMaterialJson
+fn parse_eos_submission_material_json_to_struct(
+    submission_material_json: EosSubmissionMaterialJson
 ) -> Result<EosSubmissionMaterial> {
     Ok(
         EosSubmissionMaterial {
-            action_proofs: Vec::new(), // FIXME/TODO: Once we have format!
+            action_proofs: vec![vec![]], // TODO: Once we have format!
             block_header: parse_eos_block_header_from_json(
                 &submission_material_json.block_header
             )?
         }
     )
+}
+
+fn parse_eos_submission_material_string_to_struct( // TODO test!
+    submission_material: &String,
+) -> Result<EosSubmissionMaterial> {
+    parse_eos_submission_material_string_to_json(submission_material)
+        .and_then(parse_eos_submission_material_json_to_struct)
+}
+
+pub fn parse_submission_material_and_add_to_state<D>(
+    submission_material: String,
+    state: EosState<D>,
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    parse_eos_submission_material_string_to_struct(&submission_material)
+        .and_then(|material| state.add_submission_material(material))
 }
 
 #[cfg(test)]
@@ -220,7 +238,7 @@ mod tests {
             .unwrap();
         let json = parse_eos_submission_material_string_to_json(&string)
             .unwrap();
-        if let Err(e) = parse_eos_submission_material_json_to_struct(&json) {
+        if let Err(e) = parse_eos_submission_material_json_to_struct(json) {
             panic!("Error parsing submission json: {}", e);
         }
     }
