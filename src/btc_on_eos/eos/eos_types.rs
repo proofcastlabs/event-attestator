@@ -116,10 +116,14 @@ pub struct ActionProofJson {
     pub serialized_action_receipt: String,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ProcessedTxIds(pub Vec<String>);
 
 impl ProcessedTxIds {
+    pub fn init() -> Self {
+        ProcessedTxIds(vec![])
+    }
+
     pub fn add(mut self, tx_id: String) -> Result<Self> {
         if !Self::contains(&self, &tx_id) {
             self.0.push(tx_id);
