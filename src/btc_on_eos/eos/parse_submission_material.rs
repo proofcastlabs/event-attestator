@@ -26,7 +26,10 @@ use crate::btc_on_eos::{
     eos::{
         eos_state::EosState,
         eos_types::{
+            ActionProof,
+            ActionProofs,
             ProducerKeyJson,
+            ActionProofJsons,
             EosBlockHeaderJson,
             ProducerScheduleJson,
             EosSubmissionMaterial,
@@ -34,6 +37,15 @@ use crate::btc_on_eos::{
         },
     },
 };
+
+fn parse_eos_action_proof_jsons_to_action_proofs(
+    action_proof_jsons: ActionProofJsons,
+) -> Result<ActionProofs> {
+    action_proof_jsons
+        .iter()
+        .map(|json| ActionProof::from_json(json))
+        .collect()
+}
 
 pub fn parse_eos_submission_material_string_to_json(
     submission_material_string: &String
@@ -156,7 +168,9 @@ fn parse_eos_submission_material_json_to_struct(
 ) -> Result<EosSubmissionMaterial> {
     Ok(
         EosSubmissionMaterial {
-            action_proofs: vec![vec![]], // TODO: Once we have format!
+            action_proofs: parse_eos_action_proof_jsons_to_action_proofs(
+               submission_material_json.action_proofs
+            )?,
             block_header: parse_eos_block_header_from_json(
                 &submission_material_json.block_header
             )?
@@ -164,7 +178,7 @@ fn parse_eos_submission_material_json_to_struct(
     )
 }
 
-fn parse_eos_submission_material_string_to_struct( // TODO test!
+fn parse_eos_submission_material_string_to_struct(
     submission_material: &String,
 ) -> Result<EosSubmissionMaterial> {
     parse_eos_submission_material_string_to_json(submission_material)
@@ -184,7 +198,9 @@ pub fn parse_submission_material_and_add_to_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::eos::eos_test_utils::get_sample_eos_submission_material_string_n;
+    use crate::btc_on_eos::eos::eos_test_utils::{
+        get_sample_eos_submission_material_string_n,
+    };
 
     #[test]
     fn should_parse_eos_submission_material_string_to_json() {
@@ -338,4 +354,15 @@ mod tests {
     }
 
     // TODO Need a block with something in the new_producers field.
+
+    #[test]
+    fn should_parse_submisson_material_with_action_proofs() {
+        let material = get_sample_eos_submission_material_string_n(2)
+            .unwrap();
+        if let Err(e) =  parse_eos_submission_material_string_to_struct(
+            &material
+        ) {
+            panic!("Error parsing submission material: {}", e);
+        }
+    }
 }

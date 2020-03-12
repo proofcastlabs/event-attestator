@@ -48,6 +48,9 @@ use crate::btc_on_eos::{
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-73202313.json";
 
+pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_2: &str =
+    "src/btc_on_eos/eos/eos_test_utils/eos-block-73202313.json";
+
 pub const EOS_JUNGLE_CHAIN_ID: &str =
     "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
 pub const TEMPORARY_DATABASE_PATH: &str = "src/test_utils/temporary_database";
@@ -85,6 +88,7 @@ pub fn get_sample_eos_submission_material_string_n(
 ) -> Result<String> {
     let path = match num {
         1 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1),
+        2 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_2),
         _ => Err(AppError::Custom(
             format!("Cannot find sample block num: {}", num)
         ))
