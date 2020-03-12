@@ -5,7 +5,7 @@ use crate::btc_on_eos::{
     traits::DatabaseInterface,
     eos::{
         eos_types::{
-            MerkleProofs,
+            ActionProofs,
             ProcessedTxIds,
             EosSubmissionMaterial,
             EosSignedTransactions,
@@ -20,7 +20,7 @@ use crate::btc_on_eos::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EosState<D: DatabaseInterface> {
     pub db: D,
-    pub action_proofs: MerkleProofs,
+    pub action_proofs: ActionProofs,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
     pub eos_signed_txs: Option<EosSignedTransactions>,

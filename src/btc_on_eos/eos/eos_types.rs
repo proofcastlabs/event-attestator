@@ -1,21 +1,25 @@
 use eos_primitives::{
+    Checksum256,
     Action as EosAction,
     BlockHeader as EosBlockHeader,
     ActionReceipt as EosActionReceipt,
 };
 use crate::btc_on_eos::{
-    types::Result,
+    utils::convert_hex_to_checksum256,
     eos::eos_crypto::eos_signature::EosSignature,
+    types::{
+        Bytes,
+        Result,
+    },
 };
 
 pub type EosAmount = String;
 pub type EosAddress = String;
-pub type ActionProof = MerkleProof;
 pub type MerkleProof = Vec<String>;
 pub type EosAddresses = Vec<String>;
-pub type ActionProofs = MerkleProofs;
 pub type EosAmounts = Vec<EosAmount>;
-pub type MerkleProofs = Vec<ActionProof>;
+pub type ActionProofs = Vec<ActionProof>;
+pub type MerkleProofs = Vec<MerkleProof>;
 pub type EosSignatures = Vec<EosSignature>;
 pub type ActionProofJsons = Vec<ActionProofJson>;
 pub type Sha256HashedMessage = secp256k1::Message;
@@ -104,13 +108,51 @@ pub struct EosRawTxData {
     pub eth_address: String,
 }
 
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ActionProof {
+    pub tx_id: Checksum256,
+    pub action_index: usize,
+    pub block_id: Checksum256,
+    pub serialized_action: Bytes,
+    pub action_proof: MerkleProof,
+    pub action_digest: Checksum256,
+    pub action_receipt_digest: Bytes,
+    pub serialized_action_receipt: Bytes,
+}
+
+impl ActionProof {
+    pub fn from_json(json: &ActionProofJson) -> Result<Self> {
+        Ok(
+            ActionProof {
+                action_index:
+                    json.action_index.clone(),
+                action_proof:
+                    json.action_proof.clone(),
+                serialized_action:
+                    hex::decode(&json.serialized_action)?,
+                tx_id:
+                    convert_hex_to_checksum256(&json.tx_id)?,
+                action_receipt_digest:
+                    hex::decode(&json.action_receipt_digest)?,
+                block_id:
+                    convert_hex_to_checksum256(&json.block_id)?,
+                serialized_action_receipt:
+                    hex::decode(&json.serialized_action_receipt)?,
+                action_digest:
+                    convert_hex_to_checksum256(&json.action_digest)?,
+            }
+        )
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ActionProofJson {
     pub tx_id: String,
     pub block_id: String,
     pub action_index: usize,
     pub action_digest: String,
-    pub action_proof: ActionProof,
+    pub action_proof: MerkleProof,
     pub serialized_action: String,
     pub action_receipt_digest: String,
     pub serialized_action_receipt: String,
