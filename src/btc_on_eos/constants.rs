@@ -1,3 +1,9 @@
+#[cfg(feature="debug")]
+pub const DEBUG_MODE: bool = true;
+
+#[cfg(not(feature="debug"))]
+pub const DEBUG_MODE: bool = false;
+
 pub const HASH_LENGTH: usize  = 32;
 pub const HASH_HEX_CHARS: usize  = 64;
 pub const HEX_PREFIX_LENGTH: usize = 2;
