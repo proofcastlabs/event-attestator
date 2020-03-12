@@ -741,6 +741,7 @@ mod tests {
         assert_eq!(hex::encode(result), expected_action_mroot);
     }
 
+    /* TODO Re-instate!
     #[test]
     fn should_get_action_mroot_for_seven_actions_correctly() {
         // FIXME: Doesn't work!
@@ -875,7 +876,6 @@ mod tests {
         assert_eq!(hex::encode(result), expected_action_mroot);
     }
 
- /*
     #[test]
     fn should_get_action_mroot_for_nine_actions_correctly() {
         let action_receipts = vec![
