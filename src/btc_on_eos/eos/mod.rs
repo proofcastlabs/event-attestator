@@ -4,6 +4,7 @@ pub mod eos_types;
 pub mod eos_state;
 pub mod eos_crypto;
 pub mod eos_constants;
+pub mod initialize_eos;
 pub mod eos_test_utils;
 pub mod eos_merkle_utils;
 pub mod submit_eos_block;
