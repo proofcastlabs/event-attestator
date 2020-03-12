@@ -1,8 +1,13 @@
+use eos_primitives::BlockHeader as EosBlockHeader;
 use crate::btc_on_eos::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    eos::eos_types::EosSignedTransactions,
+    eos::eos_types::{
+        MerkleProofs,
+        EosSubmissionMaterial,
+        EosSignedTransactions,
+    },
     utils::{
         get_not_in_state_err,
         get_no_overwrite_state_err,
@@ -12,17 +17,19 @@ use crate::btc_on_eos::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EosState<D: DatabaseInterface> {
     pub db: D,
+    pub action_proofs: MerkleProofs,
+    pub block_header: Option<EosBlockHeader>,
     pub eos_signed_txs: Option<EosSignedTransactions>,
 }
 
 impl<D> EosState<D> where D: DatabaseInterface {
-    pub fn init(db: D) -> Result<EosState<D>> {
-        Ok(
-            EosState {
-                db,
-                eos_signed_txs: None,
-            }
-        )
+    pub fn init(db: D) -> EosState<D> {
+        EosState {
+            db,
+            block_header: None,
+            eos_signed_txs: None,
+            action_proofs: Vec::new(),
+        }
     }
 
     pub fn add_eos_signed_txs(
@@ -42,33 +49,25 @@ impl<D> EosState<D> where D: DatabaseInterface {
         }
     }
 
-    /*
-    pub fn add_eos_block_and_action( // TODO Rename to block and action proofs
+    pub fn add_submission_material(
         mut self,
-        eos_block_and_action: EosBlockAndAction
-    ) -> Result<EosState> {
-        match self.eos_block_and_action {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("eos_block_and_action"))
-            ),
-            None => {
-                self.eos_block_and_action = Some(eos_block_and_action);
-                Ok(self)
-            }
-        }
+        submission_material: EosSubmissionMaterial,
+    ) -> Result<EosState<D>> {
+        self.block_header = Some(submission_material.block_header.clone());
+        self.action_proofs = submission_material.action_proofs;
+        Ok(self)
     }
 
-    pub fn get_eos_block_and_action(
+    pub fn get_eos_block_header(
         &self
-    ) -> Result<&EosBlockAndAction> {
-        match &self.eos_block_and_action{
-            Some(eos_block_and_action) => Ok(&eos_block_and_action),
+    ) -> Result<&EosBlockHeader> {
+        match &self.block_header{
+            Some(block_header) => Ok(&block_header),
             None => Err(AppError::Custom(
-                get_not_in_state_err("eos_block_and_action"))
+                get_not_in_state_err("block_header"))
             )
         }
     }
-    */
 
     pub fn get_eos_signed_txs(&self) -> Result<&EosSignedTransactions> {
         match &self.eos_signed_txs {
