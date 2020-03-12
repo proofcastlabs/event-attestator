@@ -8,9 +8,12 @@ use crate::btc_on_eos::eos::eos_crypto::eos_signature::EosSignature;
 
 pub type EosAmount = String;
 pub type EosAddress = String;
+pub type ActionProof = MerkleProof;
 pub type MerkleProof = Vec<String>;
 pub type EosAddresses = Vec<String>;
+pub type ActionProofs = MerkleProofs;
 pub type EosAmounts = Vec<EosAmount>;
+pub type MerkleProofs = Vec<ActionProof>;
 pub type EosSignatures = Vec<EosSignature>;
 pub type Sha256HashedMessage = secp256k1::Message;
 pub type EosSignedTransactions= Vec<EosSignedTransaction>;
@@ -50,7 +53,7 @@ impl EosSignedTransaction {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterial {
-    pub action_proofs: Vec<String>, // TODO (when we know the format!)
+    pub action_proofs: ActionProofs, // TODO (when we know the format!)
     pub block_header: EosBlockHeader,
 }
 
