@@ -15,6 +15,7 @@ pub type ActionProofs = MerkleProofs;
 pub type EosAmounts = Vec<EosAmount>;
 pub type MerkleProofs = Vec<ActionProof>;
 pub type EosSignatures = Vec<EosSignature>;
+pub type ActionProofJsons = Vec<ActionProofJson>;
 pub type Sha256HashedMessage = secp256k1::Message;
 pub type EosSignedTransactions= Vec<EosSignedTransaction>;
 
@@ -53,14 +54,14 @@ impl EosSignedTransaction {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterial {
-    pub action_proofs: ActionProofs, // TODO (when we know the format!)
+    pub action_proofs: ActionProofs,
     pub block_header: EosBlockHeader,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterialJson {
     pub block_header: EosBlockHeaderJson,
-    pub action_proofs: Vec<String>, // TODO (when we know the format!)
+    pub action_proofs: ActionProofJsons,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -100,67 +101,15 @@ pub struct EosRawTxData {
     pub asset_name: String,
     pub eth_address: String,
 }
-/*
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosBlockAndActionJson {
-    pub block_header: Vec<String>, // TODO (when we know the format!)
-    pub action_proofs: Vec<String>, // TODO (when we know the format!)
-    //pub action: EosActionJson,
-    //pub block_proof: Vec<String>, // TODO (when we know the format!)
-    //pub receipt: EosActionReceiptJson,
-    //pub raw_data: EosActionRawDataJson,
-}
-*/
-
-/*
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosActionRawDataJson {
-    pub nonce: usize,
-    pub sender: String,
-    pub receiver: String,
-    pub quantity: String,
-    pub ethereum_sender_str: String,
-}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosAuthorizationJson {
-    pub actor: String,
-    pub permission: String,
+pub struct ActionProofJson {
+    pub tx_id: String,
+    pub block_id: String,
+    pub action_index: usize,
+    pub action_digest: String,
+    pub action_proof: ActionProof,
+    pub serialized_action: String,
+    pub action_receipt_digest: String,
+    pub serialized_action_receipt: String,
 }
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosRawDataJson {
-    pub nonce: String,
-    pub sender: String,
-    pub receiver: String,
-    pub quantity: String,
-    pub ethereum_sender_str: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosAuthSequenceJson {
-    pub name: String,
-    pub num: u64,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosActionReceiptJson {
-    pub receiver: String,
-    pub act_digest: String,
-    pub global_sequence: u64,
-    pub recv_sequence: u64,
-    pub auth_sequence: Vec<EosAuthSequenceJson>,
-    pub code_sequence: usize,
-    pub abi_sequence: usize,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosActionJson {
-    pub data: String,
-    pub name: String,
-    pub account: String,
-    //pub raw_data: EosRawDataJson, // TODO Include this!
-    pub authorization: Vec<EosAuthorizationJson>,
-}
-
-*/
