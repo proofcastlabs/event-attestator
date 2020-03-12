@@ -3,10 +3,13 @@ use crate::btc_on_eos::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    eos::eos_types::{
-        MerkleProofs,
-        EosSubmissionMaterial,
-        EosSignedTransactions,
+    eos::{
+        eos_types::{
+            MerkleProofs,
+            ProcessedTxIds,
+            EosSubmissionMaterial,
+            EosSignedTransactions,
+        },
     },
     utils::{
         get_not_in_state_err,
@@ -18,14 +21,16 @@ use crate::btc_on_eos::{
 pub struct EosState<D: DatabaseInterface> {
     pub db: D,
     pub action_proofs: MerkleProofs,
+    pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
     pub eos_signed_txs: Option<EosSignedTransactions>,
 }
 
 impl<D> EosState<D> where D: DatabaseInterface {
-    pub fn init(db: D) -> EosState<D> {
+    pub fn init(db: D, processed_tx_ids: ProcessedTxIds) -> EosState<D> {
         EosState {
             db,
+            processed_tx_ids,
             block_header: None,
             eos_signed_txs: None,
             action_proofs: Vec::new(),
