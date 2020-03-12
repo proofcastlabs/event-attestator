@@ -42,3 +42,13 @@ pub static EOS_PRIVATE_KEY_DB_KEY: [u8; 32] = [
   104, 171, 117, 155, 229, 127, 102, 68,
   156, 105, 213, 244, 2, 114, 53, 113
 ];
+// NOTE (javascript): new Uint8Array(
+//   Buffer.from(web3.utils.keccak256('eos-tx-ids').slice(2), 'hex')
+// )
+// 61b33e8588f6b6caa691d584efe8d3afadea0d16125650f85386b13e1f66e2e1
+pub static PROCESSED_TX_IDS_KEY: [u8; 32] = [
+  97, 179, 62, 133, 136, 246, 182, 202,
+  166, 145, 213, 132, 239, 232, 211, 175,
+  173, 234, 13, 22, 18, 86, 80, 248,
+  83, 134, 177, 62, 31, 102, 226, 225
+];
