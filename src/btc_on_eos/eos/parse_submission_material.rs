@@ -28,6 +28,8 @@ use crate::btc_on_eos::{
         eos_types::{
             ActionProof,
             ActionProofs,
+            ActionParams,
+            ActionsParams,
             ProducerKeyJson,
             ActionProofJsons,
             EosBlockHeaderJson,
@@ -38,7 +40,7 @@ use crate::btc_on_eos::{
     },
 };
 
-fn parse_eos_action_proof_jsons_to_action_proofs(
+fn parse_eos_action_proof_jsons_to_action_proofs( // TODO Test!
     action_proof_jsons: ActionProofJsons,
 ) -> Result<ActionProofs> {
     action_proof_jsons
@@ -163,11 +165,23 @@ pub fn parse_eos_block_header_from_json(
     )
 }
 
+fn parse_eos_action_params_json_action_params(
+    action_proof_jsons: &ActionProofJsons,
+) -> Result<ActionsParams> {
+    action_proof_jsons
+        .iter()
+        .map(|json| ActionParams::from_json(&json.action_json.data))
+        .collect()
+}
+
 fn parse_eos_submission_material_json_to_struct(
     submission_material_json: EosSubmissionMaterialJson
 ) -> Result<EosSubmissionMaterial> {
     Ok(
         EosSubmissionMaterial {
+            action_params: parse_eos_action_params_json_action_params(
+               &submission_material_json.action_proofs
+            )?,
             action_proofs: parse_eos_action_proof_jsons_to_action_proofs(
                submission_material_json.action_proofs
             )?,
