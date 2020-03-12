@@ -3,8 +3,10 @@ use eos_primitives::{
     BlockHeader as EosBlockHeader,
     ActionReceipt as EosActionReceipt,
 };
-
-use crate::btc_on_eos::eos::eos_crypto::eos_signature::EosSignature;
+use crate::btc_on_eos::{
+    types::Result,
+    eos::eos_crypto::eos_signature::EosSignature,
+};
 
 pub type EosAmount = String;
 pub type EosAddress = String;
@@ -112,4 +114,20 @@ pub struct ActionProofJson {
     pub serialized_action: String,
     pub action_receipt_digest: String,
     pub serialized_action_receipt: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ProcessedTxIds(pub Vec<String>);
+
+impl ProcessedTxIds {
+    pub fn add(mut self, tx_id: String) -> Result<Self> {
+        if !Self::contains(&self, &tx_id) {
+            self.0.push(tx_id);
+        }
+        Ok(self)
+    }
+
+    pub fn contains(&self, tx_id: &String) -> bool {
+        self.0.contains(tx_id)
+    }
 }
