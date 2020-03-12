@@ -1,4 +1,5 @@
 use crate::btc_on_eos::{
+    traits::DatabaseInterface,
     types::{
         Bytes,
         Result,
@@ -8,6 +9,7 @@ use crate::btc_on_eos::{
         get_string_from_db,
     },
     eos::{
+        eos_state::EosState,
         eos_types::EosNetwork,
         eos_crypto::eos_private_key::EosPrivateKey,
         eos_constants::{
@@ -26,9 +28,39 @@ fn put_bytes_in_db(k: Bytes, v: Bytes) -> Result<()> { // TODO REINSTATE!
     Ok(())
 }
 
+// TODO pass in the db to all functions herein!
 fn get_bytes_from_db(k: Bytes) -> Result<Bytes> { // TODO REINSTATE!
     Ok(vec![0u8])
 }
+
+pub fn start_eos_db_transaction<D>(
+    state: EosState<D>,
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    state
+        .db
+        .start_transaction()
+        .map(|_| {
+            info!("✔ Database transaction begun for EOS block submission!");
+            state
+        })
+}
+
+pub fn end_eos_db_transaction<D>(
+    state: EosState<D>,
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    state
+        .db
+        .end_transaction()
+        .map(|_| {
+            info!("✔ Database transaction ended for EOS block submission!");
+            state
+        })
+}
+
 pub fn put_eos_chain_id_in_db(chain_id: &String) -> Result<()> {
     debug!("✔ Putting EOS chain ID of '{}' into db...", chain_id);
     put_string_in_db(&EOS_CHAIN_ID_DB_KEY.to_vec(), chain_id)
