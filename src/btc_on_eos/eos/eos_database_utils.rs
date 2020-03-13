@@ -1,5 +1,7 @@
+use eos_primitives::Checksum256;
 use crate::btc_on_eos::{
     traits::DatabaseInterface,
+    utils::convert_hex_to_checksum256,
     types::{
         Bytes,
         Result,
@@ -16,9 +18,11 @@ use crate::btc_on_eos::{
             ProcessedTxIds,
         },
         eos_constants::{
+            EOS_CHAIN_ID,
             EOS_NETWORK_KEY,
             EOS_CHAIN_ID_DB_KEY,
             PROCESSED_TX_IDS_KEY,
+            EOS_ACCOUNT_NAME_KEY,
             EOS_PRIVATE_KEY_DB_KEY,
         },
         eos_utils::{
@@ -35,6 +39,45 @@ fn put_bytes_in_db(k: Bytes, v: Bytes) -> Result<()> { // TODO REINSTATE!
 // TODO pass in the db to all functions herein!
 fn get_bytes_from_db(k: Bytes) -> Result<Bytes> { // TODO REINSTATE!
     Ok(vec![0u8])
+}
+
+pub fn put_eos_account_name_in_db<D>(
+    db: &D,
+    name: &String,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    db.put(EOS_ACCOUNT_NAME_KEY.to_vec(), name.as_bytes().to_vec(), None)
+}
+
+pub fn get_eos_account_name_from_db<D>(
+    db: &D,
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    db
+        .get(EOS_ACCOUNT_NAME_KEY.to_vec(), None)
+        .and_then(|bytes| Ok(String::from_utf8(bytes)?))
+}
+
+pub fn put_eos_chain_id_in_db<D>(
+    db: &D,
+    chain_id: &Checksum256
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    db.put(EOS_CHAIN_ID_DB_KEY.to_vec(), chain_id.as_bytes().to_vec(), None)
+}
+
+pub fn get_eos_chain_id_from_db<D>(
+    db: &D,
+) -> Result<Checksum256>
+    where D: DatabaseInterface
+{
+    db
+        .get(EOS_PRIVATE_KEY_DB_KEY.to_vec(), None)
+        .map(|bytes| hex::encode(bytes))
+        .and_then(|hex| convert_hex_to_checksum256(&hex))
 }
 
 pub fn get_processed_tx_ids_from_db<D>(
@@ -85,16 +128,6 @@ pub fn end_eos_db_transaction<D>(
             info!("✔ Database transaction ended for EOS block submission!");
             state
         })
-}
-
-pub fn put_eos_chain_id_in_db(chain_id: &String) -> Result<()> {
-    debug!("✔ Putting EOS chain ID of '{}' into db...", chain_id);
-    put_string_in_db(&EOS_CHAIN_ID_DB_KEY.to_vec(), chain_id)
-}
-
-pub fn get_eos_chain_id_from_db() -> Result<String> {
-    debug!("✔ Getting EOS chain ID from db...");
-    get_string_from_db(&EOS_CHAIN_ID_DB_KEY.to_vec())
 }
 
 pub fn put_eos_private_key_in_db(pk: &EosPrivateKey) -> Result<()> {

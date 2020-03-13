@@ -52,3 +52,23 @@ pub static PROCESSED_TX_IDS_KEY: [u8; 32] = [
   173, 234, 13, 22, 18, 86, 80, 248,
   83, 134, 177, 62, 31, 102, 226, 225
 ];
+// NOTE (javascript): new Uint8Array(
+//   Buffer.from(web3.utils.keccak256('eos-chain-id').slice(2), 'hex')
+// )
+// 27d6a57b5570c501ff1ce72ec96b12ad6f460a070f5cbe45651e055161ffe5dea
+pub static EOS_CHAIN_ID: [u8; 32] = [
+  39, 214, 165, 123, 85, 112, 197, 1,
+  255, 28, 231, 46, 201, 107, 18, 173,
+  111, 70, 10, 7, 15, 92, 190, 69,
+  101, 30, 5, 81, 97, 255, 229, 218
+];
+// NOTE (javascript): new Uint8Array(
+//   Buffer.from(web3.utils.keccak256('eos-account-name').slice(2), 'hex')
+// )
+// 8b9fd4b3e0a8263466a8fe52661124c424725ce71c62e0ac211f5ff022ada9a4
+pub static EOS_ACCOUNT_NAME_KEY: [u8; 32] = [
+  139, 159, 212, 179, 224, 168, 38, 52,
+  102, 168, 254, 82, 102, 17, 36, 196,
+  36, 114, 92, 231, 28, 98, 224, 172,
+  33, 31, 95, 240, 34, 173, 169, 164
+];
