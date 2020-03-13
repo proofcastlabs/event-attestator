@@ -6,6 +6,7 @@ use crate::btc_on_eos::{
     eos::{
         eos_types::{
             ActionsData,
+            RedeemParams,
             ActionProofs,
             ActionsParams,
             ProcessedTxIds,
@@ -23,6 +24,7 @@ use crate::btc_on_eos::{
 pub struct EosState<D: DatabaseInterface> {
     pub db: D,
     pub actions_data: ActionsData,
+    pub redeem_params: Vec<RedeemParams>,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
     pub eos_signed_txs: Option<EosSignedTransactions>,
@@ -35,7 +37,8 @@ impl<D> EosState<D> where D: DatabaseInterface {
             processed_tx_ids,
             block_header: None,
             eos_signed_txs: None,
-            actions_data: Vec::new(),
+            actions_data: vec![],
+            redeem_params: vec![],
         }
     }
 
@@ -62,6 +65,14 @@ impl<D> EosState<D> where D: DatabaseInterface {
     ) -> Result<EosState<D>> {
         self.block_header = Some(submission_material.block_header);
         self.actions_data = submission_material.actions_data;
+        Ok(self)
+    }
+
+    pub fn add_redeem_params(
+        mut self,
+        redeem_params: Vec<RedeemParams>,
+    ) -> Result<EosState<D>> {
+        self.redeem_params = redeem_params;
         Ok(self)
     }
 

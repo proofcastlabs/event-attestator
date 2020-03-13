@@ -36,14 +36,22 @@ pub type EosSignedTransactions= Vec<EosSignedTransaction>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ActionData {
-    action_proof: ActionProof,
-    action_params: ActionParams,
+    pub action_proof: ActionProof,
+    pub action_params: ActionParams,
 }
 
 impl ActionData {
     pub fn new(action_proof: ActionProof, action_params: ActionParams) -> Self {
         ActionData { action_proof, action_params }
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RedeemParams {
+    pub amount: u64,
+    pub recipient: String,
+    pub from: EosAccountName,
+    pub originating_tx_id: Checksum256,
 }
 
 #[derive(Debug, Eq, Serialize, Deserialize, PartialEq, Clone)]
