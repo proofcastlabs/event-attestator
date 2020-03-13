@@ -2,7 +2,11 @@ use crate::btc_on_eos::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    //eth::eth_types::EthTransactions,
+    eos::eos_types::EosSignedTransactions,
+    utils::{
+        get_not_in_state_err,
+        get_no_overwrite_state_err,
+    },
     btc::btc_types::{
         BtcBlockAndId,
         MintingParams,
@@ -12,10 +16,6 @@ use crate::btc_on_eos::{
         DepositInfoHashMap,
         SubmissionMaterial,
     },
-    utils::{
-        get_not_in_state_err,
-        get_no_overwrite_state_err,
-    },
 };
 
 #[derive(Clone, PartialEq, Eq)]
@@ -24,10 +24,10 @@ pub struct BtcState<D: DatabaseInterface> {
     pub ref_block_num: u16,
     pub ref_block_prefix: u32,
     pub minting_params: MintingParams,
+    pub signed_txs: EosSignedTransactions,
     pub output_json_string: Option<String>,
     pub utxos_and_values: BtcUtxosAndValues,
     pub btc_block_and_id: Option<BtcBlockAndId>,
-    //pub eth_signed_txs: Option<EthTransactions>,
     pub p2sh_deposit_txs: Option<BtcTransactions>,
     pub op_return_deposit_txs: Option<BtcTransactions>,
     pub deposit_info_hash_map: Option<DepositInfoHashMap>,
@@ -38,8 +38,8 @@ impl<D> BtcState<D> where D: DatabaseInterface {
     pub fn init(db: D) -> BtcState<D> {
         BtcState {
             db,
-            //eth_signed_txs: None,
             ref_block_num: 0,
+            signed_txs: vec![],
             ref_block_prefix: 0,
             btc_block_and_id: None,
             p2sh_deposit_txs: None,
@@ -178,23 +178,21 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    /*
     pub fn add_eth_signed_txs(
         mut self,
-        eth_signed_txs: EthTransactions,
+        signed_txs: EosSignedTransactions,
     ) -> Result<BtcState<D>> {
-        match self.eth_signed_txs {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("eth_signed_txs"))
-            ),
-            None => {
-                info!("✔ Adding ETH signed txs to BTC state...");
-                self.eth_signed_txs = Some(eth_signed_txs);
+        match self.signed_txs.len() {
+            0 => {
+                info!("✔ Adding signed txs to state...");
+                self.signed_txs = signed_txs;
                 Ok(self)
             }
+            _ => Err(AppError::Custom(
+                get_no_overwrite_state_err("signed_txs"))
+            ),
         }
     }
-    */
 
     pub fn add_utxos_and_values(
         mut self,
@@ -233,13 +231,13 @@ impl<D> BtcState<D> where D: DatabaseInterface {
     pub fn get_eth_signed_txs(
         &self
     ) -> Result<&EthTransactions> {
-        match &self.eth_signed_txs {
-            Some(eth_signed_txs) => {
+        match &self.signed_txs {
+            Some(signed_txs) => {
                 info!("✔ Getting ETH signed txs from BTC state...");
-                Ok(&eth_signed_txs)
+                Ok(&signed_txs)
             }
             None => Err(AppError::Custom(
-                get_not_in_state_err("eth_signed_txs"))
+                get_not_in_state_err("signed_txs"))
             )
         }
     }
