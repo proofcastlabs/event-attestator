@@ -83,7 +83,6 @@ pub fn get_unsigned_peos_transaction(
 
 pub fn sign_peos_transaction(
     to: &str,
-    nonce: &usize,
     amount: &str,
     chain_id: &str,
     eos_private_key: &EosPrivateKey,
@@ -101,14 +100,11 @@ pub fn sign_peos_transaction(
             hex::encode(
                 &unsigned_transaction.to_serialize_data()[..]
             ).to_string(),
-            *nonce,
             to.to_string(),
             amount.to_string(),
         )
     )
 }
-
-// TODO/FIXME The chain_id needs getting from the DB whenever it's used in main pipeline
 
 #[cfg(test)]
 mod tests {
@@ -129,7 +125,6 @@ mod tests {
 
     #[test]
     fn should_sign_a_tx_correctly_1() {
-        let nonce = 1;
         let to = "provabletest";
         let amount = "1.0000 EOS";
         let ref_block_num = 1195;
@@ -147,7 +142,6 @@ mod tests {
         ).unwrap();
         let result = sign_peos_transaction(
             to,
-            &nonce,
             amount,
             EOS_JUNGLE_CHAIN_ID,
             &get_sample_eos_private_key_2(),
@@ -165,7 +159,6 @@ mod tests {
 
     #[test]
     fn should_sign_a_tx_correctly_2() {
-        let nonce = 1;
         let to = "provabletest";
         let amount = "1.0000 EOS";
         let ref_block_num = 18188;
@@ -183,7 +176,6 @@ mod tests {
         ).unwrap();
         let result = sign_peos_transaction(
             to,
-            &nonce,
             amount,
             EOS_JUNGLE_CHAIN_ID,
             &get_sample_eos_private_key_2(),

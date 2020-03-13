@@ -85,7 +85,6 @@ pub enum EosNetwork {
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct EosSignedTransaction {
-    pub nonce: usize,
     pub amount: String,
     pub recipient: String,
     pub signature: String,
@@ -96,14 +95,12 @@ impl EosSignedTransaction {
     pub fn new(
         signature: String,
         transaction: String,
-        nonce: usize,
         recipient: String,
         amount: String,
     ) -> EosSignedTransaction {
         EosSignedTransaction {
             signature,
             transaction,
-            nonce,
             amount,
             recipient,
         }

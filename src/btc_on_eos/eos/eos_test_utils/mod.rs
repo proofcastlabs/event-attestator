@@ -188,21 +188,18 @@ pub fn get_sample_eos_signatures() -> EosSignedTransactions {
     signed_txs.push(EosSignedTransaction::new(
         "signature 1".to_string(),
         "transaction 1".to_string(),
-        1,
         "recipientttt1".to_string(),
         "1.0000 EOS".to_string(),
     ));
     signed_txs.push(EosSignedTransaction::new(
         "signature 2".to_string(),
         "transaction 2".to_string(),
-        2,
         "recipientttt2".to_string(),
         "2.0000 EOS".to_string(),
     ));
     signed_txs.push(EosSignedTransaction::new(
         "signature 3".to_string(),
         "transaction 3".to_string(),
-        3,
         "recipientttt3".to_string(),
         "3.0000 EOS".to_string(),
     ));
