@@ -1,3 +1,4 @@
+use eos_primitives::AccountName as EosAccountName;
 use std::{
     str::FromStr,
     fs::read_to_string,
@@ -19,7 +20,6 @@ use bitcoin::{
 };
 use crate::btc_on_eos::{
     errors::AppError,
-    utils::convert_satoshis_to_ptoken,
     constants::MINIMUM_REQUIRED_SATOSHIS,
     types::{
         Bytes,
@@ -105,43 +105,41 @@ pub fn get_sample_btc_pub_key_bytes() -> Bytes {
 
 pub fn get_sample_minting_params() -> MintingParams {
     let originating_tx_address_1 =
-        "335cC6c8e77ECD56402Fa7d4007622A6841a8B6A"
+        "eosaccount1x"
         .to_string();
     let originating_tx_address_2 =
-        "c2f16d5040deDa48Fe9292c183c5D76321e83467"
+        "eosaccount2x"
         .to_string();
     let originating_tx_address_3 =
-        "6635F83421Bf059cd8111f180f0727128685BaE4"
+        "eosaccount3x"
         .to_string();
-    /*
-    let eth_address_1 = EthAddress::from_str(&originating_tx_address_1)
+    let eos_address_1 = EosAccountName::from_str(&originating_tx_address_1)
         .unwrap();
-    let eth_address_2 = EthAddress::from_str(&originating_tx_address_2)
+    let eos_address_2 = EosAccountName::from_str(&originating_tx_address_2)
         .unwrap();
-    let eth_address_3 = EthAddress::from_str(&originating_tx_address_3)
+    let eos_address_3 = EosAccountName::from_str(&originating_tx_address_3)
         .unwrap();
-    */
-    let amount_1 = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
-    let amount_2 = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS + 1);
-    let amount_3 = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS - 1);
-    let originating_tx_hash_1 = sha256d::Hash::hash(b"something_1");
-    let originating_tx_hash_2 = sha256d::Hash::hash(b"something_2");
-    let originating_tx_hash_3 = sha256d::Hash::hash(b"something_3");
+    let amount_1 = MINIMUM_REQUIRED_SATOSHIS;
+    let amount_2 = MINIMUM_REQUIRED_SATOSHIS + 1;
+    let amount_3 = MINIMUM_REQUIRED_SATOSHIS - 1;
+    let originating_tx_hash_1 = sha256d::Hash::hash(b"something_1").to_string();
+    let originating_tx_hash_2 = sha256d::Hash::hash(b"something_2").to_string();
+    let originating_tx_hash_3 = sha256d::Hash::hash(b"something_3").to_string();
     let minting_params_1 = MintingParamStruct {
         amount: amount_1,
-        //eth_address: eth_address_1,
+        to: eos_address_1,
         originating_tx_hash: originating_tx_hash_1,
         originating_tx_address: originating_tx_address_1,
     };
     let minting_params_2 = MintingParamStruct {
         amount: amount_2,
-        //eth_address: eth_address_2,
+        to: eos_address_2,
         originating_tx_hash: originating_tx_hash_2,
         originating_tx_address: originating_tx_address_2,
     };
     let minting_params_3 = MintingParamStruct {
         amount: amount_3,
-        //eth_address: eth_address_3,
+        to: eos_address_3,
         originating_tx_hash: originating_tx_hash_3,
         originating_tx_address: originating_tx_address_3,
     };

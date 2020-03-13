@@ -1,4 +1,7 @@
-use ethereum_types::U256;
+use eos_primitives::{
+    Checksum256,
+    AccountName as EosAccountName,
+};
 use std::{
     str::FromStr,
     collections::HashMap,
@@ -117,23 +120,23 @@ impl BtcBlockInDbFormat {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MintingParamStruct {
-    pub amount: U256,
-    //pub eth_address: EthAddress,
-    pub originating_tx_hash: sha256d::Hash,
+    pub amount: u64,
+    pub to: EosAccountName,
+    pub originating_tx_hash: String,
     pub originating_tx_address: String,
 }
 
 impl MintingParamStruct {
     pub fn new(
-        amount: U256,
-        //eth_address: EthAddress,
+        amount: u64,
+        to: EosAccountName,
         originating_tx_hash: sha256d::Hash,
         originating_tx_address: BtcAddress,
     ) -> MintingParamStruct {
         MintingParamStruct {
+            to,
             amount,
-            //eth_address,
-            originating_tx_hash,
+            originating_tx_hash: originating_tx_hash.to_string(),
             originating_tx_address: originating_tx_address.to_string(),
         }
     }
