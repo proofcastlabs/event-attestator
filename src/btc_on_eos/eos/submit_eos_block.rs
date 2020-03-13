@@ -4,6 +4,7 @@ use crate::btc_on_eos::{
     check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
     eos::{
         eos_state::EosState,
+        get_eos_output::get_eos_output,
         sign_transactions::maybe_sign_txs_and_add_to_state,
         parse_redeem_params::maybe_parse_redeem_params_and_put_in_state,
         parse_submission_material::parse_submission_material_and_add_to_state,
@@ -40,5 +41,5 @@ pub fn submit_eos_block<D>(
         .and_then(maybe_parse_redeem_params_and_put_in_state)
         .and_then(maybe_sign_txs_and_add_to_state)
         .and_then(end_eos_db_transaction)
-        .map(|_| "FIN".to_string()) // TODO Output getter
+        .and_then(get_eos_output)
 }

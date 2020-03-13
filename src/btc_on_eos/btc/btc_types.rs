@@ -45,6 +45,18 @@ pub type BtcRecipientsAndAmounts = Vec<BtcRecipientAndAmount>;
 pub type DepositAddressJsonList = Vec<DepositAddressInfoJson>;
 pub type DepositInfoHashMap =  HashMap<BtcAddress, DepositAddressInfo>;
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BtcTxInfo {
+    pub btc_tx_hex: String,
+    pub btc_tx_amount: u64,
+    pub btc_tx_hash: String,
+    pub signature_timestamp: u64,
+    pub btc_account_nonce: u64,
+    pub btc_tx_recipient: String,
+    pub originating_tx_hash: String,
+    pub originating_address: String,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BtcRecipientAndAmount {
     pub amount: u64,
