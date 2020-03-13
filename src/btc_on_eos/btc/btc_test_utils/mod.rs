@@ -39,14 +39,14 @@ use crate::btc_on_eos::{
             MintingParams,
             BtcBlockAndId,
             BtcUtxoAndValue,
-            BtcBlockAndTxsJson,
             MintingParamStruct,
             BtcBlockInDbFormat,
             DepositAddressInfoJson,
+            SubmissionMaterialJson,
         },
-        parse_btc_block::{
-            parse_btc_block_string_to_json,
-            parse_btc_block_and_tx_json_to_struct,
+        parse_submission_material::{
+            parse_submission_material_to_json,
+            parse_btc_block_from_submission_material,
         },
     },
 };
@@ -165,8 +165,10 @@ pub fn get_sample_sequential_btc_blocks_in_db_format(
              read_to_string(path).unwrap()
         )
         .map(|json_string|
-            parse_btc_block_string_to_json(&json_string)
-                .and_then(parse_btc_block_and_tx_json_to_struct)
+            parse_submission_material_to_json(&json_string)
+                .and_then(|json|
+                    parse_btc_block_from_submission_material(&json)
+                )
                 .and_then(convert_sample_block_to_db_format)
         )
         .collect::<Result<Vec<BtcBlockInDbFormat>>>()
@@ -195,15 +197,15 @@ pub fn get_sample_btc_block_json_string() -> String {
         .unwrap()
 }
 
-pub fn get_sample_btc_block_json() -> Result<BtcBlockAndTxsJson> {
-    parse_btc_block_string_to_json(
+pub fn get_sample_btc_block_json() -> Result<SubmissionMaterialJson> {
+    parse_submission_material_to_json(
         &get_sample_btc_block_json_string()
     )
 }
 
 pub fn get_sample_btc_block_and_id() -> Result<BtcBlockAndId> {
-    parse_btc_block_and_tx_json_to_struct(
-        get_sample_btc_block_json()
+    parse_btc_block_from_submission_material(
+        &get_sample_btc_block_json()
             .unwrap()
     )
 }
@@ -214,10 +216,10 @@ pub fn get_sample_btc_block_in_db_format() -> Result<BtcBlockInDbFormat> {
 }
 
 pub fn get_sample_testnet_block_and_txs() -> Result<BtcBlockAndId> {
-    parse_btc_block_string_to_json(
+    parse_submission_material_to_json(
         &read_to_string(&SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH).unwrap()
     )
-        .and_then(parse_btc_block_and_tx_json_to_struct)
+        .and_then(|json| parse_btc_block_from_submission_material(&json))
 }
 
 pub fn get_sample_btc_tx() -> BtcTransaction {
@@ -229,11 +231,11 @@ pub fn get_sample_btc_tx() -> BtcTransaction {
 }
 
 pub fn get_sample_op_return_btc_block_and_txs() -> BtcBlockAndId {
-    parse_btc_block_string_to_json(
+    parse_submission_material_to_json(
         &read_to_string(&SAMPLE_TESTNET_OP_RETURN_BTC_BLOCK_JSON).unwrap()
 
     )
-        .and_then(parse_btc_block_and_tx_json_to_struct)
+        .and_then(|json| parse_btc_block_from_submission_material(&json))
         .unwrap()
 }
 
@@ -353,8 +355,8 @@ pub fn get_sample_btc_block_n(n: usize) -> Result<BtcBlockAndId> {
                 .to_string()
         ))
     }.unwrap();
-    parse_btc_block_string_to_json(&read_to_string(&block_path)?)
-        .and_then(parse_btc_block_and_tx_json_to_struct)
+    parse_submission_material_to_json(&read_to_string(&block_path)?)
+        .and_then(|json| parse_btc_block_from_submission_material(&json))
 }
 
 pub fn get_sample_op_return_utxo_and_value_n(n: usize) -> Result<BtcUtxoAndValue> {
@@ -368,8 +370,8 @@ pub fn get_sample_op_return_utxo_and_value_n(n: usize) -> Result<BtcUtxoAndValue
                 .to_string()
         ))
     }.unwrap();
-    parse_btc_block_string_to_json(&read_to_string(&tuple.0)?)
-        .and_then(parse_btc_block_and_tx_json_to_struct)
+    parse_submission_material_to_json(&read_to_string(&tuple.0)?)
+        .and_then(|json| parse_btc_block_from_submission_material(&json))
         .map(|block_and_id| block_and_id.block.txdata[tuple.1].clone())
         .map(|tx| create_op_return_btc_utxo_and_value_from_tx_output(&tx, tuple.2))
 }

@@ -64,6 +64,7 @@ pub fn maybe_sign_canon_block_transactions_and_add_to_state<D>(
         })
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -177,3 +178,4 @@ mod tests {
         assert!(result.len() == minting_params.len());
     }
 }
+*/

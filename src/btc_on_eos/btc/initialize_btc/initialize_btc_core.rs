@@ -6,11 +6,11 @@ use crate::btc_on_eos::{
         add_btc_block_to_db::maybe_add_btc_block_to_db,
         validate_btc_merkle_root::validate_btc_merkle_root,
         set_btc_canon_block_hash::maybe_set_btc_canon_block_hash,
-        parse_btc_block::parse_btc_block_and_id_and_put_in_state,
         set_btc_latest_block_hash::maybe_set_btc_latest_block_hash,
         set_btc_anchor_block_hash::maybe_set_btc_anchor_block_hash,
         validate_btc_block_header::validate_btc_block_header_in_state,
         validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
+        parse_submission_material::parse_submission_material_and_put_in_state,
         btc_database_utils::{
             end_btc_db_transaction,
             start_btc_db_transaction,
@@ -78,7 +78,7 @@ pub fn maybe_initialize_btc_core<D>(
                             )
                         )
                         .and_then(|state|
-                            parse_btc_block_and_id_and_put_in_state(
+                            parse_submission_material_and_put_in_state(
                                 block_json_string,
                                 state,
                             )

@@ -63,6 +63,13 @@ pub struct BtcRecipientAndAmount {
     pub recipient: BtcAddress,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SubmissionMaterial {
+    pub ref_block_num: u16,
+    pub ref_block_prefix: u32,
+    pub block_and_id: BtcBlockAndId,
+}
+
 impl BtcRecipientAndAmount {
     pub fn new(recipient: &str, amount: u64) -> Result<Self> {
         Ok(
@@ -133,8 +140,10 @@ impl MintingParamStruct {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct BtcBlockAndTxsJson {
+pub struct SubmissionMaterialJson {
+    pub ref_block_num: u16,
     pub block: BtcBlockJson,
+    pub ref_block_prefix: u32,
     pub transactions: Vec<String>,
     pub deposit_address_list: DepositAddressJsonList,
 }

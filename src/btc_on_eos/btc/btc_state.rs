@@ -10,6 +10,7 @@ use crate::btc_on_eos::{
         BtcUtxosAndValues,
         BtcBlockInDbFormat,
         DepositInfoHashMap,
+        SubmissionMaterial,
     },
     utils::{
         get_not_in_state_err,
@@ -20,6 +21,8 @@ use crate::btc_on_eos::{
 #[derive(Clone, PartialEq, Eq)]
 pub struct BtcState<D: DatabaseInterface> {
     pub db: D,
+    pub ref_block_num: u16,
+    pub ref_block_prefix: u32,
     pub minting_params: MintingParams,
     pub output_json_string: Option<String>,
     pub utxos_and_values: BtcUtxosAndValues,
@@ -36,6 +39,8 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         BtcState {
             db,
             //eth_signed_txs: None,
+            ref_block_num: 0,
+            ref_block_prefix: 0,
             btc_block_and_id: None,
             p2sh_deposit_txs: None,
             output_json_string: None,
@@ -47,17 +52,19 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn add_btc_block_and_id(
+    pub fn add_btc_submission_material(
         mut self,
-        btc_block_and_id: BtcBlockAndId,
+        submission_material: SubmissionMaterial,
     ) -> Result<BtcState<D>> {
         match self.btc_block_and_id {
             Some(_) => Err(AppError::Custom(
                 get_no_overwrite_state_err("btc_block_and_id"))
             ),
             None => {
-                info!("✔ Adding BTC block and ID to BTC state...");
-                self.btc_block_and_id = Some(btc_block_and_id);
+                info!("✔ Adding BTC submission material to state...");
+                self.ref_block_num = submission_material.ref_block_num;
+                self.ref_block_prefix = submission_material.ref_block_prefix;
+                self.btc_block_and_id = Some(submission_material.block_and_id);
                 Ok(self)
             }
         }
