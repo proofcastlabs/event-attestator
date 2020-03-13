@@ -178,7 +178,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn add_eth_signed_txs(
+    pub fn add_signed_txs(
         mut self,
         signed_txs: EosSignedTransactions,
     ) -> Result<BtcState<D>> {
@@ -225,28 +225,6 @@ impl<D> BtcState<D> where D: DatabaseInterface {
                 get_not_in_state_err("btc_block_and_id"))
             )
         }
-    }
-
-    /*
-    pub fn get_eth_signed_txs(
-        &self
-    ) -> Result<&EthTransactions> {
-        match &self.signed_txs {
-            Some(signed_txs) => {
-                info!("✔ Getting ETH signed txs from BTC state...");
-                Ok(&signed_txs)
-            }
-            None => Err(AppError::Custom(
-                get_not_in_state_err("signed_txs"))
-            )
-        }
-    }
-    */
-
-    pub fn get_minting_params(
-        &self
-    ) -> Result<&MintingParams> {
-        Ok(&self.minting_params)
     }
 
     pub fn get_deposit_info_hash_map(
