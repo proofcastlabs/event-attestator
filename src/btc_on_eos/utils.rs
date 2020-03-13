@@ -21,22 +21,6 @@ use crate::btc_on_eos::{
     },
 };
 
-pub fn convert_satoshis_to_ptoken(satoshis: u64) -> U256 { // FIXME unneeded
-    U256::from(satoshis) * U256::from(
-        10u64.pow(18 - (EOS_NUM_DECIMALS as u32)) // FIXME Magic number!
-    )
-}
-
-pub fn convert_ptoken_to_satoshis(ptoken: U256) -> u64 { // FIXME unneeded
-    match ptoken.checked_div(
-        U256::from(
-            10u64.pow(18 - (EOS_NUM_DECIMALS as u32)) // FIXME Magic number!
-        )
-    ) {
-        Some(amount) => amount.as_u64(),
-        None => 0,
-    }
-}
 pub fn convert_bytes_to_u64(bytes: &Bytes) -> Result<u64> {
     match bytes.len() {
         0..=7 => Err(AppError::Custom(

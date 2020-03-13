@@ -1,7 +1,6 @@
 use crate::btc_on_eos::{
     types::Result,
     traits::DatabaseInterface,
-    utils::convert_satoshis_to_ptoken,
     constants::MINIMUM_REQUIRED_SATOSHIS,
     btc::{
         btc_state::BtcState,
@@ -15,12 +14,11 @@ use crate::btc_on_eos::{
 fn filter_minting_params(
     minting_params: &MintingParams,
 ) -> Result<MintingParams> {
-    let threshold = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
     Ok(
         minting_params
             .into_iter()
             .filter(|params| {
-                match params.amount >= threshold {
+                match params.amount >= MINIMUM_REQUIRED_SATOSHIS {
                     true => true,
                     false => {
                         info!(
@@ -56,7 +54,6 @@ mod tests {
         let expected_length_before = 3;
         let expected_length_after = 2;
         let minting_params = get_sample_minting_params();
-        let threshold = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
         let length_before = minting_params.len();
         assert_eq!(length_before, expected_length_before);
         let result = filter_minting_params(&minting_params)
@@ -65,7 +62,7 @@ mod tests {
         assert_eq!(length_after, expected_length_after);
         result
             .iter()
-            .map(|params| assert!(params.amount >= threshold))
+            .map(|params| assert!(params.amount >= MINIMUM_REQUIRED_SATOSHIS))
             .for_each(drop);
     }
 }
