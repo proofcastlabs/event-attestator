@@ -62,7 +62,7 @@ pub fn filter_txs_for_op_return_deposits(
 ) -> Result<BtcTransactions> {
     info!(
         "✔ Filtering `p2pkh` deposits that are NOT {}",
-        "enclave's own change outputs..."
+        "core's own change outputs..."
     );
     let btc_address = btc_private_key.to_p2pkh_btc_address();
     let pub_key_slice = btc_private_key.to_public_key_slice();
@@ -93,6 +93,7 @@ pub fn filter_op_return_deposit_txs_and_add_to_state<D>(
         })
 }
 
+/* TODO Reinstate once we have sample blocks with EOS addresses in them!
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -216,3 +217,4 @@ mod tests {
         assert!(result);
     }
 }
+*/

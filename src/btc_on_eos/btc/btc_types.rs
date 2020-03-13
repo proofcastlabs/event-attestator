@@ -154,30 +154,27 @@ pub struct BtcBlockJson {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DepositAddressInfo {
     pub nonce: u64,
-    //pub eth_address: EthAddress,
+    pub eos_address: String,
+    pub commitment_hash: sha256d::Hash,
     pub btc_deposit_address: BtcAddress,
-    //pub eth_address_and_nonce_hash: sha256d::Hash,
 }
 
 impl DepositAddressInfo {
     pub fn new(
         nonce: &u64,
-        eth_address: &String,
+        eos_address: &String,
         btc_deposit_address: &String,
-        eth_address_and_nonce_hash: &String,
+        commitment_hash: &String,
     ) -> Result<Self> {
         Ok(
             DepositAddressInfo {
                 nonce: *nonce,
-                btc_deposit_address: BtcAddress::from_str(&btc_deposit_address)?,
-                /*
-                eth_address: convert_hex_to_address(
-                    strip_hex_prefix(eth_address)?
+                eos_address: eos_address.to_string(),
+                btc_deposit_address:
+                    BtcAddress::from_str(&btc_deposit_address)?,
+                commitment_hash: sha256d::Hash::from_slice(
+                    &hex::decode(strip_hex_prefix(commitment_hash)?)?
                 )?,
-                eth_address_and_nonce_hash: sha256d::Hash::from_slice(
-                    &hex::decode(strip_hex_prefix(eth_address_and_nonce_hash)?)?
-                )?,
-                */
             }
         )
     }
