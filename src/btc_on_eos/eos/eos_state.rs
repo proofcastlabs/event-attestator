@@ -3,6 +3,9 @@ use crate::btc_on_eos::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    btc::{
+        btc_types::BtcTransactions,
+    },
     eos::{
         eos_types::{
             ActionsData,
@@ -24,10 +27,10 @@ use crate::btc_on_eos::{
 pub struct EosState<D: DatabaseInterface> {
     pub db: D,
     pub actions_data: ActionsData,
+    pub signed_txs: BtcTransactions,
     pub redeem_params: Vec<RedeemParams>,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
-    pub eos_signed_txs: Option<EosSignedTransactions>,
 }
 
 impl<D> EosState<D> where D: DatabaseInterface {
@@ -36,27 +39,20 @@ impl<D> EosState<D> where D: DatabaseInterface {
             db,
             processed_tx_ids,
             block_header: None,
-            eos_signed_txs: None,
+            signed_txs: vec![],
             actions_data: vec![],
             redeem_params: vec![],
         }
     }
 
-    pub fn add_eos_signed_txs(
+    pub fn add_signed_txs(
         mut self,
-        eos_signed_txs: EosSignedTransactions,
+        signed_txs: BtcTransactions,
     ) -> Result<EosState<D>>
         where D: DatabaseInterface
     {
-        match self.eos_signed_txs {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("eos_signed_txs"))
-            ),
-            None => {
-                self.eos_signed_txs = Some(eos_signed_txs);
-                Ok(self)
-            }
-        }
+        self.signed_txs = signed_txs;
+        Ok(self)
     }
 
     pub fn add_submission_material(
@@ -83,15 +79,6 @@ impl<D> EosState<D> where D: DatabaseInterface {
             Some(block_header) => Ok(&block_header),
             None => Err(AppError::Custom(
                 get_not_in_state_err("block_header"))
-            )
-        }
-    }
-
-    pub fn get_eos_signed_txs(&self) -> Result<&EosSignedTransactions> {
-        match &self.eos_signed_txs {
-            Some(eos_signed_txs) => Ok(&eos_signed_txs),
-            None => Err(AppError::Custom(
-                get_not_in_state_err("eos_signed_txs"))
             )
         }
     }
