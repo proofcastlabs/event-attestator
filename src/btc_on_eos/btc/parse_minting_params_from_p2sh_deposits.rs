@@ -1,3 +1,5 @@
+use std::str::FromStr;
+use eos_primitives::AccountName as EosAccountName;
 use bitcoin::{
     util::address::Address as BtcAddress,
     network::constants::Network as BtcNetwork,
@@ -6,7 +8,7 @@ use bitcoin::{
 use crate::btc_on_eos::{
     types::Result,
     traits::DatabaseInterface,
-    utils::convert_satoshis_to_ptoken,
+    eos::eos_utils::safely_convert_string_to_eos_account,
     btc::{
         btc_state::BtcState,
         btc_database_utils::get_btc_network_from_db,
@@ -19,6 +21,7 @@ use crate::btc_on_eos::{
     },
 };
 
+// TODO make this less ugly
 fn parse_minting_params_from_p2sh_deposit_tx(
     p2sh_deposit_containing_tx: &BtcTransaction,
     deposit_info_hash_map: &DepositInfoHashMap,
@@ -29,7 +32,7 @@ fn parse_minting_params_from_p2sh_deposit_tx(
         .output
         .iter()
         .filter(|tx_out| tx_out.script_pubkey.is_p2sh())
-        .map(|p2sh_tx_out| {
+        .map(|p2sh_tx_out| -> Option<MintingParamStruct> {
             match BtcAddress::from_script(
                 &p2sh_tx_out.script_pubkey,
                 btc_network,
@@ -59,16 +62,21 @@ fn parse_minting_params_from_p2sh_deposit_tx(
                                 "✔ Deposit info extracted from hash map: {:?}",
                                 deposit_info,
                             );
-                            Some(
-                                MintingParamStruct::new(
-                                    convert_satoshis_to_ptoken(
-                                        p2sh_tx_out.value,
-                                    ),
-                                    //deposit_info.eth_address,
-                                    p2sh_deposit_containing_tx.txid(),
-                                    btc_address,
-                                )
-                            )
+                            match safely_convert_string_to_eos_account(
+                                &deposit_info.eos_address
+                            ) {
+                                Ok(account_name) => {
+                                    Some(
+                                        MintingParamStruct::new(
+                                            p2sh_tx_out.value,
+                                            account_name,
+                                            p2sh_deposit_containing_tx.txid(),
+                                            btc_address,
+                                        )
+                                    )
+                                }
+                                Err(_) => None
+                            }
                         }
                     }
                 }
