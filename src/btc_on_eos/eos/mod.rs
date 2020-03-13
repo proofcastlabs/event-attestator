@@ -11,6 +11,7 @@ pub mod submit_eos_block;
 pub mod parse_eos_actions;
 pub mod validate_signature;
 pub mod eos_database_utils;
+pub mod parse_redeem_params;
 pub mod parse_submission_material;
 pub mod deserialize_eth_transfer_data;
 

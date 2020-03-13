@@ -7,16 +7,58 @@ use ethereum_types::{
 };
 use crate::btc_on_eos::{
     errors::AppError,
-    constants::HASH_LENGTH,
     types::{
         Bytes,
         Result,
+    },
+    constants::{
+        HASH_LENGTH,
+        U64_NUM_BYTES,
     },
     eos::{
         eos_types::EosAmount,
         eos_constants::EOS_NUM_DECIMALS,
     },
 };
+
+pub fn convert_satoshis_to_ptoken(satoshis: u64) -> U256 { // FIXME unneeded
+    U256::from(satoshis) * U256::from(
+        10u64.pow(18 - (EOS_NUM_DECIMALS as u32)) // FIXME Magic number!
+    )
+}
+
+pub fn convert_ptoken_to_satoshis(ptoken: U256) -> u64 { // FIXME unneeded
+    match ptoken.checked_div(
+        U256::from(
+            10u64.pow(18 - (EOS_NUM_DECIMALS as u32)) // FIXME Magic number!
+        )
+    ) {
+        Some(amount) => amount.as_u64(),
+        None => 0,
+    }
+}
+pub fn convert_bytes_to_u64(bytes: &Bytes) -> Result<u64> {
+    match bytes.len() {
+        0..=7 => Err(AppError::Custom(
+            "✘ Not enough bytes to convert to u64!"
+                .to_string()
+        )),
+        U64_NUM_BYTES => {
+            let mut arr = [0u8; U64_NUM_BYTES];
+            let bytes = &bytes[..U64_NUM_BYTES];
+            arr.copy_from_slice(bytes);
+            Ok(u64::from_le_bytes(arr))
+        }
+        _ => Err(AppError::Custom(
+            "✘ Too many bytes to convert to u64 without overflowing!"
+                .to_string()
+        )),
+    }
+}
+
+pub fn convert_u64_to_bytes(u_64: &u64) -> Bytes {
+    u_64.to_le_bytes().to_vec()
+}
 
 pub fn convert_hex_to_checksum256(hex: &String) -> Result<Checksum256> { //TODO: Test!
     let mut arr = [0; 32];

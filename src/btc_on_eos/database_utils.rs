@@ -1,5 +1,6 @@
 use crate::btc_on_eos::{
     errors::AppError,
+    traits::DatabaseInterface,
     types::{
         Bytes,
         Result,
@@ -12,6 +13,40 @@ fn put_bytes_in_db(k: Bytes, v: Bytes) -> Result<()> { // TODO Reinstate!
 
 fn get_bytes_from_db(k: Bytes) -> Result<Bytes> { // TODO Reinstate!
     Ok(vec![0u8])
+}
+
+pub fn put_u64_in_db<D>(
+    db: &D,
+    key: &Bytes,
+    u_64: &u64,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    trace!("✔ Putting `u64` of {} in db...", u_64);
+    db.put(key.to_vec(), u_64.to_le_bytes().to_vec(), None)
+}
+
+pub fn get_u64_from_db<D>(
+    db: &D,
+    key: &Bytes
+) -> Result<u64>
+    where D: DatabaseInterface
+{
+    trace!("✔ Getting `u64` from db...");
+    db.get(key.to_vec(), None)
+        .and_then(|bytes|
+            match bytes.len() <= 8 {
+                true => {
+                    let mut array = [0; 8];
+                    let bytes = &bytes[..array.len()];
+                    array.copy_from_slice(bytes);
+                    Ok(u64::from_le_bytes(array))
+                },
+                false => Err(AppError::Custom(
+                    "✘ Too many bytes to convert to u64!".to_string()
+                ))
+            }
+        )
 }
 
 pub fn put_usize_in_db(key: &Bytes, u_size: &usize) -> Result<()> {

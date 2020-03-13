@@ -17,10 +17,15 @@ pub enum AppError {
     ParseIntError(std::num::ParseIntError),
     ChronoError(chrono::format::ParseError),
     EosPrimitivesError(eos_primitives::Error),
+    BitcoinHexError(bitcoin_hashes::hex::Error),
     SystemTimeError(std::time::SystemTimeError),
     Base58Error(crate::btc_on_eos::base58::Error),
     FromSliceError(std::array::TryFromSliceError),
+    BitcoinHashError(bitcoin_hashes::error::Error),
+    BitcoinError(bitcoin::consensus::encode::Error),
+    BitcoinAddressError(bitcoin::util::address::Error),
     EosPrimitivesNamesError(eos_primitives::ParseNameError),
+
 }
 
 impl fmt::Display for AppError {
@@ -36,20 +41,28 @@ impl fmt::Display for AppError {
                 format!("✘ Crypto Error!\n✘ {}", e),
             AppError::Base58Error(ref e) =>
                 format!("✘ Base58 Error!\n✘ {}", e),
+            AppError::BitcoinError(ref e) =>
+                format!("✘ Bitcoin Error!\n✘ {}", e),
             AppError::ChronoError(ref e) =>
                 format!("✘ Chrono error: \n✘ {:?}", e),
             AppError::SerdeJsonError(ref e) =>
                 format!("✘ Serde-Json Error!\n✘ {}", e),
+            AppError::BitcoinHexError(ref e) =>
+                format!("✘ Bitcoin Hex Error!\n✘ {}", e),
             AppError::ParseIntError(ref e) =>
                 format!("✘ Parse Int Error!\n✘ {:?}", e),
             AppError::SystemTimeError(ref e) =>
                 format!("✘ System Time Error!\n✘ {}", e),
+            AppError::BitcoinHashError(ref e) =>
+                format!("✘ Bitcoin Hash Error!\n✘ {}", e),
             AppError::FromUtf8Error(ref e) =>
                 format!("✘ From utf8 error: \n✘ {:?}", e),
             AppError::FromSliceError(ref e) =>
                 format!("✘ From slice error: \n✘ {:?}", e),
             AppError::NoneError(ref e) =>
                 format!("✘ Nothing to unwrap!\n✘ {:?}", e),
+            AppError::BitcoinAddressError(ref e) =>
+                format!("✘ Bitcoin Address Error!\n✘ {}", e),
             AppError::EosPrimitivesError(ref e) =>
                 format!("✘ Eos Primitives Error!\n✘ {:?}", e),
             AppError::SetLoggerError(ref e) =>
@@ -148,5 +161,29 @@ impl From<std::str::Utf8Error> for AppError {
 impl From<chrono::format::ParseError> for AppError {
     fn from(e: chrono::format::ParseError) -> AppError {
         AppError::ChronoError(e)
+    }
+}
+
+impl From<bitcoin::consensus::encode::Error> for AppError {
+    fn from(e: bitcoin::consensus::encode::Error) -> AppError {
+        AppError::BitcoinError(e)
+    }
+}
+
+impl From<bitcoin_hashes::hex::Error> for AppError {
+    fn from(e: bitcoin_hashes::hex::Error) -> AppError {
+        AppError::BitcoinHexError(e)
+    }
+}
+
+impl From<bitcoin_hashes::error::Error> for AppError {
+    fn from(e: bitcoin_hashes::error::Error) -> AppError {
+        AppError::BitcoinHashError(e)
+    }
+}
+
+impl From<bitcoin::util::address::Error> for AppError {
+    fn from(e: bitcoin::util::address::Error) -> AppError {
+        AppError::BitcoinAddressError(e)
     }
 }
