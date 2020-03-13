@@ -2,16 +2,14 @@ use crate::btc_on_eos::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    btc::{
+        btc_state::BtcState,
+        initialize_btc::is_btc_core_initialized::is_btc_core_initialized,
+    },
     eos::{
         eos_state::EosState,
         initialize_eos::is_eos_core_initialized::is_eos_core_initialized,
     },
-    /*
-    btc::{
-        btc_state::BtcState,
-        initialize_btc::is_btc_initialized::is_btc_core_initialized,
-    },
-    */
 };
 
 pub fn check_core_is_initialized<D>(
@@ -24,9 +22,7 @@ pub fn check_core_is_initialized<D>(
         false => Err(AppError::Custom(
             "✘ EOS side of core not initialized!".to_string()
         )),
-        true => Ok(())
-            /*
-        {
+        true => {
             match is_btc_core_initialized(db) {
                 false => Err(AppError::Custom(
                     "✘ BTC side of core not initialized!".to_string()
@@ -34,7 +30,6 @@ pub fn check_core_is_initialized<D>(
                 true => Ok(())
             }
         }
-        */
     }
 }
 
@@ -48,7 +43,6 @@ pub fn check_core_is_initialized_and_return_eos_state<D>(
         .map(|_| state)
 }
 
-/*
 pub fn check_core_is_initialized_and_return_btc_state<D>(
     state: BtcState<D>,
 ) -> Result<BtcState<D>>
@@ -57,9 +51,8 @@ pub fn check_core_is_initialized_and_return_btc_state<D>(
     check_core_is_initialized(&state.db)
         .map(|_| state)
 }
-*/
 
-/* TODO reinstate
+/* TODO Reinstate
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -68,13 +61,6 @@ mod tests {
         btc::{
             btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
             btc_database_utils::put_btc_address_in_db,
-        },
-        eth::{
-            eth_database_utils::put_public_eth_address_in_db,
-            eth_test_utils::{
-                get_sample_eth_address,
-                get_valid_eth_state,
-            },
         },
     };
 
@@ -142,7 +128,7 @@ mod tests {
             panic!("Error putting pk in db: {}", e);
         };
         assert!(
-            !is_eth_core_initialized(&db)
+            !is_eos_core_initialized(&db)
         );
         match check_core_is_initialized(&db) {
             Ok(_) => {
