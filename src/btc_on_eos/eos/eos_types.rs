@@ -23,6 +23,7 @@ pub type EosAddress = String;
 pub type MerkleProof = Vec<String>;
 pub type EosAddresses = Vec<String>;
 pub type EosAmounts = Vec<EosAmount>;
+pub type ActionsData = Vec<ActionData>;
 pub type ActionProofs = Vec<ActionProof>;
 pub type MerkleProofs = Vec<MerkleProof>;
 pub type EosSignatures = Vec<EosSignature>;
@@ -32,6 +33,18 @@ pub type Sha256HashedMessage = secp256k1::Message;
 pub type ActionParamsJsons = Vec<ActionParamsJson>;
 pub type AuthorizationJsons = Vec<AuthorizationJson>;
 pub type EosSignedTransactions= Vec<EosSignedTransaction>;
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ActionData {
+    action_proof: ActionProof,
+    action_params: ActionParams,
+}
+
+impl ActionData {
+    pub fn new(action_proof: ActionProof, action_params: ActionParams) -> Self {
+        ActionData { action_proof, action_params }
+    }
+}
 
 #[derive(Debug, Eq, Serialize, Deserialize, PartialEq, Clone)]
 pub struct ActionParams {
@@ -91,8 +104,7 @@ impl EosSignedTransaction {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterial {
-    pub action_proofs: ActionProofs,
-    pub action_params: ActionsParams,
+    pub actions_data: ActionsData,
     pub block_header: EosBlockHeader,
 }
 
