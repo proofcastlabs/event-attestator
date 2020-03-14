@@ -26,6 +26,7 @@ pub mod set_btc_latest_block_hash;
 pub mod set_btc_anchor_block_hash;
 pub mod validate_btc_block_header;
 pub mod remove_old_btc_tail_block;
+pub mod increment_signature_nonce;
 pub mod get_btc_block_in_db_format;
 pub mod update_btc_tail_block_hash;
 pub mod validate_btc_proof_of_work;

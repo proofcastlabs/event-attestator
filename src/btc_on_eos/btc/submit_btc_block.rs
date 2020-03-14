@@ -11,6 +11,7 @@ use crate::btc_on_eos::{
         add_btc_block_to_db::maybe_add_btc_block_to_db,
         validate_btc_merkle_root::validate_btc_merkle_root,
         update_btc_linker_hash::maybe_update_btc_linker_hash,
+        increment_signature_nonce::maybe_increment_signature_nonce,
         remove_old_btc_tail_block::maybe_remove_old_btc_tail_block,
         filter_minting_params::maybe_filter_minting_params_in_state,
         update_btc_tail_block_hash::maybe_update_btc_tail_block_hash,
@@ -83,7 +84,7 @@ pub fn submit_btc_block_to_core<D>(
         .and_then(maybe_update_btc_tail_block_hash)
         .and_then(maybe_update_btc_linker_hash)
         .and_then(maybe_sign_canon_block_txs_and_add_to_state)
-        //.and_then(maybe_increment_eos_account_nonce) // TODO
+        .and_then(maybe_increment_signature_nonce)
         .and_then(maybe_remove_old_btc_tail_block)
         .and_then(create_btc_output_json_and_put_in_state)
         .and_then(remove_minting_params_from_canon_block_and_return_state)
