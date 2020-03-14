@@ -7,7 +7,10 @@ use std::{
     collections::HashMap,
 };
 use crate::btc_on_eos::{
-    constants::SAFE_BTC_ADDRESS,
+    constants::{
+        SAFE_BTC_ADDRESS,
+        EOS_TOKEN_TICKER,
+    },
     utils::{
         strip_hex_prefix,
         convert_hex_to_address,
@@ -120,8 +123,8 @@ impl BtcBlockInDbFormat {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MintingParamStruct {
-    pub amount: u64,
-    pub to: EosAccountName,
+    pub amount: String,
+    pub to: String,
     pub originating_tx_hash: String,
     pub originating_tx_address: String,
 }
@@ -129,13 +132,13 @@ pub struct MintingParamStruct {
 impl MintingParamStruct {
     pub fn new(
         amount: u64,
-        to: EosAccountName,
+        to: String,
         originating_tx_hash: sha256d::Hash,
         originating_tx_address: BtcAddress,
     ) -> MintingParamStruct {
         MintingParamStruct {
             to,
-            amount,
+            amount: format!("{} {}", amount, EOS_TOKEN_TICKER),
             originating_tx_hash: originating_tx_hash.to_string(),
             originating_tx_address: originating_tx_address.to_string(),
         }

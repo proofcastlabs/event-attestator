@@ -62,21 +62,14 @@ fn parse_minting_params_from_p2sh_deposit_tx(
                                 "✔ Deposit info extracted from hash map: {:?}",
                                 deposit_info,
                             );
-                            match safely_convert_string_to_eos_account(
-                                &deposit_info.eos_address
-                            ) {
-                                Ok(account_name) => {
-                                    Some(
-                                        MintingParamStruct::new(
-                                            p2sh_tx_out.value,
-                                            account_name,
-                                            p2sh_deposit_containing_tx.txid(),
-                                            btc_address,
-                                        )
-                                    )
-                                }
-                                Err(_) => None
-                            }
+                            Some(
+                                MintingParamStruct::new(
+                                    p2sh_tx_out.value,
+                                    deposit_info.eos_address.clone(),
+                                    p2sh_deposit_containing_tx.txid(),
+                                    btc_address,
+                                )
+                            )
                         }
                     }
                 }
