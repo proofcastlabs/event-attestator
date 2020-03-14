@@ -1,6 +1,7 @@
 use crate::btc_on_eos::{
     types::Result,
     traits::DatabaseInterface,
+    utils::convert_eos_asset_to_u64,
     constants::MINIMUM_REQUIRED_SATOSHIS,
     btc::{
         btc_state::BtcState,
@@ -16,9 +17,13 @@ fn filter_minting_params(
 ) -> Result<MintingParams> {
     Ok(
         minting_params
+            .iter()
+            .map(|params| convert_eos_asset_to_u64(&params.amount))
+            .collect::<Result<Vec<u64>>>()?
             .into_iter()
-            .filter(|params| {
-                match params.amount >= MINIMUM_REQUIRED_SATOSHIS {
+            .zip(minting_params.iter())
+            .filter(|(amount, params)| {
+                match amount >= &MINIMUM_REQUIRED_SATOSHIS {
                     true => true,
                     false => {
                         info!(
@@ -29,6 +34,7 @@ fn filter_minting_params(
                     }
                 }
             })
+            .map(|(amount, params)| params)
             .cloned()
             .collect::<Vec<MintingParamStruct>>()
     )
@@ -62,7 +68,12 @@ mod tests {
         assert_eq!(length_after, expected_length_after);
         result
             .iter()
-            .map(|params| assert!(params.amount >= MINIMUM_REQUIRED_SATOSHIS))
+            .map(|params|
+                 assert!(
+                     convert_eos_asset_to_u64(&params.amount).unwrap() >=
+                     MINIMUM_REQUIRED_SATOSHIS
+                 )
+             )
             .for_each(drop);
     }
 }
