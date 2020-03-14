@@ -31,6 +31,7 @@ pub fn put_eos_account_name_in_db_and_return_state<D>(
         .map(|_| state)
 }
 
+#[allow(dead_code)]
 pub fn put_eos_token_ticker_in_db_and_return_state<D>(
     token_ticker: String,
     state: EosState<D>,
