@@ -1,4 +1,7 @@
-use ethereum_types::U256;
+use eos_primitives::{
+    Checksum256,
+    AccountName as EosAccountName,
+};
 use crate::btc_on_eos::{
     traits::DatabaseInterface,
     types::{
@@ -9,59 +12,101 @@ use crate::btc_on_eos::{
         btc_types::MintingParams,
         btc_database_utils::get_btc_canon_block_from_db,
     },
-    eth::{
-        eth_database_utils::get_signing_params_from_db,
-        eth_crypto::eth_transaction::get_signed_minting_tx,
-        eth_types::{
-            EthTransactions,
-            EthSigningParams,
+    eos::{
+        eos_types::{
+            EosSignedTransaction,
+            EosSignedTransactions,
+        },
+        eos_crypto::{
+            eos_private_key::EosPrivateKey,
+            eos_transaction::{
+                sign_peos_transaction,
+                get_unsigned_peos_transaction,
+            },
+        },
+        eos_constants::{
+            MEMO,
+            EOS_MAX_EXPIRATION_SECS,
+            PEOS_ACCOUNT_PERMISSION_LEVEL,
+        },
+        eos_database_utils::{
+            get_eos_chain_id_from_db,
+            get_eos_private_key_from_db,
+            get_eos_account_name_from_db,
         },
     },
 };
 
-pub fn get_eth_signed_txs(
-    signing_params: &EthSigningParams,
-    minting_params: &MintingParams,
-) -> Result<EthTransactions> {
-    trace!("✔ Getting ETH signed transactions...");
-    minting_params
-        .iter()
-        .enumerate()
-        .map(|(i, minting_param_struct)| {
-            info!(
-                "✔ Signing ETH tx for amount: {}, to address: {}",
-                minting_param_struct.amount,
-                minting_param_struct.eth_address,
-            );
-            get_signed_minting_tx(
-                U256::from(minting_param_struct.amount.clone()),
-                signing_params.eth_account_nonce + i as u64,
-                signing_params.chain_id,
-                signing_params.ptoken_contract_address,
-                signing_params.gas_price,
-                minting_param_struct.eth_address.clone(),
-                signing_params.eth_private_key.clone(),
+fn get_signed_tx(
+    ref_block_num: &u16,
+    ref_block_prefix: &u32,
+    to: &String,
+    amount: &String,
+    chain_id: &String,
+    private_key: &EosPrivateKey,
+    account_name: &String,
+) -> Result<EosSignedTransaction> {
+    get_unsigned_peos_transaction(
+        to,
+        account_name,
+        MEMO,
+        account_name,
+        amount,
+        ref_block_num.clone(),
+        ref_block_prefix.clone(),
+        EOS_MAX_EXPIRATION_SECS,
+        PEOS_ACCOUNT_PERMISSION_LEVEL,
+    )
+        .and_then(|unsigned_tx|
+            sign_peos_transaction(
+                to,
+                amount,
+                chain_id,
+                private_key,
+                &unsigned_tx,
             )
-        })
-        .collect::<Result<EthTransactions>>()
+        )
 }
 
-pub fn maybe_sign_canon_block_transactions_and_add_to_state<D>(
+fn get_signed_txs(
+    ref_block_num: &u16,
+    ref_block_prefix: &u32,
+    chain_id: &String,
+    private_key: &EosPrivateKey,
+    account_name: &String,
+    minting_params: &MintingParams,
+) -> Result<EosSignedTransactions> {
+    minting_params
+        .iter()
+        .map(|params|
+            get_signed_tx(
+                ref_block_num,
+                ref_block_prefix,
+                &params.to,
+                &params.amount,
+                chain_id,
+                private_key,
+                account_name,
+            )
+        )
+        .collect()
+}
+
+pub fn maybe_sign_canon_block_txs_and_add_to_state<D>(
     state: BtcState<D>
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    info!("✔ Maybe signing txs...");
-    get_eth_signed_txs(
-        &get_signing_params_from_db(&state.db)?,
-        &get_btc_canon_block_from_db(&state.db)?.minting_params,
+    info!("✔ Maybe signing minting txs...");
+    get_signed_txs(
+        &state.ref_block_num,
+        &state.ref_block_prefix,
+        &get_eos_chain_id_from_db(&state.db)?,
+        &get_eos_private_key_from_db(&state.db)?,
+        &get_eos_account_name_from_db(&state.db)?,
+        &state.minting_params,
     )
-        .and_then(|signed_txs| {
-            #[cfg(feature="debug")] {
-                debug!("✔ Signed transactions: {:?}", signed_txs);
-            }
-            state.add_eth_signed_txs(signed_txs)
-        })
+        .and_then(|signed_txs| state.add_signed_txs(signed_txs))
 }
 
 /*
@@ -171,7 +216,7 @@ mod tests {
                 originating_address,
             ),
         ];
-        let result = get_eth_signed_txs(
+        let result = get_signed_txs(
             &signing_params,
             &minting_params,
         ).unwrap();

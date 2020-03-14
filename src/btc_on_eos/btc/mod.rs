@@ -9,7 +9,7 @@ pub mod initialize_btc;
 pub mod btc_transaction;
 pub mod save_utxos_to_db;
 pub mod submit_btc_block;
-//pub mod sign_transactions;
+pub mod sign_transactions;
 pub mod btc_database_utils;
 pub mod add_btc_block_to_db;
 pub mod get_btc_output_json;
