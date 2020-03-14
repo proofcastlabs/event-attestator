@@ -213,7 +213,11 @@ fn parse_eos_submission_material_string_to_struct(
     parse_eos_submission_material_string_to_json(submission_material)
         .and_then(parse_eos_submission_material_json_to_struct)
 }
-
+/*
+ * TODO
+ * [ ] Parse action params from hex in action itself
+ * [ ] Once above is done, can remove those params from the generator.
+ */
 pub fn parse_submission_material_and_add_to_state<D>(
     submission_material: String,
     state: EosState<D>,

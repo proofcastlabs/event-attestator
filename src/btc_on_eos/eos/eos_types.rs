@@ -247,6 +247,11 @@ impl ProcessedTxIds {
         Ok(self)
     }
 
+    pub fn add_multi(mut self, tx_ids: &mut Vec<String>) -> Result<Self> {
+        self.0.append(tx_ids);
+        Ok(self)
+    }
+
     pub fn contains(&self, tx_id: &String) -> bool {
         self.0.contains(tx_id)
     }
