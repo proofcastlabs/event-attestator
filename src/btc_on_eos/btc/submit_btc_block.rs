@@ -28,7 +28,7 @@ use crate::btc_on_eos::{
         },
         get_btc_output_json::{
             get_btc_output_as_string,
-            //create_btc_output_json_and_put_in_state,
+            create_btc_output_json_and_put_in_state,
         },
         get_deposit_info_hash_map::{
             get_deposit_info_hash_map_and_put_in_state,
@@ -83,8 +83,9 @@ pub fn submit_btc_block_to_core<D>(
         .and_then(maybe_update_btc_tail_block_hash)
         .and_then(maybe_update_btc_linker_hash)
         .and_then(maybe_sign_canon_block_txs_and_add_to_state)
+        //.and_then(maybe_increment_eos_account_nonce) // TODO
         .and_then(maybe_remove_old_btc_tail_block)
-        //.and_then(create_btc_output_json_and_put_in_state)
+        .and_then(create_btc_output_json_and_put_in_state)
         .and_then(remove_minting_params_from_canon_block_and_return_state)
         .and_then(end_btc_db_transaction)
         .and_then(get_btc_output_as_string)

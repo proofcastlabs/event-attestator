@@ -5,13 +5,13 @@ use std::time::{
 use crate::btc_on_eos::{
     types::Result,
     traits::DatabaseInterface,
-    /*
-    eth::{
-        eth_types::EthTransactions,
-        eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::get_eth_account_nonce_from_db,
+    eos::{
+        eos_types::{
+            EosSignedTransaction,
+            EosSignedTransactions,
+        },
+        eos_database_utils::get_eos_account_nonce_from_db,
     },
-    */
     btc::{
         btc_state::BtcState,
         btc_constants::DEFAULT_BTC_ADDRESS,
@@ -25,15 +25,14 @@ use crate::btc_on_eos::{
         },
     },
 };
-/*
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TxInfo {
-    //pub eth_tx_hex: String,
-    //pub eth_tx_hash: String,
-    //pub eth_tx_amount: String,
-    //pub eth_account_nonce: u64,
-    //pub eth_tx_recipient: String,
+    pub eos_tx: String,
+    pub eos_tx_amount: String,
+    pub eos_account_nonce: u64,
+    pub eos_tx_recipient: String,
+    pub eos_tx_signature: String,
     pub signature_timestamp: u64,
     pub originating_tx_hash: String,
     pub originating_address: String,
@@ -41,9 +40,9 @@ pub struct TxInfo {
 
 impl TxInfo {
     pub fn new(
-        eth_tx: &EthTransaction,
+        tx: &EosSignedTransaction,
         minting_param_struct: &MintingParamStruct,
-        eth_account_nonce: u64,
+        eos_account_nonce: &u64,
     ) -> Result<TxInfo> {
         let default_address = DEFAULT_BTC_ADDRESS.to_string();
         let retrieved_address = minting_param_struct
@@ -55,17 +54,15 @@ impl TxInfo {
         };
         Ok(
             TxInfo {
-                eth_account_nonce,
-                eth_tx_hash: format!("0x{}", eth_tx.get_tx_hash()),
-                eth_tx_hex: eth_tx.serialize_hex(),
-                originating_address: address_string,
-                eth_tx_amount: minting_param_struct.amount.to_string(),
+                eos_tx: tx.transaction.clone(),
+                eos_tx_amount: tx.amount.clone(),
+                eos_tx_signature: tx.signature.clone(),
+                eos_tx_recipient: tx.recipient.clone(),
+                eos_account_nonce: *eos_account_nonce,
                 originating_tx_hash:
-                    minting_param_struct.originating_tx_hash.to_string(),
-                eth_tx_recipient: format!(
-                    "0x{}",
-                    hex::encode(minting_param_struct.eth_address.as_bytes())
-                ),
+                    minting_param_struct.originating_tx_hash.clone(),
+                originating_address:
+                    minting_param_struct.originating_tx_address.clone(),
                 signature_timestamp: SystemTime::now()
                     .duration_since(UNIX_EPOCH)?
                     .as_secs(),
@@ -77,21 +74,21 @@ impl TxInfo {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BtcOutput {
     pub btc_latest_block_number: u64,
-    pub eth_signed_transactions: Vec<TxInfo>,
+    pub eos_signed_transactions: Vec<TxInfo>,
 }
 
-pub fn get_eth_signed_tx_info_from_eth_txs(
-    eth_txs: &EthTransactions,
+pub fn get_eos_signed_tx_info_from_eth_txs(
+    txs: &EosSignedTransactions,
     minting_params: &MintingParams,
-    eth_account_nonce: u64,
+    eth_account_nonce: &u64,
 ) -> Result<Vec<TxInfo>> {
     info!("✔ Getting ETH tx info from ETH txs...");
-    let start_nonce = eth_account_nonce - eth_txs.len() as u64;
-    eth_txs
+    let start_nonce = eth_account_nonce - txs.len() as u64;
+    txs
         .iter()
         .enumerate()
         .map(|(i, tx)|
-            TxInfo::new(tx, &minting_params[i], start_nonce + i as u64)
+            TxInfo::new(tx, &minting_params[i], &(start_nonce + i as u64))
         )
         .collect::<Result<Vec<TxInfo>>>()
 }
@@ -106,20 +103,19 @@ pub fn create_btc_output_json_and_put_in_state<D>(
         &BtcOutput {
             btc_latest_block_number: get_btc_latest_block_from_db(&state.db)?
                 .height,
-            eth_signed_transactions: match &state.eth_signed_txs {
-                None => vec![],
-                Some(txs) =>
-                    get_eth_signed_tx_info_from_eth_txs(
-                        txs,
+            eos_signed_transactions: match &state.signed_txs.len() {
+                0 => vec![],
+                _ =>
+                    get_eos_signed_tx_info_from_eth_txs(
+                        &state.signed_txs,
                         &get_btc_canon_block_from_db(&state.db)?.minting_params,
-                        get_eth_account_nonce_from_db(&state.db)?,
+                        &get_eos_account_nonce_from_db(&state.db)?,
                     )?,
             }
         }
     )?)
         .and_then(|output| state.add_output_json_string(output))
 }
-*/
 
 pub fn get_btc_output_as_string<D>(
     state: BtcState<D>
@@ -127,8 +123,7 @@ pub fn get_btc_output_as_string<D>(
     where D: DatabaseInterface
 {
     info!("✔ Getting BTC output as string...");
-    //let output = state.get_output_json_string()?.to_string();
-    //info!("✔ BTC Output: {}", output);
-    //Ok(output)
-    Ok("TODO".to_string()) // FIXME!
+    let output = state.get_output_json_string()?.to_string();
+    info!("✔ BTC Output: {}", output);
+    Ok(output)
 }
