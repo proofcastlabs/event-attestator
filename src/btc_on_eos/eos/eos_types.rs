@@ -7,7 +7,10 @@ use eos_primitives::{
     ActionReceipt as EosActionReceipt,
 };
 use crate::btc_on_eos::{
-    utils::convert_hex_to_checksum256,
+    utils::{
+        convert_eos_asset_to_u64,
+        convert_hex_to_checksum256,
+    },
     types::{
         Bytes,
         Result,
@@ -67,11 +70,7 @@ impl ActionParams {
             ActionParams {
                 memo: json.memo.clone(),
                 sender: EosAccountName::from_str(&json.sender)?,
-                quantity: json
-                    .quantity
-                    .split_whitespace()
-                    .collect::<Vec<&str>>()[0]
-                    .parse::<u64>()?,
+                quantity: convert_eos_asset_to_u64(json.quantity)?,
             }
         )
     }
