@@ -1,5 +1,10 @@
-use eos_primitives::Checksum256;
+use std::str::FromStr;
+use eos_primitives::{
+    Checksum256,
+    AccountName as EosAccountName,
+};
 use crate::btc_on_eos::{
+    errors::AppError,
     traits::DatabaseInterface,
     utils::convert_hex_to_checksum256,
     types::{
@@ -21,6 +26,7 @@ use crate::btc_on_eos::{
             EOS_CHAIN_ID,
             EOS_NETWORK_KEY,
             EOS_CHAIN_ID_DB_KEY,
+            EOS_TOKEN_TICKER_KEY,
             PROCESSED_TX_IDS_KEY,
             EOS_ACCOUNT_NAME_KEY,
             EOS_PRIVATE_KEY_DB_KEY,
@@ -41,13 +47,30 @@ fn get_bytes_from_db(k: Bytes) -> Result<Bytes> { // TODO REINSTATE!
     Ok(vec![0u8])
 }
 
+pub fn put_eos_token_ticker_in_db<D>(
+    db: &D,
+    name: &String,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    put_string_in_db(db, &EOS_TOKEN_TICKER_KEY.to_vec(), name)
+}
+
+pub fn get_eos_token_ticker_from_db<D>(
+    db: &D,
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    get_string_from_db(db, &EOS_TOKEN_TICKER_KEY.to_vec())
+}
+
 pub fn put_eos_account_name_in_db<D>(
     db: &D,
     name: &String,
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    db.put(EOS_ACCOUNT_NAME_KEY.to_vec(), name.as_bytes().to_vec(), None)
+    put_string_in_db(db, &EOS_ACCOUNT_NAME_KEY.to_vec(), name)
 }
 
 pub fn get_eos_account_name_from_db<D>(
@@ -55,9 +78,7 @@ pub fn get_eos_account_name_from_db<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    db
-        .get(EOS_ACCOUNT_NAME_KEY.to_vec(), None)
-        .and_then(|bytes| Ok(String::from_utf8(bytes)?))
+    get_string_from_db(db, &EOS_ACCOUNT_NAME_KEY.to_vec())
 }
 
 pub fn put_eos_chain_id_in_db<D>(
@@ -130,17 +151,25 @@ pub fn end_eos_db_transaction<D>(
         })
 }
 
-pub fn put_eos_private_key_in_db(pk: &EosPrivateKey) -> Result<()> {
-    debug!("✔ Saving EOS private key into db...");
-    put_bytes_in_db(EOS_PRIVATE_KEY_DB_KEY.to_vec(), pk.to_bytes())
+pub fn put_eos_private_key_in_db<D>(
+    db: &D,
+    pk: &EosPrivateKey
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    debug!("✔ Putting EOS private key into db...");
+    db.put(EOS_PRIVATE_KEY_DB_KEY.to_vec(), pk.to_bytes(), Some(255))
+    // FIXME This exposes the pk, do the trick from pBTC where we pass the db to a method on the struct!
 }
 
-pub fn get_eos_private_key_from_db() -> Result<EosPrivateKey> {
+pub fn get_eos_private_key_from_db<D>(
+    db: &D
+) -> Result<EosPrivateKey>
+    where D: DatabaseInterface
+{
     debug!("✔ Getting EOS private key from db...");
-    get_bytes_from_db(EOS_PRIVATE_KEY_DB_KEY.to_vec())
-        .and_then(|bytes|
-            EosPrivateKey::from_slice(&bytes[..])
-        )
+    db.get(EOS_PRIVATE_KEY_DB_KEY.to_vec(), Some(255))
+        .and_then(|bytes| EosPrivateKey::from_slice(&bytes[..]))
 }
 
 pub fn get_eos_network_from_db() -> Result<EosNetwork> {

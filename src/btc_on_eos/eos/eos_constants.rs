@@ -5,12 +5,12 @@ pub const EOS_MAX_EXPIRATION_SECS: u32 = 3600;
 pub const PUBLIC_KEY_CHECKSUM_SIZE: usize = 4;
 pub const EOS_ADDRESS_CHAR_LENGTH: usize = 12;
 pub const EOS_TOKEN_NAME: &str = "eosio.token";
+pub const MEMO: &str = "BTC -> pBTC complete!";
 pub const EOS_TRANSFER_ACTION: &str = "transfer";
 pub const PEOS_ACCOUNT_NAME: &str = "provabletokn";
 pub const PEOS_ACCOUNT_ACTOR: &str = PEOS_ACCOUNT_NAME;
 pub const PEOS_ACCOUNT_PERMISSION_LEVEL: &str = "active";
 pub const EOS_PROVABLE_SAFE_ACCOUNT: &str = "provablesafe";
-pub const PEOS_TO_EOS_MEMO: &str = "pEOS -> EOS complete!";
 pub const PUBLIC_KEY_WITH_CHECKSUM_SIZE: usize = PUBLIC_KEY_SIZE + PUBLIC_KEY_CHECKSUM_SIZE;
 // NOTE (javascript): new Uint8Array(
 //   Buffer.from(web3.utils.keccak256('eos-network-key').slice(2), 'hex')
@@ -25,7 +25,7 @@ pub static EOS_NETWORK_KEY: [u8; 32] = [
 // NOTE (javascript): new Uint8Array(
 //   Buffer.from(web3.utils.keccak256('eos-chain-id-key').slice(2), 'hex')
 // )
-// 0xcbd29a81186afbeb3af7e170ba5aad3b41426c3e81abc7562fa321f85426c6b3
+// cbd29a81186afbeb3af7e170ba5aad3b41426c3e81abc7562fa321f85426c6b3
 pub static EOS_CHAIN_ID_DB_KEY: [u8; 32] = [
   203, 210, 154, 129, 24, 106, 251, 235,
   58, 247, 225, 112, 186, 90, 173, 59,
@@ -71,4 +71,14 @@ pub static EOS_ACCOUNT_NAME_KEY: [u8; 32] = [
   102, 168, 254, 82, 102, 17, 36, 196,
   36, 114, 92, 231, 28, 98, 224, 172,
   33, 31, 95, 240, 34, 173, 169, 164
+];
+// NOTE (javascript): new Uint8Array(
+//   Buffer.from(web3.utils.keccak256('eos-account-name').slice(2), 'hex')
+// )
+// 71c8980fe3f6e8b3cdcbd4dce5f1a13af16e1980e3a7d4a570007c24d3691271
+pub static EOS_TOKEN_TICKER_KEY: [u8; 32] = [
+  113, 200, 152, 15, 227, 246, 232, 179,
+  205, 203, 212, 220, 229, 241, 161, 58,
+  241, 110, 25, 128, 227, 167, 212, 165,
+  112, 0, 124, 36, 211, 105, 18, 113
 ];
