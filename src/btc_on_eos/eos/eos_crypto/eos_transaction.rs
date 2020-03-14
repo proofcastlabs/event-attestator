@@ -115,7 +115,7 @@ mod tests {
             get_sample_eos_private_key_2,
         },
         eos_constants::{
-            PEOS_TO_EOS_MEMO,
+            MEMO,
             PEOS_ACCOUNT_NAME,
             PEOS_ACCOUNT_ACTOR,
             EOS_MAX_EXPIRATION_SECS,
@@ -132,7 +132,7 @@ mod tests {
         let unsigned_transaction = get_unsigned_peos_transaction(
             to,
             PEOS_ACCOUNT_NAME,
-            PEOS_TO_EOS_MEMO,
+            MEMO,
             PEOS_ACCOUNT_ACTOR,
             amount,
             ref_block_num,
@@ -166,7 +166,7 @@ mod tests {
         let unsigned_transaction = get_unsigned_peos_transaction(
             to,
             PEOS_ACCOUNT_NAME,
-            PEOS_TO_EOS_MEMO,
+            MEMO,
             PEOS_ACCOUNT_ACTOR,
             amount,
             ref_block_num,
