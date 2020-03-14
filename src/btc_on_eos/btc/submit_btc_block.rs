@@ -36,26 +36,17 @@ use crate::btc_on_eos::{
         validate_btc_proof_of_work::{
             validate_proof_of_work_of_btc_block_in_state,
         },
-        filter_op_return_deposit_txs::{
-            filter_op_return_deposit_txs_and_add_to_state,
-        },
         get_btc_block_in_db_format::{
             create_btc_block_in_db_format_and_put_in_state
         },
         extract_utxos_from_p2sh_txs::{
             maybe_extract_utxos_from_p2sh_txs_and_put_in_state
         },
-        extract_utxos_from_op_return_txs::{
-            maybe_extract_utxos_from_op_return_txs_and_put_in_state,
-        },
         remove_minting_params_from_canon_block::{
             remove_minting_params_from_canon_block_and_return_state,
         },
         parse_minting_params_from_p2sh_deposits::{
             parse_minting_params_from_p2sh_deposits_and_add_to_state,
-        },
-        parse_minting_params_from_op_return_deposits::{
-            parse_minting_params_from_op_return_deposits_and_add_to_state,
         },
     },
 };
@@ -79,11 +70,8 @@ pub fn submit_btc_block_to_core<D>(
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)
         .and_then(get_deposit_info_hash_map_and_put_in_state)
-        .and_then(filter_op_return_deposit_txs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
-        .and_then(parse_minting_params_from_op_return_deposits_and_add_to_state)
         .and_then(parse_minting_params_from_p2sh_deposits_and_add_to_state)
-        .and_then(maybe_extract_utxos_from_op_return_txs_and_put_in_state)
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
         .and_then(maybe_filter_utxos_in_state)
         .and_then(maybe_save_utxos_to_db)
