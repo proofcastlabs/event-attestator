@@ -7,6 +7,7 @@ use ethereum_types::{
 };
 use crate::btc_on_eos::{
     errors::AppError,
+    constants::EOS_TOKEN_TICKER,
     types::{
         Bytes,
         Result,
@@ -20,6 +21,19 @@ use crate::btc_on_eos::{
         eos_constants::EOS_NUM_DECIMALS,
     },
 };
+
+pub fn convert_eos_asset_to_u64(eos_asset: String) -> Result<u64> {
+    Ok(
+        eos_asset
+            .split_whitespace()
+            .collect::<Vec<&str>>()[0]
+            .parse::<u64>()?
+    )
+}
+
+pub fn convert_u64_to_eos_asset(u_64: u64) -> String {
+    format!("{} {}", u_64, EOS_TOKEN_TICKER)
+}
 
 pub fn convert_bytes_to_u64(bytes: &Bytes) -> Result<u64> {
     match bytes.len() {
