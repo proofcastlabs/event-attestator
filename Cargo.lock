@@ -225,6 +225,7 @@ dependencies = [
 [[package]]
 name = "eos-keys"
 version = "0.1.0"
+source = "git+https://github.com/provable-things/rust-eos.git?branch=provable-additions#ec7e3467fcaec70280c65395cf39376cc97b6639"
 dependencies = [
  "bitcoin_hashes",
  "byteorder",
@@ -236,6 +237,7 @@ dependencies = [
 [[package]]
 name = "eos-primitives"
 version = "0.1.0"
+source = "git+https://github.com/provable-things/rust-eos.git?branch=provable-additions#ec7e3467fcaec70280c65395cf39376cc97b6639"
 dependencies = [
  "bitcoin_hashes",
  "chrono",
@@ -249,6 +251,7 @@ dependencies = [
 [[package]]
 name = "eosio-core-derive"
 version = "0.2.1"
+source = "git+https://github.com/provable-things/rust-eos.git?branch=provable-additions#ec7e3467fcaec70280c65395cf39376cc97b6639"
 dependencies = [
  "proc-macro2 0.4.30",
  "quote 0.6.13",
@@ -434,32 +437,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pbtc_core"
-version = "0.1.0"
-dependencies = [
- "base58",
- "bitcoin",
- "bitcoin_hashes",
- "byteorder",
- "chrono",
- "eos-primitives",
- "ethereum-types",
- "hex 0.4.0",
- "lazy_static",
- "log",
- "rand 0.7.2",
- "rlp",
- "rustc-hex",
- "secp256k1",
- "serde",
- "serde_derive",
- "serde_json",
- "sha256",
- "simplelog",
- "tiny-keccak",
-]
-
-[[package]]
 name = "ppv-lite86"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -494,6 +471,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c09721c6781493a2a492a96b5a5bf19b65917fe6728884e7c44dd0c60ca3435"
 dependencies = [
  "unicode-xid 0.2.0",
+]
+
+[[package]]
+name = "ptokens_core"
+version = "0.1.0"
+dependencies = [
+ "base58",
+ "bitcoin",
+ "bitcoin_hashes",
+ "byteorder",
+ "chrono",
+ "eos-primitives",
+ "ethereum-types",
+ "hex 0.4.0",
+ "lazy_static",
+ "log",
+ "rand 0.7.2",
+ "rlp",
+ "rustc-hex",
+ "secp256k1",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sha256",
+ "simplelog",
+ "tiny-keccak",
 ]
 
 [[package]]

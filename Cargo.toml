@@ -31,4 +31,4 @@ serde_derive = "=1.0.101"
 serde = { version = "=1", features = ["derive"] }
 bitcoin = { git = "https://github.com/provable-things/rust-bitcoin.git", rev = "53a5a78" }
 secp256k1 = { git = "https://github.com/bifrost-codes/rust-secp256k1", features = ["recovery", "unstable"] }
-eos-primitives = { path = "../rust-eos/primitives" } # TODO git path!
+eos-primitives = { git = "https://github.com/provable-things/rust-eos.git", branch = "provable-additions" }
