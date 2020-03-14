@@ -50,7 +50,7 @@ fn get_bytes_from_db(k: Bytes) -> Result<Bytes> { // TODO REINSTATE!
     Ok(vec![0u8])
 }
 
-pub fn get_eos_account_nonce<D>(
+pub fn get_eos_account_nonce_from_db<D>(
     db: &D
 ) -> Result<u64>
     where D: DatabaseInterface
