@@ -3,8 +3,8 @@ license = "MIT"
 publish = false
 edition = "2018"
 version = "0.1.0"
-name = "pbtc_core"
 readme = "README.md"
+name = "ptokens_core"
 keywords = ["provable", "defi", "crypto"]
 authors = ["Provable Things <provable.xyz>", "Greg Kapka <greg@oraclize.it>"]
 
