@@ -14,6 +14,7 @@ pub enum AppError {
     NoneError(std::option::NoneError),
     FromUtf8Error(std::str::Utf8Error),
     SetLoggerError(log::SetLoggerError),
+    Utf8Error(std::string::FromUtf8Error),
     ParseIntError(std::num::ParseIntError),
     ChronoError(chrono::format::ParseError),
     EosPrimitivesError(eos_primitives::Error),
@@ -37,6 +38,8 @@ impl fmt::Display for AppError {
                 format!("✘ Hex Error!\n✘ {}", e),
             AppError::IOError(ref e) =>
                 format!("✘ I/O Error!\n✘ {}", e),
+            AppError::Utf8Error(ref e) =>
+                format!("✘ UTF8 Error!\n✘ {}", e),
             AppError::CryptoError(ref e) =>
                 format!("✘ Crypto Error!\n✘ {}", e),
             AppError::Base58Error(ref e) =>
@@ -185,5 +188,11 @@ impl From<bitcoin_hashes::error::Error> for AppError {
 impl From<bitcoin::util::address::Error> for AppError {
     fn from(e: bitcoin::util::address::Error) -> AppError {
         AppError::BitcoinAddressError(e)
+    }
+}
+
+impl From<std::string::FromUtf8Error> for AppError {
+    fn from(e: std::string::FromUtf8Error) -> AppError {
+        AppError::Utf8Error(e)
     }
 }
