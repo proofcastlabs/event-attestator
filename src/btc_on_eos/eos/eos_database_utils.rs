@@ -83,22 +83,19 @@ pub fn get_eos_account_name_from_db<D>(
 
 pub fn put_eos_chain_id_in_db<D>(
     db: &D,
-    chain_id: &Checksum256
+    chain_id: &String
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    db.put(EOS_CHAIN_ID_DB_KEY.to_vec(), chain_id.as_bytes().to_vec(), None)
+    put_string_in_db(db, &EOS_CHAIN_ID_DB_KEY.to_vec(), chain_id)
 }
 
 pub fn get_eos_chain_id_from_db<D>(
     db: &D,
-) -> Result<Checksum256>
+) -> Result<String>
     where D: DatabaseInterface
 {
-    db
-        .get(EOS_PRIVATE_KEY_DB_KEY.to_vec(), None)
-        .map(|bytes| hex::encode(bytes))
-        .and_then(|hex| convert_hex_to_checksum256(&hex))
+    get_string_from_db(db, &EOS_CHAIN_ID_DB_KEY.to_vec())
 }
 
 pub fn get_processed_tx_ids_from_db<D>(
