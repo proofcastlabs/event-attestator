@@ -15,6 +15,7 @@ pub mod validate_signature;
 pub mod eos_database_utils;
 pub mod parse_redeem_params;
 pub mod parse_submission_material;
+pub mod filter_already_processed_txs;
 pub mod deserialize_eth_transfer_data;
 
 pub mod action_roots; // TODO TEMP WHILST WIP - rm
