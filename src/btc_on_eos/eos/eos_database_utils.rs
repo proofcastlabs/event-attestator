@@ -12,6 +12,8 @@ use crate::btc_on_eos::{
         Result,
     },
     database_utils::{
+        put_u64_in_db,
+        get_u64_from_db,
         put_string_in_db,
         get_string_from_db,
     },
@@ -25,6 +27,7 @@ use crate::btc_on_eos::{
         eos_constants::{
             EOS_CHAIN_ID,
             EOS_NETWORK_KEY,
+            EOS_ACCOUNT_NONCE,
             EOS_CHAIN_ID_DB_KEY,
             EOS_TOKEN_TICKER_KEY,
             PROCESSED_TX_IDS_KEY,
@@ -45,6 +48,23 @@ fn put_bytes_in_db(k: Bytes, v: Bytes) -> Result<()> { // TODO REINSTATE!
 // TODO pass in the db to all functions herein!
 fn get_bytes_from_db(k: Bytes) -> Result<Bytes> { // TODO REINSTATE!
     Ok(vec![0u8])
+}
+
+pub fn get_eos_account_nonce<D>(
+    db: &D
+) -> Result<u64>
+    where D: DatabaseInterface
+{
+    get_u64_from_db(db, &EOS_ACCOUNT_NONCE.to_vec())
+}
+
+pub fn put_eos_account_nonce_in_db<D>(
+    db: &D,
+    new_nonce: &u64,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    put_u64_in_db(db, &EOS_ACCOUNT_NONCE.to_vec(), new_nonce)
 }
 
 pub fn put_eos_token_ticker_in_db<D>(

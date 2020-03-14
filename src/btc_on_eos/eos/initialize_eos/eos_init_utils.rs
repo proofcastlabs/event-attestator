@@ -9,6 +9,7 @@ use crate::btc_on_eos::{
             put_eos_account_name_in_db,
             put_eos_token_ticker_in_db,
             put_processed_tx_ids_in_db,
+            put_eos_account_nonce_in_db,
         },
     },
 };
@@ -28,6 +29,15 @@ pub fn put_eos_account_name_in_db_and_return_state<D>(
     where D: DatabaseInterface
 {
     put_eos_account_name_in_db(&state.db, &account_name)
+        .map(|_| state)
+}
+
+pub fn put_eos_account_nonce_in_db_and_return_state<D>(
+    state: EosState<D>,
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    put_eos_account_nonce_in_db(&state.db, &0u64)
         .map(|_| state)
 }
 

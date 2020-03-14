@@ -14,6 +14,7 @@ use crate::btc_on_eos::{
                 get_eos_init_output,
                 put_eos_chain_id_in_db_and_return_state,
                 put_eos_account_name_in_db_and_return_state,
+                put_eos_account_nonce_in_db_and_return_state,
                 put_empty_processed_tx_ids_in_db_and_return_state,
             },
         },
@@ -50,6 +51,9 @@ pub fn maybe_initialize_eos_core<D>(
                         account_name,
                         state
                     )
+                )
+                .and_then(|state|
+                    put_eos_account_nonce_in_db_and_return_state(state)
                 )
                 .and_then(end_eos_db_transaction)
                 .and_then(get_eos_init_output)
