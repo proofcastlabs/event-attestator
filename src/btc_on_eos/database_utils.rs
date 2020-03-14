@@ -15,6 +15,38 @@ fn get_bytes_from_db(k: Bytes) -> Result<Bytes> { // TODO Reinstate!
     Ok(vec![0u8])
 }
 
+pub fn put_string_in_db<D>(
+    db: &D,
+    key: &Bytes,
+    string: &String
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    debug!(
+        "✔ Putting `string` of {} in db under key {}",
+        string,
+        hex::encode(key),
+    );
+    db.put(key.to_vec(), string.as_bytes().to_vec(), None)
+}
+
+pub fn get_string_from_db<D>(
+    db: &D,
+    key: &Bytes
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    debug!("✔ Getting `string` from db under key: {}", hex::encode(key));
+    db
+        .get(key.to_vec(), None)
+        .map(|bytes|
+            bytes
+                .iter()
+                .map(|byte| *byte as char)
+                .collect::<String>()
+        )
+}
+
 pub fn put_u64_in_db<D>(
     db: &D,
     key: &Bytes,
@@ -72,25 +104,6 @@ pub fn get_usize_from_db(key: &Bytes) -> Result<usize> {
         )
 }
 
-pub fn put_string_in_db(key: &Bytes, string: &String) -> Result<()> {
-    debug!(
-        "✔ Putting `string` of {} in db under key {}",
-        string,
-        hex::encode(key),
-    );
-    put_bytes_in_db(key.to_vec(), string.as_bytes().to_vec())
-}
-
-pub fn get_string_from_db(key: &Bytes) -> Result<String> {
-    debug!("✔ Getting `string` from db under key: {}", hex::encode(key));
-    get_bytes_from_db(key.to_vec())
-        .map(|bytes|
-            bytes
-                .iter()
-                .map(|byte| *byte as char)
-                .collect::<String>()
-        )
-}
 
 #[cfg(test)]
 mod tests {
