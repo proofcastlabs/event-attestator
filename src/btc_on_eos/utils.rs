@@ -22,7 +22,7 @@ use crate::btc_on_eos::{
     },
 };
 
-pub fn convert_eos_asset_to_u64(eos_asset: String) -> Result<u64> {
+pub fn convert_eos_asset_to_u64(eos_asset: &String) -> Result<u64> {
     Ok(
         eos_asset
             .split_whitespace()

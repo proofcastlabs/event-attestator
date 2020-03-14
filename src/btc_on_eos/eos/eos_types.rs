@@ -70,7 +70,7 @@ impl ActionParams {
             ActionParams {
                 memo: json.memo.clone(),
                 sender: EosAccountName::from_str(&json.sender)?,
-                quantity: convert_eos_asset_to_u64(json.quantity)?,
+                quantity: convert_eos_asset_to_u64(&json.quantity)?,
             }
         )
     }
