@@ -4,8 +4,10 @@ use crate::btc_on_eos::{
     eos::{
         eos_state::EosState,
         eos_types::ProcessedTxIds,
+        eos_crypto::eos_private_key::EosPrivateKey,
         eos_database_utils::{
             put_eos_chain_id_in_db,
+            put_eos_private_key_in_db,
             put_eos_account_name_in_db,
             put_eos_token_ticker_in_db,
             put_processed_tx_ids_in_db,
@@ -13,6 +15,18 @@ use crate::btc_on_eos::{
         },
     },
 };
+
+pub fn generated_eos_key_save_in_db_and_return_state<D>(
+    state: EosState<D>,
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    put_eos_private_key_in_db(
+        &state.db,
+        &EosPrivateKey::generate_random()?,
+    )
+        .map(|_| state)
+}
 
 pub fn get_eos_init_output<D>(
     _state: EosState<D>
