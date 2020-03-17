@@ -20,20 +20,24 @@ use crate::btc_on_eos::{
     },
 };
 
+fn get_processed_tx_ids_and_add_to_state<D>( // TODO move to somewhere better
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    get_processed_tx_ids_from_db(&state.db)
+        .and_then(|tx_ids| state.add_processed_tx_ids(tx_ids))
+}
+
 pub fn submit_eos_block_to_core<D>(
     db: D,
     block_json: String,
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    get_processed_tx_ids_from_db(&db)
-        .and_then(|tx_ids|
-            parse_submission_material_and_add_to_state(
-                block_json,
-                EosState::init(db, tx_ids),
-            )
-        )
+    parse_submission_material_and_add_to_state(block_json, EosState::init(db))
         .and_then(check_core_is_initialized_and_return_eos_state)
+        .and_then(get_processed_tx_ids_and_add_to_state)
         .and_then(start_eos_db_transaction)
         //.and_then(validate_block_header_signatures)
         //.and_then(validate_irreversibility_proof)

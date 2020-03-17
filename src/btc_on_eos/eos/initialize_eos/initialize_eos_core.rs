@@ -37,7 +37,7 @@ pub fn maybe_initialize_eos_core<D>(
         }
         false => {
             info!("✔ Initializing core for EOS...");
-            start_eos_db_transaction(EosState::init(db, ProcessedTxIds::init()))
+            start_eos_db_transaction(EosState::init(db))
                 .and_then(|state| {
                     put_empty_processed_tx_ids_in_db_and_return_state(state)
                 })

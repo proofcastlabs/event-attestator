@@ -34,14 +34,14 @@ pub struct EosState<D: DatabaseInterface> {
 }
 
 impl<D> EosState<D> where D: DatabaseInterface {
-    pub fn init(db: D, processed_tx_ids: ProcessedTxIds) -> EosState<D> {
+    pub fn init(db: D) -> EosState<D> {
         EosState {
             db,
-            processed_tx_ids,
             block_header: None,
             signed_txs: vec![],
             actions_data: vec![],
             redeem_params: vec![],
+            processed_tx_ids: ProcessedTxIds::init(),
         }
     }
 
@@ -69,6 +69,14 @@ impl<D> EosState<D> where D: DatabaseInterface {
         redeem_params: Vec<RedeemParams>,
     ) -> Result<EosState<D>> {
         self.redeem_params = redeem_params;
+        Ok(self)
+    }
+
+    pub fn add_processed_tx_ids(
+        mut self,
+        tx_ids: ProcessedTxIds,
+    ) -> Result<Self> {
+        self.processed_tx_ids = tx_ids;
         Ok(self)
     }
 
