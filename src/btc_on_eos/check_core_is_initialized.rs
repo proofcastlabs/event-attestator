@@ -12,26 +12,43 @@ use crate::btc_on_eos::{
     },
 };
 
+pub fn check_btc_core_is_initialized<D>(
+    db: &D
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    info!("✔ Checking BTC core is initialized...");
+    match is_btc_core_initialized(db) {
+        false => Err(AppError::Custom(
+            "✘ BTC side of core not initialized!".to_string()
+        )),
+        true => Ok(())
+    }
+}
+
+pub fn check_eos_core_is_initialized<D>(
+    db: &D
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    info!("✔ Checking EOS core is initialized...");
+    match is_eos_core_initialized(db) {
+        false => Err(AppError::Custom(
+            "✘ EOS side of core not initialized!".to_string()
+        )),
+        true => Ok(())
+    }
+}
+
 pub fn check_core_is_initialized<D>(
     db: &D
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    info!("✔ Checking core is initialized...");
-    match is_eos_core_initialized(db) {
-        false => Err(AppError::Custom(
-            "✘ EOS side of core not initialized!".to_string()
-        )),
-        true => {
-            match is_btc_core_initialized(db) {
-                false => Err(AppError::Custom(
-                    "✘ BTC side of core not initialized!".to_string()
-                )),
-                true => Ok(())
-            }
-        }
-    }
+    check_btc_core_is_initialized(db)
+        .and_then(|_| check_eos_core_is_initialized(db))
 }
+
 
 // TODO/FIXME Make generic
 pub fn check_core_is_initialized_and_return_eos_state<D>(
