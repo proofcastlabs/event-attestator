@@ -198,23 +198,23 @@ impl DepositAddressInfo {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DepositAddressInfoJson {
     pub nonce: u64,
-    pub eth_address: String,
+    pub address: String,
     pub btc_deposit_address: String,
-    pub eth_address_and_nonce_hash: String,
+    pub address_and_nonce_hash: String,
 }
 
 impl DepositAddressInfoJson {
     pub fn new(
         nonce: u64,
-        eth_address: String,
+        address: String,
         btc_deposit_address: String,
-        eth_address_and_nonce_hash: String,
+        address_and_nonce_hash: String,
     ) -> Self {
         DepositAddressInfoJson {
             nonce,
-            eth_address,
+            address,
             btc_deposit_address,
-            eth_address_and_nonce_hash,
+            address_and_nonce_hash,
         }
     }
 }
