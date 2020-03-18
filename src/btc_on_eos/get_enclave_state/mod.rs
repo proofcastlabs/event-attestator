@@ -10,7 +10,10 @@ use crate::btc_on_eos::{
     },
     eos::{
         eos_crypto::eos_public_key::EosPublicKey,
-        eos_database_utils::get_eos_private_key_from_db,
+        eos_database_utils::{
+            get_eos_chain_id_from_db,
+            get_eos_private_key_from_db,
+        },
     },
     btc::{
         btc_constants::BTC_TAIL_LENGTH,
@@ -40,6 +43,7 @@ pub struct EnclaveState {
     btc_address: String,
     btc_utxo_nonce: u64,
     btc_tail_length: u64,
+    eos_chain_id: String,
     btc_sats_per_byte: u64,
     eos_public_key: String,
     btc_public_key: String,
@@ -90,6 +94,8 @@ pub fn get_enclave_state<D>(
                         btc_public_key_hex,
                     btc_tail_block_number:
                         btc_tail_block.height,
+                    eos_chain_id:
+                        get_eos_chain_id_from_db(&db)?,
                     btc_tail_block_hash:
                         btc_tail_block.id.to_string(),
                     btc_latest_block_number:

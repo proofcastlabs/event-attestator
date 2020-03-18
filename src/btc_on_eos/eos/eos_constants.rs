@@ -35,7 +35,7 @@ pub static EOS_CHAIN_ID_DB_KEY: [u8; 32] = [
 // NOTE (javascript): new Uint8Array(
 //   Buffer.from(web3.utils.keccak256('eos-private-key-db-key').slice(2), 'hex')
 // )
-// 0xd2d562ddd639ba2c7de122bc75f049a968ab759be57f66449c69d5f402723571
+// d2d562ddd639ba2c7de122bc75f049a968ab759be57f66449c69d5f402723571
 pub static EOS_PRIVATE_KEY_DB_KEY: [u8; 32] = [
   210, 213, 98, 221, 214, 57, 186, 44,
   125, 225, 34, 188, 117, 240, 73, 169,
