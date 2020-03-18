@@ -91,7 +91,7 @@ fn is_output_address_in_hash_map(
                         true
                     }
                     false => {
-                        info!("✘ Output address {} is NOT in hash map!", address);
+                        trace!("✘ Output address {} is NOT in hash map!", address);
                         false
                     }
                 }
