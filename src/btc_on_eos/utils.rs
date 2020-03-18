@@ -37,7 +37,7 @@ pub fn convert_eos_asset_to_u64(eos_asset: &String) -> Result<u64> { //TODO test
 
 pub fn convert_u64_to_eos_asset(value: u64) -> String { // TODO test!
     let mut amount_string = format!("{}", value);
-    match amount_string.len() {
+    let asset = match amount_string.len() {
         0 => "0.00000000".to_string(),
         1 => format!("0.0000000{}", amount_string),
         2 => format!("0.000000{}", amount_string),
@@ -52,9 +52,10 @@ pub fn convert_u64_to_eos_asset(value: u64) -> String { // TODO test!
                 amount_string.len() - BTC_NUM_DECIMALS,
                 '.'
             );
-            format!("{} {}", amount_string, EOS_TOKEN_TICKER)
+            amount_string
         }
-    }
+    };
+    format!("{} {}", asset, EOS_TOKEN_TICKER)
 }
 
 pub fn convert_bytes_to_u64(bytes: &Bytes) -> Result<u64> {
