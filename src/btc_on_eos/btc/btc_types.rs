@@ -14,6 +14,7 @@ use crate::btc_on_eos::{
     utils::{
         strip_hex_prefix,
         convert_hex_to_address,
+        convert_u64_to_eos_asset,
     },
     types::{
         Bytes,
@@ -138,7 +139,7 @@ impl MintingParamStruct {
     ) -> MintingParamStruct {
         MintingParamStruct {
             to,
-            amount: format!("{} {}", amount, EOS_TOKEN_TICKER),
+            amount: convert_u64_to_eos_asset(amount),
             originating_tx_hash: originating_tx_hash.to_string(),
             originating_tx_address: originating_tx_address.to_string(),
         }

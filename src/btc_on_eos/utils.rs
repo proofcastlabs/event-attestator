@@ -7,7 +7,6 @@ use ethereum_types::{
 };
 use crate::btc_on_eos::{
     errors::AppError,
-    constants::EOS_TOKEN_TICKER,
     types::{
         Bytes,
         Result,
@@ -15,6 +14,10 @@ use crate::btc_on_eos::{
     constants::{
         HASH_LENGTH,
         U64_NUM_BYTES,
+    },
+    constants::{
+        EOS_TOKEN_TICKER,
+        BTC_NUM_DECIMALS,
     },
     eos::{
         eos_types::EosAmount,
@@ -31,8 +34,26 @@ pub fn convert_eos_asset_to_u64(eos_asset: &String) -> Result<u64> {
     )
 }
 
-pub fn convert_u64_to_eos_asset(u_64: u64) -> String {
-    format!("{} {}", u_64, EOS_TOKEN_TICKER)
+pub fn convert_u64_to_eos_asset(value: u64) -> String { // TODO test!
+    let mut amount_string = format!("{}", value);
+    match amount_string.len() {
+        0 => "0.00000000".to_string(),
+        1 => format!("0.0000000{}", amount_string),
+        2 => format!("0.000000{}", amount_string),
+        3 => format!("0.00000{}", amount_string),
+        4 => format!("0.0000{}", amount_string),
+        5 => format!("0.000{}", amount_string),
+        6 => format!("0.00{}", amount_string),
+        7 => format!("0.0{}", amount_string),
+        8 => format!("0.{}", amount_string),
+        _ => {
+            amount_string.insert(
+                amount_string.len() - BTC_NUM_DECIMALS,
+                '.'
+            );
+            format!("{} {}", amount_string, EOS_TOKEN_TICKER)
+        }
+    }
 }
 
 pub fn convert_bytes_to_u64(bytes: &Bytes) -> Result<u64> {
