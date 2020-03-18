@@ -15,6 +15,7 @@ pub mod validate_signature;
 pub mod eos_database_utils;
 pub mod parse_redeem_params;
 pub mod parse_submission_material;
+pub mod increment_signature_nonce;
 pub mod filter_already_processed_txs;
 pub mod add_tx_ids_to_processed_list;
 pub mod deserialize_eth_transfer_data;

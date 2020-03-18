@@ -6,6 +6,7 @@ use crate::btc_on_eos::{
         eos_state::EosState,
         get_eos_output::get_eos_output,
         sign_transactions::maybe_sign_txs_and_add_to_state,
+        increment_signature_nonce::maybe_increment_signature_nonce,
         parse_redeem_params::maybe_parse_redeem_params_and_put_in_state,
         add_tx_ids_to_processed_list::maybe_add_tx_ids_to_processed_tx_ids,
         parse_submission_material::parse_submission_material_and_add_to_state,
@@ -49,6 +50,7 @@ pub fn submit_eos_block_to_core<D>(
         .and_then(filter_out_already_processed_tx_ids_from_state)
         .and_then(maybe_add_tx_ids_to_processed_tx_ids)
         .and_then(maybe_sign_txs_and_add_to_state)
+        .and_then(maybe_increment_signature_nonce)
         .and_then(end_eos_db_transaction)
         .and_then(get_eos_output)
 }
