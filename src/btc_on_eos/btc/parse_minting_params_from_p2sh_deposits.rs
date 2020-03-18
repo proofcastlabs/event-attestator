@@ -65,7 +65,7 @@ fn parse_minting_params_from_p2sh_deposit_tx(
                             Some(
                                 MintingParamStruct::new(
                                     p2sh_tx_out.value,
-                                    deposit_info.eos_address.clone(),
+                                    deposit_info.address.clone(),
                                     p2sh_deposit_containing_tx.txid(),
                                     btc_address,
                                 )

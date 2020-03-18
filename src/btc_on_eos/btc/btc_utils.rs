@@ -197,10 +197,10 @@ pub fn convert_deposit_info_to_json(
             deposit_info_struct.nonce,
         btc_deposit_address:
             deposit_info_struct.btc_deposit_address.to_string(),
-        address: "".to_string(), // FIXME
-            //hex::encode(deposit_info_struct.address.as_bytes()),
-        address_and_nonce_hash: "".to_string(), // FIXME
-            //hex::encode(deposit_info_struct.address_and_nonce_hash),
+        address:
+            deposit_info_struct.address.to_string(),
+        address_and_nonce_hash:
+            deposit_info_struct.commitment_hash.to_string(),
     }
 }
 
