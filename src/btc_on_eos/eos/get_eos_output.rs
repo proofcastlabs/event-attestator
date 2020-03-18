@@ -19,7 +19,7 @@ use crate::btc_on_eos::{
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EosOutput {
-    pub btc_signed_txs: Vec<BtcTxInfo>,
+    pub btc_signed_transactions: Vec<BtcTxInfo>,
 }
 
 impl BtcTxInfo {
@@ -76,7 +76,7 @@ pub fn get_eos_output<D>(
     info!("✔ Getting EOS output json...");
     let output = serde_json::to_string(
         &EosOutput {
-            btc_signed_txs: match &state.signed_txs.len() {
+            btc_signed_transactions: match &state.signed_txs.len() {
                 0 => vec![],
                 _ => get_btc_signed_tx_info_from_btc_txs(
                     get_btc_account_nonce_from_db(&state.db)?,
