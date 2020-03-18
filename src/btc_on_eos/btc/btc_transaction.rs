@@ -115,7 +115,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
                                 &sha256d::Hash::from_slice(
                                     &hex::decode(
                                         deposit_info_json
-                                            .eth_address_and_nonce_hash
+                                            .address_and_nonce_hash
                                             .clone()
                                     )?[..]
                                 )?
@@ -165,7 +165,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
                                         &sha256d::Hash::from_slice(
                                             &hex::decode(
                                                 deposit_info_json
-                                                    .eth_address_and_nonce_hash
+                                                    .address_and_nonce_hash
                                                     .clone()
                                             )?[..]
                                         )?

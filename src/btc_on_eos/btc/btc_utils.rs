@@ -103,19 +103,19 @@ impl SerializedBlockInDbFormat {
 
 pub fn get_p2sh_redeem_script_sig(
     utxo_spender_pub_key_slice: &[u8],
-    eth_address_and_nonce_hash: &sha256d::Hash,
+    address_and_nonce_hash: &sha256d::Hash,
 ) -> BtcScript {
     info!("✔ Generating `p2sh`'s redeem `script_sig`");
     debug!(
-        "✔ Using `eth_address_and_nonce_hash`: {}",
-        hex::encode(eth_address_and_nonce_hash)
+        "✔ Using `address_and_nonce_hash`: {}",
+        hex::encode(address_and_nonce_hash)
     );
     debug!(
         "✔ Using `pub key slice`: {}",
         hex::encode(utxo_spender_pub_key_slice)
     );
     BtcScriptBuilder::new()
-        .push_slice(&eth_address_and_nonce_hash[..])
+        .push_slice(&address_and_nonce_hash[..])
         .push_opcode(opcodes::all::OP_DROP)
         .push_slice(&utxo_spender_pub_key_slice)
         .push_opcode(opcodes::all::OP_CHECKSIG)
@@ -197,10 +197,10 @@ pub fn convert_deposit_info_to_json(
             deposit_info_struct.nonce,
         btc_deposit_address:
             deposit_info_struct.btc_deposit_address.to_string(),
-        eth_address: "".to_string(), // FIXME
-            //hex::encode(deposit_info_struct.eth_address.as_bytes()),
-        eth_address_and_nonce_hash: "".to_string(), // FIXME
-            //hex::encode(deposit_info_struct.eth_address_and_nonce_hash),
+        address: "".to_string(), // FIXME
+            //hex::encode(deposit_info_struct.address.as_bytes()),
+        address_and_nonce_hash: "".to_string(), // FIXME
+            //hex::encode(deposit_info_struct.address_and_nonce_hash),
     }
 }
 
@@ -259,7 +259,7 @@ pub fn deserialize_btc_block_in_db_format(
     )
 }
 
-pub fn get_safe_eth_address() -> EthAddress {
+pub fn get_safe_address() -> EthAddress {
     EthAddress::from_slice(&SAFE_EOS_ADDRESS.as_bytes()) // FIXME
 }
 
@@ -538,7 +538,7 @@ mod tests {
         let originating_tx_address = BtcAddress::from_str(
             "2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2"
         ).unwrap();
-        let eth_address = EthAddress::from_slice(
+        let address = EthAddress::from_slice(
             &hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()
         );
         let originating_tx_hash = sha256d::Hash::from_slice(&hex::decode(
@@ -547,7 +547,7 @@ mod tests {
         ).unwrap();
         let minting_param_struct = MintingParamStruct::new(
             amount,
-            eth_address,
+            address,
             originating_tx_hash,
             originating_tx_address,
         );
@@ -660,9 +660,9 @@ mod tests {
     }
 
     #[test]
-    fn should_get_safe_eth_address() {
+    fn should_get_safe_address() {
         let expected_result = "71a440ee9fa7f99fb9a697e96ec7839b8a1643b8";
-        let result = get_safe_eth_address();
+        let result = get_safe_address();
         assert!(hex::encode(result.as_bytes()) == expected_result);
     }
 }
