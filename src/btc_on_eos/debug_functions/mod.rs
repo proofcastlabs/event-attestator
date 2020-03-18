@@ -112,7 +112,9 @@ pub fn debug_set_key_in_db_to_value<D>(
     info!("✔ Setting key: {} in DB to value: {}", key, value);
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
         .and_then(|_| db.put(hex::decode(key)?, hex::decode(value)?, None))
+        .and_then(|_| db.end_transaction())
         .map(|_| "{putting_value_in_database_suceeded:true}".to_string())
 }
 
