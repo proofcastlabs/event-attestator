@@ -1,13 +1,13 @@
 pub const PUBLIC_KEY_SIZE: usize = 33;
 pub const EOS_NUM_DECIMALS: usize = 4;
 pub const EOS_NAME_BYTES_LEN: usize = 8;
+pub const PBTC_MINT_FXN_NAME: &str = "issue";
 pub const EOS_MAX_EXPIRATION_SECS: u32 = 3600;
 pub const PUBLIC_KEY_CHECKSUM_SIZE: usize = 4;
 pub const EOS_ADDRESS_CHAR_LENGTH: usize = 12;
-pub const EOS_TOKEN_NAME: &str = "eosio.token";
 pub const MEMO: &str = "BTC -> pBTC complete!";
-pub const EOS_TRANSFER_ACTION: &str = "transfer";
-pub const PEOS_ACCOUNT_NAME: &str = "provabletokn";
+pub const PBTC_TOKEN_NAME: &str = "pbtctokenxxx"; // TODO this as init param?
+pub const PEOS_ACCOUNT_NAME: &str = "pbtctokenxxx"; // FIXME this IS init param!
 pub const PEOS_ACCOUNT_ACTOR: &str = PEOS_ACCOUNT_NAME;
 pub const PEOS_ACCOUNT_PERMISSION_LEVEL: &str = "active";
 pub const EOS_PROVABLE_SAFE_ACCOUNT: &str = "provablesafe";

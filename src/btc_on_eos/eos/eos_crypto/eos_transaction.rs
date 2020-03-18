@@ -2,6 +2,7 @@ use eos_primitives::{
     SerializeData,
     ActionTransfer,
     PermissionLevel,
+    ActionPTokenMint,
     Action as EosAction,
     Transaction as EosTransaction,
 };
@@ -11,8 +12,8 @@ use crate::btc_on_eos::{
         eos_types::EosSignedTransaction,
         eos_crypto::eos_private_key::EosPrivateKey,
         eos_constants::{
-            EOS_TOKEN_NAME,
-            EOS_TRANSFER_ACTION,
+            PBTC_TOKEN_NAME,
+            PBTC_MINT_FXN_NAME,
         },
     },
 };
@@ -26,14 +27,14 @@ fn get_peos_permission_level(
 
 fn get_peos_transfer_action(
     to: &str,
-    from: &str,
+    _from: &str,
     memo: &str,
     amount: &str,
-) -> Result<ActionTransfer> {
-    Ok(ActionTransfer::from_str(from, to, amount, memo)?)
+) -> Result<ActionPTokenMint> {
+    Ok(ActionPTokenMint::from_str(to, amount, memo)?)
 }
 
-fn get_eos_transfer_action(
+fn get_eos_minting_action(
     to: &str,
     from: &str,
     memo: &str,
@@ -43,8 +44,8 @@ fn get_eos_transfer_action(
 ) -> Result<EosAction> {
     Ok(
         EosAction::from_str(
-            EOS_TOKEN_NAME,
-            EOS_TRANSFER_ACTION,
+            "pbtctokenxxx",//PBTC_TOKEN_NAME, // this same as actor etc? FIXME!
+            "issue",//PBTC_MINT_FXN_NAME,
             vec![get_peos_permission_level(actor, permission_level)?],
             get_peos_transfer_action(to, from, memo, amount)?,
         )?
@@ -68,7 +69,7 @@ pub fn get_unsigned_peos_transaction(
             ref_block_num,
             ref_block_prefix,
             vec![
-                get_eos_transfer_action(
+                get_eos_minting_action(
                     to,
                     from,
                     memo,
@@ -124,11 +125,11 @@ mod tests {
     };
 
     #[test]
-    fn should_sign_a_tx_correctly_1() {
-        let to = "provabletest";
-        let amount = "1.0000 EOS";
-        let ref_block_num = 1195;
-        let ref_block_prefix = 4039442863;
+    fn should_sign_minting_tx_correctly() {
+        let to = "provtestable";
+        let amount = "1.00000042 PFFF";
+        let ref_block_num = 44391;
+        let ref_block_prefix = 1355491504;
         let unsigned_transaction = get_unsigned_peos_transaction(
             to,
             PEOS_ACCOUNT_NAME,
@@ -140,55 +141,25 @@ mod tests {
             EOS_MAX_EXPIRATION_SECS,
             PEOS_ACCOUNT_PERMISSION_LEVEL,
         ).unwrap();
-        let result = sign_peos_transaction(
-            to,
-            amount,
-            EOS_JUNGLE_CHAIN_ID,
-            &get_sample_eos_private_key_2(),
-            &unsigned_transaction,
-        )
-            .unwrap()
-            .transaction;
-        let expected_result = "ab04af01c5f0000000000100a6823403ea3055000000572d3ccdcd013021cd2a1eb3e9ad00000000a8ed3232363021cd2a1eb3e9ad90b1ca2a1eb3e9ad102700000000000004454f53000000001570454f53202d3e20454f5320636f6d706c6574652100"
-            .to_string();
-        // NOTE: First 4 bytes are the timestamp (8 hex chars...)
-        // NOTE: Signature not deterministic ∴ we don't test it.
-        let result_without_timestamp = &result[8..];
-        assert!(result_without_timestamp == expected_result);
-    }
-
-    #[test]
-    fn should_sign_a_tx_correctly_2() {
-        let to = "provabletest";
-        let amount = "1.0000 EOS";
-        let ref_block_num = 18188;
-        let ref_block_prefix = 594982047;
-        let unsigned_transaction = get_unsigned_peos_transaction(
-            to,
-            PEOS_ACCOUNT_NAME,
-            MEMO,
-            PEOS_ACCOUNT_ACTOR,
-            amount,
-            ref_block_num,
-            ref_block_prefix,
-            EOS_MAX_EXPIRATION_SECS,
-            PEOS_ACCOUNT_PERMISSION_LEVEL,
+        let pk = EosPrivateKey::from_slice(
+            &hex::decode(
+            "0bc331469a2c834b26ff3af7a72e3faab3ee806c368e7a8008f57904237c6057"
+            ).unwrap()
         ).unwrap();
         let result = sign_peos_transaction(
             to,
             amount,
             EOS_JUNGLE_CHAIN_ID,
-            &get_sample_eos_private_key_2(),
+            &pk,
             &unsigned_transaction,
         )
             .unwrap()
             .transaction;
-        // NOTE: Broadcast tx: https://jungle.bloks.io/transaction/621cdccee73d769cb201dbd6f52352e3df20e1b4797e993c9c65f28dd935648f
-        let expected_result = "0c479fb47623000000000100a6823403ea3055000000572d3ccdcd013021cd2a1eb3e9ad00000000a8ed3232363021cd2a1eb3e9ad90b1ca2a1eb3e9ad102700000000000004454f53000000001570454f53202d3e20454f5320636f6d706c6574652100"
-            .to_string();
         // NOTE: First 4 bytes are the timestamp (8 hex chars...)
         // NOTE: Signature not deterministic ∴ we don't test it.
+        // NOTE: Real tx broadcast here: https://jungle.bloks.io/transaction/45c8e6256a3e380b455648d43d0d10ffc8278c3bf428508b8de8e4e3155f7957
+        let expected_result = "67adb028cb500000000001d07b9f0ad28cf2a90000000000a5317601d07b9f0ad28cf2a900000000a8ed32322ea0e23119abbce9ad2ae1f50500000000085046464600000015425443202d3e207042544320636f6d706c6574652100".to_string();
         let result_without_timestamp = &result[8..];
-        assert!(result_without_timestamp == expected_result); // FIXME!
+        assert_eq!(result_without_timestamp, expected_result);
     }
 }

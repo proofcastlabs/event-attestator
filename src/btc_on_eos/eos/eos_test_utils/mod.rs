@@ -53,6 +53,7 @@ pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_2: &str =
 
 pub const EOS_JUNGLE_CHAIN_ID: &str =
     "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
+
 pub const TEMPORARY_DATABASE_PATH: &str = "src/test_utils/temporary_database";
 
 // Note: Key = provabletokn "active" on Jungle
