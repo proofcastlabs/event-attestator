@@ -8,6 +8,10 @@ use crate::btc_on_eos::{
         get_total_utxo_balance_from_db,
         get_total_number_of_utxos_from_db,
     },
+    eos::{
+        eos_crypto::eos_public_key::EosPublicKey,
+        eos_database_utils::get_eos_private_key_from_db,
+    },
     btc::{
         btc_constants::BTC_TAIL_LENGTH,
         update_btc_linker_hash::{
@@ -36,23 +40,25 @@ pub struct EnclaveState {
     btc_address: String,
     btc_utxo_nonce: u64,
     btc_tail_length: u64,
+    btc_sats_per_byte: u64,
+    eos_public_key: String,
     btc_public_key: String,
     btc_linker_hash: String,
-    btc_sats_per_byte: u64,
     btc_number_of_utxos: u64,
     btc_utxo_total_value: u64,
+    btc_tail_block_number: u64,
+    btc_canon_block_number: u64,
     btc_tail_block_hash: String,
     btc_canon_block_hash: String,
-    btc_tail_block_number: u64,
-    btc_latest_block_hash: String,
-    btc_canon_block_number: u64,
-    btc_anchor_block_hash: String,
     btc_latest_block_number: u64,
     btc_anchor_block_number: u64,
     btc_canon_to_tip_length: u64,
+    btc_latest_block_hash: String,
+    btc_anchor_block_hash: String,
 }
 
 // TODO get the EOS state too!
+// TODO rename enclave to core!
 pub fn get_enclave_state<D>(
     db: D
 ) -> Result<String>
@@ -66,6 +72,9 @@ pub fn get_enclave_state<D>(
             let btc_anchor_block = get_btc_anchor_block_from_db(&db)?;
             let btc_latest_block = get_btc_latest_block_from_db(&db)?;
             let btc_private_key = get_btc_private_key_from_db(&db)?;
+            let eos_private_key = get_eos_private_key_from_db(&db)?;
+            let eos_public_key = EosPublicKey::from(&eos_private_key)
+                .to_string();
             let btc_public_key_hex = hex::encode(
                 &btc_private_key
                     .to_public_key_slice()
@@ -73,6 +82,7 @@ pub fn get_enclave_state<D>(
             );
             Ok(serde_json::to_string(
                 &EnclaveState {
+                    eos_public_key,
                     debug_mode: DEBUG_MODE,
                     btc_tail_length:
                         BTC_TAIL_LENGTH,
