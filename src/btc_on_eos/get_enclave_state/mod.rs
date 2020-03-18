@@ -14,6 +14,7 @@ use crate::btc_on_eos::{
             get_eos_chain_id_from_db,
             get_eos_private_key_from_db,
             get_eos_account_name_from_db,
+            get_eos_account_nonce_from_db,
         },
     },
     btc::{
@@ -31,6 +32,7 @@ use crate::btc_on_eos::{
             get_btc_canon_block_from_db,
             get_btc_latest_block_from_db,
             get_btc_anchor_block_from_db,
+            get_btc_account_nonce_from_db,
             get_btc_canon_to_tip_length_from_db,
         },
     },
@@ -49,6 +51,8 @@ pub struct EnclaveState {
     eos_public_key: String,
     btc_public_key: String,
     btc_linker_hash: String,
+    btc_signature_nonce: u64,
+    eos_signature_nonce: u64,
     eos_account_name: String,
     btc_number_of_utxos: u64,
     btc_utxo_total_value: u64,
@@ -88,6 +92,8 @@ pub fn get_enclave_state<D>(
             );
             Ok(serde_json::to_string(
                 &EnclaveState {
+                    eos_signature_nonce: get_eos_account_nonce_from_db(&db)?,
+                    btc_signature_nonce: get_btc_account_nonce_from_db(&db)?,
                     eos_public_key,
                     debug_mode: DEBUG_MODE,
                     btc_tail_length:
