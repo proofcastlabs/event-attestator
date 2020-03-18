@@ -25,9 +25,10 @@ use crate::btc_on_eos::{
     },
 };
 
-pub fn convert_eos_asset_to_u64(eos_asset: &String) -> Result<u64> {
+pub fn convert_eos_asset_to_u64(eos_asset: &String) -> Result<u64> { //TODO test!
     Ok(
         eos_asset
+            .replace(".", "")
             .split_whitespace()
             .collect::<Vec<&str>>()[0]
             .parse::<u64>()?
