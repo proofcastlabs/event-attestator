@@ -34,7 +34,7 @@ pub mod update_btc_canon_block_hash;
 pub mod extract_utxos_from_p2sh_txs;
 //pub mod filter_op_return_deposit_txs;
 pub mod update_btc_latest_block_hash;
-//pub mod extract_utxos_from_op_return_txs;
+pub mod extract_utxos_from_op_return_txs;
 pub mod remove_minting_params_from_canon_block;
 pub mod parse_minting_params_from_p2sh_deposits;
 //pub mod parse_minting_params_from_op_return_deposits;

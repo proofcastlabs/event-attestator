@@ -4,7 +4,10 @@ use crate::btc_on_eos::{
     errors::AppError,
     traits::DatabaseInterface,
     btc::{
-        btc_types::BtcTransactions,
+        btc_types::{
+            BtcTransactions,
+            BtcUtxosAndValues,
+        },
     },
     eos::{
         eos_types::{
@@ -31,6 +34,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub redeem_params: Vec<RedeemParams>,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
+    pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
 }
 
 impl<D> EosState<D> where D: DatabaseInterface {
@@ -41,7 +45,23 @@ impl<D> EosState<D> where D: DatabaseInterface {
             signed_txs: vec![],
             actions_data: vec![],
             redeem_params: vec![],
+            btc_utxos_and_values: None,
             processed_tx_ids: ProcessedTxIds::init(),
+        }
+    }
+
+    pub fn add_btc_utxos_and_values(
+        mut self,
+        btc_utxos_and_values: BtcUtxosAndValues,
+    ) -> Result<EosState<D>> {
+        match self.btc_utxos_and_values {
+            Some(_) => Err(AppError::Custom(
+                get_no_overwrite_state_err("btc_utxos_and_values"))
+            ),
+            None => {
+                self.btc_utxos_and_values = Some(btc_utxos_and_values);
+                Ok(self)
+            }
         }
     }
 

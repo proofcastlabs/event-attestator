@@ -26,7 +26,7 @@ impl RedeemParams {
     }
 }
 
-fn parse_redeem_params_from_actions_data(
+pub fn parse_redeem_params_from_actions_data(
     actions_data: &ActionsData
 ) -> Result<Vec<RedeemParams>> {
     actions_data
