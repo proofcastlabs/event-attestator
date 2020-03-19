@@ -147,7 +147,6 @@ pub fn parse_submission_material_and_put_in_state<D>(
         .and_then(|result| state.add_btc_submission_material(result))
 }
 
-/* TODO reinstate once we have test vectors!
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -156,6 +155,7 @@ mod tests {
         get_sample_btc_block_json_string,
     };
 
+/* TODO reinstate once we have test vectors!
     #[test]
     fn should_parse_btc_block_json() {
         let string = get_sample_btc_block_json_string();
@@ -181,6 +181,7 @@ mod tests {
             panic!("Error deserializing tx: {}", e);
         }
     }
+    */
 
     #[test]
     fn should_parse_deposit_list_json_to_deposit_info() {
@@ -203,4 +204,3 @@ mod tests {
         }
     }
 }
-*/
