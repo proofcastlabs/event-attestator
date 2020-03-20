@@ -32,3 +32,6 @@ serde = { version = "=1", features = ["derive"] }
 bitcoin = { git = "https://github.com/provable-things/rust-bitcoin.git", rev = "53a5a78" }
 secp256k1 = { git = "https://github.com/bifrost-codes/rust-secp256k1", features = ["recovery", "unstable"] }
 eos-primitives = { git = "https://github.com/provable-things/rust-eos.git", branch = "provable-additions" }
+
+[dev-dependencies]
+simple_logger = "1.6.0"
