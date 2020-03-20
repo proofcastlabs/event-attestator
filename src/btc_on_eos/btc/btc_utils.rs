@@ -200,7 +200,7 @@ pub fn convert_deposit_info_to_json(
         address:
             deposit_info_struct.address.to_string(),
         address_and_nonce_hash:
-            deposit_info_struct.commitment_hash.to_string(),
+            hex::encode(deposit_info_struct.commitment_hash),
     }
 }
 
