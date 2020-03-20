@@ -94,6 +94,15 @@ pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_8: &str =
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_9: &str =
     "src/btc_on_eos/btc/btc_test_utils/1666951-block-and-txs-p2sh-and-op-return-below-threshold.json";
 
+pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_10: &str =
+    "src/btc_on_eos/btc/btc_test_utils/btc-1670411-block-and-txs.json";
+
+pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_11: &str =
+    "src/btc_on_eos/btc/btc_test_utils/btc-1670534-block-and-txs.json";
+
+pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_12: &str =
+    "src/btc_on_eos/btc/btc_test_utils/btc-1670541-block-and-txs.json";
+
 pub const SAMPLE_TESTNET_OP_RETURN_BTC_BLOCK_JSON: &str =
     "src/btc_on_eos/btc/btc_test_utils/1610826-testnet-block-with-tx-to-test-address.json";
 
@@ -301,6 +310,7 @@ pub fn get_sample_utxo_and_values() -> Vec<BtcUtxoAndValue> {
     ]
 }
 
+// TODO make fxn for getting these!
 pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
     get_sample_btc_block_n(5)
         .map(|block_and_id| {
@@ -329,6 +339,90 @@ pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
         })
 }
 
+pub fn get_sample_p2sh_utxo_and_value_2() -> Result<BtcUtxoAndValue> {
+    get_sample_btc_block_n(10)
+        .map(|block_and_id| {
+            let output_index = 0;
+            let tx = block_and_id.block.txdata[50].clone();
+            let nonce = 1584612094;
+            let btc_deposit_address = "2NB1SRPSujETy9zYbXRZAGkk1zuDZHFAtyk"
+                .to_string();
+            let eth_address = "provabletest"
+                .to_string();
+            let eth_address_and_nonce_hash =
+            "1729dce0b4e54e39610a95376a8bc96335fd93da68ae6aa27a62d4c282fb1ad3"
+                    .to_string();
+            let deposit_info_json = DepositAddressInfoJson::new(
+                nonce,
+                eth_address,
+                btc_deposit_address,
+                eth_address_and_nonce_hash,
+            );
+            BtcUtxoAndValue::new(
+                tx.output[output_index].value,
+                &create_unsigned_utxo_from_tx(&tx, output_index as u32),
+                Some(deposit_info_json),
+                None,
+            )
+        })
+}
+
+pub fn get_sample_p2sh_utxo_and_value_3() -> Result<BtcUtxoAndValue> {
+    get_sample_btc_block_n(11)
+        .map(|block_and_id| {
+            let output_index = 0;
+            let tx = block_and_id.block.txdata[95].clone();
+            let nonce = 1584696514;
+            let btc_deposit_address = "2My5iu4S78DRiH9capTKo8sXEa98yHVkQXg"
+                .to_string();
+            let eth_address = "provabletest"
+                .to_string();
+            let eth_address_and_nonce_hash =
+            "d11539e07a521c78c20381c98cc546e3ccdd8a5c97f1cffe83ae5537f61a6e39"
+                .to_string();
+            let deposit_info_json = DepositAddressInfoJson::new(
+                nonce,
+                eth_address,
+                btc_deposit_address,
+                eth_address_and_nonce_hash,
+            );
+            BtcUtxoAndValue::new(
+                tx.output[output_index].value,
+                &create_unsigned_utxo_from_tx(&tx, output_index as u32),
+                Some(deposit_info_json),
+                None,
+            )
+        })
+}
+
+pub fn get_sample_p2sh_utxo_and_value_4() -> Result<BtcUtxoAndValue> {
+    get_sample_btc_block_n(12)
+        .map(|block_and_id| {
+            let output_index = 0;
+            let tx = block_and_id.block.txdata[135].clone();
+            let nonce = 1584696514;
+            let btc_deposit_address = "2Mz5K485NS6V1yGKpUnjTrB8HJv7DKSpUgj"
+                .to_string();
+            let eth_address = "provabletest"
+                .to_string();
+            let eth_address_and_nonce_hash =
+            "bf2221253331b654b56bceed49fbc9dd794dbefd1c9785c018143341ab13b312"
+                .to_string();
+            let deposit_info_json = DepositAddressInfoJson::new(
+                nonce,
+                eth_address,
+                btc_deposit_address,
+                eth_address_and_nonce_hash,
+            );
+            BtcUtxoAndValue::new(
+                tx.output[output_index].value,
+                &create_unsigned_utxo_from_tx(&tx, output_index as u32),
+                Some(deposit_info_json),
+                None,
+            )
+        })
+}
+
 pub fn get_sample_btc_block_n(n: usize) -> Result<BtcBlockAndId> {
     let block_path = match n {
         2 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_2),
@@ -339,6 +433,9 @@ pub fn get_sample_btc_block_n(n: usize) -> Result<BtcBlockAndId> {
         7 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_7),
         8 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_8),
         9 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_9),
+        10 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_10),
+        11 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_11),
+        12 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_12),
         _ => Err(AppError::Custom(
             "✘ Don't have sample for that number!"
                 .to_string()
