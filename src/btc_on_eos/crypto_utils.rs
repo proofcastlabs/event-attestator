@@ -1,20 +1,16 @@
 use ethereum_types::H256;
 use tiny_keccak::keccak256;
-use secp256k1::{
-    Secp256k1,
-    Message as Secp256k1Message,
-};
 use rand::{
     RngCore,
     thread_rng,
 };
-use secp256k1::key::{
-    SecretKey,
-    PublicKey,
-};
 use bitcoin_hashes::{
     sha256,
     Hash as HashTrait
+};
+use secp256k1::{
+    key::SecretKey,
+    Message as Secp256k1Message,
 };
 use crate::btc_on_eos::{
     types::{
@@ -30,10 +26,6 @@ pub fn sha256_hash_message_bytes(
     message_bytes: &Bytes
 ) -> Result<Secp256k1Message> {
     Ok(Secp256k1Message::from_slice(&sha256::Hash::hash(message_bytes))?)
-}
-
-fn get_public_key_from_secret(secret_key: SecretKey) -> PublicKey {
-    PublicKey::from_secret_key(&Secp256k1::new(), &secret_key)
 }
 
 fn get_x_random_bytes(num_bytes: usize) -> Vec<u8> {
@@ -86,18 +78,5 @@ mod test {
     fn should_generate_random_private_key() {
         generate_random_private_key()
             .unwrap();
-    }
-
-    #[test]
-    fn should_convert_private_key_to_public() {
-        let secret_bytes = hex::decode(
-            "7c4495fe8341d1144c259f0b21979cbabd03814bbd747e70762c1c59b004d617"
-        ).unwrap();
-        let public_string = "0259419bf5cce6f6411ec3a90f0873b3156c43631403cb832dc710d00ec5690fe0"
-            .to_string();
-        let secret = SecretKey::from_slice(&secret_bytes[..])
-            .unwrap();
-        let result = get_public_key_from_secret(secret);
-        assert!(result.to_string() == public_string);
     }
 }

@@ -31,9 +31,12 @@ pub fn safely_convert_string_to_eos_account(
                     );
                     Ok(eos_account_name)
                 }
-                Err(e) => Err(
+                Err(err) => Err(
                     AppError::Custom(
-                        "✘ Error converting safe EOS address!".to_string()
+                        format!(
+                            "✘ Error converting safe EOS address: {}",
+                            err,
+                        )
                     )
                 )
             }

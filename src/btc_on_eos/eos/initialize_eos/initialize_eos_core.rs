@@ -3,7 +3,6 @@ use crate::btc_on_eos::{
     traits::DatabaseInterface,
     eos::{
         eos_state::EosState,
-        eos_types::ProcessedTxIds,
         eos_database_utils::{
             end_eos_db_transaction,
             start_eos_db_transaction,

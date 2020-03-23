@@ -15,7 +15,6 @@ use crate::btc_on_eos::{
     },
     btc::{
         btc_state::BtcState,
-        btc_constants::DEFAULT_BTC_ADDRESS,
         btc_types::{
             MintingParams,
             MintingParamStruct,
@@ -45,14 +44,6 @@ impl TxInfo {
         minting_param_struct: &MintingParamStruct,
         eos_account_nonce: &u64,
     ) -> Result<TxInfo> {
-        let default_address = DEFAULT_BTC_ADDRESS.to_string();
-        let retrieved_address = minting_param_struct
-            .originating_tx_address
-            .to_string();
-        let address_string = match default_address == retrieved_address {
-            false => retrieved_address,
-            true => "✘ Could not retrieve sender address".to_string(),
-        };
         Ok(
             TxInfo {
                 eos_tx: tx.transaction.clone(),

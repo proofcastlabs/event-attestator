@@ -13,11 +13,8 @@ use crate::btc_on_eos::{
         eos_types::{
             ActionsData,
             RedeemParams,
-            ActionProofs,
-            ActionsParams,
             ProcessedTxIds,
             EosSubmissionMaterial,
-            EosSignedTransactions,
         },
     },
     utils::{

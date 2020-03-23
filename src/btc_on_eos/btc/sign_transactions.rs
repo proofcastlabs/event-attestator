@@ -1,7 +1,3 @@
-use eos_primitives::{
-    Checksum256,
-    AccountName as EosAccountName,
-};
 use crate::btc_on_eos::{
     traits::DatabaseInterface,
     types::{
@@ -10,7 +6,6 @@ use crate::btc_on_eos::{
     btc::{
         btc_state::BtcState,
         btc_types::MintingParams,
-        btc_database_utils::get_btc_canon_block_from_db,
     },
     eos::{
         eos_types::{

@@ -1,3 +1,4 @@
+#![allow(unused_imports)] // FIXME: Change once mod implemented fully
 use secp256k1::{
     Message,
     Secp256k1,

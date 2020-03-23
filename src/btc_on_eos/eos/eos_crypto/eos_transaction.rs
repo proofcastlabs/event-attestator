@@ -1,6 +1,5 @@
 use eos_primitives::{
     SerializeData,
-    ActionTransfer,
     PermissionLevel,
     ActionPTokenMint,
     Action as EosAction,
@@ -11,10 +10,6 @@ use crate::btc_on_eos::{
     eos::{
         eos_types::EosSignedTransaction,
         eos_crypto::eos_private_key::EosPrivateKey,
-        eos_constants::{
-            PBTC_TOKEN_NAME,
-            PBTC_MINT_FXN_NAME,
-        },
     },
 };
 
@@ -45,7 +40,7 @@ fn get_eos_minting_action(
     Ok(
         EosAction::from_str(
             "pbtctokenxxx",//PBTC_TOKEN_NAME, // this same as actor etc? FIXME!
-            "issue",//PBTC_MINT_FXN_NAME,
+            "issue",//PBTC_MINT_FXN_NAME, FIXME!
             vec![get_peos_permission_level(actor, permission_level)?],
             get_peos_transfer_action(to, from, memo, amount)?,
         )?
@@ -111,10 +106,7 @@ pub fn sign_peos_transaction(
 mod tests {
     use super::*;
     use crate::btc_on_eos::eos::{
-        eos_test_utils::{
-            EOS_JUNGLE_CHAIN_ID,
-            get_sample_eos_private_key_2,
-        },
+        eos_test_utils::EOS_JUNGLE_CHAIN_ID,
         eos_constants::{
             MEMO,
             PEOS_ACCOUNT_NAME,

@@ -1,8 +1,4 @@
-use eos_primitives::AccountName as EosAccountName;
-use std::{
-    str::FromStr,
-    fs::read_to_string,
-};
+use std::fs::read_to_string;
 use bitcoin::{
     hashes::{
         Hash,

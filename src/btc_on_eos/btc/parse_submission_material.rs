@@ -150,11 +150,6 @@ pub fn parse_submission_material_and_put_in_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::btc::btc_test_utils::{
-        get_sample_btc_block_json,
-        get_sample_btc_block_json_string,
-    };
-
 /* TODO reinstate once we have test vectors!
     #[test]
     fn should_parse_btc_block_json() {
