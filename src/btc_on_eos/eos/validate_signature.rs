@@ -41,7 +41,6 @@ mod tests {
         println!("expected pubkey   : {}", expected_pub_key);
         println!("producer_signature: {}", producer_signature);
         println!("expected pubkey hex: {}", hex::encode(pubkey.to_bytes()));
-
         println!("recovered pubkey: {}", hex::encode(result.to_bytes()));
         println!("non_recoverable sig: {}", producer_signature.to_non_recoverable_signature());
         println!("result: {}", result);

@@ -321,7 +321,6 @@ mod tests {
             .unwrap();
         let expected_serialized = "f3f615477055c6d2343fa75e000000002a2fb72da881babc192b80bab59c289e2db1b4318160a4c0ab5e50618f57000000000000000000000000000000000000000000000000000000000000000033cfa41c93d0d37dd162d1341114122d76446ec6ce5ff6686205fa15f2fe6d46020000000000";
         let result_serialized = hex::encode(result.serialize().unwrap());
-        println!("digest: {}", result.digest().unwrap());
         assert_eq!(result.id().unwrap(), expected_block_id);
         assert_eq!(result_serialized, expected_serialized);
     }

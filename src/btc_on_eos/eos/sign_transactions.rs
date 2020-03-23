@@ -211,7 +211,6 @@ mod tests {
         let btc_address = "mtQpPJ2yqTN7qxLrRnTSJ8CpbD1BXjM2oo"
             .to_string();
         let submission_material = get_sample_eos_submission_material_json_n(3);
-        println!("{:?}", submission_material);
         let action_proof = ActionProof::from_json(
             &submission_material
                 .action_proofs[0]
@@ -222,20 +221,12 @@ mod tests {
                 .action_json
                 .data
         ).unwrap();
-        println!("{:?}", action_params);
-
         let action_data = ActionData::new(action_proof, action_params);
-        println!("\nactions data: {:?}", action_data);
         let redeem_params = parse_redeem_params_from_actions_data(
             &vec![action_data],
         ).unwrap();
-        println!("\nredeem params: {:?}", redeem_params);
-
         let utxo = get_sample_p2sh_utxo_and_value_2()
             .unwrap();
-
-        println!("\nutxo: {:?}", &utxo);
-
         save_utxos_to_db(&db, &vec![utxo])
             .unwrap();
         let pk = BtcPrivateKey::from_slice(
@@ -259,7 +250,6 @@ mod tests {
         ).unwrap();
 
         let result_hex = get_hex_tx_from_signed_btc_tx(&result);
-        println!("\nres_hex: {:?}", result_hex);
         let expected_hex_result = "0100000001f8c70a7ecd6759cae01e96fca12993e5460d80a720d3fcffe2c95816ee29ef40000000008e47304402200f8c0e9cc392f540b9b389b635bf78629b64c447bade313ced8d207a91ca063a02200bace8c78b21ce2e8a11dc07cddb04a75336e54f806cbd987d4420f50b863a5d0145201729dce0b4e54e39610a95376a8bc96335fd93da68ae6aa27a62d4c282fb1ad3752102babc00d91bacf32c9ed07774e2be9aa3bc63296a858296c2fde390c339551f8dacffffffff02c2140000000000001976a9149ae6e42c56f1ea319cfc704ad50db0683015029b88ac8f3b0000000000001976a9148d70896a446fef5fe85db1597d6dce8b72f796e088ac00000000";
         assert_eq!(result_hex, expected_hex_result);
     }
@@ -272,7 +262,6 @@ mod tests {
         let btc_address = "mwi6VyZUqwqdu1DtQMruV4UzEqJADZzj6n"
             .to_string();
         let submission_material = get_sample_eos_submission_material_json_n(3);
-        println!("{:?}", submission_material);
         let action_proof = ActionProof::from_json(
             &submission_material
                 .action_proofs[0]
@@ -283,20 +272,13 @@ mod tests {
                 .action_json
                 .data
         ).unwrap();
-        println!("{:?}", action_params);
 
         let action_data = ActionData::new(action_proof, action_params);
-        println!("\nactions data: {:?}", action_data);
         let redeem_params = parse_redeem_params_from_actions_data(
             &vec![action_data],
         ).unwrap();
-        println!("\nredeem params: {:?}", redeem_params);
-
         let utxo = get_sample_p2sh_utxo_and_value_2()
             .unwrap();
-
-        println!("\nutxo: {:?}", &utxo);
-
         save_utxos_to_db(&db, &vec![utxo])
             .unwrap();
         let pk = BtcPrivateKey::from_slice(
@@ -320,7 +302,6 @@ mod tests {
         ).unwrap();
 
         let result_hex = get_hex_tx_from_signed_btc_tx(&result);
-        println!("\nres_hex: {:?}", result_hex);
         // From the actual failing tx!
         let expected_hex_result = "0100000001d8baf6344ab19575fe40ad81e5ca1fa57345025e40de3975f7d58c7266e7b7a6000000008f483045022100c2c86c3b03306bef189a862665bece4bdd01983f797b4f9e3edf6c5ba32ac243022038fdad04425cf175cdfcdeb5d7a783934b041f7a42c7b3077652a682a8352a9a014520396e1af63755ae83fecff1975c8addcce346c58cc98103c2781c527ae03915d1752102f55e923c43236f553424b863b1d589b9b67add4d8c49aeca7e667c4772e7b942acffffffff02b3150000000000001976a9149ae6e42c56f1ea319cfc704ad50db0683015029b88ac33930000000000001976a914b19d7011a6107944209d5ebf9ef31a0fdf3115f188ac00000000";
         assert_eq!(result_hex, expected_hex_result);
@@ -335,7 +316,6 @@ mod tests {
         let btc_address = "mwi6VyZUqwqdu1DtQMruV4UzEqJADZzj6n"
             .to_string();
         let submission_material = get_sample_eos_submission_material_json_n(4);
-        println!("{:?}", submission_material);
         let action_proof = ActionProof::from_json(
             &submission_material
                 .action_proofs[0]
@@ -346,20 +326,12 @@ mod tests {
                 .action_json
                 .data
         ).unwrap();
-        println!("{:?}", action_params);
-
         let action_data = ActionData::new(action_proof, action_params);
-        println!("\nactions data: {:?}", action_data);
         let redeem_params = parse_redeem_params_from_actions_data(
             &vec![action_data],
         ).unwrap();
-        println!("\nredeem params: {:?}", redeem_params);
-
         let utxo = get_sample_p2sh_utxo_and_value_3()
             .unwrap();
-
-        println!("\nutxo: {:?}", &utxo);
-
         save_utxos_to_db(&db, &vec![utxo])
             .unwrap();
         let pk = BtcPrivateKey::from_slice(
@@ -384,7 +356,6 @@ mod tests {
         trace!("✔ Signed transaction: {:?}", result);
 
         let result_hex = get_hex_tx_from_signed_btc_tx(&result);
-        println!("\nres_hex: {:?}", result_hex);
         // NOTE: From the actual failing tx! How to get this output?
         let incorrect_hex_result = "0100000001d8baf6344ab19575fe40ad81e5ca1fa57345025e40de3975f7d58c7266e7b7a6000000008f483045022100c2c86c3b03306bef189a862665bece4bdd01983f797b4f9e3edf6c5ba32ac243022038fdad04425cf175cdfcdeb5d7a783934b041f7a42c7b3077652a682a8352a9a014520396e1af63755ae83fecff1975c8addcce346c58cc98103c2781c527ae03915d1752102f55e923c43236f553424b863b1d589b9b67add4d8c49aeca7e667c4772e7b942acffffffff02b3150000000000001976a9149ae6e42c56f1ea319cfc704ad50db0683015029b88ac33930000000000001976a914b19d7011a6107944209d5ebf9ef31a0fdf3115f188ac00000000";
         let correct_hex_result = "0100000001d8baf6344ab19575fe40ad81e5ca1fa57345025e40de3975f7d58c7266e7b7a6000000008f48304502210088a40269c4fe59aa8b2d6d0c5eb24f4e5d54879042806ea9140d00f7b4f372f4022077fa2da7c5fd70537d2a2006535f2151e3c9dbe1274664f2c59ba22cacca3c7a014520d11539e07a521c78c20381c98cc546e3ccdd8a5c97f1cffe83ae5537f61a6e39752102f55e923c43236f553424b863b1d589b9b67add4d8c49aeca7e667c4772e7b942acffffffff02b3150000000000001976a9149ae6e42c56f1ea319cfc704ad50db0683015029b88ac469c0000000000001976a914b19d7011a6107944209d5ebf9ef31a0fdf3115f188ac00000000";
@@ -402,7 +373,6 @@ mod tests {
         let btc_address = "mwi6VyZUqwqdu1DtQMruV4UzEqJADZzj6n"
             .to_string();
         let submission_material = get_sample_eos_submission_material_json_n(5);
-        println!("{:?}", submission_material);
         let action_proof = ActionProof::from_json(
             &submission_material
                 .action_proofs[0]
@@ -413,20 +383,12 @@ mod tests {
                 .action_json
                 .data
         ).unwrap();
-        println!("{:?}", action_params);
-
         let action_data = ActionData::new(action_proof, action_params);
-        println!("\nactions data: {:?}", action_data);
         let redeem_params = parse_redeem_params_from_actions_data(
             &vec![action_data],
         ).unwrap();
-        println!("\nredeem params: {:?}", redeem_params);
-
         let utxo = get_sample_p2sh_utxo_and_value_4()
             .unwrap();
-
-        println!("\nutxo: {:?}", &utxo);
-
         save_utxos_to_db(&db, &vec![utxo])
             .unwrap();
         let pk = BtcPrivateKey::from_slice(
@@ -451,7 +413,6 @@ mod tests {
         trace!("✔ Signed transaction: {:?}", result);
 
         let result_hex = get_hex_tx_from_signed_btc_tx(&result);
-        println!("\nres_hex: {:?}", result_hex);
         // NOTE: From the actual failing tx! How to get this output?
         let non_broadcastable_hex_result = "01000000012ae4f0fbd274c83895ee0d1fc3860506014c6971534c471a54acbee1be135216000000008e47304402207147dddcef10f364d37c587455d54b5ecebc6fd4fb3633e371f63e058b765c7e022047a32f1c3fb9af81e99ef44a6f549519c0d011b1fc4a0ffebf92e5f68465fda901452012b313ab41331418c085971cfdbe4d79ddc9fb49edce6bb554b63133252122bf752103e0a77075d064f5064a45017a2f3aa1ccca775aaed4d7eabe344e651ea29e4031acffffffff02f7130000000000001976a9149ae6e42c56f1ea319cfc704ad50db0683015029b88acef940000000000001976a91470c1c80d3129469426f1c9bba8bf97f2edae5ef588ac00000000";
         // and this one has theh add/nonce has the INCORRECT way around 12b3131...
