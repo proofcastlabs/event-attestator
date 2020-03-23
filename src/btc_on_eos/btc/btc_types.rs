@@ -1,19 +1,11 @@
-use eos_primitives::{
-    Checksum256,
-    AccountName as EosAccountName,
-};
 use std::{
     str::FromStr,
     collections::HashMap,
 };
 use crate::btc_on_eos::{
-    constants::{
-        SAFE_BTC_ADDRESS,
-        EOS_TOKEN_TICKER,
-    },
+    constants::SAFE_BTC_ADDRESS,
     utils::{
         strip_hex_prefix,
-        convert_hex_to_address,
         convert_u64_to_eos_asset,
     },
     types::{

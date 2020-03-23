@@ -1,3 +1,4 @@
+#![allow(unused_imports)] // FIXME: Change once mod implemented fully
 use secp256k1::{
     Message,
     Secp256k1,
@@ -41,7 +42,6 @@ mod tests {
         println!("expected pubkey   : {}", expected_pub_key);
         println!("producer_signature: {}", producer_signature);
         println!("expected pubkey hex: {}", hex::encode(pubkey.to_bytes()));
-
         println!("recovered pubkey: {}", hex::encode(result.to_bytes()));
         println!("non_recoverable sig: {}", producer_signature.to_non_recoverable_signature());
         println!("result: {}", result);

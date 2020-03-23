@@ -34,7 +34,7 @@ fn filter_minting_params(
                     }
                 }
             })
-            .map(|(amount, params)| params)
+            .map(|(_, params)| params)
             .cloned()
             .collect::<Vec<MintingParamStruct>>()
     )

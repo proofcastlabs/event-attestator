@@ -4,16 +4,15 @@ use eos_primitives::{
     Action as EosAction,
     AccountName as EosAccountName,
     BlockHeader as EosBlockHeader,
-    ActionReceipt as EosActionReceipt,
 };
 use crate::btc_on_eos::{
-    utils::{
-        convert_eos_asset_to_u64,
-        convert_hex_to_checksum256,
-    },
     types::{
         Bytes,
         Result,
+    },
+    utils::{
+        convert_eos_asset_to_u64,
+        convert_hex_to_checksum256,
     },
     eos::{
         eos_crypto::eos_signature::EosSignature,

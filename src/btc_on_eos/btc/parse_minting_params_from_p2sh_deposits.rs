@@ -1,5 +1,3 @@
-use std::str::FromStr;
-use eos_primitives::AccountName as EosAccountName;
 use bitcoin::{
     util::address::Address as BtcAddress,
     network::constants::Network as BtcNetwork,
@@ -8,7 +6,6 @@ use bitcoin::{
 use crate::btc_on_eos::{
     types::Result,
     traits::DatabaseInterface,
-    eos::eos_utils::safely_convert_string_to_eos_account,
     btc::{
         btc_state::BtcState,
         btc_database_utils::get_btc_network_from_db,

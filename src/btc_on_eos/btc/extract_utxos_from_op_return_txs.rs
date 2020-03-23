@@ -1,14 +1,7 @@
 use bitcoin::blockdata::script::Script as BtcScript;
 use crate::btc_on_eos::{
-    types::Result,
-    traits::DatabaseInterface,
     btc::{
-        btc_state::BtcState,
-        btc_utils::{
-            create_unsigned_utxo_from_tx,
-            get_pay_to_pub_key_hash_script,
-        },
-        btc_database_utils::get_btc_address_from_db,
+        btc_utils::create_unsigned_utxo_from_tx,
         btc_types::{
             BtcTransactions,
             BtcUtxoAndValue,

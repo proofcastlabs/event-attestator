@@ -3,26 +3,18 @@ use chrono::prelude::*;
 use eos_primitives::{
     Extension,
     TimePoint,
-    ActionName,
     AccountName,
     ProducerKey,
-    AuthSequence,
     BlockTimestamp,
-    PermissionLevel,
     ProducerSchedule,
-    Action as EosAction,
     PublicKey as EosPublicKey,
     BlockHeader as EosBlockHeader,
-    ActionReceipt as EosActionReceipt,
 };
 use crate::btc_on_eos::{
+    types::Result,
     errors::AppError,
     traits::DatabaseInterface,
     utils::convert_hex_to_checksum256,
-    types::{
-        Bytes,
-        Result,
-    },
     eos::{
         eos_state::EosState,
         eos_types::{
@@ -283,7 +275,7 @@ mod tests {
 
     #[test]
     fn should_parse_eos_submission_material_string_to_struct() {
-        let string = get_sample_eos_submission_material_string_n(1)
+        let string = get_sample_eos_submission_material_string_n(2)
             .unwrap();
         let json = parse_eos_submission_material_string_to_json(&string)
             .unwrap();
@@ -321,7 +313,6 @@ mod tests {
             .unwrap();
         let expected_serialized = "f3f615477055c6d2343fa75e000000002a2fb72da881babc192b80bab59c289e2db1b4318160a4c0ab5e50618f57000000000000000000000000000000000000000000000000000000000000000033cfa41c93d0d37dd162d1341114122d76446ec6ce5ff6686205fa15f2fe6d46020000000000";
         let result_serialized = hex::encode(result.serialize().unwrap());
-        println!("digest: {}", result.digest().unwrap());
         assert_eq!(result.id().unwrap(), expected_block_id);
         assert_eq!(result_serialized, expected_serialized);
     }
