@@ -5,6 +5,7 @@ use std::time::{
 use crate::btc_on_eos::{
     types::Result,
     traits::DatabaseInterface,
+    utils::convert_eos_asset_to_u64,
     eos::{
         eos_types::{
             EosSignedTransaction,
@@ -29,7 +30,7 @@ use crate::btc_on_eos::{
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TxInfo {
     pub eos_tx: String,
-    pub eos_tx_amount: String,
+    pub eos_tx_amount: u64,
     pub eos_account_nonce: u64,
     pub eos_tx_recipient: String,
     pub eos_tx_signature: String,
@@ -55,10 +56,11 @@ impl TxInfo {
         Ok(
             TxInfo {
                 eos_tx: tx.transaction.clone(),
-                eos_tx_amount: tx.amount.clone(),
                 eos_tx_signature: tx.signature.clone(),
                 eos_tx_recipient: tx.recipient.clone(),
                 eos_account_nonce: *eos_account_nonce,
+                eos_tx_amount:
+                    convert_eos_asset_to_u64(&tx.amount)?,
                 originating_tx_hash:
                     minting_param_struct.originating_tx_hash.clone(),
                 originating_address:
