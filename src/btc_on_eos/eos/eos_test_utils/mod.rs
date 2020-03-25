@@ -26,8 +26,8 @@ use crate::btc_on_eos::{
     eos::{
         eos_state::EosState,
         parse_submission_material::{
-            //parse_eos_submission_material_json,
             parse_eos_submission_material_string_to_json,
+            parse_eos_submission_material_string_to_struct,
         },
         eos_types::{
             EosAmount,
@@ -75,15 +75,13 @@ pub fn get_sample_eos_private_key_2() -> EosPrivateKey {
     ).unwrap()
 }
 
-/* // TODO Reinstate
 pub fn get_sample_eos_submission_material_n(
     n: usize
 ) -> EosSubmissionMaterial {
-    parse_eos_submission_material_json(
-        &get_sample_eos_submission_material_json_n(n).unwrap()
+    parse_eos_submission_material_string_to_struct(
+        &get_sample_eos_submission_material_string_n(n).unwrap()
     ).unwrap()
 }
-*/
 
 pub fn get_sample_eos_submission_material_json_n(
     n: usize

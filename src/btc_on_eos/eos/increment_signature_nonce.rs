@@ -18,7 +18,7 @@ fn increment_signature_nonce<D>(
     debug!(
         "✔ Incrementing signature nonce from {} to {}",
         current_nonce,
-        num_signatures
+        num_signatures + current_nonce,
     );
     put_btc_account_nonce_in_db(db, &(current_nonce + num_signatures))
 }

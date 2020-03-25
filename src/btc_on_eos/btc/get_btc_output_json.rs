@@ -73,10 +73,10 @@ pub struct BtcOutput {
 pub fn get_eos_signed_tx_info_from_eth_txs(
     txs: &EosSignedTransactions,
     minting_params: &MintingParams,
-    eth_account_nonce: &u64,
+    eos_account_nonce: &u64,
 ) -> Result<Vec<TxInfo>> {
-    info!("✔ Getting ETH tx info from ETH txs...");
-    let start_nonce = eth_account_nonce - txs.len() as u64;
+    info!("✔ Getting tx info from txs in state...");
+    let start_nonce = eos_account_nonce - txs.len() as u64;
     txs
         .iter()
         .enumerate()

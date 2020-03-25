@@ -199,7 +199,7 @@ fn parse_eos_submission_material_json_to_struct(
     )
 }
 
-fn parse_eos_submission_material_string_to_struct(
+pub fn parse_eos_submission_material_string_to_struct(
     submission_material: &String,
 ) -> Result<EosSubmissionMaterial> {
     parse_eos_submission_material_string_to_json(submission_material)
