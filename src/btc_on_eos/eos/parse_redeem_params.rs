@@ -72,9 +72,15 @@ impl RedeemParams {
     ) -> Result<Self> {
         Ok(
             RedeemParams {
-                from: action_data.action_params.sender.clone(),
-                recipient: action_data.action_params.memo.clone(),
-                amount: action_data.action_params.quantity.clone(),
+                amount: get_eos_amount_from_serialized_action(
+                    &action_data.action_proof.serialized_action,
+                )?,
+                from: get_redeem_action_sender_from_serialize_action(
+                    &action_data.action_proof.serialized_action,
+                )?,
+                recipient: get_redeem_address_from_serialized_action(
+                    &action_data.action_proof.serialized_action,
+                )?,
                 originating_tx_id: action_data.action_proof.tx_id.clone(),
             }
         )
@@ -90,6 +96,8 @@ pub fn parse_redeem_params_from_actions_data(
         .collect()
 }
 
+// TODO Filter to ensure the symbol is correct!
+// TODO Filter to ensure they're `redeem` actions
 pub fn maybe_parse_redeem_params_and_put_in_state<D>(
     state: EosState<D>
 ) -> Result<EosState<D>>
@@ -107,8 +115,24 @@ pub fn maybe_parse_redeem_params_and_put_in_state<D>(
 mod tests {
     use super::*;
     use crate::btc_on_eos::{
+        utils::convert_hex_to_checksum256,
         eos::eos_test_utils::get_sample_eos_submission_material_n,
     };
+
+    #[test]
+    fn should_get_sender_from_serialized_action() {
+        let expected_result = EosAccountName::from_str("provtestable")
+            .unwrap();
+        let serialized_action = get_sample_eos_submission_material_n(5)
+            .actions_data[0]
+            .action_proof
+            .serialized_action
+            .clone();
+        let result = get_redeem_action_sender_from_serialize_action(
+            &serialized_action
+        ).unwrap();
+        assert_eq!(result, expected_result);
+    }
 
     #[test]
     fn should_get_symbol_from_serialized_action() {
@@ -164,6 +188,27 @@ mod tests {
         let result = get_redeem_address_from_serialized_action(
             &serialized_action
         ).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_redeem_params_from_action_data_1() {
+        let expected_result = RedeemParams {
+            amount: 5111,
+            recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
+                .to_string(),
+            from: EosAccountName::from_str("provtestable")
+                .unwrap(),
+            originating_tx_id: convert_hex_to_checksum256(
+            &"aebe7cd1a4687485bc5db87bfb1bdfb44bd1b7f9c080e5cb178a411fd99d2fd5"
+                .to_string()
+            ).unwrap(),
+        };
+        let action_data = get_sample_eos_submission_material_n(5)
+            .actions_data[0]
+            .clone();
+        let result = RedeemParams::from_action_data(&action_data)
+            .unwrap();
         assert_eq!(result, expected_result);
     }
 }
