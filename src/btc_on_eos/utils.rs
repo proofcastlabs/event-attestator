@@ -158,24 +158,6 @@ pub fn convert_bytes_to_h256(bytes: &Bytes) -> Result<H256> {
     }
 }
 
-pub fn convert_usize_to_bytes(num: &usize) -> Bytes {
-    num.to_le_bytes().to_vec()
-}
-
-pub fn convert_bytes_to_usize(bytes: &Bytes) -> Result<usize> {
-    match bytes.len() >= 8 {
-        true => {
-            let mut array = [0; 8];
-            let bytes = &bytes[..array.len()];
-            array.copy_from_slice(bytes);
-            Ok(usize::from_le_bytes(array))
-        },
-        false => Err(AppError::Custom(
-            "✘ Not enough bytes to convert to usize!".to_string()
-        ))
-    }
-}
-
 pub fn convert_json_value_to_string(value: Value) -> Result<String> { // TODO: Test!
     Ok(value.as_str()?.to_string())
 }
@@ -435,23 +417,6 @@ mod tests {
             .unwrap();
         assert!(results[0] == expected_result1);
         assert!(results[1] == expected_result2);
-    }
-
-    #[test]
-    fn should_convert_usize_to_bytes() {
-        let num = 1337;
-        let expected_result = vec![57, 5, 0, 0, 0, 0, 0, 0];
-        let result = convert_usize_to_bytes(&num);
-        assert!(result == expected_result);
-    }
-
-    #[test]
-    fn should_convert_bytes_to_usize() {
-        let bytes = vec![57, 5, 0, 0, 0, 0, 0, 0];
-        let expected_result = 1337;
-        let result = convert_bytes_to_usize(&bytes)
-            .unwrap();
-        assert!(result == expected_result);
     }
 
     #[test]
