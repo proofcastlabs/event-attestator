@@ -14,6 +14,7 @@ pub mod parse_eos_actions;
 pub mod validate_signature;
 pub mod eos_database_utils;
 pub mod parse_redeem_params;
+pub mod filter_redeem_params;
 pub mod save_btc_utxos_to_db;
 pub mod parse_submission_material;
 pub mod increment_signature_nonce;
