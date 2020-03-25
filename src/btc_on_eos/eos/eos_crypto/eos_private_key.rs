@@ -129,6 +129,20 @@ impl EosPrivateKey {
         let msg_hash = sha256::Hash::hash(&message_slice);
         self.sign_hash(&msg_hash)
     }
+
+    pub fn write_to_database<D>(
+        &self,
+        db: &D,
+        key: &Bytes,
+    ) -> Result<()>
+        where D: DatabaseInterface
+    {
+        db.put(
+            key.to_vec(),
+            self.private_key[..].to_vec(),
+            PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+        )
+    }
 }
 
 impl fmt::Display for EosPrivateKey {
