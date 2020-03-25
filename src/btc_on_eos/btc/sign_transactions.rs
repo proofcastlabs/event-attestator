@@ -16,7 +16,7 @@ use crate::btc_on_eos::{
             eos_private_key::EosPrivateKey,
             eos_transaction::{
                 sign_peos_transaction,
-                get_unsigned_peos_transaction,
+                get_unsigned_eos_minting_tx,
             },
         },
         eos_constants::{
@@ -41,7 +41,7 @@ fn get_signed_tx(
     private_key: &EosPrivateKey,
     account_name: &String,
 ) -> Result<EosSignedTransaction> {
-    get_unsigned_peos_transaction(
+    get_unsigned_eos_minting_tx(
         to,
         account_name,
         MEMO,

@@ -39,15 +39,16 @@ fn get_eos_minting_action(
 ) -> Result<EosAction> {
     Ok(
         EosAction::from_str(
+            // TODO get from db!
             "pbtctokenxxx",//PBTC_TOKEN_NAME, // this same as actor etc? FIXME!
-            "issue",//PBTC_MINT_FXN_NAME, FIXME!
+            "issue",//PBTC_MINT_FXN_NAME, FIXME! Have this as const!
             vec![get_peos_permission_level(actor, permission_level)?],
             get_peos_transfer_action(to, from, memo, amount)?,
         )?
     )
 }
 
-pub fn get_unsigned_peos_transaction(
+pub fn get_unsigned_eos_minting_tx(
     to: &str,
     from: &str,
     memo: &str,
@@ -122,7 +123,7 @@ mod tests {
         let amount = "1.00000042 PFFF";
         let ref_block_num = 44391;
         let ref_block_prefix = 1355491504;
-        let unsigned_transaction = get_unsigned_peos_transaction(
+        let unsigned_transaction = get_unsigned_eos_minting_tx(
             to,
             PEOS_ACCOUNT_NAME,
             MEMO,
@@ -149,8 +150,7 @@ mod tests {
             .transaction;
         // NOTE: First 4 bytes are the timestamp (8 hex chars...)
         // NOTE: Signature not deterministic ∴ we don't test it.
-        // NOTE: Real tx broadcast here: https://jungle.bloks.io/transaction/45c8e6256a3e380b455648d43d0d10ffc8278c3bf428508b8de8e4e3155f7957
-        let expected_result = "67adb028cb500000000001d07b9f0ad28cf2a90000000000a5317601d07b9f0ad28cf2a900000000a8ed32322ea0e23119abbce9ad2ae1f50500000000085046464600000015425443202d3e207042544320636f6d706c6574652100".to_string();
+        let expected_result = "67adb028cb500000000001d07b9f0ad28cf2a90000000000a53176016002ca074f0569ae00000000a8ed32322ea0e23119abbce9ad2ae1f50500000000085046464600000015425443202d3e207042544320636f6d706c6574652100".to_string();
         let result_without_timestamp = &result[8..];
         assert_eq!(result_without_timestamp, expected_result);
     }
