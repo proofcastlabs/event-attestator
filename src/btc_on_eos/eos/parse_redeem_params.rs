@@ -1,7 +1,4 @@
-use std::str::{
-    FromStr,
-    from_utf8,
-};
+use std::str::from_utf8;
 use eos_primitives::{
     Symbol as EosSymbol,
     AccountName as EosAccountName,
@@ -9,7 +6,6 @@ use eos_primitives::{
 use crate::btc_on_eos::{
     traits::DatabaseInterface,
     utils::convert_bytes_to_u64,
-    btc::btc_constants::BTC_NUM_DECIMALS,
     types::{
         Bytes,
         Result,
@@ -24,6 +20,7 @@ use crate::btc_on_eos::{
     },
 };
 
+#[allow(dead_code)] // TODO Use when checking for correct sybmol!
 fn get_eos_symbol_from_serialized_action(
     serialized_action: &Bytes
 ) -> Result<EosSymbol> {
@@ -40,6 +37,7 @@ fn get_eos_amount_from_serialized_action(
     convert_bytes_to_u64(&serialized_action[42..50].to_vec())
 }
 
+#[allow(dead_code)] // TODO Use when checking for correct action name!
 fn get_eos_action_name_from_serialized_action(
     serialized_action: &Bytes
 ) -> Result<EosAccountName> {
@@ -114,6 +112,7 @@ pub fn maybe_parse_redeem_params_and_put_in_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::str::FromStr;
     use crate::btc_on_eos::{
         utils::convert_hex_to_checksum256,
         eos::eos_test_utils::get_sample_eos_submission_material_n,
