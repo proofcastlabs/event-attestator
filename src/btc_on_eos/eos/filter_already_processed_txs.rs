@@ -26,7 +26,7 @@ fn filter_out_already_processed_txs(
     )
 }
 
-pub fn filter_out_already_processed_tx_ids_from_state<D>(
+pub fn maybe_filter_out_already_processed_tx_ids_from_state<D>(
     state: EosState<D>
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
