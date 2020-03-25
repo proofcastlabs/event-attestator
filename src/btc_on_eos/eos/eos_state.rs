@@ -107,6 +107,15 @@ impl<D> EosState<D> where D: DatabaseInterface {
             )
         }
     }
+
+    pub fn replace_redeem_params(
+        mut self,
+        replacement_params: Vec<RedeemParams>,
+    ) -> Result<EosState<D>> {
+        info!("✔ Replacing redeem params in state...");
+        self.redeem_params = replacement_params;
+        Ok(self)
+    }
 }
 
 #[cfg(test)]

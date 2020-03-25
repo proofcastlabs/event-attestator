@@ -13,7 +13,10 @@ use crate::btc_on_eos::{
         parse_submission_material::parse_submission_material_and_add_to_state,
         extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
         filter_already_processed_txs::{
-            filter_out_already_processed_tx_ids_from_state,
+            maybe_filter_out_already_processed_tx_ids_from_state,
+        },
+        filter_redeem_params::{
+            maybe_filter_value_too_low_redeem_params_in_state
         },
         eos_database_utils::{
             end_eos_db_transaction,
@@ -49,7 +52,8 @@ pub fn submit_eos_block_to_core<D>(
         //.and_then(filter_duplicate_action_proofs_from_state)
         //.and_then(filter_already_processed_action_proofs_from_state)
         .and_then(maybe_parse_redeem_params_and_put_in_state)
-        .and_then(filter_out_already_processed_tx_ids_from_state)
+        .and_then(maybe_filter_value_too_low_redeem_params_in_state)
+        .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
         .and_then(maybe_add_tx_ids_to_processed_tx_ids)
         .and_then(maybe_sign_txs_and_add_to_state)
         .and_then(maybe_increment_signature_nonce)
