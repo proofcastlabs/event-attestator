@@ -1,13 +1,9 @@
 use std::str::FromStr;
 use eos_primitives::AccountName as EosAccountName;
 use crate::btc_on_eos::{
+    types::Result,
     errors::AppError,
-    eos::eos_types::EosNetwork,
     constants::SAFE_EOS_ADDRESS,
-    types::{
-        Bytes,
-        Result,
-    },
 };
 
 pub fn safely_convert_string_to_eos_account(
