@@ -192,7 +192,70 @@ mod tests {
     }
 
     #[test]
-    fn should_get_redeem_params_from_action_data_1() {
+    fn should_get_redeem_params_from_action_data_2() {
+        let expected_result = RedeemParams {
+            amount: 1,
+            recipient: "mr6ioeUxNMoavbr2VjaSbPAovzzgDT7Su9"
+                .to_string(),
+            from: EosAccountName::from_str("provabletest")
+                .unwrap(),
+            originating_tx_id: convert_hex_to_checksum256(
+            &"34dff748d2bbb9504057d4be24c69b8ac38b2905f7e911dd0e9ed3bf369bae03"
+                .to_string()
+            ).unwrap(),
+        };
+        let action_data = get_sample_eos_submission_material_n(2)
+            .actions_data[0]
+            .clone();
+        let result = RedeemParams::from_action_data(&action_data)
+            .unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_redeem_params_from_action_data_3() {
+        let expected_result = RedeemParams {
+            amount: 5314,
+            recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
+                .to_string(),
+            from: EosAccountName::from_str("provtestable")
+                .unwrap(),
+            originating_tx_id: convert_hex_to_checksum256(
+            &"084129e4cae2b8fb2c51fd6e569ac0f80db4de5f15ff3c2776233d9ae42aad64"
+                .to_string()
+            ).unwrap(),
+        };
+        let action_data = get_sample_eos_submission_material_n(3)
+            .actions_data[0]
+            .clone();
+        let result = RedeemParams::from_action_data(&action_data)
+            .unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_redeem_params_from_action_data_4() {
+        let expected_result = RedeemParams {
+            amount: 5555,
+            recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
+                .to_string(),
+            from: EosAccountName::from_str("provtestable")
+                .unwrap(),
+            originating_tx_id: convert_hex_to_checksum256(
+            &"8eaafcb796002a12e0f48ebc0f832bacca72a8b370e00967c65619a2c1814a04"
+                .to_string()
+            ).unwrap(),
+        };
+        let action_data = get_sample_eos_submission_material_n(4)
+            .actions_data[0]
+            .clone();
+        let result = RedeemParams::from_action_data(&action_data)
+            .unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_redeem_params_from_action_data_5() {
         let expected_result = RedeemParams {
             amount: 5111,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
