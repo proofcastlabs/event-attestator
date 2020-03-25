@@ -6,6 +6,7 @@ use crate::btc_on_eos::{
     btc::{
         btc_state::BtcState,
         btc_types::MintingParams,
+        btc_database_utils::get_btc_canon_block_from_db,
     },
     eos::{
         eos_types::{
@@ -99,7 +100,7 @@ pub fn maybe_sign_canon_block_txs_and_add_to_state<D>(
         &get_eos_chain_id_from_db(&state.db)?,
         &get_eos_private_key_from_db(&state.db)?,
         &get_eos_account_name_from_db(&state.db)?,
-        &state.minting_params,
+        &get_btc_canon_block_from_db(&state.db)?.minting_params,
     )
         .and_then(|signed_txs| state.add_signed_txs(signed_txs))
 }
