@@ -185,11 +185,6 @@ pub fn get_sample_eos_public_key_bytes() -> Bytes {
         .to_bytes()
 }
 
-pub fn get_sample_eos_private_key_bytes() -> Bytes {
-    get_sample_eos_private_key()
-        .to_bytes()
-}
-
 pub fn get_sample_eos_signature() -> EosSignature {
     get_sample_eos_private_key()
         .sign_message_bytes(&get_sample_message_to_sign().as_bytes())

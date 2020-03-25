@@ -147,8 +147,7 @@ pub fn put_eos_private_key_in_db<D>(
     where D: DatabaseInterface
 {
     debug!("✔ Putting EOS private key into db...");
-    db.put(EOS_PRIVATE_KEY_DB_KEY.to_vec(), pk.to_bytes(), Some(255))
-    // FIXME This exposes the pk, do the trick from pBTC where we pass the db to a method on the struct!
+    pk.write_to_database(db, &EOS_PRIVATE_KEY_DB_KEY.to_vec())
 }
 
 pub fn get_eos_private_key_from_db<D>(
