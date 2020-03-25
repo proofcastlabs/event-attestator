@@ -1,7 +1,6 @@
 use secp256k1::key::SecretKey;
 use std::{
     fmt,
-    fmt::Write,
     str::FromStr,
 };
 use secp256k1::{
@@ -54,25 +53,6 @@ impl EosPrivateKey {
                 private_key: SecretKey::from_slice(&slice)?
             }
         )
-    }
-
-    pub fn convert_secret_key_to_wallet_import_format(
-        &self,
-        fmt: &mut dyn Write
-    ) -> fmt::Result {
-        let mut ret = [0; 34];
-        ret[0] = match self.network {
-            EosNetwork::Mainnet => 128,
-            EosNetwork::Testnet => 239,
-        };
-        ret[1..33].copy_from_slice(&self.private_key[..]);
-        let privkey = if self.compressed {
-            ret[33] = 1;
-            base58::check_encode_slice(&ret[..])
-        } else {
-            base58::check_encode_slice(&ret[..33])
-        };
-        fmt.write_str(&privkey)
     }
 
     pub fn from_wallet_import_format(
@@ -147,7 +127,7 @@ impl EosPrivateKey {
 
 impl fmt::Display for EosPrivateKey {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.convert_secret_key_to_wallet_import_format(f)
+        write!(f, "✘ Refusing to print private key!")
     }
 }
 
