@@ -5,11 +5,8 @@ use eos_primitives::{
     BlockHeader as EosBlockHeader,
 };
 use crate::btc_on_eos::{
+    types::Result,
     utils::convert_hex_to_checksum256,
-    types::{
-        Bytes,
-        Result,
-    },
     eos::{
         eos_crypto::eos_signature::EosSignature,
         parse_eos_actions::parse_eos_action_json,
@@ -123,37 +120,19 @@ pub struct EosRawTxData {
 pub struct ActionProof {
     pub action: EosAction,
     pub tx_id: Checksum256,
-    pub action_index: usize,
-    pub block_id: Checksum256,
-    pub serialized_action: Bytes,
     pub action_proof: MerkleProof,
-    pub action_digest: Checksum256,
-    pub action_receipt_digest: Bytes,
-    pub serialized_action_receipt: Bytes,
 }
 
 impl ActionProof {
     pub fn from_json(json: &ActionProofJson) -> Result<Self> {
         Ok(
             ActionProof {
-                action_index:
-                    json.action_index.clone(),
                 action_proof:
                     json.action_proof.clone(),
-                serialized_action:
-                    hex::decode(&json.serialized_action)?,
                 tx_id:
                     convert_hex_to_checksum256(&json.tx_id)?,
-                action_receipt_digest:
-                    hex::decode(&json.action_receipt_digest)?,
                 action:
                     parse_eos_action_json(&json.action_json)?,
-                block_id:
-                    convert_hex_to_checksum256(&json.block_id)?,
-                serialized_action_receipt:
-                    hex::decode(&json.serialized_action_receipt)?,
-                action_digest:
-                    convert_hex_to_checksum256(&json.action_digest)?,
             }
         )
     }
