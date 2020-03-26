@@ -1,11 +1,14 @@
 use crate::btc_on_eth::{
     errors::AppError,
-    eth::{eth_database_utils::get_eth_private_key_from_db, eth_types::EthSignature},
+    eth::{
+        eth_database_utils::get_eth_private_key_from_db,
+        eth_json_codec::{encode_eth_signed_message_as_json, JsonValue},
+    },
     traits::DatabaseInterface,
     types::Result,
 };
 
-pub fn sign_message_with_eth_key<D, T>(db: &D, message: T) -> Result<EthSignature>
+pub fn sign_message_with_eth_key<D, T>(db: &D, message: T) -> Result<JsonValue>
 where
     D: DatabaseInterface,
     T: Into<String>,
@@ -22,9 +25,9 @@ where
     let eth_private_key = get_eth_private_key_from_db(db)?;
 
     info!("✔ Signing message with eth key...");
-    let signature = eth_private_key.sign_message_bytes(message.into_bytes())?;
+    let signature = eth_private_key.sign_message_bytes(message.clone().into_bytes())?;
 
-    Ok(signature)
+    encode_eth_signed_message_as_json(&message, &signature)
 }
 
 #[cfg(test)]
@@ -32,7 +35,7 @@ mod tests {
     use super::*;
     use crate::btc_on_eth::{
         eth::{
-            eth_database_utils::put_eth_private_key_in_db,
+            eth_database_utils::put_eth_private_key_in_db, eth_json_codec::json,
             eth_test_utils::get_sample_eth_private_key,
         },
         test_utils::get_test_database,
@@ -46,7 +49,6 @@ mod tests {
     }
 
     #[test]
-
     fn should_sign_arbitrary_message() {
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
@@ -56,22 +58,15 @@ mod tests {
         }
 
         let message = "Arbitrary message";
-        let valid_signature = [
-            21, 167, 94, 225, 108, 8, 81, 23, 25, 12, 142, 251, 205, 52, 156, 213, 161, 168, 1, 79,
-            228, 84, 149, 77, 14, 26, 128, 33, 14, 61, 91, 124, 26, 69, 95, 186, 93, 165, 20, 113,
-            4, 94, 83, 226, 151, 246, 208, 131, 112, 153, 171, 166, 93, 77, 92, 91, 152, 174, 96,
-            250, 66, 202, 68, 61, 0,
-        ];
+        let valid_json = json!({
+            "message": "Arbitrary message",
+            "signature": "0x15a75ee16c085117190c8efbcd349cd5a1a8014fe454954d0e1a80210e3d5b7c1a455fba5da51471045e53e297f6d0837099aba65d4d5c5b98ae60fa42ca443d00"
+        });
 
-        // Arrays larger than 32 elements are not covered by std
-        // thus require manual comparison
-        assert!(
-            sign_message_with_eth_key(&db, message)
-                .unwrap()
-                .iter()
-                .zip(valid_signature.iter())
-                .all(|(a, b)| a == b),
+        assert_eq!(
+            sign_message_with_eth_key(&db, message).unwrap(),
+            valid_json,
             "✘ Message signature is invalid!"
-        );
+        )
     }
 }

@@ -1,5 +1,5 @@
 use hex;
-use serde_json::{
+pub use serde_json::{
     json,
     Value as JsonValue,
 };
@@ -15,6 +15,7 @@ use crate::btc_on_eth::{
             EthBlock,
             EthReceipt,
             EthBlockAndReceipts,
+            EthSignature
         },
     }
 };
@@ -193,6 +194,17 @@ pub fn encode_eth_block_and_receipts_as_json_bytes(
     )
 }
 
+pub fn encode_eth_signed_message_as_json(
+    message: &str,
+    signature: &EthSignature
+) -> Result<JsonValue> {
+    info!("✔ Encoding eth signed message as json...");
+    Ok(json!({
+        "message": message,
+        "signature": format!("0x{}", hex::encode(&signature[..]))
+    }))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -261,5 +273,19 @@ mod tests {
             .enumerate()
             .map(|(i, receipt)| assert!(receipt == &result.receipts[i]))
             .for_each(drop);
+    }
+
+    #[test]
+    fn should_encode_eth_signed_message_as_json() {
+        let valid_json = json!({
+            "message": "Arbitrary message",
+            "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        });
+
+        assert_eq!(
+            encode_eth_signed_message_as_json("Arbitrary message", &[0u8; 65]).unwrap(),
+            valid_json,
+            "✘ Message signature json is invalid!"
+        )
     }
 }
