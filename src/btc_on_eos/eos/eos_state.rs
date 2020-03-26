@@ -116,6 +116,15 @@ impl<D> EosState<D> where D: DatabaseInterface {
         self.redeem_params = replacement_params;
         Ok(self)
     }
+
+    pub fn replace_actions_data(
+        mut self,
+        replacement_data: ActionsData,
+    ) -> Result<EosState<D>> {
+        info!("✔ Replacing `actions_data` in state...");
+        self.actions_data = replacement_data;
+        Ok(self)
+    }
 }
 
 #[cfg(test)]

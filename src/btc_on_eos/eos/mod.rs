@@ -16,6 +16,7 @@ pub mod eos_database_utils;
 pub mod parse_redeem_params;
 pub mod filter_redeem_params;
 pub mod save_btc_utxos_to_db;
+pub mod filter_duplicate_proofs;
 pub mod parse_submission_material;
 pub mod increment_signature_nonce;
 pub mod extract_utxos_from_btc_txs;
