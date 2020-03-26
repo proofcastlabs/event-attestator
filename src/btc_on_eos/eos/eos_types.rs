@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use eos_primitives::{
     Checksum256,
     Action as EosAction,
@@ -6,13 +5,10 @@ use eos_primitives::{
     BlockHeader as EosBlockHeader,
 };
 use crate::btc_on_eos::{
+    utils::convert_hex_to_checksum256,
     types::{
         Bytes,
         Result,
-    },
-    utils::{
-        convert_eos_asset_to_u64,
-        convert_hex_to_checksum256,
     },
     eos::{
         eos_crypto::eos_signature::EosSignature,
@@ -25,28 +21,14 @@ pub type EosAddress = String;
 pub type MerkleProof = Vec<String>;
 pub type EosAddresses = Vec<String>;
 pub type EosAmounts = Vec<EosAmount>;
-pub type ActionsData = Vec<ActionData>;
 pub type ActionProofs = Vec<ActionProof>;
 pub type MerkleProofs = Vec<MerkleProof>;
 pub type EosSignatures = Vec<EosSignature>;
-pub type ActionsParams = Vec<ActionParams>;
 pub type ActionProofJsons = Vec<ActionProofJson>;
 pub type Sha256HashedMessage = secp256k1::Message;
-pub type ActionParamsJsons = Vec<ActionParamsJson>;
 pub type AuthorizationJsons = Vec<AuthorizationJson>;
 pub type EosSignedTransactions= Vec<EosSignedTransaction>;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct ActionData {
-    pub action_proof: ActionProof,
-    pub action_params: ActionParams,
-}
-
-impl ActionData {
-    pub fn new(action_proof: ActionProof, action_params: ActionParams) -> Self {
-        ActionData { action_proof, action_params }
-    }
-}
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RedeemParams {
@@ -54,25 +36,6 @@ pub struct RedeemParams {
     pub recipient: String,
     pub from: EosAccountName,
     pub originating_tx_id: Checksum256,
-}
-
-#[derive(Debug, Eq, Serialize, Deserialize, PartialEq, Clone)]
-pub struct ActionParams {
-    pub memo: String,
-    pub quantity: u64,
-    pub sender: EosAccountName,
-}
-
-impl ActionParams {
-    pub fn from_json(json: &ActionParamsJson) -> Result<Self> {
-        Ok(
-            ActionParams {
-                memo: json.memo.clone(),
-                sender: EosAccountName::from_str(&json.sender)?,
-                quantity: convert_eos_asset_to_u64(&json.quantity)?,
-            }
-        )
-    }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Copy)]
@@ -107,7 +70,7 @@ impl EosSignedTransaction {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterial {
-    pub actions_data: ActionsData,
+    pub action_proofs: ActionProofs,
     pub block_header: EosBlockHeader,
 }
 
@@ -115,13 +78,6 @@ pub struct EosSubmissionMaterial {
 pub struct EosSubmissionMaterialJson {
     pub action_proofs: ActionProofJsons,
     pub block_header: EosBlockHeaderJson,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ActionParamsJson {
-    pub memo: String,
-    pub sender: String,
-    pub quantity: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -207,7 +163,6 @@ impl ActionProof {
 pub struct EosActionJson {
     pub name: String,
     pub account: String,
-    pub data: ActionParamsJson,
     pub hex_data: Option<String>,
     pub authorization: AuthorizationJsons,
 }

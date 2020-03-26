@@ -11,7 +11,7 @@ use crate::btc_on_eos::{
     },
     eos::{
         eos_types::{
-            ActionsData,
+            ActionProofs,
             RedeemParams,
             ProcessedTxIds,
             EosSubmissionMaterial,
@@ -26,7 +26,7 @@ use crate::btc_on_eos::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EosState<D: DatabaseInterface> {
     pub db: D,
-    pub actions_data: ActionsData,
+    pub action_proofs: ActionProofs,
     pub signed_txs: BtcTransactions,
     pub redeem_params: Vec<RedeemParams>,
     pub processed_tx_ids: ProcessedTxIds,
@@ -40,7 +40,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
             db,
             block_header: None,
             signed_txs: vec![],
-            actions_data: vec![],
+            action_proofs: vec![],
             redeem_params: vec![],
             btc_utxos_and_values: None,
             processed_tx_ids: ProcessedTxIds::init(),
@@ -77,7 +77,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
         submission_material: EosSubmissionMaterial,
     ) -> Result<EosState<D>> {
         self.block_header = Some(submission_material.block_header);
-        self.actions_data = submission_material.actions_data;
+        self.action_proofs = submission_material.action_proofs;
         Ok(self)
     }
 
@@ -117,12 +117,12 @@ impl<D> EosState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn replace_actions_data(
+    pub fn replace_action_proofs(
         mut self,
-        replacement_data: ActionsData,
+        replacements: ActionProofs,
     ) -> Result<EosState<D>> {
-        info!("✔ Replacing `actions_data` in state...");
-        self.actions_data = replacement_data;
+        info!("✔ Replacing `action_proofs` in state...");
+        self.action_proofs = replacements;
         Ok(self)
     }
 }

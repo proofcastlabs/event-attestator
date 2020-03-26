@@ -3,19 +3,19 @@ use crate::btc_on_eos::{
     traits::DatabaseInterface,
     eos::{
         eos_state::EosState,
-        eos_types::ActionsData,
+        eos_types::ActionProofs,
     },
 };
 
 fn filter_duplicate_proofs(
-    actions_data: &ActionsData
-) -> Result<ActionsData> {
-    let mut filtered: ActionsData = Vec::new();
-    actions_data
+    action_proofs: &ActionProofs
+) -> Result<ActionProofs> {
+    let mut filtered: ActionProofs = Vec::new();
+    action_proofs
         .iter()
-        .map(|action_data| {
-            if filtered.contains(&action_data) == false {
-                filtered.push(action_data.clone())
+        .map(|proof| {
+            if filtered.contains(&proof) == false {
+                filtered.push(proof.clone())
             }
         })
         .for_each(drop);
@@ -27,8 +27,8 @@ pub fn maybe_filter_duplicate_proofs_from_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    filter_duplicate_proofs(&state.actions_data)
-        .and_then(|filtered_proofs| state.replace_actions_data(filtered_proofs))
+    filter_duplicate_proofs(&state.action_proofs)
+        .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
 #[cfg(test)]
@@ -43,10 +43,10 @@ mod tests {
         let expected_num_proofs_after = 2;
         let expected_num_proofs_before = 2;
         let action_data_1 = get_sample_eos_submission_material_n(4)
-            .actions_data[0]
+            .action_proofs[0]
             .clone();
         let action_data_2 = get_sample_eos_submission_material_n(5)
-            .actions_data[0]
+            .action_proofs[0]
             .clone();
         let proofs_no_duplicates = vec![
             action_data_1.clone(),
@@ -66,10 +66,10 @@ mod tests {
         let expected_num_proofs_after = 2;
         let expected_num_proofs_before = 3;
         let action_data_1 = get_sample_eos_submission_material_n(4)
-            .actions_data[0]
+            .action_proofs[0]
             .clone();
         let action_data_2 = get_sample_eos_submission_material_n(5)
-            .actions_data[0]
+            .action_proofs[0]
             .clone();
         let proofs_with_duplicate = vec![
             action_data_1.clone(),

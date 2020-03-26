@@ -18,12 +18,8 @@ use crate::btc_on_eos::{
     eos::{
         eos_state::EosState,
         eos_types::{
-            ActionData,
             ActionProof,
-            ActionsData,
             ActionProofs,
-            ActionParams,
-            ActionsParams,
             ProducerKeyJson,
             ActionProofJsons,
             EosBlockHeaderJson,
@@ -159,39 +155,14 @@ pub fn parse_eos_block_header_from_json(
     )
 }
 
-fn parse_eos_action_params_json_action_params(
-    action_proof_jsons: &ActionProofJsons,
-) -> Result<ActionsParams> {
-    action_proof_jsons
-        .iter()
-        .map(|json| ActionParams::from_json(&json.action_json.data))
-        .collect()
-}
-
-fn get_actions_data_from_proofs_and_params(
-    action_proofs: ActionProofs,
-    action_params: ActionsParams,
-) -> ActionsData {
-    action_proofs
-        .into_iter()
-        .zip(action_params.into_iter())
-        .map(|(proof, params)| ActionData::new(proof, params))
-        .collect()
-}
-
 fn parse_eos_submission_material_json_to_struct(
     submission_material_json: EosSubmissionMaterialJson
 ) -> Result<EosSubmissionMaterial> {
     Ok(
         EosSubmissionMaterial {
-            actions_data: get_actions_data_from_proofs_and_params(
-                parse_eos_action_proof_jsons_to_action_proofs(
-                   &submission_material_json.action_proofs
-                )?,
-                parse_eos_action_params_json_action_params(
-                   &submission_material_json.action_proofs
-                )?,
-            ),
+            action_proofs: parse_eos_action_proof_jsons_to_action_proofs(
+               &submission_material_json.action_proofs
+            )?,
             block_header: parse_eos_block_header_from_json(
                 &submission_material_json.block_header
             )?
@@ -205,11 +176,7 @@ pub fn parse_eos_submission_material_string_to_struct(
     parse_eos_submission_material_string_to_json(submission_material)
         .and_then(parse_eos_submission_material_json_to_struct)
 }
-/*
- * TODO
- * [ ] Parse action params from hex in action itself
- * [ ] Once above is done, can remove those params from the generator.
- */
+
 pub fn parse_submission_material_and_add_to_state<D>(
     submission_material: String,
     state: EosState<D>,

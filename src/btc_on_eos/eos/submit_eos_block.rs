@@ -47,6 +47,7 @@ pub fn submit_eos_block_to_core<D>(
         .and_then(get_processed_tx_ids_and_add_to_state)
         .and_then(start_eos_db_transaction)
         .and_then(maybe_filter_duplicate_proofs_from_state)
+        //.and_then(maybe_filter_out_invalid_action_digests) //TODO
         //.and_then(validate_block_header_signatures)
         //.and_then(validate_irreversibility_proof) ?
         //.and_then(filter_invalid_action_proofs_from_state)

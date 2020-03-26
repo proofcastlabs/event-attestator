@@ -191,12 +191,8 @@ mod tests {
             },
         },
         eos::{
-            parse_redeem_params::parse_redeem_params_from_actions_data,
-            eos_types::{
-                ActionData,
-                ActionProof,
-                ActionParams,
-            },
+            eos_types::ActionProof,
+            parse_redeem_params::parse_redeem_params_from_action_proofs,
             eos_test_utils::{
                 get_sample_eos_submission_material_json_n,
             },
@@ -215,16 +211,8 @@ mod tests {
             &submission_material
                 .action_proofs[0]
         ).unwrap();
-        let action_params = ActionParams::from_json(
-            &submission_material
-                .action_proofs[0]
-                .action_json
-                .data
-        ).unwrap();
-
-        let action_data = ActionData::new(action_proof, action_params);
-        let redeem_params = parse_redeem_params_from_actions_data(
-            &vec![action_data],
+        let redeem_params = parse_redeem_params_from_action_proofs(
+            &vec![action_proof],
         ).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_2()
             .unwrap();
@@ -268,15 +256,8 @@ mod tests {
             &submission_material
                 .action_proofs[0]
         ).unwrap();
-        let action_params = ActionParams::from_json(
-            &submission_material
-                .action_proofs[0]
-                .action_json
-                .data
-        ).unwrap();
-        let action_data = ActionData::new(action_proof, action_params);
-        let redeem_params = parse_redeem_params_from_actions_data(
-            &vec![action_data],
+        let redeem_params = parse_redeem_params_from_action_proofs(
+            &vec![action_proof],
         ).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_3()
             .unwrap();
@@ -321,15 +302,8 @@ mod tests {
             &submission_material
                 .action_proofs[0]
         ).unwrap();
-        let action_params = ActionParams::from_json(
-            &submission_material
-                .action_proofs[0]
-                .action_json
-                .data
-        ).unwrap();
-        let action_data = ActionData::new(action_proof, action_params);
-        let redeem_params = parse_redeem_params_from_actions_data(
-            &vec![action_data],
+        let redeem_params = parse_redeem_params_from_action_proofs(
+            &vec![action_proof],
         ).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_4()
             .unwrap();
