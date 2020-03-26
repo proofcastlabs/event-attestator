@@ -21,47 +21,36 @@ use crate::btc_on_eos::{
 };
 
 #[allow(dead_code)] // TODO Use when checking for correct sybmol!
-fn get_eos_symbol_from_serialized_action(
-    serialized_action: &Bytes
+fn get_eos_symbol_from_action_data(
+    action_data: &Bytes
 ) -> Result<EosSymbol> {
     Ok(
         EosSymbol::new(
-            convert_bytes_to_u64(&serialized_action[50..58].to_vec())?
+            convert_bytes_to_u64(&action_data[16..24].to_vec())?
         )
     )
 }
 
-fn get_eos_amount_from_serialized_action(
-    serialized_action: &Bytes
+fn get_eos_amount_from_action_data(
+    action_data: &Bytes
 ) -> Result<u64> {
-    convert_bytes_to_u64(&serialized_action[42..50].to_vec())
+    convert_bytes_to_u64(&action_data[8..16].to_vec())
 }
 
-#[allow(dead_code)] // TODO Use when checking for correct action name!
-fn get_eos_action_name_from_serialized_action(
-    serialized_action: &Bytes
+fn get_redeem_action_sender_from_action_data(
+    action_data: &Bytes
 ) -> Result<EosAccountName> {
     Ok(
         EosAccountName::new(
-            convert_bytes_to_u64(&serialized_action[8..16].to_vec())?
+            convert_bytes_to_u64(&action_data[..8].to_vec())?
         )
     )
 }
 
-fn get_redeem_action_sender_from_serialize_action(
-    serialized_action: &Bytes
-) -> Result<EosAccountName> {
-    Ok(
-        EosAccountName::new(
-            convert_bytes_to_u64(&serialized_action[34..42].to_vec())?
-        )
-    )
-}
-
-fn get_redeem_address_from_serialized_action(
-    serialized_action: &Bytes,
+fn get_redeem_address_from_action_data(
+    action_data: &Bytes,
 ) -> Result<String> {
-    Ok(from_utf8(&serialized_action[59..])?.to_string())
+    Ok(from_utf8(&action_data[25..])?.to_string())
 }
 
 impl RedeemParams {
@@ -70,14 +59,14 @@ impl RedeemParams {
     ) -> Result<Self> {
         Ok(
             RedeemParams {
-                amount: get_eos_amount_from_serialized_action(
-                    &action_data.action_proof.serialized_action,
+                amount: get_eos_amount_from_action_data(
+                    &action_data.action_proof.action.data,
                 )?,
-                from: get_redeem_action_sender_from_serialize_action(
-                    &action_data.action_proof.serialized_action,
+                from: get_redeem_action_sender_from_action_data(
+                    &action_data.action_proof.action.data,
                 )?,
-                recipient: get_redeem_address_from_serialized_action(
-                    &action_data.action_proof.serialized_action,
+                recipient: get_redeem_address_from_action_data(
+                    &action_data.action_proof.action.data,
                 )?,
                 originating_tx_id: action_data.action_proof.tx_id.clone(),
             }
@@ -94,8 +83,6 @@ pub fn parse_redeem_params_from_actions_data(
         .collect()
 }
 
-// TODO Filter to ensure the symbol is correct!
-// TODO Filter to ensure they're `redeem` actions
 pub fn maybe_parse_redeem_params_and_put_in_state<D>(
     state: EosState<D>
 ) -> Result<EosState<D>>
@@ -119,59 +106,47 @@ mod tests {
     };
 
     #[test]
-    fn should_get_sender_from_serialized_action() {
+    fn should_get_sender_from_action_data() {
         let expected_result = EosAccountName::from_str("provtestable")
             .unwrap();
-        let serialized_action = get_sample_eos_submission_material_n(5)
+        let action_data = get_sample_eos_submission_material_n(5)
             .actions_data[0]
             .action_proof
-            .serialized_action
+            .action
+            .data
             .clone();
-        let result = get_redeem_action_sender_from_serialize_action(
-            &serialized_action
+        let result = get_redeem_action_sender_from_action_data(
+            &action_data
         ).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_get_symbol_from_serialized_action() {
+    fn should_get_symbol_from_action_data() {
         let expected_result = EosSymbol::from_str("8,PFFF")
             .unwrap();
-        let serialized_action = get_sample_eos_submission_material_n(5)
+        let action_data = get_sample_eos_submission_material_n(5)
             .actions_data[0]
             .action_proof
-            .serialized_action
+            .action
+            .data
             .clone();
-        let result = get_eos_symbol_from_serialized_action(&serialized_action)
+        let result = get_eos_symbol_from_action_data(&action_data)
             .unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_get_amount_from_serialized_action() {
+    fn should_get_amount_from_action_data() {
         let expected_result: u64 = 5111;
-        let serialized_action = get_sample_eos_submission_material_n(5)
+        let action_data = get_sample_eos_submission_material_n(5)
             .actions_data[0]
             .action_proof
-            .serialized_action
+            .action
+            .data
             .clone();
-        let result = get_eos_amount_from_serialized_action(&serialized_action)
+        let result = get_eos_amount_from_action_data(&action_data)
             .unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_get_action_name_from_serialized_action() {
-        let expected_result = EosAccountName::from_str("redeem")
-            .unwrap();
-        let serialized_action = get_sample_eos_submission_material_n(5)
-            .actions_data[0]
-            .action_proof
-            .serialized_action
-            .clone();
-        let result = get_eos_action_name_from_serialized_action(
-            &serialized_action
-        ).unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -179,13 +154,14 @@ mod tests {
     fn should_get_redeem_address_serialized_action() {
         let expected_result = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
             .to_string();
-        let serialized_action = get_sample_eos_submission_material_n(5)
+        let action_data = get_sample_eos_submission_material_n(5)
             .actions_data[0]
             .action_proof
-            .serialized_action
+            .action
+            .data
             .clone();
-        let result = get_redeem_address_from_serialized_action(
-            &serialized_action
+        let result = get_redeem_address_from_action_data(
+            &action_data
         ).unwrap();
         assert_eq!(result, expected_result);
     }
