@@ -12,6 +12,7 @@ use crate::btc_on_eos::{
         filter_duplicate_proofs::maybe_filter_duplicate_proofs_from_state,
         add_tx_ids_to_processed_list::maybe_add_tx_ids_to_processed_tx_ids,
         parse_submission_material::parse_submission_material_and_add_to_state,
+        filter_invalid_action_digests::maybe_filter_out_invalid_action_digests,
         filter_irrelevant_proofs::maybe_filter_out_irrelevant_proofs_from_state,
         extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
         filter_already_processed_txs::{
@@ -49,6 +50,7 @@ pub fn submit_eos_block_to_core<D>(
         .and_then(start_eos_db_transaction)
         .and_then(maybe_filter_duplicate_proofs_from_state)
         .and_then(maybe_filter_out_irrelevant_proofs_from_state)
+        .and_then(maybe_filter_out_invalid_action_digests)
         //.and_then(validate_block_header_signatures)
         //.and_then(validate_irreversibility_proof) ?
         //.and_then(filter_invalid_action_proofs_from_state) We do this in the redeem parser?
