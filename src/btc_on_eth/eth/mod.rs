@@ -5,6 +5,7 @@ pub mod eth_types;
 pub mod trie_nodes;
 pub mod path_codec;
 pub mod eth_crypto;
+pub mod eth_message;
 pub mod get_eth_log;
 pub mod nibble_utils;
 pub mod eth_constants;
