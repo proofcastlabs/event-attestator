@@ -24,11 +24,7 @@ use crate::btc_on_eos::{
 fn get_eos_symbol_from_action_data(
     action_data: &Bytes
 ) -> Result<EosSymbol> {
-    Ok(
-        EosSymbol::new(
-            convert_bytes_to_u64(&action_data[16..24].to_vec())?
-        )
-    )
+    Ok(EosSymbol::new(convert_bytes_to_u64(&action_data[16..24].to_vec())?))
 }
 
 fn get_eos_amount_from_action_data(
@@ -40,11 +36,7 @@ fn get_eos_amount_from_action_data(
 fn get_redeem_action_sender_from_action_data(
     action_data: &Bytes
 ) -> Result<EosAccountName> {
-    Ok(
-        EosAccountName::new(
-            convert_bytes_to_u64(&action_data[..8].to_vec())?
-        )
-    )
+    Ok(EosAccountName::new(convert_bytes_to_u64(&action_data[..8].to_vec())?))
 }
 
 fn get_redeem_address_from_action_data(

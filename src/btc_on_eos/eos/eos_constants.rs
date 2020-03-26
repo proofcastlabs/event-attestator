@@ -2,6 +2,7 @@ pub const PUBLIC_KEY_SIZE: usize = 33;
 pub const EOS_NUM_DECIMALS: usize = 4;
 pub const EOS_NAME_BYTES_LEN: usize = 8;
 pub const PBTC_MINT_FXN_NAME: &str = "issue";
+pub const REDEEM_ACTION_NAME: &str = "redeem";
 pub const EOS_MAX_EXPIRATION_SECS: u32 = 3600;
 pub const PUBLIC_KEY_CHECKSUM_SIZE: usize = 4;
 pub const EOS_ADDRESS_CHAR_LENGTH: usize = 12;
