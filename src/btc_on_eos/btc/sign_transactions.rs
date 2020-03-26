@@ -28,7 +28,7 @@ use crate::btc_on_eos::{
         eos_database_utils::{
             get_eos_chain_id_from_db,
             get_eos_private_key_from_db,
-            get_eos_account_name_from_db,
+            get_eos_account_name_string_from_db,
         },
     },
 };
@@ -99,7 +99,7 @@ pub fn maybe_sign_canon_block_txs_and_add_to_state<D>(
         &state.ref_block_prefix,
         &get_eos_chain_id_from_db(&state.db)?,
         &get_eos_private_key_from_db(&state.db)?,
-        &get_eos_account_name_from_db(&state.db)?,
+        &get_eos_account_name_string_from_db(&state.db)?,
         &get_btc_canon_block_from_db(&state.db)?.minting_params,
     )
         .and_then(|signed_txs| state.add_signed_txs(signed_txs))

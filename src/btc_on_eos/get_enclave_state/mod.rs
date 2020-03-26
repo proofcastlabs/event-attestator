@@ -13,8 +13,8 @@ use crate::btc_on_eos::{
         eos_database_utils::{
             get_eos_chain_id_from_db,
             get_eos_private_key_from_db,
-            get_eos_account_name_from_db,
             get_eos_account_nonce_from_db,
+            get_eos_account_name_string_from_db,
         },
     },
     btc::{
@@ -111,7 +111,7 @@ pub fn get_enclave_state<D>(
                     btc_latest_block_hash:
                         btc_latest_block.id.to_string(),
                     eos_account_name:
-                        get_eos_account_name_from_db(&db)?,
+                        get_eos_account_name_string_from_db(&db)?,
                     btc_anchor_block_number:
                         btc_anchor_block.height,
                     btc_anchor_block_hash:

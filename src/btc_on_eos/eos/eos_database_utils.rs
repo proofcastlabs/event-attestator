@@ -1,3 +1,5 @@
+use std::str::FromStr;
+use eos_primitives::AccountName as EosAccountName;
 use crate::btc_on_eos::{
     types::Result,
     traits::DatabaseInterface,
@@ -65,12 +67,20 @@ pub fn put_eos_account_name_in_db<D>(
     put_string_in_db(db, &EOS_ACCOUNT_NAME_KEY.to_vec(), name)
 }
 
-pub fn get_eos_account_name_from_db<D>(
+pub fn get_eos_account_name_string_from_db<D>(
     db: &D,
 ) -> Result<String>
     where D: DatabaseInterface
 {
     get_string_from_db(db, &EOS_ACCOUNT_NAME_KEY.to_vec())
+}
+
+pub fn get_eos_account_name_from_db<D>(
+    db: &D,
+) -> Result<EosAccountName>
+    where D: DatabaseInterface
+{
+    Ok(EosAccountName::from_str(&get_eos_account_name_string_from_db(db)?)?)
 }
 
 pub fn put_eos_chain_id_in_db<D>(
