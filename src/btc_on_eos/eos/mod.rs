@@ -15,6 +15,7 @@ pub mod validate_signature;
 pub mod eos_database_utils;
 pub mod parse_redeem_params;
 pub mod filter_redeem_params;
+pub mod get_processed_tx_ids;
 pub mod save_btc_utxos_to_db;
 pub mod filter_duplicate_proofs;
 pub mod filter_irrelevant_proofs;

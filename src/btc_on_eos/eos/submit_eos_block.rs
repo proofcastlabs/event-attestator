@@ -8,6 +8,7 @@ use crate::btc_on_eos::{
         save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
         sign_transactions::maybe_sign_txs_and_add_to_state,
         increment_signature_nonce::maybe_increment_signature_nonce,
+        get_processed_tx_ids::get_processed_tx_ids_and_add_to_state,
         parse_redeem_params::maybe_parse_redeem_params_and_put_in_state,
         filter_duplicate_proofs::maybe_filter_duplicate_proofs_from_state,
         add_tx_ids_to_processed_list::maybe_add_tx_ids_to_processed_tx_ids,
@@ -27,19 +28,9 @@ use crate::btc_on_eos::{
         eos_database_utils::{
             end_eos_db_transaction,
             start_eos_db_transaction,
-            get_processed_tx_ids_from_db,
         },
     },
 };
-
-fn get_processed_tx_ids_and_add_to_state<D>( // TODO move to somewhere better
-    state: EosState<D>
-) -> Result<EosState<D>>
-    where D: DatabaseInterface
-{
-    get_processed_tx_ids_from_db(&state.db)
-        .and_then(|tx_ids| state.add_processed_tx_ids(tx_ids))
-}
 
 pub fn submit_eos_block_to_core<D>(
     db: D,
