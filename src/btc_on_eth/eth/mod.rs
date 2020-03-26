@@ -6,7 +6,7 @@ pub mod eth_constants;
 pub mod eth_crypto;
 pub mod eth_database_utils;
 pub mod eth_json_codec;
-pub mod eth_message;
+pub mod eth_message_signer;
 pub mod eth_state;
 pub mod eth_test_utils;
 pub mod eth_types;
