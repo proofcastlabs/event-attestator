@@ -25,6 +25,7 @@ pub fn maybe_initialize_eos_core<D>(
     db: D,
     chain_id: String,
     account_name: String,
+    // TODO Token symbol
 ) -> Result<String>
     where D: DatabaseInterface
 {
