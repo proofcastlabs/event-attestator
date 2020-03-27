@@ -1,4 +1,3 @@
-#![allow(dead_code)] // TODO Rm once EOS proof validation is fully in!
 use bitcoin_hashes::{
     Hash,
     sha256,
