@@ -9,6 +9,7 @@ use crate::btc_on_eos::{
     types::Result,
     eos::{
         eos_types::EosSignedTransaction,
+        eos_constants::PBTC_MINT_FXN_NAME,
         eos_crypto::eos_private_key::EosPrivateKey,
     },
 };
@@ -39,9 +40,8 @@ fn get_eos_minting_action(
 ) -> Result<EosAction> {
     Ok(
         EosAction::from_str(
-            // TODO get from db!
-            "pbtctokenxxx",//PBTC_TOKEN_NAME, // this same as actor etc? FIXME!
-            "issue",//PBTC_MINT_FXN_NAME, FIXME! Have this as const!
+            from,
+            PBTC_MINT_FXN_NAME,
             vec![get_peos_permission_level(actor, permission_level)?],
             get_peos_transfer_action(to, from, memo, amount)?,
         )?
@@ -110,8 +110,6 @@ mod tests {
         eos_test_utils::EOS_JUNGLE_CHAIN_ID,
         eos_constants::{
             MEMO,
-            PEOS_ACCOUNT_NAME,
-            PEOS_ACCOUNT_ACTOR,
             EOS_MAX_EXPIRATION_SECS,
             PEOS_ACCOUNT_PERMISSION_LEVEL,
         },
@@ -125,9 +123,9 @@ mod tests {
         let ref_block_prefix = 1355491504;
         let unsigned_transaction = get_unsigned_eos_minting_tx(
             to,
-            PEOS_ACCOUNT_NAME,
+            "ptokensbtc1a",
             MEMO,
-            PEOS_ACCOUNT_ACTOR,
+            "ptokensbtc1a",
             amount,
             ref_block_num,
             ref_block_prefix,
@@ -150,7 +148,7 @@ mod tests {
             .transaction;
         // NOTE: First 4 bytes are the timestamp (8 hex chars...)
         // NOTE: Signature not deterministic ∴ we don't test it.
-        let expected_result = "67adb028cb500000000001d07b9f0ad28cf2a90000000000a53176016002ca074f0569ae00000000a8ed32322ea0e23119abbce9ad2ae1f50500000000085046464600000015425443202d3e207042544320636f6d706c6574652100".to_string();
+        let expected_result = "67adb028cb5000000000016002ca074f0569ae0000000000a53176016002ca074f0569ae00000000a8ed32322ea0e23119abbce9ad2ae1f50500000000085046464600000015425443202d3e207042544320636f6d706c6574652100".to_string();
         let result_without_timestamp = &result[8..];
         assert_eq!(result_without_timestamp, expected_result);
     }

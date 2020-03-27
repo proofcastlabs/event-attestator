@@ -260,7 +260,7 @@ pub fn deserialize_btc_block_in_db_format(
 }
 
 pub fn get_safe_address() -> EthAddress {
-    EthAddress::from_slice(&SAFE_EOS_ADDRESS.as_bytes()) // FIXME
+    EthAddress::from_slice(&SAFE_EOS_ADDRESS.as_bytes())
 }
 
 pub fn get_total_value_of_utxos_and_values(

@@ -50,7 +50,7 @@ pub fn check_core_is_initialized<D>(
 }
 
 
-// TODO/FIXME Make generic
+// TODO Make generic
 pub fn check_core_is_initialized_and_return_eos_state<D>(
     state: EosState<D>,
 ) -> Result<EosState<D>>
