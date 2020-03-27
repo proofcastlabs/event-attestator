@@ -1,4 +1,4 @@
-#![allow(unused_imports)] // FIXME: Change once mod implemented fully
+#![allow(unused_imports)] // TODO: Change once mod implemented fully
 use secp256k1::{
     Message,
     Secp256k1,
@@ -10,13 +10,15 @@ use crate::btc_on_eos::{
     },
 };
 
+// TODO This mod!
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::str::FromStr;
 
     #[test]
-    fn should_recover_public_key() {
+    fn should_recover_public_key() { // TODO Get sig validation working!
         // NOTE: This block === https://jungle.bloks.io/block/10800
         // NOTE: This block chosen because of repo here:
         // https://github.com/KyberNetwork/bridge_eth_smart_contracts/tree/master/test
@@ -46,14 +48,5 @@ mod tests {
         println!("non_recoverable sig: {}", producer_signature.to_non_recoverable_signature());
         println!("result: {}", result);
         //assert_eq!(expected_pub_key, result);
-        /*
-         *
-         * NOTE Thomas found that we need to concatenate a whole bunch of stuff
-         * create the correct digest, which when done, _does_ validate the key
-         * correctly so that's good. (In python at least).
-         *
-         * Get the info from him!
-         *
-         */
     }
 }

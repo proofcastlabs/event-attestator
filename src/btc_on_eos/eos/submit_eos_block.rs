@@ -47,7 +47,6 @@ pub fn submit_eos_block_to_core<D>(
         .and_then(maybe_filter_out_invalid_action_digests)
         .and_then(maybe_filter_out_proofs_with_wrong_merkle_roots)
         //.and_then(validate_block_header_signatures)
-        //.and_then(validate_irreversibility_proof) ?
         .and_then(maybe_parse_redeem_params_and_put_in_state)
         .and_then(maybe_filter_value_too_low_redeem_params_in_state)
         .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
