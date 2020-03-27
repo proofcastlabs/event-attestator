@@ -6,8 +6,11 @@ use eos_primitives::{
     ActionReceipt as EosActionReceipt,
 };
 use crate::btc_on_eos::{
-    types::Result,
     utils::convert_hex_to_checksum256,
+    types::{
+        Bytes,
+        Result,
+    },
     eos::{
         eos_crypto::eos_signature::EosSignature,
         parse_eos_actions::parse_eos_action_json,
@@ -17,6 +20,7 @@ use crate::btc_on_eos::{
 
 pub type EosAmount = String;
 pub type EosAddress = String;
+pub type MerklePath = Vec<Bytes>;
 pub type MerkleProof = Vec<String>;
 pub type EosAddresses = Vec<String>;
 pub type EosAmounts = Vec<EosAmount>;
