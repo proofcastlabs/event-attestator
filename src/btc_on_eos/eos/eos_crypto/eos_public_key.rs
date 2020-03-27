@@ -176,14 +176,13 @@ impl FromStr for EosPublicKey {
         }
         let s_hex = base58::from(&s[3..])?;
         let raw = &s_hex[..PUBLIC_KEY_SIZE];
-        // TODO verify with checksum
         let _checksum = &s_hex[PUBLIC_KEY_SIZE..];
         let public_key = secp256k1::key::PublicKey::from_slice(&raw)?;
         Ok(EosPublicKey { public_key, compressed: true })
     }
 }
 
-impl<'a> From<&'a EosPrivateKey> for EosPublicKey { // TODO: Not sure we need this?
+impl<'a> From<&'a EosPrivateKey> for EosPublicKey {
     fn from(eos_private_key: &EosPrivateKey) -> EosPublicKey {
         EosPublicKey {
             compressed: true,
