@@ -1,15 +1,17 @@
 #![allow(dead_code)] // TODO Rm once EOS proof validation is fully in!
-use crate::btc_on_eos::errors::AppError;
 use bitcoin_hashes::{
     Hash,
     sha256,
 };
 use crate::btc_on_eos::{
-    eos::eos_types::MerkleProof,
     types::{
         Byte,
         Bytes,
         Result,
+    },
+    eos::eos_types::{
+        MerklePath,
+        MerkleProof,
     },
 };
 
@@ -28,21 +30,23 @@ fn set_first_bit_of_byte_to_one(mut byte: Byte) -> Byte {
     byte
 }
 
-fn set_first_bit_of_hash_to_one(mut hash: Bytes) -> Bytes {
-    hash[0] = set_first_bit_of_byte_to_one(hash[0]);
-    hash
+fn set_first_bit_of_hash_to_one(hash: &Bytes) -> Bytes {
+    let mut new_hash = hash.clone();
+    new_hash[0] = set_first_bit_of_byte_to_one(hash[0]);
+    new_hash
 }
 
-fn set_first_bit_of_hash_to_zero(mut hash: Bytes) -> Bytes {
-    hash[0] = set_first_bit_of_byte_to_zero(hash[0]);
-    hash
+fn set_first_bit_of_hash_to_zero(hash: &Bytes) -> Bytes {
+    let mut new_hash = hash.clone();
+    new_hash[0] = set_first_bit_of_byte_to_zero(hash[0]);
+    new_hash
 }
 
-fn make_canonical_left(hash: Bytes) -> CanonicalLeft {
+fn make_canonical_left(hash: &Bytes) -> CanonicalLeft {
     set_first_bit_of_hash_to_zero(hash)
 }
 
-fn make_canonical_right(hash: Bytes) -> CanonicalRight {
+fn make_canonical_right(hash: &Bytes) -> CanonicalRight {
     set_first_bit_of_hash_to_one(hash)
 }
 
@@ -54,7 +58,7 @@ fn is_canonical_right(hash: &Bytes) -> bool {
     !is_canonical_left(hash)
 }
 
-fn make_canonical_pair(l: Bytes, r: Bytes) -> CanonicalPair {
+fn make_canonical_pair(l: &Bytes, r: &Bytes) -> CanonicalPair {
     (
         make_canonical_left(l),
         make_canonical_right(r),
@@ -70,7 +74,7 @@ fn hash_canonical_pair(pair: CanonicalPair) -> Sha256Hash {
     sha256::Hash::hash(&concatenate_canonical_pair(pair))
 }
 
-fn make_and_hash_canonical_pair(l: Bytes, r: Bytes) -> Bytes {
+fn make_and_hash_canonical_pair(l: &Bytes, r: &Bytes) -> Bytes {
     hash_canonical_pair(make_canonical_pair(l, r)).to_vec()
 }
 
@@ -85,10 +89,7 @@ pub fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
         }
         for i in 0..(leaves.len() / 2) {
             leaves[i] = hash_canonical_pair(
-                make_canonical_pair(
-                    leaves[2 * i].clone(),
-                    leaves[(2 * i) + 1].clone(),
-                )
+                make_canonical_pair(&leaves[2 * i], &leaves[(2 * i) + 1])
             ).to_vec();
         }
         leaves.resize(leaves.len() / 2, vec![0x00]);
@@ -147,19 +148,19 @@ pub fn generate_merkle_proof(
 }
 
 pub fn verify_merkle_proof(merkle_proof: &MerkleProof) -> Result<bool> {
-    let mut leaves = Vec::new();
-    for i in 0..merkle_proof.len() {
-        leaves.push(hex::decode(merkle_proof[i].clone())?)
-    }
-    let mut node = leaves[0].clone();
-    for i in 1..leaves.len() - 1 {
+    let mut node = hex::decode(merkle_proof[0].clone())?;
+    let leaves = merkle_proof[..merkle_proof.len() - 1]
+        .iter()
+        .map(|hex| Ok(hex::decode(hex)?))
+        .collect::<Result<Vec<Bytes>>>()?;
+    for i in 1..leaves.len() {
         if is_canonical_right(&leaves[i]) {
-            node = make_and_hash_canonical_pair(node, leaves[i].clone());
+            node = make_and_hash_canonical_pair(&node, &leaves[i]);
         } else {
-            node = make_and_hash_canonical_pair(leaves[i].clone(), node);
+            node = make_and_hash_canonical_pair(&leaves[i], &node);
         }
-    }
-    Ok(Some(&node) == leaves.last())
+    };
+    Ok(node == hex::decode(merkle_proof.last()?)?)
 }
 
 #[cfg(test)]
@@ -167,6 +168,9 @@ mod tests {
     use hex;
     use super::*;
     use std::str::FromStr;
+    use crate::btc_on_eos::{
+        eos::eos_test_utils::get_sample_eos_submission_material_n,
+    };
     use eos_primitives::{
         Action,
         ActionName,
@@ -205,8 +209,8 @@ mod tests {
 
     fn get_sample_canonical_pair() -> CanonicalPair {
         make_canonical_pair(
-            get_expected_digest_bytes_1(),
-            get_expected_digest_bytes_2(),
+            &get_expected_digest_bytes_1(),
+            &get_expected_digest_bytes_2(),
         )
     }
 
@@ -229,7 +233,7 @@ mod tests {
     #[test]
     fn should_set_first_bit_of_hash_to_one() {
         let hash = get_expected_digest_bytes_2();
-        let result = set_first_bit_of_hash_to_one(hash.clone());
+        let result = set_first_bit_of_hash_to_one(&hash);
         for i in 0..hash.len() {
             if i == 0 {
                 assert!(result[i] == get_expected_first_byte_2());
@@ -242,7 +246,7 @@ mod tests {
     #[test]
     fn should_set_first_bit_of_hash_to_zero() {
         let hash = get_expected_digest_bytes_1();
-        let result = set_first_bit_of_hash_to_zero(hash.clone());
+        let result = set_first_bit_of_hash_to_zero(&hash);
         for i in 0..hash.len() {
             if i == 0 {
                 assert!(result[i] == get_expected_first_byte_1());
@@ -255,7 +259,7 @@ mod tests {
     #[test]
     fn should_make_hash_canonical_right() {
         let hash = get_expected_digest_bytes_2();
-        let result = make_canonical_right(hash.clone());
+        let result = make_canonical_right(&hash);
         for i in 0..hash.len() {
             if i == 0 {
                 assert!(result[i] == get_expected_first_byte_2());
@@ -268,7 +272,7 @@ mod tests {
     #[test]
     fn should_make_hash_canonical_left() {
         let hash = get_expected_digest_bytes_1();
-        let result = make_canonical_left(hash.clone());
+        let result = make_canonical_left(&hash);
         for i in 0..hash.len() {
             if i == 0 {
                 assert!(result[i] == get_expected_first_byte_1());
@@ -281,7 +285,7 @@ mod tests {
     #[test]
     fn canonical_left_hash_should_be_canonical_left() {
         let hash = get_expected_digest_bytes_1();
-        let canonical_left_hash = make_canonical_left(hash.clone());
+        let canonical_left_hash = make_canonical_left(&hash);
         let is_left = is_canonical_left(&canonical_left_hash);
         let is_right = is_canonical_right(&canonical_left_hash);
         assert!(is_left);
@@ -291,7 +295,7 @@ mod tests {
     #[test]
     fn canonical_right_hash_should_be_canonical_right() {
         let hash = get_expected_digest_bytes_2();
-        let canonical_right_hash = make_canonical_right(hash.clone());
+        let canonical_right_hash = make_canonical_right(&hash);
         let is_left = is_canonical_left(&canonical_right_hash);
         let is_right = is_canonical_right(&canonical_right_hash);
         assert!(!is_left);
@@ -324,7 +328,7 @@ mod tests {
     fn should_make_canonical_pair() {
         let digest_1 = get_expected_digest_bytes_1();
         let digest_2 = get_expected_digest_bytes_2();
-        let result = make_canonical_pair(digest_1.clone(), digest_2.clone());
+        let result = make_canonical_pair(&digest_1, &digest_2);
         for i in 0..result.0.len() {
             if i == 0 {
                 assert!(result.0[i] == get_expected_first_byte_1());
@@ -496,30 +500,21 @@ mod tests {
     }
 
     #[test]
-    fn should_generate_merkle_proof_correctly() {
-        let index = 2;
-        let digests = get_sample_action_digests();
-        let expected_result = vec! [
-            "41a91de4e161bc10ff6f7173822cf3f6417dd9bfc3dc88cf8bdd8196322837ce",
-            "d14a4b2157aaaa4fec077069a8617c53b4e3f75c142a6aea5aa24bd031578e96",
-            "3d8ddd7684e1f38a0f3c6880d179fc43ae730f9363eafe842cc85484450e2613",
-            "8b4e5e5d3e7587065896d0076d65c72e03c11a9159d414eb3a2363b59108116a",
-        ];
-        let result = generate_merkle_proof(index, digests)
-            .unwrap();
-        for i in 0..expected_result.len() {
-            assert!(expected_result[i] == result[i]);
-        };
-    }
-
-    #[test]
-    fn should_verify_merkle_proof_correctly() {
-        let index = 2;
-        let digests = get_sample_action_digests();
-        let proof = generate_merkle_proof(index, digests)
-            .unwrap();
-        let result = verify_merkle_proof(&proof)
-            .unwrap();
-        assert!(result);
+    fn should_verify_merkle_proofs() {
+        let num_proofs = 4;
+        vec![0, num_proofs]
+            .iter()
+            .enumerate()
+            .map(|(_, i)| get_sample_eos_submission_material_n(i + 1))
+            .map(|submission_material|
+                 submission_material
+                    .action_proofs[0]
+                    .action_proof
+                    .clone()
+            )
+            .map(|merkle_proof|
+                 assert!(verify_merkle_proof(&merkle_proof).unwrap())
+            )
+            .for_each(drop);
     }
 }

@@ -58,6 +58,7 @@ mod tests {
         assert_eq!(result[0], get_sample_action_proof_n(4));
         assert_eq!(result[1], get_sample_action_proof_n(5));
     }
+
     #[test]
     fn should_filter_duplicate_action_proofs() {
         let expected_num_proofs_after = 2;
