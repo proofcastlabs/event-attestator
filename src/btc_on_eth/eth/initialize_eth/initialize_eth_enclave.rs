@@ -45,10 +45,11 @@ pub fn maybe_initialize_eth_enclave<D>(
     chain_id: u8,
     gas_price: u64,
     canon_to_tip_length: u64,
+    bytecode_path: String,
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    check_for_existence_of_eth_contract_byte_code()
+    check_for_existence_of_eth_contract_byte_code(&bytecode_path)
         .map(|_| EthState::init(db))
         .and_then(|state|
             match is_eth_enclave_initialized(&state.db) {
@@ -96,6 +97,7 @@ pub fn maybe_initialize_eth_enclave<D>(
                             generate_eth_contract_tx_and_put_in_state(
                                 chain_id,
                                 gas_price,
+                                &bytecode_path,
                                 state,
                             )
                         )

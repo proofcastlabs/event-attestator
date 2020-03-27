@@ -68,6 +68,7 @@ pub const TEMPORARY_ETH_CANON_TO_TIP_LENGTH: usize = 10;
 pub const INDEX_OF_LOG_IN_ROPSTEN_RECEIPT: usize = 0;
 pub const INDEX_OF_RECIEPT_IN_ROPSTEN_SAMPLE: usize = 0;
 pub const SEQUENTIAL_BLOCKS_FIRST_NUMBER: usize = 8065750;
+pub const ETH_SMART_CONTRACT_BYTECODE_PATH: &str = "./src/btc_on_eth/eth/eth_test_utils/ptoken-erc777-bytecode";
 pub const SAMPLE_BLOCK_JSON_PATH: &str = "src/btc_on_eth/eth/eth_test_utils/sample-block-json";
 pub const TEMPORARY_DATABASE_PATH: &str = "src/btc_on_eth/eth/eth_test_utils/temporary_database";
 pub const SAMPLE_RECEIPT_JSON_PATH: &str = "src/btc_on_eth/eth/eth_test_utils/sample-receipt-json";

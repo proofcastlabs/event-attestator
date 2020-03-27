@@ -4,12 +4,6 @@ pub const DEBUG_MODE: bool = true;
 #[cfg(not(feature="debug"))]
 pub const DEBUG_MODE: bool = false;
 
-#[cfg(not(test))]
-pub static ETH_BYTECODE_PATH: &'static str = "./ptoken-erc777-bytecode";
-
-#[cfg(test)]
-pub static ETH_BYTECODE_PATH: &'static str = "./src/btc_on_eth/eth/eth_test_utils/ptoken-erc777-bytecode";
-
 pub const HASH_LENGTH: usize = 32;
 pub const U64_NUM_BYTES: usize = 8;
 pub const BTC_NUM_DECIMALS: u32 = 8;
