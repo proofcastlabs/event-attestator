@@ -74,7 +74,7 @@ fn make_and_hash_canonical_pair(l: Bytes, r: Bytes) -> Bytes {
     hash_canonical_pair(make_canonical_pair(l, r)).to_vec()
 }
 
-fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
+pub fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
     if leaves.len() == 0 {
         return vec![0x00]
     }

@@ -15,8 +15,6 @@ fn filter_redeem_params(
         redeem_params
             .iter()
             .map(|params| params.amount)
-            .collect::<Vec<u64>>()
-            .into_iter()
             .zip(redeem_params.iter())
             .filter(|(amount, params)| {
                 match amount >= &MINIMUM_REQUIRED_SATOSHIS {
