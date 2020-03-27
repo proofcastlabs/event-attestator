@@ -24,8 +24,10 @@ use crate::btc_on_eth::{
 
 };
 
-pub fn check_for_existence_of_eth_contract_byte_code() -> Result<Bytes> {
-    get_ptoken_smart_contract_bytecode()
+pub fn check_for_existence_of_eth_contract_byte_code(
+    bytecode_path: &String,
+) -> Result<Bytes> {
+    get_ptoken_smart_contract_bytecode(&bytecode_path)
 }
 
 pub fn put_eth_tail_block_hash_in_db_and_return_state<D>(

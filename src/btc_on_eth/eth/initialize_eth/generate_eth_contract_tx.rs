@@ -11,7 +11,8 @@ use crate::btc_on_eth::{
 pub fn generate_eth_contract_tx_and_put_in_state<D>(
     chain_id: u8,
     gas_price: u64,
-    state: EthState<D>
+    bytecode_path: &String,
+    state: EthState<D>,
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
@@ -22,6 +23,7 @@ pub fn generate_eth_contract_tx_and_put_in_state<D>(
                 chain_id,
                 eth_private_key,
                 gas_price,
+                bytecode_path,
             )
         )
         .and_then(|signed_tx|  state.add_misc_string_to_state(signed_tx))
