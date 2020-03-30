@@ -78,7 +78,7 @@ fn convert_hex_strings_to_extensions(
 }
 
 
-fn convert_producer_schedule_json_to_producer_schedule(
+fn parse_producer_schedule_from_json(
     producer_schedule_json: &ProducerScheduleJson,
 ) -> Result<ProducerSchedule> {
     Ok(
@@ -96,7 +96,9 @@ fn convert_producer_key_json_to_producer_key(
 ) -> Result<ProducerKey> {
     Ok(
         ProducerKey {
-            producer_name: AccountName::from_str(&producer_key_json.producer_name)?,
+            producer_name: AccountName::from_str(
+                &producer_key_json.producer_name
+            )?,
             block_signing_key: EosPublicKey::from_str(
                 &producer_key_json.block_signing_key
             )?
@@ -141,7 +143,7 @@ pub fn parse_eos_block_header_from_json(
                 None => None,
                 Some(producer_schedule_json) =>
                     Some(
-                        convert_producer_schedule_json_to_producer_schedule(
+                        parse_producer_schedule_from_json(
                             &producer_schedule_json
                         )?
                     )
@@ -170,14 +172,17 @@ fn parse_eos_submission_material_json_to_struct(
 ) -> Result<EosSubmissionMaterial> {
     Ok(
         EosSubmissionMaterial {
-            action_proofs: parse_eos_action_proof_jsons_to_action_proofs(
-               &submission_material_json.action_proofs,
-            )?,
             block_header: parse_eos_block_header_from_json(
                 &submission_material_json.block_header,
             )?,
             blockroot_merkle: parse_blockroot_merkle_from_json(
                 &submission_material_json.blockroot_merkle,
+            )?,
+            active_schedule: parse_producer_schedule_from_json(
+                &submission_material_json.active_schedule,
+            )?,
+            action_proofs: parse_eos_action_proof_jsons_to_action_proofs(
+               &submission_material_json.action_proofs,
             )?,
         }
     )
