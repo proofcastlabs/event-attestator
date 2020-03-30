@@ -45,9 +45,6 @@ use crate::btc_on_eos::{
     },
 };
 
-pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1: &str =
-    "src/btc_on_eos/eos/eos_test_utils/eos-block-73202313.json";
-
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_2: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-80440580.json";
 
@@ -95,7 +92,6 @@ pub fn get_sample_eos_submission_material_string_n(
     num: usize,
 ) -> Result<String> {
     let path = match num {
-        1 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1),
         2 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_2),
         3 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_3),
         4 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_4),
