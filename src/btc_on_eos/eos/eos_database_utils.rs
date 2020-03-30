@@ -16,7 +16,7 @@ use crate::btc_on_eos::{
         eos_constants::{
             EOS_ACCOUNT_NONCE,
             EOS_CHAIN_ID_DB_KEY,
-            EOS_TOKEN_TICKER_KEY,
+            EOS_TOKEN_SYMBOL_KEY,
             PROCESSED_TX_IDS_KEY,
             EOS_ACCOUNT_NAME_KEY,
             EOS_PRIVATE_KEY_DB_KEY,
@@ -41,21 +41,21 @@ pub fn put_eos_account_nonce_in_db<D>(
     put_u64_in_db(db, &EOS_ACCOUNT_NONCE.to_vec(), new_nonce)
 }
 
-pub fn put_eos_token_ticker_in_db<D>(
+pub fn put_eos_token_symbol_in_db<D>(
     db: &D,
     name: &String,
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    put_string_in_db(db, &EOS_TOKEN_TICKER_KEY.to_vec(), name)
+    put_string_in_db(db, &EOS_TOKEN_SYMBOL_KEY.to_vec(), name)
 }
 
-pub fn get_eos_token_ticker_from_db<D>(
+pub fn get_eos_token_symbol_from_db<D>(
     db: &D,
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    get_string_from_db(db, &EOS_TOKEN_TICKER_KEY.to_vec())
+    get_string_from_db(db, &EOS_TOKEN_SYMBOL_KEY.to_vec())
 }
 
 pub fn put_eos_account_name_in_db<D>(
