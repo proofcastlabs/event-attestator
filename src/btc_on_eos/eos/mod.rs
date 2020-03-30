@@ -20,6 +20,7 @@ pub mod save_btc_utxos_to_db;
 pub mod filter_duplicate_proofs;
 pub mod filter_irrelevant_proofs;
 pub mod parse_submission_material;
+pub mod parse_eos_action_receipts;
 pub mod increment_signature_nonce;
 pub mod extract_utxos_from_btc_txs;
 pub mod filter_already_processed_txs;

@@ -3,6 +3,7 @@ use eos_primitives::{
     Action as EosAction,
     AccountName as EosAccountName,
     BlockHeader as EosBlockHeader,
+    ActionReceipt as EosActionReceipt,
 };
 use crate::btc_on_eos::{
     types::Result,
@@ -10,6 +11,7 @@ use crate::btc_on_eos::{
     eos::{
         eos_crypto::eos_signature::EosSignature,
         parse_eos_actions::parse_eos_action_json,
+        parse_eos_action_receipts::parse_eos_action_receipt_json,
     },
 };
 
@@ -23,9 +25,9 @@ pub type MerkleProofs = Vec<MerkleProof>;
 pub type EosSignatures = Vec<EosSignature>;
 pub type ActionProofJsons = Vec<ActionProofJson>;
 pub type Sha256HashedMessage = secp256k1::Message;
+pub type AuthSequenceJsons = Vec<AuthSequenceJson>;
 pub type AuthorizationJsons = Vec<AuthorizationJson>;
 pub type EosSignedTransactions= Vec<EosSignedTransaction>;
-
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RedeemParams {
@@ -121,6 +123,7 @@ pub struct ActionProof {
     pub action: EosAction,
     pub tx_id: Checksum256,
     pub action_proof: MerkleProof,
+    pub action_receipt: EosActionReceipt,
 }
 
 impl ActionProof {
@@ -133,6 +136,8 @@ impl ActionProof {
                     convert_hex_to_checksum256(&json.tx_id)?,
                 action:
                     parse_eos_action_json(&json.action_json)?,
+                action_receipt:
+                    parse_eos_action_receipt_json(&json.action_receipt_json)?,
             }
         )
     }
@@ -163,7 +168,22 @@ pub struct ActionProofJson {
     pub action_json: EosActionJson,
     pub action_receipt_digest: String,
     pub serialized_action_receipt: String,
+    pub action_receipt_json: EosActionReceiptJson,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct EosActionReceiptJson {
+    pub receiver: String,
+    pub act_digest: String,
+    pub global_sequence: u64,
+    pub recv_sequence:  u64,
+    pub auth_sequence: AuthSequenceJsons,
+    pub code_sequence: usize,
+    pub abi_sequence: usize,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct AuthSequenceJson(pub String, pub u64);
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ProcessedTxIds(pub Vec<String>);
