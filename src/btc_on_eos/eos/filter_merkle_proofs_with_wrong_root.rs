@@ -25,7 +25,7 @@ fn get_merkle_digest_from_merkle_proof(
                 .map(|hex|
                     match hex::decode(hex) {
                         Ok(bytes) => bytes,
-                        Err(_) => vec![0u8], // NOTE This make poof invalid
+                        Err(_) => vec![0u8], // NOTE This makes poof invalid
                     }
                 )
                 .collect::<Vec<Bytes>>()

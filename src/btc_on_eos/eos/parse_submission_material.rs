@@ -196,7 +196,7 @@ mod tests {
 
     #[test]
     fn should_parse_eos_submission_material_string_to_json() {
-        let string = get_sample_eos_submission_material_string_n(1)
+        let string = get_sample_eos_submission_material_string_n(2)
             .unwrap();
         if let Err(e) = parse_eos_submission_material_string_to_json(&string) {
             panic!("Error parsing eos_block_and_json: {}", e);
@@ -227,10 +227,10 @@ mod tests {
     #[test]
     fn should_parse_eos_block_header() {
         let expected_id = convert_hex_to_checksum256(
-            &"045cfa89ee5d8c860c49fe75d244b4f9c6ff1c2b6c4674be59e37aeded0504ea"
+            &"04cb6d0413d124ea2df08183d579967e3e47c9853c40126f06110bb20e9330d4"
                 .to_string()
         ).unwrap();
-        let string = get_sample_eos_submission_material_string_n(1)
+        let string = get_sample_eos_submission_material_string_n(2)
             .unwrap();
         let json = parse_eos_submission_material_string_to_json(&string)
             .unwrap();

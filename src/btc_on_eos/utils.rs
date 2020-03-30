@@ -81,11 +81,28 @@ pub fn convert_u64_to_bytes(u_64: &u64) -> Bytes {
     u_64.to_le_bytes().to_vec()
 }
 
-pub fn convert_hex_to_checksum256(hex: &String) -> Result<Checksum256> { //TODO: Test!
-    let mut arr = [0; 32];
-    let bytes = hex::decode(hex)?;
-    arr.copy_from_slice(&bytes);
-    Ok(Checksum256::from(arr))
+// TODO Test!
+pub fn convert_bytes_to_checksum256(bytes: &Bytes) -> Result<Checksum256> {
+    match bytes.len() {
+        32 => {
+            let mut arr = [0; 32];
+            arr.copy_from_slice(bytes);
+            Ok(Checksum256::from(arr))
+        }
+        _ => {
+            Err(AppError::Custom(
+                format!(
+                    "✘ Wrong number of bytes. Expected 32, got {}",
+                    bytes.len()
+                )
+            ))
+        }
+    }
+}
+
+// TODO Test!
+pub fn convert_hex_to_checksum256(hex: &String) -> Result<Checksum256> {
+    convert_bytes_to_checksum256(&hex::decode(hex)?)
 }
 
 pub fn convert_u256_to_32_byte_wide_zero_padded_hex(
