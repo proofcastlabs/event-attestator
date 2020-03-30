@@ -128,10 +128,11 @@ impl MintingParamStruct {
         to: String,
         originating_tx_hash: sha256d::Hash,
         originating_tx_address: BtcAddress,
+        symbol: &String,
     ) -> MintingParamStruct {
         MintingParamStruct {
             to,
-            amount: convert_u64_to_eos_asset(amount),
+            amount: convert_u64_to_eos_asset(amount, symbol),
             originating_tx_hash: originating_tx_hash.to_string(),
             originating_tx_address: originating_tx_address.to_string(),
         }

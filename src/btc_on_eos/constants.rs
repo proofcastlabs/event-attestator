@@ -11,7 +11,6 @@ pub const HEX_PREFIX_LENGTH: usize = 2;
 pub const BTC_NUM_DECIMALS: usize  = 8;
 pub const MINIMUM_REQUIRED_SATOSHIS: u64 = 5000;
 pub static LOG_FILE_PATH: &'static str = "logs/";
-pub static EOS_TOKEN_TICKER: &'static str = "PBTC"; // TODO Maybe get from db?
 pub static SAFE_EOS_ADDRESS: &'static str = "provabletest";
 pub const PRIVATE_KEY_DATA_SENSITIVITY_LEVEL: Option<u8> = Some(255);
 pub static SAFE_BTC_ADDRESS: &'static str = "136CTERaocm8dLbEtzCaFtJJX9jfFhnChK";

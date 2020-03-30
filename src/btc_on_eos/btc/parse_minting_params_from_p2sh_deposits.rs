@@ -6,6 +6,7 @@ use bitcoin::{
 use crate::btc_on_eos::{
     types::Result,
     traits::DatabaseInterface,
+    eos::eos_database_utils::get_eos_token_symbol_from_db,
     btc::{
         btc_state::BtcState,
         btc_database_utils::get_btc_network_from_db,
@@ -23,6 +24,7 @@ fn parse_minting_params_from_p2sh_deposit_tx(
     p2sh_deposit_containing_tx: &BtcTransaction,
     deposit_info_hash_map: &DepositInfoHashMap,
     btc_network: BtcNetwork,
+    eos_token_symbol: &String,
 ) -> Result<MintingParams> {
     info!("✔ Parsing minting params from single `p2sh` transaction...");
     p2sh_deposit_containing_tx
@@ -65,6 +67,7 @@ fn parse_minting_params_from_p2sh_deposit_tx(
                                     deposit_info.address.clone(),
                                     p2sh_deposit_containing_tx.txid(),
                                     btc_address,
+                                    eos_token_symbol,
                                 )
                             )
                         }
@@ -81,6 +84,7 @@ fn parse_minting_params_from_p2sh_deposit_txs(
     p2sh_deposit_containing_txs: &BtcTransactions,
     deposit_info_hash_map: &DepositInfoHashMap,
     btc_network: BtcNetwork,
+    eos_token_symbol: &String,
 ) -> Result<MintingParams> {
     info!("✔ Parsing minting params from `p2sh` transactions...");
     Ok(
@@ -90,7 +94,8 @@ fn parse_minting_params_from_p2sh_deposit_txs(
                  parse_minting_params_from_p2sh_deposit_tx(
                      tx,
                      deposit_info_hash_map,
-                     btc_network
+                     btc_network,
+                     eos_token_symbol,
                  )
             )
             .flatten()
@@ -108,6 +113,7 @@ pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D>(
         state.get_p2sh_deposit_txs()?,
         state.get_deposit_info_hash_map()?,
         get_btc_network_from_db(&state.db)?,
+        &get_eos_token_symbol_from_db(&state.db)?,
     )
         .and_then(|minting_params| state.add_minting_params(minting_params))
 }

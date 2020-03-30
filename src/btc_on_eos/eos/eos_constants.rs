@@ -74,7 +74,7 @@ pub static EOS_ACCOUNT_NAME_KEY: [u8; 32] = [
 //   Buffer.from(web3.utils.keccak256('eos-token-ticker').slice(2), 'hex')
 // )
 // 71c8980fe3f6e8b3cdcbd4dce5f1a13af16e1980e3a7d4a570007c24d3691271
-pub static EOS_TOKEN_TICKER_KEY: [u8; 32] = [
+pub static EOS_TOKEN_SYMBOL_KEY: [u8; 32] = [
   113, 200, 152, 15, 227, 246, 232, 179,
   205, 203, 212, 220, 229, 241, 161, 58,
   241, 110, 25, 128, 227, 167, 212, 165,

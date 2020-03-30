@@ -109,15 +109,25 @@ pub fn get_sample_btc_pub_key_bytes() -> Bytes {
 }
 
 pub fn get_sample_minting_params() -> MintingParams {
+    let symbol = "PBTC".to_string();
     let originating_tx_address_1 = "eosaccount1x".to_string();
     let originating_tx_address_2 = "eosaccount2x".to_string();
     let originating_tx_address_3 = "eosaccount3x".to_string();
     let eos_address_1 = originating_tx_address_1.clone();
     let eos_address_2 = originating_tx_address_2.clone();
     let eos_address_3 = originating_tx_address_3.clone();
-    let amount_1 = convert_u64_to_eos_asset(MINIMUM_REQUIRED_SATOSHIS);
-    let amount_2 = convert_u64_to_eos_asset(MINIMUM_REQUIRED_SATOSHIS + 1);
-    let amount_3 = convert_u64_to_eos_asset(MINIMUM_REQUIRED_SATOSHIS - 1);
+    let amount_1 = convert_u64_to_eos_asset(
+        MINIMUM_REQUIRED_SATOSHIS,
+        &symbol
+    );
+    let amount_2 = convert_u64_to_eos_asset(
+        MINIMUM_REQUIRED_SATOSHIS + 1,
+        &symbol
+    );
+    let amount_3 = convert_u64_to_eos_asset(
+        MINIMUM_REQUIRED_SATOSHIS - 1,
+        &symbol
+    );
     let originating_tx_hash_1 = sha256d::Hash::hash(b"something_1").to_string();
     let originating_tx_hash_2 = sha256d::Hash::hash(b"something_2").to_string();
     let originating_tx_hash_3 = sha256d::Hash::hash(b"something_3").to_string();
