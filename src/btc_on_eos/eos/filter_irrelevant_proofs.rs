@@ -64,7 +64,7 @@ mod tests {
     fn should_not_filter_out_proofs_for_required_account() {
         let action_proofs = vec![
             get_sample_action_proof_n(4),
-            get_sample_action_proof_n(5),
+            get_sample_action_proof_n(1),
         ];
         let account = EosAccountName::from_str("pbtctokenxxx").unwrap();
 
@@ -75,7 +75,7 @@ mod tests {
     fn should_filter_out_proofs_for_other_accounts() {
         let action_proofs = vec![
             get_sample_action_proof_n(4),
-            get_sample_action_proof_n(5),
+            get_sample_action_proof_n(1),
         ];
         let account = EosAccountName::from_str("provtestable").unwrap();
 
@@ -86,7 +86,7 @@ mod tests {
     fn should_not_filter_out_proofs_for_valid_actions() {
         let action_proofs = vec![
             get_sample_action_proof_n(4),
-            get_sample_action_proof_n(5),
+            get_sample_action_proof_n(1),
         ];
         let result = filter_out_proofs_for_other_actions(&action_proofs)
             .unwrap();
@@ -101,7 +101,7 @@ mod tests {
 
         let mut dirty_action_proofs = vec![
             get_sample_action_proof_n(4),
-            get_sample_action_proof_n(5),
+            get_sample_action_proof_n(1),
         ];
         dirty_action_proofs[0].action.name = invalid_action_name;
 
@@ -110,6 +110,6 @@ mod tests {
         let result = filter_out_proofs_for_other_actions(&dirty_action_proofs)
             .unwrap();
 
-        assert_eq!(result, [get_sample_action_proof_n(5)]);
+        assert_eq!(result, [get_sample_action_proof_n(1)]);
     }
 }

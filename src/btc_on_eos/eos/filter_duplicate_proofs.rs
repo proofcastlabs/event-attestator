@@ -43,7 +43,7 @@ mod tests {
 
         let proofs_no_duplicates = vec![
             get_sample_action_proof_n(4),
-            get_sample_action_proof_n(5),
+            get_sample_action_proof_n(1),
         ];
 
         let num_proofs_before = proofs_no_duplicates.len();
@@ -56,7 +56,7 @@ mod tests {
         assert_eq!(result.len(), expected_num_proofs_after);
 
         assert_eq!(result[0], get_sample_action_proof_n(4));
-        assert_eq!(result[1], get_sample_action_proof_n(5));
+        assert_eq!(result[1], get_sample_action_proof_n(1));
     }
 
     #[test]
@@ -65,9 +65,9 @@ mod tests {
         let expected_num_proofs_before = 3;
 
         let proofs_with_duplicate = vec![
-            get_sample_action_proof_n(4),
-            get_sample_action_proof_n(5),
-            get_sample_action_proof_n(5),
+            get_sample_action_proof_n(1),
+            get_sample_action_proof_n(2),
+            get_sample_action_proof_n(2),
         ];
 
         let num_proofs_before = proofs_with_duplicate.len();
@@ -78,8 +78,8 @@ mod tests {
 
         assert!(result.len() < num_proofs_before);
         assert_eq!(result.len(), expected_num_proofs_after);
-        
-        assert_eq!(result[0], get_sample_action_proof_n(4));
-        assert_eq!(result[1], get_sample_action_proof_n(5));
+
+        assert_eq!(result[0], get_sample_action_proof_n(1));
+        assert_eq!(result[1], get_sample_action_proof_n(2));
     }
 }

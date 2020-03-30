@@ -45,7 +45,7 @@ mod tests {
     fn should_not_filter_out_proofs_with_valid_merkle_proofs() {
         let action_proofs = vec![
             get_sample_action_proof_n(4),
-            get_sample_action_proof_n(5),
+            get_sample_action_proof_n(1),
         ];
         let result = filter_out_proofs_with_invalid_merkle_proofs(&action_proofs).unwrap();
 
@@ -56,7 +56,7 @@ mod tests {
     fn should_filter_out_proofs_with_invalid_merkle_proofs() {
         let mut dirty_action_proofs = vec![
             get_sample_action_proof_n(4),
-            get_sample_action_proof_n(5),
+            get_sample_action_proof_n(1),
         ];
 
         dirty_action_proofs[0].action_proof.pop();
@@ -64,6 +64,6 @@ mod tests {
         let result = filter_out_proofs_with_invalid_merkle_proofs(&dirty_action_proofs)
             .unwrap();
 
-        assert_eq!(result, [get_sample_action_proof_n(5)]);
+        assert_eq!(result, [get_sample_action_proof_n(1)]);
     }
 }
