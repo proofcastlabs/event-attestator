@@ -208,6 +208,66 @@ pub fn get_sample_eos_signatures() -> EosSignedTransactions {
     signed_txs
 }
 
+fn get_sample_action_receipts() -> Vec<EosActionReceipt> {
+    vec![
+        EosActionReceipt::new(
+            "eosio",
+            "3b434aa9331f5e2a0e7a0060d576fa6688406667100bdf3458104dede44ec4e9",
+            62826453,
+            12,
+            503081363,
+            10,
+            vec![AuthSequence::new(
+                "eosio",
+                61285932
+            ).unwrap()],
+        ).unwrap(),
+        EosActionReceipt::new(
+            "pokerpokerts",
+            "3d380413463e8716ef9c1f8c853dfab0c70f209cce75cae9a5b74e4e678a68a0",
+            241512,
+            4,
+            503081364,
+            30,
+            vec![AuthSequence::new(
+                "pokerpokerts",
+                241552
+            ).unwrap()],
+        ).unwrap(),
+        EosActionReceipt::new(
+            "oracleoracle",
+            "065527f0429dfa9bb79575ec5270b20f714fb9e61a9ce6ba9c86b2e69a773f82",
+            531231,
+            2,
+            503081365,
+            2,
+            vec![AuthSequence::new(
+                "feeder111112",
+                152730
+            ).unwrap()],
+        ).unwrap(),
+        EosActionReceipt::new(
+            "dvmh1tbb1him",
+            "18e42aa86473509cf620764ca606136b037e1a8ee6fb8efaa8fa657c7fa2fffc",
+            805647,
+            2,
+            503081366,
+            1,
+            vec![AuthSequence::new(
+                "dvmh1tbb1him",
+                805667
+            ).unwrap()],
+        ).unwrap(),
+    ]
+}
+
+pub fn get_sample_action_digests() -> Vec<Bytes> {
+    get_sample_action_receipts()
+        .into_iter()
+        .map(|receipt| receipt.to_digest())
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
