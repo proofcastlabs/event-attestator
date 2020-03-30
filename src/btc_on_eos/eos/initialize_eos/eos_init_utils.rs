@@ -9,7 +9,7 @@ use crate::btc_on_eos::{
             put_eos_chain_id_in_db,
             put_eos_private_key_in_db,
             put_eos_account_name_in_db,
-            put_eos_token_ticker_in_db,
+            put_eos_token_symbol_in_db,
             put_processed_tx_ids_in_db,
             put_eos_account_nonce_in_db,
         },
@@ -55,14 +55,13 @@ pub fn put_eos_account_nonce_in_db_and_return_state<D>(
         .map(|_| state)
 }
 
-#[allow(dead_code)]
-pub fn put_eos_token_ticker_in_db_and_return_state<D>(
-    token_ticker: String,
+pub fn put_eos_token_symbol_in_db_and_return_state<D>(
+    token_symbol: String,
     state: EosState<D>,
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    put_eos_token_ticker_in_db(&state.db, &token_ticker)
+    put_eos_token_symbol_in_db(&state.db, &token_symbol)
         .map(|_| state)
 }
 

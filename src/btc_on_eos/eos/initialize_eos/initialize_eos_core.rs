@@ -12,6 +12,7 @@ use crate::btc_on_eos::{
             eos_init_utils::{
                 get_eos_init_output,
                 put_eos_chain_id_in_db_and_return_state,
+                put_eos_token_symbol_in_db_and_return_state,
                 put_eos_account_name_in_db_and_return_state,
                 put_eos_account_nonce_in_db_and_return_state,
                 generated_eos_key_save_in_db_and_return_state,
@@ -25,7 +26,7 @@ pub fn maybe_initialize_eos_core<D>(
     db: D,
     chain_id: String,
     account_name: String,
-    // TODO Token symbol
+    token_symbol: String,
 ) -> Result<String>
     where D: DatabaseInterface
 {
@@ -50,6 +51,12 @@ pub fn maybe_initialize_eos_core<D>(
                 .and_then(|state|
                     put_eos_account_name_in_db_and_return_state(
                         account_name,
+                        state,
+                    )
+                )
+                .and_then(|state|
+                    put_eos_token_symbol_in_db_and_return_state(
+                        token_symbol,
                         state,
                     )
                 )
