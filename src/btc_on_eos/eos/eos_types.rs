@@ -75,10 +75,12 @@ impl EosSignedTransaction {
 pub struct EosSubmissionMaterial {
     pub action_proofs: ActionProofs,
     pub block_header: EosBlockHeader,
+    pub blockroot_merkle: MerklePath,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterialJson {
+    pub blockroot_merkle: Vec<String>,
     pub action_proofs: ActionProofJsons,
     pub block_header: EosBlockHeaderJson,
 }
