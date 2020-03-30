@@ -34,34 +34,40 @@ pub fn maybe_filter_out_invalid_action_receipt_digests<D>(
 }
 
 #[cfg(test)]
- mod tests {
-     use super::*;
-     use crate::btc_on_eos::{
-         eos::eos_test_utils::get_sample_eos_submission_material_n,
-     };
+mod tests {
+    use super::*;
+    use crate::btc_on_eos::{
+        eos::eos_test_utils::get_sample_action_proof_n,
+    };
 
-     #[test]
-     fn should_not_filter_out_valid_action_receipt_digests() {
-         let action_proofs = vec![
-             // TODO Make an eos_test_utils helper to get `action_proof_n(...)`
-             get_sample_eos_submission_material_n(4)
-                 .action_proofs[0]
-                 .clone(),
-             get_sample_eos_submission_material_n(5)
-                 .action_proofs[0]
-                 .clone(),
-         ];
-         let expected_num_results = action_proofs.len();
-         let result = filter_out_invalid_action_receipt_digests(&action_proofs)
-             .unwrap();
-         assert_eq!(result.len(), expected_num_results);
-     }
+    #[test]
+    fn should_not_filter_out_valid_action_receipt_digests() {
+        let action_proofs = vec![
+            get_sample_action_proof_n(4),
+            get_sample_action_proof_n(5),
+        ];
+        let result = filter_out_invalid_action_receipt_digests(&action_proofs)
+            .unwrap();
 
-     #[test]
-     fn should_filter_out_invalid_action_receipt_digests() {
-         // TODO Change some data in the action_receipt to invalidate the digest
-         // &/| change the first element of the action proof itself.
-         assert!(false);
-     }
- }
+        assert_eq!(result, action_proofs);
+    }
 
+    #[test]
+    fn should_filter_out_invalid_action_receipt_digests() {
+        let action_proofs = vec![
+            get_sample_action_proof_n(4),
+            get_sample_action_proof_n(5),
+        ];
+
+        let mut proof_with_invalid_receipt = get_sample_action_proof_n(3);
+        proof_with_invalid_receipt.action_receipt.global_sequence = 42;
+
+        let mut dirty_action_proofs = vec![proof_with_invalid_receipt];
+        dirty_action_proofs.extend_from_slice(&action_proofs);
+        
+        let result = filter_out_invalid_action_receipt_digests(&dirty_action_proofs)
+            .unwrap();
+
+        assert_eq!(result, action_proofs);
+    }
+}

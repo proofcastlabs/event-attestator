@@ -36,6 +36,8 @@ use crate::btc_on_eos::{
             EosSignedTransactions,
             EosSubmissionMaterial,
             EosSubmissionMaterialJson,
+            ActionProofs,
+            ActionProof
         },
         eos_crypto::{
             eos_signature::EosSignature,
@@ -266,6 +268,18 @@ pub fn get_sample_action_digests() -> Vec<Bytes> {
         .into_iter()
         .map(|receipt| receipt.to_digest())
         .collect()
+}
+
+fn get_sample_action_proofs_n(
+    n: usize
+) -> ActionProofs {
+    get_sample_eos_submission_material_n(n).action_proofs
+}
+
+pub fn get_sample_action_proof_n(
+    n: usize
+) -> ActionProof {
+    get_sample_action_proofs_n(n)[0].clone()
 }
 
 #[cfg(test)]
