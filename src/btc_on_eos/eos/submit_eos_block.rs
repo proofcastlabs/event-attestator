@@ -15,8 +15,8 @@ use crate::btc_on_eos::{
         parse_submission_material::parse_submission_material_and_add_to_state,
         filter_irrelevant_proofs::maybe_filter_out_irrelevant_proofs_from_state,
         extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
-        filter_merkle_proofs_with_wrong_root::{
-            maybe_filter_out_proofs_with_wrong_merkle_roots,
+        filter_proofs_with_wrong_action_mroot::{
+            maybe_filter_out_proofs_with_wrong_action_mroot,
         },
         filter_invalid_action_digests::{
             maybe_filter_out_invalid_action_receipt_digests,
@@ -51,7 +51,7 @@ pub fn submit_eos_block_to_core<D>(
         .and_then(maybe_filter_out_irrelevant_proofs_from_state)
         .and_then(maybe_filter_out_action_proof_receipt_mismatches)
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
-        .and_then(maybe_filter_out_proofs_with_wrong_merkle_roots)
+        .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         //.and_then(validate_block_header_signatures)
         .and_then(maybe_parse_redeem_params_and_put_in_state)
         .and_then(maybe_filter_value_too_low_redeem_params_in_state)

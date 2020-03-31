@@ -26,5 +26,5 @@ pub mod extract_utxos_from_btc_txs;
 pub mod filter_already_processed_txs;
 pub mod add_tx_ids_to_processed_list;
 pub mod filter_invalid_action_digests;
-pub mod filter_merkle_proofs_with_wrong_root;
 pub mod filter_action_and_receipt_mismatches;
+pub mod filter_proofs_with_wrong_action_mroot;
