@@ -61,30 +61,52 @@ mod tests {
     use crate::btc_on_eos::eos::eos_test_utils::get_sample_action_proof_n;
 
     #[test]
+    fn should_not_filter_out_proofs_for_valid_account() {
+        let action_proofs = vec![
+            get_sample_action_proof_n(4),
+            get_sample_action_proof_n(5),
+        ];
+        let account = EosAccountName::from_str("pbtctokenxxx").unwrap();
+
+        assert_eq!(filter_out_proofs_for_other_accounts(&action_proofs, &account).unwrap(), action_proofs);
+    }
+
+    #[test]
     fn should_filter_out_proofs_for_other_accounts() {
         let action_proofs = vec![
             get_sample_action_proof_n(4),
             get_sample_action_proof_n(5),
         ];
+        let account = EosAccountName::from_str("provtestable").unwrap();
 
-        let account_1 = EosAccountName::from_str("provtestable").unwrap();
-        let account_2 = EosAccountName::from_str("pbtctokenxxx").unwrap();
+        assert_eq!(filter_out_proofs_for_other_accounts(&action_proofs, &account).unwrap(), []);
+    }
 
-        assert_eq!(filter_out_proofs_for_other_accounts(&action_proofs, &account_1).unwrap(), []);
-        assert_eq!(filter_out_proofs_for_other_accounts(&action_proofs, &account_2).unwrap(), action_proofs);
+    #[test]
+    fn should_not_filter_out_proofs_for_valid_actions() {
+        let action_proofs = vec![
+            get_sample_action_proof_n(4),
+            get_sample_action_proof_n(5),
+        ];
+        assert_eq!(filter_out_proofs_for_other_actions(&action_proofs).unwrap(), action_proofs);
     }
 
     #[test]
     fn should_filter_out_proofs_for_other_actions() {
-        let action_proofs_1 = vec![
-            get_sample_action_proof_n(4),
-        ];
-        assert_eq!(filter_out_proofs_for_other_actions(&action_proofs_1).unwrap(), action_proofs_1);
+        let valid_action_name = EosActionName::from_str(REDEEM_ACTION_NAME).unwrap();
+        let invalid_action_name = EosActionName::from_str("setproducers").unwrap();
 
-        let action_proofs_2 = vec![
+        let mut dirty_action_proofs = vec![
             get_sample_action_proof_n(4),
             get_sample_action_proof_n(5),
         ];
-        assert_eq!(filter_out_proofs_for_other_actions(&action_proofs_2).unwrap(), action_proofs_2);
+        dirty_action_proofs[0].action.name = invalid_action_name;
+
+        assert_ne!(dirty_action_proofs[0].action.name, valid_action_name);
+
+        assert_eq!(
+            filter_out_proofs_for_other_actions(&dirty_action_proofs).unwrap(),
+            [get_sample_action_proof_n(5)]
+        );
     }
 }
