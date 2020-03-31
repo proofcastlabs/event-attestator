@@ -88,7 +88,10 @@ mod tests {
             get_sample_action_proof_n(4),
             get_sample_action_proof_n(5),
         ];
-        assert_eq!(filter_out_proofs_for_other_actions(&action_proofs).unwrap(), action_proofs);
+        let result = filter_out_proofs_for_other_actions(&action_proofs)
+            .unwrap();
+
+        assert_eq!(result, action_proofs);
     }
 
     #[test]
@@ -104,9 +107,9 @@ mod tests {
 
         assert_ne!(dirty_action_proofs[0].action.name, valid_action_name);
 
-        assert_eq!(
-            filter_out_proofs_for_other_actions(&dirty_action_proofs).unwrap(),
-            [get_sample_action_proof_n(5)]
-        );
+        let result = filter_out_proofs_for_other_actions(&dirty_action_proofs)
+            .unwrap();
+
+        assert_eq!(result, [get_sample_action_proof_n(5)]);
     }
 }
