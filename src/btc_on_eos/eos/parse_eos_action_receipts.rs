@@ -1,11 +1,9 @@
 use std::str::FromStr;
 use eos_primitives::{
     AccountName,
-    Checksum256,
     AuthSequence,
     AuthSequences,
     ActionReceipt as EosActionReceipt,
-    ActionReceipts as EosActionReceipts,
 };
 use crate::btc_on_eos::{
     types::Result,

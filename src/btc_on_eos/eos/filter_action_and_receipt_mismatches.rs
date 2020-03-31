@@ -1,11 +1,8 @@
 use eos_primitives::Checksum256;
 use crate::btc_on_eos::{
+    types::Result,
     traits::DatabaseInterface,
     utils::convert_bytes_to_checksum256,
-    types::{
-        Bytes,
-        Result,
-    },
     eos::{
         eos_state::EosState,
         eos_types::ActionProofs,
