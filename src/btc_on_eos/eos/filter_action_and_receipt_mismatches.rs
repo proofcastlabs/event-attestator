@@ -47,7 +47,7 @@ mod tests {
     };
 
     #[test]
-    fn should_not_filter_out_proofs_with_action_digests_not_in_action_receipts() {
+    fn should_not_filter_out_proofs_with_action_digests_in_action_receipts() {
         let action_proofs = vec![
             get_sample_action_proof_n(4),
             get_sample_action_proof_n(5),

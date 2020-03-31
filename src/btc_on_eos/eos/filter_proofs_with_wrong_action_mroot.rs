@@ -46,7 +46,7 @@ mod tests {
     };
 
     #[test]
-    fn should_not_filter_proofs_with_valid_merkle_proofs() {
+    fn should_not_filter_proofs_with_correct_action_mroot() {
         let action_proofs = vec![
             get_sample_action_proof_n(5),
             get_sample_action_proof_n(5),
@@ -59,7 +59,7 @@ mod tests {
     }
 
     #[test]
-    fn should_filter_proofs_with_invalid_merkle_proofs() {
+    fn should_filter_proofs_with_wrong_action_mroot() {
         let action_proofs = vec![
             get_sample_action_proof_n(4),
             get_sample_action_proof_n(5),

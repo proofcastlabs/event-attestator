@@ -61,7 +61,7 @@ mod tests {
     use crate::btc_on_eos::eos::eos_test_utils::get_sample_action_proof_n;
 
     #[test]
-    fn should_not_filter_out_proofs_for_valid_account() {
+    fn should_not_filter_out_proofs_for_required_account() {
         let action_proofs = vec![
             get_sample_action_proof_n(4),
             get_sample_action_proof_n(5),
