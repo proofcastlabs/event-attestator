@@ -35,3 +35,35 @@ pub fn maybe_filter_out_proofs_with_invalid_merkle_proofs<D>(
     filter_out_proofs_with_invalid_merkle_proofs(&state.action_proofs)
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::btc_on_eos::eos::eos_test_utils::get_sample_action_proof_n;
+
+    #[test]
+    fn should_not_filter_out_proofs_with_valid_merkle_proofs() {
+        let action_proofs = vec![
+            get_sample_action_proof_n(4),
+            get_sample_action_proof_n(5),
+        ];
+        let result = filter_out_proofs_with_invalid_merkle_proofs(&action_proofs).unwrap();
+
+        assert_eq!(result, action_proofs);
+    }
+
+    #[test]
+    fn should_filter_out_proofs_with_invalid_merkle_proofs() {
+        let mut dirty_action_proofs = vec![
+            get_sample_action_proof_n(4),
+            get_sample_action_proof_n(5),
+        ];
+
+        dirty_action_proofs[0].action_proof.pop();
+
+        let result = filter_out_proofs_with_invalid_merkle_proofs(&dirty_action_proofs)
+            .unwrap();
+
+        assert_eq!(result, [get_sample_action_proof_n(5)]);
+    }
+}
