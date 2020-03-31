@@ -58,20 +58,15 @@ pub fn maybe_filter_out_irrelevant_proofs_from_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::eos::eos_test_utils::get_sample_eos_submission_material_n;
+    use crate::btc_on_eos::eos::eos_test_utils::get_sample_action_proof_n;
 
     #[test]
     fn should_filter_out_proofs_for_other_accounts() {
-        let action_data_1 = get_sample_eos_submission_material_n(4)
-            .action_proofs[0]
-            .clone();
-        let action_data_2 = get_sample_eos_submission_material_n(5)
-            .action_proofs[0]
-            .clone();
         let action_proofs = vec![
-            action_data_1.clone(),
-            action_data_2.clone(),
+            get_sample_action_proof_n(4),
+            get_sample_action_proof_n(5),
         ];
+
         let account_1 = EosAccountName::from_str("provtestable").unwrap();
         let account_2 = EosAccountName::from_str("pbtctokenxxx").unwrap();
 
@@ -81,21 +76,15 @@ mod tests {
 
     #[test]
     fn should_filter_out_proofs_for_other_actions() {
-        let action_data_1 = get_sample_eos_submission_material_n(4)
-            .action_proofs[0]
-            .clone();
-        let action_data_2 = get_sample_eos_submission_material_n(5)
-            .action_proofs[0]
-            .clone();
         let action_proofs_1 = vec![
-            action_data_1.clone(),
+            get_sample_action_proof_n(4),
         ];
-        let action_proofs_2 = vec![
-            action_data_1.clone(),
-            action_data_2.clone(),
-        ];
-
         assert_eq!(filter_out_proofs_for_other_actions(&action_proofs_1).unwrap(), action_proofs_1);
+
+        let action_proofs_2 = vec![
+            get_sample_action_proof_n(4),
+            get_sample_action_proof_n(5),
+        ];
         assert_eq!(filter_out_proofs_for_other_actions(&action_proofs_2).unwrap(), action_proofs_2);
     }
 }
