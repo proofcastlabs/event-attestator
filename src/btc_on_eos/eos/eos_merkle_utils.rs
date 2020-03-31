@@ -146,7 +146,7 @@ fn generate_merkle_proof(
     }
 }
 
-pub fn verify_merkle_proof(merkle_proof: MerkleProof) -> Result<bool> {
+pub fn verify_merkle_proof(merkle_proof: &MerkleProof) -> Result<bool> {
     let mut leaves = Vec::new();
     for i in 0..merkle_proof.len() {
         leaves.push(hex::decode(merkle_proof[i].clone())?)
@@ -577,7 +577,7 @@ mod tests {
         let digests = get_sample_action_digests();
         let proof = generate_merkle_proof(index, digests)
             .unwrap();
-        let result = verify_merkle_proof(proof)
+        let result = verify_merkle_proof(&proof)
             .unwrap();
         assert!(result);
     }
