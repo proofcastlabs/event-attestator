@@ -27,6 +27,9 @@ use crate::btc_on_eos::{
         filter_action_and_receipt_mismatches::{
             maybe_filter_out_action_proof_receipt_mismatches,
         },
+        filter_invalid_merkle_proofs::{
+            maybe_filter_out_proofs_with_invalid_merkle_proofs,
+        },
         filter_already_processed_txs::{
             maybe_filter_out_already_processed_tx_ids_from_state,
         },
@@ -52,6 +55,7 @@ pub fn submit_eos_block_to_core<D>(
         .and_then(maybe_filter_out_action_proof_receipt_mismatches)
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
+        .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
         //.and_then(validate_block_header_signatures)
         .and_then(maybe_parse_redeem_params_and_put_in_state)
         .and_then(maybe_filter_value_too_low_redeem_params_in_state)
