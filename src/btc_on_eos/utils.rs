@@ -101,7 +101,7 @@ pub fn convert_bytes_to_checksum256(bytes: &Bytes) -> Result<Checksum256> {
 }
 
 // TODO Test!
-pub fn convert_hex_to_checksum256(hex: &String) -> Result<Checksum256> {
+pub fn convert_hex_to_checksum256<T: AsRef<[u8]>>(hex: T) -> Result<Checksum256> {
     convert_bytes_to_checksum256(&hex::decode(hex)?)
 }
 
