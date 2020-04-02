@@ -1,7 +1,6 @@
 use std::str::FromStr;
 use eos_primitives::{
     PublicKey,
-    Checksum256,
     AccountName as EosAccountName,
     BlockHeader as EosBlockHeader,
     ProducerSchedule as EosProducerSchedule,
@@ -16,7 +15,6 @@ use secp256k1::{
 use crate::btc_on_eos::{
     errors::AppError,
     traits::DatabaseInterface,
-    utils::convert_bytes_to_checksum256,
     types::{
         Bytes,
         Result,
@@ -24,10 +22,7 @@ use crate::btc_on_eos::{
     eos::{
         eos_state::EosState,
         eos_merkle_utils::IncrementalMerkle,
-        eos_types::{
-            Checksum256s,
-            EosSubmissionMaterial,
-        },
+        eos_types::Checksum256s,
         eos_crypto::{
             eos_signature::EosSignature,
             eos_public_key::EosPublicKey,
@@ -44,10 +39,6 @@ fn create_eos_signing_digest(
         &[&block_header_digest[..], &block_mroot[..]].concat()
     );
     sha256::Hash::hash(&[&hash_1[..], &schedule_hash[..]].concat()).to_vec()
-}
-
-fn get_block_id(block_header: &EosBlockHeader) -> Result<Bytes> {
-    Ok(block_header.id()?.to_bytes().to_vec())
 }
 
 fn get_block_digest(block_header: &EosBlockHeader) -> Result<Bytes> {
@@ -162,7 +153,6 @@ pub fn validate_block_header_signature<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::str::FromStr;
     use crate::btc_on_eos::{
         eos::eos_test_utils::get_sample_eos_submission_material_n,
     };
@@ -179,17 +169,6 @@ mod tests {
             &submission_material.block_header,
             &submission_material.blockroot_merkle,
         );
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_get_block_id() {
-        let expected_result = hex::decode(
-            "04dfed9c79cb5120749aecdb3803ce13035f14fa5878122d0f6fe170c314b5a7"
-        ).unwrap();
-        let submission_material = get_sample_eos_submission_material_n(1);
-        let result = get_block_id(&submission_material.block_header)
-            .unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -244,6 +223,7 @@ mod tests {
         let schedule_hash = get_schedule_hash(
             &submission_material.active_schedule
         ).unwrap();
+        assert_eq!(hex::encode(&schedule_hash), expected_schedule_hash);
 
         let expected_block_mroot =
             "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
@@ -251,6 +231,7 @@ mod tests {
             &submission_material.block_header,
             &submission_material.blockroot_merkle,
         );
+        assert_eq!(hex::encode(&block_mroot), expected_block_mroot);
 
         let expected_signing_digest =
             "e991ea00a9c3564fc9c6de33dc19865abbe5ac4bf643036ecd89f95e31c49521";

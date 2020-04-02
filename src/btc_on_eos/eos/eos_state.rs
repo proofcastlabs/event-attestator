@@ -13,7 +13,6 @@ use crate::btc_on_eos::{
         },
     },
     eos::{
-        eos_crypto::eos_signature::EosSignature,
         eos_types::{
             ActionProofs,
             Checksum256s,

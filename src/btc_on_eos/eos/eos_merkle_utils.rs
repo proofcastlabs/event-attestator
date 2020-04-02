@@ -268,7 +268,6 @@ mod tests {
     use super::*;
     use std::str::FromStr;
     use crate::btc_on_eos::{
-        utils::convert_bytes_to_checksum256,
         eos::eos_test_utils::get_sample_eos_submission_material_n,
     };
     use eos_primitives::{
