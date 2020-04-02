@@ -18,9 +18,9 @@ use crate::btc_on_eos::{
     eos::{
         eos_state::EosState,
         eos_types::{
-            MerklePath,
             ActionProof,
             ActionProofs,
+            Checksum256s,
             ProducerKeyJson,
             ActionProofJsons,
             EosBlockHeaderJson,
@@ -160,10 +160,10 @@ pub fn parse_eos_block_header_from_json(
 
 fn parse_blockroot_merkle_from_json(
     blockroot_merkle_json: &Vec<String>,
-) -> Result<MerklePath> {
+) -> Result<Checksum256s> {
     blockroot_merkle_json
         .iter()
-        .map(|hex| Ok(hex::decode(hex)?))
+        .map(convert_hex_to_checksum256)
         .collect()
 }
 
@@ -184,6 +184,10 @@ fn parse_eos_submission_material_json_to_struct(
             action_proofs: parse_eos_action_proof_jsons_to_action_proofs(
                &submission_material_json.action_proofs,
             )?,
+            producer_signature: submission_material_json
+                .block_header
+                .producer_signature
+                .clone(),
         }
     )
 }

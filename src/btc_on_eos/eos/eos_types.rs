@@ -26,6 +26,7 @@ pub type MerklePath = Vec<Bytes>;
 pub type MerkleProof = Vec<String>;
 pub type EosAddresses = Vec<String>;
 pub type EosAmounts = Vec<EosAmount>;
+pub type Checksum256s = Vec<Checksum256>;
 pub type ActionProofs = Vec<ActionProof>;
 pub type MerkleProofs = Vec<MerkleProof>;
 pub type EosSignatures = Vec<EosSignature>;
@@ -76,9 +77,10 @@ impl EosSignedTransaction {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterial {
+    pub producer_signature: String,
     pub action_proofs: ActionProofs,
     pub block_header: EosBlockHeader,
-    pub blockroot_merkle: MerklePath,
+    pub blockroot_merkle: Checksum256s,
     pub active_schedule: EosProducerSchedule,
 }
 
