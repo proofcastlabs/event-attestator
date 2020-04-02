@@ -54,7 +54,7 @@ pub fn validate_receipts_in_state<D>(
             Ok(state)
         },
         false => Err(AppError::Custom(
-            format!("✘ Not accepting ETH block - receipts root not valid!")
+            "✘ Not accepting ETH block - receipts root not valid!".to_string()
         ))
     }
 }

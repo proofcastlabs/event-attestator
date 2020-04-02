@@ -44,7 +44,7 @@ pub fn maybe_update_eth_tail_block_hash<D>(
             maybe_get_nth_ancestor_eth_block_and_receipts(
                 &state.db,
                 &latest_eth_block.block.hash,
-                &(canon_to_tip_length + ETH_TAIL_LENGTH),
+                canon_to_tip_length + ETH_TAIL_LENGTH,
             )
         })
         .and_then(|maybe_ancester_block_and_id|

@@ -60,7 +60,7 @@ impl RedeemParams {
                 recipient: get_redeem_address_from_action_data(
                     &action_proof.action.data,
                 )?,
-                originating_tx_id: action_proof.tx_id.clone(),
+                originating_tx_id: action_proof.tx_id,
             }
         )
     }

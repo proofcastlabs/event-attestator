@@ -116,7 +116,7 @@ mod tests {
         if let Err(e) = put_eth_gas_price_in_db(&db, &gas_price) {
             panic!("Error putting eth gas price in db: {}", e);
         };
-        if let Err(e) = put_eth_account_nonce_in_db(&db, &nonce) {
+        if let Err(e) = put_eth_account_nonce_in_db(&db, nonce) {
             panic!("Error putting eth account nonce in db: {}", e);
         };
         if let Err(e) = put_eth_private_key_in_db(&db, &eth_private_key) {

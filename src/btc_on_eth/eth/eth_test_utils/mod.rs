@@ -620,9 +620,7 @@ mod tests {
         ).unwrap();
         let result = get_sample_logs_with_desired_topic()
             .iter()
-            .filter(|log| log_contains_topic(log, &desired_topic) == true)
-            .collect::<Vec<&EthLog>>()
-            .len() > 0;
+            .any(|log| log_contains_topic(log, &desired_topic));
         assert!(result);
     }
 
@@ -633,9 +631,7 @@ mod tests {
         ).unwrap();
         let result = get_sample_logs_without_desired_topic()
             .iter()
-            .filter(|log| log_contains_topic(log, &desired_topic) == true)
-            .collect::<Vec<&EthLog>>()
-            .len() > 0;
+            .any(|log| log_contains_topic(log, &desired_topic));
         assert!(!result);
     }
 

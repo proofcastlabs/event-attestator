@@ -86,7 +86,7 @@ fn parse_deposit_list_json_to_deposit_info(
     deposit_address_info_json: &DepositAddressInfoJson
 ) -> Result<DepositAddressInfo> {
     DepositAddressInfo::new(
-        &deposit_address_info_json.nonce,
+        deposit_address_info_json.nonce,
         &deposit_address_info_json.address,
         &deposit_address_info_json.btc_deposit_address,
         &deposit_address_info_json.address_and_nonce_hash,
@@ -126,9 +126,9 @@ fn parse_submission_json(
     Ok(
         SubmissionMaterial {
             ref_block_num:
-                submission_json.ref_block_num.clone(),
+                submission_json.ref_block_num,
             ref_block_prefix:
-                submission_json.ref_block_prefix.clone(),
+                submission_json.ref_block_prefix,
             block_and_id:
                 parse_btc_block_from_submission_material(submission_json)?,
         }

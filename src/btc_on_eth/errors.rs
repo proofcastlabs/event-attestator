@@ -28,7 +28,7 @@ impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             AppError::Custom(ref msg) =>
-                format!("{}", msg),
+                msg.to_string(),
             AppError::HexError(ref e) =>
                 format!("✘ Hex Error!\n✘ {}", e),
             AppError::IOError(ref e) =>

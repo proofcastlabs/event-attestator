@@ -42,7 +42,7 @@ pub fn get_string_from_db<D>(
 pub fn put_u64_in_db<D>(
     db: &D,
     key: &Bytes,
-    u_64: &u64,
+    u_64: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {

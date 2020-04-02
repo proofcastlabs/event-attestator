@@ -38,7 +38,7 @@ pub fn get_linker_hash_from_db<D>(
     )? {
         Some(hash) => Ok(hash),
         None => Err(AppError::Custom(
-            format!("✘ The linker hash is not yet set in db!")
+            "✘ The linker hash is not yet set in db!".to_string()
         )),
     }
 }

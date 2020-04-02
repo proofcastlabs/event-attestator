@@ -80,7 +80,7 @@ fn make_and_hash_canonical_pair(l: &Bytes, r: &Bytes) -> Bytes {
 }
 
 pub fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
-    if leaves.len() == 0 {
+    if leaves.is_empty() {
         return vec![0x00]
     }
     while leaves.len() > 1 {

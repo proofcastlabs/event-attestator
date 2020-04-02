@@ -51,7 +51,7 @@ pub fn put_eos_account_nonce_in_db_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    put_eos_account_nonce_in_db(&state.db, &0u64)
+    put_eos_account_nonce_in_db(&state.db, 0)
         .map(|_| state)
 }
 

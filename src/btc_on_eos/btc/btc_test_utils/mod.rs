@@ -135,19 +135,19 @@ pub fn get_sample_minting_params() -> MintingParams {
         amount: amount_1,
         to: eos_address_1,
         originating_tx_hash: originating_tx_hash_1,
-        originating_tx_address: originating_tx_address_1.clone(),
+        originating_tx_address: originating_tx_address_1,
     };
     let minting_params_2 = MintingParamStruct {
         amount: amount_2,
         to: eos_address_2,
         originating_tx_hash: originating_tx_hash_2,
-        originating_tx_address: originating_tx_address_2.clone(),
+        originating_tx_address: originating_tx_address_2,
     };
     let minting_params_3 = MintingParamStruct {
         amount: amount_3,
         to: eos_address_3,
         originating_tx_hash: originating_tx_hash_3,
-        originating_tx_address: originating_tx_address_3.clone(),
+        originating_tx_address: originating_tx_address_3,
     };
     vec![minting_params_1, minting_params_2, minting_params_3]
 }

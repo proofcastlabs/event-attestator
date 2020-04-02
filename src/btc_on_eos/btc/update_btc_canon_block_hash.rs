@@ -40,7 +40,7 @@ pub fn maybe_update_btc_canon_block_hash<D>(
             maybe_get_nth_ancestor_btc_block_and_id(
                 &state.db,
                 &latest_btc_block.id,
-                &canon_to_tip_length,
+                canon_to_tip_length,
             )
         })
         .and_then(|maybe_ancester_block_and_id|

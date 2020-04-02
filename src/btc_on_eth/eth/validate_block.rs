@@ -34,7 +34,7 @@ pub fn validate_block_in_state<D>(state: EthState<D>) -> Result<EthState<D>>
     match validate_block_header(&state.get_eth_block_and_receipts()?.block)? {
         true => Ok(state),
         false => Err(AppError::Custom(
-            format!("✘ Not accepting ETH block - header hash not valid!")
+            "✘ Not accepting ETH block - header hash not valid!".to_string()
         )),
     }
 }

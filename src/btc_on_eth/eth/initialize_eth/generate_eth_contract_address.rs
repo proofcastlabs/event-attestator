@@ -45,11 +45,11 @@ pub fn generate_and_store_eth_contract_address<D>(
     get_eth_contract_address(&state.db)
         .map(|smart_contract_address| {
             info!("✔ Storing pToken contract address in db...");
-            &state.db.put(
+            state.db.put(
                 ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
                 smart_contract_address.as_bytes().to_vec(),
                 None,
-            );
+            ).ok();
             state
         })
 }

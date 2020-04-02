@@ -77,7 +77,7 @@ pub fn convert_bytes_to_u64(bytes: &Bytes) -> Result<u64> {
     }
 }
 
-pub fn convert_u64_to_bytes(u_64: &u64) -> Bytes {
+pub fn convert_u64_to_bytes(u_64: u64) -> Bytes {
     u_64.to_le_bytes().to_vec()
 }
 
@@ -213,7 +213,7 @@ pub fn convert_hex_to_u256(hex: String) -> Result<U256> {
 }
 
 pub fn convert_hex_to_bytes(hex: String) -> Result<Bytes> {
-    Ok(hex::decode(strip_hex_prefix(&hex.to_string())?)?)
+    Ok(hex::decode(strip_hex_prefix(&hex)?)?)
 }
 
 pub fn check_hex_is_valid_ethereum_address(hex: &String) -> bool {
@@ -236,12 +236,12 @@ pub fn convert_hex_to_h256(hex: String) -> Result<H256> {
             HASH_LENGTH => Ok(H256::from_slice(&bytes)),
             0..HASH_LENGTH => Err(
                 AppError::Custom(
-                    format!("✘ Too few bytes in hex to create H256 type!")
+                    "✘ Too few bytes in hex to create H256 type!".to_string()
                 )
             ),
             _ => Err(
                 AppError::Custom(
-                    format!("✘ Too many bytes in hex to create H256 type!")
+                    "✘ Too many bytes in hex to create H256 type!".to_string()
                 )
             )
         })
@@ -250,7 +250,7 @@ pub fn convert_hex_to_h256(hex: String) -> Result<H256> {
 pub fn convert_hex_strings_to_h256s(hex_strings: Vec<String>) -> Result<Vec<H256>> {
     let hashes: Result<Vec<H256>> = hex_strings
         .into_iter()
-        .map(|hex_string| convert_hex_to_h256(hex_string.to_string()))
+        .map(convert_hex_to_h256)
         .collect();
     Ok(hashes?)
 }

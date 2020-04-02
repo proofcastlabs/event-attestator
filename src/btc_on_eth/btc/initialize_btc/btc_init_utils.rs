@@ -34,7 +34,7 @@ pub fn put_btc_account_nonce_in_db_and_return_state<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Putting BTC account nonce of 0 in db...");
-    put_btc_account_nonce_in_db(&state.db, &0)
+    put_btc_account_nonce_in_db(&state.db, 0)
         .map(|_| state)
 }
 
@@ -44,7 +44,7 @@ pub fn put_canon_to_tip_length_in_db_and_return_state<D>(
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    put_btc_canon_to_tip_length_in_db(&state.db, &canon_to_tip_length)
+    put_btc_canon_to_tip_length_in_db(&state.db, canon_to_tip_length)
         .map(|_| state)
 }
 
@@ -67,7 +67,7 @@ pub fn put_difficulty_threshold_in_db<D>(
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    put_btc_difficulty_in_db(&state.db, &difficulty)
+    put_btc_difficulty_in_db(&state.db, difficulty)
         .map(|_| state)
 }
 
@@ -87,6 +87,6 @@ pub fn put_btc_fee_in_db_and_return_state<D>(
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    put_btc_fee_in_db(&state.db, &fee)
+    put_btc_fee_in_db(&state.db, fee)
         .map(|_| state)
 }

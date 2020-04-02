@@ -14,7 +14,7 @@ fn filter_duplicate_proofs(
     action_proofs
         .iter()
         .map(|proof| {
-            if filtered.contains(&proof) == false {
+            if !filtered.contains(&proof) {
                 filtered.push(proof.clone())
             }
         })

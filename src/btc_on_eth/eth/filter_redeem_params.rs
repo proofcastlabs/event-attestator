@@ -14,7 +14,7 @@ fn filter_redeem_params(
 ) -> Result<Vec<RedeemParams>> {
     Ok(
         redeem_params
-            .into_iter()
+            .iter()
             .filter(|params| {
                 match params.amount >= U256::from(MINIMUM_REQUIRED_SATOSHIS) {
                     true => true,

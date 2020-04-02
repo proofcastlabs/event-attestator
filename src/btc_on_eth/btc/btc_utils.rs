@@ -206,9 +206,9 @@ pub fn convert_deposit_info_to_json(
 
 pub fn convert_btc_network_to_bytes(network: &BtcNetwork) -> Result<Bytes> {
     match network {
-        BtcNetwork::Bitcoin => Ok(convert_u64_to_bytes(&0)),
-        BtcNetwork::Testnet => Ok(convert_u64_to_bytes(&1)),
-        BtcNetwork::Regtest=> Ok(convert_u64_to_bytes(&2)),
+        BtcNetwork::Bitcoin => Ok(convert_u64_to_bytes(0)),
+        BtcNetwork::Testnet => Ok(convert_u64_to_bytes(1)),
+        BtcNetwork::Regtest=> Ok(convert_u64_to_bytes(2)),
     }
 }
 
@@ -231,7 +231,7 @@ pub fn serialize_btc_block_in_db_format(
                 &SerializedBlockInDbFormat::new(
                     serialized_id,
                     btc_serialize(&btc_block_in_db_format.block),
-                    convert_u64_to_bytes(&btc_block_in_db_format.height),
+                    convert_u64_to_bytes(btc_block_in_db_format.height),
                     btc_block_in_db_format.extra_data.clone(),
                     serialize_minting_params(
                         &btc_block_in_db_format.minting_params

@@ -29,7 +29,7 @@ fn does_canon_block_require_updating<D>(
 
 fn maybe_get_nth_ancestor_of_latest_block<D>(
     db: &D,
-    n: &u64,
+    n: u64,
 ) -> Option<EthBlockAndReceipts>
     where D: DatabaseInterface
 {
@@ -48,7 +48,7 @@ fn maybe_get_nth_ancestor_of_latest_block<D>(
 
 fn maybe_update_canon_block_hash<D>(
     db: &D,
-    canon_to_tip_length: &u64,
+    canon_to_tip_length: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -86,7 +86,7 @@ pub fn maybe_update_eth_canon_block_hash<D>(
         .and_then(|canon_to_tip_length|
             maybe_update_canon_block_hash(
                 &state.db,
-                &canon_to_tip_length
+                canon_to_tip_length
             )
         )
         .map(|_| state)
@@ -148,7 +148,7 @@ mod tests {
             .unwrap();
         put_eth_latest_block_in_db(&db, &block_2)
             .unwrap();
-        let result = maybe_get_nth_ancestor_of_latest_block(&db, &1);
+        let result = maybe_get_nth_ancestor_of_latest_block(&db, 1);
         assert!(result == Some(block_1));
     }
 
@@ -159,7 +159,7 @@ mod tests {
         let block_1 = blocks_and_receipts[0].clone();
         put_eth_latest_block_in_db(&db, &block_1)
             .unwrap();
-        let result = maybe_get_nth_ancestor_of_latest_block(&db, &1);
+        let result = maybe_get_nth_ancestor_of_latest_block(&db, 1);
         assert!(result == None);
     }
 
@@ -178,7 +178,7 @@ mod tests {
             .unwrap();
         put_eth_latest_block_in_db(&db, &latest_block)
             .unwrap();
-        maybe_update_canon_block_hash(&db, &1).unwrap();
+        maybe_update_canon_block_hash(&db, 1).unwrap();
         let canon_block_hash_after = get_eth_canon_block_hash_from_db(&db)
             .unwrap();
         assert!(canon_block_hash_before != canon_block_hash_after);
@@ -196,7 +196,7 @@ mod tests {
             .unwrap();
         put_eth_latest_block_in_db(&db, &latest_block)
             .unwrap();
-        maybe_update_canon_block_hash(&db, &1).unwrap();
+        maybe_update_canon_block_hash(&db, 1).unwrap();
         let canon_block_hash_after = get_eth_canon_block_hash_from_db(&db)
             .unwrap();
         assert!(canon_block_hash_before == canon_block_hash_after);

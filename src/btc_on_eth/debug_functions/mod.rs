@@ -128,7 +128,7 @@ pub fn debug_reprocess_btc_block<D>(
         .and_then(end_btc_db_transaction)
         .map(|state|
             match state.output_json_string {
-                None => format!("✘ No signatures signed ∴ no output!"),
+                None => "✘ No signatures signed ∴ no output!".to_string(),
                 Some(output) => output
             }
         )

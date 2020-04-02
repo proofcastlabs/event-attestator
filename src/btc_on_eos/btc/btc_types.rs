@@ -170,14 +170,14 @@ pub struct DepositAddressInfo {
 
 impl DepositAddressInfo {
     pub fn new(
-        nonce: &u64,
+        nonce: u64,
         address: &String,
         btc_deposit_address: &String,
         commitment_hash: &String,
     ) -> Result<Self> {
         Ok(
             DepositAddressInfo {
-                nonce: *nonce,
+                nonce,
                 address: address.to_string(),
                 btc_deposit_address:
                     BtcAddress::from_str(&btc_deposit_address)?,

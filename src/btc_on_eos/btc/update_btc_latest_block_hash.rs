@@ -11,10 +11,10 @@ use crate::btc_on_eos::{
 };
 
 fn is_block_subsequent(
-    block_in_question_height: &u64,
-    latest_block_from_database_height: &u64,
+    block_in_question_height: u64,
+    latest_block_from_database_height: u64,
 ) -> bool {
-    latest_block_from_database_height == &(block_in_question_height + 1)
+    latest_block_from_database_height == block_in_question_height + 1
 }
 
 pub fn maybe_update_btc_latest_block_hash<D>(
@@ -25,8 +25,8 @@ pub fn maybe_update_btc_latest_block_hash<D>(
     get_btc_latest_block_from_db(&state.db)
         .and_then(|latest_block_and_id|
             match is_block_subsequent(
-                &latest_block_and_id.height,
-                &state.get_btc_block_and_id()?.height,
+                latest_block_and_id.height,
+                state.get_btc_block_and_id()?.height,
             ) {
                 false => {
                     info!(
