@@ -1,8 +1,10 @@
+use eos_primitives::Checksum256;
 use bitcoin_hashes::{
     Hash,
     sha256,
 };
 use crate::btc_on_eos::{
+    errors::AppError,
     types::{
         Byte,
         Bytes,
@@ -96,56 +98,6 @@ pub fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
     leaves[0].clone()
 }
 
-pub fn generate_merkle_proof(
-    mut index: usize,
-    mut leaves: Vec<Bytes>
-) -> Result<MerkleProof> {
-    let mut proof = Vec::new();
-    proof.push(hex::encode(leaves[index].clone()));
-    match index < leaves.len() {
-        false => Err(AppError::Custom("✘ Index out of bounds!".to_string())),
-        true => {
-            while leaves.len() > 1 {
-                if leaves.len() % 2 != 0 {
-                    let last = leaves[leaves.len() - 1].clone();
-                    leaves.push(last)
-                }
-                for i in 0..leaves.len() / 2 {
-                    if index / 2 == i {
-                        if index % 2 != 0 {
-                            proof.push(
-                                hex::encode(
-                                    make_canonical_left(
-                                        leaves[2 * i].clone()
-                                    )
-                                )
-                            )
-                        } else {
-                            proof.push(
-                                hex::encode(
-                                    make_canonical_right(
-                                        leaves[2 * i + 1].clone()
-                                    )
-                                )
-                            )
-                        }
-                        index /= 2;
-                    }
-                    leaves[i] = hash_canonical_pair(
-                        make_canonical_pair(
-                            leaves[2 * i].clone(),
-                            leaves[2 * i + 1].clone(),
-                        )
-                    ).to_vec()
-                }
-                leaves.resize(leaves.len() / 2, vec![0x00]);
-            }
-            proof.push(hex::encode(leaves[0].clone()));
-            return Ok(proof);
-        }
-    }
-}
-
 pub fn verify_merkle_proof(merkle_proof: &MerkleProof) -> Result<bool> {
     let mut node = hex::decode(merkle_proof[0].clone())?;
     let leaves = merkle_proof[..merkle_proof.len() - 1]
@@ -153,10 +105,9 @@ pub fn verify_merkle_proof(merkle_proof: &MerkleProof) -> Result<bool> {
         .map(|hex| Ok(hex::decode(hex)?))
         .collect::<Result<Vec<Bytes>>>()?;
     for i in 1..leaves.len() {
-        if is_canonical_right(&leaves[i]) {
-            node = make_and_hash_canonical_pair(&node, &leaves[i]);
-        } else {
-            node = make_and_hash_canonical_pair(&leaves[i], &node);
+        match is_canonical_right(&leaves[i]) {
+            true => {node = make_and_hash_canonical_pair(&node, &leaves[i]);}
+            false => {node = make_and_hash_canonical_pair(&leaves[i], &node);}
         }
     };
     Ok(node == hex::decode(merkle_proof.last()?)?)
@@ -182,12 +133,142 @@ pub fn get_merkle_root_from_merkle_path(
     )
 }
 
+// NOTE: Courtesy of: https://github.com/bifrost-codes/rust-eos/
+#[derive(Clone, Default, Debug, PartialEq)]
+pub struct IncrementalMerkle {
+    _node_count: u64,
+    _active_nodes: Vec<Checksum256>,
+}
+// NOTE: Ibid
+impl IncrementalMerkle {
+
+    fn make_canonical_left(val: &Checksum256) -> Checksum256 {
+        let mut canonical_l: Checksum256 = *val;
+        canonical_l.set_hash0(canonical_l.hash0() & 0xFFFFFFFFFFFFFF7Fu64);
+        canonical_l
+    }
+
+    fn  make_canonical_right(val: &Checksum256) -> Checksum256 {
+        let mut canonical_r: Checksum256 = *val;
+        canonical_r.set_hash0(canonical_r.hash0() | 0x0000000000000080u64);
+        canonical_r
+    }
+
+    pub fn make_canonical_pair(
+        l: &Checksum256,
+        r: &Checksum256
+    ) -> (Checksum256, Checksum256) {
+        (
+            Self::make_canonical_left(l),
+            Self::make_canonical_right(r)
+        )
+    }
+
+    fn next_power_of_2(mut value: u64) -> u64 {
+        value -= 1;
+        value |= value >> 1;
+        value |= value >> 2;
+        value |= value >> 4;
+        value |= value >> 8;
+        value |= value >> 16;
+        value |= value >> 32;
+        value += 1;
+        value
+    }
+
+    fn clz_power_2(value: u64) -> usize {
+        let mut lz: usize = 64;
+
+        if value != 0 { lz -= 1; }
+        if (value & 0x00000000FFFFFFFF_u64) != 0 { lz -= 32; }
+        if (value & 0x0000FFFF0000FFFF_u64) != 0 { lz -= 16; }
+        if (value & 0x00FF00FF00FF00FF_u64) != 0 { lz -= 8; }
+        if (value & 0x0F0F0F0F0F0F0F0F_u64) != 0 { lz -= 4; }
+        if (value & 0x3333333333333333_u64) != 0 { lz -= 2; }
+        if (value & 0x5555555555555555_u64) != 0 { lz -= 1; }
+
+        lz
+    }
+
+    fn calculate_max_depth(node_count: u64) -> usize {
+        if node_count == 0 {
+            return 0;
+        }
+        let implied_count = Self::next_power_of_2(node_count);
+        Self::clz_power_2(implied_count) + 1
+    }
+
+    pub fn new(node_count: u64, active_nodes: Vec<Checksum256>) -> Self {
+        IncrementalMerkle {
+            _node_count: node_count,
+            _active_nodes: active_nodes,
+        }
+    }
+
+    pub fn append(&mut self, digest: Checksum256) -> Result<Checksum256> {
+        let mut partial = false;
+        let max_depth = Self::calculate_max_depth(self._node_count + 1);
+        let mut current_depth = max_depth - 1;
+        let mut index = self._node_count;
+        let mut top = digest;
+        let mut active_iter = self._active_nodes.iter();
+        let mut updated_active_nodes: Vec<Checksum256> = Vec::with_capacity(
+            max_depth
+        );
+
+        while current_depth > 0 {
+            if (index & 0x1) == 0 {
+                if !partial {
+                    updated_active_nodes.push(top);
+                }
+
+                top = Checksum256::hash(
+                    Self::make_canonical_pair(&top, &top)
+                )?;
+                partial = true;
+            } else {
+                let left_value = active_iter.next().ok_or(
+                    AppError::Custom("✘ Incremerkle error!".to_string())
+                )?;
+
+                if partial {
+                    updated_active_nodes.push(*left_value);
+                }
+
+                top = Checksum256::hash(
+                    Self::make_canonical_pair(left_value, &top)
+                )?;
+            }
+
+            current_depth -= 1;
+            index = index >> 1;
+        }
+
+        updated_active_nodes.push(top);
+
+        self._active_nodes = updated_active_nodes;
+
+        self._node_count += 1;
+
+        return Ok(self._active_nodes[self._active_nodes.len() - 1]);
+    }
+
+    pub fn get_root(&self) -> Checksum256 {
+        if self._node_count > 0 {
+            return self._active_nodes[self._active_nodes.len() - 1];
+        } else {
+            return Default::default();
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use hex;
     use super::*;
     use std::str::FromStr;
     use crate::btc_on_eos::{
+        utils::convert_bytes_to_checksum256,
         eos::eos_test_utils::get_sample_eos_submission_material_n,
     };
     use eos_primitives::{
@@ -567,5 +648,26 @@ mod tests {
         let result = get_merkle_root_from_merkle_path(&merkle_path)
             .unwrap();
         assert_eq!(hex::encode(result), expected_merkle_root);
+    }
+
+    #[test]
+    fn should_get_incremental_merkle_root_from_blockroot_merkles() {
+        let expected_incremerkle_root =
+            "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
+        let submission_material = get_sample_eos_submission_material_n(5);
+        let active_nodes = submission_material
+            .blockroot_merkle
+            .clone();
+        let node_count: u64 = submission_material
+            .block_header
+            .block_num()
+            .into();
+        let incremerkle = IncrementalMerkle::new(node_count, active_nodes);
+        let incremerkle_root = hex::encode(
+            &incremerkle
+                .get_root()
+                .to_bytes()
+        );
+        assert_eq!(incremerkle_root, expected_incremerkle_root);
     }
 }
