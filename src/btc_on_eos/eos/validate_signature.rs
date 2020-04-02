@@ -154,10 +154,11 @@ pub fn validate_block_header_signature<D>(
 mod tests {
     use super::*;
     use crate::btc_on_eos::{
-        eos::eos_test_utils::get_sample_eos_submission_material_n,
+        eos::eos_test_utils::{
+            NUM_SAMPLES,
+            get_sample_eos_submission_material_n,
+        },
     };
-
-    pub const NUM_SAMPLES: usize = 5;
 
     #[test]
     fn should_get_block_mroot() {

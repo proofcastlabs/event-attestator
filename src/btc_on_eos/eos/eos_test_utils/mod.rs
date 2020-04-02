@@ -47,6 +47,8 @@ use crate::btc_on_eos::{
     },
 };
 
+pub const NUM_SAMPLES: usize = 5;
+
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-81784220.json";
 

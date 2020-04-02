@@ -8,6 +8,7 @@ use crate::btc_on_eos::{
         save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
         sign_transactions::maybe_sign_txs_and_add_to_state,
         validate_signature::validate_block_header_signature,
+        validate_schedule_version::validate_bp_schedule_version,
         increment_signature_nonce::maybe_increment_signature_nonce,
         get_processed_tx_ids::get_processed_tx_ids_and_add_to_state,
         parse_redeem_params::maybe_parse_redeem_params_and_put_in_state,
@@ -49,15 +50,16 @@ pub fn submit_eos_block_to_core<D>(
 {
     parse_submission_material_and_add_to_state(block_json, EosState::init(db))
         .and_then(check_core_is_initialized_and_return_eos_state)
-        .and_then(get_processed_tx_ids_and_add_to_state)
+        .and_then(validate_bp_schedule_version)
+        .and_then(validate_block_header_signature)
         .and_then(start_eos_db_transaction)
+        .and_then(get_processed_tx_ids_and_add_to_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)
         .and_then(maybe_filter_out_irrelevant_proofs_from_state)
         .and_then(maybe_filter_out_action_proof_receipt_mismatches)
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
-        .and_then(validate_block_header_signature)
         .and_then(maybe_parse_redeem_params_and_put_in_state)
         .and_then(maybe_filter_value_too_low_redeem_params_in_state)
         .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
