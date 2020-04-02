@@ -59,6 +59,9 @@ pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_3: &str =
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_4: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-81772484.json";
 
+pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_5: &str =
+    "src/btc_on_eos/eos/eos_test_utils/eos-block-10800.json";
+
 pub const EOS_JUNGLE_CHAIN_ID: &str =
     "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
 
@@ -98,6 +101,7 @@ pub fn get_sample_eos_submission_material_string_n(
         2 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_2),
         3 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_3),
         4 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_4),
+        5 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_5),
         _ => Err(AppError::Custom(
             format!("Cannot find sample block num: {}", num)
         ))
