@@ -120,7 +120,7 @@ pub fn filter_p2sh_deposit_txs(
                             btc_network,
                         )
                     )
-                    .filter(|tx_out|
+                    .any(|tx_out|
                         is_output_address_locked_to_pub_key(
                             tx_out,
                             &btc_network,
@@ -128,8 +128,6 @@ pub fn filter_p2sh_deposit_txs(
                             deposit_info,
                         )
                     )
-                    .collect::<Vec<&BtcTxOut>>()
-                    .len() > 0
             )
             .cloned()
             .collect::<BtcTransactions>()
