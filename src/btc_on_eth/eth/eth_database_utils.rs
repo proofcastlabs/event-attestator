@@ -402,7 +402,7 @@ pub fn put_eth_block_and_receipts_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    let key = convert_h256_to_bytes(eth_block_and_receipts.block.hash.clone());
+    let key = convert_h256_to_bytes(eth_block_and_receipts.block.hash);
     trace!("✔ Adding block to database under key: {:?}", hex::encode(&key));
     db.put(
         key,
@@ -477,7 +477,7 @@ pub fn get_eth_block_from_db<D>(
 {
     trace!("✔ Getting ETH block and receipts from db...");
     db.get(convert_h256_to_bytes(*block_hash), None)
-        .and_then(|bytes| decode_eth_block_and_receipts_from_json_bytes(bytes))
+        .and_then(decode_eth_block_and_receipts_from_json_bytes)
 }
 
 pub fn key_exists_in_db<D>(
@@ -488,15 +488,12 @@ pub fn key_exists_in_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Checking for existence of key: {}", hex::encode(key));
-    match db.get(key.to_vec(), sensitivity) {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    db.get(key.to_vec(), sensitivity).is_ok()
 }
 
 pub fn put_eth_gas_price_in_db<D>(
     db: &D,
-    gas_price: &u64,
+    gas_price: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -549,7 +546,7 @@ pub fn put_eth_account_nonce_in_db<D>(
 
 pub fn increment_eth_account_nonce_in_db<D>(
     db: &D,
-    amount_to_increment_by: &u64,
+    amount_to_increment_by: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -562,7 +559,7 @@ pub fn increment_eth_account_nonce_in_db<D>(
 
 pub fn put_eth_chain_id_in_db<D>(
     db: &D,
-    chain_id: &u8
+    chain_id: u8
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -720,7 +717,7 @@ mod tests {
     fn should_put_eth_gas_price_in_db() {
         let db = get_test_database();
         let gas_price = 20_000_000;
-        if let Err(e) = put_eth_gas_price_in_db(&db, &gas_price) {
+        if let Err(e) = put_eth_gas_price_in_db(&db, gas_price) {
             panic!("Error putting gas price in db: {}", e);
         };
         match get_eth_gas_price_from_db(&db) {
@@ -737,7 +734,7 @@ mod tests {
     fn should_put_chain_id_in_db() {
         let db = get_test_database();
         let chain_id = 6;
-        if let Err(e) = put_eth_chain_id_in_db(&db, &chain_id) {
+        if let Err(e) = put_eth_chain_id_in_db(&db, chain_id) {
             panic!("Error putting chain id in db: {}", e);
         };
         match get_eth_chain_id_from_db(&db) {
@@ -809,7 +806,7 @@ mod tests {
         let amount_to_increment_by: u64 = 671;
         if let Err(e) = increment_eth_account_nonce_in_db(
             &db,
-            &amount_to_increment_by,
+            amount_to_increment_by,
         ) {
             panic!("Error incrementing nonce in db: {}", e);
         };

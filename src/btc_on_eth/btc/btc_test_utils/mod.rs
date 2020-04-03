@@ -52,22 +52,22 @@ use crate::btc_on_eth::{
 };
 
 pub const SAMPLE_TRANSACTION_INDEX: usize = 1;
-pub const SAMPLE_BTC_UTXO_VALUE: u64 = 3347338;
+pub const SAMPLE_BTC_UTXO_VALUE: u64 = 3_347_338;
 pub const SAMPLE_OUTPUT_INDEX_OF_UTXO: u32 = 0;
 pub const SAMPLE_TRANSACTION_OUTPUT_INDEX: usize = 0;
 pub const SAMPLE_OP_RETURN_TRANSACTION_INDEX: usize = 56;
 pub const SAMPLE_OP_RETURN_TRANSACTION_OUTPUT_INDEX: usize = 1;
 
-pub const SAMPLE_TARGET_BTC_ADDRESS: &'static str =
+pub const SAMPLE_TARGET_BTC_ADDRESS: &str =
     "moBSQbHn7N9BC9pdtAMnA7GBiALzNMQJyE";
 
 pub const SAMPLE_BTC_BLOCK_JSON_PATH: &str =
     "src/btc_on_eth/btc/btc_test_utils/604700-btc-block-and-txs.json";
 
-pub const SAMPLE_BTC_PRIVATE_KEY_WIF: &'static str =
+pub const SAMPLE_BTC_PRIVATE_KEY_WIF: &str =
     "cP2Dv4mx1DwJzN8iF6CCyPZmuS27bT9MV4Qmgb9h6cNQNq2Jgpmy";
 
-pub const SAMPLE_BTC_PUBLIC_KEY: &'static str =
+pub const SAMPLE_BTC_PUBLIC_KEY: &str =
     "03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH: &str =
@@ -97,7 +97,7 @@ pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_9: &str =
 pub const SAMPLE_TESTNET_OP_RETURN_BTC_BLOCK_JSON: &str =
     "src/btc_on_eth/btc/btc_test_utils/1610826-testnet-block-with-tx-to-test-address.json";
 
-pub const SAMPLE_SERIALIZED_BTC_UTXO: &'static str = "0e8d588f88d5624148070a8cd79508da8cb76625e4fcdb19a5fc996aa843bf04000000001976a91454102783c8640c5144d039cea53eb7dbb470081488acffffffff";
+pub const SAMPLE_SERIALIZED_BTC_UTXO: &str = "0e8d588f88d5624148070a8cd79508da8cb76625e4fcdb19a5fc996aa843bf04000000001976a91454102783c8640c5144d039cea53eb7dbb470081488acffffffff";
 
 pub fn get_sample_btc_pub_key_bytes() -> Bytes {
     hex::decode(SAMPLE_BTC_PUBLIC_KEY).unwrap()
@@ -148,7 +148,7 @@ pub fn get_sample_minting_params() -> MintingParams {
 
 pub fn get_sample_sequential_btc_blocks_in_db_format(
 ) -> Vec<BtcBlockInDbFormat> {
-    let start_num = 1611090;
+    let start_num = 1_611_090;
     let path_prefix = "src/btc_on_eth/btc/btc_test_utils/sequential_block_and_ids/";
     let path_suffix = "-btc-block-and-txs.json";
     let mut paths = Vec::new();
@@ -262,7 +262,7 @@ pub fn get_sample_btc_utxo() -> BtcUtxo {
     };
     BtcUtxo {
         witness: vec![], // NOTE: Array of byte arrays (empty for non-segwit).
-        sequence: 4294967295, // NOTE: Unused so just "0xFFFFFFFF" hardcoded
+        sequence: 4_294_967_295, // NOTE: Unused so just "0xFFFFFFFF" hardcoded
         previous_output: outpoint,
         script_sig: get_sample_pay_to_pub_key_hash_script(),
     }

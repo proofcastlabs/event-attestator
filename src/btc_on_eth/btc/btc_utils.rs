@@ -1,4 +1,3 @@
-use serde_json;
 use ethereum_types::Address as EthAddress;
 use crate::btc_on_eth::{
     constants::SAFE_ETH_ADDRESS,
@@ -204,7 +203,7 @@ pub fn convert_deposit_info_to_json(
     }
 }
 
-pub fn convert_btc_network_to_bytes(network: &BtcNetwork) -> Result<Bytes> {
+pub fn convert_btc_network_to_bytes(network: BtcNetwork) -> Result<Bytes> {
     match network {
         BtcNetwork::Bitcoin => Ok(convert_u64_to_bytes(0)),
         BtcNetwork::Testnet => Ok(convert_u64_to_bytes(1)),
@@ -304,10 +303,10 @@ pub fn create_new_tx_output(value: u64, script: BtcScript) -> Result<BtcTxOut> {
 }
 
 pub fn create_new_pay_to_pub_key_hash_output(
-    value: &u64,
+    value: u64,
     recipient: &str,
 ) -> Result<BtcTxOut> {
-    create_new_tx_output(*value, get_pay_to_pub_key_hash_script(recipient)?)
+    create_new_tx_output(value, get_pay_to_pub_key_hash_script(recipient)?)
 }
 
 pub fn calculate_btc_tx_fee(
@@ -399,7 +398,7 @@ mod tests {
         ).unwrap();
         let value = 1;
         let result = create_new_pay_to_pub_key_hash_output(
-            &value,
+            value,
             SAMPLE_TARGET_BTC_ADDRESS
         ).unwrap();
         assert!(result.value == value);
@@ -638,7 +637,7 @@ mod tests {
     #[test]
     fn should_serde_btc_network_correctly() {
         let network = BtcNetwork::Bitcoin;
-        let bytes = convert_btc_network_to_bytes(&network)
+        let bytes = convert_btc_network_to_bytes(network)
             .unwrap();
         let result = convert_bytes_to_btc_network(&bytes)
             .unwrap();

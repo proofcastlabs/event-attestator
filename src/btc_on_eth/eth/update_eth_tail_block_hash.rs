@@ -24,7 +24,7 @@ fn does_tail_block_require_updating<D>(
     trace!("✔ Checking if ETH tail block needs updating...");
     get_eth_tail_block_from_db(db)
         .map(|db_tail_block|
-            db_tail_block.block.number <= calculated_tail_block.block.number - 1
+            db_tail_block.block.number < calculated_tail_block.block.number
         )
 }
 

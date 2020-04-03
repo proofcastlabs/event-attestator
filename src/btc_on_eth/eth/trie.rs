@@ -967,7 +967,7 @@ impl Trie {
                         trace!("✔ Extension & key have no common prefix");
                         Ok((self, target_key, found_stack, key))
                     },
-                    _ => match remaining_node_key.len() > 0 {
+                    _ => match !remaining_node_key.is_empty() {
                         true => {
                             trace!("✔ Extension partial match!");
                             Ok((self, target_key, found_stack, key))

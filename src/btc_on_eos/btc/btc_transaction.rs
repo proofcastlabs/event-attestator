@@ -63,7 +63,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
     info!("✔ Change amount:  {}", utxo_total - (total_to_spend + fee));
     info!("✔ Tx fee:         {}", fee);
     match total_to_spend + fee > utxo_total {
-        true => return Err(
+        true => Err(
             AppError::Custom(
                 "✘ Not enough UTXO value to make transaction!".to_string()
             )

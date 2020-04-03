@@ -169,7 +169,7 @@ fn parse_minting_param_struct_from_tx(
             tx.txid(),
             // NOTE: Currently not supporting the getting of the origin from
             // witness data.
-            match tx.input[0].witness.len() == 0 {
+            match tx.input[0].witness.is_empty() {
                 true => extract_spender_address_from_p2pkh_input(
                     &tx.input[0].clone(),
                     btc_network

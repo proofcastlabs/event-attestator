@@ -49,7 +49,7 @@ impl TxInfo {
                 eos_tx: tx.transaction.clone(),
                 eos_tx_signature: tx.signature.clone(),
                 eos_tx_recipient: tx.recipient.clone(),
-                eos_account_nonce: eos_account_nonce,
+                eos_account_nonce,
                 eos_tx_amount:
                     convert_eos_asset_to_u64(&tx.amount)?,
                 originating_tx_hash:

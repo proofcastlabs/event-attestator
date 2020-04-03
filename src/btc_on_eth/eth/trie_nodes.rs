@@ -31,7 +31,7 @@ use crate::btc_on_eth::{
     },
 };
 
-static NO_NODE_IN_STRUCT_ERR: &'static str =
+static NO_NODE_IN_STRUCT_ERR: &str =
     "✘ No node present in struct to rlp-encode!";
 
 #[derive(Debug, PartialEq, Eq, Clone)]

@@ -152,14 +152,14 @@ pub struct DepositAddressInfo {
 
 impl DepositAddressInfo {
     pub fn new(
-        nonce: &u64,
+        nonce: u64,
         eth_address: &String,
         btc_deposit_address: &String,
         eth_address_and_nonce_hash: &String,
     ) -> Result<Self> {
         Ok(
             DepositAddressInfo {
-                nonce: *nonce,
+                nonce,
                 eth_address: convert_hex_to_address(
                     strip_hex_prefix(eth_address)?
                 )?,

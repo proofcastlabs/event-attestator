@@ -468,7 +468,7 @@ pub fn slice_nibbles_at_nibble_index(
 }
 
 pub fn convert_nibble_to_usize(nibbles: Nibbles) -> usize {
-    match nibbles.len() == 0 {
+    match nibbles.is_empty() {
         true => 0,
         false => nibbles.data[0] as usize
     }

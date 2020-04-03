@@ -1,8 +1,5 @@
 use rlp::RlpStream;
-use std::{
-    fs::File,
-    io::prelude::*,
-};
+use std::fs;
 use ethereum_types::{
     U256,
     Address as EthAddress,
@@ -107,7 +104,7 @@ impl EthTransaction {
             v: chain_id.into(), // Per EIP155
             nonce: nonce.into(),
             value: value.into(),
-            chain_id: chain_id.into(),
+            chain_id,
             gas_limit: gas_limit.into(),
             gas_price: gas_price.into(),
         }
@@ -119,12 +116,12 @@ impl EthTransaction {
     ) -> Self {
         self.r = sig[0..32].into();
         self.s = sig[32..64].into();
-        self.v = Self::calculate_v_from_chain_id(&sig[64], &self.chain_id);
+        self.v = Self::calculate_v_from_chain_id(sig[64], self.chain_id);
         self
     }
 
-    fn calculate_v_from_chain_id(sig_v: &u8, chain_id: &u8) -> u64 {
-        ((chain_id * 2) + (*sig_v + 35)).into() // Per EIP155
+    fn calculate_v_from_chain_id(sig_v: u8, chain_id: u8) -> u64 {
+        ((chain_id * 2) + (sig_v + 35)).into() // Per EIP155
     }
 
     pub fn serialize_bytes(&self) -> Bytes {
@@ -159,7 +156,7 @@ impl EthTransaction {
 
 pub fn get_ptoken_smart_contract_bytecode(path: &String) -> Result<Bytes> {
     info!("✔ Getting ETH smart-contract bytecode...");
-    let mut file = match File::open(path) {
+    let contents = match fs::read_to_string(path) {
         Ok(file) => Ok(file),
         Err(err) => Err(AppError::Custom(
             format!(
@@ -170,8 +167,6 @@ pub fn get_ptoken_smart_contract_bytecode(path: &String) -> Result<Bytes> {
             )
         ))
     }?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
     Ok(hex::decode(strip_new_line_chars(contents))?)
 }
 

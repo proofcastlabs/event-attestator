@@ -112,7 +112,7 @@ pub fn put_eth_chain_id_in_db_and_return_state<D>(
         "✔ Putting ETH chain ID of {} in db...",
         chain_id,
     );
-    put_eth_chain_id_in_db(&state.db, &chain_id)
+    put_eth_chain_id_in_db(&state.db, chain_id)
         .map(|_| state)
 }
 
@@ -126,7 +126,7 @@ pub fn put_eth_gas_price_in_db_and_return_state<D>(
         "✔ Putting ETH gas price of {} in db...",
         gas_price
     );
-    put_eth_gas_price_in_db(&state.db, &gas_price)
+    put_eth_gas_price_in_db(&state.db, gas_price)
         .map(|_| state)
 }
 

@@ -24,7 +24,7 @@ fn does_tail_block_require_updating<D>(
     trace!("✔ Checking if BTC tail block needs updating...");
     get_btc_tail_block_from_db(db)
         .map(|db_tail_block|
-            db_tail_block.height <= calculated_tail_block.height - 1
+            db_tail_block.height < calculated_tail_block.height
         )
 }
 

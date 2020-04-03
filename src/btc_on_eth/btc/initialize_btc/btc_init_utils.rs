@@ -77,7 +77,7 @@ pub fn put_btc_network_in_db_and_return_state<D>(
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    put_btc_network_in_db(&state.db, &get_btc_network_from_arg(network))
+    put_btc_network_in_db(&state.db, get_btc_network_from_arg(network))
         .map(|_| state)
 }
 

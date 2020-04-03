@@ -19,7 +19,7 @@ pub fn maybe_increment_btc_nonce_in_db<D>(
             info!("✔ Incrementing BTC account nonce by {}", signed_txs.len());
             increment_btc_account_nonce_in_db(
                 &state.db,
-                &(signed_txs.len() as u64),
+                signed_txs.len() as u64,
             )
                 .and_then(|_| Ok(state))
         }

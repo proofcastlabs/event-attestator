@@ -593,9 +593,7 @@ mod tests {
         let result = get_sample_log_with_desired_topic()
             .topics
             .iter()
-            .filter(|log_topic| **log_topic == desired_topic)
-            .collect::<Vec<&EthHash>>()
-            .len() > 0;
+            .any(|log_topic| *log_topic == desired_topic);
         assert!(result);
     }
 
@@ -607,9 +605,7 @@ mod tests {
         let result = get_sample_log_without_desired_topic()
             .topics
             .iter()
-            .filter(|log_topic| **log_topic == desired_topic)
-            .collect::<Vec<&EthHash>>()
-            .len() > 0;
+            .any(|log_topic| *log_topic == desired_topic);
         assert!(!result);
     }
 

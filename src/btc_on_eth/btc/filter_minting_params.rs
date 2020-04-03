@@ -18,7 +18,7 @@ fn filter_minting_params(
     let threshold = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
     Ok(
         minting_params
-            .into_iter()
+            .iter()
             .filter(|params| {
                 match params.amount >= threshold {
                     true => true,

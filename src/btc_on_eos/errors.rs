@@ -1,8 +1,4 @@
-use hex;
-use log;
-use std::fmt;
-use serde_json;
-use std::error::Error;
+use std::{fmt, error::Error};
 
 #[derive(Debug)]
 pub enum AppError {

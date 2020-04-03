@@ -23,8 +23,7 @@ fn does_canon_block_require_updating<D>(
     info!("✔ Checking if BTC canon block needs updating...");
     get_btc_canon_block_from_db(db)
         .map(|db_canon_block_and_receipts|
-            db_canon_block_and_receipts.height <=
-            calculated_canon_block.height - 1
+            db_canon_block_and_receipts.height < calculated_canon_block.height
         )
 }
 

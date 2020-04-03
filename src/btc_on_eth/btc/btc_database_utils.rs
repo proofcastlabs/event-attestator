@@ -97,7 +97,7 @@ pub fn put_btc_account_nonce_in_db<D>(
 
 pub fn increment_btc_account_nonce_in_db<D>(
     db: &D,
-    amount_to_increment_by: &u64,
+    amount_to_increment_by: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -130,7 +130,7 @@ pub fn get_btc_network_from_db<D>(db: &D) -> Result<BtcNetwork>
         .and_then(|bytes| convert_bytes_to_btc_network(&bytes))
 }
 
-pub fn put_btc_network_in_db<D>(db: &D, network: &BtcNetwork) -> Result<()>
+pub fn put_btc_network_in_db<D>(db: &D, network: BtcNetwork) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Adding BTC '{}' network to database...", network);
@@ -248,10 +248,7 @@ pub fn key_exists_in_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Checking for existence of key: {}", hex::encode(key));
-    match db.get(key.to_vec(), sensitivity) {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    db.get(key.to_vec(), sensitivity).is_ok()
 }
 
 pub fn put_btc_canon_to_tip_length_in_db<D>(
@@ -457,13 +454,13 @@ pub fn maybe_get_parent_btc_block_and_id<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Maybe getting BTC parent block for id: {}", id);
-    maybe_get_nth_ancestor_btc_block_and_id(db, id, &1)
+    maybe_get_nth_ancestor_btc_block_and_id(db, id, 1)
 }
 
 pub fn maybe_get_nth_ancestor_btc_block_and_id<D>(
     db: &D,
     id: &sha256d::Hash,
-    n: &u64,
+    n: u64,
 ) -> Option<BtcBlockInDbFormat>
     where D: DatabaseInterface
 {
@@ -482,7 +479,7 @@ pub fn maybe_get_nth_ancestor_btc_block_and_id<D>(
             _ => maybe_get_nth_ancestor_btc_block_and_id(
                 db,
                 &block_in_db_format.block.header.prev_blockhash,
-                &(n - 1),
+                n - 1,
             )
         }
     }
@@ -610,7 +607,7 @@ mod tests {
     #[test]
     fn should_get_and_save_btc_private_key_in_db() {
         let db = get_test_database();
-        put_btc_network_in_db(&db, &BtcNetwork::Testnet)
+        put_btc_network_in_db(&db, BtcNetwork::Testnet)
             .unwrap();
         let pk = get_sample_btc_private_key();
         if let Err(e) = put_btc_private_key_in_db(&db, &pk) {
@@ -940,7 +937,7 @@ mod tests {
     fn should_get_and_put_btc_network_in_db() {
         let db = get_test_database();
         let network = BtcNetwork::Bitcoin;
-        if let Err(e) = put_btc_network_in_db(&db, &network) {
+        if let Err(e) = put_btc_network_in_db(&db, network) {
             panic!("Error putting BTC network in db: {}", e);
         }
         match get_btc_network_from_db(&db) {

@@ -22,8 +22,8 @@ fn does_canon_block_require_updating<D>(
 {
     get_eth_canon_block_from_db(db)
         .map(|db_canon_block_and_receipts|
-            db_canon_block_and_receipts.block.number <=
-            calculated_canon_block_and_receipts.block.number - 1
+            db_canon_block_and_receipts.block.number <
+                calculated_canon_block_and_receipts.block.number
         )
 }
 

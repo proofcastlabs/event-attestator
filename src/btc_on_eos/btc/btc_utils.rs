@@ -1,4 +1,3 @@
-use serde_json;
 use ethereum_types::Address as EthAddress;
 use crate::btc_on_eos::{
     constants::SAFE_EOS_ADDRESS,

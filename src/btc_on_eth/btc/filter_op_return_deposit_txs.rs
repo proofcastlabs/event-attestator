@@ -3,8 +3,6 @@ use bitcoin::{
     blockdata::{
         script::Script as BtcScript,
         transaction::{
-            TxIn as BtcTxIn,
-            TxOut as BtcTxOut,
             Transaction as BtcTransaction,
         },
     },
@@ -36,12 +34,9 @@ fn tx_has_input_locked_to_pub_key(
     tx
         .input // NOTE: Why they didn't pluralise this I'll never know.
         .iter()
-        .filter(|input|
+        .any(|input|
             sig_script_contains_pub_key(&input.script_sig, &btc_pub_key_slice)
         )
-        .cloned()
-        .collect::<Vec<BtcTxIn>>()
-        .len() > 0
 }
 
 fn tx_has_output_with_target_script(
@@ -51,9 +46,7 @@ fn tx_has_output_with_target_script(
     tx
         .output // NOTE: Ibid.
         .iter()
-        .filter(|output| &output.script_pubkey == target_script)
-        .collect::<Vec<&BtcTxOut>>()
-        .len() > 0
+        .any(|output| &output.script_pubkey == target_script)
 }
 
 pub fn filter_txs_for_op_return_deposits(

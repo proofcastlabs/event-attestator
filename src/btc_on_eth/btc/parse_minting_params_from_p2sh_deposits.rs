@@ -164,7 +164,7 @@ mod tests {
             &hash_map,
             &pub_key[..],
             &txs,
-            &btc_network,
+            btc_network,
         )
             .unwrap()
             [0]
@@ -281,7 +281,7 @@ mod tests {
             &hash_map,
             &pub_key_bytes[..],
             &txs,
-            &btc_network,
+            btc_network,
         ).unwrap();
         let result = parse_minting_params_from_p2sh_deposit_txs(
             &filtered_txs,
