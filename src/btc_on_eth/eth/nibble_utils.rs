@@ -53,7 +53,7 @@ impl Nibbles {
     }
 
     pub fn is_empty(&self) -> bool {
-        get_length_in_nibbles(&self) > 0
+        get_length_in_nibbles(&self) == 0
     }
 }
 

@@ -185,7 +185,6 @@ mod tests {
         let output = tx
             .output[output_index as usize]
             .clone();
-        println!("{:?}", output.script_pubkey.is_p2sh());
         let result = maybe_extract_p2sh_utxo(
             output_index,
             &output,
