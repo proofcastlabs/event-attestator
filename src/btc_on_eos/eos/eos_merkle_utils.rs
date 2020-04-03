@@ -1,15 +1,18 @@
-#![allow(dead_code)] // TODO Rm once EOS proof validation is fully in!
-use crate::btc_on_eos::errors::AppError;
+use eos_primitives::Checksum256;
 use bitcoin_hashes::{
     Hash,
     sha256,
 };
 use crate::btc_on_eos::{
-    eos::eos_types::MerkleProof,
+    errors::AppError,
     types::{
         Byte,
         Bytes,
         Result,
+    },
+    eos::eos_types::{
+        MerklePath,
+        MerkleProof,
     },
 };
 
@@ -28,21 +31,23 @@ fn set_first_bit_of_byte_to_one(mut byte: Byte) -> Byte {
     byte
 }
 
-fn set_first_bit_of_hash_to_one(mut hash: Bytes) -> Bytes {
-    hash[0] = set_first_bit_of_byte_to_one(hash[0]);
-    hash
+fn set_first_bit_of_hash_to_one(hash: &Bytes) -> Bytes {
+    let mut new_hash = hash.clone();
+    new_hash[0] = set_first_bit_of_byte_to_one(hash[0]);
+    new_hash
 }
 
-fn set_first_bit_of_hash_to_zero(mut hash: Bytes) -> Bytes {
-    hash[0] = set_first_bit_of_byte_to_zero(hash[0]);
-    hash
+fn set_first_bit_of_hash_to_zero(hash: &Bytes) -> Bytes {
+    let mut new_hash = hash.clone();
+    new_hash[0] = set_first_bit_of_byte_to_zero(hash[0]);
+    new_hash
 }
 
-fn make_canonical_left(hash: Bytes) -> CanonicalLeft {
+fn make_canonical_left(hash: &Bytes) -> CanonicalLeft {
     set_first_bit_of_hash_to_zero(hash)
 }
 
-fn make_canonical_right(hash: Bytes) -> CanonicalRight {
+fn make_canonical_right(hash: &Bytes) -> CanonicalRight {
     set_first_bit_of_hash_to_one(hash)
 }
 
@@ -54,7 +59,7 @@ fn is_canonical_right(hash: &Bytes) -> bool {
     !is_canonical_left(hash)
 }
 
-fn make_canonical_pair(l: Bytes, r: Bytes) -> CanonicalPair {
+fn make_canonical_pair(l: &Bytes, r: &Bytes) -> CanonicalPair {
     (
         make_canonical_left(l),
         make_canonical_right(r),
@@ -70,7 +75,7 @@ fn hash_canonical_pair(pair: CanonicalPair) -> Sha256Hash {
     sha256::Hash::hash(&concatenate_canonical_pair(pair))
 }
 
-fn make_and_hash_canonical_pair(l: Bytes, r: Bytes) -> Bytes {
+fn make_and_hash_canonical_pair(l: &Bytes, r: &Bytes) -> Bytes {
     hash_canonical_pair(make_canonical_pair(l, r)).to_vec()
 }
 
@@ -85,10 +90,7 @@ pub fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
         }
         for i in 0..(leaves.len() / 2) {
             leaves[i] = hash_canonical_pair(
-                make_canonical_pair(
-                    leaves[2 * i].clone(),
-                    leaves[(2 * i) + 1].clone(),
-                )
+                make_canonical_pair(&leaves[2 * i], &leaves[(2 * i) + 1])
             ).to_vec();
         }
         leaves.resize(leaves.len() / 2, vec![0x00]);
@@ -96,70 +98,168 @@ pub fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
     leaves[0].clone()
 }
 
-pub fn generate_merkle_proof(
-    mut index: usize,
-    mut leaves: Vec<Bytes>
-) -> Result<MerkleProof> {
-    let mut proof = Vec::new();
-    proof.push(hex::encode(leaves[index].clone()));
-    match index < leaves.len() {
-        false => Err(AppError::Custom("✘ Index out of bounds!".to_string())),
-        true => {
-            while leaves.len() > 1 {
-                if leaves.len() % 2 != 0 {
-                    let last = leaves[leaves.len() - 1].clone();
-                    leaves.push(last)
-                }
-                for i in 0..leaves.len() / 2 {
-                    if index / 2 == i {
-                        if index % 2 != 0 {
-                            proof.push(
-                                hex::encode(
-                                    make_canonical_left(
-                                        leaves[2 * i].clone()
-                                    )
-                                )
-                            )
-                        } else {
-                            proof.push(
-                                hex::encode(
-                                    make_canonical_right(
-                                        leaves[2 * i + 1].clone()
-                                    )
-                                )
-                            )
-                        }
-                        index /= 2;
-                    }
-                    leaves[i] = hash_canonical_pair(
-                        make_canonical_pair(
-                            leaves[2 * i].clone(),
-                            leaves[2 * i + 1].clone(),
-                        )
-                    ).to_vec()
-                }
-                leaves.resize(leaves.len() / 2, vec![0x00]);
-            }
-            proof.push(hex::encode(leaves[0].clone()));
-            return Ok(proof);
+pub fn verify_merkle_proof(merkle_proof: &MerkleProof) -> Result<bool> {
+    let mut node = hex::decode(merkle_proof[0].clone())?;
+    let leaves = merkle_proof[..merkle_proof.len() - 1]
+        .iter()
+        .map(|hex| Ok(hex::decode(hex)?))
+        .collect::<Result<Vec<Bytes>>>()?;
+    for i in 1..leaves.len() {
+        match is_canonical_right(&leaves[i]) {
+            true => {node = make_and_hash_canonical_pair(&node, &leaves[i]);}
+            false => {node = make_and_hash_canonical_pair(&leaves[i], &node);}
         }
-    }
+    };
+    Ok(node == hex::decode(merkle_proof.last()?)?)
 }
 
-pub fn verify_merkle_proof(merkle_proof: &MerkleProof) -> Result<bool> {
-    let mut leaves = Vec::new();
-    for i in 0..merkle_proof.len() {
-        leaves.push(hex::decode(merkle_proof[i].clone())?)
+pub fn get_merkle_root_from_merkle_path(
+    merkle_proof: &MerklePath,
+) -> Result<Bytes> {
+    let mut node = merkle_proof[0].clone();
+    Ok(
+        merkle_proof[1..]
+            .iter()
+            .map(|leaf| {
+                match is_canonical_right(&leaf) {
+                    true => node = make_and_hash_canonical_pair(&node, &leaf),
+                    false => node = make_and_hash_canonical_pair(&leaf, &node),
+                };
+                node.clone()
+            })
+            .collect::<Vec<Bytes>>()
+            .last()?
+            .to_vec()
+    )
+}
+
+// NOTE: Courtesy of: https://github.com/bifrost-codes/rust-eos/
+#[derive(Clone, Default, Debug, PartialEq)]
+pub struct IncrementalMerkle {
+    _node_count: u64,
+    _active_nodes: Vec<Checksum256>,
+}
+// NOTE: Ibid
+impl IncrementalMerkle {
+
+    fn make_canonical_left(val: &Checksum256) -> Checksum256 {
+        let mut canonical_l: Checksum256 = *val;
+        canonical_l.set_hash0(canonical_l.hash0() & 0xFFFFFFFFFFFFFF7Fu64);
+        canonical_l
     }
-    let mut node = leaves[0].clone();
-    for i in 1..leaves.len() - 1 {
-        if is_canonical_right(&leaves[i]) {
-            node = make_and_hash_canonical_pair(node, leaves[i].clone());
-        } else {
-            node = make_and_hash_canonical_pair(leaves[i].clone(), node);
+
+    fn  make_canonical_right(val: &Checksum256) -> Checksum256 {
+        let mut canonical_r: Checksum256 = *val;
+        canonical_r.set_hash0(canonical_r.hash0() | 0x0000000000000080u64);
+        canonical_r
+    }
+
+    pub fn make_canonical_pair(
+        l: &Checksum256,
+        r: &Checksum256
+    ) -> (Checksum256, Checksum256) {
+        (
+            Self::make_canonical_left(l),
+            Self::make_canonical_right(r)
+        )
+    }
+
+    fn next_power_of_2(mut value: u64) -> u64 {
+        value -= 1;
+        value |= value >> 1;
+        value |= value >> 2;
+        value |= value >> 4;
+        value |= value >> 8;
+        value |= value >> 16;
+        value |= value >> 32;
+        value += 1;
+        value
+    }
+
+    fn clz_power_2(value: u64) -> usize {
+        let mut lz: usize = 64;
+
+        if value != 0 { lz -= 1; }
+        if (value & 0x00000000FFFFFFFF_u64) != 0 { lz -= 32; }
+        if (value & 0x0000FFFF0000FFFF_u64) != 0 { lz -= 16; }
+        if (value & 0x00FF00FF00FF00FF_u64) != 0 { lz -= 8; }
+        if (value & 0x0F0F0F0F0F0F0F0F_u64) != 0 { lz -= 4; }
+        if (value & 0x3333333333333333_u64) != 0 { lz -= 2; }
+        if (value & 0x5555555555555555_u64) != 0 { lz -= 1; }
+
+        lz
+    }
+
+    fn calculate_max_depth(node_count: u64) -> usize {
+        if node_count == 0 {
+            return 0;
+        }
+        let implied_count = Self::next_power_of_2(node_count);
+        Self::clz_power_2(implied_count) + 1
+    }
+
+    pub fn new(node_count: u64, active_nodes: Vec<Checksum256>) -> Self {
+        IncrementalMerkle {
+            _node_count: node_count,
+            _active_nodes: active_nodes,
         }
     }
-    Ok(Some(&node) == leaves.last())
+
+    pub fn append(&mut self, digest: Checksum256) -> Result<Checksum256> {
+        let mut partial = false;
+        let max_depth = Self::calculate_max_depth(self._node_count + 1);
+        let mut current_depth = max_depth - 1;
+        let mut index = self._node_count;
+        let mut top = digest;
+        let mut active_iter = self._active_nodes.iter();
+        let mut updated_active_nodes: Vec<Checksum256> = Vec::with_capacity(
+            max_depth
+        );
+
+        while current_depth > 0 {
+            if (index & 0x1) == 0 {
+                if !partial {
+                    updated_active_nodes.push(top);
+                }
+
+                top = Checksum256::hash(
+                    Self::make_canonical_pair(&top, &top)
+                )?;
+                partial = true;
+            } else {
+                let left_value = active_iter.next().ok_or(
+                    AppError::Custom("✘ Incremerkle error!".to_string())
+                )?;
+
+                if partial {
+                    updated_active_nodes.push(*left_value);
+                }
+
+                top = Checksum256::hash(
+                    Self::make_canonical_pair(left_value, &top)
+                )?;
+            }
+
+            current_depth -= 1;
+            index = index >> 1;
+        }
+
+        updated_active_nodes.push(top);
+
+        self._active_nodes = updated_active_nodes;
+
+        self._node_count += 1;
+
+        return Ok(self._active_nodes[self._active_nodes.len() - 1]);
+    }
+
+    pub fn get_root(&self) -> Checksum256 {
+        if self._node_count > 0 {
+            return self._active_nodes[self._active_nodes.len() - 1];
+        } else {
+            return Default::default();
+        }
+    }
 }
 
 #[cfg(test)]
@@ -167,6 +267,9 @@ mod tests {
     use hex;
     use super::*;
     use std::str::FromStr;
+    use crate::btc_on_eos::{
+        eos::eos_test_utils::get_sample_eos_submission_material_n,
+    };
     use eos_primitives::{
         Action,
         ActionName,
@@ -205,8 +308,8 @@ mod tests {
 
     fn get_sample_canonical_pair() -> CanonicalPair {
         make_canonical_pair(
-            get_expected_digest_bytes_1(),
-            get_expected_digest_bytes_2(),
+            &get_expected_digest_bytes_1(),
+            &get_expected_digest_bytes_2(),
         )
     }
 
@@ -229,7 +332,7 @@ mod tests {
     #[test]
     fn should_set_first_bit_of_hash_to_one() {
         let hash = get_expected_digest_bytes_2();
-        let result = set_first_bit_of_hash_to_one(hash.clone());
+        let result = set_first_bit_of_hash_to_one(&hash);
         for i in 0..hash.len() {
             if i == 0 {
                 assert!(result[i] == get_expected_first_byte_2());
@@ -242,7 +345,7 @@ mod tests {
     #[test]
     fn should_set_first_bit_of_hash_to_zero() {
         let hash = get_expected_digest_bytes_1();
-        let result = set_first_bit_of_hash_to_zero(hash.clone());
+        let result = set_first_bit_of_hash_to_zero(&hash);
         for i in 0..hash.len() {
             if i == 0 {
                 assert!(result[i] == get_expected_first_byte_1());
@@ -255,7 +358,7 @@ mod tests {
     #[test]
     fn should_make_hash_canonical_right() {
         let hash = get_expected_digest_bytes_2();
-        let result = make_canonical_right(hash.clone());
+        let result = make_canonical_right(&hash);
         for i in 0..hash.len() {
             if i == 0 {
                 assert!(result[i] == get_expected_first_byte_2());
@@ -268,7 +371,7 @@ mod tests {
     #[test]
     fn should_make_hash_canonical_left() {
         let hash = get_expected_digest_bytes_1();
-        let result = make_canonical_left(hash.clone());
+        let result = make_canonical_left(&hash);
         for i in 0..hash.len() {
             if i == 0 {
                 assert!(result[i] == get_expected_first_byte_1());
@@ -281,7 +384,7 @@ mod tests {
     #[test]
     fn canonical_left_hash_should_be_canonical_left() {
         let hash = get_expected_digest_bytes_1();
-        let canonical_left_hash = make_canonical_left(hash.clone());
+        let canonical_left_hash = make_canonical_left(&hash);
         let is_left = is_canonical_left(&canonical_left_hash);
         let is_right = is_canonical_right(&canonical_left_hash);
         assert!(is_left);
@@ -291,7 +394,7 @@ mod tests {
     #[test]
     fn canonical_right_hash_should_be_canonical_right() {
         let hash = get_expected_digest_bytes_2();
-        let canonical_right_hash = make_canonical_right(hash.clone());
+        let canonical_right_hash = make_canonical_right(&hash);
         let is_left = is_canonical_left(&canonical_right_hash);
         let is_right = is_canonical_right(&canonical_right_hash);
         assert!(!is_left);
@@ -324,7 +427,7 @@ mod tests {
     fn should_make_canonical_pair() {
         let digest_1 = get_expected_digest_bytes_1();
         let digest_2 = get_expected_digest_bytes_2();
-        let result = make_canonical_pair(digest_1.clone(), digest_2.clone());
+        let result = make_canonical_pair(&digest_1, &digest_2);
         for i in 0..result.0.len() {
             if i == 0 {
                 assert!(result.0[i] == get_expected_first_byte_1());
@@ -496,30 +599,74 @@ mod tests {
     }
 
     #[test]
-    fn should_generate_merkle_proof_correctly() {
-        let index = 2;
-        let digests = get_sample_action_digests();
-        let expected_result = vec! [
-            "41a91de4e161bc10ff6f7173822cf3f6417dd9bfc3dc88cf8bdd8196322837ce",
-            "d14a4b2157aaaa4fec077069a8617c53b4e3f75c142a6aea5aa24bd031578e96",
-            "3d8ddd7684e1f38a0f3c6880d179fc43ae730f9363eafe842cc85484450e2613",
-            "8b4e5e5d3e7587065896d0076d65c72e03c11a9159d414eb3a2363b59108116a",
-        ];
-        let result = generate_merkle_proof(index, digests)
-            .unwrap();
-        for i in 0..expected_result.len() {
-            assert!(expected_result[i] == result[i]);
-        };
+    fn should_verify_merkle_proofs() {
+        let num_proofs = 4;
+        vec![0, num_proofs - 1]
+            .iter()
+            .enumerate()
+            .map(|(_, i)| get_sample_eos_submission_material_n(i + 1))
+            .map(|submission_material|
+                 submission_material
+                    .action_proofs[0]
+                    .action_proof
+                    .clone()
+            )
+            .map(|merkle_proof|
+                 assert!(verify_merkle_proof(&merkle_proof).unwrap())
+            )
+            .for_each(drop);
     }
 
     #[test]
-    fn should_verify_merkle_proof_correctly() {
-        let index = 2;
-        let digests = get_sample_action_digests();
-        let proof = generate_merkle_proof(index, digests)
+    fn should_get_merkle_root_from_merkle_path() {
+        let expected_merkle_root =
+            "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
+        let block_id =
+            "0000259a7cc27f04467b6c7362a936a143a5d9f324075b4c0d291c3974f80720";
+        let merkle_path = vec![
+            block_id,
+            "0000259943aeb714e885c783bc79487cd025bb687b39d9de755d73a7fea000dd",
+            "804c48aed6b4f21b9d13bd3cc260411dc8d7e442f0430659e9bbcc70af95c8aa",
+            "80f39c9cda67aa2c1e4ec3a6c2ed6182dbb87b30d2d82b44a2a2a76d37f74aae",
+            "29eb5e917272918a6da86be0aaec2275bef5b66062c7f717b738b92b01e24faa",
+            "07d415864f60c2ca1318d4ebf4fd46e446697076d4f38abc3105531830da815e",
+            "9006d928623a944863b1bef8a6df59fcb9c4790d8fe8b49c2fd4b0f88f48566c",
+            "efc734fa150a9cfa74402a7d50fae265f36037c70af9b078bee7c3332fe62768",
+            "3e2f1f8b53ec4b22ffe724ba11f1cb676a675a0a6cf097ed1d8a30d766008f76",
+            "43e4b272895404d72bdb14f7a06c19342cbdaa132bf3538bb20be67b28db5fc8",
+            "9e3a7f7e635ea41663de6855b81eda28320ae3d2ba669e2a8e1e1d4d8969cb5c",
+            "2cba7c7ee5c1d8ba97ea1a841707fbb2147e883b56544ba821814aebe086383e",
+            "a081325a023dd7018dd99d1d4192348c73d445f4a4fd4ca40a99c1914c3b30b3",
+            "8394f7a83fda4dc1fb026aec143ccb4c9ce69c21f23ab3a8af0a741f8597df96",
+            "2fa502d408f5bdf1660fa9fe3a1fcb432462467e7eb403a8499392ee5297d8d1",
+        ]
+            .iter()
+            .map(|x| Ok(hex::decode(x)?))
+            .collect::<Result<Vec<Bytes>>>()
             .unwrap();
-        let result = verify_merkle_proof(&proof)
+        let result = get_merkle_root_from_merkle_path(&merkle_path)
             .unwrap();
-        assert!(result);
+        assert_eq!(hex::encode(result), expected_merkle_root);
+    }
+
+    #[test]
+    fn should_get_incremental_merkle_root_from_blockroot_merkles() {
+        let expected_incremerkle_root =
+            "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
+        let submission_material = get_sample_eos_submission_material_n(5);
+        let active_nodes = submission_material
+            .blockroot_merkle
+            .clone();
+        let node_count: u64 = submission_material
+            .block_header
+            .block_num()
+            .into();
+        let incremerkle = IncrementalMerkle::new(node_count, active_nodes);
+        let incremerkle_root = hex::encode(
+            &incremerkle
+                .get_root()
+                .to_bytes()
+        );
+        assert_eq!(incremerkle_root, expected_incremerkle_root);
     }
 }

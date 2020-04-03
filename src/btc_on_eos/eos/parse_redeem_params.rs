@@ -101,7 +101,7 @@ mod tests {
     fn should_get_sender_from_action_data() {
         let expected_result = EosAccountName::from_str("provtestable")
             .unwrap();
-        let action_data = get_sample_eos_submission_material_n(5)
+        let action_data = get_sample_eos_submission_material_n(1)
             .action_proofs[0]
             .action
             .data
@@ -116,7 +116,7 @@ mod tests {
     fn should_get_symbol_from_action_data() {
         let expected_result = EosSymbol::from_str("8,PFFF")
             .unwrap();
-        let action_data = get_sample_eos_submission_material_n(5)
+        let action_data = get_sample_eos_submission_material_n(1)
             .action_proofs[0]
             .action
             .data
@@ -129,7 +129,7 @@ mod tests {
     #[test]
     fn should_get_amount_from_action_data() {
         let expected_result: u64 = 5111;
-        let action_data = get_sample_eos_submission_material_n(5)
+        let action_data = get_sample_eos_submission_material_n(1)
             .action_proofs[0]
             .action
             .data
@@ -143,7 +143,7 @@ mod tests {
     fn should_get_redeem_address_serialized_action() {
         let expected_result = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
             .to_string();
-        let action_data = get_sample_eos_submission_material_n(5)
+        let action_data = get_sample_eos_submission_material_n(1)
             .action_proofs[0]
             .action
             .data
@@ -229,7 +229,7 @@ mod tests {
                 .to_string()
             ).unwrap(),
         };
-        let action_proof = get_sample_eos_submission_material_n(5)
+        let action_proof = get_sample_eos_submission_material_n(1)
             .action_proofs[0]
             .clone();
         let result = RedeemParams::from_action_proof(&action_proof)

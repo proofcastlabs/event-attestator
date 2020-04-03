@@ -48,9 +48,9 @@ mod tests {
     #[test]
     fn should_not_filter_proofs_with_correct_action_mroot() {
         let action_proofs = vec![
-            get_sample_action_proof_n(5),
-            get_sample_action_proof_n(5),
-            get_sample_action_proof_n(5),
+            get_sample_action_proof_n(1),
+            get_sample_action_proof_n(1),
+            get_sample_action_proof_n(1),
         ];
         let action_mroot = convert_hex_to_checksum256("6ba2320b7d71d69770735f92b22f0d986d7e5d72f8842fa93b5604c63dd515c7").unwrap();
         let result = filter_proofs_with_wrong_action_mroot(&action_mroot, &action_proofs).unwrap();
@@ -62,7 +62,7 @@ mod tests {
     fn should_filter_proofs_with_wrong_action_mroot() {
         let action_proofs = vec![
             get_sample_action_proof_n(4),
-            get_sample_action_proof_n(5),
+            get_sample_action_proof_n(1),
         ];
         let action_mroot = convert_hex_to_checksum256("10c0518e15ae178bdd622e3f31249f0f12071c68045dd565a267a522df8ba96c").unwrap();
         let result = filter_proofs_with_wrong_action_mroot(&action_mroot, &action_proofs).unwrap();

@@ -22,6 +22,7 @@ pub mod filter_irrelevant_proofs;
 pub mod parse_submission_material;
 pub mod parse_eos_action_receipts;
 pub mod increment_signature_nonce;
+pub mod validate_schedule_version;
 pub mod extract_utxos_from_btc_txs;
 pub mod filter_already_processed_txs;
 pub mod filter_invalid_merkle_proofs;

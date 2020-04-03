@@ -1,4 +1,7 @@
-use eos_primitives::BlockHeader as EosBlockHeader;
+use eos_primitives::{
+    BlockHeader as EosBlockHeader,
+    ProducerSchedule as EosProducerSchedule,
+};
 use crate::btc_on_eos::{
     types::Result,
     errors::AppError,
@@ -12,6 +15,7 @@ use crate::btc_on_eos::{
     eos::{
         eos_types::{
             ActionProofs,
+            Checksum256s,
             RedeemParams,
             ProcessedTxIds,
             EosSubmissionMaterial,
@@ -26,11 +30,14 @@ use crate::btc_on_eos::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EosState<D: DatabaseInterface> {
     pub db: D,
+    pub producer_signature: String,
     pub action_proofs: ActionProofs,
     pub signed_txs: BtcTransactions,
+    pub blockroot_merkle: Checksum256s,
     pub redeem_params: Vec<RedeemParams>,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
+    pub active_schedule: EosProducerSchedule,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
 }
 
@@ -42,8 +49,11 @@ impl<D> EosState<D> where D: DatabaseInterface {
             signed_txs: vec![],
             action_proofs: vec![],
             redeem_params: vec![],
+            blockroot_merkle: vec![],
             btc_utxos_and_values: None,
+            producer_signature: String::new(),
             processed_tx_ids: ProcessedTxIds::init(),
+            active_schedule: EosProducerSchedule::default(),
         }
     }
 
@@ -76,8 +86,11 @@ impl<D> EosState<D> where D: DatabaseInterface {
         mut self,
         submission_material: EosSubmissionMaterial,
     ) -> Result<EosState<D>> {
-        self.block_header = Some(submission_material.block_header);
         self.action_proofs = submission_material.action_proofs;
+        self.block_header = Some(submission_material.block_header);
+        self.active_schedule = submission_material.active_schedule;
+        self.blockroot_merkle = submission_material.blockroot_merkle;
+        self.producer_signature = submission_material.producer_signature;
         Ok(self)
     }
 

@@ -3,11 +3,16 @@ use eos_primitives::{
     Action as EosAction,
     AccountName as EosAccountName,
     BlockHeader as EosBlockHeader,
+    ProducerKey as EosProducerKey,
     ActionReceipt as EosActionReceipt,
+    ProducerSchedule as EosProducerSchedule,
 };
 use crate::btc_on_eos::{
-    types::Result,
     utils::convert_hex_to_checksum256,
+    types::{
+        Bytes,
+        Result,
+    },
     eos::{
         eos_crypto::eos_signature::EosSignature,
         parse_eos_actions::parse_eos_action_json,
@@ -17,12 +22,15 @@ use crate::btc_on_eos::{
 
 pub type EosAmount = String;
 pub type EosAddress = String;
+pub type MerklePath = Vec<Bytes>;
 pub type MerkleProof = Vec<String>;
 pub type EosAddresses = Vec<String>;
 pub type EosAmounts = Vec<EosAmount>;
+pub type Checksum256s = Vec<Checksum256>;
 pub type ActionProofs = Vec<ActionProof>;
 pub type MerkleProofs = Vec<MerkleProof>;
 pub type EosSignatures = Vec<EosSignature>;
+pub type ProducerKeys = Vec<EosProducerKey>;
 pub type ActionProofJsons = Vec<ActionProofJson>;
 pub type Sha256HashedMessage = secp256k1::Message;
 pub type AuthSequenceJsons = Vec<AuthSequenceJson>;
@@ -69,14 +77,19 @@ impl EosSignedTransaction {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterial {
+    pub producer_signature: String,
     pub action_proofs: ActionProofs,
     pub block_header: EosBlockHeader,
+    pub blockroot_merkle: Checksum256s,
+    pub active_schedule: EosProducerSchedule,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterialJson {
+    pub blockroot_merkle: Vec<String>,
     pub action_proofs: ActionProofJsons,
     pub block_header: EosBlockHeaderJson,
+    pub active_schedule: ProducerScheduleJson,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -99,6 +112,12 @@ pub struct EosBlockHeaderJson {
 pub struct ProducerScheduleJson {
     pub version: u32,
     pub producers: Vec<ProducerKeyJson>
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ProducerSchedule {
+    pub version: u32,
+    pub producers: ProducerKeys,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

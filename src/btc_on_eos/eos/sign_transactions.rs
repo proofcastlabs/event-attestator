@@ -297,7 +297,7 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let btc_address = "mwi6VyZUqwqdu1DtQMruV4UzEqJADZzj6n"
             .to_string();
-        let submission_material = get_sample_eos_submission_material_json_n(5);
+        let submission_material = get_sample_eos_submission_material_json_n(1);
         let action_proof = ActionProof::from_json(
             &submission_material
                 .action_proofs[0]
