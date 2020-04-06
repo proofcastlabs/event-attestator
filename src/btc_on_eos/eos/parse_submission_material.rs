@@ -9,6 +9,7 @@ use eos_primitives::{
     ProducerSchedule,
     PublicKey as EosPublicKey,
     BlockHeader as EosBlockHeader,
+    ProducerSchedule as EosProducerSchedule,
 };
 use crate::btc_on_eos::{
     types::Result,
@@ -89,6 +90,17 @@ pub fn parse_producer_schedule_from_json(
             )?,
         }
     )
+}
+
+pub fn parse_producer_schedule_from_json_string(
+    json_string: &String,
+) ->Result<EosProducerSchedule> {
+    match serde_json::from_str(json_string) {
+        Ok(json) => parse_producer_schedule_from_json(&json),
+        Err(_) => Err(AppError::Custom(
+            format!("✘ Error parsing EOS schedule to json!")
+        ))
+    }
 }
 
 fn convert_producer_key_json_to_producer_key(

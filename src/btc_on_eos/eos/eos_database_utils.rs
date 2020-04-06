@@ -20,7 +20,7 @@ use crate::btc_on_eos::{
         eos_state::EosState,
         eos_types::ProcessedTxIds,
         eos_crypto::eos_private_key::EosPrivateKey,
-        parse_submission_material::parse_producer_schedule_from_json,
+        parse_submission_material::parse_producer_schedule_from_json_string,
         eos_constants::{
             EOS_ACCOUNT_NONCE,
             EOS_CHAIN_ID_DB_KEY,
@@ -65,15 +65,7 @@ pub fn get_eos_schedule_from_db<D>(
 {
     trace!("✔ Getting EOS schedule from db...");
     match get_string_from_db(db, &get_eos_schedule_db_key(version)) {
-        Ok(json_string) => {
-            trace!("✔ EOS schedule found, parsing...");
-            match serde_json::from_str(&json_string) {
-                Ok(json) => parse_producer_schedule_from_json(&json),
-                Err(_) => Err(AppError::Custom(
-                    format!("✘ Error parsing EOS schedule {} to json!", version)
-                ))
-            }
-        }
+        Ok(json) => parse_producer_schedule_from_json_string(&json),
         Err(_) => Err(AppError::Custom(
             format!("✘ Core does not have EOS schedule version: {}", version)
         ))
