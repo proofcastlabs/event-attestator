@@ -7,6 +7,7 @@ pub mod eos_constants;
 pub mod initialize_eos;
 pub mod get_eos_output;
 pub mod eos_test_utils;
+pub mod add_new_schedule;
 pub mod eos_merkle_utils;
 pub mod submit_eos_block;
 pub mod sign_transactions;
