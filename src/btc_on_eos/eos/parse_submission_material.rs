@@ -78,7 +78,7 @@ fn convert_hex_strings_to_extensions(
 }
 
 
-fn parse_producer_schedule_from_json(
+pub fn parse_producer_schedule_from_json(
     producer_schedule_json: &ProducerScheduleJson,
 ) -> Result<ProducerSchedule> {
     Ok(
