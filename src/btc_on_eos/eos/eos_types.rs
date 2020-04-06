@@ -5,7 +5,6 @@ use eos_primitives::{
     BlockHeader as EosBlockHeader,
     ProducerKey as EosProducerKey,
     ActionReceipt as EosActionReceipt,
-    ProducerSchedule as EosProducerSchedule,
 };
 use crate::btc_on_eos::{
     utils::convert_hex_to_checksum256,
@@ -81,7 +80,6 @@ pub struct EosSubmissionMaterial {
     pub action_proofs: ActionProofs,
     pub block_header: EosBlockHeader,
     pub blockroot_merkle: Checksum256s,
-    pub active_schedule: EosProducerSchedule,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -89,7 +87,6 @@ pub struct EosSubmissionMaterialJson {
     pub blockroot_merkle: Vec<String>,
     pub action_proofs: ActionProofJsons,
     pub block_header: EosBlockHeaderJson,
-    pub active_schedule: ProducerScheduleJson,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

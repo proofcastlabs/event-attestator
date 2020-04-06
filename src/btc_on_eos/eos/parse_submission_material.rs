@@ -190,9 +190,6 @@ fn parse_eos_submission_material_json_to_struct(
             blockroot_merkle: parse_blockroot_merkle_from_json(
                 &submission_material_json.blockroot_merkle,
             )?,
-            active_schedule: parse_producer_schedule_from_json(
-                &submission_material_json.active_schedule,
-            )?,
             action_proofs: parse_eos_action_proof_jsons_to_action_proofs(
                &submission_material_json.action_proofs,
             )?,
