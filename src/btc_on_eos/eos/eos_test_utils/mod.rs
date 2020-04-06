@@ -14,6 +14,7 @@ use eos_primitives::{
     PermissionLevel,
     Action as EosAction,
     ActionReceipt as EosActionReceipt,
+    ProducerSchedule as EosProducerSchedule,
 };
 use crate::btc_on_eos::{
     errors::AppError,
@@ -26,6 +27,7 @@ use crate::btc_on_eos::{
     eos::{
         eos_state::EosState,
         parse_submission_material::{
+            parse_producer_schedule_from_json_string,
             parse_eos_submission_material_string_to_json,
             parse_eos_submission_material_string_to_struct,
         },
@@ -64,6 +66,9 @@ pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_4: &str =
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_5: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-10800.json";
 
+pub const SAMPLE_EOS_ACTIVE_SCHEDULE_PATH_PREFIX: &str =
+    "src/btc_on_eos/eos/eos_test_utils/sample-active-schedule-";
+
 pub const EOS_JUNGLE_CHAIN_ID: &str =
     "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
 
@@ -72,6 +77,24 @@ pub const TEMPORARY_DATABASE_PATH: &str = "src/test_utils/temporary_database";
 // Note: Key = provabletokn "active" on Jungle
 pub const EOS_SAMPLE_PRIVATE_KEY_WIF: &str =
     "5HzXzUB9sruHL93mf5dVgUJk1A3NMiAAsfu4p6F1hDdktVVErbR";
+
+pub fn get_sample_active_schedule(
+    version: u32,
+) -> Result<EosProducerSchedule> {
+    let path = format!(
+        "{}{}.json",
+        SAMPLE_EOS_ACTIVE_SCHEDULE_PATH_PREFIX,
+        version
+    );
+    match Path::new(&path).exists() {
+        true => parse_producer_schedule_from_json_string(
+            &read_to_string(path)?
+        ),
+        false => Err(AppError::Custom(
+            format!("✘ Cannot find sample active schedule json!")
+        ))
+    }
+}
 
 pub fn get_sample_eos_private_key_2() -> EosPrivateKey {
     EosPrivateKey::from_wallet_import_format(
