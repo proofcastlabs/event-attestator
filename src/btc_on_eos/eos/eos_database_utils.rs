@@ -34,7 +34,7 @@ pub fn get_eos_account_nonce_from_db<D>(
 
 pub fn put_eos_account_nonce_in_db<D>(
     db: &D,
-    new_nonce: &u64,
+    new_nonce: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {

@@ -42,14 +42,14 @@ impl TxInfo {
     pub fn new(
         tx: &EosSignedTransaction,
         minting_param_struct: &MintingParamStruct,
-        eos_account_nonce: &u64,
+        eos_account_nonce: u64,
     ) -> Result<TxInfo> {
         Ok(
             TxInfo {
                 eos_tx: tx.transaction.clone(),
                 eos_tx_signature: tx.signature.clone(),
                 eos_tx_recipient: tx.recipient.clone(),
-                eos_account_nonce: *eos_account_nonce,
+                eos_account_nonce,
                 eos_tx_amount:
                     convert_eos_asset_to_u64(&tx.amount)?,
                 originating_tx_hash:
@@ -73,7 +73,7 @@ pub struct BtcOutput {
 pub fn get_eos_signed_tx_info_from_eth_txs(
     txs: &EosSignedTransactions,
     minting_params: &MintingParams,
-    eos_account_nonce: &u64,
+    eos_account_nonce: u64,
 ) -> Result<Vec<TxInfo>> {
     info!("✔ Getting tx info from txs in state...");
     let start_nonce = eos_account_nonce - txs.len() as u64;
@@ -81,7 +81,7 @@ pub fn get_eos_signed_tx_info_from_eth_txs(
         .iter()
         .enumerate()
         .map(|(i, tx)|
-            TxInfo::new(tx, &minting_params[i], &(start_nonce + i as u64))
+            TxInfo::new(tx, &minting_params[i], start_nonce + i as u64)
         )
         .collect::<Result<Vec<TxInfo>>>()
 }
@@ -102,7 +102,7 @@ pub fn create_btc_output_json_and_put_in_state<D>(
                     get_eos_signed_tx_info_from_eth_txs(
                         &state.signed_txs,
                         &get_btc_canon_block_from_db(&state.db)?.minting_params,
-                        &get_eos_account_nonce_from_db(&state.db)?,
+                        get_eos_account_nonce_from_db(&state.db)?,
                     )?,
             }
         }

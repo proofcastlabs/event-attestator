@@ -12,7 +12,7 @@ pub const HEX_PREFIX_LENGTH: usize = 2;
 pub const PTOKEN_ERC777_NUM_DECIMALS: u32 = 18;
 pub const MINIMUM_REQUIRED_SATOSHIS: u64 = 5_000;
 pub const PRIVATE_KEY_DATA_SENSITIVITY_LEVEL: Option<u8> = Some(255);
-pub static SAFE_BTC_ADDRESS: &'static str = "136CTERaocm8dLbEtzCaFtJJX9jfFhnChK";
+pub static SAFE_BTC_ADDRESS: &str = "136CTERaocm8dLbEtzCaFtJJX9jfFhnChK";
 
 // NOTE: "0x71A440EE9Fa7F99FB9a697e96eC7839B8A1643B8"
 pub static SAFE_ETH_ADDRESS: [u8; 20] = [

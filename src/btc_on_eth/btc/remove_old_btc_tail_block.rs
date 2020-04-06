@@ -23,7 +23,7 @@ fn is_anchor_block<D>(
     match get_btc_anchor_block_hash_from_db(db) {
         Ok(hash) => Ok(&hash == btc_block_hash),
         _ => Err(AppError::Custom(
-            format!("✘ No anchor hash found in db!")
+            "✘ No anchor hash found in db!".to_string()
         ))
     }
 }

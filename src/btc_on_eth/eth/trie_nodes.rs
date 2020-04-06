@@ -31,7 +31,7 @@ use crate::btc_on_eth::{
     },
 };
 
-static NO_NODE_IN_STRUCT_ERR: &'static str =
+static NO_NODE_IN_STRUCT_ERR: &str =
     "✘ No node present in struct to rlp-encode!";
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -197,7 +197,7 @@ impl Node {
         } else if let Some(extension_node) = &self.extension {
             // NOTE: Could be inline node, but we've not implemented them.
             extension_node.path_nibbles.len()
-        } else if let Some(_) = &self.branch {
+        } else if self.branch.is_some() {
             1
         } else {
             0
@@ -217,9 +217,9 @@ impl Node {
     }
 
     pub fn get_type(&self) -> &'static str {
-        if let Some(_) = self.leaf {
+        if self.leaf.is_some() {
             LEAF_NODE_STRING
-        } else if let Some(_) = self.branch {
+        } else if self.branch.is_some() {
             BRANCH_NODE_STRING
         } else {
             EXTENSION_NODE_STRING
@@ -254,7 +254,7 @@ pub fn rlp_decode_node(rlp_data: Bytes) -> Result<Node> {
                     let value: &Bytes = &list[16];
                     let mut branches = get_empty_child_nodes();
                     for i in 0..16 {
-                        if list[i].len() > 0 {
+                        if !list[i].is_empty() {
                             let value: &Bytes = &list[i];
                             branches[i] = Some(value.to_vec())
                         }
@@ -266,7 +266,7 @@ pub fn rlp_decode_node(rlp_data: Bytes) -> Result<Node> {
                             branch: Some(
                                 BranchNode {
                                     branches,
-                                    value: if value.len() > 0 {
+                                    value: if !value.is_empty() {
                                         Some(value.to_vec())
                                      } else {
                                          None

@@ -14,7 +14,7 @@ fn check_db_for_parent_of_block_in_state<D>(
 ) -> bool
     where D: DatabaseInterface
 {
-    key_exists_in_db(db, &convert_h256_to_bytes(parent_hash.clone()), None)
+    key_exists_in_db(db, &convert_h256_to_bytes(*parent_hash), None)
 }
 
 pub fn check_for_parent_of_block_in_state<D>(
@@ -32,7 +32,7 @@ pub fn check_for_parent_of_block_in_state<D>(
             Ok(state)
         },
         false => Err(AppError::Custom(
-            format!("✘ Block Rejected - no parent exists in database!")
+            "✘ Block Rejected - no parent exists in database!".to_string()
         )),
     }
 }

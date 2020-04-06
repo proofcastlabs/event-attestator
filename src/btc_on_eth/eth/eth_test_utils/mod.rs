@@ -593,9 +593,7 @@ mod tests {
         let result = get_sample_log_with_desired_topic()
             .topics
             .iter()
-            .filter(|log_topic| **log_topic == desired_topic)
-            .collect::<Vec<&EthHash>>()
-            .len() > 0;
+            .any(|log_topic| *log_topic == desired_topic);
         assert!(result);
     }
 
@@ -607,9 +605,7 @@ mod tests {
         let result = get_sample_log_without_desired_topic()
             .topics
             .iter()
-            .filter(|log_topic| **log_topic == desired_topic)
-            .collect::<Vec<&EthHash>>()
-            .len() > 0;
+            .any(|log_topic| *log_topic == desired_topic);
         assert!(!result);
     }
 
@@ -620,9 +616,7 @@ mod tests {
         ).unwrap();
         let result = get_sample_logs_with_desired_topic()
             .iter()
-            .filter(|log| log_contains_topic(log, &desired_topic) == true)
-            .collect::<Vec<&EthLog>>()
-            .len() > 0;
+            .any(|log| log_contains_topic(log, &desired_topic));
         assert!(result);
     }
 
@@ -633,9 +627,7 @@ mod tests {
         ).unwrap();
         let result = get_sample_logs_without_desired_topic()
             .iter()
-            .filter(|log| log_contains_topic(log, &desired_topic) == true)
-            .collect::<Vec<&EthLog>>()
-            .len() > 0;
+            .any(|log| log_contains_topic(log, &desired_topic));
         assert!(!result);
     }
 

@@ -23,7 +23,7 @@ pub fn check_for_parent_of_btc_block_in_state<D>(
             Ok(state)
         },
         _ => Err(AppError::Custom(
-            format!("✘ BTC block Rejected - no parent exists in database!")
+            "✘ BTC block Rejected - no parent exists in database!".to_string()
         )),
     }
 }

@@ -128,7 +128,7 @@ pub fn parse_eos_block_header_from_json(
             AccountName::from_str(
                 &eos_block_header_json.producer
             )?,
-            eos_block_header_json.confirmed.clone(),
+            eos_block_header_json.confirmed,
             convert_hex_to_checksum256(
                 &eos_block_header_json.previous
             )?,

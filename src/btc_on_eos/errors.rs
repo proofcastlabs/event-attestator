@@ -1,8 +1,4 @@
-use hex;
-use log;
-use std::fmt;
-use serde_json;
-use std::error::Error;
+use std::{fmt, error::Error};
 
 #[derive(Debug)]
 pub enum AppError {
@@ -33,7 +29,7 @@ impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             AppError::Custom(ref msg) =>
-                format!("{}", msg),
+                msg.to_string(),
             AppError::HexError(ref e) =>
                 format!("✘ Hex Error!\n✘ {}", e),
             AppError::IOError(ref e) =>

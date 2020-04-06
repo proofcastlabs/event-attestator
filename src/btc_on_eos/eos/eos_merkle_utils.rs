@@ -80,7 +80,7 @@ fn make_and_hash_canonical_pair(l: &Bytes, r: &Bytes) -> Bytes {
 }
 
 pub fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
-    if leaves.len() == 0 {
+    if leaves.is_empty() {
         return vec![0x00]
     }
     while leaves.len() > 1 {
@@ -104,10 +104,10 @@ pub fn verify_merkle_proof(merkle_proof: &MerkleProof) -> Result<bool> {
         .iter()
         .map(|hex| Ok(hex::decode(hex)?))
         .collect::<Result<Vec<Bytes>>>()?;
-    for i in 1..leaves.len() {
-        match is_canonical_right(&leaves[i]) {
-            true => {node = make_and_hash_canonical_pair(&node, &leaves[i]);}
-            false => {node = make_and_hash_canonical_pair(&leaves[i], &node);}
+    for leaf in leaves.iter().skip(1) {
+        match is_canonical_right(&leaf) {
+            true => {node = make_and_hash_canonical_pair(&node, &leaf);}
+            false => {node = make_and_hash_canonical_pair(&leaf, &node);}
         }
     };
     Ok(node == hex::decode(merkle_proof.last()?)?)
@@ -144,13 +144,13 @@ impl IncrementalMerkle {
 
     fn make_canonical_left(val: &Checksum256) -> Checksum256 {
         let mut canonical_l: Checksum256 = *val;
-        canonical_l.set_hash0(canonical_l.hash0() & 0xFFFFFFFFFFFFFF7Fu64);
+        canonical_l.set_hash0(canonical_l.hash0() & 0xFFFF_FFFF_FFFF_FF7F_u64);
         canonical_l
     }
 
     fn  make_canonical_right(val: &Checksum256) -> Checksum256 {
         let mut canonical_r: Checksum256 = *val;
-        canonical_r.set_hash0(canonical_r.hash0() | 0x0000000000000080u64);
+        canonical_r.set_hash0(canonical_r.hash0() | 0x0000_0000_0000_0080_u64);
         canonical_r
     }
 
@@ -180,12 +180,12 @@ impl IncrementalMerkle {
         let mut lz: usize = 64;
 
         if value != 0 { lz -= 1; }
-        if (value & 0x00000000FFFFFFFF_u64) != 0 { lz -= 32; }
-        if (value & 0x0000FFFF0000FFFF_u64) != 0 { lz -= 16; }
-        if (value & 0x00FF00FF00FF00FF_u64) != 0 { lz -= 8; }
-        if (value & 0x0F0F0F0F0F0F0F0F_u64) != 0 { lz -= 4; }
-        if (value & 0x3333333333333333_u64) != 0 { lz -= 2; }
-        if (value & 0x5555555555555555_u64) != 0 { lz -= 1; }
+        if (value & 0x0000_0000_FFFF_FFFF_u64) != 0 { lz -= 32; }
+        if (value & 0x0000_FFFF_0000_FFFF_u64) != 0 { lz -= 16; }
+        if (value & 0x00FF_00FF_00FF_00FF_u64) != 0 { lz -= 8; }
+        if (value & 0x0F0F_0F0F_0F0F_0F0F_u64) != 0 { lz -= 4; }
+        if (value & 0x3333_3333_3333_3333_u64) != 0 { lz -= 2; }
+        if (value & 0x5555_5555_5555_5555_u64) != 0 { lz -= 1; }
 
         lz
     }
@@ -227,8 +227,8 @@ impl IncrementalMerkle {
                 )?;
                 partial = true;
             } else {
-                let left_value = active_iter.next().ok_or(
-                    AppError::Custom("✘ Incremerkle error!".to_string())
+                let left_value = active_iter.next().ok_or_else(
+                    || AppError::Custom("✘ Incremerkle error!".to_string())
                 )?;
 
                 if partial {
@@ -241,7 +241,7 @@ impl IncrementalMerkle {
             }
 
             current_depth -= 1;
-            index = index >> 1;
+            index >>= 1;
         }
 
         updated_active_nodes.push(top);
@@ -250,14 +250,14 @@ impl IncrementalMerkle {
 
         self._node_count += 1;
 
-        return Ok(self._active_nodes[self._active_nodes.len() - 1]);
+        Ok(self._active_nodes[self._active_nodes.len() - 1])
     }
 
     pub fn get_root(&self) -> Checksum256 {
         if self._node_count > 0 {
-            return self._active_nodes[self._active_nodes.len() - 1];
+            self._active_nodes[self._active_nodes.len() - 1]
         } else {
-            return Default::default();
+            Default::default()
         }
     }
 }

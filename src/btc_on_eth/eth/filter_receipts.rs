@@ -21,17 +21,13 @@ pub fn log_contains_topic(log: &EthLog, topic: &EthHash) -> bool {
     log
         .topics
         .iter()
-        .filter(|log_topic| *log_topic == topic)
-        .collect::<Vec<&EthHash>>()
-        .len() > 0
+        .any(|log_topic| log_topic == topic)
 }
 
 pub fn logs_contain_topic(logs: &EthLogs, topic: &EthHash) -> bool {
     logs
         .iter()
-        .filter(|log| log_contains_topic(log, topic) == true)
-        .collect::<Vec<&EthLog>>()
-        .len() > 0
+        .any(|log| log_contains_topic(log, topic))
 }
 
 pub fn log_contains_address(log: &EthLog, address: &EthAddress) -> bool {
@@ -41,9 +37,7 @@ pub fn log_contains_address(log: &EthLog, address: &EthAddress) -> bool {
 pub fn logs_contain_address(logs: &EthLogs, address: &EthAddress) -> bool {
     logs
         .iter()
-        .filter(|log| log_contains_address(log, address) == true)
-        .collect::<Vec<&EthLog>>()
-        .len() > 0
+        .any(|log| log_contains_address(log, address))
 }
 
 fn filter_receipts_for_address_and_topic(

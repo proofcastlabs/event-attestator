@@ -85,7 +85,7 @@ fn parse_deposit_list_json_to_deposit_info(
     deposit_address_info_json: &DepositAddressInfoJson
 ) -> Result<DepositAddressInfo> {
     DepositAddressInfo::new(
-        &deposit_address_info_json.nonce,
+        deposit_address_info_json.nonce,
         &deposit_address_info_json.eth_address,
         &deposit_address_info_json.btc_deposit_address,
         &deposit_address_info_json.eth_address_and_nonce_hash,

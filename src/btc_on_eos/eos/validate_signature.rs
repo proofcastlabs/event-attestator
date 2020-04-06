@@ -74,7 +74,7 @@ fn get_signing_digest( // TODO use stuff in state! And rename better!jjjj
 }
 
 fn get_signing_key_from_active_schedule(
-    block_producer: &EosAccountName,
+    block_producer: EosAccountName,
     active_schedule: &EosProducerSchedule,
 ) -> Result<PublicKey> {
     let filtered_keys = active_schedule
@@ -82,7 +82,7 @@ fn get_signing_key_from_active_schedule(
         .iter()
         .map(|producer| producer.producer_name)
         .zip(active_schedule.producers.iter())
-        .filter(|(name, _)| name == block_producer)
+        .filter(|(name, _)| *name == block_producer)
         .map(|(_, producer)| &producer.block_signing_key)
         .cloned()
         .collect::<Vec<PublicKey>>();
@@ -120,7 +120,7 @@ fn check_block_signature_is_valid(
     active_schedule: &EosProducerSchedule,
 ) -> Result<()> {
     let signing_key = get_signing_key_from_active_schedule(
-        &block_header.producer,
+        block_header.producer,
         active_schedule,
     )?.to_string();
     let recovered_key = recover_block_signer_public_key(
@@ -201,7 +201,7 @@ mod tests {
             "EOS5CJJEKDms9UTS7XBv8rb33BENRpnpSGsQkAe6bCfpjHHCKQTgH";
         let submission_material = get_sample_eos_submission_material_n(1);
         let result = get_signing_key_from_active_schedule(
-            &submission_material.block_header.producer,
+            submission_material.block_header.producer,
             &submission_material.active_schedule,
         )
             .unwrap()
@@ -272,7 +272,7 @@ mod tests {
             .map(|(i, _)| get_sample_eos_submission_material_n(i + 1))
             .map(|submission_material|
                  get_signing_key_from_active_schedule(
-                     &submission_material.block_header.producer,
+                     submission_material.block_header.producer,
                      &submission_material.active_schedule,
                  )
              )
@@ -292,7 +292,7 @@ mod tests {
             .map(|(i, _)| get_sample_eos_submission_material_n(i + 1))
             .map(|submission_material|
                  get_signing_key_from_active_schedule(
-                     &submission_material.block_header.producer,
+                     submission_material.block_header.producer,
                      &submission_material.active_schedule,
                  )
              )

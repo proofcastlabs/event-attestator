@@ -1,4 +1,3 @@
-use hex;
 pub use serde_json::{
     json,
     Value as JsonValue,

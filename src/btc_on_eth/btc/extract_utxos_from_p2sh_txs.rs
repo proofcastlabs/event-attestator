@@ -31,7 +31,7 @@ fn maybe_extract_p2sh_utxo(
     output_index: u32,
     tx_output: &BtcTxOut,
     full_tx: &BtcTransaction,
-    btc_network: &BtcNetwork,
+    btc_network: BtcNetwork,
     deposit_info_hash_map: &DepositInfoHashMap,
 ) -> Option<BtcUtxoAndValue> {
     info!("✔ Extracting UTXOs from single `p2sh` transaction...");
@@ -40,7 +40,7 @@ fn maybe_extract_p2sh_utxo(
         true => {
             match BtcAddress::from_script(
                 &tx_output.script_pubkey,
-                *btc_network,
+                btc_network,
             ) {
                 None => {
                     info!(
@@ -95,7 +95,7 @@ fn maybe_extract_p2sh_utxo(
 pub fn extract_p2sh_utxos_from_txs(
     transactions: &BtcTransactions,
     deposit_info_hash_map: &DepositInfoHashMap,
-    btc_network: &BtcNetwork,
+    btc_network: BtcNetwork,
 ) -> Result<BtcUtxosAndValues> {
     info!("✔ Extracting UTXOs from `p2sh` transactions...");
     Ok(
@@ -131,7 +131,7 @@ pub fn maybe_extract_utxos_from_p2sh_txs_and_put_in_state<D>(
     extract_p2sh_utxos_from_txs(
         state.get_p2sh_deposit_txs()?,
         state.get_deposit_info_hash_map()?,
-        &get_btc_network_from_db(&state.db)?,
+        get_btc_network_from_db(&state.db)?,
     )
         .and_then(|utxos| {
             debug!("✔ Extracted `p2sh` UTXOs: {:?}", utxos);
@@ -177,7 +177,7 @@ mod tests {
             &hash_map,
             &pub_key[..],
             &txs,
-            &btc_network,
+            btc_network,
         )
             .unwrap()
             [0]
@@ -189,7 +189,7 @@ mod tests {
             output_index,
             &output,
             &tx,
-            &btc_network,
+            btc_network,
             &hash_map,
         ).unwrap();
         assert!(result == expected_result);
@@ -218,12 +218,12 @@ mod tests {
             &hash_map,
             &pub_key[..],
             &txs,
-            &btc_network,
+            btc_network,
         ).unwrap();
         let result = extract_p2sh_utxos_from_txs(
             &filtered_txs,
             &hash_map,
-            &btc_network,
+            btc_network,
         ).unwrap();
         assert!(result.len() == expected_num_utxos);
         assert!(result[0] == expected_result);
@@ -274,12 +274,12 @@ mod tests {
             &hash_map,
             &pub_key_bytes[..],
             &txs,
-            &btc_network,
+            btc_network,
         ).unwrap();
         let result = extract_p2sh_utxos_from_txs(
             &filtered_txs,
             &hash_map,
-            &btc_network,
+            btc_network,
         ).unwrap();
         let result_1 = result[0].clone();
         let result_2 = result[1].clone();

@@ -1,4 +1,3 @@
-use serde_json;
 use bitcoin_hashes::{
     Hash,
     sha256d,

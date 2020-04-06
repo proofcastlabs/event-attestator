@@ -1,4 +1,3 @@
-use ethereum_types::U256;
 use crate::btc_on_eth::{
     traits::DatabaseInterface,
     types::{
@@ -34,12 +33,12 @@ pub fn get_eth_signed_txs(
                 minting_param_struct.eth_address,
             );
             get_signed_minting_tx(
-                U256::from(minting_param_struct.amount.clone()),
+                minting_param_struct.amount,
                 signing_params.eth_account_nonce + i as u64,
                 signing_params.chain_id,
                 signing_params.ptoken_contract_address,
                 signing_params.gas_price,
-                minting_param_struct.eth_address.clone(),
+                minting_param_struct.eth_address,
                 signing_params.eth_private_key.clone(),
             )
         })
@@ -110,13 +109,13 @@ mod tests {
         ) {
             panic!("Error putting eth smart contract address in db: {}", e);
         };
-        if let Err(e) = put_eth_chain_id_in_db(&db, &chain_id) {
+        if let Err(e) = put_eth_chain_id_in_db(&db, chain_id) {
             panic!("Error putting eth chain id in db: {}", e);
         };
-        if let Err(e) = put_eth_gas_price_in_db(&db, &gas_price) {
+        if let Err(e) = put_eth_gas_price_in_db(&db, gas_price) {
             panic!("Error putting eth gas price in db: {}", e);
         };
-        if let Err(e) = put_eth_account_nonce_in_db(&db, &nonce) {
+        if let Err(e) = put_eth_account_nonce_in_db(&db, nonce) {
             panic!("Error putting eth account nonce in db: {}", e);
         };
         if let Err(e) = put_eth_private_key_in_db(&db, &eth_private_key) {

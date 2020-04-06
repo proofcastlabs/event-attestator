@@ -96,7 +96,7 @@ pub fn sign_peos_transaction(
             ),
             hex::encode(
                 &unsigned_transaction.to_serialize_data()[..]
-            ).to_string(),
+            ),
             to.to_string(),
             amount.to_string(),
         )

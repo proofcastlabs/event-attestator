@@ -24,7 +24,7 @@ fn does_tail_block_require_updating<D>(
     trace!("✔ Checking if ETH tail block needs updating...");
     get_eth_tail_block_from_db(db)
         .map(|db_tail_block|
-            db_tail_block.block.number <= calculated_tail_block.block.number - 1
+            db_tail_block.block.number < calculated_tail_block.block.number
         )
 }
 
@@ -44,7 +44,7 @@ pub fn maybe_update_eth_tail_block_hash<D>(
             maybe_get_nth_ancestor_eth_block_and_receipts(
                 &state.db,
                 &latest_eth_block.block.hash,
-                &(canon_to_tip_length + ETH_TAIL_LENGTH),
+                canon_to_tip_length + ETH_TAIL_LENGTH,
             )
         })
         .and_then(|maybe_ancester_block_and_id|

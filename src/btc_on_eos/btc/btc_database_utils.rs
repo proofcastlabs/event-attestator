@@ -87,7 +87,7 @@ pub fn get_btc_account_nonce_from_db<D>(
 
 pub fn put_btc_account_nonce_in_db<D>(
     db: &D,
-    nonce: &u64,
+    nonce: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -97,14 +97,14 @@ pub fn put_btc_account_nonce_in_db<D>(
 
 pub fn increment_btc_account_nonce_in_db<D>(
     db: &D,
-    amount_to_increment_by: &u64,
+    amount_to_increment_by: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Incrementing BTC account nonce in db...");
     get_btc_account_nonce_from_db(db)
         .and_then(|nonce|
-            put_btc_account_nonce_in_db(db, &(nonce + amount_to_increment_by))
+            put_btc_account_nonce_in_db(db, nonce + amount_to_increment_by)
         )
 }
 
@@ -116,7 +116,7 @@ pub fn get_btc_fee_from_db<D>(db: &D) -> Result<u64>
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
-pub fn put_btc_fee_in_db<D>(db: &D, fee: &u64) -> Result<()>
+pub fn put_btc_fee_in_db<D>(db: &D, fee: u64) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Adding BTC fee of '{}' satoshis-per-byte to db...", fee);
@@ -130,7 +130,7 @@ pub fn get_btc_network_from_db<D>(db: &D) -> Result<BtcNetwork>
         .and_then(|bytes| convert_bytes_to_btc_network(&bytes))
 }
 
-pub fn put_btc_network_in_db<D>(db: &D, network: &BtcNetwork) -> Result<()>
+pub fn put_btc_network_in_db<D>(db: &D, network: BtcNetwork) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Adding BTC '{}' network to database...", network);
@@ -141,7 +141,7 @@ pub fn put_btc_network_in_db<D>(db: &D, network: &BtcNetwork) -> Result<()>
     )
 }
 
-pub fn put_btc_difficulty_in_db<D>(db: &D, difficulty: &u64) -> Result<()>
+pub fn put_btc_difficulty_in_db<D>(db: &D, difficulty: u64) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Putting BTC difficulty threshold of {} in db...", difficulty);
@@ -248,15 +248,12 @@ pub fn key_exists_in_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Checking for existence of key: {}", hex::encode(key));
-    match db.get(key.to_vec(), sensitivity) {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    db.get(key.to_vec(), sensitivity).is_ok()
 }
 
 pub fn put_btc_canon_to_tip_length_in_db<D>(
     db: &D,
-    btc_canon_to_tip_length: &u64,
+    btc_canon_to_tip_length: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -457,13 +454,13 @@ pub fn maybe_get_parent_btc_block_and_id<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Maybe getting BTC parent block for id: {}", id);
-    maybe_get_nth_ancestor_btc_block_and_id(db, id, &1)
+    maybe_get_nth_ancestor_btc_block_and_id(db, id, 1)
 }
 
 pub fn maybe_get_nth_ancestor_btc_block_and_id<D>(
     db: &D,
     id: &sha256d::Hash,
-    n: &u64,
+    n: u64,
 ) -> Option<BtcBlockInDbFormat>
     where D: DatabaseInterface
 {
@@ -482,7 +479,7 @@ pub fn maybe_get_nth_ancestor_btc_block_and_id<D>(
             _ => maybe_get_nth_ancestor_btc_block_and_id(
                 db,
                 &block_in_db_format.block.header.prev_blockhash,
-                &(n - 1),
+                n - 1,
             )
         }
     }
@@ -579,7 +576,7 @@ mod tests {
     fn existing_key_should_exist_in_db() {
         let db = get_test_database();
         let length = 5;
-        if let Err(e) = put_btc_canon_to_tip_length_in_db(&db, &length) {
+        if let Err(e) = put_btc_canon_to_tip_length_in_db(&db, length) {
             panic!("Error putting canon to tip len in db: {}", e);
         };
         let result = key_exists_in_db(
@@ -594,7 +591,7 @@ mod tests {
     fn should_get_and_put_btc_canon_to_tip_length_in_db() {
         let db = get_test_database();
         let length = 6;
-        if let Err(e) = put_btc_canon_to_tip_length_in_db(&db, &length) {
+        if let Err(e) = put_btc_canon_to_tip_length_in_db(&db, length) {
             panic!("Error putting canon to tip len in db: {}", e);
         };
         match get_btc_canon_to_tip_length_from_db(&db) {
@@ -610,7 +607,7 @@ mod tests {
     #[test]
     fn should_get_and_save_btc_private_key_in_db() {
         let db = get_test_database();
-        put_btc_network_in_db(&db, &BtcNetwork::Testnet)
+        put_btc_network_in_db(&db, BtcNetwork::Testnet)
             .unwrap();
         let pk = get_sample_btc_private_key();
         if let Err(e) = put_btc_private_key_in_db(&db, &pk) {
@@ -923,7 +920,7 @@ mod tests {
     fn should_get_and_put_btc_fee_in_db() {
         let fee = 666;
         let db = get_test_database();
-        if let Err(e) = put_btc_fee_in_db(&db, &fee) {
+        if let Err(e) = put_btc_fee_in_db(&db, fee) {
             panic!("Error putting BTC fee in db: {}", e);
         }
         match get_btc_fee_from_db(&db) {
@@ -940,7 +937,7 @@ mod tests {
     fn should_get_and_put_btc_network_in_db() {
         let db = get_test_database();
         let network = BtcNetwork::Bitcoin;
-        if let Err(e) = put_btc_network_in_db(&db, &network) {
+        if let Err(e) = put_btc_network_in_db(&db, network) {
             panic!("Error putting BTC network in db: {}", e);
         }
         match get_btc_network_from_db(&db) {
@@ -957,7 +954,7 @@ mod tests {
     fn should_get_and_put_btc_difficulty_in_db() {
         let difficulty = 1337;
         let db = get_test_database();
-        if let Err(e) = put_btc_difficulty_in_db(&db, &difficulty) {
+        if let Err(e) = put_btc_difficulty_in_db(&db, difficulty) {
             panic!("Error putting BTC difficulty in db: {}", e);
         };
         match get_btc_difficulty_from_db(&db) {

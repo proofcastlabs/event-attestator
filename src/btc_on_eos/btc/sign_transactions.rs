@@ -34,8 +34,8 @@ use crate::btc_on_eos::{
 };
 
 fn get_signed_tx(
-    ref_block_num: &u16,
-    ref_block_prefix: &u32,
+    ref_block_num: u16,
+    ref_block_prefix: u32,
     to: &String,
     amount: &String,
     chain_id: &String,
@@ -48,8 +48,8 @@ fn get_signed_tx(
         MEMO,
         account_name,
         amount,
-        ref_block_num.clone(),
-        ref_block_prefix.clone(),
+        ref_block_num,
+        ref_block_prefix,
         EOS_MAX_EXPIRATION_SECS,
         PEOS_ACCOUNT_PERMISSION_LEVEL,
     )
@@ -65,8 +65,8 @@ fn get_signed_tx(
 }
 
 fn get_signed_txs(
-    ref_block_num: &u16,
-    ref_block_prefix: &u32,
+    ref_block_num: u16,
+    ref_block_prefix: u32,
     chain_id: &String,
     private_key: &EosPrivateKey,
     account_name: &String,
@@ -95,8 +95,8 @@ pub fn maybe_sign_canon_block_txs_and_add_to_state<D>(
 {
     info!("✔ Maybe signing minting txs...");
     get_signed_txs(
-        &state.ref_block_num,
-        &state.ref_block_prefix,
+        state.ref_block_num,
+        state.ref_block_prefix,
         &get_eos_chain_id_from_db(&state.db)?,
         &get_eos_private_key_from_db(&state.db)?,
         &get_eos_account_name_string_from_db(&state.db)?,

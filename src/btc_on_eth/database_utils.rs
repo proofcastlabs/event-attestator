@@ -10,7 +10,7 @@ use crate::btc_on_eth::{
 pub fn put_u64_in_db<D>(
     db: &D,
     key: &Bytes,
-    u_64: &u64,
+    u_64: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -51,7 +51,7 @@ mod tests {
         let key = vec![0xc0, 0xff, 0xee];
         let u_64 = 1337;
         let db = get_test_database();
-        if let Err(e) = put_u64_in_db(&db, &key, &u_64) {
+        if let Err(e) = put_u64_in_db(&db, &key, u_64) {
             panic!("Error saving eth account usize in db: {}", e);
         };
         match get_u64_from_db(&db, &key) {

@@ -45,19 +45,7 @@ pub struct EosPublicKey {
 impl EosPublicKey {
 
     pub fn write_into<W: io::Write>(&self, mut writer: W) {
-        let _write_res: io::Result<()> = if self.compressed {
-            writer.write_all(
-                &self
-                    .public_key
-                    .serialize()
-                )
-        } else {
-            writer.write_all(
-                &self
-                    .public_key
-                    .serialize()
-                )
-        };
+        writer.write_all(&self.public_key.serialize()).ok();
     }
 
     pub fn to_bytes(&self) -> Bytes {
@@ -114,7 +102,7 @@ impl EosPublicKey {
             64 => false,
             len => {
                 return Err(AppError::Base58Error(
-                    base58::Error::InvalidLength(len).into()
+                    base58::Error::InvalidLength(len)
                 ))
             }
         };

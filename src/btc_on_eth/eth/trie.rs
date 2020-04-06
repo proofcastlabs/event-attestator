@@ -59,7 +59,7 @@ impl Trie {
         match self.root == HASHED_NULL_NODE {
             true => {
                 trace!("✔ Trie empty ∴ creating new leaf node...");
-                Node::new_leaf(key.clone(), value)
+                Node::new_leaf(key, value)
                     .and_then(|leaf|
                         self.update_trie_trie_hash_map(
                             vec![leaf],
@@ -471,8 +471,8 @@ impl Trie {
                         ))
                     }),
             _ => get_common_prefix_nibbles(
-                    remaining_key.clone(),
-                    current_leaf_node.clone().get_key()
+                    remaining_key,
+                    current_leaf_node.get_key()
                 )
                 .and_then(|(common_prefix, key_remainder, node_key_remainder)| {
                     match common_prefix.len() {
@@ -776,7 +776,7 @@ impl Trie {
         mut new_stack: NodeStack,
         mut stack_to_delete: NodeStack,
     ) -> Result<Self> {
-        match stack_to_delete.len() > 0 {
+        match !stack_to_delete.is_empty() {
             true => {
                 let node = stack_to_delete.pop()?;
                 trace!(
@@ -967,7 +967,7 @@ impl Trie {
                         trace!("✔ Extension & key have no common prefix");
                         Ok((self, target_key, found_stack, key))
                     },
-                    _ => match remaining_node_key.len() > 0 {
+                    _ => match !remaining_node_key.is_empty() {
                         true => {
                             trace!("✔ Extension partial match!");
                             Ok((self, target_key, found_stack, key))

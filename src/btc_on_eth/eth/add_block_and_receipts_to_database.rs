@@ -25,7 +25,7 @@ fn add_block_and_receipts_to_db_if_not_extant<D>(
             put_eth_block_and_receipts_in_db(db, block_and_receipts)
         }
         true => Err(AppError::Custom(
-            format!("✘ Block Rejected - it's already in the db!")
+            "✘ Block Rejected - it's already in the db!".to_string()
         ))
     }
 }

@@ -18,7 +18,7 @@ use crate::btc_on_eos::{
 fn check_difficulty_is_above_threshold(
     threshold: u64,
     btc_block_header: &BtcBlockHeader,
-    network: &BtcNetwork,
+    network: BtcNetwork,
 ) -> Result<()> {
     /*
      * NOTE: Network not configurable in difficulty calculation ∵ all members
@@ -27,7 +27,7 @@ fn check_difficulty_is_above_threshold(
     info!("✔ Checking BTC block difficulty is above threshold...");
     match network {
         BtcNetwork::Bitcoin => {
-            match btc_block_header.difficulty(*network) > threshold {
+            match btc_block_header.difficulty(network) > threshold {
                     true => {
                         info!("✔ BTC block difficulty is above threshold!");
                         Ok(())
@@ -35,7 +35,7 @@ fn check_difficulty_is_above_threshold(
                     false => {
                         trace!(
                             "✘ Difficulty of {} is below threshold of {}!",
-                            btc_block_header.difficulty(*network),
+                            btc_block_header.difficulty(network),
                             threshold,
                         );
                         Err(AppError::Custom(
@@ -61,7 +61,7 @@ pub fn validate_difficulty_of_btc_block_in_state<D>(
     check_difficulty_is_above_threshold(
         get_btc_difficulty_from_db(&state.db)?,
         &state.get_btc_block_and_id()?.block.header,
-        &get_btc_network_from_db(&state.db)?,
+        get_btc_network_from_db(&state.db)?,
     )
         .and_then(|_| Ok(state))
 }
@@ -81,7 +81,7 @@ mod tests {
         if let Err(e) = check_difficulty_is_above_threshold(
             threshold,
             &block_header,
-            &BtcNetwork::Bitcoin,
+            BtcNetwork::Bitcoin,
         ) {
             panic!("Difficulty should be above threshold: {}", e);
         }
@@ -97,7 +97,7 @@ mod tests {
         if let Ok(_) = check_difficulty_is_above_threshold(
             threshold,
             &block_header,
-            &BtcNetwork::Bitcoin,
+            BtcNetwork::Bitcoin,
         ) {
             panic!("Difficulty should not be above threshold!");
         }
@@ -116,7 +116,7 @@ mod tests {
         if let Err(_) = check_difficulty_is_above_threshold(
             threshold,
             &block_header,
-            &network,
+            network,
         ) {
             panic!("Difficulty check should be skipped on testnet!");
         }

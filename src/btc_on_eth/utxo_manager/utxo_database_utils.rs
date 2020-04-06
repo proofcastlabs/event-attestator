@@ -108,7 +108,7 @@ pub fn get_utxo_and_value<D>(db: &D) -> Result<BtcUtxoAndValue>
                 }
                 Some(pointer) => {
                     trace!("✔ UTXO found, updating `UTXO_FIRST` pointer...");
-                    decrement_total_utxo_balance_in_db(db, &utxo.value)
+                    decrement_total_utxo_balance_in_db(db, utxo.value)
                         .and_then(|_| delete_first_utxo(db))
                         .and_then(|_| set_first_utxo_pointer(db, &pointer))
                         .and_then(|_| decrement_total_number_of_utxos_in_db(db))
@@ -135,7 +135,7 @@ pub fn save_new_utxo_and_value<D>(
                 .and_then(|_| increment_utxo_nonce_in_db(db))
                 .and_then(|_| increment_total_number_of_utxos_in_db(db))
                 .and_then(|_| set_last_utxo_pointer(db, &hash))
-                .and_then(|_| put_total_utxo_balance_in_db(db, &value))
+                .and_then(|_| put_total_utxo_balance_in_db(db, value))
                 .and_then(|_| put_utxo_in_db(db, &hash_vec, utxo_and_value))
         }
         _ => {
@@ -145,7 +145,7 @@ pub fn save_new_utxo_and_value<D>(
                 .and_then(|_| increment_total_number_of_utxos_in_db(db))
                 .and_then(|_| set_last_utxo_pointer(db, &hash))
                 .and_then(|_| put_utxo_in_db(db, &hash_vec, utxo_and_value))
-                .and_then(|_| increment_total_utxo_balance_in_db(db, &value))
+                .and_then(|_| increment_total_utxo_balance_in_db(db, value))
         }
     }
 }
@@ -183,7 +183,7 @@ pub fn delete_utxo_balance_key<D>(db: &D) -> Result<()>
 
 pub fn increment_total_utxo_balance_in_db<D>(
     db: &D,
-    amount_to_increment_by: &u64,
+    amount_to_increment_by: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -192,20 +192,20 @@ pub fn increment_total_utxo_balance_in_db<D>(
             trace!("✔ Incrementing UTXO total by: {}", amount_to_increment_by);
             put_total_utxo_balance_in_db(
                 db,
-                &(balance + amount_to_increment_by)
+                balance + amount_to_increment_by
             )
         })
 }
 
 pub fn decrement_total_utxo_balance_in_db<D>(
     db: &D,
-    amount_to_decrement_by: &u64,
+    amount_to_decrement_by: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {
     get_total_utxo_balance_from_db(db)
         .and_then(|balance|
-            match &balance >= amount_to_decrement_by {
+            match balance >= amount_to_decrement_by {
                 true => {
                     trace!(
                         "✔ Decrementing UTXO balance by {}",
@@ -213,7 +213,7 @@ pub fn decrement_total_utxo_balance_in_db<D>(
                     );
                     put_total_utxo_balance_in_db(
                         db,
-                        &(balance - amount_to_decrement_by)
+                        balance - amount_to_decrement_by
                     )
                 }
                 false => Err(AppError::Custom(
@@ -226,7 +226,7 @@ pub fn decrement_total_utxo_balance_in_db<D>(
 
 pub fn put_total_utxo_balance_in_db<D>(
     db: &D,
-    balance: &u64,
+    balance: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -397,7 +397,7 @@ pub fn get_total_number_of_utxos_from_db<D>(db: &D) -> Result<u64>
 
 pub fn put_total_number_of_utxos_in_db<D>(
     db: &D,
-    total_num_utxos: &u64
+    total_num_utxos: u64
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -416,7 +416,7 @@ pub fn increment_total_number_of_utxos_in_db<D>(
 {
     trace!("✔ Incrementing total number of UTXOs in db by 1...");
     get_total_number_of_utxos_from_db(db)
-        .and_then(|num| put_total_number_of_utxos_in_db(db, &(num + 1)))
+        .and_then(|num| put_total_number_of_utxos_in_db(db, num + 1))
 }
 
 pub fn decrement_total_number_of_utxos_in_db<D>(
@@ -426,12 +426,12 @@ pub fn decrement_total_number_of_utxos_in_db<D>(
 {
     trace!("✔ Decrementing total number of UTXOs in db by 1...");
     get_total_number_of_utxos_from_db(db)
-        .and_then(|num| put_total_number_of_utxos_in_db(db, &(num - 1)))
+        .and_then(|num| put_total_number_of_utxos_in_db(db, num - 1))
 }
 
 pub fn put_utxo_nonce_in_db<D>(
     db: &D,
-    utxo_nonce: &u64,
+    utxo_nonce: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -448,7 +448,7 @@ pub fn increment_utxo_nonce_in_db<D>(db: &D) -> Result<()>
 {
     trace!("✔ Incrementing UTXO nonce in db by 1...");
     get_utxo_nonce_from_db(db)
-        .and_then(|num| put_utxo_nonce_in_db(db, &(num + 1)))
+        .and_then(|num| put_utxo_nonce_in_db(db, num + 1))
 }
 
 #[cfg(test)]
@@ -477,7 +477,7 @@ mod tests {
     fn should_put_num_of_utxos_in_db() {
         let db = get_test_database();
         let num = 1337;
-        if let Err(e) = put_utxo_nonce_in_db(&db, &num) {
+        if let Err(e) = put_utxo_nonce_in_db(&db, num) {
             panic!("Error putting num of utxos in database: {}", e);
         };
         match get_utxo_nonce_from_db(&db) {
@@ -494,7 +494,7 @@ mod tests {
     fn should_increment_num_of_utxos_in_db() {
         let db = get_test_database();
         let num = 1336;
-        if let Err(e) = put_utxo_nonce_in_db(&db, &num) {
+        if let Err(e) = put_utxo_nonce_in_db(&db, num) {
             panic!("Error putting num of utxos in database: {}", e);
         };
         if let Err(e) = increment_utxo_nonce_in_db(&db) {
@@ -599,7 +599,7 @@ mod tests {
     fn should_set_and_get_total_utxo_balance_from_db() {
         let db = get_test_database();
         let num = 1337;
-        if let Err(e) = put_total_utxo_balance_in_db(&db, &num) {
+        if let Err(e) = put_total_utxo_balance_in_db(&db, num) {
             panic!("Error putting num of utxos in database: {}", e);
         };
         match get_total_utxo_balance_from_db(&db) {
@@ -618,12 +618,12 @@ mod tests {
         let num = 666;
         let amount_to_increment = 671;
         let expected_total = 1337;
-        if let Err(e) = put_total_utxo_balance_in_db(&db, &num) {
+        if let Err(e) = put_total_utxo_balance_in_db(&db, num) {
             panic!("Error putting num of utxos in database: {}", e);
         };
         if let Err(e) = increment_total_utxo_balance_in_db(
             &db,
-            &amount_to_increment,
+            amount_to_increment,
         ) {
             panic!("Error incrementing num of utxos in database: {}", e);
         };
@@ -643,12 +643,12 @@ mod tests {
         let num = 1337;
         let amount_to_decrement_by = 671;
         let expected_total = 666;
-        if let Err(e) = put_total_utxo_balance_in_db(&db, &num) {
+        if let Err(e) = put_total_utxo_balance_in_db(&db, num) {
             panic!("Error putting total of utxos in database: {}", e);
         };
         if let Err(e) = decrement_total_utxo_balance_in_db(
             &db,
-            &amount_to_decrement_by,
+            amount_to_decrement_by,
         ) {
             panic!("Error decrementing utxo balance in database: {}", e);
         };
@@ -671,12 +671,12 @@ mod tests {
         let expected_error =
             "✘ Not decrementing UTXO total value ∵ it'll underflow!"
             .to_string();
-        if let Err(e) = put_total_utxo_balance_in_db(&db, &num) {
+        if let Err(e) = put_total_utxo_balance_in_db(&db, num) {
             panic!("Error putting num of utxos in database: {}", e);
         };
         match decrement_total_utxo_balance_in_db(
             &db,
-            &amount_to_decrement_by,
+            amount_to_decrement_by,
         ) {
             Ok(_) => {
                 panic!("Decrementing balance of utxos should error!");
@@ -694,7 +694,7 @@ mod tests {
     fn should_delete_balance_key() {
         let db = get_test_database();
         let balance = 1;
-        if let Err(e) = put_total_utxo_balance_in_db(&db, &balance) {
+        if let Err(e) = put_total_utxo_balance_in_db(&db, balance) {
             panic!("Error setting `UTXO_BALANCE` in db: {}", e);
         };
         if let Err(e) = delete_utxo_balance_key(&db) {

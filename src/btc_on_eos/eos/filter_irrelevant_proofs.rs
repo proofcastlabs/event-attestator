@@ -16,12 +16,12 @@ use crate::btc_on_eos::{
 
 fn filter_out_proofs_for_other_accounts(
     action_proofs: &ActionProofs,
-    required_account_name: &EosAccountName,
+    required_account_name: EosAccountName,
 ) -> Result<ActionProofs> {
     Ok(
         action_proofs
             .iter()
-            .filter(|proof| &proof.action.account == required_account_name)
+            .filter(|proof| proof.action.account == required_account_name)
             .cloned()
             .collect()
     )
@@ -49,7 +49,7 @@ pub fn maybe_filter_out_irrelevant_proofs_from_state<D>(
     info!("✔ Filtering out irrelevant proofs...");
     filter_out_proofs_for_other_accounts(
         &state.action_proofs,
-        &get_eos_account_name_from_db(&state.db)?,
+        get_eos_account_name_from_db(&state.db)?,
     )
         .and_then(|proofs| filter_out_proofs_for_other_actions(&proofs))
         .and_then(|proofs| state.replace_action_proofs(proofs))
@@ -68,7 +68,7 @@ mod tests {
         ];
         let account = EosAccountName::from_str("pbtctokenxxx").unwrap();
 
-        assert_eq!(filter_out_proofs_for_other_accounts(&action_proofs, &account).unwrap(), action_proofs);
+        assert_eq!(filter_out_proofs_for_other_accounts(&action_proofs, account).unwrap(), action_proofs);
     }
 
     #[test]
@@ -79,7 +79,7 @@ mod tests {
         ];
         let account = EosAccountName::from_str("provtestable").unwrap();
 
-        assert_eq!(filter_out_proofs_for_other_accounts(&action_proofs, &account).unwrap(), []);
+        assert_eq!(filter_out_proofs_for_other_accounts(&action_proofs, account).unwrap(), []);
     }
 
     #[test]

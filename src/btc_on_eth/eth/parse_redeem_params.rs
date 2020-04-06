@@ -62,9 +62,9 @@ fn parse_redeem_amount_from_log(log: &EthLog) -> Result<U256> {
                 )
             )
         ),
-        false => Err(AppError::Custom(format!(
-            "✘ Not enough bytes in log data to slice out redeem amount!"
-        )))
+        false => Err(AppError::Custom(
+            "✘ Not enough bytes in log data to slice out redeem amount!".to_string()
+        ))
     }
 }
 
@@ -76,9 +76,9 @@ fn parse_redeem_params_from_log_and_receipt(
     Ok(
         RedeemParams::new(
             parse_redeem_amount_from_log(eth_log)?,
-            eth_receipt.from.clone(),
+            eth_receipt.from,
             parse_btc_address_from_log(eth_log)?,
-            eth_receipt.transaction_hash.clone(),
+            eth_receipt.transaction_hash,
         )
     )
 }
@@ -128,7 +128,7 @@ pub fn maybe_parse_redeem_params_and_add_to_state<D>(
     info!("✔ Maybe parsing redeem params...");
     get_eth_canon_block_from_db(&state.db)
         .and_then(|block_and_receipts| {
-            match block_and_receipts.receipts.len() == 0 {
+            match block_and_receipts.receipts.is_empty() {
                 true => {
                     info!("✔ No receipts in canon block ∴ no params to parse!");
                     Ok(state)

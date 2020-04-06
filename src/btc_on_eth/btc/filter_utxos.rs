@@ -13,7 +13,7 @@ use crate::btc_on_eth::{
 fn filter_utxos(utxos: &BtcUtxosAndValues) -> Result<BtcUtxosAndValues> {
     Ok(
         utxos
-            .into_iter()
+            .iter()
             .filter(|utxo| {
                 match utxo.value >= MINIMUM_REQUIRED_SATOSHIS {
                     true => true,

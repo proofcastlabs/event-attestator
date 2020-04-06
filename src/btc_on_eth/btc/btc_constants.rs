@@ -6,10 +6,10 @@ pub const PTOKEN_P2SH_SCRIPT_BYTES: usize = 0;
 
 pub const BTC_TAIL_LENGTH: u64 = 10;
 // NOTE: Following is used as placeholder for bad address parsing in ETH params!
-pub const DEFAULT_BTC_ADDRESS: &'static str =
+pub const DEFAULT_BTC_ADDRESS: &str =
     "msTgHeQgPZ11LRcUdtfzagEfiZyKF57DhR";
 
-pub const DEFAULT_BTC_SEQUENCE: u32 = 4294967295; // NOTE: 0xFFFFFFFF
+pub const DEFAULT_BTC_SEQUENCE: u32 = 4_294_967_295; // NOTE: 0xFFFFFFFF
 // NOTE (javascript): new Uint8Array(
 //   Buffer.from(web3.utils.keccak256('btc-difficulty').slice(2), 'hex')
 // )

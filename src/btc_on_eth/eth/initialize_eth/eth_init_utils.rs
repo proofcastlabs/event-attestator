@@ -98,7 +98,7 @@ pub fn put_canon_to_tip_length_in_db_and_return_state<D>(
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
-    put_eth_canon_to_tip_length_in_db(&state.db, &canon_to_tip_length)
+    put_eth_canon_to_tip_length_in_db(&state.db, canon_to_tip_length)
         .map(|_| state)
 }
 
@@ -112,7 +112,7 @@ pub fn put_eth_chain_id_in_db_and_return_state<D>(
         "✔ Putting ETH chain ID of {} in db...",
         chain_id,
     );
-    put_eth_chain_id_in_db(&state.db, &chain_id)
+    put_eth_chain_id_in_db(&state.db, chain_id)
         .map(|_| state)
 }
 
@@ -126,7 +126,7 @@ pub fn put_eth_gas_price_in_db_and_return_state<D>(
         "✔ Putting ETH gas price of {} in db...",
         gas_price
     );
-    put_eth_gas_price_in_db(&state.db, &gas_price)
+    put_eth_gas_price_in_db(&state.db, gas_price)
         .map(|_| state)
 }
 
@@ -136,7 +136,7 @@ pub fn put_eth_account_nonce_in_db_and_return_state<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Putting ETH account nonce of 1 in db...");
-    put_eth_account_nonce_in_db(&state.db, &1) // NOTE: ∵ of the contract tx!
+    put_eth_account_nonce_in_db(&state.db, 1) // NOTE: ∵ of the contract tx!
         .map(|_| state)
 }
 

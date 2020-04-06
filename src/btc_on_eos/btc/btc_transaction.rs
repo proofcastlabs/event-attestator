@@ -63,7 +63,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
     info!("✔ Change amount:  {}", utxo_total - (total_to_spend + fee));
     info!("✔ Tx fee:         {}", fee);
     match total_to_spend + fee > utxo_total {
-        true => return Err(
+        true => Err(
             AppError::Custom(
                 "✘ Not enough UTXO value to make transaction!".to_string()
             )
@@ -83,7 +83,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
             if change > 0 {
                 outputs.push(
                     create_new_pay_to_pub_key_hash_output(
-                        &change,
+                        change,
                         remainder_btc_address
                     )?
                 )
@@ -106,7 +106,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
                         .maybe_deposit_info_json {
                         None => {
                             info!("✔ Signing a `p2pkh` UTXO!");
-                            utxo?.script_sig.clone()
+                            utxo?.script_sig
                         }
                         Some(deposit_info_json) => {
                             info!("✔ Signing a `p2sh` UTXO!");
@@ -116,7 +116,6 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
                                     &hex::decode(
                                         deposit_info_json
                                             .address_and_nonce_hash
-                                            .clone()
                                     )?[..]
                                 )?
                             )
@@ -166,7 +165,6 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
                                             &hex::decode(
                                                 deposit_info_json
                                                     .address_and_nonce_hash
-                                                    .clone()
                                             )?[..]
                                         )?
                                     )

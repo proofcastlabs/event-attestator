@@ -15,8 +15,8 @@ pub fn create_btc_block_in_db_format_and_put_in_state<D>(
     info!("✔ Creating DB formatted BTC block from block in state...");
     let block_in_state = &state.get_btc_block_and_id()?;
     BtcBlockInDbFormat::new(
-        block_in_state.height.clone(),
-        block_in_state.id.clone(),
+        block_in_state.height,
+        block_in_state.id,
         state.minting_params.clone(),
         block_in_state.block.clone(),
         vec![], // NOTE: As yet unused `extra_data` param

@@ -227,7 +227,7 @@ mod tests {
         pk
             .write_to_database(&db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
             .unwrap();
-        put_btc_network_in_db(&db, &btc_network)
+        put_btc_network_in_db(&db, btc_network)
             .unwrap();
         put_btc_address_in_db(&db, &btc_address)
             .unwrap();
@@ -272,7 +272,7 @@ mod tests {
         pk
             .write_to_database(&db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
             .unwrap();
-        put_btc_network_in_db(&db, &btc_network)
+        put_btc_network_in_db(&db, btc_network)
             .unwrap();
         put_btc_address_in_db(&db, &btc_address)
             .unwrap();
@@ -318,7 +318,7 @@ mod tests {
         pk
             .write_to_database(&db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
             .unwrap();
-        put_btc_network_in_db(&db, &btc_network)
+        put_btc_network_in_db(&db, btc_network)
             .unwrap();
         put_btc_address_in_db(&db, &btc_address)
             .unwrap();

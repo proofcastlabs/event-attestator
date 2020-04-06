@@ -10,8 +10,8 @@ use crate::btc_on_eos::{
 
 fn increment_signature_nonce<D>(
     db: &D,
-    current_nonce: &u64,
-    num_signatures: &u64,
+    current_nonce: u64,
+    num_signatures: u64,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -20,7 +20,7 @@ fn increment_signature_nonce<D>(
         current_nonce,
         num_signatures + current_nonce,
     );
-    put_btc_account_nonce_in_db(db, &(current_nonce + num_signatures))
+    put_btc_account_nonce_in_db(db, current_nonce + num_signatures)
 }
 
 pub fn maybe_increment_signature_nonce<D>(
@@ -37,8 +37,8 @@ pub fn maybe_increment_signature_nonce<D>(
         _ => {
             increment_signature_nonce(
                 &state.db,
-                &get_btc_account_nonce_from_db(&state.db)?,
-                &(*num_txs as u64),
+                get_btc_account_nonce_from_db(&state.db)?,
+                *num_txs as u64,
             )
                 .map(|_| state)
         }

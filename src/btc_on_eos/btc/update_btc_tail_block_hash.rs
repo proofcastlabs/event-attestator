@@ -24,7 +24,7 @@ fn does_tail_block_require_updating<D>(
     trace!("✔ Checking if BTC tail block needs updating...");
     get_btc_tail_block_from_db(db)
         .map(|db_tail_block|
-            db_tail_block.height <= calculated_tail_block.height - 1
+            db_tail_block.height < calculated_tail_block.height
         )
 }
 
@@ -44,7 +44,7 @@ pub fn maybe_update_btc_tail_block_hash<D>(
             maybe_get_nth_ancestor_btc_block_and_id(
                 &state.db,
                 &latest_btc_block.id,
-                &(canon_to_tip_length + BTC_TAIL_LENGTH),
+                canon_to_tip_length + BTC_TAIL_LENGTH,
             )
         })
         .and_then(|maybe_ancester_block_and_id|

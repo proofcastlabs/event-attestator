@@ -50,11 +50,9 @@ pub fn parse_eos_action_receipt_json(
                 &eos_action_receipt_json.act_digest
             )?,
             global_sequence: eos_action_receipt_json
-                .global_sequence
-                .into(),
+                .global_sequence,
             recv_sequence: eos_action_receipt_json
-                .recv_sequence
-                .into(),
+                .recv_sequence,
             auth_sequence: parse_auth_sequence_jsons(
                 &eos_action_receipt_json.auth_sequence
             )?,

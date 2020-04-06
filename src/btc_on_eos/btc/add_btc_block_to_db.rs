@@ -19,7 +19,7 @@ pub fn maybe_add_btc_block_to_db<D>(
     info!("✔ Checking if BTC block is already in the db...");
     match btc_block_exists_in_db(&state.db, &state.get_btc_block_and_id()?.id) {
         true => Err(AppError::Custom(
-            format!("✘ BTC Block Rejected - it's already in the db!")
+            "✘ BTC Block Rejected - it's already in the db!".to_string()
         )),
         false => {
             let block = state.get_btc_block_in_db_format()?;
