@@ -11,6 +11,7 @@ use crate::btc_on_eos::{
         increment_signature_nonce::maybe_increment_signature_nonce,
         get_processed_tx_ids::get_processed_tx_ids_and_add_to_state,
         parse_redeem_params::maybe_parse_redeem_params_and_put_in_state,
+        get_active_schedule::get_active_schedule_from_db_and_add_to_state,
         filter_duplicate_proofs::maybe_filter_duplicate_proofs_from_state,
         add_tx_ids_to_processed_list::maybe_add_tx_ids_to_processed_tx_ids,
         parse_submission_material::parse_submission_material_and_add_to_state,
@@ -49,7 +50,7 @@ pub fn submit_eos_block_to_core<D>(
 {
     parse_submission_material_and_add_to_state(block_json, EosState::init(db))
         .and_then(check_core_is_initialized_and_return_eos_state)
-
+        .and_then(get_active_schedule_from_db_and_add_to_state)
         .and_then(validate_block_header_signature)
         .and_then(start_eos_db_transaction)
         .and_then(get_processed_tx_ids_and_add_to_state)
