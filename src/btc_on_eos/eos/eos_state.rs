@@ -37,7 +37,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub redeem_params: Vec<RedeemParams>,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
-    pub active_schedule: EosProducerSchedule,
+    pub active_schedule: Option<EosProducerSchedule>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
 }
 
@@ -49,11 +49,11 @@ impl<D> EosState<D> where D: DatabaseInterface {
             signed_txs: vec![],
             action_proofs: vec![],
             redeem_params: vec![],
+            active_schedule: None,
             blockroot_merkle: vec![],
             btc_utxos_and_values: None,
             producer_signature: String::new(),
             processed_tx_ids: ProcessedTxIds::init(),
-            active_schedule: EosProducerSchedule::default(),
         }
     }
 
@@ -67,6 +67,21 @@ impl<D> EosState<D> where D: DatabaseInterface {
             ),
             None => {
                 self.btc_utxos_and_values = Some(btc_utxos_and_values);
+                Ok(self)
+            }
+        }
+    }
+
+    pub fn add_active_schedule(
+        mut self,
+        active_schedule: EosProducerSchedule,
+    ) -> Result<EosState<D>> {
+        match self.active_schedule {
+            Some(_) => Err(AppError::Custom(
+                get_no_overwrite_state_err("active_schedule"))
+            ),
+            None => {
+                self.active_schedule = Some(active_schedule);
                 Ok(self)
             }
         }
@@ -88,7 +103,6 @@ impl<D> EosState<D> where D: DatabaseInterface {
     ) -> Result<EosState<D>> {
         self.action_proofs = submission_material.action_proofs;
         self.block_header = Some(submission_material.block_header);
-        self.active_schedule = submission_material.active_schedule;
         self.blockroot_merkle = submission_material.blockroot_merkle;
         self.producer_signature = submission_material.producer_signature;
         Ok(self)
@@ -110,13 +124,20 @@ impl<D> EosState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn get_eos_block_header(
-        &self
-    ) -> Result<&EosBlockHeader> {
+    pub fn get_eos_block_header(&self) -> Result<&EosBlockHeader> {
         match &self.block_header{
             Some(block_header) => Ok(&block_header),
             None => Err(AppError::Custom(
                 get_not_in_state_err("block_header"))
+            )
+        }
+    }
+
+    pub fn get_active_schedule(&self) -> Result<&EosProducerSchedule> {
+        match &self.active_schedule{
+            Some(active_schedule) => Ok(&active_schedule),
+            None => Err(AppError::Custom(
+                get_not_in_state_err("active_schedule"))
             )
         }
     }

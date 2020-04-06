@@ -145,9 +145,9 @@ pub fn validate_block_header_signature<D>(
         &state.producer_signature,
         state.get_eos_block_header()?,
         &state.blockroot_merkle,
-        &state.active_schedule,
+        state.get_active_schedule()?,
     )
-        .map(|_| state)
+        .and(Ok(state))
 }
 
 #[cfg(test)]

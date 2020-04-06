@@ -28,9 +28,9 @@ pub fn validate_bp_schedule_version<D>(
 {
     check_bp_schedule_version(
         state.get_eos_block_header()?,
-        &state.active_schedule,
+        state.get_active_schedule()?,
     )
-        .map(|_| state)
+        .and(Ok(state))
 }
 
 #[cfg(test)]
