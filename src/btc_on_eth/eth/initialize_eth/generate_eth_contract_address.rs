@@ -6,8 +6,10 @@ use crate::btc_on_eth::{
     traits::DatabaseInterface,
     eth::{
         eth_state::EthState,
-        eth_constants::ETH_SMART_CONTRACT_ADDRESS_KEY,
-        eth_database_utils::get_public_eth_address_from_db,
+        eth_database_utils::{
+            get_public_eth_address_from_db,
+            put_eth_smart_contract_address_in_db,
+        }
     },
 };
 
@@ -43,15 +45,11 @@ pub fn generate_and_store_eth_contract_address<D>(
 {
     info!("✔ Calculating pToken contract address...");
     get_eth_contract_address(&state.db)
-        .map(|smart_contract_address| {
+        .and_then(|ref smart_contract_address| {
             info!("✔ Storing pToken contract address in db...");
-            state.db.put(
-                ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-                smart_contract_address.as_bytes().to_vec(),
-                None,
-            ).ok();
-            state
+            put_eth_smart_contract_address_in_db(&state.db, smart_contract_address)
         })
+        .and(Ok(state))
 }
 
 #[cfg(test)]

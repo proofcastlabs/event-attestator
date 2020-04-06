@@ -104,10 +104,10 @@ pub fn verify_merkle_proof(merkle_proof: &MerkleProof) -> Result<bool> {
         .iter()
         .map(|hex| Ok(hex::decode(hex)?))
         .collect::<Result<Vec<Bytes>>>()?;
-    for leave in leaves.iter().skip(1) {
-        match is_canonical_right(&leave) {
-            true => {node = make_and_hash_canonical_pair(&node, &leave);}
-            false => {node = make_and_hash_canonical_pair(&leave, &node);}
+    for leaf in leaves.iter().skip(1) {
+        match is_canonical_right(&leaf) {
+            true => {node = make_and_hash_canonical_pair(&node, &leaf);}
+            false => {node = make_and_hash_canonical_pair(&leaf, &node);}
         }
     };
     Ok(node == hex::decode(merkle_proof.last()?)?)
