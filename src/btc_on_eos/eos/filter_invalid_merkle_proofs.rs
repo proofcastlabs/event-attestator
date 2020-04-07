@@ -11,19 +11,20 @@ use crate::btc_on_eos::{
 fn filter_out_proofs_with_invalid_merkle_proofs(
     action_proofs: &ActionProofs,
 ) -> Result<ActionProofs> {
-    Ok(
-        action_proofs
-            .iter()
-            .map(|proof_data| &proof_data.action_proof)
-            .map(verify_merkle_proof)
-            .collect::<Result<Vec<bool>>>()?
-            .into_iter()
-            .zip(action_proofs.iter())
-            .filter(|(proof_is_valid, _)| *proof_is_valid)
-            .map(|(_, proof)| proof)
-            .cloned()
-            .collect::<ActionProofs>()
-    )
+    let filtered = action_proofs
+        .iter()
+        .map(|proof_data| &proof_data.action_proof)
+        .map(verify_merkle_proof)
+        .collect::<Result<Vec<bool>>>()?
+        .into_iter()
+        .zip(action_proofs.iter())
+        .filter(|(proof_is_valid, _)| *proof_is_valid)
+        .map(|(_, proof)| proof)
+        .cloned()
+        .collect::<ActionProofs>();
+    debug!("Num proofs before: {}", action_proofs.len());
+    debug!("Num proofs after : {}", filtered.len());
+    Ok(filtered)
 }
 
 pub fn maybe_filter_out_proofs_with_invalid_merkle_proofs<D>(

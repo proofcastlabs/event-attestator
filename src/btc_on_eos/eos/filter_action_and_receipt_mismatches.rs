@@ -12,19 +12,20 @@ use crate::btc_on_eos::{
 fn filter_out_proofs_with_action_digests_not_in_action_receipts(
     action_proofs: &ActionProofs
 ) -> Result<ActionProofs> {
-    Ok(
-        action_proofs
-            .iter()
-            .map(|proof| proof.action.to_digest())
-            .map(|digest_bytes| convert_bytes_to_checksum256(&digest_bytes))
-            .collect::<Result<Vec<Checksum256>>>()?
-            .into_iter()
-            .zip(action_proofs.iter())
-            .filter(|(digest, proof)| digest == &proof.action_receipt.act_digest)
-            .map(|(_, proof)| proof)
-            .cloned()
-            .collect::<ActionProofs>()
-    )
+    let filtered = action_proofs
+        .iter()
+        .map(|proof| proof.action.to_digest())
+        .map(|digest_bytes| convert_bytes_to_checksum256(&digest_bytes))
+        .collect::<Result<Vec<Checksum256>>>()?
+        .into_iter()
+        .zip(action_proofs.iter())
+        .filter(|(digest, proof)| digest == &proof.action_receipt.act_digest)
+        .map(|(_, proof)| proof)
+        .cloned()
+        .collect::<ActionProofs>();
+    debug!("Num proofs before: {}", action_proofs.len());
+    debug!("Num proofs after : {}", filtered.len());
+    Ok(filtered)
 }
 
 pub fn maybe_filter_out_action_proof_receipt_mismatches<D>(

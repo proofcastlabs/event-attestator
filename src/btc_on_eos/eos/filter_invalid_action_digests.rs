@@ -10,17 +10,18 @@ use crate::btc_on_eos::{
 fn filter_out_invalid_action_receipt_digests(
     action_proofs: &ActionProofs
 ) -> Result<ActionProofs> {
-    Ok(
-        action_proofs
-            .iter()
-            .map(|proof| proof.action_receipt.to_digest())
-            .map(hex::encode)
-            .zip(action_proofs.iter())
-            .filter(|(digest, proof)| digest == &proof.action_proof[0])
-            .map(|(_, proof)| proof)
-            .cloned()
-            .collect::<ActionProofs>()
-    )
+    let filtered = action_proofs
+        .iter()
+        .map(|proof| proof.action_receipt.to_digest())
+        .map(hex::encode)
+        .zip(action_proofs.iter())
+        .filter(|(digest, proof)| digest == &proof.action_proof[0])
+        .map(|(_, proof)| proof)
+        .cloned()
+        .collect::<ActionProofs>();
+    debug!("Num proofs before: {}", action_proofs.len());
+    debug!("Num proofs after : {}", filtered.len());
+    Ok(filtered)
 }
 
 pub fn maybe_filter_out_invalid_action_receipt_digests<D>(

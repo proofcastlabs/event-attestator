@@ -19,6 +19,8 @@ fn filter_duplicate_proofs(
             }
         })
         .for_each(drop);
+    debug!("Num proofs before: {}", action_proofs.len());
+    debug!("Num proofs after : {}", filtered.len());
     Ok(filtered)
 }
 
@@ -27,6 +29,7 @@ pub fn maybe_filter_duplicate_proofs_from_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
+    info!("✔ Maybe filtering duplicate proofs from state...");
     filter_duplicate_proofs(&state.action_proofs)
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
