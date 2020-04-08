@@ -197,9 +197,9 @@ pub fn convert_deposit_info_to_json(
         btc_deposit_address:
             deposit_info_struct.btc_deposit_address.to_string(),
         eth_address:
-            hex::encode(deposit_info_struct.eth_address.as_bytes()),
+            hex::encode(deposit_info_struct.address.as_bytes()),
         eth_address_and_nonce_hash:
-            hex::encode(deposit_info_struct.eth_address_and_nonce_hash),
+            hex::encode(deposit_info_struct.commitment_hash),
     }
 }
 
