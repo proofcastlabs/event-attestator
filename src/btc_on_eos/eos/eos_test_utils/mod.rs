@@ -58,7 +58,7 @@ pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_2: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-80440580.json";
 
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_3: &str =
-    "src/btc_on_eos/eos/eos_test_utils/eos-block-81605103.json";
+    "src/btc_on_eos/eos/eos_test_utils/eos-block-84187467.json";
 
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_4: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-81772484.json";
@@ -139,7 +139,7 @@ pub fn get_sample_eos_submission_material_string_n(
     }
 }
 
-pub fn get_sample_eos_action() -> EosAction { // TODO: Make it a pToken action!
+pub fn get_sample_eos_action() -> EosAction {
     EosAction {
         name: ActionName::from_str("onblock").unwrap(),
         account: AccountName::from_str("eosio").unwrap(),
