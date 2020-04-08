@@ -18,26 +18,30 @@ fn filter_out_proofs_for_other_accounts(
     action_proofs: &ActionProofs,
     required_account_name: EosAccountName,
 ) -> Result<ActionProofs> {
-    Ok(
-        action_proofs
-            .iter()
-            .filter(|proof| proof.action.account == required_account_name)
-            .cloned()
-            .collect()
-    )
+    let filtered: ActionProofs = action_proofs
+        .iter()
+        .filter(|proof| proof.action.account == required_account_name)
+        .cloned()
+        .collect();
+    info!("✔ Filtering out proofs for other accounts...");
+    debug!("Num proofs before: {}", action_proofs.len());
+    debug!(" Num proofs after: {}", filtered.len());
+    Ok(filtered)
 }
 
 fn filter_out_proofs_for_other_actions(
     action_proofs: &ActionProofs
 ) -> Result<ActionProofs> {
     let required_action = EosActionName::from_str(REDEEM_ACTION_NAME)?;
-    Ok(
-        action_proofs
-            .iter()
-            .filter(|proof| proof.action.name == required_action)
-            .cloned()
-            .collect()
-    )
+    let filtered: ActionProofs = action_proofs
+        .iter()
+        .filter(|proof| proof.action.name == required_action)
+        .cloned()
+        .collect();
+    info!("✔ Filtering out proofs for other actions...");
+    debug!("Num proofs before: {}", action_proofs.len());
+    debug!(" Num proofs after: {}", filtered.len());
+    Ok(filtered)
 }
 
 // TODO Filter for those whose symbol isn't correct?

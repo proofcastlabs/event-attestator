@@ -12,16 +12,17 @@ fn filter_proofs_with_wrong_action_mroot(
     action_mroot: &Checksum256,
     action_proofs: &ActionProofs,
 ) -> Result<ActionProofs> {
-    Ok(
-        action_proofs
-            .iter()
-            .filter(|proof_data|
-                proof_data.action_proof[proof_data.action_proof.len() - 1] ==
-                action_mroot.to_string()
-            )
-            .cloned()
-            .collect::<ActionProofs>()
-    )
+    let filtered = action_proofs
+        .iter()
+        .filter(|proof_data|
+            proof_data.action_proof[proof_data.action_proof.len() - 1] ==
+            action_mroot.to_string()
+        )
+        .cloned()
+        .collect::<ActionProofs>();
+    debug!("Num proofs before: {}", action_proofs.len());
+    debug!("Num proofs after : {}", filtered.len());
+    Ok(filtered)
 }
 
 pub fn maybe_filter_out_proofs_with_wrong_action_mroot<D>(

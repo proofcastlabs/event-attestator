@@ -1,8 +1,15 @@
 use std::str::FromStr;
-use eos_primitives::AccountName as EosAccountName;
+use eos_primitives::{
+    AccountName as EosAccountName,
+    ProducerSchedule as EosProducerSchedule,
+};
 use crate::btc_on_eos::{
-    types::Result,
+    errors::AppError,
     traits::DatabaseInterface,
+    types::{
+        Bytes,
+        Result,
+    },
     database_utils::{
         put_u64_in_db,
         get_u64_from_db,
@@ -13,6 +20,7 @@ use crate::btc_on_eos::{
         eos_state::EosState,
         eos_types::ProcessedTxIds,
         eos_crypto::eos_private_key::EosPrivateKey,
+        parse_submission_material::parse_producer_schedule_from_json_string,
         eos_constants::{
             EOS_ACCOUNT_NONCE,
             EOS_CHAIN_ID_DB_KEY,
@@ -20,9 +28,49 @@ use crate::btc_on_eos::{
             PROCESSED_TX_IDS_KEY,
             EOS_ACCOUNT_NAME_KEY,
             EOS_PRIVATE_KEY_DB_KEY,
+            EOS_SCHEDULE_DB_PREFIX,
         },
     },
 };
+
+fn get_eos_schedule_db_key(version: u32) -> Bytes {
+    format!("{}{}", EOS_SCHEDULE_DB_PREFIX, version).as_bytes().to_vec()
+}
+
+pub fn put_eos_schedule_in_db<D>(
+    db: &D,
+    schedule: &EosProducerSchedule,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    let data_sensitivity = None;
+    let db_key = get_eos_schedule_db_key(schedule.version);
+    match db.get(db_key.clone(), data_sensitivity) {
+        Ok(_) => {
+            trace!("✘ EOS schedule {} already in db!", &schedule.version);
+            Ok(())
+        }
+        Err(_) => {
+            trace!("✔ Putting EOS schedule in db: {:?}", schedule);
+            put_string_in_db(db, &db_key, &serde_json::to_string(schedule)?)
+        }
+    }
+}
+
+pub fn get_eos_schedule_from_db<D>(
+    db: &D,
+    version: u32,
+) -> Result<EosProducerSchedule>
+    where D: DatabaseInterface
+{
+    trace!("✔ Getting EOS schedule from db...");
+    match get_string_from_db(db, &get_eos_schedule_db_key(version)) {
+        Ok(json) => parse_producer_schedule_from_json_string(&json),
+        Err(_) => Err(AppError::Custom(
+            format!("✘ Core does not have EOS schedule version: {}", version)
+        ))
+    }
+}
 
 pub fn get_eos_account_nonce_from_db<D>(
     db: &D

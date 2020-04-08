@@ -9,6 +9,7 @@ use eos_primitives::{
     ProducerSchedule,
     PublicKey as EosPublicKey,
     BlockHeader as EosBlockHeader,
+    ProducerSchedule as EosProducerSchedule,
 };
 use crate::btc_on_eos::{
     types::Result,
@@ -78,7 +79,7 @@ fn convert_hex_strings_to_extensions(
 }
 
 
-fn parse_producer_schedule_from_json(
+pub fn parse_producer_schedule_from_json(
     producer_schedule_json: &ProducerScheduleJson,
 ) -> Result<ProducerSchedule> {
     Ok(
@@ -89,6 +90,17 @@ fn parse_producer_schedule_from_json(
             )?,
         }
     )
+}
+
+pub fn parse_producer_schedule_from_json_string(
+    json_string: &String,
+) ->Result<EosProducerSchedule> {
+    match serde_json::from_str(json_string) {
+        Ok(json) => parse_producer_schedule_from_json(&json),
+        Err(_) => Err(AppError::Custom(
+            format!("✘ Error parsing EOS schedule to json!")
+        ))
+    }
 }
 
 fn convert_producer_key_json_to_producer_key(
@@ -177,9 +189,6 @@ fn parse_eos_submission_material_json_to_struct(
             )?,
             blockroot_merkle: parse_blockroot_merkle_from_json(
                 &submission_material_json.blockroot_merkle,
-            )?,
-            active_schedule: parse_producer_schedule_from_json(
-                &submission_material_json.active_schedule,
             )?,
             action_proofs: parse_eos_action_proof_jsons_to_action_proofs(
                &submission_material_json.action_proofs,

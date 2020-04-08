@@ -7,6 +7,7 @@ pub const EOS_MAX_EXPIRATION_SECS: u32 = 3600;
 pub const PUBLIC_KEY_CHECKSUM_SIZE: usize = 4;
 pub const EOS_ADDRESS_CHAR_LENGTH: usize = 12;
 pub const MEMO: &str = "BTC -> pBTC complete!";
+pub const EOS_SCHEDULE_DB_PREFIX: &str = "EOS_SCHEDULE_";
 pub const PEOS_ACCOUNT_PERMISSION_LEVEL: &str = "active";
 pub const EOS_PROVABLE_SAFE_ACCOUNT: &str = "provablesafe";
 pub const PUBLIC_KEY_WITH_CHECKSUM_SIZE: usize = PUBLIC_KEY_SIZE + PUBLIC_KEY_CHECKSUM_SIZE;
