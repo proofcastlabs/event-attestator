@@ -59,7 +59,7 @@ fn get_schedule_hash(active_schedule: &EosProducerSchedule) -> Result<Bytes> {
     Ok(active_schedule.schedule_hash()? .to_bytes().to_vec())
 }
 
-fn get_signing_digest( // TODO use stuff in state! And rename better!jjjj
+fn get_signing_digest(
     block_header: &EosBlockHeader,
     active_schedule: &EosProducerSchedule,
     blockroot_merkle: &Checksum256s,
@@ -361,7 +361,7 @@ mod tests {
     }
 
     #[test]
-    fn samples_blocks_should_be_valid() { // TODO -ve version of this!
+    fn samples_blocks_should_be_valid() {
         let submission_materials = vec![0; NUM_SAMPLES]
             .iter()
             .enumerate()
