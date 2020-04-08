@@ -177,13 +177,13 @@ mod tests {
     #[test]
     fn should_get_redeem_params_from_action_proof_3() {
         let expected_result = RedeemParams {
-            amount: 5314,
+            amount: 5666,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
                 .to_string(),
-            from: EosAccountName::from_str("provtestable")
+            from: EosAccountName::from_str("provabletest")
                 .unwrap(),
             originating_tx_id: convert_hex_to_checksum256(
-            &"084129e4cae2b8fb2c51fd6e569ac0f80db4de5f15ff3c2776233d9ae42aad64"
+            &"51f0dbbaf6989e9b980d0fa18bd70ddfc543851ff65140623d2cababce2ceb8c"
                 .to_string()
             ).unwrap(),
         };

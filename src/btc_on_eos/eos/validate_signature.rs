@@ -59,7 +59,7 @@ fn get_schedule_hash(active_schedule: &EosProducerSchedule) -> Result<Bytes> {
     Ok(active_schedule.schedule_hash()? .to_bytes().to_vec())
 }
 
-fn get_signing_digest( // TODO use stuff in state! And rename better!jjjj
+fn get_signing_digest(
     block_header: &EosBlockHeader,
     active_schedule: &EosProducerSchedule,
     blockroot_merkle: &Checksum256s,
@@ -276,7 +276,7 @@ mod tests {
         let expected_results = vec![
             "EOS5CJJEKDms9UTS7XBv8rb33BENRpnpSGsQkAe6bCfpjHHCKQTgH",
             "EOS79e4HpvQ1y1HdzRSqE1gCKhdN9kFGjjUU2nKG7xjiVCakt5WSs",
-            "EOS7tigERwXDRuHsok212UDToxFS1joUhAxzvDUhRof8NjuvwtoHX",
+            "EOS5hVMcN6UVWtrNCxdp5HJwsz4USULmdfNA22UDyjRNdprXEiAP6",
             "EOS6wkp1PpqQUgEA6UtgW21Zo3o1XcQeLXzcLLgKcPJhTz2aSF6fz",
             "EOS7A9BoRetjpKtE3sqA6HRykRJ955MjQ5XdRmCLionVte2uERL8h",
         ];
@@ -354,16 +354,14 @@ mod tests {
             .unwrap()
             .iter()
             .enumerate()
-            .map(|(i, key)| {
-                if i != 2 { // FIXME Why does this one fail?
-                    assert_eq!(key.to_string(), expected_results[i].to_string())
-                }
-            })
+            .map(|(i, key)|
+                assert_eq!(key.to_string(), expected_results[i].to_string())
+            )
             .for_each(drop);
     }
 
     #[test]
-    fn samples_blocks_should_be_valid() { // TODO -ve version of this!
+    fn samples_blocks_should_be_valid() {
         let submission_materials = vec![0; NUM_SAMPLES]
             .iter()
             .enumerate()
@@ -381,18 +379,13 @@ mod tests {
         submission_materials
             .iter()
             .zip(active_schedules.iter())
-            .enumerate()
-            .map(|(i, (submission_material, active_schedule))|
-                 if i == 2 {
-                    Ok(())// TODO/FIXME Why does this one fail?
-                 } else {
-                     check_block_signature_is_valid(
-                        &submission_material.producer_signature,
-                        &submission_material.block_header,
-                        &submission_material.blockroot_merkle,
-                        &active_schedule,
-                     )
-                 }
+            .map(|(submission_material, active_schedule)|
+                 check_block_signature_is_valid(
+                    &submission_material.producer_signature,
+                    &submission_material.block_header,
+                    &submission_material.blockroot_merkle,
+                    &active_schedule,
+                 )
              )
             .collect::<Result<Vec<()>>>()
             .unwrap();
