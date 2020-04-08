@@ -37,7 +37,7 @@ fn is_address_locked_to_pub_key(
             let address_from_script = BtcAddress::p2sh(
                 &get_p2sh_redeem_script_sig(
                     enclave_public_key_slice,
-                    &deposit_info.eth_address_and_nonce_hash,
+                    &deposit_info.commitment_hash,
                 ),
                 btc_network
             );

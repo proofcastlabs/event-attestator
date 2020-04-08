@@ -64,7 +64,7 @@ fn parse_minting_params_from_p2sh_deposit_tx(
                                     convert_satoshis_to_ptoken(
                                         p2sh_tx_out.value,
                                     ),
-                                    deposit_info.eth_address,
+                                    deposit_info.address,
                                     p2sh_deposit_containing_tx.txid(),
                                     btc_address,
                                 )
