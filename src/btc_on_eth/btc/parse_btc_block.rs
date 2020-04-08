@@ -86,9 +86,9 @@ fn parse_deposit_list_json_to_deposit_info(
 ) -> Result<DepositAddressInfo> {
     DepositAddressInfo::new(
         deposit_address_info_json.nonce,
-        &deposit_address_info_json.eth_address,
+        &deposit_address_info_json.address,
         &deposit_address_info_json.btc_deposit_address,
-        &deposit_address_info_json.eth_address_and_nonce_hash,
+        &deposit_address_info_json.address_and_nonce_hash,
     )
 }
 
@@ -168,18 +168,18 @@ mod tests {
     #[test]
     fn should_parse_deposit_list_json_to_deposit_info() {
         let nonce = 1578079722;
-        let eth_address = "0xedb86cd455ef3ca43f0e227e00469c3bdfa40628"
+        let address = "0xedb86cd455ef3ca43f0e227e00469c3bdfa40628"
             .to_string();
         let btc_deposit_address = "2MuuCeJjptiB1ETfytAqMZFqPCKAfXyhxoQ"
             .to_string();
-        let eth_address_and_nonce_hash =
+        let address_and_nonce_hash =
             "348c7ab8078c400c5b07d1c3dda4fff8218bb6f2dc40f72662edc13ed867fcae"
             .to_string();
         let deposit_json = DepositAddressInfoJson  {
             nonce,
-            eth_address,
+            address,
             btc_deposit_address,
-            eth_address_and_nonce_hash,
+            address_and_nonce_hash,
         };
         if let Err(e) = parse_deposit_list_json_to_deposit_info(&deposit_json) {
             panic!("Error parsing deposit info json: {}", e);
