@@ -47,7 +47,10 @@ impl EosKnownSchedules {
     }
 
     pub fn add(mut self, version: u32) -> Self {
-        self.0.push(EosKnownSchedule::new(version));
+        let new_sched = EosKnownSchedule::new(version);
+        if !self.0.contains(&new_sched) {
+            self.0.push(new_sched);
+        };
         self
     }
 }
