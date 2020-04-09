@@ -52,7 +52,7 @@ pub fn put_eos_known_schedules_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    info!("✔ Getting EOS known schedules from db...");
+    info!("✔ Putting EOS known schedules in db: {}", &eos_known_schedules);
     let data_sensitivity = None;
     db.put(
         EOS_SCHEDULE_LIST.to_vec(),
