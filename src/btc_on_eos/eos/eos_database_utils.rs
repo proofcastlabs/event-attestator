@@ -18,7 +18,12 @@ use crate::btc_on_eos::{
         eos_utils::get_eos_schedule_db_key,
         eos_crypto::eos_private_key::EosPrivateKey,
         parse_submission_material::parse_producer_schedule_from_json_string,
+        eos_types::{
+            ProcessedTxIds,
+            EosKnownSchedules,
+        },
         eos_constants::{
+            EOS_SCHEDULE_LIST,
             EOS_ACCOUNT_NONCE,
             EOS_CHAIN_ID_DB_KEY,
             EOS_TOKEN_SYMBOL_KEY,
@@ -29,6 +34,31 @@ use crate::btc_on_eos::{
     },
 };
 
+fn get_eos_known_schedules_from_db<D>(
+    db: &D,
+) -> Result<EosKnownSchedules>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting EOS known schedules from db...");
+    let data_sensitivity = None;
+    db
+        .get(EOS_SCHEDULE_LIST.to_vec(), data_sensitivity)
+        .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
+}
+
+fn put_eos_known_schedules_in_db<D>(
+    db: &D,
+    eos_known_schedules: &EosKnownSchedules,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting EOS known schedules from db...");
+    let data_sensitivity = None;
+    db.put(
+        EOS_SCHEDULE_LIST.to_vec(),
+        serde_json::to_vec(eos_known_schedules)?,
+        data_sensitivity,
+    )
 }
 
 pub fn put_eos_schedule_in_db<D>(
@@ -47,6 +77,9 @@ pub fn put_eos_schedule_in_db<D>(
         Err(_) => {
             trace!("✔ Putting EOS schedule in db: {:?}", schedule);
             put_string_in_db(db, &db_key, &serde_json::to_string(schedule)?)
+                .and_then(|_| get_eos_known_schedules_from_db(db))
+                .map(|scheds| scheds.add(schedule.version))
+                .and_then(|scheds| put_eos_known_schedules_in_db(db, &scheds))
         }
     }
 }
