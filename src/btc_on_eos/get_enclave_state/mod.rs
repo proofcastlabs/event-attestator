@@ -9,7 +9,7 @@ use crate::btc_on_eos::{
         get_total_number_of_utxos_from_db,
     },
     eos::{
-        eos_types::EosKnownSchedules,
+        eos_types::EosKnownSchedulesJsons,
         eos_crypto::eos_public_key::EosPublicKey,
         eos_database_utils::{
             get_eos_chain_id_from_db,
@@ -69,7 +69,7 @@ pub struct EnclaveState {
     btc_canon_to_tip_length: u64,
     btc_latest_block_hash: String,
     btc_anchor_block_hash: String,
-    eos_known_schedules: EosKnownSchedules,
+    eos_known_schedules: EosKnownSchedulesJsons,
 }
 
 pub fn get_enclave_state<D>(
@@ -99,7 +99,9 @@ pub fn get_enclave_state<D>(
                     eos_symbol: get_eos_token_symbol_from_db(&db)?,
                     eos_signature_nonce: get_eos_account_nonce_from_db(&db)?,
                     btc_signature_nonce: get_btc_account_nonce_from_db(&db)?,
-                    eos_known_schedules: get_eos_known_schedules_from_db(&db)?,
+                    eos_known_schedules: EosKnownSchedulesJsons::from_schedules(
+                        get_eos_known_schedules_from_db(&db)?
+                    ),
                     debug_mode: DEBUG_MODE,
                     btc_tail_length:
                         BTC_TAIL_LENGTH,

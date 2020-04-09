@@ -58,6 +58,36 @@ pub struct EosKnownSchedule {
     pub schedule_version: u32,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EosKnownSchedulesJsons(Vec<EosKnownScheduleJson>);
+
+impl EosKnownSchedulesJsons {
+    pub fn from_schedules(scheds: EosKnownSchedules) -> EosKnownSchedulesJsons {
+        EosKnownSchedulesJsons(
+            scheds
+                .0
+                .iter()
+                .map(|sched| EosKnownScheduleJson::from_schedule(sched))
+                .collect::<Vec<EosKnownScheduleJson>>()
+        )
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EosKnownScheduleJson {
+    pub schedule_db_key: String,
+    pub schedule_version: u32,
+}
+
+impl EosKnownScheduleJson {
+    pub fn from_schedule(sched: &EosKnownSchedule) -> Self {
+        EosKnownScheduleJson {
+            schedule_version: sched.schedule_version.clone(),
+            schedule_db_key: hex::encode(sched.schedule_db_key.clone()),
+        }
+    }
+}
+
 impl EosKnownSchedule {
     pub fn new(version: u32) -> Self {
         EosKnownSchedule {
