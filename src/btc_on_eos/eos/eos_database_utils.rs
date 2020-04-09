@@ -4,12 +4,9 @@ use eos_primitives::{
     ProducerSchedule as EosProducerSchedule,
 };
 use crate::btc_on_eos::{
+    types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    types::{
-        Bytes,
-        Result,
-    },
     database_utils::{
         put_u64_in_db,
         get_u64_from_db,
@@ -18,7 +15,7 @@ use crate::btc_on_eos::{
     },
     eos::{
         eos_state::EosState,
-        eos_types::ProcessedTxIds,
+        eos_utils::get_eos_schedule_db_key,
         eos_crypto::eos_private_key::EosPrivateKey,
         parse_submission_material::parse_producer_schedule_from_json_string,
         eos_constants::{
@@ -28,13 +25,10 @@ use crate::btc_on_eos::{
             PROCESSED_TX_IDS_KEY,
             EOS_ACCOUNT_NAME_KEY,
             EOS_PRIVATE_KEY_DB_KEY,
-            EOS_SCHEDULE_DB_PREFIX,
         },
     },
 };
 
-fn get_eos_schedule_db_key(version: u32) -> Bytes {
-    format!("{}{}", EOS_SCHEDULE_DB_PREFIX, version).as_bytes().to_vec()
 }
 
 pub fn put_eos_schedule_in_db<D>(
