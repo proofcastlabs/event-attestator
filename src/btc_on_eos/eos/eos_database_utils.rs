@@ -34,7 +34,7 @@ use crate::btc_on_eos::{
     },
 };
 
-fn get_eos_known_schedules_from_db<D>(
+pub fn get_eos_known_schedules_from_db<D>(
     db: &D,
 ) -> Result<EosKnownSchedules>
     where D: DatabaseInterface
@@ -46,7 +46,7 @@ fn get_eos_known_schedules_from_db<D>(
         .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
 }
 
-fn put_eos_known_schedules_in_db<D>(
+pub fn put_eos_known_schedules_in_db<D>(
     db: &D,
     eos_known_schedules: &EosKnownSchedules,
 ) -> Result<()>

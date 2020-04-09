@@ -42,6 +42,10 @@ pub type EosSignedTransactions = Vec<EosSignedTransaction>;
 pub struct EosKnownSchedules(Vec<EosKnownSchedule>);
 
 impl EosKnownSchedules {
+    pub fn new(version: u32) -> Self {
+        EosKnownSchedules(vec![EosKnownSchedule::new(version)])
+    }
+
     pub fn add(mut self, version: u32) -> Self {
         self.0.push(EosKnownSchedule::new(version));
         self
