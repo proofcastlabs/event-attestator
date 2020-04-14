@@ -91,3 +91,13 @@ pub static EOS_ACCOUNT_NONCE: [u8; 32] = [
   152, 195, 78, 211, 211, 138, 190, 223,
   194, 169, 8, 238, 164, 254, 170, 130
 ];
+// NOTE (javascript): new Uint8Array(
+//   Buffer.from(web3.utils.keccak256('eos-schedule-list').slice(2), 'hex')
+// )
+// d24e8320db81859d6e8ee6fa3ed7312155e489a2e8269c4ae8a2fa32a1ac5095
+pub static EOS_SCHEDULE_LIST: [u8; 32] = [
+  210, 78, 131, 32, 219, 129, 133, 157,
+  110, 142, 230, 250, 62, 215, 49, 33,
+  85, 228, 137, 162, 232, 38, 156, 74,
+  232, 162, 250, 50, 161, 172, 80, 149
+];

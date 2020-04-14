@@ -3,9 +3,12 @@ use crate::btc_on_eos::{
     traits::DatabaseInterface,
     eos::{
         eos_state::EosState,
-        eos_types::ProcessedTxIds,
         eos_crypto::eos_private_key::EosPrivateKey,
         parse_submission_material::parse_producer_schedule_from_json_string,
+        eos_types::{
+            ProcessedTxIds,
+            EosKnownSchedules,
+        },
         eos_database_utils::{
             put_eos_schedule_in_db,
             put_eos_chain_id_in_db,
@@ -14,9 +17,22 @@ use crate::btc_on_eos::{
             put_eos_token_symbol_in_db,
             put_processed_tx_ids_in_db,
             put_eos_account_nonce_in_db,
+            put_eos_known_schedules_in_db,
         },
     },
 };
+
+pub fn put_eos_known_schedule_in_db_and_return_state<D>(
+    schedule_json: &String,
+    state: EosState<D>,
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    parse_producer_schedule_from_json_string(schedule_json)
+        .map(|sched| EosKnownSchedules::new(sched.version))
+        .and_then(|sched| put_eos_known_schedules_in_db(&state.db, &sched))
+        .and(Ok(state))
+}
 
 pub fn put_eos_schedule_in_db_and_return_state<D>(
     schedule_json: &String,

@@ -1,3 +1,4 @@
+use std::fmt;
 use eos_primitives::{
     Checksum256,
     Action as EosAction,
@@ -13,6 +14,7 @@ use crate::btc_on_eos::{
         Result,
     },
     eos::{
+        eos_utils::get_eos_schedule_db_key,
         eos_crypto::eos_signature::EosSignature,
         parse_eos_actions::parse_eos_action_json,
         parse_eos_action_receipts::parse_eos_action_receipt_json,
@@ -34,7 +36,90 @@ pub type ActionProofJsons = Vec<ActionProofJson>;
 pub type Sha256HashedMessage = secp256k1::Message;
 pub type AuthSequenceJsons = Vec<AuthSequenceJson>;
 pub type AuthorizationJsons = Vec<AuthorizationJson>;
-pub type EosSignedTransactions= Vec<EosSignedTransaction>;
+pub type EosSignedTransactions = Vec<EosSignedTransaction>;
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EosKnownSchedules(Vec<EosKnownSchedule>);
+
+impl EosKnownSchedules {
+    pub fn new(version: u32) -> Self {
+        EosKnownSchedules(vec![EosKnownSchedule::new(version)])
+    }
+
+    pub fn add(mut self, version: u32) -> Self {
+        let new_sched = EosKnownSchedule::new(version);
+        if !self.0.contains(&new_sched) {
+            self.0.push(new_sched);
+        };
+        self
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EosKnownSchedule {
+    pub schedule_db_key: Bytes,
+    pub schedule_version: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EosKnownSchedulesJsons(Vec<EosKnownScheduleJson>);
+
+impl EosKnownSchedulesJsons {
+    pub fn from_schedules(scheds: EosKnownSchedules) -> EosKnownSchedulesJsons {
+        EosKnownSchedulesJsons(
+            scheds
+                .0
+                .iter()
+                .map(|sched| EosKnownScheduleJson::from_schedule(sched))
+                .collect::<Vec<EosKnownScheduleJson>>()
+        )
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EosKnownScheduleJson {
+    pub schedule_db_key: String,
+    pub schedule_version: u32,
+}
+
+impl EosKnownScheduleJson {
+    pub fn from_schedule(sched: &EosKnownSchedule) -> Self {
+        EosKnownScheduleJson {
+            schedule_version: sched.schedule_version.clone(),
+            schedule_db_key: hex::encode(sched.schedule_db_key.clone()),
+        }
+    }
+}
+
+impl EosKnownSchedule {
+    pub fn new(version: u32) -> Self {
+        EosKnownSchedule {
+            schedule_version: version.clone(),
+            schedule_db_key: get_eos_schedule_db_key(version),
+        }
+    }
+}
+
+impl fmt::Display for EosKnownSchedules {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "EosKnownSchedule:")?;
+        for v in &self.0 {
+            write!(f, "{}", v)?;
+        }
+        Ok(())
+    }
+}
+
+impl fmt::Display for EosKnownSchedule {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "\tschedule_version: {},\n\tdb_key: {}",
+            self.schedule_version,
+            hex::encode(&self.schedule_db_key)
+        )
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RedeemParams {

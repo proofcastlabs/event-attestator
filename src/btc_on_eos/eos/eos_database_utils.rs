@@ -4,12 +4,9 @@ use eos_primitives::{
     ProducerSchedule as EosProducerSchedule,
 };
 use crate::btc_on_eos::{
+    types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    types::{
-        Bytes,
-        Result,
-    },
     database_utils::{
         put_u64_in_db,
         get_u64_from_db,
@@ -18,23 +15,50 @@ use crate::btc_on_eos::{
     },
     eos::{
         eos_state::EosState,
-        eos_types::ProcessedTxIds,
+        eos_utils::get_eos_schedule_db_key,
         eos_crypto::eos_private_key::EosPrivateKey,
         parse_submission_material::parse_producer_schedule_from_json_string,
+        eos_types::{
+            ProcessedTxIds,
+            EosKnownSchedules,
+        },
         eos_constants::{
+            EOS_SCHEDULE_LIST,
             EOS_ACCOUNT_NONCE,
             EOS_CHAIN_ID_DB_KEY,
             EOS_TOKEN_SYMBOL_KEY,
             PROCESSED_TX_IDS_KEY,
             EOS_ACCOUNT_NAME_KEY,
             EOS_PRIVATE_KEY_DB_KEY,
-            EOS_SCHEDULE_DB_PREFIX,
         },
     },
 };
 
-fn get_eos_schedule_db_key(version: u32) -> Bytes {
-    format!("{}{}", EOS_SCHEDULE_DB_PREFIX, version).as_bytes().to_vec()
+pub fn get_eos_known_schedules_from_db<D>(
+    db: &D,
+) -> Result<EosKnownSchedules>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting EOS known schedules from db...");
+    let data_sensitivity = None;
+    db
+        .get(EOS_SCHEDULE_LIST.to_vec(), data_sensitivity)
+        .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
+}
+
+pub fn put_eos_known_schedules_in_db<D>(
+    db: &D,
+    eos_known_schedules: &EosKnownSchedules,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    info!("✔ Putting EOS known schedules in db: {}", &eos_known_schedules);
+    let data_sensitivity = None;
+    db.put(
+        EOS_SCHEDULE_LIST.to_vec(),
+        serde_json::to_vec(eos_known_schedules)?,
+        data_sensitivity,
+    )
 }
 
 pub fn put_eos_schedule_in_db<D>(
@@ -53,6 +77,9 @@ pub fn put_eos_schedule_in_db<D>(
         Err(_) => {
             trace!("✔ Putting EOS schedule in db: {:?}", schedule);
             put_string_in_db(db, &db_key, &serde_json::to_string(schedule)?)
+                .and_then(|_| get_eos_known_schedules_from_db(db))
+                .map(|scheds| scheds.add(schedule.version))
+                .and_then(|scheds| put_eos_known_schedules_in_db(db, &scheds))
         }
     }
 }

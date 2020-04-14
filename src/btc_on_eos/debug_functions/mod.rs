@@ -13,7 +13,11 @@ use crate::btc_on_eos::{
         check_core_is_initialized_and_return_eos_state,
         check_core_is_initialized_and_return_btc_state,
     },
-    eos::eos_constants::EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
+    eos::{
+        eos_database_utils::put_eos_schedule_in_db,
+        eos_constants::EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
+        parse_submission_material::parse_producer_schedule_from_json_string,
+    },
     btc::{
         btc_state::BtcState,
         btc_types::BtcUtxoAndValue,
@@ -42,6 +46,22 @@ use crate::btc_on_eos::{
         },
     },
 };
+
+pub fn debug_add_new_eos_schedule<D>(
+    db: D,
+    schedule_json: String
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    info!("✔ Debug adding new EOS schedule...");
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| parse_producer_schedule_from_json_string(&schedule_json))
+        .and_then(|schedule| put_eos_schedule_in_db(&db, &schedule))
+        .and_then(|_| db.end_transaction())
+        .map(|_| "{debug_adding_eos_schedule_succeeded:true}".to_string())
+}
 
 /*
 pub fn debug_reprocess_btc_block<D>(
