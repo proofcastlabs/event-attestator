@@ -8,20 +8,22 @@ use secp256k1::{
         PublicKey,
     },
 };
-use crate::btc_on_eth::{
+use crate::{
     traits::DatabaseInterface,
-    constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-    eth::{
-       eth_types::EthSignature,
-       eth_crypto::eth_public_key::EthPublicKey,
-    },
     types::{
         Bytes,
         Result,
     },
-    crypto_utils::{
-        keccak_hash_bytes,
-        generate_random_private_key,
+    btc_on_eth::{
+        constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+        eth::{
+           eth_types::EthSignature,
+           eth_crypto::eth_public_key::EthPublicKey,
+        },
+        crypto_utils::{
+            keccak_hash_bytes,
+            generate_random_private_key,
+        },
     },
 };
 

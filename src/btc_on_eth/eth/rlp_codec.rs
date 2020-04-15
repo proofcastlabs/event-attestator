@@ -3,12 +3,12 @@ use rlp::{
     RlpStream,
     Encodable,
 };
-use crate::btc_on_eth::{
+use crate::{
     types::{
         Bytes,
         Result,
     },
-    eth::{
+    btc_on_eth::eth::{
         nibble_utils::{
             Nibbles,
             get_nibbles_from_bytes,

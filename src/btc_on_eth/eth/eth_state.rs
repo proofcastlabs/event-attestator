@@ -1,21 +1,23 @@
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     errors::AppError,
     traits::{
         DatabaseInterface,
     },
-    eth::eth_types::{
-        EthHash,
-        RedeemParams,
-        EthBlockAndReceipts,
-    },
-    btc::btc_types::{
-        BtcTransactions,
-        BtcUtxosAndValues,
-    },
-    utils::{
-        get_not_in_state_err,
-        get_no_overwrite_state_err,
+    btc_on_eth::{
+        eth::eth_types::{
+            EthHash,
+            RedeemParams,
+            EthBlockAndReceipts,
+        },
+        btc::btc_types::{
+            BtcTransactions,
+            BtcUtxosAndValues,
+        },
+        utils::{
+            get_not_in_state_err,
+            get_no_overwrite_state_err,
+        },
     },
 };
 

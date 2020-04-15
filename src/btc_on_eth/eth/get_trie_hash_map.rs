@@ -1,10 +1,10 @@
 use ethereum_types::H256;
-use crate::btc_on_eth::{
-    eth::eth_types::TrieHashMap,
+use crate::{
     types::{
         Bytes,
         Result,
     },
+    btc_on_eth::eth::eth_types::TrieHashMap,
 };
 
 pub fn get_new_trie_hash_map() -> Result<TrieHashMap> {

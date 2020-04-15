@@ -1,13 +1,15 @@
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    utils::convert_satoshis_to_ptoken,
-    constants::MINIMUM_REQUIRED_SATOSHIS,
-    btc::{
-        btc_state::BtcState,
-        btc_types::{
-            MintingParams,
-            MintingParamStruct
+    btc_on_eth::{
+        utils::convert_satoshis_to_ptoken,
+        constants::MINIMUM_REQUIRED_SATOSHIS,
+        btc::{
+            btc_state::BtcState,
+            btc_types::{
+                MintingParams,
+                MintingParamStruct
+            },
         },
     },
 };

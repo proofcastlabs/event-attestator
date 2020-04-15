@@ -2,24 +2,26 @@ use std::time::{
     SystemTime,
     UNIX_EPOCH
 };
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    eth::{
-        eth_types::EthTransactions,
-        eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::get_eth_account_nonce_from_db,
-    },
-    btc::{
-        btc_state::BtcState,
-        btc_constants::DEFAULT_BTC_ADDRESS,
-        btc_types::{
-            MintingParams,
-            MintingParamStruct,
+    btc_on_eth::{
+        eth::{
+            eth_types::EthTransactions,
+            eth_crypto::eth_transaction::EthTransaction,
+            eth_database_utils::get_eth_account_nonce_from_db,
         },
-        btc_database_utils::{
-            get_btc_canon_block_from_db,
-            get_btc_latest_block_from_db,
+        btc::{
+            btc_state::BtcState,
+            btc_constants::DEFAULT_BTC_ADDRESS,
+            btc_types::{
+                MintingParams,
+                MintingParamStruct,
+            },
+            btc_database_utils::{
+                get_btc_canon_block_from_db,
+                get_btc_latest_block_from_db,
+            },
         },
     },
 };

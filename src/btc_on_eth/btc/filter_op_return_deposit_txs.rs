@@ -7,10 +7,10 @@ use bitcoin::{
         },
     },
 };
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc::{
+    btc_on_eth::btc::{
         btc_state::BtcState,
         btc_types::BtcTransactions,
         btc_utils::get_pay_to_pub_key_hash_script,

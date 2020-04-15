@@ -1,8 +1,6 @@
-use crate::btc_on_eth::{
-    types::{
-        Bytes,
-        Result,
-    },
+use crate::types::{
+    Bytes,
+    Result,
 };
 
 pub trait DatabaseInterface {

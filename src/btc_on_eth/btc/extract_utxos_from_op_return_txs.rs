@@ -1,8 +1,8 @@
 use bitcoin::blockdata::script::Script as BtcScript;
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc::{
+    btc_on_eth::btc::{
         btc_state::BtcState,
         btc_utils::{
             create_unsigned_utxo_from_tx,

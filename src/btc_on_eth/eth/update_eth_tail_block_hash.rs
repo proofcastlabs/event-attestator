@@ -1,16 +1,18 @@
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    eth::{
-        eth_state::EthState,
-        eth_constants::ETH_TAIL_LENGTH,
-        eth_types::EthBlockAndReceipts,
-        eth_database_utils::{
-            get_eth_tail_block_from_db,
-            get_eth_latest_block_from_db,
-            put_eth_tail_block_hash_in_db,
-            get_eth_canon_to_tip_length_from_db,
-            maybe_get_nth_ancestor_eth_block_and_receipts,
+    btc_on_eth::{
+        eth::{
+            eth_state::EthState,
+            eth_constants::ETH_TAIL_LENGTH,
+            eth_types::EthBlockAndReceipts,
+            eth_database_utils::{
+                get_eth_tail_block_from_db,
+                get_eth_latest_block_from_db,
+                put_eth_tail_block_hash_in_db,
+                get_eth_canon_to_tip_length_from_db,
+                maybe_get_nth_ancestor_eth_block_and_receipts,
+            },
         },
     },
 };

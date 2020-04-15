@@ -1,8 +1,8 @@
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    eth::{
+    btc_on_eth::eth::{
         eth_state::EthState,
         parse_eth_block::parse_eth_block_json,
         parse_eth_receipt::parse_eth_receipt_jsons,

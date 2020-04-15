@@ -1,9 +1,11 @@
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    eth::eth_database_utils::get_latest_eth_block_number,
-    btc::btc_database_utils::get_btc_latest_block_number,
-    check_enclave_is_initialized::check_enclave_is_initialized,
+    btc_on_eth::{
+        eth::eth_database_utils::get_latest_eth_block_number,
+        btc::btc_database_utils::get_btc_latest_block_number,
+        check_enclave_is_initialized::check_enclave_is_initialized,
+    },
 };
 
 #[derive(Serialize, Deserialize)]

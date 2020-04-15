@@ -5,9 +5,9 @@ use ethereum_types::{
     Bloom,
     Address,
 };
-use crate::btc_on_eth::{
+use crate::{
     types::Bytes,
-    eth::{
+    btc_on_eth::eth::{
         trie_nodes::Node,
         eth_crypto::{
             eth_private_key::EthPrivateKey,

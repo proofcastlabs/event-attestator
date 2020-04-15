@@ -2,17 +2,19 @@ use ethereum_types::{
     Bloom,
     BloomInput,
 };
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
-    eth::eth_types::{
-        EthLog,
-        EthLogJson,
-        EthReceiptJson,
-    },
-    utils::{
-        convert_hex_to_bytes,
-        convert_hex_to_address,
-        convert_hex_strings_to_h256s,
+    btc_on_eth::{
+        eth::eth_types::{
+            EthLog,
+            EthLogJson,
+            EthReceiptJson,
+        },
+        utils::{
+            convert_hex_to_bytes,
+            convert_hex_to_address,
+            convert_hex_strings_to_h256s,
+        },
     },
 };
 

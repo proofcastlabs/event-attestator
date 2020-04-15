@@ -2,33 +2,35 @@ use bitcoin_hashes::{
     Hash,
     sha256d,
 };
-use crate::btc_on_eth::{
+use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{
         Bytes,
         Result,
     },
-    btc::btc_types::{
-        BtcUtxoAndValue,
-        BtcUtxosAndValues,
-    },
-    utils::{
-        convert_u64_to_bytes,
-        convert_bytes_to_u64,
-    },
-    utxo_manager::{
-        utxo_constants::{
-            UTXO_LAST,
-            UTXO_FIRST,
-            UTXO_NONCE,
-            UTXO_BALANCE,
-            TOTAL_NUM_UTXOS,
+    btc_on_eth::{
+        btc::btc_types::{
+            BtcUtxoAndValue,
+            BtcUtxosAndValues,
         },
-        utxo_utils::{
-            get_utxo_and_value_db_key,
-            deserialize_utxo_and_value,
-            serialize_btc_utxo_and_value,
+        utils::{
+            convert_u64_to_bytes,
+            convert_bytes_to_u64,
+        },
+        utxo_manager::{
+            utxo_constants::{
+                UTXO_LAST,
+                UTXO_FIRST,
+                UTXO_NONCE,
+                UTXO_BALANCE,
+                TOTAL_NUM_UTXOS,
+            },
+            utxo_utils::{
+                get_utxo_and_value_db_key,
+                deserialize_utxo_and_value,
+                serialize_btc_utxo_and_value,
+            },
         },
     },
 };

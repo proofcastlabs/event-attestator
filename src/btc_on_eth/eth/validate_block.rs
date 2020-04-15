@@ -1,13 +1,15 @@
 use ethereum_types::H256;
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    crypto_utils::keccak_hash_bytes,
-    eth::{
-        eth_types::EthBlock,
-        eth_state::EthState,
-        rlp_codec::rlp_encode_block,
+    btc_on_eth::{
+        crypto_utils::keccak_hash_bytes,
+        eth::{
+            eth_types::EthBlock,
+            eth_state::EthState,
+            rlp_codec::rlp_encode_block,
+        },
     },
 };
 

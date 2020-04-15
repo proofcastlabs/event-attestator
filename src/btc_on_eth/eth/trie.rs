@@ -1,39 +1,41 @@
 use ethereum_types::H256;
-use crate::btc_on_eth::{
+use crate::{
     errors::AppError,
     types::{
         Bytes,
         Result,
     },
-    utils::{
-        convert_bytes_to_h256,
-        convert_h256_to_bytes,
-    },
-    eth::{
-        eth_types::{
-            NodeStack,
-            TrieHashMap,
+    btc_on_eth::{
+        utils::{
+            convert_bytes_to_h256,
+            convert_h256_to_bytes,
         },
-        eth_constants::{
-            EMPTY_NIBBLES,
-            HASHED_NULL_NODE,
-        },
-        trie_nodes::{
-            Node,
-            get_node_from_trie_hash_map,
-        },
-        get_trie_hash_map::{
-            get_new_trie_hash_map,
-            put_thing_in_trie_hash_map,
-            remove_thing_from_trie_hash_map,
-        },
-        nibble_utils::{
-            Nibbles,
-            get_nibble_at_index,
-            split_at_first_nibble,
-            get_nibbles_from_bytes,
-            convert_nibble_to_usize,
-            get_common_prefix_nibbles,
+        eth::{
+            eth_types::{
+                NodeStack,
+                TrieHashMap,
+            },
+            eth_constants::{
+                EMPTY_NIBBLES,
+                HASHED_NULL_NODE,
+            },
+            trie_nodes::{
+                Node,
+                get_node_from_trie_hash_map,
+            },
+            get_trie_hash_map::{
+                get_new_trie_hash_map,
+                put_thing_in_trie_hash_map,
+                remove_thing_from_trie_hash_map,
+            },
+            nibble_utils::{
+                Nibbles,
+                get_nibble_at_index,
+                split_at_first_nibble,
+                get_nibbles_from_bytes,
+                convert_nibble_to_usize,
+                get_common_prefix_nibbles,
+            },
         },
     },
 };

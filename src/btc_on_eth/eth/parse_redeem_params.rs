@@ -4,26 +4,28 @@ use ethereum_types::{
     U256,
     H256 as EthHash,
 };
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    constants::SAFE_BTC_ADDRESS,
-    utils::convert_ptoken_to_satoshis,
-    eth::{
-        eth_state::EthState,
-        eth_types::RedeemParams,
-        eth_database_utils::get_eth_canon_block_from_db,
-        eth_types::{
-            EthLog,
-            EthReceipt,
-            EthBlockAndReceipts,
+    btc_on_eth::{
+        constants::SAFE_BTC_ADDRESS,
+        utils::convert_ptoken_to_satoshis,
+        eth::{
+            eth_state::EthState,
+            eth_types::RedeemParams,
+            eth_database_utils::get_eth_canon_block_from_db,
+            eth_types::{
+                EthLog,
+                EthReceipt,
+                EthBlockAndReceipts,
+            },
+            eth_constants::{
+                REDEEM_EVENT_TOPIC_HEX,
+                ETH_WORD_SIZE_IN_BYTES,
+                LOG_DATA_BTC_ADDRESS_START_INDEX,
+            }
         },
-        eth_constants::{
-            REDEEM_EVENT_TOPIC_HEX,
-            ETH_WORD_SIZE_IN_BYTES,
-            LOG_DATA_BTC_ADDRESS_START_INDEX,
-        }
     },
 };
 

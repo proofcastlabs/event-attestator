@@ -1,9 +1,9 @@
 use bitcoin::blockdata::block::Block as BtcBlock;
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     errors::AppError,
-    btc::btc_state::BtcState,
     traits::DatabaseInterface,
+    btc_on_eth::btc::btc_state::BtcState,
 };
 
 fn validate_merkle_root(btc_block: &BtcBlock) -> Result<()> {

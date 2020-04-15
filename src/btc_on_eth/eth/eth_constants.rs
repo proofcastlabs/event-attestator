@@ -1,7 +1,7 @@
 use ethereum_types::H256 as EthHash;
-use crate::btc_on_eth::{
+use crate::{
     types::Byte,
-    eth::nibble_utils::Nibbles,
+    btc_on_eth::eth::nibble_utils::Nibbles,
 };
 
 pub const ZERO_BYTE: u8 = 0u8;

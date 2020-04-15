@@ -1,11 +1,11 @@
-use crate::btc_on_eth::{
+use crate::{
+    types::Result,
     errors::AppError,
-    eth::{
+    traits::DatabaseInterface,
+    btc_on_eth::eth::{
         eth_database_utils::get_eth_private_key_from_db,
         eth_json_codec::{encode_eth_signed_message_as_json, JsonValue},
     },
-    traits::DatabaseInterface,
-    types::Result,
 };
 
 pub fn sign_message_with_eth_key<D, T>(db: &D, message: T) -> Result<JsonValue>

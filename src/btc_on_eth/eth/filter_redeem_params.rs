@@ -1,11 +1,13 @@
 use ethereum_types::U256;
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    constants::MINIMUM_REQUIRED_SATOSHIS,
-    eth::{
-        eth_state::EthState,
-        eth_types::RedeemParams,
+    btc_on_eth::{
+        constants::MINIMUM_REQUIRED_SATOSHIS,
+        eth::{
+            eth_state::EthState,
+            eth_types::RedeemParams,
+        },
     },
 };
 

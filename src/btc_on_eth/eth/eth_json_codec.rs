@@ -2,12 +2,12 @@ pub use serde_json::{
     json,
     Value as JsonValue,
 };
-use crate::btc_on_eth::{
+use crate::{
     types::{
         Bytes,
         Result,
     },
-    eth::{
+    btc_on_eth::eth::{
         parse_eth_block_and_receipts::parse_eth_block_and_receipts_json,
         eth_types::{
             EthLog,

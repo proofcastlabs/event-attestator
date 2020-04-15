@@ -19,29 +19,31 @@ use bitcoin::{
     },
     consensus::encode::serialize as btc_serialize,
 };
-use crate::btc_on_eth::{
+use crate::{
     traits::DatabaseInterface,
-    constants::SAFE_ETH_ADDRESS,
-    utils::convert_satoshis_to_ptoken,
     types::{
         Bytes,
         Result,
     },
-    btc::{
-        btc_state::BtcState,
-        btc_constants::DEFAULT_BTC_ADDRESS,
-        btc_database_utils::{
-            get_btc_address_from_db,
-            get_btc_network_from_db,
-        },
-        btc_utils::{
-            get_safe_eth_address,
-            get_pay_to_pub_key_hash_script,
-        },
-        btc_types::{
-            MintingParams,
-            BtcTransactions,
-            MintingParamStruct,
+    btc_on_eth::{
+        constants::SAFE_ETH_ADDRESS,
+        utils::convert_satoshis_to_ptoken,
+        btc::{
+            btc_state::BtcState,
+            btc_constants::DEFAULT_BTC_ADDRESS,
+            btc_database_utils::{
+                get_btc_address_from_db,
+                get_btc_network_from_db,
+            },
+            btc_utils::{
+                get_safe_eth_address,
+                get_pay_to_pub_key_hash_script,
+            },
+            btc_types::{
+                MintingParams,
+                BtcTransactions,
+                MintingParamStruct,
+            },
         },
     },
 };

@@ -1,48 +1,50 @@
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
-    constants::DEBUG_MODE,
     traits::DatabaseInterface,
-    utxo_manager::utxo_database_utils::{
-        get_utxo_nonce_from_db,
-        get_total_utxo_balance_from_db,
-        get_total_number_of_utxos_from_db,
+    btc_on_eth::{
+        constants::DEBUG_MODE, // TODO move to top level constants!
+        utxo_manager::utxo_database_utils::{
+            get_utxo_nonce_from_db,
+            get_total_utxo_balance_from_db,
+            get_total_number_of_utxos_from_db,
+        },
+        eth::{
+            eth_constants::ETH_TAIL_LENGTH,
+            get_linker_hash::{
+                get_linker_hash_or_genesis_hash as get_eth_linker_hash
+            },
+            eth_database_utils::{
+                get_eth_gas_price_from_db,
+                get_eth_tail_block_from_db,
+                get_eth_canon_block_from_db,
+                get_eth_latest_block_from_db,
+                get_eth_anchor_block_from_db,
+                get_eth_account_nonce_from_db,
+                get_public_eth_address_from_db,
+                get_eth_canon_to_tip_length_from_db,
+                get_eth_smart_contract_address_from_db,
+            },
+        },
+        btc::{
+            btc_constants::BTC_TAIL_LENGTH,
+            update_btc_linker_hash::{
+                get_linker_hash_or_genesis_hash as get_btc_linker_hash,
+            },
+            btc_database_utils::{
+                get_btc_fee_from_db,
+                get_btc_network_from_db,
+                get_btc_address_from_db,
+                get_btc_tail_block_from_db,
+                get_btc_difficulty_from_db,
+                get_btc_private_key_from_db,
+                get_btc_canon_block_from_db,
+                get_btc_latest_block_from_db,
+                get_btc_anchor_block_from_db,
+                get_btc_canon_to_tip_length_from_db,
+            },
+        },
+        check_enclave_is_initialized::check_enclave_is_initialized,
     },
-    eth::{
-        eth_constants::ETH_TAIL_LENGTH,
-        get_linker_hash::{
-            get_linker_hash_or_genesis_hash as get_eth_linker_hash
-        },
-        eth_database_utils::{
-            get_eth_gas_price_from_db,
-            get_eth_tail_block_from_db,
-            get_eth_canon_block_from_db,
-            get_eth_latest_block_from_db,
-            get_eth_anchor_block_from_db,
-            get_eth_account_nonce_from_db,
-            get_public_eth_address_from_db,
-            get_eth_canon_to_tip_length_from_db,
-            get_eth_smart_contract_address_from_db,
-        },
-    },
-    btc::{
-        btc_constants::BTC_TAIL_LENGTH,
-        update_btc_linker_hash::{
-            get_linker_hash_or_genesis_hash as get_btc_linker_hash,
-        },
-        btc_database_utils::{
-            get_btc_fee_from_db,
-            get_btc_network_from_db,
-            get_btc_address_from_db,
-            get_btc_tail_block_from_db,
-            get_btc_difficulty_from_db,
-            get_btc_private_key_from_db,
-            get_btc_canon_block_from_db,
-            get_btc_latest_block_from_db,
-            get_btc_anchor_block_from_db,
-            get_btc_canon_to_tip_length_from_db,
-        },
-    },
-    check_enclave_is_initialized::check_enclave_is_initialized,
 };
 
 #[derive(Serialize, Deserialize)]

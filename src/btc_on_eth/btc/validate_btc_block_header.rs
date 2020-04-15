@@ -1,9 +1,9 @@
 use bitcoin::util::hash::BitcoinHash;
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    btc::{
+    btc_on_eth::btc::{
         btc_state::BtcState,
         btc_types::BtcBlockAndId,
     },

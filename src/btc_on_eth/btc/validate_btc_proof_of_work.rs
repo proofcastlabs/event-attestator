@@ -1,9 +1,9 @@
 use bitcoin::blockdata::block::BlockHeader as BtcBlockHeader;
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     errors::AppError,
-    btc::btc_state::BtcState,
     traits::DatabaseInterface,
+    btc_on_eth::btc::btc_state::BtcState,
 };
 
 fn validate_proof_of_work_in_block(

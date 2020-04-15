@@ -1,18 +1,20 @@
 use ethereum_types::H256;
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    eth::rlp_codec::get_rlp_encoded_receipts_and_nibble_tuples,
-    eth::{
-        eth_state::EthState,
-        eth_types::{
-            EthBlock,
-            EthReceipts,
-        },
-        trie::{
-            Trie,
-            put_in_trie_recursively,
+    btc_on_eth::{
+        eth::rlp_codec::get_rlp_encoded_receipts_and_nibble_tuples,
+        eth::{
+            eth_state::EthState,
+            eth_types::{
+                EthBlock,
+                EthReceipts,
+            },
+            trie::{
+                Trie,
+                put_in_trie_recursively,
+            },
         },
     },
 };

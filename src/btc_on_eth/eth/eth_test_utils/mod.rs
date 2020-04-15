@@ -12,50 +12,52 @@ use std::{
         remove_dir_all,
     },
 };
-use crate::btc_on_eth::{
+use crate::{
     errors::AppError,
     traits::DatabaseInterface,
-    test_utils::{
-        TestDB,
-        get_test_database,
-    },
     types::{
         Bytes,
         Result,
     },
-    utils::{
-        convert_hex_to_h256,
-        convert_hex_to_address,
-        convert_hex_strings_to_h256s,
-    },
-    eth::{
-        trie_nodes::Node,
-        eth_state::EthState,
-        parse_eth_block::parse_eth_block_json,
-        parse_eth_receipt::parse_eth_receipt_json,
-        parse_eth_block_and_receipts::parse_eth_block_and_receipts,
-        eth_types::{
-            EthLog,
-            EthHash,
-            EthLogs,
-            EthBlock,
-            EthTopics,
-            EthReceipt,
-            EthAddress,
-            TrieHashMap,
-            EthBlockJson,
-            EthReceiptJson,
-            EthBlockAndReceipts,
-            EthBlockAndReceiptsJson,
+    btc_on_eth::{
+        test_utils::{
+            TestDB,
+            get_test_database,
         },
-        eth_crypto::{
-            eth_public_key::EthPublicKey,
-            eth_private_key::EthPrivateKey,
+        utils::{
+            convert_hex_to_h256,
+            convert_hex_to_address,
+            convert_hex_strings_to_h256s,
         },
-        nibble_utils::{
-            Nibbles,
-            get_nibbles_from_bytes,
-            get_nibbles_from_offset_bytes,
+        eth::{
+            trie_nodes::Node,
+            eth_state::EthState,
+            parse_eth_block::parse_eth_block_json,
+            parse_eth_receipt::parse_eth_receipt_json,
+            parse_eth_block_and_receipts::parse_eth_block_and_receipts,
+            eth_types::{
+                EthLog,
+                EthHash,
+                EthLogs,
+                EthBlock,
+                EthTopics,
+                EthReceipt,
+                EthAddress,
+                TrieHashMap,
+                EthBlockJson,
+                EthReceiptJson,
+                EthBlockAndReceipts,
+                EthBlockAndReceiptsJson,
+            },
+            eth_crypto::{
+                eth_public_key::EthPublicKey,
+                eth_private_key::EthPrivateKey,
+            },
+            nibble_utils::{
+                Nibbles,
+                get_nibbles_from_bytes,
+                get_nibbles_from_offset_bytes,
+            },
         },
     },
 };

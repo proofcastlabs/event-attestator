@@ -2,32 +2,34 @@ use bitcoin::{
     network::constants::Network as BtcNetwork,
     blockdata::transaction::Transaction as BtcTransaction,
 };
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    utxo_manager::utxo_database_utils::get_utxo_and_value,
-    btc::{
-        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-        btc_utils::{
-            calculate_btc_tx_fee,
-            get_total_value_of_utxos_and_values,
+    btc_on_eth::{
+        utxo_manager::utxo_database_utils::get_utxo_and_value,
+        btc::{
+            btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
+            btc_utils::{
+                calculate_btc_tx_fee,
+                get_total_value_of_utxos_and_values,
+            },
+            btc_database_utils::{
+                get_btc_fee_from_db,
+                get_btc_network_from_db,
+                get_btc_address_from_db,
+                get_btc_private_key_from_db,
+            },
+            btc_types::{
+                BtcUtxoAndValue,
+                BtcUtxosAndValues,
+                BtcRecipientAndAmount,
+                BtcRecipientsAndAmounts,
+            },
         },
-        btc_database_utils::{
-            get_btc_fee_from_db,
-            get_btc_network_from_db,
-            get_btc_address_from_db,
-            get_btc_private_key_from_db,
+        eth::{
+            eth_state::EthState,
+            eth_types::RedeemParams,
         },
-        btc_types::{
-            BtcUtxoAndValue,
-            BtcUtxosAndValues,
-            BtcRecipientAndAmount,
-            BtcRecipientsAndAmounts,
-        },
-    },
-    eth::{
-        eth_state::EthState,
-        eth_types::RedeemParams,
     },
 };
 

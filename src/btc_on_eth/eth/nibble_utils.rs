@@ -1,12 +1,12 @@
 use std::fmt;
-use crate::btc_on_eth::{
+use crate::{
     errors::AppError,
     types::{
         Byte,
         Bytes,
         Result,
     },
-    eth::eth_constants::{
+    btc_on_eth::eth::eth_constants::{
         ZERO_BYTE,
         EMPTY_NIBBLES,
         HIGH_NIBBLE_MASK,
