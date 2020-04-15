@@ -1,7 +1,6 @@
 pub mod btc;
 pub mod eth;
 pub mod utils;
-pub mod base58;
 pub mod constants;
 pub mod test_utils;
 pub mod utxo_manager;

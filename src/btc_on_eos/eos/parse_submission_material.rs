@@ -11,23 +11,25 @@ use eos_primitives::{
     BlockHeader as EosBlockHeader,
     ProducerSchedule as EosProducerSchedule,
 };
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    utils::convert_hex_to_checksum256,
-    eos::{
-        eos_state::EosState,
-        eos_types::{
-            ActionProof,
-            ActionProofs,
-            Checksum256s,
-            ProducerKeyJson,
-            ActionProofJsons,
-            EosBlockHeaderJson,
-            ProducerScheduleJson,
-            EosSubmissionMaterial,
-            EosSubmissionMaterialJson,
+    btc_on_eos::{
+        utils::convert_hex_to_checksum256,
+        eos::{
+            eos_state::EosState,
+            eos_types::{
+                ActionProof,
+                ActionProofs,
+                Checksum256s,
+                ProducerKeyJson,
+                ActionProofJsons,
+                EosBlockHeaderJson,
+                ProducerScheduleJson,
+                EosSubmissionMaterial,
+                EosSubmissionMaterialJson,
+            },
         },
     },
 };

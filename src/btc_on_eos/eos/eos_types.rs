@@ -7,17 +7,19 @@ use eos_primitives::{
     ProducerKey as EosProducerKey,
     ActionReceipt as EosActionReceipt,
 };
-use crate::btc_on_eos::{
-    utils::convert_hex_to_checksum256,
+use crate::{
     types::{
         Bytes,
         Result,
     },
-    eos::{
-        eos_utils::get_eos_schedule_db_key,
-        eos_crypto::eos_signature::EosSignature,
-        parse_eos_actions::parse_eos_action_json,
-        parse_eos_action_receipts::parse_eos_action_receipt_json,
+    btc_on_eos::{
+        utils::convert_hex_to_checksum256,
+        eos::{
+            eos_utils::get_eos_schedule_db_key,
+            eos_crypto::eos_signature::EosSignature,
+            parse_eos_actions::parse_eos_action_json,
+            parse_eos_action_receipts::parse_eos_action_receipt_json,
+        },
     },
 };
 

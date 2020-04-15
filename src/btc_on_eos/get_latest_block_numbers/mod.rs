@@ -1,8 +1,10 @@
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc::btc_database_utils::get_btc_latest_block_number,
-    check_core_is_initialized::check_btc_core_is_initialized,
+    btc_on_eos::{
+        btc::btc_database_utils::get_btc_latest_block_number,
+        check_core_is_initialized::check_btc_core_is_initialized,
+    },
 };
 
 #[derive(Serialize, Deserialize)]

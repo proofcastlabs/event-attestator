@@ -1,12 +1,14 @@
 use std::str::FromStr;
 use eos_primitives::AccountName as EosAccountName;
-use crate::btc_on_eos::{
+use crate::{
     errors::AppError,
-    constants::SAFE_EOS_ADDRESS,
-    eos::eos_constants::EOS_SCHEDULE_DB_PREFIX,
     types::{
         Bytes,
         Result,
+    },
+    btc_on_eos::{
+        constants::SAFE_EOS_ADDRESS,
+        eos::eos_constants::EOS_SCHEDULE_DB_PREFIX,
     },
 };
 

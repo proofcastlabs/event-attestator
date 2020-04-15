@@ -2,28 +2,30 @@ use eos_primitives::{
     BlockHeader as EosBlockHeader,
     ProducerSchedule as EosProducerSchedule,
 };
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    btc::{
-        btc_types::{
-            BtcTransactions,
-            BtcUtxosAndValues,
+    btc_on_eos::{
+        btc::{
+            btc_types::{
+                BtcTransactions,
+                BtcUtxosAndValues,
+            },
         },
-    },
-    eos::{
-        eos_types::{
-            ActionProofs,
-            Checksum256s,
-            RedeemParams,
-            ProcessedTxIds,
-            EosSubmissionMaterial,
+        eos::{
+            eos_types::{
+                ActionProofs,
+                Checksum256s,
+                RedeemParams,
+                ProcessedTxIds,
+                EosSubmissionMaterial,
+            },
         },
-    },
-    utils::{
-        get_not_in_state_err,
-        get_no_overwrite_state_err,
+        utils::{
+            get_not_in_state_err,
+            get_no_overwrite_state_err,
+        },
     },
 };
 

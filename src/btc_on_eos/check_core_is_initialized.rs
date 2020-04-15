@@ -1,14 +1,16 @@
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    btc::{
-        btc_state::BtcState,
-        initialize_btc::is_btc_core_initialized::is_btc_core_initialized,
-    },
-    eos::{
-        eos_state::EosState,
-        initialize_eos::is_eos_core_initialized::is_eos_core_initialized,
+    btc_on_eos::{
+        btc::{
+            btc_state::BtcState,
+            initialize_btc::is_btc_core_initialized::is_btc_core_initialized,
+        },
+        eos::{
+            eos_state::EosState,
+            initialize_eos::is_eos_core_initialized::is_eos_core_initialized,
+        },
     },
 };
 

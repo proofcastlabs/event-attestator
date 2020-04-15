@@ -1,4 +1,4 @@
-use crate::btc_on_eos::{
+use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{

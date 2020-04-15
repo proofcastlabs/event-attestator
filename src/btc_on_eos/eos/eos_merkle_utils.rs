@@ -3,14 +3,14 @@ use bitcoin_hashes::{
     Hash,
     sha256,
 };
-use crate::btc_on_eos::{
+use crate::{
     errors::AppError,
     types::{
         Byte,
         Bytes,
         Result,
     },
-    eos::eos_types::{
+    btc_on_eos::eos::eos_types::{
         MerklePath,
         MerkleProof,
     },

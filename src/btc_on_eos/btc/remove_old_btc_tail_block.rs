@@ -1,9 +1,9 @@
 use bitcoin_hashes::sha256d;
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    btc::{
+    btc_on_eos::btc::{
         btc_state::BtcState,
         btc_types::BtcBlockInDbFormat,
         btc_database_utils::{

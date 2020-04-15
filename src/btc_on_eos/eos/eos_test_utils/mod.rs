@@ -16,35 +16,37 @@ use eos_primitives::{
     ActionReceipt as EosActionReceipt,
     ProducerSchedule as EosProducerSchedule,
 };
-use crate::btc_on_eos::{
+use crate::{
     errors::AppError,
-    utils::convert_hex_to_checksum256,
-    test_utils::get_sample_message_to_sign,
     types::{
         Bytes,
         Result,
     },
-    eos::{
-        eos_state::EosState,
-        parse_submission_material::{
-            parse_producer_schedule_from_json_string,
-            parse_eos_submission_material_string_to_json,
-            parse_eos_submission_material_string_to_struct,
-        },
-        eos_types::{
-            EosAmount,
-            EosSignatures,
-            EosSignedTransaction,
-            EosSignedTransactions,
-            EosSubmissionMaterial,
-            EosSubmissionMaterialJson,
-            ActionProofs,
-            ActionProof
-        },
-        eos_crypto::{
-            eos_signature::EosSignature,
-            eos_public_key::EosPublicKey,
-            eos_private_key::EosPrivateKey,
+    btc_on_eos::{
+        utils::convert_hex_to_checksum256,
+        test_utils::get_sample_message_to_sign,
+        eos::{
+            eos_state::EosState,
+            parse_submission_material::{
+                parse_producer_schedule_from_json_string,
+                parse_eos_submission_material_string_to_json,
+                parse_eos_submission_material_string_to_struct,
+            },
+            eos_types::{
+                EosAmount,
+                EosSignatures,
+                EosSignedTransaction,
+                EosSignedTransactions,
+                EosSubmissionMaterial,
+                EosSubmissionMaterialJson,
+                ActionProofs,
+                ActionProof
+            },
+            eos_crypto::{
+                eos_signature::EosSignature,
+                eos_public_key::EosPublicKey,
+                eos_private_key::EosPrivateKey,
+            },
         },
     },
 };

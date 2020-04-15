@@ -2,11 +2,11 @@ use std::{
     fmt,
     str::FromStr,
 };
-use crate::btc_on_eos::{
+use crate::{
     base58,
     types::Result,
     errors::AppError,
-    eos::eos_hash::ripemd160,
+    btc_on_eos::eos::eos_hash::ripemd160,
 };
 use secp256k1::{
     Signature as NonRecoverableSignature,

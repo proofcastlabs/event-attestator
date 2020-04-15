@@ -1,13 +1,15 @@
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    utils::convert_eos_asset_to_u64,
-    constants::MINIMUM_REQUIRED_SATOSHIS,
-    btc::{
-        btc_state::BtcState,
-        btc_types::{
-            MintingParams,
-            MintingParamStruct
+    btc_on_eos::{
+        utils::convert_eos_asset_to_u64,
+        constants::MINIMUM_REQUIRED_SATOSHIS,
+        btc::{
+            btc_state::BtcState,
+            btc_types::{
+                MintingParams,
+                MintingParamStruct
+            },
         },
     },
 };

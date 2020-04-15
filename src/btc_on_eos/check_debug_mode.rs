@@ -1,7 +1,7 @@
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     errors::AppError,
-    constants::DEBUG_MODE,
+    btc_on_eos::constants::DEBUG_MODE,
 };
 
 pub fn check_debug_mode() -> Result<()> {

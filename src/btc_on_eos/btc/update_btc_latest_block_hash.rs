@@ -1,7 +1,7 @@
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc::{
+    btc_on_eos::btc::{
         btc_state::BtcState,
         btc_database_utils::{
             get_btc_latest_block_from_db,

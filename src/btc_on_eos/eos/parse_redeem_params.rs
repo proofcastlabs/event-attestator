@@ -3,19 +3,21 @@ use eos_primitives::{
     Symbol as EosSymbol,
     AccountName as EosAccountName,
 };
-use crate::btc_on_eos::{
+use crate::{
     traits::DatabaseInterface,
-    utils::convert_bytes_to_u64,
     types::{
         Bytes,
         Result,
     },
-    eos::{
-        eos_state::EosState,
-        eos_types::{
-            ActionProof,
-            ActionProofs,
-            RedeemParams,
+    btc_on_eos::{
+        utils::convert_bytes_to_u64,
+        eos::{
+            eos_state::EosState,
+            eos_types::{
+                ActionProof,
+                ActionProofs,
+                RedeemParams,
+            },
         },
     },
 };

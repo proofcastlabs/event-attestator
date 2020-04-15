@@ -5,13 +5,15 @@ use eos_primitives::{
     AuthSequences,
     ActionReceipt as EosActionReceipt,
 };
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
-    utils::convert_hex_to_checksum256,
-    eos::eos_types::{
-        AuthSequenceJson,
-        AuthSequenceJsons,
-        EosActionReceiptJson,
+    btc_on_eos::{
+        utils::convert_hex_to_checksum256,
+        eos::eos_types::{
+            AuthSequenceJson,
+            AuthSequenceJsons,
+            EosActionReceiptJson,
+        },
     },
 };
 

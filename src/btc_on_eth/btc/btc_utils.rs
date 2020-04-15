@@ -4,6 +4,10 @@ use crate::{
         Bytes,
         Result,
     },
+    base58::{
+        from as from_base58,
+        encode_slice as base58_encode_slice,
+    },
     btc_on_eth::{
         constants::SAFE_ETH_ADDRESS,
         btc::{
@@ -24,10 +28,6 @@ use crate::{
         utils::{
             convert_bytes_to_u64,
             convert_u64_to_bytes,
-        },
-        base58::{
-            from as from_base58,
-            encode_slice as base58_encode_slice,
         },
     },
 };

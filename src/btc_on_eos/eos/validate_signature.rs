@@ -12,14 +12,14 @@ use bitcoin_hashes::{
 use secp256k1::{
     Message,
 };
-use crate::btc_on_eos::{
+use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{
         Bytes,
         Result,
     },
-    eos::{
+    btc_on_eos::eos::{
         eos_state::EosState,
         eos_merkle_utils::IncrementalMerkle,
         eos_types::Checksum256s,

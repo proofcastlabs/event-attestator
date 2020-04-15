@@ -1,8 +1,8 @@
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    btc::{
+    btc_on_eos::btc::{
         btc_state::BtcState,
         btc_database_utils::get_btc_block_from_db,
     },

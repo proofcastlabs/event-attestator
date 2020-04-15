@@ -5,20 +5,22 @@ use ethereum_types::{
     H256,
     Address as EthAddress
 };
-use crate::btc_on_eos::{
+use crate::{
     errors::AppError,
-    constants::BTC_NUM_DECIMALS,
     types::{
         Bytes,
         Result,
     },
-    constants::{
-        HASH_LENGTH,
-        U64_NUM_BYTES,
-    },
-    eos::{
-        eos_types::EosAmount,
-        eos_constants::EOS_NUM_DECIMALS,
+    btc_on_eos::{
+        constants::{
+            HASH_LENGTH,
+            U64_NUM_BYTES,
+            BTC_NUM_DECIMALS,
+        },
+        eos::{
+            eos_types::EosAmount,
+            eos_constants::EOS_NUM_DECIMALS,
+        },
     },
 };
 

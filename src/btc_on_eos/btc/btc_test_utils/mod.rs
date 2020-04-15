@@ -14,35 +14,37 @@ use bitcoin::{
         },
     },
 };
-use crate::btc_on_eos::{
+use crate::{
     errors::AppError,
-    utils::convert_u64_to_eos_asset,
-    constants::MINIMUM_REQUIRED_SATOSHIS,
     types::{
         Bytes,
         Result,
     },
-    btc::{
-        btc_utils::{
-            get_p2sh_redeem_script_sig,
-            get_btc_block_in_db_format,
-            create_unsigned_utxo_from_tx,
-            get_pay_to_pub_key_hash_script,
-            create_op_return_btc_utxo_and_value_from_tx_output,
-        },
-        btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_types::{
-            MintingParams,
-            BtcBlockAndId,
-            BtcUtxoAndValue,
-            MintingParamStruct,
-            BtcBlockInDbFormat,
-            DepositAddressInfoJson,
-            SubmissionMaterialJson,
-        },
-        parse_submission_material::{
-            parse_submission_material_to_json,
-            parse_btc_block_from_submission_material,
+    btc_on_eos::{
+        utils::convert_u64_to_eos_asset,
+        constants::MINIMUM_REQUIRED_SATOSHIS,
+        btc::{
+            btc_utils::{
+                get_p2sh_redeem_script_sig,
+                get_btc_block_in_db_format,
+                create_unsigned_utxo_from_tx,
+                get_pay_to_pub_key_hash_script,
+                create_op_return_btc_utxo_and_value_from_tx_output,
+            },
+            btc_crypto::btc_private_key::BtcPrivateKey,
+            btc_types::{
+                MintingParams,
+                BtcBlockAndId,
+                BtcUtxoAndValue,
+                MintingParamStruct,
+                BtcBlockInDbFormat,
+                DepositAddressInfoJson,
+                SubmissionMaterialJson,
+            },
+            parse_submission_material::{
+                parse_submission_material_to_json,
+                parse_btc_block_from_submission_material,
+            },
         },
     },
 };

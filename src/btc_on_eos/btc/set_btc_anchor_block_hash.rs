@@ -1,7 +1,7 @@
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc::{
+    btc_on_eos::btc::{
         btc_state::BtcState,
         btc_constants::BTC_ANCHOR_BLOCK_HASH_KEY,
         btc_database_utils::{

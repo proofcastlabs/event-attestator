@@ -1,6 +1,6 @@
-use crate::btc_on_eos::{
+use crate::{
     traits::DatabaseInterface,
-    eos::eos_database_utils::get_processed_tx_ids_from_db,
+    btc_on_eos::eos::eos_database_utils::get_processed_tx_ids_from_db,
 };
 
 pub fn is_eos_core_initialized<D>(db: &D) -> bool where D: DatabaseInterface {

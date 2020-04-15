@@ -1,10 +1,6 @@
 pub mod eos;
 pub mod btc;
 pub mod utils;
-pub mod types;
-pub mod traits;
-pub mod errors;
-pub mod base58;
 pub mod constants;
 pub mod test_utils;
 pub mod crypto_utils;

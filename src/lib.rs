@@ -5,6 +5,7 @@
 pub mod types;
 pub mod traits;
 pub mod errors;
+pub mod base58;
 pub mod btc_on_eth;
 pub mod btc_on_eos;
 

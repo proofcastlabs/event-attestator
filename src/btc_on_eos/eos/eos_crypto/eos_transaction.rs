@@ -5,9 +5,9 @@ use eos_primitives::{
     Action as EosAction,
     Transaction as EosTransaction,
 };
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
-    eos::{
+    btc_on_eos::eos::{
         eos_types::EosSignedTransaction,
         eos_constants::PBTC_MINT_FXN_NAME,
         eos_crypto::eos_private_key::EosPrivateKey,

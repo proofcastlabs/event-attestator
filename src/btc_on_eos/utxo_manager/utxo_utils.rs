@@ -2,12 +2,12 @@ use bitcoin_hashes::{
     Hash,
     sha256d,
 };
-use crate::btc_on_eos::{
+use crate::{
     types::{
         Bytes,
         Result,
     },
-    btc::btc_types::BtcUtxoAndValue,
+    btc_on_eos::btc::btc_types::BtcUtxoAndValue,
 };
 
 pub fn get_utxo_and_value_db_key(

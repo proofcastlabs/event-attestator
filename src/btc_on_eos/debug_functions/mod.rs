@@ -1,48 +1,50 @@
 #![allow(dead_code)] // TODO rm!
 #![allow(unused_imports)] // TODO rm!
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    check_debug_mode::check_debug_mode,
-    utxo_manager::utxo_database_utils::{
-        get_utxo_from_db,
-        get_all_utxo_db_keys,
-    },
-    check_core_is_initialized::{
-        check_core_is_initialized,
-        check_core_is_initialized_and_return_eos_state,
-        check_core_is_initialized_and_return_btc_state,
-    },
-    eos::{
-        eos_database_utils::put_eos_schedule_in_db,
-        eos_constants::EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
-        parse_submission_material::parse_producer_schedule_from_json_string,
-    },
-    btc::{
-        btc_state::BtcState,
-        btc_types::BtcUtxoAndValue,
-        save_utxos_to_db::maybe_save_utxos_to_db,
-        filter_utxos::maybe_filter_utxos_in_state,
-        btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
-        validate_btc_merkle_root::validate_btc_merkle_root,
-        filter_minting_params::maybe_filter_minting_params_in_state,
-        validate_btc_block_header::validate_btc_block_header_in_state,
-        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
-        btc_database_utils::{
-            end_btc_db_transaction,
-            start_btc_db_transaction,
+    btc_on_eos::{
+        check_debug_mode::check_debug_mode,
+        utxo_manager::utxo_database_utils::{
+            get_utxo_from_db,
+            get_all_utxo_db_keys,
         },
-        get_deposit_info_hash_map::{
-            get_deposit_info_hash_map_and_put_in_state,
+        check_core_is_initialized::{
+            check_core_is_initialized,
+            check_core_is_initialized_and_return_eos_state,
+            check_core_is_initialized_and_return_btc_state,
         },
-        validate_btc_proof_of_work::{
-            validate_proof_of_work_of_btc_block_in_state,
+        eos::{
+            eos_database_utils::put_eos_schedule_in_db,
+            eos_constants::EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
+            parse_submission_material::parse_producer_schedule_from_json_string,
         },
-        extract_utxos_from_p2sh_txs::{
-            maybe_extract_utxos_from_p2sh_txs_and_put_in_state
-        },
-        parse_minting_params_from_p2sh_deposits::{
-            parse_minting_params_from_p2sh_deposits_and_add_to_state,
+        btc::{
+            btc_state::BtcState,
+            btc_types::BtcUtxoAndValue,
+            save_utxos_to_db::maybe_save_utxos_to_db,
+            filter_utxos::maybe_filter_utxos_in_state,
+            btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
+            validate_btc_merkle_root::validate_btc_merkle_root,
+            filter_minting_params::maybe_filter_minting_params_in_state,
+            validate_btc_block_header::validate_btc_block_header_in_state,
+            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
+            btc_database_utils::{
+                end_btc_db_transaction,
+                start_btc_db_transaction,
+            },
+            get_deposit_info_hash_map::{
+                get_deposit_info_hash_map_and_put_in_state,
+            },
+            validate_btc_proof_of_work::{
+                validate_proof_of_work_of_btc_block_in_state,
+            },
+            extract_utxos_from_p2sh_txs::{
+                maybe_extract_utxos_from_p2sh_txs_and_put_in_state
+            },
+            parse_minting_params_from_p2sh_deposits::{
+                parse_minting_params_from_p2sh_deposits_and_add_to_state,
+            },
         },
     },
 };

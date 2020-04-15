@@ -1,7 +1,7 @@
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    eos::{
+    btc_on_eos::eos::{
         eos_state::EosState,
         eos_database_utils::put_eos_schedule_in_db,
     },
