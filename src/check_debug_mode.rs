@@ -1,7 +1,7 @@
 use crate::{
     types::Result,
     errors::AppError,
-    btc_on_eos::constants::DEBUG_MODE,
+    constants::DEBUG_MODE,
 };
 
 pub fn check_debug_mode() -> Result<()> {

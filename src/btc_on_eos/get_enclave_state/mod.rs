@@ -1,8 +1,8 @@
 use crate::{
     types::Result,
+    constants::DEBUG_MODE,
     traits::DatabaseInterface,
     btc_on_eos::{
-        constants::DEBUG_MODE,
         check_core_is_initialized::check_core_is_initialized,
         utxo_manager::utxo_database_utils::{
             get_utxo_nonce_from_db,

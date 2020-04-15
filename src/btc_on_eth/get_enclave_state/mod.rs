@@ -1,8 +1,8 @@
 use crate::{
     types::Result,
+    constants::DEBUG_MODE,
     traits::DatabaseInterface,
     btc_on_eth::{
-        constants::DEBUG_MODE, // TODO move to top level constants!
         utxo_manager::utxo_database_utils::{
             get_utxo_nonce_from_db,
             get_total_utxo_balance_from_db,

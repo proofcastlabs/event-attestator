@@ -3,8 +3,8 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    check_debug_mode::check_debug_mode,
     btc_on_eos::{
-        check_debug_mode::check_debug_mode,
         utxo_manager::utxo_database_utils::{
             get_utxo_from_db,
             get_all_utxo_db_keys,

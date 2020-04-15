@@ -6,8 +6,10 @@ pub mod types;
 pub mod traits;
 pub mod errors;
 pub mod base58;
+pub mod constants;
 pub mod btc_on_eth;
 pub mod btc_on_eos;
+pub mod check_debug_mode;
 
 #[macro_use] extern crate log;
 #[macro_use] extern crate lazy_static;
