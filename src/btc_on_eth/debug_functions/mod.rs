@@ -2,6 +2,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
+    chains::btc::utxo_manager::utxo_utils::get_all_utxos_as_json_string,
     debug_database_utils::{
         get_key_from_db,
         set_key_in_db_to_value,
@@ -215,37 +216,7 @@ pub fn debug_get_all_utxos<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    #[derive(Serialize, Deserialize)]
-    struct UtxoDetails {
-        pub db_key: String,
-        pub db_value: String,
-        pub utxo_and_value: BtcUtxoAndValue,
-    }
     check_debug_mode()
         .and_then(|_| check_enclave_is_initialized(&db))
-        .and_then(|_|
-            Ok(
-                serde_json::to_string(
-                    &get_all_utxo_db_keys(&db)
-                        .iter()
-                        .map(|db_key| {
-                            Ok(
-                                UtxoDetails {
-                                    db_key:
-                                        hex::encode(db_key.to_vec()),
-                                    utxo_and_value:
-                                        get_utxo_from_db(&db, &db_key.to_vec())?,
-                                    db_value:
-                                        hex::encode(
-                                            db.get(db_key.to_vec(), None)?
-                                        ),
-                                }
-                            )
-                        })
-                        .map(|utxo_details: Result<UtxoDetails>| utxo_details)
-                        .flatten()
-                        .collect::<Vec<UtxoDetails>>()
-                )?
-            )
-        )
+        .and_then(|_| get_all_utxos_as_json_string(db))
 }
