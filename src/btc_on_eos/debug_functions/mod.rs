@@ -2,20 +2,20 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
-    btc_on_eos::{
-        check_core_is_initialized::check_core_is_initialized,
-        utxo_manager::utxo_database_utils::{
+    chain::btc::utxo_manager::{
+        utxo_types::BtcUtxoAndValue,
+        utxo_database_utils::{
             get_utxo_from_db,
             get_all_utxo_db_keys,
         },
+    },
+    btc_on_eos::{
+        check_core_is_initialized::check_core_is_initialized,
+        btc::btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
         eos::{
             eos_database_utils::put_eos_schedule_in_db,
             eos_constants::EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
             parse_submission_material::parse_producer_schedule_from_json_string,
-        },
-        btc::{
-            btc_types::BtcUtxoAndValue,
-            btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
         },
     },
 };

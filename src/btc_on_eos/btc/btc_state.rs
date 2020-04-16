@@ -2,6 +2,7 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    chain::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
     btc_on_eos::{
         eos::eos_types::EosSignedTransactions,
         utils::{
@@ -12,7 +13,6 @@ use crate::{
             BtcBlockAndId,
             MintingParams,
             BtcTransactions,
-            BtcUtxosAndValues,
             BtcBlockInDbFormat,
             DepositInfoHashMap,
             SubmissionMaterial,

@@ -6,13 +6,9 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    chain::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
     btc_on_eos::{
-        btc::{
-            btc_types::{
-                BtcTransactions,
-                BtcUtxosAndValues,
-            },
-        },
+        btc::btc_types::BtcTransactions,
         eos::{
             eos_types::{
                 ActionProofs,

@@ -4,7 +4,6 @@ pub mod utils;
 pub mod constants;
 pub mod test_utils;
 pub mod crypto_utils;
-pub mod utxo_manager;
 pub mod database_utils;
 pub mod debug_functions;
 pub mod get_enclave_state;

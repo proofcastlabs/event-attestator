@@ -8,6 +8,17 @@ use crate::{
         from as from_base58,
         encode_slice as base58_encode_slice,
     },
+    utils::{
+        convert_bytes_to_u64,
+        convert_u64_to_bytes,
+    },
+    chain::btc::{
+        btc_types::DepositAddressInfoJson,
+        utxo_manager::utxo_types::{
+            BtcUtxoAndValue,
+            BtcUtxosAndValues,
+        },
+    },
     btc_on_eos::{
         constants::SAFE_EOS_ADDRESS,
         btc::{
@@ -18,16 +29,9 @@ use crate::{
             btc_types::{
                 BtcBlockAndId,
                 MintingParams,
-                BtcUtxoAndValue,
-                BtcUtxosAndValues,
                 BtcBlockInDbFormat,
                 DepositAddressInfo,
-                DepositAddressInfoJson,
             },
-        },
-        utils::{
-            convert_bytes_to_u64,
-            convert_u64_to_bytes,
         },
     },
 };

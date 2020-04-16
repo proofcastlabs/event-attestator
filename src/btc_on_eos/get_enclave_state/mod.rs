@@ -2,13 +2,13 @@ use crate::{
     types::Result,
     constants::DEBUG_MODE,
     traits::DatabaseInterface,
+    chain::btc::utxo_manager::utxo_database_utils::{
+        get_utxo_nonce_from_db,
+        get_total_utxo_balance_from_db,
+        get_total_number_of_utxos_from_db,
+    },
     btc_on_eos::{
         check_core_is_initialized::check_core_is_initialized,
-        utxo_manager::utxo_database_utils::{
-            get_utxo_nonce_from_db,
-            get_total_utxo_balance_from_db,
-            get_total_number_of_utxos_from_db,
-        },
         eos::{
             eos_types::EosKnownSchedulesJsons,
             eos_crypto::eos_public_key::EosPublicKey,

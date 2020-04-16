@@ -17,10 +17,10 @@ use crate::{
         Bytes,
         Result,
     },
+    chain::btc::utxo_manager::utxo_types::BtcUtxoAndValue,
     btc_on_eos::btc::{
         btc_crypto::btc_private_key::BtcPrivateKey,
         btc_types::{
-            BtcUtxoAndValue,
             BtcRecipientsAndAmounts,
         },
         btc_utils::{

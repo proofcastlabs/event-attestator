@@ -20,6 +20,10 @@ use crate::{
         Bytes,
         Result,
     },
+    chain::btc::{
+        btc_types::DepositAddressInfoJson,
+        utxo_manager::utxo_types::BtcUtxoAndValue,
+    },
     btc_on_eos::{
         utils::convert_u64_to_eos_asset,
         constants::MINIMUM_REQUIRED_SATOSHIS,
@@ -35,10 +39,8 @@ use crate::{
             btc_types::{
                 MintingParams,
                 BtcBlockAndId,
-                BtcUtxoAndValue,
                 MintingParamStruct,
                 BtcBlockInDbFormat,
-                DepositAddressInfoJson,
                 SubmissionMaterialJson,
             },
             parse_submission_material::{
