@@ -5,8 +5,14 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chain::btc::utxo_manager::{
+        utxo_database_utils::get_utxo_and_value,
+        utxo_types::{
+            BtcUtxoAndValue,
+            BtcUtxosAndValues,
+        },
+    },
     btc_on_eth::{
-        utxo_manager::utxo_database_utils::get_utxo_and_value,
         btc::{
             btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
             btc_utils::{
@@ -20,8 +26,6 @@ use crate::{
                 get_btc_private_key_from_db,
             },
             btc_types::{
-                BtcUtxoAndValue,
-                BtcUtxosAndValues,
                 BtcRecipientAndAmount,
                 BtcRecipientsAndAmounts,
             },

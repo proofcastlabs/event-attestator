@@ -1,10 +1,8 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::{
-        eth::eth_state::EthState,
-        utxo_manager::utxo_database_utils::save_utxos_to_db,
-    },
+    btc_on_eth::eth::eth_state::EthState,
+    chain::btc::utxo_manager::utxo_database_utils::save_utxos_to_db,
 };
 
 pub fn maybe_save_btc_utxos_to_db<D>(state: EthState<D>) -> Result<EthState<D>>

@@ -2,12 +2,12 @@ use crate::{
     types::Result,
     constants::DEBUG_MODE,
     traits::DatabaseInterface,
+    chain::btc::utxo_manager::utxo_database_utils::{
+        get_utxo_nonce_from_db,
+        get_total_utxo_balance_from_db,
+        get_total_number_of_utxos_from_db,
+    },
     btc_on_eth::{
-        utxo_manager::utxo_database_utils::{
-            get_utxo_nonce_from_db,
-            get_total_utxo_balance_from_db,
-            get_total_number_of_utxos_from_db,
-        },
         eth::{
             eth_constants::ETH_TAIL_LENGTH,
             get_linker_hash::{

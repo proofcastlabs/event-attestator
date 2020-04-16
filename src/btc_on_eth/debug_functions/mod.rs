@@ -2,11 +2,14 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
-    btc_on_eth::{
-        utxo_manager::utxo_database_utils::{
+    chain::btc::utxo_manager::{
+        utxo_types::BtcUtxoAndValue,
+        utxo_database_utils::{
             get_utxo_from_db,
             get_all_utxo_db_keys,
         },
+    },
+    btc_on_eth::{
         check_enclave_is_initialized::{
             check_enclave_is_initialized,
             check_enclave_is_initialized_and_return_eth_state,
@@ -14,7 +17,6 @@ use crate::{
         },
         btc::{
             btc_state::BtcState,
-            btc_types::BtcUtxoAndValue,
             sign_transactions::get_eth_signed_txs,
             save_utxos_to_db::maybe_save_utxos_to_db,
             filter_utxos::maybe_filter_utxos_in_state,
