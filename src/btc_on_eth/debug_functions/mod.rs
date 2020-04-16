@@ -2,7 +2,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
-    chain::btc::utxo_manager::{
+    chains::btc::utxo_manager::{
         utxo_types::BtcUtxoAndValue,
         utxo_database_utils::{
             get_utxo_from_db,

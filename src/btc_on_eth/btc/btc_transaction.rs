@@ -17,7 +17,7 @@ use crate::{
         Bytes,
         Result,
     },
-    chain::btc::utxo_manager::utxo_types::BtcUtxoAndValue,
+    chains::btc::utxo_manager::utxo_types::BtcUtxoAndValue,
     btc_on_eth::btc::{
         btc_types::BtcRecipientsAndAmounts,
         btc_crypto::btc_private_key::BtcPrivateKey,

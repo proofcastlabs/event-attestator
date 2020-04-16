@@ -3,9 +3,9 @@
 #![feature(exclusive_range_pattern)]
 
 pub mod utils;
-pub mod chain;
 pub mod types;
 pub mod traits;
+pub mod chains;
 pub mod errors;
 pub mod base58;
 pub mod constants;

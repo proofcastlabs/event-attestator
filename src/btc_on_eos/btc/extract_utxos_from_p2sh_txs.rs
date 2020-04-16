@@ -1,7 +1,7 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chain::btc::utxo_manager::utxo_types::{
+    chains::btc::utxo_manager::utxo_types::{
         BtcUtxoAndValue,
         BtcUtxosAndValues,
     },

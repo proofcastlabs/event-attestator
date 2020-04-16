@@ -23,7 +23,7 @@ use crate::{
         Bytes,
         Result,
     },
-    chain::btc::{
+    chains::btc::{
         btc_types::DepositAddressInfoJson,
         utxo_manager::utxo_types::BtcUtxoAndValue,
     },

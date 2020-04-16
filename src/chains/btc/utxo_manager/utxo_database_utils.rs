@@ -13,7 +13,7 @@ use crate::{
         convert_u64_to_bytes,
         convert_bytes_to_u64,
     },
-    chain::btc::utxo_manager::{
+    chains::btc::utxo_manager::{
         utxo_types::{
             BtcUtxoAndValue,
             BtcUtxosAndValues,

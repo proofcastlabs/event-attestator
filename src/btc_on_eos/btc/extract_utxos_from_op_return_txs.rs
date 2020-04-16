@@ -1,6 +1,6 @@
 use bitcoin::blockdata::script::Script as BtcScript;
 use crate::{
-    chain::btc::utxo_manager::utxo_types::{
+    chains::btc::utxo_manager::utxo_types::{
         BtcUtxoAndValue,
         BtcUtxosAndValues,
     },

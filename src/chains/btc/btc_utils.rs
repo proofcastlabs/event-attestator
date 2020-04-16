@@ -8,7 +8,7 @@ use crate::{
         from as from_base58,
         encode_slice as base58_encode_slice,
     },
-    chain::btc::utxo_manager::utxo_types::{
+    chains::btc::utxo_manager::utxo_types::{
         BtcUtxoAndValue,
         BtcUtxosAndValues,
     },

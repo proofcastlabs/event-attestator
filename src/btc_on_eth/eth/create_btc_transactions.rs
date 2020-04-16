@@ -5,7 +5,7 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chain::btc::utxo_manager::{
+    chains::btc::utxo_manager::{
         utxo_database_utils::get_utxo_and_value,
         utxo_types::{
             BtcUtxoAndValue,

@@ -7,7 +7,7 @@ use crate::{
         Bytes,
         Result,
     },
-    chain::btc::utxo_manager::utxo_types::BtcUtxoAndValue,
+    chains::btc::utxo_manager::utxo_types::BtcUtxoAndValue,
 };
 
 pub fn get_utxo_and_value_db_key(

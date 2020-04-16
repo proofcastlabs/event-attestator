@@ -3,7 +3,7 @@ use crate::{
         Bytes,
         Result,
     },
-    chain::btc::{
+    chains::btc::{
         btc_types::DepositAddressInfoJson,
         btc_utils::{
             serialize_btc_utxo,

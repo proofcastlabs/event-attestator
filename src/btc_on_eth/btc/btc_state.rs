@@ -2,7 +2,7 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    chain::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
+    chains::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
     btc_on_eth::{
         eth::eth_types::EthTransactions,
         btc::btc_types::{

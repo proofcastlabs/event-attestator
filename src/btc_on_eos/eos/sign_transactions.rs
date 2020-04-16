@@ -5,7 +5,7 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chain::btc::utxo_manager::{
+    chains::btc::utxo_manager::{
         utxo_database_utils::get_utxo_and_value,
         utxo_types::{
             BtcUtxoAndValue,
@@ -179,7 +179,7 @@ mod tests {
     use super::*;
     use bitcoin::network::constants::Network as BtcNetwork;
     use crate::{
-        chain::btc::utxo_manager::utxo_database_utils::save_utxos_to_db,
+        chains::btc::utxo_manager::utxo_database_utils::save_utxos_to_db,
         btc_on_eos::{
             test_utils::get_test_database,
             btc::{

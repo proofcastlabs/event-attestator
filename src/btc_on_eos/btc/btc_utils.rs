@@ -12,7 +12,7 @@ use crate::{
         convert_bytes_to_u64,
         convert_u64_to_bytes,
     },
-    chain::btc::{
+    chains::btc::{
         btc_types::DepositAddressInfoJson,
         utxo_manager::utxo_types::{
             BtcUtxoAndValue,

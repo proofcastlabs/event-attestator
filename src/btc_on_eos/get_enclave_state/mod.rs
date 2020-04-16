@@ -2,7 +2,7 @@ use crate::{
     types::Result,
     constants::DEBUG_MODE,
     traits::DatabaseInterface,
-    chain::btc::utxo_manager::utxo_database_utils::{
+    chains::btc::utxo_manager::utxo_database_utils::{
         get_utxo_nonce_from_db,
         get_total_utxo_balance_from_db,
         get_total_number_of_utxos_from_db,
