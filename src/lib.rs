@@ -12,6 +12,7 @@ pub mod constants;
 pub mod btc_on_eth;
 pub mod btc_on_eos;
 pub mod check_debug_mode;
+pub mod debug_database_utils;
 
 #[macro_use] extern crate log;
 #[macro_use] extern crate lazy_static;

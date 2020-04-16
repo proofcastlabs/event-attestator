@@ -2,12 +2,9 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
-    chains::btc::utxo_manager::{
-        utxo_types::BtcUtxoAndValue,
-        utxo_database_utils::{
-            get_utxo_from_db,
-            get_all_utxo_db_keys,
-        },
+    debug_database_utils::{
+        get_key_from_db,
+        set_key_in_db_to_value,
     },
     btc_on_eos::{
         check_core_is_initialized::check_core_is_initialized,
@@ -43,13 +40,8 @@ pub fn debug_set_key_in_db_to_value<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    info!("✔ Setting key: {} in DB to value: {}", key, value);
-    check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| db.put(hex::decode(key)?, hex::decode(value)?, None))
-        .and_then(|_| db.end_transaction())
-        .map(|_| "{putting_value_in_database_suceeded:true}".to_string())
+    check_core_is_initialized(&db)
+        .and_then(|_| set_key_in_db_to_value(db, key, value))
 }
 
 pub fn debug_get_key_from_db<D>(
@@ -58,23 +50,15 @@ pub fn debug_get_key_from_db<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    info!("✔ Maybe getting key: {} from DB...", key);
     let key_bytes = hex::decode(&key)?;
-    check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
-        .and_then(|_|
-            match key_bytes == EOS_KEY || key_bytes == BTC_KEY {
-                false => db.get(hex::decode(key.clone())?, None),
-                true => db.get(hex::decode(key.clone())?, Some(255)),
+    check_core_is_initialized(&db)
+        .and_then(|_| {
+            if key_bytes == EOS_KEY || key_bytes == BTC_KEY {
+                get_key_from_db(db, key, Some(255))
+            } else {
+                get_key_from_db(db, key, None)
             }
-        )
-        .map(|value|
-            format!(
-                "{{key:{},value:{}}}",
-                key,
-                hex::encode(value),
-            )
-        )
+        })
 }
 
 pub fn debug_get_all_utxos<D>(
