@@ -3,33 +3,35 @@ use eos_primitives::{
     AccountName as EosAccountName,
     ProducerSchedule as EosProducerSchedule,
 };
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    database_utils::{
-        put_u64_in_db,
-        get_u64_from_db,
-        put_string_in_db,
-        get_string_from_db,
-    },
-    eos::{
-        eos_state::EosState,
-        eos_utils::get_eos_schedule_db_key,
-        eos_crypto::eos_private_key::EosPrivateKey,
-        parse_submission_material::parse_producer_schedule_from_json_string,
-        eos_types::{
-            ProcessedTxIds,
-            EosKnownSchedules,
+    btc_on_eos::{
+        database_utils::{
+            put_u64_in_db,
+            get_u64_from_db,
+            put_string_in_db,
+            get_string_from_db,
         },
-        eos_constants::{
-            EOS_SCHEDULE_LIST,
-            EOS_ACCOUNT_NONCE,
-            EOS_CHAIN_ID_DB_KEY,
-            EOS_TOKEN_SYMBOL_KEY,
-            PROCESSED_TX_IDS_KEY,
-            EOS_ACCOUNT_NAME_KEY,
-            EOS_PRIVATE_KEY_DB_KEY,
+        eos::{
+            eos_state::EosState,
+            eos_utils::get_eos_schedule_db_key,
+            eos_crypto::eos_private_key::EosPrivateKey,
+            parse_submission_material::parse_producer_schedule_from_json_string,
+            eos_types::{
+                ProcessedTxIds,
+                EosKnownSchedules,
+            },
+            eos_constants::{
+                EOS_SCHEDULE_LIST,
+                EOS_ACCOUNT_NONCE,
+                EOS_CHAIN_ID_DB_KEY,
+                EOS_TOKEN_SYMBOL_KEY,
+                PROCESSED_TX_IDS_KEY,
+                EOS_ACCOUNT_NAME_KEY,
+                EOS_PRIVATE_KEY_DB_KEY,
+            },
         },
     },
 };

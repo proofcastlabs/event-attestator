@@ -11,19 +11,21 @@ use bitcoin_hashes::{
     sha256,
     Hash as HashTrait
 };
-use crate::btc_on_eos::{
+use crate::{
     base58,
     errors::AppError,
     traits::DatabaseInterface,
-    crypto_utils::generate_random_private_key,
-    constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
     types::{
         Bytes,
         Result,
     },
-    eos::{
-        eos_types::EosNetwork,
-        eos_crypto::eos_signature::EosSignature,
+    btc_on_eos::{
+        crypto_utils::generate_random_private_key,
+        constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+        eos::{
+            eos_types::EosNetwork,
+            eos_crypto::eos_signature::EosSignature,
+        },
     },
 };
 

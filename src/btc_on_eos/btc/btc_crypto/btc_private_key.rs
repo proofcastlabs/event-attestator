@@ -15,13 +15,15 @@ use secp256k1::{
         PublicKey,
     },
 };
-use crate::btc_on_eos::{
+use crate::{
     traits::DatabaseInterface,
-    crypto_utils::generate_random_private_key,
-    constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
     types::{
         Bytes,
         Result,
+    },
+    btc_on_eos::{
+        crypto_utils::generate_random_private_key,
+        constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
     },
 };
 

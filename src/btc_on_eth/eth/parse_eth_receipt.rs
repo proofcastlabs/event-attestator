@@ -3,22 +3,24 @@ use ethereum_types::{
     H160,
     Address,
 };
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
-    utils::{
-        convert_hex_to_h256,
-        convert_hex_to_address,
-        convert_json_value_to_string,
-    },
-    eth::{
-        eth_types::{
-            EthReceipt,
-            EthReceipts,
-            EthReceiptJson,
+    btc_on_eth::{
+        utils::{
+            convert_hex_to_h256,
+            convert_hex_to_address,
+            convert_json_value_to_string,
         },
-        get_eth_log::{
-            get_logs_bloom_from_logs,
-            get_logs_from_receipt_json,
+        eth::{
+            eth_types::{
+                EthReceipt,
+                EthReceipts,
+                EthReceiptJson,
+            },
+            get_eth_log::{
+                get_logs_bloom_from_logs,
+                get_logs_from_receipt_json,
+            },
         },
     },
 };

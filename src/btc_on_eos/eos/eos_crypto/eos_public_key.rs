@@ -13,25 +13,27 @@ use bitcoin_hashes::{
     sha256,
     Hash as HashTrait
 };
-use crate::btc_on_eos::{
+use crate::{
     base58,
     errors::AppError,
-    crypto_utils::sha256_hash_message_bytes,
     types::{
         Bytes,
         Result,
     },
-    eos::{
-        eos_hash::ripemd160,
-        eos_crypto::{
-            eos_private_key::EosPrivateKey,
-            eos_signature::EosSignature,
+    btc_on_eos::{
+        crypto_utils::sha256_hash_message_bytes,
+        eos::{
+            eos_hash::ripemd160,
+            eos_crypto::{
+                eos_private_key::EosPrivateKey,
+                eos_signature::EosSignature,
+            },
+            eos_constants::{
+                PUBLIC_KEY_SIZE,
+                PUBLIC_KEY_CHECKSUM_SIZE,
+                PUBLIC_KEY_WITH_CHECKSUM_SIZE,
+            }
         },
-        eos_constants::{
-            PUBLIC_KEY_SIZE,
-            PUBLIC_KEY_CHECKSUM_SIZE,
-            PUBLIC_KEY_WITH_CHECKSUM_SIZE,
-        }
     },
 };
 

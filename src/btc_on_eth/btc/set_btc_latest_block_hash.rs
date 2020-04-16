@@ -1,7 +1,7 @@
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc::{
+    btc_on_eth::btc::{
         btc_state::BtcState,
         btc_constants::BTC_LATEST_BLOCK_HASH_KEY,
         btc_database_utils::{

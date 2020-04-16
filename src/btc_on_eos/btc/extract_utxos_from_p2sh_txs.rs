@@ -1,7 +1,11 @@
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc::{
+    chains::btc::utxo_manager::utxo_types::{
+        BtcUtxoAndValue,
+        BtcUtxosAndValues,
+    },
+    btc_on_eos::btc::{
         btc_state::BtcState,
         btc_database_utils::get_btc_network_from_db,
         btc_utils::{
@@ -10,8 +14,6 @@ use crate::btc_on_eos::{
         },
         btc_types::{
             BtcTransactions,
-            BtcUtxoAndValue,
-            BtcUtxosAndValues,
             DepositInfoHashMap,
         },
     },

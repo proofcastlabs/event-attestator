@@ -6,23 +6,21 @@ pub enum AppError {
     IOError(std::io::Error),
     HexError(hex::FromHexError),
     CryptoError(secp256k1::Error),
+    Base58Error(crate::base58::Error),
     SerdeJsonError(serde_json::Error),
     NoneError(std::option::NoneError),
     FromUtf8Error(std::str::Utf8Error),
     SetLoggerError(log::SetLoggerError),
-    Utf8Error(std::string::FromUtf8Error),
     ParseIntError(std::num::ParseIntError),
     ChronoError(chrono::format::ParseError),
     EosPrimitivesError(eos_primitives::Error),
     BitcoinHexError(bitcoin_hashes::hex::Error),
     SystemTimeError(std::time::SystemTimeError),
-    Base58Error(crate::btc_on_eos::base58::Error),
     FromSliceError(std::array::TryFromSliceError),
     BitcoinHashError(bitcoin_hashes::error::Error),
     BitcoinError(bitcoin::consensus::encode::Error),
     BitcoinAddressError(bitcoin::util::address::Error),
     EosPrimitivesNamesError(eos_primitives::ParseNameError),
-
 }
 
 impl fmt::Display for AppError {
@@ -34,8 +32,6 @@ impl fmt::Display for AppError {
                 format!("✘ Hex Error!\n✘ {}", e),
             AppError::IOError(ref e) =>
                 format!("✘ I/O Error!\n✘ {}", e),
-            AppError::Utf8Error(ref e) =>
-                format!("✘ UTF8 Error!\n✘ {}", e),
             AppError::CryptoError(ref e) =>
                 format!("✘ Crypto Error!\n✘ {}", e),
             AppError::Base58Error(ref e) =>
@@ -50,6 +46,7 @@ impl fmt::Display for AppError {
                 format!("✘ Bitcoin Hex Error!\n✘ {}", e),
             AppError::ParseIntError(ref e) =>
                 format!("✘ Parse Int Error!\n✘ {:?}", e),
+
             AppError::SystemTimeError(ref e) =>
                 format!("✘ System Time Error!\n✘ {}", e),
             AppError::BitcoinHashError(ref e) =>
@@ -121,27 +118,15 @@ impl From<std::time::SystemTimeError> for AppError {
     }
 }
 
-impl From<eos_primitives::Error> for AppError {
-    fn from(e: eos_primitives::Error) -> AppError {
-        AppError::EosPrimitivesError(e)
-    }
-}
-
 impl From<std::num::ParseIntError> for AppError {
     fn from(e: std::num::ParseIntError) -> AppError {
         AppError::ParseIntError(e)
     }
 }
 
-impl From<crate::btc_on_eos::base58::Error> for AppError {
-    fn from(e: crate::btc_on_eos::base58::Error) -> AppError {
+impl From<crate::base58::Error> for AppError {
+    fn from(e: crate::base58::Error) -> AppError {
         AppError::Base58Error(e)
-    }
-}
-
-impl From<eos_primitives::ParseNameError> for AppError {
-    fn from(e: eos_primitives::ParseNameError) -> AppError {
-        AppError::EosPrimitivesNamesError(e)
     }
 }
 
@@ -154,12 +139,6 @@ impl From<std::array::TryFromSliceError> for AppError {
 impl From<std::str::Utf8Error> for AppError {
     fn from(e: std::str::Utf8Error) -> AppError {
         AppError::FromUtf8Error(e)
-    }
-}
-
-impl From<chrono::format::ParseError> for AppError {
-    fn from(e: chrono::format::ParseError) -> AppError {
-        AppError::ChronoError(e)
     }
 }
 
@@ -187,8 +166,20 @@ impl From<bitcoin::util::address::Error> for AppError {
     }
 }
 
-impl From<std::string::FromUtf8Error> for AppError {
-    fn from(e: std::string::FromUtf8Error) -> AppError {
-        AppError::Utf8Error(e)
+impl From<eos_primitives::ParseNameError> for AppError {
+    fn from(e: eos_primitives::ParseNameError) -> AppError {
+        AppError::EosPrimitivesNamesError(e)
+    }
+}
+
+impl From<eos_primitives::Error> for AppError {
+    fn from(e: eos_primitives::Error) -> AppError {
+        AppError::EosPrimitivesError(e)
+    }
+}
+
+impl From<chrono::format::ParseError> for AppError {
+    fn from(e: chrono::format::ParseError) -> AppError {
+        AppError::ChronoError(e)
     }
 }

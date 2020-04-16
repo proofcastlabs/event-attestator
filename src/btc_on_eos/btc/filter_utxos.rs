@@ -1,12 +1,10 @@
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    constants::MINIMUM_REQUIRED_SATOSHIS,
-    btc::{
-        btc_state::BtcState,
-        btc_types::{
-            BtcUtxosAndValues,
-        },
+    chains::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
+    btc_on_eos::{
+        constants::MINIMUM_REQUIRED_SATOSHIS,
+        btc::btc_state::BtcState,
     },
 };
 

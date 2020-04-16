@@ -11,14 +11,16 @@ use bitcoin::{
         },
     }
 };
-use crate::btc_on_eth::{
+use crate::{
     errors::AppError,
-    btc::{
+    types::{
+        Bytes,
+        Result,
+    },
+    chains::btc::utxo_manager::utxo_types::BtcUtxoAndValue,
+    btc_on_eth::btc::{
+        btc_types::BtcRecipientsAndAmounts,
         btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_types::{
-            BtcUtxoAndValue,
-            BtcRecipientsAndAmounts,
-        },
         btc_utils::{
             get_script_sig,
             calculate_btc_tx_fee,
@@ -28,10 +30,6 @@ use crate::btc_on_eth::{
             create_new_pay_to_pub_key_hash_output,
             get_p2sh_script_sig_from_redeem_script,
         },
-    },
-    types::{
-        Bytes,
-        Result,
     },
 };
 

@@ -3,7 +3,7 @@ use bitcoin_hashes::{
     Hash,
     sha256d,
 };
-use crate::btc_on_eth::{
+use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{
@@ -11,39 +11,41 @@ use crate::btc_on_eth::{
         Result,
         DataSensitivity,
     },
-    database_utils::{
-        put_u64_in_db,
-        get_u64_from_db,
-    },
-    utils::{
-        convert_bytes_to_u64,
-        convert_u64_to_bytes,
-    },
-    btc::{
-        btc_state::BtcState,
-        btc_types::BtcBlockInDbFormat,
-        btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_constants::{
-            BTC_FEE_KEY,
-            BTC_NETWORK_KEY,
-            BTC_ADDRESS_KEY,
-            BTC_LINKER_HASH_KEY,
-            BTC_PRIVATE_KEY_DB_KEY,
-            BTC_ACCOUNT_NONCE_KEY,
-            BTC_TAIL_BLOCK_HASH_KEY,
-            BTC_CANON_BLOCK_HASH_KEY,
-            BTC_DIFFICULTY_THRESHOLD,
-            BTC_ANCHOR_BLOCK_HASH_KEY,
-            BTC_LATEST_BLOCK_HASH_KEY,
-            BTC_CANON_TO_TIP_LENGTH_KEY,
+    btc_on_eth::{
+        database_utils::{
+            put_u64_in_db,
+            get_u64_from_db,
         },
-        btc_utils::{
-            convert_btc_network_to_bytes,
-            convert_bytes_to_btc_network,
-            convert_bytes_to_btc_address,
-            convert_btc_address_to_bytes,
-            serialize_btc_block_in_db_format,
-            deserialize_btc_block_in_db_format,
+        utils::{
+            convert_bytes_to_u64,
+            convert_u64_to_bytes,
+        },
+        btc::{
+            btc_state::BtcState,
+            btc_types::BtcBlockInDbFormat,
+            btc_crypto::btc_private_key::BtcPrivateKey,
+            btc_constants::{
+                BTC_FEE_KEY,
+                BTC_NETWORK_KEY,
+                BTC_ADDRESS_KEY,
+                BTC_LINKER_HASH_KEY,
+                BTC_PRIVATE_KEY_DB_KEY,
+                BTC_ACCOUNT_NONCE_KEY,
+                BTC_TAIL_BLOCK_HASH_KEY,
+                BTC_CANON_BLOCK_HASH_KEY,
+                BTC_DIFFICULTY_THRESHOLD,
+                BTC_ANCHOR_BLOCK_HASH_KEY,
+                BTC_LATEST_BLOCK_HASH_KEY,
+                BTC_CANON_TO_TIP_LENGTH_KEY,
+            },
+            btc_utils::{
+                convert_btc_network_to_bytes,
+                convert_bytes_to_btc_network,
+                convert_bytes_to_btc_address,
+                convert_btc_address_to_bytes,
+                serialize_btc_block_in_db_format,
+                deserialize_btc_block_in_db_format,
+            },
         },
     },
 };

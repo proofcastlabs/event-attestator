@@ -2,8 +2,16 @@
 #![recursion_limit="128"] // NOTE: For the format! macro in block parsing.
 #![feature(exclusive_range_pattern)]
 
+pub mod utils;
+pub mod types;
+pub mod traits;
+pub mod chains;
+pub mod errors;
+pub mod base58;
+pub mod constants;
 pub mod btc_on_eth;
 pub mod btc_on_eos;
+pub mod check_debug_mode;
 
 #[macro_use] extern crate log;
 #[macro_use] extern crate lazy_static;

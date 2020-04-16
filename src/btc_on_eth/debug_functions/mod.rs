@@ -1,80 +1,86 @@
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
-    utxo_manager::utxo_database_utils::{
-        get_utxo_from_db,
-        get_all_utxo_db_keys,
-    },
-    check_enclave_is_initialized::{
-        check_enclave_is_initialized,
-        check_enclave_is_initialized_and_return_eth_state,
-        check_enclave_is_initialized_and_return_btc_state,
-    },
-    btc::{
-        btc_state::BtcState,
-        btc_types::BtcUtxoAndValue,
-        sign_transactions::get_eth_signed_txs,
-        save_utxos_to_db::maybe_save_utxos_to_db,
-        filter_utxos::maybe_filter_utxos_in_state,
-        btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
-        validate_btc_merkle_root::validate_btc_merkle_root,
-        increment_eth_nonce::maybe_increment_eth_nonce_in_db,
-        parse_btc_block::parse_btc_block_and_id_and_put_in_state,
-        get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
-        filter_minting_params::maybe_filter_minting_params_in_state,
-        validate_btc_block_header::validate_btc_block_header_in_state,
-        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
-        btc_database_utils::{
-            end_btc_db_transaction,
-            start_btc_db_transaction,
-        },
-        get_deposit_info_hash_map::{
-            get_deposit_info_hash_map_and_put_in_state,
-        },
-        validate_btc_proof_of_work::{
-            validate_proof_of_work_of_btc_block_in_state,
-        },
-        filter_op_return_deposit_txs::{
-            filter_op_return_deposit_txs_and_add_to_state,
-        },
-        extract_utxos_from_p2sh_txs::{
-            maybe_extract_utxos_from_p2sh_txs_and_put_in_state
-        },
-        extract_utxos_from_op_return_txs::{
-            maybe_extract_utxos_from_op_return_txs_and_put_in_state,
-        },
-        parse_minting_params_from_p2sh_deposits::{
-            parse_minting_params_from_p2sh_deposits_and_add_to_state,
-        },
-        parse_minting_params_from_op_return_deposits::{
-            parse_minting_params_from_op_return_deposits_and_add_to_state,
+    chains::btc::utxo_manager::{
+        utxo_types::BtcUtxoAndValue,
+        utxo_database_utils::{
+            get_utxo_from_db,
+            get_all_utxo_db_keys,
         },
     },
-    eth::{
-        eth_state::EthState,
-        validate_block::validate_block_in_state,
-        save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
-        eth_constants::ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
-        parse_redeem_params::parse_redeem_params_from_block,
-        increment_btc_nonce::maybe_increment_btc_nonce_in_db,
-        filter_receipts::filter_irrelevant_receipts_from_state,
-        create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
-        extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
-        eth_database_utils::{
-            end_eth_db_transaction,
-            start_eth_db_transaction,
-            get_signing_params_from_db,
-            get_eth_account_nonce_from_db,
+    btc_on_eth::{
+        check_enclave_is_initialized::{
+            check_enclave_is_initialized,
+            check_enclave_is_initialized_and_return_eth_state,
+            check_enclave_is_initialized_and_return_btc_state,
         },
-        get_eth_output_json::{
-            EthOutput,
-            get_btc_signed_tx_info_from_btc_txs,
+        btc::{
+            btc_state::BtcState,
+            sign_transactions::get_eth_signed_txs,
+            save_utxos_to_db::maybe_save_utxos_to_db,
+            filter_utxos::maybe_filter_utxos_in_state,
+            btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
+            validate_btc_merkle_root::validate_btc_merkle_root,
+            increment_eth_nonce::maybe_increment_eth_nonce_in_db,
+            parse_btc_block::parse_btc_block_and_id_and_put_in_state,
+            get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
+            filter_minting_params::maybe_filter_minting_params_in_state,
+            validate_btc_block_header::validate_btc_block_header_in_state,
+            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
+            btc_database_utils::{
+                end_btc_db_transaction,
+                start_btc_db_transaction,
+            },
+            get_deposit_info_hash_map::{
+                get_deposit_info_hash_map_and_put_in_state,
+            },
+            validate_btc_proof_of_work::{
+                validate_proof_of_work_of_btc_block_in_state,
+            },
+            filter_op_return_deposit_txs::{
+                filter_op_return_deposit_txs_and_add_to_state,
+            },
+            extract_utxos_from_p2sh_txs::{
+                maybe_extract_utxos_from_p2sh_txs_and_put_in_state
+            },
+            extract_utxos_from_op_return_txs::{
+                maybe_extract_utxos_from_op_return_txs_and_put_in_state,
+            },
+            parse_minting_params_from_p2sh_deposits::{
+                parse_minting_params_from_p2sh_deposits_and_add_to_state,
+            },
+            parse_minting_params_from_op_return_deposits::{
+                parse_minting_params_from_op_return_deposits_and_add_to_state,
+            },
         },
-        parse_eth_block_and_receipts::{
-            parse_eth_block_and_receipts_and_put_in_state,
+        eth::{
+            eth_state::EthState,
+            validate_block::validate_block_in_state,
+            save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
+            eth_constants::ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
+            parse_redeem_params::parse_redeem_params_from_block,
+            increment_btc_nonce::maybe_increment_btc_nonce_in_db,
+            filter_receipts::filter_irrelevant_receipts_from_state,
+            create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
+            eth_database_utils::{
+                end_eth_db_transaction,
+                start_eth_db_transaction,
+                get_signing_params_from_db,
+                get_eth_account_nonce_from_db,
+            },
+            get_eth_output_json::{
+                EthOutput,
+                get_btc_signed_tx_info_from_btc_txs,
+            },
+            extract_utxos_from_btc_txs::{
+                maybe_extract_btc_utxo_from_btc_tx_in_state,
+            },
+            parse_eth_block_and_receipts::{
+                parse_eth_block_and_receipts_and_put_in_state,
+            },
         },
-    }
+    },
 };
 
 pub fn debug_reprocess_btc_block<D>(

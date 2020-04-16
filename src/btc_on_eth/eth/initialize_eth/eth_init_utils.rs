@@ -1,11 +1,11 @@
-use crate::btc_on_eth::{
+use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{
         Bytes,
         Result,
     },
-    eth::{
+    btc_on_eth::eth::{
         eth_state::EthState,
         eth_types::EthBlockAndReceipts,
         eth_crypto::eth_transaction::get_ptoken_smart_contract_bytecode,
@@ -21,7 +21,6 @@ use crate::btc_on_eth::{
             put_eth_canon_to_tip_length_in_db,
         },
     },
-
 };
 
 pub fn check_for_existence_of_eth_contract_byte_code(

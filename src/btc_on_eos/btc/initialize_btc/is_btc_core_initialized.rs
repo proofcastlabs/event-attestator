@@ -1,6 +1,6 @@
-use crate::btc_on_eos::{
+use crate::{
     traits::DatabaseInterface,
-    btc::btc_database_utils::get_btc_address_from_db,
+    btc_on_eos::btc::btc_database_utils::get_btc_address_from_db,
 };
 
 pub fn is_btc_core_initialized<D>(

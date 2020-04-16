@@ -1,8 +1,8 @@
 use std::collections::HashMap;
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc::{
+    btc_on_eos::btc::{
         btc_state::BtcState,
         btc_types::{
             DepositInfoList,

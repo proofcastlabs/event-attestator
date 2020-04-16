@@ -6,13 +6,13 @@ use eos_primitives::{
     PermissionLevels,
     Action as EosAction,
 };
-use crate::btc_on_eos::{
+use crate::{
     errors::AppError,
     types::{
         Bytes,
         Result,
     },
-    eos::eos_types::{
+    btc_on_eos::eos::eos_types::{
         EosActionJson,
         AuthorizationJson,
         AuthorizationJsons,

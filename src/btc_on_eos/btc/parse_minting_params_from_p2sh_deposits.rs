@@ -3,18 +3,20 @@ use bitcoin::{
     network::constants::Network as BtcNetwork,
     blockdata::transaction::Transaction as BtcTransaction,
 };
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    eos::eos_database_utils::get_eos_token_symbol_from_db,
-    btc::{
-        btc_state::BtcState,
-        btc_database_utils::get_btc_network_from_db,
-        btc_types::{
-            MintingParams,
-            BtcTransactions,
-            DepositInfoHashMap,
-            MintingParamStruct,
+    btc_on_eos::{
+        eos::eos_database_utils::get_eos_token_symbol_from_db,
+        btc::{
+            btc_state::BtcState,
+            btc_database_utils::get_btc_network_from_db,
+            btc_types::{
+                MintingParams,
+                BtcTransactions,
+                DepositInfoHashMap,
+                MintingParamStruct,
+            },
         },
     },
 };

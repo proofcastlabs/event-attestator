@@ -2,22 +2,22 @@ use bitcoin_hashes::{
     Hash,
     sha256d,
 };
-use crate::btc_on_eos::{
+use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{
         Bytes,
         Result,
     },
-    btc::btc_types::{
-        BtcUtxoAndValue,
-        BtcUtxosAndValues,
-    },
     utils::{
         convert_u64_to_bytes,
         convert_bytes_to_u64,
     },
-    utxo_manager::{
+    chains::btc::utxo_manager::{
+        utxo_types::{
+            BtcUtxoAndValue,
+            BtcUtxosAndValues,
+        },
         utxo_constants::{
             UTXO_LAST,
             UTXO_FIRST,
@@ -451,10 +451,11 @@ pub fn increment_utxo_nonce_in_db<D>(db: &D) -> Result<()>
         .and_then(|num| put_utxo_nonce_in_db(db, num + 1))
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::{
+    use crate::btc_on_eth::{
         test_utils::get_test_database,
         btc::{
             btc_database_utils::key_exists_in_db,
@@ -940,3 +941,4 @@ mod tests {
         );
     }
 }
+*/

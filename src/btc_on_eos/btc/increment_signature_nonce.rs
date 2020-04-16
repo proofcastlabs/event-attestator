@@ -1,10 +1,12 @@
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
-    btc::btc_state::BtcState,
     traits::DatabaseInterface,
-    eos::eos_database_utils::{
-        put_eos_account_nonce_in_db,
-        get_eos_account_nonce_from_db,
+    btc_on_eos::{
+        btc::btc_state::BtcState,
+        eos::eos_database_utils::{
+            put_eos_account_nonce_in_db,
+            get_eos_account_nonce_from_db,
+        },
     },
 };
 

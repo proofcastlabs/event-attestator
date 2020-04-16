@@ -2,10 +2,10 @@ use bitcoin_hashes::{
     Hash,
     sha256d,
 };
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc::{
+    btc_on_eos::btc::{
         btc_state::BtcState,
         btc_constants::PTOKEN_GENESIS_HASH,
         btc_database_utils::{

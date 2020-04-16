@@ -1,10 +1,10 @@
-use crate::btc_on_eth::{
+use crate::{
     errors::AppError,
     types::{
         Bytes,
         Result,
     },
-    eth::{
+    btc_on_eth::eth::{
         eth_constants::{
             LEAF_NODE_STRING,
             EXTENSION_NODE_STRING,

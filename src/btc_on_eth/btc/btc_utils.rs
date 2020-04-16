@@ -1,32 +1,38 @@
 use ethereum_types::Address as EthAddress;
-use crate::btc_on_eth::{
-    constants::SAFE_ETH_ADDRESS,
+use crate::{
     types::{
         Bytes,
         Result,
     },
-    btc::{
-        btc_constants::{
-            DEFAULT_BTC_SEQUENCE,
-            PTOKEN_P2SH_SCRIPT_BYTES,
-        },
-        btc_types::{
-            BtcBlockAndId,
-            MintingParams,
-            BtcUtxoAndValue,
-            BtcUtxosAndValues,
-            BtcBlockInDbFormat,
-            DepositAddressInfo,
-            DepositAddressInfoJson,
-        },
-    },
-    utils::{
-        convert_bytes_to_u64,
-        convert_u64_to_bytes,
-    },
     base58::{
         from as from_base58,
         encode_slice as base58_encode_slice,
+    },
+    chains::btc::{
+        btc_types::DepositAddressInfoJson,
+        utxo_manager::utxo_types::{
+            BtcUtxoAndValue,
+            BtcUtxosAndValues,
+        },
+    },
+    btc_on_eth::{
+        constants::SAFE_ETH_ADDRESS,
+        btc::{
+            btc_constants::{
+                DEFAULT_BTC_SEQUENCE,
+                PTOKEN_P2SH_SCRIPT_BYTES,
+            },
+            btc_types::{
+                BtcBlockAndId,
+                MintingParams,
+                BtcBlockInDbFormat,
+                DepositAddressInfo,
+            },
+        },
+        utils::{
+            convert_bytes_to_u64,
+            convert_u64_to_bytes,
+        },
     },
 };
 use bitcoin::{

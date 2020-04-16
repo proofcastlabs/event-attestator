@@ -2,12 +2,12 @@ use bitcoin_hashes::{
     Hash,
     sha256d,
 };
-use crate::btc_on_eos::{
+use crate::{
     types::{
         Bytes,
         Result,
     },
-    btc::btc_types::BtcUtxoAndValue,
+    chains::btc::utxo_manager::utxo_types::BtcUtxoAndValue,
 };
 
 pub fn get_utxo_and_value_db_key(
@@ -30,10 +30,12 @@ pub fn deserialize_utxo_and_value(
     Ok(serde_json::from_slice(bytes)?)
 }
 
+/*
+// FIXME: Reinstate once we've moved these to utxo_test_utils!
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::btc::btc_test_utils::{
+    use crate::btc_on_eth::btc::btc_test_utils::{
         get_sample_p2sh_utxo_and_value,
         get_sample_op_return_utxo_and_value,
     };
@@ -80,3 +82,4 @@ mod tests {
         assert!(result == utxo);
     }
 }
+*/

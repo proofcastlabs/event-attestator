@@ -3,17 +3,19 @@ use std::time::{
     SystemTime,
     UNIX_EPOCH
 };
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc::{
-        btc_types::BtcTxInfo,
-        btc_utils::get_hex_tx_from_signed_btc_tx,
-        btc_database_utils::get_btc_account_nonce_from_db,
-    },
-    eos::{
-        eos_state::EosState,
-        eos_types::RedeemParams,
+    btc_on_eos::{
+        btc::{
+            btc_types::BtcTxInfo,
+            btc_utils::get_hex_tx_from_signed_btc_tx,
+            btc_database_utils::get_btc_account_nonce_from_db,
+        },
+        eos::{
+            eos_state::EosState,
+            eos_types::RedeemParams,
+        },
     },
 };
 

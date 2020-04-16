@@ -12,11 +12,9 @@ use secp256k1::{
     key::SecretKey,
     Message as Secp256k1Message,
 };
-use crate::btc_on_eos::{
-    types::{
-        Bytes,
-        Result,
-    },
+use crate::types::{
+    Bytes,
+    Result,
 };
 pub fn keccak_hash_bytes(bytes: Bytes) -> H256 {
     H256::from(keccak256(&bytes[..]))

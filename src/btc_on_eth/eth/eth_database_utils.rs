@@ -2,7 +2,7 @@ use ethereum_types::{
     H256 as EthHash,
     Address as EthAddress,
 };
-use crate::btc_on_eth::{
+use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{
@@ -10,40 +10,42 @@ use crate::btc_on_eth::{
         Result,
         DataSensitivity,
     },
-    database_utils::{
-        put_u64_in_db,
-        get_u64_from_db,
-    },
-    utils::{
-        convert_bytes_to_u64,
-        convert_u64_to_bytes,
-        convert_h256_to_bytes,
-        convert_bytes_to_h256,
-    },
-    eth::{
-        eth_state::EthState,
-        eth_crypto::eth_private_key::EthPrivateKey,
-        eth_types::{
-            EthSigningParams,
-            EthBlockAndReceipts,
+    btc_on_eth::{
+        database_utils::{
+            put_u64_in_db,
+            get_u64_from_db,
         },
-        eth_constants::{
-            ETH_ADDRESS_KEY,
-            ETH_CHAIN_ID_KEY,
-            ETH_GAS_PRICE_KEY,
-            ETH_LINKER_HASH_KEY,
-            ETH_ACCOUNT_NONCE_KEY,
-            ETH_PRIVATE_KEY_DB_KEY,
-            ETH_TAIL_BLOCK_HASH_KEY,
-            ETH_CANON_BLOCK_HASH_KEY,
-            ETH_LATEST_BLOCK_HASH_KEY,
-            ETH_ANCHOR_BLOCK_HASH_KEY,
-            ETH_CANON_TO_TIP_LENGTH_KEY,
-            ETH_SMART_CONTRACT_ADDRESS_KEY,
+        utils::{
+            convert_bytes_to_u64,
+            convert_u64_to_bytes,
+            convert_h256_to_bytes,
+            convert_bytes_to_h256,
         },
-        eth_json_codec::{
-            encode_eth_block_and_receipts_as_json_bytes,
-            decode_eth_block_and_receipts_from_json_bytes,
+        eth::{
+            eth_state::EthState,
+            eth_crypto::eth_private_key::EthPrivateKey,
+            eth_types::{
+                EthSigningParams,
+                EthBlockAndReceipts,
+            },
+            eth_constants::{
+                ETH_ADDRESS_KEY,
+                ETH_CHAIN_ID_KEY,
+                ETH_GAS_PRICE_KEY,
+                ETH_LINKER_HASH_KEY,
+                ETH_ACCOUNT_NONCE_KEY,
+                ETH_PRIVATE_KEY_DB_KEY,
+                ETH_TAIL_BLOCK_HASH_KEY,
+                ETH_CANON_BLOCK_HASH_KEY,
+                ETH_LATEST_BLOCK_HASH_KEY,
+                ETH_ANCHOR_BLOCK_HASH_KEY,
+                ETH_CANON_TO_TIP_LENGTH_KEY,
+                ETH_SMART_CONTRACT_ADDRESS_KEY,
+            },
+            eth_json_codec::{
+                encode_eth_block_and_receipts_as_json_bytes,
+                decode_eth_block_and_receipts_from_json_bytes,
+            },
         },
     },
 };

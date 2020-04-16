@@ -17,36 +17,40 @@ use bitcoin::{
         },
     },
 };
-use crate::btc_on_eth::{
+use crate::{
     errors::AppError,
-    utils::convert_satoshis_to_ptoken,
-    constants::MINIMUM_REQUIRED_SATOSHIS,
     types::{
         Bytes,
         Result,
     },
-    eth::eth_types::EthAddress,
-    btc::{
-        btc_utils::{
-            get_p2sh_redeem_script_sig,
-            get_btc_block_in_db_format,
-            create_unsigned_utxo_from_tx,
-            get_pay_to_pub_key_hash_script,
-            create_op_return_btc_utxo_and_value_from_tx_output,
-        },
-        btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_types::{
-            MintingParams,
-            BtcBlockAndId,
-            BtcUtxoAndValue,
-            BtcBlockAndTxsJson,
-            MintingParamStruct,
-            BtcBlockInDbFormat,
-            DepositAddressInfoJson,
-        },
-        parse_btc_block::{
-            parse_btc_block_string_to_json,
-            parse_btc_block_and_tx_json_to_struct,
+    chains::btc::{
+        btc_types::DepositAddressInfoJson,
+        utxo_manager::utxo_types::BtcUtxoAndValue,
+    },
+    btc_on_eth::{
+        utils::convert_satoshis_to_ptoken,
+        constants::MINIMUM_REQUIRED_SATOSHIS,
+        eth::eth_types::EthAddress,
+        btc::{
+            btc_utils::{
+                get_p2sh_redeem_script_sig,
+                get_btc_block_in_db_format,
+                create_unsigned_utxo_from_tx,
+                get_pay_to_pub_key_hash_script,
+                create_op_return_btc_utxo_and_value_from_tx_output,
+            },
+            btc_crypto::btc_private_key::BtcPrivateKey,
+            btc_types::{
+                MintingParams,
+                BtcBlockAndId,
+                BtcBlockAndTxsJson,
+                MintingParamStruct,
+                BtcBlockInDbFormat,
+            },
+            parse_btc_block::{
+                parse_btc_block_string_to_json,
+                parse_btc_block_and_tx_json_to_struct,
+            },
         },
     },
 };

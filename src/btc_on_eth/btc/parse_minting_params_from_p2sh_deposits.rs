@@ -3,18 +3,20 @@ use bitcoin::{
     network::constants::Network as BtcNetwork,
     blockdata::transaction::Transaction as BtcTransaction,
 };
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    utils::convert_satoshis_to_ptoken,
-    btc::{
-        btc_state::BtcState,
-        btc_database_utils::get_btc_network_from_db,
-        btc_types::{
-            MintingParams,
-            BtcTransactions,
-            DepositInfoHashMap,
-            MintingParamStruct,
+    btc_on_eth::{
+        utils::convert_satoshis_to_ptoken,
+        btc::{
+            btc_state::BtcState,
+            btc_database_utils::get_btc_network_from_db,
+            btc_types::{
+                MintingParams,
+                BtcTransactions,
+                DepositInfoHashMap,
+                MintingParamStruct,
+            },
         },
     },
 };

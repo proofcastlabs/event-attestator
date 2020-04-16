@@ -1,19 +1,19 @@
-use crate::btc_on_eth::{
+use crate::{
+    types::Result,
     traits::DatabaseInterface,
-    types::{
-        Result,
-    },
-    btc::{
-        btc_state::BtcState,
-        btc_types::MintingParams,
-        btc_database_utils::get_btc_canon_block_from_db,
-    },
-    eth::{
-        eth_database_utils::get_signing_params_from_db,
-        eth_crypto::eth_transaction::get_signed_minting_tx,
-        eth_types::{
-            EthTransactions,
-            EthSigningParams,
+    btc_on_eth::{
+        btc::{
+            btc_state::BtcState,
+            btc_types::MintingParams,
+            btc_database_utils::get_btc_canon_block_from_db,
+        },
+        eth::{
+            eth_database_utils::get_signing_params_from_db,
+            eth_crypto::eth_transaction::get_signed_minting_tx,
+            eth_types::{
+                EthTransactions,
+                EthSigningParams,
+            },
         },
     },
 };

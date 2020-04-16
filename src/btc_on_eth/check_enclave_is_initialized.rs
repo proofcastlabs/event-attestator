@@ -1,14 +1,16 @@
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    eth::{
-        eth_state::EthState,
-        initialize_eth::is_eth_initialized::is_eth_enclave_initialized,
-    },
-    btc::{
-        btc_state::BtcState,
-        initialize_btc::is_btc_initialized::is_btc_enclave_initialized,
+    btc_on_eth::{
+        eth::{
+            eth_state::EthState,
+            initialize_eth::is_eth_initialized::is_eth_enclave_initialized,
+        },
+        btc::{
+            btc_state::BtcState,
+            initialize_btc::is_btc_initialized::is_btc_enclave_initialized,
+        },
     },
 };
 

@@ -1,7 +1,7 @@
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    eos::{
+    btc_on_eos::eos::{
         eos_state::EosState,
         eos_crypto::eos_private_key::EosPrivateKey,
         parse_submission_material::parse_producer_schedule_from_json_string,

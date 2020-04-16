@@ -3,30 +3,32 @@ use rlp::{
     Rlp,
     RlpStream
 };
-use crate::btc_on_eth::{
+use crate::{
     errors::AppError,
-    crypto_utils::keccak_hash_bytes,
     types::{
         Bytes,
         Result,
     },
-    eth::{
-        nibble_utils::Nibbles,
-        get_trie_hash_map::get_thing_from_trie_hash_map,
-        eth_types::{
-            ChildNodes,
-            TrieHashMap,
-        },
-        eth_constants::{
-            EMPTY_NIBBLES,
-            LEAF_NODE_STRING,
-            BRANCH_NODE_STRING,
-            EXTENSION_NODE_STRING,
-        },
-        path_codec::{
-            encode_leaf_path_from_nibbles,
-            encode_extension_path_from_nibbles,
-            decode_path_to_nibbles_and_node_type,
+    btc_on_eth::{
+        crypto_utils::keccak_hash_bytes,
+        eth::{
+            nibble_utils::Nibbles,
+            get_trie_hash_map::get_thing_from_trie_hash_map,
+            eth_types::{
+                ChildNodes,
+                TrieHashMap,
+            },
+            eth_constants::{
+                EMPTY_NIBBLES,
+                LEAF_NODE_STRING,
+                BRANCH_NODE_STRING,
+                EXTENSION_NODE_STRING,
+            },
+            path_codec::{
+                encode_leaf_path_from_nibbles,
+                encode_extension_path_from_nibbles,
+                decode_path_to_nibbles_and_node_type,
+            },
         },
     },
 };

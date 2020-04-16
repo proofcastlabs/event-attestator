@@ -3,10 +3,10 @@ use bitcoin::{
     blockdata::transaction::TxOut as BtcTxOut,
     network::constants::Network as BtcNetwork,
 };
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc::{
+    btc_on_eth::btc::{
         btc_state::BtcState,
         btc_utils::get_p2sh_redeem_script_sig,
         btc_database_utils::{

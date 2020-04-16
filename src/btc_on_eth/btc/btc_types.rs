@@ -6,18 +6,18 @@ use std::{
     str::FromStr,
     collections::HashMap,
 };
-use crate::btc_on_eth::{
-    constants::SAFE_BTC_ADDRESS,
-    utils::{
-        strip_hex_prefix,
-        convert_hex_to_address,
-    },
+use crate::{
     types::{
         Bytes,
         Result,
     },
-    btc::{
-        btc_utils::{
+    btc_on_eth::{
+        constants::SAFE_BTC_ADDRESS,
+        utils::{
+            strip_hex_prefix,
+            convert_hex_to_address,
+        },
+        btc::btc_utils::{
             serialize_btc_utxo,
             deserialize_btc_utxo,
         },

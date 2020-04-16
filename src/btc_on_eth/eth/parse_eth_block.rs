@@ -2,20 +2,22 @@ use ethereum_types::{
     U256,
     Bloom,
 };
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
-    eth::eth_types::{
-        EthBlock,
-        EthBlockJson,
-    },
-    utils::{
-        decode_prefixed_hex,
-        convert_hex_to_u256,
-        convert_hex_to_h256,
-        convert_hex_to_bytes,
-        convert_hex_to_address,
-        convert_dec_str_to_u256,
-        convert_hex_strings_to_h256s,
+    btc_on_eth::{
+        eth::eth_types::{
+            EthBlock,
+            EthBlockJson,
+        },
+        utils::{
+            decode_prefixed_hex,
+            convert_hex_to_u256,
+            convert_hex_to_h256,
+            convert_hex_to_bytes,
+            convert_hex_to_address,
+            convert_dec_str_to_u256,
+            convert_hex_strings_to_h256s,
+        },
     },
 };
 

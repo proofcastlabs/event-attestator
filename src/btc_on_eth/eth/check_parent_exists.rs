@@ -1,11 +1,15 @@
 use ethereum_types::H256 as EthHash;
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     errors::AppError,
-    eth::eth_state::EthState,
     traits::DatabaseInterface,
-    utils::convert_h256_to_bytes,
-    eth::eth_database_utils::key_exists_in_db,
+    btc_on_eth::{
+        utils::convert_h256_to_bytes,
+        eth::{
+            eth_state::EthState,
+            eth_database_utils::key_exists_in_db,
+        },
+    },
 };
 
 fn check_db_for_parent_of_block_in_state<D>(

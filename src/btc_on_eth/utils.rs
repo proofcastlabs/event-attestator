@@ -1,23 +1,23 @@
 use serde_json::Value;
-use crate::btc_on_eth::errors::AppError;
-use crate::btc_on_eth::{
-    types::{
-        Bytes,
-        Result,
-    },
-    constants::{
-        BTC_NUM_DECIMALS,
-        PTOKEN_ERC777_NUM_DECIMALS,
-    },
-};
 use ethereum_types::{
     U256,
     H256,
     Address as EthAddress
 };
-use crate::btc_on_eth::constants::{
-    HASH_LENGTH,
-    U64_NUM_BYTES,
+use crate::{
+    errors::AppError,
+    types::{
+        Bytes,
+        Result,
+    },
+    btc_on_eth::{
+        constants::{
+            HASH_LENGTH,
+            U64_NUM_BYTES,
+            BTC_NUM_DECIMALS,
+            PTOKEN_ERC777_NUM_DECIMALS,
+        },
+    },
 };
 
 pub fn convert_bytes_to_u64(bytes: &Bytes) -> Result<u64> {

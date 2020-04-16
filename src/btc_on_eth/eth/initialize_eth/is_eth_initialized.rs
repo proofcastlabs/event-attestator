@@ -1,6 +1,6 @@
-use crate::btc_on_eth::{
+use crate::{
     traits::DatabaseInterface,
-    eth::eth_database_utils::get_public_eth_address_from_db,
+    btc_on_eth::eth::eth_database_utils::get_public_eth_address_from_db,
 };
 
 pub fn is_eth_enclave_initialized<D>(db: &D) -> bool

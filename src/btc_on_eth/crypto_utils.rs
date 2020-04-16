@@ -12,12 +12,10 @@ use bitcoin_hashes::{
     sha256,
     Hash as HashTrait
 };
-use crate::btc_on_eth::{
-    types::{
-        Bytes,
-        Result,
-        Sha256HashedMessage,
-    },
+use crate::types::{
+    Bytes,
+    Result,
+    Sha256HashedMessage,
 };
 pub fn keccak_hash_bytes(bytes: Bytes) -> H256 {
     H256::from(keccak256(&bytes[..]))

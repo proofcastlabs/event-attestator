@@ -1,7 +1,7 @@
 use ethereum_types::Address as EthAddress;
-use crate::btc_on_eth::{
+use crate::{
     types::Bytes,
-    crypto_utils::keccak_hash_bytes,
+    btc_on_eth::crypto_utils::keccak_hash_bytes,
 };
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]

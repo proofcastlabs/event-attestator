@@ -2,26 +2,28 @@ use std::time::{
     SystemTime,
     UNIX_EPOCH
 };
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    utils::convert_eos_asset_to_u64,
-    eos::{
-        eos_types::{
-            EosSignedTransaction,
-            EosSignedTransactions,
+    btc_on_eos::{
+        utils::convert_eos_asset_to_u64,
+        eos::{
+            eos_types::{
+                EosSignedTransaction,
+                EosSignedTransactions,
+            },
+            eos_database_utils::get_eos_account_nonce_from_db,
         },
-        eos_database_utils::get_eos_account_nonce_from_db,
-    },
-    btc::{
-        btc_state::BtcState,
-        btc_types::{
-            MintingParams,
-            MintingParamStruct,
-        },
-        btc_database_utils::{
-            get_btc_canon_block_from_db,
-            get_btc_latest_block_from_db,
+        btc::{
+            btc_state::BtcState,
+            btc_types::{
+                MintingParams,
+                MintingParamStruct,
+            },
+            btc_database_utils::{
+                get_btc_canon_block_from_db,
+                get_btc_latest_block_from_db,
+            },
         },
     },
 };

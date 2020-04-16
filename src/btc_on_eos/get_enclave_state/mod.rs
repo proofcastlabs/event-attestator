@@ -1,42 +1,44 @@
-use crate::btc_on_eos::{
+use crate::{
     types::Result,
     constants::DEBUG_MODE,
     traits::DatabaseInterface,
-    check_core_is_initialized::check_core_is_initialized,
-    utxo_manager::utxo_database_utils::{
+    chains::btc::utxo_manager::utxo_database_utils::{
         get_utxo_nonce_from_db,
         get_total_utxo_balance_from_db,
         get_total_number_of_utxos_from_db,
     },
-    eos::{
-        eos_types::EosKnownSchedulesJsons,
-        eos_crypto::eos_public_key::EosPublicKey,
-        eos_database_utils::{
-            get_eos_chain_id_from_db,
-            get_eos_private_key_from_db,
-            get_eos_token_symbol_from_db,
-            get_eos_account_nonce_from_db,
-            get_eos_known_schedules_from_db,
-            get_eos_account_name_string_from_db,
+    btc_on_eos::{
+        check_core_is_initialized::check_core_is_initialized,
+        eos::{
+            eos_types::EosKnownSchedulesJsons,
+            eos_crypto::eos_public_key::EosPublicKey,
+            eos_database_utils::{
+                get_eos_chain_id_from_db,
+                get_eos_private_key_from_db,
+                get_eos_token_symbol_from_db,
+                get_eos_account_nonce_from_db,
+                get_eos_known_schedules_from_db,
+                get_eos_account_name_string_from_db,
+            },
         },
-    },
-    btc::{
-        btc_constants::BTC_TAIL_LENGTH,
-        update_btc_linker_hash::{
-            get_linker_hash_or_genesis_hash as get_btc_linker_hash,
-        },
-        btc_database_utils::{
-            get_btc_fee_from_db,
-            get_btc_network_from_db,
-            get_btc_address_from_db,
-            get_btc_tail_block_from_db,
-            get_btc_difficulty_from_db,
-            get_btc_private_key_from_db,
-            get_btc_canon_block_from_db,
-            get_btc_latest_block_from_db,
-            get_btc_anchor_block_from_db,
-            get_btc_account_nonce_from_db,
-            get_btc_canon_to_tip_length_from_db,
+        btc::{
+            btc_constants::BTC_TAIL_LENGTH,
+            update_btc_linker_hash::{
+                get_linker_hash_or_genesis_hash as get_btc_linker_hash,
+            },
+            btc_database_utils::{
+                get_btc_fee_from_db,
+                get_btc_network_from_db,
+                get_btc_address_from_db,
+                get_btc_tail_block_from_db,
+                get_btc_difficulty_from_db,
+                get_btc_private_key_from_db,
+                get_btc_canon_block_from_db,
+                get_btc_latest_block_from_db,
+                get_btc_anchor_block_from_db,
+                get_btc_account_nonce_from_db,
+                get_btc_canon_to_tip_length_from_db,
+            },
         },
     },
 };

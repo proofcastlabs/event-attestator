@@ -2,20 +2,22 @@ use std::{
     str::FromStr,
     collections::HashMap,
 };
-use crate::btc_on_eos::{
-    constants::SAFE_BTC_ADDRESS,
-    utils::{
-        strip_hex_prefix,
-        convert_u64_to_eos_asset,
-    },
+use crate::{
     types::{
         Bytes,
         Result,
     },
-    btc::{
-        btc_utils::{
-            serialize_btc_utxo,
-            deserialize_btc_utxo,
+    btc_on_eos::{
+        constants::SAFE_BTC_ADDRESS,
+        utils::{
+            strip_hex_prefix,
+            convert_u64_to_eos_asset,
+        },
+        btc::{
+            btc_utils::{
+                serialize_btc_utxo,
+                deserialize_btc_utxo,
+            },
         },
     },
 };

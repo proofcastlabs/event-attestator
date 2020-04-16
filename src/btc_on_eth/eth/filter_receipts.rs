@@ -1,7 +1,7 @@
-use crate::btc_on_eth::{
+use crate::{
     types::Result,
     traits::DatabaseInterface,
-    eth::{
+    btc_on_eth::eth::{
         eth_state::EthState,
         eth_constants::PTOKEN_CONTRACT_TOPICS,
         eth_database_utils::get_eth_smart_contract_address_from_db,
