@@ -30,8 +30,6 @@ pub fn deserialize_utxo_and_value(
     Ok(serde_json::from_slice(bytes)?)
 }
 
-/*
-// FIXME: Reinstate once we've moved these to utxo_test_utils!
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -82,4 +80,3 @@ mod tests {
         assert!(result == utxo);
     }
 }
-*/
