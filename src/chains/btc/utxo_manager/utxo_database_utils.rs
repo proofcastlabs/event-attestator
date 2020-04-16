@@ -418,10 +418,10 @@ pub fn increment_utxo_nonce_in_db<D>(db: &D) -> Result<()>
         .and_then(|num| put_utxo_nonce_in_db(db, num + 1))
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
+    // FIXME Use generic versions of these, not the BTC ones!
     use crate::btc_on_eth::{
         test_utils::get_test_database,
         btc::{
@@ -908,4 +908,3 @@ mod tests {
         );
     }
 }
-*/
