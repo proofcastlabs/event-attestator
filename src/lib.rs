@@ -2,6 +2,8 @@
 #![recursion_limit="128"] // NOTE: For the format! macro in block parsing.
 #![feature(exclusive_range_pattern)]
 
+pub mod utils;
+pub mod chain;
 pub mod types;
 pub mod traits;
 pub mod errors;
