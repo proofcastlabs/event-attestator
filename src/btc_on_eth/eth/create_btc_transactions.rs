@@ -5,20 +5,22 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::{
-        utxo_database_utils::get_utxo_and_value,
-        utxo_types::{
-            BtcUtxoAndValue,
-            BtcUtxosAndValues,
+    chains::btc::{
+        btc_utils::{
+            calculate_btc_tx_fee,
+            get_total_value_of_utxos_and_values,
+        },
+        utxo_manager::{
+            utxo_database_utils::get_utxo_and_value,
+            utxo_types::{
+                BtcUtxoAndValue,
+                BtcUtxosAndValues,
+            },
         },
     },
     btc_on_eth::{
         btc::{
             btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-            btc_utils::{
-                calculate_btc_tx_fee,
-                get_total_value_of_utxos_and_values,
-            },
             btc_database_utils::{
                 get_btc_fee_from_db,
                 get_btc_network_from_db,

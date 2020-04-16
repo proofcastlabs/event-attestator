@@ -11,15 +11,15 @@ use crate::{
         Bytes,
         Result,
     },
+    chains::btc::btc_utils::{
+        serialize_btc_utxo,
+        deserialize_btc_utxo,
+    },
     btc_on_eth::{
         constants::SAFE_BTC_ADDRESS,
         utils::{
             strip_hex_prefix,
             convert_hex_to_address,
-        },
-        btc::btc_utils::{
-            serialize_btc_utxo,
-            deserialize_btc_utxo,
         },
     },
 };

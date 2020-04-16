@@ -8,9 +8,12 @@ use crate::{
         from as from_base58,
         encode_slice as base58_encode_slice,
     },
-    chains::btc::utxo_manager::utxo_types::{
-        BtcUtxoAndValue,
-        BtcUtxosAndValues,
+    chains::btc::{
+        btc_types::DepositAddressInfoJson,
+        utxo_manager::utxo_types::{
+            BtcUtxoAndValue,
+            BtcUtxosAndValues,
+        },
     },
     btc_on_eth::{
         constants::SAFE_ETH_ADDRESS,
@@ -24,7 +27,6 @@ use crate::{
                 MintingParams,
                 BtcBlockInDbFormat,
                 DepositAddressInfo,
-                DepositAddressInfoJson,
             },
         },
         utils::{

@@ -25,6 +25,10 @@ use crate::{
         Bytes,
         Result,
     },
+    chains::btc::btc_utils::{
+        get_safe_eth_address,
+        get_pay_to_pub_key_hash_script,
+    },
     btc_on_eth::{
         constants::SAFE_ETH_ADDRESS,
         utils::convert_satoshis_to_ptoken,
@@ -34,10 +38,6 @@ use crate::{
             btc_database_utils::{
                 get_btc_address_from_db,
                 get_btc_network_from_db,
-            },
-            btc_utils::{
-                get_safe_eth_address,
-                get_pay_to_pub_key_hash_script,
             },
             btc_types::{
                 MintingParams,

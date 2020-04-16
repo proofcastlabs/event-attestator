@@ -26,19 +26,19 @@ use crate::{
     chains::btc::{
         btc_types::DepositAddressInfoJson,
         utxo_manager::utxo_types::BtcUtxoAndValue,
+        btc_utils::{
+            get_p2sh_redeem_script_sig,
+            get_btc_block_in_db_format,
+            create_unsigned_utxo_from_tx,
+            get_pay_to_pub_key_hash_script,
+            create_op_return_btc_utxo_and_value_from_tx_output,
+        },
     },
     btc_on_eth::{
         utils::convert_satoshis_to_ptoken,
         constants::MINIMUM_REQUIRED_SATOSHIS,
         eth::eth_types::EthAddress,
         btc::{
-            btc_utils::{
-                get_p2sh_redeem_script_sig,
-                get_btc_block_in_db_format,
-                create_unsigned_utxo_from_tx,
-                get_pay_to_pub_key_hash_script,
-                create_op_return_btc_utxo_and_value_from_tx_output,
-            },
             btc_crypto::btc_private_key::BtcPrivateKey,
             btc_types::{
                 MintingParams,

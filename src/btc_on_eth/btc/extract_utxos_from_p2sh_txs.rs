@@ -1,17 +1,19 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::utxo_types::{
-        BtcUtxoAndValue,
-        BtcUtxosAndValues,
-    },
-    btc_on_eth::btc::{
-        btc_state::BtcState,
-        btc_database_utils::get_btc_network_from_db,
+    chains::btc::{
         btc_utils::{
             convert_deposit_info_to_json,
             create_unsigned_utxo_from_tx,
         },
+        utxo_manager::utxo_types::{
+            BtcUtxoAndValue,
+            BtcUtxosAndValues,
+        },
+    },
+    btc_on_eth::btc::{
+        btc_state::BtcState,
+        btc_database_utils::get_btc_network_from_db,
         btc_types::{
             BtcTransactions,
             DepositInfoHashMap,
