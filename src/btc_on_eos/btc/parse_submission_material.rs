@@ -12,17 +12,19 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    chains::btc::btc_types::DepositAddressInfoJson,
+    chains::btc::btc_types::{
+        DepositInfoList,
+        DepositAddressInfo,
+        DepositAddressJsonList,
+        DepositAddressInfoJson,
+    },
     btc_on_eos::btc::{
         btc_state::BtcState,
         btc_types::{
             BtcBlockJson,
             BtcBlockAndId,
-            DepositInfoList,
-            DepositAddressInfo,
             SubmissionMaterial,
             SubmissionMaterialJson,
-            DepositAddressJsonList,
         },
     },
 };

@@ -13,7 +13,10 @@ use crate::{
         convert_u64_to_bytes,
     },
     chains::btc::{
-        btc_types::DepositAddressInfoJson,
+        btc_types::{
+            DepositAddressInfo,
+            DepositAddressInfoJson,
+        },
         utxo_manager::utxo_types::{
             BtcUtxoAndValue,
             BtcUtxosAndValues,
@@ -30,7 +33,6 @@ use crate::{
                 BtcBlockAndId,
                 MintingParams,
                 BtcBlockInDbFormat,
-                DepositAddressInfo,
             },
         },
     },

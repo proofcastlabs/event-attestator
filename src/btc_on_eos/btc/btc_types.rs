@@ -1,19 +1,19 @@
-use std::{
-    str::FromStr,
-    collections::HashMap,
-};
+use std::str::FromStr;
 use crate::{
     types::{
         Bytes,
         Result,
     },
-    chains::btc::btc_types::DepositAddressInfoJson,
+    chains::{
+        btc::btc_types::{
+            DepositInfoList,
+            DepositAddressInfoJson,
+            DepositAddressJsonList,
+        },
+    },
     btc_on_eos::{
         constants::SAFE_BTC_ADDRESS,
-        utils::{
-            strip_hex_prefix,
-            convert_u64_to_eos_asset,
-        },
+        utils::convert_u64_to_eos_asset,
         btc::{
             btc_utils::{
                 serialize_btc_utxo,
@@ -23,11 +23,8 @@ use crate::{
     },
 };
 use bitcoin::{
+    hashes::sha256d,
     util::address::Address as BtcAddress,
-    hashes::{
-        Hash,
-        sha256d,
-    },
     blockdata::{
         block::Block as BtcBlock,
         transaction::{
@@ -42,10 +39,7 @@ pub type BtcSignature = [u8; 65];
 pub type BtcTransactions = Vec<BtcTransaction>;
 pub type MintingParams = Vec<MintingParamStruct>;
 pub type BtcUtxosAndValues = Vec<BtcUtxoAndValue>;
-pub type DepositInfoList = Vec<DepositAddressInfo>;
 pub type BtcRecipientsAndAmounts = Vec<BtcRecipientAndAmount>;
-pub type DepositAddressJsonList = Vec<DepositAddressInfoJson>;
-pub type DepositInfoHashMap =  HashMap<BtcAddress, DepositAddressInfo>;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BtcTxInfo {
@@ -161,35 +155,6 @@ pub struct BtcBlockJson {
     pub timestamp: u32,
     pub merkle_root: String,
     pub previousblockhash: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct DepositAddressInfo {
-    pub nonce: u64,
-    pub address: String,
-    pub commitment_hash: sha256d::Hash,
-    pub btc_deposit_address: BtcAddress,
-}
-
-impl DepositAddressInfo {
-    pub fn new(
-        nonce: u64,
-        address: &String,
-        btc_deposit_address: &String,
-        commitment_hash: &String,
-    ) -> Result<Self> {
-        Ok(
-            DepositAddressInfo {
-                nonce,
-                address: address.to_string(),
-                btc_deposit_address:
-                    BtcAddress::from_str(&btc_deposit_address)?,
-                commitment_hash: sha256d::Hash::from_slice(
-                    &hex::decode(strip_hex_prefix(commitment_hash)?)?
-                )?,
-            }
-        )
-    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
