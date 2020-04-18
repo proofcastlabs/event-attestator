@@ -290,7 +290,7 @@ mod tests {
         let script = get_sample_op_return_output()
             .script_pubkey;
         let result = parse_eth_address_from_op_return_script(&script);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -299,7 +299,7 @@ mod tests {
         let tx = get_sample_btc_op_return_tx();
         let target_script = get_sample_pay_to_pub_key_hash_script();
         let result = sum_deposit_values_from_tx_outputs(&tx, &target_script);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -309,7 +309,7 @@ mod tests {
         let result = get_eth_address_from_op_return_in_tx_else_safe_address(
             &tx
         );
-        assert!(result == expected_result);
+        assert_eq!(result, hex::encode(expected_result));
     }
 
     #[test]
@@ -319,7 +319,7 @@ mod tests {
         let result = get_eth_address_from_op_return_in_tx_else_safe_address(
             &tx_no_op_return
         );
-        assert!(result == expected_result);
+        assert_eq!(result, hex::encode(expected_result));
     }
 
     #[test]
@@ -343,14 +343,14 @@ mod tests {
             &filtered_txs,
             network,
         ).unwrap();
-        assert!(result.len() == 1);
-        assert!(result[0].amount == expected_value);
-        assert!(result[0].eth_address == expected_address);
-        assert!(result[0].originating_tx_hash.to_string() == expected_tx_hash);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].amount, expected_value);
+        assert_eq!(result[0].eth_address, expected_address);
+        assert_eq!(result[0].originating_tx_hash.to_string(), expected_tx_hash);
         let input = filtered_txs[0].input[0].clone();
         let address = extract_spender_address_from_p2pkh_input(&input, network)
             .unwrap();
-        assert!(address.to_string() == expected_origin_address);
+        assert_eq!(address.to_string(), expected_origin_address);
     }
 
     #[test]
@@ -366,7 +366,7 @@ mod tests {
         let input = filtered_txs[0].input[0].clone();
         let result = extract_spender_address_from_p2pkh_input(&input, network)
             .unwrap();
-        assert!(result.to_string() == expected_origin_address);
+        assert_eq!(result.to_string(), expected_origin_address);
     }
 
     #[test]
@@ -388,13 +388,13 @@ mod tests {
             &tx,
             network,
         ).unwrap();
-        assert!(result.amount == expected_value);
-        assert!(result.eth_address == expected_address);
-        assert!(result.originating_tx_hash.to_string() == expected_tx_hash);
+        assert_eq!(result.amount, expected_value);
+        assert_eq!(result.eth_address, expected_address);
+        assert_eq!(result.originating_tx_hash.to_string(), expected_tx_hash);
         let input = tx.input[0].clone();
         let address = extract_spender_address_from_p2pkh_input(&input, network)
             .unwrap();
-        assert!(address.to_string() == expected_origin_address);
+        assert_eq!(address.to_string(), expected_origin_address);
     }
 
     #[test]
@@ -417,13 +417,13 @@ mod tests {
             &tx,
             network,
         ).unwrap();
-        assert!(result.amount == expected_value);
-        assert!(result.eth_address == expected_eth_address);
-        assert!(result.originating_tx_hash.to_string() == expected_tx_hash);
+        assert_eq!(result.amount, expected_value);
+        assert_eq!(result.eth_address, expected_eth_address);
+        assert_eq!(result.originating_tx_hash.to_string(), expected_tx_hash);
         let input = tx.input[0].clone();
         let address = extract_spender_address_from_p2pkh_input(&input, network)
             .unwrap();
-        assert!(address.to_string() == expected_origin_address);
+        assert_eq!(address.to_string(), expected_origin_address);
     }
 
     // TODO Fashion a transaction w/ > 1 deposit output in OP_RETURN
