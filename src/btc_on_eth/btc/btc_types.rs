@@ -12,7 +12,10 @@ use crate::{
         Result,
     },
     chains::btc::{
-        btc_types::DepositAddressInfoJson,
+        btc_types::{
+            DepositAddressInfo,
+            DepositAddressInfoJson,
+        },
         btc_utils::{
             serialize_btc_utxo,
             deserialize_btc_utxo,
@@ -20,18 +23,12 @@ use crate::{
     },
     btc_on_eth::{
         constants::SAFE_BTC_ADDRESS,
-        utils::{
-            strip_hex_prefix,
-            convert_hex_to_address,
-        },
+        utils::convert_hex_to_address,
     },
 };
 use bitcoin::{
+    hashes::sha256d,
     util::address::Address as BtcAddress,
-    hashes::{
-        Hash,
-        sha256d,
-    },
     blockdata::{
         block::Block as BtcBlock,
         transaction::{
@@ -113,16 +110,18 @@ pub struct MintingParamStruct {
 impl MintingParamStruct {
     pub fn new(
         amount: U256,
-        eth_address: EthAddress,
+        eth_address: String,
         originating_tx_hash: sha256d::Hash,
         originating_tx_address: BtcAddress,
-    ) -> MintingParamStruct {
-        MintingParamStruct {
-            amount,
-            eth_address,
-            originating_tx_hash,
-            originating_tx_address: originating_tx_address.to_string(),
-        }
+    ) -> Result<MintingParamStruct> {
+        Ok(
+            MintingParamStruct {
+                amount,
+                originating_tx_hash,
+                eth_address: convert_hex_to_address(eth_address)?,
+                originating_tx_address: originating_tx_address.to_string(),
+            }
+        )
     }
 }
 
@@ -143,36 +142,6 @@ pub struct BtcBlockJson {
     pub timestamp: u32,
     pub merkle_root: String,
     pub previousblockhash: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct DepositAddressInfo {
-    pub nonce: u64,
-    pub address: EthAddress,
-    pub commitment_hash: sha256d::Hash,
-    pub btc_deposit_address: BtcAddress,
-}
-
-impl DepositAddressInfo {
-    pub fn new(
-        nonce: u64,
-        address: &String,
-        btc_deposit_address: &String,
-        commitment_hash: &String,
-    ) -> Result<Self> {
-        Ok(
-            DepositAddressInfo {
-                nonce,
-                address:
-                    convert_hex_to_address(address.to_string())?,
-                btc_deposit_address:
-                    BtcAddress::from_str(&btc_deposit_address)?,
-                commitment_hash: sha256d::Hash::from_slice(
-                    &hex::decode(strip_hex_prefix(commitment_hash)?)?
-                )?,
-            }
-        )
-    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

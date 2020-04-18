@@ -128,7 +128,7 @@ fn sum_deposit_values_from_tx_outputs(
 
 fn get_eth_address_from_op_return_in_tx_else_safe_address(
     transaction: &BtcTransaction,
-) -> EthAddress {
+) -> String {
     let maybe_op_return = transaction
         .output
         .iter()
@@ -142,7 +142,7 @@ fn get_eth_address_from_op_return_in_tx_else_safe_address(
                 "✔ No address found, default to safe address: 0x{}",
                 hex::encode(SAFE_ETH_ADDRESS)
             );
-            get_safe_eth_address()
+            hex::encode(get_safe_eth_address())
         }
         _ => {
             let address = parse_eth_address_from_op_return_script(
@@ -152,7 +152,7 @@ fn get_eth_address_from_op_return_in_tx_else_safe_address(
                 "✔ Address parsed from `op_return` script: 0x{}",
                 hex::encode(address)
             );
-            address
+            hex::encode(address)
         }
     }
 }
@@ -181,7 +181,7 @@ fn parse_minting_param_struct_from_tx(
                     BtcAddress::from_str(&DEFAULT_BTC_ADDRESS)?
                 }
             }
-        )
+        )?
     )
 }
 

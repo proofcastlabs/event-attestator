@@ -5,6 +5,7 @@ use bitcoin::{
 };
 use crate::{
     types::Result,
+    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eth::{
         utils::convert_satoshis_to_ptoken,
@@ -31,53 +32,40 @@ fn parse_minting_params_from_p2sh_deposit_tx(
         .output
         .iter()
         .filter(|tx_out| tx_out.script_pubkey.is_p2sh())
-        .map(|p2sh_tx_out| {
-            match BtcAddress::from_script(
-                &p2sh_tx_out.script_pubkey,
-                btc_network,
-            ) {
+        .map(|tx_out|
+            match BtcAddress::from_script(&tx_out.script_pubkey, btc_network) {
                 None => {
                     info!(
                         "✘ Could not derive BTC address from tx: {:?}",
                         p2sh_deposit_containing_tx,
                     );
-                    None
+                    (tx_out, None)
                 }
-                Some(btc_address) => {
-                    info!(
-                        "✔ BTC address extracted from `tx_out`: {}",
-                        btc_address,
-                    );
-                    match deposit_info_hash_map.get(&btc_address) {
-                        None => {
-                            info!(
-                                "✘ BTC address {} not in deposit hash map!",
-                                btc_address,
-                            );
-                            None
-                        }
-                        Some(deposit_info) => {
-                            info!(
-                                "✔ Deposit info extracted from hash map: {:?}",
-                                deposit_info,
-                            );
-                            Some(
-                                MintingParamStruct::new(
-                                    convert_satoshis_to_ptoken(
-                                        p2sh_tx_out.value,
-                                    ),
-                                    deposit_info.address,
-                                    p2sh_deposit_containing_tx.txid(),
-                                    btc_address,
-                                )
-                            )
-                        }
-                    }
+                Some(address) => {
+                    info!("✔ BTC address extracted from `tx_out`: {}", address);
+                    (tx_out, Some(address))
                 }
             }
-        })
-        .filter(|maybe_minting_params| maybe_minting_params.is_some())
-        .map(|maybe_minting_params| Ok(maybe_minting_params?))
+        )
+        .filter(|(_, maybe_address)| maybe_address.is_some())
+        .map(|(tx_out, address)|
+            match deposit_info_hash_map.get(&address.clone()?) {
+                None => {
+                    info!("✘ BTC address {} not in deposit list!", address?);
+                    Err(AppError::Custom("Filtering out this err!".to_string()))
+                }
+                Some(deposit_info) => {
+                    info!("✔ Deposit info from list: {:?}", deposit_info);
+                    MintingParamStruct::new(
+                        convert_satoshis_to_ptoken(tx_out.value),
+                        deposit_info.address.clone(),
+                        p2sh_deposit_containing_tx.txid(),
+                        address?,
+                    )
+                }
+            }
+         )
+        .filter(|maybe_minting_params| maybe_minting_params.is_ok())
         .collect::<Result<MintingParams>>()
 }
 
@@ -256,16 +244,16 @@ mod tests {
         ).unwrap();
         let expected_result_1 = MintingParamStruct::new(
             expected_amount_1,
-            expected_eth_address_1,
+            hex::encode(expected_eth_address_1),
             expected_originating_tx_hash_1,
             expected_btc_address_1,
-        );
+        ).unwrap();
         let expected_result_2 = MintingParamStruct::new(
             expected_amount_2,
-            expected_eth_address_2,
+            hex::encode(expected_eth_address_2),
             expected_originating_tx_hash_2,
             expected_btc_address_2,
-        );
+        ).unwrap();
         let btc_network = BtcNetwork::Testnet;
         let block_and_id = get_sample_btc_block_n(6)
             .unwrap();

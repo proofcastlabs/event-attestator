@@ -12,7 +12,10 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    chains::btc::btc_types::DepositAddressInfoJson,
+    chains::btc::btc_types::{
+        DepositAddressInfo,
+        DepositAddressInfoJson,
+    },
     btc_on_eth::btc::{
         btc_state::BtcState,
         btc_types::{
@@ -20,7 +23,6 @@ use crate::{
             BtcBlockAndId,
             DepositInfoList,
             BtcBlockAndTxsJson,
-            DepositAddressInfo,
             DepositAddressJsonList,
         },
     },

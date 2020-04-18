@@ -158,16 +158,16 @@ mod tests {
         let minting_params = vec![
             MintingParamStruct::new(
                 convert_satoshis_to_ptoken(1337),
-                recipient_1,
+                hex::encode(recipient_1),
                 sha256d::Hash::hash(&vec![0xc0]),
                 originating_address.clone(),
-            ),
+            ).unwrap(),
             MintingParamStruct::new(
                 convert_satoshis_to_ptoken(666),
-                recipient_2,
+                hex::encode(recipient_2),
                 sha256d::Hash::hash(&vec![0xc0]),
                 originating_address,
-            ),
+            ).unwrap(),
         ];
         let result = get_eth_signed_txs(
             &signing_params,

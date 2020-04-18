@@ -9,7 +9,10 @@ use crate::{
         encode_slice as base58_encode_slice,
     },
     chains::btc::{
-        btc_types::DepositAddressInfoJson,
+        btc_types::{
+            DepositAddressInfo,
+            DepositAddressInfoJson,
+        },
         utxo_manager::utxo_types::{
             BtcUtxoAndValue,
             BtcUtxosAndValues,
@@ -26,7 +29,6 @@ use crate::{
                 BtcBlockAndId,
                 MintingParams,
                 BtcBlockInDbFormat,
-                DepositAddressInfo,
             },
         },
         utils::{
@@ -198,12 +200,10 @@ pub fn convert_deposit_info_to_json(
     deposit_info_struct: &DepositAddressInfo
 ) -> DepositAddressInfoJson {
     DepositAddressInfoJson {
-        nonce:
-            deposit_info_struct.nonce,
+        nonce: deposit_info_struct.nonce,
+        address: deposit_info_struct.address.clone(),
         btc_deposit_address:
             deposit_info_struct.btc_deposit_address.to_string(),
-        address:
-            hex::encode(deposit_info_struct.address.as_bytes()),
         address_and_nonce_hash:
             hex::encode(deposit_info_struct.commitment_hash),
     }
@@ -551,10 +551,10 @@ mod tests {
         ).unwrap();
         let minting_param_struct = MintingParamStruct::new(
             amount,
-            eth_address,
+            hex::encode(eth_address),
             originating_tx_hash,
             originating_tx_address,
-        );
+        ).unwrap();
         let minting_params = vec![minting_param_struct];
         let serialized_minting_params = serialize_minting_params(
             &minting_params
