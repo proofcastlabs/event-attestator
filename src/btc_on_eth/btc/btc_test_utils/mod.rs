@@ -320,7 +320,7 @@ pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
             let nonce = 1337;
             let btc_deposit_address = "2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2"
                 .to_string();
-            let eth_address = "fedfe2616eb3661cb8fed2782f5f0cc91d59dcac"
+            let eth_address = "0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC"
                 .to_string();
             let eth_address_and_nonce_hash =
             "98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e"
