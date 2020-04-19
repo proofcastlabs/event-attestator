@@ -8,4 +8,4 @@ pub mod database_utils;
 pub mod debug_functions;
 pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
-pub mod check_enclave_is_initialized;
+pub mod check_core_is_initialized;

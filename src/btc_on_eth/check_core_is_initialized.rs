@@ -14,7 +14,7 @@ use crate::{
     },
 };
 
-pub fn check_enclave_is_initialized<D>(
+pub fn check_core_is_initialized<D>(
     db: &D
 ) -> Result<()>
     where D: DatabaseInterface
@@ -36,21 +36,21 @@ pub fn check_enclave_is_initialized<D>(
 }
 
 // TODO/FIXME Make generic
-pub fn check_enclave_is_initialized_and_return_eth_state<D>(
+pub fn check_core_is_initialized_and_return_eth_state<D>(
     state: EthState<D>,
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
-    check_enclave_is_initialized(&state.db)
+    check_core_is_initialized(&state.db)
         .map(|_| state)
 }
 
-pub fn check_enclave_is_initialized_and_return_btc_state<D>(
+pub fn check_core_is_initialized_and_return_btc_state<D>(
     state: BtcState<D>,
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    check_enclave_is_initialized(&state.db)
+    check_core_is_initialized(&state.db)
         .map(|_| state)
 }
 
@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn should_return_false_if_enclave_not_initialized() {
-        if let Ok(_) = check_enclave_is_initialized(&get_test_database()) {
+        if let Ok(_) = check_core_is_initialized(&get_test_database()) {
             panic!("Enc should be initialized!");
         }
     }
@@ -94,7 +94,7 @@ mod tests {
         ) {
             panic!("Error putting pk in db: {}", e);
         };
-        if let Err(e) = check_enclave_is_initialized(&db) {
+        if let Err(e) = check_core_is_initialized(&db) {
             panic!("Error when enc should be initted: {}", e);
         };
     }
@@ -111,7 +111,7 @@ mod tests {
             panic!("Error putting pk in db: {}", e);
         };
         assert!(!is_btc_enclave_initialized(&db));
-        match check_enclave_is_initialized(&db) {
+        match check_core_is_initialized(&db) {
             Ok(_) => {
                 panic!("Enc should not be initialized!");
             }
@@ -138,7 +138,7 @@ mod tests {
         assert!(
             !is_eth_enclave_initialized(&db)
         );
-        match check_enclave_is_initialized(&db) {
+        match check_core_is_initialized(&db) {
             Ok(_) => {
                 panic!("Enc should not be initialized!");
             }
@@ -167,7 +167,7 @@ mod tests {
         ) {
             panic!("Error putting pk in db: {}", e);
         };
-        if let Err(e)  = check_enclave_is_initialized_and_return_eth_state(
+        if let Err(e)  = check_core_is_initialized_and_return_eth_state(
             state
         ) {
             panic!("Error when enc should be initted: {}", e);

@@ -11,10 +11,10 @@ use crate::{
         set_key_in_db_to_value,
     },
     btc_on_eth::{
-        check_enclave_is_initialized::{
-            check_enclave_is_initialized,
-            check_enclave_is_initialized_and_return_eth_state,
-            check_enclave_is_initialized_and_return_btc_state,
+        check_core_is_initialized::{
+            check_core_is_initialized,
+            check_core_is_initialized_and_return_eth_state,
+            check_core_is_initialized_and_return_btc_state,
         },
         btc::{
             btc_state::BtcState,
@@ -90,7 +90,7 @@ pub fn debug_clear_all_utxos<D>(
     where D: DatabaseInterface
 {
     info!("✔ Debug clearing all UTXOs...");
-    check_enclave_is_initialized(db)
+    check_core_is_initialized(db)
         .and_then(|_| clear_all_utxos(db))
 }
 
@@ -104,7 +104,7 @@ pub fn debug_reprocess_btc_block<D>(
         btc_block_json,
         BtcState::init(db),
     )
-        .and_then(check_enclave_is_initialized_and_return_btc_state)
+        .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)
@@ -161,7 +161,7 @@ pub fn debug_reprocess_eth_block<D>(
         eth_block_json,
         EthState::init(db),
     )
-        .and_then(check_enclave_is_initialized_and_return_eth_state)
+        .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction)
         .and_then(validate_block_in_state)
         .and_then(filter_irrelevant_receipts_from_state)
@@ -203,7 +203,7 @@ pub fn debug_set_key_in_db_to_value<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    check_enclave_is_initialized(&db)
+    check_core_is_initialized(&db)
         .and_then(|_| set_key_in_db_to_value(db, key, value))
 }
 
@@ -214,7 +214,7 @@ pub fn debug_get_key_from_db<D>(
     where D: DatabaseInterface
 {
     let key_bytes = hex::decode(&key)?;
-    check_enclave_is_initialized(&db)
+    check_core_is_initialized(&db)
         .and_then(|_| {
             if key_bytes == ETH_KEY || key_bytes == BTC_KEY {
                 get_key_from_db(db, key, Some(255))
@@ -230,6 +230,6 @@ pub fn debug_get_all_utxos<D>(
     where D: DatabaseInterface
 {
     check_debug_mode()
-        .and_then(|_| check_enclave_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| get_all_utxos_as_json_string(db))
 }
