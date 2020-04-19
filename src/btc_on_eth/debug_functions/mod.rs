@@ -2,7 +2,10 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
-    chains::btc::utxo_manager::utxo_utils::get_all_utxos_as_json_string,
+    chains::btc::utxo_manager::{
+        debug_utxo_utils::clear_all_utxos,
+        utxo_utils::get_all_utxos_as_json_string,
+    },
     debug_database_utils::{
         get_key_from_db,
         set_key_in_db_to_value,
@@ -80,6 +83,16 @@ use crate::{
         },
     },
 };
+
+pub fn debug_clear_all_utxos<D>(
+    db: &D,
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    info!("✔ Debug clearing all UTXOs...");
+    check_enclave_is_initialized(db)
+        .and_then(|_| clear_all_utxos(db))
+}
 
 pub fn debug_reprocess_btc_block<D>(
     db: D,

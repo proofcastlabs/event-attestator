@@ -6,7 +6,10 @@ use crate::{
         get_key_from_db,
         set_key_in_db_to_value,
     },
-    chains::btc::utxo_manager::utxo_utils::get_all_utxos_as_json_string,
+    chains::btc::utxo_manager::{
+        debug_utxo_utils::clear_all_utxos,
+        utxo_utils::get_all_utxos_as_json_string,
+    },
     btc_on_eos::{
         check_core_is_initialized::check_core_is_initialized,
         btc::btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
@@ -17,6 +20,16 @@ use crate::{
         },
     },
 };
+
+pub fn debug_clear_all_utxos<D>(
+    db: &D,
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    info!("✔ Debug clearing all UTXOs...");
+    check_core_is_initialized(db)
+        .and_then(|_| clear_all_utxos(db))
+}
 
 pub fn debug_add_new_eos_schedule<D>(
     db: D,
