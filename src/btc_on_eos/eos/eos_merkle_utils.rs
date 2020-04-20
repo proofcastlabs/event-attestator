@@ -10,9 +10,12 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eos::eos::eos_types::{
-        MerklePath,
-        MerkleProof,
+    btc_on_eos::{
+        utils::convert_hex_to_checksum256,
+        eos::eos_types::{
+            MerklePath,
+            MerkleProof,
+        },
     },
 };
 
@@ -131,6 +134,39 @@ pub fn get_merkle_root_from_merkle_path(
             .last()?
             .to_vec()
     )
+}
+
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct IncremerkleJson {
+    node_count: u64,
+    active_nodes: Vec<String>,
+}
+
+impl IncremerkleJson {
+    pub fn from_incremerkle(incremerkle: &IncreMerkle) -> Self {
+        IncremerkleJson {
+            node_count: incremerkle.node_count,
+            active_nodes: incremerkle
+                .active_nodes
+                .iter()
+                .map(|checksum| checksum.to_string())
+                .collect::<Vec<String>>()
+        }
+    }
+
+    pub fn to_incremerkle(self) -> Result<IncreMerkle> {
+        Ok(
+            IncreMerkle {
+                node_count: self.node_count,
+                active_nodes: self
+                    .active_nodes
+                    .iter()
+                    .map(convert_hex_to_checksum256)
+                    .collect::<Result<Vec<Checksum256>>>()?
+            }
+        )
+    }
 }
 
 // NOTE: Courtesy of: https://github.com/bifrost-codes/rust-eos/
@@ -651,7 +687,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_incremental_merkle_root_from_blockroot_merkles() {
+    fn should_get_incremerkle_root_from_blockroot_merkles() {
         let expected_incremerkle_root =
             "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
         let submission_material = get_sample_eos_submission_material_n(5);
@@ -669,5 +705,34 @@ mod tests {
                 .to_bytes()
         );
         assert_eq!(incremerkle_root, expected_incremerkle_root);
+    }
+
+    #[test]
+    fn should_convert_from_incremerkle_to_json_and_back() {
+        let expected_incremerkle_root =
+            "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
+        let submission_material = get_sample_eos_submission_material_n(5);
+        let active_nodes = submission_material
+            .blockroot_merkle
+            .clone();
+        let node_count: u64 = submission_material
+            .block_header
+            .block_num()
+            .into();
+        let incremerkle = IncreMerkle::new(node_count, active_nodes);
+        let json = IncremerkleJson::from_incremerkle(&incremerkle);
+        assert_eq!(json.node_count, incremerkle.node_count);
+        assert_eq!(json.active_nodes.len(), incremerkle.active_nodes.len());
+        let result = json
+            .to_incremerkle()
+            .unwrap();
+        assert_eq!(result.node_count, incremerkle.node_count);
+        assert_eq!(result.active_nodes.len(), incremerkle.active_nodes.len());
+        let result_root = hex::encode(
+            &incremerkle
+                .get_root()
+                .to_bytes()
+        );
+        assert_eq!(result_root, expected_incremerkle_root);
     }
 }
