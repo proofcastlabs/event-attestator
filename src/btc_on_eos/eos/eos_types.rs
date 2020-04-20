@@ -179,11 +179,11 @@ pub struct EosSubmissionMaterialJson {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosBlockHeaderJson {
+    pub block_num: u64,
     pub confirmed: u16,
     pub producer: String,
     pub previous: String,
     pub block_id: String,
-    pub block_num: usize,
     pub timestamp: String,
     pub action_mroot: String,
     pub schedule_version: u32,
@@ -201,8 +201,8 @@ pub struct ProducerSchedule {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ProducerKeyJson {
-    pub producer_name: String, // To become AccountName
-    pub block_signing_key: String, // To become public key
+    pub producer_name: String,
+    pub block_signing_key: String,
 }
 
 #[derive(Debug)]
