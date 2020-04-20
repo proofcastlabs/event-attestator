@@ -151,7 +151,6 @@ pub fn validate_block_header_signature<D>(
         .and(Ok(state))
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -451,4 +450,3 @@ mod tests {
         println!("sched serialized: {}", hex::encode(data));
     }
 }
-*/
