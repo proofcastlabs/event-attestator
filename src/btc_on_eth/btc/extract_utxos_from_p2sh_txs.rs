@@ -1,17 +1,19 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::utxo_types::{
-        BtcUtxoAndValue,
-        BtcUtxosAndValues,
-    },
-    btc_on_eth::btc::{
-        btc_state::BtcState,
-        btc_database_utils::get_btc_network_from_db,
+    chains::btc::{
         btc_utils::{
             convert_deposit_info_to_json,
             create_unsigned_utxo_from_tx,
         },
+        utxo_manager::utxo_types::{
+            BtcUtxoAndValue,
+            BtcUtxosAndValues,
+        },
+    },
+    btc_on_eth::btc::{
+        btc_state::BtcState,
+        btc_database_utils::get_btc_network_from_db,
         btc_types::{
             BtcTransactions,
             DepositInfoHashMap,
@@ -194,7 +196,7 @@ mod tests {
             btc_network,
             &hash_map,
         ).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -227,8 +229,8 @@ mod tests {
             &hash_map,
             btc_network,
         ).unwrap();
-        assert!(result.len() == expected_num_utxos);
-        assert!(result[0] == expected_result);
+        assert_eq!(result.len(), expected_num_utxos);
+        assert_eq!(result[0], expected_result);
     }
 
     #[test]
@@ -285,10 +287,10 @@ mod tests {
         ).unwrap();
         let result_1 = result[0].clone();
         let result_2 = result[1].clone();
-        assert!(result.len() == expected_num_results);
-        assert!(result_1.value == expected_value_1);
-        assert!(result_2.value == expected_value_2);
-        assert!(result_1.maybe_deposit_info_json == expected_deposit_info_1);
-        assert!(result_2.maybe_deposit_info_json == expected_deposit_info_2);
+        assert_eq!(result.len(), expected_num_results);
+        assert_eq!(result_1.value, expected_value_1);
+        assert_eq!(result_2.value, expected_value_2);
+        assert_eq!(result_1.maybe_deposit_info_json, expected_deposit_info_1);
+        assert_eq!(result_2.maybe_deposit_info_json, expected_deposit_info_2);
     }
 }

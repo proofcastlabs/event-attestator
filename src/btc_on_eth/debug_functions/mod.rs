@@ -3,17 +3,18 @@ use crate::{
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
     chains::btc::utxo_manager::{
-        utxo_types::BtcUtxoAndValue,
-        utxo_database_utils::{
-            get_utxo_from_db,
-            get_all_utxo_db_keys,
-        },
+        debug_utxo_utils::clear_all_utxos,
+        utxo_utils::get_all_utxos_as_json_string,
+    },
+    debug_database_utils::{
+        get_key_from_db,
+        set_key_in_db_to_value,
     },
     btc_on_eth::{
-        check_enclave_is_initialized::{
-            check_enclave_is_initialized,
-            check_enclave_is_initialized_and_return_eth_state,
-            check_enclave_is_initialized_and_return_btc_state,
+        check_core_is_initialized::{
+            check_core_is_initialized,
+            check_core_is_initialized_and_return_eth_state,
+            check_core_is_initialized_and_return_btc_state,
         },
         btc::{
             btc_state::BtcState,
@@ -83,6 +84,16 @@ use crate::{
     },
 };
 
+pub fn debug_clear_all_utxos<D>(
+    db: &D,
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    info!("✔ Debug clearing all UTXOs...");
+    check_core_is_initialized(db)
+        .and_then(|_| clear_all_utxos(db))
+}
+
 pub fn debug_reprocess_btc_block<D>(
     db: D,
     btc_block_json: String,
@@ -93,7 +104,7 @@ pub fn debug_reprocess_btc_block<D>(
         btc_block_json,
         BtcState::init(db),
     )
-        .and_then(check_enclave_is_initialized_and_return_btc_state)
+        .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)
@@ -150,7 +161,7 @@ pub fn debug_reprocess_eth_block<D>(
         eth_block_json,
         EthState::init(db),
     )
-        .and_then(check_enclave_is_initialized_and_return_eth_state)
+        .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction)
         .and_then(validate_block_in_state)
         .and_then(filter_irrelevant_receipts_from_state)
@@ -192,11 +203,8 @@ pub fn debug_set_key_in_db_to_value<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    info!("✔ Setting key: {} in DB to value: {}", key, value);
-    check_debug_mode()
-        .and_then(|_| check_enclave_is_initialized(&db))
-        .and_then(|_| db.put(hex::decode(key)?, hex::decode(value)?, None))
-        .map(|_| "{putting_value_in_database_suceeded:true}".to_string())
+    check_core_is_initialized(&db)
+        .and_then(|_| set_key_in_db_to_value(db, key, value))
 }
 
 pub fn debug_get_key_from_db<D>(
@@ -205,23 +213,15 @@ pub fn debug_get_key_from_db<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    info!("✔ Maybe getting key: {} from DB...", key);
     let key_bytes = hex::decode(&key)?;
-    check_debug_mode()
-        .and_then(|_| check_enclave_is_initialized(&db))
-        .and_then(|_|
-            match key_bytes == ETH_KEY || key_bytes == BTC_KEY {
-                false => db.get(hex::decode(key.clone())?, None),
-                true => db.get(hex::decode(key.clone())?, Some(255)),
+    check_core_is_initialized(&db)
+        .and_then(|_| {
+            if key_bytes == ETH_KEY || key_bytes == BTC_KEY {
+                get_key_from_db(db, key, Some(255))
+            } else {
+                get_key_from_db(db, key, None)
             }
-        )
-        .map(|value|
-            format!(
-                "{{key:{},value:{}}}",
-                key,
-                hex::encode(value),
-            )
-        )
+        })
 }
 
 pub fn debug_get_all_utxos<D>(
@@ -229,37 +229,7 @@ pub fn debug_get_all_utxos<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    #[derive(Serialize, Deserialize)]
-    struct UtxoDetails {
-        pub db_key: String,
-        pub db_value: String,
-        pub utxo_and_value: BtcUtxoAndValue,
-    }
     check_debug_mode()
-        .and_then(|_| check_enclave_is_initialized(&db))
-        .and_then(|_|
-            Ok(
-                serde_json::to_string(
-                    &get_all_utxo_db_keys(&db)
-                        .iter()
-                        .map(|db_key| {
-                            Ok(
-                                UtxoDetails {
-                                    db_key:
-                                        hex::encode(db_key.to_vec()),
-                                    utxo_and_value:
-                                        get_utxo_from_db(&db, &db_key.to_vec())?,
-                                    db_value:
-                                        hex::encode(
-                                            db.get(db_key.to_vec(), None)?
-                                        ),
-                                }
-                            )
-                        })
-                        .map(|utxo_details: Result<UtxoDetails>| utxo_details)
-                        .flatten()
-                        .collect::<Vec<UtxoDetails>>()
-                )?
-            )
-        )
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| get_all_utxos_as_json_string(db))
 }

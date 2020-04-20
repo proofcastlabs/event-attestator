@@ -2,8 +2,8 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     btc_on_eth::{
-        check_enclave_is_initialized::{
-            check_enclave_is_initialized_and_return_eth_state,
+        check_core_is_initialized::{
+            check_core_is_initialized_and_return_eth_state,
         },
         eth::{
             eth_state::EthState,
@@ -55,7 +55,7 @@ pub fn submit_eth_block_to_enclave<D>(
         block_json_string,
         EthState::init(db),
     )
-        .and_then(check_enclave_is_initialized_and_return_eth_state)
+        .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction)
         .and_then(validate_block_in_state)
         .and_then(check_for_parent_of_block_in_state)

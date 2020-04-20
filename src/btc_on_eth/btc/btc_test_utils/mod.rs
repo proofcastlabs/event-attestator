@@ -26,19 +26,19 @@ use crate::{
     chains::btc::{
         btc_types::DepositAddressInfoJson,
         utxo_manager::utxo_types::BtcUtxoAndValue,
+        btc_utils::{
+            get_p2sh_redeem_script_sig,
+            get_btc_block_in_db_format,
+            create_unsigned_utxo_from_tx,
+            get_pay_to_pub_key_hash_script,
+            create_op_return_btc_utxo_and_value_from_tx_output,
+        },
     },
     btc_on_eth::{
         utils::convert_satoshis_to_ptoken,
         constants::MINIMUM_REQUIRED_SATOSHIS,
         eth::eth_types::EthAddress,
         btc::{
-            btc_utils::{
-                get_p2sh_redeem_script_sig,
-                get_btc_block_in_db_format,
-                create_unsigned_utxo_from_tx,
-                get_pay_to_pub_key_hash_script,
-                create_op_return_btc_utxo_and_value_from_tx_output,
-            },
             btc_crypto::btc_private_key::BtcPrivateKey,
             btc_types::{
                 MintingParams,
@@ -320,7 +320,7 @@ pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
             let nonce = 1337;
             let btc_deposit_address = "2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2"
                 .to_string();
-            let eth_address = "fedfe2616eb3661cb8fed2782f5f0cc91d59dcac"
+            let eth_address = "0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC"
                 .to_string();
             let eth_address_and_nonce_hash =
             "98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e"

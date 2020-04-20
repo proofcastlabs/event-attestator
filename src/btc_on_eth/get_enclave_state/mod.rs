@@ -43,7 +43,7 @@ use crate::{
                 get_btc_canon_to_tip_length_from_db,
             },
         },
-        check_enclave_is_initialized::check_enclave_is_initialized,
+        check_core_is_initialized::check_core_is_initialized,
     },
 };
 
@@ -92,7 +92,7 @@ pub fn get_enclave_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Getting enclave state...");
-    check_enclave_is_initialized(&db)
+    check_core_is_initialized(&db)
         .and_then(|_| {
             let eth_tail_block = get_eth_tail_block_from_db(&db)?;
             let btc_tail_block = get_btc_tail_block_from_db(&db)?;

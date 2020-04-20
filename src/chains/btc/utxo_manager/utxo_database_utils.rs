@@ -103,7 +103,6 @@ pub fn get_utxo_and_value<D>(db: &D) -> Result<BtcUtxoAndValue>
                         .and_then(|_| delete_first_utxo(db))
                         .and_then(|_| delete_last_utxo_key(db))
                         .and_then(|_| delete_first_utxo_key(db))
-                        .and_then(|_| decrement_total_number_of_utxos_in_db(db))
                         .and_then(|_| Ok(utxo))
                 }
                 Some(pointer) => {
@@ -111,7 +110,6 @@ pub fn get_utxo_and_value<D>(db: &D) -> Result<BtcUtxoAndValue>
                     decrement_total_utxo_balance_in_db(db, utxo.value)
                         .and_then(|_| delete_first_utxo(db))
                         .and_then(|_| set_first_utxo_pointer(db, &pointer))
-                        .and_then(|_| decrement_total_number_of_utxos_in_db(db))
                         .and_then(|_| Ok(utxo))
                 }
             }
@@ -133,7 +131,6 @@ pub fn save_new_utxo_and_value<D>(
             trace!("✔ No UTXO balance ∴ setting `UTXO_FIRST` & `UTXO_LAST`...");
             set_first_utxo_pointer(db, &hash)
                 .and_then(|_| increment_utxo_nonce_in_db(db))
-                .and_then(|_| increment_total_number_of_utxos_in_db(db))
                 .and_then(|_| set_last_utxo_pointer(db, &hash))
                 .and_then(|_| put_total_utxo_balance_in_db(db, value))
                 .and_then(|_| put_utxo_in_db(db, &hash_vec, utxo_and_value))
@@ -142,7 +139,6 @@ pub fn save_new_utxo_and_value<D>(
             trace!("✔ > 0 UTXO balance ∴ setting only `UTXO_LAST`...");
             update_pointer_in_last_utxo_in_db(db, hash)
                 .and_then(|_| increment_utxo_nonce_in_db(db))
-                .and_then(|_| increment_total_number_of_utxos_in_db(db))
                 .and_then(|_| set_last_utxo_pointer(db, &hash))
                 .and_then(|_| put_utxo_in_db(db, &hash_vec, utxo_and_value))
                 .and_then(|_| increment_total_utxo_balance_in_db(db, value))
@@ -383,16 +379,7 @@ pub fn get_total_number_of_utxos_from_db<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
     trace!("✔ Getting total number of UTXOs from db...");
-    match db.get(TOTAL_NUM_UTXOS.to_vec(), None) {
-        Err(_) => {
-            trace!("✘ Error getting total number of UTXOs!");
-            Ok(0)
-        }
-        Ok(bytes) => {
-            trace!("✔ Converting bytes to usize for total number of UTXOs...");
-            convert_bytes_to_u64(&bytes)
-        }
-    }
+    Ok(get_all_utxo_db_keys(db).len() as u64)
 }
 
 pub fn put_total_number_of_utxos_in_db<D>(
@@ -407,26 +394,6 @@ pub fn put_total_number_of_utxos_in_db<D>(
         convert_u64_to_bytes(total_num_utxos),
         None,
     )
-}
-
-pub fn increment_total_number_of_utxos_in_db<D>(
-    db: &D
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    trace!("✔ Incrementing total number of UTXOs in db by 1...");
-    get_total_number_of_utxos_from_db(db)
-        .and_then(|num| put_total_number_of_utxos_in_db(db, num + 1))
-}
-
-pub fn decrement_total_number_of_utxos_in_db<D>(
-    db: &D,
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    trace!("✔ Decrementing total number of UTXOs in db by 1...");
-    get_total_number_of_utxos_from_db(db)
-        .and_then(|num| put_total_number_of_utxos_in_db(db, num - 1))
 }
 
 pub fn put_utxo_nonce_in_db<D>(
@@ -451,10 +418,10 @@ pub fn increment_utxo_nonce_in_db<D>(db: &D) -> Result<()>
         .and_then(|num| put_utxo_nonce_in_db(db, num + 1))
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
+    // FIXME Use generic versions of these, not the BTC ones!
     use crate::btc_on_eth::{
         test_utils::get_test_database,
         btc::{
@@ -941,4 +908,3 @@ mod tests {
         );
     }
 }
-*/

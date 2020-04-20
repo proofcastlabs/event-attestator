@@ -11,6 +11,14 @@ use crate::{
         Result,
         DataSensitivity,
     },
+    chains::btc::btc_utils::{
+        convert_btc_network_to_bytes,
+        convert_bytes_to_btc_network,
+        convert_bytes_to_btc_address,
+        convert_btc_address_to_bytes,
+        serialize_btc_block_in_db_format,
+        deserialize_btc_block_in_db_format,
+    },
     btc_on_eth::{
         database_utils::{
             put_u64_in_db,
@@ -37,14 +45,6 @@ use crate::{
                 BTC_ANCHOR_BLOCK_HASH_KEY,
                 BTC_LATEST_BLOCK_HASH_KEY,
                 BTC_CANON_TO_TIP_LENGTH_KEY,
-            },
-            btc_utils::{
-                convert_btc_network_to_bytes,
-                convert_bytes_to_btc_network,
-                convert_bytes_to_btc_address,
-                convert_btc_address_to_bytes,
-                serialize_btc_block_in_db_format,
-                deserialize_btc_block_in_db_format,
             },
         },
     },

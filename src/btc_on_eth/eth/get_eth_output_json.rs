@@ -6,9 +6,9 @@ use std::time::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::btc::btc_utils::get_hex_tx_from_signed_btc_tx,
     btc_on_eth::{
         btc::{
-            btc_utils::get_hex_tx_from_signed_btc_tx,
             btc_database_utils::get_btc_account_nonce_from_db,
         },
         eth::{

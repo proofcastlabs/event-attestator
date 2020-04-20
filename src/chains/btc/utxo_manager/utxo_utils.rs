@@ -7,7 +7,14 @@ use crate::{
         Bytes,
         Result,
     },
-    chains::btc::utxo_manager::utxo_types::BtcUtxoAndValue,
+    traits::DatabaseInterface,
+    chains::btc::utxo_manager::{
+        utxo_types::BtcUtxoAndValue,
+        utxo_database_utils::{
+            get_utxo_from_db,
+            get_all_utxo_db_keys,
+        },
+    },
 };
 
 pub fn get_utxo_and_value_db_key(
@@ -30,8 +37,43 @@ pub fn deserialize_utxo_and_value(
     Ok(serde_json::from_slice(bytes)?)
 }
 
-/*
-// FIXME: Reinstate once we've moved these to utxo_test_utils!
+pub fn get_all_utxos_as_json_string<D>(
+    db: D
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    #[derive(Serialize, Deserialize)]
+    struct UtxoDetails {
+        pub db_key: String,
+        pub db_value: String,
+        pub utxo_and_value: BtcUtxoAndValue,
+    }
+
+    Ok(
+        serde_json::to_string(
+            &get_all_utxo_db_keys(&db)
+                .iter()
+                .map(|db_key| {
+                    Ok(
+                        UtxoDetails {
+                            db_key:
+                                hex::encode(db_key.to_vec()),
+                            utxo_and_value:
+                                get_utxo_from_db(&db, &db_key.to_vec())?,
+                            db_value:
+                                hex::encode(
+                                    db.get(db_key.to_vec(), None)?
+                                ),
+                        }
+                    )
+                })
+                .map(|utxo_details: Result<UtxoDetails>| utxo_details)
+                .flatten()
+                .collect::<Vec<UtxoDetails>>()
+        )?
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -82,4 +124,3 @@ mod tests {
         assert!(result == utxo);
     }
 }
-*/
