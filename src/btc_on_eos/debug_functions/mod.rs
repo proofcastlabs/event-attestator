@@ -11,12 +11,13 @@ use crate::{
         utxo_utils::get_all_utxos_as_json_string,
     },
     btc_on_eos::{
+
         check_core_is_initialized::check_core_is_initialized,
         btc::btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
         eos::{
             eos_database_utils::put_eos_schedule_in_db,
             eos_constants::EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
-            parse_submission_material::parse_producer_schedule_from_json_string,
+            parse_eos_schedule::parse_schedule_string_to_schedule,
         },
     },
 };
@@ -41,7 +42,7 @@ pub fn debug_add_new_eos_schedule<D>(
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| db.start_transaction())
-        .and_then(|_| parse_producer_schedule_from_json_string(&schedule_json))
+        .and_then(|_| parse_schedule_string_to_schedule(&schedule_json))
         .and_then(|schedule| put_eos_schedule_in_db(&db, &schedule))
         .and_then(|_| db.end_transaction())
         .map(|_| "{debug_adding_eos_schedule_succeeded:true}".to_string())
