@@ -19,11 +19,16 @@ use crate::{
             eos_utils::get_eos_schedule_db_key,
             eos_crypto::eos_private_key::EosPrivateKey,
             parse_eos_schedule::parse_schedule_string_to_schedule,
+            eos_merkle_utils::{
+                IncreMerkle,
+                IncreMerkleJson,
+            },
             eos_types::{
                 ProcessedTxIds,
                 EosKnownSchedules,
             },
             eos_constants::{
+                EOS_INCREMERKLE,
                 EOS_SCHEDULE_LIST,
                 EOS_ACCOUNT_NONCE,
                 EOS_CHAIN_ID_DB_KEY,
@@ -35,6 +40,35 @@ use crate::{
         },
     },
 };
+
+pub fn put_incremerkle_in_db<D>(
+    db: &D,
+    incremerkle: &IncreMerkle,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    let data_sensitivity = None;
+    info!("✔ Putting EOS incremerkle in db...");
+    db
+        .put(
+            EOS_INCREMERKLE.to_vec(),
+            serde_json::to_vec(&incremerkle.to_json())?,
+            data_sensitivity,
+        )
+}
+
+pub fn get_incremerkle_from_db<D>(
+    db: &D,
+) -> Result<IncreMerkle>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting EOS incremerkle from db...");
+    let data_sensitivity = None;
+    db
+        .get(EOS_INCREMERKLE.to_vec(), data_sensitivity)
+        .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
+        .and_then(|json: IncreMerkleJson| json.to_incremerkle())
+}
 
 pub fn get_eos_known_schedules_from_db<D>(
     db: &D,
