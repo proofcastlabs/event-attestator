@@ -178,6 +178,9 @@ pub struct IncreMerkle {
 
 // NOTE: Ibid
 impl IncreMerkle {
+    pub fn default() -> Self {
+        IncreMerkle { node_count: 0, active_nodes: vec![] }
+    }
 
     fn make_canonical_left(val: &Checksum256) -> Checksum256 {
         let mut canonical_l: Checksum256 = *val;
