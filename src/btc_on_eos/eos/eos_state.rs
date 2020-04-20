@@ -1,6 +1,6 @@
 use eos_primitives::{
     BlockHeader as EosBlockHeader,
-    ProducerSchedule as EosProducerSchedule,
+    ProducerScheduleV2 as EosProducerScheduleV2,
 };
 use crate::{
     types::Result,
@@ -35,7 +35,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub redeem_params: Vec<RedeemParams>,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
-    pub active_schedule: Option<EosProducerSchedule>,
+    pub active_schedule: Option<EosProducerScheduleV2>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
 }
 
@@ -72,7 +72,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
 
     pub fn add_active_schedule(
         mut self,
-        active_schedule: EosProducerSchedule,
+        active_schedule: EosProducerScheduleV2,
     ) -> Result<EosState<D>> {
         match self.active_schedule {
             Some(_) => Err(AppError::Custom(
@@ -131,7 +131,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn get_active_schedule(&self) -> Result<&EosProducerSchedule> {
+    pub fn get_active_schedule(&self) -> Result<&EosProducerScheduleV2> {
         match &self.active_schedule{
             Some(active_schedule) => Ok(&active_schedule),
             None => Err(AppError::Custom(

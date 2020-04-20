@@ -4,12 +4,8 @@ use eos_primitives::{
     Extension,
     TimePoint,
     AccountName,
-    ProducerKey,
     BlockTimestamp,
-    ProducerSchedule,
-    PublicKey as EosPublicKey,
     BlockHeader as EosBlockHeader,
-    ProducerSchedule as EosProducerSchedule,
 };
 use crate::{
     types::Result,
@@ -19,14 +15,13 @@ use crate::{
         utils::convert_hex_to_checksum256,
         eos::{
             eos_state::EosState,
+            parse_eos_schedule::convert_schedule_json_to_schedule_v2,
             eos_types::{
                 ActionProof,
                 ActionProofs,
                 Checksum256s,
-                ProducerKeyJson,
                 ActionProofJsons,
                 EosBlockHeaderJson,
-                ProducerScheduleJson,
                 EosSubmissionMaterial,
                 EosSubmissionMaterialJson,
             },
@@ -80,57 +75,6 @@ fn convert_hex_strings_to_extensions(
         .collect::<Result<Vec<Extension>>>()
 }
 
-
-pub fn parse_producer_schedule_from_json(
-    producer_schedule_json: &ProducerScheduleJson,
-) -> Result<ProducerSchedule> {
-    Ok(
-        ProducerSchedule {
-            version: producer_schedule_json.version,
-            producers: convert_producer_key_jsons_to_producer_keys(
-                &producer_schedule_json.producers
-            )?,
-        }
-    )
-}
-
-pub fn parse_producer_schedule_from_json_string(
-    json_string: &String,
-) ->Result<EosProducerSchedule> {
-    match serde_json::from_str(json_string) {
-        Ok(json) => parse_producer_schedule_from_json(&json),
-        Err(_) => Err(AppError::Custom(
-            format!("✘ Error parsing EOS schedule to json!")
-        ))
-    }
-}
-
-fn convert_producer_key_json_to_producer_key(
-    producer_key_json: &ProducerKeyJson
-) -> Result<ProducerKey> {
-    Ok(
-        ProducerKey {
-            producer_name: AccountName::from_str(
-                &producer_key_json.producer_name
-            )?,
-            block_signing_key: EosPublicKey::from_str(
-                &producer_key_json.block_signing_key
-            )?
-        }
-    )
-}
-
-fn convert_producer_key_jsons_to_producer_keys(
-    producer_key_jsons: &Vec<ProducerKeyJson>
-) -> Result<Vec<ProducerKey>> {
-    producer_key_jsons
-        .iter()
-        .map(|producer_key_json|
-             convert_producer_key_json_to_producer_key(&producer_key_json)
-         )
-        .collect::<Result<Vec<ProducerKey>>>()
-}
-
 pub fn parse_eos_block_header_from_json(
     eos_block_header_json: &EosBlockHeaderJson
 ) -> Result<EosBlockHeader> {
@@ -157,7 +101,7 @@ pub fn parse_eos_block_header_from_json(
                 None => None,
                 Some(producer_schedule_json) =>
                     Some(
-                        parse_producer_schedule_from_json(
+                        convert_schedule_json_to_schedule_v2(
                             &producer_schedule_json
                         )?
                     )

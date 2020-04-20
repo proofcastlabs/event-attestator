@@ -18,20 +18,26 @@ use crate::{
             get_active_schedule::get_active_schedule_from_db_and_add_to_state,
             filter_duplicate_proofs::maybe_filter_duplicate_proofs_from_state,
             add_tx_ids_to_processed_list::maybe_add_tx_ids_to_processed_tx_ids,
-            parse_submission_material::parse_submission_material_and_add_to_state,
-            filter_irrelevant_proofs::maybe_filter_out_irrelevant_proofs_from_state,
-            extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
+            parse_submission_material::{
+                parse_submission_material_and_add_to_state,
+            },
+            extract_utxos_from_btc_txs::{
+                maybe_extract_btc_utxo_from_btc_tx_in_state,
+            },
+            filter_irrelevant_proofs::{
+                maybe_filter_out_irrelevant_proofs_from_state,
+            },
             filter_proofs_with_wrong_action_mroot::{
                 maybe_filter_out_proofs_with_wrong_action_mroot,
             },
             filter_invalid_action_digests::{
                 maybe_filter_out_invalid_action_receipt_digests,
             },
-            filter_redeem_params::{
-                maybe_filter_value_too_low_redeem_params_in_state,
-            },
             filter_action_and_receipt_mismatches::{
                 maybe_filter_out_action_proof_receipt_mismatches,
+            },
+            filter_redeem_params::{
+                maybe_filter_value_too_low_redeem_params_in_state,
             },
             filter_invalid_merkle_proofs::{
                 maybe_filter_out_proofs_with_invalid_merkle_proofs,

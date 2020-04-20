@@ -14,7 +14,6 @@ use eos_primitives::{
     PermissionLevel,
     Action as EosAction,
     ActionReceipt as EosActionReceipt,
-    ProducerSchedule as EosProducerSchedule,
     ProducerScheduleV2 as EosProducerScheduleV2,
 };
 use crate::{
@@ -31,10 +30,10 @@ use crate::{
             parse_eos_schedule::{
                 EosProducerScheduleJson,
                 parse_schedule_string_to_json,
+                parse_schedule_string_to_schedule,
                 convert_schedule_json_to_schedule_v2,
             },
             parse_submission_material::{
-                parse_producer_schedule_from_json_string,
                 parse_eos_submission_material_string_to_json,
                 parse_eos_submission_material_string_to_struct,
             },
@@ -109,16 +108,14 @@ pub fn get_sample_v2_schedule() -> Result<EosProducerScheduleV2> {
 
 pub fn get_sample_active_schedule(
     version: u32,
-) -> Result<EosProducerSchedule> {
+) -> Result<EosProducerScheduleV2> {
     let path = format!(
         "{}{}.json",
         SAMPLE_EOS_ACTIVE_SCHEDULE_PATH_PREFIX,
         version
     );
     match Path::new(&path).exists() {
-        true => parse_producer_schedule_from_json_string(
-            &read_to_string(path)?
-        ),
+        true => parse_schedule_string_to_schedule(&read_to_string(path)?),
         false => Err(AppError::Custom(
             format!("✘ Cannot find sample active schedule json!")
         ))

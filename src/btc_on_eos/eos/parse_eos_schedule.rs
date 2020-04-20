@@ -1,18 +1,12 @@
+use std::str::FromStr;
 use crate::{
     types::Result,
     errors::AppError,
 };
-use std::{
-    str::FromStr,
-    fs::read_to_string,
-};
 use eos_primitives::{
-    PublicKey,
     Key as EosKey,
-    Authority as EosAuthority,
     PublicKey as EosPublicKey,
     AccountName as EosAccountName,
-    ProducerKey as EosProducerKey,
     ProducerKeyV2 as EosProducerKeyV2,
     KeysAndThreshold as EosKeysAndThreshold,
     ProducerScheduleV2 as EosProducerScheduleV2,
@@ -40,19 +34,6 @@ pub struct AuthorityJson {
 pub struct ProducerKeyJson {
     weight: u16,
     key: String,
-}
-
-pub fn convert_schedule_json_to_schedule_v2(
-    json: &EosProducerScheduleJson,
-) -> Result<EosProducerScheduleV2> {
-    Ok(
-        EosProducerScheduleV2 {
-            version: json.version,
-            producers: convert_full_producer_key_jsons_to_producer_keys_v2(
-                &json.producers
-            )?,
-        }
-    )
 }
 
 fn convert_full_producer_key_jsons_to_producer_keys_v2(
@@ -120,6 +101,25 @@ pub fn parse_schedule_string_to_json(
     }
 }
 
+pub fn convert_schedule_json_to_schedule_v2(
+    json: &EosProducerScheduleJson,
+) -> Result<EosProducerScheduleV2> {
+    Ok(
+        EosProducerScheduleV2 {
+            version: json.version,
+            producers: convert_full_producer_key_jsons_to_producer_keys_v2(
+                &json.producers
+            )?,
+        }
+    )
+}
+
+pub fn parse_schedule_string_to_schedule(
+    schedule_string: &String
+) -> Result<EosProducerScheduleV2> {
+    parse_schedule_string_to_json(schedule_string)
+        .and_then(|json| convert_schedule_json_to_schedule_v2(&json))
+}
 
 #[cfg(test)]
 mod tests {
@@ -157,6 +157,15 @@ mod tests {
             .unwrap();
         if let Err(e) = convert_schedule_json_to_schedule_v2(&schedule_json) {
             panic!("Error converting producer key json: {}", e);
+        }
+    }
+
+    #[test]
+    fn should_parse_schedule_string_to_schedule() {
+        let schedule_string = get_sample_v2_schedule_json_string()
+            .unwrap();
+        if let Err(e) = parse_schedule_string_to_schedule(&schedule_string) {
+            panic!("Error parseing schedule: {}", e);
         }
     }
 }

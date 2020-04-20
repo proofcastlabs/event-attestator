@@ -4,7 +4,7 @@ use crate::{
     btc_on_eos::eos::{
         eos_state::EosState,
         eos_crypto::eos_private_key::EosPrivateKey,
-        parse_submission_material::parse_producer_schedule_from_json_string,
+        parse_eos_schedule::parse_schedule_string_to_schedule,
         eos_types::{
             ProcessedTxIds,
             EosKnownSchedules,
@@ -28,7 +28,7 @@ pub fn put_eos_known_schedule_in_db_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    parse_producer_schedule_from_json_string(schedule_json)
+    parse_schedule_string_to_schedule(schedule_json)
         .map(|sched| EosKnownSchedules::new(sched.version))
         .and_then(|sched| put_eos_known_schedules_in_db(&state.db, &sched))
         .and(Ok(state))
@@ -40,7 +40,7 @@ pub fn put_eos_schedule_in_db_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    parse_producer_schedule_from_json_string(schedule_json)
+    parse_schedule_string_to_schedule(schedule_json)
         .and_then(|schedule| put_eos_schedule_in_db(&state.db, &schedule))
         .and(Ok(state))
 }

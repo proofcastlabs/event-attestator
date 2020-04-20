@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use eos_primitives::{
     AccountName as EosAccountName,
-    ProducerSchedule as EosProducerSchedule,
+    ProducerScheduleV2 as EosProducerScheduleV2,
 };
 use crate::{
     types::Result,
@@ -18,7 +18,7 @@ use crate::{
             eos_state::EosState,
             eos_utils::get_eos_schedule_db_key,
             eos_crypto::eos_private_key::EosPrivateKey,
-            parse_submission_material::parse_producer_schedule_from_json_string,
+            parse_eos_schedule::parse_schedule_string_to_schedule,
             eos_types::{
                 ProcessedTxIds,
                 EosKnownSchedules,
@@ -65,7 +65,7 @@ pub fn put_eos_known_schedules_in_db<D>(
 
 pub fn put_eos_schedule_in_db<D>(
     db: &D,
-    schedule: &EosProducerSchedule,
+    schedule: &EosProducerScheduleV2,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -89,12 +89,12 @@ pub fn put_eos_schedule_in_db<D>(
 pub fn get_eos_schedule_from_db<D>(
     db: &D,
     version: u32,
-) -> Result<EosProducerSchedule>
+) -> Result<EosProducerScheduleV2>
     where D: DatabaseInterface
 {
     trace!("✔ Getting EOS schedule from db...");
     match get_string_from_db(db, &get_eos_schedule_db_key(version)) {
-        Ok(json) => parse_producer_schedule_from_json_string(&json),
+        Ok(json) => parse_schedule_string_to_schedule(&json),
         Err(_) => Err(AppError::Custom(
             format!("✘ Core does not have EOS schedule version: {}", version)
         ))
