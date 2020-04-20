@@ -8,7 +8,6 @@ use crate::{
         eos::{
             eos_state::EosState,
             get_eos_output::get_eos_output,
-            add_new_schedule::maybe_add_new_schedule_to_db,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
             sign_transactions::maybe_sign_txs_and_add_to_state,
             validate_signature::validate_block_header_signature,
@@ -64,7 +63,6 @@ pub fn submit_eos_block_to_core<D>(
         .and_then(get_active_schedule_from_db_and_add_to_state)
         .and_then(validate_block_header_signature)
         .and_then(start_eos_db_transaction)
-        .and_then(maybe_add_new_schedule_to_db)
         .and_then(get_processed_tx_ids_and_add_to_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)
         .and_then(maybe_filter_out_irrelevant_proofs_from_state)
