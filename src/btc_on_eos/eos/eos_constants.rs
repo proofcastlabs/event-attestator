@@ -101,3 +101,13 @@ pub static EOS_SCHEDULE_LIST: [u8; 32] = [
   85, 228, 137, 162, 232, 38, 156, 74,
   232, 162, 250, 50, 161, 172, 80, 149
 ];
+// NOTE (javascript): new Uint8Array(
+//   Buffer.from(web3.utils.keccak256('eos-incremerkle').slice(2), 'hex')
+// )
+// 9a46679091d5f3b5f56e200451de1650c1bfbd3358c23293e1decfb5ab0d0fb1
+pub static EOS_INCREMERKLE: [u8; 32] = [
+  154, 70, 103, 144, 145, 213, 243, 181,
+  245, 110, 32, 4, 81, 222, 22, 80,
+  193, 191, 189, 51, 88, 194, 50, 147,
+  225, 222, 207, 181, 171, 13, 15, 177
+];
