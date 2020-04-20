@@ -7,6 +7,7 @@ use crate::{
         },
         eos::{
             eos_state::EosState,
+            get_eos_incremerkle::get_incremerkle_and_add_to_state,
             get_eos_output::get_eos_output,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
             sign_transactions::maybe_sign_txs_and_add_to_state,
@@ -60,6 +61,7 @@ pub fn submit_eos_block_to_core<D>(
 {
     parse_submission_material_and_add_to_state(block_json, EosState::init(db))
         .and_then(check_core_is_initialized_and_return_eos_state)
+        .and_then(get_incremerkle_and_add_to_state)
         .and_then(get_active_schedule_from_db_and_add_to_state)
         .and_then(validate_block_header_signature)
         .and_then(start_eos_db_transaction)

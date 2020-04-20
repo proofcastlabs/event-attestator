@@ -98,6 +98,16 @@ impl<D> EosState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
+    pub fn add_incremerkle(
+        mut self,
+        incremerkle: IncreMerkle,
+    ) -> EosState<D>
+        where D: DatabaseInterface
+    {
+        self.incremerkle = incremerkle;
+        self
+    }
+
     pub fn add_submission_material(
         mut self,
         submission_material: EosSubmissionMaterial,

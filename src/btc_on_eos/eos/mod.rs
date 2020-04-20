@@ -16,6 +16,7 @@ pub mod validate_signature;
 pub mod eos_database_utils;
 pub mod parse_eos_schedule;
 pub mod parse_redeem_params;
+pub mod get_eos_incremerkle;
 pub mod get_active_schedule;
 pub mod filter_redeem_params;
 pub mod get_processed_tx_ids;
