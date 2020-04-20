@@ -10,6 +10,7 @@ use crate::{
     btc_on_eos::{
         btc::btc_types::BtcTransactions,
         eos::{
+            eos_merkle_utils::IncreMerkle,
             eos_types::{
                 ActionProofs,
                 Checksum256s,
@@ -28,6 +29,7 @@ use crate::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EosState<D: DatabaseInterface> {
     pub db: D,
+    pub incremerkle: IncreMerkle,
     pub producer_signature: String,
     pub action_proofs: ActionProofs,
     pub signed_txs: BtcTransactions,
@@ -51,6 +53,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
             blockroot_merkle: vec![],
             btc_utxos_and_values: None,
             producer_signature: String::new(),
+            incremerkle: IncreMerkle::default(),
             processed_tx_ids: ProcessedTxIds::init(),
         }
     }
