@@ -138,14 +138,14 @@ pub fn get_merkle_root_from_merkle_path(
 
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct IncremerkleJson {
+pub struct IncreMerkleJson {
     node_count: u64,
     active_nodes: Vec<String>,
 }
 
-impl IncremerkleJson {
+impl IncreMerkleJson {
     pub fn from_incremerkle(incremerkle: &IncreMerkle) -> Self {
-        IncremerkleJson {
+        IncreMerkleJson {
             node_count: incremerkle.node_count,
             active_nodes: incremerkle
                 .active_nodes
@@ -178,6 +178,10 @@ pub struct IncreMerkle {
 
 // NOTE: Ibid
 impl IncreMerkle {
+    pub fn to_json(&self) -> IncreMerkleJson {
+        IncreMerkleJson::from_incremerkle(self)
+    }
+
     pub fn default() -> Self {
         IncreMerkle { node_count: 0, active_nodes: vec![] }
     }
@@ -723,7 +727,7 @@ mod tests {
             .block_num()
             .into();
         let incremerkle = IncreMerkle::new(node_count, active_nodes);
-        let json = IncremerkleJson::from_incremerkle(&incremerkle);
+        let json = IncreMerkleJson::from_incremerkle(&incremerkle);
         assert_eq!(json.node_count, incremerkle.node_count);
         assert_eq!(json.active_nodes.len(), incremerkle.active_nodes.len());
         let result = json
