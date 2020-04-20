@@ -170,7 +170,7 @@ impl IncremerkleJson {
 }
 
 // NOTE: Courtesy of: https://github.com/bifrost-codes/rust-eos/
-#[derive(Clone, Default, Debug, PartialEq)]
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct IncreMerkle {
     node_count: u64,
     active_nodes: Vec<Checksum256>,
