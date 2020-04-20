@@ -1,5 +1,6 @@
 use std::str::FromStr;
 use eos_primitives::{
+    Checksum256,
     AccountName as EosAccountName,
     ProducerScheduleV2 as EosProducerScheduleV2,
 };
@@ -8,6 +9,7 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     btc_on_eos::{
+        utils::convert_hex_to_checksum256,
         database_utils::{
             put_u64_in_db,
             get_u64_from_db,
@@ -16,9 +18,9 @@ use crate::{
         },
         eos::{
             eos_state::EosState,
-            eos_utils::get_eos_schedule_db_key,
             eos_crypto::eos_private_key::EosPrivateKey,
             parse_eos_schedule::parse_schedule_string_to_schedule,
+            eos_utils::get_eos_schedule_db_key,
             eos_merkle_utils::{
                 IncreMerkle,
                 IncreMerkleJson,
@@ -35,11 +37,33 @@ use crate::{
                 EOS_TOKEN_SYMBOL_KEY,
                 PROCESSED_TX_IDS_KEY,
                 EOS_ACCOUNT_NAME_KEY,
+                EOS_LAST_SEEN_BLOCK_ID,
                 EOS_PRIVATE_KEY_DB_KEY,
             },
         },
     },
 };
+
+pub fn put_eos_last_seen_block_id_in_db<D>(
+    db: &D,
+    latest_block_id: &Checksum256
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    let block_id_string = latest_block_id.to_string();
+    info!("✔ Putting EOS latest block ID {} in db...", block_id_string);
+    put_string_in_db(db, &EOS_LAST_SEEN_BLOCK_ID.to_vec(), &block_id_string)
+}
+
+pub fn get_last_seen_block_id_from_db<D>(
+    db: &D,
+) -> Result<Checksum256>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting EOS last seen block ID from db...");
+    get_string_from_db(db, &EOS_LAST_SEEN_BLOCK_ID.to_vec())
+        .and_then(convert_hex_to_checksum256)
+}
 
 pub fn put_incremerkle_in_db<D>(
     db: &D,

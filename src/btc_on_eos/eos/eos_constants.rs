@@ -111,3 +111,13 @@ pub static EOS_INCREMERKLE: [u8; 32] = [
   193, 191, 189, 51, 88, 194, 50, 147,
   225, 222, 207, 181, 171, 13, 15, 177
 ];
+// NOTE (javascript): new Uint8Array(
+//   Buffer.from(web3.utils.keccak256('eos-last-seen-block-id').slice(2), 'hex')
+// )
+// 5f38e7e4da08610c7d63bd371b28581a22f90ec9564079c4e2ce4322a0b4c8c3
+pub static EOS_LAST_SEEN_BLOCK_ID: [u8; 32] = [
+  95, 56, 231, 228, 218, 8, 97, 12,
+  125, 99, 189, 55, 27, 40, 88, 26,
+  34, 249, 14, 201, 86, 64, 121, 196,
+  226, 206, 67, 34, 160, 180, 200, 195
+];
