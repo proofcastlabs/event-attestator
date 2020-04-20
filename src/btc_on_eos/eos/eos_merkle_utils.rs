@@ -135,12 +135,13 @@ pub fn get_merkle_root_from_merkle_path(
 
 // NOTE: Courtesy of: https://github.com/bifrost-codes/rust-eos/
 #[derive(Clone, Default, Debug, PartialEq)]
-pub struct IncrementalMerkle {
-    _node_count: u64,
-    _active_nodes: Vec<Checksum256>,
+pub struct IncreMerkle {
+    node_count: u64,
+    active_nodes: Vec<Checksum256>,
 }
+
 // NOTE: Ibid
-impl IncrementalMerkle {
+impl IncreMerkle {
 
     fn make_canonical_left(val: &Checksum256) -> Checksum256 {
         let mut canonical_l: Checksum256 = *val;
@@ -199,19 +200,19 @@ impl IncrementalMerkle {
     }
 
     pub fn new(node_count: u64, active_nodes: Vec<Checksum256>) -> Self {
-        IncrementalMerkle {
-            _node_count: node_count,
-            _active_nodes: active_nodes,
+        IncreMerkle {
+            node_count: node_count,
+            active_nodes: active_nodes,
         }
     }
 
     pub fn append(&mut self, digest: Checksum256) -> Result<Checksum256> {
         let mut partial = false;
-        let max_depth = Self::calculate_max_depth(self._node_count + 1);
+        let max_depth = Self::calculate_max_depth(self.node_count + 1);
         let mut current_depth = max_depth - 1;
-        let mut index = self._node_count;
+        let mut index = self.node_count;
         let mut top = digest;
-        let mut active_iter = self._active_nodes.iter();
+        let mut active_iter = self.active_nodes.iter();
         let mut updated_active_nodes: Vec<Checksum256> = Vec::with_capacity(
             max_depth
         );
@@ -246,16 +247,16 @@ impl IncrementalMerkle {
 
         updated_active_nodes.push(top);
 
-        self._active_nodes = updated_active_nodes;
+        self.active_nodes = updated_active_nodes;
 
-        self._node_count += 1;
+        self.node_count += 1;
 
-        Ok(self._active_nodes[self._active_nodes.len() - 1])
+        Ok(self.active_nodes[self.active_nodes.len() - 1])
     }
 
     pub fn get_root(&self) -> Checksum256 {
-        if self._node_count > 0 {
-            self._active_nodes[self._active_nodes.len() - 1]
+        if self.node_count > 0 {
+            self.active_nodes[self.active_nodes.len() - 1]
         } else {
             Default::default()
         }
@@ -661,7 +662,7 @@ mod tests {
             .block_header
             .block_num()
             .into();
-        let incremerkle = IncrementalMerkle::new(node_count, active_nodes);
+        let incremerkle = IncreMerkle::new(node_count, active_nodes);
         let incremerkle_root = hex::encode(
             &incremerkle
                 .get_root()

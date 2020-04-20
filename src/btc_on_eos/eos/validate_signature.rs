@@ -21,7 +21,7 @@ use crate::{
     },
     btc_on_eos::eos::{
         eos_state::EosState,
-        eos_merkle_utils::IncrementalMerkle,
+        eos_merkle_utils::IncreMerkle,
         eos_types::Checksum256s,
         eos_crypto::{
             eos_signature::EosSignature,
@@ -49,7 +49,7 @@ fn get_block_mroot(
     block_header: &EosBlockHeader,
     blockroot_merkle: &Checksum256s,
 ) -> Bytes {
-    IncrementalMerkle::new(
+    IncreMerkle::new(
         block_header.block_num().into(),
         blockroot_merkle.clone(),
     ).get_root().to_bytes().to_vec()
