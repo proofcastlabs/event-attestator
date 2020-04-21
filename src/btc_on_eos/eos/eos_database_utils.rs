@@ -73,7 +73,7 @@ pub fn put_eos_last_seen_block_id_in_db<D>(
     put_string_in_db(db, &EOS_LAST_SEEN_BLOCK_ID.to_vec(), &block_id_string)
 }
 
-pub fn get_last_seen_block_id_from_db<D>(
+pub fn get_eos_last_seen_block_id_from_db<D>(
     db: &D,
 ) -> Result<Checksum256>
     where D: DatabaseInterface

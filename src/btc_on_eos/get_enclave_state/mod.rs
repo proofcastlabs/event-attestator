@@ -17,7 +17,7 @@ use crate::{
                 get_eos_private_key_from_db,
                 get_eos_token_symbol_from_db,
                 get_eos_account_nonce_from_db,
-                get_last_seen_block_id_from_db,
+                get_eos_last_seen_block_id_from_db,
                 get_eos_known_schedules_from_db,
                 get_eos_account_name_string_from_db,
             },
@@ -103,7 +103,7 @@ pub fn get_enclave_state<D>(
                     eos_symbol: get_eos_token_symbol_from_db(&db)?,
                     eos_signature_nonce: get_eos_account_nonce_from_db(&db)?,
                     btc_signature_nonce: get_btc_account_nonce_from_db(&db)?,
-                    eos_last_seen_block_id: get_last_seen_block_id_from_db(&db)?
+                    eos_last_seen_block_id: get_eos_last_seen_block_id_from_db(&db)?
                         .to_string(),
                     eos_known_schedules: EosKnownSchedulesJsons::from_schedules(
                         get_eos_known_schedules_from_db(&db)?
