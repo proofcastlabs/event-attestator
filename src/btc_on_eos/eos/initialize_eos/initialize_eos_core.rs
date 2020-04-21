@@ -18,6 +18,7 @@ use crate::{
                 put_eos_account_nonce_in_db_and_return_state,
                 put_eos_known_schedule_in_db_and_return_state,
                 generated_eos_key_save_in_db_and_return_state,
+                put_eos_latest_block_info_in_db_and_return_state,
                 put_empty_processed_tx_ids_in_db_and_return_state,
             },
         },
@@ -30,6 +31,7 @@ pub fn maybe_initialize_eos_core<D>(
     account_name: String,
     token_symbol: String,
     producer_schedule: String,
+    block_json: String,
 ) -> Result<String>
     where D: DatabaseInterface
 {
@@ -72,6 +74,12 @@ pub fn maybe_initialize_eos_core<D>(
                 .and_then(|state|
                     put_eos_schedule_in_db_and_return_state(
                         &producer_schedule,
+                        state,
+                    )
+                )
+                .and_then(|state|
+                    put_eos_latest_block_info_in_db_and_return_state(
+                        &block_json,
                         state,
                     )
                 )
