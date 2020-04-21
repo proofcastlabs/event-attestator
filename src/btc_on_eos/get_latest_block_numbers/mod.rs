@@ -4,12 +4,14 @@ use crate::{
     btc_on_eos::{
         btc::btc_database_utils::get_btc_latest_block_number,
         check_core_is_initialized::check_btc_core_is_initialized,
+        eos::eos_database_utils::get_eos_last_seen_block_num_from_db,
     },
 };
 
 #[derive(Serialize, Deserialize)]
 pub struct BlockNumbers {
     btc_latest_block_number: u64,
+    eos_latest_block_number: u64,
 }
 
 pub fn get_latest_block_numbers<D>(
@@ -22,7 +24,10 @@ pub fn get_latest_block_numbers<D>(
         .and_then(|_| {
             Ok(serde_json::to_string(
                 &BlockNumbers {
-                    btc_latest_block_number: get_btc_latest_block_number(&db)?,
+                    btc_latest_block_number:
+                        get_btc_latest_block_number(&db)?,
+                    eos_latest_block_number:
+                        get_eos_last_seen_block_num_from_db(&db)?,
                 }
             )?)
         })
