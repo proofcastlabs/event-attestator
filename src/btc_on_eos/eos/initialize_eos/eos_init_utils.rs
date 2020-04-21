@@ -59,6 +59,7 @@ pub fn put_eos_known_schedule_in_db_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
+    info!("✔ Putting EOS known schedule into db...");
     parse_schedule_string_to_schedule(schedule_json)
         .map(|sched| EosKnownSchedules::new(sched.version))
         .and_then(|sched| put_eos_known_schedules_in_db(&state.db, &sched))
@@ -71,6 +72,7 @@ pub fn put_eos_schedule_in_db_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
+    info!("✔ Putting EOS schedule into db...");
     parse_schedule_string_to_schedule(schedule_json)
         .and_then(|schedule| put_eos_schedule_in_db(&state.db, &schedule))
         .and(Ok(state))
@@ -81,6 +83,7 @@ pub fn generated_eos_key_save_in_db_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
+    info!("✔ Generating EOS private key & putting into db...");
     put_eos_private_key_in_db(
         &state.db,
         &EosPrivateKey::generate_random()?,
@@ -102,6 +105,7 @@ pub fn put_eos_account_name_in_db_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
+    info!("✔ Putting EOS account name '{}' into db...", account_name);
     put_eos_account_name_in_db(&state.db, &account_name)
         .and(Ok(state))
 }
@@ -111,6 +115,7 @@ pub fn put_eos_account_nonce_in_db_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
+    info!("✔ Putting EOS account nonce in db...");
     put_eos_account_nonce_in_db(&state.db, 0)
         .and(Ok(state))
 }
@@ -121,6 +126,7 @@ pub fn put_eos_token_symbol_in_db_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
+    info!("✔ Putting EOS token symbol '{}' into db...", token_symbol);
     put_eos_token_symbol_in_db(&state.db, &token_symbol)
         .and(Ok(state))
 }
@@ -130,6 +136,7 @@ pub fn put_empty_processed_tx_ids_in_db_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
+    info!("✔ Initializing EOS processed tx ids & putting into db...");
     put_processed_tx_ids_in_db(
         &state.db,
         &ProcessedTxIds::init()
@@ -143,6 +150,7 @@ pub fn put_eos_chain_id_in_db_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
+    info!("✔ Putting EOS chain ID '{}' into db...", chain_id);
     put_eos_chain_id_in_db(
         &state.db,
         &chain_id,
