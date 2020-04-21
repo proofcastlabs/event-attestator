@@ -11,6 +11,7 @@ use crate::{
             is_eos_core_initialized::is_eos_core_initialized,
             eos_init_utils::{
                 get_eos_init_output,
+                test_block_validation_and_return_state,
                 put_eos_schedule_in_db_and_return_state,
                 put_eos_chain_id_in_db_and_return_state,
                 put_eos_token_symbol_in_db_and_return_state,
@@ -87,6 +88,12 @@ pub fn maybe_initialize_eos_core<D>(
                 )
                 .and_then(|state|
                     generate_and_put_incremerkle_in_db_and_return_state(
+                        &blockroot_merkles_json,
+                        state,
+                    )
+                )
+                .and_then(|state|
+                    test_block_validation_and_return_state(
                         &block_json,
                         state,
                     )

@@ -8,7 +8,9 @@ use crate::{
             eos_state::EosState,
             eos_merkle_utils::IncreMerkle,
             eos_crypto::eos_private_key::EosPrivateKey,
+            validate_signature::check_block_signature_is_valid,
             parse_eos_schedule::parse_schedule_string_to_schedule,
+            parse_submission_material::parse_eos_block_header_from_json,
             eos_types::{
                 Checksum256s,
                 ProcessedTxIds,
@@ -19,6 +21,8 @@ use crate::{
                 put_incremerkle_in_db,
                 put_eos_schedule_in_db,
                 put_eos_chain_id_in_db,
+                get_incremerkle_from_db,
+                get_eos_schedule_from_db,
                 put_eos_private_key_in_db,
                 put_eos_account_name_in_db,
                 put_eos_token_symbol_in_db,
@@ -33,6 +37,30 @@ use crate::{
     },
 };
 
+pub fn test_block_validation_and_return_state<D>(
+    block_json: &String,
+    state: EosState<D>,
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Checking block validation passes...");
+    let header_json: EosBlockHeaderJson = match serde_json::from_str(
+        block_json
+    ) {
+        Ok(result) => Ok(result),
+        Err(e) => Err(AppError::Custom(e.to_string()))
+    }?;
+    check_block_signature_is_valid(
+        &get_incremerkle_from_db(&state.db)?
+            .get_root()
+            .to_bytes()
+            .to_vec(),
+        &header_json.producer_signature,
+        &parse_eos_block_header_from_json(&header_json)?,
+        &get_eos_schedule_from_db(&state.db, header_json.schedule_version)?
+    )
+        .and(Ok(state))
+}
 
 pub fn generate_and_put_incremerkle_in_db_and_return_state<D>(
     blockroot_merkle_json: &String,
@@ -50,7 +78,7 @@ pub fn generate_and_put_incremerkle_in_db_and_return_state<D>(
     info!("✔ Generating and putting incremerkle in db...");
     put_incremerkle_in_db(
         &state.db,
-        &IncreMerkle::new(
+        &IncreMerkle::new( // FIXME Do we need to add block id to this?
             get_eos_last_seen_block_num_from_db(&state.db)?,
             blockroot_merkle
                 .iter()

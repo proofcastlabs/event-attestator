@@ -102,7 +102,7 @@ fn recover_block_signer_public_key(
     )
 }
 
-fn check_block_signature_is_valid(
+pub fn check_block_signature_is_valid(
     block_mroot: &Bytes,
     producer_signature: &String,
     block_header: &EosBlockHeader,
