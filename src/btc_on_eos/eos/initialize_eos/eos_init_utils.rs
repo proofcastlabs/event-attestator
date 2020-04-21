@@ -6,14 +6,17 @@ use crate::{
         utils::convert_hex_to_checksum256,
         eos::{
             eos_state::EosState,
+            eos_merkle_utils::IncreMerkle,
             eos_crypto::eos_private_key::EosPrivateKey,
             parse_eos_schedule::parse_schedule_string_to_schedule,
             eos_types::{
+                Checksum256s,
                 ProcessedTxIds,
                 EosKnownSchedules,
                 EosBlockHeaderJson,
             },
             eos_database_utils::{
+                put_incremerkle_in_db,
                 put_eos_schedule_in_db,
                 put_eos_chain_id_in_db,
                 put_eos_private_key_in_db,
@@ -24,11 +27,39 @@ use crate::{
                 put_eos_known_schedules_in_db,
                 put_eos_last_seen_block_id_in_db,
                 put_eos_last_seen_block_num_in_db,
+                get_eos_last_seen_block_num_from_db,
             },
         },
     },
 };
 
+
+pub fn generate_and_put_incremerkle_in_db_and_return_state<D>(
+    blockroot_merkle_json: &String,
+    state: EosState<D>,
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Parsing blockroot merkle json string...");
+    let blockroot_merkle: Vec<String> = match serde_json::from_str(
+        blockroot_merkle_json
+    ) {
+        Ok(result) => Ok(result),
+        Err(e) => Err(AppError::Custom(e.to_string()))
+    }?;
+    info!("✔ Generating and putting incremerkle in db...");
+    put_incremerkle_in_db(
+        &state.db,
+        &IncreMerkle::new(
+            get_eos_last_seen_block_num_from_db(&state.db)?,
+            blockroot_merkle
+                .iter()
+                .map(convert_hex_to_checksum256)
+                .collect::<Result<Checksum256s>>()?
+        ),
+    )
+        .and(Ok(state))
+}
 
 pub fn put_eos_latest_block_info_in_db_and_return_state<D>(
     block_json: &String,

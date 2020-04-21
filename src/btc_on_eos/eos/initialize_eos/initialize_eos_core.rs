@@ -20,6 +20,7 @@ use crate::{
                 generated_eos_key_save_in_db_and_return_state,
                 put_eos_latest_block_info_in_db_and_return_state,
                 put_empty_processed_tx_ids_in_db_and_return_state,
+                generate_and_put_incremerkle_in_db_and_return_state,
             },
         },
     },
@@ -32,6 +33,7 @@ pub fn maybe_initialize_eos_core<D>(
     token_symbol: String,
     producer_schedule: String,
     block_json: String,
+    blockroot_merkles_json: String,
 ) -> Result<String>
     where D: DatabaseInterface
 {
@@ -79,6 +81,12 @@ pub fn maybe_initialize_eos_core<D>(
                 )
                 .and_then(|state|
                     put_eos_latest_block_info_in_db_and_return_state(
+                        &block_json,
+                        state,
+                    )
+                )
+                .and_then(|state|
+                    generate_and_put_incremerkle_in_db_and_return_state(
                         &block_json,
                         state,
                     )
