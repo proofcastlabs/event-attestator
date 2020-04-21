@@ -25,6 +25,7 @@ pub mod save_latest_block_id;
 pub mod save_latest_block_num;
 pub mod filter_duplicate_proofs;
 pub mod filter_irrelevant_proofs;
+pub mod append_interim_block_ids;
 pub mod parse_submission_material;
 pub mod parse_eos_action_receipts;
 pub mod increment_signature_nonce;
