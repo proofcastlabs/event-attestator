@@ -130,6 +130,10 @@ fn parse_eos_submission_material_json_to_struct(
 ) -> Result<EosSubmissionMaterial> {
     Ok(
         EosSubmissionMaterial {
+            block_num: submission_material_json
+                .block_header
+                .block_num
+                .clone(),
             block_header: parse_eos_block_header_from_json(
                 &submission_material_json.block_header,
             )?,

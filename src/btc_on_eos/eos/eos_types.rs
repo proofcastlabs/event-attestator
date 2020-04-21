@@ -164,6 +164,7 @@ impl EosSignedTransaction {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterial {
+    pub block_num: u64,
     pub producer_signature: String,
     pub action_proofs: ActionProofs,
     pub block_header: EosBlockHeader,
