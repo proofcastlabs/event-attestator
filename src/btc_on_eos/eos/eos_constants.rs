@@ -101,3 +101,33 @@ pub static EOS_SCHEDULE_LIST: [u8; 32] = [
   85, 228, 137, 162, 232, 38, 156, 74,
   232, 162, 250, 50, 161, 172, 80, 149
 ];
+// NOTE (javascript): new Uint8Array(
+//   Buffer.from(web3.utils.keccak256('eos-incremerkle').slice(2), 'hex')
+// )
+// 9a46679091d5f3b5f56e200451de1650c1bfbd3358c23293e1decfb5ab0d0fb1
+pub static EOS_INCREMERKLE: [u8; 32] = [
+  154, 70, 103, 144, 145, 213, 243, 181,
+  245, 110, 32, 4, 81, 222, 22, 80,
+  193, 191, 189, 51, 88, 194, 50, 147,
+  225, 222, 207, 181, 171, 13, 15, 177
+];
+// NOTE (javascript): new Uint8Array(
+//   Buffer.from(web3.utils.keccak256('eos-last-seen-block-id').slice(2), 'hex')
+// )
+// 5f38e7e4da08610c7d63bd371b28581a22f90ec9564079c4e2ce4322a0b4c8c3
+pub static EOS_LAST_SEEN_BLOCK_ID: [u8; 32] = [
+  95, 56, 231, 228, 218, 8, 97, 12,
+  125, 99, 189, 55, 27, 40, 88, 26,
+  34, 249, 14, 201, 86, 64, 121, 196,
+  226, 206, 67, 34, 160, 180, 200, 195
+];
+// NOTE (javascript): new Uint8Array(
+//   Buffer.from(web3.utils.keccak256('eos-last-seen-block-num').slice(2), 'hex')
+// )
+// 1ed3e38d13ec2aecc6ba97ca94ba1336a6cafeb105a8b45265dada291f05f369
+pub static EOS_LAST_SEEN_BLOCK_NUM: [u8; 32] = [
+  30, 211, 227, 141, 19, 236, 42, 236,
+  198, 186, 151, 202, 148, 186, 19, 54,
+  166, 202, 254, 177, 5, 168, 180, 82,
+  101, 218, 218, 41, 31, 5, 243, 105
+];

@@ -10,9 +10,12 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eos::eos::eos_types::{
-        MerklePath,
-        MerkleProof,
+    btc_on_eos::{
+        utils::convert_hex_to_checksum256,
+        eos::eos_types::{
+            MerklePath,
+            MerkleProof,
+        },
     },
 };
 
@@ -133,14 +136,55 @@ pub fn get_merkle_root_from_merkle_path(
     )
 }
 
-// NOTE: Courtesy of: https://github.com/bifrost-codes/rust-eos/
-#[derive(Clone, Default, Debug, PartialEq)]
-pub struct IncrementalMerkle {
-    _node_count: u64,
-    _active_nodes: Vec<Checksum256>,
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct IncreMerkleJson {
+    node_count: u64,
+    active_nodes: Vec<String>,
 }
+
+impl IncreMerkleJson {
+    pub fn from_incremerkle(incremerkle: &IncreMerkle) -> Self {
+        IncreMerkleJson {
+            node_count: incremerkle.node_count,
+            active_nodes: incremerkle
+                .active_nodes
+                .iter()
+                .map(|checksum| checksum.to_string())
+                .collect::<Vec<String>>()
+        }
+    }
+
+    pub fn to_incremerkle(self) -> Result<IncreMerkle> {
+        Ok(
+            IncreMerkle {
+                node_count: self.node_count,
+                active_nodes: self
+                    .active_nodes
+                    .iter()
+                    .map(convert_hex_to_checksum256)
+                    .collect::<Result<Vec<Checksum256>>>()?
+            }
+        )
+    }
+}
+
+// NOTE: Courtesy of: https://github.com/bifrost-codes/rust-eos/
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
+pub struct IncreMerkle {
+    node_count: u64,
+    active_nodes: Vec<Checksum256>,
+}
+
 // NOTE: Ibid
-impl IncrementalMerkle {
+impl IncreMerkle {
+    pub fn to_json(&self) -> IncreMerkleJson {
+        IncreMerkleJson::from_incremerkle(self)
+    }
+
+    pub fn default() -> Self {
+        IncreMerkle { node_count: 0, active_nodes: vec![] }
+    }
 
     fn make_canonical_left(val: &Checksum256) -> Checksum256 {
         let mut canonical_l: Checksum256 = *val;
@@ -199,19 +243,19 @@ impl IncrementalMerkle {
     }
 
     pub fn new(node_count: u64, active_nodes: Vec<Checksum256>) -> Self {
-        IncrementalMerkle {
-            _node_count: node_count,
-            _active_nodes: active_nodes,
+        IncreMerkle {
+            node_count: node_count,
+            active_nodes: active_nodes,
         }
     }
 
     pub fn append(&mut self, digest: Checksum256) -> Result<Checksum256> {
         let mut partial = false;
-        let max_depth = Self::calculate_max_depth(self._node_count + 1);
+        let max_depth = Self::calculate_max_depth(self.node_count + 1);
         let mut current_depth = max_depth - 1;
-        let mut index = self._node_count;
+        let mut index = self.node_count;
         let mut top = digest;
-        let mut active_iter = self._active_nodes.iter();
+        let mut active_iter = self.active_nodes.iter();
         let mut updated_active_nodes: Vec<Checksum256> = Vec::with_capacity(
             max_depth
         );
@@ -246,16 +290,16 @@ impl IncrementalMerkle {
 
         updated_active_nodes.push(top);
 
-        self._active_nodes = updated_active_nodes;
+        self.active_nodes = updated_active_nodes;
 
-        self._node_count += 1;
+        self.node_count += 1;
 
-        Ok(self._active_nodes[self._active_nodes.len() - 1])
+        Ok(self.active_nodes[self.active_nodes.len() - 1])
     }
 
     pub fn get_root(&self) -> Checksum256 {
-        if self._node_count > 0 {
-            self._active_nodes[self._active_nodes.len() - 1]
+        if self.node_count > 0 {
+            self.active_nodes[self.active_nodes.len() - 1]
         } else {
             Default::default()
         }
@@ -650,23 +694,52 @@ mod tests {
     }
 
     #[test]
-    fn should_get_incremental_merkle_root_from_blockroot_merkles() {
+    fn should_get_incremerkle_root_from_interim_block_idss() {
         let expected_incremerkle_root =
             "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
         let submission_material = get_sample_eos_submission_material_n(5);
         let active_nodes = submission_material
-            .blockroot_merkle
+            .interim_block_ids
             .clone();
         let node_count: u64 = submission_material
             .block_header
             .block_num()
             .into();
-        let incremerkle = IncrementalMerkle::new(node_count, active_nodes);
+        let incremerkle = IncreMerkle::new(node_count, active_nodes);
         let incremerkle_root = hex::encode(
             &incremerkle
                 .get_root()
                 .to_bytes()
         );
         assert_eq!(incremerkle_root, expected_incremerkle_root);
+    }
+
+    #[test]
+    fn should_convert_from_incremerkle_to_json_and_back() {
+        let expected_incremerkle_root =
+            "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
+        let submission_material = get_sample_eos_submission_material_n(5);
+        let active_nodes = submission_material
+            .interim_block_ids
+            .clone();
+        let node_count: u64 = submission_material
+            .block_header
+            .block_num()
+            .into();
+        let incremerkle = IncreMerkle::new(node_count, active_nodes);
+        let json = IncreMerkleJson::from_incremerkle(&incremerkle);
+        assert_eq!(json.node_count, incremerkle.node_count);
+        assert_eq!(json.active_nodes.len(), incremerkle.active_nodes.len());
+        let result = json
+            .to_incremerkle()
+            .unwrap();
+        assert_eq!(result.node_count, incremerkle.node_count);
+        assert_eq!(result.active_nodes.len(), incremerkle.active_nodes.len());
+        let result_root = hex::encode(
+            &incremerkle
+                .get_root()
+                .to_bytes()
+        );
+        assert_eq!(result_root, expected_incremerkle_root);
     }
 }

@@ -18,6 +18,7 @@ use crate::{
             eos_utils::get_eos_schedule_db_key,
             eos_crypto::eos_signature::EosSignature,
             parse_eos_actions::parse_eos_action_json,
+            parse_eos_schedule::EosProducerScheduleJson,
             parse_eos_action_receipts::parse_eos_action_receipt_json,
         },
     },
@@ -163,39 +164,34 @@ impl EosSignedTransaction {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterial {
+    pub block_num: u64,
     pub producer_signature: String,
     pub action_proofs: ActionProofs,
     pub block_header: EosBlockHeader,
-    pub blockroot_merkle: Checksum256s,
+    pub interim_block_ids: Checksum256s,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterialJson {
-    pub blockroot_merkle: Vec<String>,
+    pub interim_block_ids: Vec<String>,
     pub action_proofs: ActionProofJsons,
     pub block_header: EosBlockHeaderJson,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosBlockHeaderJson {
+    pub block_num: u64,
     pub confirmed: u16,
     pub producer: String,
     pub previous: String,
     pub block_id: String,
-    pub block_num: usize,
     pub timestamp: String,
     pub action_mroot: String,
     pub schedule_version: u32,
     pub transaction_mroot: String,
     pub producer_signature: String,
     pub header_extension: Option<Vec<String>>,
-    pub new_producers: Option<ProducerScheduleJson>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ProducerScheduleJson {
-    pub version: u32,
-    pub producers: Vec<ProducerKeyJson>
+    pub new_producers: Option<EosProducerScheduleJson>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -206,8 +202,8 @@ pub struct ProducerSchedule {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ProducerKeyJson {
-    pub producer_name: String, // To become AccountName
-    pub block_signing_key: String, // To become public key
+    pub producer_name: String,
+    pub block_signing_key: String,
 }
 
 #[derive(Debug)]

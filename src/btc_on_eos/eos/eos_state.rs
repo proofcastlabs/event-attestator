@@ -1,6 +1,6 @@
 use eos_primitives::{
     BlockHeader as EosBlockHeader,
-    ProducerSchedule as EosProducerSchedule,
+    ProducerScheduleV2 as EosProducerScheduleV2,
 };
 use crate::{
     types::Result,
@@ -10,6 +10,7 @@ use crate::{
     btc_on_eos::{
         btc::btc_types::BtcTransactions,
         eos::{
+            eos_merkle_utils::IncreMerkle,
             eos_types::{
                 ActionProofs,
                 Checksum256s,
@@ -28,14 +29,16 @@ use crate::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EosState<D: DatabaseInterface> {
     pub db: D,
+    pub block_num: Option<u64>,
+    pub incremerkle: IncreMerkle,
     pub producer_signature: String,
     pub action_proofs: ActionProofs,
     pub signed_txs: BtcTransactions,
-    pub blockroot_merkle: Checksum256s,
+    pub interim_block_ids: Checksum256s,
     pub redeem_params: Vec<RedeemParams>,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
-    pub active_schedule: Option<EosProducerSchedule>,
+    pub active_schedule: Option<EosProducerScheduleV2>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
 }
 
@@ -43,14 +46,16 @@ impl<D> EosState<D> where D: DatabaseInterface {
     pub fn init(db: D) -> EosState<D> {
         EosState {
             db,
+            block_num: None,
             block_header: None,
             signed_txs: vec![],
             action_proofs: vec![],
             redeem_params: vec![],
             active_schedule: None,
-            blockroot_merkle: vec![],
+            interim_block_ids: vec![],
             btc_utxos_and_values: None,
             producer_signature: String::new(),
+            incremerkle: IncreMerkle::default(),
             processed_tx_ids: ProcessedTxIds::init(),
         }
     }
@@ -72,7 +77,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
 
     pub fn add_active_schedule(
         mut self,
-        active_schedule: EosProducerSchedule,
+        active_schedule: EosProducerScheduleV2,
     ) -> Result<EosState<D>> {
         match self.active_schedule {
             Some(_) => Err(AppError::Custom(
@@ -95,13 +100,24 @@ impl<D> EosState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
+    pub fn add_incremerkle(
+        mut self,
+        incremerkle: IncreMerkle,
+    ) -> EosState<D>
+        where D: DatabaseInterface
+    {
+        self.incremerkle = incremerkle;
+        self
+    }
+
     pub fn add_submission_material(
         mut self,
         submission_material: EosSubmissionMaterial,
     ) -> Result<EosState<D>> {
+        self.block_num = Some(submission_material.block_num);
         self.action_proofs = submission_material.action_proofs;
         self.block_header = Some(submission_material.block_header);
-        self.blockroot_merkle = submission_material.blockroot_merkle;
+        self.interim_block_ids = submission_material.interim_block_ids;
         self.producer_signature = submission_material.producer_signature;
         Ok(self)
     }
@@ -131,7 +147,16 @@ impl<D> EosState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn get_active_schedule(&self) -> Result<&EosProducerSchedule> {
+    pub fn get_eos_block_num(&self) -> Result<u64> {
+        match &self.block_num {
+            Some(num) => Ok(num.clone()),
+            None => Err(AppError::Custom(
+                get_not_in_state_err("block_num"))
+            )
+        }
+    }
+
+    pub fn get_active_schedule(&self) -> Result<&EosProducerScheduleV2> {
         match &self.active_schedule{
             Some(active_schedule) => Ok(&active_schedule),
             None => Err(AppError::Custom(

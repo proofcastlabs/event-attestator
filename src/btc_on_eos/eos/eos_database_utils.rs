@@ -1,13 +1,15 @@
 use std::str::FromStr;
 use eos_primitives::{
+    Checksum256,
     AccountName as EosAccountName,
-    ProducerSchedule as EosProducerSchedule,
+    ProducerScheduleV2 as EosProducerScheduleV2,
 };
 use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
     btc_on_eos::{
+        utils::convert_hex_to_checksum256,
         database_utils::{
             put_u64_in_db,
             get_u64_from_db,
@@ -16,25 +18,99 @@ use crate::{
         },
         eos::{
             eos_state::EosState,
-            eos_utils::get_eos_schedule_db_key,
             eos_crypto::eos_private_key::EosPrivateKey,
-            parse_submission_material::parse_producer_schedule_from_json_string,
+            parse_eos_schedule::parse_schedule_string_to_schedule,
+            eos_utils::get_eos_schedule_db_key,
+            eos_merkle_utils::{
+                IncreMerkle,
+                IncreMerkleJson,
+            },
             eos_types::{
                 ProcessedTxIds,
                 EosKnownSchedules,
             },
             eos_constants::{
+                EOS_INCREMERKLE,
                 EOS_SCHEDULE_LIST,
                 EOS_ACCOUNT_NONCE,
                 EOS_CHAIN_ID_DB_KEY,
                 EOS_TOKEN_SYMBOL_KEY,
                 PROCESSED_TX_IDS_KEY,
                 EOS_ACCOUNT_NAME_KEY,
+                EOS_LAST_SEEN_BLOCK_ID,
                 EOS_PRIVATE_KEY_DB_KEY,
+                EOS_LAST_SEEN_BLOCK_NUM,
             },
         },
     },
 };
+
+pub fn put_eos_last_seen_block_num_in_db<D>(
+    db: &D,
+    num: u64,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    put_u64_in_db(db, &EOS_LAST_SEEN_BLOCK_NUM.to_vec(), num)
+}
+
+pub fn get_eos_last_seen_block_num_from_db<D>(
+    db: &D,
+) -> Result<u64>
+    where D: DatabaseInterface
+{
+    get_u64_from_db(db, &EOS_LAST_SEEN_BLOCK_NUM.to_vec())
+}
+
+pub fn put_eos_last_seen_block_id_in_db<D>(
+    db: &D,
+    latest_block_id: &Checksum256
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    let block_id_string = latest_block_id.to_string();
+    info!("✔ Putting EOS latest block ID {} in db...", block_id_string);
+    put_string_in_db(db, &EOS_LAST_SEEN_BLOCK_ID.to_vec(), &block_id_string)
+}
+
+pub fn get_eos_last_seen_block_id_from_db<D>(
+    db: &D,
+) -> Result<Checksum256>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting EOS last seen block ID from db...");
+    get_string_from_db(db, &EOS_LAST_SEEN_BLOCK_ID.to_vec())
+        .and_then(convert_hex_to_checksum256)
+}
+
+pub fn put_incremerkle_in_db<D>(
+    db: &D,
+    incremerkle: &IncreMerkle,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    let data_sensitivity = None;
+    info!("✔ Putting EOS incremerkle in db...");
+    db
+        .put(
+            EOS_INCREMERKLE.to_vec(),
+            serde_json::to_vec(&incremerkle.to_json())?,
+            data_sensitivity,
+        )
+}
+
+pub fn get_incremerkle_from_db<D>(
+    db: &D,
+) -> Result<IncreMerkle>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting EOS incremerkle from db...");
+    let data_sensitivity = None;
+    db
+        .get(EOS_INCREMERKLE.to_vec(), data_sensitivity)
+        .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
+        .and_then(|json: IncreMerkleJson| json.to_incremerkle())
+}
 
 pub fn get_eos_known_schedules_from_db<D>(
     db: &D,
@@ -65,7 +141,7 @@ pub fn put_eos_known_schedules_in_db<D>(
 
 pub fn put_eos_schedule_in_db<D>(
     db: &D,
-    schedule: &EosProducerSchedule,
+    schedule: &EosProducerScheduleV2,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -89,12 +165,12 @@ pub fn put_eos_schedule_in_db<D>(
 pub fn get_eos_schedule_from_db<D>(
     db: &D,
     version: u32,
-) -> Result<EosProducerSchedule>
+) -> Result<EosProducerScheduleV2>
     where D: DatabaseInterface
 {
     trace!("✔ Getting EOS schedule from db...");
     match get_string_from_db(db, &get_eos_schedule_db_key(version)) {
-        Ok(json) => parse_producer_schedule_from_json_string(&json),
+        Ok(json) => parse_schedule_string_to_schedule(&json),
         Err(_) => Err(AppError::Custom(
             format!("✘ Core does not have EOS schedule version: {}", version)
         ))

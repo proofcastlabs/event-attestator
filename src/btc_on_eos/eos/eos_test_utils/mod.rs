@@ -14,7 +14,7 @@ use eos_primitives::{
     PermissionLevel,
     Action as EosAction,
     ActionReceipt as EosActionReceipt,
-    ProducerSchedule as EosProducerSchedule,
+    ProducerScheduleV2 as EosProducerScheduleV2,
 };
 use crate::{
     errors::AppError,
@@ -27,8 +27,13 @@ use crate::{
         test_utils::get_sample_message_to_sign,
         eos::{
             eos_state::EosState,
+            parse_eos_schedule::{
+                EosProducerScheduleJson,
+                parse_schedule_string_to_json,
+                parse_schedule_string_to_schedule,
+                convert_schedule_json_to_schedule_v2,
+            },
             parse_submission_material::{
-                parse_producer_schedule_from_json_string,
                 parse_eos_submission_material_string_to_json,
                 parse_eos_submission_material_string_to_struct,
             },
@@ -51,7 +56,7 @@ use crate::{
     },
 };
 
-pub const NUM_SAMPLES: usize = 5;
+pub const NUM_SAMPLES: usize = 5; // TODO update once all are passing validation!
 
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-81784220.json";
@@ -68,6 +73,9 @@ pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_4: &str =
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_5: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-10800.json";
 
+pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_6: &str =
+    "src/btc_on_eos/eos/eos_test_utils/jungle-3-block-8242000.json";
+
 pub const SAMPLE_EOS_ACTIVE_SCHEDULE_PATH_PREFIX: &str =
     "src/btc_on_eos/eos/eos_test_utils/sample-active-schedule-";
 
@@ -80,18 +88,34 @@ pub const TEMPORARY_DATABASE_PATH: &str = "src/test_utils/temporary_database";
 pub const EOS_SAMPLE_PRIVATE_KEY_WIF: &str =
     "5HzXzUB9sruHL93mf5dVgUJk1A3NMiAAsfu4p6F1hDdktVVErbR";
 
+pub fn get_sample_v2_schedule_json_string() -> Result<String> {
+    Ok(
+        read_to_string(
+            "src/btc_on_eos/eos/eos_test_utils/sample-schedule-v2.0.json"
+        )?
+    )
+}
+
+pub fn get_sample_v2_schedule_json() -> Result<EosProducerScheduleJson> {
+    get_sample_v2_schedule_json_string()
+        .and_then(|json_string| parse_schedule_string_to_json(&json_string))
+}
+
+pub fn get_sample_v2_schedule() -> Result<EosProducerScheduleV2> {
+    get_sample_v2_schedule_json()
+        .and_then(|json| convert_schedule_json_to_schedule_v2(&json))
+}
+
 pub fn get_sample_active_schedule(
     version: u32,
-) -> Result<EosProducerSchedule> {
+) -> Result<EosProducerScheduleV2> {
     let path = format!(
         "{}{}.json",
         SAMPLE_EOS_ACTIVE_SCHEDULE_PATH_PREFIX,
         version
     );
     match Path::new(&path).exists() {
-        true => parse_producer_schedule_from_json_string(
-            &read_to_string(path)?
-        ),
+        true => parse_schedule_string_to_schedule(&read_to_string(path)?),
         false => Err(AppError::Custom(
             format!("✘ Cannot find sample active schedule json!")
         ))
@@ -129,6 +153,7 @@ pub fn get_sample_eos_submission_material_string_n(
         3 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_3),
         4 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_4),
         5 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_5),
+        6 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_6),
         _ => Err(AppError::Custom(
             format!("Cannot find sample block num: {}", num)
         ))
