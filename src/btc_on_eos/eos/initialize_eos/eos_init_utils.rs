@@ -67,8 +67,8 @@ pub fn generate_and_put_incremerkle_in_db_and_return_state<D>(
     info!("✔ Generating and putting incremerkle in db...");
     put_incremerkle_in_db(
         &state.db,
-        &IncreMerkle::new( // FIXME Do we need to add block id to this?
-            get_eos_last_seen_block_num_from_db(&state.db)?,
+        &IncreMerkle::new(
+            get_eos_last_seen_block_num_from_db(&state.db)? - 1,
             blockroot_merkle
                 .iter()
                 .map(convert_hex_to_checksum256)
