@@ -29,6 +29,7 @@ use crate::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EosState<D: DatabaseInterface> {
     pub db: D,
+    pub block_num: Option<u64>,
     pub incremerkle: IncreMerkle,
     pub producer_signature: String,
     pub action_proofs: ActionProofs,
@@ -45,6 +46,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
     pub fn init(db: D) -> EosState<D> {
         EosState {
             db,
+            block_num: None,
             block_header: None,
             signed_txs: vec![],
             action_proofs: vec![],
@@ -112,6 +114,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
         mut self,
         submission_material: EosSubmissionMaterial,
     ) -> Result<EosState<D>> {
+        self.block_num = Some(submission_material.block_num);
         self.action_proofs = submission_material.action_proofs;
         self.block_header = Some(submission_material.block_header);
         self.blockroot_merkle = submission_material.blockroot_merkle;
@@ -140,6 +143,15 @@ impl<D> EosState<D> where D: DatabaseInterface {
             Some(block_header) => Ok(&block_header),
             None => Err(AppError::Custom(
                 get_not_in_state_err("block_header"))
+            )
+        }
+    }
+
+    pub fn get_eos_block_num(&self) -> Result<u64> {
+        match &self.block_num {
+            Some(num) => Ok(num.clone()),
+            None => Err(AppError::Custom(
+                get_not_in_state_err("block_num"))
             )
         }
     }

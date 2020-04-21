@@ -39,10 +39,28 @@ use crate::{
                 EOS_ACCOUNT_NAME_KEY,
                 EOS_LAST_SEEN_BLOCK_ID,
                 EOS_PRIVATE_KEY_DB_KEY,
+                EOS_LAST_SEEN_BLOCK_NUM,
             },
         },
     },
 };
+
+pub fn put_eos_last_seen_block_num_in_db<D>(
+    db: &D,
+    num: u64,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    put_u64_in_db(db, &EOS_LAST_SEEN_BLOCK_NUM.to_vec(), num)
+}
+
+pub fn get_eos_last_seen_block_num_from_db<D>(
+    db: &D,
+) -> Result<u64>
+    where D: DatabaseInterface
+{
+    get_u64_from_db(db, &EOS_LAST_SEEN_BLOCK_NUM.to_vec())
+}
 
 pub fn put_eos_last_seen_block_id_in_db<D>(
     db: &D,

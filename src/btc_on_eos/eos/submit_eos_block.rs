@@ -10,6 +10,7 @@ use crate::{
             get_eos_output::get_eos_output,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
             save_latest_block_id::save_latest_block_id_to_db,
+            save_latest_block_num::save_latest_block_num_to_db,
             sign_transactions::maybe_sign_txs_and_add_to_state,
             validate_signature::validate_block_header_signature,
             get_eos_incremerkle::get_incremerkle_and_add_to_state,
@@ -82,6 +83,7 @@ pub fn submit_eos_block_to_core<D>(
         .and_then(maybe_extract_btc_utxo_from_btc_tx_in_state)
         .and_then(maybe_save_btc_utxos_to_db)
         .and_then(save_latest_block_id_to_db)
+        .and_then(save_latest_block_num_to_db)
         .and_then(end_eos_db_transaction)
         .and_then(get_eos_output)
 }

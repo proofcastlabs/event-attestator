@@ -22,6 +22,7 @@ pub mod filter_redeem_params;
 pub mod get_processed_tx_ids;
 pub mod save_btc_utxos_to_db;
 pub mod save_latest_block_id;
+pub mod save_latest_block_num;
 pub mod filter_duplicate_proofs;
 pub mod filter_irrelevant_proofs;
 pub mod parse_submission_material;

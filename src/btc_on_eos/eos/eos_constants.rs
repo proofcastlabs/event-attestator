@@ -121,3 +121,13 @@ pub static EOS_LAST_SEEN_BLOCK_ID: [u8; 32] = [
   34, 249, 14, 201, 86, 64, 121, 196,
   226, 206, 67, 34, 160, 180, 200, 195
 ];
+// NOTE (javascript): new Uint8Array(
+//   Buffer.from(web3.utils.keccak256('eos-last-seen-block-num').slice(2), 'hex')
+// )
+// 1ed3e38d13ec2aecc6ba97ca94ba1336a6cafeb105a8b45265dada291f05f369
+pub static EOS_LAST_SEEN_BLOCK_NUM: [u8; 32] = [
+  30, 211, 227, 141, 19, 236, 42, 236,
+  198, 186, 151, 202, 148, 186, 19, 54,
+  166, 202, 254, 177, 5, 168, 180, 82,
+  101, 218, 218, 41, 31, 5, 243, 105
+];
