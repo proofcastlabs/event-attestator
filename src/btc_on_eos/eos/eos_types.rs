@@ -168,12 +168,12 @@ pub struct EosSubmissionMaterial {
     pub producer_signature: String,
     pub action_proofs: ActionProofs,
     pub block_header: EosBlockHeader,
-    pub blockroot_merkle: Checksum256s,
+    pub interim_block_ids: Checksum256s,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterialJson {
-    pub blockroot_merkle: Vec<String>,
+    pub interim_block_ids: Vec<String>,
     pub action_proofs: ActionProofJsons,
     pub block_header: EosBlockHeaderJson,
 }

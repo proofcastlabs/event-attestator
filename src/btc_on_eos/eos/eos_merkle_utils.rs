@@ -694,12 +694,12 @@ mod tests {
     }
 
     #[test]
-    fn should_get_incremerkle_root_from_blockroot_merkles() {
+    fn should_get_incremerkle_root_from_interim_block_idss() {
         let expected_incremerkle_root =
             "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
         let submission_material = get_sample_eos_submission_material_n(5);
         let active_nodes = submission_material
-            .blockroot_merkle
+            .interim_block_ids
             .clone();
         let node_count: u64 = submission_material
             .block_header
@@ -720,7 +720,7 @@ mod tests {
             "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
         let submission_material = get_sample_eos_submission_material_n(5);
         let active_nodes = submission_material
-            .blockroot_merkle
+            .interim_block_ids
             .clone();
         let node_count: u64 = submission_material
             .block_header

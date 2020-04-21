@@ -34,7 +34,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub producer_signature: String,
     pub action_proofs: ActionProofs,
     pub signed_txs: BtcTransactions,
-    pub blockroot_merkle: Checksum256s,
+    pub interim_block_ids: Checksum256s,
     pub redeem_params: Vec<RedeemParams>,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
@@ -52,7 +52,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
             action_proofs: vec![],
             redeem_params: vec![],
             active_schedule: None,
-            blockroot_merkle: vec![],
+            interim_block_ids: vec![],
             btc_utxos_and_values: None,
             producer_signature: String::new(),
             incremerkle: IncreMerkle::default(),
@@ -117,7 +117,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
         self.block_num = Some(submission_material.block_num);
         self.action_proofs = submission_material.action_proofs;
         self.block_header = Some(submission_material.block_header);
-        self.blockroot_merkle = submission_material.blockroot_merkle;
+        self.interim_block_ids = submission_material.interim_block_ids;
         self.producer_signature = submission_material.producer_signature;
         Ok(self)
     }

@@ -47,11 +47,11 @@ fn get_block_digest(block_header: &EosBlockHeader) -> Result<Bytes> {
 
 fn get_block_mroot(
     block_header: &EosBlockHeader,
-    blockroot_merkle: &Checksum256s,
+    interim_block_ids: &Checksum256s,
 ) -> Bytes {
     IncreMerkle::new(
         block_header.block_num().into(),
-        blockroot_merkle.clone(),
+        interim_block_ids.clone(),
     ).get_root().to_bytes().to_vec()
 }
 
@@ -62,11 +62,11 @@ fn get_schedule_hash(active_schedule: &EosProducerScheduleV2) -> Result<Bytes> {
 fn get_signing_digest(
     block_header: &EosBlockHeader,
     active_schedule: &EosProducerScheduleV2,
-    blockroot_merkle: &Checksum256s,
+    interim_block_ids: &Checksum256s,
 ) -> Result<Bytes> {
     Ok(
         create_eos_signing_digest(
-            get_block_mroot(block_header, blockroot_merkle),
+            get_block_mroot(block_header, interim_block_ids),
             get_schedule_hash(active_schedule)?,
             get_block_digest(block_header)?,
         )
@@ -100,14 +100,14 @@ fn recover_block_signer_public_key(
     producer_signature: &String,
     block_header: &EosBlockHeader,
     active_schedule: &EosProducerScheduleV2,
-    blockroot_merkle: &Checksum256s,
+    interim_block_ids: &Checksum256s,
 ) -> Result<EosPublicKey> {
     EosPublicKey::recover_from_digest(
         &Message::from_slice(
             &get_signing_digest(
                 &block_header,
                 &active_schedule,
-                &blockroot_merkle,
+                &interim_block_ids,
             )?,
         )?,
         &EosSignature::from_str(producer_signature)?
@@ -117,7 +117,7 @@ fn recover_block_signer_public_key(
 fn check_block_signature_is_valid(
     producer_signature: &String,
     block_header: &EosBlockHeader,
-    blockroot_merkle: &Checksum256s,
+    interim_block_ids: &Checksum256s,
     active_schedule: &EosProducerScheduleV2,
 ) -> Result<()> {
     let signing_key = get_signing_key_from_active_schedule(
@@ -128,7 +128,7 @@ fn check_block_signature_is_valid(
         producer_signature,
         block_header,
         active_schedule,
-        blockroot_merkle,
+        interim_block_ids,
     )?.to_string();
     match signing_key == recovered_key {
         true => Ok(()),
@@ -145,12 +145,16 @@ pub fn validate_block_header_signature<D>(
     check_block_signature_is_valid(
         &state.producer_signature,
         state.get_eos_block_header()?,
-        &state.blockroot_merkle,
+        &state.interim_block_ids,
         state.get_active_schedule()?,
     )
         .and(Ok(state))
 }
 
+// TODO fixme! These all are now failing since we don't use the blockroot merkle
+// that we pass in anymore. Instead we're going to keep the incremerkle in the
+// db and append to it any blocks in the interim between two submissions.
+// Update this module to reflect that!
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -178,7 +182,7 @@ mod tests {
         let submission_material = get_sample_eos_submission_material_n(5);
         let result = get_block_mroot(
             &submission_material.block_header,
-            &submission_material.blockroot_merkle,
+            &submission_material.interim_block_ids,
         );
         assert_eq!(result, expected_result);
     }
@@ -247,7 +251,7 @@ mod tests {
             "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
         let block_mroot = get_block_mroot(
             &submission_material.block_header,
-            &submission_material.blockroot_merkle,
+            &submission_material.interim_block_ids,
         );
         assert_eq!(hex::encode(&block_mroot), expected_block_mroot);
 
@@ -272,7 +276,7 @@ mod tests {
         let result = get_signing_digest(
             &submission_material.block_header,
             &active_schedule,
-            &submission_material.blockroot_merkle,
+            &submission_material.interim_block_ids,
         ).unwrap();
         assert_eq!(hex::encode(result), expected_signing_digest);
     }
@@ -353,7 +357,7 @@ mod tests {
                     &material.producer_signature,
                     &material.block_header,
                     &active_schedule,
-                    &material.blockroot_merkle,
+                    &material.interim_block_ids,
                  )
              )
             .collect::<Result<Vec<EosPublicKey>>>()
@@ -389,7 +393,7 @@ mod tests {
                  check_block_signature_is_valid(
                     &submission_material.producer_signature,
                     &submission_material.block_header,
-                    &submission_material.blockroot_merkle,
+                    &submission_material.interim_block_ids,
                     &active_schedule,
                  )
              )
@@ -405,7 +409,7 @@ mod tests {
             .clone();
         let block_mroot = get_block_mroot(
             &submission_material.block_header,
-            &submission_material.blockroot_merkle,
+            &submission_material.interim_block_ids,
         );
         let block_header_digest = get_block_digest(
             &submission_material.block_header
