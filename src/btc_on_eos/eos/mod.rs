@@ -10,6 +10,7 @@ pub mod eos_test_utils;
 pub mod add_new_schedule;
 pub mod eos_merkle_utils;
 pub mod submit_eos_block;
+pub mod save_incremerkle;
 pub mod sign_transactions;
 pub mod parse_eos_actions;
 pub mod validate_signature;
