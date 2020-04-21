@@ -21,7 +21,7 @@ pub struct EosProducerScheduleJson {
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct FullProducerKeyJson {
     pub producer_name: String,
-    pub authority: (u32, AuthorityJson),
+    pub authority: (u8, AuthorityJson),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
