@@ -1140,6 +1140,7 @@ pub fn put_in_trie_recursively(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[allow(unused_imports)]
     use simplelog::{
         TermLogger,
         LevelFilter,
