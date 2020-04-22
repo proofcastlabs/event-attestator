@@ -233,7 +233,8 @@ pub fn get_sample_eos_private_key() -> EosPrivateKey {
 }
 
 pub fn get_sample_eos_public_key() -> EosPublicKey {
-    EosPublicKey::from(&get_sample_eos_private_key())
+    get_sample_eos_private_key()
+        .to_public_key()
 }
 
 pub fn get_sample_eos_public_key_bytes() -> Bytes {

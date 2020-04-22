@@ -6,6 +6,7 @@ use std::{
 use secp256k1::{
     Message,
     Secp256k1,
+    key::PublicKey,
 };
 use bitcoin_hashes::{
     sha256,
@@ -13,18 +14,19 @@ use bitcoin_hashes::{
 };
 use crate::{
     base58,
+    types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    types::{
-        Bytes,
-        Result,
-    },
     btc_on_eos::{
         crypto_utils::generate_random_private_key,
         constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
         eos::{
             eos_types::EosNetwork,
-            eos_crypto::eos_signature::EosSignature,
+            eos_constants::EOS_PRIVATE_KEY_DB_KEY,
+            eos_crypto::{
+                eos_signature::EosSignature,
+                eos_public_key::EosPublicKey,
+            },
         },
     },
 };
@@ -32,8 +34,8 @@ use crate::{
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct EosPrivateKey {
     pub compressed: bool,
+    private_key: SecretKey,
     pub network: EosNetwork,
-    pub private_key: SecretKey,
 }
 
 impl EosPrivateKey {
@@ -45,6 +47,16 @@ impl EosPrivateKey {
                 private_key: generate_random_private_key()?,
             }
         )
+    }
+
+    pub fn to_public_key(&self) -> EosPublicKey {
+        EosPublicKey {
+            compressed: true,
+            public_key: PublicKey::from_secret_key(
+                &Secp256k1::new(),
+                &self.private_key
+            )
+        }
     }
 
     pub fn from_slice(slice: &[u8]) -> Result<Self> {
@@ -112,18 +124,31 @@ impl EosPrivateKey {
         self.sign_hash(&msg_hash)
     }
 
-    pub fn write_to_database<D>(
+    pub fn write_to_db<D>(
         &self,
         db: &D,
-        key: &Bytes,
     ) -> Result<()>
         where D: DatabaseInterface
     {
+        trace!("✔ Putting EOS private key in db...");
         db.put(
-            key.to_vec(),
+            EOS_PRIVATE_KEY_DB_KEY.to_vec(),
             self.private_key[..].to_vec(),
             PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
         )
+    }
+
+    pub fn get_from_db<D>(
+        db: &D,
+    ) -> Result<Self>
+        where D: DatabaseInterface
+    {
+        trace!("✔ Getting EOS private key from db...");
+        db.get(
+                EOS_PRIVATE_KEY_DB_KEY.to_vec(),
+                PRIVATE_KEY_DATA_SENSITIVITY_LEVEL
+            )
+            .and_then(|bytes| Self::from_slice(&bytes[..]))
     }
 }
 
@@ -156,14 +181,12 @@ mod test {
     use crate::btc_on_eos::{
         test_utils::get_sample_message_to_sign_bytes,
         eos::{
-            eos_crypto::{
-                eos_public_key::EosPublicKey,
-                eos_private_key::EosPrivateKey,
-            },
+            eos_crypto::eos_private_key::EosPrivateKey,
             eos_test_utils::{
                 get_sample_eos_signature,
                 get_sample_eos_public_key,
                 get_sample_eos_private_key,
+                get_sample_eos_public_key_str,
                 get_sample_eos_private_key_str,
             },
         },
@@ -182,7 +205,7 @@ mod test {
         let private_key = EosPrivateKey::from_wallet_import_format(wif)
             .unwrap();
         let expected_public_key = get_sample_eos_public_key();
-        let result = EosPublicKey::from(&private_key);
+        let result = private_key.to_public_key();
         assert!(result == expected_public_key);
     }
 
@@ -192,7 +215,7 @@ mod test {
         let private_key = EosPrivateKey::from_str(string)
             .unwrap();
         let expected_public_key = get_sample_eos_public_key();
-        let result = EosPublicKey::from(&private_key);
+        let result = private_key.to_public_key();
         assert!(result == expected_public_key);
     }
 
@@ -249,5 +272,15 @@ mod test {
             );
             assert!(signature.is_canonical());
         }
+    }
+
+    #[test]
+    fn should_convert_private_to_public_correctly() {
+        let expected_result = get_sample_eos_public_key_str();
+        let private_key = get_sample_eos_private_key();
+        let result = private_key
+            .to_public_key()
+            .to_string();
+        assert!(result == expected_result);
     }
 }

@@ -5,6 +5,7 @@ use std::time::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::btc::btc_constants::DEFAULT_BTC_ADDRESS,
     btc_on_eth::{
         eth::{
             eth_types::EthTransactions,
@@ -13,7 +14,6 @@ use crate::{
         },
         btc::{
             btc_state::BtcState,
-            btc_constants::DEFAULT_BTC_ADDRESS,
             btc_types::{
                 MintingParams,
                 MintingParamStruct,

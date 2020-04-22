@@ -11,6 +11,20 @@ use crate::{
         Result,
         DataSensitivity,
     },
+    chains::btc::btc_constants::{
+        BTC_FEE_KEY,
+        BTC_NETWORK_KEY,
+        BTC_ADDRESS_KEY,
+        BTC_LINKER_HASH_KEY,
+        BTC_PRIVATE_KEY_DB_KEY,
+        BTC_ACCOUNT_NONCE_KEY,
+        BTC_TAIL_BLOCK_HASH_KEY,
+        BTC_CANON_BLOCK_HASH_KEY,
+        BTC_DIFFICULTY_THRESHOLD,
+        BTC_ANCHOR_BLOCK_HASH_KEY,
+        BTC_LATEST_BLOCK_HASH_KEY,
+        BTC_CANON_TO_TIP_LENGTH_KEY,
+    },
     btc_on_eos::{
         database_utils::{
             put_u64_in_db,
@@ -24,20 +38,6 @@ use crate::{
             btc_state::BtcState,
             btc_types::BtcBlockInDbFormat,
             btc_crypto::btc_private_key::BtcPrivateKey,
-            btc_constants::{
-                BTC_FEE_KEY,
-                BTC_NETWORK_KEY,
-                BTC_ADDRESS_KEY,
-                BTC_LINKER_HASH_KEY,
-                BTC_PRIVATE_KEY_DB_KEY,
-                BTC_ACCOUNT_NONCE_KEY,
-                BTC_TAIL_BLOCK_HASH_KEY,
-                BTC_CANON_BLOCK_HASH_KEY,
-                BTC_DIFFICULTY_THRESHOLD,
-                BTC_ANCHOR_BLOCK_HASH_KEY,
-                BTC_LATEST_BLOCK_HASH_KEY,
-                BTC_CANON_TO_TIP_LENGTH_KEY,
-            },
             btc_utils::{
                 convert_btc_network_to_bytes,
                 convert_bytes_to_btc_network,
@@ -277,7 +277,7 @@ pub fn put_btc_private_key_in_db<D>(db: &D, pk: &BtcPrivateKey) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Saving BTC private key into db...");
-    pk.write_to_database(db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
+    pk.write_to_db(db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
 }
 
 pub fn get_btc_private_key_from_db<D>(db: &D) -> Result<BtcPrivateKey>

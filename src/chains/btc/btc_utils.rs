@@ -17,19 +17,17 @@ use crate::{
             BtcUtxoAndValue,
             BtcUtxosAndValues,
         },
+        btc_constants::{
+            DEFAULT_BTC_SEQUENCE,
+            PTOKEN_P2SH_SCRIPT_BYTES,
+        },
     },
     btc_on_eth::{
         constants::SAFE_ETH_ADDRESS,
-        btc::{
-            btc_constants::{
-                DEFAULT_BTC_SEQUENCE,
-                PTOKEN_P2SH_SCRIPT_BYTES,
-            },
-            btc_types::{
-                BtcBlockAndId,
-                MintingParams,
-                BtcBlockInDbFormat,
-            },
+        btc::btc_types::{
+            BtcBlockAndId,
+            MintingParams,
+            BtcBlockInDbFormat,
         },
         utils::{
             convert_bytes_to_u64,

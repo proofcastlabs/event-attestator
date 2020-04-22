@@ -25,7 +25,6 @@ use crate::{
                 put_eos_chain_id_in_db,
                 get_incremerkle_from_db,
                 get_eos_schedule_from_db,
-                put_eos_private_key_in_db,
                 put_eos_account_name_in_db,
                 put_eos_token_symbol_in_db,
                 put_processed_tx_ids_in_db,
@@ -130,10 +129,8 @@ pub fn generated_eos_key_save_in_db_and_return_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Generating EOS private key & putting into db...");
-    put_eos_private_key_in_db(
-        &state.db,
-        &EosPrivateKey::generate_random()?,
-    )
+    EosPrivateKey::generate_random()?
+        .write_to_db(&state.db)
         .and(Ok(state))
 }
 

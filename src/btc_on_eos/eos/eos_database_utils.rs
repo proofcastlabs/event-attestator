@@ -18,7 +18,6 @@ use crate::{
         },
         eos::{
             eos_state::EosState,
-            eos_crypto::eos_private_key::EosPrivateKey,
             parse_eos_schedule::parse_schedule_string_to_schedule,
             eos_utils::get_eos_schedule_db_key,
             eos_merkle_utils::{
@@ -38,7 +37,6 @@ use crate::{
                 PROCESSED_TX_IDS_KEY,
                 EOS_ACCOUNT_NAME_KEY,
                 EOS_LAST_SEEN_BLOCK_ID,
-                EOS_PRIVATE_KEY_DB_KEY,
                 EOS_LAST_SEEN_BLOCK_NUM,
             },
         },
@@ -301,24 +299,4 @@ pub fn end_eos_db_transaction<D>(
             info!("✔ Database transaction ended for EOS block submission!");
             state
         })
-}
-
-pub fn put_eos_private_key_in_db<D>(
-    db: &D,
-    pk: &EosPrivateKey
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    debug!("✔ Putting EOS private key into db...");
-    pk.write_to_database(db, &EOS_PRIVATE_KEY_DB_KEY.to_vec())
-}
-
-pub fn get_eos_private_key_from_db<D>(
-    db: &D
-) -> Result<EosPrivateKey>
-    where D: DatabaseInterface
-{
-    debug!("✔ Getting EOS private key from db...");
-    db.get(EOS_PRIVATE_KEY_DB_KEY.to_vec(), Some(255))
-        .and_then(|bytes| EosPrivateKey::from_slice(&bytes[..]))
 }
