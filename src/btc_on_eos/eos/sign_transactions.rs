@@ -179,11 +179,13 @@ mod tests {
     use super::*;
     use bitcoin::network::constants::Network as BtcNetwork;
     use crate::{
-        chains::btc::utxo_manager::utxo_database_utils::save_utxos_to_db,
+        chains::btc::{
+            btc_constants::BTC_PRIVATE_KEY_DB_KEY,
+            utxo_manager::utxo_database_utils::save_utxos_to_db,
+        },
         btc_on_eos::{
             test_utils::get_test_database,
             btc::{
-                btc_constants::BTC_PRIVATE_KEY_DB_KEY,
                 btc_utils::get_hex_tx_from_signed_btc_tx,
                 btc_crypto::btc_private_key::BtcPrivateKey,
                 btc_test_utils::{

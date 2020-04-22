@@ -13,6 +13,10 @@ use crate::{
         convert_u64_to_bytes,
     },
     chains::btc::{
+        btc_constants::{
+            DEFAULT_BTC_SEQUENCE,
+            PTOKEN_P2SH_SCRIPT_BYTES,
+        },
         btc_types::{
             DepositAddressInfo,
             DepositAddressInfoJson,
@@ -24,16 +28,10 @@ use crate::{
     },
     btc_on_eos::{
         constants::SAFE_EOS_ADDRESS,
-        btc::{
-            btc_constants::{
-                DEFAULT_BTC_SEQUENCE,
-                PTOKEN_P2SH_SCRIPT_BYTES,
-            },
-            btc_types::{
-                BtcBlockAndId,
-                MintingParams,
-                BtcBlockInDbFormat,
-            },
+        btc::btc_types::{
+            BtcBlockAndId,
+            MintingParams,
+            BtcBlockInDbFormat,
         },
     },
 };
