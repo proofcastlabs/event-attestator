@@ -152,33 +152,6 @@ pub fn parse_submission_material_and_put_in_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-/* TODO reinstate once we have test vectors!
-    #[test]
-    fn should_parse_btc_block_json() {
-        let string = get_sample_btc_block_json_string();
-        if let Err(e) = parse_submission_material_to_json(&string) {
-            panic!("Error getting json from btc block and txs sample: {}", e);
-        }
-    }
-
-    #[test]
-    fn should_parse_block_and_tx_json_to_struct() {
-        let json = get_sample_btc_block_json()
-            .unwrap();
-        if let Err(e) = parse_btc_block_from_submission_material(json) {
-            panic!("Error getting json from btc block and txs sample: {}", e);
-        }
-    }
-
-    #[test]
-    fn should_not_panic_deserializing_tx() {
-        let tx_bytes = hex::decode("0200000000010117c33a062c8d0c2ce104c9988599f6ba382ff9f786ad48519425e39af23da9880000000000feffffff022c920b00000000001976a914be8a09363cd4719b1c05b2703797ca890b718b5088acf980d30d000000001600147448bbdfe47ec14f27c68393e766567ac7c9c77102473044022073fc2b43d5c5f56d7bc92b47a28db989e04988411721db96fb0eea6689fb83ab022034b7ce2729e867962891fec894210d0faf538b971d3ae9059ebb34358209ec9e012102a51b8eb0eb8ef6b2a421fb1aae3d7308e6cdae165b90f78074c2493af98e3612c43b0900")
-            .unwrap();
-        if let Err(e) = deserialize::<BtcTransaction>(&tx_bytes) {
-            panic!("Error deserializing tx: {}", e);
-        }
-    }
-    */
 
     #[test]
     fn should_parse_deposit_list_json_to_deposit_info() {

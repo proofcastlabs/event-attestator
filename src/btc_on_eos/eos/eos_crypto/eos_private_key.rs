@@ -31,7 +31,7 @@ use crate::{
     },
 };
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct EosPrivateKey {
     pub compressed: bool,
     private_key: SecretKey,
@@ -168,6 +168,18 @@ impl FromStr for EosPrivateKey {
 impl fmt::Debug for EosPrivateKey {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[private key data]")
+    }
+}
+
+impl Drop for EosPrivateKey {
+    fn drop(&mut self) {
+        unsafe {
+            ::std::ptr::write_volatile(
+                &mut self.private_key,
+                generate_random_private_key()
+                    .expect("Failed to get EOS private key!"),
+            )
+        };
     }
 }
 

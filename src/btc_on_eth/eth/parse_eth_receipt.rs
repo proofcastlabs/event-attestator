@@ -62,14 +62,6 @@ pub fn parse_eth_receipt_json(
                     convert_json_value_to_string(eth_receipt_json.to)?
                 )?,
             },
-            /* NOTE: Note used in Ropsten!
-            root: match eth_receipt_json.root {
-                serde_json::Value::Null => H256::zero(),
-                _ => convert_hex_to_h256(
-                    convert_json_value_to_string(eth_receipt_json.root)?
-                )?,
-            },
-            */
             contract_address: match eth_receipt_json.contractAddress {
                 serde_json::Value::Null => Address::zero(),
                 _ => convert_hex_to_address(
