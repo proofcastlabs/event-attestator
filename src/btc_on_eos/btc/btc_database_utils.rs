@@ -277,7 +277,7 @@ pub fn put_btc_private_key_in_db<D>(db: &D, pk: &BtcPrivateKey) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Saving BTC private key into db...");
-    pk.write_to_database(db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
+    pk.write_to_db(db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
 }
 
 pub fn get_btc_private_key_from_db<D>(db: &D) -> Result<BtcPrivateKey>

@@ -13,17 +13,15 @@ use bitcoin_hashes::{
 };
 use crate::{
     base58,
+    types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    types::{
-        Bytes,
-        Result,
-    },
     btc_on_eos::{
         crypto_utils::generate_random_private_key,
         constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
         eos::{
             eos_types::EosNetwork,
+            eos_constants::EOS_PRIVATE_KEY_DB_KEY,
             eos_crypto::eos_signature::EosSignature,
         },
     },
@@ -112,18 +110,31 @@ impl EosPrivateKey {
         self.sign_hash(&msg_hash)
     }
 
-    pub fn write_to_database<D>(
+    pub fn write_to_db<D>(
         &self,
         db: &D,
-        key: &Bytes,
     ) -> Result<()>
         where D: DatabaseInterface
     {
+        trace!("✔ Putting EOS private key in db...");
         db.put(
-            key.to_vec(),
+            EOS_PRIVATE_KEY_DB_KEY.to_vec(),
             self.private_key[..].to_vec(),
             PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
         )
+    }
+
+    pub fn get_from_db<D>(
+        db: &D,
+    ) -> Result<Self>
+        where D: DatabaseInterface
+    {
+        trace!("✔ Getting EOS private key from db...");
+        db.get(
+                EOS_PRIVATE_KEY_DB_KEY.to_vec(),
+                PRIVATE_KEY_DATA_SENSITIVITY_LEVEL
+            )
+            .and_then(|bytes| Self::from_slice(&bytes[..]))
     }
 }
 

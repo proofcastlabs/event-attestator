@@ -105,7 +105,7 @@ impl BtcPrivateKey {
         )
     }
 
-    pub fn write_to_database<D>(
+    pub fn write_to_db<D>(
         &self,
         db: &D,
         key: &Bytes,

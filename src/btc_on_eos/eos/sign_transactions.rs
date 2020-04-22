@@ -232,7 +232,7 @@ mod tests {
             btc_network.clone(),
         ).unwrap();
         pk
-            .write_to_database(&db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
+            .write_to_db(&db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
             .unwrap();
         put_btc_network_in_db(&db, btc_network)
             .unwrap();
@@ -277,7 +277,7 @@ mod tests {
             btc_network.clone(),
         ).unwrap();
         pk
-            .write_to_database(&db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
+            .write_to_db(&db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
             .unwrap();
         put_btc_network_in_db(&db, btc_network)
             .unwrap();
@@ -323,7 +323,7 @@ mod tests {
             btc_network.clone(),
         ).unwrap();
         pk
-            .write_to_database(&db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
+            .write_to_db(&db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
             .unwrap();
         put_btc_network_in_db(&db, btc_network)
             .unwrap();
