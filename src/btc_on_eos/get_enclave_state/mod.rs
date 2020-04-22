@@ -11,10 +11,7 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized,
         eos::{
             eos_types::EosKnownSchedulesJsons,
-            eos_crypto::{
-                eos_public_key::EosPublicKey,
-                eos_private_key::EosPrivateKey,
-            },
+            eos_crypto::eos_private_key::EosPrivateKey,
             eos_database_utils::{
                 get_eos_chain_id_from_db,
                 get_eos_token_symbol_from_db,
@@ -93,9 +90,9 @@ pub fn get_enclave_state<D>(
             let btc_anchor_block = get_btc_anchor_block_from_db(&db)?;
             let btc_latest_block = get_btc_latest_block_from_db(&db)?;
             let btc_private_key = get_btc_private_key_from_db(&db)?;
-            let eos_public_key = EosPublicKey::from(
-                &EosPrivateKey::get_from_db(&db)?
-            ).to_string();
+            let eos_public_key = EosPrivateKey::get_from_db(&db)?
+                .to_public_key()
+                .to_string();
             let btc_public_key_hex = hex::encode(
                 &btc_private_key
                     .to_public_key_slice()

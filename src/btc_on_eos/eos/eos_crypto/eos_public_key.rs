@@ -24,10 +24,7 @@ use crate::{
         crypto_utils::sha256_hash_message_bytes,
         eos::{
             eos_hash::ripemd160,
-            eos_crypto::{
-                eos_private_key::EosPrivateKey,
-                eos_signature::EosSignature,
-            },
+            eos_crypto::eos_signature::EosSignature,
             eos_constants::{
                 PUBLIC_KEY_SIZE,
                 PUBLIC_KEY_CHECKSUM_SIZE,
@@ -172,18 +169,6 @@ impl FromStr for EosPublicKey {
     }
 }
 
-impl<'a> From<&'a EosPrivateKey> for EosPublicKey {
-    fn from(eos_private_key: &EosPrivateKey) -> EosPublicKey {
-        EosPublicKey {
-            compressed: true,
-            public_key: PublicKey::from_secret_key(
-                &Secp256k1::new(),
-                &eos_private_key.private_key
-            )
-        }
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -221,15 +206,6 @@ mod test {
             Ok(_) => panic!("SHould not have succeeded!"),
             Err(e) => panic!("Wrong error received: {}", e)
         }
-    }
-
-    #[test]
-    fn should_convert_private_to_public_correctly() {
-        let expected_result = get_sample_eos_public_key_str();
-        let private_key = get_sample_eos_private_key();
-        let result = EosPublicKey::from(&private_key)
-            .to_string();
-        assert!(result ==  expected_result);
     }
 
     #[test]
