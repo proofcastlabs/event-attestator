@@ -20,10 +20,8 @@ fn check_difficulty_is_above_threshold(
     btc_block_header: &BtcBlockHeader,
     network: BtcNetwork,
 ) -> Result<()> {
-    /*
-     * NOTE: Network not configurable in difficulty calculation ∵ all members
-     * of the enum return the same value from underlying lib!
-     */
+    // NOTE: Network not configurable in difficulty calculation ∵ all members
+    // of the enum return the same value from underlying lib!
     info!("✔ Checking BTC block difficulty is above threshold...");
     match network {
         BtcNetwork::Bitcoin => {

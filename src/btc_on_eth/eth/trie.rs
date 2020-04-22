@@ -1140,6 +1140,12 @@ pub fn put_in_trie_recursively(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use simplelog::{
+        TermLogger,
+        LevelFilter,
+        Config,
+        TerminalMode,
+    };
     use crate::btc_on_eth::{
         utils::{
             convert_hex_to_h256,
@@ -1270,7 +1276,7 @@ mod tests {
 
     #[test]
     fn should_put_valid_sample_receipts_in_trie_correctly() {
-        /*
+        /* NOTE: Uncomment for ungodly amounts of output.
         TermLogger::init(
             LevelFilter::Trace,
             Config::default(),
@@ -1299,7 +1305,7 @@ mod tests {
 
     #[test]
     fn should_put_invalid_sample_receipts_in_trie_correctly() {
-        /*
+        /* NOTE: Uncomment for ungodly amounts of output.
         TermLogger::init(
             LevelFilter::Trace,
             Config::default(),
@@ -1332,16 +1338,9 @@ mod tests {
 
     #[test]
     fn should_validate_root_hash_correctly() {
-        /*
-        use simplelog::{
-            TermLogger,
-            LevelFilter,
-            Config,
-            TerminalMode,
-        };
+        /* NOTE: Uncomment for ungodly amounts of output.
         TermLogger::init(
             LevelFilter::Trace,
-            //LevelFilter::Info,
             Config::default(),
             TerminalMode::Mixed
         ).unwrap();
