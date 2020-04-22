@@ -1,3 +1,4 @@
+pub const PRODUCER_REPS: u64 = 12;
 pub const PUBLIC_KEY_SIZE: usize = 33;
 pub const EOS_NUM_DECIMALS: usize = 4;
 pub const EOS_NAME_BYTES_LEN: usize = 8;
