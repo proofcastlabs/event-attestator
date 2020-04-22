@@ -65,12 +65,6 @@ macro_rules! impl_hash {
             }
         }
 
-        impl From<&'static str> for $name {
-            fn from(s: &'static str) -> Self {
-                s.parse().unwrap()
-            }
-        }
-
         impl From<u8> for $name {
             fn from(v: u8) -> Self {
                 let mut result = Self::default();
@@ -181,11 +175,6 @@ impl_hash!(H520, 65);
 //known_heap_size!(0, H32, H48, H96, H160, H256, H264, H512, H520);
 
 impl H256 {
-    #[inline]
-    pub fn from_reversed_str(s: &'static str) -> Self {
-        H256::from(s).reversed()
-    }
-
     #[inline]
     pub fn to_reversed_str(&self) -> String {
         self.reversed().to_string()
