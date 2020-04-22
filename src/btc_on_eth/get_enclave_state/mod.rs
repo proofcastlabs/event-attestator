@@ -2,10 +2,13 @@ use crate::{
     types::Result,
     constants::DEBUG_MODE,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::utxo_database_utils::{
-        get_utxo_nonce_from_db,
-        get_total_utxo_balance_from_db,
-        get_total_number_of_utxos_from_db,
+    chains::btc::{
+        btc_constants::BTC_TAIL_LENGTH,
+        utxo_manager::utxo_database_utils::{
+            get_utxo_nonce_from_db,
+            get_total_utxo_balance_from_db,
+            get_total_number_of_utxos_from_db,
+        },
     },
     btc_on_eth::{
         eth::{
@@ -26,7 +29,6 @@ use crate::{
             },
         },
         btc::{
-            btc_constants::BTC_TAIL_LENGTH,
             update_btc_linker_hash::{
                 get_linker_hash_or_genesis_hash as get_btc_linker_hash,
             },
