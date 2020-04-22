@@ -18,6 +18,7 @@ use crate::{
             increment_signature_nonce::maybe_increment_signature_nonce,
             get_processed_tx_ids::get_processed_tx_ids_and_add_to_state,
             parse_redeem_params::maybe_parse_redeem_params_and_put_in_state,
+            validate_producer_slot::validate_producer_slot_of_block_in_state,
             get_active_schedule::get_active_schedule_from_db_and_add_to_state,
             filter_duplicate_proofs::maybe_filter_duplicate_proofs_from_state,
             add_tx_ids_to_processed_list::maybe_add_tx_ids_to_processed_tx_ids,
@@ -70,6 +71,7 @@ pub fn submit_eos_block_to_core<D>(
         .and_then(get_incremerkle_and_add_to_state)
         .and_then(append_interim_block_ids_to_incremerkle_in_state)
         .and_then(get_active_schedule_from_db_and_add_to_state)
+        .and_then(validate_producer_slot_of_block_in_state)
         .and_then(validate_block_header_signature)
         .and_then(start_eos_db_transaction)
         .and_then(get_processed_tx_ids_and_add_to_state)
