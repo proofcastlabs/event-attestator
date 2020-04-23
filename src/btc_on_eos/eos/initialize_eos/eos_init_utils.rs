@@ -74,24 +74,53 @@ pub fn test_block_validation_and_return_state<D>(
         .and(Ok(state))
 }
 
-pub fn generate_and_put_incremerkle_in_db_and_return_state<D>(
+pub fn generate_and_put_incremerkle_in_db<D>(
+    db: &D,
     blockroot_merkle: &Vec<String>,
-    state: EosState<D>,
-) -> Result<EosState<D>>
+) -> Result<()>
     where D: DatabaseInterface
 {
     info!("✔ Generating and putting incremerkle in db...");
     put_incremerkle_in_db(
-        &state.db,
+        db,
         &IncreMerkle::new(
-            get_eos_last_seen_block_num_from_db(&state.db)? - 1,
+            get_eos_last_seen_block_num_from_db(db)? - 1,
             blockroot_merkle
                 .iter()
                 .map(convert_hex_to_checksum256)
                 .collect::<Result<Checksum256s>>()?
         ),
     )
+}
+
+pub fn generate_and_put_incremerkle_in_db_and_return_state<D>(
+    blockroot_merkle: &Vec<String>,
+    state: EosState<D>,
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    generate_and_put_incremerkle_in_db(&state.db, &blockroot_merkle)
         .and(Ok(state))
+}
+
+pub fn put_eos_latest_block_info_in_db<D>(
+    db: &D,
+    block_json: &EosBlockHeaderJson,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    info!(
+        "✔ Putting latest block number '{}' & ID '{}' into db...",
+        &block_json.block_num,
+        &block_json.block_id
+    );
+    put_eos_last_seen_block_num_in_db(db, block_json.block_num)
+        .and_then(|_|
+            put_eos_last_seen_block_id_in_db(
+                db,
+                &convert_hex_to_checksum256(block_json.block_id.clone())?
+            )
+        )
 }
 
 pub fn put_eos_latest_block_info_in_db_and_return_state<D>(
@@ -100,18 +129,7 @@ pub fn put_eos_latest_block_info_in_db_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    info!(
-        "✔ Putting latest block number '{}' & ID '{}' into db...",
-        &block_json.block_num,
-        &block_json.block_id
-    );
-    put_eos_last_seen_block_num_in_db(&state.db, block_json.block_num)
-        .and_then(|_|
-            put_eos_last_seen_block_id_in_db(
-                &state.db,
-                &convert_hex_to_checksum256(block_json.block_id.clone())?
-            )
-        )
+    put_eos_latest_block_info_in_db(&state.db, block_json)
         .and(Ok(state))
 }
 
