@@ -19,9 +19,33 @@ use crate::{
             eos_database_utils::put_eos_schedule_in_db,
             eos_constants::EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
             parse_eos_schedule::parse_schedule_string_to_schedule,
+            initialize_eos::eos_init_utils::{
+                put_eos_latest_block_info_in_db,
+                parse_eos_init_json_from_string,
+                generate_and_put_incremerkle_in_db,
+            },
         },
     },
 };
+
+pub fn debug_update_incremerkle<D>(
+    db: &D,
+    eos_init_json: String,
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    info!("✔ Debug updating blockroot merkle...");
+    let init_json = parse_eos_init_json_from_string(eos_init_json)?;
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(db))
+        .and_then(|_| put_eos_latest_block_info_in_db(db, &init_json.block))
+        .and_then(|_|
+            generate_and_put_incremerkle_in_db(db, &init_json.blockroot_merkle)
+        )
+        .and_then(|_|
+            Ok("{debug_update_blockroot_merkle_success:true}".to_string())
+        )
+}
 
 pub fn debug_clear_all_utxos<D>(
     db: &D,

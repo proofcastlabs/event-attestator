@@ -1,19 +1,17 @@
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eos::eos::{
         eos_state::EosState,
-        eos_types::EosBlockHeaderJson,
         eos_database_utils::{
             end_eos_db_transaction,
             start_eos_db_transaction,
         },
-        parse_eos_schedule::EosProducerScheduleJson,
         initialize_eos::{
             is_eos_core_initialized::is_eos_core_initialized,
             eos_init_utils::{
                 get_eos_init_output,
+                parse_eos_init_json_from_string,
                 test_block_validation_and_return_state,
                 put_eos_schedule_in_db_and_return_state,
                 put_eos_chain_id_in_db_and_return_state,
@@ -30,13 +28,6 @@ use crate::{
     },
 };
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosInitJson {
-    pub block: EosBlockHeaderJson,
-    pub blockroot_merkle: Vec<String>,
-    pub active_schedule: EosProducerScheduleJson,
-}
-
 pub fn maybe_initialize_eos_core<D>(
     db: D,
     chain_id: String,
@@ -46,11 +37,8 @@ pub fn maybe_initialize_eos_core<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    let init_json: EosInitJson = match serde_json::from_str(&eos_init_json) {
-        Ok(result) => Ok(result),
-        Err(e) => Err(AppError::Custom(e.to_string()))
-    }?;
     info!("✔ Maybe initializing EOS core...");
+    let init_json = parse_eos_init_json_from_string(eos_init_json)?;
     match is_eos_core_initialized(&db) {
         true => {
             info!("✔ EOS core already initialized!");
