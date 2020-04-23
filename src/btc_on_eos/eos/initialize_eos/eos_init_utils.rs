@@ -1,5 +1,6 @@
 use crate::{
     types::Result,
+    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eos::{
         utils::convert_hex_to_checksum256,
@@ -37,6 +38,22 @@ use crate::{
         },
     },
 };
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct EosInitJson {
+    pub block: EosBlockHeaderJson,
+    pub blockroot_merkle: Vec<String>,
+    pub active_schedule: EosProducerScheduleJson,
+}
+
+pub fn parse_eos_init_json_from_string(
+    eos_init_json: String,
+) -> Result<EosInitJson> {
+    match serde_json::from_str(&eos_init_json) {
+        Ok(result) => Ok(result),
+        Err(e) => Err(AppError::Custom(e.to_string()))
+    }
+}
 
 pub fn test_block_validation_and_return_state<D>(
     block_json: &EosBlockHeaderJson,
