@@ -1,9 +1,9 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::btc_constants::BTC_CANON_BLOCK_HASH_KEY,
     btc_on_eos::btc::{
         btc_state::BtcState,
+        btc_constants::BTC_CANON_BLOCK_HASH_KEY,
         btc_database_utils::{
             key_exists_in_db,
             put_btc_canon_block_hash_in_db,

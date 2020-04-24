@@ -3,6 +3,7 @@ pub mod btc_types;
 pub mod btc_utils;
 pub mod btc_crypto;
 pub mod filter_utxos;
+pub mod btc_constants;
 pub mod btc_test_utils;
 pub mod initialize_btc;
 pub mod btc_transaction;
