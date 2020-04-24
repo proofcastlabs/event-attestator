@@ -17,6 +17,7 @@ use secp256k1::{
 };
 use crate::{
     traits::DatabaseInterface,
+    chains::btc::btc_utils::get_btc_one_key,
     types::{
         Bytes,
         Result,
@@ -128,14 +129,7 @@ impl fmt::Display for BtcPrivateKey {
 
 impl Drop for BtcPrivateKey {
     fn drop(&mut self) {
-        use crate::btc_on_eth::btc::btc_test_utils::SAMPLE_BTC_PRIVATE_KEY_WIF;
-        unsafe {
-            ::std::ptr::write_volatile(
-                &mut self.0,
-                PrivateKey::from_wif(SAMPLE_BTC_PRIVATE_KEY_WIF)
-                    .expect("Failed to get BTC private key!"),
-            )
-        };
+        unsafe { ::std::ptr::write_volatile(&mut self.0, get_btc_one_key()) };
     }
 }
 

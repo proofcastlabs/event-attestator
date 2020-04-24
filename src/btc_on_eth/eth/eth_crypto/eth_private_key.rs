@@ -4,6 +4,7 @@ use secp256k1::{
     Message,
     Secp256k1,
     key::{
+        ONE_KEY,
         SecretKey,
         PublicKey,
     },
@@ -93,13 +94,7 @@ impl fmt::Display for EthPrivateKey {
 
 impl Drop for EthPrivateKey {
     fn drop(&mut self) {
-        unsafe {
-            ::std::ptr::write_volatile(
-                &mut self.0,
-                generate_random_private_key()
-                    .expect("Failed to get ETH private key!"),
-            )
-        };
+        unsafe { ::std::ptr::write_volatile(&mut self.0, ONE_KEY) };
     }
 }
 
