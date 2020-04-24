@@ -1,4 +1,9 @@
+use secp256k1::key::ONE_KEY;
 use ethereum_types::Address as EthAddress;
+use bitcoin::{
+    util::key::PrivateKey,
+    network::constants::Network,
+};
 use crate::{
     types::{
         Bytes,
@@ -103,6 +108,14 @@ impl SerializedBlockInDbFormat {
             extra_data: serialized_extra_data,
             minting_params: serialized_minting_params,
         }
+    }
+}
+
+pub fn get_btc_one_key() -> PrivateKey {
+    PrivateKey {
+        key: ONE_KEY,
+        compressed: false,
+        network: Network::Bitcoin,
     }
 }
 

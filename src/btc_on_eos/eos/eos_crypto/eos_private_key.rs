@@ -6,7 +6,10 @@ use std::{
 use secp256k1::{
     Message,
     Secp256k1,
-    key::PublicKey,
+    key::{
+        ONE_KEY,
+        PublicKey,
+    },
 };
 use bitcoin_hashes::{
     sha256,
@@ -173,13 +176,7 @@ impl fmt::Debug for EosPrivateKey {
 
 impl Drop for EosPrivateKey {
     fn drop(&mut self) {
-        unsafe {
-            ::std::ptr::write_volatile(
-                &mut self.private_key,
-                generate_random_private_key()
-                    .expect("Failed to get EOS private key!"),
-            )
-        };
+        unsafe { ::std::ptr::write_volatile(&mut self.private_key, ONE_KEY) };
     }
 }
 
