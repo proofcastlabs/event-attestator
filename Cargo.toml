@@ -3,15 +3,13 @@ license = "MIT"
 publish = false
 edition = "2018"
 version = "0.1.0"
-name = "pbtc_core"
 readme = "README.md"
+name = "ptokens_core"
 keywords = ["provable", "defi", "crypto"]
 authors = ["Provable Things <provable.xyz>", "Greg Kapka <greg@oraclize.it>"]
 
 [features]
 debug = []
-default = []
-btc-on-eth = []
 
 [dependencies]
 hex = "=0.4.0"
@@ -31,5 +29,9 @@ ethereum-types = "=0.7.0"
 bitcoin_hashes = "=0.7.0"
 serde_derive = "=1.0.101"
 serde = { version = "=1", features = ["derive"] }
-secp256k1 = { version = "=0.15.0", features = ["recovery"] }
-bitcoin = { git = "https://github.com/provable-things/rust-bitcoin.git", branch = "provable-additions" }
+bitcoin = { git = "https://github.com/provable-things/rust-bitcoin.git", rev = "53a5a78" }
+secp256k1 = { git = "https://github.com/bifrost-codes/rust-secp256k1", features = ["recovery", "unstable"] }
+eos-primitives = { git = "https://github.com/provable-things/rust-eos.git", branch = "provable-additions" }
+
+[dev-dependencies]
+simple_logger = "1.6.0"

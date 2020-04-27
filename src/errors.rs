@@ -1,8 +1,4 @@
-use hex;
-use log;
-use std::fmt;
-use serde_json;
-use std::error::Error;
+use std::{fmt, error::Error};
 
 #[derive(Debug)]
 pub enum AppError {
@@ -16,19 +12,22 @@ pub enum AppError {
     FromUtf8Error(std::str::Utf8Error),
     SetLoggerError(log::SetLoggerError),
     ParseIntError(std::num::ParseIntError),
+    ChronoError(chrono::format::ParseError),
+    EosPrimitivesError(eos_primitives::Error),
     BitcoinHexError(bitcoin_hashes::hex::Error),
     SystemTimeError(std::time::SystemTimeError),
     FromSliceError(std::array::TryFromSliceError),
     BitcoinHashError(bitcoin_hashes::error::Error),
     BitcoinError(bitcoin::consensus::encode::Error),
     BitcoinAddressError(bitcoin::util::address::Error),
+    EosPrimitivesNamesError(eos_primitives::ParseNameError),
 }
 
 impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match *self {
             AppError::Custom(ref msg) =>
-                format!("{}", msg),
+                msg.to_string(),
             AppError::HexError(ref e) =>
                 format!("✘ Hex Error!\n✘ {}", e),
             AppError::IOError(ref e) =>
@@ -39,12 +38,15 @@ impl fmt::Display for AppError {
                 format!("✘ Base58 Error!\n✘ {}", e),
             AppError::BitcoinError(ref e) =>
                 format!("✘ Bitcoin Error!\n✘ {}", e),
+            AppError::ChronoError(ref e) =>
+                format!("✘ Chrono error: \n✘ {:?}", e),
             AppError::SerdeJsonError(ref e) =>
                 format!("✘ Serde-Json Error!\n✘ {}", e),
             AppError::BitcoinHexError(ref e) =>
                 format!("✘ Bitcoin Hex Error!\n✘ {}", e),
             AppError::ParseIntError(ref e) =>
                 format!("✘ Parse Int Error!\n✘ {:?}", e),
+
             AppError::SystemTimeError(ref e) =>
                 format!("✘ System Time Error!\n✘ {}", e),
             AppError::BitcoinHashError(ref e) =>
@@ -57,8 +59,12 @@ impl fmt::Display for AppError {
                 format!("✘ Nothing to unwrap!\n✘ {:?}", e),
             AppError::BitcoinAddressError(ref e) =>
                 format!("✘ Bitcoin Address Error!\n✘ {}", e),
+            AppError::EosPrimitivesError(ref e) =>
+                format!("✘ Eos Primitives Error!\n✘ {:?}", e),
             AppError::SetLoggerError(ref e) =>
                 format!("✘ Error setting up logger!\n✘ {}", e),
+            AppError::EosPrimitivesNamesError(ref e) =>
+                format!("✘ Eos Primitives Names Error!\n✘ {:?}", e),
         };
         f.write_fmt(format_args!("{}", msg))
     }
@@ -157,5 +163,23 @@ impl From<bitcoin_hashes::error::Error> for AppError {
 impl From<bitcoin::util::address::Error> for AppError {
     fn from(e: bitcoin::util::address::Error) -> AppError {
         AppError::BitcoinAddressError(e)
+    }
+}
+
+impl From<eos_primitives::ParseNameError> for AppError {
+    fn from(e: eos_primitives::ParseNameError) -> AppError {
+        AppError::EosPrimitivesNamesError(e)
+    }
+}
+
+impl From<eos_primitives::Error> for AppError {
+    fn from(e: eos_primitives::Error) -> AppError {
+        AppError::EosPrimitivesError(e)
+    }
+}
+
+impl From<chrono::format::ParseError> for AppError {
+    fn from(e: chrono::format::ParseError) -> AppError {
+        AppError::ChronoError(e)
     }
 }
