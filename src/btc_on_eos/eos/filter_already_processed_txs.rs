@@ -17,10 +17,7 @@ fn filter_out_already_processed_txs(
     Ok(
         redeem_params
             .iter()
-            .filter(|params|
-                !processed_tx_ids
-                    .contains(&params.originating_tx_id.to_string())
-            )
+            .filter(|params| !processed_tx_ids.contains(&params.global_sequence))
             .cloned()
             .collect::<Vec<RedeemParams>>()
     )

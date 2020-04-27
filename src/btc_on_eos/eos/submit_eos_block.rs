@@ -21,7 +21,6 @@ use crate::{
             validate_producer_slot::validate_producer_slot_of_block_in_state,
             get_active_schedule::get_active_schedule_from_db_and_add_to_state,
             filter_duplicate_proofs::maybe_filter_duplicate_proofs_from_state,
-            add_tx_ids_to_processed_list::maybe_add_tx_ids_to_processed_tx_ids,
             parse_submission_material::{
                 parse_submission_material_and_add_to_state,
             },
@@ -30,6 +29,9 @@ use crate::{
             },
             filter_irrelevant_proofs::{
                 maybe_filter_out_irrelevant_proofs_from_state,
+            },
+            add_global_sequences_to_processed_list::{
+                maybe_add_global_sequences_to_processed_list,
             },
             filter_proofs_with_wrong_action_mroot::{
                 maybe_filter_out_proofs_with_wrong_action_mroot,
@@ -84,7 +86,7 @@ pub fn submit_eos_block_to_core<D>(
         .and_then(maybe_parse_redeem_params_and_put_in_state)
         .and_then(maybe_filter_value_too_low_redeem_params_in_state)
         .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
-        .and_then(maybe_add_tx_ids_to_processed_tx_ids)
+        .and_then(maybe_add_global_sequences_to_processed_list)
         .and_then(maybe_sign_txs_and_add_to_state)
         .and_then(maybe_increment_signature_nonce)
         .and_then(maybe_extract_btc_utxo_from_btc_tx_in_state)

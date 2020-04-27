@@ -26,6 +26,7 @@ use crate::{
 
 pub type EosAmount = String;
 pub type EosAddress = String;
+pub type GlobalSequence = u64;
 pub type MerklePath = Vec<Bytes>;
 pub type MerkleProof = Vec<String>;
 pub type EosAddresses = Vec<String>;
@@ -35,6 +36,7 @@ pub type ActionProofs = Vec<ActionProof>;
 pub type MerkleProofs = Vec<MerkleProof>;
 pub type EosSignatures = Vec<EosSignature>;
 pub type ProducerKeys = Vec<EosProducerKey>;
+pub type GlobalSequences = Vec<GlobalSequence>;
 pub type ActionProofJsons = Vec<ActionProofJson>;
 pub type Sha256HashedMessage = secp256k1::Message;
 pub type AuthSequenceJsons = Vec<AuthSequenceJson>;
@@ -130,6 +132,7 @@ pub struct RedeemParams {
     pub recipient: String,
     pub from: EosAccountName,
     pub originating_tx_id: Checksum256,
+    pub global_sequence: GlobalSequence,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Copy)]
@@ -285,26 +288,29 @@ pub struct EosActionReceiptJson {
 pub struct AuthSequenceJson(pub String, pub u64);
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-pub struct ProcessedTxIds(pub Vec<String>);
+pub struct ProcessedTxIds(pub Vec<GlobalSequence>);
 
 impl ProcessedTxIds {
     pub fn init() -> Self {
         ProcessedTxIds(vec![])
     }
 
-    pub fn add(mut self, tx_id: String) -> Result<Self> {
-        if !Self::contains(&self, &tx_id) {
-            self.0.push(tx_id);
+    pub fn add(mut self, global_sequence: GlobalSequence) -> Result<Self> {
+        if !Self::contains(&self, &global_sequence) {
+            self.0.push(global_sequence);
         }
         Ok(self)
     }
 
-    pub fn add_multi(mut self, tx_ids: &mut Vec<String>) -> Result<Self> {
-        self.0.append(tx_ids);
+    pub fn add_multi(
+        mut self,
+        global_sequences: &mut GlobalSequences
+    ) -> Result<Self> {
+        self.0.append(global_sequences);
         Ok(self)
     }
 
-    pub fn contains(&self, tx_id: &String) -> bool {
-        self.0.contains(tx_id)
+    pub fn contains(&self, global_sequence: &GlobalSequence) -> bool {
+        self.0.contains(global_sequence)
     }
 }
