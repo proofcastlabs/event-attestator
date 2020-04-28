@@ -53,6 +53,10 @@ impl RedeemParams {
     ) -> Result<Self> {
         Ok(
             RedeemParams {
+                global_sequence: action_proof
+                    .action_receipt
+                    .global_sequence
+                    .clone(),
                 amount: get_eos_amount_from_action_data(
                     &action_proof.action.data,
                 )?,
@@ -158,6 +162,7 @@ mod tests {
     #[test]
     fn should_get_redeem_params_from_action_proof_2() {
         let expected_result = RedeemParams {
+            global_sequence: 577606126,
             amount: 1,
             recipient: "mr6ioeUxNMoavbr2VjaSbPAovzzgDT7Su9"
                 .to_string(),
@@ -179,6 +184,7 @@ mod tests {
     #[test]
     fn should_get_redeem_params_from_action_proof_3() {
         let expected_result = RedeemParams {
+            global_sequence: 583774614,
             amount: 5666,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
                 .to_string(),
@@ -200,6 +206,7 @@ mod tests {
     #[test]
     fn should_get_redeem_params_from_action_proof_4() {
         let expected_result = RedeemParams {
+            global_sequence: 579818529,
             amount: 5555,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
                 .to_string(),
@@ -221,6 +228,7 @@ mod tests {
     #[test]
     fn should_get_redeem_params_from_action_proof_5() {
         let expected_result = RedeemParams {
+            global_sequence: 579838915,
             amount: 5111,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
                 .to_string(),
