@@ -27,6 +27,7 @@ use crate::{
         test_utils::get_sample_message_to_sign,
         eos::{
             eos_state::EosState,
+            initialize_eos::eos_init_utils::EosInitJson,
             parse_eos_schedule::{
                 EosProducerScheduleJson,
                 parse_schedule_string_to_json,
@@ -57,6 +58,7 @@ use crate::{
 };
 
 pub const NUM_SAMPLES: usize = 5; // TODO update once all are passing validation!
+pub const NUM_INIT_SAMPLES: usize = 3;
 
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-81784220.json";
@@ -79,6 +81,15 @@ pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_6: &str =
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_7: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-10700626.json";
 
+pub const SAMPLE_INIT_BLOCK_JSON_PATH_1: &str =
+    "src/btc_on_eos/eos/eos_test_utils/jungle-3-init-block-10857380.json";
+
+pub const SAMPLE_INIT_BLOCK_JSON_PATH_2: &str =
+    "src/btc_on_eos/eos/eos_test_utils/jungle-3-init-block-11879805.json";
+
+pub const SAMPLE_INIT_BLOCK_JSON_PATH_3: &str =
+    "src/btc_on_eos/eos/eos_test_utils/jungle-3-init-block-11379805.json";
+
 pub const SAMPLE_EOS_ACTIVE_SCHEDULE_PATH_PREFIX: &str =
     "src/btc_on_eos/eos/eos_test_utils/sample-active-schedule-";
 
@@ -86,6 +97,24 @@ pub const EOS_JUNGLE_CHAIN_ID: &str =
     "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
 
 pub const TEMPORARY_DATABASE_PATH: &str = "src/test_utils/temporary_database";
+
+pub fn get_init_json_n(num: usize) -> Result<EosInitJson> {
+    let path = match num {
+        1 => Ok(SAMPLE_INIT_BLOCK_JSON_PATH_1),
+        2 => Ok(SAMPLE_INIT_BLOCK_JSON_PATH_2),
+        3 => Ok(SAMPLE_INIT_BLOCK_JSON_PATH_3),
+        _ => Err(AppError::Custom(
+            format!("Cannot find sample block num: {}", num)
+        ))
+    }?;
+    let string = match Path::new(&path).exists() {
+        true => Ok(read_to_string(path)?),
+        false => Err(AppError::Custom(
+            format!("✘ Can't find sample init block json file @ path: {}", path)
+        ))
+    }?;
+    EosInitJson::from_json_string(&string)
+}
 
 // Note: Key = provabletokn "active" on Jungle
 pub const EOS_SAMPLE_PRIVATE_KEY_WIF: &str =

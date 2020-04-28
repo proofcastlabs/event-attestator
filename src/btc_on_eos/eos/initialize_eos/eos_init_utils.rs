@@ -46,7 +46,16 @@ pub struct EosInitJson {
     pub active_schedule: EosProducerScheduleJson,
 }
 
-pub fn parse_eos_init_json_from_string(
+impl EosInitJson {
+    pub fn from_json_string(json_string: &String) -> Result<Self> {
+        match serde_json::from_str(&json_string) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(AppError::Custom(e.to_string()))
+        }
+    }
+}
+
+pub fn parse_eos_init_json_from_string( // TODO use impl instead!
     eos_init_json: String,
 ) -> Result<EosInitJson> {
     match serde_json::from_str(&eos_init_json) {
@@ -234,4 +243,70 @@ pub fn put_eos_chain_id_in_db_and_return_state<D>(
         &chain_id,
     )
         .and(Ok(state))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use eos_primitives::Checksum256;
+    use crate::btc_on_eos::{
+        utils::convert_hex_to_checksum256,
+        eos::{
+            eos_merkle_utils::IncreMerkle,
+            parse_eos_schedule::convert_schedule_json_to_schedule_v2,
+            parse_submission_material::parse_eos_block_header_from_json,
+            eos_test_utils::{
+                get_init_json_n,
+                NUM_INIT_SAMPLES,
+            },
+        },
+    };
+
+    fn validate_init_block(init_json: &EosInitJson) {
+        let schedule = convert_schedule_json_to_schedule_v2(
+            &init_json.active_schedule
+        ).unwrap();
+        let block_header = parse_eos_block_header_from_json(
+            &init_json.block
+        ).unwrap();
+        let blockroot_merkle = init_json
+            .blockroot_merkle
+            .iter()
+            .map(|hex| convert_hex_to_checksum256(hex))
+            .collect::<Result<Vec<Checksum256>>>()
+            .unwrap();
+        let producer_signature = init_json
+            .block
+            .producer_signature
+            .clone();
+        let incremerkle = IncreMerkle::new(
+            (block_header.block_num() - 1).into(),
+            blockroot_merkle,
+        );
+        let block_mroot = incremerkle
+            .get_root()
+            .to_bytes()
+            .to_vec();
+        if let Err(_) = check_block_signature_is_valid(
+            &block_mroot,
+            &producer_signature,
+            &block_header,
+            &schedule,
+        ) {
+            panic!("Could not validate init block!");
+        }
+    }
+
+    #[test]
+    fn should_validate_jungle_3_init_blocks() {
+        vec![0; NUM_INIT_SAMPLES]
+            .iter()
+            .enumerate()
+            .map(|(i, _)| get_init_json_n(i + 1))
+            .collect::<Result<Vec<EosInitJson>>>()
+            .unwrap()
+            .iter()
+            .map(|init_json| validate_init_block(init_json))
+            .for_each(drop);
+    }
 }
