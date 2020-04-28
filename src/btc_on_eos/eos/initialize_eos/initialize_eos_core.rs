@@ -10,8 +10,8 @@ use crate::{
         initialize_eos::{
             is_eos_core_initialized::is_eos_core_initialized,
             eos_init_utils::{
+                EosInitJson,
                 get_eos_init_output,
-                parse_eos_init_json_from_string,
                 test_block_validation_and_return_state,
                 put_eos_schedule_in_db_and_return_state,
                 put_eos_chain_id_in_db_and_return_state,
@@ -38,7 +38,7 @@ pub fn maybe_initialize_eos_core<D>(
     where D: DatabaseInterface
 {
     info!("✔ Maybe initializing EOS core...");
-    let init_json = parse_eos_init_json_from_string(eos_init_json)?;
+    let init_json = EosInitJson::from_json_string(&eos_init_json)?;
     match is_eos_core_initialized(&db) {
         true => {
             info!("✔ EOS core already initialized!");

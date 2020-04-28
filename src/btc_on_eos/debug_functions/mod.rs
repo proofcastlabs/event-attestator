@@ -20,8 +20,8 @@ use crate::{
             eos_constants::EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
             parse_eos_schedule::parse_schedule_string_to_schedule,
             initialize_eos::eos_init_utils::{
+                EosInitJson,
                 put_eos_latest_block_info_in_db,
-                parse_eos_init_json_from_string,
                 generate_and_put_incremerkle_in_db,
             },
         },
@@ -35,7 +35,7 @@ pub fn debug_update_incremerkle<D>(
     where D: DatabaseInterface
 {
     info!("✔ Debug updating blockroot merkle...");
-    let init_json = parse_eos_init_json_from_string(eos_init_json)?;
+    let init_json = EosInitJson::from_json_string(&eos_init_json)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(db))
         .and_then(|_| put_eos_latest_block_info_in_db(db, &init_json.block))

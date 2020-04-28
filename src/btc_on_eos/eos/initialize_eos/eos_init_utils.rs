@@ -55,15 +55,6 @@ impl EosInitJson {
     }
 }
 
-pub fn parse_eos_init_json_from_string( // TODO use impl instead!
-    eos_init_json: String,
-) -> Result<EosInitJson> {
-    match serde_json::from_str(&eos_init_json) {
-        Ok(result) => Ok(result),
-        Err(e) => Err(AppError::Custom(e.to_string()))
-    }
-}
-
 pub fn test_block_validation_and_return_state<D>(
     block_json: &EosBlockHeaderJson,
     state: EosState<D>,
