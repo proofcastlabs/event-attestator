@@ -6,7 +6,7 @@ use crate::{
         utils::convert_hex_to_checksum256,
         eos::{
             eos_state::EosState,
-            eos_merkle_utils::IncreMerkle,
+            eos_merkle_utils::Incremerkle,
             eos_crypto::eos_private_key::EosPrivateKey,
             validate_signature::check_block_signature_is_valid,
             parse_eos_schedule::{
@@ -73,7 +73,7 @@ impl EosInitJson {
             .block
             .producer_signature
             .clone();
-        let incremerkle = IncreMerkle::new(
+        let incremerkle = Incremerkle::new(
             (block_header.block_num() - 1).into(),
             blockroot_merkle,
         );
@@ -120,7 +120,7 @@ pub fn generate_and_put_incremerkle_in_db<D>(
     info!("✔ Generating and putting incremerkle in db...");
     put_incremerkle_in_db(
         db,
-        &IncreMerkle::new(
+        &Incremerkle::new(
             get_eos_last_seen_block_num_from_db(db)? - 1,
             blockroot_merkle
                 .iter()

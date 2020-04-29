@@ -26,6 +26,7 @@ use crate::{
         utils::convert_hex_to_checksum256,
         test_utils::get_sample_message_to_sign,
         eos::{
+            eos_merkle_utils::Incremerkle,
             eos_state::EosState,
             initialize_eos::eos_init_utils::EosInitJson,
             parse_eos_schedule::{
