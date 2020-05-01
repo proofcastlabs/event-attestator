@@ -53,11 +53,9 @@ use crate::{
                 parse_eos_submission_material_string_to_struct,
             },
             eos_types::{
-                EosAmount,
                 ActionProof,
                 ActionProofs,
                 Checksum256s,
-                EosSignatures,
                 EosBlockHeaderJson,
                 EosSignedTransaction,
                 EosSignedTransactions,
@@ -266,7 +264,6 @@ pub fn get_init_and_subsequent_blocks_json_n(
     EosInitAndSubsequentJson::from_json_string(&string)
 }
 
->>>>>>> feat(btc-on-eos): adds samples & getters for init & subsequent j3 & mainnet blocks
 pub fn get_init_json_n(num: usize) -> Result<EosInitJson> {
     let path = match num {
         1 => Ok(SAMPLE_INIT_BLOCK_JSON_PATH_1),
@@ -302,6 +299,11 @@ pub fn get_sample_v2_schedule_json_string() -> Result<String> {
 pub fn get_sample_v2_schedule_json() -> Result<EosProducerScheduleJson> {
     get_sample_v2_schedule_json_string()
         .and_then(|json_string| parse_schedule_string_to_json(&json_string))
+}
+
+pub fn get_sample_v2_schedule() -> Result<EosProducerScheduleV2> {
+    get_sample_v2_schedule_json()
+        .and_then(|json| convert_schedule_json_to_schedule_v2(&json))
 }
 
 pub fn get_sample_eos_submission_material_n(

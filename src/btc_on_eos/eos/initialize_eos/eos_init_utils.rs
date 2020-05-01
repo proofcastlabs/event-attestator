@@ -81,6 +81,7 @@ impl EosInitJson {
             .get_root()
             .to_bytes()
             .to_vec();
+        debug!("block mroot: {}", hex::encode(&block_mroot));
         if let Err(_) = check_block_signature_is_valid(
             &block_mroot,
             &producer_signature,

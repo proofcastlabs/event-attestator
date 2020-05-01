@@ -52,13 +52,19 @@ fn get_signing_digest(
     block_header: &EosBlockHeader,
     active_schedule: &EosProducerScheduleV2,
 ) -> Result<Bytes> {
-    Ok(
-        create_eos_signing_digest(
-            block_mroot,
-            &get_schedule_hash(active_schedule)?,
-            &get_block_digest(block_header)?,
-        )
-    )
+    let block_digest = get_block_digest(block_header)?;
+    let schedule_hash = get_schedule_hash(active_schedule)?;
+    let signing_digest = create_eos_signing_digest(
+        block_mroot,
+        &schedule_hash,
+        &block_digest
+    );
+    debug!("   block mroot: {}", hex::encode(&block_mroot));
+    debug!("  block digest: {}", hex::encode(&block_digest));
+    debug!(" schedule hash: {}", hex::encode(&schedule_hash));
+    debug!("      schedule: {:?}", active_schedule);
+    debug!("signing digest: {}", hex::encode(&signing_digest));
+    Ok(signing_digest)
 }
 
 fn get_signing_key_from_active_schedule(
@@ -148,28 +154,25 @@ pub fn validate_block_header_signature<D>(
 // Update this module to reflect that!
 #[cfg(test)]
 mod tests {
-
-    #[test]
-    fn should_reinstate_these_tests() {
-        assert!(false);
-    }
-/*
+    #![allow(unused_imports)] // FIXME
     use super::*;
     use eos_primitives::{
         Write,
         NumBytes,
+        Checksum256,
     };
     use crate::btc_on_eos::{
+        utils::convert_hex_to_checksum256,
         eos::{
             eos_merkle_utils::Incremerkle,
             parse_eos_schedule::convert_schedule_json_to_schedule_v2,
             parse_submission_material::parse_eos_block_header_from_json,
             eos_types::EosSubmissionMaterial,
             eos_test_utils::{
-                NUM_SAMPLES,
+                get_init_json_n,
                 get_sample_v2_schedule,
-                get_sample_active_schedule,
                 get_sample_eos_submission_material_n,
+                get_init_and_subsequent_blocks_json_n,
             },
         },
     };
@@ -188,9 +191,9 @@ mod tests {
     #[test]
     fn should_get_schedule_hash() {
         let expected_result = hex::decode(
-            "00227471af02f659912fe48c56aa40274ec7cf6bfab2f9c205a570c87ebe5862"
+            "a722944989081591e0b9742e3065206251a0041e4480cd6a6642ce929f255194"
         ).unwrap();
-        let active_schedule = get_sample_active_schedule(389)
+        let active_schedule = get_sample_v2_schedule()
             .unwrap();
         let result = get_schedule_hash(&active_schedule)
             .unwrap();
@@ -198,247 +201,67 @@ mod tests {
     }
 
     #[test]
-    fn should_get_signing_key_from_active_schedule() {
-        let expected_result =
-            "EOS5CJJEKDms9UTS7XBv8rb33BENRpnpSGsQkAe6bCfpjHHCKQTgH";
-        let submission_material = get_sample_eos_submission_material_n(1);
-        let active_schedule = get_sample_active_schedule(
-            submission_material.block_header.schedule_version
-        ).unwrap();
-        let result = get_signing_key_from_active_schedule(
-            submission_material.block_header.producer,
+    fn should_validate_initial_and_subequent_jungle_3_blocks() {
+        let blocks_json = get_init_and_subsequent_blocks_json_n(1)
+            .unwrap();
+        blocks_json.init_block.validate();
+        let block_num = 2;
+        let producer_signature = blocks_json
+            .get_producer_signature_for_block_n(block_num)
+            .unwrap();
+        let block_header = blocks_json.get_block_n(block_num)
+            .unwrap();
+        let active_schedule = blocks_json.get_active_schedule()
+            .unwrap();
+        let block_mroot = blocks_json
+            .get_block_mroot_for_block_n(block_num)
+            .unwrap();
+        if let Err(e) = check_block_signature_is_valid(
+            &block_mroot,
+            &producer_signature,
+            &block_header,
             &active_schedule,
-        )
-            .unwrap()
-            .to_string();
-        assert_eq!(&result, expected_result);
+        ) {
+            panic!("{}", e);
+        }
     }
 
     #[test]
-    fn should_get_correct_signing_digest_from_parts() {
-        let submission_material = get_sample_eos_submission_material_n(5);
-        let active_schedule = get_sample_active_schedule(
-            submission_material.block_header.schedule_version
+    fn should_validate_initial_and_subequent_mainnet_blocks() {
+        /*
+        use simplelog::{
+            TermLogger,
+            LevelFilter,
+            Config,
+            TerminalMode,
+        };
+        TermLogger::init(
+            LevelFilter::Debug,
+            Config::default(),
+            TerminalMode::Mixed
         ).unwrap();
-
-        let expected_block_digest =
-            "3883dd314f2dcbb2dc2078356f6e71b2168296e64e7166eec08b78a157390bda";
-        let block_digest = get_block_digest(&submission_material.block_header)
+        */
+        let blocks_json = get_init_and_subsequent_blocks_json_n(3)
             .unwrap();
-        assert_eq!(hex::encode(&block_digest), expected_block_digest);
-
-        let expected_schedule_hash =
-            "4204d5ca327bae53aac3b5405e356172d2b2dd42c2f609f4f970e41d0d3dcae1";
-        let schedule_hash = get_schedule_hash(
-            &active_schedule
-        ).unwrap();
-        assert_eq!(hex::encode(&schedule_hash), expected_schedule_hash);
-
-        let expected_block_mroot =
-            "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
-        let block_mroot = get_block_mroot(
-            &submission_material.block_header,
-            &submission_material.interim_block_ids,
-        );
-        assert_eq!(hex::encode(&block_mroot), expected_block_mroot);
-
-        let expected_signing_digest =
-            "e991ea00a9c3564fc9c6de33dc19865abbe5ac4bf643036ecd89f95e31c49521";
-        let result = create_eos_signing_digest(
-            block_mroot,
-            schedule_hash,
-            block_digest,
-        );
-        assert_eq!(hex::encode(result), expected_signing_digest);
-    }
-
-    #[test]
-    fn should_get_correct_signing_digest() {
-        let submission_material = get_sample_eos_submission_material_n(5);
-        let active_schedule = get_sample_active_schedule(
-            submission_material.block_header.schedule_version
-        ).unwrap();
-        let expected_signing_digest =
-            "e991ea00a9c3564fc9c6de33dc19865abbe5ac4bf643036ecd89f95e31c49521";
-        let result = get_signing_digest(
-            &submission_material.block_header,
+        blocks_json.init_block.validate();
+        let block_num = 2;
+        let producer_signature = blocks_json
+            .get_producer_signature_for_block_n(block_num)
+            .unwrap();
+        let block_header = blocks_json.get_block_n(block_num)
+            .unwrap();
+        let active_schedule = blocks_json.get_active_schedule()
+            .unwrap();
+        let block_mroot = blocks_json
+            .get_block_mroot_for_block_n(block_num)
+            .unwrap();
+        if let Err(e) = check_block_signature_is_valid(
+            &block_mroot,
+            &producer_signature,
+            &block_header,
             &active_schedule,
-            &submission_material.interim_block_ids,
-        ).unwrap();
-        assert_eq!(hex::encode(result), expected_signing_digest);
+        ) {
+            panic!("{}", e);
+        }
     }
-
-    #[test]
-    fn should_get_signing_key_for_all_submission_materials() {
-        let expected_results = vec![
-            "EOS5CJJEKDms9UTS7XBv8rb33BENRpnpSGsQkAe6bCfpjHHCKQTgH",
-            "EOS79e4HpvQ1y1HdzRSqE1gCKhdN9kFGjjUU2nKG7xjiVCakt5WSs",
-            "EOS5hVMcN6UVWtrNCxdp5HJwsz4USULmdfNA22UDyjRNdprXEiAP6",
-            "EOS6wkp1PpqQUgEA6UtgW21Zo3o1XcQeLXzcLLgKcPJhTz2aSF6fz",
-            "EOS7A9BoRetjpKtE3sqA6HRykRJ955MjQ5XdRmCLionVte2uERL8h",
-        ];
-        let active_schedules = vec![0; NUM_SAMPLES]
-            .iter()
-            .enumerate()
-            .map(|(i, _)| get_sample_eos_submission_material_n(i + 1))
-            .map(|submission_material|
-                get_sample_active_schedule(
-                    submission_material.block_header.schedule_version
-                )
-            )
-            .collect::<Result<Vec<EosProducerScheduleV2>>>()
-            .unwrap();
-        vec![0; NUM_SAMPLES]
-            .iter()
-            .enumerate()
-            .map(|(i, _)| get_sample_eos_submission_material_n(i + 1))
-            .zip(active_schedules.iter())
-            .map(|(submission_material, active_schedule)|
-                 get_signing_key_from_active_schedule(
-                     submission_material.block_header.producer,
-                     &active_schedule,
-                 )
-             )
-            .collect::<Result<Vec<PublicKey>>>()
-            .unwrap()
-            .iter()
-            .enumerate()
-            .map(|(i, key)| assert_eq!(key.to_string(), expected_results[i]))
-            .for_each(drop);
-    }
-
-    #[test]
-    fn should_recover_public_key() {
-        let submission_materials = vec![0; NUM_SAMPLES]
-            .iter()
-            .enumerate()
-            .map(|(i, _)| get_sample_eos_submission_material_n(i + 1))
-            .collect::<Vec<EosSubmissionMaterial>>();
-        let active_schedules = submission_materials
-            .iter()
-            .map(|submission_material|
-                get_sample_active_schedule(
-                    submission_material.block_header.schedule_version
-                )
-            )
-            .collect::<Result<Vec<EosProducerScheduleV2>>>()
-            .unwrap();
-        let expected_results = submission_materials
-            .iter()
-            .zip(active_schedules.iter())
-            .map(|(submission_material, active_schedule)|
-                 get_signing_key_from_active_schedule(
-                     submission_material.block_header.producer,
-                     &active_schedule,
-                 )
-             )
-            .collect::<Result<Vec<PublicKey>>>()
-            .unwrap();
-        vec![0; NUM_SAMPLES]
-            .iter()
-            .enumerate()
-            .map(|(i, _)| get_sample_eos_submission_material_n(i + 1))
-            .zip(active_schedules.iter())
-            .map(|(material, active_schedule)|
-                 recover_block_signer_public_key(
-                    &material.producer_signature,
-                    &material.block_header,
-                    &active_schedule,
-                    &material.interim_block_ids,
-                 )
-             )
-            .collect::<Result<Vec<EosPublicKey>>>()
-            .unwrap()
-            .iter()
-            .enumerate()
-            .map(|(i, key)|
-                assert_eq!(key.to_string(), expected_results[i].to_string())
-            )
-            .for_each(drop);
-    }
-
-    #[test]
-    fn samples_blocks_should_be_valid() {
-        let submission_materials = vec![0; NUM_SAMPLES]
-            .iter()
-            .enumerate()
-            .map(|(i, _)| get_sample_eos_submission_material_n(i + 1))
-            .collect::<Vec<EosSubmissionMaterial>>();
-        let active_schedules = submission_materials
-            .iter()
-            .map(|submission_material|
-                get_sample_active_schedule(
-                    submission_material.block_header.schedule_version
-                )
-            )
-            .collect::<Result<Vec<EosProducerScheduleV2>>>()
-            .unwrap();
-        submission_materials
-            .iter()
-            .zip(active_schedules.iter())
-            .map(|(submission_material, active_schedule)|
-                 check_block_signature_is_valid(
-                    &submission_material.producer_signature,
-                    &submission_material.block_header,
-                    &submission_material.interim_block_ids,
-                    &active_schedule,
-                 )
-             )
-            .collect::<Result<Vec<()>>>()
-            .unwrap();
-    }
-
-    #[test]
-    fn should_x() {
-        let submission_material = get_sample_eos_submission_material_n(6);
-        let producer_signature = submission_material
-            .producer_signature
-            .clone();
-        let block_mroot = get_block_mroot(
-            &submission_material.block_header,
-            &submission_material.interim_block_ids,
-        );
-        let block_header_digest = get_block_digest(
-            &submission_material.block_header
-        ).unwrap();
-        let schedule_hash = get_sample_v2_schedule()
-            .unwrap()
-            .schedule_hash()
-            .unwrap()
-            .to_bytes()
-            .to_vec();
-        let sched_hash_2 = hex::decode("a722944989081591e0b9742e3065206251a0041e4480cd6a6642ce929f255194").unwrap();
-        let signing_digest = create_eos_signing_digest(
-            block_mroot.clone(),
-            schedule_hash.clone(),
-            //sched_hash_2.clone(),
-            block_header_digest.clone(),
-        );
-        let recovered_pub_key = EosPublicKey::recover_from_digest(
-            &Message::from_slice(&signing_digest).unwrap(),
-            &EosSignature::from_str(&producer_signature).unwrap(),
-        ).unwrap();
-        let expected_pub_key =
-            "EOS8X5NCx1Xqa1xgQgBa9s6EK7M1SjGaDreAcLion4kDVLsjhQr9n";
-
-        println!("      schedule: {:?}", get_sample_v2_schedule().unwrap());
-        println!("      producer: {}", submission_material.block_header.producer);
-        println!("  block digest: {}", hex::encode(block_header_digest));
-        println!("   block mroot: {}", hex::encode(block_mroot));
-        println!(" schedule hash: {}", hex::encode(schedule_hash));
-        println!("schedule hash2: {}", hex::encode(sched_hash_2));
-        println!("signing digest: {}", hex::encode(signing_digest));
-        println!(" recovered key: {}", recovered_pub_key);
-        println!("  expected key: {}", expected_pub_key);
-        println!("       matches: {}", expected_pub_key == &recovered_pub_key.to_string());
-
-        let sched_serialized = get_sample_v2_schedule()
-            .unwrap();
-        let mut data = vec![0u8; sched_serialized.num_bytes()];
-        sched_serialized.write(&mut data, &mut 0).unwrap();
-
-        println!("sched num bytes: {}", get_sample_v2_schedule().unwrap().num_bytes());
-        println!("sched serialized: {}", hex::encode(data));
-    }
-*/
 }
