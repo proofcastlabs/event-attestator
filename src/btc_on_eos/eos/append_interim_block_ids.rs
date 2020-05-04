@@ -5,15 +5,15 @@ use crate::{
         eos::{
             eos_state::EosState,
             eos_types::Checksum256s,
-            eos_merkle_utils::IncreMerkle,
+            eos_merkle_utils::Incremerkle,
         },
     },
 };
 
 fn append_block_ids_to_incremerkle(
-    mut incremerkle: IncreMerkle,
+    mut incremerkle: Incremerkle,
     block_ids: &Checksum256s,
-) -> Result<IncreMerkle> {
+) -> Result<Incremerkle> {
     block_ids
         .iter()
         .map(|id| incremerkle.append(*id))

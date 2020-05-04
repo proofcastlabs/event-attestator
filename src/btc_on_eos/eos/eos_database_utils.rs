@@ -21,8 +21,8 @@ use crate::{
             parse_eos_schedule::parse_schedule_string_to_schedule,
             eos_utils::get_eos_schedule_db_key,
             eos_merkle_utils::{
-                IncreMerkle,
-                IncreMerkleJson,
+                Incremerkle,
+                IncremerkleJson,
             },
             eos_types::{
                 ProcessedTxIds,
@@ -83,7 +83,7 @@ pub fn get_eos_last_seen_block_id_from_db<D>(
 
 pub fn put_incremerkle_in_db<D>(
     db: &D,
-    incremerkle: &IncreMerkle,
+    incremerkle: &Incremerkle,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -99,7 +99,7 @@ pub fn put_incremerkle_in_db<D>(
 
 pub fn get_incremerkle_from_db<D>(
     db: &D,
-) -> Result<IncreMerkle>
+) -> Result<Incremerkle>
     where D: DatabaseInterface
 {
     info!("✔ Getting EOS incremerkle from db...");
@@ -107,7 +107,7 @@ pub fn get_incremerkle_from_db<D>(
     db
         .get(EOS_INCREMERKLE.to_vec(), data_sensitivity)
         .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
-        .and_then(|json: IncreMerkleJson| json.to_incremerkle())
+        .and_then(|json: IncremerkleJson| json.to_incremerkle())
 }
 
 pub fn get_eos_known_schedules_from_db<D>(

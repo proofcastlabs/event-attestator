@@ -6,7 +6,7 @@ use crate::{
         utils::convert_hex_to_checksum256,
         eos::{
             eos_state::EosState,
-            eos_merkle_utils::IncreMerkle,
+            eos_merkle_utils::Incremerkle,
             eos_crypto::eos_private_key::EosPrivateKey,
             validate_signature::check_block_signature_is_valid,
             parse_eos_schedule::{
@@ -46,12 +46,49 @@ pub struct EosInitJson {
     pub active_schedule: EosProducerScheduleJson,
 }
 
-pub fn parse_eos_init_json_from_string(
-    eos_init_json: String,
-) -> Result<EosInitJson> {
-    match serde_json::from_str(&eos_init_json) {
-        Ok(result) => Ok(result),
-        Err(e) => Err(AppError::Custom(e.to_string()))
+impl EosInitJson {
+    pub fn from_json_string(json_string: &String) -> Result<Self> {
+        match serde_json::from_str(&json_string) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(AppError::Custom(e.to_string()))
+        }
+    }
+
+    #[cfg(test)]
+    pub fn validate(&self) {
+        use eos_primitives::Checksum256;
+        let schedule = convert_schedule_json_to_schedule_v2(
+            &self.active_schedule
+        ).unwrap();
+        let block_header = parse_eos_block_header_from_json(
+            &self.block
+        ).unwrap();
+        let blockroot_merkle = self
+            .blockroot_merkle
+            .iter()
+            .map(|hex| convert_hex_to_checksum256(hex))
+            .collect::<Result<Vec<Checksum256>>>()
+            .unwrap();
+        let producer_signature = self
+            .block
+            .producer_signature
+            .clone();
+        let incremerkle = Incremerkle::new(
+            (block_header.block_num() - 1).into(),
+            blockroot_merkle,
+        );
+        let block_mroot = incremerkle
+            .get_root()
+            .to_bytes()
+            .to_vec();
+        if let Err(_) = check_block_signature_is_valid(
+            &block_mroot,
+            &producer_signature,
+            &block_header,
+            &schedule,
+        ) {
+            panic!("Could not validate init block!");
+        }
     }
 }
 
@@ -83,7 +120,7 @@ pub fn generate_and_put_incremerkle_in_db<D>(
     info!("✔ Generating and putting incremerkle in db...");
     put_incremerkle_in_db(
         db,
-        &IncreMerkle::new(
+        &Incremerkle::new(
             get_eos_last_seen_block_num_from_db(db)? - 1,
             blockroot_merkle
                 .iter()
@@ -234,4 +271,28 @@ pub fn put_eos_chain_id_in_db_and_return_state<D>(
         &chain_id,
     )
         .and(Ok(state))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::btc_on_eos::{
+        eos::eos_test_utils::{
+            get_init_json_n,
+            NUM_INIT_SAMPLES,
+        },
+    };
+
+    #[test]
+    fn should_validate_jungle_3_init_blocks() {
+        vec![0; NUM_INIT_SAMPLES]
+            .iter()
+            .enumerate()
+            .map(|(i, _)| get_init_json_n(i + 1))
+            .collect::<Result<Vec<EosInitJson>>>()
+            .unwrap()
+            .iter()
+            .map(|init_json| init_json.validate())
+            .for_each(drop);
+    }
 }

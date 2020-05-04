@@ -161,6 +161,9 @@ mod tests {
     };
     use crate::btc_on_eos::{
         eos::{
+            eos_merkle_utils::Incremerkle,
+            parse_eos_schedule::convert_schedule_json_to_schedule_v2,
+            parse_submission_material::parse_eos_block_header_from_json,
             eos_types::EosSubmissionMaterial,
             eos_test_utils::{
                 NUM_SAMPLES,

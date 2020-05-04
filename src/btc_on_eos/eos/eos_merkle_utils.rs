@@ -138,14 +138,14 @@ pub fn get_merkle_root_from_merkle_path(
 
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct IncreMerkleJson {
+pub struct IncremerkleJson {
     node_count: u64,
     active_nodes: Vec<String>,
 }
 
-impl IncreMerkleJson {
-    pub fn from_incremerkle(incremerkle: &IncreMerkle) -> Self {
-        IncreMerkleJson {
+impl IncremerkleJson {
+    pub fn from_incremerkle(incremerkle: &Incremerkle) -> Self {
+        IncremerkleJson {
             node_count: incremerkle.node_count,
             active_nodes: incremerkle
                 .active_nodes
@@ -155,9 +155,9 @@ impl IncreMerkleJson {
         }
     }
 
-    pub fn to_incremerkle(self) -> Result<IncreMerkle> {
+    pub fn to_incremerkle(self) -> Result<Incremerkle> {
         Ok(
-            IncreMerkle {
+            Incremerkle {
                 node_count: self.node_count,
                 active_nodes: self
                     .active_nodes
@@ -171,19 +171,19 @@ impl IncreMerkleJson {
 
 // NOTE: Courtesy of: https://github.com/bifrost-codes/rust-eos/
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
-pub struct IncreMerkle {
+pub struct Incremerkle {
     node_count: u64,
     active_nodes: Vec<Checksum256>,
 }
 
 // NOTE: Ibid
-impl IncreMerkle {
-    pub fn to_json(&self) -> IncreMerkleJson {
-        IncreMerkleJson::from_incremerkle(self)
+impl Incremerkle {
+    pub fn to_json(&self) -> IncremerkleJson {
+        IncremerkleJson::from_incremerkle(self)
     }
 
     pub fn default() -> Self {
-        IncreMerkle { node_count: 0, active_nodes: vec![] }
+        Incremerkle { node_count: 0, active_nodes: vec![] }
     }
 
     fn make_canonical_left(val: &Checksum256) -> Checksum256 {
@@ -243,7 +243,7 @@ impl IncreMerkle {
     }
 
     pub fn new(node_count: u64, active_nodes: Vec<Checksum256>) -> Self {
-        IncreMerkle {
+        Incremerkle {
             node_count: node_count,
             active_nodes: active_nodes,
         }
@@ -705,7 +705,7 @@ mod tests {
             .block_header
             .block_num()
             .into();
-        let incremerkle = IncreMerkle::new(node_count, active_nodes);
+        let incremerkle = Incremerkle::new(node_count, active_nodes);
         let incremerkle_root = hex::encode(
             &incremerkle
                 .get_root()
@@ -726,8 +726,8 @@ mod tests {
             .block_header
             .block_num()
             .into();
-        let incremerkle = IncreMerkle::new(node_count, active_nodes);
-        let json = IncreMerkleJson::from_incremerkle(&incremerkle);
+        let incremerkle = Incremerkle::new(node_count, active_nodes);
+        let json = IncremerkleJson::from_incremerkle(&incremerkle);
         assert_eq!(json.node_count, incremerkle.node_count);
         assert_eq!(json.active_nodes.len(), incremerkle.active_nodes.len());
         let result = json

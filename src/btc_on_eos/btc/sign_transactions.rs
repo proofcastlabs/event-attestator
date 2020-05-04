@@ -63,7 +63,7 @@ fn get_signed_tx(
         )
 }
 
-fn get_signed_txs(
+pub fn get_signed_txs(
     ref_block_num: u16,
     ref_block_prefix: u32,
     chain_id: &String,

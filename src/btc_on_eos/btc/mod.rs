@@ -14,6 +14,7 @@ pub mod btc_database_utils;
 pub mod add_btc_block_to_db;
 pub mod get_btc_output_json;
 pub mod filter_minting_params;
+pub mod filter_too_short_names;
 pub mod update_btc_linker_hash;
 pub mod filter_p2sh_deposit_txs;
 pub mod check_btc_parent_exists;

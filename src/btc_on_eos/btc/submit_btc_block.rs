@@ -23,6 +23,7 @@ use crate::{
             update_btc_latest_block_hash::maybe_update_btc_latest_block_hash,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
+	    filter_too_short_names::maybe_filter_name_too_short_params_in_state,
             btc_database_utils::{
                 end_btc_db_transaction,
                 start_btc_db_transaction,
@@ -81,6 +82,7 @@ pub fn submit_btc_block_to_core<D>(
         .and_then(maybe_filter_utxos_in_state)
         .and_then(maybe_save_utxos_to_db)
         .and_then(maybe_filter_minting_params_in_state)
+        .and_then(maybe_filter_name_too_short_params_in_state)
         .and_then(create_btc_block_in_db_format_and_put_in_state)
         .and_then(maybe_add_btc_block_to_db)
         .and_then(maybe_update_btc_latest_block_hash)
