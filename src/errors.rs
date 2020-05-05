@@ -46,7 +46,6 @@ impl fmt::Display for AppError {
                 format!("✘ Bitcoin Hex Error!\n✘ {}", e),
             AppError::ParseIntError(ref e) =>
                 format!("✘ Parse Int Error!\n✘ {:?}", e),
-
             AppError::SystemTimeError(ref e) =>
                 format!("✘ System Time Error!\n✘ {}", e),
             AppError::BitcoinHashError(ref e) =>

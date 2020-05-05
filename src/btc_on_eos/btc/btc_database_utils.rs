@@ -97,19 +97,6 @@ pub fn put_btc_account_nonce_in_db<D>(
     put_u64_in_db(db, &BTC_ACCOUNT_NONCE_KEY.to_vec(), nonce)
 }
 
-pub fn increment_btc_account_nonce_in_db<D>(
-    db: &D,
-    amount_to_increment_by: u64,
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    trace!("✔ Incrementing BTC account nonce in db...");
-    get_btc_account_nonce_from_db(db)
-        .and_then(|nonce|
-            put_btc_account_nonce_in_db(db, nonce + amount_to_increment_by)
-        )
-}
-
 pub fn get_btc_fee_from_db<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
@@ -289,6 +276,7 @@ pub fn get_btc_private_key_from_db<D>(db: &D) -> Result<BtcPrivateKey>
         )
 }
 
+#[cfg(test)] // TODO Move to test utils!
 pub fn put_btc_anchor_block_in_db<D>(
     db: &D,
     block: &BtcBlockInDbFormat,
@@ -299,6 +287,7 @@ pub fn put_btc_anchor_block_in_db<D>(
     put_special_btc_block_in_db(db, block, "anchor")
 }
 
+#[cfg(test)] // TODO Move to test utils!
 pub fn put_btc_tail_block_in_db<D>(
     db: &D,
     block: &BtcBlockInDbFormat
@@ -317,16 +306,6 @@ pub fn put_btc_canon_block_in_db<D>(
 {
     trace!("✔ Putting BTC canon block in db...");
     put_special_btc_block_in_db(db, block, "canon")
-}
-
-pub fn put_btc_latest_block_in_db<D>(
-    db: &D,
-    block: &BtcBlockInDbFormat,
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    trace!("✔ Putting BTC latest block in db...");
-    put_special_btc_block_in_db(db, block, "latest")
 }
 
 pub fn get_btc_anchor_block_from_db<D>(db: &D) -> Result<BtcBlockInDbFormat>
@@ -374,13 +353,6 @@ pub fn put_btc_anchor_block_hash_in_db<D>(
     put_btc_hash_in_db(db, &BTC_ANCHOR_BLOCK_HASH_KEY.to_vec(), hash)
 }
 
-pub fn get_btc_latest_block_hash_from_db<D>(db: &D) -> Result<sha256d::Hash>
-    where D: DatabaseInterface
-{
-    trace!("✔ Getting BTC latest block hash from db...");
-    get_btc_hash_from_db(db, &BTC_LATEST_BLOCK_HASH_KEY.to_vec())
-}
-
 pub fn put_btc_latest_block_hash_in_db<D>(
     db: &D,
     hash: &sha256d::Hash
@@ -389,13 +361,6 @@ pub fn put_btc_latest_block_hash_in_db<D>(
 {
     trace!("✔ Putting BTC latest block hash in db...");
     put_btc_hash_in_db(db, &BTC_LATEST_BLOCK_HASH_KEY.to_vec(), hash)
-}
-
-pub fn get_btc_canon_block_hash_from_db<D>(db: &D) -> Result<sha256d::Hash>
-    where D: DatabaseInterface
-{
-    trace!("✔ Getting BTC canon block hash from db...");
-    get_btc_hash_from_db(db, &BTC_CANON_BLOCK_HASH_KEY.to_vec())
 }
 
 pub fn put_btc_tail_block_hash_in_db<D>(
@@ -736,7 +701,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_and_put_latest_block_hash_in_db() {
+    fn should_put_latest_block_hash_in_db() {
         let db = get_test_database();
         let latest_block_hash = get_sample_btc_block_in_db_format()
             .unwrap()
@@ -747,18 +712,10 @@ mod tests {
         ) {
             panic!("Error putting btc latest_block_hash in db: {}", e);
         };
-        match get_btc_latest_block_hash_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting btc latest_block_hash from db: {}", e);
-            }
-            Ok(hash_from_db) => {
-                assert!(hash_from_db == latest_block_hash);
-            }
-        }
     }
 
     #[test]
-    fn should_get_and_put_canon_block_hash_in_db() {
+    fn should_put_canon_block_hash_in_db() {
         let db = get_test_database();
         let canon_block_hash = get_sample_btc_block_in_db_format()
             .unwrap()
@@ -766,14 +723,6 @@ mod tests {
         if let Err(e) = put_btc_canon_block_hash_in_db(&db, &canon_block_hash) {
             panic!("Error putting btc canon_block_hash in db: {}", e);
         };
-        match get_btc_canon_block_hash_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting btc canon_block_hash from db: {}", e);
-            }
-            Ok(hash_from_db) => {
-                assert!(hash_from_db == canon_block_hash);
-            }
-        }
     }
 
     #[test]
@@ -895,27 +844,6 @@ mod tests {
                 assert!(address == SAMPLE_TARGET_BTC_ADDRESS);
             }
         }
-    }
-
-    #[test]
-    fn should_get_btc_latest_block_number() {
-        let db = get_test_database();
-        let block = get_sample_btc_block_in_db_format()
-            .unwrap();
-        if let Err(e) = put_btc_latest_block_in_db(&db, &block.clone()) {
-            panic!("Error putting latest block in db: {}", e);
-        }
-        if let Err(e) = put_btc_latest_block_hash_in_db(&db, &block.id) {
-            panic!("Error putting latest block hash in db: {}", e);
-        }
-        match get_btc_latest_block_number(&db) {
-            Err(e) => {
-                panic!("Error getting latest block number: {}", e);
-            }
-            Ok(num_from_db) => {
-                assert!(num_from_db == block.height);
-            }
-        };
     }
 
     #[test]

@@ -15,7 +15,6 @@ use bitcoin_hashes::{
 use crate::types::{
     Bytes,
     Result,
-    Sha256HashedMessage,
 };
 pub fn keccak_hash_bytes(bytes: Bytes) -> H256 {
     H256::from(keccak256(&bytes[..]))
@@ -23,7 +22,7 @@ pub fn keccak_hash_bytes(bytes: Bytes) -> H256 {
 
 pub fn sha256_hash_message_bytes(
     message_bytes: &Bytes
-) -> Result<Sha256HashedMessage> {
+) -> Result<Message> {
     Ok(Message::from_slice(&sha256::Hash::hash(message_bytes))?)
 }
 

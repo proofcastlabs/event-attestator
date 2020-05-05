@@ -1,1 +1,1 @@
-pub mod btc_private_key;
+pub(crate) mod btc_private_key;

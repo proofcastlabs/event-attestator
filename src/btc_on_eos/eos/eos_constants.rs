@@ -1,27 +1,13 @@
 pub const PRODUCER_REPS: u64 = 12;
 pub const PUBLIC_KEY_SIZE: usize = 33;
-pub const EOS_NUM_DECIMALS: usize = 4;
-pub const EOS_NAME_BYTES_LEN: usize = 8;
 pub const PBTC_MINT_FXN_NAME: &str = "issue";
 pub const REDEEM_ACTION_NAME: &str = "redeem";
 pub const EOS_MAX_EXPIRATION_SECS: u32 = 3600;
 pub const PUBLIC_KEY_CHECKSUM_SIZE: usize = 4;
-pub const EOS_ADDRESS_CHAR_LENGTH: usize = 12;
 pub const MEMO: &str = "BTC -> pBTC complete!";
 pub const EOS_SCHEDULE_DB_PREFIX: &str = "EOS_SCHEDULE_";
 pub const PEOS_ACCOUNT_PERMISSION_LEVEL: &str = "active";
-pub const EOS_PROVABLE_SAFE_ACCOUNT: &str = "provablesafe";
 pub const PUBLIC_KEY_WITH_CHECKSUM_SIZE: usize = PUBLIC_KEY_SIZE + PUBLIC_KEY_CHECKSUM_SIZE;
-// NOTE (javascript): new Uint8Array(
-//   Buffer.from(web3.utils.keccak256('eos-network-key').slice(2), 'hex')
-// )
-// 0x2833cc9fcbba1da54af6f047408d75277961fbd9237b49389f378bd7cde0f3fd
-pub static EOS_NETWORK_KEY: [u8; 32] = [
-  40, 51, 204, 159, 203, 186, 29, 165,
-  74, 246, 240, 71, 64, 141, 117, 39,
-  121, 97, 251, 217, 35, 123, 73, 56,
-  159, 55, 139, 215, 205, 224, 243, 253
-];
 // NOTE (javascript): new Uint8Array(
 //   Buffer.from(web3.utils.keccak256('eos-chain-id-key').slice(2), 'hex')
 // )
@@ -51,16 +37,6 @@ pub static PROCESSED_TX_IDS_KEY: [u8; 32] = [
   166, 145, 213, 132, 239, 232, 211, 175,
   173, 234, 13, 22, 18, 86, 80, 248,
   83, 134, 177, 62, 31, 102, 226, 225
-];
-// NOTE (javascript): new Uint8Array(
-//   Buffer.from(web3.utils.keccak256('eos-chain-id').slice(2), 'hex')
-// )
-// 27d6a57b5570c501ff1ce72ec96b12ad6f460a070f5cbe45651e055161ffe5dea
-pub static EOS_CHAIN_ID: [u8; 32] = [
-  39, 214, 165, 123, 85, 112, 197, 1,
-  255, 28, 231, 46, 201, 107, 18, 173,
-  111, 70, 10, 7, 15, 92, 190, 69,
-  101, 30, 5, 81, 97, 255, 229, 218
 ];
 // NOTE (javascript): new Uint8Array(
 //   Buffer.from(web3.utils.keccak256('eos-account-name').slice(2), 'hex')

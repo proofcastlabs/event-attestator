@@ -6,12 +6,7 @@ use std::{
 use secp256k1::{
     self,
     Secp256k1,
-    Message,
     key::PublicKey,
-};
-use bitcoin_hashes::{
-    sha256,
-    Hash as HashTrait
 };
 use crate::{
     base58,
@@ -21,7 +16,6 @@ use crate::{
         Result,
     },
     btc_on_eos::{
-        crypto_utils::sha256_hash_message_bytes,
         eos::{
             eos_hash::ripemd160,
             eos_crypto::eos_signature::EosSignature,
@@ -68,33 +62,6 @@ impl EosPublicKey {
         format!("EOS{}", base58::encode_slice(&public_key))
     }
 
-    pub fn verify_signature(
-        &self,
-        message_slice: &[u8],
-        signature: &EosSignature
-    ) -> Result<()> {
-        self.verify_hash(
-            &sha256::Hash::hash(&message_slice),
-            &signature
-        )
-    }
-
-    pub fn verify_hash(
-        &self,
-        hash: &[u8],
-        signature: &EosSignature
-    ) -> Result<()> {
-        match Secp256k1::new()
-            .verify(
-                &Message::from_slice(&hash)?,
-                &signature.to_non_recoverable_signature(),
-                &self.public_key
-        ) {
-            Ok(()) => Ok(()),
-            Err(err) => Err(err.into()),
-        }
-    }
-
     pub fn from_slice(data: &[u8]) -> Result<EosPublicKey> {
         let compressed: bool = match data.len() {
             33 => true,
@@ -113,19 +80,6 @@ impl EosPublicKey {
         )
     }
 
-    pub fn recover(
-        message_bytes: &Bytes,
-        recoverable_signature: &EosSignature,
-    ) -> Result<EosPublicKey> {
-        sha256_hash_message_bytes(message_bytes)
-            .and_then(|digest|
-                Self::recover_from_digest(
-                    &digest,
-                    recoverable_signature,
-                )
-            )
-    }
-
     pub fn recover_from_digest(
         digest: &secp256k1::Message,
         recoverable_signature: &EosSignature,
@@ -136,6 +90,7 @@ impl EosPublicKey {
                 .serialize()
         )
     }
+
 }
 
 impl fmt::Display for EosPublicKey {
@@ -173,12 +128,18 @@ impl FromStr for EosPublicKey {
 mod test {
     use super::*;
     use std::str::FromStr;
+    use secp256k1::Message;
+    use bitcoin_hashes::{
+        Hash,
+        sha256,
+    };
     use crate::btc_on_eos::{
         test_utils::get_sample_message_to_sign_bytes,
         eos::{
             eos_crypto::eos_signature::EosSignature,
             eos_test_utils::{
                 get_sample_eos_signature,
+                sha256_hash_message_bytes,
                 get_sample_eos_public_key,
                 get_sample_eos_private_key,
                 get_sample_eos_public_key_str,
@@ -187,6 +148,34 @@ mod test {
         },
     };
 
+    impl EosPublicKey {
+        pub fn verify_signature(
+            &self,
+            message_slice: &[u8],
+            signature: &EosSignature
+        ) -> Result<()> {
+            self.verify_hash(
+                &sha256::Hash::hash(&message_slice),
+                &signature
+            )
+        }
+
+        pub fn verify_hash(
+            &self,
+            hash: &[u8],
+            signature: &EosSignature
+        ) -> Result<()> {
+            match Secp256k1::new()
+                .verify(
+                    &Message::from_slice(&hash)?,
+                    &signature.0.to_standard(),
+                    &self.public_key
+            ) {
+                Ok(()) => Ok(()),
+                Err(err) => Err(err.into()),
+            }
+        }
+    }
 
     #[test]
     fn should_get_public_key_from_string() {
@@ -283,20 +272,6 @@ mod test {
             .unwrap();
         let result = EosPublicKey::recover_from_digest(
             &hashed_message,
-            &signature
-        ).unwrap();
-        assert!(result == public_key);
-    }
-
-    #[test]
-    fn should_recover_eos_public_key() {
-        let message_bytes = vec![0xc0, 0xff, 0xee];
-        let private_key = get_sample_eos_private_key();
-        let public_key = get_sample_eos_public_key();
-        let signature = private_key.sign_message_bytes(&message_bytes)
-            .unwrap();
-        let result = EosPublicKey::recover(
-            &message_bytes,
             &signature
         ).unwrap();
         assert!(result == public_key);

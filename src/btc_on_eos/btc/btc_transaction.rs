@@ -196,17 +196,17 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::btc::{
-        btc_types::BtcRecipientAndAmount,
-        btc_utils::{
-            get_tx_id_from_signed_btc_tx,
-            get_hex_tx_from_signed_btc_tx,
-        },
-        btc_test_utils::{
-            SAMPLE_TARGET_BTC_ADDRESS,
-            get_sample_btc_private_key,
-            get_sample_op_return_utxo_and_value,
-            get_sample_op_return_utxo_and_value_n,
+    use crate::{
+        chains::btc::btc_utils::get_tx_id_from_signed_btc_tx,
+        btc_on_eos::btc::{
+            btc_types::BtcRecipientAndAmount,
+            btc_utils::get_hex_tx_from_signed_btc_tx,
+            btc_test_utils::{
+                SAMPLE_TARGET_BTC_ADDRESS,
+                get_sample_btc_private_key,
+                get_sample_op_return_utxo_and_value,
+                get_sample_op_return_utxo_and_value_n,
+            },
         },
     };
 

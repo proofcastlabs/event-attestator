@@ -122,22 +122,6 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn add_op_return_deposit_txs(
-        mut self,
-        op_return_deposit_txs: BtcTransactions,
-    ) -> Result<BtcState<D>> {
-        match self.op_return_deposit_txs {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("op_return_deposit_txs"))
-            ),
-            None => {
-                info!("✔ Adding `op_return` deposit txs to BTC state...");
-                self.op_return_deposit_txs = Some(op_return_deposit_txs);
-                Ok(self)
-            }
-        }
-    }
-
     pub fn add_deposit_info_hash_map(
         mut self,
         deposit_info_hash_map: DepositInfoHashMap,
@@ -208,15 +192,6 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn update_btc_block_and_id(
-        mut self,
-        new_btc_block_and_id: BtcBlockAndId
-    ) -> Result<BtcState<D>> {
-        info!("✔ Updating BTC block & ID in BTC state...");
-        self.btc_block_and_id = Some(new_btc_block_and_id);
-        Ok(self)
-    }
-
     pub fn get_btc_block_and_id(
         &self
     ) -> Result<&BtcBlockAndId> {
@@ -241,20 +216,6 @@ impl<D> BtcState<D> where D: DatabaseInterface {
             }
             None => Err(AppError::Custom(
                 get_not_in_state_err("deposit_info_hash_map"))
-            )
-        }
-    }
-
-    pub fn get_op_return_deposit_txs(
-        &self
-    ) -> Result<&BtcTransactions> {
-        match &self.op_return_deposit_txs {
-            Some(op_return_deposit_txs) => {
-                info!("✔ Getting `op_return` deposit txs from BTC state...");
-                Ok(&op_return_deposit_txs)
-            }
-            None => Err(AppError::Custom(
-                get_not_in_state_err("op_return_deposit_txs"))
             )
         }
     }

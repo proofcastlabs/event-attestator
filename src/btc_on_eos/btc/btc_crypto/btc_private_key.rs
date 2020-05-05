@@ -11,7 +11,6 @@ use secp256k1::{
     Secp256k1,
     Signature,
     key::{
-        ONE_KEY,
         SecretKey,
         PublicKey,
     },
@@ -47,16 +46,6 @@ impl BtcPrivateKey {
                     key: SecretKey::from_slice(&slice)?
                 }
             )
-        )
-    }
-
-    pub fn one_key() -> Self {
-        Self(
-            PrivateKey {
-                network: Network::Bitcoin,
-                compressed: false,
-                key: ONE_KEY
-            }
         )
     }
 
@@ -104,6 +93,7 @@ impl BtcPrivateKey {
             .serialize()
     }
 
+    #[cfg(test)]
     pub fn from_wif(wif: &str) -> Result<Self> {
         let pk = PrivateKey::from_wif(wif)?;
         Ok(

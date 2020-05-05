@@ -1,11 +1,29 @@
+pub use get_enclave_state::get_enclave_state;
+pub use eos::add_new_schedule::add_new_schedule_to_db;
+pub use btc::submit_btc_block::submit_btc_block_to_core;
+pub use eos::submit_eos_block::submit_eos_block_to_core;
+pub use get_latest_block_numbers::get_latest_block_numbers;
+pub use debug_functions::{
+    debug_get_all_utxos,
+    debug_clear_all_utxos,
+    debug_get_key_from_db,
+    debug_update_incremerkle,
+    debug_add_new_eos_schedule,
+    debug_set_key_in_db_to_value,
+    debug_reprocess_btc_block_for_stale_eos_tx,
+};
+pub use eos::initialize_eos::initialize_eos_core::maybe_initialize_eos_core;
+pub use btc::initialize_btc::initialize_btc_core::maybe_initialize_btc_core;
+
 pub mod eos;
 pub mod btc;
-pub mod utils;
-pub mod constants;
-pub mod test_utils;
-pub mod crypto_utils;
-pub mod database_utils;
 pub mod debug_functions;
 pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
-pub mod check_core_is_initialized;
+
+mod utils;
+mod constants;
+mod test_utils;
+mod crypto_utils;
+mod database_utils;
+mod check_core_is_initialized;

@@ -1,5 +1,13 @@
 #![cfg(test)]
 #![allow(unused_imports)]
+use bitcoin_hashes::{
+    sha256,
+    Hash as HashTrait
+};
+use secp256k1::{
+    key::SecretKey,
+    Message as Secp256k1Message,
+};
 use std::{
     path::Path,
     str::FromStr,
@@ -40,14 +48,12 @@ use crate::{
                 parse_eos_submission_material_string_to_struct,
             },
             eos_types::{
-                EosAmount,
-                EosSignatures,
+                ActionProof,
+                ActionProofs,
                 EosSignedTransaction,
                 EosSignedTransactions,
                 EosSubmissionMaterial,
                 EosSubmissionMaterialJson,
-                ActionProofs,
-                ActionProof
             },
             eos_crypto::{
                 eos_signature::EosSignature,
@@ -58,7 +64,6 @@ use crate::{
     },
 };
 
-pub const NUM_SAMPLES: usize = 5; // TODO update once all are passing validation!
 pub const NUM_INIT_SAMPLES: usize = 3;
 
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1: &str =
@@ -91,13 +96,8 @@ pub const SAMPLE_INIT_BLOCK_JSON_PATH_2: &str =
 pub const SAMPLE_INIT_BLOCK_JSON_PATH_3: &str =
     "src/btc_on_eos/eos/eos_test_utils/jungle-3-init-block-11379805.json";
 
-pub const SAMPLE_EOS_ACTIVE_SCHEDULE_PATH_PREFIX: &str =
-    "src/btc_on_eos/eos/eos_test_utils/sample-active-schedule-";
-
 pub const EOS_JUNGLE_CHAIN_ID: &str =
     "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
-
-pub const TEMPORARY_DATABASE_PATH: &str = "src/test_utils/temporary_database";
 
 pub fn get_init_json_n(num: usize) -> Result<EosInitJson> {
     let path = match num {
@@ -117,9 +117,11 @@ pub fn get_init_json_n(num: usize) -> Result<EosInitJson> {
     EosInitJson::from_json_string(&string)
 }
 
-// Note: Key = provabletokn "active" on Jungle
-pub const EOS_SAMPLE_PRIVATE_KEY_WIF: &str =
-    "5HzXzUB9sruHL93mf5dVgUJk1A3NMiAAsfu4p6F1hDdktVVErbR";
+pub fn sha256_hash_message_bytes(
+    message_bytes: &Bytes
+) -> Result<Secp256k1Message> {
+    Ok(Secp256k1Message::from_slice(&sha256::Hash::hash(message_bytes))?)
+}
 
 pub fn get_sample_v2_schedule_json_string() -> Result<String> {
     Ok(
@@ -132,33 +134,6 @@ pub fn get_sample_v2_schedule_json_string() -> Result<String> {
 pub fn get_sample_v2_schedule_json() -> Result<EosProducerScheduleJson> {
     get_sample_v2_schedule_json_string()
         .and_then(|json_string| parse_schedule_string_to_json(&json_string))
-}
-
-pub fn get_sample_v2_schedule() -> Result<EosProducerScheduleV2> {
-    get_sample_v2_schedule_json()
-        .and_then(|json| convert_schedule_json_to_schedule_v2(&json))
-}
-
-pub fn get_sample_active_schedule(
-    version: u32,
-) -> Result<EosProducerScheduleV2> {
-    let path = format!(
-        "{}{}.json",
-        SAMPLE_EOS_ACTIVE_SCHEDULE_PATH_PREFIX,
-        version
-    );
-    match Path::new(&path).exists() {
-        true => parse_schedule_string_to_schedule(&read_to_string(path)?),
-        false => Err(AppError::Custom(
-            format!("✘ Cannot find sample active schedule json!")
-        ))
-    }
-}
-
-pub fn get_sample_eos_private_key_2() -> EosPrivateKey {
-    EosPrivateKey::from_wallet_import_format(
-        EOS_SAMPLE_PRIVATE_KEY_WIF
-    ).unwrap()
 }
 
 pub fn get_sample_eos_submission_material_n(
@@ -200,54 +175,6 @@ pub fn get_sample_eos_submission_material_string_n(
     }
 }
 
-pub fn get_sample_eos_action() -> EosAction {
-    EosAction {
-        name: ActionName::from_str("onblock").unwrap(),
-        account: AccountName::from_str("eosio").unwrap(),
-        authorization: vec![PermissionLevel::from_str("eosio", "active").unwrap()],
-        data: hex::decode("e0d2b86b1a3962343021cd2a1eb3e9ad672b00000000000004454f53000000002a3078303236644336413433353631444138413641373735353338623139324133653933366330463239426a01000000000000").unwrap()
-    }
-    /* NOTE: The data here is serialized from this:
-    "data": {
-        "sender": "all3manfr3di",
-        "receiver": "provabletokn",
-        "quantity": "1.1111 EOS",
-        "ethereum_sender_str": "0x026dC6A43561DA8A6A775538b192A3e936c0F29B",
-        "nonce": 362
-    }
-    */
-}
-
-pub fn get_sample_eos_action_receipt() -> EosActionReceipt {
-    EosActionReceipt {
-        recipient: AccountName::from_str("provabletokn").unwrap(),
-        act_digest: convert_hex_to_checksum256(
-            &"4f72e85ee91bb26bf223f0ad1e08e8ac11a143b4eb1ac9854e4e726e85cc9b51"
-                .to_string()
-        ).unwrap(),
-        global_sequence: 499094015,
-        recv_sequence: 2046,
-        auth_sequence: vec![
-            AuthSequence::new(
-                "provabletokn",
-                2216
-            ).unwrap(),
-        ],
-        code_sequence: 80,
-        abi_sequence: 48,
-    }
-}
-
-pub fn get_sample_eos_private_key_wif() -> &'static str {
-    "5HrBLKfeEdqH9KLMv1daHLVjrXV3DGVERAkN5cdSSc58bzqqfT4"
-}
-
-pub fn get_jungle_provable_tokn_private_key() -> EosPrivateKey {
-    EosPrivateKey::from_wallet_import_format(
-        "5HzXzUB9sruHL93mf5dVgUJk1A3NMiAAsfu4p6F1hDdktVVErbR"
-    ).unwrap()
-}
-
 pub fn get_sample_eos_private_key_str() -> &'static str {
     "5K8ufCfDxaFXqkRdeGmLywEh32F3MZf67E8hFFvQoH3imDwQ9Ea"
 }
@@ -276,29 +203,6 @@ pub fn get_sample_eos_signature() -> EosSignature {
     get_sample_eos_private_key()
         .sign_message_bytes(&get_sample_message_to_sign().as_bytes())
         .unwrap()
-}
-
-pub fn get_sample_eos_signatures() -> EosSignedTransactions {
-    let mut signed_txs: EosSignedTransactions = Vec::new();
-    signed_txs.push(EosSignedTransaction::new(
-        "signature 1".to_string(),
-        "transaction 1".to_string(),
-        "recipientttt1".to_string(),
-        "1.0000 EOS".to_string(),
-    ));
-    signed_txs.push(EosSignedTransaction::new(
-        "signature 2".to_string(),
-        "transaction 2".to_string(),
-        "recipientttt2".to_string(),
-        "2.0000 EOS".to_string(),
-    ));
-    signed_txs.push(EosSignedTransaction::new(
-        "signature 3".to_string(),
-        "transaction 3".to_string(),
-        "recipientttt3".to_string(),
-        "3.0000 EOS".to_string(),
-    ));
-    signed_txs
 }
 
 fn get_sample_action_receipts() -> Vec<EosActionReceipt> {

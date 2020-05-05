@@ -5,12 +5,6 @@ pub const PTOKEN_P2SH_SCRIPT_BYTES: usize = 101;
 pub const PTOKEN_P2SH_SCRIPT_BYTES: usize = 0;
 
 pub const BTC_TAIL_LENGTH: u64 = 10;
-pub const BTC_NUM_DECIMALS: usize = 8;
-
-// NOTE: Following is used as placeholder for bad address parsing in ETH params!
-pub const DEFAULT_BTC_ADDRESS: &str =
-    "msTgHeQgPZ11LRcUdtfzagEfiZyKF57DhR";
-
 pub const DEFAULT_BTC_SEQUENCE: u32 = 4_294_967_295; // NOTE: 0xFFFFFFFF
 
 // NOTE: Keccak256 hash of: 'btc-on-eos-btc-difficulty'

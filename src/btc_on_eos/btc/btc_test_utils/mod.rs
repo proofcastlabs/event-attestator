@@ -1,17 +1,10 @@
+#![cfg(test)]
 use std::fs::read_to_string;
 use bitcoin::{
+    blockdata::transaction::Transaction as BtcTransaction,
     hashes::{
         Hash,
         sha256d,
-    },
-    blockdata::{
-        script::Script as BtcScript,
-        transaction::{
-            TxIn as BtcUtxo,
-            TxOut as BtcTxOut,
-            OutPoint as BtcOutPoint,
-            Transaction as BtcTransaction,
-        },
     },
 };
 use crate::{
@@ -28,13 +21,7 @@ use crate::{
         utils::convert_u64_to_eos_asset,
         constants::MINIMUM_REQUIRED_SATOSHIS,
         btc::{
-            btc_utils::{
-                get_p2sh_redeem_script_sig,
-                get_btc_block_in_db_format,
-                create_unsigned_utxo_from_tx,
-                get_pay_to_pub_key_hash_script,
-                create_op_return_btc_utxo_and_value_from_tx_output,
-            },
+            btc_utils::create_unsigned_utxo_from_tx,
             btc_crypto::btc_private_key::BtcPrivateKey,
             btc_types::{
                 MintingParams,
@@ -52,11 +39,7 @@ use crate::{
 };
 
 pub const SAMPLE_TRANSACTION_INDEX: usize = 1;
-pub const SAMPLE_BTC_UTXO_VALUE: u64 = 3_347_338;
 pub const SAMPLE_OUTPUT_INDEX_OF_UTXO: u32 = 0;
-pub const SAMPLE_TRANSACTION_OUTPUT_INDEX: usize = 0;
-pub const SAMPLE_OP_RETURN_TRANSACTION_INDEX: usize = 56;
-pub const SAMPLE_OP_RETURN_TRANSACTION_OUTPUT_INDEX: usize = 1;
 
 pub const SAMPLE_TARGET_BTC_ADDRESS: &str =
     "moBSQbHn7N9BC9pdtAMnA7GBiALzNMQJyE";
@@ -103,10 +86,19 @@ pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_11: &str =
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_12: &str =
     "src/btc_on_eos/btc/btc_test_utils/btc-1670541-block-and-txs.json";
 
-pub const SAMPLE_TESTNET_OP_RETURN_BTC_BLOCK_JSON: &str =
-    "src/btc_on_eos/btc/btc_test_utils/1610826-testnet-block-with-tx-to-test-address.json";
-
-pub const SAMPLE_SERIALIZED_BTC_UTXO: &str = "0e8d588f88d5624148070a8cd79508da8cb76625e4fcdb19a5fc996aa843bf04000000001976a91454102783c8640c5144d039cea53eb7dbb470081488acffffffff";
+fn get_btc_block_in_db_format(
+    btc_block_and_id: BtcBlockAndId,
+    minting_params: MintingParams,
+    extra_data: Bytes,
+) -> Result<BtcBlockInDbFormat> {
+    BtcBlockInDbFormat::new(
+        btc_block_and_id.height,
+        btc_block_and_id.id,
+        minting_params,
+        btc_block_and_id.block,
+        extra_data,
+    )
+}
 
 pub fn get_sample_btc_pub_key_bytes() -> Bytes {
     hex::decode(SAMPLE_BTC_PUBLIC_KEY).unwrap()
@@ -183,13 +175,6 @@ pub fn get_sample_sequential_btc_blocks_in_db_format(
         .unwrap()
 }
 
-pub fn get_sample_p2sh_redeem_script_sig() -> BtcScript {
-    let pub_key_slice = get_sample_btc_private_key()
-        .to_public_key_slice();
-    let hash = sha256d::Hash::hash(b"some text");
-    get_p2sh_redeem_script_sig(&pub_key_slice, &hash)
-}
-
 pub fn convert_sample_block_to_db_format(
     btc_block_and_id: BtcBlockAndId,
 ) -> Result<BtcBlockInDbFormat> {
@@ -238,52 +223,22 @@ pub fn get_sample_btc_tx() -> BtcTransaction {
         .clone()
 }
 
-pub fn get_sample_op_return_btc_block_and_txs() -> BtcBlockAndId {
-    parse_submission_material_to_json(
-        &read_to_string(&SAMPLE_TESTNET_OP_RETURN_BTC_BLOCK_JSON).unwrap()
-
-    )
-        .and_then(|json| parse_btc_block_from_submission_material(&json))
-        .unwrap()
-}
-
-pub fn get_sample_btc_op_return_tx() -> BtcTransaction {
-    get_sample_op_return_btc_block_and_txs()
-        .block
-        .txdata[SAMPLE_OP_RETURN_TRANSACTION_INDEX]
-        .clone()
-}
-
-pub fn get_sample_op_return_output() -> BtcTxOut {
-    get_sample_btc_op_return_tx()
-      .output[SAMPLE_OP_RETURN_TRANSACTION_OUTPUT_INDEX]
-      .clone()
-}
-
-pub fn get_sample_btc_tx_output() -> BtcTxOut {
-    get_sample_btc_tx()
-        .output[SAMPLE_TRANSACTION_OUTPUT_INDEX]
-        .clone()
-}
-
-pub fn get_sample_btc_utxo() -> BtcUtxo {
-    let tx = get_sample_btc_tx();
-    let outpoint = BtcOutPoint {
-        txid: tx.txid(),
-        vout: SAMPLE_TRANSACTION_OUTPUT_INDEX as u32,
-    };
-    BtcUtxo {
-        witness: vec![], // NOTE: Array of byte arrays (empty for non-segwit).
-        sequence: 4_294_967_295, // NOTE: Unused so just "0xFFFFFFFF" hardcoded
-        previous_output: outpoint,
-        script_sig: get_sample_pay_to_pub_key_hash_script(),
-    }
-}
-
 pub fn get_sample_op_return_utxo_and_value() -> BtcUtxoAndValue {
     create_op_return_btc_utxo_and_value_from_tx_output(
         &get_sample_btc_tx(),
         SAMPLE_OUTPUT_INDEX_OF_UTXO,
+    )
+}
+
+fn create_op_return_btc_utxo_and_value_from_tx_output(
+    tx: &BtcTransaction,
+    output_index: u32,
+) -> BtcUtxoAndValue {
+    BtcUtxoAndValue::new(
+        tx.output[output_index as usize].value,
+        &create_unsigned_utxo_from_tx(tx, output_index),
+        None,
+        None,
     )
 }
 
@@ -298,7 +253,7 @@ pub fn get_sample_op_return_utxo_with_value_too_low() -> BtcUtxoAndValue {
     )
 }
 
-pub fn get_sample_p2sh_utxo_with_value_too_low() -> BtcUtxoAndValue {
+fn get_sample_p2sh_utxo_with_value_too_low() -> BtcUtxoAndValue {
     create_op_return_btc_utxo_and_value_from_tx_output(
         &get_sample_btc_block_n(9)
             .unwrap()
@@ -470,11 +425,6 @@ pub fn get_sample_op_return_utxo_and_value_n(n: usize) -> Result<BtcUtxoAndValue
         .and_then(|json| parse_btc_block_from_submission_material(&json))
         .map(|block_and_id| block_and_id.block.txdata[tuple.1].clone())
         .map(|tx| create_op_return_btc_utxo_and_value_from_tx_output(&tx, tuple.2))
-}
-
-pub fn get_sample_pay_to_pub_key_hash_script() -> BtcScript {
-    get_pay_to_pub_key_hash_script(SAMPLE_TARGET_BTC_ADDRESS)
-        .unwrap()
 }
 
 pub fn get_sample_btc_private_key() -> BtcPrivateKey {
