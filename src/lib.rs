@@ -1,6 +1,13 @@
 #![feature(try_trait)]
-#![recursion_limit="128"] // NOTE: For the format! macro in block parsing.
+#![recursion_limit="128"]
 #![feature(exclusive_range_pattern)]
+
+pub use types::{
+    Bytes,
+    Result
+};
+pub use errors::AppError;
+pub use traits::DatabaseInterface;
 
 pub mod types;
 pub mod traits;
