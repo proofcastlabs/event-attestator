@@ -16,7 +16,6 @@ use bitcoin::{
     blockdata::transaction::TxIn as BtcUtxo,
 };
 
-pub type BtcUtxos = Vec<BtcUtxo>;
 pub type BtcUtxosAndValues = Vec<BtcUtxoAndValue>;
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]

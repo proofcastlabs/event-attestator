@@ -23,7 +23,6 @@ use crate::{
             UTXO_FIRST,
             UTXO_NONCE,
             UTXO_BALANCE,
-            TOTAL_NUM_UTXOS,
         },
         utxo_utils::{
             get_utxo_and_value_db_key,
@@ -380,20 +379,6 @@ pub fn get_total_number_of_utxos_from_db<D>(db: &D) -> Result<u64>
 {
     trace!("✔ Getting total number of UTXOs from db...");
     Ok(get_all_utxo_db_keys(db).len() as u64)
-}
-
-pub fn put_total_number_of_utxos_in_db<D>(
-    db: &D,
-    total_num_utxos: u64
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    trace!("✔ Putting total number of UTXOs in db...");
-    db.put(
-        TOTAL_NUM_UTXOS.to_vec(),
-        convert_u64_to_bytes(total_num_utxos),
-        None,
-    )
 }
 
 pub fn put_utxo_nonce_in_db<D>(

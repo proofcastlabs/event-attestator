@@ -70,20 +70,6 @@ pub struct SerializedBlockAndId {
     pub height: Bytes,
 }
 
-impl SerializedBlockAndId {
-    pub fn new(
-        serialized_id: Bytes,
-        serialized_block: Bytes,
-        serialized_height: Bytes,
-    ) -> Self {
-        SerializedBlockAndId {
-            id: serialized_id,
-            block: serialized_block,
-            height: serialized_height,
-        }
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SerializedBlockInDbFormat {
     pub id: Bytes,
@@ -288,16 +274,6 @@ pub fn get_total_value_of_utxos_and_values(
         .sum()
 }
 
-pub fn get_tx_id_from_signed_btc_tx(
-    signed_btc_tx: &BtcTransaction
-) -> String {
-    let mut tx_id = signed_btc_tx
-        .txid()
-        .to_vec();
-    tx_id.reverse();
-    hex::encode(tx_id)
-}
-
 pub fn get_hex_tx_from_signed_btc_tx(
     signed_btc_tx: &BtcTransaction
 ) -> String {
@@ -376,6 +352,17 @@ pub fn get_pay_to_pub_key_hash_script(btc_address: &str) -> Result<BtcScript> {
             .push_opcode(opcodes::all::OP_CHECKSIG)
             .into_script()
     )
+}
+
+#[cfg(test)] // TODO Create then move this to chains/btc_test_utils!
+pub fn get_tx_id_from_signed_btc_tx(
+    signed_btc_tx: &BtcTransaction
+) -> String {
+    let mut tx_id = signed_btc_tx
+        .txid()
+        .to_vec();
+    tx_id.reverse();
+    hex::encode(tx_id)
 }
 
 #[cfg(test)]
