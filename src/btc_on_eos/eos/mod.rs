@@ -13,6 +13,7 @@ pub(crate) mod eos_test_utils;
 pub(crate) mod eos_merkle_utils;
 pub(crate) mod save_incremerkle;
 pub(crate) mod sign_transactions;
+pub(crate) mod protocol_features;
 pub(crate) mod parse_eos_actions;
 pub(crate) mod validate_signature;
 pub(crate) mod eos_database_utils;

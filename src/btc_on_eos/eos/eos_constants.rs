@@ -108,3 +108,13 @@ pub static EOS_LAST_SEEN_BLOCK_NUM: [u8; 32] = [
   166, 202, 254, 177, 5, 168, 180, 82,
   101, 218, 218, 41, 31, 5, 243, 105
 ];
+// NOTE (javascript): new Uint8Array(
+//   Buffer.from(web3.utils.keccak256('eos-protocol-features').slice(2), 'hex')
+// )
+// 945786e2f66f06a6b4a14cab046919d0f51fdb4a73646104e898ffa73b44bc81
+pub static EOS_PROTOCOL_FEATURES: [u8; 32] = [
+     148, 87, 134, 226, 246, 111, 6, 166,
+     180, 161, 76, 171, 4, 105, 25, 208,
+     245, 31, 219, 74, 115, 100, 97, 4,
+     232, 152, 255, 167, 59, 68, 188, 129,
+];

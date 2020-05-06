@@ -38,12 +38,41 @@ use crate::{
                 EOS_TOKEN_SYMBOL_KEY,
                 PROCESSED_TX_IDS_KEY,
                 EOS_ACCOUNT_NAME_KEY,
+                EOS_PROTOCOL_FEATURES,
                 EOS_LAST_SEEN_BLOCK_ID,
                 EOS_LAST_SEEN_BLOCK_NUM,
             },
         },
     },
 };
+
+pub fn put_eos_enabled_protocol_features_in_db<D>(
+    db: &D,
+    protocol_features: &EnabledFeatures,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    db.put(
+        EOS_PROTOCOL_FEATURES.to_vec(),
+        serde_json::to_vec(&protocol_features)?,
+        MIN_DATA_SENSITIVITY_LEVEL,
+    )
+}
+
+pub fn get_eos_enabled_protocol_features_from_db<D>(
+    db: &D,
+) -> Result<EnabledFeatures>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting EOS enabled protocol features from db...");
+    match db.get(EOS_PROTOCOL_FEATURES.to_vec(), MIN_DATA_SENSITIVITY_LEVEL) {
+        Ok(bytes) => Ok(serde_json::from_slice(&bytes)?),
+        Err(_) => {
+            info!("✔ No features found in db! Resorting to default...");
+            Ok(EnabledFeatures::default())
+        }
+    }
+}
 
 pub fn put_eos_last_seen_block_num_in_db<D>(
     db: &D,

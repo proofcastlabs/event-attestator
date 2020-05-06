@@ -1,0 +1,165 @@
+use crate::{
+    errors::AppError,
+    traits::DatabaseInterface,
+    types::{
+        Bytes,
+        Result,
+    },
+    btc_on_eos::eos::{
+        eos_database_utils::put_eos_enabled_protocol_features_in_db,
+    },
+};
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ProtocolFeature {
+    feature_hash: Bytes,
+    feature_name: String,
+}
+
+impl ProtocolFeature {
+    pub fn new(name: &str, feature_hash: Bytes) -> Self {
+        ProtocolFeature { feature_name: name.to_string(), feature_hash }
+    }
+
+    pub fn default() -> Self {
+        ProtocolFeature {
+            feature_name: "Default".to_string(),
+            feature_hash: vec![0x01, 0x03, 0x03, 0x07],
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EnabledFeatures(Vec<ProtocolFeature>);
+
+impl EnabledFeatures {
+    pub fn default() -> Self {
+        EnabledFeatures(vec![])
+    }
+
+    pub fn new(enabled_features: Vec<ProtocolFeature>) -> Self {
+        EnabledFeatures(enabled_features)
+    }
+
+    pub fn add(mut self, feature_hash: &Bytes) -> Result<Self> {
+        AVAILABLE_FEATURES
+            .check_contains(feature_hash)
+            .and_then(|_| AVAILABLE_FEATURES.get_feature_from_hash(feature_hash))
+            .map(|feature| {
+                self.0.push(feature);
+                self
+            })
+    }
+
+    pub fn contains(&self, feature_hash: &Bytes) -> bool {
+        self
+            .0
+            .iter()
+            .fold(false, |acc, e| acc || &e.feature_hash == feature_hash)
+    }
+
+    pub fn is_enabled(&self, feature_hash: &Bytes) -> bool {
+        AVAILABLE_FEATURES.contains(feature_hash) && self.contains(feature_hash)
+    }
+
+    pub fn enable<D>(
+        self,
+        db: &D,
+        feature_hash: &Bytes,
+    ) -> Result<Self>
+        where D: DatabaseInterface
+    {
+        AVAILABLE_FEATURES
+            .check_contains(feature_hash)
+            .and_then(|_| {
+                if self.is_enabled(feature_hash) {
+                    info!("✘ Feature already enabled, doing nothing!");
+                    return Ok(self)
+                }
+                info!("✔ Enabling new feature: {}", hex::encode(feature_hash));
+                self.add(feature_hash)
+                    .and_then(|new_self| {
+                        put_eos_enabled_protocol_features_in_db(db, &new_self)?;
+                        Ok(new_self)
+                    })
+            })
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AvailableFeatures(Vec<ProtocolFeature>);
+
+impl AvailableFeatures {
+    pub fn new(available_features: Vec<ProtocolFeature>) -> Self {
+        AvailableFeatures(available_features)
+    }
+
+    pub fn contains(&self, feature_hash: &Bytes) -> bool {
+        self
+            .0
+            .iter()
+            .fold(false, |acc, e| acc || &e.feature_hash == feature_hash)
+    }
+
+    pub fn does_not_contain(&self, feature_hash: &Bytes) -> bool {
+        !self.contains(feature_hash)
+    }
+
+    pub fn check_contains(&self, feature_hash: &Bytes) -> Result<()> {
+        info!(
+            "✔ Checking available features for feature hash {}",
+            hex::encode(feature_hash)
+        );
+        if AVAILABLE_FEATURES.does_not_contain(feature_hash) {
+            return Err(AppError::Custom(
+                format!(
+                    "✘ Available features do not contain feature hash: {}",
+                    hex::encode(feature_hash),
+                )
+            ))
+        };
+        Ok(())
+    }
+
+    pub fn get_feature_from_hash(
+        &self,
+        feature_hash: &Bytes,
+    ) -> Result<ProtocolFeature> {
+        self.check_contains(feature_hash)
+            .map(|_|
+                self
+                    .0
+                    .iter()
+                    .fold(
+                        ProtocolFeature::default(),
+                        |mut acc, protocol_feature| {
+                            if &protocol_feature.feature_hash == feature_hash {
+                                acc = protocol_feature.clone();
+                            };
+                            acc
+                        }
+                    )
+            )
+    }
+}
+
+lazy_static! {
+    pub static ref AVAILABLE_FEATURES: AvailableFeatures = {
+        AvailableFeatures::new(
+            vec![
+                ProtocolFeature::new(
+                    "WTMSIG_BLOCK_SIGNATURE",
+                    WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec(),
+                ),
+            ]
+        )
+    };
+}
+
+// NOTE: 299dcb6af692324b899b39f16d5a530a33062804e41f09dc97e9f156b4476707
+pub static WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH: [u8; 32] = [
+    41, 157, 203, 106, 246, 146, 50, 75,
+    137, 155, 57, 241, 109, 90, 83, 10,
+    51, 6, 40, 4, 228, 31, 9, 220,
+    151, 233, 241, 86, 180, 71, 103, 7
+];

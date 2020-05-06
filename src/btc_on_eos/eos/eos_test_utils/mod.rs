@@ -118,8 +118,6 @@ pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_2: &str =
 pub const EOS_JUNGLE_CHAIN_ID: &str =
     "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
 
-pub const TEMPORARY_DATABASE_PATH: &str = "src/test_utils/temporary_database";
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosInitAndSubsequentJson {
     pub init_block: EosInitJson,
