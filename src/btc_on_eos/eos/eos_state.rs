@@ -59,7 +59,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
             producer_signature: String::new(),
             incremerkle: Incremerkle::default(),
             processed_tx_ids: ProcessedTxIds::init(),
-            enabled_protocol_features: EnabledFeatures::default(),
+            enabled_protocol_features: EnabledFeatures::init(),
         }
     }
 

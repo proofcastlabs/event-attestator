@@ -68,8 +68,8 @@ pub fn get_eos_enabled_protocol_features_from_db<D>(
     match db.get(EOS_PROTOCOL_FEATURES.to_vec(), MIN_DATA_SENSITIVITY_LEVEL) {
         Ok(bytes) => Ok(serde_json::from_slice(&bytes)?),
         Err(_) => {
-            info!("✔ No features found in db! Resorting to default...");
-            Ok(EnabledFeatures::default())
+            info!("✔ No features found in db! Initting empty features...");
+            Ok(EnabledFeatures::init())
         }
     }
 }

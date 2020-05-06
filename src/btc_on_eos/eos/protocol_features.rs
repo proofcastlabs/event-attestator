@@ -17,6 +17,10 @@ pub struct ProtocolFeature {
 }
 
 impl ProtocolFeature {
+    pub fn to_json(&self) -> Result<String> {
+        Ok(serde_json::to_string(&self)?)
+    }
+
     pub fn new(name: &str, feature_hash: Bytes) -> Self {
         ProtocolFeature { feature_name: name.to_string(), feature_hash }
     }
@@ -33,22 +37,44 @@ impl ProtocolFeature {
 pub struct EnabledFeatures(Vec<ProtocolFeature>);
 
 impl EnabledFeatures {
-    pub fn default() -> Self {
-        EnabledFeatures(vec![])
+    pub fn to_json(&self) -> Result<String> {
+        Ok(serde_json::to_string(&self)?)
     }
 
-    pub fn new(enabled_features: Vec<ProtocolFeature>) -> Self {
-        EnabledFeatures(enabled_features)
+    pub fn init() -> Self {
+        EnabledFeatures(vec![])
     }
 
     pub fn add(mut self, feature_hash: &Bytes) -> Result<Self> {
         AVAILABLE_FEATURES
             .check_contains(feature_hash)
             .and_then(|_| AVAILABLE_FEATURES.get_feature_from_hash(feature_hash))
-            .map(|feature| {
+            .and_then(|feature| {
+                info!("✔ Adding feature: {}", feature.to_json()?);
                 self.0.push(feature);
-                self
+                Ok(self)
             })
+    }
+
+    pub fn add_multi(mut self, feature_hashes: &mut Vec<Bytes>) -> Result<Self> {
+        info!("✔ Adding multiple features...");
+        feature_hashes.sort();
+        feature_hashes.dedup();
+        feature_hashes
+            .iter()
+            .map(|hash| -> Result<Bytes> {
+                AVAILABLE_FEATURES.check_contains(hash)?;
+                Ok(hash.to_vec())
+            })
+            .map(|hash| AVAILABLE_FEATURES.get_feature_from_hash(&hash?))
+            .map(|maybe_feature| -> Result<()> {
+                let feature = maybe_feature?;
+                info!("✔ Adding feature: {}", feature.to_json()?);
+                self.0.push(feature);
+                Ok(())
+            })
+            .for_each(drop);
+        Ok(self)
     }
 
     pub fn contains(&self, feature_hash: &Bytes) -> bool {
@@ -82,6 +108,20 @@ impl EnabledFeatures {
                         put_eos_enabled_protocol_features_in_db(db, &new_self)?;
                         Ok(new_self)
                     })
+            })
+    }
+
+    pub fn enable_multi<D>(
+        self,
+        db: &D,
+        feature_hashes: &mut Vec<Bytes>
+    ) -> Result<Self>
+        where D: DatabaseInterface
+    {
+        self.add_multi(feature_hashes)
+            .and_then(|updated_self| {
+                put_eos_enabled_protocol_features_in_db(db, &updated_self)?;
+                Ok(updated_self)
             })
     }
 }
