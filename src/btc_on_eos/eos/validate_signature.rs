@@ -1,8 +1,10 @@
 use std::str::FromStr;
 use eos_primitives::{
-    PublicKey,
+    PublicKey as EosProducerKey,
     AccountName as EosAccountName,
     BlockHeader as EosBlockHeader,
+    ProducerKey as EosProducerKeyV1,
+    ProducerSchedule as EosProducerScheduleV1,
     ProducerScheduleV2 as EosProducerScheduleV2,
 };
 use bitcoin_hashes::{
@@ -21,6 +23,7 @@ use crate::{
     },
     btc_on_eos::eos::{
         eos_state::EosState,
+        protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
         eos_crypto::{
             eos_signature::EosSignature,
             eos_public_key::EosPublicKey,
@@ -43,17 +46,44 @@ fn get_block_digest(block_header: &EosBlockHeader) -> Result<Bytes> {
     Ok(block_header.digest()?.to_bytes().to_vec())
 }
 
-fn get_schedule_hash(active_schedule: &EosProducerScheduleV2) -> Result<Bytes> {
-    Ok(active_schedule.schedule_hash()? .to_bytes().to_vec())
+fn convert_v2_schedule_to_v1(
+    active_schedule: &EosProducerScheduleV2
+) -> EosProducerScheduleV1 {
+    // NOTE Only the first msig key is used in this conversion!
+    EosProducerScheduleV1::new(
+        active_schedule.version,
+        active_schedule
+            .producers
+            .iter()
+            .map(|producer|
+                EosProducerKeyV1::new(
+                    producer.producer_name,
+                    producer.authority.1.keys[0].key.clone(),
+                )
+            )
+            .collect::<Vec<EosProducerKeyV1>>(),
+    )
+}
+
+fn get_schedule_hash(
+    msig_enabled: bool,
+    active_schedule: &EosProducerScheduleV2
+) -> Result<Bytes> {
+    let hash = match msig_enabled {
+        true => active_schedule.schedule_hash()?,
+        false => convert_v2_schedule_to_v1(active_schedule).schedule_hash()?
+    };
+    Ok(hash.to_bytes().to_vec())
 }
 
 fn get_signing_digest(
+    msig_enabled: bool,
     block_mroot: &Bytes,
     block_header: &EosBlockHeader,
     active_schedule: &EosProducerScheduleV2,
 ) -> Result<Bytes> {
     let block_digest = get_block_digest(block_header)?;
-    let schedule_hash = get_schedule_hash(active_schedule)?;
+    let schedule_hash = get_schedule_hash(msig_enabled, active_schedule)?;
     let signing_digest = create_eos_signing_digest(
         block_mroot,
         &schedule_hash,
@@ -62,15 +92,15 @@ fn get_signing_digest(
     debug!("   block mroot: {}", hex::encode(&block_mroot));
     debug!("  block digest: {}", hex::encode(&block_digest));
     debug!(" schedule hash: {}", hex::encode(&schedule_hash));
-    debug!("      schedule: {:?}", active_schedule);
     debug!("signing digest: {}", hex::encode(&signing_digest));
+    debug!("      schedule: {:?}", active_schedule);
     Ok(signing_digest)
 }
 
 fn get_signing_key_from_active_schedule(
     block_producer: EosAccountName,
     active_schedule: &EosProducerScheduleV2,
-) -> Result<PublicKey> {
+) -> Result<EosProducerKey> {
     let filtered_keys = active_schedule
         .producers
         .iter()
@@ -80,7 +110,7 @@ fn get_signing_key_from_active_schedule(
         // NOTE/FIXME We're only getting the first key so far.
         .map(|(_, producer)| &producer.authority.1.keys[0].key)
         .cloned()
-        .collect::<Vec<PublicKey>>();
+        .collect::<Vec<EosProducerKey>>();
     match &filtered_keys.len() {
         0 => Err(AppError::Custom(
             "✘ Could not extract a signing key from active schedule!"
@@ -91,6 +121,7 @@ fn get_signing_key_from_active_schedule(
 }
 
 fn recover_block_signer_public_key(
+    msig_enabled: bool,
     block_mroot: &Bytes,
     producer_signature: &String,
     block_header: &EosBlockHeader,
@@ -99,9 +130,10 @@ fn recover_block_signer_public_key(
     EosPublicKey::recover_from_digest(
         &Message::from_slice(
             &get_signing_digest(
+                msig_enabled,
                 &block_mroot,
                 &block_header,
-                &active_schedule,
+                &active_schedule
             )?,
         )?,
         &EosSignature::from_str(producer_signature)?
@@ -109,6 +141,7 @@ fn recover_block_signer_public_key(
 }
 
 pub fn check_block_signature_is_valid(
+    msig_enabled: bool,
     block_mroot: &Bytes,
     producer_signature: &String,
     block_header: &EosBlockHeader,
@@ -119,6 +152,7 @@ pub fn check_block_signature_is_valid(
         active_schedule,
     )?.to_string();
     let recovered_key = recover_block_signer_public_key(
+        msig_enabled,
         block_mroot,
         producer_signature,
         block_header,
@@ -137,6 +171,9 @@ pub fn validate_block_header_signature<D>(
 {
     info!("✔ Validating EOS block header signature...");
     check_block_signature_is_valid(
+        state
+            .enabled_protocol_features
+            .is_enabled(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec()),
         &state.incremerkle
             .get_root()
             .to_bytes()
@@ -148,34 +185,42 @@ pub fn validate_block_header_signature<D>(
         .and(Ok(state))
 }
 
-// TODO fixme! These all are now failing since we don't use the blockroot merkle
-// that we pass in anymore. Instead we're going to keep the incremerkle in the
-// db and append to it any blocks in the interim between two submissions.
-// Update this module to reflect that!
 #[cfg(test)]
 mod tests {
-    #![allow(unused_imports)] // FIXME
     use super::*;
-    use eos_primitives::{
-        Write,
-        NumBytes,
-        Checksum256,
+    use crate::btc_on_eos::eos::eos_test_utils::{
+        get_sample_v2_schedule,
+        EosInitAndSubsequentBlocksJson,
+        get_sample_eos_submission_material_n,
+        get_init_and_subsequent_blocks_json_n,
     };
-    use crate::btc_on_eos::{
-        utils::convert_hex_to_checksum256,
-        eos::{
-            eos_merkle_utils::Incremerkle,
-            parse_eos_schedule::convert_schedule_json_to_schedule_v2,
-            parse_submission_material::parse_eos_block_header_from_json,
-            eos_types::EosSubmissionMaterial,
-            eos_test_utils::{
-                get_init_json_n,
-                get_sample_v2_schedule,
-                get_sample_eos_submission_material_n,
-                get_init_and_subsequent_blocks_json_n,
-            },
-        },
-    };
+
+    fn validate_subsequent_block(
+        block_num: usize,
+        blocks_json: &EosInitAndSubsequentBlocksJson,
+    ) {
+        println!("Checking subsequent block #{} is valid...", block_num);
+        let msig_enabled = blocks_json.is_msig_enabled();
+        let producer_signature = blocks_json
+            .get_producer_signature_for_block_n(block_num)
+            .unwrap();
+        let block_header = blocks_json.get_block_n(block_num)
+            .unwrap();
+        let active_schedule = blocks_json.get_active_schedule()
+            .unwrap();
+        let block_mroot = blocks_json
+            .get_block_mroot_for_block_n(block_num)
+            .unwrap();
+        if let Err(e) = check_block_signature_is_valid(
+            msig_enabled,
+            &block_mroot,
+            &producer_signature,
+            &block_header,
+            &active_schedule,
+        ) {
+            panic!("Subsequent block num {} not valid: {}", block_num, e);
+        }
+    }
 
     #[test]
     fn should_get_block_digest() {
@@ -189,13 +234,27 @@ mod tests {
     }
 
     #[test]
-    fn should_get_schedule_hash() {
+    fn should_get_schedule_hash_msig_disabled() {
+        let msig_enabled = false;
+        let expected_result = hex::decode(
+            "d21c31828d933975965bf58a8bf53b4a9a104600e149ff831071f59efb6e8796"
+        ).unwrap();
+        let active_schedule = get_sample_v2_schedule()
+            .unwrap();
+        let result = get_schedule_hash(msig_enabled, &active_schedule)
+            .unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_schedule_hash_msig_enabled() {
+        let msig_enabled = true;
         let expected_result = hex::decode(
             "a722944989081591e0b9742e3065206251a0041e4480cd6a6642ce929f255194"
         ).unwrap();
         let active_schedule = get_sample_v2_schedule()
             .unwrap();
-        let result = get_schedule_hash(&active_schedule)
+        let result = get_schedule_hash(msig_enabled, &active_schedule)
             .unwrap();
         assert_eq!(result, expected_result);
     }
@@ -204,31 +263,18 @@ mod tests {
     fn should_validate_initial_and_subequent_jungle_3_blocks() {
         let blocks_json = get_init_and_subsequent_blocks_json_n(1)
             .unwrap();
+        let msig_enabled = blocks_json.is_msig_enabled();
         blocks_json.init_block.validate();
-        let block_num = 2;
-        let producer_signature = blocks_json
-            .get_producer_signature_for_block_n(block_num)
-            .unwrap();
-        let block_header = blocks_json.get_block_n(block_num)
-            .unwrap();
-        let active_schedule = blocks_json.get_active_schedule()
-            .unwrap();
-        let block_mroot = blocks_json
-            .get_block_mroot_for_block_n(block_num)
-            .unwrap();
-        if let Err(e) = check_block_signature_is_valid(
-            &block_mroot,
-            &producer_signature,
-            &block_header,
-            &active_schedule,
-        ) {
-            panic!("{}", e);
-        }
+        vec![0; blocks_json.num_subsequent_blocks()]
+            .iter()
+            .enumerate()
+            .map(|(i, _)| validate_subsequent_block(i + 1, &blocks_json))
+            .for_each(drop);
     }
 
     #[test]
     fn should_validate_initial_and_subequent_mainnet_blocks() {
-        /*
+        /* NOTE: Uncomment for LOTS of output!
         use simplelog::{
             TermLogger,
             LevelFilter,
@@ -241,27 +287,13 @@ mod tests {
             TerminalMode::Mixed
         ).unwrap();
         */
-        let blocks_json = get_init_and_subsequent_blocks_json_n(3)
+        let blocks_json = get_init_and_subsequent_blocks_json_n(2)
             .unwrap();
         blocks_json.init_block.validate();
-        let block_num = 2;
-        let producer_signature = blocks_json
-            .get_producer_signature_for_block_n(block_num)
-            .unwrap();
-        let block_header = blocks_json.get_block_n(block_num)
-            .unwrap();
-        let active_schedule = blocks_json.get_active_schedule()
-            .unwrap();
-        let block_mroot = blocks_json
-            .get_block_mroot_for_block_n(block_num)
-            .unwrap();
-        if let Err(e) = check_block_signature_is_valid(
-            &block_mroot,
-            &producer_signature,
-            &block_header,
-            &active_schedule,
-        ) {
-            panic!("{}", e);
-        }
+        vec![0; blocks_json.num_subsequent_blocks()]
+            .iter()
+            .enumerate()
+            .map(|(i, _)| validate_subsequent_block(i + 1, &blocks_json))
+            .for_each(drop);
     }
 }

@@ -41,6 +41,7 @@ use crate::{
             eos_merkle_utils::Incremerkle,
             eos_state::EosState,
             initialize_eos::eos_init_utils::EosInitJson,
+            protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
             parse_eos_schedule::{
                 EosProducerScheduleJson,
                 parse_schedule_string_to_json,
@@ -103,28 +104,31 @@ pub const SAMPLE_INIT_BLOCK_JSON_PATH_2: &str =
 pub const SAMPLE_INIT_BLOCK_JSON_PATH_3: &str =
     "src/btc_on_eos/eos/eos_test_utils/jungle-3-init-block-11379805.json";
 
-pub const SAMPLE_EOS_ACTIVE_SCHEDULE_PATH_PREFIX: &str =
-    "src/btc_on_eos/eos/eos_test_utils/sample-active-schedule-";
-
 pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_JUNGLE_3_JSON_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-init-and-subsequent-blocks-jungle-3-1.json";
 
 pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-init-and-subsequent-blocks-mainnet-1.json";
 
-pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_2: &str =
-    "src/btc_on_eos/eos/eos_test_utils/eos-init-and-subsequent-blocks-mainnet-2.json";
-
 pub const EOS_JUNGLE_CHAIN_ID: &str =
     "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosInitAndSubsequentJson {
+pub struct EosInitAndSubsequentBlocksJson {
     pub init_block: EosInitJson,
     pub subsequent_blocks: Vec<EosSubmissionMaterialJson>,
 }
 
-impl EosInitAndSubsequentJson {
+impl EosInitAndSubsequentBlocksJson {
+    pub fn is_msig_enabled(&self) -> bool {
+        match &self.init_block.maybe_protocol_features_to_enable {
+            None => false,
+            Some(features) => features.contains(
+                &hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)
+            )
+        }
+    }
+
     pub fn from_json_string(json_string: &String) -> Result<Self> {
         match serde_json::from_str(&json_string) {
             Ok(result) => Ok(result),
@@ -134,6 +138,10 @@ impl EosInitAndSubsequentJson {
 
     pub fn total_num_blocks(&self) -> usize {
         self.subsequent_blocks.len() + 1
+    }
+
+    pub fn num_subsequent_blocks(&self) -> usize {
+        self.subsequent_blocks.len()
     }
 
     fn check_n(&self, n: usize) -> Result<()> {
@@ -187,6 +195,7 @@ impl EosInitAndSubsequentJson {
             .map(|block_json| block_json.producer_signature)
     }
 
+    #[allow(dead_code)]
     pub fn get_interim_ids_for_block_n(
         &self,
         n: usize
@@ -226,9 +235,7 @@ impl EosInitAndSubsequentJson {
                             })
                             .flatten()
                             .map(convert_hex_to_checksum256)
-                            .collect::<Result<Checksum256s>>()?
-                            .iter()
-                            .map(|checksum| incremerkle.append(*checksum))
+                            .map(|checksum| incremerkle.append(checksum?))
                             .for_each(drop);
                         Ok(incremerkle)
                     }
@@ -244,11 +251,10 @@ impl EosInitAndSubsequentJson {
 
 pub fn get_init_and_subsequent_blocks_json_n(
     num: usize
-) -> Result<EosInitAndSubsequentJson> {
+) -> Result<EosInitAndSubsequentBlocksJson> {
     let path = match num {
         1 => Ok(SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_JUNGLE_3_JSON_1),
         2 => Ok(SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_1),
-        3 => Ok(SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_2),
         _ => Err(AppError::Custom(
             format!("Cannot find sample block num: {}", num)
         ))
@@ -259,7 +265,7 @@ pub fn get_init_and_subsequent_blocks_json_n(
             format!("✘ Can't find sample init block json file @ path: {}", path)
         ))
     }?;
-    EosInitAndSubsequentJson::from_json_string(&string)
+    EosInitAndSubsequentBlocksJson::from_json_string(&string)
 }
 
 pub fn get_init_json_n(num: usize) -> Result<EosInitJson> {
