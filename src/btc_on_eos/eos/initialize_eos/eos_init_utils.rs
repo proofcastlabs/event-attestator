@@ -1,7 +1,10 @@
 use crate::{
-    types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    types::{
+        Bytes,
+        Result,
+    },
     btc_on_eos::{
         utils::convert_hex_to_checksum256,
         eos::{
@@ -9,6 +12,10 @@ use crate::{
             eos_merkle_utils::Incremerkle,
             eos_crypto::eos_private_key::EosPrivateKey,
             validate_signature::check_block_signature_is_valid,
+            protocol_features::{
+                EnabledFeatures,
+                WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
+            },
             parse_eos_schedule::{
                 EosProducerScheduleJson,
                 convert_schedule_json_to_schedule_v2,
@@ -44,6 +51,7 @@ pub struct EosInitJson {
     pub block: EosBlockHeaderJson,
     pub blockroot_merkle: Vec<String>,
     pub active_schedule: EosProducerScheduleJson,
+    pub maybe_protocol_features_to_enable: Option<Vec<String>>,
 }
 
 impl EosInitJson {
@@ -57,6 +65,12 @@ impl EosInitJson {
     #[cfg(test)]
     pub fn validate(&self) {
         use eos_primitives::Checksum256;
+        let msig_enabled = match &self.maybe_protocol_features_to_enable {
+                None => false,
+                Some(features) => features.contains(
+                    &hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)
+                )
+            };
         let schedule = convert_schedule_json_to_schedule_v2(
             &self.active_schedule
         ).unwrap();
@@ -83,12 +97,39 @@ impl EosInitJson {
             .to_vec();
         debug!("block mroot: {}", hex::encode(&block_mroot));
         if let Err(_) = check_block_signature_is_valid(
+            msig_enabled,
             &block_mroot,
             &producer_signature,
             &block_header,
             &schedule,
         ) {
             panic!("Could not validate init block!");
+        }
+    }
+}
+
+pub fn maybe_enable_protocol_features_and_return_state<D>(
+    maybe_protocol_features_to_enable: &Option<Vec<String>>,
+    state: EosState<D>,
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    match maybe_protocol_features_to_enable {
+        None => {
+            info!("✘ No protocol features to enable: Skipping!");
+            Ok(state)
+        }
+        Some(feature_hash_strings) => {
+            info!("✔ Enabling protocol features...");
+            let mut feature_hashes = feature_hash_strings
+                .iter()
+                .map(|hex| Ok(hex::decode(hex)?))
+                .collect::<Result<Vec<Bytes>>>()?;
+            EnabledFeatures::init()
+                .enable_multi(&state.db, &mut feature_hashes)
+                .and_then(|features|
+                    state.add_enabled_protocol_features(features)
+                )
         }
     }
 }
@@ -101,6 +142,9 @@ pub fn test_block_validation_and_return_state<D>(
 {
     info!("✔ Checking block validation passes...");
     check_block_signature_is_valid(
+        state
+            .enabled_protocol_features
+            .is_enabled(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec()),
         &get_incremerkle_from_db(&state.db)?
             .get_root()
             .to_bytes()

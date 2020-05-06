@@ -20,6 +20,7 @@ use crate::{
                 put_eos_account_nonce_in_db_and_return_state,
                 put_eos_known_schedule_in_db_and_return_state,
                 generated_eos_key_save_in_db_and_return_state,
+                maybe_enable_protocol_features_and_return_state,
                 put_eos_latest_block_info_in_db_and_return_state,
                 put_empty_processed_tx_ids_in_db_and_return_state,
                 generate_and_put_incremerkle_in_db_and_return_state,
@@ -90,6 +91,12 @@ pub fn maybe_initialize_eos_core<D>(
                     generate_and_put_incremerkle_in_db_and_return_state(
                         &init_json.blockroot_merkle,
                         state,
+                    )
+                )
+                .and_then(|state|
+                    maybe_enable_protocol_features_and_return_state(
+                        &init_json.maybe_protocol_features_to_enable,
+                        state
                     )
                 )
                 .and_then(|state|
