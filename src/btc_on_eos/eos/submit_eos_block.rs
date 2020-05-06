@@ -33,6 +33,9 @@ use crate::{
             add_global_sequences_to_processed_list::{
                 maybe_add_global_sequences_to_processed_list,
             },
+            get_enabled_protocol_features::{
+                get_enabled_protocol_features_and_add_to_state,
+            },
             filter_proofs_with_wrong_action_mroot::{
                 maybe_filter_out_proofs_with_wrong_action_mroot,
             },
@@ -70,6 +73,7 @@ pub fn submit_eos_block_to_core<D>(
 {
     parse_submission_material_and_add_to_state(block_json, EosState::init(db))
         .and_then(check_core_is_initialized_and_return_eos_state)
+        .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_incremerkle_and_add_to_state)
         .and_then(append_interim_block_ids_to_incremerkle_in_state)
         .and_then(get_active_schedule_from_db_and_add_to_state)

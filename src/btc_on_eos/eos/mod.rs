@@ -36,6 +36,7 @@ pub(crate) mod increment_signature_nonce;
 pub(crate) mod extract_utxos_from_btc_txs;
 pub(crate) mod filter_already_processed_txs;
 pub(crate) mod filter_invalid_merkle_proofs;
+pub(crate) mod get_enabled_protocol_features;
 pub(crate) mod filter_invalid_action_digests;
 pub(crate) mod filter_action_and_receipt_mismatches;
 pub(crate) mod filter_proofs_with_wrong_action_mroot;
