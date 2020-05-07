@@ -6,6 +6,7 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    constants::CORE_IS_VALIDATING,
     btc_on_eos::eos::{
         eos_state::EosState,
         eos_constants::PRODUCER_REPS,
@@ -48,12 +49,17 @@ pub fn validate_producer_slot_of_block_in_state<D>(
 ) ->Result<EosState<D>>
     where D: DatabaseInterface
 {
-    info!("✔ Validation slot of producer of block...");
-    validate_producer_slot(
-        state.get_active_schedule()?,
-        state.get_eos_block_header()?,
-    )
-        .and(Ok(state))
+    if CORE_IS_VALIDATING {
+        info!("✔ Validating slot of producer of block...");
+        validate_producer_slot(
+            state.get_active_schedule()?,
+            state.get_eos_block_header()?,
+        )
+            .and(Ok(state))
+    } else {
+        info!("✔ Skipping producer slot validation!");
+        Ok(state)
+    }
 }
 
 #[cfg(test)]

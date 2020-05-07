@@ -17,6 +17,7 @@ use secp256k1::{
 use crate::{
     errors::AppError,
     traits::DatabaseInterface,
+    constants::CORE_IS_VALIDATING,
     types::{
         Bytes,
         Result,
@@ -169,20 +170,25 @@ pub fn validate_block_header_signature<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    info!("✔ Validating EOS block header signature...");
-    check_block_signature_is_valid(
-        state
-            .enabled_protocol_features
-            .is_enabled(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec()),
-        &state.incremerkle
-            .get_root()
-            .to_bytes()
-            .to_vec(),
-        &state.producer_signature,
-        state.get_eos_block_header()?,
-        state.get_active_schedule()?,
-    )
-        .and(Ok(state))
+    if CORE_IS_VALIDATING {
+        info!("✔ Validating EOS block header signature...");
+        check_block_signature_is_valid(
+            state
+                .enabled_protocol_features
+                .is_enabled(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec()),
+            &state.incremerkle
+                .get_root()
+                .to_bytes()
+                .to_vec(),
+            &state.producer_signature,
+            state.get_eos_block_header()?,
+            state.get_active_schedule()?,
+        )
+            .and(Ok(state))
+    } else {
+        info!("✔ Skipping EOS block header signature validation");
+        Ok(state)
+    }
 }
 
 #[cfg(test)]

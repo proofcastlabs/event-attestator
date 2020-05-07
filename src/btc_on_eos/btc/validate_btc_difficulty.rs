@@ -6,6 +6,7 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    constants::CORE_IS_VALIDATING,
     btc_on_eos::btc::{
         btc_state::BtcState,
         btc_database_utils::{
@@ -55,13 +56,18 @@ pub fn validate_difficulty_of_btc_block_in_state<D>(
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    info!("✔ Validating BTC block difficulty...");
-    check_difficulty_is_above_threshold(
-        get_btc_difficulty_from_db(&state.db)?,
-        &state.get_btc_block_and_id()?.block.header,
-        get_btc_network_from_db(&state.db)?,
-    )
-        .and_then(|_| Ok(state))
+    if CORE_IS_VALIDATING {
+        info!("✔ Validating BTC block difficulty...");
+        check_difficulty_is_above_threshold(
+            get_btc_difficulty_from_db(&state.db)?,
+            &state.get_btc_block_and_id()?.block.header,
+            get_btc_network_from_db(&state.db)?,
+        )
+            .and_then(|_| Ok(state))
+    } else {
+        info!("✔ Skipping BTC difficulty validation!");
+        Ok(state)
+    }
 }
 
 #[cfg(test)]
