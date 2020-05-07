@@ -10,6 +10,7 @@ authors = ["Provable Things <provable.xyz>", "Greg Kapka <greg@oraclize.it>"]
 
 [features]
 debug = []
+non-validating = ["debug"]
 
 [dependencies]
 hex = "=0.4.0"

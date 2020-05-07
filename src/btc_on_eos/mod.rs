@@ -12,6 +12,8 @@
 //! ptokens_core = { version = "1.0.0", features = ["debug"] }
 //! ```
 
+#![cfg_attr(feature="non-validating", allow(dead_code), allow(unused_imports))]
+
 pub use get_enclave_state::get_enclave_state;
 pub use eos::add_new_schedule::add_new_schedule_to_db;
 pub use btc::submit_btc_block::submit_btc_block_to_core;
