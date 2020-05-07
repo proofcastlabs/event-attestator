@@ -13,7 +13,7 @@ use crate::{
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProtocolFeature {
     feature_name: String,
-    feature_hash: Bytes,
+    feature_hash: String,
 }
 
 impl ProtocolFeature {
@@ -21,14 +21,17 @@ impl ProtocolFeature {
         Ok(serde_json::to_string(&self)?)
     }
 
-    pub fn new(name: &str, feature_hash: Bytes) -> Self {
-        ProtocolFeature { feature_name: name.to_string(), feature_hash }
+    pub fn new(name: &str, feature_hash: String) -> Self {
+        ProtocolFeature {
+            feature_name: name.to_string(),
+            feature_hash: feature_hash,
+        }
     }
 
     pub fn default() -> Self {
         ProtocolFeature {
+            feature_hash: "1337".to_string(),
             feature_name: "Default".to_string(),
-            feature_hash: vec![0x01, 0x03, 0x03, 0x07],
         }
     }
 }
@@ -83,10 +86,11 @@ impl EnabledFeatures {
     }
 
     pub fn contains(&self, feature_hash: &Bytes) -> bool {
+        let hash = hex::encode(feature_hash);
         self
             .0
             .iter()
-            .fold(false, |acc, e| acc || &e.feature_hash == feature_hash)
+            .fold(false, |acc, e| acc || e.feature_hash == hash)
     }
 
     pub fn does_not_contain(&self, feature_hash: &Bytes) -> bool {
@@ -125,10 +129,11 @@ impl AvailableFeatures {
     }
 
     pub fn contains(&self, feature_hash: &Bytes) -> bool {
+        let hash = hex::encode(feature_hash);
         self
             .0
             .iter()
-            .fold(false, |acc, e| acc || &e.feature_hash == feature_hash)
+            .fold(false, |acc, e| acc || e.feature_hash == hash)
     }
 
     pub fn check_contains(&self, feature_hash: &Bytes) -> Result<()> {
@@ -154,6 +159,7 @@ impl AvailableFeatures {
         &self,
         feature_hash: &Bytes,
     ) -> Result<ProtocolFeature> {
+        let hash = hex::encode(feature_hash);
         self.check_contains(feature_hash)
             .map(|_|
                 self
@@ -162,7 +168,7 @@ impl AvailableFeatures {
                     .fold(
                         ProtocolFeature::default(),
                         |mut acc, protocol_feature| {
-                            if &protocol_feature.feature_hash == feature_hash {
+                            if protocol_feature.feature_hash == hash {
                                 acc = protocol_feature.clone();
                             };
                             acc
@@ -178,7 +184,7 @@ lazy_static! {
             vec![
                 ProtocolFeature::new(
                     "WTMSIG_BLOCK_SIGNATURE",
-                    WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec(),
+                    hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH),
                 ),
             ]
         )
