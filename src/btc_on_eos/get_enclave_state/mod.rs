@@ -13,6 +13,7 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized,
         eos::{
             eos_types::EosKnownSchedulesJsons,
+            protocol_features::EnabledFeatures,
             eos_crypto::eos_private_key::EosPrivateKey,
             eos_database_utils::{
                 get_eos_chain_id_from_db,
@@ -22,6 +23,7 @@ use crate::{
                 get_eos_last_seen_block_id_from_db,
                 get_eos_last_seen_block_num_from_db,
                 get_eos_account_name_string_from_db,
+                get_eos_enabled_protocol_features_from_db,
             },
         },
         btc::{
@@ -77,6 +79,7 @@ struct EnclaveState {
     btc_anchor_block_hash: String,
     eos_last_seen_block_id: String,
     eos_known_schedules: EosKnownSchedulesJsons,
+    eos_enabled_protocol_features: EnabledFeatures,
 }
 
 pub fn get_enclave_state<D>(
@@ -103,6 +106,8 @@ pub fn get_enclave_state<D>(
             Ok(serde_json::to_string(
                 &EnclaveState {
                     eos_public_key,
+                    eos_enabled_protocol_features:
+                        get_eos_enabled_protocol_features_from_db(&db)?,
                     eos_symbol: get_eos_token_symbol_from_db(&db)?,
                     eos_signature_nonce: get_eos_account_nonce_from_db(&db)?,
                     btc_signature_nonce: get_btc_account_nonce_from_db(&db)?,

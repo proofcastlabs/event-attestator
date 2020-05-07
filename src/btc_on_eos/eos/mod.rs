@@ -1,6 +1,8 @@
 pub mod initialize_eos;
 pub mod add_new_schedule;
 pub mod submit_eos_block;
+pub mod enable_protocol_feature;
+pub mod disable_protocol_feature;
 
 pub(crate) mod eos_hash;
 pub(crate) mod eos_state;
@@ -13,6 +15,7 @@ pub(crate) mod eos_test_utils;
 pub(crate) mod eos_merkle_utils;
 pub(crate) mod save_incremerkle;
 pub(crate) mod sign_transactions;
+pub(crate) mod protocol_features;
 pub(crate) mod parse_eos_actions;
 pub(crate) mod validate_signature;
 pub(crate) mod eos_database_utils;
@@ -35,6 +38,7 @@ pub(crate) mod increment_signature_nonce;
 pub(crate) mod extract_utxos_from_btc_txs;
 pub(crate) mod filter_already_processed_txs;
 pub(crate) mod filter_invalid_merkle_proofs;
+pub(crate) mod get_enabled_protocol_features;
 pub(crate) mod filter_invalid_action_digests;
 pub(crate) mod filter_action_and_receipt_mismatches;
 pub(crate) mod filter_proofs_with_wrong_action_mroot;

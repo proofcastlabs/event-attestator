@@ -2,6 +2,12 @@
 #![recursion_limit="128"]
 #![feature(exclusive_range_pattern)]
 
+//! # The `pToken` Core
+//!
+//! Herein lies the functionality required for the cross-chain conversions
+//! between various blockchains allowing for decentalized swaps between a native
+//! asset and a host chain's pTokenized version of that asset.
+
 pub use types::{
     Bytes,
     Result

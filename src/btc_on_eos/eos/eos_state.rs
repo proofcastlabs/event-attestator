@@ -11,6 +11,7 @@ use crate::{
         btc::btc_types::BtcTransactions,
         eos::{
             eos_merkle_utils::Incremerkle,
+            protocol_features::EnabledFeatures,
             eos_types::{
                 ActionProofs,
                 Checksum256s,
@@ -38,6 +39,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub redeem_params: Vec<RedeemParams>,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
+    pub enabled_protocol_features: EnabledFeatures,
     pub active_schedule: Option<EosProducerScheduleV2>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
 }
@@ -57,6 +59,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
             producer_signature: String::new(),
             incremerkle: Incremerkle::default(),
             processed_tx_ids: ProcessedTxIds::init(),
+            enabled_protocol_features: EnabledFeatures::init(),
         }
     }
 
@@ -135,6 +138,14 @@ impl<D> EosState<D> where D: DatabaseInterface {
         tx_ids: ProcessedTxIds,
     ) -> Result<Self> {
         self.processed_tx_ids = tx_ids;
+        Ok(self)
+    }
+
+    pub fn add_enabled_protocol_features(
+        mut self,
+        enabled_protocol_features: EnabledFeatures,
+    ) -> Result<Self> {
+        self.enabled_protocol_features = enabled_protocol_features;
         Ok(self)
     }
 

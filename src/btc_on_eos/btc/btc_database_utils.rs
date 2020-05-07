@@ -6,6 +6,7 @@ use bitcoin_hashes::{
 use crate::{
     errors::AppError,
     traits::DatabaseInterface,
+    constants::MIN_DATA_SENSITIVITY_LEVEL,
     types::{
         Bytes,
         Result,
@@ -101,7 +102,7 @@ pub fn get_btc_fee_from_db<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
     trace!("✔ Getting BTC fee from db...");
-    db.get(BTC_FEE_KEY.to_vec(), None)
+    db.get(BTC_FEE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
@@ -109,13 +110,17 @@ pub fn put_btc_fee_in_db<D>(db: &D, fee: u64) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Adding BTC fee of '{}' satoshis-per-byte to db...", fee);
-    db.put(BTC_FEE_KEY.to_vec(), convert_u64_to_bytes(fee), None)
+    db.put(
+        BTC_FEE_KEY.to_vec(),
+        convert_u64_to_bytes(fee),
+        MIN_DATA_SENSITIVITY_LEVEL
+    )
 }
 
 pub fn get_btc_network_from_db<D>(db: &D) -> Result<BtcNetwork>
     where D: DatabaseInterface
 {
-    db.get(BTC_NETWORK_KEY.to_vec(), None)
+    db.get(BTC_NETWORK_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_btc_network(&bytes))
 }
 
@@ -126,7 +131,7 @@ pub fn put_btc_network_in_db<D>(db: &D, network: BtcNetwork) -> Result<()>
     db.put(
         BTC_NETWORK_KEY.to_vec(),
         convert_btc_network_to_bytes(network)?,
-        None,
+        MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
@@ -137,7 +142,7 @@ pub fn put_btc_difficulty_in_db<D>(db: &D, difficulty: u64) -> Result<()>
     db.put(
         BTC_DIFFICULTY_THRESHOLD.to_vec(),
         convert_u64_to_bytes(difficulty),
-        None,
+        MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
@@ -145,7 +150,7 @@ pub fn get_btc_difficulty_from_db<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
     trace!("✔ Getting BTC difficulty threshold from db...");
-    db.get(BTC_DIFFICULTY_THRESHOLD.to_vec(), None)
+    db.get(BTC_DIFFICULTY_THRESHOLD.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
@@ -226,7 +231,7 @@ pub fn btc_block_exists_in_db<D>(db: &D, btc_block_id: &sha256d::Hash) -> bool
         "✔ Checking for existence of BTC block: {}",
        hex::encode(btc_block_id.to_vec())
    );
-    key_exists_in_db(db, &btc_block_id.to_vec(), None)
+    key_exists_in_db(db, &btc_block_id.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn key_exists_in_db<D>(
@@ -249,14 +254,14 @@ pub fn put_btc_canon_to_tip_length_in_db<D>(
     db.put(
         BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(),
         convert_u64_to_bytes(btc_canon_to_tip_length),
-        None,
+        MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
 pub fn get_btc_canon_to_tip_length_from_db<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
-    db.get(BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(), None)
+    db.get(BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
@@ -404,13 +409,13 @@ pub fn put_btc_hash_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    db.put(key.to_vec(), hash.to_vec(), None)
+    db.put(key.to_vec(), hash.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn get_btc_hash_from_db<D>(db: &D, key: &Bytes) -> Result<sha256d::Hash>
     where D: DatabaseInterface
 {
-    db.get(key.to_vec(), None)
+    db.get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| Ok(sha256d::Hash::from_slice(&bytes)?))
 }
 
@@ -459,7 +464,7 @@ pub fn put_btc_address_in_db<D>(db: &D, btc_address: &String) -> Result<()>
     db.put(
         BTC_ADDRESS_KEY.to_vec(),
         convert_btc_address_to_bytes(btc_address)?,
-        None,
+        MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
@@ -467,7 +472,7 @@ pub fn get_btc_address_from_db<D>(db: &D) -> Result<String>
     where D: DatabaseInterface
 {
     trace!("✔  Getting BTC address from db...");
-    db.get(BTC_ADDRESS_KEY.to_vec(), None)
+    db.get(BTC_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .map(convert_bytes_to_btc_address)
 }
 
@@ -482,7 +487,7 @@ pub fn put_btc_block_in_db<D>(
         btc_block_in_db_format,
     );
     serialize_btc_block_in_db_format(btc_block_in_db_format)
-        .and_then(|(id, block)| db.put(id, block, None))
+        .and_then(|(id, block)| db.put(id, block, MIN_DATA_SENSITIVITY_LEVEL))
 }
 
 pub fn maybe_get_btc_block_from_db<D>(
@@ -511,7 +516,7 @@ pub fn get_btc_block_from_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Getting BTC block from db via id: {}", hex::encode(id.to_vec()));
-    db.get(id.to_vec(), None)
+    db.get(id.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| deserialize_btc_block_in_db_format(&bytes))
 }
 
@@ -534,7 +539,7 @@ mod tests {
         let result = key_exists_in_db(
             &db,
             &BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(),
-            None,
+            MIN_DATA_SENSITIVITY_LEVEL,
         );
         assert!(!result);
     }
@@ -549,7 +554,7 @@ mod tests {
         let result = key_exists_in_db(
             &db,
             &BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(),
-            None,
+            MIN_DATA_SENSITIVITY_LEVEL,
         );
         assert!(result);
     }

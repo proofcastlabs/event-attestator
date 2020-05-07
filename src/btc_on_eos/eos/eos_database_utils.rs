@@ -8,6 +8,7 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    constants::MIN_DATA_SENSITIVITY_LEVEL,
     btc_on_eos::{
         utils::convert_hex_to_checksum256,
         database_utils::{
@@ -18,8 +19,9 @@ use crate::{
         },
         eos::{
             eos_state::EosState,
-            parse_eos_schedule::parse_schedule_string_to_schedule,
+            protocol_features::EnabledFeatures,
             eos_utils::get_eos_schedule_db_key,
+            parse_eos_schedule::parse_schedule_string_to_schedule,
             eos_merkle_utils::{
                 Incremerkle,
                 IncremerkleJson,
@@ -36,12 +38,41 @@ use crate::{
                 EOS_TOKEN_SYMBOL_KEY,
                 PROCESSED_TX_IDS_KEY,
                 EOS_ACCOUNT_NAME_KEY,
+                EOS_PROTOCOL_FEATURES,
                 EOS_LAST_SEEN_BLOCK_ID,
                 EOS_LAST_SEEN_BLOCK_NUM,
             },
         },
     },
 };
+
+pub fn put_eos_enabled_protocol_features_in_db<D>(
+    db: &D,
+    protocol_features: &EnabledFeatures,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    db.put(
+        EOS_PROTOCOL_FEATURES.to_vec(),
+        serde_json::to_vec(&protocol_features)?,
+        MIN_DATA_SENSITIVITY_LEVEL,
+    )
+}
+
+pub fn get_eos_enabled_protocol_features_from_db<D>(
+    db: &D,
+) -> Result<EnabledFeatures>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting EOS enabled protocol features from db...");
+    match db.get(EOS_PROTOCOL_FEATURES.to_vec(), MIN_DATA_SENSITIVITY_LEVEL) {
+        Ok(bytes) => Ok(serde_json::from_slice(&bytes)?),
+        Err(_) => {
+            info!("✔ No features found in db! Initting empty features...");
+            Ok(EnabledFeatures::init())
+        }
+    }
+}
 
 pub fn put_eos_last_seen_block_num_in_db<D>(
     db: &D,
@@ -87,13 +118,12 @@ pub fn put_incremerkle_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    let data_sensitivity = None;
     info!("✔ Putting EOS incremerkle in db...");
     db
         .put(
             EOS_INCREMERKLE.to_vec(),
             serde_json::to_vec(&incremerkle.to_json())?,
-            data_sensitivity,
+            MIN_DATA_SENSITIVITY_LEVEL,
         )
 }
 
@@ -103,9 +133,8 @@ pub fn get_incremerkle_from_db<D>(
     where D: DatabaseInterface
 {
     info!("✔ Getting EOS incremerkle from db...");
-    let data_sensitivity = None;
     db
-        .get(EOS_INCREMERKLE.to_vec(), data_sensitivity)
+        .get(EOS_INCREMERKLE.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
         .and_then(|json: IncremerkleJson| json.to_incremerkle())
 }
@@ -116,9 +145,8 @@ pub fn get_eos_known_schedules_from_db<D>(
     where D: DatabaseInterface
 {
     info!("✔ Getting EOS known schedules from db...");
-    let data_sensitivity = None;
     db
-        .get(EOS_SCHEDULE_LIST.to_vec(), data_sensitivity)
+        .get(EOS_SCHEDULE_LIST.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
 }
 
@@ -129,11 +157,10 @@ pub fn put_eos_known_schedules_in_db<D>(
     where D: DatabaseInterface
 {
     info!("✔ Putting EOS known schedules in db: {}", &eos_known_schedules);
-    let data_sensitivity = None;
     db.put(
         EOS_SCHEDULE_LIST.to_vec(),
         serde_json::to_vec(eos_known_schedules)?,
-        data_sensitivity,
+        MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
@@ -143,9 +170,8 @@ pub fn put_eos_schedule_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    let data_sensitivity = None;
     let db_key = get_eos_schedule_db_key(schedule.version);
-    match db.get(db_key.clone(), data_sensitivity) {
+    match db.get(db_key.clone(), MIN_DATA_SENSITIVITY_LEVEL) {
         Ok(_) => {
             trace!("✘ EOS schedule {} already in db!", &schedule.version);
             Ok(())
