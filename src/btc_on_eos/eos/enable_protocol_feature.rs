@@ -5,19 +5,24 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eos::eos::{
-        eos_state::EosState,
-        get_enabled_protocol_features::{
-            get_enabled_protocol_features_and_add_to_state
+    btc_on_eos::{
+        check_core_is_initialized::{
+            check_core_is_initialized_and_return_eos_state,
         },
-        protocol_features::{
-            EnabledFeatures,
-            AVAILABLE_FEATURES,
-        },
-        eos_database_utils::{
-            end_eos_db_transaction,
-            start_eos_db_transaction,
-            put_eos_enabled_protocol_features_in_db,
+        eos::{
+            eos_state::EosState,
+            get_enabled_protocol_features::{
+                get_enabled_protocol_features_and_add_to_state
+            },
+            protocol_features::{
+                EnabledFeatures,
+                AVAILABLE_FEATURES,
+            },
+            eos_database_utils::{
+                end_eos_db_transaction,
+                start_eos_db_transaction,
+                put_eos_enabled_protocol_features_in_db,
+            },
         },
     },
 };
@@ -65,7 +70,8 @@ pub fn enable_eos_protocol_feature<D>(
 {
     info!("✔ Maybe enabling EOS protocol feature w/ hash: {}", feature_hash);
     let hash = hex::decode(feature_hash)?;
-    start_eos_db_transaction(EosState::init(db))
+    check_core_is_initialized_and_return_eos_state(EosState::init(db))
+        .and_then(start_eos_db_transaction)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(|state| enable_feature_and_return_state(state, &hash))
         .and_then(end_eos_db_transaction)
