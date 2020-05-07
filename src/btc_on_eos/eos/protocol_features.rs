@@ -12,8 +12,8 @@ use crate::{
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProtocolFeature {
-    feature_hash: Bytes,
     feature_name: String,
+    feature_hash: Bytes,
 }
 
 impl ProtocolFeature {
@@ -70,15 +70,12 @@ impl EnabledFeatures {
         feature_hashes.dedup();
         feature_hashes
             .iter()
-            .map(|hash| -> Result<Bytes> {
-                AVAILABLE_FEATURES.check_contains(hash)?;
-                Ok(hash.to_vec())
-            })
-            .map(|hash| AVAILABLE_FEATURES.get_feature_from_hash(&hash?))
-            .map(|maybe_feature| -> Result<()> {
-                let feature = maybe_feature?;
+            .map(|hash| AVAILABLE_FEATURES.get_feature_from_hash(&hash))
+            .collect::<Result<Vec<ProtocolFeature>>>()?
+            .iter()
+            .map(|feature| -> Result<()> {
                 info!("✔ Adding feature: {}", feature.to_json()?);
-                self.0.push(feature);
+                self.0.push(feature.clone());
                 Ok(())
             })
             .for_each(drop);
@@ -134,24 +131,23 @@ impl AvailableFeatures {
             .fold(false, |acc, e| acc || &e.feature_hash == feature_hash)
     }
 
-    pub fn does_not_contain(&self, feature_hash: &Bytes) -> bool {
-        !self.contains(feature_hash)
-    }
-
     pub fn check_contains(&self, feature_hash: &Bytes) -> Result<()> {
         info!(
             "✔ Checking available features for feature hash {}",
             hex::encode(feature_hash)
         );
-        if AVAILABLE_FEATURES.does_not_contain(feature_hash) {
-            return Err(AppError::Custom(
+        match AVAILABLE_FEATURES.contains(feature_hash) {
+            true => {
+                info!("✔ Feature hash exists in available features!");
+                Ok(())
+            }
+            false => Err(AppError::Custom(
                 format!(
-                    "✘ Available features do not contain feature hash: {}",
+                    "✘ Unrecognised feature hash: {}",
                     hex::encode(feature_hash),
                 )
             ))
-        };
-        Ok(())
+        }
     }
 
     pub fn get_feature_from_hash(

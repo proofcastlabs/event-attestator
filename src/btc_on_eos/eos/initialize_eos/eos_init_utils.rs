@@ -120,7 +120,10 @@ pub fn maybe_enable_protocol_features_and_return_state<D>(
             Ok(state)
         }
         Some(feature_hash_strings) => {
-            info!("✔ Enabling protocol features...");
+            info!(
+                "✔ Enabling {} protocol features...",
+                feature_hash_strings.len()
+            );
             let mut feature_hashes = feature_hash_strings
                 .iter()
                 .map(|hex| Ok(hex::decode(hex)?))
