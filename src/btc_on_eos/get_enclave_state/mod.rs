@@ -1,7 +1,10 @@
 use crate::{
     types::Result,
-    constants::DEBUG_MODE,
     traits::DatabaseInterface,
+    constants::{
+        DEBUG_MODE,
+        CORE_IS_VALIDATING,
+    },
     chains::btc::{
         utxo_manager::utxo_database_utils::{
             get_utxo_nonce_from_db,
@@ -64,6 +67,7 @@ struct EnclaveState {
     btc_linker_hash: String,
     btc_signature_nonce: u64,
     eos_signature_nonce: u64,
+    core_is_validating: bool,
     eos_account_name: String,
     btc_number_of_utxos: u64,
     btc_utxo_total_value: u64,
@@ -106,6 +110,7 @@ pub fn get_enclave_state<D>(
             Ok(serde_json::to_string(
                 &EnclaveState {
                     eos_public_key,
+                    core_is_validating: CORE_IS_VALIDATING,
                     eos_enabled_protocol_features:
                         get_eos_enabled_protocol_features_from_db(&db)?,
                     eos_symbol: get_eos_token_symbol_from_db(&db)?,
