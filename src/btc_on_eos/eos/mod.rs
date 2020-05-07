@@ -2,6 +2,7 @@ pub mod initialize_eos;
 pub mod add_new_schedule;
 pub mod submit_eos_block;
 pub mod enable_protocol_feature;
+pub mod disable_protocol_feature;
 
 pub(crate) mod eos_hash;
 pub(crate) mod eos_state;

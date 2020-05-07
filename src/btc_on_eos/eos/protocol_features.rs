@@ -41,6 +41,18 @@ impl EnabledFeatures {
         EnabledFeatures(vec![])
     }
 
+    pub fn remove(mut self, feature_hash: &Bytes) -> Result<Self>{
+        if self.does_not_contain(feature_hash) {
+            return Ok(self)
+        };
+        AVAILABLE_FEATURES
+            .get_feature_from_hash(feature_hash)
+            .and_then(|feature| {
+                self.0.remove(self.0.iter().position(|x| x == &feature)?);
+                Ok(self)
+            })
+    }
+
     pub fn add(mut self, feature_hash: &Bytes) -> Result<Self> {
         AVAILABLE_FEATURES
             .check_contains(feature_hash)
@@ -80,8 +92,16 @@ impl EnabledFeatures {
             .fold(false, |acc, e| acc || &e.feature_hash == feature_hash)
     }
 
+    pub fn does_not_contain(&self, feature_hash: &Bytes) -> bool {
+        !self.contains(feature_hash)
+    }
+
     pub fn is_enabled(&self, feature_hash: &Bytes) -> bool {
         AVAILABLE_FEATURES.contains(feature_hash) && self.contains(feature_hash)
+    }
+
+    pub fn is_not_enabled(&self, feature_hash: &Bytes) -> bool {
+        !self.is_enabled(feature_hash)
     }
 
     pub fn enable_multi<D>(
