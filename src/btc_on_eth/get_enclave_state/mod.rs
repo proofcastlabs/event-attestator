@@ -2,6 +2,7 @@ use crate::{
     types::Result,
     constants::DEBUG_MODE,
     traits::DatabaseInterface,
+    constants::CORE_IS_VALIDATING,
     chains::btc::{
         btc_constants::BTC_TAIL_LENGTH,
         utxo_manager::utxo_database_utils::{
@@ -61,10 +62,11 @@ pub struct EnclaveState {
     btc_tail_length: u64,
     eth_tail_length: u64,
     btc_public_key: String,
-    eth_linker_hash: String,
-    btc_linker_hash: String,
     btc_sats_per_byte: u64,
     eth_account_nonce: u64,
+    eth_linker_hash: String,
+    btc_linker_hash: String,
+    core_is_validating: bool,
     btc_number_of_utxos: u64,
     btc_utxo_total_value: u64,
     eth_tail_block_hash: String,
@@ -112,6 +114,7 @@ pub fn get_enclave_state<D>(
             );
             Ok(serde_json::to_string(
                 &EnclaveState {
+                    core_is_validating: CORE_IS_VALIDATING,
                     debug_mode: DEBUG_MODE,
                     btc_tail_length:
                         BTC_TAIL_LENGTH,

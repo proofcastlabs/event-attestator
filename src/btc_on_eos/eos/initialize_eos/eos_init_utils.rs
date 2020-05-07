@@ -1,6 +1,7 @@
 use crate::{
     errors::AppError,
     traits::DatabaseInterface,
+    constants::CORE_IS_VALIDATING,
     types::{
         Bytes,
         Result,
@@ -143,20 +144,25 @@ pub fn test_block_validation_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    info!("✔ Checking block validation passes...");
-    check_block_signature_is_valid(
-        state
-            .enabled_protocol_features
-            .is_enabled(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec()),
-        &get_incremerkle_from_db(&state.db)?
-            .get_root()
-            .to_bytes()
-            .to_vec(),
-        &block_json.producer_signature,
-        &parse_eos_block_header_from_json(&block_json)?,
-        &get_eos_schedule_from_db(&state.db, block_json.schedule_version)?
-    )
-        .and(Ok(state))
+    if CORE_IS_VALIDATING {
+        info!("✔ Checking block validation passes...");
+        check_block_signature_is_valid(
+            state
+                .enabled_protocol_features
+                .is_enabled(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec()),
+            &get_incremerkle_from_db(&state.db)?
+                .get_root()
+                .to_bytes()
+                .to_vec(),
+            &block_json.producer_signature,
+            &parse_eos_block_header_from_json(&block_json)?,
+            &get_eos_schedule_from_db(&state.db, block_json.schedule_version)?
+        )
+            .and(Ok(state))
+    } else {
+        info!("✔ Skipping EOS init block validation check!");
+        Ok(state)
+    }
 }
 
 pub fn generate_and_put_incremerkle_in_db<D>(
