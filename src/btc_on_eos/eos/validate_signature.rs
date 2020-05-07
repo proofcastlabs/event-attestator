@@ -263,7 +263,6 @@ mod tests {
     fn should_validate_initial_and_subequent_jungle_3_blocks() {
         let blocks_json = get_init_and_subsequent_blocks_json_n(1)
             .unwrap();
-        let msig_enabled = blocks_json.is_msig_enabled();
         blocks_json.init_block.validate();
         vec![0; blocks_json.num_subsequent_blocks()]
             .iter()

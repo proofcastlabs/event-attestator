@@ -37,10 +37,6 @@ impl ProtocolFeature {
 pub struct EnabledFeatures(Vec<ProtocolFeature>);
 
 impl EnabledFeatures {
-    pub fn to_json(&self) -> Result<String> {
-        Ok(serde_json::to_string(&self)?)
-    }
-
     pub fn init() -> Self {
         EnabledFeatures(vec![])
     }
@@ -86,29 +82,6 @@ impl EnabledFeatures {
 
     pub fn is_enabled(&self, feature_hash: &Bytes) -> bool {
         AVAILABLE_FEATURES.contains(feature_hash) && self.contains(feature_hash)
-    }
-
-    pub fn enable<D>(
-        self,
-        db: &D,
-        feature_hash: &Bytes,
-    ) -> Result<Self>
-        where D: DatabaseInterface
-    {
-        AVAILABLE_FEATURES
-            .check_contains(feature_hash)
-            .and_then(|_| {
-                if self.is_enabled(feature_hash) {
-                    info!("✘ Feature already enabled, doing nothing!");
-                    return Ok(self)
-                }
-                info!("✔ Enabling new feature: {}", hex::encode(feature_hash));
-                self.add(feature_hash)
-                    .and_then(|new_self| {
-                        put_eos_enabled_protocol_features_in_db(db, &new_self)?;
-                        Ok(new_self)
-                    })
-            })
     }
 
     pub fn enable_multi<D>(
