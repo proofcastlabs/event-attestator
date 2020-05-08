@@ -1,8 +1,6 @@
 pub const HASH_LENGTH: usize = 32;
 pub const U64_NUM_BYTES: usize = 8;
 pub const BTC_NUM_DECIMALS: u32 = 8;
-pub const HASH_HEX_CHARS: usize  = 64;
-pub const HEX_PREFIX_LENGTH: usize = 2;
 pub const PTOKEN_ERC777_NUM_DECIMALS: u32 = 18;
 pub const MINIMUM_REQUIRED_SATOSHIS: u64 = 5_000;
 pub const PRIVATE_KEY_DATA_SENSITIVITY_LEVEL: Option<u8> = Some(255);

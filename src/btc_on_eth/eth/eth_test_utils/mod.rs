@@ -1,6 +1,7 @@
 #![cfg(test)]
 #![allow(unused_imports)]
 use ethereum_types::{
+    H256,
     U256,
     Address,
 };
@@ -62,6 +63,8 @@ use crate::{
     },
 };
 
+pub const HASH_HEX_CHARS: usize  = 64;
+pub const HEX_PREFIX_LENGTH: usize = 2;
 pub const SAMPLE_REF_BLOCK_NUM: u16 = 666;
 pub const SAMPLE_RECEIPT_INDEX: usize = 2;
 pub const SAMPLE_REF_BLOCK_PREFIX: u32 = 1337;
@@ -118,6 +121,10 @@ pub const LOG_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC: usize = 0;
 pub const RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_TOPIC: usize = 2;
 pub const RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS: usize = 2;
 pub const RECEIPT_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC: usize = 9;
+
+pub fn convert_h256_to_prefixed_hex(hash: H256) -> Result <String> {
+    Ok(format!("0x{}", hex::encode(hash)))
+}
 
 pub fn get_sample_eth_block_and_receipts_string(num: usize) -> Result<String> {
     let path = match num {

@@ -14,13 +14,10 @@ use crate::{
         encode_slice as base58_encode_slice,
     },
     chains::btc::{
+        utxo_manager::utxo_types::BtcUtxosAndValues,
         btc_types::{
             DepositAddressInfo,
             DepositAddressInfoJson,
-        },
-        utxo_manager::utxo_types::{
-            BtcUtxoAndValue,
-            BtcUtxosAndValues,
         },
         btc_constants::{
             DEFAULT_BTC_SEQUENCE,
@@ -30,7 +27,6 @@ use crate::{
     btc_on_eth::{
         constants::SAFE_ETH_ADDRESS,
         btc::btc_types::{
-            BtcBlockAndId,
             MintingParams,
             BtcBlockInDbFormat,
         },
@@ -136,20 +132,6 @@ pub fn get_p2sh_script_sig_from_redeem_script(
         .into_script()
 }
 
-pub fn get_btc_block_in_db_format(
-    btc_block_and_id: BtcBlockAndId,
-    minting_params: MintingParams,
-    extra_data: Bytes,
-) -> Result<BtcBlockInDbFormat> {
-    BtcBlockInDbFormat::new(
-        btc_block_and_id.height,
-        btc_block_and_id.id,
-        minting_params,
-        btc_block_and_id.block,
-        extra_data,
-    )
-}
-
 pub fn serialize_minting_params(
     minting_params: &MintingParams
 ) -> Result<Bytes> {
@@ -160,18 +142,6 @@ pub fn deserialize_minting_params(
     serialized_minting_params: Bytes
 ) -> Result<MintingParams> {
     Ok(serde_json::from_slice(&serialized_minting_params[..])?)
-}
-
-pub fn create_op_return_btc_utxo_and_value_from_tx_output(
-    tx: &BtcTransaction,
-    output_index: u32,
-) -> BtcUtxoAndValue {
-    BtcUtxoAndValue::new(
-        tx.output[output_index as usize].value,
-        &create_unsigned_utxo_from_tx(tx, output_index),
-        None,
-        None,
-    )
 }
 
 pub fn create_unsigned_utxo_from_tx(
@@ -391,6 +361,7 @@ mod tests {
                 get_sample_p2sh_redeem_script_sig,
                 get_sample_btc_block_in_db_format,
                 get_sample_op_return_utxo_and_value_n,
+                create_op_return_btc_utxo_and_value_from_tx_output,
             },
         },
     };

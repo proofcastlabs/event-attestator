@@ -93,19 +93,6 @@ impl BtcPrivateKey {
             .serialize()
     }
 
-    pub fn from_wif(wif: &str) -> Result<Self> {
-        let pk = PrivateKey::from_wif(wif)?;
-        Ok(
-            Self(
-                PrivateKey {
-                    key: pk.key,
-                    network: pk.network,
-                    compressed: pk.compressed
-                }
-            )
-        )
-    }
-
     pub fn write_to_database<D>(
         &self,
         db: &D,
@@ -117,6 +104,20 @@ impl BtcPrivateKey {
             key.to_vec(),
             self.0[..].to_vec(),
             PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+        )
+    }
+
+    #[cfg(test)]
+    pub fn from_wif(wif: &str) -> Result<Self> {
+        let pk = PrivateKey::from_wif(wif)?;
+        Ok(
+            Self(
+                PrivateKey {
+                    key: pk.key,
+                    network: pk.network,
+                    compressed: pk.compressed
+                }
+            )
         )
     }
 }
