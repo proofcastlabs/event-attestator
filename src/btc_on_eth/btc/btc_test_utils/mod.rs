@@ -107,6 +107,22 @@ pub const SAMPLE_TESTNET_OP_RETURN_BTC_BLOCK_JSON: &str =
 
 pub const SAMPLE_SERIALIZED_BTC_UTXO: &str = "0e8d588f88d5624148070a8cd79508da8cb76625e4fcdb19a5fc996aa843bf04000000001976a91454102783c8640c5144d039cea53eb7dbb470081488acffffffff";
 
+impl DepositAddressInfoJson {
+    pub fn new(
+        nonce: u64,
+        address: String,
+        btc_deposit_address: String,
+        address_and_nonce_hash: String,
+    ) -> Self {
+        DepositAddressInfoJson {
+            nonce,
+            address,
+            btc_deposit_address,
+            address_and_nonce_hash,
+        }
+    }
+}
+
 fn get_btc_block_in_db_format(
     btc_block_and_id: BtcBlockAndId,
     minting_params: MintingParams,
