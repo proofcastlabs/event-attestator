@@ -199,15 +199,6 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn update_btc_block_and_id(
-        mut self,
-        new_btc_block_and_id: BtcBlockAndId
-    ) -> Result<BtcState<D>> {
-        info!("✔ Updating BTC block & ID in BTC state...");
-        self.btc_block_and_id = Some(new_btc_block_and_id);
-        Ok(self)
-    }
-
     pub fn get_btc_block_and_id(
         &self
     ) -> Result<&BtcBlockAndId> {

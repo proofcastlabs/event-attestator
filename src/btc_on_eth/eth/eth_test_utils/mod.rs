@@ -1,16 +1,12 @@
 #![cfg(test)]
-#![allow(unused_imports)]
 use ethereum_types::{
+    H256,
     U256,
     Address,
 };
 use std::{
     path::Path,
-    str::FromStr,
-    fs::{
-        read_to_string,
-        remove_dir_all,
-    },
+    fs::read_to_string,
 };
 use crate::{
     errors::AppError,
@@ -24,17 +20,16 @@ use crate::{
             TestDB,
             get_test_database,
         },
-        utils::{
-            convert_hex_to_h256,
-            convert_hex_to_address,
-            convert_hex_strings_to_h256s,
-        },
         eth::{
             trie_nodes::Node,
             eth_state::EthState,
             parse_eth_block::parse_eth_block_json,
             parse_eth_receipt::parse_eth_receipt_json,
             parse_eth_block_and_receipts::parse_eth_block_and_receipts,
+            eth_database_utils::{
+                put_special_eth_block_in_db,
+                get_special_eth_hash_from_db,
+            },
             eth_types::{
                 EthLog,
                 EthHash,
@@ -62,35 +57,32 @@ use crate::{
     },
 };
 
-pub const SAMPLE_REF_BLOCK_NUM: u16 = 666;
+pub const HASH_HEX_CHARS: usize  = 64;
+pub const HEX_PREFIX_LENGTH: usize = 2;
 pub const SAMPLE_RECEIPT_INDEX: usize = 2;
-pub const SAMPLE_REF_BLOCK_PREFIX: u32 = 1337;
-pub const TEMPORARY_BTC_CANON_TO_TIP_LENGTH: usize = 1;
-pub const TEMPORARY_ETH_CANON_TO_TIP_LENGTH: usize = 10;
-pub const INDEX_OF_LOG_IN_ROPSTEN_RECEIPT: usize = 0;
-pub const INDEX_OF_RECIEPT_IN_ROPSTEN_SAMPLE: usize = 0;
 pub const SEQUENTIAL_BLOCKS_FIRST_NUMBER: usize = 8065750;
-pub const ETH_SMART_CONTRACT_BYTECODE_PATH: &str = "./src/btc_on_eth/eth/eth_test_utils/ptoken-erc777-bytecode";
-pub const SAMPLE_BLOCK_JSON_PATH: &str = "src/btc_on_eth/eth/eth_test_utils/sample-block-json";
-pub const TEMPORARY_DATABASE_PATH: &str = "src/btc_on_eth/eth/eth_test_utils/temporary_database";
-pub const SAMPLE_RECEIPT_JSON_PATH: &str = "src/btc_on_eth/eth/eth_test_utils/sample-receipt-json";
-pub const ROPSTEN_CONTRACT_ADDRESS: &str =
-    "0x1Ee4D5f444d0Ab291D748049231dC9331b2f04C8";
+
+pub const ETH_SMART_CONTRACT_BYTECODE_PATH: &str =
+    "./src/btc_on_eth/eth/eth_test_utils/ptoken-erc777-bytecode";
+
+pub const SAMPLE_BLOCK_JSON_PATH: &str =
+    "src/btc_on_eth/eth/eth_test_utils/sample-block-json";
+
+pub const SAMPLE_RECEIPT_JSON_PATH: &str =
+    "src/btc_on_eth/eth/eth_test_utils/sample-receipt-json";
+
 pub const SAMPLE_PTOKEN_CONTRACT_ADDRESS: &str =
     "60a640e2d10e020fee94217707bfa9543c8b59e0";
-pub const TEMPORARY_CONTRACT_ADDRESS: &str =
-    "0x60a640e2D10E020fee94217707bfa9543c8b59E0";
+
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON: &str =
     "src/btc_on_eth/eth/eth_test_utils/sample-eth-block-and-receipts-json";
-pub const SAMPLE_ROPSTEN_BLOCK_AND_RECEIPTS_JSON: &str =
-    "src/btc_on_eth/eth/eth_test_utils/sample-ropsten-eth-block-and-receipts.json";
+
 pub const SAMPLE_INVALID_BLOCK_AND_RECEIPT_JSON: &str =
     "src/btc_on_eth/eth/eth_test_utils/sample-invalid-eth-block-and-receipts-json";
-pub const ROPSTEN_CONTRACT_TOPIC: &str =
-    "fc62a6078634cc3b00bff541ac549ba6bfed8678765289f88f61e22c668198ba";
 // ERC20: Transfer(address,address,uint256)
 pub const TEMPORARY_CONTRACT_TOPIC: &str =
     "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+
 pub const SAMPLE_SEQUENTIAL_BLOCK_AND_RECEIPT_JSONS_PATH_PREFIX: &str =
     "src/btc_on_eth/eth/eth_test_utils/sequential_block_and_receipts_jsons/eth_block_and_receipts_num_";
 
@@ -118,6 +110,61 @@ pub const LOG_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC: usize = 0;
 pub const RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_TOPIC: usize = 2;
 pub const RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS: usize = 2;
 pub const RECEIPT_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC: usize = 9;
+
+pub fn put_eth_latest_block_in_db<D>(
+    db: &D,
+    eth_block_and_receipts: &EthBlockAndReceipts,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    info!("✔ Putting ETH latest block in db...");
+    put_special_eth_block_in_db(db, eth_block_and_receipts, "latest")
+}
+
+pub fn put_eth_anchor_block_in_db<D>(
+    db: &D,
+    eth_block_and_receipts: &EthBlockAndReceipts,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    info!("✔ Putting ETH anchor block in db...");
+    put_special_eth_block_in_db(db, eth_block_and_receipts, "anchor")
+}
+
+pub fn put_eth_tail_block_in_db<D>(
+    db: &D,
+    eth_block_and_receipts: &EthBlockAndReceipts,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    info!("✔ Putting ETH tail block in db...");
+    put_special_eth_block_in_db(db, eth_block_and_receipts, "tail")
+}
+
+pub fn get_eth_latest_block_hash_from_db<D>(db: &D) -> Result<EthHash>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting ETH latest block hash from db...");
+    get_special_eth_hash_from_db(db, "latest")
+}
+
+pub fn get_eth_canon_block_hash_from_db<D>(db: &D) -> Result<EthHash>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting ETH canon block hash from db...");
+    get_special_eth_hash_from_db(db, "canon")
+}
+
+pub fn get_eth_linker_hash_from_db<D>(db: &D) -> Result<EthHash>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting ETH linker hash from db...");
+    get_special_eth_hash_from_db(db, "linker")
+}
+
+pub fn convert_h256_to_prefixed_hex(hash: H256) -> Result <String> {
+    Ok(format!("0x{}", hex::encode(hash)))
+}
 
 pub fn get_sample_eth_block_and_receipts_string(num: usize) -> Result<String> {
     let path = match num {
@@ -220,15 +267,6 @@ pub fn get_sample_eth_private_key() -> EthPrivateKey {
 pub fn get_sample_eth_public_key() -> EthPublicKey {
     get_sample_eth_private_key()
         .to_public_key()
-}
-
-pub fn get_sample_message_to_sign() -> &'static str {
-    "Provable pBTCToken!"
-}
-
-pub fn get_sample_message_to_sign_bytes() -> &'static [u8] {
-    get_sample_message_to_sign()
-        .as_bytes()
 }
 
 pub fn get_sequential_eth_blocks_and_receipts() -> Vec<EthBlockAndReceipts> {
@@ -396,17 +434,6 @@ pub fn get_sample_invalid_block() -> EthBlock {
     invalid_block
 }
 
-pub fn get_sample_ropsten_eth_block_and_receipts_string() -> Result<String> {
-    match Path::new(&SAMPLE_ROPSTEN_BLOCK_AND_RECEIPTS_JSON).exists() {
-        true => Ok(read_to_string(SAMPLE_ROPSTEN_BLOCK_AND_RECEIPTS_JSON)?),
-        false => Err(AppError::Custom(
-            format!(
-                "✘ Can't find sample-rinekby-eth-block-and-receipts-json file!"
-            )
-        ))
-    }
-}
-
 pub fn get_sample_eth_block_and_receipts_json(
 ) -> Result<EthBlockAndReceiptsJson> {
     get_sample_eth_block_and_receipts_string(0)
@@ -418,11 +445,6 @@ pub fn get_sample_eth_block_and_receipts_json(
                     Err(AppError::Custom(e.to_string()))
             }
         )
-}
-
-pub fn get_sample_ropsten_eth_block_and_receipts() -> EthBlockAndReceipts {
-    let string = get_sample_ropsten_eth_block_and_receipts_string().unwrap();
-    parse_eth_block_and_receipts(&string).unwrap()
 }
 
 pub fn get_sample_eth_block_and_receipts() -> EthBlockAndReceipts {

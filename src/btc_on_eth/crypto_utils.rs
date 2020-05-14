@@ -1,29 +1,17 @@
 use ethereum_types::H256;
 use tiny_keccak::keccak256;
-use secp256k1::{
-    Message,
-    key::SecretKey,
-};
+use secp256k1::key::SecretKey;
 use rand::{
     RngCore,
     thread_rng,
-};
-use bitcoin_hashes::{
-    sha256,
-    Hash as HashTrait
 };
 use crate::types::{
     Bytes,
     Result,
 };
+
 pub fn keccak_hash_bytes(bytes: Bytes) -> H256 {
     H256::from(keccak256(&bytes[..]))
-}
-
-pub fn sha256_hash_message_bytes(
-    message_bytes: &Bytes
-) -> Result<Message> {
-    Ok(Message::from_slice(&sha256::Hash::hash(message_bytes))?)
 }
 
 fn get_x_random_bytes(num_bytes: usize) -> Vec<u8> {

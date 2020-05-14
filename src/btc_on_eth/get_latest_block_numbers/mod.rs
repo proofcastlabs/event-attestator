@@ -9,7 +9,7 @@ use crate::{
 };
 
 #[derive(Serialize, Deserialize)]
-pub struct BlockNumbers {
+struct BlockNumbers {
     btc_latest_block_number: u64,
     eth_latest_block_number: usize,
 }

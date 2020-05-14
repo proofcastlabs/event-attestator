@@ -98,11 +98,13 @@ mod tests {
     use crate::btc_on_eth::{
         test_utils::get_test_database,
         eth::{
-            eth_test_utils::get_sequential_eth_blocks_and_receipts,
-            eth_database_utils::{
-                put_eth_canon_block_in_db,
+            eth_test_utils::{
                 put_eth_latest_block_in_db,
                 get_eth_canon_block_hash_from_db,
+                get_sequential_eth_blocks_and_receipts,
+            },
+            eth_database_utils::{
+                put_eth_canon_block_in_db,
                 put_eth_block_and_receipts_in_db,
             },
         },

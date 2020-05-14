@@ -68,10 +68,6 @@ pub fn convert_dec_str_to_u256(dec_str: &str) -> Result<U256> {
     }
 }
 
-pub fn convert_h256_to_prefixed_hex(hash: H256) -> Result <String> {
-    Ok(format!("0x{}", hex::encode(hash)))
-}
-
 pub fn convert_h256_to_bytes(hash: H256) -> Bytes {
     hash.as_bytes().to_vec()
 }
@@ -126,16 +122,6 @@ pub fn convert_hex_to_bytes(hex: String) -> Result<Bytes> {
     Ok(hex::decode(strip_hex_prefix(&hex)?)?)
 }
 
-pub fn check_hex_is_valid_ethereum_address(hex: &String) -> bool {
-    match decode_hex(str::replace(hex, "0x", "")) {
-        Err(_) => false,
-        Ok(decoded_hex) => match decoded_hex.len() {
-            20 => true,
-            _ => false,
-        }
-    }
-}
-
 pub fn convert_hex_to_address(hex: String) -> Result<EthAddress> {
     Ok(EthAddress::from_slice(&decode_prefixed_hex(hex)?))
 }
@@ -185,10 +171,10 @@ pub fn convert_ptoken_to_satoshis(ptoken: U256) -> u64 {
 mod tests {
     use super::*;
     use crate::btc_on_eth::{
-        eth::eth_test_utils::get_sample_eth_address,
-        constants::{
+        eth::eth_test_utils::{
             HASH_HEX_CHARS,
             HEX_PREFIX_LENGTH,
+            get_sample_eth_address,
         },
     };
 
@@ -208,15 +194,6 @@ mod tests {
         let expected_result = 1337;
         let result = convert_ptoken_to_satoshis(ptoken);
         assert_eq!(result, expected_result);
-    }
-
-    fn get_sample_block_hash() -> &'static str {
-        "0x1ddd540f36ea0ed23e732c1709a46c31ba047b98f1d99e623f1644154311fe10"
-    }
-
-    fn get_sample_h256() -> H256 {
-        convert_hex_to_h256(get_sample_block_hash().to_string())
-            .unwrap()
     }
 
     #[test]
@@ -431,35 +408,6 @@ mod tests {
             Err(AppError::Custom(e)) => assert!(e.contains(expected_error)),
             _ => panic!("Should not have converted non decimal string!")
         }
-    }
-
-    #[test]
-    fn should_convert_h256_to_prefixed_hex_correctly() {
-        let expected_result = get_sample_block_hash();
-        let hash = get_sample_h256();
-        let result = convert_h256_to_prefixed_hex(hash)
-            .unwrap();
-        assert!(result == expected_result);
-    }
-
-    #[test]
-    fn valid_eth_address_should_be_valid() {
-        assert!(check_hex_is_valid_ethereum_address(
-            &"0xd6f026989ec8f928edcf4edc250aaad3dd14cdae".to_string()
-        ))
-    }
-
-    #[test]
-    fn invalid_eth_addresses_should_be_invalid() {
-        assert!(!check_hex_is_valid_ethereum_address(
-            &"0xd6f026989ec8f928edcf4edc250aaad3dd14cda".to_string()
-        ));
-        assert!(!check_hex_is_valid_ethereum_address(
-            &"0xd6f026989ec8f928edcf4edc250aaad3dd14cdaee".to_string()
-        ));
-        assert!(!check_hex_is_valid_ethereum_address(
-            &"0xd6f026989ec8f928edcf4edc250aaad3dd14cdaez".to_string()
-        ));
     }
 
     #[test]

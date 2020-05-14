@@ -51,7 +51,7 @@ use crate::{
 };
 
 #[derive(Serialize, Deserialize)]
-pub struct EnclaveState {
+struct EnclaveState {
     debug_mode: bool,
     eth_gas_price: u64,
     btc_difficulty: u64,

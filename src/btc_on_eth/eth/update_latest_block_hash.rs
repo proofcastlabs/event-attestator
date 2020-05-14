@@ -73,11 +73,11 @@ mod tests {
         eth::{
             eth_types::EthHash,
             eth_constants::ETH_LATEST_BLOCK_HASH_KEY,
-            eth_test_utils::get_sequential_eth_blocks_and_receipts,
-            eth_database_utils::{
+            eth_database_utils::get_hash_from_db_via_hash_key,
+            eth_test_utils::{
                 put_eth_latest_block_in_db,
-                get_hash_from_db_via_hash_key,
                 get_eth_latest_block_hash_from_db,
+                get_sequential_eth_blocks_and_receipts,
             },
         },
     };
