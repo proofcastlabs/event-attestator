@@ -7,6 +7,16 @@
 //! Herein lies the functionality required for the cross-chain conversions
 //! between various blockchains allowing for decentalized swaps between a native
 //! asset and a host chain's pTokenized version of that asset.
+//!
+//! __Note:__ When compiling the core, your app must select the desired pToken
+//! via the __`Cargo.toml`__ like so:
+//!
+//! ```no_compile
+//! ptokens_core = { version = "1.0.0", features = ["pbtc-on-eos"] }
+//! ```
+//!
+//! If no pToken is selected in the __`Cargo.toml`__ the core defaults to
+//! __`pbtc-on-eth`__.
 
 pub use types::{
     Bytes,
