@@ -2,7 +2,7 @@
 #![recursion_limit="128"]
 #![feature(exclusive_range_pattern)]
 
-//! # The `pToken` Core
+//! # The __`pToken`__ Core
 //!
 //! Herein lies the functionality required for the cross-chain conversions
 //! between various blockchains allowing for decentalized swaps between a native
@@ -17,6 +17,17 @@
 //!
 //! If no pToken is selected in the __`Cargo.toml`__ the core defaults to
 //! __`pbtc-on-eth`__.
+//!
+//! ### __CAUTION:__
+//!
+//!  - Attempting to select multiple pTokens result in errors upon
+//! compilaton due to multiple declarations of the same database key. This is
+//! correct behaviour. Please select only one pToken type in your
+//! __`Cargo.toml`__.
+//!
+//!  - If __`legacy`__ is selected, all constants are NOT prefixed at compile
+//! time, meaning database key conflicts can occur. Use at your own risk.
+//!
 
 pub use types::{
     Bytes,
