@@ -189,10 +189,10 @@ pub fn get_special_hash_from_db<D>(
     where D: DatabaseInterface
 {
     let key = match hash_type {
-        "tail" => Ok(BTC_TAIL_BLOCK_HASH_KEY),
-        "canon" => Ok(BTC_CANON_BLOCK_HASH_KEY),
-        "anchor" => Ok(BTC_ANCHOR_BLOCK_HASH_KEY),
-        "latest" => Ok(BTC_LATEST_BLOCK_HASH_KEY),
+        "tail" => Ok(BTC_TAIL_BLOCK_HASH_KEY.to_vec()),
+        "canon" => Ok(BTC_CANON_BLOCK_HASH_KEY.to_vec()),
+        "anchor" => Ok(BTC_ANCHOR_BLOCK_HASH_KEY.to_vec()),
+        "latest" => Ok(BTC_LATEST_BLOCK_HASH_KEY.to_vec()),
         _ => Err(AppError::Custom(
             format!("✘ Cannot get special BTC hash of type: {}!", hash_type)
         ))

@@ -59,7 +59,7 @@ pub fn get_linker_hash_or_genesis_hash<D>(
         }
         _ => {
             trace!("✔ No BTC linker has in db, using genesis hash...");
-            Ok(sha256d::Hash::from_slice(&PTOKEN_GENESIS_HASH)?)
+            Ok(sha256d::Hash::from_slice(&PTOKEN_GENESIS_HASH.to_vec())?)
         }
     }
 }

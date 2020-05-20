@@ -218,7 +218,7 @@ pub fn debug_get_key_from_db<D>(
     let key_bytes = hex::decode(&key)?;
     check_core_is_initialized(&db)
         .and_then(|_| {
-            if key_bytes == ETH_KEY || key_bytes == BTC_KEY {
+            if key_bytes == ETH_KEY || key_bytes == BTC_KEY.to_vec() {
                 get_key_from_db(db, key, Some(255))
             } else {
                 get_key_from_db(db, key, None)
