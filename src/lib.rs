@@ -15,9 +15,6 @@
 //! ptokens_core = { version = "1.0.0", features = ["pbtc-on-eos"] }
 //! ```
 //!
-//! If no pToken is selected in the __`Cargo.toml`__ the core defaults to
-//! __`pbtc-on-eth`__.
-//!
 //! ### __CAUTION:__
 //!
 //!  - Attempting to select multiple pTokens result in errors upon

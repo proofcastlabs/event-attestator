@@ -13,7 +13,6 @@ debug = []
 legacy = []
 pbtc-on-eth = []
 pbtc-on-eos = []
-default = ["pbtc-on-eth"]
 non-validating = ["debug"]
 
 [dependencies]

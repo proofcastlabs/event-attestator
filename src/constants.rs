@@ -21,6 +21,3 @@ pub static DB_KEY_PREFIX: &str = "pbtc-on-eos-";
 
 #[cfg(feature="legacy")]
 pub static DB_KEY_PREFIX: &str = "";
-
-#[cfg(feature="legacy")]
-warn!("✘ !!WARNING!! Legacy mode enabled - DB key conflicts are possible!");
