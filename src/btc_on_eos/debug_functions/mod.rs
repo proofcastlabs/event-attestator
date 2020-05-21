@@ -7,6 +7,7 @@ use crate::{
         set_key_in_db_to_value,
     },
     chains::btc::{
+        btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
         utxo_manager::{
             debug_utxo_utils::clear_all_utxos,
             utxo_utils::get_all_utxos_as_json_string,
@@ -23,7 +24,6 @@ use crate::{
             btc_database_utils::start_btc_db_transaction,
             get_btc_output_json::get_btc_output_as_string,
             btc_database_utils::get_btc_latest_block_from_db,
-            btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
             validate_btc_merkle_root::validate_btc_merkle_root,
             filter_minting_params::maybe_filter_minting_params_in_state,
             validate_btc_block_header::validate_btc_block_header_in_state,
@@ -197,7 +197,7 @@ pub fn debug_get_key_from_db<D>(
     let key_bytes = hex::decode(&key)?;
     check_core_is_initialized(&db)
         .and_then(|_| {
-            if key_bytes == EOS_KEY || key_bytes == BTC_KEY {
+            if key_bytes == EOS_KEY || key_bytes == BTC_KEY.to_vec() {
                 get_key_from_db(db, key, Some(255))
             } else {
                 get_key_from_db(db, key, None)

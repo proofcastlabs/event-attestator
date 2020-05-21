@@ -2,7 +2,7 @@ pub use serde_json::{
     json,
     Value as JsonValue,
 };
-use crate::utils::get_prefixed_db_key_hash;
+use crate::utils::get_prefixed_db_key;
 
 pub fn get_utxo_constants_db_keys() -> JsonValue {
     json!({
@@ -18,25 +18,17 @@ pub fn get_utxo_constants_db_keys() -> JsonValue {
 }
 
 lazy_static! {
-    pub static ref UTXO_FIRST: [u8; 32] = get_prefixed_db_key_hash(
-        "utxo-first"
-    );
+    pub static ref UTXO_FIRST: [u8; 32] = get_prefixed_db_key("utxo-first");
 }
 
 lazy_static! {
-    pub static ref UTXO_LAST: [u8; 32] = get_prefixed_db_key_hash(
-        "utxo-last"
-    );
+    pub static ref UTXO_LAST: [u8; 32] = get_prefixed_db_key("utxo-last");
 }
 
 lazy_static! {
-    pub static ref UTXO_BALANCE: [u8; 32] = get_prefixed_db_key_hash(
-        "utxo-balance"
-    );
+    pub static ref UTXO_BALANCE: [u8; 32] = get_prefixed_db_key("utxo-balance");
 }
 
 lazy_static! {
-    pub static ref UTXO_NONCE: [u8; 32] = get_prefixed_db_key_hash(
-        "utxo-nonce"
-    );
+    pub static ref UTXO_NONCE: [u8; 32] = get_prefixed_db_key("utxo-nonce");
 }

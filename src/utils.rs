@@ -11,7 +11,7 @@ use crate::{
     },
 };
 
-pub fn get_prefixed_db_key_hash(suffix: &str) -> [u8; 32] {
+pub fn get_prefixed_db_key(suffix: &str) -> [u8; 32] {
     keccak256(format!("{}{}", DB_KEY_PREFIX.to_string(), suffix).as_bytes())
 }
 

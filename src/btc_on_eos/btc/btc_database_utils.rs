@@ -12,6 +12,20 @@ use crate::{
         Result,
         DataSensitivity,
     },
+    chains::btc::btc_constants::{
+        BTC_FEE_KEY,
+        BTC_NETWORK_KEY,
+        BTC_ADDRESS_KEY,
+        BTC_LINKER_HASH_KEY,
+        BTC_PRIVATE_KEY_DB_KEY,
+        BTC_ACCOUNT_NONCE_KEY,
+        BTC_TAIL_BLOCK_HASH_KEY,
+        BTC_CANON_BLOCK_HASH_KEY,
+        BTC_DIFFICULTY_THRESHOLD,
+        BTC_ANCHOR_BLOCK_HASH_KEY,
+        BTC_LATEST_BLOCK_HASH_KEY,
+        BTC_CANON_TO_TIP_LENGTH_KEY,
+    },
     btc_on_eos::{
         database_utils::{
             put_u64_in_db,
@@ -32,20 +46,6 @@ use crate::{
                 convert_btc_address_to_bytes,
                 serialize_btc_block_in_db_format,
                 deserialize_btc_block_in_db_format,
-            },
-            btc_constants::{
-                BTC_FEE_KEY,
-                BTC_NETWORK_KEY,
-                BTC_ADDRESS_KEY,
-                BTC_LINKER_HASH_KEY,
-                BTC_PRIVATE_KEY_DB_KEY,
-                BTC_ACCOUNT_NONCE_KEY,
-                BTC_TAIL_BLOCK_HASH_KEY,
-                BTC_CANON_BLOCK_HASH_KEY,
-                BTC_DIFFICULTY_THRESHOLD,
-                BTC_ANCHOR_BLOCK_HASH_KEY,
-                BTC_LATEST_BLOCK_HASH_KEY,
-                BTC_CANON_TO_TIP_LENGTH_KEY,
             },
         },
     },
@@ -179,10 +179,10 @@ pub fn get_special_hash_from_db<D>(
     where D: DatabaseInterface
 {
     let key = match hash_type {
-        "tail" => Ok(BTC_TAIL_BLOCK_HASH_KEY),
-        "canon" => Ok(BTC_CANON_BLOCK_HASH_KEY),
-        "anchor" => Ok(BTC_ANCHOR_BLOCK_HASH_KEY),
-        "latest" => Ok(BTC_LATEST_BLOCK_HASH_KEY),
+        "tail" => Ok(BTC_TAIL_BLOCK_HASH_KEY.to_vec()),
+        "canon" => Ok(BTC_CANON_BLOCK_HASH_KEY.to_vec()),
+        "anchor" => Ok(BTC_ANCHOR_BLOCK_HASH_KEY.to_vec()),
+        "latest" => Ok(BTC_LATEST_BLOCK_HASH_KEY.to_vec()),
         _ => Err(AppError::Custom(
             format!("✘ Cannot get special BTC hash of type: {}!", hash_type)
         ))
