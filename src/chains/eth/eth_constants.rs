@@ -1,4 +1,8 @@
 use ethereum_types::H256 as EthHash;
+pub use serde_json::{
+    json,
+    Value as JsonValue,
+};
 use crate::{
     types::Byte,
     btc_on_eth::eth::nibble_utils::Nibbles,
@@ -45,6 +49,44 @@ lazy_static! {
         ]
     };
 }
+
+const HASHED_NULL_NODE_BYTES: [u8; 32] = [ // NOTE: keccak hash of the RLP of null
+    0x56, 0xe8, 0x1f, 0x17, 0x1b, 0xcc, 0x55, 0xa6,
+    0xff, 0x83, 0x45, 0xe6, 0x92, 0xc0, 0xf8, 0x6e,
+    0x5b, 0x48, 0xe0, 0x1b, 0x99, 0x6c, 0xad, 0xc0,
+    0x01, 0x62, 0x2f, 0xb5, 0xe3, 0x63, 0xb4, 0x21
+];
+
+pub fn get_eth_constants_db_keys() -> JsonValue {
+    json!({
+        "PTOKEN_GENESIS_HASH":
+            hex::encode(PTOKEN_GENESIS_HASH.to_vec()),
+        "ETH_CANON_TO_TIP_LENGTH_KEY":
+            hex::encode(ETH_CANON_TO_TIP_LENGTH_KEY.to_vec()),
+        "ETH_ANCHOR_BLOCK_HASH_KEY":
+            hex::encode(ETH_ANCHOR_BLOCK_HASH_KEY.to_vec()),
+        "ETH_LATEST_BLOCK_HASH_KEY":
+            hex::encode(ETH_LATEST_BLOCK_HASH_KEY.to_vec()),
+        "ETH_CANON_BLOCK_HASH_KEY":
+            hex::encode(ETH_CANON_BLOCK_HASH_KEY.to_vec()),
+        "ETH_LINKER_HASH_KEY":
+            hex::encode(ETH_LINKER_HASH_KEY.to_vec()),
+        "ETH_ACCOUNT_NONCE_KEY":
+            hex::encode(ETH_ACCOUNT_NONCE_KEY.to_vec()),
+        "ETH_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "ETH_ADDRESS_KEY":
+            hex::encode(ETH_ADDRESS_KEY.to_vec()),
+        "ETH_PRIVATE_KEY_DB_KEY":
+            hex::encode(ETH_PRIVATE_KEY_DB_KEY.to_vec()),
+        "ETH_CHAIN_ID_KEY":
+            hex::encode(ETH_CHAIN_ID_KEY.to_vec()),
+        "ETH_GAS_PRICE_KEY":
+            hex::encode(ETH_GAS_PRICE_KEY.to_vec()),
+        "ETH_TAIL_BLOCK_HASH_KEY":
+            hex::encode(ETH_TAIL_BLOCK_HASH_KEY.to_vec()),
+    })
+}
 // NOTE: keccak256("provable-ptoken")
 // 7eb2e65416dd107602495454d1ed094ae475cff2f3bfb2e2ae68a1c52bc0d66f
 pub static PTOKEN_GENESIS_HASH: [u8; 32] = [
@@ -52,13 +94,6 @@ pub static PTOKEN_GENESIS_HASH: [u8; 32] = [
   2, 73, 84, 84, 209, 237, 9, 74,
   228, 117, 207, 242, 243, 191, 178, 226,
   174, 104, 161, 197, 43, 192, 214, 111
-];
-
-const HASHED_NULL_NODE_BYTES: [u8; 32] = [ // NOTE: keccak hash of the RLP of null
-    0x56, 0xe8, 0x1f, 0x17, 0x1b, 0xcc, 0x55, 0xa6,
-    0xff, 0x83, 0x45, 0xe6, 0x92, 0xc0, 0xf8, 0x6e,
-    0x5b, 0x48, 0xe0, 0x1b, 0x99, 0x6c, 0xad, 0xc0,
-    0x01, 0x62, 0x2f, 0xb5, 0xe3, 0x63, 0xb4, 0x21
 ];
 
 // NOTE: keccak256("canon-to-tip-length-key")

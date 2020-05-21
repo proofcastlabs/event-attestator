@@ -47,51 +47,61 @@ lazy_static! {
         "eos-chain-id-key"
     );
 }
+
 lazy_static! {
     pub static ref EOS_PRIVATE_KEY_DB_KEY: [u8; 32] = get_prefixed_db_key(
         "eos-private-key-db-key"
     );
 }
+
 lazy_static! {
     pub static ref PROCESSED_TX_IDS_KEY: [u8; 32] = get_prefixed_db_key(
         "eos-tx-ids"
     );
 }
+
 lazy_static! {
     pub static ref EOS_ACCOUNT_NAME_KEY: [u8; 32] = get_prefixed_db_key(
         "eos-account-name"
     );
 }
+
 lazy_static! {
     pub static ref EOS_TOKEN_SYMBOL_KEY: [u8; 32] = get_prefixed_db_key(
         "eos-token-ticker"
     );
 }
+
 lazy_static! {
     pub static ref EOS_ACCOUNT_NONCE: [u8; 32] = get_prefixed_db_key(
         "eos-account-nonce"
     );
 }
+
 lazy_static! {
     pub static ref EOS_SCHEDULE_LIST: [u8; 32] = get_prefixed_db_key(
         "eos-schedule-list"
     );
 }
+
 lazy_static! {
     pub static ref EOS_INCREMERKLE: [u8; 32] = get_prefixed_db_key(
         "eos-incremerkle"
     );
 }
+
 lazy_static! {
     pub static ref EOS_LAST_SEEN_BLOCK_ID: [u8; 32] = get_prefixed_db_key(
         "eos-last-seen-block-id"
     );
 }
+
 lazy_static! {
     pub static ref EOS_LAST_SEEN_BLOCK_NUM: [u8; 32] = get_prefixed_db_key(
         "eos-last-seen-block-num"
     );
 }
+
 lazy_static! {
     pub static ref EOS_PROTOCOL_FEATURES: [u8; 32] = get_prefixed_db_key(
         "eos-protocol-features"
