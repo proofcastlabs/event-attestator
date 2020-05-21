@@ -161,7 +161,7 @@ mod tests {
         };
         let latest_block_hash_after = get_hash_from_db_via_hash_key(
             &db,
-            EthHash::from(ETH_LATEST_BLOCK_HASH_KEY),
+            EthHash::from_slice(&ETH_LATEST_BLOCK_HASH_KEY[..]),
         )
             .unwrap()
             .unwrap();

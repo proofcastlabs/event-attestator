@@ -42,9 +42,15 @@ mod tests {
 
     #[test]
     fn should_calculate_linker_hash_correctly() {
-        let linker_hash = EthHash::from(ETH_LINKER_HASH_KEY);
-        let anchor_block_hash = EthHash::from(ETH_ANCHOR_BLOCK_HASH_KEY);
-        let block_hash_to_link_to = EthHash::from(ETH_LATEST_BLOCK_HASH_KEY);
+        let linker_hash = EthHash::from_slice(
+            &ETH_LINKER_HASH_KEY[..]
+        );
+        let anchor_block_hash = EthHash::from_slice(
+            &ETH_ANCHOR_BLOCK_HASH_KEY[..]
+        );
+        let block_hash_to_link_to = EthHash::from_slice(
+            &ETH_LATEST_BLOCK_HASH_KEY[..]
+        );
         let expected_result_hex = "710f399a2c56bd37f485f3e80212679007cd58c7aea063723979d3104c3d42a5";
         let expected_result = convert_hex_to_h256(
             expected_result_hex.to_string()

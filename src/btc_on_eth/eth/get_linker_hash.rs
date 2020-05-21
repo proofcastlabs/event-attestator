@@ -16,12 +16,12 @@ pub fn get_linker_hash_or_genesis_hash<D>(db: &D) -> Result<EthHash>
 {
     match get_hash_from_db_via_hash_key(
         db,
-        EthHash::from(ETH_LINKER_HASH_KEY)
+        EthHash::from_slice(&ETH_LINKER_HASH_KEY[..])
     )? {
         Some(hash) => Ok(hash),
         None => {
             info!("✔ No linker-hash set yet, using pToken genesis hash...");
-            Ok(EthHash::from(PTOKEN_GENESIS_HASH))
+            Ok(EthHash::from_slice(&PTOKEN_GENESIS_HASH[..]))
         }
     }
 }
@@ -51,6 +51,6 @@ mod tests {
         let db = get_test_database();
         let result = get_linker_hash_or_genesis_hash(&db)
             .unwrap();
-        assert!(result == EthHash::from(PTOKEN_GENESIS_HASH));
+        assert!(result == EthHash::from_slice(&PTOKEN_GENESIS_HASH[..]));
     }
 }

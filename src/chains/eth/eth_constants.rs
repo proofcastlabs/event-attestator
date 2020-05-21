@@ -5,6 +5,7 @@ pub use serde_json::{
 };
 use crate::{
     types::Byte,
+    utils::get_prefixed_db_key,
     btc_on_eth::eth::nibble_utils::Nibbles,
 };
 
@@ -87,128 +88,81 @@ pub fn get_eth_constants_db_keys() -> JsonValue {
             hex::encode(ETH_TAIL_BLOCK_HASH_KEY.to_vec()),
     })
 }
-// NOTE: keccak256("provable-ptoken")
-// 7eb2e65416dd107602495454d1ed094ae475cff2f3bfb2e2ae68a1c52bc0d66f
-pub static PTOKEN_GENESIS_HASH: [u8; 32] = [
-  126, 178, 230, 84, 22, 221, 16, 118,
-  2, 73, 84, 84, 209, 237, 9, 74,
-  228, 117, 207, 242, 243, 191, 178, 226,
-  174, 104, 161, 197, 43, 192, 214, 111
-];
 
-// NOTE: keccak256("canon-to-tip-length-key")
-// "192b7e4da694bf96fbc089656a3ba0f63f6263a95af257b693e8dee84334b38c";
-pub static ETH_CANON_TO_TIP_LENGTH_KEY: [u8; 32] = [
-    25, 43, 126, 77, 166, 148, 191, 150,
-    251, 192, 137, 101, 106, 59, 160, 246,
-    63, 98, 99, 169, 90, 242, 87, 182,
-    147, 232, 222, 232, 67, 52, 179, 140
-];
+lazy_static! {
+    pub static ref PTOKEN_GENESIS_HASH: [u8; 32] = get_prefixed_db_key(
+        "provable-ptoken"
+    );
+}
 
-// NOTE: keccak256("anchor-block-hash-key")
-// "1087f2e9bfa897df4da210822cc94bcf77ee11396cf9d3cd247b06aeeb289737";
-pub static ETH_ANCHOR_BLOCK_HASH_KEY: [u8; 32] = [
-    16, 135, 242, 233, 191, 168, 151, 223,
-    77, 162, 16, 130, 44, 201, 75, 207,
-    119, 238, 17, 57, 108, 249, 211,
-    205, 36, 123, 6, 174, 235, 40, 151, 55
-];
+lazy_static! {
+    pub static ref ETH_CANON_TO_TIP_LENGTH_KEY: [u8; 32] = get_prefixed_db_key(
+        "canon-to-tip-length-key"
+    );
+}
 
-// NOTE: keccak256("latest-block-hash-key")
-// "8b39bef2b5b1e9564bb4a60c8211c32e2f94dc88cae8cfbaad42b2e7e527ea7a";
-pub static ETH_LATEST_BLOCK_HASH_KEY: [u8; 32] = [
-    139, 57, 190, 242, 181, 177, 233, 86,
-    75, 180, 166, 12, 130, 17, 195, 46,
-    47, 148, 220, 136, 202, 232, 207, 186,
-    173, 66, 178, 231, 229, 39, 234, 122
-];
+lazy_static! {
+    pub static ref ETH_ANCHOR_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key(
+        "anchor-block-hash-key"
+    );
+}
 
-// NOTE: keccak256("canon-block-hash-key")
-// "c737daae274d21e37403be7d3d562c493332c381ee2b0f3fa0b2286af8b8e5c2";
-pub static ETH_CANON_BLOCK_HASH_KEY: [u8; 32] = [
-    199, 55, 218, 174, 39, 77, 33, 227,
-    116, 3, 190, 125, 61, 86, 44, 73,
-    51, 50, 195, 129, 238, 43, 15, 63,
-    160, 178, 40, 106, 248, 184, 229, 194
-];
+lazy_static! {
+    pub static ref ETH_LATEST_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key(
+        "latest-block-hash-key"
+    );
+}
 
-// NOTE: keccak256("linker-hash-key")
-// "1c045b32a91a460a8a210de0a9b757da8fc21844f02399b558c3c87917122b58";
-pub static ETH_LINKER_HASH_KEY: [u8; 32] = [
-    28, 4, 91, 50, 169, 26, 70, 10,
-    138, 33, 13, 224, 169, 183, 87, 218,
-    143, 194, 24, 68, 240, 35, 153, 181,
-    88, 195, 200, 121, 23, 18, 43, 88
-];
-// NOTE (javascript): new Uint8Array(
-//   Buffer.from(web3.utils.keccak256('eth-account-nonce').slice(2), 'hex')
-// )
-// 713a7d7396c523b7978cd822839e0186395053745941615b0370c0bb72b4dcf4
-pub static ETH_ACCOUNT_NONCE_KEY: [u8; 32] = [
-  113, 58, 125, 115, 150, 197, 35, 183,
-  151, 140, 216, 34, 131, 158, 1, 134,
-  57, 80, 83, 116, 89, 65, 97, 91,
-  3, 112, 192, 187, 114, 180, 220, 244
-];
-// NOTE (javascript): new Uint8Array(
-//   Buffer.from(web3.utils.keccak256('eth-smart-contract').slice(2), 'hex')
-// )
-// f2289049ab0275224d98f6f7d6b2e5c0b301167d04b83aa724024fcad81d61fc
-pub static ETH_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = [
-    242, 40, 144, 73, 171, 2, 117, 34,
-    77, 152, 246, 247, 214, 178, 229, 192,
-    179, 1, 22, 125, 4, 184, 58, 167,
-    36, 2, 79, 202, 216, 29, 97, 252
-];
-// NOTE (javascript): new Uint8Array(
-//   Buffer.from(web3.utils.keccak256('eth-address-key').slice(2), 'hex')
-// )
-// NOTE: The above text DOES NOT hash to below bytes! Must have typod!
-// NOTE: Actual hex used is:
-// 'c493aea55db4039052bae9cf66cad8819a3571c3939ae351d01218db0237e96a'
-pub static ETH_ADDRESS_KEY: [u8; 32] = [
-  196, 147, 174, 165, 93, 180, 3, 144,
-  82, 186, 233, 207, 102, 202, 216, 129,
-  154, 53, 113, 195, 147, 154, 227, 81,
-  208, 18, 24, 219, 2, 55, 233, 106
-];
-// NOTE (javascript): new Uint8Array(
-//   Buffer.from(web3.utils.keccak256('eth-private-key-key').slice(2), 'hex')
-// )
-// eec538cafefe65e094e2e70364da2f2f6e752209e1974e38a9b23ca8ce22b73d
-pub static ETH_PRIVATE_KEY_DB_KEY: [u8; 32] = [
-  238, 197, 56, 202, 254, 254, 101, 224,
-  148, 226, 231, 3, 100, 218, 47, 47,
-  110, 117, 34, 9, 225, 151, 78, 56,
-  169, 178, 60, 168, 206, 34, 183, 61,
-];
-// NOTE (javascript): new Uint8Array(
-//   Buffer.from(web3.utils.keccak256('eth-chain-id').slice(2), 'hex')
-// )
-// 47199e3b0ffc301baeedd4eb87ebf5ef3829496c8ab2660a6038a62e36e9222f
-pub static ETH_CHAIN_ID_KEY: [u8; 32] = [
-  71, 25, 158, 59, 15, 252, 48, 27,
-  174, 237, 212, 235, 135, 235, 245, 239,
-  56, 41, 73, 108, 138, 178, 102, 10,
-  96, 56, 166, 46, 54, 233, 34, 47
-];
-// NOTE (javascript): new Uint8Array(
-//   Buffer.from(web3.utils.keccak256('eth-gas-price').slice(2), 'hex')
-// )
-// ecf932d3aca97f12884bc42af7607469feba2206e8b1d37ed1328d477c747346
-pub static ETH_GAS_PRICE_KEY: [u8; 32] = [
-  236, 249, 50, 211, 172, 169, 127, 18,
-  136, 75, 196, 42, 247, 96, 116, 105,
-  254, 186, 34, 6, 232, 177, 211, 126,
-  209, 50, 141, 71, 124, 116, 115, 70
-];
-// NOTE (javascript): new Uint8Array(
-//   Buffer.from(web3.utils.keccak256('eth-tail-block-hash-key').slice(2), 'hex')
-// )
-// 539205e110a233c64f983acf425f1d2cf6cb6535a0241a3722a512690eeba758
-pub static ETH_TAIL_BLOCK_HASH_KEY: [u8; 32] = [
-  83, 146, 5, 225, 16, 162, 51, 198,
-  79, 152, 58, 207, 66, 95, 29, 44,
-  246, 203, 101, 53, 160, 36, 26, 55,
-  34, 165, 18, 105, 14, 235, 167, 88
-];
+lazy_static! {
+    pub static ref ETH_CANON_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key(
+        "canon-block-hash-key"
+    );
+}
+
+lazy_static! {
+    pub static ref ETH_LINKER_HASH_KEY: [u8; 32] = get_prefixed_db_key(
+        "linker-hash-key"
+    );
+}
+
+lazy_static! {
+    pub static ref ETH_ACCOUNT_NONCE_KEY: [u8; 32] = get_prefixed_db_key(
+        "eth-account-nonce"
+    );
+}
+
+lazy_static! {
+    pub static ref ETH_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key(
+        "eth-smart-contract"
+    );
+}
+
+lazy_static! {
+    pub static ref ETH_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key(
+        "eth-address-key"
+    );
+}
+
+lazy_static! {
+    pub static ref ETH_PRIVATE_KEY_DB_KEY: [u8; 32] = get_prefixed_db_key(
+        "eth-private-key-key"
+    );
+}
+
+lazy_static! {
+    pub static ref ETH_CHAIN_ID_KEY: [u8; 32] = get_prefixed_db_key(
+        "eth-chain-id"
+    );
+}
+
+lazy_static! {
+    pub static ref ETH_GAS_PRICE_KEY: [u8; 32] = get_prefixed_db_key(
+        "eth-gas-price"
+    );
+}
+
+lazy_static! {
+    pub static ref ETH_TAIL_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key(
+        "eth-tail-block-hash-key"
+    );
+}

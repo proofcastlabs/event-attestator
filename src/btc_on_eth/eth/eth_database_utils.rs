@@ -274,11 +274,11 @@ pub fn get_special_eth_hash_from_db<D>(
     where D: DatabaseInterface
 {
     let key = match hash_type {
-        "linker" => Ok(ETH_LINKER_HASH_KEY),
-        "canon" => Ok(ETH_CANON_BLOCK_HASH_KEY),
-        "tail" => Ok(ETH_TAIL_BLOCK_HASH_KEY),
-        "anchor" => Ok(ETH_ANCHOR_BLOCK_HASH_KEY),
-        "latest" => Ok(ETH_LATEST_BLOCK_HASH_KEY),
+        "linker" => Ok(ETH_LINKER_HASH_KEY.to_vec()),
+        "canon" => Ok(ETH_CANON_BLOCK_HASH_KEY.to_vec()),
+        "tail" => Ok(ETH_TAIL_BLOCK_HASH_KEY.to_vec()),
+        "anchor" => Ok(ETH_ANCHOR_BLOCK_HASH_KEY.to_vec()),
+        "latest" => Ok(ETH_LATEST_BLOCK_HASH_KEY.to_vec()),
         _ => Err(AppError::Custom(
             format!("✘ Cannot get ETH special hash of type: {}!", hash_type)
         ))
@@ -638,7 +638,7 @@ mod tests {
     fn existing_key_should_exist_in_db() {
         let thing = vec![0xc0];
         let db = get_test_database();
-        let key = ETH_ACCOUNT_NONCE_KEY;
+        let key = ETH_ACCOUNT_NONCE_KEY.clone();
         if let Err(e) = db.put(key.to_vec(), thing, None) {
             panic!("Error putting canon to tip len in db: {}", e);
         };
