@@ -31,11 +31,13 @@ pub fn calculate_linker_hash(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::utils::convert_hex_to_h256;
-    use crate::btc_on_eth::eth::eth_constants::{
-        ETH_LINKER_HASH_KEY,
-        ETH_ANCHOR_BLOCK_HASH_KEY,
-        ETH_LATEST_BLOCK_HASH_KEY
+    use crate::{
+        btc_on_eth::utils::convert_hex_to_h256,
+        chains::eth::eth_constants::{
+            ETH_LINKER_HASH_KEY,
+            ETH_ANCHOR_BLOCK_HASH_KEY,
+            ETH_LATEST_BLOCK_HASH_KEY
+        },
     };
 
     #[test]

@@ -10,6 +10,20 @@ use crate::{
         Result,
         DataSensitivity,
     },
+    chains::eth::eth_constants::{
+        ETH_ADDRESS_KEY,
+        ETH_CHAIN_ID_KEY,
+        ETH_GAS_PRICE_KEY,
+        ETH_LINKER_HASH_KEY,
+        ETH_ACCOUNT_NONCE_KEY,
+        ETH_PRIVATE_KEY_DB_KEY,
+        ETH_TAIL_BLOCK_HASH_KEY,
+        ETH_CANON_BLOCK_HASH_KEY,
+        ETH_LATEST_BLOCK_HASH_KEY,
+        ETH_ANCHOR_BLOCK_HASH_KEY,
+        ETH_CANON_TO_TIP_LENGTH_KEY,
+        ETH_SMART_CONTRACT_ADDRESS_KEY,
+    },
     btc_on_eth::{
         database_utils::{
             put_u64_in_db,
@@ -27,20 +41,6 @@ use crate::{
             eth_types::{
                 EthSigningParams,
                 EthBlockAndReceipts,
-            },
-            eth_constants::{
-                ETH_ADDRESS_KEY,
-                ETH_CHAIN_ID_KEY,
-                ETH_GAS_PRICE_KEY,
-                ETH_LINKER_HASH_KEY,
-                ETH_ACCOUNT_NONCE_KEY,
-                ETH_PRIVATE_KEY_DB_KEY,
-                ETH_TAIL_BLOCK_HASH_KEY,
-                ETH_CANON_BLOCK_HASH_KEY,
-                ETH_LATEST_BLOCK_HASH_KEY,
-                ETH_ANCHOR_BLOCK_HASH_KEY,
-                ETH_CANON_TO_TIP_LENGTH_KEY,
-                ETH_SMART_CONTRACT_ADDRESS_KEY,
             },
             eth_json_codec::{
                 encode_eth_block_and_receipts_as_json_bytes,

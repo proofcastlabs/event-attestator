@@ -1,10 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eth::eth_constants::ETH_TAIL_LENGTH,
     btc_on_eth::{
         eth::{
             eth_state::EthState,
-            eth_constants::ETH_TAIL_LENGTH,
             eth_types::EthBlockAndReceipts,
             eth_database_utils::{
                 get_eth_tail_block_from_db,

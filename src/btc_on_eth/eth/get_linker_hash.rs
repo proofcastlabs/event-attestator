@@ -1,15 +1,13 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::{
-        eth::{
-            eth_types::EthHash,
-            eth_database_utils::get_hash_from_db_via_hash_key,
-            eth_constants::{
-                ETH_LINKER_HASH_KEY,
-                PTOKEN_GENESIS_HASH,
-            },
-        },
+    chains::eth::eth_constants::{
+        ETH_LINKER_HASH_KEY,
+        PTOKEN_GENESIS_HASH,
+    },
+    btc_on_eth::eth::{
+        eth_types::EthHash,
+        eth_database_utils::get_hash_from_db_via_hash_key,
     },
 };
 

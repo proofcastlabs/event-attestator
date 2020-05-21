@@ -8,6 +8,11 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    chains::eth::eth_constants::{
+        REDEEM_EVENT_TOPIC_HEX,
+        ETH_WORD_SIZE_IN_BYTES,
+        LOG_DATA_BTC_ADDRESS_START_INDEX,
+    },
     btc_on_eth::{
         constants::SAFE_BTC_ADDRESS,
         utils::convert_ptoken_to_satoshis,
@@ -20,11 +25,6 @@ use crate::{
                 EthReceipt,
                 EthBlockAndReceipts,
             },
-            eth_constants::{
-                REDEEM_EVENT_TOPIC_HEX,
-                ETH_WORD_SIZE_IN_BYTES,
-                LOG_DATA_BTC_ADDRESS_START_INDEX,
-            }
         },
     },
 };

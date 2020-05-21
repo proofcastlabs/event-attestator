@@ -5,6 +5,10 @@ use crate::{
         Bytes,
         Result,
     },
+    chains::eth::eth_constants::{
+        EMPTY_NIBBLES,
+        HASHED_NULL_NODE,
+    },
     btc_on_eth::{
         utils::{
             convert_bytes_to_h256,
@@ -14,10 +18,6 @@ use crate::{
             eth_types::{
                 NodeStack,
                 TrieHashMap,
-            },
-            eth_constants::{
-                EMPTY_NIBBLES,
-                HASHED_NULL_NODE,
             },
             trie_nodes::{
                 Node,

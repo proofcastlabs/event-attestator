@@ -6,7 +6,7 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eth::eth::eth_constants::{
+    chains::eth::eth_constants::{
         ZERO_BYTE,
         EMPTY_NIBBLES,
         HIGH_NIBBLE_MASK,
