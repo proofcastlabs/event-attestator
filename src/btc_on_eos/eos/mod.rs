@@ -9,7 +9,6 @@ pub(crate) mod eos_state;
 pub(crate) mod eos_utils;
 pub(crate) mod eos_types;
 pub(crate) mod eos_crypto;
-pub(crate) mod eos_constants;
 pub(crate) mod get_eos_output;
 pub(crate) mod eos_test_utils;
 pub(crate) mod eos_merkle_utils;

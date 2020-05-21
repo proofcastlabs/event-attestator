@@ -7,10 +7,8 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     constants::CORE_IS_VALIDATING,
-    btc_on_eos::eos::{
-        eos_state::EosState,
-        eos_constants::PRODUCER_REPS,
-    },
+    btc_on_eos::eos::eos_state::EosState,
+    chains::eos::eos_constants::PRODUCER_REPS,
 };
 
 fn get_producer_index(

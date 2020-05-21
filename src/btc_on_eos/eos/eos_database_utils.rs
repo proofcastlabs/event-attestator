@@ -9,6 +9,18 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
+    chains::eos::eos_constants::{
+        EOS_INCREMERKLE,
+        EOS_SCHEDULE_LIST,
+        EOS_ACCOUNT_NONCE,
+        EOS_CHAIN_ID_DB_KEY,
+        EOS_TOKEN_SYMBOL_KEY,
+        PROCESSED_TX_IDS_KEY,
+        EOS_ACCOUNT_NAME_KEY,
+        EOS_PROTOCOL_FEATURES,
+        EOS_LAST_SEEN_BLOCK_ID,
+        EOS_LAST_SEEN_BLOCK_NUM,
+    },
     btc_on_eos::{
         utils::convert_hex_to_checksum256,
         database_utils::{
@@ -29,18 +41,6 @@ use crate::{
             eos_types::{
                 ProcessedTxIds,
                 EosKnownSchedules,
-            },
-            eos_constants::{
-                EOS_INCREMERKLE,
-                EOS_SCHEDULE_LIST,
-                EOS_ACCOUNT_NONCE,
-                EOS_CHAIN_ID_DB_KEY,
-                EOS_TOKEN_SYMBOL_KEY,
-                PROCESSED_TX_IDS_KEY,
-                EOS_ACCOUNT_NAME_KEY,
-                EOS_PROTOCOL_FEATURES,
-                EOS_LAST_SEEN_BLOCK_ID,
-                EOS_LAST_SEEN_BLOCK_NUM,
             },
         },
     },

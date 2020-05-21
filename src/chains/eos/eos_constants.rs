@@ -1,3 +1,8 @@
+pub use serde_json::{
+    json,
+    Value as JsonValue,
+};
+
 pub const PRODUCER_REPS: u64 = 12;
 pub const PUBLIC_KEY_SIZE: usize = 33;
 pub const PBTC_MINT_FXN_NAME: &str = "issue";

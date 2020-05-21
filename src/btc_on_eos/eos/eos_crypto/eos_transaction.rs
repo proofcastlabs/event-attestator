@@ -7,9 +7,9 @@ use eos_primitives::{
 };
 use crate::{
     types::Result,
+    chains::eos::eos_constants::PBTC_MINT_FXN_NAME,
     btc_on_eos::eos::{
         eos_types::EosSignedTransaction,
-        eos_constants::PBTC_MINT_FXN_NAME,
         eos_crypto::eos_private_key::EosPrivateKey,
     },
 };
@@ -106,9 +106,9 @@ pub fn sign_peos_transaction(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::eos::{
-        eos_test_utils::EOS_JUNGLE_CHAIN_ID,
-        eos_constants::{
+    use crate::{
+        btc_on_eos::eos::eos_test_utils::EOS_JUNGLE_CHAIN_ID,
+        chains::eos::eos_constants::{
             MEMO,
             EOS_MAX_EXPIRATION_SECS,
             PEOS_ACCOUNT_PERMISSION_LEVEL,

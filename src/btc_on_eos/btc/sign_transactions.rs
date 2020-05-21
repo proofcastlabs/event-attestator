@@ -1,6 +1,11 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eos::eos_constants::{
+        MEMO,
+        EOS_MAX_EXPIRATION_SECS,
+        PEOS_ACCOUNT_PERMISSION_LEVEL,
+    },
     btc_on_eos::{
         btc::{
             btc_state::BtcState,
@@ -18,11 +23,6 @@ use crate::{
                     sign_peos_transaction,
                     get_unsigned_eos_minting_tx,
                 },
-            },
-            eos_constants::{
-                MEMO,
-                EOS_MAX_EXPIRATION_SECS,
-                PEOS_ACCOUNT_PERMISSION_LEVEL,
             },
             eos_database_utils::{
                 get_eos_chain_id_from_db,

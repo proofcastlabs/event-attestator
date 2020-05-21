@@ -6,11 +6,14 @@ use crate::{
         get_key_from_db,
         set_key_in_db_to_value,
     },
-    chains::btc::{
-        btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
-        utxo_manager::{
-            debug_utxo_utils::clear_all_utxos,
-            utxo_utils::get_all_utxos_as_json_string,
+    chains::{
+        eos::eos_constants::EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
+        btc::{
+            btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
+            utxo_manager::{
+                debug_utxo_utils::clear_all_utxos,
+                utxo_utils::get_all_utxos_as_json_string,
+            },
         },
     },
     btc_on_eos::{
@@ -52,7 +55,6 @@ use crate::{
 	},
         eos::{
             eos_crypto::eos_private_key::EosPrivateKey,
-            eos_constants::EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
             parse_eos_schedule::parse_schedule_string_to_schedule,
             eos_database_utils::{
                 get_eos_chain_id_from_db,
