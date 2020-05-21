@@ -12,7 +12,7 @@ use crate::{
 };
 
 pub fn get_prefixed_db_key_hash(suffix: &str) -> [u8; 32] {
-    keccak256(format!("{}{}",DB_KEY_PREFIX.to_string(), suffix).as_bytes())
+    keccak256(format!("{}{}", DB_KEY_PREFIX.to_string(), suffix).as_bytes())
 }
 
 pub fn convert_bytes_to_u64(bytes: &Bytes) -> Result<u64> {
