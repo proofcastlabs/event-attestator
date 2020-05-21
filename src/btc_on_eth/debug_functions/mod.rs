@@ -1,14 +1,22 @@
+use serde_json::json;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
     chains::{
-        eth::eth_constants::ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
+        eth::eth_constants::{
+            get_eth_constants_db_keys,
+            ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
+        },
         btc::{
-            btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
+            btc_constants::{
+                get_btc_constants_db_keys,
+                BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
+            },
             utxo_manager::{
                 debug_utxo_utils::clear_all_utxos,
                 utxo_utils::get_all_utxos_as_json_string,
+                utxo_constants::get_utxo_constants_db_keys,
             },
         },
     },
@@ -87,6 +95,14 @@ use crate::{
         },
     },
 };
+
+pub fn debug_get_all_db_keys() -> Result<String> {
+    Ok(json!({
+        "btc": get_btc_constants_db_keys(),
+        "eth": get_eth_constants_db_keys(),
+        "utxo-manager": get_utxo_constants_db_keys(),
+    }).to_string())
+}
 
 pub fn debug_clear_all_utxos<D>(
     db: &D,

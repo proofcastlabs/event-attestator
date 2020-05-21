@@ -1,3 +1,4 @@
+pub use serde_json::json;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
@@ -7,12 +8,19 @@ use crate::{
         set_key_in_db_to_value,
     },
     chains::{
-        eos::eos_constants::EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
+        eos::eos_constants::{
+            get_eos_constants_db_keys,
+            EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
+        },
         btc::{
-            btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
+            btc_constants::{
+                get_btc_constants_db_keys,
+                BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
+            },
             utxo_manager::{
                 debug_utxo_utils::clear_all_utxos,
                 utxo_utils::get_all_utxos_as_json_string,
+                utxo_constants::get_utxo_constants_db_keys,
             },
         },
     },
@@ -72,6 +80,14 @@ use crate::{
         },
     },
 };
+
+pub fn debug_get_all_db_keys() -> Result<String> {
+    Ok(json!({
+        "btc": get_btc_constants_db_keys(),
+        "eos": get_eos_constants_db_keys(),
+        "utxo-manager": get_utxo_constants_db_keys(),
+    }).to_string())
+}
 
 pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
     db: D,
