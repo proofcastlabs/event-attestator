@@ -13,7 +13,9 @@ pub fn set_key_in_db_to_value<D>(
 {
     info!("✔ Setting key: {} in DB to value: {}", key, value);
     check_debug_mode()
+        .and_then(|_| db.start_transaction())
         .and_then(|_| db.put(hex::decode(key)?, hex::decode(value)?, None))
+        .and_then(|_| db.end_transaction())
         .map(|_| "{putting_value_in_database_suceeded:true}".to_string())
 }
 
@@ -26,6 +28,10 @@ pub fn get_key_from_db<D>(
 {
     info!("✔ Maybe getting key: {} from DB...", key);
     check_debug_mode()
+        .and_then(|_| db.start_transaction())
         .and_then(|_| db.get(hex::decode(key.clone())?, data_sensitivity))
-        .map(|value| format!("{{key:{},value:{}}}", key, hex::encode(value)))
+        .and_then(|value| {
+            db.end_transaction()?;
+            Ok(format!("{{key:{},value:{}}}", key, hex::encode(value)))
+        })
 }
