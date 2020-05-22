@@ -19,5 +19,5 @@ pub static DB_KEY_PREFIX: &str = "btc-on-eth-";
 #[cfg(feature="pbtc-on-eos")]
 pub static DB_KEY_PREFIX: &str = "btc-on-eos-";
 
-#[cfg(feature="legacy")]
+#[cfg(feature="legacy-db-keys")]
 pub static DB_KEY_PREFIX: &str = "";
