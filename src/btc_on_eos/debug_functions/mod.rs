@@ -1,3 +1,4 @@
+pub use serde_json::json;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
@@ -6,10 +7,21 @@ use crate::{
         get_key_from_db,
         set_key_in_db_to_value,
     },
-    chains::btc::{
-        utxo_manager::{
-            debug_utxo_utils::clear_all_utxos,
-            utxo_utils::get_all_utxos_as_json_string,
+    chains::{
+        eos::eos_constants::{
+            get_eos_constants_db_keys,
+            EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
+        },
+        btc::{
+            btc_constants::{
+                get_btc_constants_db_keys,
+                BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
+            },
+            utxo_manager::{
+                debug_utxo_utils::clear_all_utxos,
+                utxo_utils::get_all_utxos_as_json_string,
+                utxo_constants::get_utxo_constants_db_keys,
+            },
         },
     },
     btc_on_eos::{
@@ -23,7 +35,6 @@ use crate::{
             btc_database_utils::start_btc_db_transaction,
             get_btc_output_json::get_btc_output_as_string,
             btc_database_utils::get_btc_latest_block_from_db,
-            btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
             validate_btc_merkle_root::validate_btc_merkle_root,
             filter_minting_params::maybe_filter_minting_params_in_state,
             validate_btc_block_header::validate_btc_block_header_in_state,
@@ -52,7 +63,6 @@ use crate::{
 	},
         eos::{
             eos_crypto::eos_private_key::EosPrivateKey,
-            eos_constants::EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
             parse_eos_schedule::parse_schedule_string_to_schedule,
             eos_database_utils::{
                 get_eos_chain_id_from_db,
@@ -70,6 +80,14 @@ use crate::{
         },
     },
 };
+
+pub fn debug_get_all_db_keys() -> Result<String> {
+    Ok(json!({
+        "btc": get_btc_constants_db_keys(),
+        "eos": get_eos_constants_db_keys(),
+        "utxo-manager": get_utxo_constants_db_keys(),
+    }).to_string())
+}
 
 pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
     db: D,
@@ -197,7 +215,7 @@ pub fn debug_get_key_from_db<D>(
     let key_bytes = hex::decode(&key)?;
     check_core_is_initialized(&db)
         .and_then(|_| {
-            if key_bytes == EOS_KEY || key_bytes == BTC_KEY {
+            if key_bytes == EOS_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
                 get_key_from_db(db, key, Some(255))
             } else {
                 get_key_from_db(db, key, None)

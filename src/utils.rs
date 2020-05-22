@@ -1,11 +1,19 @@
+use tiny_keccak::keccak256;
 use crate::{
     errors::AppError,
-    constants::U64_NUM_BYTES,
     types::{
         Bytes,
         Result,
     },
+    constants::{
+        U64_NUM_BYTES,
+        DB_KEY_PREFIX,
+    },
 };
+
+pub fn get_prefixed_db_key(suffix: &str) -> [u8; 32] {
+    keccak256(format!("{}{}", DB_KEY_PREFIX.to_string(), suffix).as_bytes())
+}
 
 pub fn convert_bytes_to_u64(bytes: &Bytes) -> Result<u64> {
     match bytes.len() {

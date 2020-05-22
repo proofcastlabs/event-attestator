@@ -17,17 +17,15 @@ use crate::{
             DepositAddressInfo,
             DepositAddressInfoJson,
         },
+        btc_constants::{
+            DEFAULT_BTC_SEQUENCE,
+            PTOKEN_P2SH_SCRIPT_BYTES,
+        },
     },
     btc_on_eos::{
-        btc::{
-            btc_constants::{
-                DEFAULT_BTC_SEQUENCE,
-                PTOKEN_P2SH_SCRIPT_BYTES,
-            },
-            btc_types::{
-                MintingParams,
-                BtcBlockInDbFormat,
-            },
+        btc::btc_types::{
+            MintingParams,
+            BtcBlockInDbFormat,
         },
     },
 };

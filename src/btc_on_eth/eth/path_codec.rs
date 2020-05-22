@@ -4,11 +4,11 @@ use crate::{
         Bytes,
         Result,
     },
+    chains::eth::eth_constants::{
+        LEAF_NODE_STRING,
+        EXTENSION_NODE_STRING,
+    },
     btc_on_eth::eth::{
-        eth_constants::{
-            LEAF_NODE_STRING,
-            EXTENSION_NODE_STRING,
-        },
         nibble_utils::{
             Nibbles,
             get_zero_nibble,

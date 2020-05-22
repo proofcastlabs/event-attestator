@@ -3,17 +3,19 @@ use crate::{
     constants::DEBUG_MODE,
     traits::DatabaseInterface,
     constants::CORE_IS_VALIDATING,
-    chains::btc::{
-        btc_constants::BTC_TAIL_LENGTH,
-        utxo_manager::utxo_database_utils::{
-            get_utxo_nonce_from_db,
-            get_total_utxo_balance_from_db,
-            get_total_number_of_utxos_from_db,
+    chains::{
+        eth::eth_constants::ETH_TAIL_LENGTH,
+        btc::{
+            btc_constants::BTC_TAIL_LENGTH,
+            utxo_manager::utxo_database_utils::{
+                get_utxo_nonce_from_db,
+                get_total_utxo_balance_from_db,
+                get_total_number_of_utxos_from_db,
+            },
         },
     },
     btc_on_eth::{
         eth::{
-            eth_constants::ETH_TAIL_LENGTH,
             get_linker_hash::{
                 get_linker_hash_or_genesis_hash as get_eth_linker_hash
             },

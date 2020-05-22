@@ -11,6 +11,13 @@ use crate::{
         Bytes,
         Result,
     },
+    chains::eth::eth_constants::{
+        VALUE_FOR_MINTING_TX,
+        VALUE_FOR_PTOKEN_DEPLOY,
+        GAS_LIMIT_FOR_MINTING_TX,
+        GAS_LIMIT_FOR_PTOKEN_DEPLOY,
+        ETH_SMART_CONTRACT_MINTING_FXN_SIG,
+    },
     btc_on_eth::{
         utils::strip_new_line_chars,
         crypto_utils::keccak_hash_bytes,
@@ -23,13 +30,6 @@ use crate::{
             eth_types::{
                 EthSignature,
                 EthSignedTransaction,
-            },
-            eth_constants::{
-                VALUE_FOR_MINTING_TX,
-                VALUE_FOR_PTOKEN_DEPLOY,
-                GAS_LIMIT_FOR_MINTING_TX,
-                GAS_LIMIT_FOR_PTOKEN_DEPLOY,
-                ETH_SMART_CONTRACT_MINTING_FXN_SIG,
             },
         },
     },

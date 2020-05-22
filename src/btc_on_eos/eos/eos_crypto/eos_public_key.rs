@@ -15,16 +15,14 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eos::{
-        eos::{
-            eos_hash::ripemd160,
-            eos_crypto::eos_signature::EosSignature,
-            eos_constants::{
-                PUBLIC_KEY_SIZE,
-                PUBLIC_KEY_CHECKSUM_SIZE,
-                PUBLIC_KEY_WITH_CHECKSUM_SIZE,
-            }
-        },
+    chains::eos::eos_constants::{
+        PUBLIC_KEY_SIZE,
+        PUBLIC_KEY_CHECKSUM_SIZE,
+        PUBLIC_KEY_WITH_CHECKSUM_SIZE,
+    },
+    btc_on_eos::eos::{
+        eos_hash::ripemd160,
+        eos_crypto::eos_signature::EosSignature,
     },
 };
 

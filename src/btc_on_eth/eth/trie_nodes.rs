@@ -9,6 +9,12 @@ use crate::{
         Bytes,
         Result,
     },
+    chains::eth::eth_constants::{
+        EMPTY_NIBBLES,
+        LEAF_NODE_STRING,
+        BRANCH_NODE_STRING,
+        EXTENSION_NODE_STRING,
+    },
     btc_on_eth::{
         crypto_utils::keccak_hash_bytes,
         eth::{
@@ -17,12 +23,6 @@ use crate::{
             eth_types::{
                 ChildNodes,
                 TrieHashMap,
-            },
-            eth_constants::{
-                EMPTY_NIBBLES,
-                LEAF_NODE_STRING,
-                BRANCH_NODE_STRING,
-                EXTENSION_NODE_STRING,
             },
             path_codec::{
                 encode_leaf_path_from_nibbles,

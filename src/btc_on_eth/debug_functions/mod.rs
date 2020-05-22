@@ -1,12 +1,23 @@
+use serde_json::json;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
-    chains::btc::{
-        btc_constants::BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
-        utxo_manager::{
-            debug_utxo_utils::clear_all_utxos,
-            utxo_utils::get_all_utxos_as_json_string,
+    chains::{
+        eth::eth_constants::{
+            get_eth_constants_db_keys,
+            ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
+        },
+        btc::{
+            btc_constants::{
+                get_btc_constants_db_keys,
+                BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
+            },
+            utxo_manager::{
+                debug_utxo_utils::clear_all_utxos,
+                utxo_utils::get_all_utxos_as_json_string,
+                utxo_constants::get_utxo_constants_db_keys,
+            },
         },
     },
     debug_database_utils::{
@@ -61,7 +72,6 @@ use crate::{
             eth_state::EthState,
             validate_block::validate_block_in_state,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
-            eth_constants::ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
             parse_redeem_params::parse_redeem_params_from_block,
             increment_btc_nonce::maybe_increment_btc_nonce_in_db,
             filter_receipts::filter_irrelevant_receipts_from_state,
@@ -85,6 +95,14 @@ use crate::{
         },
     },
 };
+
+pub fn debug_get_all_db_keys() -> Result<String> {
+    Ok(json!({
+        "btc": get_btc_constants_db_keys(),
+        "eth": get_eth_constants_db_keys(),
+        "utxo-manager": get_utxo_constants_db_keys(),
+    }).to_string())
+}
 
 pub fn debug_clear_all_utxos<D>(
     db: &D,
@@ -218,7 +236,7 @@ pub fn debug_get_key_from_db<D>(
     let key_bytes = hex::decode(&key)?;
     check_core_is_initialized(&db)
         .and_then(|_| {
-            if key_bytes == ETH_KEY || key_bytes == BTC_KEY {
+            if key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
                 get_key_from_db(db, key, Some(255))
             } else {
                 get_key_from_db(db, key, None)
