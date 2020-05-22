@@ -51,7 +51,15 @@ mod tests {
         let block_hash_to_link_to = EthHash::from_slice(
             &ETH_LATEST_BLOCK_HASH_KEY[..]
         );
-        let expected_result_hex = "710f399a2c56bd37f485f3e80212679007cd58c7aea063723979d3104c3d42a5";
+        #[cfg(feature="legacy-db-keys")]
+        let expected_result_hex =
+            "710f399a2c56bd37f485f3e80212679007cd58c7aea063723979d3104c3d42a5";
+        #[cfg(feature="pbtc-on-eth")]
+        let expected_result_hex =
+            "5d43fc25f1d6c8b4420dd911c89793b4370bb0108a212cb28ce5a9c2da135bde";
+        #[cfg(feature="pbtc-on-eos")]
+        let expected_result_hex =
+            "04427898ee833da05a62e818af9a2c7d3e797ebaed6b6d46a3d6b0c6985ce4df";
         let expected_result = convert_hex_to_h256(
             expected_result_hex.to_string()
         ).unwrap();
@@ -60,6 +68,6 @@ mod tests {
             anchor_block_hash,
             linker_hash,
         );
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 }
