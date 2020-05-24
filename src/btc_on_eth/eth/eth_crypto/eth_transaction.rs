@@ -274,29 +274,9 @@ mod tests {
     use crate::btc_on_eth::eth::eth_test_utils::{
         get_sample_eth_address,
         get_sample_eth_private_key,
+        get_sample_unsigned_eth_transaction,
         ETH_SMART_CONTRACT_BYTECODE_PATH,
     };
-
-    fn get_sample_unsigned_eth_transaction() -> EthTransaction {
-        let data = vec![];
-        let nonce = 0;
-        let value = 1;
-        let to = EthAddress::from_slice(
-            &hex::decode("53c2048dad4fcfab44C3ef3D16E882b5178df42b").unwrap()
-        );
-        let chain_id = 4; // Rinkeby
-        let gas_limit = 100_000;
-        let gas_price = 20_000_000_000;
-        EthTransaction::new(
-            data,
-            nonce,
-            value,
-            to,
-            chain_id,
-            gas_limit,
-            gas_price
-        )
-    }
 
     #[test]
     fn should_serialize_simple_eth_tx_to_bytes() {

@@ -47,6 +47,7 @@ use crate::{
             eth_crypto::{
                 eth_public_key::EthPublicKey,
                 eth_private_key::EthPrivateKey,
+                eth_transaction::EthTransaction,
             },
             nibble_utils::{
                 Nibbles,
@@ -483,6 +484,27 @@ pub fn get_expected_log() -> EthLog {
 
 pub fn get_valid_eth_state() -> Result<EthState<TestDB>> {
     Ok(EthState::init(get_test_database()))
+}
+
+pub fn get_sample_unsigned_eth_transaction() -> EthTransaction {
+    let data = vec![];
+    let nonce = 0;
+    let value = 1;
+    let to = EthAddress::from_slice(
+        &hex::decode("53c2048dad4fcfab44C3ef3D16E882b5178df42b").unwrap()
+    );
+    let chain_id = 4; // Rinkeby
+    let gas_limit = 100_000;
+    let gas_price = 20_000_000_000;
+    EthTransaction::new(
+        data,
+        nonce,
+        value,
+        to,
+        chain_id,
+        gas_limit,
+        gas_price
+    )
 }
 
 mod tests {
