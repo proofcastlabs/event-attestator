@@ -8,23 +8,10 @@
 //! between various blockchains allowing for decentalized swaps between a native
 //! asset and a host chain's pTokenized version of that asset.
 //!
-//! __Note:__ When compiling the core, your app must select the desired pToken
-//! via the __`Cargo.toml`__ like so:
-//!
-//! ```no_compile
-//! ptokens_core = { version = "1.0.0", features = ["pbtc-on-eos"] }
-//! ```
-//!
-//! ### __CAUTION:__
-//!
-//!  - Attempting to select multiple pTokens result in errors upon
-//! compilaton due to multiple declarations of the same database key. This is
-//! correct behaviour. Please select only one pToken type in your
-//! __`Cargo.toml`__.
-//!
-//!  - If __`legacy`__ is selected, all constants are NOT prefixed at compile
-//! time, meaning database key conflicts can occur. Use at your own risk.
-//!
+//! __Note:__ When compiling the core, you may provide an optional environment
+//! variable __`DB_KEY_PREFIX`__, which when used will prefix all database keys
+//! with the provided argument. Via this, database key clashes can be avoided
+//! if running multiple instances on one machine.
 
 pub use types::{
     Bytes,
