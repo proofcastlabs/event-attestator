@@ -118,6 +118,7 @@ mod tests {
         }
     }
 
+    #[cfg(not(feature="non-validating"))]
     #[test]
     fn should_not_validate_invalid_receipts_in_state() {
         let expected_error = "✘ Not accepting ETH block - receipts root not valid!"
@@ -125,7 +126,7 @@ mod tests {
         let state = get_valid_state_with_invalid_block_and_receipts()
             .unwrap();
         match validate_receipts_in_state(state) {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Receipts should not be valid!"),
             Err(_) => panic!("Wrong error message!"),
         }

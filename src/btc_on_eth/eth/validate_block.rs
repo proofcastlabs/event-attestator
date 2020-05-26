@@ -56,7 +56,6 @@ mod tests {
         get_sample_invalid_block,
         get_sample_eth_block_and_receipts,
         get_valid_state_with_block_and_receipts,
-        get_valid_state_with_invalid_block_and_receipts,
     };
 
     #[test]
@@ -92,14 +91,18 @@ mod tests {
         }
     }
 
+    #[cfg(not(feature="non-validating"))]
     #[test]
     fn should_fail_to_validate_invalid_block_in_state() {
+        use crate::btc_on_eth::eth::eth_test_utils::{
+            get_valid_state_with_invalid_block_and_receipts
+        };
         let expected_error = "✘ Not accepting ETH block - header hash not valid!"
             .to_string();
         let state = get_valid_state_with_invalid_block_and_receipts()
             .unwrap();
         match validate_block_in_state(state) {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ => panic!("Should not validate invalid block in state!")
         }
     }
