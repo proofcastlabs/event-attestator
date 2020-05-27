@@ -3,6 +3,7 @@ use crate::{
     traits::DatabaseInterface,
     constants::{
         DEBUG_MODE,
+        DB_KEY_PREFIX,
         CORE_IS_VALIDATING,
     },
     chains::btc::{
@@ -60,6 +61,7 @@ struct EnclaveState {
     eos_symbol: String,
     btc_utxo_nonce: u64,
     btc_tail_length: u64,
+    db_key_prefix: String,
     eos_chain_id: String,
     btc_sats_per_byte: u64,
     eos_public_key: String,
@@ -111,6 +113,7 @@ pub fn get_enclave_state<D>(
                 &EnclaveState {
                     eos_public_key,
                     core_is_validating: CORE_IS_VALIDATING,
+                    db_key_prefix: DB_KEY_PREFIX.to_string(),
                     eos_enabled_protocol_features:
                         get_eos_enabled_protocol_features_from_db(&db)?,
                     eos_symbol: get_eos_token_symbol_from_db(&db)?,

@@ -1,8 +1,11 @@
 use crate::{
     types::Result,
-    constants::DEBUG_MODE,
     traits::DatabaseInterface,
-    constants::CORE_IS_VALIDATING,
+    constants::{
+        DEBUG_MODE,
+        DB_KEY_PREFIX,
+        CORE_IS_VALIDATING,
+    },
     chains::{
         eth::eth_constants::ETH_TAIL_LENGTH,
         btc::{
@@ -63,6 +66,7 @@ struct EnclaveState {
     btc_utxo_nonce: u64,
     btc_tail_length: u64,
     eth_tail_length: u64,
+    db_key_prefix: String,
     btc_public_key: String,
     btc_sats_per_byte: u64,
     eth_account_nonce: u64,
@@ -117,6 +121,7 @@ pub fn get_enclave_state<D>(
             Ok(serde_json::to_string(
                 &EnclaveState {
                     core_is_validating: CORE_IS_VALIDATING,
+                    db_key_prefix: DB_KEY_PREFIX.to_string(),
                     debug_mode: DEBUG_MODE,
                     btc_tail_length:
                         BTC_TAIL_LENGTH,
