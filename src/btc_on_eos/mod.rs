@@ -21,6 +21,7 @@ pub use eos::enable_protocol_feature::enable_eos_protocol_feature;
 pub use eos::disable_protocol_feature::disable_eos_protocol_feature;
 pub use debug_functions::{
     debug_get_all_utxos,
+    debug_get_all_db_keys,
     debug_clear_all_utxos,
     debug_get_key_from_db,
     debug_update_incremerkle,
