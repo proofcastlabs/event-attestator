@@ -41,6 +41,7 @@ fn get_signed_tx(
     private_key: &EosPrivateKey,
     account_name: &String,
 ) -> Result<EosSignedTransaction> {
+    info!("✔ Signing tx for {} to {}...", &amount, &to);
     get_unsigned_eos_minting_tx(
         to,
         account_name,
@@ -71,6 +72,7 @@ pub fn get_signed_txs(
     account_name: &String,
     minting_params: &MintingParams,
 ) -> Result<EosSignedTransactions> {
+    info!("✔ Signing {} txs...", minting_params.len());
     minting_params
         .iter()
         .map(|params|
