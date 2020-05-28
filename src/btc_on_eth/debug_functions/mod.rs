@@ -97,11 +97,15 @@ use crate::{
 };
 
 pub fn debug_get_all_db_keys() -> Result<String> {
-    Ok(json!({
-        "btc": get_btc_constants_db_keys(),
-        "eth": get_eth_constants_db_keys(),
-        "utxo-manager": get_utxo_constants_db_keys(),
-    }).to_string())
+
+    check_debug_mode()
+        .map(|_|
+            json!({
+                "btc": get_btc_constants_db_keys(),
+                "eth": get_eth_constants_db_keys(),
+                "utxo-manager": get_utxo_constants_db_keys(),
+            }).to_string()
+        )
 }
 
 pub fn debug_clear_all_utxos<D>(

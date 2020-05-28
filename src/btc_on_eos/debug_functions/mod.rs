@@ -82,11 +82,14 @@ use crate::{
 };
 
 pub fn debug_get_all_db_keys() -> Result<String> {
-    Ok(json!({
-        "btc": get_btc_constants_db_keys(),
-        "eos": get_eos_constants_db_keys(),
-        "utxo-manager": get_utxo_constants_db_keys(),
-    }).to_string())
+    check_debug_mode()
+        .map(|_|
+            json!({
+                "btc": get_btc_constants_db_keys(),
+                "eos": get_eos_constants_db_keys(),
+                "utxo-manager": get_utxo_constants_db_keys(),
+            }).to_string()
+    )
 }
 
 pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
