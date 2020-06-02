@@ -1,6 +1,7 @@
 use serde_json::json;
 use crate::{
     types::Result,
+    constants::DB_KEY_PREFIX,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
     chains::{
@@ -97,12 +98,12 @@ use crate::{
 };
 
 pub fn debug_get_all_db_keys() -> Result<String> {
-
     check_debug_mode()
         .map(|_|
             json!({
                 "btc": get_btc_constants_db_keys(),
                 "eth": get_eth_constants_db_keys(),
+                "db-key-prefix": DB_KEY_PREFIX.to_string(),
                 "utxo-manager": get_utxo_constants_db_keys(),
             }).to_string()
         )
