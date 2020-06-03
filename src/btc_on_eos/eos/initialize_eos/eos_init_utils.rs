@@ -122,7 +122,7 @@ pub fn maybe_enable_protocol_features_and_return_state<D>(
         }
         Some(feature_hash_strings) => {
             info!(
-                "✔ Enabling {} protocol features...",
+                "✔ Maybe enabling {} protocol features...",
                 feature_hash_strings.len()
             );
             let mut feature_hashes = feature_hash_strings
