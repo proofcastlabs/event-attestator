@@ -73,12 +73,11 @@ impl EnabledFeatures {
         feature_hashes.dedup();
         feature_hashes
             .iter()
-            .map(|hash| AVAILABLE_FEATURES.get_feature_from_hash(&hash))
-            .collect::<Result<Vec<ProtocolFeature>>>()?
-            .iter()
+            .map(|hash| AVAILABLE_FEATURES.maybe_get_feature_from_hash(&hash))
+            .filter(|maybe_feature| maybe_feature.is_some())
             .map(|feature| -> Result<()> {
-                info!("✔ Adding feature: {}", feature.to_json()?);
-                self.0.push(feature.clone());
+                info!("✔ Adding feature: {}", feature.clone()?.to_json()?);
+                self.0.push(feature?.clone());
                 Ok(())
             })
             .for_each(drop);
@@ -155,26 +154,44 @@ impl AvailableFeatures {
         }
     }
 
+
+    fn get_known_feature_from_hash(
+        &self,
+        feature_hash: &Bytes,
+    ) -> ProtocolFeature {
+        self
+            .0
+            .iter()
+            .fold(
+                ProtocolFeature::default(),
+                |mut acc, protocol_feature| {
+                    if protocol_feature.feature_hash == hex::encode(feature_hash) {
+                        acc = protocol_feature.clone();
+                    };
+                    acc
+                }
+            )
+    }
+
+    pub fn maybe_get_feature_from_hash(
+        &self,
+        feature_hash: &Bytes,
+    ) -> Option<ProtocolFeature> {
+        match self.contains(feature_hash) {
+            true => Some(self.get_known_feature_from_hash(feature_hash)),
+            false => {
+                info!("✘ Unrecognised feature hash: {}", hex::encode(feature_hash));
+                None
+            }
+        }
+    }
+
     pub fn get_feature_from_hash(
         &self,
         feature_hash: &Bytes,
     ) -> Result<ProtocolFeature> {
-        let hash = hex::encode(feature_hash);
         self.check_contains(feature_hash)
-            .map(|_|
-                self
-                    .0
-                    .iter()
-                    .fold(
-                        ProtocolFeature::default(),
-                        |mut acc, protocol_feature| {
-                            if protocol_feature.feature_hash == hash {
-                                acc = protocol_feature.clone();
-                            };
-                            acc
-                        }
-                    )
-            )
+            .map(|_| self.get_known_feature_from_hash(feature_hash))
     }
 }
 
