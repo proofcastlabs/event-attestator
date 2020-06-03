@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::{
     types::Result,
     traits::DatabaseInterface,
