@@ -11,7 +11,6 @@ use crate::{
         },
         utils::{
             decode_prefixed_hex,
-            convert_hex_to_u256,
             convert_hex_to_h256,
             convert_hex_to_bytes,
             convert_hex_to_address,
@@ -60,10 +59,6 @@ pub fn parse_eth_block_json(
             receipts_root: convert_hex_to_h256(
                 eth_block_json.receiptsRoot
             )?,
-            seal_fields: (
-                convert_hex_to_bytes(eth_block_json.sealFields.0)?,
-                convert_hex_to_u256(eth_block_json.sealFields.1)?
-            ),
             sha3_uncles: convert_hex_to_h256(
                 eth_block_json.sha3Uncles
             )?,

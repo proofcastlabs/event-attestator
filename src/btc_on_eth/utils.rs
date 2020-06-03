@@ -114,10 +114,6 @@ pub fn get_no_overwrite_state_err(substring: &str) -> String {
     format!("✘ Cannot overwrite {} in state!" , substring)
 }
 
-pub fn convert_hex_to_u256(hex: String) -> Result<U256> {
-    Ok(U256::from(&decode_prefixed_hex(hex)?[..]))
-}
-
 pub fn convert_hex_to_bytes(hex: String) -> Result<Bytes> {
     Ok(hex::decode(strip_hex_prefix(&hex)?)?)
 }
@@ -274,15 +270,6 @@ mod tests {
         let expected_result = "✘ Cannot overwrite thing in state!";
         let result = get_no_overwrite_state_err(&thing);
         assert!(result == expected_result)
-    }
-
-    #[test]
-    fn should_convert_hex_to_u256_correctly() {
-        let hex = "0xc0ffee";
-        let expected_result: u128 = 12648430;
-        let result = convert_hex_to_u256(hex.to_string())
-            .unwrap();
-        assert!(result.as_u128() == expected_result)
     }
 
     #[test]

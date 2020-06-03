@@ -13,7 +13,6 @@
 //! ```
 
 pub use get_enclave_state::get_enclave_state;
-pub use eos::add_new_schedule::add_new_schedule_to_db;
 pub use btc::submit_btc_block::submit_btc_block_to_core;
 pub use eos::submit_eos_block::submit_eos_block_to_core;
 pub use get_latest_block_numbers::get_latest_block_numbers;
