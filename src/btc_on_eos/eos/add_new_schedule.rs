@@ -7,7 +7,7 @@ use crate::{
     },
 };
 
-pub fn add_new_schedule_to_db<D>(
+fn add_new_schedule_to_db<D>(
     db: D,
     schedule_json: String,
 ) -> Result<String>

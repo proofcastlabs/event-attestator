@@ -1,5 +1,4 @@
 pub mod initialize_eos;
-pub mod add_new_schedule;
 pub mod submit_eos_block;
 pub mod enable_protocol_feature;
 pub mod disable_protocol_feature;
@@ -11,6 +10,7 @@ pub(crate) mod eos_types;
 pub(crate) mod eos_crypto;
 pub(crate) mod get_eos_output;
 pub(crate) mod eos_test_utils;
+pub(crate) mod add_new_schedule;
 pub(crate) mod eos_merkle_utils;
 pub(crate) mod save_incremerkle;
 pub(crate) mod sign_transactions;
