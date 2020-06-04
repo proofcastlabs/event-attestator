@@ -4,6 +4,7 @@ use std::{
 };
 use crate::{
     types::Result,
+    errors::AppError,
     utils::strip_hex_prefix,
 };
 use bitcoin::{
@@ -19,7 +20,7 @@ pub type DepositAddressJsonList = Vec<DepositAddressInfoJson>;
 pub type DepositInfoHashMap =  HashMap<BtcAddress, DepositAddressInfo>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-enum DepositAddressListVersion {
+pub enum DepositAddressListVersion {
     V0,
     V1,
 }
@@ -58,6 +59,7 @@ pub struct DepositAddressInfoJson {
 }
 
 impl DepositAddressInfoJson {
+    #[cfg(test)]
     pub fn new(
         nonce: u64,
         address: String,
@@ -73,14 +75,6 @@ impl DepositAddressInfoJson {
             address_and_nonce_hash,
         }
     }
-
-    pub fn from_deposit_address_info(deposit_address_info: &DepositAddressInfo) -> Self {
-        deposit_address_info.to_json()
-    }
-
-    pub fn to_deposit_address_info(&self) -> Result<DepositAddressInfo> {
-        DepositAddressInfo::from_json(&self)
-    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -93,7 +87,7 @@ pub struct DepositAddressInfo {
 }
 
 impl DepositAddressInfo {
-    pub fn new( // Make this new_eos_info or something
+    pub fn new(
         nonce: u64,
         address: &String,
         btc_deposit_address: &String,
@@ -128,6 +122,34 @@ impl DepositAddressInfo {
             maybe_version: Some(self.version.to_string()),
             btc_deposit_address: self.btc_deposit_address.to_string(),
             address_and_nonce_hash: hex::encode(self.commitment_hash),
+        }
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_convert_deposit_info_json_to_deposit_info() {
+        let nonce = 1578079722;
+        let address = "0xedb86cd455ef3ca43f0e227e00469c3bdfa40628"
+            .to_string();
+        let btc_deposit_address = "2MuuCeJjptiB1ETfytAqMZFqPCKAfXyhxoQ"
+            .to_string();
+        let address_and_nonce_hash =
+            "348c7ab8078c400c5b07d1c3dda4fff8218bb6f2dc40f72662edc13ed867fcae"
+            .to_string();
+        let deposit_json = DepositAddressInfoJson  {
+            nonce,
+            address,
+            btc_deposit_address,
+            address_and_nonce_hash,
+            maybe_version: None,
+        };
+        if let Err(e) = DepositAddressInfo::from_json(&deposit_json) {
+            panic!("Error parsing deposit info json: {}", e);
         }
     }
 }
