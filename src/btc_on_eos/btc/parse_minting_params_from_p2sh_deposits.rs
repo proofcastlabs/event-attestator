@@ -6,7 +6,7 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::btc_types::DepositInfoHashMap,
+    chains::btc::deposit_address_info::DepositInfoHashMap,
     btc_on_eos::{
         eos::eos_database_utils::get_eos_token_symbol_from_db,
         btc::{

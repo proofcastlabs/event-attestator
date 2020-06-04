@@ -12,10 +12,7 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    chains::btc::btc_types::{
-        DepositAddressInfo,
-        DepositAddressInfoJson,
-    },
+    chains::btc::deposit_address_info::DepositAddressInfo,
     btc_on_eth::btc::{
         btc_state::BtcState,
         btc_types::{
@@ -83,23 +80,12 @@ fn convert_hex_txs_to_btc_transactions(
         .collect::<Result<Vec<BtcTransaction>>>()
 }
 
-fn parse_deposit_list_json_to_deposit_info(
-    deposit_address_info_json: &DepositAddressInfoJson
-) -> Result<DepositAddressInfo> {
-    DepositAddressInfo::new(
-        deposit_address_info_json.nonce,
-        &deposit_address_info_json.address,
-        &deposit_address_info_json.btc_deposit_address,
-        &deposit_address_info_json.address_and_nonce_hash,
-    )
-}
-
 fn parse_deposit_info_jsons_to_deposit_info_list(
     deposit_address_json_list: &DepositAddressJsonList
 ) -> Result<DepositInfoList> {
     deposit_address_json_list
         .iter()
-        .map(parse_deposit_list_json_to_deposit_info)
+        .map(DepositAddressInfo::from_json)
         .collect::<Result<DepositInfoList>>()
 }
 
@@ -164,27 +150,6 @@ mod tests {
             .unwrap();
         if let Err(e) = deserialize::<BtcTransaction>(&tx_bytes) {
             panic!("Error deserializing tx: {}", e);
-        }
-    }
-
-    #[test]
-    fn should_parse_deposit_list_json_to_deposit_info() {
-        let nonce = 1578079722;
-        let address = "0xedb86cd455ef3ca43f0e227e00469c3bdfa40628"
-            .to_string();
-        let btc_deposit_address = "2MuuCeJjptiB1ETfytAqMZFqPCKAfXyhxoQ"
-            .to_string();
-        let address_and_nonce_hash =
-            "348c7ab8078c400c5b07d1c3dda4fff8218bb6f2dc40f72662edc13ed867fcae"
-            .to_string();
-        let deposit_json = DepositAddressInfoJson  {
-            nonce,
-            address,
-            btc_deposit_address,
-            address_and_nonce_hash,
-        };
-        if let Err(e) = parse_deposit_list_json_to_deposit_info(&deposit_json) {
-            panic!("Error parsing deposit info json: {}", e);
         }
     }
 }

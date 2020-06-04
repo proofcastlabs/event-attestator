@@ -3,7 +3,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     btc_on_eos::btc::btc_state::BtcState,
-    chains::btc::btc_types::{
+    chains::btc::deposit_address_info::{
         DepositInfoList,
         DepositInfoHashMap,
     },

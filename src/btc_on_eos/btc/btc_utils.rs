@@ -13,10 +13,6 @@ use crate::{
     },
     chains::btc::{
         utxo_manager::utxo_types::BtcUtxosAndValues,
-        btc_types::{
-            DepositAddressInfo,
-            DepositAddressInfoJson,
-        },
         btc_constants::{
             DEFAULT_BTC_SEQUENCE,
             PTOKEN_P2SH_SCRIPT_BYTES,
@@ -145,21 +141,6 @@ pub fn create_unsigned_utxo_from_tx(
             .output[output_index as usize]
             .script_pubkey
             .clone(),
-    }
-}
-
-pub fn convert_deposit_info_to_json(
-    deposit_info_struct: &DepositAddressInfo
-) -> DepositAddressInfoJson {
-    DepositAddressInfoJson {
-        nonce:
-            deposit_info_struct.nonce,
-        btc_deposit_address:
-            deposit_info_struct.btc_deposit_address.to_string(),
-        address:
-            deposit_info_struct.address.to_string(),
-        address_and_nonce_hash:
-            hex::encode(deposit_info_struct.commitment_hash),
     }
 }
 

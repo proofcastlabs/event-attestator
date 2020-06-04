@@ -2,7 +2,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::btc::{
-        btc_types::DepositInfoHashMap,
+        deposit_address_info::DepositInfoHashMap,
         utxo_manager::utxo_types::{
             BtcUtxoAndValue,
             BtcUtxosAndValues,
@@ -11,11 +11,8 @@ use crate::{
     btc_on_eos::btc::{
         btc_state::BtcState,
         btc_types::BtcTransactions,
+        btc_utils::create_unsigned_utxo_from_tx,
         btc_database_utils::get_btc_network_from_db,
-        btc_utils::{
-            convert_deposit_info_to_json,
-            create_unsigned_utxo_from_tx,
-        },
     },
 };
 use bitcoin::{
@@ -45,43 +42,23 @@ fn maybe_extract_p2sh_utxo(
                 btc_network,
             ) {
                 None => {
-                    info!(
-                        "✘ Could not derive BTC address from tx outout: {:?}",
-                        tx_output,
-                    );
+                    info!("✘ Could not derive BTC address from tx outout: {:?}", tx_output);
                     None
                 },
                 Some(btc_address) => {
-                    info!(
-                        "✔ BTC address extracted from `tx_out`: {}",
-                        btc_address,
-                    );
+                    info!("✔ BTC address extracted from `tx_out`: {}", btc_address);
                     match deposit_info_hash_map.get(&btc_address) {
                         None => {
-                            info!(
-                                "✘ BTC address {} not in deposit hash map ∴ {}",
-                                btc_address,
-                                "NOT extracting UTXO!",
-                            );
+                            info!("✘ BTC address {} not in deposit hash map ∴ NOT extracting UTXO!", btc_address);
                             None
                         }
                         Some(deposit_info) => {
-                            info!(
-                                "✔ Deposit info extracted from hash map: {:?}",
-                                deposit_info,
-                            );
+                            info!("✔ Deposit info extracted from hash map: {:?}", deposit_info);
                             Some(
                                 BtcUtxoAndValue::new(
                                     tx_output.value,
-                                    &create_unsigned_utxo_from_tx(
-                                        full_tx,
-                                        output_index,
-                                    ),
-                                    Some(
-                                        convert_deposit_info_to_json(
-                                            deposit_info
-                                        )
-                                    ),
+                                    &create_unsigned_utxo_from_tx(full_tx, output_index),
+                                    Some(deposit_info.to_json()),
                                     None,
                                 )
                             )
@@ -109,13 +86,7 @@ pub fn extract_p2sh_utxos_from_txs(
                     .iter()
                     .enumerate()
                     .filter_map(|(i, tx_output)|
-                         maybe_extract_p2sh_utxo(
-                             i as u32,
-                             tx_output,
-                             full_tx,
-                             btc_network,
-                             deposit_info_hash_map
-                         )
+                         maybe_extract_p2sh_utxo(i as u32, tx_output, full_tx, btc_network, deposit_info_hash_map)
                     )
                     .collect::<Vec<BtcUtxoAndValue>>()
             )
@@ -258,20 +229,8 @@ mod tests {
         let hash_map = create_hash_map_from_deposit_info_list(
             &deposit_address_list
         ).unwrap();
-        let expected_deposit_info_1 = Some(
-            convert_deposit_info_to_json(
-                hash_map
-                    .get(&expected_btc_address_1)
-                    .unwrap()
-            )
-        );
-        let expected_deposit_info_2 = Some(
-            convert_deposit_info_to_json(
-                hash_map
-                    .get(&expected_btc_address_2)
-                    .unwrap()
-            )
-        );
+        let expected_deposit_info_1 = Some(hash_map.get(&expected_btc_address_1).unwrap().to_json());
+        let expected_deposit_info_2 = Some(hash_map.get(&expected_btc_address_2).unwrap().to_json());
         let filtered_txs = filter_p2sh_deposit_txs(
             &hash_map,
             &pub_key_bytes[..],

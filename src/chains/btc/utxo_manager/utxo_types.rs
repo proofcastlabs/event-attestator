@@ -4,7 +4,7 @@ use crate::{
         Result,
     },
     chains::btc::{
-        btc_types::DepositAddressInfoJson,
+        deposit_address_info::DepositAddressInfoJson,
         btc_utils::{
             serialize_btc_utxo,
             deserialize_btc_utxo,

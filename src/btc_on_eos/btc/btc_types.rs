@@ -5,12 +5,10 @@ use crate::{
         Bytes,
         Result,
     },
-    chains::{
-        btc::btc_types::{
-            DepositInfoList,
-            DepositAddressInfoJson,
-            DepositAddressJsonList,
-        },
+    chains::btc::deposit_address_info::{
+        DepositInfoList,
+        DepositAddressInfoJson,
+        DepositAddressJsonList,
     },
     btc_on_eos::{
         utils::convert_u64_to_eos_asset,
