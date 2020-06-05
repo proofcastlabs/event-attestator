@@ -156,6 +156,80 @@ mod tests {
     use super::*;
 
     #[test]
+    fn should_err_if_json_is_v1_and_has_no_address_and_nonce_hash_key() {
+        let nonce = 1578079722;
+        let address = "0xedb86cd455ef3ca43f0e227e00469c3bdfa40628".to_string();
+        let btc_deposit_address = "2MuuCeJjptiB1ETfytAqMZFqPCKAfXyhxoQ".to_string();
+        let eth_address_and_nonce_hash = Some(
+            "348c7ab8078c400c5b07d1c3dda4fff8218bb6f2dc40f72662edc13ed867fcae".to_string()
+        );
+        let address_and_nonce_hash = None;
+        let version = Some("1".to_string());
+        let deposit_json = DepositAddressInfoJson  {
+            nonce,
+            address,
+            btc_deposit_address,
+            version,
+            address_and_nonce_hash,
+            eth_address_and_nonce_hash,
+        };
+        let expected_error = "✘ No 'address_and_nonce_hash' field in deposit address info json!".to_string();
+        match DepositAddressInfo::from_json(&deposit_json) {
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
+            Err(e) => panic!("Wrong error received: {}", e),
+            Ok(_) => panic!("Should not have succeeded!"),
+        }
+    }
+
+    #[test]
+    fn should_err_if_json_is_v0_and_has_no_eth_address_and_nonce_hash_key() {
+        let nonce = 1578079722;
+        let address = "0xedb86cd455ef3ca43f0e227e00469c3bdfa40628".to_string();
+        let btc_deposit_address = "2MuuCeJjptiB1ETfytAqMZFqPCKAfXyhxoQ".to_string();
+        let address_and_nonce_hash = Some(
+            "348c7ab8078c400c5b07d1c3dda4fff8218bb6f2dc40f72662edc13ed867fcae".to_string()
+        );
+        let eth_address_and_nonce_hash = None;
+        let version = Some("0".to_string());
+        let deposit_json = DepositAddressInfoJson  {
+            nonce,
+            address,
+            btc_deposit_address,
+            version,
+            address_and_nonce_hash,
+            eth_address_and_nonce_hash,
+        };
+        let expected_error = "✘ No 'eth_address_and_nonce_hash' field in deposit address info json!".to_string();
+        match DepositAddressInfo::from_json(&deposit_json) {
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
+            Err(e) => panic!("Wrong error received: {}", e),
+            Ok(_) => panic!("Should not have succeeded!"),
+        }
+    }
+
+    #[test]
+    fn deposit_info_should_be_v0_if_version_field_missing() {
+        let nonce = 1578079722;
+        let address = "0xedb86cd455ef3ca43f0e227e00469c3bdfa40628".to_string();
+        let btc_deposit_address = "2MuuCeJjptiB1ETfytAqMZFqPCKAfXyhxoQ".to_string();
+        let eth_address_and_nonce_hash = Some(
+            "348c7ab8078c400c5b07d1c3dda4fff8218bb6f2dc40f72662edc13ed867fcae".to_string()
+        );
+        let address_and_nonce_hash = None;
+        let version = None;
+        let deposit_json = DepositAddressInfoJson  {
+            nonce,
+            address,
+            btc_deposit_address,
+            version,
+            address_and_nonce_hash,
+            eth_address_and_nonce_hash,
+        };
+        let result = DepositAddressInfo::from_json(&deposit_json).unwrap();
+        assert_eq!(result.version, DepositAddressListVersion::V0);
+    }
+
+    #[test]
     fn should_convert_deposit_info_json_to_deposit_info() {
         let nonce = 1578079722;
         let address = "0xedb86cd455ef3ca43f0e227e00469c3bdfa40628".to_string();
