@@ -1,8 +1,5 @@
 use bitcoin::{
-    hashes::{
-        Hash,
-        sha256d,
-    },
+    hashes::sha256d,
     blockdata::{
         transaction::{
             TxIn as BtcUtxo,
@@ -18,6 +15,7 @@ use crate::{
         Result,
     },
     chains::btc::{
+        deposit_address_info::DepositAddressInfo,
         utxo_manager::utxo_types::BtcUtxoAndValue,
         btc_utils::{
             get_script_sig,
@@ -52,41 +50,25 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
         .iter()
         .map(|recipient_and_amount| recipient_and_amount.amount)
         .sum();
-    let fee = calculate_btc_tx_fee(
-        utxos_and_values.len(),
-        recipient_addresses_and_amounts.len(),
-        sats_per_byte
-    );
+    let fee = calculate_btc_tx_fee(utxos_and_values.len(), recipient_addresses_and_amounts.len(), sats_per_byte);
     let utxo_total = get_total_value_of_utxos_and_values(&utxos_and_values);
     info!("✔ UTXO(s) total:  {}", utxo_total);
     info!("✔ Outgoing total: {}", total_to_spend);
     info!("✔ Change amount:  {}", utxo_total - (total_to_spend + fee));
     info!("✔ Tx fee:         {}", fee);
     match total_to_spend + fee > utxo_total {
-        true => Err(
-            AppError::Custom(
-                "✘ Not enough UTXO value to make transaction!".to_string()
-            )
-        ),
+        true => Err(AppError::Custom("✘ Not enough UTXO value to make transaction!".to_string())),
         _ => {
             let mut outputs = recipient_addresses_and_amounts
                 .iter()
                 .map(|recipient_and_amount|
-                    create_new_tx_output(
-                        recipient_and_amount.amount,
-                        recipient_and_amount.recipient.script_pubkey(),
-                    )
+                    create_new_tx_output(recipient_and_amount.amount, recipient_and_amount.recipient.script_pubkey())
                  )
                 .flatten()
                 .collect::<Vec<BtcTxOut>>();
             let change = utxo_total - total_to_spend - fee;
             if change > 0 {
-                outputs.push(
-                    create_new_pay_to_pub_key_hash_output(
-                        change,
-                        remainder_btc_address
-                    )?
-                )
+                outputs.push(create_new_pay_to_pub_key_hash_output(change, remainder_btc_address)?)
             };
             let tx = BtcTransaction {
                 output: outputs,
@@ -112,31 +94,17 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
                             info!("✔ Signing a `p2sh` UTXO!");
                             get_p2sh_redeem_script_sig(
                                 &btc_private_key.to_public_key_slice(),
-                                &sha256d::Hash::from_slice(
-                                    &hex::decode(
-                                        deposit_info_json
-                                            .address_and_nonce_hash
-                                    )?[..]
-                                )?
+                                &DepositAddressInfo::from_json(&deposit_info_json)?.commitment_hash,
                             )
                         }
                     };
-                    Ok(
-                        tx.signature_hash(
-                            i,
-                            &script,
-                            SIGN_ALL_HASH_TYPE as u32
-                        )
-                    )
+                    Ok(tx.signature_hash(i, &script, SIGN_ALL_HASH_TYPE as u32))
                 })
                 .map(|hash: Result<sha256d::Hash>| Ok(hash?.to_vec()))
                 .map(|tx_hash_to_sign: Result<Bytes>|
                     Ok(
                         btc_private_key
-                            .sign_hash_and_append_btc_hash_type(
-                                tx_hash_to_sign?.to_vec(),
-                                SIGN_ALL_HASH_TYPE as u8,
-                            )?
+                            .sign_hash_and_append_btc_hash_type(tx_hash_to_sign?.to_vec(), SIGN_ALL_HASH_TYPE as u8)?
                     )
                 )
                 .collect::<Result<Vec<Bytes>>>()?;
@@ -161,12 +129,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
                                     &signatures[i],
                                     &get_p2sh_redeem_script_sig(
                                         &btc_private_key.to_public_key_slice(),
-                                        &sha256d::Hash::from_slice(
-                                            &hex::decode(
-                                                deposit_info_json
-                                                    .address_and_nonce_hash
-                                            )?[..]
-                                        )?
+                                        &DepositAddressInfo::from_json(&deposit_info_json)?.commitment_hash,
                                     )
                                 )
                             }

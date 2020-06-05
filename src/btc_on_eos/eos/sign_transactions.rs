@@ -210,6 +210,7 @@ mod tests {
 
     #[test]
     fn should_get_correct_signed_btc_tx_3() {
+        //simple_logger::init().unwrap();
         let db = get_test_database();
         let sats_per_byte = 23;
         let btc_network = BtcNetwork::Testnet;
@@ -246,7 +247,6 @@ mod tests {
             btc_network,
             &redeem_params,
         ).unwrap();
-
         let result_hex = get_hex_tx_from_signed_btc_tx(&result);
         let expected_hex_result = "0100000001f8c70a7ecd6759cae01e96fca12993e5460d80a720d3fcffe2c95816ee29ef40000000008f483045022100a0872343ef2b50d1258443233b8f1e66ba7cfcf79689be7be78da4f8fb217ebc0220626084ef0b7d41f2d06903cd815295a60c225ef8a04ee9a73edced72684af14f0145201729dce0b4e54e39610a95376a8bc96335fd93da68ae6aa27a62d4c282fb1ad3752102babc00d91bacf32c9ed07774e2be9aa3bc63296a858296c2fde390c339551f8dacffffffff0222160000000000001976a9149ae6e42c56f1ea319cfc704ad50db0683015029b88ac2f3a0000000000001976a914b19d7011a6107944209d5ebf9ef31a0fdf3115f188ac00000000";
         assert_eq!(result_hex, expected_hex_result);

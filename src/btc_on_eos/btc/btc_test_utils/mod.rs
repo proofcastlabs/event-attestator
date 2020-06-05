@@ -278,7 +278,7 @@ pub fn get_sample_utxo_and_values() -> Vec<BtcUtxoAndValue> {
 // TODO make fxn for getting these!
 pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
     get_sample_btc_block_n(5)
-        .map(|block_and_id| {
+        .and_then(|block_and_id| {
             let output_index = 0;
             let tx = block_and_id.block.txdata[1].clone();
             let nonce = 1337;
@@ -296,19 +296,19 @@ pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
                 btc_deposit_address,
                 eth_address_and_nonce_hash,
                 version,
-            );
-            BtcUtxoAndValue::new(
+            )?;
+            Ok(BtcUtxoAndValue::new(
                 tx.output[output_index].value,
                 &create_unsigned_utxo_from_tx(&tx, output_index as u32),
                 Some(deposit_info_json),
                 None,
-            )
+            ))
         })
 }
 
 pub fn get_sample_p2sh_utxo_and_value_2() -> Result<BtcUtxoAndValue> {
     get_sample_btc_block_n(10)
-        .map(|block_and_id| {
+        .and_then(|block_and_id| {
             let output_index = 0;
             let tx = block_and_id.block.txdata[50].clone();
             let nonce = 1_584_612_094;
@@ -326,13 +326,13 @@ pub fn get_sample_p2sh_utxo_and_value_2() -> Result<BtcUtxoAndValue> {
                 btc_deposit_address,
                 eth_address_and_nonce_hash,
                 version,
-            );
-            BtcUtxoAndValue::new(
+            )?;
+            Ok(BtcUtxoAndValue::new(
                 tx.output[output_index].value,
                 &create_unsigned_utxo_from_tx(&tx, output_index as u32),
                 Some(deposit_info_json),
                 None,
-            )
+            ))
         })
 }
 
@@ -356,7 +356,7 @@ pub fn get_sample_p2sh_utxo_and_value_3() -> Result<BtcUtxoAndValue> {
                 btc_deposit_address,
                 eth_address_and_nonce_hash,
                 version,
-            );
+            ).unwrap();
             BtcUtxoAndValue::new(
                 tx.output[output_index].value,
                 &create_unsigned_utxo_from_tx(&tx, output_index as u32),
@@ -386,7 +386,7 @@ pub fn get_sample_p2sh_utxo_and_value_4() -> Result<BtcUtxoAndValue> {
                 btc_deposit_address,
                 eth_address_and_nonce_hash,
                 version,
-            );
+            ).unwrap();
             BtcUtxoAndValue::new(
                 tx.output[output_index].value,
                 &create_unsigned_utxo_from_tx(&tx, output_index as u32),

@@ -5,6 +5,7 @@ use bitcoin::{
     network::constants::Network,
 };
 use crate::{
+    utils::strip_hex_prefix,
     types::{
         Bytes,
         Result,
@@ -87,6 +88,10 @@ impl SerializedBlockInDbFormat {
             minting_params: serialized_minting_params,
         }
     }
+}
+
+pub fn convert_hex_to_sha256_hash(hex: &String) -> Result<sha256d::Hash> {
+    Ok(sha256d::Hash::from_slice(&hex::decode(strip_hex_prefix(&hex)?)?)?)
 }
 
 pub fn get_btc_one_key() -> PrivateKey {
