@@ -51,7 +51,7 @@ pub struct DepositAddressInfoJson {
     pub nonce: u64,
     pub address: String,
     pub btc_deposit_address: String,
-    pub maybe_version: Option<String>,
+    pub version: Option<String>,
     pub address_and_nonce_hash: Option<String>,
     pub eth_address_and_nonce_hash: Option<String>, // NOTE: For legacy reasons.
 }
@@ -63,13 +63,13 @@ impl DepositAddressInfoJson {
         address: String,
         btc_deposit_address: String,
         address_and_nonce_hash: String,
-        maybe_version: Option<String>,
+        version: Option<String>,
     ) -> Result<Self> {
-        match DepositAddressListVersion::from_maybe_string(&maybe_version)? {
+        match DepositAddressListVersion::from_maybe_string(&version)? {
             DepositAddressListVersion::V0 => Ok(DepositAddressInfoJson {
                 nonce,
                 address,
-                maybe_version,
+                version,
                 btc_deposit_address,
                 address_and_nonce_hash: None,
                 eth_address_and_nonce_hash: Some(address_and_nonce_hash)
@@ -77,7 +77,7 @@ impl DepositAddressInfoJson {
             DepositAddressListVersion::V1 => Ok(DepositAddressInfoJson {
                 nonce,
                 address,
-                maybe_version,
+                version,
                 btc_deposit_address,
                 eth_address_and_nonce_hash: None,
                 address_and_nonce_hash: Some(address_and_nonce_hash),
@@ -99,16 +99,17 @@ impl DepositAddressInfo {
     fn extract_address_and_nonce_hash_string_from_json(
         deposit_address_info_json: &DepositAddressInfoJson
     ) -> Result<String> {
-        match &deposit_address_info_json.address_and_nonce_hash {
-            Some(hash_string) => Ok(hash_string.clone()),
-            None => match &deposit_address_info_json.eth_address_and_nonce_hash {
+        let get_err_msg = |field_name: &str| -> String {
+            format!("✘ No '{}' field in deposit address info json!", field_name)
+        };
+        match DepositAddressListVersion::from_maybe_string(&deposit_address_info_json.version)? {
+            DepositAddressListVersion::V0 => match &deposit_address_info_json.eth_address_and_nonce_hash {
                 Some(hash_string) => Ok(hash_string.clone()),
-                None => Err(AppError::Custom(
-                    format!(
-                        "✘ No address and nonce hash string found in json: {}",
-                        serde_json::to_string(deposit_address_info_json)?,
-                    )
-                )),
+                None => Err(AppError::Custom(get_err_msg("eth_address_and_nonce_hash"))),
+            },
+            DepositAddressListVersion::V1 => match &deposit_address_info_json.address_and_nonce_hash {
+                Some(hash_string) => Ok(hash_string.clone()),
+                None => Err(AppError::Custom(get_err_msg("address_and_nonce_hash"))),
             }
         }
     }
@@ -126,7 +127,7 @@ impl DepositAddressInfo {
             address: deposit_address_info_json.address.clone(),
             btc_deposit_address: BtcAddress::from_str(&deposit_address_info_json.btc_deposit_address)?,
             commitment_hash: Self::extract_address_and_nonce_hash_from_json(deposit_address_info_json)?,
-            version: DepositAddressListVersion::from_maybe_string(&deposit_address_info_json.maybe_version)?,
+            version: DepositAddressListVersion::from_maybe_string(&deposit_address_info_json.version)?,
         })
     }
 
@@ -135,7 +136,7 @@ impl DepositAddressInfo {
         DepositAddressInfoJson {
             nonce: self.nonce,
             address: self.address.clone(),
-            maybe_version: Some(self.version.to_string()),
+            version: Some(self.version.to_string()),
             btc_deposit_address: self.btc_deposit_address.to_string(),
             eth_address_and_nonce_hash: match self.version {
                 DepositAddressListVersion::V0 => Some(hash_string.clone()),
@@ -163,11 +164,12 @@ mod tests {
             "348c7ab8078c400c5b07d1c3dda4fff8218bb6f2dc40f72662edc13ed867fcae".to_string()
         );
         let eth_address_and_nonce_hash = None;
+        let version = Some("1.0.0".to_string());
         let deposit_json = DepositAddressInfoJson  {
             nonce,
             address,
             btc_deposit_address,
-            maybe_version: None,
+            version,
             address_and_nonce_hash,
             eth_address_and_nonce_hash,
         };
