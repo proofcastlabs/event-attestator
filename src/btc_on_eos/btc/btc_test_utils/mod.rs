@@ -275,21 +275,17 @@ pub fn get_sample_utxo_and_values() -> Vec<BtcUtxoAndValue> {
     ]
 }
 
-// TODO make fxn for getting these!
 pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
     get_sample_btc_block_n(5)
         .and_then(|block_and_id| {
             let output_index = 0;
             let tx = block_and_id.block.txdata[1].clone();
             let nonce = 1337;
-            let btc_deposit_address = "2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2"
+            let btc_deposit_address = "2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2".to_string();
+            let eth_address = "0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC".to_string();
+            let eth_address_and_nonce_hash = "98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e"
                 .to_string();
-            let eth_address = "0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC"
-                .to_string();
-            let eth_address_and_nonce_hash =
-            "98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e"
-                    .to_string();
-            let version = Some("1".to_string());
+            let version = Some("0".to_string());
             let deposit_info_json = DepositAddressInfoJson::new(
                 nonce,
                 eth_address,

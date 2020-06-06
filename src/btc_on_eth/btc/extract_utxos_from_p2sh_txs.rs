@@ -126,75 +126,33 @@ mod tests {
 
     #[test]
     fn should_maybe_extract_p2sh_utxo() {
+        //simple_logger::init().unwrap();
         let pub_key = get_sample_btc_pub_key_bytes();
         let output_index: u32 = 0;
-        let expected_result = get_sample_p2sh_utxo_and_value()
-            .unwrap();
+        let expected_result = get_sample_p2sh_utxo_and_value().unwrap();
         let btc_network = BtcNetwork::Testnet;
-        let block_and_id = get_sample_btc_block_n(5)
-            .unwrap();
-        let deposit_address_list = block_and_id
-            .deposit_address_list
-            .clone();
-        let txs = block_and_id
-            .block
-            .txdata
-            .clone();
-        let hash_map = create_hash_map_from_deposit_info_list(
-            &deposit_address_list
-        ).unwrap();
-        let tx = filter_p2sh_deposit_txs(
-            &hash_map,
-            &pub_key[..],
-            &txs,
-            btc_network,
-        )
-            .unwrap()
-            [0]
-            .clone();
-        let output = tx
-            .output[output_index as usize]
-            .clone();
-        let result = maybe_extract_p2sh_utxo(
-            output_index,
-            &output,
-            &tx,
-            btc_network,
-            &hash_map,
-        ).unwrap();
+        let block_and_id = get_sample_btc_block_n(5).unwrap();
+        let deposit_address_list = block_and_id.deposit_address_list.clone();
+        let txs = block_and_id.block.txdata.clone();
+        let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
+        let tx = filter_p2sh_deposit_txs(&hash_map, &pub_key[..], &txs, btc_network).unwrap()[0].clone();
+        let output = tx.output[output_index as usize].clone();
+        let result = maybe_extract_p2sh_utxo(output_index, &output, &tx, btc_network, &hash_map).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_extract_p2sh_utxos_from_txs() {
         let pub_key = get_sample_btc_pub_key_bytes();
-        let expected_result = get_sample_p2sh_utxo_and_value()
-            .unwrap();
+        let expected_result = get_sample_p2sh_utxo_and_value().unwrap();
         let expected_num_utxos = 1;
         let btc_network = BtcNetwork::Testnet;
-        let block_and_id = get_sample_btc_block_n(5)
-            .unwrap();
-        let deposit_address_list = block_and_id
-            .deposit_address_list
-            .clone();
-        let txs = block_and_id
-            .block
-            .txdata
-            .clone();
-        let hash_map = create_hash_map_from_deposit_info_list(
-            &deposit_address_list
-        ).unwrap();
-        let filtered_txs = filter_p2sh_deposit_txs(
-            &hash_map,
-            &pub_key[..],
-            &txs,
-            btc_network,
-        ).unwrap();
-        let result = extract_p2sh_utxos_from_txs(
-            &filtered_txs,
-            &hash_map,
-            btc_network,
-        ).unwrap();
+        let block_and_id = get_sample_btc_block_n(5).unwrap();
+        let deposit_address_list = block_and_id.deposit_address_list.clone();
+        let txs = block_and_id.block.txdata.clone();
+        let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
+        let filtered_txs = filter_p2sh_deposit_txs(&hash_map, &pub_key[..], &txs, btc_network).unwrap();
+        let result = extract_p2sh_utxos_from_txs(&filtered_txs, &hash_map, btc_network).unwrap();
         assert_eq!(result.len(), expected_num_utxos);
         assert_eq!(result[0], expected_result);
     }
@@ -204,41 +162,18 @@ mod tests {
         let expected_num_results = 2;
         let expected_value_1 = 314159;
         let expected_value_2 = 1000000;
-        let expected_btc_address_1 = BtcAddress::from_str(
-            "2NCfNHvNAecRyXPBDaAkfgMLL7NjvPrC6GU"
-        ).unwrap();
-        let expected_btc_address_2 = BtcAddress::from_str(
-            "2N6DgNSaX3D5rUYXuMM3b5Ujgw4sPrddSHp"
-        ).unwrap();
-        let pub_key_bytes = hex::decode(
-            "03a3bea6d8d15a38d9c96074d994c788bc1286d557ef5bdbb548741ddf265637ce"
-        ).unwrap();
+        let expected_btc_address_1 = BtcAddress::from_str("2NCfNHvNAecRyXPBDaAkfgMLL7NjvPrC6GU").unwrap();
+        let expected_btc_address_2 = BtcAddress::from_str("2N6DgNSaX3D5rUYXuMM3b5Ujgw4sPrddSHp").unwrap();
+        let pub_key_bytes = hex::decode("03a3bea6d8d15a38d9c96074d994c788bc1286d557ef5bdbb548741ddf265637ce").unwrap();
         let btc_network = BtcNetwork::Testnet;
-        let block_and_id = get_sample_btc_block_n(6)
-            .unwrap();
-        let deposit_address_list = block_and_id
-            .deposit_address_list
-            .clone();
-        let txs = block_and_id
-            .block
-            .txdata
-            .clone();
-        let hash_map = create_hash_map_from_deposit_info_list(
-            &deposit_address_list
-        ).unwrap();
+        let block_and_id = get_sample_btc_block_n(6).unwrap();
+        let deposit_address_list = block_and_id.deposit_address_list.clone();
+        let txs = block_and_id.block.txdata.clone();
+        let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
         let expected_deposit_info_1 = Some(hash_map.get(&expected_btc_address_1).unwrap().to_json());
         let expected_deposit_info_2 = Some(hash_map.get(&expected_btc_address_2).unwrap().to_json());
-        let filtered_txs = filter_p2sh_deposit_txs(
-            &hash_map,
-            &pub_key_bytes[..],
-            &txs,
-            btc_network,
-        ).unwrap();
-        let result = extract_p2sh_utxos_from_txs(
-            &filtered_txs,
-            &hash_map,
-            btc_network,
-        ).unwrap();
+        let filtered_txs = filter_p2sh_deposit_txs(&hash_map, &pub_key_bytes[..], &txs, btc_network).unwrap();
+        let result = extract_p2sh_utxos_from_txs(&filtered_txs, &hash_map, btc_network).unwrap();
         let result_1 = result[0].clone();
         let result_2 = result[1].clone();
         assert_eq!(result.len(), expected_num_results);
