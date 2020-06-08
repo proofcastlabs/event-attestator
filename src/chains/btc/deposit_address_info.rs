@@ -11,6 +11,7 @@ use std::{
 };
 use crate::{
     errors::AppError,
+    utils::strip_hex_prefix,
     chains::btc::btc_utils::convert_hex_to_sha256_hash,
     types::{
         Bytes,
@@ -32,12 +33,12 @@ impl DepositAddressInfoVersion {
     pub fn from_maybe_string(maybe_string: &Option<String>) -> Result<Self> {
         match maybe_string {
             None => Ok(DepositAddressInfoVersion::V0),
-            Some(version_string) => DepositAddressInfoVersion::from_string(version_string.clone()),
+            Some(version_string) => DepositAddressInfoVersion::from_string(&version_string),
         }
     }
 
-    pub fn from_string(version_string: String) -> Result<Self> {
-        match version_string.chars().next() {
+    pub fn from_string(version_string: &str) -> Result<Self> {
+        match version_string.chars().nth(0) {
             Some('0') => Ok(DepositAddressInfoVersion::V0),
             Some('1') => Ok(DepositAddressInfoVersion::V1),
             _ => Err(AppError::Custom(format!("✘ Deposit address list version unrecognized: {}", version_string)))
@@ -63,8 +64,8 @@ pub struct DepositAddressInfoJson {
     pub eth_address_and_nonce_hash: Option<String>, // NOTE: Ibid.
 }
 
+#[cfg(test)]
 impl DepositAddressInfoJson {
-    #[cfg(test)]
     pub fn new(
         nonce: u64,
         address: String,
@@ -158,7 +159,7 @@ impl DepositAddressInfo {
 
     fn get_address_as_bytes(&self) -> Result<Bytes> {
         match self.version {
-            DepositAddressInfoVersion::V0 => Ok(hex::decode(&self.address[..].replace("0x", ""))?),
+            DepositAddressInfoVersion::V0 => Ok(hex::decode(strip_hex_prefix(&self.address)?)?),
             DepositAddressInfoVersion::V1 => Ok(self.address.as_bytes().to_vec()),
         }
     }
