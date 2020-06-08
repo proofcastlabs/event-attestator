@@ -360,7 +360,7 @@ mod tests {
     }
 
     #[test]
-    fn should_convert_deposit_info_json_to_deposit_info() {
+    fn should_convert_valid_deposit_info_json_to_deposit_info() {
         let nonce = 1578079722;
         let address = Some("0xedb86cd455ef3ca43f0e227e00469c3bdfa40628".to_string());
         let btc_deposit_address = "2NCbnp5Lp1eNeT9iBz9UrjwKCTUeQtjEcyy".to_string();
@@ -381,6 +381,34 @@ mod tests {
         };
         if let Err(e) = DepositAddressInfo::from_json(&deposit_json) {
             panic!("Error parsing deposit info json: {}", e);
+        }
+    }
+
+    #[test]
+    fn should_fail_to_convert_invalid_deposit_info_json_to_deposit_info() {
+        let expected_err = "✘ Deposit info error - commitment hash is not valid!";
+        let nonce = 1578079722;
+        let address = Some("0xedb86cd455ef3ca43f0e227e00469c3bdfa40628".to_string());
+        let btc_deposit_address = "2NCbnp5Lp1eNeT9iBz9UrjwKCTUeQtjEcyy".to_string();
+        let invalid_address_and_nonce_hash = Some(
+            "0x8d1fc5859f7c21ef5253e576185e744078a269919c9b43ddeee524889d6dd12c".to_string()
+        );
+        let eth_address = None;
+        let eth_address_and_nonce_hash = None;
+        let version = Some("1.0.0".to_string());
+        let deposit_json = DepositAddressInfoJson  {
+            nonce,
+            address,
+            version,
+            eth_address,
+            btc_deposit_address,
+            eth_address_and_nonce_hash,
+            address_and_nonce_hash: invalid_address_and_nonce_hash,
+        };
+        match DepositAddressInfo::from_json(&deposit_json) {
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(_) => panic!("Should not have succeeded!"),
+            Ok(_) => panic!("Should not have succeeded!"),
         }
     }
 }
