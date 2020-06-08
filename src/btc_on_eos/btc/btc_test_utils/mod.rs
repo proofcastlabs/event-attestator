@@ -362,36 +362,6 @@ pub fn get_sample_p2sh_utxo_and_value_3() -> Result<BtcUtxoAndValue> {
         })
 }
 
-pub fn get_sample_p2sh_utxo_and_value_4() -> Result<BtcUtxoAndValue> {
-    get_sample_btc_block_n(12)
-        .map(|block_and_id| {
-            let output_index = 0;
-            let tx = block_and_id.block.txdata[135].clone();
-            let nonce = 1_584_696_514;
-            let btc_deposit_address = "2Mz5K485NS6V1yGKpUnjTrB8HJv7DKSpUgj"
-                .to_string();
-            let eth_address = "provabletest"
-                .to_string();
-            let eth_address_and_nonce_hash =
-            "bf2221253331b654b56bceed49fbc9dd794dbefd1c9785c018143341ab13b312"
-                .to_string();
-            let version = Some("1".to_string());
-            let deposit_info_json = DepositAddressInfoJson::new(
-                nonce,
-                eth_address,
-                btc_deposit_address,
-                eth_address_and_nonce_hash,
-                version,
-            ).unwrap();
-            BtcUtxoAndValue::new(
-                tx.output[output_index].value,
-                &create_unsigned_utxo_from_tx(&tx, output_index as u32),
-                Some(deposit_info_json),
-                None,
-            )
-        })
-}
-
 pub fn get_sample_btc_block_n(n: usize) -> Result<BtcBlockAndId> {
     let block_path = match n {
         2 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_2),

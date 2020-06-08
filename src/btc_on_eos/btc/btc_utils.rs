@@ -87,14 +87,8 @@ pub fn get_p2sh_redeem_script_sig(
     address_and_nonce_hash: &sha256d::Hash,
 ) -> BtcScript {
     info!("✔ Generating `p2sh`'s redeem `script_sig`");
-    debug!(
-        "✔ Using `address_and_nonce_hash`: {}",
-        hex::encode(address_and_nonce_hash)
-    );
-    debug!(
-        "✔ Using `pub key slice`: {}",
-        hex::encode(utxo_spender_pub_key_slice)
-    );
+    debug!("✔ Using `address_and_nonce_hash`: {}", hex::encode(address_and_nonce_hash));
+    debug!("✔ Using `pub key slice`: {}", hex::encode(utxo_spender_pub_key_slice));
     BtcScriptBuilder::new()
         .push_slice(&address_and_nonce_hash[..])
         .push_opcode(opcodes::all::OP_DROP)
