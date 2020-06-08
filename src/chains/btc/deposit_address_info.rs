@@ -17,31 +17,31 @@ pub type DepositAddressJsonList = Vec<DepositAddressInfoJson>;
 pub type DepositInfoHashMap =  HashMap<BtcAddress, DepositAddressInfo>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum DepositAddressListVersion {
+pub enum DepositAddressInfoVersion {
     V0,
     V1,
 }
 
-impl DepositAddressListVersion {
+impl DepositAddressInfoVersion {
     pub fn from_maybe_string(maybe_string: &Option<String>) -> Result<Self> {
         match maybe_string {
-            None => Ok(DepositAddressListVersion::V0),
-            Some(version_string) => DepositAddressListVersion::from_string(version_string.clone()),
+            None => Ok(DepositAddressInfoVersion::V0),
+            Some(version_string) => DepositAddressInfoVersion::from_string(version_string.clone()),
         }
     }
 
     pub fn from_string(version_string: String) -> Result<Self> {
         match version_string.chars().next() {
-            Some('0') => Ok(DepositAddressListVersion::V0),
-            Some('1') => Ok(DepositAddressListVersion::V1),
+            Some('0') => Ok(DepositAddressInfoVersion::V0),
+            Some('1') => Ok(DepositAddressInfoVersion::V1),
             _ => Err(AppError::Custom(format!("✘ Deposit address list version unrecognized: {}", version_string)))
         }
     }
 
     pub fn to_string(&self) -> String {
         match self {
-            DepositAddressListVersion::V0 => "0".to_string(),
-            DepositAddressListVersion::V1 => "1".to_string(),
+            DepositAddressInfoVersion::V0 => "0".to_string(),
+            DepositAddressInfoVersion::V1 => "1".to_string(),
         }
     }
 }
@@ -66,8 +66,8 @@ impl DepositAddressInfoJson {
         address_and_nonce_hash: String,
         version: Option<String>,
     ) -> Result<Self> {
-        match DepositAddressListVersion::from_maybe_string(&version)? {
-            DepositAddressListVersion::V0 => Ok(DepositAddressInfoJson {
+        match DepositAddressInfoVersion::from_maybe_string(&version)? {
+            DepositAddressInfoVersion::V0 => Ok(DepositAddressInfoJson {
                 nonce,
                 version,
                 address: None,
@@ -76,7 +76,7 @@ impl DepositAddressInfoJson {
                 address_and_nonce_hash: None,
                 eth_address_and_nonce_hash: Some(address_and_nonce_hash)
             }),
-            DepositAddressListVersion::V1 => Ok(DepositAddressInfoJson {
+            DepositAddressInfoVersion::V1 => Ok(DepositAddressInfoJson {
                 nonce,
                 version,
                 eth_address: None,
@@ -95,7 +95,7 @@ pub struct DepositAddressInfo {
     pub address: String,
     pub commitment_hash: sha256d::Hash,
     pub btc_deposit_address: BtcAddress,
-    pub version: DepositAddressListVersion,
+    pub version: DepositAddressInfoVersion,
 }
 
 impl DepositAddressInfo {
@@ -106,12 +106,12 @@ impl DepositAddressInfo {
     fn extract_address_and_nonce_hash_string_from_json(
         deposit_address_info_json: &DepositAddressInfoJson
     ) -> Result<String> {
-        match DepositAddressListVersion::from_maybe_string(&deposit_address_info_json.version)? {
-            DepositAddressListVersion::V0 => match &deposit_address_info_json.eth_address_and_nonce_hash {
+        match DepositAddressInfoVersion::from_maybe_string(&deposit_address_info_json.version)? {
+            DepositAddressInfoVersion::V0 => match &deposit_address_info_json.eth_address_and_nonce_hash {
                 Some(hash_string) => Ok(hash_string.clone()),
                 None => Err(AppError::Custom(Self::get_missing_field_err_msg("eth_address_and_nonce_hash"))),
             },
-            DepositAddressListVersion::V1 => match &deposit_address_info_json.address_and_nonce_hash {
+            DepositAddressInfoVersion::V1 => match &deposit_address_info_json.address_and_nonce_hash {
                 Some(hash_string) => Ok(hash_string.clone()),
                 None => Err(AppError::Custom(Self::get_missing_field_err_msg("address_and_nonce_hash"))),
             },
@@ -126,12 +126,12 @@ impl DepositAddressInfo {
     }
 
     fn extract_address_string_from_json(deposit_address_info_json: &DepositAddressInfoJson) -> Result<String> {
-        match DepositAddressListVersion::from_maybe_string(&deposit_address_info_json.version)? {
-            DepositAddressListVersion::V0 => match &deposit_address_info_json.eth_address {
+        match DepositAddressInfoVersion::from_maybe_string(&deposit_address_info_json.version)? {
+            DepositAddressInfoVersion::V0 => match &deposit_address_info_json.eth_address {
                 Some(hash_string) => Ok(hash_string.clone()),
                 None => Err(AppError::Custom(Self::get_missing_field_err_msg("eth_address"))),
             },
-            DepositAddressListVersion::V1 => match &deposit_address_info_json.address {
+            DepositAddressInfoVersion::V1 => match &deposit_address_info_json.address {
                 Some(hash_string) => Ok(hash_string.clone()),
                 None => Err(AppError::Custom(Self::get_missing_field_err_msg("address"))),
             }
@@ -144,7 +144,7 @@ impl DepositAddressInfo {
             address: Self::extract_address_string_from_json(deposit_address_info_json)?,
             btc_deposit_address: BtcAddress::from_str(&deposit_address_info_json.btc_deposit_address)?,
             commitment_hash: Self::extract_address_and_nonce_hash_from_json(deposit_address_info_json)?,
-            version: DepositAddressListVersion::from_maybe_string(&deposit_address_info_json.version)?,
+            version: DepositAddressInfoVersion::from_maybe_string(&deposit_address_info_json.version)?,
         })
     }
 
@@ -155,20 +155,20 @@ impl DepositAddressInfo {
             version: Some(self.version.to_string()),
             btc_deposit_address: self.btc_deposit_address.to_string(),
             address: match self.version {
-                DepositAddressListVersion::V0 => None,
-                DepositAddressListVersion::V1 => Some(self.address.clone()),
+                DepositAddressInfoVersion::V0 => None,
+                DepositAddressInfoVersion::V1 => Some(self.address.clone()),
             },
             eth_address: match self.version {
-                DepositAddressListVersion::V0 => Some(self.address.clone()),
-                DepositAddressListVersion::V1 => None,
+                DepositAddressInfoVersion::V0 => Some(self.address.clone()),
+                DepositAddressInfoVersion::V1 => None,
             },
             eth_address_and_nonce_hash: match self.version {
-                DepositAddressListVersion::V0 => Some(hash_string.clone()),
-                DepositAddressListVersion::V1 => None,
+                DepositAddressInfoVersion::V0 => Some(hash_string.clone()),
+                DepositAddressInfoVersion::V1 => None,
             },
             address_and_nonce_hash: match self.version {
-                DepositAddressListVersion::V0 => None,
-                DepositAddressListVersion::V1 => Some(hash_string),
+                DepositAddressInfoVersion::V0 => None,
+                DepositAddressInfoVersion::V1 => Some(hash_string),
             },
         }
     }
@@ -312,7 +312,7 @@ mod tests {
             eth_address_and_nonce_hash,
         };
         let result = DepositAddressInfo::from_json(&deposit_json).unwrap();
-        assert_eq!(result.version, DepositAddressListVersion::V0);
+        assert_eq!(result.version, DepositAddressInfoVersion::V0);
     }
 
     #[test]
