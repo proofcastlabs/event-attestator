@@ -56,6 +56,12 @@ mod tests {
     use super::*;
 
     #[test]
+    fn should_maybe_initialize_simple_logger() {
+        if let Some(_) = option_env!("ENABLE_LOGGING") { simple_logger::init().unwrap() };
+        debug!("Test logging enabled!");
+    }
+
+    #[test]
     fn should_convert_u64_to_bytes() {
         let u_64 = u64::max_value();
         let expected_result = [255,255,255,255,255,255,255,255];
