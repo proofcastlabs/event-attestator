@@ -3,7 +3,7 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     chains::btc::{
-        btc_types::DepositInfoHashMap,
+        deposit_address_info::DepositInfoHashMap,
         utxo_manager::utxo_types::BtcUtxosAndValues,
     },
     btc_on_eos::{

@@ -11,11 +11,9 @@ use crate::{
         Bytes,
         Result,
     },
-    chains::btc::{
-        btc_types::{
-            DepositAddressInfo,
-            DepositAddressInfoJson,
-        },
+    chains::btc::deposit_address_info::{
+        DepositAddressInfo,
+        DepositAddressInfoJson,
     },
     btc_on_eth::{
         constants::SAFE_BTC_ADDRESS,

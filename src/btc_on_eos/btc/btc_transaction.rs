@@ -1,8 +1,5 @@
 use bitcoin::{
-    hashes::{
-        Hash,
-        sha256d,
-    },
+    hashes::sha256d,
     blockdata::{
         transaction::{
             TxIn as BtcUtxo,
@@ -17,7 +14,10 @@ use crate::{
         Bytes,
         Result,
     },
-    chains::btc::utxo_manager::utxo_types::BtcUtxoAndValue,
+    chains::btc::{
+        deposit_address_info::DepositAddressInfo,
+        utxo_manager::utxo_types::BtcUtxoAndValue,
+    },
     btc_on_eos::btc::{
         btc_crypto::btc_private_key::BtcPrivateKey,
         btc_types::{
@@ -40,7 +40,6 @@ pub const VERSION: u32 = 1;
 pub const LOCK_TIME: u32 = 0;
 pub const SIGN_ALL_HASH_TYPE: u8 = 1;
 
-
 pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
     sats_per_byte: u64,
     recipient_addresses_and_amounts: BtcRecipientsAndAmounts,
@@ -52,145 +51,101 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
         .iter()
         .map(|recipient_and_amount| recipient_and_amount.amount)
         .sum();
-    let fee = calculate_btc_tx_fee(
-        utxos_and_values.len(),
-        recipient_addresses_and_amounts.len(),
-        sats_per_byte
-    );
+    let fee = calculate_btc_tx_fee(utxos_and_values.len(), recipient_addresses_and_amounts.len(), sats_per_byte);
     let utxo_total = get_total_value_of_utxos_and_values(&utxos_and_values);
     info!("✔ UTXO(s) total:  {}", utxo_total);
     info!("✔ Outgoing total: {}", total_to_spend);
     info!("✔ Change amount:  {}", utxo_total - (total_to_spend + fee));
     info!("✔ Tx fee:         {}", fee);
-    match total_to_spend + fee > utxo_total {
-        true => Err(
-            AppError::Custom(
-                "✘ Not enough UTXO value to make transaction!".to_string()
-            )
-        ),
-        _ => {
-            let mut outputs = recipient_addresses_and_amounts
-                .iter()
-                .map(|recipient_and_amount|
-                    create_new_tx_output(
-                        recipient_and_amount.amount,
-                        recipient_and_amount.recipient.script_pubkey(),
+    if total_to_spend + fee > utxo_total {
+        return Err(AppError::Custom("✘ Not enough UTXO value to make transaction!".to_string()));
+    };
+    let mut outputs = recipient_addresses_and_amounts
+        .iter()
+        .map(|recipient_and_amount|
+            create_new_tx_output(recipient_and_amount.amount, recipient_and_amount.recipient.script_pubkey())
+         )
+        .flatten()
+        .collect::<Vec<BtcTxOut>>();
+    let change = utxo_total - total_to_spend - fee;
+    if change > 0 {
+        outputs.push(create_new_pay_to_pub_key_hash_output(change, remainder_btc_address)?)
+    };
+    let tx = BtcTransaction {
+        output: outputs,
+        version: VERSION,
+        lock_time: LOCK_TIME,
+        input: utxos_and_values
+            .iter()
+            .map(|utxo_and_value| utxo_and_value.get_utxo())
+            .collect::<Result<Vec<BtcUtxo>>>()?,
+    };
+    let signatures = utxos_and_values
+        .iter()
+        .map(|utxo_and_value| utxo_and_value.get_utxo())
+        .enumerate()
+        .map(|(i, utxo)| {
+            let script = match utxos_and_values[i].clone().maybe_deposit_info_json {
+                None => {
+                    info!("✔ Signing a `p2pkh` UTXO!");
+                    utxo?.script_sig
+                }
+                Some(deposit_info_json) => {
+                    info!("✔ Signing a `p2sh` UTXO!");
+                    get_p2sh_redeem_script_sig(
+                        &btc_private_key.to_public_key_slice(),
+                        &DepositAddressInfo::from_json(&deposit_info_json)?.commitment_hash,
                     )
-                 )
-                .flatten()
-                .collect::<Vec<BtcTxOut>>();
-            let change = utxo_total - total_to_spend - fee;
-            if change > 0 {
-                outputs.push(
-                    create_new_pay_to_pub_key_hash_output(
-                        change,
-                        remainder_btc_address
-                    )?
-                )
+                }
             };
-            let tx = BtcTransaction {
-                output: outputs,
-                version: VERSION,
-                lock_time: LOCK_TIME,
-                input: utxos_and_values
-                    .iter()
-                    .map(|utxo_and_value| utxo_and_value.get_utxo())
-                    .collect::<Result<Vec<BtcUtxo>>>()?,
-            };
-            let signatures = utxos_and_values
-                .iter()
-                .map(|utxo_and_value| utxo_and_value.get_utxo())
-                .enumerate()
-                .map(|(i, utxo)| {
-                    let script = match utxos_and_values[i].clone()
-                        .maybe_deposit_info_json {
-                        None => {
-                            info!("✔ Signing a `p2pkh` UTXO!");
-                            utxo?.script_sig
-                        }
-                        Some(deposit_info_json) => {
-                            info!("✔ Signing a `p2sh` UTXO!");
-                            get_p2sh_redeem_script_sig(
+            Ok(tx.signature_hash(i, &script, SIGN_ALL_HASH_TYPE as u32))
+        })
+        .map(|hash: Result<sha256d::Hash>| Ok(hash?.to_vec()))
+        .map(|tx_hash_to_sign: Result<Bytes>|
+            Ok(btc_private_key.sign_hash_and_append_btc_hash_type(tx_hash_to_sign?.to_vec(), SIGN_ALL_HASH_TYPE as u8)?)
+        )
+        .collect::<Result<Vec<Bytes>>>()?;
+    let utxos_with_signatures = utxos_and_values
+        .iter()
+        .map(|utxo_and_value| utxo_and_value.get_utxo())
+        .enumerate()
+        .map(|(i, maybe_utxo)| {
+            let utxo = maybe_utxo?;
+            let script_sig = match utxos_and_values[i].clone()
+                .maybe_deposit_info_json {
+                    None => {
+                        info!("✔ Spending a `p2pkh` UTXO!");
+                        get_script_sig(&signatures[i], &btc_private_key.to_public_key_slice())
+                    }
+                    Some(deposit_info_json) => {
+                        info!("✔ Spending a `p2sh` UTXO!");
+                        get_p2sh_script_sig_from_redeem_script(
+                            &signatures[i],
+                            &get_p2sh_redeem_script_sig(
                                 &btc_private_key.to_public_key_slice(),
-                                &sha256d::Hash::from_slice(
-                                    &hex::decode(
-                                        deposit_info_json
-                                            .address_and_nonce_hash
-                                    )?[..]
-                                )?
+                                &DepositAddressInfo::from_json(&deposit_info_json)?.commitment_hash,
                             )
-                        }
-                    };
-                    Ok(
-                        tx.signature_hash(
-                            i,
-                            &script,
-                            SIGN_ALL_HASH_TYPE as u32
                         )
-                    )
-                })
-                .map(|hash: Result<sha256d::Hash>| Ok(hash?.to_vec()))
-                .map(|tx_hash_to_sign: Result<Bytes>|
-                    Ok(
-                        btc_private_key
-                            .sign_hash_and_append_btc_hash_type(
-                                tx_hash_to_sign?.to_vec(),
-                                SIGN_ALL_HASH_TYPE as u8,
-                            )?
-                    )
-                )
-                .collect::<Result<Vec<Bytes>>>()?;
-            let utxos_with_signatures = utxos_and_values
-                .iter()
-                .map(|utxo_and_value| utxo_and_value.get_utxo())
-                .enumerate()
-                .map(|(i, maybe_utxo)| {
-                    let utxo = maybe_utxo?;
-                    let script_sig = match utxos_and_values[i].clone()
-                        .maybe_deposit_info_json {
-                            None => {
-                                info!("✔ Spending a `p2pkh` UTXO!");
-                                get_script_sig(
-                                    &signatures[i],
-                                    &btc_private_key.to_public_key_slice(),
-                                )
-                            }
-                            Some(deposit_info_json) => {
-                                info!("✔ Spending a `p2sh` UTXO!");
-                                get_p2sh_script_sig_from_redeem_script(
-                                    &signatures[i],
-                                    &get_p2sh_redeem_script_sig(
-                                        &btc_private_key.to_public_key_slice(),
-                                        &sha256d::Hash::from_slice(
-                                            &hex::decode(
-                                                deposit_info_json
-                                                    .address_and_nonce_hash
-                                            )?[..]
-                                        )?
-                                    )
-                                )
-                            }
-                    };
-                    Ok(
-                        BtcUtxo {
-                            script_sig,
-                            sequence: utxo.sequence,
-                            witness: utxo.witness.clone(),
-                            previous_output: utxo.previous_output,
-                        }
-                    )
-                })
-                .collect::<Result<Vec<BtcUtxo>>>()?;
+                    }
+            };
             Ok(
-                BtcTransaction {
-                    output: tx.output,
-                    version: tx.version,
-                    lock_time: tx.lock_time,
-                    input: utxos_with_signatures,
+                BtcUtxo {
+                    script_sig,
+                    sequence: utxo.sequence,
+                    witness: utxo.witness.clone(),
+                    previous_output: utxo.previous_output,
                 }
             )
+        })
+        .collect::<Result<Vec<BtcUtxo>>>()?;
+    Ok(
+        BtcTransaction {
+            output: tx.output,
+            version: tx.version,
+            lock_time: tx.lock_time,
+            input: utxos_with_signatures,
         }
-    }
+    )
 }
 
 #[cfg(test)]

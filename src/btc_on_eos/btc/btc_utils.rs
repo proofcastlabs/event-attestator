@@ -13,10 +13,6 @@ use crate::{
     },
     chains::btc::{
         utxo_manager::utxo_types::BtcUtxosAndValues,
-        btc_types::{
-            DepositAddressInfo,
-            DepositAddressInfoJson,
-        },
         btc_constants::{
             DEFAULT_BTC_SEQUENCE,
             PTOKEN_P2SH_SCRIPT_BYTES,
@@ -91,14 +87,8 @@ pub fn get_p2sh_redeem_script_sig(
     address_and_nonce_hash: &sha256d::Hash,
 ) -> BtcScript {
     info!("✔ Generating `p2sh`'s redeem `script_sig`");
-    debug!(
-        "✔ Using `address_and_nonce_hash`: {}",
-        hex::encode(address_and_nonce_hash)
-    );
-    debug!(
-        "✔ Using `pub key slice`: {}",
-        hex::encode(utxo_spender_pub_key_slice)
-    );
+    debug!("✔ Using `address_and_nonce_hash`: {}", hex::encode(address_and_nonce_hash));
+    debug!("✔ Using `pub key slice`: {}", hex::encode(utxo_spender_pub_key_slice));
     BtcScriptBuilder::new()
         .push_slice(&address_and_nonce_hash[..])
         .push_opcode(opcodes::all::OP_DROP)
@@ -145,21 +135,6 @@ pub fn create_unsigned_utxo_from_tx(
             .output[output_index as usize]
             .script_pubkey
             .clone(),
-    }
-}
-
-pub fn convert_deposit_info_to_json(
-    deposit_info_struct: &DepositAddressInfo
-) -> DepositAddressInfoJson {
-    DepositAddressInfoJson {
-        nonce:
-            deposit_info_struct.nonce,
-        btc_deposit_address:
-            deposit_info_struct.btc_deposit_address.to_string(),
-        address:
-            deposit_info_struct.address.to_string(),
-        address_and_nonce_hash:
-            hex::encode(deposit_info_struct.commitment_hash),
     }
 }
 

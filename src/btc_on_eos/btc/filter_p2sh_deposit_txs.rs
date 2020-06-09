@@ -6,7 +6,7 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::btc_types::DepositInfoHashMap,
+    chains::btc::deposit_address_info::DepositInfoHashMap,
     btc_on_eos::btc::{
         btc_state::BtcState,
         btc_types::BtcTransactions,

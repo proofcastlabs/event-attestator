@@ -5,6 +5,7 @@ use bitcoin::{
     network::constants::Network,
 };
 use crate::{
+    utils::strip_hex_prefix,
     types::{
         Bytes,
         Result,
@@ -15,10 +16,6 @@ use crate::{
     },
     chains::btc::{
         utxo_manager::utxo_types::BtcUtxosAndValues,
-        btc_types::{
-            DepositAddressInfo,
-            DepositAddressInfoJson,
-        },
         btc_constants::{
             DEFAULT_BTC_SEQUENCE,
             PTOKEN_P2SH_SCRIPT_BYTES,
@@ -93,6 +90,10 @@ impl SerializedBlockInDbFormat {
     }
 }
 
+pub fn convert_hex_to_sha256_hash(hex: &String) -> Result<sha256d::Hash> {
+    Ok(sha256d::Hash::from_slice(&hex::decode(strip_hex_prefix(&hex)?)?)?)
+}
+
 pub fn get_btc_one_key() -> PrivateKey {
     PrivateKey {
         key: ONE_KEY,
@@ -160,19 +161,6 @@ pub fn create_unsigned_utxo_from_tx(
             .output[output_index as usize]
             .script_pubkey
             .clone(),
-    }
-}
-
-pub fn convert_deposit_info_to_json(
-    deposit_info_struct: &DepositAddressInfo
-) -> DepositAddressInfoJson {
-    DepositAddressInfoJson {
-        nonce: deposit_info_struct.nonce,
-        address: deposit_info_struct.address.clone(),
-        btc_deposit_address:
-            deposit_info_struct.btc_deposit_address.to_string(),
-        address_and_nonce_hash:
-            hex::encode(deposit_info_struct.commitment_hash),
     }
 }
 
