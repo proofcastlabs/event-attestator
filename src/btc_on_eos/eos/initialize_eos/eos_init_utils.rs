@@ -332,21 +332,36 @@ mod tests {
     use super::*;
     use crate::btc_on_eos::{
         eos::eos_test_utils::{
-            get_init_json_n,
-            NUM_INIT_SAMPLES,
+            get_j3_init_json_n,
+            NUM_J3_INIT_SAMPLES,
+            get_mainnet_init_json_n,
+            NUM_MAINNET_INIT_SAMPLES,
         },
     };
 
     #[test]
     fn should_validate_jungle_3_init_blocks() {
-        vec![0; NUM_INIT_SAMPLES]
+        vec![0; NUM_J3_INIT_SAMPLES]
             .iter()
             .enumerate()
-            .map(|(i, _)| get_init_json_n(i + 1))
-            .collect::<Result<Vec<EosInitJson>>>()
-            .unwrap()
+            .map(|(i, _)| -> Result<()> {
+                println!("Validating jungle 3 init block #{}...", i + 1);
+                get_j3_init_json_n(i + 1)?.validate();
+                Ok(())
+            })
+            .for_each(drop);
+    }
+
+    #[test]
+    fn should_validate_mainnet_init_blocks() {
+        vec![0; NUM_MAINNET_INIT_SAMPLES]
             .iter()
-            .map(|init_json| init_json.validate())
+            .enumerate()
+            .map(|(i, _)| -> Result<()> {
+                println!("Validating mainnet init block #{}...", i + i);
+                get_mainnet_init_json_n(i + 1)?.validate();
+                Ok(())
+            })
             .for_each(drop);
     }
 }

@@ -76,8 +76,6 @@ use crate::{
     },
 };
 
-pub const NUM_INIT_SAMPLES: usize = 3;
-
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-81784220.json";
 
@@ -99,14 +97,23 @@ pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_6: &str =
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_7: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-10700626.json";
 
-pub const SAMPLE_INIT_BLOCK_JSON_PATH_1: &str =
+pub const SAMPLE_J3_INIT_BLOCK_JSON_PATH_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/jungle-3-init-block-10857380.json";
 
-pub const SAMPLE_INIT_BLOCK_JSON_PATH_2: &str =
+pub const SAMPLE_J3_INIT_BLOCK_JSON_PATH_2: &str =
     "src/btc_on_eos/eos/eos_test_utils/jungle-3-init-block-11879805.json";
 
-pub const SAMPLE_INIT_BLOCK_JSON_PATH_3: &str =
+pub const SAMPLE_J3_INIT_BLOCK_JSON_PATH_3: &str =
     "src/btc_on_eos/eos/eos_test_utils/jungle-3-init-block-11379805.json";
+
+pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_1: &str =
+    "src/btc_on_eos/eos/eos_test_utils/mainnet-init-block-125292121.json";
+
+pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_2: &str =
+    "src/btc_on_eos/eos/eos_test_utils/mainnet-init-block-125293807.json";
+
+pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_3: &str =
+    "src/btc_on_eos/eos/eos_test_utils/mainnet-init-block-125293952.json";
 
 pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_JUNGLE_3_JSON_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-init-and-subsequent-blocks-jungle-3-1.json";
@@ -272,11 +279,33 @@ pub fn get_init_and_subsequent_blocks_json_n(
     EosInitAndSubsequentBlocksJson::from_json_string(&string)
 }
 
-pub fn get_init_json_n(num: usize) -> Result<EosInitJson> {
+pub const NUM_J3_INIT_SAMPLES: usize = 3;
+
+pub fn get_j3_init_json_n(num: usize) -> Result<EosInitJson> {
     let path = match num {
-        1 => Ok(SAMPLE_INIT_BLOCK_JSON_PATH_1),
-        2 => Ok(SAMPLE_INIT_BLOCK_JSON_PATH_2),
-        3 => Ok(SAMPLE_INIT_BLOCK_JSON_PATH_3),
+        1 => Ok(SAMPLE_J3_INIT_BLOCK_JSON_PATH_1),
+        2 => Ok(SAMPLE_J3_INIT_BLOCK_JSON_PATH_2),
+        3 => Ok(SAMPLE_J3_INIT_BLOCK_JSON_PATH_3),
+        _ => Err(AppError::Custom(
+            format!("Cannot find sample block num: {}", num)
+        ))
+    }?;
+    let string = match Path::new(&path).exists() {
+        true => Ok(read_to_string(path)?),
+        false => Err(AppError::Custom(
+            format!("✘ Can't find sample init block json file @ path: {}", path)
+        ))
+    }?;
+    EosInitJson::from_json_string(&string)
+}
+
+pub const NUM_MAINNET_INIT_SAMPLES: usize = 2;
+
+pub fn get_mainnet_init_json_n(num: usize) -> Result<EosInitJson> {
+    let path = match num {
+        1 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_1),
+        2 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_2),
+        3 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_3),
         _ => Err(AppError::Custom(
             format!("Cannot find sample block num: {}", num)
         ))
