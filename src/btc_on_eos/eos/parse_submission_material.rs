@@ -22,12 +22,26 @@ use crate::{
                 Checksum256s,
                 ActionProofJsons,
                 EosBlockHeaderJson,
-                EosSubmissionMaterial,
-                EosSubmissionMaterialJson,
             },
         },
     },
 };
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct EosSubmissionMaterial {
+    pub block_num: u64,
+    pub producer_signature: String,
+    pub action_proofs: ActionProofs,
+    pub block_header: EosBlockHeader,
+    pub interim_block_ids: Checksum256s,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct EosSubmissionMaterialJson {
+    pub interim_block_ids: Vec<String>,
+    pub action_proofs: ActionProofJsons,
+    pub block_header: EosBlockHeaderJson,
+}
 
 fn parse_eos_action_proof_jsons_to_action_proofs(
     action_proof_jsons: &ActionProofJsons,

@@ -39,10 +39,14 @@ use crate::{
             convert_bytes_to_checksum256,
         },
         eos::{
-            eos_merkle_utils::Incremerkle,
             eos_state::EosState,
+            eos_merkle_utils::Incremerkle,
             initialize_eos::eos_init_utils::EosInitJson,
             protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
+            parse_submission_material::{
+                EosSubmissionMaterial,
+                EosSubmissionMaterialJson,
+            },
             parse_eos_schedule::{
                 EosProducerScheduleJsonV1,
                 EosProducerScheduleJsonV2,
@@ -64,8 +68,6 @@ use crate::{
                 EosBlockHeaderJson,
                 EosSignedTransaction,
                 EosSignedTransactions,
-                EosSubmissionMaterial,
-                EosSubmissionMaterialJson,
             },
             eos_crypto::{
                 eos_signature::EosSignature,

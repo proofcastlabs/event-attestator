@@ -3,7 +3,6 @@ use eos_primitives::{
     Checksum256,
     Action as EosAction,
     AccountName as EosAccountName,
-    BlockHeader as EosBlockHeader,
     ProducerKey as EosProducerKey,
     ActionReceipt as EosActionReceipt,
 };
@@ -154,22 +153,6 @@ impl EosSignedTransaction {
             recipient,
         }
     }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosSubmissionMaterial {
-    pub block_num: u64,
-    pub producer_signature: String,
-    pub action_proofs: ActionProofs,
-    pub block_header: EosBlockHeader,
-    pub interim_block_ids: Checksum256s,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosSubmissionMaterialJson {
-    pub interim_block_ids: Vec<String>,
-    pub action_proofs: ActionProofJsons,
-    pub block_header: EosBlockHeaderJson,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
