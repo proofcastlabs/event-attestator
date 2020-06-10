@@ -23,6 +23,7 @@ use eos_primitives::{
     Action as EosAction,
     BlockHeader as EosBlockHeader,
     ActionReceipt as EosActionReceipt,
+    ProducerSchedule as EosProducerScheduleV1,
     ProducerScheduleV2 as EosProducerScheduleV2,
 };
 use crate::{
@@ -43,10 +44,13 @@ use crate::{
             initialize_eos::eos_init_utils::EosInitJson,
             protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
             parse_eos_schedule::{
+                EosProducerScheduleJsonV1,
                 EosProducerScheduleJsonV2,
-                parse_v2_schedule_string_to_v2_schedule_json,
                 parse_v2_schedule_string_to_v2_schedule,
                 convert_v2_schedule_json_to_v2_schedule,
+                convert_v1_schedule_json_to_v1_schedule,
+                parse_v1_schedule_string_to_v1_schedule_json,
+                parse_v2_schedule_string_to_v2_schedule_json,
             },
             parse_submission_material::{
                 parse_eos_block_header_from_json,
@@ -292,8 +296,22 @@ pub fn sha256_hash_message_bytes(
     Ok(Secp256k1Message::from_slice(&sha256::Hash::hash(message_bytes))?)
 }
 
+pub fn get_sample_v1_schedule_json_string() -> Result<String> {
+    Ok(read_to_string("src/btc_on_eos/eos/eos_test_utils/sample-schedule-v1.json")?)
+}
+
 pub fn get_sample_v2_schedule_json_string() -> Result<String> {
     Ok(read_to_string("src/btc_on_eos/eos/eos_test_utils/sample-schedule-v2.json")?)
+}
+
+pub fn get_sample_v1_schedule_json() -> Result<EosProducerScheduleJsonV1> {
+    get_sample_v1_schedule_json_string()
+        .and_then(|json_string| parse_v1_schedule_string_to_v1_schedule_json(&json_string))
+}
+
+pub fn get_sample_v1_schedule() -> Result<EosProducerScheduleV1> {
+    get_sample_v1_schedule_json()
+        .and_then(|json| convert_v1_schedule_json_to_v1_schedule(&json))
 }
 
 pub fn get_sample_v2_schedule_json() -> Result<EosProducerScheduleJsonV2> {
