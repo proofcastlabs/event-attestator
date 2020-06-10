@@ -61,6 +61,19 @@ impl EthPrivateKey {
         self.sign_hash(keccak_hash_bytes(message))
     }
 
+    pub fn sign_eth_prefixed_msg_bytes(&self, message: Bytes) -> Result<EthSignature> {
+        let message_hash = keccak_hash_bytes(message);
+
+        let message_bytes = [
+            b"\x19Ethereum Signed Message:\n",
+            b"32".as_ref(), // message hash len bytes
+            message_hash.as_bytes(),
+        ]
+        .concat();
+
+        self.sign_message_bytes(message_bytes)
+    }
+
     pub fn to_public_key(&self) -> EthPublicKey {
         EthPublicKey {
             compressed: true,
@@ -139,6 +152,15 @@ mod tests {
         if let Err(e) = key.sign_hash(message_hash) {
             panic!("Error signing message hash: {}", e);
         }
+    }
+
+    #[test]
+    fn should_sign_eth_prefixed_msg_bytes() {
+        let key = get_sample_eth_private_key();
+        let message = "Arbitrary message";
+        if let Err(e) = key.sign_eth_prefixed_msg_bytes(message.into()) {
+            panic!("Error signing eth prefixed message bytes: {}", e);
+        }        
     }
 
     #[test]

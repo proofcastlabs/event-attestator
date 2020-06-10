@@ -13,9 +13,9 @@ use crate::{
 };
 use ethabi::{encode, Token};
 use ethereum_types::{Address as EthAddress, Signature as EthSignature};
-use tiny_keccak::keccak256;
 
 const MAX_COMPENSATION_WEI: u64 = 50_000_000_000_000_000;
+const RECOVERY_PARAM_BYTE: u8 = 0x1c;
 
 /// An any.sender relay transaction. It is very similar
 /// to a normal transaction except for a few fields.
@@ -118,13 +118,15 @@ impl RelayTransaction {
 
         let minimum_deadline = get_latest_eth_block_number(db)? as u64 + 400;
 
-        if !(minimum_deadline..=9_007_199_254_740_991).contains(&deadline_block_number) {
+        if !(deadline_block_number >= minimum_deadline
+            && deadline_block_number <= 9_007_199_254_740_991)
+        {
             return Err(AppError::Custom(
                 "✘ Any.sender deadline_block_number is out of range!".to_string(),
             ));
         }
 
-        if !(0..=3_000_000).contains(&gas) {
+        if gas > 3_000_000 {
             return Err(AppError::Custom(
                 "✘ Any.sender gas is out of range!".to_string(),
             ));
@@ -171,20 +173,9 @@ impl RelayTransaction {
             Token::Uint(self.gas.into()),
             Token::Address(self.relay_contract_address),
         ]);
-        let relay_tx_id = keccak256(&transaction_bytes);
+        let mut signed_message = eth_private_key.sign_eth_prefixed_msg_bytes(transaction_bytes)?;
 
-        let message_bytes: Vec<u8> = [
-            b"\x19Ethereum Signed Message:\n",
-            relay_tx_id.len().to_string().as_bytes(),
-            &relay_tx_id,
-        ]
-        .concat();
-
-        let mut signed_message = eth_private_key.sign_message_bytes(message_bytes)?;
-
-        // change last byte due to recovery param presence
-        signed_message[64] = 28; // 0x1c
-
+        signed_message[64] = RECOVERY_PARAM_BYTE;
         self.signature = EthSignature::from_slice(&signed_message);
 
         Ok(self)
@@ -204,7 +195,8 @@ impl RelayTransaction {
         let deadline_block_number = get_latest_eth_block_number(db)? as u64 + 405;
         let gas = eth_transaction.gas_limit.as_u32();
         let compensation = MAX_COMPENSATION_WEI;
-        let relay_contract_address = RelayContract::from_eth_chain_id(eth_transaction.chain_id)?.address()?;
+        let relay_contract_address =
+            RelayContract::from_eth_chain_id(eth_transaction.chain_id)?.address()?;
         let to = EthAddress::from_slice(&eth_transaction.to);
 
         let eth_private_key = get_eth_private_key_from_db(db)?;

@@ -24,7 +24,7 @@ impl RelayContract {
 
     /// Returns the address of the any.sender relay contract
     pub fn address(&self) -> Result<EthAddress> {
-        match  *self {
+        match *self {
             RelayContract::Mainnet | RelayContract::Ropsten => Ok(EthAddress::from_slice(
                 &hex::decode("a404d1219Ed6Fe3cF2496534de2Af3ca17114b06").unwrap(),
             )),
@@ -65,6 +65,14 @@ mod tests {
         let expected_contract_address = EthAddress::from_slice(
             &hex::decode("a404d1219Ed6Fe3cF2496534de2Af3ca17114b06").unwrap(),
         );
+
+        assert_eq!(relay_contract_address, expected_contract_address);
+
+        // Unknown
+        let relay_contract_address = RelayContract::Unknown(EthAddress::default())
+            .address()
+            .unwrap();
+        let expected_contract_address = EthAddress::default();
 
         assert_eq!(relay_contract_address, expected_contract_address);
     }
