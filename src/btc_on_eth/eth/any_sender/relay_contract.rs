@@ -21,15 +21,14 @@ impl RelayContract {
             )),
         }
     }
-}
 
-impl From<RelayContract> for EthAddress {
-    fn from(item: RelayContract) -> EthAddress {
-        match item {
-            RelayContract::Mainnet | RelayContract::Ropsten => EthAddress::from_slice(
+    /// Returns the address of the any.sender relay contract
+    pub fn address(&self) -> Result<EthAddress> {
+        match  *self {
+            RelayContract::Mainnet | RelayContract::Ropsten => Ok(EthAddress::from_slice(
                 &hex::decode("a404d1219Ed6Fe3cF2496534de2Af3ca17114b06").unwrap(),
-            ),
-            RelayContract::Unknown(address) => address,
+            )),
+            RelayContract::Unknown(address) => Ok(address),
         }
     }
 }
@@ -53,7 +52,7 @@ mod tests {
     fn should_return_correct_eth_address() {
         // Mainnet
         let relay_contract = RelayContract::from_eth_chain_id(1).unwrap();
-        let relay_contract_address = EthAddress::from(relay_contract);
+        let relay_contract_address = relay_contract.address().unwrap();
         let expected_contract_address = EthAddress::from_slice(
             &hex::decode("a404d1219Ed6Fe3cF2496534de2Af3ca17114b06").unwrap(),
         );
@@ -62,7 +61,7 @@ mod tests {
 
         // Ropsten
         let relay_contract = RelayContract::from_eth_chain_id(3).unwrap();
-        let relay_contract_address = EthAddress::from(relay_contract);
+        let relay_contract_address = relay_contract.address().unwrap();
         let expected_contract_address = EthAddress::from_slice(
             &hex::decode("a404d1219Ed6Fe3cF2496534de2Af3ca17114b06").unwrap(),
         );

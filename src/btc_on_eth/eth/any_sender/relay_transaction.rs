@@ -79,8 +79,7 @@ impl RelayTransaction {
         let from = get_public_eth_address_from_db(db)?;
 
         let eth_chain_id = get_eth_chain_id_from_db(db)?;
-        let relay_contract_address =
-            EthAddress::from(RelayContract::from_eth_chain_id(eth_chain_id)?);
+        let relay_contract_address = RelayContract::from_eth_chain_id(eth_chain_id)?.address()?;
 
         let eth_private_key = get_eth_private_key_from_db(db)?;
 
@@ -205,8 +204,7 @@ impl RelayTransaction {
         let deadline_block_number = get_latest_eth_block_number(db)? as u64 + 405;
         let gas = eth_transaction.gas_limit.as_u32();
         let compensation = MAX_COMPENSATION_WEI;
-        let relay_contract_address =
-            EthAddress::from(RelayContract::from_eth_chain_id(eth_transaction.chain_id)?);
+        let relay_contract_address = RelayContract::from_eth_chain_id(eth_transaction.chain_id)?.address()?;
         let to = EthAddress::from_slice(&eth_transaction.to);
 
         let eth_private_key = get_eth_private_key_from_db(db)?;
@@ -274,7 +272,7 @@ mod tests {
         let deadline_block_number = 7945019;
         let gas = 100000;
         let compensation = 500000000;
-        let relay_contract_address = EthAddress::from(RelayContract::Ropsten);
+        let relay_contract_address = RelayContract::Ropsten.address().unwrap();
         let to = EthAddress::from_slice(
             &hex::decode("FDE83bd51bddAA39F15c1Bf50E222a7AE5831D83").unwrap(),
         );
