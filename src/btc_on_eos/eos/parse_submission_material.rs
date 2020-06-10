@@ -15,7 +15,7 @@ use crate::{
         utils::convert_hex_to_checksum256,
         eos::{
             eos_state::EosState,
-            parse_eos_schedule::convert_schedule_json_to_schedule_v2,
+            parse_eos_schedule::convert_v2_schedule_json_to_v2_schedule,
             eos_types::{
                 ActionProof,
                 ActionProofs,
@@ -101,7 +101,7 @@ pub fn parse_eos_block_header_from_json(
                 None => None,
                 Some(producer_schedule_json) =>
                     Some(
-                        convert_schedule_json_to_schedule_v2(
+                        convert_v2_schedule_json_to_v2_schedule(
                             &producer_schedule_json
                         )?
                     )

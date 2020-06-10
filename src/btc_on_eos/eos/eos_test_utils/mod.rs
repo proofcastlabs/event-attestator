@@ -43,10 +43,10 @@ use crate::{
             initialize_eos::eos_init_utils::EosInitJson,
             protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
             parse_eos_schedule::{
-                EosProducerScheduleJson,
-                parse_schedule_string_to_json,
-                parse_schedule_string_to_schedule,
-                convert_schedule_json_to_schedule_v2,
+                EosProducerScheduleJsonV2,
+                parse_v2_schedule_string_to_v2_schedule_json,
+                parse_v2_schedule_string_to_v2_schedule,
+                convert_v2_schedule_json_to_v2_schedule,
             },
             parse_submission_material::{
                 parse_eos_block_header_from_json,
@@ -167,7 +167,7 @@ impl EosInitAndSubsequentBlocksJson {
     }
 
     pub fn get_active_schedule(&self) -> Result<EosProducerScheduleV2> {
-        convert_schedule_json_to_schedule_v2(&self.init_block.active_schedule)
+        convert_v2_schedule_json_to_v2_schedule(&self.init_block.active_schedule)
     }
 
     pub fn get_block_json_n(&self, n: usize) -> Result<EosBlockHeaderJson> {
@@ -293,37 +293,25 @@ pub fn sha256_hash_message_bytes(
 }
 
 pub fn get_sample_v2_schedule_json_string() -> Result<String> {
-    Ok(
-        read_to_string(
-            "src/btc_on_eos/eos/eos_test_utils/sample-schedule-v2.0.json"
-        )?
-    )
+    Ok(read_to_string("src/btc_on_eos/eos/eos_test_utils/sample-schedule-v2.json")?)
 }
 
-pub fn get_sample_v2_schedule_json() -> Result<EosProducerScheduleJson> {
+pub fn get_sample_v2_schedule_json() -> Result<EosProducerScheduleJsonV2> {
     get_sample_v2_schedule_json_string()
-        .and_then(|json_string| parse_schedule_string_to_json(&json_string))
+        .and_then(|json_string| parse_v2_schedule_string_to_v2_schedule_json(&json_string))
 }
 
 pub fn get_sample_v2_schedule() -> Result<EosProducerScheduleV2> {
     get_sample_v2_schedule_json()
-        .and_then(|json| convert_schedule_json_to_schedule_v2(&json))
+        .and_then(|json| convert_v2_schedule_json_to_v2_schedule(&json))
 }
 
-pub fn get_sample_eos_submission_material_n(
-    n: usize
-) -> EosSubmissionMaterial {
-    parse_eos_submission_material_string_to_struct(
-        &get_sample_eos_submission_material_string_n(n).unwrap()
-    ).unwrap()
+pub fn get_sample_eos_submission_material_n(n: usize) -> EosSubmissionMaterial {
+    parse_eos_submission_material_string_to_struct(&get_sample_eos_submission_material_string_n(n).unwrap()).unwrap()
 }
 
-pub fn get_sample_eos_submission_material_json_n(
-    n: usize
-) -> EosSubmissionMaterialJson {
-    parse_eos_submission_material_string_to_json(
-        &get_sample_eos_submission_material_string_n(n).unwrap()
-    ).unwrap()
+pub fn get_sample_eos_submission_material_json_n(n: usize) -> EosSubmissionMaterialJson {
+    parse_eos_submission_material_string_to_json(&get_sample_eos_submission_material_string_n(n).unwrap()).unwrap()
 }
 
 pub fn get_sample_eos_submission_material_string_n(

@@ -17,7 +17,7 @@ use crate::{
         eos::{
             eos_utils::get_eos_schedule_db_key,
             parse_eos_actions::parse_eos_action_json,
-            parse_eos_schedule::EosProducerScheduleJson,
+            parse_eos_schedule::EosProducerScheduleJsonV2,
             parse_eos_action_receipts::parse_eos_action_receipt_json,
         },
     },
@@ -185,7 +185,7 @@ pub struct EosBlockHeaderJson {
     pub transaction_mroot: String,
     pub producer_signature: String,
     pub header_extension: Option<Vec<String>>,
-    pub new_producers: Option<EosProducerScheduleJson>,
+    pub new_producers: Option<EosProducerScheduleJsonV2>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -195,7 +195,7 @@ pub struct ProducerSchedule {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ProducerKeyJson {
+pub struct ProducerKeyJsonV2 {
     pub producer_name: String,
     pub block_signing_key: String,
 }
