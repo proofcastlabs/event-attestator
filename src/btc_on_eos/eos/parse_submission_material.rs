@@ -325,15 +325,10 @@ mod tests {
         assert_eq!(result_serialized, expected_serialized);
     }
 
-    // TODO Need a block with something in the new_producers field.
-
     #[test]
     fn should_parse_submisson_material_with_action_proofs() {
-        let material = get_sample_eos_submission_material_string_n(2)
-            .unwrap();
-        if let Err(e) =  parse_eos_submission_material_string_to_struct(
-            &material
-        ) {
+        let material = get_sample_eos_submission_material_string_n(2).unwrap();
+        if let Err(e) =  parse_eos_submission_material_string_to_struct(&material) {
             panic!("Error parsing submission material: {}", e);
         }
     }

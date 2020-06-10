@@ -326,11 +326,11 @@ pub fn sha256_hash_message_bytes(
 }
 
 pub fn get_sample_v1_schedule_json_string() -> Result<String> {
-    Ok(read_to_string("src/btc_on_eos/eos/eos_test_utils/sample-schedule-v1.json")?)
+    Ok(read_to_string("src/btc_on_eos/eos/eos_test_utils/sample-schedule-389-v1.json")?)
 }
 
 pub fn get_sample_v2_schedule_json_string() -> Result<String> {
-    Ok(read_to_string("src/btc_on_eos/eos/eos_test_utils/sample-schedule-v2.json")?)
+    Ok(read_to_string("src/btc_on_eos/eos/eos_test_utils/sample-schedule-28-v2.json")?)
 }
 
 pub fn get_sample_v1_schedule_json() -> Result<EosProducerScheduleJsonV1> {
@@ -372,6 +372,7 @@ pub fn get_sample_eos_submission_material_string_n(
         5 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_5),
         6 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_6),
         7 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_7),
+        8 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_8),
         _ => Err(AppError::Custom(
             format!("Cannot find sample block num: {}", num)
         ))
