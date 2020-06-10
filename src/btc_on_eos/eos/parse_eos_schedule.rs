@@ -5,6 +5,7 @@ use crate::{
 };
 use eos_primitives::{
     Key as EosKey,
+    KeysAndThreshold,
     PublicKey as EosPublicKey,
     AccountName as EosAccountName,
     ProducerKey as EosProducerKeyV1,
@@ -48,6 +49,29 @@ pub struct AuthorityJson {
 pub struct ProducerKeyJsonV2 {
     weight: u16,
     key: String,
+}
+
+pub fn convert_v1_schedule_to_v2(
+    v1_schedule: &EosProducerScheduleV1
+) -> EosProducerScheduleV2 {
+    EosProducerScheduleV2 {
+        version: v1_schedule.version,
+        producers: v1_schedule
+            .producers
+            .iter()
+            .map(|producer| {
+                EosProducerKeyV2 {
+                    producer_name: producer.producer_name,
+                    authority: (
+                        0,
+                        KeysAndThreshold {
+                            threshold: 0,
+                            keys: vec![EosKey {weight: 0, key: producer.block_signing_key.clone()}]}
+                    )
+                }
+            })
+            .collect::<Vec<EosProducerKeyV2>>()
+    }
 }
 
 fn convert_v2_producer_key_jsons_to_v2_producer_keys(
@@ -141,6 +165,7 @@ pub fn parse_v2_schedule_string_to_v2_schedule(schedule_string: &String) -> Resu
 mod tests {
     use super::*;
     use crate::btc_on_eos::eos::eos_test_utils::{
+        get_sample_v1_schedule,
         get_sample_v1_schedule_json,
         get_sample_v2_schedule_json,
         get_sample_v2_schedule_json_string,
@@ -193,5 +218,11 @@ mod tests {
         if let Err(e) = parse_v2_schedule_string_to_v2_schedule(&schedule_string) {
             panic!("Error parseing schedule: {}", e);
         }
+    }
+
+    #[test]
+    fn should_convert_v1_schedule_to_v2() {
+        let v1_schedule = get_sample_v1_schedule().unwrap();
+        convert_v1_schedule_to_v2(&v1_schedule);
     }
 }
