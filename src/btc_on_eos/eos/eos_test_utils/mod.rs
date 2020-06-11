@@ -99,6 +99,9 @@ pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_6: &str =
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_7: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-10700626.json";
 
+pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_8: &str =
+    "src/btc_on_eos/eos/eos_test_utils/eos-mainnet-block-with-schedule-1714.json";
+
 pub const SAMPLE_J3_INIT_BLOCK_JSON_PATH_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/jungle-3-init-block-10857380.json";
 
@@ -123,8 +126,9 @@ pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_JUNGLE_3_JSON_1: &str =
 pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-init-and-subsequent-blocks-mainnet-1.json";
 
-pub const EOS_JUNGLE_CHAIN_ID: &str =
-    "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
+pub const EOS_JUNGLE_CHAIN_ID: &str = "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
+
+pub const SAMPLE_EOS_SCHEDULE_1: &str = "src/btc_on_eos/eos/eos_test_utils/sample-schedule-1713-v1.json";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosInitAndSubsequentBlocksJson {
