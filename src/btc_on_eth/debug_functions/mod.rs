@@ -1,9 +1,12 @@
 use serde_json::json;
 use crate::{
     types::Result,
-    constants::DB_KEY_PREFIX,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
+    constants::{
+        DB_KEY_PREFIX,
+        PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+    },
     chains::{
         eth::eth_constants::{
             get_eth_constants_db_keys,
@@ -228,8 +231,14 @@ pub fn debug_set_key_in_db_to_value<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
+    let key_bytes = hex::decode(&key)?;
+    let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
+        true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+        false => None,
+    };
     check_core_is_initialized(&db)
-        .and_then(|_| set_key_in_db_to_value(db, key, value))
+        .and_then(|_| set_key_in_db_to_value(db, key, value, sensitivity))
+
 }
 
 pub fn debug_get_key_from_db<D>(
@@ -239,14 +248,12 @@ pub fn debug_get_key_from_db<D>(
     where D: DatabaseInterface
 {
     let key_bytes = hex::decode(&key)?;
+    let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
+        true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+        false => None,
+    };
     check_core_is_initialized(&db)
-        .and_then(|_| {
-            if key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
-                get_key_from_db(db, key, Some(255))
-            } else {
-                get_key_from_db(db, key, None)
-            }
-        })
+        .and_then(|_| get_key_from_db(db, key, sensitivity))
 }
 
 pub fn debug_get_all_utxos<D>(
