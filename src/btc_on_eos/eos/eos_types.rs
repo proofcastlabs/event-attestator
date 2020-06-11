@@ -1,4 +1,5 @@
 use std::fmt;
+use serde_json::Value as JsonValue;
 use eos_primitives::{
     Checksum256,
     Action as EosAction,
@@ -16,7 +17,6 @@ use crate::{
         eos::{
             eos_utils::get_eos_schedule_db_key,
             parse_eos_actions::parse_eos_action_json,
-            parse_eos_schedule::EosProducerScheduleJsonV2,
             parse_eos_action_receipts::parse_eos_action_receipt_json,
         },
     },
@@ -167,8 +167,8 @@ pub struct EosBlockHeaderJson {
     pub schedule_version: u32,
     pub transaction_mroot: String,
     pub producer_signature: String,
+    pub new_producers: Option<JsonValue>,
     pub header_extension: Option<Vec<String>>,
-    pub new_producers: Option<EosProducerScheduleJsonV2>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

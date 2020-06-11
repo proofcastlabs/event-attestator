@@ -1,11 +1,13 @@
 use std::str::FromStr;
 use chrono::prelude::*;
+use serde_json::Value as JsonValue;
 use eos_primitives::{
     Extension,
     TimePoint,
     AccountName,
     BlockTimestamp,
     BlockHeader as EosBlockHeader,
+    ProducerScheduleV2 as EosProducerScheduleV2,
 };
 use crate::{
     types::Result,
@@ -15,13 +17,19 @@ use crate::{
         utils::convert_hex_to_checksum256,
         eos::{
             eos_state::EosState,
-            parse_eos_schedule::convert_v2_schedule_json_to_v2_schedule,
             eos_types::{
                 ActionProof,
                 ActionProofs,
                 Checksum256s,
                 ActionProofJsons,
                 EosBlockHeaderJson,
+            },
+            parse_eos_schedule::{
+                convert_v1_schedule_to_v2,
+                convert_v1_schedule_json_to_v1_schedule,
+                convert_v2_schedule_json_to_v2_schedule,
+                parse_v1_schedule_string_to_v1_schedule_json,
+                parse_v2_schedule_string_to_v2_schedule_json,
             },
         },
     },
@@ -89,9 +97,21 @@ fn convert_hex_strings_to_extensions(
         .collect::<Result<Vec<Extension>>>()
 }
 
+fn convert_schedule_json_value_to_v2_schedule_json(json_value: &JsonValue) -> Result<EosProducerScheduleV2> {
+    match parse_v2_schedule_string_to_v2_schedule_json(&json_value.to_string()) {
+        Ok(v2_json) => convert_v2_schedule_json_to_v2_schedule(&v2_json),
+        Err(_) => parse_v1_schedule_string_to_v1_schedule_json(&json_value.to_string())
+            .and_then(|v1_json| convert_v1_schedule_json_to_v1_schedule(&v1_json))
+            .map(|v1_schedule| convert_v1_schedule_to_v2(&v1_schedule))
+    }
+
+}
+
 pub fn parse_eos_block_header_from_json(
     eos_block_header_json: &EosBlockHeaderJson
 ) -> Result<EosBlockHeader> {
+    // so here we have the schedule safely as a json value.
+    // Need to convert it to a v2 schedule
     Ok(
         EosBlockHeader::new(
             convert_timestamp_string_to_block_timestamp(
@@ -114,11 +134,7 @@ pub fn parse_eos_block_header_from_json(
             match &eos_block_header_json.new_producers {
                 None => None,
                 Some(producer_schedule_json) =>
-                    Some(
-                        convert_v2_schedule_json_to_v2_schedule(
-                            &producer_schedule_json
-                        )?
-                    )
+                    Some(convert_schedule_json_value_to_v2_schedule_json(&producer_schedule_json)?)
             },
             match &eos_block_header_json.header_extension {
                 None => vec![],
