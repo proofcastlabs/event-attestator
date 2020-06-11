@@ -11,12 +11,12 @@ use secp256k1::{
 };
 use crate::{
     traits::DatabaseInterface,
+    constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
     types::{
         Bytes,
         Result,
     },
     btc_on_eth::{
-        constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
         eth::{
            eth_types::EthSignature,
            eth_crypto::eth_public_key::EthPublicKey,

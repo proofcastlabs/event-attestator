@@ -12,6 +12,7 @@ pub const CORE_IS_VALIDATING: bool = true;
 
 pub const U64_NUM_BYTES: usize = 8;
 pub const MIN_DATA_SENSITIVITY_LEVEL: Option<u8> = None;
+pub const PRIVATE_KEY_DATA_SENSITIVITY_LEVEL: Option<u8> = Some(255);
 
 lazy_static! {
     pub static ref DB_KEY_PREFIX: &'static str = match option_env!(
