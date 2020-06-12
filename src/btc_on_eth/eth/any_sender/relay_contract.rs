@@ -26,7 +26,7 @@ impl RelayContract {
     pub fn address(&self) -> Result<EthAddress> {
         match *self {
             RelayContract::Mainnet | RelayContract::Ropsten => Ok(EthAddress::from_slice(
-                &hex::decode("a404d1219Ed6Fe3cF2496534de2Af3ca17114b06").unwrap(),
+                &hex::decode("9b4FA5A1D9f6812e2B56B36fBde62736Fa82c2a7").unwrap(),
             )),
             RelayContract::Unknown(address) => Ok(address),
         }
@@ -54,7 +54,7 @@ mod tests {
         let relay_contract = RelayContract::from_eth_chain_id(1).unwrap();
         let relay_contract_address = relay_contract.address().unwrap();
         let expected_contract_address = EthAddress::from_slice(
-            &hex::decode("a404d1219Ed6Fe3cF2496534de2Af3ca17114b06").unwrap(),
+            &hex::decode("9b4FA5A1D9f6812e2B56B36fBde62736Fa82c2a7").unwrap(),
         );
 
         assert_eq!(relay_contract_address, expected_contract_address);
@@ -63,7 +63,7 @@ mod tests {
         let relay_contract = RelayContract::from_eth_chain_id(3).unwrap();
         let relay_contract_address = relay_contract.address().unwrap();
         let expected_contract_address = EthAddress::from_slice(
-            &hex::decode("a404d1219Ed6Fe3cF2496534de2Af3ca17114b06").unwrap(),
+            &hex::decode("9b4FA5A1D9f6812e2B56B36fBde62736Fa82c2a7").unwrap(),
         );
 
         assert_eq!(relay_contract_address, expected_contract_address);
