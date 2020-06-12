@@ -164,6 +164,7 @@ pub fn debug_reprocess_btc_block<D>(
                             txs,
                             &state.minting_params,
                             get_eth_account_nonce_from_db(&state.db)?,
+                            &state,
                         )
                 }?
             )?;

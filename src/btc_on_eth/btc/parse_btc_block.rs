@@ -109,12 +109,19 @@ pub fn parse_btc_block_and_tx_json_to_struct(
 
 pub fn parse_btc_block_and_id_and_put_in_state<D>(
     block_json: String,
-    state: BtcState<D>,
+    mut state: BtcState<D>,
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
     info!("✔ Parsing BTC block...");
     parse_btc_block_string_to_json(&block_json)
+        .and_then(|btc_block_json| {
+            #[cfg(feature = "any-sender")]
+            return state.set_any_sender_from_btc_block_and_tx_json(btc_block_json);
+
+            #[cfg(not(feature = "any-sender"))]
+            Ok(btc_block_json)
+        })
         .and_then(parse_btc_block_and_tx_json_to_struct)
         .and_then(|result| state.add_btc_block_and_id(result))
 }

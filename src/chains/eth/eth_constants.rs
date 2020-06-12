@@ -86,6 +86,8 @@ pub fn get_eth_constants_db_keys() -> JsonValue {
             hex::encode(ETH_GAS_PRICE_KEY.to_vec()),
         "ETH_TAIL_BLOCK_HASH_KEY":
             hex::encode(ETH_TAIL_BLOCK_HASH_KEY.to_vec()),
+        "ANY_SENDER_NONCE_KEY":
+            hex::encode(ANY_SENDER_NONCE_KEY.to_vec()),
     })
 }
 
@@ -164,5 +166,11 @@ lazy_static! {
 lazy_static! {
     pub static ref ETH_TAIL_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key(
         "eth-tail-block-hash-key"
+    );
+}
+
+lazy_static! {
+    pub static ref ANY_SENDER_NONCE_KEY: [u8; 32] = get_prefixed_db_key(
+        "any-sender-nonce"
     );
 }

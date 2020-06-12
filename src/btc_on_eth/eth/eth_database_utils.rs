@@ -50,6 +50,9 @@ use crate::{
     },
 };
 
+#[cfg(feature = "any-sender")]
+use crate::chains::eth::eth_constants::ANY_SENDER_NONCE_KEY;
+
 pub fn get_signing_params_from_db<D>(
     db: &D,
 ) -> Result<EthSigningParams>
@@ -607,6 +610,41 @@ pub fn put_eth_address_in_db<D>(
     where D: DatabaseInterface
 {
     db.put(key.to_vec(), eth_address.as_bytes().to_vec(), None)
+}
+
+#[cfg(feature = "any-sender")]
+pub fn get_any_sender_nonce_from_db<D>(
+    db: &D
+) -> Result<u64>
+    where D: DatabaseInterface
+{
+    trace!("✔ Getting any.sender nonce from db...");
+    get_u64_from_db(db, &ANY_SENDER_NONCE_KEY.to_vec())
+}
+
+#[cfg(feature = "any-sender")]
+pub fn put_any_sender_nonce_in_db<D>(
+    db: &D,
+    nonce: u64,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    trace!("✔ Putting any.sender nonce of {} in db...", nonce);
+    put_u64_in_db(db, &ANY_SENDER_NONCE_KEY.to_vec(), nonce)
+}
+
+#[cfg(feature = "any-sender")]
+pub fn increment_any_sender_nonce_in_db<D>(
+    db: &D,
+    amount_to_increment_by: u64,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    trace!("✔ Incrementing any.sender nonce in db...");
+    get_any_sender_nonce_from_db(db)
+        .and_then(|nonce|
+            put_any_sender_nonce_in_db(db, nonce + amount_to_increment_by)
+        )
 }
 
 #[cfg(test)]

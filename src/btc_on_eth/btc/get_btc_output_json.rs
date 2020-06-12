@@ -26,6 +26,12 @@ use crate::{
     },
 };
 
+#[cfg(feature = "any-sender")]
+use crate::btc_on_eth::eth::{
+    any_sender::relay_transaction::RelayTransaction,
+    eth_database_utils::get_any_sender_nonce_from_db,
+};
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EthTxInfo {
     pub eth_tx_hex: String,
@@ -36,6 +42,12 @@ pub struct EthTxInfo {
     pub signature_timestamp: u64,
     pub originating_tx_hash: String,
     pub originating_address: String,
+
+    #[cfg(feature = "any-sender")]
+    pub any_sender_tx_json: Option<String>,
+
+    #[cfg(feature = "any-sender")]
+    pub any_sender_nonce: Option<u64>,
 }
 
 impl EthTxInfo {
@@ -52,6 +64,7 @@ impl EthTxInfo {
             false => retrieved_address,
             true => "✘ Could not retrieve sender address".to_string(),
         };
+
         Ok(
             EthTxInfo {
                 eth_account_nonce,
@@ -68,6 +81,57 @@ impl EthTxInfo {
                 signature_timestamp: SystemTime::now()
                     .duration_since(UNIX_EPOCH)?
                     .as_secs(),
+                
+                #[cfg(feature = "any-sender")]
+                any_sender_tx_json: None,
+                
+                #[cfg(feature = "any-sender")]
+                any_sender_nonce: None,
+            }
+        )
+    }
+
+    #[cfg(feature = "any-sender")]
+    pub fn new_with_any_sender<D>(
+        eth_tx: &EthTransaction,
+        minting_param_struct: &MintingParamStruct,
+        eth_account_nonce: u64,
+        any_sender_nonce: Option<u64>,
+        db: &D,
+    ) -> Result<EthTxInfo>
+        where D: DatabaseInterface,
+    {
+        let default_address = DEFAULT_BTC_ADDRESS.to_string();
+        let retrieved_address = minting_param_struct
+            .originating_tx_address
+            .to_string();
+        let address_string = match default_address == retrieved_address {
+            false => retrieved_address,
+            true => "✘ Could not retrieve sender address".to_string(),
+        };
+
+        let any_sender_tx_json = serde_json::to_string(
+            &RelayTransaction::from_eth_transaction(eth_tx, db)?
+        ).ok();
+
+        Ok(
+            EthTxInfo {
+                eth_account_nonce,
+                eth_tx_hash: format!("0x{}", eth_tx.get_tx_hash()),
+                eth_tx_hex: eth_tx.serialize_hex(),
+                originating_address: address_string,
+                eth_tx_amount: minting_param_struct.amount.to_string(),
+                originating_tx_hash:
+                    minting_param_struct.originating_tx_hash.to_string(),
+                eth_tx_recipient: format!(
+                    "0x{}",
+                    hex::encode(minting_param_struct.eth_address.as_bytes())
+                ),
+                signature_timestamp: SystemTime::now()
+                    .duration_since(UNIX_EPOCH)?
+                    .as_secs(),
+                any_sender_tx_json,
+                any_sender_nonce,
             }
         )
     }
@@ -79,11 +143,36 @@ pub struct BtcOutput {
     pub eth_signed_transactions: Vec<EthTxInfo>,
 }
 
-pub fn get_eth_signed_tx_info_from_eth_txs(
+pub fn get_eth_signed_tx_info_from_eth_txs<D>(
     eth_txs: &EthTransactions,
     minting_params: &MintingParams,
     eth_account_nonce: u64,
-) -> Result<Vec<EthTxInfo>> {
+    _state: &BtcState<D>,
+) -> Result<Vec<EthTxInfo>>
+    where D: DatabaseInterface
+{
+    #[cfg(feature = "any-sender")]
+    if _state.is_any_sender() {
+        info!("✔ Getting any.sender tx info from ETH txs...");
+        let start_nonce = eth_account_nonce - eth_txs.len() as u64;
+        let any_sender_start_nonce =
+            get_any_sender_nonce_from_db(&_state.db)? - eth_txs.len() as u64;
+
+        return eth_txs
+            .iter()
+            .enumerate()
+            .map(|(i, tx)|
+                EthTxInfo::new_with_any_sender(
+                    tx,
+                    &minting_params[i],
+                    start_nonce + i as u64,
+                    Some(any_sender_start_nonce + i as u64),
+                    &_state.db,
+                )
+            )
+            .collect::<Result<Vec<EthTxInfo>>>();
+    }
+
     info!("✔ Getting ETH tx info from ETH txs...");
     let start_nonce = eth_account_nonce - eth_txs.len() as u64;
     eth_txs
@@ -112,6 +201,7 @@ pub fn create_btc_output_json_and_put_in_state<D>(
                         txs,
                         &get_btc_canon_block_from_db(&state.db)?.minting_params,
                         get_eth_account_nonce_from_db(&state.db)?,
+                        &state,
                     )?,
             }
         }

@@ -19,6 +19,9 @@ use crate::{
     },
 };
 
+#[cfg(feature = "any-sender")]
+use crate::btc_on_eth::btc::btc_types::BtcBlockAndTxsJson;
+
 #[derive(Clone, PartialEq, Eq)]
 pub struct BtcState<D: DatabaseInterface> {
     pub db: D,
@@ -31,6 +34,9 @@ pub struct BtcState<D: DatabaseInterface> {
     pub op_return_deposit_txs: Option<BtcTransactions>,
     pub deposit_info_hash_map: Option<DepositInfoHashMap>,
     pub btc_block_in_db_format: Option<BtcBlockInDbFormat>,
+
+    #[cfg(feature = "any-sender")]
+    pub any_sender: Option<bool>,
 }
 
 impl<D> BtcState<D> where D: DatabaseInterface {
@@ -46,6 +52,9 @@ impl<D> BtcState<D> where D: DatabaseInterface {
             deposit_info_hash_map: None,
             btc_block_in_db_format: None,
             utxos_and_values: Vec::new(),
+
+            #[cfg(feature = "any-sender")]
+            any_sender: None,
         }
     }
 
@@ -301,6 +310,21 @@ impl<D> BtcState<D> where D: DatabaseInterface {
                 get_not_in_state_err("output_json_string"))
             )
         }
+    }
+
+    #[cfg(feature = "any-sender")]
+    pub fn set_any_sender_from_btc_block_and_tx_json(
+        &mut self,
+        btc_block_json: BtcBlockAndTxsJson
+    ) -> Result<BtcBlockAndTxsJson> {
+        info!("✔ Setting any.sender state from BTC block...");
+        self.any_sender = btc_block_json.any_sender;
+        Ok(btc_block_json)
+    }
+
+    #[cfg(feature = "any-sender")]
+    pub fn is_any_sender(&self) -> bool {
+        self.any_sender == Some(true)
     }
 }
 
