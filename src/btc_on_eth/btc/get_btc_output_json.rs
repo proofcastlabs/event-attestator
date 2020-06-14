@@ -109,15 +109,13 @@ impl EthTxInfo {
             true => "✘ Could not retrieve sender address".to_string(),
         };
 
-        let any_sender_tx = Some(
-            RelayTransaction::from_eth_transaction(eth_tx, db)?
-        );
+        let any_sender_tx = RelayTransaction::from_eth_transaction(eth_tx, db)?;
 
         Ok(
             EthTxInfo {
                 eth_account_nonce: None,
                 // FIXME: set to any.sender tx hash for now
-                eth_tx_hash: format!("0x{}", eth_tx.get_tx_hash()),
+                eth_tx_hash: format!("0x{}", any_sender_tx.get_tx_hash()),
                 eth_tx_hex: eth_tx.serialize_hex(),
                 originating_address: address_string,
                 eth_tx_amount: minting_param_struct.amount.to_string(),
@@ -130,7 +128,7 @@ impl EthTxInfo {
                 signature_timestamp: SystemTime::now()
                     .duration_since(UNIX_EPOCH)?
                     .as_secs(),
-                any_sender_tx,
+                any_sender_tx: Some(any_sender_tx),
                 any_sender_nonce,
             }
         )

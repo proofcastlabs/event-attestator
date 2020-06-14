@@ -1,12 +1,16 @@
 use crate::{
-    btc_on_eth::eth::{
-        any_sender::{
-            relay_contract::RelayContract,
-            serde::{compensation, data},
-        },
-        eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
-        eth_database_utils::{
-            get_eth_chain_id_from_db, get_eth_private_key_from_db, get_public_eth_address_from_db,
+    btc_on_eth::{
+        crypto_utils::keccak_hash_bytes,
+        eth::{
+            any_sender::{
+                relay_contract::RelayContract,
+                serde::{compensation, data},
+            },
+            eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
+            eth_database_utils::{
+                get_eth_chain_id_from_db, get_eth_private_key_from_db,
+                get_public_eth_address_from_db,
+            },
         },
     },
     errors::AppError,
@@ -15,6 +19,7 @@ use crate::{
 };
 use ethabi::{encode, Token};
 use ethereum_types::{Address as EthAddress, Signature as EthSignature};
+use rlp::RlpStream;
 
 const MAX_COMPENSATION_WEI: u64 = 49_999_999_999_999_999;
 
@@ -219,6 +224,25 @@ impl RelayTransaction {
 
         Ok(relay_transaction)
     }
+
+    pub fn serialize_bytes(&self) -> Bytes {
+        let mut rlp_stream = RlpStream::new();
+        rlp_stream.begin_list(9);
+        rlp_stream.append(&self.to);
+        rlp_stream.append(&self.from);
+        rlp_stream.append(&self.data);
+        rlp_stream.append(&self.deadline);
+        rlp_stream.append(&self.compensation);
+        rlp_stream.append(&self.gas_limit);
+        rlp_stream.append(&self.chain_id);
+        rlp_stream.append(&self.relay_contract_address);
+        rlp_stream.append(&self.signature);
+        rlp_stream.out()
+    }
+
+    pub fn get_tx_hash(&self) -> String {
+        hex::encode(keccak_hash_bytes(self.serialize_bytes()))
+    }
 }
 
 #[cfg(test)]
@@ -404,5 +428,62 @@ mod tests {
         let relay_transaction = serde_json::to_string(&relay_transaction).unwrap();
 
         assert_eq!(relay_transaction, expected_relay_transaction);
+    }
+
+    #[test]
+    fn should_serialize_relay_tx_to_bytes() {
+        let expected_result = vec![
+            248, 243, 148, 253, 232, 59, 213, 27, 221, 170, 57, 241, 92, 27, 245, 14, 34, 42, 122,
+            229, 131, 29, 131, 148, 115, 102, 97, 115, 101, 51, 188, 252, 156, 195, 86, 73, 230,
+            50, 74, 206, 251, 125, 50, 193, 184, 100, 241, 93, 167, 41, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 116, 101,
+            115, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 128, 132, 29, 205, 101, 0, 131, 1, 134, 160, 3, 148, 155, 79, 165, 161, 217, 246,
+            129, 46, 43, 86, 179, 111, 189, 230, 39, 54, 250, 130, 194, 167, 184, 65, 90, 161, 74,
+            133, 36, 57, 217, 245, 170, 123, 34, 198, 58, 34, 141, 121, 198, 130, 44, 246, 68, 186,
+            220, 154, 99, 17, 125, 215, 136, 13, 154, 76, 99, 158, 204, 212, 174, 238, 233, 30,
+            174, 166, 62, 54, 100, 13, 21, 27, 231, 19, 70, 215, 133, 210, 189, 39, 79, 184, 35,
+            81, 198, 187, 44, 16, 27,
+        ];
+
+        let data = hex::decode("f15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000").unwrap();
+        let deadline = Some(0);
+        let gas_limit = 100000;
+        let compensation = 500000000;
+        let to = EthAddress::from_slice(
+            &hex::decode("FDE83bd51bddAA39F15c1Bf50E222a7AE5831D83").unwrap(),
+        );
+
+        let db = setup_db(None);
+
+        let relay_transaction =
+            RelayTransaction::new(data, deadline, gas_limit, compensation, to, &db).unwrap();
+
+        let result = relay_transaction.serialize_bytes();
+
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_relay_tx_hash() {
+        let expected_tx_hash = "e93eab63e9b863d4c93007b0a641c749af840c8c19602ea18f6546a308431cc4";
+
+        let data = hex::decode("f15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000").unwrap();
+        let deadline = Some(0);
+        let gas_limit = 100000;
+        let compensation = 500000000;
+        let to = EthAddress::from_slice(
+            &hex::decode("FDE83bd51bddAA39F15c1Bf50E222a7AE5831D83").unwrap(),
+        );
+
+        let db = setup_db(None);
+
+        let relay_transaction =
+            RelayTransaction::new(data, deadline, gas_limit, compensation, to, &db).unwrap();
+
+        let tx_hash = relay_transaction.get_tx_hash();
+
+        assert_eq!(tx_hash, expected_tx_hash);
     }
 }
