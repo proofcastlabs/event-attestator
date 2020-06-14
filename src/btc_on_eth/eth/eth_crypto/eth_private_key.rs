@@ -71,7 +71,12 @@ impl EthPrivateKey {
         ]
         .concat();
 
-        self.sign_message_bytes(message_bytes)
+        let mut signature = self.sign_message_bytes(message_bytes)?;
+
+        // set recovery param
+        signature[64] = if signature[64] == 1 { 0x1c } else { 0x1b };
+
+        Ok(signature)
     }
 
     pub fn to_public_key(&self) -> EthPublicKey {

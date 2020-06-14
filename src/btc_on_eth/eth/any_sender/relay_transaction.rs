@@ -14,7 +14,6 @@ use ethabi::{encode, Token};
 use ethereum_types::{Address as EthAddress, Signature as EthSignature};
 
 const MAX_COMPENSATION_WEI: u64 = 50_000_000_000_000_000;
-const RECOVERY_PARAM_BYTE: u8 = 0x1b;
 
 /// An any.sender relay transaction. It is very similar
 /// to a normal transaction except for a few fields.
@@ -118,15 +117,12 @@ impl RelayTransaction {
         info!("✔ Checking any.sender transaction constraints...");
 
         let deadline = deadline.unwrap_or_default();
-        // let minimum_deadline = latest_eth_block_number + 400;
 
-        // if !(deadline >= minimum_deadline
-        //     && deadline <= 9_007_199_254_740_991)
-        // {
-        //     return Err(AppError::Custom(
-        //         "✘ Any.sender deadline is out of range!".to_string(),
-        //     ));
-        // }
+        if deadline > 9_007_199_254_740_991 {
+            return Err(AppError::Custom(
+                "✘ Any.sender deadline is out of range!".to_string(),
+            ));
+        }
 
         if gas_limit > 3_000_000 {
             return Err(AppError::Custom(
@@ -183,9 +179,8 @@ impl RelayTransaction {
             Token::Uint(self.chain_id.into()),
             Token::Address(self.relay_contract_address),
         ]);
-        let mut signed_message = eth_private_key.sign_eth_prefixed_msg_bytes(transaction_bytes)?;
 
-        signed_message[64] = RECOVERY_PARAM_BYTE;
+        let signed_message = eth_private_key.sign_eth_prefixed_msg_bytes(transaction_bytes)?;
         self.signature = EthSignature::from_slice(&signed_message);
 
         Ok(self)
@@ -233,34 +228,38 @@ mod tests {
     use crate::btc_on_eth::{
         eth::eth_database_utils::{
             put_eth_chain_id_in_db, put_eth_private_key_in_db, put_public_eth_address_in_db,
-            put_special_eth_block_in_db,
         },
-        eth::eth_test_utils::{
-            get_sample_eth_block_and_receipts_n, get_sample_unsigned_eth_transaction,
-        },
+        eth::eth_test_utils::get_sample_unsigned_eth_transaction,
         test_utils::{get_test_database, TestDB},
     };
 
-    fn setup_db() -> TestDB {
+    fn setup_db(recovery_param: Option<bool>) -> TestDB {
         let db = get_test_database();
 
         let chain_id = 3;
         put_eth_chain_id_in_db(&db, chain_id).expect("Error putting chain id in db!");
 
         let from = EthAddress::from_slice(
-            &hex::decode("0590c44fc2d5971bca9407399d65144f97de6e12").unwrap(),
+            &hex::decode(if recovery_param.unwrap_or_default() {
+                "1a96829d85bdf719b58b2593e2853d4ae5a0f50b"
+            } else {
+                "736661736533BcfC9cc35649e6324aceFb7D32c1"
+            })
+            .unwrap(),
         );
         put_public_eth_address_in_db(&db, &from).expect("Error putting public eth address in db!");
 
-        let block_type = "latest";
-        let block = get_sample_eth_block_and_receipts_n(1).unwrap();
-        put_special_eth_block_in_db(&db, &block, &block_type)
-            .expect("Error putting ETH special block in db!");
-
-        let eth_private_key = EthPrivateKey::from_slice([
-            94, 198, 246, 91, 76, 118, 240, 238, 182, 141, 19, 140, 15, 63, 112, 18, 212, 176, 49,
-            147, 40, 163, 118, 50, 200, 8, 193, 250, 236, 16, 135, 82,
-        ])
+        let eth_private_key = EthPrivateKey::from_slice(if recovery_param.unwrap_or_default() {
+            [
+                6, 55, 162, 221, 254, 198, 108, 20, 103, 12, 93, 123, 226, 232, 71, 70, 139, 212,
+                41, 54, 65, 132, 18, 158, 202, 14, 137, 226, 174, 63, 11, 45,
+            ]
+        } else {
+            [
+                132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169,
+                234, 47, 186, 237, 88, 161, 200, 177, 24, 142, 207, 242, 168, 221,
+            ]
+        })
         .unwrap();
         put_eth_private_key_in_db(&db, &eth_private_key)
             .expect("Error putting eth private key in db!");
@@ -278,20 +277,52 @@ mod tests {
         let to = EthAddress::from_slice(
             &hex::decode("FDE83bd51bddAA39F15c1Bf50E222a7AE5831D83").unwrap(),
         );
+
+        let expected_data = hex::decode("f15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000").unwrap();
+
+        // private key without recovery param
         let from = EthAddress::from_slice(
-            &hex::decode("0590c44fC2d5971bcA9407399D65144F97de6e12").unwrap(),
+            &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap(),
         );
 
-        let db = setup_db();
+        let db = setup_db(None);
+
+        let relay_transaction =
+            RelayTransaction::new(data.clone(), deadline, gas_limit, compensation, to, &db)
+                .unwrap();
+
+        let expected_signature = EthSignature::from_slice(
+            &hex::decode("5aa14a852439d9f5aa7b22c63a228d79c6822cf644badc9a63117dd7880d9a4c639eccd4aeeee91eaea63e36640d151be71346d785d2bd274fb82351c6bb2c101b")
+                .unwrap(),
+        );
+        let expected_relay_transaction = RelayTransaction {
+            signature: expected_signature,
+            data: expected_data.clone(),
+            chain_id: 3,
+            deadline: 0,
+            from,
+            gas_limit,
+            compensation,
+            relay_contract_address,
+            to,
+        };
+
+        assert_eq!(relay_transaction, expected_relay_transaction);
+
+        // private key with recovery param
+        let from = EthAddress::from_slice(
+            &hex::decode("1a96829d85bdf719b58b2593e2853d4ae5a0f50b").unwrap(),
+        );
+
+        let db = setup_db(Some(true));
 
         let relay_transaction =
             RelayTransaction::new(data, deadline, gas_limit, compensation, to, &db).unwrap();
 
-        let expected_data = hex::decode("f15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000").unwrap();
         let expected_signature = EthSignature::from_slice(
-            &hex::decode("bdb679eca0a55ff1bb2af1a51d8757ad29e916504a54f965545d8918776b616651d2a953cfc1484c82d76aa59390a964963213253c5702d5b1cb04febc666f861b")
-                .unwrap(),
-        );
+            &hex::decode("89397a8de1489ab225704fdfe2187a72d837659c190b6bd0c0e2b6cd5f2705da1fa1db87fd516f4677f6db821a6ede7b4f7f4779d9f248a7ed93c1b8ca86c48f1b")
+                .unwrap()
+            );
         let expected_relay_transaction = RelayTransaction {
             signature: expected_signature,
             data: expected_data,
@@ -309,7 +340,7 @@ mod tests {
 
     #[test]
     fn should_create_new_signed_relay_tx_from_eth_tx() {
-        let db = setup_db();
+        let db = setup_db(None);
 
         let mut eth_transaction = get_sample_unsigned_eth_transaction();
         eth_transaction.chain_id = 3;
@@ -319,9 +350,9 @@ mod tests {
         let expected_relay_transaction = RelayTransaction {
             chain_id: 3,
             from: EthAddress::from_slice(
-                &hex::decode("0590c44fc2d5971bca9407399d65144f97de6e12").unwrap()),
+                &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap()),
             signature: EthSignature::from_slice(
-                &hex::decode("c3a365a85ab404a2deaf192f4192bd22cc57dbeed2e99f1c7f1d18d2d02b0ef36030a19befedb2c531f04268c04f122963afbe465607c77f01de091fb650e1a81b").unwrap()),
+                &hex::decode("7a8d98c902443d4035085b22af11869ff189eb2a1fd594eaba6335c7284a414d68cb6e9c44f0ff0b54b76a684072c0e7912d090894aa4f2b73dab19fd49cc90a1b").unwrap()),
             data: Bytes::default(),
             deadline: 0,
             gas_limit: 100000,
