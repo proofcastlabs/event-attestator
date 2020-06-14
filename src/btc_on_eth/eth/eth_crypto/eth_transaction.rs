@@ -289,7 +289,7 @@ mod tests {
         ];
         let tx = get_sample_unsigned_eth_transaction();
         let result = tx.serialize_bytes();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -303,7 +303,7 @@ mod tests {
             .sign(private_key)
             .unwrap()
             .serialize_hex();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -357,7 +357,7 @@ mod tests {
             .unwrap();
         let expected_result = "40c10f190000000000000000000000001739624f5cd969885a224da84418d12b8570d61a0000000000000000000000000000000000000000000000000000000000000001"
             .to_string();
-        assert!(hex::encode(result) == expected_result);
+        assert_eq!(hex::encode(result), expected_result);
     }
 
     #[test]
@@ -382,7 +382,7 @@ mod tests {
         ).unwrap();
         let expected_result = "f86a048504a817c8008301d4c094c63b099efb18c8db573981fb64564f1564af4f3080b84440c10f190000000000000000000000001739624f5cd969885a224da84418d12b8570d61a0000000000000000000000000000000000000000000000000000000000000001048080"
             .to_string();
-        assert!(result.serialize_hex() == expected_result);
+        assert_eq!(result.serialize_hex(), expected_result);
     }
 
     #[test]
@@ -412,7 +412,7 @@ mod tests {
             .to_string();
         let expected_tx_hash = "c11826091cd47445fa72b7788eabac8d42bfedfcabcd8f719d1a7ba84894cd2b";
         let tx_hash = result.get_tx_hash();
-        assert!(tx_hash == expected_tx_hash);
-        assert!(result.serialize_hex() == expected_result);
+        assert_eq!(tx_hash, expected_tx_hash);
+        assert_eq!(result.serialize_hex(), expected_result);
     }
 }
