@@ -116,7 +116,7 @@ impl EthTxInfo {
                 eth_account_nonce: None,
                 // FIXME: set to any.sender tx hash for now
                 eth_tx_hash: format!("0x{}", any_sender_tx.get_tx_hash()),
-                eth_tx_hex: eth_tx.serialize_hex(),
+                eth_tx_hex: any_sender_tx.serialize_hex(),
                 originating_address: address_string,
                 eth_tx_amount: minting_param_struct.amount.to_string(),
                 originating_tx_hash:

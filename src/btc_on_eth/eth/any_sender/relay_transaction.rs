@@ -243,6 +243,10 @@ impl RelayTransaction {
     pub fn get_tx_hash(&self) -> String {
         hex::encode(keccak_hash_bytes(self.serialize_bytes()))
     }
+
+    pub fn serialize_hex(&self) -> String {
+        hex::encode(self.serialize_bytes())
+    }
 }
 
 #[cfg(test)]
@@ -446,28 +450,8 @@ mod tests {
             174, 166, 62, 54, 100, 13, 21, 27, 231, 19, 70, 215, 133, 210, 189, 39, 79, 184, 35,
             81, 198, 187, 44, 16, 27,
         ];
-
-        let data = hex::decode("f15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000").unwrap();
-        let deadline = Some(0);
-        let gas_limit = 100000;
-        let compensation = 500000000;
-        let to = EthAddress::from_slice(
-            &hex::decode("FDE83bd51bddAA39F15c1Bf50E222a7AE5831D83").unwrap(),
-        );
-
-        let db = setup_db(None);
-
-        let relay_transaction =
-            RelayTransaction::new(data, deadline, gas_limit, compensation, to, &db).unwrap();
-
-        let result = relay_transaction.serialize_bytes();
-
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_get_relay_tx_hash() {
         let expected_tx_hash = "e93eab63e9b863d4c93007b0a641c749af840c8c19602ea18f6546a308431cc4";
+        let expected_tx_hex = "f8f394fde83bd51bddaa39f15c1bf50e222a7ae5831d8394736661736533bcfc9cc35649e6324acefb7d32c1b864f15da72900000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000004746573740000000000000000000000000000000000000000000000000000000080841dcd6500830186a003949b4fa5a1d9f6812e2b56b36fbde62736fa82c2a7b8415aa14a852439d9f5aa7b22c63a228d79c6822cf644badc9a63117dd7880d9a4c639eccd4aeeee91eaea63e36640d151be71346d785d2bd274fb82351c6bb2c101b";
 
         let data = hex::decode("f15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000").unwrap();
         let deadline = Some(0);
@@ -482,8 +466,16 @@ mod tests {
         let relay_transaction =
             RelayTransaction::new(data, deadline, gas_limit, compensation, to, &db).unwrap();
 
-        let tx_hash = relay_transaction.get_tx_hash();
+        // bytes
+        let result = relay_transaction.serialize_bytes();
+        assert_eq!(result, expected_result);
 
+        // hash
+        let tx_hash = relay_transaction.get_tx_hash();
         assert_eq!(tx_hash, expected_tx_hash);
+
+        // hex
+        let tx_hex = relay_transaction.serialize_hex();
+        assert_eq!(tx_hex, expected_tx_hex);
     }
 }
