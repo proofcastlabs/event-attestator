@@ -13,7 +13,7 @@ use crate::{
 use ethabi::{encode, Token};
 use ethereum_types::{Address as EthAddress, Signature as EthSignature};
 
-const MAX_COMPENSATION_WEI: u64 = 50_000_000_000_000_000;
+const MAX_COMPENSATION_WEI: u64 = 49_999_999_999_999_999;
 
 /// An any.sender relay transaction. It is very similar
 /// to a normal transaction except for a few fields.
@@ -40,11 +40,11 @@ pub struct RelayTransaction {
     pub data: Bytes,
 
     /// The block by which this transaction must be mined.
-    /// Must be at minimum 400 greater than current block (BETA).
-    /// There is a tolerance of 20 blocks above and below 400 (BETA).
+    /// Must be at most 400 blocks larger than the current block height (BETA).
+    /// There is a tolerance of 20 blocks above and below this value (BETA).
     /// Can optionally be set to 0. In this case the any.sender API will
     /// fill in a deadline (currentBlock + 400) and populate it in the returned receipt.
-    // An integer in range 0..=9_007_199_254_740_991.
+    // An integer in range 0..=(currentBlock + 400).
     pub deadline: u64,
 
     /// The gas limit provided to the transaction for execution.
@@ -118,12 +118,6 @@ impl RelayTransaction {
 
         let deadline = deadline.unwrap_or_default();
 
-        if deadline > 9_007_199_254_740_991 {
-            return Err(AppError::Custom(
-                "✘ Any.sender deadline is out of range!".to_string(),
-            ));
-        }
-
         if gas_limit > 3_000_000 {
             return Err(AppError::Custom(
                 "✘ Any.sender gas limit is out of range!".to_string(),
@@ -138,7 +132,7 @@ impl RelayTransaction {
 
         if compensation > MAX_COMPENSATION_WEI {
             return Err(AppError::Custom(
-                "✘ Any.sender compensation cannot be grater than 0.05 ETH!".to_string(),
+                "✘ Any.sender compensation should be smaller than 0.05 ETH!".to_string(),
             ));
         }
 
@@ -352,11 +346,11 @@ mod tests {
             from: EthAddress::from_slice(
                 &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap()),
             signature: EthSignature::from_slice(
-                &hex::decode("7a8d98c902443d4035085b22af11869ff189eb2a1fd594eaba6335c7284a414d68cb6e9c44f0ff0b54b76a684072c0e7912d090894aa4f2b73dab19fd49cc90a1b").unwrap()),
+                &hex::decode("836ca384f9e2da3a7333c70142edae081b5f8048e9f919de9033e60021f3e1076d050dd58ce6d3db109a172b06b64a8ec7adce9bd5d5aaa84e54a0c6aeb401041c").unwrap()),
             data: Bytes::default(),
             deadline: 0,
             gas_limit: 100000,
-            compensation: 50000000000000000,
+            compensation: 49999999999999999,
             relay_contract_address: EthAddress::from_slice(
                 &hex::decode("9b4fa5a1d9f6812e2b56b36fbde62736fa82c2a7").unwrap()),
             to: EthAddress::from_slice(
