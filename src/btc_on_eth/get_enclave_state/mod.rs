@@ -32,6 +32,7 @@ use crate::{
                 get_public_eth_address_from_db,
                 get_eth_canon_to_tip_length_from_db,
                 get_eth_smart_contract_address_from_db,
+                get_any_sender_nonce_from_db,
             },
         },
         btc::{
@@ -94,6 +95,7 @@ struct EnclaveState {
     btc_anchor_block_number: u64,
     btc_canon_to_tip_length: u64,
     eth_latest_block_number: usize,
+    any_sender_nonce: u64,
 }
 
 pub fn get_enclave_state<D>(
@@ -196,6 +198,8 @@ pub fn get_enclave_state<D>(
                         get_total_number_of_utxos_from_db(&db)?,
                     btc_utxo_total_value:
                         get_total_utxo_balance_from_db(&db)?,
+                    any_sender_nonce:
+                        get_any_sender_nonce_from_db(&db)?,
                 }
             )?)
         })
