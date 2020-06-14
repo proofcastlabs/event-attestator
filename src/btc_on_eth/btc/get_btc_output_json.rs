@@ -37,14 +37,14 @@ pub struct EthTxInfo {
     pub eth_tx_hex: String,
     pub eth_tx_hash: String,
     pub eth_tx_amount: String,
-    pub eth_account_nonce: u64,
+    pub eth_account_nonce: Option<u64>,
     pub eth_tx_recipient: String,
     pub signature_timestamp: u64,
     pub originating_tx_hash: String,
     pub originating_address: String,
 
     #[cfg(feature = "any-sender")]
-    pub any_sender_tx_json: Option<String>,
+    pub any_sender_tx: Option<RelayTransaction>,
 
     #[cfg(feature = "any-sender")]
     pub any_sender_nonce: Option<u64>,
@@ -54,7 +54,7 @@ impl EthTxInfo {
     pub fn new(
         eth_tx: &EthTransaction,
         minting_param_struct: &MintingParamStruct,
-        eth_account_nonce: u64,
+        eth_account_nonce: Option<u64>,
     ) -> Result<EthTxInfo> {
         let default_address = DEFAULT_BTC_ADDRESS.to_string();
         let retrieved_address = minting_param_struct
@@ -83,7 +83,7 @@ impl EthTxInfo {
                     .as_secs(),
                 
                 #[cfg(feature = "any-sender")]
-                any_sender_tx_json: None,
+                any_sender_tx: None,
                 
                 #[cfg(feature = "any-sender")]
                 any_sender_nonce: None,
@@ -95,7 +95,6 @@ impl EthTxInfo {
     pub fn new_with_any_sender<D>(
         eth_tx: &EthTransaction,
         minting_param_struct: &MintingParamStruct,
-        eth_account_nonce: u64,
         any_sender_nonce: Option<u64>,
         db: &D,
     ) -> Result<EthTxInfo>
@@ -110,13 +109,14 @@ impl EthTxInfo {
             true => "✘ Could not retrieve sender address".to_string(),
         };
 
-        let any_sender_tx_json = serde_json::to_string(
-            &RelayTransaction::from_eth_transaction(eth_tx, db)?
-        ).ok();
+        let any_sender_tx = Some(
+            RelayTransaction::from_eth_transaction(eth_tx, db)?
+        );
 
         Ok(
             EthTxInfo {
-                eth_account_nonce,
+                eth_account_nonce: None,
+                // FIXME: set to any.sender tx hash for now
                 eth_tx_hash: format!("0x{}", eth_tx.get_tx_hash()),
                 eth_tx_hex: eth_tx.serialize_hex(),
                 originating_address: address_string,
@@ -130,7 +130,7 @@ impl EthTxInfo {
                 signature_timestamp: SystemTime::now()
                     .duration_since(UNIX_EPOCH)?
                     .as_secs(),
-                any_sender_tx_json,
+                any_sender_tx,
                 any_sender_nonce,
             }
         )
@@ -154,7 +154,6 @@ pub fn get_eth_signed_tx_info_from_eth_txs<D>(
     #[cfg(feature = "any-sender")]
     if _state.is_any_sender() {
         info!("✔ Getting any.sender tx info from ETH txs...");
-        let start_nonce = eth_account_nonce - eth_txs.len() as u64;
         let any_sender_start_nonce =
             get_any_sender_nonce_from_db(&_state.db)? - eth_txs.len() as u64;
 
@@ -165,7 +164,6 @@ pub fn get_eth_signed_tx_info_from_eth_txs<D>(
                 EthTxInfo::new_with_any_sender(
                     tx,
                     &minting_params[i],
-                    start_nonce + i as u64,
                     Some(any_sender_start_nonce + i as u64),
                     &_state.db,
                 )
@@ -179,7 +177,7 @@ pub fn get_eth_signed_tx_info_from_eth_txs<D>(
         .iter()
         .enumerate()
         .map(|(i, tx)|
-            EthTxInfo::new(tx, &minting_params[i], start_nonce + i as u64)
+            EthTxInfo::new(tx, &minting_params[i], Some(start_nonce + i as u64))
         )
         .collect::<Result<Vec<EthTxInfo>>>()
 }

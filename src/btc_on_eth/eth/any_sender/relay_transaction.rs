@@ -1,6 +1,9 @@
 use crate::{
     btc_on_eth::eth::{
-        any_sender::relay_contract::RelayContract,
+        any_sender::{
+            relay_contract::RelayContract,
+            serde::{compensation, data},
+        },
         eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
         eth_database_utils::{
             get_eth_chain_id_from_db, get_eth_private_key_from_db, get_public_eth_address_from_db,
@@ -19,7 +22,7 @@ const MAX_COMPENSATION_WEI: u64 = 49_999_999_999_999_999;
 /// to a normal transaction except for a few fields.
 /// The schema can be found [here](https://github.com/PISAresearch/docs.any.sender/blob/master/docs/relayTx.schema.json).
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all(serialize = "camelCase", deserialize = "snake_case"))]
+#[serde(rename_all = "camelCase")]
 pub struct RelayTransaction {
     /// The standard eth chain id.
     /// Currently supports Ropsten = 3 and Mainnet = 1.
@@ -37,6 +40,7 @@ pub struct RelayTransaction {
     /// The ABI encoded call data.
     /// Same as standard Ethereum.
     /// Max data length is 3000 bytes (BETA).
+    #[serde(with = "data")]
     pub data: Bytes,
 
     /// The block by which this transaction must be mined.
@@ -57,6 +61,7 @@ pub struct RelayTransaction {
     /// before the `deadline`.
     /// Max compensation is 0.05 ETH (BETA).
     // Maximum value 50_000_000_000_000_000
+    #[serde(with = "compensation")]
     pub compensation: u64,
 
     /// The address of the relay contract
@@ -356,6 +361,47 @@ mod tests {
             to: EthAddress::from_slice(
                 &hex::decode("53c2048dad4fcfab44c3ef3d16e882b5178df42b").unwrap()),
         };
+
+        assert_eq!(relay_transaction, expected_relay_transaction);
+    }
+
+    #[test]
+    fn should_serialize_deserialize_relay_tx_as_json() {
+        // deserialize
+        let json_str = r#"
+            {
+                "chainId": 3,
+                "from": "0x736661736533BcfC9cc35649e6324aceFb7D32c1",
+                "to": "0xFDE83bd51bddAA39F15c1Bf50E222a7AE5831D83",
+                "data": "0xf15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000",
+                "deadline": 0,
+                "gasLimit": 100000,
+                "compensation": "500000000",
+                "relayContractAddress": "0x9b4FA5A1D9f6812e2B56B36fBde62736Fa82c2a7",
+                "signature": "0x5aa14a852439d9f5aa7b22c63a228d79c6822cf644badc9a63117dd7880d9a4c639eccd4aeeee91eaea63e36640d151be71346d785d2bd274fb82351c6bb2c101b"
+            }
+        "#;
+
+        let relay_transaction: RelayTransaction = serde_json::from_str(json_str).unwrap();
+
+        let data = hex::decode("f15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000").unwrap();
+        let deadline = Some(0);
+        let gas_limit = 100000;
+        let compensation = 500000000;
+        let to = EthAddress::from_slice(
+            &hex::decode("FDE83bd51bddAA39F15c1Bf50E222a7AE5831D83").unwrap(),
+        );
+
+        let db = setup_db(None);
+
+        let expected_relay_transaction =
+            RelayTransaction::new(data, deadline, gas_limit, compensation, to, &db).unwrap();
+
+        assert_eq!(relay_transaction, expected_relay_transaction);
+
+        // serialize
+        let expected_relay_transaction = "{\"chainId\":3,\"from\":\"0x736661736533bcfc9cc35649e6324acefb7d32c1\",\"signature\":\"0x5aa14a852439d9f5aa7b22c63a228d79c6822cf644badc9a63117dd7880d9a4c639eccd4aeeee91eaea63e36640d151be71346d785d2bd274fb82351c6bb2c101b\",\"data\":\"0xf15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000\",\"deadline\":0,\"gasLimit\":100000,\"compensation\":\"500000000\",\"relayContractAddress\":\"0x9b4fa5a1d9f6812e2b56b36fbde62736fa82c2a7\",\"to\":\"0xfde83bd51bddaa39f15c1bf50e222a7ae5831d83\"}".to_string();
+        let relay_transaction = serde_json::to_string(&relay_transaction).unwrap();
 
         assert_eq!(relay_transaction, expected_relay_transaction);
     }
