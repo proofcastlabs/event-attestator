@@ -445,7 +445,7 @@ pub fn maybe_get_nth_ancestor_btc_block_and_id<D>(
     }
 }
 
-pub fn put_btc_address_in_db<D>(db: &D, btc_address: &String) -> Result<()>
+pub fn put_btc_address_in_db<D>(db: &D, btc_address: &str) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Putting BTC address {} in db...", btc_address);

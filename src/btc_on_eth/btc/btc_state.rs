@@ -300,7 +300,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 
     pub fn get_output_json_string(
         &self
-    ) -> Result<&String> {
+    ) -> Result<&str> {
         match &self.output_json_string {
             Some(output_json_string) => {
                 info!("✔ Getting BTC output json string from state...");

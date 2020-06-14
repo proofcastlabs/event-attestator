@@ -156,7 +156,7 @@ impl EthTransaction {
     }
 }
 
-pub fn get_ptoken_smart_contract_bytecode(path: &String) -> Result<Bytes> {
+pub fn get_ptoken_smart_contract_bytecode(path: &str) -> Result<Bytes> {
     info!("✔ Getting ETH smart-contract bytecode...");
     let contents = match fs::read_to_string(path) {
         Ok(file) => Ok(file),
@@ -176,7 +176,7 @@ fn get_unsigned_ptoken_smart_contract_tx(
     nonce: u64,
     chain_id: u8,
     gas_price: u64,
-    bytecode_path: &String,
+    bytecode_path: &str,
 ) -> Result<EthTransaction> {
     Ok(
         EthTransaction::new_contract(
@@ -195,7 +195,7 @@ pub fn get_signed_ptoken_smart_contract_tx(
     chain_id: u8,
     eth_private_key: EthPrivateKey,
     gas_price: u64,
-    bytecode_path: &String,
+    bytecode_path: &str,
 ) -> Result<EthSignedTransaction> {
     Ok(
         get_unsigned_ptoken_smart_contract_tx(

@@ -34,11 +34,13 @@ use crate::{
                 check_for_existence_of_eth_contract_byte_code,
                 put_canon_to_tip_length_in_db_and_return_state,
                 put_eth_tail_block_hash_in_db_and_return_state,
-                put_any_sender_nonce_in_db_and_return_state,
             },
         },
     },
 };
+
+#[cfg(feature = "any-sender")]
+use crate::btc_on_eth::eth::initialize_eth::eth_init_utils::put_any_sender_nonce_in_db_and_return_state;
 
 pub fn maybe_initialize_eth_enclave<D>(
     db: D,
