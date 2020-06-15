@@ -11,7 +11,11 @@ use secp256k1::{
 };
 use crate::{
     traits::DatabaseInterface,
-    constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+    constants::{
+        PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+        PREFIXED_MESSAGE_HASH_LEN,
+        ETH_MESSAGE_PREFIX,
+    },
     types::{
         Bytes,
         Result,
@@ -65,8 +69,8 @@ impl EthPrivateKey {
         let message_hash = keccak_hash_bytes(message);
 
         let message_bytes = [
-            b"\x19Ethereum Signed Message:\n",
-            b"32".as_ref(), // message hash len bytes
+            ETH_MESSAGE_PREFIX,
+            PREFIXED_MESSAGE_HASH_LEN.as_ref(),
             message_hash.as_bytes(),
         ]
         .concat();
