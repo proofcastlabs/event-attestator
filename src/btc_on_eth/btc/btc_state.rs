@@ -2,16 +2,20 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
+    chains::btc::{
+        deposit_address_info::DepositInfoHashMap,
+        utxo_manager::utxo_types::BtcUtxosAndValues,
+    },
     btc_on_eth::{
         eth::eth_types::EthTransactions,
-        btc::btc_types::{
-            BtcBlockAndId,
-            MintingParams,
-            BtcTransactions,
-            BtcBlockInDbFormat,
-            DepositInfoHashMap,
-            BtcBlockAndTxsJson,
+        btc::{
+            btc_types::{
+                BtcBlockAndId,
+                MintingParams,
+                BtcTransactions,
+                BtcBlockInDbFormat,
+            },
+            parse_submission_material::BtcSubmissionMaterialJson,
         },
         utils::{
             get_not_in_state_err,
@@ -306,13 +310,13 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn set_any_sender_from_btc_block_and_tx_json(
+    pub fn set_any_sender_status_from_submission_material(
         &mut self,
-        btc_block_json: BtcBlockAndTxsJson
-    ) -> Result<BtcBlockAndTxsJson> {
-        info!("✔ Setting any.sender state from BTC block...");
-        self.any_sender = btc_block_json.any_sender;
-        Ok(btc_block_json)
+        btc_submission_material_json: BtcSubmissionMaterialJson
+    ) -> Result<BtcSubmissionMaterialJson> {
+        info!("✔ Setting any.sender status from submission material...");
+        self.any_sender = btc_submission_material_json.any_sender;
+        Ok(btc_submission_material_json)
     }
 
     pub fn is_any_sender(&self) -> bool {

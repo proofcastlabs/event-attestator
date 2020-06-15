@@ -13,7 +13,7 @@ use crate::{
             validate_btc_merkle_root::validate_btc_merkle_root,
             update_btc_linker_hash::maybe_update_btc_linker_hash,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
-            parse_btc_block::parse_btc_block_and_id_and_put_in_state,
+            parse_submission_material::parse_btc_block_and_id_and_put_in_state,
             remove_old_btc_tail_block::maybe_remove_old_btc_tail_block,
             filter_minting_params::maybe_filter_minting_params_in_state,
             update_btc_tail_block_hash::maybe_update_btc_tail_block_hash,

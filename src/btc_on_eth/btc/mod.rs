@@ -6,7 +6,7 @@ pub(crate) mod btc_types;
 pub(crate) mod btc_crypto;
 pub(crate) mod filter_utxos;
 pub(crate) mod btc_test_utils;
-pub(crate) mod parse_btc_block;
+pub(crate) mod parse_submission_material;
 pub(crate) mod btc_transaction;
 pub(crate) mod save_utxos_to_db;
 pub(crate) mod sign_transactions;

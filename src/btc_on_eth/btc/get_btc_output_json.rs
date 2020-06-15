@@ -32,7 +32,7 @@ use crate::{
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EthTxInfo {
-    pub eth_tx_hex: String,
+    pub eth_tx_hex: Option<String>,
     pub eth_tx_hash: String,
     pub eth_tx_amount: String,
     pub eth_account_nonce: Option<u64>,
@@ -63,7 +63,7 @@ impl EthTxInfo {
             EthTxInfo {
                 eth_account_nonce,
                 eth_tx_hash: format!("0x{}", eth_tx.get_tx_hash()),
-                eth_tx_hex: eth_tx.serialize_hex(),
+                eth_tx_hex: Some(eth_tx.serialize_hex()),
                 originating_address: address_string,
                 eth_tx_amount: minting_param_struct.amount.to_string(),
                 originating_tx_hash:
@@ -103,9 +103,8 @@ impl EthTxInfo {
         Ok(
             EthTxInfo {
                 eth_account_nonce: None,
-                // FIXME: set to any.sender tx hash for now
                 eth_tx_hash: format!("0x{}", any_sender_tx.get_tx_hash()),
-                eth_tx_hex: any_sender_tx.serialize_hex(),
+                eth_tx_hex: None,
                 originating_address: address_string,
                 eth_tx_amount: minting_param_struct.amount.to_string(),
                 originating_tx_hash:

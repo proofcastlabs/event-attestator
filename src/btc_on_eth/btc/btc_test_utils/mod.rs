@@ -48,13 +48,13 @@ use crate::{
             btc_types::{
                 MintingParams,
                 BtcBlockAndId,
-                BtcBlockAndTxsJson,
                 MintingParamStruct,
                 BtcBlockInDbFormat,
             },
-            parse_btc_block::{
+            parse_submission_material::{
                 parse_btc_block_string_to_json,
                 parse_btc_block_and_tx_json_to_struct,
+                BtcSubmissionMaterialJson,
             },
         },
     },
@@ -259,20 +259,20 @@ pub fn convert_sample_block_to_db_format(
     )
 }
 
-pub fn get_sample_btc_block_json_string() -> String {
+pub fn get_sample_btc_submission_material_json_string() -> String {
     read_to_string(SAMPLE_BTC_BLOCK_JSON_PATH)
         .unwrap()
 }
 
-pub fn get_sample_btc_block_json() -> Result<BtcBlockAndTxsJson> {
+pub fn get_sample_btc_submission_material_json() -> Result<BtcSubmissionMaterialJson> {
     parse_btc_block_string_to_json(
-        &get_sample_btc_block_json_string()
+        &get_sample_btc_submission_material_json_string()
     )
 }
 
 pub fn get_sample_btc_block_and_id() -> Result<BtcBlockAndId> {
     parse_btc_block_and_tx_json_to_struct(
-        get_sample_btc_block_json()
+        get_sample_btc_submission_material_json()
             .unwrap()
     )
 }

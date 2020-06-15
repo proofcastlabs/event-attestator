@@ -1,40 +1,34 @@
-use ethereum_types::{
-    U256,
-    Address as EthAddress
-};
-use std::{
-    str::FromStr,
-    collections::HashMap,
-};
 use crate::{
-    types::{
-        Bytes,
-        Result,
-    },
-    chains::btc::deposit_address_info::{
-        DepositAddressInfo,
-        DepositAddressInfoJson,
-    },
     btc_on_eth::{
         constants::SAFE_BTC_ADDRESS,
         utils::convert_hex_to_address,
     },
-};
-use bitcoin::{
-    hashes::sha256d,
-    util::address::Address as BtcAddress,
-    blockdata::{
-        block::Block as BtcBlock,
-        transaction::Transaction as BtcTransaction,
+    chains::btc::deposit_address_info::{
+        DepositInfoList,
+        DepositAddressInfoJson,
+    },
+    types::{
+        Bytes,
+        Result,
     },
 };
+use bitcoin::{
+    blockdata::{
+        block::Block as BtcBlock,
+        transaction::Transaction as BtcTransaction
+    },
+    hashes::sha256d,
+    util::address::Address as BtcAddress,
+};
+use ethereum_types::{
+    Address as EthAddress,
+    U256
+};
+use std::str::FromStr;
 
 pub type BtcTransactions = Vec<BtcTransaction>;
 pub type MintingParams = Vec<MintingParamStruct>;
-pub type DepositInfoList = Vec<DepositAddressInfo>;
 pub type BtcRecipientsAndAmounts = Vec<BtcRecipientAndAmount>;
-pub type DepositAddressJsonList = Vec<DepositAddressInfoJson>;
-pub type DepositInfoHashMap =  HashMap<BtcAddress, DepositAddressInfo>;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BtcRecipientAndAmount {
@@ -44,25 +38,17 @@ pub struct BtcRecipientAndAmount {
 
 impl BtcRecipientAndAmount {
     pub fn new(recipient: &str, amount: u64) -> Result<Self> {
-        Ok(
-            BtcRecipientAndAmount {
-                amount,
-                recipient: match BtcAddress::from_str(recipient) {
-                    Ok(address) => address,
-                    Err(error) => {
-                        info!(
-                            "✔ Error parsing BTC address for recipient: {}",
-                            error
-                        );
-                        info!(
-                            "✔ Defaulting to SAFE BTC address: {}",
-                            SAFE_BTC_ADDRESS,
-                        );
-                        BtcAddress::from_str(SAFE_BTC_ADDRESS)?
-                    }
+        Ok(BtcRecipientAndAmount {
+            amount,
+            recipient: match BtcAddress::from_str(recipient) {
+                Ok(address) => address,
+                Err(error) => {
+                    info!("✔ Error parsing BTC address for recipient: {}", error);
+                    info!("✔ Defaulting to SAFE BTC address: {}", SAFE_BTC_ADDRESS,);
+                    BtcAddress::from_str(SAFE_BTC_ADDRESS)?
                 }
-            }
-        )
+            },
+        })
     }
 }
 
@@ -83,7 +69,13 @@ impl BtcBlockInDbFormat {
         block: BtcBlock,
         extra_data: Bytes,
     ) -> Result<Self> {
-        Ok(BtcBlockInDbFormat{ id, block, height, minting_params, extra_data })
+        Ok(BtcBlockInDbFormat {
+            id,
+            block,
+            height,
+            minting_params,
+            extra_data,
+        })
     }
 }
 
@@ -102,35 +94,13 @@ impl MintingParamStruct {
         originating_tx_hash: sha256d::Hash,
         originating_tx_address: BtcAddress,
     ) -> Result<MintingParamStruct> {
-        Ok(
-            MintingParamStruct {
-                amount,
-                originating_tx_hash,
-                eth_address: convert_hex_to_address(eth_address)?,
-                originating_tx_address: originating_tx_address.to_string(),
-            }
-        )
+        Ok(MintingParamStruct {
+            amount,
+            originating_tx_hash,
+            eth_address: convert_hex_to_address(eth_address)?,
+            originating_tx_address: originating_tx_address.to_string(),
+        })
     }
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct BtcBlockAndTxsJson {
-    pub block: BtcBlockJson,
-    pub transactions: Vec<String>,
-    pub deposit_address_list: DepositAddressJsonList,
-    pub any_sender: Option<bool>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct BtcBlockJson {
-    pub bits: u32,
-    pub id: String,
-    pub nonce: u32,
-    pub version: u32,
-    pub height: u64,
-    pub timestamp: u32,
-    pub merkle_root: String,
-    pub previousblockhash: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

@@ -171,7 +171,7 @@ pub fn put_any_sender_nonce_in_db_and_return_state<D>(
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
-    trace!("✔ Putting any.sender nonce of 1 in db...");
-    put_any_sender_nonce_in_db(&state.db, 1)
+    trace!("✔ Putting any.sender nonce of 0 in db...");
+    put_any_sender_nonce_in_db(&state.db, 0)
         .map(|_| state)
 }
