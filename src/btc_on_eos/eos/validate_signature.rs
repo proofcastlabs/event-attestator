@@ -169,7 +169,14 @@ pub fn validate_block_header_signature<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    if CORE_IS_VALIDATING {
+    if !CORE_IS_VALIDATING {
+        info!("✔ Skipping EOS block header signature validation");
+        Ok(state)
+    } else if state.get_eos_block_header()?.new_producers.is_some() {
+        // NOTE/FIXME; To be cleaned up once validation for these has been fixed!
+        info!("✔ `new_producers` field exists in EOS block ∴ skipping validation check...");
+        Ok(state)
+    } else {
         info!("✔ Validating EOS block header signature...");
         check_block_signature_is_valid(
             state.enabled_protocol_features.is_enabled(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec()),
@@ -179,9 +186,6 @@ pub fn validate_block_header_signature<D>(
             state.get_active_schedule()?,
         )
             .and(Ok(state))
-    } else {
-        info!("✔ Skipping EOS block header signature validation");
-        Ok(state)
     }
 }
 
