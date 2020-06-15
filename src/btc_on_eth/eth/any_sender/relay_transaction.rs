@@ -7,14 +7,9 @@ use crate::{
                 serde::{compensation, data},
             },
             eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
-            eth_database_utils::{
-                get_eth_chain_id_from_db, get_eth_private_key_from_db,
-                get_public_eth_address_from_db,
-            },
         },
     },
     errors::AppError,
-    traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
 use ethabi::{encode, Token};
@@ -80,21 +75,17 @@ pub struct RelayTransaction {
 
 impl RelayTransaction {
     /// Creates a new signed relay transaction.
-    pub fn new<D>(
+    pub fn new(
+        from: EthAddress,
+        chain_id: u8,
+        eth_private_key: EthPrivateKey,
         data: Bytes,
         deadline: Option<u64>,
         gas_limit: u32,
         compensation: u64,
         to: EthAddress,
-        db: &D,
-    ) -> Result<RelayTransaction>
-    where
-        D: DatabaseInterface,
-    {
-        let from = get_public_eth_address_from_db(db)?;
-        let chain_id = get_eth_chain_id_from_db(db)?;
+    ) -> Result<RelayTransaction> {
         let relay_contract_address = RelayContract::from_eth_chain_id(chain_id)?.address()?;
-        let eth_private_key = get_eth_private_key_from_db(db)?;
 
         let relay_transaction = RelayTransaction::from_data_unsigned(
             chain_id,
@@ -191,15 +182,12 @@ impl RelayTransaction {
     }
 
     /// Creates a new relay transaction from Ethereum transaction.
-    pub fn from_eth_transaction<D>(
+    pub fn from_eth_transaction(
         eth_transaction: &EthTransaction,
-        db: &D,
-    ) -> Result<RelayTransaction>
-    where
-        D: DatabaseInterface,
-    {
+        from: EthAddress,
+        eth_private_key: EthPrivateKey,
+    ) -> Result<RelayTransaction> {
         let chain_id = eth_transaction.chain_id;
-        let from = get_public_eth_address_from_db(db)?;
         let data = eth_transaction.data.clone();
         let deadline = None; // use the default any.sender deadline
         let gas_limit = eth_transaction.gas_limit.as_u32();
@@ -207,8 +195,6 @@ impl RelayTransaction {
         let relay_contract_address =
             RelayContract::from_eth_chain_id(eth_transaction.chain_id)?.address()?;
         let to = EthAddress::from_slice(&eth_transaction.to);
-
-        let eth_private_key = get_eth_private_key_from_db(db)?;
 
         let relay_transaction = RelayTransaction::from_data_unsigned(
             chain_id,
@@ -252,50 +238,11 @@ impl RelayTransaction {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
-        eth::eth_database_utils::{
-            put_eth_chain_id_in_db, put_eth_private_key_in_db, put_public_eth_address_in_db,
-        },
-        eth::eth_test_utils::get_sample_unsigned_eth_transaction,
-        test_utils::{get_test_database, TestDB},
-    };
-
-    fn setup_db(recovery_param: Option<bool>) -> TestDB {
-        let db = get_test_database();
-
-        let chain_id = 3;
-        put_eth_chain_id_in_db(&db, chain_id).expect("Error putting chain id in db!");
-
-        let from = EthAddress::from_slice(
-            &hex::decode(if recovery_param.unwrap_or_default() {
-                "1a96829d85bdf719b58b2593e2853d4ae5a0f50b"
-            } else {
-                "736661736533BcfC9cc35649e6324aceFb7D32c1"
-            })
-            .unwrap(),
-        );
-        put_public_eth_address_in_db(&db, &from).expect("Error putting public eth address in db!");
-
-        let eth_private_key = EthPrivateKey::from_slice(if recovery_param.unwrap_or_default() {
-            [
-                6, 55, 162, 221, 254, 198, 108, 20, 103, 12, 93, 123, 226, 232, 71, 70, 139, 212,
-                41, 54, 65, 132, 18, 158, 202, 14, 137, 226, 174, 63, 11, 45,
-            ]
-        } else {
-            [
-                132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169,
-                234, 47, 186, 237, 88, 161, 200, 177, 24, 142, 207, 242, 168, 221,
-            ]
-        })
-        .unwrap();
-        put_eth_private_key_in_db(&db, &eth_private_key)
-            .expect("Error putting eth private key in db!");
-
-        db
-    }
+    use crate::btc_on_eth::eth::eth_test_utils::get_sample_unsigned_eth_transaction;
 
     #[test]
     fn should_create_new_signed_relay_tx_from_data() {
+        let chain_id = 3;
         let data = hex::decode("f15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000").unwrap();
         let deadline = Some(0);
         let gas_limit = 100000;
@@ -308,15 +255,26 @@ mod tests {
         let expected_data = hex::decode("f15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000").unwrap();
 
         // private key without recovery param
+        let eth_private_key = EthPrivateKey::from_slice([
+            132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169, 234,
+            47, 186, 237, 88, 161, 200, 177, 24, 142, 207, 242, 168, 221,
+        ])
+        .unwrap();
         let from = EthAddress::from_slice(
             &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap(),
         );
 
-        let db = setup_db(None);
-
-        let relay_transaction =
-            RelayTransaction::new(data.clone(), deadline, gas_limit, compensation, to, &db)
-                .unwrap();
+        let relay_transaction = RelayTransaction::new(
+            from,
+            chain_id,
+            eth_private_key,
+            data.clone(),
+            deadline,
+            gas_limit,
+            compensation,
+            to,
+        )
+        .unwrap();
 
         let expected_signature = EthSignature::from_slice(
             &hex::decode("5aa14a852439d9f5aa7b22c63a228d79c6822cf644badc9a63117dd7880d9a4c639eccd4aeeee91eaea63e36640d151be71346d785d2bd274fb82351c6bb2c101b")
@@ -337,19 +295,31 @@ mod tests {
         assert_eq!(relay_transaction, expected_relay_transaction);
 
         // private key with recovery param
+        let eth_private_key = EthPrivateKey::from_slice([
+            6, 55, 162, 221, 254, 198, 108, 20, 103, 12, 93, 123, 226, 232, 71, 70, 139, 212, 41,
+            54, 65, 132, 18, 158, 202, 14, 137, 226, 174, 63, 11, 45,
+        ])
+        .unwrap();
         let from = EthAddress::from_slice(
             &hex::decode("1a96829d85bdf719b58b2593e2853d4ae5a0f50b").unwrap(),
         );
 
-        let db = setup_db(Some(true));
-
-        let relay_transaction =
-            RelayTransaction::new(data, deadline, gas_limit, compensation, to, &db).unwrap();
+        let relay_transaction = RelayTransaction::new(
+            from,
+            chain_id,
+            eth_private_key,
+            data,
+            deadline,
+            gas_limit,
+            compensation,
+            to,
+        )
+        .unwrap();
 
         let expected_signature = EthSignature::from_slice(
             &hex::decode("89397a8de1489ab225704fdfe2187a72d837659c190b6bd0c0e2b6cd5f2705da1fa1db87fd516f4677f6db821a6ede7b4f7f4779d9f248a7ed93c1b8ca86c48f1b")
                 .unwrap()
-            );
+        );
         let expected_relay_transaction = RelayTransaction {
             signature: expected_signature,
             data: expected_data,
@@ -367,13 +337,20 @@ mod tests {
 
     #[test]
     fn should_create_new_signed_relay_tx_from_eth_tx() {
-        let db = setup_db(None);
-
         let mut eth_transaction = get_sample_unsigned_eth_transaction();
         eth_transaction.chain_id = 3;
+        let eth_private_key = EthPrivateKey::from_slice([
+            132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169, 234,
+            47, 186, 237, 88, 161, 200, 177, 24, 142, 207, 242, 168, 221,
+        ])
+        .unwrap();
+        let from = EthAddress::from_slice(
+            &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap(),
+        );
 
-        let relay_transaction = RelayTransaction::from_eth_transaction(&eth_transaction, &db)
-            .expect("Error creating any.sender relay transaction from eth transaction!");
+        let relay_transaction =
+            RelayTransaction::from_eth_transaction(&eth_transaction, from, eth_private_key)
+                .expect("Error creating any.sender relay transaction from eth transaction!");
         let expected_relay_transaction = RelayTransaction {
             chain_id: 3,
             from: EthAddress::from_slice(
@@ -412,6 +389,15 @@ mod tests {
 
         let relay_transaction: RelayTransaction = serde_json::from_str(json_str).unwrap();
 
+        let chain_id = 3;
+        let eth_private_key = EthPrivateKey::from_slice([
+            132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169, 234,
+            47, 186, 237, 88, 161, 200, 177, 24, 142, 207, 242, 168, 221,
+        ])
+        .unwrap();
+        let from = EthAddress::from_slice(
+            &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap(),
+        );
         let data = hex::decode("f15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000").unwrap();
         let deadline = Some(0);
         let gas_limit = 100000;
@@ -420,10 +406,17 @@ mod tests {
             &hex::decode("FDE83bd51bddAA39F15c1Bf50E222a7AE5831D83").unwrap(),
         );
 
-        let db = setup_db(None);
-
-        let expected_relay_transaction =
-            RelayTransaction::new(data, deadline, gas_limit, compensation, to, &db).unwrap();
+        let expected_relay_transaction = RelayTransaction::new(
+            from,
+            chain_id,
+            eth_private_key,
+            data,
+            deadline,
+            gas_limit,
+            compensation,
+            to,
+        )
+        .unwrap();
 
         assert_eq!(relay_transaction, expected_relay_transaction);
 
@@ -453,6 +446,15 @@ mod tests {
         let expected_tx_hash = "e93eab63e9b863d4c93007b0a641c749af840c8c19602ea18f6546a308431cc4";
         let expected_tx_hex = "f8f394fde83bd51bddaa39f15c1bf50e222a7ae5831d8394736661736533bcfc9cc35649e6324acefb7d32c1b864f15da72900000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000004746573740000000000000000000000000000000000000000000000000000000080841dcd6500830186a003949b4fa5a1d9f6812e2b56b36fbde62736fa82c2a7b8415aa14a852439d9f5aa7b22c63a228d79c6822cf644badc9a63117dd7880d9a4c639eccd4aeeee91eaea63e36640d151be71346d785d2bd274fb82351c6bb2c101b";
 
+        let chain_id = 3;
+        let eth_private_key = EthPrivateKey::from_slice([
+            132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169, 234,
+            47, 186, 237, 88, 161, 200, 177, 24, 142, 207, 242, 168, 221,
+        ])
+        .unwrap();
+        let from = EthAddress::from_slice(
+            &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap(),
+        );
         let data = hex::decode("f15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000").unwrap();
         let deadline = Some(0);
         let gas_limit = 100000;
@@ -461,10 +463,17 @@ mod tests {
             &hex::decode("FDE83bd51bddAA39F15c1Bf50E222a7AE5831D83").unwrap(),
         );
 
-        let db = setup_db(None);
-
-        let relay_transaction =
-            RelayTransaction::new(data, deadline, gas_limit, compensation, to, &db).unwrap();
+        let relay_transaction = RelayTransaction::new(
+            from,
+            chain_id,
+            eth_private_key,
+            data,
+            deadline,
+            gas_limit,
+            compensation,
+            to,
+        )
+        .unwrap();
 
         // bytes
         let result = relay_transaction.serialize_bytes();

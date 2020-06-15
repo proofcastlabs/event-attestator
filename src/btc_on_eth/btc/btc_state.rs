@@ -319,7 +319,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         Ok(btc_submission_material_json)
     }
 
-    pub fn is_any_sender(&self) -> bool {
+    pub fn use_any_sender_tx_type(&self) -> bool {
         self.any_sender == Some(true)
     }
 }

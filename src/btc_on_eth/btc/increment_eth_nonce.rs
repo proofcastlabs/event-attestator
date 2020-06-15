@@ -12,7 +12,7 @@ pub fn maybe_increment_eth_nonce_in_db<D>(
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    if state.is_any_sender() {
+    if state.use_any_sender_tx_type() {
         info!("✔ Not incrementing ETH account nonce - any.sender transaction!");
         return Ok(state);
     }

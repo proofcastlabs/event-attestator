@@ -12,7 +12,7 @@ pub fn maybe_increment_any_sender_nonce_in_db<D>(
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    if !state.is_any_sender() {
+    if !state.use_any_sender_tx_type() {
         info!("✔ Not incrementing any.sender nonce - not an any.sender transaction!");
         return Ok(state);
     }

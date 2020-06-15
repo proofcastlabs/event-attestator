@@ -85,6 +85,9 @@ use crate::{
                 start_eth_db_transaction,
                 get_signing_params_from_db,
                 get_eth_account_nonce_from_db,
+                get_any_sender_nonce_from_db,
+                get_eth_private_key_from_db,
+                get_public_eth_address_from_db,
             },
             get_eth_output_json::{
                 EthOutput,
@@ -164,7 +167,10 @@ pub fn debug_reprocess_btc_block<D>(
                             txs,
                             &state.minting_params,
                             get_eth_account_nonce_from_db(&state.db)?,
-                            &state,
+                            state.use_any_sender_tx_type(),
+                            get_any_sender_nonce_from_db(&state.db)?,
+                            get_public_eth_address_from_db(&state.db)?,
+                            get_eth_private_key_from_db(&state.db)?
                         )
                 }?
             )?;

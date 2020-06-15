@@ -13,8 +13,11 @@ use crate::{
             eth_database_utils::{
                 get_eth_account_nonce_from_db,
                 get_any_sender_nonce_from_db,
+                get_eth_private_key_from_db,
+                get_public_eth_address_from_db,
             },
             any_sender::relay_transaction::RelayTransaction,
+            eth_crypto::eth_private_key::EthPrivateKey,
         },
         btc::{
             btc_state::BtcState,
@@ -29,6 +32,7 @@ use crate::{
         },
     },
 };
+use ethereum_types::Address as EthAddress;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EthTxInfo {
@@ -81,14 +85,13 @@ impl EthTxInfo {
         )
     }
 
-    pub fn new_with_any_sender<D>(
+    pub fn new_with_any_sender(
         eth_tx: &EthTransaction,
         minting_param_struct: &MintingParamStruct,
         any_sender_nonce: Option<u64>,
-        db: &D,
-    ) -> Result<EthTxInfo>
-        where D: DatabaseInterface,
-    {
+        from: EthAddress,
+        eth_private_key: EthPrivateKey,
+    ) -> Result<EthTxInfo> {
         let default_address = DEFAULT_BTC_ADDRESS.to_string();
         let retrieved_address = minting_param_struct
             .originating_tx_address
@@ -98,28 +101,23 @@ impl EthTxInfo {
             true => "✘ Could not retrieve sender address".to_string(),
         };
 
-        let any_sender_tx = RelayTransaction::from_eth_transaction(eth_tx, db)?;
+        let any_sender_tx = RelayTransaction::from_eth_transaction(eth_tx, from, eth_private_key)?;
 
-        Ok(
-            EthTxInfo {
-                eth_account_nonce: None,
-                eth_tx_hash: format!("0x{}", any_sender_tx.get_tx_hash()),
-                eth_tx_hex: None,
-                originating_address: address_string,
-                eth_tx_amount: minting_param_struct.amount.to_string(),
-                originating_tx_hash:
-                    minting_param_struct.originating_tx_hash.to_string(),
-                eth_tx_recipient: format!(
-                    "0x{}",
-                    hex::encode(minting_param_struct.eth_address.as_bytes())
-                ),
-                signature_timestamp: SystemTime::now()
-                    .duration_since(UNIX_EPOCH)?
-                    .as_secs(),
-                any_sender_tx: Some(any_sender_tx),
-                any_sender_nonce,
-            }
-        )
+        Ok(EthTxInfo {
+            eth_account_nonce: None,
+            eth_tx_hash: format!("0x{}", any_sender_tx.get_tx_hash()),
+            eth_tx_hex: None,
+            originating_address: address_string,
+            eth_tx_amount: minting_param_struct.amount.to_string(),
+            originating_tx_hash: minting_param_struct.originating_tx_hash.to_string(),
+            eth_tx_recipient: format!(
+                "0x{}",
+                hex::encode(minting_param_struct.eth_address.as_bytes())
+            ),
+            signature_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
+            any_sender_tx: Some(any_sender_tx),
+            any_sender_nonce,
+        })
     }
 }
 
@@ -129,30 +127,31 @@ pub struct BtcOutput {
     pub eth_signed_transactions: Vec<EthTxInfo>,
 }
 
-pub fn get_eth_signed_tx_info_from_eth_txs<D>(
+pub fn get_eth_signed_tx_info_from_eth_txs(
     eth_txs: &EthTransactions,
     minting_params: &MintingParams,
     eth_account_nonce: u64,
-    state: &BtcState<D>,
-) -> Result<Vec<EthTxInfo>>
-    where D: DatabaseInterface
-{
-    if state.is_any_sender() {
+    use_any_sender_tx_type: bool,
+    any_sender_nonce: u64,
+    from: EthAddress,
+    eth_private_key: EthPrivateKey,
+) -> Result<Vec<EthTxInfo>> {
+    if use_any_sender_tx_type {
         info!("✔ Getting any.sender tx info from ETH txs...");
-        let any_sender_start_nonce =
-            get_any_sender_nonce_from_db(&state.db)? - eth_txs.len() as u64;
+        let any_sender_start_nonce = any_sender_nonce - eth_txs.len() as u64;
 
         return eth_txs
             .iter()
             .enumerate()
-            .map(|(i, tx)|
+            .map(|(i, tx)| {
                 EthTxInfo::new_with_any_sender(
                     tx,
                     &minting_params[i],
                     Some(any_sender_start_nonce + i as u64),
-                    &state.db,
+                    from,
+                    eth_private_key.clone(),
                 )
-            )
+            })
             .collect::<Result<Vec<EthTxInfo>>>();
     }
 
@@ -161,9 +160,7 @@ pub fn get_eth_signed_tx_info_from_eth_txs<D>(
     eth_txs
         .iter()
         .enumerate()
-        .map(|(i, tx)|
-            EthTxInfo::new(tx, &minting_params[i], Some(start_nonce + i as u64))
-        )
+        .map(|(i, tx)| EthTxInfo::new(tx, &minting_params[i], Some(start_nonce + i as u64)))
         .collect::<Result<Vec<EthTxInfo>>>()
 }
 
@@ -184,7 +181,10 @@ pub fn create_btc_output_json_and_put_in_state<D>(
                         txs,
                         &get_btc_canon_block_from_db(&state.db)?.minting_params,
                         get_eth_account_nonce_from_db(&state.db)?,
-                        &state,
+                        state.use_any_sender_tx_type(),
+                        get_any_sender_nonce_from_db(&state.db)?,
+                        get_public_eth_address_from_db(&state.db)?,
+                        get_eth_private_key_from_db(&state.db)?
                     )?,
             }
         }
