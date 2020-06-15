@@ -28,6 +28,7 @@ use crate::{
         crypto_utils::{
             keccak_hash_bytes,
             generate_random_private_key,
+            set_eth_signature_recovery_param,
         },
     },
 };
@@ -76,9 +77,7 @@ impl EthPrivateKey {
         .concat();
 
         let mut signature = self.sign_message_bytes(message_bytes)?;
-
-        // set recovery param
-        signature[64] = if signature[64] == 1 { 0x1c } else { 0x1b };
+        set_eth_signature_recovery_param(&mut signature);
 
         Ok(signature)
     }

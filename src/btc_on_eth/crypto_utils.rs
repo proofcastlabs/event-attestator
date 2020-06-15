@@ -5,9 +5,12 @@ use rand::{
     RngCore,
     thread_rng,
 };
-use crate::types::{
-    Bytes,
-    Result,
+use crate::{
+    types::{
+        Bytes,
+        Result,
+    },
+    btc_on_eth::eth::eth_types::EthSignature,
 };
 
 pub fn keccak_hash_bytes(bytes: Bytes) -> H256 {
@@ -28,6 +31,10 @@ fn get_32_random_bytes_arr() -> [u8; 32] {
 
 pub fn generate_random_private_key() -> Result<SecretKey> {
     Ok(SecretKey::from_slice(&get_32_random_bytes_arr())?)
+}
+
+pub fn set_eth_signature_recovery_param(signature: &mut EthSignature) {
+    signature[64] = if signature[64] == 1 { 0x1c } else { 0x1b };
 }
 
 #[cfg(test)]
