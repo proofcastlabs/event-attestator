@@ -33,7 +33,7 @@ use crate::{
             eos_state::EosState,
             protocol_features::EnabledFeatures,
             eos_utils::get_eos_schedule_db_key,
-            parse_eos_schedule::parse_schedule_string_to_schedule,
+            parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
             eos_merkle_utils::{
                 Incremerkle,
                 IncremerkleJson,
@@ -194,7 +194,7 @@ pub fn get_eos_schedule_from_db<D>(
 {
     trace!("✔ Getting EOS schedule from db...");
     match get_string_from_db(db, &get_eos_schedule_db_key(version)) {
-        Ok(json) => parse_schedule_string_to_schedule(&json),
+        Ok(json) => parse_v2_schedule_string_to_v2_schedule(&json),
         Err(_) => Err(AppError::Custom(
             format!("✘ Core does not have EOS schedule version: {}", version)
         ))

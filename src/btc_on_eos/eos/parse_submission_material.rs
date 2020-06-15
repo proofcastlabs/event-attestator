@@ -1,11 +1,13 @@
 use std::str::FromStr;
 use chrono::prelude::*;
+use serde_json::Value as JsonValue;
 use eos_primitives::{
     Extension,
     TimePoint,
     AccountName,
     BlockTimestamp,
     BlockHeader as EosBlockHeader,
+    ProducerScheduleV2 as EosProducerScheduleV2,
 };
 use crate::{
     types::Result,
@@ -15,19 +17,39 @@ use crate::{
         utils::convert_hex_to_checksum256,
         eos::{
             eos_state::EosState,
-            parse_eos_schedule::convert_schedule_json_to_schedule_v2,
             eos_types::{
                 ActionProof,
                 ActionProofs,
                 Checksum256s,
                 ActionProofJsons,
                 EosBlockHeaderJson,
-                EosSubmissionMaterial,
-                EosSubmissionMaterialJson,
+            },
+            parse_eos_schedule::{
+                convert_v1_schedule_to_v2,
+                convert_v1_schedule_json_to_v1_schedule,
+                convert_v2_schedule_json_to_v2_schedule,
+                parse_v1_schedule_string_to_v1_schedule_json,
+                parse_v2_schedule_string_to_v2_schedule_json,
             },
         },
     },
 };
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct EosSubmissionMaterial {
+    pub block_num: u64,
+    pub producer_signature: String,
+    pub action_proofs: ActionProofs,
+    pub block_header: EosBlockHeader,
+    pub interim_block_ids: Checksum256s,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct EosSubmissionMaterialJson {
+    pub interim_block_ids: Vec<String>,
+    pub action_proofs: ActionProofJsons,
+    pub block_header: EosBlockHeaderJson,
+}
 
 fn parse_eos_action_proof_jsons_to_action_proofs(
     action_proof_jsons: &ActionProofJsons,
@@ -75,36 +97,32 @@ fn convert_hex_strings_to_extensions(
         .collect::<Result<Vec<Extension>>>()
 }
 
+fn convert_schedule_json_value_to_v2_schedule_json(json_value: &JsonValue) -> Result<EosProducerScheduleV2> {
+    match parse_v2_schedule_string_to_v2_schedule_json(json_value.as_str()?) {
+        Ok(v2_json) => convert_v2_schedule_json_to_v2_schedule(&v2_json),
+        Err(_) => parse_v1_schedule_string_to_v1_schedule_json(&json_value.to_string())
+            .and_then(|v1_json| convert_v1_schedule_json_to_v1_schedule(&v1_json))
+            .map(|v1_schedule| convert_v1_schedule_to_v2(&v1_schedule))
+    }
+
+}
+
 pub fn parse_eos_block_header_from_json(
     eos_block_header_json: &EosBlockHeaderJson
 ) -> Result<EosBlockHeader> {
     Ok(
         EosBlockHeader::new(
-            convert_timestamp_string_to_block_timestamp(
-                &eos_block_header_json.timestamp
-            )?,
-            AccountName::from_str(
-                &eos_block_header_json.producer
-            )?,
+            convert_timestamp_string_to_block_timestamp(&eos_block_header_json.timestamp)?,
+            AccountName::from_str(&eos_block_header_json.producer)?,
             eos_block_header_json.confirmed,
-            convert_hex_to_checksum256(
-                &eos_block_header_json.previous
-            )?,
-            convert_hex_to_checksum256(
-                &eos_block_header_json.transaction_mroot
-            )?,
-            convert_hex_to_checksum256(
-                &eos_block_header_json.action_mroot
-            )?,
+            convert_hex_to_checksum256(&eos_block_header_json.previous)?,
+            convert_hex_to_checksum256(&eos_block_header_json.transaction_mroot)?,
+            convert_hex_to_checksum256(&eos_block_header_json.action_mroot)?,
             eos_block_header_json.schedule_version,
             match &eos_block_header_json.new_producers {
                 None => None,
                 Some(producer_schedule_json) =>
-                    Some(
-                        convert_schedule_json_to_schedule_v2(
-                            &producer_schedule_json
-                        )?
-                    )
+                    Some(convert_schedule_json_value_to_v2_schedule_json(&producer_schedule_json)?)
             },
             match &eos_block_header_json.header_extension {
                 None => vec![],
@@ -325,15 +343,10 @@ mod tests {
         assert_eq!(result_serialized, expected_serialized);
     }
 
-    // TODO Need a block with something in the new_producers field.
-
     #[test]
     fn should_parse_submisson_material_with_action_proofs() {
-        let material = get_sample_eos_submission_material_string_n(2)
-            .unwrap();
-        if let Err(e) =  parse_eos_submission_material_string_to_struct(
-            &material
-        ) {
+        let material = get_sample_eos_submission_material_string_n(2).unwrap();
+        if let Err(e) =  parse_eos_submission_material_string_to_struct(&material) {
             panic!("Error parsing submission material: {}", e);
         }
     }

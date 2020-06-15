@@ -12,12 +12,12 @@ use crate::{
         eos::{
             eos_merkle_utils::Incremerkle,
             protocol_features::EnabledFeatures,
+            parse_submission_material::EosSubmissionMaterial,
             eos_types::{
                 ActionProofs,
                 Checksum256s,
                 RedeemParams,
                 ProcessedTxIds,
-                EosSubmissionMaterial,
             },
         },
         utils::{

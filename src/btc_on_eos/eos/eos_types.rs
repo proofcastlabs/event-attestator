@@ -1,9 +1,9 @@
 use std::fmt;
+use serde_json::Value as JsonValue;
 use eos_primitives::{
     Checksum256,
     Action as EosAction,
     AccountName as EosAccountName,
-    BlockHeader as EosBlockHeader,
     ProducerKey as EosProducerKey,
     ActionReceipt as EosActionReceipt,
 };
@@ -17,7 +17,6 @@ use crate::{
         eos::{
             eos_utils::get_eos_schedule_db_key,
             parse_eos_actions::parse_eos_action_json,
-            parse_eos_schedule::EosProducerScheduleJson,
             parse_eos_action_receipts::parse_eos_action_receipt_json,
         },
     },
@@ -157,22 +156,6 @@ impl EosSignedTransaction {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosSubmissionMaterial {
-    pub block_num: u64,
-    pub producer_signature: String,
-    pub action_proofs: ActionProofs,
-    pub block_header: EosBlockHeader,
-    pub interim_block_ids: Checksum256s,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosSubmissionMaterialJson {
-    pub interim_block_ids: Vec<String>,
-    pub action_proofs: ActionProofJsons,
-    pub block_header: EosBlockHeaderJson,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosBlockHeaderJson {
     pub block_num: u64,
     pub confirmed: u16,
@@ -184,8 +167,8 @@ pub struct EosBlockHeaderJson {
     pub schedule_version: u32,
     pub transaction_mroot: String,
     pub producer_signature: String,
+    pub new_producers: Option<JsonValue>,
     pub header_extension: Option<Vec<String>>,
-    pub new_producers: Option<EosProducerScheduleJson>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -195,7 +178,7 @@ pub struct ProducerSchedule {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ProducerKeyJson {
+pub struct ProducerKeyJsonV2 {
     pub producer_name: String,
     pub block_signing_key: String,
 }

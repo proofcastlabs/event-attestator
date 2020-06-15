@@ -67,7 +67,7 @@ use crate::{
 	},
         eos::{
             eos_crypto::eos_private_key::EosPrivateKey,
-            parse_eos_schedule::parse_schedule_string_to_schedule,
+            parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
             eos_database_utils::{
                 get_eos_chain_id_from_db,
                 get_eos_account_name_string_from_db,
@@ -197,7 +197,7 @@ pub fn debug_add_new_eos_schedule<D>(
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| db.start_transaction())
-        .and_then(|_| parse_schedule_string_to_schedule(&schedule_json))
+        .and_then(|_| parse_v2_schedule_string_to_v2_schedule(&schedule_json))
         .and_then(|schedule| put_eos_schedule_in_db(&db, &schedule))
         .and_then(|_| db.end_transaction())
         .map(|_| "{debug_adding_eos_schedule_succeeded:true}".to_string())

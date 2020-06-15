@@ -23,6 +23,7 @@ use eos_primitives::{
     Action as EosAction,
     BlockHeader as EosBlockHeader,
     ActionReceipt as EosActionReceipt,
+    ProducerSchedule as EosProducerScheduleV1,
     ProducerScheduleV2 as EosProducerScheduleV2,
 };
 use crate::{
@@ -38,15 +39,23 @@ use crate::{
             convert_bytes_to_checksum256,
         },
         eos::{
-            eos_merkle_utils::Incremerkle,
             eos_state::EosState,
+            eos_merkle_utils::Incremerkle,
             initialize_eos::eos_init_utils::EosInitJson,
             protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
+            parse_submission_material::{
+                EosSubmissionMaterial,
+                EosSubmissionMaterialJson,
+            },
             parse_eos_schedule::{
-                EosProducerScheduleJson,
-                parse_schedule_string_to_json,
-                parse_schedule_string_to_schedule,
-                convert_schedule_json_to_schedule_v2,
+                convert_v1_schedule_to_v2,
+                EosProducerScheduleJsonV1,
+                EosProducerScheduleJsonV2,
+                parse_v2_schedule_string_to_v2_schedule,
+                convert_v2_schedule_json_to_v2_schedule,
+                convert_v1_schedule_json_to_v1_schedule,
+                parse_v1_schedule_string_to_v1_schedule_json,
+                parse_v2_schedule_string_to_v2_schedule_json,
             },
             parse_submission_material::{
                 parse_eos_block_header_from_json,
@@ -60,8 +69,6 @@ use crate::{
                 EosBlockHeaderJson,
                 EosSignedTransaction,
                 EosSignedTransactions,
-                EosSubmissionMaterial,
-                EosSubmissionMaterialJson,
             },
             eos_crypto::{
                 eos_signature::EosSignature,
@@ -71,8 +78,6 @@ use crate::{
         },
     },
 };
-
-pub const NUM_INIT_SAMPLES: usize = 3;
 
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-81784220.json";
@@ -95,14 +100,29 @@ pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_6: &str =
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_7: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-block-10700626.json";
 
-pub const SAMPLE_INIT_BLOCK_JSON_PATH_1: &str =
+pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_8: &str =
+    "src/btc_on_eos/eos/eos_test_utils/eos-mainnet-block-with-schedule-1714.json";
+
+pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_9: &str =
+    "src/btc_on_eos/eos/eos_test_utils/eos-j3-block-with-schedule.json";
+
+pub const SAMPLE_J3_INIT_BLOCK_JSON_PATH_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/jungle-3-init-block-10857380.json";
 
-pub const SAMPLE_INIT_BLOCK_JSON_PATH_2: &str =
+pub const SAMPLE_J3_INIT_BLOCK_JSON_PATH_2: &str =
     "src/btc_on_eos/eos/eos_test_utils/jungle-3-init-block-11879805.json";
 
-pub const SAMPLE_INIT_BLOCK_JSON_PATH_3: &str =
+pub const SAMPLE_J3_INIT_BLOCK_JSON_PATH_3: &str =
     "src/btc_on_eos/eos/eos_test_utils/jungle-3-init-block-11379805.json";
+
+pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_1: &str =
+    "src/btc_on_eos/eos/eos_test_utils/mainnet-init-block-125292121.json";
+
+pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_2: &str =
+    "src/btc_on_eos/eos/eos_test_utils/mainnet-init-block-125293807.json";
+
+pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_3: &str =
+    "src/btc_on_eos/eos/eos_test_utils/mainnet-init-block-125293952.json";
 
 pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_JUNGLE_3_JSON_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-init-and-subsequent-blocks-jungle-3-1.json";
@@ -110,8 +130,7 @@ pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_JUNGLE_3_JSON_1: &str =
 pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-init-and-subsequent-blocks-mainnet-1.json";
 
-pub const EOS_JUNGLE_CHAIN_ID: &str =
-    "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
+pub const EOS_JUNGLE_CHAIN_ID: &str = "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosInitAndSubsequentBlocksJson {
@@ -167,7 +186,7 @@ impl EosInitAndSubsequentBlocksJson {
     }
 
     pub fn get_active_schedule(&self) -> Result<EosProducerScheduleV2> {
-        convert_schedule_json_to_schedule_v2(&self.init_block.active_schedule)
+        convert_v2_schedule_json_to_v2_schedule(&self.init_block.active_schedule)
     }
 
     pub fn get_block_json_n(&self, n: usize) -> Result<EosBlockHeaderJson> {
@@ -268,11 +287,33 @@ pub fn get_init_and_subsequent_blocks_json_n(
     EosInitAndSubsequentBlocksJson::from_json_string(&string)
 }
 
-pub fn get_init_json_n(num: usize) -> Result<EosInitJson> {
+pub const NUM_J3_INIT_SAMPLES: usize = 3;
+
+pub fn get_j3_init_json_n(num: usize) -> Result<EosInitJson> {
     let path = match num {
-        1 => Ok(SAMPLE_INIT_BLOCK_JSON_PATH_1),
-        2 => Ok(SAMPLE_INIT_BLOCK_JSON_PATH_2),
-        3 => Ok(SAMPLE_INIT_BLOCK_JSON_PATH_3),
+        1 => Ok(SAMPLE_J3_INIT_BLOCK_JSON_PATH_1),
+        2 => Ok(SAMPLE_J3_INIT_BLOCK_JSON_PATH_2),
+        3 => Ok(SAMPLE_J3_INIT_BLOCK_JSON_PATH_3),
+        _ => Err(AppError::Custom(
+            format!("Cannot find sample block num: {}", num)
+        ))
+    }?;
+    let string = match Path::new(&path).exists() {
+        true => Ok(read_to_string(path)?),
+        false => Err(AppError::Custom(
+            format!("✘ Can't find sample init block json file @ path: {}", path)
+        ))
+    }?;
+    EosInitJson::from_json_string(&string)
+}
+
+pub const NUM_MAINNET_INIT_SAMPLES: usize = 2;
+
+pub fn get_mainnet_init_json_n(num: usize) -> Result<EosInitJson> {
+    let path = match num {
+        1 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_1),
+        2 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_2),
+        3 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_3),
         _ => Err(AppError::Custom(
             format!("Cannot find sample block num: {}", num)
         ))
@@ -292,38 +333,56 @@ pub fn sha256_hash_message_bytes(
     Ok(Secp256k1Message::from_slice(&sha256::Hash::hash(message_bytes))?)
 }
 
-pub fn get_sample_v2_schedule_json_string() -> Result<String> {
-    Ok(
-        read_to_string(
-            "src/btc_on_eos/eos/eos_test_utils/sample-schedule-v2.0.json"
-        )?
-    )
+pub fn get_sample_v1_schedule_json_string() -> Result<String> {
+    Ok(read_to_string("src/btc_on_eos/eos/eos_test_utils/sample-schedule-389-v1.json")?)
 }
 
-pub fn get_sample_v2_schedule_json() -> Result<EosProducerScheduleJson> {
+pub fn get_sample_v2_schedule_json_string() -> Result<String> {
+    Ok(read_to_string("src/btc_on_eos/eos/eos_test_utils/sample-schedule-28-v2.json")?)
+}
+
+pub fn get_sample_mainnet_schedule_1713() -> Result<EosProducerScheduleV2> {
+    parse_v1_schedule_string_to_v1_schedule_json(
+        &read_to_string("src/btc_on_eos/eos/eos_test_utils/sample-schedule-1713-v1.json")?
+    )
+        .and_then(|v1_json| convert_v1_schedule_json_to_v1_schedule(&v1_json))
+        .map(|v1_schedule| convert_v1_schedule_to_v2(&v1_schedule))
+}
+
+pub fn get_sample_j3_schedule_37() -> Result<EosProducerScheduleV2> {
+    parse_v1_schedule_string_to_v1_schedule_json(
+        &read_to_string("src/btc_on_eos/eos/eos_test_utils/sample-j3-schedule-37.json")?
+    )
+        .and_then(|v1_json| convert_v1_schedule_json_to_v1_schedule(&v1_json))
+        .map(|v1_schedule| convert_v1_schedule_to_v2(&v1_schedule))
+}
+
+pub fn get_sample_v1_schedule_json() -> Result<EosProducerScheduleJsonV1> {
+    get_sample_v1_schedule_json_string()
+        .and_then(|json_string| parse_v1_schedule_string_to_v1_schedule_json(&json_string))
+}
+
+pub fn get_sample_v1_schedule() -> Result<EosProducerScheduleV1> {
+    get_sample_v1_schedule_json()
+        .and_then(|json| convert_v1_schedule_json_to_v1_schedule(&json))
+}
+
+pub fn get_sample_v2_schedule_json() -> Result<EosProducerScheduleJsonV2> {
     get_sample_v2_schedule_json_string()
-        .and_then(|json_string| parse_schedule_string_to_json(&json_string))
+        .and_then(|json_string| parse_v2_schedule_string_to_v2_schedule_json(&json_string))
 }
 
 pub fn get_sample_v2_schedule() -> Result<EosProducerScheduleV2> {
     get_sample_v2_schedule_json()
-        .and_then(|json| convert_schedule_json_to_schedule_v2(&json))
+        .and_then(|json| convert_v2_schedule_json_to_v2_schedule(&json))
 }
 
-pub fn get_sample_eos_submission_material_n(
-    n: usize
-) -> EosSubmissionMaterial {
-    parse_eos_submission_material_string_to_struct(
-        &get_sample_eos_submission_material_string_n(n).unwrap()
-    ).unwrap()
+pub fn get_sample_eos_submission_material_n(n: usize) -> EosSubmissionMaterial {
+    parse_eos_submission_material_string_to_struct(&get_sample_eos_submission_material_string_n(n).unwrap()).unwrap()
 }
 
-pub fn get_sample_eos_submission_material_json_n(
-    n: usize
-) -> EosSubmissionMaterialJson {
-    parse_eos_submission_material_string_to_json(
-        &get_sample_eos_submission_material_string_n(n).unwrap()
-    ).unwrap()
+pub fn get_sample_eos_submission_material_json_n(n: usize) -> EosSubmissionMaterialJson {
+    parse_eos_submission_material_string_to_json(&get_sample_eos_submission_material_string_n(n).unwrap()).unwrap()
 }
 
 pub fn get_sample_eos_submission_material_string_n(
@@ -337,6 +396,8 @@ pub fn get_sample_eos_submission_material_string_n(
         5 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_5),
         6 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_6),
         7 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_7),
+        8 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_8),
+        9 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_9),
         _ => Err(AppError::Custom(
             format!("Cannot find sample block num: {}", num)
         ))

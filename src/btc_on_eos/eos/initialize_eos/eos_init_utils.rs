@@ -18,8 +18,8 @@ use crate::{
                 WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
             },
             parse_eos_schedule::{
-                EosProducerScheduleJson,
-                convert_schedule_json_to_schedule_v2,
+                EosProducerScheduleJsonV2,
+                convert_v2_schedule_json_to_v2_schedule,
             },
             parse_submission_material::parse_eos_block_header_from_json,
             eos_types::{
@@ -51,7 +51,7 @@ use crate::{
 pub struct EosInitJson {
     pub block: EosBlockHeaderJson,
     pub blockroot_merkle: Vec<String>,
-    pub active_schedule: EosProducerScheduleJson,
+    pub active_schedule: EosProducerScheduleJsonV2,
     pub maybe_protocol_features_to_enable: Option<Vec<String>>,
 }
 
@@ -72,7 +72,7 @@ impl EosInitJson {
                     &hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)
                 )
             };
-        let schedule = convert_schedule_json_to_schedule_v2(
+        let schedule = convert_v2_schedule_json_to_v2_schedule(
             &self.active_schedule
         ).unwrap();
         let block_header = parse_eos_block_header_from_json(
@@ -225,26 +225,26 @@ pub fn put_eos_latest_block_info_in_db_and_return_state<D>(
 }
 
 pub fn put_eos_known_schedule_in_db_and_return_state<D>(
-    schedule_json: &EosProducerScheduleJson,
+    schedule_json: &EosProducerScheduleJsonV2,
     state: EosState<D>,
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
     info!("✔ Putting EOS known schedule into db...");
-    convert_schedule_json_to_schedule_v2(schedule_json)
+    convert_v2_schedule_json_to_v2_schedule(schedule_json)
         .map(|sched| EosKnownSchedules::new(sched.version))
         .and_then(|sched| put_eos_known_schedules_in_db(&state.db, &sched))
         .and(Ok(state))
 }
 
 pub fn put_eos_schedule_in_db_and_return_state<D>(
-    schedule_json: &EosProducerScheduleJson,
+    schedule_json: &EosProducerScheduleJsonV2,
     state: EosState<D>,
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
     info!("✔ Putting EOS schedule into db...");
-    convert_schedule_json_to_schedule_v2(schedule_json)
+    convert_v2_schedule_json_to_v2_schedule(schedule_json)
         .and_then(|schedule| put_eos_schedule_in_db(&state.db, &schedule))
         .and(Ok(state))
 }
@@ -332,21 +332,36 @@ mod tests {
     use super::*;
     use crate::btc_on_eos::{
         eos::eos_test_utils::{
-            get_init_json_n,
-            NUM_INIT_SAMPLES,
+            get_j3_init_json_n,
+            NUM_J3_INIT_SAMPLES,
+            get_mainnet_init_json_n,
+            NUM_MAINNET_INIT_SAMPLES,
         },
     };
 
     #[test]
     fn should_validate_jungle_3_init_blocks() {
-        vec![0; NUM_INIT_SAMPLES]
+        vec![0; NUM_J3_INIT_SAMPLES]
             .iter()
             .enumerate()
-            .map(|(i, _)| get_init_json_n(i + 1))
-            .collect::<Result<Vec<EosInitJson>>>()
-            .unwrap()
+            .map(|(i, _)| -> Result<()> {
+                println!("Validating jungle 3 init block #{}...", i + 1);
+                get_j3_init_json_n(i + 1)?.validate();
+                Ok(())
+            })
+            .for_each(drop);
+    }
+
+    #[test]
+    fn should_validate_mainnet_init_blocks() {
+        vec![0; NUM_MAINNET_INIT_SAMPLES]
             .iter()
-            .map(|init_json| init_json.validate())
+            .enumerate()
+            .map(|(i, _)| -> Result<()> {
+                println!("Validating mainnet init block #{}...", i + i);
+                get_mainnet_init_json_n(i + 1)?.validate();
+                Ok(())
+            })
             .for_each(drop);
     }
 }
