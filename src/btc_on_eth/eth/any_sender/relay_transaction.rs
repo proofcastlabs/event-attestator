@@ -75,6 +75,7 @@ pub struct RelayTransaction {
 
 impl RelayTransaction {
     /// Creates a new signed relay transaction.
+    #[allow(dead_code)]
     pub fn new(
         from: EthAddress,
         chain_id: u8,
@@ -230,6 +231,7 @@ impl RelayTransaction {
         hex::encode(keccak_hash_bytes(self.serialize_bytes()))
     }
 
+    #[allow(dead_code)]
     pub fn serialize_hex(&self) -> String {
         hex::encode(self.serialize_bytes())
     }

@@ -7,7 +7,6 @@ use ethereum_types::Address as EthAddress;
 pub enum RelayContract {
     Mainnet,
     Ropsten,
-    Unknown(EthAddress),
 }
 
 impl RelayContract {
@@ -28,7 +27,6 @@ impl RelayContract {
             RelayContract::Mainnet | RelayContract::Ropsten => Ok(EthAddress::from_slice(
                 &hex::decode("9b4FA5A1D9f6812e2B56B36fBde62736Fa82c2a7").unwrap(),
             )),
-            RelayContract::Unknown(address) => Ok(address),
         }
     }
 }
@@ -65,14 +63,6 @@ mod tests {
         let expected_contract_address = EthAddress::from_slice(
             &hex::decode("9b4FA5A1D9f6812e2B56B36fBde62736Fa82c2a7").unwrap(),
         );
-
-        assert_eq!(relay_contract_address, expected_contract_address);
-
-        // Unknown
-        let relay_contract_address = RelayContract::Unknown(EthAddress::default())
-            .address()
-            .unwrap();
-        let expected_contract_address = EthAddress::default();
 
         assert_eq!(relay_contract_address, expected_contract_address);
     }
