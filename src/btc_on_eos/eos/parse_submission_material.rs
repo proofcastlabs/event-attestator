@@ -98,7 +98,7 @@ fn convert_hex_strings_to_extensions(
 }
 
 fn convert_schedule_json_value_to_v2_schedule_json(json_value: &JsonValue) -> Result<EosProducerScheduleV2> {
-    match parse_v2_schedule_string_to_v2_schedule_json(&json_value.to_string()) {
+    match parse_v2_schedule_string_to_v2_schedule_json(json_value.as_str()?) {
         Ok(v2_json) => convert_v2_schedule_json_to_v2_schedule(&v2_json),
         Err(_) => parse_v1_schedule_string_to_v1_schedule_json(&json_value.to_string())
             .and_then(|v1_json| convert_v1_schedule_json_to_v1_schedule(&v1_json))
@@ -110,26 +110,14 @@ fn convert_schedule_json_value_to_v2_schedule_json(json_value: &JsonValue) -> Re
 pub fn parse_eos_block_header_from_json(
     eos_block_header_json: &EosBlockHeaderJson
 ) -> Result<EosBlockHeader> {
-    // so here we have the schedule safely as a json value.
-    // Need to convert it to a v2 schedule
     Ok(
         EosBlockHeader::new(
-            convert_timestamp_string_to_block_timestamp(
-                &eos_block_header_json.timestamp
-            )?,
-            AccountName::from_str(
-                &eos_block_header_json.producer
-            )?,
+            convert_timestamp_string_to_block_timestamp(&eos_block_header_json.timestamp)?,
+            AccountName::from_str(&eos_block_header_json.producer)?,
             eos_block_header_json.confirmed,
-            convert_hex_to_checksum256(
-                &eos_block_header_json.previous
-            )?,
-            convert_hex_to_checksum256(
-                &eos_block_header_json.transaction_mroot
-            )?,
-            convert_hex_to_checksum256(
-                &eos_block_header_json.action_mroot
-            )?,
+            convert_hex_to_checksum256(&eos_block_header_json.previous)?,
+            convert_hex_to_checksum256(&eos_block_header_json.transaction_mroot)?,
+            convert_hex_to_checksum256(&eos_block_header_json.action_mroot)?,
             eos_block_header_json.schedule_version,
             match &eos_block_header_json.new_producers {
                 None => None,

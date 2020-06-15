@@ -124,7 +124,7 @@ pub fn convert_key_json_to_eos_key(key_json: &ProducerKeyJsonV2) -> Result<EosKe
     )
 }
 
-pub fn parse_v2_schedule_string_to_v2_schedule_json(schedule_string: &String) -> Result<EosProducerScheduleJsonV2> {
+pub fn parse_v2_schedule_string_to_v2_schedule_json(schedule_string: &str) -> Result<EosProducerScheduleJsonV2> {
     match serde_json::from_str(schedule_string) {
         Ok(result) => Ok(result),
         Err(e) => Err(AppError::Custom(e.to_string()))

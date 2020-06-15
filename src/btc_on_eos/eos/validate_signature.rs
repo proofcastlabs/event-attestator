@@ -306,7 +306,7 @@ mod tests {
             "caa64b849f848f0122e5ad1f0fd6979c85572467e7061ffb371e5c1f0f51b2b1",
         ]
             .iter()
-            .map(|hex| convert_hex_to_checksum256(hex))
+            .map(convert_hex_to_checksum256)
             .collect::<Result<Vec<Checksum256>>>()
             .unwrap();
         let node_count = submission_material.block_header.block_num() - 1;
@@ -344,7 +344,7 @@ mod tests {
             "1db45036e746ddde8051425bb462ea6639f4ec751ee0ef18abbe4d8ada53d0fc"
         ]
             .iter()
-            .map(|hex| convert_hex_to_checksum256(hex))
+            .map(convert_hex_to_checksum256)
             .collect::<Result<Vec<Checksum256>>>()
             .unwrap();
         let node_count = submission_material.block_header.block_num() - 1;
