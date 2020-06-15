@@ -9,7 +9,6 @@ keywords = ["provable", "defi", "crypto"]
 authors = ["Provable Things <provable.xyz>", "Greg Kapka <greg@oraclize.it>"]
 
 [features]
-any-sender = []
 debug = []
 non-validating = ["debug"]
 

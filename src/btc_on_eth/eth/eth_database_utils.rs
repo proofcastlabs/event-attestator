@@ -23,6 +23,7 @@ use crate::{
         ETH_ANCHOR_BLOCK_HASH_KEY,
         ETH_CANON_TO_TIP_LENGTH_KEY,
         ETH_SMART_CONTRACT_ADDRESS_KEY,
+        ANY_SENDER_NONCE_KEY,
     },
     btc_on_eth::{
         database_utils::{
@@ -49,9 +50,6 @@ use crate::{
         },
     },
 };
-
-#[cfg(feature = "any-sender")]
-use crate::chains::eth::eth_constants::ANY_SENDER_NONCE_KEY;
 
 pub fn get_signing_params_from_db<D>(
     db: &D,
@@ -612,7 +610,6 @@ pub fn put_eth_address_in_db<D>(
     db.put(key.to_vec(), eth_address.as_bytes().to_vec(), None)
 }
 
-#[cfg(feature = "any-sender")]
 pub fn get_any_sender_nonce_from_db<D>(
     db: &D
 ) -> Result<u64>
@@ -622,7 +619,6 @@ pub fn get_any_sender_nonce_from_db<D>(
     get_u64_from_db(db, &ANY_SENDER_NONCE_KEY.to_vec())
 }
 
-#[cfg(feature = "any-sender")]
 pub fn put_any_sender_nonce_in_db<D>(
     db: &D,
     nonce: u64,
@@ -633,7 +629,6 @@ pub fn put_any_sender_nonce_in_db<D>(
     put_u64_in_db(db, &ANY_SENDER_NONCE_KEY.to_vec(), nonce)
 }
 
-#[cfg(feature = "any-sender")]
 pub fn increment_any_sender_nonce_in_db<D>(
     db: &D,
     amount_to_increment_by: u64,

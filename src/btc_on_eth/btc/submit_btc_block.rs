@@ -23,6 +23,7 @@ use crate::{
             update_btc_latest_block_hash::maybe_update_btc_latest_block_hash,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
+            increment_any_sender_nonce::maybe_increment_any_sender_nonce_in_db,
             btc_database_utils::{
                 end_btc_db_transaction,
                 start_btc_db_transaction,
@@ -65,9 +66,6 @@ use crate::{
     },
 };
 
-#[cfg(feature = "any-sender")]
-use crate::btc_on_eth::btc::increment_any_sender_nonce::maybe_increment_any_sender_nonce_in_db;
-
 pub fn submit_btc_block_to_enclave<D>(
     db: D,
     block_json_string: String
@@ -104,13 +102,7 @@ pub fn submit_btc_block_to_enclave<D>(
         .and_then(maybe_update_btc_linker_hash)
         .and_then(maybe_sign_canon_block_transactions_and_add_to_state)
         .and_then(maybe_increment_eth_nonce_in_db)
-        .and_then(|result| {
-            #[cfg(feature = "any-sender")]
-            return maybe_increment_any_sender_nonce_in_db(result);
-
-            #[cfg(not(feature = "any-sender"))]
-            Ok(result)
-        })
+        .and_then(maybe_increment_any_sender_nonce_in_db)
         .and_then(maybe_remove_old_btc_tail_block)
         .and_then(create_btc_output_json_and_put_in_state)
         .and_then(remove_minting_params_from_canon_block_and_return_state)

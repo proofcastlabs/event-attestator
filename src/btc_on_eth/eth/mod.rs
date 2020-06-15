@@ -2,9 +2,7 @@ pub mod initialize_eth;
 pub mod submit_eth_block;
 pub mod eth_message_signer;
 
-#[cfg(feature = "any-sender")]
 pub(crate) mod any_sender;
-
 pub(crate) mod trie;
 pub(crate) mod rlp_codec;
 pub(crate) mod eth_state;

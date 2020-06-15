@@ -19,12 +19,10 @@ use crate::{
             put_eth_latest_block_hash_in_db,
             put_eth_block_and_receipts_in_db,
             put_eth_canon_to_tip_length_in_db,
+            put_any_sender_nonce_in_db,
         },
     },
 };
-
-#[cfg(feature = "any-sender")]
-use crate::btc_on_eth::eth::eth_database_utils::put_any_sender_nonce_in_db;
 
 pub fn check_for_existence_of_eth_contract_byte_code(
     bytecode_path: &str,
@@ -168,7 +166,6 @@ pub fn add_eth_block_to_db_and_return_state<D>(
         .map(|_| state)
 }
 
-#[cfg(feature = "any-sender")]
 pub fn put_any_sender_nonce_in_db_and_return_state<D>(
     state: EthState<D>,
 ) -> Result<EthState<D>>

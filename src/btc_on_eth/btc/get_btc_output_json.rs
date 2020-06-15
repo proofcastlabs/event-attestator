@@ -10,7 +10,11 @@ use crate::{
         eth::{
             eth_types::EthTransactions,
             eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::get_eth_account_nonce_from_db,
+            eth_database_utils::{
+                get_eth_account_nonce_from_db,
+                get_any_sender_nonce_from_db,
+            },
+            any_sender::relay_transaction::RelayTransaction,
         },
         btc::{
             btc_state::BtcState,
@@ -26,12 +30,6 @@ use crate::{
     },
 };
 
-#[cfg(feature = "any-sender")]
-use crate::btc_on_eth::eth::{
-    any_sender::relay_transaction::RelayTransaction,
-    eth_database_utils::get_any_sender_nonce_from_db,
-};
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EthTxInfo {
     pub eth_tx_hex: String,
@@ -42,11 +40,7 @@ pub struct EthTxInfo {
     pub signature_timestamp: u64,
     pub originating_tx_hash: String,
     pub originating_address: String,
-
-    #[cfg(feature = "any-sender")]
     pub any_sender_tx: Option<RelayTransaction>,
-
-    #[cfg(feature = "any-sender")]
     pub any_sender_nonce: Option<u64>,
 }
 
@@ -81,17 +75,12 @@ impl EthTxInfo {
                 signature_timestamp: SystemTime::now()
                     .duration_since(UNIX_EPOCH)?
                     .as_secs(),
-                
-                #[cfg(feature = "any-sender")]
                 any_sender_tx: None,
-                
-                #[cfg(feature = "any-sender")]
                 any_sender_nonce: None,
             }
         )
     }
 
-    #[cfg(feature = "any-sender")]
     pub fn new_with_any_sender<D>(
         eth_tx: &EthTransaction,
         minting_param_struct: &MintingParamStruct,
@@ -145,15 +134,14 @@ pub fn get_eth_signed_tx_info_from_eth_txs<D>(
     eth_txs: &EthTransactions,
     minting_params: &MintingParams,
     eth_account_nonce: u64,
-    _state: &BtcState<D>,
+    state: &BtcState<D>,
 ) -> Result<Vec<EthTxInfo>>
     where D: DatabaseInterface
 {
-    #[cfg(feature = "any-sender")]
-    if _state.is_any_sender() {
+    if state.is_any_sender() {
         info!("✔ Getting any.sender tx info from ETH txs...");
         let any_sender_start_nonce =
-            get_any_sender_nonce_from_db(&_state.db)? - eth_txs.len() as u64;
+            get_any_sender_nonce_from_db(&state.db)? - eth_txs.len() as u64;
 
         return eth_txs
             .iter()
@@ -163,7 +151,7 @@ pub fn get_eth_signed_tx_info_from_eth_txs<D>(
                     tx,
                     &minting_params[i],
                     Some(any_sender_start_nonce + i as u64),
-                    &_state.db,
+                    &state.db,
                 )
             )
             .collect::<Result<Vec<EthTxInfo>>>();

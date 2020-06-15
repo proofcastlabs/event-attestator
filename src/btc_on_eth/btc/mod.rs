@@ -37,6 +37,4 @@ pub(crate) mod extract_utxos_from_op_return_txs;
 pub(crate) mod remove_minting_params_from_canon_block;
 pub(crate) mod parse_minting_params_from_p2sh_deposits;
 pub(crate) mod parse_minting_params_from_op_return_deposits;
-
-#[cfg(feature = "any-sender")]
 pub(crate) mod increment_any_sender_nonce;

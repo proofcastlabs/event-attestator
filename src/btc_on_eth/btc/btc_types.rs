@@ -118,8 +118,6 @@ pub struct BtcBlockAndTxsJson {
     pub block: BtcBlockJson,
     pub transactions: Vec<String>,
     pub deposit_address_list: DepositAddressJsonList,
-
-    #[cfg(feature = "any-sender")]
     pub any_sender: Option<bool>,
 }
 
