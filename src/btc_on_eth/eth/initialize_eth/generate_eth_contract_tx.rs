@@ -11,7 +11,7 @@ use crate::{
 pub fn generate_eth_contract_tx_and_put_in_state<D>(
     chain_id: u8,
     gas_price: u64,
-    bytecode_path: &String,
+    bytecode_path: &str,
     state: EthState<D>,
 ) -> Result<EthState<D>>
     where D: DatabaseInterface

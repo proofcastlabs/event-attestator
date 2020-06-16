@@ -29,6 +29,16 @@ pub const EMPTY_NIBBLES: Nibbles = Nibbles { data: Vec::new(), offset: 0 };
 pub static REDEEM_EVENT_TOPIC_HEX: &str =
     "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65";
 
+pub const ETH_MESSAGE_PREFIX: &[u8; 26] = b"\x19Ethereum Signed Message:\n";
+pub const PREFIXED_MESSAGE_HASH_LEN: &[u8; 2] = b"32";
+    
+pub const ANY_SENDER_MAX_COMPENSATION_WEI: u64 = 49_999_999_999_999_999;
+pub const ANY_SENDER_MAX_GAS_LIMIT: u32 = 3_000_000;
+pub const ANY_SENDER_MAX_DATA_LEN: usize = 3_000;
+
+pub const ETH_MAINNET_CHAIN_ID: u8 = 1;
+pub const ETH_ROPSTEN_CHAIN_ID: u8 = 3;
+
 #[cfg(not(test))]
 lazy_static! {
     pub static ref PTOKEN_CONTRACT_TOPICS: [EthHash; 1] = {
@@ -86,6 +96,8 @@ pub fn get_eth_constants_db_keys() -> JsonValue {
             hex::encode(ETH_GAS_PRICE_KEY.to_vec()),
         "ETH_TAIL_BLOCK_HASH_KEY":
             hex::encode(ETH_TAIL_BLOCK_HASH_KEY.to_vec()),
+        "ANY_SENDER_NONCE_KEY":
+            hex::encode(ANY_SENDER_NONCE_KEY.to_vec()),
     })
 }
 
@@ -164,5 +176,11 @@ lazy_static! {
 lazy_static! {
     pub static ref ETH_TAIL_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key(
         "eth-tail-block-hash-key"
+    );
+}
+
+lazy_static! {
+    pub static ref ANY_SENDER_NONCE_KEY: [u8; 32] = get_prefixed_db_key(
+        "any-sender-nonce"
     );
 }

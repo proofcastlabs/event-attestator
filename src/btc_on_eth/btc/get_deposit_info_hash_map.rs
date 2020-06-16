@@ -1,14 +1,12 @@
 use std::collections::HashMap;
 use crate::{
-    types::Result,
-    traits::DatabaseInterface,
-    btc_on_eth::btc::{
-        btc_state::BtcState,
-        btc_types::{
-            DepositInfoList,
-            DepositInfoHashMap,
-        },
+    btc_on_eth::btc::btc_state::BtcState,
+    chains::btc::deposit_address_info::{
+        DepositInfoHashMap,
+        DepositInfoList
     },
+    traits::DatabaseInterface,
+    types::Result,
 };
 
 pub fn create_hash_map_from_deposit_info_list(

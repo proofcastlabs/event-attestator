@@ -23,6 +23,7 @@ use crate::{
         ETH_ANCHOR_BLOCK_HASH_KEY,
         ETH_CANON_TO_TIP_LENGTH_KEY,
         ETH_SMART_CONTRACT_ADDRESS_KEY,
+        ANY_SENDER_NONCE_KEY,
     },
     btc_on_eth::{
         database_utils::{
@@ -607,6 +608,38 @@ pub fn put_eth_address_in_db<D>(
     where D: DatabaseInterface
 {
     db.put(key.to_vec(), eth_address.as_bytes().to_vec(), None)
+}
+
+pub fn get_any_sender_nonce_from_db<D>(
+    db: &D
+) -> Result<u64>
+    where D: DatabaseInterface
+{
+    trace!("✔ Getting any.sender nonce from db...");
+    get_u64_from_db(db, &ANY_SENDER_NONCE_KEY.to_vec())
+}
+
+pub fn put_any_sender_nonce_in_db<D>(
+    db: &D,
+    nonce: u64,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    trace!("✔ Putting any.sender nonce of {} in db...", nonce);
+    put_u64_in_db(db, &ANY_SENDER_NONCE_KEY.to_vec(), nonce)
+}
+
+pub fn increment_any_sender_nonce_in_db<D>(
+    db: &D,
+    amount_to_increment_by: u64,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    trace!("✔ Incrementing any.sender nonce in db...");
+    get_any_sender_nonce_from_db(db)
+        .and_then(|nonce|
+            put_any_sender_nonce_in_db(db, nonce + amount_to_increment_by)
+        )
 }
 
 #[cfg(test)]

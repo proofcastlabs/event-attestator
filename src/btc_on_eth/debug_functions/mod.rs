@@ -41,7 +41,7 @@ use crate::{
             filter_utxos::maybe_filter_utxos_in_state,
             validate_btc_merkle_root::validate_btc_merkle_root,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
-            parse_btc_block::parse_btc_block_and_id_and_put_in_state,
+            parse_submission_material::parse_btc_block_and_id_and_put_in_state,
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
             filter_minting_params::maybe_filter_minting_params_in_state,
             validate_btc_block_header::validate_btc_block_header_in_state,
@@ -85,6 +85,9 @@ use crate::{
                 start_eth_db_transaction,
                 get_signing_params_from_db,
                 get_eth_account_nonce_from_db,
+                get_any_sender_nonce_from_db,
+                get_eth_private_key_from_db,
+                get_public_eth_address_from_db,
             },
             get_eth_output_json::{
                 EthOutput,
@@ -124,12 +127,12 @@ pub fn debug_clear_all_utxos<D>(
 
 pub fn debug_reprocess_btc_block<D>(
     db: D,
-    btc_block_json: String,
+    btc_submission_material_json: String,
 ) -> Result<String>
     where D: DatabaseInterface
 {
     parse_btc_block_and_id_and_put_in_state(
-        btc_block_json,
+        btc_submission_material_json,
         BtcState::init(db),
     )
         .and_then(check_core_is_initialized_and_return_btc_state)
@@ -164,6 +167,10 @@ pub fn debug_reprocess_btc_block<D>(
                             txs,
                             &state.minting_params,
                             get_eth_account_nonce_from_db(&state.db)?,
+                            state.use_any_sender_tx_type(),
+                            get_any_sender_nonce_from_db(&state.db)?,
+                            get_public_eth_address_from_db(&state.db)?,
+                            get_eth_private_key_from_db(&state.db)?
                         )
                 }?
             )?;

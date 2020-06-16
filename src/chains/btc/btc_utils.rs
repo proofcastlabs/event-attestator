@@ -90,7 +90,7 @@ impl SerializedBlockInDbFormat {
     }
 }
 
-pub fn convert_hex_to_sha256_hash(hex: &String) -> Result<sha256d::Hash> {
+pub fn convert_hex_to_sha256_hash(hex: &str) -> Result<sha256d::Hash> {
     Ok(sha256d::Hash::from_slice(&hex::decode(strip_hex_prefix(&hex)?)?)?)
 }
 
@@ -282,7 +282,7 @@ pub fn deserialize_btc_utxo(bytes: &Bytes) -> Result<BtcUtxo> {
 }
 
 pub fn convert_btc_address_to_bytes(
-    btc_address: &String
+    btc_address: &str
 ) -> Result<Bytes> {
     Ok(from_base58(btc_address)?)
 }
