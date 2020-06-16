@@ -9,14 +9,16 @@ use crate::{
             eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
         },
     },
+    chains::eth::eth_constants::{
+        ANY_SENDER_MAX_COMPENSATION_WEI, ANY_SENDER_MAX_DATA_LEN, ANY_SENDER_MAX_GAS_LIMIT,
+        ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID,
+    },
     errors::AppError,
     types::{Byte, Bytes, Result},
 };
 use ethabi::{encode, Token};
 use ethereum_types::{Address as EthAddress, Signature as EthSignature};
 use rlp::RlpStream;
-
-const MAX_COMPENSATION_WEI: u64 = 49_999_999_999_999_999;
 
 /// An any.sender relay transaction. It is very similar
 /// to a normal transaction except for a few fields.
@@ -75,7 +77,7 @@ pub struct RelayTransaction {
 
 impl RelayTransaction {
     /// Creates a new signed relay transaction.
-    #[allow(dead_code)]
+    #[cfg(test)]
     pub fn new(
         from: EthAddress,
         chain_id: u8,
@@ -120,25 +122,25 @@ impl RelayTransaction {
 
         let deadline = deadline.unwrap_or_default();
 
-        if gas_limit > 3_000_000 {
+        if gas_limit > ANY_SENDER_MAX_GAS_LIMIT {
             return Err(AppError::Custom(
                 "✘ Any.sender gas limit is out of range!".to_string(),
             ));
         }
 
-        if data.len() > 3_000 {
+        if data.len() > ANY_SENDER_MAX_DATA_LEN {
             return Err(AppError::Custom(
                 "✘ Any.sender data length is out of range!".to_string(),
             ));
         }
 
-        if compensation > MAX_COMPENSATION_WEI {
+        if compensation > ANY_SENDER_MAX_COMPENSATION_WEI {
             return Err(AppError::Custom(
                 "✘ Any.sender compensation should be smaller than 0.05 ETH!".to_string(),
             ));
         }
 
-        if chain_id != 1 && chain_id != 3 {
+        if chain_id != ETH_MAINNET_CHAIN_ID && chain_id != ETH_ROPSTEN_CHAIN_ID {
             return Err(AppError::Custom(
                 "✘ Any.sender is not available on chain with the id provided!".to_string(),
             ));
@@ -192,7 +194,7 @@ impl RelayTransaction {
         let data = eth_transaction.data.clone();
         let deadline = None; // use the default any.sender deadline
         let gas_limit = eth_transaction.gas_limit.as_u32();
-        let compensation = MAX_COMPENSATION_WEI;
+        let compensation = ANY_SENDER_MAX_COMPENSATION_WEI;
         let relay_contract_address =
             RelayContract::from_eth_chain_id(eth_transaction.chain_id)?.address()?;
         let to = EthAddress::from_slice(&eth_transaction.to);
@@ -231,7 +233,7 @@ impl RelayTransaction {
         hex::encode(keccak_hash_bytes(self.serialize_bytes()))
     }
 
-    #[allow(dead_code)]
+    #[cfg(test)]
     pub fn serialize_hex(&self) -> String {
         hex::encode(self.serialize_bytes())
     }

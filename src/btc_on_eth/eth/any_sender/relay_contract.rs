@@ -1,4 +1,8 @@
-use crate::{errors::AppError, types::Result};
+use crate::{
+    chains::eth::eth_constants::{ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID},
+    errors::AppError,
+    types::Result,
+};
 use ethereum_types::Address as EthAddress;
 
 /// An any.sender relay contract address.
@@ -13,8 +17,8 @@ impl RelayContract {
     /// Creates new relay contract from Ethereum chain id.
     pub fn from_eth_chain_id(chain_id: u8) -> Result<RelayContract> {
         match chain_id {
-            1 => Ok(RelayContract::Mainnet),
-            3 => Ok(RelayContract::Ropsten),
+            ETH_MAINNET_CHAIN_ID => Ok(RelayContract::Mainnet),
+            ETH_ROPSTEN_CHAIN_ID => Ok(RelayContract::Ropsten),
             _ => Err(AppError::Custom(
                 "✘ Any.sender is only available on Ropsten and Mainnet!".to_string(),
             )),

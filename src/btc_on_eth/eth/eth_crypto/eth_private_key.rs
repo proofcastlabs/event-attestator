@@ -11,11 +11,7 @@ use secp256k1::{
 };
 use crate::{
     traits::DatabaseInterface,
-    constants::{
-        PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-        PREFIXED_MESSAGE_HASH_LEN,
-        ETH_MESSAGE_PREFIX,
-    },
+    constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
     types::{
         Bytes,
         Result,
@@ -30,6 +26,10 @@ use crate::{
             generate_random_private_key,
             set_eth_signature_recovery_param,
         },
+    },
+    chains::eth::eth_constants::{
+        PREFIXED_MESSAGE_HASH_LEN,
+        ETH_MESSAGE_PREFIX,
     },
 };
 
