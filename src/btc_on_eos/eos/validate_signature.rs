@@ -62,7 +62,7 @@ fn convert_v2_schedule_block_header_to_v1_schedule_block_header(
         v2_block_header.transaction_mroot,
         v2_block_header.action_mroot,
         v2_block_header.schedule_version,
-        match &v2_block_header.new_producers {
+        match &v2_block_header.new_producer_schedule {
             None => None,
             Some(v2_schedule) => Some(convert_v2_schedule_to_v1(&v2_schedule.clone())),
         },
@@ -172,7 +172,7 @@ pub fn validate_block_header_signature<D>(
     if !CORE_IS_VALIDATING {
         info!("✔ Skipping EOS block header signature validation");
         Ok(state)
-    } else if state.get_eos_block_header()?.new_producers.is_some() {
+    } else if state.get_eos_block_header()?.new_producer_schedule.is_some() {
         // NOTE/FIXME; To be cleaned up once validation for these has been fixed!
         info!("✔ `new_producers` field exists in EOS block ∴ skipping validation check...");
         Ok(state)
