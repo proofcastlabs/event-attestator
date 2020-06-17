@@ -110,6 +110,13 @@ fn convert_schedule_json_value_to_v2_schedule_json(json_value: &JsonValue) -> Re
 pub fn parse_eos_block_header_from_json(
     eos_block_header_json: &EosBlockHeaderJson
 ) -> Result<EosBlockHeader> {
+    let schedule = if eos_block_header_json.new_producers.is_some() {
+        Some(convert_schedule_json_value_to_v2_schedule_json(eos_block_header_json.new_producers.as_ref()?)?)
+    } else if eos_block_header_json.new_producer_schedule.is_some() {
+        Some(convert_schedule_json_value_to_v2_schedule_json(eos_block_header_json.new_producer_schedule.as_ref()?)?)
+    } else {
+        None
+    };
     Ok(
         EosBlockHeader::new(
             convert_timestamp_string_to_block_timestamp(&eos_block_header_json.timestamp)?,
@@ -119,11 +126,7 @@ pub fn parse_eos_block_header_from_json(
             convert_hex_to_checksum256(&eos_block_header_json.transaction_mroot)?,
             convert_hex_to_checksum256(&eos_block_header_json.action_mroot)?,
             eos_block_header_json.schedule_version,
-            match &eos_block_header_json.new_producers {
-                None => None,
-                Some(producer_schedule_json) =>
-                    Some(convert_schedule_json_value_to_v2_schedule_json(&producer_schedule_json)?)
-            },
+            schedule,
             match &eos_block_header_json.header_extension {
                 None => vec![],
                 Some(hex_strings) => convert_hex_strings_to_extensions(
@@ -273,6 +276,7 @@ mod tests {
             transaction_mroot: "0000000000000000000000000000000000000000000000000000000000000000".to_string(),
             producer_signature: "SIG_K1_KX9Y5xYQrBYtpdKm4njsMerfzoPU6qbiW3G3RmbmbSyZ5sjE2J1U4PHC1vQ8arZQrBKqwW1adLPwYDzqt3v137GLp1ZWse".to_string(), // Ignored
             header_extension: None,
+            new_producer_schedule: None,
             new_producers: None,
         };
         let result = parse_eos_block_header_from_json(&json)
@@ -303,6 +307,7 @@ mod tests {
             transaction_mroot: "0000000000000000000000000000000000000000000000000000000000000000".to_string(),
             producer_signature: "SIG_K1_KAYaAyqWGxo38cxuNexehkqQEghJY5iekGj56A1v7c8Qs61v4rLgH3cFdqpQ6rLzeNcAb1xZVXsNfayiHuQKzbyC2Kr36Y".to_string(),
             header_extension: None,
+            new_producer_schedule: None,
             new_producers: None,
         };
         let result = parse_eos_block_header_from_json(&json)
@@ -333,6 +338,7 @@ mod tests {
             transaction_mroot: "0000000000000000000000000000000000000000000000000000000000000000".to_string(),
             producer_signature: "SIG_K1_K8S9NPR8Xv8hyi7EWT6fjy4iBYtt3F6PPxv5S5H2a9rucP8YxtZUmxeyxxsxg6HHNeNQ4JJTRKCzdqdN3drRFWDi9KJduL".to_string(),
             header_extension: None,
+            new_producer_schedule: None,
             new_producers: None,
         };
         let result = parse_eos_block_header_from_json(&json)
