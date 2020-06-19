@@ -45,7 +45,7 @@ pub fn parse_eth_block_and_receipts(
 }
 
 pub fn parse_eth_block_and_receipts_and_put_in_state<D>(
-    block_json: String,
+    block_json: &str,
     state: EthState<D>,
 ) -> Result<EthState<D>>
     where D: DatabaseInterface

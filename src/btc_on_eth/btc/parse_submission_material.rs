@@ -126,7 +126,7 @@ pub fn parse_btc_block_and_tx_json_to_struct(
 }
 
 pub fn parse_btc_block_and_id_and_put_in_state<D>(
-    block_json: String,
+    block_json: &str,
     mut state: BtcState<D>,
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface

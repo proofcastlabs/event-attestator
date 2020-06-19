@@ -56,7 +56,7 @@ pub struct EosInitJson {
 }
 
 impl EosInitJson {
-    pub fn from_json_string(json_string: &String) -> Result<Self> {
+    pub fn from_json_string(json_string: &str) -> Result<Self> {
         match serde_json::from_str(&json_string) {
             Ok(result) => Ok(result),
             Err(e) => Err(AppError::Custom(e.to_string()))

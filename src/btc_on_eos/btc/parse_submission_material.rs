@@ -126,7 +126,7 @@ fn parse_submission_json(
 }
 
 pub fn parse_submission_material_and_put_in_state<D>(
-    submission_json: String,
+    submission_json: &str,
     state: BtcState<D>,
 ) -> Result<BtcState<D>>
    where D: DatabaseInterface

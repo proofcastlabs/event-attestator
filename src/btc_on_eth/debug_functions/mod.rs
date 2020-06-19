@@ -80,6 +80,8 @@ use crate::{
             increment_btc_nonce::maybe_increment_btc_nonce_in_db,
             filter_receipts::filter_irrelevant_receipts_from_state,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
+            extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
+            parse_eth_block_and_receipts::parse_eth_block_and_receipts_and_put_in_state,
             eth_database_utils::{
                 end_eth_db_transaction,
                 start_eth_db_transaction,
@@ -92,12 +94,6 @@ use crate::{
             get_eth_output_json::{
                 EthOutput,
                 get_btc_signed_tx_info_from_btc_txs,
-            },
-            extract_utxos_from_btc_txs::{
-                maybe_extract_btc_utxo_from_btc_tx_in_state,
-            },
-            parse_eth_block_and_receipts::{
-                parse_eth_block_and_receipts_and_put_in_state,
             },
         },
     },
@@ -124,7 +120,7 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
         .map(|_| "{debug_clear_all_utxos_succeeded:true}".to_string())
 }
 
-pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_material_json: String) -> Result<String> {
+pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
     parse_btc_block_and_id_and_put_in_state(btc_submission_material_json, BtcState::init(db))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
@@ -174,7 +170,7 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
         )
 }
 
-pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: String) -> Result<String> {
+pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &str) -> Result<String> {
     parse_eth_block_and_receipts_and_put_in_state(eth_block_json, EthState::init(db))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction)
@@ -207,7 +203,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: St
         })
 }
 
-pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: String, value: String) -> Result<String> {
+pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
         true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
@@ -217,7 +213,7 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: String, va
 
 }
 
-pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: String) -> Result<String> {
+pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
         true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
