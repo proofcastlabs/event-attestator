@@ -220,7 +220,7 @@ pub fn put_eos_account_nonce_in_db<D>(
 
 pub fn put_eos_token_symbol_in_db<D>(
     db: &D,
-    name: &String,
+    name: &str,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -237,7 +237,7 @@ pub fn get_eos_token_symbol_from_db<D>(
 
 pub fn put_eos_account_name_in_db<D>(
     db: &D,
-    name: &String,
+    name: &str,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -262,7 +262,7 @@ pub fn get_eos_account_name_from_db<D>(
 
 pub fn put_eos_chain_id_in_db<D>(
     db: &D,
-    chain_id: &String
+    chain_id: &str
 ) -> Result<()>
     where D: DatabaseInterface
 {

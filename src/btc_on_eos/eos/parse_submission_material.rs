@@ -61,7 +61,7 @@ fn parse_eos_action_proof_jsons_to_action_proofs(
 }
 
 pub fn parse_eos_submission_material_string_to_json(
-    submission_material_string: &String
+    submission_material_string: &str
 ) -> Result<EosSubmissionMaterialJson> {
     match serde_json::from_str(submission_material_string) {
         Ok(result) => Ok(result),
@@ -158,19 +158,19 @@ fn parse_eos_submission_material_json_to_struct(
 }
 
 pub fn parse_eos_submission_material_string_to_struct(
-    submission_material: &String,
+    submission_material: &str,
 ) -> Result<EosSubmissionMaterial> {
     parse_eos_submission_material_string_to_json(submission_material)
         .and_then(parse_eos_submission_material_json_to_struct)
 }
 
 pub fn parse_submission_material_and_add_to_state<D>(
-    submission_material: String,
+    submission_material: &str,
     state: EosState<D>,
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    parse_eos_submission_material_string_to_struct(&submission_material)
+    parse_eos_submission_material_string_to_struct(submission_material)
         .and_then(|material| state.add_submission_material(material))
 }
 
