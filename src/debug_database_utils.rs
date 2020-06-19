@@ -6,8 +6,8 @@ use crate::{
 
 pub fn set_key_in_db_to_value<D>(
     db: D,
-    key: String,
-    value: String,
+    key: &str,
+    value: &str,
     data_sensitivity: Option<u8>,
 ) -> Result<String>
     where D: DatabaseInterface
@@ -20,13 +20,7 @@ pub fn set_key_in_db_to_value<D>(
         .map(|_| "{putting_value_in_database_suceeded:true}".to_string())
 }
 
-pub fn get_key_from_db<D>(
-    db: D,
-    key: String,
-    data_sensitivity: Option<u8>,
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn get_key_from_db<D: DatabaseInterface>(db: D, key: &str, data_sensitivity: Option<u8>) -> Result<String> {
     info!("✔ Maybe getting key: {} from DB...", key);
     check_debug_mode()
         .and_then(|_| db.start_transaction())

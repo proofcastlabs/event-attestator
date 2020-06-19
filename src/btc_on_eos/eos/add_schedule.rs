@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub fn maybe_add_new_eos_schedule_to_db<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    match &state.get_eos_block_header()?.new_producers {
+    match &state.get_eos_block_header()?.new_producer_schedule {
         None => {
             info!("✔ No new schedule in block ∴ nothing to add to db!");
             Ok(state)

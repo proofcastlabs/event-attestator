@@ -48,7 +48,7 @@ pub fn put_canon_to_tip_length_in_db_and_return_state<D>(
         .map(|_| state)
 }
 
-pub fn get_btc_network_from_arg(network_arg: &String) -> BtcNetwork {
+pub fn get_btc_network_from_arg(network_arg: &str) -> BtcNetwork {
     match &network_arg[..] {
         "Testnet" => {
             trace!("✔ Using 'TESTNET' for bitcoin network!");
@@ -72,7 +72,7 @@ pub fn put_difficulty_threshold_in_db<D>(
 }
 
 pub fn put_btc_network_in_db_and_return_state<D>(
-    network: &String,
+    network: &str,
     state: BtcState<D>
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface

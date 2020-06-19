@@ -156,7 +156,7 @@ pub fn convert_v2_schedule_json_to_v2_schedule(json: &EosProducerScheduleJsonV2)
     )
 }
 
-pub fn parse_v2_schedule_string_to_v2_schedule(schedule_string: &String) -> Result<EosProducerScheduleV2> {
+pub fn parse_v2_schedule_string_to_v2_schedule(schedule_string: &str) -> Result<EosProducerScheduleV2> {
     parse_v2_schedule_string_to_v2_schedule_json(schedule_string)
         .and_then(|json| convert_v2_schedule_json_to_v2_schedule(&json))
 }

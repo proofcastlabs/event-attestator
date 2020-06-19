@@ -2,9 +2,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     btc_on_eth::{
-        check_core_is_initialized::{
-            check_core_is_initialized_and_return_eth_state,
-        },
+        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
             eth_state::EthState,
             validate_block::validate_block_in_state,
@@ -21,40 +19,22 @@ use crate::{
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
             update_eth_canon_block_hash::maybe_update_eth_canon_block_hash,
             parse_redeem_params::maybe_parse_redeem_params_and_add_to_state,
+            update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
+            extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
+            parse_eth_block_and_receipts::parse_eth_block_and_receipts_and_put_in_state,
+            add_block_and_receipts_to_database::maybe_add_block_and_receipts_to_db_and_return_state,
+            remove_receipts_from_canon_block::maybe_remove_receipts_from_canon_block_and_return_state,
             eth_database_utils::{
                 end_eth_db_transaction,
                 start_eth_db_transaction,
-            },
-            extract_utxos_from_btc_txs::{
-                maybe_extract_btc_utxo_from_btc_tx_in_state,
-            },
-            update_eth_linker_hash::{
-                maybe_update_eth_linker_hash_and_return_state,
-            },
-            parse_eth_block_and_receipts::{
-                parse_eth_block_and_receipts_and_put_in_state,
-            },
-            add_block_and_receipts_to_database::{
-                maybe_add_block_and_receipts_to_db_and_return_state,
-            },
-            remove_receipts_from_canon_block::{
-                maybe_remove_receipts_from_canon_block_and_return_state,
             },
         },
     },
 };
 
-pub fn submit_eth_block_to_enclave<D>(
-    db: D,
-    block_json_string: String
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting ETH block to enclave...");
-    parse_eth_block_and_receipts_and_put_in_state(
-        block_json_string,
-        EthState::init(db),
-    )
+    parse_eth_block_and_receipts_and_put_in_state(block_json_string, EthState::init(db))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction)
         .and_then(validate_block_in_state)

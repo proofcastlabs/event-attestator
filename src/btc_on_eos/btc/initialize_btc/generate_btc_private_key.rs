@@ -10,15 +10,12 @@ use crate::{
 };
 
 pub fn generate_and_store_btc_private_key<D>(
-    network: &String,
+    network: &str,
     state: BtcState<D>
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
     info!("✔ Generating & storing BTC private key...");
-    put_btc_private_key_in_db(
-        &state.db,
-        &BtcPrivateKey::generate_random(get_btc_network_from_arg(network))?,
-    )
-        .and_then(|_| Ok(state))
+    put_btc_private_key_in_db(&state.db, &BtcPrivateKey::generate_random(get_btc_network_from_arg(network))?)
+        .and(Ok(state))
 }

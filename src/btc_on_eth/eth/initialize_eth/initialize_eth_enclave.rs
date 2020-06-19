@@ -42,11 +42,11 @@ use crate::{
 
 pub fn maybe_initialize_eth_enclave<D>(
     db: D,
-    block_json_string: String,
+    block_json_string: &str,
     chain_id: u8,
     gas_price: u64,
     canon_to_tip_length: u64,
-    bytecode_path: String,
+    bytecode_path: &str,
 ) -> Result<String>
     where D: DatabaseInterface
 {
@@ -60,37 +60,19 @@ pub fn maybe_initialize_eth_enclave<D>(
                 }
                 false => {
                     info!("✔ Initializing enclave for ETH...");
-                    parse_eth_block_and_receipts_and_put_in_state(
-                        block_json_string,
-                        state,
-                    )
+                    parse_eth_block_and_receipts_and_put_in_state(block_json_string, state)
                         .and_then(validate_eth_block_in_state)
                         .and_then(remove_receipts_from_block_in_state)
                         .and_then(start_eth_db_transaction)
                         .and_then(add_eth_block_to_db_and_return_state)
-                        .and_then(|state|
-                            put_canon_to_tip_length_in_db_and_return_state(
-                                canon_to_tip_length,
-                                state,
-                            )
-                        )
+                        .and_then(|state| put_canon_to_tip_length_in_db_and_return_state(canon_to_tip_length, state))
                         .and_then(set_eth_anchor_block_hash_and_return_state)
                         .and_then(set_eth_latest_block_hash_and_return_state)
                         .and_then(set_eth_canon_block_hash_and_return_state)
                         .and_then(generate_and_store_eth_private_key)
                         .and_then(put_eth_tail_block_hash_in_db_and_return_state)
-                        .and_then(|state|
-                            put_eth_chain_id_in_db_and_return_state(
-                                chain_id,
-                                state,
-                            )
-                        )
-                        .and_then(|state|
-                            put_eth_gas_price_in_db_and_return_state(
-                                gas_price,
-                                state
-                            )
-                        )
+                        .and_then(|state| put_eth_chain_id_in_db_and_return_state(chain_id, state))
+                        .and_then(|state| put_eth_gas_price_in_db_and_return_state(gas_price, state))
                         .and_then(put_eth_account_nonce_in_db_and_return_state)
                         .and_then(put_any_sender_nonce_in_db_and_return_state)
                         .and_then(generate_and_store_eth_address)

@@ -168,6 +168,7 @@ pub struct EosBlockHeaderJson {
     pub transaction_mroot: String,
     pub producer_signature: String,
     pub new_producers: Option<JsonValue>,
+    pub new_producer_schedule: Option<JsonValue>,
     pub header_extension: Option<Vec<String>>,
 }
 
