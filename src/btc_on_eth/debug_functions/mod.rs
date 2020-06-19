@@ -115,26 +115,17 @@ pub fn debug_get_all_db_keys() -> Result<String> {
         )
 }
 
-pub fn debug_clear_all_utxos<D>(
-    db: &D,
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     info!("✔ Debug clearing all UTXOs...");
     check_core_is_initialized(db)
+        .and_then(|_| db.start_transaction())
         .and_then(|_| clear_all_utxos(db))
+        .and_then(|_| db.end_transaction())
+        .map(|_| "{debug_clear_all_utxos_succeeded:true}".to_string())
 }
 
-pub fn debug_reprocess_btc_block<D>(
-    db: D,
-    btc_submission_material_json: String,
-) -> Result<String>
-    where D: DatabaseInterface
-{
-    parse_btc_block_and_id_and_put_in_state(
-        btc_submission_material_json,
-        BtcState::init(db),
-    )
+pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_material_json: String) -> Result<String> {
+    parse_btc_block_and_id_and_put_in_state(btc_submission_material_json, BtcState::init(db))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
@@ -151,10 +142,7 @@ pub fn debug_reprocess_btc_block<D>(
         .and_then(maybe_save_utxos_to_db)
         .and_then(maybe_filter_minting_params_in_state)
         .and_then(|state| {
-            get_eth_signed_txs(
-                &get_signing_params_from_db(&state.db)?,
-                &state.minting_params,
-            )
+            get_eth_signed_txs(&get_signing_params_from_db(&state.db)?, &state.minting_params)
                 .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
         })
         .and_then(maybe_increment_eth_nonce_in_db)
@@ -186,16 +174,8 @@ pub fn debug_reprocess_btc_block<D>(
         )
 }
 
-pub fn debug_reprocess_eth_block<D>(
-    db: D,
-    eth_block_json: String,
-) -> Result<String>
-    where D: DatabaseInterface
-{
-    parse_eth_block_and_receipts_and_put_in_state(
-        eth_block_json,
-        EthState::init(db),
-    )
+pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: String) -> Result<String> {
+    parse_eth_block_and_receipts_and_put_in_state(eth_block_json, EthState::init(db))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction)
         .and_then(validate_block_in_state)
@@ -217,11 +197,7 @@ pub fn debug_reprocess_eth_block<D>(
                 &EthOutput {
                     eth_latest_block_number: 0,
                     btc_signed_transactions: match state.btc_transactions {
-                        Some(txs) => get_btc_signed_tx_info_from_btc_txs(
-                            0,
-                            txs,
-                            &state.redeem_params,
-                        )?,
+                        Some(txs) => get_btc_signed_tx_info_from_btc_txs(0, txs, &state.redeem_params)?,
                         None => vec![],
                     }
                 }
@@ -231,43 +207,26 @@ pub fn debug_reprocess_eth_block<D>(
         })
 }
 
-pub fn debug_set_key_in_db_to_value<D>(
-    db: D,
-    key: String,
-    value: String
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: String, value: String) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
         true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
         false => None,
     };
-    check_core_is_initialized(&db)
-        .and_then(|_| set_key_in_db_to_value(db, key, value, sensitivity))
+    set_key_in_db_to_value(db, key, value, sensitivity)
 
 }
 
-pub fn debug_get_key_from_db<D>(
-    db: D,
-    key: String
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: String) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
         true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
         false => None,
     };
-    check_core_is_initialized(&db)
-        .and_then(|_| get_key_from_db(db, key, sensitivity))
+    get_key_from_db(db, key, sensitivity)
 }
 
-pub fn debug_get_all_utxos<D>(
-    db: D
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| get_all_utxos_as_json_string(db))

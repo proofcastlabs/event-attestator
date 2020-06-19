@@ -158,44 +158,26 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
 	.and_then(get_btc_output_as_string)
 }
 
-pub fn debug_update_incremerkle<D>(
-    db: &D,
-    eos_init_json: String,
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: String) -> Result<String> {
     info!("✔ Debug updating blockroot merkle...");
     let init_json = EosInitJson::from_json_string(&eos_init_json)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(db))
         .and_then(|_| put_eos_latest_block_info_in_db(db, &init_json.block))
-        .and_then(|_|
-            generate_and_put_incremerkle_in_db(db, &init_json.blockroot_merkle)
-        )
-        .and_then(|_|
-            Ok("{debug_update_blockroot_merkle_success:true}".to_string())
-        )
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| generate_and_put_incremerkle_in_db(db, &init_json.blockroot_merkle))
+        .and_then(|_| db.end_transaction())
+        .and_then(|_| Ok("{debug_update_blockroot_merkle_success:true}".to_string()))
 }
 
-pub fn debug_clear_all_utxos<D>(
-    db: &D,
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     info!("✔ Debug clearing all UTXOs...");
-    check_core_is_initialized(db)
-        .and_then(|_| clear_all_utxos(db))
+    clear_all_utxos(db)
 }
 
-pub fn debug_add_new_eos_schedule<D>(
-    db: D,
-    schedule_json: String
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: String) -> Result<String> {
     info!("✔ Debug adding new EOS schedule...");
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| db.start_transaction())
         .and_then(|_| parse_v2_schedule_string_to_v2_schedule(&schedule_json))
         .and_then(|schedule| put_eos_schedule_in_db(&db, &schedule))
@@ -203,43 +185,25 @@ pub fn debug_add_new_eos_schedule<D>(
         .map(|_| "{debug_adding_eos_schedule_succeeded:true}".to_string())
 }
 
-pub fn debug_set_key_in_db_to_value<D>(
-    db: D,
-    key: String,
-    value: String
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: String, value: String) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let sensitivity = match key_bytes == EOS_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
         true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
         false => None,
     };
-    check_core_is_initialized(&db)
-        .and_then(|_| set_key_in_db_to_value(db, key, value, sensitivity))
+    set_key_in_db_to_value(db, key, value, sensitivity)
 }
 
-pub fn debug_get_key_from_db<D>(
-    db: D,
-    key: String
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: String) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let sensitivity = match key_bytes == EOS_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
         true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
         false => None,
     };
-    check_core_is_initialized(&db)
-        .and_then(|_| get_key_from_db(db, key, sensitivity))
+    get_key_from_db(db, key, sensitivity)
 }
 
-pub fn debug_get_all_utxos<D>(
-    db: D
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| get_all_utxos_as_json_string(db))
 }
