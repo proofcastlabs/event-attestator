@@ -174,7 +174,7 @@ pub fn validate_block_header_signature<D>(
         Ok(state)
     } else if state.get_eos_block_header()?.new_producer_schedule.is_some() {
         // NOTE/FIXME; To be cleaned up once validation for these has been fixed!
-        info!("✔ `new_producers` field exists in EOS block ∴ skipping validation check...");
+        info!("✔ New producer schedule exists in EOS block ∴ skipping validation check...");
         Ok(state)
     } else {
         info!("✔ Validating EOS block header signature...");
