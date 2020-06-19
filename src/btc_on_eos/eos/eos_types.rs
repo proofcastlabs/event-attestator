@@ -1,9 +1,9 @@
 use std::fmt;
+use serde_json::Value as JsonValue;
 use eos_primitives::{
     Checksum256,
     Action as EosAction,
     AccountName as EosAccountName,
-    BlockHeader as EosBlockHeader,
     ProducerKey as EosProducerKey,
     ActionReceipt as EosActionReceipt,
 };
@@ -16,29 +16,19 @@ use crate::{
         utils::convert_hex_to_checksum256,
         eos::{
             eos_utils::get_eos_schedule_db_key,
-            eos_crypto::eos_signature::EosSignature,
             parse_eos_actions::parse_eos_action_json,
-            parse_eos_schedule::EosProducerScheduleJson,
             parse_eos_action_receipts::parse_eos_action_receipt_json,
         },
     },
 };
 
-pub type EosAmount = String;
-pub type EosAddress = String;
 pub type GlobalSequence = u64;
-pub type MerklePath = Vec<Bytes>;
 pub type MerkleProof = Vec<String>;
-pub type EosAddresses = Vec<String>;
-pub type EosAmounts = Vec<EosAmount>;
 pub type Checksum256s = Vec<Checksum256>;
 pub type ActionProofs = Vec<ActionProof>;
-pub type MerkleProofs = Vec<MerkleProof>;
-pub type EosSignatures = Vec<EosSignature>;
 pub type ProducerKeys = Vec<EosProducerKey>;
 pub type GlobalSequences = Vec<GlobalSequence>;
 pub type ActionProofJsons = Vec<ActionProofJson>;
-pub type Sha256HashedMessage = secp256k1::Message;
 pub type AuthSequenceJsons = Vec<AuthSequenceJson>;
 pub type AuthorizationJsons = Vec<AuthorizationJson>;
 pub type EosSignedTransactions = Vec<EosSignedTransaction>;
@@ -166,22 +156,6 @@ impl EosSignedTransaction {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosSubmissionMaterial {
-    pub block_num: u64,
-    pub producer_signature: String,
-    pub action_proofs: ActionProofs,
-    pub block_header: EosBlockHeader,
-    pub interim_block_ids: Checksum256s,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosSubmissionMaterialJson {
-    pub interim_block_ids: Vec<String>,
-    pub action_proofs: ActionProofJsons,
-    pub block_header: EosBlockHeaderJson,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosBlockHeaderJson {
     pub block_num: u64,
     pub confirmed: u16,
@@ -193,8 +167,9 @@ pub struct EosBlockHeaderJson {
     pub schedule_version: u32,
     pub transaction_mroot: String,
     pub producer_signature: String,
+    pub new_producers: Option<JsonValue>,
+    pub new_producer_schedule: Option<JsonValue>,
     pub header_extension: Option<Vec<String>>,
-    pub new_producers: Option<EosProducerScheduleJson>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -204,7 +179,7 @@ pub struct ProducerSchedule {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ProducerKeyJson {
+pub struct ProducerKeyJsonV2 {
     pub producer_name: String,
     pub block_signing_key: String,
 }
@@ -293,13 +268,6 @@ pub struct ProcessedTxIds(pub Vec<GlobalSequence>);
 impl ProcessedTxIds {
     pub fn init() -> Self {
         ProcessedTxIds(vec![])
-    }
-
-    pub fn add(mut self, global_sequence: GlobalSequence) -> Result<Self> {
-        if !Self::contains(&self, &global_sequence) {
-            self.0.push(global_sequence);
-        }
-        Ok(self)
     }
 
     pub fn add_multi(

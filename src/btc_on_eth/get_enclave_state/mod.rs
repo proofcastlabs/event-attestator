@@ -1,18 +1,24 @@
 use crate::{
     types::Result,
-    constants::DEBUG_MODE,
     traits::DatabaseInterface,
-    chains::btc::{
-        btc_constants::BTC_TAIL_LENGTH,
-        utxo_manager::utxo_database_utils::{
-            get_utxo_nonce_from_db,
-            get_total_utxo_balance_from_db,
-            get_total_number_of_utxos_from_db,
+    constants::{
+        DEBUG_MODE,
+        DB_KEY_PREFIX,
+        CORE_IS_VALIDATING,
+    },
+    chains::{
+        eth::eth_constants::ETH_TAIL_LENGTH,
+        btc::{
+            btc_constants::BTC_TAIL_LENGTH,
+            utxo_manager::utxo_database_utils::{
+                get_utxo_nonce_from_db,
+                get_total_utxo_balance_from_db,
+                get_total_number_of_utxos_from_db,
+            },
         },
     },
     btc_on_eth::{
         eth::{
-            eth_constants::ETH_TAIL_LENGTH,
             get_linker_hash::{
                 get_linker_hash_or_genesis_hash as get_eth_linker_hash
             },
@@ -26,6 +32,7 @@ use crate::{
                 get_public_eth_address_from_db,
                 get_eth_canon_to_tip_length_from_db,
                 get_eth_smart_contract_address_from_db,
+                get_any_sender_nonce_from_db,
             },
         },
         btc::{
@@ -50,7 +57,7 @@ use crate::{
 };
 
 #[derive(Serialize, Deserialize)]
-pub struct EnclaveState {
+struct EnclaveState {
     debug_mode: bool,
     eth_gas_price: u64,
     btc_difficulty: u64,
@@ -60,11 +67,13 @@ pub struct EnclaveState {
     btc_utxo_nonce: u64,
     btc_tail_length: u64,
     eth_tail_length: u64,
+    db_key_prefix: String,
     btc_public_key: String,
-    eth_linker_hash: String,
-    btc_linker_hash: String,
     btc_sats_per_byte: u64,
     eth_account_nonce: u64,
+    eth_linker_hash: String,
+    btc_linker_hash: String,
+    core_is_validating: bool,
     btc_number_of_utxos: u64,
     btc_utxo_total_value: u64,
     eth_tail_block_hash: String,
@@ -86,6 +95,7 @@ pub struct EnclaveState {
     btc_anchor_block_number: u64,
     btc_canon_to_tip_length: u64,
     eth_latest_block_number: usize,
+    any_sender_nonce: u64,
 }
 
 pub fn get_enclave_state<D>(
@@ -112,6 +122,8 @@ pub fn get_enclave_state<D>(
             );
             Ok(serde_json::to_string(
                 &EnclaveState {
+                    core_is_validating: CORE_IS_VALIDATING,
+                    db_key_prefix: DB_KEY_PREFIX.to_string(),
                     debug_mode: DEBUG_MODE,
                     btc_tail_length:
                         BTC_TAIL_LENGTH,
@@ -186,6 +198,8 @@ pub fn get_enclave_state<D>(
                         get_total_number_of_utxos_from_db(&db)?,
                     btc_utxo_total_value:
                         get_total_utxo_balance_from_db(&db)?,
+                    any_sender_nonce:
+                        get_any_sender_nonce_from_db(&db)?,
                 }
             )?)
         })

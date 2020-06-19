@@ -18,13 +18,11 @@ use secp256k1::{
 use crate::{
     traits::DatabaseInterface,
     chains::btc::btc_utils::get_btc_one_key,
+    constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+    btc_on_eth::crypto_utils::generate_random_private_key,
     types::{
         Bytes,
         Result,
-    },
-    btc_on_eth::{
-        crypto_utils::generate_random_private_key,
-        constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
     },
 };
 
@@ -93,19 +91,6 @@ impl BtcPrivateKey {
             .serialize()
     }
 
-    pub fn from_wif(wif: &str) -> Result<Self> {
-        let pk = PrivateKey::from_wif(wif)?;
-        Ok(
-            Self(
-                PrivateKey {
-                    key: pk.key,
-                    network: pk.network,
-                    compressed: pk.compressed
-                }
-            )
-        )
-    }
-
     pub fn write_to_database<D>(
         &self,
         db: &D,
@@ -117,6 +102,20 @@ impl BtcPrivateKey {
             key.to_vec(),
             self.0[..].to_vec(),
             PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+        )
+    }
+
+    #[cfg(test)]
+    pub fn from_wif(wif: &str) -> Result<Self> {
+        let pk = PrivateKey::from_wif(wif)?;
+        Ok(
+            Self(
+                PrivateKey {
+                    key: pk.key,
+                    network: pk.network,
+                    compressed: pk.compressed
+                }
+            )
         )
     }
 }

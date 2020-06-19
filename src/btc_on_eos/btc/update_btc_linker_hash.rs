@@ -5,9 +5,9 @@ use bitcoin_hashes::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::btc::btc_constants::PTOKEN_GENESIS_HASH,
     btc_on_eos::btc::{
         btc_state::BtcState,
-        btc_constants::PTOKEN_GENESIS_HASH,
         btc_database_utils::{
             put_btc_linker_hash_in_db,
             get_btc_tail_block_from_db,
@@ -59,7 +59,7 @@ pub fn get_linker_hash_or_genesis_hash<D>(
         }
         _ => {
             trace!("✔ No BTC linker has in db, using genesis hash...");
-            Ok(sha256d::Hash::from_slice(&PTOKEN_GENESIS_HASH)?)
+            Ok(sha256d::Hash::from_slice(&PTOKEN_GENESIS_HASH.to_vec())?)
         }
     }
 }

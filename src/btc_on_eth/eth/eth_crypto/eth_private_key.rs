@@ -11,12 +11,12 @@ use secp256k1::{
 };
 use crate::{
     traits::DatabaseInterface,
+    constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
     types::{
         Bytes,
         Result,
     },
     btc_on_eth::{
-        constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
         eth::{
            eth_types::EthSignature,
            eth_crypto::eth_public_key::EthPublicKey,
@@ -24,7 +24,12 @@ use crate::{
         crypto_utils::{
             keccak_hash_bytes,
             generate_random_private_key,
+            set_eth_signature_recovery_param,
         },
+    },
+    chains::eth::eth_constants::{
+        PREFIXED_MESSAGE_HASH_LEN,
+        ETH_MESSAGE_PREFIX,
     },
 };
 
@@ -59,6 +64,22 @@ impl EthPrivateKey {
 
     pub fn sign_message_bytes(&self, message: Bytes) -> Result<EthSignature> {
         self.sign_hash(keccak_hash_bytes(message))
+    }
+
+    pub fn sign_eth_prefixed_msg_bytes(&self, message: Bytes) -> Result<EthSignature> {
+        let message_hash = keccak_hash_bytes(message);
+
+        let message_bytes = [
+            ETH_MESSAGE_PREFIX,
+            PREFIXED_MESSAGE_HASH_LEN.as_ref(),
+            message_hash.as_bytes(),
+        ]
+        .concat();
+
+        let mut signature = self.sign_message_bytes(message_bytes)?;
+        set_eth_signature_recovery_param(&mut signature);
+
+        Ok(signature)
     }
 
     pub fn to_public_key(&self) -> EthPublicKey {
@@ -139,6 +160,15 @@ mod tests {
         if let Err(e) = key.sign_hash(message_hash) {
             panic!("Error signing message hash: {}", e);
         }
+    }
+
+    #[test]
+    fn should_sign_eth_prefixed_msg_bytes() {
+        let key = get_sample_eth_private_key();
+        let message = "Arbitrary message";
+        if let Err(e) = key.sign_eth_prefixed_msg_bytes(message.into()) {
+            panic!("Error signing eth prefixed message bytes: {}", e);
+        }        
     }
 
     #[test]

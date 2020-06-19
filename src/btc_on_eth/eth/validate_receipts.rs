@@ -3,6 +3,7 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    constants::CORE_IS_VALIDATING,
     btc_on_eth::{
         eth::rlp_codec::get_rlp_encoded_receipts_and_nibble_tuples,
         eth::{
@@ -46,18 +47,24 @@ pub fn validate_receipts_in_state<D>(
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
-    info!("✔ Validating receipts...");
-    match receipts_root_is_correct(
-        &state.get_eth_block_and_receipts()?.block,
-        &state.get_eth_block_and_receipts()?.receipts,
-    )? {
-        true => {
-            info!("✔ Receipts are valid!");
-            Ok(state)
-        },
-        false => Err(AppError::Custom(
-            "✘ Not accepting ETH block - receipts root not valid!".to_string()
-        ))
+    if CORE_IS_VALIDATING {
+        info!("✔ Validating receipts...");
+        match receipts_root_is_correct(
+            &state.get_eth_block_and_receipts()?.block,
+            &state.get_eth_block_and_receipts()?.receipts,
+        )? {
+            true => {
+                info!("✔ Receipts are valid!");
+                Ok(state)
+            },
+            false => Err(AppError::Custom(
+                "✘ Not accepting ETH block - receipts root not valid!"
+                    .to_string()
+            ))
+        }
+    } else {
+        info!("✔ Skipping ETH receipts validation!");
+        Ok(state)
     }
 }
 
@@ -111,6 +118,7 @@ mod tests {
         }
     }
 
+    #[cfg(not(feature="non-validating"))]
     #[test]
     fn should_not_validate_invalid_receipts_in_state() {
         let expected_error = "✘ Not accepting ETH block - receipts root not valid!"
@@ -118,7 +126,7 @@ mod tests {
         let state = get_valid_state_with_invalid_block_and_receipts()
             .unwrap();
         match validate_receipts_in_state(state) {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Receipts should not be valid!"),
             Err(_) => panic!("Wrong error message!"),
         }

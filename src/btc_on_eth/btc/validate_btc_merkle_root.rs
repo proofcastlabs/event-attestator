@@ -3,6 +3,7 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    constants::CORE_IS_VALIDATING,
     btc_on_eth::btc::btc_state::BtcState,
 };
 
@@ -24,9 +25,14 @@ pub fn validate_btc_merkle_root<D>(
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    info!("✔ Validating merkle-root in BTC block...");
-    validate_merkle_root(&state.get_btc_block_and_id()?.block)
-        .and_then(|_| Ok(state))
+    if CORE_IS_VALIDATING {
+        info!("✔ Validating merkle-root in BTC block...");
+        validate_merkle_root(&state.get_btc_block_and_id()?.block)
+            .and_then(|_| Ok(state))
+    } else {
+        info!("✔ Skipping BTC merkle-root validation!");
+        Ok(state)
+    }
 }
 
 #[cfg(test)]

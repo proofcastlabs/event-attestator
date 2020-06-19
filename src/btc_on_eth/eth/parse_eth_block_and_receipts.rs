@@ -14,7 +14,7 @@ use crate::{
 };
 
 fn parse_eth_block_and_receipts_json_string(
-    eth_block_and_receipt_json_string: &String
+    eth_block_and_receipt_json_string: &str
 ) -> Result<EthBlockAndReceiptsJson> {
     match serde_json::from_str(&eth_block_and_receipt_json_string) {
         Ok(result) => Ok(result),
@@ -38,14 +38,14 @@ pub fn parse_eth_block_and_receipts_json(
 }
 
 pub fn parse_eth_block_and_receipts(
-    eth_block_and_receipts: &String
+    eth_block_and_receipts: &str
 ) -> Result<EthBlockAndReceipts> {
     parse_eth_block_and_receipts_json_string(eth_block_and_receipts)
         .and_then(parse_eth_block_and_receipts_json)
 }
 
 pub fn parse_eth_block_and_receipts_and_put_in_state<D>(
-    block_json: String,
+    block_json: &str,
     state: EthState<D>,
 ) -> Result<EthState<D>>
     where D: DatabaseInterface

@@ -151,10 +151,6 @@ fn encode_eth_block_as_json(
                 "0x{}",
                 hex::encode(eth_block.transactions_root.as_bytes())
             ),
-            "sealFields": [
-                format!("0x{}", hex::encode(eth_block.seal_fields.0.clone())),
-                format!("0x{:x}", eth_block.seal_fields.1),
-            ],
         })
     )
 }

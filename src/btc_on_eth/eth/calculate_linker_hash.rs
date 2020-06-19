@@ -31,27 +31,34 @@ pub fn calculate_linker_hash(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::utils::convert_hex_to_h256;
-    use crate::btc_on_eth::eth::eth_constants::{
-        ETH_LINKER_HASH_KEY,
-        ETH_ANCHOR_BLOCK_HASH_KEY,
-        ETH_LATEST_BLOCK_HASH_KEY
-    };
 
     #[test]
     fn should_calculate_linker_hash_correctly() {
-        let linker_hash = EthHash::from(ETH_LINKER_HASH_KEY);
-        let anchor_block_hash = EthHash::from(ETH_ANCHOR_BLOCK_HASH_KEY);
-        let block_hash_to_link_to = EthHash::from(ETH_LATEST_BLOCK_HASH_KEY);
-        let expected_result_hex = "710f399a2c56bd37f485f3e80212679007cd58c7aea063723979d3104c3d42a5";
-        let expected_result = convert_hex_to_h256(
-            expected_result_hex.to_string()
-        ).unwrap();
+        let linker_hash = EthHash::from_slice(
+            &hex::decode(
+                "0151d767a2bacda0969c93c9e3ea00e1eb08deb4bbd9cfdb7fe8d2d7c6c30062"
+            ).unwrap()[..]
+        );
+        let anchor_block_hash = EthHash::from_slice(
+            &hex::decode(
+                "74a17673228252a159f8edb348d2e137c0240596b57281e59453d05c7b1adab8"
+            ).unwrap()[..]
+        );
+        let block_hash_to_link_to = EthHash::from_slice(
+            &hex::decode(
+                "33f5f89485b53d02b7150436f9ddf44b0c43d047ee9d7793db9bae3ce88988bd"
+            ).unwrap()[..]
+        );
+        let expected_result = EthHash::from_slice(
+            &hex::decode(
+                "ddd1ddca8da92b1fb4dc36dc39ad038d1fd7acaef8a49316b46752a780956f6a"
+            ).unwrap()[..]
+        );
         let result = calculate_linker_hash(
             block_hash_to_link_to,
             anchor_block_hash,
             linker_hash,
         );
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 }

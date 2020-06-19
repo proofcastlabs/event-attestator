@@ -189,10 +189,10 @@ pub fn get_special_hash_from_db<D>(
     where D: DatabaseInterface
 {
     let key = match hash_type {
-        "tail" => Ok(BTC_TAIL_BLOCK_HASH_KEY),
-        "canon" => Ok(BTC_CANON_BLOCK_HASH_KEY),
-        "anchor" => Ok(BTC_ANCHOR_BLOCK_HASH_KEY),
-        "latest" => Ok(BTC_LATEST_BLOCK_HASH_KEY),
+        "tail" => Ok(BTC_TAIL_BLOCK_HASH_KEY.to_vec()),
+        "canon" => Ok(BTC_CANON_BLOCK_HASH_KEY.to_vec()),
+        "anchor" => Ok(BTC_ANCHOR_BLOCK_HASH_KEY.to_vec()),
+        "latest" => Ok(BTC_LATEST_BLOCK_HASH_KEY.to_vec()),
         _ => Err(AppError::Custom(
             format!("✘ Cannot get special BTC hash of type: {}!", hash_type)
         ))
@@ -291,26 +291,6 @@ pub fn get_btc_private_key_from_db<D>(db: &D) -> Result<BtcPrivateKey>
         )
 }
 
-pub fn put_btc_anchor_block_in_db<D>(
-    db: &D,
-    block: &BtcBlockInDbFormat,
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    trace!("✔ Putting BTC anchor block in db...");
-    put_special_btc_block_in_db(db, block, "anchor")
-}
-
-pub fn put_btc_tail_block_in_db<D>(
-    db: &D,
-    block: &BtcBlockInDbFormat
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    trace!("✔ Putting BTC tail block in db...");
-    put_special_btc_block_in_db(db, block, "tail")
-}
-
 pub fn put_btc_canon_block_in_db<D>(
     db: &D,
     block: &BtcBlockInDbFormat
@@ -319,16 +299,6 @@ pub fn put_btc_canon_block_in_db<D>(
 {
     trace!("✔ Putting BTC canon block in db...");
     put_special_btc_block_in_db(db, block, "canon")
-}
-
-pub fn put_btc_latest_block_in_db<D>(
-    db: &D,
-    block: &BtcBlockInDbFormat,
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    trace!("✔ Putting BTC latest block in db...");
-    put_special_btc_block_in_db(db, block, "latest")
 }
 
 pub fn get_btc_anchor_block_from_db<D>(db: &D) -> Result<BtcBlockInDbFormat>
@@ -376,13 +346,6 @@ pub fn put_btc_anchor_block_hash_in_db<D>(
     put_btc_hash_in_db(db, &BTC_ANCHOR_BLOCK_HASH_KEY.to_vec(), hash)
 }
 
-pub fn get_btc_latest_block_hash_from_db<D>(db: &D) -> Result<sha256d::Hash>
-    where D: DatabaseInterface
-{
-    trace!("✔ Getting BTC latest block hash from db...");
-    get_btc_hash_from_db(db, &BTC_LATEST_BLOCK_HASH_KEY.to_vec())
-}
-
 pub fn put_btc_latest_block_hash_in_db<D>(
     db: &D,
     hash: &sha256d::Hash
@@ -391,13 +354,6 @@ pub fn put_btc_latest_block_hash_in_db<D>(
 {
     trace!("✔ Putting BTC latest block hash in db...");
     put_btc_hash_in_db(db, &BTC_LATEST_BLOCK_HASH_KEY.to_vec(), hash)
-}
-
-pub fn get_btc_canon_block_hash_from_db<D>(db: &D) -> Result<sha256d::Hash>
-    where D: DatabaseInterface
-{
-    trace!("✔ Getting BTC canon block hash from db...");
-    get_btc_hash_from_db(db, &BTC_CANON_BLOCK_HASH_KEY.to_vec())
 }
 
 pub fn put_btc_tail_block_hash_in_db<D>(
@@ -489,7 +445,7 @@ pub fn maybe_get_nth_ancestor_btc_block_and_id<D>(
     }
 }
 
-pub fn put_btc_address_in_db<D>(db: &D, btc_address: &String) -> Result<()>
+pub fn put_btc_address_in_db<D>(db: &D, btc_address: &str) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Putting BTC address {} in db...", btc_address);
@@ -560,7 +516,9 @@ mod tests {
         btc::btc_test_utils::{
             SAMPLE_TARGET_BTC_ADDRESS,
             get_sample_btc_private_key,
+            put_btc_latest_block_in_db,
             get_sample_btc_block_in_db_format,
+            get_btc_latest_block_hash_from_db,
             get_sample_sequential_btc_blocks_in_db_format,
         },
     };
@@ -755,25 +713,6 @@ mod tests {
             }
             Ok(hash_from_db) => {
                 assert!(hash_from_db == latest_block_hash);
-            }
-        }
-    }
-
-    #[test]
-    fn should_get_and_put_canon_block_hash_in_db() {
-        let db = get_test_database();
-        let canon_block_hash = get_sample_btc_block_in_db_format()
-            .unwrap()
-            .id;
-        if let Err(e) = put_btc_canon_block_hash_in_db(&db, &canon_block_hash) {
-            panic!("Error putting btc canon_block_hash in db: {}", e);
-        };
-        match get_btc_canon_block_hash_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting btc canon_block_hash from db: {}", e);
-            }
-            Ok(hash_from_db) => {
-                assert!(hash_from_db == canon_block_hash);
             }
         }
     }

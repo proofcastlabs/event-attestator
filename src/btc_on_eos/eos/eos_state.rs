@@ -10,13 +10,14 @@ use crate::{
     btc_on_eos::{
         btc::btc_types::BtcTransactions,
         eos::{
-            eos_merkle_utils::IncreMerkle,
+            eos_merkle_utils::Incremerkle,
+            protocol_features::EnabledFeatures,
+            parse_submission_material::EosSubmissionMaterial,
             eos_types::{
                 ActionProofs,
                 Checksum256s,
                 RedeemParams,
                 ProcessedTxIds,
-                EosSubmissionMaterial,
             },
         },
         utils::{
@@ -30,7 +31,7 @@ use crate::{
 pub struct EosState<D: DatabaseInterface> {
     pub db: D,
     pub block_num: Option<u64>,
-    pub incremerkle: IncreMerkle,
+    pub incremerkle: Incremerkle,
     pub producer_signature: String,
     pub action_proofs: ActionProofs,
     pub signed_txs: BtcTransactions,
@@ -38,6 +39,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub redeem_params: Vec<RedeemParams>,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
+    pub enabled_protocol_features: EnabledFeatures,
     pub active_schedule: Option<EosProducerScheduleV2>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
 }
@@ -55,8 +57,9 @@ impl<D> EosState<D> where D: DatabaseInterface {
             interim_block_ids: vec![],
             btc_utxos_and_values: None,
             producer_signature: String::new(),
-            incremerkle: IncreMerkle::default(),
+            incremerkle: Incremerkle::default(),
             processed_tx_ids: ProcessedTxIds::init(),
+            enabled_protocol_features: EnabledFeatures::init(),
         }
     }
 
@@ -102,7 +105,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
 
     pub fn add_incremerkle(
         mut self,
-        incremerkle: IncreMerkle,
+        incremerkle: Incremerkle,
     ) -> EosState<D>
         where D: DatabaseInterface
     {
@@ -135,6 +138,14 @@ impl<D> EosState<D> where D: DatabaseInterface {
         tx_ids: ProcessedTxIds,
     ) -> Result<Self> {
         self.processed_tx_ids = tx_ids;
+        Ok(self)
+    }
+
+    pub fn add_enabled_protocol_features(
+        mut self,
+        enabled_protocol_features: EnabledFeatures,
+    ) -> Result<Self> {
+        self.enabled_protocol_features = enabled_protocol_features;
         Ok(self)
     }
 

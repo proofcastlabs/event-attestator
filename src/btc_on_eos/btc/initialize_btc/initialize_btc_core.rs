@@ -40,10 +40,10 @@ use crate::{
 
 pub fn maybe_initialize_btc_core<D>(
     db: D,
-    block_json_string: String,
+    block_json_string: &str,
     fee: u64,
     difficulty: u64,
-    network: String,
+    network: &str,
     canon_to_tip_length: u64,
 ) -> Result<String>
     where D: DatabaseInterface
@@ -59,40 +59,15 @@ pub fn maybe_initialize_btc_core<D>(
                 false => {
                     info!("✔ Initializing core for BTC...");
                     start_btc_db_transaction(state)
-                        .and_then(|state|
-                            put_difficulty_threshold_in_db(
-                                difficulty,
-                                state,
-                            )
-                        )
-                        .and_then(|state|
-                            put_btc_network_in_db_and_return_state(
-                                &network,
-                                state,
-                            )
-                        )
-                        .and_then(|state|
-                            put_btc_fee_in_db_and_return_state(
-                                fee,
-                                state,
-                            )
-                        )
-                        .and_then(|state|
-                            parse_submission_material_and_put_in_state(
-                                block_json_string,
-                                state,
-                            )
-                        )
+                        .and_then(|state| put_difficulty_threshold_in_db(difficulty, state))
+                        .and_then(|state| put_btc_network_in_db_and_return_state(network, state))
+                        .and_then(|state| put_btc_fee_in_db_and_return_state(fee, state))
+                        .and_then(|state| parse_submission_material_and_put_in_state(block_json_string, state))
                         .and_then(validate_btc_block_header_in_state)
                         .and_then(validate_difficulty_of_btc_block_in_state)
                         .and_then(validate_proof_of_work_of_btc_block_in_state)
                         .and_then(validate_btc_merkle_root)
-                        .and_then(|state|
-                            put_canon_to_tip_length_in_db_and_return_state(
-                                canon_to_tip_length,
-                                state,
-                            )
-                        )
+                        .and_then(|state| put_canon_to_tip_length_in_db_and_return_state(canon_to_tip_length, state))
                         .and_then(maybe_set_btc_anchor_block_hash)
                         .and_then(maybe_set_btc_latest_block_hash)
                         .and_then(maybe_set_btc_canon_block_hash)
@@ -100,12 +75,7 @@ pub fn maybe_initialize_btc_core<D>(
                         .and_then(create_btc_block_in_db_format_and_put_in_state)
                         .and_then(maybe_add_btc_block_to_db)
                         .and_then(put_btc_account_nonce_in_db_and_return_state)
-                        .and_then(|state|
-                            generate_and_store_btc_private_key(
-                                &network,
-                                state,
-                            )
-                        )
+                        .and_then(|state| generate_and_store_btc_private_key(&network, state))
                         .and_then(generate_and_store_btc_address)
                         .and_then(end_btc_db_transaction)
                         .and_then(get_btc_init_output_json)

@@ -3,6 +3,7 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    constants::CORE_IS_VALIDATING,
     btc_on_eth::btc::btc_state::BtcState,
 };
 
@@ -26,9 +27,15 @@ pub fn validate_proof_of_work_of_btc_block_in_state<D>(
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    info!("✔ Validating BTC block's proof-of-work...");
-    validate_proof_of_work_in_block(&state.get_btc_block_and_id()?.block.header)
-        .and_then(|_| Ok(state))
+    if CORE_IS_VALIDATING {
+        info!("✔ Validating BTC block's proof-of-work...");
+        validate_proof_of_work_in_block(
+            &state.get_btc_block_and_id()?.block.header
+        ).and_then(|_| Ok(state))
+    } else {
+        info!("✔ Skipping BTC proof-of-work validation!");
+        Ok(state)
+    }
 }
 
 #[cfg(test)]

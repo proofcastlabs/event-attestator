@@ -5,6 +5,7 @@ use bitcoin::{
     network::constants::Network,
 };
 use crate::{
+    utils::strip_hex_prefix,
     types::{
         Bytes,
         Result,
@@ -14,14 +15,7 @@ use crate::{
         encode_slice as base58_encode_slice,
     },
     chains::btc::{
-        btc_types::{
-            DepositAddressInfo,
-            DepositAddressInfoJson,
-        },
-        utxo_manager::utxo_types::{
-            BtcUtxoAndValue,
-            BtcUtxosAndValues,
-        },
+        utxo_manager::utxo_types::BtcUtxosAndValues,
         btc_constants::{
             DEFAULT_BTC_SEQUENCE,
             PTOKEN_P2SH_SCRIPT_BYTES,
@@ -30,7 +24,6 @@ use crate::{
     btc_on_eth::{
         constants::SAFE_ETH_ADDRESS,
         btc::btc_types::{
-            BtcBlockAndId,
             MintingParams,
             BtcBlockInDbFormat,
         },
@@ -70,20 +63,6 @@ pub struct SerializedBlockAndId {
     pub height: Bytes,
 }
 
-impl SerializedBlockAndId {
-    pub fn new(
-        serialized_id: Bytes,
-        serialized_block: Bytes,
-        serialized_height: Bytes,
-    ) -> Self {
-        SerializedBlockAndId {
-            id: serialized_id,
-            block: serialized_block,
-            height: serialized_height,
-        }
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SerializedBlockInDbFormat {
     pub id: Bytes,
@@ -109,6 +88,10 @@ impl SerializedBlockInDbFormat {
             minting_params: serialized_minting_params,
         }
     }
+}
+
+pub fn convert_hex_to_sha256_hash(hex: &str) -> Result<sha256d::Hash> {
+    Ok(sha256d::Hash::from_slice(&hex::decode(strip_hex_prefix(&hex)?)?)?)
 }
 
 pub fn get_btc_one_key() -> PrivateKey {
@@ -150,20 +133,6 @@ pub fn get_p2sh_script_sig_from_redeem_script(
         .into_script()
 }
 
-pub fn get_btc_block_in_db_format(
-    btc_block_and_id: BtcBlockAndId,
-    minting_params: MintingParams,
-    extra_data: Bytes,
-) -> Result<BtcBlockInDbFormat> {
-    BtcBlockInDbFormat::new(
-        btc_block_and_id.height,
-        btc_block_and_id.id,
-        minting_params,
-        btc_block_and_id.block,
-        extra_data,
-    )
-}
-
 pub fn serialize_minting_params(
     minting_params: &MintingParams
 ) -> Result<Bytes> {
@@ -174,18 +143,6 @@ pub fn deserialize_minting_params(
     serialized_minting_params: Bytes
 ) -> Result<MintingParams> {
     Ok(serde_json::from_slice(&serialized_minting_params[..])?)
-}
-
-pub fn create_op_return_btc_utxo_and_value_from_tx_output(
-    tx: &BtcTransaction,
-    output_index: u32,
-) -> BtcUtxoAndValue {
-    BtcUtxoAndValue::new(
-        tx.output[output_index as usize].value,
-        &create_unsigned_utxo_from_tx(tx, output_index),
-        None,
-        None,
-    )
 }
 
 pub fn create_unsigned_utxo_from_tx(
@@ -204,19 +161,6 @@ pub fn create_unsigned_utxo_from_tx(
             .output[output_index as usize]
             .script_pubkey
             .clone(),
-    }
-}
-
-pub fn convert_deposit_info_to_json(
-    deposit_info_struct: &DepositAddressInfo
-) -> DepositAddressInfoJson {
-    DepositAddressInfoJson {
-        nonce: deposit_info_struct.nonce,
-        address: deposit_info_struct.address.clone(),
-        btc_deposit_address:
-            deposit_info_struct.btc_deposit_address.to_string(),
-        address_and_nonce_hash:
-            hex::encode(deposit_info_struct.commitment_hash),
     }
 }
 
@@ -288,16 +232,6 @@ pub fn get_total_value_of_utxos_and_values(
         .sum()
 }
 
-pub fn get_tx_id_from_signed_btc_tx(
-    signed_btc_tx: &BtcTransaction
-) -> String {
-    let mut tx_id = signed_btc_tx
-        .txid()
-        .to_vec();
-    tx_id.reverse();
-    hex::encode(tx_id)
-}
-
 pub fn get_hex_tx_from_signed_btc_tx(
     signed_btc_tx: &BtcTransaction
 ) -> String {
@@ -348,7 +282,7 @@ pub fn deserialize_btc_utxo(bytes: &Bytes) -> Result<BtcUtxo> {
 }
 
 pub fn convert_btc_address_to_bytes(
-    btc_address: &String
+    btc_address: &str
 ) -> Result<Bytes> {
     Ok(from_base58(btc_address)?)
 }
@@ -378,6 +312,17 @@ pub fn get_pay_to_pub_key_hash_script(btc_address: &str) -> Result<BtcScript> {
     )
 }
 
+#[cfg(test)] // TODO Create then move this to chains/btc_test_utils!
+pub fn get_tx_id_from_signed_btc_tx(
+    signed_btc_tx: &BtcTransaction
+) -> String {
+    let mut tx_id = signed_btc_tx
+        .txid()
+        .to_vec();
+    tx_id.reverse();
+    hex::encode(tx_id)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -404,6 +349,7 @@ mod tests {
                 get_sample_p2sh_redeem_script_sig,
                 get_sample_btc_block_in_db_format,
                 get_sample_op_return_utxo_and_value_n,
+                create_op_return_btc_utxo_and_value_from_tx_output,
             },
         },
     };

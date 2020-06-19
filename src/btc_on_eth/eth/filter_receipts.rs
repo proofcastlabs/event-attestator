@@ -1,9 +1,9 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eth::eth_constants::PTOKEN_CONTRACT_TOPICS,
     btc_on_eth::eth::{
         eth_state::EthState,
-        eth_constants::PTOKEN_CONTRACT_TOPICS,
         eth_database_utils::get_eth_smart_contract_address_from_db,
         eth_types::{
             EthLog,
@@ -111,9 +111,9 @@ pub fn filter_irrelevant_receipts_from_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::{
-        eth_constants::REDEEM_EVENT_TOPIC_HEX,
-        eth_test_utils::{
+    use crate::{
+        chains::eth::eth_constants::REDEEM_EVENT_TOPIC_HEX,
+        btc_on_eth::eth::eth_test_utils::{
             get_sample_contract_topic,
             get_sample_contract_topics,
             get_sample_contract_address,

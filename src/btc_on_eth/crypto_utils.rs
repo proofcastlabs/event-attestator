@@ -1,30 +1,20 @@
 use ethereum_types::H256;
 use tiny_keccak::keccak256;
-use secp256k1::{
-    Message,
-    key::SecretKey,
-};
+use secp256k1::key::SecretKey;
 use rand::{
     RngCore,
     thread_rng,
 };
-use bitcoin_hashes::{
-    sha256,
-    Hash as HashTrait
+use crate::{
+    types::{
+        Bytes,
+        Result,
+    },
+    btc_on_eth::eth::eth_types::EthSignature,
 };
-use crate::types::{
-    Bytes,
-    Result,
-    Sha256HashedMessage,
-};
+
 pub fn keccak_hash_bytes(bytes: Bytes) -> H256 {
     H256::from(keccak256(&bytes[..]))
-}
-
-pub fn sha256_hash_message_bytes(
-    message_bytes: &Bytes
-) -> Result<Sha256HashedMessage> {
-    Ok(Message::from_slice(&sha256::Hash::hash(message_bytes))?)
 }
 
 fn get_x_random_bytes(num_bytes: usize) -> Vec<u8> {
@@ -41,6 +31,10 @@ fn get_32_random_bytes_arr() -> [u8; 32] {
 
 pub fn generate_random_private_key() -> Result<SecretKey> {
     Ok(SecretKey::from_slice(&get_32_random_bytes_arr())?)
+}
+
+pub fn set_eth_signature_recovery_param(signature: &mut EthSignature) {
+    signature[64] = if signature[64] == 1 { 0x1c } else { 0x1b };
 }
 
 #[cfg(test)]

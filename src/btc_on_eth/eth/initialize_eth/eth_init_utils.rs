@@ -19,12 +19,13 @@ use crate::{
             put_eth_latest_block_hash_in_db,
             put_eth_block_and_receipts_in_db,
             put_eth_canon_to_tip_length_in_db,
+            put_any_sender_nonce_in_db,
         },
     },
 };
 
 pub fn check_for_existence_of_eth_contract_byte_code(
-    bytecode_path: &String,
+    bytecode_path: &str,
 ) -> Result<Bytes> {
     get_ptoken_smart_contract_bytecode(&bytecode_path)
 }
@@ -162,5 +163,15 @@ pub fn add_eth_block_to_db_and_return_state<D>(
         &state.db,
         state.get_eth_block_and_receipts()?
     )
+        .map(|_| state)
+}
+
+pub fn put_any_sender_nonce_in_db_and_return_state<D>(
+    state: EthState<D>,
+) -> Result<EthState<D>>
+    where D: DatabaseInterface
+{
+    trace!("✔ Putting any.sender nonce of 0 in db...");
+    put_any_sender_nonce_in_db(&state.db, 0)
         .map(|_| state)
 }

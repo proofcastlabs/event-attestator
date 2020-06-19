@@ -81,12 +81,14 @@ mod tests {
     use crate::btc_on_eth::{
         test_utils::get_test_database,
         btc::{
-            btc_test_utils::get_sample_sequential_btc_blocks_in_db_format,
+            btc_test_utils::{
+                put_btc_tail_block_in_db,
+                put_btc_anchor_block_in_db,
+                get_sample_sequential_btc_blocks_in_db_format,
+            },
             btc_database_utils::{
                 put_btc_block_in_db,
                 btc_block_exists_in_db,
-                put_btc_tail_block_in_db,
-                put_btc_anchor_block_in_db,
             },
         },
     };

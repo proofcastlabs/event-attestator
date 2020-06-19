@@ -7,6 +7,7 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    chains::btc::deposit_address_info::DepositInfoHashMap,
     btc_on_eth::{
         utils::convert_satoshis_to_ptoken,
         btc::{
@@ -15,7 +16,6 @@ use crate::{
             btc_types::{
                 MintingParams,
                 BtcTransactions,
-                DepositInfoHashMap,
                 MintingParamStruct,
             },
         },

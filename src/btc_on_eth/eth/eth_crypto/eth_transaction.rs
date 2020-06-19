@@ -11,6 +11,13 @@ use crate::{
         Bytes,
         Result,
     },
+    chains::eth::eth_constants::{
+        VALUE_FOR_MINTING_TX,
+        VALUE_FOR_PTOKEN_DEPLOY,
+        GAS_LIMIT_FOR_MINTING_TX,
+        GAS_LIMIT_FOR_PTOKEN_DEPLOY,
+        ETH_SMART_CONTRACT_MINTING_FXN_SIG,
+    },
     btc_on_eth::{
         utils::strip_new_line_chars,
         crypto_utils::keccak_hash_bytes,
@@ -23,13 +30,6 @@ use crate::{
             eth_types::{
                 EthSignature,
                 EthSignedTransaction,
-            },
-            eth_constants::{
-                VALUE_FOR_MINTING_TX,
-                VALUE_FOR_PTOKEN_DEPLOY,
-                GAS_LIMIT_FOR_MINTING_TX,
-                GAS_LIMIT_FOR_PTOKEN_DEPLOY,
-                ETH_SMART_CONTRACT_MINTING_FXN_SIG,
             },
         },
     },
@@ -156,7 +156,7 @@ impl EthTransaction {
     }
 }
 
-pub fn get_ptoken_smart_contract_bytecode(path: &String) -> Result<Bytes> {
+pub fn get_ptoken_smart_contract_bytecode(path: &str) -> Result<Bytes> {
     info!("✔ Getting ETH smart-contract bytecode...");
     let contents = match fs::read_to_string(path) {
         Ok(file) => Ok(file),
@@ -176,7 +176,7 @@ fn get_unsigned_ptoken_smart_contract_tx(
     nonce: u64,
     chain_id: u8,
     gas_price: u64,
-    bytecode_path: &String,
+    bytecode_path: &str,
 ) -> Result<EthTransaction> {
     Ok(
         EthTransaction::new_contract(
@@ -195,7 +195,7 @@ pub fn get_signed_ptoken_smart_contract_tx(
     chain_id: u8,
     eth_private_key: EthPrivateKey,
     gas_price: u64,
-    bytecode_path: &String,
+    bytecode_path: &str,
 ) -> Result<EthSignedTransaction> {
     Ok(
         get_unsigned_ptoken_smart_contract_tx(
@@ -274,29 +274,9 @@ mod tests {
     use crate::btc_on_eth::eth::eth_test_utils::{
         get_sample_eth_address,
         get_sample_eth_private_key,
+        get_sample_unsigned_eth_transaction,
         ETH_SMART_CONTRACT_BYTECODE_PATH,
     };
-
-    fn get_sample_unsigned_eth_transaction() -> EthTransaction {
-        let data = vec![];
-        let nonce = 0;
-        let value = 1;
-        let to = EthAddress::from_slice(
-            &hex::decode("53c2048dad4fcfab44C3ef3D16E882b5178df42b").unwrap()
-        );
-        let chain_id = 4; // Rinkeby
-        let gas_limit = 100_000;
-        let gas_price = 20_000_000_000;
-        EthTransaction::new(
-            data,
-            nonce,
-            value,
-            to,
-            chain_id,
-            gas_limit,
-            gas_price
-        )
-    }
 
     #[test]
     fn should_serialize_simple_eth_tx_to_bytes() {
@@ -309,7 +289,7 @@ mod tests {
         ];
         let tx = get_sample_unsigned_eth_transaction();
         let result = tx.serialize_bytes();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -323,7 +303,7 @@ mod tests {
             .sign(private_key)
             .unwrap()
             .serialize_hex();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -377,7 +357,7 @@ mod tests {
             .unwrap();
         let expected_result = "40c10f190000000000000000000000001739624f5cd969885a224da84418d12b8570d61a0000000000000000000000000000000000000000000000000000000000000001"
             .to_string();
-        assert!(hex::encode(result) == expected_result);
+        assert_eq!(hex::encode(result), expected_result);
     }
 
     #[test]
@@ -402,7 +382,7 @@ mod tests {
         ).unwrap();
         let expected_result = "f86a048504a817c8008301d4c094c63b099efb18c8db573981fb64564f1564af4f3080b84440c10f190000000000000000000000001739624f5cd969885a224da84418d12b8570d61a0000000000000000000000000000000000000000000000000000000000000001048080"
             .to_string();
-        assert!(result.serialize_hex() == expected_result);
+        assert_eq!(result.serialize_hex(), expected_result);
     }
 
     #[test]
@@ -432,7 +412,7 @@ mod tests {
             .to_string();
         let expected_tx_hash = "c11826091cd47445fa72b7788eabac8d42bfedfcabcd8f719d1a7ba84894cd2b";
         let tx_hash = result.get_tx_hash();
-        assert!(tx_hash == expected_tx_hash);
-        assert!(result.serialize_hex() == expected_result);
+        assert_eq!(tx_hash, expected_tx_hash);
+        assert_eq!(result.serialize_hex(), expected_result);
     }
 }

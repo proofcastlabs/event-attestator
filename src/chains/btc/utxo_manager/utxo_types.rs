@@ -4,7 +4,7 @@ use crate::{
         Result,
     },
     chains::btc::{
-        btc_types::DepositAddressInfoJson,
+        deposit_address_info::DepositAddressInfoJson,
         btc_utils::{
             serialize_btc_utxo,
             deserialize_btc_utxo,
@@ -16,7 +16,6 @@ use bitcoin::{
     blockdata::transaction::TxIn as BtcUtxo,
 };
 
-pub type BtcUtxos = Vec<BtcUtxo>;
 pub type BtcUtxosAndValues = Vec<BtcUtxoAndValue>;
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]

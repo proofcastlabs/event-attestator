@@ -6,10 +6,25 @@ use bitcoin_hashes::{
 use crate::{
     errors::AppError,
     traits::DatabaseInterface,
+    constants::MIN_DATA_SENSITIVITY_LEVEL,
     types::{
         Bytes,
         Result,
         DataSensitivity,
+    },
+    chains::btc::btc_constants::{
+        BTC_FEE_KEY,
+        BTC_NETWORK_KEY,
+        BTC_ADDRESS_KEY,
+        BTC_LINKER_HASH_KEY,
+        BTC_PRIVATE_KEY_DB_KEY,
+        BTC_ACCOUNT_NONCE_KEY,
+        BTC_TAIL_BLOCK_HASH_KEY,
+        BTC_CANON_BLOCK_HASH_KEY,
+        BTC_DIFFICULTY_THRESHOLD,
+        BTC_ANCHOR_BLOCK_HASH_KEY,
+        BTC_LATEST_BLOCK_HASH_KEY,
+        BTC_CANON_TO_TIP_LENGTH_KEY,
     },
     btc_on_eos::{
         database_utils::{
@@ -31,20 +46,6 @@ use crate::{
                 convert_btc_address_to_bytes,
                 serialize_btc_block_in_db_format,
                 deserialize_btc_block_in_db_format,
-            },
-            btc_constants::{
-                BTC_FEE_KEY,
-                BTC_NETWORK_KEY,
-                BTC_ADDRESS_KEY,
-                BTC_LINKER_HASH_KEY,
-                BTC_PRIVATE_KEY_DB_KEY,
-                BTC_ACCOUNT_NONCE_KEY,
-                BTC_TAIL_BLOCK_HASH_KEY,
-                BTC_CANON_BLOCK_HASH_KEY,
-                BTC_DIFFICULTY_THRESHOLD,
-                BTC_ANCHOR_BLOCK_HASH_KEY,
-                BTC_LATEST_BLOCK_HASH_KEY,
-                BTC_CANON_TO_TIP_LENGTH_KEY,
             },
         },
     },
@@ -97,24 +98,11 @@ pub fn put_btc_account_nonce_in_db<D>(
     put_u64_in_db(db, &BTC_ACCOUNT_NONCE_KEY.to_vec(), nonce)
 }
 
-pub fn increment_btc_account_nonce_in_db<D>(
-    db: &D,
-    amount_to_increment_by: u64,
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    trace!("✔ Incrementing BTC account nonce in db...");
-    get_btc_account_nonce_from_db(db)
-        .and_then(|nonce|
-            put_btc_account_nonce_in_db(db, nonce + amount_to_increment_by)
-        )
-}
-
 pub fn get_btc_fee_from_db<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
     trace!("✔ Getting BTC fee from db...");
-    db.get(BTC_FEE_KEY.to_vec(), None)
+    db.get(BTC_FEE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
@@ -122,13 +110,17 @@ pub fn put_btc_fee_in_db<D>(db: &D, fee: u64) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Adding BTC fee of '{}' satoshis-per-byte to db...", fee);
-    db.put(BTC_FEE_KEY.to_vec(), convert_u64_to_bytes(fee), None)
+    db.put(
+        BTC_FEE_KEY.to_vec(),
+        convert_u64_to_bytes(fee),
+        MIN_DATA_SENSITIVITY_LEVEL
+    )
 }
 
 pub fn get_btc_network_from_db<D>(db: &D) -> Result<BtcNetwork>
     where D: DatabaseInterface
 {
-    db.get(BTC_NETWORK_KEY.to_vec(), None)
+    db.get(BTC_NETWORK_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_btc_network(&bytes))
 }
 
@@ -139,7 +131,7 @@ pub fn put_btc_network_in_db<D>(db: &D, network: BtcNetwork) -> Result<()>
     db.put(
         BTC_NETWORK_KEY.to_vec(),
         convert_btc_network_to_bytes(network)?,
-        None,
+        MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
@@ -150,7 +142,7 @@ pub fn put_btc_difficulty_in_db<D>(db: &D, difficulty: u64) -> Result<()>
     db.put(
         BTC_DIFFICULTY_THRESHOLD.to_vec(),
         convert_u64_to_bytes(difficulty),
-        None,
+        MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
@@ -158,7 +150,7 @@ pub fn get_btc_difficulty_from_db<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
     trace!("✔ Getting BTC difficulty threshold from db...");
-    db.get(BTC_DIFFICULTY_THRESHOLD.to_vec(), None)
+    db.get(BTC_DIFFICULTY_THRESHOLD.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
@@ -187,10 +179,10 @@ pub fn get_special_hash_from_db<D>(
     where D: DatabaseInterface
 {
     let key = match hash_type {
-        "tail" => Ok(BTC_TAIL_BLOCK_HASH_KEY),
-        "canon" => Ok(BTC_CANON_BLOCK_HASH_KEY),
-        "anchor" => Ok(BTC_ANCHOR_BLOCK_HASH_KEY),
-        "latest" => Ok(BTC_LATEST_BLOCK_HASH_KEY),
+        "tail" => Ok(BTC_TAIL_BLOCK_HASH_KEY.to_vec()),
+        "canon" => Ok(BTC_CANON_BLOCK_HASH_KEY.to_vec()),
+        "anchor" => Ok(BTC_ANCHOR_BLOCK_HASH_KEY.to_vec()),
+        "latest" => Ok(BTC_LATEST_BLOCK_HASH_KEY.to_vec()),
         _ => Err(AppError::Custom(
             format!("✘ Cannot get special BTC hash of type: {}!", hash_type)
         ))
@@ -239,7 +231,7 @@ pub fn btc_block_exists_in_db<D>(db: &D, btc_block_id: &sha256d::Hash) -> bool
         "✔ Checking for existence of BTC block: {}",
        hex::encode(btc_block_id.to_vec())
    );
-    key_exists_in_db(db, &btc_block_id.to_vec(), None)
+    key_exists_in_db(db, &btc_block_id.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn key_exists_in_db<D>(
@@ -262,14 +254,14 @@ pub fn put_btc_canon_to_tip_length_in_db<D>(
     db.put(
         BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(),
         convert_u64_to_bytes(btc_canon_to_tip_length),
-        None,
+        MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
 pub fn get_btc_canon_to_tip_length_from_db<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
-    db.get(BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(), None)
+    db.get(BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
@@ -289,6 +281,7 @@ pub fn get_btc_private_key_from_db<D>(db: &D) -> Result<BtcPrivateKey>
         )
 }
 
+#[cfg(test)] // TODO Move to test utils!
 pub fn put_btc_anchor_block_in_db<D>(
     db: &D,
     block: &BtcBlockInDbFormat,
@@ -299,6 +292,7 @@ pub fn put_btc_anchor_block_in_db<D>(
     put_special_btc_block_in_db(db, block, "anchor")
 }
 
+#[cfg(test)] // TODO Move to test utils!
 pub fn put_btc_tail_block_in_db<D>(
     db: &D,
     block: &BtcBlockInDbFormat
@@ -317,16 +311,6 @@ pub fn put_btc_canon_block_in_db<D>(
 {
     trace!("✔ Putting BTC canon block in db...");
     put_special_btc_block_in_db(db, block, "canon")
-}
-
-pub fn put_btc_latest_block_in_db<D>(
-    db: &D,
-    block: &BtcBlockInDbFormat,
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    trace!("✔ Putting BTC latest block in db...");
-    put_special_btc_block_in_db(db, block, "latest")
 }
 
 pub fn get_btc_anchor_block_from_db<D>(db: &D) -> Result<BtcBlockInDbFormat>
@@ -374,13 +358,6 @@ pub fn put_btc_anchor_block_hash_in_db<D>(
     put_btc_hash_in_db(db, &BTC_ANCHOR_BLOCK_HASH_KEY.to_vec(), hash)
 }
 
-pub fn get_btc_latest_block_hash_from_db<D>(db: &D) -> Result<sha256d::Hash>
-    where D: DatabaseInterface
-{
-    trace!("✔ Getting BTC latest block hash from db...");
-    get_btc_hash_from_db(db, &BTC_LATEST_BLOCK_HASH_KEY.to_vec())
-}
-
 pub fn put_btc_latest_block_hash_in_db<D>(
     db: &D,
     hash: &sha256d::Hash
@@ -389,13 +366,6 @@ pub fn put_btc_latest_block_hash_in_db<D>(
 {
     trace!("✔ Putting BTC latest block hash in db...");
     put_btc_hash_in_db(db, &BTC_LATEST_BLOCK_HASH_KEY.to_vec(), hash)
-}
-
-pub fn get_btc_canon_block_hash_from_db<D>(db: &D) -> Result<sha256d::Hash>
-    where D: DatabaseInterface
-{
-    trace!("✔ Getting BTC canon block hash from db...");
-    get_btc_hash_from_db(db, &BTC_CANON_BLOCK_HASH_KEY.to_vec())
 }
 
 pub fn put_btc_tail_block_hash_in_db<D>(
@@ -439,13 +409,13 @@ pub fn put_btc_hash_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    db.put(key.to_vec(), hash.to_vec(), None)
+    db.put(key.to_vec(), hash.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn get_btc_hash_from_db<D>(db: &D, key: &Bytes) -> Result<sha256d::Hash>
     where D: DatabaseInterface
 {
-    db.get(key.to_vec(), None)
+    db.get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| Ok(sha256d::Hash::from_slice(&bytes)?))
 }
 
@@ -494,7 +464,7 @@ pub fn put_btc_address_in_db<D>(db: &D, btc_address: &String) -> Result<()>
     db.put(
         BTC_ADDRESS_KEY.to_vec(),
         convert_btc_address_to_bytes(btc_address)?,
-        None,
+        MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
@@ -502,7 +472,7 @@ pub fn get_btc_address_from_db<D>(db: &D) -> Result<String>
     where D: DatabaseInterface
 {
     trace!("✔  Getting BTC address from db...");
-    db.get(BTC_ADDRESS_KEY.to_vec(), None)
+    db.get(BTC_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .map(convert_bytes_to_btc_address)
 }
 
@@ -517,7 +487,7 @@ pub fn put_btc_block_in_db<D>(
         btc_block_in_db_format,
     );
     serialize_btc_block_in_db_format(btc_block_in_db_format)
-        .and_then(|(id, block)| db.put(id, block, None))
+        .and_then(|(id, block)| db.put(id, block, MIN_DATA_SENSITIVITY_LEVEL))
 }
 
 pub fn maybe_get_btc_block_from_db<D>(
@@ -546,7 +516,7 @@ pub fn get_btc_block_from_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Getting BTC block from db via id: {}", hex::encode(id.to_vec()));
-    db.get(id.to_vec(), None)
+    db.get(id.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| deserialize_btc_block_in_db_format(&bytes))
 }
 
@@ -569,7 +539,7 @@ mod tests {
         let result = key_exists_in_db(
             &db,
             &BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(),
-            None,
+            MIN_DATA_SENSITIVITY_LEVEL,
         );
         assert!(!result);
     }
@@ -584,7 +554,7 @@ mod tests {
         let result = key_exists_in_db(
             &db,
             &BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(),
-            None,
+            MIN_DATA_SENSITIVITY_LEVEL,
         );
         assert!(result);
     }
@@ -736,7 +706,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_and_put_latest_block_hash_in_db() {
+    fn should_put_latest_block_hash_in_db() {
         let db = get_test_database();
         let latest_block_hash = get_sample_btc_block_in_db_format()
             .unwrap()
@@ -747,18 +717,10 @@ mod tests {
         ) {
             panic!("Error putting btc latest_block_hash in db: {}", e);
         };
-        match get_btc_latest_block_hash_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting btc latest_block_hash from db: {}", e);
-            }
-            Ok(hash_from_db) => {
-                assert!(hash_from_db == latest_block_hash);
-            }
-        }
     }
 
     #[test]
-    fn should_get_and_put_canon_block_hash_in_db() {
+    fn should_put_canon_block_hash_in_db() {
         let db = get_test_database();
         let canon_block_hash = get_sample_btc_block_in_db_format()
             .unwrap()
@@ -766,14 +728,6 @@ mod tests {
         if let Err(e) = put_btc_canon_block_hash_in_db(&db, &canon_block_hash) {
             panic!("Error putting btc canon_block_hash in db: {}", e);
         };
-        match get_btc_canon_block_hash_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting btc canon_block_hash from db: {}", e);
-            }
-            Ok(hash_from_db) => {
-                assert!(hash_from_db == canon_block_hash);
-            }
-        }
     }
 
     #[test]
@@ -895,27 +849,6 @@ mod tests {
                 assert!(address == SAMPLE_TARGET_BTC_ADDRESS);
             }
         }
-    }
-
-    #[test]
-    fn should_get_btc_latest_block_number() {
-        let db = get_test_database();
-        let block = get_sample_btc_block_in_db_format()
-            .unwrap();
-        if let Err(e) = put_btc_latest_block_in_db(&db, &block.clone()) {
-            panic!("Error putting latest block in db: {}", e);
-        }
-        if let Err(e) = put_btc_latest_block_hash_in_db(&db, &block.id) {
-            panic!("Error putting latest block hash in db: {}", e);
-        }
-        match get_btc_latest_block_number(&db) {
-            Err(e) => {
-                panic!("Error getting latest block number: {}", e);
-            }
-            Ok(num_from_db) => {
-                assert!(num_from_db == block.height);
-            }
-        };
     }
 
     #[test]

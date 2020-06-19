@@ -10,6 +10,21 @@ use crate::{
         Result,
         DataSensitivity,
     },
+    chains::eth::eth_constants::{
+        ETH_ADDRESS_KEY,
+        ETH_CHAIN_ID_KEY,
+        ETH_GAS_PRICE_KEY,
+        ETH_LINKER_HASH_KEY,
+        ETH_ACCOUNT_NONCE_KEY,
+        ETH_PRIVATE_KEY_DB_KEY,
+        ETH_TAIL_BLOCK_HASH_KEY,
+        ETH_CANON_BLOCK_HASH_KEY,
+        ETH_LATEST_BLOCK_HASH_KEY,
+        ETH_ANCHOR_BLOCK_HASH_KEY,
+        ETH_CANON_TO_TIP_LENGTH_KEY,
+        ETH_SMART_CONTRACT_ADDRESS_KEY,
+        ANY_SENDER_NONCE_KEY,
+    },
     btc_on_eth::{
         database_utils::{
             put_u64_in_db,
@@ -27,20 +42,6 @@ use crate::{
             eth_types::{
                 EthSigningParams,
                 EthBlockAndReceipts,
-            },
-            eth_constants::{
-                ETH_ADDRESS_KEY,
-                ETH_CHAIN_ID_KEY,
-                ETH_GAS_PRICE_KEY,
-                ETH_LINKER_HASH_KEY,
-                ETH_ACCOUNT_NONCE_KEY,
-                ETH_PRIVATE_KEY_DB_KEY,
-                ETH_TAIL_BLOCK_HASH_KEY,
-                ETH_CANON_BLOCK_HASH_KEY,
-                ETH_LATEST_BLOCK_HASH_KEY,
-                ETH_ANCHOR_BLOCK_HASH_KEY,
-                ETH_CANON_TO_TIP_LENGTH_KEY,
-                ETH_SMART_CONTRACT_ADDRESS_KEY,
             },
             eth_json_codec::{
                 encode_eth_block_and_receipts_as_json_bytes,
@@ -122,26 +123,6 @@ pub fn get_eth_canon_to_tip_length_from_db<D>(db: &D) -> Result<u64>
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
-pub fn put_eth_latest_block_in_db<D>(
-    db: &D,
-    eth_block_and_receipts: &EthBlockAndReceipts,
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    info!("✔ Putting ETH latest block in db...");
-    put_special_eth_block_in_db(db, eth_block_and_receipts, "latest")
-}
-
-pub fn put_eth_anchor_block_in_db<D>(
-    db: &D,
-    eth_block_and_receipts: &EthBlockAndReceipts,
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    info!("✔ Putting ETH anchor block in db...");
-    put_special_eth_block_in_db(db, eth_block_and_receipts, "anchor")
-}
-
 pub fn put_eth_canon_block_in_db<D>(
     db: &D,
     eth_block_and_receipts: &EthBlockAndReceipts,
@@ -150,16 +131,6 @@ pub fn put_eth_canon_block_in_db<D>(
 {
     info!("✔ Putting ETH canon block in db...");
     put_special_eth_block_in_db(db, eth_block_and_receipts, "canon")
-}
-
-pub fn put_eth_tail_block_in_db<D>(
-    db: &D,
-    eth_block_and_receipts: &EthBlockAndReceipts,
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    info!("✔ Putting ETH tail block in db...");
-    put_special_eth_block_in_db(db, eth_block_and_receipts, "tail")
 }
 
 pub fn put_eth_latest_block_hash_in_db<D>(
@@ -290,39 +261,11 @@ pub fn get_eth_canon_block_from_db<D>(
     get_special_eth_block_from_db(db, "canon")
 }
 
-pub fn get_eth_tail_block_hash_from_db<D>(db: &D) -> Result<EthHash>
-    where D: DatabaseInterface
-{
-    info!("✔ Getting ETH tail block hash from db...");
-    get_special_eth_hash_from_db(db, "tail")
-}
-
-pub fn get_eth_latest_block_hash_from_db<D>(db: &D) -> Result<EthHash>
-    where D: DatabaseInterface
-{
-    info!("✔ Getting ETH latest block hash from db...");
-    get_special_eth_hash_from_db(db, "latest")
-}
-
 pub fn get_eth_anchor_block_hash_from_db<D>(db: &D) -> Result<EthHash>
     where D: DatabaseInterface
 {
     info!("✔ Getting ETH anchor block hash from db...");
     get_special_eth_hash_from_db(db, "anchor")
-}
-
-pub fn get_eth_canon_block_hash_from_db<D>(db: &D) -> Result<EthHash>
-    where D: DatabaseInterface
-{
-    info!("✔ Getting ETH canon block hash from db...");
-    get_special_eth_hash_from_db(db, "canon")
-}
-
-pub fn get_eth_linker_hash_from_db<D>(db: &D) -> Result<EthHash>
-    where D: DatabaseInterface
-{
-    info!("✔ Getting ETH linker hash from db...");
-    get_special_eth_hash_from_db(db, "linker")
 }
 
 pub fn get_special_eth_hash_from_db<D>(
@@ -332,11 +275,11 @@ pub fn get_special_eth_hash_from_db<D>(
     where D: DatabaseInterface
 {
     let key = match hash_type {
-        "linker" => Ok(ETH_LINKER_HASH_KEY),
-        "canon" => Ok(ETH_CANON_BLOCK_HASH_KEY),
-        "tail" => Ok(ETH_TAIL_BLOCK_HASH_KEY),
-        "anchor" => Ok(ETH_ANCHOR_BLOCK_HASH_KEY),
-        "latest" => Ok(ETH_LATEST_BLOCK_HASH_KEY),
+        "linker" => Ok(ETH_LINKER_HASH_KEY.to_vec()),
+        "canon" => Ok(ETH_CANON_BLOCK_HASH_KEY.to_vec()),
+        "tail" => Ok(ETH_TAIL_BLOCK_HASH_KEY.to_vec()),
+        "anchor" => Ok(ETH_ANCHOR_BLOCK_HASH_KEY.to_vec()),
+        "latest" => Ok(ETH_LATEST_BLOCK_HASH_KEY.to_vec()),
         _ => Err(AppError::Custom(
             format!("✘ Cannot get ETH special hash of type: {}!", hash_type)
         ))
@@ -657,13 +600,6 @@ pub fn put_public_eth_address_in_db<D>(
     db.put(ETH_ADDRESS_KEY.to_vec(), eth_address.as_bytes().to_vec(), None)
 }
 
-pub fn get_eth_address_from_db<D>(db: &D, key: &Bytes) -> Result<EthAddress>
-    where D: DatabaseInterface
-{
-    db.get(key.to_vec(), None)
-        .map(|bytes| EthAddress::from_slice(&bytes))
-}
-
 pub fn put_eth_address_in_db<D>(
     db: &D,
     key: &Bytes,
@@ -672,6 +608,38 @@ pub fn put_eth_address_in_db<D>(
     where D: DatabaseInterface
 {
     db.put(key.to_vec(), eth_address.as_bytes().to_vec(), None)
+}
+
+pub fn get_any_sender_nonce_from_db<D>(
+    db: &D
+) -> Result<u64>
+    where D: DatabaseInterface
+{
+    trace!("✔ Getting any.sender nonce from db...");
+    get_u64_from_db(db, &ANY_SENDER_NONCE_KEY.to_vec())
+}
+
+pub fn put_any_sender_nonce_in_db<D>(
+    db: &D,
+    nonce: u64,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    trace!("✔ Putting any.sender nonce of {} in db...", nonce);
+    put_u64_in_db(db, &ANY_SENDER_NONCE_KEY.to_vec(), nonce)
+}
+
+pub fn increment_any_sender_nonce_in_db<D>(
+    db: &D,
+    amount_to_increment_by: u64,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    trace!("✔ Incrementing any.sender nonce in db...");
+    get_any_sender_nonce_from_db(db)
+        .and_then(|nonce|
+            put_any_sender_nonce_in_db(db, nonce + amount_to_increment_by)
+        )
 }
 
 #[cfg(test)]
@@ -703,7 +671,7 @@ mod tests {
     fn existing_key_should_exist_in_db() {
         let thing = vec![0xc0];
         let db = get_test_database();
-        let key = ETH_ACCOUNT_NONCE_KEY;
+        let key = ETH_ACCOUNT_NONCE_KEY.clone();
         if let Err(e) = db.put(key.to_vec(), thing, None) {
             panic!("Error putting canon to tip len in db: {}", e);
         };
@@ -905,21 +873,13 @@ mod tests {
     }
 
     #[test]
-    fn should_put_and_get_eth_address_in_db() {
+    fn should_put_eth_address_in_db() {
         let db = get_test_database();
         let key = ETH_ADDRESS_KEY.to_vec();
         let eth_address = get_sample_contract_address();
         if let Err(e) = put_eth_address_in_db(&db, &key, &eth_address) {
             panic!("Error putting ETH address in db: {}", e);
         };
-        match get_eth_address_from_db(&db, &key) {
-            Err(e) => {
-                panic!("Error getting ETH address from db: {}", e);
-            }
-            Ok(eth_address_from_db) => {
-                assert!(eth_address_from_db == eth_address);
-            }
-        }
     }
 
     #[test]

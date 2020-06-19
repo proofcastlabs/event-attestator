@@ -5,6 +5,10 @@ use crate::{
         Bytes,
         Result,
     },
+    chains::eth::eth_constants::{
+        EMPTY_NIBBLES,
+        HASHED_NULL_NODE,
+    },
     btc_on_eth::{
         utils::{
             convert_bytes_to_h256,
@@ -14,10 +18,6 @@ use crate::{
             eth_types::{
                 NodeStack,
                 TrieHashMap,
-            },
-            eth_constants::{
-                EMPTY_NIBBLES,
-                HASHED_NULL_NODE,
             },
             trie_nodes::{
                 Node,
@@ -1150,7 +1150,6 @@ mod tests {
     use crate::btc_on_eth::{
         utils::{
             convert_hex_to_h256,
-            convert_h256_to_prefixed_hex,
         },
         eth::{
             get_trie_hash_map::get_thing_from_trie_hash_map,
@@ -1159,6 +1158,7 @@ mod tests {
                 get_sample_leaf_node,
                 get_sample_branch_node,
                 get_sample_extension_node,
+                convert_h256_to_prefixed_hex,
                 convert_hex_string_to_nibbles,
                 get_sample_eth_block_and_receipts,
                 get_sample_eth_block_and_receipts_n,

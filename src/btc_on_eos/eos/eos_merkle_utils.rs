@@ -11,11 +11,8 @@ use crate::{
         Result,
     },
     btc_on_eos::{
+        eos::eos_types::MerkleProof,
         utils::convert_hex_to_checksum256,
-        eos::eos_types::{
-            MerklePath,
-            MerkleProof,
-        },
     },
 };
 
@@ -82,25 +79,6 @@ fn make_and_hash_canonical_pair(l: &Bytes, r: &Bytes) -> Bytes {
     hash_canonical_pair(make_canonical_pair(l, r)).to_vec()
 }
 
-pub fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
-    if leaves.is_empty() {
-        return vec![0x00]
-    }
-    while leaves.len() > 1 {
-        if leaves.len() % 2 != 0 {
-            let last = leaves[leaves.len() - 1].clone();
-            leaves.push(last);
-        }
-        for i in 0..(leaves.len() / 2) {
-            leaves[i] = hash_canonical_pair(
-                make_canonical_pair(&leaves[2 * i], &leaves[(2 * i) + 1])
-            ).to_vec();
-        }
-        leaves.resize(leaves.len() / 2, vec![0x00]);
-    }
-    leaves[0].clone()
-}
-
 pub fn verify_merkle_proof(merkle_proof: &MerkleProof) -> Result<bool> {
     let mut node = hex::decode(merkle_proof[0].clone())?;
     let leaves = merkle_proof[..merkle_proof.len() - 1]
@@ -116,36 +94,15 @@ pub fn verify_merkle_proof(merkle_proof: &MerkleProof) -> Result<bool> {
     Ok(node == hex::decode(merkle_proof.last()?)?)
 }
 
-pub fn get_merkle_root_from_merkle_path(
-    merkle_proof: &MerklePath,
-) -> Result<Bytes> {
-    let mut node = merkle_proof[0].clone();
-    Ok(
-        merkle_proof[1..]
-            .iter()
-            .map(|leaf| {
-                match is_canonical_right(&leaf) {
-                    true => node = make_and_hash_canonical_pair(&node, &leaf),
-                    false => node = make_and_hash_canonical_pair(&leaf, &node),
-                };
-                node.clone()
-            })
-            .collect::<Vec<Bytes>>()
-            .last()?
-            .to_vec()
-    )
-}
-
-
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct IncreMerkleJson {
+pub struct IncremerkleJson {
     node_count: u64,
     active_nodes: Vec<String>,
 }
 
-impl IncreMerkleJson {
-    pub fn from_incremerkle(incremerkle: &IncreMerkle) -> Self {
-        IncreMerkleJson {
+impl IncremerkleJson {
+    pub fn from_incremerkle(incremerkle: &Incremerkle) -> Self {
+        IncremerkleJson {
             node_count: incremerkle.node_count,
             active_nodes: incremerkle
                 .active_nodes
@@ -155,9 +112,9 @@ impl IncreMerkleJson {
         }
     }
 
-    pub fn to_incremerkle(self) -> Result<IncreMerkle> {
+    pub fn to_incremerkle(self) -> Result<Incremerkle> {
         Ok(
-            IncreMerkle {
+            Incremerkle {
                 node_count: self.node_count,
                 active_nodes: self
                     .active_nodes
@@ -171,19 +128,19 @@ impl IncreMerkleJson {
 
 // NOTE: Courtesy of: https://github.com/bifrost-codes/rust-eos/
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
-pub struct IncreMerkle {
+pub struct Incremerkle {
     node_count: u64,
     active_nodes: Vec<Checksum256>,
 }
 
 // NOTE: Ibid
-impl IncreMerkle {
-    pub fn to_json(&self) -> IncreMerkleJson {
-        IncreMerkleJson::from_incremerkle(self)
+impl Incremerkle {
+    pub fn to_json(&self) -> IncremerkleJson {
+        IncremerkleJson::from_incremerkle(self)
     }
 
     pub fn default() -> Self {
-        IncreMerkle { node_count: 0, active_nodes: vec![] }
+        Incremerkle { node_count: 0, active_nodes: vec![] }
     }
 
     fn make_canonical_left(val: &Checksum256) -> Checksum256 {
@@ -243,7 +200,7 @@ impl IncreMerkle {
     }
 
     pub fn new(node_count: u64, active_nodes: Vec<Checksum256>) -> Self {
-        IncreMerkle {
+        Incremerkle {
             node_count: node_count,
             active_nodes: active_nodes,
         }
@@ -355,6 +312,25 @@ mod tests {
             &get_expected_digest_bytes_1(),
             &get_expected_digest_bytes_2(),
         )
+    }
+
+    pub fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
+        if leaves.is_empty() {
+            return vec![0x00]
+        }
+        while leaves.len() > 1 {
+            if leaves.len() % 2 != 0 {
+                let last = leaves[leaves.len() - 1].clone();
+                leaves.push(last);
+            }
+            for i in 0..(leaves.len() / 2) {
+                leaves[i] = hash_canonical_pair(
+                    make_canonical_pair(&leaves[2 * i], &leaves[(2 * i) + 1])
+                ).to_vec();
+            }
+            leaves.resize(leaves.len() / 2, vec![0x00]);
+        }
+        leaves[0].clone()
     }
 
     #[test]
@@ -662,38 +638,6 @@ mod tests {
     }
 
     #[test]
-    fn should_get_merkle_root_from_merkle_path() {
-        let expected_merkle_root =
-            "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
-        let block_id =
-            "0000259a7cc27f04467b6c7362a936a143a5d9f324075b4c0d291c3974f80720";
-        let merkle_path = vec![
-            block_id,
-            "0000259943aeb714e885c783bc79487cd025bb687b39d9de755d73a7fea000dd",
-            "804c48aed6b4f21b9d13bd3cc260411dc8d7e442f0430659e9bbcc70af95c8aa",
-            "80f39c9cda67aa2c1e4ec3a6c2ed6182dbb87b30d2d82b44a2a2a76d37f74aae",
-            "29eb5e917272918a6da86be0aaec2275bef5b66062c7f717b738b92b01e24faa",
-            "07d415864f60c2ca1318d4ebf4fd46e446697076d4f38abc3105531830da815e",
-            "9006d928623a944863b1bef8a6df59fcb9c4790d8fe8b49c2fd4b0f88f48566c",
-            "efc734fa150a9cfa74402a7d50fae265f36037c70af9b078bee7c3332fe62768",
-            "3e2f1f8b53ec4b22ffe724ba11f1cb676a675a0a6cf097ed1d8a30d766008f76",
-            "43e4b272895404d72bdb14f7a06c19342cbdaa132bf3538bb20be67b28db5fc8",
-            "9e3a7f7e635ea41663de6855b81eda28320ae3d2ba669e2a8e1e1d4d8969cb5c",
-            "2cba7c7ee5c1d8ba97ea1a841707fbb2147e883b56544ba821814aebe086383e",
-            "a081325a023dd7018dd99d1d4192348c73d445f4a4fd4ca40a99c1914c3b30b3",
-            "8394f7a83fda4dc1fb026aec143ccb4c9ce69c21f23ab3a8af0a741f8597df96",
-            "2fa502d408f5bdf1660fa9fe3a1fcb432462467e7eb403a8499392ee5297d8d1",
-        ]
-            .iter()
-            .map(|x| Ok(hex::decode(x)?))
-            .collect::<Result<Vec<Bytes>>>()
-            .unwrap();
-        let result = get_merkle_root_from_merkle_path(&merkle_path)
-            .unwrap();
-        assert_eq!(hex::encode(result), expected_merkle_root);
-    }
-
-    #[test]
     fn should_get_incremerkle_root_from_interim_block_idss() {
         let expected_incremerkle_root =
             "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
@@ -705,7 +649,7 @@ mod tests {
             .block_header
             .block_num()
             .into();
-        let incremerkle = IncreMerkle::new(node_count, active_nodes);
+        let incremerkle = Incremerkle::new(node_count, active_nodes);
         let incremerkle_root = hex::encode(
             &incremerkle
                 .get_root()
@@ -726,8 +670,8 @@ mod tests {
             .block_header
             .block_num()
             .into();
-        let incremerkle = IncreMerkle::new(node_count, active_nodes);
-        let json = IncreMerkleJson::from_incremerkle(&incremerkle);
+        let incremerkle = Incremerkle::new(node_count, active_nodes);
+        let json = IncremerkleJson::from_incremerkle(&incremerkle);
         assert_eq!(json.node_count, incremerkle.node_count);
         assert_eq!(json.active_nodes.len(), incremerkle.active_nodes.len());
         let result = json

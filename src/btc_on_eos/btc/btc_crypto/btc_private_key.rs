@@ -11,7 +11,6 @@ use secp256k1::{
     Secp256k1,
     Signature,
     key::{
-        ONE_KEY,
         SecretKey,
         PublicKey,
     },
@@ -19,13 +18,11 @@ use secp256k1::{
 use crate::{
     traits::DatabaseInterface,
     chains::btc::btc_utils::get_btc_one_key,
+    constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+    btc_on_eos::crypto_utils::generate_random_private_key,
     types::{
         Bytes,
         Result,
-    },
-    btc_on_eos::{
-        crypto_utils::generate_random_private_key,
-        constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
     },
 };
 
@@ -47,16 +44,6 @@ impl BtcPrivateKey {
                     key: SecretKey::from_slice(&slice)?
                 }
             )
-        )
-    }
-
-    pub fn one_key() -> Self {
-        Self(
-            PrivateKey {
-                network: Network::Bitcoin,
-                compressed: false,
-                key: ONE_KEY
-            }
         )
     }
 
@@ -104,6 +91,7 @@ impl BtcPrivateKey {
             .serialize()
     }
 
+    #[cfg(test)]
     pub fn from_wif(wif: &str) -> Result<Self> {
         let pk = PrivateKey::from_wif(wif)?;
         Ok(

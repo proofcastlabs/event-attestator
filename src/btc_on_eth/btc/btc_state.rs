@@ -2,15 +2,20 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
+    chains::btc::{
+        deposit_address_info::DepositInfoHashMap,
+        utxo_manager::utxo_types::BtcUtxosAndValues,
+    },
     btc_on_eth::{
         eth::eth_types::EthTransactions,
-        btc::btc_types::{
-            BtcBlockAndId,
-            MintingParams,
-            BtcTransactions,
-            BtcBlockInDbFormat,
-            DepositInfoHashMap,
+        btc::{
+            btc_types::{
+                BtcBlockAndId,
+                MintingParams,
+                BtcTransactions,
+                BtcBlockInDbFormat,
+            },
+            parse_submission_material::BtcSubmissionMaterialJson,
         },
         utils::{
             get_not_in_state_err,
@@ -31,6 +36,7 @@ pub struct BtcState<D: DatabaseInterface> {
     pub op_return_deposit_txs: Option<BtcTransactions>,
     pub deposit_info_hash_map: Option<DepositInfoHashMap>,
     pub btc_block_in_db_format: Option<BtcBlockInDbFormat>,
+    pub any_sender: Option<bool>,
 }
 
 impl<D> BtcState<D> where D: DatabaseInterface {
@@ -46,6 +52,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
             deposit_info_hash_map: None,
             btc_block_in_db_format: None,
             utxos_and_values: Vec::new(),
+            any_sender: None,
         }
     }
 
@@ -199,15 +206,6 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn update_btc_block_and_id(
-        mut self,
-        new_btc_block_and_id: BtcBlockAndId
-    ) -> Result<BtcState<D>> {
-        info!("✔ Updating BTC block & ID in BTC state...");
-        self.btc_block_and_id = Some(new_btc_block_and_id);
-        Ok(self)
-    }
-
     pub fn get_btc_block_and_id(
         &self
     ) -> Result<&BtcBlockAndId> {
@@ -300,7 +298,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 
     pub fn get_output_json_string(
         &self
-    ) -> Result<&String> {
+    ) -> Result<&str> {
         match &self.output_json_string {
             Some(output_json_string) => {
                 info!("✔ Getting BTC output json string from state...");
@@ -310,6 +308,19 @@ impl<D> BtcState<D> where D: DatabaseInterface {
                 get_not_in_state_err("output_json_string"))
             )
         }
+    }
+
+    pub fn set_any_sender_status_from_submission_material(
+        &mut self,
+        btc_submission_material_json: BtcSubmissionMaterialJson
+    ) -> Result<BtcSubmissionMaterialJson> {
+        info!("✔ Setting any.sender status from submission material...");
+        self.any_sender = btc_submission_material_json.any_sender;
+        Ok(btc_submission_material_json)
+    }
+
+    pub fn use_any_sender_tx_type(&self) -> bool {
+        self.any_sender == Some(true)
     }
 }
 

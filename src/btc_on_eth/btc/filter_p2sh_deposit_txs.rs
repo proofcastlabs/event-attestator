@@ -6,17 +6,17 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::btc_utils::get_p2sh_redeem_script_sig,
+    chains::btc::{
+        deposit_address_info::DepositInfoHashMap,
+        btc_utils::get_p2sh_redeem_script_sig,
+    },
     btc_on_eth::btc::{
         btc_state::BtcState,
         btc_database_utils::{
             get_btc_network_from_db,
             get_btc_private_key_from_db,
         },
-        btc_types::{
-            BtcTransactions,
-            DepositInfoHashMap,
-        },
+        btc_types::BtcTransactions,
     },
 };
 

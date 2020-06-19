@@ -9,7 +9,6 @@ use crate::{
     btc_on_eos::eos::eos_hash::ripemd160,
 };
 use secp256k1::{
-    Signature as NonRecoverableSignature,
     recovery::{
         RecoveryId,
         RecoverableSignature,
@@ -18,12 +17,6 @@ use secp256k1::{
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct EosSignature(pub RecoverableSignature);
-
-impl EosSignature {
-    pub fn to_non_recoverable_signature(&self) -> NonRecoverableSignature {
-        self.0.to_standard()
-    }
-}
 
 impl From<RecoverableSignature> for EosSignature {
     fn from(recv_sig: RecoverableSignature) -> EosSignature {

@@ -20,12 +20,12 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+    chains::eos::eos_constants::EOS_PRIVATE_KEY_DB_KEY,
     btc_on_eos::{
         crypto_utils::generate_random_private_key,
-        constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
         eos::{
             eos_types::EosNetwork,
-            eos_constants::EOS_PRIVATE_KEY_DB_KEY,
             eos_crypto::{
                 eos_signature::EosSignature,
                 eos_public_key::EosPublicKey,

@@ -1,4 +1,3 @@
-use ethereum_types::Address as EthAddress;
 use crate::{
     types::{
         Bytes,
@@ -13,27 +12,16 @@ use crate::{
         convert_u64_to_bytes,
     },
     chains::btc::{
-        btc_types::{
-            DepositAddressInfo,
-            DepositAddressInfoJson,
-        },
-        utxo_manager::utxo_types::{
-            BtcUtxoAndValue,
-            BtcUtxosAndValues,
+        utxo_manager::utxo_types::BtcUtxosAndValues,
+        btc_constants::{
+            DEFAULT_BTC_SEQUENCE,
+            PTOKEN_P2SH_SCRIPT_BYTES,
         },
     },
     btc_on_eos::{
-        constants::SAFE_EOS_ADDRESS,
-        btc::{
-            btc_constants::{
-                DEFAULT_BTC_SEQUENCE,
-                PTOKEN_P2SH_SCRIPT_BYTES,
-            },
-            btc_types::{
-                BtcBlockAndId,
-                MintingParams,
-                BtcBlockInDbFormat,
-            },
+        btc::btc_types::{
+            MintingParams,
+            BtcBlockInDbFormat,
         },
     },
 };
@@ -65,20 +53,6 @@ pub struct SerializedBlockAndId {
     pub id: Bytes,
     pub block: Bytes,
     pub height: Bytes,
-}
-
-impl SerializedBlockAndId {
-    pub fn new(
-        serialized_id: Bytes,
-        serialized_block: Bytes,
-        serialized_height: Bytes,
-    ) -> Self {
-        SerializedBlockAndId {
-            id: serialized_id,
-            block: serialized_block,
-            height: serialized_height,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -113,14 +87,8 @@ pub fn get_p2sh_redeem_script_sig(
     address_and_nonce_hash: &sha256d::Hash,
 ) -> BtcScript {
     info!("✔ Generating `p2sh`'s redeem `script_sig`");
-    debug!(
-        "✔ Using `address_and_nonce_hash`: {}",
-        hex::encode(address_and_nonce_hash)
-    );
-    debug!(
-        "✔ Using `pub key slice`: {}",
-        hex::encode(utxo_spender_pub_key_slice)
-    );
+    debug!("✔ Using `address_and_nonce_hash`: {}", hex::encode(address_and_nonce_hash));
+    debug!("✔ Using `pub key slice`: {}", hex::encode(utxo_spender_pub_key_slice));
     BtcScriptBuilder::new()
         .push_slice(&address_and_nonce_hash[..])
         .push_opcode(opcodes::all::OP_DROP)
@@ -139,20 +107,6 @@ pub fn get_p2sh_script_sig_from_redeem_script(
         .into_script()
 }
 
-pub fn get_btc_block_in_db_format(
-    btc_block_and_id: BtcBlockAndId,
-    minting_params: MintingParams,
-    extra_data: Bytes,
-) -> Result<BtcBlockInDbFormat> {
-    BtcBlockInDbFormat::new(
-        btc_block_and_id.height,
-        btc_block_and_id.id,
-        minting_params,
-        btc_block_and_id.block,
-        extra_data,
-    )
-}
-
 pub fn serialize_minting_params(
     minting_params: &MintingParams
 ) -> Result<Bytes> {
@@ -163,18 +117,6 @@ pub fn deserialize_minting_params(
     serialized_minting_params: Bytes
 ) -> Result<MintingParams> {
     Ok(serde_json::from_slice(&serialized_minting_params[..])?)
-}
-
-pub fn create_op_return_btc_utxo_and_value_from_tx_output(
-    tx: &BtcTransaction,
-    output_index: u32,
-) -> BtcUtxoAndValue {
-    BtcUtxoAndValue::new(
-        tx.output[output_index as usize].value,
-        &create_unsigned_utxo_from_tx(tx, output_index),
-        None,
-        None,
-    )
 }
 
 pub fn create_unsigned_utxo_from_tx(
@@ -193,21 +135,6 @@ pub fn create_unsigned_utxo_from_tx(
             .output[output_index as usize]
             .script_pubkey
             .clone(),
-    }
-}
-
-pub fn convert_deposit_info_to_json(
-    deposit_info_struct: &DepositAddressInfo
-) -> DepositAddressInfoJson {
-    DepositAddressInfoJson {
-        nonce:
-            deposit_info_struct.nonce,
-        btc_deposit_address:
-            deposit_info_struct.btc_deposit_address.to_string(),
-        address:
-            deposit_info_struct.address.to_string(),
-        address_and_nonce_hash:
-            hex::encode(deposit_info_struct.commitment_hash),
     }
 }
 
@@ -266,10 +193,6 @@ pub fn deserialize_btc_block_in_db_format(
     )
 }
 
-pub fn get_safe_address() -> EthAddress {
-    EthAddress::from_slice(&SAFE_EOS_ADDRESS.as_bytes())
-}
-
 pub fn get_total_value_of_utxos_and_values(
     utxos_and_values: &BtcUtxosAndValues
 ) -> u64 {
@@ -277,16 +200,6 @@ pub fn get_total_value_of_utxos_and_values(
         .iter()
         .map(|utxo_and_value| utxo_and_value.value)
         .sum()
-}
-
-pub fn get_tx_id_from_signed_btc_tx(
-    signed_btc_tx: &BtcTransaction
-) -> String {
-    let mut tx_id = signed_btc_tx
-        .txid()
-        .to_vec();
-    tx_id.reverse();
-    hex::encode(tx_id)
 }
 
 pub fn get_hex_tx_from_signed_btc_tx(
@@ -328,14 +241,6 @@ pub fn calculate_btc_tx_fee(
 // NOTE: Assumes compressed keys and no multi-sigs!
 pub fn calculate_btc_tx_size(num_inputs: usize, num_outputs: usize) -> u64 {
     ((num_inputs * (148 + PTOKEN_P2SH_SCRIPT_BYTES)) + (num_outputs * 34) + 10 + num_inputs) as u64
-}
-
-pub fn serialize_btc_utxo(btc_utxo: &BtcUtxo) -> Bytes {
-    btc_serialize(btc_utxo)
-}
-
-pub fn deserialize_btc_utxo(bytes: &Bytes) -> Result<BtcUtxo> {
-    Ok(btc_deserialize(bytes)?)
 }
 
 pub fn convert_btc_address_to_bytes(

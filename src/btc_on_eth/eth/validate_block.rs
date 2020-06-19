@@ -3,6 +3,7 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    constants::CORE_IS_VALIDATING,
     btc_on_eth::{
         crypto_utils::keccak_hash_bytes,
         eth::{
@@ -32,12 +33,19 @@ pub fn validate_block_header(block: &EthBlock) -> Result<bool> {
 pub fn validate_block_in_state<D>(state: EthState<D>) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
-    trace!("✔ Validating block header...");
-    match validate_block_header(&state.get_eth_block_and_receipts()?.block)? {
-        true => Ok(state),
-        false => Err(AppError::Custom(
-            "✘ Not accepting ETH block - header hash not valid!".to_string()
-        )),
+    if CORE_IS_VALIDATING {
+        info!("✔ Validating block header...");
+        match validate_block_header(
+            &state.get_eth_block_and_receipts()?.block
+        )? {
+            true => Ok(state),
+            false => Err(AppError::Custom(
+                "✘ Not accepting ETH block - header hash not valid!".to_string()
+            )),
+        }
+    } else {
+        info!("✔ Skipping ETH block header validaton!");
+        Ok(state)
     }
 }
 
@@ -48,7 +56,6 @@ mod tests {
         get_sample_invalid_block,
         get_sample_eth_block_and_receipts,
         get_valid_state_with_block_and_receipts,
-        get_valid_state_with_invalid_block_and_receipts,
     };
 
     #[test]
@@ -84,14 +91,18 @@ mod tests {
         }
     }
 
+    #[cfg(not(feature="non-validating"))]
     #[test]
     fn should_fail_to_validate_invalid_block_in_state() {
+        use crate::btc_on_eth::eth::eth_test_utils::{
+            get_valid_state_with_invalid_block_and_receipts
+        };
         let expected_error = "✘ Not accepting ETH block - header hash not valid!"
             .to_string();
         let state = get_valid_state_with_invalid_block_and_receipts()
             .unwrap();
         match validate_block_in_state(state) {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ => panic!("Should not validate invalid block in state!")
         }
     }
