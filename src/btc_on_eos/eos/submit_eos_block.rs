@@ -44,7 +44,7 @@ use crate::{
 
 pub fn submit_eos_block_to_core<D>(
     db: D,
-    block_json: String,
+    block_json: &str,
 ) -> Result<String>
     where D: DatabaseInterface
 {

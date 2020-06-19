@@ -10,7 +10,7 @@ use crate::{
 pub fn put_string_in_db<D>(
     db: &D,
     key: &Bytes,
-    string: &String
+    string: &str
 ) -> Result<()>
     where D: DatabaseInterface
 {

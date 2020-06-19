@@ -269,7 +269,7 @@ pub fn get_eos_init_output<D>(
 }
 
 pub fn put_eos_account_name_in_db_and_return_state<D>(
-    account_name: String,
+    account_name: &str,
     state: EosState<D>,
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
@@ -290,7 +290,7 @@ pub fn put_eos_account_nonce_in_db_and_return_state<D>(
 }
 
 pub fn put_eos_token_symbol_in_db_and_return_state<D>(
-    token_symbol: String,
+    token_symbol: &str,
     state: EosState<D>,
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
@@ -314,16 +314,13 @@ pub fn put_empty_processed_tx_ids_in_db_and_return_state<D>(
 }
 
 pub fn put_eos_chain_id_in_db_and_return_state<D>(
-    chain_id: String,
+    chain_id: &str,
     state: EosState<D>
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
     info!("✔ Putting EOS chain ID '{}' into db...", chain_id);
-    put_eos_chain_id_in_db(
-        &state.db,
-        &chain_id,
-    )
+    put_eos_chain_id_in_db(&state.db, chain_id)
         .and(Ok(state))
 }
 
