@@ -11,7 +11,7 @@ use crate::{
     },
     chains::eth::eth_constants::{
         ANY_SENDER_MAX_COMPENSATION_WEI, ANY_SENDER_MAX_DATA_LEN, ANY_SENDER_MAX_GAS_LIMIT,
-        ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID,
+        ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID, ETH_TX_VALUE_BYTES_LEN,
     },
     errors::AppError,
     types::{Byte, Bytes, Result},
@@ -191,13 +191,26 @@ impl RelayTransaction {
         eth_private_key: EthPrivateKey,
     ) -> Result<RelayTransaction> {
         let chain_id = eth_transaction.chain_id;
-        let data = eth_transaction.data.clone();
         let deadline = None; // use the default any.sender deadline
         let gas_limit = eth_transaction.gas_limit.as_u32();
         let compensation = ANY_SENDER_MAX_COMPENSATION_WEI;
         let relay_contract_address =
             RelayContract::from_eth_chain_id(eth_transaction.chain_id)?.address()?;
         let to = EthAddress::from_slice(&eth_transaction.to);
+
+        let mut value_bytes = vec![0; ETH_TX_VALUE_BYTES_LEN];
+        eth_transaction.value.to_big_endian(&mut value_bytes);
+
+        let mut data = [
+            to.as_bytes(),
+            from.as_bytes(),
+            &value_bytes,
+            &eth_transaction.data,
+        ]
+        .concat();
+
+        let mut data_signature = eth_private_key.sign_message_bytes(data.clone())?.to_vec();
+        data.append(&mut data_signature);
 
         let relay_transaction = RelayTransaction::from_data_unsigned(
             chain_id,
@@ -360,8 +373,8 @@ mod tests {
             from: EthAddress::from_slice(
                 &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap()),
             signature: EthSignature::from_slice(
-                &hex::decode("836ca384f9e2da3a7333c70142edae081b5f8048e9f919de9033e60021f3e1076d050dd58ce6d3db109a172b06b64a8ec7adce9bd5d5aaa84e54a0c6aeb401041c").unwrap()),
-            data: Bytes::default(),
+                &hex::decode("c68da066026f2d93939372c17338f36e6ef7e8a90f74f1c6a51c10cb4487a15c3398ea96889c659697b401e81b5c290afd0973fe3a0e2715364e64dad33144c01b").unwrap()),
+            data: vec![83, 194, 4, 141, 173, 79, 207, 171, 68, 195, 239, 61, 22, 232, 130, 181, 23, 141, 244, 43, 115, 102, 97, 115, 101, 51, 188, 252, 156, 195, 86, 73, 230, 50, 74, 206, 251, 125, 50, 193, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 42, 105, 15, 41, 170, 27, 174, 10, 127, 232, 5, 76, 114, 37, 143, 167, 189, 253, 11, 134, 139, 87, 161, 173, 49, 106, 234, 78, 114, 159, 246, 230, 59, 17, 250, 20, 45, 223, 194, 202, 20, 180, 188, 25, 70, 100, 241, 76, 79, 46, 54, 159, 41, 157, 189, 5, 124, 22, 138, 143, 227, 54, 99, 64, 1],
             deadline: 0,
             gas_limit: 100000,
             compensation: 49999999999999999,
