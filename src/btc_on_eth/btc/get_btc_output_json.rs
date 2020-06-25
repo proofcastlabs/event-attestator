@@ -104,6 +104,7 @@ impl EthTxInfo {
         let any_sender_tx = RelayTransaction::from_eth_transaction(
             eth_tx,
             from,
+            minting_param_struct.amount,
             any_sender_nonce,
             eth_private_key,
         )?;

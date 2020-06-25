@@ -11,13 +11,13 @@ use crate::{
     },
     chains::eth::eth_constants::{
         ANY_SENDER_MAX_COMPENSATION_WEI, ANY_SENDER_MAX_DATA_LEN, ANY_SENDER_MAX_GAS_LIMIT,
-        ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID, ETH_TX_VALUE_BYTES_LEN,
+        ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID,
     },
     errors::AppError,
     types::{Byte, Bytes, Result},
 };
 use ethabi::{encode, Token};
-use ethereum_types::{Address as EthAddress, Signature as EthSignature};
+use ethereum_types::{Address as EthAddress, Signature as EthSignature, U256};
 use rlp::RlpStream;
 
 /// An any.sender relay transaction. It is very similar
@@ -188,6 +188,7 @@ impl RelayTransaction {
     pub fn from_eth_transaction(
         eth_transaction: &EthTransaction,
         from: EthAddress,
+        amount: U256,
         any_sender_nonce: u64,
         eth_private_key: EthPrivateKey,
     ) -> Result<RelayTransaction> {
@@ -199,18 +200,17 @@ impl RelayTransaction {
             RelayContract::from_eth_chain_id(eth_transaction.chain_id)?.address()?;
         let to = EthAddress::from_slice(&eth_transaction.to);
 
-        let mut value_bytes = vec![0; ETH_TX_VALUE_BYTES_LEN];
-        eth_transaction.value.to_big_endian(&mut value_bytes);
-
         let proxy_signature = eth_private_key
-            .sign_eth_prefixed_msg_bytes(
-                [to.as_bytes(), &value_bytes, &any_sender_nonce.to_be_bytes()].concat(),
-            )?
+            .sign_eth_prefixed_msg_bytes(encode(&[
+                Token::Address(to),
+                Token::Uint(amount),
+                Token::Uint(any_sender_nonce.into()),
+            ]))?
             .to_vec();
 
         let proxy_data = encode(&[
             Token::Address(to),
-            Token::Uint(eth_transaction.value),
+            Token::Uint(amount),
             Token::Uint(any_sender_nonce.into()),
             Token::Bytes(proxy_signature),
         ]);
@@ -373,10 +373,12 @@ mod tests {
             &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap(),
         );
         let any_sender_nonce = 0;
+        let amount = U256::from(1337);
 
         let relay_transaction = RelayTransaction::from_eth_transaction(
             &eth_transaction,
             from,
+            amount,
             any_sender_nonce,
             eth_private_key,
         )
@@ -386,8 +388,8 @@ mod tests {
             from: EthAddress::from_slice(
                 &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap()),
             signature: EthSignature::from_slice(
-                &hex::decode("e8ab833f51e50d57a7834533cf71901b4f88cd6842119608e261eef17ab11dc15d1dec037b6a4d9f37204c4a0b3fa7956dfaefd12eceb5c7de343937770a95511c").unwrap()),
-            data: vec![115, 102, 97, 115, 101, 51, 188, 252, 156, 195, 86, 73, 230, 50, 74, 206, 251, 125, 50, 193, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 83, 194, 4, 141, 173, 79, 207, 171, 68, 195, 239, 61, 22, 232, 130, 181, 23, 141, 244, 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 65, 66, 80, 179, 91, 77, 17, 142, 159, 4, 225, 237, 194, 138, 239, 94, 205, 232, 75, 208, 104, 199, 40, 26, 108, 57, 221, 190, 231, 149, 201, 73, 92, 8, 166, 142, 144, 216, 94, 86, 55, 4, 152, 152, 64, 62, 168, 175, 107, 233, 119, 65, 200, 47, 101, 79, 76, 174, 110, 55, 145, 160, 184, 7, 12, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 158, 88, 239, 237, 151, 231, 207, 195, 94, 176, 227, 40, 107, 192, 73, 191, 116, 127, 107, 72, 12, 28, 139, 236, 63, 215, 164, 219, 159, 211, 208, 161, 118, 176, 195, 174, 119, 98, 107, 96, 141, 18, 115, 37, 202, 154, 117, 206, 5, 114, 37, 25, 36, 156, 121, 85, 246, 57, 179, 3, 13, 13, 169, 1, 1],
+                &hex::decode("04a85fd80139f55d1ac21d53fca416a20d2e67fe7d0152f149250483163babbc334b8b04f96fae1e094200f6ba9f25d39fb8777e64845ff629e18c5115a32ab61c").unwrap()),
+            data: vec![115, 102, 97, 115, 101, 51, 188, 252, 156, 195, 86, 73, 230, 50, 74, 206, 251, 125, 50, 193, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 83, 194, 4, 141, 173, 79, 207, 171, 68, 195, 239, 61, 22, 232, 130, 181, 23, 141, 244, 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 57, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 65, 155, 196, 23, 176, 241, 106, 157, 159, 93, 33, 109, 139, 206, 183, 77, 162, 108, 242, 171, 31, 212, 249, 141, 180, 202, 134, 217, 239, 84, 242, 88, 6, 113, 242, 43, 136, 1, 215, 205, 182, 59, 242, 3, 109, 145, 213, 166, 32, 222, 8, 251, 143, 7, 215, 54, 128, 82, 237, 31, 99, 7, 176, 247, 39, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 206, 240, 187, 71, 161, 27, 116, 42, 77, 182, 117, 46, 166, 213, 85, 119, 220, 110, 30, 168, 136, 32, 164, 154, 246, 66, 154, 247, 225, 128, 99, 8, 8, 247, 31, 54, 5, 37, 167, 244, 190, 153, 46, 52, 84, 90, 252, 103, 74, 7, 166, 55, 88, 211, 236, 143, 47, 40, 93, 173, 87, 80, 202, 195, 0],
             deadline: 0,
             gas_limit: 100000,
             compensation: 49999999999999999,
