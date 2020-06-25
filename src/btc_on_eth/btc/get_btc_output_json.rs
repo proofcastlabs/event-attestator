@@ -88,7 +88,7 @@ impl EthTxInfo {
     pub fn new_with_any_sender(
         eth_tx: &EthTransaction,
         minting_param_struct: &MintingParamStruct,
-        any_sender_nonce: Option<u64>,
+        any_sender_nonce: u64,
         from: EthAddress,
         eth_private_key: EthPrivateKey,
     ) -> Result<EthTxInfo> {
@@ -101,7 +101,12 @@ impl EthTxInfo {
             true => "✘ Could not retrieve sender address".to_string(),
         };
 
-        let any_sender_tx = RelayTransaction::from_eth_transaction(eth_tx, from, eth_private_key)?;
+        let any_sender_tx = RelayTransaction::from_eth_transaction(
+            eth_tx,
+            from,
+            any_sender_nonce,
+            eth_private_key,
+        )?;
 
         Ok(EthTxInfo {
             eth_account_nonce: None,
@@ -116,7 +121,7 @@ impl EthTxInfo {
             ),
             signature_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             any_sender_tx: Some(any_sender_tx),
-            any_sender_nonce,
+            any_sender_nonce: Some(any_sender_nonce),
         })
     }
 }
@@ -147,7 +152,7 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
                 EthTxInfo::new_with_any_sender(
                     tx,
                     &minting_params[i],
-                    Some(any_sender_start_nonce + i as u64),
+                    any_sender_start_nonce + i as u64,
                     from,
                     eth_private_key.clone(),
                 )

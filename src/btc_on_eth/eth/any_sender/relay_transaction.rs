@@ -188,6 +188,7 @@ impl RelayTransaction {
     pub fn from_eth_transaction(
         eth_transaction: &EthTransaction,
         from: EthAddress,
+        any_sender_nonce: u64,
         eth_private_key: EthPrivateKey,
     ) -> Result<RelayTransaction> {
         let chain_id = eth_transaction.chain_id;
@@ -201,13 +202,20 @@ impl RelayTransaction {
         let mut value_bytes = vec![0; ETH_TX_VALUE_BYTES_LEN];
         eth_transaction.value.to_big_endian(&mut value_bytes);
 
-        let mut data = [
-            to.as_bytes(),
-            from.as_bytes(),
-            &value_bytes,
-            &eth_transaction.data,
-        ]
-        .concat();
+        let proxy_signature = eth_private_key
+            .sign_eth_prefixed_msg_bytes(
+                [to.as_bytes(), &value_bytes, &any_sender_nonce.to_be_bytes()].concat(),
+            )?
+            .to_vec();
+
+        let proxy_data = encode(&[
+            Token::Address(to),
+            Token::Uint(eth_transaction.value),
+            Token::Uint(any_sender_nonce.into()),
+            Token::Bytes(proxy_signature),
+        ]);
+
+        let mut data = [from.as_bytes(), &proxy_data].concat();
 
         let mut data_signature = eth_private_key.sign_message_bytes(data.clone())?.to_vec();
         data.append(&mut data_signature);
@@ -364,17 +372,22 @@ mod tests {
         let from = EthAddress::from_slice(
             &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap(),
         );
+        let any_sender_nonce = 0;
 
-        let relay_transaction =
-            RelayTransaction::from_eth_transaction(&eth_transaction, from, eth_private_key)
-                .expect("Error creating any.sender relay transaction from eth transaction!");
+        let relay_transaction = RelayTransaction::from_eth_transaction(
+            &eth_transaction,
+            from,
+            any_sender_nonce,
+            eth_private_key,
+        )
+        .expect("Error creating any.sender relay transaction from eth transaction!");
         let expected_relay_transaction = RelayTransaction {
             chain_id: 3,
             from: EthAddress::from_slice(
                 &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap()),
             signature: EthSignature::from_slice(
-                &hex::decode("c68da066026f2d93939372c17338f36e6ef7e8a90f74f1c6a51c10cb4487a15c3398ea96889c659697b401e81b5c290afd0973fe3a0e2715364e64dad33144c01b").unwrap()),
-            data: vec![83, 194, 4, 141, 173, 79, 207, 171, 68, 195, 239, 61, 22, 232, 130, 181, 23, 141, 244, 43, 115, 102, 97, 115, 101, 51, 188, 252, 156, 195, 86, 73, 230, 50, 74, 206, 251, 125, 50, 193, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 42, 105, 15, 41, 170, 27, 174, 10, 127, 232, 5, 76, 114, 37, 143, 167, 189, 253, 11, 134, 139, 87, 161, 173, 49, 106, 234, 78, 114, 159, 246, 230, 59, 17, 250, 20, 45, 223, 194, 202, 20, 180, 188, 25, 70, 100, 241, 76, 79, 46, 54, 159, 41, 157, 189, 5, 124, 22, 138, 143, 227, 54, 99, 64, 1],
+                &hex::decode("e8ab833f51e50d57a7834533cf71901b4f88cd6842119608e261eef17ab11dc15d1dec037b6a4d9f37204c4a0b3fa7956dfaefd12eceb5c7de343937770a95511c").unwrap()),
+            data: vec![115, 102, 97, 115, 101, 51, 188, 252, 156, 195, 86, 73, 230, 50, 74, 206, 251, 125, 50, 193, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 83, 194, 4, 141, 173, 79, 207, 171, 68, 195, 239, 61, 22, 232, 130, 181, 23, 141, 244, 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 65, 66, 80, 179, 91, 77, 17, 142, 159, 4, 225, 237, 194, 138, 239, 94, 205, 232, 75, 208, 104, 199, 40, 26, 108, 57, 221, 190, 231, 149, 201, 73, 92, 8, 166, 142, 144, 216, 94, 86, 55, 4, 152, 152, 64, 62, 168, 175, 107, 233, 119, 65, 200, 47, 101, 79, 76, 174, 110, 55, 145, 160, 184, 7, 12, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 158, 88, 239, 237, 151, 231, 207, 195, 94, 176, 227, 40, 107, 192, 73, 191, 116, 127, 107, 72, 12, 28, 139, 236, 63, 215, 164, 219, 159, 211, 208, 161, 118, 176, 195, 174, 119, 98, 107, 96, 141, 18, 115, 37, 202, 154, 117, 206, 5, 114, 37, 25, 36, 156, 121, 85, 246, 57, 179, 3, 13, 13, 169, 1, 1],
             deadline: 0,
             gas_limit: 100000,
             compensation: 49999999999999999,
