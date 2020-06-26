@@ -1,30 +1,27 @@
 use ethabi::Token;
 use ethereum_types::Address as EthAddress;
 use crate::{
+    types::{
+        Bytes,
+        Result,
+    },
     errors::AppError,
     traits::DatabaseInterface,
     chains::eth::eth_contracts::get_contract::instantiate_contract_from_abi,
     btc_on_eth::eth::{
-        eth_crypto::{
-            eth_private_key::EthPrivateKey,
-            eth_transaction::EthTransaction,
-        },
+        eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::{
             get_eth_chain_id_from_db,
             get_eth_gas_price_from_db,
             get_eth_private_key_from_db,
             get_eth_account_nonce_from_db,
             increment_eth_account_nonce_in_db,
-            get_eth_smart_contract_address_from_db, // TODO rename to get_erc777...etc
+            get_eth_smart_contract_address_from_db,
         },
-    },
-    types::{
-        Bytes,
-        Result,
     },
 };
 
-const ERC777_PNETWORK_CHANGE_GAS_LIMIT: usize = 30_000; // TODO finesse!
+const ERC777_PNETWORK_CHANGE_GAS_LIMIT: usize = 30_000;
 const CHANGE_PNETWORK_FXN_NAME: &str = "changePNetwork";
 pub const CHANGE_PNETWORK_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"newPNetwork\",\"type\":\"address\"}],\"name\":\"changePNetwork\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0xfd4add66\"}]";
 

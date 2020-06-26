@@ -1,8 +1,5 @@
+use crate::types::Result;
 use ethabi::Contract as EthContract;
-use crate::{
-    types::Result,
-    errors::AppError,
-};
 
 pub fn instantiate_contract_from_abi(abi: &str) -> Result<EthContract> {
     Ok(EthContract::load(abi.as_bytes())?)
