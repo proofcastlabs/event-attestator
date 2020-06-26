@@ -5,10 +5,7 @@ use crate::{
 };
 
 pub fn instantiate_contract_from_abi(abi: &str) -> Result<EthContract> {
-    match EthContract::load(abi.as_bytes()) {
-        Ok(contract) => Ok(contract),
-        Err(e) => Err(AppError::Custom(format!("✘ Error instantiating contract from ABI fragment: {}", e))),
-    }
+    Ok(EthContract::load(abi.as_bytes())?)
 }
 
 #[cfg(test)]
