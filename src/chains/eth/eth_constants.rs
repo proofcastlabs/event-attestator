@@ -4,7 +4,8 @@ pub use serde_json::{
     Value as JsonValue,
 };
 use crate::{
-    types::Byte,
+    types::{Byte, Result},
+    errors::AppError,
     utils::get_prefixed_db_key,
     btc_on_eth::eth::nibble_utils::Nibbles,
 };
@@ -183,4 +184,38 @@ lazy_static! {
     pub static ref ANY_SENDER_NONCE_KEY: [u8; 32] = get_prefixed_db_key(
         "any-sender-nonce"
     );
+}
+
+pub const PROXY_FN_NAME: &str = "mintByProxy";
+
+pub fn get_mint_by_proxy_contract() -> Result<ethabi::Contract> {
+    let contract_json = json!([{
+        "type": "function",
+        "name": PROXY_FN_NAME,
+        "inputs": [
+          {
+            "name": "_recipient",
+            "type": "address"
+          },
+          {
+            "name": "_amount",
+            "type": "uint256"
+          },
+          {
+            "name": "_nonce",
+            "type": "uint"
+          },
+          {
+            "name": "_signature",
+            "type": "bytes"
+          }
+        ],
+        "outputs": [{
+              "name": "",
+              "type": "bool"
+        }],
+        "constant": false
+    }]);
+    let contract_bytes = contract_json.to_string().into_bytes();
+    ethabi::Contract::load(&contract_bytes[..]).map_err(AppError::EthAbiError)
 }
