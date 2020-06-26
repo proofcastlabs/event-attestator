@@ -9,9 +9,12 @@ use crate::{
             eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
         },
     },
-    chains::eth::eth_constants::{
-        get_mint_by_proxy_contract, ANY_SENDER_MAX_COMPENSATION_WEI, ANY_SENDER_MAX_DATA_LEN,
-        ANY_SENDER_MAX_GAS_LIMIT, ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID, PROXY_FN_NAME,
+    chains::eth::{
+        eth_contracts::get_contract::instantiate_contract_from_abi,
+        eth_constants::{
+            ANY_SENDER_MAX_COMPENSATION_WEI, ANY_SENDER_MAX_DATA_LEN,
+            ANY_SENDER_MAX_GAS_LIMIT, ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID,
+        },
     },
     errors::AppError,
     types::{Byte, Bytes, Result},
@@ -19,6 +22,9 @@ use crate::{
 use ethabi::{encode, Token};
 use ethereum_types::{Address as EthAddress, Signature as EthSignature, U256};
 use rlp::RlpStream;
+
+pub const PROXY_FN_NAME: &str = "mintByProxy";
+pub const PROXY_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"_recipient\",\"type\":\"address\"},{\"name\":\"_amount\",\"type\":\"uint256\"},{\"name\":\"_nonce\",\"type\":\"uint256\"},{\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"mintByProxy\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0x7ad6ae47\"}]";
 
 /// An any.sender relay transaction. It is very similar
 /// to a normal transaction except for a few fields.
@@ -215,7 +221,7 @@ impl RelayTransaction {
             Token::Bytes(proxy_signature),
         ];
 
-        let data = get_mint_by_proxy_contract()?
+        let data = instantiate_contract_from_abi(PROXY_ABI)?
             .function(PROXY_FN_NAME)?
             .encode_input(&proxy_tokens)?;
 

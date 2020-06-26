@@ -27,9 +27,7 @@ pub static EXTENSION_NODE_STRING: &str = "extension";
 pub const HASHED_NULL_NODE: EthHash = EthHash(HASHED_NULL_NODE_BYTES);
 pub static ETH_SMART_CONTRACT_MINTING_FXN_SIG: &str = "40c10f19";
 pub const EMPTY_NIBBLES: Nibbles = Nibbles { data: Vec::new(), offset: 0 };
-pub static REDEEM_EVENT_TOPIC_HEX: &str =
-    "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65";
-
+pub static REDEEM_EVENT_TOPIC_HEX: &str = "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65";
 pub const ETH_MESSAGE_PREFIX: &[u8; 26] = b"\x19Ethereum Signed Message:\n";
 pub const PREFIXED_MESSAGE_HASH_LEN: &[u8; 2] = b"32";
 pub const ETH_TX_VALUE_BYTES_LEN: usize = 32;
@@ -184,38 +182,4 @@ lazy_static! {
     pub static ref ANY_SENDER_NONCE_KEY: [u8; 32] = get_prefixed_db_key(
         "any-sender-nonce"
     );
-}
-
-pub const PROXY_FN_NAME: &str = "mintByProxy";
-
-pub fn get_mint_by_proxy_contract() -> Result<ethabi::Contract> {
-    let contract_json = json!([{
-        "type": "function",
-        "name": PROXY_FN_NAME,
-        "inputs": [
-          {
-            "name": "_recipient",
-            "type": "address"
-          },
-          {
-            "name": "_amount",
-            "type": "uint256"
-          },
-          {
-            "name": "_nonce",
-            "type": "uint"
-          },
-          {
-            "name": "_signature",
-            "type": "bytes"
-          }
-        ],
-        "outputs": [{
-              "name": "",
-              "type": "bool"
-        }],
-        "constant": false
-    }]);
-    let contract_bytes = contract_json.to_string().into_bytes();
-    ethabi::Contract::load(&contract_bytes[..]).map_err(AppError::EthAbiError)
 }
