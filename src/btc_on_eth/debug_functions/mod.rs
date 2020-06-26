@@ -1,4 +1,5 @@
 use serde_json::json;
+use ethereum_types::Address as EthAddress;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
@@ -41,35 +42,21 @@ use crate::{
             filter_utxos::maybe_filter_utxos_in_state,
             validate_btc_merkle_root::validate_btc_merkle_root,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
-            parse_submission_material::parse_btc_block_and_id_and_put_in_state,
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
             filter_minting_params::maybe_filter_minting_params_in_state,
             validate_btc_block_header::validate_btc_block_header_in_state,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
+            parse_submission_material::parse_btc_block_and_id_and_put_in_state,
+            get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
+            validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
+            filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
+            extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
+            extract_utxos_from_op_return_txs::maybe_extract_utxos_from_op_return_txs_and_put_in_state,
+            parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
+            parse_minting_params_from_op_return_deposits::parse_minting_params_from_op_return_deposits_and_add_to_state,
             btc_database_utils::{
                 end_btc_db_transaction,
                 start_btc_db_transaction,
-            },
-            get_deposit_info_hash_map::{
-                get_deposit_info_hash_map_and_put_in_state,
-            },
-            validate_btc_proof_of_work::{
-                validate_proof_of_work_of_btc_block_in_state,
-            },
-            filter_op_return_deposit_txs::{
-                filter_op_return_deposit_txs_and_add_to_state,
-            },
-            extract_utxos_from_p2sh_txs::{
-                maybe_extract_utxos_from_p2sh_txs_and_put_in_state
-            },
-            extract_utxos_from_op_return_txs::{
-                maybe_extract_utxos_from_op_return_txs_and_put_in_state,
-            },
-            parse_minting_params_from_p2sh_deposits::{
-                parse_minting_params_from_p2sh_deposits_and_add_to_state,
-            },
-            parse_minting_params_from_op_return_deposits::{
-                parse_minting_params_from_op_return_deposits_and_add_to_state,
             },
         },
         eth::{
@@ -80,6 +67,7 @@ use crate::{
             increment_btc_nonce::maybe_increment_btc_nonce_in_db,
             filter_receipts::filter_irrelevant_receipts_from_state,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
+            change_erc777_pnetwork_address::get_signed_change_erc777_pnetwork_tx,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
             parse_eth_block_and_receipts::parse_eth_block_and_receipts_and_put_in_state,
             eth_database_utils::{
@@ -226,4 +214,14 @@ pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| get_all_utxos_as_json_string(db))
+}
+
+pub fn debug_get_signed_change_erc777_pnetwork_address_tx<D>(
+    db: D,
+    new_address: &str
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    get_signed_change_erc777_pnetwork_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?))
+        .map(|signed_tx_hex| format!("{{signed_tx:{}}}", signed_tx_hex))
 }

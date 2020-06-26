@@ -21,6 +21,7 @@ pub use debug_functions::{
     debug_reprocess_btc_block,
     debug_reprocess_eth_block,
     debug_set_key_in_db_to_value,
+    debug_get_signed_change_erc777_pnetwork_address_tx,
 };
 pub use btc::submit_btc_block::submit_btc_block_to_enclave;
 pub use eth::submit_eth_block::submit_eth_block_to_enclave;
