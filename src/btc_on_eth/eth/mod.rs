@@ -2,6 +2,7 @@ pub mod initialize_eth;
 pub mod submit_eth_block;
 pub mod eth_message_signer;
 
+
 pub(crate) mod any_sender;
 pub(crate) mod trie;
 pub(crate) mod rlp_codec;
@@ -37,5 +38,6 @@ pub(crate) mod update_eth_tail_block_hash;
 pub(crate) mod extract_utxos_from_btc_txs;
 pub(crate) mod update_eth_canon_block_hash;
 pub(crate) mod parse_eth_block_and_receipts;
+pub(crate) mod change_erc777_pnetwork_address;
 pub(crate) mod remove_receipts_from_canon_block;
 pub(crate) mod add_block_and_receipts_to_database;

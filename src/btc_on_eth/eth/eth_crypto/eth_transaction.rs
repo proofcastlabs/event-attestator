@@ -59,15 +59,7 @@ impl EthTransaction {
         gas_limit: usize,
         gas_price: u64,
     ) -> EthTransaction {
-        Self::new_eth_tx(
-            to.as_bytes().to_vec(),
-            data,
-            nonce,
-            value,
-            chain_id,
-            gas_limit,
-            gas_price
-        )
+        Self::new_eth_tx(to.as_bytes().to_vec(), data, nonce, value, chain_id, gas_limit, gas_price)
     }
 
     pub fn new_contract(
@@ -78,15 +70,7 @@ impl EthTransaction {
         gas_limit: usize,
         gas_price: u64,
     ) -> EthTransaction {
-        Self::new_eth_tx(
-            vec![],
-            data,
-            nonce,
-            value,
-            chain_id,
-            gas_limit,
-            gas_price
-        )
+        Self::new_eth_tx(vec![], data, nonce, value, chain_id, gas_limit, gas_price)
     }
 
     fn new_eth_tx(

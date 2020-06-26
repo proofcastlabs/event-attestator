@@ -168,7 +168,7 @@ mod tests {
         let message = "Arbitrary message";
         if let Err(e) = key.sign_eth_prefixed_msg_bytes(message.into()) {
             panic!("Error signing eth prefixed message bytes: {}", e);
-        }        
+        }
     }
 
     #[test]
