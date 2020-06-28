@@ -4,13 +4,13 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eos::btc::btc_state::BtcState,
     chains::btc::deposit_address_info::{
-        DepositInfoList,
+        DepositAddressInfo,
         DepositInfoHashMap,
     },
 };
 
 pub fn create_hash_map_from_deposit_info_list(
-    deposit_info_list: &DepositInfoList
+    deposit_info_list: &[DepositAddressInfo]
 ) -> Result<DepositInfoHashMap> {
     let mut hash_map = HashMap::new();
     deposit_info_list
@@ -46,7 +46,7 @@ mod tests {
         let address_info_list = get_sample_btc_block_and_id()
             .unwrap()
             .deposit_address_list
-            .clone();
+            ;
         let result = create_hash_map_from_deposit_info_list(&address_info_list)
             .unwrap();
         assert!(!result.is_empty());

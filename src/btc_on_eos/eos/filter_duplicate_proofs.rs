@@ -3,12 +3,15 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eos::eos::{
         eos_state::EosState,
-        eos_types::ActionProofs,
+        eos_types::{
+            ActionProof,
+            ActionProofs,
+        },
     },
 };
 
 fn filter_duplicate_proofs(
-    action_proofs: &ActionProofs
+    action_proofs: &[ActionProof]
 ) -> Result<ActionProofs> {
     let mut filtered: ActionProofs = Vec::new();
     action_proofs

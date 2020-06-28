@@ -6,7 +6,7 @@ use eos_primitives::{
 use crate::{
     traits::DatabaseInterface,
     types::{
-        Bytes,
+        Byte,
         Result,
     },
     btc_on_eos::{
@@ -15,7 +15,6 @@ use crate::{
             eos_state::EosState,
             eos_types::{
                 ActionProof,
-                ActionProofs,
                 RedeemParams,
             },
         },
@@ -24,25 +23,25 @@ use crate::{
 
 #[allow(dead_code)] // TODO Use when checking for correct sybmol!
 fn get_eos_symbol_from_action_data(
-    action_data: &Bytes
+    action_data: &[Byte]
 ) -> Result<EosSymbol> {
     Ok(EosSymbol::new(convert_bytes_to_u64(&action_data[16..24].to_vec())?))
 }
 
 fn get_eos_amount_from_action_data(
-    action_data: &Bytes
+    action_data: &[Byte]
 ) -> Result<u64> {
     convert_bytes_to_u64(&action_data[8..16].to_vec())
 }
 
 fn get_redeem_action_sender_from_action_data(
-    action_data: &Bytes
+    action_data: &[Byte]
 ) -> Result<EosAccountName> {
     Ok(EosAccountName::new(convert_bytes_to_u64(&action_data[..8].to_vec())?))
 }
 
 fn get_redeem_address_from_action_data(
-    action_data: &Bytes,
+    action_data: &[Byte],
 ) -> Result<String> {
     Ok(from_utf8(&action_data[25..])?.to_string())
 }
@@ -55,8 +54,7 @@ impl RedeemParams {
             RedeemParams {
                 global_sequence: action_proof
                     .action_receipt
-                    .global_sequence
-                    .clone(),
+                    .global_sequence,
                 amount: get_eos_amount_from_action_data(
                     &action_proof.action.data,
                 )?,
@@ -73,7 +71,7 @@ impl RedeemParams {
 }
 
 pub fn parse_redeem_params_from_action_proofs(
-    action_proofs: &ActionProofs
+    action_proofs: &[ActionProof]
 ) -> Result<Vec<RedeemParams>> {
     action_proofs
         .iter()

@@ -4,6 +4,7 @@ use bitcoin_hashes::{
 };
 use crate::{
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -32,7 +33,7 @@ pub fn serialize_btc_utxo_and_value(
 }
 
 pub fn deserialize_utxo_and_value(
-    bytes: &Bytes
+    bytes: &[Byte]
 ) -> Result<BtcUtxoAndValue> {
     Ok(serde_json::from_slice(bytes)?)
 }

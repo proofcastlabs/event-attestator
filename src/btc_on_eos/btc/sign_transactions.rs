@@ -9,7 +9,7 @@ use crate::{
     btc_on_eos::{
         btc::{
             btc_state::BtcState,
-            btc_types::MintingParams,
+            btc_types::MintingParamStruct,
             btc_database_utils::get_btc_canon_block_from_db,
         },
         eos::{
@@ -35,11 +35,11 @@ use crate::{
 fn get_signed_tx(
     ref_block_num: u16,
     ref_block_prefix: u32,
-    to: &String,
-    amount: &String,
-    chain_id: &String,
+    to: &str,
+    amount: &str,
+    chain_id: &str,
     private_key: &EosPrivateKey,
-    account_name: &String,
+    account_name: &str,
 ) -> Result<EosSignedTransaction> {
     info!("✔ Signing tx for {} to {}...", &amount, &to);
     get_unsigned_eos_minting_tx(
@@ -67,10 +67,10 @@ fn get_signed_tx(
 pub fn get_signed_txs(
     ref_block_num: u16,
     ref_block_prefix: u32,
-    chain_id: &String,
+    chain_id: &str,
     private_key: &EosPrivateKey,
-    account_name: &String,
-    minting_params: &MintingParams,
+    account_name: &str,
+    minting_params: &[MintingParamStruct],
 ) -> Result<EosSignedTransactions> {
     info!("✔ Signing {} txs...", minting_params.len());
     minting_params

@@ -51,7 +51,7 @@ fn tx_has_output_with_target_script(
 
 pub fn filter_txs_for_op_return_deposits(
     btc_private_key: &BtcPrivateKey,
-    transactions: &BtcTransactions,
+    transactions: &[BtcTransaction],
 ) -> Result<BtcTransactions> {
     info!(
         "✔ Filtering `p2pkh` deposits that are NOT {}",

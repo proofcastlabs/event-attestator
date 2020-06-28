@@ -32,9 +32,9 @@ fn get_eth_contract_address<D>(db: &D) -> Result<EthAddress>
     where D: DatabaseInterface
 {
     get_public_eth_address_from_db(db)
-        .and_then(|eth_address| {
+        .map(|eth_address| {
             info!("✔ Calculating pBTC contract address...");
-            Ok(calculate_contract_address(eth_address, INITIAL_NONCE))
+            calculate_contract_address(eth_address, INITIAL_NONCE)
         })
 }
 

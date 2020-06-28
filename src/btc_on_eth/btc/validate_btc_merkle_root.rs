@@ -27,8 +27,7 @@ pub fn validate_btc_merkle_root<D>(
 {
     if CORE_IS_VALIDATING {
         info!("✔ Validating merkle-root in BTC block...");
-        validate_merkle_root(&state.get_btc_block_and_id()?.block)
-            .and_then(|_| Ok(state))
+        validate_merkle_root(&state.get_btc_block_and_id()?.block).map(|_| state)
     } else {
         info!("✔ Skipping BTC merkle-root validation!");
         Ok(state)

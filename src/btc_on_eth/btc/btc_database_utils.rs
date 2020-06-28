@@ -7,7 +7,7 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{
-        Bytes,
+        Byte,
         Result,
         DataSensitivity,
     },
@@ -246,7 +246,7 @@ pub fn btc_block_exists_in_db<D>(db: &D, btc_block_id: &sha256d::Hash) -> bool
 
 pub fn key_exists_in_db<D>(
     db: &D,
-    key: &Bytes,
+    key: &[Byte],
     sensitivity: DataSensitivity
 ) -> bool
     where D: DatabaseInterface
@@ -392,7 +392,7 @@ pub fn put_btc_linker_hash_in_db<D>(db: &D, hash: &sha256d::Hash) -> Result<()>
 
 pub fn put_btc_hash_in_db<D>(
     db: &D,
-    key: &Bytes,
+    key: &[Byte],
     hash: &sha256d::Hash,
 ) -> Result<()>
     where D: DatabaseInterface
@@ -400,7 +400,7 @@ pub fn put_btc_hash_in_db<D>(
     db.put(key.to_vec(), hash.to_vec(), None)
 }
 
-pub fn get_btc_hash_from_db<D>(db: &D, key: &Bytes) -> Result<sha256d::Hash>
+pub fn get_btc_hash_from_db<D>(db: &D, key: &[Byte]) -> Result<sha256d::Hash>
     where D: DatabaseInterface
 {
     db.get(key.to_vec(), None)
@@ -767,10 +767,10 @@ mod tests {
         let db = get_test_database();
         let test_block = get_sample_btc_block_in_db_format()
             .unwrap();
-        if let Some(_) = maybe_get_parent_btc_block_and_id(
+        if maybe_get_parent_btc_block_and_id(
             &db,
             &test_block.id
-        ) {
+        ).is_some() {
             panic!("Should have failed to get parent block!");
         };
     }
@@ -843,7 +843,7 @@ mod tests {
         let db = get_test_database();
         let block = get_sample_btc_block_in_db_format()
             .unwrap();
-        if let Err(e) = put_btc_latest_block_in_db(&db, &block.clone()) {
+        if let Err(e) = put_btc_latest_block_in_db(&db, &block) {
             panic!("Error putting latest block in db: {}", e);
         }
         if let Err(e) = put_btc_latest_block_hash_in_db(&db, &block.id) {
@@ -916,7 +916,7 @@ mod tests {
         let block = get_sample_btc_block_in_db_format()
             .unwrap();
         let block_hash = block.id;
-        if let Some(_) = maybe_get_btc_block_from_db(&db, &block_hash) {
+        if maybe_get_btc_block_from_db(&db, &block_hash).is_some() {
             panic!("Block should not be in database!");
         }
     }

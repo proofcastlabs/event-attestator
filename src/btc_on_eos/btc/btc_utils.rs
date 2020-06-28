@@ -1,5 +1,6 @@
 use crate::{
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -12,7 +13,7 @@ use crate::{
         convert_u64_to_bytes,
     },
     chains::btc::{
-        utxo_manager::utxo_types::BtcUtxosAndValues,
+        utxo_manager::utxo_types::BtcUtxoAndValue,
         btc_constants::{
             DEFAULT_BTC_SEQUENCE,
             PTOKEN_P2SH_SCRIPT_BYTES,
@@ -21,6 +22,7 @@ use crate::{
     btc_on_eos::{
         btc::btc_types::{
             MintingParams,
+            MintingParamStruct,
             BtcBlockInDbFormat,
         },
     },
@@ -108,7 +110,7 @@ pub fn get_p2sh_script_sig_from_redeem_script(
 }
 
 pub fn serialize_minting_params(
-    minting_params: &MintingParams
+    minting_params: &[MintingParamStruct]
 ) -> Result<Bytes> {
     Ok(serde_json::to_vec(minting_params)?)
 }
@@ -146,7 +148,7 @@ pub fn convert_btc_network_to_bytes(network: BtcNetwork) -> Result<Bytes> {
     }
 }
 
-pub fn convert_bytes_to_btc_network(bytes: &Bytes) -> Result<BtcNetwork> {
+pub fn convert_bytes_to_btc_network(bytes: &[Byte]) -> Result<BtcNetwork> {
     match convert_bytes_to_u64(bytes)? {
         1 => Ok(BtcNetwork::Testnet),
         2 => Ok(BtcNetwork::Regtest),
@@ -177,7 +179,7 @@ pub fn serialize_btc_block_in_db_format(
 }
 
 pub fn deserialize_btc_block_in_db_format(
-    serialized_block_in_db_format: &Bytes
+    serialized_block_in_db_format: &[Byte]
 ) -> Result<BtcBlockInDbFormat> {
     let serialized_struct: SerializedBlockInDbFormat = serde_json::from_slice(
         &serialized_block_in_db_format
@@ -194,7 +196,7 @@ pub fn deserialize_btc_block_in_db_format(
 }
 
 pub fn get_total_value_of_utxos_and_values(
-    utxos_and_values: &BtcUtxosAndValues
+    utxos_and_values: &[BtcUtxoAndValue]
 ) -> u64 {
    utxos_and_values
         .iter()
@@ -244,7 +246,7 @@ pub fn calculate_btc_tx_size(num_inputs: usize, num_outputs: usize) -> u64 {
 }
 
 pub fn convert_btc_address_to_bytes(
-    btc_address: &String
+    btc_address: &str
 ) -> Result<Bytes> {
     Ok(from_base58(btc_address)?)
 }

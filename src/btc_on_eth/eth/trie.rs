@@ -461,16 +461,16 @@ impl Trie {
                     current_leaf_node.get_key(),
                     value
                 )
-                    .and_then(|new_leaf| {
+                    .map(|new_leaf| {
                         trace!("✔ No key remaining ∴ creating new leaf node");
                         new_stack.push(new_leaf);
-                        Ok((
+                        (
                             self,
                             target_key,
                             found_stack,
                             new_stack,
                             Vec::new()
-                        ))
+                        )
                     }),
             _ => get_common_prefix_nibbles(
                     remaining_key,
@@ -628,16 +628,13 @@ impl Trie {
                 new_stack.push(updated_branch);
                 new_stack.push(new_leaf);
                 Ok(new_stack)
-            })
-            .and_then(|new_stack|
-                Ok((
+            }).map(|new_stack| (
                     self,
                     target_key,
                     found_stack,
                     new_stack,
                     Vec::new()
                 ))
-            )
     }
 
     fn update_stale_nodes(
@@ -916,16 +913,16 @@ impl Trie {
     ) -> Result<(Self, Nibbles, NodeStack, Nibbles)> {
         trace!("✔ Leaf node found, continuing...");
         get_common_prefix_nibbles(key.clone(), leaf_node.get_key())
-            .and_then(|(_, remaining_key, _)| {
+            .map(|(_, remaining_key, _)| {
                 found_stack.push(leaf_node);
                 match remaining_key.len() {
                     0 => {
                         trace!("✔ Wohoo! Leaf node matches fully!");
-                        Ok((self, target_key, found_stack, EMPTY_NIBBLES))
+                        (self, target_key, found_stack, EMPTY_NIBBLES)
                     },
                     _ => {
                         trace!("✔ Leaf node has some | no match");
-                        Ok((self, target_key, found_stack, key))
+                        (self, target_key, found_stack, key)
                     }
                 }
             })
@@ -1109,7 +1106,7 @@ impl Trie {
 
 }
 
-fn get_key_length_accounted_for_in_stack(node_stack: &NodeStack) -> usize {
+fn get_key_length_accounted_for_in_stack(node_stack: &[Node]) -> usize {
     node_stack
         .iter()
         .map(|node| node.get_key_length())
@@ -1223,7 +1220,7 @@ mod tests {
         let node_value = vec![0xde, 0xca, 0xff];
         let trie = Trie::get_new_trie()
             .unwrap();
-        let node = Node::new_leaf(node_key.clone(), node_value.clone())
+        let node = Node::new_leaf(node_key, node_value)
             .unwrap();
         let expected_result = node.get_rlp_encoding()
             .unwrap();
@@ -1231,7 +1228,7 @@ mod tests {
             .get_hash()
             .unwrap();
         let updated_trie = trie
-            .put_node_in_trie_hash_map(node.clone())
+            .put_node_in_trie_hash_map(node)
             .unwrap();
         let result = get_thing_from_trie_hash_map(
             &updated_trie.trie_hash_map,
@@ -1247,7 +1244,7 @@ mod tests {
         let node_value = vec![0xde, 0xca, 0xff];
         let trie = Trie::get_new_trie()
             .unwrap();
-        let node = Node::new_leaf(node_key.clone(), node_value.clone())
+        let node = Node::new_leaf(node_key, node_value)
             .unwrap();
         let node_hash = node
             .get_hash()
@@ -1289,7 +1286,7 @@ mod tests {
         let expected_root_hex = convert_h256_to_prefixed_hex(
             block_and_receipts.block.receipts_root
         ).unwrap();
-        let receipts = block_and_receipts.receipts.clone();
+        let receipts = block_and_receipts.receipts;
         let trie = Trie::get_new_trie().unwrap();
         let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(
             &receipts
@@ -1354,7 +1351,7 @@ mod tests {
         let start_index = 0;
         let receipts = block_and_receipts
             .receipts
-            .clone();
+            ;
         let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(
             &receipts
         ).unwrap();

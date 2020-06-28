@@ -11,7 +11,6 @@ use crate::{
         utils::convert_hex_to_checksum256,
         eos::eos_types::{
             AuthSequenceJson,
-            AuthSequenceJsons,
             EosActionReceiptJson,
         },
     },
@@ -29,7 +28,7 @@ fn parse_auth_sequence_json(
 }
 
 fn parse_auth_sequence_jsons(
-    auth_sequence_jsons: &AuthSequenceJsons
+    auth_sequence_jsons: &[AuthSequenceJson]
 ) -> Result<AuthSequences> {
     auth_sequence_jsons
         .iter()

@@ -15,8 +15,7 @@ pub fn maybe_save_btc_utxos_to_db<D>(state: EthState<D>) -> Result<EthState<D>>
             Ok(state)
         }
         Some(utxos) => {
-            save_utxos_to_db(&state.db, &utxos)
-                .and_then(|_| Ok(state))
+            save_utxos_to_db(&state.db, &utxos).map(|_| state)
         }
     }
 }

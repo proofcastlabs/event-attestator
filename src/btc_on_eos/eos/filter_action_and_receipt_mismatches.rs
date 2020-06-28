@@ -6,13 +6,16 @@ use crate::{
         utils::convert_bytes_to_checksum256,
         eos::{
             eos_state::EosState,
-            eos_types::ActionProofs,
+            eos_types::{
+                ActionProof,
+                ActionProofs,
+            },
         },
     },
 };
 
 fn filter_out_proofs_with_action_digests_not_in_action_receipts(
-    action_proofs: &ActionProofs
+    action_proofs: &[ActionProof]
 ) -> Result<ActionProofs> {
     let filtered = action_proofs
         .iter()

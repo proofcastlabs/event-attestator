@@ -26,9 +26,9 @@ pub fn maybe_add_btc_block_to_db<D>(
             info!("✔ BTC block not in db!");
             info!("✔ Adding BTC block to db: {:?}", block);
             put_btc_block_in_db(&state.db, block)
-                .and_then(|_| {
+                .map(|_| {
                     info!("✔ BTC block added to database!");
-                    Ok(state)
+                    state
                 })
         }
     }

@@ -7,7 +7,7 @@ use crate::{
     traits::DatabaseInterface,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     types::{
-        Bytes,
+        Byte,
         Result,
         DataSensitivity,
     },
@@ -269,15 +269,16 @@ pub fn get_special_eth_hash_from_db<D>(
     get_eth_hash_from_db(db, &key.to_vec())
 }
 
-pub fn get_eth_hash_from_db<D>(db: &D, key: &Bytes) -> Result<EthHash>
+pub fn get_eth_hash_from_db<D>(db: &D, key: &[Byte]) -> Result<EthHash>
     where D: DatabaseInterface
 {
     trace!(
         "✔ Getting ETH hash from db under key: {}",
         hex::encode(&key)
     );
+
     db.get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
-        .and_then(|bytes| Ok(EthHash::from_slice(&bytes)))
+        .map(|bytes| EthHash::from_slice(&bytes))
 }
 
 pub fn get_special_eth_block_from_db<D>(
@@ -292,7 +293,7 @@ pub fn get_special_eth_block_from_db<D>(
 
 pub fn put_eth_hash_in_db<D>(
     db: &D,
-    key: &Bytes,
+    key: &[Byte],
     eth_hash: &EthHash
 ) -> Result<()>
     where D: DatabaseInterface
@@ -347,7 +348,7 @@ pub fn maybe_get_nth_ancestor_eth_block_and_receipts<D>(
 ) -> Option<EthBlockAndReceipts>
     where D: DatabaseInterface
 {
-    info!("✔ Getting {}th ancester ETH block from db...", n);
+    info!("✔ Getting {}th ancestor ETH block from db...", n);
     match maybe_get_eth_block_and_receipts_from_db(db, block_hash) {
         None => None,
         Some(block_and_receipts) => match n {
@@ -397,7 +398,7 @@ pub fn get_eth_block_from_db<D>(
 
 pub fn key_exists_in_db<D>(
     db: &D,
-    key: &Bytes,
+    key: &[Byte],
     sensitivity: DataSensitivity
 ) -> bool
     where D: DatabaseInterface
@@ -525,7 +526,7 @@ pub fn get_erc777_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
 {
     trace!("✔ Getting ETH smart-contract address from db...");
     db.get(ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
-        .and_then(|address_bytes| Ok(EthAddress::from_slice(&address_bytes[..])))
+        .map(|address_bytes| EthAddress::from_slice(&address_bytes[..]))
 }
 
 pub fn get_erc777_proxy_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
@@ -581,7 +582,7 @@ pub fn put_public_eth_address_in_db<D>(
 
 pub fn put_eth_address_in_db<D>(
     db: &D,
-    key: &Bytes,
+    key: &[Byte],
     eth_address: &EthAddress,
 ) -> Result<()>
     where D: DatabaseInterface
@@ -884,10 +885,10 @@ mod tests {
             .block
             .hash
             .clone();
-        if let Some(_) = maybe_get_eth_block_and_receipts_from_db(
+        if maybe_get_eth_block_and_receipts_from_db(
             &db,
             &block_hash
-        ) {
+        ).is_some() {
             panic!("Maybe getting none existing block should be 'None'");
         };
     }
@@ -920,10 +921,10 @@ mod tests {
         if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
             panic!("Error putting ETH block in db: {}", e);
         };
-        if let Some(_) = maybe_get_parent_eth_block_and_receipts(
+        if maybe_get_parent_eth_block_and_receipts(
             &db,
             &block_hash
-        ) {
+        ).is_some() {
             panic!("Block should have no parent in the DB!");
         };
     }
@@ -966,11 +967,11 @@ mod tests {
         if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
             panic!("Error putting ETH block in db: {}", e);
         };
-        if let Some(_) = maybe_get_nth_ancestor_eth_block_and_receipts(
+        if maybe_get_nth_ancestor_eth_block_and_receipts(
             &db,
             &block_hash,
             ancestor_number,
-        ) {
+        ).is_some() {
             panic!("Block should have no parent in the DB!");
         };
     }
@@ -1007,11 +1008,11 @@ mod tests {
                 }
              )
             .for_each(drop);
-        if let Some(_) = maybe_get_nth_ancestor_eth_block_and_receipts(
+        if maybe_get_nth_ancestor_eth_block_and_receipts(
             &db,
             &block_hash,
             blocks.len() as u64,
-        ) {
+        ).is_some() {
             panic!("Shouldn't have ancestor #{} in db!", blocks.len());
         };
     }

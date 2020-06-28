@@ -8,9 +8,9 @@ use crate::{
         eth_types::{
             EthLog,
             EthHash,
-            EthLogs,
-            EthTopics,
+            EthTopic,
             EthAddress,
+            EthReceipt,
             EthReceipts,
             EthBlockAndReceipts
         },
@@ -24,7 +24,7 @@ pub fn log_contains_topic(log: &EthLog, topic: &EthHash) -> bool {
         .any(|log_topic| log_topic == topic)
 }
 
-pub fn logs_contain_topic(logs: &EthLogs, topic: &EthHash) -> bool {
+pub fn logs_contain_topic(logs: &[EthLog], topic: &EthHash) -> bool {
     logs
         .iter()
         .any(|log| log_contains_topic(log, topic))
@@ -34,14 +34,14 @@ pub fn log_contains_address(log: &EthLog, address: &EthAddress) -> bool {
     &log.address == address
 }
 
-pub fn logs_contain_address(logs: &EthLogs, address: &EthAddress) -> bool {
+pub fn logs_contain_address(logs: &[EthLog], address: &EthAddress) -> bool {
     logs
         .iter()
         .any(|log| log_contains_address(log, address))
 }
 
 fn filter_receipts_for_address_and_topic(
-    receipts: &EthReceipts,
+    receipts: &[EthReceipt],
     address: &EthAddress,
     topic: &EthHash,
 ) -> EthReceipts {
@@ -54,9 +54,9 @@ fn filter_receipts_for_address_and_topic(
 }
 
 fn filter_receipts_for_address_and_topics(
-    receipts: &EthReceipts,
+    receipts: &[EthReceipt],
     address: &EthAddress,
-    eth_topics: &EthTopics,
+    eth_topics: &[EthTopic],
 ) -> EthReceipts {
     eth_topics
         .iter()
@@ -74,7 +74,7 @@ fn filter_receipts_for_address_and_topics(
 fn filter_eth_block_and_receipts(
     eth_block_and_receipts: &EthBlockAndReceipts,
     address: &EthAddress,
-    eth_topics: &EthTopics,
+    eth_topics: &[EthTopic],
 ) -> Result<EthBlockAndReceipts> {
     Ok(
         EthBlockAndReceipts {

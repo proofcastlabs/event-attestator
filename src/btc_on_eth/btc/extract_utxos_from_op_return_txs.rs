@@ -14,14 +14,14 @@ use crate::{
     },
     btc_on_eth::btc::{
         btc_state::BtcState,
-        btc_types::BtcTransactions,
+        btc_types::BtcTransaction,
         btc_database_utils::get_btc_address_from_db,
     },
 };
 
 pub fn extract_utxos_from_txs(
     target_script: &BtcScript,
-    txs: &BtcTransactions
+    txs: &[BtcTransaction]
 ) -> BtcUtxosAndValues {
     info!("✔ Extracting UTXOs from {} `op_return` txs...", txs.len());
     txs

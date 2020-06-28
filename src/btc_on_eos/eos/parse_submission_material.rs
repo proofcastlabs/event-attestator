@@ -21,6 +21,7 @@ use crate::{
                 ActionProof,
                 ActionProofs,
                 Checksum256s,
+                ActionProofJson,
                 ActionProofJsons,
                 EosBlockHeaderJson,
             },
@@ -52,7 +53,7 @@ pub struct EosSubmissionMaterialJson {
 }
 
 fn parse_eos_action_proof_jsons_to_action_proofs(
-    action_proof_jsons: &ActionProofJsons,
+    action_proof_jsons: &[ActionProofJson],
 ) -> Result<ActionProofs> {
     action_proof_jsons
         .iter()
@@ -89,7 +90,7 @@ fn convert_hex_to_extension(hex_string: &str) -> Result<Extension> {
 }
 
 fn convert_hex_to_extensions(
-    extension_strings: &Vec<String>,
+    extension_strings: &[String],
 ) -> Result<Vec<Extension>> {
     extension_strings
         .iter()
@@ -138,7 +139,7 @@ pub fn parse_eos_block_header_from_json(
 }
 
 fn parse_interim_block_ids_from_json(
-    interim_block_ids_json: &Vec<String>,
+    interim_block_ids_json: &[String],
 ) -> Result<Checksum256s> {
     interim_block_ids_json.iter().map(convert_hex_to_checksum256).collect()
 }
@@ -148,7 +149,7 @@ fn parse_eos_submission_material_json_to_struct(
 ) -> Result<EosSubmissionMaterial> {
     Ok(
         EosSubmissionMaterial {
-            block_num: submission_material_json.block_header.block_num.clone(),
+            block_num: submission_material_json.block_header.block_num,
             producer_signature: submission_material_json.block_header.producer_signature .clone(),
             block_header: parse_eos_block_header_from_json(&submission_material_json.block_header)?,
             interim_block_ids: parse_interim_block_ids_from_json(&submission_material_json.interim_block_ids)?,

@@ -71,8 +71,7 @@ pub fn maybe_update_btc_canon_block_hash<D>(
                             put_btc_canon_block_hash_in_db(
                                 &state.db,
                                 &ancestor_block.id
-                            )
-                                .and_then(|_| Ok(state))
+                            ).map(|_| state)
                         }
                     }
                 }

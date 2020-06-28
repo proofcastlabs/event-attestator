@@ -24,7 +24,7 @@ pub fn get_key_from_db<D: DatabaseInterface>(db: D, key: &str, data_sensitivity:
     info!("✔ Maybe getting key: {} from DB...", key);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| db.get(hex::decode(key.clone())?, data_sensitivity))
+        .and_then(|_| db.get(hex::decode(key)?, data_sensitivity))
         .and_then(|value| {
             db.end_transaction()?;
             Ok(format!("{{key:{},value:{}}}", key, hex::encode(value)))

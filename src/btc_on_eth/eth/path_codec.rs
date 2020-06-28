@@ -130,7 +130,7 @@ pub fn encode_leaf_path_from_nibbles(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hex;
+    
     use crate::btc_on_eth::eth::nibble_utils::{
         get_nibbles_from_bytes,
         get_nibbles_from_offset_bytes,
@@ -244,7 +244,7 @@ mod tests {
         let (expected_nibbles, path) = get_even_leaf_path_sample();
         let (result_nibbles, result_type) =
             decode_path_to_nibbles_and_node_type(path).unwrap();
-        assert!(result_type == "leaf".to_string());
+        assert!(result_type == "leaf");
         assert!(expected_nibbles.data == result_nibbles.data);
     }
 
@@ -253,7 +253,7 @@ mod tests {
         let (expected_nibbles, path) = get_odd_leaf_path_sample();
         let (result_nibbles, result_type) =
             decode_path_to_nibbles_and_node_type(path).unwrap();
-        assert!(result_type == "leaf".to_string());
+        assert!(result_type == "leaf");
         assert!(expected_nibbles.data == result_nibbles.data);
     }
 
@@ -262,7 +262,7 @@ mod tests {
         let (expected_nibbles, path) = get_odd_extension_path_sample();
         let (result_nibbles, result_type) =
             decode_path_to_nibbles_and_node_type(path).unwrap();
-        assert!(result_type == "extension".to_string());
+        assert!(result_type == "extension");
         assert!(expected_nibbles.data == result_nibbles.data);
     }
 
@@ -271,7 +271,7 @@ mod tests {
         let (expected_nibbles, path) = get_even_extension_path_sample();
         let (result_nibbles, result_type) =
             decode_path_to_nibbles_and_node_type(path).unwrap();
-        assert!(result_type == "extension".to_string());
+        assert!(result_type == "extension");
         assert!(expected_nibbles.data == result_nibbles.data);
     }
 

@@ -62,8 +62,7 @@ pub fn validate_difficulty_of_btc_block_in_state<D>(
             get_btc_difficulty_from_db(&state.db)?,
             &state.get_btc_block_and_id()?.block.header,
             get_btc_network_from_db(&state.db)?,
-        )
-            .and_then(|_| Ok(state))
+        ).map(|_| state)
     } else {
         info!("✔ Skipping BTC difficulty validation!");
         Ok(state)
@@ -98,11 +97,11 @@ mod tests {
             .block
             .header;
         let threshold = u64::max_value();
-        if let Ok(_) = check_difficulty_is_above_threshold(
+        if check_difficulty_is_above_threshold(
             threshold,
             &block_header,
             BtcNetwork::Bitcoin,
-        ) {
+        ).is_ok() {
             panic!("Difficulty should not be above threshold!");
         }
     }
@@ -117,11 +116,11 @@ mod tests {
         let network = BtcNetwork::Testnet;
         let difficulty = block_header.difficulty(network);
         assert!(difficulty > threshold);
-        if let Err(_) = check_difficulty_is_above_threshold(
+        if check_difficulty_is_above_threshold(
             threshold,
             &block_header,
             network,
-        ) {
+        ).is_err() {
             panic!("Difficulty check should be skipped on testnet!");
         }
     }

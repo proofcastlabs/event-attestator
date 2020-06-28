@@ -21,11 +21,10 @@ use crate::{
 use bitcoin::{
     hashes::sha256d,
     util::address::Address as BtcAddress,
-    blockdata::{
-        block::Block as BtcBlock,
-        transaction::Transaction as BtcTransaction,
-    },
+    blockdata::block::Block as BtcBlock,
 };
+
+pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 
 pub type BtcTransactions = Vec<BtcTransaction>;
 pub type MintingParams = Vec<MintingParamStruct>;
@@ -115,7 +114,7 @@ impl MintingParamStruct {
         to: String,
         originating_tx_hash: sha256d::Hash,
         originating_tx_address: BtcAddress,
-        symbol: &String,
+        symbol: &str,
     ) -> MintingParamStruct {
         MintingParamStruct {
             to: match EosAccountName::from_str(&to) {

@@ -86,7 +86,7 @@ mod tests {
     fn should_validate_block_in_state() {
         let state = get_valid_state_with_block_and_receipts()
             .unwrap();
-        if let Err(_) = validate_block_in_state(state) {
+        if validate_block_in_state(state).is_err() {
             panic!("Block in state should be valid!")
         }
     }

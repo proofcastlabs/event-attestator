@@ -1,7 +1,6 @@
 use std::fmt;
 use serde_json::Value as JsonValue;
 use eos_primitives::{
-    Checksum256,
     Action as EosAction,
     AccountName as EosAccountName,
     ProducerKey as EosProducerKey,
@@ -21,6 +20,8 @@ use crate::{
         },
     },
 };
+
+pub use eos_primitives::Checksum256;
 
 pub type GlobalSequence = u64;
 pub type MerkleProof = Vec<String>;
@@ -80,17 +81,17 @@ pub struct EosKnownScheduleJson {
 impl EosKnownScheduleJson {
     pub fn from_schedule(sched: &EosKnownSchedule) -> Self {
         EosKnownScheduleJson {
-            schedule_version: sched.schedule_version.clone(),
+            schedule_version: sched.schedule_version,
             schedule_db_key: hex::encode(sched.schedule_db_key.clone()),
         }
     }
 }
 
 impl EosKnownSchedule {
-    pub fn new(version: u32) -> Self {
+    pub fn new(schedule_version: u32) -> Self {
         EosKnownSchedule {
-            schedule_version: version.clone(),
-            schedule_db_key: get_eos_schedule_db_key(version),
+            schedule_version,
+            schedule_db_key: get_eos_schedule_db_key(schedule_version),
         }
     }
 }

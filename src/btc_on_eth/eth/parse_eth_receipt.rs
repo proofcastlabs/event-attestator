@@ -110,7 +110,7 @@ mod tests {
     fn should_parse_eth_receipt_jsons() {
         let eth_json = get_sample_eth_block_and_receipts_json()
             .unwrap();
-        if let Err(_) = parse_eth_receipt_jsons(eth_json.receipts) {
+        if parse_eth_receipt_jsons(eth_json.receipts).is_err() {
             panic!("Should have generated receipts correctly!")
         }
     }

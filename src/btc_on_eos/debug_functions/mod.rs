@@ -153,8 +153,7 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &st
         .and_then(|_| put_eos_latest_block_info_in_db(db, &init_json.block))
         .and_then(|_| db.start_transaction())
         .and_then(|_| generate_and_put_incremerkle_in_db(db, &init_json.blockroot_merkle))
-        .and_then(|_| db.end_transaction())
-        .and_then(|_| Ok("{debug_update_blockroot_merkle_success:true}".to_string()))
+        .and_then(|_| db.end_transaction()).map(|_| "{debug_update_blockroot_merkle_success:true}".to_string())
 }
 
 pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {

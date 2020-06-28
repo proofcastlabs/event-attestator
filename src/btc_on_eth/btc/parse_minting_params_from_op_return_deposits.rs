@@ -22,7 +22,7 @@ use bitcoin::{
 use crate::{
     traits::DatabaseInterface,
     types::{
-        Bytes,
+        Byte,
         Result,
     },
     chains::btc::{
@@ -43,7 +43,6 @@ use crate::{
             },
             btc_types::{
                 MintingParams,
-                BtcTransactions,
                 MintingParamStruct,
             },
         },
@@ -99,7 +98,7 @@ fn parse_eth_address_from_op_return_script(
 }
 
 fn serialized_script_pubkey_is_desired_op_return(
-    serialized_script: &Bytes
+    serialized_script: &[Byte]
 ) -> bool {
     serialized_script.len() == NUM_BYTES_IN_SCRIPT_WITH_LEN_PREFIX &&
     serialized_script[0] == NUM_BYTES_IN_SCRIPT &&
@@ -189,7 +188,7 @@ fn parse_minting_param_struct_from_tx(
 
 fn parse_minting_params_from_txs(
     target_deposit_script: &BtcScript,
-    op_return_deposit_containing_transactions: &BtcTransactions,
+    op_return_deposit_containing_transactions: &[BtcTransaction],
     btc_network: BtcNetwork,
 ) -> Result<MintingParams> {
     trace!(

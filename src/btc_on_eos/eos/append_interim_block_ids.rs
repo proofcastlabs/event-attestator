@@ -4,7 +4,7 @@ use crate::{
     btc_on_eos::{
         eos::{
             eos_state::EosState,
-            eos_types::Checksum256s,
+            eos_types::Checksum256,
             eos_merkle_utils::Incremerkle,
         },
     },
@@ -12,7 +12,7 @@ use crate::{
 
 fn append_block_ids_to_incremerkle(
     mut incremerkle: Incremerkle,
-    block_ids: &Checksum256s,
+    block_ids: &[Checksum256],
 ) -> Result<Incremerkle> {
     block_ids
         .iter()

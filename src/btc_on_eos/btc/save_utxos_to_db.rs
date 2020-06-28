@@ -15,8 +15,7 @@ pub fn maybe_save_utxos_to_db<D>(state: BtcState<D>) -> Result<BtcState<D>>
             Ok(state)
         }
         _ => {
-            save_utxos_to_db(&state.db, &state.utxos_and_values)
-                .and_then(|_| Ok(state))
+            save_utxos_to_db(&state.db, &state.utxos_and_values).map(|_| state)
         }
     }
 }

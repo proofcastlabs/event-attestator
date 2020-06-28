@@ -3,17 +3,20 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eos::eos::{
         eos_state::EosState,
-        eos_types::ActionProofs,
+        eos_types::{
+            ActionProofs,
+            ActionProof,
+        },
         eos_merkle_utils::verify_merkle_proof,
     },
 };
 
 fn filter_out_proofs_with_invalid_merkle_proofs(
-    action_proofs: &ActionProofs,
+    action_proofs: &[ActionProof],
 ) -> Result<ActionProofs> {
     let filtered = action_proofs
         .iter()
-        .map(|proof_data| &proof_data.action_proof)
+        .map(|proof_data| proof_data.action_proof.as_slice())
         .map(verify_merkle_proof)
         .collect::<Result<Vec<bool>>>()?
         .into_iter()

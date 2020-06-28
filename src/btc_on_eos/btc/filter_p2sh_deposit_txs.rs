@@ -9,7 +9,10 @@ use crate::{
     chains::btc::deposit_address_info::DepositInfoHashMap,
     btc_on_eos::btc::{
         btc_state::BtcState,
-        btc_types::BtcTransactions,
+        btc_types::{
+            BtcTransaction,
+            BtcTransactions,
+        },
         btc_utils::get_p2sh_redeem_script_sig,
         btc_database_utils::{
             get_btc_network_from_db,
@@ -100,7 +103,7 @@ fn is_output_address_in_hash_map(
 pub fn filter_p2sh_deposit_txs(
     deposit_info: &DepositInfoHashMap,
     enclave_public_key_slice: &[u8],
-    transactions: &BtcTransactions,
+    transactions: &[BtcTransaction],
     btc_network: BtcNetwork,
 ) -> Result<BtcTransactions> {
     Ok(

@@ -21,6 +21,7 @@ use crate::{
     constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
     btc_on_eth::crypto_utils::generate_random_private_key,
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -94,7 +95,7 @@ impl BtcPrivateKey {
     pub fn write_to_database<D>(
         &self,
         db: &D,
-        key: &Bytes,
+        key: &[Byte],
     ) -> Result<()>
         where D: DatabaseInterface
     {

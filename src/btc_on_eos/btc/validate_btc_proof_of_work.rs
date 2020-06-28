@@ -32,7 +32,7 @@ pub fn validate_proof_of_work_of_btc_block_in_state<D>(
         info!("✔ Validating BTC block's proof-of-work...");
         validate_proof_of_work_in_block(
             &state.get_btc_block_and_id()?.block.header
-        ).and_then(|_| Ok(state))
+        ).map(|_| state)
     } else {
         info!("✔ Skipping proof-of-work validation!");
         Ok(state)

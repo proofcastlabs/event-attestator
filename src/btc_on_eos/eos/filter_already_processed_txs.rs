@@ -11,7 +11,7 @@ use crate::{
 };
 
 fn filter_out_already_processed_txs(
-    redeem_params: &Vec<RedeemParams>,
+    redeem_params: &[RedeemParams],
     processed_tx_ids: &ProcessedTxIds,
 ) -> Result<Vec<RedeemParams>> {
     Ok(

@@ -73,8 +73,7 @@ fn maybe_update_linker_hash<D>(db: &D) -> Result<()>
             get_new_linker_hash(db, &parent_of_eth_tail_block.block.hash)
                 .and_then(|linker_hash|
                     put_eth_linker_hash_in_db(db, linker_hash)
-                )
-                .and_then(|_| Ok(()))
+                ).map(|_| ())
         }
         None => {
             info!("✔ ETH tail has no parent in db ∴ NOT updating linker hash");

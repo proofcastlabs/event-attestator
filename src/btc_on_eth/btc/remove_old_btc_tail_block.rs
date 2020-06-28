@@ -71,8 +71,7 @@ pub fn maybe_remove_old_btc_tail_block<D>(
     get_btc_tail_block_from_db(&state.db)
         .and_then(|tail_block|
             remove_parents_if_not_anchor(&state.db, &tail_block)
-        )
-        .and_then(|_| Ok(state))
+        ).map(|_| state)
 }
 
 #[cfg(test)]

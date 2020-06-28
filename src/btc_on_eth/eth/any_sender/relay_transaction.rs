@@ -117,6 +117,7 @@ impl RelayTransaction {
     }
 
     /// Creates a new unsigned relay transaction from data.
+    #[allow(clippy::too_many_arguments)]
     fn from_data_unsigned(
         chain_id: u8,
         from: EthAddress,

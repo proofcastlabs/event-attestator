@@ -19,6 +19,5 @@ pub fn generate_and_store_btc_private_key<D>(
     put_btc_private_key_in_db(
         &state.db,
         &BtcPrivateKey::generate_random(get_btc_network_from_arg(network))?,
-    )
-        .and_then(|_| Ok(state))
+    ).map(|_| state)
 }

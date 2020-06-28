@@ -15,7 +15,6 @@ use crate::{
     btc_on_eos::eos::eos_types::{
         EosActionJson,
         AuthorizationJson,
-        AuthorizationJsons,
     },
 };
 
@@ -31,7 +30,7 @@ fn parse_authorization_json(
 }
 
 fn parse_authorization_jsons(
-    authorization_jsons: &AuthorizationJsons
+    authorization_jsons: &[AuthorizationJson]
 ) -> Result<PermissionLevels> {
     authorization_jsons
         .iter()

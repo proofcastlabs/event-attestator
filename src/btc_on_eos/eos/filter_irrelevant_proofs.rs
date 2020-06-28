@@ -9,13 +9,16 @@ use crate::{
     chains::eos::eos_constants::REDEEM_ACTION_NAME,
     btc_on_eos::eos::{
         eos_state::EosState,
-        eos_types::ActionProofs,
+        eos_types::{
+            ActionProof,
+            ActionProofs,
+        },
         eos_database_utils::get_eos_account_name_from_db,
     },
 };
 
 fn filter_out_proofs_for_other_accounts(
-    action_proofs: &ActionProofs,
+    action_proofs: &[ActionProof],
     required_account_name: EosAccountName,
 ) -> Result<ActionProofs> {
     let filtered: ActionProofs = action_proofs
@@ -30,7 +33,7 @@ fn filter_out_proofs_for_other_accounts(
 }
 
 fn filter_out_proofs_for_other_actions(
-    action_proofs: &ActionProofs
+    action_proofs: &[ActionProof]
 ) -> Result<ActionProofs> {
     let required_action = EosActionName::from_str(REDEEM_ACTION_NAME)?;
     let filtered: ActionProofs = action_proofs

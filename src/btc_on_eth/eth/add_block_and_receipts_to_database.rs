@@ -91,10 +91,10 @@ mod tests {
             panic!("Error when maybe adding block to database: {}", e);
         };
         let bool_after = eth_block_exists_in_db(&db, &eth_block_hash);
-        if let Ok(_) = add_block_and_receipts_to_db_if_not_extant(
+        if add_block_and_receipts_to_db_if_not_extant(
             &db,
             &block_and_receipts,
-        ) {
+        ).is_ok() {
             panic!("Should error ∴ block already in db: {}");
         }
         assert!(bool_after);

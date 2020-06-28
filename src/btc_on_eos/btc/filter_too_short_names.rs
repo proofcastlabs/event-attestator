@@ -14,7 +14,7 @@ use crate::{
 };
 
 fn filter_too_short_account_names(
-    minting_params: &MintingParams,
+    minting_params: &[MintingParamStruct],
 ) -> Result<MintingParams> {
     Ok(
         minting_params

@@ -22,7 +22,7 @@ pub fn get_sample_message_to_sign_bytes() -> &'static [u8] {
         .as_bytes()
 }
 
-pub static DB_LOCK_ERRROR: &'static str = "✘ Cannot get lock on DB!";
+pub static DB_LOCK_ERRROR: &str = "✘ Cannot get lock on DB!";
 
 pub struct TestDB(pub Mutex<HashMap<Bytes, Bytes>>);
 

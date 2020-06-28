@@ -86,7 +86,7 @@ mod test {
     #[test]
     fn should_error_gettin_signature_from_string_without_prefix() {
         let signature = "KomV6FEHKdtZxGDwhwSubEAcJ7VhtUQpEt5P6iDz33ic936aSXx87B2L56C8JLQkqNpp1W8ZXjrKiLHUEB4LCGeXvbtVuR";
-        if let Ok(_) = EosSignature::from_str(signature) {
+        if EosSignature::from_str(signature).is_ok() {
             panic!("Should error converting string w/out prefix to sig!")
         }
     }
