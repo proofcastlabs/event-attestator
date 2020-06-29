@@ -2,11 +2,11 @@ use crate::{
     btc_on_eth::{
         crypto_utils::keccak_hash_bytes,
         eth::{
-            any_sender::{
-                relay_contract::RelayContract,
-                serde::{compensation, data},
-            },
             eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
+            any_sender::{
+                serde::{compensation, data},
+                relay_contract::RelayContract,
+            },
         },
     },
     chains::eth::{
@@ -197,6 +197,7 @@ impl RelayTransaction {
         amount: U256,
         any_sender_nonce: u64,
         eth_private_key: EthPrivateKey,
+        to: EthAddress,
     ) -> Result<RelayTransaction> {
         let chain_id = eth_transaction.chain_id;
         let deadline = None; // use the default any.sender deadline
@@ -204,18 +205,17 @@ impl RelayTransaction {
         let compensation = ANY_SENDER_MAX_COMPENSATION_WEI;
         let relay_contract_address =
             RelayContract::from_eth_chain_id(eth_transaction.chain_id)?.address()?;
-        let to = EthAddress::from_slice(&eth_transaction.to);
 
         let proxy_signature = eth_private_key
             .sign_eth_prefixed_msg_bytes(encode(&[
-                Token::Address(to),
+                Token::Address(EthAddress::from_slice(&eth_transaction.to)),
                 Token::Uint(amount),
                 Token::Uint(any_sender_nonce.into()),
             ]))?
             .to_vec();
 
         let proxy_tokens = [
-            Token::Address(to),
+            Token::Address(EthAddress::from_slice(&eth_transaction.to)),
             Token::Uint(amount),
             Token::Uint(any_sender_nonce.into()),
             Token::Bytes(proxy_signature),
@@ -386,6 +386,7 @@ mod tests {
             amount,
             any_sender_nonce,
             eth_private_key,
+            EthAddress::from_slice(&eth_transaction.to),
         )
         .expect("Error creating any.sender relay transaction from eth transaction!");
         let expected_relay_transaction = RelayTransaction {
