@@ -15,6 +15,7 @@ use crate::{
         ETH_CHAIN_ID_KEY,
         ETH_GAS_PRICE_KEY,
         ETH_LINKER_HASH_KEY,
+        ANY_SENDER_NONCE_KEY,
         ETH_ACCOUNT_NONCE_KEY,
         ETH_PRIVATE_KEY_DB_KEY,
         ETH_TAIL_BLOCK_HASH_KEY,
@@ -23,7 +24,7 @@ use crate::{
         ETH_ANCHOR_BLOCK_HASH_KEY,
         ETH_CANON_TO_TIP_LENGTH_KEY,
         ETH_SMART_CONTRACT_ADDRESS_KEY,
-        ANY_SENDER_NONCE_KEY,
+        ERC777_PROXY_CONTACT_ADDRESS_KEY,
     },
     btc_on_eth::{
         database_utils::{
@@ -59,16 +60,11 @@ pub fn get_signing_params_from_db<D>(
     trace!("✔ Getting signing params from db...");
     Ok(
         EthSigningParams {
-            chain_id:
-                get_eth_chain_id_from_db(db)?,
-            gas_price:
-                get_eth_gas_price_from_db(db)?,
-            eth_private_key:
-                get_eth_private_key_from_db(db)?,
-            eth_account_nonce:
-                get_eth_account_nonce_from_db(db)?,
-            ptoken_contract_address:
-                get_eth_smart_contract_address_from_db(db)?,
+            chain_id: get_eth_chain_id_from_db(db)?,
+            gas_price: get_eth_gas_price_from_db(db)?,
+            eth_private_key: get_eth_private_key_from_db(db)?,
+            eth_account_nonce: get_eth_account_nonce_from_db(db)?,
+            ptoken_contract_address: get_eth_smart_contract_address_from_db(db)?,
         }
     )
 }
@@ -566,6 +562,25 @@ pub fn get_eth_smart_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
         .and_then(|address_bytes|
             Ok(EthAddress::from_slice(&address_bytes[..]))
         )
+}
+
+pub fn get_erc777_proxy_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
+    where D: DatabaseInterface
+{
+    trace!("✔ Getting ERC777 proxy contract address from db...");
+    db.get(ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(), None)
+        .and_then(|address_bytes| Ok(EthAddress::from_slice(&address_bytes[..])))
+}
+
+#[allow(dead_code)]
+pub fn put_erc777_proxy_contract_address_in_db<D>(
+    db: &D,
+    proxy_contract_address: &EthAddress,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    trace!("✔ Putting ERC777 proxy contract address in db...");
+    put_eth_address_in_db(db, &ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(), proxy_contract_address)
 }
 
 pub fn put_eth_smart_contract_address_in_db<D>(
