@@ -11,10 +11,11 @@ use crate::{
             eth_types::EthTransactions,
             eth_crypto::eth_transaction::EthTransaction,
             eth_database_utils::{
-                get_eth_account_nonce_from_db,
-                get_any_sender_nonce_from_db,
                 get_eth_private_key_from_db,
+                get_any_sender_nonce_from_db,
+                get_eth_account_nonce_from_db,
                 get_public_eth_address_from_db,
+                get_erc777_proxy_contract_address_from_db,
             },
             any_sender::relay_transaction::RelayTransaction,
             eth_crypto::eth_private_key::EthPrivateKey,
@@ -91,6 +92,7 @@ impl EthTxInfo {
         any_sender_nonce: u64,
         from: EthAddress,
         eth_private_key: EthPrivateKey,
+        erc777_proxy_address: EthAddress,
     ) -> Result<EthTxInfo> {
         let default_address = DEFAULT_BTC_ADDRESS.to_string();
         let retrieved_address = minting_param_struct
@@ -107,6 +109,7 @@ impl EthTxInfo {
             minting_param_struct.amount,
             any_sender_nonce,
             eth_private_key,
+            erc777_proxy_address,
         )?;
 
         Ok(EthTxInfo {
@@ -141,6 +144,7 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
     any_sender_nonce: u64,
     from: EthAddress,
     eth_private_key: EthPrivateKey,
+    erc777_proxy_address: EthAddress,
 ) -> Result<Vec<EthTxInfo>> {
     if use_any_sender_tx_type {
         info!("✔ Getting any.sender tx info from ETH txs...");
@@ -156,6 +160,7 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
                     any_sender_start_nonce + i as u64,
                     from,
                     eth_private_key.clone(),
+                    erc777_proxy_address,
                 )
             })
             .collect::<Result<Vec<EthTxInfo>>>();
@@ -190,7 +195,8 @@ pub fn create_btc_output_json_and_put_in_state<D>(
                         state.use_any_sender_tx_type(),
                         get_any_sender_nonce_from_db(&state.db)?,
                         get_public_eth_address_from_db(&state.db)?,
-                        get_eth_private_key_from_db(&state.db)?
+                        get_eth_private_key_from_db(&state.db)?,
+                        get_erc777_proxy_contract_address_from_db(&state.db)?,
                     )?,
             }
         }
