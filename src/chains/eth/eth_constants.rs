@@ -95,6 +95,8 @@ pub fn get_eth_constants_db_keys() -> JsonValue {
             hex::encode(ETH_TAIL_BLOCK_HASH_KEY.to_vec()),
         "ANY_SENDER_NONCE_KEY":
             hex::encode(ANY_SENDER_NONCE_KEY.to_vec()),
+        "ERC777_PROXY_CONTACT_ADDRESS_KEY":
+            hex::encode(ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec()),
     })
 }
 
@@ -179,5 +181,11 @@ lazy_static! {
 lazy_static! {
     pub static ref ANY_SENDER_NONCE_KEY: [u8; 32] = get_prefixed_db_key(
         "any-sender-nonce"
+    );
+}
+
+lazy_static! {
+    pub static ref ERC777_PROXY_CONTACT_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key(
+        "erc-777-proxy-contract-address-key"
     );
 }
