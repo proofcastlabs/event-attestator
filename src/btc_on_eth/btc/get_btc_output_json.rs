@@ -110,6 +110,7 @@ impl EthTxInfo {
             any_sender_nonce,
             eth_private_key,
             erc777_proxy_address,
+            minting_param_struct.eth_address,
         )?;
 
         Ok(EthTxInfo {
@@ -161,6 +162,7 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
                     from,
                     eth_private_key.clone(),
                     erc777_proxy_address,
+
                 )
             })
             .collect::<Result<Vec<EthTxInfo>>>();

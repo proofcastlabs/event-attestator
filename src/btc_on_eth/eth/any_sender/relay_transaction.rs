@@ -191,6 +191,7 @@ impl RelayTransaction {
     }
 
     /// Creates a new relay transaction from Ethereum transaction.
+    // TODO this is not working for our needs. Make a more specific version for the proxy which takes minting params.
     pub fn from_eth_transaction(
         eth_transaction: &EthTransaction,
         from: EthAddress,
@@ -198,24 +199,25 @@ impl RelayTransaction {
         any_sender_nonce: u64,
         eth_private_key: EthPrivateKey,
         to: EthAddress,
+        token_recipient: EthAddress,
     ) -> Result<RelayTransaction> {
         let chain_id = eth_transaction.chain_id;
         let deadline = None; // use the default any.sender deadline
-        let gas_limit = eth_transaction.gas_limit.as_u32();
+        let gas_limit = 300_000; // TODO FIXME finesse this & create new constant ∵ it'll always be > than vanilla minting tx gas amount!
         let compensation = ANY_SENDER_MAX_COMPENSATION_WEI;
         let relay_contract_address =
             RelayContract::from_eth_chain_id(eth_transaction.chain_id)?.address()?;
 
         let proxy_signature = eth_private_key
             .sign_eth_prefixed_msg_bytes(encode(&[
-                Token::Address(EthAddress::from_slice(&eth_transaction.to)),
+                Token::Address(EthAddress::from_slice(token_recipient.as_bytes())),
                 Token::Uint(amount),
                 Token::Uint(any_sender_nonce.into()),
             ]))?
             .to_vec();
 
         let proxy_tokens = [
-            Token::Address(EthAddress::from_slice(&eth_transaction.to)),
+            Token::Address(EthAddress::from_slice(token_recipient.as_bytes())),
             Token::Uint(amount),
             Token::Uint(any_sender_nonce.into()),
             Token::Bytes(proxy_signature),
@@ -387,6 +389,7 @@ mod tests {
             any_sender_nonce,
             eth_private_key,
             EthAddress::from_slice(&eth_transaction.to),
+            EthAddress::from_slice(&eth_transaction.to), // FIXME This should be a different address really!
         )
         .expect("Error creating any.sender relay transaction from eth transaction!");
         let expected_relay_transaction = RelayTransaction {
