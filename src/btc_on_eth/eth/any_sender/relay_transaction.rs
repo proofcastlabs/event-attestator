@@ -10,7 +10,7 @@ use crate::{
         },
     },
     chains::eth::{
-        eth_contracts::get_contract::instantiate_contract_from_abi,
+        eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
         eth_constants::{
             ETH_MAINNET_CHAIN_ID,
             ETH_ROPSTEN_CHAIN_ID,
@@ -28,9 +28,6 @@ pub const ANY_SENDER_MAX_DATA_LEN: usize = 3_000;
 pub const ANY_SENDER_MAX_GAS_LIMIT: u32 = 3_000_000;
 pub const ANY_SENDER_DEFAULT_DEADLINE: Option<u64> =  None;
 pub const ANY_SENDER_MAX_COMPENSATION_WEI: u64 = 49_999_999_999_999_999;
-
-pub const PROXY_FN_NAME: &str = "mintByProxy";
-pub const PROXY_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"_recipient\",\"type\":\"address\"},{\"name\":\"_amount\",\"type\":\"uint256\"},{\"name\":\"_nonce\",\"type\":\"uint256\"},{\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"mintByProxy\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0x7ad6ae47\"}]";
 
 /// An any.sender relay transaction. It is very similar
 /// to a normal transaction except for a few fields.
@@ -196,27 +193,7 @@ impl RelayTransaction {
         Ok(self)
     }
 
-    fn get_mint_by_proxy_tx_data(
-        eth_private_key: &EthPrivateKey,
-        token_recipient: EthAddress,
-        token_amount: U256,
-        any_sender_nonce: u64,
-    ) -> Result<Bytes> {
-        let proxy_signature = eth_private_key
-            .sign_eth_prefixed_msg_bytes(encode(&[
-                Token::Address(EthAddress::from_slice(token_recipient.as_bytes())),
-                Token::Uint(token_amount),
-                Token::Uint(any_sender_nonce.into()),
-            ]))?.to_vec();
-        let proxy_tokens = [
-            Token::Address(EthAddress::from_slice(token_recipient.as_bytes())),
-            Token::Uint(token_amount),
-            Token::Uint(any_sender_nonce.into()),
-            Token::Bytes(proxy_signature),
-        ];
-        Ok(instantiate_contract_from_abi(PROXY_ABI)?.function(PROXY_FN_NAME)?.encode_input(&proxy_tokens)?)
-    }
-
+    /// Creates a new AnySender relayed `mintByProxy` ERC777 proxy contract tranasction.
     pub fn new_mint_by_proxy_tx(
         chain_id: Byte,
         from: EthAddress,
@@ -230,12 +207,7 @@ impl RelayTransaction {
             RelayTransaction::from_data_unsigned(
                 chain_id,
                 from,
-                RelayTransaction::get_mint_by_proxy_tx_data(
-                    eth_private_key,
-                    token_recipient,
-                    token_amount,
-                    any_sender_nonce
-                )?,
+                encode_mint_by_proxy_tx_data(eth_private_key, token_recipient, token_amount, any_sender_nonce)?,
                 ANY_SENDER_DEFAULT_DEADLINE,
                 ANY_SENDER_GAS_LIMIT,
                 ANY_SENDER_MAX_COMPENSATION_WEI,
@@ -371,7 +343,7 @@ mod tests {
     }
 
     #[test]
-    fn should_create_new_signed_relay_tx_from_eth_tx() {
+    fn should_create_new_any_sender_relayed_mint_by_proxy_tx() {
         let eth_transaction = get_sample_unsigned_eth_transaction();
         let chain_id = 3;
         let eth_private_key = EthPrivateKey::from_slice([

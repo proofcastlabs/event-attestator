@@ -8,11 +8,11 @@ pub fn instantiate_contract_from_abi(abi: &str) -> Result<EthContract> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::change_erc777_pnetwork_address::CHANGE_PNETWORK_ABI;
+    use crate::chains::eth::eth_contracts::erc777_proxy::ERC777_PROXY_ABI;
 
     #[test]
     fn should_instantiate_pnetwork_contract_from_abi() {
-        if let Err(e) = instantiate_contract_from_abi(CHANGE_PNETWORK_ABI) {
+        if let Err(e) = instantiate_contract_from_abi(ERC777_PROXY_ABI) {
             panic!("Error instantiating contract from abi: {}", e);
         }
     }
