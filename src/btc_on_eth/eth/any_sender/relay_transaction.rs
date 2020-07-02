@@ -2,7 +2,7 @@ use crate::{
     btc_on_eth::{
         crypto_utils::keccak_hash_bytes,
         eth::{
-            eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
+            eth_crypto::eth_private_key::EthPrivateKey,
             any_sender::{
                 serde::{compensation, data},
                 relay_contract::RelayContract,
@@ -193,7 +193,7 @@ impl RelayTransaction {
     /// Creates a new relay transaction from Ethereum transaction.
     // TODO this is not working for our needs. Make a more specific version for the proxy which takes minting params.
     pub fn from_eth_transaction(
-        eth_transaction: &EthTransaction, // So this is only used for chain id now
+        chain_id: Byte,
         from: EthAddress,
         amount: U256,
         any_sender_nonce: u64,
@@ -201,12 +201,10 @@ impl RelayTransaction {
         to: EthAddress,
         token_recipient: EthAddress,
     ) -> Result<RelayTransaction> {
-        let chain_id = eth_transaction.chain_id;
         let deadline = None; // use the default any.sender deadline
         let gas_limit = 300_000; // TODO FIXME finesse this & create new constant ∵ it'll always be > than vanilla minting tx gas amount!
         let compensation = ANY_SENDER_MAX_COMPENSATION_WEI;
-        let relay_contract_address =
-            RelayContract::from_eth_chain_id(eth_transaction.chain_id)?.address()?;
+        let relay_contract_address = RelayContract::from_eth_chain_id(chain_id)?.address()?;
 
         let proxy_signature = eth_private_key
             .sign_eth_prefixed_msg_bytes(encode(&[
@@ -369,8 +367,8 @@ mod tests {
 
     #[test]
     fn should_create_new_signed_relay_tx_from_eth_tx() {
-        let mut eth_transaction = get_sample_unsigned_eth_transaction();
-        eth_transaction.chain_id = 3;
+        let eth_transaction = get_sample_unsigned_eth_transaction();
+        let chain_id = 3;
         let eth_private_key = EthPrivateKey::from_slice([
             132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169, 234,
             47, 186, 237, 88, 161, 200, 177, 24, 142, 207, 242, 168, 221,
@@ -383,7 +381,7 @@ mod tests {
         let amount = U256::from(1337);
 
         let relay_transaction = RelayTransaction::from_eth_transaction(
-            &eth_transaction,
+            chain_id,
             from,
             amount,
             any_sender_nonce,

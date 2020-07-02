@@ -3,7 +3,10 @@ use std::time::{
     UNIX_EPOCH
 };
 use crate::{
-    types::Result,
+    types::{
+        Byte,
+        Result,
+    },
     traits::DatabaseInterface,
     chains::btc::btc_constants::DEFAULT_BTC_ADDRESS,
     btc_on_eth::{
@@ -87,7 +90,7 @@ impl EthTxInfo {
     }
 
     pub fn new_with_any_sender(
-        eth_tx: &EthTransaction,
+        chain_id: Byte,
         minting_param_struct: &MintingParamStruct,
         any_sender_nonce: u64,
         from: EthAddress,
@@ -104,7 +107,7 @@ impl EthTxInfo {
         };
 
         let any_sender_tx = RelayTransaction::from_eth_transaction(
-            eth_tx,
+            chain_id,
             from,
             minting_param_struct.amount,
             any_sender_nonce,
@@ -156,7 +159,7 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
             .enumerate()
             .map(|(i, tx)| {
                 EthTxInfo::new_with_any_sender(
-                    tx,
+                    tx.chain_id,
                     &minting_params[i],
                     any_sender_start_nonce + i as u64,
                     from,
