@@ -66,10 +66,14 @@ use crate::{
             parse_redeem_params::parse_redeem_params_from_block,
             increment_btc_nonce::maybe_increment_btc_nonce_in_db,
             filter_receipts::filter_irrelevant_receipts_from_state,
-            change_pnetwork_address::get_signed_erc777_change_pnetwork_tx,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
             parse_eth_block_and_receipts::parse_eth_block_and_receipts_and_put_in_state,
+            change_pnetwork_address::{
+                get_signed_erc777_change_pnetwork_tx,
+                get_signed_erc777_proxy_change_pnetwork_tx,
+                get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
+            },
             eth_database_utils::{
                 end_eth_db_transaction,
                 start_eth_db_transaction,
@@ -219,7 +223,7 @@ pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
         .and_then(|_| get_all_utxos_as_json_string(db))
 }
 
-pub fn debug_get_signed_change_erc777_pnetwork_address_tx<D>(
+pub fn debug_get_signed_erc777_change_pnetwork_tx<D>(
     db: D,
     new_address: &str
 ) -> Result<String>
@@ -228,3 +232,24 @@ pub fn debug_get_signed_change_erc777_pnetwork_address_tx<D>(
     get_signed_erc777_change_pnetwork_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?))
         .map(|signed_tx_hex| format!("{{signed_tx:{}}}", signed_tx_hex))
 }
+
+pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D>(
+    db: D,
+    new_address: &str
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    get_signed_erc777_proxy_change_pnetwork_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?))
+        .map(|signed_tx_hex| format!("{{signed_tx:{}}}", signed_tx_hex))
+}
+
+pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
+    db: D,
+    new_address: &str
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    get_signed_erc777_proxy_change_pnetwork_by_proxy_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?))
+        .map(|signed_tx_hex| format!("{{signed_tx:{}}}", signed_tx_hex))
+}
+
