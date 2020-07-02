@@ -66,8 +66,8 @@ use crate::{
             parse_redeem_params::parse_redeem_params_from_block,
             increment_btc_nonce::maybe_increment_btc_nonce_in_db,
             filter_receipts::filter_irrelevant_receipts_from_state,
+            change_pnetwork_address::get_signed_erc777_change_pnetwork_tx,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
-            change_erc777_pnetwork_address::get_signed_change_erc777_pnetwork_tx,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
             parse_eth_block_and_receipts::parse_eth_block_and_receipts_and_put_in_state,
             eth_database_utils::{
@@ -225,6 +225,6 @@ pub fn debug_get_signed_change_erc777_pnetwork_address_tx<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    get_signed_change_erc777_pnetwork_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?))
+    get_signed_erc777_change_pnetwork_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?))
         .map(|signed_tx_hex| format!("{{signed_tx:{}}}", signed_tx_hex))
 }

@@ -19,7 +19,7 @@ use crate::{
     },
 };
 
-pub fn get_signed_change_erc777_pnetwork_tx<D>(
+pub fn get_signed_erc777_change_pnetwork_tx<D>(
     db: &D,
     new_ptoken_address: EthAddress
 ) -> Result<String>
