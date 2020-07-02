@@ -193,7 +193,7 @@ impl RelayTransaction {
     /// Creates a new relay transaction from Ethereum transaction.
     // TODO this is not working for our needs. Make a more specific version for the proxy which takes minting params.
     pub fn from_eth_transaction(
-        eth_transaction: &EthTransaction,
+        eth_transaction: &EthTransaction, // So this is only used for chain id now
         from: EthAddress,
         amount: U256,
         any_sender_nonce: u64,
@@ -397,10 +397,10 @@ mod tests {
             from: EthAddress::from_slice(
                 &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap()),
             signature: EthSignature::from_slice(
-                &hex::decode("ccd747255bbdb626afe84daf46ad7fbc70c270699f93865822daa8c203d52ec64112b604e389f26b8a83c26a07b0f5bc34d8835b3cd08cfd7142ab0dd47831031c").unwrap()),
+                &hex::decode("6b7a97497a94eaef7f19b3512ecfc776a740c6802e08afe1b0422df62acd48c1649be24bdea460be79315d9c9bdbea0dbdac118b3577eb6aab48d3cdf7c11f931c").unwrap()),
             data: vec![122, 214, 174, 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 83, 194, 4, 141, 173, 79, 207, 171, 68, 195, 239, 61, 22, 232, 130, 181, 23, 141, 244, 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 57, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 65, 155, 196, 23, 176, 241, 106, 157, 159, 93, 33, 109, 139, 206, 183, 77, 162, 108, 242, 171, 31, 212, 249, 141, 180, 202, 134, 217, 239, 84, 242, 88, 6, 113, 242, 43, 136, 1, 215, 205, 182, 59, 242, 3, 109, 145, 213, 166, 32, 222, 8, 251, 143, 7, 215, 54, 128, 82, 237, 31, 99, 7, 176, 247, 39, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             deadline: 0,
-            gas_limit: 100000,
+            gas_limit: 300000,
             compensation: 49999999999999999,
             relay_contract_address: EthAddress::from_slice(
                 &hex::decode("9b4fa5a1d9f6812e2b56b36fbde62736fa82c2a7").unwrap()),
