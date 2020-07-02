@@ -568,8 +568,13 @@ pub fn get_erc777_proxy_contract_address_from_db<D>(db: &D) -> Result<EthAddress
     where D: DatabaseInterface
 {
     trace!("✔ Getting ERC777 proxy contract address from db...");
-    db.get(ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(), None)
-        .and_then(|address_bytes| Ok(EthAddress::from_slice(&address_bytes[..])))
+    match db.get(ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(), None) {
+        Ok(address_bytes) => Ok(EthAddress::from_slice(&address_bytes[..])),
+        Err(_) => {
+            debug!("✘ No ERC777 proxy address in db, defaulting to zero ETH address!");
+            Ok(EthAddress::zero())
+        }
+    }
 }
 
 #[allow(dead_code)]
