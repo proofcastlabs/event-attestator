@@ -12,8 +12,8 @@ use crate::{
     chains::eth::{
         eth_contracts::get_contract::instantiate_contract_from_abi,
         eth_constants::{
-            ANY_SENDER_MAX_COMPENSATION_WEI, ANY_SENDER_MAX_DATA_LEN,
-            ANY_SENDER_MAX_GAS_LIMIT, ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID,
+            ETH_MAINNET_CHAIN_ID,
+            ETH_ROPSTEN_CHAIN_ID,
         },
     },
     errors::AppError,
@@ -22,6 +22,12 @@ use crate::{
 use ethabi::{encode, Token};
 use ethereum_types::{Address as EthAddress, Signature as EthSignature, U256};
 use rlp::RlpStream;
+
+pub const ANY_SENDER_GAS_LIMIT: u32 = 300_000;
+pub const ANY_SENDER_MAX_DATA_LEN: usize = 3_000;
+pub const ANY_SENDER_MAX_GAS_LIMIT: u32 = 3_000_000;
+pub const ANY_SENDER_DEFAULT_DEADLINE: Option<u64> =  None;
+pub const ANY_SENDER_MAX_COMPENSATION_WEI: u64 = 49_999_999_999_999_999;
 
 pub const PROXY_FN_NAME: &str = "mintByProxy";
 pub const PROXY_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"_recipient\",\"type\":\"address\"},{\"name\":\"_amount\",\"type\":\"uint256\"},{\"name\":\"_nonce\",\"type\":\"uint256\"},{\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"mintByProxy\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0x7ad6ae47\"}]";
@@ -190,54 +196,53 @@ impl RelayTransaction {
         Ok(self)
     }
 
-    /// Creates a new relay transaction from Ethereum transaction.
-    // TODO this is not working for our needs. Make a more specific version for the proxy which takes minting params.
-    pub fn from_eth_transaction(
-        chain_id: Byte,
-        from: EthAddress,
-        amount: U256,
-        any_sender_nonce: u64,
-        eth_private_key: EthPrivateKey,
-        to: EthAddress,
+    fn get_mint_by_proxy_tx_data(
+        eth_private_key: &EthPrivateKey,
         token_recipient: EthAddress,
-    ) -> Result<RelayTransaction> {
-        let deadline = None; // use the default any.sender deadline
-        let gas_limit = 300_000; // TODO FIXME finesse this & create new constant ∵ it'll always be > than vanilla minting tx gas amount!
-        let compensation = ANY_SENDER_MAX_COMPENSATION_WEI;
-        let relay_contract_address = RelayContract::from_eth_chain_id(chain_id)?.address()?;
-
+        token_amount: U256,
+        any_sender_nonce: u64,
+    ) -> Result<Bytes> {
         let proxy_signature = eth_private_key
             .sign_eth_prefixed_msg_bytes(encode(&[
                 Token::Address(EthAddress::from_slice(token_recipient.as_bytes())),
-                Token::Uint(amount),
+                Token::Uint(token_amount),
                 Token::Uint(any_sender_nonce.into()),
-            ]))?
-            .to_vec();
-
+            ]))?.to_vec();
         let proxy_tokens = [
             Token::Address(EthAddress::from_slice(token_recipient.as_bytes())),
-            Token::Uint(amount),
+            Token::Uint(token_amount),
             Token::Uint(any_sender_nonce.into()),
             Token::Bytes(proxy_signature),
         ];
+        Ok(instantiate_contract_from_abi(PROXY_ABI)?.function(PROXY_FN_NAME)?.encode_input(&proxy_tokens)?)
+    }
 
-        let data = instantiate_contract_from_abi(PROXY_ABI)?
-            .function(PROXY_FN_NAME)?
-            .encode_input(&proxy_tokens)?;
-
-        let relay_transaction = RelayTransaction::from_data_unsigned(
-            chain_id,
-            from,
-            data,
-            deadline,
-            gas_limit,
-            compensation,
-            relay_contract_address,
-            to,
-        )?
-        .sign(&eth_private_key)?;
-
-        Ok(relay_transaction)
+    pub fn new_mint_by_proxy_tx(
+        chain_id: Byte,
+        from: EthAddress,
+        token_amount: U256,
+        any_sender_nonce: u64,
+        eth_private_key: &EthPrivateKey,
+        to: EthAddress,
+        token_recipient: EthAddress,
+    ) -> Result<RelayTransaction> {
+        Ok(
+            RelayTransaction::from_data_unsigned(
+                chain_id,
+                from,
+                RelayTransaction::get_mint_by_proxy_tx_data(
+                    eth_private_key,
+                    token_recipient,
+                    token_amount,
+                    any_sender_nonce
+                )?,
+                ANY_SENDER_DEFAULT_DEADLINE,
+                ANY_SENDER_GAS_LIMIT,
+                ANY_SENDER_MAX_COMPENSATION_WEI,
+                RelayContract::from_eth_chain_id(chain_id)?.address()?,
+                to,
+            )?.sign(&eth_private_key)?
+        )
     }
 
     pub fn serialize_bytes(&self) -> Bytes {
@@ -380,12 +385,12 @@ mod tests {
         let any_sender_nonce = 0;
         let amount = U256::from(1337);
 
-        let relay_transaction = RelayTransaction::from_eth_transaction(
+        let relay_transaction = RelayTransaction::new_mint_by_proxy_tx(
             chain_id,
             from,
             amount,
             any_sender_nonce,
-            eth_private_key,
+            &eth_private_key,
             EthAddress::from_slice(&eth_transaction.to),
             EthAddress::from_slice(&eth_transaction.to), // FIXME This should be a different address really!
         )
