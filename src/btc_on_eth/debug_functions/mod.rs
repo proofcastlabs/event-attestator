@@ -2,6 +2,7 @@ use serde_json::json;
 use ethereum_types::Address as EthAddress;
 use crate::{
     types::Result,
+    errors::AppError,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
     constants::{
@@ -233,13 +234,27 @@ pub fn debug_get_signed_erc777_change_pnetwork_tx<D>(
         .map(|signed_tx_hex| format!("{{signed_tx:{}}}", signed_tx_hex))
 }
 
+fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()> {
+    info!("✔ Checking if the ERC777 proxy address is set...");
+    get_erc777_proxy_contract_address_from_db(db)
+        .and_then(|address|
+            match address == EthAddress::zero() {
+                true => Err(AppError::Custom("✘ No ERC777 proxy address set in db - not signing tx1".to_string())),
+                false => Ok(()),
+            }
+        )
+}
+
 pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D>(
     db: D,
     new_address: &str
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    get_signed_erc777_proxy_change_pnetwork_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?))
+    check_erc777_proxy_address_is_set(&db)
+        .and_then(|_|
+            get_signed_erc777_proxy_change_pnetwork_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?))
+        )
         .map(|signed_tx_hex| format!("{{signed_tx:{}}}", signed_tx_hex))
 }
 
@@ -249,7 +264,10 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    get_signed_erc777_proxy_change_pnetwork_by_proxy_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?))
+    check_erc777_proxy_address_is_set(&db)
+        .and_then(|_|
+            get_signed_erc777_proxy_change_pnetwork_by_proxy_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?))
+        )
         .map(|signed_tx_hex| format!("{{signed_tx:{}}}", signed_tx_hex))
 }
 
