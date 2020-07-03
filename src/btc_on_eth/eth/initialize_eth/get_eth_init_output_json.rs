@@ -7,7 +7,7 @@ use crate::{
         eth_database_utils::{
             get_latest_eth_block_number,
             get_public_eth_address_from_db,
-            get_eth_smart_contract_address_from_db,
+            get_erc777_contract_address_from_db,
         },
     },
 };
@@ -64,7 +64,7 @@ pub fn get_eth_init_output_json<D>(
         format!(
             "0x{}",
             hex::encode(
-                get_eth_smart_contract_address_from_db(&state.db)?.as_bytes()
+                get_erc777_contract_address_from_db(&state.db)?.as_bytes()
             )
         ),
     )

@@ -64,7 +64,7 @@ pub fn get_signing_params_from_db<D>(
             gas_price: get_eth_gas_price_from_db(db)?,
             eth_private_key: get_eth_private_key_from_db(db)?,
             eth_account_nonce: get_eth_account_nonce_from_db(db)?,
-            ptoken_contract_address: get_eth_smart_contract_address_from_db(db)?,
+            ptoken_contract_address: get_erc777_contract_address_from_db(db)?,
         }
     )
 }
@@ -554,7 +554,7 @@ pub fn get_eth_private_key_from_db<D>(db: &D) -> Result<EthPrivateKey>
         })
 }
 
-pub fn get_eth_smart_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
+pub fn get_erc777_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
     where D: DatabaseInterface
 {
     trace!("✔ Getting ETH smart-contract address from db...");
@@ -755,7 +755,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_eth_smart_contract_address_from_db() {
+    fn should_get_erc777_contract_address_from_db() {
         let db = get_test_database();
         let contract_address = get_sample_eth_address();
         if let Err(e) = put_eth_smart_contract_address_in_db(
@@ -764,7 +764,7 @@ mod tests {
         ) {
             panic!("Error putting eth address in db: {}", e);
         };
-        let result = get_eth_smart_contract_address_from_db(&db)
+        let result = get_erc777_contract_address_from_db(&db)
             .unwrap();
         assert!(result == contract_address);
     }

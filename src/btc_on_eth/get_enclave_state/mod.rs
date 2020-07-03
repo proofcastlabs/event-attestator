@@ -32,7 +32,7 @@ use crate::{
                 get_eth_account_nonce_from_db,
                 get_public_eth_address_from_db,
                 get_eth_canon_to_tip_length_from_db,
-                get_eth_smart_contract_address_from_db,
+                get_erc777_contract_address_from_db,
                 get_erc777_proxy_contract_address_from_db,
             },
         },
@@ -158,7 +158,7 @@ pub fn get_enclave_state<D>(
                     eth_latest_block_hash: hex::encode(eth_latest_block.block.hash.as_bytes()),
                     eth_address: hex::encode(get_public_eth_address_from_db(&db)?.as_bytes()),
                     erc777_proxy_contract_address: hex::encode(get_erc777_proxy_contract_address_from_db(&db)?),
-                    smart_contract_address: hex::encode(get_eth_smart_contract_address_from_db(&db)?.as_bytes()),
+                    smart_contract_address: hex::encode(get_erc777_contract_address_from_db(&db)?.as_bytes()),
                 }
             )?)
         })
