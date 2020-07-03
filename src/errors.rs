@@ -21,6 +21,7 @@ pub enum AppError {
     BitcoinError(bitcoin::consensus::encode::Error),
     BitcoinAddressError(bitcoin::util::address::Error),
     EosPrimitivesNamesError(eos_primitives::ParseNameError),
+    EthAbiError(ethabi::Error),
 }
 
 impl fmt::Display for AppError {
@@ -64,6 +65,8 @@ impl fmt::Display for AppError {
                 format!("✘ Error setting up logger!\n✘ {}", e),
             AppError::EosPrimitivesNamesError(ref e) =>
                 format!("✘ Eos Primitives Names Error!\n✘ {:?}", e),
+            AppError::EthAbiError(ref e) =>
+                format!("✘ Eth ABI Error!\n✘ {}", e),
         };
         f.write_fmt(format_args!("{}", msg))
     }
@@ -180,5 +183,11 @@ impl From<eos_primitives::Error> for AppError {
 impl From<chrono::format::ParseError> for AppError {
     fn from(e: chrono::format::ParseError) -> AppError {
         AppError::ChronoError(e)
+    }
+}
+
+impl From<ethabi::Error> for AppError {
+    fn from(e: ethabi::Error) -> AppError {
+        AppError::EthAbiError(e)
     }
 }

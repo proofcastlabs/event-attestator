@@ -2,23 +2,32 @@ use crate::{
     btc_on_eth::{
         crypto_utils::keccak_hash_bytes,
         eth::{
+            eth_crypto::eth_private_key::EthPrivateKey,
             any_sender::{
-                relay_contract::RelayContract,
                 serde::{compensation, data},
+                relay_contract::RelayContract,
             },
-            eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
         },
     },
-    chains::eth::eth_constants::{
-        ANY_SENDER_MAX_COMPENSATION_WEI, ANY_SENDER_MAX_DATA_LEN, ANY_SENDER_MAX_GAS_LIMIT,
-        ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID,
+    chains::eth::{
+        eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
+        eth_constants::{
+            ETH_MAINNET_CHAIN_ID,
+            ETH_ROPSTEN_CHAIN_ID,
+        },
     },
     errors::AppError,
     types::{Byte, Bytes, Result},
 };
 use ethabi::{encode, Token};
-use ethereum_types::{Address as EthAddress, Signature as EthSignature};
+use ethereum_types::{Address as EthAddress, Signature as EthSignature, U256};
 use rlp::RlpStream;
+
+pub const ANY_SENDER_GAS_LIMIT: u32 = 300_000;
+pub const ANY_SENDER_MAX_DATA_LEN: usize = 3_000;
+pub const ANY_SENDER_MAX_GAS_LIMIT: u32 = 3_000_000;
+pub const ANY_SENDER_DEFAULT_DEADLINE: Option<u64> =  None;
+pub const ANY_SENDER_MAX_COMPENSATION_WEI: u64 = 49_999_999_999_999_999;
 
 /// An any.sender relay transaction. It is very similar
 /// to a normal transaction except for a few fields.
@@ -184,34 +193,28 @@ impl RelayTransaction {
         Ok(self)
     }
 
-    /// Creates a new relay transaction from Ethereum transaction.
-    pub fn from_eth_transaction(
-        eth_transaction: &EthTransaction,
+    /// Creates a new AnySender relayed `mintByProxy` ERC777 proxy contract tranasction.
+    pub fn new_mint_by_proxy_tx(
+        chain_id: Byte,
         from: EthAddress,
-        eth_private_key: EthPrivateKey,
+        token_amount: U256,
+        any_sender_nonce: u64,
+        eth_private_key: &EthPrivateKey,
+        to: EthAddress,
+        token_recipient: EthAddress,
     ) -> Result<RelayTransaction> {
-        let chain_id = eth_transaction.chain_id;
-        let data = eth_transaction.data.clone();
-        let deadline = None; // use the default any.sender deadline
-        let gas_limit = eth_transaction.gas_limit.as_u32();
-        let compensation = ANY_SENDER_MAX_COMPENSATION_WEI;
-        let relay_contract_address =
-            RelayContract::from_eth_chain_id(eth_transaction.chain_id)?.address()?;
-        let to = EthAddress::from_slice(&eth_transaction.to);
-
-        let relay_transaction = RelayTransaction::from_data_unsigned(
-            chain_id,
-            from,
-            data,
-            deadline,
-            gas_limit,
-            compensation,
-            relay_contract_address,
-            to,
-        )?
-        .sign(&eth_private_key)?;
-
-        Ok(relay_transaction)
+        Ok(
+            RelayTransaction::from_data_unsigned(
+                chain_id,
+                from,
+                encode_mint_by_proxy_tx_data(eth_private_key, token_recipient, token_amount, any_sender_nonce)?,
+                ANY_SENDER_DEFAULT_DEADLINE,
+                ANY_SENDER_GAS_LIMIT,
+                ANY_SENDER_MAX_COMPENSATION_WEI,
+                RelayContract::from_eth_chain_id(chain_id)?.address()?,
+                to,
+            )?.sign(&eth_private_key)?
+        )
     }
 
     pub fn serialize_bytes(&self) -> Bytes {
@@ -340,9 +343,9 @@ mod tests {
     }
 
     #[test]
-    fn should_create_new_signed_relay_tx_from_eth_tx() {
-        let mut eth_transaction = get_sample_unsigned_eth_transaction();
-        eth_transaction.chain_id = 3;
+    fn should_create_new_any_sender_relayed_mint_by_proxy_tx() {
+        let eth_transaction = get_sample_unsigned_eth_transaction();
+        let chain_id = 3;
         let eth_private_key = EthPrivateKey::from_slice([
             132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169, 234,
             47, 186, 237, 88, 161, 200, 177, 24, 142, 207, 242, 168, 221,
@@ -351,19 +354,28 @@ mod tests {
         let from = EthAddress::from_slice(
             &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap(),
         );
+        let any_sender_nonce = 0;
+        let amount = U256::from(1337);
 
-        let relay_transaction =
-            RelayTransaction::from_eth_transaction(&eth_transaction, from, eth_private_key)
-                .expect("Error creating any.sender relay transaction from eth transaction!");
+        let relay_transaction = RelayTransaction::new_mint_by_proxy_tx(
+            chain_id,
+            from,
+            amount,
+            any_sender_nonce,
+            &eth_private_key,
+            EthAddress::from_slice(&eth_transaction.to),
+            EthAddress::from_slice(&eth_transaction.to), // FIXME This should be a different address really!
+        )
+        .expect("Error creating any.sender relay transaction from eth transaction!");
         let expected_relay_transaction = RelayTransaction {
             chain_id: 3,
             from: EthAddress::from_slice(
                 &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap()),
             signature: EthSignature::from_slice(
-                &hex::decode("836ca384f9e2da3a7333c70142edae081b5f8048e9f919de9033e60021f3e1076d050dd58ce6d3db109a172b06b64a8ec7adce9bd5d5aaa84e54a0c6aeb401041c").unwrap()),
-            data: Bytes::default(),
+                &hex::decode("6b7a97497a94eaef7f19b3512ecfc776a740c6802e08afe1b0422df62acd48c1649be24bdea460be79315d9c9bdbea0dbdac118b3577eb6aab48d3cdf7c11f931c").unwrap()),
+            data: vec![122, 214, 174, 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 83, 194, 4, 141, 173, 79, 207, 171, 68, 195, 239, 61, 22, 232, 130, 181, 23, 141, 244, 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 57, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 65, 155, 196, 23, 176, 241, 106, 157, 159, 93, 33, 109, 139, 206, 183, 77, 162, 108, 242, 171, 31, 212, 249, 141, 180, 202, 134, 217, 239, 84, 242, 88, 6, 113, 242, 43, 136, 1, 215, 205, 182, 59, 242, 3, 109, 145, 213, 166, 32, 222, 8, 251, 143, 7, 215, 54, 128, 82, 237, 31, 99, 7, 176, 247, 39, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             deadline: 0,
-            gas_limit: 100000,
+            gas_limit: 300000,
             compensation: 49999999999999999,
             relay_contract_address: EthAddress::from_slice(
                 &hex::decode("9b4fa5a1d9f6812e2b56b36fbde62736fa82c2a7").unwrap()),

@@ -5,6 +5,7 @@ use ethereum_types::{
 use crate::{
     errors::AppError,
     traits::DatabaseInterface,
+    constants::MIN_DATA_SENSITIVITY_LEVEL,
     types::{
         Bytes,
         Result,
@@ -15,6 +16,7 @@ use crate::{
         ETH_CHAIN_ID_KEY,
         ETH_GAS_PRICE_KEY,
         ETH_LINKER_HASH_KEY,
+        ANY_SENDER_NONCE_KEY,
         ETH_ACCOUNT_NONCE_KEY,
         ETH_PRIVATE_KEY_DB_KEY,
         ETH_TAIL_BLOCK_HASH_KEY,
@@ -23,7 +25,7 @@ use crate::{
         ETH_ANCHOR_BLOCK_HASH_KEY,
         ETH_CANON_TO_TIP_LENGTH_KEY,
         ETH_SMART_CONTRACT_ADDRESS_KEY,
-        ANY_SENDER_NONCE_KEY,
+        ERC777_PROXY_CONTACT_ADDRESS_KEY,
     },
     btc_on_eth::{
         database_utils::{
@@ -59,16 +61,11 @@ pub fn get_signing_params_from_db<D>(
     trace!("✔ Getting signing params from db...");
     Ok(
         EthSigningParams {
-            chain_id:
-                get_eth_chain_id_from_db(db)?,
-            gas_price:
-                get_eth_gas_price_from_db(db)?,
-            eth_private_key:
-                get_eth_private_key_from_db(db)?,
-            eth_account_nonce:
-                get_eth_account_nonce_from_db(db)?,
-            ptoken_contract_address:
-                get_eth_smart_contract_address_from_db(db)?,
+            chain_id: get_eth_chain_id_from_db(db)?,
+            gas_price: get_eth_gas_price_from_db(db)?,
+            eth_private_key: get_eth_private_key_from_db(db)?,
+            eth_account_nonce: get_eth_account_nonce_from_db(db)?,
+            ptoken_contract_address: get_erc777_contract_address_from_db(db)?,
         }
     )
 }
@@ -78,13 +75,10 @@ pub fn start_eth_db_transaction<D>(
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
-    state
-        .db
-        .start_transaction()
-        .map(|_| {
-            info!("✔ Database transaction begun for ETH block submission!");
-            state
-        })
+    state.db.start_transaction().map(|_| {
+        info!("✔ Database transaction begun for ETH block submission!");
+        state
+    })
 }
 
 pub fn end_eth_db_transaction<D>(
@@ -92,13 +86,10 @@ pub fn end_eth_db_transaction<D>(
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
-    state
-        .db
-        .end_transaction()
-        .map(|_| {
-            info!("✔ Database transaction ended for ETH block submission!");
-            state
-        })
+    state.db.end_transaction().map(|_| {
+        info!("✔ Database transaction ended for ETH block submission!");
+        state
+    })
 }
 
 pub fn put_eth_canon_to_tip_length_in_db<D>(
@@ -108,18 +99,14 @@ pub fn put_eth_canon_to_tip_length_in_db<D>(
     where D: DatabaseInterface
 {
     info!("✔ Putting ETH canon-to-tip length of {} in db...", length);
-    db.put(
-        ETH_CANON_TO_TIP_LENGTH_KEY.to_vec(),
-        convert_u64_to_bytes(length),
-        None,
-    )
+    db.put(ETH_CANON_TO_TIP_LENGTH_KEY.to_vec(), convert_u64_to_bytes(length), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn get_eth_canon_to_tip_length_from_db<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
     info!("✔ Getting ETH canon-to-tip length from db...");
-    db.get(ETH_CANON_TO_TIP_LENGTH_KEY.to_vec(), None)
+    db.get(ETH_CANON_TO_TIP_LENGTH_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
@@ -192,13 +179,7 @@ pub fn put_special_eth_block_in_db<D>(
 {
     trace!("✔ Putting ETH special block in db of type: {}", block_type);
     put_eth_block_and_receipts_in_db(db, &eth_block_and_receipts)
-        .and_then(|_|
-            put_special_eth_hash_in_db(
-                db,
-                &block_type,
-                &eth_block_and_receipts.block.hash
-            )
-        )
+        .and_then(|_| put_special_eth_hash_in_db(db, &block_type, &eth_block_and_receipts.block.hash))
 }
 
 pub fn put_special_eth_hash_in_db<D>(
@@ -295,7 +276,7 @@ pub fn get_eth_hash_from_db<D>(db: &D, key: &Bytes) -> Result<EthHash>
         "✔ Getting ETH hash from db under key: {}",
         hex::encode(&key)
     );
-    db.get(key.to_vec(), None)
+    db.get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| Ok(EthHash::from_slice(&bytes)))
 }
 
@@ -316,17 +297,14 @@ pub fn put_eth_hash_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    db.put(key.to_vec(), convert_h256_to_bytes(*eth_hash), None)
+    db.put(key.to_vec(), convert_h256_to_bytes(*eth_hash), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn eth_block_exists_in_db<D>(db: &D, block_hash: &EthHash) -> bool
     where D: DatabaseInterface
 {
-    info!(
-        "✔ Checking for existence of ETH block: {}",
-       hex::encode(block_hash.as_bytes().to_vec())
-   );
-    key_exists_in_db(db, &block_hash.as_bytes().to_vec(), None)
+    info!("✔ Checking for existence of ETH block: {}", hex::encode(block_hash.as_bytes().to_vec()));
+    key_exists_in_db(db, &block_hash.as_bytes().to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn get_hash_from_db_via_hash_key<D>(
@@ -335,7 +313,7 @@ pub fn get_hash_from_db_via_hash_key<D>(
 ) -> Result<Option<EthHash>>
     where D: DatabaseInterface
 {
-    match db.get(convert_h256_to_bytes(hash_key), None) {
+    match db.get(convert_h256_to_bytes(hash_key), MIN_DATA_SENSITIVITY_LEVEL) {
         Ok(bytes) => Ok(Some(convert_bytes_to_h256(&bytes)?)),
         Err(_) => Ok(None),
     }
@@ -349,11 +327,7 @@ pub fn put_eth_block_and_receipts_in_db<D>(
 {
     let key = convert_h256_to_bytes(eth_block_and_receipts.block.hash);
     trace!("✔ Adding block to database under key: {:?}", hex::encode(&key));
-    db.put(
-        key,
-        encode_eth_block_and_receipts_as_json_bytes(eth_block_and_receipts)?,
-        None,
-    )
+    db.put(key, encode_eth_block_and_receipts_as_json_bytes(eth_block_and_receipts)?, MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn maybe_get_parent_eth_block_and_receipts<D>(
@@ -378,11 +352,7 @@ pub fn maybe_get_nth_ancestor_eth_block_and_receipts<D>(
         None => None,
         Some(block_and_receipts) => match n {
             0 => Some(block_and_receipts),
-            _ => maybe_get_nth_ancestor_eth_block_and_receipts(
-                db,
-                &block_and_receipts.block.parent_hash,
-                n - 1,
-            )
+            _ => maybe_get_nth_ancestor_eth_block_and_receipts(db, &block_and_receipts.block.parent_hash, n - 1)
         }
     }
 }
@@ -397,7 +367,7 @@ pub fn maybe_get_eth_block_and_receipts_from_db<D>(
         "✔ Maybe getting ETH block and receipts from db under hash: {}",
         block_hash,
     );
-    match db.get(convert_h256_to_bytes(*block_hash), None) {
+    match db.get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL) {
         Err(_) => None,
         Ok(bytes) => {
             match decode_eth_block_and_receipts_from_json_bytes(bytes) {
@@ -421,7 +391,7 @@ pub fn get_eth_block_from_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Getting ETH block and receipts from db...");
-    db.get(convert_h256_to_bytes(*block_hash), None)
+    db.get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(decode_eth_block_and_receipts_from_json_bytes)
 }
 
@@ -443,18 +413,14 @@ pub fn put_eth_gas_price_in_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Putting ETH gas price of {} in db...", gas_price);
-    db.put(
-        ETH_GAS_PRICE_KEY.to_vec(),
-        gas_price.to_le_bytes().to_vec(),
-        None,
-    )
+    db.put(ETH_GAS_PRICE_KEY.to_vec(), gas_price.to_le_bytes().to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn get_eth_gas_price_from_db<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
     trace!("✔ Getting ETH gas price from db...");
-    db.get(ETH_GAS_PRICE_KEY.to_vec(), None)
+    db.get(ETH_GAS_PRICE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes|
             match bytes.len() <= 8 {
                 true => {
@@ -509,18 +475,14 @@ pub fn put_eth_chain_id_in_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Putting ETH `chain_id` in db of {} in db...", chain_id);
-    db.put(
-        ETH_CHAIN_ID_KEY.to_vec(),
-        chain_id.to_le_bytes().to_vec(),
-        None,
-    )
+    db.put(ETH_CHAIN_ID_KEY.to_vec(), chain_id.to_le_bytes().to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn get_eth_chain_id_from_db<D>(db: &D) -> Result<u8>
     where D: DatabaseInterface
 {
     trace!("✔ Getting ETH `chain_id` from db...");
-    db.get(ETH_CHAIN_ID_KEY.to_vec(), None)
+    db.get(ETH_CHAIN_ID_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes|
             match bytes.len() == 1 {
                 true => {
@@ -558,14 +520,36 @@ pub fn get_eth_private_key_from_db<D>(db: &D) -> Result<EthPrivateKey>
         })
 }
 
-pub fn get_eth_smart_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
+pub fn get_erc777_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
     where D: DatabaseInterface
 {
     trace!("✔ Getting ETH smart-contract address from db...");
-    db.get(ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(), None)
-        .and_then(|address_bytes|
-            Ok(EthAddress::from_slice(&address_bytes[..]))
-        )
+    db.get(ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+        .and_then(|address_bytes| Ok(EthAddress::from_slice(&address_bytes[..])))
+}
+
+pub fn get_erc777_proxy_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
+    where D: DatabaseInterface
+{
+    trace!("✔ Getting ERC777 proxy contract address from db...");
+    match db.get(ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL) {
+        Ok(address_bytes) => Ok(EthAddress::from_slice(&address_bytes[..])),
+        Err(_) => {
+            debug!("✘ No ERC777 proxy address in db, defaulting to zero ETH address!");
+            Ok(EthAddress::zero())
+        }
+    }
+}
+
+#[allow(dead_code)]
+pub fn put_erc777_proxy_contract_address_in_db<D>(
+    db: &D,
+    proxy_contract_address: &EthAddress,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    trace!("✔ Putting ERC777 proxy contract address in db...");
+    put_eth_address_in_db(db, &ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(), proxy_contract_address)
 }
 
 pub fn put_eth_smart_contract_address_in_db<D>(
@@ -575,19 +559,14 @@ pub fn put_eth_smart_contract_address_in_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Putting ETH smart-contract address in db...");
-    put_eth_address_in_db(
-        db,
-        &ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-        smart_contract_address,
-    )
+    put_eth_address_in_db(db, &ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(), smart_contract_address)
 }
 
 pub fn get_public_eth_address_from_db<D>(db: &D) -> Result<EthAddress>
     where D: DatabaseInterface
 {
     trace!("✔ Getting public ETH address from db...");
-    db.get(ETH_ADDRESS_KEY.to_vec(), None)
-        .map(|bytes| EthAddress::from_slice(&bytes))
+    db.get(ETH_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL).map(|bytes| EthAddress::from_slice(&bytes))
 }
 
 pub fn put_public_eth_address_in_db<D>(
@@ -597,7 +576,7 @@ pub fn put_public_eth_address_in_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Putting public ETH address in db...");
-    db.put(ETH_ADDRESS_KEY.to_vec(), eth_address.as_bytes().to_vec(), None)
+    db.put(ETH_ADDRESS_KEY.to_vec(), eth_address.as_bytes().to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn put_eth_address_in_db<D>(
@@ -607,7 +586,7 @@ pub fn put_eth_address_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    db.put(key.to_vec(), eth_address.as_bytes().to_vec(), None)
+    db.put(key.to_vec(), eth_address.as_bytes().to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn get_any_sender_nonce_from_db<D>(
@@ -637,9 +616,7 @@ pub fn increment_any_sender_nonce_in_db<D>(
 {
     trace!("✔ Incrementing any.sender nonce in db...");
     get_any_sender_nonce_from_db(db)
-        .and_then(|nonce|
-            put_any_sender_nonce_in_db(db, nonce + amount_to_increment_by)
-        )
+        .and_then(|nonce| put_any_sender_nonce_in_db(db, nonce + amount_to_increment_by))
 }
 
 #[cfg(test)]
@@ -662,7 +639,7 @@ mod tests {
         let result = key_exists_in_db(
             &db,
             &ETH_ACCOUNT_NONCE_KEY.to_vec(),
-            None
+            MIN_DATA_SENSITIVITY_LEVEL
         );
         assert!(!result);
     }
@@ -672,13 +649,13 @@ mod tests {
         let thing = vec![0xc0];
         let db = get_test_database();
         let key = ETH_ACCOUNT_NONCE_KEY.clone();
-        if let Err(e) = db.put(key.to_vec(), thing, None) {
+        if let Err(e) = db.put(key.to_vec(), thing, MIN_DATA_SENSITIVITY_LEVEL) {
             panic!("Error putting canon to tip len in db: {}", e);
         };
         let result = key_exists_in_db(
             &db,
             &ETH_ACCOUNT_NONCE_KEY.to_vec(),
-            None,
+            MIN_DATA_SENSITIVITY_LEVEL,
         );
         assert!(result);
     }
@@ -735,7 +712,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_eth_smart_contract_address_from_db() {
+    fn should_get_erc777_contract_address_from_db() {
         let db = get_test_database();
         let contract_address = get_sample_eth_address();
         if let Err(e) = put_eth_smart_contract_address_in_db(
@@ -744,7 +721,7 @@ mod tests {
         ) {
             panic!("Error putting eth address in db: {}", e);
         };
-        let result = get_eth_smart_contract_address_from_db(&db)
+        let result = get_erc777_contract_address_from_db(&db)
             .unwrap();
         assert!(result == contract_address);
     }

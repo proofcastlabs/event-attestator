@@ -4,7 +4,7 @@ use crate::{
     chains::eth::eth_constants::PTOKEN_CONTRACT_TOPICS,
     btc_on_eth::eth::{
         eth_state::EthState,
-        eth_database_utils::get_eth_smart_contract_address_from_db,
+        eth_database_utils::get_erc777_contract_address_from_db,
         eth_types::{
             EthLog,
             EthHash,
@@ -96,7 +96,7 @@ pub fn filter_irrelevant_receipts_from_state<D>(
     info!("✔ Filtering out non-pToken related receipts...");
     filter_eth_block_and_receipts(
         state.get_eth_block_and_receipts()?,
-        &get_eth_smart_contract_address_from_db(&state.db)?,
+        &get_erc777_contract_address_from_db(&state.db)?,
         &PTOKEN_CONTRACT_TOPICS.to_vec(),
     )
         .and_then(|filtered_block_and_receipts| {

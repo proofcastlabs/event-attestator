@@ -27,12 +27,13 @@ use crate::{
                 get_eth_tail_block_from_db,
                 get_eth_canon_block_from_db,
                 get_eth_latest_block_from_db,
+                get_any_sender_nonce_from_db,
                 get_eth_anchor_block_from_db,
                 get_eth_account_nonce_from_db,
                 get_public_eth_address_from_db,
                 get_eth_canon_to_tip_length_from_db,
-                get_eth_smart_contract_address_from_db,
-                get_any_sender_nonce_from_db,
+                get_erc777_contract_address_from_db,
+                get_erc777_proxy_contract_address_from_db,
             },
         },
         btc::{
@@ -67,6 +68,7 @@ struct EnclaveState {
     btc_utxo_nonce: u64,
     btc_tail_length: u64,
     eth_tail_length: u64,
+    any_sender_nonce: u64,
     db_key_prefix: String,
     btc_public_key: String,
     btc_sats_per_byte: u64,
@@ -95,7 +97,7 @@ struct EnclaveState {
     btc_anchor_block_number: u64,
     btc_canon_to_tip_length: u64,
     eth_latest_block_number: usize,
-    any_sender_nonce: u64,
+    erc777_proxy_contract_address: String,
 }
 
 pub fn get_enclave_state<D>(
@@ -110,96 +112,53 @@ pub fn get_enclave_state<D>(
             let btc_tail_block = get_btc_tail_block_from_db(&db)?;
             let eth_canon_block = get_eth_canon_block_from_db(&db)?;
             let btc_canon_block = get_btc_canon_block_from_db(&db)?;
+            let btc_private_key = get_btc_private_key_from_db(&db)?;
             let eth_anchor_block = get_eth_anchor_block_from_db(&db)?;
             let btc_anchor_block = get_btc_anchor_block_from_db(&db)?;
             let eth_latest_block = get_eth_latest_block_from_db(&db)?;
             let btc_latest_block = get_btc_latest_block_from_db(&db)?;
-            let btc_private_key = get_btc_private_key_from_db(&db)?;
-            let btc_public_key_hex = hex::encode(
-                &btc_private_key
-                    .to_public_key_slice()
-                    .to_vec()
-            );
+            let btc_public_key_hex = hex::encode(&btc_private_key.to_public_key_slice().to_vec());
             Ok(serde_json::to_string(
                 &EnclaveState {
+                    debug_mode: DEBUG_MODE,
+                    btc_tail_length: BTC_TAIL_LENGTH,
+                    eth_tail_length: ETH_TAIL_LENGTH,
+                    btc_public_key: btc_public_key_hex,
                     core_is_validating: CORE_IS_VALIDATING,
                     db_key_prefix: DB_KEY_PREFIX.to_string(),
-                    debug_mode: DEBUG_MODE,
-                    btc_tail_length:
-                        BTC_TAIL_LENGTH,
-                    eth_tail_length:
-                        ETH_TAIL_LENGTH,
-                    btc_public_key:
-                        btc_public_key_hex,
-                    btc_tail_block_number:
-                        btc_tail_block.height,
-                    btc_tail_block_hash:
-                        btc_tail_block.id.to_string(),
-                    btc_latest_block_number:
-                        btc_latest_block.height,
-                    btc_latest_block_hash:
-                        btc_latest_block.id.to_string(),
-                    btc_anchor_block_number:
-                        btc_anchor_block.height,
-                    btc_anchor_block_hash:
-                        btc_anchor_block.id.to_string(),
-                    btc_canon_block_number:
-                        btc_canon_block.height,
-                    btc_canon_block_hash:
-                        btc_canon_block.id.to_string(),
-                    eth_tail_block_number:
-                        eth_tail_block.block.number.as_usize(),
-                    eth_latest_block_number:
-                        eth_latest_block.block.number.as_usize(),
-                    eth_canon_block_number:
-                        eth_canon_block.block.number.as_usize(),
-                    eth_anchor_block_number:
-                        eth_anchor_block.block.number.as_usize(),
-                    eth_tail_block_hash:
-                        hex::encode(eth_tail_block.block.hash.as_bytes()),
-                    eth_latest_block_hash:
-                        hex::encode(eth_latest_block.block.hash.as_bytes()),
-                    eth_canon_block_hash:
-                        hex::encode(eth_canon_block.block.hash.as_bytes()),
-                    eth_anchor_block_hash:
-                        hex::encode(eth_anchor_block.block.hash.as_bytes()),
-                    eth_linker_hash:
-                        hex::encode(get_eth_linker_hash(&db)?.as_bytes()),
-                    btc_sats_per_byte:
-                        get_btc_fee_from_db(&db)?,
-                    btc_difficulty:
-                        get_btc_difficulty_from_db(&db)?,
-                    btc_linker_hash:
-                        get_btc_linker_hash(&db)?.to_string(),
-                    eth_canon_to_tip_length:
-                        get_eth_canon_to_tip_length_from_db(&db)?,
-                    btc_canon_to_tip_length:
-                        get_btc_canon_to_tip_length_from_db(&db)?,
-                    eth_address:
-                        hex::encode(
-                            get_public_eth_address_from_db(&db)?.as_bytes()
-                        ),
-                    smart_contract_address:
-                        hex::encode(
-                            get_eth_smart_contract_address_from_db(&db)?
-                                .as_bytes()
-                        ),
-                    btc_utxo_nonce:
-                        get_utxo_nonce_from_db(&db)?,
-                    btc_address:
-                        get_btc_address_from_db(&db)?,
-                    btc_network:
-                        get_btc_network_from_db(&db)?.to_string(),
-                    eth_account_nonce:
-                        get_eth_account_nonce_from_db(&db)?,
-                    eth_gas_price:
-                        get_eth_gas_price_from_db(&db)?,
-                    btc_number_of_utxos:
-                        get_total_number_of_utxos_from_db(&db)?,
-                    btc_utxo_total_value:
-                        get_total_utxo_balance_from_db(&db)?,
-                    any_sender_nonce:
-                        get_any_sender_nonce_from_db(&db)?,
+                    btc_address: get_btc_address_from_db(&db)?,
+                    btc_utxo_nonce: get_utxo_nonce_from_db(&db)?,
+                    btc_tail_block_number: btc_tail_block.height,
+                    btc_sats_per_byte: get_btc_fee_from_db(&db)?,
+                    eth_gas_price: get_eth_gas_price_from_db(&db)?,
+                    btc_canon_block_number: btc_canon_block.height,
+                    btc_latest_block_number: btc_latest_block.height,
+                    btc_difficulty: get_btc_difficulty_from_db(&db)?,
+                    btc_anchor_block_number: btc_anchor_block.height,
+                    btc_tail_block_hash: btc_tail_block.id.to_string(),
+                    btc_canon_block_hash: btc_canon_block.id.to_string(),
+                    any_sender_nonce: get_any_sender_nonce_from_db(&db)?,
+                    btc_latest_block_hash: btc_latest_block.id.to_string(),
+                    btc_anchor_block_hash: btc_anchor_block.id.to_string(),
+                    btc_linker_hash: get_btc_linker_hash(&db)?.to_string(),
+                    btc_network: get_btc_network_from_db(&db)?.to_string(),
+                    eth_account_nonce: get_eth_account_nonce_from_db(&db)?,
+                    btc_utxo_total_value: get_total_utxo_balance_from_db(&db)?,
+                    btc_number_of_utxos: get_total_number_of_utxos_from_db(&db)?,
+                    eth_tail_block_number: eth_tail_block.block.number.as_usize(),
+                    eth_canon_block_number: eth_canon_block.block.number.as_usize(),
+                    eth_anchor_block_number: eth_anchor_block.block.number.as_usize(),
+                    eth_latest_block_number: eth_latest_block.block.number.as_usize(),
+                    eth_linker_hash: hex::encode(get_eth_linker_hash(&db)?.as_bytes()),
+                    eth_canon_to_tip_length: get_eth_canon_to_tip_length_from_db(&db)?,
+                    btc_canon_to_tip_length: get_btc_canon_to_tip_length_from_db(&db)?,
+                    eth_tail_block_hash: hex::encode(eth_tail_block.block.hash.as_bytes()),
+                    eth_canon_block_hash: hex::encode(eth_canon_block.block.hash.as_bytes()),
+                    eth_anchor_block_hash: hex::encode(eth_anchor_block.block.hash.as_bytes()),
+                    eth_latest_block_hash: hex::encode(eth_latest_block.block.hash.as_bytes()),
+                    eth_address: hex::encode(get_public_eth_address_from_db(&db)?.as_bytes()),
+                    erc777_proxy_contract_address: hex::encode(get_erc777_proxy_contract_address_from_db(&db)?),
+                    smart_contract_address: hex::encode(get_erc777_contract_address_from_db(&db)?.as_bytes()),
                 }
             )?)
         })
