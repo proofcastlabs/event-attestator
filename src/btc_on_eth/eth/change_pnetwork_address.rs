@@ -4,6 +4,7 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::eth_contracts::{
         erc777_proxy::{
+            ERC777_CHANGE_PNETWORK_BY_PROXY_GAS_LIMIT,
             encode_erc777_proxy_change_pnetwork_fxn_data,
             encode_erc777_proxy_change_pnetwork_by_proxy_fxn_data,
         },
@@ -95,7 +96,7 @@ pub fn get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
                     eth_value,
                     get_erc777_proxy_contract_address_from_db(db)?,
                     get_eth_chain_id_from_db(db)?,
-                    ERC777_CHANGE_PNETWORK_GAS_LIMIT,
+                    ERC777_CHANGE_PNETWORK_BY_PROXY_GAS_LIMIT,
                     get_eth_gas_price_from_db(db)?,
                 )
                     .sign(get_eth_private_key_from_db(db)?)?
