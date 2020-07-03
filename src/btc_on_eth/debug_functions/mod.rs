@@ -230,8 +230,13 @@ pub fn debug_get_signed_erc777_change_pnetwork_tx<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    get_signed_erc777_change_pnetwork_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?))
-        .map(|signed_tx_hex| format!("{{signed_tx:{}}}", signed_tx_hex))
+    check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| get_signed_erc777_change_pnetwork_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?)))
+        .and_then(|signed_tx_hex| {
+            db.end_transaction()?;
+            Ok(format!("{{signed_tx:{}}}", signed_tx_hex))
+        })
 }
 
 fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()> {
@@ -251,11 +256,16 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    check_erc777_proxy_address_is_set(&db)
+    check_debug_mode()
+        .and_then(|_| check_erc777_proxy_address_is_set(&db))
+        .and_then(|_| db.start_transaction())
         .and_then(|_|
             get_signed_erc777_proxy_change_pnetwork_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?))
         )
-        .map(|signed_tx_hex| format!("{{signed_tx:{}}}", signed_tx_hex))
+        .and_then(|signed_tx_hex| {
+            db.end_transaction()?;
+            Ok(format!("{{signed_tx:{}}}", signed_tx_hex))
+        })
 }
 
 pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
@@ -264,10 +274,15 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    check_erc777_proxy_address_is_set(&db)
+    check_debug_mode()
+        .and_then(|_| check_erc777_proxy_address_is_set(&db))
+        .and_then(|_| db.start_transaction())
         .and_then(|_|
             get_signed_erc777_proxy_change_pnetwork_by_proxy_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?))
         )
-        .map(|signed_tx_hex| format!("{{signed_tx:{}}}", signed_tx_hex))
+        .and_then(|signed_tx_hex| {
+            db.end_transaction()?;
+            Ok(format!("{{signed_tx:{}}}", signed_tx_hex))
+        })
 }
 
