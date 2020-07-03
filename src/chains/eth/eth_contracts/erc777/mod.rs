@@ -13,7 +13,7 @@ pub const ERC777_CHANGE_PNETWORK_GAS_LIMIT: usize = 30_000;
 pub const ERC777_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"newPNetwork\",\"type\":\"address\"}],\"name\":\"changePNetwork\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0xfd4add66\"}]";
 
 pub fn encode_erc777_change_pnetwork_fxn_data(new_ptoken_address: EthAddress) -> Result<Bytes> {
-    encode_fxn_call(ERC777_ABI, "changePNetwork", vec![Token::Address(new_ptoken_address)])
+    encode_fxn_call(ERC777_ABI, "changePNetwork", &[Token::Address(new_ptoken_address)])
 }
 
 #[cfg(test)]

@@ -28,29 +28,21 @@ pub fn encode_mint_by_proxy_tx_data(
             Token::Uint(token_amount),
             Token::Uint(any_sender_nonce.into()),
         ]))?.to_vec();
-    let proxy_tokens = vec![
+    let fxn_param_tokens = [
         Token::Address(EthAddress::from_slice(token_recipient.as_bytes())),
         Token::Uint(token_amount),
         Token::Uint(any_sender_nonce.into()),
         Token::Bytes(proxy_signature),
     ];
-    encode_fxn_call(ERC777_PROXY_ABI, "mintByProxy", proxy_tokens)
+    encode_fxn_call(ERC777_PROXY_ABI, "mintByProxy", &fxn_param_tokens)
 }
 
 pub fn encode_erc777_proxy_change_pnetwork_fxn_data(new_pnetwork_address: EthAddress) -> Result<Bytes> {
-    encode_fxn_call(
-        ERC777_PROXY_ABI,
-        "changePNetwork",
-        vec![Token::Address(new_pnetwork_address)],
-    )
+    encode_fxn_call(ERC777_PROXY_ABI, "changePNetwork", &[Token::Address(new_pnetwork_address)])
 }
 
 pub fn encode_erc777_proxy_change_pnetwork_by_proxy_fxn_data(new_pnetwork_address: EthAddress) -> Result<Bytes> {
-    encode_fxn_call(
-        ERC777_PROXY_ABI,
-        "changePNetworkByProxy",
-        vec![Token::Address(new_pnetwork_address)]
-    )
+    encode_fxn_call(ERC777_PROXY_ABI, "changePNetworkByProxy", &[Token::Address(new_pnetwork_address)])
 }
 
 

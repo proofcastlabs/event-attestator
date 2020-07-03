@@ -243,8 +243,8 @@ fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()>
     info!("✔ Checking if the ERC777 proxy address is set...");
     get_erc777_proxy_contract_address_from_db(db)
         .and_then(|address|
-            match address == EthAddress::zero() {
-                true => Err(AppError::Custom("✘ No ERC777 proxy address set in db - not signing tx1".to_string())),
+            match address.is_zero() {
+                true => Err(AppError::Custom("✘ No ERC777 proxy address set in db - not signing tx!".to_string())),
                 false => Ok(()),
             }
         )

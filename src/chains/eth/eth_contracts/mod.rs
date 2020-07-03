@@ -13,7 +13,7 @@ pub fn instantiate_contract_from_abi(abi: &str) -> Result<EthContract> {
     Ok(EthContract::load(abi.as_bytes())?)
 }
 
-pub fn encode_fxn_call(abi: &str, fxn_name: &str, param_tokens: Vec<Token>) -> Result<Bytes> {
+pub fn encode_fxn_call(abi: &str, fxn_name: &str, param_tokens: &[Token]) -> Result<Bytes> {
     Ok(instantiate_contract_from_abi(abi)?.function(fxn_name)?.encode_input(&param_tokens)?)
 }
 
