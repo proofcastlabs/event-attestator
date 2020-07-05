@@ -1,3 +1,7 @@
+use serde_json::{
+    json,
+    Value as JsonValue,
+};
 use bitcoin_hashes::{
     Hash,
     sha256d,
@@ -9,6 +13,7 @@ use crate::{
         Result,
     },
     traits::DatabaseInterface,
+    constants::MIN_DATA_SENSITIVITY_LEVEL,
     chains::btc::utxo_manager::{
         utxo_types::BtcUtxoAndValue,
         utxo_database_utils::{
@@ -47,7 +52,7 @@ pub fn get_all_utxos_as_json_string<D>(
     struct UtxoDetails {
         pub db_key: String,
         pub db_value: String,
-        pub utxo_and_value: BtcUtxoAndValue,
+        pub utxo_and_value: JsonValue,
     }
 
     Ok(
@@ -57,14 +62,18 @@ pub fn get_all_utxos_as_json_string<D>(
                 .map(|db_key| {
                     Ok(
                         UtxoDetails {
-                            db_key:
-                                hex::encode(db_key.to_vec()),
-                            utxo_and_value:
-                                get_utxo_from_db(&db, &db_key.to_vec())?,
-                            db_value:
-                                hex::encode(
-                                    db.get(db_key.to_vec(), None)?
-                                ),
+                            db_key: hex::encode(db_key.to_vec()),
+                            db_value: hex::encode(db.get(db_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)?),
+                            utxo_and_value: get_utxo_from_db(&db, &db_key.to_vec())
+                                .map(|utxo_and_value|
+                                    json!({
+                                        "value": utxo_and_value.value,
+                                        "maybe_pointer": utxo_and_value.maybe_pointer,
+                                        "maybe_extra_data": utxo_and_value.maybe_extra_data,
+                                        "serialized_utxo": hex::encode(utxo_and_value.serialized_utxo),
+                                        "maybe_deposit_info_json": utxo_and_value.maybe_deposit_info_json,
+                                    })
+                                )?,
                         }
                     )
                 })
