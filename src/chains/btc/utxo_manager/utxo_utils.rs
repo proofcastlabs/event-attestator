@@ -6,6 +6,10 @@ use bitcoin_hashes::{
     Hash,
     sha256d,
 };
+use bitcoin::{
+    blockdata::transaction::TxIn as BtcUtxo,
+    consensus::encode::deserialize as btc_deserialize,
+};
 use crate::{
     types::{
         Byte,
@@ -82,6 +86,41 @@ pub fn get_all_utxos_as_json_string<D>(
                 .collect::<Vec<UtxoDetails>>()
         )?
     )
+}
+
+fn get_all_utxos_from_db<D: DatabaseInterface>(db: &D) -> Result<Vec<BtcUtxoAndValue>> {
+    get_all_utxo_db_keys(db).iter().map(|db_key| get_utxo_from_db(db, &db_key.to_vec())) .collect()
+}
+
+fn get_btc_utxos_from_utxo_and_values(utxo_and_values: Vec<BtcUtxoAndValue>) -> Result<Vec<BtcUtxo>> {
+    utxo_and_values
+        .iter()
+        .map(|utxo_and_value| Ok(btc_deserialize(&utxo_and_value.serialized_utxo)?))
+        .collect::<Result<Vec<BtcUtxo>>>()
+}
+
+pub fn utxo_exists_in_db<D>(
+    db: &D,
+    utxo_to_check: BtcUtxo,
+) -> Result<bool>
+    where D: DatabaseInterface
+{
+    debug!("✔ Checking if UTXO exists in db...");
+    get_all_utxos_from_db(db)
+        .and_then(get_btc_utxos_from_utxo_and_values)
+        .map(|btc_utxos_from_db| btc_utxos_from_db.contains(&utxo_to_check))
+}
+
+pub fn utxos_exists_in_db<D>(
+    db: &D,
+    utxos_to_check: Vec<BtcUtxo>,
+) -> Result<Vec<bool>>
+    where D: DatabaseInterface
+{
+    debug!("✔ Checking if UTXOs exist in db...");
+    get_all_utxos_from_db(db)
+        .and_then(get_btc_utxos_from_utxo_and_values)
+        .map(|btc_utxos_from_db| utxos_to_check.iter().map(|utxo| btc_utxos_from_db.contains(utxo)).collect())
 }
 
 #[cfg(test)]
