@@ -25,7 +25,8 @@ pub fn maybe_extract_btc_utxo_from_btc_tx_in_state<D>(
         Some(btc_txs) => {
             info!("✔ Extracting BTC UTXOs...");
             get_btc_address_from_db(&state.db)
-                .and_then(|address| get_pay_to_pub_key_hash_script(&address)).map(|target_script| extract_utxos_from_txs(&target_script, &btc_txs))
+                .and_then(|address| get_pay_to_pub_key_hash_script(&address))
+                .map(|target_script| extract_utxos_from_txs(&target_script, &btc_txs))
                 .and_then(|utxos| state.add_btc_utxos_and_values(utxos))
         }
     }

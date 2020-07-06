@@ -315,7 +315,6 @@ pub fn get_node_from_trie_hash_map(
 
 #[cfg(test)]
 mod tests {
-    
     use super::*;
     use crate::btc_on_eth::{
         utils::convert_hex_to_h256,

@@ -64,7 +64,6 @@ pub fn get_logs_from_receipt_json(
 
 #[cfg(test)]
 mod tests {
-    
     use super::*;
     use crate::btc_on_eth::eth::eth_test_utils::{
         get_expected_log,

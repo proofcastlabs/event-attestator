@@ -99,13 +99,15 @@ pub fn get_utxo_and_value<D>(db: &D) -> Result<BtcUtxoAndValue>
                     delete_utxo_balance_key(db)
                         .and_then(|_| delete_first_utxo(db))
                         .and_then(|_| delete_last_utxo_key(db))
-                        .and_then(|_| delete_first_utxo_key(db)).map(|_| utxo)
+                        .and_then(|_| delete_first_utxo_key(db))
+                        .map(|_| utxo)
                 }
                 Some(pointer) => {
                     trace!("✔ UTXO found, updating `UTXO_FIRST` pointer...");
                     decrement_total_utxo_balance_in_db(db, utxo.value)
                         .and_then(|_| delete_first_utxo(db))
-                        .and_then(|_| set_first_utxo_pointer(db, &pointer)).map(|_| utxo)
+                        .and_then(|_| set_first_utxo_pointer(db, &pointer))
+                        .map(|_| utxo)
                 }
             }
         )
