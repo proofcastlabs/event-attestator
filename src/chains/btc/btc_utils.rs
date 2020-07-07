@@ -7,6 +7,7 @@ use bitcoin::{
 use crate::{
     utils::strip_hex_prefix,
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -15,7 +16,7 @@ use crate::{
         encode_slice as base58_encode_slice,
     },
     chains::btc::{
-        utxo_manager::utxo_types::BtcUtxosAndValues,
+        utxo_manager::utxo_types::BtcUtxoAndValue,
         btc_constants::{
             DEFAULT_BTC_SEQUENCE,
             PTOKEN_P2SH_SCRIPT_BYTES,
@@ -25,6 +26,7 @@ use crate::{
         constants::SAFE_ETH_ADDRESS,
         btc::btc_types::{
             MintingParams,
+            MintingParamStruct,
             BtcBlockInDbFormat,
         },
         utils::{
@@ -134,7 +136,7 @@ pub fn get_p2sh_script_sig_from_redeem_script(
 }
 
 pub fn serialize_minting_params(
-    minting_params: &MintingParams
+    minting_params: &[MintingParamStruct]
 ) -> Result<Bytes> {
     Ok(serde_json::to_vec(minting_params)?)
 }
@@ -172,7 +174,7 @@ pub fn convert_btc_network_to_bytes(network: BtcNetwork) -> Result<Bytes> {
     }
 }
 
-pub fn convert_bytes_to_btc_network(bytes: &Bytes) -> Result<BtcNetwork> {
+pub fn convert_bytes_to_btc_network(bytes: &[Byte]) -> Result<BtcNetwork> {
     match convert_bytes_to_u64(bytes)? {
         1 => Ok(BtcNetwork::Testnet),
         2 => Ok(BtcNetwork::Regtest),
@@ -203,7 +205,7 @@ pub fn serialize_btc_block_in_db_format(
 }
 
 pub fn deserialize_btc_block_in_db_format(
-    serialized_block_in_db_format: &Bytes
+    serialized_block_in_db_format: &[Byte]
 ) -> Result<BtcBlockInDbFormat> {
     let serialized_struct: SerializedBlockInDbFormat = serde_json::from_slice(
         &serialized_block_in_db_format
@@ -224,7 +226,7 @@ pub fn get_safe_eth_address() -> EthAddress {
 }
 
 pub fn get_total_value_of_utxos_and_values(
-    utxos_and_values: &BtcUtxosAndValues
+    utxos_and_values: &[BtcUtxoAndValue]
 ) -> u64 {
    utxos_and_values
         .iter()
@@ -277,7 +279,7 @@ pub fn serialize_btc_utxo(btc_utxo: &BtcUtxo) -> Bytes {
     btc_serialize(btc_utxo)
 }
 
-pub fn deserialize_btc_utxo(bytes: &Bytes) -> Result<BtcUtxo> {
+pub fn deserialize_btc_utxo(bytes: &[Byte]) -> Result<BtcUtxo> {
     Ok(btc_deserialize(bytes)?)
 }
 

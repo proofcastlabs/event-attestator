@@ -6,13 +6,13 @@ use crate::{
     },
     btc_on_eos::btc::{
         btc_utils::create_unsigned_utxo_from_tx,
-        btc_types::BtcTransactions,
+        btc_types::BtcTransaction,
     },
 };
 
 pub fn extract_utxos_from_txs(
     target_script: &BtcScript,
-    txs: &BtcTransactions
+    txs: &[BtcTransaction]
 ) -> BtcUtxosAndValues {
     info!("✔ Extracting UTXOs from {} `op_return` txs...", txs.len());
     txs

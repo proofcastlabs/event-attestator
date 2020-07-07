@@ -2,14 +2,14 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{
-        Bytes,
+        Byte,
         Result,
     },
 };
 
 pub fn put_u64_in_db<D>(
     db: &D,
-    key: &Bytes,
+    key: &[Byte],
     u_64: u64,
 ) -> Result<()>
     where D: DatabaseInterface
@@ -20,7 +20,7 @@ pub fn put_u64_in_db<D>(
 
 pub fn get_u64_from_db<D>(
     db: &D,
-    key: &Bytes
+    key: &[Byte]
 ) -> Result<u64>
     where D: DatabaseInterface
 {

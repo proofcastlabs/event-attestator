@@ -2,6 +2,7 @@ use tiny_keccak::keccak256;
 use crate::{
     errors::AppError,
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -15,7 +16,7 @@ pub fn get_prefixed_db_key(suffix: &str) -> [u8; 32] {
     keccak256(format!("{}{}", DB_KEY_PREFIX.to_string(), suffix).as_bytes())
 }
 
-pub fn convert_bytes_to_u64(bytes: &Bytes) -> Result<u64> {
+pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
     match bytes.len() {
         0..=7 => Err(AppError::Custom(
             "✘ Not enough bytes to convert to u64!"
@@ -65,7 +66,7 @@ mod tests {
 
     #[test]
     fn should_maybe_initialize_simple_logger() {
-        if let Some(_) = option_env!("ENABLE_LOGGING") { simple_logger::init().unwrap() };
+        if option_env!("ENABLE_LOGGING").is_some() { simple_logger::init().unwrap() };
         debug!("Test logging enabled!");
     }
 

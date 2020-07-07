@@ -27,8 +27,7 @@ pub fn maybe_increment_any_sender_nonce_in_db<D>(
             increment_any_sender_nonce_in_db(
                 &state.db,
                 signed_txs.len() as u64,
-            )
-                .and_then(|_| Ok(state))
+            ).map(|_| state)
         }
     }
 }

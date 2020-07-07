@@ -70,7 +70,7 @@ mod tests {
     fn should_parse_eth_block_and_receipts_json_string() {
         let json_string = get_sample_eth_block_and_receipts_string(0)
             .unwrap();
-        if let Err(_) = parse_eth_block_and_receipts_json_string(&json_string) {
+        if parse_eth_block_and_receipts_json_string(&json_string).is_err() {
             panic!("SHould parse eth block and json string correctly!");
         }
     }

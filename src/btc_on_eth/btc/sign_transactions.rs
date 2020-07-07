@@ -4,7 +4,7 @@ use crate::{
     btc_on_eth::{
         btc::{
             btc_state::BtcState,
-            btc_types::MintingParams,
+            btc_types::MintingParamStruct,
             btc_database_utils::get_btc_canon_block_from_db,
         },
         eth::{
@@ -20,7 +20,7 @@ use crate::{
 
 pub fn get_eth_signed_txs(
     signing_params: &EthSigningParams,
-    minting_params: &MintingParams,
+    minting_params: &[MintingParamStruct],
 ) -> Result<EthTransactions> {
     trace!("✔ Getting ETH signed transactions...");
     minting_params
@@ -159,13 +159,13 @@ mod tests {
             MintingParamStruct::new(
                 convert_satoshis_to_ptoken(1337),
                 hex::encode(recipient_1),
-                sha256d::Hash::hash(&vec![0xc0]),
+                sha256d::Hash::hash(&[0xc0]),
                 originating_address.clone(),
             ).unwrap(),
             MintingParamStruct::new(
                 convert_satoshis_to_ptoken(666),
                 hex::encode(recipient_2),
-                sha256d::Hash::hash(&vec![0xc0]),
+                sha256d::Hash::hash(&[0xc0]),
                 originating_address,
             ).unwrap(),
         ];

@@ -10,7 +10,7 @@ use crate::{
             eth_state::EthState,
             eth_types::{
                 EthBlock,
-                EthReceipts,
+                EthReceipt,
             },
             trie::{
                 Trie,
@@ -20,7 +20,7 @@ use crate::{
     },
 };
 
-fn get_receipts_root_from_receipts(receipts: &EthReceipts) -> Result<H256> {
+fn get_receipts_root_from_receipts(receipts: &[EthReceipt]) -> Result<H256> {
     get_rlp_encoded_receipts_and_nibble_tuples(receipts)
         .and_then(|key_value_tuples| {
             info!("✔ Building merkle-patricia trie from receipts...");
@@ -35,7 +35,7 @@ fn get_receipts_root_from_receipts(receipts: &EthReceipts) -> Result<H256> {
 
 fn receipts_root_is_correct(
     block: &EthBlock,
-    receipts: &EthReceipts,
+    receipts: &[EthReceipt],
 ) -> Result<bool> {
     info!("✔ Checking trie root against receipts root...");
     get_receipts_root_from_receipts(receipts)
@@ -113,7 +113,7 @@ mod tests {
     fn should_validate_receipts_in_state() {
         let state = get_valid_state_with_block_and_receipts()
             .unwrap();
-        if let Err(_) = validate_receipts_in_state(state) {
+        if validate_receipts_in_state(state).is_err() {
             panic!("Receipts should be valid!")
         }
     }

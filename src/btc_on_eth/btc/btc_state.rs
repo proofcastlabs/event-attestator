@@ -12,6 +12,8 @@ use crate::{
             btc_types::{
                 BtcBlockAndId,
                 MintingParams,
+                MintingParamStruct,
+                BtcTransaction,
                 BtcTransactions,
                 BtcBlockInDbFormat,
             },
@@ -236,7 +238,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 
     pub fn get_minting_params(
         &self
-    ) -> Result<&MintingParams> {
+    ) -> Result<&[MintingParamStruct]> {
         Ok(&self.minting_params)
     }
 
@@ -256,7 +258,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 
     pub fn get_op_return_deposit_txs(
         &self
-    ) -> Result<&BtcTransactions> {
+    ) -> Result<&[BtcTransaction]> {
         match &self.op_return_deposit_txs {
             Some(op_return_deposit_txs) => {
                 info!("✔ Getting `op_return` deposit txs from BTC state...");
@@ -270,7 +272,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 
     pub fn get_p2sh_deposit_txs(
         &self
-    ) -> Result<&BtcTransactions> {
+    ) -> Result<&[BtcTransaction]> {
         match &self.p2sh_deposit_txs {
             Some(p2sh_deposit_txs) => {
                 info!("✔ Getting `p2sh` deposit txs from BTC state...");

@@ -419,9 +419,9 @@ pub fn prefix_nibbles_with_byte(
     mut vec_including_prefix_byte: Vec<u8>
 ) -> Result<Bytes> {
     convert_nibble_to_bytes(nibbles)
-        .and_then(|mut bytes| {
+        .map(|mut bytes| {
             vec_including_prefix_byte.append(&mut bytes);
-            Ok(vec_including_prefix_byte)
+            vec_including_prefix_byte
         })
 }
 
@@ -1140,8 +1140,8 @@ mod tests {
         let mut expected_result = prefix.clone();
         let result = prefix_nibbles_with_byte(nibbles, prefix)
             .unwrap();
-        let bytes = get_bytes_with_nibbles_from_index_zero();
-        expected_result.append(&mut bytes.clone());
+        let mut bytes = get_bytes_with_nibbles_from_index_zero();
+        expected_result.append(&mut bytes);
         assert!(result == expected_result);
     }
 
@@ -1152,8 +1152,8 @@ mod tests {
         let mut expected_result = prefix.clone();
         let result = prefix_nibbles_with_byte(nibbles, prefix)
             .unwrap();
-        let bytes = get_bytes_with_nibbles_from_index_one();
-        expected_result.append(&mut bytes.clone());
+        let mut bytes = get_bytes_with_nibbles_from_index_one();
+        expected_result.append(&mut bytes);
         assert!(result == expected_result);
     }
 
@@ -1287,7 +1287,7 @@ mod tests {
         let nibble_index = 1;
         let nibbles = get_sample_nibbles();
         let result = slice_nibbles_at_nibble_index(
-            nibbles.clone(),
+            nibbles,
             nibble_index
         ).unwrap();
         let expected_result = get_nibbles_from_offset_bytes(
@@ -1301,7 +1301,7 @@ mod tests {
         let nibble_index = 1;
         let nibbles = get_sample_offset_nibbles();
         let result = slice_nibbles_at_nibble_index(
-            nibbles.clone(),
+            nibbles,
             nibble_index
         ).unwrap();
         let expected_result = get_nibbles_from_bytes(
@@ -1346,7 +1346,7 @@ mod tests {
     fn should_shift_bytes_in_vec_left_one_nibble() {
         let bytes = get_bytes_with_nibbles_from_index_one();
         let expected_result = vec![0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xd0];
-        let result = shift_bits_in_vec_left_one_nibble(bytes.clone());
+        let result = shift_bits_in_vec_left_one_nibble(bytes);
         assert!(result == expected_result);
     }
 
@@ -1354,7 +1354,7 @@ mod tests {
     fn should_shift_one_byte_in_vec_left_one_nibble() {
         let byte = vec![0xab];
         let expected_result = vec![0xb0];
-        let result = shift_bits_in_vec_left_one_nibble(byte.clone());
+        let result = shift_bits_in_vec_left_one_nibble(byte);
         assert!(result == expected_result);
     }
 
@@ -1554,10 +1554,10 @@ mod tests {
             longer_bytes.clone()
         );
         let shorter_nibbles = get_nibbles_from_offset_bytes(
-            shorter_bytes.clone()
+            shorter_bytes
         );
         let expected_common_prefix_result = get_nibbles_from_offset_bytes(
-            longer_bytes.clone()
+            longer_bytes
         );
         let (
             result_prefix,
@@ -1578,9 +1578,9 @@ mod tests {
         let longer_bytes = vec![0x12, 0x34, 0x56, 0x78, 0x9a];
         let shorter_bytes = vec![0x12, 0x34, 0x56, 0x78, 0x9a];
         let longer_nibbles = get_nibbles_from_bytes(longer_bytes.clone());
-        let shorter_nibbles = get_nibbles_from_bytes(shorter_bytes.clone());
+        let shorter_nibbles = get_nibbles_from_bytes(shorter_bytes);
         let expected_common_prefix_result = get_nibbles_from_bytes(
-            longer_bytes.clone()
+            longer_bytes
         );
         let (
             result_prefix,
@@ -1632,8 +1632,8 @@ mod tests {
         let longer_bytes_suffix = vec![0x78, 0x9a];
         let shorter_bytes = vec![0x12, 0x34, 0x56];
         let longer_bytes = vec![0x12, 0x34, 0x56, 0x78, 0x9a];
-        let longer_nibbles = get_nibbles_from_bytes(longer_bytes.clone());
-        let shorter_nibbles = get_nibbles_from_bytes(shorter_bytes.clone());
+        let longer_nibbles = get_nibbles_from_bytes(longer_bytes);
+        let shorter_nibbles = get_nibbles_from_bytes(shorter_bytes);
         let expected_common_prefix_result = get_nibbles_from_bytes(
             prefix_bytes
         );
@@ -1661,10 +1661,10 @@ mod tests {
         let shorter_bytes = vec![0x2u8, 0x34, 0x56];
         let longer_bytes = vec![0x2u8, 0x34, 0x56, 0x78, 0x9a];
         let longer_nibbles = get_nibbles_from_offset_bytes(
-            longer_bytes.clone()
+            longer_bytes
         );
         let shorter_nibbles = get_nibbles_from_offset_bytes(
-            shorter_bytes.clone()
+            shorter_bytes
         );
         let expected_common_prefix_result = get_nibbles_from_offset_bytes(
             prefix_bytes

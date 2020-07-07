@@ -13,7 +13,7 @@ use crate::{
     },
 };
 
-pub static DB_LOCK_ERRROR: &'static str = "✘ Cannot get lock on DB!";
+pub static DB_LOCK_ERRROR: &str = "✘ Cannot get lock on DB!";
 
 pub struct TestDB(pub Mutex<HashMap<Bytes, Bytes>>);
 

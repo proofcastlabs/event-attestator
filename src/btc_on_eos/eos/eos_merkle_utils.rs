@@ -10,10 +10,7 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eos::{
-        eos::eos_types::MerkleProof,
-        utils::convert_hex_to_checksum256,
-    },
+    btc_on_eos::utils::convert_hex_to_checksum256,
 };
 
 pub type CanonicalLeft = Bytes;
@@ -31,35 +28,35 @@ fn set_first_bit_of_byte_to_one(mut byte: Byte) -> Byte {
     byte
 }
 
-fn set_first_bit_of_hash_to_one(hash: &Bytes) -> Bytes {
-    let mut new_hash = hash.clone();
+fn set_first_bit_of_hash_to_one(hash: &[Byte]) -> Bytes {
+    let mut new_hash = hash.to_vec();
     new_hash[0] = set_first_bit_of_byte_to_one(hash[0]);
     new_hash
 }
 
-fn set_first_bit_of_hash_to_zero(hash: &Bytes) -> Bytes {
-    let mut new_hash = hash.clone();
+fn set_first_bit_of_hash_to_zero(hash: &[Byte]) -> Bytes {
+    let mut new_hash = hash.to_vec();
     new_hash[0] = set_first_bit_of_byte_to_zero(hash[0]);
     new_hash
 }
 
-fn make_canonical_left(hash: &Bytes) -> CanonicalLeft {
+fn make_canonical_left(hash: &[Byte]) -> CanonicalLeft {
     set_first_bit_of_hash_to_zero(hash)
 }
 
-fn make_canonical_right(hash: &Bytes) -> CanonicalRight {
+fn make_canonical_right(hash: &[Byte]) -> CanonicalRight {
     set_first_bit_of_hash_to_one(hash)
 }
 
-fn is_canonical_left(hash: &Bytes) -> bool {
+fn is_canonical_left(hash: &[Byte]) -> bool {
     hash[0] & 0b1000_0000 == 0
 }
 
-fn is_canonical_right(hash: &Bytes) -> bool {
+fn is_canonical_right(hash: &[Byte]) -> bool {
     !is_canonical_left(hash)
 }
 
-fn make_canonical_pair(l: &Bytes, r: &Bytes) -> CanonicalPair {
+fn make_canonical_pair(l: &[Byte], r: &[Byte]) -> CanonicalPair {
     (
         make_canonical_left(l),
         make_canonical_right(r),
@@ -75,11 +72,11 @@ fn hash_canonical_pair(pair: CanonicalPair) -> Sha256Hash {
     sha256::Hash::hash(&concatenate_canonical_pair(pair))
 }
 
-fn make_and_hash_canonical_pair(l: &Bytes, r: &Bytes) -> Bytes {
+fn make_and_hash_canonical_pair(l: &[Byte], r: &[Byte]) -> Bytes {
     hash_canonical_pair(make_canonical_pair(l, r)).to_vec()
 }
 
-pub fn verify_merkle_proof(merkle_proof: &MerkleProof) -> Result<bool> {
+pub fn verify_merkle_proof(merkle_proof: &[String]) -> Result<bool> {
     let mut node = hex::decode(merkle_proof[0].clone())?;
     let leaves = merkle_proof[..merkle_proof.len() - 1]
         .iter()
@@ -112,7 +109,7 @@ impl IncremerkleJson {
         }
     }
 
-    pub fn to_incremerkle(self) -> Result<Incremerkle> {
+    pub fn to_incremerkle(&self) -> Result<Incremerkle> {
         Ok(
             Incremerkle {
                 node_count: self.node_count,
@@ -201,8 +198,8 @@ impl Incremerkle {
 
     pub fn new(node_count: u64, active_nodes: Vec<Checksum256>) -> Self {
         Incremerkle {
-            node_count: node_count,
-            active_nodes: active_nodes,
+            node_count,
+            active_nodes,
         }
     }
 
@@ -265,7 +262,7 @@ impl Incremerkle {
 
 #[cfg(test)]
 mod tests {
-    use hex;
+    
     use super::*;
     use std::str::FromStr;
     use crate::btc_on_eos::{
@@ -440,7 +437,7 @@ mod tests {
         );
         let serialized_action = action.to_serialize_data();
         let result = sha256::Hash::hash(&serialized_action).to_string();
-        assert!(result == get_expected_digest_1().to_string());
+        assert!(result == get_expected_digest_1());
     }
 
     #[test]

@@ -13,10 +13,7 @@ use crate::{
     },
 };
 use bitcoin::{
-    blockdata::{
-        block::Block as BtcBlock,
-        transaction::Transaction as BtcTransaction
-    },
+    blockdata::block::Block as BtcBlock,
     hashes::sha256d,
     util::address::Address as BtcAddress,
 };
@@ -25,6 +22,8 @@ use ethereum_types::{
     U256
 };
 use std::str::FromStr;
+
+pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 
 pub type BtcTransactions = Vec<BtcTransaction>;
 pub type MintingParams = Vec<MintingParamStruct>;

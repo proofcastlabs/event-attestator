@@ -2,7 +2,7 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{
-        Bytes,
+        Byte,
         Result,
     },
     btc_on_eos::{
@@ -29,7 +29,7 @@ use crate::{
 
 fn enable_protocol_feature<D>(
     db: &D,
-    feature_hash: &Bytes,
+    feature_hash: &[Byte],
     enabled_features: &EnabledFeatures,
 ) -> Result<()>
     where D: DatabaseInterface
@@ -54,7 +54,7 @@ fn enable_protocol_feature<D>(
 
 fn enable_feature_and_return_state<D>(
     state: EosState<D>,
-    hash: &Bytes,
+    hash: &[Byte],
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {

@@ -15,7 +15,7 @@ use crate::{
     chains::btc::deposit_address_info::{
         DepositInfoList,
         DepositAddressInfo,
-        DepositAddressJsonList,
+        DepositAddressInfoJson,
     },
     btc_on_eos::btc::{
         btc_state::BtcState,
@@ -70,12 +70,12 @@ pub fn parse_submission_material_to_json(
     }
 }
 
-fn convert_hex_tx_to_btc_transaction(hex: &String) -> Result<BtcTransaction> {
+fn convert_hex_tx_to_btc_transaction<T: AsRef<[u8]>>(hex: T) -> Result<BtcTransaction> {
     Ok(deserialize::<BtcTransaction>(&hex::decode(hex)?)?)
 }
 
 fn convert_hex_txs_to_btc_transactions(
-    hex_txs: &Vec<String>
+    hex_txs: &[String]
 ) -> Result<Vec<BtcTransaction>> {
     hex_txs
         .iter()
@@ -84,7 +84,7 @@ fn convert_hex_txs_to_btc_transactions(
 }
 
 fn parse_deposit_info_jsons_to_deposit_info_list(
-    deposit_address_json_list: &DepositAddressJsonList
+    deposit_address_json_list: &[DepositAddressInfoJson]
 ) -> Result<DepositInfoList> {
     deposit_address_json_list
         .iter()

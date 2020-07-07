@@ -77,8 +77,7 @@ pub fn maybe_update_eth_tail_block_hash<D>(
                             put_eth_tail_block_hash_in_db(
                                 &state.db,
                                 &ancestor_block.block.hash
-                            )
-                                .and_then(|_| Ok(state))
+                            ).map(|_| state)
                         }
                     }
                 }

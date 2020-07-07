@@ -18,16 +18,19 @@ use crate::{
 
 pub type EthHash = H256;
 pub type EthAddress = Address;
-pub type EthTopics = EthHashes;
+pub type EthTopic = EthHash;
 pub type NodeStack = Vec<Node>;
-pub type EthLogs = Vec<EthLog>;
 pub type EthSignature = [u8; 65];
-pub type EthHashes = Vec<EthHash>;
 pub type EthReceipts = Vec<EthReceipt>;
 pub type EthSignedTransaction = String;
 pub type ChildNodes = [Option<Bytes>; 16];
 pub type TrieHashMap = HashMap<H256, Bytes>;
 pub type EthTransactions = Vec<EthTransaction>;
+
+#[cfg(test)]
+pub type EthTopics = Vec<EthTopic>;
+#[cfg(test)]
+pub type EthLogs = Vec<EthLog>;
 
 #[derive(Debug)]
 pub struct EthSigningParams {

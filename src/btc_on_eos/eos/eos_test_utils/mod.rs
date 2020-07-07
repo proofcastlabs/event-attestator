@@ -29,6 +29,7 @@ use eos_primitives::{
 use crate::{
     errors::AppError,
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -148,7 +149,7 @@ impl EosInitAndSubsequentBlocksJson {
         }
     }
 
-    pub fn from_json_string(json_string: &String) -> Result<Self> {
+    pub fn from_json_string(json_string: &str) -> Result<Self> {
         match serde_json::from_str(&json_string) {
             Ok(result) => Ok(result),
             Err(e) => Err(AppError::Custom(e.to_string()))
@@ -328,7 +329,7 @@ pub fn get_mainnet_init_json_n(num: usize) -> Result<EosInitJson> {
 }
 
 pub fn sha256_hash_message_bytes(
-    message_bytes: &Bytes
+    message_bytes: &[Byte]
 ) -> Result<Secp256k1Message> {
     Ok(Secp256k1Message::from_slice(&sha256::Hash::hash(message_bytes))?)
 }
@@ -405,7 +406,7 @@ pub fn get_sample_eos_submission_material_string_n(
     match Path::new(&path).exists() {
         true => Ok(read_to_string(path)?),
         false => Err(AppError::Custom(
-            format!("✘ Cannot find sample-eos-block-and-action-json file!")
+            "✘ Cannot find sample-eos-block-and-action-json file!".to_string()
         ))
     }
 }

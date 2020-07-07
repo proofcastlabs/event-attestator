@@ -3,12 +3,15 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eos::eos::{
         eos_state::EosState,
-        eos_types::ActionProofs,
+        eos_types::{
+            ActionProofs,
+            ActionProof,
+        },
     },
 };
 
 fn filter_out_invalid_action_receipt_digests(
-    action_proofs: &ActionProofs
+    action_proofs: &[ActionProof]
 ) -> Result<ActionProofs> {
     let filtered = action_proofs
         .iter()

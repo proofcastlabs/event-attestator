@@ -81,7 +81,7 @@ impl EosInitJson {
         let blockroot_merkle = self
             .blockroot_merkle
             .iter()
-            .map(|hex| convert_hex_to_checksum256(hex))
+            .map(convert_hex_to_checksum256)
             .collect::<Result<Vec<Checksum256>>>()
             .unwrap();
         let producer_signature = self
@@ -97,13 +97,13 @@ impl EosInitJson {
             .to_bytes()
             .to_vec();
         debug!("block mroot: {}", hex::encode(&block_mroot));
-        if let Err(_) = check_block_signature_is_valid(
+        if check_block_signature_is_valid(
             msig_enabled,
             &block_mroot,
             &producer_signature,
             &block_header,
             &schedule,
-        ) {
+        ).is_err() {
             panic!("Could not validate init block!");
         }
     }
@@ -167,7 +167,7 @@ pub fn test_block_validation_and_return_state<D>(
 
 pub fn generate_and_put_incremerkle_in_db<D>(
     db: &D,
-    blockroot_merkle: &Vec<String>,
+    blockroot_merkle: &[String],
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -185,7 +185,7 @@ pub fn generate_and_put_incremerkle_in_db<D>(
 }
 
 pub fn generate_and_put_incremerkle_in_db_and_return_state<D>(
-    blockroot_merkle: &Vec<String>,
+    blockroot_merkle: &[String],
     state: EosState<D>,
 ) -> Result<EosState<D>>
     where D: DatabaseInterface

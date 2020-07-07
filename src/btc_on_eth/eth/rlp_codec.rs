@@ -17,7 +17,6 @@ use crate::{
             EthLog,
             EthBlock,
             EthReceipt,
-            EthReceipts,
         },
     },
 };
@@ -103,7 +102,7 @@ pub fn get_rlp_encoded_receipt_and_encoded_key_tuple(
 }
 
 pub fn get_rlp_encoded_receipts_and_nibble_tuples(
-    receipts: &EthReceipts
+    receipts: &[EthReceipt]
 ) -> Result<Vec<(Nibbles, Bytes)>> {
     receipts
         .iter()

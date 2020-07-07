@@ -178,8 +178,7 @@ impl Node {
     }
 
     pub fn get_hash(&self) -> Result<H256> {
-        self.get_rlp_encoding()
-            .and_then(|encoded| Ok(keccak_hash_bytes(encoded)))
+        self.get_rlp_encoding().map(keccak_hash_bytes)
     }
 
     pub fn get_key(&self) -> Nibbles {
@@ -236,7 +235,7 @@ pub fn rlp_decode_node(rlp_data: Bytes) -> Result<Node> {
             match list.len() {
                 2 => {
                     let path: &Bytes = &list[0];
-                    let value: &Bytes = &list[1];
+                    let value = &list[1];
                     let (
                         path_nibbles,
                         node_type
@@ -253,11 +252,11 @@ pub fn rlp_decode_node(rlp_data: Bytes) -> Result<Node> {
                     }
                 },
                 17 => {
-                    let value: &Bytes = &list[16];
+                    let value = &list[16];
                     let mut branches = get_empty_child_nodes();
                     for i in 0..16 {
                         if !list[i].is_empty() {
-                            let value: &Bytes = &list[i];
+                            let value = &list[i];
                             branches[i] = Some(value.to_vec())
                         }
                     }
@@ -316,7 +315,6 @@ pub fn get_node_from_trie_hash_map(
 
 #[cfg(test)]
 mod tests {
-    use hex;
     use super::*;
     use crate::btc_on_eth::{
         utils::convert_hex_to_h256,
@@ -380,8 +378,8 @@ mod tests {
     fn should_get_new_leaf_node_correctly() {
         let panic_str = "Node should be a leaf node";
         let path_bytes = vec![0x12, 0x34, 0x56];
-        let expected_nibble_length = path_bytes.clone().len() * 2;
-        let path_nibbles = get_nibbles_from_bytes(path_bytes.clone());
+        let expected_nibble_length = path_bytes.len() * 2;
+        let path_nibbles = get_nibbles_from_bytes(path_bytes);
         let value = hex::decode("c0ffee".to_string()).unwrap();
         let expected_encoded_path = encode_leaf_path_from_nibbles(
             path_nibbles.clone()
@@ -391,12 +389,12 @@ mod tests {
         let result = Node::new_leaf(path_nibbles.clone(), value.clone())
             .unwrap();
         let node_type = result
-            .clone()
+            
             .get_type();
         assert!(node_type == LEAF_NODE_STRING);
-        if let Some(_) = result.extension {
+        if result.extension.is_some() {
             panic!(panic_str)
-        } else if let Some(_) = result.branch {
+        } else if result.branch.is_some() {
             panic!(panic_str)
         }
         match result.leaf {
@@ -405,7 +403,7 @@ mod tests {
                 let nibble_length = get_length_in_nibbles(
                     &leaf
                         .path_nibbles
-                        .clone()
+                        
                 );
                 assert!(leaf.value == value);
                 assert!(leaf.raw == expected_raw);
@@ -440,7 +438,7 @@ mod tests {
     fn should_get_extension_node_correctly() {
         let panic_str = "Node should be an extension node";
         let path_bytes = vec![0xc0, 0xff, 0xee];
-        let expected_nibble_length = path_bytes.clone().len() * 2;
+        let expected_nibble_length = path_bytes.len() * 2;
         let path_nibbles = get_nibbles_from_bytes(path_bytes);
         let value = hex::decode(
             "4aad98246efabf243441508dc0f328d80e83e9522e43709abab1c0c9cf4416dc"
@@ -452,14 +450,14 @@ mod tests {
         let result = Node::new_extension(path_nibbles.clone(), value.clone())
             .unwrap();
         let node_type = result
-            .clone()
+            
             .get_type();
         assert!(node_type == EXTENSION_NODE_STRING);
         let mut expected_raw = expected_encoded_path.clone();
         expected_raw.append(&mut value.clone());
-        if let Some(_) = result.leaf {
+        if result.leaf.is_some() {
             panic!(panic_str)
-        } else if let Some(_) = result.branch {
+        } else if result.branch.is_some() {
             panic!(panic_str)
         }
         match result.extension {
@@ -468,7 +466,7 @@ mod tests {
                 let nibble_length = get_length_in_nibbles(
                     &extension
                         .path_nibbles
-                        .clone()
+                        
                 );
                 assert!(extension.value == value);
                 assert!(extension.raw == expected_raw);
@@ -503,19 +501,19 @@ mod tests {
     fn should_get_new_branch_with_no_value_correctly() {
         let panic_str = "Node should be a branch node";
         let result = Node::new_branch(None).unwrap();
-        if let Some(_) = result.extension {
+        if result.extension.is_some() {
             panic!(panic_str)
-        } else if let Some(_) = result.leaf {
+        } else if result.leaf.is_some() {
             panic!(panic_str)
         }
         let node_type = result
-            .clone()
+            
             .get_type();
         assert!(node_type == BRANCH_NODE_STRING);
         match result.branch {
             None => panic!(panic_str),
             Some(branch) => {
-                if let Some(_) = branch.value {
+                if branch.value.is_some() {
                     panic!("Branch should not have a value!")
                 };
                 assert!(branch.branches == get_empty_child_nodes());
@@ -529,15 +527,15 @@ mod tests {
         let value = hex::decode("c0ffee")
             .unwrap();
         let result = Node::new_branch(Some(value.clone())).unwrap();
-        if let Some(_) = result.extension {
+        if result.extension.is_some() {
             panic!(panic_str)
-        } else if let Some(_) = result.leaf {
+        } else if result.leaf.is_some() {
             panic!(panic_str)
         }
         let node_type = result
-            .clone()
+            
             .get_type();
-        assert!(node_type == "branch".to_string());
+        assert!(node_type == "branch");
         match result.branch {
             None => panic!(panic_str),
             Some(branch) => {
@@ -569,7 +567,7 @@ mod tests {
         ).unwrap();
         assert!(
             result
-                .clone()
+                
                 .branch
                 .unwrap()
                 .branches[index] == Some(branch_value)
@@ -609,7 +607,7 @@ mod tests {
     #[test]
     fn should_get_key_from_leaf_node() {
         let path_bytes = vec![0x12, 0x34, 0x56];
-        let expected_result = get_nibbles_from_bytes(path_bytes.clone());
+        let expected_result = get_nibbles_from_bytes(path_bytes);
         let node = get_sample_leaf_node();
         let result = node.get_key();
         assert!(result == expected_result);

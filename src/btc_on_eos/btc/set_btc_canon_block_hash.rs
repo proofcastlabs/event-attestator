@@ -31,8 +31,7 @@ pub fn maybe_set_btc_canon_block_hash<D>(
             put_btc_canon_block_hash_in_db(
                 &state.db,
                 &state.get_btc_block_and_id()?.id
-            )
-                .and_then(|_| Ok(state))
+            ).map(|_| state)
         }
     }
 }

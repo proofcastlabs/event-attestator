@@ -11,7 +11,6 @@ use crate::{
     chains::btc::btc_constants::DEFAULT_BTC_ADDRESS,
     btc_on_eth::{
         eth::{
-            eth_types::EthTransactions,
             eth_crypto::eth_transaction::EthTransaction,
             eth_database_utils::{
                 get_eth_private_key_from_db,
@@ -25,10 +24,7 @@ use crate::{
         },
         btc::{
             btc_state::BtcState,
-            btc_types::{
-                MintingParams,
-                MintingParamStruct,
-            },
+            btc_types::MintingParamStruct,
             btc_database_utils::{
                 get_btc_canon_block_from_db,
                 get_btc_latest_block_from_db,
@@ -140,9 +136,10 @@ pub struct BtcOutput {
     pub eth_signed_transactions: Vec<EthTxInfo>,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn get_eth_signed_tx_info_from_eth_txs(
-    eth_txs: &EthTransactions,
-    minting_params: &MintingParams,
+    eth_txs: &[EthTransaction],
+    minting_params: &[MintingParamStruct],
     eth_account_nonce: u64,
     use_any_sender_tx_type: bool,
     any_sender_nonce: u64,

@@ -183,7 +183,7 @@ pub fn get_sample_eth_block_and_receipts_string(num: usize) -> Result<String> {
     match Path::new(&path).exists() {
         true => Ok(read_to_string(path)?),
         false => Err(AppError::Custom(
-            format!("✘ Cannot find sample-eth-block-and-receipts-json file!")
+            "✘ Cannot find sample-eth-block-and-receipts-json file!".to_string()
         ))
     }
 }
@@ -359,7 +359,7 @@ pub fn convert_hex_string_to_nibbles(hex_string: String) -> Result<Nibbles> {
 
 pub fn get_sample_leaf_node() -> Node {
     let path_bytes = vec![0x12, 0x34, 0x56];
-    let path_nibbles = get_nibbles_from_bytes(path_bytes.clone());
+    let path_nibbles = get_nibbles_from_bytes(path_bytes);
     let value = hex::decode("c0ffee".to_string()).unwrap();
     Node::new_leaf(path_nibbles, value)
         .unwrap()
@@ -393,14 +393,14 @@ pub fn get_sample_branch_node() -> Node {
 }
 
 pub fn get_thing_to_put_in_trie_hash_map() -> Bytes {
-    "Provable".as_bytes().to_owned()
+    b"Provable".to_vec()
 }
 
 pub fn get_trie_hash_map_with_thing_in_it() -> Result<TrieHashMap> {
     let mut trie_hash_map: TrieHashMap = std::collections::HashMap::new();
     trie_hash_map.insert(
         get_expected_key_of_thing_in_trie_hash_map(),
-        "Provable".as_bytes().to_owned()
+        b"Provable".to_vec()
     );
     Ok(trie_hash_map)
 }
@@ -413,7 +413,7 @@ pub fn get_valid_state_with_invalid_block_and_receipts(
 ) -> Result<EthState<TestDB>> {
     match Path::new(&SAMPLE_BLOCK_AND_RECEIPT_JSON).exists() {
         false => Err(AppError::Custom(
-            format!("✘ Cannot find sample-eth-block-and-receipts-json file!")
+            "✘ Cannot find sample-eth-block-and-receipts-json file!".to_string()
         )),
         true => {
             let string = read_to_string(SAMPLE_INVALID_BLOCK_AND_RECEIPT_JSON)

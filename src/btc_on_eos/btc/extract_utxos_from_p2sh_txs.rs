@@ -10,7 +10,6 @@ use crate::{
     },
     btc_on_eos::btc::{
         btc_state::BtcState,
-        btc_types::BtcTransactions,
         btc_utils::create_unsigned_utxo_from_tx,
         btc_database_utils::get_btc_network_from_db,
     },
@@ -72,7 +71,7 @@ fn maybe_extract_p2sh_utxo(
 }
 
 pub fn extract_p2sh_utxos_from_txs(
-    transactions: &BtcTransactions,
+    transactions: &[BtcTransaction],
     deposit_info_hash_map: &DepositInfoHashMap,
     btc_network: BtcNetwork,
 ) -> Result<BtcUtxosAndValues> {
@@ -135,7 +134,7 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let block_and_id = get_sample_btc_block_n(5).unwrap();
         let deposit_address_list = block_and_id.deposit_address_list.clone();
-        let txs = block_and_id.block.txdata.clone();
+        let txs = block_and_id.block.txdata;
         let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
         let tx = filter_p2sh_deposit_txs(&hash_map, &pub_key[..], &txs, btc_network).unwrap()[0].clone();
         let output = tx.output[output_index as usize].clone();
@@ -151,7 +150,7 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let block_and_id = get_sample_btc_block_n(5).unwrap();
         let deposit_address_list = block_and_id.deposit_address_list.clone();
-        let txs = block_and_id.block.txdata.clone();
+        let txs = block_and_id.block.txdata;
         let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
         let filtered_txs = filter_p2sh_deposit_txs(&hash_map, &pub_key[..], &txs, btc_network).unwrap();
         let result = extract_p2sh_utxos_from_txs(&filtered_txs, &hash_map, btc_network).unwrap();
@@ -170,7 +169,7 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let block_and_id = get_sample_btc_block_n(6).unwrap();
         let deposit_address_list = block_and_id.deposit_address_list.clone();
-        let txs = block_and_id.block.txdata.clone();
+        let txs = block_and_id.block.txdata;
         let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
         let expected_deposit_info_1 = Some(hash_map.get(&expected_btc_address_1).unwrap().to_json());
         let expected_deposit_info_2 = Some(hash_map.get(&expected_btc_address_2).unwrap().to_json());

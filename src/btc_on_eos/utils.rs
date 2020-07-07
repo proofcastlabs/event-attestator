@@ -2,6 +2,7 @@ use eos_primitives::Checksum256;
 use crate::{
     errors::AppError,
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -13,7 +14,7 @@ use crate::{
     },
 };
 
-pub fn convert_eos_asset_to_u64(eos_asset: &String) -> Result<u64> { //TODO test!
+pub fn convert_eos_asset_to_u64(eos_asset: &str) -> Result<u64> { //TODO test!
     Ok(
         eos_asset
             .replace(".", "")
@@ -25,7 +26,7 @@ pub fn convert_eos_asset_to_u64(eos_asset: &String) -> Result<u64> { //TODO test
 
 pub fn convert_u64_to_eos_asset( // TODO Test
     value: u64,
-    token_symbol: &String,
+    token_symbol: &str,
 ) -> String {
     let mut amount_string = format!("{}", value);
     let asset = match amount_string.len() {
@@ -49,7 +50,7 @@ pub fn convert_u64_to_eos_asset( // TODO Test
     format!("{} {}", asset, token_symbol)
 }
 
-pub fn convert_bytes_to_u64(bytes: &Bytes) -> Result<u64> {
+pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
     match bytes.len() {
         0..=7 => Err(AppError::Custom(
             "✘ Not enough bytes to convert to u64!"
@@ -73,7 +74,7 @@ pub fn convert_u64_to_bytes(u_64: u64) -> Bytes {
 }
 
 // TODO Test!
-pub fn convert_bytes_to_checksum256(bytes: &Bytes) -> Result<Checksum256> {
+pub fn convert_bytes_to_checksum256(bytes: &[Byte]) -> Result<Checksum256> {
     match bytes.len() {
         32 => {
             let mut arr = [0; 32];

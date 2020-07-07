@@ -30,8 +30,7 @@ pub fn validate_btc_block_header_in_state<D>(
 {
     if CORE_IS_VALIDATING {
         info!("✔ Validating BTC block header...");
-        validate_btc_block_header(state.get_btc_block_and_id()?)
-            .and_then(|_| Ok(state))
+        validate_btc_block_header(state.get_btc_block_and_id()?).map(|_| state)
     } else {
         info!("✔ Skipping BTC block-header validation!");
         Ok(state)
@@ -69,7 +68,7 @@ mod tests {
         let invalid_block_and_id = BtcBlockAndId {
             height: 1,
             deposit_address_list: Vec::new(),
-            block: block_and_id.block.clone(),
+            block: block_and_id.block,
             id: sha256d::Hash::from_str(&wrong_block_id).unwrap(),
         };
         match validate_btc_block_header(&invalid_block_and_id) {

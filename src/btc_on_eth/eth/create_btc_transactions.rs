@@ -40,7 +40,7 @@ use crate::{
 };
 
 fn sum_redeem_params(
-    redeem_params: &Vec<RedeemParams>
+    redeem_params: &[RedeemParams]
 ) -> u64 {
     info!("✔ Summing redeem param amounts...");
     redeem_params
@@ -98,7 +98,7 @@ fn get_enough_utxos_to_cover_total<D>(
 }
 
 fn get_address_and_amounts_from_redeem_params(
-    redeem_params: &Vec<RedeemParams>,
+    redeem_params: &[RedeemParams],
 ) -> BtcRecipientsAndAmounts {
     info!("✔ Getting BTC addresses & amounts from redeem params...");
     redeem_params
@@ -122,7 +122,7 @@ fn create_btc_tx_from_redeem_params<D>(
     db: &D,
     sats_per_byte: u64,
     btc_network: BtcNetwork,
-    redeem_params: &Vec<RedeemParams>,
+    redeem_params: &[RedeemParams],
 ) -> Result<BtcTransaction>
     where D: DatabaseInterface
 {

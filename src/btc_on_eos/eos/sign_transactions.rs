@@ -38,7 +38,7 @@ use crate::{
 };
 
 fn sum_redeem_params(
-    redeem_params: &Vec<RedeemParams>
+    redeem_params: &[RedeemParams]
 ) -> u64 {
     info!("✔ Summing redeem param amounts...");
     redeem_params.iter().map(|params| params.amount).sum()
@@ -78,7 +78,7 @@ fn get_enough_utxos_to_cover_total<D>(
 }
 
 fn get_address_and_amounts_from_redeem_params(
-    redeem_params: &Vec<RedeemParams>,
+    redeem_params: &[RedeemParams],
 ) -> BtcRecipientsAndAmounts {
     info!("✔ Getting addresses & amounts from redeem params...");
     redeem_params
@@ -96,7 +96,7 @@ fn sign_txs_from_redeem_params<D>(
     db: &D,
     sats_per_byte: u64,
     btc_network: BtcNetwork,
-    redeem_params: &Vec<RedeemParams>,
+    redeem_params: &[RedeemParams],
 ) -> Result<BtcTransaction>
     where D: DatabaseInterface
 {
@@ -190,7 +190,7 @@ mod tests {
         let action_proof = ActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
         let redeem_params = parse_redeem_params_from_action_proofs(&vec![action_proof],).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_2().unwrap();
-        save_utxos_to_db(&db, &vec![utxo]).unwrap();
+        save_utxos_to_db(&db, &[utxo]).unwrap();
         let pk = BtcPrivateKey::from_slice(
             &hex::decode("2cc48e2f9066a0452e73cc7874f3fa8ba5ef705067d64bef627c686baa514336").unwrap(),
             btc_network.clone(),
@@ -214,7 +214,7 @@ mod tests {
         let action_proof = ActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
         let redeem_params = parse_redeem_params_from_action_proofs(&vec![action_proof]).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_3().unwrap();
-        save_utxos_to_db(&db, &vec![utxo]).unwrap();
+        save_utxos_to_db(&db, &[utxo]).unwrap();
         let pk = BtcPrivateKey::from_slice(
             &hex::decode("040cc91d329860197e118a1ea26b7ed7042de8f991d0600df9e482c367bb1c45").unwrap(),
             btc_network.clone(),

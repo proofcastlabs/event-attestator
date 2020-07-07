@@ -14,7 +14,6 @@ use crate::{
             btc_database_utils::get_btc_network_from_db,
             btc_types::{
                 MintingParams,
-                BtcTransactions,
                 MintingParamStruct,
             },
         },
@@ -26,7 +25,7 @@ fn parse_minting_params_from_p2sh_deposit_tx(
     p2sh_deposit_containing_tx: &BtcTransaction,
     deposit_info_hash_map: &DepositInfoHashMap,
     btc_network: BtcNetwork,
-    eos_token_symbol: &String,
+    eos_token_symbol: &str,
 ) -> Result<MintingParams> {
     info!("✔ Parsing minting params from single `p2sh` transaction...");
     p2sh_deposit_containing_tx
@@ -83,10 +82,10 @@ fn parse_minting_params_from_p2sh_deposit_tx(
 }
 
 fn parse_minting_params_from_p2sh_deposit_txs(
-    p2sh_deposit_containing_txs: &BtcTransactions,
+    p2sh_deposit_containing_txs: &[BtcTransaction],
     deposit_info_hash_map: &DepositInfoHashMap,
     btc_network: BtcNetwork,
-    eos_token_symbol: &String,
+    eos_token_symbol: &str,
 ) -> Result<MintingParams> {
     info!("✔ Parsing minting params from `p2sh` transactions...");
     Ok(

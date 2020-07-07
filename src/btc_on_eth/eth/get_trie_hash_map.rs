@@ -65,7 +65,7 @@ mod tests {
         put_thing_in_trie_hash_map(
             trie_hash_map,
             get_expected_key_of_thing_in_trie_hash_map(),
-            expected_result.clone()
+            expected_result
         ).unwrap();
     }
 

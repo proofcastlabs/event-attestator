@@ -7,6 +7,7 @@ use ethereum_types::{
 use crate::{
     errors::AppError,
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -20,7 +21,7 @@ use crate::{
     },
 };
 
-pub fn convert_bytes_to_u64(bytes: &Bytes) -> Result<u64> {
+pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
     match bytes.len() {
         0..=7 => Err(AppError::Custom(
             "✘ Not enough bytes to convert to u64!"
@@ -72,7 +73,7 @@ pub fn convert_h256_to_bytes(hash: H256) -> Bytes {
     hash.as_bytes().to_vec()
 }
 
-pub fn convert_bytes_to_h256(bytes: &Bytes) -> Result<H256> {
+pub fn convert_bytes_to_h256(bytes: &[Byte]) -> Result<H256> {
     match bytes.len() {
         32 => Ok(H256::from_slice(&bytes[..])),
         _ => Err(AppError::Custom(
@@ -195,7 +196,7 @@ mod tests {
     #[test]
     fn should_decode_none_prefixed_hex_correctly() {
         let none_prefixed_hex = "c0ffee";
-        assert!(!none_prefixed_hex.contains("x"));
+        assert!(!none_prefixed_hex.contains('x'));
         let expected_result = [192, 255, 238];
         let result = decode_hex(none_prefixed_hex.to_string())
             .unwrap();
@@ -329,7 +330,7 @@ mod tests {
     fn should_fail_to_convert_invalid_hex_to_h256_correctly() {
         let long_hash = "0xc5acf860fa849b72fc78855dcbc4e9b968a8af5cdaf79f03beeca78e6a9cecffzz";
         assert!(long_hash.len() > HASH_HEX_CHARS + HEX_PREFIX_LENGTH);
-        assert!(long_hash.contains("z"));
+        assert!(long_hash.contains('z'));
         match convert_hex_to_h256(long_hash.to_string()) {
             Err(AppError::HexError(e)) => assert!(
                 e.to_string().contains("Invalid")

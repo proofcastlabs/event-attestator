@@ -15,6 +15,7 @@ use crate::{
     },
     chains::btc::deposit_address_info::{
         DepositAddressInfo,
+        DepositAddressInfoJson,
         DepositAddressJsonList,
         DepositInfoList,
     },
@@ -99,7 +100,7 @@ fn convert_hex_txs_to_btc_transactions(
 }
 
 fn parse_deposit_info_jsons_to_deposit_info_list(
-    deposit_address_json_list: &DepositAddressJsonList
+    deposit_address_json_list: &[DepositAddressInfoJson]
 ) -> Result<DepositInfoList> {
     deposit_address_json_list
         .iter()

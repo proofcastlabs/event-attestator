@@ -11,7 +11,7 @@ use crate::{
 };
 
 fn filter_redeem_params(
-    redeem_params: &Vec<RedeemParams>,
+    redeem_params: &[RedeemParams],
 ) -> Result<Vec<RedeemParams>> {
     Ok(
         redeem_params

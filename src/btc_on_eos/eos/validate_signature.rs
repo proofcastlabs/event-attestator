@@ -18,6 +18,7 @@ use crate::{
     traits::DatabaseInterface,
     constants::CORE_IS_VALIDATING,
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -31,7 +32,7 @@ use crate::{
     },
 };
 
-fn create_eos_signing_digest(block_mroot: &Bytes, schedule_hash: &Bytes, block_header_digest: &Bytes) -> Bytes {
+fn create_eos_signing_digest(block_mroot: &[Byte], schedule_hash: &[Byte], block_header_digest: &[Byte]) -> Bytes {
     let hash_1 = sha256::Hash::hash(&[&block_header_digest[..], &block_mroot[..]].concat());
     sha256::Hash::hash(&[&hash_1[..], &schedule_hash[..]].concat()).to_vec()
 }
@@ -92,7 +93,7 @@ fn get_schedule_hash(msig_enabled: bool, v2_schedule: &EosProducerScheduleV2) ->
 
 fn get_signing_digest(
     msig_enabled: bool,
-    block_mroot: &Bytes,
+    block_mroot: &[Byte],
     block_header: &EosBlockHeaderV2,
     v2_schedule: &EosProducerScheduleV2,
 ) -> Result<Bytes> {
@@ -129,8 +130,8 @@ fn get_signing_key_from_active_schedule(
 
 fn recover_block_signer_public_key(
     msig_enabled: bool,
-    block_mroot: &Bytes,
-    producer_signature: &String,
+    block_mroot: &[Byte],
+    producer_signature: &str,
     block_header: &EosBlockHeaderV2,
     v2_schedule: &EosProducerScheduleV2,
 ) -> Result<EosPublicKey> {
@@ -142,8 +143,8 @@ fn recover_block_signer_public_key(
 
 pub fn check_block_signature_is_valid(
     msig_enabled: bool,
-    block_mroot: &Bytes,
-    producer_signature: &String,
+    block_mroot: &[Byte],
+    producer_signature: &str,
     block_header: &EosBlockHeaderV2,
     v2_schedule: &EosProducerScheduleV2,
 ) -> Result<()> {
@@ -312,8 +313,8 @@ mod tests {
         let node_count = submission_material.block_header.block_num() - 1;
         let block_mroot = Incremerkle::new(node_count.into(), blockroot_merkle).get_root().as_bytes().to_vec();
         let msig_enabled = false;
-        let producer_signature = submission_material_json.block_header.producer_signature.clone();
-        let block_header = submission_material.block_header.clone();
+        let producer_signature = submission_material_json.block_header.producer_signature;
+        let block_header = submission_material.block_header;
         let active_schedule = get_sample_mainnet_schedule_1713().unwrap();
         if let Err(e) = check_block_signature_is_valid(
             msig_enabled,
@@ -350,8 +351,8 @@ mod tests {
         let node_count = submission_material.block_header.block_num() - 1;
         let block_mroot = Incremerkle::new(node_count.into(), blockroot_merkle).get_root().as_bytes().to_vec();
         let msig_enabled = true;
-        let producer_signature = submission_material_json.block_header.producer_signature.clone();
-        let block_header = submission_material.block_header.clone();
+        let producer_signature = submission_material_json.block_header.producer_signature;
+        let block_header = submission_material.block_header;
         let active_schedule = get_sample_j3_schedule_37().unwrap();
         if let Err(e) = check_block_signature_is_valid(
             msig_enabled,

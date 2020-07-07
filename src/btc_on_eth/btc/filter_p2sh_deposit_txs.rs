@@ -16,7 +16,10 @@ use crate::{
             get_btc_network_from_db,
             get_btc_private_key_from_db,
         },
-        btc_types::BtcTransactions,
+        btc_types::{
+            BtcTransaction,
+            BtcTransactions,
+        },
     },
 };
 
@@ -102,7 +105,7 @@ fn is_output_address_in_hash_map(
 pub fn filter_p2sh_deposit_txs(
     deposit_info: &DepositInfoHashMap,
     enclave_public_key_slice: &[u8],
-    transactions: &BtcTransactions,
+    transactions: &[BtcTransaction],
     btc_network: BtcNetwork,
 ) -> Result<BtcTransactions> {
     Ok(
@@ -215,7 +218,7 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let deposit_address_list = get_sample_btc_block_with_p2sh_deposit()
             .deposit_address_list
-            .clone();
+            ;
         let deposit_info = create_hash_map_from_deposit_info_list(
             &deposit_address_list
         ).unwrap();
@@ -235,7 +238,7 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let deposit_address_list = get_sample_btc_block_with_p2sh_deposit()
             .deposit_address_list
-            .clone();
+            ;
         let deposit_info = create_hash_map_from_deposit_info_list(
             &deposit_address_list
         ).unwrap();
@@ -255,7 +258,7 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let deposit_address_list = get_sample_btc_block_with_p2sh_deposit()
             .deposit_address_list
-            .clone();
+            ;
         let deposit_info = create_hash_map_from_deposit_info_list(
             &deposit_address_list
         ).unwrap();
@@ -275,7 +278,7 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let deposit_address_list = get_sample_btc_block_with_p2sh_deposit()
             .deposit_address_list
-            .clone();
+            ;
         let deposit_info = create_hash_map_from_deposit_info_list(
             &deposit_address_list
         ).unwrap();
@@ -294,7 +297,7 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let deposit_address_list = get_sample_btc_block_with_p2sh_deposit()
             .deposit_address_list
-            .clone();
+            ;
         let deposit_info = create_hash_map_from_deposit_info_list(
             &deposit_address_list
         ).unwrap();
@@ -312,7 +315,7 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let deposit_address_list = get_sample_btc_block_with_p2sh_deposit()
             .deposit_address_list
-            .clone();
+            ;
         let deposit_info = create_hash_map_from_deposit_info_list(
             &deposit_address_list
         ).unwrap();
@@ -339,7 +342,7 @@ mod tests {
         let txs = block_and_id
             .block
             .txdata
-            .clone();
+            ;
         let num_txs_before = txs.len();
         let hash_map = create_hash_map_from_deposit_info_list(
             &deposit_address_list
@@ -354,6 +357,6 @@ mod tests {
         assert!(num_txs_before != num_txs_after);
         assert!(num_txs_after == expected_num_txs);
         let tx_hash = result[0].txid();
-        assert!(tx_hash.to_string() == expected_tx_hash.to_string());
+        assert!(tx_hash.to_string() == expected_tx_hash);
     }
 }

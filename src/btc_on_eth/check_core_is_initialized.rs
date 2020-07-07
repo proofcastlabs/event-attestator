@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn should_return_false_if_enclave_not_initialized() {
-        if let Ok(_) = check_core_is_initialized(&get_test_database()) {
+        if check_core_is_initialized(&get_test_database()).is_ok() {
             panic!("Enc should be initialized!");
         }
     }

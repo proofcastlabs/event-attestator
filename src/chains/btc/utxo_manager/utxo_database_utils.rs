@@ -6,6 +6,7 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -14,10 +15,7 @@ use crate::{
         convert_bytes_to_u64,
     },
     chains::btc::utxo_manager::{
-        utxo_types::{
-            BtcUtxoAndValue,
-            BtcUtxosAndValues,
-        },
+        utxo_types::BtcUtxoAndValue,
         utxo_constants::{
             UTXO_LAST,
             UTXO_FIRST,
@@ -34,7 +32,7 @@ use crate::{
 
 pub fn save_utxos_to_db<D>(
     db: &D,
-    utxos_and_values: &BtcUtxosAndValues
+    utxos_and_values: &[BtcUtxoAndValue]
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -76,7 +74,7 @@ pub fn get_all_utxo_db_keys<D>(db: &D) -> Vec<Bytes>
 
 fn maybe_get_next_utxo_pointer_from_utxo_pointer<D>(
     db: &D,
-    utxo_pointer: &Bytes
+    utxo_pointer: &[Byte]
 ) -> Option<Bytes>
     where D: DatabaseInterface
 {
@@ -102,14 +100,14 @@ pub fn get_utxo_and_value<D>(db: &D) -> Result<BtcUtxoAndValue>
                         .and_then(|_| delete_first_utxo(db))
                         .and_then(|_| delete_last_utxo_key(db))
                         .and_then(|_| delete_first_utxo_key(db))
-                        .and_then(|_| Ok(utxo))
+                        .map(|_| utxo)
                 }
                 Some(pointer) => {
                     trace!("✔ UTXO found, updating `UTXO_FIRST` pointer...");
                     decrement_total_utxo_balance_in_db(db, utxo.value)
                         .and_then(|_| delete_first_utxo(db))
                         .and_then(|_| set_first_utxo_pointer(db, &pointer))
-                        .and_then(|_| Ok(utxo))
+                        .map(|_| utxo)
                 }
             }
         )
@@ -258,7 +256,7 @@ pub fn update_pointer_in_last_utxo_in_db<D>(
 
 pub fn update_pointer_in_utxo_in_db<D>(
     db: &D,
-    db_key: &Bytes,
+    db_key: &[Byte],
     new_pointer: sha256d::Hash,
 ) -> Result<()>
     where D: DatabaseInterface
@@ -275,7 +273,7 @@ pub fn update_pointer_in_utxo_in_db<D>(
 
 pub fn maybe_get_utxo_from_db<D>(
     db: &D,
-    db_key: &Bytes
+    db_key: &[Byte]
 ) -> Option<BtcUtxoAndValue>
     where D: DatabaseInterface
 {
@@ -295,7 +293,7 @@ pub fn maybe_get_utxo_from_db<D>(
     }
 }
 
-pub fn get_utxo_from_db<D>(db: &D, db_key: &Bytes) -> Result<BtcUtxoAndValue>
+pub fn get_utxo_from_db<D>(db: &D, db_key: &[Byte]) -> Result<BtcUtxoAndValue>
     where D: DatabaseInterface
 {
     trace!(
@@ -308,7 +306,7 @@ pub fn get_utxo_from_db<D>(db: &D, db_key: &Bytes) -> Result<BtcUtxoAndValue>
 
 pub fn put_utxo_in_db<D>(
     db: &D,
-    key: &Bytes,
+    key: &[Byte],
     utxo: &BtcUtxoAndValue,
 ) -> Result<()>
     where D: DatabaseInterface

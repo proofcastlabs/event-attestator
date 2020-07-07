@@ -1,14 +1,17 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
+    chains::btc::utxo_manager::utxo_types::{
+        BtcUtxoAndValue,
+        BtcUtxosAndValues,
+    },
     btc_on_eos::{
         constants::MINIMUM_REQUIRED_SATOSHIS,
         btc::btc_state::BtcState,
     },
 };
 
-fn filter_utxos(utxos: &BtcUtxosAndValues) -> Result<BtcUtxosAndValues> {
+fn filter_utxos(utxos: &[BtcUtxoAndValue]) -> Result<BtcUtxosAndValues> {
     Ok(
         utxos
             .iter()

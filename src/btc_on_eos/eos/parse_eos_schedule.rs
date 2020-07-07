@@ -75,7 +75,7 @@ pub fn convert_v1_schedule_to_v2(
 }
 
 fn convert_v2_producer_key_jsons_to_v2_producer_keys(
-    json: &Vec<FullProducerKeyJsonV2>
+    json: &[FullProducerKeyJsonV2]
 ) -> Result<Vec<EosProducerKeyV2>> {
     json.iter().map(convert_full_producer_key_json_to_v2_producer_key).collect()
 }
@@ -89,7 +89,7 @@ fn convert_full_producer_key_json_to_v2_producer_key(json: &FullProducerKeyJsonV
     )
 }
 
-fn convert_v1_producer_key_jsons_to_v1_producer_keys(json: &Vec<ProducerKeyJsonV1>) -> Result<Vec<EosProducerKeyV1>> {
+fn convert_v1_producer_key_jsons_to_v1_producer_keys(json: &[ProducerKeyJsonV1]) -> Result<Vec<EosProducerKeyV1>> {
     json.iter().map(convert_v1_producer_key_json_to_v1_producer_key).collect()
 }
 
@@ -111,7 +111,7 @@ fn convert_authority_json_to_eos_keys_and_threshold(json: &AuthorityJson) -> Res
     )
 }
 
-pub fn convert_keys_json_to_vec_of_eos_keys(keys_json: &Vec<ProducerKeyJsonV2>) -> Result<Vec<EosKey>> {
+pub fn convert_keys_json_to_vec_of_eos_keys(keys_json: &[ProducerKeyJsonV2]) -> Result<Vec<EosKey>> {
     keys_json.iter().map(convert_key_json_to_eos_key).collect()
 }
 
@@ -131,7 +131,7 @@ pub fn parse_v2_schedule_string_to_v2_schedule_json(schedule_string: &str) -> Re
     }
 }
 
-pub fn parse_v1_schedule_string_to_v1_schedule_json(schedule_string: &String) -> Result<EosProducerScheduleJsonV1> {
+pub fn parse_v1_schedule_string_to_v1_schedule_json(schedule_string: &str) -> Result<EosProducerScheduleJsonV1> {
     match serde_json::from_str(schedule_string) {
         Ok(result) => Ok(result),
         Err(e) => Err(AppError::Custom(e.to_string()))

@@ -103,8 +103,7 @@ pub fn maybe_update_btc_linker_hash<D>(
                     put_btc_linker_hash_in_db(
                         &state.db,
                         &get_new_linker_hash(&state.db, &parent_btc_block.id)?,
-                    )
-                        .and_then(|_| Ok(state))
+                    ).map(|_| state)
                 }
                 None => {
                     info!(

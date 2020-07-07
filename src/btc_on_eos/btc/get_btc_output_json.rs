@@ -8,18 +8,12 @@ use crate::{
     btc_on_eos::{
         utils::convert_eos_asset_to_u64,
         eos::{
-            eos_types::{
-                EosSignedTransaction,
-                EosSignedTransactions,
-            },
+            eos_types::EosSignedTransaction,
             eos_database_utils::get_eos_account_nonce_from_db,
         },
         btc::{
             btc_state::BtcState,
-            btc_types::{
-                MintingParams,
-                MintingParamStruct,
-            },
+            btc_types::MintingParamStruct,
             btc_database_utils::{
                 get_btc_canon_block_from_db,
                 get_btc_latest_block_from_db,
@@ -73,8 +67,8 @@ pub struct BtcOutput {
 }
 
 pub fn get_eos_signed_tx_info_from_eth_txs(
-    txs: &EosSignedTransactions,
-    minting_params: &MintingParams,
+    txs: &[EosSignedTransaction],
+    minting_params: &[MintingParamStruct],
     eos_account_nonce: u64,
 ) -> Result<Vec<TxInfo>> {
     info!("✔ Getting tx info from txs in state...");

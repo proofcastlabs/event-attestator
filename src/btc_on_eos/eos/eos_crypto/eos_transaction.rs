@@ -48,6 +48,7 @@ fn get_eos_minting_action(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn get_unsigned_eos_minting_tx(
     to: &str,
     from: &str,

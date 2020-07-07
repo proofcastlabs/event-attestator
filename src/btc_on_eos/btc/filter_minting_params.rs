@@ -15,7 +15,7 @@ use crate::{
 };
 
 fn filter_minting_params(
-    minting_params: &MintingParams,
+    minting_params: &[MintingParamStruct],
 ) -> Result<MintingParams> {
     Ok(
         minting_params

@@ -13,7 +13,7 @@ use crate::{
 };
 
 fn get_global_sequences_from_redeem_params(
-    redeem_params: &Vec<RedeemParams>
+    redeem_params: &[RedeemParams]
 ) -> GlobalSequences {
     redeem_params
         .iter()
@@ -23,7 +23,7 @@ fn get_global_sequences_from_redeem_params(
 
 fn add_tx_ids_to_processed_tx_ids<D>(
     db: &D,
-    redeem_params: &Vec<RedeemParams>,
+    redeem_params: &[RedeemParams],
     processed_tx_ids: &ProcessedTxIds,
 ) -> Result<()>
     where D: DatabaseInterface

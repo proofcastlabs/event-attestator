@@ -8,6 +8,7 @@ use bitcoin::{
 use std::{
     str::FromStr,
     collections::HashMap,
+    fmt,
 };
 use crate::{
     errors::AppError,
@@ -38,17 +39,19 @@ impl DepositAddressInfoVersion {
     }
 
     pub fn from_string(version_string: &str) -> Result<Self> {
-        match version_string.chars().nth(0) {
+        match version_string.chars().next() {
             Some('0') => Ok(DepositAddressInfoVersion::V0),
             Some('1') => Ok(DepositAddressInfoVersion::V1),
             _ => Err(AppError::Custom(format!("✘ Deposit address list version unrecognized: {}", version_string)))
         }
     }
+}
 
-    pub fn to_string(&self) -> String {
+impl fmt::Display for DepositAddressInfoVersion {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            DepositAddressInfoVersion::V0 => "0".to_string(),
-            DepositAddressInfoVersion::V1 => "1".to_string(),
+            DepositAddressInfoVersion::V0 => write!(f, "0"),
+            DepositAddressInfoVersion::V1 => write!(f, "1"),
         }
     }
 }
@@ -148,7 +151,7 @@ impl DepositAddressInfo {
     fn from_json_with_no_validation(deposit_address_info_json: &DepositAddressInfoJson) -> Result<Self> {
         Ok(
             DepositAddressInfo {
-                nonce: deposit_address_info_json.nonce.clone(),
+                nonce: deposit_address_info_json.nonce,
                 address: Self::extract_address_string_from_json(deposit_address_info_json)?,
                 btc_deposit_address: BtcAddress::from_str(&deposit_address_info_json.btc_deposit_address)?,
                 commitment_hash: Self::extract_address_and_nonce_hash_from_json(deposit_address_info_json)?,
@@ -166,9 +169,9 @@ impl DepositAddressInfo {
 
     fn calculate_commitment_hash(&self) -> Result<sha256d::Hash> {
         self.get_address_as_bytes()
-            .and_then(|mut address_bytes| {
+            .map(|mut address_bytes| {
                 address_bytes.append(&mut self.nonce.to_le_bytes().to_vec());
-                Ok(sha256d::Hash::hash(&address_bytes))
+                sha256d::Hash::hash(&address_bytes)
             })
     }
 

@@ -4,13 +4,16 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eos::eos::{
         eos_state::EosState,
-        eos_types::ActionProofs,
+        eos_types::{
+            ActionProof,
+            ActionProofs,
+        },
     },
 };
 
 fn filter_proofs_with_wrong_action_mroot(
     action_mroot: &Checksum256,
-    action_proofs: &ActionProofs,
+    action_proofs: &[ActionProof],
 ) -> Result<ActionProofs> {
     let filtered = action_proofs
         .iter()

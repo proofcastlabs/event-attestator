@@ -13,6 +13,7 @@ use crate::{
     traits::DatabaseInterface,
     constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -95,7 +96,7 @@ impl EthPrivateKey {
     pub fn write_to_database<D>(
         &self,
         db: &D,
-        key: &Bytes,
+        key: &[Byte],
     ) -> Result<()>
         where D: DatabaseInterface
     {

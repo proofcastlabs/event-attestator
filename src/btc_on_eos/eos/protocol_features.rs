@@ -2,6 +2,7 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -24,7 +25,7 @@ impl ProtocolFeature {
     pub fn new(name: &str, feature_hash: String) -> Self {
         ProtocolFeature {
             feature_name: name.to_string(),
-            feature_hash: feature_hash,
+            feature_hash,
         }
     }
 
@@ -44,7 +45,7 @@ impl EnabledFeatures {
         EnabledFeatures(vec![])
     }
 
-    pub fn remove(mut self, feature_hash: &Bytes) -> Result<Self>{
+    pub fn remove(mut self, feature_hash: &[Byte]) -> Result<Self>{
         if self.does_not_contain(feature_hash) {
             return Ok(self)
         };
@@ -56,7 +57,7 @@ impl EnabledFeatures {
             })
     }
 
-    pub fn add(mut self, feature_hash: &Bytes) -> Result<Self> {
+    pub fn add(mut self, feature_hash: &[Byte]) -> Result<Self> {
         AVAILABLE_FEATURES
             .check_contains(feature_hash)
             .and_then(|_| AVAILABLE_FEATURES.get_feature_from_hash(feature_hash))
@@ -77,30 +78,30 @@ impl EnabledFeatures {
             .filter(|maybe_feature| maybe_feature.is_some())
             .map(|feature| -> Result<()> {
                 info!("✔ Adding feature: {}", feature.clone()?.to_json()?);
-                self.0.push(feature?.clone());
+                self.0.push(feature?);
                 Ok(())
             })
             .for_each(drop);
         Ok(self)
     }
 
-    pub fn contains(&self, feature_hash: &Bytes) -> bool {
+    pub fn contains(&self, feature_hash: &[Byte]) -> bool {
         let hash = hex::encode(feature_hash);
         self
             .0
             .iter()
-            .fold(false, |acc, e| acc || e.feature_hash == hash)
+            .any(|e| e.feature_hash == hash)
     }
 
-    pub fn does_not_contain(&self, feature_hash: &Bytes) -> bool {
+    pub fn does_not_contain(&self, feature_hash: &[Byte]) -> bool {
         !self.contains(feature_hash)
     }
 
-    pub fn is_enabled(&self, feature_hash: &Bytes) -> bool {
+    pub fn is_enabled(&self, feature_hash: &[Byte]) -> bool {
         AVAILABLE_FEATURES.contains(feature_hash) && self.contains(feature_hash)
     }
 
-    pub fn is_not_enabled(&self, feature_hash: &Bytes) -> bool {
+    pub fn is_not_enabled(&self, feature_hash: &[Byte]) -> bool {
         !self.is_enabled(feature_hash)
     }
 
@@ -127,15 +128,15 @@ impl AvailableFeatures {
         AvailableFeatures(available_features)
     }
 
-    pub fn contains(&self, feature_hash: &Bytes) -> bool {
+    pub fn contains(&self, feature_hash: &[Byte]) -> bool {
         let hash = hex::encode(feature_hash);
         self
             .0
             .iter()
-            .fold(false, |acc, e| acc || e.feature_hash == hash)
+            .any(|e| e.feature_hash == hash)
     }
 
-    pub fn check_contains(&self, feature_hash: &Bytes) -> Result<()> {
+    pub fn check_contains(&self, feature_hash: &[Byte]) -> Result<()> {
         info!(
             "✔ Checking available features for feature hash {}",
             hex::encode(feature_hash)
@@ -157,7 +158,7 @@ impl AvailableFeatures {
 
     fn get_known_feature_from_hash(
         &self,
-        feature_hash: &Bytes,
+        feature_hash: &[Byte],
     ) -> ProtocolFeature {
         self
             .0
@@ -175,7 +176,7 @@ impl AvailableFeatures {
 
     pub fn maybe_get_feature_from_hash(
         &self,
-        feature_hash: &Bytes,
+        feature_hash: &[Byte],
     ) -> Option<ProtocolFeature> {
         match self.contains(feature_hash) {
             true => Some(self.get_known_feature_from_hash(feature_hash)),
@@ -188,7 +189,7 @@ impl AvailableFeatures {
 
     pub fn get_feature_from_hash(
         &self,
-        feature_hash: &Bytes,
+        feature_hash: &[Byte],
     ) -> Result<ProtocolFeature> {
         self.check_contains(feature_hash)
             .map(|_| self.get_known_feature_from_hash(feature_hash))

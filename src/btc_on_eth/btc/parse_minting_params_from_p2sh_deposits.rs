@@ -15,7 +15,6 @@ use crate::{
             btc_database_utils::get_btc_network_from_db,
             btc_types::{
                 MintingParams,
-                BtcTransactions,
                 MintingParamStruct,
             },
         },
@@ -70,7 +69,7 @@ fn parse_minting_params_from_p2sh_deposit_tx(
 }
 
 fn parse_minting_params_from_p2sh_deposit_txs(
-    p2sh_deposit_containing_txs: &BtcTransactions,
+    p2sh_deposit_containing_txs: &[BtcTransaction],
     deposit_info_hash_map: &DepositInfoHashMap,
     btc_network: BtcNetwork,
 ) -> Result<MintingParams> {
@@ -146,7 +145,7 @@ mod tests {
         let txs = block_and_id
             .block
             .txdata
-            .clone();
+            ;
         let hash_map = create_hash_map_from_deposit_info_list(
             &deposit_address_list
         ).unwrap();
@@ -194,7 +193,7 @@ mod tests {
         let txs = block_and_id
             .block
             .txdata
-            .clone();
+            ;
         let hash_map = create_hash_map_from_deposit_info_list(
             &deposit_address_list
         ).unwrap();
@@ -263,7 +262,7 @@ mod tests {
         let txs = block_and_id
             .block
             .txdata
-            .clone();
+            ;
         let hash_map = create_hash_map_from_deposit_info_list(
             &deposit_address_list
         ).unwrap();

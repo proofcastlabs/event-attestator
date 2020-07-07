@@ -40,7 +40,7 @@ fn get_log_from_json(log_json: &EthLogJson) -> Result<EthLog> {
     )
 }
 
-pub fn get_logs_bloom_from_logs(logs: &Vec<EthLog>) -> Result<Bloom> {
+pub fn get_logs_bloom_from_logs(logs: &[EthLog]) -> Result<Bloom> {
     Ok(
         logs
             .iter()
@@ -64,7 +64,6 @@ pub fn get_logs_from_receipt_json(
 
 #[cfg(test)]
 mod tests {
-    use hex;
     use super::*;
     use crate::btc_on_eth::eth::eth_test_utils::{
         get_expected_log,

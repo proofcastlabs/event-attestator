@@ -15,6 +15,7 @@ use crate::{
         btc::btc_types::{
             BtcBlockAndId,
             MintingParams,
+            BtcTransaction,
             BtcTransactions,
             BtcBlockInDbFormat,
             SubmissionMaterial,
@@ -222,7 +223,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 
     pub fn get_p2sh_deposit_txs(
         &self
-    ) -> Result<&BtcTransactions> {
+    ) -> Result<&[BtcTransaction]> {
         match &self.p2sh_deposit_txs {
             Some(p2sh_deposit_txs) => {
                 info!("✔ Getting `p2sh` deposit txs from BTC state...");
@@ -250,7 +251,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 
     pub fn get_output_json_string(
         &self
-    ) -> Result<&String> {
+    ) -> Result<&str> {
         match &self.output_json_string {
             Some(output_json_string) => {
                 info!("✔ Getting BTC output json string from state...");

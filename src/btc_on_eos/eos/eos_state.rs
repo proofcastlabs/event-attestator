@@ -159,8 +159,8 @@ impl<D> EosState<D> where D: DatabaseInterface {
     }
 
     pub fn get_eos_block_num(&self) -> Result<u64> {
-        match &self.block_num {
-            Some(num) => Ok(num.clone()),
+        match self.block_num {
+            Some(num) => Ok(num),
             None => Err(AppError::Custom(
                 get_not_in_state_err("block_num"))
             )
