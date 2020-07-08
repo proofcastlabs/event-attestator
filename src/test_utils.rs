@@ -1,3 +1,4 @@
+use rand::Rng;
 use std::{
     sync::Mutex,
     collections::HashMap,
@@ -56,4 +57,8 @@ impl DatabaseInterface for TestDB {
 
 pub fn get_test_database() -> TestDB {
     TestDB::new()
+}
+
+pub fn get_random_num_between(min: usize, max: usize) -> usize {
+    rand::thread_rng().gen_range(min, max)
 }
