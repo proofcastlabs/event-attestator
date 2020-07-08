@@ -46,9 +46,9 @@ pub fn maybe_add_block_and_receipts_to_db_and_return_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        eth::eth_test_utils::get_sample_eth_block_and_receipts_n,
+        btc_on_eth::eth::eth_test_utils::get_sample_eth_block_and_receipts_n,
     };
 
 

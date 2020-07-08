@@ -77,9 +77,9 @@ pub fn maybe_remove_old_btc_tail_block<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        btc::{
+        btc_on_eth::btc::{
             btc_test_utils::{
                 put_btc_tail_block_in_db,
                 put_btc_anchor_block_in_db,

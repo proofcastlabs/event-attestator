@@ -511,9 +511,9 @@ pub fn get_btc_block_from_db<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        btc::btc_test_utils::{
+        btc_on_eth::btc::btc_test_utils::{
             SAMPLE_TARGET_BTC_ADDRESS,
             get_sample_btc_private_key,
             put_btc_latest_block_in_db,

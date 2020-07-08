@@ -267,9 +267,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::test_utils::{
-        get_test_database,
-    };
+    use crate::test_utils::get_test_database;
 
     #[test]
     fn should_fail_to_get_btc_block_and_receipts_in_state() {

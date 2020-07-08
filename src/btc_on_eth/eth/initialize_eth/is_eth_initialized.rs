@@ -22,9 +22,9 @@ pub fn is_eth_enclave_initialized<D>(db: &D) -> bool
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        eth::{
+        btc_on_eth::eth::{
             eth_test_utils::get_sample_eth_address,
             eth_database_utils::put_public_eth_address_in_db,
         },

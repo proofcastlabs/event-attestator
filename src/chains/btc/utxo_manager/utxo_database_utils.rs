@@ -405,9 +405,9 @@ pub fn increment_utxo_nonce_in_db<D>(db: &D) -> Result<()>
 mod tests {
     use super::*;
     // FIXME Use generic versions of these, not the BTC ones!
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        btc::{
+        btc_on_eth::btc::{
             btc_database_utils::key_exists_in_db,
             btc_test_utils::{
                 get_sample_utxo_and_values,

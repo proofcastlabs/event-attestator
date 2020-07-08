@@ -69,9 +69,9 @@ pub fn maybe_update_latest_block_hash<D>(
 mod tests {
     use super::*;
     use crate::{
+        test_utils::get_test_database,
         chains::eth::eth_constants::ETH_LATEST_BLOCK_HASH_KEY,
         btc_on_eth::{
-            test_utils::get_test_database,
             eth::{
                 eth_types::EthHash,
                 eth_database_utils::get_hash_from_db_via_hash_key,

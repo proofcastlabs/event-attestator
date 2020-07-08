@@ -29,9 +29,9 @@ pub fn get_linker_hash_or_genesis_hash<D>(db: &D) -> Result<EthHash>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        eth::eth_database_utils::put_eth_linker_hash_in_db,
+        btc_on_eth::eth::eth_database_utils::put_eth_linker_hash_in_db,
     };
 
     #[test]

@@ -623,9 +623,9 @@ pub fn increment_any_sender_nonce_in_db<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        eth::eth_test_utils::{
+        btc_on_eth::eth::eth_test_utils::{
             get_sample_eth_address,
             get_sample_eth_private_key,
             get_sample_contract_address,

@@ -155,9 +155,9 @@ impl<D> EthState<D> where D: DatabaseInterface {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        eth::eth_test_utils::{
+        btc_on_eth::eth::eth_test_utils::{
             get_expected_block,
             get_expected_receipt,
             SAMPLE_RECEIPT_INDEX,

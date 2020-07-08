@@ -44,7 +44,7 @@ pub fn get_u64_from_db<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::test_utils::get_test_database;
+    use crate::test_utils::get_test_database;
 
     #[test]
     fn should_save_and_get_usize_from_db() {

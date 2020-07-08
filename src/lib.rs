@@ -33,6 +33,7 @@ mod chains;
 mod constants;
 mod check_debug_mode;
 mod debug_database_utils;
+#[cfg(test)] mod test_utils;
 
 #[macro_use] extern crate log;
 #[macro_use] extern crate lazy_static;

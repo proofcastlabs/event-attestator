@@ -1,4 +1,3 @@
-#![cfg(test)]
 use std::{
     sync::Mutex,
     collections::HashMap,
@@ -12,15 +11,6 @@ use crate::{
         DataSensitivity,
     },
 };
-
-pub fn get_sample_message_to_sign() -> &'static str {
-    "Provable pToken!"
-}
-
-pub fn get_sample_message_to_sign_bytes() -> &'static [u8] {
-    get_sample_message_to_sign()
-        .as_bytes()
-}
 
 pub static DB_LOCK_ERRROR: &str = "✘ Cannot get lock on DB!";
 
@@ -47,34 +37,20 @@ impl DatabaseInterface for TestDB {
         value: Bytes,
         _sensitivity: DataSensitivity,
     ) -> Result<()> {
-        self
-            .0
-            .lock()
-            .expect(DB_LOCK_ERRROR)
-            .insert(key, value);
+        self.0.lock().expect(DB_LOCK_ERRROR).insert(key, value);
         Ok(())
     }
 
     fn delete(&self, key: Bytes) -> Result<()> {
-        self
-            .0
-            .lock()
-            .expect(DB_LOCK_ERRROR)
-            .remove(&key);
+        self.0.lock().expect(DB_LOCK_ERRROR).remove(&key);
         Ok(())
     }
 
     fn get(&self, key: Bytes, _sensitivity: DataSensitivity) -> Result<Bytes> {
-        match self
-            .0
-            .lock()
-            .expect(DB_LOCK_ERRROR)
-            .get(&key) {
-                Some(value) => Ok(value.to_vec()),
-                None => Err(AppError::Custom(
-                    "✘ Cannot find item in database!".to_string()
-                ))
-            }
+        match self.0.lock().expect(DB_LOCK_ERRROR).get(&key) {
+            Some(value) => Ok(value.to_vec()),
+            None => Err(AppError::Custom("✘ Cannot find item in database!".to_string()))
+        }
     }
 }
 

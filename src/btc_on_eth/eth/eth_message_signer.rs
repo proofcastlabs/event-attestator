@@ -33,12 +33,12 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
-        eth::{
+    use crate::{
+        test_utils::get_test_database,
+        btc_on_eth::eth::{
             eth_database_utils::put_eth_private_key_in_db, eth_json_codec::json,
             eth_test_utils::get_sample_eth_private_key,
         },
-        test_utils::get_test_database,
     };
 
     #[test]
