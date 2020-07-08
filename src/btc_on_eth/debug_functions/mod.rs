@@ -40,7 +40,6 @@ use crate::{
             btc_state::BtcState,
             sign_transactions::get_eth_signed_txs,
             save_utxos_to_db::maybe_save_utxos_to_db,
-            filter_utxos::filter_out_value_too_low_utxos_from_state,
             validate_btc_merkle_root::validate_btc_merkle_root,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
@@ -58,6 +57,10 @@ use crate::{
             btc_database_utils::{
                 end_btc_db_transaction,
                 start_btc_db_transaction,
+            },
+            filter_utxos::{
+                filter_out_utxos_extant_in_db_from_state,
+                filter_out_value_too_low_utxos_from_state,
             },
         },
         eth::{
@@ -299,3 +302,27 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
         })
 }
 
+pub fn debug_maybe_add_utxo_to_db<D>(
+    db: D,
+    btc_submission_material_json: &str,
+) -> Result<String>
+    where D: DatabaseInterface,
+{
+    check_debug_mode()
+        .and_then(|_| parse_btc_block_and_id_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
+        .and_then(check_core_is_initialized_and_return_btc_state)
+        .and_then(start_btc_db_transaction)
+        .and_then(validate_btc_block_header_in_state)
+        .and_then(validate_proof_of_work_of_btc_block_in_state)
+        .and_then(validate_btc_merkle_root)
+        .and_then(get_deposit_info_hash_map_and_put_in_state)
+        .and_then(filter_op_return_deposit_txs_and_add_to_state)
+        .and_then(filter_p2sh_deposit_txs_and_add_to_state)
+        .and_then(maybe_extract_utxos_from_op_return_txs_and_put_in_state)
+        .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
+        .and_then(filter_out_value_too_low_utxos_from_state)
+        .and_then(filter_out_utxos_extant_in_db_from_state)
+        .and_then(maybe_save_utxos_to_db)
+        .and_then(end_btc_db_transaction)
+        .map(|_| "{add_utxo_to_db_succeeded:true}".to_string())
+}

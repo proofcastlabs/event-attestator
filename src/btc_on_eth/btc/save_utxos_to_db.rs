@@ -14,8 +14,6 @@ pub fn maybe_save_utxos_to_db<D>(state: BtcState<D>) -> Result<BtcState<D>>
             info!("✔ No UTXOs in state to save!");
             Ok(state)
         }
-        _ => {
-            save_utxos_to_db(&state.db, &state.utxos_and_values).map(|_| state)
-        }
+        _ => save_utxos_to_db(&state.db, &state.utxos_and_values).map(|_| state)
     }
 }
