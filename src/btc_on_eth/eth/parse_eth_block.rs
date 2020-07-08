@@ -97,11 +97,10 @@ mod tests {
 
     #[test]
     fn should_parse_eth_block_json_to_eth_block() {
-        let eth_json = get_sample_eth_block_and_receipts_json()
-            .unwrap();
+        let eth_json = get_sample_eth_block_and_receipts_json().unwrap();
         match parse_eth_block_json(eth_json.block) {
-            Err(_) => panic!("Failed to get eth block json!"),
             Ok(block) => assert!(block == get_expected_block()),
+            _ => panic!("Failed to get eth block json!"),
         }
     }
 }

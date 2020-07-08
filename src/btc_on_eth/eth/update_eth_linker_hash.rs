@@ -137,7 +137,7 @@ mod tests {
         let expected_result_hex =
             "5cfaf026b198808363c898b2f7fcada79d88fe163fa6281211956a5431481ecf";
         let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
-        let block_hash_to_link_to = blocks_and_receipts[5].block.hash.clone();
+        let block_hash_to_link_to = blocks_and_receipts[5].block.hash;
         let anchor_block = blocks_and_receipts[1].clone();
         let linker_hash = blocks_and_receipts[3].block.hash;
         put_eth_linker_hash_in_db(&db, linker_hash).unwrap();

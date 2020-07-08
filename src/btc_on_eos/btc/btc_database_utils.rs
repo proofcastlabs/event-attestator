@@ -610,15 +610,9 @@ mod tests {
             &block,
             non_existent_block_type
         ) {
-            Ok(_) => {
-                panic!("Should not have succeeded!");
-            }
-            Err(AppError::Custom(e)) => {
-                assert!(e == expected_error);
-            }
-            Err(_) => {
-                panic!("Wrong error received!")
-            }
+            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Ok(_) => panic!("Should not have succeeded!"),
+            _ => panic!("Wrong error received!"),
         }
     }
 
@@ -632,12 +626,8 @@ mod tests {
             panic!("Error putting special block in db: {}", e);
         };
         match get_btc_canon_block_from_db(&db) {
-            Err(e) => {
-                panic!("Error geting canon block: {}", e);
-            }
-            Ok(block_from_db) => {
-                assert!(block_from_db == block);
-            }
+            Err(e) => panic!("Error geting canon block: {}", e),
+            Ok(block_from_db) => assert!(block_from_db == block),
         }
     }
 
@@ -650,15 +640,9 @@ mod tests {
             non_existent_block_type
         );
         match get_special_btc_block_from_db(&db, non_existent_block_type) {
-            Ok(_) => {
-                panic!("Should not have got special block!");
-            }
-            Err(AppError::Custom(e)) => {
-                assert!(e == expected_error);
-            }
-            Err(_) => {
-                panic!("Wrong error when getting non-existent block type!");
-            }
+            Ok(_) => panic!("Should not have got special block!"),
+            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            _ =>  panic!("Wrong error when getting non-existent block type!"),
         }
     }
 

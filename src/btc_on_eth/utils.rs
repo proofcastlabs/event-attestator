@@ -457,7 +457,7 @@ mod tests {
         match  convert_bytes_to_u64(&bytes) {
             Err(AppError::Custom(e)) => assert!(e == expected_error),
             Ok(_) => panic!("Shouldn't work!"),
-            Err(_) => panic!("Wrong error!"),
+            _ => panic!("Wrong error!"),
         }
     }
 
@@ -471,7 +471,7 @@ mod tests {
         match  convert_bytes_to_u64(&bytes) {
             Err(AppError::Custom(e)) => assert!(e == expected_error),
             Ok(_) => panic!("Shouldn't work!"),
-            Err(_) => panic!("Wrong error!"),
+            _ => panic!("Wrong error!"),
         }
     }
 }

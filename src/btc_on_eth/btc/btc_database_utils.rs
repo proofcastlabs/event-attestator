@@ -6,6 +6,7 @@ use bitcoin_hashes::{
 use crate::{
     errors::AppError,
     traits::DatabaseInterface,
+    constants::MIN_DATA_SENSITIVITY_LEVEL,
     types::{
         Byte,
         Result,
@@ -116,7 +117,7 @@ pub fn get_btc_fee_from_db<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
     trace!("✔ Getting BTC fee from db...");
-    db.get(BTC_FEE_KEY.to_vec(), None)
+    db.get(BTC_FEE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
@@ -124,13 +125,13 @@ pub fn put_btc_fee_in_db<D>(db: &D, fee: u64) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Adding BTC fee of '{}' satoshis-per-byte to db...", fee);
-    db.put(BTC_FEE_KEY.to_vec(), convert_u64_to_bytes(fee), None)
+    db.put(BTC_FEE_KEY.to_vec(), convert_u64_to_bytes(fee), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn get_btc_network_from_db<D>(db: &D) -> Result<BtcNetwork>
     where D: DatabaseInterface
 {
-    db.get(BTC_NETWORK_KEY.to_vec(), None)
+    db.get(BTC_NETWORK_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_btc_network(&bytes))
 }
 
@@ -141,7 +142,7 @@ pub fn put_btc_network_in_db<D>(db: &D, network: BtcNetwork) -> Result<()>
     db.put(
         BTC_NETWORK_KEY.to_vec(),
         convert_btc_network_to_bytes(network)?,
-        None,
+        MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
@@ -152,7 +153,7 @@ pub fn put_btc_difficulty_in_db<D>(db: &D, difficulty: u64) -> Result<()>
     db.put(
         BTC_DIFFICULTY_THRESHOLD.to_vec(),
         convert_u64_to_bytes(difficulty),
-        None,
+        MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
@@ -160,7 +161,7 @@ pub fn get_btc_difficulty_from_db<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
     trace!("✔ Getting BTC difficulty threshold from db...");
-    db.get(BTC_DIFFICULTY_THRESHOLD.to_vec(), None)
+    db.get(BTC_DIFFICULTY_THRESHOLD.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
@@ -241,7 +242,7 @@ pub fn btc_block_exists_in_db<D>(db: &D, btc_block_id: &sha256d::Hash) -> bool
         "✔ Checking for existence of BTC block: {}",
        hex::encode(btc_block_id.to_vec())
    );
-    key_exists_in_db(db, &btc_block_id.to_vec(), None)
+    key_exists_in_db(db, &btc_block_id.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn key_exists_in_db<D>(
@@ -264,14 +265,14 @@ pub fn put_btc_canon_to_tip_length_in_db<D>(
     db.put(
         BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(),
         convert_u64_to_bytes(btc_canon_to_tip_length),
-        None,
+        MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
 pub fn get_btc_canon_to_tip_length_from_db<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
-    db.get(BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(), None)
+    db.get(BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
@@ -397,13 +398,13 @@ pub fn put_btc_hash_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    db.put(key.to_vec(), hash.to_vec(), None)
+    db.put(key.to_vec(), hash.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn get_btc_hash_from_db<D>(db: &D, key: &[Byte]) -> Result<sha256d::Hash>
     where D: DatabaseInterface
 {
-    db.get(key.to_vec(), None)
+    db.get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| Ok(sha256d::Hash::from_slice(&bytes)?))
 }
 
@@ -452,7 +453,7 @@ pub fn put_btc_address_in_db<D>(db: &D, btc_address: &str) -> Result<()>
     db.put(
         BTC_ADDRESS_KEY.to_vec(),
         convert_btc_address_to_bytes(btc_address)?,
-        None,
+        MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
@@ -460,7 +461,7 @@ pub fn get_btc_address_from_db<D>(db: &D) -> Result<String>
     where D: DatabaseInterface
 {
     trace!("✔  Getting BTC address from db...");
-    db.get(BTC_ADDRESS_KEY.to_vec(), None)
+    db.get(BTC_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .map(convert_bytes_to_btc_address)
 }
 
@@ -475,7 +476,7 @@ pub fn put_btc_block_in_db<D>(
         btc_block_in_db_format,
     );
     serialize_btc_block_in_db_format(btc_block_in_db_format)
-        .and_then(|(id, block)| db.put(id, block, None))
+        .and_then(|(id, block)| db.put(id, block, MIN_DATA_SENSITIVITY_LEVEL))
 }
 
 pub fn maybe_get_btc_block_from_db<D>(
@@ -504,7 +505,7 @@ pub fn get_btc_block_from_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Getting BTC block from db via id: {}", hex::encode(id.to_vec()));
-    db.get(id.to_vec(), None)
+    db.get(id.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| deserialize_btc_block_in_db_format(&bytes))
 }
 
@@ -526,62 +527,45 @@ mod tests {
     #[test]
     fn non_existing_key_should_not_exist_in_db() {
         let db = get_test_database();
-        let result = key_exists_in_db(
-            &db,
-            &BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(),
-            None,
-        );
+        let result = key_exists_in_db(&db, &BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
         assert!(!result);
     }
 
     #[test]
     fn existing_key_should_exist_in_db() {
-        let db = get_test_database();
         let length = 5;
+        let db = get_test_database();
         if let Err(e) = put_btc_canon_to_tip_length_in_db(&db, length) {
             panic!("Error putting canon to tip len in db: {}", e);
         };
-        let result = key_exists_in_db(
-            &db,
-            &BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(),
-            None,
-        );
+        let result = key_exists_in_db(&db, &BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
         assert!(result);
     }
 
     #[test]
     fn should_get_and_put_btc_canon_to_tip_length_in_db() {
-        let db = get_test_database();
         let length = 6;
+        let db = get_test_database();
         if let Err(e) = put_btc_canon_to_tip_length_in_db(&db, length) {
             panic!("Error putting canon to tip len in db: {}", e);
         };
         match get_btc_canon_to_tip_length_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting canon to tip lengt from db: {}", e);
-            }
-            Ok(length_from_db) => {
-                assert!(length_from_db == length);
-            }
+            Err(e) => panic!("Error getting canon to tip lengt from db: {}", e),
+            Ok(length_from_db) => assert!(length_from_db == length),
         }
     }
 
     #[test]
     fn should_get_and_save_btc_private_key_in_db() {
         let db = get_test_database();
-        put_btc_network_in_db(&db, BtcNetwork::Testnet)
-            .unwrap();
+        put_btc_network_in_db(&db, BtcNetwork::Testnet).unwrap();
         let pk = get_sample_btc_private_key();
         if let Err(e) = put_btc_private_key_in_db(&db, &pk) {
             panic!("Error putting btc pk in db: {}", e);
         };
         match get_btc_private_key_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting BTC pk from db: {}", e);
-            }
-            Ok(pk_from_db) => {
-                assert!(pk_from_db.to_public_key() == pk.to_public_key());
-            }
+            Err(e) => panic!("Error getting BTC pk from db: {}", e),
+            Ok(pk_from_db) => assert!(pk_from_db.to_public_key() == pk.to_public_key()),
         };
     }
 
@@ -589,45 +573,26 @@ mod tests {
     fn should_error_putting_non_existent_block_type_in_db() {
         let db = get_test_database();
         let non_existent_block_type = "non-existent block type!";
-        let block = get_sample_btc_block_in_db_format()
-            .unwrap();
-        let expected_error = format!(
-            "✘ Cannot store special BTC hash of type: {}!",
-            non_existent_block_type,
-        );
-        match put_special_btc_block_in_db(
-            &db,
-            &block,
-            non_existent_block_type
-        ) {
-            Ok(_) => {
-                panic!("Should not have succeeded!");
-            }
-            Err(AppError::Custom(e)) => {
-                assert!(e == expected_error);
-            }
-            Err(_) => {
-                panic!("Wrong error received!")
-            }
+        let block = get_sample_btc_block_in_db_format().unwrap();
+        let expected_error = format!("✘ Cannot store special BTC hash of type: {}!", non_existent_block_type);
+        match put_special_btc_block_in_db(&db, &block, non_existent_block_type) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            _ => panic!("Wrong error received!"),
         }
     }
 
     #[test]
     fn should_put_special_block_in_db() {
         let db = get_test_database();
-        let block = get_sample_btc_block_in_db_format()
-            .unwrap();
+        let block = get_sample_btc_block_in_db_format().unwrap();
         let block_type = "canon";
         if let Err(e) = put_special_btc_block_in_db(&db, &block, block_type) {
             panic!("Error putting special block in db: {}", e);
         };
         match get_btc_canon_block_from_db(&db) {
-            Err(e) => {
-                panic!("Error geting canon block: {}", e);
-            }
-            Ok(block_from_db) => {
-                assert!(block_from_db == block);
-            }
+            Err(e) => panic!("Error geting canon block: {}", e),
+            Ok(block_from_db) => assert!(block_from_db == block),
         }
     }
 
@@ -635,28 +600,18 @@ mod tests {
     fn should_error_getting_non_existent_special_block() {
         let db = get_test_database();
         let non_existent_block_type = "does not exist";
-        let expected_error = format!(
-            "✘ Cannot get special BTC hash of type: {}!",
-            non_existent_block_type
-        );
+        let expected_error = format!("✘ Cannot get special BTC hash of type: {}!", non_existent_block_type);
         match get_special_btc_block_from_db(&db, non_existent_block_type) {
-            Ok(_) => {
-                panic!("Should not have got special block!");
-            }
-            Err(AppError::Custom(e)) => {
-                assert!(e == expected_error);
-            }
-            Err(_) => {
-                panic!("Wrong error when getting non-existent block type!");
-            }
+            Ok(_) => panic!("Should not have got special block!"),
+            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            _ => panic!("Wrong error when getting non-existent block type!"),
         }
     }
 
     #[test]
     fn should_get_special_block_type() {
         let db = get_test_database();
-        let block = get_sample_btc_block_in_db_format()
-            .unwrap();
+        let block = get_sample_btc_block_in_db_format().unwrap();
         if let Err(e) = put_btc_block_in_db(&db, &block) {
             panic!("Error putting block in db: {}", e);
         };
@@ -664,113 +619,68 @@ mod tests {
             panic!("Error putting anchor hash in db: {}", e);
         };
         match get_special_btc_block_from_db(&db, "anchor") {
-            Err(e) => {
-                panic!("Error getting special block from db: {}", e);
-            }
-            Ok(block_from_db) => {
-                assert!(block_from_db == block);
-            }
+            Ok(block_from_db) => assert!(block_from_db == block),
+            Err(e) => panic!("Error getting special block from db: {}", e),
         }
     }
 
     #[test]
     fn should_get_and_put_anchor_block_hash_in_db() {
         let db = get_test_database();
-        let anchor_block_hash = get_sample_btc_block_in_db_format()
-            .unwrap()
-            .id;
-        if let Err(e) = put_btc_anchor_block_hash_in_db(
-            &db,
-            &anchor_block_hash
-        ) {
+        let anchor_block_hash = get_sample_btc_block_in_db_format().unwrap().id;
+        if let Err(e) = put_btc_anchor_block_hash_in_db(&db, &anchor_block_hash) {
             panic!("Error putting btc anchor_block_hash in db: {}", e);
         };
         match get_btc_anchor_block_hash_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting btc anchor_block_hash from db: {}", e);
-            }
-            Ok(hash_from_db) => {
-                assert!(hash_from_db == anchor_block_hash);
-            }
+            Ok(hash_from_db) => assert!(hash_from_db == anchor_block_hash),
+            Err(e) => panic!("Error getting btc anchor_block_hash from db: {}", e),
         }
     }
 
     #[test]
     fn should_get_and_put_latest_block_hash_in_db() {
         let db = get_test_database();
-        let latest_block_hash = get_sample_btc_block_in_db_format()
-            .unwrap()
-            .id;
-        if let Err(e) = put_btc_latest_block_hash_in_db(
-            &db,
-            &latest_block_hash
-        ) {
+        let latest_block_hash = get_sample_btc_block_in_db_format().unwrap().id;
+        if let Err(e) = put_btc_latest_block_hash_in_db(&db, &latest_block_hash) {
             panic!("Error putting btc latest_block_hash in db: {}", e);
         };
         match get_btc_latest_block_hash_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting btc latest_block_hash from db: {}", e);
-            }
-            Ok(hash_from_db) => {
-                assert!(hash_from_db == latest_block_hash);
-            }
+            Ok(hash_from_db) => assert!(hash_from_db == latest_block_hash),
+            Err(e) => panic!("Error getting btc latest_block_hash from db: {}", e),
         }
     }
 
     #[test]
     fn should_get_and_put_linker_hash_in_db() {
         let db = get_test_database();
-        let linker_hash = get_sample_btc_block_in_db_format()
-            .unwrap()
-            .id;
+        let linker_hash = get_sample_btc_block_in_db_format().unwrap().id;
         if let Err(e) = put_btc_linker_hash_in_db(&db, &linker_hash) {
             panic!("Error putting btc linker_hash in db: {}", e);
         };
         match get_btc_linker_hash_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting btc linker_hash from db: {}", e);
-            }
-            Ok(hash_from_db) => {
-                assert!(hash_from_db == linker_hash);
-            }
+            Ok(hash_from_db) => assert!(hash_from_db == linker_hash),
+            Err(e) => panic!("Error getting btc linker_hash from db: {}", e),
         }
     }
 
     #[test]
     fn should_put_hash_in_db() {
         let db = get_test_database();
-        let hash = get_sample_btc_block_in_db_format()
-            .unwrap()
-            .id;
-        if let Err(e) = put_btc_hash_in_db(
-            &db,
-            &BTC_LINKER_HASH_KEY.to_vec(),
-            &hash
-        ) {
+        let hash = get_sample_btc_block_in_db_format().unwrap().id;
+        if let Err(e) = put_btc_hash_in_db(&db, &BTC_LINKER_HASH_KEY.to_vec(), &hash) {
             panic!("Error putting btc hash in db: {}", e);
         };
-        match get_btc_hash_from_db(
-            &db,
-            &BTC_LINKER_HASH_KEY.to_vec(),
-        ) {
-            Err(e) => {
-                panic!("Error getting btc hash from db: {}", e);
-            }
-            Ok(hash_from_db) => {
-                assert!(hash_from_db == hash);
-            }
+        match get_btc_hash_from_db(&db, &BTC_LINKER_HASH_KEY.to_vec()) {
+            Ok(hash_from_db) => assert!(hash_from_db == hash),
+            Err(e) => panic!("Error getting btc hash from db: {}", e),
         }
     }
 
     #[test]
     fn should_not_get_parent_block_if_non_existent() {
         let db = get_test_database();
-        let test_block = get_sample_btc_block_in_db_format()
-            .unwrap();
-        if maybe_get_parent_btc_block_and_id(
-            &db,
-            &test_block.id
-        ).is_some() {
+        let test_block = get_sample_btc_block_in_db_format().unwrap();
+        if maybe_get_parent_btc_block_and_id(&db, &test_block.id).is_some() {
             panic!("Should have failed to get parent block!");
         };
     }
@@ -779,24 +689,14 @@ mod tests {
     fn should_get_parent_block() {
         let db = get_test_database();
         let blocks = get_sample_sequential_btc_blocks_in_db_format();
-        let test_block = blocks[blocks.len() - 1]
-            .clone();
-        let expected_result = blocks[blocks.len() - 2]
-            .clone();
-        blocks
-            .iter()
-            .map(|block| put_btc_block_in_db(&db, &block))
-            .collect::<Result<()>>()
-            .unwrap();
+        let test_block = blocks[blocks.len() - 1].clone();
+        let expected_result = blocks[blocks.len() - 2].clone();
+        blocks.iter().map(|block| put_btc_block_in_db(&db, &block)).collect::<Result<()>>().unwrap();
         match maybe_get_parent_btc_block_and_id(&db, &test_block.id) {
-            None => {
-                panic!("Failed to get parent block!");
-            }
+            None => panic!("Failed to get parent block!"),
             Some(parent_block) => {
                 assert!(parent_block == expected_result);
-                assert!(
-                    parent_block.id == test_block.block.header.prev_blockhash
-                );
+                assert!(parent_block.id == test_block.block.header.prev_blockhash);
             }
         }
     }
@@ -804,45 +704,32 @@ mod tests {
     #[test]
     fn should_get_and_put_btc_block_in_db() {
         let db = get_test_database();
-        let block_and_id = get_sample_btc_block_in_db_format()
-            .unwrap();
+        let block_and_id = get_sample_btc_block_in_db_format().unwrap();
         if let Err(e) = put_btc_block_in_db(&db, &block_and_id) {
             panic!("Error putting btc block and id in db: {}", e);
         };
         match get_btc_block_from_db(&db, &block_and_id.id) {
-            Err(e) => {
-                panic!("Error getting btc block from db: {}", e);
-            }
-            Ok(block) => {
-                assert!(block == block_and_id);
-            }
+            Err(e) => panic!("Error getting btc block from db: {}", e),
+            Ok(block) => assert!(block == block_and_id),
         }
     }
 
     #[test]
     fn should_get_and_put_btc_address_in_database() {
         let db = get_test_database();
-        if let Err(e) = put_btc_address_in_db(
-            &db,
-            &SAMPLE_TARGET_BTC_ADDRESS.to_string(),
-        ) {
+        if let Err(e) = put_btc_address_in_db(&db, &SAMPLE_TARGET_BTC_ADDRESS.to_string()) {
             panic!("Error putting btc address in db: {}", e);
         };
         match get_btc_address_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting btc address from db: {}", e);
-            }
-            Ok(address) => {
-                assert!(address == SAMPLE_TARGET_BTC_ADDRESS);
-            }
+            Err(e) => panic!("Error getting btc address from db: {}", e),
+            Ok(address) => assert!(address == SAMPLE_TARGET_BTC_ADDRESS),
         }
     }
 
     #[test]
     fn should_get_btc_latest_block_number() {
         let db = get_test_database();
-        let block = get_sample_btc_block_in_db_format()
-            .unwrap();
+        let block = get_sample_btc_block_in_db_format().unwrap();
         if let Err(e) = put_btc_latest_block_in_db(&db, &block) {
             panic!("Error putting latest block in db: {}", e);
         }
@@ -850,12 +737,8 @@ mod tests {
             panic!("Error putting latest block hash in db: {}", e);
         }
         match get_btc_latest_block_number(&db) {
-            Err(e) => {
-                panic!("Error getting latest block number: {}", e);
-            }
-            Ok(num_from_db) => {
-                assert!(num_from_db == block.height);
-            }
+            Err(e) => panic!("Error getting latest block number: {}", e),
+            Ok(num_from_db) => assert!(num_from_db == block.height),
         };
     }
 
@@ -867,12 +750,8 @@ mod tests {
             panic!("Error putting BTC fee in db: {}", e);
         }
         match get_btc_fee_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting BTC fee from db: {}", e);
-            }
-            Ok(fee_from_db) => {
-                assert!(fee_from_db == fee)
-            }
+            Err(e) => panic!("Error getting BTC fee from db: {}", e),
+            Ok(fee_from_db) => assert!(fee_from_db == fee),
         }
     }
 
@@ -884,12 +763,8 @@ mod tests {
             panic!("Error putting BTC network in db: {}", e);
         }
         match get_btc_network_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting BTC network from db: {}", e);
-            }
-            Ok(network_from_db) => {
-                assert!(network_from_db == network)
-            }
+            Err(e) => panic!("Error getting BTC network from db: {}", e),
+            Ok(network_from_db) => assert!(network_from_db == network),
         }
     }
 
@@ -901,20 +776,15 @@ mod tests {
             panic!("Error putting BTC difficulty in db: {}", e);
         };
         match get_btc_difficulty_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting BTC difficulty from db: {}", e);
-            }
-            Ok(network_from_db) => {
-                assert!(network_from_db == difficulty)
-            }
+            Ok(network_from_db) => assert!(network_from_db == difficulty),
+            Err(e) => panic!("Error getting BTC difficulty from db: {}", e),
         }
     }
 
     #[test]
     fn should_maybe_get_btc_block_from_db_if_none_extant() {
         let db = get_test_database();
-        let block = get_sample_btc_block_in_db_format()
-            .unwrap();
+        let block = get_sample_btc_block_in_db_format().unwrap();
         let block_hash = block.id;
         if maybe_get_btc_block_from_db(&db, &block_hash).is_some() {
             panic!("Block should not be in database!");
@@ -924,28 +794,21 @@ mod tests {
     #[test]
     fn should_maybe_get_btc_block_from_db_if_extant() {
         let db = get_test_database();
-        let block = get_sample_btc_block_in_db_format()
-            .unwrap();
+        let block = get_sample_btc_block_in_db_format().unwrap();
         if let Err(e) = put_btc_block_in_db(&db, &block) {
             panic!("Error putting BTC block in db: {}", e);
         };
         let block_hash = block.id;
         match maybe_get_btc_block_from_db(&db, &block_hash) {
-            None => {
-                panic!("Should have gotten block from db!");
-            }
-            Some(block_from_db) => {
-                assert!(block_from_db == block);
-            }
+            None => panic!("Should have gotten block from db!"),
+            Some(block_from_db) => assert!(block_from_db == block),
         }
     }
 
     #[test]
     fn none_existent_block_should_not_exist_in_db() {
         let db = get_test_database();
-        let block_hash = get_sample_btc_block_in_db_format()
-            .unwrap()
-            .id;
+        let block_hash = get_sample_btc_block_in_db_format().unwrap().id;
         let result = btc_block_exists_in_db(&db, &block_hash);
         assert!(!result);
     }

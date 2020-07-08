@@ -262,7 +262,7 @@ impl Incremerkle {
 
 #[cfg(test)]
 mod tests {
-    
+    #![allow(clippy::needless_range_loop)]
     use super::*;
     use std::str::FromStr;
     use crate::btc_on_eos::{
@@ -321,9 +321,7 @@ mod tests {
                 leaves.push(last);
             }
             for i in 0..(leaves.len() / 2) {
-                leaves[i] = hash_canonical_pair(
-                    make_canonical_pair(&leaves[2 * i], &leaves[(2 * i) + 1])
-                ).to_vec();
+                leaves[i] = hash_canonical_pair(make_canonical_pair(&leaves[2 * i], &leaves[(2 * i) + 1])).to_vec();
             }
             leaves.resize(leaves.len() / 2, vec![0x00]);
         }

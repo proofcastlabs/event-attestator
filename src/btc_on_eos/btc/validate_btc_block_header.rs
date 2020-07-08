@@ -74,7 +74,7 @@ mod tests {
         match validate_btc_block_header(&invalid_block_and_id) {
             Err(AppError::Custom(e)) => assert!(e == expected_error),
             Ok(_) => panic!("Should not be valid!"),
-            Err(_) => panic!("Wrong error for invalid btc block!"),
+            _ => panic!("Wrong error received!")
         }
     }
 }

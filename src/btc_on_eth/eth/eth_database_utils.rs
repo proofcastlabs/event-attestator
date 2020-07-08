@@ -637,11 +637,7 @@ mod tests {
     #[test]
     fn non_existing_key_should_not_exist_in_db() {
         let db = get_test_database();
-        let result = key_exists_in_db(
-            &db,
-            &ETH_ACCOUNT_NONCE_KEY.to_vec(),
-            MIN_DATA_SENSITIVITY_LEVEL
-        );
+        let result = key_exists_in_db(&db, &ETH_ACCOUNT_NONCE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
         assert!(!result);
     }
 
@@ -649,15 +645,11 @@ mod tests {
     fn existing_key_should_exist_in_db() {
         let thing = vec![0xc0];
         let db = get_test_database();
-        let key = ETH_ACCOUNT_NONCE_KEY.clone();
+        let key = *ETH_ACCOUNT_NONCE_KEY;
         if let Err(e) = db.put(key.to_vec(), thing, MIN_DATA_SENSITIVITY_LEVEL) {
             panic!("Error putting canon to tip len in db: {}", e);
         };
-        let result = key_exists_in_db(
-            &db,
-            &ETH_ACCOUNT_NONCE_KEY.to_vec(),
-            MIN_DATA_SENSITIVITY_LEVEL,
-        );
+        let result = key_exists_in_db(&db, &ETH_ACCOUNT_NONCE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
         assert!(result);
     }
 
@@ -669,12 +661,8 @@ mod tests {
             panic!("Error putting gas price in db: {}", e);
         };
         match get_eth_gas_price_from_db(&db) {
-            Ok(gas_price_from_db) => {
-                assert!(gas_price_from_db == gas_price);
-            }
-            Err(e) => {
-                panic!("Error getting gas price from db: {}", e);
-            }
+            Ok(gas_price_from_db) => assert!(gas_price_from_db == gas_price),
+            Err(e) => panic!("Error getting gas price from db: {}", e),
         }
     }
 
@@ -686,12 +674,8 @@ mod tests {
             panic!("Error putting chain id in db: {}", e);
         };
         match get_eth_chain_id_from_db(&db) {
-            Ok(chain_id_from_db) => {
-                assert!(chain_id_from_db == chain_id);
-            }
-            Err(e) => {
-                panic!("Error getting chain id from db: {}", e);
-            }
+            Ok(chain_id_from_db) => assert!(chain_id_from_db == chain_id),
+            Err(e) => panic!("Error getting chain id from db: {}", e),
         }
     }
 
@@ -703,12 +687,8 @@ mod tests {
             panic!("Error saving eth account nonce in db: {}", e);
         };
         match get_eth_account_nonce_from_db(&db) {
-            Ok(nonce_from_db) => {
-                assert!(nonce_from_db == nonce);
-            }
-            Err(e) => {
-                panic!("Error getting nonce from db: {}", e)
-            }
+            Ok(nonce_from_db) => assert!(nonce_from_db == nonce),
+            Err(e) => panic!("Error getting nonce from db: {}", e),
         }
     }
 
@@ -716,14 +696,10 @@ mod tests {
     fn should_get_erc777_contract_address_from_db() {
         let db = get_test_database();
         let contract_address = get_sample_eth_address();
-        if let Err(e) = put_eth_smart_contract_address_in_db(
-            &db,
-            &contract_address,
-        ) {
+        if let Err(e) = put_eth_smart_contract_address_in_db(&db, &contract_address) {
             panic!("Error putting eth address in db: {}", e);
         };
-        let result = get_erc777_contract_address_from_db(&db)
-            .unwrap();
+        let result = get_erc777_contract_address_from_db(&db).unwrap();
         assert!(result == contract_address);
     }
 
@@ -735,12 +711,8 @@ mod tests {
             panic!("Error putting eth private key in db: {}", e);
         }
         match get_eth_private_key_from_db(&db) {
-            Ok(pk) => {
-                assert!(pk == eth_private_key);
-            }
-            Err(e) => {
-                panic!("Error getting eth private key from db: {}", e);
-            }
+            Ok(pk) => assert!(pk == eth_private_key),
+            Err(e) => panic!("Error getting eth private key from db: {}", e),
         }
     }
 
@@ -752,19 +724,12 @@ mod tests {
             panic!("Error saving eth account nonce in db: {}", e);
         };
         let amount_to_increment_by: u64 = 671;
-        if let Err(e) = increment_eth_account_nonce_in_db(
-            &db,
-            amount_to_increment_by,
-        ) {
+        if let Err(e) = increment_eth_account_nonce_in_db(&db, amount_to_increment_by) {
             panic!("Error incrementing nonce in db: {}", e);
         };
         match get_eth_account_nonce_from_db(&db) {
-            Ok(nonce_from_db) => {
-                assert!(nonce_from_db == nonce + amount_to_increment_by);
-            }
-            Err(e) => {
-                panic!("Error getting nonce from db: {}", e)
-            }
+            Err(e) => panic!("Error getting nonce from db: {}", e),
+            Ok(nonce_from_db) => assert!(nonce_from_db == nonce + amount_to_increment_by),
         }
     }
 
@@ -772,21 +737,13 @@ mod tests {
     fn should_put_and_get_special_eth_hash_in_db() {
         let db = get_test_database();
         let hash_type = "linker";
-        let hash = get_sample_eth_block_and_receipts_n(1)
-            .unwrap()
-            .block
-            .hash
-            .clone();
+        let hash = get_sample_eth_block_and_receipts_n(1).unwrap().block.hash;
         if let Err(e) = put_special_eth_hash_in_db(&db, &hash_type, &hash) {
             panic!("Error putting ETH special hash in db: {}", e);
         };
         match get_special_eth_hash_from_db(&db, hash_type) {
-            Err(e) => {
-                panic!("Error getting ETH special hash from db: {}", e);
-            }
-            Ok(hash_from_db) => {
-                assert!(hash_from_db == hash);
-            }
+            Ok(hash_from_db) => assert!(hash_from_db == hash),
+            Err(e) => panic!("Error getting ETH special hash from db: {}", e),
         }
     }
 
@@ -794,21 +751,13 @@ mod tests {
     fn should_put_and_get_eth_hash_in_db() {
         let db = get_test_database();
         let hash_key = vec![6u8, 6u8, 6u8];
-        let hash = get_sample_eth_block_and_receipts_n(1)
-            .unwrap()
-            .block
-            .hash
-            .clone();
+        let hash = get_sample_eth_block_and_receipts_n(1).unwrap().block.hash;
         if let Err(e) = put_eth_hash_in_db(&db, &hash_key, &hash){
             panic!("Error putting ETH hash in db: {}", e);
         };
         match get_eth_hash_from_db(&db, &hash_key) {
-            Err(e) => {
-                panic!("Error getting ETH hash from db: {}", e);
-            }
-            Ok(hash_from_db) => {
-                assert!(hash_from_db == hash);
-            }
+            Ok(hash_from_db) => assert!(hash_from_db == hash),
+            Err(e) => panic!("Error getting ETH hash from db: {}", e),
         }
     }
 
@@ -816,37 +765,27 @@ mod tests {
     fn should_put_and_get_special_eth_block_in_db() {
         let db = get_test_database();
         let block_type = "anchor";
-        let block = get_sample_eth_block_and_receipts_n(1)
-            .unwrap();
+        let block = get_sample_eth_block_and_receipts_n(1).unwrap();
         if let Err(e) = put_special_eth_block_in_db(&db, &block, &block_type) {
             panic!("Error putting ETH special block in db: {}", e);
         };
         match get_special_eth_block_from_db(&db, block_type) {
-            Err(e) => {
-                panic!("Error getting ETH special block from db: {}", e);
-            }
-            Ok(block_from_db) => {
-                assert!(block_from_db == block);
-            }
+            Ok(block_from_db) => assert!(block_from_db == block),
+            Err(e) => panic!("Error getting ETH special block from db: {}", e),
         }
     }
 
     #[test]
     fn should_get_eth_block_from_db() {
         let db = get_test_database();
-        let block = get_sample_eth_block_and_receipts_n(1)
-            .unwrap();
-        let block_hash = block.block.hash.clone();
+        let block = get_sample_eth_block_and_receipts_n(1).unwrap();
+        let block_hash = block.block.hash;
         if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
             panic!("Error putting ETH block and receipts in db: {}", e);
         };
         match get_eth_block_from_db(&db, &block_hash) {
-            Err(e) => {
-                panic!("Error getting ETH block from db: {}", e);
-            }
-            Ok(block_from_db) => {
-                assert!(block_from_db == block);
-            }
+            Ok(block_from_db) => assert!(block_from_db == block),
+            Err(e) => panic!("Error getting ETH block from db: {}", e),
         }
     }
 
@@ -868,27 +807,16 @@ mod tests {
             panic!("Error putting ETH address in db: {}", e);
         };
         match get_public_eth_address_from_db(&db) {
-            Err(e) => {
-                panic!("Error getting ETH address from db: {}", e);
-            }
-            Ok(eth_address_from_db) => {
-                assert!(eth_address_from_db == eth_address);
-            }
+            Ok(eth_address_from_db) => assert!(eth_address_from_db == eth_address),
+            Err(e) => panic!("Error getting ETH address from db: {}", e),
         }
     }
 
     #[test]
     fn maybe_get_block_should_be_none_if_block_not_extant() {
         let db = get_test_database();
-        let block_hash = get_sample_eth_block_and_receipts_n(1)
-            .unwrap()
-            .block
-            .hash
-            .clone();
-        if maybe_get_eth_block_and_receipts_from_db(
-            &db,
-            &block_hash
-        ).is_some() {
+        let block_hash = get_sample_eth_block_and_receipts_n(1).unwrap().block.hash;
+        if maybe_get_eth_block_and_receipts_from_db(&db, &block_hash).is_some() {
             panic!("Maybe getting none existing block should be 'None'");
         };
     }
@@ -896,35 +824,26 @@ mod tests {
     #[test]
     fn should_maybe_get_some_block_if_exists() {
         let db = get_test_database();
-        let block = get_sample_eth_block_and_receipts_n(1)
-            .unwrap();
-        let block_hash = block.block.hash.clone();
+        let block = get_sample_eth_block_and_receipts_n(1).unwrap();
+        let block_hash = block.block.hash;
         if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
             panic!("Error putting ETH block in db: {}", e);
         };
         match maybe_get_eth_block_and_receipts_from_db(&db, &block_hash) {
-            None => {
-                panic!("Block should exist in db!");
-            }
-            Some(block_from_db) => {
-                assert!(block_from_db == block);
-            }
+            None => panic!("Block should exist in db!"),
+            Some(block_from_db) => assert!(block_from_db == block),
         };
     }
 
     #[test]
     fn should_return_none_if_no_parent_block_exists() {
         let db = get_test_database();
-        let block = get_sample_eth_block_and_receipts_n(1)
-            .unwrap();
-        let block_hash = block.block.hash.clone();
+        let block = get_sample_eth_block_and_receipts_n(1).unwrap();
+        let block_hash = block.block.hash;
         if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
             panic!("Error putting ETH block in db: {}", e);
         };
-        if maybe_get_parent_eth_block_and_receipts(
-            &db,
-            &block_hash
-        ).is_some() {
+        if maybe_get_parent_eth_block_and_receipts(&db, &block_hash).is_some() {
             panic!("Block should have no parent in the DB!");
         };
     }
@@ -933,14 +852,9 @@ mod tests {
     fn should_maybe_get_parent_block_if_it_exists() {
         let db = get_test_database();
         let blocks = get_sequential_eth_blocks_and_receipts();
-        let block = blocks[1]
-            .clone();
-        let parent_block = blocks[0]
-            .clone();
-        let block_hash = block
-            .block
-            .hash
-            .clone();
+        let block = blocks[1].clone();
+        let parent_block = blocks[0].clone();
+        let block_hash = block.block.hash;
         if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
             panic!("Error putting ETH block in db: {}", e);
         };
@@ -948,30 +862,21 @@ mod tests {
             panic!("Error putting ETH block in db: {}", e);
         };
         match maybe_get_parent_eth_block_and_receipts(&db, &block_hash) {
-            None => {
-                panic!("Block should have parent in the DB!");
-            }
-            Some(parent_block_from_db) => {
-                assert!(parent_block_from_db == parent_block);
-            }
+            None => panic!("Block should have parent in the DB!"),
+            Some(parent_block_from_db) => assert!(parent_block_from_db == parent_block),
         };
     }
 
     #[test]
     fn should_get_no_nth_ancestor_if_not_extant() {
-        let db = get_test_database();
         let ancestor_number = 3;
-        let block = get_sample_eth_block_and_receipts_n(1)
-            .unwrap();
-        let block_hash = block.block.hash.clone();
+        let db = get_test_database();
+        let block = get_sample_eth_block_and_receipts_n(1).unwrap();
+        let block_hash = block.block.hash;
         if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
             panic!("Error putting ETH block in db: {}", e);
         };
-        if maybe_get_nth_ancestor_eth_block_and_receipts(
-            &db,
-            &block_hash,
-            ancestor_number,
-        ).is_some() {
+        if maybe_get_nth_ancestor_eth_block_and_receipts(&db, &block_hash, ancestor_number).is_some() {
             panic!("Block should have no parent in the DB!");
         };
     }
@@ -980,10 +885,7 @@ mod tests {
     fn should_get_nth_ancestor_if_extant() {
         let db = get_test_database();
         let blocks = get_sequential_eth_blocks_and_receipts();
-        let block_hash = blocks[blocks.len() - 1]
-            .block
-            .hash
-            .clone();
+        let block_hash = blocks[blocks.len() - 1].block.hash;
         if let Err(e) = blocks
             .iter()
             .map(|block| put_eth_block_and_receipts_in_db(&db, block))
@@ -994,25 +896,13 @@ mod tests {
             .iter()
             .enumerate()
             .map(|(i, _)|
-                match maybe_get_nth_ancestor_eth_block_and_receipts(
-                    &db,
-                    &block_hash,
-                    i as u64,
-                ) {
-                    None => {
-                        panic!("Ancestor number {} should exist!", i);
-                    }
-                    Some(ancestor) => {
-                        assert!(ancestor == blocks[blocks.len() - i - 1]);
-                    }
+                match maybe_get_nth_ancestor_eth_block_and_receipts(&db, &block_hash, i as u64) {
+                    None => panic!("Ancestor number {} should exist!", i),
+                    Some(ancestor) => assert!(ancestor == blocks[blocks.len() - i - 1]),
                 }
              )
             .for_each(drop);
-        if maybe_get_nth_ancestor_eth_block_and_receipts(
-            &db,
-            &block_hash,
-            blocks.len() as u64,
-        ).is_some() {
+        if maybe_get_nth_ancestor_eth_block_and_receipts(&db, &block_hash, blocks.len() as u64).is_some() {
             panic!("Shouldn't have ancestor #{} in db!", blocks.len());
         };
     }

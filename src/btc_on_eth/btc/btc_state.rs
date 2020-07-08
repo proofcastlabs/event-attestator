@@ -338,7 +338,7 @@ mod tests {
         match initial_state.get_btc_block_and_id() {
             Err(AppError::Custom(e)) => assert!(e == expected_error),
             Ok(_) => panic!("Block should not be in state yet!"),
-            Err(_) => panic!("Wrong error received!")
+            _ => panic!("Wrong error received!")
         };
     }
 }

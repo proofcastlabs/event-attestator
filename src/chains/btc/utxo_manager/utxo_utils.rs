@@ -107,7 +107,7 @@ pub fn utxo_exists_in_db<D: DatabaseInterface>(db: &D, utxo_to_check: &BtcUtxo,)
         .map(|btc_utxos_from_db| btc_utxos_from_db.contains(&utxo_to_check))
 }
 
-pub fn utxos_exists_in_db<D: DatabaseInterface>(db: &D, utxos_to_check: &[BtcUtxo]) -> Result<Vec<bool>> {
+pub fn utxos_exist_in_db<D: DatabaseInterface>(db: &D, utxos_to_check: &[BtcUtxo]) -> Result<Vec<bool>> {
     debug!("✔ Checking if UTXOs exist in db...");
     get_all_utxos_from_db(db)
         .and_then(get_btc_utxos_from_utxo_and_values)
@@ -189,7 +189,7 @@ mod tests {
         let utxo_1 = btc_deserialize(&utxo_and_value_1.serialized_utxo).unwrap();
         let utxo_2 = btc_deserialize(&utxo_and_value_2.serialized_utxo).unwrap();
         save_new_utxo_and_value(&db, &utxo_and_value_2).unwrap();
-        let result = utxos_exists_in_db(&db, &[utxo_1, utxo_2]).unwrap();
+        let result = utxos_exist_in_db(&db, &[utxo_1, utxo_2]).unwrap();
         assert_eq!(result, expected_result);
     }
 }

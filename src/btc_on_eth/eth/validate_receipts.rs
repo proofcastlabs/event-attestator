@@ -80,8 +80,7 @@ mod tests {
     #[test]
     fn should_get_receipts_root_from_receipts() {
         let block_and_receipts = get_sample_eth_block_and_receipts();
-        let result = get_receipts_root_from_receipts(&block_and_receipts.receipts)
-            .unwrap();
+        let result = get_receipts_root_from_receipts(&block_and_receipts.receipts).unwrap();
         let expected_result = block_and_receipts.block.receipts_root;
         assert!(result == expected_result);
     }
@@ -89,30 +88,21 @@ mod tests {
     #[test]
     fn should_return_true_if_receipts_root_is_correct() {
         let block_and_receipts = get_sample_eth_block_and_receipts();
-        let result = receipts_root_is_correct(
-            &block_and_receipts.block,
-            &block_and_receipts.receipts,
-        ).unwrap();
+        let result = receipts_root_is_correct(&block_and_receipts.block, &block_and_receipts.receipts).unwrap();
         assert!(result);
     }
 
     #[test]
     fn should_return_false_if_receipts_root_is_not_correct() {
-        let state = get_valid_state_with_invalid_block_and_receipts()
-            .unwrap();
-        let block_and_receipts = state.get_eth_block_and_receipts()
-            .unwrap();
-        let result = receipts_root_is_correct(
-            &block_and_receipts.block,
-            &block_and_receipts.receipts,
-        ).unwrap();
+        let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
+        let block_and_receipts = state.get_eth_block_and_receipts().unwrap();
+        let result = receipts_root_is_correct(&block_and_receipts.block, &block_and_receipts.receipts).unwrap();
         assert!(!result);
     }
 
     #[test]
     fn should_validate_receipts_in_state() {
-        let state = get_valid_state_with_block_and_receipts()
-            .unwrap();
+        let state = get_valid_state_with_block_and_receipts().unwrap();
         if validate_receipts_in_state(state).is_err() {
             panic!("Receipts should be valid!")
         }
@@ -121,14 +111,12 @@ mod tests {
     #[cfg(not(feature="non-validating"))]
     #[test]
     fn should_not_validate_invalid_receipts_in_state() {
-        let expected_error = "✘ Not accepting ETH block - receipts root not valid!"
-            .to_string();
-        let state = get_valid_state_with_invalid_block_and_receipts()
-            .unwrap();
+        let expected_error = "✘ Not accepting ETH block - receipts root not valid!".to_string();
+        let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
         match validate_receipts_in_state(state) {
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Receipts should not be valid!"),
-            Err(_) => panic!("Wrong error message!"),
+            _ => panic!("Wrong error message!"),
         }
     }
 }

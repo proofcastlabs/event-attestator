@@ -540,12 +540,9 @@ mod tests {
         let expected_block_field = "block";
         let expected_block_number = "8003897";
         let expected_receipts_field = "receipts";
-        let expected_tx_hash =
-            "0x49b980475527f989936ddc8afd1e045612cd567238bb567dbd99b48ad15860dc";
-        let expected_block_hash =
-            "0xb626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0";
-        let result = get_sample_eth_block_and_receipts_string(0)
-            .unwrap();
+        let expected_tx_hash = "0x49b980475527f989936ddc8afd1e045612cd567238bb567dbd99b48ad15860dc";
+        let expected_block_hash = "0xb626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0";
+        let result = get_sample_eth_block_and_receipts_string(0).unwrap();
         assert!(result.contains(expected_tx_hash));
         assert!(result.contains(expected_block_hash));
         assert!(result.contains(expected_block_field));
@@ -556,8 +553,7 @@ mod tests {
     #[test]
     fn should_get_sample_eth_block_and_receipts_json() {
         let expected_block_number = 8503804;
-        let result = get_sample_eth_block_and_receipts_json()
-            .unwrap();
+        let result = get_sample_eth_block_and_receipts_json().unwrap();
         assert!(result.block.number == expected_block_number);
     }
 
@@ -581,8 +577,7 @@ mod tests {
 
     #[test]
     fn should_get_valid_state_with_blocks_and_receipts() {
-        let result = get_valid_state_with_block_and_receipts()
-            .unwrap();
+        let result = get_valid_state_with_block_and_receipts().unwrap();
         if let Err(e) = result.get_eth_block_and_receipts() {
             panic!("Error getting eth block and receipt from state: {}", e)
         }
@@ -591,21 +586,14 @@ mod tests {
     #[test]
     fn should_get_sample_invalid_block() {
         let invalid_block = get_sample_invalid_block();
-        let is_valid = validate_block_header(&invalid_block)
-            .unwrap();
+        let is_valid = validate_block_header(&invalid_block).unwrap();
         assert!(!is_valid)
     }
 
     #[test]
     fn should_get_valid_state_with_invalid_block_and_receipts() {
-        let state = get_valid_state_with_invalid_block_and_receipts()
-            .unwrap();
-        let is_valid = validate_block_header(
-            &state
-                .get_eth_block_and_receipts()
-                .unwrap()
-                .block
-        ).unwrap();
+        let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
+        let is_valid = validate_block_header(&state.get_eth_block_and_receipts().unwrap().block).unwrap();
         assert!(!is_valid);
     }
 
@@ -614,8 +602,7 @@ mod tests {
         let bytes = vec![0xc0, 0xff, 0xee];
         let hex_string = "c0ffee".to_string();
         let expected_result = get_nibbles_from_bytes(bytes);
-        let result = convert_hex_string_to_nibbles(hex_string)
-            .unwrap();
+        let result = convert_hex_string_to_nibbles(hex_string).unwrap();
         assert!(result == expected_result);
     }
 
@@ -624,16 +611,13 @@ mod tests {
         let bytes = vec![0xdu8, 0xec, 0xaf];
         let hex_string = "decaf".to_string();
         let expected_result = get_nibbles_from_offset_bytes(bytes);
-        let result = convert_hex_string_to_nibbles(hex_string)
-            .unwrap();
+        let result = convert_hex_string_to_nibbles(hex_string).unwrap();
         assert!(result == expected_result);
     }
 
     #[test]
     fn sample_log_with_desired_topic_should_contain_topic() {
-        let desired_topic = convert_hex_to_h256(
-            TEMPORARY_CONTRACT_TOPIC.to_string()
-        ).unwrap();
+        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC.to_string()).unwrap();
         let result = get_sample_log_with_desired_topic()
             .topics
             .iter()
@@ -643,9 +627,7 @@ mod tests {
 
     #[test]
     fn sample_log_without_desired_topic_should_contain_topic() {
-        let desired_topic = convert_hex_to_h256(
-            TEMPORARY_CONTRACT_TOPIC.to_string()
-        ).unwrap();
+        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC.to_string()).unwrap();
         let result = get_sample_log_without_desired_topic()
             .topics
             .iter()
@@ -655,9 +637,7 @@ mod tests {
 
     #[test]
     fn sample_logs_with_desired_topic_should_contain_topic() {
-        let desired_topic = convert_hex_to_h256(
-            TEMPORARY_CONTRACT_TOPIC.to_string()
-        ).unwrap();
+        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC.to_string()).unwrap();
         let result = get_sample_logs_with_desired_topic()
             .iter()
             .any(|log| log_contains_topic(log, &desired_topic));
@@ -666,9 +646,7 @@ mod tests {
 
     #[test]
     fn sample_logs_without_desired_topic_should_contain_topic() {
-        let desired_topic = convert_hex_to_h256(
-            TEMPORARY_CONTRACT_TOPIC.to_string()
-        ).unwrap();
+        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC.to_string()).unwrap();
         let result = get_sample_logs_without_desired_topic()
             .iter()
             .any(|log| log_contains_topic(log, &desired_topic));
@@ -677,36 +655,25 @@ mod tests {
 
     #[test]
     fn sample_receipts_with_desired_topic_should_contain_topic() {
-        let desired_topic = convert_hex_to_h256(
-            TEMPORARY_CONTRACT_TOPIC.to_string()
-        ).unwrap();
-        let result = logs_contain_topic(
-            &get_sample_receipt_with_desired_topic().logs,
-            &desired_topic,
-        );
+        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC.to_string()).unwrap();
+        let result = logs_contain_topic(&get_sample_receipt_with_desired_topic().logs, &desired_topic);
         assert!(result);
     }
 
     #[test]
     fn sample_receipts_without_desired_topic_should_not_contain_topic() {
-        let desired_topic = convert_hex_to_h256(
-            TEMPORARY_CONTRACT_TOPIC.to_string()
-        ).unwrap();
-        let result = logs_contain_topic(
-            &get_sample_receipt_without_desired_topic().logs,
-            &desired_topic,
-        );
+        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC.to_string()).unwrap();
+        let result = logs_contain_topic(&get_sample_receipt_without_desired_topic().logs, &desired_topic);
         assert!(!result);
     }
 
     #[test]
     fn should_get_sequential_block_and_receipts() {
         let block_and_receipts = get_sequential_eth_blocks_and_receipts();
-        for i in 0..block_and_receipts.len() {
-            assert!(
-                block_and_receipts[i].block.number.as_usize() ==
-                SEQUENTIAL_BLOCKS_FIRST_NUMBER + i
-            )
-        }
+        block_and_receipts
+            .iter()
+            .enumerate()
+            .map(|(i, block)| assert!(block.block.number.as_usize() == SEQUENTIAL_BLOCKS_FIRST_NUMBER + i))
+            .for_each(drop);
     }
 }

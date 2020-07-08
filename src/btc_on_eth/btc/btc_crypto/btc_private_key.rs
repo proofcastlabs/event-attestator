@@ -178,8 +178,8 @@ mod tests {
         let sk = BtcPrivateKey::from_wif(wif)
             .unwrap();
         assert!(!sk.0.compressed);
-        assert!(&sk.0.to_wif() == wif);
-        assert!(sk.0.network == Network::Bitcoin);
+        assert_eq!(&sk.0.to_wif(), wif);
+        assert_eq!(sk.0.network, Network::Bitcoin);
     }
 
     #[test]

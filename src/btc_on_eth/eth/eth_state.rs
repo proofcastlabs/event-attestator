@@ -174,7 +174,7 @@ mod tests {
         match initial_state.get_eth_block_and_receipts() {
             Err(AppError::Custom(e)) => assert!(e == expected_error),
             Ok(_) => panic!("Eth block should not be in state yet!"),
-            Err(_) => panic!("Wrong error received!")
+            _ => panic!("Wrong error received!")
         };
     }
 
@@ -186,82 +186,52 @@ mod tests {
         match initial_state.get_eth_block_and_receipts() {
             Err(AppError::Custom(e)) => assert!(e == expected_error),
             Ok(_) => panic!("Eth block should not be in state yet!"),
-            Err(_) => panic!("Wrong error received!")
+            _ => panic!("Wrong error received!")
         };
-        let updated_state = initial_state.add_eth_block_and_receipts(
-            eth_block_and_receipts
-        ).unwrap();
+        let updated_state = initial_state.add_eth_block_and_receipts(eth_block_and_receipts).unwrap();
         match updated_state.get_eth_block_and_receipts() {
-            Err(_) => panic!("Eth block & receipts should be in state!"),
             Ok(block_and_receipt) => {
-                let block = block_and_receipt
-                    .block
-                    .clone();
-                let receipt = block_and_receipt
-                    .receipts[SAMPLE_RECEIPT_INDEX]
-                    .clone();
+                let block = block_and_receipt.block.clone();
+                let receipt = block_and_receipt.receipts[SAMPLE_RECEIPT_INDEX].clone();
                 let expected_block = get_expected_block();
                 let expected_receipt = get_expected_receipt();
                 assert!(block == expected_block);
                 assert!(receipt == expected_receipt);
             }
+            _ => panic!("Eth block & receipts should be in state!"),
         }
     }
 
     #[test]
     fn should_err_when_overwriting_eth_block_and_receipts_in_state() {
-        let expected_error = get_no_overwrite_state_err(
-            "eth_block_and_receipts");
+        let expected_error = get_no_overwrite_state_err("eth_block_and_receipts");
         let eth_block_and_receipts = get_sample_eth_block_and_receipts();
         let initial_state = EthState::init(get_test_database());
-        let updated_state = initial_state.add_eth_block_and_receipts(
-            eth_block_and_receipts.clone()
-        ).unwrap();
-
-        match updated_state.add_eth_block_and_receipts(
-            eth_block_and_receipts
-        ) {
+        let updated_state = initial_state.add_eth_block_and_receipts(eth_block_and_receipts.clone()).unwrap();
+        match updated_state.add_eth_block_and_receipts(eth_block_and_receipts) {
             Ok(_) => panic!("Overwriting state should not have succeeded!"),
             Err(AppError::Custom(e)) => assert!(e == expected_error),
-            Err(_) => panic!("Wrong error recieved!")
+            _ => panic!("Wrong error recieved!")
         }
     }
 
     #[test]
     fn should_update_eth_block_and_receipts() {
-        let eth_block_and_receipts_1 = get_sample_eth_block_and_receipts_n(0)
-            .unwrap();
-        let eth_block_and_receipts_2 = get_sample_eth_block_and_receipts_n(1)
-            .unwrap();
+        let eth_block_and_receipts_1 = get_sample_eth_block_and_receipts_n(0).unwrap();
+        let eth_block_and_receipts_2 = get_sample_eth_block_and_receipts_n(1).unwrap();
         let initial_state = EthState::init(get_test_database());
-        let updated_state = initial_state.add_eth_block_and_receipts(
-            eth_block_and_receipts_1
-        ).unwrap();
-        let initial_state_block_num = updated_state.get_eth_block_and_receipts()
-            .unwrap()
-            .block
-            .number
-            .clone();
-        let final_state = updated_state.update_eth_block_and_receipts(
-            eth_block_and_receipts_2
-        ).unwrap();
-        let final_state_block_number = final_state.get_eth_block_and_receipts()
-            .unwrap()
-            .block
-            .number;
+        let updated_state = initial_state.add_eth_block_and_receipts(eth_block_and_receipts_1).unwrap();
+        let initial_state_block_num = updated_state.get_eth_block_and_receipts().unwrap().block.number;
+        let final_state = updated_state.update_eth_block_and_receipts(eth_block_and_receipts_2).unwrap();
+        let final_state_block_number = final_state.get_eth_block_and_receipts().unwrap().block.number;
         assert_ne!(final_state_block_number, initial_state_block_num);
     }
 
     #[test]
     fn should_get_eth_parent_hash() {
-        let expected_result = get_sample_eth_block_and_receipts()
-            .block
-            .parent_hash;
-        let state = get_valid_state_with_block_and_receipts()
-            .unwrap();
-        let result = state
-            .get_parent_hash()
-            .unwrap();
+        let expected_result = get_sample_eth_block_and_receipts().block.parent_hash;
+        let state = get_valid_state_with_block_and_receipts().unwrap();
+        let result = state.get_parent_hash().unwrap();
         assert!(result == expected_result);
     }
 }

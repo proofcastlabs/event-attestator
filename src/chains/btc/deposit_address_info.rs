@@ -411,8 +411,8 @@ mod tests {
         };
         match DepositAddressInfo::from_json(&deposit_json) {
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
-            Err(_) => panic!("Should not have succeeded!"),
             Ok(_) => panic!("Should not have succeeded!"),
+            _ => panic!("Wrong error received"),
         }
     }
 }

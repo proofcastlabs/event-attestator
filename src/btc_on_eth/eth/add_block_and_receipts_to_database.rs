@@ -55,18 +55,11 @@ mod tests {
     #[test]
     fn should_maybe_add_block_and_receipts_to_db() {
         let db = get_test_database();
-        let block_and_receipts = get_sample_eth_block_and_receipts_n(1)
-            .unwrap();
-        let eth_block_hash = block_and_receipts
-            .block
-            .hash
-            .clone();
+        let block_and_receipts = get_sample_eth_block_and_receipts_n(1).unwrap();
+        let eth_block_hash = block_and_receipts.block.hash;
         let bool_before = eth_block_exists_in_db(&db, &eth_block_hash);
         assert!(!bool_before);
-        if let Err(e) = add_block_and_receipts_to_db_if_not_extant(
-            &db,
-            &block_and_receipts
-        ) {
+        if let Err(e) = add_block_and_receipts_to_db_if_not_extant(&db, &block_and_receipts) {
             panic!("Error when maybe adding block to database: {}", e);
         }
         let bool_after = eth_block_exists_in_db(&db, &eth_block_hash);
@@ -76,26 +69,16 @@ mod tests {
     #[test]
     fn should_error_if_block_already_in_db() {
         let db = get_test_database();
-        let block_and_receipts = get_sample_eth_block_and_receipts_n(1)
-            .unwrap();
-        let eth_block_hash = block_and_receipts
-            .block
-            .hash
-            .clone();
+        let block_and_receipts = get_sample_eth_block_and_receipts_n(1).unwrap();
+        let eth_block_hash = block_and_receipts.block.hash;
         let bool_before = eth_block_exists_in_db(&db, &eth_block_hash);
         assert!(!bool_before);
-        if let Err(e) = add_block_and_receipts_to_db_if_not_extant(
-            &db,
-            &block_and_receipts,
-        ) {
+        if let Err(e) = add_block_and_receipts_to_db_if_not_extant(&db, &block_and_receipts) {
             panic!("Error when maybe adding block to database: {}", e);
         };
         let bool_after = eth_block_exists_in_db(&db, &eth_block_hash);
-        if add_block_and_receipts_to_db_if_not_extant(
-            &db,
-            &block_and_receipts,
-        ).is_ok() {
-            panic!("Should error ∴ block already in db: {}");
+        if add_block_and_receipts_to_db_if_not_extant(&db, &block_and_receipts).is_ok() {
+            panic!("Should error ∵ block already in db!");
         }
         assert!(bool_after);
     }

@@ -336,13 +336,11 @@ mod tests {
     };
 
     fn get_sample_leaf_node_expected_encoding() -> Bytes {
-        hex::decode("c9842012345683c0ffee")
-            .unwrap()
+        hex::decode("c9842012345683c0ffee").unwrap()
     }
 
     fn get_sample_extension_node_expected_encoding() -> Bytes {
-        hex::decode("e68400c0ffeea01d237c84432c78d82886cb7d6549c179ca51ebf3b324d2a3fa01af6a563a9377")
-            .unwrap()
+        hex::decode("e68400c0ffeea01d237c84432c78d82886cb7d6549c179ca51ebf3b324d2a3fa01af6a563a9377").unwrap()
     }
 
     fn get_sample_branch_node_expected_encoding() -> Bytes {
@@ -351,27 +349,18 @@ mod tests {
     }
 
     fn get_sample_leaf_node_expected_hash() -> H256 {
-        let hex =
-            "c9161ce49c6a3362f5d20db4b6e36c259c9624eac5f99e64a052f45035d14c5d"
-                .to_string();
-        convert_hex_to_h256(hex)
-            .unwrap()
+        let hex = "c9161ce49c6a3362f5d20db4b6e36c259c9624eac5f99e64a052f45035d14c5d".to_string();
+        convert_hex_to_h256(hex).unwrap()
     }
 
     fn get_sample_extension_node_expected_hash() -> H256 {
-        let hex =
-            "d1425391446456311990cdf61e1dbe92b14cb53caad0539a15564b9efac0f733"
-                .to_string();
-        convert_hex_to_h256(hex)
-            .unwrap()
+        let hex = "d1425391446456311990cdf61e1dbe92b14cb53caad0539a15564b9efac0f733".to_string();
+        convert_hex_to_h256(hex).unwrap()
     }
 
     fn get_sample_branch_node_expected_hash() -> H256 {
-        let hex =
-            "9b88bb3372fcfde94cfbfd784ffcf64490a75bb2adedc128e67c887ce3d78535"
-                .to_string();
-        convert_hex_to_h256(hex)
-            .unwrap()
+        let hex = "9b88bb3372fcfde94cfbfd784ffcf64490a75bb2adedc128e67c887ce3d78535".to_string();
+        convert_hex_to_h256(hex).unwrap()
     }
 
     #[test]
@@ -381,30 +370,19 @@ mod tests {
         let expected_nibble_length = path_bytes.len() * 2;
         let path_nibbles = get_nibbles_from_bytes(path_bytes);
         let value = hex::decode("c0ffee".to_string()).unwrap();
-        let expected_encoded_path = encode_leaf_path_from_nibbles(
-            path_nibbles.clone()
-        ).unwrap();
+        let expected_encoded_path = encode_leaf_path_from_nibbles(path_nibbles.clone()).unwrap();
         let mut expected_raw = expected_encoded_path.clone();
         expected_raw.append(&mut value.clone());
-        let result = Node::new_leaf(path_nibbles.clone(), value.clone())
-            .unwrap();
-        let node_type = result
-            
-            .get_type();
+        let result = Node::new_leaf(path_nibbles.clone(), value.clone()).unwrap();
+        let node_type = result.get_type();
         assert!(node_type == LEAF_NODE_STRING);
-        if result.extension.is_some() {
-            panic!(panic_str)
-        } else if result.branch.is_some() {
+        if result.extension.is_some() || result.branch.is_some() {
             panic!(panic_str)
         }
         match result.leaf {
             None => panic!(panic_str),
             Some(leaf) => {
-                let nibble_length = get_length_in_nibbles(
-                    &leaf
-                        .path_nibbles
-                        
-                );
+                let nibble_length = get_length_in_nibbles(&leaf.path_nibbles);
                 assert!(leaf.value == value);
                 assert!(leaf.raw == expected_raw);
                 assert!(leaf.path_nibbles == path_nibbles);
@@ -418,9 +396,7 @@ mod tests {
     fn should_rlp_encode_leaf_node_correctly() {
         let leaf_node = get_sample_leaf_node();
         let expected_result = get_sample_leaf_node_expected_encoding();
-        let result = leaf_node
-            .get_rlp_encoding()
-            .unwrap();
+        let result = leaf_node.get_rlp_encoding().unwrap();
         assert!(result == expected_result);
     }
 
@@ -428,9 +404,7 @@ mod tests {
     fn should_get_leaf_node_hash_correctly() {
         let leaf_node = get_sample_leaf_node();
         let expected_result = get_sample_leaf_node_expected_hash();
-        let result = leaf_node
-            .get_hash()
-            .unwrap();
+        let result = leaf_node.get_hash().unwrap();
         assert!(result == expected_result);
     }
 
@@ -441,33 +415,21 @@ mod tests {
         let expected_nibble_length = path_bytes.len() * 2;
         let path_nibbles = get_nibbles_from_bytes(path_bytes);
         let value = hex::decode(
-            "4aad98246efabf243441508dc0f328d80e83e9522e43709abab1c0c9cf4416dc"
-                .to_string()
+            "4aad98246efabf243441508dc0f328d80e83e9522e43709abab1c0c9cf4416dc".to_string()
         ).unwrap();
-        let expected_encoded_path = encode_extension_path_from_nibbles(
-            path_nibbles.clone()
-        ).unwrap();
-        let result = Node::new_extension(path_nibbles.clone(), value.clone())
-            .unwrap();
-        let node_type = result
-            
-            .get_type();
+        let expected_encoded_path = encode_extension_path_from_nibbles(path_nibbles.clone()).unwrap();
+        let result = Node::new_extension(path_nibbles.clone(), value.clone()).unwrap();
+        let node_type = result.get_type();
         assert!(node_type == EXTENSION_NODE_STRING);
         let mut expected_raw = expected_encoded_path.clone();
         expected_raw.append(&mut value.clone());
-        if result.leaf.is_some() {
-            panic!(panic_str)
-        } else if result.branch.is_some() {
+        if result.leaf.is_some() || result.branch.is_some() {
             panic!(panic_str)
         }
         match result.extension {
             None => panic!(panic_str),
             Some(extension) => {
-                let nibble_length = get_length_in_nibbles(
-                    &extension
-                        .path_nibbles
-                        
-                );
+                let nibble_length = get_length_in_nibbles(&extension.path_nibbles);
                 assert!(extension.value == value);
                 assert!(extension.raw == expected_raw);
                 assert!(extension.path_nibbles == path_nibbles);
@@ -481,9 +443,7 @@ mod tests {
     fn should_rlp_encode_extension_node_correctly() {
         let extension_node = get_sample_extension_node();
         let expected_result = get_sample_extension_node_expected_encoding();
-        let result = extension_node
-            .get_rlp_encoding()
-            .unwrap();
+        let result = extension_node.get_rlp_encoding().unwrap();
         assert!(result == expected_result);
     }
 
@@ -491,9 +451,7 @@ mod tests {
     fn should_get_extension_node_hash_correctly() {
         let extension_node = get_sample_extension_node();
         let expected_result = get_sample_extension_node_expected_hash();
-        let result = extension_node
-            .get_hash()
-            .unwrap();
+        let result = extension_node.get_hash().unwrap();
         assert!(result == expected_result);
     }
 
@@ -501,14 +459,10 @@ mod tests {
     fn should_get_new_branch_with_no_value_correctly() {
         let panic_str = "Node should be a branch node";
         let result = Node::new_branch(None).unwrap();
-        if result.extension.is_some() {
-            panic!(panic_str)
-        } else if result.leaf.is_some() {
+        if result.extension.is_some() || result.leaf.is_some() {
             panic!(panic_str)
         }
-        let node_type = result
-            
-            .get_type();
+        let node_type = result.get_type();
         assert!(node_type == BRANCH_NODE_STRING);
         match result.branch {
             None => panic!(panic_str),
@@ -524,17 +478,12 @@ mod tests {
     #[test]
     fn should_get_new_branch_with_value_correctly() {
         let panic_str = "Node should be a branch node";
-        let value = hex::decode("c0ffee")
-            .unwrap();
+        let value = hex::decode("c0ffee").unwrap();
         let result = Node::new_branch(Some(value.clone())).unwrap();
-        if result.extension.is_some() {
-            panic!(panic_str)
-        } else if result.leaf.is_some() {
+        if result.extension.is_some() || result.leaf.is_some() {
             panic!(panic_str)
         }
-        let node_type = result
-            
-            .get_type();
+        let node_type = result.get_type();
         assert!(node_type == "branch");
         match result.branch {
             None => panic!(panic_str),
@@ -554,24 +503,9 @@ mod tests {
         let value = None;
         let branch_value = hex::decode("c0ffee").unwrap();
         let branch_node = Node::new_branch(value).unwrap();
-        assert!(
-            branch_node
-                .clone()
-                .branch
-                .unwrap()
-                .branches[index] == None
-        );
-        let result = branch_node.update_branch_at_index(
-            Some(branch_value.clone()),
-            index,
-        ).unwrap();
-        assert!(
-            result
-                
-                .branch
-                .unwrap()
-                .branches[index] == Some(branch_value)
-        );
+        assert!(branch_node.clone().branch.unwrap().branches[index] == None);
+        let result = branch_node.update_branch_at_index(Some(branch_value.clone()), index).unwrap();
+        assert!(result.branch.unwrap().branches[index] == Some(branch_value));
     }
 
     #[test]
@@ -588,9 +522,7 @@ mod tests {
     fn should_rlp_encode_branch_node_correctly() {
         let branch_node = get_sample_branch_node();
         let expected_result = get_sample_branch_node_expected_encoding();
-        let result = branch_node
-            .get_rlp_encoding()
-            .unwrap();
+        let result = branch_node.get_rlp_encoding().unwrap();
         assert!(result == expected_result);
     }
 
@@ -598,9 +530,7 @@ mod tests {
     fn should_get_branch_node_hash_correctly() {
         let branch_node = get_sample_branch_node();
         let expected_result = get_sample_branch_node_expected_hash();
-        let result = branch_node
-            .get_hash()
-            .unwrap();
+        let result = branch_node.get_hash().unwrap();
         assert!(result == expected_result);
     }
 
@@ -641,8 +571,7 @@ mod tests {
     fn should_get_value_from_extension_node() {
         let node = get_sample_extension_node();
         let expected_result = hex::decode(
-            "1d237c84432c78d82886cb7d6549c179ca51ebf3b324d2a3fa01af6a563a9377"
-                .to_string()
+            "1d237c84432c78d82886cb7d6549c179ca51ebf3b324d2a3fa01af6a563a9377".to_string()
         ).unwrap();
         let result = node.get_value();
         assert!(result == Some(expected_result));
@@ -659,95 +588,66 @@ mod tests {
     #[test]
     fn should_rlp_decode_leaf_node() {
         let node = get_sample_leaf_node();
-        let rlp_encoded_node = node
-            .get_rlp_encoding()
-            .unwrap();
-        let result = rlp_decode_node(rlp_encoded_node)
-            .unwrap();
+        let rlp_encoded_node = node.get_rlp_encoding().unwrap();
+        let result = rlp_decode_node(rlp_encoded_node).unwrap();
         assert!(result == node );
     }
 
     #[test]
     fn should_rlp_decode_extension_node() {
         let node = get_sample_extension_node();
-        let rlp_encoded_node = node
-            .get_rlp_encoding()
-            .unwrap();
-        let result = rlp_decode_node(rlp_encoded_node)
-            .unwrap();
+        let rlp_encoded_node = node.get_rlp_encoding().unwrap();
+        let result = rlp_decode_node(rlp_encoded_node).unwrap();
         assert!(result == node);
     }
 
     #[test]
     fn should_rlp_decode_branch_node() {
         let node = get_sample_branch_node();
-        let rlp_encoded_node = node
-            .get_rlp_encoding()
-            .unwrap();
-        let result = rlp_decode_node(rlp_encoded_node)
-            .unwrap();
+        let rlp_encoded_node = node.get_rlp_encoding() .unwrap();
+        let result = rlp_decode_node(rlp_encoded_node).unwrap();
         assert!(result == node);
     }
 
     #[test]
     fn should_get_leaf_node_from_trie_hash_map() {
-        let trie_hash_map = get_new_trie_hash_map()
-            .unwrap();
+        let trie_hash_map = get_new_trie_hash_map().unwrap();
         let node = get_sample_leaf_node();
         let key = node.get_hash().unwrap();
         let rlp_encoded_node = node.get_rlp_encoding().unwrap();
-        let updated_trie_hash_map = put_thing_in_trie_hash_map(
-            trie_hash_map,
-            key,
-            rlp_encoded_node,
-        ).unwrap();
-        let result = get_node_from_trie_hash_map(&updated_trie_hash_map, &key)
-            .unwrap();
+        let updated_trie_hash_map = put_thing_in_trie_hash_map(trie_hash_map, key, rlp_encoded_node).unwrap();
+        let result = get_node_from_trie_hash_map(&updated_trie_hash_map, &key).unwrap();
         assert!(result == Some(node));
     }
 
     #[test]
     fn should_get_branch_node_from_trie_hash_map() {
-        let trie_hash_map = get_new_trie_hash_map()
-            .unwrap();
+        let trie_hash_map = get_new_trie_hash_map().unwrap();
         let node = get_sample_branch_node();
         let key = node.get_hash().unwrap();
         let rlp_encoded_node = node.get_rlp_encoding().unwrap();
-        let updated_trie_hash_map = put_thing_in_trie_hash_map(
-            trie_hash_map,
-            key,
-            rlp_encoded_node,
-        ).unwrap();
-        let result = get_node_from_trie_hash_map(&updated_trie_hash_map, &key)
-            .unwrap();
+        let updated_trie_hash_map = put_thing_in_trie_hash_map(trie_hash_map, key, rlp_encoded_node).unwrap();
+        let result = get_node_from_trie_hash_map(&updated_trie_hash_map, &key).unwrap();
         assert!(result == Some(node));
     }
 
     #[test]
     fn should_get_extension_node_from_trie_hash_map() {
-        let trie_hash_map = get_new_trie_hash_map()
-            .unwrap();
+        let trie_hash_map = get_new_trie_hash_map().unwrap();
         let node = get_sample_branch_node();
         let key = node.get_hash().unwrap();
         let rlp_encoded_node = node.get_rlp_encoding().unwrap();
-        let updated_trie_hash_map = put_thing_in_trie_hash_map(
-            trie_hash_map,
-            key,
-            rlp_encoded_node,
-        ).unwrap();
-        let result = get_node_from_trie_hash_map(&updated_trie_hash_map, &key)
-            .unwrap();
+        let updated_trie_hash_map = put_thing_in_trie_hash_map(trie_hash_map, key, rlp_encoded_node).unwrap();
+        let result = get_node_from_trie_hash_map(&updated_trie_hash_map, &key).unwrap();
         assert!(result == Some(node));
     }
 
     #[test]
     fn should_fail_to_get_non_existing_node_from_db() {
-        let trie_hash_map = get_new_trie_hash_map()
-            .unwrap();
+        let trie_hash_map = get_new_trie_hash_map().unwrap();
         let node = get_sample_branch_node();
         let dummy_key = node.get_hash().unwrap();
-        let result = get_node_from_trie_hash_map(&trie_hash_map, &dummy_key)
-            .unwrap();
+        let result = get_node_from_trie_hash_map(&trie_hash_map, &dummy_key).unwrap();
         assert!(result == None);
     }
 

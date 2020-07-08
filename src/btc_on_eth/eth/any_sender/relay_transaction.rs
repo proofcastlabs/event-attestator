@@ -87,6 +87,7 @@ pub struct RelayTransaction {
 impl RelayTransaction {
     /// Creates a new signed relay transaction.
     #[cfg(test)]
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         from: EthAddress,
         chain_id: u8,

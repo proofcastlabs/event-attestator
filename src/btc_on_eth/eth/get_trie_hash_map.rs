@@ -52,49 +52,35 @@ mod tests {
 
     #[test]
     fn should_get_new_empty_trie_hash_map() {
-        let trie_hash_map = get_new_trie_hash_map()
-            .unwrap();
+        let trie_hash_map = get_new_trie_hash_map().unwrap();
         assert!(trie_hash_map.is_empty())
     }
 
     #[test]
     fn should_insert_thing_in_trie_hash_map() {
-        let trie_hash_map = get_new_trie_hash_map()
-            .unwrap();
+        let trie_hash_map = get_new_trie_hash_map().unwrap();
         let expected_result = get_thing_to_put_in_trie_hash_map();
-        put_thing_in_trie_hash_map(
-            trie_hash_map,
-            get_expected_key_of_thing_in_trie_hash_map(),
-            expected_result
-        ).unwrap();
+        put_thing_in_trie_hash_map(trie_hash_map, get_expected_key_of_thing_in_trie_hash_map(), expected_result)
+            .unwrap();
     }
 
     #[test]
     fn should_get_thing_from_trie_hash_map() {
         let expected_thing = get_thing_to_put_in_trie_hash_map();
-        let trie_hash_map = get_trie_hash_map_with_thing_in_it()
-            .unwrap();
+        let trie_hash_map = get_trie_hash_map_with_thing_in_it().unwrap();
         let key = get_expected_key_of_thing_in_trie_hash_map();
-        let result = get_thing_from_trie_hash_map(&trie_hash_map, &key)
-            .unwrap();
+        let result = get_thing_from_trie_hash_map(&trie_hash_map, &key).unwrap();
         assert!(result == expected_thing);
     }
 
     #[test]
     fn should_remove_thing_from_trie_hash_map() {
         let key = get_expected_key_of_thing_in_trie_hash_map();
-        let trie_hash_map = get_new_trie_hash_map()
+        let trie_hash_map = get_new_trie_hash_map().unwrap();
+        let updated_trie_hash_map = put_thing_in_trie_hash_map(trie_hash_map, key, get_thing_to_put_in_trie_hash_map())
             .unwrap();
-        let updated_trie_hash_map = put_thing_in_trie_hash_map(
-            trie_hash_map,
-            key.clone(),
-            get_thing_to_put_in_trie_hash_map(),
-        ).unwrap();
         assert!(updated_trie_hash_map.contains_key(&key));
-        let result = remove_thing_from_trie_hash_map(
-            updated_trie_hash_map,
-            &key,
-        ).unwrap();
+        let result = remove_thing_from_trie_hash_map(updated_trie_hash_map, &key).unwrap();
         assert!(!result.contains_key(&key));
     }
 }

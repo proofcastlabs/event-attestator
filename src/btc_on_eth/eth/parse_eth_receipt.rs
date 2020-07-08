@@ -97,19 +97,17 @@ mod tests {
 
     #[test]
     fn should_parse_eth_receipt_json() {
-        let eth_json = get_sample_eth_block_and_receipts_json()
-            .unwrap();
+        let eth_json = get_sample_eth_block_and_receipts_json().unwrap();
         let receipt_json = eth_json.receipts[SAMPLE_RECEIPT_INDEX].clone();
         match parse_eth_receipt_json(receipt_json) {
-            Err(_) => panic!("Should have parsed receipt!"),
             Ok(receipt) => assert!(receipt == get_expected_receipt()),
+            _ => panic!("Should have parsed receipt!"),
         }
     }
 
     #[test]
     fn should_parse_eth_receipt_jsons() {
-        let eth_json = get_sample_eth_block_and_receipts_json()
-            .unwrap();
+        let eth_json = get_sample_eth_block_and_receipts_json().unwrap();
         if parse_eth_receipt_jsons(eth_json.receipts).is_err() {
             panic!("Should have generated receipts correctly!")
         }
