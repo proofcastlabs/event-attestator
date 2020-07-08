@@ -108,6 +108,7 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     info!("✔ Debug clearing all UTXOs...");
     check_core_is_initialized(db)
+        .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
         .and_then(|_| clear_all_utxos(db))
         .and_then(|_| db.end_transaction())
@@ -116,7 +117,8 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
 
 // TODO/FIXME: This doesn't work with Any.Sender yet!
 pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
-    parse_btc_block_and_id_and_put_in_state(btc_submission_material_json, BtcState::init(db))
+    check_debug_mode()
+        .and_then(|_| parse_btc_block_and_id_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
@@ -167,7 +169,8 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
 }
 
 pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &str) -> Result<String> {
-    parse_eth_block_and_receipts_and_put_in_state(eth_block_json, EthState::init(db))
+    check_debug_mode()
+        .and_then(|_| parse_eth_block_and_receipts_and_put_in_state(eth_block_json, EthState::init(db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction)
         .and_then(validate_block_in_state)
@@ -200,22 +203,27 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
 }
 
 pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
-    let key_bytes = hex::decode(&key)?;
-    let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
-        true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-        false => None,
-    };
-    set_key_in_db_to_value(db, key, value, sensitivity)
-
+    check_debug_mode()
+        .and_then(|_| {
+            let key_bytes = hex::decode(&key)?;
+            let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
+                true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+                false => None,
+            };
+            set_key_in_db_to_value(db, key, value, sensitivity)
+        })
 }
 
 pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
-    let key_bytes = hex::decode(&key)?;
-    let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
-        true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-        false => None,
-    };
-    get_key_from_db(db, key, sensitivity)
+    check_debug_mode()
+        .and_then(|_| {
+            let key_bytes = hex::decode(&key)?;
+            let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
+                true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+                false => None,
+            };
+            get_key_from_db(db, key, sensitivity)
+        })
 }
 
 pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
@@ -230,7 +238,8 @@ pub fn debug_get_signed_erc777_change_pnetwork_tx<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    check_debug_mode()
+    check_core_is_initialized(&db)
+        .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_signed_erc777_change_pnetwork_tx(&db, EthAddress::from_slice(&hex::decode(new_address)?)))
         .and_then(|signed_tx_hex| {
@@ -241,7 +250,8 @@ pub fn debug_get_signed_erc777_change_pnetwork_tx<D>(
 
 fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()> {
     info!("✔ Checking if the ERC777 proxy address is set...");
-    get_erc777_proxy_contract_address_from_db(db)
+    check_debug_mode()
+        .and_then(|_| get_erc777_proxy_contract_address_from_db(db))
         .and_then(|address|
             match address.is_zero() {
                 true => Err(AppError::Custom("✘ No ERC777 proxy address set in db - not signing tx!".to_string())),
@@ -256,7 +266,8 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    check_debug_mode()
+    check_core_is_initialized(&db)
+        .and_then(|_| check_debug_mode())
         .and_then(|_| check_erc777_proxy_address_is_set(&db))
         .and_then(|_| db.start_transaction())
         .and_then(|_|
@@ -274,7 +285,8 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    check_debug_mode()
+    check_core_is_initialized(&db)
+        .and_then(|_| check_debug_mode())
         .and_then(|_| check_erc777_proxy_address_is_set(&db))
         .and_then(|_| db.start_transaction())
         .and_then(|_|
