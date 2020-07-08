@@ -1,15 +1,37 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::utxo_types::{
-        BtcUtxoAndValue,
-        BtcUtxosAndValues,
+    chains::btc::{
+        utxo_manager::{
+        utxo_utils::utxos_exist_in_db,
+        utxo_types::{
+            BtcUtxoAndValue,
+            BtcUtxosAndValues,
+        },
     },
     btc_on_eos::{
         constants::MINIMUM_REQUIRED_SATOSHIS,
         btc::btc_state::BtcState,
     },
 };
+
+fn filter_out_utxos_that_already_exist_in_db<D>(
+    db: &D,
+    utxos: &[BtcUtxoAndValue]
+) -> Result<BtcUtxosAndValues>
+    where D: DatabaseInterface
+{
+    utxos_exist_in_db(db, utxos)
+        .map(|bool_arr| {
+            utxos
+                .iter()
+                .enumerate()
+                .filter(|(i, _)| bool_arr[*i])
+                .map(|(_, utxo)| utxo)
+                .cloned()
+                .collect::<BtcUtxosAndValues>()
+        })
+}
 
 fn filter_out_utxos_whose_value_is_too_low(utxos: &[BtcUtxoAndValue]) -> Result<BtcUtxosAndValues> {
     Ok(
