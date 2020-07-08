@@ -1,33 +1,16 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::utxo_types::{
-        BtcUtxoAndValue,
-        BtcUtxosAndValues,
-    },
-    btc_on_eth::{
-        btc::btc_state::BtcState,
-        constants::MINIMUM_REQUIRED_SATOSHIS,
+    btc_on_eth::btc::btc_state::BtcState,
+    chains::btc::{
+        btc_constants::MINIMUM_REQUIRED_SATOSHIS,
+        filter_utxos::filter_out_utxos_whose_value_is_too_low,
+        utxo_manager::utxo_types::{
+            BtcUtxoAndValue,
+            BtcUtxosAndValues,
+        },
     },
 };
-
-fn filter_out_utxos_whose_value_is_too_low(utxos: &[BtcUtxoAndValue]) -> Result<BtcUtxosAndValues> {
-    Ok(
-        utxos
-            .iter()
-            .filter(|utxo| {
-                match utxo.value >= MINIMUM_REQUIRED_SATOSHIS {
-                    true => true,
-                    false => {
-                        info!("✘ Filtering UTXO ∵ value too low: {:?}", utxo);
-                        false
-                    }
-                }
-            })
-            .cloned()
-            .collect::<BtcUtxosAndValues>()
-    )
-}
 
 pub fn filter_out_value_too_low_utxos_from_state<D>(
     state: BtcState<D>
@@ -49,8 +32,7 @@ mod tests {
         let expected_num_after_filtering = 3;
         let utxos = get_sample_utxo_and_values();
         let utxos_length_before = utxos.len();
-        let result = filter_out_utxos_whose_value_is_too_low(&utxos)
-            .unwrap();
+        let result = filter_out_utxos_whose_value_is_too_low(&utxos).unwrap();
         let utxos_length_after = result.len();
         assert!(utxos_length_after < utxos_length_before);
         assert_ne!(utxos_length_before, utxos_length_after);
