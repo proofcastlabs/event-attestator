@@ -1,3 +1,4 @@
+#![allow(dead_code)] // TODO rm me!
 use serde_json::{
     json,
     Value as JsonValue,
@@ -99,24 +100,14 @@ fn get_btc_utxos_from_utxo_and_values(utxo_and_values: Vec<BtcUtxoAndValue>) -> 
         .collect::<Result<Vec<BtcUtxo>>>()
 }
 
-pub fn utxo_exists_in_db<D>(
-    db: &D,
-    utxo_to_check: BtcUtxo,
-) -> Result<bool>
-    where D: DatabaseInterface
-{
+pub fn utxo_exists_in_db<D: DatabaseInterface>(db: &D, utxo_to_check: &BtcUtxo,) -> Result<bool> {
     debug!("✔ Checking if UTXO exists in db...");
     get_all_utxos_from_db(db)
         .and_then(get_btc_utxos_from_utxo_and_values)
         .map(|btc_utxos_from_db| btc_utxos_from_db.contains(&utxo_to_check))
 }
 
-pub fn utxos_exists_in_db<D>(
-    db: &D,
-    utxos_to_check: Vec<BtcUtxo>,
-) -> Result<Vec<bool>>
-    where D: DatabaseInterface
-{
+pub fn utxos_exists_in_db<D: DatabaseInterface>(db: &D, utxos_to_check: &[BtcUtxo]) -> Result<Vec<bool>> {
     debug!("✔ Checking if UTXOs exist in db...");
     get_all_utxos_from_db(db)
         .and_then(get_btc_utxos_from_utxo_and_values)
@@ -126,36 +117,35 @@ pub fn utxos_exists_in_db<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::btc::btc_test_utils::{
-        get_sample_p2sh_utxo_and_value,
-        get_sample_op_return_utxo_and_value,
+    use bitcoin::consensus::encode::deserialize as btc_deserialize;
+    use crate::{
+        test_utils::get_test_database,
+        chains::btc::utxo_manager::utxo_database_utils::save_new_utxo_and_value,
+        btc_on_eth::btc::btc_test_utils::{
+            get_sample_p2sh_utxo_and_value,
+            get_sample_op_return_utxo_and_value,
+        },
     };
 
     #[test]
     fn should_serde_op_return_btc_utxo_and_value() {
         let utxo = get_sample_op_return_utxo_and_value();
-        let serialized_utxo = serialize_btc_utxo_and_value(&utxo)
-            .unwrap();
-        let result = deserialize_utxo_and_value(&serialized_utxo)
-            .unwrap();
+        let serialized_utxo = serialize_btc_utxo_and_value(&utxo).unwrap();
+        let result = deserialize_utxo_and_value(&serialized_utxo).unwrap();
         assert!(result == utxo);
     }
 
     #[test]
     fn should_serde_p2sh_btc_utxo_and_value() {
-        let utxo = get_sample_p2sh_utxo_and_value()
-            .unwrap();
-        let serialized_utxo = serialize_btc_utxo_and_value(&utxo)
-            .unwrap();
-        let result = deserialize_utxo_and_value(&serialized_utxo)
-            .unwrap();
+        let utxo = get_sample_p2sh_utxo_and_value().unwrap();
+        let serialized_utxo = serialize_btc_utxo_and_value(&utxo).unwrap();
+        let result = deserialize_utxo_and_value(&serialized_utxo).unwrap();
         assert!(result == utxo);
     }
 
     #[test]
     fn should_get_utxo_db_key() {
-        let expected_result =
-            "b783e877488797a385ffd73089fc7d051db72ea1cf4290ee0d3a65efa712e29c";
+        let expected_result = "b783e877488797a385ffd73089fc7d051db72ea1cf4290ee0d3a65efa712e29c";
         let num = 1;
         let result = get_utxo_and_value_db_key(num);
         assert!(hex::encode(result) == expected_result);
@@ -166,10 +156,40 @@ mod tests {
         let mut utxo = get_sample_op_return_utxo_and_value();
         let pointer_hash = sha256d::Hash::hash(b"pointer hash");
         utxo.maybe_pointer = Some(pointer_hash);
-        let serialized_utxo = serialize_btc_utxo_and_value(&utxo)
-            .unwrap();
-        let result = deserialize_utxo_and_value(&serialized_utxo)
-            .unwrap();
+        let serialized_utxo = serialize_btc_utxo_and_value(&utxo).unwrap();
+        let result = deserialize_utxo_and_value(&serialized_utxo).unwrap();
         assert!(result == utxo);
+    }
+
+    #[test]
+    fn should_return_false_if_utxo_exists_in_db() {
+        let expected_result = false;
+        let db = get_test_database();
+        let utxo = btc_deserialize(&get_sample_p2sh_utxo_and_value().unwrap().serialized_utxo).unwrap();
+        let result = utxo_exists_in_db(&db, &utxo).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_return_true_if_utxo_exists_in_db() {
+        let db = get_test_database();
+        let utxo_and_value = get_sample_p2sh_utxo_and_value().unwrap();
+        let utxo = btc_deserialize(&utxo_and_value.serialized_utxo).unwrap();
+        save_new_utxo_and_value(&db, &utxo_and_value).unwrap();
+        let result = utxo_exists_in_db(&db, &utxo).unwrap();
+        assert!(result);
+    }
+
+    #[test]
+    fn should_return_correct_bool_array_when_checking_it_multiple_utxos_exist_in_db() {
+        let expected_result = vec![false, true];
+        let db = get_test_database();
+        let utxo_and_value_1 = get_sample_p2sh_utxo_and_value().unwrap();
+        let utxo_and_value_2 = get_sample_op_return_utxo_and_value();
+        let utxo_1 = btc_deserialize(&utxo_and_value_1.serialized_utxo).unwrap();
+        let utxo_2 = btc_deserialize(&utxo_and_value_2.serialized_utxo).unwrap();
+        save_new_utxo_and_value(&db, &utxo_and_value_2).unwrap();
+        let result = utxos_exists_in_db(&db, &[utxo_1, utxo_2]).unwrap();
+        assert_eq!(result, expected_result);
     }
 }
