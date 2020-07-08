@@ -13,7 +13,7 @@ use crate::{
     },
 };
 
-pub fn filter_out_utxos_that_already_exist_in_db<D>(
+pub fn filter_out_utxos_extant_in_db<D>(
     db: &D,
     utxos: &[BtcUtxoAndValue]
 ) -> Result<BtcUtxosAndValues>
@@ -47,4 +47,23 @@ pub fn filter_out_utxos_whose_value_is_too_low(utxos: &[BtcUtxoAndValue]) -> Res
             .cloned()
             .collect::<BtcUtxosAndValues>()
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::btc_on_eth::btc::btc_test_utils::get_sample_utxo_and_values;
+    // TODO Start using chains::btc::test_utils!
+
+    #[test]
+    fn should_filter_utxos() {
+        let expected_num_after_filtering = 3;
+        let utxos = get_sample_utxo_and_values();
+        let utxos_length_before = utxos.len();
+        let result = filter_out_utxos_whose_value_is_too_low(&utxos).unwrap();
+        let utxos_length_after = result.len();
+        assert!(utxos_length_after < utxos_length_before);
+        assert_ne!(utxos_length_before, utxos_length_after);
+        assert_eq!(utxos_length_after, expected_num_after_filtering);
+    }
 }

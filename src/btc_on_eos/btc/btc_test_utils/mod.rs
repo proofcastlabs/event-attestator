@@ -242,39 +242,6 @@ fn create_op_return_btc_utxo_and_value_from_tx_output(
     )
 }
 
-pub fn get_sample_op_return_utxo_with_value_too_low() -> BtcUtxoAndValue {
-    create_op_return_btc_utxo_and_value_from_tx_output(
-        &get_sample_btc_block_n(9)
-            .unwrap()
-            .block
-            .txdata
-            [18],
-        0,
-    )
-}
-
-fn get_sample_p2sh_utxo_with_value_too_low() -> BtcUtxoAndValue {
-    create_op_return_btc_utxo_and_value_from_tx_output(
-        &get_sample_btc_block_n(9)
-            .unwrap()
-            .block
-            .txdata
-            [19],
-        0,
-    )
-}
-
-pub fn get_sample_utxo_and_values() -> Vec<BtcUtxoAndValue> {
-    vec![
-        get_sample_op_return_utxo_and_value_n(2).unwrap(),
-        get_sample_op_return_utxo_and_value_n(3).unwrap(),
-        get_sample_op_return_utxo_and_value_n(4).unwrap(),
-        get_sample_op_return_utxo_and_value(),
-        get_sample_op_return_utxo_with_value_too_low(),
-        get_sample_p2sh_utxo_with_value_too_low(),
-    ]
-}
-
 pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
     get_sample_btc_block_n(5)
         .and_then(|block_and_id| {
