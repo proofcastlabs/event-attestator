@@ -40,7 +40,7 @@ use crate::{
             btc_state::BtcState,
             sign_transactions::get_eth_signed_txs,
             save_utxos_to_db::maybe_save_utxos_to_db,
-            filter_utxos::maybe_filter_utxos_in_state,
+            filter_utxos::filter_out_value_too_low_utxos_from_state,
             validate_btc_merkle_root::validate_btc_merkle_root,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
@@ -132,7 +132,7 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
         .and_then(parse_minting_params_from_p2sh_deposits_and_add_to_state)
         .and_then(maybe_extract_utxos_from_op_return_txs_and_put_in_state)
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
-        .and_then(maybe_filter_utxos_in_state)
+        .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
         .and_then(maybe_filter_minting_params_in_state)
         .and_then(|state| {

@@ -8,7 +8,7 @@ use crate::{
         btc::{
             btc_state::BtcState,
             save_utxos_to_db::maybe_save_utxos_to_db,
-            filter_utxos::maybe_filter_utxos_in_state,
+            filter_utxos::filter_out_value_too_low_utxos_from_state,
             add_btc_block_to_db::maybe_add_btc_block_to_db,
             validate_btc_merkle_root::validate_btc_merkle_root,
             update_btc_linker_hash::maybe_update_btc_linker_hash,
@@ -63,7 +63,7 @@ pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(parse_minting_params_from_p2sh_deposits_and_add_to_state)
         .and_then(maybe_extract_utxos_from_op_return_txs_and_put_in_state)
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
-        .and_then(maybe_filter_utxos_in_state)
+        .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
         .and_then(maybe_filter_minting_params_in_state)
         .and_then(create_btc_block_in_db_format_and_put_in_state)

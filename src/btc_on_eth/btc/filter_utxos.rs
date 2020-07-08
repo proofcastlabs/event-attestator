@@ -11,7 +11,7 @@ use crate::{
     },
 };
 
-fn filter_utxos(utxos: &[BtcUtxoAndValue]) -> Result<BtcUtxosAndValues> {
+fn filter_out_utxos_whose_value_is_too_low(utxos: &[BtcUtxoAndValue]) -> Result<BtcUtxosAndValues> {
     Ok(
         utxos
             .iter()
@@ -29,13 +29,13 @@ fn filter_utxos(utxos: &[BtcUtxoAndValue]) -> Result<BtcUtxosAndValues> {
     )
 }
 
-pub fn maybe_filter_utxos_in_state<D>(
+pub fn filter_out_value_too_low_utxos_from_state<D>(
     state: BtcState<D>
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
     info!("✔ Maybe filtering out any UTXOs below minimum # of Satoshis...");
-    filter_utxos(&state.utxos_and_values)
+    filter_out_utxos_whose_value_is_too_low(&state.utxos_and_values)
         .and_then(|utxos| state.replace_utxos_and_values(utxos))
 }
 
@@ -49,7 +49,7 @@ mod tests {
         let expected_num_after_filtering = 3;
         let utxos = get_sample_utxo_and_values();
         let utxos_length_before = utxos.len();
-        let result = filter_utxos(&utxos)
+        let result = filter_out_utxos_whose_value_is_too_low(&utxos)
             .unwrap();
         let utxos_length_after = result.len();
         assert!(utxos_length_after < utxos_length_before);
