@@ -26,9 +26,12 @@ use crate::{
         Result,
     },
     chains::btc::{
-        btc_constants::BTC_LATEST_BLOCK_HASH_KEY,
         utxo_manager::utxo_types::BtcUtxoAndValue,
         deposit_address_info::DepositAddressInfoJson,
+        btc_constants::{
+            BTC_LATEST_BLOCK_HASH_KEY,
+            MINIMUM_REQUIRED_SATOSHIS,
+        },
         btc_utils::{
             get_p2sh_redeem_script_sig,
             create_unsigned_utxo_from_tx,
@@ -37,7 +40,6 @@ use crate::{
     },
     btc_on_eth::{
         utils::convert_satoshis_to_ptoken,
-        constants::MINIMUM_REQUIRED_SATOSHIS,
         eth::eth_types::EthAddress,
         btc::{
             btc_crypto::btc_private_key::BtcPrivateKey,

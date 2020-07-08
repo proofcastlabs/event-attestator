@@ -1,9 +1,9 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
     btc_on_eth::{
         utils::convert_satoshis_to_ptoken,
-        constants::MINIMUM_REQUIRED_SATOSHIS,
         btc::{
             btc_state::BtcState,
             btc_types::{

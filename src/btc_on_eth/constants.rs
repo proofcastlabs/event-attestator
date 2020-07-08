@@ -2,7 +2,6 @@ pub const HASH_LENGTH: usize = 32;
 pub const U64_NUM_BYTES: usize = 8;
 pub const BTC_NUM_DECIMALS: u32 = 8;
 pub const PTOKEN_ERC777_NUM_DECIMALS: u32 = 18;
-pub const MINIMUM_REQUIRED_SATOSHIS: u64 = 5_000;
 pub static SAFE_BTC_ADDRESS: &str = "136CTERaocm8dLbEtzCaFtJJX9jfFhnChK";
 
 // NOTE: "0x71A440EE9Fa7F99FB9a697e96eC7839B8A1643B8"
