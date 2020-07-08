@@ -1,5 +1,6 @@
 #![feature(try_trait)]
 #![recursion_limit="128"]
+#![allow(clippy::match_bool)]
 #![feature(exclusive_range_pattern)]
 
 //! # The __`pToken`__ Core
