@@ -44,7 +44,7 @@ pub fn get_u64_from_db<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::test_utils::get_test_database;
+    use crate::test_utils::get_test_database;
 
     #[test]
     fn should_save_and_get_usize_from_db() {
@@ -56,7 +56,7 @@ mod tests {
         };
         match get_u64_from_db(&db, &key) {
             Ok(usize_from_db) => {
-                assert!(usize_from_db == u_64);
+                assert_eq!(usize_from_db, u_64);
             }
             Err(e) => {
                 panic!("Error getting usize from db: {}", e)

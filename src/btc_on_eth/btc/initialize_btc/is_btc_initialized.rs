@@ -24,9 +24,9 @@ pub fn is_btc_enclave_initialized<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        btc::{
+        btc_on_eth::btc::{
             btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
             btc_database_utils::put_btc_address_in_db,
         },

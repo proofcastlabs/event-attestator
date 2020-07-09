@@ -200,7 +200,7 @@ mod tests {
         let expected_result = [192, 255, 238];
         let result = decode_hex(none_prefixed_hex.to_string())
             .unwrap();
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 
     #[test]
@@ -209,7 +209,7 @@ mod tests {
         let expected_result = "00xc0ffee".to_string();
         let result = left_pad_with_zero(dummy_hex)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -218,7 +218,7 @@ mod tests {
         let expected_result = "c0ffee".to_string();
         let result = strip_hex_prefix(dummy_hex)
             .unwrap();
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 
     #[test]
@@ -227,7 +227,7 @@ mod tests {
         let expected_result = "c0ffee".to_string();
         let result = strip_hex_prefix(dummy_hex)
             .unwrap();
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 
     #[test]
@@ -238,7 +238,7 @@ mod tests {
         let expected_result = decode_prefixed_hex(address_hex.to_string())
             .unwrap();
         let expected_result_bytes = &expected_result[..];
-        assert!(result.as_bytes() == expected_result_bytes);
+        assert_eq!(result.as_bytes(), expected_result_bytes);
     }
 
     #[test]
@@ -246,7 +246,7 @@ mod tests {
         let hex = "c0ffee".to_string();
         let expected_result = [ 192, 255, 238 ];
         let result = convert_hex_to_bytes(hex).unwrap();
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 
     #[test]
@@ -254,7 +254,7 @@ mod tests {
         let hex = "0xc0ffee".to_string();
         let expected_result = [ 192, 255, 238 ];
         let result = convert_hex_to_bytes(hex).unwrap();
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 
     #[test]
@@ -262,7 +262,7 @@ mod tests {
         let thing = "thing".to_string();
         let expected_result = "✘ No thing in state!";
         let result = get_not_in_state_err(&thing);
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 
     #[test]
@@ -270,30 +270,30 @@ mod tests {
         let thing = "thing".to_string();
         let expected_result = "✘ Cannot overwrite thing in state!";
         let result = get_no_overwrite_state_err(&thing);
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 
     #[test]
     fn should_decode_prefixed_hex_correctly() {
         let prefixed_hex = "0xc0ffee";
         let mut chars = prefixed_hex.chars();
-        assert!("0" == chars.next().unwrap().to_string());
-        assert!("x" == chars.next().unwrap().to_string());
+        assert_eq!("0", chars.next().unwrap().to_string());
+        assert_eq!("x", chars.next().unwrap().to_string());
         let expected_result = [192, 255, 238];
         let result = decode_prefixed_hex(prefixed_hex.to_string())
             .unwrap();
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
         #[test]
     fn should_convert_hex_to_h256_correctly() {
         let dummy_hash = "0xc5acf860fa849b72fc78855dcbc4e9b968a8af5cdaf79f03beeca78e6a9cec8b";
-        assert!(dummy_hash.len() == HASH_HEX_CHARS + HEX_PREFIX_LENGTH);
+        assert_eq!(dummy_hash.len(), HASH_HEX_CHARS + HEX_PREFIX_LENGTH);
         let result = convert_hex_to_h256(dummy_hash.to_string())
             .unwrap();
         let expected_result = decode_prefixed_hex(dummy_hash.to_string())
             .unwrap();
         let expected_result_bytes = &expected_result[..];
-        assert!(result.as_bytes() == expected_result_bytes);
+        assert_eq!(result.as_bytes(), expected_result_bytes);
     }
 
     #[test]
@@ -306,7 +306,7 @@ mod tests {
         );
         assert!(short_hash.len() < HASH_HEX_CHARS + HEX_PREFIX_LENGTH);
         match convert_hex_to_h256(short_hash.to_string()) {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ => panic!("Should have errored ∵ of short hash!")
         }
     }
@@ -321,7 +321,7 @@ mod tests {
         );
         assert!(long_hash.len() > HASH_HEX_CHARS + HEX_PREFIX_LENGTH);
         match convert_hex_to_h256(long_hash.to_string()) {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ => panic!("Should have errored ∵ of short hash!")
         }
     }
@@ -349,8 +349,8 @@ mod tests {
         let hex_strings: Vec<String> = vec!(str1, str2);
         let results: Vec<H256> = convert_hex_strings_to_h256s(hex_strings)
             .unwrap();
-        assert!(results[0] == expected_result1);
-        assert!(results[1] == expected_result2);
+        assert_eq!(results[0], expected_result1);
+        assert_eq!(results[1], expected_result2);
     }
 
     #[test]
@@ -363,7 +363,7 @@ mod tests {
             0, 0, 0, 0, 0, 0, 0, 0
         ];
         let result = convert_h256_to_bytes(hash);
-        assert!(expected_result == result);
+        assert_eq!(expected_result, result);
     }
 
     #[test]
@@ -376,7 +376,7 @@ mod tests {
             .unwrap();
         let result = convert_bytes_to_h256(&bytes)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -385,7 +385,7 @@ mod tests {
         let dec_str = "1337";
         let result = convert_dec_str_to_u256(dec_str)
             .unwrap();
-        assert!(result.as_usize() == expected_result);
+        assert_eq!(result.as_usize(), expected_result);
     }
 
     #[test]
@@ -408,7 +408,7 @@ mod tests {
         let result = strip_new_line_chars(string);
         let length_after = result.len();
         assert!(length_after < length_before);
-        assert!(length_after == length_before - new_line_char.len());
+        assert_eq!(length_after, length_before - new_line_char.len());
     }
 
     #[test]
@@ -417,7 +417,7 @@ mod tests {
         let expected_result = "0000000000000000000000000000000000000000000000000000000000bbdf01"
             .to_string();
         let result = convert_u256_to_32_byte_wide_zero_padded_hex(u256);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -428,7 +428,7 @@ mod tests {
         let result = convert_eth_address_to_32_byte_wide_zero_padded_hex(
             eth_address
         );
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -436,7 +436,7 @@ mod tests {
         let u_64 = u64::max_value();
         let expected_result = [255,255,255,255,255,255,255,255];
         let result = convert_u64_to_bytes(u_64);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -445,7 +445,7 @@ mod tests {
         let expected_result = u64::max_value();
         let result = convert_bytes_to_u64(&bytes)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -455,9 +455,9 @@ mod tests {
         let bytes = vec![255,255,255,255,255,255,255];
         assert!(bytes.len() < U64_NUM_BYTES);
         match  convert_bytes_to_u64(&bytes) {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Shouldn't work!"),
-            Err(_) => panic!("Wrong error!"),
+            _ => panic!("Wrong error!"),
         }
     }
 
@@ -469,9 +469,9 @@ mod tests {
         let bytes = vec![255,255,255,255,255,255,255,255,255];
         assert!(bytes.len() > U64_NUM_BYTES);
         match  convert_bytes_to_u64(&bytes) {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Shouldn't work!"),
-            Err(_) => panic!("Wrong error!"),
+            _ => panic!("Wrong error!"),
         }
     }
 }

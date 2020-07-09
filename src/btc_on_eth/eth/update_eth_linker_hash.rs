@@ -85,9 +85,9 @@ fn maybe_update_linker_hash<D>(db: &D) -> Result<()>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        eth::{
+        btc_on_eth::eth::{
             eth_test_utils::{
                 put_eth_tail_block_in_db,
                 put_eth_anchor_block_in_db,
@@ -116,7 +116,7 @@ mod tests {
         let result = maybe_get_parent_of_eth_tail_block(&db)
             .unwrap()
             .unwrap();
-        assert!(result == parent_of_eth_tail_block);
+        assert_eq!(result, parent_of_eth_tail_block);
     }
 
     #[test]
@@ -128,7 +128,7 @@ mod tests {
             .unwrap();
         let result = maybe_get_parent_of_eth_tail_block(&db)
             .unwrap();
-        assert!(result == None);
+        assert_eq!(result, None);
     }
 
     #[test]
@@ -137,7 +137,7 @@ mod tests {
         let expected_result_hex =
             "5cfaf026b198808363c898b2f7fcada79d88fe163fa6281211956a5431481ecf";
         let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
-        let block_hash_to_link_to = blocks_and_receipts[5].block.hash.clone();
+        let block_hash_to_link_to = blocks_and_receipts[5].block.hash;
         let anchor_block = blocks_and_receipts[1].clone();
         let linker_hash = blocks_and_receipts[3].block.hash;
         put_eth_linker_hash_in_db(&db, linker_hash).unwrap();
@@ -146,7 +146,7 @@ mod tests {
         let result = get_new_linker_hash(&db, &block_hash_to_link_to)
             .unwrap();
         let result_hex = hex::encode(result.as_bytes());
-        assert!(result_hex == expected_result_hex);
+        assert_eq!(result_hex, expected_result_hex);
     }
 
     #[test]
@@ -172,7 +172,7 @@ mod tests {
             .unwrap();
         let result_hex = hex::encode(linker_hash_after.as_bytes());
         assert!(linker_hash_after != linker_hash_before);
-        assert!(result_hex == expected_result_hex);
+        assert_eq!(result_hex, expected_result_hex);
     }
 
     #[test]
@@ -193,7 +193,7 @@ mod tests {
         let linker_hash_after = get_eth_linker_hash_from_db(&db)
             .unwrap();
         let result_hex = hex::encode(linker_hash_after.as_bytes());
-        assert!(linker_hash_after == linker_hash_before);
-        assert!(result_hex == expected_result_hex);
+        assert_eq!(linker_hash_after, linker_hash_before);
+        assert_eq!(result_hex, expected_result_hex);
     }
 }

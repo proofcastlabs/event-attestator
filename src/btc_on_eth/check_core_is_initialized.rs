@@ -57,17 +57,19 @@ pub fn check_core_is_initialized_and_return_btc_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        btc::{
-            btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
-            btc_database_utils::put_btc_address_in_db,
-        },
-        eth::{
-            eth_database_utils::put_public_eth_address_in_db,
-            eth_test_utils::{
-                get_sample_eth_address,
-                get_valid_eth_state,
+        btc_on_eth::{
+            btc::{
+                btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
+                btc_database_utils::put_btc_address_in_db,
+            },
+            eth::{
+                eth_database_utils::put_public_eth_address_in_db,
+                eth_test_utils::{
+                    get_valid_eth_state,
+                    get_sample_eth_address,
+                },
             },
         },
     };
@@ -116,7 +118,7 @@ mod tests {
                 panic!("Enc should not be initialized!");
             }
             Err(AppError::Custom(e)) => {
-                assert!(e == expected_error);
+                assert_eq!(e, expected_error);
             }
             Err(e) => {
                 panic!("Wrong err recieved: {}", e);
@@ -143,7 +145,7 @@ mod tests {
                 panic!("Enc should not be initialized!");
             }
             Err(AppError::Custom(e)) => {
-                assert!(e == expected_error);
+                assert_eq!(e, expected_error);
             }
             Err(e) => {
                 panic!("Wrong err recieved: {}", e);

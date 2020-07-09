@@ -405,9 +405,9 @@ pub fn increment_utxo_nonce_in_db<D>(db: &D) -> Result<()>
 mod tests {
     use super::*;
     // FIXME Use generic versions of these, not the BTC ones!
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        btc::{
+        btc_on_eth::btc::{
             btc_database_utils::key_exists_in_db,
             btc_test_utils::{
                 get_sample_utxo_and_values,
@@ -436,7 +436,7 @@ mod tests {
                 panic!("Error getting num of utxos from db: {}", e);
             }
             Ok(num_from_db) => {
-                assert!(num_from_db == num);
+                assert_eq!(num_from_db, num);
             }
         }
     }
@@ -456,7 +456,7 @@ mod tests {
                 panic!("Error getting num of utxos from db: {}", e);
             }
             Ok(num_from_db) => {
-                assert!(num_from_db == num + 1);
+                assert_eq!(num_from_db, num + 1);
             }
         }
     }
@@ -474,7 +474,7 @@ mod tests {
                 panic!("Error getting last utxo pointer: {}", e);
             }
             Ok(pointer_from_db) => {
-                assert!(pointer_from_db == pointer_hash.to_vec());
+                assert_eq!(pointer_from_db, pointer_hash.to_vec());
             }
         }
     }
@@ -492,7 +492,7 @@ mod tests {
                 panic!("Error getting last utxo pointer: {}", e);
             }
             Ok(pointer_from_db) => {
-                assert!(pointer_from_db == pointer_hash.to_vec());
+                assert_eq!(pointer_from_db, pointer_hash.to_vec());
             }
         }
     }
@@ -510,7 +510,7 @@ mod tests {
                 panic!("Error getting utxo from db: {}", e);
             },
             Ok(utxo_from_db) => {
-                assert!(utxo_from_db == utxo);
+                assert_eq!(utxo_from_db, utxo);
             }
         };
     }
@@ -521,7 +521,7 @@ mod tests {
         let utxo = get_sample_op_return_utxo_and_value();
         let key = get_utxo_and_value_db_key(1);
         let pointer = sha256d::Hash::hash(&[6u8, 6u8, 6u8]);
-        assert!(utxo.maybe_pointer == None);
+        assert_eq!(utxo.maybe_pointer, None);
         if let Err(e) = put_utxo_in_db(&db, &key, &utxo) {
             panic!("Error putting utxo in db: {}", e);
         };
@@ -533,7 +533,7 @@ mod tests {
                 panic!("Error getting utxo from db: {}", e);
             },
             Ok(utxo_from_db) => {
-                assert!(utxo_from_db.maybe_pointer == Some(pointer));
+                assert_eq!(utxo_from_db.maybe_pointer, Some(pointer));
             }
         };
     }
@@ -558,7 +558,7 @@ mod tests {
                 panic!("Error getting num of utxos from db: {}", e);
             }
             Ok(num_from_db) => {
-                assert!(num_from_db == num);
+                assert_eq!(num_from_db, num);
             }
         }
     }
@@ -583,7 +583,7 @@ mod tests {
                 panic!("Error getting num of utxos from db: {}", e);
             }
             Ok(num_from_db) => {
-                assert!(num_from_db == expected_total);
+                assert_eq!(num_from_db, expected_total);
             }
         }
     }
@@ -608,7 +608,7 @@ mod tests {
                 panic!("Error getting balance of utxos from db: {}", e);
             }
             Ok(num_from_db) => {
-                assert!(num_from_db == expected_total);
+                assert_eq!(num_from_db, expected_total);
             }
         }
     }
@@ -633,7 +633,7 @@ mod tests {
                 panic!("Decrementing balance of utxos should error!");
             }
             Err(AppError::Custom(e)) => {
-                assert!(e == expected_error);
+                assert_eq!(e, expected_error);
             }
             Err(e) => {
                 panic!("Wrong error on decrement UTXO balance: {}", e);
@@ -698,19 +698,19 @@ mod tests {
             panic!("Error saving utxo: {}", e);
         };
         match get_utxo_nonce_from_db(&db) {
-            Ok(n) => assert!(n == 1),
+            Ok(n) => assert_eq!(n, 1),
             Err(e) => {
                 panic!("Error getting utxo nonce: {}", e);
             }
         };
         match get_first_utxo_pointer(&db) {
-            Ok(ptr) => assert!(ptr == hash1),
+            Ok(ptr) => assert_eq!(ptr, hash1),
             Err(e) => {
                 panic!("Error getting last utxo pointer from db: {}", e);
             }
         };
         match get_last_utxo_pointer(&db) {
-            Ok(ptr) => assert!(ptr == hash1),
+            Ok(ptr) => assert_eq!(ptr, hash1),
             Err(e) => {
                 panic!("Error getting last utxo pointer from db: {}", e);
             }
@@ -719,13 +719,13 @@ mod tests {
             panic!("Error saving utxo: {}", e);
         };
         match get_first_utxo_pointer(&db) {
-            Ok(ptr) => assert!(ptr == hash1),
+            Ok(ptr) => assert_eq!(ptr, hash1),
             Err(e) => {
                 panic!("Error getting last utxo pointer from db: {}", e);
             }
         };
         match get_last_utxo_pointer(&db) {
-            Ok(ptr) => assert!(ptr == hash2),
+            Ok(ptr) => assert_eq!(ptr, hash2),
             Err(e) => {
                 panic!("Error getting last utxo pointer from db: {}", e);
             }
@@ -735,9 +735,9 @@ mod tests {
                 let expected_pointer = Some(
                     sha256d::Hash::from_slice(&hash2).unwrap()
                 );
-                assert!(utxo1_from_db.value == utxo1.value);
-                assert!(utxo1_from_db.maybe_pointer == expected_pointer);
-                assert!(utxo1_from_db.serialized_utxo == utxo1.serialized_utxo);
+                assert_eq!(utxo1_from_db.value, utxo1.value);
+                assert_eq!(utxo1_from_db.maybe_pointer, expected_pointer);
+                assert_eq!(utxo1_from_db.serialized_utxo, utxo1.serialized_utxo);
             }
             Err(e) => {
                 panic!("Error getting utxo from db: {}", e);
@@ -767,37 +767,37 @@ mod tests {
             panic!("Error saving utxo: {}", e);
         };
         match get_utxo_nonce_from_db(&db) {
-            Ok(n) => assert!(n == 2),
+            Ok(n) => assert_eq!(n, 2),
             Err(e) => {
                 panic!("Error getting utxo nonce: {}", e);
             }
         };
         match get_first_utxo_pointer(&db) {
-            Ok(ptr) => assert!(ptr == hash1),
+            Ok(ptr) => assert_eq!(ptr, hash1),
             Err(e) => {
                 panic!("Error getting last utxo pointer from db: {}", e);
             }
         };
         match get_last_utxo_pointer(&db) {
-            Ok(ptr) => assert!(ptr == hash2),
+            Ok(ptr) => assert_eq!(ptr, hash2),
             Err(e) => {
                 panic!("Error getting last utxo pointer from db: {}", e);
             }
         };
         match get_utxo_and_value(&db) {
-            Ok(utxo) => assert!(utxo == expected_utxo1),
+            Ok(utxo) => assert_eq!(utxo, expected_utxo1),
             Err(e) => {
                 panic!("Error getting utxo from db: {}", e);
             }
         };
         match get_first_utxo_pointer(&db) {
-            Ok(ptr) => assert!(ptr == hash2),
+            Ok(ptr) => assert_eq!(ptr, hash2),
             Err(e) => {
                 panic!("Error getting last utxo pointer from db: {}", e);
             }
         };
         match get_last_utxo_pointer(&db) {
-            Ok(ptr) => assert!(ptr == hash2),
+            Ok(ptr) => assert_eq!(ptr, hash2),
             Err(e) => {
                 panic!("Error getting last utxo pointer from db: {}", e);
             }
@@ -824,12 +824,12 @@ mod tests {
         let last_pointer_after = get_last_utxo_pointer(&db);
         let utxo_total_after = get_total_utxo_balance_from_db(&db)
             .unwrap();
-        assert!(utxo_total_after == 0);
+        assert_eq!(utxo_total_after, 0);
         assert!(last_pointer_after.is_err());
         assert!(first_pointer_after.is_err());
-        assert!(utxo_total_before == utxo1.value);
+        assert_eq!(utxo_total_before, utxo1.value);
         assert!(utxo_total_after < utxo_total_before);
-        assert!(first_pointer_before == last_pointer_before);
+        assert_eq!(first_pointer_before, last_pointer_before);
     }
 
     #[test]

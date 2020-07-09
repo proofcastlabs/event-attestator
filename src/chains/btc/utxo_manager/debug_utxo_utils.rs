@@ -18,12 +18,7 @@ pub fn clear_all_utxos<D>(
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .map(|_| get_all_utxo_db_keys(db).to_vec())
-        .and_then(|db_keys|
-            db_keys
-                .iter()
-                .map(|db_key| db.delete(db_key.to_vec()))
-                .collect::<Result<Vec<()>>>()
-        )
+        .and_then(|db_keys| db_keys.iter().map(|db_key| db.delete(db_key.to_vec())).collect::<Result<Vec<()>>>())
         .and_then(|_| delete_last_utxo_key(db))
         .and_then(|_| delete_first_utxo_key(db))
         .and_then(|_| put_total_utxo_balance_in_db(db, 0))

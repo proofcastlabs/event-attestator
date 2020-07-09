@@ -215,7 +215,7 @@ mod test {
             .unwrap();
         let expected_public_key = get_sample_eos_public_key();
         let result = private_key.to_public_key();
-        assert!(result == expected_public_key);
+        assert_eq!(result, expected_public_key);
     }
 
     #[test]
@@ -225,7 +225,7 @@ mod test {
             .unwrap();
         let expected_public_key = get_sample_eos_public_key();
         let result = private_key.to_public_key();
-        assert!(result == expected_public_key);
+        assert_eq!(result, expected_public_key);
     }
 
     #[test]
@@ -236,7 +236,7 @@ mod test {
         let result = private_key
             .sign_message_bytes(message_bytes)
             .unwrap();
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 
     #[test]
@@ -248,7 +248,7 @@ mod test {
         let result = private_key
             .sign_hash(hash)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -290,6 +290,6 @@ mod test {
         let result = private_key
             .to_public_key()
             .to_string();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 }

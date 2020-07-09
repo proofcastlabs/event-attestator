@@ -14,12 +14,12 @@ use crate::{
         Result,
     },
     chains::btc::{
+        btc_constants::MINIMUM_REQUIRED_SATOSHIS,
         utxo_manager::utxo_types::BtcUtxoAndValue,
         deposit_address_info::DepositAddressInfoJson,
     },
     btc_on_eos::{
         utils::convert_u64_to_eos_asset,
-        constants::MINIMUM_REQUIRED_SATOSHIS,
         btc::{
             btc_utils::create_unsigned_utxo_from_tx,
             btc_crypto::btc_private_key::BtcPrivateKey,
@@ -240,39 +240,6 @@ fn create_op_return_btc_utxo_and_value_from_tx_output(
         None,
         None,
     )
-}
-
-pub fn get_sample_op_return_utxo_with_value_too_low() -> BtcUtxoAndValue {
-    create_op_return_btc_utxo_and_value_from_tx_output(
-        &get_sample_btc_block_n(9)
-            .unwrap()
-            .block
-            .txdata
-            [18],
-        0,
-    )
-}
-
-fn get_sample_p2sh_utxo_with_value_too_low() -> BtcUtxoAndValue {
-    create_op_return_btc_utxo_and_value_from_tx_output(
-        &get_sample_btc_block_n(9)
-            .unwrap()
-            .block
-            .txdata
-            [19],
-        0,
-    )
-}
-
-pub fn get_sample_utxo_and_values() -> Vec<BtcUtxoAndValue> {
-    vec![
-        get_sample_op_return_utxo_and_value_n(2).unwrap(),
-        get_sample_op_return_utxo_and_value_n(3).unwrap(),
-        get_sample_op_return_utxo_and_value_n(4).unwrap(),
-        get_sample_op_return_utxo_and_value(),
-        get_sample_op_return_utxo_with_value_too_low(),
-        get_sample_p2sh_utxo_with_value_too_low(),
-    ]
 }
 
 pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {

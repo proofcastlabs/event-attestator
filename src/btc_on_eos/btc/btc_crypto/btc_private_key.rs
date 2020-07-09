@@ -175,11 +175,10 @@ mod tests {
     #[test]
     fn should_get_private_key_from_wif() {
         let wif = "5JYkZjmN7PVMjJUfJWfRFwtuXTGB439XV6faajeHPAM9Z2PT2R3";
-        let sk = BtcPrivateKey::from_wif(wif)
-            .unwrap();
+        let sk = BtcPrivateKey::from_wif(wif).unwrap();
         assert!(!sk.0.compressed);
-        assert!(&sk.0.to_wif() == wif);
-        assert!(sk.0.network == Network::Bitcoin);
+        assert_eq!(&sk.0.to_wif(), wif);
+        assert_eq!(sk.0.network, Network::Bitcoin);
     }
 
     #[test]
@@ -187,12 +186,9 @@ mod tests {
         let expected_signature = "304502210092a8d56c768e2e3ea74671609ac2f40b7914ee57806df92476e2721b35648eb30220431f2f28d59dcf666f6c435587afb7aac13cc8197bba54ad6629333a95f11a84";
         let btc_private_key = get_sample_btc_private_key();
         let message_to_sign = b"message to sign";
-        let hash = sha256d::Hash::hash(message_to_sign)
-            .to_vec();
-        let result = btc_private_key
-            .sign_hash(hash)
-            .unwrap();
-        assert!(result.to_string() == expected_signature);
+        let hash = sha256d::Hash::hash(message_to_sign).to_vec();
+        let result = btc_private_key.sign_hash(hash).unwrap();
+        assert_eq!(result.to_string(), expected_signature);
     }
 
     #[test]
@@ -201,21 +197,17 @@ mod tests {
         let btc_private_key = get_sample_btc_private_key();
         let message_to_sign = b"message to sign";
         let hash_type: u8 = 1;
-        let hash = sha256d::Hash::hash(message_to_sign)
-            .to_vec();
-        let result = btc_private_key
-            .sign_hash_and_append_btc_hash_type(hash, hash_type)
-            .unwrap();
+        let hash = sha256d::Hash::hash(message_to_sign).to_vec();
+        let result = btc_private_key.sign_hash_and_append_btc_hash_type(hash, hash_type).unwrap();
         let result_hex = hex::encode(result);
-        assert!(result_hex == expected_result);
+        assert_eq!(result_hex, expected_result);
     }
 
     #[test]
     fn should_get_public_key_from_private() {
         let btc_private_key = get_sample_btc_private_key();
-        let result = btc_private_key
-            .to_public_key();
-        assert!(result.to_string() == SAMPLE_BTC_PUBLIC_KEY);
+        let result = btc_private_key.to_public_key();
+        assert_eq!(result.to_string(), SAMPLE_BTC_PUBLIC_KEY);
     }
 
     #[test]
@@ -230,13 +222,13 @@ mod tests {
         let btc_private_key = get_sample_btc_private_key();
         let result = btc_private_key
             .to_public_key_slice();
-        assert!(result.to_vec() == expected_result);
+        assert_eq!(result.to_vec(), expected_result);
     }
 
     #[test]
     fn should_convert_private_key_to_p2pkh_address() {
         let pk = get_sample_btc_private_key();
         let result = pk.to_p2pkh_btc_address();
-        assert!(result == SAMPLE_TARGET_BTC_ADDRESS);
+        assert_eq!(result, SAMPLE_TARGET_BTC_ADDRESS);
     }
 }

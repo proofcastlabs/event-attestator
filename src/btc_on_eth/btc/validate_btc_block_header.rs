@@ -49,8 +49,7 @@ mod tests {
 
     #[test]
     fn should_validate_btc_block_header() {
-        let block_and_id = get_sample_btc_block_and_id()
-            .unwrap();
+        let block_and_id = get_sample_btc_block_and_id().unwrap();
         if let Err(e) = validate_btc_block_header(&block_and_id) {
             panic!("Sample block should be valid: {}", e);
         }
@@ -58,13 +57,9 @@ mod tests {
 
     #[test]
     fn should_error_on_invalid_block() {
-        let expected_error =
-            "✘ Invalid BTC block! Block header hash does not match block id!"
-                .to_string();
-        let block_and_id = get_sample_btc_block_and_id()
-            .unwrap();
-        let wrong_block_id =
-            "c0ffee0000000000000c084f2a5fa68ef814144d350a601688248b421258dd3f";
+        let expected_error = "✘ Invalid BTC block! Block header hash does not match block id!".to_string();
+        let block_and_id = get_sample_btc_block_and_id().unwrap();
+        let wrong_block_id = "c0ffee0000000000000c084f2a5fa68ef814144d350a601688248b421258dd3f";
         let invalid_block_and_id = BtcBlockAndId {
             height: 1,
             deposit_address_list: Vec::new(),
@@ -72,9 +67,9 @@ mod tests {
             id: sha256d::Hash::from_str(&wrong_block_id).unwrap(),
         };
         match validate_btc_block_header(&invalid_block_and_id) {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Should not be valid!"),
-            Err(_) => panic!("Wrong error for invalid btc block!"),
+            _ => panic!("Wrong error for invalid btc block!"),
         }
     }
 }

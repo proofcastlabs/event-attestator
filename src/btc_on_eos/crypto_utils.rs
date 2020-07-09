@@ -28,14 +28,14 @@ mod test {
     #[test]
     fn should_generate_32_random_bytes() {
         let result = get_32_random_bytes_arr();
-        assert!(result.len() == 32);
+        assert_eq!(result.len(), 32);
     }
 
     #[test]
     fn should_generate_x_random_bytes() {
         let x: usize = 100; // TODO: get a random num here!
         let result = get_x_random_bytes(x);
-        assert!(result.len() == x);
+        assert_eq!(result.len(), x);
     }
 
     #[test]

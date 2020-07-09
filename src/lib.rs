@@ -1,6 +1,9 @@
 #![feature(try_trait)]
-#![recursion_limit="128"]
 #![feature(exclusive_range_pattern)]
+
+#![recursion_limit="128"]
+
+#![allow(clippy::match_bool)]
 
 //! # The __`pToken`__ Core
 //!
@@ -33,7 +36,14 @@ mod constants;
 mod check_debug_mode;
 mod debug_database_utils;
 
-#[macro_use] extern crate log;
-#[macro_use] extern crate lazy_static;
-#[macro_use] extern crate serde_derive;
-#[cfg(test)] extern crate simple_logger;
+#[cfg(test)]
+mod test_utils;
+#[cfg(test)]
+extern crate simple_logger;
+
+#[macro_use]
+extern crate log;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate serde_derive;

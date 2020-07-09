@@ -95,9 +95,9 @@ pub fn maybe_update_eth_canon_block_hash<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        eth::{
+        btc_on_eth::eth::{
             eth_test_utils::{
                 put_eth_latest_block_in_db,
                 get_eth_canon_block_hash_from_db,
@@ -151,7 +151,7 @@ mod tests {
         put_eth_latest_block_in_db(&db, &block_2)
             .unwrap();
         let result = maybe_get_nth_ancestor_of_latest_block(&db, 1);
-        assert!(result == Some(block_1));
+        assert_eq!(result, Some(block_1));
     }
 
     #[test]
@@ -162,7 +162,7 @@ mod tests {
         put_eth_latest_block_in_db(&db, &block_1)
             .unwrap();
         let result = maybe_get_nth_ancestor_of_latest_block(&db, 1);
-        assert!(result == None);
+        assert_eq!(result, None);
     }
 
     #[test]
@@ -184,7 +184,7 @@ mod tests {
         let canon_block_hash_after = get_eth_canon_block_hash_from_db(&db)
             .unwrap();
         assert!(canon_block_hash_before != canon_block_hash_after);
-        assert!(canon_block_hash_after == expected_canon_block_hash);
+        assert_eq!(canon_block_hash_after, expected_canon_block_hash);
     }
 
     #[test]
@@ -201,6 +201,6 @@ mod tests {
         maybe_update_canon_block_hash(&db, 1).unwrap();
         let canon_block_hash_after = get_eth_canon_block_hash_from_db(&db)
             .unwrap();
-        assert!(canon_block_hash_before == canon_block_hash_after);
+        assert_eq!(canon_block_hash_before, canon_block_hash_after);
     }
 }

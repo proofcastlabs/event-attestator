@@ -11,7 +11,7 @@ pub const PTOKEN_P2SH_SCRIPT_BYTES: usize = 0;
 pub const PTOKEN_P2SH_SCRIPT_BYTES: usize = 101;
 
 pub const BTC_TAIL_LENGTH: u64 = 10;
-
+pub const MINIMUM_REQUIRED_SATOSHIS: u64 = 5000;
 pub const DEFAULT_BTC_SEQUENCE: u32 = 4_294_967_295; // NOTE: 0xFFFFFFFF
 
 // NOTE: Following is used as placeholder for bad address parsing in ETH params!

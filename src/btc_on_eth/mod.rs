@@ -20,6 +20,7 @@ pub use debug_functions::{
     debug_clear_all_utxos,
     debug_reprocess_btc_block,
     debug_reprocess_eth_block,
+    debug_maybe_add_utxo_to_db,
     debug_set_key_in_db_to_value,
     debug_get_signed_erc777_change_pnetwork_tx,
     debug_get_signed_erc777_proxy_change_pnetwork_tx,
@@ -47,4 +48,3 @@ mod check_core_is_initialized;
 // TODO Fix the chains dependencies on these so they can be fully private!
 pub(crate) mod utils;
 pub(crate) mod constants;
-pub(crate) mod test_utils;

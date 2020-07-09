@@ -72,27 +72,29 @@ mod tests {
         Hash,
         sha256d,
     };
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        utils::convert_satoshis_to_ptoken,
-        btc::{
-            btc_types::MintingParamStruct,
-            btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
-        },
-        eth::{
-            eth_types::EthAddress,
-            eth_test_utils::{
-                get_sample_eth_address,
-                get_sample_eth_private_key,
+            btc_on_eth::{
+            utils::convert_satoshis_to_ptoken,
+            btc::{
+                btc_types::MintingParamStruct,
+                btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
             },
-            eth_database_utils::{
-                put_eth_chain_id_in_db,
-                put_eth_gas_price_in_db,
-                put_eth_private_key_in_db,
-                put_eth_account_nonce_in_db,
-                put_eth_smart_contract_address_in_db,
-            }
-        }
+            eth::{
+                eth_types::EthAddress,
+                eth_test_utils::{
+                    get_sample_eth_address,
+                    get_sample_eth_private_key,
+                },
+                eth_database_utils::{
+                    put_eth_chain_id_in_db,
+                    put_eth_gas_price_in_db,
+                    put_eth_private_key_in_db,
+                    put_eth_account_nonce_in_db,
+                    put_eth_smart_contract_address_in_db,
+                },
+            },
+        },
     };
 
     #[test]
@@ -173,6 +175,6 @@ mod tests {
             &signing_params,
             &minting_params,
         ).unwrap();
-        assert!(result.len() == minting_params.len());
+        assert_eq!(result.len(), minting_params.len());
     }
 }

@@ -39,7 +39,9 @@ pub mod get_latest_block_numbers;
 
 mod utils;
 mod constants;
-mod test_utils;
 mod crypto_utils;
 mod database_utils;
 mod check_core_is_initialized;
+
+#[cfg(test)]
+mod test_utils;

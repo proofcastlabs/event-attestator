@@ -68,8 +68,7 @@ mod tests {
 
     #[test]
     fn should_parse_eth_block_and_receipts_json_string() {
-        let json_string = get_sample_eth_block_and_receipts_string(0)
-            .unwrap();
+        let json_string = get_sample_eth_block_and_receipts_string(0).unwrap();
         if parse_eth_block_and_receipts_json_string(&json_string).is_err() {
             panic!("SHould parse eth block and json string correctly!");
         }
@@ -77,10 +76,8 @@ mod tests {
 
     #[test]
     fn should_parse_eth_block_and_receipts_json() {
-        let json_string = get_sample_eth_block_and_receipts_string(0)
-            .unwrap();
+        let json_string = get_sample_eth_block_and_receipts_string(0).unwrap();
         match parse_eth_block_and_receipts(&json_string) {
-            Err(_) => panic!("Should parse block & receipt correctly!"),
             Ok(block_and_receipt) => {
                 let block = block_and_receipt
                     .block
@@ -89,18 +86,17 @@ mod tests {
                     .receipts[SAMPLE_RECEIPT_INDEX].clone();
                 let expected_block = get_expected_block();
                 let expected_receipt = get_expected_receipt();
-                assert!(block == expected_block);
-                assert!(receipt == expected_receipt);
+                assert_eq!(block, expected_block);
+                assert_eq!(receipt, expected_receipt);
             }
+            _ => panic!("Should parse block & receipt correctly!"),
         }
     }
 
     #[test]
     fn should_parse_eth_block_and_receipts() {
-        let json_string = get_sample_eth_block_and_receipts_string(0)
-            .unwrap();
+        let json_string = get_sample_eth_block_and_receipts_string(0).unwrap();
         match parse_eth_block_and_receipts(&json_string) {
-            Err(_) => panic!("Should parse block & receipt correctly!"),
             Ok(block_and_receipt) => {
                 let block = block_and_receipt
                     .block
@@ -109,9 +105,10 @@ mod tests {
                     .receipts[SAMPLE_RECEIPT_INDEX].clone();
                 let expected_block = get_expected_block();
                 let expected_receipt = get_expected_receipt();
-                assert!(block == expected_block);
-                assert!(receipt == expected_receipt);
+                assert_eq!(block, expected_block);
+                assert_eq!(receipt, expected_receipt);
             }
+            _ => panic!("Should parse block & receipt correctly!"),
         }
     }
 }

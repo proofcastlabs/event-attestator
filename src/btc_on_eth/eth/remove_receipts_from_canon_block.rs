@@ -46,9 +46,9 @@ pub fn maybe_remove_receipts_from_canon_block_and_return_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
+    use crate::{
         test_utils::get_test_database,
-        eth::eth_test_utils::get_sample_eth_block_and_receipts,
+        btc_on_eth::eth::eth_test_utils::get_sample_eth_block_and_receipts,
     };
 
     #[test]
@@ -60,7 +60,7 @@ mod tests {
             block_and_receipts
         );
         let num_receipts_after = result_block_and_receipts.receipts.len();
-        assert!(num_receipts_after == 0);
+        assert_eq!(num_receipts_after, 0);
     }
 
     #[test]

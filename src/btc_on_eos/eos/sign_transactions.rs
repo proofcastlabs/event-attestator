@@ -153,12 +153,12 @@ mod tests {
     use super::*;
     use bitcoin::network::constants::Network as BtcNetwork;
     use crate::{
+        test_utils::get_test_database,
         chains::btc::{
             btc_constants::BTC_PRIVATE_KEY_DB_KEY,
             utxo_manager::utxo_database_utils::save_utxos_to_db,
         },
         btc_on_eos::{
-            test_utils::get_test_database,
             btc::{
                 btc_utils::get_hex_tx_from_signed_btc_tx,
                 btc_crypto::btc_private_key::BtcPrivateKey,
@@ -184,16 +184,15 @@ mod tests {
         let db = get_test_database();
         let sats_per_byte = 23;
         let btc_network = BtcNetwork::Testnet;
-        let btc_address = "mwi6VyZUqwqdu1DtQMruV4UzEqJADZzj6n"
-            .to_string();
+        let btc_address = "mwi6VyZUqwqdu1DtQMruV4UzEqJADZzj6n".to_string();
         let submission_material = get_sample_eos_submission_material_json_n(3);
         let action_proof = ActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
-        let redeem_params = parse_redeem_params_from_action_proofs(&vec![action_proof],).unwrap();
+        let redeem_params = parse_redeem_params_from_action_proofs(&[action_proof]).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_2().unwrap();
         save_utxos_to_db(&db, &[utxo]).unwrap();
         let pk = BtcPrivateKey::from_slice(
             &hex::decode("2cc48e2f9066a0452e73cc7874f3fa8ba5ef705067d64bef627c686baa514336").unwrap(),
-            btc_network.clone(),
+            btc_network,
         ).unwrap();
         pk.write_to_db(&db, &BTC_PRIVATE_KEY_DB_KEY.to_vec()).unwrap();
         put_btc_network_in_db(&db, btc_network).unwrap();
@@ -212,12 +211,12 @@ mod tests {
         let btc_address = "mwi6VyZUqwqdu1DtQMruV4UzEqJADZzj6n".to_string();
         let submission_material = get_sample_eos_submission_material_json_n(4);
         let action_proof = ActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
-        let redeem_params = parse_redeem_params_from_action_proofs(&vec![action_proof]).unwrap();
+        let redeem_params = parse_redeem_params_from_action_proofs(&[action_proof]).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_3().unwrap();
         save_utxos_to_db(&db, &[utxo]).unwrap();
         let pk = BtcPrivateKey::from_slice(
             &hex::decode("040cc91d329860197e118a1ea26b7ed7042de8f991d0600df9e482c367bb1c45").unwrap(),
-            btc_network.clone(),
+            btc_network,
         ).unwrap();
         pk.write_to_db(&db, &BTC_PRIVATE_KEY_DB_KEY.to_vec()).unwrap();
         put_btc_network_in_db(&db, btc_network).unwrap();

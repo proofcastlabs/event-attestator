@@ -180,9 +180,9 @@ mod tests {
             &hash_map,
             btc_network,
         ).unwrap();
-        assert!(result.len() == expected_num_results);
-        assert!(result[0].amount == expected_amount);
-        assert!(result[0].originating_tx_hash.to_string() == expected_tx_hash);
+        assert_eq!(result.len(), expected_num_results);
+        assert_eq!(result[0].amount, expected_amount);
+        assert_eq!(result[0].originating_tx_hash.to_string(), expected_tx_hash);
         assert!(
             result[0].originating_tx_address.to_string() == expected_btc_address
         );
@@ -219,9 +219,9 @@ mod tests {
             &hash_map,
             btc_network,
         ).unwrap();
-        assert!(result.len() == expected_num_results);
-        assert!(result[0].amount == expected_amount);
-        assert!(result[0].originating_tx_hash.to_string() == expected_tx_hash);
+        assert_eq!(result.len(), expected_num_results);
+        assert_eq!(result[0].amount, expected_amount);
+        assert_eq!(result[0].originating_tx_hash.to_string(), expected_tx_hash);
         assert!(
             result[0].originating_tx_address.to_string() == expected_btc_address
         );
@@ -296,9 +296,9 @@ mod tests {
         ).unwrap();
         let result_1 = result[0].clone();
         let result_2 = result[1].clone();
-        assert!(result.len() == expected_num_results);
-        assert!(result_1 == expected_result_1);
-        assert!(result_2 == expected_result_2);
+        assert_eq!(result.len(), expected_num_results);
+        assert_eq!(result_1, expected_result_1);
+        assert_eq!(result_2, expected_result_2);
     }
 }
 */

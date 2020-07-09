@@ -59,7 +59,6 @@ fn maybe_extract_p2sh_utxo(
                                 )
                             )
                         }
-
                     }
                 }
             }

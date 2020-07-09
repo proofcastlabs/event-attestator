@@ -262,7 +262,7 @@ impl Incremerkle {
 
 #[cfg(test)]
 mod tests {
-    
+    #![allow(clippy::needless_range_loop)]
     use super::*;
     use std::str::FromStr;
     use crate::btc_on_eos::{
@@ -321,9 +321,7 @@ mod tests {
                 leaves.push(last);
             }
             for i in 0..(leaves.len() / 2) {
-                leaves[i] = hash_canonical_pair(
-                    make_canonical_pair(&leaves[2 * i], &leaves[(2 * i) + 1])
-                ).to_vec();
+                leaves[i] = hash_canonical_pair(make_canonical_pair(&leaves[2 * i], &leaves[(2 * i) + 1])).to_vec();
             }
             leaves.resize(leaves.len() / 2, vec![0x00]);
         }
@@ -335,7 +333,7 @@ mod tests {
         let byte = 0b1011_1011;
         let expected_result = 0b0011_1011;
         let result = set_first_bit_of_byte_to_zero(byte);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -343,7 +341,7 @@ mod tests {
         let byte = 0b0011_0011;
         let expected_result = 0b1011_0011;
         let result = set_first_bit_of_byte_to_one(byte);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -352,9 +350,9 @@ mod tests {
         let result = set_first_bit_of_hash_to_one(&hash);
         for i in 0..hash.len() {
             if i == 0 {
-                assert!(result[i] == get_expected_first_byte_2());
+                assert_eq!(result[i], get_expected_first_byte_2());
             } else {
-                assert!(result[i] == hash[i]);
+                assert_eq!(result[i], hash[i]);
             }
         }
     }
@@ -365,9 +363,9 @@ mod tests {
         let result = set_first_bit_of_hash_to_zero(&hash);
         for i in 0..hash.len() {
             if i == 0 {
-                assert!(result[i] == get_expected_first_byte_1());
+                assert_eq!(result[i], get_expected_first_byte_1());
             } else {
-                assert!(result[i] == hash[i]);
+                assert_eq!(result[i], hash[i]);
             }
         }
     }
@@ -378,9 +376,9 @@ mod tests {
         let result = make_canonical_right(&hash);
         for i in 0..hash.len() {
             if i == 0 {
-                assert!(result[i] == get_expected_first_byte_2());
+                assert_eq!(result[i], get_expected_first_byte_2());
             } else {
-                assert!(result[i] == hash[i]);
+                assert_eq!(result[i], hash[i]);
             }
         }
     }
@@ -391,9 +389,9 @@ mod tests {
         let result = make_canonical_left(&hash);
         for i in 0..hash.len() {
             if i == 0 {
-                assert!(result[i] == get_expected_first_byte_1());
+                assert_eq!(result[i], get_expected_first_byte_1());
             } else {
-                assert!(result[i] == hash[i]);
+                assert_eq!(result[i], hash[i]);
             }
         }
     }
@@ -437,7 +435,7 @@ mod tests {
         );
         let serialized_action = action.to_serialize_data();
         let result = sha256::Hash::hash(&serialized_action).to_string();
-        assert!(result == get_expected_digest_1());
+        assert_eq!(result, get_expected_digest_1());
     }
 
     #[test]
@@ -447,16 +445,16 @@ mod tests {
         let result = make_canonical_pair(&digest_1, &digest_2);
         for i in 0..result.0.len() {
             if i == 0 {
-                assert!(result.0[i] == get_expected_first_byte_1());
+                assert_eq!(result.0[i], get_expected_first_byte_1());
             } else {
-                assert!(result.0[i] == digest_1[i]);
+                assert_eq!(result.0[i], digest_1[i]);
             }
         }
         for i in 0..result.1.len() {
             if i == 0 {
-                assert!(result.1[i] == get_expected_first_byte_2());
+                assert_eq!(result.1[i], get_expected_first_byte_2());
             } else {
-                assert!(result.1[i] == digest_2[i]);
+                assert_eq!(result.1[i], digest_2[i]);
             }
         }
     }
@@ -467,7 +465,7 @@ mod tests {
             "a26284468e89fe4a5cce763ca3b3d3d37d5fcb35f289c63f0558487ec57ace28";
         let canonical_pair = get_sample_canonical_pair();
         let result = hash_canonical_pair(canonical_pair);
-        assert!(result.to_string() == expected_result);
+        assert_eq!(result.to_string(), expected_result);
     }
 
     #[test]
@@ -486,7 +484,7 @@ mod tests {
         )
             .unwrap()
             .to_digest();
-        assert!(hex::encode(result) == expected_result);
+        assert_eq!(hex::encode(result), expected_result);
     }
 
     #[test]
@@ -517,7 +515,7 @@ mod tests {
             .unwrap()
             .to_digest();
         let result = get_merkle_digest(vec![ action_digest_1, action_digest_2]);
-        assert!(hex::encode(result) == expected_result);
+        assert_eq!(hex::encode(result), expected_result);
     }
 
     #[test]
@@ -563,7 +561,7 @@ mod tests {
             action_digest_2,
             action_digest_3,
         ]);
-        assert!(hex::encode(result) == expected_result);
+        assert_eq!(hex::encode(result), expected_result);
     }
 
     #[test]
@@ -603,7 +601,7 @@ mod tests {
             action_receipt_1,
             action_receipt_2,
         ]);
-        assert!(hex::encode(result) == expected_result);
+        assert_eq!(hex::encode(result), expected_result);
     }
 
     #[test]
@@ -612,7 +610,7 @@ mod tests {
         let expected_result =
             "8b4e5e5d3e7587065896d0076d65c72e03c11a9159d414eb3a2363b59108116a";
         let result = get_merkle_digest(digests);
-        assert!(hex::encode(result) == expected_result);
+        assert_eq!(hex::encode(result), expected_result);
     }
 
     #[test]

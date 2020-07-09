@@ -80,7 +80,7 @@ mod tests {
         let result = get_logs_from_receipt_json(
             &eth_block_and_receipt_json.receipts[SAMPLE_RECEIPT_INDEX]
         ).unwrap();
-        assert!(result[0] == expected_result);
+        assert_eq!(result[0], expected_result);
     }
 
     #[test]
@@ -88,7 +88,7 @@ mod tests {
         let receipt = get_expected_receipt();
         let logs = receipt.logs.clone();
         let result = get_logs_bloom_from_logs(&logs).unwrap();
-        assert!(result == receipt.logs_bloom);
+        assert_eq!(result, receipt.logs_bloom);
     }
 
     #[test]
@@ -101,7 +101,7 @@ mod tests {
             .clone();
         let result = get_log_from_json(&log_json).unwrap();
         let expected_result = get_expected_log();
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 
     #[test]
@@ -118,6 +118,6 @@ mod tests {
             .unwrap();
         let result = get_logs_bloom_from_logs(&logs)
             .unwrap();
-        assert!(result.as_bytes() == expected_bloom_bytes)
+        assert_eq!(result.as_bytes(), expected_bloom_bytes)
     }
 }

@@ -210,7 +210,7 @@ mod tests {
         let expected_result = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
         let log = get_sample_log_with_redeem();
         let result = parse_btc_address_from_log(&log).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -286,6 +286,6 @@ mod tests {
         let expected_result = "2MyT7cyDnsHFwkhGDJa3LhayYtPN3cSE7wx";
         let log = get_sample_log_with_p2sh_redeem();
         let result = parse_btc_address_from_log(&log).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 }

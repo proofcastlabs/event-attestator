@@ -37,13 +37,13 @@ mod tests{
         let public_key = get_sample_eth_public_key();
         let expected_result = get_sample_eth_public_key_bytes();
         let result = public_key.to_bytes();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_convert_public_key_to_eth_address() {
         let public_key = get_sample_eth_public_key();
         let result = public_key.to_address();
-        assert!(hex::encode(result.as_bytes()) == get_sample_eth_address_string());
+        assert_eq!(hex::encode(result.as_bytes()), get_sample_eth_address_string());
     }
 }

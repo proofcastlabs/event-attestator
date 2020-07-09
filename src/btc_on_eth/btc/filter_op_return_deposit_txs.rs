@@ -158,8 +158,8 @@ mod tests {
             &block_and_id.block.txdata,
         ).unwrap();
         let prev_id = filtered_txs[0].input[0].previous_output.txid;
-        assert!(prev_id == expected_prev_id);
-        assert!(filtered_txs.len() == expected_num_txs);
+        assert_eq!(prev_id, expected_prev_id);
+        assert_eq!(filtered_txs.len(), expected_num_txs);
     }
 
     #[test]
@@ -170,7 +170,7 @@ mod tests {
             &get_sample_btc_private_key(),
             &block_and_id.block.txdata,
         ).unwrap();
-        assert!(filtered_txs.len() == expected_num_txs);
+        assert_eq!(filtered_txs.len(), expected_num_txs);
     }
 
     #[test]

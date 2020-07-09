@@ -72,9 +72,9 @@ mod tests {
             id: sha256d::Hash::from_str(&wrong_block_id).unwrap(),
         };
         match validate_btc_block_header(&invalid_block_and_id) {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Should not be valid!"),
-            Err(_) => panic!("Wrong error for invalid btc block!"),
+            _ => panic!("Wrong error received!")
         }
     }
 }
