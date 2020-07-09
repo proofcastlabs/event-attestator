@@ -43,4 +43,5 @@ mod crypto_utils;
 mod database_utils;
 mod check_core_is_initialized;
 
-#[cfg(test)] mod test_utils;
+#[cfg(test)]
+mod test_utils;

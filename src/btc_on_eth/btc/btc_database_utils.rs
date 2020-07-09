@@ -717,7 +717,7 @@ mod tests {
     #[test]
     fn should_get_and_put_btc_address_in_database() {
         let db = get_test_database();
-        if let Err(e) = put_btc_address_in_db(&db, &SAMPLE_TARGET_BTC_ADDRESS.to_string()) {
+        if let Err(e) = put_btc_address_in_db(&db, &SAMPLE_TARGET_BTC_ADDRESS) {
             panic!("Error putting btc address in db: {}", e);
         };
         match get_btc_address_from_db(&db) {
