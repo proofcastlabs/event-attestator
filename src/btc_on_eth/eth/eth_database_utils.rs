@@ -596,7 +596,12 @@ pub fn get_any_sender_nonce_from_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Getting any.sender nonce from db...");
-    get_u64_from_db(db, &ANY_SENDER_NONCE_KEY.to_vec())
+    Ok(
+        get_u64_from_db(db, &ANY_SENDER_NONCE_KEY.to_vec()).unwrap_or_else(|_| {
+            info!("✘ Could not find `AnySender` nonce in db, defaulting to `0`");
+            0
+        })
+    )
 }
 
 pub fn put_any_sender_nonce_in_db<D>(
