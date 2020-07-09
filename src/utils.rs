@@ -75,7 +75,7 @@ mod tests {
         let u_64 = u64::max_value();
         let expected_result = [255,255,255,255,255,255,255,255];
         let result = convert_u64_to_bytes(u_64);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -84,7 +84,7 @@ mod tests {
         let expected_result = u64::max_value();
         let result = convert_bytes_to_u64(&bytes)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -93,7 +93,7 @@ mod tests {
         let expected_result = "c0ffee".to_string();
         let result = strip_hex_prefix(dummy_hex)
             .unwrap();
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 
     #[test]
@@ -102,7 +102,7 @@ mod tests {
         let expected_result = "00xc0ffee".to_string();
         let result = left_pad_with_zero(dummy_hex)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -111,7 +111,7 @@ mod tests {
         let expected_result = "c0ffee".to_string();
         let result = strip_hex_prefix(dummy_hex)
             .unwrap();
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 
     #[test]
@@ -120,6 +120,6 @@ mod tests {
         let expected_result = "c0ffee".to_string();
         let result = strip_hex_prefix(dummy_hex)
             .unwrap();
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 }

@@ -115,6 +115,6 @@ mod tests {
         let thing = "thing".to_string();
         let expected_result = "✘ Cannot overwrite thing in state!";
         let result = get_no_overwrite_state_err(&thing);
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 }

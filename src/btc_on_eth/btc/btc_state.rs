@@ -336,7 +336,7 @@ mod tests {
         let expected_error = get_not_in_state_err("btc_block_and_id");
         let initial_state = BtcState::init(get_test_database());
         match initial_state.get_btc_block_and_id() {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Block should not be in state yet!"),
             _ => panic!("Wrong error received!")
         };

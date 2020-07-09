@@ -571,7 +571,7 @@ mod tests {
                 panic!("Error getting canon to tip lengt from db: {}", e);
             }
             Ok(length_from_db) => {
-                assert!(length_from_db == length);
+                assert_eq!(length_from_db, length);
             }
         }
     }
@@ -590,7 +590,7 @@ mod tests {
                 panic!("Error getting BTC pk from db: {}", e);
             }
             Ok(pk_from_db) => {
-                assert!(pk_from_db.to_public_key() == pk.to_public_key());
+                assert_eq!(pk_from_db.to_public_key(), pk.to_public_key());
             }
         };
     }
@@ -610,7 +610,7 @@ mod tests {
             &block,
             non_existent_block_type
         ) {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Should not have succeeded!"),
             _ => panic!("Wrong error received!"),
         }
@@ -627,7 +627,7 @@ mod tests {
         };
         match get_btc_canon_block_from_db(&db) {
             Err(e) => panic!("Error geting canon block: {}", e),
-            Ok(block_from_db) => assert!(block_from_db == block),
+            Ok(block_from_db) => assert_eq!(block_from_db, block),
         }
     }
 
@@ -641,7 +641,7 @@ mod tests {
         );
         match get_special_btc_block_from_db(&db, non_existent_block_type) {
             Ok(_) => panic!("Should not have got special block!"),
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ =>  panic!("Wrong error when getting non-existent block type!"),
         }
     }
@@ -662,7 +662,7 @@ mod tests {
                 panic!("Error getting special block from db: {}", e);
             }
             Ok(block_from_db) => {
-                assert!(block_from_db == block);
+                assert_eq!(block_from_db, block);
             }
         }
     }
@@ -684,7 +684,7 @@ mod tests {
                 panic!("Error getting btc anchor_block_hash from db: {}", e);
             }
             Ok(hash_from_db) => {
-                assert!(hash_from_db == anchor_block_hash);
+                assert_eq!(hash_from_db, anchor_block_hash);
             }
         }
     }
@@ -728,7 +728,7 @@ mod tests {
                 panic!("Error getting btc linker_hash from db: {}", e);
             }
             Ok(hash_from_db) => {
-                assert!(hash_from_db == linker_hash);
+                assert_eq!(hash_from_db, linker_hash);
             }
         }
     }
@@ -754,7 +754,7 @@ mod tests {
                 panic!("Error getting btc hash from db: {}", e);
             }
             Ok(hash_from_db) => {
-                assert!(hash_from_db == hash);
+                assert_eq!(hash_from_db, hash);
             }
         }
     }
@@ -790,7 +790,7 @@ mod tests {
                 panic!("Failed to get parent block!");
             }
             Some(parent_block) => {
-                assert!(parent_block == expected_result);
+                assert_eq!(parent_block, expected_result);
                 assert!(
                     parent_block.id == test_block.block.header.prev_blockhash
                 );
@@ -811,7 +811,7 @@ mod tests {
                 panic!("Error getting btc block from db: {}", e);
             }
             Ok(block) => {
-                assert!(block == block_and_id);
+                assert_eq!(block, block_and_id);
             }
         }
     }
@@ -830,7 +830,7 @@ mod tests {
                 panic!("Error getting btc address from db: {}", e);
             }
             Ok(address) => {
-                assert!(address == SAMPLE_TARGET_BTC_ADDRESS);
+                assert_eq!(address, SAMPLE_TARGET_BTC_ADDRESS);
             }
         }
     }
@@ -847,7 +847,7 @@ mod tests {
                 panic!("Error getting BTC fee from db: {}", e);
             }
             Ok(fee_from_db) => {
-                assert!(fee_from_db == fee)
+                assert_eq!(fee_from_db, fee)
             }
         }
     }
@@ -864,7 +864,7 @@ mod tests {
                 panic!("Error getting BTC network from db: {}", e);
             }
             Ok(network_from_db) => {
-                assert!(network_from_db == network)
+                assert_eq!(network_from_db, network)
             }
         }
     }
@@ -881,7 +881,7 @@ mod tests {
                 panic!("Error getting BTC difficulty from db: {}", e);
             }
             Ok(network_from_db) => {
-                assert!(network_from_db == difficulty)
+                assert_eq!(network_from_db, difficulty)
             }
         }
     }
@@ -911,7 +911,7 @@ mod tests {
                 panic!("Should have gotten block from db!");
             }
             Some(block_from_db) => {
-                assert!(block_from_db == block);
+                assert_eq!(block_from_db, block);
             }
         }
     }

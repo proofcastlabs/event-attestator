@@ -70,7 +70,7 @@ mod tests {
         let trie_hash_map = get_trie_hash_map_with_thing_in_it().unwrap();
         let key = get_expected_key_of_thing_in_trie_hash_map();
         let result = get_thing_from_trie_hash_map(&trie_hash_map, &key).unwrap();
-        assert!(result == expected_thing);
+        assert_eq!(result, expected_thing);
     }
 
     #[test]

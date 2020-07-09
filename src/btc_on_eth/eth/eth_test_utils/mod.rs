@@ -518,21 +518,21 @@ mod tests {
     fn should_get_expected_log_correctly() {
         let result = get_expected_log();
         let expected_result = get_expected_log();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_get_expected_receipt_correctly() {
         let expected_result = get_expected_receipt();
         let result = get_expected_receipt();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_get_expected_block_correctly() {
         let result = get_expected_block();
         let expected_block = get_expected_block();
-        assert!(result == expected_block);
+        assert_eq!(result, expected_block);
     }
 
     #[test]
@@ -554,7 +554,7 @@ mod tests {
     fn should_get_sample_eth_block_and_receipts_json() {
         let expected_block_number = 8503804;
         let result = get_sample_eth_block_and_receipts_json().unwrap();
-        assert!(result.block.number == expected_block_number);
+        assert_eq!(result.block.number, expected_block_number);
     }
 
     #[test]
@@ -564,8 +564,8 @@ mod tests {
         let block = result.block.clone();
         let receipt = result.receipts[SAMPLE_RECEIPT_INDEX].clone();
         let expected_block = get_expected_block();
-        assert!(receipt == expected_receipt);
-        assert!(block == expected_block);
+        assert_eq!(receipt, expected_receipt);
+        assert_eq!(block, expected_block);
     }
 
     #[test]
@@ -603,7 +603,7 @@ mod tests {
         let hex_string = "c0ffee".to_string();
         let expected_result = get_nibbles_from_bytes(bytes);
         let result = convert_hex_string_to_nibbles(hex_string).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -612,7 +612,7 @@ mod tests {
         let hex_string = "decaf".to_string();
         let expected_result = get_nibbles_from_offset_bytes(bytes);
         let result = convert_hex_string_to_nibbles(hex_string).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -673,7 +673,7 @@ mod tests {
         block_and_receipts
             .iter()
             .enumerate()
-            .map(|(i, block)| assert!(block.block.number.as_usize() == SEQUENTIAL_BLOCKS_FIRST_NUMBER + i))
+            .map(|(i, block)| assert_eq!(block.block.number.as_usize(), SEQUENTIAL_BLOCKS_FIRST_NUMBER + i))
             .for_each(drop);
     }
 }

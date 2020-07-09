@@ -551,7 +551,7 @@ mod tests {
         };
         match get_btc_canon_to_tip_length_from_db(&db) {
             Err(e) => panic!("Error getting canon to tip lengt from db: {}", e),
-            Ok(length_from_db) => assert!(length_from_db == length),
+            Ok(length_from_db) => assert_eq!(length_from_db, length),
         }
     }
 
@@ -565,7 +565,7 @@ mod tests {
         };
         match get_btc_private_key_from_db(&db) {
             Err(e) => panic!("Error getting BTC pk from db: {}", e),
-            Ok(pk_from_db) => assert!(pk_from_db.to_public_key() == pk.to_public_key()),
+            Ok(pk_from_db) => assert_eq!(pk_from_db.to_public_key(), pk.to_public_key()),
         };
     }
 
@@ -577,7 +577,7 @@ mod tests {
         let expected_error = format!("✘ Cannot store special BTC hash of type: {}!", non_existent_block_type);
         match put_special_btc_block_in_db(&db, &block, non_existent_block_type) {
             Ok(_) => panic!("Should not have succeeded!"),
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ => panic!("Wrong error received!"),
         }
     }
@@ -592,7 +592,7 @@ mod tests {
         };
         match get_btc_canon_block_from_db(&db) {
             Err(e) => panic!("Error geting canon block: {}", e),
-            Ok(block_from_db) => assert!(block_from_db == block),
+            Ok(block_from_db) => assert_eq!(block_from_db, block),
         }
     }
 
@@ -603,7 +603,7 @@ mod tests {
         let expected_error = format!("✘ Cannot get special BTC hash of type: {}!", non_existent_block_type);
         match get_special_btc_block_from_db(&db, non_existent_block_type) {
             Ok(_) => panic!("Should not have got special block!"),
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ => panic!("Wrong error when getting non-existent block type!"),
         }
     }
@@ -619,7 +619,7 @@ mod tests {
             panic!("Error putting anchor hash in db: {}", e);
         };
         match get_special_btc_block_from_db(&db, "anchor") {
-            Ok(block_from_db) => assert!(block_from_db == block),
+            Ok(block_from_db) => assert_eq!(block_from_db, block),
             Err(e) => panic!("Error getting special block from db: {}", e),
         }
     }
@@ -632,7 +632,7 @@ mod tests {
             panic!("Error putting btc anchor_block_hash in db: {}", e);
         };
         match get_btc_anchor_block_hash_from_db(&db) {
-            Ok(hash_from_db) => assert!(hash_from_db == anchor_block_hash),
+            Ok(hash_from_db) => assert_eq!(hash_from_db, anchor_block_hash),
             Err(e) => panic!("Error getting btc anchor_block_hash from db: {}", e),
         }
     }
@@ -645,7 +645,7 @@ mod tests {
             panic!("Error putting btc latest_block_hash in db: {}", e);
         };
         match get_btc_latest_block_hash_from_db(&db) {
-            Ok(hash_from_db) => assert!(hash_from_db == latest_block_hash),
+            Ok(hash_from_db) => assert_eq!(hash_from_db, latest_block_hash),
             Err(e) => panic!("Error getting btc latest_block_hash from db: {}", e),
         }
     }
@@ -658,7 +658,7 @@ mod tests {
             panic!("Error putting btc linker_hash in db: {}", e);
         };
         match get_btc_linker_hash_from_db(&db) {
-            Ok(hash_from_db) => assert!(hash_from_db == linker_hash),
+            Ok(hash_from_db) => assert_eq!(hash_from_db, linker_hash),
             Err(e) => panic!("Error getting btc linker_hash from db: {}", e),
         }
     }
@@ -671,7 +671,7 @@ mod tests {
             panic!("Error putting btc hash in db: {}", e);
         };
         match get_btc_hash_from_db(&db, &BTC_LINKER_HASH_KEY.to_vec()) {
-            Ok(hash_from_db) => assert!(hash_from_db == hash),
+            Ok(hash_from_db) => assert_eq!(hash_from_db, hash),
             Err(e) => panic!("Error getting btc hash from db: {}", e),
         }
     }
@@ -695,8 +695,8 @@ mod tests {
         match maybe_get_parent_btc_block_and_id(&db, &test_block.id) {
             None => panic!("Failed to get parent block!"),
             Some(parent_block) => {
-                assert!(parent_block == expected_result);
-                assert!(parent_block.id == test_block.block.header.prev_blockhash);
+                assert_eq!(parent_block, expected_result);
+                assert_eq!(parent_block.id, test_block.block.header.prev_blockhash);
             }
         }
     }
@@ -710,7 +710,7 @@ mod tests {
         };
         match get_btc_block_from_db(&db, &block_and_id.id) {
             Err(e) => panic!("Error getting btc block from db: {}", e),
-            Ok(block) => assert!(block == block_and_id),
+            Ok(block) => assert_eq!(block, block_and_id),
         }
     }
 
@@ -722,7 +722,7 @@ mod tests {
         };
         match get_btc_address_from_db(&db) {
             Err(e) => panic!("Error getting btc address from db: {}", e),
-            Ok(address) => assert!(address == SAMPLE_TARGET_BTC_ADDRESS),
+            Ok(address) => assert_eq!(address, SAMPLE_TARGET_BTC_ADDRESS),
         }
     }
 
@@ -738,7 +738,7 @@ mod tests {
         }
         match get_btc_latest_block_number(&db) {
             Err(e) => panic!("Error getting latest block number: {}", e),
-            Ok(num_from_db) => assert!(num_from_db == block.height),
+            Ok(num_from_db) => assert_eq!(num_from_db, block.height),
         };
     }
 
@@ -751,7 +751,7 @@ mod tests {
         }
         match get_btc_fee_from_db(&db) {
             Err(e) => panic!("Error getting BTC fee from db: {}", e),
-            Ok(fee_from_db) => assert!(fee_from_db == fee),
+            Ok(fee_from_db) => assert_eq!(fee_from_db, fee),
         }
     }
 
@@ -764,7 +764,7 @@ mod tests {
         }
         match get_btc_network_from_db(&db) {
             Err(e) => panic!("Error getting BTC network from db: {}", e),
-            Ok(network_from_db) => assert!(network_from_db == network),
+            Ok(network_from_db) => assert_eq!(network_from_db, network),
         }
     }
 
@@ -776,7 +776,7 @@ mod tests {
             panic!("Error putting BTC difficulty in db: {}", e);
         };
         match get_btc_difficulty_from_db(&db) {
-            Ok(network_from_db) => assert!(network_from_db == difficulty),
+            Ok(network_from_db) => assert_eq!(network_from_db, difficulty),
             Err(e) => panic!("Error getting BTC difficulty from db: {}", e),
         }
     }
@@ -801,7 +801,7 @@ mod tests {
         let block_hash = block.id;
         match maybe_get_btc_block_from_db(&db, &block_hash) {
             None => panic!("Should have gotten block from db!"),
-            Some(block_from_db) => assert!(block_from_db == block),
+            Some(block_from_db) => assert_eq!(block_from_db, block),
         }
     }
 

@@ -118,7 +118,7 @@ mod tests {
                 panic!("Enc should not be initialized!");
             }
             Err(AppError::Custom(e)) => {
-                assert!(e == expected_error);
+                assert_eq!(e, expected_error);
             }
             Err(e) => {
                 panic!("Wrong err recieved: {}", e);
@@ -145,7 +145,7 @@ mod tests {
                 panic!("Enc should not be initialized!");
             }
             Err(AppError::Custom(e)) => {
-                assert!(e == expected_error);
+                assert_eq!(e, expected_error);
             }
             Err(e) => {
                 panic!("Wrong err recieved: {}", e);

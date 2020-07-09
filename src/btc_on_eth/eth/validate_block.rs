@@ -63,7 +63,7 @@ mod tests {
         let block = get_sample_eth_block_and_receipts().block;
         let result = hash_block(&block)
             .unwrap();
-        assert!(result == block.hash)
+        assert_eq!(result, block.hash)
     }
 
     #[test]

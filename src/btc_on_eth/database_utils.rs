@@ -56,7 +56,7 @@ mod tests {
         };
         match get_u64_from_db(&db, &key) {
             Ok(usize_from_db) => {
-                assert!(usize_from_db == u_64);
+                assert_eq!(usize_from_db, u_64);
             }
             Err(e) => {
                 panic!("Error getting usize from db: {}", e)

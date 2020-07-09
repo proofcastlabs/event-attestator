@@ -661,7 +661,7 @@ mod tests {
             panic!("Error putting gas price in db: {}", e);
         };
         match get_eth_gas_price_from_db(&db) {
-            Ok(gas_price_from_db) => assert!(gas_price_from_db == gas_price),
+            Ok(gas_price_from_db) => assert_eq!(gas_price_from_db, gas_price),
             Err(e) => panic!("Error getting gas price from db: {}", e),
         }
     }
@@ -674,7 +674,7 @@ mod tests {
             panic!("Error putting chain id in db: {}", e);
         };
         match get_eth_chain_id_from_db(&db) {
-            Ok(chain_id_from_db) => assert!(chain_id_from_db == chain_id),
+            Ok(chain_id_from_db) => assert_eq!(chain_id_from_db, chain_id),
             Err(e) => panic!("Error getting chain id from db: {}", e),
         }
     }
@@ -687,7 +687,7 @@ mod tests {
             panic!("Error saving eth account nonce in db: {}", e);
         };
         match get_eth_account_nonce_from_db(&db) {
-            Ok(nonce_from_db) => assert!(nonce_from_db == nonce),
+            Ok(nonce_from_db) => assert_eq!(nonce_from_db, nonce),
             Err(e) => panic!("Error getting nonce from db: {}", e),
         }
     }
@@ -700,7 +700,7 @@ mod tests {
             panic!("Error putting eth address in db: {}", e);
         };
         let result = get_erc777_contract_address_from_db(&db).unwrap();
-        assert!(result == contract_address);
+        assert_eq!(result, contract_address);
     }
 
     #[test]
@@ -711,7 +711,7 @@ mod tests {
             panic!("Error putting eth private key in db: {}", e);
         }
         match get_eth_private_key_from_db(&db) {
-            Ok(pk) => assert!(pk == eth_private_key),
+            Ok(pk) => assert_eq!(pk, eth_private_key),
             Err(e) => panic!("Error getting eth private key from db: {}", e),
         }
     }
@@ -729,7 +729,7 @@ mod tests {
         };
         match get_eth_account_nonce_from_db(&db) {
             Err(e) => panic!("Error getting nonce from db: {}", e),
-            Ok(nonce_from_db) => assert!(nonce_from_db == nonce + amount_to_increment_by),
+            Ok(nonce_from_db) => assert_eq!(nonce_from_db, nonce + amount_to_increment_by),
         }
     }
 
@@ -742,7 +742,7 @@ mod tests {
             panic!("Error putting ETH special hash in db: {}", e);
         };
         match get_special_eth_hash_from_db(&db, hash_type) {
-            Ok(hash_from_db) => assert!(hash_from_db == hash),
+            Ok(hash_from_db) => assert_eq!(hash_from_db, hash),
             Err(e) => panic!("Error getting ETH special hash from db: {}", e),
         }
     }
@@ -756,7 +756,7 @@ mod tests {
             panic!("Error putting ETH hash in db: {}", e);
         };
         match get_eth_hash_from_db(&db, &hash_key) {
-            Ok(hash_from_db) => assert!(hash_from_db == hash),
+            Ok(hash_from_db) => assert_eq!(hash_from_db, hash),
             Err(e) => panic!("Error getting ETH hash from db: {}", e),
         }
     }
@@ -770,7 +770,7 @@ mod tests {
             panic!("Error putting ETH special block in db: {}", e);
         };
         match get_special_eth_block_from_db(&db, block_type) {
-            Ok(block_from_db) => assert!(block_from_db == block),
+            Ok(block_from_db) => assert_eq!(block_from_db, block),
             Err(e) => panic!("Error getting ETH special block from db: {}", e),
         }
     }
@@ -784,7 +784,7 @@ mod tests {
             panic!("Error putting ETH block and receipts in db: {}", e);
         };
         match get_eth_block_from_db(&db, &block_hash) {
-            Ok(block_from_db) => assert!(block_from_db == block),
+            Ok(block_from_db) => assert_eq!(block_from_db, block),
             Err(e) => panic!("Error getting ETH block from db: {}", e),
         }
     }
@@ -807,7 +807,7 @@ mod tests {
             panic!("Error putting ETH address in db: {}", e);
         };
         match get_public_eth_address_from_db(&db) {
-            Ok(eth_address_from_db) => assert!(eth_address_from_db == eth_address),
+            Ok(eth_address_from_db) => assert_eq!(eth_address_from_db, eth_address),
             Err(e) => panic!("Error getting ETH address from db: {}", e),
         }
     }
@@ -831,7 +831,7 @@ mod tests {
         };
         match maybe_get_eth_block_and_receipts_from_db(&db, &block_hash) {
             None => panic!("Block should exist in db!"),
-            Some(block_from_db) => assert!(block_from_db == block),
+            Some(block_from_db) => assert_eq!(block_from_db, block),
         };
     }
 
@@ -863,7 +863,7 @@ mod tests {
         };
         match maybe_get_parent_eth_block_and_receipts(&db, &block_hash) {
             None => panic!("Block should have parent in the DB!"),
-            Some(parent_block_from_db) => assert!(parent_block_from_db == parent_block),
+            Some(parent_block_from_db) => assert_eq!(parent_block_from_db, parent_block),
         };
     }
 
@@ -898,7 +898,7 @@ mod tests {
             .map(|(i, _)|
                 match maybe_get_nth_ancestor_eth_block_and_receipts(&db, &block_hash, i as u64) {
                     None => panic!("Ancestor number {} should exist!", i),
-                    Some(ancestor) => assert!(ancestor == blocks[blocks.len() - i - 1]),
+                    Some(ancestor) => assert_eq!(ancestor, blocks[blocks.len() - i - 1]),
                 }
              )
             .for_each(drop);

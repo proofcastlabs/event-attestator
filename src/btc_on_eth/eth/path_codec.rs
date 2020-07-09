@@ -180,7 +180,7 @@ mod tests {
         let (sample, expected_result) = get_odd_extension_path_sample();
         let result = encode_odd_length_extension_path_from_nibbles(sample)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -188,7 +188,7 @@ mod tests {
         let (sample, expected_result) = get_even_extension_path_sample();
         let result = encode_even_length_extension_path_from_nibbles(sample)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -196,7 +196,7 @@ mod tests {
         let (sample, expected_result) = get_odd_leaf_path_sample();
         let result = encode_odd_length_leaf_path_from_nibbles(sample)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -204,7 +204,7 @@ mod tests {
         let (sample, expected_result) = get_even_leaf_path_sample();
         let result = encode_even_length_leaf_path_from_nibbles(sample)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -212,7 +212,7 @@ mod tests {
         let (sample, expected_result) = get_odd_extension_path_sample();
         let result = encode_extension_path_from_nibbles(sample)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -220,7 +220,7 @@ mod tests {
         let (sample, expected_result) = get_even_extension_path_sample();
         let result = encode_extension_path_from_nibbles(sample)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -228,7 +228,7 @@ mod tests {
         let (sample, expected_result) = get_odd_leaf_path_sample();
         let result = encode_leaf_path_from_nibbles(sample)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -236,7 +236,7 @@ mod tests {
         let (sample, expected_result) = get_even_leaf_path_sample();
         let result = encode_leaf_path_from_nibbles(sample)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -244,8 +244,8 @@ mod tests {
         let (expected_nibbles, path) = get_even_leaf_path_sample();
         let (result_nibbles, result_type) =
             decode_path_to_nibbles_and_node_type(path).unwrap();
-        assert!(result_type == "leaf");
-        assert!(expected_nibbles.data == result_nibbles.data);
+        assert_eq!(result_type, "leaf");
+        assert_eq!(expected_nibbles.data, result_nibbles.data);
     }
 
     #[test]
@@ -253,8 +253,8 @@ mod tests {
         let (expected_nibbles, path) = get_odd_leaf_path_sample();
         let (result_nibbles, result_type) =
             decode_path_to_nibbles_and_node_type(path).unwrap();
-        assert!(result_type == "leaf");
-        assert!(expected_nibbles.data == result_nibbles.data);
+        assert_eq!(result_type, "leaf");
+        assert_eq!(expected_nibbles.data, result_nibbles.data);
     }
 
     #[test]
@@ -262,8 +262,8 @@ mod tests {
         let (expected_nibbles, path) = get_odd_extension_path_sample();
         let (result_nibbles, result_type) =
             decode_path_to_nibbles_and_node_type(path).unwrap();
-        assert!(result_type == "extension");
-        assert!(expected_nibbles.data == result_nibbles.data);
+        assert_eq!(result_type, "extension");
+        assert_eq!(expected_nibbles.data, result_nibbles.data);
     }
 
     #[test]
@@ -271,8 +271,8 @@ mod tests {
         let (expected_nibbles, path) = get_even_extension_path_sample();
         let (result_nibbles, result_type) =
             decode_path_to_nibbles_and_node_type(path).unwrap();
-        assert!(result_type == "extension");
-        assert!(expected_nibbles.data == result_nibbles.data);
+        assert_eq!(result_type, "extension");
+        assert_eq!(expected_nibbles.data, result_nibbles.data);
     }
 
     #[test]
@@ -283,7 +283,7 @@ mod tests {
             .to_string();
         match decode_path_to_nibbles_and_node_type(wrong_path) {
             Ok(_) => panic!("Should not decode a bad encoding!"),
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ => panic!("Didn't get correct decoding error!"),
         }
     }
@@ -294,7 +294,7 @@ mod tests {
         let encoded_nibbles = get_nibbles_from_bytes(path);
         let result = decode_odd_length_nibbles(encoded_nibbles)
             .unwrap();
-        assert!(result.data == expected_nibbles.data);
+        assert_eq!(result.data, expected_nibbles.data);
     }
 
     #[test]
@@ -303,6 +303,6 @@ mod tests {
         let encoded_nibbles = get_nibbles_from_bytes(path);
         let result = decode_odd_length_nibbles(encoded_nibbles)
             .unwrap();
-        assert!(result.data == expected_nibbles.data);
+        assert_eq!(result.data, expected_nibbles.data);
     }
 }

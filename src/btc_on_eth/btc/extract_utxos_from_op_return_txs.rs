@@ -89,7 +89,7 @@ mod tests {
             SAMPLE_OUTPUT_INDEX_OF_UTXO,
         );
         let expected_result = get_sample_btc_utxo();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -102,7 +102,7 @@ mod tests {
             .txdata;
         let target_script = get_sample_pay_to_pub_key_hash_script();
         let result = extract_utxos_from_txs(&target_script, &txs);
-        assert!(result.len() == expected_num_utxos);
-        assert!(result == vec![expected_utxo_and_value]);
+        assert_eq!(result.len(), expected_num_utxos);
+        assert_eq!(result, vec![expected_utxo_and_value]);
     }
 }

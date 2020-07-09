@@ -172,7 +172,7 @@ mod tests {
         let expected_error = get_not_in_state_err("eth_block_and_receipts");
         let initial_state = EthState::init(get_test_database());
         match initial_state.get_eth_block_and_receipts() {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Eth block should not be in state yet!"),
             _ => panic!("Wrong error received!")
         };
@@ -184,7 +184,7 @@ mod tests {
         let eth_block_and_receipts = get_sample_eth_block_and_receipts();
         let initial_state = EthState::init(get_test_database());
         match initial_state.get_eth_block_and_receipts() {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Eth block should not be in state yet!"),
             _ => panic!("Wrong error received!")
         };
@@ -195,8 +195,8 @@ mod tests {
                 let receipt = block_and_receipt.receipts[SAMPLE_RECEIPT_INDEX].clone();
                 let expected_block = get_expected_block();
                 let expected_receipt = get_expected_receipt();
-                assert!(block == expected_block);
-                assert!(receipt == expected_receipt);
+                assert_eq!(block, expected_block);
+                assert_eq!(receipt, expected_receipt);
             }
             _ => panic!("Eth block & receipts should be in state!"),
         }
@@ -210,7 +210,7 @@ mod tests {
         let updated_state = initial_state.add_eth_block_and_receipts(eth_block_and_receipts.clone()).unwrap();
         match updated_state.add_eth_block_and_receipts(eth_block_and_receipts) {
             Ok(_) => panic!("Overwriting state should not have succeeded!"),
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ => panic!("Wrong error recieved!")
         }
     }
@@ -232,6 +232,6 @@ mod tests {
         let expected_result = get_sample_eth_block_and_receipts().block.parent_hash;
         let state = get_valid_state_with_block_and_receipts().unwrap();
         let result = state.get_parent_hash().unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 }

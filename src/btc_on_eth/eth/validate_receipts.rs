@@ -82,7 +82,7 @@ mod tests {
         let block_and_receipts = get_sample_eth_block_and_receipts();
         let result = get_receipts_root_from_receipts(&block_and_receipts.receipts).unwrap();
         let expected_result = block_and_receipts.block.receipts_root;
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]

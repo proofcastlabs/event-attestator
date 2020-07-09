@@ -51,20 +51,20 @@ mod test {
             .to_string();
         let expected_result = convert_hex_to_h256(expected_result_hex)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_generate_32_random_bytes() {
         let result = get_32_random_bytes_arr();
-        assert!(result.len() == 32);
+        assert_eq!(result.len(), 32);
     }
 
     #[test]
     fn should_generate_x_random_bytes() {
         let x: usize = 100;
         let result = get_x_random_bytes(x);
-        assert!(result.len() == x);
+        assert_eq!(result.len(), x);
     }
 
     #[test]

@@ -116,7 +116,7 @@ mod tests {
         let result = maybe_get_parent_of_eth_tail_block(&db)
             .unwrap()
             .unwrap();
-        assert!(result == parent_of_eth_tail_block);
+        assert_eq!(result, parent_of_eth_tail_block);
     }
 
     #[test]
@@ -128,7 +128,7 @@ mod tests {
             .unwrap();
         let result = maybe_get_parent_of_eth_tail_block(&db)
             .unwrap();
-        assert!(result == None);
+        assert_eq!(result, None);
     }
 
     #[test]
@@ -146,7 +146,7 @@ mod tests {
         let result = get_new_linker_hash(&db, &block_hash_to_link_to)
             .unwrap();
         let result_hex = hex::encode(result.as_bytes());
-        assert!(result_hex == expected_result_hex);
+        assert_eq!(result_hex, expected_result_hex);
     }
 
     #[test]
@@ -172,7 +172,7 @@ mod tests {
             .unwrap();
         let result_hex = hex::encode(linker_hash_after.as_bytes());
         assert!(linker_hash_after != linker_hash_before);
-        assert!(result_hex == expected_result_hex);
+        assert_eq!(result_hex, expected_result_hex);
     }
 
     #[test]
@@ -193,7 +193,7 @@ mod tests {
         let linker_hash_after = get_eth_linker_hash_from_db(&db)
             .unwrap();
         let result_hex = hex::encode(linker_hash_after.as_bytes());
-        assert!(linker_hash_after == linker_hash_before);
-        assert!(result_hex == expected_result_hex);
+        assert_eq!(linker_hash_after, linker_hash_before);
+        assert_eq!(result_hex, expected_result_hex);
     }
 }

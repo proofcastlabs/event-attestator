@@ -60,7 +60,7 @@ mod tests {
             block_and_receipts
         );
         let num_receipts_after = result_block_and_receipts.receipts.len();
-        assert!(num_receipts_after == 0);
+        assert_eq!(num_receipts_after, 0);
     }
 
     #[test]

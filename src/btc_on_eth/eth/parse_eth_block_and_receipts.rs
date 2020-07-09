@@ -86,8 +86,8 @@ mod tests {
                     .receipts[SAMPLE_RECEIPT_INDEX].clone();
                 let expected_block = get_expected_block();
                 let expected_receipt = get_expected_receipt();
-                assert!(block == expected_block);
-                assert!(receipt == expected_receipt);
+                assert_eq!(block, expected_block);
+                assert_eq!(receipt, expected_receipt);
             }
             _ => panic!("Should parse block & receipt correctly!"),
         }
@@ -105,8 +105,8 @@ mod tests {
                     .receipts[SAMPLE_RECEIPT_INDEX].clone();
                 let expected_block = get_expected_block();
                 let expected_receipt = get_expected_receipt();
-                assert!(block == expected_block);
-                assert!(receipt == expected_receipt);
+                assert_eq!(block, expected_block);
+                assert_eq!(receipt, expected_receipt);
             }
             _ => panic!("Should parse block & receipt correctly!"),
         }

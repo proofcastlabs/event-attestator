@@ -189,8 +189,8 @@ mod tests {
         ).unwrap();
         let tx_id = get_tx_id_from_signed_btc_tx(&final_signed_tx);
         let result_hex = get_hex_tx_from_signed_btc_tx(&final_signed_tx);
-        assert!(result_hex == expected_serialized_tx);
-        assert!(tx_id == expected_tx_id);
+        assert_eq!(result_hex, expected_serialized_tx);
+        assert_eq!(tx_id, expected_tx_id);
     }
 
     #[test]
@@ -217,8 +217,8 @@ mod tests {
         ).unwrap();
         let tx_id = get_tx_id_from_signed_btc_tx(&final_signed_tx);
         let result_hex = get_hex_tx_from_signed_btc_tx(&final_signed_tx);
-        assert!(result_hex == expected_serialized_tx);
-        assert!(tx_id == expected_tx_id);
+        assert_eq!(result_hex, expected_serialized_tx);
+        assert_eq!(tx_id, expected_tx_id);
     }
 
     #[test]
@@ -252,7 +252,7 @@ mod tests {
         ).unwrap();
         let tx_id = get_tx_id_from_signed_btc_tx(&final_signed_tx);
         let result_hex = get_hex_tx_from_signed_btc_tx(&final_signed_tx);
-        assert!(result_hex == expected_result);
-        assert!(tx_id == expected_tx_id);
+        assert_eq!(result_hex, expected_result);
+        assert_eq!(tx_id, expected_tx_id);
     }
 }

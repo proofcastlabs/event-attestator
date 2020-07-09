@@ -503,13 +503,13 @@ mod tests {
     fn should_convert_nibble_to_usize() {
         let nibble = get_nibbles_from_bytes(vec![0xfu8]);
         let result = convert_nibble_to_usize(nibble);
-        assert!(result == 15);
+        assert_eq!(result, 15);
     }
 
     #[test]
     fn should_convert_zero_nibble_to_usize() {
         let result = convert_nibble_to_usize(EMPTY_NIBBLES);
-        assert!(result == 0);
+        assert_eq!(result, 0);
     }
 
     #[test]
@@ -517,7 +517,7 @@ mod tests {
         let expected_length = get_bytes_with_nibbles_from_index_zero().len() * 2;
         let bytes = get_bytes_with_nibbles_from_index_zero();
         let result = get_nibbles_from_bytes(bytes);
-        assert!(get_length_in_nibbles(&result) == expected_length)
+        assert_eq!(get_length_in_nibbles(&result), expected_length)
     }
 
     #[test]
@@ -525,7 +525,7 @@ mod tests {
         let expected_length = get_bytes_with_nibbles_from_index_one().len() * 2 - 1;
         let bytes = get_bytes_with_nibbles_from_index_one();
         let result = get_nibbles_from_offset_bytes(bytes);
-        assert!(get_length_in_nibbles(&result) == expected_length)
+        assert_eq!(get_length_in_nibbles(&result), expected_length)
     }
 
     #[test]
@@ -534,7 +534,7 @@ mod tests {
         let nibbles = get_nibbles_from_bytes(bytes);
         for i in 0..get_length_in_nibbles(&nibbles) {
             let nibble = get_nibble_at_index(&nibbles, i).unwrap();
-            assert!(nibble == EXPECTED_NIBBLES[i]);
+            assert_eq!(nibble, EXPECTED_NIBBLES[i]);
         }
     }
 
@@ -544,7 +544,7 @@ mod tests {
         let nibbles = get_nibbles_from_offset_bytes(bytes);
         for i in 0..get_length_in_nibbles(&nibbles) {
             let nibble = get_nibble_at_index(&nibbles, i).unwrap();
-            assert!(nibble == EXPECTED_NIBBLES[i]);
+            assert_eq!(nibble, EXPECTED_NIBBLES[i]);
         }
     }
 
@@ -582,7 +582,7 @@ mod tests {
         let high_nibble_byte = 160u8; // [10100000]
         let expected_result = 174u8;  // [10101110]
         let result = merge_nibbles_from_bytes(low_nibble_byte, high_nibble_byte,);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -590,7 +590,7 @@ mod tests {
         let test_byte = 160u8;      // [10100000]
         let expected_result = 10u8; // [00001010]
         let result = shift_nibble_right(test_byte);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -598,7 +598,7 @@ mod tests {
         let test_byte = 10u8;        // [00001010]
         let expected_result = 160u8; // [10100000]
         let result = shift_nibble_left(test_byte);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -606,7 +606,7 @@ mod tests {
         let test_byte = 174u8;      // [10101110]
         let expected_result = 14u8; // [00001110]
         let result = mask_higher_nibble(test_byte);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -615,7 +615,7 @@ mod tests {
         let nibbles = get_nibbles_from_bytes(vec![174u8]); // [10101110]
         let expected_result = 14u8;  // [00001110]
         let result = get_low_nibble_from_byte(&nibbles, index_of_byte).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -624,7 +624,7 @@ mod tests {
         let nibbles = get_nibbles_from_bytes(vec![174u8]); // [10101110]
         let expected_result = 10u8;  // [00001010]
         let result = get_high_nibble_from_byte(&nibbles, index_of_byte).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -633,7 +633,7 @@ mod tests {
         let nibbles = get_nibbles_from_bytes(vec![0u8, 1u8, 2u8, 3u8, 4u8, 5u8]);
         let expected_result = 1u8;
         let result = get_byte_containing_nibble_at_nibble_index(&nibbles, index_of_nibble,).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -642,7 +642,7 @@ mod tests {
         let replacement_nibble = 240u8; // [11110000]
         let expected_result = 250u8;    // [11111010]
         let result = replace_high_nibble_in_byte(test_byte, get_nibbles_from_bytes(vec![replacement_nibble]));
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -651,7 +651,7 @@ mod tests {
         let replacement_nibble = 15u8; // [00001111]
         let expected_result = 250u8;   // [11111010]
         let result = replace_high_nibble_in_byte(test_byte, get_nibbles_from_offset_bytes(vec![replacement_nibble]));
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -660,7 +660,7 @@ mod tests {
         let replacement_nibble = 240u8; // [11110000]
         let expected_result = 175u8;    // [10101111]
         let result = replace_low_nibble_in_byte(test_byte, get_nibbles_from_bytes(vec![replacement_nibble]));
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -669,7 +669,7 @@ mod tests {
         let replacement_nibble = 15u8; // [00001111]
         let expected_result = 175u8;   // [10101111]
         let result = replace_low_nibble_in_byte(test_byte, get_nibbles_from_offset_bytes(vec![replacement_nibble]));
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -683,14 +683,14 @@ mod tests {
         let updated_nibbles = replace_byte_in_nibbles_at_byte_index(byte_index, nibbles, replacement_byte);
         let result = updated_nibbles.data[byte_index];
         assert!(result != original_byte);
-        assert!(result == replacement_byte);
+        assert_eq!(result, replacement_byte);
         updated_nibbles
             .data
             .iter()
             .enumerate()
             .map(|(i, byte)| match i == byte_index {
-                true => assert!(byte == &replacement_byte),
-                false => assert!(byte == &original_bytes[i]),
+                true => assert_eq!(byte, &replacement_byte),
+                false => assert_eq!(byte, &original_bytes[i]),
             })
             .for_each(drop);
     }
@@ -706,14 +706,14 @@ mod tests {
         let updated_nibbles = replace_byte_in_nibbles_at_byte_index(byte_index, nibbles, replacement_byte);
         let result = updated_nibbles.data[byte_index];
         assert!(result != original_byte);
-        assert!(result == replacement_byte);
+        assert_eq!(result, replacement_byte);
         updated_nibbles
             .data
             .iter()
             .enumerate()
             .map(|(i, byte)| match i == byte_index {
-                true => assert!(byte == &replacement_byte),
-                false => assert!(byte == &original_bytes[i]),
+                true => assert_eq!(byte, &replacement_byte),
+                false => assert_eq!(byte, &original_bytes[i]),
             })
             .for_each(drop)
     }
@@ -724,7 +724,7 @@ mod tests {
         let expected_result = 1;
         let nibbles = get_sample_nibbles();
         let result = convert_nibble_index_to_byte_index(&nibbles, nibble_index);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -733,7 +733,7 @@ mod tests {
         let expected_result = 2;
         let nibbles = get_sample_offset_nibbles();
         let result = convert_nibble_index_to_byte_index(&nibbles, nibble_index);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -755,12 +755,12 @@ mod tests {
             let target_nibble_after = get_nibble_at_index(&nibbles_after, nibble_index,).unwrap();
             let byte_after = get_byte_containing_nibble_at_nibble_index(&nibbles_after, nibble_index).unwrap();
             assert!(byte_before != byte_after);
-            assert!(target_nibble_after == replacement_nibble.data[0]);
-            assert!(nibbles_before.data.len() == nibbles_after.data.len());
-            assert!(byte_after == expected_byte);
+            assert_eq!(target_nibble_after, replacement_nibble.data[0]);
+            assert_eq!(nibbles_before.data.len(), nibbles_after.data.len());
+            assert_eq!(byte_after, expected_byte);
             for i in 0..nibbles_after.data.len() {
                 match i == byte_index {
-                    true => assert!(nibbles_after.data[i] == expected_byte),
+                    true => assert_eq!(nibbles_after.data[i], expected_byte),
                     _ => assert!(
                         nibbles_after.data[i] == nibbles_before.data[i]
                     )
@@ -788,12 +788,12 @@ mod tests {
             let target_nibble_after = get_nibble_at_index(&nibbles_after, nibble_index,).unwrap();
             let byte_after = get_byte_containing_nibble_at_nibble_index(&nibbles_after, nibble_index).unwrap();
             assert!(byte_before != byte_after);
-            assert!(target_nibble_after == replacement_nibble.data[0]);
-            assert!(nibbles_before.data.len() == nibbles_after.data.len());
-            assert!(byte_after == expected_byte);
+            assert_eq!(target_nibble_after, replacement_nibble.data[0]);
+            assert_eq!(nibbles_before.data.len(), nibbles_after.data.len());
+            assert_eq!(byte_after, expected_byte);
             for i in 0..nibbles_after.data.len() {
                 match i == byte_index {
-                    true => assert!(nibbles_after.data[i] == expected_byte),
+                    true => assert_eq!(nibbles_after.data[i], expected_byte),
                     _ => assert!(
                         nibbles_after.data[i] == nibbles_before.data[i]
                     )
@@ -822,12 +822,12 @@ mod tests {
             let byte_after = get_byte_containing_nibble_at_nibble_index(&nibbles_after, nibble_index).unwrap();
             assert!(byte_before != byte_after);
             // NOTE: Shift left ∵ we're replacing w/ a non-offset nibble!
-            assert!(shift_nibble_left(target_nibble_after) == replacement_nibble.data[0]);
-            assert!(nibbles_before.data.len() == nibbles_after.data.len());
-            assert!(byte_after == expected_byte);
+            assert_eq!(shift_nibble_left(target_nibble_after), replacement_nibble.data[0]);
+            assert_eq!(nibbles_before.data.len(), nibbles_after.data.len());
+            assert_eq!(byte_after, expected_byte);
             for i in 0..nibbles_after.data.len() {
                 match i == byte_index {
-                    true => assert!(nibbles_after.data[i] == expected_byte),
+                    true => assert_eq!(nibbles_after.data[i], expected_byte),
                     _ => assert!(
                         nibbles_after.data[i] == nibbles_before.data[i]
                     )
@@ -856,12 +856,12 @@ mod tests {
             let byte_after = get_byte_containing_nibble_at_nibble_index(&nibbles_after, nibble_index).unwrap();
             assert!(byte_before != byte_after);
             // NOTE: Shift left ∵ we're replacing w/ a non-offset nibble!
-            assert!(shift_nibble_left(target_nibble_after) == replacement_nibble.data[0]);
-            assert!(nibbles_before.data.len() == nibbles_after.data.len());
-            assert!(byte_after == expected_byte);
+            assert_eq!(shift_nibble_left(target_nibble_after), replacement_nibble.data[0]);
+            assert_eq!(nibbles_before.data.len(), nibbles_after.data.len());
+            assert_eq!(byte_after, expected_byte);
             for i in 0..nibbles_after.data.len() {
                 match i == byte_index {
-                    true => assert!(nibbles_after.data[i] == expected_byte),
+                    true => assert_eq!(nibbles_after.data[i], expected_byte),
                     _ => assert!(
                         nibbles_after.data[i] == nibbles_before.data[i]
                     )
@@ -878,7 +878,7 @@ mod tests {
         assert!(nibble_flag_before != expected_result);
         let updated_nibbles = set_nibble_offset_to_zero(nibbles);
         let result = updated_nibbles.offset;
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -889,7 +889,7 @@ mod tests {
         assert!(nibble_flag_before != expected_result);
         let updated_nibbles = set_nibble_offset_to_one(nibbles);
         let result = updated_nibbles.offset;
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -898,8 +898,8 @@ mod tests {
         let number_of_nibbles_before = get_length_in_nibbles(&nibbles_before);
         let nibbles_after = remove_first_byte_from_nibbles(nibbles_before.clone());
         let number_of_nibbles_after = get_length_in_nibbles(&nibbles_after);
-        assert!(number_of_nibbles_after == number_of_nibbles_before - 2);
-        assert!(nibbles_after.data.len() == nibbles_before.data.len() - 1);
+        assert_eq!(number_of_nibbles_after, number_of_nibbles_before - 2);
+        assert_eq!(nibbles_after.data.len(), nibbles_before.data.len() - 1);
     }
 
     #[test]
@@ -908,8 +908,8 @@ mod tests {
         let number_of_nibbles_before = get_length_in_nibbles(&nibbles_before);
         let nibbles_after = remove_first_byte_from_nibbles(nibbles_before.clone());
         let number_of_nibbles_after = get_length_in_nibbles(&nibbles_after);
-        assert!(number_of_nibbles_after == number_of_nibbles_before - 1);
-        assert!(nibbles_after.data.len() == nibbles_before.data.len() - 1);
+        assert_eq!(number_of_nibbles_after, number_of_nibbles_before - 1);
+        assert_eq!(nibbles_after.data.len(), nibbles_before.data.len() - 1);
 
     }
 
@@ -917,7 +917,7 @@ mod tests {
     fn should_remove_first_byte_of_single_nibble_correctly() {
         let nibble = Nibbles { data: vec![0xfu8], offset: 1 };
         let result = remove_first_byte_from_nibbles(nibble);
-        assert!(result == EMPTY_NIBBLES);
+        assert_eq!(result, EMPTY_NIBBLES);
     }
 
     #[test]
@@ -928,10 +928,10 @@ mod tests {
         let expected_offset = 1;
         let result = get_zero_nibble();
         let num_nibbles = get_length_in_nibbles(&result);
-        assert!(result.data[0] == expected_byte);
-        assert!(num_nibbles == expected_num_nibbles);
-        assert!(result.data.len() == expected_length);
-        assert!(result.offset == expected_offset);
+        assert_eq!(result.data[0], expected_byte);
+        assert_eq!(num_nibbles, expected_num_nibbles);
+        assert_eq!(result.data.len(), expected_length);
+        assert_eq!(result.offset, expected_offset);
     }
 
     #[test]
@@ -946,10 +946,10 @@ mod tests {
         let first_nibble_after = get_nibble_at_index(&result, 0).unwrap();
         let last_nibble_after = get_nibble_at_index(&result, nibble_len_after - 1).unwrap();
         let nibble_len_after = get_length_in_nibbles(&result);
-        assert!(last_nibble_before == last_nibble_after);
-        assert!(nibble_len_after == nibble_len_before - 1);
+        assert_eq!(last_nibble_before, last_nibble_after);
+        assert_eq!(nibble_len_after, nibble_len_before - 1);
         assert!(first_nibble_before != first_nibble_after);
-        assert!(first_nibble_after == expected_first_nibble_after);
+        assert_eq!(first_nibble_after, expected_first_nibble_after);
     }
 
     #[test]
@@ -964,10 +964,10 @@ mod tests {
         let first_nibble_after = get_nibble_at_index(&result, 0).unwrap();
         let last_nibble_after = get_nibble_at_index(&result, nibble_len_after - 1).unwrap();
         let nibble_len_after = get_length_in_nibbles(&result);
-        assert!(last_nibble_before == last_nibble_after);
-        assert!(nibble_len_after == nibble_len_before - 1);
+        assert_eq!(last_nibble_before, last_nibble_after);
+        assert_eq!(nibble_len_after, nibble_len_before - 1);
         assert!(first_nibble_before != first_nibble_after);
-        assert!(first_nibble_after == expected_first_nibble_after);
+        assert_eq!(first_nibble_after, expected_first_nibble_after);
     }
 
     #[test]
@@ -975,7 +975,7 @@ mod tests {
         let byte = 5u8;
         let nibble = get_nibbles_from_offset_bytes(vec![byte]);
         let result = remove_first_nibble(nibble).unwrap();
-        assert!(result == EMPTY_NIBBLES);
+        assert_eq!(result, EMPTY_NIBBLES);
     }
 
     #[test]
@@ -986,7 +986,7 @@ mod tests {
         let result = prefix_nibbles_with_byte(nibbles, prefix).unwrap();
         let mut bytes = get_bytes_with_nibbles_from_index_zero();
         expected_result.append(&mut bytes);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -997,7 +997,7 @@ mod tests {
         let result = prefix_nibbles_with_byte(nibbles, prefix).unwrap();
         let mut bytes = get_bytes_with_nibbles_from_index_one();
         expected_result.append(&mut bytes);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1005,7 +1005,7 @@ mod tests {
         let nibbles = get_sample_nibbles();
         let expected_result = get_bytes_with_nibbles_from_index_zero();
         let result = convert_nibble_to_bytes(nibbles).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1013,7 +1013,7 @@ mod tests {
         let nibbles = get_sample_offset_nibbles();
         let expected_result = get_bytes_with_nibbles_from_index_one();
         let result = convert_nibble_to_bytes(nibbles).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1022,7 +1022,7 @@ mod tests {
         let nibbles = get_sample_nibbles();
         let expected_result = get_nibbles_from_bytes(vec![0x56, 0x78, 0x9a, 0xbc, 0xde]);
         let result = slice_nibbles_at_byte_index(nibbles, byte_index).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1031,17 +1031,17 @@ mod tests {
         let nibbles = get_sample_offset_nibbles();
         let expected_result = get_nibbles_from_bytes(vec![0x45, 0x67, 0x89, 0xab, 0xcd]);
         let result = slice_nibbles_at_byte_index(nibbles, byte_index).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_slice_nibbles_at_even_nibble_index_correctly() {
         let nibble_index = 4;
-        assert!(nibble_index % 2 == 0);
+        assert_eq!(nibble_index % 2, 0);
         let nibbles = get_sample_nibbles();
         let expected_result = get_nibbles_from_bytes(vec![0x56, 0x78, 0x9a, 0xbc, 0xde]);
         let result = slice_nibbles_at_nibble_index(nibbles, nibble_index).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1051,17 +1051,17 @@ mod tests {
         let nibbles = get_sample_nibbles();
         let expected_result = get_nibbles_from_offset_bytes(vec![0x6u8, 0x78, 0x9a, 0xbc, 0xde]);
         let result = slice_nibbles_at_nibble_index(nibbles, nibble_index).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_slice_offset_nibbles_at_even_nibble_index_correctly() {
         let nibble_index = 4;
-        assert!(nibble_index % 2 == 0);
+        assert_eq!(nibble_index % 2, 0);
         let nibbles = get_sample_offset_nibbles();
         let expected_result = get_nibbles_from_offset_bytes(vec![0x5u8, 0x67, 0x89, 0xab, 0xcd]);
         let result = slice_nibbles_at_nibble_index(nibbles, nibble_index).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1071,7 +1071,7 @@ mod tests {
         let nibbles = get_sample_offset_nibbles();
         let expected_result = get_nibbles_from_bytes(vec![0x67, 0x89, 0xab, 0xcd]);
         let result = slice_nibbles_at_nibble_index(nibbles, nibble_index).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1081,7 +1081,7 @@ mod tests {
         let nibble_index = nibble_length + 1;
         assert!(nibble_length <= nibble_index);
         let result = slice_nibbles_at_nibble_index(nibbles, nibble_index).unwrap();
-        assert!(result == EMPTY_NIBBLES)
+        assert_eq!(result, EMPTY_NIBBLES)
     }
 
     #[test]
@@ -1089,7 +1089,7 @@ mod tests {
         let nibble_index = 0;
         let nibbles = get_sample_nibbles();
         let result = slice_nibbles_at_nibble_index(nibbles.clone(), nibble_index).unwrap();
-        assert!(nibbles == result);
+        assert_eq!(nibbles, result);
     }
 
     #[test]
@@ -1097,7 +1097,7 @@ mod tests {
         let nibble_index = 0;
         let nibbles = get_sample_offset_nibbles();
         let result = slice_nibbles_at_nibble_index(nibbles.clone(), nibble_index).unwrap();
-        assert!(nibbles == result);
+        assert_eq!(nibbles, result);
     }
 
     #[test]
@@ -1106,7 +1106,7 @@ mod tests {
         let nibbles = get_sample_nibbles();
         let result = slice_nibbles_at_nibble_index(nibbles, nibble_index).unwrap();
         let expected_result = get_nibbles_from_offset_bytes(vec![0x2u8, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde]);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1115,13 +1115,13 @@ mod tests {
         let nibbles = get_sample_offset_nibbles();
         let result = slice_nibbles_at_nibble_index(nibbles, nibble_index).unwrap();
         let expected_result = get_nibbles_from_bytes(vec![0x23, 0x45, 0x67, 0x89, 0xab, 0xcd]);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
     fn empty_nibbles_should_have_nibble_length_of_zero() {
         let length_in_nibbles = get_length_in_nibbles(&EMPTY_NIBBLES);
-        assert!(length_in_nibbles == 0)
+        assert_eq!(length_in_nibbles, 0)
     }
 
     #[test]
@@ -1129,7 +1129,7 @@ mod tests {
         let bytes = get_bytes_with_nibbles_from_index_zero();
         let expected_result = vec![0x01u8, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xe0 ];
         let result = shift_bits_in_vec_right_one_nibble(bytes);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1137,7 +1137,7 @@ mod tests {
         let byte = vec![0xab];
         let expected_result = vec![0xau8];
         let result = shift_bits_in_vec_right_one_nibble(byte);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1145,7 +1145,7 @@ mod tests {
         let byte = Vec::new();
         let expected_result = vec![ZERO_BYTE];
         let result = shift_bits_in_vec_right_one_nibble(byte);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1153,7 +1153,7 @@ mod tests {
         let bytes = get_bytes_with_nibbles_from_index_one();
         let expected_result = vec![0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xd0];
         let result = shift_bits_in_vec_left_one_nibble(bytes);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1161,7 +1161,7 @@ mod tests {
         let byte = vec![0xab];
         let expected_result = vec![0xb0];
         let result = shift_bits_in_vec_left_one_nibble(byte);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1169,7 +1169,7 @@ mod tests {
         let byte = Vec::new();
         let expected_result = vec![ZERO_BYTE];
         let result = shift_bits_in_vec_left_one_nibble(byte);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1177,7 +1177,7 @@ mod tests {
         let nibble = Nibbles { data: vec![0xab], offset: 1};
         let result = get_appending_byte_from_nibble(nibble).unwrap();
         let expected_result = 0xb0;
-        assert!(result == expected_result)
+        assert_eq!(result, expected_result)
     }
 
     #[test]
@@ -1187,7 +1187,7 @@ mod tests {
         let mut expected_result = nibbles.clone().data;
         expected_result.push(byte[0]);
         let result = append_byte_to_nibble_data(nibbles, byte).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1197,7 +1197,7 @@ mod tests {
         let mut expected_result = nibbles.clone().data;
         expected_result.push(byte[0]);
         let result = append_byte_to_nibble_data(nibbles, byte).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1209,7 +1209,7 @@ mod tests {
             offset: 1
         };
         let result = push_nibble_into_nibbles(nibble, nibbles).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1222,7 +1222,7 @@ mod tests {
         };
         let result = push_nibble_into_nibbles(nibble, nibbles)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1234,7 +1234,7 @@ mod tests {
             offset: 0
         };
         let result = push_nibble_into_nibbles(nibble, nibbles).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1246,7 +1246,7 @@ mod tests {
             offset: 1
         };
         let result = push_nibble_into_nibbles(nibble, nibbles).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1254,7 +1254,7 @@ mod tests {
         let nibbles = get_sample_nibbles();
         let expected_result = get_nibbles_from_bytes(vec![0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc]);
         let result = remove_last_byte_from_nibbles(nibbles);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1264,20 +1264,20 @@ mod tests {
             vec![0x01u8, 0x23, 0x45, 0x67, 0x89, 0xab]
         );
         let result = remove_last_byte_from_nibbles(nibbles);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_remove_last_byte_from_single_nibble_correctly() {
         let nibble = Nibbles { data: vec![0xfu8], offset: 1 };
         let result = remove_last_byte_from_nibbles(nibble);
-        assert!(result == EMPTY_NIBBLES);
+        assert_eq!(result, EMPTY_NIBBLES);
     }
 
     #[test]
     fn should_remove_last_byte_from_empty_nibble_correctly() {
         let result = remove_last_byte_from_nibbles(EMPTY_NIBBLES);
-        assert!(result == EMPTY_NIBBLES);
+        assert_eq!(result, EMPTY_NIBBLES);
     }
 
     #[test]
@@ -1297,9 +1297,9 @@ mod tests {
             longer_nibbles,
             EMPTY_NIBBLES,
         ).unwrap();
-        assert!(result_longer == expected_longer_result);
-        assert!(result_shorter == expected_shorter_result);
-        assert!(result_prefix == expected_common_prefix_result);
+        assert_eq!(result_longer, expected_longer_result);
+        assert_eq!(result_shorter, expected_shorter_result);
+        assert_eq!(result_prefix, expected_common_prefix_result);
     }
 
     #[test]
@@ -1319,9 +1319,9 @@ mod tests {
             longer_nibbles,
             EMPTY_NIBBLES,
         ).unwrap();
-        assert!(result_longer == expected_longer_result);
-        assert!(result_shorter == expected_shorter_result);
-        assert!(result_prefix == expected_common_prefix_result);
+        assert_eq!(result_longer, expected_longer_result);
+        assert_eq!(result_shorter, expected_shorter_result);
+        assert_eq!(result_prefix, expected_common_prefix_result);
     }
 
     #[test]
@@ -1336,9 +1336,9 @@ mod tests {
             longer_nibbles,
             EMPTY_NIBBLES,
         ).unwrap();
-        assert!(result_longer == EMPTY_NIBBLES);
-        assert!(result_shorter == EMPTY_NIBBLES);
-        assert!(result_prefix == expected_common_prefix_result);
+        assert_eq!(result_longer, EMPTY_NIBBLES);
+        assert_eq!(result_shorter, EMPTY_NIBBLES);
+        assert_eq!(result_prefix, expected_common_prefix_result);
     }
 
     #[test]
@@ -1353,9 +1353,9 @@ mod tests {
             longer_nibbles,
             EMPTY_NIBBLES,
         ).unwrap();
-        assert!(result_longer == EMPTY_NIBBLES);
-        assert!(result_shorter == EMPTY_NIBBLES);
-        assert!(result_prefix == expected_common_prefix_result);
+        assert_eq!(result_longer, EMPTY_NIBBLES);
+        assert_eq!(result_shorter, EMPTY_NIBBLES);
+        assert_eq!(result_prefix, expected_common_prefix_result);
     }
 
     #[test]
@@ -1375,9 +1375,9 @@ mod tests {
             longer_nibbles,
             EMPTY_NIBBLES,
         ).unwrap();
-        assert!(result_longer == expected_longer_result);
-        assert!(result_shorter == expected_shorter_result);
-        assert!(result_prefix == expected_common_prefix_result);
+        assert_eq!(result_longer, expected_longer_result);
+        assert_eq!(result_shorter, expected_shorter_result);
+        assert_eq!(result_prefix, expected_common_prefix_result);
     }
 
     #[test]
@@ -1395,9 +1395,9 @@ mod tests {
             longer_nibbles,
             EMPTY_NIBBLES,
         ).unwrap();
-        assert!(result_shorter == EMPTY_NIBBLES);
-        assert!(result_longer == expected_longer_result);
-        assert!(result_prefix == expected_common_prefix_result);
+        assert_eq!(result_shorter, EMPTY_NIBBLES);
+        assert_eq!(result_longer, expected_longer_result);
+        assert_eq!(result_prefix, expected_common_prefix_result);
     }
 
     #[test]
@@ -1415,9 +1415,9 @@ mod tests {
             longer_nibbles,
             EMPTY_NIBBLES,
         ).unwrap();
-        assert!(result_shorter == EMPTY_NIBBLES);
-        assert!(result_longer == expected_longer_result);
-        assert!(result_prefix == expected_common_prefix_result);
+        assert_eq!(result_shorter, EMPTY_NIBBLES);
+        assert_eq!(result_longer, expected_longer_result);
+        assert_eq!(result_prefix, expected_common_prefix_result);
     }
 
     #[test]
@@ -1433,9 +1433,9 @@ mod tests {
             nibbles_2,
             EMPTY_NIBBLES,
         ).unwrap();
-        assert!(result_1 == expected_res_1);
-        assert!(result_2 == expected_res_2);
-        assert!(result_prefix == EMPTY_NIBBLES);
+        assert_eq!(result_1, expected_res_1);
+        assert_eq!(result_2, expected_res_2);
+        assert_eq!(result_prefix, EMPTY_NIBBLES);
     }
 
     #[test]
@@ -1451,9 +1451,9 @@ mod tests {
             nibbles_2,
             EMPTY_NIBBLES,
         ).unwrap();
-        assert!(result_1 == expected_res_1);
-        assert!(result_2 == expected_res_2);
-        assert!(result_prefix == EMPTY_NIBBLES);
+        assert_eq!(result_1, expected_res_1);
+        assert_eq!(result_2, expected_res_2);
+        assert_eq!(result_prefix, EMPTY_NIBBLES);
     }
 
     #[test]
@@ -1469,9 +1469,9 @@ mod tests {
             nibbles_2,
             EMPTY_NIBBLES,
         ).unwrap();
-        assert!(result_1 == expected_res_1);
-        assert!(result_2 == expected_res_2);
-        assert!(result_prefix == EMPTY_NIBBLES);
+        assert_eq!(result_1, expected_res_1);
+        assert_eq!(result_2, expected_res_2);
+        assert_eq!(result_prefix, EMPTY_NIBBLES);
     }
 
 
@@ -1488,9 +1488,9 @@ mod tests {
         let expected_longer_result = get_nibbles_from_bytes(longer_bytes_suffix);
         let expected_shorter_result = get_nibbles_from_bytes(shorter_bytes_suffix);
         let (result_prefix, result_1, result_2) = get_common_prefix_nibbles(shorter_nibbles, longer_nibbles).unwrap();
-        assert!(result_2 == expected_longer_result);
-        assert!(result_1 == expected_shorter_result);
-        assert!(result_prefix == expected_common_prefix_result);
+        assert_eq!(result_2, expected_longer_result);
+        assert_eq!(result_1, expected_shorter_result);
+        assert_eq!(result_prefix, expected_common_prefix_result);
     }
 
     #[test]
@@ -1506,9 +1506,9 @@ mod tests {
         let expected_longer_result = get_nibbles_from_bytes(longer_bytes_suffix);
         let expected_shorter_result = get_nibbles_from_bytes(shorter_bytes_suffix);
         let (result_prefix, result_1, result_2) = get_common_prefix_nibbles(longer_nibbles, shorter_nibbles).unwrap();
-        assert!(result_1 == expected_longer_result);
-        assert!(result_2 == expected_shorter_result);
-        assert!(result_prefix == expected_common_prefix_result);
+        assert_eq!(result_1, expected_longer_result);
+        assert_eq!(result_2, expected_shorter_result);
+        assert_eq!(result_prefix, expected_common_prefix_result);
     }
 
     #[test]
@@ -1518,8 +1518,8 @@ mod tests {
         let expected_nibbles = get_nibbles_from_bytes(vec![0xec, 0xaf]);
         let expected_nibble = get_nibbles_from_offset_bytes(vec![0xdu8]);
         let (result_nibble, result_nibbles) = split_at_first_nibble(&nibbles).unwrap();
-        assert!(result_nibble == expected_nibble);
-        assert!(result_nibbles == expected_nibbles);
+        assert_eq!(result_nibble, expected_nibble);
+        assert_eq!(result_nibbles, expected_nibbles);
     }
 
     #[test]
@@ -1528,14 +1528,14 @@ mod tests {
         let nibbles = get_nibbles_from_offset_bytes(bytes);
         let expected_nibble = get_nibbles_from_offset_bytes(vec![0xdu8]);
         let (result_nibble, result_nibbles) = split_at_first_nibble(&nibbles).unwrap();
-        assert!(result_nibble == expected_nibble);
-        assert!(result_nibbles == EMPTY_NIBBLES);
+        assert_eq!(result_nibble, expected_nibble);
+        assert_eq!(result_nibbles, EMPTY_NIBBLES);
     }
 
     #[test]
     fn should_split_at_first_nibble_from_empty_nibbles_correctly() {
         let (result_nibble, result_nibbles) = split_at_first_nibble(&EMPTY_NIBBLES).unwrap();
-        assert!(result_nibble == EMPTY_NIBBLES);
-        assert!(result_nibbles == EMPTY_NIBBLES);
+        assert_eq!(result_nibble, EMPTY_NIBBLES);
+        assert_eq!(result_nibbles, EMPTY_NIBBLES);
     }
 }

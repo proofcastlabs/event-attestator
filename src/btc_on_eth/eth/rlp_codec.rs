@@ -138,7 +138,7 @@ mod tests {
     fn should_rlp_encode_receipt() {
         let result = rlp_encode_receipt(&get_expected_receipt())
             .unwrap();
-        assert!(result == get_rlp_encoded_receipt())
+        assert_eq!(result, get_rlp_encoded_receipt())
     }
 
     #[test]
@@ -147,8 +147,8 @@ mod tests {
         let result = rlp_encode_block(&block)
             .unwrap();
         let expected_result = get_rlp_encoded_block();
-        assert!(get_logs_bloom() == hex::encode(block.logs_bloom));
-        assert!(result == expected_result);
+        assert_eq!(get_logs_bloom(), hex::encode(block.logs_bloom));
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -156,8 +156,8 @@ mod tests {
         let result = get_rlp_encoded_receipt_and_encoded_key_tuple(
             &get_expected_receipt()
         ).unwrap();
-        assert!(result.0 == get_expected_receipt_nibbles());
-        assert!(result.1 == get_rlp_encoded_receipt());
+        assert_eq!(result.0, get_expected_receipt_nibbles());
+        assert_eq!(result.1, get_rlp_encoded_receipt());
     }
 
     #[test]
@@ -171,8 +171,8 @@ mod tests {
         results
             .iter()
             .map(|result| {
-                assert!(result.0 == get_expected_receipt_nibbles());
-                assert!(result.1 == get_rlp_encoded_receipt());
+                assert_eq!(result.0, get_expected_receipt_nibbles());
+                assert_eq!(result.1, get_rlp_encoded_receipt());
             })
             .for_each(drop);
     }
@@ -182,7 +182,7 @@ mod tests {
         let index_u256 = U256::from_dec_str("3").unwrap();
         let result = rlp_encode_transaction_index(&index_u256).unwrap();
         let expected_result = vec![0x03];
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -190,6 +190,6 @@ mod tests {
         let index_u256 = U256::from_dec_str("0").unwrap();
         let result = rlp_encode_transaction_index(&index_u256).unwrap();
         let expected_result = vec![0x80];
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 }

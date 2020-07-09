@@ -192,7 +192,7 @@ mod tests {
         let result = btc_private_key
             .sign_hash(hash)
             .unwrap();
-        assert!(result.to_string() == expected_signature);
+        assert_eq!(result.to_string(), expected_signature);
     }
 
     #[test]
@@ -207,7 +207,7 @@ mod tests {
             .sign_hash_and_append_btc_hash_type(hash, hash_type)
             .unwrap();
         let result_hex = hex::encode(result);
-        assert!(result_hex == expected_result);
+        assert_eq!(result_hex, expected_result);
     }
 
     #[test]
@@ -215,7 +215,7 @@ mod tests {
         let btc_private_key = get_sample_btc_private_key();
         let result = btc_private_key
             .to_public_key();
-        assert!(result.to_string() == SAMPLE_BTC_PUBLIC_KEY);
+        assert_eq!(result.to_string(), SAMPLE_BTC_PUBLIC_KEY);
     }
 
     #[test]
@@ -230,13 +230,13 @@ mod tests {
         let btc_private_key = get_sample_btc_private_key();
         let result = btc_private_key
             .to_public_key_slice();
-        assert!(result.to_vec() == expected_result);
+        assert_eq!(result.to_vec(), expected_result);
     }
 
     #[test]
     fn should_convert_private_key_to_p2pkh_address() {
         let pk = get_sample_btc_private_key();
         let result = pk.to_p2pkh_btc_address();
-        assert!(result == SAMPLE_TARGET_BTC_ADDRESS);
+        assert_eq!(result, SAMPLE_TARGET_BTC_ADDRESS);
     }
 }

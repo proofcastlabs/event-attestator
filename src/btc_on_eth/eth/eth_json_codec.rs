@@ -261,12 +261,12 @@ mod tests {
         ).unwrap();
         let result = decode_eth_block_and_receipts_from_json_bytes(bytes)
             .unwrap();
-        assert!(result.block == block_and_receipts.block);
+        assert_eq!(result.block, block_and_receipts.block);
         block_and_receipts
             .receipts
             .iter()
             .enumerate()
-            .map(|(i, receipt)| assert!(receipt == &result.receipts[i]))
+            .map(|(i, receipt)| assert_eq!(receipt, &result.receipts[i]))
             .for_each(drop);
     }
 

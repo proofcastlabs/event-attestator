@@ -181,7 +181,7 @@ mod test {
         let result = EosPublicKey::from_str(public_key_string)
             .unwrap()
             .to_string();
-        assert!(result == public_key_string);
+        assert_eq!(result, public_key_string);
     }
 
     #[test]
@@ -189,7 +189,7 @@ mod test {
         let invalid_str = "not-a-valid-public-key";
         match EosPublicKey::from_str(invalid_str) {
             Err(AppError::CryptoError(e)) =>
-                assert!(e == secp256k1::Error::InvalidPublicKey),
+                assert_eq!(e, secp256k1::Error::InvalidPublicKey),
             Ok(_) => panic!("SHould not have succeeded!"),
             Err(e) => panic!("Wrong error received: {}", e)
         }
@@ -224,7 +224,7 @@ mod test {
         match public_key
             .verify_signature(&wrong_message_bytes, &signature) {
             Err(AppError::CryptoError(e)) =>
-                assert!(e == secp256k1::Error::IncorrectSignature),
+                assert_eq!(e, secp256k1::Error::IncorrectSignature),
             Ok(_) => panic!("Should not verify wrong message signature!"),
             Err(e) => panic!("Wrong error received: {}", e)
         }
@@ -240,7 +240,7 @@ mod test {
             .unwrap();
         match public_key.verify_signature(message_bytes, &signature) {
             Err(AppError::CryptoError(e)) =>
-                assert!(e == secp256k1::Error::IncorrectSignature),
+                assert_eq!(e, secp256k1::Error::IncorrectSignature),
             Ok(_) => panic!("Should not verify bad signature!"),
             Err(e) => panic!("Wrong error received: {}", e)
         }
@@ -256,7 +256,7 @@ mod test {
             .unwrap();
         let result = sha256_hash_message_bytes(&message)
             .unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -272,7 +272,7 @@ mod test {
             &hashed_message,
             &signature
         ).unwrap();
-        assert!(result == public_key);
+        assert_eq!(result, public_key);
     }
 
     #[test]
@@ -280,7 +280,7 @@ mod test {
         let expected_result = get_sample_eos_public_key_bytes();
         let public_key = get_sample_eos_public_key();
         let result = public_key.to_bytes();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -289,7 +289,7 @@ mod test {
             &get_sample_eos_public_key_bytes()
         ).unwrap();
         let expected_result = get_sample_eos_public_key();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -297,6 +297,6 @@ mod test {
         let expected_result = get_sample_eos_public_key_str();
         let public_key = get_sample_eos_public_key();
         let result = public_key.to_eos_format();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 }

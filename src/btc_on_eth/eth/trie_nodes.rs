@@ -375,7 +375,7 @@ mod tests {
         expected_raw.append(&mut value.clone());
         let result = Node::new_leaf(path_nibbles.clone(), value.clone()).unwrap();
         let node_type = result.get_type();
-        assert!(node_type == LEAF_NODE_STRING);
+        assert_eq!(node_type, LEAF_NODE_STRING);
         if result.extension.is_some() || result.branch.is_some() {
             panic!(panic_str)
         }
@@ -383,11 +383,11 @@ mod tests {
             None => panic!(panic_str),
             Some(leaf) => {
                 let nibble_length = get_length_in_nibbles(&leaf.path_nibbles);
-                assert!(leaf.value == value);
-                assert!(leaf.raw == expected_raw);
-                assert!(leaf.path_nibbles == path_nibbles);
-                assert!(leaf.encoded_path == expected_encoded_path);
-                assert!(nibble_length == expected_nibble_length)
+                assert_eq!(leaf.value, value);
+                assert_eq!(leaf.raw, expected_raw);
+                assert_eq!(leaf.path_nibbles, path_nibbles);
+                assert_eq!(leaf.encoded_path, expected_encoded_path);
+                assert_eq!(nibble_length, expected_nibble_length)
             }
         }
     }
@@ -397,7 +397,7 @@ mod tests {
         let leaf_node = get_sample_leaf_node();
         let expected_result = get_sample_leaf_node_expected_encoding();
         let result = leaf_node.get_rlp_encoding().unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -405,7 +405,7 @@ mod tests {
         let leaf_node = get_sample_leaf_node();
         let expected_result = get_sample_leaf_node_expected_hash();
         let result = leaf_node.get_hash().unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -420,7 +420,7 @@ mod tests {
         let expected_encoded_path = encode_extension_path_from_nibbles(path_nibbles.clone()).unwrap();
         let result = Node::new_extension(path_nibbles.clone(), value.clone()).unwrap();
         let node_type = result.get_type();
-        assert!(node_type == EXTENSION_NODE_STRING);
+        assert_eq!(node_type, EXTENSION_NODE_STRING);
         let mut expected_raw = expected_encoded_path.clone();
         expected_raw.append(&mut value.clone());
         if result.leaf.is_some() || result.branch.is_some() {
@@ -430,11 +430,11 @@ mod tests {
             None => panic!(panic_str),
             Some(extension) => {
                 let nibble_length = get_length_in_nibbles(&extension.path_nibbles);
-                assert!(extension.value == value);
-                assert!(extension.raw == expected_raw);
-                assert!(extension.path_nibbles == path_nibbles);
-                assert!(extension.encoded_path == expected_encoded_path);
-                assert!(nibble_length == expected_nibble_length)
+                assert_eq!(extension.value, value);
+                assert_eq!(extension.raw, expected_raw);
+                assert_eq!(extension.path_nibbles, path_nibbles);
+                assert_eq!(extension.encoded_path, expected_encoded_path);
+                assert_eq!(nibble_length, expected_nibble_length)
             }
         }
     }
@@ -444,7 +444,7 @@ mod tests {
         let extension_node = get_sample_extension_node();
         let expected_result = get_sample_extension_node_expected_encoding();
         let result = extension_node.get_rlp_encoding().unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -452,7 +452,7 @@ mod tests {
         let extension_node = get_sample_extension_node();
         let expected_result = get_sample_extension_node_expected_hash();
         let result = extension_node.get_hash().unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -463,14 +463,14 @@ mod tests {
             panic!(panic_str)
         }
         let node_type = result.get_type();
-        assert!(node_type == BRANCH_NODE_STRING);
+        assert_eq!(node_type, BRANCH_NODE_STRING);
         match result.branch {
             None => panic!(panic_str),
             Some(branch) => {
                 if branch.value.is_some() {
                     panic!("Branch should not have a value!")
                 };
-                assert!(branch.branches == get_empty_child_nodes());
+                assert_eq!(branch.branches, get_empty_child_nodes());
             }
         }
     }
@@ -484,15 +484,15 @@ mod tests {
             panic!(panic_str)
         }
         let node_type = result.get_type();
-        assert!(node_type == "branch");
+        assert_eq!(node_type, "branch");
         match result.branch {
             None => panic!(panic_str),
             Some(branch) => {
                 match branch.value {
-                    Some(_value) => assert!(_value == value),
+                    Some(_value) => assert_eq!(_value, value),
                     None => panic!("Branch should have a value!")
                 }
-                assert!(branch.branches == get_empty_child_nodes());
+                assert_eq!(branch.branches, get_empty_child_nodes());
             }
         }
     }
@@ -503,9 +503,9 @@ mod tests {
         let value = None;
         let branch_value = hex::decode("c0ffee").unwrap();
         let branch_node = Node::new_branch(value).unwrap();
-        assert!(branch_node.clone().branch.unwrap().branches[index] == None);
+        assert_eq!(branch_node.clone().branch.unwrap().branches[index], None);
         let result = branch_node.update_branch_at_index(Some(branch_value.clone()), index).unwrap();
-        assert!(result.branch.unwrap().branches[index] == Some(branch_value));
+        assert_eq!(result.branch.unwrap().branches[index], Some(branch_value));
     }
 
     #[test]
@@ -513,7 +513,7 @@ mod tests {
         let expected_error = "✘ Cannot update branches - not a branch node!";
         let non_branch_node = get_sample_leaf_node();
         match non_branch_node.update_branch_at_index(None, 4) {
-            Err(AppError::Custom(e)) => assert!(e == expected_error),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ => panic!("Did not receive expected error!")
         }
     }
@@ -523,7 +523,7 @@ mod tests {
         let branch_node = get_sample_branch_node();
         let expected_result = get_sample_branch_node_expected_encoding();
         let result = branch_node.get_rlp_encoding().unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -531,7 +531,7 @@ mod tests {
         let branch_node = get_sample_branch_node();
         let expected_result = get_sample_branch_node_expected_hash();
         let result = branch_node.get_hash().unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -540,7 +540,7 @@ mod tests {
         let expected_result = get_nibbles_from_bytes(path_bytes);
         let node = get_sample_leaf_node();
         let result = node.get_key();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -549,14 +549,14 @@ mod tests {
         let path_bytes = vec![0xc0, 0xff, 0xee];
         let expected_result = get_nibbles_from_bytes(path_bytes);
         let result = node.get_key();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_get_no_key_from_branch_node() {
         let node = get_sample_branch_node();
         let result = node.get_key();
-        assert!(result == EMPTY_NIBBLES);
+        assert_eq!(result, EMPTY_NIBBLES);
     }
 
     #[test]
@@ -564,7 +564,7 @@ mod tests {
         let expected_result = hex::decode("c0ffee".to_string()).unwrap();
         let node = get_sample_leaf_node();
         let result = node.get_value();
-        assert!(result == Some(expected_result));
+        assert_eq!(result, Some(expected_result));
     }
 
     #[test]
@@ -574,7 +574,7 @@ mod tests {
             "1d237c84432c78d82886cb7d6549c179ca51ebf3b324d2a3fa01af6a563a9377".to_string()
         ).unwrap();
         let result = node.get_value();
-        assert!(result == Some(expected_result));
+        assert_eq!(result, Some(expected_result));
     }
 
     #[test]
@@ -582,7 +582,7 @@ mod tests {
         let node = get_sample_branch_node();
         let expected_result = None;
         let result = node.get_value();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -590,7 +590,7 @@ mod tests {
         let node = get_sample_leaf_node();
         let rlp_encoded_node = node.get_rlp_encoding().unwrap();
         let result = rlp_decode_node(rlp_encoded_node).unwrap();
-        assert!(result == node );
+        assert_eq!(result, node );
     }
 
     #[test]
@@ -598,7 +598,7 @@ mod tests {
         let node = get_sample_extension_node();
         let rlp_encoded_node = node.get_rlp_encoding().unwrap();
         let result = rlp_decode_node(rlp_encoded_node).unwrap();
-        assert!(result == node);
+        assert_eq!(result, node);
     }
 
     #[test]
@@ -606,7 +606,7 @@ mod tests {
         let node = get_sample_branch_node();
         let rlp_encoded_node = node.get_rlp_encoding() .unwrap();
         let result = rlp_decode_node(rlp_encoded_node).unwrap();
-        assert!(result == node);
+        assert_eq!(result, node);
     }
 
     #[test]
@@ -617,7 +617,7 @@ mod tests {
         let rlp_encoded_node = node.get_rlp_encoding().unwrap();
         let updated_trie_hash_map = put_thing_in_trie_hash_map(trie_hash_map, key, rlp_encoded_node).unwrap();
         let result = get_node_from_trie_hash_map(&updated_trie_hash_map, &key).unwrap();
-        assert!(result == Some(node));
+        assert_eq!(result, Some(node));
     }
 
     #[test]
@@ -628,7 +628,7 @@ mod tests {
         let rlp_encoded_node = node.get_rlp_encoding().unwrap();
         let updated_trie_hash_map = put_thing_in_trie_hash_map(trie_hash_map, key, rlp_encoded_node).unwrap();
         let result = get_node_from_trie_hash_map(&updated_trie_hash_map, &key).unwrap();
-        assert!(result == Some(node));
+        assert_eq!(result, Some(node));
     }
 
     #[test]
@@ -639,7 +639,7 @@ mod tests {
         let rlp_encoded_node = node.get_rlp_encoding().unwrap();
         let updated_trie_hash_map = put_thing_in_trie_hash_map(trie_hash_map, key, rlp_encoded_node).unwrap();
         let result = get_node_from_trie_hash_map(&updated_trie_hash_map, &key).unwrap();
-        assert!(result == Some(node));
+        assert_eq!(result, Some(node));
     }
 
     #[test]
@@ -648,7 +648,7 @@ mod tests {
         let node = get_sample_branch_node();
         let dummy_key = node.get_hash().unwrap();
         let result = get_node_from_trie_hash_map(&trie_hash_map, &dummy_key).unwrap();
-        assert!(result == None);
+        assert_eq!(result, None);
     }
 
     #[test]
@@ -656,7 +656,7 @@ mod tests {
         let node = get_sample_leaf_node();
         let expected_result = 6; // Note: "123456" length.
         let result = node.get_key_length();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -664,7 +664,7 @@ mod tests {
         let node = get_sample_extension_node();
         let expected_result = 6; // Note: "c0ffee" length.
         let result = node.get_key_length();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -672,6 +672,6 @@ mod tests {
         let node = get_sample_branch_node();
         let expected_result = 1;
         let result = node.get_key_length();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 }

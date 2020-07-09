@@ -132,6 +132,6 @@ mod tests {
             &db,
             EthHash::from_slice(&ETH_LATEST_BLOCK_HASH_KEY[..]),
         ).unwrap().unwrap();
-        assert!(latest_block_hash_before == latest_block_hash_after);
+        assert_eq!(latest_block_hash_before, latest_block_hash_after);
     }
 }

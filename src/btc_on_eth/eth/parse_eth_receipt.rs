@@ -100,7 +100,7 @@ mod tests {
         let eth_json = get_sample_eth_block_and_receipts_json().unwrap();
         let receipt_json = eth_json.receipts[SAMPLE_RECEIPT_INDEX].clone();
         match parse_eth_receipt_json(receipt_json) {
-            Ok(receipt) => assert!(receipt == get_expected_receipt()),
+            Ok(receipt) => assert_eq!(receipt, get_expected_receipt()),
             _ => panic!("Should have parsed receipt!"),
         }
     }

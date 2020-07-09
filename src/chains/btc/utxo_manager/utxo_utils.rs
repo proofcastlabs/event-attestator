@@ -139,7 +139,7 @@ mod tests {
         let utxo = get_sample_op_return_utxo_and_value();
         let serialized_utxo = serialize_btc_utxo_and_value(&utxo).unwrap();
         let result = deserialize_utxo_and_value(&serialized_utxo).unwrap();
-        assert!(result == utxo);
+        assert_eq!(result, utxo);
     }
 
     #[test]
@@ -147,7 +147,7 @@ mod tests {
         let utxo = get_sample_p2sh_utxo_and_value().unwrap();
         let serialized_utxo = serialize_btc_utxo_and_value(&utxo).unwrap();
         let result = deserialize_utxo_and_value(&serialized_utxo).unwrap();
-        assert!(result == utxo);
+        assert_eq!(result, utxo);
     }
 
     #[test]
@@ -155,7 +155,7 @@ mod tests {
         let expected_result = "b783e877488797a385ffd73089fc7d051db72ea1cf4290ee0d3a65efa712e29c";
         let num = 1;
         let result = get_utxo_and_value_db_key(num);
-        assert!(hex::encode(result) == expected_result);
+        assert_eq!(hex::encode(result), expected_result);
     }
 
     #[test]
@@ -165,7 +165,7 @@ mod tests {
         utxo.maybe_pointer = Some(pointer_hash);
         let serialized_utxo = serialize_btc_utxo_and_value(&utxo).unwrap();
         let result = deserialize_utxo_and_value(&serialized_utxo).unwrap();
-        assert!(result == utxo);
+        assert_eq!(result, utxo);
     }
 
     #[test]

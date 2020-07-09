@@ -42,7 +42,7 @@ mod tests {
             .unwrap();
         let result = get_linker_hash_or_genesis_hash(&db)
             .unwrap();
-        assert!(result == linker_hash);
+        assert_eq!(result, linker_hash);
     }
 
 
@@ -51,6 +51,6 @@ mod tests {
         let db = get_test_database();
         let result = get_linker_hash_or_genesis_hash(&db)
             .unwrap();
-        assert!(result == EthHash::from_slice(&PTOKEN_GENESIS_HASH[..]));
+        assert_eq!(result, EthHash::from_slice(&PTOKEN_GENESIS_HASH[..]));
     }
 }

@@ -67,6 +67,6 @@ mod tests{
             &hex::decode("c63b099efB18c8db573981fB64564f1564af4f30").unwrap()
         );
         let result = calculate_contract_address(eth_address, nonce);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 }

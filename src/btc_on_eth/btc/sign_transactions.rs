@@ -175,6 +175,6 @@ mod tests {
             &signing_params,
             &minting_params,
         ).unwrap();
-        assert!(result.len() == minting_params.len());
+        assert_eq!(result.len(), minting_params.len());
     }
 }

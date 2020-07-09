@@ -354,9 +354,9 @@ mod tests {
         ).unwrap();
         let num_txs_after = result.len();
         assert!(num_txs_before != num_txs_after);
-        assert!(num_txs_after == expected_num_txs);
+        assert_eq!(num_txs_after, expected_num_txs);
         let tx_hash = result[0].txid();
-        assert!(tx_hash.to_string() == expected_tx_hash.to_string());
+        assert_eq!(tx_hash.to_string(), expected_tx_hash.to_string());
     }
 }
 */

@@ -1169,7 +1169,7 @@ mod tests {
         let trie = Trie::get_new_trie()
             .unwrap();
         assert!(trie.trie_hash_map.is_empty());
-        assert!(trie.root == HASHED_NULL_NODE);
+        assert_eq!(trie.root, HASHED_NULL_NODE);
     }
 
     #[test]
@@ -1189,12 +1189,12 @@ mod tests {
             .unwrap();
         let result = trie.put(key, value)
             .unwrap();
-        assert!(result.root == expected_node.get_hash().unwrap());
+        assert_eq!(result.root, expected_node.get_hash().unwrap());
         let thing_from_db = get_thing_from_trie_hash_map(
             &result.trie_hash_map,
             &expected_db_key
         ).unwrap();
-        assert!(thing_from_db == expected_thing_from_db)
+        assert_eq!(thing_from_db, expected_thing_from_db)
     }
 
     #[test]
@@ -1209,7 +1209,7 @@ mod tests {
         assert!(old_hash != new_hash);
         let result = trie.update_root_hash(new_hash)
             .unwrap();
-        assert!(result.root == new_hash);
+        assert_eq!(result.root, new_hash);
         assert!(result.root != old_hash);
     }
 
@@ -1234,7 +1234,7 @@ mod tests {
             &updated_trie.trie_hash_map,
             &node_hash
         ).unwrap();
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1269,7 +1269,7 @@ mod tests {
         found_stack.push(branch_node);
         let expected_result = 13;
         let result = get_key_length_accounted_for_in_stack(&found_stack);
-        assert!(result == expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -1298,7 +1298,7 @@ mod tests {
         ).unwrap();
         let root_hex = convert_h256_to_prefixed_hex(updated_trie.root)
             .unwrap();
-        assert!(root_hex == expected_root_hex);
+        assert_eq!(root_hex, expected_root_hex);
     }
 
     #[test]
@@ -1364,6 +1364,6 @@ mod tests {
         ).unwrap();
         let root_hex = convert_h256_to_prefixed_hex(updated_trie.root)
             .unwrap();
-        assert!(root_hex == expected_root_hex);
+        assert_eq!(root_hex, expected_root_hex);
     }
 }
