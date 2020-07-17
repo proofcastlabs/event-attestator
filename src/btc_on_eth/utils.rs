@@ -23,20 +23,14 @@ use crate::{
 
 pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
     match bytes.len() {
-        0..=7 => Err(AppError::Custom(
-            "✘ Not enough bytes to convert to u64!"
-                .to_string()
-        )),
+        0..=7 => Err(AppError::Custom("✘ Not enough bytes to convert to u64!" .to_string())),
         U64_NUM_BYTES => {
             let mut arr = [0u8; U64_NUM_BYTES];
             let bytes = &bytes[..U64_NUM_BYTES];
             arr.copy_from_slice(bytes);
             Ok(u64::from_le_bytes(arr))
         }
-        _ => Err(AppError::Custom(
-            "✘ Too many bytes to convert to u64 without overflowing!"
-                .to_string()
-        )),
+        _ => Err(AppError::Custom("✘ Too many bytes to convert to u64 without overflowing!".to_string())),
     }
 }
 
@@ -44,15 +38,11 @@ pub fn convert_u64_to_bytes(u_64: u64) -> Bytes {
     u_64.to_le_bytes().to_vec()
 }
 
-pub fn convert_u256_to_32_byte_wide_zero_padded_hex(
-    u256: U256
-) -> String {
+pub fn convert_u256_to_32_byte_wide_zero_padded_hex(u256: U256) -> String {
     format!("{:0>64}", format!("{:x}", u256))
 }
 
-pub fn convert_eth_address_to_32_byte_wide_zero_padded_hex(
-    eth_address: EthAddress
-) -> String {
+pub fn convert_eth_address_to_32_byte_wide_zero_padded_hex(eth_address: EthAddress) -> String {
     format!("{:0>64}", format!("{:x}", eth_address))
 }
 
@@ -63,9 +53,7 @@ pub fn strip_new_line_chars(string: String) -> String {
 pub fn convert_dec_str_to_u256(dec_str: &str) -> Result<U256> {
     match U256::from_dec_str(dec_str) {
         Ok(u256) => Ok(u256),
-        Err(e) => Err(AppError::Custom(
-            format!("✘ Error converting decimal string to u256:\n{:?}", e)
-        ))
+        Err(e) => Err(AppError::Custom(format!("✘ Error converting decimal string to u256:\n{:?}", e)))
     }
 }
 
@@ -103,8 +91,7 @@ pub fn decode_hex(hex_to_decode: String) -> Result<Vec<u8>> {
 }
 
 pub fn decode_prefixed_hex(hex_to_decode: String) -> Result<Vec<u8>> {
-    strip_hex_prefix(&hex_to_decode)
-        .and_then(decode_hex)
+    strip_hex_prefix(&hex_to_decode).and_then(decode_hex)
 }
 
 pub fn get_not_in_state_err(substring: &str) -> String {
@@ -127,38 +114,23 @@ pub fn convert_hex_to_h256(hex: String) -> Result<H256> {
     decode_prefixed_hex(hex)
         .and_then(|bytes| match bytes.len() {
             HASH_LENGTH => Ok(H256::from_slice(&bytes)),
-            _ => Err(
-                AppError::Custom(
-                    format!(
-                        "✘ {} bytes required to create h256 type, {} provided!",
-                        HASH_LENGTH,
-                        bytes.len(),
-                    )
-                )
-            )
+            _ => Err(AppError::Custom(
+                format!("✘ {} bytes required to create h256 type, {} provided!", HASH_LENGTH, bytes.len())
+            ))
         })
 }
 
 pub fn convert_hex_strings_to_h256s(hex_strings: Vec<String>) -> Result<Vec<H256>> {
-    let hashes: Result<Vec<H256>> = hex_strings
-        .into_iter()
-        .map(convert_hex_to_h256)
-        .collect();
+    let hashes: Result<Vec<H256>> = hex_strings.into_iter().map(convert_hex_to_h256).collect();
     Ok(hashes?)
 }
 
 pub fn convert_satoshis_to_ptoken(satoshis: u64) -> U256 {
-    U256::from(satoshis) * U256::from(
-        10u64.pow(PTOKEN_ERC777_NUM_DECIMALS - BTC_NUM_DECIMALS)
-    )
+    U256::from(satoshis) * U256::from(10u64.pow(PTOKEN_ERC777_NUM_DECIMALS - BTC_NUM_DECIMALS))
 }
 
 pub fn convert_ptoken_to_satoshis(ptoken: U256) -> u64 {
-    match ptoken.checked_div(
-        U256::from(
-            10u64.pow(PTOKEN_ERC777_NUM_DECIMALS - BTC_NUM_DECIMALS)
-        )
-    ) {
+    match ptoken.checked_div(U256::from(10u64.pow(PTOKEN_ERC777_NUM_DECIMALS - BTC_NUM_DECIMALS))) {
         Some(amount) => amount.as_u64(),
         None => 0,
     }
@@ -178,16 +150,14 @@ mod tests {
     #[test]
     fn should_convert_satoshis_to_ptoken() {
         let satoshis = 1337;
-        let expected_result = U256::from_dec_str("13370000000000")
-            .unwrap();
+        let expected_result = U256::from_dec_str("13370000000000").unwrap();
         let result = convert_satoshis_to_ptoken(satoshis);
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_convert_ptoken_to_satoshis() {
-        let ptoken = U256::from_dec_str("13370000000000")
-            .unwrap();
+        let ptoken = U256::from_dec_str("13370000000000").unwrap();
         let expected_result = 1337;
         let result = convert_ptoken_to_satoshis(ptoken);
         assert_eq!(result, expected_result);
@@ -198,8 +168,7 @@ mod tests {
         let none_prefixed_hex = "c0ffee";
         assert!(!none_prefixed_hex.contains('x'));
         let expected_result = [192, 255, 238];
-        let result = decode_hex(none_prefixed_hex.to_string())
-            .unwrap();
+        let result = decode_hex(none_prefixed_hex.to_string()).unwrap();
         assert_eq!(result, expected_result)
     }
 
@@ -207,8 +176,7 @@ mod tests {
     fn should_left_pad_string_with_zero_correctly() {
         let dummy_hex = "0xc0ffee";
         let expected_result = "00xc0ffee".to_string();
-        let result = left_pad_with_zero(dummy_hex)
-            .unwrap();
+        let result = left_pad_with_zero(dummy_hex).unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -216,8 +184,7 @@ mod tests {
     fn should_strip_hex_prefix_correctly() {
         let dummy_hex = "0xc0ffee";
         let expected_result = "c0ffee".to_string();
-        let result = strip_hex_prefix(dummy_hex)
-            .unwrap();
+        let result = strip_hex_prefix(dummy_hex).unwrap();
         assert_eq!(result, expected_result)
     }
 
@@ -225,18 +192,15 @@ mod tests {
     fn should_not_strip_missing_hex_prefix_correctly() {
         let dummy_hex = "c0ffee";
         let expected_result = "c0ffee".to_string();
-        let result = strip_hex_prefix(dummy_hex)
-            .unwrap();
+        let result = strip_hex_prefix(dummy_hex).unwrap();
         assert_eq!(result, expected_result)
     }
 
     #[test]
     fn should_convert_hex_to_address_correcty() {
         let address_hex = "0xb2930b35844a230f00e51431acae96fe543a0347";
-        let result = convert_hex_to_address(address_hex.to_string())
-            .unwrap();
-        let expected_result = decode_prefixed_hex(address_hex.to_string())
-            .unwrap();
+        let result = convert_hex_to_address(address_hex.to_string()).unwrap();
+        let expected_result = decode_prefixed_hex(address_hex.to_string()).unwrap();
         let expected_result_bytes = &expected_result[..];
         assert_eq!(result.as_bytes(), expected_result_bytes);
     }
@@ -280,18 +244,15 @@ mod tests {
         assert_eq!("0", chars.next().unwrap().to_string());
         assert_eq!("x", chars.next().unwrap().to_string());
         let expected_result = [192, 255, 238];
-        let result = decode_prefixed_hex(prefixed_hex.to_string())
-            .unwrap();
+        let result = decode_prefixed_hex(prefixed_hex.to_string()).unwrap();
         assert_eq!(result, expected_result)
     }
         #[test]
     fn should_convert_hex_to_h256_correctly() {
         let dummy_hash = "0xc5acf860fa849b72fc78855dcbc4e9b968a8af5cdaf79f03beeca78e6a9cec8b";
         assert_eq!(dummy_hash.len(), HASH_HEX_CHARS + HEX_PREFIX_LENGTH);
-        let result = convert_hex_to_h256(dummy_hash.to_string())
-            .unwrap();
-        let expected_result = decode_prefixed_hex(dummy_hash.to_string())
-            .unwrap();
+        let result = convert_hex_to_h256(dummy_hash.to_string()).unwrap();
+        let expected_result = decode_prefixed_hex(dummy_hash.to_string()).unwrap();
         let expected_result_bytes = &expected_result[..];
         assert_eq!(result.as_bytes(), expected_result_bytes);
     }
@@ -332,9 +293,7 @@ mod tests {
         assert!(long_hash.len() > HASH_HEX_CHARS + HEX_PREFIX_LENGTH);
         assert!(long_hash.contains('z'));
         match convert_hex_to_h256(long_hash.to_string()) {
-            Err(AppError::HexError(e)) => assert!(
-                e.to_string().contains("Invalid")
-            ),
+            Err(AppError::HexError(e)) => assert!(e.to_string().contains("Invalid")),
             Err(AppError::Custom(_)) => panic!("Should be hex error!"),
             _ => panic!("Should have errored ∵ of invalid hash!")
         }
@@ -347,8 +306,7 @@ mod tests {
         let expected_result1 = convert_hex_to_h256(str1.clone()).unwrap();
         let expected_result2 = convert_hex_to_h256(str2.clone()).unwrap();
         let hex_strings: Vec<String> = vec!(str1, str2);
-        let results: Vec<H256> = convert_hex_strings_to_h256s(hex_strings)
-            .unwrap();
+        let results: Vec<H256> = convert_hex_strings_to_h256s(hex_strings).unwrap();
         assert_eq!(results[0], expected_result1);
         assert_eq!(results[1], expected_result2);
     }
@@ -368,14 +326,10 @@ mod tests {
 
     #[test]
     fn should_convert_bytes_to_h256() {
-        let hex_string = "ebfa2e7610ea186fa3fa97bbaa5db80cce033dfff7e546c6ee05493dbcbfda7a"
-            .to_string();
-        let expected_result = convert_hex_to_h256(hex_string.clone())
-            .unwrap();
-        let bytes = hex::decode(hex_string)
-            .unwrap();
-        let result = convert_bytes_to_h256(&bytes)
-            .unwrap();
+        let hex_string = "ebfa2e7610ea186fa3fa97bbaa5db80cce033dfff7e546c6ee05493dbcbfda7a".to_string();
+        let expected_result = convert_hex_to_h256(hex_string.clone()).unwrap();
+        let bytes = hex::decode(hex_string).unwrap();
+        let result = convert_bytes_to_h256(&bytes).unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -383,8 +337,7 @@ mod tests {
     fn should_convert_decimal_string_to_u256() {
         let expected_result = 1337;
         let dec_str = "1337";
-        let result = convert_dec_str_to_u256(dec_str)
-            .unwrap();
+        let result = convert_dec_str_to_u256(dec_str).unwrap();
         assert_eq!(result.as_usize(), expected_result);
     }
 
@@ -414,8 +367,7 @@ mod tests {
     #[test]
     fn should_convert_u256_to_padded_hex() {
         let u256 = U256::from_dec_str("12312321").unwrap();
-        let expected_result = "0000000000000000000000000000000000000000000000000000000000bbdf01"
-            .to_string();
+        let expected_result = "0000000000000000000000000000000000000000000000000000000000bbdf01".to_string();
         let result = convert_u256_to_32_byte_wide_zero_padded_hex(u256);
         assert_eq!(result, expected_result);
     }
@@ -423,11 +375,8 @@ mod tests {
     #[test]
     fn should_convert_eth_address_to_padded_hex() {
         let eth_address = get_sample_eth_address();
-        let expected_result = "0000000000000000000000001739624f5cd969885a224da84418d12b8570d61a"
-            .to_string();
-        let result = convert_eth_address_to_32_byte_wide_zero_padded_hex(
-            eth_address
-        );
+        let expected_result = "0000000000000000000000001739624f5cd969885a224da84418d12b8570d61a".to_string();
+        let result = convert_eth_address_to_32_byte_wide_zero_padded_hex(eth_address);
         assert_eq!(result, expected_result);
     }
 
@@ -443,15 +392,13 @@ mod tests {
     fn should_convert_bytes_to_u64() {
         let bytes = vec![255,255,255,255,255,255,255,255];
         let expected_result = u64::max_value();
-        let result = convert_bytes_to_u64(&bytes)
-            .unwrap();
+        let result = convert_bytes_to_u64(&bytes).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_error_converting_too_few_bytes_to_u64() {
-        let expected_error = "✘ Not enough bytes to convert to u64!"
-            .to_string();
+        let expected_error = "✘ Not enough bytes to convert to u64!".to_string();
         let bytes = vec![255,255,255,255,255,255,255];
         assert!(bytes.len() < U64_NUM_BYTES);
         match  convert_bytes_to_u64(&bytes) {
@@ -463,9 +410,7 @@ mod tests {
 
     #[test]
     fn should_error_converting_too_many_bytes_to_u64() {
-        let expected_error =
-            "✘ Too many bytes to convert to u64 without overflowing!"
-                .to_string();
+        let expected_error = "✘ Too many bytes to convert to u64 without overflowing!".to_string();
         let bytes = vec![255,255,255,255,255,255,255,255,255];
         assert!(bytes.len() > U64_NUM_BYTES);
         match  convert_bytes_to_u64(&bytes) {

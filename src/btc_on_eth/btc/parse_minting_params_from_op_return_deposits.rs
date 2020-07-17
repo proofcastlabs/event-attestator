@@ -74,12 +74,7 @@ fn extract_spender_address_from_p2pkh_input(
                 };
                 info!("✔ Instruction: {:?}", script_instruction);
                 info!("✔ data: {:?}", data);
-                Ok(
-                    BtcAddress::p2pkh(
-                        &BtcPublicKey::from_slice(data)?,
-                        btc_network,
-                    )
-                )
+                Ok(BtcAddress::p2pkh(&BtcPublicKey::from_slice(data)?, btc_network))
             })
             .collect::<Result<Vec<BtcAddress>>>()?[0]
             .clone()
@@ -90,11 +85,7 @@ fn parse_eth_address_from_op_return_script(
     op_return_script: &BtcScript
 ) -> EthAddress {
     trace!("✔ Parsing ETH address from script: {}", op_return_script);
-    EthAddress::from_slice(
-        &btc_serialize(op_return_script)[
-            NUM_PREFIX_BYTES_IN_SERIALIZED_OP_RETURN..
-        ]
-    )
+    EthAddress::from_slice(&btc_serialize(op_return_script)[NUM_PREFIX_BYTES_IN_SERIALIZED_OP_RETURN..])
 }
 
 fn serialized_script_pubkey_is_desired_op_return(
@@ -109,9 +100,7 @@ fn serialized_script_pubkey_is_desired_op_return(
 fn output_is_desired_op_return(
     output: &BtcTxOut
 ) -> bool {
-    serialized_script_pubkey_is_desired_op_return(
-        &btc_serialize(&output.script_pubkey)
-    )
+    serialized_script_pubkey_is_desired_op_return(&btc_serialize(&output.script_pubkey))
 }
 
 fn sum_deposit_values_from_tx_outputs(
@@ -165,18 +154,13 @@ fn parse_minting_param_struct_from_tx(
 ) -> Result<MintingParamStruct> {
     Ok(
         MintingParamStruct::new(
-            convert_satoshis_to_ptoken(
-                sum_deposit_values_from_tx_outputs(&tx, &target_deposit_script),
-            ),
+            convert_satoshis_to_ptoken(sum_deposit_values_from_tx_outputs(&tx, &target_deposit_script)),
             get_eth_address_from_op_return_in_tx_else_safe_address(&tx),
             tx.txid(),
             // NOTE: Currently not supporting the getting of the origin from
             // witness data.
             match tx.input[0].witness.is_empty() {
-                true => extract_spender_address_from_p2pkh_input(
-                    &tx.input[0].clone(),
-                    btc_network
-                )?,
+                true => extract_spender_address_from_p2pkh_input(&tx.input[0].clone(), btc_network)?,
                 false => {
                     info!("✔ Not a p2pkh script, can't get sender address");
                     BtcAddress::from_str(&DEFAULT_BTC_ADDRESS)?
@@ -191,19 +175,10 @@ fn parse_minting_params_from_txs(
     op_return_deposit_containing_transactions: &[BtcTransaction],
     btc_network: BtcNetwork,
 ) -> Result<MintingParams> {
-    trace!(
-        "✔ Parsing minting params from target script: {}",
-        target_deposit_script
-    );
+    trace!("✔ Parsing minting params from target script: {}", target_deposit_script);
     op_return_deposit_containing_transactions
         .iter()
-        .map(|tx|
-             parse_minting_param_struct_from_tx(
-                 target_deposit_script,
-                 tx,
-                 btc_network
-             )
-        )
+        .map(|tx| parse_minting_param_struct_from_tx(target_deposit_script, tx, btc_network))
         .collect::<Result<Vec<MintingParamStruct>>>()
 }
 
@@ -245,20 +220,14 @@ mod tests {
     };
 
     fn get_expected_eth_address() -> EthAddress {
-        EthAddress::from_slice(
-            &hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()
-        )
+        EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap())
     }
 
     #[test]
     fn serialized_script_pubkey_should_be_desired_op_return() {
         let op_return_output = get_sample_op_return_output();
-        let serialized_output_script = btc_serialize(
-            &op_return_output.script_pubkey
-        );
-        let result = serialized_script_pubkey_is_desired_op_return(
-            &serialized_output_script
-        );
+        let serialized_output_script = btc_serialize(&op_return_output.script_pubkey);
+        let result = serialized_script_pubkey_is_desired_op_return(&serialized_output_script);
         assert!(result);
     }
 
@@ -273,14 +242,9 @@ mod tests {
     fn incorrect_output_should_not_be_desired_op_return() {
         #[allow(non_snake_case)]
         let INDEX_OF_NON_OP_RETURN_OUTPUT = 0;
-        assert!(
-            INDEX_OF_NON_OP_RETURN_OUTPUT !=
-            SAMPLE_OP_RETURN_TRANSACTION_OUTPUT_INDEX
-        );
+        assert!(INDEX_OF_NON_OP_RETURN_OUTPUT != SAMPLE_OP_RETURN_TRANSACTION_OUTPUT_INDEX);
         let tx = get_sample_btc_op_return_tx();
-        let wrong_output = tx
-            .output[INDEX_OF_NON_OP_RETURN_OUTPUT]
-            .clone();
+        let wrong_output = tx.output[INDEX_OF_NON_OP_RETURN_OUTPUT].clone();
         let result = output_is_desired_op_return(&wrong_output);
         assert!(!result);
     }
@@ -288,8 +252,7 @@ mod tests {
     #[test]
     fn should_parse_eth_address_from_op_return_script() {
         let expected_result = get_expected_eth_address();
-        let script = get_sample_op_return_output()
-            .script_pubkey;
+        let script = get_sample_op_return_output().script_pubkey;
         let result = parse_eth_address_from_op_return_script(&script);
         assert_eq!(result, expected_result);
     }
@@ -307,20 +270,15 @@ mod tests {
     fn should_get_eth_address_from_op_return_in_tx_else_safe_address() {
         let expected_result = get_expected_eth_address();
         let tx = get_sample_btc_op_return_tx();
-        let result = get_eth_address_from_op_return_in_tx_else_safe_address(
-            &tx
-        );
+        let result = get_eth_address_from_op_return_in_tx_else_safe_address(&tx);
         assert_eq!(result, hex::encode(expected_result));
     }
 
     #[test]
     fn should_default_to_safe_address_if_no_op_return() {
         let tx_no_op_return = get_sample_btc_tx();
-        let expected_result = get_safe_eth_address();
-        let result = get_eth_address_from_op_return_in_tx_else_safe_address(
-            &tx_no_op_return
-        );
-        assert_eq!(result, hex::encode(expected_result));
+        let result = get_eth_address_from_op_return_in_tx_else_safe_address(&tx_no_op_return);
+        assert_eq!(result, hex::encode(SAFE_ETH_ADDRESS.as_bytes()));
     }
 
     #[test]
@@ -329,28 +287,17 @@ mod tests {
         let expected_address = get_expected_eth_address();
         let expected_value = convert_satoshis_to_ptoken(1337);
         let expected_origin_address = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
-        let expected_tx_hash =
-            "183d4334c0e06d38cebfe2387e192c3a5f24f13c612214945af95f0aec696c6b"
-                .to_string();
-        let block = get_sample_op_return_btc_block_and_txs()
-            .block;
-        let filtered_txs = filter_txs_for_op_return_deposits(
-            &get_sample_btc_private_key(),
-            &block.txdata,
-        ).unwrap();
+        let expected_tx_hash = "183d4334c0e06d38cebfe2387e192c3a5f24f13c612214945af95f0aec696c6b".to_string();
+        let block = get_sample_op_return_btc_block_and_txs().block;
+        let filtered_txs = filter_txs_for_op_return_deposits(&get_sample_btc_private_key(), &block.txdata).unwrap();
         let target_deposit_script = get_sample_pay_to_pub_key_hash_script();
-        let result = parse_minting_params_from_txs(
-            &target_deposit_script,
-            &filtered_txs,
-            network,
-        ).unwrap();
+        let result = parse_minting_params_from_txs(&target_deposit_script, &filtered_txs, network).unwrap();
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].amount, expected_value);
         assert_eq!(result[0].eth_address, expected_address);
         assert_eq!(result[0].originating_tx_hash.to_string(), expected_tx_hash);
         let input = filtered_txs[0].input[0].clone();
-        let address = extract_spender_address_from_p2pkh_input(&input, network)
-            .unwrap();
+        let address = extract_spender_address_from_p2pkh_input(&input, network).unwrap();
         assert_eq!(address.to_string(), expected_origin_address);
     }
 
@@ -358,15 +305,10 @@ mod tests {
     fn should_extract_spender_address_from_p2pkh_input() {
         let network = BtcNetwork::Testnet;
         let expected_origin_address = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
-        let block = get_sample_op_return_btc_block_and_txs()
-            .block;
-        let filtered_txs = filter_txs_for_op_return_deposits(
-            &get_sample_btc_private_key(),
-            &block.txdata,
-        ).unwrap();
+        let block = get_sample_op_return_btc_block_and_txs().block;
+        let filtered_txs = filter_txs_for_op_return_deposits(&get_sample_btc_private_key(), &block.txdata).unwrap();
         let input = filtered_txs[0].input[0].clone();
-        let result = extract_spender_address_from_p2pkh_input(&input, network)
-            .unwrap();
+        let result = extract_spender_address_from_p2pkh_input(&input, network).unwrap();
         assert_eq!(result.to_string(), expected_origin_address);
     }
 
@@ -377,24 +319,16 @@ mod tests {
         let expected_address = get_expected_eth_address();
         let expected_value = convert_satoshis_to_ptoken(1337);
         let expected_origin_address = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
-        let expected_tx_hash =
-            "183d4334c0e06d38cebfe2387e192c3a5f24f13c612214945af95f0aec696c6b"
-                .to_string();
-        let block = get_sample_op_return_btc_block_and_txs()
-            .block;
+        let expected_tx_hash = "183d4334c0e06d38cebfe2387e192c3a5f24f13c612214945af95f0aec696c6b".to_string();
+        let block = get_sample_op_return_btc_block_and_txs().block;
         let tx = block.txdata[tx_index].clone();
         let target_deposit_script = get_sample_pay_to_pub_key_hash_script();
-        let result = parse_minting_param_struct_from_tx(
-            &target_deposit_script,
-            &tx,
-            network,
-        ).unwrap();
+        let result = parse_minting_param_struct_from_tx(&target_deposit_script, &tx, network).unwrap();
         assert_eq!(result.amount, expected_value);
         assert_eq!(result.eth_address, expected_address);
         assert_eq!(result.originating_tx_hash.to_string(), expected_tx_hash);
         let input = tx.input[0].clone();
-        let address = extract_spender_address_from_p2pkh_input(&input, network)
-            .unwrap();
+        let address = extract_spender_address_from_p2pkh_input(&input, network).unwrap();
         assert_eq!(address.to_string(), expected_origin_address);
     }
 
@@ -402,28 +336,18 @@ mod tests {
     fn should_default_to_safe_address_if_no_op_return_present() {
         let tx_index = 36;
         let network = BtcNetwork::Testnet;
-        let expected_eth_address = get_safe_eth_address();
         let expected_value = convert_satoshis_to_ptoken(4610922);
         let expected_origin_address = "moBSQbHn7N9BC9pdtAMnA7GBiALzNMQJyE";
-        let expected_tx_hash =
-            "9ac032f07cacce63d66fc3937ea04c032eb33852bed705e3e7a309baa8bedf19"
-                .to_string();
-        let block = get_sample_btc_block_n(8)
-            .unwrap()
-            .block;
+        let expected_tx_hash = "9ac032f07cacce63d66fc3937ea04c032eb33852bed705e3e7a309baa8bedf19".to_string();
+        let block = get_sample_btc_block_n(8).unwrap().block;
         let tx = block.txdata[tx_index].clone();
         let target_deposit_script = get_sample_pay_to_pub_key_hash_script();
-        let result = parse_minting_param_struct_from_tx(
-            &target_deposit_script,
-            &tx,
-            network,
-        ).unwrap();
+        let result = parse_minting_param_struct_from_tx(&target_deposit_script, &tx, network).unwrap();
         assert_eq!(result.amount, expected_value);
-        assert_eq!(result.eth_address, expected_eth_address);
+        assert_eq!(result.eth_address, *SAFE_ETH_ADDRESS);
         assert_eq!(result.originating_tx_hash.to_string(), expected_tx_hash);
         let input = tx.input[0].clone();
-        let address = extract_spender_address_from_p2pkh_input(&input, network)
-            .unwrap();
+        let address = extract_spender_address_from_p2pkh_input(&input, network).unwrap();
         assert_eq!(address.to_string(), expected_origin_address);
     }
 
