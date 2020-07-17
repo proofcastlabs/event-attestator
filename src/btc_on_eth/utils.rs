@@ -11,13 +11,12 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eth::{
-        constants::{
-            HASH_LENGTH,
-            U64_NUM_BYTES,
-            BTC_NUM_DECIMALS,
-            PTOKEN_ERC777_NUM_DECIMALS,
-        },
+    btc_on_eth::constants::{
+        HASH_LENGTH,
+        U64_NUM_BYTES,
+        BTC_NUM_DECIMALS,
+        SAFE_ETH_ADDRESS,
+        PTOKEN_ERC777_NUM_DECIMALS,
     },
 };
 
@@ -106,7 +105,18 @@ pub fn convert_hex_to_bytes(hex: String) -> Result<Bytes> {
     Ok(hex::decode(strip_hex_prefix(&hex)?)?)
 }
 
-pub fn convert_hex_to_address(hex: String) -> Result<EthAddress> {
+pub fn safely_convert_hex_to_eth_address(hex: &str) -> Result<EthAddress> {
+    match convert_hex_to_address(hex.to_string()) {
+        Ok(address) => Ok(address),
+        Err(_) => {
+            info!("✔ Could not parse hex: '{}'!", hex);
+            info!("✔ Defaulting to safe eth address: 0x{}", hex::encode(SAFE_ETH_ADDRESS.as_bytes()));
+            Ok(*SAFE_ETH_ADDRESS)
+        }
+    }
+}
+
+pub fn convert_hex_to_address(hex: String) -> Result<EthAddress> { 
     Ok(EthAddress::from_slice(&decode_prefixed_hex(hex)?))
 }
 
@@ -197,12 +207,35 @@ mod tests {
     }
 
     #[test]
-    fn should_convert_hex_to_address_correcty() {
+    fn should_convert_hex_to_address_correctly() {
         let address_hex = "0xb2930b35844a230f00e51431acae96fe543a0347";
         let result = convert_hex_to_address(address_hex.to_string()).unwrap();
         let expected_result = decode_prefixed_hex(address_hex.to_string()).unwrap();
         let expected_result_bytes = &expected_result[..];
         assert_eq!(result.as_bytes(), expected_result_bytes);
+    }
+
+    #[test]
+    fn should_fail_to_convert_bad_hex_to_address_correctly() {
+        let bad_hex = "https://somewhere.com/address/0xb2930b35844a230f00e51431acae96fe543a0347";
+        let result = convert_hex_to_address(bad_hex.to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn should_safely_convert_hex_to_eth_address_correctly() {
+        let address_hex = "0xb2930b35844a230f00e51431acae96fe543a0347";
+        let result = safely_convert_hex_to_eth_address(address_hex).unwrap();
+        let expected_result = decode_prefixed_hex(address_hex.to_string()).unwrap();
+        let expected_result_bytes = &expected_result[..];
+        assert_eq!(result.as_bytes(), expected_result_bytes);
+    }
+
+    #[test]
+    fn should_revert_to_safe_eth_address_when_safely_convert_bad_hex_to_eth_address() {
+        let bad_hex = "https://somewhere.com/address/0xb2930b35844a230f00e51431acae96fe543a0347";
+        let result = safely_convert_hex_to_eth_address(bad_hex).unwrap();
+        assert_eq!(result, *SAFE_ETH_ADDRESS);
     }
 
     #[test]
