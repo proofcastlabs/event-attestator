@@ -221,10 +221,6 @@ pub fn deserialize_btc_block_in_db_format(
     )
 }
 
-pub fn get_safe_eth_address() -> EthAddress {
-    EthAddress::from_slice(&SAFE_ETH_ADDRESS)
-}
-
 pub fn get_total_value_of_utxos_and_values(
     utxos_and_values: &[BtcUtxoAndValue]
 ) -> u64 {
@@ -620,12 +616,5 @@ mod tests {
         let result = deserialize_btc_block_in_db_format(&serialized_block)
             .unwrap();
         assert_eq!(result, block_in_db_format);
-    }
-
-    #[test]
-    fn should_get_safe_eth_address() {
-        let expected_result = "71a440ee9fa7f99fb9a697e96ec7839b8a1643b8";
-        let result = get_safe_eth_address();
-        assert_eq!(hex::encode(result.as_bytes()), expected_result);
     }
 }

@@ -27,10 +27,7 @@ use crate::{
     },
     chains::btc::{
         btc_constants::DEFAULT_BTC_ADDRESS,
-        btc_utils::{
-            get_safe_eth_address,
-            get_pay_to_pub_key_hash_script,
-        },
+        btc_utils::get_pay_to_pub_key_hash_script,
     },
     btc_on_eth::{
         constants::SAFE_ETH_ADDRESS,
@@ -125,23 +122,15 @@ fn get_eth_address_from_op_return_in_tx_else_safe_address(
         .cloned()
         .filter(output_is_desired_op_return)
         .collect::<Vec<BtcTxOut>>();
-
     match maybe_op_return.len() {
         0 => {
-            info!(
-                "✔ No address found, default to safe address: 0x{}",
-                hex::encode(SAFE_ETH_ADDRESS)
-            );
-            hex::encode(get_safe_eth_address())
+            let address = hex::encode(SAFE_ETH_ADDRESS.as_bytes());
+            info!("✔ No address found, default to safe address: 0x{}", address);
+            address
         }
         _ => {
-            let address = parse_eth_address_from_op_return_script(
-                &maybe_op_return[0].script_pubkey
-            );
-            info!(
-                "✔ Address parsed from `op_return` script: 0x{}",
-                hex::encode(address)
-            );
+            let address = parse_eth_address_from_op_return_script(&maybe_op_return[0].script_pubkey);
+            info!("✔ Address parsed from `op_return` script: 0x{}", hex::encode(address));
             hex::encode(address)
         }
     }
