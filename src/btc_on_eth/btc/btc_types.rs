@@ -1,7 +1,7 @@
 use crate::{
     btc_on_eth::{
         constants::SAFE_BTC_ADDRESS,
-        utils::convert_hex_to_address,
+        utils::safely_convert_hex_to_eth_address,
     },
     chains::btc::deposit_address_info::{
         DepositInfoList,
@@ -89,15 +89,15 @@ pub struct MintingParamStruct {
 impl MintingParamStruct {
     pub fn new(
         amount: U256,
-        eth_address: String,
+        eth_address_hex: String,
         originating_tx_hash: sha256d::Hash,
         originating_tx_address: BtcAddress,
     ) -> Result<MintingParamStruct> {
         Ok(MintingParamStruct {
             amount,
             originating_tx_hash,
-            eth_address: convert_hex_to_address(eth_address)?,
             originating_tx_address: originating_tx_address.to_string(),
+            eth_address: safely_convert_hex_to_eth_address(&eth_address_hex)?,
         })
     }
 }
