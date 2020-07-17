@@ -85,12 +85,12 @@ pub fn strip_hex_prefix(prefixed_hex : &str) -> Result<String> {
     }
 }
 
-pub fn decode_hex(hex_to_decode: String) -> Result<Vec<u8>> {
+pub fn decode_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
     Ok(hex::decode(hex_to_decode)?)
 }
 
-pub fn decode_prefixed_hex(hex_to_decode: String) -> Result<Vec<u8>> {
-    strip_hex_prefix(&hex_to_decode).and_then(decode_hex)
+pub fn decode_prefixed_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
+    strip_hex_prefix(&hex_to_decode).and_then(|hex| decode_hex(&hex))
 }
 
 pub fn get_not_in_state_err(substring: &str) -> String {
@@ -101,12 +101,12 @@ pub fn get_no_overwrite_state_err(substring: &str) -> String {
     format!("✘ Cannot overwrite {} in state!" , substring)
 }
 
-pub fn convert_hex_to_bytes(hex: String) -> Result<Bytes> {
+pub fn convert_hex_to_bytes(hex: &str) -> Result<Bytes> {
     Ok(hex::decode(strip_hex_prefix(&hex)?)?)
 }
 
 pub fn safely_convert_hex_to_eth_address(hex: &str) -> Result<EthAddress> {
-    match convert_hex_to_address(hex.to_string()) {
+    match convert_hex_to_address(hex) {
         Ok(address) => Ok(address),
         Err(_) => {
             info!("✔ Could not parse hex: '{}'!", hex);
@@ -116,11 +116,11 @@ pub fn safely_convert_hex_to_eth_address(hex: &str) -> Result<EthAddress> {
     }
 }
 
-pub fn convert_hex_to_address(hex: String) -> Result<EthAddress> { 
+pub fn convert_hex_to_address(hex: &str) -> Result<EthAddress> { // TODO take str & rename to have ETH in it!
     Ok(EthAddress::from_slice(&decode_prefixed_hex(hex)?))
 }
 
-pub fn convert_hex_to_h256(hex: String) -> Result<H256> {
+pub fn convert_hex_to_h256(hex: &str) -> Result<H256> {
     decode_prefixed_hex(hex)
         .and_then(|bytes| match bytes.len() {
             HASH_LENGTH => Ok(H256::from_slice(&bytes)),
@@ -130,7 +130,7 @@ pub fn convert_hex_to_h256(hex: String) -> Result<H256> {
         })
 }
 
-pub fn convert_hex_strings_to_h256s(hex_strings: Vec<String>) -> Result<Vec<H256>> {
+pub fn convert_hex_strings_to_h256s(hex_strings: Vec<&str>) -> Result<Vec<H256>> {
     let hashes: Result<Vec<H256>> = hex_strings.into_iter().map(convert_hex_to_h256).collect();
     Ok(hashes?)
 }
@@ -178,7 +178,7 @@ mod tests {
         let none_prefixed_hex = "c0ffee";
         assert!(!none_prefixed_hex.contains('x'));
         let expected_result = [192, 255, 238];
-        let result = decode_hex(none_prefixed_hex.to_string()).unwrap();
+        let result = decode_hex(none_prefixed_hex).unwrap();
         assert_eq!(result, expected_result)
     }
 
@@ -209,8 +209,8 @@ mod tests {
     #[test]
     fn should_convert_hex_to_address_correctly() {
         let address_hex = "0xb2930b35844a230f00e51431acae96fe543a0347";
-        let result = convert_hex_to_address(address_hex.to_string()).unwrap();
-        let expected_result = decode_prefixed_hex(address_hex.to_string()).unwrap();
+        let result = convert_hex_to_address(address_hex).unwrap();
+        let expected_result = decode_prefixed_hex(address_hex).unwrap();
         let expected_result_bytes = &expected_result[..];
         assert_eq!(result.as_bytes(), expected_result_bytes);
     }
@@ -218,7 +218,7 @@ mod tests {
     #[test]
     fn should_fail_to_convert_bad_hex_to_address_correctly() {
         let bad_hex = "https://somewhere.com/address/0xb2930b35844a230f00e51431acae96fe543a0347";
-        let result = convert_hex_to_address(bad_hex.to_string());
+        let result = convert_hex_to_address(bad_hex);
         assert!(result.is_err());
     }
 
@@ -226,7 +226,7 @@ mod tests {
     fn should_safely_convert_hex_to_eth_address_correctly() {
         let address_hex = "0xb2930b35844a230f00e51431acae96fe543a0347";
         let result = safely_convert_hex_to_eth_address(address_hex).unwrap();
-        let expected_result = decode_prefixed_hex(address_hex.to_string()).unwrap();
+        let expected_result = decode_prefixed_hex(address_hex).unwrap();
         let expected_result_bytes = &expected_result[..];
         assert_eq!(result.as_bytes(), expected_result_bytes);
     }
@@ -240,7 +240,7 @@ mod tests {
 
     #[test]
     fn should_convert_unprefixed_hex_to_bytes_correctly() {
-        let hex = "c0ffee".to_string();
+        let hex = "c0ffee";
         let expected_result = [ 192, 255, 238 ];
         let result = convert_hex_to_bytes(hex).unwrap();
         assert_eq!(result, expected_result)
@@ -248,7 +248,7 @@ mod tests {
 
     #[test]
     fn should_convert_prefixed_hex_to_bytes_correctly() {
-        let hex = "0xc0ffee".to_string();
+        let hex = "0xc0ffee";
         let expected_result = [ 192, 255, 238 ];
         let result = convert_hex_to_bytes(hex).unwrap();
         assert_eq!(result, expected_result)
@@ -277,15 +277,15 @@ mod tests {
         assert_eq!("0", chars.next().unwrap().to_string());
         assert_eq!("x", chars.next().unwrap().to_string());
         let expected_result = [192, 255, 238];
-        let result = decode_prefixed_hex(prefixed_hex.to_string()).unwrap();
+        let result = decode_prefixed_hex(prefixed_hex).unwrap();
         assert_eq!(result, expected_result)
     }
         #[test]
     fn should_convert_hex_to_h256_correctly() {
         let dummy_hash = "0xc5acf860fa849b72fc78855dcbc4e9b968a8af5cdaf79f03beeca78e6a9cec8b";
         assert_eq!(dummy_hash.len(), HASH_HEX_CHARS + HEX_PREFIX_LENGTH);
-        let result = convert_hex_to_h256(dummy_hash.to_string()).unwrap();
-        let expected_result = decode_prefixed_hex(dummy_hash.to_string()).unwrap();
+        let result = convert_hex_to_h256(dummy_hash).unwrap();
+        let expected_result = decode_prefixed_hex(dummy_hash).unwrap();
         let expected_result_bytes = &expected_result[..];
         assert_eq!(result.as_bytes(), expected_result_bytes);
     }
@@ -299,7 +299,7 @@ mod tests {
             hex::decode(&short_hash[2..]).unwrap().len(),
         );
         assert!(short_hash.len() < HASH_HEX_CHARS + HEX_PREFIX_LENGTH);
-        match convert_hex_to_h256(short_hash.to_string()) {
+        match convert_hex_to_h256(short_hash) {
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ => panic!("Should have errored ∵ of short hash!")
         }
@@ -314,7 +314,7 @@ mod tests {
             hex::decode(&long_hash[2..]).unwrap().len(),
         );
         assert!(long_hash.len() > HASH_HEX_CHARS + HEX_PREFIX_LENGTH);
-        match convert_hex_to_h256(long_hash.to_string()) {
+        match convert_hex_to_h256(long_hash) {
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ => panic!("Should have errored ∵ of short hash!")
         }
@@ -325,7 +325,7 @@ mod tests {
         let long_hash = "0xc5acf860fa849b72fc78855dcbc4e9b968a8af5cdaf79f03beeca78e6a9cecffzz";
         assert!(long_hash.len() > HASH_HEX_CHARS + HEX_PREFIX_LENGTH);
         assert!(long_hash.contains('z'));
-        match convert_hex_to_h256(long_hash.to_string()) {
+        match convert_hex_to_h256(long_hash) {
             Err(AppError::HexError(e)) => assert!(e.to_string().contains("Invalid")),
             Err(AppError::Custom(_)) => panic!("Should be hex error!"),
             _ => panic!("Should have errored ∵ of invalid hash!")
@@ -334,11 +334,11 @@ mod tests {
 
     #[test]
     fn should_convert_hex_strings_to_h256s() {
-        let str1 = "0xebfa2e7610ea186fa3fa97bbaa5db80cce033dfff7e546c6ee05493dbcbfda7a".to_string();
-        let str2 = "0x08075826de57b85238fe1728a37b366ab755b95c65c59faec7b0f1054fca1654".to_string();
-        let expected_result1 = convert_hex_to_h256(str1.clone()).unwrap();
-        let expected_result2 = convert_hex_to_h256(str2.clone()).unwrap();
-        let hex_strings: Vec<String> = vec!(str1, str2);
+        let str1 = "0xebfa2e7610ea186fa3fa97bbaa5db80cce033dfff7e546c6ee05493dbcbfda7a";
+        let str2 = "0x08075826de57b85238fe1728a37b366ab755b95c65c59faec7b0f1054fca1654";
+        let expected_result1 = convert_hex_to_h256(str1).unwrap();
+        let expected_result2 = convert_hex_to_h256(str2).unwrap();
+        let hex_strings: Vec<&str> = vec!(str1, str2);
         let results: Vec<H256> = convert_hex_strings_to_h256s(hex_strings).unwrap();
         assert_eq!(results[0], expected_result1);
         assert_eq!(results[1], expected_result2);
@@ -359,9 +359,9 @@ mod tests {
 
     #[test]
     fn should_convert_bytes_to_h256() {
-        let hex_string = "ebfa2e7610ea186fa3fa97bbaa5db80cce033dfff7e546c6ee05493dbcbfda7a".to_string();
-        let expected_result = convert_hex_to_h256(hex_string.clone()).unwrap();
-        let bytes = hex::decode(hex_string).unwrap();
+        let hex = "ebfa2e7610ea186fa3fa97bbaa5db80cce033dfff7e546c6ee05493dbcbfda7a";
+        let expected_result = convert_hex_to_h256(hex).unwrap();
+        let bytes = hex::decode(hex).unwrap();
         let result = convert_bytes_to_h256(&bytes).unwrap();
         assert_eq!(result, expected_result);
     }

@@ -33,9 +33,9 @@ fn calculate_bloom_from_log(log: &EthLog) -> Bloom {
 fn get_log_from_json(log_json: &EthLogJson) -> Result<EthLog> {
     Ok(
         EthLog {
-            address: convert_hex_to_address(log_json.address.clone())?,
-            topics: convert_hex_strings_to_h256s(log_json.topics.clone())?,
-            data: convert_hex_to_bytes(log_json.data.clone())?,
+            data: convert_hex_to_bytes(&log_json.data)?,
+            address: convert_hex_to_address(&log_json.address)?,
+            topics: convert_hex_strings_to_h256s(log_json.topics.iter().map(AsRef::as_ref).collect())?,
         }
     )
 }

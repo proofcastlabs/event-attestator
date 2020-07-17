@@ -349,17 +349,17 @@ mod tests {
     }
 
     fn get_sample_leaf_node_expected_hash() -> H256 {
-        let hex = "c9161ce49c6a3362f5d20db4b6e36c259c9624eac5f99e64a052f45035d14c5d".to_string();
+        let hex = "c9161ce49c6a3362f5d20db4b6e36c259c9624eac5f99e64a052f45035d14c5d";
         convert_hex_to_h256(hex).unwrap()
     }
 
     fn get_sample_extension_node_expected_hash() -> H256 {
-        let hex = "d1425391446456311990cdf61e1dbe92b14cb53caad0539a15564b9efac0f733".to_string();
+        let hex = "d1425391446456311990cdf61e1dbe92b14cb53caad0539a15564b9efac0f733";
         convert_hex_to_h256(hex).unwrap()
     }
 
     fn get_sample_branch_node_expected_hash() -> H256 {
-        let hex = "9b88bb3372fcfde94cfbfd784ffcf64490a75bb2adedc128e67c887ce3d78535".to_string();
+        let hex = "9b88bb3372fcfde94cfbfd784ffcf64490a75bb2adedc128e67c887ce3d78535";
         convert_hex_to_h256(hex).unwrap()
     }
 
@@ -369,7 +369,7 @@ mod tests {
         let path_bytes = vec![0x12, 0x34, 0x56];
         let expected_nibble_length = path_bytes.len() * 2;
         let path_nibbles = get_nibbles_from_bytes(path_bytes);
-        let value = hex::decode("c0ffee".to_string()).unwrap();
+        let value = hex::decode("c0ffee").unwrap();
         let expected_encoded_path = encode_leaf_path_from_nibbles(path_nibbles.clone()).unwrap();
         let mut expected_raw = expected_encoded_path.clone();
         expected_raw.append(&mut value.clone());

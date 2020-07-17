@@ -31,44 +31,22 @@ pub fn parse_eth_receipt_json(
     let logs = get_logs_from_receipt_json(&eth_receipt_json)?;
     Ok(
         EthReceipt {
-            from: convert_hex_to_address(
-                eth_receipt_json.from
-            )?,
-            logs_bloom: get_logs_bloom_from_logs(
-                &logs
-            )?,
-            gas_used: U256::from(
-                eth_receipt_json.gasUsed
-            ),
-            block_hash: convert_hex_to_h256(
-                eth_receipt_json.blockHash
-            )?,
-            block_number: U256::from(
-                eth_receipt_json.blockNumber
-            ),
-            transaction_hash: convert_hex_to_h256(
-                eth_receipt_json.transactionHash
-            )?,
-            transaction_index: U256::from(
-                eth_receipt_json.transactionIndex
-            ),
-            cumulative_gas_used: U256::from(
-                eth_receipt_json.cumulativeGasUsed
-            ),
             status: eth_receipt_json.status,
+            logs_bloom: get_logs_bloom_from_logs(&logs)?,
+            gas_used: U256::from(eth_receipt_json.gasUsed),
+            from: convert_hex_to_address(&eth_receipt_json.from)?,
+            block_number: U256::from(eth_receipt_json.blockNumber),
+            block_hash: convert_hex_to_h256(&eth_receipt_json.blockHash)?,
+            transaction_index: U256::from(eth_receipt_json.transactionIndex),
+            cumulative_gas_used: U256::from(eth_receipt_json.cumulativeGasUsed),
+            transaction_hash: convert_hex_to_h256(&eth_receipt_json.transactionHash)?,
             to: match eth_receipt_json.to {
                 serde_json::Value::Null => H160::zero(),
-                _ => convert_hex_to_address(
-                    convert_json_value_to_string(eth_receipt_json.to)?
-                )?,
+                _ => convert_hex_to_address(&convert_json_value_to_string(eth_receipt_json.to)?)?,
             },
             contract_address: match eth_receipt_json.contractAddress {
                 serde_json::Value::Null => Address::zero(),
-                _ => convert_hex_to_address(
-                    convert_json_value_to_string(
-                        eth_receipt_json.contractAddress
-                    )?
-                )?,
+                _ => convert_hex_to_address(&convert_json_value_to_string(eth_receipt_json.contractAddress)?)?,
             },
             logs,
         }
@@ -79,11 +57,7 @@ pub fn parse_eth_receipt_jsons(
     eth_receipts_jsons: Vec<EthReceiptJson>
 ) -> Result<EthReceipts> {
     trace!("✔ Parsing ETH receipt JSON...");
-    eth_receipts_jsons
-        .iter()
-        .cloned()
-        .map(parse_eth_receipt_json)
-        .collect::<Result<EthReceipts>>()
+    eth_receipts_jsons.iter().cloned().map(parse_eth_receipt_json).collect()
 }
 
 #[cfg(test)]

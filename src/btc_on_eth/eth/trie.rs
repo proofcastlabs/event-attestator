@@ -1166,95 +1166,59 @@ mod tests {
 
     #[test]
     fn should_get_empty_trie() {
-        let trie = Trie::get_new_trie()
-            .unwrap();
+        let trie = Trie::get_new_trie().unwrap();
         assert!(trie.trie_hash_map.is_empty());
         assert_eq!(trie.root, HASHED_NULL_NODE);
     }
 
     #[test]
     fn should_put_thing_in_empty_trie() {
-        let key = convert_hex_string_to_nibbles("c0ffe".to_string())
-            .unwrap();
+        let key = convert_hex_string_to_nibbles("c0ffe".to_string()).unwrap();
         let value = vec![0xde, 0xca, 0xff];
-        let expected_node = Node::new_leaf(key.clone(), value.clone())
-            .unwrap();
-        let expected_db_key = expected_node
-            .get_hash()
-            .unwrap();
-        let expected_thing_from_db = expected_node
-            .get_rlp_encoding()
-            .unwrap();
-        let trie = Trie::get_new_trie()
-            .unwrap();
-        let result = trie.put(key, value)
-            .unwrap();
+        let expected_node = Node::new_leaf(key.clone(), value.clone()).unwrap();
+        let expected_db_key = expected_node.get_hash().unwrap();
+        let expected_thing_from_db = expected_node.get_rlp_encoding().unwrap();
+        let trie = Trie::get_new_trie().unwrap();
+        let result = trie.put(key, value).unwrap();
         assert_eq!(result.root, expected_node.get_hash().unwrap());
-        let thing_from_db = get_thing_from_trie_hash_map(
-            &result.trie_hash_map,
-            &expected_db_key
-        ).unwrap();
+        let thing_from_db = get_thing_from_trie_hash_map(&result.trie_hash_map, &expected_db_key).unwrap();
         assert_eq!(thing_from_db, expected_thing_from_db)
     }
 
     #[test]
     fn should_update_root_hash() {
-        let trie = Trie::get_new_trie()
-            .unwrap();
+        let trie = Trie::get_new_trie().unwrap();
         let old_hash = trie.root;
-        let new_hash = convert_hex_to_h256(
-            "a8780134f4add652b6e22e16a45b3436d3ecc293840fe8433f6fbcdc9ea8f16e"
-                .to_string()
-        ).unwrap();
+        let new_hash = convert_hex_to_h256("a8780134f4add652b6e22e16a45b3436d3ecc293840fe8433f6fbcdc9ea8f16e").unwrap();
         assert!(old_hash != new_hash);
-        let result = trie.update_root_hash(new_hash)
-            .unwrap();
+        let result = trie.update_root_hash(new_hash).unwrap();
         assert_eq!(result.root, new_hash);
         assert!(result.root != old_hash);
     }
 
     #[test]
     fn should_put_node_in_trie_hash_map_in_trie() {
-        let node_key = convert_hex_string_to_nibbles("c0ffe".to_string())
-            .unwrap();
+        let node_key = convert_hex_string_to_nibbles("c0ffe".to_string()).unwrap();
         let node_value = vec![0xde, 0xca, 0xff];
-        let trie = Trie::get_new_trie()
-            .unwrap();
-        let node = Node::new_leaf(node_key, node_value)
-            .unwrap();
-        let expected_result = node.get_rlp_encoding()
-            .unwrap();
-        let node_hash = node
-            .get_hash()
-            .unwrap();
-        let updated_trie = trie
-            .put_node_in_trie_hash_map(node)
-            .unwrap();
-        let result = get_thing_from_trie_hash_map(
-            &updated_trie.trie_hash_map,
-            &node_hash
-        ).unwrap();
+        let trie = Trie::get_new_trie().unwrap();
+        let node = Node::new_leaf(node_key, node_value).unwrap();
+        let expected_result = node.get_rlp_encoding().unwrap();
+        let node_hash = node.get_hash().unwrap();
+        let updated_trie = trie.put_node_in_trie_hash_map(node).unwrap();
+        let result = get_thing_from_trie_hash_map(&updated_trie.trie_hash_map, &node_hash).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_remove_node_from_trie_hash_map() {
-        let node_key = convert_hex_string_to_nibbles("c0ffe".to_string())
-            .unwrap();
+        let node_key = convert_hex_string_to_nibbles("c0ffe".to_string()).unwrap();
         let node_value = vec![0xde, 0xca, 0xff];
-        let trie = Trie::get_new_trie()
-            .unwrap();
-        let node = Node::new_leaf(node_key, node_value)
-            .unwrap();
-        let node_hash = node
-            .get_hash()
-            .unwrap();
-        let updated_trie = trie
-            .put_node_in_trie_hash_map(node.clone())
-            .unwrap();
+        let trie = Trie::get_new_trie().unwrap();
+        let node = Node::new_leaf(node_key, node_value).unwrap();
+        let node_hash = node.get_hash().unwrap();
+        let updated_trie = trie.put_node_in_trie_hash_map(node.clone()).unwrap();
         assert!(updated_trie.trie_hash_map.contains_key(&node_hash));
-        let resulting_trie = updated_trie.remove_node_from_trie_hash_map(node)
-            .unwrap();
+        let resulting_trie = updated_trie.remove_node_from_trie_hash_map(node).unwrap();
         assert!(!resulting_trie.trie_hash_map.contains_key(&node_hash));
     }
 
@@ -1274,96 +1238,41 @@ mod tests {
 
     #[test]
     fn should_put_valid_sample_receipts_in_trie_correctly() {
-        /* NOTE: Uncomment for ungodly amounts of output.
-        TermLogger::init(
-            LevelFilter::Trace,
-            Config::default(),
-            TerminalMode::Mixed
-        ).unwrap();
-        */
         let index = 0;
         let block_and_receipts = get_sample_eth_block_and_receipts();
-        let expected_root_hex = convert_h256_to_prefixed_hex(
-            block_and_receipts.block.receipts_root
-        ).unwrap();
+        let expected_root_hex = convert_h256_to_prefixed_hex(block_and_receipts.block.receipts_root).unwrap();
         let receipts = block_and_receipts.receipts;
         let trie = Trie::get_new_trie().unwrap();
-        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(
-            &receipts
-        ).unwrap();
-        let updated_trie = put_in_trie_recursively(
-            trie,
-            key_value_tuples,
-            index
-        ).unwrap();
-        let root_hex = convert_h256_to_prefixed_hex(updated_trie.root)
-            .unwrap();
+        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(&receipts).unwrap();
+        let updated_trie = put_in_trie_recursively(trie, key_value_tuples, index).unwrap();
+        let root_hex = convert_h256_to_prefixed_hex(updated_trie.root).unwrap();
         assert_eq!(root_hex, expected_root_hex);
     }
 
     #[test]
     fn should_put_invalid_sample_receipts_in_trie_correctly() {
-        /* NOTE: Uncomment for ungodly amounts of output.
-        TermLogger::init(
-            LevelFilter::Trace,
-            Config::default(),
-            TerminalMode::Mixed
-        ).unwrap();
-        */
         let index = 0;
-        let state = get_valid_state_with_invalid_block_and_receipts()
-                .unwrap();
-        let block_and_receipts = state
-                .get_eth_block_and_receipts()
-                .unwrap();
-        let expected_root_hex = convert_h256_to_prefixed_hex(
-            block_and_receipts.block.receipts_root
-        ).unwrap();
+        let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
+        let block_and_receipts = state.get_eth_block_and_receipts().unwrap();
+        let expected_root_hex = convert_h256_to_prefixed_hex(block_and_receipts.block.receipts_root).unwrap();
         let receipts = block_and_receipts.receipts.clone();
         let trie = Trie::get_new_trie().unwrap();
-        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(
-            &receipts
-        ).unwrap();
-        let updated_trie = put_in_trie_recursively(
-            trie,
-            key_value_tuples,
-            index
-        ).unwrap();
-        let root_hex = convert_h256_to_prefixed_hex(updated_trie.root)
-            .unwrap();
+        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(&receipts).unwrap();
+        let updated_trie = put_in_trie_recursively(trie, key_value_tuples, index).unwrap();
+        let root_hex = convert_h256_to_prefixed_hex(updated_trie.root).unwrap();
         assert!(root_hex != expected_root_hex);
     }
 
     #[test]
     fn should_validate_root_hash_correctly() {
-        /* NOTE: Uncomment for ungodly amounts of output.
-        TermLogger::init(
-            LevelFilter::Trace,
-            Config::default(),
-            TerminalMode::Mixed
-        ).unwrap();
-        */
-        let block_and_receipts = get_sample_eth_block_and_receipts_n(1)
-            .unwrap();
-        let expected_root_hex = convert_h256_to_prefixed_hex(
-            block_and_receipts.block.receipts_root
-        ).unwrap();
+        let block_and_receipts = get_sample_eth_block_and_receipts_n(1).unwrap();
+        let expected_root_hex = convert_h256_to_prefixed_hex(block_and_receipts.block.receipts_root).unwrap();
         let start_index = 0;
-        let receipts = block_and_receipts
-            .receipts
-            ;
-        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(
-            &receipts
-        ).unwrap();
-        let trie = Trie::get_new_trie()
-            .unwrap();
-        let updated_trie = put_in_trie_recursively(
-            trie,
-            key_value_tuples,
-            start_index
-        ).unwrap();
-        let root_hex = convert_h256_to_prefixed_hex(updated_trie.root)
-            .unwrap();
+        let receipts = block_and_receipts.receipts;
+        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(&receipts).unwrap();
+        let trie = Trie::get_new_trie().unwrap();
+        let updated_trie = put_in_trie_recursively(trie, key_value_tuples, start_index).unwrap();
+        let root_hex = convert_h256_to_prefixed_hex(updated_trie.root).unwrap();
         assert_eq!(root_hex, expected_root_hex);
     }
 }
