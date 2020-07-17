@@ -1,5 +1,4 @@
 use secp256k1::key::ONE_KEY;
-use ethereum_types::Address as EthAddress;
 use bitcoin::{
     util::key::PrivateKey,
     network::constants::Network,
@@ -23,7 +22,6 @@ use crate::{
         },
     },
     btc_on_eth::{
-        constants::SAFE_ETH_ADDRESS,
         btc::btc_types::{
             MintingParams,
             MintingParamStruct,
@@ -221,10 +219,6 @@ pub fn deserialize_btc_block_in_db_format(
     )
 }
 
-pub fn get_safe_eth_address() -> EthAddress {
-    EthAddress::from_slice(&SAFE_ETH_ADDRESS)
-}
-
 pub fn get_total_value_of_utxos_and_values(
     utxos_and_values: &[BtcUtxoAndValue]
 ) -> u64 {
@@ -329,6 +323,7 @@ pub fn get_tx_id_from_signed_btc_tx(
 mod tests {
     use super::*;
     use std::str::FromStr;
+    use ethereum_types::Address as EthAddress;
     use bitcoin::{
         util::address::Address as BtcAddress,
         hashes::{
@@ -358,14 +353,9 @@ mod tests {
 
     #[test]
     fn should_create_new_pay_to_pub_key_hash_output() {
-        let expected_script = get_pay_to_pub_key_hash_script(
-            SAMPLE_TARGET_BTC_ADDRESS
-        ).unwrap();
+        let expected_script = get_pay_to_pub_key_hash_script(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         let value = 1;
-        let result = create_new_pay_to_pub_key_hash_output(
-            value,
-            SAMPLE_TARGET_BTC_ADDRESS
-        ).unwrap();
+        let result = create_new_pay_to_pub_key_hash_output(value, SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         assert_eq!(result.value, value);
         assert_eq!(result.script_pubkey, expected_script);
     }
@@ -373,10 +363,8 @@ mod tests {
     #[test]
     fn should_create_new_tx_output() {
         let value = 1;
-        let script = get_pay_to_pub_key_hash_script(SAMPLE_TARGET_BTC_ADDRESS)
-            .unwrap();
-        let result = create_new_tx_output(value, script.clone())
-            .unwrap();
+        let script = get_pay_to_pub_key_hash_script(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
+        let result = create_new_tx_output(value, script.clone()).unwrap();
         assert_eq!(result.value, value);
         assert_eq!(result.script_pubkey, script);
     }
@@ -402,10 +390,8 @@ mod tests {
         let expected_txid = sha256d::Hash::from_str(
             "04bf43a86a99fca519dbfce42566b78cda0895d78c0a07484162d5888f588d0e"
         ).unwrap();
-        let serialized_btc_utxo = hex::decode(SAMPLE_SERIALIZED_BTC_UTXO)
-            .unwrap();
-        let result = deserialize_btc_utxo(&serialized_btc_utxo)
-            .unwrap();
+        let serialized_btc_utxo = hex::decode(SAMPLE_SERIALIZED_BTC_UTXO).unwrap();
+        let result = deserialize_btc_utxo(&serialized_btc_utxo).unwrap();
         assert_eq!(result.sequence, expected_sequence);
         assert_eq!(result.previous_output.txid, expected_txid);
         assert_eq!(result.previous_output.vout, expected_vout);
@@ -414,20 +400,15 @@ mod tests {
 
     #[test]
     fn should_convert_btc_address_to_bytes() {
-        let expected_result_hex =
-            "6f54102783c8640c5144d039cea53eb7dbb470081462fbafd9";
-        let result = convert_btc_address_to_bytes(
-            &SAMPLE_TARGET_BTC_ADDRESS.to_string()
-        ).unwrap();
+        let expected_result_hex = "6f54102783c8640c5144d039cea53eb7dbb470081462fbafd9";
+        let result = convert_btc_address_to_bytes(&SAMPLE_TARGET_BTC_ADDRESS.to_string()).unwrap();
         let result_hex = hex::encode(result);
         assert_eq!(result_hex, expected_result_hex);
     }
 
     #[test]
     fn should_convert_bytes_to_btc_address() {
-        let bytes = convert_btc_address_to_bytes(
-            &SAMPLE_TARGET_BTC_ADDRESS.to_string()
-        ).unwrap();
+        let bytes = convert_btc_address_to_bytes(&SAMPLE_TARGET_BTC_ADDRESS.to_string()).unwrap();
         let result = convert_bytes_to_btc_address(bytes);
         assert_eq!(result, SAMPLE_TARGET_BTC_ADDRESS);
     }
@@ -435,9 +416,7 @@ mod tests {
     #[test]
     fn should_convert_btc_address_to_pub_key_hash_bytes() {
         let expected_result = "54102783c8640c5144d039cea53eb7dbb4700814";
-        let result = convert_btc_address_to_pub_key_hash_bytes(
-            SAMPLE_TARGET_BTC_ADDRESS
-        ).unwrap();
+        let result = convert_btc_address_to_pub_key_hash_bytes(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         assert_eq!(hex::encode(result), expected_result);
     }
 
@@ -450,11 +429,8 @@ mod tests {
             .output[SAMPLE_OUTPUT_INDEX_OF_UTXO as usize]
             .script_pubkey
             .clone();
-        let expected_result =
-            "76a91454102783c8640c5144d039cea53eb7dbb470081488ac";
-        let result_script = get_pay_to_pub_key_hash_script(
-            SAMPLE_TARGET_BTC_ADDRESS
-        ).unwrap();
+        let expected_result = "76a91454102783c8640c5144d039cea53eb7dbb470081488ac";
+        let result_script = get_pay_to_pub_key_hash_script(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         let hex_result = hex::encode(result_script.as_bytes());
         assert!(!result_script.is_p2sh());
         assert!(result_script.is_p2pkh());
@@ -468,9 +444,7 @@ mod tests {
         let hash_type = 1;
         let hash = sha256d::Hash::hash(b"a message");
         let btc_pk = get_sample_btc_private_key();
-        let signature = btc_pk
-            .sign_hash_and_append_btc_hash_type(hash.to_vec(), hash_type)
-            .unwrap();
+        let signature = btc_pk.sign_hash_and_append_btc_hash_type(hash.to_vec(), hash_type) .unwrap();
         let pub_key_slice = btc_pk.to_public_key_slice();
         let result_script = get_script_sig(&signature, &pub_key_slice);
         let hex_result = hex::encode(result_script.as_bytes());
@@ -481,12 +455,9 @@ mod tests {
     fn should_get_total_value_of_utxos_and_values() {
         let expected_result = 1942233;
         let utxos = vec![
-            get_sample_op_return_utxo_and_value_n(2)
-                .unwrap(),
-            get_sample_op_return_utxo_and_value_n(3)
-                .unwrap(),
-            get_sample_op_return_utxo_and_value_n(4)
-                .unwrap(),
+            get_sample_op_return_utxo_and_value_n(2).unwrap(),
+            get_sample_op_return_utxo_and_value_n(3).unwrap(),
+            get_sample_op_return_utxo_and_value_n(4).unwrap(),
         ];
         let result = get_total_value_of_utxos_and_values(&utxos);
         assert_eq!(result, expected_result);
@@ -498,15 +469,10 @@ mod tests {
 91, 123, 34, 97, 109, 111, 117, 110, 116, 34, 58, 34, 48, 120, 99, 50, 56, 102, 50, 49, 57, 99, 52, 48, 48, 34, 44, 34, 101, 116, 104, 95, 97, 100, 100, 114, 101, 115, 115, 34, 58, 34, 48, 120, 102, 101, 100, 102, 101, 50, 54, 49, 54, 101, 98, 51, 54, 54, 49, 99, 98, 56, 102, 101, 100, 50, 55, 56, 50, 102, 53, 102, 48, 99, 99, 57, 49, 100, 53, 57, 100, 99, 97, 99, 34, 44, 34, 111, 114, 105, 103, 105, 110, 97, 116, 105, 110, 103, 95, 116, 120, 95, 104, 97, 115, 104, 34, 58, 34, 57, 101, 56, 100, 100, 50, 57, 102, 48, 56, 51, 57, 56, 100, 55, 97, 100, 102, 57, 50, 53, 50, 56, 97, 99, 49, 49, 51, 98, 99, 99, 55, 51, 54, 102, 55, 97, 100, 99, 100, 55, 99, 57, 57, 101, 101, 101, 48, 52, 54, 56, 97, 57, 57, 50, 99, 56, 49, 102, 51, 101, 97, 57, 56, 34, 44, 34, 111, 114, 105, 103, 105, 110, 97, 116, 105, 110, 103, 95, 116, 120, 95, 97, 100, 100, 114, 101, 115, 115, 34, 58, 34, 50, 78, 50, 76, 72, 89, 98, 116, 56, 75, 49, 75, 68, 66, 111, 103, 100, 54, 88, 85, 71, 57, 86, 66, 118, 53, 89, 77, 54, 120, 101, 102, 100, 77, 50, 34, 125, 93
                 ];
         let amount = convert_satoshis_to_ptoken(1337);
-        let originating_tx_address = BtcAddress::from_str(
-            "2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2"
-        ).unwrap();
-        let eth_address = EthAddress::from_slice(
-            &hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()
-        );
-        let originating_tx_hash = sha256d::Hash::from_slice(&hex::decode(
-        "98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e"
-            ).unwrap()
+        let originating_tx_address = BtcAddress::from_str("2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2").unwrap();
+        let eth_address = EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap());
+        let originating_tx_hash = sha256d::Hash::from_slice(
+            &hex::decode("98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e").unwrap()
         ).unwrap();
         let minting_param_struct = MintingParamStruct::new(
             amount,
@@ -515,31 +481,22 @@ mod tests {
             originating_tx_address,
         ).unwrap();
         let minting_params = vec![minting_param_struct];
-        let serialized_minting_params = serialize_minting_params(
-            &minting_params
-        ).unwrap();
+        let serialized_minting_params = serialize_minting_params(&minting_params).unwrap();
         assert_eq!(serialized_minting_params, expected_serialization);
-        let deserialized = deserialize_minting_params(serialized_minting_params)
-            .unwrap();
+        let deserialized = deserialize_minting_params(serialized_minting_params).unwrap();
         assert_eq!(deserialized.len(), minting_params.len());
         deserialized
             .iter()
             .enumerate()
-            .map(|(i, minting_param_struct)|
-                 assert_eq!(minting_param_struct, &minting_params[i])
-             )
+            .map(|(i, minting_param_struct)| assert_eq!(minting_param_struct, &minting_params[i]))
             .for_each(drop);
     }
 
     #[test]
     fn should_serde_btc_block_in_db_format() {
-        let block = get_sample_btc_block_in_db_format()
-            .unwrap();
-        let (_db_key, serialized_block)= serialize_btc_block_in_db_format(
-            &block
-        ).unwrap();
-        let deserialized = deserialize_btc_block_in_db_format(&serialized_block)
-            .unwrap();
+        let block = get_sample_btc_block_in_db_format().unwrap();
+        let (_db_key, serialized_block)= serialize_btc_block_in_db_format(&block).unwrap();
+        let deserialized = deserialize_btc_block_in_db_format(&serialized_block).unwrap();
         assert_eq!(deserialized, block);
     }
 
@@ -556,10 +513,7 @@ mod tests {
         let signature_slice = &vec![6u8, 6u8, 6u8][..];
         let redeem_script = get_sample_p2sh_redeem_script_sig();
         let expected_result = "03060606452071a8e55edefe53f703646a679e66799cfef657b98474ff2e4148c3a1ea43169c752103d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7ac";
-        let result = get_p2sh_script_sig_from_redeem_script(
-            &signature_slice,
-            &redeem_script,
-        );
+        let result = get_p2sh_script_sig_from_redeem_script(&signature_slice, &redeem_script);
         let result_hex = hex::encode(result.as_bytes());
         assert_eq!(result_hex, expected_result);
     }
@@ -568,11 +522,7 @@ mod tests {
     fn should_create_unsigned_utxo_from_tx() {
         let expected_result = "f80c2f7c35f5df8441a5a5b52e2820793fc7e69f4603d38ba7217be41c20691d0000000016001497cfc76442fe717f2a3f0cc9c175f7561b661997ffffffff";
         let index = 0;
-        let tx = get_sample_btc_block_in_db_format()
-            .unwrap()
-            .block
-            .txdata[0]
-            .clone();
+        let tx = get_sample_btc_block_in_db_format().unwrap().block.txdata[0].clone();
         let result = create_unsigned_utxo_from_tx(&tx, index);
         let result_hex = hex::encode(btc_serialize(&result));
         assert_eq!(result_hex, expected_result);
@@ -583,15 +533,8 @@ mod tests {
         let expected_value = 1261602424;
         let expected_utxo = "f80c2f7c35f5df8441a5a5b52e2820793fc7e69f4603d38ba7217be41c20691d0000000016001497cfc76442fe717f2a3f0cc9c175f7561b661997ffffffff";
         let index = 0;
-        let tx = get_sample_btc_block_in_db_format()
-            .unwrap()
-            .block
-            .txdata[0]
-            .clone();
-        let result = create_op_return_btc_utxo_and_value_from_tx_output(
-            &tx,
-            index,
-        );
+        let tx = get_sample_btc_block_in_db_format().unwrap().block.txdata[0] .clone();
+        let result = create_op_return_btc_utxo_and_value_from_tx_output(&tx, index);
         assert_eq!(result.maybe_pointer, None);
         assert_eq!(result.value, expected_value);
         assert_eq!(result.maybe_extra_data, None);
@@ -602,30 +545,17 @@ mod tests {
     #[test]
     fn should_serde_btc_network_correctly() {
         let network = BtcNetwork::Bitcoin;
-        let bytes = convert_btc_network_to_bytes(network)
-            .unwrap();
-        let result = convert_bytes_to_btc_network(&bytes)
-            .unwrap();
+        let bytes = convert_btc_network_to_bytes(network).unwrap();
+        let result = convert_bytes_to_btc_network(&bytes).unwrap();
         assert_eq!(result, network);
     }
 
     #[test]
     fn should_serde_btc_block_in_db_format_correctly() {
-        let block_in_db_format = get_sample_btc_block_in_db_format()
-            .unwrap();
-        let (id, serialized_block) = serialize_btc_block_in_db_format(
-            &block_in_db_format
-        ).unwrap();
+        let block_in_db_format = get_sample_btc_block_in_db_format().unwrap();
+        let (id, serialized_block) = serialize_btc_block_in_db_format(&block_in_db_format).unwrap();
         assert_eq!(id, &block_in_db_format.id[..]);
-        let result = deserialize_btc_block_in_db_format(&serialized_block)
-            .unwrap();
+        let result = deserialize_btc_block_in_db_format(&serialized_block).unwrap();
         assert_eq!(result, block_in_db_format);
-    }
-
-    #[test]
-    fn should_get_safe_eth_address() {
-        let expected_result = "71a440ee9fa7f99fb9a697e96ec7839b8a1643b8";
-        let result = get_safe_eth_address();
-        assert_eq!(hex::encode(result.as_bytes()), expected_result);
     }
 }

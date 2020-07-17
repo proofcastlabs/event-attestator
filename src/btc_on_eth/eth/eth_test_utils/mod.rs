@@ -617,7 +617,7 @@ mod tests {
 
     #[test]
     fn sample_log_with_desired_topic_should_contain_topic() {
-        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC.to_string()).unwrap();
+        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
         let result = get_sample_log_with_desired_topic()
             .topics
             .iter()
@@ -627,7 +627,7 @@ mod tests {
 
     #[test]
     fn sample_log_without_desired_topic_should_contain_topic() {
-        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC.to_string()).unwrap();
+        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
         let result = get_sample_log_without_desired_topic()
             .topics
             .iter()
@@ -637,7 +637,7 @@ mod tests {
 
     #[test]
     fn sample_logs_with_desired_topic_should_contain_topic() {
-        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC.to_string()).unwrap();
+        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
         let result = get_sample_logs_with_desired_topic()
             .iter()
             .any(|log| log_contains_topic(log, &desired_topic));
@@ -646,7 +646,7 @@ mod tests {
 
     #[test]
     fn sample_logs_without_desired_topic_should_contain_topic() {
-        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC.to_string()).unwrap();
+        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
         let result = get_sample_logs_without_desired_topic()
             .iter()
             .any(|log| log_contains_topic(log, &desired_topic));
@@ -655,14 +655,14 @@ mod tests {
 
     #[test]
     fn sample_receipts_with_desired_topic_should_contain_topic() {
-        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC.to_string()).unwrap();
+        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
         let result = logs_contain_topic(&get_sample_receipt_with_desired_topic().logs, &desired_topic);
         assert!(result);
     }
 
     #[test]
     fn sample_receipts_without_desired_topic_should_not_contain_topic() {
-        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC.to_string()).unwrap();
+        let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
         let result = logs_contain_topic(&get_sample_receipt_without_desired_topic().logs, &desired_topic);
         assert!(!result);
     }

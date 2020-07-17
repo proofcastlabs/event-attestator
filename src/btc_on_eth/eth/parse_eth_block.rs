@@ -25,64 +25,26 @@ pub fn parse_eth_block_json(
 ) -> Result<EthBlock> {
     Ok(
         EthBlock {
-            difficulty: convert_dec_str_to_u256(
-                &eth_block_json.difficulty
-            )?,
-            extra_data: convert_hex_to_bytes(
-                eth_block_json.extraData
-            )?,
-            gas_limit: U256::from(
-                eth_block_json.gasLimit
-            ),
-            gas_used: U256::from(
-                eth_block_json.gasUsed
-            ),
-            hash: convert_hex_to_h256(
-                eth_block_json.hash
-            )?,
-            logs_bloom: Bloom::from_slice(
-                &convert_hex_to_bytes(eth_block_json.logsBloom)?[..]
-            ),
-            miner: convert_hex_to_address(
-                eth_block_json.miner
-            )?,
-            mix_hash: convert_hex_to_h256(
-                eth_block_json.mixHash
-            )?,
-            nonce: decode_prefixed_hex(eth_block_json.nonce)?,
-            number: U256::from(
-                eth_block_json.number
-            ),
-            parent_hash: convert_hex_to_h256(
-                eth_block_json.parentHash
-            )?,
-            receipts_root: convert_hex_to_h256(
-                eth_block_json.receiptsRoot
-            )?,
-            sha3_uncles: convert_hex_to_h256(
-                eth_block_json.sha3Uncles
-            )?,
-            size: U256::from(
-                eth_block_json.size
-            ),
-            state_root: convert_hex_to_h256(
-                eth_block_json.stateRoot
-            )?,
-            timestamp: U256::from(
-                eth_block_json.timestamp
-            ),
-            total_difficulty: convert_dec_str_to_u256(
-                &eth_block_json.totalDifficulty
-            )?,
-            transactions: convert_hex_strings_to_h256s(
-                eth_block_json.transactions
-            )?,
-            transactions_root: convert_hex_to_h256(
-                eth_block_json.transactionsRoot
-            )?,
-            uncles: convert_hex_strings_to_h256s(
-                eth_block_json.uncles
-            )?,
+            size: U256::from(eth_block_json.size),
+            number: U256::from(eth_block_json.number),
+            gas_used: U256::from(eth_block_json.gasUsed),
+            gas_limit: U256::from(eth_block_json.gasLimit),
+            hash: convert_hex_to_h256(&eth_block_json.hash)?,
+            timestamp: U256::from(eth_block_json.timestamp),
+            nonce: decode_prefixed_hex(&eth_block_json.nonce)?,
+            miner: convert_hex_to_address(&eth_block_json.miner)?,
+            mix_hash: convert_hex_to_h256(&eth_block_json.mixHash)?,
+            state_root: convert_hex_to_h256(&eth_block_json.stateRoot)?,
+            extra_data: convert_hex_to_bytes(&eth_block_json.extraData)?,
+            parent_hash: convert_hex_to_h256(&eth_block_json.parentHash)?,
+            sha3_uncles: convert_hex_to_h256(&eth_block_json.sha3Uncles)?,
+            difficulty: convert_dec_str_to_u256(&eth_block_json.difficulty)?,
+            receipts_root: convert_hex_to_h256(&eth_block_json.receiptsRoot)?,
+            transactions_root: convert_hex_to_h256(&eth_block_json.transactionsRoot)?,
+            total_difficulty: convert_dec_str_to_u256(&eth_block_json.totalDifficulty)?,
+            logs_bloom: Bloom::from_slice(&convert_hex_to_bytes(&eth_block_json.logsBloom)?[..]),
+            uncles: convert_hex_strings_to_h256s(eth_block_json.uncles.iter().map(AsRef::as_ref).collect())?,
+            transactions: convert_hex_strings_to_h256s(eth_block_json.transactions.iter().map(AsRef::as_ref).collect())?,
         }
     )
 }

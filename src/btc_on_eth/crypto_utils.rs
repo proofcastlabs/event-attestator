@@ -46,11 +46,8 @@ mod test {
     fn should_keccak_hash_bytes() {
         let bytes = vec![0xc0, 0xff, 0xee];
         let result = keccak_hash_bytes(bytes);
-        let expected_result_hex =
-            "7924f890e12acdf516d6278e342cd34550e3bafe0a3dec1b9c2c3e991733711a"
-            .to_string();
-        let expected_result = convert_hex_to_h256(expected_result_hex)
-            .unwrap();
+        let expected_result_hex = "7924f890e12acdf516d6278e342cd34550e3bafe0a3dec1b9c2c3e991733711a";
+        let expected_result = convert_hex_to_h256(expected_result_hex).unwrap();
         assert_eq!(result, expected_result);
     }
 
