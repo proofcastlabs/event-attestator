@@ -57,6 +57,7 @@ use crate::{
             btc_database_utils::{
                 end_btc_db_transaction,
                 start_btc_db_transaction,
+                get_btc_account_nonce_from_db,
             },
             filter_utxos::{
                 filter_out_utxos_extant_in_db_from_state,
@@ -82,6 +83,7 @@ use crate::{
                 end_eth_db_transaction,
                 start_eth_db_transaction,
                 get_signing_params_from_db,
+                get_latest_eth_block_number,
                 get_eth_private_key_from_db,
                 get_any_sender_nonce_from_db,
                 get_eth_account_nonce_from_db,
@@ -194,9 +196,13 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
             info!("✔ Getting ETH output json...");
             let output = serde_json::to_string(
                 &EthOutput {
-                    eth_latest_block_number: 0,
+                    eth_latest_block_number: get_latest_eth_block_number(&state.db)?,
                     btc_signed_transactions: match state.btc_transactions {
-                        Some(txs) => get_btc_signed_tx_info_from_btc_txs(0, txs, &state.redeem_params)?,
+                        Some(txs) => get_btc_signed_tx_info_from_btc_txs(
+                            get_btc_account_nonce_from_db(&state.db)?,
+                            txs,
+                            &state.redeem_params
+                        )?,
                         None => vec![],
                     }
                 }
