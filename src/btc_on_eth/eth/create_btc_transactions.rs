@@ -39,14 +39,9 @@ use crate::{
     },
 };
 
-fn sum_redeem_params(
-    redeem_params: &[RedeemParams]
-) -> u64 {
+fn sum_redeem_params(redeem_params: &[RedeemParams]) -> u64 {
     info!("✔ Summing redeem param amounts...");
-    redeem_params
-        .iter()
-        .map(|params| params.amount.as_u64())
-        .sum()
+    redeem_params.iter().map(|params| params.amount.as_u64()).sum()
 }
 
 fn get_enough_utxos_to_cover_total<D>(
@@ -62,32 +57,17 @@ fn get_enough_utxos_to_cover_total<D>(
     get_utxo_and_value(db)
         .and_then(|utxo_and_value| {
             debug!("✔ Retrieved UTXO of value: {}", utxo_and_value.value);
-            let fee = calculate_btc_tx_fee(
-                inputs.len() + 1,
-                num_outputs,
-                sats_per_byte
-            );
+            let fee = calculate_btc_tx_fee(inputs.len() + 1, num_outputs, sats_per_byte);
             let total_cost = fee + required_btc_amount;
             inputs.push(utxo_and_value);
             let total_utxo_value = get_total_value_of_utxos_and_values(&inputs);
-            debug!(
-               "✔ Calculated fee for {} input(s) & {} output(s): {} Satoshis",
-               inputs.len(),
-               num_outputs,
-               fee
-           );
+            debug!("✔ Calculated fee for {} input(s) & {} output(s): {} Satoshis", inputs.len(), num_outputs, fee);
             debug!("✔ Fee + required BTC value of tx: {} Satoshis", total_cost);
             debug!("✔ Current total UTXO value: {} Satoshis", total_utxo_value);
             match total_cost > total_utxo_value {
                 true => {
                     trace!("✔ UTXOs do not cover fee + amount, need another!");
-                    get_enough_utxos_to_cover_total(
-                        db,
-                        required_btc_amount,
-                        num_outputs,
-                        sats_per_byte,
-                        inputs,
-                    )
+                    get_enough_utxos_to_cover_total(db, required_btc_amount, num_outputs, sats_per_byte, inputs)
                 }
                 false => {
                     trace!("✔ UTXO(s) covers fee and required btc amount!");
@@ -158,9 +138,7 @@ pub fn maybe_create_btc_txs_and_add_to_state<D>(
                 &state.redeem_params,
             )
                 .and_then(|signed_tx| {
-                    #[cfg(feature="debug")] {
-                        debug!("✔ Signed transaction: {:?}", signed_tx);
-                    }
+                    #[cfg(feature="debug")] { debug!("✔ Signed transaction: {:?}", signed_tx); }
                     state.add_btc_transactions(vec![signed_tx])
                 })
         },
