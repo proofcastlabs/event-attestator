@@ -97,25 +97,16 @@ fn get_enough_utxos_to_cover_total<D>(
         })
 }
 
-fn get_address_and_amounts_from_redeem_params(
-    redeem_params: &[RedeemParams],
-) -> BtcRecipientsAndAmounts {
+fn get_address_and_amounts_from_redeem_params(redeem_params: &[RedeemParams]) -> Result<BtcRecipientsAndAmounts> {
     info!("✔ Getting BTC addresses & amounts from redeem params...");
     redeem_params
         .iter()
         .map(|params| {
-            let recipient_and_amount = BtcRecipientAndAmount::new(
-                &params.recipient[..],
-                params.amount.as_u64()
-            );
-            info!(
-                "✔ Recipients & amount retrieved from redeem: {:?}",
-                recipient_and_amount
-            );
+            let recipient_and_amount = BtcRecipientAndAmount::new(&params.recipient[..], params.amount.as_u64());
+            info!("✔ Recipients & amount retrieved from redeem: {:?}", recipient_and_amount);
             recipient_and_amount
          })
-        .flatten()
-        .collect::<BtcRecipientsAndAmounts>()
+        .collect()
 }
 
 fn create_btc_tx_from_redeem_params<D>(
@@ -140,7 +131,7 @@ fn create_btc_tx_from_redeem_params<D>(
     info!("✔ Creating BTC transaction...");
     create_signed_raw_btc_tx_for_n_input_n_outputs(
         sats_per_byte,
-        get_address_and_amounts_from_redeem_params(&redeem_params),
+        get_address_and_amounts_from_redeem_params(&redeem_params)?,
         &get_btc_address_from_db(db)?[..],
         get_btc_private_key_from_db(db)?,
         utxos_and_values,
