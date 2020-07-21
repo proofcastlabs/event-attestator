@@ -18,6 +18,10 @@ use crate::{
         },
     },
     btc_on_eth::{
+        constants::{
+            SAFE_ETH_ADDRESS,
+            SAFE_BTC_ADDRESS,
+        },
         eth::{
             get_linker_hash::{
                 get_linker_hash_or_genesis_hash as get_eth_linker_hash
@@ -77,6 +81,8 @@ struct EnclaveState {
     btc_linker_hash: String,
     core_is_validating: bool,
     btc_number_of_utxos: u64,
+    btc_safe_address: String,
+    eth_safe_address: String,
     btc_utxo_total_value: u64,
     eth_tail_block_hash: String,
     btc_tail_block_hash: String,
@@ -132,6 +138,7 @@ pub fn get_enclave_state<D>(
                     btc_sats_per_byte: get_btc_fee_from_db(&db)?,
                     eth_gas_price: get_eth_gas_price_from_db(&db)?,
                     btc_canon_block_number: btc_canon_block.height,
+                    btc_safe_address: SAFE_BTC_ADDRESS.to_string(),
                     btc_latest_block_number: btc_latest_block.height,
                     btc_difficulty: get_btc_difficulty_from_db(&db)?,
                     btc_anchor_block_number: btc_anchor_block.height,
@@ -143,6 +150,7 @@ pub fn get_enclave_state<D>(
                     btc_linker_hash: get_btc_linker_hash(&db)?.to_string(),
                     btc_network: get_btc_network_from_db(&db)?.to_string(),
                     eth_account_nonce: get_eth_account_nonce_from_db(&db)?,
+                    eth_safe_address: hex::encode(SAFE_ETH_ADDRESS.as_bytes()),
                     btc_utxo_total_value: get_total_utxo_balance_from_db(&db)?,
                     btc_number_of_utxos: get_total_number_of_utxos_from_db(&db)?,
                     eth_tail_block_number: eth_tail_block.block.number.as_usize(),
