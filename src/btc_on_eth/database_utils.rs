@@ -63,4 +63,12 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn should_convert_to_le_bytes_correctly() {
+        let expected_result = "000065cd1d000000";
+        let x:u64 = 128_000_000_000;
+        let result = hex::encode(x.to_le_bytes());
+        assert_eq!(result, expected_result);
+    }
 }
