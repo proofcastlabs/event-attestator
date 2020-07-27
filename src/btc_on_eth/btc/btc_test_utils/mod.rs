@@ -386,14 +386,14 @@ pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
             let eth_address_and_nonce_hash = "98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e"
                 .to_string();
             let version = Some("0".to_string());
-            let user_data = None;
+            let user_data = vec![];
             let deposit_info_json = DepositAddressInfoJson::new(
                 nonce,
                 eth_address,
                 btc_deposit_address,
                 eth_address_and_nonce_hash,
                 version,
-                user_data,
+                &user_data,
             )?;
             Ok(BtcUtxoAndValue::new(
                 tx.output[output_index].value,
