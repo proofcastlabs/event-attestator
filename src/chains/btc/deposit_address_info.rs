@@ -12,7 +12,7 @@ use std::{
 };
 use crate::{
     errors::AppError,
-    utils::strip_hex_prefix,
+    utils::decode_hex_with_err_msg,
     chains::btc::btc_utils::convert_hex_to_sha256_hash,
     types::{
         Bytes,
@@ -69,6 +69,12 @@ pub struct DepositAddressInfoJson {
     pub btc_deposit_address: String,
     pub address_and_nonce_hash: Option<String>,
     pub eth_address_and_nonce_hash: Option<String>, // NOTE: Ibid.
+}
+
+impl DepositAddressInfoJson {
+    pub fn to_string(&self) -> Result<String> {
+        Ok(serde_json::to_string(self)?)
+    }
 }
 
 #[cfg(test)]
@@ -178,7 +184,10 @@ impl DepositAddressInfo {
                 commitment_hash: Self::extract_address_and_nonce_hash_from_json(deposit_address_info_json)?,
                 version: DepositAddressInfoVersion::from_maybe_string(&deposit_address_info_json.version)?,
                 calldata: match &deposit_address_info_json.calldata {
-                    Some(hex_string) => hex::decode(strip_hex_prefix(hex_string)?)?,
+                    Some(hex_string) => decode_hex_with_err_msg(
+                        hex_string,
+                        &format!("✘ Could not decode hex in calldata in {}: ", deposit_address_info_json.to_string()?),
+                    )?,
                     None => vec![],
                 },
             }
@@ -187,9 +196,11 @@ impl DepositAddressInfo {
 
     fn get_address_as_bytes(&self) -> Result<Bytes> {
         match self.version {
-            DepositAddressInfoVersion::V0 | DepositAddressInfoVersion::V2 =>
-                Ok(hex::decode(strip_hex_prefix(&self.address)?)?),
             DepositAddressInfoVersion::V1 => Ok(self.address.as_bytes().to_vec()),
+            DepositAddressInfoVersion::V0 | DepositAddressInfoVersion::V2 => decode_hex_with_err_msg(
+                &self.address,
+                &format!("✘ Could not decode address hex in {}: ", self.to_json().to_string()?),
+            ),
         }
     }
 
