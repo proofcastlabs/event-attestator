@@ -18,25 +18,28 @@ pub fn get_prefixed_db_key(suffix: &str) -> [u8; 32] {
 
 pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
     match bytes.len() {
-        0..=7 => Err(AppError::Custom(
-            "✘ Not enough bytes to convert to u64!"
-                .to_string()
-        )),
+        0..=7 => Err(AppError::Custom("✘ Not enough bytes to convert to u64!".to_string())),
         U64_NUM_BYTES => {
             let mut arr = [0u8; U64_NUM_BYTES];
             let bytes = &bytes[..U64_NUM_BYTES];
             arr.copy_from_slice(bytes);
             Ok(u64::from_le_bytes(arr))
         }
-        _ => Err(AppError::Custom(
-            "✘ Too many bytes to convert to u64 without overflowing!"
-                .to_string()
-        )),
+        _ => Err(AppError::Custom("✘ Too many bytes to convert to u64 without overflowing!".to_string())),
     }
 }
 
 fn left_pad_with_zero(string: &str) -> Result<String> {
     Ok(format!("0{}", string))
+}
+
+fn maybe_strip_hex_prefix(hex: &str) -> Result<&str> {
+    let lowercase_hex_prefix = "0x";
+    let uppercase_hex_prefix = "0X";
+    match hex.starts_with(lowercase_hex_prefix) || hex.starts_with(uppercase_hex_prefix) {
+        true => Ok(hex.trim_start_matches(lowercase_hex_prefix).trim_start_matches(uppercase_hex_prefix)),
+        false => Ok(hex),
+    }
 }
 
 pub fn strip_hex_prefix(hex : &str) -> Result<String> {
@@ -47,12 +50,10 @@ pub fn strip_hex_prefix(hex : &str) -> Result<String> {
         })
 }
 
-fn maybe_strip_hex_prefix(hex: &str) -> Result<&str> {
-    let lowercase_hex_prefix = "0x";
-    let uppercase_hex_prefix = "0X";
-    match hex.starts_with(lowercase_hex_prefix) || hex.starts_with(uppercase_hex_prefix) {
-        true => Ok(hex.trim_start_matches(lowercase_hex_prefix).trim_start_matches(uppercase_hex_prefix)),
-        false => Ok(hex),
+pub fn decode_hex_with_err_msg(hex: &str, err_msg: &str) -> Result<Bytes> {
+    match hex::decode(strip_hex_prefix(hex)?) {
+        Ok(bytes) => Ok(bytes),
+        Err(err) => Err(AppError::Custom(format!("{} {}", err_msg, err))),
     }
 }
 
@@ -121,5 +122,17 @@ mod tests {
         let result = strip_hex_prefix(dummy_hex)
             .unwrap();
         assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn should_decode_hex_with_err_msg() {
+        let hex = "0xcoffee";
+        let err_msg = "Could not decode test hex:";
+        let expected_error = format!("{} Invalid character \'o\' at position 1", err_msg);
+        match decode_hex_with_err_msg(hex, err_msg) {
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
+            Err(e) => panic!("Wrong error recieved: {}", e),
+            Ok(_) => panic!("Should not have succeeded!"),
+        }
     }
 }
