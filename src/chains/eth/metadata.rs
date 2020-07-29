@@ -1,6 +1,7 @@
 #![allow(dead_code)] // TODO rm!
 use std::{
     fmt,
+    str,
     str::FromStr,
 };
 use crate::{
@@ -10,13 +11,17 @@ use crate::{
         Result,
     },
     errors::AppError,
-    utils::decode_hex_with_err_msg,
     btc_on_eth::btc::btc_types::MintingParamStruct as BtcOnEthMintingParamStruct,
 };
 use bitcoin::{
-    hashes::sha256d,
+    hashes::{
+        Hash,
+        sha256d,
+    },
     util::address::Address as BtcAddress,
 };
+
+pub const MINIMUM_METADATA_BYTES: usize = 33;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum EthMetadataVersion {
@@ -47,9 +52,130 @@ impl fmt::Display for EthMetadataVersion {
     }
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EthMetadataFromBtc {
+    pub version: EthMetadataVersion,
+    pub originating_tx_hash: sha256d::Hash,
+    pub originating_tx_address: Option<BtcAddress>,
+}
+
+impl EthMetadataFromBtc {
+    pub fn from_btc_minting_params(
+        version: &EthMetadataVersion,
+        minting_param_struct: &BtcOnEthMintingParamStruct
+    ) -> Self {
+        match version {
+            EthMetadataVersion::V1 => {
+                EthMetadataFromBtc {
+                    version: version.clone(),
+                    originating_tx_hash: minting_param_struct.originating_tx_hash,
+                    originating_tx_address:
+                        Self::get_btc_address_from_str(&minting_param_struct.originating_tx_address),
+                }
+            }
+        }
+    }
+
+    fn get_version_byte(&self) -> Byte {
+        self.version.as_byte()
+    }
+
+    fn get_originating_hash_bytes(&self) -> Bytes {
+        self.originating_tx_hash.to_vec()
+    }
+
+    fn get_originating_address_bytes(&self) -> Result<Bytes> {
+        match &self.originating_tx_address {
+            None => Ok(vec![]),
+            Some(btc_address) => Ok(btc_address.to_string().as_bytes().to_vec())
+        }
+    }
+
+    fn get_btc_address_from_str(btc_address_str: &str) -> Option<BtcAddress> {
+        match BtcAddress::from_str(&btc_address_str) {
+            Ok(btc_address) => Some(btc_address),
+            Err(err) => {
+                info!("✘ Error creating  BTC address from str in `EthMetadataFromBtc`: {}", err);
+                None
+            }
+        }
+    }
+
+    fn get_sha_hash_from_bytes(bytes: &[Byte]) -> Result<sha256d::Hash> {
+        match sha256d::Hash::from_slice(bytes) {
+            Ok(hash) => Ok(hash),
+            Err(err) => Err(AppError::Custom(format!(
+                "✘ Error extracting hash from bytes in `EthMetadataVersion`: {}",
+                err
+            )))
+        }
+    }
+
+    pub fn serialize(&self) -> Result<Bytes> {
+        match self.version {
+            EthMetadataVersion::V1 => {
+                let mut vec = vec![];
+                vec.append(&mut vec![self.get_version_byte()]);
+                vec.append(&mut self.get_originating_hash_bytes());
+                vec.append(&mut self.get_originating_address_bytes()?);
+                Ok(vec)
+            }
+        }
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        let num_bytes = bytes.len();
+        if num_bytes < MINIMUM_METADATA_BYTES {
+            return Err(AppError::Custom(format!(
+                "✘ Too few bytes to deserialize `EthMetadataFromBtc`! Got {}, need {}!",
+                num_bytes,
+                MINIMUM_METADATA_BYTES
+            )))
+        }
+        let version = EthMetadataVersion::from_byte(&bytes[0])?;
+        match version {
+            EthMetadataVersion::V1 => Ok(
+                EthMetadataFromBtc {
+                    version: EthMetadataVersion::from_byte(&bytes[0])?,
+                    originating_tx_hash: Self::get_sha_hash_from_bytes(&bytes[1..33])?,
+                    originating_tx_address: match str::from_utf8(&bytes[33..]) {
+                        Ok(address_string) => Self::get_btc_address_from_str(address_string),
+                        Err(err) => {
+                            info!("✘ Failed to convert bytes to utf8 when deserializing `EthMetadataFromBtc`: {}", err);
+                            None
+                        }
+                    }
+                }
+            )
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bitcoin::hashes::Hash;
+    use ethereum_types::Address as EthAddress;
+    use crate::{
+        chains::btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
+        btc_on_eth::utils::convert_satoshis_to_ptoken,
+    };
+
+    fn get_sample_minting_param_struct() -> BtcOnEthMintingParamStruct {
+        let originating_tx_address = "moBSQbHn7N9BC9pdtAMnA7GBiALzNMQJyE".to_string();
+        let eth_address = EthAddress::from_str(&"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap();
+        let amount = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
+        let originating_tx_hash = sha256d::Hash::hash(b"something to hash");
+        BtcOnEthMintingParamStruct { amount, eth_address, originating_tx_hash, originating_tx_address }
+    }
+
+    fn get_sample_v1_metadata() -> EthMetadataFromBtc {
+        EthMetadataFromBtc::from_btc_minting_params(&EthMetadataVersion::V1, &get_sample_minting_param_struct())
+    }
+
+    fn get_sample_v1_serialized_metadata() -> Bytes {
+        get_sample_v1_metadata().serialize().unwrap()
+    }
 
     #[test]
     fn should_get_metadata_v1_byte() {
@@ -68,5 +194,56 @@ mod tests {
             Err(err) => panic!("Wrong error received: {}", err),
             Ok(_) => panic!("Should not have succeeded!"),
         }
+    }
+
+    #[test]
+    fn should_get_metadata_version_from_byte() {
+        let byte = 1u8;
+        let expected_result = EthMetadataVersion::V1;
+        let result = EthMetadataVersion::from_byte(&byte).unwrap();
+        assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn should_get_eth_metadata_v1_from_btc_minting_params() {
+        let btc_minting_params = get_sample_minting_param_struct();
+        let version = EthMetadataVersion::V1;
+        let result = EthMetadataFromBtc::from_btc_minting_params(&version, &btc_minting_params);
+        assert_eq!(version, result.version);
+        assert_eq!(btc_minting_params.originating_tx_hash, result.originating_tx_hash);
+        assert!(result.originating_tx_address.is_some());
+        assert_eq!(btc_minting_params.originating_tx_address, result.originating_tx_address.unwrap().to_string());
+    }
+
+    #[test]
+    fn should_serialize_v1_metadata() {
+        let expected_result = get_sample_v1_serialized_metadata();
+        let metadata = get_sample_v1_metadata();
+        let result = metadata.serialize().unwrap();
+        assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn should_fail_to_deserialize_v1_metadata_if_too_few_bytes() {
+        let bytes = vec![0u8, 1u8];
+        let expected_error = format!(
+            "✘ Too few bytes to deserialize `EthMetadataFromBtc`! Got {}, need {}!",
+            bytes.len(),
+            MINIMUM_METADATA_BYTES,
+        );
+        assert!(bytes.len() < MINIMUM_METADATA_BYTES);
+        match EthMetadataFromBtc::from_bytes(&bytes) {
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_error),
+            Err(err) => panic!("Wrong error received: {}", err),
+            Ok(_) => panic!("Should not have succeeded!"),
+        }
+    }
+
+    #[test]
+    fn should_deserialize_eth_metadata_v1_correctly() {
+        let serialized = get_sample_v1_serialized_metadata();
+        let expected_result = get_sample_v1_metadata();
+        let result = EthMetadataFromBtc::from_bytes(&serialized).unwrap();
+        assert_eq!(result, expected_result);
     }
 }
