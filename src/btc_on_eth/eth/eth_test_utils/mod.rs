@@ -19,6 +19,11 @@ use crate::{
         TestDB,
         get_test_database,
     },
+    chains::eth::eth_crypto::{
+        eth_public_key::EthPublicKey,
+        eth_private_key::EthPrivateKey,
+        eth_transaction::EthTransaction,
+    },
     btc_on_eth::eth::{
         trie_nodes::Node,
         eth_state::EthState,
@@ -42,11 +47,6 @@ use crate::{
             EthReceiptJson,
             EthBlockAndReceipts,
             EthBlockAndReceiptsJson,
-        },
-        eth_crypto::{
-            eth_public_key::EthPublicKey,
-            eth_private_key::EthPrivateKey,
-            eth_transaction::EthTransaction,
         },
         nibble_utils::{
             Nibbles,

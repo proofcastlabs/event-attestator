@@ -1,11 +1,11 @@
 use crate::{
-    chains::eth::eth_crypto_utils::keccak_hash_bytes,
-    btc_on_eth::eth::{
+    chains::eth::{
+        eth_crypto_utils::keccak_hash_bytes,
         eth_crypto::eth_private_key::EthPrivateKey,
-        any_sender::{
-            serde::{compensation, data},
-            relay_contract::RelayContract,
-        },
+    },
+    btc_on_eth::eth::any_sender::{
+        serde::{compensation, data},
+        relay_contract::RelayContract,
     },
     chains::eth::{
         eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,

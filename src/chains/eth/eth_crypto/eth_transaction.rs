@@ -13,6 +13,7 @@ use crate::{
     },
     chains::eth::{
         eth_crypto_utils::keccak_hash_bytes,
+        eth_crypto::eth_private_key::EthPrivateKey,
         eth_constants::{
             VALUE_FOR_MINTING_TX,
             VALUE_FOR_PTOKEN_DEPLOY,
@@ -27,12 +28,9 @@ use crate::{
             convert_u256_to_32_byte_wide_zero_padded_hex,
             convert_eth_address_to_32_byte_wide_zero_padded_hex,
         },
-        eth::{
-            eth_crypto::eth_private_key::EthPrivateKey,
-            eth_types::{
-                EthSignature,
-                EthSignedTransaction,
-            },
+        eth::eth_types::{
+            EthSignature,
+            EthSignedTransaction,
         },
     },
 };

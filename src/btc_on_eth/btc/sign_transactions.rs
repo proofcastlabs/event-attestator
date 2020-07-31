@@ -1,6 +1,7 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eth::eth_crypto::eth_transaction::get_signed_minting_tx,
     btc_on_eth::{
         btc::{
             btc_state::BtcState,
@@ -9,7 +10,6 @@ use crate::{
         },
         eth::{
             eth_database_utils::get_signing_params_from_db,
-            eth_crypto::eth_transaction::get_signed_minting_tx,
             eth_types::{
                 EthTransactions,
                 EthSigningParams,

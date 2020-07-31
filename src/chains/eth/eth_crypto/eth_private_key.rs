@@ -17,13 +17,15 @@ use crate::{
         Byte,
         Result,
     },
-    chains::eth::eth_crypto_utils::{
-        keccak_hash_bytes,
-        set_eth_signature_recovery_param,
+    chains::eth::{
+        eth_crypto::eth_public_key::EthPublicKey,
+        eth_crypto_utils::{
+            keccak_hash_bytes,
+            set_eth_signature_recovery_param,
+        },
     },
     btc_on_eth::eth::{
        eth_types::EthSignature,
-       eth_crypto::eth_public_key::EthPublicKey,
     },
     chains::eth::eth_constants::{
         PREFIXED_MESSAGE_HASH_LEN,

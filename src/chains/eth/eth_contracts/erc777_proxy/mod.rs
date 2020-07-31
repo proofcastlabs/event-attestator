@@ -8,8 +8,10 @@ use crate::{
         Bytes,
         Result,
     },
-    chains::eth::eth_contracts::encode_fxn_call,
-    btc_on_eth::eth::eth_crypto::eth_private_key::EthPrivateKey,
+    chains::eth::{
+        eth_contracts::encode_fxn_call,
+        eth_crypto::eth_private_key::EthPrivateKey,
+    },
 };
 
 pub const ERC777_CHANGE_PNETWORK_BY_PROXY_GAS_LIMIT: usize = 33_000;
