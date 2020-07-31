@@ -4,6 +4,7 @@
 #![recursion_limit="128"]
 
 #![allow(clippy::match_bool)]
+#![allow(clippy::too_many_arguments)]
 
 //! # The __`pToken`__ Core
 //!
