@@ -1,4 +1,3 @@
-#![allow(dead_code)] // TODO rm!
 use std::{
     fmt,
     str,
@@ -10,17 +9,19 @@ use crate::{
         Bytes,
         Result,
     },
-    errors::AppError,
     btc_on_eth::btc::btc_types::MintingParamStruct as BtcOnEthMintingParamStruct,
 };
 use bitcoin::{
-    hashes::{
-        Hash,
-        sha256d,
-    },
+    hashes::sha256d,
     util::address::Address as BtcAddress,
 };
 
+#[cfg(test)]
+use bitcoin::hashes::Hash;
+#[cfg(test)]
+use crate::errors::AppError;
+
+#[cfg(test)]
 pub const MINIMUM_METADATA_BYTES: usize = 33;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -35,6 +36,7 @@ impl EthMetadataVersion {
         }
     }
 
+    #[cfg(test)]
     pub fn from_byte(byte: &Byte) -> Result<Self> {
         match byte {
             1u8 => Ok(EthMetadataVersion::V1),
@@ -101,6 +103,7 @@ impl EthMetadataFromBtc {
         }
     }
 
+    #[cfg(test)]
     fn get_sha_hash_from_bytes(bytes: &[Byte]) -> Result<sha256d::Hash> {
         match sha256d::Hash::from_slice(bytes) {
             Ok(hash) => Ok(hash),
@@ -123,6 +126,7 @@ impl EthMetadataFromBtc {
         }
     }
 
+    #[cfg(test)]
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         let num_bytes = bytes.len();
         if num_bytes < MINIMUM_METADATA_BYTES {
