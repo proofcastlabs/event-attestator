@@ -20,15 +20,10 @@ use crate::{
             VALUE_FOR_PTOKEN_DEPLOY,
             GAS_LIMIT_FOR_MINTING_TX,
             GAS_LIMIT_FOR_PTOKEN_DEPLOY,
-            ETH_SMART_CONTRACT_MINTING_FXN_SIG,
         },
     },
     btc_on_eth::{
         utils::strip_new_line_chars,
-        utils::{
-            convert_u256_to_32_byte_wide_zero_padded_hex,
-            convert_eth_address_to_32_byte_wide_zero_padded_hex,
-        },
         eth::eth_types::{
             EthSignature,
             EthSignedTransaction,

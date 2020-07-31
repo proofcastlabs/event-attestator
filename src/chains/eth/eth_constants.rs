@@ -24,7 +24,6 @@ pub const LOG_DATA_BTC_ADDRESS_START_INDEX: usize = 96;
 pub const GAS_LIMIT_FOR_PTOKEN_DEPLOY: usize = 2_800_000;
 pub static EXTENSION_NODE_STRING: &str = "extension";
 pub const HASHED_NULL_NODE: EthHash = EthHash(HASHED_NULL_NODE_BYTES);
-pub static ETH_SMART_CONTRACT_MINTING_FXN_SIG: &str = "40c10f19";
 pub const EMPTY_NIBBLES: Nibbles = Nibbles { data: Vec::new(), offset: 0 };
 pub static REDEEM_EVENT_TOPIC_HEX: &str = "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65";
 pub const ETH_MESSAGE_PREFIX: &[u8; 26] = b"\x19Ethereum Signed Message:\n";
