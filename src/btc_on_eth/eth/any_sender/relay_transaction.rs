@@ -187,7 +187,7 @@ impl RelayTransaction {
             Token::Address(self.relay_contract_address),
         ]);
 
-        let signed_message = eth_private_key.sign_eth_prefixed_msg_bytes(transaction_bytes)?;
+        let signed_message = eth_private_key.sign_eth_prefixed_msg_bytes(&transaction_bytes)?;
         self.signature = EthSignature::from_slice(&signed_message);
 
         Ok(self)

@@ -129,7 +129,7 @@ impl EthTransaction {
 
     pub fn sign(self, eth_private_key: EthPrivateKey) -> Result<Self> {
         eth_private_key
-            .sign_message_bytes(self.serialize_bytes())
+            .sign_message_bytes(&self.serialize_bytes())
             .map(|signature| self.add_signature_to_transaction(signature))
     }
 

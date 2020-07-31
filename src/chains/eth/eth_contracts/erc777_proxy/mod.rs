@@ -23,7 +23,7 @@ pub fn encode_mint_by_proxy_tx_data(
     any_sender_nonce: u64,
 ) -> Result<Bytes> {
     let proxy_signature = eth_private_key
-        .sign_eth_prefixed_msg_bytes(encode(&[
+        .sign_eth_prefixed_msg_bytes(&encode(&[
             Token::Address(EthAddress::from_slice(token_recipient.as_bytes())),
             Token::Uint(token_amount),
             Token::Uint(any_sender_nonce.into()),
