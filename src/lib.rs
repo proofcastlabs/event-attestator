@@ -33,6 +33,7 @@ mod utils;
 mod base58;
 mod chains;
 mod constants;
+mod crypto_utils;
 mod check_debug_mode;
 mod debug_database_utils;
 

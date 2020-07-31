@@ -18,8 +18,8 @@ use secp256k1::{
 use crate::{
     traits::DatabaseInterface,
     chains::btc::btc_utils::get_btc_one_key,
+    crypto_utils::generate_random_private_key,
     constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-    btc_on_eth::crypto_utils::generate_random_private_key,
     types::{
         Byte,
         Bytes,

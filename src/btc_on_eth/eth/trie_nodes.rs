@@ -9,14 +9,16 @@ use crate::{
         Bytes,
         Result,
     },
-    chains::eth::eth_constants::{
-        EMPTY_NIBBLES,
-        LEAF_NODE_STRING,
-        BRANCH_NODE_STRING,
-        EXTENSION_NODE_STRING,
+    chains::eth::{
+        eth_crypto_utils::keccak_hash_bytes,
+        eth_constants::{
+            EMPTY_NIBBLES,
+            LEAF_NODE_STRING,
+            BRANCH_NODE_STRING,
+            EXTENSION_NODE_STRING,
+        },
     },
     btc_on_eth::{
-        crypto_utils::keccak_hash_bytes,
         eth::{
             nibble_utils::Nibbles,
             get_trie_hash_map::get_thing_from_trie_hash_map,
@@ -178,7 +180,7 @@ impl Node {
     }
 
     pub fn get_hash(&self) -> Result<H256> {
-        self.get_rlp_encoding().map(keccak_hash_bytes)
+        self.get_rlp_encoding().map(|bytes| keccak_hash_bytes(&bytes))
     }
 
     pub fn get_key(&self) -> Nibbles {

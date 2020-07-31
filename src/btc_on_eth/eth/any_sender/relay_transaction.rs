@@ -1,12 +1,10 @@
 use crate::{
-    btc_on_eth::{
-        crypto_utils::keccak_hash_bytes,
-        eth::{
-            eth_crypto::eth_private_key::EthPrivateKey,
-            any_sender::{
-                serde::{compensation, data},
-                relay_contract::RelayContract,
-            },
+    chains::eth::eth_crypto_utils::keccak_hash_bytes,
+    btc_on_eth::eth::{
+        eth_crypto::eth_private_key::EthPrivateKey,
+        any_sender::{
+            serde::{compensation, data},
+            relay_contract::RelayContract,
         },
     },
     chains::eth::{
@@ -235,7 +233,7 @@ impl RelayTransaction {
     }
 
     pub fn get_tx_hash(&self) -> String {
-        hex::encode(keccak_hash_bytes(self.serialize_bytes()))
+        hex::encode(keccak_hash_bytes(&self.serialize_bytes()))
     }
 
     #[cfg(test)]

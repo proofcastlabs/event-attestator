@@ -11,16 +11,18 @@ use crate::{
         Bytes,
         Result,
     },
-    chains::eth::eth_constants::{
-        VALUE_FOR_MINTING_TX,
-        VALUE_FOR_PTOKEN_DEPLOY,
-        GAS_LIMIT_FOR_MINTING_TX,
-        GAS_LIMIT_FOR_PTOKEN_DEPLOY,
-        ETH_SMART_CONTRACT_MINTING_FXN_SIG,
+    chains::eth::{
+        eth_crypto_utils::keccak_hash_bytes,
+        eth_constants::{
+            VALUE_FOR_MINTING_TX,
+            VALUE_FOR_PTOKEN_DEPLOY,
+            GAS_LIMIT_FOR_MINTING_TX,
+            GAS_LIMIT_FOR_PTOKEN_DEPLOY,
+            ETH_SMART_CONTRACT_MINTING_FXN_SIG,
+        },
     },
     btc_on_eth::{
         utils::strip_new_line_chars,
-        crypto_utils::keccak_hash_bytes,
         utils::{
             convert_u256_to_32_byte_wide_zero_padded_hex,
             convert_eth_address_to_32_byte_wide_zero_padded_hex,
@@ -132,7 +134,7 @@ impl EthTransaction {
     }
 
     pub fn get_tx_hash(&self) -> String {
-        hex::encode(keccak_hash_bytes(self.serialize_bytes()))
+        hex::encode(keccak_hash_bytes(&self.serialize_bytes()))
     }
 
     pub fn serialize_hex(&self) -> String {
