@@ -14,6 +14,7 @@ use crate::{
     chains::eth::{
         eth_crypto_utils::keccak_hash_bytes,
         eth_crypto::eth_private_key::EthPrivateKey,
+        eth_contracts::erc777::encode_erc777_mint_with_no_data_fxn,
         eth_constants::{
             VALUE_FOR_MINTING_TX,
             VALUE_FOR_PTOKEN_DEPLOY,
@@ -193,33 +194,17 @@ pub fn get_signed_ptoken_smart_contract_tx(
     )
 }
 
-fn encode_minting_tx_params(
-    recipient: EthAddress,
-    amount: U256,
-) -> Result<Bytes> {
-    Ok(
-        hex::decode(
-            format!(
-                "{}{}{}",
-                ETH_SMART_CONTRACT_MINTING_FXN_SIG,
-                convert_eth_address_to_32_byte_wide_zero_padded_hex(recipient),
-                convert_u256_to_32_byte_wide_zero_padded_hex(amount),
-            )
-        )?
-    )
-}
-
 pub fn get_unsigned_minting_tx(
     nonce: u64,
-    amount: U256,
+    amount: &U256,
     chain_id: u8,
     to: EthAddress,
     gas_price: u64,
-    recipient: EthAddress,
+    recipient: &EthAddress,
 ) -> Result<EthTransaction> {
     Ok(
         EthTransaction::new(
-            encode_minting_tx_params(recipient, amount)?,
+            encode_erc777_mint_with_no_data_fxn(recipient, amount)?,
             nonce,
             VALUE_FOR_MINTING_TX,
             to,
@@ -231,12 +216,12 @@ pub fn get_unsigned_minting_tx(
 }
 
 pub fn get_signed_minting_tx(
-    amount: U256,
+    amount: &U256,
     nonce: u64,
     chain_id: u8,
     to: EthAddress,
     gas_price: u64,
-    recipient: EthAddress,
+    recipient: &EthAddress,
     eth_private_key: EthPrivateKey
 ) -> Result<EthTransaction> {
     Ok(
@@ -333,18 +318,6 @@ mod tests {
     }
 
     #[test]
-    fn should_encode_minting_params() {
-        let recipient = get_sample_eth_address();
-        let amount = U256::from_dec_str("1")
-            .unwrap();
-        let result = encode_minting_tx_params(recipient, amount)
-            .unwrap();
-        let expected_result = "40c10f190000000000000000000000001739624f5cd969885a224da84418d12b8570d61a0000000000000000000000000000000000000000000000000000000000000001"
-            .to_string();
-        assert_eq!(hex::encode(result), expected_result);
-    }
-
-    #[test]
     fn should_get_unsigned_minting_tx() {
         let recipient = get_sample_eth_address();
         let amount = U256::from_dec_str("1")
@@ -358,11 +331,11 @@ mod tests {
         );
         let result = get_unsigned_minting_tx(
             nonce,
-            amount,
+            &amount,
             chain_id,
             to,
             gas_price,
-            recipient,
+            &recipient,
         ).unwrap();
         let expected_result = "f86a048504a817c8008301d4c094c63b099efb18c8db573981fb64564f1564af4f3080b84440c10f190000000000000000000000001739624f5cd969885a224da84418d12b8570d61a0000000000000000000000000000000000000000000000000000000000000001048080"
             .to_string();
@@ -383,12 +356,12 @@ mod tests {
             &hex::decode(test_contract_address).unwrap()
         );
         let result = get_signed_minting_tx(
-            amount,
+            &amount,
             nonce,
             chain_id,
             to,
             gas_price,
-            recipient,
+            &recipient,
             eth_private_key,
         ).unwrap();
         // Note: Read tx here: https://rinkeby.etherscan.io/tx/0xc11826091cd47445fa72b7788eabac8d42bfedfcabcd8f719d1a7ba84894cd2b

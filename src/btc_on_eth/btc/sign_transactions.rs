@@ -33,12 +33,12 @@ pub fn get_eth_signed_txs(
                 minting_param_struct.eth_address,
             );
             get_signed_minting_tx(
-                minting_param_struct.amount,
+                &minting_param_struct.amount,
                 signing_params.eth_account_nonce + i as u64,
                 signing_params.chain_id,
                 signing_params.ptoken_contract_address,
                 signing_params.gas_price,
-                minting_param_struct.eth_address,
+                &minting_param_struct.eth_address,
                 signing_params.eth_private_key.clone(),
             )
         })
