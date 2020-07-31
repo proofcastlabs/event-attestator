@@ -83,7 +83,7 @@ impl EthMetadataFromBtc {
     }
 
     fn get_originating_hash_bytes(&self) -> Bytes {
-        self.originating_tx_hash.to_vec()
+        hex::decode(self.originating_tx_hash.to_string()).unwrap()
     }
 
     fn get_originating_address_bytes(&self) -> Result<Bytes> {
@@ -104,8 +104,16 @@ impl EthMetadataFromBtc {
     }
 
     #[cfg(test)]
+    fn reverse_endianess_of_bytes(bytes: &[Byte]) -> Bytes {
+        // Re the endianess switch: https://bitcointalk.org/index.php?topic=5201170.0
+        let mut result = bytes.to_vec();
+        result.reverse();
+        result
+    }
+
+    #[cfg(test)]
     fn get_sha_hash_from_bytes(bytes: &[Byte]) -> Result<sha256d::Hash> {
-        match sha256d::Hash::from_slice(bytes) {
+        match sha256d::Hash::from_slice(&Self::reverse_endianess_of_bytes(bytes)) {
             Ok(hash) => Ok(hash),
             Err(err) => Err(AppError::Custom(format!(
                 "✘ Error extracting hash from bytes in `EthMetadataVersion`: {}",
@@ -117,11 +125,11 @@ impl EthMetadataFromBtc {
     pub fn serialize(&self) -> Result<Bytes> {
         match self.version {
             EthMetadataVersion::V1 => {
-                let mut vec = vec![];
-                vec.append(&mut vec![self.get_version_byte()]);
-                vec.append(&mut self.get_originating_hash_bytes());
-                vec.append(&mut self.get_originating_address_bytes()?);
-                Ok(vec)
+                let mut serialized = vec![];
+                serialized.append(&mut vec![self.get_version_byte()]);
+                serialized.append(&mut self.get_originating_hash_bytes());
+                serialized.append(&mut self.get_originating_address_bytes()?);
+                Ok(serialized)
             }
         }
     }
@@ -186,7 +194,7 @@ mod tests {
         let expected_result = 0x01;
         let metadata_version = EthMetadataVersion::V1;
         let result = metadata_version.as_byte();
-        assert_eq!(result ,expected_result);
+        assert_eq!(result, expected_result);
     }
 
     #[test]

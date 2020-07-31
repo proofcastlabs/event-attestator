@@ -224,7 +224,7 @@ pub fn get_signed_minting_tx(
     operator_data: Option<&[Byte]>,
 ) -> Result<EthTransaction> {
     Ok(
-        get_unsigned_minting_tx( nonce, amount, chain_id, to, gas_price, recipient, user_data, operator_data)?
+        get_unsigned_minting_tx(nonce, amount, chain_id, to, gas_price, recipient, user_data, operator_data)?
             .sign(eth_private_key)?
     )
 }
