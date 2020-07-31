@@ -14,7 +14,7 @@ use crate::{
     chains::eth::{
         eth_crypto_utils::keccak_hash_bytes,
         eth_crypto::eth_private_key::EthPrivateKey,
-        eth_contracts::erc777::encode_erc777_mint_with_no_data_fxn,
+        eth_contracts::erc777::encode_erc777_mint_fxn_maybe_with_data,
         eth_constants::{
             VALUE_FOR_MINTING_TX,
             VALUE_FOR_PTOKEN_DEPLOY,
@@ -196,10 +196,12 @@ pub fn get_unsigned_minting_tx(
     to: EthAddress,
     gas_price: u64,
     recipient: &EthAddress,
+    user_data: Option<&[Byte]>,
+    operator_data: Option<&[Byte]>,
 ) -> Result<EthTransaction> {
     Ok(
         EthTransaction::new(
-            encode_erc777_mint_with_no_data_fxn(recipient, amount)?,
+            encode_erc777_mint_fxn_maybe_with_data(recipient, amount, user_data, operator_data)?,
             nonce,
             VALUE_FOR_MINTING_TX,
             to,
@@ -217,17 +219,12 @@ pub fn get_signed_minting_tx(
     to: EthAddress,
     gas_price: u64,
     recipient: &EthAddress,
-    eth_private_key: EthPrivateKey
+    eth_private_key: EthPrivateKey,
+    user_data: Option<&[Byte]>,
+    operator_data: Option<&[Byte]>,
 ) -> Result<EthTransaction> {
     Ok(
-        get_unsigned_minting_tx(
-            nonce,
-            amount,
-            chain_id,
-            to,
-            gas_price,
-            recipient
-        )?
+        get_unsigned_minting_tx( nonce, amount, chain_id, to, gas_price, recipient, user_data, operator_data)?
             .sign(eth_private_key)?
     )
 }
@@ -324,6 +321,8 @@ mod tests {
         let to = EthAddress::from_slice(
             &hex::decode(test_contract_address).unwrap()
         );
+        let user_data = None;
+        let operator_data = None;
         let result = get_unsigned_minting_tx(
             nonce,
             &amount,
@@ -331,6 +330,8 @@ mod tests {
             to,
             gas_price,
             &recipient,
+            user_data,
+            operator_data,
         ).unwrap();
         let expected_result = "f86a048504a817c8008301d4c094c63b099efb18c8db573981fb64564f1564af4f3080b84440c10f190000000000000000000000001739624f5cd969885a224da84418d12b8570d61a0000000000000000000000000000000000000000000000000000000000000001048080"
             .to_string();
@@ -350,6 +351,8 @@ mod tests {
         let to = EthAddress::from_slice(
             &hex::decode(test_contract_address).unwrap()
         );
+        let user_data = None;
+        let operator_data = None;
         let result = get_signed_minting_tx(
             &amount,
             nonce,
@@ -358,6 +361,8 @@ mod tests {
             gas_price,
             &recipient,
             eth_private_key,
+            user_data,
+            operator_data,
         ).unwrap();
         // Note: Read tx here: https://rinkeby.etherscan.io/tx/0xc11826091cd47445fa72b7788eabac8d42bfedfcabcd8f719d1a7ba84894cd2b
         let expected_result = "f8aa058504a817c8008301d4c094c63b099efb18c8db573981fb64564f1564af4f3080b84440c10f190000000000000000000000001739624f5cd969885a224da84418d12b8570d61a00000000000000000000000000000000000000000000000000000000000000012ba00e03d405b8f319a646786896b5136fa083a38133d38bdc2fb037847070d4187ba0507a418b6d50aa522d5e8cee22637e78d148519c6c82096dcbcc8d2233ea0e3d"

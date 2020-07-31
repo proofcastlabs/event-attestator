@@ -12,6 +12,7 @@ use crate::{
     chains::eth::eth_contracts::encode_fxn_call,
 };
 
+pub const EMPTY_DATA: Bytes = vec![];
 pub const ERC777_CHANGE_PNETWORK_GAS_LIMIT: usize = 30_000;
 
 pub const ERC777_CHANGE_PNETWORK_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"newPNetwork\",\"type\":\"address\"}],\"name\":\"changePNetwork\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0xfd4add66\"}]";
@@ -24,14 +25,14 @@ pub fn encode_erc777_change_pnetwork_fxn_data(new_ptoken_address: EthAddress) ->
     encode_fxn_call(ERC777_CHANGE_PNETWORK_ABI, "changePNetwork", &[Token::Address(new_ptoken_address)])
 }
 
-pub fn encode_erc777_mint_with_no_data_fxn(
+fn encode_erc777_mint_with_no_data_fxn(
     recipient: &EthAddress,
     value: &U256,
 ) -> Result<Bytes> {
     encode_fxn_call(ERC777_MINT_WITH_NO_DATA_ABI, "mint", &[Token::Address(*recipient), Token::Uint(*value)])
 }
 
-pub fn encode_erc777_mint_with_data_fxn(
+fn encode_erc777_mint_with_data_fxn(
     recipient: &EthAddress,
     value: &U256,
     user_data: &[Byte],
@@ -47,6 +48,30 @@ pub fn encode_erc777_mint_with_data_fxn(
             Token::Bytes(user_data.to_vec()),
         ]
     )
+}
+
+fn get_eth_calldata_from_maybe_data(maybe_data: Option<&[Byte]>) -> Bytes {
+    match maybe_data {
+        None => EMPTY_DATA,
+        Some(data) => data.to_vec(),
+    }
+}
+
+pub fn encode_erc777_mint_fxn_maybe_with_data(
+    recipient: &EthAddress,
+    value: &U256,
+    user_data: Option<&[Byte]>,
+    operator_data: Option<&[Byte]>,
+) -> Result<Bytes> {
+    match user_data.is_some() | operator_data.is_some() {
+        false => encode_erc777_mint_with_no_data_fxn(recipient, value),
+        true => encode_erc777_mint_with_data_fxn(
+            recipient,
+            value,
+            &get_eth_calldata_from_maybe_data(user_data),
+            &get_eth_calldata_from_maybe_data(operator_data),
+        )
+    }
 }
 
 #[cfg(test)]
