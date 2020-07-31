@@ -6,7 +6,6 @@ pub(crate) mod trie;
 pub(crate) mod rlp_codec;
 pub(crate) mod eth_state;
 pub(crate) mod eth_types;
-pub(crate) mod any_sender;
 pub(crate) mod path_codec;
 pub(crate) mod trie_nodes;
 pub(crate) mod get_eth_log;

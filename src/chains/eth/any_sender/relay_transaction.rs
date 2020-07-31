@@ -3,12 +3,12 @@ use crate::{
         eth_crypto_utils::keccak_hash_bytes,
         eth_crypto::eth_private_key::EthPrivateKey,
     },
-    btc_on_eth::eth::any_sender::{
-        serde::{compensation, data},
-        relay_contract::RelayContract,
-    },
     chains::eth::{
         eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
+        any_sender::{
+            serde::{compensation, data},
+            relay_contract::RelayContract,
+        },
         eth_constants::{
             ETH_MAINNET_CHAIN_ID,
             ETH_ROPSTEN_CHAIN_ID,
