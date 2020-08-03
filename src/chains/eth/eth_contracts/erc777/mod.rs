@@ -51,10 +51,7 @@ fn encode_erc777_mint_with_data_fxn(
 }
 
 fn get_eth_calldata_from_maybe_data(maybe_data: Option<&[Byte]>) -> Bytes {
-    match maybe_data {
-        None => EMPTY_DATA,
-        Some(data) => data.to_vec(),
-    }
+    maybe_data.unwrap_or(&EMPTY_DATA).to_vec()
 }
 
 pub fn encode_erc777_mint_fxn_maybe_with_data(

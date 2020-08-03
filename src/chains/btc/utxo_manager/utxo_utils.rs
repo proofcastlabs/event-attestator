@@ -26,6 +26,7 @@ use crate::{
             get_all_utxo_db_keys,
         },
     },
+    errors::AppError,
 };
 
 pub fn get_utxo_and_value_db_key(
@@ -65,7 +66,7 @@ pub fn get_all_utxos_as_json_string<D>(
             &get_all_utxo_db_keys(&db)
                 .iter()
                 .map(|db_key| {
-                    Ok(
+                    Ok::<UtxoDetails, AppError>(
                         UtxoDetails {
                             db_key: hex::encode(db_key.to_vec()),
                             db_value: hex::encode(db.get(db_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)?),
@@ -82,7 +83,6 @@ pub fn get_all_utxos_as_json_string<D>(
                         }
                     )
                 })
-                .map(|utxo_details: Result<UtxoDetails>| utxo_details)
                 .flatten()
                 .collect::<Vec<UtxoDetails>>()
         )?

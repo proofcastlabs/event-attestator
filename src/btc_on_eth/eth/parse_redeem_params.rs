@@ -100,10 +100,7 @@ fn parse_amount_and_address_tuples_from_receipt(
     receipt
         .logs
         .iter()
-        .filter(|log| match log_is_redeem(log) {
-            Ok(true) => true,
-            _ => false,
-        })
+        .filter(|log| matches!(log_is_redeem(log), Ok(true)))
         .map(|log| parse_redeem_params_from_log_and_receipt(log, receipt))
         .collect::<Result<Vec<RedeemParams>>>()
 }

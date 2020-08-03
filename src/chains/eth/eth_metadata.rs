@@ -125,11 +125,13 @@ impl EthMetadataFromBtc {
     pub fn serialize(&self) -> Result<Bytes> {
         match self.version {
             EthMetadataVersion::V1 => {
-                let mut serialized = vec![];
-                serialized.append(&mut vec![self.get_version_byte()]);
-                serialized.append(&mut self.get_originating_hash_bytes());
-                serialized.append(&mut self.get_originating_address_bytes()?);
-                Ok(serialized)
+                Ok(
+                    vec![
+                        vec![self.get_version_byte()],
+                        self.get_originating_hash_bytes(),
+                        self.get_originating_address_bytes()?
+                    ].concat()
+                )
             }
         }
     }

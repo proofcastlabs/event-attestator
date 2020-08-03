@@ -218,10 +218,10 @@ impl DepositAddressInfo {
 
     fn calculate_commitment_hash_v2(&self) -> Result<sha256d::Hash> {
         self.get_address_as_bytes()
-            .and_then(|mut address_bytes| {
+            .map(|mut address_bytes| {
                 address_bytes.append(&mut self.nonce.to_le_bytes().to_vec());
                 address_bytes.append(&mut self.calldata.clone());
-                Ok(sha256d::Hash::hash(&address_bytes))
+                sha256d::Hash::hash(&address_bytes)
             })
     }
 
