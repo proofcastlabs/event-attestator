@@ -8,8 +8,10 @@ use crate::{
         Bytes,
         Result,
     },
-    chains::eth::eth_contracts::encode_fxn_call,
-    btc_on_eth::eth::eth_crypto::eth_private_key::EthPrivateKey,
+    chains::eth::{
+        eth_contracts::encode_fxn_call,
+        eth_crypto::eth_private_key::EthPrivateKey,
+    },
 };
 
 pub const ERC777_CHANGE_PNETWORK_BY_PROXY_GAS_LIMIT: usize = 33_000;
@@ -23,7 +25,7 @@ pub fn encode_mint_by_proxy_tx_data(
     any_sender_nonce: u64,
 ) -> Result<Bytes> {
     let proxy_signature = eth_private_key
-        .sign_eth_prefixed_msg_bytes(encode(&[
+        .sign_eth_prefixed_msg_bytes(&encode(&[
             Token::Address(EthAddress::from_slice(token_recipient.as_bytes())),
             Token::Uint(token_amount),
             Token::Uint(any_sender_nonce.into()),

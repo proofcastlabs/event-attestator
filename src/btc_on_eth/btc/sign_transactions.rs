@@ -1,6 +1,13 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eth::{
+        eth_crypto::eth_transaction::get_signed_minting_tx,
+        eth_metadata::{
+            EthMetadataFromBtc,
+            EthMetadataVersion,
+        },
+    },
     btc_on_eth::{
         btc::{
             btc_state::BtcState,
@@ -9,7 +16,6 @@ use crate::{
         },
         eth::{
             eth_database_utils::get_signing_params_from_db,
-            eth_crypto::eth_transaction::get_signed_minting_tx,
             eth_types::{
                 EthTransactions,
                 EthSigningParams,
@@ -33,13 +39,20 @@ pub fn get_eth_signed_txs(
                 minting_param_struct.eth_address,
             );
             get_signed_minting_tx(
-                minting_param_struct.amount,
+                &minting_param_struct.amount,
                 signing_params.eth_account_nonce + i as u64,
                 signing_params.chain_id,
                 signing_params.ptoken_contract_address,
                 signing_params.gas_price,
-                minting_param_struct.eth_address,
+                &minting_param_struct.eth_address,
                 signing_params.eth_private_key.clone(),
+                None,
+                Some(
+                    &EthMetadataFromBtc::from_btc_minting_params(
+                        &EthMetadataVersion::V1,
+                        minting_param_struct,
+                    ).serialize()?
+                ),
             )
         })
         .collect::<Result<EthTransactions>>()

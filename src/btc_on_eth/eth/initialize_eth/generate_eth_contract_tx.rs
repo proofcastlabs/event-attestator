@@ -1,10 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eth::eth_crypto::eth_transaction::get_signed_ptoken_smart_contract_tx,
     btc_on_eth::eth::{
         eth_state::EthState,
         eth_database_utils::get_eth_private_key_from_db,
-        eth_crypto::eth_transaction::get_signed_ptoken_smart_contract_tx,
     },
 };
 

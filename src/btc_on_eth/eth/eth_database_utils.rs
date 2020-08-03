@@ -11,21 +11,24 @@ use crate::{
         Result,
         DataSensitivity,
     },
-    chains::eth::eth_constants::{
-        ETH_ADDRESS_KEY,
-        ETH_CHAIN_ID_KEY,
-        ETH_GAS_PRICE_KEY,
-        ETH_LINKER_HASH_KEY,
-        ANY_SENDER_NONCE_KEY,
-        ETH_ACCOUNT_NONCE_KEY,
-        ETH_PRIVATE_KEY_DB_KEY,
-        ETH_TAIL_BLOCK_HASH_KEY,
-        ETH_CANON_BLOCK_HASH_KEY,
-        ETH_LATEST_BLOCK_HASH_KEY,
-        ETH_ANCHOR_BLOCK_HASH_KEY,
-        ETH_CANON_TO_TIP_LENGTH_KEY,
-        ETH_SMART_CONTRACT_ADDRESS_KEY,
-        ERC777_PROXY_CONTACT_ADDRESS_KEY,
+    chains::eth::{
+        eth_crypto::eth_private_key::EthPrivateKey,
+        eth_constants::{
+            ETH_ADDRESS_KEY,
+            ETH_CHAIN_ID_KEY,
+            ETH_GAS_PRICE_KEY,
+            ETH_LINKER_HASH_KEY,
+            ANY_SENDER_NONCE_KEY,
+            ETH_ACCOUNT_NONCE_KEY,
+            ETH_PRIVATE_KEY_DB_KEY,
+            ETH_TAIL_BLOCK_HASH_KEY,
+            ETH_CANON_BLOCK_HASH_KEY,
+            ETH_LATEST_BLOCK_HASH_KEY,
+            ETH_ANCHOR_BLOCK_HASH_KEY,
+            ETH_CANON_TO_TIP_LENGTH_KEY,
+            ETH_SMART_CONTRACT_ADDRESS_KEY,
+            ERC777_PROXY_CONTACT_ADDRESS_KEY,
+        },
     },
     btc_on_eth::{
         database_utils::{
@@ -40,7 +43,6 @@ use crate::{
         },
         eth::{
             eth_state::EthState,
-            eth_crypto::eth_private_key::EthPrivateKey,
             eth_types::{
                 EthSigningParams,
                 EthBlockAndReceipts,

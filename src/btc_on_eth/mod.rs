@@ -41,7 +41,6 @@ pub mod debug_functions;
 pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
 
-mod crypto_utils;
 mod database_utils;
 mod check_core_is_initialized;
 

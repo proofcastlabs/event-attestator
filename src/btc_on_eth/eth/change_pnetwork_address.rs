@@ -2,19 +2,21 @@ use ethereum_types::Address as EthAddress;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::eth_contracts::{
-        erc777_proxy::{
-            ERC777_CHANGE_PNETWORK_BY_PROXY_GAS_LIMIT,
-            encode_erc777_proxy_change_pnetwork_fxn_data,
-            encode_erc777_proxy_change_pnetwork_by_proxy_fxn_data,
-        },
-        erc777::{
-            ERC777_CHANGE_PNETWORK_GAS_LIMIT,
-            encode_erc777_change_pnetwork_fxn_data,
+    chains::eth::{
+        eth_crypto::eth_transaction::EthTransaction,
+        eth_contracts::{
+            erc777_proxy::{
+                ERC777_CHANGE_PNETWORK_BY_PROXY_GAS_LIMIT,
+                encode_erc777_proxy_change_pnetwork_fxn_data,
+                encode_erc777_proxy_change_pnetwork_by_proxy_fxn_data,
+            },
+            erc777::{
+                ERC777_CHANGE_PNETWORK_GAS_LIMIT,
+                encode_erc777_change_pnetwork_fxn_data,
+            },
         },
     },
     btc_on_eth::eth::{
-        eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::{
             get_eth_chain_id_from_db,
             get_eth_gas_price_from_db,

@@ -8,10 +8,18 @@ use crate::{
         Result,
     },
     traits::DatabaseInterface,
-    chains::btc::btc_constants::DEFAULT_BTC_ADDRESS,
+    chains::{
+        btc::btc_constants::DEFAULT_BTC_ADDRESS,
+        eth::{
+            any_sender::relay_transaction::RelayTransaction,
+            eth_crypto::{
+                eth_transaction::EthTransaction,
+                eth_private_key::EthPrivateKey,
+            },
+        },
+    },
     btc_on_eth::{
         eth::{
-            eth_crypto::eth_transaction::EthTransaction,
             eth_database_utils::{
                 get_eth_private_key_from_db,
                 get_any_sender_nonce_from_db,
@@ -19,8 +27,6 @@ use crate::{
                 get_public_eth_address_from_db,
                 get_erc777_proxy_contract_address_from_db,
             },
-            any_sender::relay_transaction::RelayTransaction,
-            eth_crypto::eth_private_key::EthPrivateKey,
         },
         btc::{
             btc_state::BtcState,

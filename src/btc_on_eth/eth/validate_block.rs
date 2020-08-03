@@ -4,13 +4,11 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     constants::CORE_IS_VALIDATING,
-    btc_on_eth::{
-        crypto_utils::keccak_hash_bytes,
-        eth::{
-            eth_types::EthBlock,
-            eth_state::EthState,
-            rlp_codec::rlp_encode_block,
-        },
+    chains::eth::eth_crypto_utils::keccak_hash_bytes,
+    btc_on_eth::eth::{
+        eth_types::EthBlock,
+        eth_state::EthState,
+        rlp_codec::rlp_encode_block,
     },
 };
 
@@ -18,7 +16,7 @@ fn hash_block(block: &EthBlock) -> Result<H256> {
     trace!("block being encoded: {:?}", block);
     trace!("rlp encoded block: {}", hex::encode(rlp_encode_block(block)?));
     rlp_encode_block(block)
-        .map(keccak_hash_bytes)
+        .map(|bytes| keccak_hash_bytes(&bytes))
 }
 
 pub fn validate_block_header(block: &EthBlock) -> Result<bool> {

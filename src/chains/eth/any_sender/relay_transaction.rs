@@ -1,16 +1,14 @@
 use crate::{
-    btc_on_eth::{
-        crypto_utils::keccak_hash_bytes,
-        eth::{
-            eth_crypto::eth_private_key::EthPrivateKey,
-            any_sender::{
-                serde::{compensation, data},
-                relay_contract::RelayContract,
-            },
-        },
+    chains::eth::{
+        eth_crypto_utils::keccak_hash_bytes,
+        eth_crypto::eth_private_key::EthPrivateKey,
     },
     chains::eth::{
         eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
+        any_sender::{
+            serde::{compensation, data},
+            relay_contract::RelayContract,
+        },
         eth_constants::{
             ETH_MAINNET_CHAIN_ID,
             ETH_ROPSTEN_CHAIN_ID,
@@ -189,7 +187,7 @@ impl RelayTransaction {
             Token::Address(self.relay_contract_address),
         ]);
 
-        let signed_message = eth_private_key.sign_eth_prefixed_msg_bytes(transaction_bytes)?;
+        let signed_message = eth_private_key.sign_eth_prefixed_msg_bytes(&transaction_bytes)?;
         self.signature = EthSignature::from_slice(&signed_message);
 
         Ok(self)
@@ -235,7 +233,7 @@ impl RelayTransaction {
     }
 
     pub fn get_tx_hash(&self) -> String {
-        hex::encode(keccak_hash_bytes(self.serialize_bytes()))
+        hex::encode(keccak_hash_bytes(&self.serialize_bytes()))
     }
 
     #[cfg(test)]

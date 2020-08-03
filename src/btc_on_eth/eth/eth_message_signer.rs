@@ -25,7 +25,7 @@ where
     let eth_private_key = get_eth_private_key_from_db(db)?;
 
     info!("✔ Signing message with eth key...");
-    let signature = eth_private_key.sign_message_bytes(message.clone().into_bytes())?;
+    let signature = eth_private_key.sign_message_bytes(message.as_bytes())?;
 
     encode_eth_signed_message_as_json(&message, &signature)
 }

@@ -37,14 +37,6 @@ pub fn convert_u64_to_bytes(u_64: u64) -> Bytes {
     u_64.to_le_bytes().to_vec()
 }
 
-pub fn convert_u256_to_32_byte_wide_zero_padded_hex(u256: U256) -> String {
-    format!("{:0>64}", format!("{:x}", u256))
-}
-
-pub fn convert_eth_address_to_32_byte_wide_zero_padded_hex(eth_address: EthAddress) -> String {
-    format!("{:0>64}", format!("{:x}", eth_address))
-}
-
 pub fn strip_new_line_chars(string: String) -> String {
     string.replace("\n", "")
 }
@@ -153,7 +145,6 @@ mod tests {
         eth::eth_test_utils::{
             HASH_HEX_CHARS,
             HEX_PREFIX_LENGTH,
-            get_sample_eth_address,
         },
     };
 
@@ -395,22 +386,6 @@ mod tests {
         let length_after = result.len();
         assert!(length_after < length_before);
         assert_eq!(length_after, length_before - new_line_char.len());
-    }
-
-    #[test]
-    fn should_convert_u256_to_padded_hex() {
-        let u256 = U256::from_dec_str("12312321").unwrap();
-        let expected_result = "0000000000000000000000000000000000000000000000000000000000bbdf01".to_string();
-        let result = convert_u256_to_32_byte_wide_zero_padded_hex(u256);
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_convert_eth_address_to_padded_hex() {
-        let eth_address = get_sample_eth_address();
-        let expected_result = "0000000000000000000000001739624f5cd969885a224da84418d12b8570d61a".to_string();
-        let result = convert_eth_address_to_32_byte_wide_zero_padded_hex(eth_address);
-        assert_eq!(result, expected_result);
     }
 
     #[test]

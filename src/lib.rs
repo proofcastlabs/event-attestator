@@ -4,6 +4,7 @@
 #![recursion_limit="128"]
 
 #![allow(clippy::match_bool)]
+#![allow(clippy::too_many_arguments)]
 
 //! # The __`pToken`__ Core
 //!
@@ -33,6 +34,7 @@ mod utils;
 mod base58;
 mod chains;
 mod constants;
+mod crypto_utils;
 mod check_debug_mode;
 mod debug_database_utils;
 

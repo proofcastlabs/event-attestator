@@ -7,12 +7,10 @@ use ethereum_types::{
 };
 use crate::{
     types::Bytes,
-    btc_on_eth::eth::{
-        trie_nodes::Node,
-        eth_crypto::{
-            eth_private_key::EthPrivateKey,
-            eth_transaction::EthTransaction,
-        },
+    btc_on_eth::eth::trie_nodes::Node,
+    chains::eth::eth_crypto::{
+        eth_private_key::EthPrivateKey,
+        eth_transaction::EthTransaction,
     },
 };
 
