@@ -12,7 +12,6 @@ use crate::{
         Result,
     },
     chains::eth::{
-        eth_crypto_utils::keccak_hash_bytes,
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_contracts::erc777::encode_erc777_mint_fxn_maybe_with_data,
         eth_constants::{
@@ -21,6 +20,7 @@ use crate::{
             GAS_LIMIT_FOR_MINTING_TX,
             GAS_LIMIT_FOR_PTOKEN_DEPLOY,
         },
+        any_sender::relay_transaction::RelayTransaction,
     },
     btc_on_eth::{
         utils::strip_new_line_chars,
@@ -29,6 +29,7 @@ use crate::{
             EthSignedTransaction,
         },
     },
+    traits::EthTxInfoCompatible,
 };
 
 #[derive(Clone, Debug, Eq, PartialEq,)]
@@ -106,7 +107,31 @@ impl EthTransaction {
         ((chain_id * 2) + (sig_v + 35)).into() // Per EIP155
     }
 
-    pub fn serialize_bytes(&self) -> Bytes {
+    pub fn sign(self, eth_private_key: EthPrivateKey) -> Result<Self> {
+        eth_private_key
+            .sign_message_bytes(&self.serialize_bytes())
+            .map(|signature| self.add_signature_to_transaction(signature))
+    }
+
+    pub fn serialize_hex(&self) -> String {
+        hex::encode(self.serialize_bytes())
+    }
+}
+
+impl EthTxInfoCompatible for EthTransaction {
+    fn is_any_sender(&self) -> bool {
+        false
+    }
+
+    fn any_sender_tx(&self) -> Option<RelayTransaction> {
+        None
+    }
+
+    fn eth_tx_hex(&self) -> Option<String> {
+        Some(self.serialize_hex())
+    }
+
+    fn serialize_bytes(&self) -> Bytes {
         let mut rlp_stream = RlpStream::new();
         rlp_stream.begin_list(9);
         rlp_stream.append(&self.nonce);
@@ -119,20 +144,6 @@ impl EthTransaction {
         rlp_stream.append(&self.r);
         rlp_stream.append(&self.s);
         rlp_stream.out()
-    }
-
-    pub fn sign(self, eth_private_key: EthPrivateKey) -> Result<Self> {
-        eth_private_key
-            .sign_message_bytes(&self.serialize_bytes())
-            .map(|signature| self.add_signature_to_transaction(signature))
-    }
-
-    pub fn get_tx_hash(&self) -> String {
-        hex::encode(keccak_hash_bytes(&self.serialize_bytes()))
-    }
-
-    pub fn serialize_hex(&self) -> String {
-        hex::encode(self.serialize_bytes())
     }
 }
 

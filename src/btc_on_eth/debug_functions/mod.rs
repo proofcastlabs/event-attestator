@@ -92,11 +92,8 @@ use crate::{
                 start_eth_db_transaction,
                 get_signing_params_from_db,
                 get_latest_eth_block_number,
-                get_eth_private_key_from_db,
                 get_any_sender_nonce_from_db,
                 get_eth_account_nonce_from_db,
-                get_public_eth_address_from_db,
-                get_erc777_contract_address_from_db,
                 get_erc777_proxy_contract_address_from_db,
             },
             get_eth_output_json::{
@@ -164,9 +161,6 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
                             get_eth_account_nonce_from_db(&state.db)?,
                             state.use_any_sender_tx_type(),
                             get_any_sender_nonce_from_db(&state.db)?,
-                            get_public_eth_address_from_db(&state.db)?,
-                            &get_eth_private_key_from_db(&state.db)?,
-                            get_erc777_contract_address_from_db(&state.db)?,
                         )
                 }?
             )?;

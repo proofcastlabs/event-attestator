@@ -8,9 +8,12 @@ use ethereum_types::{
 use crate::{
     types::Bytes,
     btc_on_eth::eth::trie_nodes::Node,
-    chains::eth::eth_crypto::{
-        eth_private_key::EthPrivateKey,
-        eth_transaction::EthTransaction,
+    chains::eth::{
+        any_sender::relay_transaction::RelayTransaction,
+        eth_crypto::{
+            eth_private_key::EthPrivateKey,
+            eth_transaction::EthTransaction,
+        },
     },
 };
 
@@ -24,6 +27,7 @@ pub type EthSignedTransaction = String;
 pub type ChildNodes = [Option<Bytes>; 16];
 pub type TrieHashMap = HashMap<H256, Bytes>;
 pub type EthTransactions = Vec<EthTransaction>;
+pub type RelayTransactions = Vec<RelayTransaction>;
 
 #[cfg(test)]
 pub type EthTopics = Vec<EthTopic>;
@@ -37,6 +41,15 @@ pub struct EthSigningParams {
     pub eth_account_nonce: u64,
     pub eth_private_key: EthPrivateKey,
     pub ptoken_contract_address: EthAddress,
+}
+
+#[derive(Debug)]
+pub struct AnySenderSigningParams {
+    pub chain_id: u8,
+    pub any_sender_nonce: u64,
+    pub eth_private_key: EthPrivateKey,
+    pub public_eth_address: EthAddress,
+    pub erc777_proxy_address: EthAddress,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

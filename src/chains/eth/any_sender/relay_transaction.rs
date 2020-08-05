@@ -1,20 +1,15 @@
 use crate::{
     chains::eth::{
-        eth_crypto_utils::keccak_hash_bytes,
+        any_sender::{
+            relay_contract::RelayContract,
+            serde::{compensation, data},
+        },
+        eth_constants::{ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID},
+        eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
         eth_crypto::eth_private_key::EthPrivateKey,
     },
-    chains::eth::{
-        eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
-        any_sender::{
-            serde::{compensation, data},
-            relay_contract::RelayContract,
-        },
-        eth_constants::{
-            ETH_MAINNET_CHAIN_ID,
-            ETH_ROPSTEN_CHAIN_ID,
-        },
-    },
     errors::AppError,
+    traits::EthTxInfoCompatible,
     types::{Byte, Bytes, Result},
 };
 use ethabi::{encode, Token};
@@ -24,7 +19,7 @@ use rlp::RlpStream;
 pub const ANY_SENDER_GAS_LIMIT: u32 = 300_000;
 pub const ANY_SENDER_MAX_DATA_LEN: usize = 3_000;
 pub const ANY_SENDER_MAX_GAS_LIMIT: u32 = 3_000_000;
-pub const ANY_SENDER_DEFAULT_DEADLINE: Option<u64> =  None;
+pub const ANY_SENDER_DEFAULT_DEADLINE: Option<u64> = None;
 pub const ANY_SENDER_MAX_COMPENSATION_WEI: u64 = 49_999_999_999_999_999;
 
 /// An any.sender relay transaction. It is very similar
@@ -85,7 +80,6 @@ pub struct RelayTransaction {
 impl RelayTransaction {
     /// Creates a new signed relay transaction.
     #[cfg(test)]
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         from: EthAddress,
         chain_id: u8,
@@ -116,7 +110,6 @@ impl RelayTransaction {
     }
 
     /// Creates a new unsigned relay transaction from data.
-    #[allow(clippy::too_many_arguments)]
     fn from_data_unsigned(
         chain_id: u8,
         from: EthAddress,
@@ -193,7 +186,7 @@ impl RelayTransaction {
         Ok(self)
     }
 
-    /// Creates a new AnySender relayed `mintByProxy` ERC777 proxy contract tranasction.
+    /// Creates a new AnySender relayed `mintByProxy` ERC777 proxy contract transaction.
     pub fn new_mint_by_proxy_tx(
         chain_id: Byte,
         from: EthAddress,
@@ -203,21 +196,44 @@ impl RelayTransaction {
         to: EthAddress,
         token_recipient: EthAddress,
     ) -> Result<RelayTransaction> {
-        Ok(
-            RelayTransaction::from_data_unsigned(
-                chain_id,
-                from,
-                encode_mint_by_proxy_tx_data(eth_private_key, token_recipient, token_amount, any_sender_nonce)?,
-                ANY_SENDER_DEFAULT_DEADLINE,
-                ANY_SENDER_GAS_LIMIT,
-                ANY_SENDER_MAX_COMPENSATION_WEI,
-                RelayContract::from_eth_chain_id(chain_id)?.address()?,
-                to,
-            )?.sign(&eth_private_key)?
-        )
+        Ok(RelayTransaction::from_data_unsigned(
+            chain_id,
+            from,
+            encode_mint_by_proxy_tx_data(
+                eth_private_key,
+                token_recipient,
+                token_amount,
+                any_sender_nonce,
+            )?,
+            ANY_SENDER_DEFAULT_DEADLINE,
+            ANY_SENDER_GAS_LIMIT,
+            ANY_SENDER_MAX_COMPENSATION_WEI,
+            RelayContract::from_eth_chain_id(chain_id)?.address()?,
+            to,
+        )?
+        .sign(eth_private_key)?)
     }
 
-    pub fn serialize_bytes(&self) -> Bytes {
+    #[cfg(test)]
+    pub fn serialize_hex(&self) -> String {
+        hex::encode(self.serialize_bytes())
+    }
+}
+
+impl EthTxInfoCompatible for RelayTransaction {
+    fn is_any_sender(&self) -> bool {
+        true
+    }
+
+    fn any_sender_tx(&self) -> Option<RelayTransaction> {
+        Some(self.clone())
+    }
+
+    fn eth_tx_hex(&self) -> Option<String> {
+        None
+    }
+
+    fn serialize_bytes(&self) -> Bytes {
         let mut rlp_stream = RlpStream::new();
         rlp_stream.begin_list(9);
         rlp_stream.append(&self.to);
@@ -230,15 +246,6 @@ impl RelayTransaction {
         rlp_stream.append(&self.relay_contract_address);
         rlp_stream.append(&self.signature);
         rlp_stream.out()
-    }
-
-    pub fn get_tx_hash(&self) -> String {
-        hex::encode(keccak_hash_bytes(&self.serialize_bytes()))
-    }
-
-    #[cfg(test)]
-    pub fn serialize_hex(&self) -> String {
-        hex::encode(self.serialize_bytes())
     }
 }
 

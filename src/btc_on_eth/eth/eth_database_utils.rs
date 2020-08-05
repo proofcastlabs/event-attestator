@@ -46,6 +46,7 @@ use crate::{
             eth_types::{
                 EthSigningParams,
                 EthBlockAndReceipts,
+                AnySenderSigningParams,
             },
             eth_json_codec::{
                 encode_eth_block_and_receipts_as_json_bytes,
@@ -68,6 +69,23 @@ pub fn get_signing_params_from_db<D>(
             eth_private_key: get_eth_private_key_from_db(db)?,
             eth_account_nonce: get_eth_account_nonce_from_db(db)?,
             ptoken_contract_address: get_erc777_contract_address_from_db(db)?,
+        }
+    )
+}
+
+pub fn get_any_sender_signing_params_from_db<D>(
+    db: &D,
+) -> Result<AnySenderSigningParams>
+    where D: DatabaseInterface
+{
+    trace!("✔ Getting any.sender signing params from db...");
+    Ok(
+        AnySenderSigningParams {
+            chain_id: get_eth_chain_id_from_db(db)?,
+            eth_private_key: get_eth_private_key_from_db(db)?,
+            any_sender_nonce: get_any_sender_nonce_from_db(db)?,
+            public_eth_address: get_public_eth_address_from_db(db)?,
+            erc777_proxy_address: get_erc777_proxy_contract_address_from_db(db)?,
         }
     )
 }

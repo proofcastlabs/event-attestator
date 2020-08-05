@@ -3,29 +3,23 @@ use std::time::{
     UNIX_EPOCH
 };
 use crate::{
-    types::{
-        Byte,
-        Result,
+    types::Result,
+    traits::{
+        DatabaseInterface,
+        EthTxInfoCompatible,
     },
-    traits::DatabaseInterface,
     chains::{
         btc::btc_constants::DEFAULT_BTC_ADDRESS,
         eth::{
             any_sender::relay_transaction::RelayTransaction,
-            eth_crypto::{
-                eth_transaction::EthTransaction,
-                eth_private_key::EthPrivateKey,
-            },
+            eth_crypto::eth_transaction::EthTransaction,
         },
     },
     btc_on_eth::{
         eth::{
             eth_database_utils::{
-                get_eth_private_key_from_db,
-                get_any_sender_nonce_from_db,
                 get_eth_account_nonce_from_db,
-                get_public_eth_address_from_db,
-                get_erc777_proxy_contract_address_from_db,
+                get_any_sender_nonce_from_db,
             },
         },
         btc::{
@@ -38,7 +32,6 @@ use crate::{
         },
     },
 };
-use ethereum_types::Address as EthAddress;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EthTxInfo {
@@ -55,10 +48,10 @@ pub struct EthTxInfo {
 }
 
 impl EthTxInfo {
-    pub fn new(
-        eth_tx: &EthTransaction,
+    pub fn new<T: EthTxInfoCompatible>(
+        tx: &T,
         minting_param_struct: &MintingParamStruct,
-        eth_account_nonce: Option<u64>,
+        nonce: Option<u64>,
     ) -> Result<EthTxInfo> {
         let default_address = DEFAULT_BTC_ADDRESS.to_string();
         let retrieved_address = minting_param_struct
@@ -71,9 +64,9 @@ impl EthTxInfo {
 
         Ok(
             EthTxInfo {
-                eth_account_nonce,
-                eth_tx_hash: format!("0x{}", eth_tx.get_tx_hash()),
-                eth_tx_hex: Some(eth_tx.serialize_hex()),
+                eth_account_nonce: if tx.is_any_sender() { None } else { nonce },
+                eth_tx_hash: format!("0x{}", tx.get_tx_hash()),
+                eth_tx_hex: tx.eth_tx_hex(),
                 originating_address: address_string,
                 eth_tx_amount: minting_param_struct.amount.to_string(),
                 originating_tx_hash:
@@ -85,54 +78,10 @@ impl EthTxInfo {
                 signature_timestamp: SystemTime::now()
                     .duration_since(UNIX_EPOCH)?
                     .as_secs(),
-                any_sender_tx: None,
-                any_sender_nonce: None,
+                any_sender_tx: tx.any_sender_tx(),
+                any_sender_nonce: if tx.is_any_sender() { nonce } else { None },
             }
         )
-    }
-
-    pub fn new_with_any_sender(
-        chain_id: Byte,
-        minting_param_struct: &MintingParamStruct,
-        any_sender_nonce: u64,
-        from: EthAddress,
-        eth_private_key: &EthPrivateKey,
-        erc777_proxy_address: EthAddress,
-    ) -> Result<EthTxInfo> {
-        let default_address = DEFAULT_BTC_ADDRESS.to_string();
-        let retrieved_address = minting_param_struct
-            .originating_tx_address
-            .to_string();
-        let address_string = match default_address == retrieved_address {
-            false => retrieved_address,
-            true => "✘ Could not retrieve sender address".to_string(),
-        };
-
-        let any_sender_tx = RelayTransaction::new_mint_by_proxy_tx(
-            chain_id,
-            from,
-            minting_param_struct.amount,
-            any_sender_nonce,
-            eth_private_key,
-            erc777_proxy_address,
-            minting_param_struct.eth_address,
-        )?;
-
-        Ok(EthTxInfo {
-            eth_account_nonce: None,
-            eth_tx_hash: format!("0x{}", any_sender_tx.get_tx_hash()),
-            eth_tx_hex: None,
-            originating_address: address_string,
-            eth_tx_amount: minting_param_struct.amount.to_string(),
-            originating_tx_hash: minting_param_struct.originating_tx_hash.to_string(),
-            eth_tx_recipient: format!(
-                "0x{}",
-                hex::encode(minting_param_struct.eth_address.as_bytes())
-            ),
-            signature_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            any_sender_tx: Some(any_sender_tx),
-            any_sender_nonce: Some(any_sender_nonce),
-        })
     }
 }
 
@@ -142,39 +91,21 @@ pub struct BtcOutput {
     pub eth_signed_transactions: Vec<EthTxInfo>,
 }
 
-#[allow(clippy::too_many_arguments)]
 pub fn get_eth_signed_tx_info_from_eth_txs(
     eth_txs: &[EthTransaction],
     minting_params: &[MintingParamStruct],
     eth_account_nonce: u64,
     use_any_sender_tx_type: bool,
     any_sender_nonce: u64,
-    from: EthAddress,
-    eth_private_key: &EthPrivateKey,
-    erc777_proxy_address: EthAddress,
 ) -> Result<Vec<EthTxInfo>> {
-    if use_any_sender_tx_type {
+    let start_nonce = if use_any_sender_tx_type {
         info!("✔ Getting any.sender tx info from ETH txs...");
-        let any_sender_start_nonce = any_sender_nonce - eth_txs.len() as u64;
+        any_sender_nonce - eth_txs.len() as u64
+    } else {
+        info!("✔ Getting ETH tx info from ETH txs...");
+        eth_account_nonce - eth_txs.len() as u64
+    };
 
-        return eth_txs
-            .iter()
-            .enumerate()
-            .map(|(i, tx)| {
-                EthTxInfo::new_with_any_sender(
-                    tx.chain_id,
-                    &minting_params[i],
-                    any_sender_start_nonce + i as u64,
-                    from,
-                    eth_private_key,
-                    erc777_proxy_address,
-                )
-            })
-            .collect::<Result<Vec<EthTxInfo>>>();
-    }
-
-    info!("✔ Getting ETH tx info from ETH txs...");
-    let start_nonce = eth_account_nonce - eth_txs.len() as u64;
     eth_txs
         .iter()
         .enumerate()
@@ -201,9 +132,6 @@ pub fn create_btc_output_json_and_put_in_state<D>(
                         get_eth_account_nonce_from_db(&state.db)?,
                         state.use_any_sender_tx_type(),
                         get_any_sender_nonce_from_db(&state.db)?,
-                        get_public_eth_address_from_db(&state.db)?,
-                        &get_eth_private_key_from_db(&state.db)?,
-                        get_erc777_proxy_contract_address_from_db(&state.db)?,
                     )?,
             }
         }

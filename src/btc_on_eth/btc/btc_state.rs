@@ -7,7 +7,10 @@ use crate::{
         utxo_manager::utxo_types::BtcUtxosAndValues,
     },
     btc_on_eth::{
-        eth::eth_types::EthTransactions,
+        eth::eth_types::{
+            EthTransactions,
+            RelayTransactions,
+        },
         btc::{
             btc_types::{
                 BtcBlockAndId,
@@ -39,6 +42,7 @@ pub struct BtcState<D: DatabaseInterface> {
     pub deposit_info_hash_map: Option<DepositInfoHashMap>,
     pub btc_block_in_db_format: Option<BtcBlockInDbFormat>,
     pub any_sender: Option<bool>,
+    pub any_sender_signed_txs: Option<RelayTransactions>,
 }
 
 impl<D> BtcState<D> where D: DatabaseInterface {
@@ -55,6 +59,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
             btc_block_in_db_format: None,
             utxos_and_values: Vec::new(),
             any_sender: None,
+            any_sender_signed_txs: None,
         }
     }
 
@@ -193,6 +198,22 @@ impl<D> BtcState<D> where D: DatabaseInterface {
             None => {
                 info!("✔ Adding ETH signed txs to BTC state...");
                 self.eth_signed_txs = Some(eth_signed_txs);
+                Ok(self)
+            }
+        }
+    }
+
+    pub fn add_any_sender_signed_txs(
+        mut self,
+        any_sender_signed_txs: RelayTransactions,
+    ) -> Result<BtcState<D>> {
+        match self.any_sender_signed_txs {
+            Some(_) => Err(AppError::Custom(
+                get_no_overwrite_state_err("any_sender_signed_txs"))
+            ),
+            None => {
+                info!("✔ Adding any.sender signed txs to BTC state...");
+                self.any_sender_signed_txs = Some(any_sender_signed_txs);
                 Ok(self)
             }
         }
