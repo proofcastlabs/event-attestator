@@ -42,12 +42,7 @@ use crate::{
     },
 };
 
-pub fn submit_eos_block_to_core<D>(
-    db: D,
-    block_json: &str,
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn submit_eos_block_to_core<D>(db: D, block_json: &str) -> Result<String> where D: DatabaseInterface {
     info!("✔ Submitting EOS block to core...");
     parse_submission_material_and_add_to_state(block_json, EosState::init(db))
         .and_then(check_core_is_initialized_and_return_eos_state)

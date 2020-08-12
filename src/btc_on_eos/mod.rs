@@ -25,6 +25,7 @@ pub use debug_functions::{
     debug_get_key_from_db,
     debug_update_incremerkle,
     debug_add_new_eos_schedule,
+    debug_reprocess_eos_block,
     debug_set_key_in_db_to_value,
     debug_reprocess_btc_block_for_stale_eos_tx,
 };
