@@ -99,7 +99,7 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
     any_sender_nonce: u64,
 ) -> Result<Vec<EthTxInfo>> {
     let start_nonce = if use_any_sender_tx_type {
-        info!("✔ Getting any.sender tx info from ETH txs...");
+        info!("✔ Getting AnySender tx info from ETH txs...");
         any_sender_nonce - eth_txs.len() as u64
     } else {
         info!("✔ Getting ETH tx info from ETH txs...");

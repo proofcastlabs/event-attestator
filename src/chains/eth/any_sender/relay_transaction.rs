@@ -22,7 +22,7 @@ pub const ANY_SENDER_MAX_GAS_LIMIT: u32 = 3_000_000;
 pub const ANY_SENDER_DEFAULT_DEADLINE: Option<u64> = None;
 pub const ANY_SENDER_MAX_COMPENSATION_WEI: u64 = 49_999_999_999_999_999;
 
-/// An any.sender relay transaction. It is very similar
+/// An AnySender relay transaction. It is very similar
 /// to a normal transaction except for a few fields.
 /// The schema can be found [here](https://github.com/PISAresearch/docs.any.sender/blob/master/docs/relayTx.schema.json).
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -50,7 +50,7 @@ pub struct RelayTransaction {
     /// The block by which this transaction must be mined.
     /// Must be at most 400 blocks larger than the current block height (BETA).
     /// There is a tolerance of 20 blocks above and below this value (BETA).
-    /// Can optionally be set to 0. In this case the any.sender API will
+    /// Can optionally be set to 0. In this case the AnySender API will
     /// fill in a deadline (currentBlock + 400) and populate it in the returned receipt.
     // An integer in range 0..=(currentBlock + 400).
     pub deadline: u64,
@@ -61,7 +61,7 @@ pub struct RelayTransaction {
     pub gas_limit: u32,
 
     /// The value of the compensation that the user will be owed
-    /// if any.sender fails to mine the transaction
+    /// if AnySender fails to mine the transaction
     /// before the `deadline`.
     /// Max compensation is 0.05 ETH (BETA).
     // Maximum value 50_000_000_000_000_000
@@ -104,7 +104,7 @@ impl RelayTransaction {
         )?
         .sign(&eth_private_key)?;
 
-        info!("✔ Any.sender transaction signature is calculated. Returning signed transaction...");
+        info!("✔ AnySender transaction signature is calculated. Returning signed transaction...");
 
         Ok(relay_transaction)
     }
@@ -120,36 +120,36 @@ impl RelayTransaction {
         relay_contract_address: EthAddress,
         to: EthAddress,
     ) -> Result<RelayTransaction> {
-        info!("✔ Checking any.sender transaction constraints...");
+        info!("✔ Checking AnySender transaction constraints...");
 
         let deadline = deadline.unwrap_or_default();
 
         if gas_limit > ANY_SENDER_MAX_GAS_LIMIT {
             return Err(AppError::Custom(
-                "✘ Any.sender gas limit is out of range!".to_string(),
+                "✘ AnySender gas limit is out of range!".to_string(),
             ));
         }
 
         if data.len() > ANY_SENDER_MAX_DATA_LEN {
             return Err(AppError::Custom(
-                "✘ Any.sender data length is out of range!".to_string(),
+                "✘ AnySender data length is out of range!".to_string(),
             ));
         }
 
         if compensation > ANY_SENDER_MAX_COMPENSATION_WEI {
             return Err(AppError::Custom(
-                "✘ Any.sender compensation should be smaller than 0.05 ETH!".to_string(),
+                "✘ AnySender compensation should be smaller than 0.05 ETH!".to_string(),
             ));
         }
 
         if chain_id != ETH_MAINNET_CHAIN_ID && chain_id != ETH_ROPSTEN_CHAIN_ID {
             return Err(AppError::Custom(
-                "✘ Any.sender is not available on chain with the id provided!".to_string(),
+                "✘ AnySender is not available on chain with the id provided!".to_string(),
             ));
         }
 
         info!(
-            "✔ Any.sender transaction constraints are satisfied. Returning unsigned transaction..."
+            "✔ AnySender transaction constraints are satisfied. Returning unsigned transaction..."
         );
 
         Ok(RelayTransaction {
@@ -165,7 +165,7 @@ impl RelayTransaction {
         })
     }
 
-    /// Calculates any.sender relay transaction signature.
+    /// Calculates AnySender relay transaction signature.
     fn sign(mut self, eth_private_key: &EthPrivateKey) -> Result<RelayTransaction> {
         info!("Calculating relay transaction signature...");
 
@@ -373,7 +373,7 @@ mod tests {
             EthAddress::from_slice(&eth_transaction.to),
             EthAddress::from_slice(&eth_transaction.to), // FIXME This should be a different address really!
         )
-        .expect("Error creating any.sender relay transaction from eth transaction!");
+        .expect("Error creating AnySender relay transaction from eth transaction!");
         let expected_relay_transaction = RelayTransaction {
             chain_id: 3,
             from: EthAddress::from_slice(

@@ -212,7 +212,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
                 get_no_overwrite_state_err("any_sender_signed_txs"))
             ),
             None => {
-                info!("✔ Adding any.sender signed txs to BTC state...");
+                info!("✔ Adding AnySender signed txs to BTC state...");
                 self.any_sender_signed_txs = Some(any_sender_signed_txs);
                 Ok(self)
             }
@@ -337,7 +337,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         &mut self,
         btc_submission_material_json: BtcSubmissionMaterialJson
     ) -> Result<BtcSubmissionMaterialJson> {
-        info!("✔ Setting any.sender status from submission material...");
+        info!("✔ Setting AnySender status from submission material...");
         self.any_sender = btc_submission_material_json.any_sender;
         Ok(btc_submission_material_json)
     }

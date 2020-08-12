@@ -126,7 +126,7 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
         .map(|_| "{debug_clear_all_utxos_succeeded:true}".to_string())
 }
 
-// TODO/FIXME: This doesn't work with Any.Sender yet!
+// TODO/FIXME: This doesn't work with AnySender yet!
 pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
     check_debug_mode()
         .and_then(|_| parse_btc_block_and_id_and_put_in_state(btc_submission_material_json, BtcState::init(db)))

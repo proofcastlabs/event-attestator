@@ -22,13 +22,13 @@ pub fn get_any_sender_signed_txs(
     signing_params: &AnySenderSigningParams,
     minting_params: &[MintingParamStruct],
 ) -> Result<RelayTransactions> {
-    trace!("✔ Getting any.sender signed transactions...");
+    trace!("✔ Getting AnySender signed transactions...");
     minting_params
         .iter()
         .enumerate()
         .map(|(i, minting_param_struct)| {
             info!(
-                "✔ Signing any.sender tx for amount: {}, to address: {}",
+                "✔ Signing AnySender tx for amount: {}, to address: {}",
                 minting_param_struct.amount, minting_param_struct.eth_address,
             );
 
@@ -67,7 +67,7 @@ where
     .and_then(|signed_txs| {
         #[cfg(feature = "debug")]
         {
-            debug!("✔ Signed any.sender transactions: {:?}", signed_txs);
+            debug!("✔ Signed AnySender transactions: {:?}", signed_txs);
         }
         state.add_any_sender_signed_txs(signed_txs)
     })

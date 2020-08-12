@@ -78,7 +78,7 @@ pub fn get_any_sender_signing_params_from_db<D>(
 ) -> Result<AnySenderSigningParams>
     where D: DatabaseInterface
 {
-    trace!("✔ Getting any.sender signing params from db...");
+    trace!("✔ Getting AnySender signing params from db...");
     Ok(
         AnySenderSigningParams {
             chain_id: get_eth_chain_id_from_db(db)?,
@@ -615,7 +615,7 @@ pub fn get_any_sender_nonce_from_db<D>(
 ) -> Result<u64>
     where D: DatabaseInterface
 {
-    trace!("✔ Getting any.sender nonce from db...");
+    trace!("✔ Getting AnySender nonce from db...");
     Ok(
         get_u64_from_db(db, &ANY_SENDER_NONCE_KEY.to_vec()).unwrap_or_else(|_| {
             info!("✘ Could not find `AnySender` nonce in db, defaulting to `0`");
@@ -630,7 +630,7 @@ pub fn put_any_sender_nonce_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    trace!("✔ Putting any.sender nonce of {} in db...", nonce);
+    trace!("✔ Putting AnySender nonce of {} in db...", nonce);
     put_u64_in_db(db, &ANY_SENDER_NONCE_KEY.to_vec(), nonce)
 }
 
@@ -640,7 +640,7 @@ pub fn increment_any_sender_nonce_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    trace!("✔ Incrementing any.sender nonce in db...");
+    trace!("✔ Incrementing AnySender nonce in db...");
     get_any_sender_nonce_from_db(db)
         .and_then(|nonce| put_any_sender_nonce_in_db(db, nonce + amount_to_increment_by))
 }
