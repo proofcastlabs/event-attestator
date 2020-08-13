@@ -7,9 +7,9 @@ use crate::{
         eth_constants::{ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID},
         eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
         eth_crypto::eth_private_key::EthPrivateKey,
+        traits::EthTxInfoCompatible
     },
     errors::AppError,
-    traits::EthTxInfoCompatible,
     types::{Byte, Bytes, Result},
 };
 use ethabi::{encode, Token};
@@ -92,7 +92,7 @@ impl RelayTransaction {
     ) -> Result<RelayTransaction> {
         let relay_contract_address = RelayContract::from_eth_chain_id(chain_id)?.address()?;
 
-        let relay_transaction = RelayTransaction::from_data_unsigned(
+        let relay_transaction = RelayTransaction::new_unsigned(
             chain_id,
             from,
             data,
@@ -110,7 +110,7 @@ impl RelayTransaction {
     }
 
     /// Creates a new unsigned relay transaction from data.
-    fn from_data_unsigned(
+    fn new_unsigned(
         chain_id: u8,
         from: EthAddress,
         data: Bytes,
@@ -196,7 +196,7 @@ impl RelayTransaction {
         to: EthAddress,
         token_recipient: EthAddress,
     ) -> Result<RelayTransaction> {
-        Ok(RelayTransaction::from_data_unsigned(
+        Ok(RelayTransaction::new_unsigned(
             chain_id,
             from,
             encode_mint_by_proxy_tx_data(

@@ -13,7 +13,7 @@ pub fn maybe_increment_eth_nonce_in_db<D>(
     where D: DatabaseInterface
 {
     if state.use_any_sender_tx_type() {
-        info!("✔ Not incrementing ETH account nonce - AnySender transaction!");
+        info!("✔ Not incrementing ETH account nonce due to using AnySender transactions instead!");
         return Ok(state);
     }
 

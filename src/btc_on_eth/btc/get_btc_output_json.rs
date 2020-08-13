@@ -4,15 +4,13 @@ use std::time::{
 };
 use crate::{
     types::Result,
-    traits::{
-        DatabaseInterface,
-        EthTxInfoCompatible,
-    },
+    traits::DatabaseInterface,
     chains::{
         btc::btc_constants::DEFAULT_BTC_ADDRESS,
         eth::{
             any_sender::relay_transaction::RelayTransaction,
             eth_crypto::eth_transaction::EthTransaction,
+            traits::EthTxInfoCompatible
         },
     },
     btc_on_eth::{

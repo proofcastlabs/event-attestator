@@ -21,6 +21,7 @@ use crate::{
             GAS_LIMIT_FOR_PTOKEN_DEPLOY,
         },
         any_sender::relay_transaction::RelayTransaction,
+        traits::EthTxInfoCompatible
     },
     btc_on_eth::{
         utils::strip_new_line_chars,
@@ -29,7 +30,6 @@ use crate::{
             EthSignedTransaction,
         },
     },
-    traits::EthTxInfoCompatible,
 };
 
 #[derive(Clone, Debug, Eq, PartialEq,)]
@@ -47,7 +47,7 @@ pub struct EthTransaction {
 }
 
 impl EthTransaction {
-    pub fn new(
+    pub fn new_unsigned(
         data: Bytes,
         nonce: u64,
         value: usize,
@@ -211,7 +211,7 @@ pub fn get_unsigned_minting_tx(
     operator_data: Option<&[Byte]>,
 ) -> Result<EthTransaction> {
     Ok(
-        EthTransaction::new(
+        EthTransaction::new_unsigned(
             encode_erc777_mint_fxn_maybe_with_data(recipient, amount, user_data, operator_data)?,
             nonce,
             VALUE_FOR_MINTING_TX,

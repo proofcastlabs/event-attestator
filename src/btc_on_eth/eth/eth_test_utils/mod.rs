@@ -494,7 +494,7 @@ pub fn get_sample_unsigned_eth_transaction() -> EthTransaction {
     let chain_id = 4; // Rinkeby
     let gas_limit = 100_000;
     let gas_price = 20_000_000_000;
-    EthTransaction::new(
+    EthTransaction::new_unsigned(
         data,
         nonce,
         value,

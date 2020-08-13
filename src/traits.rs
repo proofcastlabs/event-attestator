@@ -1,13 +1,4 @@
-use crate::{
-    chains::eth::{
-        eth_crypto_utils::keccak_hash_bytes,
-        any_sender::relay_transaction::RelayTransaction,
-    },
-    types::{
-        Bytes,
-        Result
-    },
-};
+use crate::types::{Bytes, Result};
 
 pub trait DatabaseInterface {
     fn end_transaction(&self) -> Result<()>;
@@ -28,19 +19,4 @@ pub trait DatabaseInterface {
         value: Bytes,
         data_sensitivity: Option<u8>
     ) -> Result<()>;
-}
-
-
-pub trait EthTxInfoCompatible {
-    fn is_any_sender(&self) -> bool;
-
-    fn any_sender_tx(&self) -> Option<RelayTransaction>;
-
-    fn eth_tx_hex(&self) -> Option<String>;
-
-    fn serialize_bytes(&self) -> Bytes;
-
-    fn get_tx_hash(&self) -> String {
-        hex::encode(keccak_hash_bytes(&self.serialize_bytes()))
-    }
 }

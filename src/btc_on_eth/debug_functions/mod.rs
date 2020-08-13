@@ -46,7 +46,7 @@ use crate::{
         },
         btc::{
             btc_state::BtcState,
-            sign_transactions::get_eth_signed_txs,
+            sign_normal_eth_transactions::get_eth_signed_txs,
             save_utxos_to_db::maybe_save_utxos_to_db,
             validate_btc_merkle_root::validate_btc_merkle_root,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
