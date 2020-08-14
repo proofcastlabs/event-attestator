@@ -15,7 +15,7 @@ use crate::{
     },
     chains::{
         eth::{
-            eth_chain_id::EthereumChainId,
+            eth_network::EthNetwork,
             eth_constants::{
                 get_eth_constants_db_keys,
                 ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
@@ -367,7 +367,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
             get_signed_minting_tx(
                 &amount.into(),
                 nonce,
-                EthereumChainId::from_str(&eth_network)?.to_byte(),
+                EthNetwork::from_str(&eth_network)?.to_byte(),
                 get_erc777_contract_address_from_db(&db)?,
                 gas_price,
                 &recipient_eth_address,
