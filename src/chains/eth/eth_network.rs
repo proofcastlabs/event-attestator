@@ -17,19 +17,19 @@ pub enum EthNetwork {
 }
 
 impl EthNetwork {
-    pub fn from_chain_id(int: &u8) -> Result<Self> {
-        match int {
+    pub fn from_chain_id(chain_id: &u8) -> Result<Self> {
+        match chain_id {
             1 => Ok(EthNetwork::Mainnet),
             3 => Ok(EthNetwork::Ropsten),
             4 => Ok(EthNetwork::Rinkeby),
             5 => Ok(EthNetwork::Goerli),
             42 => Ok(EthNetwork::Kovan),
-            _ => Err(AppError::Custom(format!("✘ Unrecognised chain id: '{}'!", int)))
+            _ => Err(AppError::Custom(format!("✘ Unrecognised chain id: '{}'!", chain_id)))
         }
     }
 
     pub fn to_byte(&self) -> Byte {
-        self.to_chain_id() as u8
+        self.to_chain_id()
     }
 
     pub fn to_chain_id(&self) -> u8 {
@@ -45,11 +45,11 @@ impl EthNetwork {
     pub fn from_str(network_str: &str) -> Result<Self> {
         let lowercase_network_str: &str = &network_str.to_lowercase();
         match lowercase_network_str {
-            "mainnet" => EthNetwork::from_chain_id(&1),
-            "ropsten" => EthNetwork::from_chain_id(&3),
-            "rinkeby" => EthNetwork::from_chain_id(&4),
-            "goerli"  => EthNetwork::from_chain_id(&5),
-            "kovan"   => EthNetwork::from_chain_id(&42),
+            "mainnet" | "1"  => EthNetwork::from_chain_id(&1),
+            "ropsten" | "3"  => EthNetwork::from_chain_id(&3),
+            "rinkeby" | "4"  => EthNetwork::from_chain_id(&4),
+            "goerli"  | "5"  => EthNetwork::from_chain_id(&5),
+            "kovan"   | "42" => EthNetwork::from_chain_id(&42),
             _ => Err(AppError::Custom(format!("✘ Unrecognized ethereum network: '{}'!", network_str))),
         }
     }
@@ -112,14 +112,51 @@ mod tests {
     }
 
     #[test]
+    fn should_convert_mainnet_str_int_to_ethereum_chain_id_correctly() {
+        let network_str = "1";
+        let expected_result = EthNetwork::Mainnet;
+        let result = EthNetwork::from_str(network_str).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_kovan_str_int_to_ethereum_chain_id_correctly() {
+        let network_str = "42";
+        let expected_result = EthNetwork::Kovan;
+        let result = EthNetwork::from_str(network_str).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_ropsten_str_int_to_ethereum_chain_id_correctly() {
+        let network_str = "3";
+        let expected_result = EthNetwork::Ropsten;
+        let result = EthNetwork::from_str(network_str).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_goerli_str_int_to_ethereum_chain_id_correctly() {
+        let network_str = "5";
+        let expected_result = EthNetwork::Goerli;
+        let result = EthNetwork::from_str(network_str).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_rinkeby_str_int_to_ethereum_chain_id_correctly() {
+        let network_str = "4";
+        let expected_result = EthNetwork::Rinkeby;
+        let result = EthNetwork::from_str(network_str).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
     fn should_fail_to_convert_unknown_network_correctly() {
         let network_str = "some other network";
         let expected_err = format!("✘ Unrecognized ethereum network: '{}'!", network_str);
-        match EthNetwork::from_str(network_str) {
-            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
-            Err(err) => panic!("Wrong error received: {}", err),
-            Ok(_) => panic!("Should not have succeeded!"),
-        }
+        let err = EthNetwork::from_str(network_str).unwrap_err().to_string();
+        assert_eq!(err, expected_err);
     }
 
     #[test]
