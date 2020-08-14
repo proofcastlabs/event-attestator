@@ -15,6 +15,7 @@ use crate::{
     },
     chains::{
         eth::{
+            eth_chain_id::EthereumChainId,
             eth_constants::{
                 get_eth_constants_db_keys,
                 ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
@@ -348,9 +349,9 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
     db: D,
     amount: u64,
     nonce: u64,
-    chain_id: u8,
+    eth_network: &str,
     gas_price: u64,
-    recipient: String,
+    recipient: &str,
 ) -> Result<String> {
     check_core_is_initialized(&db)
         .and_then(|_| check_debug_mode())
@@ -366,7 +367,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
             get_signed_minting_tx(
                 &amount.into(),
                 nonce,
-                chain_id,
+                EthereumChainId::from_str(&eth_network)?.to_byte(),
                 get_erc777_contract_address_from_db(&db)?,
                 gas_price,
                 &recipient_eth_address,
@@ -379,9 +380,9 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
              json!({
                  "nonce": nonce,
                  "amount": amount,
-                 "chain_id": chain_id,
                  "gas_price": gas_price,
                  "recipient": recipient,
+                 "eth_network": eth_network,
                  "signed_tx": signed_tx.serialize_hex(),
              }).to_string()
          )
