@@ -47,7 +47,7 @@ pub fn get_any_sender_signed_txs(
         .collect::<Result<RelayTransactions>>()
 }
 
-pub fn maybe_sign_any_sender_transactions_and_add_to_state<D>(
+pub fn maybe_sign_any_sender_canon_block_txs_and_add_to_state<D>(
     state: BtcState<D>,
 ) -> Result<BtcState<D>>
 where

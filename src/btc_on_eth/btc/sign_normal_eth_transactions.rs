@@ -58,7 +58,7 @@ pub fn get_eth_signed_txs(
         .collect::<Result<EthTransactions>>()
 }
 
-pub fn maybe_sign_canon_block_transactions_and_add_to_state<D>(
+pub fn maybe_sign_normal_canon_block_txs_and_add_to_state<D>(
     state: BtcState<D>
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface

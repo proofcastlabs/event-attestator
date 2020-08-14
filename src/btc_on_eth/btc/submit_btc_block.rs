@@ -25,8 +25,8 @@ use crate::{
             increment_any_sender_nonce::maybe_increment_any_sender_nonce_in_db,
             parse_submission_material::parse_btc_block_and_id_and_put_in_state,
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
-            sign_normal_eth_transactions::maybe_sign_canon_block_transactions_and_add_to_state,
-            sign_any_sender_transactions::maybe_sign_any_sender_transactions_and_add_to_state,
+            sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,
+            sign_any_sender_transactions::maybe_sign_any_sender_canon_block_txs_and_add_to_state,
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
             get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
@@ -73,8 +73,8 @@ pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_update_btc_canon_block_hash)
         .and_then(maybe_update_btc_tail_block_hash)
         .and_then(maybe_update_btc_linker_hash)
-        .and_then(maybe_sign_canon_block_transactions_and_add_to_state)
-        .and_then(maybe_sign_any_sender_transactions_and_add_to_state)
+        .and_then(maybe_sign_normal_canon_block_txs_and_add_to_state)
+        .and_then(maybe_sign_any_sender_canon_block_txs_and_add_to_state)
         .and_then(maybe_increment_eth_nonce_in_db)
         .and_then(maybe_increment_any_sender_nonce_in_db)
         .and_then(maybe_remove_old_btc_tail_block)
