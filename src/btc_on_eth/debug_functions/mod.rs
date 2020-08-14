@@ -5,14 +5,21 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
+    utils::{
+        strip_hex_prefix,
+        decode_hex_with_err_msg,
+    },
     constants::{
         DB_KEY_PREFIX,
         PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
     },
     chains::{
-        eth::eth_constants::{
-            get_eth_constants_db_keys,
-            ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
+        eth::{
+            eth_constants::{
+                get_eth_constants_db_keys,
+                ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
+            },
+            eth_crypto::eth_transaction::get_signed_minting_tx,
         },
         btc::{
             btc_constants::{
@@ -331,4 +338,51 @@ pub fn debug_maybe_add_utxo_to_db<D>(
         .and_then(maybe_save_utxos_to_db)
         .and_then(end_btc_db_transaction)
         .map(|_| "{add_utxo_to_db_succeeded:true}".to_string())
+}
+
+/// # Debug Mint pBTC
+/// This fxn simply creates & signs a pBTC minting transaction using the private key from the
+/// database. It does __not__ change the database in __any way__, including incrementing the nonce
+/// etc. Use only if you know what you're doing and why!
+pub fn debug_mint_pbtc<D: DatabaseInterface>(
+    db: D,
+    amount: u64,
+    nonce: u64,
+    chain_id: u8,
+    gas_price: u64,
+    recipient: String,
+) -> Result<String> {
+    check_core_is_initialized(&db)
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| strip_hex_prefix(&recipient))
+        .and_then(|hex_no_prefix|
+            decode_hex_with_err_msg(
+                &hex_no_prefix,
+                "Could not decode hex for recipient in `debug_mint_pbtc` fxn!",
+            )
+        )
+        .map(|recipient_bytes| EthAddress::from_slice(&recipient_bytes))
+        .and_then(|recipient_eth_address|
+            get_signed_minting_tx(
+                &amount.into(),
+                nonce,
+                chain_id,
+                get_erc777_contract_address_from_db(&db)?,
+                gas_price,
+                &recipient_eth_address,
+                get_eth_private_key_from_db(&db)?,
+                None,
+                None,
+            )
+        )
+        .map(|signed_tx|
+             json!({
+                 "nonce": nonce,
+                 "amount": amount,
+                 "chain_id": chain_id,
+                 "gas_price": gas_price,
+                 "recipient": recipient,
+                 "signed_tx": signed_tx.serialize_hex(),
+             }).to_string()
+         )
 }

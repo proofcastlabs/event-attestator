@@ -14,6 +14,7 @@
 
 pub use get_enclave_state::get_enclave_state;
 pub use debug_functions::{
+    debug_mint_pbtc,
     debug_get_all_utxos,
     debug_get_all_db_keys,
     debug_get_key_from_db,
