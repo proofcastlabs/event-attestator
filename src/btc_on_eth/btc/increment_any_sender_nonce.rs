@@ -13,17 +13,17 @@ pub fn maybe_increment_any_sender_nonce_in_db<D>(
     where D: DatabaseInterface
 {
     if !state.use_any_sender_tx_type() {
-        info!("✔ Not incrementing any.sender nonce - not an any.sender transaction!");
+        info!("✔ Not incrementing AnySender nonce - not an AnySender transaction!");
         return Ok(state);
     }
 
     match state.get_eth_signed_txs() {
         Err(_) => {
-            info!("✔ Not incrementing any.sender nonce - no signatures made!");
+            info!("✔ Not incrementing AnySender nonce - no signatures made!");
             Ok(state)
         }
         Ok(signed_txs) => {
-            info!("✔ Incrementing any.sender nonce by {}", signed_txs.len());
+            info!("✔ Incrementing AnySender nonce by {}", signed_txs.len());
             increment_any_sender_nonce_in_db(
                 &state.db,
                 signed_txs.len() as u64,

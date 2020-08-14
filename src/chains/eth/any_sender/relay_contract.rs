@@ -5,8 +5,8 @@ use crate::{
 };
 use ethereum_types::Address as EthAddress;
 
-/// An any.sender relay contract address.
-/// Should be kept up-to-date with [this](https://github.com/PISAresearch/docs.any.sender#addresses) table.
+/// An AnySender relay contract address.
+/// Should be kept up-to-date with [this](https://github.com/PISAresearch/docs.AnySender#addresses) table.
 #[derive(Debug, PartialEq)]
 pub enum RelayContract {
     Mainnet,
@@ -20,12 +20,12 @@ impl RelayContract {
             ETH_MAINNET_CHAIN_ID => Ok(RelayContract::Mainnet),
             ETH_ROPSTEN_CHAIN_ID => Ok(RelayContract::Ropsten),
             _ => Err(AppError::Custom(
-                "✘ Any.sender is only available on Ropsten and Mainnet!".to_string(),
+                "✘ AnySender is only available on Ropsten and Mainnet!".to_string(),
             )),
         }
     }
 
-    /// Returns the address of the any.sender relay contract
+    /// Returns the address of the AnySender relay contract
     pub fn address(&self) -> Result<EthAddress> {
         match *self {
             RelayContract::Mainnet | RelayContract::Ropsten => Ok(EthAddress::from_slice(

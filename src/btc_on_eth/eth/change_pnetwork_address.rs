@@ -41,7 +41,7 @@ pub fn get_signed_erc777_change_pnetwork_tx<D>(
     increment_eth_account_nonce_in_db(db, 1)
         .and_then(|_|
             Ok(
-                EthTransaction::new(
+                EthTransaction::new_unsigned(
                     encode_erc777_change_pnetwork_fxn_data(new_address)?,
                     nonce_before_incrementing,
                     ZERO_ETH_VALUE,
@@ -66,7 +66,7 @@ pub fn get_signed_erc777_proxy_change_pnetwork_tx<D>(
     increment_eth_account_nonce_in_db(db, 1)
         .and_then(|_|
             Ok(
-                EthTransaction::new(
+                EthTransaction::new_unsigned(
                     encode_erc777_proxy_change_pnetwork_fxn_data(new_address)?,
                     nonce_before_incrementing,
                     ZERO_ETH_VALUE,
@@ -91,7 +91,7 @@ pub fn get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
     increment_eth_account_nonce_in_db(db, 1)
         .and_then(|_|
             Ok(
-                EthTransaction::new(
+                EthTransaction::new_unsigned(
                     encode_erc777_proxy_change_pnetwork_by_proxy_fxn_data(new_address)?,
                     nonce_before_incrementing,
                     ZERO_ETH_VALUE,

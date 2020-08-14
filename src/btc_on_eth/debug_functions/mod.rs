@@ -46,7 +46,7 @@ use crate::{
         },
         btc::{
             btc_state::BtcState,
-            sign_transactions::get_eth_signed_txs,
+            sign_normal_eth_transactions::get_eth_signed_txs,
             save_utxos_to_db::maybe_save_utxos_to_db,
             validate_btc_merkle_root::validate_btc_merkle_root,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
@@ -95,9 +95,8 @@ use crate::{
                 get_eth_private_key_from_db,
                 get_any_sender_nonce_from_db,
                 get_eth_account_nonce_from_db,
-                get_public_eth_address_from_db,
                 get_erc777_contract_address_from_db,
-                get_erc777_proxy_contract_address_from_db,
+                get_erc777_proxy_contract_address_from_db
             },
             get_eth_output_json::{
                 EthOutput,
@@ -129,7 +128,7 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
         .map(|_| "{debug_clear_all_utxos_succeeded:true}".to_string())
 }
 
-// TODO/FIXME: This doesn't work with Any.Sender yet!
+// TODO/FIXME: This doesn't work with AnySender yet!
 pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
     check_debug_mode()
         .and_then(|_| parse_btc_block_and_id_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
@@ -164,9 +163,6 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
                             get_eth_account_nonce_from_db(&state.db)?,
                             state.use_any_sender_tx_type(),
                             get_any_sender_nonce_from_db(&state.db)?,
-                            get_public_eth_address_from_db(&state.db)?,
-                            &get_eth_private_key_from_db(&state.db)?,
-                            get_erc777_contract_address_from_db(&state.db)?,
                         )
                 }?
             )?;

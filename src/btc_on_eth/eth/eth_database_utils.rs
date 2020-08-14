@@ -46,6 +46,7 @@ use crate::{
             eth_types::{
                 EthSigningParams,
                 EthBlockAndReceipts,
+                AnySenderSigningParams,
             },
             eth_json_codec::{
                 encode_eth_block_and_receipts_as_json_bytes,
@@ -68,6 +69,23 @@ pub fn get_signing_params_from_db<D>(
             eth_private_key: get_eth_private_key_from_db(db)?,
             eth_account_nonce: get_eth_account_nonce_from_db(db)?,
             ptoken_contract_address: get_erc777_contract_address_from_db(db)?,
+        }
+    )
+}
+
+pub fn get_any_sender_signing_params_from_db<D>(
+    db: &D,
+) -> Result<AnySenderSigningParams>
+    where D: DatabaseInterface
+{
+    trace!("✔ Getting AnySender signing params from db...");
+    Ok(
+        AnySenderSigningParams {
+            chain_id: get_eth_chain_id_from_db(db)?,
+            eth_private_key: get_eth_private_key_from_db(db)?,
+            any_sender_nonce: get_any_sender_nonce_from_db(db)?,
+            public_eth_address: get_public_eth_address_from_db(db)?,
+            erc777_proxy_address: get_erc777_proxy_contract_address_from_db(db)?,
         }
     )
 }
@@ -597,7 +615,7 @@ pub fn get_any_sender_nonce_from_db<D>(
 ) -> Result<u64>
     where D: DatabaseInterface
 {
-    trace!("✔ Getting any.sender nonce from db...");
+    trace!("✔ Getting AnySender nonce from db...");
     Ok(
         get_u64_from_db(db, &ANY_SENDER_NONCE_KEY.to_vec()).unwrap_or_else(|_| {
             info!("✘ Could not find `AnySender` nonce in db, defaulting to `0`");
@@ -612,7 +630,7 @@ pub fn put_any_sender_nonce_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    trace!("✔ Putting any.sender nonce of {} in db...", nonce);
+    trace!("✔ Putting AnySender nonce of {} in db...", nonce);
     put_u64_in_db(db, &ANY_SENDER_NONCE_KEY.to_vec(), nonce)
 }
 
@@ -622,7 +640,7 @@ pub fn increment_any_sender_nonce_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    trace!("✔ Incrementing any.sender nonce in db...");
+    trace!("✔ Incrementing AnySender nonce in db...");
     get_any_sender_nonce_from_db(db)
         .and_then(|nonce| put_any_sender_nonce_in_db(db, nonce + amount_to_increment_by))
 }

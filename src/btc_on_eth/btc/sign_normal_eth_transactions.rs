@@ -58,12 +58,18 @@ pub fn get_eth_signed_txs(
         .collect::<Result<EthTransactions>>()
 }
 
-pub fn maybe_sign_canon_block_transactions_and_add_to_state<D>(
+pub fn maybe_sign_normal_canon_block_txs_and_add_to_state<D>(
     state: BtcState<D>
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    info!("✔ Maybe signing txs...");
+    if state.use_any_sender_tx_type() {
+        info!("✔ Using AnySender therefore not signing normal ETH transactions!");
+        return Ok(state);
+    }
+
+    info!("✔ Maybe signing normal ETH txs...");
+
     get_eth_signed_txs(
         &get_signing_params_from_db(&state.db)?,
         &get_btc_canon_block_from_db(&state.db)?.minting_params,

@@ -1,18 +1,13 @@
 use crate::{
     chains::eth::{
-        eth_crypto_utils::keccak_hash_bytes,
-        eth_crypto::eth_private_key::EthPrivateKey,
-    },
-    chains::eth::{
-        eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
         any_sender::{
-            serde::{compensation, data},
             relay_contract::RelayContract,
+            serde::{compensation, data},
         },
-        eth_constants::{
-            ETH_MAINNET_CHAIN_ID,
-            ETH_ROPSTEN_CHAIN_ID,
-        },
+        eth_constants::{ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID},
+        eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
+        eth_crypto::eth_private_key::EthPrivateKey,
+        eth_traits::EthTxInfoCompatible
     },
     errors::AppError,
     types::{Byte, Bytes, Result},
@@ -24,10 +19,10 @@ use rlp::RlpStream;
 pub const ANY_SENDER_GAS_LIMIT: u32 = 300_000;
 pub const ANY_SENDER_MAX_DATA_LEN: usize = 3_000;
 pub const ANY_SENDER_MAX_GAS_LIMIT: u32 = 3_000_000;
-pub const ANY_SENDER_DEFAULT_DEADLINE: Option<u64> =  None;
+pub const ANY_SENDER_DEFAULT_DEADLINE: Option<u64> = None;
 pub const ANY_SENDER_MAX_COMPENSATION_WEI: u64 = 49_999_999_999_999_999;
 
-/// An any.sender relay transaction. It is very similar
+/// An AnySender relay transaction. It is very similar
 /// to a normal transaction except for a few fields.
 /// The schema can be found [here](https://github.com/PISAresearch/docs.any.sender/blob/master/docs/relayTx.schema.json).
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -55,7 +50,7 @@ pub struct RelayTransaction {
     /// The block by which this transaction must be mined.
     /// Must be at most 400 blocks larger than the current block height (BETA).
     /// There is a tolerance of 20 blocks above and below this value (BETA).
-    /// Can optionally be set to 0. In this case the any.sender API will
+    /// Can optionally be set to 0. In this case the AnySender API will
     /// fill in a deadline (currentBlock + 400) and populate it in the returned receipt.
     // An integer in range 0..=(currentBlock + 400).
     pub deadline: u64,
@@ -66,7 +61,7 @@ pub struct RelayTransaction {
     pub gas_limit: u32,
 
     /// The value of the compensation that the user will be owed
-    /// if any.sender fails to mine the transaction
+    /// if AnySender fails to mine the transaction
     /// before the `deadline`.
     /// Max compensation is 0.05 ETH (BETA).
     // Maximum value 50_000_000_000_000_000
@@ -85,7 +80,6 @@ pub struct RelayTransaction {
 impl RelayTransaction {
     /// Creates a new signed relay transaction.
     #[cfg(test)]
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         from: EthAddress,
         chain_id: u8,
@@ -98,7 +92,7 @@ impl RelayTransaction {
     ) -> Result<RelayTransaction> {
         let relay_contract_address = RelayContract::from_eth_chain_id(chain_id)?.address()?;
 
-        let relay_transaction = RelayTransaction::from_data_unsigned(
+        let relay_transaction = RelayTransaction::new_unsigned(
             chain_id,
             from,
             data,
@@ -110,14 +104,13 @@ impl RelayTransaction {
         )?
         .sign(&eth_private_key)?;
 
-        info!("✔ Any.sender transaction signature is calculated. Returning signed transaction...");
+        info!("✔ AnySender transaction signature is calculated. Returning signed transaction...");
 
         Ok(relay_transaction)
     }
 
     /// Creates a new unsigned relay transaction from data.
-    #[allow(clippy::too_many_arguments)]
-    fn from_data_unsigned(
+    fn new_unsigned(
         chain_id: u8,
         from: EthAddress,
         data: Bytes,
@@ -127,36 +120,36 @@ impl RelayTransaction {
         relay_contract_address: EthAddress,
         to: EthAddress,
     ) -> Result<RelayTransaction> {
-        info!("✔ Checking any.sender transaction constraints...");
+        info!("✔ Checking AnySender transaction constraints...");
 
         let deadline = deadline.unwrap_or_default();
 
         if gas_limit > ANY_SENDER_MAX_GAS_LIMIT {
             return Err(AppError::Custom(
-                "✘ Any.sender gas limit is out of range!".to_string(),
+                "✘ AnySender gas limit is out of range!".to_string(),
             ));
         }
 
         if data.len() > ANY_SENDER_MAX_DATA_LEN {
             return Err(AppError::Custom(
-                "✘ Any.sender data length is out of range!".to_string(),
+                "✘ AnySender data length is out of range!".to_string(),
             ));
         }
 
         if compensation > ANY_SENDER_MAX_COMPENSATION_WEI {
             return Err(AppError::Custom(
-                "✘ Any.sender compensation should be smaller than 0.05 ETH!".to_string(),
+                "✘ AnySender compensation should be smaller than 0.05 ETH!".to_string(),
             ));
         }
 
         if chain_id != ETH_MAINNET_CHAIN_ID && chain_id != ETH_ROPSTEN_CHAIN_ID {
             return Err(AppError::Custom(
-                "✘ Any.sender is not available on chain with the id provided!".to_string(),
+                "✘ AnySender is not available on chain with the id provided!".to_string(),
             ));
         }
 
         info!(
-            "✔ Any.sender transaction constraints are satisfied. Returning unsigned transaction..."
+            "✔ AnySender transaction constraints are satisfied. Returning unsigned transaction..."
         );
 
         Ok(RelayTransaction {
@@ -172,7 +165,7 @@ impl RelayTransaction {
         })
     }
 
-    /// Calculates any.sender relay transaction signature.
+    /// Calculates AnySender relay transaction signature.
     fn sign(mut self, eth_private_key: &EthPrivateKey) -> Result<RelayTransaction> {
         info!("Calculating relay transaction signature...");
 
@@ -193,7 +186,7 @@ impl RelayTransaction {
         Ok(self)
     }
 
-    /// Creates a new AnySender relayed `mintByProxy` ERC777 proxy contract tranasction.
+    /// Creates a new AnySender relayed `mintByProxy` ERC777 proxy contract transaction.
     pub fn new_mint_by_proxy_tx(
         chain_id: Byte,
         from: EthAddress,
@@ -203,21 +196,44 @@ impl RelayTransaction {
         to: EthAddress,
         token_recipient: EthAddress,
     ) -> Result<RelayTransaction> {
-        Ok(
-            RelayTransaction::from_data_unsigned(
-                chain_id,
-                from,
-                encode_mint_by_proxy_tx_data(eth_private_key, token_recipient, token_amount, any_sender_nonce)?,
-                ANY_SENDER_DEFAULT_DEADLINE,
-                ANY_SENDER_GAS_LIMIT,
-                ANY_SENDER_MAX_COMPENSATION_WEI,
-                RelayContract::from_eth_chain_id(chain_id)?.address()?,
-                to,
-            )?.sign(&eth_private_key)?
-        )
+        Ok(RelayTransaction::new_unsigned(
+            chain_id,
+            from,
+            encode_mint_by_proxy_tx_data(
+                eth_private_key,
+                token_recipient,
+                token_amount,
+                any_sender_nonce,
+            )?,
+            ANY_SENDER_DEFAULT_DEADLINE,
+            ANY_SENDER_GAS_LIMIT,
+            ANY_SENDER_MAX_COMPENSATION_WEI,
+            RelayContract::from_eth_chain_id(chain_id)?.address()?,
+            to,
+        )?
+        .sign(eth_private_key)?)
     }
 
-    pub fn serialize_bytes(&self) -> Bytes {
+    #[cfg(test)]
+    pub fn serialize_hex(&self) -> String {
+        hex::encode(self.serialize_bytes())
+    }
+}
+
+impl EthTxInfoCompatible for RelayTransaction {
+    fn is_any_sender(&self) -> bool {
+        true
+    }
+
+    fn any_sender_tx(&self) -> Option<RelayTransaction> {
+        Some(self.clone())
+    }
+
+    fn eth_tx_hex(&self) -> Option<String> {
+        None
+    }
+
+    fn serialize_bytes(&self) -> Bytes {
         let mut rlp_stream = RlpStream::new();
         rlp_stream.begin_list(9);
         rlp_stream.append(&self.to);
@@ -230,15 +246,6 @@ impl RelayTransaction {
         rlp_stream.append(&self.relay_contract_address);
         rlp_stream.append(&self.signature);
         rlp_stream.out()
-    }
-
-    pub fn get_tx_hash(&self) -> String {
-        hex::encode(keccak_hash_bytes(&self.serialize_bytes()))
-    }
-
-    #[cfg(test)]
-    pub fn serialize_hex(&self) -> String {
-        hex::encode(self.serialize_bytes())
     }
 }
 
@@ -366,7 +373,7 @@ mod tests {
             EthAddress::from_slice(&eth_transaction.to),
             EthAddress::from_slice(&eth_transaction.to), // FIXME This should be a different address really!
         )
-        .expect("Error creating any.sender relay transaction from eth transaction!");
+        .expect("Error creating AnySender relay transaction from eth transaction!");
         let expected_relay_transaction = RelayTransaction {
             chain_id: 3,
             from: EthAddress::from_slice(
