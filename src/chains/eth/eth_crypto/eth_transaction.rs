@@ -21,7 +21,7 @@ use crate::{
             GAS_LIMIT_FOR_PTOKEN_DEPLOY,
         },
         any_sender::relay_transaction::RelayTransaction,
-        traits::EthTxInfoCompatible
+        eth_traits::EthTxInfoCompatible
     },
     btc_on_eth::{
         utils::strip_new_line_chars,

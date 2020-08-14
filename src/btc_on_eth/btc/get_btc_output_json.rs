@@ -10,7 +10,7 @@ use crate::{
         eth::{
             any_sender::relay_transaction::RelayTransaction,
             eth_crypto::eth_transaction::EthTransaction,
-            traits::EthTxInfoCompatible
+            eth_traits::EthTxInfoCompatible
         },
     },
     btc_on_eth::{

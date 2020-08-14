@@ -5,4 +5,4 @@ pub(crate) mod eth_metadata;
 pub(crate) mod eth_constants;
 pub(crate) mod eth_contracts;
 pub(crate) mod eth_crypto_utils;
-pub(crate) mod traits;
+pub(crate) mod eth_traits;
