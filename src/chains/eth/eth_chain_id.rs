@@ -7,6 +7,7 @@ use crate::{
     errors::AppError,
 };
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum EthereumChainId {
     Kovan,
     Goerli,
@@ -63,5 +64,101 @@ impl fmt::Display for EthereumChainId {
             EthereumChainId::Ropsten => write!(f, "Ropsten Testnet"),
             EthereumChainId::Rinkeby => write!(f, "Rinkeby Testnet"),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_convert_mainnet_str_to_ethereum_chain_id_correctly() {
+        let network_str = "Mainnet";
+        let expected_result = EthereumChainId::Mainnet;
+        let result = EthereumChainId::from_str(network_str).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_kovan_str_to_ethereum_chain_id_correctly() {
+        let network_str = "kOvAN";
+        let expected_result = EthereumChainId::Kovan;
+        let result = EthereumChainId::from_str(network_str).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_ropsten_str_to_ethereum_chain_id_correctly() {
+        let network_str = "ROPSTEN";
+        let expected_result = EthereumChainId::Ropsten;
+        let result = EthereumChainId::from_str(network_str).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_goerli_str_to_ethereum_chain_id_correctly() {
+        let network_str = "goerli";
+        let expected_result = EthereumChainId::Goerli;
+        let result = EthereumChainId::from_str(network_str).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_rinkeby_str_to_ethereum_chain_id_correctly() {
+        let network_str = "rinkeby";
+        let expected_result = EthereumChainId::Rinkeby;
+        let result = EthereumChainId::from_str(network_str).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_fail_to_convert_unknown_network_correctly() {
+        let network_str = "some other network";
+        let expected_err = format!("✘ Unrecognized ethereum network: '{}'!", network_str);
+        match EthereumChainId::from_str(network_str) {
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(err) => panic!("Wrong error received: {}", err),
+            Ok(_) => panic!("Should not have succeeded!"),
+        }
+    }
+
+    #[test]
+    fn should_convert_mainnet_to_correct_chain_id() {
+        let eth_network = EthereumChainId::Mainnet;
+        let expected_result = 1;
+        let result = eth_network.to_chain_id();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_rinekby_to_correct_chain_id() {
+        let eth_network = EthereumChainId::Rinkeby;
+        let expected_result = 4;
+        let result = eth_network.to_chain_id();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_ropsten_to_correct_chain_id() {
+        let eth_network = EthereumChainId::Ropsten;
+        let expected_result = 3;
+        let result = eth_network.to_chain_id();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_goerli_to_correct_chain_id() {
+        let eth_network = EthereumChainId::Goerli;
+        let expected_result = 5;
+        let result = eth_network.to_chain_id();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_kovan_to_correct_chain_id() {
+        let eth_network = EthereumChainId::Kovan;
+        let expected_result = 42;
+        let result = eth_network.to_chain_id();
+        assert_eq!(result, expected_result);
     }
 }
