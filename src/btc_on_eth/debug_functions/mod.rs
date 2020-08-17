@@ -340,10 +340,11 @@ pub fn debug_maybe_add_utxo_to_db<D>(
 /// # Debug Mint pBTC
 /// This fxn simply creates & signs a pBTC minting transaction using the private key from the
 /// database. It does __not__ change the database in __any way__, including incrementing the nonce
-/// etc. Use only if you know what you're doing and why!
+/// etc. There is great potential for bricking a running instance when using this, so only use it
+/// if you know exactly what you're doing and why!
 pub fn debug_mint_pbtc<D: DatabaseInterface>(
     db: D,
-    amount: u64,
+    amount: u128,
     nonce: u64,
     eth_network: &str,
     gas_price: u64,
