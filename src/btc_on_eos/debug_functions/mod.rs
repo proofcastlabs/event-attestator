@@ -96,6 +96,9 @@ use crate::{
     },
 };
 
+/// # Debug Get All Db Keys
+///
+/// This function will return a JSON formatted list of all the database keys used in the encrypted database.
 pub fn debug_get_all_db_keys() -> Result<String> {
     check_debug_mode()
         .map(|_|
@@ -108,6 +111,14 @@ pub fn debug_get_all_db_keys() -> Result<String> {
     )
 }
 
+/// # Debug Reprocess EOS Block For Stale Transaction
+///
+/// This function will take a passed in EOS block submission material and run it through the
+/// submission pipeline, signing any signatures for pegouts it may find in the block
+///
+/// ### BEWARE:
+/// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
+/// fail due to the core having an incorret set of UTXOs!
 pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> where D: DatabaseInterface {
     info!("✔ Debug reprocessing EOS block...");
     parse_submission_material_and_add_to_state(block_json, EosState::init(db))
@@ -134,6 +145,12 @@ pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> w
         .map(prepend_debug_output_marker_to_string)
 }
 
+/// # Debug Reprocess BTC Block For Stale Transaction
+///
+/// This function takes BTC block submission material and runs it thorugh the BTC submission
+/// pipeline signing any transactions along the way. The `stale_transaction` part alludes to the
+/// fact that EOS transactions have an intrinsic time limit, meaning a failure of upstream parts of
+/// the bridge (ie tx broadcasting) could lead to expired transactions that can't ever be mind.
 pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
     db: D,
     block_json_string: &str
@@ -193,6 +210,16 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
         .map(prepend_debug_output_marker_to_string)
 }
 
+/// # Debug Update Incremerkle
+///
+/// This function will take an EOS initialization JSON as its input and use it to create an
+/// incremerkle valid for the block number in the JSON. It will then REPLACE the increrkle in the
+/// encrypted database with this one.
+///
+/// ### BEWARE:
+/// Changing the incremerkle changes the last block the enclave has seen and so can easily lead to
+/// transaction replays. Use with extreme caution and only if you know exactly what you are doing
+/// and why.
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
     info!("✔ Debug updating blockroot merkle...");
     let init_json = EosInitJson::from_json_string(&eos_init_json)?;
@@ -206,6 +233,12 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &st
         .map(prepend_debug_output_marker_to_string)
 }
 
+/// # Debug Clear All UTXOS
+///
+/// This function will remove ALL UTXOS from the core's encrypted database
+///
+/// ### BEWARE:
+/// Use with extreme caution, and only if you know exactly what you are doing and why.
 pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     info!("✔ Debug clearing all UTXOs...");
     clear_all_utxos(db).map(prepend_debug_output_marker_to_string)
@@ -222,6 +255,12 @@ pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &s
         .map(prepend_debug_output_marker_to_string)
 }
 
+/// # Debug Set Key in DB to Value
+///
+/// This function set to the given value a given key in the encryped database.
+///
+/// ### BEWARE:
+/// Only use this if you know exactly what you are doing and why.
 pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let sensitivity = match key_bytes == EOS_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
@@ -231,6 +270,9 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
     set_key_in_db_to_value(db, key, value, sensitivity).map(prepend_debug_output_marker_to_string)
 }
 
+/// # Debug Get Key From Db
+///
+/// This function will return the value stored under a given key in the encrypted database.
 pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let sensitivity = match key_bytes == EOS_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
@@ -241,6 +283,9 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
 
 }
 
+/// # Debug Get All UTXOs
+///
+/// This function will return a JSON containing all the UTXOs the encrypted database currently has.
 pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
     check_debug_mode()
         .and_then(|_| get_all_utxos_as_json_string(db))

@@ -107,6 +107,9 @@ use crate::{
     },
 };
 
+/// # Debug Get All Db Keys
+///
+/// This function will return a JSON formatted list of all the database keys used in the encrypted database.
 pub fn debug_get_all_db_keys() -> Result<String> {
     check_debug_mode()
         .map(|_|
@@ -119,6 +122,12 @@ pub fn debug_get_all_db_keys() -> Result<String> {
         )
 }
 
+/// # Debug Clear All UTXOS
+///
+/// This function will remove ALL UTXOS from the core's encrypted database
+///
+/// ### BEWARE:
+/// Use with extreme caution, and only if you know exactly what you are doing and why.
 pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     info!("✔ Debug clearing all UTXOs...");
     check_core_is_initialized(db)
@@ -130,6 +139,17 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
         .map(prepend_debug_output_marker_to_string)
 }
 
+/// # Debug Reprocess BTC Block
+///
+/// This function will take a passed in ETH block submission material and run it through the
+/// submission pipeline, signing any signatures for pegins it may find in the block
+///
+/// ### NOTE:
+/// This does not yet work with AnySender type transactions.
+///
+/// ### BEWARE:
+/// If you don't broadcast the transaction outputted from this function, future ETH transactions will
+/// fail due to the nonce being too high!
 // TODO/FIXME: This doesn't work with AnySender yet!
 pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
     check_debug_mode()
@@ -181,6 +201,14 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
         .map(prepend_debug_output_marker_to_string)
 }
 
+/// # Debug Reprocess ETH Block
+///
+/// This function will take a passed in ETH block submission material and run it through the
+/// submission pipeline, signing any signatures for pegouts it may find in the block
+///
+/// ### BEWARE:
+/// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
+/// fail due to the core having an incorret set of UTXOs!
 pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &str) -> Result<String> {
     check_debug_mode()
         .and_then(|_| parse_eth_block_and_receipts_and_put_in_state(eth_block_json, EthState::init(db)))
@@ -220,6 +248,12 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
         .map(prepend_debug_output_marker_to_string)
 }
 
+/// # Debug Set Key in DB to Value
+///
+/// This function set to the given value a given key in the encryped database.
+///
+/// ### BEWARE:
+/// Only use this if you know exactly what you are doing and why.
 pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
     check_debug_mode()
         .and_then(|_| {
@@ -233,6 +267,9 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
         .map(prepend_debug_output_marker_to_string)
 }
 
+/// # Debug Get Key From Db
+///
+/// This function will return the value stored under a given key in the encrypted database.
 pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
     check_debug_mode()
         .and_then(|_| {
@@ -246,12 +283,23 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
         .map(prepend_debug_output_marker_to_string)
 }
 
+/// # Debug Get All UTXOs
+///
+/// This function will return a JSON containing all the UTXOs the encrypted database currently has.
 pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| get_all_utxos_as_json_string(db))
 }
 
+/// # Debug Get Signed ERC777 change pNetwork Tx
+///
+/// This function will create a signed ETH tranasaction that will change the pNetwork address in
+/// the pToken ERC777 contract to the passed in address.
+///
+/// ### BEWARE:
+/// If you don't broadcast the transaction outputted from this function, future ETH transactions will
+/// fail due to the nonce being too high!
 pub fn debug_get_signed_erc777_change_pnetwork_tx<D>(
     db: D,
     new_address: &str
@@ -281,6 +329,14 @@ fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()>
         )
 }
 
+/// # Debug Get Signed ERC777 change pNetwork Tx
+///
+/// This function will create a signed ETH tranasaction that will change the pNetwork address in
+/// the pToken ERC777 proxy contract to the passed in address.
+///
+/// ### BEWARE:
+/// If you don't broadcast the transaction outputted from this function, future ETH transactions will
+/// fail due to the nonce being too high!
 pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D>(
     db: D,
     new_address: &str
@@ -301,6 +357,14 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D>(
         .map(prepend_debug_output_marker_to_string)
 }
 
+/// # Debug Get Signed ERC777 change pNetwork By Proxy Tx
+///
+/// This function will create a signed ETH tranasaction that will change the pNetwork address in
+/// the pToken ERC777 contract via the ERC777 proxy contract, to the passed in address.
+///
+/// ### BEWARE:
+/// If you don't broadcast the transaction outputted from this function, future ETH transactions will
+/// fail due to the nonce being too high!
 pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
     db: D,
     new_address: &str
@@ -321,6 +385,15 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
         .map(prepend_debug_output_marker_to_string)
 }
 
+/// # Debug Maybe Add UTXO To DB
+///
+/// This function accepts as its param BTC submission material, in which it inspects all the
+/// transactions looking for any pertaining to the core's own public key, or deposit addresses
+/// derived from it. Any it finds it will extact the UTXO from and add it to the encrypted
+/// database.
+///
+/// ### NOTE:
+/// The core won't accept UTXOs it already has in its encrypted database.
 pub fn debug_maybe_add_utxo_to_db<D>(
     db: D,
     btc_submission_material_json: &str,
@@ -348,9 +421,13 @@ pub fn debug_maybe_add_utxo_to_db<D>(
 }
 
 /// # Debug Mint pBTC
+///
 /// This fxn simply creates & signs a pBTC minting transaction using the private key from the
 /// database. It does __not__ change the database in __any way__, including incrementing the nonce
-/// etc. There is great potential for bricking a running instance when using this, so only use it
+/// etc.
+///
+/// ### BEWARE:
+/// There is great potential for bricking a running instance when using this, so only use it
 /// if you know exactly what you're doing and why!
 pub fn debug_mint_pbtc<D: DatabaseInterface>(
     db: D,
