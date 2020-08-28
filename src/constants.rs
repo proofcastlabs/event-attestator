@@ -15,7 +15,7 @@ pub const NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR: &str =
 
 pub const U64_NUM_BYTES: usize = 8;
 pub const MIN_DATA_SENSITIVITY_LEVEL: Option<u8> = None;
-pub const DEBUG_OUTPUT_MARKER: &str = "DEBUG_OUTPUT_MARKER_";
+pub const DEBUG_OUTPUT_MARKER: &str = "DEBUG_OUTPUT_MARKER";
 pub const PRIVATE_KEY_DATA_SENSITIVITY_LEVEL: Option<u8> = Some(255);
 
 lazy_static! {

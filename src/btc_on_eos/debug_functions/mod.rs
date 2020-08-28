@@ -213,7 +213,7 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
 /// # Debug Update Incremerkle
 ///
 /// This function will take an EOS initialization JSON as its input and use it to create an
-/// incremerkle valid for the block number in the JSON. It will then REPLACE the increrkle in the
+/// incremerkle valid for the block number in the JSON. It will then REPLACE the incremerkle in the
 /// encrypted database with this one.
 ///
 /// ### BEWARE:
@@ -280,7 +280,6 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
         false => None,
     };
     get_key_from_db(db, key, sensitivity).map(prepend_debug_output_marker_to_string)
-
 }
 
 /// # Debug Get All UTXOs

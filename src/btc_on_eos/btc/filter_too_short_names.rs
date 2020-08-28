@@ -18,9 +18,9 @@ fn filter_too_short_account_names(minting_params: &[MintingParamStruct]) -> Resu
         minting_params
             .iter()
             .map(|params| {
-                match params.to.len() >= 1 {
-                    true => params.clone(),
-                    false => {
+                match params.to.is_empty() {
+                    false => params.clone(),
+                    true => {
                         info!("✘ Redirecting to safe address {:?} ∵ name too short:", params);
                         MintingParamStruct {
                             amount: params.amount.clone(),

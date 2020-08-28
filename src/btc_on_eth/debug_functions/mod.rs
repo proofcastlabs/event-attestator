@@ -294,7 +294,7 @@ pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
 
 /// # Debug Get Signed ERC777 change pNetwork Tx
 ///
-/// This function will create a signed ETH tranasaction that will change the pNetwork address in
+/// This function will create a signed ETH transaction that will change the pNetwork address in
 /// the pToken ERC777 contract to the passed in address.
 ///
 /// ### BEWARE:
@@ -331,7 +331,7 @@ fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()>
 
 /// # Debug Get Signed ERC777 change pNetwork Tx
 ///
-/// This function will create a signed ETH tranasaction that will change the pNetwork address in
+/// This function will create a signed ETH transaction that will change the pNetwork address in
 /// the pToken ERC777 proxy contract to the passed in address.
 ///
 /// ### BEWARE:
@@ -359,7 +359,7 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D>(
 
 /// # Debug Get Signed ERC777 change pNetwork By Proxy Tx
 ///
-/// This function will create a signed ETH tranasaction that will change the pNetwork address in
+/// This function will create a signed ETH transaction that will change the pNetwork address in
 /// the pToken ERC777 contract via the ERC777 proxy contract, to the passed in address.
 ///
 /// ### BEWARE:
@@ -389,7 +389,7 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
 ///
 /// This function accepts as its param BTC submission material, in which it inspects all the
 /// transactions looking for any pertaining to the core's own public key, or deposit addresses
-/// derived from it. Any it finds it will extact the UTXO from and add it to the encrypted
+/// derived from it. Any it finds it will extract the UTXO from and add it to the encrypted
 /// database.
 ///
 /// ### NOTE:

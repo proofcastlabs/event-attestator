@@ -63,7 +63,7 @@ pub fn convert_u64_to_bytes(u_64: u64) -> Bytes {
 }
 
 pub fn prepend_debug_output_marker_to_string(string_to_prepend: String) -> String {
-    String::new() + DEBUG_OUTPUT_MARKER + &string_to_prepend
+    format!("{}_{}", DEBUG_OUTPUT_MARKER, &string_to_prepend)
 }
 
 #[cfg(test)]
@@ -144,7 +144,7 @@ mod tests {
     #[test]
     fn should_prepend_debug_marker_to_string() {
         let string = "some string".to_string();
-        let expected_result = String::new() + DEBUG_OUTPUT_MARKER + &string;
+        let expected_result = format!("{}_{}", DEBUG_OUTPUT_MARKER, &string);
         let result = prepend_debug_output_marker_to_string(string);
         assert_eq!(result, expected_result);
     }
