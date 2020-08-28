@@ -3,6 +3,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
+    utils::prepend_debug_output_marker_to_string,
     constants::{
         DB_KEY_PREFIX,
         PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
@@ -130,6 +131,7 @@ pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> w
         .and_then(maybe_save_btc_utxos_to_db)
         .and_then(end_eos_db_transaction)
         .and_then(get_eos_output)
+        .map(prepend_debug_output_marker_to_string)
 }
 
 pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
@@ -188,6 +190,7 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
 		.and_then(|output| state.add_output_json_string(output))
 	})
 	.and_then(get_btc_output_as_string)
+        .map(prepend_debug_output_marker_to_string)
 }
 
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
@@ -200,11 +203,12 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &st
         .and_then(|_| generate_and_put_incremerkle_in_db(db, &init_json.blockroot_merkle))
         .and_then(|_| db.end_transaction())
         .map(|_| "{debug_update_blockroot_merkle_success:true}".to_string())
+        .map(prepend_debug_output_marker_to_string)
 }
 
 pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     info!("✔ Debug clearing all UTXOs...");
-    clear_all_utxos(db)
+    clear_all_utxos(db).map(prepend_debug_output_marker_to_string)
 }
 
 pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &str) -> Result<String> {
@@ -215,6 +219,7 @@ pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &s
         .and_then(|schedule| put_eos_schedule_in_db(&db, &schedule))
         .and_then(|_| db.end_transaction())
         .map(|_| "{debug_adding_eos_schedule_succeeded:true}".to_string())
+        .map(prepend_debug_output_marker_to_string)
 }
 
 pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
@@ -223,7 +228,7 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
         true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
         false => None,
     };
-    set_key_in_db_to_value(db, key, value, sensitivity)
+    set_key_in_db_to_value(db, key, value, sensitivity).map(prepend_debug_output_marker_to_string)
 }
 
 pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
@@ -232,7 +237,8 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
         true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
         false => None,
     };
-    get_key_from_db(db, key, sensitivity)
+    get_key_from_db(db, key, sensitivity).map(prepend_debug_output_marker_to_string)
+
 }
 
 pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {

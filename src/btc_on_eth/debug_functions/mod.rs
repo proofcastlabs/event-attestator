@@ -8,6 +8,7 @@ use crate::{
     utils::{
         strip_hex_prefix,
         decode_hex_with_err_msg,
+        prepend_debug_output_marker_to_string,
     },
     constants::{
         DB_KEY_PREFIX,
@@ -126,6 +127,7 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
         .and_then(|_| clear_all_utxos(db))
         .and_then(|_| db.end_transaction())
         .map(|_| "{debug_clear_all_utxos_succeeded:true}".to_string())
+        .map(prepend_debug_output_marker_to_string)
 }
 
 // TODO/FIXME: This doesn't work with AnySender yet!
@@ -176,6 +178,7 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
                 Some(output) => output
             }
         )
+        .map(prepend_debug_output_marker_to_string)
 }
 
 pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &str) -> Result<String> {
@@ -214,6 +217,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
             info!("✔ ETH Output: {}", output);
             Ok(output)
         })
+        .map(prepend_debug_output_marker_to_string)
 }
 
 pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
@@ -226,6 +230,7 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
             };
             set_key_in_db_to_value(db, key, value, sensitivity)
         })
+        .map(prepend_debug_output_marker_to_string)
 }
 
 pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
@@ -238,6 +243,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
             };
             get_key_from_db(db, key, sensitivity)
         })
+        .map(prepend_debug_output_marker_to_string)
 }
 
 pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
@@ -260,6 +266,7 @@ pub fn debug_get_signed_erc777_change_pnetwork_tx<D>(
             db.end_transaction()?;
             Ok(format!("{{signed_tx:{}}}", signed_tx_hex))
         })
+        .map(prepend_debug_output_marker_to_string)
 }
 
 fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()> {
@@ -291,6 +298,7 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D>(
             db.end_transaction()?;
             Ok(format!("{{signed_tx:{}}}", signed_tx_hex))
         })
+        .map(prepend_debug_output_marker_to_string)
 }
 
 pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
@@ -310,6 +318,7 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
             db.end_transaction()?;
             Ok(format!("{{signed_tx:{}}}", signed_tx_hex))
         })
+        .map(prepend_debug_output_marker_to_string)
 }
 
 pub fn debug_maybe_add_utxo_to_db<D>(
@@ -335,6 +344,7 @@ pub fn debug_maybe_add_utxo_to_db<D>(
         .and_then(maybe_save_utxos_to_db)
         .and_then(end_btc_db_transaction)
         .map(|_| "{add_utxo_to_db_succeeded:true}".to_string())
+        .map(prepend_debug_output_marker_to_string)
 }
 
 /// # Debug Mint pBTC
@@ -383,4 +393,5 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
                  "signed_tx": signed_tx.serialize_hex(),
              }).to_string()
          )
+        .map(prepend_debug_output_marker_to_string)
 }
