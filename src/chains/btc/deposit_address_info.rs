@@ -21,7 +21,7 @@ use crate::{
 };
 
 pub type DepositInfoList = Vec<DepositAddressInfo>;
-pub type DepositAddressJsonList = Vec<DepositAddressInfoJson>;
+pub type DepositAddressInfoJsonList = Vec<DepositAddressInfoJson>;
 pub type DepositInfoHashMap =  HashMap<BtcAddress, DepositAddressInfo>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

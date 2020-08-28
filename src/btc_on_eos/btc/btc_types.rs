@@ -8,7 +8,7 @@ use crate::{
     chains::btc::deposit_address_info::{
         DepositInfoList,
         DepositAddressInfoJson,
-        DepositAddressJsonList,
+        DepositAddressInfoJsonList,
     },
     btc_on_eos::{
         utils::convert_u64_to_eos_asset,
@@ -141,7 +141,7 @@ pub struct SubmissionMaterialJson {
     pub block: BtcBlockJson,
     pub ref_block_prefix: u32,
     pub transactions: Vec<String>,
-    pub deposit_address_list: DepositAddressJsonList,
+    pub deposit_address_list: DepositAddressInfoJsonList,
 }
 
 #[derive(Clone, Debug, Deserialize)]
