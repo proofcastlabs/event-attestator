@@ -3,7 +3,11 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    constants::CORE_IS_VALIDATING,
+    constants::{
+        DEBUG_MODE,
+        CORE_IS_VALIDATING,
+        NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR,
+    },
     btc_on_eth::{
         eth::rlp_codec::get_rlp_encoded_receipts_and_nibble_tuples,
         eth::{
@@ -24,29 +28,17 @@ fn get_receipts_root_from_receipts(receipts: &[EthReceipt]) -> Result<H256> {
     get_rlp_encoded_receipts_and_nibble_tuples(receipts)
         .and_then(|key_value_tuples| {
             info!("✔ Building merkle-patricia trie from receipts...");
-            put_in_trie_recursively(
-                Trie::get_new_trie()?,
-                key_value_tuples,
-                0,
-            )
+            put_in_trie_recursively(Trie::get_new_trie()?, key_value_tuples, 0)
         })
         .map(|trie| trie.root)
 }
 
-fn receipts_root_is_correct(
-    block: &EthBlock,
-    receipts: &[EthReceipt],
-) -> Result<bool> {
+fn receipts_root_is_correct(block: &EthBlock, receipts: &[EthReceipt]) -> Result<bool> {
     info!("✔ Checking trie root against receipts root...");
-    get_receipts_root_from_receipts(receipts)
-        .map(|root| root == block.receipts_root)
+    get_receipts_root_from_receipts(receipts).map(|root| root == block.receipts_root)
 }
 
-pub fn validate_receipts_in_state<D>(
-    state: EthState<D>
-) -> Result<EthState<D>>
-    where D: DatabaseInterface
-{
+pub fn validate_receipts_in_state<D>(state: EthState<D>) -> Result<EthState<D>> where D: DatabaseInterface {
     if CORE_IS_VALIDATING {
         info!("✔ Validating receipts...");
         match receipts_root_is_correct(
@@ -57,14 +49,14 @@ pub fn validate_receipts_in_state<D>(
                 info!("✔ Receipts are valid!");
                 Ok(state)
             },
-            false => Err(AppError::Custom(
-                "✘ Not accepting ETH block - receipts root not valid!"
-                    .to_string()
-            ))
+            false => Err(AppError::Custom("✘ Not accepting ETH block - receipts root not valid!".to_string()))
         }
     } else {
         info!("✔ Skipping ETH receipts validation!");
-        Ok(state)
+        match DEBUG_MODE {
+            true =>  Ok(state),
+            false => Err(AppError::Custom(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.to_string())),
+        }
     }
 }
 

@@ -3,8 +3,12 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    constants::CORE_IS_VALIDATING,
     btc_on_eos::btc::btc_state::BtcState,
+    constants::{
+        DEBUG_MODE,
+        CORE_IS_VALIDATING,
+        NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR,
+    },
 };
 
 fn validate_merkle_root(btc_block: &BtcBlock) -> Result<()> {
@@ -13,25 +17,22 @@ fn validate_merkle_root(btc_block: &BtcBlock) -> Result<()> {
             info!("✔ Merkle-root valid!");
             Ok(())
         }
-        false => Err(AppError::Custom(
-            "✘ Invalid block! Merkle root doesn't match calculated merkle root!"
-                .to_string()
-        ))
+        false => Err(AppError::Custom("✘ Invalid block! Merkle root doesn't match calculated merkle root!".to_string()))
     }
 }
 
-pub fn validate_btc_merkle_root<D>(
-    state: BtcState<D>
-) -> Result<BtcState<D>>
-    where D: DatabaseInterface
-{
+pub fn validate_btc_merkle_root<D>(state: BtcState<D>) -> Result<BtcState<D>> where D: DatabaseInterface {
     if CORE_IS_VALIDATING {
         info!("✔ Validating merkle-root in BTC block...");
         validate_merkle_root(&state.get_btc_block_and_id()?.block)
             .and(Ok(state))
     } else {
         info!("✔ Skipping BTC merkle root validation!");
-        Ok(state)
+        info!("✔ Skipping BTC difficulty validation!");
+        match DEBUG_MODE {
+            true => Ok(state),
+            false => Err(AppError::Custom(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.to_string())),
+        }
     }
 }
 

@@ -16,11 +16,15 @@ use bitcoin_hashes::{
 use crate::{
     errors::AppError,
     traits::DatabaseInterface,
-    constants::CORE_IS_VALIDATING,
     types::{
         Byte,
         Bytes,
         Result,
+    },
+    constants::{
+        DEBUG_MODE,
+        CORE_IS_VALIDATING,
+        NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR,
     },
     btc_on_eos::eos::{
         eos_state::EosState,
@@ -172,7 +176,10 @@ pub fn validate_block_header_signature<D>(
 {
     if !CORE_IS_VALIDATING {
         info!("✔ Skipping EOS block header signature validation");
-        Ok(state)
+        match DEBUG_MODE {
+            true =>  Ok(state),
+            false => Err(AppError::Custom(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.to_string())),
+        }
     } else if state.get_eos_block_header()?.new_producer_schedule.is_some() {
         // NOTE/FIXME; To be cleaned up once validation for these has been fixed!
         info!("✔ New producer schedule exists in EOS block ∴ skipping validation check...");

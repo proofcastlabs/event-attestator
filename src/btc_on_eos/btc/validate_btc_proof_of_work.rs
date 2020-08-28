@@ -3,22 +3,21 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    constants::CORE_IS_VALIDATING,
     btc_on_eos::btc::btc_state::BtcState,
+    constants::{
+        DEBUG_MODE,
+        CORE_IS_VALIDATING,
+        NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR,
+    },
 };
 
-fn validate_proof_of_work_in_block(
-    btc_block_header: &BtcBlockHeader
-) -> Result<()> {
+fn validate_proof_of_work_in_block(btc_block_header: &BtcBlockHeader) -> Result<()> {
     match btc_block_header.validate_pow(&btc_block_header.target()) {
         Ok(_) => {
             info!("✔ BTC block's proof-of-work is valid!");
             Ok(())
         }
-        Err(_) => Err(AppError::Custom(
-            "✘ Invalid block! PoW validation error: Block hash > target!"
-                .to_string()
-        ))
+        Err(_) => Err(AppError::Custom("✘ Invalid block! PoW validation error: Block hash > target!".to_string()))
     }
 }
 
@@ -26,16 +25,16 @@ pub fn validate_proof_of_work_of_btc_block_in_state<D>(
     state: BtcState<D>,
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
-
 {
     if CORE_IS_VALIDATING {
         info!("✔ Validating BTC block's proof-of-work...");
-        validate_proof_of_work_in_block(
-            &state.get_btc_block_and_id()?.block.header
-        ).map(|_| state)
+        validate_proof_of_work_in_block(&state.get_btc_block_and_id()?.block.header).map(|_| state)
     } else {
         info!("✔ Skipping proof-of-work validation!");
-        Ok(state)
+        match DEBUG_MODE {
+            true => Ok(state),
+            false => Err(AppError::Custom(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.to_string())),
+        }
     }
 }
 
