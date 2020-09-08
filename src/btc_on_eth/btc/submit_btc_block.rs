@@ -23,7 +23,6 @@ use crate::{
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
             increment_any_sender_nonce::maybe_increment_any_sender_nonce_in_db,
-            parse_submission_material::parse_btc_block_and_id_and_put_in_state,
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
             sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,
             sign_any_sender_transactions::maybe_sign_any_sender_canon_block_txs_and_add_to_state,
@@ -35,6 +34,9 @@ use crate::{
             remove_minting_params_from_canon_block::remove_minting_params_from_canon_block_and_return_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             parse_minting_params_from_op_return_deposits::parse_minting_params_from_op_return_deposits_and_add_to_state,
+            parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
+            parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
+            set_flags::set_any_sender_flag_in_state,
             btc_database_utils::{
                 end_btc_db_transaction,
                 start_btc_db_transaction,
@@ -49,7 +51,9 @@ use crate::{
 
 pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting BTC block to enclave...");
-    parse_btc_block_and_id_and_put_in_state(block_json_string, BtcState::init(db))
+    parse_btc_submission_json_and_put_in_state(block_json_string, BtcState::init(db))
+        .and_then(set_any_sender_flag_in_state)
+        .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(check_for_parent_of_btc_block_in_state)

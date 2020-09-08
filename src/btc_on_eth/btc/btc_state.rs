@@ -20,7 +20,7 @@ use crate::{
                 BtcTransactions,
                 BtcBlockInDbFormat,
             },
-            parse_submission_material::BtcSubmissionMaterialJson,
+            parse_submission_material_json::BtcSubmissionMaterialJson,
         },
         utils::{
             get_not_in_state_err,
@@ -35,6 +35,7 @@ pub struct BtcState<D: DatabaseInterface> {
     pub minting_params: MintingParams,
     pub output_json_string: Option<String>,
     pub utxos_and_values: BtcUtxosAndValues,
+    pub submission_json: Option<BtcSubmissionMaterialJson>,
     pub btc_block_and_id: Option<BtcBlockAndId>,
     pub eth_signed_txs: Option<EthTransactions>,
     pub p2sh_deposit_txs: Option<BtcTransactions>,
@@ -50,6 +51,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         BtcState {
             db,
             eth_signed_txs: None,
+            submission_json: None,
             btc_block_and_id: None,
             p2sh_deposit_txs: None,
             output_json_string: None,
@@ -333,17 +335,40 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn set_any_sender_status_from_submission_material(
-        &mut self,
-        btc_submission_material_json: BtcSubmissionMaterialJson
-    ) -> Result<BtcSubmissionMaterialJson> {
-        info!("✔ Setting AnySender status from submission material...");
-        self.any_sender = btc_submission_material_json.any_sender;
-        Ok(btc_submission_material_json)
-    }
-
     pub fn use_any_sender_tx_type(&self) -> bool {
         self.any_sender == Some(true)
+    }
+
+    pub fn add_btc_submission_json(
+        mut self,
+        submission_json: BtcSubmissionMaterialJson,
+    ) -> Result<BtcState<D>> {
+        info!("✔ Adding BTC submission json to BTC state...");
+        self.submission_json = Some(submission_json);
+        Ok(self)
+    }
+
+    pub fn get_btc_submission_json(
+        &self
+    ) -> Result<&BtcSubmissionMaterialJson> {
+        match self.submission_json {
+            Some(ref submission_json) => {
+                info!("✔ Getting BTC submission json from BTC state...");
+                Ok(submission_json)
+            }
+            None => Err(AppError::Custom(
+                get_not_in_state_err("submission_json"))
+            )
+        }
+    }
+
+    pub fn add_any_sender_flag(
+        mut self,
+        any_sender: Option<bool>,
+    ) -> Result<BtcState<D>> {
+        info!("✔ Adding AnySender flag to BTC state...");
+        self.any_sender = any_sender;
+        Ok(self)
     }
 }
 
