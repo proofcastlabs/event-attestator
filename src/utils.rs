@@ -1,6 +1,7 @@
 use tiny_keccak::keccak256;
 use crate::{
     errors::AppError,
+    constants::DEBUG_OUTPUT_MARKER,
     types::{
         Byte,
         Bytes,
@@ -59,6 +60,10 @@ pub fn decode_hex_with_err_msg(hex: &str, err_msg: &str) -> Result<Bytes> {
 
 pub fn convert_u64_to_bytes(u_64: u64) -> Bytes {
     u_64.to_le_bytes().to_vec()
+}
+
+pub fn prepend_debug_output_marker_to_string(string_to_prepend: String) -> String {
+    format!("{}_{}", DEBUG_OUTPUT_MARKER, &string_to_prepend)
 }
 
 #[cfg(test)]
@@ -134,5 +139,13 @@ mod tests {
             Err(e) => panic!("Wrong error recieved: {}", e),
             Ok(_) => panic!("Should not have succeeded!"),
         }
+    }
+
+    #[test]
+    fn should_prepend_debug_marker_to_string() {
+        let string = "some string".to_string();
+        let expected_result = format!("{}_{}", DEBUG_OUTPUT_MARKER, &string);
+        let result = prepend_debug_output_marker_to_string(string);
+        assert_eq!(result, expected_result);
     }
 }

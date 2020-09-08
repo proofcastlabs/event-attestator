@@ -6,9 +6,13 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
-    constants::CORE_IS_VALIDATING,
     btc_on_eos::eos::eos_state::EosState,
     chains::eos::eos_constants::PRODUCER_REPS,
+    constants::{
+        DEBUG_MODE,
+        CORE_IS_VALIDATING,
+        NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR,
+    },
 };
 
 fn get_producer_index(
@@ -49,14 +53,13 @@ pub fn validate_producer_slot_of_block_in_state<D>(
 {
     if CORE_IS_VALIDATING {
         info!("✔ Validating slot of producer of block...");
-        validate_producer_slot(
-            state.get_active_schedule()?,
-            state.get_eos_block_header()?,
-        )
-            .and(Ok(state))
+        validate_producer_slot(state.get_active_schedule()?, state.get_eos_block_header()?).and(Ok(state))
     } else {
         info!("✔ Skipping producer slot validation!");
-        Ok(state)
+        match DEBUG_MODE {
+            true =>  Ok(state),
+            false => Err(AppError::Custom(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.to_string())),
+        }
     }
 }
 

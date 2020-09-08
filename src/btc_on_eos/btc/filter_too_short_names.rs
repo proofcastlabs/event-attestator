@@ -13,33 +13,20 @@ use crate::{
     },
 };
 
-fn filter_too_short_account_names(
-    minting_params: &[MintingParamStruct],
-) -> Result<MintingParams> {
+fn filter_too_short_account_names(minting_params: &[MintingParamStruct]) -> Result<MintingParams> {
     Ok(
         minting_params
             .iter()
             .map(|params| {
-                match params.to.len() > 1 {
-                    true => params.clone(),
-                    false => {
-                        info!(
-                            "✘ Redirecting to safe address {} {:?}",
-                            "∵ name too short:",
-                            params
-                        );
+                match params.to.is_empty() {
+                    false => params.clone(),
+                    true => {
+                        info!("✘ Redirecting to safe address {:?} ∵ name too short:", params);
                         MintingParamStruct {
-                            amount: params
-                                .amount
-                                .clone(),
-                            to: SAFE_EOS_ADDRESS
-                                .to_string(),
-                            originating_tx_hash: params
-                                .originating_tx_hash
-                                .clone(),
-                            originating_tx_address: params
-                                .originating_tx_address
-                                .clone(),
+                            amount: params.amount.clone(),
+                            to: SAFE_EOS_ADDRESS.to_string(),
+                            originating_tx_hash: params.originating_tx_hash.clone(),
+                            originating_tx_address: params.originating_tx_address.clone(),
                         }
                     }
                 }

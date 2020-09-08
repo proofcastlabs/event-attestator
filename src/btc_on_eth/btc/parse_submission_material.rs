@@ -16,7 +16,7 @@ use crate::{
     chains::btc::deposit_address_info::{
         DepositAddressInfo,
         DepositAddressInfoJson,
-        DepositAddressJsonList,
+        DepositAddressInfoJsonList,
         DepositInfoList,
     },
     errors::AppError,
@@ -40,7 +40,7 @@ pub struct BtcBlockJson {
 pub struct BtcSubmissionMaterialJson {
     pub block: BtcBlockJson,
     pub transactions: Vec<String>,
-    pub deposit_address_list: DepositAddressJsonList,
+    pub deposit_address_list: DepositAddressInfoJsonList,
     pub any_sender: Option<bool>,
 }
 
