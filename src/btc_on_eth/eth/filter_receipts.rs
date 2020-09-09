@@ -1,10 +1,8 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::eth_constants::PTOKEN_CONTRACT_TOPICS,
-    btc_on_eth::eth::{
-        eth_state::EthState,
-        eth_database_utils::get_erc777_contract_address_from_db,
+    chains::eth::{
+        eth_constants::PTOKEN_CONTRACT_TOPICS,
         eth_types::{
             EthLog,
             EthHash,
@@ -14,6 +12,10 @@ use crate::{
             EthReceipts,
             EthBlockAndReceipts
         },
+    },
+    btc_on_eth::eth::{
+        eth_state::EthState,
+        eth_database_utils::get_erc777_contract_address_from_db,
     },
 };
 

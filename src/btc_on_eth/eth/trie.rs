@@ -11,10 +11,6 @@ use crate::{
             convert_h256_to_bytes,
         },
         eth::{
-            eth_types::{
-                NodeStack,
-                TrieHashMap,
-            },
             trie_nodes::{
                 Node,
                 get_node_from_trie_hash_map,

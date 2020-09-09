@@ -2,6 +2,10 @@ use ethereum_types::H256;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eth::eth_types::{
+        EthBlock,
+        EthReceipt,
+    },
     constants::{
         DEBUG_MODE,
         CORE_IS_VALIDATING,
@@ -11,10 +15,6 @@ use crate::{
         eth::rlp_codec::get_rlp_encoded_receipts_and_nibble_tuples,
         eth::{
             eth_state::EthState,
-            eth_types::{
-                EthBlock,
-                EthReceipt,
-            },
             trie::{
                 Trie,
                 put_in_trie_recursively,

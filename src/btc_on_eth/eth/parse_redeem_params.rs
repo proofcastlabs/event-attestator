@@ -7,23 +7,25 @@ use ethereum_types::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::eth_constants::{
-        REDEEM_EVENT_TOPIC_HEX,
-        ETH_WORD_SIZE_IN_BYTES,
-        LOG_DATA_BTC_ADDRESS_START_INDEX,
+    chains::eth::{
+        eth_types::{
+            EthLog,
+            EthReceipt,
+            RedeemParams,
+            EthBlockAndReceipts,
+        },
+        eth_constants::{
+            REDEEM_EVENT_TOPIC_HEX,
+            ETH_WORD_SIZE_IN_BYTES,
+            LOG_DATA_BTC_ADDRESS_START_INDEX,
+        },
     },
     btc_on_eth::{
         constants::SAFE_BTC_ADDRESS,
         utils::convert_ptoken_to_satoshis,
         eth::{
             eth_state::EthState,
-            eth_types::RedeemParams,
             eth_database_utils::get_eth_canon_block_from_db,
-            eth_types::{
-                EthLog,
-                EthReceipt,
-                EthBlockAndReceipts,
-            },
         },
     },
 };

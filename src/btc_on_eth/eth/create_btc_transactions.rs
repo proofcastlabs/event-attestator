@@ -5,20 +5,24 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::{
-        btc_utils::{
-            calculate_btc_tx_fee,
-            get_total_value_of_utxos_and_values,
-        },
-        utxo_manager::{
-            utxo_database_utils::get_utxo_and_value,
-            utxo_types::{
-                BtcUtxoAndValue,
-                BtcUtxosAndValues,
+    chains::{
+        eth::eth_types::RedeemParams,
+        btc::{
+            btc_utils::{
+                calculate_btc_tx_fee,
+                get_total_value_of_utxos_and_values,
+            },
+            utxo_manager::{
+                utxo_database_utils::get_utxo_and_value,
+                utxo_types::{
+                    BtcUtxoAndValue,
+                    BtcUtxosAndValues,
+                },
             },
         },
     },
     btc_on_eth::{
+        eth::eth_state::EthState,
         btc::{
             btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
             btc_database_utils::{
@@ -31,10 +35,6 @@ use crate::{
                 BtcRecipientAndAmount,
                 BtcRecipientsAndAmounts,
             },
-        },
-        eth::{
-            eth_state::EthState,
-            eth_types::RedeemParams,
         },
     },
 };

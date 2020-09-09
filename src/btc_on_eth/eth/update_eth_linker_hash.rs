@@ -1,21 +1,19 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::{
-        eth::{
-            eth_state::EthState,
-            calculate_linker_hash::calculate_linker_hash,
-            get_linker_hash::get_linker_hash_or_genesis_hash,
-            eth_types::{
-                EthHash,
-                EthBlockAndReceipts,
-            },
-            eth_database_utils::{
-                put_eth_linker_hash_in_db,
-                get_eth_tail_block_from_db,
-                get_eth_anchor_block_from_db,
-                maybe_get_parent_eth_block_and_receipts,
-            },
+    chains::eth::eth_types::{
+        EthHash,
+        EthBlockAndReceipts,
+    },
+    btc_on_eth::eth::{
+        eth_state::EthState,
+        calculate_linker_hash::calculate_linker_hash,
+        get_linker_hash::get_linker_hash_or_genesis_hash,
+        eth_database_utils::{
+            put_eth_linker_hash_in_db,
+            get_eth_tail_block_from_db,
+            get_eth_anchor_block_from_db,
+            maybe_get_parent_eth_block_and_receipts,
         },
     },
 };

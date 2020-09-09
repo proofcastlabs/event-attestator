@@ -4,7 +4,6 @@ use crate::{
     chains::eth::eth_crypto::eth_transaction::get_ptoken_smart_contract_bytecode,
     btc_on_eth::eth::{
         eth_state::EthState,
-        eth_types::EthBlockAndReceipts,
         eth_database_utils::{
             put_eth_chain_id_in_db,
             put_eth_gas_price_in_db,

@@ -7,6 +7,10 @@ use crate::{
     types::{Bytes, Result},
     chains::eth::{
         eth_crypto_utils::keccak_hash_bytes,
+        eth_types::{
+            ChildNodes,
+            TrieHashMap,
+        },
         eth_constants::{
             EMPTY_NIBBLES,
             LEAF_NODE_STRING,
@@ -18,10 +22,6 @@ use crate::{
         eth::{
             nibble_utils::Nibbles,
             get_trie_hash_map::get_thing_from_trie_hash_map,
-            eth_types::{
-                ChildNodes,
-                TrieHashMap,
-            },
             path_codec::{
                 encode_leaf_path_from_nibbles,
                 encode_extension_path_from_nibbles,

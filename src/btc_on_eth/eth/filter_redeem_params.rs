@@ -2,10 +2,10 @@ use ethereum_types::U256;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
-    btc_on_eth::eth::{
-        eth_state::EthState,
-        eth_types::RedeemParams,
+    btc_on_eth::eth::eth_state::EthState,
+    chains::{
+        eth::eth_types::RedeemParams,
+        btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
     },
 };
 
@@ -47,7 +47,7 @@ mod tests {
     use super::*;
     use std::str::FromStr;
     use ethereum_types::U256;
-    use crate::btc_on_eth::eth::eth_types::{
+    use crate::chains::eth::eth_types::{
         EthHash,
         EthAddress,
     };

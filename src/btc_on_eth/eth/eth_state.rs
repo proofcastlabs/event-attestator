@@ -1,14 +1,16 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
-    btc_on_eth::{
-        btc::btc_types::BtcTransactions,
+    chains::{
+        btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eth::eth_types::{
             EthHash,
             RedeemParams,
             EthBlockAndReceipts,
         },
+    },
+    btc_on_eth::{
+        btc::btc_types::BtcTransactions,
         utils::{
             get_not_in_state_err,
             get_no_overwrite_state_err,

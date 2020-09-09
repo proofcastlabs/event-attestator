@@ -1,9 +1,9 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eth::eth_types::EthBlock,
     btc_on_eth::eth::{
         eth_state::EthState,
-        eth_types::EthBlock,
         eth_database_utils::{
             get_eth_latest_block_from_db,
             put_eth_latest_block_hash_in_db,
@@ -70,10 +70,12 @@ mod tests {
     use super::*;
     use crate::{
         test_utils::get_test_database,
-        chains::eth::eth_constants::ETH_LATEST_BLOCK_HASH_KEY,
+        chains::eth::{
+            eth_types::EthHash,
+            eth_constants::ETH_LATEST_BLOCK_HASH_KEY,
+        },
         btc_on_eth::{
             eth::{
-                eth_types::EthHash,
                 eth_database_utils::get_hash_from_db_via_hash_key,
                 eth_test_utils::{
                     put_eth_latest_block_in_db,

@@ -1,7 +1,7 @@
 use tiny_keccak::keccak256;
-use crate::btc_on_eth::{
-    eth::eth_types::EthHash,
-    utils::convert_h256_to_bytes,
+use crate::{
+    chains::eth::eth_types::EthHash,
+    btc_on_eth::utils::convert_h256_to_bytes,
 };
 
 pub fn calculate_linker_hash(

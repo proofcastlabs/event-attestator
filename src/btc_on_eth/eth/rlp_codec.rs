@@ -8,16 +8,14 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eth::eth::{
-        nibble_utils::{
-            Nibbles,
-            get_nibbles_from_bytes,
-        },
-        eth_types::{
-            EthLog,
-            EthBlock,
-            EthReceipt,
-        },
+    chains::eth::eth_types::{
+        EthLog,
+        EthBlock,
+        EthReceipt,
+    },
+    btc_on_eth::eth::nibble_utils::{
+        Nibbles,
+        get_nibbles_from_bytes,
     },
 };
 

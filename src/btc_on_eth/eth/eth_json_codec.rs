@@ -7,7 +7,7 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eth::eth::{
+    chains::eth::{
         parse_eth_block_and_receipts::parse_eth_block_and_receipts_json,
         eth_types::{
             EthLog,
@@ -16,7 +16,7 @@ use crate::{
             EthBlockAndReceipts,
             EthSignature
         },
-    }
+    },
 };
 
 fn encode_eth_log_as_json(eth_log: &EthLog) -> Result<JsonValue> {
@@ -171,22 +171,12 @@ fn encode_eth_block_and_receipts_as_json(
     )
 }
 
-pub fn decode_eth_block_and_receipts_from_json_bytes(
-    block_and_receipt_bytes: Bytes
-) -> Result<EthBlockAndReceipts> {
-    parse_eth_block_and_receipts_json(
-        serde_json::from_slice(&block_and_receipt_bytes)?
-    )
+pub fn decode_eth_block_and_receipts_from_json_bytes(block_and_receipt_bytes: Bytes) -> Result<EthBlockAndReceipts> {
+    parse_eth_block_and_receipts_json(serde_json::from_slice(&block_and_receipt_bytes)?)
 }
 
-pub fn encode_eth_block_and_receipts_as_json_bytes(
-    eth_block_and_receipts: &EthBlockAndReceipts
-) -> Result<Bytes> {
-    Ok(
-        serde_json::to_vec(
-            &encode_eth_block_and_receipts_as_json(eth_block_and_receipts)?
-        )?
-    )
+pub fn encode_eth_block_and_receipts_as_json_bytes(eth_block_and_receipts: &EthBlockAndReceipts) -> Result<Bytes> {
+    Ok(serde_json::to_vec(&encode_eth_block_and_receipts_as_json(eth_block_and_receipts)?)?)
 }
 
 pub fn encode_eth_signed_message_as_json(

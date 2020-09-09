@@ -19,21 +19,10 @@ use crate::{
         TestDB,
         get_test_database,
     },
-    chains::eth::eth_crypto::{
-        eth_public_key::EthPublicKey,
-        eth_private_key::EthPrivateKey,
-        eth_transaction::EthTransaction,
-    },
-    btc_on_eth::eth::{
-        trie_nodes::Node,
-        eth_state::EthState,
-        parse_eth_block::parse_eth_block_json,
-        parse_eth_receipt::parse_eth_receipt_json,
+    chains::eth::{
+        parse_eth_block_json::parse_eth_block_json,
+        parse_eth_receipt_json::parse_eth_receipt_json,
         parse_eth_block_and_receipts::parse_eth_block_and_receipts,
-        eth_database_utils::{
-            put_special_eth_block_in_db,
-            get_special_eth_hash_from_db,
-        },
         eth_types::{
             EthLog,
             EthHash,
@@ -47,6 +36,19 @@ use crate::{
             EthReceiptJson,
             EthBlockAndReceipts,
             EthBlockAndReceiptsJson,
+        },
+        eth_crypto::{
+            eth_public_key::EthPublicKey,
+            eth_private_key::EthPrivateKey,
+            eth_transaction::EthTransaction,
+        },
+    },
+    btc_on_eth::eth::{
+        trie_nodes::Node,
+        eth_state::EthState,
+        eth_database_utils::{
+            put_special_eth_block_in_db,
+            get_special_eth_hash_from_db,
         },
         nibble_utils::{
             Nibbles,

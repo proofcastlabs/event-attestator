@@ -2,14 +2,16 @@ use ethereum_types::H256;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::eth_crypto_utils::keccak_hash_bytes,
+    chains::eth::{
+        eth_types::EthBlock,
+        eth_crypto_utils::keccak_hash_bytes,
+    },
     constants::{
         DEBUG_MODE,
         CORE_IS_VALIDATING,
         NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR,
     },
     btc_on_eth::eth::{
-        eth_types::EthBlock,
         eth_state::EthState,
         rlp_codec::rlp_encode_block,
     },

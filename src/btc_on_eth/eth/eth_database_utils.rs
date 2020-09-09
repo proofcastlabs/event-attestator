@@ -12,6 +12,11 @@ use crate::{
         DataSensitivity,
     },
     chains::eth::{
+        eth_types::{
+            EthSigningParams,
+            EthBlockAndReceipts,
+            AnySenderSigningParams,
+        },
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_constants::{
             ETH_ADDRESS_KEY,
@@ -43,11 +48,6 @@ use crate::{
         },
         eth::{
             eth_state::EthState,
-            eth_types::{
-                EthSigningParams,
-                EthBlockAndReceipts,
-                AnySenderSigningParams,
-            },
             eth_json_codec::{
                 encode_eth_block_and_receipts_as_json_bytes,
                 decode_eth_block_and_receipts_from_json_bytes,

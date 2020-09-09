@@ -1,15 +1,17 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::{
-        deposit_address_info::DepositInfoHashMap,
-        utxo_manager::utxo_types::BtcUtxosAndValues,
-    },
-    btc_on_eth::{
+    chains::{
         eth::eth_types::{
             EthTransactions,
             RelayTransactions,
         },
+        btc::{
+            deposit_address_info::DepositInfoHashMap,
+            utxo_manager::utxo_types::BtcUtxosAndValues,
+        },
+    },
+    btc_on_eth::{
         btc::{
             btc_types::{
                 BtcBlockAndId,

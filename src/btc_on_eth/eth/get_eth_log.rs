@@ -4,17 +4,15 @@ use ethereum_types::{
 };
 use crate::{
     types::Result,
-    btc_on_eth::{
-        eth::eth_types::{
-            EthLog,
-            EthLogJson,
-            EthReceiptJson,
-        },
-        utils::{
-            convert_hex_to_bytes,
-            convert_hex_to_address,
-            convert_hex_strings_to_h256s,
-        },
+    chains::eth::eth_types::{
+        EthLog,
+        EthLogJson,
+        EthReceiptJson,
+    },
+    btc_on_eth::utils::{
+        convert_hex_to_bytes,
+        convert_hex_to_address,
+        convert_hex_strings_to_h256s,
     },
 };
 

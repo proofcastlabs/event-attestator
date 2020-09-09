@@ -5,22 +5,20 @@ use ethereum_types::{
 };
 use crate::{
     types::Result,
+    chains::eth::eth_types::{
+        EthReceipt,
+        EthReceipts,
+        EthReceiptJson,
+    },
     btc_on_eth::{
         utils::{
             convert_hex_to_h256,
             convert_hex_to_address,
             convert_json_value_to_string,
         },
-        eth::{
-            eth_types::{
-                EthReceipt,
-                EthReceipts,
-                EthReceiptJson,
-            },
-            get_eth_log::{
-                get_logs_bloom_from_logs,
-                get_logs_from_receipt_json,
-            },
+        eth::get_eth_log::{
+            get_logs_bloom_from_logs,
+            get_logs_from_receipt_json,
         },
     },
 };
@@ -53,9 +51,7 @@ pub fn parse_eth_receipt_json(
     )
 }
 
-pub fn parse_eth_receipt_jsons(
-    eth_receipts_jsons: Vec<EthReceiptJson>
-) -> Result<EthReceipts> {
+pub fn parse_eth_receipt_jsons(eth_receipts_jsons: Vec<EthReceiptJson>) -> Result<EthReceipts> {
     trace!("✔ Parsing ETH receipt JSON...");
     eth_receipts_jsons.iter().cloned().map(parse_eth_receipt_json).collect()
 }

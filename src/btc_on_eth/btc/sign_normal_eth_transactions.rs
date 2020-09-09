@@ -3,23 +3,21 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::{
         eth_crypto::eth_transaction::get_signed_minting_tx,
+        eth_types::{
+            EthTransactions,
+            EthSigningParams,
+        },
         eth_metadata::{
             EthMetadataFromBtc,
             EthMetadataVersion,
         },
     },
     btc_on_eth::{
+        eth::eth_database_utils::get_signing_params_from_db,
         btc::{
             btc_state::BtcState,
             btc_types::MintingParamStruct,
             btc_database_utils::get_btc_canon_block_from_db,
-        },
-        eth::{
-            eth_database_utils::get_signing_params_from_db,
-            eth_types::{
-                EthTransactions,
-                EthSigningParams,
-            },
         },
     },
 };
@@ -93,14 +91,14 @@ mod tests {
     };
     use crate::{
         test_utils::get_test_database,
-            btc_on_eth::{
+        chains::eth::eth_types::EthAddress,
+        btc_on_eth::{
             utils::convert_satoshis_to_ptoken,
             btc::{
                 btc_types::MintingParamStruct,
                 btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
             },
             eth::{
-                eth_types::EthAddress,
                 eth_test_utils::{
                     get_sample_eth_address,
                     get_sample_eth_private_key,
