@@ -1,4 +1,8 @@
 use std::collections::HashMap;
+use serde_json::{
+    json,
+    Value as JsonValue,
+};
 use ethereum_types::{
     H256,
     U256,
@@ -6,8 +10,11 @@ use ethereum_types::{
     Address,
 };
 use crate::{
-    types::Bytes,
     btc_on_eth::eth::trie_nodes::Node,
+    types::{
+        Bytes,
+        Result,
+    },
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
         eth_crypto::{
@@ -165,6 +172,54 @@ pub struct EthReceiptJson {
     pub contractAddress: serde_json::Value,
 }
 
+/*
+impl EthReceiptJson {
+    pub fn from_eth_receipt(eth_receipt: &EthReceipt) -> Result<Self> {
+        let encoded_logs = eth_receipt
+            .logs
+            .iter()
+            .map(encode_eth_log_as_json)
+            .collect::<Result<Vec<JsonValue>>>()?;
+        Ok(
+            json!({
+                "logs": encoded_logs,
+                "status": eth_receipt.status,
+                "gasUsed": eth_receipt.gas_used.as_usize(),
+                "blockNumber": eth_receipt.block_number.as_usize(),
+                "transactionIndex": eth_receipt.transaction_index.as_usize(),
+                "cumulativeGasUsed": eth_receipt.cumulative_gas_used.as_usize(),
+                "contractAddress": format!(
+                    "0x{:x}",
+                    eth_receipt.contract_address
+                ),
+                "to": format!(
+                    "0x{}",
+                    hex::encode(eth_receipt.to.as_bytes())
+                ),
+                "from": format!(
+                    "0x{}",
+                    hex::encode(eth_receipt.from.as_bytes()),
+                ),
+                "transactionHash": format!(
+                    "0x{}",
+                    hex::encode(
+                        eth_receipt.transaction_hash.as_bytes()
+                    ),
+                ),
+                "blockHash": format!(
+                    "0x{}",
+                    hex::encode(eth_receipt.block_hash.as_bytes()),
+                ),
+                "logsBloom": format!(
+                    "0x{}",
+                    hex::encode(eth_receipt.logs_bloom.as_bytes())
+                ),
+            })
+        )
+    }
+}
+*/
+
 #[allow(non_snake_case)]
 #[derive(Clone, Debug, Deserialize)]
 pub struct EthLogJson {
@@ -173,9 +228,49 @@ pub struct EthLogJson {
     pub topics: Vec<String>,
 }
 
+// TODO move this to own mod in here?
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 pub struct EthLog {
     pub address: Address,
     pub topics: Vec<H256>,
     pub data: Bytes,
+}
+
+impl EthLog {
+    pub fn to_json(&self) -> Result<JsonValue> {
+        let topic_strings = self
+            .topics
+            .iter()
+            .map(|topic_hash| format!("0x{}", hex::encode(topic_hash.as_bytes())))
+            .collect::<Vec<String>>();
+        Ok(
+            json!({
+                "topics": topic_strings,
+                "data": format!("0x{}", hex::encode(self.data.clone())),
+                "address": format!("0x{}", hex::encode(self.address.as_bytes())),
+            })
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::btc_on_eth::eth::eth_test_utils::get_sample_log_with_desired_topic;
+
+    #[test]
+    fn should_encode_eth_log_as_json() {
+        let log = get_sample_log_with_desired_topic();
+        let result = log.to_json().unwrap();
+        let expected_result = json!({
+            "address": "0x60a640e2d10e020fee94217707bfa9543c8b59e0",
+            "data": "0x00000000000000000000000000000000000000000000000589ba7ab174d54000",
+            "topics": vec![
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "0x000000000000000000000000250abfa8bc8371709fa4b601d821b1421667a886",
+                "0x0000000000000000000000005a7dd68907e103c3239411dae0b0eef968468ef2",
+            ]
+        });
+        assert_eq!(result, expected_result);
+    }
 }

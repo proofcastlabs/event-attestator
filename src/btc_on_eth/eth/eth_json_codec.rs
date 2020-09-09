@@ -10,7 +10,6 @@ use crate::{
     chains::eth::{
         parse_eth_block_and_receipts::parse_eth_block_and_receipts_json,
         eth_types::{
-            EthLog,
             EthBlock,
             EthReceipt,
             EthBlockAndReceipts,
@@ -19,34 +18,13 @@ use crate::{
     },
 };
 
-fn encode_eth_log_as_json(eth_log: &EthLog) -> Result<JsonValue> {
-    let topic_strings = eth_log
-        .topics
-        .iter()
-        .map(|topic_hash| format!("0x{}", hex::encode(topic_hash.as_bytes())))
-        .collect::<Vec<String>>();
-    Ok(
-        json!({
-            "topics": topic_strings,
-            "address": format!(
-                "0x{}",
-                hex::encode(eth_log.address.as_bytes())
-            ),
-            "data": format!(
-                "0x{}",
-                hex::encode(eth_log.data.clone())
-            ),
-        })
-    )
-}
-
 fn encode_eth_receipt_as_json(
     eth_receipt: &EthReceipt
 ) -> Result<JsonValue> {
     let encoded_logs = eth_receipt
         .logs
         .iter()
-        .map(encode_eth_log_as_json)
+        .map(|x| x.to_json())
         .collect::<Result<Vec<JsonValue>>>()?;
     Ok(
         json!({
@@ -194,18 +172,9 @@ pub fn encode_eth_signed_message_as_json(
 mod tests {
     use super::*;
     use crate::btc_on_eth::eth::eth_test_utils::{
-        get_sample_log_with_desired_topic,
         get_sample_eth_block_and_receipts,
         get_sample_receipt_with_desired_topic,
     };
-
-    #[test]
-    fn should_encode_eth_log_as_json() {
-        let log = get_sample_log_with_desired_topic();
-        if let Err(e) = encode_eth_log_as_json(&log) {
-            panic!("Error encoding eth log as json: {}", e)
-        }
-    }
 
     #[test]
     fn should_encode_eth_receipt_as_json() {
