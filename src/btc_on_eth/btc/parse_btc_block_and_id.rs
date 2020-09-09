@@ -74,13 +74,8 @@ pub fn parse_btc_block_and_id_and_put_in_state<D>(
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface,
 {
-    match state.submission_json {
-        Some(ref btc_submission_material_json) => {
-            parse_btc_block_and_tx_json_to_struct(btc_submission_material_json)
-                .and_then(|result| state.add_btc_block_and_id(result))
-        }
-        None => Ok(state),
-    }
+    parse_btc_block_and_tx_json_to_struct(state.get_btc_submission_json()?)
+        .and_then(|result| state.add_btc_block_and_id(result))
 }
 
 fn parse_btc_block_json_to_btc_block(
