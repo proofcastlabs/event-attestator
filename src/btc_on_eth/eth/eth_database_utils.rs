@@ -12,12 +12,12 @@ use crate::{
         DataSensitivity,
     },
     chains::eth::{
+        eth_crypto::eth_private_key::EthPrivateKey,
+        eth_block_and_receipts::EthBlockAndReceipts,
         eth_types::{
             EthSigningParams,
-            EthBlockAndReceipts,
             AnySenderSigningParams,
         },
-        eth_crypto::eth_private_key::EthPrivateKey,
         eth_constants::{
             ETH_ADDRESS_KEY,
             ETH_CHAIN_ID_KEY,

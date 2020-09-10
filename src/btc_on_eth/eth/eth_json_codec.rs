@@ -8,16 +8,14 @@ use crate::{
         Result,
     },
     chains::eth::{
-        parse_eth_block_and_receipts::parse_eth_block_and_receipts_json,
-        eth_types::{
-            EthSignature,
-            EthBlockAndReceipts,
-        },
+        eth_types::EthSignature,
+        eth_block_and_receipts::EthBlockAndReceipts,
     },
 };
 
+// TODO rm this in favour of impl!
 pub fn decode_eth_block_and_receipts_from_json_bytes(block_and_receipt_bytes: Bytes) -> Result<EthBlockAndReceipts> {
-    parse_eth_block_and_receipts_json(serde_json::from_slice(&block_and_receipt_bytes)?)
+    EthBlockAndReceipts::from_json(&serde_json::from_slice(&block_and_receipt_bytes)?)
 }
 
 pub fn encode_eth_signed_message_as_json(

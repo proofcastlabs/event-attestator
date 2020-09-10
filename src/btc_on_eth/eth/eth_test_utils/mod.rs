@@ -20,8 +20,11 @@ use crate::{
         get_test_database,
     },
     chains::eth::{
-        parse_eth_block_and_receipts::parse_eth_block_and_receipts,
         eth_receipt::EthReceipt,
+        eth_block_and_receipts::{
+            EthBlockAndReceipts,
+            EthBlockAndReceiptsJson,
+        },
         eth_log::{
             EthLog,
             EthLogs,
@@ -35,8 +38,6 @@ use crate::{
             EthTopics,
             EthAddress,
             TrieHashMap,
-            EthBlockAndReceipts,
-            EthBlockAndReceiptsJson,
         },
         eth_crypto::{
             eth_public_key::EthPublicKey,
@@ -189,7 +190,7 @@ pub fn get_sample_eth_block_and_receipts_n(
     num: usize
 ) -> Result<EthBlockAndReceipts> {
     get_sample_eth_block_and_receipts_string(num)
-        .and_then(|string| parse_eth_block_and_receipts(&string))
+        .and_then(|string| EthBlockAndReceipts::from_str(&string))
 }
 
 pub fn get_sample_receipt_n(
@@ -277,7 +278,7 @@ pub fn get_sequential_eth_blocks_and_receipts() -> Vec<EthBlockAndReceipts> {
         );
         let string = read_to_string(path)
             .unwrap();
-        let block_and_receipt = parse_eth_block_and_receipts(&string)
+        let block_and_receipt = EthBlockAndReceipts::from_str(&string)
             .unwrap();
         block_and_receipts.push(block_and_receipt)
     }
@@ -402,7 +403,7 @@ pub fn get_valid_state_with_invalid_block_and_receipts(
         true => {
             let string = read_to_string(SAMPLE_INVALID_BLOCK_AND_RECEIPT_JSON)
                 .unwrap();
-            let invalid_struct = parse_eth_block_and_receipts(&string)
+            let invalid_struct = EthBlockAndReceipts::from_str(&string)
                 .unwrap();
             let state = get_valid_eth_state()
                 .unwrap();
@@ -419,8 +420,7 @@ pub fn get_sample_invalid_block() -> EthBlock {
     invalid_block
 }
 
-pub fn get_sample_eth_block_and_receipts_json(
-) -> Result<EthBlockAndReceiptsJson> {
+pub fn get_sample_eth_block_and_receipts_json() -> Result<EthBlockAndReceiptsJson> {
     get_sample_eth_block_and_receipts_string(0)
         .and_then(|eth_block_and_receipts_json_string|
             match serde_json::from_str(&eth_block_and_receipts_json_string) {
@@ -432,7 +432,7 @@ pub fn get_sample_eth_block_and_receipts_json(
 
 pub fn get_sample_eth_block_and_receipts() -> EthBlockAndReceipts {
     let string = get_sample_eth_block_and_receipts_string(0).unwrap();
-    parse_eth_block_and_receipts(&string).unwrap()
+    EthBlockAndReceipts::from_str(&string).unwrap()
 }
 
 pub fn get_valid_state_with_block_and_receipts() -> Result<EthState<TestDB>> {

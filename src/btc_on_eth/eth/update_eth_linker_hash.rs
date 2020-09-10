@@ -1,9 +1,9 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::eth_types::{
-        EthHash,
-        EthBlockAndReceipts,
+    chains::eth::{
+        eth_types::EthHash,
+        eth_block_and_receipts::EthBlockAndReceipts,
     },
     btc_on_eth::eth::{
         eth_state::EthState,

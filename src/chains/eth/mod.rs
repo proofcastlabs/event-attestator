@@ -10,4 +10,4 @@ pub(crate) mod eth_metadata;
 pub(crate) mod eth_constants;
 pub(crate) mod eth_contracts;
 pub(crate) mod eth_crypto_utils;
-pub(crate) mod parse_eth_block_and_receipts;
+pub(crate) mod eth_block_and_receipts;

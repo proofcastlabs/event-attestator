@@ -2,7 +2,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     btc_on_eth::eth::eth_state::EthState,
-    chains::eth::parse_eth_block_and_receipts::parse_eth_block_and_receipts,
+    chains::eth::eth_block_and_receipts::EthBlockAndReceipts,
 };
 
 pub fn parse_eth_block_and_receipts_and_put_in_state<D>(
@@ -11,5 +11,6 @@ pub fn parse_eth_block_and_receipts_and_put_in_state<D>(
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
-    parse_eth_block_and_receipts(&block_json).and_then(|result| state.add_eth_block_and_receipts(result))
+    info!("✔ Parsing ETH block & receipts...");
+    EthBlockAndReceipts::from_str(&block_json).and_then(|result| state.add_eth_block_and_receipts(result))
 }

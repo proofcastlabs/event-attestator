@@ -10,10 +10,8 @@ use crate::{
     chains::eth::{
         eth_log::EthLog,
         eth_receipt::EthReceipt,
-        eth_types::{
-            RedeemParams,
-            EthBlockAndReceipts,
-        },
+        eth_types::RedeemParams,
+        eth_block_and_receipts::EthBlockAndReceipts,
         eth_constants::{
             REDEEM_EVENT_TOPIC_HEX,
             ETH_WORD_SIZE_IN_BYTES,

@@ -1,29 +1,14 @@
 use std::collections::HashMap;
-use serde_json::{
-    json,
-    Value as JsonValue,
-};
 use ethereum_types::{
     H256,
     U256,
     Address,
 };
 use crate::{
+    types::Bytes,
     btc_on_eth::eth::trie_nodes::Node,
-    types::{
-        Bytes,
-        Result,
-    },
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
-        eth_block::{
-            EthBlock,
-            EthBlockJson,
-        },
-        eth_receipt::{
-            EthReceipt,
-            EthReceiptJson,
-        },
         eth_crypto::{
             eth_private_key::EthPrivateKey,
             eth_transaction::EthTransaction,
@@ -75,29 +60,4 @@ impl RedeemParams {
     pub fn new(amount: U256, from: EthAddress, recipient: String, originating_tx_hash: EthHash) -> RedeemParams {
         RedeemParams { amount, recipient, originating_tx_hash, from }
     }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
-pub struct EthBlockAndReceipts {
-    pub block: EthBlock,
-    pub receipts: Vec<EthReceipt>
-}
-
-impl EthBlockAndReceipts {
-    pub fn to_json(&self) -> Result<JsonValue> {
-        Ok(json!({
-            "block": &self.block.to_json()?,
-            "receipts": self.receipts.iter().map(|receipt| receipt.to_json()).collect::<Result<Vec<JsonValue>>>()?,
-        }))
-    }
-
-    pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(&self.to_json()?)?)
-    }
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct EthBlockAndReceiptsJson {
-    pub block: EthBlockJson,
-    pub receipts: Vec<EthReceiptJson>
 }

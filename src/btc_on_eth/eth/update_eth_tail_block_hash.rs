@@ -2,8 +2,8 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::eth::{
-        eth_types::EthBlockAndReceipts,
         eth_constants::ETH_TAIL_LENGTH,
+        eth_block_and_receipts::EthBlockAndReceipts,
     },
     btc_on_eth::{
         eth::{

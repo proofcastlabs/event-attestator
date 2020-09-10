@@ -3,6 +3,7 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::{
         eth_constants::PTOKEN_CONTRACT_TOPICS,
+        eth_block_and_receipts::EthBlockAndReceipts,
         eth_log::{
             EthLog,
             EthLogs,
@@ -15,7 +16,6 @@ use crate::{
             EthHash,
             EthTopic,
             EthAddress,
-            EthBlockAndReceipts,
         },
     },
     btc_on_eth::eth::{

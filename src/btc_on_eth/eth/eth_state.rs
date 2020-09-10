@@ -3,10 +3,12 @@ use crate::{
     traits::DatabaseInterface,
     chains::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
-        eth::eth_types::{
-            EthHash,
-            RedeemParams,
-            EthBlockAndReceipts,
+        eth::{
+            eth_block_and_receipts::EthBlockAndReceipts,
+            eth_types::{
+                EthHash,
+                RedeemParams,
+            },
         },
     },
     btc_on_eth::{
