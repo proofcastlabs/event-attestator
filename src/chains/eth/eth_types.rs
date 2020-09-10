@@ -68,12 +68,7 @@ pub struct RedeemParams {
 }
 
 impl RedeemParams {
-    pub fn new(
-        amount: U256,
-        from: EthAddress,
-        recipient: String,
-        originating_tx_hash: EthHash,
-    ) -> RedeemParams {
+    pub fn new(amount: U256, from: EthAddress, recipient: String, originating_tx_hash: EthHash) -> RedeemParams {
         RedeemParams { amount, recipient, originating_tx_hash, from }
     }
 }
@@ -90,6 +85,10 @@ impl EthBlockAndReceipts {
             "block": &self.block.to_json()?,
             "receipts": self.receipts.iter().map(|receipt| receipt.to_json()).collect::<Result<Vec<JsonValue>>>()?,
         }))
+    }
+
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(&self.to_json()?)?)
     }
 }
 
@@ -397,4 +396,10 @@ mod tests {
         assert!(result.is_ok());
     }
 
+    #[test]
+    fn should_encode_eth_block_and_receipts_as_bytes() {
+        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let result = block_and_receipts.to_bytes();
+        assert!(result.is_ok());
+    }
 }

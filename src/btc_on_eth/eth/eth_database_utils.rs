@@ -49,7 +49,6 @@ use crate::{
         eth::{
             eth_state::EthState,
             eth_json_codec::{
-                encode_eth_block_and_receipts_as_json_bytes,
                 decode_eth_block_and_receipts_from_json_bytes,
             },
         },
@@ -344,7 +343,7 @@ pub fn put_eth_block_and_receipts_in_db<D>(
 {
     let key = convert_h256_to_bytes(eth_block_and_receipts.block.hash);
     trace!("✔ Adding block to database under key: {:?}", hex::encode(&key));
-    db.put(key, encode_eth_block_and_receipts_as_json_bytes(eth_block_and_receipts)?, MIN_DATA_SENSITIVITY_LEVEL)
+    db.put(key, eth_block_and_receipts.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn maybe_get_parent_eth_block_and_receipts<D>(

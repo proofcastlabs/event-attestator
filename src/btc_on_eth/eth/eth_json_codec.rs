@@ -16,18 +16,8 @@ use crate::{
     },
 };
 
-fn encode_eth_block_and_receipts_as_json(
-    eth_block_and_receipts: &EthBlockAndReceipts
-) -> Result<JsonValue> {
-    eth_block_and_receipts.to_json()
-}
-
 pub fn decode_eth_block_and_receipts_from_json_bytes(block_and_receipt_bytes: Bytes) -> Result<EthBlockAndReceipts> {
     parse_eth_block_and_receipts_json(serde_json::from_slice(&block_and_receipt_bytes)?)
-}
-
-pub fn encode_eth_block_and_receipts_as_json_bytes(eth_block_and_receipts: &EthBlockAndReceipts) -> Result<Bytes> {
-    Ok(serde_json::to_vec(&eth_block_and_receipts.to_json()?)?)
 }
 
 pub fn encode_eth_signed_message_as_json(
@@ -47,21 +37,9 @@ mod tests {
     use crate::btc_on_eth::eth::eth_test_utils::get_sample_eth_block_and_receipts;
 
     #[test]
-    fn should_encode_eth_block_and_receipts_as_json_bytes() {
-        let block_and_receipts = get_sample_eth_block_and_receipts();
-        if let Err(e) = encode_eth_block_and_receipts_as_json_bytes(
-            &block_and_receipts
-        ) {
-            panic!("Error encoding eth block and receipts as json bytes: {}", e)
-        }
-    }
-
-    #[test]
     fn should_decode_block_and_recipts_json_correctly() {
         let block_and_receipts = get_sample_eth_block_and_receipts();
-        let bytes = encode_eth_block_and_receipts_as_json_bytes(
-            &block_and_receipts
-        ).unwrap();
+        let bytes = block_and_receipts.to_bytes().unwrap();
         let result = decode_eth_block_and_receipts_from_json_bytes(bytes)
             .unwrap();
         assert_eq!(result.block, block_and_receipts.block);
