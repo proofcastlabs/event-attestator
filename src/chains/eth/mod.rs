@@ -10,5 +10,4 @@ pub(crate) mod eth_constants;
 pub(crate) mod eth_contracts;
 pub(crate) mod eth_crypto_utils;
 pub(crate) mod parse_eth_block_json;
-pub(crate) mod parse_eth_receipt_json;
 pub(crate) mod parse_eth_block_and_receipts;

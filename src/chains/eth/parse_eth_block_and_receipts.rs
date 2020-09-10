@@ -2,8 +2,8 @@ use crate::{
     types::Result,
     errors::AppError,
     chains::eth::{
+        eth_receipt::EthReceipts,
         parse_eth_block_json::parse_eth_block_json,
-        parse_eth_receipt_json::parse_eth_receipt_jsons,
         eth_types::{
             EthBlockAndReceipts,
             EthBlockAndReceiptsJson,
@@ -22,7 +22,7 @@ pub fn parse_eth_block_and_receipts_json(json: EthBlockAndReceiptsJson) -> Resul
     Ok(
         EthBlockAndReceipts {
             block: parse_eth_block_json(json.block.clone())?,
-            receipts: parse_eth_receipt_jsons(json.receipts)?.0,
+            receipts: EthReceipts::from_jsons(&json.receipts)?.0,
         }
     )
 }

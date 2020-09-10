@@ -27,6 +27,12 @@ use crate::{
 #[derive(Debug)]
 pub struct EthReceipts(pub Vec<EthReceipt>);
 
+impl EthReceipts {
+    pub fn from_jsons(jsons: &[EthReceiptJson]) -> Result<Self> {
+        Ok(Self(jsons.iter().cloned().map(|json| EthReceipt::from_json(&json)).collect::<Result<Vec<EthReceipt>>>()?))
+    }
+}
+
 #[allow(non_snake_case)]
 #[derive(Clone, Debug, Deserialize)]
 pub struct EthReceiptJson {
@@ -176,6 +182,14 @@ mod tests {
         match EthReceipt::from_json(&receipt_json) {
             Ok(receipt) => assert_eq!(receipt, get_expected_receipt()),
             _ => panic!("Should have parsed receipt!"),
+        }
+    }
+
+    #[test]
+    fn should_parse_eth_receipt_jsons() {
+        let eth_json = get_sample_eth_block_and_receipts_json().unwrap();
+        if EthReceipts::from_jsons(&eth_json.receipts).is_err() {
+            panic!("Should have generated receipts correctly!")
         }
     }
 }
