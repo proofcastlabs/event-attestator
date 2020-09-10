@@ -1,6 +1,5 @@
 pub mod initialize_eth;
 pub mod submit_eth_block;
-pub mod eth_message_signer;
 
 pub(crate) mod trie;
 pub(crate) mod rlp_codec;

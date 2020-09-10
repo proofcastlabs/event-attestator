@@ -9,11 +9,12 @@ use crate::{
     btc_on_eth::eth::eth_database_utils::get_eth_private_key_from_db,
 };
 
-pub fn encode_eth_signed_message_as_json(message: &str, signature: &EthSignature) -> Result<JsonValue> {
+fn encode_eth_signed_message_as_json(message: &str, signature: &EthSignature) -> Result<JsonValue> {
     info!("✔ Encoding eth signed message as json...");
     Ok(json!({"message": message, "signature": format!("0x{}", hex::encode(&signature[..]))}))
 }
 
+#[allow(dead_code)]
 pub fn sign_message_with_eth_key<D, T>(db: &D, message: T) -> Result<JsonValue>
 where
     D: DatabaseInterface,
