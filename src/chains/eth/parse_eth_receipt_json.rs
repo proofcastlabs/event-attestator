@@ -20,35 +20,9 @@ use crate::{
     },
 };
 
-pub fn parse_eth_receipt_json(eth_receipt_json: EthReceiptJson) -> Result<EthReceipt> {
-    let logs = EthereumLogs::from_receipt_json(&eth_receipt_json)?;
-    Ok(
-        EthReceipt {
-            status: eth_receipt_json.status,
-            logs_bloom: logs.get_bloom(),
-            gas_used: U256::from(eth_receipt_json.gasUsed),
-            from: convert_hex_to_address(&eth_receipt_json.from)?,
-            block_number: U256::from(eth_receipt_json.blockNumber),
-            block_hash: convert_hex_to_h256(&eth_receipt_json.blockHash)?,
-            transaction_index: U256::from(eth_receipt_json.transactionIndex),
-            cumulative_gas_used: U256::from(eth_receipt_json.cumulativeGasUsed),
-            transaction_hash: convert_hex_to_h256(&eth_receipt_json.transactionHash)?,
-            to: match eth_receipt_json.to {
-                serde_json::Value::Null => H160::zero(),
-                _ => convert_hex_to_address(&convert_json_value_to_string(eth_receipt_json.to)?)?,
-            },
-            contract_address: match eth_receipt_json.contractAddress {
-                serde_json::Value::Null => Address::zero(),
-                _ => convert_hex_to_address(&convert_json_value_to_string(eth_receipt_json.contractAddress)?)?,
-            },
-            logs: logs.0, // TODO FIXME use the EthereumLogs type!
-        }
-    )
-}
-
-pub fn parse_eth_receipt_jsons(eth_receipts_jsons: Vec<EthReceiptJson>) -> Result<EthReceipts> {
+pub fn parse_eth_receipt_jsons(eth_receipts_jsons: Vec<EthReceiptJson>) -> Result<EthReceipts> { // TODO Make a type so we can impl on it!
     trace!("✔ Parsing ETH receipt JSON...");
-    eth_receipts_jsons.iter().cloned().map(parse_eth_receipt_json).collect()
+    eth_receipts_jsons.iter().cloned().map(|receipt_json| EthReceipt::from_json(&receipt_json)).collect()
 }
 
 #[cfg(test)]
@@ -59,16 +33,6 @@ mod tests {
         SAMPLE_RECEIPT_INDEX,
         get_sample_eth_block_and_receipts_json,
     };
-
-    #[test]
-    fn should_parse_eth_receipt_json() {
-        let eth_json = get_sample_eth_block_and_receipts_json().unwrap();
-        let receipt_json = eth_json.receipts[SAMPLE_RECEIPT_INDEX].clone();
-        match parse_eth_receipt_json(receipt_json) {
-            Ok(receipt) => assert_eq!(receipt, get_expected_receipt()),
-            _ => panic!("Should have parsed receipt!"),
-        }
-    }
 
     #[test]
     fn should_parse_eth_receipt_jsons() {

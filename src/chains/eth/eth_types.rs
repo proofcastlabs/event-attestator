@@ -5,6 +5,7 @@ use serde_json::{
 };
 use ethereum_types::{
     H256,
+    H160,
     U256,
     Bloom,
     Address,
@@ -18,7 +19,9 @@ use crate::{
     },
     btc_on_eth::utils::{
         convert_hex_to_bytes,
+        convert_hex_to_h256,
         convert_hex_to_address,
+        convert_json_value_to_string,
         convert_hex_strings_to_h256s,
     },
     chains::eth::{
@@ -161,6 +164,32 @@ impl EthReceipt {
                 "logsBloom": format!("0x{}", hex::encode(self.logs_bloom.as_bytes())),
                 "transactionHash": format!("0x{}", hex::encode( self.transaction_hash.as_bytes())),
             })
+        )
+    }
+
+    pub fn from_json(eth_receipt_json: &EthReceiptJson) -> Result<Self> {
+        let logs = EthereumLogs::from_receipt_json(&eth_receipt_json)?;
+        Ok(
+            EthReceipt {
+                status: eth_receipt_json.status,
+                logs_bloom: logs.get_bloom(),
+                gas_used: U256::from(eth_receipt_json.gasUsed),
+                from: convert_hex_to_address(&eth_receipt_json.from)?,
+                block_number: U256::from(eth_receipt_json.blockNumber),
+                block_hash: convert_hex_to_h256(&eth_receipt_json.blockHash)?,
+                transaction_index: U256::from(eth_receipt_json.transactionIndex),
+                cumulative_gas_used: U256::from(eth_receipt_json.cumulativeGasUsed),
+                transaction_hash: convert_hex_to_h256(&eth_receipt_json.transactionHash)?,
+                to: match eth_receipt_json.to {
+                    serde_json::Value::Null => H160::zero(),
+                    _ => convert_hex_to_address(&convert_json_value_to_string(&eth_receipt_json.to)?)?,
+                },
+                contract_address: match eth_receipt_json.contractAddress {
+                    serde_json::Value::Null => Address::zero(),
+                    _ => convert_hex_to_address(&convert_json_value_to_string(&eth_receipt_json.contractAddress)?)?,
+                },
+                logs: logs.0, // TODO FIXME use the EthereumLogs type!
+            }
         )
     }
 }
@@ -491,4 +520,15 @@ mod tests {
             .unwrap();
         assert_eq!(result.0[0], expected_result);
     }
+
+    #[test]
+    fn should_parse_eth_receipt_json() {
+        let eth_json = get_sample_eth_block_and_receipts_json().unwrap();
+        let receipt_json = eth_json.receipts[SAMPLE_RECEIPT_INDEX].clone();
+        match EthReceipt::from_json(&receipt_json) {
+            Ok(receipt) => assert_eq!(receipt, get_expected_receipt()),
+            _ => panic!("Should have parsed receipt!"),
+        }
+    }
+
 }
