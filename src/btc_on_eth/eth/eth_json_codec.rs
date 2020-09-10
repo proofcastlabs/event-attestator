@@ -10,95 +10,23 @@ use crate::{
     chains::eth::{
         parse_eth_block_and_receipts::parse_eth_block_and_receipts_json,
         eth_types::{
-            EthBlock,
-            EthReceipt,
+            EthSignature,
             EthBlockAndReceipts,
-            EthSignature
         },
     },
 };
 
-fn encode_eth_block_as_json(
-    eth_block: &EthBlock
-) -> Result<JsonValue> {
-    let encoded_transactions = eth_block
-        .transactions
-        .iter()
-        .map(|tx_hash| format!("0x{}", hex::encode(tx_hash.as_bytes())))
-        .collect::<Vec<String>>();
-    let encoded_uncles = eth_block
-        .uncles
-        .iter()
-        .map(|uncle_hash| format!("0x{}", hex::encode(uncle_hash.as_bytes())))
-        .collect::<Vec<String>>();
-    Ok(
-        json!({
-            "nonce": format!("0x{}", hex::encode(eth_block.nonce.clone())),
-            "uncles": encoded_uncles,
-            "size": eth_block.size.as_usize(),
-            "transactions": encoded_transactions,
-            "number": eth_block.number.as_usize(),
-            "gasUsed": eth_block.gas_used.as_usize(),
-            "gasLimit": eth_block.gas_limit.as_usize(),
-            "timestamp": eth_block.timestamp.as_usize(),
-            "difficulty": eth_block.difficulty.to_string(),
-            "totalDifficulty": eth_block.total_difficulty.to_string(),
-            "logsBloom": format!(
-                "0x{}",
-                hex::encode(eth_block.logs_bloom)
-            ),
-            "hash": format!(
-                "0x{}",
-                hex::encode(eth_block.hash.as_bytes())
-            ),
-            "miner": format!(
-                "0x{}",
-                hex::encode(eth_block.miner.as_bytes())
-            ),
-            "extraData": format!(
-                "0x{}",
-                hex::encode(eth_block.extra_data.clone())
-            ),
-            "mixHash": format!(
-                "0x{}",
-                hex::encode(eth_block.mix_hash.as_bytes())
-            ),
-            "stateRoot": format!(
-                "0x{}",
-                hex::encode(eth_block.state_root.as_bytes())
-            ),
-            "parentHash": format!(
-                "0x{}",
-                hex::encode(eth_block.parent_hash.as_bytes())
-            ),
-            "sha3Uncles": format!(
-                "0x{}",
-                hex::encode(eth_block.sha3_uncles.as_bytes())
-            ),
-            "receiptsRoot": format!(
-                "0x{}",
-                hex::encode(eth_block.receipts_root.as_bytes())
-            ),
-            "transactionsRoot": format!(
-                "0x{}",
-                hex::encode(eth_block.transactions_root.as_bytes())
-            ),
-        })
-    )
-}
-
 fn encode_eth_block_and_receipts_as_json(
     eth_block_and_receipts: &EthBlockAndReceipts
 ) -> Result<JsonValue> {
-    let encoded_receipts = eth_block_and_receipts
-        .receipts
-        .iter()
-        .map(|x| x.to_json())
-        .collect::<Result<Vec<JsonValue>>>()?;
     Ok(
         json!({
-            "receipts": encoded_receipts,
-            "block": encode_eth_block_as_json(&eth_block_and_receipts.block)?
+            "block": &eth_block_and_receipts.block.to_json()?,
+            "receipts": eth_block_and_receipts
+                .receipts
+                .iter()
+                .map(|receipt| receipt.to_json())
+                .collect::<Result<Vec<JsonValue>>>()?,
         })
     )
 }
@@ -125,18 +53,7 @@ pub fn encode_eth_signed_message_as_json(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::eth_test_utils::{
-        get_sample_eth_block_and_receipts,
-        get_sample_receipt_with_desired_topic,
-    };
-
-    #[test]
-    fn should_encode_eth_block_as_json() {
-        let block = get_sample_eth_block_and_receipts().block;
-        if let Err(e) = encode_eth_block_as_json(&block) {
-            panic!("Error encoding eth block as json: {}", e)
-        }
-    }
+    use crate::btc_on_eth::eth::eth_test_utils::get_sample_eth_block_and_receipts;
 
     #[test]
     fn should_encode_eth_block_and_receipts_as_json() {
