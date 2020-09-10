@@ -84,6 +84,15 @@ pub struct EthBlockAndReceipts {
     pub receipts: Vec<EthReceipt>
 }
 
+impl EthBlockAndReceipts {
+    pub fn to_json(&self) -> Result<JsonValue> {
+        Ok(json!({
+            "block": &self.block.to_json()?,
+            "receipts": self.receipts.iter().map(|receipt| receipt.to_json()).collect::<Result<Vec<JsonValue>>>()?,
+        }))
+    }
+}
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct EthBlockAndReceiptsJson {
     pub block: EthBlockJson,
@@ -380,4 +389,12 @@ mod tests {
         let result = block.to_json().unwrap();
         assert_eq!(result, expected_result);
     }
+
+    #[test]
+    fn should_encode_eth_block_and_receipts_as_json() {
+        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let result = block_and_receipts.to_json();
+        assert!(result.is_ok());
+    }
+
 }
