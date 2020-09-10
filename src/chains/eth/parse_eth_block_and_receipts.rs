@@ -22,7 +22,7 @@ pub fn parse_eth_block_and_receipts_json(json: EthBlockAndReceiptsJson) -> Resul
     Ok(
         EthBlockAndReceipts {
             block: parse_eth_block_json(json.block.clone())?,
-            receipts: parse_eth_receipt_jsons(json.receipts)?,
+            receipts: parse_eth_receipt_jsons(json.receipts)?.0,
         }
     )
 }

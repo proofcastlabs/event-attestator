@@ -1,17 +1,15 @@
 use crate::{
     types::Result,
-    chains::eth::{
-        eth_types::{
-            EthReceipt,
-            EthReceipts,
-            EthReceiptJson,
-        },
+    chains::eth::eth_receipt::{
+        EthReceipt,
+        EthReceipts,
+        EthReceiptJson,
     },
 };
 
 pub fn parse_eth_receipt_jsons(eth_receipts_jsons: Vec<EthReceiptJson>) -> Result<EthReceipts> { // TODO Make a type so we can impl on it!
     trace!("✔ Parsing ETH receipt JSON...");
-    eth_receipts_jsons.iter().cloned().map(|receipt_json| EthReceipt::from_json(&receipt_json)).collect()
+    Ok(EthReceipts(eth_receipts_jsons.iter().cloned().map(|receipt_json| EthReceipt::from_json(&receipt_json)).collect::<Result<Vec<EthReceipt>>>()?))
 }
 
 #[cfg(test)]

@@ -10,9 +10,9 @@ use crate::{
     },
     chains::eth::{
         eth_log::EthLog,
+        eth_receipt::EthReceipt,
         eth_types::{
             EthBlock,
-            EthReceipt,
         },
     },
     btc_on_eth::eth::nibble_utils::{

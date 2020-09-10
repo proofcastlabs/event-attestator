@@ -22,6 +22,7 @@ use crate::{
     chains::eth::{
         parse_eth_block_json::parse_eth_block_json,
         parse_eth_block_and_receipts::parse_eth_block_and_receipts,
+        eth_receipt::EthReceipt,
         eth_log::{
             EthLog,
             EthLogs,
@@ -30,7 +31,6 @@ use crate::{
             EthHash,
             EthBlock,
             EthTopics,
-            EthReceipt,
             EthAddress,
             TrieHashMap,
             EthBlockJson,

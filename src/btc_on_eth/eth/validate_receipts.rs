@@ -2,9 +2,9 @@ use ethereum_types::H256;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::eth_types::{
-        EthBlock,
-        EthReceipt,
+    chains::eth::{
+        eth_types::EthBlock,
+        eth_receipt::EthReceipt,
     },
     constants::{
         DEBUG_MODE,

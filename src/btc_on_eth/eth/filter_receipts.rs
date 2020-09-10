@@ -7,12 +7,14 @@ use crate::{
             EthLog,
             EthLogs,
         },
+        eth_receipt::{
+            EthReceipt,
+            EthReceipts,
+        },
         eth_types::{
             EthHash,
             EthTopic,
             EthAddress,
-            EthReceipt,
-            EthReceipts,
             EthBlockAndReceipts,
         },
     },
@@ -39,28 +41,34 @@ pub fn logs_contain_address(logs: &EthLogs, address: &EthAddress) -> bool { // T
 }
 
 fn filter_receipts_for_address_and_topic(
-    receipts: &[EthReceipt],
+    receipts: &EthReceipts,
     address: &EthAddress,
     topic: &EthHash,
 ) -> EthReceipts {
-    receipts
-        .iter()
-        .filter(|receipt| logs_contain_address(&receipt.logs, address))
-        .filter(|receipt| logs_contain_topic(&receipt.logs, topic))
-        .cloned()
-        .collect::<EthReceipts>()
+    EthReceipts(
+        receipts
+            .0
+            .iter()
+            .filter(|receipt| logs_contain_address(&receipt.logs, address))
+            .filter(|receipt| logs_contain_topic(&receipt.logs, topic))
+            .cloned()
+            .collect::<Vec<EthReceipt>>()
+    )
 }
 
 fn filter_receipts_for_address_and_topics(
-    receipts: &[EthReceipt],
+    receipts: &EthReceipts,
     address: &EthAddress,
     eth_topics: &[EthTopic],
 ) -> EthReceipts {
-    eth_topics
-        .iter()
-        .map(|topic| filter_receipts_for_address_and_topic(&receipts, &address, &topic))
-        .flatten()
-        .collect::<EthReceipts>()
+    EthReceipts(
+        eth_topics
+            .iter()
+            .map(|topic| filter_receipts_for_address_and_topic(receipts, &address, &topic))
+            .map(|receipts| receipts.0)
+            .flatten()
+            .collect::<Vec<EthReceipt>>()
+    )
 }
 
 fn filter_eth_block_and_receipts(
@@ -71,7 +79,11 @@ fn filter_eth_block_and_receipts(
     Ok(
         EthBlockAndReceipts {
             block: eth_block_and_receipts.block.clone(),
-            receipts: filter_receipts_for_address_and_topics(&eth_block_and_receipts.receipts, address, eth_topics)
+            receipts: filter_receipts_for_address_and_topics(
+                &EthReceipts(eth_block_and_receipts.receipts.clone()),
+                address,
+                eth_topics
+            ).0
         }
     )
 }
@@ -189,13 +201,14 @@ mod tests {
         let topic = get_sample_contract_topic();
         let address = get_sample_contract_address();
         let result = filter_receipts_for_address_and_topic(
-            &receipts,
+            &EthReceipts(receipts),
             &address,
             &topic
         );
-        let num_receipts_after = result.len();
+        let num_receipts_after = result.0.len();
         assert!(num_receipts_before > num_receipts_after);
         result
+            .0
             .iter()
             .map(|receipt| assert!(logs_contain_topic(&receipt.logs, &topic)))
             .for_each(drop);

@@ -9,8 +9,8 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::{
         eth_log::EthLog,
+        eth_receipt::EthReceipt,
         eth_types::{
-            EthReceipt,
             RedeemParams,
             EthBlockAndReceipts,
         },

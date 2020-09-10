@@ -9,7 +9,7 @@ use ethereum_types::{
     BloomInput,
 };
 use crate::{
-    chains::eth::eth_types::EthReceiptJson,
+    chains::eth::eth_receipt::EthReceiptJson,
     types::{
         Bytes,
         Result,
