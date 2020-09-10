@@ -5,6 +5,7 @@ use serde_json::{
 use crate::{
     errors::AppError,
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -37,6 +38,10 @@ impl EthBlockAndReceipts {
             "block": &self.block.to_json()?,
             "receipts": self.receipts.0.iter().map(|receipt| receipt.to_json()).collect::<Result<Vec<JsonValue>>>()?,
         }))
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        Self::from_json(&serde_json::from_slice(bytes)?)
     }
 
     pub fn to_bytes(&self) -> Result<Bytes> {
@@ -86,6 +91,7 @@ mod tests {
             get_expected_block,
             get_expected_receipt,
             SAMPLE_RECEIPT_INDEX,
+            get_sample_eth_block_and_receipts,
             get_sample_eth_block_and_receipts_string,
         },
     };
@@ -112,7 +118,7 @@ mod tests {
                 assert_eq!(block, expected_block);
                 assert_eq!(receipt, expected_receipt);
             }
-            _ => panic!("Should parse block & receipt correctly!"),
+            _ => panic!("Should parse block & receipts correctly!"),
         }
     }
 
@@ -123,6 +129,29 @@ mod tests {
         ).unwrap();
         let string = block_and_receipts.to_string().unwrap();
         let result = EthBlockAndReceipts::from_str(&string).unwrap();
+        assert_eq!(result, block_and_receipts);
+    }
+
+    #[test]
+    fn should_decode_block_and_recipts_json_correctly() {
+        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let bytes = block_and_receipts.to_bytes().unwrap();
+        let result = EthBlockAndReceipts::from_bytes(&bytes).unwrap();
+        assert_eq!(result.block, block_and_receipts.block);
+        block_and_receipts
+            .receipts
+            .0
+            .iter()
+            .enumerate()
+            .map(|(i, receipt)| assert_eq!(receipt, &result.receipts.0[i]))
+            .for_each(drop);
+    }
+
+    #[test]
+    fn should_make_to_and_from_bytes_round_trip_correctly() {
+        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let bytes = block_and_receipts.to_bytes().unwrap();
+        let result = EthBlockAndReceipts::from_bytes(&bytes).unwrap();
         assert_eq!(result, block_and_receipts);
     }
 }

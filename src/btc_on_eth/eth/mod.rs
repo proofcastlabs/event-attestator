@@ -8,7 +8,6 @@ pub(crate) mod eth_state;
 pub(crate) mod path_codec;
 pub(crate) mod trie_nodes;
 pub(crate) mod nibble_utils;
-pub(crate) mod eth_json_codec;
 pub(crate) mod eth_test_utils;
 pub(crate) mod validate_block;
 pub(crate) mod filter_receipts;

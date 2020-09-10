@@ -36,6 +36,7 @@ use crate::{
         },
     },
     btc_on_eth::{
+        eth::eth_state::EthState,
         database_utils::{
             put_u64_in_db,
             get_u64_from_db,
@@ -45,12 +46,6 @@ use crate::{
             convert_u64_to_bytes,
             convert_h256_to_bytes,
             convert_bytes_to_h256,
-        },
-        eth::{
-            eth_state::EthState,
-            eth_json_codec::{
-                decode_eth_block_and_receipts_from_json_bytes,
-            },
         },
     },
 };
@@ -386,7 +381,7 @@ pub fn maybe_get_eth_block_and_receipts_from_db<D>(
     match db.get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL) {
         Err(_) => None,
         Ok(bytes) => {
-            match decode_eth_block_and_receipts_from_json_bytes(bytes) {
+            match EthBlockAndReceipts::from_bytes(&bytes) {
                 Ok(block_and_receipts) => {
                     info!("✔ Decoded eth block and receipts from db!");
                     Some(block_and_receipts)
@@ -407,8 +402,9 @@ pub fn get_eth_block_from_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Getting ETH block and receipts from db...");
-    db.get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL)
-        .and_then(decode_eth_block_and_receipts_from_json_bytes)
+    db
+        .get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL)
+        .and_then(|bytes| EthBlockAndReceipts::from_bytes(&bytes))
 }
 
 pub fn key_exists_in_db<D>(
