@@ -1231,7 +1231,7 @@ mod tests {
         let expected_root_hex = convert_h256_to_prefixed_hex(block_and_receipts.block.receipts_root).unwrap();
         let receipts = block_and_receipts.receipts;
         let trie = Trie::get_new_trie().unwrap();
-        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(&receipts).unwrap();
+        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(&receipts.0).unwrap();
         let updated_trie = put_in_trie_recursively(trie, key_value_tuples, index).unwrap();
         let root_hex = convert_h256_to_prefixed_hex(updated_trie.root).unwrap();
         assert_eq!(root_hex, expected_root_hex);
@@ -1245,7 +1245,7 @@ mod tests {
         let expected_root_hex = convert_h256_to_prefixed_hex(block_and_receipts.block.receipts_root).unwrap();
         let receipts = block_and_receipts.receipts.clone();
         let trie = Trie::get_new_trie().unwrap();
-        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(&receipts).unwrap();
+        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(&receipts.0).unwrap();
         let updated_trie = put_in_trie_recursively(trie, key_value_tuples, index).unwrap();
         let root_hex = convert_h256_to_prefixed_hex(updated_trie.root).unwrap();
         assert!(root_hex != expected_root_hex);
@@ -1257,7 +1257,7 @@ mod tests {
         let expected_root_hex = convert_h256_to_prefixed_hex(block_and_receipts.block.receipts_root).unwrap();
         let start_index = 0;
         let receipts = block_and_receipts.receipts;
-        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(&receipts).unwrap();
+        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(&receipts.0).unwrap();
         let trie = Trie::get_new_trie().unwrap();
         let updated_trie = put_in_trie_recursively(trie, key_value_tuples, start_index).unwrap();
         let root_hex = convert_h256_to_prefixed_hex(updated_trie.root).unwrap();

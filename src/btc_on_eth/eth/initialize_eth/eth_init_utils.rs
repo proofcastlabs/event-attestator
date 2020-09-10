@@ -143,7 +143,7 @@ pub fn remove_receipts_from_block_in_state<D>( // ∵ there shouldn't be relevan
     trace!("✔ Removing receipts from ETH block in state...");
     let block_with_no_receipts = EthBlockAndReceipts {
         block: state.get_eth_block_and_receipts()?.block.clone(),
-        receipts: vec![],
+        receipts: EthReceipts::new_empty(),
     };
     state.update_eth_block_and_receipts(block_with_no_receipts)
 }

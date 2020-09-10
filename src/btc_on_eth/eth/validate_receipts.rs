@@ -4,7 +4,7 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::{
         eth_block::EthBlock,
-        eth_receipt::EthReceipt,
+        eth_receipt::EthReceipts,
     },
     constants::{
         DEBUG_MODE,
@@ -23,8 +23,8 @@ use crate::{
     },
 };
 
-fn get_receipts_root_from_receipts(receipts: &[EthReceipt]) -> Result<H256> {
-    get_rlp_encoded_receipts_and_nibble_tuples(receipts)
+fn get_receipts_root_from_receipts(receipts: &EthReceipts) -> Result<H256> {
+    get_rlp_encoded_receipts_and_nibble_tuples(&receipts.0) // TODO pass the real type through!
         .and_then(|key_value_tuples| {
             info!("✔ Building merkle-patricia trie from receipts...");
             put_in_trie_recursively(Trie::get_new_trie()?, key_value_tuples, 0)
@@ -32,7 +32,7 @@ fn get_receipts_root_from_receipts(receipts: &[EthReceipt]) -> Result<H256> {
         .map(|trie| trie.root)
 }
 
-fn receipts_root_is_correct(block: &EthBlock, receipts: &[EthReceipt]) -> Result<bool> {
+fn receipts_root_is_correct(block: &EthBlock, receipts: &EthReceipts) -> Result<bool> {
     info!("✔ Checking trie root against receipts root...");
     get_receipts_root_from_receipts(receipts).map(|root| root == block.receipts_root)
 }

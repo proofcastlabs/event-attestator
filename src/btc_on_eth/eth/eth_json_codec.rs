@@ -43,9 +43,10 @@ mod tests {
         assert_eq!(result.block, block_and_receipts.block);
         block_and_receipts
             .receipts
+            .0
             .iter()
             .enumerate()
-            .map(|(i, receipt)| assert_eq!(receipt, &result.receipts[i]))
+            .map(|(i, receipt)| assert_eq!(receipt, &result.receipts.0[i]))
             .for_each(drop);
     }
 

@@ -198,7 +198,7 @@ pub fn get_sample_receipt_n(
     receipt_index: usize,
 ) -> Result<EthReceipt> {
     get_sample_eth_block_and_receipts_n(sample_block_num)
-        .map(|block| block.receipts[receipt_index].clone())
+        .map(|block| block.receipts.0[receipt_index].clone())
 }
 
 pub fn get_sample_log_n(
@@ -287,14 +287,14 @@ pub fn get_sequential_eth_blocks_and_receipts() -> Vec<EthBlockAndReceipts> {
 
 pub fn get_sample_receipt_with_desired_topic() -> EthReceipt {
     get_sample_eth_block_and_receipts()
-        .receipts[RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_TOPIC]
+        .receipts
+        .0
+        [RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_TOPIC]
         .clone()
 }
 
 pub fn get_sample_receipt_with_desired_address() -> EthReceipt {
-    get_sample_eth_block_and_receipts()
-        .receipts[RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS]
-        .clone()
+    get_sample_eth_block_and_receipts().receipts.0[RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS].clone()
 }
 
 pub fn get_sample_logs_with_desired_topic() -> EthLogs {
@@ -314,7 +314,7 @@ pub fn get_sample_log_with_desired_address() -> EthLog {
 }
 
 pub fn get_sample_receipt_without_desired_topic() -> EthReceipt {
-    get_sample_eth_block_and_receipts().receipts[RECEIPT_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC].clone()
+    get_sample_eth_block_and_receipts().receipts.0[RECEIPT_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC].clone()
 }
 
 pub fn get_sample_receipt_without_desired_address() -> EthReceipt {
@@ -540,7 +540,7 @@ mod tests {
         let expected_receipt = get_expected_receipt();
         let result = get_sample_eth_block_and_receipts();
         let block = result.block.clone();
-        let receipt = result.receipts[SAMPLE_RECEIPT_INDEX].clone();
+        let receipt = result.receipts.0[SAMPLE_RECEIPT_INDEX].clone();
         let expected_block = get_expected_block();
         assert_eq!(receipt, expected_receipt);
         assert_eq!(block, expected_block);

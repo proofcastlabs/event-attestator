@@ -186,7 +186,7 @@ mod tests {
         match updated_state.get_eth_block_and_receipts() {
             Ok(block_and_receipt) => {
                 let block = block_and_receipt.block.clone();
-                let receipt = block_and_receipt.receipts[SAMPLE_RECEIPT_INDEX].clone();
+                let receipt = block_and_receipt.receipts.0[SAMPLE_RECEIPT_INDEX].clone();
                 let expected_block = get_expected_block();
                 let expected_receipt = get_expected_receipt();
                 assert_eq!(block, expected_block);

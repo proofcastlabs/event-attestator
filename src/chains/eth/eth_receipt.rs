@@ -24,10 +24,22 @@ use crate::{
     },
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
 pub struct EthReceipts(pub Vec<EthReceipt>);
 
 impl EthReceipts {
+    pub fn new_empty() -> Self {
+        Self(Vec::new())
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
     pub fn from_jsons(jsons: &[EthReceiptJson]) -> Result<Self> {
         Ok(Self(jsons.iter().cloned().map(|json| EthReceipt::from_json(&json)).collect::<Result<Vec<EthReceipt>>>()?))
     }

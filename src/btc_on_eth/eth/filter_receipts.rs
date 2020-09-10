@@ -80,10 +80,10 @@ fn filter_eth_block_and_receipts(
         EthBlockAndReceipts {
             block: eth_block_and_receipts.block.clone(),
             receipts: filter_receipts_for_address_and_topics(
-                &EthReceipts(eth_block_and_receipts.receipts.clone()),
+                &eth_block_and_receipts.receipts.clone(),
                 address,
                 eth_topics
-            ).0
+            )
         }
     )
 }
@@ -200,11 +200,7 @@ mod tests {
         let num_receipts_before = receipts.len();
         let topic = get_sample_contract_topic();
         let address = get_sample_contract_address();
-        let result = filter_receipts_for_address_and_topic(
-            &EthReceipts(receipts),
-            &address,
-            &topic
-        );
+        let result = filter_receipts_for_address_and_topic(&receipts, &address, &topic);
         let num_receipts_after = result.0.len();
         assert!(num_receipts_before > num_receipts_after);
         result
@@ -229,6 +225,7 @@ mod tests {
         assert!(num_receipts_before > num_receipts_after);
         result
             .receipts
+            .0
             .iter()
             .map(|receipt| {
                 assert!(logs_contain_topic(&receipt.logs, &topics[0]));
@@ -263,6 +260,7 @@ mod tests {
         assert_eq!(num_receipts_after, expected_num_receipts_after);
         result
             .receipts
+            .0
             .iter()
             .map(|receipt| {
                 assert!(logs_contain_topic(&receipt.logs, &topics[0]));

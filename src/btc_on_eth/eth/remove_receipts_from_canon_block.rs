@@ -1,7 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::eth_block_and_receipts::EthBlockAndReceipts,
+    chains::eth::{
+        eth_receipt::EthReceipts,
+        eth_block_and_receipts::EthBlockAndReceipts,
+    },
     btc_on_eth::eth::{
         eth_state::EthState,
         eth_database_utils::{
@@ -15,7 +18,7 @@ pub fn remove_receipts_from_block(
     eth_block_and_receipts: EthBlockAndReceipts,
 ) -> EthBlockAndReceipts {
     EthBlockAndReceipts {
-        receipts: Vec::new(),
+        receipts: EthReceipts::new_empty(),
         block: eth_block_and_receipts.block,
     }
 }

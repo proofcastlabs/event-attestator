@@ -24,14 +24,18 @@ use crate::{
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 pub struct EthBlockAndReceipts {
     pub block: EthBlock,
-    pub receipts: Vec<EthReceipt> // TODO Use actual plural type!
+    pub receipts: EthReceipts,
 }
 
 impl EthBlockAndReceipts {
+    pub fn get_receipts(&self) -> Vec<EthReceipt> {
+        self.receipts.0.clone()
+    }
+
     pub fn to_json(&self) -> Result<JsonValue> {
         Ok(json!({
             "block": &self.block.to_json()?,
-            "receipts": self.receipts.iter().map(|receipt| receipt.to_json()).collect::<Result<Vec<JsonValue>>>()?,
+            "receipts": self.receipts.0.iter().map(|receipt| receipt.to_json()).collect::<Result<Vec<JsonValue>>>()?,
         }))
     }
 
@@ -43,7 +47,7 @@ impl EthBlockAndReceipts {
         Ok(
             EthBlockAndReceipts {
                 block: EthBlock::from_json(&json.block)?,
-                receipts: EthReceipts::from_jsons(&json.receipts)?.0,
+                receipts: EthReceipts::from_jsons(&json.receipts)?,
             }
         )
     }
@@ -102,8 +106,7 @@ mod tests {
                 let block = block_and_receipt
                     .block
                     .clone();
-                let receipt = block_and_receipt
-                    .receipts[SAMPLE_RECEIPT_INDEX].clone();
+                let receipt = block_and_receipt.receipts.0[SAMPLE_RECEIPT_INDEX].clone();
                 let expected_block = get_expected_block();
                 let expected_receipt = get_expected_receipt();
                 assert_eq!(block, expected_block);

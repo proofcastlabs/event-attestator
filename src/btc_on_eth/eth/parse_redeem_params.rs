@@ -108,7 +108,7 @@ pub fn parse_redeem_params_from_block(
 ) -> Result<Vec<RedeemParams>> {
     info!("✔ Parsing redeem params from block...");
     let mut redeem_params_vec = Vec::new();
-    for receipt in eth_block_and_receipts.receipts {
+    for receipt in eth_block_and_receipts.get_receipts() {
         let structures = parse_amount_and_address_tuples_from_receipt(&receipt)?;
         for structure in structures {
             redeem_params_vec.push(structure);
@@ -186,6 +186,7 @@ mod tests {
             .unwrap();
         get_sample_block_with_redeem()
             .receipts
+            .0
             .iter()
             .filter(|receipt| receipt.transaction_hash == hash)
             .collect::<Vec<&EthReceipt>>()
