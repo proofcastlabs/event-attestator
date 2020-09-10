@@ -7,7 +7,6 @@ pub(crate) mod rlp_codec;
 pub(crate) mod eth_state;
 pub(crate) mod path_codec;
 pub(crate) mod trie_nodes;
-pub(crate) mod get_eth_log;
 pub(crate) mod nibble_utils;
 pub(crate) mod eth_json_codec;
 pub(crate) mod eth_test_utils;

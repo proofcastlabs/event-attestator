@@ -8,12 +8,18 @@ use ethereum_types::{
     U256,
     Bloom,
     Address,
+    BloomInput,
 };
 use crate::{
     btc_on_eth::eth::trie_nodes::Node,
     types::{
         Bytes,
         Result,
+    },
+    btc_on_eth::utils::{
+        convert_hex_to_bytes,
+        convert_hex_to_address,
+        convert_hex_strings_to_h256s,
     },
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
@@ -40,6 +46,25 @@ pub type RelayTransactions = Vec<RelayTransaction>;
 pub type EthTopics = Vec<EthTopic>;
 #[cfg(test)]
 pub type EthLogs = Vec<EthLog>;
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct EthereumLogs(pub Vec<EthLog>);
+
+impl EthereumLogs {
+    pub fn get_bloom(&self) -> Bloom {
+        self
+            .0
+            .iter()
+            .fold(Bloom::default(), |mut bloom, log| {
+                bloom.accrue_bloom(&log.get_bloom());
+                bloom
+            })
+    }
+
+    pub fn from_receipt_json(json: &EthReceiptJson) -> Result<Self> {
+        Ok(Self(json.logs.iter().map(|log_json| EthLog::from_json(log_json)).collect::<Result<Vec<EthLog>>>()?))
+    }
+}
 
 #[derive(Debug)]
 pub struct EthSigningParams {
@@ -261,6 +286,16 @@ pub struct EthLog {
 }
 
 impl EthLog {
+    pub fn from_json(log_json: &EthLogJson) -> Result<Self> {
+        Ok(
+            EthLog {
+                data: convert_hex_to_bytes(&log_json.data)?,
+                address: convert_hex_to_address(&log_json.address)?,
+                topics: convert_hex_strings_to_h256s(log_json.topics.iter().map(AsRef::as_ref).collect())?,
+            }
+        )
+    }
+
     pub fn to_json(&self) -> Result<JsonValue> {
         let topic_strings = self
             .topics
@@ -275,15 +310,32 @@ impl EthLog {
             })
         )
     }
+
+    pub fn get_bloom(&self) -> Bloom {
+        self
+            .topics
+            .iter()
+            .fold(
+                Bloom::from(BloomInput::Raw(self.address.as_bytes())),
+                |mut bloom, topic| {
+                    bloom.accrue(BloomInput::Raw(topic.as_bytes()));
+                    bloom
+                }
+            )
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::btc_on_eth::eth::eth_test_utils::{
+        get_expected_log,
+        SAMPLE_RECEIPT_INDEX,
+        get_expected_receipt,
         get_sample_log_with_desired_topic,
         get_sample_eth_block_and_receipts,
         get_sample_receipt_with_desired_topic,
+        get_sample_eth_block_and_receipts_json,
     };
 
     #[test]
@@ -401,5 +453,42 @@ mod tests {
         let block_and_receipts = get_sample_eth_block_and_receipts();
         let result = block_and_receipts.to_bytes();
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_get_log_from_log_json_correctly() {
+        let eth_block_and_receipt_json = get_sample_eth_block_and_receipts_json()
+            .unwrap();
+        let log_json = eth_block_and_receipt_json
+            .receipts[SAMPLE_RECEIPT_INDEX]
+            .logs[0]
+            .clone();
+        let result = EthLog::from_json(&log_json).unwrap();
+        let expected_result = get_expected_log();
+        assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn should_get_logs_bloom_from_logs() {
+        let expected_bloom = "00000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000010000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000800000000000000000000010000000000000000008000000000000000000000000000000000000000000000200000003000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000020000000";
+        let expected_bloom_bytes = &hex::decode(expected_bloom)
+            .unwrap()[..];
+        let eth_block_and_receipt_json = get_sample_eth_block_and_receipts_json()
+            .unwrap();
+        let receipt_json = eth_block_and_receipt_json
+            .receipts[SAMPLE_RECEIPT_INDEX]
+            .clone();
+        let logs = EthereumLogs::from_receipt_json(&receipt_json).unwrap();
+        let result = logs.get_bloom();
+        assert_eq!(result.as_bytes(), expected_bloom_bytes)
+    }
+
+    #[test]
+    fn should_get_logs_from_receipt_json() {
+        let expected_result = get_expected_log();
+        let eth_block_and_receipt_json = get_sample_eth_block_and_receipts_json().unwrap();
+        let result = EthereumLogs::from_receipt_json(&eth_block_and_receipt_json.receipts[SAMPLE_RECEIPT_INDEX])
+            .unwrap();
+        assert_eq!(result.0[0], expected_result);
     }
 }

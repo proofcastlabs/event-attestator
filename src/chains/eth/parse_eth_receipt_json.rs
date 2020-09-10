@@ -5,32 +5,27 @@ use ethereum_types::{
 };
 use crate::{
     types::Result,
-    chains::eth::eth_types::{
-        EthReceipt,
-        EthReceipts,
-        EthReceiptJson,
+    chains::eth::{
+        eth_types::{
+            EthReceipt,
+            EthReceipts,
+            EthereumLogs,
+            EthReceiptJson,
+        },
     },
-    btc_on_eth::{
-        utils::{
-            convert_hex_to_h256,
-            convert_hex_to_address,
-            convert_json_value_to_string,
-        },
-        eth::get_eth_log::{
-            get_logs_bloom_from_logs,
-            get_logs_from_receipt_json,
-        },
+    btc_on_eth::utils::{
+        convert_hex_to_h256,
+        convert_hex_to_address,
+        convert_json_value_to_string,
     },
 };
 
-pub fn parse_eth_receipt_json(
-    eth_receipt_json: EthReceiptJson
-) -> Result<EthReceipt> {
-    let logs = get_logs_from_receipt_json(&eth_receipt_json)?;
+pub fn parse_eth_receipt_json(eth_receipt_json: EthReceiptJson) -> Result<EthReceipt> {
+    let logs = EthereumLogs::from_receipt_json(&eth_receipt_json)?;
     Ok(
         EthReceipt {
             status: eth_receipt_json.status,
-            logs_bloom: get_logs_bloom_from_logs(&logs)?,
+            logs_bloom: logs.get_bloom(),
             gas_used: U256::from(eth_receipt_json.gasUsed),
             from: convert_hex_to_address(&eth_receipt_json.from)?,
             block_number: U256::from(eth_receipt_json.blockNumber),
@@ -46,7 +41,7 @@ pub fn parse_eth_receipt_json(
                 serde_json::Value::Null => Address::zero(),
                 _ => convert_hex_to_address(&convert_json_value_to_string(eth_receipt_json.contractAddress)?)?,
             },
-            logs,
+            logs: logs.0, // TODO FIXME use the EthereumLogs type!
         }
     )
 }
