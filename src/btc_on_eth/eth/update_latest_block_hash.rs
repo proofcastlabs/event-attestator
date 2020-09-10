@@ -1,7 +1,7 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::eth_types::EthBlock,
+    chains::eth::eth_block::EthBlock,
     btc_on_eth::eth::{
         eth_state::EthState,
         eth_database_utils::{

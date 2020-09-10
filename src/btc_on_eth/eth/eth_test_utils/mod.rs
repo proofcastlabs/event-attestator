@@ -20,20 +20,21 @@ use crate::{
         get_test_database,
     },
     chains::eth::{
-        parse_eth_block_json::parse_eth_block_json,
         parse_eth_block_and_receipts::parse_eth_block_and_receipts,
         eth_receipt::EthReceipt,
         eth_log::{
             EthLog,
             EthLogs,
         },
+        eth_block::{
+            EthBlock,
+            EthBlockJson,
+        },
         eth_types::{
             EthHash,
-            EthBlock,
             EthTopics,
             EthAddress,
             TrieHashMap,
-            EthBlockJson,
             EthBlockAndReceipts,
             EthBlockAndReceiptsJson,
         },
@@ -446,7 +447,7 @@ pub fn get_valid_state_with_block_and_receipts() -> Result<EthState<TestDB>> {
 pub fn get_expected_block() -> EthBlock {
     let string = read_to_string(SAMPLE_BLOCK_JSON_PATH).unwrap();
     let eth_block_json: EthBlockJson = serde_json::from_str(&string).unwrap();
-    parse_eth_block_json(eth_block_json).unwrap()
+    EthBlock::from_json(&eth_block_json).unwrap()
 }
 
 pub fn get_expected_receipt() -> EthReceipt {

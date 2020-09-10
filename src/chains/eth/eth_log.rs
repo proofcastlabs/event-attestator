@@ -102,6 +102,7 @@ mod tests {
     use crate::btc_on_eth::eth::eth_test_utils::{
         get_expected_log,
         SAMPLE_RECEIPT_INDEX,
+        get_sample_log_with_desired_topic,
         get_sample_eth_block_and_receipts_json,
     };
 
@@ -142,4 +143,19 @@ mod tests {
         assert_eq!(result, expected_result)
     }
 
+    #[test]
+    fn should_encode_eth_log_as_json() {
+        let log = get_sample_log_with_desired_topic();
+        let result = log.to_json().unwrap();
+        let expected_result = json!({
+            "address": "0x60a640e2d10e020fee94217707bfa9543c8b59e0",
+            "data": "0x00000000000000000000000000000000000000000000000589ba7ab174d54000",
+            "topics": vec![
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "0x000000000000000000000000250abfa8bc8371709fa4b601d821b1421667a886",
+                "0x0000000000000000000000005a7dd68907e103c3239411dae0b0eef968468ef2",
+            ]
+        });
+        assert_eq!(result, expected_result);
+    }
 }

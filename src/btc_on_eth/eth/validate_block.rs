@@ -3,7 +3,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::eth::{
-        eth_types::EthBlock,
+        eth_block::EthBlock,
         eth_crypto_utils::keccak_hash_bytes,
     },
     constants::{
