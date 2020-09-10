@@ -8,8 +8,8 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::eth::{
+        eth_log::EthLog,
         eth_types::{
-            EthLog,
             EthReceipt,
             RedeemParams,
             EthBlockAndReceipts,
@@ -98,6 +98,7 @@ fn parse_amount_and_address_tuples_from_receipt(
     info!("✔ Parsing amount & address tuples from receipt...");
     receipt
         .logs
+        .0
         .iter()
         .filter(|log| matches!(log_is_redeem(log), Ok(true)))
         .map(|log| parse_redeem_params_from_log_and_receipt(log, receipt))
@@ -195,10 +196,7 @@ mod tests {
     }
 
     fn get_sample_log_with_redeem() -> EthLog {
-        get_sample_receipt_with_redeem()
-            .logs
-            [2]
-            .clone()
+        get_sample_receipt_with_redeem().logs.0[2].clone()
     }
 
     #[test]
@@ -238,7 +236,7 @@ mod tests {
     #[test]
     fn non_redeem_log_should_not_be_redeem() {
         let result = log_is_redeem(
-            &get_sample_receipt_with_redeem().logs[1]
+            &get_sample_receipt_with_redeem().logs.0[1]
         ).unwrap();
         assert!(!result);
     }

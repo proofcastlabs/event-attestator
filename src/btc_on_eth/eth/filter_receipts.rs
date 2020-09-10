@@ -3,14 +3,17 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::{
         eth_constants::PTOKEN_CONTRACT_TOPICS,
-        eth_types::{
+        eth_log::{
             EthLog,
+            EthLogs,
+        },
+        eth_types::{
             EthHash,
             EthTopic,
             EthAddress,
             EthReceipt,
             EthReceipts,
-            EthBlockAndReceipts
+            EthBlockAndReceipts,
         },
     },
     btc_on_eth::eth::{
@@ -20,26 +23,19 @@ use crate::{
 };
 
 pub fn log_contains_topic(log: &EthLog, topic: &EthHash) -> bool {
-    log
-        .topics
-        .iter()
-        .any(|log_topic| log_topic == topic)
+    log.topics.iter().any(|log_topic| log_topic == topic)
 }
 
-pub fn logs_contain_topic(logs: &[EthLog], topic: &EthHash) -> bool {
-    logs
-        .iter()
-        .any(|log| log_contains_topic(log, topic))
+pub fn logs_contain_topic(logs: &EthLogs, topic: &EthHash) -> bool {
+    logs.0.iter().any(|log| log_contains_topic(log, topic))
 }
 
 pub fn log_contains_address(log: &EthLog, address: &EthAddress) -> bool {
     &log.address == address
 }
 
-pub fn logs_contain_address(logs: &[EthLog], address: &EthAddress) -> bool {
-    logs
-        .iter()
-        .any(|log| log_contains_address(log, address))
+pub fn logs_contain_address(logs: &EthLogs, address: &EthAddress) -> bool { // TODO impl this on the receipt!
+    logs.0.iter().any(|log| log_contains_address(log, address))
 }
 
 fn filter_receipts_for_address_and_topic(
@@ -62,13 +58,7 @@ fn filter_receipts_for_address_and_topics(
 ) -> EthReceipts {
     eth_topics
         .iter()
-        .map(|topic|
-             filter_receipts_for_address_and_topic(
-                &receipts,
-                &address,
-                &topic,
-             )
-         )
+        .map(|topic| filter_receipts_for_address_and_topic(&receipts, &address, &topic))
         .flatten()
         .collect::<EthReceipts>()
 }
@@ -81,11 +71,7 @@ fn filter_eth_block_and_receipts(
     Ok(
         EthBlockAndReceipts {
             block: eth_block_and_receipts.block.clone(),
-            receipts: filter_receipts_for_address_and_topics(
-                &eth_block_and_receipts.receipts,
-                address,
-                eth_topics,
-            )
+            receipts: filter_receipts_for_address_and_topics(&eth_block_and_receipts.receipts, address, eth_topics)
         }
     )
 }

@@ -1,3 +1,4 @@
+pub(crate) mod eth_log;
 pub(crate) mod eth_types;
 pub(crate) mod any_sender;
 pub(crate) mod eth_traits;

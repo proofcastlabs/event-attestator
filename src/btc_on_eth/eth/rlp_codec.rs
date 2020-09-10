@@ -8,10 +8,12 @@ use crate::{
         Bytes,
         Result,
     },
-    chains::eth::eth_types::{
-        EthLog,
-        EthBlock,
-        EthReceipt,
+    chains::eth::{
+        eth_log::EthLog,
+        eth_types::{
+            EthBlock,
+            EthReceipt,
+        },
     },
     btc_on_eth::eth::nibble_utils::{
         Nibbles,
@@ -26,20 +28,13 @@ impl Encodable for EthReceipt {
             true => rlp.append(&self.status),
             false => rlp.append_empty_data()
         };
-        rlp
-            .append(&self.cumulative_gas_used)
-            .append(&self.logs_bloom)
-            .append_list(&self.logs);
+        rlp.append(&self.cumulative_gas_used).append(&self.logs_bloom).append_list(&self.logs.0);
     }
 }
 
 impl Encodable for EthLog {
     fn rlp_append(&self, rlp_stream: &mut RlpStream) {
-        rlp_stream
-            .begin_list(3)
-            .append(&self.address)
-            .append_list(&self.topics)
-            .append(&self.data);
+        rlp_stream.begin_list(3).append(&self.address).append_list(&self.topics).append(&self.data);
     }
 }
 

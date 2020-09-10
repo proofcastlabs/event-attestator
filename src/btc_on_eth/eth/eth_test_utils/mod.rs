@@ -22,17 +22,18 @@ use crate::{
     chains::eth::{
         parse_eth_block_json::parse_eth_block_json,
         parse_eth_block_and_receipts::parse_eth_block_and_receipts,
-        eth_types::{
+        eth_log::{
             EthLog,
-            EthHash,
             EthLogs,
+        },
+        eth_types::{
+            EthHash,
             EthBlock,
             EthTopics,
             EthReceipt,
             EthAddress,
             TrieHashMap,
             EthBlockJson,
-            EthReceiptJson,
             EthBlockAndReceipts,
             EthBlockAndReceiptsJson,
         },
@@ -204,7 +205,7 @@ pub fn get_sample_log_n(
     log_index: usize,
 ) -> Result<EthLog> {
     get_sample_receipt_n(sample_block_num, receipt_index)
-        .map(|receipt| receipt.logs[log_index].clone())
+        .map(|receipt| receipt.logs.0[log_index].clone())
 }
 
 pub fn get_sample_contract_topic() -> EthHash {
@@ -295,31 +296,23 @@ pub fn get_sample_receipt_with_desired_address() -> EthReceipt {
 }
 
 pub fn get_sample_logs_with_desired_topic() -> EthLogs {
-    get_sample_receipt_with_desired_topic()
-        .logs
+    get_sample_receipt_with_desired_topic().logs
 }
 
 pub fn get_sample_logs_with_desired_address() -> EthLogs {
-    get_sample_receipt_with_desired_address()
-        .logs
+    get_sample_receipt_with_desired_address().logs
 }
 
 pub fn get_sample_log_with_desired_topic() -> EthLog {
-    get_sample_logs_with_desired_topic()[
-        LOG_INDEX_OF_LOG_WITH_SAMPLE_TOPIC
-    ].clone()
+    get_sample_logs_with_desired_topic().0[LOG_INDEX_OF_LOG_WITH_SAMPLE_TOPIC].clone()
 }
 
 pub fn get_sample_log_with_desired_address() -> EthLog {
-    get_sample_logs_with_desired_address()[
-        LOG_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS
-    ].clone()
+    get_sample_logs_with_desired_address().0[LOG_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS].clone()
 }
 
 pub fn get_sample_receipt_without_desired_topic() -> EthReceipt {
-    get_sample_eth_block_and_receipts()
-        .receipts[RECEIPT_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC]
-        .clone()
+    get_sample_eth_block_and_receipts().receipts[RECEIPT_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC].clone()
 }
 
 pub fn get_sample_receipt_without_desired_address() -> EthReceipt {
@@ -328,14 +321,11 @@ pub fn get_sample_receipt_without_desired_address() -> EthReceipt {
 }
 
 pub fn get_sample_logs_without_desired_topic() -> EthLogs {
-    get_sample_receipt_without_desired_topic()
-        .logs
+    get_sample_receipt_without_desired_topic().logs
 }
 
 pub fn get_sample_log_without_desired_topic() -> EthLog {
-    get_sample_logs_without_desired_topic() [
-        LOG_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC
-    ].clone()
+    get_sample_logs_without_desired_topic().0[LOG_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC ].clone()
 }
 
 pub fn get_sample_log_without_desired_address() -> EthLog {
@@ -464,7 +454,7 @@ pub fn get_expected_receipt() -> EthReceipt {
 }
 
 pub fn get_expected_log() -> EthLog {
-    get_expected_receipt().logs[0].clone()
+    get_expected_receipt().logs.0[0].clone()
 }
 
 pub fn get_valid_eth_state() -> Result<EthState<TestDB>> {
@@ -626,6 +616,7 @@ mod tests {
     fn sample_logs_with_desired_topic_should_contain_topic() {
         let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
         let result = get_sample_logs_with_desired_topic()
+            .0
             .iter()
             .any(|log| log_contains_topic(log, &desired_topic));
         assert!(result);
@@ -635,6 +626,7 @@ mod tests {
     fn sample_logs_without_desired_topic_should_contain_topic() {
         let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
         let result = get_sample_logs_without_desired_topic()
+            .0
             .iter()
             .any(|log| log_contains_topic(log, &desired_topic));
         assert!(!result);

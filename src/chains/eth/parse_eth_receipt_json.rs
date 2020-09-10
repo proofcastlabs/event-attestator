@@ -1,22 +1,11 @@
-use ethereum_types::{
-    U256,
-    H160,
-    Address,
-};
 use crate::{
     types::Result,
     chains::eth::{
         eth_types::{
             EthReceipt,
             EthReceipts,
-            EthereumLogs,
             EthReceiptJson,
         },
-    },
-    btc_on_eth::utils::{
-        convert_hex_to_h256,
-        convert_hex_to_address,
-        convert_json_value_to_string,
     },
 };
 
@@ -28,11 +17,7 @@ pub fn parse_eth_receipt_jsons(eth_receipts_jsons: Vec<EthReceiptJson>) -> Resul
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::eth_test_utils::{
-        get_expected_receipt,
-        SAMPLE_RECEIPT_INDEX,
-        get_sample_eth_block_and_receipts_json,
-    };
+    use crate::btc_on_eth::eth::eth_test_utils::get_sample_eth_block_and_receipts_json;
 
     #[test]
     fn should_parse_eth_receipt_jsons() {
