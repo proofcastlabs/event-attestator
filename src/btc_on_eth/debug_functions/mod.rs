@@ -51,11 +51,12 @@ use crate::{
             save_utxos_to_db::maybe_save_utxos_to_db,
             validate_btc_merkle_root::validate_btc_merkle_root,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
+            parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
+            parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
             filter_minting_params::maybe_filter_minting_params_in_state,
             validate_btc_block_header::validate_btc_block_header_in_state,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
-            parse_submission_material::parse_btc_block_and_id_and_put_in_state,
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
@@ -72,6 +73,7 @@ use crate::{
                 filter_out_utxos_extant_in_db_from_state,
                 filter_out_value_too_low_utxos_from_state,
             },
+            set_flags::set_any_sender_flag_in_state,
         },
         eth::{
             eth_state::EthState,
@@ -153,7 +155,9 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
 // TODO/FIXME: This doesn't work with AnySender yet!
 pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| parse_btc_block_and_id_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
+        .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
+        .and_then(set_any_sender_flag_in_state)
+        .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
@@ -401,7 +405,9 @@ pub fn debug_maybe_add_utxo_to_db<D>(
     where D: DatabaseInterface,
 {
     check_debug_mode()
-        .and_then(|_| parse_btc_block_and_id_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
+        .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
+        .and_then(set_any_sender_flag_in_state)
+        .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)

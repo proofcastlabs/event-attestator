@@ -6,11 +6,13 @@ use crate::{
         add_btc_block_to_db::maybe_add_btc_block_to_db,
         validate_btc_merkle_root::validate_btc_merkle_root,
         set_btc_canon_block_hash::maybe_set_btc_canon_block_hash,
-        parse_submission_material::parse_btc_block_and_id_and_put_in_state,
+        parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
+        parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
         set_btc_latest_block_hash::maybe_set_btc_latest_block_hash,
         set_btc_anchor_block_hash::maybe_set_btc_anchor_block_hash,
         validate_btc_block_header::validate_btc_block_header_in_state,
         validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
+        set_flags::set_any_sender_flag_in_state,
         btc_database_utils::{
             end_btc_db_transaction,
             start_btc_db_transaction,
@@ -62,7 +64,9 @@ pub fn maybe_initialize_btc_enclave<D>(
                         .and_then(|state| put_difficulty_threshold_in_db(difficulty, state))
                         .and_then(|state| put_btc_network_in_db_and_return_state(&network, state))
                         .and_then(|state| put_btc_fee_in_db_and_return_state(fee, state))
-                        .and_then(|state| parse_btc_block_and_id_and_put_in_state(block_json_string, state))
+                        .and_then(|state| parse_btc_submission_json_and_put_in_state(block_json_string, state))
+                        .and_then(set_any_sender_flag_in_state)
+                        .and_then(parse_btc_block_and_id_and_put_in_state)
                         .and_then(validate_btc_block_header_in_state)
                         .and_then(validate_difficulty_of_btc_block_in_state)
                         .and_then(validate_proof_of_work_of_btc_block_in_state)

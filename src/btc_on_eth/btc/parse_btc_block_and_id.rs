@@ -11,20 +11,19 @@ use bitcoin::{
 use crate::{
     btc_on_eth::btc::{
         btc_state::BtcState,
-        btc_types::BtcBlockAndId
+        btc_types::BtcBlockAndId,
+        parse_submission_material_json::BtcSubmissionMaterialJson,
     },
     chains::btc::deposit_address_info::{
         DepositAddressInfo,
         DepositAddressInfoJson,
-        DepositAddressInfoJsonList,
         DepositInfoList,
     },
-    errors::AppError,
     traits::DatabaseInterface,
     types::Result,
 };
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 pub struct BtcBlockJson {
     pub bits: u32,
     pub id: String,
@@ -34,14 +33,6 @@ pub struct BtcBlockJson {
     pub timestamp: u32,
     pub merkle_root: String,
     pub previousblockhash: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct BtcSubmissionMaterialJson {
-    pub block: BtcBlockJson,
-    pub transactions: Vec<String>,
-    pub deposit_address_list: DepositAddressInfoJsonList,
-    pub any_sender: Option<bool>,
 }
 
 fn parse_btc_block_json_to_block_header(
@@ -60,56 +51,8 @@ fn parse_btc_block_json_to_block_header(
     )
 }
 
-pub fn parse_btc_block_json_to_btc_block(
-    btc_submission_material_json: BtcSubmissionMaterialJson
-) -> Result<BtcBlock> {
-    trace!("✔ Parsing `BtcSubmissionMaterialJson` to `BtcBlock`...");
-    Ok(
-        BtcBlock::new(
-            parse_btc_block_json_to_block_header(
-                btc_submission_material_json.block.clone()
-            )?,
-            convert_hex_txs_to_btc_transactions(
-                btc_submission_material_json.transactions
-            )?
-        )
-    )
-}
-
-pub fn parse_btc_block_string_to_json(
-    btc_block_json_string: &str
-) -> Result<BtcSubmissionMaterialJson> {
-    trace!("✔ Parsing JSON string to `BtcSubmissionMaterialJson`...");
-    match serde_json::from_str(btc_block_json_string) {
-        Ok(json) => Ok(json),
-        Err(e) => Err(AppError::Custom(e.to_string()))
-    }
-}
-
-fn convert_hex_tx_to_btc_transaction(hex: String) -> Result<BtcTransaction> {
-    Ok(deserialize::<BtcTransaction>(&hex::decode(hex)?)?)
-}
-
-fn convert_hex_txs_to_btc_transactions(
-    hex_txs: Vec<String>
-) -> Result<Vec<BtcTransaction>> {
-    hex_txs
-        .into_iter()
-        .map(convert_hex_tx_to_btc_transaction)
-        .collect::<Result<Vec<BtcTransaction>>>()
-}
-
-fn parse_deposit_info_jsons_to_deposit_info_list(
-    deposit_address_json_list: &[DepositAddressInfoJson]
-) -> Result<DepositInfoList> {
-    deposit_address_json_list
-        .iter()
-        .map(DepositAddressInfo::from_json)
-        .collect::<Result<DepositInfoList>>()
-}
-
 pub fn parse_btc_block_and_tx_json_to_struct(
-    btc_submission_material_json: BtcSubmissionMaterialJson
+    btc_submission_material_json: &BtcSubmissionMaterialJson
 ) -> Result<BtcBlockAndId> {
     trace!("✔ Parsing `BtcBlockSAndtxsJson` to `BtcBlockAndId`...");
     Ok(
@@ -127,16 +70,50 @@ pub fn parse_btc_block_and_tx_json_to_struct(
 }
 
 pub fn parse_btc_block_and_id_and_put_in_state<D>(
-    block_json: &str,
-    mut state: BtcState<D>,
+    state: BtcState<D>
 ) -> Result<BtcState<D>>
-    where D: DatabaseInterface
+    where D: DatabaseInterface,
 {
-    info!("✔ Parsing BTC block...");
-    parse_btc_block_string_to_json(&block_json)
-        .and_then(|btc_submission_material_json| state.set_any_sender_status_from_submission_material(btc_submission_material_json))
-        .and_then(parse_btc_block_and_tx_json_to_struct)
+    parse_btc_block_and_tx_json_to_struct(state.get_btc_submission_json()?)
         .and_then(|result| state.add_btc_block_and_id(result))
+}
+
+fn parse_btc_block_json_to_btc_block(
+    btc_submission_material_json: &BtcSubmissionMaterialJson
+) -> Result<BtcBlock> {
+    trace!("✔ Parsing `BtcSubmissionMaterialJson` to `BtcBlock`...");
+    Ok(
+        BtcBlock::new(
+            parse_btc_block_json_to_block_header(
+                btc_submission_material_json.block.clone()
+            )?,
+            convert_hex_txs_to_btc_transactions(
+                btc_submission_material_json.transactions.clone()
+            )?
+        )
+    )
+}
+
+fn parse_deposit_info_jsons_to_deposit_info_list(
+    deposit_address_json_list: &[DepositAddressInfoJson]
+) -> Result<DepositInfoList> {
+    deposit_address_json_list
+        .iter()
+        .map(DepositAddressInfo::from_json)
+        .collect::<Result<DepositInfoList>>()
+}
+
+fn convert_hex_txs_to_btc_transactions(
+    hex_txs: Vec<String>
+) -> Result<Vec<BtcTransaction>> {
+    hex_txs
+        .into_iter()
+        .map(convert_hex_tx_to_btc_transaction)
+        .collect::<Result<Vec<BtcTransaction>>>()
+}
+
+fn convert_hex_tx_to_btc_transaction(hex: String) -> Result<BtcTransaction> {
+    Ok(deserialize::<BtcTransaction>(&hex::decode(hex)?)?)
 }
 
 #[cfg(test)]
@@ -144,22 +121,13 @@ mod tests {
     use super::*;
     use crate::btc_on_eth::btc::btc_test_utils::{
         get_sample_btc_submission_material_json,
-        get_sample_btc_submission_material_json_string,
     };
-
-    #[test]
-    fn should_parse_btc_block_json() {
-        let string = get_sample_btc_submission_material_json_string();
-        if let Err(e) = parse_btc_block_string_to_json(&string) {
-            panic!("Error getting json from btc block and txs sample: {}", e);
-        }
-    }
 
     #[test]
     fn should_parse_block_and_tx_json_to_struct() {
         let json = get_sample_btc_submission_material_json()
             .unwrap();
-        if let Err(e) = parse_btc_block_and_tx_json_to_struct(json) {
+        if let Err(e) = parse_btc_block_and_tx_json_to_struct(&json) {
             panic!("Error getting json from btc block and txs sample: {}", e);
         }
     }
