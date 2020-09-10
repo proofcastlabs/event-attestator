@@ -18,52 +18,6 @@ use crate::{
     },
 };
 
-fn encode_eth_receipt_as_json(
-    eth_receipt: &EthReceipt
-) -> Result<JsonValue> {
-    let encoded_logs = eth_receipt
-        .logs
-        .iter()
-        .map(|x| x.to_json())
-        .collect::<Result<Vec<JsonValue>>>()?;
-    Ok(
-        json!({
-            "logs": encoded_logs,
-            "status": eth_receipt.status,
-            "gasUsed": eth_receipt.gas_used.as_usize(),
-            "blockNumber": eth_receipt.block_number.as_usize(),
-            "transactionIndex": eth_receipt.transaction_index.as_usize(),
-            "cumulativeGasUsed": eth_receipt.cumulative_gas_used.as_usize(),
-            "contractAddress": format!(
-                "0x{:x}",
-                eth_receipt.contract_address
-            ),
-            "to": format!(
-                "0x{}",
-                hex::encode(eth_receipt.to.as_bytes())
-            ),
-            "from": format!(
-                "0x{}",
-                hex::encode(eth_receipt.from.as_bytes()),
-            ),
-            "transactionHash": format!(
-                "0x{}",
-                hex::encode(
-                    eth_receipt.transaction_hash.as_bytes()
-                ),
-            ),
-            "blockHash": format!(
-                "0x{}",
-                hex::encode(eth_receipt.block_hash.as_bytes()),
-            ),
-            "logsBloom": format!(
-                "0x{}",
-                hex::encode(eth_receipt.logs_bloom.as_bytes())
-            ),
-        })
-    )
-}
-
 fn encode_eth_block_as_json(
     eth_block: &EthBlock
 ) -> Result<JsonValue> {
@@ -139,7 +93,7 @@ fn encode_eth_block_and_receipts_as_json(
     let encoded_receipts = eth_block_and_receipts
         .receipts
         .iter()
-        .map(encode_eth_receipt_as_json)
+        .map(|x| x.to_json())
         .collect::<Result<Vec<JsonValue>>>()?;
     Ok(
         json!({
@@ -175,14 +129,6 @@ mod tests {
         get_sample_eth_block_and_receipts,
         get_sample_receipt_with_desired_topic,
     };
-
-    #[test]
-    fn should_encode_eth_receipt_as_json() {
-        let receipt = get_sample_receipt_with_desired_topic();
-        if let Err(e) = encode_eth_receipt_as_json(&receipt) {
-            panic!("Error encoding eth receipt as json: {}", e)
-        }
-    }
 
     #[test]
     fn should_encode_eth_block_as_json() {
