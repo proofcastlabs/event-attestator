@@ -22,8 +22,7 @@ fn does_canon_block_require_updating<D>(
 {
     get_eth_canon_block_from_db(db)
         .map(|db_canon_block_and_receipts|
-            db_canon_block_and_receipts.block.number <
-                calculated_canon_block_and_receipts.block.number
+            db_canon_block_and_receipts.block.number < calculated_canon_block_and_receipts.block.number
         )
 }
 
@@ -35,23 +34,12 @@ fn maybe_get_nth_ancestor_of_latest_block<D>(
 {
     info!("✔ Maybe getting ancestor #{} of latest ETH block...", n);
     match get_eth_latest_block_from_db(db) {
+        Ok(block_and_receipts) => maybe_get_nth_ancestor_eth_block_and_receipts(db, &block_and_receipts.block.hash, n),
         Err(_) => None,
-        Ok(block_and_receipts) => {
-            maybe_get_nth_ancestor_eth_block_and_receipts(
-                db,
-                &block_and_receipts.block.hash,
-                n
-            )
-        }
     }
 }
 
-fn maybe_update_canon_block_hash<D>(
-    db: &D,
-    canon_to_tip_length: u64,
-) -> Result<()>
-    where D: DatabaseInterface
-{
+fn maybe_update_canon_block_hash<D>(db: &D, canon_to_tip_length: u64,) -> Result<()> where D: DatabaseInterface {
     match maybe_get_nth_ancestor_of_latest_block(db, canon_to_tip_length) {
         None => {
             info!("✔ No {}th ancestor block in db yet!", canon_to_tip_length);
@@ -62,10 +50,7 @@ fn maybe_update_canon_block_hash<D>(
             match does_canon_block_require_updating(db, &ancestor_block)? {
                 true => {
                     info!("✔ Updating canon block...");
-                    put_eth_canon_block_hash_in_db(
-                        db,
-                        &ancestor_block.block.hash
-                    )
+                    put_eth_canon_block_hash_in_db(db, &ancestor_block.block.hash)
                 }
                 false => {
                     info!("✔ Canon block does not require updating");
@@ -76,20 +61,11 @@ fn maybe_update_canon_block_hash<D>(
     }
 }
 
-pub fn maybe_update_eth_canon_block_hash<D>(
-    state: EthState<D>
-) -> Result<EthState<D>>
-    where D: DatabaseInterface
-{
+pub fn maybe_update_eth_canon_block_hash<D>(state: EthState<D>) -> Result<EthState<D>> where D: DatabaseInterface {
     info!("✔ Maybe updating ETH canon block hash...");
     get_eth_canon_to_tip_length_from_db(&state.db)
-        .and_then(|canon_to_tip_length|
-            maybe_update_canon_block_hash(
-                &state.db,
-                canon_to_tip_length
-            )
-        )
-        .map(|_| state)
+        .and_then(|canon_to_tip_length| maybe_update_canon_block_hash(&state.db, canon_to_tip_length))
+        .and(Ok(state))
 }
 
 #[cfg(test)]

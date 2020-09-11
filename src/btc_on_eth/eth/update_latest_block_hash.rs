@@ -11,10 +11,7 @@ use crate::{
     },
 };
 
-fn is_block_subsequent(
-    block_in_question: &EthBlock,
-    latest_block_from_database: &EthBlock,
-) -> bool {
+fn is_block_subsequent(block_in_question: &EthBlock, latest_block_from_database: &EthBlock) -> bool {
     latest_block_from_database.number == block_in_question.number + 1
 }
 
@@ -27,42 +24,23 @@ fn update_latest_block_hash_if_subsequent<D>(
     info!("✔ Updating latest ETH block hash if subsequent...");
     get_eth_latest_block_from_db(db)
         .and_then(|latest_block_and_receipts|
-            match is_block_subsequent(
-                &latest_block_and_receipts.block,
-                &maybe_subsequent_block,
-            ) {
+            match is_block_subsequent(&latest_block_and_receipts.block, &maybe_subsequent_block) {
                 false => {
-                    info!(
-                        "✔ Block NOT subsequent {}",
-                        "∴ NOT updating latest block hash",
-                    );
+                    info!("✔ Block NOT subsequent ∴ NOT updating latest block hash!");
                     Ok(())
                 }
                 true => {
-                    info!(
-                        "✔ Block IS subsequent {}",
-                        "∴ updating latest block hash...",
-                    );
-                    put_eth_latest_block_hash_in_db(
-                        db,
-                        &maybe_subsequent_block.hash,
-                    )
+                    info!("✔ Block IS subsequent ∴ updating latest block hash...",);
+                    put_eth_latest_block_hash_in_db(db, &maybe_subsequent_block.hash)
                 }
             }
         )
 }
 
-pub fn maybe_update_latest_block_hash<D>(
-    state: EthState<D>
-) -> Result<EthState<D>>
-    where D: DatabaseInterface
-{
+pub fn maybe_update_latest_block_hash<D>(state: EthState<D>) -> Result<EthState<D>> where D: DatabaseInterface {
     info!("✔ Maybe updating latest ETH block hash if subsequent...");
-    update_latest_block_hash_if_subsequent(
-        &state.db,
-        &state.get_eth_block_and_receipts()?.block,
-    )
-        .map(|_| state)
+    update_latest_block_hash_if_subsequent(&state.db, &state.get_eth_block_and_receipts()?.block)
+        .and(Ok(state))
 }
 
 #[cfg(test)]

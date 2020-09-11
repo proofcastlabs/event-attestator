@@ -54,21 +54,12 @@ fn parse_btc_address_from_log(log: &EthLog) -> Result<String> {
 fn parse_redeem_amount_from_log(log: &EthLog) -> Result<U256> {
     info!("✔ Parsing redeem amount from log...");
     match log.data.len() >= ETH_WORD_SIZE_IN_BYTES {
-        true => Ok(
-            U256::from(
-                convert_ptoken_to_satoshis(
-                    U256::from(&log.data[..ETH_WORD_SIZE_IN_BYTES])
-                )
-            )
-        ),
-        false => Err("✘ Not enough bytes in log data to slice out redeem amount!".into())
+        true => Ok(U256::from(convert_ptoken_to_satoshis(U256::from(&log.data[..ETH_WORD_SIZE_IN_BYTES])))),
+        false => Err(AppError::Custom("✘ Not enough bytes in log data to slice out redeem amount!".to_string()))
     }
 }
 
-fn parse_redeem_params_from_log_and_receipt(
-    eth_log: &EthLog,
-    eth_receipt: &EthReceipt,
-) -> Result<RedeemParams> {
+fn parse_redeem_params_from_log_and_receipt(eth_log: &EthLog, eth_receipt: &EthReceipt) -> Result<RedeemParams> {
     info!("✔ Parsing redeems from logs...");
     Ok(
         RedeemParams::new(
@@ -81,16 +72,10 @@ fn parse_redeem_params_from_log_and_receipt(
 }
 
 fn log_is_redeem(log: &EthLog) -> Result<bool> {
-    Ok(
-        log.topics[0] == EthHash::from_slice(
-            &hex::decode(&REDEEM_EVENT_TOPIC_HEX)?[..]
-        )
-    )
+    Ok(log.topics[0] == EthHash::from_slice(&hex::decode(&REDEEM_EVENT_TOPIC_HEX)?[..]))
 }
 
-fn parse_amount_and_address_tuples_from_receipt(
-    receipt: &EthReceipt
-) -> Result<Vec<RedeemParams>> {
+fn parse_amount_and_address_tuples_from_receipt(receipt: &EthReceipt) -> Result<Vec<RedeemParams>> {
     info!("✔ Parsing amount & address tuples from receipt...");
     receipt
         .logs
@@ -101,9 +86,7 @@ fn parse_amount_and_address_tuples_from_receipt(
         .collect::<Result<Vec<RedeemParams>>>()
 }
 
-pub fn parse_redeem_params_from_block(
-    eth_block_and_receipts: EthBlockAndReceipts
-) -> Result<Vec<RedeemParams>> {
+pub fn parse_redeem_params_from_block(eth_block_and_receipts: EthBlockAndReceipts) -> Result<Vec<RedeemParams>> {
     info!("✔ Parsing redeem params from block...");
     let mut redeem_params_vec = Vec::new();
     for receipt in eth_block_and_receipts.get_receipts() {
@@ -129,14 +112,9 @@ pub fn maybe_parse_redeem_params_and_add_to_state<D>(
                     Ok(state)
                 }
                 false => {
-                    info!(
-                        "✔ Receipts in canon block #{} ∴ parsing params...",
-                        block_and_receipts.block.number
-                    );
+                    info!("✔ Receipts in canon block #{} ∴ parsing params...", block_and_receipts.block.number);
                     parse_redeem_params_from_block(block_and_receipts)
-                        .and_then(|redeem_params|
-                            state.add_redeem_params(redeem_params)
-                        )
+                        .and_then(|redeem_params| state.add_redeem_params(redeem_params))
                 }
             }
         })

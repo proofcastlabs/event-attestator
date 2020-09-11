@@ -10,12 +10,10 @@ pub fn maybe_save_btc_utxos_to_db<D>(state: EthState<D>) -> Result<EthState<D>>
 {
     info!("✔ Maybe saving BTC UTXOs...");
     match &state.btc_utxos_and_values {
+        Some(utxos) => save_utxos_to_db(&state.db, &utxos).and(Ok(state)),
         None => {
             info!("✔ No BTC UTXOs in state to save!");
             Ok(state)
-        }
-        Some(utxos) => {
-            save_utxos_to_db(&state.db, &utxos).map(|_| state)
         }
     }
 }

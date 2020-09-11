@@ -12,25 +12,13 @@ use crate::{
     },
 };
 
-pub fn remove_receipts_from_block(
-    eth_block_and_receipts: EthBlockAndReceipts,
-) -> EthBlockAndReceipts {
-    EthBlockAndReceipts {
-        receipts: EthReceipts::new_empty(),
-        block: eth_block_and_receipts.block,
-    }
+pub fn remove_receipts_from_block(eth_block_and_receipts: EthBlockAndReceipts) -> EthBlockAndReceipts {
+    EthBlockAndReceipts { receipts: EthReceipts::new_empty(), block: eth_block_and_receipts.block }
 }
 
-pub fn remove_receipts_from_canon_block_and_save_in_db<D>(db: &D) -> Result<()>
-    where D: DatabaseInterface
-{
+pub fn remove_receipts_from_canon_block_and_save_in_db<D>(db: &D) -> Result<()> where D: DatabaseInterface {
     get_eth_canon_block_from_db(db)
-        .and_then(|canon_block|
-            put_eth_canon_block_in_db(
-                db,
-                &remove_receipts_from_block(canon_block)
-            )
-        )
+        .and_then(|canon_block| put_eth_canon_block_in_db(db, &remove_receipts_from_block(canon_block)))
 
 }
 
@@ -40,8 +28,7 @@ pub fn maybe_remove_receipts_from_canon_block_and_return_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Removing receipts from canon block...");
-    remove_receipts_from_canon_block_and_save_in_db(&state.db)
-        .map(|_| state)
+    remove_receipts_from_canon_block_and_save_in_db(&state.db).and(Ok(state))
 }
 
 #[cfg(test)]

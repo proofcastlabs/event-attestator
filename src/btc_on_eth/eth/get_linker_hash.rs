@@ -11,13 +11,8 @@ use crate::{
     },
 };
 
-pub fn get_linker_hash_or_genesis_hash<D>(db: &D) -> Result<EthHash>
-    where D: DatabaseInterface
-{
-    match get_hash_from_db_via_hash_key(
-        db,
-        EthHash::from_slice(&ETH_LINKER_HASH_KEY[..])
-    )? {
+pub fn get_linker_hash_or_genesis_hash<D>(db: &D) -> Result<EthHash> where D: DatabaseInterface {
+    match get_hash_from_db_via_hash_key(db, EthHash::from_slice(&ETH_LINKER_HASH_KEY[..]))? {
         Some(hash) => Ok(hash),
         None => {
             info!("✔ No linker-hash set yet, using pToken genesis hash...");

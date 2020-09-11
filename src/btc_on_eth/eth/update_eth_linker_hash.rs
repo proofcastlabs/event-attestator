@@ -18,12 +18,7 @@ use crate::{
     },
 };
 
-fn get_new_linker_hash<D>(
-    db: &D,
-    block_hash_to_link_to: &EthHash
-) -> Result<EthHash>
-    where D: DatabaseInterface
-{
+fn get_new_linker_hash<D>(db: &D, block_hash_to_link_to: &EthHash) -> Result<EthHash> where D: DatabaseInterface {
     info!("✔ Calculating new linker hash...");
     get_eth_anchor_block_from_db(db)
         .and_then(|anchor_block|
@@ -37,19 +32,25 @@ fn get_new_linker_hash<D>(
         )
 }
 
-fn maybe_get_parent_of_eth_tail_block<D>(
-    db: &D
-) -> Result<Option<EthBlockAndReceipts>>
-    where D: DatabaseInterface
-{
+fn maybe_get_parent_of_eth_tail_block<D>(db: &D) -> Result<Option<EthBlockAndReceipts>> where D: DatabaseInterface {
     info!("✔ Maybe getting parent of ETH tail block from db...");
     get_eth_tail_block_from_db(db)
-        .map(|eth_canon_block|
-            maybe_get_parent_eth_block_and_receipts(
-                db,
-                &eth_canon_block.block.hash
-            )
-        )
+        .map(|eth_canon_block| maybe_get_parent_eth_block_and_receipts(db, &eth_canon_block.block.hash))
+}
+
+fn maybe_update_linker_hash<D>(db: &D) -> Result<()> where D: DatabaseInterface {
+    match maybe_get_parent_of_eth_tail_block(db)? {
+        Some(parent_of_eth_tail_block) => {
+            info!("✔ Updating ETH linker hash...");
+            get_new_linker_hash(db, &parent_of_eth_tail_block.block.hash)
+                .and_then(|linker_hash| put_eth_linker_hash_in_db(db, linker_hash))
+                .map(|_| ())
+        }
+        None => {
+            info!("✔ ETH tail has no parent in db ∴ NOT updating linker hash");
+            Ok(())
+        }
+    }
 }
 
 pub fn maybe_update_eth_linker_hash_and_return_state<D>(
@@ -58,27 +59,9 @@ pub fn maybe_update_eth_linker_hash_and_return_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Maybe updating the ETH linker hash...");
-    maybe_update_linker_hash(&state.db)
-        .map(|_| state)
+    maybe_update_linker_hash(&state.db).and(Ok(state))
 }
 
-fn maybe_update_linker_hash<D>(db: &D) -> Result<()>
-    where D: DatabaseInterface
-{
-    match maybe_get_parent_of_eth_tail_block(db)? {
-        Some(parent_of_eth_tail_block) => {
-            info!("✔ Updating ETH linker hash...");
-            get_new_linker_hash(db, &parent_of_eth_tail_block.block.hash)
-                .and_then(|linker_hash|
-                    put_eth_linker_hash_in_db(db, linker_hash)
-                ).map(|_| ())
-        }
-        None => {
-            info!("✔ ETH tail has no parent in db ∴ NOT updating linker hash");
-            Ok(())
-        }
-    }
-}
 
 #[cfg(test)]
 mod tests {

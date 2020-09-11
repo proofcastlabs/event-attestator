@@ -9,9 +9,7 @@ use crate::{
     },
 };
 
-fn filter_redeem_params(
-    redeem_params: &[RedeemParams]
-) -> Result<Vec<RedeemParams>> {
+fn filter_redeem_params(redeem_params: &[RedeemParams]) -> Result<Vec<RedeemParams>> {
     Ok(
         redeem_params
             .iter()
@@ -19,27 +17,19 @@ fn filter_redeem_params(
                 match params.amount >= U256::from(MINIMUM_REQUIRED_SATOSHIS) {
                     true => true,
                     false => {
-                        trace!(
-                            "✘ Filtering redeem params ∵ amount too low: {:?}",
-                            params,
-                        );
+                        trace!("✘ Filtering redeem params ∵ amount too low: {:?}", params);
                         false
                     }
                 }
             })
             .cloned()
-            .collect::<Vec<RedeemParams>>()
+            .collect()
     )
 }
 
-pub fn maybe_filter_redeem_params_in_state<D>(
-    state: EthState<D>
-) -> Result<EthState<D>>
-    where D: DatabaseInterface
-{
+pub fn maybe_filter_redeem_params_in_state<D>(state: EthState<D>) -> Result<EthState<D>> where D: DatabaseInterface {
     info!("✔ Maybe filtering any redeem params below minimum # of Satoshis...");
-    filter_redeem_params(&state.redeem_params)
-        .and_then(|new_params| state.replace_redeem_params(new_params))
+    filter_redeem_params(&state.redeem_params).and_then(|new_params| state.replace_redeem_params(new_params))
 }
 
 #[cfg(test)]

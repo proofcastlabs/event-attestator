@@ -13,15 +13,10 @@ use crate::{
     },
 };
 
-fn is_anchor_block<D>(
-    db: &D,
-    eth_block_hash: &EthHash,
-) -> Result<bool>
-    where D: DatabaseInterface
-{
+fn is_anchor_block<D>(db: &D, eth_block_hash: &EthHash) -> Result<bool> where D: DatabaseInterface {
     match get_eth_anchor_block_hash_from_db(db) {
         Ok(hash) => Ok(&hash == eth_block_hash),
-        _ => Err("✘ No anchor hash found in db!".into())
+        _ => Err(AppError::Custom("✘ No anchor hash found in db!".to_string()))
     }
 }
 
@@ -31,10 +26,7 @@ fn remove_parents_if_not_anchor<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    match get_eth_block_from_db(
-        db,
-        &block_whose_parents_to_be_removed.block.parent_hash,
-    ) {
+    match get_eth_block_from_db(db, &block_whose_parents_to_be_removed.block.parent_hash) {
         Err(_) => {
             info!("✔ No block found ∵ doing nothing!");
             Ok(())
@@ -50,25 +42,17 @@ fn remove_parents_if_not_anchor<D>(
                     info!("✔ Block is NOT the anchor ∴ removing it...");
                     db
                         .delete(parent_block.block.hash.as_bytes().to_vec())
-                        .and_then(|_|
-                            remove_parents_if_not_anchor(db, &parent_block)
-                        )
+                        .and_then(|_| remove_parents_if_not_anchor(db, &parent_block))
                 }
             }
         }
     }
 }
 
-pub fn maybe_remove_old_eth_tail_block<D>(
-    state: EthState<D>
-) -> Result<EthState<D>>
-    where D: DatabaseInterface
-{
+pub fn maybe_remove_old_eth_tail_block<D>(state: EthState<D>) -> Result<EthState<D>> where D: DatabaseInterface {
     info!("✔ Maybe removing old ETH tail block...");
     get_eth_tail_block_from_db(&state.db)
-        .and_then(|tail_block|
-            remove_parents_if_not_anchor(&state.db, &tail_block)
-        ).map(|_| state)
+        .and_then(|tail_block| remove_parents_if_not_anchor(&state.db, &tail_block)).and(Ok(state))
 }
 
 #[cfg(test)]
