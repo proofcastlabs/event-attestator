@@ -12,7 +12,6 @@ use crate::{
         NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR,
     },
     btc_on_eth::{
-        eth::rlp_codec::get_rlp_encoded_receipts_and_nibble_tuples,
         eth::{
             eth_state::EthState,
             trie::{
@@ -24,7 +23,8 @@ use crate::{
 };
 
 fn get_receipts_root_from_receipts(receipts: &EthReceipts) -> Result<H256> {
-    get_rlp_encoded_receipts_and_nibble_tuples(&receipts.0) // TODO pass the real type through!
+    receipts
+        .get_rlp_encoded_receipts_and_nibble_tuples() // TODO pass the real type through!
         .and_then(|key_value_tuples| {
             info!("✔ Building merkle-patricia trie from receipts...");
             put_in_trie_recursively(Trie::get_new_trie()?, key_value_tuples, 0)

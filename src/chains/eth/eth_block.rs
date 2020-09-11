@@ -1,14 +1,19 @@
+use rlp::{
+    RlpStream,
+    Encodable,
+};
 use serde_json::{
     json,
     Value as JsonValue,
 };
 use ethereum_types::{
-    H256,
     U256,
     Bloom,
-    Address,
+    H256 as EthHash,
+    Address as EthAddress,
 };
 use crate::{
+    chains::eth::eth_crypto_utils::keccak_hash_bytes,
     types::{
         Bytes,
         Result,
@@ -29,22 +34,22 @@ pub struct EthBlock {
     pub extra_data: Bytes,
     pub gas_limit: U256,
     pub gas_used: U256,
-    pub hash: H256,
+    pub hash: EthHash,
     pub logs_bloom: Bloom,
-    pub miner: Address,
-    pub mix_hash: H256,
+    pub miner: EthAddress,
+    pub mix_hash: EthHash,
     pub nonce: Bytes,
     pub number: U256,
-    pub parent_hash: H256,
-    pub receipts_root: H256,
-    pub sha3_uncles: H256,
+    pub parent_hash: EthHash,
+    pub receipts_root: EthHash,
+    pub sha3_uncles: EthHash,
     pub size: U256,
-    pub state_root: H256,
+    pub state_root: EthHash,
     pub timestamp: U256,
     pub total_difficulty: U256,
-    pub transactions: Vec<H256>,
-    pub transactions_root: H256,
-    pub uncles: Vec<H256>,
+    pub transactions: Vec<EthHash>,
+    pub transactions_root: EthHash,
+    pub uncles: Vec<EthHash>,
 }
 
 impl EthBlock {
@@ -110,6 +115,41 @@ impl EthBlock {
                 transactions: convert_hex_strings_to_h256s(eth_block_json.transactions.iter().map(AsRef::as_ref).collect())?,
             }
         )
+    }
+
+    pub fn rlp_encode(&self) -> Result<Bytes> {
+        let mut rlp_stream = RlpStream::new();
+        rlp_stream.append(self);
+        Ok(rlp_stream.out())
+    }
+
+
+    /*
+    fn hash_block(&self) -> Result<EthHash> { // TODO use during validatoin!
+        self.rlp_encode().map(|bytes| keccak_hash_bytes(&bytes))
+    }
+    */
+}
+
+impl Encodable for EthBlock {
+    fn rlp_append(&self, rlp_stream: &mut RlpStream) {
+        rlp_stream
+            .begin_list(15)
+            .append(&self.parent_hash)
+            .append(&self.sha3_uncles)
+            .append(&self.miner)
+            .append(&self.state_root)
+            .append(&self.transactions_root)
+            .append(&self.receipts_root)
+            .append(&self.logs_bloom)
+            .append(&self.difficulty)
+            .append(&self.number)
+            .append(&self.gas_limit)
+            .append(&self.gas_used)
+            .append(&self.timestamp)
+            .append(&self.extra_data)
+            .append(&self.mix_hash)
+            .append(&self.nonce);
     }
 }
 
@@ -210,5 +250,15 @@ mod tests {
             Ok(block) => assert_eq!(block, get_expected_block()),
             _ => panic!("Failed to get eth block json!"),
         }
+    }
+
+    #[test]
+    fn should_rlp_encode_block() {
+        let expected_log_bloom = "10040060000810a000180002060000042000328000101012000204800010010000412401000100080012600209a005001200048a0c048008413ca08d8021414000000012002200004880b408400810408000040401c0005000018009804b000480020000122004003200004004080920080020058081444000080a9000a000004080000041100202000000004006040080a80001a12000100000400020340050020080040200200008000082104010040080010481020080000220000124051640075007890200000040c420000820400020800028420018000800020000208080322000000a200008a002000000800101044000000920418600200666900601";
+        let expected_encoded_block = "f9021aa026e9930dafaf07f59b6c8fe2963819b7d9319ad4ff556cb12eefba0dbd3af3fba01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347945a0b54d5dc17e0aadc383d2db43b0a0d3e029c4ca0061d01dd552a3538b3eadf6234382aeb27cd80cd5cd88b3825fd6990fd762824a0989081ea9213babd8e82b99b579b3012c3d33434b420c3f97af0e9f6f8b8e047a0937e08f03388b32d7c776e7a02371b930d71e3ec096d495230b6735e7f9b20aeb9010010040060000810a000180002060000042000328000101012000204800010010000412401000100080012600209a005001200048a0c048008413ca08d8021414000000012002200004880b408400810408000040401c0005000018009804b000480020000122004003200004004080920080020058081444000080a9000a000004080000041100202000000004006040080a80001a12000100000400020340050020080040200200008000082104010040080010481020080000220000124051640075007890200000040c420000820400020800028420018000800020000208080322000000a200008a00200000080010104400000092041860020066690060187081366f7e754dc8381c1fc837a21398379ef51845d73d38a995050594520737061726b706f6f6c2d6574682d636e2d687a33a0b3a1d476b9632a39df2edd3116692165a7bc363b7f5647c069f54b670cd564ae889f6d788005a450ed";
+        let block = get_sample_eth_block_and_receipts().block;
+        let result = hex::encode(block.rlp_encode().unwrap());
+        assert_eq!(expected_log_bloom, hex::encode(block.logs_bloom));
+        assert_eq!(result, expected_encoded_block);
     }
 }

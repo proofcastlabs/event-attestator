@@ -1,3 +1,7 @@
+use rlp::{
+    RlpStream,
+    Encodable,
+};
 use serde_json::{
     json,
     Value as JsonValue,
@@ -81,6 +85,12 @@ impl EthLog {
 
     pub fn contains_address(&self, address: &EthAddress) -> bool {
         &self.address == address
+    }
+}
+
+impl Encodable for EthLog {
+    fn rlp_append(&self, rlp_stream: &mut RlpStream) {
+        rlp_stream.begin_list(3).append(&self.address).append_list(&self.topics).append(&self.data);
     }
 }
 

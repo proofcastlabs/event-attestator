@@ -1,3 +1,7 @@
+use rlp::{
+    RlpStream,
+    Encodable,
+};
 use serde_json::{
     json,
     Value as JsonValue,
@@ -10,17 +14,24 @@ use ethereum_types::{
     Address as EthAddress,
 };
 use crate::{
-    types::Result,
-    btc_on_eth::utils::{
-        convert_hex_to_h256,
-        convert_hex_to_address,
-        convert_json_value_to_string,
+    types::{
+        Bytes,
+        Result,
     },
-    chains::eth::{
-        eth_log::{
-            EthLogs,
-            EthLogJson,
+    btc_on_eth::{
+        utils::{
+            convert_hex_to_h256,
+            convert_hex_to_address,
+            convert_json_value_to_string,
         },
+        eth::nibble_utils::{
+            Nibbles,
+            get_nibbles_from_bytes,
+        },
+    },
+    chains::eth::eth_log::{
+        EthLogs,
+        EthLogJson,
     },
 };
 
@@ -72,8 +83,12 @@ impl EthReceipts {
                 .iter()
                 .map(|topic| self.filter_for_receipts_containing_log_with_address_and_topic(address, topic).0)
                 .flatten()
-                .collect::<Vec<EthReceipt>>()
+                .collect()
         )
+    }
+
+    pub fn get_rlp_encoded_receipts_and_nibble_tuples(&self) -> Result<Vec<(Nibbles, Bytes)>> {
+        self.0.iter().map(|receipt| receipt.get_rlp_encoded_receipt_and_encoded_key_tuple()).collect()
     }
 }
 
@@ -169,6 +184,35 @@ impl EthReceipt {
     pub fn contains_log_with_address(&self, address: &EthAddress) -> bool {
         self.logs.contain_address(address)
     }
+
+    pub fn rlp_encode(&self) -> Result<Bytes> {
+        let mut rlp_stream = RlpStream::new();
+        rlp_stream.append(self);
+        Ok(rlp_stream.out())
+    }
+
+    fn rlp_encode_transaction_index(&self) -> Bytes {
+        let mut rlp_stream = RlpStream::new();
+        rlp_stream.append(&self.transaction_index.as_usize());
+        rlp_stream.out()
+    }
+
+    pub fn get_rlp_encoded_receipt_and_encoded_key_tuple(&self) -> Result<(Nibbles, Bytes)> {
+        self
+            .rlp_encode()
+            .and_then(|bytes| Ok((get_nibbles_from_bytes(self.rlp_encode_transaction_index()), bytes)))
+    }
+}
+
+impl Encodable for EthReceipt {
+    fn rlp_append(&self, rlp_stream: &mut RlpStream) {
+        let rlp = rlp_stream.begin_list(4);
+        match &self.status {
+            true => rlp.append(&self.status),
+            false => rlp.append_empty_data()
+        };
+        rlp.append(&self.cumulative_gas_used).append(&self.logs_bloom).append_list(&self.logs.0);
+    }
 }
 
 #[cfg(test)]
@@ -262,4 +306,35 @@ mod tests {
         result.0.iter().map(|receipt| assert!(receipt.logs.contain_topic(&topic))).for_each(drop);
     }
 
+    fn get_encoded_receipt() -> String {
+        "f901a7018301384bb9010000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000010000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000800000000000000000000010000000000000000008000000000000000000000000000000000000000000000200000003000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000020000000f89df89b9460a640e2d10e020fee94217707bfa9543c8b59e0f863a0ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3efa0000000000000000000000000250abfa8bc8371709fa4b601d821b1421667a886a00000000000000000000000005a7dd68907e103c3239411dae0b0eef968468ef2a000000000000000000000000000000000000000000000000589ba7ab174d54000".to_string()
+    }
+
+    #[test]
+    fn should_rlp_encode_receipt() {
+        let result =get_expected_receipt().rlp_encode().unwrap();
+        assert_eq!(hex::encode(result), get_encoded_receipt())
+    }
+
+    #[test]
+    fn should_get_encoded_receipt_and_hash_tuple() {
+        let result = get_expected_receipt().get_rlp_encoded_receipt_and_encoded_key_tuple().unwrap();
+        let expected_encoded_nibbles = get_nibbles_from_bytes(vec![0x02]); // NOTE: The tx index of sample receipt
+        assert_eq!(result.0, expected_encoded_nibbles);
+        assert_eq!(hex::encode(result.1), get_encoded_receipt());
+    }
+
+    #[test]
+    fn should_get_encoded_receipts_and_hash_tuples() {
+        let expected_encoded_nibbles = get_nibbles_from_bytes(vec![0x02]);
+        let receipts = EthReceipts::new(vec![get_expected_receipt(), get_expected_receipt()]);
+        let results = receipts.get_rlp_encoded_receipts_and_nibble_tuples().unwrap();
+        results
+            .iter()
+            .map(|result| {
+                assert_eq!(result.0, expected_encoded_nibbles);
+                assert_eq!(hex::encode(&result.1), get_encoded_receipt());
+            })
+            .for_each(drop);
+    }
 }

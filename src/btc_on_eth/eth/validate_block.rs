@@ -13,14 +13,13 @@ use crate::{
     },
     btc_on_eth::eth::{
         eth_state::EthState,
-        rlp_codec::rlp_encode_block,
     },
 };
 
 fn hash_block(block: &EthBlock) -> Result<H256> {
     trace!("block being encoded: {:?}", block);
-    trace!("rlp encoded block: {}", hex::encode(rlp_encode_block(block)?));
-    rlp_encode_block(block).map(|bytes| keccak_hash_bytes(&bytes))
+    trace!("rlp encoded block: {}", hex::encode(block.rlp_encode()?));
+    block.rlp_encode().map(|bytes| keccak_hash_bytes(&bytes))
 }
 
 pub fn validate_block_header(block: &EthBlock) -> Result<bool> {

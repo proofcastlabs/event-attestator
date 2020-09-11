@@ -2,7 +2,6 @@ pub mod initialize_eth;
 pub mod submit_eth_block;
 
 pub(crate) mod trie;
-pub(crate) mod rlp_codec;
 pub(crate) mod eth_state;
 pub(crate) mod path_codec;
 pub(crate) mod trie_nodes;
