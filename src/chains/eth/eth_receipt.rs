@@ -19,6 +19,7 @@ use crate::{
         Result,
     },
     chains::eth::{
+        eth_types::RedeemParams,
         eth_log::{
             EthLogs,
             EthLogJson,
@@ -215,6 +216,26 @@ impl EthReceipt {
             .rlp_encode()
             .and_then(|bytes| Ok((get_nibbles_from_bytes(self.rlp_encode_transaction_index()), bytes)))
     }
+
+    pub fn get_redeem_params(&self) -> Result<Vec<RedeemParams>> {
+        info!("✔ Getting redeem params from receipt...");
+        self
+            .logs
+            .0
+            .iter()
+            .filter(|log| matches!(log.is_ptoken_redeem(), Ok(true)))
+            .map(|log| -> Result<RedeemParams> {
+                Ok(
+                    RedeemParams::new(
+                        log.get_redeem_amount()?,
+                        self.from,
+                        log.get_btc_address()?,
+                        self.transaction_hash
+                    )
+                )
+            })
+            .collect()
+    }
 }
 
 impl Encodable for EthReceipt {
@@ -231,16 +252,51 @@ impl Encodable for EthReceipt {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::eth_test_utils::{
-        get_expected_receipt,
-        SAMPLE_RECEIPT_INDEX,
-        get_sample_contract_topic,
-        get_sample_contract_address,
-        get_sample_eth_block_and_receipts,
-        get_sample_receipt_with_desired_topic,
-        get_sample_eth_block_and_receipts_json,
-        get_valid_state_with_invalid_block_and_receipts,
+    use std::str::FromStr;
+    use crate::{
+        chains::eth::eth_block_and_receipts::EthBlockAndReceipts,
+        btc_on_eth::eth::eth_test_utils::{
+            get_expected_receipt,
+            SAMPLE_RECEIPT_INDEX,
+            get_sample_contract_topic,
+            get_sample_contract_address,
+            get_sample_eth_block_and_receipts,
+            get_sample_eth_block_and_receipts_n,
+            get_sample_receipt_with_desired_topic,
+            get_sample_eth_block_and_receipts_json,
+            get_valid_state_with_invalid_block_and_receipts,
+        },
     };
+
+    fn get_sample_block_with_redeem() -> EthBlockAndReceipts {
+        get_sample_eth_block_and_receipts_n(4)
+            .unwrap()
+    }
+
+    fn get_tx_hash_of_redeem_tx() -> &'static str {
+        "442612aba789ce873bb3804ff62ced770dcecb07d19ddcf9b651c357eebaed40"
+    }
+
+    fn get_sample_receipt_with_redeem() -> EthReceipt {
+        let hash = EthHash::from_str(get_tx_hash_of_redeem_tx())
+            .unwrap();
+        get_sample_block_with_redeem()
+            .receipts
+            .0
+            .iter()
+            .filter(|receipt| receipt.transaction_hash == hash)
+            .collect::<Vec<&EthReceipt>>()
+            [0]
+            .clone()
+    }
+
+    fn get_expected_redeem_params() -> RedeemParams {
+        let amount = U256::from_dec_str("666").unwrap();
+        let from = EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap();
+        let recipient = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string();
+        let originating_tx_hash = EthHash::from_slice(&hex::decode(get_tx_hash_of_redeem_tx()).unwrap()[..]);
+        RedeemParams::new(amount, from, recipient, originating_tx_hash)
+    }
 
     #[test]
     fn should_encode_eth_receipt_as_json() {
@@ -366,5 +422,13 @@ mod tests {
         let block_and_receipts = state.get_eth_block_and_receipts().unwrap();
         let result = block_and_receipts.receipts_are_valid().unwrap();
         assert!(!result);
+    }
+
+    #[test]
+    fn should_parse_redeem_params_from_receipt() {
+        let expected_num_results = 1;
+        let result = get_sample_receipt_with_redeem().get_redeem_params().unwrap();
+        assert_eq!(result.len(), expected_num_results);
+        assert_eq!(result[0], get_expected_redeem_params());
     }
 }
