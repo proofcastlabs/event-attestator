@@ -12,6 +12,7 @@ use crate::{
         eth_receipt::EthReceipt,
         eth_types::RedeemParams,
         eth_block_and_receipts::EthBlockAndReceipts,
+        eth_database_utils::get_eth_canon_block_from_db,
         eth_constants::{
             REDEEM_EVENT_TOPIC_HEX,
             ETH_WORD_SIZE_IN_BYTES,
@@ -19,12 +20,9 @@ use crate::{
         },
     },
     btc_on_eth::{
+        eth::eth_state::EthState,
         constants::SAFE_BTC_ADDRESS,
         utils::convert_ptoken_to_satoshis,
-        eth::{
-            eth_state::EthState,
-            eth_database_utils::get_eth_canon_block_from_db,
-        },
     },
 };
 

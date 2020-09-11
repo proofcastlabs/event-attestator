@@ -42,7 +42,6 @@ pub mod debug_functions;
 pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
 
-mod database_utils;
 mod check_core_is_initialized;
 
 // TODO Fix the chains dependencies on these so they can be fully private!

@@ -3,13 +3,11 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::{
         eth_types::EthHash,
+        eth_database_utils::get_hash_from_db_via_hash_key,
         eth_constants::{
             ETH_LINKER_HASH_KEY,
             PTOKEN_GENESIS_HASH,
         },
-    },
-    btc_on_eth::eth::{
-        eth_database_utils::get_hash_from_db_via_hash_key,
     },
 };
 
@@ -33,7 +31,7 @@ mod tests {
     use super::*;
     use crate::{
         test_utils::get_test_database,
-        btc_on_eth::eth::eth_database_utils::put_eth_linker_hash_in_db,
+        chains::eth::eth_database_utils::put_eth_linker_hash_in_db,
     };
 
     #[test]

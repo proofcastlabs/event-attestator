@@ -2,12 +2,10 @@ use ethereum_types::H256 as EthHash;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eth::eth_database_utils::key_exists_in_db,
     btc_on_eth::{
+        eth::eth_state::EthState,
         utils::convert_h256_to_bytes,
-        eth::{
-            eth_state::EthState,
-            eth_database_utils::key_exists_in_db,
-        },
     },
 };
 

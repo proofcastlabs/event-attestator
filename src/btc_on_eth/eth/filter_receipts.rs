@@ -1,9 +1,9 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::eth_constants::PTOKEN_CONTRACT_TOPICS,
-    btc_on_eth::eth::{
-        eth_state::EthState,
+    btc_on_eth::eth::eth_state::EthState,
+    chains::eth::{
+        eth_constants::PTOKEN_CONTRACT_TOPICS,
         eth_database_utils::get_erc777_contract_address_from_db,
     },
 };

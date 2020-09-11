@@ -1,6 +1,6 @@
 use crate::{
     traits::DatabaseInterface,
-    btc_on_eth::eth::eth_database_utils::get_public_eth_address_from_db,
+    chains::eth::eth_database_utils::get_public_eth_address_from_db,
 };
 
 pub fn is_eth_enclave_initialized<D>(db: &D) -> bool
@@ -24,10 +24,8 @@ mod tests {
     use super::*;
     use crate::{
         test_utils::get_test_database,
-        btc_on_eth::eth::{
-            eth_test_utils::get_sample_eth_address,
-            eth_database_utils::put_public_eth_address_in_db,
-        },
+        btc_on_eth::eth::eth_test_utils::get_sample_eth_address,
+        chains::eth::eth_database_utils::put_public_eth_address_in_db,
     };
 
     #[test]

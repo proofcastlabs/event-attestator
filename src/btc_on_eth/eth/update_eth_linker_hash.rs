@@ -4,17 +4,17 @@ use crate::{
     chains::eth::{
         eth_types::EthHash,
         eth_block_and_receipts::EthBlockAndReceipts,
-    },
-    btc_on_eth::eth::{
-        eth_state::EthState,
-        calculate_linker_hash::calculate_linker_hash,
-        get_linker_hash::get_linker_hash_or_genesis_hash,
         eth_database_utils::{
             put_eth_linker_hash_in_db,
             get_eth_tail_block_from_db,
             get_eth_anchor_block_from_db,
             maybe_get_parent_eth_block_and_receipts,
         },
+    },
+    btc_on_eth::eth::{
+        eth_state::EthState,
+        calculate_linker_hash::calculate_linker_hash,
+        get_linker_hash::get_linker_hash_or_genesis_hash,
     },
 };
 
@@ -85,16 +85,12 @@ mod tests {
     use super::*;
     use crate::{
         test_utils::get_test_database,
-        btc_on_eth::eth::{
-            eth_test_utils::{
-                put_eth_tail_block_in_db,
-                put_eth_anchor_block_in_db,
-                get_eth_linker_hash_from_db,
-                get_sequential_eth_blocks_and_receipts,
-            },
-            eth_database_utils::{
-                put_eth_block_and_receipts_in_db,
-            },
+        chains::eth::eth_database_utils::put_eth_block_and_receipts_in_db,
+        btc_on_eth::eth::eth_test_utils::{
+            put_eth_tail_block_in_db,
+            put_eth_anchor_block_in_db,
+            get_eth_linker_hash_from_db,
+            get_sequential_eth_blocks_and_receipts,
         },
     };
 

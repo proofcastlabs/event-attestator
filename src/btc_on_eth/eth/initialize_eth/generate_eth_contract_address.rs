@@ -4,12 +4,10 @@ use ethereum_types::Address as EthAddress;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::eth::{
-        eth_state::EthState,
-        eth_database_utils::{
-            get_public_eth_address_from_db,
-            put_eth_smart_contract_address_in_db,
-        }
+    btc_on_eth::eth::eth_state::EthState,
+    chains::eth::eth_database_utils::{
+        get_public_eth_address_from_db,
+        put_eth_smart_contract_address_in_db,
     },
 };
 

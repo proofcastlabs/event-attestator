@@ -7,15 +7,15 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::{
-        eth::eth_types::RedeemParams,
         btc::btc_utils::get_hex_tx_from_signed_btc_tx,
-    },
-    btc_on_eth::{
-        btc::btc_database_utils::get_btc_account_nonce_from_db,
         eth::{
-            eth_state::EthState,
+            eth_types::RedeemParams,
             eth_database_utils::get_eth_latest_block_from_db,
         },
+    },
+    btc_on_eth::{
+        eth::eth_state::EthState,
+        btc::btc_database_utils::get_btc_account_nonce_from_db,
     },
 };
 

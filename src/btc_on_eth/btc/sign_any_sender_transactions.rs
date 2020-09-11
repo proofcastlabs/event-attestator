@@ -3,6 +3,7 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
+        eth_database_utils::get_any_sender_signing_params_from_db,
         eth_types::{
             AnySenderSigningParams,
             RelayTransactions
@@ -13,9 +14,6 @@ use crate::{
             btc_database_utils::get_btc_canon_block_from_db,
             btc_state::BtcState,
             btc_types::MintingParamStruct,
-        },
-        eth::{
-            eth_database_utils::get_any_sender_signing_params_from_db,
         },
     },
 };

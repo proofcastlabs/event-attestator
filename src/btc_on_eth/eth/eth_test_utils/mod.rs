@@ -11,6 +11,7 @@ use std::{
 use crate::{
     errors::AppError,
     traits::DatabaseInterface,
+    btc_on_eth::eth::eth_state::EthState,
     types::{
         Bytes,
         Result,
@@ -49,9 +50,6 @@ use crate::{
             get_nibbles_from_bytes,
             get_nibbles_from_offset_bytes,
         },
-    },
-    btc_on_eth::eth::{
-        eth_state::EthState,
         eth_database_utils::{
             put_special_eth_block_in_db,
             get_special_eth_hash_from_db,

@@ -7,7 +7,6 @@ pub(crate) mod validate_block;
 pub(crate) mod filter_receipts;
 pub(crate) mod get_linker_hash;
 pub(crate) mod validate_receipts;
-pub(crate) mod eth_database_utils;
 pub(crate) mod parse_redeem_params;
 pub(crate) mod get_eth_output_json;
 pub(crate) mod check_parent_exists;

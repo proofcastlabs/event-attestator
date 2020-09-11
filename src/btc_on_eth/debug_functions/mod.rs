@@ -16,11 +16,20 @@ use crate::{
     chains::{
         eth::{
             eth_network::EthNetwork,
+            eth_crypto::eth_transaction::get_signed_minting_tx,
             eth_constants::{
                 get_eth_constants_db_keys,
                 ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
             },
-            eth_crypto::eth_transaction::get_signed_minting_tx,
+            eth_database_utils::{
+                get_signing_params_from_db,
+                get_latest_eth_block_number,
+                get_eth_private_key_from_db,
+                get_any_sender_nonce_from_db,
+                get_eth_account_nonce_from_db,
+                get_erc777_contract_address_from_db,
+                get_erc777_proxy_contract_address_from_db,
+            },
         },
         btc::{
             btc_constants::{
@@ -92,15 +101,6 @@ use crate::{
             eth_database_transactions::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
-            },
-            eth_database_utils::{
-                get_signing_params_from_db,
-                get_latest_eth_block_number,
-                get_eth_private_key_from_db,
-                get_any_sender_nonce_from_db,
-                get_eth_account_nonce_from_db,
-                get_erc777_contract_address_from_db,
-                get_erc777_proxy_contract_address_from_db,
             },
             get_eth_output_json::{
                 EthOutput,

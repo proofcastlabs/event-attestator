@@ -1,9 +1,9 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::eth_block_and_receipts::EthBlockAndReceipts,
-    btc_on_eth::eth::{
-        eth_state::EthState,
+    btc_on_eth::eth::eth_state::EthState,
+    chains::eth::{
+        eth_block_and_receipts::EthBlockAndReceipts,
         eth_database_utils::{
             get_eth_canon_block_from_db,
             get_eth_latest_block_from_db,
@@ -97,16 +97,14 @@ mod tests {
     use super::*;
     use crate::{
         test_utils::get_test_database,
-        btc_on_eth::eth::{
-            eth_test_utils::{
-                put_eth_latest_block_in_db,
-                get_eth_canon_block_hash_from_db,
-                get_sequential_eth_blocks_and_receipts,
-            },
-            eth_database_utils::{
-                put_eth_canon_block_in_db,
-                put_eth_block_and_receipts_in_db,
-            },
+        chains::eth::eth_database_utils::{
+            put_eth_canon_block_in_db,
+            put_eth_block_and_receipts_in_db,
+        },
+        btc_on_eth::eth::eth_test_utils::{
+            put_eth_latest_block_in_db,
+            get_eth_canon_block_hash_from_db,
+            get_sequential_eth_blocks_and_receipts,
         },
     };
 

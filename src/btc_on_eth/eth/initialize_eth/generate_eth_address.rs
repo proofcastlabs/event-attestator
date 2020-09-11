@@ -1,12 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::eth::{
-        eth_state::EthState,
-        eth_database_utils::{
-            get_eth_private_key_from_db,
-            put_public_eth_address_in_db,
-        },
+    btc_on_eth::eth::eth_state::EthState,
+    chains::eth::eth_database_utils::{
+        get_eth_private_key_from_db,
+        put_public_eth_address_in_db,
     },
 };
 

@@ -4,6 +4,15 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::{
         eth_crypto::eth_transaction::EthTransaction,
+        eth_database_utils::{
+            get_eth_chain_id_from_db,
+            get_eth_gas_price_from_db,
+            get_eth_private_key_from_db,
+            get_eth_account_nonce_from_db,
+            increment_eth_account_nonce_in_db,
+            get_erc777_contract_address_from_db,
+            get_erc777_proxy_contract_address_from_db,
+        },
         eth_contracts::{
             erc777_proxy::{
                 ERC777_CHANGE_PNETWORK_BY_PROXY_GAS_LIMIT,
@@ -14,17 +23,6 @@ use crate::{
                 ERC777_CHANGE_PNETWORK_GAS_LIMIT,
                 encode_erc777_change_pnetwork_fxn_data,
             },
-        },
-    },
-    btc_on_eth::eth::{
-        eth_database_utils::{
-            get_eth_chain_id_from_db,
-            get_eth_gas_price_from_db,
-            get_eth_private_key_from_db,
-            get_eth_account_nonce_from_db,
-            increment_eth_account_nonce_in_db,
-            get_erc777_contract_address_from_db,
-            get_erc777_proxy_contract_address_from_db,
         },
     },
 };

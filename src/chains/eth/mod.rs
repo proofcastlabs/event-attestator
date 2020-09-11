@@ -17,4 +17,5 @@ pub(crate) mod eth_constants;
 pub(crate) mod eth_contracts;
 pub(crate) mod eth_crypto_utils;
 pub(crate) mod get_trie_hash_map;
+pub(crate) mod eth_database_utils;
 pub(crate) mod eth_block_and_receipts;

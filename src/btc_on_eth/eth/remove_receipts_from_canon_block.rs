@@ -1,12 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eth::eth::eth_state::EthState,
     chains::eth::{
         eth_receipt::EthReceipts,
         eth_block_and_receipts::EthBlockAndReceipts,
-    },
-    btc_on_eth::eth::{
-        eth_state::EthState,
         eth_database_utils::{
             put_eth_canon_block_in_db,
             get_eth_canon_block_from_db,

@@ -1,13 +1,11 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::eth::{
-        eth_state::EthState,
-        eth_database_utils::{
-            get_latest_eth_block_number,
-            get_public_eth_address_from_db,
-            get_erc777_contract_address_from_db,
-        },
+    btc_on_eth::eth::eth_state::EthState,
+    chains::eth::eth_database_utils::{
+        get_latest_eth_block_number,
+        get_public_eth_address_from_db,
+        get_erc777_contract_address_from_db,
     },
 };
 

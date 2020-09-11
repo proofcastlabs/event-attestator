@@ -5,8 +5,10 @@ use serde_json::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::eth_types::EthSignature,
-    btc_on_eth::eth::eth_database_utils::get_eth_private_key_from_db,
+    chains::eth::{
+        eth_types::EthSignature,
+        eth_database_utils::get_eth_private_key_from_db,
+    },
 };
 
 fn encode_eth_signed_message_as_json(message: &str, signature: &EthSignature) -> Result<JsonValue> {
@@ -36,10 +38,8 @@ mod tests {
     use super::*;
     use crate::{
         test_utils::get_test_database,
-        btc_on_eth::eth::{
-            eth_test_utils::get_sample_eth_private_key,
-            eth_database_utils::put_eth_private_key_in_db,
-        },
+        chains::eth::eth_database_utils::put_eth_private_key_in_db,
+        btc_on_eth::eth::eth_test_utils::get_sample_eth_private_key,
     };
 
     #[test]

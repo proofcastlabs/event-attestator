@@ -11,6 +11,10 @@ use crate::{
         Result,
         DataSensitivity,
     },
+    database_utils::{
+        put_u64_in_db,
+        get_u64_from_db,
+    },
     chains::eth::{
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_block_and_receipts::EthBlockAndReceipts,
@@ -35,17 +39,11 @@ use crate::{
             ERC777_PROXY_CONTACT_ADDRESS_KEY,
         },
     },
-    btc_on_eth::{
-        database_utils::{
-            put_u64_in_db,
-            get_u64_from_db,
-        },
-        utils::{
-            convert_bytes_to_u64,
-            convert_u64_to_bytes,
-            convert_h256_to_bytes,
-            convert_bytes_to_h256,
-        },
+    btc_on_eth::utils::{ // TODO move this to chains/eth dir!
+        convert_bytes_to_u64,
+        convert_u64_to_bytes,
+        convert_h256_to_bytes,
+        convert_bytes_to_h256,
     },
 };
 
