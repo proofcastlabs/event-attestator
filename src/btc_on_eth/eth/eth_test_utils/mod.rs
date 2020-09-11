@@ -486,7 +486,6 @@ mod tests {
     use super::*;
     use crate::btc_on_eth::{
         utils::convert_hex_to_h256,
-        eth::validate_block::validate_block_header,
     };
 
     #[test]
@@ -561,14 +560,14 @@ mod tests {
     #[test]
     fn should_get_sample_invalid_block() {
         let invalid_block = get_sample_invalid_block();
-        let is_valid = validate_block_header(&invalid_block).unwrap();
+        let is_valid = invalid_block.is_valid().unwrap();
         assert!(!is_valid)
     }
 
     #[test]
     fn should_get_valid_state_with_invalid_block_and_receipts() {
         let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
-        let is_valid = validate_block_header(&state.get_eth_block_and_receipts().unwrap().block).unwrap();
+        let is_valid = state.get_eth_block_and_receipts().unwrap().block.is_valid().unwrap();
         assert!(!is_valid);
     }
 

@@ -123,12 +123,19 @@ impl EthBlock {
         Ok(rlp_stream.out())
     }
 
-
-    /*
-    fn hash_block(&self) -> Result<EthHash> { // TODO use during validatoin!
+    pub fn hash(&self) -> Result<EthHash> {
         self.rlp_encode().map(|bytes| keccak_hash_bytes(&bytes))
     }
-    */
+
+    pub fn is_valid(&self) -> Result<bool> {
+        self
+            .hash()
+            .map(|calculated_hash| {
+                debug!("✔ Block hash from from block: {}", self.hash);
+                debug!("✔ Calculated block hash: {}", calculated_hash);
+                calculated_hash == self.hash
+            })
+    }
 }
 
 impl Encodable for EthBlock {
@@ -183,6 +190,7 @@ mod tests {
     use super::*;
     use crate::btc_on_eth::eth::eth_test_utils::{
         get_expected_block,
+        get_sample_invalid_block,
         get_sample_eth_block_and_receipts,
         get_sample_eth_block_and_receipts_json,
     };
@@ -260,5 +268,26 @@ mod tests {
         let result = hex::encode(block.rlp_encode().unwrap());
         assert_eq!(expected_log_bloom, hex::encode(block.logs_bloom));
         assert_eq!(result, expected_encoded_block);
+    }
+
+    #[test]
+    fn should_hash_block() {
+        let block = get_sample_eth_block_and_receipts().block;
+        let result = block.hash().unwrap();
+        assert_eq!(result, block.hash)
+    }
+
+    #[test]
+    fn valid_block_header_should_return_true() {
+        let block = get_sample_eth_block_and_receipts().block;
+        let result = block.is_valid().unwrap();
+        assert!(result);
+    }
+
+    #[test]
+    fn invalid_block_header_should_return_true() {
+        let invalid_block = get_sample_invalid_block();
+        let result = invalid_block.is_valid().unwrap();
+        assert!(!result);
     }
 }
