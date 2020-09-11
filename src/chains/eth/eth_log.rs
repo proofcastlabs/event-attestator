@@ -183,7 +183,6 @@ mod tests {
         assert_eq!(result, expected_result);
     }
 
-
     #[test]
     fn should_return_true_if_log_contains_desired_topic() {
         let log = get_sample_log_with_desired_topic();
@@ -241,5 +240,4 @@ mod tests {
         let result = receipt.logs.contain_address(&address);
         assert!(!result);
     }
-
 }

@@ -2,6 +2,10 @@ use serde_json::{
     json,
     Value as JsonValue,
 };
+use ethereum_types::{
+    H256 as EthHash,
+    Address as EthAddress,
+};
 use crate::{
     errors::AppError,
     types::{
@@ -29,6 +33,10 @@ pub struct EthBlockAndReceipts {
 }
 
 impl EthBlockAndReceipts {
+    fn new(block: EthBlock, receipts: EthReceipts) -> Self {
+        Self { block, receipts }
+    }
+
     pub fn get_receipts(&self) -> Vec<EthReceipt> {
         self.receipts.0.clone()
     }
@@ -65,6 +73,20 @@ impl EthBlockAndReceipts {
     pub fn to_string(&self) -> Result<String> {
         Ok(self.to_json()?.to_string())
     }
+
+    pub fn filter_for_receipts_containing_log_with_address_and_topics(
+        &self,
+        address: &EthAddress,
+        topics: &[EthHash],
+    ) -> Result<Self> {
+        info!("✔ Number of receipts before filtering: {}", self.receipts.len());
+        let filtered = Self::new(
+            self.block.clone(),
+            self.receipts.filter_for_receipts_containing_log_with_address_and_topics(address, topics),
+        );
+        info!("✔ Number of receipts after filtering:  {}", filtered.receipts.len());
+        Ok(filtered)
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -82,16 +104,19 @@ impl EthBlockAndReceiptsJson {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
-        eth::eth_test_utils::{
+    use crate::{
+        chains::eth::eth_constants::REDEEM_EVENT_TOPIC_HEX,
+        btc_on_eth::eth::eth_test_utils::{
             get_expected_block,
             get_expected_receipt,
             SAMPLE_RECEIPT_INDEX,
+            get_sample_contract_topics,
+            get_sample_contract_address,
             get_sample_eth_block_and_receipts,
+            get_sample_eth_block_and_receipts_n,
             get_sample_eth_block_and_receipts_string,
         },
     };
@@ -153,5 +178,51 @@ mod tests {
         let bytes = block_and_receipts.to_bytes().unwrap();
         let result = EthBlockAndReceipts::from_bytes(&bytes).unwrap();
         assert_eq!(result, block_and_receipts);
+    }
+
+    #[test]
+    fn should_filter_eth_block_and_receipts() {
+        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let num_receipts_before = block_and_receipts.receipts.len();
+        let address = get_sample_contract_address();
+        let topics = get_sample_contract_topics();
+        let result = block_and_receipts.filter_for_receipts_containing_log_with_address_and_topics(&address, &topics)
+            .unwrap();
+        let num_receipts_after = result.receipts.len();
+        assert!(num_receipts_before > num_receipts_after);
+        result
+            .receipts
+            .0
+            .iter()
+            .map(|receipt| {
+                assert!(receipt.logs.contain_topic(&topics[0]));
+                receipt
+            })
+            .map(|receipt| assert!(receipt.logs.contain_address(&address)))
+            .for_each(drop);
+    }
+
+    #[test]
+    fn should_filter_eth_block_and_receipts_2() {
+        let expected_num_receipts_after = 1;
+        let block_and_receipts = get_sample_eth_block_and_receipts_n(6).unwrap();
+        let num_receipts_before = block_and_receipts.receipts.len();
+        let address = EthAddress::from_slice(&hex::decode("74630cfbc4066726107a4efe73956e219bbb46ab").unwrap());
+        let topics = vec![EthHash::from_slice(&hex::decode(REDEEM_EVENT_TOPIC_HEX).unwrap()) ];
+        let result = block_and_receipts.filter_for_receipts_containing_log_with_address_and_topics(&address, &topics)
+            .unwrap();
+        let num_receipts_after = result.receipts.len();
+        assert!(num_receipts_before > num_receipts_after);
+        assert_eq!(num_receipts_after, expected_num_receipts_after);
+        result
+            .receipts
+            .0
+            .iter()
+            .map(|receipt| {
+                assert!(receipt.logs.contain_topic(&topics[0]));
+                receipt
+            })
+            .map(|receipt| assert!(receipt.logs.contain_address(&address)))
+            .for_each(drop);
     }
 }

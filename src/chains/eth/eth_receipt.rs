@@ -3,11 +3,11 @@ use serde_json::{
     Value as JsonValue,
 };
 use ethereum_types::{
-    H256,
     H160,
     U256,
     Bloom,
-    Address,
+    H256 as EthHash,
+    Address as EthAddress,
 };
 use crate::{
     types::Result,
@@ -47,6 +47,34 @@ impl EthReceipts {
     pub fn from_jsons(jsons: &[EthReceiptJson]) -> Result<Self> {
         Ok(Self(jsons.iter().cloned().map(|json| EthReceipt::from_json(&json)).collect::<Result<Vec<EthReceipt>>>()?))
     }
+
+    fn filter_for_receipts_containing_log_with_address(&self, address: &EthAddress) -> Self {
+        Self::new(self.0.iter().filter(|receipt| receipt.contains_log_with_address(address)).cloned().collect())
+    }
+
+    fn filter_for_receipts_containing_log_with_topic(&self, topic: &EthHash) -> Self {
+        Self::new(self.0.iter().filter(|receipt| receipt.contains_log_with_topic(topic)).cloned().collect())
+    }
+
+    fn filter_for_receipts_containing_log_with_address_and_topic(&self, address: &EthAddress, topic: &EthHash) -> Self {
+        self
+            .filter_for_receipts_containing_log_with_address(address)
+            .filter_for_receipts_containing_log_with_topic(topic)
+    }
+
+    pub fn filter_for_receipts_containing_log_with_address_and_topics(
+        &self,
+        address: &EthAddress,
+        topics: &[EthHash],
+    ) -> Self {
+        Self::new(
+            topics
+                .iter()
+                .map(|topic| self.filter_for_receipts_containing_log_with_address_and_topic(address, topic).0)
+                .flatten()
+                .collect::<Vec<EthReceipt>>()
+        )
+    }
 }
 
 #[allow(non_snake_case)]
@@ -68,16 +96,16 @@ pub struct EthReceiptJson {
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 pub struct EthReceipt {
-    pub to: Address,
-    pub from: Address,
+    pub to: EthAddress,
+    pub from: EthAddress,
     pub status: bool,
     pub gas_used: U256,
-    pub block_hash: H256,
-    pub transaction_hash: H256,
+    pub block_hash: EthHash,
+    pub transaction_hash: EthHash,
     pub cumulative_gas_used: U256,
     pub block_number: U256,
     pub transaction_index: U256,
-    pub contract_address: Address,
+    pub contract_address: EthAddress,
     pub logs: EthLogs,
     pub logs_bloom: Bloom,
 }
@@ -126,12 +154,20 @@ impl EthReceipt {
                     _ => convert_hex_to_address(&convert_json_value_to_string(&eth_receipt_json.to)?)?,
                 },
                 contract_address: match eth_receipt_json.contractAddress {
-                    serde_json::Value::Null => Address::zero(),
+                    serde_json::Value::Null => EthAddress::zero(),
                     _ => convert_hex_to_address(&convert_json_value_to_string(&eth_receipt_json.contractAddress)?)?,
                 },
                 logs,
             }
         )
+    }
+
+    pub fn contains_log_with_topic(&self, topic: &EthHash) -> bool {
+        self.logs.contain_topic(topic)
+    }
+
+    pub fn contains_log_with_address(&self, address: &EthAddress) -> bool {
+        self.logs.contain_address(address)
     }
 }
 
@@ -139,8 +175,10 @@ impl EthReceipt {
 mod tests {
     use super::*;
     use crate::btc_on_eth::eth::eth_test_utils::{
-        SAMPLE_RECEIPT_INDEX,
         get_expected_receipt,
+        SAMPLE_RECEIPT_INDEX,
+        get_sample_contract_topic,
+        get_sample_contract_address,
         get_sample_eth_block_and_receipts,
         get_sample_receipt_with_desired_topic,
         get_sample_eth_block_and_receipts_json,
@@ -208,4 +246,20 @@ mod tests {
             panic!("Should have generated receipts correctly!")
         }
     }
+
+    #[test]
+    fn should_filter_receipts_for_topics() {
+        let expected_num_receipts_after = 1;
+        let receipts = get_sample_eth_block_and_receipts().receipts;
+        let num_receipts_before = receipts.len();
+        let topic = get_sample_contract_topic();
+        let topics = vec![topic];
+        let address = get_sample_contract_address();
+        let result = receipts.filter_for_receipts_containing_log_with_address_and_topics(&address, &topics);
+        let num_receipts_after = result.len();
+        assert_eq!(num_receipts_after, expected_num_receipts_after);
+        assert!(num_receipts_before > num_receipts_after);
+        result.0.iter().map(|receipt| assert!(receipt.logs.contain_topic(&topic))).for_each(drop);
+    }
+
 }
