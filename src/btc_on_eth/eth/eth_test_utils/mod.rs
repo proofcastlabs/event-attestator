@@ -35,7 +35,6 @@ use crate::{
         },
         eth_types::{
             EthHash,
-            EthTopics,
             EthAddress,
             TrieHashMap,
         },
@@ -214,7 +213,7 @@ pub fn get_sample_contract_topic() -> EthHash {
     EthHash::from_slice(&hex::decode(TEMPORARY_CONTRACT_TOPIC).unwrap())
 }
 
-pub fn get_sample_contract_topics() -> EthTopics {
+pub fn get_sample_contract_topics() -> Vec<H256>{
     vec![
         EthHash::from_slice(&hex::decode(TEMPORARY_CONTRACT_TOPIC).unwrap())
     ]
