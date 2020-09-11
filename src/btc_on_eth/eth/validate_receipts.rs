@@ -1,24 +1,11 @@
-use ethereum_types::H256;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::{
-        eth_block::EthBlock,
-        eth_receipt::EthReceipts,
-    },
+    btc_on_eth::eth::eth_state::EthState,
     constants::{
         DEBUG_MODE,
         CORE_IS_VALIDATING,
         NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR,
-    },
-    btc_on_eth::{
-        eth::{
-            eth_state::EthState,
-            trie::{
-                Trie,
-                put_in_trie_recursively,
-            },
-        },
     },
 };
 

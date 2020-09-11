@@ -6,7 +6,9 @@ use rlp::{
 use crate::{
     types::{Bytes, Result},
     chains::eth::{
+        nibble_utils::Nibbles,
         eth_crypto_utils::keccak_hash_bytes,
+        get_trie_hash_map::get_thing_from_trie_hash_map,
         eth_types::{
             ChildNodes,
             TrieHashMap,
@@ -17,16 +19,10 @@ use crate::{
             BRANCH_NODE_STRING,
             EXTENSION_NODE_STRING,
         },
-    },
-    btc_on_eth::{
-        eth::{
-            nibble_utils::Nibbles,
-            get_trie_hash_map::get_thing_from_trie_hash_map,
-            path_codec::{
-                encode_leaf_path_from_nibbles,
-                encode_extension_path_from_nibbles,
-                decode_path_to_nibbles_and_node_type,
-            },
+        path_codec::{
+            encode_leaf_path_from_nibbles,
+            encode_extension_path_from_nibbles,
+            decode_path_to_nibbles_and_node_type,
         },
     },
 };
@@ -311,23 +307,22 @@ pub fn get_node_from_trie_hash_map(
 mod tests {
     use super::*;
     use crate::{
-        errors::AppError,
+        chains::eth::{
+            nibble_utils::{
+                get_length_in_nibbles,
+                get_nibbles_from_bytes,
+            },
+            get_trie_hash_map::{
+                get_new_trie_hash_map,
+                put_thing_in_trie_hash_map,
+            },
+        },
         btc_on_eth::{
             utils::convert_hex_to_h256,
-            eth::{
-                nibble_utils::{
-                    get_length_in_nibbles,
-                    get_nibbles_from_bytes,
-                },
-                get_trie_hash_map::{
-                    get_new_trie_hash_map,
-                    put_thing_in_trie_hash_map,
-                },
-                eth_test_utils::{
-                    get_sample_leaf_node,
-                    get_sample_branch_node,
-                    get_sample_extension_node,
-                },
+            eth::eth_test_utils::{
+                get_sample_leaf_node,
+                get_sample_branch_node,
+                get_sample_extension_node,
             },
         },
     };

@@ -1,22 +1,28 @@
 use crate::{
-    types::{Bytes, Result},
-    chains::eth::eth_constants::{
-        LEAF_NODE_STRING,
-        EXTENSION_NODE_STRING,
+    errors::AppError,
+    types::{
+        Bytes,
+        Result,
     },
-    btc_on_eth::eth::nibble_utils::{
-        Nibbles,
-        get_zero_nibble,
-        get_nibble_at_index,
-        get_length_in_nibbles,
-        get_nibbles_from_bytes,
-        convert_nibble_to_bytes,
-        prefix_nibbles_with_byte,
-        set_nibble_offset_to_one,
-        set_nibble_offset_to_zero,
-        slice_nibbles_at_nibble_index,
-        get_nibbles_from_offset_bytes,
-        replace_nibble_in_nibbles_at_nibble_index,
+    chains::eth::{
+        eth_constants::{
+            LEAF_NODE_STRING,
+            EXTENSION_NODE_STRING,
+        },
+        nibble_utils::{
+            Nibbles,
+            get_zero_nibble,
+            get_nibble_at_index,
+            get_length_in_nibbles,
+            get_nibbles_from_bytes,
+            convert_nibble_to_bytes,
+            prefix_nibbles_with_byte,
+            set_nibble_offset_to_one,
+            set_nibble_offset_to_zero,
+            slice_nibbles_at_nibble_index,
+            get_nibbles_from_offset_bytes,
+            replace_nibble_in_nibbles_at_nibble_index,
+        },
     },
 };
 
@@ -122,12 +128,9 @@ pub fn encode_leaf_path_from_nibbles(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        errors::AppError,
-        btc_on_eth::eth::nibble_utils::{
-            get_nibbles_from_bytes,
-            get_nibbles_from_offset_bytes,
-        },
+    use crate::chains::eth::nibble_utils::{
+        get_nibbles_from_bytes,
+        get_nibbles_from_offset_bytes,
     };
 
 /*

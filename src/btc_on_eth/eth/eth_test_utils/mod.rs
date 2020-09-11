@@ -43,18 +43,18 @@ use crate::{
             eth_private_key::EthPrivateKey,
             eth_transaction::EthTransaction,
         },
-    },
-    btc_on_eth::eth::{
         trie_nodes::Node,
-        eth_state::EthState,
-        eth_database_utils::{
-            put_special_eth_block_in_db,
-            get_special_eth_hash_from_db,
-        },
         nibble_utils::{
             Nibbles,
             get_nibbles_from_bytes,
             get_nibbles_from_offset_bytes,
+        },
+    },
+    btc_on_eth::eth::{
+        eth_state::EthState,
+        eth_database_utils::{
+            put_special_eth_block_in_db,
+            get_special_eth_hash_from_db,
         },
     },
 };

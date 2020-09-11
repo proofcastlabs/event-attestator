@@ -14,10 +14,23 @@ use ethereum_types::{
     Address as EthAddress,
 };
 use crate::{
-
     types::{
         Bytes,
         Result,
+    },
+    chains::eth::{
+        eth_log::{
+            EthLogs,
+            EthLogJson,
+        },
+        trie::{
+            Trie,
+            put_in_trie_recursively,
+        },
+        nibble_utils::{
+            Nibbles,
+            get_nibbles_from_bytes,
+        },
     },
     btc_on_eth::{
         utils::{
@@ -25,20 +38,6 @@ use crate::{
             convert_hex_to_address,
             convert_json_value_to_string,
         },
-        eth::{
-            trie::{
-                Trie,
-                put_in_trie_recursively,
-            },
-            nibble_utils::{
-                Nibbles,
-                get_nibbles_from_bytes,
-            },
-        },
-    },
-    chains::eth::eth_log::{
-        EthLogs,
-        EthLogJson,
     },
 };
 

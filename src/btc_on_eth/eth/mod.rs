@@ -1,16 +1,11 @@
 pub mod initialize_eth;
 pub mod submit_eth_block;
 
-pub(crate) mod trie;
 pub(crate) mod eth_state;
-pub(crate) mod path_codec;
-pub(crate) mod trie_nodes;
-pub(crate) mod nibble_utils;
 pub(crate) mod eth_test_utils;
 pub(crate) mod validate_block;
 pub(crate) mod filter_receipts;
 pub(crate) mod get_linker_hash;
-pub(crate) mod get_trie_hash_map;
 pub(crate) mod validate_receipts;
 pub(crate) mod eth_database_utils;
 pub(crate) mod parse_redeem_params;

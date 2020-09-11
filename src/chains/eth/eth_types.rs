@@ -6,8 +6,8 @@ use ethereum_types::{
 };
 use crate::{
     types::Bytes,
-    btc_on_eth::eth::trie_nodes::Node,
     chains::eth::{
+        trie_nodes::Node,
         any_sender::relay_transaction::RelayTransaction,
         eth_crypto::{
             eth_private_key::EthPrivateKey,

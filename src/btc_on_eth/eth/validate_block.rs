@@ -1,11 +1,6 @@
-use ethereum_types::H256;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::{
-        eth_block::EthBlock,
-        eth_crypto_utils::keccak_hash_bytes,
-    },
     constants::{
         DEBUG_MODE,
         CORE_IS_VALIDATING,
