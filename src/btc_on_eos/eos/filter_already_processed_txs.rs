@@ -4,22 +4,22 @@ use crate::{
     btc_on_eos::eos::{
         eos_state::EosState,
         eos_types::{
-            RedeemParams,
+            RedeemInfo,
             ProcessedTxIds,
         },
     },
 };
 
 fn filter_out_already_processed_txs(
-    redeem_params: &[RedeemParams],
+    redeem_params: &[RedeemInfo],
     processed_tx_ids: &ProcessedTxIds,
-) -> Result<Vec<RedeemParams>> {
+) -> Result<Vec<RedeemInfo>> {
     Ok(
         redeem_params
             .iter()
             .filter(|params| !processed_tx_ids.contains(&params.global_sequence))
             .cloned()
-            .collect::<Vec<RedeemParams>>()
+            .collect::<Vec<RedeemInfo>>()
     )
 }
 

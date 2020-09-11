@@ -118,7 +118,7 @@ impl fmt::Display for EosKnownSchedule {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RedeemParams {
+pub struct RedeemInfo {
     pub amount: u64,
     pub recipient: String,
     pub from: EosAccountName,

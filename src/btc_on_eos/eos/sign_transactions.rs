@@ -15,7 +15,7 @@ use crate::{
     btc_on_eos::{
         eos::{
             eos_state::EosState,
-            eos_types::RedeemParams,
+            eos_types::RedeemInfo,
         },
         btc::{
             btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
@@ -38,7 +38,7 @@ use crate::{
 };
 
 fn sum_redeem_params(
-    redeem_params: &[RedeemParams]
+    redeem_params: &[RedeemInfo]
 ) -> u64 {
     info!("✔ Summing redeem param amounts...");
     redeem_params.iter().map(|params| params.amount).sum()
@@ -77,7 +77,7 @@ fn get_enough_utxos_to_cover_total<D>(
         })
 }
 
-fn get_address_and_amounts_from_redeem_params(redeem_params: &[RedeemParams]) -> Result<BtcRecipientsAndAmounts> {
+fn get_address_and_amounts_from_redeem_params(redeem_params: &[RedeemInfo]) -> Result<BtcRecipientsAndAmounts> {
     info!("✔ Getting addresses & amounts from redeem params...");
     redeem_params
         .iter()
@@ -93,7 +93,7 @@ fn sign_txs_from_redeem_params<D>(
     db: &D,
     sats_per_byte: u64,
     btc_network: BtcNetwork,
-    redeem_params: &[RedeemParams],
+    redeem_params: &[RedeemInfo],
 ) -> Result<BtcTransaction>
     where D: DatabaseInterface
 {

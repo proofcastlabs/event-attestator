@@ -6,7 +6,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::{
-        eth::eth_types::RedeemParams,
+        eth::eth_types::RedeemInfo,
         btc::{
             btc_utils::{
                 calculate_btc_tx_fee,
@@ -39,7 +39,7 @@ use crate::{
     },
 };
 
-fn sum_redeem_params(redeem_params: &[RedeemParams]) -> u64 {
+fn sum_redeem_params(redeem_params: &[RedeemInfo]) -> u64 {
     info!("✔ Summing redeem param amounts...");
     redeem_params.iter().map(|params| params.amount.as_u64()).sum()
 }
@@ -77,7 +77,7 @@ fn get_enough_utxos_to_cover_total<D>(
         })
 }
 
-fn get_address_and_amounts_from_redeem_params(redeem_params: &[RedeemParams]) -> Result<BtcRecipientsAndAmounts> {
+fn get_address_and_amounts_from_redeem_params(redeem_params: &[RedeemInfo]) -> Result<BtcRecipientsAndAmounts> {
     info!("✔ Getting BTC addresses & amounts from redeem params...");
     redeem_params
         .iter()
@@ -93,7 +93,7 @@ fn create_btc_tx_from_redeem_params<D>(
     db: &D,
     sats_per_byte: u64,
     btc_network: BtcNetwork,
-    redeem_params: &[RedeemParams],
+    redeem_params: &[RedeemInfo],
 ) -> Result<BtcTransaction>
     where D: DatabaseInterface
 {

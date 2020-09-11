@@ -14,7 +14,7 @@ use crate::{
         Result,
     },
     chains::eth::{
-        eth_types::RedeemParams,
+        eth_types::RedeemInfo,
         eth_block::{
             EthBlock,
             EthBlockJson,
@@ -100,14 +100,14 @@ impl EthBlockAndReceipts {
             })
     }
 
-    pub fn get_redeem_params(&self) -> Result<Vec<RedeemParams>> {
+    pub fn get_redeem_params(&self) -> Result<Vec<RedeemInfo>> {
         info!("✔ Getting pToken redeem params from block and receipts...");
         Ok(
             self
                 .get_receipts()
                 .iter()
                 .map(|receipt| receipt.get_redeem_params())
-                .collect::<Result<Vec<Vec<RedeemParams>>>>()?
+                .collect::<Result<Vec<Vec<RedeemInfo>>>>()?
                 .concat()
         )
     }
@@ -270,7 +270,7 @@ mod tests {
     #[test]
     fn should_parse_redeem_params_from_block() {
         let result = get_sample_block_with_redeem().get_redeem_params().unwrap();
-        let expected_result = RedeemParams {
+        let expected_result = RedeemInfo {
             amount: U256::from_dec_str("666").unwrap(),
             from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),

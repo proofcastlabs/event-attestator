@@ -4,12 +4,12 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eth::eth::eth_state::EthState,
     chains::{
-        eth::eth_types::RedeemParams,
+        eth::eth_types::RedeemInfo,
         btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
     },
 };
 
-fn filter_redeem_params(redeem_params: &[RedeemParams]) -> Result<Vec<RedeemParams>> {
+fn filter_redeem_params(redeem_params: &[RedeemInfo]) -> Result<Vec<RedeemInfo>> {
     Ok(
         redeem_params
             .iter()
@@ -46,7 +46,7 @@ mod tests {
     fn should_filter_redeem_params() {
         let expected_length = 2;
         let params = vec![
-            RedeemParams {
+            RedeemInfo {
                 amount: U256::from_dec_str("4999").unwrap(),
                 from: EthAddress::from_str(
                     "edb86cd455ef3ca43f0e227e00469c3bdfa40628"
@@ -57,7 +57,7 @@ mod tests {
                     .unwrap()[..]
                 ),
             },
-            RedeemParams {
+            RedeemInfo {
                 amount: U256::from_dec_str("5000").unwrap(),
                 from: EthAddress::from_str(
                     "edb86cd455ef3ca43f0e227e00469c3bdfa40628"
@@ -68,7 +68,7 @@ mod tests {
                     .unwrap()[..]
                 ),
             },
-            RedeemParams {
+            RedeemInfo {
                 amount: U256::from_dec_str("5001").unwrap(),
                 from: EthAddress::from_str(
                     "edb86cd455ef3ca43f0e227e00469c3bdfa40628"

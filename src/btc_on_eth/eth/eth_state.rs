@@ -7,7 +7,7 @@ use crate::{
             eth_block_and_receipts::EthBlockAndReceipts,
             eth_types::{
                 EthHash,
-                RedeemParams,
+                RedeemInfo,
             },
         },
     },
@@ -24,7 +24,7 @@ use crate::{
 pub struct EthState<D: DatabaseInterface> {
     pub db: D,
     pub misc: Option<String>,
-    pub redeem_params: Vec<RedeemParams>,
+    pub redeem_params: Vec<RedeemInfo>,
     pub btc_transactions: Option<BtcTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub eth_block_and_receipts: Option<EthBlockAndReceipts>,
@@ -57,7 +57,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
 
     pub fn add_redeem_params(
         mut self,
-        mut new_redeem_params: Vec<RedeemParams>,
+        mut new_redeem_params: Vec<RedeemInfo>,
     ) -> Result<EthState<D>> {
         self.redeem_params
             .append(&mut new_redeem_params);
@@ -66,7 +66,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
 
     pub fn replace_redeem_params(
         mut self,
-        replacement_params: Vec<RedeemParams>,
+        replacement_params: Vec<RedeemInfo>,
     ) -> Result<EthState<D>> {
         self.redeem_params = replacement_params;
         Ok(self)

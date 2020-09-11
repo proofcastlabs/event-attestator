@@ -19,7 +19,7 @@ use crate::{
         Result,
     },
     chains::eth::{
-        eth_types::RedeemParams,
+        eth_types::RedeemInfo,
         eth_log::{
             EthLogs,
             EthLogJson,
@@ -217,16 +217,16 @@ impl EthReceipt {
             .and_then(|bytes| Ok((get_nibbles_from_bytes(self.rlp_encode_transaction_index()), bytes)))
     }
 
-    pub fn get_redeem_params(&self) -> Result<Vec<RedeemParams>> {
+    pub fn get_redeem_params(&self) -> Result<Vec<RedeemInfo>> {
         info!("✔ Getting redeem params from receipt...");
         self
             .logs
             .0
             .iter()
             .filter(|log| matches!(log.is_ptoken_redeem(), Ok(true)))
-            .map(|log| -> Result<RedeemParams> {
+            .map(|log| -> Result<RedeemInfo> {
                 Ok(
-                    RedeemParams::new(
+                    RedeemInfo::new(
                         log.get_redeem_amount()?,
                         self.from,
                         log.get_btc_address()?,
@@ -290,12 +290,12 @@ mod tests {
             .clone()
     }
 
-    fn get_expected_redeem_params() -> RedeemParams {
+    fn get_expected_redeem_params() -> RedeemInfo {
         let amount = U256::from_dec_str("666").unwrap();
         let from = EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap();
         let recipient = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string();
         let originating_tx_hash = EthHash::from_slice(&hex::decode(get_tx_hash_of_redeem_tx()).unwrap()[..]);
-        RedeemParams::new(amount, from, recipient, originating_tx_hash)
+        RedeemInfo::new(amount, from, recipient, originating_tx_hash)
     }
 
     #[test]
