@@ -1,3 +1,5 @@
+use std::str::FromStr;
+use bitcoin::util::address::Address as BtcAddress;
 use rlp::{
     RlpStream,
     Encodable,
@@ -7,24 +9,34 @@ use serde_json::{
     Value as JsonValue,
 };
 use ethereum_types::{
+    U256,
     Bloom,
     BloomInput,
     H256 as EthHash,
     Address as EthAddress,
 };
 use crate::{
+    errors::AppError,
     types::{
         Bytes,
         Result,
     },
     chains::eth::{
         eth_receipt::EthReceiptJson,
-        eth_constants::REDEEM_EVENT_TOPIC_HEX,
+        eth_constants::{
+            REDEEM_EVENT_TOPIC_HEX,
+            ETH_WORD_SIZE_IN_BYTES,
+            LOG_DATA_BTC_ADDRESS_START_INDEX,
+        },
     },
-    btc_on_eth::utils::{
-        convert_hex_to_bytes,
-        convert_hex_to_address,
-        convert_hex_strings_to_h256s,
+    btc_on_eth::{
+        constants::SAFE_BTC_ADDRESS,
+        utils::{
+            convert_hex_to_bytes,
+            convert_hex_to_address,
+            convert_ptoken_to_satoshis,
+            convert_hex_strings_to_h256s,
+        },
     },
 };
 
@@ -93,6 +105,51 @@ impl EthLog {
     pub fn is_ptoken_redeem(&self) -> Result<bool> {
         Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&REDEEM_EVENT_TOPIC_HEX)?[..]))
     }
+
+    fn check_is_ptoken_redeem(&self) -> Result<()> {
+        trace!("✔ Checking if log is a pToken redeem...");
+        match self.is_ptoken_redeem()? {
+            true => Ok(()),
+            false => Err(AppError::Custom("✘ Log is not from a pToken redeem event!".to_string())),
+        }
+    }
+
+    pub fn get_redeem_amount(&self) -> Result<U256> {
+        self.check_is_ptoken_redeem()
+            .and_then(|_| {
+                info!("✔ Parsing redeem amount from log...");
+                match self.data.len() >= ETH_WORD_SIZE_IN_BYTES {
+                    true => Ok(U256::from(convert_ptoken_to_satoshis(U256::from(&self.data[..ETH_WORD_SIZE_IN_BYTES])))),
+                    false => Err(AppError::Custom("✘ Not enough bytes in log data to get redeem amount!".to_string()))
+                }
+            })
+    }
+
+    pub fn get_btc_address(&self) -> Result<String> {
+        self.check_is_ptoken_redeem()
+            .and_then(|_|{
+                info!("✔ Parsing BTC address from log...");
+                let default_address_error_string = format!("✔ Defaulting to safe BTC address: {}!", SAFE_BTC_ADDRESS);
+                let maybe_btc_address = self
+                    .data[LOG_DATA_BTC_ADDRESS_START_INDEX..]
+                    .iter()
+                    .filter(|byte| *byte != &0u8)
+                    .map(|byte| *byte as char)
+                    .collect::<String>();
+                info!("✔ Maybe BTC address parsed from log: {}", maybe_btc_address);
+                match BtcAddress::from_str(&maybe_btc_address) {
+                    Ok(address) => {
+                        info!("✔ Good BTC address parsed from log: {}", address);
+                        Ok(address.to_string())
+                    },
+                    Err(_) => {
+                        info!("✔ Failed to parse BTC address from log!");
+                        info!("{}", default_address_error_string);
+                        Ok(SAFE_BTC_ADDRESS.to_string())
+                    }
+                }
+            })
+    }
 }
 
 impl Encodable for EthLog {
@@ -140,6 +197,7 @@ mod tests {
         },
         btc_on_eth::eth::eth_test_utils::{
             get_expected_log,
+            get_sample_log_n,
             SAMPLE_RECEIPT_INDEX,
             get_sample_contract_topic,
             get_sample_contract_address,
@@ -178,6 +236,10 @@ mod tests {
 
     fn get_sample_log_with_redeem() -> EthLog {
         get_sample_receipt_with_redeem().logs.0[2].clone()
+    }
+
+    fn get_sample_log_with_p2sh_redeem() -> EthLog {
+        get_sample_log_n(5, 23, 2).unwrap()
     }
 
     #[test]
@@ -301,5 +363,29 @@ mod tests {
     fn non_redeem_log_should_not_be_redeem() {
         let result =&get_sample_receipt_with_redeem().logs.0[1].is_ptoken_redeem().unwrap();
         assert!(!result);
+    }
+
+    #[test]
+    fn should_parse_redeem_amount_from_log() {
+        let expected_result = U256::from_dec_str("666").unwrap();
+        let log = get_sample_log_with_redeem();
+        let result = log.get_redeem_amount().unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_parse_btc_address_from_log() {
+        let expected_result = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
+        let log = get_sample_log_with_redeem();
+        let result = log.get_btc_address().unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_parse_p2sh_btc_address_from_log() {
+        let expected_result = "2MyT7cyDnsHFwkhGDJa3LhayYtPN3cSE7wx";
+        let log = get_sample_log_with_p2sh_redeem();
+        let result = log.get_btc_address().unwrap();
+        assert_eq!(result, expected_result);
     }
 }

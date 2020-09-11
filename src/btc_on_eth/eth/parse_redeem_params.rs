@@ -1,70 +1,19 @@
-use std::str::FromStr;
-use ethereum_types::U256;
-use bitcoin::util::address::Address as BtcAddress;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eth::eth::eth_state::EthState,
     chains::eth::{
         eth_log::EthLog,
         eth_receipt::EthReceipt,
         eth_types::RedeemParams,
         eth_block_and_receipts::EthBlockAndReceipts,
         eth_database_utils::get_eth_canon_block_from_db,
-        eth_constants::{
-            ETH_WORD_SIZE_IN_BYTES,
-            LOG_DATA_BTC_ADDRESS_START_INDEX,
-        },
-    },
-    btc_on_eth::{
-        eth::eth_state::EthState,
-        constants::SAFE_BTC_ADDRESS,
-        utils::convert_ptoken_to_satoshis,
     },
 };
 
-fn parse_btc_address_from_log(log: &EthLog) -> Result<String> {
-    info!("✔ Parsing BTC address from log...");
-    let default_address_error_string = format!(
-        "✔ Defaulting to safe BTC address: {}!",
-        SAFE_BTC_ADDRESS
-    );
-    let maybe_btc_address = log.data[LOG_DATA_BTC_ADDRESS_START_INDEX..]
-        .iter()
-        .filter(|byte| *byte != &0u8)
-        .map(|byte| *byte as char)
-        .collect::<String>();
-    info!("✔ Maybe BTC address parsed from log: {}", maybe_btc_address);
-    match BtcAddress::from_str(&maybe_btc_address) {
-        Ok(address) => {
-            info!("✔ Good BTC address parsed from log: {}", address);
-            Ok(address.to_string())
-        },
-        Err(_) => {
-            info!("✔ Failed to parse BTC address from log!");
-            info!("{}", default_address_error_string);
-            Ok(SAFE_BTC_ADDRESS.to_string())
-        }
-    }
-}
-
-fn parse_redeem_amount_from_log(log: &EthLog) -> Result<U256> {
-    info!("✔ Parsing redeem amount from log...");
-    match log.data.len() >= ETH_WORD_SIZE_IN_BYTES {
-        true => Ok(U256::from(convert_ptoken_to_satoshis(U256::from(&log.data[..ETH_WORD_SIZE_IN_BYTES])))),
-        false => Err(AppError::Custom("✘ Not enough bytes in log data to slice out redeem amount!".to_string()))
-    }
-}
-
-fn parse_redeem_params_from_log_and_receipt(eth_log: &EthLog, eth_receipt: &EthReceipt) -> Result<RedeemParams> {
+fn parse_redeem_params_from_log_and_receipt(log: &EthLog, receipt: &EthReceipt) -> Result<RedeemParams> {
     info!("✔ Parsing redeems from logs...");
-    Ok(
-        RedeemParams::new(
-            parse_redeem_amount_from_log(eth_log)?,
-            eth_receipt.from,
-            parse_btc_address_from_log(eth_log)?,
-            eth_receipt.transaction_hash,
-        )
-    )
+    Ok(RedeemParams::new(log.get_redeem_amount()?, receipt.from, log.get_btc_address()?, receipt.transaction_hash))
 }
 
 fn parse_amount_and_address_tuples_from_receipt(receipt: &EthReceipt) -> Result<Vec<RedeemParams>> {
@@ -117,6 +66,7 @@ mod tests {
     use super::*;
     use std::str::FromStr;
     use ethereum_types::{
+        U256,
         H256 as EthHash,
         Address as EthAddress,
     };
@@ -170,24 +120,6 @@ mod tests {
     }
 
     #[test]
-    fn should_parse_btc_address_from_log() {
-        let expected_result = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
-        let log = get_sample_log_with_redeem();
-        let result = parse_btc_address_from_log(&log).unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_parse_redeem_amount_from_log() {
-        let expected_result = U256::from_dec_str("666")
-            .unwrap();
-        let log = get_sample_log_with_redeem();
-        let result = parse_redeem_amount_from_log(&log)
-            .unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
     fn should_parse_redeem_params_from_log_and_receipt() {
         let result = parse_redeem_params_from_log_and_receipt(
             &get_sample_log_with_redeem(),
@@ -225,16 +157,6 @@ mod tests {
         assert_eq!(expected_result.from, result[0].from);
         assert_eq!(expected_result.amount, result[0].amount);
         assert_eq!(expected_result.recipient, result[0].recipient);
-        assert_eq!(
-            expected_result.originating_tx_hash, result[0].originating_tx_hash
-        );
-    }
-
-    #[test]
-    fn should_parse_p2sh_btc_address_from_log() {
-        let expected_result = "2MyT7cyDnsHFwkhGDJa3LhayYtPN3cSE7wx";
-        let log = get_sample_log_with_p2sh_redeem();
-        let result = parse_btc_address_from_log(&log).unwrap();
-        assert_eq!(result, expected_result);
+        assert_eq!(expected_result.originating_tx_hash, result[0].originating_tx_hash);
     }
 }
