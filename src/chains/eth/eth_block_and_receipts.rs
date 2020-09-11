@@ -87,6 +87,17 @@ impl EthBlockAndReceipts {
         info!("✔ Number of receipts after filtering:  {}", filtered.receipts.len());
         Ok(filtered)
     }
+
+    pub fn receipts_are_valid(&self) -> Result<bool> {
+        self
+            .receipts
+            .get_merkle_root()
+            .map(|calculated_root| {
+                info!("✔    Block's receipts root: {}", self.block.receipts_root.to_string());
+                info!("✔ Calculated receipts root: {}", calculated_root.to_string());
+                calculated_root == self.block.receipts_root
+            })
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -224,5 +235,12 @@ mod tests {
             })
             .map(|receipt| assert!(receipt.logs.contain_address(&address)))
             .for_each(drop);
+    }
+
+    #[test]
+    fn should_return_true_if_receipts_root_is_correct() {
+        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let result = block_and_receipts.receipts_are_valid().unwrap();
+        assert!(result);
     }
 }

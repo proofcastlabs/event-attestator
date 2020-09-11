@@ -14,6 +14,7 @@ use ethereum_types::{
     Address as EthAddress,
 };
 use crate::{
+
     types::{
         Bytes,
         Result,
@@ -24,9 +25,15 @@ use crate::{
             convert_hex_to_address,
             convert_json_value_to_string,
         },
-        eth::nibble_utils::{
-            Nibbles,
-            get_nibbles_from_bytes,
+        eth::{
+            trie::{
+                Trie,
+                put_in_trie_recursively,
+            },
+            nibble_utils::{
+                Nibbles,
+                get_nibbles_from_bytes,
+            },
         },
     },
     chains::eth::eth_log::{
@@ -89,6 +96,13 @@ impl EthReceipts {
 
     pub fn get_rlp_encoded_receipts_and_nibble_tuples(&self) -> Result<Vec<(Nibbles, Bytes)>> {
         self.0.iter().map(|receipt| receipt.get_rlp_encoded_receipt_and_encoded_key_tuple()).collect()
+    }
+
+    pub fn get_merkle_root(&self) -> Result<EthHash> {
+        self
+            .get_rlp_encoded_receipts_and_nibble_tuples()
+            .and_then(|key_value_tuples| put_in_trie_recursively(Trie::get_new_trie()?, key_value_tuples, 0))
+            .map(|trie| trie.root)
     }
 }
 
@@ -226,6 +240,7 @@ mod tests {
         get_sample_eth_block_and_receipts,
         get_sample_receipt_with_desired_topic,
         get_sample_eth_block_and_receipts_json,
+        get_valid_state_with_invalid_block_and_receipts,
     };
 
     #[test]
@@ -336,5 +351,21 @@ mod tests {
                 assert_eq!(hex::encode(&result.1), get_encoded_receipt());
             })
             .for_each(drop);
+    }
+
+    #[test]
+    fn should_get_receipts_merkle_root_from_receipts() {
+        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let result = block_and_receipts.receipts.get_merkle_root().unwrap();
+        let expected_result = block_and_receipts.block.receipts_root;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_return_false_if_receipts_root_is_not_correct() {
+        let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
+        let block_and_receipts = state.get_eth_block_and_receipts().unwrap();
+        let result = block_and_receipts.receipts_are_valid().unwrap();
+        assert!(!result);
     }
 }
