@@ -13,10 +13,13 @@ use ethereum_types::{
     Address as EthAddress,
 };
 use crate::{
-    chains::eth::eth_receipt::EthReceiptJson,
     types::{
         Bytes,
         Result,
+    },
+    chains::eth::{
+        eth_receipt::EthReceiptJson,
+        eth_constants::REDEEM_EVENT_TOPIC_HEX,
     },
     btc_on_eth::utils::{
         convert_hex_to_bytes,
@@ -86,6 +89,10 @@ impl EthLog {
     pub fn contains_address(&self, address: &EthAddress) -> bool {
         &self.address == address
     }
+
+    pub fn is_ptoken_redeem(&self) -> Result<bool> {
+        Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&REDEEM_EVENT_TOPIC_HEX)?[..]))
+    }
 }
 
 impl Encodable for EthLog {
@@ -125,20 +132,53 @@ impl EthLogs {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::eth_test_utils::{
-        get_expected_log,
-        SAMPLE_RECEIPT_INDEX,
-        get_sample_contract_topic,
-        get_sample_contract_address,
-        get_sample_log_with_desired_topic,
-        get_sample_logs_with_desired_topic,
-        get_sample_log_with_desired_address,
-        get_sample_logs_without_desired_topic,
-        get_sample_log_without_desired_address,
-        get_sample_eth_block_and_receipts_json,
-        get_sample_receipt_with_desired_address,
-        get_sample_receipt_without_desired_address,
+    use std::str::FromStr;
+    use crate::{
+        chains::eth::{
+            eth_receipt::EthReceipt,
+            eth_block_and_receipts::EthBlockAndReceipts,
+        },
+        btc_on_eth::eth::eth_test_utils::{
+            get_expected_log,
+            SAMPLE_RECEIPT_INDEX,
+            get_sample_contract_topic,
+            get_sample_contract_address,
+            get_sample_log_with_desired_topic,
+            get_sample_logs_with_desired_topic,
+            get_sample_eth_block_and_receipts_n,
+            get_sample_log_with_desired_address,
+            get_sample_logs_without_desired_topic,
+            get_sample_log_without_desired_address,
+            get_sample_eth_block_and_receipts_json,
+            get_sample_receipt_with_desired_address,
+            get_sample_receipt_without_desired_address,
+        },
     };
+
+    fn get_tx_hash_of_redeem_tx() -> &'static str {
+        "442612aba789ce873bb3804ff62ced770dcecb07d19ddcf9b651c357eebaed40"
+    }
+
+    fn get_sample_block_with_redeem() -> EthBlockAndReceipts { // TODO coalesce these three!
+        get_sample_eth_block_and_receipts_n(4).unwrap()
+    }
+
+    fn get_sample_receipt_with_redeem() -> EthReceipt {
+        let hash = EthHash::from_str(get_tx_hash_of_redeem_tx())
+            .unwrap();
+        get_sample_block_with_redeem()
+            .receipts
+            .0
+            .iter()
+            .filter(|receipt| receipt.transaction_hash == hash)
+            .collect::<Vec<&EthReceipt>>()
+            [0]
+            .clone()
+    }
+
+    fn get_sample_log_with_redeem() -> EthLog {
+        get_sample_receipt_with_redeem().logs.0[2].clone()
+    }
 
     #[test]
     fn should_get_logs_bloom_from_logs() {
@@ -248,6 +288,18 @@ mod tests {
         let receipt = get_sample_receipt_without_desired_address();
         let address = get_sample_contract_address();
         let result = receipt.logs.contain_address(&address);
+        assert!(!result);
+    }
+
+    #[test]
+    fn redeem_log_should_be_redeem() {
+        let result = get_sample_log_with_redeem().is_ptoken_redeem().unwrap();
+        assert!(result);
+    }
+
+    #[test]
+    fn non_redeem_log_should_not_be_redeem() {
+        let result =&get_sample_receipt_with_redeem().logs.0[1].is_ptoken_redeem().unwrap();
         assert!(!result);
     }
 }

@@ -1,9 +1,6 @@
 use std::str::FromStr;
+use ethereum_types::U256;
 use bitcoin::util::address::Address as BtcAddress;
-use ethereum_types::{
-    U256,
-    H256 as EthHash,
-};
 use crate::{
     types::Result,
     traits::DatabaseInterface,
@@ -14,7 +11,6 @@ use crate::{
         eth_block_and_receipts::EthBlockAndReceipts,
         eth_database_utils::get_eth_canon_block_from_db,
         eth_constants::{
-            REDEEM_EVENT_TOPIC_HEX,
             ETH_WORD_SIZE_IN_BYTES,
             LOG_DATA_BTC_ADDRESS_START_INDEX,
         },
@@ -71,17 +67,13 @@ fn parse_redeem_params_from_log_and_receipt(eth_log: &EthLog, eth_receipt: &EthR
     )
 }
 
-fn log_is_redeem(log: &EthLog) -> Result<bool> {
-    Ok(log.topics[0] == EthHash::from_slice(&hex::decode(&REDEEM_EVENT_TOPIC_HEX)?[..]))
-}
-
 fn parse_amount_and_address_tuples_from_receipt(receipt: &EthReceipt) -> Result<Vec<RedeemParams>> {
     info!("✔ Parsing amount & address tuples from receipt...");
     receipt
         .logs
         .0
         .iter()
-        .filter(|log| matches!(log_is_redeem(log), Ok(true)))
+        .filter(|log| matches!(log.is_ptoken_redeem(), Ok(true)))
         .map(|log| parse_redeem_params_from_log_and_receipt(log, receipt))
         .collect::<Result<Vec<RedeemParams>>>()
 }
@@ -124,7 +116,10 @@ pub fn maybe_parse_redeem_params_and_add_to_state<D>(
 mod tests {
     use super::*;
     use std::str::FromStr;
-    use ethereum_types::Address as EthAddress;
+    use ethereum_types::{
+        H256 as EthHash,
+        Address as EthAddress,
+    };
     use crate::btc_on_eth::eth::eth_test_utils::{
         get_sample_log_n,
         get_sample_eth_block_and_receipts_n,
@@ -199,21 +194,6 @@ mod tests {
             &get_sample_receipt_with_redeem(),
         ).unwrap();
         assert_eq!(result, get_expected_redeem_params());
-    }
-
-    #[test]
-    fn redeem_log_should_be_redeem() {
-        let result = log_is_redeem(&get_sample_log_with_redeem())
-            .unwrap();
-        assert!(result);
-    }
-
-    #[test]
-    fn non_redeem_log_should_not_be_redeem() {
-        let result = log_is_redeem(
-            &get_sample_receipt_with_redeem().logs.0[1]
-        ).unwrap();
-        assert!(!result);
     }
 
     #[test]
