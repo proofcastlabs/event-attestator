@@ -14,6 +14,7 @@ use crate::{
         Result,
     },
     chains::eth::{
+        eth_types::RedeemParams,
         eth_block::{
             EthBlock,
             EthBlockJson,
@@ -98,6 +99,18 @@ impl EthBlockAndReceipts {
                 calculated_root == self.block.receipts_root
             })
     }
+
+    pub fn get_redeem_params(&self) -> Result<Vec<RedeemParams>> {
+        info!("✔ Getting pToken redeem params from block and receipts...");
+        Ok(
+            self
+                .get_receipts()
+                .iter()
+                .map(|receipt| receipt.get_redeem_params())
+                .collect::<Result<Vec<Vec<RedeemParams>>>>()?
+                .concat()
+        )
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -118,6 +131,8 @@ impl EthBlockAndReceiptsJson {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::str::FromStr;
+    use ethereum_types::U256;
     use crate::{
         chains::eth::eth_constants::REDEEM_EVENT_TOPIC_HEX,
         btc_on_eth::eth::eth_test_utils::{
@@ -242,5 +257,28 @@ mod tests {
         let block_and_receipts = get_sample_eth_block_and_receipts();
         let result = block_and_receipts.receipts_are_valid().unwrap();
         assert!(result);
+    }
+
+    fn get_sample_block_with_redeem() -> EthBlockAndReceipts {
+        get_sample_eth_block_and_receipts_n(4).unwrap()
+    }
+
+    fn get_tx_hash_of_redeem_tx() -> &'static str {
+        "442612aba789ce873bb3804ff62ced770dcecb07d19ddcf9b651c357eebaed40"
+    }
+
+    #[test]
+    fn should_parse_redeem_params_from_block() {
+        let result = get_sample_block_with_redeem().get_redeem_params().unwrap();
+        let expected_result = RedeemParams {
+            amount: U256::from_dec_str("666").unwrap(),
+            from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),
+            recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
+            originating_tx_hash: EthHash::from_slice(&hex::decode(get_tx_hash_of_redeem_tx()) .unwrap()[..]),
+        };
+        assert_eq!(expected_result.from, result[0].from);
+        assert_eq!(expected_result.amount, result[0].amount);
+        assert_eq!(expected_result.recipient, result[0].recipient);
+        assert_eq!(expected_result.originating_tx_hash, result[0].originating_tx_hash);
     }
 }

@@ -87,7 +87,6 @@ use crate::{
             eth_state::EthState,
             validate_block::validate_block_in_state,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
-            parse_redeem_params::parse_redeem_params_from_block,
             increment_btc_nonce::maybe_increment_btc_nonce_in_db,
             filter_receipts::filter_irrelevant_receipts_from_state,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
@@ -224,7 +223,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
         .and_then(|state| {
             state
                 .get_eth_block_and_receipts()
-                .and_then(|block| parse_redeem_params_from_block(block.clone()))
+                .and_then(|block| block.get_redeem_params())
                 .and_then(|params| state.add_redeem_params(params))
         })
         .and_then(maybe_create_btc_txs_and_add_to_state)
