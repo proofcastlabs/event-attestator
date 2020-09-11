@@ -485,11 +485,9 @@ pub fn get_sample_unsigned_eth_transaction() -> EthTransaction {
 
 mod tests {
     use super::*;
-    use crate::btc_on_eth::utils::convert_hex_to_h256;
-    use crate::btc_on_eth::eth::validate_block::validate_block_header;
-    use crate::btc_on_eth::eth::filter_receipts::{
-        log_contains_topic,
-        logs_contain_topic,
+    use crate::btc_on_eth::{
+        utils::convert_hex_to_h256,
+        eth::validate_block::validate_block_header,
     };
 
     #[test]
@@ -619,7 +617,7 @@ mod tests {
         let result = get_sample_logs_with_desired_topic()
             .0
             .iter()
-            .any(|log| log_contains_topic(log, &desired_topic));
+            .any(|log| log.contains_topic(&desired_topic));
         assert!(result);
     }
 
@@ -629,21 +627,21 @@ mod tests {
         let result = get_sample_logs_without_desired_topic()
             .0
             .iter()
-            .any(|log| log_contains_topic(log, &desired_topic));
+            .any(|log| log.contains_topic(&desired_topic));
         assert!(!result);
     }
 
     #[test]
     fn sample_receipts_with_desired_topic_should_contain_topic() {
         let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
-        let result = logs_contain_topic(&get_sample_receipt_with_desired_topic().logs, &desired_topic);
+        let result = get_sample_receipt_with_desired_topic().logs.contain_topic(&desired_topic);
         assert!(result);
     }
 
     #[test]
     fn sample_receipts_without_desired_topic_should_not_contain_topic() {
         let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
-        let result = logs_contain_topic(&get_sample_receipt_without_desired_topic().logs, &desired_topic);
+        let result =get_sample_receipt_without_desired_topic().logs.contain_topic(&desired_topic);
         assert!(!result);
     }
 

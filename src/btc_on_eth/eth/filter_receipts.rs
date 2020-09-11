@@ -24,14 +24,6 @@ use crate::{
     },
 };
 
-pub fn log_contains_topic(log: &EthLog, topic: &EthHash) -> bool {
-    log.topics.iter().any(|log_topic| log_topic == topic)
-}
-
-pub fn logs_contain_topic(logs: &EthLogs, topic: &EthHash) -> bool {
-    logs.0.iter().any(|log| log_contains_topic(log, topic))
-}
-
 pub fn log_contains_address(log: &EthLog, address: &EthAddress) -> bool {
     &log.address == address
 }
@@ -50,7 +42,7 @@ fn filter_receipts_for_address_and_topic(
             .0
             .iter()
             .filter(|receipt| logs_contain_address(&receipt.logs, address))
-            .filter(|receipt| logs_contain_topic(&receipt.logs, topic))
+            .filter(|receipt| receipt.logs.contain_topic(topic))
             .cloned()
             .collect::<Vec<EthReceipt>>()
     )
@@ -117,50 +109,14 @@ mod tests {
             get_sample_contract_topic,
             get_sample_contract_topics,
             get_sample_contract_address,
-            get_sample_log_with_desired_topic,
             get_sample_eth_block_and_receipts,
-            get_sample_logs_with_desired_topic,
             get_sample_eth_block_and_receipts_n,
             get_sample_log_with_desired_address,
-            get_sample_log_without_desired_topic,
-            get_sample_logs_without_desired_topic,
             get_sample_log_without_desired_address,
             get_sample_receipt_with_desired_address,
             get_sample_receipt_without_desired_address
         },
     };
-
-    #[test]
-    fn should_return_true_if_log_contains_desired_topic() {
-        let log = get_sample_log_with_desired_topic();
-        let topic = get_sample_contract_topic();
-        let result = log_contains_topic(&log, &topic);
-        assert!(result);
-    }
-
-    #[test]
-    fn should_return_false_if_log_does_not_contain_desired_topic() {
-        let log = get_sample_log_without_desired_topic();
-        let topic = get_sample_contract_topic();
-        let result = log_contains_topic(&log, &topic);
-        assert!(!result);
-    }
-
-    #[test]
-    fn sample_logs_with_desired_topic_should_contain_topic() {
-        let logs = get_sample_logs_with_desired_topic();
-        let topic = get_sample_contract_topic();
-        let result = logs_contain_topic(&logs, &topic);
-        assert!(result);
-    }
-
-    #[test]
-    fn sample_logs_without_desired_topic_should_contain_topic() {
-        let logs = get_sample_logs_without_desired_topic();
-        let topic = get_sample_contract_topic();
-        let result = logs_contain_topic(&logs, &topic);
-        assert!(!result);
-    }
 
     #[test]
     fn sample_log_receipt_with_desired_address_should_return_true() {
@@ -206,7 +162,7 @@ mod tests {
         result
             .0
             .iter()
-            .map(|receipt| assert!(logs_contain_topic(&receipt.logs, &topic)))
+            .map(|receipt| assert!(receipt.logs.contain_topic(&topic)))
             .for_each(drop);
     }
 
@@ -228,7 +184,7 @@ mod tests {
             .0
             .iter()
             .map(|receipt| {
-                assert!(logs_contain_topic(&receipt.logs, &topics[0]));
+                assert!(receipt.logs.contain_topic(&topics[0]));
                 receipt
             })
             .map(|receipt|
@@ -263,7 +219,7 @@ mod tests {
             .0
             .iter()
             .map(|receipt| {
-                assert!(logs_contain_topic(&receipt.logs, &topics[0]));
+                assert!(receipt.logs.contain_topic(&topics[0]));
                 receipt
             })
             .map(|receipt|

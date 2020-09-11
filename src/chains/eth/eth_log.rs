@@ -3,10 +3,10 @@ use serde_json::{
     Value as JsonValue,
 };
 use ethereum_types::{
-    H256,
     Bloom,
     Address,
     BloomInput,
+    H256 as EthHash,
 };
 use crate::{
     chains::eth::eth_receipt::EthReceiptJson,
@@ -32,7 +32,7 @@ pub struct EthLogJson {
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 pub struct EthLog {
     pub address: Address,
-    pub topics: Vec<H256>,
+    pub topics: Vec<EthHash>,
     pub data: Bytes,
 }
 
@@ -74,6 +74,10 @@ impl EthLog {
                 }
             )
     }
+
+    pub fn contains_topic(&self, topic: &EthHash) -> bool {
+        self.topics.iter().any(|log_topic| log_topic == topic)
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
@@ -93,6 +97,10 @@ impl EthLogs {
     pub fn from_receipt_json(json: &EthReceiptJson) -> Result<Self> {
         Ok(Self(json.logs.iter().map(|log_json| EthLog::from_json(log_json)).collect::<Result<Vec<EthLog>>>()?))
     }
+
+    pub fn contain_topic(&self, topic: &EthHash) -> bool {
+        self.0.iter().any(|log| log.contains_topic(topic))
+    }
 }
 
 
@@ -102,7 +110,10 @@ mod tests {
     use crate::btc_on_eth::eth::eth_test_utils::{
         get_expected_log,
         SAMPLE_RECEIPT_INDEX,
+        get_sample_contract_topic,
         get_sample_log_with_desired_topic,
+        get_sample_logs_with_desired_topic,
+        get_sample_logs_without_desired_topic,
         get_sample_eth_block_and_receipts_json,
     };
 
@@ -157,5 +168,31 @@ mod tests {
             ]
         });
         assert_eq!(result, expected_result);
+    }
+
+
+    #[test]
+    fn should_return_true_if_log_contains_desired_topic() {
+        let log = get_sample_log_with_desired_topic();
+        let topic = get_sample_contract_topic();
+        let result = log.contains_topic(&topic);
+        assert!(result);
+    }
+
+
+    #[test]
+    fn sample_logs_with_desired_topic_should_contain_topic() {
+        let logs = get_sample_logs_with_desired_topic();
+        let topic = get_sample_contract_topic();
+        let result = logs.contain_topic(&topic);
+        assert!(result);
+    }
+
+    #[test]
+    fn sample_logs_without_desired_topic_should_contain_topic() {
+        let logs = get_sample_logs_without_desired_topic();
+        let topic = get_sample_contract_topic();
+        let result = logs.contain_topic(&topic);
+        assert!(!result);
     }
 }
