@@ -28,6 +28,10 @@ use crate::{
 pub struct EthReceipts(pub Vec<EthReceipt>);
 
 impl EthReceipts {
+    pub fn new(receipts: Vec<EthReceipt>) -> Self {
+        Self(receipts)
+    }
+
     pub fn new_empty() -> Self {
         Self(Vec::new())
     }

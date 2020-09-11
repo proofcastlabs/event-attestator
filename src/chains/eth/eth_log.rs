@@ -4,9 +4,9 @@ use serde_json::{
 };
 use ethereum_types::{
     Bloom,
-    Address,
     BloomInput,
     H256 as EthHash,
+    Address as EthAddress,
 };
 use crate::{
     chains::eth::eth_receipt::EthReceiptJson,
@@ -31,7 +31,7 @@ pub struct EthLogJson {
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 pub struct EthLog {
-    pub address: Address,
+    pub address: EthAddress,
     pub topics: Vec<EthHash>,
     pub data: Bytes,
 }
@@ -78,6 +78,10 @@ impl EthLog {
     pub fn contains_topic(&self, topic: &EthHash) -> bool {
         self.topics.iter().any(|log_topic| log_topic == topic)
     }
+
+    pub fn contains_address(&self, address: &EthAddress) -> bool {
+        &self.address == address
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
@@ -101,6 +105,10 @@ impl EthLogs {
     pub fn contain_topic(&self, topic: &EthHash) -> bool {
         self.0.iter().any(|log| log.contains_topic(topic))
     }
+
+    pub fn contain_address(&self, address: &EthAddress) -> bool {
+        self.0.iter().any(|log| log.contains_address(address))
+    }
 }
 
 
@@ -111,10 +119,15 @@ mod tests {
         get_expected_log,
         SAMPLE_RECEIPT_INDEX,
         get_sample_contract_topic,
+        get_sample_contract_address,
         get_sample_log_with_desired_topic,
         get_sample_logs_with_desired_topic,
+        get_sample_log_with_desired_address,
         get_sample_logs_without_desired_topic,
+        get_sample_log_without_desired_address,
         get_sample_eth_block_and_receipts_json,
+        get_sample_receipt_with_desired_address,
+        get_sample_receipt_without_desired_address,
     };
 
     #[test]
@@ -195,4 +208,38 @@ mod tests {
         let result = logs.contain_topic(&topic);
         assert!(!result);
     }
+
+
+    #[test]
+    fn sample_log_receipt_with_desired_address_should_return_true() {
+        let log = get_sample_log_with_desired_address();
+        let address = get_sample_contract_address();
+        let result = log.contains_address(&address);
+        assert!(result);
+    }
+
+    #[test]
+    fn sample_log_without_desired_address_should_return_false() {
+        let log = get_sample_log_without_desired_address();
+        let address = get_sample_contract_address();
+        let result = log.contains_address(&address);
+        assert!(!result);
+    }
+
+    #[test]
+    fn sample_receipt_with_desired_address_should_return_true() {
+        let receipt = get_sample_receipt_with_desired_address();
+        let address = get_sample_contract_address();
+        let result = receipt.logs.contain_address(&address);
+        assert!(result);
+    }
+
+    #[test]
+    fn sample_receipt_without_desired_address_should_return_false() {
+        let receipt = get_sample_receipt_without_desired_address();
+        let address = get_sample_contract_address();
+        let result = receipt.logs.contain_address(&address);
+        assert!(!result);
+    }
+
 }
