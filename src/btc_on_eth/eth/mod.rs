@@ -19,6 +19,7 @@ pub(crate) mod update_eth_linker_hash;
 pub(crate) mod change_pnetwork_address;
 pub(crate) mod create_btc_transactions;
 pub(crate) mod update_latest_block_hash;
+pub(crate) mod eth_database_transactions;
 pub(crate) mod remove_old_eth_tail_block;
 pub(crate) mod update_eth_tail_block_hash;
 pub(crate) mod extract_utxos_from_btc_txs;

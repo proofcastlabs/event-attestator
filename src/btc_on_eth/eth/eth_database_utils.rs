@@ -36,7 +36,6 @@ use crate::{
         },
     },
     btc_on_eth::{
-        eth::eth_state::EthState,
         database_utils::{
             put_u64_in_db,
             get_u64_from_db,
@@ -82,28 +81,6 @@ pub fn get_any_sender_signing_params_from_db<D>(
             erc777_proxy_address: get_erc777_proxy_contract_address_from_db(db)?,
         }
     )
-}
-
-pub fn start_eth_db_transaction<D>(
-    state: EthState<D>,
-) -> Result<EthState<D>>
-    where D: DatabaseInterface
-{
-    state.db.start_transaction().map(|_| {
-        info!("✔ Database transaction begun for ETH block submission!");
-        state
-    })
-}
-
-pub fn end_eth_db_transaction<D>(
-    state: EthState<D>,
-) -> Result<EthState<D>>
-    where D: DatabaseInterface
-{
-    state.db.end_transaction().map(|_| {
-        info!("✔ Database transaction ended for ETH block submission!");
-        state
-    })
 }
 
 pub fn put_eth_canon_to_tip_length_in_db<D>(

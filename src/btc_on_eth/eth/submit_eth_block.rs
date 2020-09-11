@@ -24,9 +24,9 @@ use crate::{
             parse_eth_block_and_receipts::parse_eth_block_and_receipts_and_put_in_state,
             add_block_and_receipts_to_database::maybe_add_block_and_receipts_to_db_and_return_state,
             remove_receipts_from_canon_block::maybe_remove_receipts_from_canon_block_and_return_state,
-            eth_database_utils::{
-                end_eth_db_transaction,
-                start_eth_db_transaction,
+            eth_database_transactions::{
+                end_eth_db_transaction_and_return_state,
+                start_eth_db_transaction_and_return_state,
             },
         },
     },
@@ -36,7 +36,7 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
     info!("✔ Submitting ETH block to enclave...");
     parse_eth_block_and_receipts_and_put_in_state(block_json_string, EthState::init(db))
         .and_then(check_core_is_initialized_and_return_eth_state)
-        .and_then(start_eth_db_transaction)
+        .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
         .and_then(check_for_parent_of_block_in_state)
         .and_then(validate_receipts_in_state)
@@ -54,6 +54,6 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_save_btc_utxos_to_db)
         .and_then(maybe_remove_old_eth_tail_block)
         .and_then(maybe_remove_receipts_from_canon_block_and_return_state)
-        .and_then(end_eth_db_transaction)
+        .and_then(end_eth_db_transaction_and_return_state)
         .and_then(get_eth_output_json)
 }

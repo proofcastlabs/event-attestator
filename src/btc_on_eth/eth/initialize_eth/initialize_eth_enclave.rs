@@ -3,9 +3,9 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eth::eth::{
         eth_state::EthState,
-        eth_database_utils::{
-            end_eth_db_transaction,
-            start_eth_db_transaction,
+        eth_database_transactions::{
+            end_eth_db_transaction_and_return_state,
+            start_eth_db_transaction_and_return_state,
         },
         parse_eth_block_and_receipts::{
             parse_eth_block_and_receipts_and_put_in_state,
@@ -63,7 +63,7 @@ pub fn maybe_initialize_eth_enclave<D>(
                     parse_eth_block_and_receipts_and_put_in_state(block_json_string, state)
                         .and_then(validate_eth_block_in_state)
                         .and_then(remove_receipts_from_block_in_state)
-                        .and_then(start_eth_db_transaction)
+                        .and_then(start_eth_db_transaction_and_return_state)
                         .and_then(add_eth_block_to_db_and_return_state)
                         .and_then(|state| put_canon_to_tip_length_in_db_and_return_state(canon_to_tip_length, state))
                         .and_then(set_eth_anchor_block_hash_and_return_state)
@@ -85,7 +85,7 @@ pub fn maybe_initialize_eth_enclave<D>(
                                 state,
                             )
                         )
-                        .and_then(end_eth_db_transaction)
+                        .and_then(end_eth_db_transaction_and_return_state)
                         .and_then(get_eth_init_output_json)
                 }
             }
