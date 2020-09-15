@@ -1,6 +1,5 @@
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eth::eth::{
         eth_state::EthState,
@@ -24,9 +23,7 @@ fn add_block_and_receipts_to_db_if_not_extant<D>(
             info!("✔ Block & receipts not in db, adding them now...");
             put_eth_block_and_receipts_in_db(db, block_and_receipts)
         }
-        true => Err(AppError::Custom(
-            "✘ Block Rejected - it's already in the db!".to_string()
-        ))
+        true => Err("✘ Block Rejected - it's already in the db!".into())
     }
 }
 

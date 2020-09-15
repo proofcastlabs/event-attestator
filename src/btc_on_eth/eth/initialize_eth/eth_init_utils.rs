@@ -1,10 +1,6 @@
 use crate::{
-    errors::AppError,
     traits::DatabaseInterface,
-    types::{
-        Bytes,
-        Result,
-    },
+    types::{Bytes, Result},
     chains::eth::eth_crypto::eth_transaction::get_ptoken_smart_contract_bytecode,
     btc_on_eth::eth::{
         eth_state::EthState,
@@ -63,7 +59,7 @@ fn set_hash_from_block_in_state<D>(
             info!("✔ Initializating ETH anchor block hash...");
             put_eth_anchor_block_hash_in_db(&state.db, hash)
         }
-        _ => Err(AppError::Custom("✘ Hash type not recognized!".to_string()))
+        _ => Err("✘ Hash type not recognized!".into())
     }?;
     Ok(state)
 }

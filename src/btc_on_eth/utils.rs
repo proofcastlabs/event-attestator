@@ -5,12 +5,7 @@ use ethereum_types::{
     Address as EthAddress
 };
 use crate::{
-    errors::AppError,
-    types::{
-        Byte,
-        Bytes,
-        Result,
-    },
+    types::{Byte, Bytes, NoneError, Result},
     btc_on_eth::constants::{
         HASH_LENGTH,
         U64_NUM_BYTES,
@@ -22,14 +17,14 @@ use crate::{
 
 pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
     match bytes.len() {
-        0..=7 => Err(AppError::Custom("✘ Not enough bytes to convert to u64!" .to_string())),
+        0..=7 => Err("✘ Not enough bytes to convert to u64!".into()),
         U64_NUM_BYTES => {
             let mut arr = [0u8; U64_NUM_BYTES];
             let bytes = &bytes[..U64_NUM_BYTES];
             arr.copy_from_slice(bytes);
             Ok(u64::from_le_bytes(arr))
         }
-        _ => Err(AppError::Custom("✘ Too many bytes to convert to u64 without overflowing!".to_string())),
+        _ => Err("✘ Too many bytes to convert to u64 without overflowing!".into()),
     }
 }
 
@@ -44,7 +39,7 @@ pub fn strip_new_line_chars(string: String) -> String {
 pub fn convert_dec_str_to_u256(dec_str: &str) -> Result<U256> {
     match U256::from_dec_str(dec_str) {
         Ok(u256) => Ok(u256),
-        Err(e) => Err(AppError::Custom(format!("✘ Error converting decimal string to u256:\n{:?}", e)))
+        Err(err) => Err(format!("✘ Error converting decimal string to u256:\n{:?}", err).into())
     }
 }
 
@@ -55,14 +50,12 @@ pub fn convert_h256_to_bytes(hash: H256) -> Bytes {
 pub fn convert_bytes_to_h256(bytes: &[Byte]) -> Result<H256> {
     match bytes.len() {
         32 => Ok(H256::from_slice(&bytes[..])),
-        _ => Err(AppError::Custom(
-            "✘ Not enough bytes to convert to h256!".to_string()
-        ))
+        _ => Err("✘ Not enough bytes to convert to h256!".into())
     }
 }
 
 pub fn convert_json_value_to_string(value: Value) -> Result<String> {
-    Ok(value.as_str()?.to_string())
+    Ok(value.as_str().ok_or(NoneError)?.to_string())
 }
 
 fn left_pad_with_zero(string: &str) -> Result<String> {
@@ -116,9 +109,7 @@ pub fn convert_hex_to_h256(hex: &str) -> Result<H256> {
     decode_prefixed_hex(hex)
         .and_then(|bytes| match bytes.len() {
             HASH_LENGTH => Ok(H256::from_slice(&bytes)),
-            _ => Err(AppError::Custom(
-                format!("✘ {} bytes required to create h256 type, {} provided!", HASH_LENGTH, bytes.len())
-            ))
+            _ => Err(format!("✘ {} bytes required to create h256 type, {} provided!", HASH_LENGTH, bytes.len()).into())
         })
 }
 
@@ -141,8 +132,9 @@ pub fn convert_ptoken_to_satoshis(ptoken: U256) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
-        eth::eth_test_utils::{
+    use crate::{
+        errors::AppError,
+        btc_on_eth::eth::eth_test_utils::{
             HASH_HEX_CHARS,
             HEX_PREFIX_LENGTH,
         },

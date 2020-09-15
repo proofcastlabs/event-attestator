@@ -1,6 +1,5 @@
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eth::eth::{
         eth_state::EthState,
@@ -18,7 +17,7 @@ fn parse_eth_block_and_receipts_json_string(
 ) -> Result<EthBlockAndReceiptsJson> {
     match serde_json::from_str(&eth_block_and_receipt_json_string) {
         Ok(result) => Ok(result),
-        Err(e) => Err(AppError::Custom(e.to_string()))
+        Err(err) => Err(err.into())
     }
 }
 

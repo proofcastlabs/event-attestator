@@ -1,7 +1,6 @@
 use bitcoin_hashes::sha256d;
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eth::btc::{
         btc_state::BtcState,
@@ -22,9 +21,7 @@ fn is_anchor_block<D>(
 {
     match get_btc_anchor_block_hash_from_db(db) {
         Ok(hash) => Ok(&hash == btc_block_hash),
-        _ => Err(AppError::Custom(
-            "✘ No anchor hash found in db!".to_string()
-        ))
+        _ => Err("✘ No anchor hash found in db!".into())
     }
 }
 

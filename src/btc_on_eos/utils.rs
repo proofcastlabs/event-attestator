@@ -1,16 +1,9 @@
 use eos_primitives::Checksum256;
 use crate::{
-    errors::AppError,
-    types::{
-        Byte,
-        Bytes,
-        Result,
-    },
-    btc_on_eos::{
-        constants::{
-            U64_NUM_BYTES,
-            BTC_NUM_DECIMALS,
-        },
+    types::{Byte, Bytes, Result},
+    btc_on_eos::constants::{
+        U64_NUM_BYTES,
+        BTC_NUM_DECIMALS,
     },
 };
 
@@ -52,20 +45,14 @@ pub fn convert_u64_to_eos_asset( // TODO Test
 
 pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
     match bytes.len() {
-        0..=7 => Err(AppError::Custom(
-            "✘ Not enough bytes to convert to u64!"
-                .to_string()
-        )),
+        0..=7 => Err("✘ Not enough bytes to convert to u64!".into()),
         U64_NUM_BYTES => {
             let mut arr = [0u8; U64_NUM_BYTES];
             let bytes = &bytes[..U64_NUM_BYTES];
             arr.copy_from_slice(bytes);
             Ok(u64::from_le_bytes(arr))
         }
-        _ => Err(AppError::Custom(
-            "✘ Too many bytes to convert to u64 without overflowing!"
-                .to_string()
-        )),
+        _ => Err("✘ Too many bytes to convert to u64 without overflowing!".into()),
     }
 }
 
@@ -81,14 +68,7 @@ pub fn convert_bytes_to_checksum256(bytes: &[Byte]) -> Result<Checksum256> {
             arr.copy_from_slice(bytes);
             Ok(Checksum256::from(arr))
         }
-        _ => {
-            Err(AppError::Custom(
-                format!(
-                    "✘ Wrong number of bytes. Expected 32, got {}",
-                    bytes.len()
-                )
-            ))
-        }
+        _ => Err(format!("✘ Wrong number of bytes. Expected 32, got {}", bytes.len()).into())
     }
 }
 

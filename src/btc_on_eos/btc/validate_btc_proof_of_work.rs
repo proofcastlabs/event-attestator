@@ -1,7 +1,6 @@
 use bitcoin::blockdata::block::BlockHeader as BtcBlockHeader;
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eos::btc::btc_state::BtcState,
     constants::{
@@ -17,7 +16,7 @@ fn validate_proof_of_work_in_block(btc_block_header: &BtcBlockHeader) -> Result<
             info!("✔ BTC block's proof-of-work is valid!");
             Ok(())
         }
-        Err(_) => Err(AppError::Custom("✘ Invalid block! PoW validation error: Block hash > target!".to_string()))
+        Err(_) => Err("✘ Invalid block! PoW validation error: Block hash > target!".into())
     }
 }
 
@@ -33,7 +32,7 @@ pub fn validate_proof_of_work_of_btc_block_in_state<D>(
         info!("✔ Skipping proof-of-work validation!");
         match DEBUG_MODE {
             true => Ok(state),
-            false => Err(AppError::Custom(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.to_string())),
+            false => Err(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.into()),
         }
     }
 }

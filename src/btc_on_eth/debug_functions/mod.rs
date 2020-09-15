@@ -2,7 +2,6 @@ use serde_json::json;
 use ethereum_types::Address as EthAddress;
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
     utils::{
@@ -327,7 +326,7 @@ fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()>
         .and_then(|_| get_erc777_proxy_contract_address_from_db(db))
         .and_then(|address|
             match address.is_zero() {
-                true => Err(AppError::Custom("✘ No ERC777 proxy address set in db - not signing tx!".to_string())),
+                true => Err("✘ No ERC777 proxy address set in db - not signing tx!".into()),
                 false => Ok(()),
             }
         )

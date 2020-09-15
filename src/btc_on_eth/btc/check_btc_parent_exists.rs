@@ -1,6 +1,5 @@
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eth::btc::{
         btc_state::BtcState,
@@ -22,8 +21,6 @@ pub fn check_for_parent_of_btc_block_in_state<D>(
             info!("✔ BTC block's parent exists in database!");
             Ok(state)
         },
-        _ => Err(AppError::Custom(
-            "✘ BTC block Rejected - no parent exists in database!".to_string()
-        )),
+        _ => Err("✘ BTC block Rejected - no parent exists in database!".into()),
     }
 }

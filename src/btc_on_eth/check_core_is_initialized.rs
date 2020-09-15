@@ -1,6 +1,5 @@
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eth::{
         eth::{
@@ -21,14 +20,10 @@ pub fn check_core_is_initialized<D>(
 {
     info!("✔ Checking enclave is initialized...");
     match is_btc_enclave_initialized(db) {
-        false => Err(AppError::Custom(
-            "✘ BTC side of enclave not initialized!".to_string()
-        )),
+        false => Err("✘ BTC side of enclave not initialized!".into()),
         true => {
             match is_eth_enclave_initialized(db) {
-                false => Err(AppError::Custom(
-                    "✘ ETH side of enclave not initialized!".to_string()
-                )),
+                false => Err("✘ ETH side of enclave not initialized!".into()),
                 true => Ok(())
             }
         }
@@ -58,6 +53,7 @@ pub fn check_core_is_initialized_and_return_btc_state<D>(
 mod tests {
     use super::*;
     use crate::{
+        errors::AppError,
         test_utils::get_test_database,
         btc_on_eth::{
             btc::{

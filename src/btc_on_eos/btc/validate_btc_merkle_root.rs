@@ -1,7 +1,6 @@
 use bitcoin::blockdata::block::Block as BtcBlock;
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eos::btc::btc_state::BtcState,
     constants::{
@@ -17,7 +16,7 @@ fn validate_merkle_root(btc_block: &BtcBlock) -> Result<()> {
             info!("✔ Merkle-root valid!");
             Ok(())
         }
-        false => Err(AppError::Custom("✘ Invalid block! Merkle root doesn't match calculated merkle root!".to_string()))
+        false => Err("✘ Invalid block! Merkle root doesn't match calculated merkle root!".into())
     }
 }
 
@@ -31,7 +30,7 @@ pub fn validate_btc_merkle_root<D>(state: BtcState<D>) -> Result<BtcState<D>> wh
         info!("✔ Skipping BTC difficulty validation!");
         match DEBUG_MODE {
             true => Ok(state),
-            false => Err(AppError::Custom(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.to_string())),
+            false => Err(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.into()),
         }
     }
 }

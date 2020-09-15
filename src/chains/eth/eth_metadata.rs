@@ -40,7 +40,7 @@ impl EthMetadataVersion {
     pub fn from_byte(byte: &Byte) -> Result<Self> {
         match byte {
             1u8 => Ok(EthMetadataVersion::V1),
-            _ => Err(AppError::Custom(format!("✘ Unrecognized version byte for `EthMetadataVersion`: {:?}", byte)))
+            _ => Err(format!("✘ Unrecognized version byte for `EthMetadataVersion`: {:?}", byte).into())
         }
 
     }
@@ -115,10 +115,10 @@ impl EthMetadataFromBtc {
     fn get_sha_hash_from_bytes(bytes: &[Byte]) -> Result<sha256d::Hash> {
         match sha256d::Hash::from_slice(&Self::reverse_endianess_of_bytes(bytes)) {
             Ok(hash) => Ok(hash),
-            Err(err) => Err(AppError::Custom(format!(
+            Err(err) => Err(format!(
                 "✘ Error extracting hash from bytes in `EthMetadataVersion`: {}",
                 err
-            )))
+            ).into())
         }
     }
 
@@ -140,11 +140,11 @@ impl EthMetadataFromBtc {
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         let num_bytes = bytes.len();
         if num_bytes < MINIMUM_METADATA_BYTES {
-            return Err(AppError::Custom(format!(
+            return Err(format!(
                 "✘ Too few bytes to deserialize `EthMetadataFromBtc`! Got {}, need {}!",
                 num_bytes,
                 MINIMUM_METADATA_BYTES
-            )))
+            ).into())
         }
         let version = EthMetadataVersion::from_byte(&bytes[0])?;
         match version {

@@ -14,13 +14,8 @@ use bitcoin_hashes::{
     sha256,
 };
 use crate::{
-    errors::AppError,
     traits::DatabaseInterface,
-    types::{
-        Byte,
-        Bytes,
-        Result,
-    },
+    types::{Byte, Bytes, Result},
     constants::{
         DEBUG_MODE,
         CORE_IS_VALIDATING,
@@ -127,7 +122,7 @@ fn get_signing_key_from_active_schedule(
         .cloned()
         .collect::<Vec<EosProducerKey>>();
     match &filtered_keys.len() {
-        0 => Err(AppError::Custom("✘ Could not extract a signing key from active schedule!".to_string())),
+        0 => Err("✘ Could not extract a signing key from active schedule!".into()),
         _ => Ok(filtered_keys[0].clone()) // NOTE: Can this ever be > 1?
     }
 }
@@ -165,7 +160,7 @@ pub fn check_block_signature_is_valid(
     debug!("Recovered key: {}", recovered_key);
     match signing_key == recovered_key {
         true => Ok(()),
-        _ => Err(AppError::Custom("✘ Block signature not valid!".to_string()))
+        _ => Err("✘ Block signature not valid!".into())
     }
 }
 
@@ -178,7 +173,7 @@ pub fn validate_block_header_signature<D>(
         info!("✔ Skipping EOS block header signature validation");
         match DEBUG_MODE {
             true =>  Ok(state),
-            false => Err(AppError::Custom(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.to_string())),
+            false => Err(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.into()),
         }
     } else if state.get_eos_block_header()?.new_producer_schedule.is_some() {
         // NOTE/FIXME; To be cleaned up once validation for these has been fixed!

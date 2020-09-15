@@ -1,6 +1,5 @@
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     chains::btc::{
         deposit_address_info::DepositInfoHashMap,
@@ -62,9 +61,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         submission_material: SubmissionMaterial,
     ) -> Result<BtcState<D>> {
         match self.btc_block_and_id {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("btc_block_and_id"))
-            ),
+            Some(_) => Err(get_no_overwrite_state_err("btc_block_and_id").into()),
             None => {
                 info!("✔ Adding BTC submission material to state...");
                 self.ref_block_num = submission_material.ref_block_num;
@@ -80,9 +77,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         p2sh_deposit_txs: BtcTransactions,
     ) -> Result<BtcState<D>> {
         match self.p2sh_deposit_txs {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("p2sh_deposit_txs"))
-            ),
+            Some(_) => Err(get_no_overwrite_state_err("p2sh_deposit_txs").into()),
             None => {
                 info!("✔ Adding `p2sh` deposit txs to BTC state...");
                 self.p2sh_deposit_txs = Some(p2sh_deposit_txs);
@@ -96,9 +91,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         output_json_string: String,
     ) -> Result<BtcState<D>> {
         match self.output_json_string {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("output_json_string"))
-            ),
+            Some(_) => Err(get_no_overwrite_state_err("output_json_string").into()),
             None => {
                 info!("✔ Adding BTC output JSON to BTC state...");
                 self.output_json_string = Some(output_json_string);
@@ -112,9 +105,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         btc_block_in_db_format: BtcBlockInDbFormat,
     ) -> Result<BtcState<D>> {
         match self.btc_block_in_db_format {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("btc_block_in_db_format"))
-            ),
+            Some(_) => Err(get_no_overwrite_state_err("btc_block_in_db_format").into()),
             None => {
                 info!("✔ Adding BTC block in DB format to BTC state...");
                 self.btc_block_in_db_format = Some(btc_block_in_db_format);
@@ -128,9 +119,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         deposit_info_hash_map: DepositInfoHashMap,
     ) -> Result<BtcState<D>> {
         match self.deposit_info_hash_map {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("deposit_info_hash_map"))
-            ),
+            Some(_) => Err(get_no_overwrite_state_err("deposit_info_hash_map").into()),
             None => {
                 info!("✔ Adding deposit info hash map to BTC state...");
                 self.deposit_info_hash_map = Some(deposit_info_hash_map);
@@ -177,9 +166,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
                 self.signed_txs = signed_txs;
                 Ok(self)
             }
-            _ => Err(AppError::Custom(
-                get_no_overwrite_state_err("signed_txs"))
-            ),
+            _ => Err(get_no_overwrite_state_err("signed_txs").into()),
         }
     }
 
@@ -201,9 +188,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
                 info!("✔ Getting BTC block & ID from BTC state...");
                 Ok(&btc_block_and_id)
             }
-            None => Err(AppError::Custom(
-                get_not_in_state_err("btc_block_and_id"))
-            )
+            None => Err(get_not_in_state_err("btc_block_and_id").into())
         }
     }
 
@@ -215,9 +200,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
                 info!("✔ Getting deposit info hash map from BTC state...");
                 Ok(&deposit_info_hash_map)
             }
-            None => Err(AppError::Custom(
-                get_not_in_state_err("deposit_info_hash_map"))
-            )
+            None => Err(get_not_in_state_err("deposit_info_hash_map").into())
         }
     }
 
@@ -229,9 +212,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
                 info!("✔ Getting `p2sh` deposit txs from BTC state...");
                 Ok(&p2sh_deposit_txs)
             }
-            None => Err(AppError::Custom(
-                get_not_in_state_err("p2sh_deposit_txs"))
-            )
+            None => Err(get_not_in_state_err("p2sh_deposit_txs").into())
         }
     }
 
@@ -243,9 +224,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
                 info!("✔ Getting BTC block in DB format from BTC state...");
                 Ok(&btc_block_in_db_format)
             }
-            None => Err(AppError::Custom(
-                get_not_in_state_err("btc_block_in_db_format"))
-            )
+            None => Err(get_not_in_state_err("btc_block_in_db_format").into())
         }
     }
 
@@ -257,9 +236,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
                 info!("✔ Getting BTC output json string from state...");
                 Ok(&output_json_string)
             }
-            None => Err(AppError::Custom(
-                get_not_in_state_err("output_json_string"))
-            )
+            None => Err(get_not_in_state_err("output_json_string").into())
         }
     }
 }
@@ -267,7 +244,10 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::get_test_database;
+    use crate::{
+        errors::AppError,
+        test_utils::get_test_database,
+    };
 
     #[test]
     fn should_fail_to_get_btc_block_and_receipts_in_state() {

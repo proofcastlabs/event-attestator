@@ -1,6 +1,5 @@
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eth::eth::{
         eth_database_utils::get_eth_private_key_from_db,
@@ -17,9 +16,7 @@ where
 
     info!("✔ Checking message is valid ASCII...");
     if !message.is_ascii() {
-        return Err(AppError::Custom(
-            "✘ Non-ASCII message passed. Only valid ASCII messages are supported.".to_string(),
-        ));
+        return Err("✘ Non-ASCII message passed. Only valid ASCII messages are supported.".into());
     }
 
     let eth_private_key = get_eth_private_key_from_db(db)?;

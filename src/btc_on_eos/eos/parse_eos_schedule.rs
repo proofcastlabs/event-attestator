@@ -1,8 +1,5 @@
 use std::str::FromStr;
-use crate::{
-    types::Result,
-    errors::AppError,
-};
+use crate::types::Result;
 use eos_primitives::{
     Key as EosKey,
     KeysAndThreshold,
@@ -127,14 +124,14 @@ pub fn convert_key_json_to_eos_key(key_json: &ProducerKeyJsonV2) -> Result<EosKe
 pub fn parse_v2_schedule_string_to_v2_schedule_json(schedule_string: &str) -> Result<EosProducerScheduleJsonV2> {
     match serde_json::from_str(schedule_string) {
         Ok(result) => Ok(result),
-        Err(e) => Err(AppError::Custom(e.to_string()))
+        Err(err) => Err(err.into())
     }
 }
 
 pub fn parse_v1_schedule_string_to_v1_schedule_json(schedule_string: &str) -> Result<EosProducerScheduleJsonV1> {
     match serde_json::from_str(schedule_string) {
         Ok(result) => Ok(result),
-        Err(e) => Err(AppError::Custom(e.to_string()))
+        Err(err) => Err(err.into())
     }
 }
 

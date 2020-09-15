@@ -1,7 +1,6 @@
 use bitcoin::util::hash::BitcoinHash;
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     constants::{
         DEBUG_MODE,
@@ -20,7 +19,7 @@ fn validate_btc_block_header(btc_block_and_id: &BtcBlockAndId) -> Result<()> {
             info!("✔ BTC block header valid!");
             Ok(())
         }
-        false => Err(AppError::Custom("✘ Invalid BTC block! Block header hash does not match block id!".to_string()))
+        false => Err("✘ Invalid BTC block! Block header hash does not match block id!".into())
     }
 }
 
@@ -32,7 +31,7 @@ pub fn validate_btc_block_header_in_state<D>(state: BtcState<D>) -> Result<BtcSt
         info!("✔ Skipping BTC block-header validation!");
         match DEBUG_MODE {
             true =>  Ok(state),
-            false => Err(AppError::Custom(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.to_string())),
+            false => Err(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.into()),
         }
     }
 }
@@ -42,9 +41,12 @@ mod tests {
     use super::*;
     use std::str::FromStr;
     use bitcoin_hashes::sha256d;
-    use crate::btc_on_eth::btc::{
-        btc_types::BtcBlockAndId,
-        btc_test_utils::get_sample_btc_block_and_id,
+    use crate::{
+        errors::AppError,
+        btc_on_eth::btc::{
+            btc_types::BtcBlockAndId,
+            btc_test_utils::get_sample_btc_block_and_id,
+        },
     };
 
     #[test]

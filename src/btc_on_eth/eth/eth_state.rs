@@ -1,6 +1,5 @@
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     chains::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
     btc_on_eth::{
@@ -44,9 +43,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
         eth_block_and_receipts: EthBlockAndReceipts
     ) -> Result<EthState<D>> {
         match self.eth_block_and_receipts {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("eth_block_and_receipts"))
-            ),
+            Some(_) => Err(get_no_overwrite_state_err("eth_block_and_receipts").into()),
             None => {
                 self.eth_block_and_receipts = Some(eth_block_and_receipts);
                 Ok(self)
@@ -76,9 +73,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
         misc_string: String
     ) -> Result<EthState<D>> {
         match self.misc {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("misc_string"))
-            ),
+            Some(_) => Err(get_no_overwrite_state_err("misc_string").into()),
             None => {
                 self.misc = Some(misc_string);
                 Ok(self)
@@ -91,9 +86,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
         btc_transactions: BtcTransactions
     ) -> Result<EthState<D>> {
         match self.btc_transactions {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("btc_transaction"))
-            ),
+            Some(_) => Err(get_no_overwrite_state_err("btc_transaction").into()),
             None => {
                 self.btc_transactions = Some(btc_transactions);
                 Ok(self)
@@ -106,9 +99,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
         btc_utxos_and_values: BtcUtxosAndValues,
     ) -> Result<EthState<D>> {
         match self.btc_utxos_and_values {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("btc_utxos_and_values"))
-            ),
+            Some(_) => Err(get_no_overwrite_state_err("btc_utxos_and_values").into()),
             None => {
                 self.btc_utxos_and_values = Some(btc_utxos_and_values);
                 Ok(self)
@@ -129,9 +120,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
     ) -> Result<&EthBlockAndReceipts> {
         match &self.eth_block_and_receipts {
             Some(eth_block_and_receipts) => Ok(&eth_block_and_receipts),
-            None => Err(AppError::Custom(
-                get_not_in_state_err("eth_block_and_receipts"))
-            )
+            None => Err(get_not_in_state_err("eth_block_and_receipts").into())
         }
     }
 
@@ -156,6 +145,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
 mod tests {
     use super::*;
     use crate::{
+        errors::AppError,
         test_utils::get_test_database,
         btc_on_eth::eth::eth_test_utils::{
             get_expected_block,

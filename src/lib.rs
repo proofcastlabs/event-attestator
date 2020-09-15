@@ -1,6 +1,3 @@
-#![feature(try_trait)]
-#![feature(exclusive_range_pattern)]
-
 #![recursion_limit="128"]
 
 #![allow(clippy::match_bool)]
@@ -49,3 +46,5 @@ extern crate log;
 extern crate lazy_static;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate quick_error;

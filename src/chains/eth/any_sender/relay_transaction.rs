@@ -9,7 +9,6 @@ use crate::{
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_traits::EthTxInfoCompatible
     },
-    errors::AppError,
     types::{Byte, Bytes, Result},
 };
 use ethabi::{encode, Token};
@@ -125,27 +124,19 @@ impl RelayTransaction {
         let deadline = deadline.unwrap_or_default();
 
         if gas_limit > ANY_SENDER_MAX_GAS_LIMIT {
-            return Err(AppError::Custom(
-                "✘ AnySender gas limit is out of range!".to_string(),
-            ));
+            return Err("✘ AnySender gas limit is out of range!".into());
         }
 
         if data.len() > ANY_SENDER_MAX_DATA_LEN {
-            return Err(AppError::Custom(
-                "✘ AnySender data length is out of range!".to_string(),
-            ));
+            return Err("✘ AnySender data length is out of range!".into());
         }
 
         if compensation > ANY_SENDER_MAX_COMPENSATION_WEI {
-            return Err(AppError::Custom(
-                "✘ AnySender compensation should be smaller than 0.05 ETH!".to_string(),
-            ));
+            return Err("✘ AnySender compensation should be smaller than 0.05 ETH!".into());
         }
 
         if chain_id != ETH_MAINNET_CHAIN_ID && chain_id != ETH_ROPSTEN_CHAIN_ID {
-            return Err(AppError::Custom(
-                "✘ AnySender is not available on chain with the id provided!".to_string(),
-            ));
+            return Err("✘ AnySender is not available on chain with the id provided!".into());
         }
 
         info!(

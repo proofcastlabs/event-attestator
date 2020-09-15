@@ -1,9 +1,9 @@
 use crate::{
-    errors::AppError,
     traits::DatabaseInterface,
     types::{
         Byte,
         Bytes,
+        NoneError,
         Result,
     },
     btc_on_eos::eos::{
@@ -52,7 +52,7 @@ impl EnabledFeatures {
         AVAILABLE_FEATURES
             .get_feature_from_hash(feature_hash)
             .and_then(|feature| {
-                self.0.remove(self.0.iter().position(|x| x == &feature)?);
+                self.0.remove(self.0.iter().position(|x| x == &feature).ok_or(NoneError)?);
                 Ok(self)
             })
     }
@@ -77,8 +77,8 @@ impl EnabledFeatures {
             .map(|hash| AVAILABLE_FEATURES.maybe_get_feature_from_hash(&hash))
             .filter(|maybe_feature| maybe_feature.is_some())
             .map(|feature| -> Result<()> {
-                info!("✔ Adding feature: {}", feature.clone()?.to_json()?);
-                self.0.push(feature?);
+                info!("✔ Adding feature: {}", feature.clone().ok_or(NoneError)?.to_json()?);
+                self.0.push(feature.ok_or(NoneError)?);
                 Ok(())
             })
             .for_each(drop);
@@ -146,12 +146,10 @@ impl AvailableFeatures {
                 info!("✔ Feature hash exists in available features!");
                 Ok(())
             }
-            false => Err(AppError::Custom(
-                format!(
-                    "✘ Unrecognised feature hash: {}",
-                    hex::encode(feature_hash),
-                )
-            ))
+            false => Err(format!(
+                "✘ Unrecognised feature hash: {}",
+                hex::encode(feature_hash),
+            ).into())
         }
     }
 

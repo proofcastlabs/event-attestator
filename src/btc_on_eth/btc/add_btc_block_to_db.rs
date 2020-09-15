@@ -1,6 +1,5 @@
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eth::btc::{
         btc_state::BtcState,
@@ -18,9 +17,7 @@ pub fn maybe_add_btc_block_to_db<D>(
 {
     info!("✔ Checking if BTC block is already in the db...");
     match btc_block_exists_in_db(&state.db, &state.get_btc_block_and_id()?.id) {
-        true => Err(AppError::Custom(
-            "✘ BTC Block Rejected - it's already in the db!".to_string()
-        )),
+        true => Err("✘ BTC Block Rejected - it's already in the db!".into()),
         false => {
             let block = state.get_btc_block_in_db_format()?;
             info!("✔ BTC block not in db!");

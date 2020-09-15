@@ -10,7 +10,6 @@ use bitcoin::{
 };
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     chains::btc::deposit_address_info::{
         DepositInfoList,
@@ -66,7 +65,7 @@ pub fn parse_submission_material_to_json(
     trace!("✔ Parsing JSON string to `SubmissionMaterialJson`...");
     match serde_json::from_str(submission_material) {
         Ok(json) => Ok(json),
-        Err(e) => Err(AppError::Custom(e.to_string()))
+        Err(err) => Err(err.into())
     }
 }
 

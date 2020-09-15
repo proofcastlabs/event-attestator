@@ -11,7 +11,6 @@ use std::{
     fmt,
 };
 use crate::{
-    errors::AppError,
     utils::decode_hex_with_err_msg,
     chains::btc::btc_utils::convert_hex_to_sha256_hash,
     types::{
@@ -44,7 +43,7 @@ impl DepositAddressInfoVersion {
             Some('0') => Ok(DepositAddressInfoVersion::V0),
             Some('1') => Ok(DepositAddressInfoVersion::V1),
             Some('2') => Ok(DepositAddressInfoVersion::V2),
-            _ => Err(AppError::Custom(format!("✘ Deposit address list version unrecognized: {}", version_string)))
+            _ => Err(format!("✘ Deposit address list version unrecognized: {}", version_string).into())
         }
     }
 }
@@ -145,12 +144,12 @@ impl DepositAddressInfo {
         match DepositAddressInfoVersion::from_maybe_string(&deposit_address_info_json.version)? {
             DepositAddressInfoVersion::V0 => match &deposit_address_info_json.eth_address_and_nonce_hash {
                 Some(hash_string) => Ok(hash_string.clone()),
-                None => Err(AppError::Custom(Self::get_missing_field_err_msg("eth_address_and_nonce_hash"))),
+                None => Err(Self::get_missing_field_err_msg("eth_address_and_nonce_hash").into()),
             },
             DepositAddressInfoVersion::V1 | DepositAddressInfoVersion::V2 =>
                 match &deposit_address_info_json.address_and_nonce_hash {
                     Some(hash_string) => Ok(hash_string.clone()),
-                    None => Err(AppError::Custom(Self::get_missing_field_err_msg("address_and_nonce_hash"))),
+                    None => Err(Self::get_missing_field_err_msg("address_and_nonce_hash").into()),
                 },
         }
     }
@@ -166,11 +165,11 @@ impl DepositAddressInfo {
         match DepositAddressInfoVersion::from_maybe_string(&deposit_address_info_json.version)? {
             DepositAddressInfoVersion::V0 => match &deposit_address_info_json.eth_address {
                 Some(hash_string) => Ok(hash_string.clone()),
-                None => Err(AppError::Custom(Self::get_missing_field_err_msg("eth_address"))),
+                None => Err(Self::get_missing_field_err_msg("eth_address").into()),
             },
             DepositAddressInfoVersion::V1 | DepositAddressInfoVersion::V2 => match &deposit_address_info_json.address {
                 Some(hash_string) => Ok(hash_string.clone()),
-                None => Err(AppError::Custom(Self::get_missing_field_err_msg("address"))),
+                None => Err(Self::get_missing_field_err_msg("address").into()),
             }
         }
     }
@@ -243,7 +242,7 @@ impl DepositAddressInfo {
                         debug!("        Deposit info adresss: {}", &self.address);
                         debug!("  Calculated commitment hash: {}", &calculated_hash);
                         debug!("Deposit info commitment hash: {}", &self.commitment_hash);
-                        Err(AppError::Custom("✘ Deposit info error - commitment hash is not valid!".to_string()))
+                        Err("✘ Deposit info error - commitment hash is not valid!".into())
                     },
                 }
             })
@@ -288,6 +287,7 @@ impl DepositAddressInfo {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::errors::AppError;
 
     #[test]
     fn should_err_if_json_is_v1_and_has_no_address_and_nonce_hash_key() {

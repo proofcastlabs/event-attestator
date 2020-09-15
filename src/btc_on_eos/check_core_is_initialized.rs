@@ -1,6 +1,5 @@
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eos::{
         btc::{
@@ -21,9 +20,7 @@ pub fn check_btc_core_is_initialized<D>(
 {
     info!("✔ Checking BTC core is initialized...");
     match is_btc_core_initialized(db) {
-        false => Err(AppError::Custom(
-            "✘ BTC side of core not initialized!".to_string()
-        )),
+        false => Err("✘ BTC side of core not initialized!".into()),
         true => Ok(())
     }
 }
@@ -35,9 +32,7 @@ pub fn check_eos_core_is_initialized<D>(
 {
     info!("✔ Checking EOS core is initialized...");
     match is_eos_core_initialized(db) {
-        false => Err(AppError::Custom(
-            "✘ EOS side of core not initialized!".to_string()
-        )),
+        false => Err("✘ EOS side of core not initialized!".into()),
         true => Ok(())
     }
 }

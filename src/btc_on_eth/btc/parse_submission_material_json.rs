@@ -4,7 +4,6 @@ use crate::{
         parse_btc_block_and_id::BtcBlockJson,
     },
     chains::btc::deposit_address_info::DepositAddressInfoJsonList,
-    errors::AppError,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -23,7 +22,7 @@ pub fn parse_btc_block_string_to_json(
     trace!("✔ Parsing JSON string to `BtcSubmissionMaterialJson`...");
     match serde_json::from_str(btc_block_json_string) {
         Ok(json) => Ok(json),
-        Err(e) => Err(AppError::Custom(e.to_string()))
+        Err(err) => Err(err.into())
     }
 }
 

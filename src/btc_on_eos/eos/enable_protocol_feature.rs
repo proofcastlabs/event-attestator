@@ -1,23 +1,12 @@
 use crate::{
-    errors::AppError,
     traits::DatabaseInterface,
-    types::{
-        Byte,
-        Result,
-    },
+    types::{Byte, Result},
     btc_on_eos::{
-        check_core_is_initialized::{
-            check_core_is_initialized_and_return_eos_state,
-        },
+        check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
         eos::{
             eos_state::EosState,
-            get_enabled_protocol_features::{
-                get_enabled_protocol_features_and_add_to_state
-            },
-            protocol_features::{
-                EnabledFeatures,
-                AVAILABLE_FEATURES,
-            },
+            get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
+            protocol_features::{EnabledFeatures, AVAILABLE_FEATURES},
             eos_database_utils::{
                 end_eos_db_transaction,
                 start_eos_db_transaction,
@@ -38,9 +27,7 @@ fn enable_protocol_feature<D>(
         .check_contains(feature_hash)
         .and_then(|_| {
             if enabled_features.is_enabled(feature_hash) {
-                return Err(AppError::Custom(
-                    "✘ Feature already enabled, doing nothing!".to_string()
-                ))
+                return Err("✘ Feature already enabled, doing nothing!".into())
             }
             info!("✔ Enabling new feature: {}", hex::encode(feature_hash));
             enabled_features
