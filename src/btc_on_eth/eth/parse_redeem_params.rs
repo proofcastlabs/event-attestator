@@ -6,7 +6,6 @@ use ethereum_types::{
 };
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     chains::eth::eth_constants::{
         REDEEM_EVENT_TOPIC_HEX,
@@ -64,9 +63,7 @@ fn parse_redeem_amount_from_log(log: &EthLog) -> Result<U256> {
                 )
             )
         ),
-        false => Err(AppError::Custom(
-            "✘ Not enough bytes in log data to slice out redeem amount!".to_string()
-        ))
+        false => Err("✘ Not enough bytes in log data to slice out redeem amount!".into())
     }
 }
 

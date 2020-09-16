@@ -4,7 +4,6 @@ use eos_primitives::{
 };
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     chains::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
     btc_on_eos::{
@@ -68,9 +67,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
         btc_utxos_and_values: BtcUtxosAndValues,
     ) -> Result<EosState<D>> {
         match self.btc_utxos_and_values {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("btc_utxos_and_values"))
-            ),
+            Some(_) => Err(get_no_overwrite_state_err("btc_utxos_and_values").into()),
             None => {
                 self.btc_utxos_and_values = Some(btc_utxos_and_values);
                 Ok(self)
@@ -83,9 +80,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
         active_schedule: EosProducerScheduleV2,
     ) -> Result<EosState<D>> {
         match self.active_schedule {
-            Some(_) => Err(AppError::Custom(
-                get_no_overwrite_state_err("active_schedule"))
-            ),
+            Some(_) => Err(get_no_overwrite_state_err("active_schedule").into()),
             None => {
                 self.active_schedule = Some(active_schedule);
                 Ok(self)
@@ -152,27 +147,21 @@ impl<D> EosState<D> where D: DatabaseInterface {
     pub fn get_eos_block_header(&self) -> Result<&EosBlockHeader> {
         match &self.block_header{
             Some(block_header) => Ok(&block_header),
-            None => Err(AppError::Custom(
-                get_not_in_state_err("block_header"))
-            )
+            None => Err(get_not_in_state_err("block_header").into())
         }
     }
 
     pub fn get_eos_block_num(&self) -> Result<u64> {
         match self.block_num {
             Some(num) => Ok(num),
-            None => Err(AppError::Custom(
-                get_not_in_state_err("block_num"))
-            )
+            None => Err(get_not_in_state_err("block_num").into())
         }
     }
 
     pub fn get_active_schedule(&self) -> Result<&EosProducerScheduleV2> {
         match &self.active_schedule{
             Some(active_schedule) => Ok(&active_schedule),
-            None => Err(AppError::Custom(
-                get_not_in_state_err("active_schedule"))
-            )
+            None => Err(get_not_in_state_err("active_schedule").into())
         }
     }
 

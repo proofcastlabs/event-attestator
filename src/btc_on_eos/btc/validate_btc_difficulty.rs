@@ -4,7 +4,6 @@ use bitcoin::{
 };
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     constants::{
         DEBUG_MODE,
@@ -41,7 +40,7 @@ fn check_difficulty_is_above_threshold(
                             btc_block_header.difficulty(network),
                             threshold,
                         );
-                        Err(AppError::Custom("✘ Invalid block! Difficulty is below threshold!".to_string()))
+                        Err("✘ Invalid block! Difficulty is below threshold!".into())
                     }
                 }
         }
@@ -68,7 +67,7 @@ pub fn validate_difficulty_of_btc_block_in_state<D>(
         info!("✔ Skipping BTC difficulty validation!");
         match DEBUG_MODE {
             true => Ok(state),
-            false => Err(AppError::Custom(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.to_string())),
+            false => Err(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.into()),
         }
     }
 }

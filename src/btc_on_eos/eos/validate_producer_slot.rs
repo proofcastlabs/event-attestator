@@ -4,7 +4,6 @@ use eos_primitives::{
 };
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eos::eos::eos_state::EosState,
     chains::eos::eos_constants::PRODUCER_REPS,
@@ -41,7 +40,7 @@ fn validate_producer_slot(
                 "  Actual producer: {}",
                 schedule.producers[index].producer_name.to_string()
             );
-            Err(AppError::Custom("✘ Producer slot not valid!".to_string()))
+            Err("✘ Producer slot not valid!".into())
         }
     }
 }
@@ -58,7 +57,7 @@ pub fn validate_producer_slot_of_block_in_state<D>(
         info!("✔ Skipping producer slot validation!");
         match DEBUG_MODE {
             true =>  Ok(state),
-            false => Err(AppError::Custom(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.to_string())),
+            false => Err(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.into()),
         }
     }
 }

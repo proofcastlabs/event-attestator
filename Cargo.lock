@@ -529,7 +529,7 @@ dependencies = [
 
 [[package]]
 name = "ptokens_core"
-version = "1.10.0"
+version = "1.11.0"
 dependencies = [
  "base58",
  "bitcoin",
@@ -542,6 +542,7 @@ dependencies = [
  "hex 0.4.0",
  "lazy_static",
  "log",
+ "quick-error",
  "rand 0.7.2",
  "rlp",
  "rustc-hex",
@@ -554,6 +555,12 @@ dependencies = [
  "simplelog",
  "tiny-keccak 1.5.0",
 ]
+
+[[package]]
+name = "quick-error"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ac73b1112776fc109b2e61909bc46c7e1bf0d7f690ffb1676553acce16d5cda"
 
 [[package]]
 name = "quote"

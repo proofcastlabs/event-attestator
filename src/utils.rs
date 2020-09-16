@@ -1,12 +1,7 @@
 use tiny_keccak::keccak256;
 use crate::{
-    errors::AppError,
     constants::DEBUG_OUTPUT_MARKER,
-    types::{
-        Byte,
-        Bytes,
-        Result,
-    },
+    types::{Byte, Bytes, Result},
     constants::{
         U64_NUM_BYTES,
         DB_KEY_PREFIX,
@@ -19,14 +14,14 @@ pub fn get_prefixed_db_key(suffix: &str) -> [u8; 32] {
 
 pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
     match bytes.len() {
-        0..=7 => Err(AppError::Custom("✘ Not enough bytes to convert to u64!".to_string())),
+        0..=7 => Err("✘ Not enough bytes to convert to u64!".into()),
         U64_NUM_BYTES => {
             let mut arr = [0u8; U64_NUM_BYTES];
             let bytes = &bytes[..U64_NUM_BYTES];
             arr.copy_from_slice(bytes);
             Ok(u64::from_le_bytes(arr))
         }
-        _ => Err(AppError::Custom("✘ Too many bytes to convert to u64 without overflowing!".to_string())),
+        _ => Err("✘ Too many bytes to convert to u64 without overflowing!".into()),
     }
 }
 
@@ -54,7 +49,7 @@ pub fn strip_hex_prefix(hex : &str) -> Result<String> {
 pub fn decode_hex_with_err_msg(hex: &str, err_msg: &str) -> Result<Bytes> {
     match hex::decode(strip_hex_prefix(hex)?) {
         Ok(bytes) => Ok(bytes),
-        Err(err) => Err(AppError::Custom(format!("{} {}", err_msg, err))),
+        Err(err) => Err(format!("{} {}", err_msg, err).into()),
     }
 }
 
@@ -69,6 +64,7 @@ pub fn prepend_debug_output_marker_to_string(string_to_prepend: String) -> Strin
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::errors::AppError;
 
     #[test]
     fn should_maybe_initialize_simple_logger() {

@@ -1,7 +1,6 @@
 use ethereum_types::H256 as EthHash;
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eth::{
         utils::convert_h256_to_bytes,
@@ -35,9 +34,7 @@ pub fn check_for_parent_of_block_in_state<D>(
             info!("✔ Block's parent exists in database!");
             Ok(state)
         },
-        false => Err(AppError::Custom(
-            "✘ Block Rejected - no parent exists in database!".to_string()
-        )),
+        false => Err("✘ Block Rejected - no parent exists in database!".into()),
     }
 }
 

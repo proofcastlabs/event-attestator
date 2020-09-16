@@ -1,10 +1,6 @@
 use crate::{
-    errors::AppError,
     traits::DatabaseInterface,
-    types::{
-        Byte,
-        Result,
-    },
+    types::{Byte, Result},
 };
 
 pub fn put_u64_in_db<D>(
@@ -34,9 +30,7 @@ pub fn get_u64_from_db<D>(
                     array.copy_from_slice(bytes);
                     Ok(u64::from_le_bytes(array))
                 },
-                false => Err(AppError::Custom(
-                    "✘ Too many bytes to convert to u64!".to_string()
-                ))
+                false => Err("✘ Too many bytes to convert to u64!".into())
             }
         )
 }

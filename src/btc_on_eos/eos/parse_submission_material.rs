@@ -10,8 +10,7 @@ use eos_primitives::{
     ProducerScheduleV2 as EosProducerScheduleV2,
 };
 use crate::{
-    types::Result,
-    errors::AppError,
+    types::{NoneError, Result},
     traits::DatabaseInterface,
     btc_on_eos::{
         utils::convert_hex_to_checksum256,
@@ -66,7 +65,7 @@ pub fn parse_eos_submission_material_string_to_json(
 ) -> Result<EosSubmissionMaterialJson> {
     match serde_json::from_str(submission_material_string) {
         Ok(result) => Ok(result),
-        Err(e) => Err(AppError::Custom(e.to_string()))
+        Err(err) => Err(err.into())
     }
 }
 
@@ -112,10 +111,16 @@ pub fn parse_eos_block_header_from_json(
 ) -> Result<EosBlockHeader> {
     let schedule = if eos_block_header_json.new_producers.is_some() {
         debug!("✔ `new_producers` field in EOS block json!");
-        Some(convert_schedule_json_value_to_v2_schedule_json(eos_block_header_json.new_producers.as_ref()?)?)
+        Some(convert_schedule_json_value_to_v2_schedule_json(
+            eos_block_header_json.new_producers.as_ref()
+                .ok_or(NoneError("Could not unwrap `new_producers` field in EOS block json!"))?
+        )?)
     } else if eos_block_header_json.new_producer_schedule.is_some() {
         debug!("✔ `new_producer_schedule` field in EOS block json!");
-        Some(convert_schedule_json_value_to_v2_schedule_json(&eos_block_header_json.new_producer_schedule.clone()?)?)
+        Some(convert_schedule_json_value_to_v2_schedule_json(
+            &eos_block_header_json.new_producer_schedule.clone()
+                .ok_or(NoneError("Could not unwrap `new_producer_schedule` field in EOS block json!"))?
+        )?)
     } else {
         debug!("✔ No producers field in EOS block json!");
         None

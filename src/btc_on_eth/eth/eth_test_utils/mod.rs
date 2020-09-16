@@ -174,15 +174,11 @@ pub fn get_sample_eth_block_and_receipts_string(num: usize) -> Result<String> {
         4 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_4),
         5 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_5),
         6 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_6),
-        _ => Err(
-            AppError::Custom(format!("Cannot find sample block num: {}", num))
-        )
+        _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num)))
     }?;
     match Path::new(&path).exists() {
         true => Ok(read_to_string(path)?),
-        false => Err(AppError::Custom(
-            "✘ Cannot find sample-eth-block-and-receipts-json file!".to_string()
-        ))
+        false => Err("✘ Cannot find sample-eth-block-and-receipts-json file!".into())
     }
 }
 
@@ -410,9 +406,7 @@ pub fn get_expected_key_of_thing_in_trie_hash_map() -> EthHash {
 pub fn get_valid_state_with_invalid_block_and_receipts(
 ) -> Result<EthState<TestDB>> {
     match Path::new(&SAMPLE_BLOCK_AND_RECEIPT_JSON).exists() {
-        false => Err(AppError::Custom(
-            "✘ Cannot find sample-eth-block-and-receipts-json file!".to_string()
-        )),
+        false => Err("✘ Cannot find sample-eth-block-and-receipts-json file!".into()),
         true => {
             let string = read_to_string(SAMPLE_INVALID_BLOCK_AND_RECEIPT_JSON)
                 .unwrap();
@@ -438,10 +432,8 @@ pub fn get_sample_eth_block_and_receipts_json(
     get_sample_eth_block_and_receipts_string(0)
         .and_then(|eth_block_and_receipts_json_string|
             match serde_json::from_str(&eth_block_and_receipts_json_string) {
-                Ok(eth_block_and_receipts_json) =>
-                    Ok(eth_block_and_receipts_json),
-                Err(e) =>
-                    Err(AppError::Custom(e.to_string()))
+                Ok(eth_block_and_receipts_json) => Ok(eth_block_and_receipts_json),
+                Err(err) => Err(err.into())
             }
         )
 }

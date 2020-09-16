@@ -411,10 +411,7 @@ pub fn get_sample_btc_block_n(n: usize) -> Result<BtcBlockAndId> {
         7 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_7),
         8 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_8),
         9 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_9),
-        _ => Err(AppError::Custom(
-            "✘ Don't have sample for that number!"
-                .to_string()
-        ))
+        _ => Err(AppError::Custom("✘ Don't have sample for that number!".into()))
     }.unwrap();
     parse_btc_block_string_to_json(&read_to_string(&block_path)?)
         .and_then(|result| parse_btc_block_and_tx_json_to_struct(&result))
@@ -426,10 +423,7 @@ pub fn get_sample_op_return_utxo_and_value_n(n: usize) -> Result<BtcUtxoAndValue
         2 => Ok((SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_2, 18, 2)),
         3 => Ok((SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_3, 28, 0)),
         4 => Ok((SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_3, 28, 1)),
-        _ => Err(AppError::Custom(
-            "✘ Don't have sample for that number!"
-                .to_string()
-        ))
+        _ => Err(AppError::Custom("✘ Don't have sample for that number!".into()))
     }.unwrap();
     parse_btc_block_string_to_json(&read_to_string(&tuple.0)?)
         .and_then(|result| parse_btc_block_and_tx_json_to_struct(&result))

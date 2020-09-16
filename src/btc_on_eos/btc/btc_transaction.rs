@@ -9,11 +9,7 @@ use bitcoin::{
     }
 };
 use crate::{
-    errors::AppError,
-    types::{
-        Bytes,
-        Result,
-    },
+    types::{Bytes, Result},
     chains::btc::{
         deposit_address_info::DepositAddressInfo,
         utxo_manager::utxo_types::BtcUtxoAndValue,
@@ -58,7 +54,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
     info!("✔ Change amount:  {}", utxo_total - (total_to_spend + fee));
     info!("✔ Tx fee:         {}", fee);
     if total_to_spend + fee > utxo_total {
-        return Err(AppError::Custom("✘ Not enough UTXO value to make transaction!".to_string()));
+        return Err("✘ Not enough UTXO value to make transaction!".into());
     };
     let mut outputs = recipient_addresses_and_amounts
         .iter()

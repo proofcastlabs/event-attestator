@@ -1,7 +1,6 @@
 use ethereum_types::H256;
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     chains::eth::eth_crypto_utils::keccak_hash_bytes,
     constants::{
@@ -36,13 +35,13 @@ pub fn validate_block_in_state<D>(state: EthState<D>) -> Result<EthState<D>> whe
         info!("✔ Validating block header...");
         match validate_block_header(&state.get_eth_block_and_receipts()?.block)? {
             true => Ok(state),
-            false => Err(AppError::Custom("✘ Not accepting ETH block - header hash not valid!".to_string())),
+            false => Err("✘ Not accepting ETH block - header hash not valid!".into()),
         }
     } else {
         info!("✔ Skipping ETH block header validaton!");
         match DEBUG_MODE {
             true =>  Ok(state),
-            false => Err(AppError::Custom(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.to_string())),
+            false => Err(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.into()),
         }
     }
 }
@@ -50,10 +49,13 @@ pub fn validate_block_in_state<D>(state: EthState<D>) -> Result<EthState<D>> whe
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::eth_test_utils::{
-        get_sample_invalid_block,
-        get_sample_eth_block_and_receipts,
-        get_valid_state_with_block_and_receipts,
+    use crate::{
+        errors::AppError,
+        btc_on_eth::eth::eth_test_utils::{
+            get_sample_invalid_block,
+            get_sample_eth_block_and_receipts,
+            get_valid_state_with_block_and_receipts,
+        },
     };
 
     #[test]

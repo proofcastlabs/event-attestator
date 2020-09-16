@@ -1,5 +1,4 @@
 use crate::{
-    errors::AppError,
     traits::DatabaseInterface,
     types::{
         Byte,
@@ -38,9 +37,7 @@ fn disable_protocol_feature<D>(
         .check_contains(feature_hash)
         .and_then(|_| {
             if enabled_features.is_not_enabled(feature_hash) {
-                return Err(AppError::Custom(
-                    "✘ Feature not enabled, doing nothing!".to_string()
-                ))
+                return Err("✘ Feature not enabled, doing nothing!".into());
             }
             info!("✔ Disabling feature: {}", hex::encode(feature_hash));
             enabled_features

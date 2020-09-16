@@ -1,6 +1,5 @@
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eth::eth::{
         eth_state::EthState,
@@ -43,7 +42,7 @@ fn json_stringify(
 ) -> Result<String> {
     match serde_json::to_string(&output) {
         Ok(res) => Ok(res),
-        Err(err) => Err(AppError::Custom(err.to_string()))
+        Err(err) => Err(err.into())
     }
 }
 

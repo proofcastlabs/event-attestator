@@ -8,6 +8,7 @@ use crate::{
     types::{
         Byte,
         Bytes,
+        NoneError,
         Result,
     },
     btc_on_eos::utils::convert_hex_to_checksum256,
@@ -88,7 +89,9 @@ pub fn verify_merkle_proof(merkle_proof: &[String]) -> Result<bool> {
             false => {node = make_and_hash_canonical_pair(&leaf, &node);}
         }
     };
-    Ok(node == hex::decode(merkle_proof.last()?)?)
+    Ok(node == hex::decode(merkle_proof.last()
+        .ok_or(NoneError("Could not unwrap merkle proof!"))?
+    )?)
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -226,7 +229,7 @@ impl Incremerkle {
                 partial = true;
             } else {
                 let left_value = active_iter.next().ok_or_else(
-                    || AppError::Custom("✘ Incremerkle error!".to_string())
+                    || AppError::Custom("✘ Incremerkle error!".into())
                 )?;
 
                 if partial {

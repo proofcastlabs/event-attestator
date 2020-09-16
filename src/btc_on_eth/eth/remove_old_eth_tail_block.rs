@@ -1,7 +1,6 @@
 use ethereum_types::H256 as EthHash;
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     btc_on_eth::eth::{
         eth_types::EthBlockAndReceipts,
@@ -22,9 +21,7 @@ fn is_anchor_block<D>(
 {
     match get_eth_anchor_block_hash_from_db(db) {
         Ok(hash) => Ok(&hash == eth_block_hash),
-        _ => Err(AppError::Custom(
-            "✘ No anchor hash found in db!".to_string()
-        ))
+        _ => Err("✘ No anchor hash found in db!".into())
     }
 }
 

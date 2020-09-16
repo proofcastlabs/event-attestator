@@ -1,5 +1,4 @@
 use crate::{
-    errors::AppError,
     traits::DatabaseInterface,
     constants::CORE_IS_VALIDATING,
     types::{
@@ -59,7 +58,7 @@ impl EosInitJson {
     pub fn from_json_string(json_string: &str) -> Result<Self> {
         match serde_json::from_str(&json_string) {
             Ok(result) => Ok(result),
-            Err(e) => Err(AppError::Custom(e.to_string()))
+            Err(err) => Err(err.into())
         }
     }
 

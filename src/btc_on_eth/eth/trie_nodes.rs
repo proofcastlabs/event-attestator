@@ -4,11 +4,7 @@ use rlp::{
     RlpStream
 };
 use crate::{
-    errors::AppError,
-    types::{
-        Bytes,
-        Result,
-    },
+    types::{Bytes, Result},
     chains::eth::{
         eth_crypto_utils::keccak_hash_bytes,
         eth_constants::{
@@ -143,9 +139,7 @@ impl Node {
                 }
             )
         } else {
-            Err(AppError::Custom(
-                "✘ Cannot update branches - not a branch node!".to_string()
-            ))
+            Err("✘ Cannot update branches - not a branch node!".into())
         }
     }
 
@@ -175,7 +169,7 @@ impl Node {
             };
             Ok(rlp_stream.out())
         } else {
-            Err(AppError::Custom(NO_NODE_IN_STRUCT_ERR.to_string()))
+            Err(NO_NODE_IN_STRUCT_ERR.into())
         }
     }
 
@@ -232,7 +226,7 @@ impl Node {
 
 pub fn rlp_decode_node(rlp_data: Bytes) -> Result<Node> {
     match Rlp::new(&rlp_data).as_list() {
-        Err(e) => Err(AppError::Custom(e.to_string())),
+        Err(err) => Err(err.into()),
         Ok(list) => {
             match list.len() {
                 2 => {
@@ -279,9 +273,7 @@ pub fn rlp_decode_node(rlp_data: Bytes) -> Result<Node> {
                         }
                     )
                 },
-                _ => Err(AppError::Custom(
-                    "✘ Cannot decode node from rlp data!".to_string()
-                ))
+                _ => Err("✘ Cannot decode node from rlp data!".into())
             }
         }
     }
@@ -318,21 +310,24 @@ pub fn get_node_from_trie_hash_map(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
-        utils::convert_hex_to_h256,
-        eth::{
-            nibble_utils::{
-                get_length_in_nibbles,
-                get_nibbles_from_bytes,
-            },
-            get_trie_hash_map::{
-                get_new_trie_hash_map,
-                put_thing_in_trie_hash_map,
-            },
-            eth_test_utils::{
-                get_sample_leaf_node,
-                get_sample_branch_node,
-                get_sample_extension_node,
+    use crate::{
+        errors::AppError,
+        btc_on_eth::{
+            utils::convert_hex_to_h256,
+            eth::{
+                nibble_utils::{
+                    get_length_in_nibbles,
+                    get_nibbles_from_bytes,
+                },
+                get_trie_hash_map::{
+                    get_new_trie_hash_map,
+                    put_thing_in_trie_hash_map,
+                },
+                eth_test_utils::{
+                    get_sample_leaf_node,
+                    get_sample_branch_node,
+                    get_sample_extension_node,
+                },
             },
         },
     };

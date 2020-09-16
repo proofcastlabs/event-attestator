@@ -6,7 +6,6 @@ use eos_primitives::{
 };
 use crate::{
     types::Result,
-    errors::AppError,
     traits::DatabaseInterface,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     chains::eos::eos_constants::{
@@ -195,9 +194,7 @@ pub fn get_eos_schedule_from_db<D>(
     trace!("✔ Getting EOS schedule from db...");
     match get_string_from_db(db, &get_eos_schedule_db_key(version)) {
         Ok(json) => parse_v2_schedule_string_to_v2_schedule(&json),
-        Err(_) => Err(AppError::Custom(
-            format!("✘ Core does not have EOS schedule version: {}", version)
-        ))
+        Err(_) => Err(format!("✘ Core does not have EOS schedule version: {}", version).into())
     }
 }
 

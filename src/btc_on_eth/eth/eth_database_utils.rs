@@ -215,9 +215,7 @@ pub fn put_special_eth_hash_in_db<D>(
         "tail" => Ok(ETH_TAIL_BLOCK_HASH_KEY.to_vec()),
         "anchor" => Ok(ETH_ANCHOR_BLOCK_HASH_KEY.to_vec()),
         "latest" => Ok(ETH_LATEST_BLOCK_HASH_KEY.to_vec()),
-        _ => Err(AppError::Custom(
-            format!("✘ Cannot store special ETH hash of type: {}!", hash_type)
-        ))
+        _ => Err(AppError::Custom(format!("✘ Cannot store special ETH hash of type: {}!", hash_type)))
     }?;
     put_eth_hash_in_db(db, &key, hash)
 }
@@ -281,9 +279,7 @@ pub fn get_special_eth_hash_from_db<D>(
         "tail" => Ok(ETH_TAIL_BLOCK_HASH_KEY.to_vec()),
         "anchor" => Ok(ETH_ANCHOR_BLOCK_HASH_KEY.to_vec()),
         "latest" => Ok(ETH_LATEST_BLOCK_HASH_KEY.to_vec()),
-        _ => Err(AppError::Custom(
-            format!("✘ Cannot get ETH special hash of type: {}!", hash_type)
-        ))
+        _ => Err(AppError::Custom(format!("✘ Cannot get ETH special hash of type: {}!", hash_type)))
     }?;
     trace!("✔ Getting special ETH hash from db of type: {}", hash_type);
     get_eth_hash_from_db(db, &key.to_vec())
@@ -450,9 +446,7 @@ pub fn get_eth_gas_price_from_db<D>(db: &D) -> Result<u64>
                     array.copy_from_slice(bytes);
                     Ok(u64::from_le_bytes(array))
                 },
-                false => Err(AppError::Custom(
-                    "✘ Too many bytes to convert to u64!".to_string()
-                ))
+                false => Err("✘ Too many bytes to convert to u64!".into())
             }
         )
 }
@@ -512,9 +506,7 @@ pub fn get_eth_chain_id_from_db<D>(db: &D) -> Result<u8>
                     array.copy_from_slice(bytes);
                     Ok(u8::from_le_bytes(array))
                 },
-                false => Err(AppError::Custom(
-                    "✘ Wrong number of bytes to convert to usize!".to_string()
-                ))
+                false => Err("✘ Wrong number of bytes to convert to usize!".into())
             }
         )
 }

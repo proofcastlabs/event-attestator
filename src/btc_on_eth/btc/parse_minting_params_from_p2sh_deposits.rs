@@ -4,8 +4,7 @@ use bitcoin::{
     blockdata::transaction::Transaction as BtcTransaction,
 };
 use crate::{
-    types::Result,
-    errors::AppError,
+    types::{NoneError, Result},
     traits::DatabaseInterface,
     chains::btc::deposit_address_info::DepositInfoHashMap,
     btc_on_eth::{
@@ -45,10 +44,14 @@ fn parse_minting_params_from_p2sh_deposit_tx(
         )
         .filter(|(_, maybe_address)| maybe_address.is_some())
         .map(|(tx_out, address)|
-            match deposit_info_hash_map.get(&address.clone()?) {
+            match deposit_info_hash_map.get(
+                &address.clone().ok_or(NoneError("Could not unwrap BTC address!"))?
+            ) {
                 None => {
-                    info!("✘ BTC address {} not in deposit list!", address?);
-                    Err(AppError::Custom("Filtering out this err!".to_string()))
+                    info!("✘ BTC address {} not in deposit list!", address
+                        .ok_or(NoneError("Could not unwrap BTC address!"))?
+                    );
+                    Err("Filtering out this err!".into())
                 }
                 Some(deposit_info) => {
                     info!("✔ Deposit info from list: {:?}", deposit_info);
@@ -56,7 +59,7 @@ fn parse_minting_params_from_p2sh_deposit_tx(
                         convert_satoshis_to_ptoken(tx_out.value),
                         deposit_info.address.clone(),
                         p2sh_deposit_containing_tx.txid(),
-                        address?,
+                        address.ok_or(NoneError("Could not unwrap BTC address!"))?,
                     )
                 }
             }

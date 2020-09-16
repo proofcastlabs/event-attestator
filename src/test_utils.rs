@@ -4,13 +4,8 @@ use std::{
     collections::HashMap,
 };
 use crate::{
-    errors::AppError,
     traits::DatabaseInterface,
-    types::{
-        Bytes,
-        Result,
-        DataSensitivity,
-    },
+    types::{Bytes, Result, DataSensitivity},
 };
 
 pub static DB_LOCK_ERRROR: &str = "✘ Cannot get lock on DB!";
@@ -50,7 +45,7 @@ impl DatabaseInterface for TestDB {
     fn get(&self, key: Bytes, _sensitivity: DataSensitivity) -> Result<Bytes> {
         match self.0.lock().expect(DB_LOCK_ERRROR).get(&key) {
             Some(value) => Ok(value.to_vec()),
-            None => Err(AppError::Custom("✘ Cannot find item in database!".to_string()))
+            None => Err("✘ Cannot find item in database!".into())
         }
     }
 }

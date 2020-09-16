@@ -183,9 +183,7 @@ pub fn get_special_hash_from_db<D>(
         "canon" => Ok(BTC_CANON_BLOCK_HASH_KEY.to_vec()),
         "anchor" => Ok(BTC_ANCHOR_BLOCK_HASH_KEY.to_vec()),
         "latest" => Ok(BTC_LATEST_BLOCK_HASH_KEY.to_vec()),
-        _ => Err(AppError::Custom(
-            format!("✘ Cannot get special BTC hash of type: {}!", hash_type)
-        ))
+        _ => Err(AppError::Custom(format!("✘ Cannot get special BTC hash of type: {}!", hash_type)))
     }?;
     trace!("✔ Getting special BTC hash from db of type: {}", hash_type);
     get_btc_hash_from_db(db, &key.to_vec())
@@ -217,9 +215,7 @@ pub fn put_special_btc_hash_in_db<D>(
         "canon" => Ok(BTC_CANON_BLOCK_HASH_KEY.to_vec()),
         "anchor" => Ok(BTC_ANCHOR_BLOCK_HASH_KEY.to_vec()),
         "latest" => Ok(BTC_LATEST_BLOCK_HASH_KEY.to_vec()),
-        _ => Err(AppError::Custom(
-            format!("✘ Cannot store special BTC hash of type: {}!", hash_type)
-        ))
+        _ => Err(AppError::Custom(format!("✘ Cannot store special BTC hash of type: {}!", hash_type)))
     }?;
     put_btc_hash_in_db(db, &key, hash)
 }

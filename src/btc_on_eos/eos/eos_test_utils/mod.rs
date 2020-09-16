@@ -152,7 +152,7 @@ impl EosInitAndSubsequentBlocksJson {
     pub fn from_json_string(json_string: &str) -> Result<Self> {
         match serde_json::from_str(&json_string) {
             Ok(result) => Ok(result),
-            Err(e) => Err(AppError::Custom(e.to_string()))
+            Err(err) => Err(err.into())
         }
     }
 
@@ -167,9 +167,7 @@ impl EosInitAndSubsequentBlocksJson {
     fn check_n(&self, n: usize) -> Result<()> {
         match n >= 1 && n <= self.total_num_blocks() {
             true => Ok(()),
-            false => Err(AppError::Custom(
-                format!("✘ Not enough blocks to get block num {}!", n)
-            )),
+            false => Err(format!("✘ Not enough blocks to get block num {}!", n).into()),
         }
     }
 
@@ -221,9 +219,7 @@ impl EosInitAndSubsequentBlocksJson {
         n: usize
     ) -> Result<Checksum256s> {
         match n < 1 && n <= self.total_num_blocks() {
-            false => Err(AppError::Custom(
-                format!("✘ Error getting interim IDs for block {}", n)
-            )),
+            false => Err(format!("✘ Error getting interim IDs for block {}", n).into()),
             true => self
                 .subsequent_blocks[n]
                 .interim_block_ids
@@ -275,15 +271,11 @@ pub fn get_init_and_subsequent_blocks_json_n(
     let path = match num {
         1 => Ok(SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_JUNGLE_3_JSON_1),
         2 => Ok(SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_1),
-        _ => Err(AppError::Custom(
-            format!("Cannot find sample block num: {}", num)
-        ))
+        _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num)))
     }?;
     let string = match Path::new(&path).exists() {
         true => Ok(read_to_string(path)?),
-        false => Err(AppError::Custom(
-            format!("✘ Can't find sample init block json file @ path: {}", path)
-        ))
+        false => Err(AppError::Custom(format!("✘ Can't find sample init block json file @ path: {}", path)))
     }?;
     EosInitAndSubsequentBlocksJson::from_json_string(&string)
 }
@@ -295,15 +287,11 @@ pub fn get_j3_init_json_n(num: usize) -> Result<EosInitJson> {
         1 => Ok(SAMPLE_J3_INIT_BLOCK_JSON_PATH_1),
         2 => Ok(SAMPLE_J3_INIT_BLOCK_JSON_PATH_2),
         3 => Ok(SAMPLE_J3_INIT_BLOCK_JSON_PATH_3),
-        _ => Err(AppError::Custom(
-            format!("Cannot find sample block num: {}", num)
-        ))
+        _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num)))
     }?;
     let string = match Path::new(&path).exists() {
         true => Ok(read_to_string(path)?),
-        false => Err(AppError::Custom(
-            format!("✘ Can't find sample init block json file @ path: {}", path)
-        ))
+        false => Err(AppError::Custom(format!("✘ Can't find sample init block json file @ path: {}", path)))
     }?;
     EosInitJson::from_json_string(&string)
 }
@@ -315,15 +303,11 @@ pub fn get_mainnet_init_json_n(num: usize) -> Result<EosInitJson> {
         1 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_1),
         2 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_2),
         3 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_3),
-        _ => Err(AppError::Custom(
-            format!("Cannot find sample block num: {}", num)
-        ))
+        _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num)))
     }?;
     let string = match Path::new(&path).exists() {
         true => Ok(read_to_string(path)?),
-        false => Err(AppError::Custom(
-            format!("✘ Can't find sample init block json file @ path: {}", path)
-        ))
+        false => Err(AppError::Custom(format!("✘ Can't find sample init block json file @ path: {}", path)))
     }?;
     EosInitJson::from_json_string(&string)
 }
@@ -399,15 +383,11 @@ pub fn get_sample_eos_submission_material_string_n(
         7 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_7),
         8 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_8),
         9 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_9),
-        _ => Err(AppError::Custom(
-            format!("Cannot find sample block num: {}", num)
-        ))
+        _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num)))
     }?;
     match Path::new(&path).exists() {
         true => Ok(read_to_string(path)?),
-        false => Err(AppError::Custom(
-            "✘ Cannot find sample-eos-block-and-action-json file!".to_string()
-        ))
+        false => Err( "✘ Cannot find sample-eos-block-and-action-json file!".into())
     }
 }
 

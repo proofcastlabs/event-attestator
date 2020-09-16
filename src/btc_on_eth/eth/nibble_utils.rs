@@ -1,11 +1,6 @@
 use std::fmt;
 use crate::{
-    errors::AppError,
-    types::{
-        Byte,
-        Bytes,
-        Result,
-    },
+    types::{Byte, Bytes, Result},
     chains::eth::eth_constants::{
         ZERO_BYTE,
         EMPTY_NIBBLES,
@@ -360,12 +355,7 @@ pub fn get_nibble_at_index(
     nibble_index: usize
 ) -> Result<Byte> {
     match nibble_index > get_length_in_nibbles(&nibbles) {
-        true => Err(AppError::Custom(
-            format!(
-                "✘ Index {} is out-of-bounds in nibble vector!",
-                nibble_index
-            )
-        )),
+        true => Err(format!("✘ Index {} is out-of-bounds in nibble vector!", nibble_index).into()),
         _ => match nibbles.offset {
             0 => match nibble_index % 2 {
                 0 => get_high_nibble_from_byte(&nibbles, nibble_index),
@@ -477,7 +467,10 @@ pub fn convert_nibble_to_usize(nibbles: Nibbles) -> usize {
 #[cfg(test)]
 mod tests {
     #![allow(clippy::needless_range_loop)]
+
     use super::*;
+    use crate::errors::AppError;
+
     const EXPECTED_NIBBLES: [u8; 14] = [
         0x01u8, 0x02u8, 0x03u8, 0x04u8, 0x05u8, 0x06u8, 0x07u8,
         0x08u8, 0x09u8, 0x0au8, 0x0bu8, 0x0cu8, 0x0du8, 0x0eu8,

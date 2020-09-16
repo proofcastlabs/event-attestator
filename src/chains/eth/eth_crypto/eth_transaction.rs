@@ -5,12 +5,7 @@ use ethereum_types::{
     Address as EthAddress,
 };
 use crate::{
-    errors::AppError,
-    types::{
-        Byte,
-        Bytes,
-        Result,
-    },
+    types::{Byte, Bytes, Result},
     chains::eth::{
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_contracts::erc777::encode_erc777_mint_fxn_maybe_with_data,
@@ -151,14 +146,13 @@ pub fn get_ptoken_smart_contract_bytecode(path: &str) -> Result<Bytes> {
     info!("✔ Getting ETH smart-contract bytecode...");
     let contents = match fs::read_to_string(path) {
         Ok(file) => Ok(file),
-        Err(err) => Err(AppError::Custom(
-            format!(
+        Err(err) => Err(format!(
                 "✘ Cannot find ETH smart-contract byte code at: '{}'\n✘ {}\n{}",
                 path,
                 err,
                 "✘ Maybe look into the pToken ERC777 bytecode generator tool?",
             )
-        ))
+        )
     }?;
     Ok(hex::decode(strip_new_line_chars(contents))?)
 }

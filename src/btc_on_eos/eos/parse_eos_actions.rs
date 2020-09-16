@@ -7,11 +7,7 @@ use eos_primitives::{
     Action as EosAction,
 };
 use crate::{
-    errors::AppError,
-    types::{
-        Bytes,
-        Result,
-    },
+    types::{Bytes, Result},
     btc_on_eos::eos::eos_types::{
         EosActionJson,
         AuthorizationJson,
@@ -43,9 +39,7 @@ fn deserialize_action_data(
 ) -> Result<Bytes> {
     match maybe_hex_data {
         Some(string) => Ok(hex::decode(string)?),
-        None => Err(AppError::Custom(
-            "✘ Failed to decode hex_data field of action!".to_string()
-        ))
+        None => Err("✘ Failed to decode hex_data field of action!".into())
     }
 }
 

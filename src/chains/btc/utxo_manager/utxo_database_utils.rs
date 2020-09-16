@@ -3,7 +3,6 @@ use bitcoin_hashes::{
     sha256d,
 };
 use crate::{
-    errors::AppError,
     traits::DatabaseInterface,
     types::{
         Byte,
@@ -209,10 +208,7 @@ pub fn decrement_total_utxo_balance_in_db<D>(
                         balance - amount_to_decrement_by
                     )
                 }
-                false => Err(AppError::Custom(
-                    "✘ Not decrementing UTXO total value ∵ it'll underflow!"
-                        .to_string()
-                ))
+                false => Err("✘ Not decrementing UTXO total value ∵ it'll underflow!".into())
             }
         )
 }
@@ -406,6 +402,7 @@ mod tests {
     use super::*;
     // FIXME Use generic versions of these, not the BTC ones!
     use crate::{
+        errors::AppError,
         test_utils::get_test_database,
         btc_on_eth::btc::{
             btc_database_utils::key_exists_in_db,

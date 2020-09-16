@@ -1,10 +1,6 @@
 use ethereum_types::H256;
 use crate::{
-    errors::AppError,
-    types::{
-        Bytes,
-        Result,
-    },
+    types::{Bytes, NoneError, Result},
     chains::eth::eth_constants::{
         EMPTY_NIBBLES,
         HASHED_NULL_NODE,
@@ -140,14 +136,10 @@ impl Trie {
                         remaining_key,
                         value,
                     ),
-                    _ => Err(AppError::Custom(
-                        "✘ Node type not recognized!".to_string()
-                    ))
+                    _ => Err("✘ Node type not recognized!".into())
                 }
             },
-            None =>  Err(AppError::Custom(
-                "✘ Cannot process node stack: It's empty!".to_string()
-            )),
+            None =>  Err("✘ Cannot process node stack: It's empty!".into()),
         }
     }
     /**
@@ -216,7 +208,9 @@ impl Trie {
                                 let branch = Node::new_branch(None)?;
                                 let updated_branch_1 = branch
                                     .update_branch_at_index(
-                                        Some(current_ext_node.get_value()?),
+                                        Some(current_ext_node.get_value()
+                                            .ok_or(NoneError("Could not unwrap the value of current ext node!"))?
+                                        ),
                                         convert_nibble_to_usize(
                                             ext_first_nibble
                                         )
@@ -261,7 +255,8 @@ impl Trie {
                                 )?;
                                 let new_ext = Node::new_extension(
                                     ext_nibbles,
-                                    current_ext_node.get_value()?
+                                    current_ext_node.get_value()
+                                        .ok_or(NoneError("Could not unwrap the value of current ext node!"))?
                                 )?;
                                 let branch = Node::new_branch(None)?;
                                 let updated_branch_1 = branch
@@ -331,7 +326,9 @@ impl Trie {
                                 )?;
                             let final_new_branch = updated_new_branch
                                 .update_branch_at_index(
-                                    Some(current_ext_node.get_value()?),
+                                    Some(current_ext_node.get_value()
+                                        .ok_or(NoneError("Could not unwrap the value of current ext node!"))?
+                                    ),
                                     convert_nibble_to_usize(
                                         node_key_remainder_first_nibble
                                     )
@@ -368,7 +365,8 @@ impl Trie {
                             ) = split_at_first_nibble(&node_key_remainder)?;
                             let ext_below_branch = Node::new_extension(
                                 node_key_remainder_nibbles,
-                                current_ext_node.get_value()?
+                                current_ext_node.get_value()
+                                    .ok_or(NoneError("Could not unwrap the value of current ext node!"))?
                             )?;
                             let new_leaf = Node::new_leaf(
                                 key_remainder_nibbles,
@@ -490,7 +488,8 @@ impl Trie {
                                 ) = split_at_first_nibble(&key_remainder)?;
                                 let new_leaf_1 = Node::new_leaf(
                                     leaf_nibbles,
-                                    current_leaf_node.get_value()?
+                                    current_leaf_node.get_value()
+                                        .ok_or(NoneError("Could not unwrap the value of current leaf node!"))?
                                 )?;
                                 let new_leaf_2 = Node::new_leaf(
                                     key_remainder_nibbles,
@@ -542,7 +541,8 @@ impl Trie {
                                 ) = split_at_first_nibble(&key_remainder)?;
                                 let new_leaf_1 = Node::new_leaf(
                                     leaf_nibbles,
-                                    current_leaf_node.get_value()?
+                                    current_leaf_node.get_value()
+                                        .ok_or(NoneError("Could not unwrap the value of current leaf node!"))?
                                 )?;
                                 let new_leaf_2 = Node::new_leaf(
                                     key_remainder_nibbles,
@@ -660,9 +660,7 @@ impl Trie {
                     new_stack,
                     stack_to_delete,
                 ),
-                _ => Err(AppError::Custom(
-                    "✘ Error updating old nodes: Wrong node type!".to_string()
-                ))
+                _ => Err("✘ Error updating old nodes: Wrong node type!".into())
             },
             None => Ok((
                 self,
@@ -777,7 +775,8 @@ impl Trie {
     ) -> Result<Self> {
         match !stack_to_delete.is_empty() {
             true => {
-                let node = stack_to_delete.pop()?;
+                let node = stack_to_delete.pop()
+                    .ok_or(NoneError("Could not unwrap node from the stack to delete!"))?;
                 trace!(
                     "✔ Removing {} from trie_hash_map w/ hash: {}",
                     node.get_type(),
@@ -794,7 +793,8 @@ impl Trie {
             false => match new_stack.len() {
                 0 => Ok(self),
                 1 => {
-                    let node = new_stack.pop()?;
+                    let node = new_stack.pop()
+                        .ok_or(NoneError("Could not unwrap single node from the new stack!"))?;
                     let next_root_hash = node.get_hash()?;
                     trace!(
                         "✔ Putting new {} in trie_hash_map w/ hash: {}",
@@ -808,7 +808,8 @@ impl Trie {
                         })
                 }
                 _ => {
-                    let node = new_stack.pop()?;
+                    let node = new_stack.pop()
+                        .ok_or(NoneError("Could not unwrap node from the new stack!"))?;
                     trace!(
                         "✔ Putting new {} in trie_hash_map w/ hash: {}",
                         node.get_type(),
@@ -838,9 +839,7 @@ impl Trie {
                     vec![node],
                     target_key
                 ),
-                None => Err(AppError::Custom(
-                    "✘ Find Error: Could not find root node in db!".to_string()
-                ))
+                None => Err("✘ Find Error: Could not find root node in db!".into())
             })
     }
 
@@ -878,9 +877,7 @@ impl Trie {
                         found_stack,
                         remaining_key,
                     ),
-                    _ => Err(AppError::Custom(
-                        "✘ Find Error: Node type not recognized!".to_string()
-                    ))
+                    _ => Err("✘ Find Error: Node type not recognized!".into())
                 }
             }
         }
@@ -958,7 +955,8 @@ impl Trie {
         get_common_prefix_nibbles(key.clone(), extension_node.get_key())
             .and_then(|(common_prefix, remaining_key, remaining_node_key)| {
                 let next_node_hash = &convert_bytes_to_h256(
-                    &extension_node.get_value()?
+                    &extension_node.get_value()
+                        .ok_or(NoneError("Could not unwrap the value of current extension node!"))?
                 )?;
                 found_stack.push(extension_node);
                 match common_prefix.len() {
@@ -986,10 +984,7 @@ impl Trie {
                                         remaining_key
                                     )
                                 },
-                                None => Err(AppError::Custom(
-                                    "✘ Find Error: Extension child not in db!"
-                                        .to_string()
-                                ))
+                                None => Err("✘ Find Error: Extension child not in db!".into())
                             }
                         }
                     }
@@ -1040,7 +1035,7 @@ impl Trie {
         split_at_first_nibble(&key)
             .and_then(|(first_nibble, remaining_nibbles)| {
                 match &branch_node
-                    .branch?
+                    .branch.ok_or(NoneError("Could not unwrap the branch!"))?
                     .branches[convert_nibble_to_usize(first_nibble)] {
                     None => {
                         trace!("✔ No hash at next nibble index in branch");
@@ -1064,10 +1059,7 @@ impl Trie {
                                     remaining_nibbles
                                 )
                             },
-                            None => Err(AppError::Custom(
-                                "✘ Find Error: Branch child not in db!"
-                                    .to_string()
-                            )),
+                            None => Err("✘ Find Error: Branch child not in db!".into()),
                         }
                     }
                 }

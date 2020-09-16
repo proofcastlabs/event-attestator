@@ -1,6 +1,5 @@
 use crate::{
     chains::eth::eth_constants::{ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID},
-    errors::AppError,
     types::Result,
 };
 use ethereum_types::Address as EthAddress;
@@ -19,9 +18,7 @@ impl RelayContract {
         match chain_id {
             ETH_MAINNET_CHAIN_ID => Ok(RelayContract::Mainnet),
             ETH_ROPSTEN_CHAIN_ID => Ok(RelayContract::Ropsten),
-            _ => Err(AppError::Custom(
-                "✘ AnySender is only available on Ropsten and Mainnet!".to_string(),
-            )),
+            _ => Err("✘ AnySender is only available on Ropsten and Mainnet!".into()),
         }
     }
 

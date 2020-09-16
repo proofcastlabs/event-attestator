@@ -1,11 +1,5 @@
 use std::fmt;
-use crate::{
-    types::{
-        Byte,
-        Result,
-    },
-    errors::AppError,
-};
+use crate::types::{Byte, Result};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum EthNetwork {
@@ -24,7 +18,7 @@ impl EthNetwork {
             4 => Ok(EthNetwork::Rinkeby),
             5 => Ok(EthNetwork::Goerli),
             42 => Ok(EthNetwork::Kovan),
-            _ => Err(AppError::Custom(format!("✘ Unrecognised chain id: '{}'!", chain_id)))
+            _ => Err(format!("✘ Unrecognised chain id: '{}'!", chain_id).into())
         }
     }
 
@@ -50,7 +44,7 @@ impl EthNetwork {
             "rinkeby" | "4"  => EthNetwork::from_chain_id(&4),
             "goerli"  | "5"  => EthNetwork::from_chain_id(&5),
             "kovan"   | "42" => EthNetwork::from_chain_id(&42),
-            _ => Err(AppError::Custom(format!("✘ Unrecognized ethereum network: '{}'!", network_str))),
+            _ => Err(format!("✘ Unrecognized ethereum network: '{}'!", network_str).into()),
         }
     }
 }
@@ -154,7 +148,7 @@ mod tests {
     #[test]
     fn should_fail_to_convert_unknown_network_correctly() {
         let network_str = "some other network";
-        let expected_err = format!("✘ Unrecognized ethereum network: '{}'!", network_str);
+        let expected_err = format!("✘ Program Error!\n✘ Unrecognized ethereum network: '{}'!", network_str);
         let err = EthNetwork::from_str(network_str).unwrap_err().to_string();
         assert_eq!(err, expected_err);
     }
