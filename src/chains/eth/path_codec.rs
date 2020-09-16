@@ -1,5 +1,4 @@
 use crate::{
-    errors::AppError,
     types::{
         Bytes,
         Result,
@@ -128,9 +127,12 @@ pub fn encode_leaf_path_from_nibbles(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eth::nibble_utils::{
-        get_nibbles_from_bytes,
-        get_nibbles_from_offset_bytes,
+    use crate::{
+        errors::AppError,
+        chains::eth::nibble_utils::{
+            get_nibbles_from_bytes,
+            get_nibbles_from_offset_bytes,
+        },
     };
 
 /*

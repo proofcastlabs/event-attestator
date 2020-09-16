@@ -307,6 +307,7 @@ pub fn get_node_from_trie_hash_map(
 mod tests {
     use super::*;
     use crate::{
+        errors::AppError,
         chains::eth::{
             nibble_utils::{
                 get_length_in_nibbles,

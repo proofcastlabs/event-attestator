@@ -15,6 +15,6 @@ pub fn check_for_parent_of_block_in_state<D>(state: EthState<D>) -> Result<EthSt
             info!("✔ Block's parent exists in database!");
             Ok(state)
         },
-        false => Err(AppError::Custom("✘ Block Rejected - no parent exists in database!".to_string())),
+        false => Err("✘ Block Rejected - no parent exists in database!".into()),
     }
 }
