@@ -77,7 +77,9 @@ fn parse_minting_params_from_p2sh_deposit_tx(
             }
         })
         .filter(|maybe_minting_params| maybe_minting_params.is_some())
-        .map(|maybe_minting_params| Ok(maybe_minting_params.ok_or(NoneError)?))
+        .map(|maybe_minting_params| Ok(maybe_minting_params
+            .ok_or(NoneError("Could not unwrap minting param struct!"))?
+        ))
         .collect::<Result<MintingParams>>()
 }
 

@@ -44,9 +44,13 @@ fn parse_minting_params_from_p2sh_deposit_tx(
         )
         .filter(|(_, maybe_address)| maybe_address.is_some())
         .map(|(tx_out, address)|
-            match deposit_info_hash_map.get(&address.clone().ok_or(NoneError)?) {
+            match deposit_info_hash_map.get(
+                &address.clone().ok_or(NoneError("Could not unwrap BTC address!"))?
+            ) {
                 None => {
-                    info!("✘ BTC address {} not in deposit list!", address.ok_or(NoneError)?);
+                    info!("✘ BTC address {} not in deposit list!", address
+                        .ok_or(NoneError("Could not unwrap BTC address!"))?
+                    );
                     Err("Filtering out this err!".into())
                 }
                 Some(deposit_info) => {
@@ -55,7 +59,7 @@ fn parse_minting_params_from_p2sh_deposit_tx(
                         convert_satoshis_to_ptoken(tx_out.value),
                         deposit_info.address.clone(),
                         p2sh_deposit_containing_tx.txid(),
-                        address.ok_or(NoneError)?,
+                        address.ok_or(NoneError("Could not unwrap BTC address!"))?,
                     )
                 }
             }

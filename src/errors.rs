@@ -82,9 +82,8 @@ quick_error! {
             from()
             display("✘ RLP Decoder Error!\n✘ {}", err)
         }
-        NoneError {
-            from()
-            display("✘ Nothing to unwrap!\n")
+        NoneError(err: &'static str) {
+            display("✘ None Error!\n✘ {}", err)
         }
     }
 }

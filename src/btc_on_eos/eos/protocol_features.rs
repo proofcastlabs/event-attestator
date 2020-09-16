@@ -52,7 +52,9 @@ impl EnabledFeatures {
         AVAILABLE_FEATURES
             .get_feature_from_hash(feature_hash)
             .and_then(|feature| {
-                self.0.remove(self.0.iter().position(|x| x == &feature).ok_or(NoneError)?);
+                self.0.remove(self.0.iter().position(|x| x == &feature)
+                    .ok_or(NoneError("Could not unwrap EOS protocol feature while removing!"))?
+                );
                 Ok(self)
             })
     }
@@ -77,8 +79,11 @@ impl EnabledFeatures {
             .map(|hash| AVAILABLE_FEATURES.maybe_get_feature_from_hash(&hash))
             .filter(|maybe_feature| maybe_feature.is_some())
             .map(|feature| -> Result<()> {
-                info!("✔ Adding feature: {}", feature.clone().ok_or(NoneError)?.to_json()?);
-                self.0.push(feature.ok_or(NoneError)?);
+                info!("✔ Adding feature: {}", feature.clone()
+                    .ok_or(NoneError("Could not unwrap EOS protocol feature while adding!"))?
+                    .to_json()?
+                );
+                self.0.push(feature.ok_or(NoneError("Could not unwrap EOS protocol feature while adding!"))?);
                 Ok(())
             })
             .for_each(drop);

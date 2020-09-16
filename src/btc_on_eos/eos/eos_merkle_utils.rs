@@ -89,7 +89,9 @@ pub fn verify_merkle_proof(merkle_proof: &[String]) -> Result<bool> {
             false => {node = make_and_hash_canonical_pair(&leaf, &node);}
         }
     };
-    Ok(node == hex::decode(merkle_proof.last().ok_or(NoneError)?)?)
+    Ok(node == hex::decode(merkle_proof.last()
+        .ok_or(NoneError("Could not unwrap merkle proof!"))?
+    )?)
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

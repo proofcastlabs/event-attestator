@@ -111,10 +111,16 @@ pub fn parse_eos_block_header_from_json(
 ) -> Result<EosBlockHeader> {
     let schedule = if eos_block_header_json.new_producers.is_some() {
         debug!("✔ `new_producers` field in EOS block json!");
-        Some(convert_schedule_json_value_to_v2_schedule_json(eos_block_header_json.new_producers.as_ref().ok_or(NoneError)?)?)
+        Some(convert_schedule_json_value_to_v2_schedule_json(
+            eos_block_header_json.new_producers.as_ref()
+                .ok_or(NoneError("Could not unwrap `new_producers` field in EOS block json!"))?
+        )?)
     } else if eos_block_header_json.new_producer_schedule.is_some() {
         debug!("✔ `new_producer_schedule` field in EOS block json!");
-        Some(convert_schedule_json_value_to_v2_schedule_json(&eos_block_header_json.new_producer_schedule.clone().ok_or(NoneError)?)?)
+        Some(convert_schedule_json_value_to_v2_schedule_json(
+            &eos_block_header_json.new_producer_schedule.clone()
+                .ok_or(NoneError("Could not unwrap `new_producer_schedule` field in EOS block json!"))?
+        )?)
     } else {
         debug!("✔ No producers field in EOS block json!");
         None

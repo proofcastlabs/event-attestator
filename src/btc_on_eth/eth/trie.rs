@@ -208,7 +208,9 @@ impl Trie {
                                 let branch = Node::new_branch(None)?;
                                 let updated_branch_1 = branch
                                     .update_branch_at_index(
-                                        Some(current_ext_node.get_value().ok_or(NoneError)?),
+                                        Some(current_ext_node.get_value()
+                                            .ok_or(NoneError("Could not unwrap the value of current ext node!"))?
+                                        ),
                                         convert_nibble_to_usize(
                                             ext_first_nibble
                                         )
@@ -253,7 +255,8 @@ impl Trie {
                                 )?;
                                 let new_ext = Node::new_extension(
                                     ext_nibbles,
-                                    current_ext_node.get_value().ok_or(NoneError)?
+                                    current_ext_node.get_value()
+                                        .ok_or(NoneError("Could not unwrap the value of current ext node!"))?
                                 )?;
                                 let branch = Node::new_branch(None)?;
                                 let updated_branch_1 = branch
@@ -323,7 +326,9 @@ impl Trie {
                                 )?;
                             let final_new_branch = updated_new_branch
                                 .update_branch_at_index(
-                                    Some(current_ext_node.get_value().ok_or(NoneError)?),
+                                    Some(current_ext_node.get_value()
+                                        .ok_or(NoneError("Could not unwrap the value of current ext node!"))?
+                                    ),
                                     convert_nibble_to_usize(
                                         node_key_remainder_first_nibble
                                     )
@@ -360,7 +365,8 @@ impl Trie {
                             ) = split_at_first_nibble(&node_key_remainder)?;
                             let ext_below_branch = Node::new_extension(
                                 node_key_remainder_nibbles,
-                                current_ext_node.get_value().ok_or(NoneError)?
+                                current_ext_node.get_value()
+                                    .ok_or(NoneError("Could not unwrap the value of current ext node!"))?
                             )?;
                             let new_leaf = Node::new_leaf(
                                 key_remainder_nibbles,
@@ -482,7 +488,8 @@ impl Trie {
                                 ) = split_at_first_nibble(&key_remainder)?;
                                 let new_leaf_1 = Node::new_leaf(
                                     leaf_nibbles,
-                                    current_leaf_node.get_value().ok_or(NoneError)?
+                                    current_leaf_node.get_value()
+                                        .ok_or(NoneError("Could not unwrap the value of current leaf node!"))?
                                 )?;
                                 let new_leaf_2 = Node::new_leaf(
                                     key_remainder_nibbles,
@@ -534,7 +541,8 @@ impl Trie {
                                 ) = split_at_first_nibble(&key_remainder)?;
                                 let new_leaf_1 = Node::new_leaf(
                                     leaf_nibbles,
-                                    current_leaf_node.get_value().ok_or(NoneError)?
+                                    current_leaf_node.get_value()
+                                        .ok_or(NoneError("Could not unwrap the value of current leaf node!"))?
                                 )?;
                                 let new_leaf_2 = Node::new_leaf(
                                     key_remainder_nibbles,
@@ -767,7 +775,8 @@ impl Trie {
     ) -> Result<Self> {
         match !stack_to_delete.is_empty() {
             true => {
-                let node = stack_to_delete.pop().ok_or(NoneError)?;
+                let node = stack_to_delete.pop()
+                    .ok_or(NoneError("Could not unwrap node from the stack to delete!"))?;
                 trace!(
                     "✔ Removing {} from trie_hash_map w/ hash: {}",
                     node.get_type(),
@@ -784,7 +793,8 @@ impl Trie {
             false => match new_stack.len() {
                 0 => Ok(self),
                 1 => {
-                    let node = new_stack.pop().ok_or(NoneError)?;
+                    let node = new_stack.pop()
+                        .ok_or(NoneError("Could not unwrap single node from the new stack!"))?;
                     let next_root_hash = node.get_hash()?;
                     trace!(
                         "✔ Putting new {} in trie_hash_map w/ hash: {}",
@@ -798,7 +808,8 @@ impl Trie {
                         })
                 }
                 _ => {
-                    let node = new_stack.pop().ok_or(NoneError)?;
+                    let node = new_stack.pop()
+                        .ok_or(NoneError("Could not unwrap node from the new stack!"))?;
                     trace!(
                         "✔ Putting new {} in trie_hash_map w/ hash: {}",
                         node.get_type(),
@@ -944,7 +955,8 @@ impl Trie {
         get_common_prefix_nibbles(key.clone(), extension_node.get_key())
             .and_then(|(common_prefix, remaining_key, remaining_node_key)| {
                 let next_node_hash = &convert_bytes_to_h256(
-                    &extension_node.get_value().ok_or(NoneError)?
+                    &extension_node.get_value()
+                        .ok_or(NoneError("Could not unwrap the value of current extension node!"))?
                 )?;
                 found_stack.push(extension_node);
                 match common_prefix.len() {
@@ -1023,7 +1035,7 @@ impl Trie {
         split_at_first_nibble(&key)
             .and_then(|(first_nibble, remaining_nibbles)| {
                 match &branch_node
-                    .branch.ok_or(NoneError)?
+                    .branch.ok_or(NoneError("Could not unwrap the branch!"))?
                     .branches[convert_nibble_to_usize(first_nibble)] {
                     None => {
                         trace!("✔ No hash at next nibble index in branch");

@@ -55,7 +55,7 @@ pub fn convert_bytes_to_h256(bytes: &[Byte]) -> Result<H256> {
 }
 
 pub fn convert_json_value_to_string(value: Value) -> Result<String> {
-    Ok(value.as_str().ok_or(NoneError)?.to_string())
+    Ok(value.as_str().ok_or(NoneError("Could not unwrap. JSON value isn't a String!"))?.to_string())
 }
 
 fn left_pad_with_zero(string: &str) -> Result<String> {
