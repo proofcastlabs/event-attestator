@@ -93,9 +93,9 @@ use crate::{
         eth::{
             eth_state::EthState,
             validate_block::validate_block_in_state,
-            save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
             filter_receipts::filter_irrelevant_receipts_from_state,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
+            save_btc_utxos_to_db::maybe_save_btc_utxos_to_db_and_return_state,
             increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
             parse_eth_block_and_receipts::parse_eth_block_and_receipts_and_put_in_state,
@@ -231,7 +231,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
         .and_then(maybe_create_btc_txs_and_add_to_state)
         .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
         .and_then(maybe_extract_btc_utxo_from_btc_tx_in_state)
-        .and_then(maybe_save_btc_utxos_to_db)
+        .and_then(maybe_save_btc_utxos_to_db_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting ETH output json...");
