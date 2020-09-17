@@ -111,6 +111,10 @@ impl EthBlockAndReceipts {
                 .concat()
         )
     }
+
+    pub fn remove_receipts(&self) -> Self {
+        EthBlockAndReceipts { block: self.block.clone(), receipts: EthReceipts::new_empty() }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -280,5 +284,15 @@ mod tests {
         assert_eq!(expected_result.amount, result[0].amount);
         assert_eq!(expected_result.recipient, result[0].recipient);
         assert_eq!(expected_result.originating_tx_hash, result[0].originating_tx_hash);
+    }
+
+    #[test]
+    fn should_remove_receipts_from_block_and_receipts() {
+        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let num_receipts_before = block_and_receipts.receipts.len();
+        assert!(num_receipts_before > 0);
+        let result = block_and_receipts.remove_receipts();
+        let num_receipts_after = result.receipts.len();
+        assert_eq!(num_receipts_after, 0);
     }
 }
