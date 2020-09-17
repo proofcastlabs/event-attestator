@@ -4,7 +4,7 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eth::eth::eth_state::EthState,
     chains::{
-        eth::eth_types::RedeemInfo,
+        eth::eth_redeem_info::RedeemInfo,
         btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
     },
 };

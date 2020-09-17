@@ -14,7 +14,7 @@ use crate::{
         Result,
     },
     chains::eth::{
-        eth_types::RedeemInfo,
+        eth_redeem_info::RedeemInfo,
         eth_block::{
             EthBlock,
             EthBlockJson,

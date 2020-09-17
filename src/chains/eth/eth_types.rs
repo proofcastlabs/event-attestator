@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use ethereum_types::{
     H256,
-    U256,
     Address,
 };
 use crate::{
@@ -42,18 +41,4 @@ pub struct AnySenderSigningParams {
     pub eth_private_key: EthPrivateKey,
     pub public_eth_address: EthAddress,
     pub erc777_proxy_address: EthAddress,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RedeemInfo {
-    pub amount: U256,
-    pub from: EthAddress,
-    pub recipient: String,
-    pub originating_tx_hash: EthHash,
-}
-
-impl RedeemInfo {
-    pub fn new(amount: U256, from: EthAddress, recipient: String, originating_tx_hash: EthHash) -> RedeemInfo {
-        RedeemInfo { amount, recipient, originating_tx_hash, from }
-    }
 }

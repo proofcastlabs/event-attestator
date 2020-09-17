@@ -6,7 +6,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::{
-        eth::eth_types::RedeemInfo,
+        eth::eth_redeem_info::RedeemInfo,
         btc::{
             btc_utils::{
                 calculate_btc_tx_fee,

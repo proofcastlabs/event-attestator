@@ -9,7 +9,7 @@ use crate::{
     chains::{
         btc::btc_utils::get_hex_tx_from_signed_btc_tx,
         eth::{
-            eth_types::RedeemInfo,
+            eth_redeem_info::RedeemInfo,
             eth_database_utils::get_eth_latest_block_from_db,
         },
     },

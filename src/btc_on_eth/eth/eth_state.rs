@@ -1,14 +1,12 @@
+use ethereum_types::H256 as EthHash;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eth::{
+            eth_redeem_info::RedeemInfo,
             eth_block_and_receipts::EthBlockAndReceipts,
-            eth_types::{
-                EthHash,
-                RedeemInfo,
-            },
         },
     },
     btc_on_eth::{
