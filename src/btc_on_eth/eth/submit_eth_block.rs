@@ -15,13 +15,13 @@ use crate::{
             filter_redeem_params::maybe_filter_redeem_params_in_state,
             update_eth_tail_block_hash::maybe_update_eth_tail_block_hash,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
-            update_eth_canon_block_hash::maybe_update_eth_canon_block_hash,
             parse_redeem_params::maybe_parse_redeem_params_and_add_to_state,
             update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
             increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
             remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
             parse_eth_block_and_receipts::parse_eth_block_and_receipts_and_put_in_state,
+            update_eth_canon_block_hash::maybe_update_eth_canon_block_hash_and_return_state,
             add_block_and_receipts_to_database::maybe_add_block_and_receipts_to_db_and_return_state,
             remove_receipts_from_canon_block::maybe_remove_receipts_from_canon_block_and_return_state,
             eth_database_transactions::{
@@ -43,7 +43,7 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(filter_irrelevant_receipts_from_state)
         .and_then(maybe_add_block_and_receipts_to_db_and_return_state)
         .and_then(maybe_update_latest_block_hash)
-        .and_then(maybe_update_eth_canon_block_hash)
+        .and_then(maybe_update_eth_canon_block_hash_and_return_state)
         .and_then(maybe_update_eth_tail_block_hash)
         .and_then(maybe_update_eth_linker_hash_and_return_state)
         .and_then(maybe_parse_redeem_params_and_add_to_state)
