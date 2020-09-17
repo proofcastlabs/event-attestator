@@ -9,6 +9,7 @@ use crate::{
     chains::{
         eth::{
             eth_constants::ETH_TAIL_LENGTH,
+            get_linker_hash::get_linker_hash_or_genesis_hash as get_eth_linker_hash,
             eth_database_utils::{
                 get_eth_gas_price_from_db,
                 get_eth_tail_block_from_db,
@@ -37,7 +38,6 @@ use crate::{
             SAFE_ETH_ADDRESS,
             SAFE_BTC_ADDRESS,
         },
-        eth::get_linker_hash::get_linker_hash_or_genesis_hash as get_eth_linker_hash,
         btc::{
             update_btc_linker_hash::get_linker_hash_or_genesis_hash as get_btc_linker_hash,
             btc_database_utils::{
