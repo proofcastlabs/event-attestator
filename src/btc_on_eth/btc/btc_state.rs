@@ -36,12 +36,12 @@ pub struct BtcState<D: DatabaseInterface> {
     pub minting_params: MintingParams,
     pub output_json_string: Option<String>,
     pub utxos_and_values: BtcUtxosAndValues,
-    pub submission_json: Option<BtcSubmissionMaterialJson>,
     pub btc_block_and_id: Option<BtcBlockAndId>,
     pub eth_signed_txs: Option<EthTransactions>,
     pub p2sh_deposit_txs: Option<BtcTransactions>,
     pub op_return_deposit_txs: Option<BtcTransactions>,
     pub deposit_info_hash_map: Option<DepositInfoHashMap>,
+    pub submission_json: Option<BtcSubmissionMaterialJson>,
     pub btc_block_in_db_format: Option<BtcBlockInDbFormat>,
     pub any_sender: Option<bool>,
     pub any_sender_signed_txs: Option<RelayTransactions>,
@@ -51,6 +51,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
     pub fn init(db: D) -> BtcState<D> {
         BtcState {
             db,
+            any_sender: None,
             eth_signed_txs: None,
             submission_json: None,
             btc_block_and_id: None,
@@ -60,9 +61,8 @@ impl<D> BtcState<D> where D: DatabaseInterface {
             op_return_deposit_txs: None,
             deposit_info_hash_map: None,
             btc_block_in_db_format: None,
-            utxos_and_values: Vec::new(),
-            any_sender: None,
             any_sender_signed_txs: None,
+            utxos_and_values: BtcUtxosAndValues::new_empty(),
         }
     }
 
@@ -160,12 +160,9 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn replace_utxos_and_values(
-        mut self,
-        replacement_params: BtcUtxosAndValues,
-    ) -> Result<BtcState<D>> {
+    pub fn replace_utxos_and_values(mut self, replacement_utxos: BtcUtxosAndValues) -> Result<BtcState<D>> {
         info!("✔ Replacing UTXOs in state...");
-        self.utxos_and_values = replacement_params;
+        self.utxos_and_values = replacement_utxos;
         Ok(self)
     }
 
@@ -206,14 +203,10 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn add_utxos_and_values(
-        mut self,
-        mut utxos_and_values: BtcUtxosAndValues,
-    ) -> Result<BtcState<D>> {
+    pub fn add_utxos_and_values(mut self, utxos_and_values: BtcUtxosAndValues) -> Result<BtcState<D>> {
         info!("✔ Adding UTXOs & values to BTC state...");
-        self.utxos_and_values
-            .append(&mut utxos_and_values);
-        Ok(self)
+        let new_utxos = self.utxos_and_values.clone().append(utxos_and_values.clone());
+        self.replace_utxos_and_values(new_utxos)
     }
 
     pub fn get_btc_block_and_id(

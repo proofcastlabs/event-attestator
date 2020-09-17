@@ -13,11 +13,8 @@ use crate::{
                 get_total_value_of_utxos_and_values,
             },
             utxo_manager::{
+                utxo_types::BtcUtxosAndValues,
                 utxo_database_utils::get_utxo_and_value,
-                utxo_types::{
-                    BtcUtxoAndValue,
-                    BtcUtxosAndValues,
-                },
             },
         },
     },
@@ -40,7 +37,7 @@ fn get_enough_utxos_to_cover_total<D>(
     required_btc_amount: u64,
     num_outputs: usize,
     sats_per_byte: u64,
-    mut inputs: Vec<BtcUtxoAndValue>, // TODO use plural type
+    mut inputs: BtcUtxosAndValues,
 ) -> Result<BtcUtxosAndValues>
     where D: DatabaseInterface
 {
@@ -50,19 +47,19 @@ fn get_enough_utxos_to_cover_total<D>(
             debug!("✔ Retrieved UTXO of value: {}", utxo_and_value.value);
             let fee = calculate_btc_tx_fee(inputs.len() + 1, num_outputs, sats_per_byte);
             let total_cost = fee + required_btc_amount;
-            inputs.push(utxo_and_value);
-            let total_utxo_value = get_total_value_of_utxos_and_values(&inputs);
-            debug!("✔ Calculated fee for {} input(s) & {} output(s): {} Satoshis", inputs.len(), num_outputs, fee);
+            let updated_inputs = inputs.clone().push(utxo_and_value); // FIXME Make more efficient!
+            let total_utxo_value = updated_inputs.sum();
+            debug!("✔ Calculated fee for {} input(s) & {} output(s): {} Sats", updated_inputs.len(), num_outputs, fee);
             debug!("✔ Fee + required BTC value of tx: {} Satoshis", total_cost);
             debug!("✔ Current total UTXO value: {} Satoshis", total_utxo_value);
             match total_cost > total_utxo_value {
                 true => {
                     trace!("✔ UTXOs do not cover fee + amount, need another!");
-                    get_enough_utxos_to_cover_total(db, required_btc_amount, num_outputs, sats_per_byte, inputs)
+                    get_enough_utxos_to_cover_total(db, required_btc_amount, num_outputs, sats_per_byte, updated_inputs)
                 }
                 false => {
                     trace!("✔ UTXO(s) covers fee and required btc amount!");
-                    Ok(inputs)
+                    Ok(updated_inputs)
                 }
             }
         })
@@ -84,7 +81,7 @@ fn create_btc_tx_from_redeem_infos<D>(
         redeem_infos.sum(),
         redeem_infos.len(),
         sats_per_byte,
-        Vec::new(),
+        BtcUtxosAndValues::new_empty(),
     )?;
     debug!("✔ Retrieved {} UTXOs!", utxos_and_values.len());
     info!("✔ Creating BTC transaction...");

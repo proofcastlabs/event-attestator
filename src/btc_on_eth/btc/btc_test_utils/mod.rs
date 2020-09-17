@@ -28,8 +28,11 @@ use crate::{
     chains::{
         eth::eth_types::EthAddress,
         btc::{
-            utxo_manager::utxo_types::BtcUtxoAndValue,
             deposit_address_info::DepositAddressInfoJson,
+            utxo_manager::utxo_types::{
+                BtcUtxoAndValue,
+                BtcUtxosAndValues,
+            },
             btc_constants::{
                 BTC_LATEST_BLOCK_HASH_KEY,
                 MINIMUM_REQUIRED_SATOSHIS,
@@ -366,15 +369,15 @@ pub fn get_sample_p2sh_utxo_with_value_too_low() -> BtcUtxoAndValue {
     )
 }
 
-pub fn get_sample_utxo_and_values() -> Vec<BtcUtxoAndValue> {
-    vec![
+pub fn get_sample_utxo_and_values() -> BtcUtxosAndValues {
+    BtcUtxosAndValues::new(vec![
         get_sample_op_return_utxo_and_value_n(2).unwrap(),
         get_sample_op_return_utxo_and_value_n(3).unwrap(),
         get_sample_op_return_utxo_and_value_n(4).unwrap(),
         get_sample_op_return_utxo_and_value(),
         get_sample_op_return_utxo_with_value_too_low(),
         get_sample_p2sh_utxo_with_value_too_low(),
-    ]
+    ])
 }
 
 pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
