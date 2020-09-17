@@ -7,7 +7,11 @@ use crate::{
     },
 };
 
-pub fn maybe_increment_btc_nonce_in_db<D>(state: EthState<D>) -> Result<EthState<D>> where D: DatabaseInterface {
+pub fn maybe_increment_btc_nonce_in_db_and_return_state<D>(
+    state: EthState<D>
+) -> Result<EthState<D>>
+    where D: DatabaseInterface
+{
     match &state.btc_transactions {
         None => {
             info!("✔ Not incrementing BTC account nonce - no signatures made!");
