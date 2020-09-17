@@ -6,7 +6,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::{
-        eth::eth_redeem_info::RedeemInfo,
+        eth::eth_redeem_info::RedeemInfos,
         btc::{
             btc_utils::{
                 calculate_btc_tx_fee,
@@ -31,25 +31,16 @@ use crate::{
                 get_btc_address_from_db,
                 get_btc_private_key_from_db,
             },
-            btc_types::{
-                BtcRecipientAndAmount,
-                BtcRecipientsAndAmounts,
-            },
         },
     },
 };
-
-fn sum_redeem_params(redeem_params: &[RedeemInfo]) -> u64 {
-    info!("✔ Summing redeem param amounts...");
-    redeem_params.iter().map(|params| params.amount.as_u64()).sum()
-}
 
 fn get_enough_utxos_to_cover_total<D>(
     db: &D,
     required_btc_amount: u64,
     num_outputs: usize,
     sats_per_byte: u64,
-    mut inputs: Vec<BtcUtxoAndValue>,
+    mut inputs: Vec<BtcUtxoAndValue>, // TODO use plural type
 ) -> Result<BtcUtxosAndValues>
     where D: DatabaseInterface
 {
@@ -77,23 +68,11 @@ fn get_enough_utxos_to_cover_total<D>(
         })
 }
 
-fn get_address_and_amounts_from_redeem_params(redeem_params: &[RedeemInfo]) -> Result<BtcRecipientsAndAmounts> {
-    info!("✔ Getting BTC addresses & amounts from redeem params...");
-    redeem_params
-        .iter()
-        .map(|params| {
-            let recipient_and_amount = BtcRecipientAndAmount::new(&params.recipient[..], params.amount.as_u64());
-            info!("✔ Recipients & amount retrieved from redeem: {:?}", recipient_and_amount);
-            recipient_and_amount
-         })
-        .collect()
-}
-
-fn create_btc_tx_from_redeem_params<D>(
+fn create_btc_tx_from_redeem_infos<D>(
     db: &D,
     sats_per_byte: u64,
     btc_network: BtcNetwork,
-    redeem_params: &[RedeemInfo],
+    redeem_infos: &RedeemInfos,
 ) -> Result<BtcTransaction>
     where D: DatabaseInterface
 {
@@ -102,8 +81,8 @@ fn create_btc_tx_from_redeem_params<D>(
     debug!("✔ Satoshis per byte: {}", sats_per_byte);
     let utxos_and_values = get_enough_utxos_to_cover_total(
         db,
-        sum_redeem_params(&redeem_params),
-        redeem_params.len(),
+        redeem_infos.sum(),
+        redeem_infos.len(),
         sats_per_byte,
         Vec::new(),
     )?;
@@ -111,7 +90,7 @@ fn create_btc_tx_from_redeem_params<D>(
     info!("✔ Creating BTC transaction...");
     create_signed_raw_btc_tx_for_n_input_n_outputs(
         sats_per_byte,
-        get_address_and_amounts_from_redeem_params(&redeem_params)?,
+        redeem_infos.to_btc_addresses_and_amounts()?,
         &get_btc_address_from_db(db)?[..],
         get_btc_private_key_from_db(db)?,
         utxos_and_values,
@@ -131,11 +110,11 @@ pub fn maybe_create_btc_txs_and_add_to_state<D>(
         }
         _ => {
             info!("✔ Burn event params in state ∴ creating BTC txs...");
-            create_btc_tx_from_redeem_params(
+            create_btc_tx_from_redeem_infos(
                 &state.db,
                 get_btc_fee_from_db(&state.db)?,
                 get_btc_network_from_db(&state.db)?,
-                &state.redeem_params,
+                &RedeemInfos::new(state.redeem_params.clone()),
             )
                 .and_then(|signed_tx| {
                     #[cfg(feature="debug")] { debug!("✔ Signed transaction: {:?}", signed_tx); }
