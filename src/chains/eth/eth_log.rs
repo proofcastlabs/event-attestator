@@ -127,7 +127,7 @@ impl EthLog {
 
     pub fn get_btc_address(&self) -> Result<String> {
         self.check_is_ptoken_redeem()
-            .and_then(|_|{
+            .map(|_|{
                 info!("✔ Parsing BTC address from log...");
                 let default_address_error_string = format!("✔ Defaulting to safe BTC address: {}!", SAFE_BTC_ADDRESS);
                 let maybe_btc_address = self
@@ -140,12 +140,12 @@ impl EthLog {
                 match BtcAddress::from_str(&maybe_btc_address) {
                     Ok(address) => {
                         info!("✔ Good BTC address parsed from log: {}", address);
-                        Ok(address.to_string())
+                        address.to_string()
                     },
                     Err(_) => {
                         info!("✔ Failed to parse BTC address from log!");
                         info!("{}", default_address_error_string);
-                        Ok(SAFE_BTC_ADDRESS.to_string())
+                        SAFE_BTC_ADDRESS.to_string()
                     }
                 }
             })

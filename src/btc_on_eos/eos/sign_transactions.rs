@@ -6,11 +6,8 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::btc::utxo_manager::{
+        utxo_types::BtcUtxosAndValues,
         utxo_database_utils::get_utxo_and_value,
-        utxo_types::{
-            BtcUtxoAndValue,
-            BtcUtxosAndValues,
-        },
     },
     btc_on_eos::{
         eos::{
@@ -18,11 +15,8 @@ use crate::{
             eos_types::RedeemInfo,
         },
         btc::{
+            btc_utils::calculate_btc_tx_fee,
             btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-            btc_utils::{
-                calculate_btc_tx_fee,
-                get_total_value_of_utxos_and_values,
-            },
             btc_database_utils::{
                 get_btc_fee_from_db,
                 get_btc_network_from_db,
@@ -49,7 +43,7 @@ fn get_enough_utxos_to_cover_total<D>(
     required_btc_amount: u64,
     num_outputs: usize,
     sats_per_byte: u64,
-    mut inputs: BtcUtxosAndValues,
+    inputs: BtcUtxosAndValues,
 ) -> Result<BtcUtxosAndValues>
     where D: DatabaseInterface
 {
@@ -57,7 +51,6 @@ fn get_enough_utxos_to_cover_total<D>(
     get_utxo_and_value(db)
         .and_then(|utxo_and_value| {
             debug!("✔ Retrieved UTXO of value: {}", utxo_and_value.value);
-            let num_inputs = inputs.len();
             let fee = calculate_btc_tx_fee(inputs.len() + 1, num_outputs, sats_per_byte);
             let total_cost = fee + required_btc_amount;
             let updated_inputs = inputs.clone().push(utxo_and_value); // FIXME - can we make more efficient?

@@ -12,10 +12,7 @@ use crate::{
     types::{Bytes, Result},
     chains::btc::{
         deposit_address_info::DepositAddressInfo,
-        utxo_manager::utxo_types::{
-            BtcUtxoAndValue,
-            BtcUtxosAndValues,
-        },
+        utxo_manager::utxo_types::BtcUtxosAndValues,
         btc_utils::{
             get_script_sig,
             calculate_btc_tx_fee,

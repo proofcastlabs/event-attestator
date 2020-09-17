@@ -212,9 +212,7 @@ impl EthReceipt {
     }
 
     pub fn get_rlp_encoded_receipt_and_encoded_key_tuple(&self) -> Result<(Nibbles, Bytes)> {
-        self
-            .rlp_encode()
-            .and_then(|bytes| Ok((get_nibbles_from_bytes(self.rlp_encode_transaction_index()), bytes)))
+        self.rlp_encode().map(|bytes| (get_nibbles_from_bytes(self.rlp_encode_transaction_index()), bytes))
     }
 
     pub fn get_redeem_params(&self) -> Result<Vec<RedeemInfo>> {

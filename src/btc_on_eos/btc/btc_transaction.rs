@@ -12,10 +12,7 @@ use crate::{
     types::{Bytes, Result},
     chains::btc::{
         deposit_address_info::DepositAddressInfo,
-        utxo_manager::utxo_types::{
-            BtcUtxoAndValue,
-            BtcUtxosAndValues,
-        },
+        utxo_manager::utxo_types::BtcUtxosAndValues,
     },
     btc_on_eos::btc::{
         btc_crypto::btc_private_key::BtcPrivateKey,
@@ -27,7 +24,6 @@ use crate::{
             calculate_btc_tx_fee,
             create_new_tx_output,
             get_p2sh_redeem_script_sig,
-            get_total_value_of_utxos_and_values,
             create_new_pay_to_pub_key_hash_output,
             get_p2sh_script_sig_from_redeem_script,
         },

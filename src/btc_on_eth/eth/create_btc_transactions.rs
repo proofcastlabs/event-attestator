@@ -8,10 +8,7 @@ use crate::{
     chains::{
         eth::eth_redeem_info::RedeemInfos,
         btc::{
-            btc_utils::{
-                calculate_btc_tx_fee,
-                get_total_value_of_utxos_and_values,
-            },
+            btc_utils::calculate_btc_tx_fee,
             utxo_manager::{
                 utxo_types::BtcUtxosAndValues,
                 utxo_database_utils::get_utxo_and_value,
@@ -37,7 +34,7 @@ fn get_enough_utxos_to_cover_total<D>(
     required_btc_amount: u64,
     num_outputs: usize,
     sats_per_byte: u64,
-    mut inputs: BtcUtxosAndValues,
+    inputs: BtcUtxosAndValues,
 ) -> Result<BtcUtxosAndValues>
     where D: DatabaseInterface
 {
@@ -47,7 +44,7 @@ fn get_enough_utxos_to_cover_total<D>(
             debug!("✔ Retrieved UTXO of value: {}", utxo_and_value.value);
             let fee = calculate_btc_tx_fee(inputs.len() + 1, num_outputs, sats_per_byte);
             let total_cost = fee + required_btc_amount;
-            let updated_inputs = inputs.clone().push(utxo_and_value); // FIXME Make more efficient!
+            let updated_inputs = inputs.clone().push(utxo_and_value);
             let total_utxo_value = updated_inputs.sum();
             debug!("✔ Calculated fee for {} input(s) & {} output(s): {} Sats", updated_inputs.len(), num_outputs, fee);
             debug!("✔ Fee + required BTC value of tx: {} Satoshis", total_cost);
