@@ -17,6 +17,13 @@ use crate::{
         eth::{
             eth_network::EthNetwork,
             eth_crypto::eth_transaction::get_signed_minting_tx,
+            eth_contracts::{
+                erc777::get_signed_erc777_change_pnetwork_tx,
+                erc777_proxy::{
+                    get_signed_erc777_proxy_change_pnetwork_tx,
+                    get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
+                },
+            },
             eth_constants::{
                 get_eth_constants_db_keys,
                 ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
@@ -92,11 +99,6 @@ use crate::{
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
             parse_eth_block_and_receipts::parse_eth_block_and_receipts_and_put_in_state,
-            change_pnetwork_address::{
-                get_signed_erc777_change_pnetwork_tx,
-                get_signed_erc777_proxy_change_pnetwork_tx,
-                get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
-            },
             eth_database_transactions::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,

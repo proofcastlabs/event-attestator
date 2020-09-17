@@ -13,7 +13,6 @@ pub(crate) mod increment_btc_nonce;
 pub(crate) mod filter_redeem_params;
 pub(crate) mod save_btc_utxos_to_db;
 pub(crate) mod update_eth_linker_hash;
-pub(crate) mod change_pnetwork_address;
 pub(crate) mod create_btc_transactions;
 pub(crate) mod update_latest_block_hash;
 pub(crate) mod eth_database_transactions;
