@@ -22,4 +22,5 @@ pub(crate) mod eth_database_utils;
 pub(crate) mod calculate_linker_hash;
 pub(crate) mod update_eth_linker_hash;
 pub(crate) mod eth_block_and_receipts;
+pub(crate) mod remove_old_eth_tail_block;
 pub(crate) mod add_block_and_receipts_to_db;

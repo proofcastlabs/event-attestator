@@ -13,7 +13,6 @@ use crate::{
             check_parent_exists::check_for_parent_of_block_in_state,
             update_latest_block_hash::maybe_update_latest_block_hash,
             filter_redeem_params::maybe_filter_redeem_params_in_state,
-            remove_old_eth_tail_block::maybe_remove_old_eth_tail_block,
             update_eth_tail_block_hash::maybe_update_eth_tail_block_hash,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
             update_eth_canon_block_hash::maybe_update_eth_canon_block_hash,
@@ -21,6 +20,7 @@ use crate::{
             update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
             increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
+            remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
             parse_eth_block_and_receipts::parse_eth_block_and_receipts_and_put_in_state,
             add_block_and_receipts_to_database::maybe_add_block_and_receipts_to_db_and_return_state,
             remove_receipts_from_canon_block::maybe_remove_receipts_from_canon_block_and_return_state,
@@ -52,7 +52,7 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
         .and_then(maybe_extract_btc_utxo_from_btc_tx_in_state)
         .and_then(maybe_save_btc_utxos_to_db)
-        .and_then(maybe_remove_old_eth_tail_block)
+        .and_then(maybe_remove_old_eth_tail_block_and_return_state)
         .and_then(maybe_remove_receipts_from_canon_block_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(get_eth_output_json)
