@@ -90,8 +90,8 @@ struct EnclaveState {
     eos_last_seen_block_id: String,
     eos_known_schedules: EosKnownSchedulesJsons,
     eos_enabled_protocol_features: EnabledFeatures,
-    safe_eos_address: String,
-    safe_btc_address: String,
+    eos_safe_address: String,
+    btc_safe_address: String,
 }
 
 pub fn get_enclave_state<D>(
@@ -123,8 +123,8 @@ pub fn get_enclave_state<D>(
                     btc_sats_per_byte: get_btc_fee_from_db(&db)?,
                     btc_utxo_nonce: get_utxo_nonce_from_db(&db)?,
                     eos_symbol: get_eos_token_symbol_from_db(&db)?,
-                    safe_btc_address: SAFE_BTC_ADDRESS.to_string(),
-                    safe_eos_address: SAFE_EOS_ADDRESS.to_string(),
+                    btc_safe_address: SAFE_BTC_ADDRESS.to_string(),
+                    eos_safe_address: SAFE_EOS_ADDRESS.to_string(),
                     btc_canon_block_number: btc_canon_block.height,
                     btc_latest_block_number: btc_latest_block.height,
                     btc_anchor_block_number: btc_anchor_block.height,
