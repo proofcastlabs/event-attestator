@@ -1,5 +1,6 @@
 use crate::{
     traits::DatabaseInterface,
+    chains::eos::disable_protocol_feature::disable_protocol_feature,
     types::{
         Byte,
         Result,
@@ -13,41 +14,13 @@ use crate::{
             get_enabled_protocol_features::{
                 get_enabled_protocol_features_and_add_to_state
             },
-            protocol_features::{
-                EnabledFeatures,
-                AVAILABLE_FEATURES,
-            },
             eos_database_utils::{
                 end_eos_db_transaction,
                 start_eos_db_transaction,
-                put_eos_enabled_protocol_features_in_db,
             },
         },
     },
 };
-
-fn disable_protocol_feature<D>(
-    db: &D,
-    feature_hash: &[Byte],
-    enabled_features: &EnabledFeatures,
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    AVAILABLE_FEATURES
-        .check_contains(feature_hash)
-        .and_then(|_| {
-            if enabled_features.is_not_enabled(feature_hash) {
-                return Err("✘ Feature not enabled, doing nothing!".into());
-            }
-            info!("✔ Disabling feature: {}", hex::encode(feature_hash));
-            enabled_features
-                .clone()
-                .remove(feature_hash)
-                .and_then(|new_features|
-                    put_eos_enabled_protocol_features_in_db(db, &new_features)
-                )
-        })
-}
 
 fn disable_feature_and_return_state<D>(
     state: EosState<D>,
