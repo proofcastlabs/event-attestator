@@ -9,4 +9,5 @@ pub(crate) mod eos_database_utils;
 pub(crate) mod enable_protocol_feature;
 pub(crate) mod append_interim_block_ids;
 pub(crate) mod disable_protocol_feature;
+pub(crate) mod extract_utxos_from_btc_txs;
 pub(crate) mod add_global_sequences_to_processed_list;
