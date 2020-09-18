@@ -8,7 +8,6 @@ use crate::{
         eos::{
             eos_state::EosState,
             get_eos_output::get_eos_output,
-            add_schedule::maybe_add_new_eos_schedule_to_db,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
             save_latest_block_id::save_latest_block_id_to_db,
             save_latest_block_num::save_latest_block_num_to_db,
@@ -18,6 +17,7 @@ use crate::{
             get_eos_incremerkle::get_incremerkle_and_add_to_state,
             increment_signature_nonce::maybe_increment_signature_nonce,
             get_processed_tx_ids::get_processed_tx_ids_and_add_to_state,
+            add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
             parse_redeem_params::maybe_parse_redeem_params_and_put_in_state,
             validate_producer_slot::validate_producer_slot_of_block_in_state,
             get_active_schedule::get_active_schedule_from_db_and_add_to_state,
@@ -53,7 +53,7 @@ pub fn submit_eos_block_to_core<D>(db: D, block_json: &str) -> Result<String> wh
         .and_then(validate_producer_slot_of_block_in_state)
         .and_then(validate_block_header_signature)
         .and_then(start_eos_db_transaction)
-        .and_then(maybe_add_new_eos_schedule_to_db)
+        .and_then(maybe_add_new_eos_schedule_to_db_and_return_state)
         .and_then(get_processed_tx_ids_and_add_to_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)
         .and_then(maybe_filter_out_irrelevant_proofs_from_state)

@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 use crate::{
     types::Result,
     traits::DatabaseInterface,
@@ -8,7 +7,11 @@ use crate::{
     },
 };
 
-pub fn maybe_add_new_eos_schedule_to_db<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
+pub fn maybe_add_new_eos_schedule_to_db_and_return_state<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
     match &state.get_eos_block_header()?.new_producer_schedule {
         None => {
             info!("✔ No new schedule in block ∴ nothing to add to db!");
