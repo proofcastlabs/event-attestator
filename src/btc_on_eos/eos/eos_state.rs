@@ -5,11 +5,13 @@ use eos_primitives::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
+    chains::{
+        eos::eos_merkle_utils::Incremerkle,
+        btc::utxo_manager::utxo_types::BtcUtxosAndValues,
+    },
     btc_on_eos::{
         btc::btc_types::BtcTransactions,
         eos::{
-            eos_merkle_utils::Incremerkle,
             protocol_features::EnabledFeatures,
             parse_submission_material::EosSubmissionMaterial,
             eos_types::{

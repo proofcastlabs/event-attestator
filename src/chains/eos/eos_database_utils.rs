@@ -15,6 +15,10 @@ use crate::{
         get_string_from_db,
     },
     chains::eos::{
+        eos_merkle_utils::{
+            Incremerkle,
+            IncremerkleJson,
+        },
         eos_utils::{
             get_eos_schedule_db_key,
             convert_hex_to_checksum256,
@@ -37,10 +41,6 @@ use crate::{
             eos_state::EosState,
             protocol_features::EnabledFeatures,
             parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
-            eos_merkle_utils::{
-                Incremerkle,
-                IncremerkleJson,
-            },
             eos_types::{
                 ProcessedTxIds,
                 EosKnownSchedules,

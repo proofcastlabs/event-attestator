@@ -1,9 +1,7 @@
 use crate::{
     types::Result,
-    btc_on_eos::eos::{
-        eos_types::Checksum256,
-        eos_merkle_utils::Incremerkle,
-    },
+    chains::eos::eos_merkle_utils::Incremerkle,
+    btc_on_eos::eos::eos_types::Checksum256,
 };
 
 pub fn append_block_ids_to_incremerkle(

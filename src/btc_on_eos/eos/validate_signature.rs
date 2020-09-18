@@ -198,10 +198,12 @@ mod tests {
 
     use eos_primitives::Checksum256;
     use crate::{
-        chains::eos::eos_utils::convert_hex_to_checksum256,
+        chains::eos::{
+            eos_utils::convert_hex_to_checksum256,
+            eos_merkle_utils::Incremerkle,
+        },
         btc_on_eos::{
             eos::{
-                eos_merkle_utils::Incremerkle,
                 eos_test_utils::{
                     get_sample_v2_schedule,
                     get_sample_j3_schedule_37,

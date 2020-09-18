@@ -8,7 +8,6 @@ pub(crate) mod eos_types;
 pub(crate) mod add_schedule;
 pub(crate) mod get_eos_output;
 pub(crate) mod eos_test_utils;
-pub(crate) mod eos_merkle_utils;
 pub(crate) mod save_incremerkle;
 pub(crate) mod sign_transactions;
 pub(crate) mod protocol_features;

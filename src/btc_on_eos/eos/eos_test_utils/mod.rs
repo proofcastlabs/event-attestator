@@ -34,6 +34,7 @@ use crate::{
         Result,
     },
     chains::eos::{
+        eos_merkle_utils::Incremerkle,
         eos_crypto::{
             eos_signature::EosSignature,
             eos_public_key::EosPublicKey,
@@ -47,7 +48,6 @@ use crate::{
     btc_on_eos::{
         eos::{
             eos_state::EosState,
-            eos_merkle_utils::Incremerkle,
             initialize_eos::eos_init_utils::EosInitJson,
             protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
             parse_submission_material::{
