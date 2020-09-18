@@ -20,16 +20,14 @@ use crate::{
     types::Result,
     errors::AppError,
     traits::DatabaseInterface,
+    crypto_utils::generate_random_private_key,
     constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-    chains::eos::eos_constants::EOS_PRIVATE_KEY_DB_KEY,
-    btc_on_eos::{
-        crypto_utils::generate_random_private_key,
-        eos::{
-            eos_types::EosNetwork,
-            eos_crypto::{
-                eos_signature::EosSignature,
-                eos_public_key::EosPublicKey,
-            },
+    btc_on_eos::eos::eos_types::EosNetwork,
+    chains::eos::{
+        eos_constants::EOS_PRIVATE_KEY_DB_KEY,
+        eos_crypto::{
+            eos_signature::EosSignature,
+            eos_public_key::EosPublicKey,
         },
     },
 };
@@ -187,19 +185,20 @@ mod test {
         sha256,
         Hash as HashTrait
     };
-    use crate::btc_on_eos::{
-        test_utils::get_sample_message_to_sign_bytes,
-        eos::{
-            eos_crypto::eos_private_key::EosPrivateKey,
-            eos_test_utils::{
-                get_sample_eos_signature,
-                get_sample_eos_public_key,
-                get_sample_eos_private_key,
-                get_sample_eos_public_key_str,
-                get_sample_eos_private_key_str,
-            },
+    use crate::{
+        chains::eos::eos_crypto::eos_private_key::EosPrivateKey,
+        btc_on_eos::eos::eos_test_utils::{
+            get_sample_eos_signature,
+            get_sample_eos_public_key,
+            get_sample_eos_private_key,
+            get_sample_eos_public_key_str,
+            get_sample_eos_private_key_str,
         },
     };
+
+    fn get_sample_message_to_sign_bytes() -> &'static [u8] {
+        "Provable pToken!".as_bytes()
+    }
 
     #[test]
     fn should_generate_random_eos_crypto() {

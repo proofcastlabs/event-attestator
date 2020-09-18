@@ -2,6 +2,13 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::eos::{
+        eos_crypto::{
+            eos_private_key::EosPrivateKey,
+            eos_transaction::{
+                sign_peos_transaction,
+                get_unsigned_eos_minting_tx,
+            },
+        },
         eos_database_utils::{
             get_eos_chain_id_from_db,
             get_eos_account_name_string_from_db,
@@ -18,18 +25,9 @@ use crate::{
             btc_types::MintingParamStruct,
             btc_database_utils::get_btc_canon_block_from_db,
         },
-        eos::{
-            eos_types::{
-                EosSignedTransaction,
-                EosSignedTransactions,
-            },
-            eos_crypto::{
-                eos_private_key::EosPrivateKey,
-                eos_transaction::{
-                    sign_peos_transaction,
-                    get_unsigned_eos_minting_tx,
-                },
-            },
+        eos::eos_types::{
+            EosSignedTransaction,
+            EosSignedTransactions,
         },
     },
 };

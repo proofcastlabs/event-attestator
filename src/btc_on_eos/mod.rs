@@ -42,6 +42,3 @@ mod utils;
 mod constants;
 mod crypto_utils;
 mod check_core_is_initialized;
-
-#[cfg(test)]
-mod test_utils;

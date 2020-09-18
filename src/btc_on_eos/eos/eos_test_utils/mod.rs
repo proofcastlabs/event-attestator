@@ -33,12 +33,18 @@ use crate::{
         Bytes,
         Result,
     },
-    chains::eos::eos_utils::{
-        convert_hex_to_checksum256,
-        convert_bytes_to_checksum256,
+    chains::eos::{
+        eos_crypto::{
+            eos_signature::EosSignature,
+            eos_public_key::EosPublicKey,
+            eos_private_key::EosPrivateKey,
+        },
+        eos_utils::{
+            convert_hex_to_checksum256,
+            convert_bytes_to_checksum256,
+        },
     },
     btc_on_eos::{
-        test_utils::get_sample_message_to_sign,
         eos::{
             eos_state::EosState,
             eos_merkle_utils::Incremerkle,
@@ -70,11 +76,6 @@ use crate::{
                 EosBlockHeaderJson,
                 EosSignedTransaction,
                 EosSignedTransactions,
-            },
-            eos_crypto::{
-                eos_signature::EosSignature,
-                eos_public_key::EosPublicKey,
-                eos_private_key::EosPrivateKey,
             },
         },
     },
@@ -132,6 +133,10 @@ pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-init-and-subsequent-blocks-mainnet-1.json";
 
 pub const EOS_JUNGLE_CHAIN_ID: &str = "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
+
+fn get_sample_message_to_sign_bytes() -> &'static [u8] {
+    "Provable pToken!".as_bytes()
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosInitAndSubsequentBlocksJson {
@@ -413,7 +418,7 @@ pub fn get_sample_eos_public_key_bytes() -> Bytes {
 
 pub fn get_sample_eos_signature() -> EosSignature {
     get_sample_eos_private_key()
-        .sign_message_bytes(&get_sample_message_to_sign().as_bytes())
+        .sign_message_bytes(&get_sample_message_to_sign_bytes())
         .unwrap()
 }
 

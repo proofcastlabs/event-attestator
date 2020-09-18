@@ -7,6 +7,7 @@ use crate::{
     },
     chains::eos::{
         eos_utils::convert_hex_to_checksum256,
+        eos_crypto::eos_private_key::EosPrivateKey,
         eos_database_utils::{
             put_incremerkle_in_db,
             put_eos_schedule_in_db,
@@ -27,7 +28,6 @@ use crate::{
         eos::{
             eos_state::EosState,
             eos_merkle_utils::Incremerkle,
-            eos_crypto::eos_private_key::EosPrivateKey,
             validate_signature::check_block_signature_is_valid,
             protocol_features::{
                 EnabledFeatures,
