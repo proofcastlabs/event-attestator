@@ -89,9 +89,9 @@ use crate::{
             filter_invalid_action_digests::maybe_filter_out_invalid_action_receipt_digests,
             filter_invalid_merkle_proofs::maybe_filter_out_proofs_with_invalid_merkle_proofs,
             filter_already_processed_txs::maybe_filter_out_already_processed_tx_ids_from_state,
-            add_global_sequences_to_processed_list::maybe_add_global_sequences_to_processed_list,
             filter_proofs_with_wrong_action_mroot::maybe_filter_out_proofs_with_wrong_action_mroot,
             filter_action_and_receipt_mismatches::maybe_filter_out_action_proof_receipt_mismatches,
+            add_global_sequences_to_processed_list::maybe_add_global_sequences_to_processed_list_and_return_state,
         },
     },
 };
@@ -135,7 +135,7 @@ pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> w
         .and_then(maybe_parse_redeem_params_and_put_in_state)
         .and_then(maybe_filter_value_too_low_redeem_params_in_state)
         .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
-        .and_then(maybe_add_global_sequences_to_processed_list)
+        .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
         .and_then(maybe_sign_txs_and_add_to_state)
         .and_then(maybe_increment_signature_nonce)
         .and_then(maybe_extract_btc_utxo_from_btc_tx_in_state)
