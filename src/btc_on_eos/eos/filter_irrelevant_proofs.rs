@@ -6,14 +6,16 @@ use eos_primitives::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eos::eos_constants::REDEEM_ACTION_NAME,
+    chains::eos::{
+        eos_constants::REDEEM_ACTION_NAME,
+        eos_database_utils::get_eos_account_name_from_db,
+    },
     btc_on_eos::eos::{
         eos_state::EosState,
         eos_types::{
             ActionProof,
             ActionProofs,
         },
-        eos_database_utils::get_eos_account_name_from_db,
     },
 };
 

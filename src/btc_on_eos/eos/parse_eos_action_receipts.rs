@@ -7,12 +7,10 @@ use eos_primitives::{
 };
 use crate::{
     types::Result,
-    btc_on_eos::{
-        utils::convert_hex_to_checksum256,
-        eos::eos_types::{
-            AuthSequenceJson,
-            EosActionReceiptJson,
-        },
+    chains::eos::eos_utils::convert_hex_to_checksum256,
+    btc_on_eos::eos::eos_types::{
+        AuthSequenceJson,
+        EosActionReceiptJson,
     },
 };
 

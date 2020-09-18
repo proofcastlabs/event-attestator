@@ -5,7 +5,6 @@ pub mod disable_protocol_feature;
 
 pub(crate) mod eos_hash;
 pub(crate) mod eos_state;
-pub(crate) mod eos_utils;
 pub(crate) mod eos_types;
 pub(crate) mod eos_crypto;
 pub(crate) mod add_schedule;
@@ -17,7 +16,6 @@ pub(crate) mod sign_transactions;
 pub(crate) mod protocol_features;
 pub(crate) mod parse_eos_actions;
 pub(crate) mod validate_signature;
-pub(crate) mod eos_database_utils;
 pub(crate) mod parse_eos_schedule;
 pub(crate) mod parse_redeem_params;
 pub(crate) mod get_eos_incremerkle;

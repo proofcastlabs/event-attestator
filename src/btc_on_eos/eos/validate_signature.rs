@@ -197,18 +197,20 @@ mod tests {
     use super::*;
 
     use eos_primitives::Checksum256;
-    use crate::btc_on_eos::{
-        utils::convert_hex_to_checksum256,
-        eos::{
-            eos_merkle_utils::Incremerkle,
-            eos_test_utils::{
-                get_sample_v2_schedule,
-                get_sample_j3_schedule_37,
-                EosInitAndSubsequentBlocksJson,
-                get_sample_mainnet_schedule_1713,
-                get_sample_eos_submission_material_n,
-                get_init_and_subsequent_blocks_json_n,
-                get_sample_eos_submission_material_json_n,
+    use crate::{
+        chains::eos::eos_utils::convert_hex_to_checksum256,
+        btc_on_eos::{
+            eos::{
+                eos_merkle_utils::Incremerkle,
+                eos_test_utils::{
+                    get_sample_v2_schedule,
+                    get_sample_j3_schedule_37,
+                    EosInitAndSubsequentBlocksJson,
+                    get_sample_mainnet_schedule_1713,
+                    get_sample_eos_submission_material_n,
+                    get_init_and_subsequent_blocks_json_n,
+                    get_sample_eos_submission_material_json_n,
+                },
             },
         },
     };

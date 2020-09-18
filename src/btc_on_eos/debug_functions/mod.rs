@@ -13,9 +13,19 @@ use crate::{
         set_key_in_db_to_value,
     },
     chains::{
-        eos::eos_constants::{
-            get_eos_constants_db_keys,
-            EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
+        eos::{
+            eos_database_utils::{
+                end_eos_db_transaction,
+                put_eos_schedule_in_db,
+                start_eos_db_transaction,
+                get_eos_chain_id_from_db,
+                get_eos_account_nonce_from_db,
+                get_eos_account_name_string_from_db,
+            },
+            eos_constants::{
+                get_eos_constants_db_keys,
+                EOS_PRIVATE_KEY_DB_KEY as EOS_KEY,
+            },
         },
         btc::{
             btc_constants::{
@@ -60,14 +70,6 @@ use crate::{
         eos::{
             eos_crypto::eos_private_key::EosPrivateKey,
             parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
-            eos_database_utils::{
-                end_eos_db_transaction,
-                put_eos_schedule_in_db,
-                start_eos_db_transaction,
-                get_eos_chain_id_from_db,
-		get_eos_account_nonce_from_db,
-                get_eos_account_name_string_from_db,
-            },
             initialize_eos::eos_init_utils::{
                 EosInitJson,
                 put_eos_latest_block_info_in_db,

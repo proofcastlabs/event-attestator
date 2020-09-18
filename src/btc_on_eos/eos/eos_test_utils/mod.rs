@@ -33,12 +33,12 @@ use crate::{
         Bytes,
         Result,
     },
+    chains::eos::eos_utils::{
+        convert_hex_to_checksum256,
+        convert_bytes_to_checksum256,
+    },
     btc_on_eos::{
         test_utils::get_sample_message_to_sign,
-        utils::{
-            convert_hex_to_checksum256,
-            convert_bytes_to_checksum256,
-        },
         eos::{
             eos_state::EosState,
             eos_merkle_utils::Incremerkle,

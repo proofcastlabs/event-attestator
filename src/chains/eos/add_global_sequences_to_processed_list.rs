@@ -1,13 +1,11 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::{
-        eos_database_utils::put_processed_tx_ids_in_db,
-        eos_types::{
-            RedeemParams,
-            ProcessedTxIds,
-            GlobalSequences,
-        },
+    chains::eos::eos_database_utils::put_processed_tx_ids_in_db,
+    btc_on_eos::eos::eos_types::{
+        RedeemParams,
+        ProcessedTxIds,
+        GlobalSequences,
     },
 };
 

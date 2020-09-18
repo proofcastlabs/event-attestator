@@ -96,9 +96,9 @@ pub fn maybe_parse_redeem_params_and_put_in_state<D>(
 mod tests {
     use super::*;
     use std::str::FromStr;
-    use crate::btc_on_eos::{
-        utils::convert_hex_to_checksum256,
-        eos::eos_test_utils::get_sample_eos_submission_material_n,
+    use crate::{
+        chains::eos::eos_utils::convert_hex_to_checksum256,
+        btc_on_eos::eos::eos_test_utils::get_sample_eos_submission_material_n,
     };
 
     #[test]

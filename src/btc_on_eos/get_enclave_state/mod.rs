@@ -1,18 +1,30 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::{
+        eos::eos_database_utils::{
+            get_eos_chain_id_from_db,
+            get_eos_token_symbol_from_db,
+            get_eos_account_nonce_from_db,
+            get_eos_known_schedules_from_db,
+            get_eos_last_seen_block_id_from_db,
+            get_eos_last_seen_block_num_from_db,
+            get_eos_account_name_string_from_db,
+            get_eos_enabled_protocol_features_from_db,
+        },
+        btc::{
+            btc_constants::BTC_TAIL_LENGTH,
+            utxo_manager::utxo_database_utils::{
+                get_utxo_nonce_from_db,
+                get_total_utxo_balance_from_db,
+                get_total_number_of_utxos_from_db,
+            },
+        },
+    },
     constants::{
         DEBUG_MODE,
         DB_KEY_PREFIX,
         CORE_IS_VALIDATING,
-    },
-    chains::btc::{
-        btc_constants::BTC_TAIL_LENGTH,
-        utxo_manager::utxo_database_utils::{
-            get_utxo_nonce_from_db,
-            get_total_utxo_balance_from_db,
-            get_total_number_of_utxos_from_db,
-        },
     },
     btc_on_eos::{
         check_core_is_initialized::check_core_is_initialized,
@@ -24,16 +36,6 @@ use crate::{
             eos_types::EosKnownSchedulesJsons,
             protocol_features::EnabledFeatures,
             eos_crypto::eos_private_key::EosPrivateKey,
-            eos_database_utils::{
-                get_eos_chain_id_from_db,
-                get_eos_token_symbol_from_db,
-                get_eos_account_nonce_from_db,
-                get_eos_known_schedules_from_db,
-                get_eos_last_seen_block_id_from_db,
-                get_eos_last_seen_block_num_from_db,
-                get_eos_account_name_string_from_db,
-                get_eos_enabled_protocol_features_from_db,
-            },
         },
         btc::{
             update_btc_linker_hash::{

@@ -4,8 +4,8 @@ use crate::{
         Byte,
         Result,
     },
+    chains::eos::eos_database_utils::put_eos_enabled_protocol_features_in_db,
     btc_on_eos::eos::{
-        eos_database_utils::put_eos_enabled_protocol_features_in_db,
         protocol_features::{
             EnabledFeatures,
             AVAILABLE_FEATURES,

@@ -1,4 +1,3 @@
-use eos_primitives::Checksum256;
 use crate::{
     types::{Byte, Bytes, Result},
     btc_on_eos::constants::{
@@ -58,24 +57,6 @@ pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
 
 pub fn convert_u64_to_bytes(u_64: u64) -> Bytes {
     u_64.to_le_bytes().to_vec()
-}
-
-// TODO Test!
-pub fn convert_bytes_to_checksum256(bytes: &[Byte]) -> Result<Checksum256> {
-    match bytes.len() {
-        32 => {
-            let mut arr = [0; 32];
-            arr.copy_from_slice(bytes);
-            Ok(Checksum256::from(arr))
-        }
-        _ => Err(format!("✘ Wrong number of bytes. Expected 32, got {}", bytes.len()).into())
-    }
-}
-
-pub fn convert_hex_to_checksum256<T: AsRef<[u8]>>(
-    hex: T
-) -> Result<Checksum256> {
-    convert_bytes_to_checksum256(&hex::decode(hex)?)
 }
 
 pub fn get_not_in_state_err(substring: &str) -> String {

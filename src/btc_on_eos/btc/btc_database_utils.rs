@@ -7,6 +7,10 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
+    database_utils::{
+        put_u64_in_db,
+        get_u64_from_db,
+    },
     types::{
         Byte,
         Result,
@@ -27,10 +31,6 @@ use crate::{
         BTC_CANON_TO_TIP_LENGTH_KEY,
     },
     btc_on_eos::{
-        database_utils::{
-            put_u64_in_db,
-            get_u64_from_db,
-        },
         utils::{
             convert_bytes_to_u64,
             convert_u64_to_bytes,

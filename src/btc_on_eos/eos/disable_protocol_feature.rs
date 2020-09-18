@@ -1,23 +1,21 @@
 use crate::{
     traits::DatabaseInterface,
-    chains::eos::disable_protocol_feature::disable_protocol_feature,
     types::{
         Byte,
         Result,
     },
-    btc_on_eos::{
-        check_core_is_initialized::{
-            check_core_is_initialized_and_return_eos_state,
+    chains::eos::{
+        disable_protocol_feature::disable_protocol_feature,
+        eos_database_utils::{
+            end_eos_db_transaction,
+            start_eos_db_transaction,
         },
+    },
+    btc_on_eos::{
+        check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
         eos::{
             eos_state::EosState,
-            get_enabled_protocol_features::{
-                get_enabled_protocol_features_and_add_to_state
-            },
-            eos_database_utils::{
-                end_eos_db_transaction,
-                start_eos_db_transaction,
-            },
+            get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state
         },
     },
 };

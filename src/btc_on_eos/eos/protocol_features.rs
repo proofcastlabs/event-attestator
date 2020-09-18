@@ -1,13 +1,11 @@
 use crate::{
     traits::DatabaseInterface,
+    chains::eos::eos_database_utils::put_eos_enabled_protocol_features_in_db,
     types::{
         Byte,
         Bytes,
         NoneError,
         Result,
-    },
-    btc_on_eos::eos::{
-        eos_database_utils::put_eos_enabled_protocol_features_in_db,
     },
 };
 

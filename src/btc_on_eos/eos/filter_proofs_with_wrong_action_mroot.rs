@@ -44,9 +44,9 @@ pub fn maybe_filter_out_proofs_with_wrong_action_mroot<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::{
-        eos::eos_test_utils::get_sample_action_proof_n,
-        utils::convert_hex_to_checksum256,
+    use crate::{
+        chains::eos::eos_utils::convert_hex_to_checksum256,
+        btc_on_eos::eos::eos_test_utils::get_sample_action_proof_n,
     };
 
     #[test]

@@ -1,6 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eos::eos_database_utils::{
+        end_eos_db_transaction,
+        start_eos_db_transaction,
+    },
     btc_on_eos::{
         check_core_is_initialized::{
             check_core_is_initialized_and_return_eos_state,
@@ -34,10 +38,6 @@ use crate::{
             filter_proofs_with_wrong_action_mroot::maybe_filter_out_proofs_with_wrong_action_mroot,
             filter_action_and_receipt_mismatches::maybe_filter_out_action_proof_receipt_mismatches,
             add_global_sequences_to_processed_list::maybe_add_global_sequences_to_processed_list_and_return_state,
-            eos_database_utils::{
-                end_eos_db_transaction,
-                start_eos_db_transaction,
-            },
         },
     },
 };
