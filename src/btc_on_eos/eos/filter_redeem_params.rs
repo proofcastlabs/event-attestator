@@ -1,10 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
-    btc_on_eos::eos::{
-        eos_state::EosState,
-        eos_types::RedeemInfo,
+    btc_on_eos::eos::eos_state::EosState,
+    chains::{
+        eos::eos_types::RedeemParams,
+        btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
     },
 };
 

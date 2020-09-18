@@ -3,6 +3,7 @@ use crate::{
     traits::DatabaseInterface,
     chains::{
         eos::{
+            eos_types::EosKnownSchedulesJsons,
             eos_crypto::eos_private_key::EosPrivateKey,
             eos_database_utils::{
                 get_eos_chain_id_from_db,
@@ -30,14 +31,11 @@ use crate::{
         CORE_IS_VALIDATING,
     },
     btc_on_eos::{
+        eos::protocol_features::EnabledFeatures,
         check_core_is_initialized::check_core_is_initialized,
         constants::{
             SAFE_EOS_ADDRESS,
             SAFE_BTC_ADDRESS,
-        },
-        eos::{
-            eos_types::EosKnownSchedulesJsons,
-            protocol_features::EnabledFeatures,
         },
         btc::{
             update_btc_linker_hash::{

@@ -12,25 +12,25 @@ use eos_primitives::{
 use crate::{
     types::{NoneError, Result},
     traits::DatabaseInterface,
-    chains::eos::eos_utils::convert_hex_to_checksum256,
-    btc_on_eos::{
-        eos::{
-            eos_state::EosState,
-            eos_types::{
-                ActionProof,
-                ActionProofs,
-                Checksum256s,
-                ActionProofJson,
-                ActionProofJsons,
-                EosBlockHeaderJson,
-            },
-            parse_eos_schedule::{
-                convert_v1_schedule_to_v2,
-                convert_v1_schedule_json_to_v1_schedule,
-                convert_v2_schedule_json_to_v2_schedule,
-                parse_v1_schedule_string_to_v1_schedule_json,
-                parse_v2_schedule_string_to_v2_schedule_json,
-            },
+    chains::eos::{
+        eos_utils::convert_hex_to_checksum256,
+        eos_types::{
+            ActionProof,
+            ActionProofs,
+            Checksum256s,
+            ActionProofJson,
+            ActionProofJsons,
+            EosBlockHeaderJson,
+        },
+    },
+    btc_on_eos::eos::{
+        eos_state::EosState,
+        parse_eos_schedule::{
+            convert_v1_schedule_to_v2,
+            convert_v1_schedule_json_to_v1_schedule,
+            convert_v2_schedule_json_to_v2_schedule,
+            parse_v1_schedule_string_to_v1_schedule_json,
+            parse_v2_schedule_string_to_v2_schedule_json,
         },
     },
 };

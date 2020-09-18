@@ -1,12 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::{
-        eos_state::EosState,
-        eos_types::{
-            ActionProofs,
-            ActionProof,
-        },
+    btc_on_eos::eos::eos_state::EosState,
+    chains::eos::eos_types::{
+        ActionProofs,
+        ActionProof,
     },
 };
 

@@ -22,8 +22,8 @@ use crate::{
     traits::DatabaseInterface,
     crypto_utils::generate_random_private_key,
     constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-    btc_on_eos::eos::eos_types::EosNetwork,
     chains::eos::{
+        eos_types::EosNetwork,
         eos_constants::EOS_PRIVATE_KEY_DB_KEY,
         eos_crypto::{
             eos_signature::EosSignature,

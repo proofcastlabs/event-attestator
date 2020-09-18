@@ -6,20 +6,22 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::{
-        eos::eos_merkle_utils::Incremerkle,
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
-    },
-    btc_on_eos::{
-        btc::btc_types::BtcTransactions,
         eos::{
-            protocol_features::EnabledFeatures,
-            parse_submission_material::EosSubmissionMaterial,
+            eos_merkle_utils::Incremerkle,
             eos_types::{
                 ActionProofs,
                 Checksum256s,
                 RedeemInfo,
                 ProcessedTxIds,
             },
+        },
+    },
+    btc_on_eos::{
+        btc::btc_types::BtcTransactions,
+        eos::{
+            protocol_features::EnabledFeatures,
+            parse_submission_material::EosSubmissionMaterial,
         },
         utils::{
             get_not_in_state_err,

@@ -35,6 +35,14 @@ use crate::{
     },
     chains::eos::{
         eos_merkle_utils::Incremerkle,
+        eos_types::{
+            ActionProof,
+            ActionProofs,
+            Checksum256s,
+            EosBlockHeaderJson,
+            EosSignedTransaction,
+            EosSignedTransactions,
+        },
         eos_crypto::{
             eos_signature::EosSignature,
             eos_public_key::EosPublicKey,
@@ -68,14 +76,6 @@ use crate::{
                 parse_eos_block_header_from_json,
                 parse_eos_submission_material_string_to_json,
                 parse_eos_submission_material_string_to_struct,
-            },
-            eos_types::{
-                ActionProof,
-                ActionProofs,
-                Checksum256s,
-                EosBlockHeaderJson,
-                EosSignedTransaction,
-                EosSignedTransactions,
             },
         },
     },

@@ -1,9 +1,9 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eos::eos_merkle_utils::verify_merkle_proof,
-    btc_on_eos::eos::{
-        eos_state::EosState,
+    btc_on_eos::eos::eos_state::EosState,
+    chains::eos::{
+        eos_merkle_utils::verify_merkle_proof,
         eos_types::{
             ActionProofs,
             ActionProof,

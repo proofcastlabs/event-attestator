@@ -18,17 +18,15 @@ use crate::{
             EOS_MAX_EXPIRATION_SECS,
             PEOS_ACCOUNT_PERMISSION_LEVEL,
         },
-    },
-    btc_on_eos::{
-        btc::{
-            btc_state::BtcState,
-            btc_types::MintingParamStruct,
-            btc_database_utils::get_btc_canon_block_from_db,
-        },
-        eos::eos_types::{
+        eos_types::{
             EosSignedTransaction,
             EosSignedTransactions,
         },
+    },
+    btc_on_eos::btc::{
+        btc_state::BtcState,
+        btc_types::MintingParamStruct,
+        btc_database_utils::get_btc_canon_block_from_db,
     },
 };
 

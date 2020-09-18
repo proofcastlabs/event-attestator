@@ -35,17 +35,15 @@ use crate::{
             EOS_LAST_SEEN_BLOCK_ID,
             EOS_LAST_SEEN_BLOCK_NUM,
         },
-    },
-    btc_on_eos::{
-        eos::{
-            eos_state::EosState,
-            protocol_features::EnabledFeatures,
-            parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
-            eos_types::{
-                ProcessedTxIds,
-                EosKnownSchedules,
-            },
+        eos_types::{
+            ProcessedTxIds,
+            EosKnownSchedules,
         },
+    },
+    btc_on_eos::eos::{
+        eos_state::EosState,
+        protocol_features::EnabledFeatures,
+        parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
     },
 };
 

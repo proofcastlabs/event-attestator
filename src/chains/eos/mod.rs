@@ -2,6 +2,7 @@ pub mod eos_constants;
 
 pub(crate) mod eos_hash;
 pub(crate) mod eos_utils;
+pub(crate) mod eos_types;
 pub(crate) mod eos_crypto;
 pub(crate) mod eos_merkle_utils;
 pub(crate) mod eos_database_utils;

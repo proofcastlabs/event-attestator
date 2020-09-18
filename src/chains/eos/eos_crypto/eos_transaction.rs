@@ -7,8 +7,8 @@ use eos_primitives::{
 };
 use crate::{
     types::Result,
-    btc_on_eos::eos::eos_types::EosSignedTransaction,
     chains::eos::{
+        eos_types::EosSignedTransaction,
         eos_constants::PBTC_MINT_FXN_NAME,
         eos_crypto::eos_private_key::EosPrivateKey,
     },

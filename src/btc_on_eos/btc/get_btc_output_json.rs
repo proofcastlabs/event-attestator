@@ -5,10 +5,12 @@ use std::time::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eos::eos_database_utils::get_eos_account_nonce_from_db,
+    chains::eos::{
+        eos_types::EosSignedTransaction,
+        eos_database_utils::get_eos_account_nonce_from_db,
+    },
     btc_on_eos::{
         utils::convert_eos_asset_to_u64,
-        eos::eos_types::EosSignedTransaction,
         btc::{
             btc_state::BtcState,
             btc_types::MintingParamStruct,

@@ -9,15 +9,13 @@ use crate::{
         Byte,
         Result,
     },
+    chains::eos::eos_types::{
+        ActionProof,
+        RedeemParams,
+    },
     btc_on_eos::{
+        eos::eos_state::EosState,
         utils::convert_bytes_to_u64,
-        eos::{
-            eos_state::EosState,
-            eos_types::{
-                ActionProof,
-                RedeemInfo,
-            },
-        },
     },
 };
 

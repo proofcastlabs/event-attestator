@@ -2,12 +2,10 @@ use eos_primitives::Checksum256;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::{
-        eos_state::EosState,
-        eos_types::{
-            ActionProof,
-            ActionProofs,
-        },
+    btc_on_eos::eos::eos_state::EosState,
+    chains::eos::eos_types::{
+        ActionProof,
+        ActionProofs,
     },
 };
 

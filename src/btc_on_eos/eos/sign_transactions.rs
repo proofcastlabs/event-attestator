@@ -5,14 +5,19 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::{
-        utxo_types::BtcUtxosAndValues,
-        utxo_database_utils::get_utxo_and_value,
+    chains::{
+        eos::eos_types::RedeemParams,
+        btc::utxo_manager::{
+            utxo_database_utils::get_utxo_and_value,
+            utxo_types::{
+                BtcUtxoAndValue,
+                BtcUtxosAndValues,
+            },
+        },
     },
     btc_on_eos::{
         eos::{
             eos_state::EosState,
-            eos_types::RedeemInfo,
         },
         btc::{
             btc_utils::calculate_btc_tx_fee,
@@ -145,9 +150,12 @@ mod tests {
     use bitcoin::network::constants::Network as BtcNetwork;
     use crate::{
         test_utils::get_test_database,
-        chains::btc::{
-            btc_constants::BTC_PRIVATE_KEY_DB_KEY,
-            utxo_manager::utxo_database_utils::save_utxos_to_db,
+        chains::{
+            eos::eos_types::ActionProof,
+            btc::{
+                btc_constants::BTC_PRIVATE_KEY_DB_KEY,
+                utxo_manager::utxo_database_utils::save_utxos_to_db,
+            },
         },
         btc_on_eos::{
             btc::{
@@ -163,7 +171,6 @@ mod tests {
                 },
             },
             eos::{
-                eos_types::ActionProof,
                 eos_test_utils::get_sample_eos_submission_material_json_n,
                 parse_redeem_params::parse_redeem_params_from_action_proofs,
             },
