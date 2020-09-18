@@ -1,5 +1,6 @@
 pub mod eos_constants;
 
+pub(crate) mod eos_hash;
 pub(crate) mod eos_utils;
 pub(crate) mod eos_database_utils;
 pub(crate) mod enable_protocol_feature;
