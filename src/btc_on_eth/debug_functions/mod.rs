@@ -16,11 +16,27 @@ use crate::{
     chains::{
         eth::{
             eth_network::EthNetwork,
+            eth_crypto::eth_transaction::get_signed_minting_tx,
+            eth_contracts::{
+                erc777::get_signed_erc777_change_pnetwork_tx,
+                erc777_proxy::{
+                    get_signed_erc777_proxy_change_pnetwork_tx,
+                    get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
+                },
+            },
             eth_constants::{
                 get_eth_constants_db_keys,
                 ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
             },
-            eth_crypto::eth_transaction::get_signed_minting_tx,
+            eth_database_utils::{
+                get_signing_params_from_db,
+                get_latest_eth_block_number,
+                get_eth_private_key_from_db,
+                get_any_sender_nonce_from_db,
+                get_eth_account_nonce_from_db,
+                get_erc777_contract_address_from_db,
+                get_erc777_proxy_contract_address_from_db,
+            },
         },
         btc::{
             btc_constants::{
@@ -64,9 +80,9 @@ use crate::{
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             parse_minting_params_from_op_return_deposits::parse_minting_params_from_op_return_deposits_and_add_to_state,
             btc_database_utils::{
+                get_btc_account_nonce_from_db,
                 end_btc_db_transaction,
                 start_btc_db_transaction,
-                get_btc_account_nonce_from_db,
             },
             filter_utxos::{
                 filter_out_utxos_extant_in_db_from_state,
@@ -77,28 +93,15 @@ use crate::{
         eth::{
             eth_state::EthState,
             validate_block::validate_block_in_state,
-            save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
-            parse_redeem_params::parse_redeem_params_from_block,
-            increment_btc_nonce::maybe_increment_btc_nonce_in_db,
             filter_receipts::filter_irrelevant_receipts_from_state,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
+            save_btc_utxos_to_db::maybe_save_btc_utxos_to_db_and_return_state,
+            increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
             parse_eth_block_and_receipts::parse_eth_block_and_receipts_and_put_in_state,
-            change_pnetwork_address::{
-                get_signed_erc777_change_pnetwork_tx,
-                get_signed_erc777_proxy_change_pnetwork_tx,
-                get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
-            },
-            eth_database_utils::{
-                end_eth_db_transaction,
-                start_eth_db_transaction,
-                get_signing_params_from_db,
-                get_latest_eth_block_number,
-                get_eth_private_key_from_db,
-                get_any_sender_nonce_from_db,
-                get_eth_account_nonce_from_db,
-                get_erc777_contract_address_from_db,
-                get_erc777_proxy_contract_address_from_db
+            eth_database_transactions::{
+                end_eth_db_transaction_and_return_state,
+                start_eth_db_transaction_and_return_state,
             },
             get_eth_output_json::{
                 EthOutput,
@@ -216,20 +219,20 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
     check_debug_mode()
         .and_then(|_| parse_eth_block_and_receipts_and_put_in_state(eth_block_json, EthState::init(db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
-        .and_then(start_eth_db_transaction)
+        .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
         .and_then(filter_irrelevant_receipts_from_state)
         .and_then(|state| {
             state
                 .get_eth_block_and_receipts()
-                .and_then(|block| parse_redeem_params_from_block(block.clone()))
+                .and_then(|block| block.get_redeem_params())
                 .and_then(|params| state.add_redeem_params(params))
         })
         .and_then(maybe_create_btc_txs_and_add_to_state)
-        .and_then(maybe_increment_btc_nonce_in_db)
+        .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
         .and_then(maybe_extract_btc_utxo_from_btc_tx_in_state)
-        .and_then(maybe_save_btc_utxos_to_db)
-        .and_then(end_eth_db_transaction)
+        .and_then(maybe_save_btc_utxos_to_db_and_return_state)
+        .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting ETH output json...");
             let output = serde_json::to_string(

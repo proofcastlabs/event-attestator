@@ -1,14 +1,16 @@
+use ethereum_types::H256 as EthHash;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
+    chains::{
+        btc::utxo_manager::utxo_types::BtcUtxosAndValues,
+        eth::{
+            eth_redeem_info::RedeemInfo,
+            eth_block_and_receipts::EthBlockAndReceipts,
+        },
+    },
     btc_on_eth::{
         btc::btc_types::BtcTransactions,
-        eth::eth_types::{
-            EthHash,
-            RedeemParams,
-            EthBlockAndReceipts,
-        },
         utils::{
             get_not_in_state_err,
             get_no_overwrite_state_err,
@@ -20,7 +22,7 @@ use crate::{
 pub struct EthState<D: DatabaseInterface> {
     pub db: D,
     pub misc: Option<String>,
-    pub redeem_params: Vec<RedeemParams>,
+    pub redeem_params: Vec<RedeemInfo>,
     pub btc_transactions: Option<BtcTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub eth_block_and_receipts: Option<EthBlockAndReceipts>,
@@ -53,7 +55,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
 
     pub fn add_redeem_params(
         mut self,
-        mut new_redeem_params: Vec<RedeemParams>,
+        mut new_redeem_params: Vec<RedeemInfo>,
     ) -> Result<EthState<D>> {
         self.redeem_params
             .append(&mut new_redeem_params);
@@ -62,7 +64,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
 
     pub fn replace_redeem_params(
         mut self,
-        replacement_params: Vec<RedeemParams>,
+        replacement_params: Vec<RedeemInfo>,
     ) -> Result<EthState<D>> {
         self.redeem_params = replacement_params;
         Ok(self)
@@ -182,7 +184,7 @@ mod tests {
         match updated_state.get_eth_block_and_receipts() {
             Ok(block_and_receipt) => {
                 let block = block_and_receipt.block.clone();
-                let receipt = block_and_receipt.receipts[SAMPLE_RECEIPT_INDEX].clone();
+                let receipt = block_and_receipt.receipts.0[SAMPLE_RECEIPT_INDEX].clone();
                 let expected_block = get_expected_block();
                 let expected_receipt = get_expected_receipt();
                 assert_eq!(block, expected_block);

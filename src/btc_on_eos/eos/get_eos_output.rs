@@ -14,7 +14,7 @@ use crate::{
         },
         eos::{
             eos_state::EosState,
-            eos_types::RedeemParams,
+            eos_types::RedeemInfo,
         },
     },
 };
@@ -27,7 +27,7 @@ pub struct EosOutput {
 impl BtcTxInfo {
     pub fn new(
         btc_tx: &BtcTransaction,
-        redeem_params: &RedeemParams,
+        redeem_params: &RedeemInfo,
         btc_account_nonce: u64,
     ) -> Result<BtcTxInfo> {
         Ok(
@@ -53,7 +53,7 @@ impl BtcTxInfo {
 pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_account_nonce: u64,
     btc_txs: &[BtcTransaction],
-    redeem_params: &[RedeemParams],
+    redeem_params: &[RedeemInfo],
 ) -> Result<Vec<BtcTxInfo>> {
     info!("✔ Getting BTC tx info from BTC txs...");
     let start_nonce = btc_account_nonce - btc_txs.len() as u64;

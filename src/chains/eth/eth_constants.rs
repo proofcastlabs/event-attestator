@@ -6,7 +6,7 @@ pub use serde_json::{
 use crate::{
     types::Byte,
     utils::get_prefixed_db_key,
-    btc_on_eth::eth::nibble_utils::Nibbles,
+    chains::eth::nibble_utils::Nibbles,
 };
 
 pub const ZERO_BYTE: u8 = 0u8;

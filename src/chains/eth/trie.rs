@@ -1,38 +1,36 @@
 use ethereum_types::H256;
 use crate::{
     types::{Bytes, NoneError, Result},
-    chains::eth::eth_constants::{
-        EMPTY_NIBBLES,
-        HASHED_NULL_NODE,
+    chains::eth::{
+        eth_types::{
+            NodeStack,
+            TrieHashMap,
+        },
+        eth_constants::{
+            EMPTY_NIBBLES,
+            HASHED_NULL_NODE,
+        },
+        trie_nodes::{
+            Node,
+            get_node_from_trie_hash_map,
+        },
+        get_trie_hash_map::{
+            get_new_trie_hash_map,
+            put_thing_in_trie_hash_map,
+            remove_thing_from_trie_hash_map,
+        },
+        nibble_utils::{
+            Nibbles,
+            get_nibble_at_index,
+            split_at_first_nibble,
+            get_nibbles_from_bytes,
+            convert_nibble_to_usize,
+            get_common_prefix_nibbles,
+        },
     },
-    btc_on_eth::{
-        utils::{
-            convert_bytes_to_h256,
-            convert_h256_to_bytes,
-        },
-        eth::{
-            eth_types::{
-                NodeStack,
-                TrieHashMap,
-            },
-            trie_nodes::{
-                Node,
-                get_node_from_trie_hash_map,
-            },
-            get_trie_hash_map::{
-                get_new_trie_hash_map,
-                put_thing_in_trie_hash_map,
-                remove_thing_from_trie_hash_map,
-            },
-            nibble_utils::{
-                Nibbles,
-                get_nibble_at_index,
-                split_at_first_nibble,
-                get_nibbles_from_bytes,
-                convert_nibble_to_usize,
-                get_common_prefix_nibbles,
-            },
-        },
+    btc_on_eth::utils::{
+        convert_bytes_to_h256,
+        convert_h256_to_bytes,
     },
 };
 
@@ -1131,19 +1129,16 @@ mod tests {
     use super::*;
     #[allow(unused_imports)]
     use simplelog::{
+        Config,
         TermLogger,
         LevelFilter,
-        Config,
         TerminalMode,
     };
-    use crate::btc_on_eth::{
-        utils::{
-            convert_hex_to_h256,
-        },
-        eth::{
-            get_trie_hash_map::get_thing_from_trie_hash_map,
-            rlp_codec::get_rlp_encoded_receipts_and_nibble_tuples,
-            eth_test_utils::{
+    use crate::{
+        chains::eth::get_trie_hash_map::get_thing_from_trie_hash_map,
+        btc_on_eth::{
+            utils::convert_hex_to_h256,
+            eth::eth_test_utils::{
                 get_sample_leaf_node,
                 get_sample_branch_node,
                 get_sample_extension_node,
@@ -1235,7 +1230,7 @@ mod tests {
         let expected_root_hex = convert_h256_to_prefixed_hex(block_and_receipts.block.receipts_root).unwrap();
         let receipts = block_and_receipts.receipts;
         let trie = Trie::get_new_trie().unwrap();
-        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(&receipts).unwrap();
+        let key_value_tuples = receipts.get_rlp_encoded_receipts_and_nibble_tuples().unwrap();
         let updated_trie = put_in_trie_recursively(trie, key_value_tuples, index).unwrap();
         let root_hex = convert_h256_to_prefixed_hex(updated_trie.root).unwrap();
         assert_eq!(root_hex, expected_root_hex);
@@ -1249,7 +1244,7 @@ mod tests {
         let expected_root_hex = convert_h256_to_prefixed_hex(block_and_receipts.block.receipts_root).unwrap();
         let receipts = block_and_receipts.receipts.clone();
         let trie = Trie::get_new_trie().unwrap();
-        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(&receipts).unwrap();
+        let key_value_tuples = receipts.get_rlp_encoded_receipts_and_nibble_tuples().unwrap();
         let updated_trie = put_in_trie_recursively(trie, key_value_tuples, index).unwrap();
         let root_hex = convert_h256_to_prefixed_hex(updated_trie.root).unwrap();
         assert!(root_hex != expected_root_hex);
@@ -1261,7 +1256,7 @@ mod tests {
         let expected_root_hex = convert_h256_to_prefixed_hex(block_and_receipts.block.receipts_root).unwrap();
         let start_index = 0;
         let receipts = block_and_receipts.receipts;
-        let key_value_tuples = get_rlp_encoded_receipts_and_nibble_tuples(&receipts).unwrap();
+        let key_value_tuples = receipts.get_rlp_encoded_receipts_and_nibble_tuples().unwrap();
         let trie = Trie::get_new_trie().unwrap();
         let updated_trie = put_in_trie_recursively(trie, key_value_tuples, start_index).unwrap();
         let root_hex = convert_h256_to_prefixed_hex(updated_trie.root).unwrap();

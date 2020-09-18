@@ -7,25 +7,9 @@ use crate::{
         CORE_IS_VALIDATING,
     },
     chains::{
-        eth::eth_constants::ETH_TAIL_LENGTH,
-        btc::{
-            btc_constants::BTC_TAIL_LENGTH,
-            utxo_manager::utxo_database_utils::{
-                get_utxo_nonce_from_db,
-                get_total_utxo_balance_from_db,
-                get_total_number_of_utxos_from_db,
-            },
-        },
-    },
-    btc_on_eth::{
-        constants::{
-            SAFE_ETH_ADDRESS,
-            SAFE_BTC_ADDRESS,
-        },
         eth::{
-            get_linker_hash::{
-                get_linker_hash_or_genesis_hash as get_eth_linker_hash
-            },
+            eth_constants::ETH_TAIL_LENGTH,
+            get_linker_hash::get_linker_hash_or_genesis_hash as get_eth_linker_hash,
             eth_database_utils::{
                 get_eth_gas_price_from_db,
                 get_eth_tail_block_from_db,
@@ -41,9 +25,21 @@ use crate::{
             },
         },
         btc::{
-            update_btc_linker_hash::{
-                get_linker_hash_or_genesis_hash as get_btc_linker_hash,
+            btc_constants::BTC_TAIL_LENGTH,
+            utxo_manager::utxo_database_utils::{
+                get_utxo_nonce_from_db,
+                get_total_utxo_balance_from_db,
+                get_total_number_of_utxos_from_db,
             },
+        },
+    },
+    btc_on_eth::{
+        constants::{
+            SAFE_ETH_ADDRESS,
+            SAFE_BTC_ADDRESS,
+        },
+        btc::{
+            update_btc_linker_hash::get_linker_hash_or_genesis_hash as get_btc_linker_hash,
             btc_database_utils::{
                 get_btc_fee_from_db,
                 get_btc_network_from_db,

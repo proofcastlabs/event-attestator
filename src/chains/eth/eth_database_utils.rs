@@ -11,8 +11,17 @@ use crate::{
         Result,
         DataSensitivity,
     },
+    database_utils::{
+        put_u64_in_db,
+        get_u64_from_db,
+    },
     chains::eth::{
         eth_crypto::eth_private_key::EthPrivateKey,
+        eth_block_and_receipts::EthBlockAndReceipts,
+        eth_types::{
+            EthSigningParams,
+            AnySenderSigningParams,
+        },
         eth_constants::{
             ETH_ADDRESS_KEY,
             ETH_CHAIN_ID_KEY,
@@ -30,29 +39,11 @@ use crate::{
             ERC777_PROXY_CONTACT_ADDRESS_KEY,
         },
     },
-    btc_on_eth::{
-        database_utils::{
-            put_u64_in_db,
-            get_u64_from_db,
-        },
-        utils::{
-            convert_bytes_to_u64,
-            convert_u64_to_bytes,
-            convert_h256_to_bytes,
-            convert_bytes_to_h256,
-        },
-        eth::{
-            eth_state::EthState,
-            eth_types::{
-                EthSigningParams,
-                EthBlockAndReceipts,
-                AnySenderSigningParams,
-            },
-            eth_json_codec::{
-                encode_eth_block_and_receipts_as_json_bytes,
-                decode_eth_block_and_receipts_from_json_bytes,
-            },
-        },
+    btc_on_eth::utils::{ // TODO move this to chains/eth dir!
+        convert_bytes_to_u64,
+        convert_u64_to_bytes,
+        convert_h256_to_bytes,
+        convert_bytes_to_h256,
     },
 };
 
@@ -88,28 +79,6 @@ pub fn get_any_sender_signing_params_from_db<D>(
             erc777_proxy_address: get_erc777_proxy_contract_address_from_db(db)?,
         }
     )
-}
-
-pub fn start_eth_db_transaction<D>(
-    state: EthState<D>,
-) -> Result<EthState<D>>
-    where D: DatabaseInterface
-{
-    state.db.start_transaction().map(|_| {
-        info!("✔ Database transaction begun for ETH block submission!");
-        state
-    })
-}
-
-pub fn end_eth_db_transaction<D>(
-    state: EthState<D>,
-) -> Result<EthState<D>>
-    where D: DatabaseInterface
-{
-    state.db.end_transaction().map(|_| {
-        info!("✔ Database transaction ended for ETH block submission!");
-        state
-    })
 }
 
 pub fn put_eth_canon_to_tip_length_in_db<D>(
@@ -344,7 +313,7 @@ pub fn put_eth_block_and_receipts_in_db<D>(
 {
     let key = convert_h256_to_bytes(eth_block_and_receipts.block.hash);
     trace!("✔ Adding block to database under key: {:?}", hex::encode(&key));
-    db.put(key, encode_eth_block_and_receipts_as_json_bytes(eth_block_and_receipts)?, MIN_DATA_SENSITIVITY_LEVEL)
+    db.put(key, eth_block_and_receipts.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn maybe_get_parent_eth_block_and_receipts<D>(
@@ -387,7 +356,7 @@ pub fn maybe_get_eth_block_and_receipts_from_db<D>(
     match db.get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL) {
         Err(_) => None,
         Ok(bytes) => {
-            match decode_eth_block_and_receipts_from_json_bytes(bytes) {
+            match EthBlockAndReceipts::from_bytes(&bytes) {
                 Ok(block_and_receipts) => {
                     info!("✔ Decoded eth block and receipts from db!");
                     Some(block_and_receipts)
@@ -408,8 +377,9 @@ pub fn get_eth_block_from_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Getting ETH block and receipts from db...");
-    db.get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL)
-        .and_then(decode_eth_block_and_receipts_from_json_bytes)
+    db
+        .get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL)
+        .and_then(|bytes| EthBlockAndReceipts::from_bytes(&bytes))
 }
 
 pub fn key_exists_in_db<D>(

@@ -4,13 +4,13 @@ use crate::{
     chains::btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
     btc_on_eos::eos::{
         eos_state::EosState,
-        eos_types::RedeemParams,
+        eos_types::RedeemInfo,
     },
 };
 
 fn filter_redeem_params(
-    redeem_params: &[RedeemParams],
-) -> Result<Vec<RedeemParams>> {
+    redeem_params: &[RedeemInfo],
+) -> Result<Vec<RedeemInfo>> {
     Ok(
         redeem_params
             .iter()
@@ -30,7 +30,7 @@ fn filter_redeem_params(
             })
             .map(|(_, params)| params)
             .cloned()
-            .collect::<Vec<RedeemParams>>()
+            .collect::<Vec<RedeemInfo>>()
     )
 }
 

@@ -2,7 +2,7 @@ use ethereum_types::H256;
 use tiny_keccak::keccak256;
 use crate::{
     types::Byte,
-    btc_on_eth::eth::eth_types::EthSignature,
+    chains::eth::eth_types::EthSignature,
 };
 
 pub fn keccak_hash_bytes(bytes: &[Byte]) -> H256 {

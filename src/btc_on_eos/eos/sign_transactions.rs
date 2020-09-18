@@ -6,23 +6,17 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::btc::utxo_manager::{
+        utxo_types::BtcUtxosAndValues,
         utxo_database_utils::get_utxo_and_value,
-        utxo_types::{
-            BtcUtxoAndValue,
-            BtcUtxosAndValues,
-        },
     },
     btc_on_eos::{
         eos::{
             eos_state::EosState,
-            eos_types::RedeemParams,
+            eos_types::RedeemInfo,
         },
         btc::{
+            btc_utils::calculate_btc_tx_fee,
             btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-            btc_utils::{
-                calculate_btc_tx_fee,
-                get_total_value_of_utxos_and_values,
-            },
             btc_database_utils::{
                 get_btc_fee_from_db,
                 get_btc_network_from_db,
@@ -37,8 +31,8 @@ use crate::{
     },
 };
 
-fn sum_redeem_params(
-    redeem_params: &[RedeemParams]
+fn sum_redeem_params( // FIXME Use plural type!
+    redeem_params: &[RedeemInfo]
 ) -> u64 {
     info!("✔ Summing redeem param amounts...");
     redeem_params.iter().map(|params| params.amount).sum()
@@ -49,7 +43,7 @@ fn get_enough_utxos_to_cover_total<D>(
     required_btc_amount: u64,
     num_outputs: usize,
     sats_per_byte: u64,
-    mut inputs: Vec<BtcUtxoAndValue>,
+    inputs: BtcUtxosAndValues,
 ) -> Result<BtcUtxosAndValues>
     where D: DatabaseInterface
 {
@@ -59,25 +53,25 @@ fn get_enough_utxos_to_cover_total<D>(
             debug!("✔ Retrieved UTXO of value: {}", utxo_and_value.value);
             let fee = calculate_btc_tx_fee(inputs.len() + 1, num_outputs, sats_per_byte);
             let total_cost = fee + required_btc_amount;
-            inputs.push(utxo_and_value);
-            let total_utxo_value = get_total_value_of_utxos_and_values(&inputs);
-            debug!("✔ Calculated fee for {} input(s) & {} output(s): {} Satoshis", inputs.len(), num_outputs, fee);
+            let updated_inputs = inputs.clone().push(utxo_and_value); // FIXME - can we make more efficient?
+            let total_utxo_value = updated_inputs.sum();
+            debug!("✔ Calculated fee for {} input(s) & {} output(s): {} Sats", updated_inputs.len(), num_outputs, fee);
             debug!("✔ Fee + required value of tx: {} Satoshis", total_cost);
             debug!("✔ Current total UTXO value: {} Satoshis", total_utxo_value);
             match total_cost > total_utxo_value {
                 true => {
                     trace!("✔ UTXOs do not cover fee + amount, need another!");
-                    get_enough_utxos_to_cover_total(db, required_btc_amount, num_outputs, sats_per_byte, inputs)
+                    get_enough_utxos_to_cover_total(db, required_btc_amount, num_outputs, sats_per_byte, updated_inputs)
                 }
                 false => {
                     trace!("✔ UTXO(s) covers fee and required amount!");
-                    Ok(inputs)
+                    Ok(updated_inputs)
                 }
             }
         })
 }
 
-fn get_address_and_amounts_from_redeem_params(redeem_params: &[RedeemParams]) -> Result<BtcRecipientsAndAmounts> {
+fn get_address_and_amounts_from_redeem_params(redeem_params: &[RedeemInfo]) -> Result<BtcRecipientsAndAmounts> {
     info!("✔ Getting addresses & amounts from redeem params...");
     redeem_params
         .iter()
@@ -93,7 +87,7 @@ fn sign_txs_from_redeem_params<D>(
     db: &D,
     sats_per_byte: u64,
     btc_network: BtcNetwork,
-    redeem_params: &[RedeemParams],
+    redeem_params: &[RedeemInfo], // FIXME Use plural type!
 ) -> Result<BtcTransaction>
     where D: DatabaseInterface
 {
@@ -105,7 +99,7 @@ fn sign_txs_from_redeem_params<D>(
         sum_redeem_params(&redeem_params),
         redeem_params.len(),
         sats_per_byte,
-        Vec::new(),
+        BtcUtxosAndValues::new_empty(),
     )?;
     debug!("✔ Retrieved {} UTXOs!", utxos_and_values.len());
     info!("✔ Signing transaction...");
@@ -186,7 +180,7 @@ mod tests {
         let action_proof = ActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
         let redeem_params = parse_redeem_params_from_action_proofs(&[action_proof]).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_2().unwrap();
-        save_utxos_to_db(&db, &[utxo]).unwrap();
+        save_utxos_to_db(&db, &BtcUtxosAndValues::new(vec![utxo])).unwrap();
         let pk = BtcPrivateKey::from_slice(
             &hex::decode("2cc48e2f9066a0452e73cc7874f3fa8ba5ef705067d64bef627c686baa514336").unwrap(),
             btc_network,
@@ -210,7 +204,7 @@ mod tests {
         let action_proof = ActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
         let redeem_params = parse_redeem_params_from_action_proofs(&[action_proof]).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_3().unwrap();
-        save_utxos_to_db(&db, &[utxo]).unwrap();
+        save_utxos_to_db(&db, &BtcUtxosAndValues::new(vec![utxo])).unwrap();
         let pk = BtcPrivateKey::from_slice(
             &hex::decode("040cc91d329860197e118a1ea26b7ed7042de8f991d0600df9e482c367bb1c45").unwrap(),
             btc_network,

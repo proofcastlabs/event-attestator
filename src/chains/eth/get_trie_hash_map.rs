@@ -4,7 +4,7 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eth::eth::eth_types::TrieHashMap,
+    chains::eth::eth_types::TrieHashMap,
 };
 
 pub fn get_new_trie_hash_map() -> Result<TrieHashMap> {

@@ -6,16 +6,16 @@ use std::time::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::btc_utils::get_hex_tx_from_signed_btc_tx,
-    btc_on_eth::{
-        btc::{
-            btc_database_utils::get_btc_account_nonce_from_db,
-        },
+    chains::{
+        btc::btc_utils::get_hex_tx_from_signed_btc_tx,
         eth::{
-            eth_state::EthState,
-            eth_types::RedeemParams,
+            eth_redeem_info::RedeemInfo,
             eth_database_utils::get_eth_latest_block_from_db,
         },
+    },
+    btc_on_eth::{
+        eth::eth_state::EthState,
+        btc::btc_database_utils::get_btc_account_nonce_from_db,
     },
 };
 
@@ -34,7 +34,7 @@ pub struct BtcTxInfo {
 impl BtcTxInfo {
     pub fn new(
         btc_tx: &BtcTransaction,
-        redeem_params: &RedeemParams,
+        redeem_params: &RedeemInfo,
         btc_account_nonce: u64,
     ) -> Result<BtcTxInfo> {
         Ok(
@@ -69,7 +69,7 @@ pub struct EthOutput {
 pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_account_nonce: u64,
     btc_txs: Vec<BtcTransaction>,
-    redeem_params: &[RedeemParams],
+    redeem_params: &[RedeemInfo],
 ) -> Result<Vec<BtcTxInfo>> {
     info!("✔ Getting BTC tx info from BTC txs...");
     let start_nonce = btc_account_nonce - btc_txs.len() as u64;

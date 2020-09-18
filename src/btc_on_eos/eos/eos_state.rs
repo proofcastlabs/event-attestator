@@ -15,7 +15,7 @@ use crate::{
             eos_types::{
                 ActionProofs,
                 Checksum256s,
-                RedeemParams,
+                RedeemInfo,
                 ProcessedTxIds,
             },
         },
@@ -35,7 +35,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub action_proofs: ActionProofs,
     pub signed_txs: BtcTransactions,
     pub interim_block_ids: Checksum256s,
-    pub redeem_params: Vec<RedeemParams>,
+    pub redeem_params: Vec<RedeemInfo>,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
     pub enabled_protocol_features: EnabledFeatures,
@@ -122,7 +122,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
 
     pub fn add_redeem_params(
         mut self,
-        redeem_params: Vec<RedeemParams>,
+        redeem_params: Vec<RedeemInfo>,
     ) -> Result<EosState<D>> {
         self.redeem_params = redeem_params;
         Ok(self)
@@ -167,7 +167,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
 
     pub fn replace_redeem_params(
         mut self,
-        replacement_params: Vec<RedeemParams>,
+        replacement_params: Vec<RedeemInfo>,
     ) -> Result<EosState<D>> {
         info!("✔ Replacing redeem params in state...");
         self.redeem_params = replacement_params;

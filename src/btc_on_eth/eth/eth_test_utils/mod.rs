@@ -11,6 +11,7 @@ use std::{
 use crate::{
     errors::AppError,
     traits::DatabaseInterface,
+    btc_on_eth::eth::eth_state::EthState,
     types::{
         Bytes,
         Result,
@@ -19,39 +20,39 @@ use crate::{
         TestDB,
         get_test_database,
     },
-    chains::eth::eth_crypto::{
-        eth_public_key::EthPublicKey,
-        eth_private_key::EthPrivateKey,
-        eth_transaction::EthTransaction,
-    },
-    btc_on_eth::eth::{
-        trie_nodes::Node,
-        eth_state::EthState,
-        parse_eth_block::parse_eth_block_json,
-        parse_eth_receipt::parse_eth_receipt_json,
-        parse_eth_block_and_receipts::parse_eth_block_and_receipts,
-        eth_database_utils::{
-            put_special_eth_block_in_db,
-            get_special_eth_hash_from_db,
-        },
-        eth_types::{
-            EthLog,
-            EthHash,
-            EthLogs,
-            EthBlock,
-            EthTopics,
-            EthReceipt,
-            EthAddress,
-            TrieHashMap,
-            EthBlockJson,
-            EthReceiptJson,
+    chains::eth::{
+        eth_receipt::EthReceipt,
+        eth_block_and_receipts::{
             EthBlockAndReceipts,
             EthBlockAndReceiptsJson,
         },
+        eth_log::{
+            EthLog,
+            EthLogs,
+        },
+        eth_block::{
+            EthBlock,
+            EthBlockJson,
+        },
+        eth_types::{
+            EthHash,
+            EthAddress,
+            TrieHashMap,
+        },
+        eth_crypto::{
+            eth_public_key::EthPublicKey,
+            eth_private_key::EthPrivateKey,
+            eth_transaction::EthTransaction,
+        },
+        trie_nodes::Node,
         nibble_utils::{
             Nibbles,
             get_nibbles_from_bytes,
             get_nibbles_from_offset_bytes,
+        },
+        eth_database_utils::{
+            put_special_eth_block_in_db,
+            get_special_eth_hash_from_db,
         },
     },
 };
@@ -186,7 +187,7 @@ pub fn get_sample_eth_block_and_receipts_n(
     num: usize
 ) -> Result<EthBlockAndReceipts> {
     get_sample_eth_block_and_receipts_string(num)
-        .and_then(|string| parse_eth_block_and_receipts(&string))
+        .and_then(|string| EthBlockAndReceipts::from_str(&string))
 }
 
 pub fn get_sample_receipt_n(
@@ -194,7 +195,7 @@ pub fn get_sample_receipt_n(
     receipt_index: usize,
 ) -> Result<EthReceipt> {
     get_sample_eth_block_and_receipts_n(sample_block_num)
-        .map(|block| block.receipts[receipt_index].clone())
+        .map(|block| block.receipts.0[receipt_index].clone())
 }
 
 pub fn get_sample_log_n(
@@ -203,14 +204,14 @@ pub fn get_sample_log_n(
     log_index: usize,
 ) -> Result<EthLog> {
     get_sample_receipt_n(sample_block_num, receipt_index)
-        .map(|receipt| receipt.logs[log_index].clone())
+        .map(|receipt| receipt.logs.0[log_index].clone())
 }
 
 pub fn get_sample_contract_topic() -> EthHash {
     EthHash::from_slice(&hex::decode(TEMPORARY_CONTRACT_TOPIC).unwrap())
 }
 
-pub fn get_sample_contract_topics() -> EthTopics {
+pub fn get_sample_contract_topics() -> Vec<H256>{
     vec![
         EthHash::from_slice(&hex::decode(TEMPORARY_CONTRACT_TOPIC).unwrap())
     ]
@@ -274,7 +275,7 @@ pub fn get_sequential_eth_blocks_and_receipts() -> Vec<EthBlockAndReceipts> {
         );
         let string = read_to_string(path)
             .unwrap();
-        let block_and_receipt = parse_eth_block_and_receipts(&string)
+        let block_and_receipt = EthBlockAndReceipts::from_str(&string)
             .unwrap();
         block_and_receipts.push(block_and_receipt)
     }
@@ -283,42 +284,34 @@ pub fn get_sequential_eth_blocks_and_receipts() -> Vec<EthBlockAndReceipts> {
 
 pub fn get_sample_receipt_with_desired_topic() -> EthReceipt {
     get_sample_eth_block_and_receipts()
-        .receipts[RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_TOPIC]
+        .receipts
+        .0
+        [RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_TOPIC]
         .clone()
 }
 
 pub fn get_sample_receipt_with_desired_address() -> EthReceipt {
-    get_sample_eth_block_and_receipts()
-        .receipts[RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS]
-        .clone()
+    get_sample_eth_block_and_receipts().receipts.0[RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS].clone()
 }
 
 pub fn get_sample_logs_with_desired_topic() -> EthLogs {
-    get_sample_receipt_with_desired_topic()
-        .logs
+    get_sample_receipt_with_desired_topic().logs
 }
 
 pub fn get_sample_logs_with_desired_address() -> EthLogs {
-    get_sample_receipt_with_desired_address()
-        .logs
+    get_sample_receipt_with_desired_address().logs
 }
 
 pub fn get_sample_log_with_desired_topic() -> EthLog {
-    get_sample_logs_with_desired_topic()[
-        LOG_INDEX_OF_LOG_WITH_SAMPLE_TOPIC
-    ].clone()
+    get_sample_logs_with_desired_topic().0[LOG_INDEX_OF_LOG_WITH_SAMPLE_TOPIC].clone()
 }
 
 pub fn get_sample_log_with_desired_address() -> EthLog {
-    get_sample_logs_with_desired_address()[
-        LOG_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS
-    ].clone()
+    get_sample_logs_with_desired_address().0[LOG_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS].clone()
 }
 
 pub fn get_sample_receipt_without_desired_topic() -> EthReceipt {
-    get_sample_eth_block_and_receipts()
-        .receipts[RECEIPT_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC]
-        .clone()
+    get_sample_eth_block_and_receipts().receipts.0[RECEIPT_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC].clone()
 }
 
 pub fn get_sample_receipt_without_desired_address() -> EthReceipt {
@@ -327,14 +320,11 @@ pub fn get_sample_receipt_without_desired_address() -> EthReceipt {
 }
 
 pub fn get_sample_logs_without_desired_topic() -> EthLogs {
-    get_sample_receipt_without_desired_topic()
-        .logs
+    get_sample_receipt_without_desired_topic().logs
 }
 
 pub fn get_sample_log_without_desired_topic() -> EthLog {
-    get_sample_logs_without_desired_topic() [
-        LOG_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC
-    ].clone()
+    get_sample_logs_without_desired_topic().0[LOG_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC ].clone()
 }
 
 pub fn get_sample_log_without_desired_address() -> EthLog {
@@ -410,7 +400,7 @@ pub fn get_valid_state_with_invalid_block_and_receipts(
         true => {
             let string = read_to_string(SAMPLE_INVALID_BLOCK_AND_RECEIPT_JSON)
                 .unwrap();
-            let invalid_struct = parse_eth_block_and_receipts(&string)
+            let invalid_struct = EthBlockAndReceipts::from_str(&string)
                 .unwrap();
             let state = get_valid_eth_state()
                 .unwrap();
@@ -427,8 +417,7 @@ pub fn get_sample_invalid_block() -> EthBlock {
     invalid_block
 }
 
-pub fn get_sample_eth_block_and_receipts_json(
-) -> Result<EthBlockAndReceiptsJson> {
+pub fn get_sample_eth_block_and_receipts_json() -> Result<EthBlockAndReceiptsJson> {
     get_sample_eth_block_and_receipts_string(0)
         .and_then(|eth_block_and_receipts_json_string|
             match serde_json::from_str(&eth_block_and_receipts_json_string) {
@@ -440,7 +429,7 @@ pub fn get_sample_eth_block_and_receipts_json(
 
 pub fn get_sample_eth_block_and_receipts() -> EthBlockAndReceipts {
     let string = get_sample_eth_block_and_receipts_string(0).unwrap();
-    parse_eth_block_and_receipts(&string).unwrap()
+    EthBlockAndReceipts::from_str(&string).unwrap()
 }
 
 pub fn get_valid_state_with_block_and_receipts() -> Result<EthState<TestDB>> {
@@ -454,22 +443,16 @@ pub fn get_valid_state_with_block_and_receipts() -> Result<EthState<TestDB>> {
 
 pub fn get_expected_block() -> EthBlock {
     let string = read_to_string(SAMPLE_BLOCK_JSON_PATH).unwrap();
-    let eth_block_json: EthBlockJson = serde_json::from_str(&string)
-        .unwrap();
-    parse_eth_block_json(eth_block_json)
-        .unwrap()
+    let eth_block_json: EthBlockJson = serde_json::from_str(&string).unwrap();
+    EthBlock::from_json(&eth_block_json).unwrap()
 }
 
 pub fn get_expected_receipt() -> EthReceipt {
-    let string = read_to_string(SAMPLE_RECEIPT_JSON_PATH).unwrap();
-    let eth_receipt_json: EthReceiptJson = serde_json::from_str(&string)
-        .unwrap();
-    parse_eth_receipt_json(eth_receipt_json)
-        .unwrap()
+    EthReceipt::from_json(&serde_json::from_str(&read_to_string(SAMPLE_RECEIPT_JSON_PATH).unwrap()).unwrap()).unwrap()
 }
 
 pub fn get_expected_log() -> EthLog {
-    get_expected_receipt().logs[0].clone()
+    get_expected_receipt().logs.0[0].clone()
 }
 
 pub fn get_valid_eth_state() -> Result<EthState<TestDB>> {
@@ -499,11 +482,8 @@ pub fn get_sample_unsigned_eth_transaction() -> EthTransaction {
 
 mod tests {
     use super::*;
-    use crate::btc_on_eth::utils::convert_hex_to_h256;
-    use crate::btc_on_eth::eth::validate_block::validate_block_header;
-    use crate::btc_on_eth::eth::filter_receipts::{
-        log_contains_topic,
-        logs_contain_topic,
+    use crate::btc_on_eth::{
+        utils::convert_hex_to_h256,
     };
 
     #[test]
@@ -554,7 +534,7 @@ mod tests {
         let expected_receipt = get_expected_receipt();
         let result = get_sample_eth_block_and_receipts();
         let block = result.block.clone();
-        let receipt = result.receipts[SAMPLE_RECEIPT_INDEX].clone();
+        let receipt = result.receipts.0[SAMPLE_RECEIPT_INDEX].clone();
         let expected_block = get_expected_block();
         assert_eq!(receipt, expected_receipt);
         assert_eq!(block, expected_block);
@@ -578,14 +558,14 @@ mod tests {
     #[test]
     fn should_get_sample_invalid_block() {
         let invalid_block = get_sample_invalid_block();
-        let is_valid = validate_block_header(&invalid_block).unwrap();
+        let is_valid = invalid_block.is_valid().unwrap();
         assert!(!is_valid)
     }
 
     #[test]
     fn should_get_valid_state_with_invalid_block_and_receipts() {
         let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
-        let is_valid = validate_block_header(&state.get_eth_block_and_receipts().unwrap().block).unwrap();
+        let is_valid = state.get_eth_block_and_receipts().unwrap().block.is_valid().unwrap();
         assert!(!is_valid);
     }
 
@@ -631,8 +611,9 @@ mod tests {
     fn sample_logs_with_desired_topic_should_contain_topic() {
         let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
         let result = get_sample_logs_with_desired_topic()
+            .0
             .iter()
-            .any(|log| log_contains_topic(log, &desired_topic));
+            .any(|log| log.contains_topic(&desired_topic));
         assert!(result);
     }
 
@@ -640,22 +621,23 @@ mod tests {
     fn sample_logs_without_desired_topic_should_contain_topic() {
         let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
         let result = get_sample_logs_without_desired_topic()
+            .0
             .iter()
-            .any(|log| log_contains_topic(log, &desired_topic));
+            .any(|log| log.contains_topic(&desired_topic));
         assert!(!result);
     }
 
     #[test]
     fn sample_receipts_with_desired_topic_should_contain_topic() {
         let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
-        let result = logs_contain_topic(&get_sample_receipt_with_desired_topic().logs, &desired_topic);
+        let result = get_sample_receipt_with_desired_topic().logs.contain_topic(&desired_topic);
         assert!(result);
     }
 
     #[test]
     fn sample_receipts_without_desired_topic_should_not_contain_topic() {
         let desired_topic = convert_hex_to_h256(TEMPORARY_CONTRACT_TOPIC).unwrap();
-        let result = logs_contain_topic(&get_sample_receipt_without_desired_topic().logs, &desired_topic);
+        let result =get_sample_receipt_without_desired_topic().logs.contain_topic(&desired_topic);
         assert!(!result);
     }
 

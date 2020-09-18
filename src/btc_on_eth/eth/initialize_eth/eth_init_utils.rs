@@ -1,10 +1,14 @@
 use crate::{
     traits::DatabaseInterface,
-    types::{Bytes, Result},
-    chains::eth::eth_crypto::eth_transaction::get_ptoken_smart_contract_bytecode,
-    btc_on_eth::eth::{
-        eth_state::EthState,
-        eth_types::EthBlockAndReceipts,
+    types::{
+        Bytes,
+        Result,
+    },
+    btc_on_eth::eth::eth_state::EthState,
+    chains::eth::{
+        eth_receipt::EthReceipts,
+        eth_block_and_receipts::EthBlockAndReceipts,
+        eth_crypto::eth_transaction::get_ptoken_smart_contract_bytecode,
         eth_database_utils::{
             put_eth_chain_id_in_db,
             put_eth_gas_price_in_db,
@@ -144,7 +148,7 @@ pub fn remove_receipts_from_block_in_state<D>( // ∵ there shouldn't be relevan
     trace!("✔ Removing receipts from ETH block in state...");
     let block_with_no_receipts = EthBlockAndReceipts {
         block: state.get_eth_block_and_receipts()?.block.clone(),
-        receipts: vec![],
+        receipts: EthReceipts::new_empty(),
     };
     state.update_eth_block_and_receipts(block_with_no_receipts)
 }
