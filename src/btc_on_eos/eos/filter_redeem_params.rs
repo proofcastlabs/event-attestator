@@ -3,7 +3,7 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eos::eos::eos_state::EosState,
     chains::{
-        eos::eos_types::RedeemParams,
+        eos::eos_types::RedeemInfo,
         btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
     },
 };

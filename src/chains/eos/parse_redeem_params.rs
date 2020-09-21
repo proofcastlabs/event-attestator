@@ -12,7 +12,7 @@ use crate::{
     chains::eos::{
         eos_types::{
             ActionProof,
-            RedeemParams,
+            RedeemInfo,
         },
     },
 };
@@ -42,12 +42,12 @@ fn get_redeem_address_from_action_data(
     Ok(from_utf8(&action_data[25..])?.to_string())
 }
 
-impl RedeemParams {
+impl RedeemInfo {
     pub fn from_action_proof(
         action_proof: &ActionProof,
     ) -> Result<Self> {
         Ok(
-            RedeemParams {
+            RedeemInfo {
                 global_sequence: action_proof
                     .action_receipt
                     .global_sequence,
@@ -68,10 +68,10 @@ impl RedeemParams {
 
 pub fn parse_redeem_params_from_action_proofs(
     action_proofs: &[ActionProof]
-) -> Result<Vec<RedeemParams>> {
+) -> Result<Vec<RedeemInfo>> {
     action_proofs
         .iter()
-        .map(|proof| RedeemParams::from_action_proof(proof))
+        .map(|proof| RedeemInfo::from_action_proof(proof))
         .collect()
 }
 
@@ -142,7 +142,7 @@ mod tests {
 
     #[test]
     fn should_get_redeem_params_from_action_proof_2() {
-        let expected_result = RedeemParams {
+        let expected_result = RedeemInfo {
             global_sequence: 577606126,
             amount: 1,
             recipient: "mr6ioeUxNMoavbr2VjaSbPAovzzgDT7Su9"
@@ -157,14 +157,14 @@ mod tests {
         let action_proof = get_sample_eos_submission_material_n(2)
             .action_proofs[0]
             .clone();
-        let result = RedeemParams::from_action_proof(&action_proof)
+        let result = RedeemInfo::from_action_proof(&action_proof)
             .unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_get_redeem_params_from_action_proof_3() {
-        let expected_result = RedeemParams {
+        let expected_result = RedeemInfo {
             global_sequence: 583774614,
             amount: 5666,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
@@ -179,14 +179,14 @@ mod tests {
         let action_proof = get_sample_eos_submission_material_n(3)
             .action_proofs[0]
             .clone();
-        let result = RedeemParams::from_action_proof(&action_proof)
+        let result = RedeemInfo::from_action_proof(&action_proof)
             .unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_get_redeem_params_from_action_proof_4() {
-        let expected_result = RedeemParams {
+        let expected_result = RedeemInfo {
             global_sequence: 579818529,
             amount: 5555,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
@@ -201,14 +201,14 @@ mod tests {
         let action_proof = get_sample_eos_submission_material_n(4)
             .action_proofs[0]
             .clone();
-        let result = RedeemParams::from_action_proof(&action_proof)
+        let result = RedeemInfo::from_action_proof(&action_proof)
             .unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_get_redeem_params_from_action_proof_5() {
-        let expected_result = RedeemParams {
+        let expected_result = RedeemInfo {
             global_sequence: 579838915,
             amount: 5111,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
@@ -223,7 +223,7 @@ mod tests {
         let action_proof = get_sample_eos_submission_material_n(1)
             .action_proofs[0]
             .clone();
-        let result = RedeemParams::from_action_proof(&action_proof)
+        let result = RedeemInfo::from_action_proof(&action_proof)
             .unwrap();
         assert_eq!(result, expected_result);
     }

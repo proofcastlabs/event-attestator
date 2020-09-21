@@ -22,6 +22,7 @@ pub(crate) mod validate_producer_slot;
 pub(crate) mod filter_duplicate_proofs;
 pub(crate) mod filter_irrelevant_proofs;
 pub(crate) mod append_interim_block_ids;
+pub(crate) mod eos_database_transactions;
 pub(crate) mod parse_submission_material;
 pub(crate) mod increment_signature_nonce;
 pub(crate) mod extract_utxos_from_btc_txs;

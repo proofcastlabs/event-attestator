@@ -6,7 +6,7 @@ use std::time::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eos::eos_types::RedeemParams,
+    chains::eos::eos_types::RedeemInfo,
     btc_on_eos::{
         eos::eos_state::EosState,
         btc::{

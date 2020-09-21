@@ -17,9 +17,7 @@ use crate::{
             eos_crypto::eos_private_key::EosPrivateKey,
             parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
             eos_database_utils::{
-                end_eos_db_transaction,
                 put_eos_schedule_in_db,
-                start_eos_db_transaction,
                 get_eos_chain_id_from_db,
                 get_eos_account_nonce_from_db,
                 get_eos_account_name_string_from_db,
@@ -75,6 +73,10 @@ use crate::{
                 put_eos_latest_block_info_in_db,
                 generate_and_put_incremerkle_in_db,
             },
+            eos_database_transactions::{
+                end_eos_db_transaction_and_return_state,
+                start_eos_db_transaction_and_return_state,
+            },
             eos_state::EosState,
             get_eos_output::get_eos_output,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
@@ -126,7 +128,7 @@ pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> w
     parse_submission_material_and_add_to_state(block_json, EosState::init(db))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
-        .and_then(start_eos_db_transaction)
+        .and_then(start_eos_db_transaction_and_return_state)
         .and_then(get_processed_tx_ids_and_add_to_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)
         .and_then(maybe_filter_out_irrelevant_proofs_from_state)
@@ -142,7 +144,7 @@ pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> w
         .and_then(maybe_increment_signature_nonce_and_return_state)
         .and_then(maybe_extract_btc_utxo_from_btc_tx_in_state)
         .and_then(maybe_save_btc_utxos_to_db)
-        .and_then(end_eos_db_transaction)
+        .and_then(end_eos_db_transaction_and_return_state)
         .and_then(get_eos_output)
         .map(prepend_debug_output_marker_to_string)
 }

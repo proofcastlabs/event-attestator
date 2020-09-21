@@ -42,7 +42,6 @@ use crate::{
         },
         protocol_features::EnabledFeatures,
     },
-    btc_on_eos::eos::eos_state::EosState,
 };
 
 pub fn put_eos_enabled_protocol_features_in_db<D>(
@@ -273,32 +272,4 @@ pub fn put_processed_tx_ids_in_db<D>(
     where D: DatabaseInterface
 {
     db.put(PROCESSED_TX_IDS_KEY.to_vec(), serde_json::to_vec(processed_tx_ids)?, None)
-}
-
-pub fn start_eos_db_transaction<D>(
-    state: EosState<D>,
-) -> Result<EosState<D>>
-    where D: DatabaseInterface
-{
-    state
-        .db
-        .start_transaction()
-        .map(|_| {
-            info!("✔ Database transaction begun for EOS block submission!");
-            state
-        })
-}
-
-pub fn end_eos_db_transaction<D>(
-    state: EosState<D>,
-) -> Result<EosState<D>>
-    where D: DatabaseInterface
-{
-    state
-        .db
-        .end_transaction()
-        .map(|_| {
-            info!("✔ Database transaction ended for EOS block submission!");
-            state
-        })
 }

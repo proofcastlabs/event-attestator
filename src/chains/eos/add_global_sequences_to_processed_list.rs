@@ -4,20 +4,20 @@ use crate::{
     chains::eos::{
         eos_database_utils::put_processed_tx_ids_in_db,
         eos_types::{
-            RedeemParams,
+            RedeemInfo,
             ProcessedTxIds,
             GlobalSequences,
         },
     },
 };
 
-fn get_global_sequences_from_redeem_params(redeem_params: &[RedeemParams]) -> GlobalSequences {
+fn get_global_sequences_from_redeem_params(redeem_params: &[RedeemInfo]) -> GlobalSequences {
     redeem_params.iter().map(|params| params.global_sequence).collect::<GlobalSequences>()
 }
 
 pub fn add_tx_ids_to_processed_tx_ids<D>(
     db: &D,
-    redeem_params: &[RedeemParams],
+    redeem_params: &[RedeemInfo],
     processed_tx_ids: &ProcessedTxIds,
 ) -> Result<()>
     where D: DatabaseInterface

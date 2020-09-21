@@ -1,12 +1,12 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eos::eos_database_utils::{
-        end_eos_db_transaction,
-        start_eos_db_transaction,
-    },
     btc_on_eos::eos::{
         eos_state::EosState,
+        eos_database_transactions::{
+            end_eos_db_transaction_and_return_state,
+            start_eos_db_transaction_and_return_state,
+        },
         initialize_eos::{
             is_eos_core_initialized::is_eos_core_initialized,
             eos_init_utils::{
@@ -47,7 +47,7 @@ pub fn maybe_initialize_eos_core<D>(
         }
         false => {
             info!("✔ Initializing core for EOS...");
-            start_eos_db_transaction(EosState::init(db))
+            start_eos_db_transaction_and_return_state(EosState::init(db))
                 .and_then(put_empty_processed_tx_ids_in_db_and_return_state)
                 .and_then(|state| put_eos_chain_id_in_db_and_return_state(chain_id, state))
                 .and_then(|state| put_eos_account_name_in_db_and_return_state(account_name, state))
@@ -70,7 +70,7 @@ pub fn maybe_initialize_eos_core<D>(
                 .and_then(|state| test_block_validation_and_return_state(&init_json.block, state))
                 .and_then(generated_eos_key_save_in_db_and_return_state)
                 .and_then(put_eos_account_nonce_in_db_and_return_state)
-                .and_then(end_eos_db_transaction)
+                .and_then(end_eos_db_transaction_and_return_state)
                 .and_then(get_eos_init_output)
         }
     }
