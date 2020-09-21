@@ -94,8 +94,8 @@ use crate::{
             filter_invalid_merkle_proofs::maybe_filter_out_proofs_with_invalid_merkle_proofs,
             filter_already_processed_txs::maybe_filter_out_already_processed_tx_ids_from_state,
             filter_proofs_with_wrong_action_mroot::maybe_filter_out_proofs_with_wrong_action_mroot,
-            filter_action_and_receipt_mismatches::maybe_filter_out_action_proof_receipt_mismatches,
             add_global_sequences_to_processed_list::maybe_add_global_sequences_to_processed_list_and_return_state,
+            filter_action_and_receipt_mismatches::maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
         },
     },
 };
@@ -132,7 +132,7 @@ pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> w
         .and_then(get_processed_tx_ids_and_add_to_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)
         .and_then(maybe_filter_out_irrelevant_proofs_from_state)
-        .and_then(maybe_filter_out_action_proof_receipt_mismatches)
+        .and_then(maybe_filter_out_action_proof_receipt_mismatches_and_return_state)
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
