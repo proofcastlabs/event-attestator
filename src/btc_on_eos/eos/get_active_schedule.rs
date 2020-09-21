@@ -11,9 +11,6 @@ pub fn get_active_schedule_from_db_and_add_to_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Getting EOS producer list and adding to state...");
-    get_eos_schedule_from_db(
-        &state.db,
-        state.get_eos_block_header()?.schedule_version,
-    )
+    get_eos_schedule_from_db(&state.db, state.get_eos_block_header()?.schedule_version)
         .and_then(|schedule| state.add_active_schedule(schedule))
 }
