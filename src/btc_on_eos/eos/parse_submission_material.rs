@@ -12,6 +12,7 @@ use eos_primitives::{
 use crate::{
     types::{NoneError, Result},
     traits::DatabaseInterface,
+    btc_on_eos::eos::eos_state::EosState,
     chains::eos::{
         eos_utils::convert_hex_to_checksum256,
         eos_types::{
@@ -22,9 +23,6 @@ use crate::{
             ActionProofJsons,
             EosBlockHeaderJson,
         },
-    },
-    btc_on_eos::eos::{
-        eos_state::EosState,
         parse_eos_schedule::{
             convert_v1_schedule_to_v2,
             convert_v1_schedule_json_to_v1_schedule,

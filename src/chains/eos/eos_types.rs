@@ -11,13 +11,13 @@ use crate::{
         Bytes,
         Result,
     },
-    chains::eos::eos_utils::{
-        get_eos_schedule_db_key,
-        convert_hex_to_checksum256,
-    },
-    btc_on_eos::eos::{
+    chains::eos::{
         parse_eos_actions::parse_eos_action_json,
         parse_eos_action_receipts::parse_eos_action_receipt_json,
+        eos_utils::{
+            get_eos_schedule_db_key,
+            convert_hex_to_checksum256,
+        },
     },
 };
 

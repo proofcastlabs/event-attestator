@@ -15,6 +15,7 @@ use crate::{
     chains::{
         eos::{
             eos_crypto::eos_private_key::EosPrivateKey,
+            parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
             eos_database_utils::{
                 end_eos_db_transaction,
                 put_eos_schedule_in_db,
@@ -69,7 +70,6 @@ use crate::{
             },
 	},
         eos::{
-            parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
             initialize_eos::eos_init_utils::{
                 EosInitJson,
                 put_eos_latest_block_info_in_db,

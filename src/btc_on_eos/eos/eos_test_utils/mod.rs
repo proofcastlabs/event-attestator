@@ -52,6 +52,16 @@ use crate::{
             convert_hex_to_checksum256,
             convert_bytes_to_checksum256,
         },
+        parse_eos_schedule::{
+            convert_v1_schedule_to_v2,
+            EosProducerScheduleJsonV1,
+            EosProducerScheduleJsonV2,
+            parse_v2_schedule_string_to_v2_schedule,
+            convert_v2_schedule_json_to_v2_schedule,
+            convert_v1_schedule_json_to_v1_schedule,
+            parse_v1_schedule_string_to_v1_schedule_json,
+            parse_v2_schedule_string_to_v2_schedule_json,
+        },
     },
     btc_on_eos::{
         eos::{
@@ -61,16 +71,6 @@ use crate::{
             parse_submission_material::{
                 EosSubmissionMaterial,
                 EosSubmissionMaterialJson,
-            },
-            parse_eos_schedule::{
-                convert_v1_schedule_to_v2,
-                EosProducerScheduleJsonV1,
-                EosProducerScheduleJsonV2,
-                parse_v2_schedule_string_to_v2_schedule,
-                convert_v2_schedule_json_to_v2_schedule,
-                convert_v1_schedule_json_to_v1_schedule,
-                parse_v1_schedule_string_to_v1_schedule_json,
-                parse_v2_schedule_string_to_v2_schedule_json,
             },
             parse_submission_material::{
                 parse_eos_block_header_from_json,

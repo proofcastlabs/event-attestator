@@ -9,6 +9,10 @@ use crate::{
         eos_merkle_utils::Incremerkle,
         eos_utils::convert_hex_to_checksum256,
         eos_crypto::eos_private_key::EosPrivateKey,
+        parse_eos_schedule::{
+            EosProducerScheduleJsonV2,
+            convert_v2_schedule_json_to_v2_schedule,
+        },
         eos_types::{
             Checksum256s,
             ProcessedTxIds,
@@ -39,10 +43,6 @@ use crate::{
             protocol_features::{
                 EnabledFeatures,
                 WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
-            },
-            parse_eos_schedule::{
-                EosProducerScheduleJsonV2,
-                convert_v2_schedule_json_to_v2_schedule,
             },
         },
     },
