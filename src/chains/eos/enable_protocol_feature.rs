@@ -1,8 +1,10 @@
 use crate::{
     traits::DatabaseInterface,
     types::{Byte, Result},
-    chains::eos::eos_database_utils::put_eos_enabled_protocol_features_in_db,
-    btc_on_eos::eos::protocol_features::{EnabledFeatures, AVAILABLE_FEATURES},
+    chains::eos::{
+        protocol_features::{EnabledFeatures, AVAILABLE_FEATURES},
+        eos_database_utils::put_eos_enabled_protocol_features_in_db,
+    },
 };
 
 pub fn enable_protocol_feature<D>(

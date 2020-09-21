@@ -9,7 +9,6 @@ pub(crate) mod get_eos_output;
 pub(crate) mod eos_test_utils;
 pub(crate) mod save_incremerkle;
 pub(crate) mod sign_transactions;
-pub(crate) mod protocol_features;
 pub(crate) mod validate_signature;
 pub(crate) mod parse_redeem_params;
 pub(crate) mod get_eos_incremerkle;

@@ -6,6 +6,7 @@ pub(crate) mod eos_types;
 pub(crate) mod eos_crypto;
 pub(crate) mod eos_merkle_utils;
 pub(crate) mod parse_eos_actions;
+pub(crate) mod protocol_features;
 pub(crate) mod eos_database_utils;
 pub(crate) mod parse_eos_schedule;
 pub(crate) mod parse_redeem_params;

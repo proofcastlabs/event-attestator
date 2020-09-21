@@ -16,19 +16,19 @@ use bitcoin_hashes::{
 use crate::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
-    chains::eos::eos_crypto::{
-        eos_signature::EosSignature,
-        eos_public_key::EosPublicKey,
+    chains::eos::{
+        protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
+        eos_crypto::{
+            eos_signature::EosSignature,
+            eos_public_key::EosPublicKey,
+        },
     },
     constants::{
         DEBUG_MODE,
         CORE_IS_VALIDATING,
         NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR,
     },
-    btc_on_eos::eos::{
-        eos_state::EosState,
-        protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
-    },
+    btc_on_eos::eos::eos_state::EosState,
 };
 
 fn create_eos_signing_digest(block_mroot: &[Byte], schedule_hash: &[Byte], block_header_digest: &[Byte]) -> Bytes {

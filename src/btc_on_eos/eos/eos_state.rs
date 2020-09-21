@@ -9,6 +9,7 @@ use crate::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eos::{
             eos_merkle_utils::Incremerkle,
+            protocol_features::EnabledFeatures,
             parse_submission_material::EosSubmissionMaterial,
             eos_types::{
                 ActionProofs,
@@ -20,7 +21,6 @@ use crate::{
     },
     btc_on_eos::{
         btc::btc_types::BtcTransactions,
-        eos::protocol_features::EnabledFeatures,
         utils::{
             get_not_in_state_err,
             get_no_overwrite_state_err,

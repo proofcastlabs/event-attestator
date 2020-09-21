@@ -26,8 +26,7 @@ fn disable_feature_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    disable_protocol_feature(&state.db, hash, &state.enabled_protocol_features)
-        .and(Ok(state))
+    disable_protocol_feature(&state.db, hash, &state.enabled_protocol_features).and(Ok(state))
 }
 
 pub fn disable_eos_protocol_feature<D: DatabaseInterface>(db: D, feature_hash: &str) -> Result<String> {

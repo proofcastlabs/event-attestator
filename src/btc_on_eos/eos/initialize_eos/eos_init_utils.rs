@@ -35,16 +35,14 @@ use crate::{
             put_eos_last_seen_block_num_in_db,
             get_eos_last_seen_block_num_from_db,
         },
-    },
-    btc_on_eos::{
-        eos::{
-            eos_state::EosState,
-            validate_signature::check_block_signature_is_valid,
             protocol_features::{
-                EnabledFeatures,
-                WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
-            },
+            EnabledFeatures,
+            WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
         },
+    },
+    btc_on_eos::eos::{
+        eos_state::EosState,
+        validate_signature::check_block_signature_is_valid,
     },
 };
 

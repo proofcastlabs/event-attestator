@@ -40,11 +40,9 @@ use crate::{
             ProcessedTxIds,
             EosKnownSchedules,
         },
-    },
-    btc_on_eos::eos::{
-        eos_state::EosState,
         protocol_features::EnabledFeatures,
     },
+    btc_on_eos::eos::eos_state::EosState,
 };
 
 pub fn put_eos_enabled_protocol_features_in_db<D>(
