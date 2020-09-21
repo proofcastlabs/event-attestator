@@ -151,7 +151,10 @@ mod tests {
     use crate::{
         test_utils::get_test_database,
         chains::{
-            eos::eos_types::ActionProof,
+            eos::{
+                eos_types::ActionProof,
+                parse_redeem_params::parse_redeem_params_from_action_proofs,
+            },
             btc::{
                 btc_constants::BTC_PRIVATE_KEY_DB_KEY,
                 utxo_manager::utxo_database_utils::save_utxos_to_db,
@@ -170,10 +173,7 @@ mod tests {
                     put_btc_address_in_db,
                 },
             },
-            eos::{
-                eos_test_utils::get_sample_eos_submission_material_json_n,
-                parse_redeem_params::parse_redeem_params_from_action_proofs,
-            },
+            eos::eos_test_utils::get_sample_eos_submission_material_json_n,
         },
     };
 
