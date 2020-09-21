@@ -62,21 +62,19 @@ use crate::{
             parse_v1_schedule_string_to_v1_schedule_json,
             parse_v2_schedule_string_to_v2_schedule_json,
         },
+        parse_submission_material::{
+            EosSubmissionMaterial,
+            EosSubmissionMaterialJson,
+            parse_eos_block_header_from_json,
+            parse_eos_submission_material_string_to_json,
+            parse_eos_submission_material_string_to_struct,
+        },
     },
     btc_on_eos::{
         eos::{
             eos_state::EosState,
             initialize_eos::eos_init_utils::EosInitJson,
             protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
-            parse_submission_material::{
-                EosSubmissionMaterial,
-                EosSubmissionMaterialJson,
-            },
-            parse_submission_material::{
-                parse_eos_block_header_from_json,
-                parse_eos_submission_material_string_to_json,
-                parse_eos_submission_material_string_to_struct,
-            },
         },
     },
 };

@@ -9,6 +9,7 @@ use crate::{
         eos_merkle_utils::Incremerkle,
         eos_utils::convert_hex_to_checksum256,
         eos_crypto::eos_private_key::EosPrivateKey,
+        parse_submission_material::parse_eos_block_header_from_json,
         parse_eos_schedule::{
             EosProducerScheduleJsonV2,
             convert_v2_schedule_json_to_v2_schedule,
@@ -39,7 +40,6 @@ use crate::{
         eos::{
             eos_state::EosState,
             validate_signature::check_block_signature_is_valid,
-            parse_submission_material::parse_eos_block_header_from_json,
             protocol_features::{
                 EnabledFeatures,
                 WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
