@@ -33,50 +33,47 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eos::{
-        test_utils::get_sample_message_to_sign,
-        utils::{
+    chains::eos::{
+        eos_merkle_utils::Incremerkle,
+        eos_types::{
+            ActionProof,
+            ActionProofs,
+            Checksum256s,
+            EosBlockHeaderJson,
+            EosSignedTransaction,
+            EosSignedTransactions,
+        },
+        eos_crypto::{
+            eos_signature::EosSignature,
+            eos_public_key::EosPublicKey,
+            eos_private_key::EosPrivateKey,
+        },
+        eos_utils::{
             convert_hex_to_checksum256,
             convert_bytes_to_checksum256,
         },
-        eos::{
-            eos_state::EosState,
-            eos_merkle_utils::Incremerkle,
-            initialize_eos::eos_init_utils::EosInitJson,
-            protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
-            parse_submission_material::{
-                EosSubmissionMaterial,
-                EosSubmissionMaterialJson,
-            },
-            parse_eos_schedule::{
-                convert_v1_schedule_to_v2,
-                EosProducerScheduleJsonV1,
-                EosProducerScheduleJsonV2,
-                parse_v2_schedule_string_to_v2_schedule,
-                convert_v2_schedule_json_to_v2_schedule,
-                convert_v1_schedule_json_to_v1_schedule,
-                parse_v1_schedule_string_to_v1_schedule_json,
-                parse_v2_schedule_string_to_v2_schedule_json,
-            },
-            parse_submission_material::{
-                parse_eos_block_header_from_json,
-                parse_eos_submission_material_string_to_json,
-                parse_eos_submission_material_string_to_struct,
-            },
-            eos_types::{
-                ActionProof,
-                ActionProofs,
-                Checksum256s,
-                EosBlockHeaderJson,
-                EosSignedTransaction,
-                EosSignedTransactions,
-            },
-            eos_crypto::{
-                eos_signature::EosSignature,
-                eos_public_key::EosPublicKey,
-                eos_private_key::EosPrivateKey,
-            },
+        parse_eos_schedule::{
+            convert_v1_schedule_to_v2,
+            EosProducerScheduleJsonV1,
+            EosProducerScheduleJsonV2,
+            parse_v2_schedule_string_to_v2_schedule,
+            convert_v2_schedule_json_to_v2_schedule,
+            convert_v1_schedule_json_to_v1_schedule,
+            parse_v1_schedule_string_to_v1_schedule_json,
+            parse_v2_schedule_string_to_v2_schedule_json,
         },
+        parse_submission_material::{
+            EosSubmissionMaterial,
+            EosSubmissionMaterialJson,
+            parse_eos_block_header_from_json,
+            parse_eos_submission_material_string_to_json,
+            parse_eos_submission_material_string_to_struct,
+        },
+        protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
+    },
+    btc_on_eos::eos::{
+        eos_state::EosState,
+        initialize_eos::eos_init_utils::EosInitJson,
     },
 };
 
@@ -132,6 +129,10 @@ pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-init-and-subsequent-blocks-mainnet-1.json";
 
 pub const EOS_JUNGLE_CHAIN_ID: &str = "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
+
+fn get_sample_message_to_sign_bytes() -> &'static [u8] {
+    "Provable pToken!".as_bytes()
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosInitAndSubsequentBlocksJson {
@@ -413,7 +414,7 @@ pub fn get_sample_eos_public_key_bytes() -> Bytes {
 
 pub fn get_sample_eos_signature() -> EosSignature {
     get_sample_eos_private_key()
-        .sign_message_bytes(&get_sample_message_to_sign().as_bytes())
+        .sign_message_bytes(&get_sample_message_to_sign_bytes())
         .unwrap()
 }
 

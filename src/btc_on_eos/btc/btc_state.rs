@@ -1,12 +1,14 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::{
-        deposit_address_info::DepositInfoHashMap,
-        utxo_manager::utxo_types::BtcUtxosAndValues,
+    chains::{
+        eos::eos_types::EosSignedTransactions,
+        btc::{
+            deposit_address_info::DepositInfoHashMap,
+            utxo_manager::utxo_types::BtcUtxosAndValues,
+        },
     },
     btc_on_eos::{
-        eos::eos_types::EosSignedTransactions,
         utils::{
             get_not_in_state_err,
             get_no_overwrite_state_err,

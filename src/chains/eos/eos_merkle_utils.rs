@@ -5,13 +5,13 @@ use bitcoin_hashes::{
 };
 use crate::{
     errors::AppError,
+    chains::eos::eos_utils::convert_hex_to_checksum256,
     types::{
         Byte,
         Bytes,
         NoneError,
         Result,
     },
-    btc_on_eos::utils::convert_hex_to_checksum256,
 };
 
 pub type CanonicalLeft = Bytes;

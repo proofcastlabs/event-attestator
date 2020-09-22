@@ -6,7 +6,7 @@ use crate::{
     base58,
     types::Result,
     errors::AppError,
-    btc_on_eos::eos::eos_hash::ripemd160,
+    chains::eos::eos_hash::ripemd160,
 };
 use secp256k1::{
     recovery::{

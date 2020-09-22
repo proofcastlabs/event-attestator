@@ -15,14 +15,14 @@ use crate::{
         Bytes,
         Result,
     },
-    chains::eos::eos_constants::{
-        PUBLIC_KEY_SIZE,
-        PUBLIC_KEY_CHECKSUM_SIZE,
-        PUBLIC_KEY_WITH_CHECKSUM_SIZE,
-    },
-    btc_on_eos::eos::{
+    chains::eos::{
         eos_hash::ripemd160,
         eos_crypto::eos_signature::EosSignature,
+        eos_constants::{
+            PUBLIC_KEY_SIZE,
+            PUBLIC_KEY_CHECKSUM_SIZE,
+            PUBLIC_KEY_WITH_CHECKSUM_SIZE,
+        },
     },
 };
 
@@ -131,20 +131,21 @@ mod test {
         Hash,
         sha256,
     };
-    use crate::btc_on_eos::{
-        test_utils::get_sample_message_to_sign_bytes,
-        eos::{
-            eos_crypto::eos_signature::EosSignature,
-            eos_test_utils::{
-                get_sample_eos_signature,
-                sha256_hash_message_bytes,
-                get_sample_eos_public_key,
-                get_sample_eos_private_key,
-                get_sample_eos_public_key_str,
-                get_sample_eos_public_key_bytes,
-            },
+    use crate::{
+        chains::eos::eos_crypto::eos_signature::EosSignature,
+        btc_on_eos::eos::eos_test_utils::{
+            get_sample_eos_signature,
+            sha256_hash_message_bytes,
+            get_sample_eos_public_key,
+            get_sample_eos_private_key,
+            get_sample_eos_public_key_str,
+            get_sample_eos_public_key_bytes,
         },
     };
+
+    fn get_sample_message_to_sign_bytes() -> &'static [u8] {
+        "Provable pToken!".as_bytes()
+    }
 
     impl EosPublicKey {
         pub fn verify_signature(

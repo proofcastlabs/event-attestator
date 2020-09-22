@@ -16,19 +16,19 @@ use bitcoin_hashes::{
 use crate::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
-    constants::{
-        DEBUG_MODE,
-        CORE_IS_VALIDATING,
-        NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR,
-    },
-    btc_on_eos::eos::{
-        eos_state::EosState,
+    chains::eos::{
         protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
         eos_crypto::{
             eos_signature::EosSignature,
             eos_public_key::EosPublicKey,
         },
     },
+    constants::{
+        DEBUG_MODE,
+        CORE_IS_VALIDATING,
+        NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR,
+    },
+    btc_on_eos::eos::eos_state::EosState,
 };
 
 fn create_eos_signing_digest(block_mroot: &[Byte], schedule_hash: &[Byte], block_header_digest: &[Byte]) -> Bytes {
@@ -197,18 +197,22 @@ mod tests {
     use super::*;
 
     use eos_primitives::Checksum256;
-    use crate::btc_on_eos::{
-        utils::convert_hex_to_checksum256,
-        eos::{
+    use crate::{
+        chains::eos::{
+            eos_utils::convert_hex_to_checksum256,
             eos_merkle_utils::Incremerkle,
-            eos_test_utils::{
-                get_sample_v2_schedule,
-                get_sample_j3_schedule_37,
-                EosInitAndSubsequentBlocksJson,
-                get_sample_mainnet_schedule_1713,
-                get_sample_eos_submission_material_n,
-                get_init_and_subsequent_blocks_json_n,
-                get_sample_eos_submission_material_json_n,
+        },
+        btc_on_eos::{
+            eos::{
+                eos_test_utils::{
+                    get_sample_v2_schedule,
+                    get_sample_j3_schedule_37,
+                    EosInitAndSubsequentBlocksJson,
+                    get_sample_mainnet_schedule_1713,
+                    get_sample_eos_submission_material_n,
+                    get_init_and_subsequent_blocks_json_n,
+                    get_sample_eos_submission_material_json_n,
+                },
             },
         },
     };

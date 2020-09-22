@@ -8,7 +8,7 @@ use eos_primitives::{
 };
 use crate::{
     types::{Bytes, Result},
-    btc_on_eos::eos::eos_types::{
+    chains::eos::eos_types::{
         EosActionJson,
         AuthorizationJson,
     },

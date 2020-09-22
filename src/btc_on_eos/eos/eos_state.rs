@@ -5,20 +5,22 @@ use eos_primitives::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
-    btc_on_eos::{
-        btc::btc_types::BtcTransactions,
+    chains::{
+        btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eos::{
             eos_merkle_utils::Incremerkle,
             protocol_features::EnabledFeatures,
             parse_submission_material::EosSubmissionMaterial,
             eos_types::{
+                RedeemInfos,
                 ActionProofs,
                 Checksum256s,
-                RedeemInfo,
                 ProcessedTxIds,
             },
         },
+    },
+    btc_on_eos::{
+        btc::btc_types::BtcTransactions,
         utils::{
             get_not_in_state_err,
             get_no_overwrite_state_err,
@@ -31,11 +33,11 @@ pub struct EosState<D: DatabaseInterface> {
     pub db: D,
     pub block_num: Option<u64>,
     pub incremerkle: Incremerkle,
+    pub redeem_infos: RedeemInfos,
     pub producer_signature: String,
     pub action_proofs: ActionProofs,
     pub signed_txs: BtcTransactions,
     pub interim_block_ids: Checksum256s,
-    pub redeem_params: Vec<RedeemInfo>,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
     pub enabled_protocol_features: EnabledFeatures,
@@ -51,12 +53,12 @@ impl<D> EosState<D> where D: DatabaseInterface {
             block_header: None,
             signed_txs: vec![],
             action_proofs: vec![],
-            redeem_params: vec![],
             active_schedule: None,
             interim_block_ids: vec![],
             btc_utxos_and_values: None,
             producer_signature: String::new(),
             incremerkle: Incremerkle::default(),
+            redeem_infos: RedeemInfos::new(&vec![]),
             processed_tx_ids: ProcessedTxIds::init(),
             enabled_protocol_features: EnabledFeatures::init(),
         }
@@ -120,11 +122,8 @@ impl<D> EosState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn add_redeem_params(
-        mut self,
-        redeem_params: Vec<RedeemInfo>,
-    ) -> Result<EosState<D>> {
-        self.redeem_params = redeem_params;
+    pub fn add_redeem_infos(mut self, redeem_infos: RedeemInfos) -> Result<EosState<D>> {
+        self.redeem_infos = redeem_infos;
         Ok(self)
     }
 
@@ -165,12 +164,9 @@ impl<D> EosState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn replace_redeem_params(
-        mut self,
-        replacement_params: Vec<RedeemInfo>,
-    ) -> Result<EosState<D>> {
-        info!("✔ Replacing redeem params in state...");
-        self.redeem_params = replacement_params;
+    pub fn replace_redeem_infos(mut self, replacements: RedeemInfos) -> Result<EosState<D>> {
+        info!("✔ Replacing redeem infos in state...");
+        self.redeem_infos = replacements;
         Ok(self)
     }
 

@@ -65,9 +65,9 @@ pub fn validate_producer_slot_of_block_in_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::eos::{
-        eos_test_utils::get_sample_eos_submission_material_n,
-        parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
+    use crate::{
+        btc_on_eos::eos::eos_test_utils::get_sample_eos_submission_material_n,
+        chains::eos::parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
     };
 
     #[test]

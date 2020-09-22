@@ -1,25 +1,7 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    constants::{
-        DEBUG_MODE,
-        DB_KEY_PREFIX,
-        CORE_IS_VALIDATING,
-    },
-    chains::btc::{
-        btc_constants::BTC_TAIL_LENGTH,
-        utxo_manager::utxo_database_utils::{
-            get_utxo_nonce_from_db,
-            get_total_utxo_balance_from_db,
-            get_total_number_of_utxos_from_db,
-        },
-    },
-    btc_on_eos::{
-        check_core_is_initialized::check_core_is_initialized,
-        constants::{
-            SAFE_EOS_ADDRESS,
-            SAFE_BTC_ADDRESS,
-        },
+    chains::{
         eos::{
             eos_types::EosKnownSchedulesJsons,
             protocol_features::EnabledFeatures,
@@ -34,6 +16,26 @@ use crate::{
                 get_eos_account_name_string_from_db,
                 get_eos_enabled_protocol_features_from_db,
             },
+        },
+        btc::{
+            btc_constants::BTC_TAIL_LENGTH,
+            utxo_manager::utxo_database_utils::{
+                get_utxo_nonce_from_db,
+                get_total_utxo_balance_from_db,
+                get_total_number_of_utxos_from_db,
+            },
+        },
+    },
+    constants::{
+        DEBUG_MODE,
+        DB_KEY_PREFIX,
+        CORE_IS_VALIDATING,
+    },
+    btc_on_eos::{
+        check_core_is_initialized::check_core_is_initialized,
+        constants::{
+            SAFE_EOS_ADDRESS,
+            SAFE_BTC_ADDRESS,
         },
         btc::{
             update_btc_linker_hash::{

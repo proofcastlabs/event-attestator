@@ -11,12 +11,17 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eos::{
-        utils::convert_hex_to_checksum256,
-        eos::{
-            eos_utils::get_eos_schedule_db_key,
-            parse_eos_actions::parse_eos_action_json,
-            parse_eos_action_receipts::parse_eos_action_receipt_json,
+    chains::eos::{
+        parse_eos_actions::parse_eos_action_json,
+        parse_eos_action_receipts::parse_eos_action_receipt_json,
+        parse_redeem_infos::{
+            get_eos_amount_from_action_data,
+            get_redeem_address_from_action_data,
+            get_redeem_action_sender_from_action_data,
+        },
+        eos_utils::{
+            get_eos_schedule_db_key,
+            convert_hex_to_checksum256,
         },
     },
 };
@@ -126,6 +131,41 @@ pub struct RedeemInfo {
     pub global_sequence: GlobalSequence,
 }
 
+impl RedeemInfo {
+    pub fn from_action_proof(action_proof: &ActionProof) -> Result<Self> {
+        Ok(
+            RedeemInfo {
+                originating_tx_id: action_proof.tx_id,
+                global_sequence: action_proof.action_receipt.global_sequence,
+                amount: get_eos_amount_from_action_data(&action_proof.action.data)?,
+                from: get_redeem_action_sender_from_action_data(&action_proof.action.data)?,
+                recipient: get_redeem_address_from_action_data(&action_proof.action.data)?,
+            }
+        )
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RedeemInfos(pub Vec<RedeemInfo>);
+
+impl RedeemInfos {
+    pub fn new(redeem_infos: &[RedeemInfo]) -> Self {
+        Self(redeem_infos.to_vec())
+    }
+
+    pub fn sum(&self) -> u64 {
+        self.0.iter().fold(0, |acc, infos| acc + infos.amount)
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn get_global_sequences(&self) -> GlobalSequences {
+        self.0.iter().map(|infos| infos.global_sequence).collect()
+    }
+}
+
 #[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub enum EosNetwork {
     Mainnet,
@@ -208,14 +248,10 @@ impl ActionProof {
     pub fn from_json(json: &ActionProofJson) -> Result<Self> {
         Ok(
             ActionProof {
-                action_proof:
-                    json.action_proof.clone(),
-                tx_id:
-                    convert_hex_to_checksum256(&json.tx_id)?,
-                action:
-                    parse_eos_action_json(&json.action_json)?,
-                action_receipt:
-                    parse_eos_action_receipt_json(&json.action_receipt_json)?,
+                action_proof: json.action_proof.clone(),
+                tx_id: convert_hex_to_checksum256(&json.tx_id)?,
+                action: parse_eos_action_json(&json.action_json)?,
+                action_receipt: parse_eos_action_receipt_json(&json.action_receipt_json)?,
             }
         )
     }
@@ -271,10 +307,7 @@ impl ProcessedTxIds {
         ProcessedTxIds(vec![])
     }
 
-    pub fn add_multi(
-        mut self,
-        global_sequences: &mut GlobalSequences
-    ) -> Result<Self> {
+    pub fn add_multi(mut self, global_sequences: &mut GlobalSequences) -> Result<Self> {
         self.0.append(global_sequences);
         Ok(self)
     }
