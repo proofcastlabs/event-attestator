@@ -11,6 +11,7 @@ use crate::{
         Byte,
         Bytes,
         Result,
+        NoneError,
     },
     chains::eth::{
         eth_redeem_info::{
@@ -33,11 +34,26 @@ use crate::{
 pub struct EthSubmissionMaterial {
     pub block: EthBlock,
     pub receipts: EthReceipts,
+    pub eos_ref_block_num: Option<u16>,
+    pub eos_ref_block_prefix: Option<u32>,
 }
 
 impl EthSubmissionMaterial {
-    fn new(block: EthBlock, receipts: EthReceipts) -> Self {
-        Self { block, receipts }
+    fn new(
+        block: EthBlock,
+        receipts: EthReceipts,
+        eos_ref_block_num: Option<u16>,
+        eos_ref_block_prefix: Option<u32>
+    ) -> Self {
+        Self { block, receipts, eos_ref_block_num, eos_ref_block_prefix }
+    }
+
+    pub fn get_eos_ref_block_num(&self) -> Result<u16> {
+        Ok(self.eos_ref_block_num.ok_or(NoneError("No `eos_ref_block_num` in submission material!"))?)
+    }
+
+    pub fn get_eos_ref_block_prefix(&self) -> Result<u32> {
+        Ok(self.eos_ref_block_prefix.ok_or(NoneError("No `eos_ref_block_prefix` in submission material!"))?)
     }
 
     pub fn get_receipts(&self) -> Vec<EthReceipt> {
@@ -63,6 +79,8 @@ impl EthSubmissionMaterial {
         Ok(
             EthSubmissionMaterial {
                 block: EthBlock::from_json(&json.block)?,
+                eos_ref_block_num: json.eos_ref_block_num,
+                eos_ref_block_prefix: json.eos_ref_block_prefix,
                 receipts: EthReceipts::from_jsons(&json.receipts)?,
             }
         )
@@ -86,6 +104,8 @@ impl EthSubmissionMaterial {
         let filtered = Self::new(
             self.block.clone(),
             self.receipts.filter_for_receipts_containing_log_with_address_and_topics(address, topics),
+            self.eos_ref_block_num.clone(),
+            self.eos_ref_block_prefix.clone(),
         );
         info!("✔ Number of receipts after filtering:  {}", filtered.receipts.len());
         Ok(filtered)
@@ -115,14 +135,21 @@ impl EthSubmissionMaterial {
     }
 
     pub fn remove_receipts(&self) -> Self {
-        EthBlockAndReceipts { block: self.block.clone(), receipts: vec![].into() }
+        EthSubmissionMaterial {
+            receipts: vec![].into(),
+            block: self.block.clone(),
+            eos_ref_block_num: self.eos_ref_block_num.clone(),
+            eos_ref_block_prefix: self.eos_ref_block_prefix.clone(),
+        }
     }
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct EthSubmissionMaterialJson {
     pub block: EthBlockJson,
-    pub receipts: Vec<EthReceiptJson>
+    pub receipts: Vec<EthReceiptJson>,
+    pub eos_ref_block_num: Option<u16>,
+    pub eos_ref_block_prefix: Option<u32>,
 }
 
 impl EthSubmissionMaterialJson {
