@@ -131,9 +131,9 @@ pub fn parse_eos_block_header_from_json(
             convert_hex_to_checksum256(&eos_block_header_json.action_mroot)?,
             eos_block_header_json.schedule_version,
             schedule,
-            match &eos_block_header_json.header_extension {
+            match eos_block_header_json.header_extension {
                 None => vec![],
-                Some(hex_extensions) => convert_hex_to_extensions(&hex_extensions)?
+                Some(ref hex_extensions) => convert_hex_to_extensions(&hex_extensions)?
             },
         )
     )

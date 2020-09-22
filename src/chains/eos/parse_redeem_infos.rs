@@ -19,21 +19,15 @@ use crate::{
 };
 
 #[allow(dead_code)] // TODO Use when checking for correct symbol!
-fn get_eos_symbol_from_action_data(
-    action_data: &[Byte]
-) -> Result<EosSymbol> {
+fn get_eos_symbol_from_action_data(action_data: &[Byte]) -> Result<EosSymbol> {
     Ok(EosSymbol::new(convert_bytes_to_u64(&action_data[16..24].to_vec())?))
 }
 
-pub fn get_eos_amount_from_action_data(
-    action_data: &[Byte]
-) -> Result<u64> {
+pub fn get_eos_amount_from_action_data(action_data: &[Byte]) -> Result<u64> {
     convert_bytes_to_u64(&action_data[8..16].to_vec())
 }
 
-pub fn get_redeem_action_sender_from_action_data(
-    action_data: &[Byte]
-) -> Result<EosAccountName> {
+pub fn get_redeem_action_sender_from_action_data(action_data: &[Byte]) -> Result<EosAccountName> {
     Ok(EosAccountName::new(convert_bytes_to_u64(&action_data[..8].to_vec())?))
 }
 
@@ -43,7 +37,7 @@ pub fn get_redeem_address_from_action_data(action_data: &[Byte]) -> Result<Strin
 
 pub fn parse_redeem_infos_from_action_proofs(action_proofs: &[ActionProof]) -> Result<RedeemInfos> {
     Ok(RedeemInfos::new(
-        action_proofs
+        &action_proofs
             .iter()
             .map(|proof| RedeemInfo::from_action_proof(proof))
             .collect::<Result<Vec<RedeemInfo>>>()?

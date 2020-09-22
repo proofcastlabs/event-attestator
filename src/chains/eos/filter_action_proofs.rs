@@ -75,8 +75,7 @@ pub fn filter_out_proofs_with_invalid_merkle_proofs(action_proofs: &[ActionProof
         .collect::<Result<Vec<bool>>>()?
         .into_iter()
         .zip(action_proofs.iter())
-        .filter(|(proof_is_valid, _)| *proof_is_valid)
-        .map(|(_, proof)| proof)
+        .filter_map(|(proof_is_valid, proof)| {if proof_is_valid { Some(proof) } else { None }})
         .cloned()
         .collect::<ActionProofs>();
     debug!("Num proofs before: {}", action_proofs.len());
@@ -90,8 +89,7 @@ pub fn filter_out_invalid_action_receipt_digests(action_proofs: &[ActionProof]) 
         .map(|proof| proof.action_receipt.to_digest())
         .map(hex::encode)
         .zip(action_proofs.iter())
-        .filter(|(digest, proof)| digest == &proof.action_proof[0])
-        .map(|(_, proof)| proof)
+        .filter_map(|(digest, proof)| { if digest == proof.action_proof[0] { Some(proof) } else { None }})
         .cloned()
         .collect::<ActionProofs>();
     debug!("Num proofs before: {}", action_proofs.len());
@@ -109,8 +107,7 @@ pub fn filter_out_proofs_with_action_digests_not_in_action_receipts(
         .collect::<Result<Vec<Checksum256>>>()?
         .into_iter()
         .zip(action_proofs.iter())
-        .filter(|(digest, proof)| digest == &proof.action_receipt.act_digest)
-        .map(|(_, proof)| proof)
+        .filter_map(|(digest, proof)| { if digest == proof.action_receipt.act_digest { Some(proof) } else { None }})
         .cloned()
         .collect::<ActionProofs>();
     debug!("Num proofs before: {}", action_proofs.len());
@@ -124,7 +121,7 @@ pub fn filter_out_already_processed_txs(
 ) -> Result<RedeemInfos> {
     Ok(
         RedeemInfos::new(
-            redeem_infos
+            &redeem_infos
                 .0
                 .iter()
                 .filter(|params| !processed_tx_ids.contains(&params.global_sequence))

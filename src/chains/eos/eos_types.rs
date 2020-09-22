@@ -149,12 +149,12 @@ impl RedeemInfo {
 pub struct RedeemInfos(pub Vec<RedeemInfo>);
 
 impl RedeemInfos {
-    pub fn new(redeem_infos: Vec<RedeemInfo>) -> Self {
-        Self(redeem_infos)
+    pub fn new(redeem_infos: &[RedeemInfo]) -> Self {
+        Self(redeem_infos.to_vec())
     }
 
     pub fn sum(&self) -> u64 {
-        self.0.iter().map(|infos| infos.amount).sum()
+        self.0.iter().fold(0, |acc, infos| acc + infos.amount)
     }
 
     pub fn len(&self) -> usize {
@@ -248,14 +248,10 @@ impl ActionProof {
     pub fn from_json(json: &ActionProofJson) -> Result<Self> {
         Ok(
             ActionProof {
-                action_proof:
-                    json.action_proof.clone(),
-                tx_id:
-                    convert_hex_to_checksum256(&json.tx_id)?,
-                action:
-                    parse_eos_action_json(&json.action_json)?,
-                action_receipt:
-                    parse_eos_action_receipt_json(&json.action_receipt_json)?,
+                action_proof: json.action_proof.clone(),
+                tx_id: convert_hex_to_checksum256(&json.tx_id)?,
+                action: parse_eos_action_json(&json.action_json)?,
+                action_receipt: parse_eos_action_receipt_json(&json.action_receipt_json)?,
             }
         )
     }
