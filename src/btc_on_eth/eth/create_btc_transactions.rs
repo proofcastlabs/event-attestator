@@ -101,7 +101,7 @@ pub fn maybe_create_btc_txs_and_add_to_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Maybe creating BTC transaction(s) from redeem params...");
-    match &state.redeem_params.len() {
+    match &state.btc_on_eth_redeem_infos.len() {
         0 => {
             info!("✔ No redeem params in state ∴ not creating BTC txs!");
             Ok(state)
@@ -112,7 +112,7 @@ pub fn maybe_create_btc_txs_and_add_to_state<D>(
                 &state.db,
                 get_btc_fee_from_db(&state.db)?,
                 get_btc_network_from_db(&state.db)?,
-                &RedeemInfos::new(state.redeem_params.clone()),
+                &state.btc_on_eth_redeem_infos,
             )
                 .and_then(|signed_tx| {
                     #[cfg(feature="debug")] { debug!("✔ Signed transaction: {:?}", signed_tx); }

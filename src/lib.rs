@@ -24,6 +24,7 @@ pub mod traits;
 pub mod errors;
 pub mod btc_on_eth;
 pub mod btc_on_eos;
+pub mod erc20_on_eos;
 
 mod utils;
 mod base58;

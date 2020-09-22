@@ -5,7 +5,7 @@ use crate::{
     chains::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eth::{
-            eth_redeem_info::RedeemInfo,
+            eth_redeem_info::RedeemInfos,
             eth_block_and_receipts::EthBlockAndReceipts,
         },
     },
@@ -22,7 +22,7 @@ use crate::{
 pub struct EthState<D: DatabaseInterface> {
     pub db: D,
     pub misc: Option<String>,
-    pub redeem_params: Vec<RedeemInfo>,
+    pub btc_on_eth_redeem_infos: RedeemInfos,
     pub btc_transactions: Option<BtcTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub eth_block_and_receipts: Option<EthBlockAndReceipts>,
@@ -34,16 +34,13 @@ impl<D> EthState<D> where D: DatabaseInterface {
             db,
             misc: None,
             btc_transactions: None,
-            redeem_params: Vec::new(),
             btc_utxos_and_values: None,
             eth_block_and_receipts: None,
+            btc_on_eth_redeem_infos: RedeemInfos::new(&vec![]),
         }
     }
 
-    pub fn add_eth_block_and_receipts(
-        mut self,
-        eth_block_and_receipts: EthBlockAndReceipts
-    ) -> Result<EthState<D>> {
+    pub fn add_eth_block_and_receipts(mut self, eth_block_and_receipts: EthBlockAndReceipts) -> Result<EthState<D>> {
         match self.eth_block_and_receipts {
             Some(_) => Err(get_no_overwrite_state_err("eth_block_and_receipts").into()),
             None => {
@@ -53,27 +50,18 @@ impl<D> EthState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn add_redeem_params(
-        mut self,
-        mut new_redeem_params: Vec<RedeemInfo>,
-    ) -> Result<EthState<D>> {
-        self.redeem_params
-            .append(&mut new_redeem_params);
+    pub fn add_btc_on_eth_redeem_infos(self, mut infos: RedeemInfos) -> Result<EthState<D>> {
+        let mut new_infos = self.btc_on_eth_redeem_infos.clone().0;
+        new_infos.append(&mut infos.0);
+        self.replace_btc_on_eth_redeem_infos(RedeemInfos::new(&new_infos))
+    }
+
+    pub fn replace_btc_on_eth_redeem_infos(mut self, replacements: RedeemInfos) -> Result<EthState<D>> {
+        self.btc_on_eth_redeem_infos = replacements;
         Ok(self)
     }
 
-    pub fn replace_redeem_params(
-        mut self,
-        replacement_params: Vec<RedeemInfo>,
-    ) -> Result<EthState<D>> {
-        self.redeem_params = replacement_params;
-        Ok(self)
-    }
-
-    pub fn add_misc_string_to_state(
-        mut self,
-        misc_string: String
-    ) -> Result<EthState<D>> {
+    pub fn add_misc_string_to_state(mut self, misc_string: String) -> Result<EthState<D>> {
         match self.misc {
             Some(_) => Err(get_no_overwrite_state_err("misc_string").into()),
             None => {
@@ -83,10 +71,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn add_btc_transactions(
-        mut self,
-        btc_transactions: BtcTransactions
-    ) -> Result<EthState<D>> {
+    pub fn add_btc_transactions(mut self, btc_transactions: BtcTransactions) -> Result<EthState<D>> {
         match self.btc_transactions {
             Some(_) => Err(get_no_overwrite_state_err("btc_transaction").into()),
             None => {
@@ -96,10 +81,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn add_btc_utxos_and_values(
-        mut self,
-        btc_utxos_and_values: BtcUtxosAndValues,
-    ) -> Result<EthState<D>> {
+    pub fn add_btc_utxos_and_values(mut self, btc_utxos_and_values: BtcUtxosAndValues) -> Result<EthState<D>> {
         match self.btc_utxos_and_values {
             Some(_) => Err(get_no_overwrite_state_err("btc_utxos_and_values").into()),
             None => {
@@ -117,11 +99,9 @@ impl<D> EthState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn get_eth_block_and_receipts(
-        &self
-    ) -> Result<&EthBlockAndReceipts> {
-        match self.eth_block_and_receipts {
-            Some(ref eth_block_and_receipts) => Ok(eth_block_and_receipts),
+    pub fn get_eth_block_and_receipts(&self) -> Result<&EthBlockAndReceipts> {
+        match &self.eth_block_and_receipts {
+            Some(eth_block_and_receipts) => Ok(&eth_block_and_receipts),
             None => Err(get_not_in_state_err("eth_block_and_receipts").into())
         }
     }
@@ -134,12 +114,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
     }
 
     pub fn get_parent_hash(&self) -> Result<EthHash> {
-        Ok(
-            self
-                .get_eth_block_and_receipts()?
-                .block
-                .parent_hash
-        )
+        Ok(self.get_eth_block_and_receipts()?.block.parent_hash)
     }
 }
 

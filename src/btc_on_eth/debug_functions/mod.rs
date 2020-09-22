@@ -225,8 +225,8 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
         .and_then(|state| {
             state
                 .get_eth_block_and_receipts()
-                .and_then(|block| block.get_redeem_params())
-                .and_then(|params| state.add_redeem_params(params))
+                .and_then(|block| block.get_redeem_infos())
+                .and_then(|params| state.add_btc_on_eth_redeem_infos(params))
         })
         .and_then(maybe_create_btc_txs_and_add_to_state)
         .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
@@ -242,7 +242,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
                         Some(txs) => get_btc_signed_tx_info_from_btc_txs(
                             get_btc_account_nonce_from_db(&state.db)?,
                             txs,
-                            &state.redeem_params
+                            &state.btc_on_eth_redeem_infos
                         )?,
                         None => vec![],
                     }

@@ -10,9 +10,9 @@ use crate::{
             validate_receipts::validate_receipts_in_state,
             filter_receipts::filter_irrelevant_receipts_from_state,
             check_parent_exists::check_for_parent_of_block_in_state,
-            filter_redeem_params::maybe_filter_redeem_params_in_state,
+            filter_redeem_infos::maybe_filter_redeem_infos_in_state,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
-            parse_redeem_params::maybe_parse_redeem_params_and_add_to_state,
+            parse_redeem_infos::maybe_parse_redeem_infos_and_add_to_state,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db_and_return_state,
             update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
             increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
@@ -54,8 +54,8 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_update_eth_canon_block_hash_and_return_state)
         .and_then(maybe_update_eth_tail_block_hash_and_return_state)
         .and_then(maybe_update_eth_linker_hash_and_return_state)
-        .and_then(maybe_parse_redeem_params_and_add_to_state)
-        .and_then(maybe_filter_redeem_params_in_state)
+        .and_then(maybe_parse_redeem_infos_and_add_to_state)
+        .and_then(maybe_filter_redeem_infos_in_state)
         .and_then(maybe_create_btc_txs_and_add_to_state)
         .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
         .and_then(maybe_extract_btc_utxo_from_btc_tx_in_state)

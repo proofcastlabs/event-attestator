@@ -13,7 +13,10 @@ use crate::{
         Result,
     },
     chains::eth::{
-        eth_redeem_info::RedeemInfo,
+        eth_redeem_info::{
+            RedeemInfo,
+            RedeemInfos,
+        },
         eth_block::{
             EthBlock,
             EthBlockJson,
@@ -99,16 +102,16 @@ impl EthBlockAndReceipts {
             })
     }
 
-    pub fn get_redeem_params(&self) -> Result<Vec<RedeemInfo>> {
+    pub fn get_redeem_infos(&self) -> Result<RedeemInfos> {
         info!("✔ Getting pToken redeem params from block and receipts...");
-        Ok(
-            self
+        Ok(RedeemInfos::new(
+            &self
                 .get_receipts()
                 .iter()
                 .map(|receipt| receipt.get_redeem_params())
                 .collect::<Result<Vec<Vec<RedeemInfo>>>>()?
                 .concat()
-        )
+        ))
     }
 
     pub fn remove_receipts(&self) -> Self {
@@ -272,17 +275,17 @@ mod tests {
 
     #[test]
     fn should_parse_redeem_params_from_block() {
-        let result = get_sample_block_with_redeem().get_redeem_params().unwrap();
+        let result = get_sample_block_with_redeem().get_redeem_infos().unwrap();
         let expected_result = RedeemInfo {
             amount: U256::from_dec_str("666").unwrap(),
             from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
             originating_tx_hash: EthHash::from_slice(&hex::decode(get_tx_hash_of_redeem_tx()) .unwrap()[..]),
         };
-        assert_eq!(expected_result.from, result[0].from);
-        assert_eq!(expected_result.amount, result[0].amount);
-        assert_eq!(expected_result.recipient, result[0].recipient);
-        assert_eq!(expected_result.originating_tx_hash, result[0].originating_tx_hash);
+        assert_eq!(expected_result.from, result.0[0].from);
+        assert_eq!(expected_result.amount, result.0[0].amount);
+        assert_eq!(expected_result.recipient, result.0[0].recipient);
+        assert_eq!(expected_result.originating_tx_hash, result.0[0].originating_tx_hash);
     }
 
     #[test]

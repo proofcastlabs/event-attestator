@@ -4,32 +4,37 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eth::eth::eth_state::EthState,
     chains::{
-        eth::eth_redeem_info::RedeemInfo,
         btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
+        eth::eth_redeem_info::{
+            RedeemInfo,
+            RedeemInfos,
+        },
     },
 };
 
-fn filter_redeem_params(redeem_params: &[RedeemInfo]) -> Result<Vec<RedeemInfo>> {
-    Ok(
-        redeem_params
+fn filter_redeem_infos(redeem_infos: &RedeemInfos) -> Result<RedeemInfos> {
+    Ok(RedeemInfos::new(
+        &redeem_infos
+            .0
             .iter()
-            .filter(|params| {
-                match params.amount >= U256::from(MINIMUM_REQUIRED_SATOSHIS) {
+            .filter(|infos| {
+                match infos.amount >= U256::from(MINIMUM_REQUIRED_SATOSHIS) {
                     true => true,
                     false => {
-                        trace!("✘ Filtering redeem params ∵ amount too low: {:?}", params);
+                        trace!("✘ Filtering redeem infos ∵ amount too low: {:?}", infos);
                         false
                     }
                 }
             })
             .cloned()
-            .collect()
-    )
+            .collect::<Vec<RedeemInfo>>()
+    ))
 }
 
-pub fn maybe_filter_redeem_params_in_state<D>(state: EthState<D>) -> Result<EthState<D>> where D: DatabaseInterface {
-    info!("✔ Maybe filtering any redeem params below minimum # of Satoshis...");
-    filter_redeem_params(&state.redeem_params).and_then(|new_params| state.replace_redeem_params(new_params))
+pub fn maybe_filter_redeem_infos_in_state<D>(state: EthState<D>) -> Result<EthState<D>> where D: DatabaseInterface {
+    info!("✔ Maybe filtering any redeem infos below minimum # of Satoshis...");
+    filter_redeem_infos(&state.btc_on_eth_redeem_infos)
+        .and_then(|new_infos| state.replace_btc_on_eth_redeem_infos(new_infos))
 }
 
 #[cfg(test)]
@@ -37,15 +42,18 @@ mod tests {
     use super::*;
     use std::str::FromStr;
     use ethereum_types::U256;
-    use crate::chains::eth::eth_types::{
-        EthHash,
-        EthAddress,
+    use crate::chains::eth::{
+        eth_redeem_info::RedeemInfo,
+        eth_types::{
+            EthHash,
+            EthAddress,
+        },
     };
 
     #[test]
-    fn should_filter_redeem_params() {
+    fn should_filter_redeem_infos() {
         let expected_length = 2;
-        let params = vec![
+        let infos = RedeemInfos::new(&vec![
             RedeemInfo {
                 amount: U256::from_dec_str("4999").unwrap(),
                 from: EthAddress::from_str(
@@ -79,10 +87,9 @@ mod tests {
                     .unwrap()[..]
                 ),
             },
-        ];
-        let length_before = params.len();
-        let result = filter_redeem_params(&params)
-            .unwrap();
+        ]);
+        let length_before = infos.len();
+        let result = filter_redeem_infos(&infos).unwrap();
         let length_after = result.len();
         assert!(length_before > length_after);
         assert_eq!(length_after, expected_length);
