@@ -2,6 +2,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::eth::{
+        eth_state::EthState,
         eth_constants::ETH_TAIL_LENGTH,
         eth_submission_material::EthSubmissionMaterial,
         eth_database_utils::{
@@ -57,4 +58,13 @@ pub fn maybe_update_eth_tail_block_hash<D>(db: &D) -> Result<()> where D: Databa
                 }
             }
         )
+}
+
+pub fn maybe_update_eth_tail_block_hash_and_return_state<D>(
+    state: EthState<D>
+) -> Result<EthState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Maybe updating ETH tail block hash...");
+    maybe_update_eth_tail_block_hash(&state.db).and(Ok(state))
 }

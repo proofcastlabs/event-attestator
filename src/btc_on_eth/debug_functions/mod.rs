@@ -15,9 +15,16 @@ use crate::{
     },
     chains::{
         eth::{
+            validate_block_in_state::validate_block_in_state,
+            filter_receipts_in_state::filter_irrelevant_receipts_from_state,
+            eth_database_transactions::{
+                end_eth_db_transaction_and_return_state,
+                start_eth_db_transaction_and_return_state,
+            },
             eth_state::EthState,
             eth_network::EthNetwork,
             eth_crypto::eth_transaction::get_signed_minting_tx,
+            parse_eth_submission_material::parse_eth_submission_material_and_put_in_state,
             eth_contracts::{
                 erc777::get_signed_erc777_change_pnetwork_tx,
                 erc777_proxy::{
@@ -92,17 +99,10 @@ use crate::{
             set_flags::set_any_sender_flag_in_state,
         },
         eth::{
-            validate_block::validate_block_in_state,
-            filter_receipts::filter_irrelevant_receipts_from_state,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db_and_return_state,
             increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
-            parse_eth_submission_material::parse_eth_submission_material_and_put_in_state,
-            eth_database_transactions::{
-                end_eth_db_transaction_and_return_state,
-                start_eth_db_transaction_and_return_state,
-            },
             get_eth_output_json::{
                 EthOutput,
                 get_btc_signed_tx_info_from_btc_txs,

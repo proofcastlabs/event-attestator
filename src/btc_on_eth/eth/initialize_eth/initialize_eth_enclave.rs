@@ -1,27 +1,23 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::eth_state::EthState,
-    btc_on_eth::eth::{
+    chains::eth::{
+        eth_state::EthState,
+        parse_eth_submission_material::parse_eth_submission_material_and_put_in_state,
+        validate_block_in_state::validate_block_in_state as validate_eth_block_in_state,
         eth_database_transactions::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        parse_eth_submission_material::{
-            parse_eth_submission_material_and_put_in_state,
-        },
-        validate_block::{
-            validate_block_in_state as validate_eth_block_in_state,
-        },
+    },
+    btc_on_eth::eth::{
         initialize_eth::{
             is_eth_initialized::is_eth_enclave_initialized,
             get_eth_init_output_json::get_eth_init_output_json,
             generate_eth_address::generate_and_store_eth_address,
             generate_eth_private_key::generate_and_store_eth_private_key,
             generate_eth_contract_tx::generate_eth_contract_tx_and_put_in_state,
-            generate_eth_contract_address::{
-                generate_and_store_eth_contract_address
-            },
+            generate_eth_contract_address::generate_and_store_eth_contract_address,
             eth_init_utils::{
                 remove_receipts_from_block_in_state,
                 add_eth_block_to_db_and_return_state,

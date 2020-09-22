@@ -30,6 +30,8 @@ use crate::{
     },
 };
 
+// TODO This could have some enum in it that defines what it's submission material for?
+// TODO The same would need to be true of the Receipts themselves since that's where the redeem param parsing is done!
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 pub struct EthSubmissionMaterial {
     pub block: EthBlock,

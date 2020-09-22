@@ -2,11 +2,13 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::eth::{
+        eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
         eth_database_utils::{
             get_eth_canon_block_from_db,
             get_eth_latest_block_from_db,
             put_eth_canon_block_hash_in_db,
+            get_eth_canon_to_tip_length_from_db,
             maybe_get_nth_ancestor_eth_submission_material,
         },
     },
@@ -57,6 +59,15 @@ pub fn maybe_update_canon_block_hash<D>(db: &D, canon_to_tip_length: u64,) -> Re
             }
         }
     }
+}
+
+pub fn maybe_update_eth_canon_block_hash_and_return_state<D>(
+    state: EthState<D>
+) -> Result<EthState<D>> where D: DatabaseInterface {
+    info!("✔ Maybe updating ETH canon block hash...");
+    get_eth_canon_to_tip_length_from_db(&state.db)
+        .and_then(|canon_to_tip_length| maybe_update_canon_block_hash(&state.db, canon_to_tip_length))
+        .and(Ok(state))
 }
 
 #[cfg(test)]

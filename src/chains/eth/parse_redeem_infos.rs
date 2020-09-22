@@ -14,15 +14,15 @@ pub fn maybe_parse_redeem_infos_and_add_to_state<D>(
 {
     info!("✔ Maybe parsing redeem infos...");
     get_eth_canon_block_from_db(&state.db)
-        .and_then(|block_and_receipts| {
-            match block_and_receipts.receipts.is_empty() {
+        .and_then(|submission_material| {
+            match submission_material.receipts.is_empty() {
                 true => {
                     info!("✔ No receipts in canon block ∴ no infos to parse!");
                     Ok(state)
                 }
                 false => {
-                    info!("✔ Receipts in canon block #{}∴ parsing infos...", block_and_receipts.block.number);
-                    block_and_receipts.get_redeem_infos()
+                    info!("✔ Receipts in canon block #{}∴ parsing infos...", submission_material.block.number);
+                    submission_material.get_redeem_infos() // TODO rename to include `btc_on_eth`
                         .and_then(|infos| state.add_btc_on_eth_redeem_infos(infos))
                 }
             }

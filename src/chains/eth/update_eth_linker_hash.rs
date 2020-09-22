@@ -3,6 +3,7 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::{
         eth_types::EthHash,
+        eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
         calculate_linker_hash::calculate_linker_hash,
         get_linker_hash::get_linker_hash_or_genesis_hash,
@@ -48,6 +49,15 @@ pub fn maybe_update_eth_linker_hash<D>(db: &D) -> Result<()> where D: DatabaseIn
             Ok(())
         }
     }
+}
+
+pub fn maybe_update_eth_linker_hash_and_return_state<D>(
+    state: EthState<D>
+) -> Result<EthState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Maybe updating the ETH linker hash...");
+    maybe_update_eth_linker_hash(&state.db).and(Ok(state))
 }
 
 #[cfg(test)]
