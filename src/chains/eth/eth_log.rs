@@ -193,7 +193,7 @@ mod tests {
     use crate::{
         chains::eth::{
             eth_receipt::EthReceipt,
-            eth_block_and_receipts::EthBlockAndReceipts,
+            eth_submission_material::EthSubmissionMaterial,
         },
         btc_on_eth::eth::eth_test_utils::{
             get_expected_log,
@@ -203,11 +203,11 @@ mod tests {
             get_sample_contract_address,
             get_sample_log_with_desired_topic,
             get_sample_logs_with_desired_topic,
-            get_sample_eth_block_and_receipts_n,
+            get_sample_eth_submission_material_n,
             get_sample_log_with_desired_address,
             get_sample_logs_without_desired_topic,
             get_sample_log_without_desired_address,
-            get_sample_eth_block_and_receipts_json,
+            get_sample_eth_submission_material_json,
             get_sample_receipt_with_desired_address,
             get_sample_receipt_without_desired_address,
         },
@@ -217,8 +217,8 @@ mod tests {
         "442612aba789ce873bb3804ff62ced770dcecb07d19ddcf9b651c357eebaed40"
     }
 
-    fn get_sample_block_with_redeem() -> EthBlockAndReceipts { // TODO coalesce these three!
-        get_sample_eth_block_and_receipts_n(4).unwrap()
+    fn get_sample_block_with_redeem() -> EthSubmissionMaterial { // TODO coalesce these three!
+        get_sample_eth_submission_material_n(4).unwrap()
     }
 
     fn get_sample_receipt_with_redeem() -> EthReceipt {
@@ -247,7 +247,7 @@ mod tests {
         let expected_bloom = "00000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000010000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000800000000000000000000010000000000000000008000000000000000000000000000000000000000000000200000003000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000020000000";
         let expected_bloom_bytes = &hex::decode(expected_bloom)
             .unwrap()[..];
-        let eth_block_and_receipt_json = get_sample_eth_block_and_receipts_json()
+        let eth_block_and_receipt_json = get_sample_eth_submission_material_json()
             .unwrap();
         let receipt_json = eth_block_and_receipt_json
             .receipts[SAMPLE_RECEIPT_INDEX]
@@ -260,7 +260,7 @@ mod tests {
     #[test]
     fn should_get_logs_from_receipt_json() {
         let expected_result = get_expected_log();
-        let eth_block_and_receipt_json = get_sample_eth_block_and_receipts_json().unwrap();
+        let eth_block_and_receipt_json = get_sample_eth_submission_material_json().unwrap();
         let result = EthLogs::from_receipt_json(&eth_block_and_receipt_json.receipts[SAMPLE_RECEIPT_INDEX])
             .unwrap();
         assert_eq!(result.0[0], expected_result);
@@ -268,7 +268,7 @@ mod tests {
 
     #[test]
     fn should_get_log_from_log_json_correctly() {
-        let eth_block_and_receipt_json = get_sample_eth_block_and_receipts_json()
+        let eth_block_and_receipt_json = get_sample_eth_submission_material_json()
             .unwrap();
         let log_json = eth_block_and_receipt_json
             .receipts[SAMPLE_RECEIPT_INDEX]

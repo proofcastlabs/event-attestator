@@ -2,6 +2,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::eth::eth_state::EthState,
+    /*
     btc_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
@@ -30,6 +31,7 @@ use crate::{
             },
         },
     },
+    */
 };
 
 /// # Submit ETH Block to Enclave
@@ -37,12 +39,13 @@ use crate::{
 /// The main submission pipeline. Submitting an ETH block to the enclave will - if that block is
 /// valid & subsequent to the enclave's current latest block - advanced the piece of the ETH
 /// blockchain held by the enclave in it's encrypted database. Should the submitted block
-/// contain a redeem event emitted by the smart-contract the enclave is watching, a BTC
+/// contain a redeem event emitted by the smart-contract the enclave is watching, an EOS
 /// transaction will be signed & returned to the caller.
-///
 pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting ETH block to enclave...");
     parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
+        .map(|_| "fin".to_string())
+        /*
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
@@ -64,4 +67,5 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_remove_receipts_from_canon_block_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(get_eth_output_json)
+        */
 }

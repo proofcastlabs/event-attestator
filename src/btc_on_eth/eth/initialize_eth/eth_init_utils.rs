@@ -7,7 +7,7 @@ use crate::{
     chains::eth::{
         eth_state::EthState,
         eth_receipt::EthReceipts,
-        eth_block_and_receipts::EthBlockAndReceipts,
+        eth_submission_material::EthSubmissionMaterial,
         eth_crypto::eth_transaction::get_ptoken_smart_contract_bytecode,
         eth_database_utils::{
             put_eth_chain_id_in_db,
@@ -17,7 +17,7 @@ use crate::{
             put_eth_canon_block_hash_in_db,
             put_eth_anchor_block_hash_in_db,
             put_eth_latest_block_hash_in_db,
-            put_eth_block_and_receipts_in_db,
+            put_eth_submission_material_in_db,
             put_eth_canon_to_tip_length_in_db,
             put_any_sender_nonce_in_db,
         },
@@ -38,7 +38,7 @@ pub fn put_eth_tail_block_hash_in_db_and_return_state<D>(
     info!("✔ Putting ETH tail block has in db...");
     put_eth_tail_block_hash_in_db(
         &state.db,
-        &state.get_eth_block_and_receipts()?.block.hash
+        &state.get_eth_submission_material()?.block.hash
     )
         .map(|_| state)
 }
@@ -49,7 +49,7 @@ fn set_hash_from_block_in_state<D>(
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
-    let hash = &state.get_eth_block_and_receipts()?.block.hash;
+    let hash = &state.get_eth_submission_material()?.block.hash;
     match hash_type {
         "canon" => {
             info!("✔ Initializating ETH canon block hash...");
@@ -150,7 +150,7 @@ pub fn remove_receipts_from_block_in_state<D>( // ∵ there shouldn't be relevan
         block: state.get_eth_block_and_receipts()?.block.clone(),
         receipts: vec![].into(),
     };
-    state.update_eth_block_and_receipts(block_with_no_receipts)
+    state.update_eth_submission_material(block_with_no_receipts)
 }
 
 pub fn add_eth_block_to_db_and_return_state<D>(
@@ -159,9 +159,9 @@ pub fn add_eth_block_to_db_and_return_state<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Adding ETH block and receipts to db...",);
-    put_eth_block_and_receipts_in_db(
+    put_eth_submission_material_in_db(
         &state.db,
-        state.get_eth_block_and_receipts()?
+        state.get_eth_submission_material()?
     )
         .map(|_| state)
 }

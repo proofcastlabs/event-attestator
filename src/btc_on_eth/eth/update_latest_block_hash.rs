@@ -13,5 +13,5 @@ pub fn maybe_update_latest_block_hash_and_return_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Maybe updating latest ETH block hash if subsequent...");
-    update_latest_block_hash_if_subsequent(&state.db, &state.get_eth_block_and_receipts()?.block).and(Ok(state))
+    update_latest_block_hash_if_subsequent(&state.db, &state.get_eth_submission_material()?.block).and(Ok(state))
 }

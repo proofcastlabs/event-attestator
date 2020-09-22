@@ -242,22 +242,22 @@ mod tests {
     use super::*;
     use std::str::FromStr;
     use crate::{
-        chains::eth::eth_block_and_receipts::EthBlockAndReceipts,
+        chains::eth::eth_submission_material::EthSubmissionMaterial,
         btc_on_eth::eth::eth_test_utils::{
             get_expected_receipt,
             SAMPLE_RECEIPT_INDEX,
             get_sample_contract_topic,
             get_sample_contract_address,
-            get_sample_eth_block_and_receipts,
-            get_sample_eth_block_and_receipts_n,
+            get_sample_eth_submission_material,
+            get_sample_eth_submission_material_n,
             get_sample_receipt_with_desired_topic,
-            get_sample_eth_block_and_receipts_json,
+            get_sample_eth_submission_material_json,
             get_valid_state_with_invalid_block_and_receipts,
         },
     };
 
-    fn get_sample_block_with_redeem() -> EthBlockAndReceipts {
-        get_sample_eth_block_and_receipts_n(4)
+    fn get_sample_block_with_redeem() -> EthSubmissionMaterial {
+        get_sample_eth_submission_material_n(4)
             .unwrap()
     }
 
@@ -318,22 +318,22 @@ mod tests {
     }
 
     #[test]
-    fn should_encode_eth_block_and_receipts_as_json() {
-        let block_and_receipts = get_sample_eth_block_and_receipts();
+    fn should_encode_eth_submission_material_as_json() {
+        let block_and_receipts = get_sample_eth_submission_material();
         let result = block_and_receipts.to_json();
         assert!(result.is_ok());
     }
 
     #[test]
-    fn should_encode_eth_block_and_receipts_as_bytes() {
-        let block_and_receipts = get_sample_eth_block_and_receipts();
+    fn should_encode_eth_submission_material_as_bytes() {
+        let block_and_receipts = get_sample_eth_submission_material();
         let result = block_and_receipts.to_bytes();
         assert!(result.is_ok());
     }
 
     #[test]
     fn should_parse_eth_receipt_json() {
-        let eth_json = get_sample_eth_block_and_receipts_json().unwrap();
+        let eth_json = get_sample_eth_submission_material_json().unwrap();
         let receipt_json = eth_json.receipts[SAMPLE_RECEIPT_INDEX].clone();
         match EthReceipt::from_json(&receipt_json) {
             Ok(receipt) => assert_eq!(receipt, get_expected_receipt()),
@@ -343,7 +343,7 @@ mod tests {
 
     #[test]
     fn should_parse_eth_receipt_jsons() {
-        let eth_json = get_sample_eth_block_and_receipts_json().unwrap();
+        let eth_json = get_sample_eth_submission_material_json().unwrap();
         if EthReceipts::from_jsons(&eth_json.receipts).is_err() {
             panic!("Should have generated receipts correctly!")
         }
@@ -352,7 +352,7 @@ mod tests {
     #[test]
     fn should_filter_receipts_for_topics() {
         let expected_num_receipts_after = 1;
-        let receipts = get_sample_eth_block_and_receipts().receipts;
+        let receipts = get_sample_eth_submission_material().receipts;
         let num_receipts_before = receipts.len();
         let topic = get_sample_contract_topic();
         let topics = vec![topic];
@@ -398,7 +398,7 @@ mod tests {
 
     #[test]
     fn should_get_receipts_merkle_root_from_receipts() {
-        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let block_and_receipts = get_sample_eth_submission_material();
         let result = block_and_receipts.receipts.get_merkle_root().unwrap();
         let expected_result = block_and_receipts.block.receipts_root;
         assert_eq!(result, expected_result);
@@ -407,7 +407,7 @@ mod tests {
     #[test]
     fn should_return_false_if_receipts_root_is_not_correct() {
         let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
-        let block_and_receipts = state.get_eth_block_and_receipts().unwrap();
+        let block_and_receipts = state.get_eth_submission_material().unwrap();
         let result = block_and_receipts.receipts_are_valid().unwrap();
         assert!(!result);
     }

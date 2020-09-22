@@ -13,5 +13,5 @@ pub fn maybe_add_block_and_receipts_to_db_and_return_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Maybe adding ETH block and receipts if not in db...");
-    add_block_and_receipts_to_db_if_not_extant(&state.db, state.get_eth_block_and_receipts()?).and(Ok(state))
+    add_block_and_receipts_to_db_if_not_extant(&state.db, state.get_eth_submission_material()?).and(Ok(state))
 }

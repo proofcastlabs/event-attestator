@@ -19,6 +19,6 @@ pub(crate) mod remove_old_eth_tail_block;
 pub(crate) mod update_eth_tail_block_hash;
 pub(crate) mod extract_utxos_from_btc_txs;
 pub(crate) mod update_eth_canon_block_hash;
-pub(crate) mod parse_eth_block_and_receipts;
+pub(crate) mod parse_eth_submission_material;
 pub(crate) mod remove_receipts_from_canon_block;
 pub(crate) mod add_block_and_receipts_to_database;

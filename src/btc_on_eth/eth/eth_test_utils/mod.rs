@@ -22,9 +22,9 @@ use crate::{
     chains::eth::{
         eth_state::EthState,
         eth_receipt::EthReceipt,
-        eth_block_and_receipts::{
-            EthBlockAndReceipts,
-            EthBlockAndReceiptsJson,
+        eth_submission_material::{
+            EthSubmissionMaterial,
+            EthSubmissionMaterialJson,
         },
         eth_log::{
             EthLog,
@@ -113,32 +113,32 @@ pub const RECEIPT_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC: usize = 9;
 
 pub fn put_eth_latest_block_in_db<D>(
     db: &D,
-    eth_block_and_receipts: &EthBlockAndReceipts,
+    eth_submission_material: &EthSubmissionMaterial,
 ) -> Result<()>
     where D: DatabaseInterface
 {
     info!("✔ Putting ETH latest block in db...");
-    put_special_eth_block_in_db(db, eth_block_and_receipts, "latest")
+    put_special_eth_block_in_db(db, eth_submission_material, "latest")
 }
 
 pub fn put_eth_anchor_block_in_db<D>(
     db: &D,
-    eth_block_and_receipts: &EthBlockAndReceipts,
+    eth_submission_material: &EthSubmissionMaterial,
 ) -> Result<()>
     where D: DatabaseInterface
 {
     info!("✔ Putting ETH anchor block in db...");
-    put_special_eth_block_in_db(db, eth_block_and_receipts, "anchor")
+    put_special_eth_block_in_db(db, eth_submission_material, "anchor")
 }
 
 pub fn put_eth_tail_block_in_db<D>(
     db: &D,
-    eth_block_and_receipts: &EthBlockAndReceipts,
+    eth_submission_material: &EthSubmissionMaterial,
 ) -> Result<()>
     where D: DatabaseInterface
 {
     info!("✔ Putting ETH tail block in db...");
-    put_special_eth_block_in_db(db, eth_block_and_receipts, "tail")
+    put_special_eth_block_in_db(db, eth_submission_material, "tail")
 }
 
 pub fn get_eth_latest_block_hash_from_db<D>(db: &D) -> Result<EthHash>
@@ -166,7 +166,7 @@ pub fn convert_h256_to_prefixed_hex(hash: H256) -> Result <String> {
     Ok(format!("0x{}", hex::encode(hash)))
 }
 
-pub fn get_sample_eth_block_and_receipts_string(num: usize) -> Result<String> {
+pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
     let path = match num {
         0 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON),
         1 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_1),
@@ -183,18 +183,18 @@ pub fn get_sample_eth_block_and_receipts_string(num: usize) -> Result<String> {
     }
 }
 
-pub fn get_sample_eth_block_and_receipts_n(
+pub fn get_sample_eth_submission_material_n(
     num: usize
-) -> Result<EthBlockAndReceipts> {
-    get_sample_eth_block_and_receipts_string(num)
-        .and_then(|string| EthBlockAndReceipts::from_str(&string))
+) -> Result<EthSubmissionMaterial> {
+    get_sample_eth_submission_material_string(num)
+        .and_then(|string| EthSubmissionMaterial::from_str(&string))
 }
 
 pub fn get_sample_receipt_n(
     sample_block_num: usize,
     receipt_index: usize,
 ) -> Result<EthReceipt> {
-    get_sample_eth_block_and_receipts_n(sample_block_num)
+    get_sample_eth_submission_material_n(sample_block_num)
         .map(|block| block.receipts.0[receipt_index].clone())
 }
 
@@ -265,7 +265,7 @@ pub fn get_sample_eth_public_key() -> EthPublicKey {
         .to_public_key()
 }
 
-pub fn get_sequential_eth_blocks_and_receipts() -> Vec<EthBlockAndReceipts> {
+pub fn get_sequential_eth_blocks_and_receipts() -> Vec<EthSubmissionMaterial> {
     let mut block_and_receipts = Vec::new();
     for i in 0..20 {
         let path = format!(
@@ -275,7 +275,7 @@ pub fn get_sequential_eth_blocks_and_receipts() -> Vec<EthBlockAndReceipts> {
         );
         let string = read_to_string(path)
             .unwrap();
-        let block_and_receipt = EthBlockAndReceipts::from_str(&string)
+        let block_and_receipt = EthSubmissionMaterial::from_str(&string)
             .unwrap();
         block_and_receipts.push(block_and_receipt)
     }
@@ -283,7 +283,7 @@ pub fn get_sequential_eth_blocks_and_receipts() -> Vec<EthBlockAndReceipts> {
 }
 
 pub fn get_sample_receipt_with_desired_topic() -> EthReceipt {
-    get_sample_eth_block_and_receipts()
+    get_sample_eth_submission_material()
         .receipts
         .0
         [RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_TOPIC]
@@ -291,7 +291,7 @@ pub fn get_sample_receipt_with_desired_topic() -> EthReceipt {
 }
 
 pub fn get_sample_receipt_with_desired_address() -> EthReceipt {
-    get_sample_eth_block_and_receipts().receipts.0[RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS].clone()
+    get_sample_eth_submission_material().receipts.0[RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS].clone()
 }
 
 pub fn get_sample_logs_with_desired_topic() -> EthLogs {
@@ -311,7 +311,7 @@ pub fn get_sample_log_with_desired_address() -> EthLog {
 }
 
 pub fn get_sample_receipt_without_desired_topic() -> EthReceipt {
-    get_sample_eth_block_and_receipts().receipts.0[RECEIPT_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC].clone()
+    get_sample_eth_submission_material().receipts.0[RECEIPT_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC].clone()
 }
 
 pub fn get_sample_receipt_without_desired_address() -> EthReceipt {
@@ -400,11 +400,11 @@ pub fn get_valid_state_with_invalid_block_and_receipts(
         true => {
             let string = read_to_string(SAMPLE_INVALID_BLOCK_AND_RECEIPT_JSON)
                 .unwrap();
-            let invalid_struct = EthBlockAndReceipts::from_str(&string)
+            let invalid_struct = EthSubmissionMaterial::from_str(&string)
                 .unwrap();
             let state = get_valid_eth_state()
                 .unwrap();
-            let final_state = state.add_eth_block_and_receipts(invalid_struct)
+            let final_state = state.add_eth_submission_material(invalid_struct)
                 .unwrap();
             Ok(final_state)
         }
@@ -412,31 +412,31 @@ pub fn get_valid_state_with_invalid_block_and_receipts(
 }
 
 pub fn get_sample_invalid_block() -> EthBlock {
-    let mut invalid_block = get_sample_eth_block_and_receipts().block;
+    let mut invalid_block = get_sample_eth_submission_material().block;
     invalid_block.timestamp = U256::from(1234);
     invalid_block
 }
 
-pub fn get_sample_eth_block_and_receipts_json() -> Result<EthBlockAndReceiptsJson> {
-    get_sample_eth_block_and_receipts_string(0)
-        .and_then(|eth_block_and_receipts_json_string|
-            match serde_json::from_str(&eth_block_and_receipts_json_string) {
-                Ok(eth_block_and_receipts_json) => Ok(eth_block_and_receipts_json),
+pub fn get_sample_eth_submission_material_json() -> Result<EthSubmissionMaterialJson> {
+    get_sample_eth_submission_material_string(0)
+        .and_then(|eth_submission_material_json_string|
+            match serde_json::from_str(&eth_submission_material_json_string) {
+                Ok(eth_submission_material_json) => Ok(eth_submission_material_json),
                 Err(err) => Err(err.into())
             }
         )
 }
 
-pub fn get_sample_eth_block_and_receipts() -> EthBlockAndReceipts {
-    let string = get_sample_eth_block_and_receipts_string(0).unwrap();
-    EthBlockAndReceipts::from_str(&string).unwrap()
+pub fn get_sample_eth_submission_material() -> EthSubmissionMaterial {
+    let string = get_sample_eth_submission_material_string(0).unwrap();
+    EthSubmissionMaterial::from_str(&string).unwrap()
 }
 
 pub fn get_valid_state_with_block_and_receipts() -> Result<EthState<TestDB>> {
     get_valid_eth_state()
         .and_then(|state|
-            state.add_eth_block_and_receipts(
-                get_sample_eth_block_and_receipts()
+            state.add_eth_submission_material(
+                get_sample_eth_submission_material()
             )
         )
 }
@@ -514,7 +514,7 @@ mod tests {
         let expected_receipts_field = "receipts";
         let expected_tx_hash = "0x49b980475527f989936ddc8afd1e045612cd567238bb567dbd99b48ad15860dc";
         let expected_block_hash = "0xb626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0";
-        let result = get_sample_eth_block_and_receipts_string(0).unwrap();
+        let result = get_sample_eth_submission_material_string(0).unwrap();
         assert!(result.contains(expected_tx_hash));
         assert!(result.contains(expected_block_hash));
         assert!(result.contains(expected_block_field));
@@ -523,16 +523,16 @@ mod tests {
     }
 
     #[test]
-    fn should_get_sample_eth_block_and_receipts_json() {
+    fn should_get_sample_eth_submission_material_json() {
         let expected_block_number = 8503804;
-        let result = get_sample_eth_block_and_receipts_json().unwrap();
+        let result = get_sample_eth_submission_material_json().unwrap();
         assert_eq!(result.block.number, expected_block_number);
     }
 
     #[test]
-    fn should_get_sample_eth_block_and_receipts() {
+    fn should_get_sample_eth_submission_material() {
         let expected_receipt = get_expected_receipt();
-        let result = get_sample_eth_block_and_receipts();
+        let result = get_sample_eth_submission_material();
         let block = result.block.clone();
         let receipt = result.receipts.0[SAMPLE_RECEIPT_INDEX].clone();
         let expected_block = get_expected_block();
@@ -550,7 +550,7 @@ mod tests {
     #[test]
     fn should_get_valid_state_with_blocks_and_receipts() {
         let result = get_valid_state_with_block_and_receipts().unwrap();
-        if let Err(e) = result.get_eth_block_and_receipts() {
+        if let Err(e) = result.get_eth_submission_material() {
             panic!("Error getting eth block and receipt from state: {}", e)
         }
     }
@@ -565,7 +565,7 @@ mod tests {
     #[test]
     fn should_get_valid_state_with_invalid_block_and_receipts() {
         let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
-        let is_valid = state.get_eth_block_and_receipts().unwrap().block.is_valid().unwrap();
+        let is_valid = state.get_eth_submission_material().unwrap().block.is_valid().unwrap();
         assert!(!is_valid);
     }
 

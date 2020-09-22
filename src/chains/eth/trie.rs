@@ -1144,8 +1144,8 @@ mod tests {
                 get_sample_extension_node,
                 convert_h256_to_prefixed_hex,
                 convert_hex_string_to_nibbles,
-                get_sample_eth_block_and_receipts,
-                get_sample_eth_block_and_receipts_n,
+                get_sample_eth_submission_material,
+                get_sample_eth_submission_material_n,
                 get_valid_state_with_invalid_block_and_receipts,
             },
         },
@@ -1226,7 +1226,7 @@ mod tests {
     #[test]
     fn should_put_valid_sample_receipts_in_trie_correctly() {
         let index = 0;
-        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let block_and_receipts = get_sample_eth_submission_material();
         let expected_root_hex = convert_h256_to_prefixed_hex(block_and_receipts.block.receipts_root).unwrap();
         let receipts = block_and_receipts.receipts;
         let trie = Trie::get_new_trie().unwrap();
@@ -1240,7 +1240,7 @@ mod tests {
     fn should_put_invalid_sample_receipts_in_trie_correctly() {
         let index = 0;
         let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
-        let block_and_receipts = state.get_eth_block_and_receipts().unwrap();
+        let block_and_receipts = state.get_eth_submission_material().unwrap();
         let expected_root_hex = convert_h256_to_prefixed_hex(block_and_receipts.block.receipts_root).unwrap();
         let receipts = block_and_receipts.receipts.clone();
         let trie = Trie::get_new_trie().unwrap();
@@ -1252,7 +1252,7 @@ mod tests {
 
     #[test]
     fn should_validate_root_hash_correctly() {
-        let block_and_receipts = get_sample_eth_block_and_receipts_n(1).unwrap();
+        let block_and_receipts = get_sample_eth_submission_material_n(1).unwrap();
         let expected_root_hex = convert_h256_to_prefixed_hex(block_and_receipts.block.receipts_root).unwrap();
         let start_index = 0;
         let receipts = block_and_receipts.receipts;

@@ -12,7 +12,7 @@ use crate::{
 pub fn validate_receipts_in_state<D>(state: EthState<D>) -> Result<EthState<D>> where D: DatabaseInterface {
     if CORE_IS_VALIDATING {
         info!("✔ Validating receipts...");
-        match state.get_eth_block_and_receipts()?.receipts_are_valid()? {
+        match state.get_eth_submission_material()?.receipts_are_valid()? {
             true => {
                 info!("✔ Receipts are valid!");
                 Ok(state)

@@ -7,8 +7,8 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        parse_eth_block_and_receipts::{
-            parse_eth_block_and_receipts_and_put_in_state,
+        parse_eth_submission_material::{
+            parse_eth_submission_material_and_put_in_state,
         },
         validate_block::{
             validate_block_in_state as validate_eth_block_in_state,
@@ -60,7 +60,7 @@ pub fn maybe_initialize_eth_enclave<D>(
                 }
                 false => {
                     info!("✔ Initializing enclave for ETH...");
-                    parse_eth_block_and_receipts_and_put_in_state(block_json_string, state)
+                    parse_eth_submission_material_and_put_in_state(block_json_string, state)
                         .and_then(validate_eth_block_in_state)
                         .and_then(remove_receipts_from_block_in_state)
                         .and_then(start_eth_db_transaction_and_return_state)

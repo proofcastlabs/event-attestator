@@ -6,7 +6,7 @@ use crate::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eth::{
             eth_redeem_info::RedeemInfos,
-            eth_block_and_receipts::EthBlockAndReceipts,
+            eth_submission_material::EthSubmissionMaterial,
         },
     },
     btc_on_eth::{
@@ -25,7 +25,7 @@ pub struct EthState<D: DatabaseInterface> {
     pub btc_on_eth_redeem_infos: RedeemInfos,
     pub btc_transactions: Option<BtcTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
-    pub eth_block_and_receipts: Option<EthBlockAndReceipts>,
+    pub eth_submission_material: Option<EthSubmissionMaterial>,
 }
 
 impl<D> EthState<D> where D: DatabaseInterface {
@@ -35,16 +35,16 @@ impl<D> EthState<D> where D: DatabaseInterface {
             misc: None,
             btc_transactions: None,
             btc_utxos_and_values: None,
-            eth_block_and_receipts: None,
+            eth_submission_material: None,
             btc_on_eth_redeem_infos: RedeemInfos::new(&vec![]),
         }
     }
 
-    pub fn add_eth_block_and_receipts(mut self, eth_block_and_receipts: EthBlockAndReceipts) -> Result<EthState<D>> {
-        match self.eth_block_and_receipts {
-            Some(_) => Err(get_no_overwrite_state_err("eth_block_and_receipts").into()),
+    pub fn add_eth_submission_material(mut self, eth_submission_material: EthSubmissionMaterial) -> Result<EthState<D>> {
+        match self.eth_submission_material {
+            Some(_) => Err(get_no_overwrite_state_err("eth_submission_material").into()),
             None => {
-                self.eth_block_and_receipts = Some(eth_block_and_receipts);
+                self.eth_submission_material = Some(eth_submission_material);
                 Ok(self)
             }
         }
@@ -91,18 +91,18 @@ impl<D> EthState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn update_eth_block_and_receipts(
+    pub fn update_eth_submission_material(
         mut self,
-        new_eth_block_and_receipts: EthBlockAndReceipts
+        new_eth_submission_material: EthSubmissionMaterial
     ) -> Result<EthState<D>> {
-        self.eth_block_and_receipts = Some(new_eth_block_and_receipts);
+        self.eth_submission_material = Some(new_eth_submission_material);
         Ok(self)
     }
 
-    pub fn get_eth_block_and_receipts(&self) -> Result<&EthBlockAndReceipts> {
-        match &self.eth_block_and_receipts {
-            Some(eth_block_and_receipts) => Ok(&eth_block_and_receipts),
-            None => Err(get_not_in_state_err("eth_block_and_receipts").into())
+    pub fn get_eth_submission_material(&self) -> Result<&EthSubmissionMaterial> {
+        match &self.eth_submission_material {
+            Some(eth_submission_material) => Ok(&eth_submission_material),
+            None => Err(get_not_in_state_err("eth_submission_material").into())
         }
     }
 
@@ -114,7 +114,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
     }
 
     pub fn get_parent_hash(&self) -> Result<EthHash> {
-        Ok(self.get_eth_block_and_receipts()?.block.parent_hash)
+        Ok(self.get_eth_submission_material()?.block.parent_hash)
     }
 }
 
@@ -128,17 +128,17 @@ mod tests {
             get_expected_block,
             get_expected_receipt,
             SAMPLE_RECEIPT_INDEX,
-            get_sample_eth_block_and_receipts,
-            get_sample_eth_block_and_receipts_n,
+            get_sample_eth_submission_material,
+            get_sample_eth_submission_material_n,
             get_valid_state_with_block_and_receipts,
         },
     };
 
     #[test]
-    fn should_fail_to_get_eth_block_and_receipts_in_state() {
-        let expected_error = get_not_in_state_err("eth_block_and_receipts");
+    fn should_fail_to_get_eth_submission_material_in_state() {
+        let expected_error = get_not_in_state_err("eth_submission_material");
         let initial_state = EthState::init(get_test_database());
-        match initial_state.get_eth_block_and_receipts() {
+        match initial_state.get_eth_submission_material() {
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Eth block should not be in state yet!"),
             _ => panic!("Wrong error received!")
@@ -146,17 +146,17 @@ mod tests {
     }
 
     #[test]
-    fn should_add_eth_block_and_receipts_state() {
-        let expected_error = get_not_in_state_err("eth_block_and_receipts");
-        let eth_block_and_receipts = get_sample_eth_block_and_receipts();
+    fn should_add_eth_submission_material_state() {
+        let expected_error = get_not_in_state_err("eth_submission_material");
+        let eth_submission_material = get_sample_eth_submission_material();
         let initial_state = EthState::init(get_test_database());
-        match initial_state.get_eth_block_and_receipts() {
+        match initial_state.get_eth_submission_material() {
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Eth block should not be in state yet!"),
             _ => panic!("Wrong error received!")
         };
-        let updated_state = initial_state.add_eth_block_and_receipts(eth_block_and_receipts).unwrap();
-        match updated_state.get_eth_block_and_receipts() {
+        let updated_state = initial_state.add_eth_submission_material(eth_submission_material).unwrap();
+        match updated_state.get_eth_submission_material() {
             Ok(block_and_receipt) => {
                 let block = block_and_receipt.block.clone();
                 let receipt = block_and_receipt.receipts.0[SAMPLE_RECEIPT_INDEX].clone();
@@ -170,12 +170,12 @@ mod tests {
     }
 
     #[test]
-    fn should_err_when_overwriting_eth_block_and_receipts_in_state() {
-        let expected_error = get_no_overwrite_state_err("eth_block_and_receipts");
-        let eth_block_and_receipts = get_sample_eth_block_and_receipts();
+    fn should_err_when_overwriting_eth_submission_material_in_state() {
+        let expected_error = get_no_overwrite_state_err("eth_submission_material");
+        let eth_submission_material = get_sample_eth_submission_material();
         let initial_state = EthState::init(get_test_database());
-        let updated_state = initial_state.add_eth_block_and_receipts(eth_block_and_receipts.clone()).unwrap();
-        match updated_state.add_eth_block_and_receipts(eth_block_and_receipts) {
+        let updated_state = initial_state.add_eth_submission_material(eth_submission_material.clone()).unwrap();
+        match updated_state.add_eth_submission_material(eth_submission_material) {
             Ok(_) => panic!("Overwriting state should not have succeeded!"),
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ => panic!("Wrong error recieved!")
@@ -183,20 +183,20 @@ mod tests {
     }
 
     #[test]
-    fn should_update_eth_block_and_receipts() {
-        let eth_block_and_receipts_1 = get_sample_eth_block_and_receipts_n(0).unwrap();
-        let eth_block_and_receipts_2 = get_sample_eth_block_and_receipts_n(1).unwrap();
+    fn should_update_eth_submission_material() {
+        let eth_submission_material_1 = get_sample_eth_submission_material_n(0).unwrap();
+        let eth_submission_material_2 = get_sample_eth_submission_material_n(1).unwrap();
         let initial_state = EthState::init(get_test_database());
-        let updated_state = initial_state.add_eth_block_and_receipts(eth_block_and_receipts_1).unwrap();
-        let initial_state_block_num = updated_state.get_eth_block_and_receipts().unwrap().block.number;
-        let final_state = updated_state.update_eth_block_and_receipts(eth_block_and_receipts_2).unwrap();
-        let final_state_block_number = final_state.get_eth_block_and_receipts().unwrap().block.number;
+        let updated_state = initial_state.add_eth_submission_material(eth_submission_material_1).unwrap();
+        let initial_state_block_num = updated_state.get_eth_submission_material().unwrap().block.number;
+        let final_state = updated_state.update_eth_submission_material(eth_submission_material_2).unwrap();
+        let final_state_block_number = final_state.get_eth_submission_material().unwrap().block.number;
         assert_ne!(final_state_block_number, initial_state_block_num);
     }
 
     #[test]
     fn should_get_eth_parent_hash() {
-        let expected_result = get_sample_eth_block_and_receipts().block.parent_hash;
+        let expected_result = get_sample_eth_submission_material().block.parent_hash;
         let state = get_valid_state_with_block_and_receipts().unwrap();
         let result = state.get_parent_hash().unwrap();
         assert_eq!(result, expected_result);

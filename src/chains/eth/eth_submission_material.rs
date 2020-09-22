@@ -30,12 +30,12 @@ use crate::{
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
-pub struct EthBlockAndReceipts {
+pub struct EthSubmissionMaterial {
     pub block: EthBlock,
     pub receipts: EthReceipts,
 }
 
-impl EthBlockAndReceipts {
+impl EthSubmissionMaterial {
     fn new(block: EthBlock, receipts: EthReceipts) -> Self {
         Self { block, receipts }
     }
@@ -59,9 +59,9 @@ impl EthBlockAndReceipts {
         Ok(serde_json::to_vec(&self.to_json()?)?)
     }
 
-    pub fn from_json(json: &EthBlockAndReceiptsJson) -> Result<Self> {
+    pub fn from_json(json: &EthSubmissionMaterialJson) -> Result<Self> {
         Ok(
-            EthBlockAndReceipts {
+            EthSubmissionMaterial {
                 block: EthBlock::from_json(&json.block)?,
                 receipts: EthReceipts::from_jsons(&json.receipts)?,
             }
@@ -69,7 +69,7 @@ impl EthBlockAndReceipts {
     }
 
     pub fn from_str(json_str: &str) -> Result<Self> {
-        Self::from_json(&EthBlockAndReceiptsJson::from_str(json_str)?)
+        Self::from_json(&EthSubmissionMaterialJson::from_str(json_str)?)
     }
 
     #[cfg(test)]
@@ -120,12 +120,12 @@ impl EthBlockAndReceipts {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct EthBlockAndReceiptsJson {
+pub struct EthSubmissionMaterialJson {
     pub block: EthBlockJson,
     pub receipts: Vec<EthReceiptJson>
 }
 
-impl EthBlockAndReceiptsJson {
+impl EthSubmissionMaterialJson {
     pub fn from_str(json_str: &str) -> Result<Self> {
         match serde_json::from_str(&json_str) {
             Ok(result) => Ok(result),
@@ -147,24 +147,24 @@ mod tests {
             SAMPLE_RECEIPT_INDEX,
             get_sample_contract_topics,
             get_sample_contract_address,
-            get_sample_eth_block_and_receipts,
-            get_sample_eth_block_and_receipts_n,
-            get_sample_eth_block_and_receipts_string,
+            get_sample_eth_submission_material,
+            get_sample_eth_submission_material_n,
+            get_sample_eth_submission_material_string,
         },
     };
 
     #[test]
-    fn should_parse_eth_block_and_receipts_json_string() {
-        let json_string = get_sample_eth_block_and_receipts_string(0).unwrap();
-        if EthBlockAndReceiptsJson::from_str(&json_string).is_err() {
+    fn should_parse_eth_submission_material_json_string() {
+        let json_string = get_sample_eth_submission_material_string(0).unwrap();
+        if EthSubmissionMaterial::from_str(&json_string).is_err() {
             panic!("SHould parse eth block and json string correctly!");
         }
     }
 
     #[test]
-    fn should_parse_eth_block_and_receipts_json() {
-        let json_string = get_sample_eth_block_and_receipts_string(0).unwrap();
-        match EthBlockAndReceipts::from_str(&json_string) {
+    fn should_parse_eth_submission_material_json() {
+        let json_string = get_sample_eth_submission_material_string(0).unwrap();
+        match EthSubmissionMaterial::from_str(&json_string) {
             Ok(block_and_receipt) => {
                 let block = block_and_receipt
                     .block
@@ -181,19 +181,19 @@ mod tests {
 
     #[test]
     fn should_make_to_and_from_string_round_trip() {
-        let block_and_receipts = EthBlockAndReceipts::from_str(
-            &get_sample_eth_block_and_receipts_string(0).unwrap()
+        let block_and_receipts = EthSubmissionMaterial::from_str(
+            &get_sample_eth_submission_material_string(0).unwrap()
         ).unwrap();
         let string = block_and_receipts.to_string().unwrap();
-        let result = EthBlockAndReceipts::from_str(&string).unwrap();
+        let result = EthSubmissionMaterial::from_str(&string).unwrap();
         assert_eq!(result, block_and_receipts);
     }
 
     #[test]
     fn should_decode_block_and_recipts_json_correctly() {
-        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let block_and_receipts = get_sample_eth_submission_material();
         let bytes = block_and_receipts.to_bytes().unwrap();
-        let result = EthBlockAndReceipts::from_bytes(&bytes).unwrap();
+        let result = EthSubmissionMaterial::from_bytes(&bytes).unwrap();
         assert_eq!(result.block, block_and_receipts.block);
         block_and_receipts
             .receipts
@@ -206,15 +206,15 @@ mod tests {
 
     #[test]
     fn should_make_to_and_from_bytes_round_trip_correctly() {
-        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let block_and_receipts = get_sample_eth_submission_material();
         let bytes = block_and_receipts.to_bytes().unwrap();
-        let result = EthBlockAndReceipts::from_bytes(&bytes).unwrap();
+        let result = EthSubmissionMaterial::from_bytes(&bytes).unwrap();
         assert_eq!(result, block_and_receipts);
     }
 
     #[test]
-    fn should_filter_eth_block_and_receipts() {
-        let block_and_receipts = get_sample_eth_block_and_receipts();
+    fn should_filter_eth_submission_material() {
+        let block_and_receipts = get_sample_eth_submission_material();
         let num_receipts_before = block_and_receipts.receipts.len();
         let address = get_sample_contract_address();
         let topics = get_sample_contract_topics();
@@ -235,9 +235,9 @@ mod tests {
     }
 
     #[test]
-    fn should_filter_eth_block_and_receipts_2() {
+    fn should_filter_eth_submission_material_2() {
         let expected_num_receipts_after = 1;
-        let block_and_receipts = get_sample_eth_block_and_receipts_n(6).unwrap();
+        let block_and_receipts = get_sample_eth_submission_material_n(6).unwrap();
         let num_receipts_before = block_and_receipts.receipts.len();
         let address = EthAddress::from_slice(&hex::decode("74630cfbc4066726107a4efe73956e219bbb46ab").unwrap());
         let topics = vec![EthHash::from_slice(&hex::decode(REDEEM_EVENT_TOPIC_HEX).unwrap()) ];
@@ -260,13 +260,13 @@ mod tests {
 
     #[test]
     fn should_return_true_if_receipts_root_is_correct() {
-        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let block_and_receipts = get_sample_eth_submission_material();
         let result = block_and_receipts.receipts_are_valid().unwrap();
         assert!(result);
     }
 
-    fn get_sample_block_with_redeem() -> EthBlockAndReceipts {
-        get_sample_eth_block_and_receipts_n(4).unwrap()
+    fn get_sample_block_with_redeem() -> EthSubmissionMaterial {
+        get_sample_eth_submission_material_n(4).unwrap()
     }
 
     fn get_tx_hash_of_redeem_tx() -> &'static str {
@@ -290,7 +290,7 @@ mod tests {
 
     #[test]
     fn should_remove_receipts_from_block_and_receipts() {
-        let block_and_receipts = get_sample_eth_block_and_receipts();
+        let block_and_receipts = get_sample_eth_submission_material();
         let num_receipts_before = block_and_receipts.receipts.len();
         assert!(num_receipts_before > 0);
         let result = block_and_receipts.remove_receipts();
