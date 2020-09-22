@@ -13,6 +13,7 @@ use crate::{
         eos_types::{
             ActionProof,
             RedeemInfo,
+            RedeemInfos,
         },
     },
 };
@@ -24,55 +25,29 @@ fn get_eos_symbol_from_action_data(
     Ok(EosSymbol::new(convert_bytes_to_u64(&action_data[16..24].to_vec())?))
 }
 
-fn get_eos_amount_from_action_data(
+pub fn get_eos_amount_from_action_data(
     action_data: &[Byte]
 ) -> Result<u64> {
     convert_bytes_to_u64(&action_data[8..16].to_vec())
 }
 
-fn get_redeem_action_sender_from_action_data(
+pub fn get_redeem_action_sender_from_action_data(
     action_data: &[Byte]
 ) -> Result<EosAccountName> {
     Ok(EosAccountName::new(convert_bytes_to_u64(&action_data[..8].to_vec())?))
 }
 
-fn get_redeem_address_from_action_data(
-    action_data: &[Byte],
-) -> Result<String> {
+pub fn get_redeem_address_from_action_data(action_data: &[Byte]) -> Result<String> {
     Ok(from_utf8(&action_data[25..])?.to_string())
 }
 
-impl RedeemInfo {
-    pub fn from_action_proof(
-        action_proof: &ActionProof,
-    ) -> Result<Self> {
-        Ok(
-            RedeemInfo {
-                global_sequence: action_proof
-                    .action_receipt
-                    .global_sequence,
-                amount: get_eos_amount_from_action_data(
-                    &action_proof.action.data,
-                )?,
-                from: get_redeem_action_sender_from_action_data(
-                    &action_proof.action.data,
-                )?,
-                recipient: get_redeem_address_from_action_data(
-                    &action_proof.action.data,
-                )?,
-                originating_tx_id: action_proof.tx_id,
-            }
-        )
-    }
-}
-
-pub fn parse_redeem_params_from_action_proofs(
-    action_proofs: &[ActionProof]
-) -> Result<Vec<RedeemInfo>> {
-    action_proofs
-        .iter()
-        .map(|proof| RedeemInfo::from_action_proof(proof))
-        .collect()
+pub fn parse_redeem_infos_from_action_proofs(action_proofs: &[ActionProof]) -> Result<RedeemInfos> {
+    Ok(RedeemInfos::new(
+        action_proofs
+            .iter()
+            .map(|proof| RedeemInfo::from_action_proof(proof))
+            .collect::<Result<Vec<RedeemInfo>>>()?
+    ))
 }
 
 #[cfg(test)]
@@ -141,7 +116,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_redeem_params_from_action_proof_2() {
+    fn should_get_redeem_infos_from_action_proof_2() {
         let expected_result = RedeemInfo {
             global_sequence: 577606126,
             amount: 1,
@@ -163,7 +138,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_redeem_params_from_action_proof_3() {
+    fn should_get_redeem_infos_from_action_proof_3() {
         let expected_result = RedeemInfo {
             global_sequence: 583774614,
             amount: 5666,
@@ -185,7 +160,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_redeem_params_from_action_proof_4() {
+    fn should_get_redeem_infos_from_action_proof_4() {
         let expected_result = RedeemInfo {
             global_sequence: 579818529,
             amount: 5555,
@@ -207,7 +182,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_redeem_params_from_action_proof_5() {
+    fn should_get_redeem_infos_from_action_proof_5() {
         let expected_result = RedeemInfo {
             global_sequence: 579838915,
             amount: 5111,

@@ -82,11 +82,11 @@ use crate::{
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
             sign_transactions::maybe_sign_txs_and_add_to_state,
             get_processed_tx_ids::get_processed_tx_ids_and_add_to_state,
-            parse_redeem_params::maybe_parse_redeem_params_and_put_in_state,
+            parse_redeem_infos::maybe_parse_redeem_infos_and_put_in_state,
             filter_duplicate_proofs::maybe_filter_duplicate_proofs_from_state,
             parse_submission_material::parse_submission_material_and_add_to_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
-            filter_redeem_params::maybe_filter_value_too_low_redeem_params_in_state,
+            filter_redeem_infos::maybe_filter_value_too_low_redeem_infos_in_state,
             filter_irrelevant_proofs::maybe_filter_out_irrelevant_proofs_from_state,
             increment_signature_nonce::maybe_increment_signature_nonce_and_return_state,
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
@@ -136,8 +136,8 @@ pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> w
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
-        .and_then(maybe_parse_redeem_params_and_put_in_state)
-        .and_then(maybe_filter_value_too_low_redeem_params_in_state)
+        .and_then(maybe_parse_redeem_infos_and_put_in_state)
+        .and_then(maybe_filter_value_too_low_redeem_infos_in_state)
         .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
         .and_then(maybe_sign_txs_and_add_to_state)

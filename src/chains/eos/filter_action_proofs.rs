@@ -12,6 +12,7 @@ use crate::{
         eos_utils::convert_bytes_to_checksum256,
         eos_types::{
             RedeemInfo,
+            RedeemInfos,
             ActionProof,
             ActionProofs,
             ProcessedTxIds,
@@ -118,15 +119,18 @@ pub fn filter_out_proofs_with_action_digests_not_in_action_receipts(
 }
 
 pub fn filter_out_already_processed_txs(
-    redeem_params: &[RedeemInfo],
+    redeem_infos: &RedeemInfos,
     processed_tx_ids: &ProcessedTxIds,
-) -> Result<Vec<RedeemInfo>> {
+) -> Result<RedeemInfos> {
     Ok(
-        redeem_params
-            .iter()
-            .filter(|params| !processed_tx_ids.contains(&params.global_sequence))
-            .cloned()
-            .collect::<Vec<RedeemInfo>>()
+        RedeemInfos::new(
+            redeem_infos
+                .0
+                .iter()
+                .filter(|params| !processed_tx_ids.contains(&params.global_sequence))
+                .cloned()
+                .collect::<Vec<RedeemInfo>>()
+        )
     )
 }
 
