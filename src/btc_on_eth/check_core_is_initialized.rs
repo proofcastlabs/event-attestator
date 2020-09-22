@@ -1,11 +1,9 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eth::eth_state::EthState,
     btc_on_eth::{
-        eth::{
-            eth_state::EthState,
-            initialize_eth::is_eth_initialized::is_eth_enclave_initialized,
-        },
+        eth::initialize_eth::is_eth_initialized::is_eth_enclave_initialized,
         btc::{
             btc_state::BtcState,
             initialize_btc::is_btc_initialized::is_btc_enclave_initialized,
@@ -36,8 +34,7 @@ pub fn check_core_is_initialized_and_return_eth_state<D>(
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
-    check_core_is_initialized(&state.db)
-        .map(|_| state)
+    check_core_is_initialized(&state.db).and(Ok(state))
 }
 
 pub fn check_core_is_initialized_and_return_btc_state<D>(
@@ -45,8 +42,7 @@ pub fn check_core_is_initialized_and_return_btc_state<D>(
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    check_core_is_initialized(&state.db)
-        .map(|_| state)
+    check_core_is_initialized(&state.db).and(Ok(state))
 }
 
 #[cfg(test)]

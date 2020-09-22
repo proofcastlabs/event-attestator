@@ -1,7 +1,6 @@
 pub mod initialize_eth;
 pub mod submit_eth_block;
 
-pub(crate) mod eth_state;
 pub(crate) mod eth_test_utils;
 pub(crate) mod validate_block;
 pub(crate) mod filter_receipts;

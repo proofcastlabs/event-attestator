@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::eth::eth_state::EthState,
-    chains::eth::update_latest_block_hash::update_latest_block_hash_if_subsequent,
+    chains::{
+        eth::eth_state::EthState,
+        eth::update_latest_block_hash::update_latest_block_hash_if_subsequent,
+    },
 };
 
 pub fn maybe_update_latest_block_hash_and_return_state<D>(

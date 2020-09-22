@@ -1,8 +1,8 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::eth::eth_state::EthState,
     chains::eth::{
+        eth_state::EthState,
         eth_database_utils::get_eth_tail_block_from_db,
         remove_old_eth_tail_block::remove_parents_if_not_anchor,
     },

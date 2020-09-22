@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::eth::eth_state::EthState,
-    chains::eth::eth_database_utils::get_eth_canon_block_from_db,
+    chains::eth::{
+        eth_state::EthState,
+        eth_database_utils::get_eth_canon_block_from_db,
+    },
 };
 
 pub fn maybe_parse_redeem_infos_and_add_to_state<D>(

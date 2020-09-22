@@ -1,10 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eth::eth_state::EthState,
     btc_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
-            eth_state::EthState,
             validate_block::validate_block_in_state,
             get_eth_output_json::get_eth_output_json,
             validate_receipts::validate_receipts_in_state,

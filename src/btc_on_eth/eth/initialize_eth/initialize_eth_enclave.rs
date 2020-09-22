@@ -1,8 +1,8 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eth::eth_state::EthState,
     btc_on_eth::eth::{
-        eth_state::EthState,
         eth_database_transactions::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
@@ -78,12 +78,7 @@ pub fn maybe_initialize_eth_enclave<D>(
                         .and_then(generate_and_store_eth_address)
                         .and_then(generate_and_store_eth_contract_address)
                         .and_then(|state|
-                            generate_eth_contract_tx_and_put_in_state(
-                                chain_id,
-                                gas_price,
-                                &bytecode_path,
-                                state,
-                            )
+                            generate_eth_contract_tx_and_put_in_state(chain_id, gas_price, &bytecode_path, state)
                         )
                         .and_then(end_eth_db_transaction_and_return_state)
                         .and_then(get_eth_init_output_json)

@@ -15,6 +15,7 @@ use crate::{
     },
     chains::{
         eth::{
+            eth_state::EthState,
             eth_network::EthNetwork,
             eth_crypto::eth_transaction::get_signed_minting_tx,
             eth_contracts::{
@@ -91,7 +92,6 @@ use crate::{
             set_flags::set_any_sender_flag_in_state,
         },
         eth::{
-            eth_state::EthState,
             validate_block::validate_block_in_state,
             filter_receipts::filter_irrelevant_receipts_from_state,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,

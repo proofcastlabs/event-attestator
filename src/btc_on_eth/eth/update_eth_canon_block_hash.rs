@@ -1,8 +1,8 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::eth::eth_state::EthState,
     chains::eth::{
+        eth_state::EthState,
         eth_database_utils::get_eth_canon_to_tip_length_from_db,
         update_eth_canon_block_hash::maybe_update_canon_block_hash,
     },

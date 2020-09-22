@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::eth::eth_state::EthState,
-    chains::eth::remove_receipts_from_canon_block::remove_receipts_from_canon_block_and_save_in_db,
+    chains::eth::{
+        eth_state::EthState,
+        remove_receipts_from_canon_block::remove_receipts_from_canon_block_and_save_in_db,
+    },
 };
 
 pub fn maybe_remove_receipts_from_canon_block_and_return_state<D>(

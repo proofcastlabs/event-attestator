@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::eth::eth_state::EthState,
-    chains::eth::add_block_and_receipts_to_db::add_block_and_receipts_to_db_if_not_extant,
+    chains::eth::{
+        eth_state::EthState,
+        add_block_and_receipts_to_db::add_block_and_receipts_to_db_if_not_extant,
+    },
 };
 
 pub fn maybe_add_block_and_receipts_to_db_and_return_state<D>(

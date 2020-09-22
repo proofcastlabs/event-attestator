@@ -11,7 +11,6 @@ use std::{
 use crate::{
     errors::AppError,
     traits::DatabaseInterface,
-    btc_on_eth::eth::eth_state::EthState,
     types::{
         Bytes,
         Result,
@@ -21,6 +20,7 @@ use crate::{
         get_test_database,
     },
     chains::eth::{
+        eth_state::EthState,
         eth_receipt::EthReceipt,
         eth_block_and_receipts::{
             EthBlockAndReceipts,

@@ -4,19 +4,18 @@ use ethereum_types::Address as EthAddress;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::eth::eth_state::EthState,
-    chains::eth::eth_database_utils::{
-        get_public_eth_address_from_db,
-        put_eth_smart_contract_address_in_db,
+    chains::eth::{
+        eth_state::EthState,
+        eth_database_utils::{
+            get_public_eth_address_from_db,
+            put_eth_smart_contract_address_in_db,
+        },
     },
 };
 
 const INITIAL_NONCE: usize = 0;
 
-fn calculate_contract_address(
-    eth_address: EthAddress,
-    nonce: usize
-) -> EthAddress {
+fn calculate_contract_address(eth_address: EthAddress, nonce: usize) -> EthAddress {
     let mut rlp_stream = RlpStream::new();
     rlp_stream.begin_list(2);
     rlp_stream.append(&eth_address);
@@ -26,9 +25,7 @@ fn calculate_contract_address(
     EthAddress::from_slice(&hashed[12..])
 }
 
-fn get_eth_contract_address<D>(db: &D) -> Result<EthAddress>
-    where D: DatabaseInterface
-{
+fn get_eth_contract_address<D>(db: &D) -> Result<EthAddress> where D: DatabaseInterface {
     get_public_eth_address_from_db(db)
         .map(|eth_address| {
             info!("✔ Calculating pBTC contract address...");

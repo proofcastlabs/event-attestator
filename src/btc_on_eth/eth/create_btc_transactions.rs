@@ -6,7 +6,10 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::{
-        eth::eth_redeem_info::RedeemInfos,
+        eth::{
+            eth_state::EthState,
+            eth_redeem_info::RedeemInfos,
+        },
         btc::{
             btc_utils::calculate_btc_tx_fee,
             utxo_manager::{
@@ -15,16 +18,13 @@ use crate::{
             },
         },
     },
-    btc_on_eth::{
-        eth::eth_state::EthState,
-        btc::{
-            btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-            btc_database_utils::{
-                get_btc_fee_from_db,
-                get_btc_network_from_db,
-                get_btc_address_from_db,
-                get_btc_private_key_from_db,
-            },
+    btc_on_eth::btc::{
+        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
+        btc_database_utils::{
+            get_btc_fee_from_db,
+            get_btc_network_from_db,
+            get_btc_address_from_db,
+            get_btc_private_key_from_db,
         },
     },
 };

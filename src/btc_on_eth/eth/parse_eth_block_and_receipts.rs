@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::eth::eth_state::EthState,
-    chains::eth::eth_block_and_receipts::EthBlockAndReceipts,
+    chains::eth::{
+        eth_state::EthState,
+        eth_block_and_receipts::EthBlockAndReceipts,
+    },
 };
 
 pub fn parse_eth_block_and_receipts_and_put_in_state<D>(
