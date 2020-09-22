@@ -205,23 +205,16 @@ impl EthReceipt {
         self.rlp_encode().map(|bytes| (get_nibbles_from_bytes(self.rlp_encode_transaction_index()), bytes))
     }
 
-    pub fn get_redeem_params(&self) -> Result<Vec<RedeemInfo>> {
-        info!("✔ Getting redeem params from receipt...");
+    pub fn get_btc_on_eth_redeem_infos(&self) -> Result<Vec<RedeemInfo>> {
+        info!("✔ Getting redeem `btc_on_eth` redeem infos from receipt...");
         self
             .logs
             .0
             .iter()
             .filter(|log| matches!(log.is_ptoken_redeem(), Ok(true)))
-            .map(|log| -> Result<RedeemInfo> {
-                Ok(
-                    RedeemInfo::new(
-                        log.get_redeem_amount()?,
-                        self.from,
-                        log.get_btc_address()?,
-                        self.transaction_hash
-                    )
-                )
-            })
+            .map(|log|
+                Ok( RedeemInfo::new(log.get_redeem_amount()?, self.from, log.get_btc_address()?, self.transaction_hash))
+            )
             .collect()
     }
 }
@@ -413,9 +406,9 @@ mod tests {
     }
 
     #[test]
-    fn should_parse_redeem_params_from_receipt() {
+    fn should_parse_btc_on_eth_redeem_params_from_receipt() {
         let expected_num_results = 1;
-        let result = get_sample_receipt_with_redeem().get_redeem_params().unwrap();
+        let result = get_sample_receipt_with_redeem().get_btc_on_eth_redeem_infos().unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result[0], get_expected_redeem_params());
     }

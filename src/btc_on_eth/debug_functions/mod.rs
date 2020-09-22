@@ -225,7 +225,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
         .and_then(|state| {
             state
                 .get_eth_submission_material()
-                .and_then(|block| block.get_redeem_infos())
+                .and_then(|block| block.get_btc_on_eth_redeem_infos())
                 .and_then(|params| state.add_btc_on_eth_redeem_infos(params))
         })
         .and_then(maybe_create_btc_txs_and_add_to_state)

@@ -124,13 +124,13 @@ impl EthSubmissionMaterial {
             })
     }
 
-    pub fn get_redeem_infos(&self) -> Result<RedeemInfos> {
+    pub fn get_btc_on_eth_redeem_infos(&self) -> Result<RedeemInfos> {
         info!("✔ Getting pToken redeem params from block and receipts...");
         Ok(RedeemInfos::new(
             &self
                 .get_receipts()
                 .iter()
-                .map(|receipt| receipt.get_redeem_params())
+                .map(|receipt| receipt.get_btc_on_eth_redeem_infos())
                 .collect::<Result<Vec<Vec<RedeemInfo>>>>()?
                 .concat()
         ))
@@ -303,8 +303,8 @@ mod tests {
     }
 
     #[test]
-    fn should_parse_redeem_params_from_block() {
-        let result = get_sample_block_with_redeem().get_redeem_infos().unwrap();
+    fn should_parse_btc_on_eth_redeem_params_from_block() {
+        let result = get_sample_block_with_redeem().get_btc_on_eth_redeem_infos().unwrap();
         let expected_result = RedeemInfo {
             amount: U256::from_dec_str("666").unwrap(),
             from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),

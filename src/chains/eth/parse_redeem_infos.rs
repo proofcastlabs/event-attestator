@@ -22,7 +22,7 @@ pub fn maybe_parse_redeem_infos_and_add_to_state<D>(
                 }
                 false => {
                     info!("✔ Receipts in canon block #{}∴ parsing infos...", submission_material.block.number);
-                    submission_material.get_redeem_infos() // TODO rename to include `btc_on_eth`
+                    submission_material.get_btc_on_eth_redeem_infos()
                         .and_then(|infos| state.add_btc_on_eth_redeem_infos(infos))
                 }
             }
