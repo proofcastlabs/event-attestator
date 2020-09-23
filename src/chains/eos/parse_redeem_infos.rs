@@ -12,8 +12,8 @@ use crate::{
     chains::eos::{
         eos_types::{
             ActionProof,
-            RedeemInfo,
-            RedeemInfos,
+            BtcOnEthRedeemInfo,
+            BtcOnEthRedeemInfos,
         },
     },
 };
@@ -35,12 +35,12 @@ pub fn get_redeem_address_from_action_data(action_data: &[Byte]) -> Result<Strin
     Ok(from_utf8(&action_data[25..])?.to_string())
 }
 
-pub fn parse_redeem_infos_from_action_proofs(action_proofs: &[ActionProof]) -> Result<RedeemInfos> {
-    Ok(RedeemInfos::new(
+pub fn parse_redeem_infos_from_action_proofs(action_proofs: &[ActionProof]) -> Result<BtcOnEthRedeemInfos> {
+    Ok(BtcOnEthRedeemInfos::new(
         &action_proofs
             .iter()
-            .map(|proof| RedeemInfo::from_action_proof(proof))
-            .collect::<Result<Vec<RedeemInfo>>>()?
+            .map(|proof| BtcOnEthRedeemInfo::from_action_proof(proof))
+            .collect::<Result<Vec<BtcOnEthRedeemInfo>>>()?
     ))
 }
 
@@ -111,7 +111,7 @@ mod tests {
 
     #[test]
     fn should_get_redeem_infos_from_action_proof_2() {
-        let expected_result = RedeemInfo {
+        let expected_result = BtcOnEthRedeemInfo {
             global_sequence: 577606126,
             amount: 1,
             recipient: "mr6ioeUxNMoavbr2VjaSbPAovzzgDT7Su9"
@@ -126,14 +126,14 @@ mod tests {
         let action_proof = get_sample_eos_submission_material_n(2)
             .action_proofs[0]
             .clone();
-        let result = RedeemInfo::from_action_proof(&action_proof)
+        let result = BtcOnEthRedeemInfo::from_action_proof(&action_proof)
             .unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_get_redeem_infos_from_action_proof_3() {
-        let expected_result = RedeemInfo {
+        let expected_result = BtcOnEthRedeemInfo {
             global_sequence: 583774614,
             amount: 5666,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
@@ -148,14 +148,14 @@ mod tests {
         let action_proof = get_sample_eos_submission_material_n(3)
             .action_proofs[0]
             .clone();
-        let result = RedeemInfo::from_action_proof(&action_proof)
+        let result = BtcOnEthRedeemInfo::from_action_proof(&action_proof)
             .unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_get_redeem_infos_from_action_proof_4() {
-        let expected_result = RedeemInfo {
+        let expected_result = BtcOnEthRedeemInfo {
             global_sequence: 579818529,
             amount: 5555,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
@@ -170,14 +170,14 @@ mod tests {
         let action_proof = get_sample_eos_submission_material_n(4)
             .action_proofs[0]
             .clone();
-        let result = RedeemInfo::from_action_proof(&action_proof)
+        let result = BtcOnEthRedeemInfo::from_action_proof(&action_proof)
             .unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_get_redeem_infos_from_action_proof_5() {
-        let expected_result = RedeemInfo {
+        let expected_result = BtcOnEthRedeemInfo {
             global_sequence: 579838915,
             amount: 5111,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM"
@@ -192,7 +192,7 @@ mod tests {
         let action_proof = get_sample_eos_submission_material_n(1)
             .action_proofs[0]
             .clone();
-        let result = RedeemInfo::from_action_proof(&action_proof)
+        let result = BtcOnEthRedeemInfo::from_action_proof(&action_proof)
             .unwrap();
         assert_eq!(result, expected_result);
     }

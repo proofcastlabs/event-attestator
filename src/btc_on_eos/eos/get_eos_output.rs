@@ -7,8 +7,8 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::eos::eos_types::{
-        RedeemInfo,
-        RedeemInfos,
+        BtcOnEthRedeemInfo,
+        BtcOnEthRedeemInfos,
     },
     btc_on_eos::{
         eos::eos_state::EosState,
@@ -26,7 +26,7 @@ pub struct EosOutput {
 }
 
 impl BtcTxInfo {
-    pub fn new(btc_tx: &BtcTransaction, redeem_info: &RedeemInfo, btc_account_nonce: u64) -> Result<BtcTxInfo> {
+    pub fn new(btc_tx: &BtcTransaction, redeem_info: &BtcOnEthRedeemInfo, btc_account_nonce: u64) -> Result<BtcTxInfo> {
         Ok(
             BtcTxInfo {
                 btc_account_nonce,
@@ -45,7 +45,7 @@ impl BtcTxInfo {
 pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_account_nonce: u64,
     btc_txs: &[BtcTransaction],
-    redeem_infos: &RedeemInfos,
+    redeem_infos: &BtcOnEthRedeemInfos,
 ) -> Result<Vec<BtcTxInfo>> {
     info!("✔ Getting BTC tx info from BTC txs...");
     let start_nonce = btc_account_nonce - btc_txs.len() as u64;

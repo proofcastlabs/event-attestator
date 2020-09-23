@@ -14,8 +14,8 @@ use crate::{
             eth_state::EthState,
             eth_database_utils::get_eth_latest_block_from_db,
             eth_redeem_info::{
-                RedeemInfo,
-                RedeemInfos,
+                BtcOnEthRedeemInfo,
+                BtcOnEthRedeemInfos,
             },
         },
     },
@@ -36,7 +36,7 @@ pub struct BtcTxInfo {
 impl BtcTxInfo {
     pub fn new(
         btc_tx: &BtcTransaction,
-        redeem_info: &RedeemInfo,
+        redeem_info: &BtcOnEthRedeemInfo,
         btc_account_nonce: u64,
     ) -> Result<BtcTxInfo> {
         Ok(
@@ -71,7 +71,7 @@ pub struct EthOutput {
 pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_account_nonce: u64,
     btc_txs: Vec<BtcTransaction>,
-    redeem_info: &RedeemInfos,
+    redeem_info: &BtcOnEthRedeemInfos,
 ) -> Result<Vec<BtcTxInfo>> {
     info!("✔ Getting BTC tx info from BTC txs...");
     let start_nonce = btc_account_nonce - btc_txs.len() as u64;

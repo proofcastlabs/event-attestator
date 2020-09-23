@@ -13,11 +13,11 @@ use crate::{
         Result,
         NoneError,
     },
+    btc_on_eth::eth::redeem_info::{
+        BtcOnEthRedeemInfo,
+        BtcOnEthRedeemInfos,
+    },
     chains::eth::{
-        eth_redeem_info::{
-            RedeemInfo,
-            RedeemInfos,
-        },
         eth_block::{
             EthBlock,
             EthBlockJson,
@@ -124,17 +124,31 @@ impl EthSubmissionMaterial {
             })
     }
 
-    pub fn get_btc_on_eth_redeem_infos(&self) -> Result<RedeemInfos> {
-        info!("✔ Getting pToken redeem params from block and receipts...");
-        Ok(RedeemInfos::new(
+    pub fn get_btc_on_eth_redeem_infos(&self) -> Result<BtcOnEthRedeemInfos> {
+        info!("✔ Getting `btc-on-eth` redeem infos from submission material...");
+        Ok(BtcOnEthRedeemInfos::new(
             &self
                 .get_receipts()
                 .iter()
                 .map(|receipt| receipt.get_btc_on_eth_redeem_infos())
-                .collect::<Result<Vec<Vec<RedeemInfo>>>>()?
+                .collect::<Result<Vec<Vec<BtcOnEthRedeemInfo>>>>()?
                 .concat()
         ))
     }
+
+    /* TODO
+    pub fn get_erc20_on_eos_redeem_infos(&self) -> Result<Erc20OnEosRedeemInfos> {
+        info!("✔ Getting `erc20-on-eos` redeem infos from submission material...");
+        Ok(BtcOnEthRedeemInfos::new(
+            &self
+                .get_receipts()
+                .iter()
+                .map(|receipt| receipt.get_erc20_on_eos_redeem_infos())
+                .collect::<Result<Vec<Vec<Erc20OnEosRedeemInfo>>>>()?
+                .concat()
+        ))
+    }
+    */
 
     pub fn remove_receipts(&self) -> Self {
         EthSubmissionMaterial {
@@ -305,7 +319,7 @@ mod tests {
     #[test]
     fn should_parse_btc_on_eth_redeem_params_from_block() {
         let result = get_sample_block_with_redeem().get_btc_on_eth_redeem_infos().unwrap();
-        let expected_result = RedeemInfo {
+        let expected_result = BtcOnEthRedeemInfo {
             amount: U256::from_dec_str("666").unwrap(),
             from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),

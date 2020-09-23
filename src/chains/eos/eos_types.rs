@@ -123,7 +123,7 @@ impl fmt::Display for EosKnownSchedule {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RedeemInfo {
+pub struct BtcOnEthRedeemInfo {
     pub amount: u64,
     pub recipient: String,
     pub from: EosAccountName,
@@ -131,10 +131,10 @@ pub struct RedeemInfo {
     pub global_sequence: GlobalSequence,
 }
 
-impl RedeemInfo {
+impl BtcOnEthRedeemInfo {
     pub fn from_action_proof(action_proof: &ActionProof) -> Result<Self> {
         Ok(
-            RedeemInfo {
+            BtcOnEthRedeemInfo {
                 originating_tx_id: action_proof.tx_id,
                 global_sequence: action_proof.action_receipt.global_sequence,
                 amount: get_eos_amount_from_action_data(&action_proof.action.data)?,
@@ -146,10 +146,10 @@ impl RedeemInfo {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RedeemInfos(pub Vec<RedeemInfo>);
+pub struct BtcOnEthRedeemInfos(pub Vec<BtcOnEthRedeemInfo>);
 
-impl RedeemInfos {
-    pub fn new(redeem_infos: &[RedeemInfo]) -> Self {
+impl BtcOnEthRedeemInfos {
+    pub fn new(redeem_infos: &[BtcOnEthRedeemInfo]) -> Self {
         Self(redeem_infos.to_vec())
     }
 

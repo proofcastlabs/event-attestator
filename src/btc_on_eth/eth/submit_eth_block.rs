@@ -1,13 +1,15 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eth::eth::{
+        parse_redeem_infos::maybe_parse_redeem_infos_and_add_to_state,
+        filter_redeem_infos_in_state::maybe_filter_redeem_infos_in_state,
+    },
     chains::eth::{
         eth_state::EthState,
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
         check_parent_exists::check_for_parent_of_block_in_state,
-        parse_redeem_infos::maybe_parse_redeem_infos_and_add_to_state,
-        filter_redeem_infos_in_state::maybe_filter_redeem_infos_in_state,
         update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
         update_latest_block_hash::maybe_update_latest_block_hash_and_return_state,
         remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,

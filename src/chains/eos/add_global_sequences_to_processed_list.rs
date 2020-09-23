@@ -4,7 +4,7 @@ use crate::{
     chains::eos::{
         eos_database_utils::put_processed_tx_ids_in_db,
         eos_types::{
-            RedeemInfos,
+            BtcOnEthRedeemInfos,
             ProcessedTxIds,
         },
     },
@@ -12,7 +12,7 @@ use crate::{
 
 pub fn add_tx_ids_to_processed_tx_ids<D>(
     db: &D,
-    redeem_infos: &RedeemInfos,
+    redeem_infos: &BtcOnEthRedeemInfos,
     processed_tx_ids: &ProcessedTxIds,
 ) -> Result<()>
     where D: DatabaseInterface

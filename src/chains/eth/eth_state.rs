@@ -2,12 +2,10 @@ use ethereum_types::H256 as EthHash;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
     chains::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
-        eth::{
-            eth_redeem_info::RedeemInfos,
-            eth_submission_material::EthSubmissionMaterial,
-        },
+        eth::eth_submission_material::EthSubmissionMaterial,
     },
     btc_on_eth::{
         btc::btc_types::BtcTransactions,
@@ -22,7 +20,7 @@ use crate::{
 pub struct EthState<D: DatabaseInterface> {
     pub db: D,
     pub misc: Option<String>,
-    pub btc_on_eth_redeem_infos: RedeemInfos,
+    pub btc_on_eth_redeem_infos: BtcOnEthRedeemInfos,
     pub btc_transactions: Option<BtcTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
@@ -36,7 +34,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
             btc_transactions: None,
             btc_utxos_and_values: None,
             eth_submission_material: None,
-            btc_on_eth_redeem_infos: RedeemInfos::new(&vec![]),
+            btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(&vec![]),
         }
     }
 
@@ -50,13 +48,13 @@ impl<D> EthState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn add_btc_on_eth_redeem_infos(self, mut infos: RedeemInfos) -> Result<EthState<D>> {
+    pub fn add_btc_on_eth_redeem_infos(self, mut infos: BtcOnEthRedeemInfos) -> Result<EthState<D>> {
         let mut new_infos = self.btc_on_eth_redeem_infos.clone().0;
         new_infos.append(&mut infos.0);
-        self.replace_btc_on_eth_redeem_infos(RedeemInfos::new(&new_infos))
+        self.replace_btc_on_eth_redeem_infos(BtcOnEthRedeemInfos::new(&new_infos))
     }
 
-    pub fn replace_btc_on_eth_redeem_infos(mut self, replacements: RedeemInfos) -> Result<EthState<D>> {
+    pub fn replace_btc_on_eth_redeem_infos(mut self, replacements: BtcOnEthRedeemInfos) -> Result<EthState<D>> {
         self.btc_on_eth_redeem_infos = replacements;
         Ok(self)
     }

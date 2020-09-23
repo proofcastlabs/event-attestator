@@ -12,7 +12,7 @@ use crate::{
             protocol_features::EnabledFeatures,
             parse_submission_material::EosSubmissionMaterial,
             eos_types::{
-                RedeemInfos,
+                BtcOnEthRedeemInfos,
                 ActionProofs,
                 Checksum256s,
                 ProcessedTxIds,
@@ -33,7 +33,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub db: D,
     pub block_num: Option<u64>,
     pub incremerkle: Incremerkle,
-    pub redeem_infos: RedeemInfos,
+    pub redeem_infos: BtcOnEthRedeemInfos,
     pub producer_signature: String,
     pub action_proofs: ActionProofs,
     pub signed_txs: BtcTransactions,
@@ -58,8 +58,8 @@ impl<D> EosState<D> where D: DatabaseInterface {
             btc_utxos_and_values: None,
             producer_signature: String::new(),
             incremerkle: Incremerkle::default(),
-            redeem_infos: RedeemInfos::new(&[]),
             processed_tx_ids: ProcessedTxIds::init(),
+            redeem_infos: BtcOnEthRedeemInfos::new(&[]),
             enabled_protocol_features: EnabledFeatures::init(),
         }
     }
@@ -122,7 +122,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn add_redeem_infos(mut self, redeem_infos: RedeemInfos) -> Result<EosState<D>> {
+    pub fn add_redeem_infos(mut self, redeem_infos: BtcOnEthRedeemInfos) -> Result<EosState<D>> {
         self.redeem_infos = redeem_infos;
         Ok(self)
     }
@@ -164,7 +164,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn replace_redeem_infos(mut self, replacements: RedeemInfos) -> Result<EosState<D>> {
+    pub fn replace_redeem_infos(mut self, replacements: BtcOnEthRedeemInfos) -> Result<EosState<D>> {
         info!("✔ Replacing redeem infos in state...");
         self.redeem_infos = replacements;
         Ok(self)

@@ -3,14 +3,14 @@ use crate::{
     chains::{
         btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
         eos::eos_types::{
-            RedeemInfo,
-            RedeemInfos,
+            BtcOnEthRedeemInfo,
+            BtcOnEthRedeemInfos,
         },
     },
 };
 
-pub fn filter_redeem_infos(redeem_infos: &RedeemInfos) -> Result<RedeemInfos> {
-    Ok(RedeemInfos::new(
+pub fn filter_redeem_infos(redeem_infos: &BtcOnEthRedeemInfos) -> Result<BtcOnEthRedeemInfos> {
+    Ok(BtcOnEthRedeemInfos::new(
         &redeem_infos
             .0
             .iter()
@@ -26,6 +26,6 @@ pub fn filter_redeem_infos(redeem_infos: &RedeemInfos) -> Result<RedeemInfos> {
                 }
             })
             .cloned()
-            .collect::<Vec<RedeemInfo>>()
+            .collect::<Vec<BtcOnEthRedeemInfo>>()
     ))
 }

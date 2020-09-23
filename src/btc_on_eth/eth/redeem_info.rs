@@ -17,23 +17,27 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RedeemInfo {
+pub struct BtcOnEthRedeemInfo {
     pub amount: U256,
     pub from: EthAddress,
     pub recipient: String,
     pub originating_tx_hash: EthHash,
 }
 
-impl RedeemInfo {
-    pub fn new(amount: U256, from: EthAddress, recipient: String, originating_tx_hash: EthHash) -> RedeemInfo {
-        RedeemInfo { amount, recipient, originating_tx_hash, from }
+impl BtcOnEthRedeemInfo {
+    pub fn new(amount: U256, from: EthAddress, recipient: String, originating_tx_hash: EthHash) -> BtcOnEthRedeemInfo {
+        BtcOnEthRedeemInfo { amount, recipient, originating_tx_hash, from }
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]
-pub struct RedeemInfos(pub Vec<RedeemInfo>);
+pub struct BtcOnEthRedeemInfos(pub Vec<BtcOnEthRedeemInfo>);
 
-impl RedeemInfos {
+impl BtcOnEthRedeemInfos {
+    pub fn new(redeem_infos: &[BtcOnEthRedeemInfo]) -> Self {
+        Self(redeem_infos.to_vec())
+    }
+
     pub fn sum(&self) -> u64 {
         self.iter().fold(0, |acc, params| acc + params.amount.as_u64())
     }

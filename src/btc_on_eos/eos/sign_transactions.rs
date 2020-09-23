@@ -6,7 +6,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::{
-        eos::eos_types::RedeemInfos,
+        eos::eos_types::BtcOnEthRedeemInfos,
         btc::utxo_manager::{
             utxo_types::BtcUtxosAndValues,
             utxo_database_utils::get_utxo_and_value,
@@ -68,7 +68,7 @@ fn get_enough_utxos_to_cover_total<D>(
         })
 }
 
-fn get_address_and_amounts_from_redeem_infos(redeem_infos: &RedeemInfos) -> Result<BtcRecipientsAndAmounts> {
+fn get_address_and_amounts_from_redeem_infos(redeem_infos: &BtcOnEthRedeemInfos) -> Result<BtcRecipientsAndAmounts> {
     info!("✔ Getting addresses & amounts from redeem params...");
     redeem_infos
         .0
@@ -85,7 +85,7 @@ fn sign_txs_from_redeem_infos<D>(
     db: &D,
     sats_per_byte: u64,
     btc_network: BtcNetwork,
-    redeem_infos: &RedeemInfos,
+    redeem_infos: &BtcOnEthRedeemInfos,
 ) -> Result<BtcTransaction>
     where D: DatabaseInterface
 {

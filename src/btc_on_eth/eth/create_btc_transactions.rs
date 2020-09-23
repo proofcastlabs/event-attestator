@@ -5,11 +5,9 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
     chains::{
-        eth::{
-            eth_state::EthState,
-            eth_redeem_info::RedeemInfos,
-        },
+        eth::eth_state::EthState,
         btc::{
             btc_utils::calculate_btc_tx_fee,
             utxo_manager::{
@@ -70,7 +68,7 @@ fn create_btc_tx_from_redeem_infos<D>(
     db: &D,
     sats_per_byte: u64,
     btc_network: BtcNetwork,
-    redeem_infos: &RedeemInfos,
+    redeem_infos: &BtcOnEthRedeemInfos,
 ) -> Result<BtcTransaction>
     where D: DatabaseInterface
 {

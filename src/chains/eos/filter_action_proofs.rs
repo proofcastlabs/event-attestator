@@ -11,8 +11,8 @@ use crate::{
         eos_merkle_utils::verify_merkle_proof,
         eos_utils::convert_bytes_to_checksum256,
         eos_types::{
-            RedeemInfo,
-            RedeemInfos,
+            BtcOnEthRedeemInfo,
+            BtcOnEthRedeemInfos,
             ActionProof,
             ActionProofs,
             ProcessedTxIds,
@@ -116,17 +116,17 @@ pub fn filter_out_proofs_with_action_digests_not_in_action_receipts(
 }
 
 pub fn filter_out_already_processed_txs(
-    redeem_infos: &RedeemInfos,
+    redeem_infos: &BtcOnEthRedeemInfos,
     processed_tx_ids: &ProcessedTxIds,
-) -> Result<RedeemInfos> {
+) -> Result<BtcOnEthRedeemInfos> {
     Ok(
-        RedeemInfos::new(
+        BtcOnEthRedeemInfos::new(
             &redeem_infos
                 .0
                 .iter()
                 .filter(|params| !processed_tx_ids.contains(&params.global_sequence))
                 .cloned()
-                .collect::<Vec<RedeemInfo>>()
+                .collect::<Vec<BtcOnEthRedeemInfo>>()
         )
     )
 }
