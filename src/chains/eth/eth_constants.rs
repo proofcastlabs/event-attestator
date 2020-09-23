@@ -15,9 +15,10 @@ pub const HIGH_NIBBLE_MASK: Byte = 15u8; // NOTE: 15u8 == [0,0,0,0,1,1,1,1]
 pub const NUM_BITS_IN_NIBBLE: usize = 4;
 pub const NUM_NIBBLES_IN_BYTE: usize = 2;
 pub const VALUE_FOR_MINTING_TX: usize = 0;
+pub static LEAF_NODE_STRING: &str = "leaf";
 pub const VALUE_FOR_PTOKEN_DEPLOY: usize = 0;
 pub const ETH_WORD_SIZE_IN_BYTES: usize = 32;
-pub static LEAF_NODE_STRING: &str = "leaf";
+pub const ETH_ADDRESS_SIZE_IN_BYTES: usize = 20;
 pub const GAS_LIMIT_FOR_MINTING_TX: usize = 120_000;
 pub static BRANCH_NODE_STRING: &str = "branch";
 pub const LOG_DATA_BTC_ADDRESS_START_INDEX: usize = 96;

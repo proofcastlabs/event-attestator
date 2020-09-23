@@ -211,7 +211,7 @@ impl EthReceipt {
             .logs
             .0
             .iter()
-            .filter(|log| matches!(log.is_ptoken_redeem(), Ok(true)))
+            .filter(|log| matches!(log.is_btc_on_eth_redeem(), Ok(true)))
             .map(|log|
                 Ok(BtcOnEthRedeemInfo::new(
                     log.get_btc_on_eth_redeem_amount()?,

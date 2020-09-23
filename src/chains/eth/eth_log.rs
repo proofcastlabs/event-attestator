@@ -24,6 +24,7 @@ use crate::{
         eth_receipt::EthReceiptJson,
         eth_constants::{
             ETH_WORD_SIZE_IN_BYTES,
+            ETH_ADDRESS_SIZE_IN_BYTES,
             ERC20_PEG_IN_EVENT_TOPIC_HEX,
             LOG_DATA_BTC_ADDRESS_START_INDEX,
             BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
@@ -54,6 +55,8 @@ pub struct EthLog {
     pub topics: Vec<EthHash>,
     pub data: Bytes,
 }
+
+pub const NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR: &str = "Not enough bytes in log data!";
 
 impl EthLog {
     pub fn from_json(log_json: &EthLogJson) -> Result<Self> {
@@ -102,7 +105,7 @@ impl EthLog {
         self.address == *address
     }
 
-    pub fn is_ptoken_redeem(&self) -> Result<bool> {
+    pub fn is_btc_on_eth_redeem(&self) -> Result<bool> {
         Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX)?[..]))
     }
 
@@ -110,15 +113,15 @@ impl EthLog {
         Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&ERC20_PEG_IN_EVENT_TOPIC_HEX)?[..]))
     }
 
-    fn check_is_pbtc_on_eth_peg_in(&self) -> Result<()> {
-        trace!("✔ Checking if log is a pToken redeem...");
-        match self.is_ptoken_redeem()? {
+    fn check_is_btc_on_eth_redeem(&self) -> Result<()> {
+        trace!("✔ Checking if log is a `btc_on_eth` redeem...");
+        match self.is_btc_on_eth_redeem()? {
             true => Ok(()),
             false => Err("✘ Log is not from a pToken redeem event!".into()),
         }
     }
 
-    fn check_is_perc20_peg_in(&self) -> Result<()> {
+    fn check_is_erc20_peg_in(&self) -> Result<()> {
         trace!("✔ Checking if log is a pERC20 peg in...");
         match self.is_perc20_peg_in()? {
             true => Ok(()),
@@ -127,7 +130,7 @@ impl EthLog {
     }
 
     pub fn get_btc_on_eth_redeem_amount(&self) -> Result<U256> {
-        self.check_is_pbtc_on_eth_peg_in()
+        self.check_is_btc_on_eth_redeem()
             .and_then(|_| {
                 info!("✔ Parsing redeem amount from log...");
                 if self.data.len() >= ETH_WORD_SIZE_IN_BYTES {
@@ -139,7 +142,7 @@ impl EthLog {
     }
 
     pub fn get_btc_on_eth_btc_redeem_address(&self) -> Result<String> {
-        self.check_is_pbtc_on_eth_peg_in()
+        self.check_is_btc_on_eth_redeem()
             .map(|_|{
                 info!("✔ Parsing BTC address from log...");
                 let default_address_error_string = format!("✔ Defaulting to safe BTC address: {}!", SAFE_BTC_ADDRESS);
@@ -163,6 +166,55 @@ impl EthLog {
                 }
             })
     }
+
+    pub fn get_erc20_on_eos_peg_in_amount(&self) -> Result<U256> {
+        self.check_is_erc20_peg_in()
+            .and_then(|_| {
+                info!("✔ Parsing `erc20-on-eos` peg in amount from log...");
+                let start_index = ETH_WORD_SIZE_IN_BYTES * 2;
+                let end_index = ETH_WORD_SIZE_IN_BYTES * 3;
+                match self.data.len() >= end_index {
+                    true => Ok(U256::from(&self.data[start_index..end_index])),
+                    false => Err(NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR.into()),
+                }
+            })
+    }
+
+    pub fn get_erc20_on_eos_peg_in_token_contract_address(&self) -> Result<EthAddress> {
+        self.check_is_erc20_peg_in()
+            .and_then(|_| {
+                info!("✔ Parsing `erc20-on-eos` peg in token contract address from log...");
+                let start_index = ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES;
+                let end_index = start_index + ETH_ADDRESS_SIZE_IN_BYTES;
+                match self.data.len() >= end_index {
+                    true => Ok(EthAddress::from_slice(&self.data[start_index..end_index])),
+                    false => Err(NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR.into()),
+                }
+            })
+    }
+
+    pub fn get_erc20_on_eos_peg_in_token_sender_address(&self) -> Result<EthAddress> {
+        self.check_is_erc20_peg_in()
+            .and_then(|_| {
+                info!("✔ Parsing `erc20-on-eos` peg in token sender address from log...");
+                let start_index = ETH_WORD_SIZE_IN_BYTES * 2 - ETH_ADDRESS_SIZE_IN_BYTES;
+                let end_index = start_index + ETH_ADDRESS_SIZE_IN_BYTES;
+                match self.data.len() >= end_index {
+                    true => Ok(EthAddress::from_slice(&self.data[start_index..end_index])),
+                    false => Err(NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR.into()),
+                }
+            })
+    }
+
+    pub fn get_erc20_on_eos_peg_in_eos_address(&self) -> Result<String> {
+        self.check_is_erc20_peg_in()
+            .and_then(|_| {
+                let start_index = ETH_WORD_SIZE_IN_BYTES * 5;
+                info!("✔ Parsing `erc20-on-eos` peg in EOS address from log...");
+                Ok(self.data[start_index..].iter().filter(|byte| *byte != &0u8).map(|byte| *byte as char).collect())
+            })
+    }
+
 }
 
 impl Encodable for EthLog {
@@ -207,6 +259,7 @@ mod tests {
         chains::eth::{
             eth_receipt::EthReceipt,
             eth_submission_material::EthSubmissionMaterial,
+            eth_test_utils::get_sample_log_with_erc20_peg_in_event,
         },
         btc_on_eth::eth::eth_test_utils::{
             get_expected_log,
@@ -368,13 +421,13 @@ mod tests {
 
     #[test]
     fn redeem_log_should_be_redeem() {
-        let result = get_sample_log_with_redeem().is_ptoken_redeem().unwrap();
+        let result = get_sample_log_with_redeem().is_btc_on_eth_redeem().unwrap();
         assert!(result);
     }
 
     #[test]
     fn non_redeem_log_should_not_be_redeem() {
-        let result =&get_sample_receipt_with_redeem().logs.0[1].is_ptoken_redeem().unwrap();
+        let result =&get_sample_receipt_with_redeem().logs.0[1].is_btc_on_eth_redeem().unwrap();
         assert!(!result);
     }
 
@@ -399,6 +452,59 @@ mod tests {
         let expected_result = "2MyT7cyDnsHFwkhGDJa3LhayYtPN3cSE7wx";
         let log = get_sample_log_with_p2sh_redeem();
         let result = log.get_btc_on_eth_btc_redeem_address().unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn check_is_erc20_peg_in_should_be_ok() {
+        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
+        let result = log.check_is_erc20_peg_in();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn erc20_log_with_peg_in_should_be_erc20_log_with_peg_in() {
+        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
+        let result = log.is_perc20_peg_in().unwrap();
+        assert!(result);
+    }
+
+    #[test]
+    fn erc20_log_with_peg_in_should_not_be_a_btc_on_eth_redeem() {
+        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
+        let result = log.is_btc_on_eth_redeem().unwrap();
+        assert!(!result);
+    }
+
+    #[test]
+    fn should_get_erc20_peg_in_amount() {
+        let expected_result = U256::from(1337);
+        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
+        let result = log.get_erc20_on_eos_peg_in_amount().unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_erc20_peg_in_token_contract_address() {
+        let expected_result = EthAddress::from_slice(&hex::decode("9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap());
+        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
+        let result = log.get_erc20_on_eos_peg_in_token_contract_address().unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_erc20_peg_in_token_sender_address() {
+        let expected_result = EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap());
+        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
+        let result = log.get_erc20_on_eos_peg_in_token_sender_address().unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_erc20_peg_in_eos_address() {
+        let expected_result = "aneosaddress";
+        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
+        let result = log.get_erc20_on_eos_peg_in_eos_address().unwrap();
         assert_eq!(result, expected_result);
     }
 }
