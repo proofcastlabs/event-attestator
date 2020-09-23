@@ -169,7 +169,7 @@ mod tests {
     use std::str::FromStr;
     use ethereum_types::U256;
     use crate::{
-        chains::eth::eth_constants::REDEEM_EVENT_TOPIC_HEX,
+        chains::eth::eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
         btc_on_eth::eth::eth_test_utils::{
             get_expected_block,
             get_expected_receipt,
@@ -269,7 +269,7 @@ mod tests {
         let block_and_receipts = get_sample_eth_submission_material_n(6).unwrap();
         let num_receipts_before = block_and_receipts.receipts.len();
         let address = EthAddress::from_slice(&hex::decode("74630cfbc4066726107a4efe73956e219bbb46ab").unwrap());
-        let topics = vec![EthHash::from_slice(&hex::decode(REDEEM_EVENT_TOPIC_HEX).unwrap()) ];
+        let topics = vec![EthHash::from_slice(&hex::decode(BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX).unwrap()) ];
         let result = block_and_receipts.filter_for_receipts_containing_log_with_address_and_topics(&address, &topics)
             .unwrap();
         let num_receipts_after = result.receipts.len();

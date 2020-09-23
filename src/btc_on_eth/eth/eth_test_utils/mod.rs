@@ -183,11 +183,8 @@ pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
     }
 }
 
-pub fn get_sample_eth_submission_material_n(
-    num: usize
-) -> Result<EthSubmissionMaterial> {
-    get_sample_eth_submission_material_string(num)
-        .and_then(|string| EthSubmissionMaterial::from_str(&string))
+pub fn get_sample_eth_submission_material_n(num: usize) -> Result<EthSubmissionMaterial> {
+    get_sample_eth_submission_material_string(num).and_then(|string| EthSubmissionMaterial::from_str(&string))
 }
 
 pub fn get_sample_receipt_n(

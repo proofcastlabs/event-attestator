@@ -23,9 +23,10 @@ use crate::{
     chains::eth::{
         eth_receipt::EthReceiptJson,
         eth_constants::{
-            REDEEM_EVENT_TOPIC_HEX,
             ETH_WORD_SIZE_IN_BYTES,
+            PERC20_PEG_IN_EVENT_TOPIC_HEX,
             LOG_DATA_BTC_ADDRESS_START_INDEX,
+            BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
         },
     },
     btc_on_eth::{
@@ -102,10 +103,14 @@ impl EthLog {
     }
 
     pub fn is_ptoken_redeem(&self) -> Result<bool> {
-        Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&REDEEM_EVENT_TOPIC_HEX)?[..]))
+        Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX)?[..]))
     }
 
-    fn check_is_ptoken_redeem(&self) -> Result<()> {
+    pub fn is_perc20_peg_in(&self) -> Result<bool> { // TODO Test!
+        Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&PERC20_PEG_IN_EVENT_TOPIC_HEX)?[..]))
+    }
+
+    fn check_is_pbtc_on_eth_peg_in(&self) -> Result<()> {
         trace!("✔ Checking if log is a pToken redeem...");
         match self.is_ptoken_redeem()? {
             true => Ok(()),
@@ -113,8 +118,16 @@ impl EthLog {
         }
     }
 
-    pub fn get_redeem_amount(&self) -> Result<U256> {
-        self.check_is_ptoken_redeem()
+    fn check_is_perc20_peg_in(&self) -> Result<()> {
+        trace!("✔ Checking if log is a pERC20 peg in...");
+        match self.is_perc20_peg_in()? {
+            true => Ok(()),
+            false => Err(AppError::Custom("✘ Log is not from a pERC20 peg in event!".to_string())),
+        }
+    }
+
+    pub fn get_btc_on_eth_redeem_amount(&self) -> Result<U256> {
+        self.check_is_pbtc_on_eth_peg_in()
             .and_then(|_| {
                 info!("✔ Parsing redeem amount from log...");
                 if self.data.len() >= ETH_WORD_SIZE_IN_BYTES {
@@ -125,8 +138,8 @@ impl EthLog {
             })
     }
 
-    pub fn get_btc_address(&self) -> Result<String> {
-        self.check_is_ptoken_redeem()
+    pub fn get_btc_on_eth_btc_redeem_address(&self) -> Result<String> {
+        self.check_is_pbtc_on_eth_peg_in()
             .map(|_|{
                 info!("✔ Parsing BTC address from log...");
                 let default_address_error_string = format!("✔ Defaulting to safe BTC address: {}!", SAFE_BTC_ADDRESS);
@@ -369,7 +382,7 @@ mod tests {
     fn should_parse_redeem_amount_from_log() {
         let expected_result = U256::from_dec_str("666").unwrap();
         let log = get_sample_log_with_redeem();
-        let result = log.get_redeem_amount().unwrap();
+        let result = log.get_btc_on_eth_redeem_amount().unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -377,7 +390,7 @@ mod tests {
     fn should_parse_btc_address_from_log() {
         let expected_result = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
         let log = get_sample_log_with_redeem();
-        let result = log.get_btc_address().unwrap();
+        let result = log.get_btc_on_eth_btc_redeem_address().unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -385,7 +398,7 @@ mod tests {
     fn should_parse_p2sh_btc_address_from_log() {
         let expected_result = "2MyT7cyDnsHFwkhGDJa3LhayYtPN3cSE7wx";
         let log = get_sample_log_with_p2sh_redeem();
-        let result = log.get_btc_address().unwrap();
+        let result = log.get_btc_on_eth_btc_redeem_address().unwrap();
         assert_eq!(result, expected_result);
     }
 }

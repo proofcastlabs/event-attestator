@@ -5,6 +5,7 @@ pub(crate) mod eth_log;
 pub(crate) mod eth_state;
 pub(crate) mod eth_block;
 pub(crate) mod eth_types;
+pub(crate) mod test_utils;
 pub(crate) mod path_codec;
 pub(crate) mod any_sender;
 pub(crate) mod trie_nodes;

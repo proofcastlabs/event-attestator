@@ -213,7 +213,12 @@ impl EthReceipt {
             .iter()
             .filter(|log| matches!(log.is_ptoken_redeem(), Ok(true)))
             .map(|log|
-                Ok( RedeemInfo::new(log.get_redeem_amount()?, self.from, log.get_btc_address()?, self.transaction_hash))
+                Ok(RedeemInfo::new(
+                    log.get_btc_on_eth_redeem_amount()?,
+                    self.from,
+                    log.get_btc_on_eth_btc_redeem_address()?,
+                    self.transaction_hash
+                ))
             )
             .collect()
     }
