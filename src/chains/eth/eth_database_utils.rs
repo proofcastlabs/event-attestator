@@ -37,6 +37,7 @@ use crate::{
             ETH_CANON_TO_TIP_LENGTH_KEY,
             ETH_SMART_CONTRACT_ADDRESS_KEY,
             ERC777_PROXY_CONTACT_ADDRESS_KEY,
+            ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY,
         },
     },
     btc_on_eth::utils::{ // TODO move this to chains/eth dir!
@@ -508,6 +509,14 @@ pub fn get_erc777_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
 {
     trace!("✔ Getting ETH smart-contract address from db...");
     db.get(ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+        .map(|address_bytes| EthAddress::from_slice(&address_bytes[..]))
+}
+
+pub fn get_erc20_on_eos_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
+    where D: DatabaseInterface
+{
+    trace!("✔ Getting pERC20 on EOS smart-contract address from db...");
+    db.get(ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .map(|address_bytes| EthAddress::from_slice(&address_bytes[..]))
 }
 

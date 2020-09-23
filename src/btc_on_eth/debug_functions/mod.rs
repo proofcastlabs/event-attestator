@@ -16,7 +16,7 @@ use crate::{
     chains::{
         eth::{
             validate_block_in_state::validate_block_in_state,
-            filter_receipts_in_state::filter_irrelevant_receipts_from_state,
+            filter_receipts_in_state::filter_receipts_for_btc_on_eth_redeem_events_in_state,
             eth_database_transactions::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
@@ -221,7 +221,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
-        .and_then(filter_irrelevant_receipts_from_state)
+        .and_then(filter_receipts_for_btc_on_eth_redeem_events_in_state)
         .and_then(|state| {
             state
                 .get_eth_submission_material()

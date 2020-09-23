@@ -25,8 +25,8 @@ pub const GAS_LIMIT_FOR_PTOKEN_DEPLOY: usize = 4_000_000;
 pub static EXTENSION_NODE_STRING: &str = "extension";
 pub const HASHED_NULL_NODE: EthHash = EthHash(HASHED_NULL_NODE_BYTES);
 pub const EMPTY_NIBBLES: Nibbles = Nibbles { data: Vec::new(), offset: 0 };
-pub static PERC20_PEG_IN_EVENT_TOPIC_HEX: &str = "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
-pub static BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX: &str = "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65";
+pub const ERC20_PEG_IN_EVENT_TOPIC_HEX: &str = "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
+pub const BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX: &str = "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65";
 pub const ETH_MESSAGE_PREFIX: &[u8; 26] = b"\x19Ethereum Signed Message:\n";
 pub const PREFIXED_MESSAGE_HASH_LEN: &[u8; 2] = b"32";
 pub const ETH_MAINNET_CHAIN_ID: u8 = 1;
@@ -34,10 +34,20 @@ pub const ETH_ROPSTEN_CHAIN_ID: u8 = 3;
 
 #[cfg(not(test))]
 lazy_static! {
-    pub static ref PTOKEN_CONTRACT_TOPICS: [EthHash; 1] = {
+    pub static ref BTC_ON_ETH_REDEEM_EVENT_TOPIC: [EthHash; 1] = {
         [
             EthHash::from_slice(&hex::decode(
                 BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX
+            ).expect("✘ Invalid hex in BTC_ON_ETH_REDEEM_EVENT_TOPIC")),
+        ]
+    };
+}
+
+lazy_static! {
+    pub static ref ERC20_ON_EOS_PEG_IN_EVENT_TOPIC: [EthHash; 1] = {
+        [
+            EthHash::from_slice(&hex::decode(
+                ERC20_PEG_IN_EVENT_TOPIC_HEX
             ).expect("✘ Invalid hex in PTOKEN_CONTRACT_TOPIC!")),
         ]
     };
@@ -45,7 +55,7 @@ lazy_static! {
 
 #[cfg(test)]
 lazy_static! {
-    pub static ref PTOKEN_CONTRACT_TOPICS: [EthHash; 1] = {
+    pub static ref BTC_ON_ETH_REDEEM_EVENT_TOPIC: [EthHash; 1] = {
         [
             EthHash::from_slice(&hex::decode(
             "fc62a6078634cc3b00bff541ac549ba6bfed8678765289f88f61e22c668198ba"
@@ -79,6 +89,8 @@ pub fn get_eth_constants_db_keys() -> JsonValue {
             hex::encode(ETH_ACCOUNT_NONCE_KEY.to_vec()),
         "ETH_SMART_CONTRACT_ADDRESS_KEY":
             hex::encode(ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
         "ETH_ADDRESS_KEY":
             hex::encode(ETH_ADDRESS_KEY.to_vec()),
         "ETH_PRIVATE_KEY_DB_KEY":
@@ -141,6 +153,12 @@ lazy_static! {
 lazy_static! {
     pub static ref ETH_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key(
         "eth-smart-contract"
+    );
+}
+
+lazy_static! {
+    pub static ref ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key(
+        "erc20-on-eos-smart-contract-address-key"
     );
 }
 

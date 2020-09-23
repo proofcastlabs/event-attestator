@@ -24,7 +24,7 @@ use crate::{
         eth_receipt::EthReceiptJson,
         eth_constants::{
             ETH_WORD_SIZE_IN_BYTES,
-            PERC20_PEG_IN_EVENT_TOPIC_HEX,
+            ERC20_PEG_IN_EVENT_TOPIC_HEX,
             LOG_DATA_BTC_ADDRESS_START_INDEX,
             BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
         },
@@ -107,7 +107,7 @@ impl EthLog {
     }
 
     pub fn is_perc20_peg_in(&self) -> Result<bool> { // TODO Test!
-        Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&PERC20_PEG_IN_EVENT_TOPIC_HEX)?[..]))
+        Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&ERC20_PEG_IN_EVENT_TOPIC_HEX)?[..]))
     }
 
     fn check_is_pbtc_on_eth_peg_in(&self) -> Result<()> {

@@ -7,7 +7,6 @@ use crate::{
         validate_receipts_in_state::validate_receipts_in_state,
         check_parent_exists::check_for_parent_of_block_in_state,
         parse_redeem_infos::maybe_parse_redeem_infos_and_add_to_state,
-        filter_receipts_in_state::filter_irrelevant_receipts_from_state,
         filter_redeem_infos_in_state::maybe_filter_redeem_infos_in_state,
         update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
         update_latest_block_hash::maybe_update_latest_block_hash_and_return_state,
@@ -16,6 +15,7 @@ use crate::{
         parse_eth_submission_material::parse_eth_submission_material_and_put_in_state,
         update_eth_canon_block_hash::maybe_update_eth_canon_block_hash_and_return_state,
         add_block_and_receipts_to_db::maybe_add_block_and_receipts_to_db_and_return_state,
+        filter_receipts_in_state::filter_receipts_for_erc20_on_eos_peg_in_events_in_state,
         remove_receipts_from_canon_block::maybe_remove_receipts_from_canon_block_and_return_state,
         eth_database_transactions::{
             end_eth_db_transaction_and_return_state,
@@ -52,7 +52,7 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
-        .and_then(check_for_parent_of_block_in_state) // TODO
+        .and_then(check_for_parent_of_block_in_state)
         .and_then(validate_receipts_in_state)
         .and_then(filter_irrelevant_receipts_from_state) // TODO this needs to work with ERC20 stuff now!
         .and_then(maybe_add_block_and_receipts_to_db_and_return_state)
