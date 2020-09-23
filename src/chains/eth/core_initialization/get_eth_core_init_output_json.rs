@@ -44,7 +44,7 @@ fn json_stringify(output: EthInitializationOutput) -> Result<String> {
     }
 }
 
-pub fn get_eth_init_output_json<D>(state: EthState<D>) -> Result<String> where D: DatabaseInterface {
+pub fn get_eth_core_init_output_json<D>(state: EthState<D>) -> Result<String> where D: DatabaseInterface {
     EthInitializationOutput::new(
         format!("0x{}", hex::encode(get_public_eth_address_from_db(&state.db)?.as_bytes())),
         get_latest_eth_block_number(&state.db)?,

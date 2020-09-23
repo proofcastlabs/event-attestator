@@ -3,7 +3,7 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::{
         eth_state::EthState,
-        check_eth_core_is_initialized::is_eth_core_initialized,
+        core_initialization::check_eth_core_is_initialized::is_eth_core_initialized,
     },
     btc_on_eth::btc::{
         btc_state::BtcState,

@@ -1,4 +1,3 @@
-pub mod initialize_eth;
 pub mod submit_eth_block;
 
 pub(crate) mod eth_test_utils;

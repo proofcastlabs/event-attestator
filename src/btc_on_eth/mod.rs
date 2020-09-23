@@ -29,7 +29,7 @@ pub use debug_functions::{
 };
 pub use btc::submit_btc_block::submit_btc_block_to_enclave;
 pub use eth::submit_eth_block::submit_eth_block_to_enclave;
-pub use eth::initialize_eth::initialize_eth_enclave::{
+pub use crate::chains::eth::core_initialization::initialize_eth_enclave::{
     maybe_initialize_eth_enclave,
 };
 pub use btc::initialize_btc::initialize_btc_enclave::{

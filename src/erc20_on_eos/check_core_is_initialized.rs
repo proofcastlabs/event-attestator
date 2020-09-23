@@ -5,7 +5,7 @@ use crate::{
         eos::check_eos_core_is_initialized::is_eos_core_initialized,
         eth::{
             eth_state::EthState,
-            check_eth_core_is_initialized::is_eth_core_initialized,
+            core_initialization::check_eth_core_is_initialized::is_eth_core_initialized,
         },
     },
 };
