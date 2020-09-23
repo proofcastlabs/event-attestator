@@ -22,11 +22,13 @@ use crate::{
             start_eth_db_transaction_and_return_state,
         },
     },
+    erc20_on_eos::{
+        eth::get_eth_output_json::get_eth_output_json,
+        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
+    },
     /*
     btc_on_eth::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
-            get_eth_output_json::get_eth_output_json,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db_and_return_state,
             increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
@@ -47,7 +49,7 @@ use crate::{
 pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting ETH block to enclave...");
     parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
-        //.and_then(check_core_is_initialized_and_return_eth_state) // TODO
+        .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
         .and_then(check_for_parent_of_block_in_state) // TODO
