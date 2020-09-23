@@ -21,6 +21,7 @@ pub use traits::DatabaseInterface;
 
 pub mod types;
 pub mod traits;
+pub mod chains;
 pub mod errors;
 pub mod btc_on_eth;
 pub mod btc_on_eos;
@@ -28,7 +29,6 @@ pub mod erc20_on_eos;
 
 mod utils;
 mod base58;
-mod chains;
 mod constants;
 mod crypto_utils;
 mod database_utils;

@@ -1,3 +1,4 @@
+//! # The pToken error enum.
 quick_error! {
     #[derive(Debug)]
     pub enum AppError {
