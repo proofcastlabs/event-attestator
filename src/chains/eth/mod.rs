@@ -38,4 +38,5 @@ pub(crate) mod update_eth_canon_block_hash;
 pub(crate) mod add_block_and_receipts_to_db;
 pub(crate) mod filter_redeem_infos_in_state;
 pub(crate) mod parse_eth_submission_material;
+pub(crate) mod check_eth_core_is_initialized;
 pub(crate) mod remove_receipts_from_canon_block;

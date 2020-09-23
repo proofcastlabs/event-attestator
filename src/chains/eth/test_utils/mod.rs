@@ -9,8 +9,7 @@ use crate::{
     },
 };
 
-pub const PERC20_SUBMISSION_MATERIAL_1: &str =
-    "src/erc20_on_eos/eth/eth_test_utils/eth-block-10828316-with-dai-transfer-event.json";
+pub const PERC20_SUBMISSION_MATERIAL_1: &str = "src/erc20_on_eos/eth/eth_test_utils/eth-block-10828316-with-dai-transfer-event.json";
 
 pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
     let path = match num {

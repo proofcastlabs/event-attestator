@@ -3,6 +3,7 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::{
         eth_state::EthState,
+        check_eth_core_is_initialized::is_eth_core_initialized,
         parse_eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::validate_block_in_state as validate_eth_block_in_state,
         eth_database_transactions::{
@@ -12,7 +13,6 @@ use crate::{
     },
     btc_on_eth::eth::{
         initialize_eth::{
-            is_eth_initialized::is_eth_enclave_initialized,
             get_eth_init_output_json::get_eth_init_output_json,
             generate_eth_address::generate_and_store_eth_address,
             generate_eth_private_key::generate_and_store_eth_private_key,
@@ -49,7 +49,7 @@ pub fn maybe_initialize_eth_enclave<D>(
     check_for_existence_of_eth_contract_byte_code(&bytecode_path)
         .map(|_| EthState::init(db))
         .and_then(|state|
-            match is_eth_enclave_initialized(&state.db) {
+            match is_eth_core_initialized(&state.db) {
                 true => {
                     info!("✔ ETH Enclave already initialized!");
                     Ok("{eth_enclave_initialized:true}".to_string())
