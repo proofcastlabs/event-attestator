@@ -18,6 +18,7 @@ pub(crate) mod nibble_utils;
 pub(crate) mod eth_metadata;
 pub(crate) mod eth_constants;
 pub(crate) mod eth_contracts;
+pub(crate) mod eth_test_utils;
 pub(crate) mod get_linker_hash;
 pub(crate) mod eth_crypto_utils;
 pub(crate) mod get_trie_hash_map;
