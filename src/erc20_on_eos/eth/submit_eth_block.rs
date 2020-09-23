@@ -54,7 +54,7 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(validate_block_in_state)
         .and_then(check_for_parent_of_block_in_state)
         .and_then(validate_receipts_in_state)
-        .and_then(filter_irrelevant_receipts_from_state) // TODO this needs to work with ERC20 stuff now!
+        .and_then(filter_receipts_for_erc20_on_eos_peg_in_events_in_state)
         .and_then(maybe_add_block_and_receipts_to_db_and_return_state)
         .and_then(maybe_update_latest_block_hash_and_return_state)
         .and_then(maybe_update_eth_canon_block_hash_and_return_state)
@@ -67,6 +67,5 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)
         .and_then(maybe_remove_receipts_from_canon_block_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)
-        //.and_then(get_eth_output_json) // TODO make work for EOS
-        .map(|_| "fin".to_string())
+        .and_then(get_eth_output_json) // TODO this is currently a stub!
 }
