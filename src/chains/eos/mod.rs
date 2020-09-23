@@ -19,4 +19,5 @@ pub(crate) mod parse_submission_material;
 pub(crate) mod increment_signature_nonce;
 pub(crate) mod parse_eos_action_receipts;
 pub(crate) mod extract_utxos_from_btc_txs;
+pub(crate) mod check_eos_core_is_initialized;
 pub(crate) mod add_global_sequences_to_processed_list;
