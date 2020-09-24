@@ -6,13 +6,12 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
         check_parent_exists::check_for_parent_of_block_in_state,
-        //parse_redeem_infos::maybe_parse_redeem_infos_and_add_to_state,
-        //filter_redeem_infos_in_state::maybe_filter_redeem_infos_in_state,
         update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
         update_latest_block_hash::maybe_update_latest_block_hash_and_return_state,
         remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
         update_eth_tail_block_hash::maybe_update_eth_tail_block_hash_and_return_state,
         parse_eth_submission_material::parse_eth_submission_material_and_put_in_state,
+        increment_eos_account_nonce::maybe_increment_eos_account_nonce_and_return_state,
         update_eth_canon_block_hash::maybe_update_eth_canon_block_hash_and_return_state,
         add_block_and_receipts_to_db::maybe_add_block_and_receipts_to_db_and_return_state,
         filter_receipts_in_state::filter_receipts_for_erc20_on_eos_peg_in_events_in_state,
@@ -29,17 +28,6 @@ use crate::{
             parse_peg_in_info::maybe_parse_peg_in_info_and_add_to_state,
         },
     },
-    /*
-    btc_on_eth::{
-        eth::{
-            create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
-            save_btc_utxos_to_db::maybe_save_btc_utxos_to_db_and_return_state,
-            increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
-            extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
-            parse_eth_submission_material::parse_eth_submission_material_and_put_in_state,
-        },
-    },
-    */
 };
 
 /// # Submit ETH Block to Enclave
@@ -64,9 +52,8 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_update_eth_tail_block_hash_and_return_state)
         .and_then(maybe_update_eth_linker_hash_and_return_state)
         .and_then(maybe_parse_peg_in_info_and_add_to_state)
-        //.and_then(maybe_filter_redeem_infos_in_state) // TODO!
         //.and_then(maybe_create_btc_txs_and_add_to_state) // TODO need the EOS tx types here!
-        //.and_then(maybe_increment_btc_nonce_in_db_and_return_state) // TODO need the EOS nonce increasing here!
+        .and_then(maybe_increment_eos_account_nonce_and_return_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)
         .and_then(maybe_remove_receipts_from_canon_block_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)
