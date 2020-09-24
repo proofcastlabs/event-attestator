@@ -68,7 +68,9 @@ mod tests {
 
     #[test]
     fn should_maybe_initialize_simple_logger() {
-        if option_env!("ENABLE_LOGGING").is_some() { simple_logger::init().unwrap() };
+        if option_env!("ENABLE_LOGGING").is_some() {
+            simple_logger::SimpleLogger::new().init().unwrap();
+        };
         debug!("Test logging enabled!");
     }
 

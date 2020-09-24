@@ -1,8 +1,3 @@
-#![recursion_limit="128"]
-
-#![allow(clippy::match_bool)]
-#![allow(clippy::too_many_arguments)]
-
 //! # The __`pToken`__ Core
 //!
 //! Herein lies the functionality required for the cross-chain conversions
@@ -13,6 +8,9 @@
 //! variable __`DB_KEY_PREFIX`__, which when used will prefix all database keys
 //! with the provided argument. Via this, database key clashes can be avoided
 //! if running multiple instances on one machine.
+
+#![allow(clippy::match_bool)]
+#![allow(clippy::too_many_arguments)]
 
 pub use types::{
     Bytes,

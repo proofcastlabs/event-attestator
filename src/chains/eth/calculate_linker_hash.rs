@@ -7,13 +7,15 @@ use crate::{
 pub fn calculate_linker_hash(
     block_hash_to_link_to: EthHash,
     anchor_block_hash: EthHash,
-    linker_hash: EthHash
+    linker_hash: EthHash,
 ) -> EthHash {
-    let mut data = Vec::new();
-    convert_h256_to_bytes(block_hash_to_link_to).iter().cloned().map(|byte| data.push(byte)).for_each(drop);
-    convert_h256_to_bytes(anchor_block_hash).iter().cloned().map(|byte| data.push(byte)).for_each(drop);
-    convert_h256_to_bytes(linker_hash).iter().cloned().map(|byte| data.push(byte)).for_each(drop);
-    EthHash::from(keccak256(data.as_slice()))
+    let data = [
+        convert_h256_to_bytes(block_hash_to_link_to),
+        convert_h256_to_bytes(anchor_block_hash),
+        convert_h256_to_bytes(linker_hash),
+    ]
+    .concat();
+    EthHash::from(keccak256(&data))
 }
 
 #[cfg(test)]

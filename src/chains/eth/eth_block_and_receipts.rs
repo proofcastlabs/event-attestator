@@ -7,7 +7,6 @@ use ethereum_types::{
     Address as EthAddress,
 };
 use crate::{
-    errors::AppError,
     types::{
         Byte,
         Bytes,
@@ -113,7 +112,7 @@ impl EthBlockAndReceipts {
     }
 
     pub fn remove_receipts(&self) -> Self {
-        EthBlockAndReceipts { block: self.block.clone(), receipts: EthReceipts::new_empty() }
+        EthBlockAndReceipts { block: self.block.clone(), receipts: vec![].into() }
     }
 }
 
@@ -127,7 +126,7 @@ impl EthBlockAndReceiptsJson {
     pub fn from_str(json_str: &str) -> Result<Self> {
         match serde_json::from_str(&json_str) {
             Ok(result) => Ok(result),
-            Err(e) => Err(AppError::Custom(e.to_string()))
+            Err(e) => Err(e.into())
         }
     }
 }
