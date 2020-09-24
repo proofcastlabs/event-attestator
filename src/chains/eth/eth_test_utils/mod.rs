@@ -57,7 +57,7 @@ pub fn get_sample_log_with_erc20_peg_in_event() -> Result<EthLog> {
     get_sample_log_n(0, 17, 1)
 }
 
-pub fn get_expected_erc20_on_eos_peg_in_info() -> Result<Erc20OnEosPegInInfo> {
+pub fn get_sample_erc20_on_eos_peg_in_info() -> Result<Erc20OnEosPegInInfo> {
     Ok(Erc20OnEosPegInInfo::new(
         U256::from(1337),
         EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
@@ -69,6 +69,6 @@ pub fn get_expected_erc20_on_eos_peg_in_info() -> Result<Erc20OnEosPegInInfo> {
     ))
 }
 
-pub fn get_expected_erc20_on_eos_peg_in_infos() -> Result<Erc20OnEosPegInInfos> {
-    Ok(Erc20OnEosPegInInfos::new(&[get_expected_erc20_on_eos_peg_in_info()?]))
+pub fn get_sample_erc20_on_eos_peg_in_infos() -> Result<Erc20OnEosPegInInfos> {
+    Ok(Erc20OnEosPegInInfos::new(&[get_sample_erc20_on_eos_peg_in_info()?]))
 }

@@ -7,6 +7,10 @@ use crate::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eth::eth_submission_material::EthSubmissionMaterial,
     },
+    erc20_on_eos::eth::peg_in_info::{
+        Erc20OnEosPegInInfo,
+        Erc20OnEosPegInInfos,
+    },
     btc_on_eth::{
         btc::btc_types::BtcTransactions,
         utils::{
@@ -20,8 +24,9 @@ use crate::{
 pub struct EthState<D: DatabaseInterface> {
     pub db: D,
     pub misc: Option<String>,
-    pub btc_on_eth_redeem_infos: BtcOnEthRedeemInfos,
     pub btc_transactions: Option<BtcTransactions>,
+    pub btc_on_eth_redeem_infos: BtcOnEthRedeemInfos,
+    pub erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
 }
@@ -34,7 +39,8 @@ impl<D> EthState<D> where D: DatabaseInterface {
             btc_transactions: None,
             btc_utxos_and_values: None,
             eth_submission_material: None,
-            btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(&vec![]),
+            btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(&[]),
+            erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos::new(&[]),
         }
     }
 
@@ -54,8 +60,19 @@ impl<D> EthState<D> where D: DatabaseInterface {
         self.replace_btc_on_eth_redeem_infos(BtcOnEthRedeemInfos::new(&new_infos))
     }
 
+    pub fn add_erc20_on_eos_peg_in_infos(self, mut infos: Erc20OnEosPegInInfos) -> Result<EthState<D>> {
+        let mut new_infos = self.erc20_on_eos_peg_in_infos.clone().0;
+        new_infos.append(&mut infos.0);
+        self.replace_erc20_on_eos_peg_in_infos(Erc20OnEosPegInInfos::new(&new_infos))
+    }
+
     pub fn replace_btc_on_eth_redeem_infos(mut self, replacements: BtcOnEthRedeemInfos) -> Result<EthState<D>> {
         self.btc_on_eth_redeem_infos = replacements;
+        Ok(self)
+    }
+
+    pub fn replace_erc20_on_eos_peg_in_infos(mut self, replacements: Erc20OnEosPegInInfos) -> Result<EthState<D>> {
+        self.erc20_on_eos_peg_in_infos = replacements;
         Ok(self)
     }
 
@@ -122,6 +139,9 @@ mod tests {
     use crate::{
         errors::AppError,
         test_utils::get_test_database,
+        chains::eth::eth_test_utils::{
+            get_sample_erc20_on_eos_peg_in_infos
+        },
         btc_on_eth::eth::eth_test_utils::{
             get_expected_block,
             get_expected_receipt,
@@ -198,5 +218,18 @@ mod tests {
         let state = get_valid_state_with_block_and_receipts().unwrap();
         let result = state.get_parent_hash().unwrap();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_add_erc20_on_eos_peg_in_info() {
+        let info = get_sample_erc20_on_eos_peg_in_infos().unwrap();
+        let state = get_valid_state_with_block_and_receipts().unwrap();
+        let new_state = state.add_erc20_on_eos_peg_in_infos(info.clone()).unwrap();
+        let mut len = new_state.erc20_on_eos_peg_in_infos.len();
+        assert_eq!(len, 1);
+        let final_state = new_state.add_erc20_on_eos_peg_in_infos(info).unwrap();
+        len = final_state.erc20_on_eos_peg_in_infos.len();
+        assert_eq!(len, 2);
+
     }
 }

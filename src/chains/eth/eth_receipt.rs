@@ -268,7 +268,7 @@ mod tests {
         chains::eth::{
             eth_submission_material::EthSubmissionMaterial,
             eth_test_utils::{
-                get_expected_erc20_on_eos_peg_in_info,
+                get_sample_erc20_on_eos_peg_in_info,
                 get_sample_receipt_with_erc20_peg_in_event,
             },
         },
@@ -452,7 +452,7 @@ mod tests {
     #[test]
     fn should_get_get_erc20_redeem_infos_from_receipt() {
         let expected_num_results = 1;
-        let expected_result = get_expected_erc20_on_eos_peg_in_info().unwrap();
+        let expected_result = get_sample_erc20_on_eos_peg_in_info().unwrap();
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
         let result = receipt.get_erc20_on_eos_peg_in_infos().unwrap();
         assert_eq!(result.len(), expected_num_results);
