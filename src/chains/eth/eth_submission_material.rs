@@ -17,6 +17,10 @@ use crate::{
         BtcOnEthRedeemInfo,
         BtcOnEthRedeemInfos,
     },
+    erc20_on_eos::eth::peg_in_info::{
+        Erc20OnEosPegInInfo,
+        Erc20OnEosPegInInfos,
+    },
     chains::eth::{
         eth_block::{
             EthBlock,
@@ -136,19 +140,20 @@ impl EthSubmissionMaterial {
         ))
     }
 
-    /* TODO
-    pub fn get_erc20_on_eos_redeem_infos(&self) -> Result<Erc20OnEosRedeemInfos> {
-        info!("✔ Getting `erc20-on-eos` redeem infos from submission material...");
-        Ok(BtcOnEthRedeemInfos::new(
+    pub fn get_erc20_on_eos_peg_in_infos(&self) -> Result<Erc20OnEosPegInInfos> {
+        info!("✔ Getting `erc20-on-eos` peg in infos from submission material...");
+        Ok(Erc20OnEosPegInInfos::new(
             &self
                 .get_receipts()
                 .iter()
-                .map(|receipt| receipt.get_erc20_on_eos_redeem_infos())
-                .collect::<Result<Vec<Vec<Erc20OnEosRedeemInfo>>>>()?
+                .map(|receipt| receipt.get_erc20_on_eos_peg_in_infos())
+                .collect::<Result<Vec<Erc20OnEosPegInInfos>>>()?
+                .iter()
+                .map(|infos| infos.0.clone()) // FIXME: There is very likely a better way to do this!
+                .collect::<Vec<Vec<Erc20OnEosPegInInfo>>>()
                 .concat()
         ))
     }
-    */
 
     pub fn remove_receipts(&self) -> Self {
         EthSubmissionMaterial {
@@ -183,7 +188,13 @@ mod tests {
     use std::str::FromStr;
     use ethereum_types::U256;
     use crate::{
-        chains::eth::eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
+        chains::eth::{
+            eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
+            eth_test_utils::{
+                get_expected_erc20_on_eos_peg_in_infos,
+                get_sample_submission_material_with_erc20_peg_in_event,
+            },
+        },
         btc_on_eth::eth::eth_test_utils::{
             get_expected_block,
             get_expected_receipt,
@@ -339,5 +350,15 @@ mod tests {
         let result = block_and_receipts.remove_receipts();
         let num_receipts_after = result.receipts.len();
         assert_eq!(num_receipts_after, 0);
+    }
+
+    #[test]
+    fn should_get_erc20_on_eos_peg_in_infos() {
+        let expected_num_results = 1;
+        let submission_material = get_sample_submission_material_with_erc20_peg_in_event().unwrap();
+        let expected_result = get_expected_erc20_on_eos_peg_in_infos().unwrap();
+        let result = submission_material.get_erc20_on_eos_peg_in_infos().unwrap();
+        assert_eq!(result.len(), expected_num_results);
+        assert_eq!(result, expected_result);
     }
 }
