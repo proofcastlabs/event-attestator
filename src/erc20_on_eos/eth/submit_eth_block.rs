@@ -23,8 +23,11 @@ use crate::{
         },
     },
     erc20_on_eos::{
-        eth::get_eth_output_json::get_eth_output_json,
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
+        eth::{
+            get_eth_output_json::get_eth_output_json,
+            parse_peg_in_info::maybe_parse_peg_in_info_and_add_to_state,
+        },
     },
     /*
     btc_on_eth::{
@@ -60,7 +63,7 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_update_eth_canon_block_hash_and_return_state)
         .and_then(maybe_update_eth_tail_block_hash_and_return_state)
         .and_then(maybe_update_eth_linker_hash_and_return_state)
-        //.and_then(maybe_parse_redeem_infos_and_add_to_state) // TODO This needs a type inside that'll parse the correct redeem params!
+        .and_then(maybe_parse_peg_in_info_and_add_to_state)
         //.and_then(maybe_filter_redeem_infos_in_state) // TODO!
         //.and_then(maybe_create_btc_txs_and_add_to_state) // TODO need the EOS tx types here!
         //.and_then(maybe_increment_btc_nonce_in_db_and_return_state) // TODO need the EOS nonce increasing here!
