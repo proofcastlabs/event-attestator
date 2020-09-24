@@ -25,6 +25,10 @@ use crate::{
         Result,
     },
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfo,
+    erc20_on_eos::eth::peg_in_info::{
+        Erc20OnEosPegInInfo,
+        Erc20OnEosPegInInfos,
+    },
     chains::eth::{
         eth_log::{
             EthLogs,
@@ -222,6 +226,27 @@ impl EthReceipt {
             )
             .collect()
     }
+
+    pub fn get_erc20_on_eos_peg_in_infos(&self) -> Result<Erc20OnEosPegInInfos> {
+        info!("✔ Getting `erc20-on-eos` peg in infos from receipt...");
+        Ok(Erc20OnEosPegInInfos::new(
+            &self
+                .logs
+                .0
+                .iter()
+                .filter(|log| matches!(log.is_perc20_peg_in(), Ok(true)))
+                .map(|log|
+                    Ok(Erc20OnEosPegInInfo::new(
+                        log.get_erc20_on_eos_peg_in_amount()?,
+                        log.get_erc20_on_eos_peg_in_token_sender_address()?,
+                        log.get_erc20_on_eos_peg_in_token_contract_address()?,
+                        log.get_erc20_on_eos_peg_in_eos_address()?,
+                        self.transaction_hash,
+                    ))
+                )
+                .collect::<Result<Vec<Erc20OnEosPegInInfo>>>()?
+        ))
+    }
 }
 
 impl Encodable for EthReceipt {
@@ -240,7 +265,13 @@ mod tests {
     use super::*;
     use std::str::FromStr;
     use crate::{
-        chains::eth::eth_submission_material::EthSubmissionMaterial,
+        chains::eth::{
+            eth_submission_material::EthSubmissionMaterial,
+            eth_test_utils::{
+                get_expected_erc20_on_eos_peg_in_info,
+                get_sample_receipt_with_erc20_peg_in_event,
+            },
+        },
         btc_on_eth::eth::eth_test_utils::{
             get_expected_receipt,
             SAMPLE_RECEIPT_INDEX,
@@ -416,5 +447,15 @@ mod tests {
         let result = get_sample_receipt_with_redeem().get_btc_on_eth_redeem_infos().unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result[0], get_expected_redeem_params());
+    }
+
+    #[test]
+    fn should_get_get_erc20_redeem_infos_from_receipt() {
+        let expected_num_results = 1;
+        let expected_result = get_expected_erc20_on_eos_peg_in_info().unwrap();
+        let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
+        let result = receipt.get_erc20_on_eos_peg_in_infos().unwrap();
+        assert_eq!(result.len(), expected_num_results);
+        assert_eq!(result.0[0], expected_result);
     }
 }
