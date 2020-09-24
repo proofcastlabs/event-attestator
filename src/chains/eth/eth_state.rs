@@ -24,6 +24,7 @@ use crate::{
 pub struct EthState<D: DatabaseInterface> {
     pub db: D,
     pub misc: Option<String>,
+    pub eos_transactions: Option<Vec<usize>>, // TODO update to real type!
     pub btc_transactions: Option<BtcTransactions>,
     pub btc_on_eth_redeem_infos: BtcOnEthRedeemInfos,
     pub erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos,
@@ -37,6 +38,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
             db,
             misc: None,
             btc_transactions: None,
+            eos_transactions: None,
             btc_utxos_and_values: None,
             eth_submission_material: None,
             btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(&[]),
@@ -130,6 +132,13 @@ impl<D> EthState<D> where D: DatabaseInterface {
 
     pub fn get_parent_hash(&self) -> Result<EthHash> {
         Ok(self.get_eth_submission_material()?.block.parent_hash)
+    }
+
+    pub fn get_num_eos_txs(&self) -> usize {
+        match  self.eos_transactions {
+            None => 0,
+            Some(ref txs) => txs.len(),
+        }
     }
 }
 
