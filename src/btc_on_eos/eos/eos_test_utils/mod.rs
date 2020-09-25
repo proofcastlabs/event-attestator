@@ -190,11 +190,12 @@ impl EosInitAndSubsequentBlocksJson {
     }
 
     pub fn get_block_json_n(&self, n: usize) -> Result<EosBlockHeaderJson> {
-        self.check_n(n)
-            .map(|_| match n == 1 {
-                true => self.init_block.block.clone(),
-                false => self.subsequent_blocks[n - 2].block_header.clone(),
-            })
+        self.check_n(n)?;
+        Ok(if n == 1 {
+            self.init_block.block.clone()
+        } else {
+            self.subsequent_blocks[n - 2].block_header.clone()
+        })
     }
 
     pub fn get_block_n(&self, n: usize) -> Result<EosBlockHeader> {

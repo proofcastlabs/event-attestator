@@ -3,6 +3,11 @@ use ethereum_types::{
     H256 as EthHash,
     Address as EthAddress,
 };
+use derive_more::{
+    Constructor,
+    Deref,
+    IntoIterator,
+};
 use crate::{
     types::Result,
     btc_on_eth::btc::btc_types::{
@@ -25,32 +30,26 @@ impl RedeemInfo {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]
 pub struct RedeemInfos(pub Vec<RedeemInfo>);
 
 impl RedeemInfos {
-    pub fn new(redeem_infos: Vec<RedeemInfo>) -> Self {
-        Self(redeem_infos)
-    }
-
     pub fn sum(&self) -> u64 {
-        self.0.iter().map(|params| params.amount.as_u64()).sum()
-    }
-
-    pub fn len(&self) -> usize {
-        self.0.len()
+        self.iter().fold(0, |acc, params| acc + params.amount.as_u64())
     }
 
     pub fn to_btc_addresses_and_amounts(&self) -> Result<BtcRecipientsAndAmounts> {
         info!("✔ Getting BTC addresses & amounts from redeem params...");
-        self
-            .0
-            .iter()
+        self.iter()
             .map(|params| {
-                let recipient_and_amount = BtcRecipientAndAmount::new(&params.recipient[..], params.amount.as_u64());
-                info!("✔ Recipients & amount retrieved from redeem: {:?}", recipient_and_amount);
+                let recipient_and_amount =
+                    BtcRecipientAndAmount::new(&params.recipient[..], params.amount.as_u64());
+                info!(
+                    "✔ Recipients & amount retrieved from redeem: {:?}",
+                    recipient_and_amount
+                );
                 recipient_and_amount
-             })
+            })
             .collect()
     }
 }

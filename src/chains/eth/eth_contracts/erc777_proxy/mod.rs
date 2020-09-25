@@ -63,53 +63,52 @@ const ZERO_ETH_VALUE: usize = 0;
 
 pub fn get_signed_erc777_proxy_change_pnetwork_tx<D>(
     db: &D,
-    new_address: EthAddress
+    new_address: EthAddress,
 ) -> Result<String>
-    where D: DatabaseInterface
+where
+    D: DatabaseInterface,
 {
     let nonce_before_incrementing = get_eth_account_nonce_from_db(db)?;
     increment_eth_account_nonce_in_db(db, 1)
-        .and_then(|_|
-            Ok(
-                EthTransaction::new_unsigned(
-                    encode_erc777_proxy_change_pnetwork_fxn_data(new_address)?,
-                    nonce_before_incrementing,
-                    ZERO_ETH_VALUE,
-                    get_erc777_proxy_contract_address_from_db(db)?,
-                    get_eth_chain_id_from_db(db)?,
-                    ERC777_CHANGE_PNETWORK_GAS_LIMIT,
-                    get_eth_gas_price_from_db(db)?,
-                )
-                    .sign(get_eth_private_key_from_db(db)?)?
-                    .serialize_hex()
+        .and(
+            Ok(EthTransaction::new_unsigned(
+                encode_erc777_proxy_change_pnetwork_fxn_data(new_address)?,
+                nonce_before_incrementing,
+                ZERO_ETH_VALUE,
+                get_erc777_proxy_contract_address_from_db(db)?,
+                get_eth_chain_id_from_db(db)?,
+                ERC777_CHANGE_PNETWORK_GAS_LIMIT,
+                get_eth_gas_price_from_db(db)?,
             )
+            .sign(get_eth_private_key_from_db(db)?)?
+            .serialize_hex())
         )
 }
 
 pub fn get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(
     db: &D,
-    new_address: EthAddress
+    new_address: EthAddress,
 ) -> Result<String>
-    where D: DatabaseInterface
+where
+    D: DatabaseInterface,
 {
     let nonce_before_incrementing = get_eth_account_nonce_from_db(db)?;
     increment_eth_account_nonce_in_db(db, 1)
-        .and_then(|_|
-            Ok(
-                EthTransaction::new_unsigned(
-                    encode_erc777_proxy_change_pnetwork_by_proxy_fxn_data(new_address)?,
-                    nonce_before_incrementing,
-                    ZERO_ETH_VALUE,
-                    get_erc777_proxy_contract_address_from_db(db)?,
-                    get_eth_chain_id_from_db(db)?,
-                    ERC777_CHANGE_PNETWORK_BY_PROXY_GAS_LIMIT,
-                    get_eth_gas_price_from_db(db)?,
-                )
-                    .sign(get_eth_private_key_from_db(db)?)?
-                    .serialize_hex()
+        .and(
+            Ok(EthTransaction::new_unsigned(
+                encode_erc777_proxy_change_pnetwork_by_proxy_fxn_data(new_address)?,
+                nonce_before_incrementing,
+                ZERO_ETH_VALUE,
+                get_erc777_proxy_contract_address_from_db(db)?,
+                get_eth_chain_id_from_db(db)?,
+                ERC777_CHANGE_PNETWORK_BY_PROXY_GAS_LIMIT,
+                get_eth_gas_price_from_db(db)?,
             )
+            .sign(get_eth_private_key_from_db(db)?)?
+            .serialize_hex())
         )
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;

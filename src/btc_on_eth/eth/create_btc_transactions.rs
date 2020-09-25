@@ -44,8 +44,12 @@ fn get_enough_utxos_to_cover_total<D>(
             debug!("✔ Retrieved UTXO of value: {}", utxo_and_value.value);
             let fee = calculate_btc_tx_fee(inputs.len() + 1, num_outputs, sats_per_byte);
             let total_cost = fee + required_btc_amount;
-            let updated_inputs = inputs.clone().push(utxo_and_value);
-            let total_utxo_value = updated_inputs.sum();
+            let updated_inputs = {
+                let mut v = inputs.clone();
+                v.push(utxo_and_value); // FIXME - can we make more efficient?
+                v
+            };
+            let total_utxo_value = updated_inputs.iter().fold(0, |acc, utxo_and_value| acc + utxo_and_value.value);
             debug!("✔ Calculated fee for {} input(s) & {} output(s): {} Sats", updated_inputs.len(), num_outputs, fee);
             debug!("✔ Fee + required BTC value of tx: {} Satoshis", total_cost);
             debug!("✔ Current total UTXO value: {} Satoshis", total_utxo_value);
@@ -78,7 +82,7 @@ fn create_btc_tx_from_redeem_infos<D>(
         redeem_infos.sum(),
         redeem_infos.len(),
         sats_per_byte,
-        BtcUtxosAndValues::new_empty(),
+        vec![].into(),
     )?;
     debug!("✔ Retrieved {} UTXOs!", utxos_and_values.len());
     info!("✔ Creating BTC transaction...");

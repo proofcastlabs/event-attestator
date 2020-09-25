@@ -83,29 +83,25 @@ pub fn encode_erc777_mint_fxn_maybe_with_data(
     }
 }
 
-pub fn get_signed_erc777_change_pnetwork_tx<D>(
-    db: &D,
-    new_address: EthAddress
-) -> Result<String>
-    where D: DatabaseInterface
+pub fn get_signed_erc777_change_pnetwork_tx<D>(db: &D, new_address: EthAddress) -> Result<String>
+where
+    D: DatabaseInterface,
 {
     const ZERO_ETH_VALUE: usize = 0;
     let nonce_before_incrementing = get_eth_account_nonce_from_db(db)?;
     increment_eth_account_nonce_in_db(db, 1)
-        .and_then(|_|
-            Ok(
-                EthTransaction::new_unsigned(
-                    encode_erc777_change_pnetwork_fxn_data(new_address)?,
-                    nonce_before_incrementing,
-                    ZERO_ETH_VALUE,
-                    get_erc777_contract_address_from_db(db)?,
-                    get_eth_chain_id_from_db(db)?,
-                    ERC777_CHANGE_PNETWORK_GAS_LIMIT,
-                    get_eth_gas_price_from_db(db)?,
-                )
-                    .sign(get_eth_private_key_from_db(db)?)?
-                    .serialize_hex()
+        .and(
+            Ok(EthTransaction::new_unsigned(
+                encode_erc777_change_pnetwork_fxn_data(new_address)?,
+                nonce_before_incrementing,
+                ZERO_ETH_VALUE,
+                get_erc777_contract_address_from_db(db)?,
+                get_eth_chain_id_from_db(db)?,
+                ERC777_CHANGE_PNETWORK_GAS_LIMIT,
+                get_eth_gas_price_from_db(db)?,
             )
+            .sign(get_eth_private_key_from_db(db)?)?
+            .serialize_hex())
         )
 }
 

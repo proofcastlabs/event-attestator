@@ -120,8 +120,8 @@ impl<D> EthState<D> where D: DatabaseInterface {
     pub fn get_eth_block_and_receipts(
         &self
     ) -> Result<&EthBlockAndReceipts> {
-        match &self.eth_block_and_receipts {
-            Some(eth_block_and_receipts) => Ok(&eth_block_and_receipts),
+        match self.eth_block_and_receipts {
+            Some(ref eth_block_and_receipts) => Ok(eth_block_and_receipts),
             None => Err(get_not_in_state_err("eth_block_and_receipts").into())
         }
     }

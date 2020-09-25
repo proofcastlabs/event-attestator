@@ -13,7 +13,7 @@ use crate::{
 
 fn is_anchor_block<D>(db: &D, eth_block_hash: &EthHash) -> Result<bool> where D: DatabaseInterface {
     match get_eth_anchor_block_hash_from_db(db) {
-        Ok(hash) => Ok(&hash == eth_block_hash),
+        Ok(ref hash) => Ok(hash == eth_block_hash),
         _ => Err("✘ No anchor hash found in db!".into())
     }
 }

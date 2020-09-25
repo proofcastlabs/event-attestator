@@ -450,7 +450,7 @@ mod tests {
             get_sample_op_return_utxo_and_value_n(3).unwrap(),
             get_sample_op_return_utxo_and_value_n(4).unwrap(),
         ]);
-        let result = utxos.sum();
+        let result = utxos.iter().fold(0, |acc, utxo_and_value| acc + utxo_and_value.value);
         assert_eq!(result, expected_result);
     }
 

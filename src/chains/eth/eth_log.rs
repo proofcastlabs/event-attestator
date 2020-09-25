@@ -16,7 +16,6 @@ use ethereum_types::{
     Address as EthAddress,
 };
 use crate::{
-    errors::AppError,
     types::{
         Bytes,
         Result,
@@ -99,7 +98,7 @@ impl EthLog {
     }
 
     pub fn contains_address(&self, address: &EthAddress) -> bool {
-        &self.address == address
+        self.address == *address
     }
 
     pub fn is_ptoken_redeem(&self) -> Result<bool> {
@@ -110,7 +109,7 @@ impl EthLog {
         trace!("✔ Checking if log is a pToken redeem...");
         match self.is_ptoken_redeem()? {
             true => Ok(()),
-            false => Err(AppError::Custom("✘ Log is not from a pToken redeem event!".to_string())),
+            false => Err("✘ Log is not from a pToken redeem event!".into()),
         }
     }
 
@@ -118,9 +117,10 @@ impl EthLog {
         self.check_is_ptoken_redeem()
             .and_then(|_| {
                 info!("✔ Parsing redeem amount from log...");
-                match self.data.len() >= ETH_WORD_SIZE_IN_BYTES {
-                    true => Ok(U256::from(convert_ptoken_to_satoshis(U256::from(&self.data[..ETH_WORD_SIZE_IN_BYTES])))),
-                    false => Err(AppError::Custom("✘ Not enough bytes in log data to get redeem amount!".to_string()))
+                if self.data.len() >= ETH_WORD_SIZE_IN_BYTES {
+                    Ok(U256::from(convert_ptoken_to_satoshis(U256::from(&self.data[..ETH_WORD_SIZE_IN_BYTES]))))
+                } else {
+                    Err("✘ Not enough bytes in log data to get redeem amount!".into())
                 }
             })
     }

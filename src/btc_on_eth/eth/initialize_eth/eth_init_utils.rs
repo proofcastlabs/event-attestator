@@ -6,7 +6,6 @@ use crate::{
     },
     btc_on_eth::eth::eth_state::EthState,
     chains::eth::{
-        eth_receipt::EthReceipts,
         eth_block_and_receipts::EthBlockAndReceipts,
         eth_crypto::eth_transaction::get_ptoken_smart_contract_bytecode,
         eth_database_utils::{
@@ -148,7 +147,7 @@ pub fn remove_receipts_from_block_in_state<D>( // ∵ there shouldn't be relevan
     trace!("✔ Removing receipts from ETH block in state...");
     let block_with_no_receipts = EthBlockAndReceipts {
         block: state.get_eth_block_and_receipts()?.block.clone(),
-        receipts: EthReceipts::new_empty(),
+        receipts: vec![].into(),
     };
     state.update_eth_block_and_receipts(block_with_no_receipts)
 }

@@ -62,7 +62,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
             deposit_info_hash_map: None,
             btc_block_in_db_format: None,
             any_sender_signed_txs: None,
-            utxos_and_values: BtcUtxosAndValues::new_empty(),
+            utxos_and_values: vec![].into(),
         }
     }
 
@@ -203,10 +203,10 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn add_utxos_and_values(self, utxos_and_values: BtcUtxosAndValues) -> Result<BtcState<D>> {
+    pub fn add_utxos_and_values(mut self, utxos_and_values: BtcUtxosAndValues) -> Result<BtcState<D>> {
         info!("✔ Adding UTXOs & values to BTC state...");
-        let new_utxos = self.utxos_and_values.clone().append(utxos_and_values);
-        self.replace_utxos_and_values(new_utxos)
+        self.utxos_and_values.extend(utxos_and_values);
+        Ok(self)
     }
 
     pub fn get_btc_block_and_id(

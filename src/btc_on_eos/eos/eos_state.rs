@@ -58,7 +58,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
             btc_utxos_and_values: None,
             producer_signature: String::new(),
             incremerkle: Incremerkle::default(),
-            redeem_infos: RedeemInfos::new(&vec![]),
+            redeem_infos: RedeemInfos::new(&[]),
             processed_tx_ids: ProcessedTxIds::init(),
             enabled_protocol_features: EnabledFeatures::init(),
         }
@@ -144,8 +144,8 @@ impl<D> EosState<D> where D: DatabaseInterface {
     }
 
     pub fn get_eos_block_header(&self) -> Result<&EosBlockHeader> {
-        match &self.block_header{
-            Some(block_header) => Ok(&block_header),
+        match self.block_header{
+            Some(ref block_header) => Ok(block_header),
             None => Err(get_not_in_state_err("block_header").into())
         }
     }
@@ -158,8 +158,8 @@ impl<D> EosState<D> where D: DatabaseInterface {
     }
 
     pub fn get_active_schedule(&self) -> Result<&EosProducerScheduleV2> {
-        match &self.active_schedule{
-            Some(active_schedule) => Ok(&active_schedule),
+        match self.active_schedule{
+            Some(ref active_schedule) => Ok(active_schedule),
             None => Err(get_not_in_state_err("active_schedule").into())
         }
     }

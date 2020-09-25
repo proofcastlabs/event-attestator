@@ -6,6 +6,12 @@ use serde_json::{
     json,
     Value as JsonValue,
 };
+use derive_more::{
+    Constructor,
+    Deref,
+    From,
+    Into,
+};
 use ethereum_types::{
     H160,
     U256,
@@ -42,26 +48,10 @@ use crate::{
     },
 };
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Constructor, Deref, From, Into)]
 pub struct EthReceipts(pub Vec<EthReceipt>);
 
 impl EthReceipts {
-    pub fn new(receipts: Vec<EthReceipt>) -> Self {
-        Self(receipts)
-    }
-
-    pub fn new_empty() -> Self {
-        Self(Vec::new())
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
-
     pub fn from_jsons(jsons: &[EthReceiptJson]) -> Result<Self> {
         Ok(Self(jsons.iter().cloned().map(|json| EthReceipt::from_json(&json)).collect::<Result<Vec<EthReceipt>>>()?))
     }

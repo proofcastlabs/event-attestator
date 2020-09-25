@@ -1,51 +1,28 @@
 use crate::{
-    types::{
-        Bytes,
-        Result,
-    },
     chains::btc::{
+        btc_utils::{deserialize_btc_utxo, serialize_btc_utxo},
         deposit_address_info::DepositAddressInfoJson,
-        btc_utils::{
-            serialize_btc_utxo,
-            deserialize_btc_utxo,
-        },
     },
+    types::{Bytes, Result},
 };
-use bitcoin::{
-    hashes::sha256d,
-    blockdata::transaction::TxIn as BtcUtxo,
-};
+use bitcoin::{blockdata::transaction::TxIn as BtcUtxo, hashes::sha256d};
+use derive_more::{Constructor, Deref, DerefMut, From, Into, IntoIterator};
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(
+    Clone,
+    Debug,
+    Deserialize,
+    Serialize,
+    PartialEq,
+    Eq,
+    Constructor,
+    Deref,
+    DerefMut,
+    From,
+    Into,
+    IntoIterator,
+)]
 pub struct BtcUtxosAndValues(pub Vec<BtcUtxoAndValue>);
-
-impl BtcUtxosAndValues {
-    pub fn new(utxos_and_values: Vec<BtcUtxoAndValue>) -> Self {
-        Self(utxos_and_values)
-    }
-
-    pub fn new_empty() -> Self {
-        Self(Vec::new())
-    }
-
-    pub fn push(mut self, utxo_and_value: BtcUtxoAndValue) -> Self {
-        self.0.push(utxo_and_value);
-        self
-    }
-
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
-
-    pub fn append(mut self, mut utxos_and_values: BtcUtxosAndValues) -> Self {
-        self.0.append(&mut utxos_and_values.0);
-        self
-    }
-
-    pub fn sum(&self) -> u64 {
-        self.0.iter().map(|utxo_and_value| utxo_and_value.value).sum()
-    }
-}
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct BtcUtxoAndValue {
