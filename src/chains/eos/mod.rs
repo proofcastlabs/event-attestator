@@ -12,6 +12,7 @@ pub(crate) mod eos_database_utils;
 pub(crate) mod parse_eos_schedule;
 pub(crate) mod filter_redeem_infos;
 pub(crate) mod filter_action_proofs;
+pub(crate) mod eos_erc20_account_names;
 pub(crate) mod enable_protocol_feature;
 pub(crate) mod append_interim_block_ids;
 pub(crate) mod disable_protocol_feature;
