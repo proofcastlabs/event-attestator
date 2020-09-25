@@ -6,6 +6,10 @@ use ethereum_types::{
 use crate::{
     types::Result,
 };
+use derive_more::{
+    Deref,
+    Constructor,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Erc20OnEosPegInInfo {
@@ -28,14 +32,10 @@ impl Erc20OnEosPegInInfo {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
 pub struct Erc20OnEosPegInInfos(pub Vec<Erc20OnEosPegInInfo>);
 
 impl Erc20OnEosPegInInfos {
-    pub fn new(redeem_infos: &[Erc20OnEosPegInInfo]) -> Self {
-        Self(redeem_infos.to_vec())
-    }
-
     pub fn sum(&self) -> U256 {
         self.0.iter().fold(U256::zero(), |acc, params| acc + params.token_amount)
     }
