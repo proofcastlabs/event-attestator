@@ -82,7 +82,7 @@ impl EosErc20AccountNames {
         db.put(EOS_ERC20_ACCOUNT_NAMES.to_vec(), self.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
     }
 
-    fn get_from_db<D>(db: &D) -> Result<Self> where D: DatabaseInterface {
+    pub fn get_from_db<D>(db: &D) -> Result<Self> where D: DatabaseInterface {
         info!("✔ Getting `EosErc20AccountNamesJson` from db...");
         match db.get(EOS_ERC20_ACCOUNT_NAMES.to_vec(), MIN_DATA_SENSITIVITY_LEVEL) {
             Ok(bytes) => Self::from_bytes(&bytes),
@@ -120,6 +120,10 @@ impl EosErc20AccountNames {
             }
         }
         Err(format!("No `EosErc20AccountName` exists with address: {}", token_address).into())
+    }
+
+    pub fn is_token_supported(&self, token_address: &EthAddress) -> bool {
+        self.get_account_name_from_token_address(token_address).is_ok()
     }
 }
 
@@ -317,5 +321,25 @@ mod tests {
         let account_names = get_sample_eos_erc20_account_names();
         let result = account_names.get_account_name_from_token_address(&token_address);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn should_return_true_if_token_supported() {
+        let supported_token_address = EthAddress::from_slice(
+            &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
+        );
+        let account_names = get_sample_eos_erc20_account_names();
+        let result = account_names.is_token_supported(&supported_token_address);
+        assert!(result);
+    }
+
+    #[test]
+    fn should_return_false_if_token_supported() {
+        let supported_token_address = EthAddress::from_slice(
+            &hex::decode("8f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
+        );
+        let account_names = get_sample_eos_erc20_account_names();
+        let result = account_names.is_token_supported(&supported_token_address);
+        assert!(!result);
     }
 }
