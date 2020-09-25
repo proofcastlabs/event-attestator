@@ -21,15 +21,18 @@ use crate::{
         Erc20OnEosPegInInfo,
         Erc20OnEosPegInInfos,
     },
-    chains::eth::{
-        eth_block::{
-            EthBlock,
-            EthBlockJson,
-        },
-        eth_receipt::{
-            EthReceipt,
-            EthReceipts,
-            EthReceiptJson,
+    chains::{
+        eos::eos_erc20_account_names::EosErc20AccountNames,
+        eth::{
+            eth_block::{
+                EthBlock,
+                EthBlockJson,
+            },
+            eth_receipt::{
+                EthReceipt,
+                EthReceipts,
+                EthReceiptJson,
+            },
         },
     },
 };
@@ -140,13 +143,16 @@ impl EthSubmissionMaterial {
         ))
     }
 
-    pub fn get_erc20_on_eos_peg_in_infos(&self) -> Result<Erc20OnEosPegInInfos> {
+    pub fn get_erc20_on_eos_peg_in_infos(
+        &self,
+        eos_erc20_account_names: &EosErc20AccountNames
+    ) -> Result<Erc20OnEosPegInInfos> {
         info!("✔ Getting `erc20-on-eos` peg in infos from submission material...");
         Ok(Erc20OnEosPegInInfos::new(
             self
                 .get_receipts()
                 .iter()
-                .map(|receipt| receipt.get_erc20_on_eos_peg_in_infos())
+                .map(|receipt| receipt.get_erc20_on_eos_peg_in_infos(eos_erc20_account_names))
                 .collect::<Result<Vec<Erc20OnEosPegInInfos>>>()?
                 .iter()
                 .map(|infos| infos.0.clone()) // FIXME: There is very likely a better way to do this!
@@ -188,11 +194,14 @@ mod tests {
     use std::str::FromStr;
     use ethereum_types::U256;
     use crate::{
-        chains::eth::{
-            eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
-            eth_test_utils::{
-                get_sample_erc20_on_eos_peg_in_infos,
-                get_sample_submission_material_with_erc20_peg_in_event,
+        chains::{
+            eos::eos_erc20_account_names::EosErc20AccountName,
+            eth::{
+                eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
+                eth_test_utils::{
+                    get_sample_erc20_on_eos_peg_in_infos,
+                    get_sample_submission_material_with_erc20_peg_in_event,
+                },
             },
         },
         btc_on_eth::eth::eth_test_utils::{
@@ -354,10 +363,17 @@ mod tests {
 
     #[test]
     fn should_get_erc20_on_eos_peg_in_infos() {
+        let token_name = "SampleToken".to_string();
+        let token_address = EthAddress::from_slice(
+            &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
+        );
+        let eos_erc20_account_names = EosErc20AccountNames::new(vec![
+            EosErc20AccountName::new(token_name, token_address)
+        ]);
         let expected_num_results = 1;
         let submission_material = get_sample_submission_material_with_erc20_peg_in_event().unwrap();
         let expected_result = get_sample_erc20_on_eos_peg_in_infos().unwrap();
-        let result = submission_material.get_erc20_on_eos_peg_in_infos().unwrap();
+        let result = submission_material.get_erc20_on_eos_peg_in_infos(&eos_erc20_account_names).unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result, expected_result);
     }
