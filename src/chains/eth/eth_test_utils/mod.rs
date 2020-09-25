@@ -66,6 +66,7 @@ pub fn get_sample_erc20_on_eos_peg_in_info() -> Result<Erc20OnEosPegInInfo> {
         EthHash::from_slice(
             &hex::decode("241f386690b715422102edf42f5c9edcddea16b64f17d02bad572f5f341725c0").unwrap()
         ),
+        "SampleToken".to_string(),
     ))
 }
 

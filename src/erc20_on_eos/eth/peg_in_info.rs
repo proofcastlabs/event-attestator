@@ -12,6 +12,7 @@ use derive_more::{
 pub struct Erc20OnEosPegInInfo {
     pub token_amount: U256,
     pub eos_address: String,
+    pub account_name: String,
     pub token_sender: EthAddress,
     pub token_contract: EthAddress,
     pub originating_tx_hash: EthHash,
@@ -23,9 +24,17 @@ impl Erc20OnEosPegInInfo {
         token_sender: EthAddress,
         token_contract: EthAddress,
         eos_address: String,
-        originating_tx_hash: EthHash
+        originating_tx_hash: EthHash,
+        account_name: String,
     ) -> Erc20OnEosPegInInfo {
-        Erc20OnEosPegInInfo { token_amount, token_contract, eos_address, originating_tx_hash, token_sender }
+        Erc20OnEosPegInInfo {
+            token_amount,
+            token_contract,
+            eos_address,
+            originating_tx_hash,
+            token_sender,
+            account_name,
+        }
     }
 }
 

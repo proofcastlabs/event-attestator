@@ -113,7 +113,7 @@ impl EosErc20AccountNames {
         }
     }
 
-    fn get_account_name_from_token_address(&self, token_address: &EthAddress) -> Result<String> {
+    pub fn get_account_name_from_token_address(&self, token_address: &EthAddress) -> Result<String> {
         for account_name in self.iter() {
             if &account_name.token_address == token_address {
                 return Ok(account_name.token_name.to_string())

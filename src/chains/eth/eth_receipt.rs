@@ -241,13 +241,17 @@ impl EthReceipt {
                 .0
                 .iter()
                 .filter(|log| matches!(log.is_supported_perc20_peg_in(eos_erc20_account_names), Ok(true)))
-                .map(|log| Ok(Erc20OnEosPegInInfo::new(
-                    log.get_erc20_on_eos_peg_in_amount()?,
-                    log.get_erc20_on_eos_peg_in_token_sender_address()?,
-                    log.get_erc20_on_eos_peg_in_token_contract_address()?,
-                    log.get_erc20_on_eos_peg_in_eos_address()?,
-                    self.transaction_hash,
-                )))
+                .map(|log| {
+                    let token_contract_address = log.get_erc20_on_eos_peg_in_token_contract_address()?;
+                    Ok(Erc20OnEosPegInInfo::new(
+                        log.get_erc20_on_eos_peg_in_amount()?,
+                        log.get_erc20_on_eos_peg_in_token_sender_address()?,
+                        token_contract_address,
+                        log.get_erc20_on_eos_peg_in_eos_address()?,
+                        self.transaction_hash,
+                        eos_erc20_account_names.get_account_name_from_token_address(&token_contract_address)?,
+                    ))
+                })
                 .collect::<Result<Vec<Erc20OnEosPegInInfo>>>()?
         ))
     }
