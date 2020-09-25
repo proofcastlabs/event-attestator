@@ -5,6 +5,7 @@ use crate::{
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
     chains::{
+        eos::eos_types::EosSignedTransactions,
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eth::eth_submission_material::EthSubmissionMaterial,
     },
@@ -21,9 +22,9 @@ use crate::{
 pub struct EthState<D: DatabaseInterface> {
     pub db: D,
     pub misc: Option<String>,
-    pub eos_transactions: Option<Vec<usize>>, // TODO update to real type!
     pub btc_transactions: Option<BtcTransactions>,
     pub btc_on_eth_redeem_infos: BtcOnEthRedeemInfos,
+    pub eos_transactions: Option<EosSignedTransactions>,
     pub erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
@@ -90,6 +91,16 @@ impl<D> EthState<D> where D: DatabaseInterface {
             Some(_) => Err(get_no_overwrite_state_err("btc_transaction").into()),
             None => {
                 self.btc_transactions = Some(btc_transactions);
+                Ok(self)
+            }
+        }
+    }
+
+    pub fn add_eos_transactions(mut self, eos_transactions: EosSignedTransactions) -> Result<EthState<D>> {
+        match self.eos_transactions {
+            Some(_) => Err(get_no_overwrite_state_err("eos_transaction").into()),
+            None => {
+                self.eos_transactions = Some(eos_transactions);
                 Ok(self)
             }
         }
