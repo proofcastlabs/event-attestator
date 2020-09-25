@@ -230,7 +230,7 @@ impl EthReceipt {
     pub fn get_erc20_on_eos_peg_in_infos(&self) -> Result<Erc20OnEosPegInInfos> {
         info!("✔ Getting `erc20-on-eos` peg in infos from receipt...");
         Ok(Erc20OnEosPegInInfos::new(
-            &self
+            self
                 .logs
                 .0
                 .iter()

@@ -70,5 +70,5 @@ pub fn get_sample_erc20_on_eos_peg_in_info() -> Result<Erc20OnEosPegInInfo> {
 }
 
 pub fn get_sample_erc20_on_eos_peg_in_infos() -> Result<Erc20OnEosPegInInfos> {
-    Ok(Erc20OnEosPegInInfos::new(&[get_sample_erc20_on_eos_peg_in_info()?]))
+    Ok(Erc20OnEosPegInInfos::new(vec![get_sample_erc20_on_eos_peg_in_info()?]))
 }

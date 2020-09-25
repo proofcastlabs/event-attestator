@@ -131,7 +131,7 @@ impl EthSubmissionMaterial {
     pub fn get_btc_on_eth_redeem_infos(&self) -> Result<BtcOnEthRedeemInfos> {
         info!("✔ Getting `btc-on-eth` redeem infos from submission material...");
         Ok(BtcOnEthRedeemInfos::new(
-            &self
+            self
                 .get_receipts()
                 .iter()
                 .map(|receipt| receipt.get_btc_on_eth_redeem_infos())
@@ -143,7 +143,7 @@ impl EthSubmissionMaterial {
     pub fn get_erc20_on_eos_peg_in_infos(&self) -> Result<Erc20OnEosPegInInfos> {
         info!("✔ Getting `erc20-on-eos` peg in infos from submission material...");
         Ok(Erc20OnEosPegInInfos::new(
-            &self
+            self
                 .get_receipts()
                 .iter()
                 .map(|receipt| receipt.get_erc20_on_eos_peg_in_infos())

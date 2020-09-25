@@ -14,7 +14,7 @@ use crate::{
 
 fn filter_redeem_infos(redeem_infos: &BtcOnEthRedeemInfos) -> Result<BtcOnEthRedeemInfos> {
     Ok(BtcOnEthRedeemInfos::new(
-        &redeem_infos
+        redeem_infos
             .0
             .iter()
             .filter(|infos| {
@@ -53,7 +53,7 @@ mod tests {
     #[test]
     fn should_filter_redeem_infos() {
         let expected_length = 2;
-        let infos = BtcOnEthRedeemInfos::new(&vec![
+        let infos = BtcOnEthRedeemInfos::new(vec![
             BtcOnEthRedeemInfo {
                 amount: U256::from_dec_str("4999").unwrap(),
                 from: EthAddress::from_str(

@@ -125,7 +125,7 @@ impl EthLog {
         trace!("✔ Checking if log is a pERC20 peg in...");
         match self.is_perc20_peg_in()? {
             true => Ok(()),
-            false => Err(AppError::Custom("✘ Log is not from a pERC20 peg in event!".to_string())),
+            false => Err("✘ Log is not from a pERC20 peg in event!".into()),
         }
     }
 

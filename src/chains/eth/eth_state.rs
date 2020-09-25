@@ -41,8 +41,8 @@ impl<D> EthState<D> where D: DatabaseInterface {
             eos_transactions: None,
             btc_utxos_and_values: None,
             eth_submission_material: None,
-            btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(&[]),
-            erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos::new(&[]),
+            btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(vec![]),
+            erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos::new(vec![]),
         }
     }
 
@@ -59,13 +59,13 @@ impl<D> EthState<D> where D: DatabaseInterface {
     pub fn add_btc_on_eth_redeem_infos(self, mut infos: BtcOnEthRedeemInfos) -> Result<EthState<D>> {
         let mut new_infos = self.btc_on_eth_redeem_infos.clone().0;
         new_infos.append(&mut infos.0);
-        self.replace_btc_on_eth_redeem_infos(BtcOnEthRedeemInfos::new(&new_infos))
+        self.replace_btc_on_eth_redeem_infos(BtcOnEthRedeemInfos::new(new_infos))
     }
 
     pub fn add_erc20_on_eos_peg_in_infos(self, mut infos: Erc20OnEosPegInInfos) -> Result<EthState<D>> {
         let mut new_infos = self.erc20_on_eos_peg_in_infos.clone().0;
         new_infos.append(&mut infos.0);
-        self.replace_erc20_on_eos_peg_in_infos(Erc20OnEosPegInInfos::new(&new_infos))
+        self.replace_erc20_on_eos_peg_in_infos(Erc20OnEosPegInInfos::new(new_infos))
     }
 
     pub fn replace_btc_on_eth_redeem_infos(mut self, replacements: BtcOnEthRedeemInfos) -> Result<EthState<D>> {

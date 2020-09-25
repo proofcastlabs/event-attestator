@@ -34,10 +34,6 @@ impl BtcOnEthRedeemInfo {
 pub struct BtcOnEthRedeemInfos(pub Vec<BtcOnEthRedeemInfo>);
 
 impl BtcOnEthRedeemInfos {
-    pub fn new(redeem_infos: &[BtcOnEthRedeemInfo]) -> Self {
-        Self(redeem_infos.to_vec())
-    }
-
     pub fn sum(&self) -> u64 {
         self.iter().fold(0, |acc, params| acc + params.amount.as_u64())
     }
