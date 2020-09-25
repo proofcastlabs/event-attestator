@@ -20,14 +20,17 @@ use crate::{
         Bytes,
         Result,
     },
-    chains::eth::{
-        eth_receipt::EthReceiptJson,
-        eth_constants::{
-            ETH_WORD_SIZE_IN_BYTES,
-            ETH_ADDRESS_SIZE_IN_BYTES,
-            ERC20_PEG_IN_EVENT_TOPIC_HEX,
-            LOG_DATA_BTC_ADDRESS_START_INDEX,
-            BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
+    chains::{
+        eos::eos_erc20_account_names::EosErc20AccountNames,
+        eth::{
+            eth_receipt::EthReceiptJson,
+            eth_constants::{
+                ETH_WORD_SIZE_IN_BYTES,
+                ETH_ADDRESS_SIZE_IN_BYTES,
+                ERC20_PEG_IN_EVENT_TOPIC_HEX,
+                LOG_DATA_BTC_ADDRESS_START_INDEX,
+                BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
+            },
         },
     },
     btc_on_eth::{
@@ -109,8 +112,17 @@ impl EthLog {
         Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX)?[..]))
     }
 
-    pub fn is_perc20_peg_in(&self) -> Result<bool> { // TODO Test!
+    fn is_perc20_peg_in(&self) -> Result<bool> {
         Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&ERC20_PEG_IN_EVENT_TOPIC_HEX)?[..]))
+    }
+
+    pub fn is_supported_perc20_peg_in(&self, eos_erc20_account_names: &EosErc20AccountNames) -> Result<bool> {
+        match self.is_perc20_peg_in()? {
+            false => Ok(false),
+            true => self
+                .get_erc20_on_eos_peg_in_token_contract_address()
+                .map(|token_contract_address| eos_erc20_account_names.is_token_supported(&token_contract_address)),
+        }
     }
 
     fn check_is_btc_on_eth_redeem(&self) -> Result<()> {
@@ -256,10 +268,13 @@ mod tests {
     use super::*;
     use std::str::FromStr;
     use crate::{
-        chains::eth::{
-            eth_receipt::EthReceipt,
-            eth_submission_material::EthSubmissionMaterial,
-            eth_test_utils::get_sample_log_with_erc20_peg_in_event,
+        chains::{
+            eos::eos_erc20_account_names::EosErc20AccountName,
+            eth::{
+                eth_receipt::EthReceipt,
+                eth_submission_material::EthSubmissionMaterial,
+                eth_test_utils::get_sample_log_with_erc20_peg_in_event,
+            },
         },
         btc_on_eth::eth::eth_test_utils::{
             get_expected_log,
@@ -506,5 +521,33 @@ mod tests {
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = log.get_erc20_on_eos_peg_in_eos_address().unwrap();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn is_supported_perc20_peg_in_should_be_true_if_supported() {
+        let token_name = "SampleToken".to_string();
+        let token_address = EthAddress::from_slice(
+            &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
+        );
+        let eos_erc20_account_names = EosErc20AccountNames::new(vec![
+            EosErc20AccountName::new(token_name, token_address)
+        ]);
+        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
+        let result = log.is_supported_perc20_peg_in(&eos_erc20_account_names).unwrap();
+        assert!(result);
+    }
+
+    #[test]
+    fn is_supported_perc20_peg_in_should_be_false_if_not_supported() {
+        let token_name = "SampleToken".to_string();
+        let token_address = EthAddress::from_slice(
+            &hex::decode("8f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
+        );
+        let eos_erc20_account_names = EosErc20AccountNames::new(vec![
+            EosErc20AccountName::new(token_name, token_address)
+        ]);
+        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
+        let result = log.is_supported_perc20_peg_in(&eos_erc20_account_names).unwrap();
+        assert!(!result);
     }
 }
