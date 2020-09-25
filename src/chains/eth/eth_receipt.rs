@@ -29,18 +29,21 @@ use crate::{
         Erc20OnEosPegInInfo,
         Erc20OnEosPegInInfos,
     },
-    chains::eth::{
-        eth_log::{
-            EthLogs,
-            EthLogJson,
-        },
-        trie::{
-            Trie,
-            put_in_trie_recursively,
-        },
-        nibble_utils::{
-            Nibbles,
-            get_nibbles_from_bytes,
+    chains::{
+        eos::eos_erc20_account_names::EosErc20AccountNames,
+        eth::{
+            eth_log::{
+                EthLogs,
+                EthLogJson,
+            },
+            trie::{
+                Trie,
+                put_in_trie_recursively,
+            },
+            nibble_utils::{
+                Nibbles,
+                get_nibbles_from_bytes,
+            },
         },
     },
     btc_on_eth::{
@@ -227,23 +230,24 @@ impl EthReceipt {
             .collect()
     }
 
-    pub fn get_erc20_on_eos_peg_in_infos(&self) -> Result<Erc20OnEosPegInInfos> {
+    pub fn get_erc20_on_eos_peg_in_infos(
+        &self,
+        eos_erc20_account_names: &EosErc20AccountNames,
+    ) -> Result<Erc20OnEosPegInInfos> {
         info!("✔ Getting `erc20-on-eos` peg in infos from receipt...");
         Ok(Erc20OnEosPegInInfos::new(
             self
                 .logs
                 .0
                 .iter()
-                .filter(|log| matches!(log.is_perc20_peg_in(), Ok(true)))
-                .map(|log|
-                    Ok(Erc20OnEosPegInInfo::new(
-                        log.get_erc20_on_eos_peg_in_amount()?,
-                        log.get_erc20_on_eos_peg_in_token_sender_address()?,
-                        log.get_erc20_on_eos_peg_in_token_contract_address()?,
-                        log.get_erc20_on_eos_peg_in_eos_address()?,
-                        self.transaction_hash,
-                    ))
-                )
+                .filter(|log| matches!(log.is_supported_perc20_peg_in(eos_erc20_account_names), Ok(true)))
+                .map(|log| Ok(Erc20OnEosPegInInfo::new(
+                    log.get_erc20_on_eos_peg_in_amount()?,
+                    log.get_erc20_on_eos_peg_in_token_sender_address()?,
+                    log.get_erc20_on_eos_peg_in_token_contract_address()?,
+                    log.get_erc20_on_eos_peg_in_eos_address()?,
+                    self.transaction_hash,
+                )))
                 .collect::<Result<Vec<Erc20OnEosPegInInfo>>>()?
         ))
     }
@@ -265,11 +269,14 @@ mod tests {
     use super::*;
     use std::str::FromStr;
     use crate::{
-        chains::eth::{
-            eth_submission_material::EthSubmissionMaterial,
-            eth_test_utils::{
-                get_sample_erc20_on_eos_peg_in_info,
-                get_sample_receipt_with_erc20_peg_in_event,
+        chains::{
+            eos::eos_erc20_account_names::EosErc20AccountName,
+            eth::{
+                eth_submission_material::EthSubmissionMaterial,
+                eth_test_utils::{
+                    get_sample_erc20_on_eos_peg_in_info,
+                    get_sample_receipt_with_erc20_peg_in_event,
+                },
             },
         },
         btc_on_eth::eth::eth_test_utils::{
@@ -451,11 +458,27 @@ mod tests {
 
     #[test]
     fn should_get_get_erc20_redeem_infos_from_receipt() {
+        let token_name = "SampleToken".to_string();
+        let token_address = EthAddress::from_slice(
+            &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
+        );
+        let eos_erc20_account_names = EosErc20AccountNames::new(vec![
+            EosErc20AccountName::new(token_name, token_address)
+        ]);
         let expected_num_results = 1;
         let expected_result = get_sample_erc20_on_eos_peg_in_info().unwrap();
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = receipt.get_erc20_on_eos_peg_in_infos().unwrap();
+        let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_erc20_account_names).unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result.0[0], expected_result);
+    }
+
+    #[test]
+    fn should_not_get_get_erc20_redeem_infos_from_receipt_if_token_not_supported() {
+        let eos_erc20_account_names = EosErc20AccountNames::new(vec![]);
+        let expected_num_results = 0;
+        let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
+        let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_erc20_account_names).unwrap();
+        assert_eq!(result.len(), expected_num_results);
     }
 }
