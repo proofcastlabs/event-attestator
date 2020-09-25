@@ -3,13 +3,10 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
+    erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
     chains::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eth::eth_submission_material::EthSubmissionMaterial,
-    },
-    erc20_on_eos::eth::peg_in_info::{
-        Erc20OnEosPegInInfo,
-        Erc20OnEosPegInInfos,
     },
     btc_on_eth::{
         btc::btc_types::BtcTransactions,

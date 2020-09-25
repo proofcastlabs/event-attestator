@@ -3,9 +3,6 @@ use ethereum_types::{
     H256 as EthHash,
     Address as EthAddress,
 };
-use crate::{
-    types::Result,
-};
 use derive_more::{
     Deref,
     Constructor,

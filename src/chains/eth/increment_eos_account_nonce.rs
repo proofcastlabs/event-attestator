@@ -4,11 +4,8 @@ use crate::{
     chains::{
         eth::eth_state::EthState,
         eos::{
+            eos_database_utils::get_eos_account_nonce_from_db,
             increment_eos_account_nonce::increment_eos_account_nonce,
-            eos_database_utils::{
-                put_eos_account_nonce_in_db,
-                get_eos_account_nonce_from_db,
-            },
         },
     },
 };
