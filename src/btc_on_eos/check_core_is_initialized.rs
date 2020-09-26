@@ -1,13 +1,13 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eos::check_eos_core_is_initialized::is_eos_core_initialized,
-    btc_on_eos::{
-        eos::eos_state::EosState,
-        btc::{
-            btc_state::BtcState,
-            initialize_btc::is_btc_core_initialized::is_btc_core_initialized,
-        },
+    chains::eos::{
+        eos_state::EosState,
+        check_eos_core_is_initialized::is_eos_core_initialized,
+    },
+    btc_on_eos::btc::{
+        btc_state::BtcState,
+        initialize_btc::is_btc_core_initialized::is_btc_core_initialized,
     },
 };
 

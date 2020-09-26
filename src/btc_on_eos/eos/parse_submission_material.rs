@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::eos_state::EosState,
-    chains::eos::parse_submission_material::parse_eos_submission_material_string_to_struct
+    chains::eos::{
+        eos_state::EosState,
+        parse_submission_material::parse_eos_submission_material_string_to_struct
+    },
 };
 
 pub fn parse_submission_material_and_add_to_state<D>(

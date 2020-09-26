@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::eos_state::EosState,
-    chains::eos::filter_action_proofs::filter_duplicate_proofs,
+    chains::eos::{
+        eos_state::EosState,
+        filter_action_proofs::filter_duplicate_proofs,
+    },
 };
 
 pub fn maybe_filter_duplicate_proofs_from_state<D>(

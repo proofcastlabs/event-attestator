@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::eos_state::EosState,
-    chains::eos::eos_database_utils::put_incremerkle_in_db,
+    chains::eos::{
+        eos_state::EosState,
+        eos_database_utils::put_incremerkle_in_db,
+    },
 };
 
 pub fn save_incremerkle_from_state_to_db<D>(state: EosState<D>) -> Result<EosState<D>> where D: DatabaseInterface {

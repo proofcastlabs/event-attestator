@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::eos_state::EosState,
-    chains::eos::filter_action_proofs::filter_out_proofs_with_action_digests_not_in_action_receipts,
+    chains::eos::{
+        eos_state::EosState,
+        filter_action_proofs::filter_out_proofs_with_action_digests_not_in_action_receipts,
+    },
 };
 
 pub fn maybe_filter_out_action_proof_receipt_mismatches_and_return_state<D>(

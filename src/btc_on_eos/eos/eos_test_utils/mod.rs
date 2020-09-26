@@ -34,6 +34,7 @@ use crate::{
         Result,
     },
     chains::eos::{
+        eos_state::EosState,
         eos_merkle_utils::Incremerkle,
         eos_types::{
             ActionProof,
@@ -72,7 +73,6 @@ use crate::{
         protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
     },
     btc_on_eos::eos::{
-        eos_state::EosState,
         initialize_eos::eos_init_utils::EosInitJson,
     },
 };

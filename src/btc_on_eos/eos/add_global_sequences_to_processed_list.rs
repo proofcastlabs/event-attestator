@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::eos_state::EosState,
-    chains::eos::add_global_sequences_to_processed_list::add_tx_ids_to_processed_tx_ids,
+    chains::eos::{
+        eos_state::EosState,
+        add_global_sequences_to_processed_list::add_tx_ids_to_processed_tx_ids,
+    },
 };
 
 pub fn maybe_add_global_sequences_to_processed_list_and_return_state<D>(

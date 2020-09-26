@@ -6,14 +6,16 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::{
-        eos::eos_types::BtcOnEthRedeemInfos,
+        eos::{
+            eos_state::EosState,
+            eos_types::BtcOnEthRedeemInfos,
+        },
         btc::utxo_manager::{
             utxo_types::BtcUtxosAndValues,
             utxo_database_utils::get_utxo_and_value,
         },
     },
     btc_on_eos::{
-        eos::eos_state::EosState,
         btc::{
             btc_utils::calculate_btc_tx_fee,
             btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,

@@ -61,6 +61,14 @@ pub fn prepend_debug_output_marker_to_string(string_to_prepend: String) -> Strin
     format!("{}_{}", DEBUG_OUTPUT_MARKER, &string_to_prepend)
 }
 
+pub fn get_not_in_state_err(substring: &str) -> String {
+    format!("✘ No {} in state!" , substring)
+}
+
+pub fn get_no_overwrite_state_err(substring: &str) -> String {
+    format!("✘ Cannot overwrite {} in state!" , substring)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -145,5 +153,21 @@ mod tests {
         let expected_result = format!("{}_{}", DEBUG_OUTPUT_MARKER, &string);
         let result = prepend_debug_output_marker_to_string(string);
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_no_state_err_string() {
+        let thing = "thing".to_string();
+        let expected_result = "✘ No thing in state!";
+        let result = get_not_in_state_err(&thing);
+        assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn should_get_no_overwrite_err_string() {
+        let thing = "thing".to_string();
+        let expected_result = "✘ Cannot overwrite thing in state!";
+        let result = get_no_overwrite_state_err(&thing);
+        assert_eq!(result, expected_result)
     }
 }

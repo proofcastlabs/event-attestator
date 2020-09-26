@@ -1,6 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    utils::{
+        get_not_in_state_err,
+        get_no_overwrite_state_err,
+    },
     chains::{
         eth::eth_types::{
             EthTransactions,
@@ -22,10 +26,6 @@ use crate::{
                 BtcBlockInDbFormat,
             },
             parse_submission_material_json::BtcSubmissionMaterialJson,
-        },
-        utils::{
-            get_not_in_state_err,
-            get_no_overwrite_state_err,
         },
     },
 };

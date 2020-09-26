@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::eos_state::EosState,
-    chains::eos::filter_action_proofs::filter_proofs_with_wrong_action_mroot,
+    chains::eos::{
+        eos_state::EosState,
+        filter_action_proofs::filter_proofs_with_wrong_action_mroot,
+    },
 };
 
 pub fn maybe_filter_out_proofs_with_wrong_action_mroot<D>(

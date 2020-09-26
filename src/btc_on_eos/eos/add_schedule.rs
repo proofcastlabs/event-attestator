@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::eos_state::EosState,
-    chains::eos::eos_database_utils::put_eos_schedule_in_db,
+    chains::eos::{
+        eos_state::EosState,
+        eos_database_utils::put_eos_schedule_in_db,
+    },
 };
 
 pub fn maybe_add_new_eos_schedule_to_db_and_return_state<D>(

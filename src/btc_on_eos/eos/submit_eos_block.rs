@@ -1,12 +1,12 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::eos::eos_state::EosState,
     btc_on_eos::{
         check_core_is_initialized::{
             check_core_is_initialized_and_return_eos_state,
         },
         eos::{
-            eos_state::EosState,
             get_eos_output::get_eos_output,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
             save_latest_block_id::save_latest_block_id_to_db,

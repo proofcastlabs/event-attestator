@@ -1,8 +1,8 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::eos_state::EosState,
     chains::eos::{
+        eos_state::EosState,
         eos_database_utils::get_eos_account_name_from_db,
         filter_action_proofs::{
             filter_out_proofs_for_other_actions,

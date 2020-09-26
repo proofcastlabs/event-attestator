@@ -2,6 +2,10 @@ use ethereum_types::H256 as EthHash;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    utils::{
+        get_not_in_state_err,
+        get_no_overwrite_state_err,
+    },
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
     chains::{
@@ -9,13 +13,7 @@ use crate::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eth::eth_submission_material::EthSubmissionMaterial,
     },
-    btc_on_eth::{
-        btc::btc_types::BtcTransactions,
-        utils::{
-            get_not_in_state_err,
-            get_no_overwrite_state_err,
-        },
-    },
+    btc_on_eth::btc::btc_types::BtcTransactions,
 };
 
 #[derive(Clone, PartialEq, Eq)]

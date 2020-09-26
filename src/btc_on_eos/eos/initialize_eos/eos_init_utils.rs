@@ -1,11 +1,13 @@
 use crate::{
     traits::DatabaseInterface,
     constants::CORE_IS_VALIDATING,
+    btc_on_eos::eos::validate_signature::check_block_signature_is_valid,
     types::{
         Bytes,
         Result,
     },
     chains::eos::{
+        eos_state::EosState,
         eos_merkle_utils::Incremerkle,
         eos_utils::convert_hex_to_checksum256,
         eos_crypto::eos_private_key::EosPrivateKey,
@@ -39,10 +41,6 @@ use crate::{
             EnabledFeatures,
             WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
         },
-    },
-    btc_on_eos::eos::{
-        eos_state::EosState,
-        validate_signature::check_block_signature_is_valid,
     },
 };
 

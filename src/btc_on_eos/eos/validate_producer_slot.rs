@@ -5,8 +5,10 @@ use eos_primitives::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::eos_state::EosState,
-    chains::eos::eos_constants::PRODUCER_REPS,
+    chains::eos::{
+        eos_state::EosState,
+        eos_constants::PRODUCER_REPS,
+    },
     constants::{
         DEBUG_MODE,
         CORE_IS_VALIDATING,

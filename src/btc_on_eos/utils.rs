@@ -58,24 +58,3 @@ pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
 pub fn convert_u64_to_bytes(u_64: u64) -> Bytes {
     u_64.to_le_bytes().to_vec()
 }
-
-pub fn get_not_in_state_err(substring: &str) -> String {
-    format!("✘ No {} in state!" , substring)
-}
-
-pub fn get_no_overwrite_state_err(substring: &str) -> String {
-    format!("✘ Cannot overwrite {} in state!" , substring)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn should_get_no_overwrite_err_string() {
-        let thing = "thing".to_string();
-        let expected_result = "✘ Cannot overwrite thing in state!";
-        let result = get_no_overwrite_state_err(&thing);
-        assert_eq!(result, expected_result)
-    }
-}

@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::eos_state::EosState,
-    chains::eos::filter_redeem_infos::filter_redeem_infos,
+    chains::eos::{
+        eos_state::EosState,
+        filter_redeem_infos::filter_redeem_infos,
+    },
 };
 
 pub fn maybe_filter_value_too_low_redeem_infos_in_state<D>(

@@ -14,6 +14,7 @@ use crate::{
     },
     chains::{
         eos::{
+            eos_state::EosState,
             eos_crypto::eos_private_key::EosPrivateKey,
             parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
             eos_database_utils::{
@@ -77,7 +78,6 @@ use crate::{
                 end_eos_db_transaction_and_return_state,
                 start_eos_db_transaction_and_return_state,
             },
-            eos_state::EosState,
             get_eos_output::get_eos_output,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
             sign_transactions::maybe_sign_txs_and_add_to_state,

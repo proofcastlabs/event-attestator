@@ -2,12 +2,12 @@ use crate::{
     traits::DatabaseInterface,
     types::{Byte, Result},
     chains::eos::{
+        eos_state::EosState,
         enable_protocol_feature::enable_protocol_feature,
     },
     btc_on_eos::{
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
         eos::{
-            eos_state::EosState,
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
             eos_database_transactions::{
                 end_eos_db_transaction_and_return_state,

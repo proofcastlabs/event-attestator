@@ -78,14 +78,6 @@ pub fn decode_prefixed_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
     strip_hex_prefix(&hex_to_decode).and_then(|hex| decode_hex(&hex))
 }
 
-pub fn get_not_in_state_err(substring: &str) -> String {
-    format!("✘ No {} in state!" , substring)
-}
-
-pub fn get_no_overwrite_state_err(substring: &str) -> String {
-    format!("✘ Cannot overwrite {} in state!" , substring)
-}
-
 pub fn convert_hex_to_bytes(hex: &str) -> Result<Bytes> {
     Ok(hex::decode(strip_hex_prefix(&hex)?)?)
 }
@@ -234,22 +226,6 @@ mod tests {
         let hex = "0xc0ffee";
         let expected_result = [ 192, 255, 238 ];
         let result = convert_hex_to_bytes(hex).unwrap();
-        assert_eq!(result, expected_result)
-    }
-
-    #[test]
-    fn should_get_no_state_err_string() {
-        let thing = "thing".to_string();
-        let expected_result = "✘ No thing in state!";
-        let result = get_not_in_state_err(&thing);
-        assert_eq!(result, expected_result)
-    }
-
-    #[test]
-    fn should_get_no_overwrite_err_string() {
-        let thing = "thing".to_string();
-        let expected_result = "✘ Cannot overwrite thing in state!";
-        let result = get_no_overwrite_state_err(&thing);
         assert_eq!(result, expected_result)
     }
 

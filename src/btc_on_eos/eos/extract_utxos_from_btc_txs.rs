@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::eos_state::EosState,
-    chains::eos::extract_utxos_from_btc_txs::extract_btc_utxo_from_btc_tx,
+    chains::eos::{
+        eos_state::EosState,
+        extract_utxos_from_btc_txs::extract_btc_utxo_from_btc_tx,
+    },
 };
 
 pub fn maybe_extract_btc_utxo_from_btc_tx_in_state<D>(

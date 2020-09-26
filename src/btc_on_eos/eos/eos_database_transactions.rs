@@ -1,7 +1,7 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::eos_state::EosState,
+    chains::eos::eos_state::EosState,
 };
 
 pub fn start_eos_db_transaction_and_return_state<D>(

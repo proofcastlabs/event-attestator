@@ -5,6 +5,11 @@ use eos_primitives::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    utils::{
+        get_not_in_state_err,
+        get_no_overwrite_state_err,
+    },
+    btc_on_eos::btc::btc_types::BtcTransactions,
     chains::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eos::{
@@ -17,13 +22,6 @@ use crate::{
                 Checksum256s,
                 ProcessedTxIds,
             },
-        },
-    },
-    btc_on_eos::{
-        btc::btc_types::BtcTransactions,
-        utils::{
-            get_not_in_state_err,
-            get_no_overwrite_state_err,
         },
     },
 };

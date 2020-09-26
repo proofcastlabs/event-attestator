@@ -1,9 +1,11 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eos::check_eos_core_is_initialized::is_eos_core_initialized,
-    btc_on_eos::eos::{
+    chains::eos::{
         eos_state::EosState,
+        check_eos_core_is_initialized::is_eos_core_initialized,
+    },
+    btc_on_eos::eos::{
         eos_database_transactions::{
             end_eos_db_transaction_and_return_state,
             start_eos_db_transaction_and_return_state,

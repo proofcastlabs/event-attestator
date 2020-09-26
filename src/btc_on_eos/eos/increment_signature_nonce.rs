@@ -1,10 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::increment_btc_account_nonce::increment_btc_account_nonce,
-    btc_on_eos::{
+    btc_on_eos::btc::btc_database_utils::get_btc_account_nonce_from_db,
+    chains::{
         eos::eos_state::EosState,
-        btc::btc_database_utils::get_btc_account_nonce_from_db,
+        btc::increment_btc_account_nonce::increment_btc_account_nonce,
     },
 };
 

@@ -3,7 +3,6 @@ pub mod submit_eos_block;
 pub mod enable_protocol_feature;
 pub mod disable_protocol_feature;
 
-pub(crate) mod eos_state;
 pub(crate) mod add_schedule;
 pub(crate) mod get_eos_output;
 pub(crate) mod eos_test_utils;

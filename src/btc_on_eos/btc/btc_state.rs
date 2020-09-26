@@ -1,6 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    utils::{
+        get_not_in_state_err,
+        get_no_overwrite_state_err,
+    },
     chains::{
         eos::eos_types::EosSignedTransactions,
         btc::{
@@ -8,19 +12,13 @@ use crate::{
             utxo_manager::utxo_types::BtcUtxosAndValues,
         },
     },
-    btc_on_eos::{
-        utils::{
-            get_not_in_state_err,
-            get_no_overwrite_state_err,
-        },
-        btc::btc_types::{
-            BtcBlockAndId,
-            MintingParams,
-            BtcTransaction,
-            BtcTransactions,
-            BtcBlockInDbFormat,
-            SubmissionMaterial,
-        },
+    btc_on_eos::btc::btc_types::{
+        BtcBlockAndId,
+        MintingParams,
+        BtcTransaction,
+        BtcTransactions,
+        BtcBlockInDbFormat,
+        SubmissionMaterial,
     },
 };
 

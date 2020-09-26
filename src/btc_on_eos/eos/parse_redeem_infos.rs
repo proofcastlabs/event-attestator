@@ -1,8 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::eos_state::EosState,
-    chains::eos::parse_redeem_infos::parse_redeem_infos_from_action_proofs,
+    chains::eos::{
+        eos_state::EosState,
+        parse_redeem_infos::parse_redeem_infos_from_action_proofs,
+    },
 };
 
 pub fn maybe_parse_redeem_infos_and_put_in_state<D>(
