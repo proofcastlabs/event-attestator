@@ -2,7 +2,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::{
-        eos::sign_eos_transactions::maybe_sign_eth_canon_block_eos_txs_and_add_to_eth_state,
+        eos::sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
         eth::{
             eth_state::EthState,
             validate_block_in_state::validate_block_in_state,
@@ -27,7 +27,7 @@ use crate::{
     erc20_on_eos::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
-            get_eth_output_json::get_eth_output_json,
+            get_output_json::get_output_json,
             parse_peg_in_info::maybe_parse_peg_in_info_and_add_to_state,
         },
     },
@@ -55,11 +55,10 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_update_eth_tail_block_hash_and_return_state)
         .and_then(maybe_update_eth_linker_hash_and_return_state)
         .and_then(maybe_parse_peg_in_info_and_add_to_state)
-        //.and_then(maybe_create_btc_txs_and_add_to_state) // TODO need the EOS tx types here!
-        .and_then(maybe_sign_eth_canon_block_eos_txs_and_add_to_eth_state)
+        .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
         .and_then(maybe_increment_eos_account_nonce_and_return_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)
         .and_then(maybe_remove_receipts_from_canon_block_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)
-        .and_then(get_eth_output_json) // TODO this is currently a stub!
+        .and_then(get_output_json)
 }

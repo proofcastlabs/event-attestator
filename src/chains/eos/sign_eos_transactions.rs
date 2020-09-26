@@ -3,9 +3,9 @@ use crate::{
     traits::DatabaseInterface,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
     chains::{
+        eth::eth_state::EthState,
         eos::{
             eos_database_utils::get_eos_chain_id_from_db,
-            eos_erc20_account_names::EosErc20AccountNames,
             eos_crypto::{
                 eos_private_key::EosPrivateKey,
                 eos_transaction::{
@@ -22,10 +22,6 @@ use crate::{
                 EosSignedTransaction,
                 EosSignedTransactions,
             },
-        },
-        eth::{
-            eth_state::EthState,
-            eth_database_utils::get_eth_canon_block_from_db,
         },
     },
 };
@@ -78,20 +74,19 @@ pub fn get_signed_txs_from_erc20_on_eos_peg_in_infos(
         .collect()
 }
 
-pub fn maybe_sign_eth_canon_block_eos_txs_and_add_to_eth_state<D>(
+pub fn maybe_sign_eos_txs_and_add_to_eth_state<D>(
     state: EthState<D>
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
     info!("✔ Maybe signing `erc20-on-eos` peg in txs...");
     let submission_material = state.get_eth_submission_material()?;
-    let account_names = EosErc20AccountNames::get_from_db(&state.db)?;
     get_signed_txs_from_erc20_on_eos_peg_in_infos(
         submission_material.get_eos_ref_block_num()?,
         submission_material.get_eos_ref_block_prefix()?,
         &get_eos_chain_id_from_db(&state.db)?,
         &EosPrivateKey::get_from_db(&state.db)?,
-        &get_eth_canon_block_from_db(&state.db)?.get_erc20_on_eos_peg_in_infos(&account_names)?,
+        &state.erc20_on_eos_peg_in_infos,
     )
         .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
 }
