@@ -1,3 +1,4 @@
+pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use eos_primitives::{
     BlockHeader as EosBlockHeader,
     ProducerScheduleV2 as EosProducerScheduleV2,
@@ -9,7 +10,6 @@ use crate::{
         get_not_in_state_err,
         get_no_overwrite_state_err,
     },
-    btc_on_eos::btc::btc_types::BtcTransactions,
     chains::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eos::{
@@ -34,7 +34,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub redeem_infos: BtcOnEthRedeemInfos,
     pub producer_signature: String,
     pub action_proofs: ActionProofs,
-    pub signed_txs: BtcTransactions,
+    pub signed_txs: Vec<BtcTransaction>,
     pub interim_block_ids: Checksum256s,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
@@ -90,7 +90,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
 
     pub fn add_signed_txs(
         mut self,
-        signed_txs: BtcTransactions,
+        signed_txs: Vec<BtcTransaction>,
     ) -> Result<EosState<D>>
         where D: DatabaseInterface
     {
