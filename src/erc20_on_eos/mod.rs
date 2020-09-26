@@ -16,5 +16,6 @@ pub use crate::chains::eth::core_initialization::initialize_eth_enclave::{
 };
 
 pub mod eth;
+pub mod eos;
 
 pub(crate) mod check_core_is_initialized;

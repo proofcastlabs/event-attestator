@@ -1,7 +1,6 @@
 use crate::{
     traits::DatabaseInterface,
     constants::CORE_IS_VALIDATING,
-    btc_on_eos::eos::validate_signature::check_block_signature_is_valid,
     types::{
         Bytes,
         Result,
@@ -11,6 +10,7 @@ use crate::{
         eos_merkle_utils::Incremerkle,
         eos_utils::convert_hex_to_checksum256,
         eos_crypto::eos_private_key::EosPrivateKey,
+        validate_signature::check_block_signature_is_valid,
         parse_submission_material::parse_eos_block_header_from_json,
         parse_eos_schedule::{
             EosProducerScheduleJsonV2,

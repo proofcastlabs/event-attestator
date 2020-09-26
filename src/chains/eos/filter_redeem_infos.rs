@@ -1,10 +1,14 @@
 use crate::{
     types::Result,
+    traits::DatabaseInterface,
     chains::{
         btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
-        eos::eos_types::{
-            BtcOnEthRedeemInfo,
-            BtcOnEthRedeemInfos,
+        eos::{
+            eos_state::EosState,
+            eos_types::{
+                BtcOnEthRedeemInfo,
+                BtcOnEthRedeemInfos,
+            },
         },
     },
 };
@@ -28,4 +32,13 @@ pub fn filter_redeem_infos(redeem_infos: &BtcOnEthRedeemInfos) -> Result<BtcOnEt
             .cloned()
             .collect::<Vec<BtcOnEthRedeemInfo>>()
     ))
+}
+
+pub fn maybe_filter_value_too_low_redeem_infos_in_state<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out any redeem infos below minimum # of Satoshis...");
+    filter_redeem_infos(&state.redeem_infos).and_then(|new_infos| state.replace_redeem_infos(new_infos))
 }
