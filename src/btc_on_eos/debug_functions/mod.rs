@@ -18,17 +18,11 @@ use crate::{
             eos_crypto::eos_private_key::EosPrivateKey,
             get_processed_tx_ids::get_processed_tx_ids_and_add_to_state,
             parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
-            filter_duplicate_proofs::maybe_filter_duplicate_proofs_from_state,
             parse_submission_material::parse_submission_material_and_add_to_state,
             filter_redeem_infos::maybe_filter_value_too_low_redeem_infos_in_state,
-            filter_irrelevant_proofs::maybe_filter_out_irrelevant_proofs_from_state,
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
-            filter_invalid_action_digests::maybe_filter_out_invalid_action_receipt_digests,
-            filter_invalid_merkle_proofs::maybe_filter_out_proofs_with_invalid_merkle_proofs,
             filter_already_processed_txs::maybe_filter_out_already_processed_tx_ids_from_state,
-            filter_proofs_with_wrong_action_mroot::maybe_filter_out_proofs_with_wrong_action_mroot,
             add_global_sequences_to_processed_list::maybe_add_global_sequences_to_processed_list_and_return_state,
-            filter_action_and_receipt_mismatches::maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
             eos_database_utils::{
                 put_eos_schedule_in_db,
                 get_eos_chain_id_from_db,
@@ -42,6 +36,14 @@ use crate::{
             eos_database_transactions::{
                 end_eos_db_transaction_and_return_state,
                 start_eos_db_transaction_and_return_state,
+            },
+            filter_action_proofs::{
+                maybe_filter_duplicate_proofs_from_state,
+                maybe_filter_out_proofs_for_irrelevant_accounts,
+                maybe_filter_out_invalid_action_receipt_digests,
+                maybe_filter_out_proofs_with_wrong_action_mroot,
+                maybe_filter_out_proofs_with_invalid_merkle_proofs,
+                maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
             },
         },
         btc::{
@@ -131,7 +133,7 @@ pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> w
         .and_then(start_eos_db_transaction_and_return_state)
         .and_then(get_processed_tx_ids_and_add_to_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)
-        .and_then(maybe_filter_out_irrelevant_proofs_from_state)
+        .and_then(maybe_filter_out_proofs_for_irrelevant_accounts)
         .and_then(maybe_filter_out_action_proof_receipt_mismatches_and_return_state)
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)

@@ -6,7 +6,9 @@ use eos_primitives::{
 };
 use crate::{
     types::Result,
+    traits::DatabaseInterface,
     chains::eos::{
+        eos_state::EosState,
         eos_constants::REDEEM_ACTION_NAME,
         eos_merkle_utils::verify_merkle_proof,
         eos_utils::convert_bytes_to_checksum256,
@@ -16,6 +18,9 @@ use crate::{
             ActionProof,
             ActionProofs,
             ProcessedTxIds,
+        },
+        eos_database_utils::{
+            get_eos_account_name_from_db,
         },
     },
 };
@@ -146,6 +151,68 @@ pub fn filter_duplicate_proofs(
     debug!("Num proofs before: {}", action_proofs.len());
     debug!("Num proofs after : {}", filtered.len());
     Ok(filtered)
+}
+
+pub fn maybe_filter_duplicate_proofs_from_state<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Maybe filtering duplicate proofs from state...");
+    filter_duplicate_proofs(&state.action_proofs).and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+// TODO Could also add a filter for those whose symbol isn't correct? Though this is up to the
+// smart-contract implementer really, and filtering on the account-name should be enough.
+pub fn maybe_filter_out_proofs_for_irrelevant_accounts<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out irrelevant proofs...");
+    filter_out_proofs_for_other_accounts(&state.action_proofs, get_eos_account_name_from_db(&state.db)?)
+        .and_then(|proofs| filter_out_proofs_for_other_actions(&proofs))
+        .and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_out_action_proof_receipt_mismatches_and_return_state<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering proofs w/ action digests NOT in action receipts...");
+    filter_out_proofs_with_action_digests_not_in_action_receipts(&state.action_proofs)
+        .and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_out_invalid_action_receipt_digests<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out invalid action digests...");
+    filter_out_invalid_action_receipt_digests(&state.action_proofs)
+        .and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_out_proofs_with_invalid_merkle_proofs<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out invalid merkle proofs...");
+    filter_out_proofs_with_invalid_merkle_proofs(&state.action_proofs)
+        .and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_out_proofs_with_wrong_action_mroot<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out proofs with wrong `action_mroot`...");
+    filter_proofs_with_wrong_action_mroot(&state.get_eos_block_header()?.action_mroot, &state.action_proofs)
+        .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
 #[cfg(test)]
