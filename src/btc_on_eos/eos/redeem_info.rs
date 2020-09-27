@@ -9,12 +9,16 @@ use eos_primitives::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eos::{
-        eos_state::EosState,
-        eos_action_proofs::EosActionProof,
-        eos_types::{
-            GlobalSequence,
-            GlobalSequences,
+    chains::{
+        btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
+        eos::{
+            eos_state::EosState,
+            eos_action_proofs::EosActionProof,
+            eos_types::{
+                ProcessedTxIds,
+                GlobalSequence,
+                GlobalSequences,
+            },
         },
     },
 };
@@ -48,6 +52,16 @@ impl BtcOnEosRedeemInfos {
                 .collect::<Result<Vec<BtcOnEosRedeemInfo>>>()?
         ))
     }
+
+    pub fn filter_out_already_processed_txs(&self, processed_tx_ids: &ProcessedTxIds) -> Result<BtcOnEosRedeemInfos> {
+        Ok(BtcOnEosRedeemInfos::new(
+            self
+                .iter()
+                .filter(|info| !processed_tx_ids.contains(&info.global_sequence))
+                .cloned()
+                .collect::<Vec<BtcOnEosRedeemInfo>>()
+        ))
+    }
 }
 
 pub fn maybe_parse_redeem_infos_and_put_in_state<D>(
@@ -61,4 +75,47 @@ pub fn maybe_parse_redeem_infos_and_put_in_state<D>(
             info!("✔ Parsed {} sets of redeem info!", redeem_infos.len());
             state.add_btc_on_eos_redeem_infos(redeem_infos)
         })
+}
+
+pub fn filter_out_value_too_low_btc_on_eos_redeem_infos(
+    redeem_infos: &BtcOnEosRedeemInfos
+) -> Result<BtcOnEosRedeemInfos> {
+    Ok(BtcOnEosRedeemInfos::new(
+        redeem_infos
+            .iter()
+            .map(|redeem_info| redeem_info.amount)
+            .zip(redeem_infos.0.iter())
+            .filter_map(|(amount, redeem_info)| {
+                match amount >= MINIMUM_REQUIRED_SATOSHIS {
+                    true => Some(redeem_info),
+                    false => {
+                        info!("✘ Filtering redeem redeem info ∵ value too low: {:?}", redeem_info);
+                        None
+                    }
+                }
+            })
+            .cloned()
+            .collect::<Vec<BtcOnEosRedeemInfo>>()
+    ))
+}
+
+
+pub fn maybe_filter_value_too_low_redeem_infos_in_state<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out any redeem infos below minimum # of Satoshis...");
+    filter_out_value_too_low_btc_on_eos_redeem_infos(&state.btc_on_eos_redeem_infos)
+        .and_then(|new_infos| state.replace_btc_on_eos_redeem_infos(new_infos))
+}
+
+pub fn maybe_filter_out_already_processed_tx_ids_from_state<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out already processed tx IDs...");
+    state.btc_on_eos_redeem_infos.filter_out_already_processed_txs(&state.processed_tx_ids)
+        .and_then(|filtered| state.add_btc_on_eos_redeem_infos(filtered))
 }

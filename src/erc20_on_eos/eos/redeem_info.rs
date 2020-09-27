@@ -17,6 +17,7 @@ use crate::{
         eos_state::EosState,
         eos_action_proofs::EosActionProof,
         eos_types::{
+            ProcessedTxIds,
             GlobalSequence,
             GlobalSequences,
         },
@@ -52,6 +53,16 @@ impl Erc20OnEosRedeemInfos {
                 .collect::<Result<Vec<Erc20OnEosRedeemInfo>>>()?
         ))
     }
+
+    pub fn filter_out_already_processed_txs(&self, processed_tx_ids: &ProcessedTxIds) -> Result<Self> {
+        Ok(Erc20OnEosRedeemInfos::new(
+            self
+                .iter()
+                .filter(|info| !processed_tx_ids.contains(&info.global_sequence))
+                .cloned()
+                .collect::<Vec<Erc20OnEosRedeemInfo>>()
+        ))
+    }
 }
 
 pub fn maybe_parse_redeem_infos_and_put_in_state<D>(
@@ -65,4 +76,14 @@ pub fn maybe_parse_redeem_infos_and_put_in_state<D>(
             info!("✔ Parsed {} sets of redeem info!", redeem_infos.len());
             state.add_erc20_on_eos_redeem_infos(redeem_infos)
         })
+}
+
+pub fn maybe_filter_out_already_processed_tx_ids_from_state<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out already processed tx IDs...");
+    state.erc20_on_eos_redeem_infos.filter_out_already_processed_txs(&state.processed_tx_ids)
+        .and_then(|filtered| state.add_erc20_on_eos_redeem_infos(filtered))
 }

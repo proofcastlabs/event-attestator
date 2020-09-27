@@ -7,22 +7,15 @@ use eos_primitives::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::redeem_info::{
-        BtcOnEosRedeemInfo,
-        BtcOnEosRedeemInfos,
-    },
     chains::eos::{
         eos_state::EosState,
-        eos_types::ProcessedTxIds,
         eos_constants::REDEEM_ACTION_NAME,
         eos_merkle_utils::verify_merkle_proof,
         eos_utils::convert_bytes_to_checksum256,
+        eos_database_utils::get_eos_account_name_from_db,
         eos_action_proofs::{
             EosActionProof,
             EosActionProofs,
-        },
-        eos_database_utils::{
-            get_eos_account_name_from_db,
         },
     },
 };
@@ -115,21 +108,6 @@ pub fn filter_out_proofs_with_action_digests_not_in_action_receipts(
     debug!("Num proofs before: {}", action_proofs.len());
     debug!("Num proofs after : {}", filtered.len());
     Ok(filtered)
-}
-
-pub fn filter_out_already_processed_txs(
-    redeem_infos: &BtcOnEosRedeemInfos,
-    processed_tx_ids: &ProcessedTxIds,
-) -> Result<BtcOnEosRedeemInfos> {
-    Ok(
-        BtcOnEosRedeemInfos::new(
-            redeem_infos
-                .iter()
-                .filter(|params| !processed_tx_ids.contains(&params.global_sequence))
-                .cloned()
-                .collect::<Vec<BtcOnEosRedeemInfo>>()
-        )
-    )
 }
 
 pub fn filter_duplicate_proofs(

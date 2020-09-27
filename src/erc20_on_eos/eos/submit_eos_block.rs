@@ -2,8 +2,11 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     erc20_on_eos::{
-        eos::redeem_info::maybe_parse_redeem_infos_and_put_in_state,
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
+        eos::redeem_info::{
+            maybe_parse_redeem_infos_and_put_in_state,
+            maybe_filter_out_already_processed_tx_ids_from_state,
+        },
     },
     chains::eos::{
         eos_state::EosState,
@@ -19,7 +22,6 @@ use crate::{
         parse_submission_material::parse_submission_material_and_add_to_state,
         append_interim_block_ids::append_interim_block_ids_to_incremerkle_in_state,
         get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
-        filter_already_processed_txs::maybe_filter_out_already_processed_tx_ids_from_state,
         add_global_sequences_to_processed_list::maybe_add_global_sequences_to_processed_list_and_return_state,
         eos_database_transactions::{
             end_eos_db_transaction_and_return_state,
@@ -34,12 +36,6 @@ use crate::{
             maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
         },
     },
-            /*
-            get_eos_output::get_eos_output,
-            save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
-            sign_transactions::maybe_sign_txs_and_add_to_state,
-            extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
-            */
 };
 
 pub fn submit_eos_block_to_core<D>(db: D, block_json: &str) -> Result<String> where D: DatabaseInterface {

@@ -19,9 +19,7 @@ use crate::{
             get_processed_tx_ids::get_processed_tx_ids_and_add_to_state,
             parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
             parse_submission_material::parse_submission_material_and_add_to_state,
-            filter_redeem_infos::maybe_filter_value_too_low_redeem_infos_in_state,
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
-            filter_already_processed_txs::maybe_filter_out_already_processed_tx_ids_from_state,
             add_global_sequences_to_processed_list::maybe_add_global_sequences_to_processed_list_and_return_state,
             eos_database_utils::{
                 put_eos_schedule_in_db,
@@ -96,8 +94,12 @@ use crate::{
             get_eos_output::get_eos_output,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
             sign_transactions::maybe_sign_txs_and_add_to_state,
-            redeem_info::maybe_parse_redeem_infos_and_put_in_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
+            redeem_info::{
+                maybe_parse_redeem_infos_and_put_in_state,
+                maybe_filter_value_too_low_redeem_infos_in_state,
+                maybe_filter_out_already_processed_tx_ids_from_state,
+            },
         },
     },
 };
