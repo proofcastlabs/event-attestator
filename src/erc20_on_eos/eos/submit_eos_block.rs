@@ -2,6 +2,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     erc20_on_eos::{
+        eos::redeem_info::maybe_parse_redeem_infos_and_put_in_state,
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
     },
     chains::eos::{
@@ -12,7 +13,6 @@ use crate::{
         validate_signature::validate_block_header_signature,
         get_eos_incremerkle::get_incremerkle_and_add_to_state,
         get_processed_tx_ids::get_processed_tx_ids_and_add_to_state,
-        //parse_redeem_infos::maybe_parse_redeem_infos_and_put_in_state,
         add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
         validate_producer_slot::validate_producer_slot_of_block_in_state,
         get_active_schedule::get_active_schedule_from_db_and_add_to_state,
@@ -56,13 +56,14 @@ pub fn submit_eos_block_to_core<D>(db: D, block_json: &str) -> Result<String> wh
         .and_then(start_eos_db_transaction_and_return_state)
         .and_then(maybe_add_new_eos_schedule_to_db_and_return_state)
         .and_then(get_processed_tx_ids_and_add_to_state)
+        // FIXME: The filterers are all working on btc_on_eos redeem tyoes!
         .and_then(maybe_filter_duplicate_proofs_from_state)
         .and_then(maybe_filter_out_proofs_for_irrelevant_accounts)
         .and_then(maybe_filter_out_action_proof_receipt_mismatches_and_return_state)
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
-        //.and_then(maybe_parse_redeem_infos_and_put_in_state) // TODO perc20 version of this
+        .and_then(maybe_parse_redeem_infos_and_put_in_state)
         .and_then(maybe_filter_value_too_low_redeem_infos_in_state) // TODO check this?
         .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)

@@ -1,4 +1,8 @@
 use std::str::from_utf8;
+use ethereum_types::{
+    U256,
+    Address as EthAddress,
+};
 use eos_primitives::{
     Checksum256,
     Action as EosAction,
@@ -10,6 +14,7 @@ use crate::{
     types::Result,
     utils::convert_bytes_to_u64,
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfo,
+    erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfo,
     chains::eos::{
         eos_types:: MerkleProof,
         eos_utils::convert_hex_to_checksum256,
@@ -37,8 +42,12 @@ impl EosActionProof {
         Ok(EosSymbol::new(convert_bytes_to_u64(&self.action.data[16..24].to_vec())?))
     }
 
-    fn get_eos_amount(&self) -> Result<u64> {
+    fn get_btc_on_eos_eos_amount(&self) -> Result<u64> {
         convert_bytes_to_u64(&self.action.data[8..16].to_vec())
+    }
+
+    fn get_erc20_on_eos_btc_redeem_amount(&self) -> Result<U256> {
+        Ok(U256::from(&self.action.data[8..16])) // FIXME TODO Test this!
     }
 
     fn get_redeem_action_sender(&self) -> Result<EosAccountName> {
@@ -47,6 +56,10 @@ impl EosActionProof {
 
     fn get_btc_on_eos_btc_redeem_address(&self) -> Result<String> {
         Ok(from_utf8(&self.action.data[25..])?.to_string())
+    }
+
+    fn get_erc20_on_eos_btc_redeem_address(&self) -> Result<EthAddress> {
+        Ok(EthAddress::from_slice(&self.action.data[25..])) // FIXME / TODO Test this!
     }
 
     pub fn from_json(json: &EosActionProofJson) -> Result<Self> {
@@ -63,10 +76,20 @@ impl EosActionProof {
     pub fn to_btc_on_eos_redeem_info(&self) -> Result<BtcOnEosRedeemInfo> {
         Ok(BtcOnEosRedeemInfo {
             originating_tx_id: self.tx_id,
-            amount: self.get_eos_amount()?,
             from: self.get_redeem_action_sender()?,
+            amount: self.get_btc_on_eos_eos_amount()?,
             recipient: self.get_btc_on_eos_btc_redeem_address()?,
             global_sequence: self.action_receipt.global_sequence,
+        })
+    }
+
+    pub fn to_erc20_on_eos_redeem_info(&self) -> Result<Erc20OnEosRedeemInfo> {
+        Ok(Erc20OnEosRedeemInfo {
+            originating_tx_id: self.tx_id,
+            from: self.get_redeem_action_sender()?,
+            amount: self.get_erc20_on_eos_btc_redeem_amount()?,
+            global_sequence: self.action_receipt.global_sequence,
+            recipient: self.get_erc20_on_eos_btc_redeem_address()?,
         })
     }
 }
@@ -148,7 +171,7 @@ mod tests {
         let expected_result: u64 = 5111;
         let result = get_sample_eos_submission_material_n(1)
             .action_proofs[0]
-            .get_eos_amount()
+            .get_btc_on_eos_eos_amount()
             .unwrap();
         assert_eq!(result, expected_result);
     }

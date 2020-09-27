@@ -124,8 +124,13 @@ impl<D> EosState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn add_btc_on_eos_redeem_infos(mut self, btc_on_eos_redeem_infos: BtcOnEosRedeemInfos) -> Result<EosState<D>> {
-        self.btc_on_eos_redeem_infos = btc_on_eos_redeem_infos;
+    pub fn add_btc_on_eos_redeem_infos(mut self, infos: BtcOnEosRedeemInfos) -> Result<EosState<D>> {
+        self.btc_on_eos_redeem_infos = infos;
+        Ok(self)
+    }
+
+    pub fn add_erc20_on_eos_redeem_infos(mut self, infos: Erc20OnEosRedeemInfos) -> Result<EosState<D>> {
+        self.erc20_on_eos_redeem_infos = infos;
         Ok(self)
     }
 
