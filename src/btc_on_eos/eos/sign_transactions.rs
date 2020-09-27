@@ -118,7 +118,7 @@ pub fn maybe_sign_txs_and_add_to_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Maybe signing tx(s) from redeem params...");
-    match &state.redeem_infos.len() {
+    match &state.btc_on_eos_redeem_infos.len() {
         0 => {
             info!("✔ No redeem params in state ∴ not signing txs!");
             Ok(state)
@@ -129,7 +129,7 @@ pub fn maybe_sign_txs_and_add_to_state<D>(
                 &state.db,
                 get_btc_fee_from_db(&state.db)?,
                 get_btc_network_from_db(&state.db)?,
-                &state.redeem_infos,
+                &state.btc_on_eos_redeem_infos,
             )
                 .and_then(|signed_tx| {
                     #[cfg(feature="debug")] { debug!("✔ Signed transaction: {:?}", signed_tx); }

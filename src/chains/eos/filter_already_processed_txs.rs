@@ -13,6 +13,6 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Filtering out already processed tx IDs...");
-    filter_out_already_processed_txs(&state.redeem_infos, &state.processed_tx_ids)
-        .and_then(|filtered| state.add_redeem_infos(filtered))
+    filter_out_already_processed_txs(&state.btc_on_eos_redeem_infos, &state.processed_tx_ids)
+        .and_then(|filtered| state.add_btc_on_eos_redeem_infos(filtered))
 }

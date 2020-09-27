@@ -59,6 +59,6 @@ pub fn maybe_parse_redeem_infos_and_put_in_state<D>(
     BtcOnEosRedeemInfos::from_action_proofs(&state.action_proofs)
         .and_then(|redeem_infos| {
             info!("✔ Parsed {} sets of redeem info!", redeem_infos.len());
-            state.add_redeem_infos(redeem_infos)
+            state.add_btc_on_eos_redeem_infos(redeem_infos)
         })
 }

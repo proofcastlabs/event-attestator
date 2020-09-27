@@ -11,7 +11,7 @@ use crate::{
     },
 };
 
-pub fn filter_redeem_infos(redeem_infos: &BtcOnEosRedeemInfos) -> Result<BtcOnEosRedeemInfos> {
+pub fn filter_btc_on_eos_redeem_infos(redeem_infos: &BtcOnEosRedeemInfos) -> Result<BtcOnEosRedeemInfos> {
     Ok(BtcOnEosRedeemInfos::new(
         redeem_infos
             .iter()
@@ -37,5 +37,6 @@ pub fn maybe_filter_value_too_low_redeem_infos_in_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Filtering out any redeem infos below minimum # of Satoshis...");
-    filter_redeem_infos(&state.redeem_infos).and_then(|new_infos| state.replace_redeem_infos(new_infos))
+    filter_btc_on_eos_redeem_infos(&state.btc_on_eos_redeem_infos)
+        .and_then(|new_infos| state.replace_btc_on_eos_redeem_infos(new_infos))
 }
