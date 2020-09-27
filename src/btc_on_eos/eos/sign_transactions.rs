@@ -167,10 +167,7 @@ mod tests {
                     put_btc_address_in_db,
                 },
             },
-            eos::{
-                redeem_info::parse_redeem_infos_from_action_proofs,
-                eos_test_utils::get_sample_eos_submission_material_json_n,
-            },
+            eos::eos_test_utils::get_sample_eos_submission_material_json_n,
         },
     };
 
@@ -182,7 +179,7 @@ mod tests {
         let btc_address = "mwi6VyZUqwqdu1DtQMruV4UzEqJADZzj6n".to_string();
         let submission_material = get_sample_eos_submission_material_json_n(3);
         let action_proof = EosActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
-        let redeem_infos = parse_redeem_infos_from_action_proofs(&[action_proof]).unwrap();
+        let redeem_infos = BtcOnEosRedeemInfos::from_action_proofs(&[action_proof]).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_2().unwrap();
         save_utxos_to_db(&db, &BtcUtxosAndValues::new(vec![utxo])).unwrap();
         let pk = BtcPrivateKey::from_slice(
@@ -206,7 +203,7 @@ mod tests {
         let btc_address = "mwi6VyZUqwqdu1DtQMruV4UzEqJADZzj6n".to_string();
         let submission_material = get_sample_eos_submission_material_json_n(4);
         let action_proof = EosActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
-        let redeem_infos = parse_redeem_infos_from_action_proofs(&[action_proof]).unwrap();
+        let redeem_infos = BtcOnEosRedeemInfos::from_action_proofs(&[action_proof]).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_3().unwrap();
         save_utxos_to_db(&db, &BtcUtxosAndValues::new(vec![utxo])).unwrap();
         let pk = BtcPrivateKey::from_slice(
