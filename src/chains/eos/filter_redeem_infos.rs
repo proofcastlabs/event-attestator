@@ -6,15 +6,15 @@ use crate::{
         eos::{
             eos_state::EosState,
             eos_types::{
-                BtcOnEthRedeemInfo,
-                BtcOnEthRedeemInfos,
+                BtcOnEosRedeemInfo,
+                BtcOnEosRedeemInfos,
             },
         },
     },
 };
 
-pub fn filter_redeem_infos(redeem_infos: &BtcOnEthRedeemInfos) -> Result<BtcOnEthRedeemInfos> {
-    Ok(BtcOnEthRedeemInfos::new(
+pub fn filter_redeem_infos(redeem_infos: &BtcOnEosRedeemInfos) -> Result<BtcOnEosRedeemInfos> {
+    Ok(BtcOnEosRedeemInfos::new(
         &redeem_infos
             .0
             .iter()
@@ -30,7 +30,7 @@ pub fn filter_redeem_infos(redeem_infos: &BtcOnEthRedeemInfos) -> Result<BtcOnEt
                 }
             })
             .cloned()
-            .collect::<Vec<BtcOnEthRedeemInfo>>()
+            .collect::<Vec<BtcOnEosRedeemInfo>>()
     ))
 }
 
