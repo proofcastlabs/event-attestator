@@ -9,7 +9,7 @@ use crate::{
     types::Result,
     chains::eos::{
         eos_utils::convert_hex_to_checksum256,
-        eos_types::{
+        eos_action_proofs::{
             AuthSequenceJson,
             EosActionReceiptJson,
         },

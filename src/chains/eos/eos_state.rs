@@ -14,11 +14,11 @@ use crate::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eos::{
             eos_merkle_utils::Incremerkle,
+            eos_action_proofs::EosActionProofs,
             protocol_features::EnabledFeatures,
             parse_submission_material::EosSubmissionMaterial,
             eos_types::{
                 BtcOnEosRedeemInfos,
-                ActionProofs,
                 Checksum256s,
                 ProcessedTxIds,
             },
@@ -33,7 +33,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub incremerkle: Incremerkle,
     pub redeem_infos: BtcOnEosRedeemInfos,
     pub producer_signature: String,
-    pub action_proofs: ActionProofs,
+    pub action_proofs: EosActionProofs,
     pub signed_txs: Vec<BtcTransaction>,
     pub interim_block_ids: Checksum256s,
     pub processed_tx_ids: ProcessedTxIds,
@@ -170,7 +170,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
 
     pub fn replace_action_proofs(
         mut self,
-        replacements: ActionProofs,
+        replacements: EosActionProofs,
     ) -> Result<EosState<D>> {
         info!("✔ Replacing `action_proofs` in state...");
         self.action_proofs = replacements;

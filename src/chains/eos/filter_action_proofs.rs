@@ -12,11 +12,13 @@ use crate::{
         eos_constants::REDEEM_ACTION_NAME,
         eos_merkle_utils::verify_merkle_proof,
         eos_utils::convert_bytes_to_checksum256,
+        eos_action_proofs::{
+            EosActionProof,
+            EosActionProofs,
+        },
         eos_types::{
             BtcOnEosRedeemInfo,
             BtcOnEosRedeemInfos,
-            ActionProof,
-            ActionProofs,
             ProcessedTxIds,
         },
         eos_database_utils::{
@@ -27,8 +29,8 @@ use crate::{
 
 pub fn filter_proofs_with_wrong_action_mroot(
     action_mroot: &Checksum256,
-    action_proofs: &[ActionProof],
-) -> Result<ActionProofs> {
+    action_proofs: &[EosActionProof],
+) -> Result<EosActionProofs> {
     let filtered = action_proofs
         .iter()
         .filter(|proof_data|
@@ -36,17 +38,17 @@ pub fn filter_proofs_with_wrong_action_mroot(
             action_mroot.to_string()
         )
         .cloned()
-        .collect::<ActionProofs>();
+        .collect::<EosActionProofs>();
     debug!("Num proofs before: {}", action_proofs.len());
     debug!("Num proofs after : {}", filtered.len());
     Ok(filtered)
 }
 
 pub fn filter_out_proofs_for_other_accounts(
-    action_proofs: &[ActionProof],
+    action_proofs: &[EosActionProof],
     required_account_name: EosAccountName,
-) -> Result<ActionProofs> {
-    let filtered: ActionProofs = action_proofs
+) -> Result<EosActionProofs> {
+    let filtered: EosActionProofs = action_proofs
         .iter()
         .filter(|proof| proof.action.account == required_account_name)
         .cloned()
@@ -58,10 +60,10 @@ pub fn filter_out_proofs_for_other_accounts(
 }
 
 pub fn filter_out_proofs_for_other_actions(
-    action_proofs: &[ActionProof]
-) -> Result<ActionProofs> {
+    action_proofs: &[EosActionProof]
+) -> Result<EosActionProofs> {
     let required_action = EosActionName::from_str(REDEEM_ACTION_NAME)?;
-    let filtered: ActionProofs = action_proofs
+    let filtered: EosActionProofs = action_proofs
         .iter()
         .filter(|proof| proof.action.name == required_action)
         .cloned()
@@ -72,7 +74,7 @@ pub fn filter_out_proofs_for_other_actions(
     Ok(filtered)
 }
 
-pub fn filter_out_proofs_with_invalid_merkle_proofs(action_proofs: &[ActionProof]) -> Result<ActionProofs> {
+pub fn filter_out_proofs_with_invalid_merkle_proofs(action_proofs: &[EosActionProof]) -> Result<EosActionProofs> {
     let filtered = action_proofs
         .iter()
         .map(|proof_data| proof_data.action_proof.as_slice())
@@ -82,13 +84,13 @@ pub fn filter_out_proofs_with_invalid_merkle_proofs(action_proofs: &[ActionProof
         .zip(action_proofs.iter())
         .filter_map(|(proof_is_valid, proof)| {if proof_is_valid { Some(proof) } else { None }})
         .cloned()
-        .collect::<ActionProofs>();
+        .collect::<EosActionProofs>();
     debug!("Num proofs before: {}", action_proofs.len());
     debug!("Num proofs after : {}", filtered.len());
     Ok(filtered)
 }
 
-pub fn filter_out_invalid_action_receipt_digests(action_proofs: &[ActionProof]) -> Result<ActionProofs> {
+pub fn filter_out_invalid_action_receipt_digests(action_proofs: &[EosActionProof]) -> Result<EosActionProofs> {
     let filtered = action_proofs
         .iter()
         .map(|proof| proof.action_receipt.to_digest())
@@ -96,15 +98,15 @@ pub fn filter_out_invalid_action_receipt_digests(action_proofs: &[ActionProof]) 
         .zip(action_proofs.iter())
         .filter_map(|(digest, proof)| { if digest == proof.action_proof[0] { Some(proof) } else { None }})
         .cloned()
-        .collect::<ActionProofs>();
+        .collect::<EosActionProofs>();
     debug!("Num proofs before: {}", action_proofs.len());
     debug!("Num proofs after : {}", filtered.len());
     Ok(filtered)
 }
 
 pub fn filter_out_proofs_with_action_digests_not_in_action_receipts(
-    action_proofs: &[ActionProof]
-) -> Result<ActionProofs> {
+    action_proofs: &[EosActionProof]
+) -> Result<EosActionProofs> {
     let filtered = action_proofs
         .iter()
         .map(|proof| proof.action.to_digest())
@@ -114,7 +116,7 @@ pub fn filter_out_proofs_with_action_digests_not_in_action_receipts(
         .zip(action_proofs.iter())
         .filter_map(|(digest, proof)| { if digest == proof.action_receipt.act_digest { Some(proof) } else { None }})
         .cloned()
-        .collect::<ActionProofs>();
+        .collect::<EosActionProofs>();
     debug!("Num proofs before: {}", action_proofs.len());
     debug!("Num proofs after : {}", filtered.len());
     Ok(filtered)
@@ -137,9 +139,9 @@ pub fn filter_out_already_processed_txs(
 }
 
 pub fn filter_duplicate_proofs(
-    action_proofs: &[ActionProof]
-) -> Result<ActionProofs> {
-    let mut filtered: ActionProofs = Vec::new();
+    action_proofs: &[EosActionProof]
+) -> Result<EosActionProofs> {
+    let mut filtered: EosActionProofs = Vec::new();
     action_proofs
         .iter()
         .map(|proof| {

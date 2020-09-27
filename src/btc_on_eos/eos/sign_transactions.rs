@@ -147,7 +147,7 @@ mod tests {
         test_utils::get_test_database,
         chains::{
             eos::{
-                eos_types::ActionProof,
+                eos_action_proofs::EosActionProof,
                 parse_redeem_infos::parse_redeem_infos_from_action_proofs,
             },
             btc::{
@@ -179,7 +179,7 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let btc_address = "mwi6VyZUqwqdu1DtQMruV4UzEqJADZzj6n".to_string();
         let submission_material = get_sample_eos_submission_material_json_n(3);
-        let action_proof = ActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
+        let action_proof = EosActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
         let redeem_infos = parse_redeem_infos_from_action_proofs(&[action_proof]).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_2().unwrap();
         save_utxos_to_db(&db, &BtcUtxosAndValues::new(vec![utxo])).unwrap();
@@ -203,7 +203,7 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let btc_address = "mwi6VyZUqwqdu1DtQMruV4UzEqJADZzj6n".to_string();
         let submission_material = get_sample_eos_submission_material_json_n(4);
-        let action_proof = ActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
+        let action_proof = EosActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
         let redeem_infos = parse_redeem_infos_from_action_proofs(&[action_proof]).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_3().unwrap();
         save_utxos_to_db(&db, &BtcUtxosAndValues::new(vec![utxo])).unwrap();

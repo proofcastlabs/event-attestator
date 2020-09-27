@@ -36,9 +36,11 @@ use crate::{
     chains::eos::{
         eos_state::EosState,
         eos_merkle_utils::Incremerkle,
+        eos_action_proofs::{
+            EosActionProof,
+            EosActionProofs,
+        },
         eos_types::{
-            ActionProof,
-            ActionProofs,
             Checksum256s,
             EosBlockHeaderJson,
             EosSignedTransaction,
@@ -465,13 +467,13 @@ pub fn get_sample_action_digests() -> Vec<Bytes> {
 
 fn get_sample_action_proofs_n(
     n: usize
-) -> ActionProofs {
+) -> EosActionProofs {
     get_sample_eos_submission_material_n(n).action_proofs
 }
 
 pub fn get_sample_action_proof_n(
     n: usize
-) -> ActionProof {
+) -> EosActionProof {
     get_sample_action_proofs_n(n)[0].clone()
 }
 

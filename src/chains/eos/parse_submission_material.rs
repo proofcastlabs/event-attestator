@@ -15,12 +15,14 @@ use crate::{
     chains::eos::{
         eos_state::EosState,
         eos_utils::convert_hex_to_checksum256,
+        eos_action_proofs::{
+            EosActionProof,
+            EosActionProofs,
+            EosActionProofJson,
+            EosActionProofJsons,
+        },
         eos_types::{
-            ActionProof,
-            ActionProofs,
             Checksum256s,
-            ActionProofJson,
-            ActionProofJsons,
             EosBlockHeaderJson,
         },
         parse_eos_schedule::{
@@ -37,7 +39,7 @@ use crate::{
 pub struct EosSubmissionMaterial {
     pub block_num: u64,
     pub producer_signature: String,
-    pub action_proofs: ActionProofs,
+    pub action_proofs: EosActionProofs,
     pub block_header: EosBlockHeader,
     pub interim_block_ids: Checksum256s,
 }
@@ -45,16 +47,16 @@ pub struct EosSubmissionMaterial {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterialJson {
     pub interim_block_ids: Vec<String>,
-    pub action_proofs: ActionProofJsons,
+    pub action_proofs: EosActionProofJsons,
     pub block_header: EosBlockHeaderJson,
 }
 
 fn parse_eos_action_proof_jsons_to_action_proofs(
-    action_proof_jsons: &[ActionProofJson],
-) -> Result<ActionProofs> {
+    action_proof_jsons: &[EosActionProofJson],
+) -> Result<EosActionProofs> {
     action_proof_jsons
         .iter()
-        .map(|json| ActionProof::from_json(json))
+        .map(|json| EosActionProof::from_json(json))
         .collect()
 }
 

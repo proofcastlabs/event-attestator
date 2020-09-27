@@ -10,8 +10,8 @@ use crate::{
         Result,
     },
     chains::eos::{
+        eos_action_proofs::EosActionProof,
         eos_types::{
-            ActionProof,
             BtcOnEosRedeemInfo,
             BtcOnEosRedeemInfos,
         },
@@ -35,7 +35,7 @@ pub fn get_redeem_address_from_action_data(action_data: &[Byte]) -> Result<Strin
     Ok(from_utf8(&action_data[25..])?.to_string())
 }
 
-pub fn parse_redeem_infos_from_action_proofs(action_proofs: &[ActionProof]) -> Result<BtcOnEosRedeemInfos> {
+pub fn parse_redeem_infos_from_action_proofs(action_proofs: &[EosActionProof]) -> Result<BtcOnEosRedeemInfos> {
     Ok(BtcOnEosRedeemInfos::new(
         &action_proofs
             .iter()

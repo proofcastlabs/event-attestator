@@ -8,7 +8,7 @@ use eos_primitives::{
 };
 use crate::{
     types::{Bytes, Result},
-    chains::eos::eos_types::{
+    chains::eos::eos_action_proofs::{
         EosActionJson,
         AuthorizationJson,
     },
