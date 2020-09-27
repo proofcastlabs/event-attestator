@@ -33,10 +33,7 @@ pub fn filter_proofs_with_wrong_action_mroot(
 ) -> Result<EosActionProofs> {
     let filtered = action_proofs
         .iter()
-        .filter(|proof_data|
-            proof_data.action_proof[proof_data.action_proof.len() - 1] ==
-            action_mroot.to_string()
-        )
+        .filter(|proof_data| proof_data.action_proof[proof_data.action_proof.len() - 1] == action_mroot.to_string())
         .cloned()
         .collect::<EosActionProofs>();
     debug!("Num proofs before: {}", action_proofs.len());
@@ -59,9 +56,7 @@ pub fn filter_out_proofs_for_other_accounts(
     Ok(filtered)
 }
 
-pub fn filter_out_proofs_for_other_actions(
-    action_proofs: &[EosActionProof]
-) -> Result<EosActionProofs> {
+pub fn filter_out_proofs_for_other_actions(action_proofs: &[EosActionProof]) -> Result<EosActionProofs> {
     let required_action = EosActionName::from_str(REDEEM_ACTION_NAME)?;
     let filtered: EosActionProofs = action_proofs
         .iter()
@@ -170,7 +165,7 @@ pub fn maybe_filter_out_proofs_for_irrelevant_accounts<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    info!("✔ Filtering out irrelevant proofs...");
+    info!("✔ Filtering out proofs for accounts we don't care about...");
     filter_out_proofs_for_other_accounts(&state.action_proofs, get_eos_account_name_from_db(&state.db)?)
         .and_then(|proofs| filter_out_proofs_for_other_actions(&proofs))
         .and_then(|proofs| state.replace_action_proofs(proofs))
