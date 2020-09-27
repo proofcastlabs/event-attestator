@@ -24,7 +24,8 @@ pub fn maybe_add_global_sequences_to_processed_list_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    match &state.btc_on_eos_redeem_infos.len() {
+    let global_sequences = state.get_global_sequences_from_redeem_info();
+    match global_sequences.len() {
         0 => {
             info!("✔ No `global_sequences` to add to processed tx list!");
             Ok(state)

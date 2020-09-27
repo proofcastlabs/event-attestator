@@ -22,6 +22,7 @@ use crate::{
             eos_types::{
                 Checksum256s,
                 ProcessedTxIds,
+                GlobalSequences,
             },
         },
     },
@@ -178,5 +179,17 @@ impl<D> EosState<D> where D: DatabaseInterface {
         info!("✔ Replacing `action_proofs` in state...");
         self.action_proofs = replacements;
         Ok(self)
+    }
+
+    pub fn get_global_sequences_from_redeem_info(&self) -> GlobalSequences {
+        match self.btc_on_eos_redeem_infos.len() {
+            0 => {
+                match self.erc20_on_eos_redeem_infos.len() {
+                    0 => vec![],
+                    _ => self.erc20_on_eos_redeem_infos.get_global_sequences()
+                }
+            }
+            _ => self.btc_on_eos_redeem_infos.get_global_sequences()
+        }
     }
 }
