@@ -3,6 +3,7 @@ pub mod submit_eos_block;
 pub mod enable_protocol_feature;
 pub mod disable_protocol_feature;
 
+pub(crate) mod redeem_info;
 pub(crate) mod get_eos_output;
 pub(crate) mod eos_test_utils;
 pub(crate) mod sign_transactions;

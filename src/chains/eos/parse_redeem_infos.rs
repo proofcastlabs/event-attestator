@@ -5,16 +5,14 @@ use eos_primitives::{
 };
 use crate::{
     utils::convert_bytes_to_u64,
+    chains::eos::eos_action_proofs::EosActionProof,
     types::{
         Byte,
         Result,
     },
-    chains::eos::{
-        eos_action_proofs::EosActionProof,
-        eos_types::{
-            BtcOnEosRedeemInfo,
-            BtcOnEosRedeemInfos,
-        },
+    btc_on_eos::eos::redeem_info::{
+        BtcOnEosRedeemInfo,
+        BtcOnEosRedeemInfos,
     },
 };
 

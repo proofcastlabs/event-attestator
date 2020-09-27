@@ -1,15 +1,13 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eos::eos::redeem_info::{
+        BtcOnEosRedeemInfo,
+        BtcOnEosRedeemInfos,
+    },
     chains::{
+        eos::eos_state::EosState,
         btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
-        eos::{
-            eos_state::EosState,
-            eos_types::{
-                BtcOnEosRedeemInfo,
-                BtcOnEosRedeemInfos,
-            },
-        },
     },
 };
 

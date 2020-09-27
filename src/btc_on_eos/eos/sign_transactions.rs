@@ -5,10 +5,10 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
     chains::{
         eos::{
             eos_state::EosState,
-            eos_types::BtcOnEosRedeemInfos,
         },
         btc::utxo_manager::{
             utxo_types::BtcUtxosAndValues,

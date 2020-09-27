@@ -7,19 +7,19 @@ use eos_primitives::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eos::eos::redeem_info::{
+        BtcOnEosRedeemInfo,
+        BtcOnEosRedeemInfos,
+    },
     chains::eos::{
         eos_state::EosState,
+        eos_types::ProcessedTxIds,
         eos_constants::REDEEM_ACTION_NAME,
         eos_merkle_utils::verify_merkle_proof,
         eos_utils::convert_bytes_to_checksum256,
         eos_action_proofs::{
             EosActionProof,
             EosActionProofs,
-        },
-        eos_types::{
-            BtcOnEosRedeemInfo,
-            BtcOnEosRedeemInfos,
-            ProcessedTxIds,
         },
         eos_database_utils::{
             get_eos_account_name_from_db,

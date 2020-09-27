@@ -8,12 +8,12 @@ use crate::{
     traits::DatabaseInterface,
     chains::eos::{
         eos_state::EosState,
-        eos_types::{
+    },
+    btc_on_eos::{
+        eos::redeem_info::{
             BtcOnEosRedeemInfo,
             BtcOnEosRedeemInfos,
         },
-    },
-    btc_on_eos::{
         btc::{
             btc_types::BtcTxInfo,
             btc_utils::get_hex_tx_from_signed_btc_tx,

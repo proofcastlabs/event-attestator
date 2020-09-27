@@ -10,6 +10,7 @@ use crate::{
         get_not_in_state_err,
         get_no_overwrite_state_err,
     },
+    btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
     chains::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eos::{
@@ -18,7 +19,6 @@ use crate::{
             protocol_features::EnabledFeatures,
             parse_submission_material::EosSubmissionMaterial,
             eos_types::{
-                BtcOnEosRedeemInfos,
                 Checksum256s,
                 ProcessedTxIds,
             },
