@@ -148,7 +148,6 @@ mod tests {
         chains::{
             eos::{
                 eos_action_proofs::EosActionProof,
-                parse_redeem_infos::parse_redeem_infos_from_action_proofs,
             },
             btc::{
                 btc_constants::BTC_PRIVATE_KEY_DB_KEY,
@@ -168,7 +167,10 @@ mod tests {
                     put_btc_address_in_db,
                 },
             },
-            eos::eos_test_utils::get_sample_eos_submission_material_json_n,
+            eos::{
+                redeem_info::parse_redeem_infos_from_action_proofs,
+                eos_test_utils::get_sample_eos_submission_material_json_n,
+            },
         },
     };
 

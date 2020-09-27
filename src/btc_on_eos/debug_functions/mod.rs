@@ -96,7 +96,7 @@ use crate::{
             get_eos_output::get_eos_output,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
             sign_transactions::maybe_sign_txs_and_add_to_state,
-            parse_redeem_infos::maybe_parse_redeem_infos_and_put_in_state,
+            redeem_info::maybe_parse_redeem_infos_and_put_in_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
         },
     },
