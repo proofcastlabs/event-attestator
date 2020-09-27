@@ -57,7 +57,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
             producer_signature: String::new(),
             incremerkle: Incremerkle::default(),
             processed_tx_ids: ProcessedTxIds::init(),
-            redeem_infos: BtcOnEosRedeemInfos::new(&[]),
+            redeem_infos: BtcOnEosRedeemInfos::new(vec![]),
             enabled_protocol_features: EnabledFeatures::init(),
         }
     }

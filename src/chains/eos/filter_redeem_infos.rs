@@ -13,8 +13,7 @@ use crate::{
 
 pub fn filter_redeem_infos(redeem_infos: &BtcOnEosRedeemInfos) -> Result<BtcOnEosRedeemInfos> {
     Ok(BtcOnEosRedeemInfos::new(
-        &redeem_infos
-            .0
+        redeem_infos
             .iter()
             .map(|redeem_info| redeem_info.amount)
             .zip(redeem_infos.0.iter())

@@ -1,4 +1,8 @@
 use std::str::from_utf8;
+use derive_more::{
+    Deref,
+    Constructor,
+};
 use eos_primitives::{
     Checksum256,
     Symbol as EosSymbol,
@@ -44,20 +48,12 @@ impl BtcOnEosRedeemInfo {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
 pub struct BtcOnEosRedeemInfos(pub Vec<BtcOnEosRedeemInfo>);
 
 impl BtcOnEosRedeemInfos {
-    pub fn new(redeem_infos: &[BtcOnEosRedeemInfo]) -> Self {
-        Self(redeem_infos.to_vec())
-    }
-
     pub fn sum(&self) -> u64 {
         self.0.iter().fold(0, |acc, infos| acc + infos.amount)
-    }
-
-    pub fn len(&self) -> usize {
-        self.0.len()
     }
 
     pub fn get_global_sequences(&self) -> GlobalSequences {
@@ -85,7 +81,7 @@ pub fn get_redeem_address_from_action_data(action_data: &[Byte]) -> Result<Strin
 
 pub fn parse_redeem_infos_from_action_proofs(action_proofs: &[EosActionProof]) -> Result<BtcOnEosRedeemInfos> {
     Ok(BtcOnEosRedeemInfos::new(
-        &action_proofs
+        action_proofs
             .iter()
             .map(|proof| BtcOnEosRedeemInfo::from_action_proof(proof))
             .collect::<Result<Vec<BtcOnEosRedeemInfo>>>()?

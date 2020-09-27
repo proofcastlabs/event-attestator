@@ -128,8 +128,7 @@ pub fn filter_out_already_processed_txs(
 ) -> Result<BtcOnEosRedeemInfos> {
     Ok(
         BtcOnEosRedeemInfos::new(
-            &redeem_infos
-                .0
+            redeem_infos
                 .iter()
                 .filter(|params| !processed_tx_ids.contains(&params.global_sequence))
                 .cloned()
