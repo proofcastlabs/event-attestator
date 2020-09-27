@@ -1,4 +1,7 @@
-use std::str::from_utf8;
+use std::str::{
+    FromStr,
+    from_utf8,
+};
 use ethereum_types::{
     U256,
     Address as EthAddress,
@@ -9,16 +12,22 @@ use eos_primitives::{
     Symbol as EosSymbol,
     AccountName as EosAccountName,
     ActionReceipt as EosActionReceipt,
+    ActionName,
+    AccountName,
+    PermissionLevel,
+    PermissionLevels,
 };
 use crate::{
-    types::Result,
     utils::convert_bytes_to_u64,
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfo,
     erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfo,
+    types::{
+        Bytes,
+        Result,
+    },
     chains::eos::{
         eos_types:: MerkleProof,
         eos_utils::convert_hex_to_checksum256,
-        parse_eos_actions::parse_eos_action_json,
         parse_eos_action_receipts::parse_eos_action_receipt_json,
     },
 };
@@ -65,9 +74,9 @@ impl EosActionProof {
     pub fn from_json(json: &EosActionProofJson) -> Result<Self> {
         Ok(
             EosActionProof {
+                action: json.action_json.to_action()?,
                 action_proof: json.action_proof.clone(),
                 tx_id: convert_hex_to_checksum256(&json.tx_id)?,
-                action: parse_eos_action_json(&json.action_json)?,
                 action_receipt: parse_eos_action_receipt_json(&json.action_receipt_json)?,
             }
         )
@@ -129,6 +138,32 @@ pub struct EosActionJson {
     pub account: String,
     pub hex_data: Option<String>,
     pub authorization: AuthorizationJsons,
+}
+
+impl EosActionJson {
+    fn parse_authorization_json(authorization_json: &AuthorizationJson) -> Result<PermissionLevel> {
+        Ok(PermissionLevel::from_str(authorization_json.actor.clone(), authorization_json.permission.clone())?)
+    }
+
+    fn parse_authorization_jsons(authorization_jsons: &[AuthorizationJson]) -> Result<PermissionLevels> {
+        authorization_jsons.iter().map(Self::parse_authorization_json).collect()
+    }
+
+    fn deserialize_action_data(maybe_hex_data: &Option<String>) -> Result<Bytes> {
+        match maybe_hex_data {
+            Some(string) => Ok(hex::decode(string)?),
+            None => Err("✘ Failed to decode hex_data field of action!".into())
+        }
+    }
+
+    pub fn to_action(&self) -> Result<EosAction> {
+        Ok(EosAction {
+            name: ActionName::from_str(&self.name)?,
+            account: AccountName::from_str(&self.account)?,
+            data: Self::deserialize_action_data(&self.hex_data)?,
+            authorization: Self::parse_authorization_jsons(&self.authorization)?,
+        })
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
