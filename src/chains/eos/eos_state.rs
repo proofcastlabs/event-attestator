@@ -35,10 +35,10 @@ pub struct EosState<D: DatabaseInterface> {
     pub incremerkle: Incremerkle,
     pub producer_signature: String,
     pub action_proofs: EosActionProofs,
-    pub signed_txs: Vec<BtcTransaction>,
     pub interim_block_ids: Checksum256s,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
+    pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub enabled_protocol_features: EnabledFeatures,
     pub btc_on_eos_redeem_infos: BtcOnEosRedeemInfos,
     pub active_schedule: Option<EosProducerScheduleV2>,
@@ -52,11 +52,11 @@ impl<D> EosState<D> where D: DatabaseInterface {
             db,
             block_num: None,
             block_header: None,
-            signed_txs: vec![],
             action_proofs: vec![],
             active_schedule: None,
             interim_block_ids: vec![],
             btc_utxos_and_values: None,
+            btc_on_eos_signed_txs: vec![],
             producer_signature: String::new(),
             incremerkle: Incremerkle::default(),
             processed_tx_ids: ProcessedTxIds::init(),
@@ -92,30 +92,22 @@ impl<D> EosState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn add_signed_txs(
+    pub fn add_btc_on_eos_signed_txs(
         mut self,
-        signed_txs: Vec<BtcTransaction>,
+        btc_on_eos_signed_txs: Vec<BtcTransaction>,
     ) -> Result<EosState<D>>
         where D: DatabaseInterface
     {
-        self.signed_txs = signed_txs;
+        self.btc_on_eos_signed_txs = btc_on_eos_signed_txs;
         Ok(self)
     }
 
-    pub fn add_incremerkle(
-        mut self,
-        incremerkle: Incremerkle,
-    ) -> EosState<D>
-        where D: DatabaseInterface
-    {
+    pub fn add_incremerkle(mut self, incremerkle: Incremerkle) -> EosState<D> where D: DatabaseInterface {
         self.incremerkle = incremerkle;
         self
     }
 
-    pub fn add_submission_material(
-        mut self,
-        submission_material: EosSubmissionMaterial,
-    ) -> Result<EosState<D>> {
+    pub fn add_submission_material(mut self, submission_material: EosSubmissionMaterial) -> Result<EosState<D>> {
         self.block_num = Some(submission_material.block_num);
         self.action_proofs = submission_material.action_proofs;
         self.block_header = Some(submission_material.block_header);
@@ -134,18 +126,12 @@ impl<D> EosState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn add_processed_tx_ids(
-        mut self,
-        tx_ids: ProcessedTxIds,
-    ) -> Result<Self> {
+    pub fn add_processed_tx_ids(mut self, tx_ids: ProcessedTxIds) -> Result<Self> {
         self.processed_tx_ids = tx_ids;
         Ok(self)
     }
 
-    pub fn add_enabled_protocol_features(
-        mut self,
-        enabled_protocol_features: EnabledFeatures,
-    ) -> Result<Self> {
+    pub fn add_enabled_protocol_features(mut self, enabled_protocol_features: EnabledFeatures) -> Result<Self> {
         self.enabled_protocol_features = enabled_protocol_features;
         Ok(self)
     }
@@ -177,10 +163,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn replace_action_proofs(
-        mut self,
-        replacements: EosActionProofs,
-    ) -> Result<EosState<D>> {
+    pub fn replace_action_proofs(mut self, replacements: EosActionProofs) -> Result<EosState<D>> {
         info!("✔ Replacing `action_proofs` in state...");
         self.action_proofs = replacements;
         Ok(self)

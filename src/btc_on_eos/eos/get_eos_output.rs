@@ -62,11 +62,11 @@ pub fn get_eos_output<D>(state: EosState<D>) -> Result<String> where D: Database
     info!("✔ Getting EOS output json...");
     let output = serde_json::to_string(
         &EosOutput {
-            btc_signed_transactions: match &state.signed_txs.len() {
+            btc_signed_transactions: match &state.btc_on_eos_signed_txs.len() {
                 0 => vec![],
                 _ => get_btc_signed_tx_info_from_btc_txs(
                     get_btc_account_nonce_from_db(&state.db)?,
-                    &state.signed_txs,
+                    &state.btc_on_eos_signed_txs,
                     &state.btc_on_eos_redeem_infos,
                 )?,
             }

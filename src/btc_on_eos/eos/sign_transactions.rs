@@ -133,7 +133,7 @@ pub fn maybe_sign_txs_and_add_to_state<D>(
             )
                 .and_then(|signed_tx| {
                     #[cfg(feature="debug")] { debug!("✔ Signed transaction: {:?}", signed_tx); }
-                    state.add_signed_txs(vec![signed_tx])
+                    state.add_btc_on_eos_signed_txs(vec![signed_tx])
                 })
         },
     }

@@ -25,7 +25,7 @@ pub fn maybe_increment_btc_signature_nonce_and_return_eos_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    let num_txs = &state.signed_txs.len();
+    let num_txs = &state.btc_on_eos_signed_txs.len();
     match num_txs {
         0 => {
             info!("✔ No signatures in state ∴ not incrementing nonce");
