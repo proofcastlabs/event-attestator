@@ -60,7 +60,7 @@ pub fn get_signing_params_from_db<D>(
             gas_price: get_eth_gas_price_from_db(db)?,
             eth_private_key: get_eth_private_key_from_db(db)?,
             eth_account_nonce: get_eth_account_nonce_from_db(db)?,
-            ptoken_contract_address: get_erc777_contract_address_from_db(db)?,
+            smart_contract_address: get_erc777_contract_address_from_db(db)?,
         }
     )
 }

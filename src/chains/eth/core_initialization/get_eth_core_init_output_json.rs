@@ -16,7 +16,7 @@ pub struct EthInitializationOutput {
     pub eth_address: String,
     pub eth_latest_block_num: usize,
     pub eth_ptoken_contract_tx: String,
-    pub ptoken_contract_address: String,
+    pub smart_contract_address: String,
 }
 
 impl EthInitializationOutput {
@@ -24,14 +24,14 @@ impl EthInitializationOutput {
         eth_address: String,
         eth_latest_block_num: usize,
         eth_ptoken_contract_tx: String,
-        ptoken_contract_address: String,
+        smart_contract_address: String,
     ) -> Result<Self> {
         Ok(
             EthInitializationOutput {
                 eth_address,
                 eth_latest_block_num,
                 eth_ptoken_contract_tx,
-                ptoken_contract_address,
+                smart_contract_address,
             }
         )
     }

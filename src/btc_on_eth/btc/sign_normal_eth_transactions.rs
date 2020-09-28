@@ -40,7 +40,7 @@ pub fn get_eth_signed_txs(
                 &minting_param_struct.amount,
                 signing_params.eth_account_nonce + i as u64,
                 signing_params.chain_id,
-                signing_params.ptoken_contract_address,
+                signing_params.smart_contract_address,
                 signing_params.gas_price,
                 &minting_param_struct.eth_address,
                 signing_params.eth_private_key.clone(),
@@ -147,7 +147,7 @@ mod tests {
                     signing_params.gas_price == gas_price &&
                     signing_params.eth_account_nonce == nonce &&
                     signing_params.eth_private_key == eth_private_key &&
-                    signing_params.ptoken_contract_address == contract_address
+                    signing_params.smart_contract_address == contract_address
                 );
             }
             Err(e) => {
@@ -163,7 +163,7 @@ mod tests {
             eth_account_nonce: 0,
             gas_price: 20_000_000_000,
             eth_private_key: get_sample_eth_private_key(),
-            ptoken_contract_address: get_sample_eth_address(),
+            smart_contract_address: get_sample_eth_address(),
         };
         let originating_address = BtcAddress::from_str(
             SAMPLE_TARGET_BTC_ADDRESS
