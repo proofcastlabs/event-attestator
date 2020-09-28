@@ -10,6 +10,7 @@ use crate::{
 };
 
 pub const ZERO_BYTE: u8 = 0u8;
+pub const ZERO_ETH_VALUE: usize = 0;
 pub const ETH_TAIL_LENGTH: u64 = 100;
 pub const HIGH_NIBBLE_MASK: Byte = 15u8; // NOTE: 15u8 == [0,0,0,0,1,1,1,1]
 pub const NUM_BITS_IN_NIBBLE: usize = 4;
