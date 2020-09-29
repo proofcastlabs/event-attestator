@@ -4,6 +4,7 @@ use crate::{
     erc20_on_eos::{
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
         eos::{
+            get_eos_output::get_eos_output,
             sign_normal_eth_txs::maybe_sign_normal_eth_txs_and_add_to_state,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db_and_return_state,
             redeem_info::{
@@ -70,6 +71,5 @@ pub fn submit_eos_block_to_core<D>(db: D, block_json: &str) -> Result<String> wh
         .and_then(save_latest_block_num_to_db)
         .and_then(save_incremerkle_from_state_to_db)
         .and_then(end_eos_db_transaction_and_return_state)
-        .and(Ok("FIXME: replace me with the real output".to_string()))
-        //.and_then(get_eos_output)
+        .and_then(get_eos_output)
 }
