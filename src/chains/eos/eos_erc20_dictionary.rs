@@ -1,4 +1,6 @@
+use std::str::FromStr;
 use ethereum_types::Address as EthAddress;
+use eos_primitives::AccountName as EosAccountName;
 use derive_more::{
     Deref,
     DerefMut,
@@ -127,6 +129,10 @@ impl EosErc20Dictionary {
 
     pub fn to_eth_addresses(&self) -> Vec<EthAddress> {
         self.iter().map(|entry| entry.eth_erc20_token_address).collect()
+    }
+
+    pub fn to_eos_accounts(&self) -> Result<Vec<EosAccountName>> {
+        self.iter().map(|entry| Ok(EosAccountName::from_str(&entry.eos_token_account_name)?)).collect()
     }
 }
 
