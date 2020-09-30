@@ -29,7 +29,7 @@ pub use debug_functions::{
     debug_set_key_in_db_to_value,
     debug_reprocess_btc_block_for_stale_eos_tx,
 };
-pub use eos::initialize_eos::initialize_eos_core::maybe_initialize_eos_core;
+pub use eos::initialize_eos_core::maybe_initialize_eos_core;
 pub use btc::initialize_btc::initialize_btc_core::maybe_initialize_btc_core;
 
 pub mod eos;

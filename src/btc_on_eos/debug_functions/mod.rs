@@ -43,6 +43,11 @@ use crate::{
                 maybe_filter_out_proofs_with_invalid_merkle_proofs,
                 maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
             },
+            core_initialization::eos_init_utils::{
+                EosInitJson,
+                put_eos_latest_block_info_in_db,
+                generate_and_put_incremerkle_in_db,
+            },
         },
         btc::{
             increment_btc_account_nonce::maybe_increment_btc_signature_nonce_and_return_eos_state,
@@ -86,11 +91,6 @@ use crate::{
             },
 	},
         eos::{
-            initialize_eos::eos_init_utils::{
-                EosInitJson,
-                put_eos_latest_block_info_in_db,
-                generate_and_put_incremerkle_in_db,
-            },
             get_eos_output::get_eos_output,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
             sign_transactions::maybe_sign_txs_and_add_to_state,

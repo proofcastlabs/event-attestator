@@ -13,6 +13,7 @@ pub(crate) mod eos_action_proofs;
 pub(crate) mod eos_database_utils;
 pub(crate) mod parse_eos_schedule;
 pub(crate) mod validate_signature;
+pub(crate) mod core_initialization;
 pub(crate) mod get_eos_incremerkle;
 pub(crate) mod get_active_schedule;
 pub(crate) mod get_processed_tx_ids;
