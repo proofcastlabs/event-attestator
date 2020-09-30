@@ -43,6 +43,13 @@ use crate::{
     },
 };
 
+/// # Submit EOS Block to Core
+///
+/// The main submission pipeline. Submitting an EOS block to the enclave will - if the block is
+/// valid & the accompanying transaction IDs update the incremerkle correctly - advanced the core's
+/// incremerkle accordingly. Any proofs submitted with the block and transaction IDs will then be
+/// parsed and if found to pertain to peg outs made in the block in question, an ETH transaction
+/// will be signed and returned to the caller.
 pub fn submit_eos_block_to_core<D>(db: D, block_json: &str) -> Result<String> where D: DatabaseInterface {
     info!("✔ Submitting EOS block to core...");
     parse_submission_material_and_add_to_state(block_json, EosState::init(db))
