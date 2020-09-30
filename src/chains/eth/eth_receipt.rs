@@ -231,6 +231,20 @@ impl EthReceipt {
             .collect()
     }
 
+    pub fn contains_supported_erc20_peg_in(&self, eos_erc20_dictionary: &EosErc20Dictionary) -> bool {
+        self.get_supported_erc20_peg_in_logs(eos_erc20_dictionary).len() > 0
+    }
+
+    fn get_supported_erc20_peg_in_logs(&self, eos_erc20_dictionary: &EosErc20Dictionary) -> EthLogs {
+        EthLogs::new(self
+            .logs
+            .iter()
+            .filter(|log| matches!(log.is_supported_erc20_peg_in(eos_erc20_dictionary), Ok(true)))
+            .cloned()
+            .collect()
+        )
+    }
+
     pub fn get_erc20_on_eos_peg_in_infos(
         &self,
         eos_erc20_dictionary: &EosErc20Dictionary,
@@ -238,10 +252,8 @@ impl EthReceipt {
         info!("✔ Getting `erc20-on-eos` peg in infos from receipt...");
         Ok(Erc20OnEosPegInInfos::new(
             self
-                .logs
-                .0
+                .get_supported_erc20_peg_in_logs(eos_erc20_dictionary)
                 .iter()
-                .filter(|log| matches!(log.is_supported_perc20_peg_in(eos_erc20_dictionary), Ok(true)))
                 .map(|log| {
                     let token_contract_address = log.get_erc20_on_eos_peg_in_token_contract_address()?;
                     Ok(Erc20OnEosPegInInfo::new(
@@ -287,8 +299,12 @@ mod tests {
     use std::str::FromStr;
     use crate::{
         chains::{
-            eos::eos_erc20_dictionary::EosErc20DictionaryEntry,
+            eos::{
+                eos_erc20_dictionary::EosErc20DictionaryEntry,
+                eos_test_utils::get_sample_eos_erc20_dictionary,
+            },
             eth::{
+                eth_log::EthLog,
                 eth_submission_material::EthSubmissionMaterial,
                 eth_test_utils::{
                     get_sample_erc20_on_eos_peg_in_info,
@@ -474,6 +490,22 @@ mod tests {
     }
 
     #[test]
+    fn should_return_true_if_receipt_contains_log_with_erc20_peg_in() {
+        let dictionary = get_sample_eos_erc20_dictionary();
+        let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
+        let result = receipt.contains_supported_erc20_peg_in(&dictionary);
+        assert!(result);
+    }
+
+    #[test]
+    fn should_return_false_if_receipt_does_not_contain_log_with_erc20_peg_in() {
+        let dictionary = EosErc20Dictionary::new(vec![]);
+        let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
+        let result = receipt.contains_supported_erc20_peg_in(&dictionary);
+        assert!(!result);
+    }
+
+    #[test]
     fn should_get_get_erc20_redeem_infos_from_receipt() {
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(
@@ -497,5 +529,20 @@ mod tests {
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
         let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_erc20_dictionary).unwrap();
         assert_eq!(result.len(), expected_num_results);
+    }
+
+    #[test]
+    fn should_get_supported_erc20_peg_in_logs() {
+        let expected_result = EthLogs::new(vec![EthLog {
+            address: EthAddress::from_slice(&hex::decode("d0a3d2d3d19a6ac58e60254fd606ec766638c3ba").unwrap()),
+            topics: vec![EthHash::from_slice(&hex::decode("42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36").unwrap())],
+            data: hex::decode("0000000000000000000000009f57cb2a4f462a5258a49e88b4331068a391de66000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac00000000000000000000000000000000000000000000000000000000000005390000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000c616e656f73616464726573730000000000000000000000000000000000000000").unwrap(),
+        }]);
+        let expected_num_logs = 1;
+        let dictionary = get_sample_eos_erc20_dictionary();
+        let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
+        let result = receipt.get_supported_erc20_peg_in_logs(&dictionary);
+        assert_eq!(result.len(), expected_num_logs);
+        assert_eq!(result, expected_result);
     }
 }

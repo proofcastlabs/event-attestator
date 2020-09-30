@@ -24,10 +24,7 @@ pub fn get_sample_eos_erc20_dictionary_entry_2() -> EosErc20DictionaryEntry {
 }
 
 pub fn get_sample_eos_erc20_dictionary() -> EosErc20Dictionary {
-    EosErc20Dictionary::new(vec![
-        get_sample_eos_erc20_dictionary_entry_1(),
-        get_sample_eos_erc20_dictionary_entry_2(),
-    ])
+    EosErc20Dictionary::new(vec![get_sample_eos_erc20_dictionary_entry_1(), get_sample_eos_erc20_dictionary_entry_2()])
 }
 
 pub fn get_sample_eos_erc20_dictionary_json() -> EosErc20DictionaryJson {
