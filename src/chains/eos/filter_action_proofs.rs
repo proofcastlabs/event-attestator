@@ -34,19 +34,32 @@ pub fn filter_proofs_with_wrong_action_mroot(
     Ok(filtered)
 }
 
-pub fn filter_out_proofs_for_other_accounts(
+pub fn filter_proofs_for_account(
     action_proofs: &[EosActionProof],
     required_account_name: EosAccountName,
 ) -> Result<EosActionProofs> {
+    info!("✔ Filtering proofs for EOS account `{}`", required_account_name);
     let filtered: EosActionProofs = action_proofs
         .iter()
         .filter(|proof| proof.action.account == required_account_name)
         .cloned()
         .collect();
-    info!("✔ Filtering out proofs for other accounts...");
     debug!("Num proofs before: {}", action_proofs.len());
-    debug!(" Num proofs after: {}", filtered.len());
+    debug!("Num proofs after: {}", filtered.len());
     Ok(filtered)
+}
+
+pub fn filter_proofs_for_accounts(
+    action_proofs: &[EosActionProof],
+    account_names: &[EosAccountName],
+) -> Result<EosActionProofs> {
+    info!("✔ Filtering proofs for EOS accounts...");
+    Ok(account_names
+        .iter()
+        .map(|account_name| filter_proofs_for_account(action_proofs, *account_name))
+        .collect::<Result<Vec<EosActionProofs>>>()?
+        .concat()
+    )
 }
 
 pub fn filter_out_proofs_for_other_actions(action_proofs: &[EosActionProof]) -> Result<EosActionProofs> {
@@ -342,7 +355,7 @@ mod tests {
         ];
         let account = EosAccountName::from_str("pbtctokenxxx").unwrap();
 
-        assert_eq!(filter_out_proofs_for_other_accounts(&action_proofs, account).unwrap(), action_proofs);
+        assert_eq!(filter_proofs_for_account(&action_proofs, account).unwrap(), action_proofs);
     }
 
     #[test]
@@ -353,7 +366,7 @@ mod tests {
         ];
         let account = EosAccountName::from_str("provtestable").unwrap();
 
-        assert_eq!(filter_out_proofs_for_other_accounts(&action_proofs, account).unwrap(), []);
+        assert_eq!(filter_proofs_for_account(&action_proofs, account).unwrap(), []);
     }
 
     #[test]
