@@ -25,7 +25,7 @@ use crate::{
                 put_eth_tail_block_hash_in_db_and_return_state,
             },
         },
-        parse_eth_submission_material::parse_eth_submission_material_and_put_in_state,
+        eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::validate_block_in_state as validate_eth_block_in_state,
         eth_database_transactions::{
             end_eth_db_transaction_and_return_state,

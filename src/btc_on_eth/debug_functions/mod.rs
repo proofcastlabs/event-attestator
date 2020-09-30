@@ -24,7 +24,7 @@ use crate::{
             eth_state::EthState,
             eth_network::EthNetwork,
             eth_crypto::eth_transaction::get_signed_minting_tx,
-            parse_eth_submission_material::parse_eth_submission_material_and_put_in_state,
+            eth_submission_material::parse_eth_submission_material_and_put_in_state,
             eth_contracts::{
                 erc777::get_signed_erc777_change_pnetwork_tx,
                 erc777_proxy::{

@@ -36,5 +36,4 @@ pub(crate) mod update_eth_tail_block_hash;
 pub(crate) mod update_eth_canon_block_hash;
 pub(crate) mod increment_eos_account_nonce;
 pub(crate) mod add_block_and_receipts_to_db;
-pub(crate) mod parse_eth_submission_material;
 pub(crate) mod remove_receipts_from_canon_block;
