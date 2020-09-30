@@ -122,6 +122,9 @@ pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_2: &str =
 pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_3: &str =
     "src/btc_on_eos/eos/eos_test_utils/mainnet-init-block-125293952.json";
 
+pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_4: &str =
+    "src/btc_on_eos/eos/eos_test_utils/mainnet-init-block-125293952_with_erc20_dictionary.json";
+
 pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_JUNGLE_3_JSON_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-init-and-subsequent-blocks-jungle-3-1.json";
 
@@ -301,6 +304,7 @@ pub fn get_mainnet_init_json_n(num: usize) -> Result<EosInitJson> {
         1 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_1),
         2 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_2),
         3 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_3),
+        4 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_4),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num)))
     }?;
     let string = match Path::new(&path).exists() {
@@ -308,6 +312,10 @@ pub fn get_mainnet_init_json_n(num: usize) -> Result<EosInitJson> {
         false => Err(AppError::Custom(format!("✘ Can't find sample init block json file @ path: {}", path)))
     }?;
     EosInitJson::from_json_string(&string)
+}
+
+pub fn get_sample_mainnet_init_json_with_erc20_dictionary() -> Result<EosInitJson> {
+    get_mainnet_init_json_n(4)
 }
 
 pub fn sha256_hash_message_bytes(

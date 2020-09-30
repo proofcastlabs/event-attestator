@@ -11,8 +11,11 @@ use crate::{
         eos_utils::convert_hex_to_checksum256,
         eos_crypto::eos_private_key::EosPrivateKey,
         validate_signature::check_block_signature_is_valid,
-        eos_erc20_dictionary::EosErc20DictionaryEntryJson,
         parse_submission_material::parse_eos_block_header_from_json,
+        eos_erc20_dictionary::{
+            EosErc20Dictionary,
+            EosErc20DictionaryJson,
+        },
         parse_eos_schedule::{
             EosProducerScheduleJsonV2,
             convert_v2_schedule_json_to_v2_schedule,
@@ -51,7 +54,7 @@ pub struct EosInitJson {
     pub blockroot_merkle: Vec<String>,
     pub active_schedule: EosProducerScheduleJsonV2,
     pub maybe_protocol_features_to_enable: Option<Vec<String>>,
-    pub erc20_on_eos_token_dictionary: Option<Vec<EosErc20DictionaryEntryJson>>, // TODO Add test to this1 Make a copy of the init blocks and add dict!
+    pub erc20_on_eos_token_dictionary: Option<EosErc20DictionaryJson>,
 }
 
 impl EosInitJson {
