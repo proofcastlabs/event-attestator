@@ -24,6 +24,7 @@ pub const MIN_DATA_SENSITIVITY_LEVEL: Option<u8> = None;
 pub const DEBUG_OUTPUT_MARKER: &str = "DEBUG_OUTPUT_MARKER";
 pub const PRIVATE_KEY_DATA_SENSITIVITY_LEVEL: Option<u8> = Some(255);
 pub const SAFE_BTC_ADDRESS: &str = "136CTERaocm8dLbEtzCaFtJJX9jfFhnChK";
+pub const SAFE_ETH_ADDRESS_HEX: &str = "71A440EE9Fa7F99FB9a697e96eC7839B8A1643B8";
 
 lazy_static! {
     pub static ref DB_KEY_PREFIX: &'static str = match option_env!("DB_KEY_PREFIX") {
@@ -33,10 +34,6 @@ lazy_static! {
 }
 
 lazy_static! {
-    // NOTE: "0x71A440EE9Fa7F99FB9a697e96eC7839B8A1643B8"
-    pub static ref SAFE_ETH_ADDRESS: EthAddress = EthAddress::from_slice(&[
-        113, 164, 64, 238, 159, 167, 249, 159, 185, 166,
-        151, 233, 110, 199, 131, 155, 138, 22, 67, 184
-    ]);
+    pub static ref SAFE_ETH_ADDRESS: EthAddress = EthAddress::from_slice(&hex::decode(SAFE_ETH_ADDRESS_HEX).unwrap());
 }
 
