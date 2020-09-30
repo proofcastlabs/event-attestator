@@ -149,15 +149,24 @@ pub fn maybe_filter_duplicate_proofs_from_state<D>(
     filter_duplicate_proofs(&state.action_proofs).and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
-// TODO Could also add a filter for those whose symbol isn't correct? Though this is up to the
-// smart-contract implementer really, and filtering on the account-name should be enough.
-pub fn maybe_filter_out_proofs_for_irrelevant_accounts<D>(
+pub fn maybe_filter_out_proofs_for_non_erc20_accounts<D>(
     state: EosState<D>
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
     info!("✔ Filtering out proofs for accounts we don't care about...");
-    filter_out_proofs_for_other_accounts(&state.action_proofs, get_eos_account_name_from_db(&state.db)?)
+    filter_proofs_for_accounts(&state.action_proofs, &state.get_eos_erc20_dictionary()?.to_eos_accounts()?)
+        .and_then(|proofs| filter_out_proofs_for_other_actions(&proofs))
+        .and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_out_proofs_for_non_btc_on_eos_accounts<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out proofs for accounts we don't care about...");
+    filter_proofs_for_account(&state.action_proofs, get_eos_account_name_from_db(&state.db)?)
         .and_then(|proofs| filter_out_proofs_for_other_actions(&proofs))
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }

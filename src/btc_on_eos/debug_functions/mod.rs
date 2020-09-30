@@ -37,10 +37,10 @@ use crate::{
             },
             filter_action_proofs::{
                 maybe_filter_duplicate_proofs_from_state,
-                maybe_filter_out_proofs_for_irrelevant_accounts,
                 maybe_filter_out_invalid_action_receipt_digests,
                 maybe_filter_out_proofs_with_wrong_action_mroot,
                 maybe_filter_out_proofs_with_invalid_merkle_proofs,
+                maybe_filter_out_proofs_for_non_btc_on_eos_accounts,
                 maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
             },
             core_initialization::eos_init_utils::{
@@ -135,7 +135,7 @@ pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> w
         .and_then(start_eos_db_transaction_and_return_state)
         .and_then(get_processed_tx_ids_and_add_to_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)
-        .and_then(maybe_filter_out_proofs_for_irrelevant_accounts)
+        .and_then(maybe_filter_out_proofs_for_non_btc_on_eos_accounts)
         .and_then(maybe_filter_out_action_proof_receipt_mismatches_and_return_state)
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
