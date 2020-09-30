@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use rlp::{
     RlpStream,
     Encodable,
@@ -254,6 +255,18 @@ impl EthReceipt {
                 })
                 .collect::<Result<Vec<Erc20OnEosPegInInfo>>>()?
         ))
+    }
+}
+
+impl Ord for EthReceipt {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.transaction_index.cmp(&other.transaction_index)
+    }
+}
+
+impl PartialOrd for EthReceipt {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
