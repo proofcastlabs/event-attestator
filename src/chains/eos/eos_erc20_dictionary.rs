@@ -24,7 +24,7 @@ impl EosErc20Dictionary {
     fn to_hex_strings(&self) -> Result<Vec<String>> {
         self
             .iter()
-            .map(|eos_erc20_account_name| eos_erc20_account_name.to_bytes())
+            .map(|eos_erc20_dictionary| eos_erc20_dictionary.to_bytes())
             .map(|bytes: Result<Bytes>| -> Result<String> { Ok(hex::encode(&bytes?)) })
             .collect()
     }
@@ -50,25 +50,25 @@ impl EosErc20Dictionary {
         EosErc20DictionaryJson::from_bytes(bytes).and_then(|json| Self::from_json(&json))
     }
 
-    fn add(mut self, eos_erc20_account_name: EosErc20DictionaryEntry) -> Result<Self> {
-        match self.contains(&eos_erc20_account_name) {
+    fn add(mut self, eos_erc20_dictionary: EosErc20DictionaryEntry) -> Result<Self> {
+        match self.contains(&eos_erc20_dictionary) {
             true => {
                 debug!("Not adding new `EosErc20DictionaryEntry` ∵ account name already extant!");
                 Ok(self)
             }
             false => {
-                self.push(eos_erc20_account_name);
+                self.push(eos_erc20_dictionary);
                 Ok(self)
             }
         }
     }
 
-    fn remove(mut self, eos_erc20_account_name: &EosErc20DictionaryEntry) -> Result<Self> {
-        match self.contains(&eos_erc20_account_name) {
+    fn remove(mut self, eos_erc20_dictionary: &EosErc20DictionaryEntry) -> Result<Self> {
+        match self.contains(&eos_erc20_dictionary) {
             false => Ok(self),
             true => {
-                debug!("Removing `EosErc20DictionaryEntry`: {:?}", eos_erc20_account_name);
-                self.retain(|x| x != eos_erc20_account_name);
+                debug!("Removing `EosErc20DictionaryEntry`: {:?}", eos_erc20_dictionary);
+                self.retain(|x| x != eos_erc20_dictionary);
                 Ok(self)
             }
         }
@@ -91,28 +91,28 @@ impl EosErc20Dictionary {
 
     fn add_and_update_in_db<D>(
         self,
-        eos_erc20_account_name: EosErc20DictionaryEntry,
+        eos_erc20_dictionary: EosErc20DictionaryEntry,
         db: &D
     ) -> Result<Self> where D: DatabaseInterface {
-        self.add(eos_erc20_account_name).and_then(|new_self| { new_self.save_to_db(db)?; Ok(new_self) })
+        self.add(eos_erc20_dictionary).and_then(|new_self| { new_self.save_to_db(db)?; Ok(new_self) })
 
     }
 
     fn remove_and_update_in_db<D>(
         self,
-        eos_erc20_account_name: &EosErc20DictionaryEntry,
+        eos_erc20_dictionary: &EosErc20DictionaryEntry,
         db: &D
     ) -> Result<Self> where D: DatabaseInterface {
-        match self.contains(eos_erc20_account_name) {
-            true => self.remove(eos_erc20_account_name).and_then(|new_self| { new_self.save_to_db(db)?; Ok(new_self) }),
+        match self.contains(eos_erc20_dictionary) {
+            true => self.remove(eos_erc20_dictionary).and_then(|new_self| { new_self.save_to_db(db)?; Ok(new_self) }),
             false => Ok(self)
         }
     }
 
     pub fn get_eos_account_name_from_eth_token_address(&self, eth_erc20_token_address: &EthAddress) -> Result<String> {
-        for account_name in self.iter() {
-            if &account_name.eth_erc20_token_address == eth_erc20_token_address {
-                return Ok(account_name.token_eos_account_name.to_string())
+        for entry in self.iter() {
+            if &entry.eth_erc20_token_address == eth_erc20_token_address {
+                return Ok(entry.token_eos_account_name.to_string())
             }
         }
         Err(format!("No `EosErc20DictionaryEntry` exists with address: {}", eth_erc20_token_address).into())
@@ -120,6 +120,10 @@ impl EosErc20Dictionary {
 
     pub fn is_token_supported(&self, eth_erc20_token_address: &EthAddress) -> bool {
         self.get_eos_account_name_from_eth_token_address(eth_erc20_token_address).is_ok()
+    }
+
+    pub fn to_eth_addresses(&self) -> Vec<EthAddress> {
+        self.iter().map(|entry| entry.eth_erc20_token_address).collect()
     }
 }
 
