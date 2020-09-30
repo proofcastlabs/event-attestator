@@ -1,5 +1,9 @@
 use std::str::FromStr;
 use bitcoin::util::address::Address as BtcAddress;
+use derive_more::{
+    Deref,
+    Constructor,
+};
 use rlp::{
     RlpStream,
     Encodable,
@@ -112,16 +116,16 @@ impl EthLog {
         Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX)?[..]))
     }
 
-    fn is_perc20_peg_in(&self) -> Result<bool> {
+    fn is_erc20_peg_in(&self) -> Result<bool> {
         Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&ERC20_PEG_IN_EVENT_TOPIC_HEX)?[..]))
     }
 
-    pub fn is_supported_perc20_peg_in(&self, eos_erc20_account_names: &EosErc20Dictionary) -> Result<bool> {
-        match self.is_perc20_peg_in()? {
+    pub fn is_supported_erc20_peg_in(&self, eos_erc20_dictionary: &EosErc20Dictionary) -> Result<bool> {
+        match self.is_erc20_peg_in()? {
             false => Ok(false),
             true => self
                 .get_erc20_on_eos_peg_in_token_contract_address()
-                .map(|token_contract_address| eos_erc20_account_names.is_token_supported(&token_contract_address)),
+                .map(|token_contract_address| eos_erc20_dictionary.is_token_supported(&token_contract_address)),
         }
     }
 
@@ -134,10 +138,10 @@ impl EthLog {
     }
 
     fn check_is_erc20_peg_in(&self) -> Result<()> {
-        trace!("✔ Checking if log is a pERC20 peg in...");
-        match self.is_perc20_peg_in()? {
+        trace!("✔ Checking if log is a erc20 peg in...");
+        match self.is_erc20_peg_in()? {
             true => Ok(()),
-            false => Err("✘ Log is not from a pERC20 peg in event!".into()),
+            false => Err("✘ Log is not from a erc20 peg in event!".into()),
         }
     }
 
@@ -235,7 +239,7 @@ impl Encodable for EthLog {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Deref, Constructor)]
 pub struct EthLogs(pub Vec<EthLog>);
 
 impl EthLogs {
@@ -480,7 +484,7 @@ mod tests {
     #[test]
     fn erc20_log_with_peg_in_should_be_erc20_log_with_peg_in() {
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = log.is_perc20_peg_in().unwrap();
+        let result = log.is_erc20_peg_in().unwrap();
         assert!(result);
     }
 
@@ -524,7 +528,7 @@ mod tests {
     }
 
     #[test]
-    fn is_supported_perc20_peg_in_should_be_true_if_supported() {
+    fn is_supported_erc20_peg_in_should_be_true_if_supported() {
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(
             &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
@@ -533,12 +537,12 @@ mod tests {
             EosErc20DictionaryEntry::new(token_name, token_address)
         ]);
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = log.is_supported_perc20_peg_in(&eos_erc20_account_names).unwrap();
+        let result = log.is_supported_erc20_peg_in(&eos_erc20_account_names).unwrap();
         assert!(result);
     }
 
     #[test]
-    fn is_supported_perc20_peg_in_should_be_false_if_not_supported() {
+    fn is_supported_erc20_peg_in_should_be_false_if_not_supported() {
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(
             &hex::decode("8f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
@@ -547,7 +551,7 @@ mod tests {
             EosErc20DictionaryEntry::new(token_name, token_address)
         ]);
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = log.is_supported_perc20_peg_in(&eos_erc20_account_names).unwrap();
+        let result = log.is_supported_erc20_peg_in(&eos_erc20_account_names).unwrap();
         assert!(!result);
     }
 }
