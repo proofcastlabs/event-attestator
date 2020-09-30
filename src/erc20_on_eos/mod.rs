@@ -15,6 +15,14 @@ pub use crate::chains::eth::core_initialization::initialize_eth_enclave::{
     maybe_initialize_eth_enclave,
 };
 
+pub use crate::erc20_on_eos::{
+    eth::submit_eth_block::submit_eth_block_to_core,
+    eos::{
+        submit_eos_block::submit_eos_block_to_core,
+        initialize_eos_core::maybe_initialize_eos_core,
+    },
+};
+
 pub mod eth;
 pub mod eos;
 
