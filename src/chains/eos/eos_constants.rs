@@ -24,12 +24,12 @@ pub fn get_eos_constants_db_keys() -> JsonValue {
         "EOS_CHAIN_ID_DB_KEY": hex::encode(EOS_CHAIN_ID_DB_KEY.to_vec()),
         "PROCESSED_TX_IDS_KEY": hex::encode(PROCESSED_TX_IDS_KEY.to_vec()),
         "EOS_ACCOUNT_NAME_KEY": hex::encode(EOS_ACCOUNT_NAME_KEY.to_vec()),
+        "EOS_ERC20_DICTIONARY": hex::encode(EOS_ERC20_DICTIONARY.to_vec()),
         "EOS_TOKEN_SYMBOL_KEY": hex::encode(EOS_TOKEN_SYMBOL_KEY.to_vec()),
         "EOS_PROTOCOL_FEATURES": hex::encode(EOS_PROTOCOL_FEATURES.to_vec()),
         "EOS_LAST_SEEN_BLOCK_ID": hex::encode(EOS_LAST_SEEN_BLOCK_ID.to_vec()),
         "EOS_PRIVATE_KEY_DB_KEY": hex::encode(EOS_PRIVATE_KEY_DB_KEY.to_vec()),
         "EOS_LAST_SEEN_BLOCK_NUM": hex::encode(EOS_LAST_SEEN_BLOCK_NUM.to_vec()),
-        "EOS_ERC20_ACCOUNT_NAMES": hex::encode(EOS_ERC20_ACCOUNT_NAMES.to_vec()),
     })
 }
 
@@ -40,8 +40,8 @@ lazy_static! { pub static ref EOS_SCHEDULE_LIST: [u8; 32] = get_prefixed_db_key(
 lazy_static! { pub static ref EOS_CHAIN_ID_DB_KEY: [u8; 32] = get_prefixed_db_key("eos-chain-id-key"); }
 lazy_static! { pub static ref EOS_TOKEN_SYMBOL_KEY: [u8; 32] = get_prefixed_db_key("eos-token-ticker"); }
 lazy_static! { pub static ref EOS_ACCOUNT_NAME_KEY: [u8; 32] = get_prefixed_db_key("eos-account-name"); }
+lazy_static! { pub static ref EOS_ERC20_DICTIONARY: [u8; 32] = get_prefixed_db_key("eos-erc20-dictionary"); }
 lazy_static! { pub static ref EOS_PROTOCOL_FEATURES: [u8; 32] = get_prefixed_db_key("eos-protocol-features"); }
 lazy_static! { pub static ref EOS_PRIVATE_KEY_DB_KEY: [u8; 32] = get_prefixed_db_key("eos-private-key-db-key"); }
 lazy_static! { pub static ref EOS_LAST_SEEN_BLOCK_ID: [u8; 32] = get_prefixed_db_key("eos-last-seen-block-id"); }
 lazy_static! { pub static ref EOS_LAST_SEEN_BLOCK_NUM: [u8; 32] = get_prefixed_db_key("eos-last-seen-block-num"); }
-lazy_static! { pub static ref EOS_ERC20_ACCOUNT_NAMES: [u8; 32] = get_prefixed_db_key("eos-erc20-account-names"); }

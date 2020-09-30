@@ -249,7 +249,7 @@ impl EthReceipt {
                         token_contract_address,
                         log.get_erc20_on_eos_peg_in_eos_address()?,
                         self.transaction_hash,
-                        eos_erc20_account_names.get_account_name_from_token_address(&token_contract_address)?,
+                        eos_erc20_account_names.get_eos_account_name_from_eth_token_address(&token_contract_address)?,
                     ))
                 })
                 .collect::<Result<Vec<Erc20OnEosPegInInfo>>>()?
