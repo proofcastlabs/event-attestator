@@ -6,12 +6,15 @@ use derive_more::{
 };
 use crate::{
     traits::DatabaseInterface,
-    chains::eos::eos_state::EosState,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     types::{
         Byte,
         Bytes,
         Result,
+    },
+    chains::{
+        eos::eos_state::EosState,
+        eth::eth_state::EthState,
     },
     chains::eos::eos_constants::EOS_ERC20_DICTIONARY,
 };
@@ -182,12 +185,21 @@ impl EosErc20DictionaryEntryJson {
     }
 }
 
-pub fn get_erc20_dictionary_from_db_and_add_to_state<D>(
+pub fn get_erc20_dictionary_from_db_and_add_to_eos_state<D>(
     state: EosState<D>
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    info!("✔ Getting `EosERc20Dictionary` and adding to state...");
+    info!("✔ Getting `EosERc20Dictionary` and adding to EOS state...");
+    EosErc20Dictionary::get_from_db(&state.db).and_then(|dictionary| state.add_eos_erc20_dictionary(dictionary))
+}
+
+pub fn get_erc20_dictionary_from_db_and_add_to_eth_state<D>(
+    state: EthState<D>
+) -> Result<EthState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting `EosERc20Dictionary` and adding to ETH state...");
     EosErc20Dictionary::get_from_db(&state.db).and_then(|dictionary| state.add_eos_erc20_dictionary(dictionary))
 }
 

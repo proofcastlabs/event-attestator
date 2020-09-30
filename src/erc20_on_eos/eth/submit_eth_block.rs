@@ -2,7 +2,10 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::{
-        eos::sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
+        eos::{
+            sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
+            eos_erc20_dictionary::get_erc20_dictionary_from_db_and_add_to_eth_state,
+        },
         eth::{
             eth_state::EthState,
             validate_block_in_state::validate_block_in_state,
@@ -46,6 +49,7 @@ pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
+        .and_then(get_erc20_dictionary_from_db_and_add_to_eth_state)
         .and_then(check_for_parent_of_block_in_state)
         .and_then(validate_receipts_in_state)
         .and_then(filter_receipts_for_erc20_on_eos_peg_in_events_in_state)
@@ -62,3 +66,4 @@ pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(get_output_json)
 }
+
