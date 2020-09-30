@@ -30,7 +30,7 @@ use crate::{
         Erc20OnEosPegInInfos,
     },
     chains::{
-        eos::eos_erc20_account_names::EosErc20AccountNames,
+        eos::eos_erc20_dictionary::EosErc20Dictionary,
         eth::{
             eth_log::{
                 EthLogs,
@@ -232,7 +232,7 @@ impl EthReceipt {
 
     pub fn get_erc20_on_eos_peg_in_infos(
         &self,
-        eos_erc20_account_names: &EosErc20AccountNames,
+        eos_erc20_account_names: &EosErc20Dictionary,
     ) -> Result<Erc20OnEosPegInInfos> {
         info!("✔ Getting `erc20-on-eos` peg in infos from receipt...");
         Ok(Erc20OnEosPegInInfos::new(
@@ -274,7 +274,7 @@ mod tests {
     use std::str::FromStr;
     use crate::{
         chains::{
-            eos::eos_erc20_account_names::EosErc20AccountName,
+            eos::eos_erc20_dictionary::EosErc20DictionaryEntry,
             eth::{
                 eth_submission_material::EthSubmissionMaterial,
                 eth_test_utils::{
@@ -466,8 +466,8 @@ mod tests {
         let token_address = EthAddress::from_slice(
             &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
         );
-        let eos_erc20_account_names = EosErc20AccountNames::new(vec![
-            EosErc20AccountName::new(token_name, token_address)
+        let eos_erc20_account_names = EosErc20Dictionary::new(vec![
+            EosErc20DictionaryEntry::new(token_name, token_address)
         ]);
         let expected_num_results = 1;
         let expected_result = get_sample_erc20_on_eos_peg_in_info().unwrap();
@@ -479,7 +479,7 @@ mod tests {
 
     #[test]
     fn should_not_get_get_erc20_redeem_infos_from_receipt_if_token_not_supported() {
-        let eos_erc20_account_names = EosErc20AccountNames::new(vec![]);
+        let eos_erc20_account_names = EosErc20Dictionary::new(vec![]);
         let expected_num_results = 0;
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
         let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_erc20_account_names).unwrap();

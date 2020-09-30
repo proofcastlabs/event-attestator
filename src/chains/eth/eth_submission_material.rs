@@ -22,7 +22,7 @@ use crate::{
         Erc20OnEosPegInInfos,
     },
     chains::{
-        eos::eos_erc20_account_names::EosErc20AccountNames,
+        eos::eos_erc20_dictionary::EosErc20Dictionary,
         eth::{
             eth_block::{
                 EthBlock,
@@ -145,7 +145,7 @@ impl EthSubmissionMaterial {
 
     pub fn get_erc20_on_eos_peg_in_infos(
         &self,
-        eos_erc20_account_names: &EosErc20AccountNames
+        eos_erc20_account_names: &EosErc20Dictionary
     ) -> Result<Erc20OnEosPegInInfos> {
         info!("✔ Getting `erc20-on-eos` peg in infos from submission material...");
         Ok(Erc20OnEosPegInInfos::new(
@@ -195,7 +195,7 @@ mod tests {
     use ethereum_types::U256;
     use crate::{
         chains::{
-            eos::eos_erc20_account_names::EosErc20AccountName,
+            eos::eos_erc20_dictionary::EosErc20DictionaryEntry,
             eth::{
                 eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
                 eth_test_utils::{
@@ -367,8 +367,8 @@ mod tests {
         let token_address = EthAddress::from_slice(
             &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
         );
-        let eos_erc20_account_names = EosErc20AccountNames::new(vec![
-            EosErc20AccountName::new(token_name, token_address)
+        let eos_erc20_account_names = EosErc20Dictionary::new(vec![
+            EosErc20DictionaryEntry::new(token_name, token_address)
         ]);
         let expected_num_results = 1;
         let submission_material = get_sample_submission_material_with_erc20_peg_in_event().unwrap();

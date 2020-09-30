@@ -21,7 +21,7 @@ use crate::{
         Result,
     },
     chains::{
-        eos::eos_erc20_account_names::EosErc20AccountNames,
+        eos::eos_erc20_dictionary::EosErc20Dictionary,
         eth::{
             eth_receipt::EthReceiptJson,
             eth_constants::{
@@ -116,7 +116,7 @@ impl EthLog {
         Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&ERC20_PEG_IN_EVENT_TOPIC_HEX)?[..]))
     }
 
-    pub fn is_supported_perc20_peg_in(&self, eos_erc20_account_names: &EosErc20AccountNames) -> Result<bool> {
+    pub fn is_supported_perc20_peg_in(&self, eos_erc20_account_names: &EosErc20Dictionary) -> Result<bool> {
         match self.is_perc20_peg_in()? {
             false => Ok(false),
             true => self
@@ -269,7 +269,7 @@ mod tests {
     use std::str::FromStr;
     use crate::{
         chains::{
-            eos::eos_erc20_account_names::EosErc20AccountName,
+            eos::eos_erc20_dictionary::EosErc20DictionaryEntry,
             eth::{
                 eth_receipt::EthReceipt,
                 eth_submission_material::EthSubmissionMaterial,
@@ -529,8 +529,8 @@ mod tests {
         let token_address = EthAddress::from_slice(
             &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
         );
-        let eos_erc20_account_names = EosErc20AccountNames::new(vec![
-            EosErc20AccountName::new(token_name, token_address)
+        let eos_erc20_account_names = EosErc20Dictionary::new(vec![
+            EosErc20DictionaryEntry::new(token_name, token_address)
         ]);
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = log.is_supported_perc20_peg_in(&eos_erc20_account_names).unwrap();
@@ -543,8 +543,8 @@ mod tests {
         let token_address = EthAddress::from_slice(
             &hex::decode("8f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
         );
-        let eos_erc20_account_names = EosErc20AccountNames::new(vec![
-            EosErc20AccountName::new(token_name, token_address)
+        let eos_erc20_account_names = EosErc20Dictionary::new(vec![
+            EosErc20DictionaryEntry::new(token_name, token_address)
         ]);
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = log.is_supported_perc20_peg_in(&eos_erc20_account_names).unwrap();

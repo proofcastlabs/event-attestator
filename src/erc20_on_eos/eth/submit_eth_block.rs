@@ -28,7 +28,7 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
             get_output_json::get_output_json,
-            parse_peg_in_info::maybe_parse_peg_in_info_and_add_to_state,
+            peg_in_info::maybe_parse_peg_in_info_and_add_to_state,
         },
     },
 };
