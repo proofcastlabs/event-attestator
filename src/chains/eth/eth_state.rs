@@ -9,9 +9,12 @@ use crate::{
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
     chains::{
-        eos::eos_types::EosSignedTransactions,
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eth::eth_submission_material::EthSubmissionMaterial,
+        eos::{
+            eos_types::EosSignedTransactions,
+            eos_erc20_dictionary::EosErc20Dictionary,
+        },
     },
     btc_on_eth::btc::btc_types::BtcTransactions,
 };
@@ -25,6 +28,7 @@ pub struct EthState<D: DatabaseInterface> {
     pub eos_transactions: Option<EosSignedTransactions>,
     pub erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
+    pub eos_erc20_dictionary: Option<EosErc20Dictionary>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
 }
 
@@ -36,6 +40,7 @@ impl<D> EthState<D> where D: DatabaseInterface {
             btc_transactions: None,
             eos_transactions: None,
             btc_utxos_and_values: None,
+            eos_erc20_dictionary: None,
             eth_submission_material: None,
             btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(vec![]),
             erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos::new(vec![]),
@@ -144,6 +149,23 @@ impl<D> EthState<D> where D: DatabaseInterface {
         match  self.eos_transactions {
             None => 0,
             Some(ref txs) => txs.len(),
+        }
+    }
+
+    pub fn add_eos_erc20_dictionary(mut self, dictionary: EosErc20Dictionary) -> Result<EthState<D>> {
+        match self.eos_erc20_dictionary {
+            Some(_) => Err(get_no_overwrite_state_err("eos_erc20_dictionary").into()),
+            None => {
+                self.eos_erc20_dictionary = Some(dictionary);
+                Ok(self)
+            }
+        }
+    }
+
+    pub fn get_eos_erc20_dictionary(&self) -> Result<&EosErc20Dictionary> {
+        match self.eos_erc20_dictionary {
+            Some(ref dictionary) => Ok(dictionary),
+            None => Err(get_not_in_state_err("eos_erc20_dictionary").into())
         }
     }
 }
