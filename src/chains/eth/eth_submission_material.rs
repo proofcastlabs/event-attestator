@@ -122,6 +122,31 @@ impl EthSubmissionMaterial {
         Ok(filtered)
     }
 
+    pub fn filter_for_receipts_pertaining_to_eos_erc20_dictionary_tokens( // TODO Unit test once we have samples!
+        &self,
+        erc20_dictionary: &EosErc20Dictionary,
+        topics: &[EthHash]
+    ) -> Result<Self> {
+        info!("✔ Num receipts before filtering for those pertainging to ERC20 dictionary: {}", self.receipts.len());
+        let mut filtered_receipts = erc20_dictionary
+            .to_eth_addresses()
+            .iter()
+            .map(|address| self.receipts.filter_for_receipts_containing_log_with_address_and_topics(address, topics))
+            .map(|eth_receipts| eth_receipts.0)
+            .collect::<Vec<Vec<EthReceipt>>>()
+            .concat();
+        filtered_receipts.sort();
+        filtered_receipts.dedup();
+        let new_self = Self::new(
+            self.block.clone(),
+            EthReceipts::new(filtered_receipts),
+            self.eos_ref_block_num.clone(),
+            self.eos_ref_block_prefix.clone(),
+        );
+        info!("✔ Num receipts after filtering for those pertainging to ERC20 dictionary: {}", new_self.receipts.len());
+        Ok(new_self)
+    }
+
     pub fn receipts_are_valid(&self) -> Result<bool> {
         self
             .receipts
