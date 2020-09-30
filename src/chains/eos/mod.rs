@@ -6,6 +6,7 @@ pub(crate) mod eos_state;
 pub(crate) mod eos_types;
 pub(crate) mod eos_crypto;
 pub(crate) mod add_schedule;
+pub(crate) mod eos_test_utils;
 pub(crate) mod save_incremerkle;
 pub(crate) mod eos_merkle_utils;
 pub(crate) mod protocol_features;

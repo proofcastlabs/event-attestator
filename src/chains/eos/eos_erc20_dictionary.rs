@@ -29,7 +29,7 @@ impl EosErc20Dictionary {
             .collect()
     }
 
-    fn to_json(&self) -> Result<EosErc20DictionaryJson> {
+    pub fn to_json(&self) -> Result<EosErc20DictionaryJson> {
         Ok(EosErc20DictionaryJson::new(self.iter().map(|entry| entry.to_json()).collect()))
     }
 
@@ -194,34 +194,16 @@ pub fn get_erc20_dictionary_from_db_and_add_to_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::get_test_database;
+    use crate::{
+        test_utils::get_test_database,
+        chains::eos::eos_test_utils::{
+            get_sample_eos_erc20_dictionary,
+            get_sample_eos_erc20_dictionary_json,
+            get_sample_eos_erc20_dictionary_entry_1,
+            get_sample_eos_erc20_dictionary_entry_2,
+        },
+    };
 
-    fn get_sample_eos_erc20_dictionary_entry_1() -> EosErc20DictionaryEntry {
-        let token_address_hex = "9f57CB2a4F462a5258a49E88B4331068a391DE66".to_string();
-        EosErc20DictionaryEntry::new(
-            "SampleToken_1".to_string(),
-            EthAddress::from_slice(&hex::decode(&token_address_hex).unwrap()),
-        )
-    }
-
-    fn get_sample_eos_erc20_dictionary_entry_2() -> EosErc20DictionaryEntry {
-        let token_address_hex = "9e57CB2a4F462a5258a49E88B4331068a391DE66".to_string();
-        EosErc20DictionaryEntry::new(
-            "SampleToken_2".to_string(),
-            EthAddress::from_slice(&hex::decode(&token_address_hex).unwrap()),
-        )
-    }
-
-    fn get_sample_eos_erc20_dictionary() -> EosErc20Dictionary {
-        EosErc20Dictionary::new(vec![
-            get_sample_eos_erc20_dictionary_entry_1(),
-            get_sample_eos_erc20_dictionary_entry_2(),
-        ])
-    }
-
-    fn get_sample_eos_erc20_dictionary_json() -> EosErc20DictionaryJson {
-        get_sample_eos_erc20_dictionary().to_json().unwrap()
-    }
 
     #[test]
     fn eos_erc20_dictionary_should_contain_eos_erc20_dictionary_entry() {
