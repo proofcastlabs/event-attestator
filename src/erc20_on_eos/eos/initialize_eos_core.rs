@@ -21,6 +21,7 @@ use crate::{
             generated_eos_key_save_in_db_and_return_state,
             maybe_enable_protocol_features_and_return_state,
             put_eos_latest_block_info_in_db_and_return_state,
+            maybe_put_erc20_dictionary_in_db_and_return_state,
             put_empty_processed_tx_ids_in_db_and_return_state,
             generate_and_put_incremerkle_in_db_and_return_state,
         },
@@ -59,6 +60,7 @@ pub fn maybe_initialize_eos_core<D>(
                 .and_then(|state|
                     maybe_enable_protocol_features_and_return_state(&init_json.maybe_protocol_features_to_enable, state)
                 )
+                .and_then(|state| maybe_put_erc20_dictionary_in_db_and_return_state(&init_json, state))
                 .and_then(|state| test_block_validation_and_return_state(&init_json.block, state))
                 .and_then(generated_eos_key_save_in_db_and_return_state)
                 .and_then(put_eos_account_nonce_in_db_and_return_state)

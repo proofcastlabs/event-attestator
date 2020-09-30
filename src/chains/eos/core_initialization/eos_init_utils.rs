@@ -325,6 +325,25 @@ pub fn put_eos_chain_id_in_db_and_return_state<D>(
     put_eos_chain_id_in_db(&state.db, chain_id)
         .and(Ok(state))
 }
+pub fn maybe_put_erc20_dictionary_in_db_and_return_state<D>(
+    init_json: &EosInitJson,
+    state: EosState<D>,
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    match &init_json.erc20_on_eos_token_dictionary {
+        None => {
+            info!("✔ No `EosErc20DictionaryJson` in `init-json` ∴ doing nothing!");
+            Ok(state)
+        }
+        Some(dictionary_json) => {
+            info!("✔ `EosErc20Dictionary` in `init-json` ∴ putting it in db...");
+            EosErc20Dictionary::from_json(&dictionary_json)
+                .and_then(|dict| dict.save_to_db(&state.db))
+                .and(Ok(state))
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
