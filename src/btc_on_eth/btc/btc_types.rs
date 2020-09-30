@@ -1,15 +1,13 @@
 use crate::{
-    btc_on_eth::{
-        constants::SAFE_BTC_ADDRESS,
-        utils::safely_convert_hex_to_eth_address,
+    constants::SAFE_BTC_ADDRESS,
+    btc_on_eth::utils::safely_convert_hex_to_eth_address,
+    types::{
+        Bytes,
+        Result,
     },
     chains::btc::deposit_address_info::{
         DepositInfoList,
         DepositAddressInfoJson,
-    },
-    types::{
-        Bytes,
-        Result,
     },
 };
 use bitcoin::{

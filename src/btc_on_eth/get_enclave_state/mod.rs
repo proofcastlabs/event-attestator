@@ -6,6 +6,10 @@ use crate::{
         DB_KEY_PREFIX,
         CORE_IS_VALIDATING,
     },
+    constants::{
+        SAFE_ETH_ADDRESS,
+        SAFE_BTC_ADDRESS,
+    },
     chains::{
         eth::{
             eth_constants::ETH_TAIL_LENGTH,
@@ -34,10 +38,7 @@ use crate::{
         },
     },
     btc_on_eth::{
-        constants::{
-            SAFE_ETH_ADDRESS,
-            SAFE_BTC_ADDRESS,
-        },
+        check_core_is_initialized::check_core_is_initialized,
         btc::{
             update_btc_linker_hash::get_linker_hash_or_genesis_hash as get_btc_linker_hash,
             btc_database_utils::{
@@ -53,7 +54,6 @@ use crate::{
                 get_btc_canon_to_tip_length_from_db,
             },
         },
-        check_core_is_initialized::check_core_is_initialized,
     },
 };
 

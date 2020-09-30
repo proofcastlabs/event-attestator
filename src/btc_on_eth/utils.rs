@@ -6,11 +6,11 @@ use ethereum_types::{
 };
 use crate::{
     types::{Byte, Bytes, NoneError, Result},
-    btc_on_eth::constants::{
-        HASH_LENGTH,
+    constants::{
         U64_NUM_BYTES,
-        BTC_NUM_DECIMALS,
+        ETH_HASH_LENGTH,
         SAFE_ETH_ADDRESS,
+        BTC_NUM_DECIMALS,
         PTOKEN_ERC777_NUM_DECIMALS,
     },
 };
@@ -100,8 +100,8 @@ pub fn convert_hex_to_address(hex: &str) -> Result<EthAddress> { // TODO take st
 pub fn convert_hex_to_h256(hex: &str) -> Result<H256> {
     decode_prefixed_hex(hex)
         .and_then(|bytes| match bytes.len() {
-            HASH_LENGTH => Ok(H256::from_slice(&bytes)),
-            _ => Err(format!("✘ {} bytes required to create h256 type, {} provided!", HASH_LENGTH, bytes.len()).into())
+            ETH_HASH_LENGTH => Ok(H256::from_slice(&bytes)),
+            _ => Err(format!("✘ {} bytes required to create h256 type, {} provided!", ETH_HASH_LENGTH, bytes.len()).into())
         })
 }
 
@@ -111,11 +111,11 @@ pub fn convert_hex_strings_to_h256s(hex_strings: Vec<&str>) -> Result<Vec<H256>>
 }
 
 pub fn convert_satoshis_to_ptoken(satoshis: u64) -> U256 {
-    U256::from(satoshis) * U256::from(10u64.pow(PTOKEN_ERC777_NUM_DECIMALS - BTC_NUM_DECIMALS))
+    U256::from(satoshis) * U256::from(10u64.pow(PTOKEN_ERC777_NUM_DECIMALS - BTC_NUM_DECIMALS as u32))
 }
 
 pub fn convert_ptoken_to_satoshis(ptoken: U256) -> u64 {
-    match ptoken.checked_div(U256::from(10u64.pow(PTOKEN_ERC777_NUM_DECIMALS - BTC_NUM_DECIMALS))) {
+    match ptoken.checked_div(U256::from(10u64.pow(PTOKEN_ERC777_NUM_DECIMALS - BTC_NUM_DECIMALS as u32))) {
         Some(amount) => amount.as_u64(),
         None => 0,
     }
@@ -254,7 +254,7 @@ mod tests {
         let short_hash = "0xc5acf860fa849b72fc78855dcbc4e9b968a8af5cdaf79f03beeca78e6a9cec";
         let expected_error = format!(
             "✘ {} bytes required to create h256 type, {} provided!",
-            HASH_LENGTH,
+            ETH_HASH_LENGTH,
             hex::decode(&short_hash[2..]).unwrap().len(),
         );
         assert!(short_hash.len() < HASH_HEX_CHARS + HEX_PREFIX_LENGTH);
@@ -269,7 +269,7 @@ mod tests {
         let long_hash = "0xc5acf860fa849b72fc78855dcbc4e9b968a8af5cdaf79f03beeca78e6a9cecffff";
         let expected_error = format!(
             "✘ {} bytes required to create h256 type, {} provided!",
-            HASH_LENGTH,
+            ETH_HASH_LENGTH,
             hex::decode(&long_hash[2..]).unwrap().len(),
         );
         assert!(long_hash.len() > HASH_HEX_CHARS + HEX_PREFIX_LENGTH);

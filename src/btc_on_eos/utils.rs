@@ -1,6 +1,6 @@
 use crate::{
     types::{Byte, Bytes, Result},
-    btc_on_eos::constants::{
+    constants::{
         U64_NUM_BYTES,
         BTC_NUM_DECIMALS,
     },

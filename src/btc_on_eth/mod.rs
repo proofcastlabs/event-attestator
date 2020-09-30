@@ -44,6 +44,4 @@ pub mod get_latest_block_numbers;
 
 mod check_core_is_initialized;
 
-// TODO Fix the chains dependencies on these so they can be fully private!
 pub(crate) mod utils;
-pub(crate) mod constants;

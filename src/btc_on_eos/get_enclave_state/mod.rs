@@ -29,14 +29,12 @@ use crate::{
     constants::{
         DEBUG_MODE,
         DB_KEY_PREFIX,
+        SAFE_EOS_ADDRESS,
+        SAFE_BTC_ADDRESS,
         CORE_IS_VALIDATING,
     },
     btc_on_eos::{
         check_core_is_initialized::check_core_is_initialized,
-        constants::{
-            SAFE_EOS_ADDRESS,
-            SAFE_BTC_ADDRESS,
-        },
         btc::{
             update_btc_linker_hash::{
                 get_linker_hash_or_genesis_hash as get_btc_linker_hash,

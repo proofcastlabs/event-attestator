@@ -24,6 +24,7 @@ use crate::{
         Bytes,
         Result,
     },
+    constants::SAFE_BTC_ADDRESS,
     chains::{
         eos::eos_erc20_dictionary::EosErc20Dictionary,
         eth::{
@@ -38,7 +39,6 @@ use crate::{
         },
     },
     btc_on_eth::{
-        constants::SAFE_BTC_ADDRESS,
         utils::{
             convert_hex_to_bytes,
             convert_hex_to_address,
