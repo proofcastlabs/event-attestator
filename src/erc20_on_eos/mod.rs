@@ -11,6 +11,7 @@
 //! ```no_compile
 //! ptokens_core = { version = "1.0.0", features = ["debug"] }
 //! ```
+pub use crate::erc20_on_eos::get_enclave_state::get_enclave_state;
 pub use crate::chains::eth::core_initialization::initialize_eth_enclave::{
     maybe_initialize_eth_enclave,
 };
@@ -25,5 +26,6 @@ pub use crate::erc20_on_eos::{
 
 pub mod eth;
 pub mod eos;
+pub mod get_enclave_state;
 
 pub(crate) mod check_core_is_initialized;
