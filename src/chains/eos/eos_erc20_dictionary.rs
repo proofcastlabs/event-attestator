@@ -6,6 +6,7 @@ use derive_more::{
 };
 use crate::{
     traits::DatabaseInterface,
+    chains::eos::eos_state::EosState,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     types::{
         Byte,
@@ -175,6 +176,15 @@ impl EosErc20DictionaryEntryJson {
     pub fn to_bytes(&self) -> Result<Bytes> {
         Ok(serde_json::to_vec(&self)?)
     }
+}
+
+pub fn get_erc20_dictionary_from_db_and_add_to_state<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting `EosERc20Dictionary` and adding to state...");
+    EosErc20Dictionary::get_from_db(&state.db).and_then(|dictionary| state.add_eos_erc20_dictionary(dictionary))
 }
 
 #[cfg(test)]

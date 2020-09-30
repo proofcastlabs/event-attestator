@@ -19,6 +19,7 @@ use crate::{
             eos_merkle_utils::Incremerkle,
             eos_action_proofs::EosActionProofs,
             protocol_features::EnabledFeatures,
+            eos_erc20_dictionary::EosErc20Dictionary,
             parse_submission_material::EosSubmissionMaterial,
             eos_types::{
                 Checksum256s,
@@ -46,6 +47,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub active_schedule: Option<EosProducerScheduleV2>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub erc20_on_eos_redeem_infos: Erc20OnEosRedeemInfos,
+    pub eos_erc20_dictionary: Option<EosErc20Dictionary>,
 }
 
 impl<D> EosState<D> where D: DatabaseInterface {
@@ -58,6 +60,7 @@ impl<D> EosState<D> where D: DatabaseInterface {
             active_schedule: None,
             interim_block_ids: vec![],
             btc_utxos_and_values: None,
+            eos_erc20_dictionary: None,
             btc_on_eos_signed_txs: vec![],
             erc20_on_eos_signed_txs: vec![],
             producer_signature: String::new(),
@@ -150,9 +153,26 @@ impl<D> EosState<D> where D: DatabaseInterface {
     }
 
     pub fn get_eos_block_header(&self) -> Result<&EosBlockHeader> {
-        match self.block_header{
+        match self.block_header {
             Some(ref block_header) => Ok(block_header),
             None => Err(get_not_in_state_err("block_header").into())
+        }
+    }
+
+    pub fn add_eos_erc20_dictionary(mut self, dictionary: EosErc20Dictionary) -> Result<EosState<D>> {
+        match self.eos_erc20_dictionary {
+            Some(_) => Err(get_no_overwrite_state_err("eos_erc20_dictionary").into()),
+            None => {
+                self.eos_erc20_dictionary = Some(dictionary);
+                Ok(self)
+            }
+        }
+    }
+
+    pub fn get_eos_erc20_dictionary(&self) -> Result<&EosErc20Dictionary> {
+        match self.eos_erc20_dictionary {
+            Some(ref dictionary) => Ok(dictionary),
+            None => Err(get_not_in_state_err("eos_erc20_dictionary").into())
         }
     }
 
