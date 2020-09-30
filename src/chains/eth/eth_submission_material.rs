@@ -122,29 +122,25 @@ impl EthSubmissionMaterial {
         Ok(filtered)
     }
 
-    pub fn filter_for_receipts_pertaining_to_eos_erc20_dictionary_tokens( // TODO Unit test once we have samples!
+    pub fn filter_receipts_containing_supported_erc20_peg_ins(
         &self,
         erc20_dictionary: &EosErc20Dictionary,
-        topics: &[EthHash]
     ) -> Result<Self> {
         info!("✔ Num receipts before filtering for those pertainging to ERC20 dictionary: {}", self.receipts.len());
-        let mut filtered_receipts = erc20_dictionary
-            .to_eth_addresses()
+        let filtered_receipts = EthReceipts::new(self
+            .receipts
             .iter()
-            .map(|address| self.receipts.filter_for_receipts_containing_log_with_address_and_topics(address, topics))
-            .map(|eth_receipts| eth_receipts.0)
-            .collect::<Vec<Vec<EthReceipt>>>()
-            .concat();
-        filtered_receipts.sort();
-        filtered_receipts.dedup();
-        let new_self = Self::new(
+            .filter(|receipt| receipt.contains_supported_erc20_peg_in(erc20_dictionary))
+            .cloned()
+            .collect()
+        );
+        info!("✔ Num receipts after filtering for those pertaining to ERC20 dictionary: {}", filtered_receipts.len());
+        Ok(Self::new(
             self.block.clone(),
-            EthReceipts::new(filtered_receipts),
+            filtered_receipts,
             self.eos_ref_block_num.clone(),
             self.eos_ref_block_prefix.clone(),
-        );
-        info!("✔ Num receipts after filtering for those pertainging to ERC20 dictionary: {}", new_self.receipts.len());
-        Ok(new_self)
+        ))
     }
 
     pub fn receipts_are_valid(&self) -> Result<bool> {
@@ -172,14 +168,14 @@ impl EthSubmissionMaterial {
 
     pub fn get_erc20_on_eos_peg_in_infos(
         &self,
-        eos_erc20_account_names: &EosErc20Dictionary
+        eos_erc20_dictionary: &EosErc20Dictionary
     ) -> Result<Erc20OnEosPegInInfos> {
         info!("✔ Getting `erc20-on-eos` peg in infos from submission material...");
         Ok(Erc20OnEosPegInInfos::new(
             self
                 .get_receipts()
                 .iter()
-                .map(|receipt| receipt.get_erc20_on_eos_peg_in_infos(eos_erc20_account_names))
+                .map(|receipt| receipt.get_erc20_on_eos_peg_in_infos(eos_erc20_dictionary))
                 .collect::<Result<Vec<Erc20OnEosPegInInfos>>>()?
                 .iter()
                 .map(|infos| infos.0.clone()) // FIXME: There is very likely a better way to do this!
@@ -232,7 +228,10 @@ mod tests {
     use ethereum_types::U256;
     use crate::{
         chains::{
-            eos::eos_erc20_dictionary::EosErc20DictionaryEntry,
+            eos::{
+                eos_erc20_dictionary::EosErc20DictionaryEntry,
+                eos_test_utils::get_sample_eos_erc20_dictionary,
+            },
             eth::{
                 eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
                 eth_test_utils::{
@@ -413,5 +412,20 @@ mod tests {
         let result = submission_material.get_erc20_on_eos_peg_in_infos(&eos_erc20_account_names).unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_filter_submission_material_for_receipts_containing_supported_erc20_peg_ins() {
+        let expected_num_receipts_after = 1;
+        let expected_num_receipts_before = 69;
+        let erc20_dictionary = get_sample_eos_erc20_dictionary();
+        let submission_material = get_sample_submission_material_with_erc20_peg_in_event().unwrap();
+        let num_receipts_before = submission_material.receipts.len();
+        assert_eq!(num_receipts_before, expected_num_receipts_before);
+        let filtered_submission_material = submission_material
+            .filter_receipts_containing_supported_erc20_peg_ins(&erc20_dictionary)
+            .unwrap();
+        let num_receipts_after = filtered_submission_material.receipts.len();
+        assert_eq!(num_receipts_after, expected_num_receipts_after);
     }
 }

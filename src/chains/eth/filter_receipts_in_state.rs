@@ -3,11 +3,8 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::{
         eth_state::EthState,
+        eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC,
         eth_database_utils::get_erc777_contract_address_from_db,
-        eth_constants::{
-            BTC_ON_ETH_REDEEM_EVENT_TOPIC,
-            ERC20_ON_EOS_PEG_IN_EVENT_TOPIC,
-        },
     },
 };
 
@@ -34,9 +31,6 @@ pub fn filter_receipts_for_erc20_on_eos_peg_in_events_in_state<D>(
     info!("✔ Filtering receipts for those containing `erc20-on-eos` peg in events...");
     state
         .get_eth_submission_material()?
-        .filter_for_receipts_pertaining_to_eos_erc20_dictionary_tokens(
-            state.get_eos_erc20_dictionary()?,
-            &ERC20_ON_EOS_PEG_IN_EVENT_TOPIC.to_vec(),
-        )
-        .and_then(|filtered_block_and_receipts| state.update_eth_submission_material(filtered_block_and_receipts))
+        .filter_receipts_containing_supported_erc20_peg_ins(state.get_eos_erc20_dictionary()?)
+        .and_then(|filtered_submission_material| state.update_eth_submission_material(filtered_submission_material))
 }
