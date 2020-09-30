@@ -232,7 +232,7 @@ impl EthReceipt {
 
     pub fn get_erc20_on_eos_peg_in_infos(
         &self,
-        eos_erc20_account_names: &EosErc20Dictionary,
+        eos_erc20_dictionary: &EosErc20Dictionary,
     ) -> Result<Erc20OnEosPegInInfos> {
         info!("✔ Getting `erc20-on-eos` peg in infos from receipt...");
         Ok(Erc20OnEosPegInInfos::new(
@@ -240,7 +240,7 @@ impl EthReceipt {
                 .logs
                 .0
                 .iter()
-                .filter(|log| matches!(log.is_supported_perc20_peg_in(eos_erc20_account_names), Ok(true)))
+                .filter(|log| matches!(log.is_supported_perc20_peg_in(eos_erc20_dictionary), Ok(true)))
                 .map(|log| {
                     let token_contract_address = log.get_erc20_on_eos_peg_in_token_contract_address()?;
                     Ok(Erc20OnEosPegInInfo::new(
@@ -249,7 +249,7 @@ impl EthReceipt {
                         token_contract_address,
                         log.get_erc20_on_eos_peg_in_eos_address()?,
                         self.transaction_hash,
-                        eos_erc20_account_names.get_eos_account_name_from_eth_token_address(&token_contract_address)?,
+                        eos_erc20_dictionary.get_eos_account_name_from_eth_token_address(&token_contract_address)?,
                     ))
                 })
                 .collect::<Result<Vec<Erc20OnEosPegInInfo>>>()?
@@ -466,23 +466,23 @@ mod tests {
         let token_address = EthAddress::from_slice(
             &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
         );
-        let eos_erc20_account_names = EosErc20Dictionary::new(vec![
+        let eos_erc20_dictionary = EosErc20Dictionary::new(vec![
             EosErc20DictionaryEntry::new(token_name, token_address)
         ]);
         let expected_num_results = 1;
         let expected_result = get_sample_erc20_on_eos_peg_in_info().unwrap();
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_erc20_account_names).unwrap();
+        let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_erc20_dictionary).unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result.0[0], expected_result);
     }
 
     #[test]
     fn should_not_get_get_erc20_redeem_infos_from_receipt_if_token_not_supported() {
-        let eos_erc20_account_names = EosErc20Dictionary::new(vec![]);
+        let eos_erc20_dictionary = EosErc20Dictionary::new(vec![]);
         let expected_num_results = 0;
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_erc20_account_names).unwrap();
+        let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_erc20_dictionary).unwrap();
         assert_eq!(result.len(), expected_num_results);
     }
 }
