@@ -115,7 +115,7 @@ impl EosErc20Dictionary {
     pub fn get_eos_account_name_from_eth_token_address(&self, eth_erc20_token_address: &EthAddress) -> Result<String> {
         for entry in self.iter() {
             if &entry.eth_erc20_token_address == eth_erc20_token_address {
-                return Ok(entry.token_eos_account_name.to_string())
+                return Ok(entry.eos_token_account_name.to_string())
             }
         }
         Err(format!("No `EosErc20DictionaryEntry` exists with address: {}", eth_erc20_token_address).into())
@@ -145,7 +145,7 @@ impl EosErc20DictionaryJson {
 
 #[derive(Debug, Clone, Eq, PartialEq, Constructor, Deserialize, Serialize)]
 pub struct EosErc20DictionaryEntry {
-    token_eos_account_name: String,
+    eos_token_account_name: String,
     eth_erc20_token_address: EthAddress,
 }
 
@@ -153,13 +153,13 @@ impl EosErc20DictionaryEntry {
     fn to_json(&self) -> EosErc20DictionaryEntryJson {
         EosErc20DictionaryEntryJson {
             eth_erc20_token_address: hex::encode(self.eth_erc20_token_address),
-            token_eos_account_name: self.token_eos_account_name.to_string(),
+            eos_token_account_name: self.eos_token_account_name.to_string(),
         }
     }
 
     pub fn from_json(json: &EosErc20DictionaryEntryJson) -> Result<Self> {
         Ok(Self {
-            token_eos_account_name: json.token_eos_account_name.to_string(),
+            eos_token_account_name: json.eos_token_account_name.to_string(),
             eth_erc20_token_address: EthAddress::from_slice(&hex::decode(&json.eth_erc20_token_address)?),
         })
     }
@@ -175,7 +175,7 @@ impl EosErc20DictionaryEntry {
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct EosErc20DictionaryEntryJson {
-    token_eos_account_name: String,
+    eos_token_account_name: String,
     eth_erc20_token_address: String,
 }
 
