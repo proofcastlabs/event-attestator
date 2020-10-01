@@ -11,21 +11,29 @@
 //! ```no_compile
 //! ptokens_core = { version = "1.0.0", features = ["debug"] }
 //! ```
-pub use crate::erc20_on_eos::get_enclave_state::get_enclave_state;
-pub use crate::chains::eth::core_initialization::initialize_eth_enclave::{
-    maybe_initialize_eth_enclave,
-};
-
-pub use crate::erc20_on_eos::{
-    eth::submit_eth_block::submit_eth_block_to_core,
-    eos::{
-        submit_eos_block::submit_eos_block_to_core,
-        initialize_eos_core::maybe_initialize_eos_core,
+pub use crate::{
+    chains::eth::core_initialization::initialize_eth_enclave::maybe_initialize_eth_enclave as maybe_initialize_eth_core,
+    erc20_on_eos::{
+        get_enclave_state::get_enclave_state,
+        eth::submit_eth_block::submit_eth_block_to_core,
+        get_latest_block_numbers::get_latest_block_numbers,
+        eos::{
+            submit_eos_block::submit_eos_block_to_core,
+            initialize_eos_core::maybe_initialize_eos_core,
+        },
+        debug_functions::{
+            debug_update_incremerkle,
+            debug_add_new_eos_schedule,
+            debug_set_key_in_db_to_value,
+            debug_get_key_from_db,
+            debug_get_all_db_keys,
+        },
     },
 };
 
 pub mod eth;
 pub mod eos;
+pub mod debug_functions;
 pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
 
