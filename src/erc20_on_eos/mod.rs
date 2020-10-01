@@ -20,6 +20,8 @@ pub use crate::{
         eos::{
             submit_eos_block::submit_eos_block_to_core,
             initialize_eos_core::maybe_initialize_eos_core,
+            enable_protocol_feature::enable_eos_protocol_feature,
+            disable_protocol_feature::disable_eos_protocol_feature,
         },
         debug_functions::{
             debug_get_key_from_db,
