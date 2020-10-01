@@ -27,5 +27,6 @@ pub use crate::erc20_on_eos::{
 pub mod eth;
 pub mod eos;
 pub mod get_enclave_state;
+pub mod get_latest_block_numbers;
 
 pub(crate) mod check_core_is_initialized;

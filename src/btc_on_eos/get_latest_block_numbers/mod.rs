@@ -24,10 +24,8 @@ pub fn get_latest_block_numbers<D>(
         .and_then(|_| {
             Ok(serde_json::to_string(
                 &BlockNumbers {
-                    btc_latest_block_number:
-                        get_btc_latest_block_number(&db)?,
-                    eos_latest_block_number:
-                        get_eos_last_seen_block_num_from_db(&db)?,
+                    btc_latest_block_number: get_btc_latest_block_number(&db)?,
+                    eos_latest_block_number: get_eos_last_seen_block_num_from_db(&db)?,
                 }
             )?)
         })
