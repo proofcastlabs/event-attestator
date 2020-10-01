@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use serde_json::Value as JsonValue;
 use ethereum_types::Address as EthAddress;
 use eos_primitives::AccountName as EosAccountName;
 use derive_more::{
@@ -26,12 +27,8 @@ use crate::{
 pub struct EosErc20Dictionary(pub Vec<EosErc20DictionaryEntry>);
 
 impl EosErc20Dictionary {
-    fn to_hex_strings(&self) -> Result<Vec<String>> {
-        self
-            .iter()
-            .map(|eos_erc20_dictionary| eos_erc20_dictionary.to_bytes())
-            .map(|bytes: Result<Bytes>| -> Result<String> { Ok(hex::encode(&bytes?)) })
-            .collect()
+    pub fn from_str(json_string: &str) -> Result<Self> {
+        Self::from_json(&EosErc20DictionaryJson::from_str(json_string)?)
     }
 
     pub fn to_json(&self) -> Result<EosErc20DictionaryJson> {
@@ -55,25 +52,27 @@ impl EosErc20Dictionary {
         EosErc20DictionaryJson::from_bytes(bytes).and_then(|json| Self::from_json(&json))
     }
 
-    fn add(mut self, eos_erc20_dictionary: EosErc20DictionaryEntry) -> Result<Self> {
-        match self.contains(&eos_erc20_dictionary) {
+    fn add(mut self, entry: EosErc20DictionaryEntry) -> Result<Self> {
+        info!("✔ Adding `EosErc20Dictionary` entry: {:?}...", entry);
+        match self.contains(&entry) {
             true => {
-                debug!("Not adding new `EosErc20DictionaryEntry` ∵ account name already extant!");
+                info!("Not adding new `EosErc20DictionaryEntry` ∵ account name already extant!");
                 Ok(self)
             }
             false => {
-                self.push(eos_erc20_dictionary);
+                self.push(entry);
                 Ok(self)
             }
         }
     }
 
-    fn remove(mut self, eos_erc20_dictionary: &EosErc20DictionaryEntry) -> Result<Self> {
-        match self.contains(&eos_erc20_dictionary) {
+    fn remove(mut self, entry: &EosErc20DictionaryEntry) -> Result<Self> {
+        info!("✔ Removing `EosErc20Dictionary` entry: {:?}...", entry);
+        match self.contains(&entry) {
             false => Ok(self),
             true => {
-                debug!("Removing `EosErc20DictionaryEntry`: {:?}", eos_erc20_dictionary);
-                self.retain(|x| x != eos_erc20_dictionary);
+                info!("Removing `EosErc20DictionaryEntry`: {:?}", entry);
+                self.retain(|x| x != entry);
                 Ok(self)
             }
         }
@@ -94,22 +93,21 @@ impl EosErc20Dictionary {
         }
     }
 
-    fn add_and_update_in_db<D>(
+    pub fn add_and_update_in_db<D>(
         self,
-        eos_erc20_dictionary: EosErc20DictionaryEntry,
+        entry: EosErc20DictionaryEntry,
         db: &D
     ) -> Result<Self> where D: DatabaseInterface {
-        self.add(eos_erc20_dictionary).and_then(|new_self| { new_self.save_to_db(db)?; Ok(new_self) })
-
+        self.add(entry).and_then(|new_self| { new_self.save_to_db(db)?; Ok(new_self) })
     }
 
-    fn remove_and_update_in_db<D>(
+    pub fn remove_and_update_in_db<D>(
         self,
-        eos_erc20_dictionary: &EosErc20DictionaryEntry,
+        entry: &EosErc20DictionaryEntry,
         db: &D
     ) -> Result<Self> where D: DatabaseInterface {
-        match self.contains(eos_erc20_dictionary) {
-            true => self.remove(eos_erc20_dictionary).and_then(|new_self| { new_self.save_to_db(db)?; Ok(new_self) }),
+        match self.contains(entry) {
+            true => self.remove(entry).and_then(|new_self| { new_self.save_to_db(db)?; Ok(new_self) }),
             false => Ok(self)
         }
     }
@@ -147,6 +145,17 @@ impl EosErc20DictionaryJson {
     pub fn from_bytes(bytes: &Bytes) -> Result<Self> {
         Ok(serde_json::from_slice(bytes)?)
     }
+
+    pub fn from_str(json_string: &str) -> Result<Self> {
+        let intermediary: Vec<JsonValue> = serde_json::from_str(json_string)?;
+        Ok(Self::new(
+            intermediary
+                .iter()
+                .map(|json_value| json_value.to_string())
+                .map(|entry_json_string| EosErc20DictionaryEntryJson::from_str(&entry_json_string))
+                .collect::<Result<Vec<EosErc20DictionaryEntryJson>>>()?
+        ))
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Constructor, Deserialize, Serialize)]
@@ -177,6 +186,10 @@ impl EosErc20DictionaryEntry {
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         Self::from_json(&serde_json::from_slice(bytes)?)
     }
+
+    pub fn from_str(json_string: &str) -> Result<Self> {
+        EosErc20DictionaryEntryJson::from_str(json_string).and_then(|entry_json| Self::from_json(&entry_json))
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -188,6 +201,13 @@ pub struct EosErc20DictionaryEntryJson {
 impl EosErc20DictionaryEntryJson {
     pub fn to_bytes(&self) -> Result<Bytes> {
         Ok(serde_json::to_vec(&self)?)
+    }
+
+    pub fn from_str(json_string: &str) -> Result<Self> {
+        match serde_json::from_str(json_string) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(err.into())
+        }
     }
 }
 
@@ -319,7 +339,9 @@ mod tests {
 
     #[test]
     fn should_get_eos_account_name_from_eth_token_address_in_eos_erc20_dictionary() {
-        let eth_erc20_token_address = EthAddress::from_slice(&hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
+        let eth_erc20_token_address = EthAddress::from_slice(
+            &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
+        );
         let dictionary_entries = get_sample_eos_erc20_dictionary();
         let expected_result = "SampleToken_1".to_string();
         let result = dictionary_entries.get_eos_account_name_from_eth_token_address(&eth_erc20_token_address).unwrap();
@@ -328,7 +350,9 @@ mod tests {
 
     #[test]
     fn should_err_when_getting_eos_account_name_from_eth_token_address_if_no_entry_in_dictionary() {
-        let eth_erc20_token_address = EthAddress::from_slice(&hex::decode("8f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
+        let eth_erc20_token_address = EthAddress::from_slice(
+            &hex::decode("8f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
+        );
         let dictionary_entries = get_sample_eos_erc20_dictionary();
         let result = dictionary_entries.get_eos_account_name_from_eth_token_address(&eth_erc20_token_address);
         assert!(result.is_err());
@@ -376,5 +400,42 @@ mod tests {
         let bytes = dictionary.to_bytes().unwrap();
         let result = EosErc20Dictionary::from_bytes(&bytes).unwrap();
         assert_eq!(result, dictionary);
+
+    }
+
+    fn get_sample_dictionary_entry_json_string() -> String {
+        "{\"eos_token_account_name\":\"account_name\",\"eth_erc20_token_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"}".to_string()
+    }
+
+    fn get_sample_dictionary_json_string() -> String {
+        "[{\"eos_token_account_name\":\"somename1\",\"eth_erc20_token_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"},{\"eos_token_account_name\":\"somename2\",\"eth_erc20_token_address\":\"edB86cd455ef3ca43f0e227e00469C3bDFA40628\"}]".to_string()
+    }
+
+    #[test]
+    fn should_get_dictionary_entry_json_from_str() {
+        let json_string = get_sample_dictionary_entry_json_string();
+        let result = EosErc20DictionaryEntryJson::from_str(&json_string);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_get_dictionary_entry_from_str() {
+        let json_string = get_sample_dictionary_entry_json_string();
+        let result = EosErc20DictionaryEntry::from_str(&json_string);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_get_dictionary_json_from_str() {
+        let json_string = get_sample_dictionary_json_string();
+        let result = EosErc20DictionaryJson::from_str(&json_string);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_get_dictionary_from_str() {
+        let json_string = get_sample_dictionary_json_string();
+        let result = EosErc20Dictionary::from_str(&json_string);
+        assert!(result.is_ok());
     }
 }
