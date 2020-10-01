@@ -39,7 +39,7 @@ use crate::{
             put_eos_known_schedules_in_db,
             put_eos_last_seen_block_id_in_db,
             put_eos_last_seen_block_num_in_db,
-            get_eos_last_seen_block_num_from_db,
+            get_latest_eos_block_number,
         },
             protocol_features::{
             EnabledFeatures,
@@ -177,7 +177,7 @@ pub fn generate_and_put_incremerkle_in_db<D>(
     put_incremerkle_in_db(
         db,
         &Incremerkle::new(
-            get_eos_last_seen_block_num_from_db(db)? - 1,
+            get_latest_eos_block_number(db)? - 1,
             blockroot_merkle
                 .iter()
                 .map(convert_hex_to_checksum256)

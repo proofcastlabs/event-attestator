@@ -77,7 +77,7 @@ pub fn put_eos_last_seen_block_num_in_db<D>(
     put_u64_in_db(db, &EOS_LAST_SEEN_BLOCK_NUM.to_vec(), num)
 }
 
-pub fn get_eos_last_seen_block_num_from_db<D>(
+pub fn get_latest_eos_block_number<D>(
     db: &D,
 ) -> Result<u64>
     where D: DatabaseInterface

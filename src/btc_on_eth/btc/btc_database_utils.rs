@@ -165,7 +165,7 @@ pub fn get_btc_difficulty_from_db<D>(db: &D) -> Result<u64>
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
-pub fn get_btc_latest_block_number<D>(db: &D) -> Result<u64>
+pub fn get_latest_btc_block_number<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
     trace!("✔ Getting BTC latest block number from db...");
@@ -723,7 +723,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_btc_latest_block_number() {
+    fn should_get_latest_btc_block_number() {
         let db = get_test_database();
         let block = get_sample_btc_block_in_db_format().unwrap();
         if let Err(e) = put_btc_latest_block_in_db(&db, &block) {
@@ -732,7 +732,7 @@ mod tests {
         if let Err(e) = put_btc_latest_block_hash_in_db(&db, &block.id) {
             panic!("Error putting latest block hash in db: {}", e);
         }
-        match get_btc_latest_block_number(&db) {
+        match get_latest_btc_block_number(&db) {
             Err(e) => panic!("Error getting latest block number: {}", e),
             Ok(num_from_db) => assert_eq!(num_from_db, block.height),
         };

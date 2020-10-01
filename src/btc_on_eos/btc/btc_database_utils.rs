@@ -154,7 +154,7 @@ pub fn get_btc_difficulty_from_db<D>(db: &D) -> Result<u64>
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
-pub fn get_btc_latest_block_number<D>(db: &D) -> Result<u64>
+pub fn get_latest_btc_block_number<D>(db: &D) -> Result<u64>
     where D: DatabaseInterface
 {
     trace!("✔ Getting BTC latest block number from db...");
