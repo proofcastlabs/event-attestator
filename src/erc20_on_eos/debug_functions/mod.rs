@@ -15,8 +15,12 @@ use crate::{
     erc20_on_eos::check_core_is_initialized::check_core_is_initialized,
     chains::{
         eos::{
-            parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
             eos_database_utils::put_eos_schedule_in_db,
+            parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
+            eos_erc20_dictionary::{
+                EosErc20Dictionary,
+                EosErc20DictionaryEntry,
+            },
             eos_constants::{
                 EOS_PRIVATE_KEY_DB_KEY,
                 get_eos_constants_db_keys,
@@ -55,7 +59,7 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &st
         .and_then(|_| db.start_transaction())
         .and_then(|_| generate_and_put_incremerkle_in_db(db, &init_json.blockroot_merkle))
         .and_then(|_| db.end_transaction())
-        .map(|_| "{debug_update_blockroot_merkle_success:true}".to_string())
+        .and(Ok("{debug_update_blockroot_merkle_success:true}".to_string()))
         .map(prepend_debug_output_marker_to_string)
 }
 
@@ -72,7 +76,7 @@ pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &s
         .and_then(|_| parse_v2_schedule_string_to_v2_schedule(&schedule_json))
         .and_then(|schedule| put_eos_schedule_in_db(&db, &schedule))
         .and_then(|_| db.end_transaction())
-        .map(|_| "{debug_adding_eos_schedule_succeeded:true}".to_string())
+        .and(Ok("{debug_adding_eos_schedule_succeeded:true}".to_string()))
         .map(prepend_debug_output_marker_to_string)
 }
 
@@ -114,12 +118,58 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
 /// This function will return a JSON formatted list of all the database keys used in the encrypted database.
 pub fn debug_get_all_db_keys() -> Result<String> {
     check_debug_mode()
-        .map(|_|
-            json!({
-                "eth": get_eth_constants_db_keys(),
-                "eos": get_eos_constants_db_keys(),
-                "db-key-prefix": DB_KEY_PREFIX.to_string(),
-            }).to_string()
+        .and(Ok(json!({
+            "eth": get_eth_constants_db_keys(),
+            "eos": get_eos_constants_db_keys(),
+            "db-key-prefix": DB_KEY_PREFIX.to_string(),
+        }).to_string())
     )
 }
 
+/// # Debug Add ERC20 Dictionary Entry
+///
+/// This function will add an entry to the `EosErc20Dictionary` held in the encrypted database. The
+/// dictionary defines the relationship between ERC20 etheruem addresses and their pToken EOS
+/// address counterparts.
+///
+/// The required format of an entry is:
+/// {
+///     "eos_token_account_name":"<eos-account-name>",
+///     "eth_erc20_token_address":"<erc20-token-address>"
+/// }
+pub fn debug_add_erc20_dictionary_entry<D>(
+    db: D,
+    dictionary_entry_json_string: &str,
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    info!("✔ Debug adding entry to `EosErc20Dictionary`...");
+    let dictionary = EosErc20Dictionary::get_from_db(&db)?;
+    EosErc20DictionaryEntry::from_str(dictionary_entry_json_string)
+        .and_then(|entry| dictionary.add_and_update_in_db(entry, &db))
+        .and(Ok(json!({"adding_dictionary_entry_sucess":true}).to_string()))
+}
+
+/// # Debug Remove ERC20 Dictionary Entry
+///
+/// This function will remove an entry to the `EosErc20Dictionary` held in the encrypted database. The
+/// dictionary defines the relationship between ERC20 etheruem addresses and their pToken EOS
+/// address counterparts.
+///
+/// The required format of an entry is:
+/// {
+///     "eos_token_account_name":"<eos-account-name>",
+///     "eth_erc20_token_address":"<erc20-token-address>"
+/// }
+pub fn debug_remove_erc20_dictionary_entry<D>(
+    db: D,
+    dictionary_entry_json_string: &str,
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    info!("✔ Debug adding entry to `EosErc20Dictionary`...");
+    let dictionary = EosErc20Dictionary::get_from_db(&db)?;
+    EosErc20DictionaryEntry::from_str(dictionary_entry_json_string)
+        .and_then(|entry| dictionary.remove_and_update_in_db(&entry, &db))
+        .and(Ok(json!({"removing_dictionary_entry_sucess":true}).to_string()))
+}

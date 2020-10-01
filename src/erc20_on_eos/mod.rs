@@ -22,11 +22,13 @@ pub use crate::{
             initialize_eos_core::maybe_initialize_eos_core,
         },
         debug_functions::{
+            debug_get_key_from_db,
+            debug_get_all_db_keys,
             debug_update_incremerkle,
             debug_add_new_eos_schedule,
             debug_set_key_in_db_to_value,
-            debug_get_key_from_db,
-            debug_get_all_db_keys,
+            debug_add_erc20_dictionary_entry,
+            debug_remove_erc20_dictionary_entry,
         },
     },
 };
