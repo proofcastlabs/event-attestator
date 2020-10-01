@@ -12,8 +12,8 @@ use crate::{
     chains::{
         eos::eos_state::EosState,
         eth::{
-            eth_types::EthTransactions,
             eth_traits::EthTxInfoCompatible,
+            eth_crypto::eth_transaction::EthTransaction,
             any_sender::relay_transaction::RelayTransaction,
             eth_database_utils::{
                 get_any_sender_nonce_from_db,
@@ -64,7 +64,7 @@ impl EthTxInfo {
 }
 
 pub fn get_eth_signed_tx_info_from_eth_txs(
-    txs: &EthTransactions,
+    txs: &[EthTransaction],
     redeem_info: &Erc20OnEosRedeemInfos,
     eth_account_nonce: u64,
     use_any_sender_tx_type: bool,

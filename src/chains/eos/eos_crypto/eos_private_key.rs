@@ -186,6 +186,7 @@ mod test {
         Hash as HashTrait
     };
     use crate::{
+        test_utils::get_sample_message_to_sign_bytes,
         chains::eos::eos_crypto::eos_private_key::EosPrivateKey,
         btc_on_eos::eos::eos_test_utils::{
             get_sample_eos_signature,
@@ -195,10 +196,6 @@ mod test {
             get_sample_eos_private_key_str,
         },
     };
-
-    fn get_sample_message_to_sign_bytes() -> &'static [u8] {
-        "Provable pToken!".as_bytes()
-    }
 
     #[test]
     fn should_generate_random_eos_crypto() {

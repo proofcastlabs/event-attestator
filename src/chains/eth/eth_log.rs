@@ -224,10 +224,10 @@ impl EthLog {
 
     pub fn get_erc20_on_eos_peg_in_eos_address(&self) -> Result<String> {
         self.check_is_erc20_peg_in()
-            .and_then(|_| {
+            .map(|_| {
                 let start_index = ETH_WORD_SIZE_IN_BYTES * 5;
                 info!("✔ Parsing `erc20-on-eos` peg in EOS address from log...");
-                Ok(self.data[start_index..].iter().filter(|byte| *byte != &0u8).map(|byte| *byte as char).collect())
+                self.data[start_index..].iter().filter(|byte| *byte != &0u8).map(|byte| *byte as char).collect()
             })
     }
 

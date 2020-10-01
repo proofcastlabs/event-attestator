@@ -48,7 +48,7 @@ impl EosErc20Dictionary {
         self.to_json()?.to_bytes()
     }
 
-    fn from_bytes(bytes: &Bytes) -> Result<Self> {
+    fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         EosErc20DictionaryJson::from_bytes(bytes).and_then(|json| Self::from_json(&json))
     }
 
@@ -142,7 +142,7 @@ impl EosErc20DictionaryJson {
         Ok(serde_json::to_vec(&self)?)
     }
 
-    pub fn from_bytes(bytes: &Bytes) -> Result<Self> {
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         Ok(serde_json::from_slice(bytes)?)
     }
 

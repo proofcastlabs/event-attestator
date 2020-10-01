@@ -115,8 +115,8 @@ impl EthSubmissionMaterial {
         let filtered = Self::new(
             self.block.clone(),
             self.receipts.filter_for_receipts_containing_log_with_address_and_topics(address, topics),
-            self.eos_ref_block_num.clone(),
-            self.eos_ref_block_prefix.clone(),
+            self.eos_ref_block_num,
+            self.eos_ref_block_prefix,
         );
         info!("✔ Number of receipts after filtering:  {}", filtered.receipts.len());
         Ok(filtered)
@@ -135,12 +135,7 @@ impl EthSubmissionMaterial {
             .collect()
         );
         info!("✔ Num receipts after filtering for those pertaining to ERC20 dictionary: {}", filtered_receipts.len());
-        Ok(Self::new(
-            self.block.clone(),
-            filtered_receipts,
-            self.eos_ref_block_num.clone(),
-            self.eos_ref_block_prefix.clone(),
-        ))
+        Ok(Self::new(self.block.clone(), filtered_receipts, self.eos_ref_block_num, self.eos_ref_block_prefix))
     }
 
     pub fn receipts_are_valid(&self) -> Result<bool> {
@@ -188,8 +183,8 @@ impl EthSubmissionMaterial {
         EthSubmissionMaterial {
             receipts: vec![].into(),
             block: self.block.clone(),
-            eos_ref_block_num: self.eos_ref_block_num.clone(),
-            eos_ref_block_prefix: self.eos_ref_block_prefix.clone(),
+            eos_ref_block_num: self.eos_ref_block_num,
+            eos_ref_block_prefix: self.eos_ref_block_prefix,
         }
     }
 }
