@@ -252,6 +252,12 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     clear_all_utxos(db).map(prepend_debug_output_marker_to_string)
 }
 
+/// # Debug Add New Eos Schedule
+///
+/// Does exactly what it says on the tin. It's currently required due to an open ticket on the
+/// validation of EOS blocks containing new schedules. Once that ticket is cleared, new schedules
+/// can be brought in "organically" by syncing to the core up to the block containing said new
+/// schedule. Meanwhile, this function must suffice.
 pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &str) -> Result<String> {
     info!("✔ Debug adding new EOS schedule...");
     check_debug_mode()
