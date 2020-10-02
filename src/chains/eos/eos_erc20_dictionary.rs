@@ -160,6 +160,8 @@ impl EosErc20DictionaryJson {
 
 #[derive(Debug, Clone, Eq, PartialEq, Constructor, Deserialize, Serialize)]
 pub struct EosErc20DictionaryEntry {
+    eos_symbol: String,
+    eth_symbol: String,
     eos_address: String,
     eth_address: EthAddress,
 }
@@ -167,13 +169,17 @@ pub struct EosErc20DictionaryEntry {
 impl EosErc20DictionaryEntry {
     fn to_json(&self) -> EosErc20DictionaryEntryJson {
         EosErc20DictionaryEntryJson {
-            eth_address: hex::encode(self.eth_address),
+            eos_symbol: self.eos_symbol.to_string(),
+            eth_symbol: self.eth_symbol.to_string(),
             eos_address: self.eos_address.to_string(),
+            eth_address: hex::encode(self.eth_address),
         }
     }
 
     pub fn from_json(json: &EosErc20DictionaryEntryJson) -> Result<Self> {
         Ok(Self {
+            eos_symbol: json.eos_symbol.to_string(),
+            eth_symbol: json.eth_symbol.to_string(),
             eos_address: json.eos_address.to_string(),
             eth_address: EthAddress::from_slice(&hex::decode(&json.eth_address)?),
         })
@@ -194,8 +200,10 @@ impl EosErc20DictionaryEntry {
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct EosErc20DictionaryEntryJson {
-    eos_address: String,
+    eth_symbol: String,
+    eos_symbol: String,
     eth_address: String,
+    eos_address: String,
 }
 
 impl EosErc20DictionaryEntryJson {
@@ -254,6 +262,8 @@ mod tests {
     fn eos_erc20_dictionary_should_no_contain_other_eos_erc20_dictionary_entry() {
         let token_address_hex = "9e57CB2a4F462a5258a49E88B4331068a391DE66".to_string();
         let other_dictionary_entry = EosErc20DictionaryEntry::new(
+            "SYM".to_string(),
+            "SYM".to_string(),
             "SampleTokenx".to_string(),
             EthAddress::from_slice(&hex::decode(&token_address_hex).unwrap()),
         );
@@ -404,11 +414,11 @@ mod tests {
     }
 
     fn get_sample_dictionary_entry_json_string() -> String {
-        "{\"eos_address\":\"account_name\",\"eth_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"}".to_string()
+        "{\"eos_symbol\":\"SYM\",\"eth_symbol\":\"SYM\",\"eos_address\":\"account_name\",\"eth_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"}".to_string()
     }
 
     fn get_sample_dictionary_json_string() -> String {
-        "[{\"eos_address\":\"somename1\",\"eth_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"},{\"eos_address\":\"somename2\",\"eth_address\":\"edB86cd455ef3ca43f0e227e00469C3bDFA40628\"}]".to_string()
+        "[{\"eos_symbol\":\"SYM\",\"eth_symbol\":\"SYM2\",\"eos_address\":\"somename1\",\"eth_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"},{\"eos_symbol\":\"SYM\",\"eth_symbol\":\"SYM2\",\"eos_address\":\"somename2\",\"eth_address\":\"edB86cd455ef3ca43f0e227e00469C3bDFA40628\"}]".to_string()
     }
 
     #[test]
