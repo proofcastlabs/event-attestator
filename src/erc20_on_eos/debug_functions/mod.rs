@@ -134,8 +134,8 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 ///
 /// The required format of an entry is:
 /// {
-///     "eos_token_account_name":"<eos-account-name>",
-///     "eth_erc20_token_address":"<erc20-token-address>"
+///     "eos_address":"<eos-account-name>",
+///     "eth_address":"<erc20-token-address>"
 /// }
 pub fn debug_add_erc20_dictionary_entry<D>(
     db: D,
@@ -158,8 +158,8 @@ pub fn debug_add_erc20_dictionary_entry<D>(
 ///
 /// The required format of an entry is:
 /// {
-///     "eos_token_account_name":"<eos-account-name>",
-///     "eth_erc20_token_address":"<erc20-token-address>"
+///     "eos_address":"<eos-account-name>",
+///     "eth_address":"<erc20-token-address>"
 /// }
 pub fn debug_remove_erc20_dictionary_entry<D>(
     db: D,

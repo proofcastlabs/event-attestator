@@ -112,25 +112,25 @@ impl EosErc20Dictionary {
         }
     }
 
-    pub fn get_eos_account_name_from_eth_token_address(&self, eth_erc20_token_address: &EthAddress) -> Result<String> {
+    pub fn get_eos_account_name_from_eth_token_address(&self, eth_address: &EthAddress) -> Result<String> {
         for entry in self.iter() {
-            if &entry.eth_erc20_token_address == eth_erc20_token_address {
-                return Ok(entry.eos_token_account_name.to_string())
+            if &entry.eth_address == eth_address {
+                return Ok(entry.eos_address.to_string())
             }
         }
-        Err(format!("No `EosErc20DictionaryEntry` exists with address: {}", eth_erc20_token_address).into())
+        Err(format!("No `EosErc20DictionaryEntry` exists with address: {}", eth_address).into())
     }
 
-    pub fn is_token_supported(&self, eth_erc20_token_address: &EthAddress) -> bool {
-        self.get_eos_account_name_from_eth_token_address(eth_erc20_token_address).is_ok()
+    pub fn is_token_supported(&self, eth_address: &EthAddress) -> bool {
+        self.get_eos_account_name_from_eth_token_address(eth_address).is_ok()
     }
 
     pub fn to_eth_addresses(&self) -> Vec<EthAddress> {
-        self.iter().map(|entry| entry.eth_erc20_token_address).collect()
+        self.iter().map(|entry| entry.eth_address).collect()
     }
 
     pub fn to_eos_accounts(&self) -> Result<Vec<EosAccountName>> {
-        self.iter().map(|entry| Ok(EosAccountName::from_str(&entry.eos_token_account_name)?)).collect()
+        self.iter().map(|entry| Ok(EosAccountName::from_str(&entry.eos_address)?)).collect()
     }
 }
 
@@ -160,22 +160,22 @@ impl EosErc20DictionaryJson {
 
 #[derive(Debug, Clone, Eq, PartialEq, Constructor, Deserialize, Serialize)]
 pub struct EosErc20DictionaryEntry {
-    eos_token_account_name: String,
-    eth_erc20_token_address: EthAddress,
+    eos_address: String,
+    eth_address: EthAddress,
 }
 
 impl EosErc20DictionaryEntry {
     fn to_json(&self) -> EosErc20DictionaryEntryJson {
         EosErc20DictionaryEntryJson {
-            eth_erc20_token_address: hex::encode(self.eth_erc20_token_address),
-            eos_token_account_name: self.eos_token_account_name.to_string(),
+            eth_address: hex::encode(self.eth_address),
+            eos_address: self.eos_address.to_string(),
         }
     }
 
     pub fn from_json(json: &EosErc20DictionaryEntryJson) -> Result<Self> {
         Ok(Self {
-            eos_token_account_name: json.eos_token_account_name.to_string(),
-            eth_erc20_token_address: EthAddress::from_slice(&hex::decode(&json.eth_erc20_token_address)?),
+            eos_address: json.eos_address.to_string(),
+            eth_address: EthAddress::from_slice(&hex::decode(&json.eth_address)?),
         })
     }
 
@@ -194,8 +194,8 @@ impl EosErc20DictionaryEntry {
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct EosErc20DictionaryEntryJson {
-    eos_token_account_name: String,
-    eth_erc20_token_address: String,
+    eos_address: String,
+    eth_address: String,
 }
 
 impl EosErc20DictionaryEntryJson {
@@ -339,22 +339,22 @@ mod tests {
 
     #[test]
     fn should_get_eos_account_name_from_eth_token_address_in_eos_erc20_dictionary() {
-        let eth_erc20_token_address = EthAddress::from_slice(
+        let eth_address = EthAddress::from_slice(
             &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
         );
         let dictionary_entries = get_sample_eos_erc20_dictionary();
         let expected_result = "SampleToken_1".to_string();
-        let result = dictionary_entries.get_eos_account_name_from_eth_token_address(&eth_erc20_token_address).unwrap();
+        let result = dictionary_entries.get_eos_account_name_from_eth_token_address(&eth_address).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_err_when_getting_eos_account_name_from_eth_token_address_if_no_entry_in_dictionary() {
-        let eth_erc20_token_address = EthAddress::from_slice(
+        let eth_address = EthAddress::from_slice(
             &hex::decode("8f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
         );
         let dictionary_entries = get_sample_eos_erc20_dictionary();
-        let result = dictionary_entries.get_eos_account_name_from_eth_token_address(&eth_erc20_token_address);
+        let result = dictionary_entries.get_eos_account_name_from_eth_token_address(&eth_address);
         assert!(result.is_err());
     }
 
@@ -404,11 +404,11 @@ mod tests {
     }
 
     fn get_sample_dictionary_entry_json_string() -> String {
-        "{\"eos_token_account_name\":\"account_name\",\"eth_erc20_token_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"}".to_string()
+        "{\"eos_address\":\"account_name\",\"eth_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"}".to_string()
     }
 
     fn get_sample_dictionary_json_string() -> String {
-        "[{\"eos_token_account_name\":\"somename1\",\"eth_erc20_token_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"},{\"eos_token_account_name\":\"somename2\",\"eth_erc20_token_address\":\"edB86cd455ef3ca43f0e227e00469C3bDFA40628\"}]".to_string()
+        "[{\"eos_address\":\"somename1\",\"eth_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"},{\"eos_address\":\"somename2\",\"eth_address\":\"edB86cd455ef3ca43f0e227e00469C3bDFA40628\"}]".to_string()
     }
 
     #[test]
