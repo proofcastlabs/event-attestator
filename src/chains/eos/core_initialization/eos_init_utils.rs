@@ -387,6 +387,7 @@ mod tests {
     #[test]
     fn should_parse_init_json_with_erc20_dictionary() {
         let init_json_with_erc20_dictionary = get_sample_mainnet_init_json_with_erc20_dictionary();
-        assert!(init_json_with_erc20_dictionary.is_ok());
+        //assert!(init_json_with_erc20_dictionary.is_ok());
+        init_json_with_erc20_dictionary.unwrap();
     }
 }

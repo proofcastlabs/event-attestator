@@ -527,6 +527,7 @@ mod tests {
 
     #[test]
     fn is_supported_erc20_peg_in_should_be_true_if_supported() {
+        let eth_token_decimals = 18;
         let eth_symbol = "SAM".to_string();
         let eos_symbol = "SYM".to_string();
         let token_name = "SampleToken".to_string();
@@ -534,7 +535,7 @@ mod tests {
             &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
         );
         let eos_erc20_account_names = EosErc20Dictionary::new(vec![
-            EosErc20DictionaryEntry::new(eth_symbol, eos_symbol, token_name, token_address)
+            EosErc20DictionaryEntry::new(eth_token_decimals, eth_symbol, eos_symbol, token_name, token_address)
         ]);
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = log.is_supported_erc20_peg_in(&eos_erc20_account_names).unwrap();
@@ -543,6 +544,7 @@ mod tests {
 
     #[test]
     fn is_supported_erc20_peg_in_should_be_false_if_not_supported() {
+        let eth_token_decimals = 18;
         let eth_symbol = "SAM".to_string();
         let eos_symbol = "SYM".to_string();
         let token_name = "SampleToken".to_string();
@@ -550,7 +552,7 @@ mod tests {
             &hex::decode("8f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
         );
         let eos_erc20_account_names = EosErc20Dictionary::new(vec![
-            EosErc20DictionaryEntry::new(eth_symbol, eos_symbol, token_name, token_address)
+            EosErc20DictionaryEntry::new(eth_token_decimals, eth_symbol, eos_symbol, token_name, token_address)
         ]);
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = log.is_supported_erc20_peg_in(&eos_erc20_account_names).unwrap();

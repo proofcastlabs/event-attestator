@@ -505,6 +505,7 @@ mod tests {
 
     #[test]
     fn should_get_get_erc20_redeem_infos_from_receipt() {
+        let eth_token_decimals = 18;
         let eth_symbol = "SAM".to_string();
         let eos_symbol = "SAM".to_string();
         let token_name = "SampleToken".to_string();
@@ -512,7 +513,7 @@ mod tests {
             &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
         );
         let eos_erc20_dictionary = EosErc20Dictionary::new(vec![
-            EosErc20DictionaryEntry::new(eth_symbol, eos_symbol, token_name, token_address)
+            EosErc20DictionaryEntry::new(eth_token_decimals, eth_symbol, eos_symbol, token_name, token_address)
         ]);
         let expected_num_results = 1;
         let expected_result = get_sample_erc20_on_eos_peg_in_info().unwrap();
