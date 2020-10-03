@@ -16,40 +16,40 @@ use crate::{
         Result,
         DataSensitivity,
     },
-    chains::btc::{
-        btc_constants::{
-            BTC_FEE_KEY,
-            BTC_NETWORK_KEY,
-            BTC_ADDRESS_KEY,
-            BTC_LINKER_HASH_KEY,
-            BTC_PRIVATE_KEY_DB_KEY,
-            BTC_ACCOUNT_NONCE_KEY,
-            BTC_TAIL_BLOCK_HASH_KEY,
-            BTC_CANON_BLOCK_HASH_KEY,
-            BTC_DIFFICULTY_THRESHOLD,
-            BTC_ANCHOR_BLOCK_HASH_KEY,
-            BTC_LATEST_BLOCK_HASH_KEY,
-            BTC_CANON_TO_TIP_LENGTH_KEY,
-        },
-        btc_utils::{
-            convert_btc_network_to_bytes,
-            convert_bytes_to_btc_network,
-            convert_bytes_to_btc_address,
-            convert_btc_address_to_bytes,
-            serialize_btc_block_in_db_format,
-            deserialize_btc_block_in_db_format,
-        },
-    },
-    btc_on_eth::{
-        utils::{
+    chains::{
+        eth::eth_utils::{
             convert_bytes_to_u64,
             convert_u64_to_bytes,
         },
         btc::{
-            btc_state::BtcState,
-            btc_types::BtcBlockInDbFormat,
-            btc_crypto::btc_private_key::BtcPrivateKey,
+            btc_constants::{
+                BTC_FEE_KEY,
+                BTC_NETWORK_KEY,
+                BTC_ADDRESS_KEY,
+                BTC_LINKER_HASH_KEY,
+                BTC_PRIVATE_KEY_DB_KEY,
+                BTC_ACCOUNT_NONCE_KEY,
+                BTC_TAIL_BLOCK_HASH_KEY,
+                BTC_CANON_BLOCK_HASH_KEY,
+                BTC_DIFFICULTY_THRESHOLD,
+                BTC_ANCHOR_BLOCK_HASH_KEY,
+                BTC_LATEST_BLOCK_HASH_KEY,
+                BTC_CANON_TO_TIP_LENGTH_KEY,
+            },
+            btc_utils::{
+                convert_btc_network_to_bytes,
+                convert_bytes_to_btc_network,
+                convert_bytes_to_btc_address,
+                convert_btc_address_to_bytes,
+                serialize_btc_block_in_db_format,
+                deserialize_btc_block_in_db_format,
+            },
         },
+    },
+    btc_on_eth::btc::{
+        btc_state::BtcState,
+        btc_types::BtcBlockInDbFormat,
+        btc_crypto::btc_private_key::BtcPrivateKey,
     },
 };
 

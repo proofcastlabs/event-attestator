@@ -309,6 +309,7 @@ mod tests {
     use crate::{
         errors::AppError,
         chains::eth::{
+            eth_utils::convert_hex_to_h256,
             nibble_utils::{
                 get_length_in_nibbles,
                 get_nibbles_from_bytes,
@@ -319,7 +320,6 @@ mod tests {
             },
         },
         btc_on_eth::{
-            utils::convert_hex_to_h256,
             eth::eth_test_utils::{
                 get_sample_leaf_node,
                 get_sample_branch_node,

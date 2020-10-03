@@ -3,6 +3,7 @@ pub mod core_initialization;
 
 pub(crate) mod trie;
 pub(crate) mod eth_log;
+pub(crate) mod eth_utils;
 pub(crate) mod eth_state;
 pub(crate) mod eth_block;
 pub(crate) mod eth_types;

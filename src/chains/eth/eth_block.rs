@@ -18,7 +18,7 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eth::utils::{
+    chains::eth::eth_utils::{
         decode_prefixed_hex,
         convert_hex_to_h256,
         convert_hex_to_bytes,

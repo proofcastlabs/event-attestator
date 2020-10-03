@@ -45,13 +45,11 @@ use crate::{
                 Nibbles,
                 get_nibbles_from_bytes,
             },
-        },
-    },
-    btc_on_eth::{
-        utils::{
-            convert_hex_to_h256,
-            convert_hex_to_address,
-            convert_json_value_to_string,
+            eth_utils::{
+                convert_hex_to_h256,
+                convert_hex_to_address,
+                convert_json_value_to_string,
+            },
         },
     },
 };

@@ -6,6 +6,10 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
+    utils::{
+        convert_bytes_to_u64,
+        convert_u64_to_bytes,
+    },
     types::{
         Byte,
         Result,
@@ -22,6 +26,10 @@ use crate::{
             EthSigningParams,
             AnySenderSigningParams,
         },
+        eth_utils::{
+            convert_h256_to_bytes,
+            convert_bytes_to_h256,
+        },
         eth_constants::{
             ETH_ADDRESS_KEY,
             ETH_CHAIN_ID_KEY,
@@ -37,14 +45,7 @@ use crate::{
             ETH_CANON_TO_TIP_LENGTH_KEY,
             ETH_SMART_CONTRACT_ADDRESS_KEY,
             ERC777_PROXY_CONTACT_ADDRESS_KEY,
-            ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY,
         },
-    },
-    btc_on_eth::utils::{ // TODO move this to chains/eth dir!
-        convert_bytes_to_u64,
-        convert_u64_to_bytes,
-        convert_h256_to_bytes,
-        convert_bytes_to_h256,
     },
 };
 

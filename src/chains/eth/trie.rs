@@ -27,10 +27,10 @@ use crate::{
             convert_nibble_to_usize,
             get_common_prefix_nibbles,
         },
-    },
-    btc_on_eth::utils::{
-        convert_bytes_to_h256,
-        convert_h256_to_bytes,
+        eth_utils::{
+            convert_bytes_to_h256,
+            convert_h256_to_bytes,
+        },
     },
 };
 
@@ -1135,9 +1135,11 @@ mod tests {
         TerminalMode,
     };
     use crate::{
-        chains::eth::get_trie_hash_map::get_thing_from_trie_hash_map,
+        chains::eth::{
+            eth_utils::convert_hex_to_h256,
+            get_trie_hash_map::get_thing_from_trie_hash_map,
+        },
         btc_on_eth::{
-            utils::convert_hex_to_h256,
             eth::eth_test_utils::{
                 get_sample_leaf_node,
                 get_sample_branch_node,

@@ -479,9 +479,7 @@ pub fn get_sample_unsigned_eth_transaction() -> EthTransaction {
 
 mod tests {
     use super::*;
-    use crate::btc_on_eth::{
-        utils::convert_hex_to_h256,
-    };
+    use crate::chains::eth::eth_utils::convert_hex_to_h256;
 
     #[test]
     fn should_get_expected_log_correctly() {

@@ -16,7 +16,7 @@ pub fn set_eth_signature_recovery_param(signature: &mut EthSignature) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::utils::convert_hex_to_h256;
+    use crate::chains::eth::eth_utils::convert_hex_to_h256;
 
     #[test]
     fn should_keccak_hash_bytes() {

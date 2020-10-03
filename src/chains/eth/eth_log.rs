@@ -25,10 +25,16 @@ use crate::{
         Result,
     },
     constants::SAFE_BTC_ADDRESS,
+    btc_on_eth::utils::convert_ptoken_to_satoshis,
     chains::{
         eos::eos_erc20_dictionary::EosErc20Dictionary,
         eth::{
             eth_receipt::EthReceiptJson,
+            eth_utils::{
+                convert_hex_to_bytes,
+                convert_hex_to_address,
+                convert_hex_strings_to_h256s,
+            },
             eth_constants::{
                 ETH_WORD_SIZE_IN_BYTES,
                 ETH_ADDRESS_SIZE_IN_BYTES,
@@ -36,14 +42,6 @@ use crate::{
                 LOG_DATA_BTC_ADDRESS_START_INDEX,
                 BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
             },
-        },
-    },
-    btc_on_eth::{
-        utils::{
-            convert_hex_to_bytes,
-            convert_hex_to_address,
-            convert_ptoken_to_satoshis,
-            convert_hex_strings_to_h256s,
         },
     },
 };

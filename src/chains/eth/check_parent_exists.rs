@@ -1,9 +1,9 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::utils::convert_h256_to_bytes,
     chains::eth::{
         eth_state::EthState,
+        eth_utils::convert_h256_to_bytes,
         eth_database_utils::key_exists_in_db,
     },
 };
