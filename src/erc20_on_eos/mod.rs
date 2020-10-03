@@ -29,6 +29,7 @@ pub use crate::{
             debug_update_incremerkle,
             debug_add_new_eos_schedule,
             debug_set_key_in_db_to_value,
+            debug_get_perc20_migration_tx,
             debug_add_erc20_dictionary_entry,
             debug_remove_erc20_dictionary_entry,
         },

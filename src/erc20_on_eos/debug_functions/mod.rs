@@ -1,9 +1,13 @@
 pub use serde_json::json;
+use ethereum_types::Address as EthAddress;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
-    utils::prepend_debug_output_marker_to_string,
+    utils::{
+        decode_hex_with_err_msg,
+        prepend_debug_output_marker_to_string,
+    },
     constants::{
         DB_KEY_PREFIX,
         PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
@@ -32,6 +36,20 @@ use crate::{
             },
         },
         eth::{
+            eth_crypto::eth_transaction::EthTransaction,
+            eth_contracts::perc20::{
+                PERC20_MIGRATE_GAS_LIMIT,
+                encode_perc20_migrate_fxn_data,
+            },
+            eth_database_utils::{
+                get_eth_chain_id_from_db,
+                get_eth_gas_price_from_db,
+                get_eth_private_key_from_db,
+                get_eth_account_nonce_from_db,
+                increment_eth_account_nonce_in_db,
+                put_eth_smart_contract_address_in_db,
+                get_eos_erc20_smart_contract_address_from_db,
+            },
             eth_constants::{
                 ETH_PRIVATE_KEY_DB_KEY,
                 get_eth_constants_db_keys,
@@ -172,4 +190,54 @@ pub fn debug_remove_erc20_dictionary_entry<D>(
     EosErc20DictionaryEntry::from_str(dictionary_entry_json_string)
         .and_then(|entry| dictionary.remove_and_update_in_db(&entry, &db))
         .and(Ok(json!({"removing_dictionary_entry_sucess":true}).to_string()))
+}
+
+fn get_eth_address_from_str(eth_address_str: &str) -> Result<EthAddress> {
+    info!("✔ Getting ETH address from str...");
+    decode_hex_with_err_msg(eth_address_str, "ETH address is not valid hex!")
+        .and_then(|bytes| match bytes.len() {
+            20 => Ok(EthAddress::from_slice(&bytes)),
+            _ => Err("Incorrect number of bytes for ETH address!".into()),
+        })
+}
+
+/// # Debug Get PERC20 Migration Transaction
+///
+/// This function will create and sign a transaction that calls the `migrate` function on the
+/// current `pERC20-on-EOS` smart-contract, migrationg it to the ETH address provided as an
+/// argument. It then updates the smart-contract address stored in the encrypted database to that
+/// new address.
+///
+/// ### BEWARE:
+/// This function outputs a signed transaction which if NOT broadcast will result in the enclave no
+/// longer working.  Use with extreme caution and only if you know exactly what you are doing!
+pub fn debug_get_perc20_migration_tx<D>(
+    db: D,
+    new_eos_erc20_smart_contract_address_string: &str,
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    info!("✔ Debug getting migration transaction...");
+    let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
+    let current_eos_erc20_smart_contract_address = get_eos_erc20_smart_contract_address_from_db(&db)?;
+    let new_eos_erc20_smart_contract_address = get_eth_address_from_str(new_eos_erc20_smart_contract_address_string)?;
+    increment_eth_account_nonce_in_db(&db, 1)
+        .and_then(|_| put_eth_smart_contract_address_in_db(&db, &new_eos_erc20_smart_contract_address))
+        .and_then(|_| encode_perc20_migrate_fxn_data(new_eos_erc20_smart_contract_address))
+        .and_then(|tx_data| Ok(EthTransaction::new_unsigned(
+            tx_data,
+            current_eth_account_nonce,
+            0,
+            current_eos_erc20_smart_contract_address,
+            get_eth_chain_id_from_db(&db)?,
+            PERC20_MIGRATE_GAS_LIMIT,
+            get_eth_gas_price_from_db(&db)?,
+        )))
+        .and_then(|unsigned_tx| unsigned_tx.sign(get_eth_private_key_from_db(&db)?))
+        .map(|signed_tx| signed_tx.serialize_hex())
+        .map(|hex_tx| json!({
+            "success": true,
+            "eth_signed_tx": hex_tx,
+            "migrated_to_address:": new_eos_erc20_smart_contract_address.to_string(),
+        }).to_string())
 }
