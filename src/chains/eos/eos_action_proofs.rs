@@ -55,7 +55,7 @@ impl EosActionProof {
         convert_bytes_to_u64(&self.action.data[8..16].to_vec())
     }
 
-    fn get_erc20_on_eos_btc_redeem_amount(&self) -> Result<U256> {
+    fn get_erc20_on_eos_eth_redeem_amount(&self) -> Result<U256> {
         Ok(U256::from(&self.action.data[8..16])) // FIXME TODO Test this!
     }
 
@@ -96,7 +96,7 @@ impl EosActionProof {
         Ok(Erc20OnEosRedeemInfo {
             originating_tx_id: self.tx_id,
             from: self.get_redeem_action_sender()?,
-            amount: self.get_erc20_on_eos_btc_redeem_amount()?,
+            amount: self.get_erc20_on_eos_eth_redeem_amount()?,
             global_sequence: self.action_receipt.global_sequence,
             recipient: self.get_erc20_on_eos_btc_redeem_address()?,
         })
