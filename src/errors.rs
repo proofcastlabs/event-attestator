@@ -83,6 +83,10 @@ quick_error! {
             from()
             display("✘ RLP Decoder Error!\n✘ {}", err)
         }
+        FromDecStrErr(err: ethereum_types::FromDecStrErr) {
+            from()
+            display("✘ Ethereum types `from_dec_str` err: {}", err)
+        }
         NoneError(err: &'static str) {
             display("✘ None Error!\n✘ {}", err)
         }
