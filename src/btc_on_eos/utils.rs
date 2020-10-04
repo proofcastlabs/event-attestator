@@ -6,20 +6,11 @@ use crate::{
     },
 };
 
-pub fn convert_eos_asset_to_u64(eos_asset: &str) -> Result<u64> { //TODO test!
-    Ok(
-        eos_asset
-            .replace(".", "")
-            .split_whitespace()
-            .collect::<Vec<&str>>()[0]
-            .parse::<u64>()?
-    )
+pub fn convert_eos_asset_to_u64(eos_asset: &str) -> Result<u64> { //TODO Test!
+    Ok(eos_asset.replace(".", "").split_whitespace().collect::<Vec<&str>>()[0].parse::<u64>()?)
 }
 
-pub fn convert_u64_to_eos_asset( // TODO Test
-    value: u64,
-    token_symbol: &str,
-) -> String {
+pub fn convert_u64_to_eos_asset(value: u64, token_symbol: &str) -> String { // TODO Test!
     let mut amount_string = format!("{}", value);
     let asset = match amount_string.len() {
         0 => "0.00000000".to_string(),
@@ -32,10 +23,7 @@ pub fn convert_u64_to_eos_asset( // TODO Test
         7 => format!("0.0{}", amount_string),
         8 => format!("0.{}", amount_string),
         _ => {
-            amount_string.insert(
-                amount_string.len() - BTC_NUM_DECIMALS,
-                '.'
-            );
+            amount_string.insert(amount_string.len() - BTC_NUM_DECIMALS, '.');
             amount_string
         }
     };

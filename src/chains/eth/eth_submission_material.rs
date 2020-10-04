@@ -395,6 +395,7 @@ mod tests {
     #[test]
     fn should_get_erc20_on_eos_peg_in_infos() {
         let eth_token_decimals = 18;
+        let eos_token_decimals = 9;
         let eth_symbol = "SYM".to_string();
         let eos_symbol = "SYM".to_string();
         let token_name = "SampleToken".to_string();
@@ -402,7 +403,14 @@ mod tests {
             &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
         );
         let eos_erc20_account_names = EosErc20Dictionary::new(vec![
-            EosErc20DictionaryEntry::new(eth_token_decimals, eth_symbol, eos_symbol, token_name, token_address)
+            EosErc20DictionaryEntry::new(
+                eth_token_decimals,
+                eos_token_decimals,
+                eth_symbol,
+                eos_symbol,
+                token_name,
+                token_address
+            )
         ]);
         let expected_num_results = 1;
         let submission_material = get_sample_submission_material_with_erc20_peg_in_event().unwrap();

@@ -16,10 +16,12 @@ use crate::{
         Result,
     },
     chains::{
-        eos::eos_state::EosState,
         eth::eth_state::EthState,
+        eos::{
+            eos_state::EosState,
+            eos_constants::EOS_ERC20_DICTIONARY,
+        },
     },
-    chains::eos::eos_constants::EOS_ERC20_DICTIONARY,
 };
 
 
@@ -160,7 +162,8 @@ impl EosErc20DictionaryJson {
 
 #[derive(Debug, Clone, Eq, PartialEq, Constructor, Deserialize, Serialize)]
 pub struct EosErc20DictionaryEntry {
-    eth_token_decimals: u8,
+    eth_token_decimals: usize,
+    eos_token_decimals: usize,
     eos_symbol: String,
     eth_symbol: String,
     eos_address: String,
@@ -171,6 +174,7 @@ impl EosErc20DictionaryEntry {
     fn to_json(&self) -> EosErc20DictionaryEntryJson {
         EosErc20DictionaryEntryJson {
             eth_token_decimals: self.eth_token_decimals,
+            eos_token_decimals: self.eos_token_decimals,
             eos_symbol: self.eos_symbol.to_string(),
             eth_symbol: self.eth_symbol.to_string(),
             eos_address: self.eos_address.to_string(),
@@ -181,6 +185,7 @@ impl EosErc20DictionaryEntry {
     pub fn from_json(json: &EosErc20DictionaryEntryJson) -> Result<Self> {
         Ok(Self {
             eth_token_decimals: json.eth_token_decimals,
+            eos_token_decimals: json.eos_token_decimals,
             eos_symbol: json.eos_symbol.to_string(),
             eth_symbol: json.eth_symbol.to_string(),
             eos_address: json.eos_address.to_string(),
@@ -203,7 +208,8 @@ impl EosErc20DictionaryEntry {
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct EosErc20DictionaryEntryJson {
-    eth_token_decimals: u8,
+    eth_token_decimals: usize,
+    eos_token_decimals: usize,
     eth_symbol: String,
     eos_symbol: String,
     eth_address: String,
@@ -267,6 +273,7 @@ mod tests {
         let token_address_hex = "9e57CB2a4F462a5258a49E88B4331068a391DE66".to_string();
         let other_dictionary_entry = EosErc20DictionaryEntry::new(
             18,
+            9,
             "SYM".to_string(),
             "SYM".to_string(),
             "SampleTokenx".to_string(),
@@ -419,11 +426,11 @@ mod tests {
     }
 
     fn get_sample_dictionary_entry_json_string() -> String {
-        "{\"eth_token_decimals\":18,\"eos_symbol\":\"SYM\",\"eth_symbol\":\"SYM\",\"eos_address\":\"account_name\",\"eth_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"}".to_string()
+        "{\"eos_token_decimals\":9,\"eth_token_decimals\":18,\"eos_symbol\":\"SYM\",\"eth_symbol\":\"SYM\",\"eos_address\":\"account_name\",\"eth_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"}".to_string()
     }
 
     fn get_sample_dictionary_json_string() -> String {
-        "[{\"eth_token_decimals\":18,\"eos_symbol\":\"SYM\",\"eth_symbol\":\"SYM2\",\"eos_address\":\"somename1\",\"eth_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"},{\"eth_token_decimals\":18,\"eos_symbol\":\"SYM\",\"eth_symbol\":\"SYM2\",\"eos_address\":\"somename2\",\"eth_address\":\"edB86cd455ef3ca43f0e227e00469C3bDFA40628\"}]".to_string()
+        "[{\"eos_token_decimals\":9,\"eth_token_decimals\":18,\"eos_symbol\":\"SYM\",\"eth_symbol\":\"SYM2\",\"eos_address\":\"somename1\",\"eth_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"},{\"eos_token_decimals\":9,\"eth_token_decimals\":18,\"eos_symbol\":\"SYM\",\"eth_symbol\":\"SYM2\",\"eos_address\":\"somename2\",\"eth_address\":\"edB86cd455ef3ca43f0e227e00469C3bDFA40628\"}]".to_string()
     }
 
     #[test]
