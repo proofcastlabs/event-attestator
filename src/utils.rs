@@ -8,6 +8,17 @@ use crate::{
     },
 };
 
+pub fn right_pad_or_truncate(s: &str, width: usize) -> String {
+    if s.len() >= width { truncate_str(&s, width).to_string() } else { right_pad_with_zeroes(&s, width).to_string() }
+}
+
+pub fn truncate_str(s: &str, num_chars: usize) -> &str {
+    match s.char_indices().nth(num_chars) {
+        None => s,
+        Some((i, _)) => &s[..i],
+    }
+}
+
 pub fn get_prefixed_db_key(suffix: &str) -> [u8; 32] {
     keccak256(format!("{}{}", DB_KEY_PREFIX.to_string(), suffix).as_bytes())
 }
@@ -23,6 +34,18 @@ pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
         }
         _ => Err("✘ Too many bytes to convert to u64 without overflowing!".into()),
     }
+}
+
+pub fn right_pad_with_zeroes(s: &str, width: usize) -> String {
+    format!("{:0<width$}", s, width = width)
+}
+
+pub fn left_pad_with_zeroes(s: &str, width: usize) -> String {
+    format!("{:0>width$}", s, width = width)
+}
+
+pub fn split_string_at_index(s: &str, i: usize) -> (String, String) {
+    (s.chars().take(i).collect::<String>(), s.chars().skip(i).collect::<String>())
 }
 
 fn left_pad_with_zero(string: &str) -> Result<String> {
@@ -169,5 +192,90 @@ mod tests {
         let expected_result = "✘ Cannot overwrite thing in state!";
         let result = get_no_overwrite_state_err(&thing);
         assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn should_split_string_at_index() {
+        let s = "some string";
+        let i = 3;
+        let result = split_string_at_index(s, i);
+        println!("{:?}", &result);
+        assert_eq!(result.0, "som");
+        assert_eq!(result.1, "e string");
+    }
+
+    #[test]
+    fn should_split_string_at_index_if_index_gt_string_len() {
+        let s = "some string";
+        let i = 100;
+        assert!(i > s.len());
+        let result = split_string_at_index(s, i);
+        assert_eq!(result.0, s);
+        assert_eq!(result.1, "");
+    }
+
+    #[test]
+    fn should_split_string_at_index_if_index_is_0() {
+        let s = "some string";
+        let i = 0;
+        let result = split_string_at_index(s, i);
+        assert_eq!(result.0, "");
+        assert_eq!(result.1, s);
+    }
+
+    #[test]
+    fn should_truncate_str() {
+        let s = "some string";
+        let len = 3;
+        let result = truncate_str(s, len);
+        assert_eq!(result, "som");
+    }
+
+    #[test]
+    fn should_not_truncate_str_if_i_gt_len() {
+        let s = "some string";
+        let len = s.len() + 1;
+        let result = truncate_str(s, len);
+        assert_eq!(result, s);
+    }
+
+    #[test]
+    fn should_truncate_str_correctly_if_i_0() {
+        let s = "some string";
+        let len = 0;
+        let result = truncate_str(s, len);
+        assert_eq!(result, "");
+    }
+
+    #[test]
+    fn should_right_pad_with_zeroes() {
+        let s = "some string";
+        let width = s.len() + 3;
+        let result = right_pad_with_zeroes(s, width);
+        assert_eq!(result, "some string000")
+    }
+
+    #[test]
+    fn should_left_pad_with_zeroes() {
+        let s = "some string";
+        let width = s.len() + 3;
+        let result = left_pad_with_zeroes(s, width);
+        assert_eq!(result, "000some string")
+    }
+
+    #[test]
+    fn right_pad_or_truncate_should_truncate_correctly() {
+        let s = "some string";
+        let width = s.len() - 3;
+        let result = right_pad_or_truncate(s, width);
+        assert_eq!(result, "some str");
+    }
+
+    #[test]
+    fn right_pad_or_truncate_should_pad_correctly() {
+        let s = "some string";
+        let width = s.len() + 3;
+        let result = right_pad_or_truncate(s, width);
+        assert_eq!(result, "some string000");
     }
 }
