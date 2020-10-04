@@ -254,13 +254,15 @@ impl EthReceipt {
                 .iter()
                 .map(|log| {
                     let token_contract_address = log.get_erc20_on_eos_peg_in_token_contract_address()?;
+                    let eth_amount = log.get_erc20_on_eos_peg_in_amount()?;
                     Ok(Erc20OnEosPegInInfo::new(
-                        log.get_erc20_on_eos_peg_in_amount()?,
+                        eth_amount,
                         log.get_erc20_on_eos_peg_in_token_sender_address()?,
                         token_contract_address,
                         log.get_erc20_on_eos_peg_in_eos_address()?,
                         self.transaction_hash,
                         eos_erc20_dictionary.get_eos_account_name_from_eth_token_address(&token_contract_address)?,
+                        eos_erc20_dictionary.convert_u256_to_eos_asset_string(&token_contract_address, &eth_amount)?,
                     ))
                 })
                 .collect::<Result<Vec<Erc20OnEosPegInInfo>>>()?
@@ -506,7 +508,7 @@ mod tests {
     #[test]
     fn should_get_get_erc20_redeem_infos_from_receipt() {
         let eth_token_decimals = 18;
-        let eos_token_decimals = 18;
+        let eos_token_decimals = 9;
         let eth_symbol = "SAM".to_string();
         let eos_symbol = "SAM".to_string();
         let token_name = "SampleToken".to_string();

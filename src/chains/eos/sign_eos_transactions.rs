@@ -57,20 +57,21 @@ pub fn get_signed_txs_from_erc20_on_eos_peg_in_infos(
     private_key: &EosPrivateKey,
     peg_in_infos: &Erc20OnEosPegInInfos,
 ) -> Result<EosSignedTransactions> {
-    info!("✔ Signing {} txs from `erc20-on-eos` peg in infos...", peg_in_infos.len());
+    info!("✔ Signing {} EOS txs from `erc20-on-eos` peg in infos...", peg_in_infos.len());
     peg_in_infos
         .iter()
-        .map(|peg_in_info|
+        .map(|peg_in_info| {
+            info!("✔ Signing EOS tx from `erc20-on-eos` peg in info: {:?}", peg_in_info);
             get_signed_tx(
                 ref_block_num,
                 ref_block_prefix,
                 &peg_in_info.eos_address,
-                &peg_in_info.token_amount.to_string(),
+                &peg_in_info.eos_asset_amount,
                 chain_id,
                 private_key,
                 &peg_in_info.account_name,
             )
-        )
+        })
         .collect()
 }
 

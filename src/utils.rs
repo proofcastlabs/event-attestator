@@ -199,7 +199,6 @@ mod tests {
         let s = "some string";
         let i = 3;
         let result = split_string_at_index(s, i);
-        println!("{:?}", &result);
         assert_eq!(result.0, "som");
         assert_eq!(result.1, "e string");
     }

@@ -396,8 +396,8 @@ mod tests {
     fn should_get_erc20_on_eos_peg_in_infos() {
         let eth_token_decimals = 18;
         let eos_token_decimals = 9;
-        let eth_symbol = "SYM".to_string();
-        let eos_symbol = "SYM".to_string();
+        let eth_symbol = "SAM".to_string();
+        let eos_symbol = "SAM".to_string();
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(
             &hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap()
