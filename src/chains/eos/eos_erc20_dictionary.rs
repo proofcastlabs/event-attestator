@@ -124,17 +124,18 @@ impl EosErc20Dictionary {
         }
     }
 
-    pub fn get_eos_account_name_from_eth_token_address(&self, eth_address: &EthAddress) -> Result<String> {
-        for entry in self.iter() {
-            if &entry.eth_address == eth_address {
-                return Ok(entry.eos_address.to_string())
-            }
-        }
-        Err(format!("No `EosErc20DictionaryEntry` exists with address: {}", eth_address).into())
+    pub fn get_entry_via_eth_token_address(&self, address: &EthAddress) -> Result<EosErc20DictionaryEntry> {
+        for entry in self.iter() { if &entry.eth_address == address { return Ok(entry.clone()) } };
+        Err(format!("No `EosErc20DictionaryEntry` exists with address: {}", address).into())
     }
 
-    pub fn is_token_supported(&self, eth_address: &EthAddress) -> bool {
-        self.get_eos_account_name_from_eth_token_address(eth_address).is_ok()
+    pub fn get_eos_account_name_from_eth_token_address(&self, address: &EthAddress) -> Result<String> {
+        self.get_entry_via_eth_token_address(address)
+            .map(|entry| entry.eos_address.to_string())
+    }
+
+    pub fn is_token_supported(&self, address: &EthAddress) -> bool {
+        self.get_eos_account_name_from_eth_token_address(address).is_ok()
     }
 
     pub fn to_eth_addresses(&self) -> Vec<EthAddress> {
