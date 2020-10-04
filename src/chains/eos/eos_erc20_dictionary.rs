@@ -113,7 +113,7 @@ impl EosErc20Dictionary {
         self.add(entry).and_then(|new_self| { new_self.save_to_db(db)?; Ok(new_self) })
     }
 
-    pub fn remove_and_update_in_db<D>(
+    fn remove_and_update_in_db<D>(
         self,
         entry: &EosErc20DictionaryEntry,
         db: &D
@@ -122,6 +122,15 @@ impl EosErc20Dictionary {
             true => self.remove(entry).and_then(|new_self| { new_self.save_to_db(db)?; Ok(new_self) }),
             false => Ok(self)
         }
+    }
+
+    pub fn remove_entry_via_eth_address_and_update_in_db<D>( // TODO test!
+        self,
+        eth_address: &EthAddress,
+        db: &D
+    ) -> Result<Self> where D: DatabaseInterface {
+        self.get_entry_via_eth_token_address(eth_address)
+            .and_then(|entry| self.remove_and_update_in_db(&entry, db))
     }
 
     pub fn get_entry_via_eth_token_address(&self, address: &EthAddress) -> Result<EosErc20DictionaryEntry> {
@@ -415,6 +424,18 @@ mod tests {
         let dictionary_entries = get_sample_eos_erc20_dictionary();
         dictionary_entries.save_to_db(&db).unwrap();
         dictionary_entries.remove_and_update_in_db(&get_sample_eos_erc20_dictionary_entry_1(), &db).unwrap();
+        let result = EosErc20Dictionary::get_from_db(&db).unwrap();
+        let expected_result = EosErc20Dictionary::new(vec![get_sample_eos_erc20_dictionary_entry_2()]);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn eos_erc20_dictionary_should_remove_entry_via_eth_address_and_update_in_db() {
+        let token_address = EthAddress::from_slice(&hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
+        let db = get_test_database();
+        let dictionary_entries = get_sample_eos_erc20_dictionary();
+        dictionary_entries.save_to_db(&db).unwrap();
+        dictionary_entries.remove_entry_via_eth_address_and_update_in_db(&token_address, &db).unwrap();
         let result = EosErc20Dictionary::get_from_db(&db).unwrap();
         let expected_result = EosErc20Dictionary::new(vec![get_sample_eos_erc20_dictionary_entry_2()]);
         assert_eq!(result, expected_result);
