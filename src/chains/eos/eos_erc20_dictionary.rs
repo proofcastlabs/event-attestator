@@ -1,6 +1,9 @@
 use std::str::FromStr;
 use serde_json::Value as JsonValue;
-use ethereum_types::Address as EthAddress;
+use ethereum_types::{
+    U256 as EthAmount,
+    Address as EthAddress,
+};
 use eos_primitives::AccountName as EosAccountName;
 use derive_more::{
     Deref,
@@ -10,6 +13,13 @@ use derive_more::{
 use crate::{
     traits::DatabaseInterface,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
+    utils::{
+        truncate_str,
+        left_pad_with_zeroes,
+        split_string_at_index,
+        right_pad_with_zeroes,
+        right_pad_or_truncate,
+    },
     types::{
         Byte,
         Bytes,
@@ -203,6 +213,45 @@ impl EosErc20DictionaryEntry {
 
     pub fn from_str(json_string: &str) -> Result<Self> {
         EosErc20DictionaryEntryJson::from_str(json_string).and_then(|entry_json| Self::from_json(&entry_json))
+    }
+
+
+    fn remove_symbol_from_eos_asset(eos_asset: &str) -> &str {
+        eos_asset.split_whitespace().collect::<Vec<&str>>()[0]
+    }
+
+    fn get_decimal_and_fractional_parts_of_eos_asset(eos_asset: &str) -> (&str, &str) {
+        let parts = Self::remove_symbol_from_eos_asset(eos_asset).split(".").collect::<Vec<&str>>();
+        let decimal_part = parts[0];
+        let fractional_part = if parts.len() > 1 { parts[1] } else { "" };
+        (decimal_part, fractional_part)
+    }
+
+    pub fn convert_eos_asset_to_eth_amount(&self, eos_asset: &str) -> Result<EthAmount> {
+        let (decimal_str, fraction_str) = Self::get_decimal_and_fractional_parts_of_eos_asset(eos_asset);
+        let augmented_fraction_str = if self.eth_token_decimals > self.eos_token_decimals {
+            right_pad_with_zeroes(fraction_str, self.eth_token_decimals)
+        } else if self.eth_token_decimals == self.eos_token_decimals {
+            fraction_str.to_string()
+        } else {
+            truncate_str(fraction_str, self.eos_token_decimals - self.eth_token_decimals).to_string()
+        };
+        Ok(EthAmount::from_dec_str(&format!("{}{}", decimal_str, augmented_fraction_str))?)
+    }
+
+    pub fn convert_u256_to_eos_asset_string(&self, amount: &EthAmount) -> Result<String> {
+        let amount_str = amount.to_string();
+        if amount_str.len() >= self.eth_token_decimals {
+            let decimal_point_index = amount_str.len() - self.eth_token_decimals;
+            let (decimal_str, fraction_str) = split_string_at_index(&amount_str, decimal_point_index);
+            let augmented_fraction_str = right_pad_or_truncate(&fraction_str, self.eos_token_decimals);
+            let augmented_decimal_str = if decimal_str == "" { "0".to_string() } else { decimal_str };
+            Ok(format!("{}.{} {}", augmented_decimal_str, augmented_fraction_str, self.eos_symbol.to_uppercase()))
+        } else {
+            let fraction_str = left_pad_with_zeroes(&amount_str, self.eth_token_decimals);
+            let augmented_fraction_str = right_pad_or_truncate(&fraction_str, self.eos_token_decimals);
+            Ok(format!("0.{} {}", augmented_fraction_str, self.eos_symbol.to_uppercase()))
+        }
     }
 }
 
@@ -459,5 +508,77 @@ mod tests {
         let json_string = get_sample_dictionary_json_string();
         let result = EosErc20Dictionary::from_str(&json_string);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_convert_eos_asset_to_eth_amount() {
+        let entry = get_sample_eos_erc20_dictionary_entry_1();
+        let expected_results = vec![
+            EthAmount::from_dec_str("1234567891000000000").unwrap(),
+            EthAmount::from_dec_str("123456789000000000").unwrap(),
+            EthAmount::from_dec_str("12345678000000000").unwrap(),
+            EthAmount::from_dec_str("1234567000000000").unwrap(),
+            EthAmount::from_dec_str("123456000000000").unwrap(),
+            EthAmount::from_dec_str("12345000000000").unwrap(),
+            EthAmount::from_dec_str("1234000000000").unwrap(),
+            EthAmount::from_dec_str("123000000000").unwrap(),
+            EthAmount::from_dec_str("12000000000").unwrap(),
+            EthAmount::from_dec_str("1000000000").unwrap(),
+            EthAmount::from_dec_str("0").unwrap(),
+        ];
+        vec![
+            "1.234567891 SAM1".to_string(),
+            "0.123456789 SAM1".to_string(),
+            "0.012345678 SAM1".to_string(),
+            "0.001234567 SAM1".to_string(),
+            "0.000123456 SAM1".to_string(),
+            "0.000012345 SAM1".to_string(),
+            "0.000001234 SAM1".to_string(),
+            "0.000000123 SAM1".to_string(),
+            "0.000000012 SAM1".to_string(),
+            "0.000000001 SAM1".to_string(),
+            "0.000000000 SAM1".to_string(),
+        ]
+            .iter()
+            .map(|eos_asset| entry.convert_eos_asset_to_eth_amount(&eos_asset).unwrap())
+            .zip(expected_results.iter())
+            .map(|(result, expected_result)| assert_eq!(&result, expected_result))
+            .for_each(drop);
+    }
+
+    #[test]
+    fn should_convert_eth_amount_to_eos_asset() {
+        let entry = get_sample_eos_erc20_dictionary_entry_1();
+        let expected_results = vec![
+            "1.234567891 SAM1".to_string(),
+            "0.123456789 SAM1".to_string(),
+            "0.012345678 SAM1".to_string(),
+            "0.001234567 SAM1".to_string(),
+            "0.000123456 SAM1".to_string(),
+            "0.000012345 SAM1".to_string(),
+            "0.000001234 SAM1".to_string(),
+            "0.000000123 SAM1".to_string(),
+            "0.000000012 SAM1".to_string(),
+            "0.000000001 SAM1".to_string(),
+            "0.000000000 SAM1".to_string(),
+        ];
+        vec![
+            EthAmount::from_dec_str("1234567891234567891").unwrap(),
+            EthAmount::from_dec_str("123456789123456789").unwrap(),
+            EthAmount::from_dec_str("12345678912345678").unwrap(),
+            EthAmount::from_dec_str("1234567891234567").unwrap(),
+            EthAmount::from_dec_str("123456789123456").unwrap(),
+            EthAmount::from_dec_str("12345678912345").unwrap(),
+            EthAmount::from_dec_str("1234567891234").unwrap(),
+            EthAmount::from_dec_str("123456789123").unwrap(),
+            EthAmount::from_dec_str("12345678912").unwrap(),
+            EthAmount::from_dec_str("1234567891").unwrap(),
+            EthAmount::from_dec_str("123456789").unwrap(),
+        ]
+            .iter()
+            .map(|eth_amount| entry.convert_u256_to_eos_asset_string(&eth_amount).unwrap())
+            .zip(expected_results.iter())
+            .map(|(result, expected_result)| assert_eq!(&result, expected_result))
+            .for_each(drop);
     }
 }
