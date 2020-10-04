@@ -145,6 +145,17 @@ impl EosErc20Dictionary {
     pub fn to_eos_accounts(&self) -> Result<Vec<EosAccountName>> {
         self.iter().map(|entry| Ok(EosAccountName::from_str(&entry.eos_address)?)).collect()
     }
+
+    pub fn convert_eos_asset_to_eth_amount(&self, address: &EthAddress, eos_asset: &str) -> Result<EthAmount> {
+        self.get_entry_via_eth_token_address(address)
+            .and_then(|entry| entry.convert_eos_asset_to_eth_amount(eos_asset))
+    }
+
+    pub fn convert_u256_to_eos_asset_string(&self, address: &EthAddress, eth_amount: &EthAmount) -> Result<String> {
+        self.get_entry_via_eth_token_address(address)
+            .and_then(|entry| entry.convert_u256_to_eos_asset_string(eth_amount))
+    }
+
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
