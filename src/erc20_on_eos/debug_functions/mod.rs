@@ -1,13 +1,9 @@
 pub use serde_json::json;
-use ethereum_types::Address as EthAddress;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
     check_debug_mode::check_debug_mode,
-    utils::{
-        decode_hex_with_err_msg,
-        prepend_debug_output_marker_to_string,
-    },
+    utils::prepend_debug_output_marker_to_string,
     constants::{
         DB_KEY_PREFIX,
         PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
@@ -36,6 +32,7 @@ use crate::{
             },
         },
         eth::{
+            eth_utils::get_eth_address_from_str,
             eth_crypto::eth_transaction::EthTransaction,
             eth_contracts::perc20::{
                 PERC20_MIGRATE_GAS_LIMIT,
@@ -152,8 +149,12 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 ///
 /// The required format of an entry is:
 /// {
-///     "eos_address":"<eos-account-name>",
-///     "eth_address":"<erc20-token-address>"
+///     "eos_symbol": <symbol>,
+///     "eth_symbol": <symbol>,
+///     "eos_address": <address>,
+///     "eth_address": <address>,
+///     "eth_token_decimals": <num-decimals>,
+///     "eos_token_decimals": <num-decimals>,
 /// }
 pub fn debug_add_erc20_dictionary_entry<D>(
     db: D,
@@ -170,37 +171,21 @@ pub fn debug_add_erc20_dictionary_entry<D>(
 
 /// # Debug Remove ERC20 Dictionary Entry
 ///
-/// This function will remove an entry to the `EosErc20Dictionary` held in the encrypted database. The
-/// dictionary defines the relationship between ERC20 etheruem addresses and their pToken EOS
-/// address counterparts.
-///
-/// The required format of an entry is:
-/// {
-///     "eos_address":"<eos-account-name>",
-///     "eth_address":"<erc20-token-address>"
-/// }
+/// This function will remove an entry pertaining to the passed in ETH address from the
+/// `EosErc20Dictionary` held in the encrypted database, should that entry exist. If it is
+/// not extant, nothing is changed.
 pub fn debug_remove_erc20_dictionary_entry<D>(
     db: D,
-    dictionary_entry_json_string: &str,
+    eth_address_str: &str,
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    info!("✔ Debug adding entry to `EosErc20Dictionary`...");
+    info!("✔ Debug removing entry from `EosErc20Dictionary`...");
     let dictionary = EosErc20Dictionary::get_from_db(&db)?;
-    EosErc20DictionaryEntry::from_str(dictionary_entry_json_string)
-        .and_then(|entry| dictionary.remove_and_update_in_db(&entry, &db))
+    get_eth_address_from_str(eth_address_str)
+        .and_then(|eth_address| dictionary.remove_entry_via_eth_address_and_update_in_db(&eth_address, &db))
         .and(Ok(json!({"removing_dictionary_entry_sucess":true}).to_string()))
 }
-
-fn get_eth_address_from_str(eth_address_str: &str) -> Result<EthAddress> {
-    info!("✔ Getting ETH address from str...");
-    decode_hex_with_err_msg(eth_address_str, "ETH address is not valid hex!")
-        .and_then(|bytes| match bytes.len() {
-            20 => Ok(EthAddress::from_slice(&bytes)),
-            _ => Err("Incorrect number of bytes for ETH address!".into()),
-        })
-}
-
 /// # Debug Get PERC20 Migration Transaction
 ///
 /// This function will create and sign a transaction that calls the `migrate` function on the

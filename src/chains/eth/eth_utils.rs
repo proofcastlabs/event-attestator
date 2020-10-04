@@ -5,6 +5,7 @@ use ethereum_types::{
     Address as EthAddress
 };
 use crate::{
+    utils::decode_hex_with_err_msg,
     types::{Byte, Bytes, NoneError, Result},
     constants::{
         U64_NUM_BYTES,
@@ -12,6 +13,15 @@ use crate::{
         SAFE_ETH_ADDRESS,
     },
 };
+
+pub fn get_eth_address_from_str(eth_address_str: &str) -> Result<EthAddress> {
+    info!("✔ Getting ETH address from str...");
+    decode_hex_with_err_msg(eth_address_str, "ETH address is not valid hex!")
+        .and_then(|bytes| match bytes.len() {
+            20 => Ok(EthAddress::from_slice(&bytes)),
+            _ => Err("Incorrect number of bytes for ETH address!".into()),
+        })
+}
 
 pub fn convert_h256_to_bytes(hash: H256) -> Bytes {
     hash.as_bytes().to_vec()
