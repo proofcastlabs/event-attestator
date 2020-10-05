@@ -40,6 +40,7 @@ use crate::{
                 get_eth_account_nonce_from_db,
                 get_public_eth_address_from_db,
                 get_eth_canon_to_tip_length_from_db,
+                get_eos_erc20_smart_contract_address_from_db,
             },
         },
     },
@@ -67,6 +68,7 @@ struct EnclaveState {
     eth_anchor_block_number: usize,
     eth_canon_to_tip_length: u64,
     eth_latest_block_number: usize,
+    eth_perc20_on_eos_smart_contract_address: String,
     eos_chain_id: String,
     eos_public_key: String,
     eos_signature_nonce: u64,
@@ -112,6 +114,9 @@ pub fn get_enclave_state<D>(
                     eth_anchor_block_hash: hex::encode(eth_anchor_block.block.hash.as_bytes()),
                     eth_latest_block_hash: hex::encode(eth_latest_block.block.hash.as_bytes()),
                     eth_address: hex::encode(get_public_eth_address_from_db(&db)?.as_bytes()),
+                    eth_perc20_on_eos_smart_contract_address: hex::encode(
+                        get_eos_erc20_smart_contract_address_from_db(&db)?
+                    ),
                     eos_public_key,
                     eos_chain_id: get_eos_chain_id_from_db(&db)?,
                     eos_safe_address: SAFE_EOS_ADDRESS.to_string(),
