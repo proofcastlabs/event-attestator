@@ -52,7 +52,7 @@ fn left_pad_with_zero(string: &str) -> Result<String> {
     Ok(format!("0{}", string))
 }
 
-fn maybe_strip_hex_prefix(hex: &str) -> Result<&str> {
+pub fn maybe_strip_hex_prefix(hex: &str) -> Result<&str> {
     let lowercase_hex_prefix = "0x";
     let uppercase_hex_prefix = "0X";
     match hex.starts_with(lowercase_hex_prefix) || hex.starts_with(uppercase_hex_prefix) {

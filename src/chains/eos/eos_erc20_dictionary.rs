@@ -19,6 +19,7 @@ use crate::{
         split_string_at_index,
         right_pad_with_zeroes,
         right_pad_or_truncate,
+        maybe_strip_hex_prefix,
     },
     types::{
         Byte,
@@ -220,7 +221,7 @@ impl EosErc20DictionaryEntry {
             eos_symbol: json.eos_symbol.to_string(),
             eth_symbol: json.eth_symbol.to_string(),
             eos_address: json.eos_address.to_string(),
-            eth_address: EthAddress::from_slice(&hex::decode(&json.eth_address)?),
+            eth_address: EthAddress::from_slice(&hex::decode(&maybe_strip_hex_prefix(&json.eth_address)?)?),
         })
     }
 
