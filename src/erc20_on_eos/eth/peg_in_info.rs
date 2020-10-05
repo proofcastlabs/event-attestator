@@ -63,8 +63,8 @@ impl Erc20OnEosPegInInfos {
         self.0.iter().fold(U256::zero(), |acc, params| acc + params.token_amount)
     }
 
-    pub fn filter_out_zero_eos_values(&self) -> Self {
-        Self::new(
+    pub fn filter_out_zero_eos_values(&self) -> Result<Self> {
+        Ok(Self::new(
             self
                 .iter()
                 .filter(|peg_in_info|
@@ -78,7 +78,7 @@ impl Erc20OnEosPegInInfos {
                 )
                 .cloned()
                 .collect::<Vec<Erc20OnEosPegInInfo>>()
-        )
+        ))
     }
 }
 
@@ -105,6 +105,22 @@ pub fn maybe_parse_peg_in_info_and_add_to_state<D>(
         })
 }
 
+pub fn maybe_filter_peg_in_info_in_state<D>(
+    state: EthState<D>
+) -> Result<EthState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Maybe filtering `erc20-on-eos` peg-in infos...");
+    debug!("✔ Num peg-in infos before: {}", state.erc20_on_eos_peg_in_infos.len());
+    state
+        .erc20_on_eos_peg_in_infos
+        .filter_out_zero_eos_values()
+        .and_then(|filtered_peg_ins| {
+            debug!("✔ Num peg-in infos after: {}", filtered_peg_ins.len());
+            state.replace_erc20_on_eos_peg_in_infos(filtered_peg_ins)
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -127,7 +143,7 @@ mod tests {
         let expected_num_peg_ins_after = 0;
         let peg_ins = Erc20OnEosPegInInfos::new(vec![get_sample_zero_eos_asset_peg_in_info()]);
         assert_eq!(peg_ins.len(), expected_num_peg_ins_before);
-        let result = peg_ins.filter_out_zero_eos_values();
+        let result = peg_ins.filter_out_zero_eos_values().unwrap();
         assert_eq!(result.len(), expected_num_peg_ins_after);
     }
 }

@@ -31,7 +31,10 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
             get_output_json::get_output_json,
-            peg_in_info::maybe_parse_peg_in_info_and_add_to_state,
+            peg_in_info::{
+                maybe_filter_peg_in_info_in_state,
+                maybe_parse_peg_in_info_and_add_to_state,
+            },
         },
     },
 };
@@ -59,6 +62,7 @@ pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(maybe_update_eth_tail_block_hash_and_return_state)
         .and_then(maybe_update_eth_linker_hash_and_return_state)
         .and_then(maybe_parse_peg_in_info_and_add_to_state)
+        .and_then(maybe_filter_peg_in_info_in_state)
         .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
         .and_then(maybe_increment_eos_account_nonce_and_return_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)
