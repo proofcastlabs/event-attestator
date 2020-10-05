@@ -1,11 +1,11 @@
 use crate::{
     traits::DatabaseInterface,
-    chains::eos::eos_database_utils::get_processed_tx_ids_from_db,
+    chains::eos::eos_crypto::eos_private_key::EosPrivateKey,
 };
 
 pub fn is_eos_core_initialized<D>(db: &D) -> bool where D: DatabaseInterface {
     trace!("✔ Checking if EOS core has been initialized...");
-    match get_processed_tx_ids_from_db(db) {
+    match EosPrivateKey::get_from_db(db) {
         Ok(_)=> {
             trace!("✔ EOS core *HAS* been initialized!");
             true
