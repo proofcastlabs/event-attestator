@@ -89,7 +89,7 @@ pub fn put_eth_canon_to_tip_length_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    info!("✔ Putting ETH canon-to-tip length of {} in db...", length);
+    debug!("✔ Putting ETH canon-to-tip length of {} in db...", length);
     db.put(ETH_CANON_TO_TIP_LENGTH_KEY.to_vec(), convert_u64_to_bytes(length), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
@@ -324,7 +324,7 @@ pub fn maybe_get_parent_eth_submission_material<D>(
 ) -> Option<EthSubmissionMaterial>
     where D: DatabaseInterface
 {
-    info!("✔ Maybe getting parent ETH block from db...");
+    debug!("✔ Maybe getting parent ETH block from db...");
     maybe_get_nth_ancestor_eth_submission_material(db, block_hash, 1)
 }
 
@@ -335,7 +335,7 @@ pub fn maybe_get_nth_ancestor_eth_submission_material<D>(
 ) -> Option<EthSubmissionMaterial>
     where D: DatabaseInterface
 {
-    info!("✔ Getting {}th ancestor ETH block from db...", n);
+    debug!("✔ Getting {}th ancestor ETH block from db...", n);
     match maybe_get_eth_submission_material_from_db(db, block_hash) {
         None => None,
         Some(block_and_receipts) => match n {
@@ -351,20 +351,17 @@ pub fn maybe_get_eth_submission_material_from_db<D>(
 ) -> Option<EthSubmissionMaterial>
     where D: DatabaseInterface
 {
-    info!(
-        "✔ Maybe getting ETH block and receipts from db under hash: {}",
-        block_hash,
-    );
+    trace!("✔ Maybe getting ETH block and receipts from db under hash: {}", block_hash);
     match db.get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL) {
         Err(_) => None,
         Ok(bytes) => {
             match EthSubmissionMaterial::from_bytes(&bytes) {
                 Ok(block_and_receipts) => {
-                    info!("✔ Decoded eth block and receipts from db!");
+                    trace!("✔ Decoded eth block and receipts from db!");
                     Some(block_and_receipts)
                 }
                 Err(_) => {
-                    info!("✘ Failed to decode eth block and receipts from db!");
+                    error!("✘ Failed to decode eth block and receipts from db!");
                     None
                 }
             }

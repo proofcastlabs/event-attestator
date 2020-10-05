@@ -255,7 +255,7 @@ impl EthReceipt {
                 .map(|log| {
                     let token_contract_address = log.get_erc20_on_eos_peg_in_token_contract_address()?;
                     let eth_amount = log.get_erc20_on_eos_peg_in_amount()?;
-                    Ok(Erc20OnEosPegInInfo::new(
+                    let peg_in_info = Erc20OnEosPegInInfo::new(
                         eth_amount,
                         log.get_erc20_on_eos_peg_in_token_sender_address()?,
                         token_contract_address,
@@ -263,7 +263,9 @@ impl EthReceipt {
                         self.transaction_hash,
                         eos_erc20_dictionary.get_eos_account_name_from_eth_token_address(&token_contract_address)?,
                         eos_erc20_dictionary.convert_u256_to_eos_asset_string(&token_contract_address, &eth_amount)?,
-                    ))
+                    );
+                    info!("✔ Parsed peg-in info: {:?}", peg_in_info);
+                    Ok(peg_in_info)
                 })
                 .collect::<Result<Vec<Erc20OnEosPegInInfo>>>()?
         ))

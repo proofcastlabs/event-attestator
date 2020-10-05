@@ -184,11 +184,14 @@ impl EthLog {
     pub fn get_erc20_on_eos_peg_in_amount(&self) -> Result<U256> {
         self.check_is_erc20_peg_in()
             .and_then(|_| {
-                info!("✔ Parsing `erc20-on-eos` peg in amount from log...");
                 let start_index = ETH_WORD_SIZE_IN_BYTES * 2;
                 let end_index = ETH_WORD_SIZE_IN_BYTES * 3;
                 match self.data.len() >= end_index {
-                    true => Ok(U256::from(&self.data[start_index..end_index])),
+                    true => {
+                        let amount = U256::from(&self.data[start_index..end_index]);
+                        info!("✔ Parsed `erc20-on-eos` peg in amount from log: {}", amount.to_string());
+                        Ok(amount)
+                    }
                     false => Err(NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR.into()),
                 }
             })
