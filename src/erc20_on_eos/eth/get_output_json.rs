@@ -56,10 +56,12 @@ impl EosTxInfo {
                 eos_tx_signature: eos_tx.signature.clone(),
                 eos_tx_recipient: eos_tx.recipient.clone(),
                 eos_serialized_tx: eos_tx.transaction.clone(),
+                eth_tx_amount: peg_in_info.token_amount.to_string(),
                 _id: format!("perc20-on-eos-eos-{}", eos_account_nonce),
-                originating_address: peg_in_info.token_sender.to_string(),
                 originating_tx_hash: peg_in_info.originating_tx_hash.to_string(),
+                originating_address: format!("0x{}", hex::encode(peg_in_info.token_sender)),
                 witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
+                eth_erc20_token_contract: format!("0x{}", hex::encode(&peg_in_info.token_contract)),
             }
         )
     }
