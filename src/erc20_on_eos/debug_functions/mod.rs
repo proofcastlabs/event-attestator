@@ -37,6 +37,7 @@ use crate::{
             eth_contracts::perc20::{
                 PERC20_MIGRATE_GAS_LIMIT,
                 encode_perc20_migrate_fxn_data,
+                PERC20_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
                 encode_perc20_add_supported_token_fx_data,
                 encode_perc20_remove_supported_token_fx_data,
             },
@@ -271,7 +272,7 @@ pub fn debug_get_add_supported_token_tx<D>(
             0,
             get_eos_erc20_smart_contract_address_from_db(&db)?,
             get_eth_chain_id_from_db(&db)?,
-            PERC20_MIGRATE_GAS_LIMIT,
+            PERC20_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
             get_eth_gas_price_from_db(&db)?,
         )))
         .and_then(|unsigned_tx| unsigned_tx.sign(get_eth_private_key_from_db(&db)?))
@@ -309,7 +310,7 @@ pub fn debug_get_remove_supported_token_tx<D>(
             0,
             get_eos_erc20_smart_contract_address_from_db(&db)?,
             get_eth_chain_id_from_db(&db)?,
-            PERC20_MIGRATE_GAS_LIMIT,
+            PERC20_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
             get_eth_gas_price_from_db(&db)?,
         )))
         .and_then(|unsigned_tx| unsigned_tx.sign(get_eth_private_key_from_db(&db)?))
