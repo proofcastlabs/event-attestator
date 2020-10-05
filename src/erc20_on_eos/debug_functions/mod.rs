@@ -166,8 +166,12 @@ pub fn debug_add_erc20_dictionary_entry<D>(
 {
     info!("✔ Debug adding entry to `EosErc20Dictionary`...");
     let dictionary = EosErc20Dictionary::get_from_db(&db)?;
-    EosErc20DictionaryEntry::from_str(dictionary_entry_json_string)
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EosErc20DictionaryEntry::from_str(dictionary_entry_json_string))
         .and_then(|entry| dictionary.add_and_update_in_db(entry, &db))
+        .and_then(|_| db.end_transaction())
         .and(Ok(json!({"adding_dictionary_entry_sucess":true}).to_string()))
 }
 
@@ -184,8 +188,12 @@ pub fn debug_remove_erc20_dictionary_entry<D>(
 {
     info!("✔ Debug removing entry from `EosErc20Dictionary`...");
     let dictionary = EosErc20Dictionary::get_from_db(&db)?;
-    get_eth_address_from_str(eth_address_str)
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| get_eth_address_from_str(eth_address_str))
         .and_then(|eth_address| dictionary.remove_entry_via_eth_address_and_update_in_db(&eth_address, &db))
+        .and_then(|_| db.end_transaction())
         .and(Ok(json!({"removing_dictionary_entry_sucess":true}).to_string()))
 }
 /// # Debug Get PERC20 Migration Transaction
@@ -208,7 +216,11 @@ pub fn debug_get_perc20_migration_tx<D>(
     let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
     let current_eos_erc20_smart_contract_address = get_eos_erc20_smart_contract_address_from_db(&db)?;
     let new_eos_erc20_smart_contract_address = get_eth_address_from_str(new_eos_erc20_smart_contract_address_string)?;
-    increment_eth_account_nonce_in_db(&db, 1)
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
+        .and_then(|_| db.end_transaction())
         .and_then(|_| put_eth_smart_contract_address_in_db(&db, &new_eos_erc20_smart_contract_address))
         .and_then(|_| encode_perc20_migrate_fxn_data(new_eos_erc20_smart_contract_address))
         .and_then(|tx_data| Ok(EthTransaction::new_unsigned(
@@ -247,7 +259,11 @@ pub fn debug_get_add_supported_token_tx<D>(
     info!("✔ Debug getting `addSupportedToken` contract tx...");
     let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
     let eth_address = get_eth_address_from_str(eth_address_str)?;
-    increment_eth_account_nonce_in_db(&db, 1)
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
+        .and_then(|_| db.end_transaction())
         .and_then(|_| encode_perc20_add_supported_token_fx_data(eth_address))
         .and_then(|tx_data| Ok(EthTransaction::new_unsigned(
             tx_data,
@@ -281,7 +297,11 @@ pub fn debug_get_remove_supported_token_tx<D>(
     info!("✔ Debug getting `removeSupportedToken` contract tx...");
     let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
     let eth_address = get_eth_address_from_str(eth_address_str)?;
-    increment_eth_account_nonce_in_db(&db, 1)
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
+        .and_then(|_| db.end_transaction())
         .and_then(|_| encode_perc20_remove_supported_token_fx_data(eth_address))
         .and_then(|tx_data| Ok(EthTransaction::new_unsigned(
             tx_data,
