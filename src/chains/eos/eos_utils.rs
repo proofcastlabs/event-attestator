@@ -26,3 +26,20 @@ pub fn convert_bytes_to_checksum256(bytes: &[Byte]) -> Result<Checksum256> {
 pub fn get_eos_schedule_db_key(version: u32) -> Bytes {
     format!("{}{}", EOS_SCHEDULE_DB_PREFIX, version).as_bytes().to_vec()
 }
+
+pub fn remove_symbol_from_eos_asset(eos_asset: &str) -> &str {
+    eos_asset.split_whitespace().collect::<Vec<&str>>()[0]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_remove_symbol_from_eos_asset() {
+        let amount = "1.23456789";
+        let asset = format!("{} SAM", amount);
+        let result = remove_symbol_from_eos_asset(&asset);
+        assert_eq!(result, amount);
+    }
+}

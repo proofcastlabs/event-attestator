@@ -31,6 +31,7 @@ use crate::{
         eos::{
             eos_state::EosState,
             eos_constants::EOS_ERC20_DICTIONARY,
+            eos_utils::remove_symbol_from_eos_asset,
         },
     },
 };
@@ -236,14 +237,8 @@ impl EosErc20DictionaryEntry {
     pub fn from_str(json_string: &str) -> Result<Self> {
         EosErc20DictionaryEntryJson::from_str(json_string).and_then(|entry_json| Self::from_json(&entry_json))
     }
-
-
-    fn remove_symbol_from_eos_asset(eos_asset: &str) -> &str {
-        eos_asset.split_whitespace().collect::<Vec<&str>>()[0]
-    }
-
     fn get_decimal_and_fractional_parts_of_eos_asset(eos_asset: &str) -> (&str, &str) {
-        let parts = Self::remove_symbol_from_eos_asset(eos_asset).split(".").collect::<Vec<&str>>();
+        let parts = remove_symbol_from_eos_asset(eos_asset).split(".").collect::<Vec<&str>>();
         let decimal_part = parts[0];
         let fractional_part = if parts.len() > 1 { parts[1] } else { "" };
         (decimal_part, fractional_part)
