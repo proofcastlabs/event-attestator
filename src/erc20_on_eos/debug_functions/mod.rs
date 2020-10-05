@@ -37,6 +37,8 @@ use crate::{
             eth_contracts::perc20::{
                 PERC20_MIGRATE_GAS_LIMIT,
                 encode_perc20_migrate_fxn_data,
+                encode_perc20_add_supported_token_fx_data,
+                encode_perc20_remove_supported_token_fx_data,
             },
             eth_database_utils::{
                 get_eth_chain_id_from_db,
@@ -225,4 +227,72 @@ pub fn debug_get_perc20_migration_tx<D>(
             "eth_signed_tx": hex_tx,
             "migrated_to_address:": new_eos_erc20_smart_contract_address.to_string(),
         }).to_string())
+}
+
+/// # Debug Get Add Supported Token Transaction
+///
+/// This function will sign a transaction to add the given address as a supported token to
+/// the `perc20-on-eos` smart-contract.
+///
+/// ### BEWARE:
+/// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
+/// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
+/// and only if you know exactly what you are doing and why!
+pub fn debug_get_add_supported_token_tx<D>(
+    db: D,
+    eth_address_str: &str,
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    info!("✔ Debug getting `addSupportedToken` contract tx...");
+    let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
+    let eth_address = get_eth_address_from_str(eth_address_str)?;
+    increment_eth_account_nonce_in_db(&db, 1)
+        .and_then(|_| encode_perc20_add_supported_token_fx_data(eth_address))
+        .and_then(|tx_data| Ok(EthTransaction::new_unsigned(
+            tx_data,
+            current_eth_account_nonce,
+            0,
+            get_eos_erc20_smart_contract_address_from_db(&db)?,
+            get_eth_chain_id_from_db(&db)?,
+            PERC20_MIGRATE_GAS_LIMIT,
+            get_eth_gas_price_from_db(&db)?,
+        )))
+        .and_then(|unsigned_tx| unsigned_tx.sign(get_eth_private_key_from_db(&db)?))
+        .map(|signed_tx| signed_tx.serialize_hex())
+        .map(|hex_tx| json!({ "success": true, "eth_signed_tx": hex_tx }).to_string())
+}
+
+/// # Debug Get Remove Supported Token Transaction
+///
+/// This function will sign a transaction to remove the given address as a supported token to
+/// the `perc20-on-eos` smart-contract.
+///
+/// ### BEWARE:
+/// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
+/// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
+/// and only if you know exactly what you are doing and why!
+pub fn debug_get_remove_supported_token_tx<D>(
+    db: D,
+    eth_address_str: &str,
+) -> Result<String>
+    where D: DatabaseInterface
+{
+    info!("✔ Debug getting `removeSupportedToken` contract tx...");
+    let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
+    let eth_address = get_eth_address_from_str(eth_address_str)?;
+    increment_eth_account_nonce_in_db(&db, 1)
+        .and_then(|_| encode_perc20_remove_supported_token_fx_data(eth_address))
+        .and_then(|tx_data| Ok(EthTransaction::new_unsigned(
+            tx_data,
+            current_eth_account_nonce,
+            0,
+            get_eos_erc20_smart_contract_address_from_db(&db)?,
+            get_eth_chain_id_from_db(&db)?,
+            PERC20_MIGRATE_GAS_LIMIT,
+            get_eth_gas_price_from_db(&db)?,
+        )))
+        .and_then(|unsigned_tx| unsigned_tx.sign(get_eth_private_key_from_db(&db)?))
+        .map(|signed_tx| signed_tx.serialize_hex())
+        .map(|hex_tx| json!({ "success": true, "eth_signed_tx": hex_tx }).to_string())
 }
