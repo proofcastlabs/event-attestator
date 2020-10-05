@@ -23,6 +23,7 @@ use crate::{
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EosTxInfo {
+    pub _id: String,
     pub broadcast: bool,
     pub eos_tx_amount: String,
     pub eos_account_nonce: u64,
@@ -51,10 +52,11 @@ impl EosTxInfo {
                 eos_latest_block_number,
                 broadcast_tx_hash: None,
                 broadcast_timestamp: None,
-                eos_serialized_tx: eos_tx.transaction.clone(),
                 eos_tx_amount: eos_tx.amount.to_string(),
                 eos_tx_signature: eos_tx.signature.clone(),
                 eos_tx_recipient: eos_tx.recipient.clone(),
+                eos_serialized_tx: eos_tx.transaction.clone(),
+                _id: format!("perc20-on-eos-eos-{}", eos_account_nonce),
                 originating_address: peg_in_info.token_sender.to_string(),
                 originating_tx_hash: peg_in_info.originating_tx_hash.to_string(),
                 witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
