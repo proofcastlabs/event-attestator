@@ -41,23 +41,11 @@ pub struct EosPrivateKey {
 
 impl EosPrivateKey {
     pub fn generate_random() -> Result<Self> {
-        Ok(
-            Self {
-                compressed: false,
-                network: EosNetwork::Mainnet,
-                private_key: generate_random_private_key()?,
-            }
-        )
+        Ok(Self { compressed: false, network: EosNetwork::Mainnet, private_key: generate_random_private_key()? })
     }
 
     pub fn to_public_key(&self) -> EosPublicKey {
-        EosPublicKey {
-            compressed: true,
-            public_key: PublicKey::from_secret_key(
-                &Secp256k1::new(),
-                &self.private_key
-            )
-        }
+        EosPublicKey { compressed: true, public_key: PublicKey::from_secret_key(&Secp256k1::new(), &self.private_key) }
     }
 
     pub fn from_slice(slice: &[u8]) -> Result<Self> {
@@ -92,13 +80,7 @@ impl EosPrivateKey {
                 ))
             }
         };
-        Ok(
-            EosPrivateKey {
-                compressed,
-                network,
-                private_key: SecretKey::from_slice(&data[1..33])?,
-            }
-        )
+        Ok(EosPrivateKey { compressed, network, private_key: SecretKey::from_slice(&data[1..33])? })
     }
 
     pub fn sign_hash(&self, hash: &[u8]) -> Result<EosSignature> {
@@ -106,49 +88,22 @@ impl EosPrivateKey {
             Ok(msg) => msg,
             Err(err) => return Err(err.into()),
         };
-        Ok(
-            EosSignature::from(
-                Secp256k1::sign_canonical(
-                    &Secp256k1::new(),
-                    &msg,
-                    &self.private_key
-                )
-            )
-        )
+        Ok(EosSignature::from(Secp256k1::sign_canonical(&Secp256k1::new(), &msg, &self.private_key)))
     }
 
-    pub fn sign_message_bytes(
-        &self,
-        message_slice: &[u8]
-    ) -> Result<EosSignature> {
+    pub fn sign_message_bytes(&self, message_slice: &[u8]) -> Result<EosSignature> {
         let msg_hash = sha256::Hash::hash(&message_slice);
         self.sign_hash(&msg_hash)
     }
 
-    pub fn write_to_db<D>(
-        &self,
-        db: &D,
-    ) -> Result<()>
-        where D: DatabaseInterface
-    {
+    pub fn write_to_db<D>(&self, db: &D) -> Result<()> where D: DatabaseInterface {
         trace!("✔ Putting EOS private key in db...");
-        db.put(
-            EOS_PRIVATE_KEY_DB_KEY.to_vec(),
-            self.private_key[..].to_vec(),
-            PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-        )
+        db.put(EOS_PRIVATE_KEY_DB_KEY.to_vec(), self.private_key[..].to_vec(), PRIVATE_KEY_DATA_SENSITIVITY_LEVEL)
     }
 
-    pub fn get_from_db<D>(
-        db: &D,
-    ) -> Result<Self>
-        where D: DatabaseInterface
-    {
+    pub fn get_from_db<D>(db: &D) -> Result<Self> where D: DatabaseInterface {
         trace!("✔ Getting EOS private key from db...");
-        db.get(
-                EOS_PRIVATE_KEY_DB_KEY.to_vec(),
-                PRIVATE_KEY_DATA_SENSITIVITY_LEVEL
-            )
+        db.get(EOS_PRIVATE_KEY_DB_KEY.to_vec(), PRIVATE_KEY_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| Self::from_slice(&bytes[..]))
     }
 }
