@@ -26,6 +26,7 @@ pub struct EosTxInfo {
     pub _id: String,
     pub broadcast: bool,
     pub eos_tx_amount: String,
+    pub eth_tx_amount: String,
     pub eos_account_nonce: u64,
     pub eos_tx_recipient: String,
     pub eos_tx_signature: String,
@@ -34,6 +35,7 @@ pub struct EosTxInfo {
     pub originating_tx_hash: String,
     pub originating_address: String,
     pub eos_latest_block_number: u64,
+    pub eth_erc20_token_contract: String,
     pub broadcast_tx_hash: Option<String>,
     pub broadcast_timestamp: Option<String>,
 }
