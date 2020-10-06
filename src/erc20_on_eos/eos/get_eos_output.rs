@@ -13,7 +13,10 @@ use crate::{
         Erc20OnEosRedeemInfos,
     },
     chains::{
-        eos::eos_state::EosState,
+        eos::{
+            eos_state::EosState,
+            eos_database_utils::get_latest_eos_block_number,
+        },
         eth::{
             eth_traits::EthTxInfoCompatible,
             eth_crypto::eth_transaction::EthTransaction,
@@ -29,6 +32,7 @@ use crate::{
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EosOutput {
+    pub eos_latest_block_number: u64,
     pub eth_signed_transactions: Vec<EthTxInfo>,
 }
 
@@ -109,6 +113,7 @@ pub fn get_eos_output<D>(state: EosState<D>) -> Result<String> where D: Database
     info!("✔ Getting EOS output json...");
     let output = serde_json::to_string(
         &EosOutput {
+            eos_latest_block_number: get_latest_eos_block_number(&state.db)?,
             eth_signed_transactions: match &state.erc20_on_eos_signed_txs.len() {
                 0 => vec![],
                 _ => get_eth_signed_tx_info_from_eth_txs(
