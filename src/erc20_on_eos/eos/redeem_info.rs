@@ -16,6 +16,7 @@ use crate::{
     chains::eos::{
         eos_state::EosState,
         eos_action_proofs::EosActionProof,
+        eos_erc20_dictionary::EosErc20Dictionary,
         eos_types::{
             ProcessedTxIds,
             GlobalSequence,
@@ -24,7 +25,7 @@ use crate::{
     },
 };
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Constructor)]
 pub struct Erc20OnEosRedeemInfo {
     pub amount: U256,
     pub from: EosAccountName,
@@ -45,11 +46,14 @@ impl Erc20OnEosRedeemInfos {
         self.0.iter().map(|infos| infos.global_sequence).collect()
     }
 
-    pub fn from_action_proofs(action_proofs: &[EosActionProof]) -> Result<Erc20OnEosRedeemInfos> {
+    pub fn from_action_proofs(
+        action_proofs: &[EosActionProof],
+        dictionary: &EosErc20Dictionary,
+    ) -> Result<Erc20OnEosRedeemInfos> {
         Ok(Erc20OnEosRedeemInfos::new(
             action_proofs
                 .iter()
-                .map(|action_proof| action_proof.to_erc20_on_eos_redeem_info())
+                .map(|action_proof| action_proof.to_erc20_on_eos_redeem_info(dictionary))
                 .collect::<Result<Vec<Erc20OnEosRedeemInfo>>>()?
         ))
     }
@@ -71,7 +75,7 @@ pub fn maybe_parse_redeem_infos_and_put_in_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Parsing redeem params from actions data...");
-    Erc20OnEosRedeemInfos::from_action_proofs(&state.action_proofs)
+    Erc20OnEosRedeemInfos::from_action_proofs(&state.action_proofs, state.get_eos_erc20_dictionary()?)
         .and_then(|redeem_infos| {
             info!("✔ Parsed {} sets of redeem info!", redeem_infos.len());
             state.add_erc20_on_eos_redeem_infos(redeem_infos)
