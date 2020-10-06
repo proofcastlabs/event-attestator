@@ -18,17 +18,24 @@ use eos_primitives::{
     PermissionLevels,
 };
 use crate::{
-    utils::convert_bytes_to_u64,
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfo,
     erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfo,
     types::{
         Bytes,
         Result,
     },
+    utils::{
+        convert_bytes_to_u64,
+        maybe_strip_hex_prefix,
+    },
     chains::eos::{
         eos_types:: MerkleProof,
         eos_utils::convert_hex_to_checksum256,
         parse_eos_action_receipts::parse_eos_action_receipt_json,
+        eos_erc20_dictionary::{
+            EosErc20Dictionary,
+            EosErc20DictionaryEntry,
+        },
     },
 };
 
@@ -55,34 +62,37 @@ impl EosActionProof {
         convert_bytes_to_u64(&self.action.data[8..16].to_vec())
     }
 
-    fn get_erc20_on_eos_eth_redeem_amount(&self) -> Result<U256> {
-        Ok(U256::from(&self.action.data[8..16])) // FIXME TODO Test this!
+    fn get_erc20_on_eos_eth_redeem_amount(&self, dictionary_entry: &EosErc20DictionaryEntry) -> Result<U256> {
+        dictionary_entry
+            .convert_u64_to_eos_asset(convert_bytes_to_u64(&self.action.data[8..16].to_vec())?)
+            .and_then(|eos_asset| dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset))
     }
 
     fn get_redeem_action_sender(&self) -> Result<EosAccountName> {
-        Ok(EosAccountName::new(convert_bytes_to_u64(&self.action.data[..8].to_vec())?))
+        let account_name = EosAccountName::new(convert_bytes_to_u64(&self.action.data[..8].to_vec())?);
+        debug!("✔ Account name parsed from redeem action: {}", account_name);
+        Ok(account_name)
     }
 
     fn get_btc_on_eos_btc_redeem_address(&self) -> Result<String> {
         Ok(from_utf8(&self.action.data[25..])?.to_string())
     }
 
-    fn get_erc20_on_eos_btc_redeem_address(&self) -> Result<EthAddress> {
-        Ok(EthAddress::from_slice(&self.action.data[25..])) // FIXME / TODO Test this!
+    fn get_erc20_on_eos_eth_redeem_address(&self) -> Result<EthAddress> {
+        Ok(EthAddress::from_slice(&hex::decode(&maybe_strip_hex_prefix(&from_utf8(&self.action.data[25..])?)?)?))
     }
 
     pub fn from_json(json: &EosActionProofJson) -> Result<Self> {
-        Ok(
-            EosActionProof {
-                action: json.action_json.to_action()?,
-                action_proof: json.action_proof.clone(),
-                tx_id: convert_hex_to_checksum256(&json.tx_id)?,
-                action_receipt: parse_eos_action_receipt_json(&json.action_receipt_json)?,
-            }
-        )
+        Ok(EosActionProof {
+            action: json.action_json.to_action()?,
+            action_proof: json.action_proof.clone(),
+            tx_id: convert_hex_to_checksum256(&json.tx_id)?,
+            action_receipt: parse_eos_action_receipt_json(&json.action_receipt_json)?,
+        })
     }
 
     pub fn to_btc_on_eos_redeem_info(&self) -> Result<BtcOnEosRedeemInfo> {
+        info!("✔ Converting action proof to `btc-on-eos` redeem info...");
         Ok(BtcOnEosRedeemInfo {
             originating_tx_id: self.tx_id,
             from: self.get_redeem_action_sender()?,
@@ -92,14 +102,19 @@ impl EosActionProof {
         })
     }
 
-    pub fn to_erc20_on_eos_redeem_info(&self) -> Result<Erc20OnEosRedeemInfo> {
-        Ok(Erc20OnEosRedeemInfo {
-            originating_tx_id: self.tx_id,
-            from: self.get_redeem_action_sender()?,
-            amount: self.get_erc20_on_eos_eth_redeem_amount()?,
-            global_sequence: self.action_receipt.global_sequence,
-            recipient: self.get_erc20_on_eos_btc_redeem_address()?,
-        })
+    pub fn to_erc20_on_eos_redeem_info(&self, dictionary: &EosErc20Dictionary) -> Result<Erc20OnEosRedeemInfo> {
+        dictionary
+            .get_entry_via_eos_address(&self.action.account.to_string())
+            .and_then(|entry| {
+                info!("✔ Converting action proof to `erc20-on-eos` redeem info...");
+                Ok(Erc20OnEosRedeemInfo {
+                    originating_tx_id: self.tx_id,
+                    from: self.get_redeem_action_sender()?,
+                    global_sequence: self.action_receipt.global_sequence,
+                    recipient: self.get_erc20_on_eos_eth_redeem_address()?,
+                    amount: self.get_erc20_on_eos_eth_redeem_amount(&entry)?,
+                })
+            })
     }
 }
 
@@ -283,6 +298,58 @@ mod tests {
         };
         let action_proof = get_sample_eos_submission_material_n(1).action_proofs[0].clone();
         let result = action_proof.to_btc_on_eos_redeem_info().unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    fn get_sample_action_proof_for_erc20_redeem() -> EosActionProof {
+        get_sample_eos_submission_material_n(10).action_proofs[0].clone()
+    }
+
+    #[test]
+    fn should_get_erc20_on_eos_eth_redeem_amount() {
+        let dictionary_entry = EosErc20DictionaryEntry::new(
+            18,
+            9,
+            "PETH".to_string(),
+            "SAM".to_string(),
+            "testpethxxxx".to_string(),
+            EthAddress::from_slice(&hex::decode("32eF9e9a622736399DB5Ee78A68B258dadBB4353").unwrap()),
+        );
+        let proof = get_sample_action_proof_for_erc20_redeem();
+        let result = proof.get_erc20_on_eos_eth_redeem_amount(&dictionary_entry).unwrap();
+        let expected_result = U256::from_dec_str("1337000000000").unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_erc20_on_eos_eth_redeem_address() {
+        let expected_result =  EthAddress::from_slice(
+            &hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap()
+        );
+        let proof = get_sample_action_proof_for_erc20_redeem();
+        let result = proof.get_erc20_on_eos_eth_redeem_address().unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_proof_to_erc20_on_eos_redeem_info() {
+        let expected_result = Erc20OnEosRedeemInfo::new(
+            U256::from_dec_str("1337000000000").unwrap(),
+            EosAccountName::from_str("t11ptokens11").unwrap(),
+            EthAddress::from_slice(&hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap()),
+            convert_hex_to_checksum256("ed991197c5d571f39b4605f91bf1374dd69237070d44b46d4550527c245a01b9").unwrap(),
+            250255005734,
+        );
+        let dictionary = EosErc20Dictionary::new(vec![EosErc20DictionaryEntry::new(
+            18,
+            9,
+            "PETH".to_string(),
+            "SAM".to_string(),
+            "testpethxxxx".to_string(),
+            EthAddress::from_slice(&hex::decode("32eF9e9a622736399DB5Ee78A68B258dadBB4353").unwrap()),
+        )]);
+        let proof = get_sample_action_proof_for_erc20_redeem();
+        let result = proof.to_erc20_on_eos_redeem_info(&dictionary).unwrap();
         assert_eq!(result, expected_result);
     }
 }
