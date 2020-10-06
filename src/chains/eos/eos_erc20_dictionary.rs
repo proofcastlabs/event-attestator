@@ -270,6 +270,22 @@ impl EosErc20DictionaryEntry {
             Ok(format!("0.{} {}", augmented_fraction_str, self.eos_symbol.to_uppercase()))
         }
     }
+
+    pub fn convert_u64_to_eos_asset(&self, u_64: u64) -> Result<String> {
+        let amount_str = u_64.to_string();
+        if amount_str.len() < self.eos_token_decimals {
+            let fraction_part = left_pad_with_zeroes(&amount_str, self.eos_token_decimals);
+            Ok(format!("0.{} {}", fraction_part, self.eos_symbol))
+        } else if amount_str.len() == self.eos_token_decimals {
+            Ok(format!("0.{} {}", amount_str, self.eos_symbol))
+        } else {
+            let (decimal_part, fraction_part) = split_string_at_index(
+                &amount_str,
+                amount_str.len() - self.eos_token_decimals
+            );
+            Ok(format!("{}.{} {}", decimal_part, fraction_part, self.eos_symbol))
+        }
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -609,5 +625,58 @@ mod tests {
             .zip(expected_results.iter())
             .map(|(result, expected_result)| assert_eq!(&result, expected_result))
             .for_each(drop);
+    }
+
+    #[test]
+    fn should_convert_u64_to_eos_asset() {
+        let entry = get_sample_eos_erc20_dictionary_entry_1();
+        let expected_results = vec![
+            "123456789.123456789 SAM1".to_string(),
+            "12345678.912345678 SAM1".to_string(),
+            "1234567.891234567 SAM1".to_string(),
+            "123456.789123456 SAM1".to_string(),
+            "12345.678912345 SAM1".to_string(),
+            "1234.567891234 SAM1".to_string(),
+            "123.456789123 SAM1".to_string(),
+            "12.345678912 SAM1".to_string(),
+            "1.234567891 SAM1".to_string(),
+            "0.123456789 SAM1".to_string(),
+            "0.012345678 SAM1".to_string(),
+            "0.001234567 SAM1".to_string(),
+            "0.000123456 SAM1".to_string(),
+            "0.000012345 SAM1".to_string(),
+            "0.000001234 SAM1".to_string(),
+            "0.000000123 SAM1".to_string(),
+            "0.000000012 SAM1".to_string(),
+            "0.000000001 SAM1".to_string(),
+            "0.000000000 SAM1".to_string(),
+        ];
+        vec![
+            123456789123456789 as u64,
+            12345678912345678 as u64,
+            1234567891234567 as u64,
+            123456789123456 as u64,
+            12345678912345 as u64,
+            1234567891234 as u64,
+            123456789123 as u64,
+            12345678912 as u64,
+            1234567891 as u64,
+            123456789 as u64,
+            12345678 as u64,
+            1234567 as u64,
+            123456 as u64,
+            12345 as u64,
+            1234 as u64,
+            123 as u64,
+            12 as u64,
+            1 as u64,
+            0 as u64,
+        ]
+            .iter()
+            .map(|u_64| entry.convert_u64_to_eos_asset(*u_64).unwrap())
+            .zip(expected_results.iter())
+            .map(|(result, expected_result)| assert_eq!(&result, expected_result))
+            .for_each(drop);
+
     }
 }
