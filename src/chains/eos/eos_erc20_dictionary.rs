@@ -200,12 +200,12 @@ impl EosErc20DictionaryJson {
 
 #[derive(Debug, Clone, Eq, PartialEq, Constructor, Deserialize, Serialize)]
 pub struct EosErc20DictionaryEntry {
-    eth_token_decimals: usize,
-    eos_token_decimals: usize,
-    eos_symbol: String,
-    eth_symbol: String,
-    eos_address: String,
-    eth_address: EthAddress,
+    pub eth_token_decimals: usize,
+    pub eos_token_decimals: usize,
+    pub eos_symbol: String,
+    pub eth_symbol: String,
+    pub eos_address: String,
+    pub eth_address: EthAddress,
 }
 
 impl EosErc20DictionaryEntry {

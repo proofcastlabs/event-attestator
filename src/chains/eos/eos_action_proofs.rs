@@ -110,6 +110,7 @@ impl EosActionProof {
                 Ok(Erc20OnEosRedeemInfo {
                     originating_tx_id: self.tx_id,
                     from: self.get_redeem_action_sender()?,
+                    eth_token_address: entry.eth_address.clone(),
                     global_sequence: self.action_receipt.global_sequence,
                     recipient: self.get_erc20_on_eos_eth_redeem_address()?,
                     amount: self.get_erc20_on_eos_eth_redeem_amount(&entry)?,
@@ -337,6 +338,7 @@ mod tests {
             U256::from_dec_str("1337000000000").unwrap(),
             EosAccountName::from_str("t11ptokens11").unwrap(),
             EthAddress::from_slice(&hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap()),
+            EthAddress::from_slice(&hex::decode("32eF9e9a622736399DB5Ee78A68B258dadBB4353").unwrap()),
             convert_hex_to_checksum256("ed991197c5d571f39b4605f91bf1374dd69237070d44b46d4550527c245a01b9").unwrap(),
             250255005734,
         );

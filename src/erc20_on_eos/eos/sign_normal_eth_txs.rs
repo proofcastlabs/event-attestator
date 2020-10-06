@@ -33,7 +33,7 @@ pub fn get_eth_signed_txs(
             EthTransaction::new_unsigned(
                 encode_perc20_peg_out_fxn_data(
                     redeem_info.recipient,
-                    signing_params.smart_contract_address,
+                    redeem_info.eth_token_address,
                     redeem_info.amount
                 )?,
                 signing_params.eth_account_nonce + i as u64,

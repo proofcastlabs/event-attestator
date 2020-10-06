@@ -30,6 +30,7 @@ pub struct Erc20OnEosRedeemInfo {
     pub amount: U256,
     pub from: EosAccountName,
     pub recipient: EthAddress,
+    pub eth_token_address: EthAddress,
     pub originating_tx_id: Checksum256,
     pub global_sequence: GlobalSequence,
 }
