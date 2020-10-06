@@ -137,7 +137,12 @@ impl EosErc20Dictionary {
 
     pub fn get_entry_via_eth_token_address(&self, address: &EthAddress) -> Result<EosErc20DictionaryEntry> {
         for entry in self.iter() { if &entry.eth_address == address { return Ok(entry.clone()) } };
-        Err(format!("No `EosErc20DictionaryEntry` exists with address: {}", address).into())
+        Err(format!("No `EosErc20DictionaryEntry` exists with ETH address: {}", address).into())
+    }
+
+    pub fn get_entry_via_eos_address(&self, eos_address: &str) -> Result<EosErc20DictionaryEntry> {
+        for entry in self.iter() { if &entry.eos_address == eos_address { return Ok(entry.clone()) } };
+        Err(format!("No `EosErc20DictionaryEntry` exists with EOS address: {}", eos_address).into())
     }
 
     pub fn get_eos_account_name_from_eth_token_address(&self, address: &EthAddress) -> Result<String> {
