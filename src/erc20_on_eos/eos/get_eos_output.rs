@@ -69,7 +69,7 @@ impl EthTxInfo {
             _id: if tx.is_any_sender() {
                 format!("perc20-on-eos-any-sender-{}", nonce)
             } else {
-                format!("perc20-on-eos-{}", nonce)
+                format!("perc20-on-eos-eth-{}", nonce)
             },
             eth_tx_amount: redeem_info.amount.to_string(),
             eth_tx_hash: format!("0x{}", tx.get_tx_hash()),

@@ -159,6 +159,10 @@ pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> w
 /// pipeline signing any transactions along the way. The `stale_transaction` part alludes to the
 /// fact that EOS transactions have an intrinsic time limit, meaning a failure of upstream parts of
 /// the bridge (ie tx broadcasting) could lead to expired transactions that can't ever be mind.
+///
+/// ### NOTE:
+/// This function will increment the core's EOS nonce, meaning the outputted reports will have a
+/// gap in their report IDs!
 pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
     db: D,
     block_json_string: &str

@@ -204,6 +204,10 @@ pub fn debug_remove_erc20_dictionary_entry<D>(
 /// argument. It then updates the smart-contract address stored in the encrypted database to that
 /// new address.
 ///
+/// ### NOTE:
+/// This function will increment the core's ETH nonce, meaning the outputted reports will have a
+/// gap in their report IDs!
+///
 /// ### BEWARE:
 /// This function outputs a signed transaction which if NOT broadcast will result in the enclave no
 /// longer working.  Use with extreme caution and only if you know exactly what you are doing!
@@ -247,6 +251,10 @@ pub fn debug_get_perc20_migration_tx<D>(
 /// This function will sign a transaction to add the given address as a supported token to
 /// the `perc20-on-eos` smart-contract.
 ///
+/// ### NOTE:
+/// This function will increment the core's ETH nonce, meaning the outputted reports will have a
+/// gap in their report IDs!
+///
 /// ### BEWARE:
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
 /// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
@@ -284,6 +292,10 @@ pub fn debug_get_add_supported_token_tx<D>(
 ///
 /// This function will sign a transaction to remove the given address as a supported token to
 /// the `perc20-on-eos` smart-contract.
+///
+/// ### NOTE:
+/// This function will increment the core's ETH nonce, meaning the outputted reports will have a
+/// gap in their report IDs!
 ///
 /// ### BEWARE:
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast

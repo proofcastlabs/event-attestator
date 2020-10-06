@@ -212,6 +212,10 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
 /// This function will take a passed in ETH block submission material and run it through the
 /// submission pipeline, signing any signatures for pegouts it may find in the block
 ///
+/// ### NOTE:
+/// This function will increment the core's ETH nonce, meaning the outputted reports will have a
+/// gap in their report IDs!
+///
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
 /// fail due to the core having an incorret set of UTXOs!
@@ -303,6 +307,10 @@ pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
 /// This function will create a signed ETH transaction that will change the pNetwork address in
 /// the pToken ERC777 contract to the passed in address.
 ///
+/// ### NOTE:
+/// This function will increment the core's ETH nonce, meaning the outputted reports will have a
+/// gap in their report IDs!
+///
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
@@ -340,6 +348,10 @@ fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()>
 /// This function will create a signed ETH transaction that will change the pNetwork address in
 /// the pToken ERC777 proxy contract to the passed in address.
 ///
+/// ### NOTE:
+/// This function will increment the core's ETH nonce, meaning the outputted reports will have a
+/// gap in their report IDs!
+///
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
@@ -367,6 +379,10 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D>(
 ///
 /// This function will create a signed ETH transaction that will change the pNetwork address in
 /// the pToken ERC777 contract via the ERC777 proxy contract, to the passed in address.
+///
+/// ### NOTE:
+/// This function will increment the core's ETH nonce, meaning the outputted reports will have a
+/// gap in their report IDs!
 ///
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
@@ -433,6 +449,10 @@ pub fn debug_maybe_add_utxo_to_db<D>(
 /// This fxn simply creates & signs a pBTC minting transaction using the private key from the
 /// database. It does __not__ change the database in __any way__, including incrementing the nonce
 /// etc.
+///
+/// ### NOTE:
+/// This function will increment the core's ETH nonce, meaning the outputted reports will have a
+/// gap in their report IDs!
 ///
 /// ### BEWARE:
 /// There is great potential for bricking a running instance when using this, so only use it
