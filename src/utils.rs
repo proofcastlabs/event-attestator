@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub fn right_pad_or_truncate(s: &str, width: usize) -> String {
-    if s.len() >= width { truncate_str(&s, width).to_string() } else { right_pad_with_zeroes(&s, width).to_string() }
+    if s.len() >= width { truncate_str(&s, width).to_string() } else { right_pad_with_zeroes(&s, width) }
 }
 
 pub fn truncate_str(s: &str, num_chars: usize) -> &str {

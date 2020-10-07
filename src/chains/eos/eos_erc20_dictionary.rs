@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use std::cmp::Ordering;
 use serde_json::Value as JsonValue;
 use ethereum_types::{
     U256 as EthAmount,
@@ -141,13 +142,13 @@ impl EosErc20Dictionary {
     }
 
     pub fn get_entry_via_eos_address(&self, eos_address: &str) -> Result<EosErc20DictionaryEntry> {
-        for entry in self.iter() { if &entry.eos_address == eos_address { return Ok(entry.clone()) } };
+        for entry in self.iter() { if entry.eos_address == eos_address { return Ok(entry.clone()) } };
         Err(format!("No `EosErc20DictionaryEntry` exists with EOS address: {}", eos_address).into())
     }
 
     pub fn get_eos_account_name_from_eth_token_address(&self, address: &EthAddress) -> Result<String> {
         self.get_entry_via_eth_token_address(address)
-            .map(|entry| entry.eos_address.to_string())
+            .map(|entry| entry.eos_address)
     }
 
     pub fn is_token_supported(&self, address: &EthAddress) -> bool {
@@ -243,7 +244,7 @@ impl EosErc20DictionaryEntry {
         EosErc20DictionaryEntryJson::from_str(json_string).and_then(|entry_json| Self::from_json(&entry_json))
     }
     fn get_decimal_and_fractional_parts_of_eos_asset(eos_asset: &str) -> (&str, &str) {
-        let parts = remove_symbol_from_eos_asset(eos_asset).split(".").collect::<Vec<&str>>();
+        let parts = remove_symbol_from_eos_asset(eos_asset).split('.').collect::<Vec<&str>>();
         let decimal_part = parts[0];
         let fractional_part = if parts.len() > 1 { parts[1] } else { "" };
         (decimal_part, fractional_part)
@@ -251,44 +252,47 @@ impl EosErc20DictionaryEntry {
 
     pub fn convert_eos_asset_to_eth_amount(&self, eos_asset: &str) -> Result<EthAmount> {
         let (decimal_str, fraction_str) = Self::get_decimal_and_fractional_parts_of_eos_asset(eos_asset);
-        let augmented_fraction_str = if self.eth_token_decimals > self.eos_token_decimals {
-            right_pad_with_zeroes(fraction_str, self.eth_token_decimals)
-        } else if self.eth_token_decimals == self.eos_token_decimals {
-            fraction_str.to_string()
-        } else {
-            truncate_str(fraction_str, self.eos_token_decimals - self.eth_token_decimals).to_string()
+        let augmented_fraction_str = match self.eth_token_decimals.cmp(&self.eos_token_decimals) {
+            Ordering::Greater => right_pad_with_zeroes(fraction_str, self.eth_token_decimals),
+            Ordering::Equal => fraction_str.to_string(),
+            Ordering::Less => truncate_str(fraction_str, self.eos_token_decimals - self.eth_token_decimals).to_string(),
         };
         Ok(EthAmount::from_dec_str(&format!("{}{}", decimal_str, augmented_fraction_str))?)
     }
 
     pub fn convert_u256_to_eos_asset_string(&self, amount: &EthAmount) -> Result<String> {
         let amount_str = amount.to_string();
-        if amount_str.len() >= self.eth_token_decimals {
-            let decimal_point_index = amount_str.len() - self.eth_token_decimals;
-            let (decimal_str, fraction_str) = split_string_at_index(&amount_str, decimal_point_index);
-            let augmented_fraction_str = right_pad_or_truncate(&fraction_str, self.eos_token_decimals);
-            let augmented_decimal_str = if decimal_str == "" { "0".to_string() } else { decimal_str };
-            Ok(format!("{}.{} {}", augmented_decimal_str, augmented_fraction_str, self.eos_symbol.to_uppercase()))
-        } else {
-            let fraction_str = left_pad_with_zeroes(&amount_str, self.eth_token_decimals);
-            let augmented_fraction_str = right_pad_or_truncate(&fraction_str, self.eos_token_decimals);
-            Ok(format!("0.{} {}", augmented_fraction_str, self.eos_symbol.to_uppercase()))
+        match amount_str.len().cmp(&self.eth_token_decimals) {
+            Ordering::Greater | Ordering::Equal => {
+                let decimal_point_index = amount_str.len() - self.eth_token_decimals;
+                let (decimal_str, fraction_str) = split_string_at_index(&amount_str, decimal_point_index);
+                let augmented_fraction_str = right_pad_or_truncate(&fraction_str, self.eos_token_decimals);
+                let augmented_decimal_str = if decimal_str == "" { "0".to_string() } else { decimal_str };
+                Ok(format!("{}.{} {}", augmented_decimal_str, augmented_fraction_str, self.eos_symbol.to_uppercase()))
+            }
+            Ordering::Less => {
+                let fraction_str = left_pad_with_zeroes(&amount_str, self.eth_token_decimals);
+                let augmented_fraction_str = right_pad_or_truncate(&fraction_str, self.eos_token_decimals);
+                Ok(format!("0.{} {}", augmented_fraction_str, self.eos_symbol.to_uppercase()))
+            }
         }
     }
 
     pub fn convert_u64_to_eos_asset(&self, u_64: u64) -> Result<String> {
         let amount_str = u_64.to_string();
-        if amount_str.len() < self.eos_token_decimals {
-            let fraction_part = left_pad_with_zeroes(&amount_str, self.eos_token_decimals);
-            Ok(format!("0.{} {}", fraction_part, self.eos_symbol))
-        } else if amount_str.len() == self.eos_token_decimals {
-            Ok(format!("0.{} {}", amount_str, self.eos_symbol))
-        } else {
-            let (decimal_part, fraction_part) = split_string_at_index(
-                &amount_str,
-                amount_str.len() - self.eos_token_decimals
-            );
-            Ok(format!("{}.{} {}", decimal_part, fraction_part, self.eos_symbol))
+        match amount_str.len().cmp(&self.eos_token_decimals) {
+            Ordering::Equal => Ok(format!("0.{} {}", amount_str, self.eos_symbol)),
+            Ordering::Less => {
+                let fraction_part = left_pad_with_zeroes(&amount_str, self.eos_token_decimals);
+                Ok(format!("0.{} {}", fraction_part, self.eos_symbol))
+            }
+            Ordering::Greater => {
+                let (decimal_part, fraction_part) = split_string_at_index(
+                    &amount_str,
+                    amount_str.len() - self.eos_token_decimals
+                );
+                Ok(format!("{}.{} {}", decimal_part, fraction_part, self.eos_symbol))
+            }
         }
     }
 }

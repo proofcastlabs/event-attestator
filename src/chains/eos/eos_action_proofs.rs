@@ -109,8 +109,8 @@ impl EosActionProof {
                 info!("✔ Converting action proof to `erc20-on-eos` redeem info...");
                 Ok(Erc20OnEosRedeemInfo {
                     originating_tx_id: self.tx_id,
+                    eth_token_address: entry.eth_address,
                     from: self.get_redeem_action_sender()?,
-                    eth_token_address: entry.eth_address.clone(),
                     global_sequence: self.action_receipt.global_sequence,
                     recipient: self.get_erc20_on_eos_eth_redeem_address()?,
                     amount: self.get_erc20_on_eos_eth_redeem_amount(&entry)?,
