@@ -1,5 +1,6 @@
 use std::str::FromStr;
 use bitcoin::util::address::Address as BtcAddress;
+use eos_primitives::AccountName as EosAccountName;
 use derive_more::{
     Deref,
     Constructor,
@@ -20,12 +21,15 @@ use ethereum_types::{
     Address as EthAddress,
 };
 use crate::{
+    btc_on_eth::utils::convert_ptoken_to_satoshis,
     types::{
         Bytes,
         Result,
     },
-    constants::SAFE_BTC_ADDRESS,
-    btc_on_eth::utils::convert_ptoken_to_satoshis,
+    constants::{
+        SAFE_BTC_ADDRESS,
+        SAFE_EOS_ADDRESS,
+    },
     chains::{
         eos::eos_erc20_dictionary::EosErc20Dictionary,
         eth::{
@@ -223,15 +227,31 @@ impl EthLog {
             })
     }
 
-    pub fn get_erc20_on_eos_peg_in_eos_address(&self) -> Result<String> {
-        self.check_is_erc20_peg_in()
-            .map(|_| {
-                let start_index = ETH_WORD_SIZE_IN_BYTES * 5;
-                info!("✔ Parsing `erc20-on-eos` peg in EOS address from log...");
-                self.data[start_index..].iter().filter(|byte| *byte != &0u8).map(|byte| *byte as char).collect()
+    fn extract_eos_address_string(&self) -> Result<String> {
+        info!("✔ Parsing `erc20-on-eos` peg in EOS address from log...");
+        let start_index = ETH_WORD_SIZE_IN_BYTES * 5;
+        Ok(self.data[start_index..].iter().filter(|byte| *byte != &0u8).map(|byte| *byte as char).collect())
+    }
+
+    // TODO get sample log w/ bad address & test this1
+    fn extract_eos_address_or_default_to_safe_address(&self) -> Result<String> {
+        self.extract_eos_address_string()
+            .map(|maybe_eos_address: String| {
+                match EosAccountName::from_str(&maybe_eos_address) {
+                    Ok(_) => maybe_eos_address,
+                    Err(_) => {
+                        info!("✘ Could not parse EOS address from: {}", maybe_eos_address);
+                        info!("✔ Defaulting to safe EOS address: {}", SAFE_EOS_ADDRESS);
+                        SAFE_EOS_ADDRESS.to_string()
+                    },
+                }
             })
     }
 
+    pub fn get_erc20_on_eos_peg_in_eos_address(&self) -> Result<String> {
+        self.check_is_erc20_peg_in()
+            .and_then(|_| self.extract_eos_address_or_default_to_safe_address())
+    }
 }
 
 impl Encodable for EthLog {
