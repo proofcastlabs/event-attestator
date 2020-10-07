@@ -18,6 +18,7 @@ use eos_primitives::{
     PermissionLevels,
 };
 use crate::{
+    constants::SAFE_ETH_ADDRESS,
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfo,
     erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfo,
     types::{
@@ -78,8 +79,24 @@ impl EosActionProof {
         Ok(from_utf8(&self.action.data[25..])?.to_string())
     }
 
+    fn get_memo_string(&self) -> Result<String> {
+        Ok(from_utf8(&self.action.data[25..])?.to_string())
+    }
+
     fn get_erc20_on_eos_eth_redeem_address(&self) -> Result<EthAddress> {
-        Ok(EthAddress::from_slice(&hex::decode(&maybe_strip_hex_prefix(&from_utf8(&self.action.data[25..])?)?)?))
+        Ok(EthAddress::from_slice(&hex::decode(&maybe_strip_hex_prefix(&self.get_memo_string()?)?)?))
+    }
+
+    // TODO get sample with bad ETH address and test this!
+    fn get_erc20_on_eos_eth_redeem_address_or_default_to_safe_address(&self) -> Result<EthAddress> {
+        match self.get_erc20_on_eos_eth_redeem_address() {
+            Ok(address) => Ok(address),
+            Err(_) => {
+                info!("✘ Could not parse ETH address from action memo: {}", self.get_memo_string()?);
+                info!("✔ Defaulting to safe ETH address: 0x{}", hex::encode(*SAFE_ETH_ADDRESS));
+                Ok(*SAFE_ETH_ADDRESS)
+            }
+        }
     }
 
     pub fn from_json(json: &EosActionProofJson) -> Result<Self> {
