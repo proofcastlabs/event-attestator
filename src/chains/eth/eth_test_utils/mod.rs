@@ -21,10 +21,12 @@ use crate::{
 };
 
 pub const SAMPLE_ETH_SUBMISSION_MATERIAL_0: &str = "src/chains/eth/eth_test_utils/eth-submission-material-block-8739996-with-erc20-peg-in-event.json";
+pub const SAMPLE_ETH_SUBMISSION_MATERIAL_1: &str = "src/chains/eth/eth_test_utils/eth-submission-material-block-11011551.json";
 
 pub fn get_sample_eth_submission_material_string_n(n: usize) -> Result<String> {
     let path = match n {
         0 => Ok(SAMPLE_ETH_SUBMISSION_MATERIAL_0),
+        1 => Ok(SAMPLE_ETH_SUBMISSION_MATERIAL_1),
         _ => Err(format!("Cannot find sample eth submission material num: {}", n))
     }?;
     match Path::new(&path).exists() {

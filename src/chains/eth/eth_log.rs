@@ -115,11 +115,11 @@ impl EthLog {
     }
 
     pub fn is_btc_on_eth_redeem(&self) -> Result<bool> {
-        Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX)?[..]))
+        Ok(self.contains_topic(&EthHash::from_slice(&hex::decode(&BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX)?[..])))
     }
 
     fn is_erc20_peg_in(&self) -> Result<bool> {
-        Ok(self.topics[0] == EthHash::from_slice(&hex::decode(&ERC20_PEG_IN_EVENT_TOPIC_HEX)?[..]))
+        Ok(self.contains_topic(&EthHash::from_slice(&hex::decode(&ERC20_PEG_IN_EVENT_TOPIC_HEX)?[..])))
     }
 
     pub fn is_supported_erc20_peg_in(&self, eos_erc20_dictionary: &EosErc20Dictionary) -> Result<bool> {
@@ -309,8 +309,8 @@ mod tests {
             get_sample_contract_address,
             get_sample_log_with_desired_topic,
             get_sample_logs_with_desired_topic,
-            get_sample_eth_submission_material_n,
             get_sample_log_with_desired_address,
+            get_sample_eth_submission_material_n,
             get_sample_logs_without_desired_topic,
             get_sample_log_without_desired_address,
             get_sample_eth_submission_material_json,
