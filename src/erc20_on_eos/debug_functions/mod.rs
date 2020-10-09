@@ -12,14 +12,25 @@ use crate::{
         get_key_from_db,
         set_key_in_db_to_value,
     },
-    erc20_on_eos::check_core_is_initialized::check_core_is_initialized,
+    erc20_on_eos::{
+        check_core_is_initialized::{
+            check_core_is_initialized,
+            check_core_is_initialized_and_return_eth_state,
+        },
+        eth::{
+            get_output_json::get_output_json,
+            peg_in_info::maybe_filter_peg_in_info_in_state,
+        },
+    },
     chains::{
         eos::{
             eos_database_utils::put_eos_schedule_in_db,
             parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
+            sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
             eos_erc20_dictionary::{
                 EosErc20Dictionary,
                 EosErc20DictionaryEntry,
+                get_erc20_dictionary_from_db_and_add_to_eth_state,
             },
             eos_constants::{
                 EOS_PRIVATE_KEY_DB_KEY,
@@ -32,8 +43,13 @@ use crate::{
             },
         },
         eth::{
+            eth_state::EthState,
             eth_utils::get_eth_address_from_str,
             eth_crypto::eth_transaction::EthTransaction,
+            validate_block_in_state::validate_block_in_state,
+            validate_receipts_in_state::validate_receipts_in_state,
+            eth_submission_material::parse_eth_submission_material_and_put_in_state,
+            filter_receipts_in_state::filter_receipts_for_erc20_on_eos_peg_in_events_in_state,
             eth_contracts::perc20::{
                 PERC20_MIGRATE_GAS_LIMIT,
                 encode_perc20_migrate_fxn_data,
@@ -328,4 +344,47 @@ pub fn debug_get_remove_supported_token_tx<D>(
         .and_then(|unsigned_tx| unsigned_tx.sign(get_eth_private_key_from_db(&db)?))
         .map(|signed_tx| signed_tx.serialize_hex())
         .map(|hex_tx| json!({ "success": true, "eth_signed_tx": hex_tx }).to_string())
+}
+
+/// # Debug Reprocess ETH Block For Stale EOS Transaction
+///
+/// This function will take a passed in ETH block submission material and run it through the
+/// simplified submission pipeline, signing any EOS signatures for peg-ins it may find in the block
+///
+/// ### NOTE:
+/// This function has no database transactional capabilities and thus cannot modifiy the state of
+/// the encrypted database in any way.
+///
+/// ### BEWARE:
+/// Per above, this function does NOT increment the EOS  nonce (since it is not critical for correct
+/// transaction creation) and so outputted reports will NOT contain correct nonces. This is to ensure
+/// future transactions written by the proper submit-ETH-block pipeline will remain contiguous. The
+/// user of this function should understand why this is the case, and thus should be able to modify
+/// the outputted reports to slot into the external database correctly.
+pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
+    info!("✔ Debug reprocessing ETH block...");
+    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
+        .and_then(check_core_is_initialized_and_return_eth_state)
+        .and_then(validate_block_in_state)
+        .and_then(get_erc20_dictionary_from_db_and_add_to_eth_state)
+        .and_then(validate_receipts_in_state)
+        .and_then(filter_receipts_for_erc20_on_eos_peg_in_events_in_state)
+        .and_then(|state| {
+            let submission_material = state.get_eth_submission_material()?.clone();
+            match submission_material.receipts.is_empty() {
+                true => {
+                    info!("✔ No receipts in block ∴ no info to parse!");
+                    Ok(state)
+                }
+                false => {
+                    info!("✔ {} receipts in block ∴ parsing info...", submission_material.block.number);
+                    EosErc20Dictionary::get_from_db(&state.db)
+                        .and_then(|accounts| submission_material.get_erc20_on_eos_peg_in_infos(&accounts))
+                        .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
+                }
+            }
+        })
+        .and_then(maybe_filter_peg_in_info_in_state)
+        .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
+        .and_then(get_output_json)
 }
