@@ -158,7 +158,7 @@ pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> w
 /// This function takes BTC block submission material and runs it thorugh the BTC submission
 /// pipeline signing any transactions along the way. The `stale_transaction` part alludes to the
 /// fact that EOS transactions have an intrinsic time limit, meaning a failure of upstream parts of
-/// the bridge (ie tx broadcasting) could lead to expired transactions that can't ever be mind.
+/// the bridge (ie tx broadcasting) could lead to expired transactions that can't ever be mined.
 ///
 /// ### NOTE:
 /// This function will increment the core's EOS nonce, meaning the outputted reports will have a

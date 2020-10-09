@@ -82,7 +82,7 @@ impl Erc20OnEosPegInInfos {
     }
 }
 
-pub fn maybe_parse_peg_in_info_and_add_to_state<D>(
+pub fn maybe_parse_peg_in_info_from_canon_block_and_add_to_state<D>(
     state: EthState<D>
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
