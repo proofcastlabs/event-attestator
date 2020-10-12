@@ -39,10 +39,6 @@ pub struct Erc20OnEosRedeemInfo {
 pub struct Erc20OnEosRedeemInfos(pub Vec<Erc20OnEosRedeemInfo>);
 
 impl Erc20OnEosRedeemInfos {
-    pub fn sum(&self) -> U256 {
-        self.iter().fold(U256::zero(), |acc, infos| acc + infos.amount)
-    }
-
     pub fn get_global_sequences(&self) -> GlobalSequences {
         self.iter().map(|infos| infos.global_sequence).collect()
     }

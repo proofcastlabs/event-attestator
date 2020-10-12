@@ -129,8 +129,8 @@ impl EosActionProof {
                     eth_token_address: entry.eth_address,
                     from: self.get_redeem_action_sender()?,
                     global_sequence: self.action_receipt.global_sequence,
-                    recipient: self.get_erc20_on_eos_eth_redeem_address()?,
                     amount: self.get_erc20_on_eos_eth_redeem_amount(&entry)?,
+                    recipient: self.get_erc20_on_eos_eth_redeem_address_or_default_to_safe_address()?,
                 })
             })
     }

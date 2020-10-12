@@ -151,7 +151,7 @@ impl EosErc20Dictionary {
     }
 
     pub fn get_entry_via_eos_address(&self, eos_address: &str) -> Result<EosErc20DictionaryEntry> {
-        match self.iter().find(|entry| &entry.eos_address == eos_address) {
+        match self.iter().find(|entry| entry.eos_address == eos_address) {
             Some(entry) => Ok(entry.clone()),
             None => Err(format!("No `EosErc20DictionaryEntry` exists with EOS address: {}", eos_address).into())
         }

@@ -1,3 +1,4 @@
+#![cfg(test)]
 use std::{
     path::Path,
     fs::read_to_string,

@@ -1,3 +1,4 @@
+#![cfg(test)]
 use ethereum_types::Address as EthAddress;
 use crate::{
     chains::eos::eos_erc20_dictionary::{

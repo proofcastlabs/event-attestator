@@ -9,7 +9,6 @@
 //! with the provided argument. Via this, database key clashes can be avoided
 //! if running multiple instances on one machine.
 
-#![allow(dead_code)] // TODO rm!
 #![allow(clippy::match_bool)]
 #![allow(clippy::too_many_arguments)]
 
