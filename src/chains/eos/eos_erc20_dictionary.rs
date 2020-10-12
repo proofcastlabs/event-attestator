@@ -113,7 +113,12 @@ impl EosErc20Dictionary {
         entry: EosErc20DictionaryEntry,
         db: &D
     ) -> Result<Self> where D: DatabaseInterface {
-        self.add(entry).and_then(|new_self| { new_self.save_to_db(db)?; Ok(new_self) })
+        self
+            .add(entry)
+            .and_then(|new_self| {
+                new_self.save_to_db(db)?;
+                Ok(new_self)
+            })
     }
 
     fn remove_and_update_in_db<D>(
@@ -127,7 +132,7 @@ impl EosErc20Dictionary {
         }
     }
 
-    pub fn remove_entry_via_eth_address_and_update_in_db<D>( // TODO test!
+    pub fn remove_entry_via_eth_address_and_update_in_db<D>(
         self,
         eth_address: &EthAddress,
         db: &D
@@ -137,13 +142,17 @@ impl EosErc20Dictionary {
     }
 
     pub fn get_entry_via_eth_token_address(&self, address: &EthAddress) -> Result<EosErc20DictionaryEntry> {
-        for entry in self.iter() { if &entry.eth_address == address { return Ok(entry.clone()) } };
-        Err(format!("No `EosErc20DictionaryEntry` exists with ETH address: {}", address).into())
+        match self.iter().find(|entry| &entry.eth_address == address) {
+            Some(entry) => Ok(entry.clone()),
+            None => Err(format!("No `EosErc20DictionaryEntry` exists with ETH address: {}", address).into())
+        }
     }
 
     pub fn get_entry_via_eos_address(&self, eos_address: &str) -> Result<EosErc20DictionaryEntry> {
-        for entry in self.iter() { if entry.eos_address == eos_address { return Ok(entry.clone()) } };
-        Err(format!("No `EosErc20DictionaryEntry` exists with EOS address: {}", eos_address).into())
+        match self.iter().find(|entry| &entry.eos_address == eos_address) {
+            Some(entry) => Ok(entry.clone()),
+            None => Err(format!("No `EosErc20DictionaryEntry` exists with EOS address: {}", eos_address).into())
+        }
     }
 
     pub fn get_eos_account_name_from_eth_token_address(&self, address: &EthAddress) -> Result<String> {
@@ -687,5 +696,23 @@ mod tests {
             .map(|(result, expected_result)| assert_eq!(&result, expected_result))
             .for_each(drop);
 
+    }
+
+    #[test]
+    fn should_get_entry_via_eth_token_address() {
+        let dictionary = get_sample_eos_erc20_dictionary();
+        let expected_result = get_sample_eos_erc20_dictionary_entry_2();
+        let eth_address = EthAddress::from_slice(&hex::decode("9e57cb2a4f462a5258a49e88b4331068a391de66").unwrap());
+        let result = dictionary.get_entry_via_eth_token_address(&eth_address).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_entry_via_eos_address() {
+        let dictionary = get_sample_eos_erc20_dictionary();
+        let expected_result = get_sample_eos_erc20_dictionary_entry_2();
+        let eos_address = "SampleToken_2";
+        let result = dictionary.get_entry_via_eos_address(eos_address).unwrap();
+        assert_eq!(result, expected_result);
     }
 }
