@@ -66,7 +66,7 @@ mod tests {
     #[test]
     fn should_return_true_if_enclave_initialized() {
         let db = get_test_database();
-        if let Err(e) = put_btc_address_in_db(&db, &SAMPLE_TARGET_BTC_ADDRESS.to_string()) {
+        if let Err(e) = put_btc_address_in_db(&db, &SAMPLE_TARGET_BTC_ADDRESS) {
             panic!("Error putting pk in db: {}", e);
         };
         if let Err(e) = put_public_eth_address_in_db(&db, &get_sample_eth_address()) {

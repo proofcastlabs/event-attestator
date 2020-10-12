@@ -11,7 +11,7 @@ pub fn convert_eos_asset_to_u64(eos_asset: &str) -> Result<u64> { //TODO Test!
 }
 
 pub fn convert_u64_to_eos_asset(value: u64, token_symbol: &str) -> String { // TODO Test!
-    let mut amount_string = format!("{}", value);
+    let mut amount_string = value.to_string();
     let asset = match amount_string.len() {
         0 => "0.00000000".to_string(),
         1 => format!("0.0000000{}", amount_string),

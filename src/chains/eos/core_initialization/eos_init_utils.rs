@@ -331,14 +331,14 @@ pub fn maybe_put_erc20_dictionary_in_db_and_return_state<D>(
 ) -> Result<EosState<D>>
     where D: DatabaseInterface
 {
-    match &init_json.erc20_on_eos_token_dictionary {
+    match init_json.erc20_on_eos_token_dictionary {
         None => {
             info!("✔ No `EosErc20DictionaryJson` in `init-json` ∴ doing nothing!");
             Ok(state)
         }
-        Some(dictionary_json) => {
+        Some(ref dictionary_json) => {
             info!("✔ `EosErc20Dictionary` in `init-json` ∴ putting it in db...");
-            EosErc20Dictionary::from_json(&dictionary_json)
+            EosErc20Dictionary::from_json(dictionary_json)
                 .and_then(|dict| dict.save_to_db(&state.db))
                 .and(Ok(state))
         }
@@ -387,7 +387,6 @@ mod tests {
     #[test]
     fn should_parse_init_json_with_erc20_dictionary() {
         let init_json_with_erc20_dictionary = get_sample_mainnet_init_json_with_erc20_dictionary();
-        //assert!(init_json_with_erc20_dictionary.is_ok());
-        init_json_with_erc20_dictionary.unwrap();
+        assert!(init_json_with_erc20_dictionary.is_ok());
     }
 }

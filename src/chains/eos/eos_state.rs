@@ -203,14 +203,10 @@ impl<D> EosState<D> where D: DatabaseInterface {
     }
 
     pub fn get_global_sequences_from_redeem_info(&self) -> GlobalSequences {
-        match self.btc_on_eos_redeem_infos.len() {
-            0 => {
-                match self.erc20_on_eos_redeem_infos.len() {
-                    0 => vec![],
-                    _ => self.erc20_on_eos_redeem_infos.get_global_sequences()
-                }
-            }
-            _ => self.btc_on_eos_redeem_infos.get_global_sequences()
+        match (self.btc_on_eos_redeem_infos.len(), self.erc20_on_eos_redeem_infos.len()) {
+            (0, 0) => vec![],
+            (0, _) => self.erc20_on_eos_redeem_infos.get_global_sequences(),
+            (_, _) => self.btc_on_eos_redeem_infos.get_global_sequences(),
         }
     }
 }

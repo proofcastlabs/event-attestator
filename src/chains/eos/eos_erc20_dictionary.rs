@@ -17,7 +17,6 @@ use crate::{
     utils::{
         truncate_str,
         left_pad_with_zeroes,
-        split_string_at_index,
         right_pad_with_zeroes,
         right_pad_or_truncate,
         maybe_strip_hex_prefix,
@@ -127,8 +126,11 @@ impl EosErc20Dictionary {
         db: &D
     ) -> Result<Self> where D: DatabaseInterface {
         match self.contains(entry) {
-            true => self.remove(entry).and_then(|new_self| { new_self.save_to_db(db)?; Ok(new_self) }),
-            false => Ok(self)
+            false => Ok(self),
+            true => self.remove(entry).and_then(|new_self| {
+                new_self.save_to_db(db)?;
+                Ok(new_self)
+            }),
         }
     }
 
@@ -274,9 +276,9 @@ impl EosErc20DictionaryEntry {
         match amount_str.len().cmp(&self.eth_token_decimals) {
             Ordering::Greater | Ordering::Equal => {
                 let decimal_point_index = amount_str.len() - self.eth_token_decimals;
-                let (decimal_str, fraction_str) = split_string_at_index(&amount_str, decimal_point_index);
+                let (decimal_str, fraction_str) = &amount_str.split_at(decimal_point_index);
                 let augmented_fraction_str = right_pad_or_truncate(&fraction_str, self.eos_token_decimals);
-                let augmented_decimal_str = if decimal_str == "" { "0".to_string() } else { decimal_str };
+                let augmented_decimal_str = if decimal_str == &"" { "0" } else { decimal_str };
                 Ok(format!("{}.{} {}", augmented_decimal_str, augmented_fraction_str, self.eos_symbol.to_uppercase()))
             }
             Ordering::Less => {
@@ -296,10 +298,7 @@ impl EosErc20DictionaryEntry {
                 Ok(format!("0.{} {}", fraction_part, self.eos_symbol))
             }
             Ordering::Greater => {
-                let (decimal_part, fraction_part) = split_string_at_index(
-                    &amount_str,
-                    amount_str.len() - self.eos_token_decimals
-                );
+                let (decimal_part, fraction_part) = &amount_str.split_at(amount_str.len() - self.eos_token_decimals);
                 Ok(format!("{}.{} {}", decimal_part, fraction_part, self.eos_symbol))
             }
         }

@@ -188,11 +188,11 @@ impl EthLog {
     pub fn get_erc20_on_eos_peg_in_amount(&self) -> Result<U256> {
         self.check_is_erc20_peg_in()
             .and_then(|_| {
-                let start_index = ETH_WORD_SIZE_IN_BYTES * 2;
-                let end_index = ETH_WORD_SIZE_IN_BYTES * 3;
-                match self.data.len() >= end_index {
+                const START_INDEX: usize = ETH_WORD_SIZE_IN_BYTES * 2;
+                const END_INDEX: usize = ETH_WORD_SIZE_IN_BYTES * 3;
+                match self.data.len() >= END_INDEX {
                     true => {
-                        let amount = U256::from(&self.data[start_index..end_index]);
+                        let amount = U256::from(&self.data[START_INDEX..END_INDEX]);
                         info!("✔ Parsed `erc20-on-eos` peg in amount from log: {}", amount.to_string());
                         Ok(amount)
                     }
@@ -205,10 +205,10 @@ impl EthLog {
         self.check_is_erc20_peg_in()
             .and_then(|_| {
                 info!("✔ Parsing `erc20-on-eos` peg in token contract address from log...");
-                let start_index = ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES;
-                let end_index = start_index + ETH_ADDRESS_SIZE_IN_BYTES;
-                match self.data.len() >= end_index {
-                    true => Ok(EthAddress::from_slice(&self.data[start_index..end_index])),
+                const START_INDEX: usize = ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES;
+                const END_INDEX: usize = START_INDEX + ETH_ADDRESS_SIZE_IN_BYTES;
+                match self.data.len() >= END_INDEX {
+                    true => Ok(EthAddress::from_slice(&self.data[START_INDEX..END_INDEX])),
                     false => Err(NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR.into()),
                 }
             })
@@ -218,10 +218,10 @@ impl EthLog {
         self.check_is_erc20_peg_in()
             .and_then(|_| {
                 info!("✔ Parsing `erc20-on-eos` peg in token sender address from log...");
-                let start_index = ETH_WORD_SIZE_IN_BYTES * 2 - ETH_ADDRESS_SIZE_IN_BYTES;
-                let end_index = start_index + ETH_ADDRESS_SIZE_IN_BYTES;
-                match self.data.len() >= end_index {
-                    true => Ok(EthAddress::from_slice(&self.data[start_index..end_index])),
+                const START_INDEX: usize = ETH_WORD_SIZE_IN_BYTES * 2 - ETH_ADDRESS_SIZE_IN_BYTES;
+                const END_INDEX: usize = START_INDEX + ETH_ADDRESS_SIZE_IN_BYTES;
+                match self.data.len() >= END_INDEX {
+                    true => Ok(EthAddress::from_slice(&self.data[START_INDEX..END_INDEX])),
                     false => Err(NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR.into()),
                 }
             })
@@ -229,11 +229,11 @@ impl EthLog {
 
     fn extract_eos_address_string(&self) -> Result<String> {
         info!("✔ Parsing `erc20-on-eos` peg in EOS address from log...");
-        let start_index = ETH_WORD_SIZE_IN_BYTES * 5;
-        Ok(self.data[start_index..].iter().filter(|byte| *byte != &0u8).map(|byte| *byte as char).collect())
+        const START_INDEX: usize = ETH_WORD_SIZE_IN_BYTES * 5;
+        Ok(self.data[START_INDEX..].iter().filter(|byte| *byte != &0u8).map(|byte| *byte as char).collect())
     }
 
-    // TODO get sample log w/ bad address & test this1
+    // TODO get sample log w/ bad address & test this!
     fn extract_eos_address_or_default_to_safe_address(&self) -> Result<String> {
         self.extract_eos_address_string()
             .map(|maybe_eos_address: String| {

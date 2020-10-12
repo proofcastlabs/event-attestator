@@ -44,10 +44,6 @@ pub fn left_pad_with_zeroes(s: &str, width: usize) -> String {
     format!("{:0>width$}", s, width = width)
 }
 
-pub fn split_string_at_index(s: &str, i: usize) -> (String, String) {
-    (s.chars().take(i).collect::<String>(), s.chars().skip(i).collect::<String>())
-}
-
 fn left_pad_with_zero(string: &str) -> Result<String> {
     Ok(format!("0{}", string))
 }
@@ -199,34 +195,6 @@ mod tests {
         let expected_result = "✘ Cannot overwrite thing in state!";
         let result = get_no_overwrite_state_err(&thing);
         assert_eq!(result, expected_result)
-    }
-
-    #[test]
-    fn should_split_string_at_index() {
-        let s = "some string";
-        let i = 3;
-        let result = split_string_at_index(s, i);
-        assert_eq!(result.0, "som");
-        assert_eq!(result.1, "e string");
-    }
-
-    #[test]
-    fn should_split_string_at_index_if_index_gt_string_len() {
-        let s = "some string";
-        let i = 100;
-        assert!(i > s.len());
-        let result = split_string_at_index(s, i);
-        assert_eq!(result.0, s);
-        assert_eq!(result.1, "");
-    }
-
-    #[test]
-    fn should_split_string_at_index_if_index_is_0() {
-        let s = "some string";
-        let i = 0;
-        let result = split_string_at_index(s, i);
-        assert_eq!(result.0, "");
-        assert_eq!(result.1, s);
     }
 
     #[test]

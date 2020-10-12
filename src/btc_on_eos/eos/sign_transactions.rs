@@ -7,9 +7,7 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
     chains::{
-        eos::{
-            eos_state::EosState,
-        },
+        eos::eos_state::EosState,
         btc::utxo_manager::{
             utxo_types::BtcUtxosAndValues,
             utxo_database_utils::get_utxo_and_value,

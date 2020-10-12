@@ -127,12 +127,13 @@ impl EthSubmissionMaterial {
         erc20_dictionary: &EosErc20Dictionary,
     ) -> Result<Self> {
         info!("✔ Num receipts before filtering for those pertainging to ERC20 dictionary: {}", self.receipts.len());
-        let filtered_receipts = EthReceipts::new(self
-            .receipts
-            .iter()
-            .filter(|receipt| receipt.contains_supported_erc20_peg_in(erc20_dictionary))
-            .cloned()
-            .collect()
+        let filtered_receipts = EthReceipts::new(
+            self
+                .receipts
+                .iter()
+                .filter(|receipt| receipt.contains_supported_erc20_peg_in(erc20_dictionary))
+                .cloned()
+                .collect()
         );
         info!("✔ Num receipts after filtering for those pertaining to ERC20 dictionary: {}", filtered_receipts.len());
         Ok(Self::new(self.block.clone(), filtered_receipts, self.eos_ref_block_num, self.eos_ref_block_prefix))
@@ -173,7 +174,7 @@ impl EthSubmissionMaterial {
                 .map(|receipt| receipt.get_erc20_on_eos_peg_in_infos(eos_erc20_dictionary))
                 .collect::<Result<Vec<Erc20OnEosPegInInfos>>>()?
                 .iter()
-                .map(|infos| infos.0.clone()) // FIXME: There is very likely a better way to do this!
+                .map(|infos| infos.iter().cloned().collect())
                 .collect::<Vec<Vec<Erc20OnEosPegInInfo>>>()
                 .concat()
         ))

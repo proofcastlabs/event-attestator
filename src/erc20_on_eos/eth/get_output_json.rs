@@ -82,9 +82,9 @@ pub fn get_output_json<D>(state: EthState<D>) -> Result<String>
     Ok(serde_json::to_string(
         &Erc20OnEosEthOutput {
             eth_latest_block_number: get_eth_latest_block_from_db(&state.db)?.block.number.as_u64(),
-            eos_signed_transactions: match &state.eos_transactions {
+            eos_signed_transactions: match state.eos_transactions {
                 None => vec![],
-                Some(eos_txs) => {
+                Some(ref eos_txs) => {
                     let start_nonce = get_eos_account_nonce_from_db(&state.db)? - eos_txs.len() as u64;
                     eos_txs
                         .iter()
