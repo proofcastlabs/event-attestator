@@ -22,7 +22,7 @@ pub fn convert_eos_asset_to_u64(eos_asset: &str) -> Result<u64> {
     )
 }
 
-pub fn convert_u64_to_eos_asset(value: u64, token_symbol: &str) -> String { // TODO Test!
+pub fn convert_u64_to_8_decimal_eos_asset(value: u64, token_symbol: &str) -> String {
     let mut amount_string = value.to_string();
     let asset = match amount_string.len() {
         0 => "0.00000000".to_string(),
@@ -115,7 +115,7 @@ mod tests {
     }
 
     #[test]
-    fn should_convert_u64_to_eos_asset() {
+    fn should_convert_u64_to_8_decimal_eos_asset() {
         let symbol = "SAM";
         let expected_results = vec![
             "1234567891.23456789 SAM",
@@ -160,7 +160,7 @@ mod tests {
             0 as u64,
         ]
             .iter()
-            .map(|u_64| convert_u64_to_eos_asset(*u_64, symbol))
+            .map(|u_64| convert_u64_to_8_decimal_eos_asset(*u_64, symbol))
             .zip(expected_results.iter())
             .map(|(result, expected_result)| assert_eq!(&result, expected_result))
             .for_each(drop);
