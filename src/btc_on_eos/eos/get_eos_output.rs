@@ -6,12 +6,14 @@ use std::time::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eos::eos_types::{
-        RedeemInfo,
-        RedeemInfos,
+    chains::eos::{
+        eos_state::EosState,
     },
     btc_on_eos::{
-        eos::eos_state::EosState,
+        eos::redeem_info::{
+            BtcOnEosRedeemInfo,
+            BtcOnEosRedeemInfos,
+        },
         btc::{
             btc_types::BtcTxInfo,
             btc_utils::get_hex_tx_from_signed_btc_tx,
@@ -26,7 +28,7 @@ pub struct EosOutput {
 }
 
 impl BtcTxInfo {
-    pub fn new(btc_tx: &BtcTransaction, redeem_info: &RedeemInfo, btc_account_nonce: u64) -> Result<BtcTxInfo> {
+    pub fn new(btc_tx: &BtcTransaction, redeem_info: &BtcOnEosRedeemInfo, btc_account_nonce: u64) -> Result<BtcTxInfo> {
         Ok(
             BtcTxInfo {
                 btc_account_nonce,
@@ -45,7 +47,7 @@ impl BtcTxInfo {
 pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_account_nonce: u64,
     btc_txs: &[BtcTransaction],
-    redeem_infos: &RedeemInfos,
+    redeem_infos: &BtcOnEosRedeemInfos,
 ) -> Result<Vec<BtcTxInfo>> {
     info!("✔ Getting BTC tx info from BTC txs...");
     let start_nonce = btc_account_nonce - btc_txs.len() as u64;
@@ -60,12 +62,12 @@ pub fn get_eos_output<D>(state: EosState<D>) -> Result<String> where D: Database
     info!("✔ Getting EOS output json...");
     let output = serde_json::to_string(
         &EosOutput {
-            btc_signed_transactions: match &state.signed_txs.len() {
+            btc_signed_transactions: match &state.btc_on_eos_signed_txs.len() {
                 0 => vec![],
                 _ => get_btc_signed_tx_info_from_btc_txs(
                     get_btc_account_nonce_from_db(&state.db)?,
-                    &state.signed_txs,
-                    &state.redeem_infos,
+                    &state.btc_on_eos_signed_txs,
+                    &state.btc_on_eos_redeem_infos,
                 )?,
             }
         }

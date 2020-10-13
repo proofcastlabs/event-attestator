@@ -14,20 +14,20 @@ use crate::{
         from as from_base58,
         encode_slice as base58_encode_slice,
     },
-    chains::btc::btc_constants::{
-        DEFAULT_BTC_SEQUENCE,
-        PTOKEN_P2SH_SCRIPT_BYTES,
-    },
-    btc_on_eth::{
-        btc::btc_types::{
-            MintingParams,
-            MintingParamStruct,
-            BtcBlockInDbFormat,
+    chains::{
+        btc::btc_constants::{
+            DEFAULT_BTC_SEQUENCE,
+            PTOKEN_P2SH_SCRIPT_BYTES,
         },
-        utils::{
+        eth::eth_utils::{
             convert_bytes_to_u64,
             convert_u64_to_bytes,
         },
+    },
+    btc_on_eth::btc::btc_types::{
+        MintingParams,
+        MintingParamStruct,
+        BtcBlockInDbFormat,
     },
 };
 use bitcoin::{

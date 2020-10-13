@@ -31,7 +31,7 @@ pub struct EthSigningParams {
     pub gas_price: u64,
     pub eth_account_nonce: u64,
     pub eth_private_key: EthPrivateKey,
-    pub ptoken_contract_address: EthAddress,
+    pub smart_contract_address: EthAddress,
 }
 
 #[derive(Debug)]

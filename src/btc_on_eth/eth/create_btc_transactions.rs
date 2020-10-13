@@ -5,8 +5,9 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
     chains::{
-        eth::eth_redeem_info::RedeemInfos,
+        eth::eth_state::EthState,
         btc::{
             btc_utils::calculate_btc_tx_fee,
             utxo_manager::{
@@ -15,16 +16,13 @@ use crate::{
             },
         },
     },
-    btc_on_eth::{
-        eth::eth_state::EthState,
-        btc::{
-            btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-            btc_database_utils::{
-                get_btc_fee_from_db,
-                get_btc_network_from_db,
-                get_btc_address_from_db,
-                get_btc_private_key_from_db,
-            },
+    btc_on_eth::btc::{
+        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
+        btc_database_utils::{
+            get_btc_fee_from_db,
+            get_btc_network_from_db,
+            get_btc_address_from_db,
+            get_btc_private_key_from_db,
         },
     },
 };
@@ -70,7 +68,7 @@ fn create_btc_tx_from_redeem_infos<D>(
     db: &D,
     sats_per_byte: u64,
     btc_network: BtcNetwork,
-    redeem_infos: &RedeemInfos,
+    redeem_infos: &BtcOnEthRedeemInfos,
 ) -> Result<BtcTransaction>
     where D: DatabaseInterface
 {
@@ -101,7 +99,7 @@ pub fn maybe_create_btc_txs_and_add_to_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Maybe creating BTC transaction(s) from redeem params...");
-    match &state.redeem_params.len() {
+    match &state.btc_on_eth_redeem_infos.len() {
         0 => {
             info!("✔ No redeem params in state ∴ not creating BTC txs!");
             Ok(state)
@@ -112,7 +110,7 @@ pub fn maybe_create_btc_txs_and_add_to_state<D>(
                 &state.db,
                 get_btc_fee_from_db(&state.db)?,
                 get_btc_network_from_db(&state.db)?,
-                &RedeemInfos::new(state.redeem_params.clone()),
+                &state.btc_on_eth_redeem_infos,
             )
                 .and_then(|signed_tx| {
                     #[cfg(feature="debug")] { debug!("✔ Signed transaction: {:?}", signed_tx); }

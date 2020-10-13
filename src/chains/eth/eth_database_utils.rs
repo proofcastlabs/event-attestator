@@ -6,6 +6,10 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
+    utils::{
+        convert_bytes_to_u64,
+        convert_u64_to_bytes,
+    },
     types::{
         Byte,
         Result,
@@ -17,10 +21,14 @@ use crate::{
     },
     chains::eth::{
         eth_crypto::eth_private_key::EthPrivateKey,
-        eth_block_and_receipts::EthBlockAndReceipts,
+        eth_submission_material::EthSubmissionMaterial,
         eth_types::{
             EthSigningParams,
             AnySenderSigningParams,
+        },
+        eth_utils::{
+            convert_h256_to_bytes,
+            convert_bytes_to_h256,
         },
         eth_constants::{
             ETH_ADDRESS_KEY,
@@ -39,12 +47,6 @@ use crate::{
             ERC777_PROXY_CONTACT_ADDRESS_KEY,
         },
     },
-    btc_on_eth::utils::{ // TODO move this to chains/eth dir!
-        convert_bytes_to_u64,
-        convert_u64_to_bytes,
-        convert_h256_to_bytes,
-        convert_bytes_to_h256,
-    },
 };
 
 pub fn get_signing_params_from_db<D>(
@@ -59,7 +61,7 @@ pub fn get_signing_params_from_db<D>(
             gas_price: get_eth_gas_price_from_db(db)?,
             eth_private_key: get_eth_private_key_from_db(db)?,
             eth_account_nonce: get_eth_account_nonce_from_db(db)?,
-            ptoken_contract_address: get_erc777_contract_address_from_db(db)?,
+            smart_contract_address: get_erc777_contract_address_from_db(db)?,
         }
     )
 }
@@ -87,7 +89,7 @@ pub fn put_eth_canon_to_tip_length_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    info!("✔ Putting ETH canon-to-tip length of {} in db...", length);
+    debug!("✔ Putting ETH canon-to-tip length of {} in db...", length);
     db.put(ETH_CANON_TO_TIP_LENGTH_KEY.to_vec(), convert_u64_to_bytes(length), MIN_DATA_SENSITIVITY_LEVEL)
 }
 
@@ -101,12 +103,12 @@ pub fn get_eth_canon_to_tip_length_from_db<D>(db: &D) -> Result<u64>
 
 pub fn put_eth_canon_block_in_db<D>(
     db: &D,
-    eth_block_and_receipts: &EthBlockAndReceipts,
+    eth_submission_material: &EthSubmissionMaterial,
 ) -> Result<()>
     where D: DatabaseInterface
 {
     info!("✔ Putting ETH canon block in db...");
-    put_special_eth_block_in_db(db, eth_block_and_receipts, "canon")
+    put_special_eth_block_in_db(db, eth_submission_material, "canon")
 }
 
 pub fn put_eth_latest_block_hash_in_db<D>(
@@ -161,14 +163,14 @@ pub fn put_eth_linker_hash_in_db<D>(
 
 pub fn put_special_eth_block_in_db<D>(
     db: &D,
-    eth_block_and_receipts: &EthBlockAndReceipts,
+    eth_submission_material: &EthSubmissionMaterial,
     block_type: &str,
 ) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Putting ETH special block in db of type: {}", block_type);
-    put_eth_block_and_receipts_in_db(db, &eth_block_and_receipts)
-        .and_then(|_| put_special_eth_hash_in_db(db, &block_type, &eth_block_and_receipts.block.hash))
+    put_eth_submission_material_in_db(db, &eth_submission_material)
+        .and_then(|_| put_special_eth_hash_in_db(db, &block_type, &eth_submission_material.block.hash))
 }
 
 pub fn put_special_eth_hash_in_db<D>(
@@ -199,21 +201,21 @@ pub fn get_latest_eth_block_number<D>(db: &D) -> Result<usize>
     }
 }
 
-pub fn get_eth_tail_block_from_db<D>(db: &D) -> Result<EthBlockAndReceipts>
+pub fn get_eth_tail_block_from_db<D>(db: &D) -> Result<EthSubmissionMaterial>
     where D: DatabaseInterface
 {
     info!("✔ Getting ETH tail block from db...");
     get_special_eth_block_from_db(db, "tail")
 }
 
-pub fn get_eth_latest_block_from_db<D>(db: &D) -> Result<EthBlockAndReceipts>
+pub fn get_eth_latest_block_from_db<D>(db: &D) -> Result<EthSubmissionMaterial>
     where D: DatabaseInterface
 {
     info!("✔ Getting ETH latest block from db...");
     get_special_eth_block_from_db(db, "latest")
 }
 
-pub fn get_eth_anchor_block_from_db<D>(db: &D) -> Result<EthBlockAndReceipts>
+pub fn get_eth_anchor_block_from_db<D>(db: &D) -> Result<EthSubmissionMaterial>
     where D: DatabaseInterface
 {
     info!("✔ Getting ETH anchor block from db...");
@@ -222,7 +224,7 @@ pub fn get_eth_anchor_block_from_db<D>(db: &D) -> Result<EthBlockAndReceipts>
 
 pub fn get_eth_canon_block_from_db<D>(
     db: &D
-) -> Result<EthBlockAndReceipts>
+) -> Result<EthSubmissionMaterial>
     where D: DatabaseInterface
 {
     info!("✔ Getting ETH canon block from db...");
@@ -269,7 +271,7 @@ pub fn get_eth_hash_from_db<D>(db: &D, key: &[Byte]) -> Result<EthHash>
 pub fn get_special_eth_block_from_db<D>(
     db: &D,
     block_type: &str,
-) -> Result<EthBlockAndReceipts>
+) -> Result<EthSubmissionMaterial>
     where D: DatabaseInterface
 {
     get_special_eth_hash_from_db(db, block_type)
@@ -305,64 +307,61 @@ pub fn get_hash_from_db_via_hash_key<D>(
     }
 }
 
-pub fn put_eth_block_and_receipts_in_db<D>(
+pub fn put_eth_submission_material_in_db<D>(
     db: &D,
-    eth_block_and_receipts: &EthBlockAndReceipts,
+    eth_submission_material: &EthSubmissionMaterial,
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    let key = convert_h256_to_bytes(eth_block_and_receipts.block.hash);
+    let key = convert_h256_to_bytes(eth_submission_material.block.hash);
     trace!("✔ Adding block to database under key: {:?}", hex::encode(&key));
-    db.put(key, eth_block_and_receipts.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
+    db.put(key, eth_submission_material.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
 }
 
-pub fn maybe_get_parent_eth_block_and_receipts<D>(
+pub fn maybe_get_parent_eth_submission_material<D>(
     db: &D,
     block_hash: &EthHash,
-) -> Option<EthBlockAndReceipts>
+) -> Option<EthSubmissionMaterial>
     where D: DatabaseInterface
 {
-    info!("✔ Maybe getting parent ETH block from db...");
-    maybe_get_nth_ancestor_eth_block_and_receipts(db, block_hash, 1)
+    debug!("✔ Maybe getting parent ETH block from db...");
+    maybe_get_nth_ancestor_eth_submission_material(db, block_hash, 1)
 }
 
-pub fn maybe_get_nth_ancestor_eth_block_and_receipts<D>(
+pub fn maybe_get_nth_ancestor_eth_submission_material<D>(
     db: &D,
     block_hash: &EthHash,
     n: u64,
-) -> Option<EthBlockAndReceipts>
+) -> Option<EthSubmissionMaterial>
     where D: DatabaseInterface
 {
-    info!("✔ Getting {}th ancestor ETH block from db...", n);
-    match maybe_get_eth_block_and_receipts_from_db(db, block_hash) {
+    debug!("✔ Getting {}th ancestor ETH block from db...", n);
+    match maybe_get_eth_submission_material_from_db(db, block_hash) {
         None => None,
         Some(block_and_receipts) => match n {
             0 => Some(block_and_receipts),
-            _ => maybe_get_nth_ancestor_eth_block_and_receipts(db, &block_and_receipts.block.parent_hash, n - 1)
+            _ => maybe_get_nth_ancestor_eth_submission_material(db, &block_and_receipts.block.parent_hash, n - 1)
         }
     }
 }
 
-pub fn maybe_get_eth_block_and_receipts_from_db<D>(
+pub fn maybe_get_eth_submission_material_from_db<D>(
     db: &D,
     block_hash: &EthHash,
-) -> Option<EthBlockAndReceipts>
+) -> Option<EthSubmissionMaterial>
     where D: DatabaseInterface
 {
-    info!(
-        "✔ Maybe getting ETH block and receipts from db under hash: {}",
-        block_hash,
-    );
+    trace!("✔ Maybe getting ETH block and receipts from db under hash: {}", block_hash);
     match db.get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL) {
         Err(_) => None,
         Ok(bytes) => {
-            match EthBlockAndReceipts::from_bytes(&bytes) {
+            match EthSubmissionMaterial::from_bytes(&bytes) {
                 Ok(block_and_receipts) => {
-                    info!("✔ Decoded eth block and receipts from db!");
+                    trace!("✔ Decoded eth block and receipts from db!");
                     Some(block_and_receipts)
                 }
                 Err(_) => {
-                    info!("✘ Failed to decode eth block and receipts from db!");
+                    error!("✘ Failed to decode eth block and receipts from db!");
                     None
                 }
             }
@@ -373,13 +372,13 @@ pub fn maybe_get_eth_block_and_receipts_from_db<D>(
 pub fn get_eth_block_from_db<D>(
     db: &D,
     block_hash: &EthHash,
-) -> Result<EthBlockAndReceipts>
+) -> Result<EthSubmissionMaterial>
     where D: DatabaseInterface
 {
     trace!("✔ Getting ETH block and receipts from db...");
     db
         .get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL)
-        .and_then(|bytes| EthBlockAndReceipts::from_bytes(&bytes))
+        .and_then(|bytes| EthSubmissionMaterial::from_bytes(&bytes))
 }
 
 pub fn key_exists_in_db<D>(
@@ -511,6 +510,21 @@ pub fn get_erc777_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
         .map(|address_bytes| EthAddress::from_slice(&address_bytes[..]))
 }
 
+pub fn get_eos_erc20_smart_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
+    where D: DatabaseInterface
+{
+    info!("✔ Getting pERC20 on EOS smart-contract address from db...");
+    get_eth_smart_contract_address_from_db(db)
+}
+
+pub fn get_eth_smart_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
+    where D: DatabaseInterface
+{
+    trace!("✔ Getting ETH smart-contract address from db...");
+    db.get(ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+        .map(|address_bytes| EthAddress::from_slice(&address_bytes[..]))
+}
+
 pub fn get_erc777_proxy_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
     where D: DatabaseInterface
 {
@@ -616,7 +630,7 @@ mod tests {
             get_sample_eth_address,
             get_sample_eth_private_key,
             get_sample_contract_address,
-            get_sample_eth_block_and_receipts_n,
+            get_sample_eth_submission_material_n,
             get_sequential_eth_blocks_and_receipts,
         },
     };
@@ -724,7 +738,7 @@ mod tests {
     fn should_put_and_get_special_eth_hash_in_db() {
         let db = get_test_database();
         let hash_type = "linker";
-        let hash = get_sample_eth_block_and_receipts_n(1).unwrap().block.hash;
+        let hash = get_sample_eth_submission_material_n(1).unwrap().block.hash;
         if let Err(e) = put_special_eth_hash_in_db(&db, &hash_type, &hash) {
             panic!("Error putting ETH special hash in db: {}", e);
         };
@@ -738,7 +752,7 @@ mod tests {
     fn should_put_and_get_eth_hash_in_db() {
         let db = get_test_database();
         let hash_key = vec![6u8, 6u8, 6u8];
-        let hash = get_sample_eth_block_and_receipts_n(1).unwrap().block.hash;
+        let hash = get_sample_eth_submission_material_n(1).unwrap().block.hash;
         if let Err(e) = put_eth_hash_in_db(&db, &hash_key, &hash){
             panic!("Error putting ETH hash in db: {}", e);
         };
@@ -752,7 +766,7 @@ mod tests {
     fn should_put_and_get_special_eth_block_in_db() {
         let db = get_test_database();
         let block_type = "anchor";
-        let block = get_sample_eth_block_and_receipts_n(1).unwrap();
+        let block = get_sample_eth_submission_material_n(1).unwrap();
         if let Err(e) = put_special_eth_block_in_db(&db, &block, &block_type) {
             panic!("Error putting ETH special block in db: {}", e);
         };
@@ -765,9 +779,9 @@ mod tests {
     #[test]
     fn should_get_eth_block_from_db() {
         let db = get_test_database();
-        let block = get_sample_eth_block_and_receipts_n(1).unwrap();
+        let block = get_sample_eth_submission_material_n(1).unwrap();
         let block_hash = block.block.hash;
-        if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
+        if let Err(e) = put_eth_submission_material_in_db(&db, &block) {
             panic!("Error putting ETH block and receipts in db: {}", e);
         };
         match get_eth_block_from_db(&db, &block_hash) {
@@ -802,8 +816,8 @@ mod tests {
     #[test]
     fn maybe_get_block_should_be_none_if_block_not_extant() {
         let db = get_test_database();
-        let block_hash = get_sample_eth_block_and_receipts_n(1).unwrap().block.hash;
-        if maybe_get_eth_block_and_receipts_from_db(&db, &block_hash).is_some() {
+        let block_hash = get_sample_eth_submission_material_n(1).unwrap().block.hash;
+        if maybe_get_eth_submission_material_from_db(&db, &block_hash).is_some() {
             panic!("Maybe getting none existing block should be 'None'");
         };
     }
@@ -811,12 +825,12 @@ mod tests {
     #[test]
     fn should_maybe_get_some_block_if_exists() {
         let db = get_test_database();
-        let block = get_sample_eth_block_and_receipts_n(1).unwrap();
+        let block = get_sample_eth_submission_material_n(1).unwrap();
         let block_hash = block.block.hash;
-        if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
+        if let Err(e) = put_eth_submission_material_in_db(&db, &block) {
             panic!("Error putting ETH block in db: {}", e);
         };
-        match maybe_get_eth_block_and_receipts_from_db(&db, &block_hash) {
+        match maybe_get_eth_submission_material_from_db(&db, &block_hash) {
             None => panic!("Block should exist in db!"),
             Some(block_from_db) => assert_eq!(block_from_db, block),
         };
@@ -825,12 +839,12 @@ mod tests {
     #[test]
     fn should_return_none_if_no_parent_block_exists() {
         let db = get_test_database();
-        let block = get_sample_eth_block_and_receipts_n(1).unwrap();
+        let block = get_sample_eth_submission_material_n(1).unwrap();
         let block_hash = block.block.hash;
-        if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
+        if let Err(e) = put_eth_submission_material_in_db(&db, &block) {
             panic!("Error putting ETH block in db: {}", e);
         };
-        if maybe_get_parent_eth_block_and_receipts(&db, &block_hash).is_some() {
+        if maybe_get_parent_eth_submission_material(&db, &block_hash).is_some() {
             panic!("Block should have no parent in the DB!");
         };
     }
@@ -842,13 +856,13 @@ mod tests {
         let block = blocks[1].clone();
         let parent_block = blocks[0].clone();
         let block_hash = block.block.hash;
-        if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
+        if let Err(e) = put_eth_submission_material_in_db(&db, &block) {
             panic!("Error putting ETH block in db: {}", e);
         };
-        if let Err(e) = put_eth_block_and_receipts_in_db(&db, &parent_block) {
+        if let Err(e) = put_eth_submission_material_in_db(&db, &parent_block) {
             panic!("Error putting ETH block in db: {}", e);
         };
-        match maybe_get_parent_eth_block_and_receipts(&db, &block_hash) {
+        match maybe_get_parent_eth_submission_material(&db, &block_hash) {
             None => panic!("Block should have parent in the DB!"),
             Some(parent_block_from_db) => assert_eq!(parent_block_from_db, parent_block),
         };
@@ -858,12 +872,12 @@ mod tests {
     fn should_get_no_nth_ancestor_if_not_extant() {
         let ancestor_number = 3;
         let db = get_test_database();
-        let block = get_sample_eth_block_and_receipts_n(1).unwrap();
+        let block = get_sample_eth_submission_material_n(1).unwrap();
         let block_hash = block.block.hash;
-        if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
+        if let Err(e) = put_eth_submission_material_in_db(&db, &block) {
             panic!("Error putting ETH block in db: {}", e);
         };
-        if maybe_get_nth_ancestor_eth_block_and_receipts(&db, &block_hash, ancestor_number).is_some() {
+        if maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, ancestor_number).is_some() {
             panic!("Block should have no parent in the DB!");
         };
     }
@@ -875,7 +889,7 @@ mod tests {
         let block_hash = blocks[blocks.len() - 1].block.hash;
         if let Err(e) = blocks
             .iter()
-            .map(|block| put_eth_block_and_receipts_in_db(&db, block))
+            .map(|block| put_eth_submission_material_in_db(&db, block))
             .collect::<Result<()>>() {
                 panic!("Error putting block in db: {}", e);
             };
@@ -883,13 +897,13 @@ mod tests {
             .iter()
             .enumerate()
             .map(|(i, _)|
-                match maybe_get_nth_ancestor_eth_block_and_receipts(&db, &block_hash, i as u64) {
+                match maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, i as u64) {
                     None => panic!("Ancestor number {} should exist!", i),
                     Some(ancestor) => assert_eq!(ancestor, blocks[blocks.len() - i - 1]),
                 }
              )
             .for_each(drop);
-        if maybe_get_nth_ancestor_eth_block_and_receipts(&db, &block_hash, blocks.len() as u64).is_some() {
+        if maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, blocks.len() as u64).is_some() {
             panic!("Shouldn't have ancestor #{} in db!", blocks.len());
         };
     }

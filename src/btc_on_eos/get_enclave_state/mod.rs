@@ -12,7 +12,7 @@ use crate::{
                 get_eos_account_nonce_from_db,
                 get_eos_known_schedules_from_db,
                 get_eos_last_seen_block_id_from_db,
-                get_eos_last_seen_block_num_from_db,
+                get_latest_eos_block_number,
                 get_eos_account_name_string_from_db,
                 get_eos_enabled_protocol_features_from_db,
             },
@@ -29,14 +29,12 @@ use crate::{
     constants::{
         DEBUG_MODE,
         DB_KEY_PREFIX,
+        SAFE_EOS_ADDRESS,
+        SAFE_BTC_ADDRESS,
         CORE_IS_VALIDATING,
     },
     btc_on_eos::{
         check_core_is_initialized::check_core_is_initialized,
-        constants::{
-            SAFE_EOS_ADDRESS,
-            SAFE_BTC_ADDRESS,
-        },
         btc::{
             update_btc_linker_hash::{
                 get_linker_hash_or_genesis_hash as get_btc_linker_hash,
@@ -143,7 +141,7 @@ pub fn get_enclave_state<D>(
                     eos_account_name: get_eos_account_name_string_from_db(&db)?,
                     btc_number_of_utxos: get_total_number_of_utxos_from_db(&db)?,
                     btc_canon_to_tip_length: get_btc_canon_to_tip_length_from_db(&db)?,
-                    eos_last_seen_block_num: get_eos_last_seen_block_num_from_db(&db)?,
+                    eos_last_seen_block_num: get_latest_eos_block_number(&db)?,
                     eos_last_seen_block_id: get_eos_last_seen_block_id_from_db(&db)?.to_string(),
                     eos_enabled_protocol_features: get_eos_enabled_protocol_features_from_db(&db)?,
                     eos_known_schedules: EosKnownSchedulesJsons::from_schedules(get_eos_known_schedules_from_db(&db)?),

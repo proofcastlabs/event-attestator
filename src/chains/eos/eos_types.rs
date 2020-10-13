@@ -1,42 +1,22 @@
 use std::fmt;
 use serde_json::Value as JsonValue;
+pub use eos_primitives::Checksum256;
 use eos_primitives::{
-    Action as EosAction,
-    AccountName as EosAccountName,
     ProducerKey as EosProducerKey,
-    ActionReceipt as EosActionReceipt,
 };
 use crate::{
     types::{
         Bytes,
         Result,
     },
-    chains::eos::{
-        parse_eos_actions::parse_eos_action_json,
-        parse_eos_action_receipts::parse_eos_action_receipt_json,
-        parse_redeem_infos::{
-            get_eos_amount_from_action_data,
-            get_redeem_address_from_action_data,
-            get_redeem_action_sender_from_action_data,
-        },
-        eos_utils::{
-            get_eos_schedule_db_key,
-            convert_hex_to_checksum256,
-        },
-    },
+    chains::eos::eos_utils::get_eos_schedule_db_key,
 };
-
-pub use eos_primitives::Checksum256;
 
 pub type GlobalSequence = u64;
 pub type MerkleProof = Vec<String>;
 pub type Checksum256s = Vec<Checksum256>;
-pub type ActionProofs = Vec<ActionProof>;
 pub type ProducerKeys = Vec<EosProducerKey>;
 pub type GlobalSequences = Vec<GlobalSequence>;
-pub type ActionProofJsons = Vec<ActionProofJson>;
-pub type AuthSequenceJsons = Vec<AuthSequenceJson>;
-pub type AuthorizationJsons = Vec<AuthorizationJson>;
 pub type EosSignedTransactions = Vec<EosSignedTransaction>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -122,50 +102,6 @@ impl fmt::Display for EosKnownSchedule {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RedeemInfo {
-    pub amount: u64,
-    pub recipient: String,
-    pub from: EosAccountName,
-    pub originating_tx_id: Checksum256,
-    pub global_sequence: GlobalSequence,
-}
-
-impl RedeemInfo {
-    pub fn from_action_proof(action_proof: &ActionProof) -> Result<Self> {
-        Ok(
-            RedeemInfo {
-                originating_tx_id: action_proof.tx_id,
-                global_sequence: action_proof.action_receipt.global_sequence,
-                amount: get_eos_amount_from_action_data(&action_proof.action.data)?,
-                from: get_redeem_action_sender_from_action_data(&action_proof.action.data)?,
-                recipient: get_redeem_address_from_action_data(&action_proof.action.data)?,
-            }
-        )
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RedeemInfos(pub Vec<RedeemInfo>);
-
-impl RedeemInfos {
-    pub fn new(redeem_infos: &[RedeemInfo]) -> Self {
-        Self(redeem_infos.to_vec())
-    }
-
-    pub fn sum(&self) -> u64 {
-        self.0.iter().fold(0, |acc, infos| acc + infos.amount)
-    }
-
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
-
-    pub fn get_global_sequences(&self) -> GlobalSequences {
-        self.0.iter().map(|infos| infos.global_sequence).collect()
-    }
-}
-
 #[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub enum EosNetwork {
     Mainnet,
@@ -234,70 +170,6 @@ pub struct EosRawTxData {
     pub asset_name: String,
     pub eth_address: String,
 }
-
-
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-pub struct ActionProof {
-    pub action: EosAction,
-    pub tx_id: Checksum256,
-    pub action_proof: MerkleProof,
-    pub action_receipt: EosActionReceipt,
-}
-
-impl ActionProof {
-    pub fn from_json(json: &ActionProofJson) -> Result<Self> {
-        Ok(
-            ActionProof {
-                action_proof: json.action_proof.clone(),
-                tx_id: convert_hex_to_checksum256(&json.tx_id)?,
-                action: parse_eos_action_json(&json.action_json)?,
-                action_receipt: parse_eos_action_receipt_json(&json.action_receipt_json)?,
-            }
-        )
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosActionJson {
-    pub name: String,
-    pub account: String,
-    pub hex_data: Option<String>,
-    pub authorization: AuthorizationJsons,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct AuthorizationJson {
-    pub actor: String,
-    pub permission: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ActionProofJson {
-    pub tx_id: String,
-    pub block_id: String,
-    pub action_index: usize,
-    pub action_digest: String,
-    pub action_proof: MerkleProof,
-    pub serialized_action: String,
-    pub action_json: EosActionJson,
-    pub action_receipt_digest: String,
-    pub serialized_action_receipt: String,
-    pub action_receipt_json: EosActionReceiptJson,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosActionReceiptJson {
-    pub receiver: String,
-    pub act_digest: String,
-    pub global_sequence: u64,
-    pub recv_sequence:  u64,
-    pub auth_sequence: AuthSequenceJsons,
-    pub code_sequence: usize,
-    pub abi_sequence: usize,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct AuthSequenceJson(pub String, pub u64);
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ProcessedTxIds(pub Vec<GlobalSequence>);

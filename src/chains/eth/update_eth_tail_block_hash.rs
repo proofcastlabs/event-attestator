@@ -2,21 +2,22 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::eth::{
+        eth_state::EthState,
         eth_constants::ETH_TAIL_LENGTH,
-        eth_block_and_receipts::EthBlockAndReceipts,
+        eth_submission_material::EthSubmissionMaterial,
         eth_database_utils::{
             get_eth_tail_block_from_db,
             get_eth_latest_block_from_db,
             put_eth_tail_block_hash_in_db,
             get_eth_canon_to_tip_length_from_db,
-            maybe_get_nth_ancestor_eth_block_and_receipts,
+            maybe_get_nth_ancestor_eth_submission_material,
         },
     },
 };
 
 fn does_tail_block_require_updating<D>(
     db: &D,
-    calculated_tail_block: &EthBlockAndReceipts,
+    calculated_tail_block: &EthSubmissionMaterial,
 ) -> Result<bool>
     where D: DatabaseInterface
 {
@@ -30,7 +31,7 @@ pub fn maybe_update_eth_tail_block_hash<D>(db: &D) -> Result<()> where D: Databa
     get_eth_latest_block_from_db(db)
         .map(|latest_eth_block| {
             info!("✔ Searching for tail block {} blocks back from tip...", canon_to_tip_length + ETH_TAIL_LENGTH);
-            maybe_get_nth_ancestor_eth_block_and_receipts(
+            maybe_get_nth_ancestor_eth_submission_material(
                 db,
                 &latest_eth_block.block.hash,
                 canon_to_tip_length + ETH_TAIL_LENGTH,
@@ -57,4 +58,13 @@ pub fn maybe_update_eth_tail_block_hash<D>(db: &D) -> Result<()> where D: Databa
                 }
             }
         )
+}
+
+pub fn maybe_update_eth_tail_block_hash_and_return_state<D>(
+    state: EthState<D>
+) -> Result<EthState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Maybe updating ETH tail block hash...");
+    maybe_update_eth_tail_block_hash(&state.db).and(Ok(state))
 }

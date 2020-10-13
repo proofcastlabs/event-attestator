@@ -3,14 +3,15 @@ use crate::{
     traits::DatabaseInterface,
     chains::eth::{
         eth_types::EthHash,
-        eth_block_and_receipts::EthBlockAndReceipts,
+        eth_state::EthState,
+        eth_submission_material::EthSubmissionMaterial,
         calculate_linker_hash::calculate_linker_hash,
         get_linker_hash::get_linker_hash_or_genesis_hash,
         eth_database_utils::{
             put_eth_linker_hash_in_db,
             get_eth_tail_block_from_db,
             get_eth_anchor_block_from_db,
-            maybe_get_parent_eth_block_and_receipts,
+            maybe_get_parent_eth_submission_material,
         },
     },
 };
@@ -29,10 +30,10 @@ fn get_new_linker_hash<D>(db: &D, block_hash_to_link_to: &EthHash) -> Result<Eth
         )
 }
 
-fn maybe_get_parent_of_eth_tail_block<D>(db: &D) -> Result<Option<EthBlockAndReceipts>> where D: DatabaseInterface {
+fn maybe_get_parent_of_eth_tail_block<D>(db: &D) -> Result<Option<EthSubmissionMaterial>> where D: DatabaseInterface {
     info!("✔ Maybe getting parent of ETH tail block from db...");
     get_eth_tail_block_from_db(db)
-        .map(|eth_canon_block| maybe_get_parent_eth_block_and_receipts(db, &eth_canon_block.block.hash))
+        .map(|eth_canon_block| maybe_get_parent_eth_submission_material(db, &eth_canon_block.block.hash))
 }
 
 pub fn maybe_update_eth_linker_hash<D>(db: &D) -> Result<()> where D: DatabaseInterface {
@@ -50,12 +51,21 @@ pub fn maybe_update_eth_linker_hash<D>(db: &D) -> Result<()> where D: DatabaseIn
     }
 }
 
+pub fn maybe_update_eth_linker_hash_and_return_state<D>(
+    state: EthState<D>
+) -> Result<EthState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Maybe updating the ETH linker hash...");
+    maybe_update_eth_linker_hash(&state.db).and(Ok(state))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
         test_utils::get_test_database,
-        chains::eth::eth_database_utils::put_eth_block_and_receipts_in_db,
+        chains::eth::eth_database_utils::put_eth_submission_material_in_db,
         btc_on_eth::eth::eth_test_utils::{
             put_eth_tail_block_in_db,
             put_eth_anchor_block_in_db,
@@ -75,7 +85,7 @@ mod tests {
         );
         put_eth_tail_block_in_db(&db, &canon_block)
             .unwrap();
-        put_eth_block_and_receipts_in_db(&db, &parent_of_eth_tail_block)
+        put_eth_submission_material_in_db(&db, &parent_of_eth_tail_block)
             .unwrap();
         let result = maybe_get_parent_of_eth_tail_block(&db)
             .unwrap()
@@ -120,7 +130,7 @@ mod tests {
         put_eth_linker_hash_in_db(&db, linker_hash_before).unwrap();
         put_eth_anchor_block_in_db(&db, &anchor_block).unwrap();
         put_eth_tail_block_in_db(&db, &canon_block).unwrap();
-        put_eth_block_and_receipts_in_db(&db, &parent_of_eth_tail_block).unwrap();
+        put_eth_submission_material_in_db(&db, &parent_of_eth_tail_block).unwrap();
         maybe_update_eth_linker_hash(&db).unwrap();
         let linker_hash_after = get_eth_linker_hash_from_db(&db).unwrap();
         let result_hex = hex::encode(linker_hash_after.as_bytes());

@@ -6,57 +6,65 @@ use eos_primitives::{
 };
 use crate::{
     types::Result,
+    traits::DatabaseInterface,
     chains::eos::{
+        eos_state::EosState,
         eos_constants::REDEEM_ACTION_NAME,
         eos_merkle_utils::verify_merkle_proof,
         eos_utils::convert_bytes_to_checksum256,
-        eos_types::{
-            RedeemInfo,
-            RedeemInfos,
-            ActionProof,
-            ActionProofs,
-            ProcessedTxIds,
+        eos_database_utils::get_eos_account_name_from_db,
+        eos_action_proofs::{
+            EosActionProof,
+            EosActionProofs,
         },
     },
 };
 
 pub fn filter_proofs_with_wrong_action_mroot(
     action_mroot: &Checksum256,
-    action_proofs: &[ActionProof],
-) -> Result<ActionProofs> {
+    action_proofs: &[EosActionProof],
+) -> Result<EosActionProofs> {
     let filtered = action_proofs
         .iter()
-        .filter(|proof_data|
-            proof_data.action_proof[proof_data.action_proof.len() - 1] ==
-            action_mroot.to_string()
-        )
+        .filter(|proof_data| proof_data.action_proof[proof_data.action_proof.len() - 1] == action_mroot.to_string())
         .cloned()
-        .collect::<ActionProofs>();
+        .collect::<EosActionProofs>();
     debug!("Num proofs before: {}", action_proofs.len());
     debug!("Num proofs after : {}", filtered.len());
     Ok(filtered)
 }
 
-pub fn filter_out_proofs_for_other_accounts(
-    action_proofs: &[ActionProof],
+pub fn filter_proofs_for_account(
+    action_proofs: &[EosActionProof],
     required_account_name: EosAccountName,
-) -> Result<ActionProofs> {
-    let filtered: ActionProofs = action_proofs
+) -> Result<EosActionProofs> {
+    info!("✔ Filtering proofs for EOS account `{}`", required_account_name);
+    let filtered: EosActionProofs = action_proofs
         .iter()
         .filter(|proof| proof.action.account == required_account_name)
         .cloned()
         .collect();
-    info!("✔ Filtering out proofs for other accounts...");
     debug!("Num proofs before: {}", action_proofs.len());
-    debug!(" Num proofs after: {}", filtered.len());
+    debug!("Num proofs after: {}", filtered.len());
     Ok(filtered)
 }
 
-pub fn filter_out_proofs_for_other_actions(
-    action_proofs: &[ActionProof]
-) -> Result<ActionProofs> {
+pub fn filter_proofs_for_accounts(
+    action_proofs: &[EosActionProof],
+    account_names: &[EosAccountName],
+) -> Result<EosActionProofs> {
+    info!("✔ Filtering proofs for EOS accounts...");
+    Ok(account_names
+        .iter()
+        .map(|account_name| filter_proofs_for_account(action_proofs, *account_name))
+        .collect::<Result<Vec<EosActionProofs>>>()?
+        .concat()
+    )
+}
+
+pub fn filter_out_proofs_for_other_actions(action_proofs: &[EosActionProof]) -> Result<EosActionProofs> {
     let required_action = EosActionName::from_str(REDEEM_ACTION_NAME)?;
-    let filtered: ActionProofs = action_proofs
+    let filtered: EosActionProofs = action_proofs
         .iter()
         .filter(|proof| proof.action.name == required_action)
         .cloned()
@@ -67,7 +75,7 @@ pub fn filter_out_proofs_for_other_actions(
     Ok(filtered)
 }
 
-pub fn filter_out_proofs_with_invalid_merkle_proofs(action_proofs: &[ActionProof]) -> Result<ActionProofs> {
+pub fn filter_out_proofs_with_invalid_merkle_proofs(action_proofs: &[EosActionProof]) -> Result<EosActionProofs> {
     let filtered = action_proofs
         .iter()
         .map(|proof_data| proof_data.action_proof.as_slice())
@@ -77,13 +85,13 @@ pub fn filter_out_proofs_with_invalid_merkle_proofs(action_proofs: &[ActionProof
         .zip(action_proofs.iter())
         .filter_map(|(proof_is_valid, proof)| {if proof_is_valid { Some(proof) } else { None }})
         .cloned()
-        .collect::<ActionProofs>();
+        .collect::<EosActionProofs>();
     debug!("Num proofs before: {}", action_proofs.len());
     debug!("Num proofs after : {}", filtered.len());
     Ok(filtered)
 }
 
-pub fn filter_out_invalid_action_receipt_digests(action_proofs: &[ActionProof]) -> Result<ActionProofs> {
+pub fn filter_out_invalid_action_receipt_digests(action_proofs: &[EosActionProof]) -> Result<EosActionProofs> {
     let filtered = action_proofs
         .iter()
         .map(|proof| proof.action_receipt.to_digest())
@@ -91,15 +99,15 @@ pub fn filter_out_invalid_action_receipt_digests(action_proofs: &[ActionProof]) 
         .zip(action_proofs.iter())
         .filter_map(|(digest, proof)| { if digest == proof.action_proof[0] { Some(proof) } else { None }})
         .cloned()
-        .collect::<ActionProofs>();
+        .collect::<EosActionProofs>();
     debug!("Num proofs before: {}", action_proofs.len());
     debug!("Num proofs after : {}", filtered.len());
     Ok(filtered)
 }
 
 pub fn filter_out_proofs_with_action_digests_not_in_action_receipts(
-    action_proofs: &[ActionProof]
-) -> Result<ActionProofs> {
+    action_proofs: &[EosActionProof]
+) -> Result<EosActionProofs> {
     let filtered = action_proofs
         .iter()
         .map(|proof| proof.action.to_digest())
@@ -109,32 +117,16 @@ pub fn filter_out_proofs_with_action_digests_not_in_action_receipts(
         .zip(action_proofs.iter())
         .filter_map(|(digest, proof)| { if digest == proof.action_receipt.act_digest { Some(proof) } else { None }})
         .cloned()
-        .collect::<ActionProofs>();
+        .collect::<EosActionProofs>();
     debug!("Num proofs before: {}", action_proofs.len());
     debug!("Num proofs after : {}", filtered.len());
     Ok(filtered)
 }
 
-pub fn filter_out_already_processed_txs(
-    redeem_infos: &RedeemInfos,
-    processed_tx_ids: &ProcessedTxIds,
-) -> Result<RedeemInfos> {
-    Ok(
-        RedeemInfos::new(
-            &redeem_infos
-                .0
-                .iter()
-                .filter(|params| !processed_tx_ids.contains(&params.global_sequence))
-                .cloned()
-                .collect::<Vec<RedeemInfo>>()
-        )
-    )
-}
-
 pub fn filter_duplicate_proofs(
-    action_proofs: &[ActionProof]
-) -> Result<ActionProofs> {
-    let mut filtered: ActionProofs = Vec::new();
+    action_proofs: &[EosActionProof]
+) -> Result<EosActionProofs> {
+    let mut filtered: EosActionProofs = Vec::new();
     action_proofs
         .iter()
         .map(|proof| {
@@ -146,6 +138,77 @@ pub fn filter_duplicate_proofs(
     debug!("Num proofs before: {}", action_proofs.len());
     debug!("Num proofs after : {}", filtered.len());
     Ok(filtered)
+}
+
+pub fn maybe_filter_duplicate_proofs_from_state<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Maybe filtering duplicate proofs from state...");
+    filter_duplicate_proofs(&state.action_proofs).and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_out_proofs_for_non_erc20_accounts<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out proofs for accounts we don't care about...");
+    filter_proofs_for_accounts(&state.action_proofs, &state.get_eos_erc20_dictionary()?.to_eos_accounts()?)
+        .and_then(|proofs| filter_out_proofs_for_other_actions(&proofs))
+        .and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_out_proofs_for_non_btc_on_eos_accounts<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out proofs for accounts we don't care about...");
+    filter_proofs_for_account(&state.action_proofs, get_eos_account_name_from_db(&state.db)?)
+        .and_then(|proofs| filter_out_proofs_for_other_actions(&proofs))
+        .and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_out_action_proof_receipt_mismatches_and_return_state<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering proofs w/ action digests NOT in action receipts...");
+    filter_out_proofs_with_action_digests_not_in_action_receipts(&state.action_proofs)
+        .and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_out_invalid_action_receipt_digests<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out invalid action digests...");
+    filter_out_invalid_action_receipt_digests(&state.action_proofs)
+        .and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_out_proofs_with_invalid_merkle_proofs<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out invalid merkle proofs...");
+    filter_out_proofs_with_invalid_merkle_proofs(&state.action_proofs)
+        .and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_out_proofs_with_wrong_action_mroot<D>(
+    state: EosState<D>
+) -> Result<EosState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Filtering out proofs with wrong `action_mroot`...");
+    filter_proofs_with_wrong_action_mroot(&state.get_eos_block_header()?.action_mroot, &state.action_proofs)
+        .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
 #[cfg(test)]
@@ -301,7 +364,7 @@ mod tests {
         ];
         let account = EosAccountName::from_str("pbtctokenxxx").unwrap();
 
-        assert_eq!(filter_out_proofs_for_other_accounts(&action_proofs, account).unwrap(), action_proofs);
+        assert_eq!(filter_proofs_for_account(&action_proofs, account).unwrap(), action_proofs);
     }
 
     #[test]
@@ -312,7 +375,7 @@ mod tests {
         ];
         let account = EosAccountName::from_str("provtestable").unwrap();
 
-        assert_eq!(filter_out_proofs_for_other_accounts(&action_proofs, account).unwrap(), []);
+        assert_eq!(filter_proofs_for_account(&action_proofs, account).unwrap(), []);
     }
 
     #[test]

@@ -5,15 +5,15 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
     chains::{
-        eos::eos_types::RedeemInfos,
+        eos::eos_state::EosState,
         btc::utxo_manager::{
             utxo_types::BtcUtxosAndValues,
             utxo_database_utils::get_utxo_and_value,
         },
     },
     btc_on_eos::{
-        eos::eos_state::EosState,
         btc::{
             btc_utils::calculate_btc_tx_fee,
             btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
@@ -68,7 +68,7 @@ fn get_enough_utxos_to_cover_total<D>(
         })
 }
 
-fn get_address_and_amounts_from_redeem_infos(redeem_infos: &RedeemInfos) -> Result<BtcRecipientsAndAmounts> {
+fn get_address_and_amounts_from_redeem_infos(redeem_infos: &BtcOnEosRedeemInfos) -> Result<BtcRecipientsAndAmounts> {
     info!("✔ Getting addresses & amounts from redeem params...");
     redeem_infos
         .0
@@ -85,7 +85,7 @@ fn sign_txs_from_redeem_infos<D>(
     db: &D,
     sats_per_byte: u64,
     btc_network: BtcNetwork,
-    redeem_infos: &RedeemInfos,
+    redeem_infos: &BtcOnEosRedeemInfos,
 ) -> Result<BtcTransaction>
     where D: DatabaseInterface
 {
@@ -116,7 +116,7 @@ pub fn maybe_sign_txs_and_add_to_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Maybe signing tx(s) from redeem params...");
-    match &state.redeem_infos.len() {
+    match &state.btc_on_eos_redeem_infos.len() {
         0 => {
             info!("✔ No redeem params in state ∴ not signing txs!");
             Ok(state)
@@ -127,11 +127,11 @@ pub fn maybe_sign_txs_and_add_to_state<D>(
                 &state.db,
                 get_btc_fee_from_db(&state.db)?,
                 get_btc_network_from_db(&state.db)?,
-                &state.redeem_infos,
+                &state.btc_on_eos_redeem_infos,
             )
                 .and_then(|signed_tx| {
                     #[cfg(feature="debug")] { debug!("✔ Signed transaction: {:?}", signed_tx); }
-                    state.add_signed_txs(vec![signed_tx])
+                    state.add_btc_on_eos_signed_txs(vec![signed_tx])
                 })
         },
     }
@@ -145,8 +145,7 @@ mod tests {
         test_utils::get_test_database,
         chains::{
             eos::{
-                eos_types::ActionProof,
-                parse_redeem_infos::parse_redeem_infos_from_action_proofs,
+                eos_action_proofs::EosActionProof,
             },
             btc::{
                 btc_constants::BTC_PRIVATE_KEY_DB_KEY,
@@ -177,8 +176,8 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let btc_address = "mwi6VyZUqwqdu1DtQMruV4UzEqJADZzj6n".to_string();
         let submission_material = get_sample_eos_submission_material_json_n(3);
-        let action_proof = ActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
-        let redeem_infos = parse_redeem_infos_from_action_proofs(&[action_proof]).unwrap();
+        let action_proof = EosActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
+        let redeem_infos = BtcOnEosRedeemInfos::from_action_proofs(&[action_proof]).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_2().unwrap();
         save_utxos_to_db(&db, &BtcUtxosAndValues::new(vec![utxo])).unwrap();
         let pk = BtcPrivateKey::from_slice(
@@ -201,8 +200,8 @@ mod tests {
         let btc_network = BtcNetwork::Testnet;
         let btc_address = "mwi6VyZUqwqdu1DtQMruV4UzEqJADZzj6n".to_string();
         let submission_material = get_sample_eos_submission_material_json_n(4);
-        let action_proof = ActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
-        let redeem_infos = parse_redeem_infos_from_action_proofs(&[action_proof]).unwrap();
+        let action_proof = EosActionProof::from_json(&submission_material.action_proofs[0]).unwrap();
+        let redeem_infos = BtcOnEosRedeemInfos::from_action_proofs(&[action_proof]).unwrap();
         let utxo = get_sample_p2sh_utxo_and_value_3().unwrap();
         save_utxos_to_db(&db, &BtcUtxosAndValues::new(vec![utxo])).unwrap();
         let pk = BtcPrivateKey::from_slice(

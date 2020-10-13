@@ -2,19 +2,21 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::eth::{
-        eth_block_and_receipts::EthBlockAndReceipts,
+        eth_state::EthState,
+        eth_submission_material::EthSubmissionMaterial,
         eth_database_utils::{
             get_eth_canon_block_from_db,
             get_eth_latest_block_from_db,
             put_eth_canon_block_hash_in_db,
-            maybe_get_nth_ancestor_eth_block_and_receipts,
+            get_eth_canon_to_tip_length_from_db,
+            maybe_get_nth_ancestor_eth_submission_material,
         },
     },
 };
 
 fn does_canon_block_require_updating<D>(
     db: &D,
-    calculated_canon_block_and_receipts: &EthBlockAndReceipts,
+    calculated_canon_block_and_receipts: &EthSubmissionMaterial,
 ) -> Result<bool>
     where D: DatabaseInterface
 {
@@ -27,12 +29,12 @@ fn does_canon_block_require_updating<D>(
 fn maybe_get_nth_ancestor_of_latest_block<D>(
     db: &D,
     n: u64,
-) -> Option<EthBlockAndReceipts>
+) -> Option<EthSubmissionMaterial>
     where D: DatabaseInterface
 {
     info!("✔ Maybe getting ancestor #{} of latest ETH block...", n);
     match get_eth_latest_block_from_db(db) {
-        Ok(block_and_receipts) => maybe_get_nth_ancestor_eth_block_and_receipts(db, &block_and_receipts.block.hash, n),
+        Ok(block_and_receipts) => maybe_get_nth_ancestor_eth_submission_material(db, &block_and_receipts.block.hash, n),
         Err(_) => None,
     }
 }
@@ -59,6 +61,15 @@ pub fn maybe_update_canon_block_hash<D>(db: &D, canon_to_tip_length: u64,) -> Re
     }
 }
 
+pub fn maybe_update_eth_canon_block_hash_and_return_state<D>(
+    state: EthState<D>
+) -> Result<EthState<D>> where D: DatabaseInterface {
+    info!("✔ Maybe updating ETH canon block hash...");
+    get_eth_canon_to_tip_length_from_db(&state.db)
+        .and_then(|canon_to_tip_length| maybe_update_canon_block_hash(&state.db, canon_to_tip_length))
+        .and(Ok(state))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -66,7 +77,7 @@ mod tests {
         test_utils::get_test_database,
         chains::eth::eth_database_utils::{
             put_eth_canon_block_in_db,
-            put_eth_block_and_receipts_in_db,
+            put_eth_submission_material_in_db,
         },
         btc_on_eth::eth::eth_test_utils::{
             put_eth_latest_block_in_db,
@@ -111,7 +122,7 @@ mod tests {
         let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
         let block_1 = blocks_and_receipts[0].clone();
         let block_2 = blocks_and_receipts[1].clone();
-        put_eth_block_and_receipts_in_db(&db, &block_1)
+        put_eth_submission_material_in_db(&db, &block_1)
             .unwrap();
         put_eth_latest_block_in_db(&db, &block_2)
             .unwrap();
@@ -141,7 +152,7 @@ mod tests {
         let canon_block_hash_before = canon_block.block.hash;
         put_eth_canon_block_in_db(&db, &canon_block)
             .unwrap();
-        put_eth_block_and_receipts_in_db(&db, &block_1)
+        put_eth_submission_material_in_db(&db, &block_1)
             .unwrap();
         put_eth_latest_block_in_db(&db, &latest_block)
             .unwrap();

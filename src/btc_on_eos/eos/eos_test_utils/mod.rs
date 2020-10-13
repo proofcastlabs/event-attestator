@@ -33,11 +33,16 @@ use crate::{
         Bytes,
         Result,
     },
+    test_utils::get_sample_message_to_sign_bytes,
     chains::eos::{
+        eos_state::EosState,
         eos_merkle_utils::Incremerkle,
+        core_initialization::eos_init_utils::EosInitJson,
+        eos_action_proofs::{
+            EosActionProof,
+            EosActionProofs,
+        },
         eos_types::{
-            ActionProof,
-            ActionProofs,
             Checksum256s,
             EosBlockHeaderJson,
             EosSignedTransaction,
@@ -71,10 +76,6 @@ use crate::{
         },
         protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
     },
-    btc_on_eos::eos::{
-        eos_state::EosState,
-        initialize_eos::eos_init_utils::EosInitJson,
-    },
 };
 
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1: &str =
@@ -104,6 +105,9 @@ pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_8: &str =
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_9: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-j3-block-with-schedule.json";
 
+pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_10: &str =
+    "src/chains/eos/eos_test_utils/mainnet-submission-material-with-perc20-redeem.json";
+
 pub const SAMPLE_J3_INIT_BLOCK_JSON_PATH_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/jungle-3-init-block-10857380.json";
 
@@ -122,17 +126,17 @@ pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_2: &str =
 pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_3: &str =
     "src/btc_on_eos/eos/eos_test_utils/mainnet-init-block-125293952.json";
 
+pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_4: &str =
+    "src/btc_on_eos/eos/eos_test_utils/mainnet-init-block-125293952_with_erc20_dictionary.json";
+
 pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_JUNGLE_3_JSON_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-init-and-subsequent-blocks-jungle-3-1.json";
 
 pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_1: &str =
     "src/btc_on_eos/eos/eos_test_utils/eos-init-and-subsequent-blocks-mainnet-1.json";
 
-pub const EOS_JUNGLE_CHAIN_ID: &str = "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
 
-fn get_sample_message_to_sign_bytes() -> &'static [u8] {
-    "Provable pToken!".as_bytes()
-}
+pub const EOS_JUNGLE_CHAIN_ID: &str = "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosInitAndSubsequentBlocksJson {
@@ -301,6 +305,7 @@ pub fn get_mainnet_init_json_n(num: usize) -> Result<EosInitJson> {
         1 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_1),
         2 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_2),
         3 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_3),
+        4 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_4),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num)))
     }?;
     let string = match Path::new(&path).exists() {
@@ -308,6 +313,10 @@ pub fn get_mainnet_init_json_n(num: usize) -> Result<EosInitJson> {
         false => Err(AppError::Custom(format!("✘ Can't find sample init block json file @ path: {}", path)))
     }?;
     EosInitJson::from_json_string(&string)
+}
+
+pub fn get_sample_mainnet_init_json_with_erc20_dictionary() -> Result<EosInitJson> {
+    get_mainnet_init_json_n(4)
 }
 
 pub fn sha256_hash_message_bytes(
@@ -381,6 +390,7 @@ pub fn get_sample_eos_submission_material_string_n(
         7 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_7),
         8 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_8),
         9 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_9),
+        10 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_10),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num)))
     }?;
     match Path::new(&path).exists() {
@@ -465,13 +475,13 @@ pub fn get_sample_action_digests() -> Vec<Bytes> {
 
 fn get_sample_action_proofs_n(
     n: usize
-) -> ActionProofs {
+) -> EosActionProofs {
     get_sample_eos_submission_material_n(n).action_proofs
 }
 
 pub fn get_sample_action_proof_n(
     n: usize
-) -> ActionProof {
+) -> EosActionProof {
     get_sample_action_proofs_n(n)[0].clone()
 }
 

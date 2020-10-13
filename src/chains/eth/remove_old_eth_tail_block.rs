@@ -3,9 +3,11 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::eth::{
-        eth_block_and_receipts::EthBlockAndReceipts,
+        eth_state::EthState,
+        eth_submission_material::EthSubmissionMaterial,
         eth_database_utils::{
             get_eth_block_from_db,
+            get_eth_tail_block_from_db,
             get_eth_anchor_block_hash_from_db,
         },
     },
@@ -20,7 +22,7 @@ fn is_anchor_block<D>(db: &D, eth_block_hash: &EthHash) -> Result<bool> where D:
 
 pub fn remove_parents_if_not_anchor<D>(
     db: &D,
-    block_whose_parents_to_be_removed: &EthBlockAndReceipts,
+    block_whose_parents_to_be_removed: &EthSubmissionMaterial,
 ) -> Result<()>
     where D: DatabaseInterface
 {
@@ -47,6 +49,17 @@ pub fn remove_parents_if_not_anchor<D>(
     }
 }
 
+pub fn maybe_remove_old_eth_tail_block_and_return_state<D>(
+    state: EthState<D>
+) -> Result<EthState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Maybe removing old ETH tail block...");
+    get_eth_tail_block_from_db(&state.db)
+        .and_then(|tail_block| remove_parents_if_not_anchor(&state.db, &tail_block))
+        .and(Ok(state))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -54,7 +67,7 @@ mod tests {
         test_utils::get_test_database,
         chains::eth::eth_database_utils::{
             eth_block_exists_in_db,
-            put_eth_block_and_receipts_in_db
+            put_eth_submission_material_in_db
         },
         btc_on_eth::eth::eth_test_utils::{
             put_eth_tail_block_in_db,
@@ -108,10 +121,10 @@ mod tests {
         if let Err(e) = put_eth_anchor_block_in_db(&db, &anchor_block) {
             panic!("Error putting btc anchor block in db: {}", e);
         };
-        if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
+        if let Err(e) = put_eth_submission_material_in_db(&db, &block) {
             panic!("Error putting btc block in db: {}", e);
         };
-        if let Err(e) = put_eth_block_and_receipts_in_db(&db, &parent_block) {
+        if let Err(e) = put_eth_submission_material_in_db(&db, &parent_block) {
             panic!("Error putting btc block in db: {}", e);
         };
         assert!(eth_block_exists_in_db(&db, &parent_block.block.hash));
@@ -133,7 +146,7 @@ mod tests {
         if let Err(e) = put_eth_anchor_block_in_db(&db, &anchor_block) {
             panic!("Error putting btc anchor block in db: {}", e);
         };
-        if let Err(e) = put_eth_block_and_receipts_in_db(&db, &block) {
+        if let Err(e) = put_eth_submission_material_in_db(&db, &block) {
             panic!("Error putting btc block in db: {}", e);
         };
         assert!(eth_block_exists_in_db(&db, &anchor_block.block.hash));
@@ -161,7 +174,7 @@ mod tests {
         assert!(eth_block_exists_in_db(&db, &anchor_block.block.hash));
         blocks
             .iter()
-            .map(|block| put_eth_block_and_receipts_in_db(&db, block))
+            .map(|block| put_eth_submission_material_in_db(&db, block))
             .collect::<Result<()>>()
             .unwrap();
         blocks
