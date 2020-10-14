@@ -63,8 +63,8 @@ use crate::{
                 get_eth_private_key_from_db,
                 get_eth_account_nonce_from_db,
                 increment_eth_account_nonce_in_db,
-                put_btc_on_eth_smart_contract_address_in_db,
                 get_eos_erc20_smart_contract_address_from_db,
+                put_erc20_on_eos_smart_contract_address_in_db,
             },
             eth_constants::{
                 ETH_PRIVATE_KEY_DB_KEY,
@@ -241,7 +241,7 @@ pub fn debug_get_perc20_migration_tx<D>(
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
-        .and_then(|_| put_btc_on_eth_smart_contract_address_in_db(&db, &new_eos_erc20_smart_contract_address))
+        .and_then(|_| put_erc20_on_eos_smart_contract_address_in_db(&db, &new_eos_erc20_smart_contract_address))
         .and_then(|_| encode_perc20_migrate_fxn_data(new_eos_erc20_smart_contract_address))
         .and_then(|tx_data| Ok(EthTransaction::new_unsigned(
             tx_data,
