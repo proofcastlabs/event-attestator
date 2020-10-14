@@ -1,5 +1,3 @@
-pub mod initialize_eth_enclave;
-
 pub(crate) mod eth_core_init_utils;
 pub(crate) mod generate_eth_address;
 pub(crate) mod generate_eth_contract_tx;
