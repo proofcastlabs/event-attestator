@@ -53,7 +53,7 @@ pub fn get_eth_signed_txs(
         .collect::<Result<EthTransactions>>()
 }
 
-pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>( state: EosState<D>) -> Result<EosState<D>> {
+pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Maybe signing normal ETH txs...");
     get_eth_signed_txs(
         &get_signing_params_from_db(&state.db)?,

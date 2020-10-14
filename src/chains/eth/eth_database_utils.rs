@@ -524,12 +524,12 @@ fn get_eth_address_from_db<D>(db: &D, key: &[Byte]) -> Result<EthAddress> where 
 
 pub fn get_eth_smart_contract_address_from_db<D>(db: &D) -> Result<EthAddress> where D: DatabaseInterface {
     info!("✔ Getting ETH smart-contract address from db...");
-    get_eth_address_from_db(db, &BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec())
+    get_eth_address_from_db(db, &*BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY)
 }
 
 pub fn get_erc20_on_eos_smart_contract_address_from_db<D>(db: &D) -> Result<EthAddress> where D: DatabaseInterface {
     info!("✔ Getting `ERC20-on-EOS` smart-contract address from db...");
-    get_eth_address_from_db(db, &ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec())
+    get_eth_address_from_db(db, &*ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec())
 }
 
 pub fn get_erc777_proxy_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
@@ -563,7 +563,7 @@ pub fn put_btc_on_eth_smart_contract_address_in_db<D>(
     where D: DatabaseInterface
 {
     trace!("✔ Putting ETH smart-contract address in db...");
-    put_eth_address_in_db(db, &BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(), smart_contract_address)
+    put_eth_address_in_db(db, &*BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY, smart_contract_address)
 }
 
 pub fn put_erc20_on_eos_smart_contract_address_in_db<D>(
