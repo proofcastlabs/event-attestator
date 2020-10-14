@@ -26,10 +26,10 @@ use crate::{
 pub struct Erc20OnEosPegInInfo {
     pub token_amount: U256,
     pub eos_address: String,
-    pub account_name: String,
+    pub eos_token_address: String,
     pub eos_asset_amount: String,
     pub token_sender: EthAddress,
-    pub token_contract: EthAddress,
+    pub eth_token_address: EthAddress,
     pub originating_tx_hash: EthHash,
 }
 
@@ -37,19 +37,19 @@ impl Erc20OnEosPegInInfo {
     pub fn new(
         token_amount: U256,
         token_sender: EthAddress,
-        token_contract: EthAddress,
+        eth_token_address: EthAddress,
         eos_address: String,
         originating_tx_hash: EthHash,
-        account_name: String,
+        eos_token_address: String,
         eos_asset_amount: String,
     ) -> Erc20OnEosPegInInfo {
         Erc20OnEosPegInInfo {
             token_amount,
-            token_contract,
+            eth_token_address,
             eos_address,
             originating_tx_hash,
             token_sender,
-            account_name,
+            eos_token_address,
             eos_asset_amount,
         }
     }

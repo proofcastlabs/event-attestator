@@ -69,7 +69,7 @@ pub fn get_signed_txs_from_erc20_on_eos_peg_in_infos(
                 &peg_in_info.eos_asset_amount,
                 chain_id,
                 private_key,
-                &peg_in_info.account_name,
+                &peg_in_info.eos_token_address,
             )
         })
         .collect()
