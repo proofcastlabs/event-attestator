@@ -98,7 +98,7 @@ mod tests {
                 put_eth_gas_price_in_db,
                 put_eth_private_key_in_db,
                 put_eth_account_nonce_in_db,
-                put_eth_smart_contract_address_in_db,
+                put_btc_on_eth_smart_contract_address_in_db,
             },
         },
         btc_on_eth::{
@@ -122,7 +122,7 @@ mod tests {
         let gas_price = 20_000_000_000;
         let contract_address = get_sample_eth_address();
         let eth_private_key = get_sample_eth_private_key();
-        if let Err(e) = put_eth_smart_contract_address_in_db(
+        if let Err(e) = put_btc_on_eth_smart_contract_address_in_db(
             &db,
             &contract_address,
         ) {

@@ -8,7 +8,7 @@ use crate::{
         eth_state::EthState,
         eth_database_utils::{
             get_public_eth_address_from_db,
-            put_eth_smart_contract_address_in_db,
+            put_btc_on_eth_smart_contract_address_in_db,
         },
     },
 };
@@ -38,11 +38,11 @@ pub fn generate_and_store_btc_on_eth_contract_address<D>(
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
-    info!("✔ Calculating pToken contract address...");
+    info!("✔ Calculating `pBTC-on-ETH` contract address...");
     get_eth_contract_address(&state.db)
         .and_then(|ref smart_contract_address| {
-            info!("✔ Storing pToken contract address in db...");
-            put_eth_smart_contract_address_in_db(&state.db, smart_contract_address)
+            info!("✔ Storing `pBTC-on-ETH` contract address in db...");
+            put_btc_on_eth_smart_contract_address_in_db(&state.db, smart_contract_address)
         })
         .and(Ok(state))
 }

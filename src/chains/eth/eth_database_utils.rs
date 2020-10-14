@@ -43,7 +43,7 @@ use crate::{
             ETH_LATEST_BLOCK_HASH_KEY,
             ETH_ANCHOR_BLOCK_HASH_KEY,
             ETH_CANON_TO_TIP_LENGTH_KEY,
-            ETH_SMART_CONTRACT_ADDRESS_KEY,
+            BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
             ERC777_PROXY_CONTACT_ADDRESS_KEY,
         },
     },
@@ -506,7 +506,7 @@ pub fn get_erc777_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
     where D: DatabaseInterface
 {
     trace!("✔ Getting ETH smart-contract address from db...");
-    db.get(ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+    db.get(BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .map(|address_bytes| EthAddress::from_slice(&address_bytes[..]))
 }
 
@@ -521,7 +521,7 @@ pub fn get_eth_smart_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
     where D: DatabaseInterface
 {
     trace!("✔ Getting ETH smart-contract address from db...");
-    db.get(ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+    db.get(BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .map(|address_bytes| EthAddress::from_slice(&address_bytes[..]))
 }
 
@@ -549,14 +549,14 @@ pub fn put_erc777_proxy_contract_address_in_db<D>(
     put_eth_address_in_db(db, &ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(), proxy_contract_address)
 }
 
-pub fn put_eth_smart_contract_address_in_db<D>(
+pub fn put_btc_on_eth_smart_contract_address_in_db<D>(
     db: &D,
     smart_contract_address: &EthAddress,
 ) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Putting ETH smart-contract address in db...");
-    put_eth_address_in_db(db, &ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(), smart_contract_address)
+    put_eth_address_in_db(db, &BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(), smart_contract_address)
 }
 
 pub fn get_public_eth_address_from_db<D>(db: &D) -> Result<EthAddress>
@@ -697,7 +697,7 @@ mod tests {
     fn should_get_erc777_contract_address_from_db() {
         let db = get_test_database();
         let contract_address = get_sample_eth_address();
-        if let Err(e) = put_eth_smart_contract_address_in_db(&db, &contract_address) {
+        if let Err(e) = put_btc_on_eth_smart_contract_address_in_db(&db, &contract_address) {
             panic!("Error putting eth address in db: {}", e);
         };
         let result = get_erc777_contract_address_from_db(&db).unwrap();
