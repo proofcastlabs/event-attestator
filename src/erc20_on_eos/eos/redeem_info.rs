@@ -33,6 +33,7 @@ pub struct Erc20OnEosRedeemInfo {
     pub eth_token_address: EthAddress,
     pub originating_tx_id: Checksum256,
     pub global_sequence: GlobalSequence,
+    pub eos_token_address: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]

@@ -126,8 +126,9 @@ impl EosActionProof {
                 info!("✔ Converting action proof to `erc20-on-eos` redeem info...");
                 Ok(Erc20OnEosRedeemInfo {
                     originating_tx_id: self.tx_id,
-                    eth_token_address: entry.eth_address,
                     from: self.get_redeem_action_sender()?,
+                    eos_token_address: entry.eos_address.clone(),
+                    eth_token_address: entry.eth_address.clone(),
                     global_sequence: self.action_receipt.global_sequence,
                     amount: self.get_erc20_on_eos_eth_redeem_amount(&entry)?,
                     recipient: self.get_erc20_on_eos_eth_redeem_address_or_default_to_safe_address()?,
@@ -351,6 +352,7 @@ mod tests {
 
     #[test]
     fn should_convert_proof_to_erc20_on_eos_redeem_info() {
+        let eos_account_name = "testpethxxxx".to_string();
         let expected_result = Erc20OnEosRedeemInfo::new(
             U256::from_dec_str("1337000000000").unwrap(),
             EosAccountName::from_str("t11ptokens11").unwrap(),
@@ -358,13 +360,14 @@ mod tests {
             EthAddress::from_slice(&hex::decode("32eF9e9a622736399DB5Ee78A68B258dadBB4353").unwrap()),
             convert_hex_to_checksum256("ed991197c5d571f39b4605f91bf1374dd69237070d44b46d4550527c245a01b9").unwrap(),
             250255005734,
+            eos_account_name.clone(),
         );
         let dictionary = EosErc20Dictionary::new(vec![EosErc20DictionaryEntry::new(
             18,
             9,
             "PETH".to_string(),
             "SAM".to_string(),
-            "testpethxxxx".to_string(),
+            eos_account_name,
             EthAddress::from_slice(&hex::decode("32eF9e9a622736399DB5Ee78A68B258dadBB4353").unwrap()),
         )]);
         let proof = get_sample_action_proof_for_erc20_redeem();
