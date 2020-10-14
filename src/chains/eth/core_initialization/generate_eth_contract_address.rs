@@ -33,7 +33,7 @@ fn get_eth_contract_address<D>(db: &D) -> Result<EthAddress> where D: DatabaseIn
         })
 }
 
-pub fn generate_and_store_eth_contract_address<D>(
+pub fn generate_and_store_btc_on_eth_contract_address<D>(
     state: EthState<D>
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
