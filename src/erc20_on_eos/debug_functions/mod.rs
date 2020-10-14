@@ -282,13 +282,12 @@ pub fn debug_get_add_supported_token_tx<D>(
     where D: DatabaseInterface
 {
     info!("✔ Debug getting `addSupportedToken` contract tx...");
+    db.start_transaction()?;
     let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
     let eth_address = get_eth_address_from_str(eth_address_str)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
-        .and_then(|_| db.start_transaction())
         .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
-        .and_then(|_| db.end_transaction())
         .and_then(|_| encode_perc20_add_supported_token_fx_data(eth_address))
         .and_then(|tx_data| Ok(EthTransaction::new_unsigned(
             tx_data,
@@ -301,7 +300,10 @@ pub fn debug_get_add_supported_token_tx<D>(
         )))
         .and_then(|unsigned_tx| unsigned_tx.sign(get_eth_private_key_from_db(&db)?))
         .map(|signed_tx| signed_tx.serialize_hex())
-        .map(|hex_tx| json!({ "success": true, "eth_signed_tx": hex_tx }).to_string())
+        .and_then(|hex_tx| {
+            db.end_transaction()?;
+            Ok(json!({ "success": true, "eth_signed_tx": hex_tx }).to_string())
+        })
 }
 
 /// # Debug Get Remove Supported Token Transaction
@@ -324,13 +326,12 @@ pub fn debug_get_remove_supported_token_tx<D>(
     where D: DatabaseInterface
 {
     info!("✔ Debug getting `removeSupportedToken` contract tx...");
+    db.start_transaction()?;
     let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
     let eth_address = get_eth_address_from_str(eth_address_str)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
-        .and_then(|_| db.start_transaction())
         .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
-        .and_then(|_| db.end_transaction())
         .and_then(|_| encode_perc20_remove_supported_token_fx_data(eth_address))
         .and_then(|tx_data| Ok(EthTransaction::new_unsigned(
             tx_data,
@@ -343,7 +344,10 @@ pub fn debug_get_remove_supported_token_tx<D>(
         )))
         .and_then(|unsigned_tx| unsigned_tx.sign(get_eth_private_key_from_db(&db)?))
         .map(|signed_tx| signed_tx.serialize_hex())
-        .map(|hex_tx| json!({ "success": true, "eth_signed_tx": hex_tx }).to_string())
+        .and_then(|hex_tx| {
+            db.end_transaction()?;
+            Ok(json!({ "success": true, "eth_signed_tx": hex_tx }).to_string())
+        })
 }
 
 /// # Debug Reprocess ETH Block For Stale EOS Transaction
