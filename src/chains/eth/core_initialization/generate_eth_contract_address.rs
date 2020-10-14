@@ -9,6 +9,7 @@ use crate::{
         eth_database_utils::{
             get_public_eth_address_from_db,
             put_btc_on_eth_smart_contract_address_in_db,
+            put_erc20_on_eos_smart_contract_address_in_db,
         },
     },
 };
@@ -43,6 +44,20 @@ pub fn generate_and_store_btc_on_eth_contract_address<D>(
         .and_then(|ref smart_contract_address| {
             info!("✔ Storing `pBTC-on-ETH` contract address in db...");
             put_btc_on_eth_smart_contract_address_in_db(&state.db, smart_contract_address)
+        })
+        .and(Ok(state))
+}
+
+pub fn generate_and_store_erc20_on_eos_contract_address<D>(
+    state: EthState<D>
+) -> Result<EthState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Calculating `pERC20-on-EOS` contract address...");
+    get_eth_contract_address(&state.db)
+        .and_then(|ref smart_contract_address| {
+            info!("✔ Storing `pERC20-on-EOS` contract address in db...");
+            put_erc20_on_eos_smart_contract_address_in_db(&state.db, smart_contract_address)
         })
         .and(Ok(state))
 }
