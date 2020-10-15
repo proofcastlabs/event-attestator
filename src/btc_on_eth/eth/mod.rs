@@ -1,4 +1,5 @@
 pub mod submit_eth_block;
+pub mod initialize_eth_core;
 
 pub(crate) mod redeem_info;
 pub(crate) mod eth_test_utils;

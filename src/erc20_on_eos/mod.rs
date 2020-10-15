@@ -12,17 +12,9 @@
 //! ptokens_core = { version = "1", features = ["debug"] }
 //! ```
 pub use crate::{
-    chains::eth::core_initialization::initialize_eth_enclave::maybe_initialize_eth_enclave as maybe_initialize_eth_core,
     erc20_on_eos::{
         get_enclave_state::get_enclave_state,
-        eth::submit_eth_block::submit_eth_block_to_core,
         get_latest_block_numbers::get_latest_block_numbers,
-        eos::{
-            submit_eos_block::submit_eos_block_to_core,
-            initialize_eos_core::maybe_initialize_eos_core,
-            enable_protocol_feature::enable_eos_protocol_feature,
-            disable_protocol_feature::disable_eos_protocol_feature,
-        },
         debug_functions::{
             debug_get_key_from_db,
             debug_get_all_db_keys,
@@ -35,6 +27,16 @@ pub use crate::{
             debug_add_erc20_dictionary_entry,
             debug_get_remove_supported_token_tx,
             debug_remove_erc20_dictionary_entry,
+        },
+        eth::{
+            submit_eth_block::submit_eth_block_to_core,
+            initialize_eth_core::maybe_initialize_eth_enclave as maybe_initialize_eth_core,
+        },
+        eos::{
+            submit_eos_block::submit_eos_block_to_core,
+            initialize_eos_core::maybe_initialize_eos_core,
+            enable_protocol_feature::enable_eos_protocol_feature,
+            disable_protocol_feature::disable_eos_protocol_feature,
         },
     },
 };

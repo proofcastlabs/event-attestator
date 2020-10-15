@@ -89,8 +89,8 @@ pub fn get_eth_constants_db_keys() -> JsonValue {
             hex::encode(ETH_LINKER_HASH_KEY.to_vec()),
         "ETH_ACCOUNT_NONCE_KEY":
             hex::encode(ETH_ACCOUNT_NONCE_KEY.to_vec()),
-        "ETH_SMART_CONTRACT_ADDRESS_KEY":
-            hex::encode(ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
         "ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY":
             hex::encode(ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
         "ETH_ADDRESS_KEY":
@@ -153,7 +153,7 @@ lazy_static! {
 }
 
 lazy_static! {
-    pub static ref ETH_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key(
+    pub static ref BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key(
         "eth-smart-contract"
     );
 }

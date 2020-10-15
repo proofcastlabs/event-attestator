@@ -9,7 +9,7 @@ use crate::{
             generate_eth_private_key::generate_and_store_eth_private_key,
             get_eth_core_init_output_json::get_eth_core_init_output_json,
             generate_eth_contract_tx::generate_eth_contract_tx_and_put_in_state,
-            generate_eth_contract_address::generate_and_store_eth_contract_address,
+            generate_eth_contract_address::generate_and_store_erc20_on_eos_contract_address,
             eth_core_init_utils::{
                 remove_receipts_from_block_in_state,
                 add_eth_block_to_db_and_return_state,
@@ -44,7 +44,7 @@ pub fn maybe_initialize_eth_enclave<D>(
 ) -> Result<String>
     where D: DatabaseInterface
 {
-    check_for_existence_of_eth_contract_byte_code(&bytecode_path)
+    check_for_existence_of_eth_contract_byte_code(bytecode_path)
         .map(|_| EthState::init(db))
         .and_then(|state|
             match is_eth_core_initialized(&state.db) {
@@ -70,9 +70,9 @@ pub fn maybe_initialize_eth_enclave<D>(
                         .and_then(put_eth_account_nonce_in_db_and_return_state)
                         .and_then(put_any_sender_nonce_in_db_and_return_state)
                         .and_then(generate_and_store_eth_address)
-                        .and_then(generate_and_store_eth_contract_address)
+                        .and_then(generate_and_store_erc20_on_eos_contract_address)
                         .and_then(|state|
-                            generate_eth_contract_tx_and_put_in_state(chain_id, gas_price, &bytecode_path, state)
+                            generate_eth_contract_tx_and_put_in_state(chain_id, gas_price, bytecode_path, state)
                         )
                         .and_then(end_eth_db_transaction_and_return_state)
                         .and_then(get_eth_core_init_output_json)
