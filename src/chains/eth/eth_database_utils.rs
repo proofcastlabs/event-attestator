@@ -514,8 +514,8 @@ pub fn get_erc777_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
 pub fn get_eos_erc20_smart_contract_address_from_db<D>(db: &D) -> Result<EthAddress>
     where D: DatabaseInterface
 {
-    info!("✔ Getting pERC20 on EOS smart-contract address from db...");
-    get_eth_smart_contract_address_from_db(db)
+    info!("✔ Getting `pERC20-on-EOS` smart-contract address from db...");
+    get_eth_address_from_db(db, &*ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY)
 }
 
 fn get_eth_address_from_db<D>(db: &D, key: &[Byte]) -> Result<EthAddress> where D: DatabaseInterface {
