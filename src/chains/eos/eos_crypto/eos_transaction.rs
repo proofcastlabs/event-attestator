@@ -110,7 +110,6 @@ mod tests {
     use crate::{
         btc_on_eos::eos::eos_test_utils::EOS_JUNGLE_CHAIN_ID,
         chains::eos::eos_constants::{
-            MEMO,
             EOS_MAX_EXPIRATION_SECS,
             PEOS_ACCOUNT_PERMISSION_LEVEL,
         },
@@ -125,7 +124,7 @@ mod tests {
         let unsigned_transaction = get_unsigned_eos_minting_tx(
             to,
             "ptokensbtc1a",
-            MEMO,
+            "BTC -> pBTC complete!",
             "ptokensbtc1a",
             amount,
             ref_block_num,
