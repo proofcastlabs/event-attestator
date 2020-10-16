@@ -20,6 +20,7 @@ pub use crate::{
             debug_get_all_db_keys,
             debug_update_incremerkle,
             debug_reprocess_eth_block,
+            debug_reprocess_eos_block,
             debug_add_new_eos_schedule,
             debug_set_key_in_db_to_value,
             debug_get_perc20_migration_tx,
