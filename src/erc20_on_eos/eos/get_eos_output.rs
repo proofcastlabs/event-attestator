@@ -84,9 +84,9 @@ impl EthTxInfo {
             originating_tx_hash: redeem_info.originating_tx_id.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             eth_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
-            native_token_address: format!("{}", hex::encode(&redeem_info.eth_token_address)),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             eth_tx_recipient: format!("0x{}", hex::encode(redeem_info.recipient.as_bytes())),
+            native_token_address: format!("0x{}", hex::encode(&redeem_info.eth_token_address)),
         })
     }
 }
