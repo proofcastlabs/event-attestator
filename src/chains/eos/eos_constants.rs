@@ -4,12 +4,12 @@ pub use serde_json::{
 };
 use crate::utils::get_prefixed_db_key;
 
+pub const MEMO: &str = "";
 pub const PRODUCER_REPS: u64 = 12;
 pub const PUBLIC_KEY_SIZE: usize = 33;
 pub const PBTC_MINT_FXN_NAME: &str = "issue";
 pub const REDEEM_ACTION_NAME: &str = "redeem";
 pub const PUBLIC_KEY_CHECKSUM_SIZE: usize = 4;
-pub const MEMO: &str = "BTC -> pBTC complete!";
 pub const EOS_SCHEDULE_DB_PREFIX: &str = "EOS_SCHEDULE_";
 pub const PEOS_ACCOUNT_PERMISSION_LEVEL: &str = "active";
 pub const PUBLIC_KEY_WITH_CHECKSUM_SIZE: usize = PUBLIC_KEY_SIZE + PUBLIC_KEY_CHECKSUM_SIZE;
