@@ -298,7 +298,10 @@ mod tests {
             eth::{
                 eth_receipt::EthReceipt,
                 eth_submission_material::EthSubmissionMaterial,
-                eth_test_utils::get_sample_log_with_erc20_peg_in_event,
+                eth_test_utils::{
+                    get_sample_log_with_erc20_peg_in_event,
+                    get_sample_log_with_erc20_peg_in_event_2,
+                },
             },
         },
         btc_on_eth::eth::eth_test_utils::{
@@ -596,5 +599,30 @@ mod tests {
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = log.is_supported_erc20_peg_in(&eos_erc20_account_names).unwrap();
         assert!(!result);
+    }
+
+    #[test]
+    fn is_supported_erc20_peg_in_2_should_be_true_if_supported() {
+        let eth_token_decimals = 18;
+        let eos_token_decimals = 9;
+        let eth_symbol = "SAM".to_string();
+        let eos_symbol = "SYM".to_string();
+        let token_name = "SampleToken".to_string();
+        let token_address = EthAddress::from_slice(
+            &hex::decode("c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2").unwrap() // NOTE wETH address on mainnet!
+        );
+        let eos_erc20_account_names = EosErc20Dictionary::new(vec![
+            EosErc20DictionaryEntry::new(
+                eth_token_decimals,
+                eos_token_decimals,
+                eth_symbol,
+                eos_symbol,
+                token_name,
+                token_address
+            )
+        ]);
+        let log = get_sample_log_with_erc20_peg_in_event_2().unwrap();
+        let result = log.is_supported_erc20_peg_in(&eos_erc20_account_names).unwrap();
+        assert!(result);
     }
 }
