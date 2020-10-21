@@ -126,7 +126,7 @@ impl EthSubmissionMaterial {
         &self,
         erc20_dictionary: &EosErc20Dictionary,
     ) -> Result<Self> {
-        info!("✔ Num receipts before filtering for those pertainging to ERC20 dictionary: {}", self.receipts.len());
+        info!("✔ Num receipts before filtering for those pertaining to ERC20 dictionary: {}", self.receipts.len());
         let filtered_receipts = EthReceipts::new(
             self
                 .receipts

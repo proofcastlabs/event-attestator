@@ -21,13 +21,15 @@ use crate::{
     },
 };
 
-pub const SAMPLE_ETH_SUBMISSION_MATERIAL_0: &str = "src/chains/eth/eth_test_utils/eth-submission-material-block-8739996-with-erc20-peg-in-event.json";
 pub const SAMPLE_ETH_SUBMISSION_MATERIAL_1: &str = "src/chains/eth/eth_test_utils/eth-submission-material-block-11011551.json";
+pub const SAMPLE_ETH_SUBMISSION_MATERIAL_0: &str = "src/chains/eth/eth_test_utils/eth-submission-material-block-8739996-with-erc20-peg-in-event.json";
+pub const SAMPLE_ETH_SUBMISSION_MATERIAL_2: &str = "src/chains/eth/eth_test_utils/eth-submission-material-block-11087536-with-erc20-peg-in-event.json";
 
 pub fn get_sample_eth_submission_material_string_n(n: usize) -> Result<String> {
     let path = match n {
         0 => Ok(SAMPLE_ETH_SUBMISSION_MATERIAL_0),
         1 => Ok(SAMPLE_ETH_SUBMISSION_MATERIAL_1),
+        2 => Ok(SAMPLE_ETH_SUBMISSION_MATERIAL_2),
         _ => Err(format!("Cannot find sample eth submission material num: {}", n))
     }?;
     match Path::new(&path).exists() {
@@ -58,6 +60,10 @@ pub fn get_sample_receipt_with_erc20_peg_in_event() -> Result<EthReceipt> {
 
 pub fn get_sample_log_with_erc20_peg_in_event() -> Result<EthLog> {
     get_sample_log_n(0, 17, 1)
+}
+
+pub fn get_sample_log_with_erc20_peg_in_event_2() -> Result<EthLog> {
+    get_sample_log_n(2, 16, 1)
 }
 
 // TODO The eth->eos decimal conversion makes this a bad example now. Get a better one!
