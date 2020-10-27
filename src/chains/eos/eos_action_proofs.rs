@@ -132,7 +132,7 @@ impl EosActionProof {
                     originating_tx_id: self.tx_id,
                     eth_token_address: entry.eth_address,
                     from: self.get_redeem_action_sender()?,
-                    eos_token_address: entry.eos_address.clone(),
+                    eos_token_address: entry.eos_address,
                     global_sequence: self.action_receipt.global_sequence,
                     recipient: self.get_erc20_on_eos_eth_redeem_address_or_default_to_safe_address()?,
                 })
