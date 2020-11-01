@@ -49,12 +49,10 @@ use crate::{
                 generate_and_put_incremerkle_in_db,
             },
             eos_state::EosState,
-            get_eos_incremerkle::get_incremerkle_and_add_to_state,
             add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
             get_active_schedule::get_active_schedule_from_db_and_add_to_state,
             parse_submission_material::parse_submission_material_and_add_to_state,
             eos_erc20_dictionary::get_erc20_dictionary_from_db_and_add_to_eos_state,
-            append_interim_block_ids::append_interim_block_ids_to_incremerkle_in_state,
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
             eos_database_transactions::{
                 end_eos_db_transaction_and_return_state,
@@ -439,8 +437,6 @@ pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> w
     parse_submission_material_and_add_to_state(block_json, EosState::init(db))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
-        .and_then(get_incremerkle_and_add_to_state)
-        .and_then(append_interim_block_ids_to_incremerkle_in_state)
         .and_then(get_active_schedule_from_db_and_add_to_state)
         .and_then(start_eos_db_transaction_and_return_state)
         .and_then(get_erc20_dictionary_from_db_and_add_to_eos_state)
@@ -456,4 +452,5 @@ pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String> w
         .and_then(maybe_increment_eth_nonce_in_db_and_return_state)
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(get_eos_output)
+        .map(prepend_debug_output_marker_to_string)
 }

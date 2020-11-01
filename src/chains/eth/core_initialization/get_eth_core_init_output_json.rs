@@ -7,7 +7,7 @@ use crate::{
             get_latest_eth_block_number,
             get_public_eth_address_from_db,
             get_erc777_contract_address_from_db,
-            get_erc20_on_eos_smart_contract_address_from_db,
+            get_eos_erc20_smart_contract_address_from_db,
         },
     },
 };
@@ -60,7 +60,7 @@ pub fn get_erc20_on_eth_eth_core_init_output_json<D>(state: EthState<D>) -> Resu
         format!("0x{}", hex::encode(get_public_eth_address_from_db(&state.db)?.as_bytes())),
         get_latest_eth_block_number(&state.db)?,
         state.get_misc_string()?,
-        format!("0x{}", hex::encode(get_erc20_on_eos_smart_contract_address_from_db(&state.db)?.as_bytes())),
+        format!("0x{}", hex::encode(get_eos_erc20_smart_contract_address_from_db(&state.db)?.as_bytes())),
     )
         .and_then(json_stringify)
 }
