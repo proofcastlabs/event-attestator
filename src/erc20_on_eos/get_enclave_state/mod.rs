@@ -40,7 +40,7 @@ use crate::{
                 get_eth_account_nonce_from_db,
                 get_public_eth_address_from_db,
                 get_eth_canon_to_tip_length_from_db,
-                get_eos_erc20_smart_contract_address_from_db,
+                get_erc20_on_eos_smart_contract_address_from_db,
             },
         },
     },
@@ -115,7 +115,7 @@ pub fn get_enclave_state<D>(
                     eth_latest_block_hash: hex::encode(eth_latest_block.block.hash.as_bytes()),
                     eth_address: hex::encode(get_public_eth_address_from_db(&db)?.as_bytes()),
                     eth_perc20_on_eos_smart_contract_address: hex::encode(
-                        get_eos_erc20_smart_contract_address_from_db(&db)?
+                        get_erc20_on_eos_smart_contract_address_from_db(&db)?
                     ),
                     eos_public_key,
                     eos_chain_id: get_eos_chain_id_from_db(&db)?,

@@ -88,7 +88,7 @@ use crate::{
                 get_eth_private_key_from_db,
                 get_eth_account_nonce_from_db,
                 increment_eth_account_nonce_in_db,
-                get_eos_erc20_smart_contract_address_from_db,
+                get_erc20_on_eos_smart_contract_address_from_db,
                 put_erc20_on_eos_smart_contract_address_in_db,
             },
             eth_constants::{
@@ -261,7 +261,7 @@ pub fn debug_get_perc20_migration_tx<D>(
     db.start_transaction()?;
     info!("✔ Debug getting migration transaction...");
     let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
-    let current_eos_erc20_smart_contract_address = get_eos_erc20_smart_contract_address_from_db(&db)?;
+    let current_eos_erc20_smart_contract_address = get_erc20_on_eos_smart_contract_address_from_db(&db)?;
     let new_eos_erc20_smart_contract_address = get_eth_address_from_str(new_eos_erc20_smart_contract_address_string)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
@@ -320,7 +320,7 @@ pub fn debug_get_add_supported_token_tx<D>(
             tx_data,
             current_eth_account_nonce,
             0,
-            get_eos_erc20_smart_contract_address_from_db(&db)?,
+            get_erc20_on_eos_smart_contract_address_from_db(&db)?,
             get_eth_chain_id_from_db(&db)?,
             PERC20_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
             get_eth_gas_price_from_db(&db)?,
@@ -364,7 +364,7 @@ pub fn debug_get_remove_supported_token_tx<D>(
             tx_data,
             current_eth_account_nonce,
             0,
-            get_eos_erc20_smart_contract_address_from_db(&db)?,
+            get_erc20_on_eos_smart_contract_address_from_db(&db)?,
             get_eth_chain_id_from_db(&db)?,
             PERC20_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
             get_eth_gas_price_from_db(&db)?,

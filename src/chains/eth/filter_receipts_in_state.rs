@@ -9,7 +9,7 @@ use crate::{
         },
         eth_database_utils::{
             get_erc777_contract_address_from_db,
-            get_eos_erc20_smart_contract_address_from_db,
+            get_erc20_on_eos_smart_contract_address_from_db,
         },
     },
 };
@@ -38,7 +38,7 @@ pub fn filter_receipts_for_erc20_on_eos_peg_in_events_in_state<D>(
     state
         .get_eth_submission_material()?
         .filter_for_receipts_containing_log_with_address_and_topics(
-            &get_eos_erc20_smart_contract_address_from_db(&state.db)?,
+            &get_erc20_on_eos_smart_contract_address_from_db(&state.db)?,
             &ERC20_ON_EOS_PEG_IN_EVENT_TOPIC.to_vec(),
         )
         .and_then(|filtered|
