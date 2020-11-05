@@ -3,6 +3,7 @@ use serde_json::{
     Value as JsonValue,
 };
 use ethereum_types::{
+    U256,
     H256 as EthHash,
     Address as EthAddress,
 };
@@ -47,6 +48,10 @@ pub struct EthSubmissionMaterial {
     pub receipts: EthReceipts,
     pub eos_ref_block_num: Option<u16>,
     pub eos_ref_block_prefix: Option<u32>,
+    pub hash: Option<EthHash>,
+    pub block_number: Option<U256>,
+    pub parent_hash: Option<EthHash>,
+    pub receipts_root: Option<EthHash>,
 }
 
 impl EthSubmissionMaterial {
@@ -56,7 +61,16 @@ impl EthSubmissionMaterial {
         eos_ref_block_num: Option<u16>,
         eos_ref_block_prefix: Option<u32>
     ) -> Self {
-        Self { block, receipts, eos_ref_block_num, eos_ref_block_prefix }
+        Self {
+            receipts,
+            eos_ref_block_num,
+            eos_ref_block_prefix,
+            hash: Some(block.hash),
+            block_number: Some(block.number),
+            parent_hash: Some(block.parent_hash),
+            receipts_root: Some(block.receipts_root),
+            block
+        }
     }
 
     pub fn get_eos_ref_block_num(&self) -> Result<u16> {
@@ -87,12 +101,17 @@ impl EthSubmissionMaterial {
     }
 
     pub fn from_json(json: &EthSubmissionMaterialJson) -> Result<Self> {
+        let block = EthBlock::from_json(&json.block)?;
         Ok(
             EthSubmissionMaterial {
-                block: EthBlock::from_json(&json.block)?,
+                hash: Some(block.hash),
+                block_number: Some(block.number),
+                parent_hash: Some(block.parent_hash),
+                receipts_root: Some(block.receipts_root),
                 eos_ref_block_num: json.eos_ref_block_num,
                 eos_ref_block_prefix: json.eos_ref_block_prefix,
-                receipts: EthReceipts::from_jsons(&json.receipts)?,
+                receipts: EthReceipts::from_jsons(&json.receipts.clone())?,
+                block,
             }
         )
     }
@@ -182,8 +201,12 @@ impl EthSubmissionMaterial {
 
     pub fn remove_receipts(&self) -> Self {
         EthSubmissionMaterial {
+            hash: self.hash,
             receipts: vec![].into(),
             block: self.block.clone(),
+            parent_hash: self.parent_hash,
+            block_number: self.block_number,
+            receipts_root: self.receipts_root,
             eos_ref_block_num: self.eos_ref_block_num,
             eos_ref_block_prefix: self.eos_ref_block_prefix,
         }
@@ -221,7 +244,6 @@ pub fn parse_eth_submission_material_and_put_in_state<D>(
 mod tests {
     use super::*;
     use std::str::FromStr;
-    use ethereum_types::U256;
     use crate::{
         chains::{
             eos::{

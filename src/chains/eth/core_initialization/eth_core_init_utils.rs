@@ -145,11 +145,16 @@ pub fn remove_receipts_from_block_in_state<D>( // ∵ there shouldn't be relevan
     where D: DatabaseInterface
 {
     trace!("✔ Removing receipts from ETH block in state...");
+    let block = state.get_eth_submission_material()?.block.clone();
     let block_with_no_receipts = EthSubmissionMaterial {
+        block: block.clone(),
+        hash: Some(block.hash),
+        receipts: vec![].into(),
         eos_ref_block_num: None,
         eos_ref_block_prefix: None,
-        receipts: vec![].into(),
-        block: state.get_eth_submission_material()?.block.clone(),
+        block_number: Some(block.number),
+        parent_hash: Some(block.parent_hash),
+        receipts_root: Some(block.receipts_root),
     };
     state.update_eth_submission_material(block_with_no_receipts)
 }
