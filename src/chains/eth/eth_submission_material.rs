@@ -73,12 +73,28 @@ impl EthSubmissionMaterial {
         }
     }
 
+    pub fn get_block_hash(&self) -> Result<EthHash> {
+        self.hash.ok_or(NoneError("✘ No `hash` in ETH submission material!"))
+    }
+
+    pub fn get_parent_hash(&self) -> Result<EthHash> {
+        self.parent_hash.ok_or(NoneError("✘ No` parent_hash` in ETH submission material!"))
+    }
+
+    pub fn get_block_number(&self) -> Result<U256> {
+        self.block_number.ok_or(NoneError("✘ No `block_number` in ETH submission material!"))
+    }
+
+    pub fn get_receipts_root(&self) -> Result<EthHash> {
+        self.receipts_root.ok_or(NoneError("✘ No `receipts_root` in ETH submission material!"))
+    }
+
     pub fn get_eos_ref_block_num(&self) -> Result<u16> {
-        Ok(self.eos_ref_block_num.ok_or(NoneError("No `eos_ref_block_num` in submission material!"))?)
+        self.eos_ref_block_num.ok_or(NoneError("No `eos_ref_block_num` in submission material!"))
     }
 
     pub fn get_eos_ref_block_prefix(&self) -> Result<u32> {
-        Ok(self.eos_ref_block_prefix.ok_or(NoneError("No `eos_ref_block_prefix` in submission material!"))?)
+        self.eos_ref_block_prefix.ok_or(NoneError("No `eos_ref_block_prefix` in submission material!"))
     }
 
     pub fn get_receipts(&self) -> Vec<EthReceipt> {
