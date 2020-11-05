@@ -276,7 +276,7 @@ pub fn get_special_eth_block_from_db<D>(
     where D: DatabaseInterface
 {
     get_special_eth_hash_from_db(db, block_type)
-        .and_then(|block_hash| get_eth_block_from_db(db, &block_hash))
+        .and_then(|block_hash| get_submission_material_from_db(db, &block_hash))
 }
 
 pub fn put_eth_hash_in_db<D>(
@@ -370,7 +370,7 @@ pub fn maybe_get_eth_submission_material_from_db<D>(
     }
 }
 
-pub fn get_eth_block_from_db<D>(
+pub fn get_submission_material_from_db<D>(
     db: &D,
     block_hash: &EthHash,
 ) -> Result<EthSubmissionMaterial>
@@ -784,14 +784,14 @@ mod tests {
     }
 
     #[test]
-    fn should_get_eth_block_from_db() {
+    fn should_get_submission_material_block_from_db() {
         let db = get_test_database();
         let block = get_sample_eth_submission_material_n(1).unwrap();
         let block_hash = block.block.hash;
         if let Err(e) = put_eth_submission_material_in_db(&db, &block) {
             panic!("Error putting ETH block and receipts in db: {}", e);
         };
-        match get_eth_block_from_db(&db, &block_hash) {
+        match get_submission_material_from_db(&db, &block_hash) {
             Ok(block_from_db) => assert_eq!(block_from_db, block),
             Err(e) => panic!("Error getting ETH block from db: {}", e),
         }

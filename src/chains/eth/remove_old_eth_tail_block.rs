@@ -6,8 +6,8 @@ use crate::{
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
         eth_database_utils::{
-            get_eth_block_from_db,
             get_eth_tail_block_from_db,
+            get_submission_material_from_db,
             get_eth_anchor_block_hash_from_db,
         },
     },
@@ -26,7 +26,7 @@ pub fn remove_parents_if_not_anchor<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    match get_eth_block_from_db(db, &block_whose_parents_to_be_removed.block.parent_hash) {
+    match get_submission_material_from_db(db, &block_whose_parents_to_be_removed.block.parent_hash) {
         Err(_) => {
             info!("✔ No block found ∵ doing nothing!");
             Ok(())
