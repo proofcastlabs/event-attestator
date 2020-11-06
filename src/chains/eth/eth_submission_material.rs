@@ -44,7 +44,7 @@ use crate::{
 // TODO The same would need to be true of the Receipts themselves since that's where the redeem param parsing is done!
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 pub struct EthSubmissionMaterial {
-    pub block: EthBlock,
+    pub block: Option<EthBlock>,
     pub receipts: EthReceipts,
     pub eos_ref_block_num: Option<u16>,
     pub eos_ref_block_prefix: Option<u32>,
@@ -69,8 +69,12 @@ impl EthSubmissionMaterial {
             block_number: Some(block.number),
             parent_hash: Some(block.parent_hash),
             receipts_root: Some(block.receipts_root),
-            block
+            block: Some(block),
         }
+    }
+
+    pub fn get_block(&self) -> Result<EthBlock> {
+        self.block.clone().ok_or(NoneError("✘ No block in ETH submisson material!"))
     }
 
     pub fn get_block_hash(&self) -> Result<EthHash> {
@@ -103,7 +107,7 @@ impl EthSubmissionMaterial {
 
     pub fn to_json(&self) -> Result<JsonValue> {
         Ok(json!({
-            "block": &self.block.to_json()?,
+            "block": &self.get_block()?.to_json()?,
             "receipts": self.receipts.0.iter().map(|receipt| receipt.to_json()).collect::<Result<Vec<JsonValue>>>()?,
         }))
     }
@@ -127,7 +131,7 @@ impl EthSubmissionMaterial {
                 eos_ref_block_num: json.eos_ref_block_num,
                 eos_ref_block_prefix: json.eos_ref_block_prefix,
                 receipts: EthReceipts::from_jsons(&json.receipts.clone())?,
-                block,
+                block: Some(block),
             }
         )
     }
@@ -148,7 +152,7 @@ impl EthSubmissionMaterial {
     ) -> Result<Self> {
         info!("✔ Number of receipts before filtering: {}", self.receipts.len());
         let filtered = Self::new(
-            self.block.clone(),
+            self.get_block()?,
             self.receipts.filter_for_receipts_containing_log_with_address_and_topics(address, topics),
             self.eos_ref_block_num,
             self.eos_ref_block_prefix,
@@ -171,17 +175,18 @@ impl EthSubmissionMaterial {
                 .collect()
         );
         info!("✔ Num receipts after filtering for those pertaining to ERC20 dictionary: {}", filtered_receipts.len());
-        Ok(Self::new(self.block.clone(), filtered_receipts, self.eos_ref_block_num, self.eos_ref_block_prefix))
+        Ok(Self::new(self.get_block()?, filtered_receipts, self.eos_ref_block_num, self.eos_ref_block_prefix))
     }
 
     pub fn receipts_are_valid(&self) -> Result<bool> {
         self
             .receipts
             .get_merkle_root()
-            .map(|calculated_root| {
-                info!("✔    Block's receipts root: {}", self.block.receipts_root.to_string());
+            .and_then(|calculated_root| {
+                let receipts_root = self.get_receipts_root()?;
+                info!("✔    Block's receipts root: {}", receipts_root.to_string());
                 info!("✔ Calculated receipts root: {}", calculated_root.to_string());
-                calculated_root == self.block.receipts_root
+                Ok(calculated_root == receipts_root)
             })
     }
 
@@ -297,19 +302,13 @@ mod tests {
     #[test]
     fn should_parse_eth_submission_material_json() {
         let json_string = get_sample_eth_submission_material_string(0).unwrap();
-        match EthSubmissionMaterial::from_str(&json_string) {
-            Ok(block_and_receipt) => {
-                let block = block_and_receipt
-                    .block
-                    .clone();
-                let receipt = block_and_receipt.receipts.0[SAMPLE_RECEIPT_INDEX].clone();
-                let expected_block = get_expected_block();
-                let expected_receipt = get_expected_receipt();
-                assert_eq!(block, expected_block);
-                assert_eq!(receipt, expected_receipt);
-            }
-            _ => panic!("Should parse block & receipts correctly!"),
-        }
+        let submission_material = EthSubmissionMaterial::from_str(&json_string).unwrap();
+        let block = submission_material.get_block().unwrap();
+        let receipt = submission_material.receipts.0[SAMPLE_RECEIPT_INDEX].clone();
+        let expected_block = get_expected_block();
+        let expected_receipt = get_expected_receipt();
+        assert_eq!(block, expected_block);
+        assert_eq!(receipt, expected_receipt);
     }
 
     #[test]

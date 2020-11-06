@@ -171,7 +171,7 @@ pub fn put_special_eth_block_in_db<D>(
 {
     trace!("✔ Putting ETH special block in db of type: {}", block_type);
     put_eth_submission_material_in_db(db, &eth_submission_material)
-        .and_then(|_| put_special_eth_hash_in_db(db, &block_type, &eth_submission_material.block.hash))
+        .and_then(|_| put_special_eth_hash_in_db(db, &block_type, &eth_submission_material.get_block_hash()?))
 }
 
 pub fn put_special_eth_hash_in_db<D>(
@@ -197,7 +197,7 @@ pub fn get_latest_eth_block_number<D>(db: &D) -> Result<usize>
 {
     info!("✔ Getting latest ETH block number from db...");
     match get_special_eth_block_from_db(db, "latest") {
-        Ok(result) => Ok(result.block.number.as_usize()),
+        Ok(result) => Ok(result.get_block_number()?.as_usize()),
         Err(e) => Err(e)
     }
 }
@@ -314,8 +314,9 @@ pub fn put_eth_submission_material_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    let key = convert_h256_to_bytes(eth_submission_material.block.hash);
+    let key = convert_h256_to_bytes(eth_submission_material.get_block_hash()?);
     trace!("✔ Adding block to database under key: {:?}", hex::encode(&key));
+    // TODO Make the submisson material as small as possible first! Have a method on it to remove the block!
     db.put(key, eth_submission_material.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
 }
 
@@ -326,22 +327,25 @@ pub fn maybe_get_parent_eth_submission_material<D>(
     where D: DatabaseInterface
 {
     debug!("✔ Maybe getting parent ETH block from db...");
-    maybe_get_nth_ancestor_eth_submission_material(db, block_hash, 1)
+    match maybe_get_nth_ancestor_eth_submission_material(db, block_hash, 1) { // FIXME!
+        Ok(option) => option,
+        _ => None,
+    }
 }
 
 pub fn maybe_get_nth_ancestor_eth_submission_material<D>(
     db: &D,
     block_hash: &EthHash,
     n: u64,
-) -> Option<EthSubmissionMaterial>
+) -> Result<Option<EthSubmissionMaterial>>
     where D: DatabaseInterface
 {
     debug!("✔ Getting {}th ancestor ETH block from db...", n);
     match maybe_get_eth_submission_material_from_db(db, block_hash) {
-        None => None,
+        None => Ok(None),
         Some(block_and_receipts) => match n {
-            0 => Some(block_and_receipts),
-            _ => maybe_get_nth_ancestor_eth_submission_material(db, &block_and_receipts.block.parent_hash, n - 1)
+            0 => Ok(Some(block_and_receipts)),
+            _ => maybe_get_nth_ancestor_eth_submission_material(db, &block_and_receipts.get_parent_hash().unwrap(), n - 1)
         }
     }
 }
@@ -654,9 +658,7 @@ mod tests {
         let thing = vec![0xc0];
         let db = get_test_database();
         let key = *ETH_ACCOUNT_NONCE_KEY;
-        if let Err(e) = db.put(key.to_vec(), thing, MIN_DATA_SENSITIVITY_LEVEL) {
-            panic!("Error putting canon to tip len in db: {}", e);
-        };
+        db.put(key.to_vec(), thing, MIN_DATA_SENSITIVITY_LEVEL).unwrap();
         let result = key_exists_in_db(&db, &ETH_ACCOUNT_NONCE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
         assert!(result);
     }
@@ -665,9 +667,7 @@ mod tests {
     fn should_put_eth_gas_price_in_db() {
         let db = get_test_database();
         let gas_price = 20_000_000;
-        if let Err(e) = put_eth_gas_price_in_db(&db, gas_price) {
-            panic!("Error putting gas price in db: {}", e);
-        };
+        put_eth_gas_price_in_db(&db, gas_price).unwrap();
         match get_eth_gas_price_from_db(&db) {
             Ok(gas_price_from_db) => assert_eq!(gas_price_from_db, gas_price),
             Err(e) => panic!("Error getting gas price from db: {}", e),
@@ -678,22 +678,16 @@ mod tests {
     fn should_put_chain_id_in_db() {
         let db = get_test_database();
         let chain_id = 6;
-        if let Err(e) = put_eth_chain_id_in_db(&db, chain_id) {
-            panic!("Error putting chain id in db: {}", e);
-        };
-        match get_eth_chain_id_from_db(&db) {
-            Ok(chain_id_from_db) => assert_eq!(chain_id_from_db, chain_id),
-            Err(e) => panic!("Error getting chain id from db: {}", e),
-        }
+        put_eth_chain_id_in_db(&db, chain_id).unwrap();
+        let result = get_eth_chain_id_from_db(&db).unwrap();
+        assert_eq!(result, chain_id);
     }
 
     #[test]
     fn should_save_nonce_to_db_and_get_nonce_from_db() {
         let db = get_test_database();
         let nonce = 1227;
-        if let Err(e) = put_eth_account_nonce_in_db(&db, nonce) {
-            panic!("Error saving eth account nonce in db: {}", e);
-        };
+        put_eth_account_nonce_in_db(&db, nonce).unwrap();
         match get_eth_account_nonce_from_db(&db) {
             Ok(nonce_from_db) => assert_eq!(nonce_from_db, nonce),
             Err(e) => panic!("Error getting nonce from db: {}", e),
@@ -704,9 +698,7 @@ mod tests {
     fn should_get_erc777_contract_address_from_db() {
         let db = get_test_database();
         let contract_address = get_sample_eth_address();
-        if let Err(e) = put_btc_on_eth_smart_contract_address_in_db(&db, &contract_address) {
-            panic!("Error putting eth address in db: {}", e);
-        };
+        put_btc_on_eth_smart_contract_address_in_db(&db, &contract_address).unwrap();
         let result = get_erc777_contract_address_from_db(&db).unwrap();
         assert_eq!(result, contract_address);
     }
@@ -715,9 +707,7 @@ mod tests {
     fn should_get_eth_pk_from_database() {
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
-        if let Err(e) = put_eth_private_key_in_db(&db, &eth_private_key) {
-            panic!("Error putting eth private key in db: {}", e);
-        }
+        put_eth_private_key_in_db(&db, &eth_private_key).unwrap();
         match get_eth_private_key_from_db(&db) {
             Ok(pk) => assert_eq!(pk, eth_private_key),
             Err(e) => panic!("Error getting eth private key from db: {}", e),
@@ -728,13 +718,9 @@ mod tests {
     fn should_increment_eth_account_nonce_in_db() {
         let nonce = 666;
         let db = get_test_database();
-        if let Err(e) = put_eth_account_nonce_in_db(&db, nonce) {
-            panic!("Error saving eth account nonce in db: {}", e);
-        };
+        put_eth_account_nonce_in_db(&db, nonce).unwrap();
         let amount_to_increment_by: u64 = 671;
-        if let Err(e) = increment_eth_account_nonce_in_db(&db, amount_to_increment_by) {
-            panic!("Error incrementing nonce in db: {}", e);
-        };
+        increment_eth_account_nonce_in_db(&db, amount_to_increment_by).unwrap();
         match get_eth_account_nonce_from_db(&db) {
             Err(e) => panic!("Error getting nonce from db: {}", e),
             Ok(nonce_from_db) => assert_eq!(nonce_from_db, nonce + amount_to_increment_by),
@@ -745,10 +731,8 @@ mod tests {
     fn should_put_and_get_special_eth_hash_in_db() {
         let db = get_test_database();
         let hash_type = "linker";
-        let hash = get_sample_eth_submission_material_n(1).unwrap().block.hash;
-        if let Err(e) = put_special_eth_hash_in_db(&db, &hash_type, &hash) {
-            panic!("Error putting ETH special hash in db: {}", e);
-        };
+        let hash = get_sample_eth_submission_material_n(1).unwrap().get_block_hash().unwrap();
+        put_special_eth_hash_in_db(&db, &hash_type, &hash).unwrap();
         match get_special_eth_hash_from_db(&db, hash_type) {
             Ok(hash_from_db) => assert_eq!(hash_from_db, hash),
             Err(e) => panic!("Error getting ETH special hash from db: {}", e),
@@ -759,10 +743,8 @@ mod tests {
     fn should_put_and_get_eth_hash_in_db() {
         let db = get_test_database();
         let hash_key = vec![6u8, 6u8, 6u8];
-        let hash = get_sample_eth_submission_material_n(1).unwrap().block.hash;
-        if let Err(e) = put_eth_hash_in_db(&db, &hash_key, &hash){
-            panic!("Error putting ETH hash in db: {}", e);
-        };
+        let hash = get_sample_eth_submission_material_n(1).unwrap().get_block_hash().unwrap();
+        put_eth_hash_in_db(&db, &hash_key, &hash).unwrap();
         match get_eth_hash_from_db(&db, &hash_key) {
             Ok(hash_from_db) => assert_eq!(hash_from_db, hash),
             Err(e) => panic!("Error getting ETH hash from db: {}", e),
@@ -774,9 +756,7 @@ mod tests {
         let db = get_test_database();
         let block_type = "anchor";
         let block = get_sample_eth_submission_material_n(1).unwrap();
-        if let Err(e) = put_special_eth_block_in_db(&db, &block, &block_type) {
-            panic!("Error putting ETH special block in db: {}", e);
-        };
+        put_special_eth_block_in_db(&db, &block, &block_type).unwrap();
         match get_special_eth_block_from_db(&db, block_type) {
             Ok(block_from_db) => assert_eq!(block_from_db, block),
             Err(e) => panic!("Error getting ETH special block from db: {}", e),
@@ -787,10 +767,8 @@ mod tests {
     fn should_get_submission_material_block_from_db() {
         let db = get_test_database();
         let block = get_sample_eth_submission_material_n(1).unwrap();
-        let block_hash = block.block.hash;
-        if let Err(e) = put_eth_submission_material_in_db(&db, &block) {
-            panic!("Error putting ETH block and receipts in db: {}", e);
-        };
+        let block_hash = block.get_block_hash().unwrap();
+        put_eth_submission_material_in_db(&db, &block).unwrap();
         match get_submission_material_from_db(&db, &block_hash) {
             Ok(block_from_db) => assert_eq!(block_from_db, block),
             Err(e) => panic!("Error getting ETH block from db: {}", e),
@@ -802,18 +780,15 @@ mod tests {
         let db = get_test_database();
         let key = ETH_ADDRESS_KEY.to_vec();
         let eth_address = get_sample_contract_address();
-        if let Err(e) = put_eth_address_in_db(&db, &key, &eth_address) {
-            panic!("Error putting ETH address in db: {}", e);
-        };
+        let result = put_eth_address_in_db(&db, &key, &eth_address);
+        assert!(result.is_ok());
     }
 
     #[test]
     fn should_put_and_get_public_eth_address_in_db() {
         let db = get_test_database();
         let eth_address = get_sample_contract_address();
-        if let Err(e) = put_public_eth_address_in_db(&db, &eth_address) {
-            panic!("Error putting ETH address in db: {}", e);
-        };
+        put_public_eth_address_in_db(&db, &eth_address).unwrap();
         match get_public_eth_address_from_db(&db) {
             Ok(eth_address_from_db) => assert_eq!(eth_address_from_db, eth_address),
             Err(e) => panic!("Error getting ETH address from db: {}", e),
@@ -823,7 +798,7 @@ mod tests {
     #[test]
     fn maybe_get_block_should_be_none_if_block_not_extant() {
         let db = get_test_database();
-        let block_hash = get_sample_eth_submission_material_n(1).unwrap().block.hash;
+        let block_hash = get_sample_eth_submission_material_n(1).unwrap().get_block_hash().unwrap();
         if maybe_get_eth_submission_material_from_db(&db, &block_hash).is_some() {
             panic!("Maybe getting none existing block should be 'None'");
         };
@@ -833,10 +808,8 @@ mod tests {
     fn should_maybe_get_some_block_if_exists() {
         let db = get_test_database();
         let block = get_sample_eth_submission_material_n(1).unwrap();
-        let block_hash = block.block.hash;
-        if let Err(e) = put_eth_submission_material_in_db(&db, &block) {
-            panic!("Error putting ETH block in db: {}", e);
-        };
+        let block_hash = block.get_block_hash().unwrap();
+        put_eth_submission_material_in_db(&db, &block).unwrap();
         match maybe_get_eth_submission_material_from_db(&db, &block_hash) {
             None => panic!("Block should exist in db!"),
             Some(block_from_db) => assert_eq!(block_from_db, block),
@@ -847,13 +820,10 @@ mod tests {
     fn should_return_none_if_no_parent_block_exists() {
         let db = get_test_database();
         let block = get_sample_eth_submission_material_n(1).unwrap();
-        let block_hash = block.block.hash;
-        if let Err(e) = put_eth_submission_material_in_db(&db, &block) {
-            panic!("Error putting ETH block in db: {}", e);
-        };
-        if maybe_get_parent_eth_submission_material(&db, &block_hash).is_some() {
-            panic!("Block should have no parent in the DB!");
-        };
+        let block_hash = block.get_block_hash().unwrap();
+        put_eth_submission_material_in_db(&db, &block).unwrap();
+        let result = maybe_get_parent_eth_submission_material(&db, &block_hash);
+        assert!(result.is_none());
     }
 
     #[test]
@@ -862,13 +832,9 @@ mod tests {
         let blocks = get_sequential_eth_blocks_and_receipts();
         let block = blocks[1].clone();
         let parent_block = blocks[0].clone();
-        let block_hash = block.block.hash;
-        if let Err(e) = put_eth_submission_material_in_db(&db, &block) {
-            panic!("Error putting ETH block in db: {}", e);
-        };
-        if let Err(e) = put_eth_submission_material_in_db(&db, &parent_block) {
-            panic!("Error putting ETH block in db: {}", e);
-        };
+        let block_hash = block.get_block_hash().unwrap();
+        put_eth_submission_material_in_db(&db, &block).unwrap();
+        put_eth_submission_material_in_db(&db, &parent_block).unwrap();
         match maybe_get_parent_eth_submission_material(&db, &block_hash) {
             None => panic!("Block should have parent in the DB!"),
             Some(parent_block_from_db) => assert_eq!(parent_block_from_db, parent_block),
@@ -880,38 +846,29 @@ mod tests {
         let ancestor_number = 3;
         let db = get_test_database();
         let block = get_sample_eth_submission_material_n(1).unwrap();
-        let block_hash = block.block.hash;
-        if let Err(e) = put_eth_submission_material_in_db(&db, &block) {
-            panic!("Error putting ETH block in db: {}", e);
-        };
-        if maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, ancestor_number).is_some() {
-            panic!("Block should have no parent in the DB!");
-        };
+        let block_hash = block.get_block_hash().unwrap();
+        put_eth_submission_material_in_db(&db, &block).unwrap();
+        let result = maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, ancestor_number).unwrap();
+        assert!(result.is_none());
     }
 
     #[test]
     fn should_get_nth_ancestor_if_extant() {
         let db = get_test_database();
         let blocks = get_sequential_eth_blocks_and_receipts();
-        let block_hash = blocks[blocks.len() - 1].block.hash;
-        if let Err(e) = blocks
-            .iter()
-            .map(|block| put_eth_submission_material_in_db(&db, block))
-            .collect::<Result<()>>() {
-                panic!("Error putting block in db: {}", e);
-            };
+        let block_hash = blocks[blocks.len() - 1].get_block_hash().unwrap();
+        blocks.iter().map(|block| put_eth_submission_material_in_db(&db, block)).collect::<Result<()>>().unwrap();
         blocks
             .iter()
             .enumerate()
             .map(|(i, _)|
-                match maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, i as u64) {
+                match maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, i as u64).unwrap() {
                     None => panic!("Ancestor number {} should exist!", i),
                     Some(ancestor) => assert_eq!(ancestor, blocks[blocks.len() - i - 1]),
                 }
              )
             .for_each(drop);
-        if maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, blocks.len() as u64).is_some() {
-            panic!("Shouldn't have ancestor #{} in db!", blocks.len());
-        };
+        let result =  maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, blocks.len() as u64).unwrap();
+        assert!(result.is_none());
     }
 }

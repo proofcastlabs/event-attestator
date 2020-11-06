@@ -35,11 +35,7 @@ pub fn put_eth_tail_block_hash_in_db_and_return_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Putting ETH tail block has in db...");
-    put_eth_tail_block_hash_in_db(
-        &state.db,
-        &state.get_eth_submission_material()?.block.hash
-    )
-        .map(|_| state)
+    put_eth_tail_block_hash_in_db(&state.db, &state.get_eth_submission_material()?.get_block_hash()?).and(Ok(state))
 }
 
 fn set_hash_from_block_in_state<D>(
@@ -48,7 +44,7 @@ fn set_hash_from_block_in_state<D>(
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
-    let hash = &state.get_eth_submission_material()?.block.hash;
+    let hash = &state.get_eth_submission_material()?.get_block_hash()?;
     match hash_type {
         "canon" => {
             info!("✔ Initializating ETH canon block hash...");
@@ -139,15 +135,15 @@ pub fn put_eth_account_nonce_in_db_and_return_state<D>(
         .map(|_| state)
 }
 
+// FIXME Do we call this AFTER we've saved the block? In which point there is no block in the stuct!
 pub fn remove_receipts_from_block_in_state<D>( // ∵ there shouldn't be relevant txs!
     state: EthState<D>
 ) -> Result<EthState<D>>
     where D: DatabaseInterface
 {
     trace!("✔ Removing receipts from ETH block in state...");
-    let block = state.get_eth_submission_material()?.block.clone();
+    let block = state.get_eth_submission_material()?.get_block()?;
     let block_with_no_receipts = EthSubmissionMaterial {
-        block: block.clone(),
         hash: Some(block.hash),
         receipts: vec![].into(),
         eos_ref_block_num: None,
@@ -155,6 +151,7 @@ pub fn remove_receipts_from_block_in_state<D>( // ∵ there shouldn't be relevan
         block_number: Some(block.number),
         parent_hash: Some(block.parent_hash),
         receipts_root: Some(block.receipts_root),
+        block: Some(block),
     };
     state.update_eth_submission_material(block_with_no_receipts)
 }

@@ -24,7 +24,7 @@ pub fn update_latest_block_hash_if_subsequent<D>(
     info!("✔ Updating latest ETH block hash if subsequent...");
     get_eth_latest_block_from_db(db)
         .and_then(|latest_block_and_receipts|
-            match is_block_subsequent(&latest_block_and_receipts.block, &maybe_subsequent_block) {
+            match is_block_subsequent(&latest_block_and_receipts.get_block()?, &maybe_subsequent_block) {
                 false => {
                     info!("✔ Block NOT subsequent ∴ NOT updating latest block hash!");
                     Ok(())
@@ -43,7 +43,7 @@ pub fn maybe_update_latest_block_hash_and_return_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Maybe updating latest ETH block hash if subsequent...");
-    update_latest_block_hash_if_subsequent(&state.db, &state.get_eth_submission_material()?.block).and(Ok(state))
+    update_latest_block_hash_if_subsequent(&state.db, &state.get_eth_submission_material()?.get_block()?).and(Ok(state))
 }
 
 #[cfg(test)]
@@ -70,7 +70,10 @@ mod tests {
     #[test]
     fn should_return_true_if_block_is_subsequent() {
         let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
-        let result = is_block_subsequent(&blocks_and_receipts[0].block, &blocks_and_receipts[1].block);
+        let result = is_block_subsequent(
+            &blocks_and_receipts[0].get_block().unwrap(),
+            &blocks_and_receipts[1].get_block().unwrap(),
+        );
         assert!(result);
     }
 
@@ -78,7 +81,10 @@ mod tests {
     fn should_return_false_if_block_is_not_subsequent() {
         let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
         for i in 2..blocks_and_receipts.len() {
-            assert!(!is_block_subsequent(&blocks_and_receipts[0].block, &blocks_and_receipts[i].block));
+            assert!(!is_block_subsequent(
+                &blocks_and_receipts[0].get_block().unwrap(),
+                &blocks_and_receipts[i].get_block().unwrap(),
+            ));
         }
     }
 
@@ -86,16 +92,11 @@ mod tests {
     fn should_update_latest_block_hash_if_subsequent() {
         let db = get_test_database();
         let latest_block_and_receipts = get_sequential_eth_blocks_and_receipts()[0].clone();
-        let latest_block_hash_before = latest_block_and_receipts.block.hash;
+        let latest_block_hash_before = latest_block_and_receipts.get_block_hash().unwrap();
         put_eth_latest_block_in_db(&db, &latest_block_and_receipts).unwrap();
         let subsequent_block = get_sequential_eth_blocks_and_receipts()[1].clone();
-        let expected_block_hash_after = subsequent_block.block.hash;
-        if let Err(e) = update_latest_block_hash_if_subsequent(
-            &db,
-            &subsequent_block.block,
-        ) {
-            panic!("Error when maybe updating latest blockhash: {}", e);
-        };
+        let expected_block_hash_after = subsequent_block.get_block_hash().unwrap();
+        update_latest_block_hash_if_subsequent(&db, &subsequent_block.get_block().unwrap()).unwrap();
         let latest_block_hash_after = get_eth_latest_block_hash_from_db(&db).unwrap();
         assert_ne!(latest_block_hash_before, latest_block_hash_after);
         assert_eq!(latest_block_hash_after, expected_block_hash_after);
@@ -105,12 +106,10 @@ mod tests {
     fn should_not_update_latest_block_hash_if_not_subsequent() {
         let db = get_test_database();
         let latest_block_and_receipts = get_sequential_eth_blocks_and_receipts()[0].clone();
-        let latest_block_hash_before = latest_block_and_receipts.block.hash;
+        let latest_block_hash_before = latest_block_and_receipts.get_block_hash().unwrap();
         put_eth_latest_block_in_db(&db, &latest_block_and_receipts).unwrap();
         let non_subsequent_block = get_sequential_eth_blocks_and_receipts()[0].clone();
-        if let Err(e) = update_latest_block_hash_if_subsequent(&db, &non_subsequent_block.block) {
-            panic!("Error when maybe updating latest blockhash: {}", e);
-        };
+        update_latest_block_hash_if_subsequent(&db, &non_subsequent_block.get_block().unwrap()).unwrap();
         let latest_block_hash_after = get_hash_from_db_via_hash_key(
             &db,
             EthHash::from_slice(&ETH_LATEST_BLOCK_HASH_KEY[..]),
