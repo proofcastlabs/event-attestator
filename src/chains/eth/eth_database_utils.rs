@@ -316,8 +316,7 @@ pub fn put_eth_submission_material_in_db<D>(
 {
     let key = convert_h256_to_bytes(eth_submission_material.get_block_hash()?);
     trace!("✔ Adding block to database under key: {:?}", hex::encode(&key));
-    // TODO Make the submisson material as small as possible first! Have a method on it to remove the block!
-    db.put(key, eth_submission_material.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
+    db.put(key, eth_submission_material.remove_block().to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn maybe_get_parent_eth_submission_material<D>(
@@ -755,23 +754,25 @@ mod tests {
     fn should_put_and_get_special_eth_block_in_db() {
         let db = get_test_database();
         let block_type = "anchor";
-        let block = get_sample_eth_submission_material_n(1).unwrap();
-        put_special_eth_block_in_db(&db, &block, &block_type).unwrap();
+        let submission_material = get_sample_eth_submission_material_n(1).unwrap();
+        let expected_result = submission_material.remove_block();
+        put_special_eth_block_in_db(&db, &submission_material, &block_type).unwrap();
         match get_special_eth_block_from_db(&db, block_type) {
-            Ok(block_from_db) => assert_eq!(block_from_db, block),
-            Err(e) => panic!("Error getting ETH special block from db: {}", e),
+            Ok(result) => assert_eq!(result, expected_result),
+            Err(e) => panic!("Error getting ETH special submission_material from db: {}", e),
         }
     }
 
     #[test]
     fn should_get_submission_material_block_from_db() {
         let db = get_test_database();
-        let block = get_sample_eth_submission_material_n(1).unwrap();
-        let block_hash = block.get_block_hash().unwrap();
-        put_eth_submission_material_in_db(&db, &block).unwrap();
+        let submission_material = get_sample_eth_submission_material_n(1).unwrap();
+        let expected_result = submission_material.remove_block();
+        let block_hash = submission_material.get_block_hash().unwrap();
+        put_eth_submission_material_in_db(&db, &submission_material).unwrap();
         match get_submission_material_from_db(&db, &block_hash) {
-            Ok(block_from_db) => assert_eq!(block_from_db, block),
-            Err(e) => panic!("Error getting ETH block from db: {}", e),
+            Ok(result) => assert_eq!(result, expected_result),
+            Err(e) => panic!("Error getting ETH submission_material from db: {}", e),
         }
     }
 
@@ -807,12 +808,13 @@ mod tests {
     #[test]
     fn should_maybe_get_some_block_if_exists() {
         let db = get_test_database();
-        let block = get_sample_eth_submission_material_n(1).unwrap();
-        let block_hash = block.get_block_hash().unwrap();
-        put_eth_submission_material_in_db(&db, &block).unwrap();
+        let submission_material = get_sample_eth_submission_material_n(1).unwrap();
+        let expected_result = submission_material.remove_block();
+        let block_hash = submission_material.get_block_hash().unwrap();
+        put_eth_submission_material_in_db(&db, &submission_material).unwrap();
         match maybe_get_eth_submission_material_from_db(&db, &block_hash) {
-            None => panic!("Block should exist in db!"),
-            Some(block_from_db) => assert_eq!(block_from_db, block),
+            None => panic!("`submission_material` should exist in db!"),
+            Some(result) => assert_eq!(result, expected_result),
         };
     }
 
@@ -832,12 +834,13 @@ mod tests {
         let blocks = get_sequential_eth_blocks_and_receipts();
         let block = blocks[1].clone();
         let parent_block = blocks[0].clone();
+        let expected_result = parent_block.remove_block();
         let block_hash = block.get_block_hash().unwrap();
         put_eth_submission_material_in_db(&db, &block).unwrap();
         put_eth_submission_material_in_db(&db, &parent_block).unwrap();
         match maybe_get_parent_eth_submission_material(&db, &block_hash) {
             None => panic!("Block should have parent in the DB!"),
-            Some(parent_block_from_db) => assert_eq!(parent_block_from_db, parent_block),
+            Some(result) => assert_eq!(result, expected_result),
         };
     }
 
@@ -864,7 +867,7 @@ mod tests {
             .map(|(i, _)|
                 match maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, i as u64).unwrap() {
                     None => panic!("Ancestor number {} should exist!", i),
-                    Some(ancestor) => assert_eq!(ancestor, blocks[blocks.len() - i - 1]),
+                    Some(ancestor) => assert_eq!(ancestor, blocks[blocks.len() - i - 1].remove_block()),
                 }
              )
             .for_each(drop);

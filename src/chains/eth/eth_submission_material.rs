@@ -106,8 +106,18 @@ impl EthSubmissionMaterial {
     }
 
     pub fn to_json(&self) -> Result<JsonValue> {
+        let block_json = match &self.block {
+            Some(block) => Some(block.to_json()?),
+            None => None,
+        };
         Ok(json!({
-            "block": &self.get_block()?.to_json()?,
+            "hash": self.hash,
+            "block": block_json,
+            "parent_hash": self.parent_hash,
+            "block_number": self.block_number,
+            "receipts_root": self.receipts_root,
+            "eos_ref_block_num": self.eos_ref_block_num,
+            "eos_ref_block_prefix": self.eos_ref_block_prefix,
             "receipts": self.receipts.0.iter().map(|receipt| receipt.to_json()).collect::<Result<Vec<JsonValue>>>()?,
         }))
     }
@@ -121,9 +131,12 @@ impl EthSubmissionMaterial {
     }
 
     pub fn from_json(json: &EthSubmissionMaterialJson) -> Result<Self> {
-        let block = EthBlock::from_json(&json.block)?;
-        Ok(
-            EthSubmissionMaterial {
+        let block = match json.block {
+            Some(ref block_json) => Some(EthBlock::from_json(block_json)?),
+            None => None,
+        };
+        match block {
+            Some(block) => Ok(EthSubmissionMaterial {
                 hash: Some(block.hash),
                 block_number: Some(block.number),
                 parent_hash: Some(block.parent_hash),
@@ -132,8 +145,19 @@ impl EthSubmissionMaterial {
                 eos_ref_block_prefix: json.eos_ref_block_prefix,
                 receipts: EthReceipts::from_jsons(&json.receipts.clone())?,
                 block: Some(block),
-            }
-        )
+            }),
+            // TODO check that the new bits are there in their options?
+            None =>  Ok(EthSubmissionMaterial {
+                block: None,
+                hash: json.hash,
+                parent_hash: json.parent_hash,
+                block_number: json.block_number,
+                receipts_root:json.receipts_root,
+                eos_ref_block_num: json.eos_ref_block_num,
+                eos_ref_block_prefix: json.eos_ref_block_prefix,
+                receipts: EthReceipts::from_jsons(&json.receipts.clone())?,
+            })
+        }
     }
 
     pub fn from_str(json_str: &str) -> Result<Self> {
@@ -232,14 +256,31 @@ impl EthSubmissionMaterial {
             eos_ref_block_prefix: self.eos_ref_block_prefix,
         }
     }
+
+    pub fn remove_block(&self) -> Self {
+        EthSubmissionMaterial {
+            block: None,
+            hash: self.hash,
+            parent_hash: self.parent_hash,
+            receipts: self.receipts.clone(),
+            block_number: self.block_number,
+            receipts_root: self.receipts_root,
+            eos_ref_block_num: self.eos_ref_block_num,
+            eos_ref_block_prefix: self.eos_ref_block_prefix,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct EthSubmissionMaterialJson {
-    pub block: EthBlockJson,
+    pub block: Option<EthBlockJson>,
     pub receipts: Vec<EthReceiptJson>,
     pub eos_ref_block_num: Option<u16>,
     pub eos_ref_block_prefix: Option<u32>,
+    pub hash: Option<EthHash>,
+    pub block_number: Option<U256>,
+    pub parent_hash: Option<EthHash>,
+    pub receipts_root: Option<EthHash>,
 }
 
 impl EthSubmissionMaterialJson {

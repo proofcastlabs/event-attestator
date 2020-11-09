@@ -254,7 +254,7 @@ mod tests {
     #[test]
     fn should_parse_eth_block_json_to_eth_block() {
         let eth_json = get_sample_eth_submission_material_json().unwrap();
-        match EthBlock::from_json(&eth_json.block) {
+        match EthBlock::from_json(&eth_json.block.unwrap()) {
             Ok(block) => assert_eq!(block, get_expected_block()),
             _ => panic!("Failed to get eth block json!"),
         }

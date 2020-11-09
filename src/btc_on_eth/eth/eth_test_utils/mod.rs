@@ -520,8 +520,8 @@ mod tests {
     #[test]
     fn should_get_sample_eth_submission_material_json() {
         let expected_block_number = 8503804;
-        let result = get_sample_eth_submission_material_json().unwrap();
-        assert_eq!(result.block.number, expected_block_number);
+        let result = get_sample_eth_submission_material_json().unwrap().block.unwrap().number;
+        assert_eq!(result, expected_block_number);
     }
 
     #[test]

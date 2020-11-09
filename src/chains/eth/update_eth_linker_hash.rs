@@ -80,11 +80,12 @@ mod tests {
         let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
         let canon_block = blocks_and_receipts[5].clone();
         let parent_of_eth_tail_block = blocks_and_receipts[4].clone();
+        let expected_result = parent_of_eth_tail_block.remove_block();
         assert!(canon_block.get_parent_hash().unwrap() == parent_of_eth_tail_block.get_block_hash().unwrap());
         put_eth_tail_block_in_db(&db, &canon_block).unwrap();
         put_eth_submission_material_in_db(&db, &parent_of_eth_tail_block).unwrap();
         let result = maybe_get_parent_of_eth_tail_block(&db).unwrap().unwrap();
-        assert_eq!(result, parent_of_eth_tail_block);
+        assert_eq!(result, expected_result);
     }
 
     #[test]
