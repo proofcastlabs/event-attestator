@@ -640,6 +640,7 @@ mod tests {
             get_sample_eth_address,
             get_sample_eth_private_key,
             get_sample_contract_address,
+            get_sample_eth_submission_material,
             get_sample_eth_submission_material_n,
             get_sequential_eth_blocks_and_receipts,
         },
@@ -873,5 +874,27 @@ mod tests {
             .for_each(drop);
         let result =  maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, blocks.len() as u64).unwrap();
         assert!(result.is_none());
+
+    }
+
+    #[test]
+    fn saving_submission_material_should_remove_block() {
+        let db = get_test_database();
+        let submission_material = get_sample_eth_submission_material();
+        let db_key = submission_material.get_block_hash().unwrap();
+        assert!(submission_material.block.is_some());
+        put_eth_submission_material_in_db(&db, &submission_material).unwrap();
+        let result = get_submission_material_from_db(&db, &db_key).unwrap();
+        assert!(result.block.is_none());
+    }
+
+    #[test]
+    fn should_save_submission_material_if_block_already_removed() {
+        let db = get_test_database();
+        let submission_material = get_sample_eth_submission_material().remove_block();
+        let db_key = submission_material.get_block_hash().unwrap();
+        put_eth_submission_material_in_db(&db, &submission_material).unwrap();
+        let result = get_submission_material_from_db(&db, &db_key).unwrap();
+        assert_eq!(result, submission_material);
     }
 }
