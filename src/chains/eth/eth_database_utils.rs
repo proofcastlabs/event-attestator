@@ -326,10 +326,7 @@ pub fn maybe_get_parent_eth_submission_material<D>(
     where D: DatabaseInterface
 {
     debug!("✔ Maybe getting parent ETH block from db...");
-    match maybe_get_nth_ancestor_eth_submission_material(db, block_hash, 1) { // FIXME!
-        Ok(option) => option,
-        _ => None,
-    }
+    maybe_get_nth_ancestor_eth_submission_material(db, block_hash, 1).ok()?
 }
 
 pub fn maybe_get_nth_ancestor_eth_submission_material<D>(
@@ -344,7 +341,7 @@ pub fn maybe_get_nth_ancestor_eth_submission_material<D>(
         None => Ok(None),
         Some(block_and_receipts) => match n {
             0 => Ok(Some(block_and_receipts)),
-            _ => maybe_get_nth_ancestor_eth_submission_material(db, &block_and_receipts.get_parent_hash().unwrap(), n - 1)
+            _ => maybe_get_nth_ancestor_eth_submission_material(db, &block_and_receipts.get_parent_hash()?, n - 1)
         }
     }
 }
