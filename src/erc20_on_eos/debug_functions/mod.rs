@@ -408,7 +408,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
                     Ok(state)
                 }
                 false => {
-                    info!("✔ {} receipts in block ∴ parsing info...", submission_material.block.number);
+                    info!("✔ {} receipts in block ∴ parsing info...", submission_material.get_block_number()?);
                     EosErc20Dictionary::get_from_db(&state.db)
                         .and_then(|accounts| submission_material.get_erc20_on_eos_peg_in_infos(&accounts))
                         .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
