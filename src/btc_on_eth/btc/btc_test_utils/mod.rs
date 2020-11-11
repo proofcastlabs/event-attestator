@@ -50,7 +50,7 @@ use crate::{
             btc_crypto::btc_private_key::BtcPrivateKey,
             parse_btc_block_and_id::parse_btc_block_and_tx_json_to_struct,
             minting_params::{
-                MintingParams,
+                BtcOnEthMintingParams,
                 MintingParamStruct,
             },
             btc_database_utils::{
@@ -118,7 +118,7 @@ pub const SAMPLE_SERIALIZED_BTC_UTXO: &str = "0e8d588f88d5624148070a8cd79508da8c
 
 fn get_btc_block_in_db_format(
     btc_block_and_id: BtcBlockAndId,
-    minting_params: MintingParams,
+    minting_params: BtcOnEthMintingParams,
     extra_data: Bytes,
 ) -> Result<BtcBlockInDbFormat> {
     BtcBlockInDbFormat::new(
@@ -183,7 +183,7 @@ pub fn get_sample_btc_pub_key_bytes() -> Bytes {
     hex::decode(SAMPLE_BTC_PUBLIC_KEY).unwrap()
 }
 
-pub fn get_sample_minting_params() -> MintingParams {
+pub fn get_sample_minting_params() -> BtcOnEthMintingParams {
     let originating_tx_address_1 =
         "335cC6c8e77ECD56402Fa7d4007622A6841a8B6A"
         .to_string();
@@ -223,7 +223,7 @@ pub fn get_sample_minting_params() -> MintingParams {
         originating_tx_hash: originating_tx_hash_3,
         originating_tx_address: originating_tx_address_3,
     };
-    MintingParams::new(vec![minting_params_1, minting_params_2, minting_params_3])
+    BtcOnEthMintingParams::new(vec![minting_params_1, minting_params_2, minting_params_3])
 }
 
 pub fn get_sample_sequential_btc_blocks_in_db_format(
@@ -263,7 +263,7 @@ pub fn convert_sample_block_to_db_format(
 ) -> Result<BtcBlockInDbFormat> {
     get_btc_block_in_db_format(
         btc_block_and_id,
-        MintingParams::new(Vec::new()),
+        BtcOnEthMintingParams::new(Vec::new()),
         Vec::new(),
     )
 }

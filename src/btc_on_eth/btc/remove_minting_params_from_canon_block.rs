@@ -3,7 +3,7 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eth::btc::{
         btc_state::BtcState,
-        minting_params::MintingParams,
+        minting_params::BtcOnEthMintingParams,
         btc_types::BtcBlockInDbFormat,
         btc_database_utils::{
             put_btc_canon_block_in_db,
@@ -22,7 +22,7 @@ fn remove_minting_params_from_canon_block<D>(
             BtcBlockInDbFormat::new(
                 canon_block.height,
                 canon_block.id,
-                MintingParams::new(vec![]),
+                BtcOnEthMintingParams::new(vec![]),
                 canon_block.block,
                 canon_block.extra_data,
             )

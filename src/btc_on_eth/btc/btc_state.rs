@@ -17,7 +17,7 @@ use crate::{
     },
     btc_on_eth::{
         btc::{
-            minting_params::MintingParams,
+            minting_params::BtcOnEthMintingParams,
             parse_submission_material_json::BtcSubmissionMaterialJson,
             btc_types::{
                 BtcBlockAndId,
@@ -32,7 +32,7 @@ use crate::{
 #[derive(Clone, PartialEq, Eq)]
 pub struct BtcState<D: DatabaseInterface> {
     pub db: D,
-    pub minting_params: MintingParams,
+    pub minting_params: BtcOnEthMintingParams,
     pub output_json_string: Option<String>,
     pub utxos_and_values: BtcUtxosAndValues,
     pub btc_block_and_id: Option<BtcBlockAndId>,
@@ -61,7 +61,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
             btc_block_in_db_format: None,
             any_sender_signed_txs: None,
             utxos_and_values: vec![].into(),
-            minting_params: MintingParams::new(vec![]),
+            minting_params: BtcOnEthMintingParams::new(vec![]),
         }
     }
 
@@ -151,7 +151,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 
     pub fn add_minting_params(
         mut self,
-        mut new_minting_params: MintingParams,
+        mut new_minting_params: BtcOnEthMintingParams,
     ) -> Result<BtcState<D>> {
         info!("✔ Adding minting params to state...");
         self.minting_params
@@ -167,7 +167,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 
     pub fn replace_minting_params(
         mut self,
-        replacement_params: MintingParams
+        replacement_params: BtcOnEthMintingParams
     ) -> Result<BtcState<D>> {
         info!("✔ Replacing minting params in state...");
         self.minting_params = replacement_params;
@@ -232,7 +232,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn get_minting_params(&self) -> Result<&MintingParams> {
+    pub fn get_minting_params(&self) -> Result<&BtcOnEthMintingParams> {
         Ok(&self.minting_params)
     }
 

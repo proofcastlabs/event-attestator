@@ -21,9 +21,9 @@ use ethereum_types::{
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
-pub struct MintingParams(pub Vec<MintingParamStruct>);
+pub struct BtcOnEthMintingParams(pub Vec<MintingParamStruct>);
 
-impl MintingParams {
+impl BtcOnEthMintingParams {
     pub fn to_bytes(&self) -> Result<Bytes> {
         Ok(serde_json::to_vec(&self.0)?)
     }

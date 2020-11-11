@@ -7,7 +7,7 @@ use crate::{
         btc::{
             btc_state::BtcState,
             minting_params::{
-                MintingParams,
+                BtcOnEthMintingParams,
                 MintingParamStruct
             },
         },
@@ -16,9 +16,9 @@ use crate::{
 
 fn filter_minting_params(
     minting_params: &[MintingParamStruct],
-) -> Result<MintingParams> {
+) -> Result<BtcOnEthMintingParams> {
     let threshold = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
-    Ok(MintingParams::new(
+    Ok(BtcOnEthMintingParams::new(
         minting_params
             .iter()
             .filter(|params| {

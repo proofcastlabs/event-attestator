@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use crate::{
     constants::SAFE_BTC_ADDRESS,
-    btc_on_eth::btc::minting_params::MintingParams,
+    btc_on_eth::btc::minting_params::BtcOnEthMintingParams,
     types::{
         Bytes,
         Result,
@@ -50,14 +50,14 @@ pub struct BtcBlockInDbFormat {
     pub block: BtcBlock,
     pub id: sha256d::Hash,
     pub extra_data: Bytes,
-    pub minting_params: MintingParams,
+    pub minting_params: BtcOnEthMintingParams,
 }
 
 impl BtcBlockInDbFormat {
     pub fn new(
         height: u64,
         id: sha256d::Hash,
-        minting_params: MintingParams,
+        minting_params: BtcOnEthMintingParams,
         block: BtcBlock,
         extra_data: Bytes,
     ) -> Result<Self> {

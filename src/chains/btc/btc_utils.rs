@@ -29,7 +29,7 @@ use crate::{
         btc_types::BtcBlockInDbFormat as BtcOnEosBtcBlockInDbFormat,
     },
     btc_on_eth::btc::{
-        minting_params::MintingParams as BtcOnEthMintingParams,
+        minting_params::BtcOnEthMintingParams,
         btc_types::BtcBlockInDbFormat as BtcOnEthBtcBlockInDbFormat,
     },
 };
@@ -344,10 +344,7 @@ mod tests {
         btc_on_eth::{
             utils::convert_satoshis_to_ptoken,
             btc::{
-                minting_params::{
-                    MintingParams,
-                    MintingParamStruct,
-                },
+                minting_params::MintingParamStruct,
                 btc_test_utils::{
                     get_sample_btc_utxo,
                     SAMPLE_TRANSACTION_INDEX,
@@ -494,10 +491,10 @@ mod tests {
             originating_tx_hash,
             originating_tx_address,
         ).unwrap();
-        let minting_params = MintingParams::new(vec![minting_param_struct]);
+        let minting_params = BtcOnEthMintingParams::new(vec![minting_param_struct]);
         let serialized_minting_params = minting_params.to_bytes().unwrap();
         assert_eq!(serialized_minting_params, expected_serialization);
-        let deserialized = MintingParams::from_bytes(&serialized_minting_params).unwrap();
+        let deserialized = BtcOnEthMintingParams::from_bytes(&serialized_minting_params).unwrap();
         assert_eq!(deserialized.len(), minting_params.len());
         deserialized
             .iter()

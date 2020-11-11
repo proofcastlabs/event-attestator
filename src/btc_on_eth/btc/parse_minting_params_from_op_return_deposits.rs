@@ -39,7 +39,7 @@ use crate::{
                 get_btc_network_from_db,
             },
             minting_params::{
-                MintingParams,
+                BtcOnEthMintingParams,
                 MintingParamStruct,
             },
         },
@@ -163,9 +163,9 @@ fn parse_minting_params_from_txs(
     target_deposit_script: &BtcScript,
     op_return_deposit_containing_transactions: &[BtcTransaction],
     btc_network: BtcNetwork,
-) -> Result<MintingParams> {
+) -> Result<BtcOnEthMintingParams> {
     trace!("✔ Parsing minting params from target script: {}", target_deposit_script);
-    Ok(MintingParams::new(
+    Ok(BtcOnEthMintingParams::new(
         op_return_deposit_containing_transactions
             .iter()
             .map(|tx| parse_minting_param_struct_from_tx(target_deposit_script, tx, btc_network))
