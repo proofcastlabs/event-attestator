@@ -12,7 +12,7 @@ use crate::{
 };
 
 fn filter_too_short_account_names(minting_params: &[MintingParamStruct]) -> Result<MintingParams> {
-    Ok(
+    Ok(MintingParams::new( // FIXME Implement these filters on the type!
         minting_params
             .iter()
             .map(|params| {
@@ -30,7 +30,7 @@ fn filter_too_short_account_names(minting_params: &[MintingParamStruct]) -> Resu
                 }
             })
             .collect::<Vec<MintingParamStruct>>()
-    )
+    ))
 }
 
 pub fn maybe_filter_name_too_short_params_in_state<D>(

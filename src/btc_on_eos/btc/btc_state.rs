@@ -48,11 +48,11 @@ impl<D> BtcState<D> where D: DatabaseInterface {
             btc_block_and_id: None,
             p2sh_deposit_txs: None,
             output_json_string: None,
-            minting_params: Vec::new(),
             op_return_deposit_txs: None,
             deposit_info_hash_map: None,
             btc_block_in_db_format: None,
             utxos_and_values: vec![].into(),
+            minting_params: MintingParams::new(vec![]),
         }
     }
 

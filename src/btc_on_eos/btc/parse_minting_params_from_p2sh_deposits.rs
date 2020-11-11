@@ -28,45 +28,47 @@ fn parse_minting_params_from_p2sh_deposit_tx(
     eos_token_symbol: &str,
 ) -> Result<MintingParams> {
     info!("✔ Parsing minting params from single `p2sh` transaction...");
-    p2sh_deposit_containing_tx
-        .output
-        .iter()
-        .filter(|tx_out| tx_out.script_pubkey.is_p2sh())
-        .map(|p2sh_tx_out| -> Option<MintingParamStruct> {
-            match BtcAddress::from_script(
-                &p2sh_tx_out.script_pubkey,
-                btc_network,
-            ) {
-                None => {
-                    info!("✘ Could not derive BTC address from tx: {:?}", p2sh_deposit_containing_tx);
-                    None
-                }
-                Some(btc_address) => {
-                    info!("✔ BTC address extracted from `tx_out`: {}", btc_address);
-                    match deposit_info_hash_map.get(&btc_address) {
-                        None => {
-                            info!("✘ BTC address {} not in deposit hash map!", btc_address);
-                            None
-                        }
-                        Some(deposit_info) => {
-                            info!("✔ Deposit info extracted from hash map: {:?}", deposit_info);
-                            Some(
-                                MintingParamStruct::new(
-                                    p2sh_tx_out.value,
-                                    deposit_info.address.clone(),
-                                    p2sh_deposit_containing_tx.txid(),
-                                    btc_address,
-                                    eos_token_symbol,
+    Ok(MintingParams::new(
+        p2sh_deposit_containing_tx
+            .output
+            .iter()
+            .filter(|tx_out| tx_out.script_pubkey.is_p2sh())
+            .map(|p2sh_tx_out| -> Option<MintingParamStruct> {
+                match BtcAddress::from_script(
+                    &p2sh_tx_out.script_pubkey,
+                    btc_network,
+                ) {
+                    None => {
+                        info!("✘ Could not derive BTC address from tx: {:?}", p2sh_deposit_containing_tx);
+                        None
+                    }
+                    Some(btc_address) => {
+                        info!("✔ BTC address extracted from `tx_out`: {}", btc_address);
+                        match deposit_info_hash_map.get(&btc_address) {
+                            None => {
+                                info!("✘ BTC address {} not in deposit hash map!", btc_address);
+                                None
+                            }
+                            Some(deposit_info) => {
+                                info!("✔ Deposit info extracted from hash map: {:?}", deposit_info);
+                                Some(
+                                    MintingParamStruct::new(
+                                        p2sh_tx_out.value,
+                                        deposit_info.address.clone(),
+                                        p2sh_deposit_containing_tx.txid(),
+                                        btc_address,
+                                        eos_token_symbol,
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
-            }
-        })
-        .filter(|maybe_minting_params| maybe_minting_params.is_some())
-        .map(|maybe_minting_params| Ok(maybe_minting_params.ok_or(NoneError("Could not unwrap minting params!"))?))
-        .collect::<Result<MintingParams>>()
+            })
+            .filter(|maybe_minting_params| maybe_minting_params.is_some())
+            .map(|maybe_minting_params| Ok(maybe_minting_params.ok_or(NoneError("Could not unwrap minting params!"))?))
+            .collect::<Result<Vec<MintingParamStruct>>>()?
+    ))
 }
 
 fn parse_minting_params_from_p2sh_deposit_txs(
@@ -76,15 +78,16 @@ fn parse_minting_params_from_p2sh_deposit_txs(
     eos_token_symbol: &str,
 ) -> Result<MintingParams> {
     info!("✔ Parsing minting params from `p2sh` transactions...");
-    Ok(
+    Ok(MintingParams::new(
         p2sh_deposit_containing_txs
             .iter()
             .flat_map(|tx|
                  parse_minting_params_from_p2sh_deposit_tx(tx, deposit_info_hash_map, btc_network, eos_token_symbol)
              )
+            .map(|minting_params| minting_params.0)
             .flatten()
-            .collect::<MintingParams>()
-   )
+            .collect::<Vec<MintingParamStruct>>()
+   ))
 }
 
 pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D>(

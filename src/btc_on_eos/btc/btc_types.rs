@@ -1,5 +1,10 @@
 use std::str::FromStr;
 use eos_primitives::AccountName as EosAccountName;
+use derive_more::{
+    Deref,
+    DerefMut,
+    Constructor,
+};
 use crate::{
     btc_on_eos::utils::convert_u64_to_8_decimal_eos_asset,
     types::{
@@ -25,8 +30,10 @@ use bitcoin::{
 pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 
 pub type BtcTransactions = Vec<BtcTransaction>;
-pub type MintingParams = Vec<MintingParamStruct>;
 pub type BtcRecipientsAndAmounts = Vec<BtcRecipientAndAmount>;
+
+#[derive(Debug, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
+pub struct MintingParams(pub Vec<MintingParamStruct>);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BtcTxInfo {

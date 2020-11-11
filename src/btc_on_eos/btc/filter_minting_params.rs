@@ -17,7 +17,7 @@ use crate::{
 fn filter_minting_params(
     minting_params: &[MintingParamStruct],
 ) -> Result<MintingParams> {
-    Ok(
+    Ok(MintingParams::new(
         minting_params
             .iter()
             .map(|params| convert_eos_asset_to_u64(&params.amount))
@@ -28,10 +28,7 @@ fn filter_minting_params(
                 match amount >= &MINIMUM_REQUIRED_SATOSHIS {
                     true => true,
                     false => {
-                        info!(
-                            "✘ Filtering minting params ∵ value too low: {:?}",
-                            params,
-                        );
+                        info!("✘ Filtering minting params ∵ value too low: {:?}", params);
                         false
                     }
                 }
@@ -39,7 +36,7 @@ fn filter_minting_params(
             .map(|(_, params)| params)
             .cloned()
             .collect::<Vec<MintingParamStruct>>()
-    )
+    ))
 }
 
 pub fn maybe_filter_minting_params_in_state<D>(
