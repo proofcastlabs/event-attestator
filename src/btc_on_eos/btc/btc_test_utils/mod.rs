@@ -24,7 +24,7 @@ use crate::{
         btc::{
             btc_crypto::btc_private_key::BtcPrivateKey,
             minting_params::{
-                MintingParams,
+                BtcOnEosMintingParams,
                 MintingParamStruct,
             },
             btc_types::{
@@ -90,7 +90,7 @@ pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_12: &str =
 
 fn get_btc_block_in_db_format(
     btc_block_and_id: BtcBlockAndId,
-    minting_params: MintingParams,
+    minting_params: BtcOnEosMintingParams,
     extra_data: Bytes,
 ) -> Result<BtcBlockInDbFormat> {
     BtcBlockInDbFormat::new(
@@ -106,7 +106,7 @@ pub fn get_sample_btc_pub_key_bytes() -> Bytes {
     hex::decode(SAMPLE_BTC_PUBLIC_KEY).unwrap()
 }
 
-pub fn get_sample_minting_params() -> MintingParams {
+pub fn get_sample_minting_params() -> BtcOnEosMintingParams {
     let symbol = "PBTC".to_string();
     let originating_tx_address_1 = "eosaccount1x".to_string();
     let originating_tx_address_2 = "eosaccount2x".to_string();
@@ -147,7 +147,7 @@ pub fn get_sample_minting_params() -> MintingParams {
         originating_tx_hash: originating_tx_hash_3,
         originating_tx_address: originating_tx_address_3,
     };
-    MintingParams::new(vec![minting_params_1, minting_params_2, minting_params_3])
+    BtcOnEosMintingParams::new(vec![minting_params_1, minting_params_2, minting_params_3])
 }
 
 pub fn get_sample_sequential_btc_blocks_in_db_format(
@@ -182,7 +182,7 @@ pub fn convert_sample_block_to_db_format(
 ) -> Result<BtcBlockInDbFormat> {
     get_btc_block_in_db_format(
         btc_block_and_id,
-        MintingParams::new(vec![]),
+        BtcOnEosMintingParams::new(vec![]),
         Vec::new(),
     )
 }

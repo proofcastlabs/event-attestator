@@ -4,7 +4,7 @@ use crate::{
     btc_on_eos::btc::{
         btc_state::BtcState,
         btc_types::BtcBlockInDbFormat,
-        minting_params::MintingParams,
+        minting_params::BtcOnEosMintingParams,
         btc_database_utils::{
             put_btc_canon_block_in_db,
             get_btc_canon_block_from_db,
@@ -22,7 +22,7 @@ fn remove_minting_params_from_canon_block<D>(
             BtcBlockInDbFormat::new(
                 canon_block.height,
                 canon_block.id,
-                MintingParams::new(vec![]),
+                BtcOnEosMintingParams::new(vec![]),
                 canon_block.block,
                 canon_block.extra_data,
             )

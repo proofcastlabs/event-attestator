@@ -25,7 +25,7 @@ use crate::{
         },
     },
     btc_on_eos::btc::{
-        minting_params::MintingParams as BtcOnEosMintingParams,
+        minting_params::BtcOnEosMintingParams,
         btc_types::BtcBlockInDbFormat as BtcOnEosBtcBlockInDbFormat,
     },
     btc_on_eth::btc::btc_types::{ // FIXME Once the btc_types are refd!

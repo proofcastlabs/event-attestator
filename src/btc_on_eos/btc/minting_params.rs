@@ -20,9 +20,9 @@ use bitcoin::{
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
-pub struct MintingParams(pub Vec<MintingParamStruct>);
+pub struct BtcOnEosMintingParams(pub Vec<MintingParamStruct>);
 
-impl MintingParams {
+impl BtcOnEosMintingParams {
     pub fn to_bytes(&self) -> Result<Bytes> {
         Ok(serde_json::to_vec(&self.0)?)
     }

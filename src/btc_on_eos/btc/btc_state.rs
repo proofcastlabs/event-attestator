@@ -13,7 +13,7 @@ use crate::{
         },
     },
     btc_on_eos::btc::{
-        minting_params::MintingParams,
+        minting_params::BtcOnEosMintingParams,
         btc_types::{
             BtcBlockAndId,
             BtcTransaction,
@@ -29,7 +29,7 @@ pub struct BtcState<D: DatabaseInterface> {
     pub db: D,
     pub ref_block_num: u16,
     pub ref_block_prefix: u32,
-    pub minting_params: MintingParams,
+    pub minting_params: BtcOnEosMintingParams,
     pub signed_txs: EosSignedTransactions,
     pub output_json_string: Option<String>,
     pub utxos_and_values: BtcUtxosAndValues,
@@ -54,7 +54,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
             deposit_info_hash_map: None,
             btc_block_in_db_format: None,
             utxos_and_values: vec![].into(),
-            minting_params: MintingParams::new(vec![]),
+            minting_params: BtcOnEosMintingParams::new(vec![]),
         }
     }
 
@@ -132,7 +132,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 
     pub fn add_minting_params(
         mut self,
-        mut new_minting_params: MintingParams,
+        mut new_minting_params: BtcOnEosMintingParams,
     ) -> Result<BtcState<D>> {
         info!("✔ Adding minting params to state...");
         self.minting_params
@@ -148,7 +148,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 
     pub fn replace_minting_params(
         mut self,
-        replacement_params: MintingParams
+        replacement_params: BtcOnEosMintingParams
     ) -> Result<BtcState<D>> {
         info!("✔ Replacing minting params in state...");
         self.minting_params = replacement_params;

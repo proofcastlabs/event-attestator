@@ -7,7 +7,7 @@ use crate::{
         btc::{
             btc_state::BtcState,
             minting_params::{
-                MintingParams,
+                BtcOnEosMintingParams,
                 MintingParamStruct
             },
         },
@@ -16,8 +16,8 @@ use crate::{
 
 fn filter_minting_params(
     minting_params: &[MintingParamStruct],
-) -> Result<MintingParams> {
-    Ok(MintingParams::new(
+) -> Result<BtcOnEosMintingParams> {
+    Ok(BtcOnEosMintingParams::new(
         minting_params
             .iter()
             .map(|params| convert_eos_asset_to_u64(&params.amount))

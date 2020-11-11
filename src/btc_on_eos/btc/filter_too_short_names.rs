@@ -5,14 +5,14 @@ use crate::{
     btc_on_eos::btc::{
         btc_state::BtcState,
         minting_params::{
-            MintingParams,
+            BtcOnEosMintingParams,
             MintingParamStruct
         },
     },
 };
 
-fn filter_too_short_account_names(minting_params: &[MintingParamStruct]) -> Result<MintingParams> {
-    Ok(MintingParams::new( // FIXME Implement these filters on the type!
+fn filter_too_short_account_names(minting_params: &[MintingParamStruct]) -> Result<BtcOnEosMintingParams> {
+    Ok(BtcOnEosMintingParams::new( // FIXME Implement these filters on the type!
         minting_params
             .iter()
             .map(|params| {
