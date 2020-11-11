@@ -8,6 +8,7 @@ use derive_more::{
 use crate::{
     btc_on_eos::utils::convert_u64_to_8_decimal_eos_asset,
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -34,6 +35,16 @@ pub type BtcRecipientsAndAmounts = Vec<BtcRecipientAndAmount>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
 pub struct MintingParams(pub Vec<MintingParamStruct>);
+
+impl MintingParams {
+    pub fn serialize(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(&self.0)?)
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        Ok(serde_json::from_slice(bytes)?)
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BtcTxInfo {

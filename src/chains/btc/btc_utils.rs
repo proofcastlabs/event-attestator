@@ -26,7 +26,6 @@ use crate::{
     },
     btc_on_eos::btc::btc_types::{ // FIXME Once the btc_types are refd!
         MintingParams as BtcOnEosMintingParams,
-        MintingParamStruct as BtcOnEosMintingParamStruct,
         BtcBlockInDbFormat as BtcOnEosBtcBlockInDbFormat,
     },
     btc_on_eth::btc::btc_types::{ // FIME Once the btc_types are refd!
@@ -147,22 +146,7 @@ pub fn deserialize_minting_params( // FIXME Impl this on the type!
     Ok(serde_json::from_slice(&serialized_minting_params[..])?)
 }
 
-pub fn serialize_btc_on_eos_minting_params( // FIXME Impl this on the type!
-    minting_params: &[BtcOnEosMintingParamStruct]
-) -> Result<Bytes> {
-    Ok(serde_json::to_vec(minting_params)?)
-}
-
-pub fn deserialize_btc_on_eos_minting_params( // FIXME Impl this on the type!
-    serialized_minting_params: Bytes
-) -> Result<BtcOnEosMintingParams> {
-    Ok(serde_json::from_slice(&serialized_minting_params[..])?)
-}
-
-pub fn create_unsigned_utxo_from_tx(
-    tx: &BtcTransaction,
-    output_index: u32,
-) -> BtcUtxo {
+pub fn create_unsigned_utxo_from_tx(tx: &BtcTransaction, output_index: u32) -> BtcUtxo {
     let outpoint = BtcOutPoint {
         txid: tx.txid(),
         vout: output_index,
@@ -216,6 +200,7 @@ pub fn serialize_btc_block_in_db_format(
     )
 }
 
+// FIXME Impl this on the type!
 pub fn serialize_btc_on_eos_btc_block_in_db_format( // FIXME Rm this one btc types are refd!
     btc_block_in_db_format: &BtcOnEosBtcBlockInDbFormat,
 ) -> Result<(Bytes, Bytes)> {
@@ -229,7 +214,7 @@ pub fn serialize_btc_on_eos_btc_block_in_db_format( // FIXME Rm this one btc typ
                     btc_serialize(&btc_block_in_db_format.block),
                     convert_u64_to_bytes(btc_block_in_db_format.height),
                     btc_block_in_db_format.extra_data.clone(),
-                    serialize_btc_on_eos_minting_params(&btc_block_in_db_format.minting_params)?,
+                    btc_block_in_db_format.minting_params.serialize()?,
                 )
             )?
         )
@@ -262,7 +247,7 @@ pub fn deserialize_btc_on_eos_btc_block_in_db_format( // FIXME Rm this one btc t
     BtcOnEosBtcBlockInDbFormat::new(
         convert_bytes_to_u64(&serialized_struct.height)?,
         sha256d::Hash::from_slice(&serialized_struct.id)?,
-        deserialize_btc_on_eos_minting_params(serialized_struct.minting_params)?,
+        BtcOnEosMintingParams::from_bytes(&serialized_struct.minting_params)?,
         btc_deserialize(&serialized_struct.block)?,
         serialized_struct.extra_data,
     )
