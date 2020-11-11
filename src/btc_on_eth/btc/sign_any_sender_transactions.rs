@@ -11,9 +11,9 @@ use crate::{
     },
     btc_on_eth::{
         btc::{
-            btc_database_utils::get_btc_canon_block_from_db,
             btc_state::BtcState,
-            btc_types::MintingParamStruct,
+            minting_params::MintingParamStruct,
+            btc_database_utils::get_btc_canon_block_from_db,
         },
     },
 };
@@ -80,8 +80,8 @@ mod tests {
         chains::eth::eth_types::EthAddress,
         btc_on_eth::{
             btc::{
+                minting_params::MintingParamStruct,
                 btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
-                btc_types::MintingParamStruct
             },
             eth::{
                 eth_test_utils::{

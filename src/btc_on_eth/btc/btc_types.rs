@@ -1,51 +1,26 @@
+use std::str::FromStr;
 use crate::{
     constants::SAFE_BTC_ADDRESS,
+    btc_on_eth::btc::minting_params::MintingParams,
     types::{
-        Byte,
         Bytes,
         Result,
     },
-    chains::{
-        eth::eth_utils::safely_convert_hex_to_eth_address,
-        btc::deposit_address_info::{
-            DepositInfoList,
-            DepositAddressInfoJson,
-        },
+    chains::btc::deposit_address_info::{
+        DepositInfoList,
+        DepositAddressInfoJson,
     },
-};
-use derive_more::{
-    Deref,
-    DerefMut,
-    Constructor,
 };
 use bitcoin::{
     blockdata::block::Block as BtcBlock,
     hashes::sha256d,
     util::address::Address as BtcAddress,
 };
-use ethereum_types::{
-    Address as EthAddress,
-    U256
-};
-use std::str::FromStr;
 
 pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 
 pub type BtcTransactions = Vec<BtcTransaction>;
 pub type BtcRecipientsAndAmounts = Vec<BtcRecipientAndAmount>;
-
-#[derive(Debug, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
-pub struct MintingParams(pub Vec<MintingParamStruct>);
-
-impl MintingParams {
-    pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(&self.0)?)
-    }
-
-    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
-        Ok(serde_json::from_slice(bytes)?)
-    }
-}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BtcRecipientAndAmount {
@@ -92,30 +67,6 @@ impl BtcBlockInDbFormat {
             height,
             minting_params,
             extra_data,
-        })
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MintingParamStruct {
-    pub amount: U256,
-    pub eth_address: EthAddress,
-    pub originating_tx_hash: sha256d::Hash,
-    pub originating_tx_address: String,
-}
-
-impl MintingParamStruct {
-    pub fn new(
-        amount: U256,
-        eth_address_hex: String,
-        originating_tx_hash: sha256d::Hash,
-        originating_tx_address: BtcAddress,
-    ) -> Result<MintingParamStruct> {
-        Ok(MintingParamStruct {
-            amount,
-            originating_tx_hash,
-            originating_tx_address: originating_tx_address.to_string(),
-            eth_address: safely_convert_hex_to_eth_address(&eth_address_hex)?,
         })
     }
 }

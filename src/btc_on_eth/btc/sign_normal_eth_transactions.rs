@@ -16,7 +16,7 @@ use crate::{
     btc_on_eth::{
         btc::{
             btc_state::BtcState,
-            btc_types::MintingParamStruct,
+            minting_params::MintingParamStruct,
             btc_database_utils::get_btc_canon_block_from_db,
         },
     },
@@ -103,10 +103,7 @@ mod tests {
         },
         btc_on_eth::{
             utils::convert_satoshis_to_ptoken,
-            btc::{
-                btc_types::MintingParamStruct,
-                btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
-            },
+            btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
             eth::eth_test_utils::{
                 get_sample_eth_address,
                 get_sample_eth_private_key,

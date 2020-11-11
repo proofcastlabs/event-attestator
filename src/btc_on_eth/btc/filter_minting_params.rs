@@ -6,7 +6,7 @@ use crate::{
         utils::convert_satoshis_to_ptoken,
         btc::{
             btc_state::BtcState,
-            btc_types::{
+            minting_params::{
                 MintingParams,
                 MintingParamStruct
             },

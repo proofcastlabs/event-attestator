@@ -17,14 +17,14 @@ use crate::{
     },
     btc_on_eth::{
         btc::{
+            minting_params::MintingParams,
+            parse_submission_material_json::BtcSubmissionMaterialJson,
             btc_types::{
                 BtcBlockAndId,
-                MintingParams,
                 BtcTransaction,
                 BtcTransactions,
                 BtcBlockInDbFormat,
             },
-            parse_submission_material_json::BtcSubmissionMaterialJson,
         },
     },
 };

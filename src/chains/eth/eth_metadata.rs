@@ -9,7 +9,7 @@ use crate::{
         Bytes,
         Result,
     },
-    btc_on_eth::btc::btc_types::MintingParamStruct as BtcOnEthMintingParamStruct,
+    btc_on_eth::btc::minting_params::MintingParamStruct as BtcOnEthMintingParamStruct,
 };
 use bitcoin::{
     hashes::sha256d,

@@ -38,7 +38,7 @@ use crate::{
                 get_btc_address_from_db,
                 get_btc_network_from_db,
             },
-            btc_types::{
+            minting_params::{
                 MintingParams,
                 MintingParamStruct,
             },

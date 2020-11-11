@@ -7,6 +7,7 @@ pub(crate) mod btc_crypto;
 pub(crate) mod filter_utxos;
 pub(crate) mod btc_test_utils;
 pub(crate) mod parse_submission_material_json;
+pub(crate) mod minting_params;
 pub(crate) mod btc_transaction;
 pub(crate) mod save_utxos_to_db;
 pub(crate) mod sign_normal_eth_transactions;

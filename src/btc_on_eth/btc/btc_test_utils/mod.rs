@@ -48,21 +48,23 @@ use crate::{
         utils::convert_satoshis_to_ptoken,
         btc::{
             btc_crypto::btc_private_key::BtcPrivateKey,
+            parse_btc_block_and_id::parse_btc_block_and_tx_json_to_struct,
+            minting_params::{
+                MintingParams,
+                MintingParamStruct,
+            },
             btc_database_utils::{
                 get_btc_hash_from_db,
                 put_special_btc_block_in_db
             },
             btc_types::{
-                MintingParams,
                 BtcBlockAndId,
-                MintingParamStruct,
                 BtcBlockInDbFormat,
             },
             parse_submission_material_json::{
                 parse_btc_block_string_to_json,
                 BtcSubmissionMaterialJson,
             },
-            parse_btc_block_and_id::parse_btc_block_and_tx_json_to_struct,
         },
     },
 };

@@ -28,9 +28,9 @@ use crate::{
         minting_params::BtcOnEosMintingParams,
         btc_types::BtcBlockInDbFormat as BtcOnEosBtcBlockInDbFormat,
     },
-    btc_on_eth::btc::btc_types::{ // FIXME Once the btc_types are refd!
-        MintingParams as BtcOnEthMintingParams,
-        BtcBlockInDbFormat as BtcOnEthBtcBlockInDbFormat,
+    btc_on_eth::btc::{
+        minting_params::MintingParams as BtcOnEthMintingParams,
+        btc_types::BtcBlockInDbFormat as BtcOnEthBtcBlockInDbFormat,
     },
 };
 use bitcoin::{
@@ -344,7 +344,7 @@ mod tests {
         btc_on_eth::{
             utils::convert_satoshis_to_ptoken,
             btc::{
-                btc_types::{
+                minting_params::{
                     MintingParams,
                     MintingParamStruct,
                 },
