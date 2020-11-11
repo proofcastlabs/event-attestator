@@ -23,18 +23,6 @@ pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 pub type BtcTransactions = Vec<BtcTransaction>;
 pub type BtcRecipientsAndAmounts = Vec<BtcRecipientAndAmount>;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct BtcTxInfo {
-    pub btc_tx_hex: String,
-    pub btc_tx_amount: u64,
-    pub btc_tx_hash: String,
-    pub signature_timestamp: u64,
-    pub btc_account_nonce: u64,
-    pub btc_tx_recipient: String,
-    pub originating_tx_hash: String,
-    pub originating_address: String,
-}
-
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BtcRecipientAndAmount {
     pub amount: u64,
@@ -56,14 +44,8 @@ impl BtcRecipientAndAmount {
                 recipient: match BtcAddress::from_str(recipient) {
                     Ok(address) => address,
                     Err(error) => {
-                        info!(
-                            "✔ Error parsing BTC address for recipient: {}",
-                            error
-                        );
-                        info!(
-                            "✔ Defaulting to SAFE BTC address: {}",
-                            SAFE_BTC_ADDRESS,
-                        );
+                        info!("✔ Error parsing BTC address for recipient: {}", error);
+                        info!("✔ Defaulting to SAFE BTC address: {}", SAFE_BTC_ADDRESS);
                         BtcAddress::from_str(SAFE_BTC_ADDRESS)?
                     }
                 }
