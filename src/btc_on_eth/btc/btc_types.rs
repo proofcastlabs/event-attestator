@@ -1,6 +1,7 @@
 use crate::{
     constants::SAFE_BTC_ADDRESS,
     types::{
+        Byte,
         Bytes,
         Result,
     },
@@ -11,6 +12,11 @@ use crate::{
             DepositAddressInfoJson,
         },
     },
+};
+use derive_more::{
+    Deref,
+    DerefMut,
+    Constructor,
 };
 use bitcoin::{
     blockdata::block::Block as BtcBlock,
@@ -26,8 +32,20 @@ use std::str::FromStr;
 pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 
 pub type BtcTransactions = Vec<BtcTransaction>;
-pub type MintingParams = Vec<MintingParamStruct>;
 pub type BtcRecipientsAndAmounts = Vec<BtcRecipientAndAmount>;
+
+#[derive(Debug, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
+pub struct MintingParams(pub Vec<MintingParamStruct>);
+
+impl MintingParams {
+    pub fn serialize(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(&self.0)?)
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        Ok(serde_json::from_slice(bytes)?)
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BtcRecipientAndAmount {

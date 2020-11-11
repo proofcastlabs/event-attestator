@@ -17,7 +17,7 @@ pub fn create_btc_block_in_db_format_and_put_in_state<D>(
     BtcBlockInDbFormat::new(
         block_in_state.height,
         block_in_state.id,
-        state.get_minting_params()?.to_vec(),
+        state.get_minting_params()?.clone(),
         block_in_state.block.clone(),
         vec![], // NOTE: As yet unused `extra_data` param
     )

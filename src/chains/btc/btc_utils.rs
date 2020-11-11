@@ -30,7 +30,6 @@ use crate::{
     },
     btc_on_eth::btc::btc_types::{ // FIME Once the btc_types are refd!
         MintingParams as BtcOnEthMintingParams,
-        MintingParamStruct as BtcOnEthMintingParamStruct,
         BtcBlockInDbFormat as BtcOnEthBtcBlockInDbFormat,
     },
 };
@@ -134,18 +133,6 @@ pub fn get_p2sh_script_sig_from_redeem_script(
         .into_script()
 }
 
-pub fn serialize_minting_params( // FIXME Impl this on the type!
-    minting_params: &[BtcOnEthMintingParamStruct]
-) -> Result<Bytes> {
-    Ok(serde_json::to_vec(minting_params)?)
-}
-
-pub fn deserialize_minting_params( // FIXME Impl this on the type!
-    serialized_minting_params: Bytes
-) -> Result<BtcOnEthMintingParams> {
-    Ok(serde_json::from_slice(&serialized_minting_params[..])?)
-}
-
 pub fn create_unsigned_utxo_from_tx(tx: &BtcTransaction, output_index: u32) -> BtcUtxo {
     let outpoint = BtcOutPoint {
         txid: tx.txid(),
@@ -178,7 +165,7 @@ pub fn convert_bytes_to_btc_network(bytes: &[Byte]) -> Result<BtcNetwork> {
     }
 }
 
-pub fn serialize_btc_block_in_db_format(
+pub fn serialize_btc_block_in_db_format( // FIXME Impl this on the type!
     btc_block_in_db_format: &BtcOnEthBtcBlockInDbFormat,
 ) -> Result<(Bytes, Bytes)> {
     let serialized_id = btc_block_in_db_format.id.to_vec();
@@ -191,9 +178,7 @@ pub fn serialize_btc_block_in_db_format(
                     btc_serialize(&btc_block_in_db_format.block),
                     convert_u64_to_bytes(btc_block_in_db_format.height),
                     btc_block_in_db_format.extra_data.clone(),
-                    serialize_minting_params(
-                        &btc_block_in_db_format.minting_params
-                    )?,
+                    btc_block_in_db_format.minting_params.serialize()?,
                 )
             )?
         )
@@ -230,9 +215,7 @@ pub fn deserialize_btc_block_in_db_format(
     BtcOnEthBtcBlockInDbFormat::new(
         convert_bytes_to_u64(&serialized_struct.height)?,
         sha256d::Hash::from_slice(&serialized_struct.id)?,
-        deserialize_minting_params(
-            serialized_struct.minting_params
-        )?,
+        BtcOnEthMintingParams::from_bytes(&serialized_struct.minting_params)?,
         btc_deserialize(&serialized_struct.block)?,
         serialized_struct.extra_data,
     )
@@ -361,7 +344,10 @@ mod tests {
         btc_on_eth::{
             utils::convert_satoshis_to_ptoken,
             btc::{
-                btc_types::MintingParamStruct,
+                btc_types::{
+                    MintingParams,
+                    MintingParamStruct,
+                },
                 btc_test_utils::{
                     get_sample_btc_utxo,
                     SAMPLE_TRANSACTION_INDEX,
@@ -508,10 +494,10 @@ mod tests {
             originating_tx_hash,
             originating_tx_address,
         ).unwrap();
-        let minting_params = vec![minting_param_struct];
-        let serialized_minting_params = serialize_minting_params(&minting_params).unwrap();
+        let minting_params = MintingParams::new(vec![minting_param_struct]);
+        let serialized_minting_params = minting_params.serialize().unwrap();
         assert_eq!(serialized_minting_params, expected_serialization);
-        let deserialized = deserialize_minting_params(serialized_minting_params).unwrap();
+        let deserialized = MintingParams::from_bytes(&serialized_minting_params).unwrap();
         assert_eq!(deserialized.len(), minting_params.len());
         deserialized
             .iter()

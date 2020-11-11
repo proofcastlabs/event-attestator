@@ -221,7 +221,7 @@ pub fn get_sample_minting_params() -> MintingParams {
         originating_tx_hash: originating_tx_hash_3,
         originating_tx_address: originating_tx_address_3,
     };
-    vec![minting_params_1, minting_params_2, minting_params_3]
+    MintingParams::new(vec![minting_params_1, minting_params_2, minting_params_3])
 }
 
 pub fn get_sample_sequential_btc_blocks_in_db_format(
@@ -261,7 +261,7 @@ pub fn convert_sample_block_to_db_format(
 ) -> Result<BtcBlockInDbFormat> {
     get_btc_block_in_db_format(
         btc_block_and_id,
-        Vec::new(),
+        MintingParams::new(Vec::new()),
         Vec::new(),
     )
 }

@@ -165,10 +165,12 @@ fn parse_minting_params_from_txs(
     btc_network: BtcNetwork,
 ) -> Result<MintingParams> {
     trace!("✔ Parsing minting params from target script: {}", target_deposit_script);
-    op_return_deposit_containing_transactions
-        .iter()
-        .map(|tx| parse_minting_param_struct_from_tx(target_deposit_script, tx, btc_network))
-        .collect::<Result<Vec<MintingParamStruct>>>()
+    Ok(MintingParams::new(
+        op_return_deposit_containing_transactions
+            .iter()
+            .map(|tx| parse_minting_param_struct_from_tx(target_deposit_script, tx, btc_network))
+            .collect::<Result<Vec<MintingParamStruct>>>()?
+    ))
 }
 
 pub fn parse_minting_params_from_op_return_deposits_and_add_to_state<D>(

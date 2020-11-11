@@ -18,7 +18,7 @@ fn filter_minting_params(
     minting_params: &[MintingParamStruct],
 ) -> Result<MintingParams> {
     let threshold = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
-    Ok(
+    Ok(MintingParams::new(
         minting_params
             .iter()
             .filter(|params| {
@@ -35,7 +35,7 @@ fn filter_minting_params(
             })
             .cloned()
             .collect::<Vec<MintingParamStruct>>()
-    )
+    ))
 }
 
 pub fn maybe_filter_minting_params_in_state<D>(

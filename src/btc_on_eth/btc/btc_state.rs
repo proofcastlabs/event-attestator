@@ -20,7 +20,6 @@ use crate::{
             btc_types::{
                 BtcBlockAndId,
                 MintingParams,
-                MintingParamStruct,
                 BtcTransaction,
                 BtcTransactions,
                 BtcBlockInDbFormat,
@@ -57,12 +56,12 @@ impl<D> BtcState<D> where D: DatabaseInterface {
             btc_block_and_id: None,
             p2sh_deposit_txs: None,
             output_json_string: None,
-            minting_params: Vec::new(),
             op_return_deposit_txs: None,
             deposit_info_hash_map: None,
             btc_block_in_db_format: None,
             any_sender_signed_txs: None,
             utxos_and_values: vec![].into(),
+            minting_params: MintingParams::new(vec![]),
         }
     }
 
@@ -233,9 +232,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn get_minting_params(
-        &self
-    ) -> Result<&[MintingParamStruct]> {
+    pub fn get_minting_params(&self) -> Result<&MintingParams> {
         Ok(&self.minting_params)
     }
 
