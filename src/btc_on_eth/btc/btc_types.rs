@@ -38,7 +38,7 @@ pub type BtcRecipientsAndAmounts = Vec<BtcRecipientAndAmount>;
 pub struct MintingParams(pub Vec<MintingParamStruct>);
 
 impl MintingParams {
-    pub fn serialize(&self) -> Result<Bytes> {
+    pub fn to_bytes(&self) -> Result<Bytes> {
         Ok(serde_json::to_vec(&self.0)?)
     }
 

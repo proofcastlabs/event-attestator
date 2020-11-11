@@ -28,7 +28,7 @@ use crate::{
         MintingParams as BtcOnEosMintingParams,
         BtcBlockInDbFormat as BtcOnEosBtcBlockInDbFormat,
     },
-    btc_on_eth::btc::btc_types::{ // FIME Once the btc_types are refd!
+    btc_on_eth::btc::btc_types::{ // FIXME Once the btc_types are refd!
         MintingParams as BtcOnEthMintingParams,
         BtcBlockInDbFormat as BtcOnEthBtcBlockInDbFormat,
     },
@@ -178,7 +178,7 @@ pub fn serialize_btc_block_in_db_format( // FIXME Impl this on the type!
                     btc_serialize(&btc_block_in_db_format.block),
                     convert_u64_to_bytes(btc_block_in_db_format.height),
                     btc_block_in_db_format.extra_data.clone(),
-                    btc_block_in_db_format.minting_params.serialize()?,
+                    btc_block_in_db_format.minting_params.to_bytes()?,
                 )
             )?
         )
@@ -199,7 +199,7 @@ pub fn serialize_btc_on_eos_btc_block_in_db_format( // FIXME Rm this one btc typ
                     btc_serialize(&btc_block_in_db_format.block),
                     convert_u64_to_bytes(btc_block_in_db_format.height),
                     btc_block_in_db_format.extra_data.clone(),
-                    btc_block_in_db_format.minting_params.serialize()?,
+                    btc_block_in_db_format.minting_params.to_bytes()?,
                 )
             )?
         )
@@ -495,7 +495,7 @@ mod tests {
             originating_tx_address,
         ).unwrap();
         let minting_params = MintingParams::new(vec![minting_param_struct]);
-        let serialized_minting_params = minting_params.serialize().unwrap();
+        let serialized_minting_params = minting_params.to_bytes().unwrap();
         assert_eq!(serialized_minting_params, expected_serialization);
         let deserialized = MintingParams::from_bytes(&serialized_minting_params).unwrap();
         assert_eq!(deserialized.len(), minting_params.len());
