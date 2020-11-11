@@ -11,6 +11,7 @@ use crate::{
             RelayTransactions,
         },
         btc::{
+            btc_types::BtcBlockAndId,
             deposit_address_info::DepositInfoHashMap,
             utxo_manager::utxo_types::BtcUtxosAndValues,
         },
@@ -20,7 +21,6 @@ use crate::{
             minting_params::BtcOnEthMintingParams,
             parse_submission_material_json::BtcSubmissionMaterialJson,
             btc_types::{
-                BtcBlockAndId,
                 BtcTransaction,
                 BtcTransactions,
                 BtcBlockInDbFormat,

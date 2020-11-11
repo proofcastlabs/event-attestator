@@ -11,13 +11,15 @@ use bitcoin::{
 use crate::{
     btc_on_eth::btc::{
         btc_state::BtcState,
-        btc_types::BtcBlockAndId,
         parse_submission_material_json::BtcSubmissionMaterialJson,
     },
-    chains::btc::deposit_address_info::{
-        DepositAddressInfo,
-        DepositAddressInfoJson,
-        DepositInfoList,
+    chains::btc::{
+        btc_types::BtcBlockAndId,
+        deposit_address_info::{
+            DepositAddressInfo,
+            DepositAddressInfoJson,
+            DepositInfoList,
+        },
     },
     traits::DatabaseInterface,
     types::Result,

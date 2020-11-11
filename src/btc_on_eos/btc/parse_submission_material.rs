@@ -11,16 +11,18 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::deposit_address_info::{
-        DepositInfoList,
-        DepositAddressInfo,
-        DepositAddressInfoJson,
+    chains::btc::{
+        btc_types::BtcBlockAndId,
+        deposit_address_info::{
+            DepositInfoList,
+            DepositAddressInfo,
+            DepositAddressInfoJson,
+        },
     },
     btc_on_eos::btc::{
         btc_state::BtcState,
         btc_types::{
             BtcBlockJson,
-            BtcBlockAndId,
             SubmissionMaterial,
             SubmissionMaterialJson,
         },

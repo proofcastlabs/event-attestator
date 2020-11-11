@@ -14,6 +14,7 @@ use crate::{
         Result,
     },
     chains::btc::{
+        btc_types::BtcBlockAndId,
         btc_utils::create_unsigned_utxo_from_tx,
         btc_constants::MINIMUM_REQUIRED_SATOSHIS,
         utxo_manager::utxo_types::BtcUtxoAndValue,
@@ -28,7 +29,6 @@ use crate::{
                 BtcOnEosMintingParamStruct,
             },
             btc_types::{
-                BtcBlockAndId,
                 BtcBlockInDbFormat,
                 SubmissionMaterialJson,
             },

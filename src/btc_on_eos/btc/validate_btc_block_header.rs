@@ -2,14 +2,12 @@ use bitcoin::util::hash::BitcoinHash;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eos::btc::btc_state::BtcState,
+    chains::btc::btc_types::BtcBlockAndId,
     constants::{
         DEBUG_MODE,
         CORE_IS_VALIDATING,
         NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR,
-    },
-    btc_on_eos::btc::{
-        btc_state::BtcState,
-        btc_types::BtcBlockAndId,
     },
 };
 
@@ -43,10 +41,8 @@ mod tests {
     use bitcoin_hashes::sha256d;
     use crate::{
         errors::AppError,
-        btc_on_eos::btc::{
-            btc_types::BtcBlockAndId,
-            btc_test_utils::get_sample_btc_block_and_id,
-        },
+        chains::btc::btc_types::BtcBlockAndId,
+        btc_on_eos::btc::btc_test_utils::get_sample_btc_block_and_id,
     };
 
     #[test]

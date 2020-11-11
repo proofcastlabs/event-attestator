@@ -168,9 +168,9 @@ mod tests {
             },
         }
     };
-    use crate::btc_on_eth::{
-        btc::{
-            btc_types::BtcBlockAndId,
+    use crate::{
+        chains::btc::btc_types::BtcBlockAndId,
+        btc_on_eth::btc::{
             get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
             btc_test_utils::{
                 get_sample_btc_block_n,
