@@ -13,7 +13,7 @@ use crate::{
     btc_on_eos::btc::{
         btc_state::BtcState,
         btc_database_utils::get_btc_network_from_db,
-        btc_types::{
+        minting_params::{
             MintingParams,
             MintingParamStruct,
         },

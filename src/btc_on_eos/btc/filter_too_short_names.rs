@@ -4,7 +4,7 @@ use crate::{
     constants::SAFE_EOS_ADDRESS,
     btc_on_eos::btc::{
         btc_state::BtcState,
-        btc_types::{
+        minting_params::{
             MintingParams,
             MintingParamStruct
         },

@@ -23,10 +23,12 @@ use crate::{
         utils::convert_u64_to_8_decimal_eos_asset,
         btc::{
             btc_crypto::btc_private_key::BtcPrivateKey,
-            btc_types::{
+            minting_params::{
                 MintingParams,
-                BtcBlockAndId,
                 MintingParamStruct,
+            },
+            btc_types::{
+                BtcBlockAndId,
                 BtcBlockInDbFormat,
                 SubmissionMaterialJson,
             },

@@ -25,7 +25,7 @@ use crate::{
     },
     btc_on_eos::btc::{
         btc_state::BtcState,
-        btc_types::MintingParamStruct,
+        minting_params::MintingParamStruct,
         btc_database_utils::get_btc_canon_block_from_db,
     },
 };

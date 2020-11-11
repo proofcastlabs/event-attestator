@@ -1,21 +1,11 @@
 use std::str::FromStr;
-use eos_primitives::AccountName as EosAccountName;
-use derive_more::{
-    Deref,
-    DerefMut,
-    Constructor,
-};
 use crate::{
-    btc_on_eos::utils::convert_u64_to_8_decimal_eos_asset,
+    btc_on_eos::btc::minting_params::MintingParams,
     types::{
-        Byte,
         Bytes,
         Result,
     },
-    constants::{
-        SAFE_BTC_ADDRESS,
-        SAFE_EOS_ADDRESS,
-    },
+    constants::SAFE_BTC_ADDRESS,
     chains::btc::deposit_address_info::{
         DepositInfoList,
         DepositAddressInfoJson,
@@ -32,19 +22,6 @@ pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 
 pub type BtcTransactions = Vec<BtcTransaction>;
 pub type BtcRecipientsAndAmounts = Vec<BtcRecipientAndAmount>;
-
-#[derive(Debug, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
-pub struct MintingParams(pub Vec<MintingParamStruct>);
-
-impl MintingParams {
-    pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(&self.0)?)
-    }
-
-    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
-        Ok(serde_json::from_slice(bytes)?)
-    }
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BtcTxInfo {
@@ -113,41 +90,6 @@ impl BtcBlockInDbFormat {
         extra_data: Bytes,
     ) -> Result<Self> {
         Ok(BtcBlockInDbFormat{ id, block, height, minting_params, extra_data })
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MintingParamStruct {
-    pub amount: String,
-    pub to: String,
-    pub originating_tx_hash: String,
-    pub originating_tx_address: String,
-}
-
-impl MintingParamStruct {
-    pub fn new(
-        amount: u64,
-        to: String,
-        originating_tx_hash: sha256d::Hash,
-        originating_tx_address: BtcAddress,
-        symbol: &str,
-    ) -> MintingParamStruct {
-        MintingParamStruct {
-            to: match EosAccountName::from_str(&to) {
-                Ok(_) => to,
-                Err(_) => {
-                    info!("✘ Error converting '{}' to EOS address!", to);
-                    info!(
-                        "✔ Defaulting to safe EOS address: '{}'",
-                        SAFE_EOS_ADDRESS
-                    );
-                    SAFE_EOS_ADDRESS.to_string()
-                }
-            },
-            amount: convert_u64_to_8_decimal_eos_asset(amount, symbol),
-            originating_tx_hash: originating_tx_hash.to_string(),
-            originating_tx_address: originating_tx_address.to_string(),
-        }
     }
 }
 

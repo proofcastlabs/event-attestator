@@ -13,7 +13,7 @@ use crate::{
         utils::convert_eos_asset_to_u64,
         btc::{
             btc_state::BtcState,
-            btc_types::MintingParamStruct,
+            minting_params::MintingParamStruct,
             btc_database_utils::{
                 get_btc_canon_block_from_db,
                 get_btc_latest_block_from_db,

@@ -3,10 +3,8 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eos::btc::{
         btc_state::BtcState,
-        btc_types::{
-            BtcBlockInDbFormat,
-            MintingParams
-        },
+        btc_types::BtcBlockInDbFormat,
+        minting_params::MintingParams,
         btc_database_utils::{
             put_btc_canon_block_in_db,
             get_btc_canon_block_from_db,

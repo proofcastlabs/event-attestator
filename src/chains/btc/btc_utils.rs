@@ -24,9 +24,9 @@ use crate::{
             convert_u64_to_bytes,
         },
     },
-    btc_on_eos::btc::btc_types::{ // FIXME Once the btc_types are refd!
-        MintingParams as BtcOnEosMintingParams,
-        BtcBlockInDbFormat as BtcOnEosBtcBlockInDbFormat,
+    btc_on_eos::btc::{
+        minting_params::MintingParams as BtcOnEosMintingParams,
+        btc_types::BtcBlockInDbFormat as BtcOnEosBtcBlockInDbFormat,
     },
     btc_on_eth::btc::btc_types::{ // FIXME Once the btc_types are refd!
         MintingParams as BtcOnEthMintingParams,

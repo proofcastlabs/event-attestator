@@ -12,13 +12,15 @@ use crate::{
             utxo_manager::utxo_types::BtcUtxosAndValues,
         },
     },
-    btc_on_eos::btc::btc_types::{
-        BtcBlockAndId,
-        MintingParams,
-        BtcTransaction,
-        BtcTransactions,
-        BtcBlockInDbFormat,
-        SubmissionMaterial,
+    btc_on_eos::btc::{
+        minting_params::MintingParams,
+        btc_types::{
+            BtcBlockAndId,
+            BtcTransaction,
+            BtcTransactions,
+            BtcBlockInDbFormat,
+            SubmissionMaterial,
+        },
     },
 };
 
