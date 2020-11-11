@@ -40,7 +40,7 @@ use crate::{
             },
             minting_params::{
                 BtcOnEthMintingParams,
-                MintingParamStruct,
+                BtcOnEthMintingParamStruct,
             },
         },
     },
@@ -140,9 +140,9 @@ fn parse_minting_param_struct_from_tx(
     target_deposit_script: &BtcScript,
     tx: &BtcTransaction,
     btc_network: BtcNetwork,
-) -> Result<MintingParamStruct> {
+) -> Result<BtcOnEthMintingParamStruct> {
     Ok(
-        MintingParamStruct::new(
+        BtcOnEthMintingParamStruct::new(
             convert_satoshis_to_ptoken(sum_deposit_values_from_tx_outputs(&tx, &target_deposit_script)),
             get_eth_address_from_op_return_in_tx_else_safe_address(&tx),
             tx.txid(),
@@ -169,7 +169,7 @@ fn parse_minting_params_from_txs(
         op_return_deposit_containing_transactions
             .iter()
             .map(|tx| parse_minting_param_struct_from_tx(target_deposit_script, tx, btc_network))
-            .collect::<Result<Vec<MintingParamStruct>>>()?
+            .collect::<Result<Vec<BtcOnEthMintingParamStruct>>>()?
     ))
 }
 

@@ -21,7 +21,7 @@ use ethereum_types::{
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
-pub struct BtcOnEthMintingParams(pub Vec<MintingParamStruct>);
+pub struct BtcOnEthMintingParams(pub Vec<BtcOnEthMintingParamStruct>);
 
 impl BtcOnEthMintingParams {
     pub fn to_bytes(&self) -> Result<Bytes> {
@@ -34,21 +34,21 @@ impl BtcOnEthMintingParams {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MintingParamStruct {
+pub struct BtcOnEthMintingParamStruct {
     pub amount: U256,
     pub eth_address: EthAddress,
     pub originating_tx_hash: sha256d::Hash,
     pub originating_tx_address: String,
 }
 
-impl MintingParamStruct {
+impl BtcOnEthMintingParamStruct {
     pub fn new(
         amount: U256,
         eth_address_hex: String,
         originating_tx_hash: sha256d::Hash,
         originating_tx_address: BtcAddress,
-    ) -> Result<MintingParamStruct> {
-        Ok(MintingParamStruct {
+    ) -> Result<BtcOnEthMintingParamStruct> {
+        Ok(BtcOnEthMintingParamStruct {
             amount,
             originating_tx_hash,
             originating_tx_address: originating_tx_address.to_string(),

@@ -25,7 +25,7 @@ use crate::{
     },
     btc_on_eos::btc::{
         btc_state::BtcState,
-        minting_params::MintingParamStruct,
+        minting_params::BtcOnEosMintingParamStruct,
         btc_database_utils::get_btc_canon_block_from_db,
     },
 };
@@ -68,7 +68,7 @@ pub fn get_signed_txs(
     chain_id: &str,
     private_key: &EosPrivateKey,
     account_name: &str,
-    minting_params: &[MintingParamStruct],
+    minting_params: &[BtcOnEosMintingParamStruct],
 ) -> Result<EosSignedTransactions> {
     info!("✔ Signing {} txs...", minting_params.len());
     minting_params
@@ -118,7 +118,7 @@ mod tests {
         test_utils::get_test_database,
         utils::convert_satoshis_to_ptoken,
         btc::{
-            btc_types::MintingParamStruct,
+            btc_types::BtcOnEosMintingParamStruct,
             btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
         },
         eth::{
@@ -198,13 +198,13 @@ mod tests {
             "9360a5C047e8Eb44647f17672638c3bB8e2B8a53",
         ).unwrap());
         let minting_params = vec![
-            MintingParamStruct::new(
+            BtcOnEosMintingParamStruct::new(
                 convert_satoshis_to_ptoken(1337),
                 recipient_1,
                 sha256d::Hash::hash(&vec![0xc0]),
                 originating_address.clone(),
             ),
-            MintingParamStruct::new(
+            BtcOnEosMintingParamStruct::new(
                 convert_satoshis_to_ptoken(666),
                 recipient_2,
                 sha256d::Hash::hash(&vec![0xc0]),

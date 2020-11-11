@@ -8,14 +8,14 @@ use crate::{
             btc_state::BtcState,
             minting_params::{
                 BtcOnEthMintingParams,
-                MintingParamStruct
+                BtcOnEthMintingParamStruct
             },
         },
     },
 };
 
 fn filter_minting_params(
-    minting_params: &[MintingParamStruct],
+    minting_params: &[BtcOnEthMintingParamStruct],
 ) -> Result<BtcOnEthMintingParams> {
     let threshold = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
     Ok(BtcOnEthMintingParams::new(
@@ -34,7 +34,7 @@ fn filter_minting_params(
                 }
             })
             .cloned()
-            .collect::<Vec<MintingParamStruct>>()
+            .collect::<Vec<BtcOnEthMintingParamStruct>>()
     ))
 }
 

@@ -19,7 +19,7 @@ use crate::{
     },
     btc_on_eth::btc::{
         btc_state::BtcState,
-        minting_params::MintingParamStruct,
+        minting_params::BtcOnEthMintingParamStruct,
         btc_database_utils::{
             get_btc_canon_block_from_db,
             get_btc_latest_block_from_db,
@@ -44,7 +44,7 @@ pub struct EthTxInfo {
 impl EthTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
         tx: &T,
-        minting_param_struct: &MintingParamStruct,
+        minting_param_struct: &BtcOnEthMintingParamStruct,
         nonce: Option<u64>,
     ) -> Result<EthTxInfo> {
         let default_address = DEFAULT_BTC_ADDRESS.to_string();
@@ -87,7 +87,7 @@ pub struct BtcOutput {
 
 pub fn get_eth_signed_tx_info_from_eth_txs(
     eth_txs: &[EthTransaction],
-    minting_params: &[MintingParamStruct],
+    minting_params: &[BtcOnEthMintingParamStruct],
     eth_account_nonce: u64,
     use_any_sender_tx_type: bool,
     any_sender_nonce: u64,

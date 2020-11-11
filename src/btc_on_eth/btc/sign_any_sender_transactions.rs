@@ -12,7 +12,7 @@ use crate::{
     btc_on_eth::{
         btc::{
             btc_state::BtcState,
-            minting_params::MintingParamStruct,
+            minting_params::BtcOnEthMintingParamStruct,
             btc_database_utils::get_btc_canon_block_from_db,
         },
     },
@@ -20,7 +20,7 @@ use crate::{
 
 pub fn get_any_sender_signed_txs(
     signing_params: &AnySenderSigningParams,
-    minting_params: &[MintingParamStruct],
+    minting_params: &[BtcOnEthMintingParamStruct],
 ) -> Result<RelayTransactions> {
     trace!("✔ Getting AnySender signed transactions...");
     minting_params
@@ -80,7 +80,7 @@ mod tests {
         chains::eth::eth_types::EthAddress,
         btc_on_eth::{
             btc::{
-                minting_params::MintingParamStruct,
+                minting_params::BtcOnEthMintingParamStruct,
                 btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
             },
             eth::{
@@ -116,14 +116,14 @@ mod tests {
             &hex::decode("9360a5C047e8Eb44647f17672638c3bB8e2B8a53").unwrap(),
         );
         let minting_params = vec![
-            MintingParamStruct::new(
+            BtcOnEthMintingParamStruct::new(
                 convert_satoshis_to_ptoken(1337),
                 hex::encode(recipient_1),
                 sha256d::Hash::hash(&[0xc0]),
                 originating_address.clone(),
             )
             .unwrap(),
-            MintingParamStruct::new(
+            BtcOnEthMintingParamStruct::new(
                 convert_satoshis_to_ptoken(666),
                 hex::encode(recipient_2),
                 sha256d::Hash::hash(&[0xc0]),

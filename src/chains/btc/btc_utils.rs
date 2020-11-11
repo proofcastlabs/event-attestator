@@ -344,7 +344,7 @@ mod tests {
         btc_on_eth::{
             utils::convert_satoshis_to_ptoken,
             btc::{
-                minting_params::MintingParamStruct,
+                minting_params::BtcOnEthMintingParamStruct,
                 btc_test_utils::{
                     get_sample_btc_utxo,
                     SAMPLE_TRANSACTION_INDEX,
@@ -485,7 +485,7 @@ mod tests {
         let originating_tx_hash = sha256d::Hash::from_slice(
             &hex::decode("98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e").unwrap()
         ).unwrap();
-        let minting_param_struct = MintingParamStruct::new(
+        let minting_param_struct = BtcOnEthMintingParamStruct::new(
             amount,
             hex::encode(eth_address),
             originating_tx_hash,

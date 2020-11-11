@@ -14,7 +14,7 @@ use crate::{
             btc_database_utils::get_btc_network_from_db,
             minting_params::{
                 BtcOnEthMintingParams,
-                MintingParamStruct,
+                BtcOnEthMintingParamStruct,
             },
         },
     },
@@ -56,7 +56,7 @@ fn parse_minting_params_from_p2sh_deposit_tx(
                     }
                     Some(deposit_info) => {
                         info!("✔ Deposit info from list: {:?}", deposit_info);
-                        MintingParamStruct::new(
+                        BtcOnEthMintingParamStruct::new(
                             convert_satoshis_to_ptoken(tx_out.value),
                             deposit_info.address.clone(),
                             p2sh_deposit_containing_tx.txid(),
@@ -66,7 +66,7 @@ fn parse_minting_params_from_p2sh_deposit_tx(
                 }
              )
             .filter(|maybe_minting_params| maybe_minting_params.is_ok())
-            .collect::<Result<Vec<MintingParamStruct>>>()?
+            .collect::<Result<Vec<BtcOnEthMintingParamStruct>>>()?
     ))
 }
 
@@ -82,7 +82,7 @@ fn parse_minting_params_from_p2sh_deposit_txs(
             .flat_map(|tx| parse_minting_params_from_p2sh_deposit_tx(tx, deposit_info_hash_map, btc_network))
             .map(|minting_params| minting_params.0)
             .flatten()
-            .collect::<Vec<MintingParamStruct>>()
+            .collect::<Vec<BtcOnEthMintingParamStruct>>()
    ))
 }
 
@@ -184,13 +184,13 @@ mod tests {
             "130a150ff71f8cabf02d4315f7d61f801ced234c7fcc3144d858816033578110"
         ).unwrap();
         let pub_key_bytes = hex::decode("03a3bea6d8d15a38d9c96074d994c788bc1286d557ef5bdbb548741ddf265637ce").unwrap();
-        let expected_result_1 = MintingParamStruct::new(
+        let expected_result_1 = BtcOnEthMintingParamStruct::new(
             expected_amount_1,
             hex::encode(expected_eth_address_1),
             expected_originating_tx_hash_1,
             expected_btc_address_1,
         ).unwrap();
-        let expected_result_2 = MintingParamStruct::new(
+        let expected_result_2 = BtcOnEthMintingParamStruct::new(
             expected_amount_2,
             hex::encode(expected_eth_address_2),
             expected_originating_tx_hash_2,

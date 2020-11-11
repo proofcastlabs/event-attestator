@@ -25,7 +25,7 @@ use crate::{
             btc_crypto::btc_private_key::BtcPrivateKey,
             minting_params::{
                 BtcOnEosMintingParams,
-                MintingParamStruct,
+                BtcOnEosMintingParamStruct,
             },
             btc_types::{
                 BtcBlockAndId,
@@ -129,19 +129,19 @@ pub fn get_sample_minting_params() -> BtcOnEosMintingParams {
     let originating_tx_hash_1 = sha256d::Hash::hash(b"something_1").to_string();
     let originating_tx_hash_2 = sha256d::Hash::hash(b"something_2").to_string();
     let originating_tx_hash_3 = sha256d::Hash::hash(b"something_3").to_string();
-    let minting_params_1 = MintingParamStruct {
+    let minting_params_1 = BtcOnEosMintingParamStruct {
         amount: amount_1,
         to: eos_address_1,
         originating_tx_hash: originating_tx_hash_1,
         originating_tx_address: originating_tx_address_1,
     };
-    let minting_params_2 = MintingParamStruct {
+    let minting_params_2 = BtcOnEosMintingParamStruct {
         amount: amount_2,
         to: eos_address_2,
         originating_tx_hash: originating_tx_hash_2,
         originating_tx_address: originating_tx_address_2,
     };
-    let minting_params_3 = MintingParamStruct {
+    let minting_params_3 = BtcOnEosMintingParamStruct {
         amount: amount_3,
         to: eos_address_3,
         originating_tx_hash: originating_tx_hash_3,

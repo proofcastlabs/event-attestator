@@ -6,12 +6,12 @@ use crate::{
         btc_state::BtcState,
         minting_params::{
             BtcOnEosMintingParams,
-            MintingParamStruct
+            BtcOnEosMintingParamStruct
         },
     },
 };
 
-fn filter_too_short_account_names(minting_params: &[MintingParamStruct]) -> Result<BtcOnEosMintingParams> {
+fn filter_too_short_account_names(minting_params: &[BtcOnEosMintingParamStruct]) -> Result<BtcOnEosMintingParams> {
     Ok(BtcOnEosMintingParams::new( // FIXME Implement these filters on the type!
         minting_params
             .iter()
@@ -20,7 +20,7 @@ fn filter_too_short_account_names(minting_params: &[MintingParamStruct]) -> Resu
                     false => params.clone(),
                     true => {
                         info!("✘ Redirecting to safe address {:?} ∵ name too short:", params);
-                        MintingParamStruct {
+                        BtcOnEosMintingParamStruct {
                             amount: params.amount.clone(),
                             to: SAFE_EOS_ADDRESS.to_string(),
                             originating_tx_hash: params.originating_tx_hash.clone(),
@@ -29,7 +29,7 @@ fn filter_too_short_account_names(minting_params: &[MintingParamStruct]) -> Resu
                     }
                 }
             })
-            .collect::<Vec<MintingParamStruct>>()
+            .collect::<Vec<BtcOnEosMintingParamStruct>>()
     ))
 }
 

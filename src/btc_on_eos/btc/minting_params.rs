@@ -20,7 +20,7 @@ use bitcoin::{
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
-pub struct BtcOnEosMintingParams(pub Vec<MintingParamStruct>);
+pub struct BtcOnEosMintingParams(pub Vec<BtcOnEosMintingParamStruct>);
 
 impl BtcOnEosMintingParams {
     pub fn to_bytes(&self) -> Result<Bytes> {
@@ -33,22 +33,22 @@ impl BtcOnEosMintingParams {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct MintingParamStruct {
+pub struct BtcOnEosMintingParamStruct {
     pub amount: String,
     pub to: String,
     pub originating_tx_hash: String,
     pub originating_tx_address: String,
 }
 
-impl MintingParamStruct {
+impl BtcOnEosMintingParamStruct {
     pub fn new(
         amount: u64,
         to: String,
         originating_tx_hash: sha256d::Hash,
         originating_tx_address: BtcAddress,
         symbol: &str,
-    ) -> MintingParamStruct {
-        MintingParamStruct {
+    ) -> BtcOnEosMintingParamStruct {
+        BtcOnEosMintingParamStruct {
             to: match EosAccountName::from_str(&to) {
                 Ok(_) => to,
                 Err(_) => {

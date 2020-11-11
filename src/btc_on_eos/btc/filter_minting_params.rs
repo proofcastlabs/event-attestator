@@ -8,14 +8,14 @@ use crate::{
             btc_state::BtcState,
             minting_params::{
                 BtcOnEosMintingParams,
-                MintingParamStruct
+                BtcOnEosMintingParamStruct
             },
         },
     },
 };
 
 fn filter_minting_params(
-    minting_params: &[MintingParamStruct],
+    minting_params: &[BtcOnEosMintingParamStruct],
 ) -> Result<BtcOnEosMintingParams> {
     Ok(BtcOnEosMintingParams::new(
         minting_params
@@ -35,7 +35,7 @@ fn filter_minting_params(
             })
             .map(|(_, params)| params)
             .cloned()
-            .collect::<Vec<MintingParamStruct>>()
+            .collect::<Vec<BtcOnEosMintingParamStruct>>()
     ))
 }
 
