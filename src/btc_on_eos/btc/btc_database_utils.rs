@@ -30,23 +30,23 @@ use crate::{
         BTC_LATEST_BLOCK_HASH_KEY,
         BTC_CANON_TO_TIP_LENGTH_KEY,
     },
+    utils::{
+        convert_bytes_to_u64,
+        convert_u64_to_bytes,
+    },
+    chains::btc::btc_utils::{
+        convert_btc_network_to_bytes,
+        convert_bytes_to_btc_network,
+        convert_bytes_to_btc_address,
+        convert_btc_address_to_bytes,
+        serialize_btc_on_eos_btc_block_in_db_format,
+        deserialize_btc_on_eos_btc_block_in_db_format,
+    },
     btc_on_eos::{
-        utils::{
-            convert_bytes_to_u64,
-            convert_u64_to_bytes,
-        },
         btc::{
             btc_state::BtcState,
             btc_types::BtcBlockInDbFormat,
             btc_crypto::btc_private_key::BtcPrivateKey,
-            btc_utils::{
-                convert_btc_network_to_bytes,
-                convert_bytes_to_btc_network,
-                convert_bytes_to_btc_address,
-                convert_btc_address_to_bytes,
-                serialize_btc_block_in_db_format,
-                deserialize_btc_block_in_db_format,
-            },
         },
     },
 };
@@ -482,7 +482,7 @@ pub fn put_btc_block_in_db<D>(
         "✔ Putting BTC block in db: {:?}",
         btc_block_in_db_format,
     );
-    serialize_btc_block_in_db_format(btc_block_in_db_format)
+    serialize_btc_on_eos_btc_block_in_db_format(btc_block_in_db_format)
         .and_then(|(id, block)| db.put(id, block, MIN_DATA_SENSITIVITY_LEVEL))
 }
 
@@ -513,7 +513,7 @@ pub fn get_btc_block_from_db<D>(
 {
     trace!("✔ Getting BTC block from db via id: {}", hex::encode(id.to_vec()));
     db.get(id.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
-        .and_then(|bytes| deserialize_btc_block_in_db_format(&bytes))
+        .and_then(|bytes| deserialize_btc_on_eos_btc_block_in_db_format(&bytes))
 }
 
 #[cfg(test)]

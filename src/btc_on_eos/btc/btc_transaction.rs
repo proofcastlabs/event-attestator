@@ -13,12 +13,6 @@ use crate::{
     chains::btc::{
         deposit_address_info::DepositAddressInfo,
         utxo_manager::utxo_types::BtcUtxosAndValues,
-    },
-    btc_on_eos::btc::{
-        btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_types::{
-            BtcRecipientsAndAmounts,
-        },
         btc_utils::{
             get_script_sig,
             calculate_btc_tx_fee,
@@ -27,6 +21,10 @@ use crate::{
             create_new_pay_to_pub_key_hash_output,
             get_p2sh_script_sig_from_redeem_script,
         },
+    },
+    btc_on_eos::btc::{
+        btc_types::BtcRecipientsAndAmounts,
+        btc_crypto::btc_private_key::BtcPrivateKey,
     },
 };
 
@@ -150,10 +148,12 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
 mod tests {
     use super::*;
     use crate::{
-        chains::btc::btc_utils::get_tx_id_from_signed_btc_tx,
+        chains::btc::btc_utils::{
+            get_tx_id_from_signed_btc_tx,
+            get_hex_tx_from_signed_btc_tx,
+        },
         btc_on_eos::btc::{
             btc_types::BtcRecipientAndAmount,
-            btc_utils::get_hex_tx_from_signed_btc_tx,
             btc_test_utils::{
                 SAMPLE_TARGET_BTC_ADDRESS,
                 get_sample_btc_private_key,

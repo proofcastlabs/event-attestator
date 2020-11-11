@@ -1,12 +1,12 @@
 use bitcoin::blockdata::script::Script as BtcScript;
 use crate::{
-    chains::btc::utxo_manager::utxo_types::{
-        BtcUtxoAndValue,
-        BtcUtxosAndValues,
-    },
-    btc_on_eos::btc::{
+    btc_on_eos::btc::btc_types::BtcTransaction,
+    chains::btc::{
         btc_utils::create_unsigned_utxo_from_tx,
-        btc_types::BtcTransaction,
+        utxo_manager::utxo_types::{
+            BtcUtxoAndValue,
+            BtcUtxosAndValues,
+        },
     },
 };
 

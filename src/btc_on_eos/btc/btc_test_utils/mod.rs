@@ -14,6 +14,7 @@ use crate::{
         Result,
     },
     chains::btc::{
+        btc_utils::create_unsigned_utxo_from_tx,
         btc_constants::MINIMUM_REQUIRED_SATOSHIS,
         utxo_manager::utxo_types::BtcUtxoAndValue,
         deposit_address_info::DepositAddressInfoJson,
@@ -21,7 +22,6 @@ use crate::{
     btc_on_eos::{
         utils::convert_u64_to_8_decimal_eos_asset,
         btc::{
-            btc_utils::create_unsigned_utxo_from_tx,
             btc_crypto::btc_private_key::BtcPrivateKey,
             btc_types::{
                 MintingParams,

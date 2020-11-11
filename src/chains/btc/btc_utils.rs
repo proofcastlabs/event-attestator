@@ -24,10 +24,15 @@ use crate::{
             convert_u64_to_bytes,
         },
     },
-    btc_on_eth::btc::btc_types::{
-        MintingParams,
-        MintingParamStruct,
-        BtcBlockInDbFormat,
+    btc_on_eos::btc::btc_types::{ // FIXME Once the btc_types are refd!
+        MintingParams as BtcOnEosMintingParams,
+        MintingParamStruct as BtcOnEosMintingParamStruct,
+        BtcBlockInDbFormat as BtcOnEosBtcBlockInDbFormat,
+    },
+    btc_on_eth::btc::btc_types::{ // FIME Once the btc_types are refd!
+        MintingParams as BtcOnEthMintingParams,
+        MintingParamStruct as BtcOnEthMintingParamStruct,
+        BtcBlockInDbFormat as BtcOnEthBtcBlockInDbFormat,
     },
 };
 use bitcoin::{
@@ -130,15 +135,27 @@ pub fn get_p2sh_script_sig_from_redeem_script(
         .into_script()
 }
 
-pub fn serialize_minting_params(
-    minting_params: &[MintingParamStruct]
+pub fn serialize_minting_params( // FIXME Impl this on the type!
+    minting_params: &[BtcOnEthMintingParamStruct]
 ) -> Result<Bytes> {
     Ok(serde_json::to_vec(minting_params)?)
 }
 
-pub fn deserialize_minting_params(
+pub fn deserialize_minting_params( // FIXME Impl this on the type!
     serialized_minting_params: Bytes
-) -> Result<MintingParams> {
+) -> Result<BtcOnEthMintingParams> {
+    Ok(serde_json::from_slice(&serialized_minting_params[..])?)
+}
+
+pub fn serialize_btc_on_eos_minting_params( // FIXME Impl this on the type!
+    minting_params: &[BtcOnEosMintingParamStruct]
+) -> Result<Bytes> {
+    Ok(serde_json::to_vec(minting_params)?)
+}
+
+pub fn deserialize_btc_on_eos_minting_params( // FIXME Impl this on the type!
+    serialized_minting_params: Bytes
+) -> Result<BtcOnEosMintingParams> {
     Ok(serde_json::from_slice(&serialized_minting_params[..])?)
 }
 
@@ -178,7 +195,7 @@ pub fn convert_bytes_to_btc_network(bytes: &[Byte]) -> Result<BtcNetwork> {
 }
 
 pub fn serialize_btc_block_in_db_format(
-    btc_block_in_db_format: &BtcBlockInDbFormat,
+    btc_block_in_db_format: &BtcOnEthBtcBlockInDbFormat,
 ) -> Result<(Bytes, Bytes)> {
     let serialized_id = btc_block_in_db_format.id.to_vec();
     Ok(
@@ -199,18 +216,53 @@ pub fn serialize_btc_block_in_db_format(
     )
 }
 
+pub fn serialize_btc_on_eos_btc_block_in_db_format( // FIXME Rm this one btc types are refd!
+    btc_block_in_db_format: &BtcOnEosBtcBlockInDbFormat,
+) -> Result<(Bytes, Bytes)> {
+    let serialized_id = btc_block_in_db_format.id.to_vec();
+    Ok(
+        (
+            serialized_id.clone(),
+            serde_json::to_vec(
+                &SerializedBlockInDbFormat::new(
+                    serialized_id,
+                    btc_serialize(&btc_block_in_db_format.block),
+                    convert_u64_to_bytes(btc_block_in_db_format.height),
+                    btc_block_in_db_format.extra_data.clone(),
+                    serialize_btc_on_eos_minting_params(&btc_block_in_db_format.minting_params)?,
+                )
+            )?
+        )
+    )
+}
+
 pub fn deserialize_btc_block_in_db_format(
     serialized_block_in_db_format: &[Byte]
-) -> Result<BtcBlockInDbFormat> {
+) -> Result<BtcOnEthBtcBlockInDbFormat> {
     let serialized_struct: SerializedBlockInDbFormat = serde_json::from_slice(
         &serialized_block_in_db_format
     )?;
-    BtcBlockInDbFormat::new(
+    BtcOnEthBtcBlockInDbFormat::new(
         convert_bytes_to_u64(&serialized_struct.height)?,
         sha256d::Hash::from_slice(&serialized_struct.id)?,
         deserialize_minting_params(
             serialized_struct.minting_params
         )?,
+        btc_deserialize(&serialized_struct.block)?,
+        serialized_struct.extra_data,
+    )
+}
+
+pub fn deserialize_btc_on_eos_btc_block_in_db_format( // FIXME Rm this one btc types are refd!
+    serialized_block_in_db_format: &[Byte]
+) -> Result<BtcOnEosBtcBlockInDbFormat> {
+    let serialized_struct: SerializedBlockInDbFormat = serde_json::from_slice(
+        &serialized_block_in_db_format
+    )?;
+    BtcOnEosBtcBlockInDbFormat::new(
+        convert_bytes_to_u64(&serialized_struct.height)?,
+        sha256d::Hash::from_slice(&serialized_struct.id)?,
+        deserialize_btc_on_eos_minting_params(serialized_struct.minting_params)?,
         btc_deserialize(&serialized_struct.block)?,
         serialized_struct.extra_data,
     )

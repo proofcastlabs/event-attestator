@@ -6,8 +6,9 @@ use std::time::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eos::{
-        eos_state::EosState,
+    chains::{
+        eos::eos_state::EosState,
+        btc::btc_utils::get_hex_tx_from_signed_btc_tx,
     },
     btc_on_eos::{
         eos::redeem_info::{
@@ -16,7 +17,6 @@ use crate::{
         },
         btc::{
             btc_types::BtcTxInfo,
-            btc_utils::get_hex_tx_from_signed_btc_tx,
             btc_database_utils::get_btc_account_nonce_from_db,
         },
     },

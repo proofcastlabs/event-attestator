@@ -8,14 +8,16 @@ use crate::{
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
     chains::{
         eos::eos_state::EosState,
-        btc::utxo_manager::{
-            utxo_types::BtcUtxosAndValues,
-            utxo_database_utils::get_utxo_and_value,
+        btc::{
+            btc_utils::calculate_btc_tx_fee,
+            utxo_manager::{
+                utxo_types::BtcUtxosAndValues,
+                utxo_database_utils::get_utxo_and_value,
+            },
         },
     },
     btc_on_eos::{
         btc::{
-            btc_utils::calculate_btc_tx_fee,
             btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
             btc_database_utils::{
                 get_btc_fee_from_db,
@@ -149,12 +151,12 @@ mod tests {
             },
             btc::{
                 btc_constants::BTC_PRIVATE_KEY_DB_KEY,
+                btc_utils::get_hex_tx_from_signed_btc_tx,
                 utxo_manager::utxo_database_utils::save_utxos_to_db,
             },
         },
         btc_on_eos::{
             btc::{
-                btc_utils::get_hex_tx_from_signed_btc_tx,
                 btc_crypto::btc_private_key::BtcPrivateKey,
                 btc_test_utils::{
                     get_sample_p2sh_utxo_and_value_2,

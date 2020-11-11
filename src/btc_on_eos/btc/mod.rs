@@ -3,7 +3,6 @@ pub mod submit_btc_block;
 
 pub(crate) mod btc_state;
 pub(crate) mod btc_types;
-pub(crate) mod btc_utils;
 pub(crate) mod btc_crypto;
 pub(crate) mod filter_utxos;
 pub(crate) mod btc_test_utils;

@@ -2,6 +2,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::btc::{
+        btc_utils::create_unsigned_utxo_from_tx,
         deposit_address_info::DepositInfoHashMap,
         utxo_manager::utxo_types::{
             BtcUtxoAndValue,
@@ -10,7 +11,6 @@ use crate::{
     },
     btc_on_eos::btc::{
         btc_state::BtcState,
-        btc_utils::create_unsigned_utxo_from_tx,
         btc_database_utils::get_btc_network_from_db,
     },
 };
