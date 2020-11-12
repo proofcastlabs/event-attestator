@@ -11,10 +11,6 @@ use bitcoin::{
     blockdata::block::Block as BtcBlock,
 };
 
-pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-
-pub type BtcTransactions = Vec<BtcTransaction>;
-
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SubmissionMaterial {
     pub ref_block_num: u16,

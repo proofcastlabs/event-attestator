@@ -2,15 +2,13 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::btc::{
-        utxo_manager::utxo_types::BtcUtxosAndValues,
+        btc_types::BtcTransaction,
         btc_utils::get_pay_to_pub_key_hash_script,
+        utxo_manager::utxo_types::BtcUtxosAndValues,
     },
-    btc_on_eos::{
-        btc::{
-            btc_types::BtcTransaction,
-            btc_database_utils::get_btc_address_from_db,
-            extract_utxos_from_op_return_txs::extract_utxos_from_txs,
-        },
+    btc_on_eos::btc::{
+        btc_database_utils::get_btc_address_from_db,
+        extract_utxos_from_op_return_txs::extract_utxos_from_txs,
     },
 };
 

@@ -3,6 +3,7 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::btc::{
+        btc_types::BtcTransaction,
         btc_utils::{
             create_unsigned_utxo_from_tx,
             get_pay_to_pub_key_hash_script,
@@ -14,7 +15,6 @@ use crate::{
     },
     btc_on_eth::btc::{
         btc_state::BtcState,
-        btc_types::BtcTransaction,
         btc_database_utils::get_btc_address_from_db,
     },
 };

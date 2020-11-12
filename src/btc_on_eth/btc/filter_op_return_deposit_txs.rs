@@ -10,10 +10,12 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::btc_utils::get_pay_to_pub_key_hash_script,
+    chains::btc::{
+        btc_types::BtcTransactions,
+        btc_utils::get_pay_to_pub_key_hash_script,
+    },
     btc_on_eth::btc::{
         btc_state::BtcState,
-        btc_types::BtcTransactions,
         btc_crypto::btc_private_key::BtcPrivateKey,
         btc_database_utils::get_btc_private_key_from_db,
     },

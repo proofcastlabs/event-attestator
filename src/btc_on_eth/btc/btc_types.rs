@@ -10,10 +10,6 @@ use bitcoin::{
     hashes::sha256d,
 };
 
-pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-
-pub type BtcTransactions = Vec<BtcTransaction>;
-
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BtcBlockInDbFormat {
     pub height: u64,

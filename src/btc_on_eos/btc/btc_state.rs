@@ -8,16 +8,18 @@ use crate::{
     chains::{
         eos::eos_types::EosSignedTransactions,
         btc::{
-            btc_types::BtcBlockAndId,
             deposit_address_info::DepositInfoHashMap,
             utxo_manager::utxo_types::BtcUtxosAndValues,
+            btc_types::{
+                BtcBlockAndId,
+                BtcTransaction,
+                BtcTransactions,
+            },
         },
     },
     btc_on_eos::btc::{
         minting_params::BtcOnEosMintingParams,
         btc_types::{
-            BtcTransaction,
-            BtcTransactions,
             BtcBlockInDbFormat,
             SubmissionMaterial,
         },

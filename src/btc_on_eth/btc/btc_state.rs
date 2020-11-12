@@ -15,19 +15,15 @@ use crate::{
             utxo_manager::utxo_types::BtcUtxosAndValues,
             btc_types::{
                 BtcBlockAndId,
+                BtcTransaction,
+                BtcTransactions,
                 BtcSubmissionMaterialJson,
             },
         },
     },
-    btc_on_eth::{
-        btc::{
-            minting_params::BtcOnEthMintingParams,
-            btc_types::{
-                BtcTransaction,
-                BtcTransactions,
-                BtcBlockInDbFormat,
-            },
-        },
+    btc_on_eth::btc::{
+        btc_types::BtcBlockInDbFormat,
+        minting_params::BtcOnEthMintingParams,
     },
 };
 
