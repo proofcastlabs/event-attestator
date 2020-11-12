@@ -18,8 +18,8 @@ use secp256k1::{
 use crate::{
     traits::DatabaseInterface,
     chains::btc::btc_utils::get_btc_one_key,
+    crypto_utils::generate_random_private_key,
     constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-    btc_on_eos::crypto_utils::generate_random_private_key,
     types::{
         Byte,
         Bytes,
@@ -32,46 +32,22 @@ pub struct BtcPrivateKey(PrivateKey);
 
 impl BtcPrivateKey {
     pub fn to_p2pkh_btc_address(&self) -> String {
-        BtcAddress::p2pkh(&self.0.public_key(&Secp256k1::new()), self.0.network)
-            .to_string()
+        BtcAddress::p2pkh(&self.0.public_key(&Secp256k1::new()), self.0.network).to_string()
     }
 
     pub fn from_slice(slice: &[u8], network: Network) -> Result<Self> {
-        Ok(
-            Self(
-                PrivateKey {
-                    network,
-                    compressed: true,
-                    key: SecretKey::from_slice(&slice)?
-                }
-            )
-        )
+        Ok(Self(PrivateKey { network, compressed: true, key: SecretKey::from_slice(&slice)? }))
     }
 
     pub fn generate_random(network: Network) -> Result<Self> {
-        Ok(
-            Self(
-                PrivateKey {
-                    network,
-                    compressed: false,
-                    key: generate_random_private_key()?
-                }
-            )
-        )
+        Ok(Self(PrivateKey { network, compressed: false, key: generate_random_private_key()?  }))
     }
 
     pub fn sign_hash(&self, hash: Bytes) -> Result<Signature> {
-        Ok(
-            Secp256k1::new()
-                .sign(&Message::from_slice(&hash)?, &self.0.key)
-        )
+        Ok(Secp256k1::new().sign(&Message::from_slice(&hash)?, &self.0.key))
     }
 
-    pub fn sign_hash_and_append_btc_hash_type(
-        &self,
-        hash: Bytes,
-        hash_type: u8,
-    ) -> Result<Bytes> {
+    pub fn sign_hash_and_append_btc_hash_type(&self, hash: Bytes, hash_type: u8) -> Result<Bytes> {
         self.sign_hash(hash)
             .map(|sig| sig.serialize_der().to_vec())
             .map(|mut sig_vec| {
@@ -81,43 +57,21 @@ impl BtcPrivateKey {
     }
 
     pub fn to_public_key(&self) -> PublicKey {
-        PublicKey::from_secret_key(
-            &Secp256k1::new(),
-            &self.0.key
-        )
+        PublicKey::from_secret_key(&Secp256k1::new(), &self.0.key)
     }
 
     pub fn to_public_key_slice(&self) -> [u8; 33] {
-        self.to_public_key()
-            .serialize()
+        self.to_public_key().serialize()
     }
 
     #[cfg(test)]
     pub fn from_wif(wif: &str) -> Result<Self> {
         let pk = PrivateKey::from_wif(wif)?;
-        Ok(
-            Self(
-                PrivateKey {
-                    key: pk.key,
-                    network: pk.network,
-                    compressed: pk.compressed
-                }
-            )
-        )
+        Ok(Self(PrivateKey { key: pk.key, network: pk.network, compressed: pk.compressed }))
     }
 
-    pub fn write_to_db<D>(
-        &self,
-        db: &D,
-        key: &[Byte],
-    ) -> Result<()>
-        where D: DatabaseInterface
-    {
-        db.put(
-            key.to_vec(),
-            self.0[..].to_vec(),
-            PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-        )
+    pub fn write_to_db<D: DatabaseInterface>(&self, db: &D, key: &[Byte]) -> Result<()> {
+        db.put(key.to_vec(), self.0[..].to_vec(), PRIVATE_KEY_DATA_SENSITIVITY_LEVEL)
     }
 }
 

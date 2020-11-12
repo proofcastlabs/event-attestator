@@ -10,10 +10,10 @@ use bitcoin::{
 };
 use crate::{
     types::{Bytes, Result},
-    btc_on_eth::btc::btc_crypto::btc_private_key::BtcPrivateKey,
     chains::btc::{
         btc_types::BtcRecipientsAndAmounts,
         deposit_address_info::DepositAddressInfo,
+        btc_crypto::btc_private_key::BtcPrivateKey,
         utxo_manager::utxo_types::BtcUtxosAndValues,
         btc_utils::{
             get_script_sig,

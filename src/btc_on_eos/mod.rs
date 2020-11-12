@@ -39,5 +39,4 @@ pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
 
 mod utils;
-mod crypto_utils;
 mod check_core_is_initialized;

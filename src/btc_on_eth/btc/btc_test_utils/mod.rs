@@ -28,6 +28,7 @@ use crate::{
     chains::{
         eth::eth_types::EthAddress,
         btc::{
+            btc_crypto::btc_private_key::BtcPrivateKey,
             deposit_address_info::DepositAddressInfoJson,
             btc_types::{
                 BtcBlockAndId,
@@ -52,7 +53,6 @@ use crate::{
     btc_on_eth::{
         utils::convert_satoshis_to_ptoken,
         btc::{
-            btc_crypto::btc_private_key::BtcPrivateKey,
             parse_btc_block_and_id::parse_btc_block_and_tx_json_to_struct,
             parse_submission_material_json::parse_btc_block_string_to_json,
             minting_params::{

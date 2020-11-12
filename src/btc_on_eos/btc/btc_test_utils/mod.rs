@@ -17,6 +17,7 @@ use crate::{
         btc_utils::create_unsigned_utxo_from_tx,
         btc_constants::MINIMUM_REQUIRED_SATOSHIS,
         utxo_manager::utxo_types::BtcUtxoAndValue,
+        btc_crypto::btc_private_key::BtcPrivateKey,
         deposit_address_info::DepositAddressInfoJson,
         btc_types::{
             BtcBlockAndId,
@@ -27,7 +28,6 @@ use crate::{
     btc_on_eos::{
         utils::convert_u64_to_8_decimal_eos_asset,
         btc::{
-            btc_crypto::btc_private_key::BtcPrivateKey,
             minting_params::{
                 BtcOnEosMintingParams,
                 BtcOnEosMintingParamStruct,

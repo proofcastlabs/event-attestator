@@ -6,6 +6,7 @@ use bitcoin_hashes::{
 use crate::{
     errors::AppError,
     traits::DatabaseInterface,
+    btc_on_eth::btc::btc_state::BtcState,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     database_utils::{
         put_u64_in_db,
@@ -23,6 +24,7 @@ use crate::{
         },
         btc::{
             btc_types::BtcBlockInDbFormat,
+            btc_crypto::btc_private_key::BtcPrivateKey,
             btc_constants::{
                 BTC_FEE_KEY,
                 BTC_NETWORK_KEY,
@@ -46,10 +48,6 @@ use crate::{
                 deserialize_btc_block_in_db_format,
             },
         },
-    },
-    btc_on_eth::btc::{
-        btc_state::BtcState,
-        btc_crypto::btc_private_key::BtcPrivateKey,
     },
 };
 
@@ -253,7 +251,7 @@ pub fn put_btc_private_key_in_db<D>(db: &D, pk: &BtcPrivateKey) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Saving BTC private key into db...");
-    pk.write_to_database(db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
+    pk.write_to_db(db, &BTC_PRIVATE_KEY_DB_KEY.to_vec())
 }
 
 pub fn get_btc_private_key_from_db<D>(db: &D) -> Result<BtcPrivateKey>

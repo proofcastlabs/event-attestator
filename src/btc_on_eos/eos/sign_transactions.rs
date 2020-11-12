@@ -144,12 +144,11 @@ mod tests {
     use crate::{
         test_utils::get_test_database,
         chains::{
-            eos::{
-                eos_action_proofs::EosActionProof,
-            },
+            eos::eos_action_proofs::EosActionProof,
             btc::{
                 btc_constants::BTC_PRIVATE_KEY_DB_KEY,
                 btc_utils::get_hex_tx_from_signed_btc_tx,
+                btc_crypto::btc_private_key::BtcPrivateKey,
                 utxo_manager::utxo_database_utils::save_utxos_to_db,
                 btc_database_utils::{
                     put_btc_network_in_db,
@@ -158,14 +157,11 @@ mod tests {
             },
         },
         btc_on_eos::{
-            btc::{
-                btc_crypto::btc_private_key::BtcPrivateKey,
-                btc_test_utils::{
-                    get_sample_p2sh_utxo_and_value_2,
-                    get_sample_p2sh_utxo_and_value_3,
-                },
-            },
             eos::eos_test_utils::get_sample_eos_submission_material_json_n,
+            btc::btc_test_utils::{
+                get_sample_p2sh_utxo_and_value_2,
+                get_sample_p2sh_utxo_and_value_3,
+            },
         },
     };
 

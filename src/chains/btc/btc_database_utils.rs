@@ -7,6 +7,7 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
+    btc_on_eos::btc::btc_state::BtcState as BtcOnEosBtcState,
     database_utils::{
         put_u64_in_db,
         get_u64_from_db,
@@ -36,6 +37,7 @@ use crate::{
     },
     chains::btc::{
         btc_types::BtcBlockInDbFormat,
+        btc_crypto::btc_private_key::BtcPrivateKey,
         btc_utils::{
             convert_btc_network_to_bytes,
             convert_bytes_to_btc_network,
@@ -45,15 +47,11 @@ use crate::{
             deserialize_btc_on_eos_btc_block_in_db_format,
         },
     },
-    btc_on_eos::btc::{
-        btc_state::BtcState,
-        btc_crypto::btc_private_key::BtcPrivateKey,
-    },
 };
 
 pub fn start_btc_db_transaction<D>(
-    state: BtcState<D>,
-) -> Result<BtcState<D>>
+    state: BtcOnEosBtcState<D>,
+) -> Result<BtcOnEosBtcState<D>>
     where D: DatabaseInterface
 {
     state
@@ -66,8 +64,8 @@ pub fn start_btc_db_transaction<D>(
 }
 
 pub fn end_btc_db_transaction<D>(
-    state: BtcState<D>,
-) -> Result<BtcState<D>>
+    state: BtcOnEosBtcState<D>,
+) -> Result<BtcOnEosBtcState<D>>
     where D: DatabaseInterface
 {
     state
