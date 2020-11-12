@@ -1,12 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::btc::{
-        btc_state::BtcState,
-        btc_database_utils::{
-            get_btc_latest_block_from_db,
-            put_btc_latest_block_hash_in_db,
-        },
+    btc_on_eos::btc::btc_state::BtcState,
+    chains::btc::btc_database_utils::{
+        get_btc_latest_block_from_db,
+        put_btc_latest_block_hash_in_db,
     },
 };
 

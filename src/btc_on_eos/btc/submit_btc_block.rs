@@ -1,10 +1,12 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::btc::btc_database_utils::{
+        end_btc_db_transaction,
+        start_btc_db_transaction,
+    },
     btc_on_eos::{
-        check_core_is_initialized::{
-            check_core_is_initialized_and_return_btc_state,
-        },
+        check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
         btc::{
             btc_state::BtcState,
             save_utxos_to_db::maybe_save_utxos_to_db,
@@ -31,10 +33,6 @@ use crate::{
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
             remove_minting_params_from_canon_block::remove_minting_params_from_canon_block_and_return_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
-            btc_database_utils::{
-                end_btc_db_transaction,
-                start_btc_db_transaction,
-            },
             get_btc_output_json::{
                 get_btc_output_as_string,
                 create_btc_output_json_and_put_in_state,

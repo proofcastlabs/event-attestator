@@ -53,49 +53,26 @@ use crate::{
     },
 };
 
-pub fn start_btc_db_transaction<D>(
-    state: BtcState<D>,
-) -> Result<BtcState<D>>
-    where D: DatabaseInterface
-{
-    state
-        .db
-        .start_transaction()
-        .map(|_| {
-            info!("✔ Database transaction begun for BTC block submission!");
-            state
-        })
+pub fn start_btc_db_transaction<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
+    state.db.start_transaction().map(|_| {
+        info!("✔ Database transaction begun for BTC block submission!");
+        state
+    })
 }
 
-pub fn end_btc_db_transaction<D>(
-    state: BtcState<D>,
-) -> Result<BtcState<D>>
-    where D: DatabaseInterface
-{
-    state
-        .db
-        .end_transaction()
-        .map(|_| {
-            info!("✔ Database transaction ended for BTC block submission!");
-            state
-        })
+pub fn end_btc_db_transaction<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
+    state.db.end_transaction().map(|_| {
+        info!("✔ Database transaction ended for BTC block submission!");
+        state
+    })
 }
 
-pub fn get_btc_account_nonce_from_db<D>(
-    db: &D
-) -> Result<u64>
-    where D: DatabaseInterface
-{
+pub fn get_btc_account_nonce_from_db<D: DatabaseInterface>(db: &D) -> Result<u64> {
     trace!("✔ Getting BTC account nonce from db...");
     get_u64_from_db(db, &BTC_ACCOUNT_NONCE_KEY.to_vec())
 }
 
-pub fn put_btc_account_nonce_in_db<D>(
-    db: &D,
-    nonce: u64,
-) -> Result<()>
-    where D: DatabaseInterface
-{
+pub fn put_btc_account_nonce_in_db<D: DatabaseInterface>(db: &D, nonce: u64) -> Result<()> {
     trace!("✔ Putting BTC account nonce of {} in db...", nonce);
     put_u64_in_db(db, &BTC_ACCOUNT_NONCE_KEY.to_vec(), nonce)
 }

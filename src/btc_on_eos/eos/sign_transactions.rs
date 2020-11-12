@@ -5,7 +5,10 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
+    btc_on_eos::{
+        eos::redeem_info::BtcOnEosRedeemInfos,
+        btc::btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
+    },
     chains::{
         eos::eos_state::EosState,
         btc::{
@@ -18,15 +21,12 @@ use crate::{
                 utxo_types::BtcUtxosAndValues,
                 utxo_database_utils::get_utxo_and_value,
             },
-        },
-    },
-    btc_on_eos::btc::{
-        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-        btc_database_utils::{
-            get_btc_fee_from_db,
-            get_btc_network_from_db,
-            get_btc_address_from_db,
-            get_btc_private_key_from_db,
+            btc_database_utils::{
+                get_btc_fee_from_db,
+                get_btc_network_from_db,
+                get_btc_address_from_db,
+                get_btc_private_key_from_db,
+            },
         },
     },
 };
@@ -151,6 +151,10 @@ mod tests {
                 btc_constants::BTC_PRIVATE_KEY_DB_KEY,
                 btc_utils::get_hex_tx_from_signed_btc_tx,
                 utxo_manager::utxo_database_utils::save_utxos_to_db,
+                btc_database_utils::{
+                    put_btc_network_in_db,
+                    put_btc_address_in_db,
+                },
             },
         },
         btc_on_eos::{
@@ -159,10 +163,6 @@ mod tests {
                 btc_test_utils::{
                     get_sample_p2sh_utxo_and_value_2,
                     get_sample_p2sh_utxo_and_value_3,
-                },
-                btc_database_utils::{
-                    put_btc_network_in_db,
-                    put_btc_address_in_db,
                 },
             },
             eos::eos_test_utils::get_sample_eos_submission_material_json_n,

@@ -7,12 +7,14 @@ use crate::{
     types::{NoneError, Result},
     traits::DatabaseInterface,
     chains::{
-        btc::deposit_address_info::DepositInfoHashMap,
         eos::eos_database_utils::get_eos_token_symbol_from_db,
+        btc::{
+            deposit_address_info::DepositInfoHashMap,
+            btc_database_utils::get_btc_network_from_db,
+        },
     },
     btc_on_eos::btc::{
         btc_state::BtcState,
-        btc_database_utils::get_btc_network_from_db,
         minting_params::{
             BtcOnEosMintingParams,
             BtcOnEosMintingParamStruct,

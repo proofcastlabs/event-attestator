@@ -1,10 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    chains::btc::btc_database_utils::put_btc_private_key_in_db,
     btc_on_eos::btc::{
         btc_state::BtcState,
         btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_database_utils::put_btc_private_key_in_db,
         initialize_btc::btc_init_utils::get_btc_network_from_arg,
     },
 };

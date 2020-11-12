@@ -3,6 +3,7 @@ pub mod submit_btc_block;
 
 pub(crate) mod btc_state;
 pub(crate) mod btc_crypto;
+pub(crate) mod btc_database_utils;
 pub(crate) mod filter_utxos;
 pub(crate) mod btc_test_utils;
 pub(crate) mod parse_submission_material_json;
@@ -11,7 +12,6 @@ pub(crate) mod btc_transaction;
 pub(crate) mod save_utxos_to_db;
 pub(crate) mod sign_normal_eth_transactions;
 pub(crate) mod sign_any_sender_transactions;
-pub(crate) mod btc_database_utils;
 pub(crate) mod add_btc_block_to_db;
 pub(crate) mod get_btc_output_json;
 pub(crate) mod increment_eth_nonce;

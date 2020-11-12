@@ -1,10 +1,8 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::btc::{
-        btc_state::BtcState,
-        btc_database_utils::get_btc_block_from_db,
-    },
+    btc_on_eos::btc::btc_state::BtcState,
+    chains::btc::btc_database_utils::get_btc_block_from_db,
 };
 
 pub fn check_for_parent_of_btc_block_in_state<D>(

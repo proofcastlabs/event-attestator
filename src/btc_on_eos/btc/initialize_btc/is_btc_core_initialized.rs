@@ -1,6 +1,6 @@
 use crate::{
     traits::DatabaseInterface,
-    btc_on_eos::btc::btc_database_utils::get_btc_address_from_db,
+    chains::btc::btc_database_utils::get_btc_address_from_db,
 };
 
 pub fn is_btc_core_initialized<D>(
@@ -26,10 +26,8 @@ mod tests {
     use super::*;
     use crate::{
         test_utils::get_test_database,
-        btc_on_eos::btc::{
-            btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
-            btc_database_utils::put_btc_address_in_db,
-        },
+        chains::btc::btc_database_utils::put_btc_address_in_db,
+        btc_on_eos::btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
     };
 
     #[test]

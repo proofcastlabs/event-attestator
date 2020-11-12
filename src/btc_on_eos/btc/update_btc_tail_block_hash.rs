@@ -1,12 +1,10 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eos::btc::btc_state::BtcState,
     chains::btc::{
         btc_types::BtcBlockInDbFormat,
         btc_constants::BTC_TAIL_LENGTH,
-    },
-    btc_on_eos::btc::{
-        btc_state::BtcState,
         btc_database_utils::{
             get_btc_tail_block_from_db,
             get_btc_latest_block_from_db,

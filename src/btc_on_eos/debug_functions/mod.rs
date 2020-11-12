@@ -13,6 +13,10 @@ use crate::{
         set_key_in_db_to_value,
     },
     chains::{
+        btc::btc_database_utils::{
+            start_btc_db_transaction,
+            get_btc_latest_block_from_db,
+        },
         eos::{
             eos_state::EosState,
             eos_crypto::eos_private_key::EosPrivateKey,
@@ -71,9 +75,7 @@ use crate::{
         btc::{
             btc_state::BtcState,
             sign_transactions::get_signed_txs,
-            btc_database_utils::start_btc_db_transaction,
             get_btc_output_json::get_btc_output_as_string,
-            btc_database_utils::get_btc_latest_block_from_db,
             validate_btc_merkle_root::validate_btc_merkle_root,
             filter_minting_params::maybe_filter_minting_params_in_state,
             validate_btc_block_header::validate_btc_block_header_in_state,
