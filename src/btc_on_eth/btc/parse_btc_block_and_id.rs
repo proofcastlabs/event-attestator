@@ -14,7 +14,10 @@ use crate::{
         parse_submission_material_json::BtcSubmissionMaterialJson,
     },
     chains::btc::{
-        btc_types::BtcBlockAndId,
+        btc_types::{
+            BtcBlockJson,
+            BtcBlockAndId,
+        },
         deposit_address_info::{
             DepositAddressInfo,
             DepositAddressInfoJson,
@@ -24,18 +27,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
-pub struct BtcBlockJson {
-    pub bits: u32,
-    pub id: String,
-    pub nonce: u32,
-    pub version: u32,
-    pub height: u64,
-    pub timestamp: u32,
-    pub merkle_root: String,
-    pub previousblockhash: String,
-}
 
 fn parse_btc_block_json_to_block_header(
     btc_submission_material_json: BtcBlockJson

@@ -26,3 +26,15 @@ pub struct BtcUtxoAndValue {
     pub maybe_pointer: Option<sha256d::Hash>,
     pub maybe_deposit_info_json: Option<DepositAddressInfoJson>,
 }
+
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
+pub struct BtcBlockJson {
+    pub bits: u32,
+    pub id: String,
+    pub nonce: u32,
+    pub version: u32,
+    pub height: u64,
+    pub timestamp: u32,
+    pub merkle_root: String,
+    pub previousblockhash: String,
+}

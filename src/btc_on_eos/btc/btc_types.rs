@@ -7,8 +7,11 @@ use crate::{
         Result,
     },
     chains::btc::{
-        btc_types::BtcBlockAndId,
         deposit_address_info::DepositAddressInfoJsonList,
+        btc_types::{
+            BtcBlockAndId,
+            BtcBlockJson,
+        },
     },
 };
 use bitcoin::{
@@ -81,16 +84,4 @@ pub struct SubmissionMaterialJson {
     pub ref_block_prefix: u32,
     pub transactions: Vec<String>,
     pub deposit_address_list: DepositAddressInfoJsonList,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct BtcBlockJson {
-    pub bits: u32,
-    pub id: String,
-    pub nonce: u32,
-    pub version: u32,
-    pub height: u64,
-    pub timestamp: u32,
-    pub merkle_root: String,
-    pub previousblockhash: String,
 }

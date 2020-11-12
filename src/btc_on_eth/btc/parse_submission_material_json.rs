@@ -1,11 +1,11 @@
 use crate::{
-    btc_on_eth::btc::{
-        btc_state::BtcState,
-        parse_btc_block_and_id::BtcBlockJson,
-    },
-    chains::btc::deposit_address_info::DepositAddressInfoJsonList,
-    traits::DatabaseInterface,
     types::Result,
+    traits::DatabaseInterface,
+    btc_on_eth::btc::btc_state::BtcState,
+    chains::btc::{
+        btc_types::BtcBlockJson,
+        deposit_address_info::DepositAddressInfoJsonList,
+    },
 };
 
 #[derive(Clone, PartialEq, Eq, Debug, Deserialize)]
