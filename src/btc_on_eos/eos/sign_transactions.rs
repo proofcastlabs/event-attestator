@@ -10,25 +10,23 @@ use crate::{
         eos::eos_state::EosState,
         btc::{
             btc_utils::calculate_btc_tx_fee,
+            btc_types::{
+                BtcRecipientAndAmount,
+                BtcRecipientsAndAmounts,
+            },
             utxo_manager::{
                 utxo_types::BtcUtxosAndValues,
                 utxo_database_utils::get_utxo_and_value,
             },
         },
     },
-    btc_on_eos::{
-        btc::{
-            btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-            btc_database_utils::{
-                get_btc_fee_from_db,
-                get_btc_network_from_db,
-                get_btc_address_from_db,
-                get_btc_private_key_from_db,
-            },
-            btc_types::{
-                BtcRecipientAndAmount,
-                BtcRecipientsAndAmounts,
-            },
+    btc_on_eos::btc::{
+        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
+        btc_database_utils::{
+            get_btc_fee_from_db,
+            get_btc_network_from_db,
+            get_btc_address_from_db,
+            get_btc_private_key_from_db,
         },
     },
 };
