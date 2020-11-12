@@ -14,15 +14,13 @@ use crate::{
                 BtcBlockAndId,
                 BtcTransaction,
                 BtcTransactions,
+                SubmissionMaterial,
             },
         },
     },
     btc_on_eos::btc::{
+        btc_types:: BtcBlockInDbFormat,
         minting_params::BtcOnEosMintingParams,
-        btc_types::{
-            BtcBlockInDbFormat,
-            SubmissionMaterial,
-        },
     },
 };
 

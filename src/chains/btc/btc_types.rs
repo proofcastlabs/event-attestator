@@ -84,3 +84,10 @@ pub struct BtcSubmissionMaterialJson {
     pub ref_block_prefix: Option<u32>,
     pub deposit_address_list: DepositAddressInfoJsonList,
 }
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SubmissionMaterial {
+    pub ref_block_num: u16,
+    pub ref_block_prefix: u32,
+    pub block_and_id: BtcBlockAndId,
+}

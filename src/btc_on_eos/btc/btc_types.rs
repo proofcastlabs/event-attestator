@@ -1,5 +1,4 @@
 use crate::{
-    chains::btc::btc_types::BtcBlockAndId,
     btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
     types::{
         Bytes,
@@ -10,13 +9,6 @@ use bitcoin::{
     hashes::sha256d,
     blockdata::block::Block as BtcBlock,
 };
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct SubmissionMaterial {
-    pub ref_block_num: u16,
-    pub ref_block_prefix: u32,
-    pub block_and_id: BtcBlockAndId,
-}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BtcBlockInDbFormat {

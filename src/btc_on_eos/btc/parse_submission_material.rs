@@ -14,10 +14,12 @@ use crate::{
         Result,
         NoneError,
     },
+    btc_on_eos::btc::btc_state::BtcState,
     chains::btc::{
         btc_types::{
             BtcBlockJson,
             BtcBlockAndId,
+            SubmissionMaterial,
             BtcSubmissionMaterialJson,
         },
         deposit_address_info::{
@@ -25,10 +27,6 @@ use crate::{
             DepositAddressInfo,
             DepositAddressInfoJson,
         },
-    },
-    btc_on_eos::btc::{
-        btc_state::BtcState,
-        btc_types::SubmissionMaterial,
     },
 };
 
