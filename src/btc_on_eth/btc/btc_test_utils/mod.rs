@@ -31,6 +31,7 @@ use crate::{
             deposit_address_info::DepositAddressInfoJson,
             btc_types::{
                 BtcBlockAndId,
+                BtcBlockInDbFormat,
                 BtcSubmissionMaterialJson,
             },
             utxo_manager::utxo_types::{
@@ -51,7 +52,6 @@ use crate::{
     btc_on_eth::{
         utils::convert_satoshis_to_ptoken,
         btc::{
-            btc_types::BtcBlockInDbFormat,
             btc_crypto::btc_private_key::BtcPrivateKey,
             parse_btc_block_and_id::parse_btc_block_and_tx_json_to_struct,
             parse_submission_material_json::parse_btc_block_string_to_json,
@@ -122,9 +122,10 @@ fn get_btc_block_in_db_format(
     BtcBlockInDbFormat::new(
         btc_block_and_id.height,
         btc_block_and_id.id,
-        minting_params,
         btc_block_and_id.block,
         extra_data,
+        None,
+        Some(minting_params),
     )
 }
 

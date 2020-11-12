@@ -1,5 +1,7 @@
 use std::str::FromStr;
 use crate::{
+    btc_on_eth::btc::minting_params::BtcOnEthMintingParams,
+    btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
     constants::SAFE_BTC_ADDRESS,
     types::{
         Bytes,
@@ -90,4 +92,46 @@ pub struct SubmissionMaterial {
     pub ref_block_num: u16,
     pub ref_block_prefix: u32,
     pub block_and_id: BtcBlockAndId,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct BtcBlockInDbFormat {
+    pub height: u64,
+    pub block: BtcBlock,
+    pub id: sha256d::Hash,
+    pub extra_data: Bytes,
+    pub eos_minting_params: Option<BtcOnEosMintingParams>,
+    pub eth_minting_params: Option<BtcOnEthMintingParams>,
+}
+
+impl BtcBlockInDbFormat {
+    pub fn new(
+        height: u64,
+        id: sha256d::Hash,
+        block: BtcBlock,
+        extra_data: Bytes,
+        eos_minting_params: Option<BtcOnEosMintingParams>,
+        eth_minting_params: Option<BtcOnEthMintingParams>,
+    ) -> Result<Self> {
+        Ok(BtcBlockInDbFormat{
+            id,
+            block,
+            height,
+            extra_data,
+            eth_minting_params: eth_minting_params,
+            eos_minting_params: eos_minting_params,
+        })
+    }
+
+    pub fn get_eos_minting_params(&self) -> BtcOnEosMintingParams {
+        self.eos_minting_params.clone().unwrap_or(BtcOnEosMintingParams::new(vec![]))
+    }
+
+    pub fn get_eth_minting_params(&self) -> BtcOnEthMintingParams {
+        self.eth_minting_params.clone().unwrap_or(BtcOnEthMintingParams::new(vec![]))
+    }
+
+    pub fn remove_minting_params(&self) -> Result<Self> {
+        Self::new(self.height, self.id, self.block.clone(), self.extra_data.clone(), None, None)
+    }
 }

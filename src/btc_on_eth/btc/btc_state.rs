@@ -1,6 +1,7 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eth::btc::minting_params::BtcOnEthMintingParams,
     utils::{
         get_not_in_state_err,
         get_no_overwrite_state_err,
@@ -17,13 +18,10 @@ use crate::{
                 BtcBlockAndId,
                 BtcTransaction,
                 BtcTransactions,
+                BtcBlockInDbFormat,
                 BtcSubmissionMaterialJson,
             },
         },
-    },
-    btc_on_eth::btc::{
-        btc_types::BtcBlockInDbFormat,
-        minting_params::BtcOnEthMintingParams,
     },
 };
 

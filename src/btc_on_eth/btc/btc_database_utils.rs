@@ -22,6 +22,7 @@ use crate::{
             convert_u64_to_bytes,
         },
         btc::{
+            btc_types::BtcBlockInDbFormat,
             btc_constants::{
                 BTC_FEE_KEY,
                 BTC_NETWORK_KEY,
@@ -48,7 +49,6 @@ use crate::{
     },
     btc_on_eth::btc::{
         btc_state::BtcState,
-        btc_types::BtcBlockInDbFormat,
         btc_crypto::btc_private_key::BtcPrivateKey,
     },
 };

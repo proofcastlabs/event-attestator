@@ -34,20 +34,20 @@ use crate::{
         convert_bytes_to_u64,
         convert_u64_to_bytes,
     },
-    chains::btc::btc_utils::{
-        convert_btc_network_to_bytes,
-        convert_bytes_to_btc_network,
-        convert_bytes_to_btc_address,
-        convert_btc_address_to_bytes,
-        serialize_btc_on_eos_btc_block_in_db_format,
-        deserialize_btc_on_eos_btc_block_in_db_format,
-    },
-    btc_on_eos::{
-        btc::{
-            btc_state::BtcState,
-            btc_types::BtcBlockInDbFormat,
-            btc_crypto::btc_private_key::BtcPrivateKey,
+    chains::btc::{
+        btc_types::BtcBlockInDbFormat,
+        btc_utils::{
+            convert_btc_network_to_bytes,
+            convert_bytes_to_btc_network,
+            convert_bytes_to_btc_address,
+            convert_btc_address_to_bytes,
+            serialize_btc_on_eos_btc_block_in_db_format,
+            deserialize_btc_on_eos_btc_block_in_db_format,
         },
+    },
+    btc_on_eos::btc::{
+        btc_state::BtcState,
+        btc_crypto::btc_private_key::BtcPrivateKey,
     },
 };
 

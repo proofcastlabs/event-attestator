@@ -1,6 +1,7 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
     utils::{
         get_not_in_state_err,
         get_no_overwrite_state_err,
@@ -15,12 +16,9 @@ use crate::{
                 BtcTransaction,
                 BtcTransactions,
                 SubmissionMaterial,
+                BtcBlockInDbFormat,
             },
         },
-    },
-    btc_on_eos::btc::{
-        btc_types:: BtcBlockInDbFormat,
-        minting_params::BtcOnEosMintingParams,
     },
 };
 

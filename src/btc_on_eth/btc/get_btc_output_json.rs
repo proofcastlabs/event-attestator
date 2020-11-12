@@ -122,7 +122,7 @@ pub fn create_btc_output_json_and_put_in_state<D>(
                 Some(txs) =>
                     get_eth_signed_tx_info_from_eth_txs(
                         txs,
-                        &get_btc_canon_block_from_db(&state.db)?.minting_params,
+                        &get_btc_canon_block_from_db(&state.db)?.get_eth_minting_params(),
                         get_eth_account_nonce_from_db(&state.db)?,
                         state.use_any_sender_tx_type(),
                         get_any_sender_nonce_from_db(&state.db)?,

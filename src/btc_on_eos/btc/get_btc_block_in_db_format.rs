@@ -1,10 +1,8 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::btc::{
-        btc_state::BtcState,
-        btc_types::BtcBlockInDbFormat,
-    },
+    btc_on_eos::btc::btc_state::BtcState,
+    chains::btc::btc_types::BtcBlockInDbFormat,
 };
 
 pub fn create_btc_block_in_db_format_and_put_in_state<D>(
@@ -17,11 +15,10 @@ pub fn create_btc_block_in_db_format_and_put_in_state<D>(
     BtcBlockInDbFormat::new(
         block_in_state.height,
         block_in_state.id,
-        state.minting_params.clone(),
         block_in_state.block.clone(),
         vec![], // NOTE: As yet unused `extra_data` param
+        Some(state.minting_params.clone()),
+        None,
     )
-        .and_then(|block_in_db_format|
-            state.add_btc_block_in_db_format(block_in_db_format)
-        )
+        .and_then(|block_in_db_format| state.add_btc_block_in_db_format(block_in_db_format))
 }

@@ -20,13 +20,13 @@ use crate::{
         deposit_address_info::DepositAddressInfoJson,
         btc_types::{
             BtcBlockAndId,
+            BtcBlockInDbFormat,
             BtcSubmissionMaterialJson,
         },
     },
     btc_on_eos::{
         utils::convert_u64_to_8_decimal_eos_asset,
         btc::{
-            btc_types::BtcBlockInDbFormat,
             btc_crypto::btc_private_key::BtcPrivateKey,
             minting_params::{
                 BtcOnEosMintingParams,
@@ -96,9 +96,10 @@ fn get_btc_block_in_db_format(
     BtcBlockInDbFormat::new(
         btc_block_and_id.height,
         btc_block_and_id.id,
-        minting_params,
         btc_block_and_id.block,
         extra_data,
+        Some(minting_params),
+        None,
     )
 }
 
