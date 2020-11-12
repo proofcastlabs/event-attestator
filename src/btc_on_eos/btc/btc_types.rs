@@ -1,15 +1,9 @@
 use crate::{
+    chains::btc::btc_types::BtcBlockAndId,
     btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
     types::{
         Bytes,
         Result,
-    },
-    chains::btc::{
-        deposit_address_info::DepositAddressInfoJsonList,
-        btc_types::{
-            BtcBlockAndId,
-            BtcBlockJson,
-        },
     },
 };
 use bitcoin::{
@@ -47,13 +41,4 @@ impl BtcBlockInDbFormat {
     ) -> Result<Self> {
         Ok(BtcBlockInDbFormat{ id, block, height, minting_params, extra_data })
     }
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct SubmissionMaterialJson {
-    pub ref_block_num: u16,
-    pub block: BtcBlockJson,
-    pub ref_block_prefix: u32,
-    pub transactions: Vec<String>,
-    pub deposit_address_list: DepositAddressInfoJsonList,
 }

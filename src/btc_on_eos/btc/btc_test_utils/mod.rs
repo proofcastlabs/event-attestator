@@ -14,23 +14,23 @@ use crate::{
         Result,
     },
     chains::btc::{
-        btc_types::BtcBlockAndId,
         btc_utils::create_unsigned_utxo_from_tx,
         btc_constants::MINIMUM_REQUIRED_SATOSHIS,
         utxo_manager::utxo_types::BtcUtxoAndValue,
         deposit_address_info::DepositAddressInfoJson,
+        btc_types::{
+            BtcBlockAndId,
+            BtcSubmissionMaterialJson,
+        },
     },
     btc_on_eos::{
         utils::convert_u64_to_8_decimal_eos_asset,
         btc::{
+            btc_types::BtcBlockInDbFormat,
             btc_crypto::btc_private_key::BtcPrivateKey,
             minting_params::{
                 BtcOnEosMintingParams,
                 BtcOnEosMintingParamStruct,
-            },
-            btc_types::{
-                BtcBlockInDbFormat,
-                SubmissionMaterialJson,
             },
             parse_submission_material::{
                 parse_submission_material_to_json,
@@ -192,7 +192,7 @@ pub fn get_sample_btc_block_json_string() -> String {
         .unwrap()
 }
 
-pub fn get_sample_btc_block_json() -> Result<SubmissionMaterialJson> {
+pub fn get_sample_btc_block_json() -> Result<BtcSubmissionMaterialJson> {
     parse_submission_material_to_json(
         &get_sample_btc_block_json_string()
     )

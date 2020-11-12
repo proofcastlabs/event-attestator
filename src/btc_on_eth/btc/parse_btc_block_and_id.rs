@@ -9,23 +9,21 @@ use bitcoin::{
     consensus::encode::deserialize,
 };
 use crate::{
-    btc_on_eth::btc::{
-        btc_state::BtcState,
-        parse_submission_material_json::BtcSubmissionMaterialJson,
-    },
+    types::Result,
+    traits::DatabaseInterface,
+    btc_on_eth::btc::btc_state::BtcState,
     chains::btc::{
         btc_types::{
             BtcBlockJson,
             BtcBlockAndId,
+            BtcSubmissionMaterialJson,
         },
         deposit_address_info::{
+            DepositInfoList,
             DepositAddressInfo,
             DepositAddressInfoJson,
-            DepositInfoList,
         },
     },
-    traits::DatabaseInterface,
-    types::Result,
 };
 
 fn parse_btc_block_json_to_block_header(

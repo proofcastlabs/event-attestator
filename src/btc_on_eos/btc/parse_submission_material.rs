@@ -9,12 +9,16 @@ use bitcoin::{
     },
 };
 use crate::{
-    types::Result,
     traits::DatabaseInterface,
+    types::{
+        Result,
+        NoneError,
+    },
     chains::btc::{
         btc_types::{
             BtcBlockJson,
             BtcBlockAndId,
+            BtcSubmissionMaterialJson,
         },
         deposit_address_info::{
             DepositInfoList,
@@ -24,10 +28,7 @@ use crate::{
     },
     btc_on_eos::btc::{
         btc_state::BtcState,
-        btc_types::{
-            SubmissionMaterial,
-            SubmissionMaterialJson,
-        },
+        btc_types::SubmissionMaterial,
     },
 };
 
@@ -47,26 +48,18 @@ fn parse_btc_block_json_to_block_header(
     )
 }
 
-pub fn parse_btc_block_json_to_btc_block(
-    json: &SubmissionMaterialJson
-) -> Result<BtcBlock> {
-    trace!("✔ Parsing `SubmissionMaterialJson` to `BtcBlock`...");
-    Ok(
-        BtcBlock::new(
-            parse_btc_block_json_to_block_header(
-                json.block.clone()
-            )?,
-            convert_hex_txs_to_btc_transactions(
-                &json.transactions
-            )?
-        )
-    )
+pub fn parse_btc_block_json_to_btc_block(json: &BtcSubmissionMaterialJson) -> Result<BtcBlock> {
+    trace!("✔ Parsing `BtcSubmissionMaterialJson` to `BtcBlock`...");
+    Ok(BtcBlock::new(
+        parse_btc_block_json_to_block_header(json.block.clone())?,
+        convert_hex_txs_to_btc_transactions(&json.transactions)?
+    ))
 }
 
 pub fn parse_submission_material_to_json(
     submission_material: &str
-) -> Result<SubmissionMaterialJson> {
-    trace!("✔ Parsing JSON string to `SubmissionMaterialJson`...");
+) -> Result<BtcSubmissionMaterialJson> {
+    trace!("✔ Parsing JSON string to `BtcSubmissionMaterialJson`...");
     match serde_json::from_str(submission_material) {
         Ok(json) => Ok(json),
         Err(err) => Err(err.into())
@@ -96,7 +89,7 @@ fn parse_deposit_info_jsons_to_deposit_info_list(
 }
 
 pub fn parse_btc_block_from_submission_material(
-    submision_material_json: &SubmissionMaterialJson,
+    submision_material_json: &BtcSubmissionMaterialJson,
 ) -> Result<BtcBlockAndId> {
     trace!("✔ Parsing `BtcBlockSAndtxsJson` to `BtcBlockAndId`...");
     Ok(
@@ -114,16 +107,15 @@ pub fn parse_btc_block_from_submission_material(
 }
 
 fn parse_submission_json(
-    submission_json: &SubmissionMaterialJson,
+    submission_json: &BtcSubmissionMaterialJson,
 ) -> Result<SubmissionMaterial> {
     Ok(
         SubmissionMaterial {
+            block_and_id: parse_btc_block_from_submission_material(submission_json)?,
             ref_block_num:
-                submission_json.ref_block_num,
+                submission_json.ref_block_num.ok_or(NoneError("No `ref_block_num` in submission material!"))?,
             ref_block_prefix:
-                submission_json.ref_block_prefix,
-            block_and_id:
-                parse_btc_block_from_submission_material(submission_json)?,
+                submission_json.ref_block_prefix.ok_or(NoneError("No `ref_block_prefix` in submission material!"))?,
         }
     )
 }

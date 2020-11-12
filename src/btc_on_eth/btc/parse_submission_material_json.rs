@@ -2,19 +2,8 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     btc_on_eth::btc::btc_state::BtcState,
-    chains::btc::{
-        btc_types::BtcBlockJson,
-        deposit_address_info::DepositAddressInfoJsonList,
-    },
+    chains::btc::btc_types::BtcSubmissionMaterialJson
 };
-
-#[derive(Clone, PartialEq, Eq, Debug, Deserialize)]
-pub struct BtcSubmissionMaterialJson {
-    pub block: BtcBlockJson,
-    pub transactions: Vec<String>,
-    pub deposit_address_list: DepositAddressInfoJsonList,
-    pub any_sender: Option<bool>,
-}
 
 pub fn parse_btc_block_string_to_json(
     btc_block_json_string: &str

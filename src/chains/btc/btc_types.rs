@@ -8,6 +8,7 @@ use crate::{
     chains::btc::deposit_address_info::{
         DepositInfoList,
         DepositAddressInfoJson,
+        DepositAddressInfoJsonList,
     },
 };
 use bitcoin::{
@@ -67,4 +68,14 @@ impl BtcRecipientAndAmount {
             },
         })
     }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
+pub struct BtcSubmissionMaterialJson {
+    pub block: BtcBlockJson,
+    pub any_sender: Option<bool>,
+    pub transactions: Vec<String>,
+    pub ref_block_num: Option<u16>,
+    pub ref_block_prefix: Option<u32>,
+    pub deposit_address_list: DepositAddressInfoJsonList,
 }

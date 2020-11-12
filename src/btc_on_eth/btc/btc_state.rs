@@ -11,15 +11,17 @@ use crate::{
             RelayTransactions,
         },
         btc::{
-            btc_types::BtcBlockAndId,
             deposit_address_info::DepositInfoHashMap,
             utxo_manager::utxo_types::BtcUtxosAndValues,
+            btc_types::{
+                BtcBlockAndId,
+                BtcSubmissionMaterialJson,
+            },
         },
     },
     btc_on_eth::{
         btc::{
             minting_params::BtcOnEthMintingParams,
-            parse_submission_material_json::BtcSubmissionMaterialJson,
             btc_types::{
                 BtcTransaction,
                 BtcTransactions,

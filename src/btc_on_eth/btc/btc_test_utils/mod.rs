@@ -28,8 +28,11 @@ use crate::{
     chains::{
         eth::eth_types::EthAddress,
         btc::{
-            btc_types::BtcBlockAndId,
             deposit_address_info::DepositAddressInfoJson,
+            btc_types::{
+                BtcBlockAndId,
+                BtcSubmissionMaterialJson,
+            },
             utxo_manager::utxo_types::{
                 BtcUtxoAndValue,
                 BtcUtxosAndValues,
@@ -51,6 +54,7 @@ use crate::{
             btc_types::BtcBlockInDbFormat,
             btc_crypto::btc_private_key::BtcPrivateKey,
             parse_btc_block_and_id::parse_btc_block_and_tx_json_to_struct,
+            parse_submission_material_json::parse_btc_block_string_to_json,
             minting_params::{
                 BtcOnEthMintingParams,
                 BtcOnEthMintingParamStruct,
@@ -58,10 +62,6 @@ use crate::{
             btc_database_utils::{
                 get_btc_hash_from_db,
                 put_special_btc_block_in_db
-            },
-            parse_submission_material_json::{
-                parse_btc_block_string_to_json,
-                BtcSubmissionMaterialJson,
             },
         },
     },
