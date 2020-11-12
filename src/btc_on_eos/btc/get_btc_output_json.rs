@@ -97,7 +97,7 @@ pub fn create_btc_output_json_and_put_in_state<D>(
                 _ =>
                     get_eos_signed_tx_info_from_eth_txs(
                         &state.signed_txs,
-                        &get_btc_canon_block_from_db(&state.db)?.minting_params,
+                        &get_btc_canon_block_from_db(&state.db)?.get_eos_minting_params(),
                         get_eos_account_nonce_from_db(&state.db)?,
                     )?,
             }

@@ -25,7 +25,7 @@ use crate::{
     },
     btc_on_eos::btc::{
         btc_state::BtcState,
-        minting_params::BtcOnEosMintingParamStruct,
+        minting_params::BtcOnEosMintingParams,
         btc_database_utils::get_btc_canon_block_from_db,
     },
 };
@@ -66,24 +66,14 @@ pub fn get_signed_txs(
     ref_block_num: u16,
     ref_block_prefix: u32,
     chain_id: &str,
-    private_key: &EosPrivateKey,
-    account_name: &str,
-    minting_params: &[BtcOnEosMintingParamStruct],
+    pk: &EosPrivateKey,
+    account: &str,
+    minting_params: &BtcOnEosMintingParams,
 ) -> Result<EosSignedTransactions> {
     info!("✔ Signing {} txs...", minting_params.len());
     minting_params
         .iter()
-        .map(|params|
-            get_signed_tx(
-                ref_block_num,
-                ref_block_prefix,
-                &params.to,
-                &params.amount,
-                chain_id,
-                private_key,
-                account_name,
-            )
-        )
+        .map(|params| get_signed_tx(ref_block_num, ref_block_prefix, &params.to, &params.amount, chain_id, pk, account))
         .collect()
 }
 
@@ -99,7 +89,7 @@ pub fn maybe_sign_canon_block_txs_and_add_to_state<D>(
         &get_eos_chain_id_from_db(&state.db)?,
         &EosPrivateKey::get_from_db(&state.db)?,
         &get_eos_account_name_string_from_db(&state.db)?,
-        &get_btc_canon_block_from_db(&state.db)?.minting_params,
+        &get_btc_canon_block_from_db(&state.db)?.get_eos_minting_params(),
     )
         .and_then(|signed_txs| state.add_signed_txs(signed_txs))
 }

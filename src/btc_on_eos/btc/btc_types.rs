@@ -16,17 +16,21 @@ pub struct BtcBlockInDbFormat {
     pub block: BtcBlock,
     pub id: sha256d::Hash,
     pub extra_data: Bytes,
-    pub minting_params: BtcOnEosMintingParams,
+    pub eos_minting_params: Option<BtcOnEosMintingParams>,
 }
 
 impl BtcBlockInDbFormat {
     pub fn new(
         height: u64,
         id: sha256d::Hash,
-        minting_params: BtcOnEosMintingParams,
+        eos_minting_params: BtcOnEosMintingParams,
         block: BtcBlock,
         extra_data: Bytes,
     ) -> Result<Self> {
-        Ok(BtcBlockInDbFormat{ id, block, height, minting_params, extra_data })
+        Ok(BtcBlockInDbFormat{ id, block, height, extra_data, eos_minting_params: Some(eos_minting_params) })
+    }
+
+    pub fn get_eos_minting_params(&self) -> BtcOnEosMintingParams {
+        self.eos_minting_params.clone().unwrap_or(BtcOnEosMintingParams::new(vec![]))
     }
 }

@@ -199,7 +199,7 @@ pub fn serialize_btc_on_eos_btc_block_in_db_format( // FIXME Rm this one btc typ
                     btc_serialize(&btc_block_in_db_format.block),
                     convert_u64_to_bytes(btc_block_in_db_format.height),
                     btc_block_in_db_format.extra_data.clone(),
-                    btc_block_in_db_format.minting_params.to_bytes()?,
+                    btc_block_in_db_format.get_eos_minting_params().to_bytes()?,
                 )
             )?
         )
