@@ -1,9 +1,9 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::btc_types::BtcBlockInDbFormat,
-    btc_on_eth::btc::{
-        btc_state::BtcState,
+    btc_on_eth::btc::btc_state::BtcState,
+    chains::btc::{
+        btc_types::BtcBlockInDbFormat,
         btc_database_utils::{
             get_btc_canon_block_from_db,
             get_btc_latest_block_from_db,

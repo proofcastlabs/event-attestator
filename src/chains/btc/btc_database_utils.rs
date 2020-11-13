@@ -8,6 +8,7 @@ use crate::{
     traits::DatabaseInterface,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     btc_on_eos::btc::btc_state::BtcState as BtcOnEosBtcState,
+    btc_on_eth::btc::btc_state::BtcState as BtcOnEthBtcState,
     database_utils::{
         put_u64_in_db,
         get_u64_from_db,
@@ -49,18 +50,26 @@ use crate::{
     },
 };
 
+pub fn increment_btc_account_nonce_in_db<D>(
+    db: &D,
+    amount_to_increment_by: u64,
+) -> Result<()>
+    where D: DatabaseInterface
+{
+    info!("✔ Incrementing BTC account nonce in db...");
+    get_btc_account_nonce_from_db(db)
+        .and_then(|nonce| put_btc_account_nonce_in_db(db, nonce + amount_to_increment_by))
+}
+
 pub fn start_btc_db_transaction<D>(
     state: BtcOnEosBtcState<D>,
 ) -> Result<BtcOnEosBtcState<D>>
     where D: DatabaseInterface
 {
-    state
-        .db
-        .start_transaction()
-        .map(|_| {
-            info!("✔ Database transaction begun for BTC block submission!");
-            state
-        })
+    state.db.start_transaction().map(|_| {
+        info!("✔ Database transaction begun for `btc-on-eos` BTC block submission!");
+        state
+    })
 }
 
 pub fn end_btc_db_transaction<D>(
@@ -68,13 +77,32 @@ pub fn end_btc_db_transaction<D>(
 ) -> Result<BtcOnEosBtcState<D>>
     where D: DatabaseInterface
 {
-    state
-        .db
-        .end_transaction()
-        .map(|_| {
-            info!("✔ Database transaction ended for BTC block submission!");
-            state
-        })
+    state.db.end_transaction().map(|_| {
+        info!("✔ Database transaction ended for `btc-on-eos` BTC block submission!");
+        state
+    })
+}
+
+pub fn start_btc_on_eth_btc_db_transaction<D>(
+    state: BtcOnEthBtcState<D>,
+) -> Result<BtcOnEthBtcState<D>>
+    where D: DatabaseInterface
+{
+    state.db.start_transaction().map(|_| {
+        info!("✔ Database transaction begun for `btc-on-eth` BTC block submission!");
+        state
+    })
+}
+
+pub fn end_btc_on_eth_btc_db_transaction<D>(
+    state: BtcOnEthBtcState<D>,
+) -> Result<BtcOnEthBtcState<D>>
+    where D: DatabaseInterface
+{
+    state.db.end_transaction().map(|_| {
+        info!("✔ Database transaction ended for `btc-on-eth` BTC block submission!");
+        state
+    })
 }
 
 pub fn get_btc_account_nonce_from_db<D>(

@@ -2,9 +2,9 @@ use bitcoin_hashes::sha256d;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::btc_types::BtcBlockInDbFormat,
-    btc_on_eth::btc::{
-        btc_state::BtcState,
+    btc_on_eth::btc::btc_state::BtcState,
+    chains::btc::{
+        btc_types::BtcBlockInDbFormat,
         btc_database_utils::{
             get_btc_block_from_db,
             get_btc_tail_block_from_db,
@@ -76,16 +76,14 @@ mod tests {
     use super::*;
     use crate::{
         test_utils::get_test_database,
-        btc_on_eth::btc::{
-            btc_test_utils::{
-                put_btc_tail_block_in_db,
-                put_btc_anchor_block_in_db,
-                get_sample_sequential_btc_blocks_in_db_format,
-            },
-            btc_database_utils::{
-                put_btc_block_in_db,
-                btc_block_exists_in_db,
-            },
+        chains::btc::btc_database_utils::{
+            put_btc_block_in_db,
+            btc_block_exists_in_db,
+        },
+        btc_on_eth::btc::btc_test_utils::{
+            put_btc_tail_block_in_db,
+            put_btc_anchor_block_in_db,
+            get_sample_sequential_btc_blocks_in_db_format,
         },
     };
 

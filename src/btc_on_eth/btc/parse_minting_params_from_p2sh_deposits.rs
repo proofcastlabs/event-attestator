@@ -6,12 +6,14 @@ use bitcoin::{
 use crate::{
     types::{NoneError, Result},
     traits::DatabaseInterface,
-    chains::btc::deposit_address_info::DepositInfoHashMap,
+    chains::btc::{
+        deposit_address_info::DepositInfoHashMap,
+        btc_database_utils::get_btc_network_from_db,
+    },
     btc_on_eth::{
         utils::convert_satoshis_to_ptoken,
         btc::{
             btc_state::BtcState,
-            btc_database_utils::get_btc_network_from_db,
             minting_params::{
                 BtcOnEthMintingParams,
                 BtcOnEthMintingParamStruct,

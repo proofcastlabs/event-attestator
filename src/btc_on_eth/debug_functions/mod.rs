@@ -56,6 +56,11 @@ use crate::{
                 utxo_utils::get_all_utxos_as_json_string,
                 utxo_constants::get_utxo_constants_db_keys,
             },
+            btc_database_utils::{
+                end_btc_on_eth_btc_db_transaction,
+                start_btc_on_eth_btc_db_transaction,
+                get_btc_account_nonce_from_db,
+            },
         },
     },
     debug_database_utils::{
@@ -87,11 +92,6 @@ use crate::{
             extract_utxos_from_op_return_txs::maybe_extract_utxos_from_op_return_txs_and_put_in_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             parse_minting_params_from_op_return_deposits::parse_minting_params_from_op_return_deposits_and_add_to_state,
-            btc_database_utils::{
-                get_btc_account_nonce_from_db,
-                end_btc_db_transaction,
-                start_btc_db_transaction,
-            },
             filter_utxos::{
                 filter_out_utxos_extant_in_db_from_state,
                 filter_out_value_too_low_utxos_from_state,
@@ -161,7 +161,7 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
         .and_then(set_any_sender_flag_in_state)
         .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
-        .and_then(start_btc_db_transaction)
+        .and_then(start_btc_on_eth_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)
@@ -197,7 +197,7 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
             info!("✔ BTC signatures: {}", signatures);
             state.add_output_json_string(signatures)
         })
-        .and_then(end_btc_db_transaction)
+        .and_then(end_btc_on_eth_btc_db_transaction)
         .map(|state|
             match state.output_json_string {
                 None => "✘ No signatures signed ∴ no output!".to_string(),
@@ -427,7 +427,7 @@ pub fn debug_maybe_add_utxo_to_db<D>(
         .and_then(set_any_sender_flag_in_state)
         .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
-        .and_then(start_btc_db_transaction)
+        .and_then(start_btc_on_eth_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)
@@ -439,7 +439,7 @@ pub fn debug_maybe_add_utxo_to_db<D>(
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(filter_out_utxos_extant_in_db_from_state)
         .and_then(maybe_save_utxos_to_db)
-        .and_then(end_btc_db_transaction)
+        .and_then(end_btc_on_eth_btc_db_transaction)
         .map(|_| "{add_utxo_to_db_succeeded:true}".to_string())
         .map(prepend_debug_output_marker_to_string)
 }
@@ -469,10 +469,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
         .and_then(|_| check_debug_mode())
         .and_then(|_| strip_hex_prefix(&recipient))
         .and_then(|hex_no_prefix|
-            decode_hex_with_err_msg(
-                &hex_no_prefix,
-                "Could not decode hex for recipient in `debug_mint_pbtc` fxn!",
-            )
+            decode_hex_with_err_msg(&hex_no_prefix, "Could not decode hex for recipient in `debug_mint_pbtc` fxn!")
         )
         .map(|recipient_bytes| EthAddress::from_slice(&recipient_bytes))
         .and_then(|recipient_eth_address|

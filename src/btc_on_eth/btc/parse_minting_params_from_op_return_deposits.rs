@@ -29,15 +29,15 @@ use crate::{
     chains::btc::{
         btc_constants::DEFAULT_BTC_ADDRESS,
         btc_utils::get_pay_to_pub_key_hash_script,
+        btc_database_utils::{
+            get_btc_address_from_db,
+            get_btc_network_from_db,
+        },
     },
     btc_on_eth::{
         utils::convert_satoshis_to_ptoken,
         btc::{
             btc_state::BtcState,
-            btc_database_utils::{
-                get_btc_address_from_db,
-                get_btc_network_from_db,
-            },
             minting_params::{
                 BtcOnEthMintingParams,
                 BtcOnEthMintingParamStruct,

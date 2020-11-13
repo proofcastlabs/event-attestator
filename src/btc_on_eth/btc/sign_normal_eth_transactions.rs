@@ -1,24 +1,24 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::{
-        eth_database_utils::get_signing_params_from_db,
-        eth_crypto::eth_transaction::get_signed_minting_tx,
-        eth_types::{
-            EthTransactions,
-            EthSigningParams,
-        },
-        eth_metadata::{
-            EthMetadataFromBtc,
-            EthMetadataVersion,
+    chains::{
+        btc::btc_database_utils::get_btc_canon_block_from_db,
+        eth::{
+            eth_database_utils::get_signing_params_from_db,
+            eth_crypto::eth_transaction::get_signed_minting_tx,
+            eth_types::{
+                EthTransactions,
+                EthSigningParams,
+            },
+            eth_metadata::{
+                EthMetadataFromBtc,
+                EthMetadataVersion,
+            },
         },
     },
-    btc_on_eth::{
-        btc::{
-            btc_state::BtcState,
-            minting_params::BtcOnEthMintingParamStruct,
-            btc_database_utils::get_btc_canon_block_from_db,
-        },
+    btc_on_eth::btc::{
+        btc_state::BtcState,
+        minting_params::BtcOnEthMintingParamStruct,
     },
 };
 

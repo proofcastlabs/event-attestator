@@ -35,12 +35,6 @@ use crate::{
                 get_total_utxo_balance_from_db,
                 get_total_number_of_utxos_from_db,
             },
-        },
-    },
-    btc_on_eth::{
-        check_core_is_initialized::check_core_is_initialized,
-        btc::{
-            update_btc_linker_hash::get_linker_hash_or_genesis_hash as get_btc_linker_hash,
             btc_database_utils::{
                 get_btc_fee_from_db,
                 get_btc_network_from_db,
@@ -54,6 +48,10 @@ use crate::{
                 get_btc_canon_to_tip_length_from_db,
             },
         },
+    },
+    btc_on_eth::{
+        check_core_is_initialized::check_core_is_initialized,
+        btc::update_btc_linker_hash::get_linker_hash_or_genesis_hash as get_btc_linker_hash,
     },
 };
 

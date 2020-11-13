@@ -5,7 +5,10 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
+    btc_on_eth::{
+        eth::redeem_info::BtcOnEthRedeemInfos,
+        btc::btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
+    },
     chains::{
         eth::eth_state::EthState,
         btc::{
@@ -14,15 +17,12 @@ use crate::{
                 utxo_types::BtcUtxosAndValues,
                 utxo_database_utils::get_utxo_and_value,
             },
-        },
-    },
-    btc_on_eth::btc::{
-        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-        btc_database_utils::{
-            get_btc_fee_from_db,
-            get_btc_network_from_db,
-            get_btc_address_from_db,
-            get_btc_private_key_from_db,
+            btc_database_utils::{
+                get_btc_fee_from_db,
+                get_btc_network_from_db,
+                get_btc_address_from_db,
+                get_btc_private_key_from_db,
+            },
         },
     },
 };

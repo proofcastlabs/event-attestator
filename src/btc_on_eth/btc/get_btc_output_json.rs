@@ -6,7 +6,13 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::{
-        btc::btc_constants::DEFAULT_BTC_ADDRESS,
+        btc::{
+            btc_constants::DEFAULT_BTC_ADDRESS,
+            btc_database_utils::{
+                get_btc_canon_block_from_db,
+                get_btc_latest_block_from_db,
+            },
+        },
         eth::{
             eth_traits::EthTxInfoCompatible,
             eth_crypto::eth_transaction::EthTransaction,
@@ -20,10 +26,6 @@ use crate::{
     btc_on_eth::btc::{
         btc_state::BtcState,
         minting_params::BtcOnEthMintingParamStruct,
-        btc_database_utils::{
-            get_btc_canon_block_from_db,
-            get_btc_latest_block_from_db,
-        },
     },
 };
 
