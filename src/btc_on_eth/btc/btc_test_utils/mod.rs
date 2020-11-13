@@ -110,7 +110,7 @@ pub const SAMPLE_SERIALIZED_BTC_UTXO: &str = "0e8d588f88d5624148070a8cd79508da8c
 
 pub fn get_btc_block_in_db_format(
     btc_block_and_id: BtcBlockAndId,
-    minting_params: BtcOnEthMintingParams,
+    eth_minting_params: BtcOnEthMintingParams,
     extra_data: Bytes,
 ) -> Result<BtcBlockInDbFormat> {
     BtcBlockInDbFormat::new(
@@ -119,7 +119,7 @@ pub fn get_btc_block_in_db_format(
         btc_block_and_id.block,
         extra_data,
         None,
-        Some(minting_params),
+        if eth_minting_params.is_empty() { None } else { Some(eth_minting_params) },
     )
 }
 

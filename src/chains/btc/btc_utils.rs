@@ -5,8 +5,6 @@ use bitcoin::{
 };
 use crate::{
     utils::strip_hex_prefix,
-    btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
-    btc_on_eth::btc::minting_params::BtcOnEthMintingParams,
     types::{
         Byte,
         Bytes,
@@ -17,16 +15,19 @@ use crate::{
         encode_slice as base58_encode_slice,
     },
     chains::{
+        eth::eth_utils::{
+            convert_bytes_to_u64,
+            convert_u64_to_bytes,
+        },
         btc::{
-            btc_types::BtcBlockInDbFormat,
+            btc_types::{
+                BtcBlockInDbFormat,
+                SerializedBlockInDbFormat,
+            },
             btc_constants::{
                 DEFAULT_BTC_SEQUENCE,
                 PTOKEN_P2SH_SCRIPT_BYTES,
             },
-        },
-        eth::eth_utils::{
-            convert_bytes_to_u64,
-            convert_u64_to_bytes,
         },
     },
 };
@@ -52,40 +53,6 @@ use bitcoin::{
         },
     },
 };
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SerializedBlockAndId {
-    pub id: Bytes,
-    pub block: Bytes,
-    pub height: Bytes,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SerializedBlockInDbFormat {
-    pub id: Bytes,
-    pub block: Bytes,
-    pub height: Bytes,
-    pub extra_data: Bytes,
-    pub minting_params: Bytes,
-}
-
-impl SerializedBlockInDbFormat {
-    pub fn new(
-        serialized_id: Bytes,
-        serialized_block: Bytes,
-        serialized_height: Bytes,
-        serialized_extra_data: Bytes,
-        serialized_minting_params: Bytes,
-    ) -> Self {
-        SerializedBlockInDbFormat {
-            id: serialized_id,
-            block: serialized_block,
-            height: serialized_height,
-            extra_data: serialized_extra_data,
-            minting_params: serialized_minting_params,
-        }
-    }
-}
 
 pub fn convert_hex_to_sha256_hash(hex: &str) -> Result<sha256d::Hash> {
     Ok(sha256d::Hash::from_slice(&hex::decode(strip_hex_prefix(&hex)?)?)?)
@@ -162,9 +129,8 @@ pub fn convert_bytes_to_btc_network(bytes: &[Byte]) -> Result<BtcNetwork> {
     }
 }
 
-pub fn serialize_btc_block_in_db_format( // FIXME Impl this on the type!
-    btc_block_in_db_format: &BtcBlockInDbFormat,
-) -> Result<(Bytes, Bytes)> {
+// FIXME Impl this on the type!
+pub fn serialize_btc_block_in_db_format(btc_block_in_db_format: &BtcBlockInDbFormat) -> Result<(Bytes, Bytes)> {
     let serialized_id = btc_block_in_db_format.id.to_vec();
     Ok(
         (
@@ -175,7 +141,8 @@ pub fn serialize_btc_block_in_db_format( // FIXME Impl this on the type!
                     btc_serialize(&btc_block_in_db_format.block),
                     convert_u64_to_bytes(btc_block_in_db_format.height),
                     btc_block_in_db_format.extra_data.clone(),
-                    btc_block_in_db_format.get_eth_minting_params().to_bytes()?,
+                    btc_block_in_db_format.get_eth_minting_param_bytes()?,
+                    btc_block_in_db_format.get_eos_minting_param_bytes()?,
                 )
             )?
         )
@@ -183,55 +150,15 @@ pub fn serialize_btc_block_in_db_format( // FIXME Impl this on the type!
 }
 
 // FIXME Impl this on the type!
-pub fn serialize_btc_on_eos_btc_block_in_db_format( // FIXME Rm this one btc types are refd!
-    btc_block_in_db_format: &BtcBlockInDbFormat,
-) -> Result<(Bytes, Bytes)> {
-    let serialized_id = btc_block_in_db_format.id.to_vec();
-    Ok(
-        (
-            serialized_id.clone(),
-            serde_json::to_vec(
-                &SerializedBlockInDbFormat::new(
-                    serialized_id,
-                    btc_serialize(&btc_block_in_db_format.block),
-                    convert_u64_to_bytes(btc_block_in_db_format.height),
-                    btc_block_in_db_format.extra_data.clone(),
-                    btc_block_in_db_format.get_eos_minting_params().to_bytes()?,
-                )
-            )?
-        )
-    )
-}
-
-pub fn deserialize_btc_block_in_db_format(
-    serialized_block_in_db_format: &[Byte]
-) -> Result<BtcBlockInDbFormat> {
-    let serialized_struct: SerializedBlockInDbFormat = serde_json::from_slice(
-        &serialized_block_in_db_format
-    )?;
+pub fn deserialize_btc_block_in_db_format(serialized_block_in_db_format: &[Byte]) -> Result<BtcBlockInDbFormat> {
+    let serialized_struct: SerializedBlockInDbFormat = serde_json::from_slice(&serialized_block_in_db_format)?;
     BtcBlockInDbFormat::new(
         convert_bytes_to_u64(&serialized_struct.height)?,
         sha256d::Hash::from_slice(&serialized_struct.id)?,
         btc_deserialize(&serialized_struct.block)?,
-        serialized_struct.extra_data,
-        None,
-        Some(BtcOnEthMintingParams::from_bytes(&serialized_struct.minting_params)?),
-    )
-}
-
-pub fn deserialize_btc_on_eos_btc_block_in_db_format( // FIXME Rm this one btc types are refd!
-    serialized_block_in_db_format: &[Byte]
-) -> Result<BtcBlockInDbFormat> {
-    let serialized_struct: SerializedBlockInDbFormat = serde_json::from_slice(
-        &serialized_block_in_db_format
-    )?;
-    BtcBlockInDbFormat::new(
-        convert_bytes_to_u64(&serialized_struct.height)?,
-        sha256d::Hash::from_slice(&serialized_struct.id)?,
-        btc_deserialize(&serialized_struct.block)?,
-        serialized_struct.extra_data,
-        Some(BtcOnEosMintingParams::from_bytes(&serialized_struct.minting_params)?),
-        None,
+        serialized_struct.extra_data.clone(),
+        serialized_struct.get_btc_on_eos_minting_params()?,
+        serialized_struct.get_btc_on_eth_minting_params()?,
     )
 }
 
@@ -343,7 +270,10 @@ mod tests {
         btc_on_eth::{
             utils::convert_satoshis_to_ptoken,
             btc::{
-                minting_params::BtcOnEthMintingParamStruct,
+                minting_params::{
+                    BtcOnEthMintingParams,
+                    BtcOnEthMintingParamStruct,
+                },
                 btc_test_utils::{
                     get_sample_btc_utxo,
                     SAMPLE_TRANSACTION_INDEX,
@@ -506,8 +436,8 @@ mod tests {
     fn should_serde_btc_block_in_db_format() {
         let block = get_sample_btc_block_in_db_format().unwrap();
         let (_db_key, serialized_block)= serialize_btc_block_in_db_format(&block).unwrap();
-        let deserialized = deserialize_btc_block_in_db_format(&serialized_block).unwrap();
-        assert_eq!(deserialized, block);
+        let result = deserialize_btc_block_in_db_format(&serialized_block).unwrap();
+        assert_eq!(result, block);
     }
 
     #[test]
@@ -558,14 +488,5 @@ mod tests {
         let bytes = convert_btc_network_to_bytes(network).unwrap();
         let result = convert_bytes_to_btc_network(&bytes).unwrap();
         assert_eq!(result, network);
-    }
-
-    #[test]
-    fn should_serde_btc_block_in_db_format_correctly() {
-        let block_in_db_format = get_sample_btc_block_in_db_format().unwrap();
-        let (id, serialized_block) = serialize_btc_block_in_db_format(&block_in_db_format).unwrap();
-        assert_eq!(id, &block_in_db_format.id[..]);
-        let result = deserialize_btc_block_in_db_format(&serialized_block).unwrap();
-        assert_eq!(result, block_in_db_format);
     }
 }

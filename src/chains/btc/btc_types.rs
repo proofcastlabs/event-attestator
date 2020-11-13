@@ -1,8 +1,9 @@
 use std::str::FromStr;
+use derive_more::Constructor;
 use crate::{
+    constants::SAFE_BTC_ADDRESS,
     btc_on_eth::btc::minting_params::BtcOnEthMintingParams,
     btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
-    constants::SAFE_BTC_ADDRESS,
     types::{
         Bytes,
         Result,
@@ -131,7 +132,43 @@ impl BtcBlockInDbFormat {
         self.eth_minting_params.clone().unwrap_or(BtcOnEthMintingParams::new(vec![]))
     }
 
+    pub fn get_eos_minting_param_bytes(&self) -> Result<Option<Bytes>> {
+        // NOTE: This returns the option required for the serialized structure to be backwards compatible.
+        if self.eos_minting_params.is_some() {
+            Ok(Some(self.get_eos_minting_params().to_bytes()?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn get_eth_minting_param_bytes(&self) -> Result<Bytes> {
+        self.get_eth_minting_params().to_bytes()
+    }
+
     pub fn remove_minting_params(&self) -> Result<Self> {
         Self::new(self.height, self.id, self.block.clone(), self.extra_data.clone(), None, None)
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Constructor)]
+pub struct SerializedBlockInDbFormat {
+    pub id: Bytes,
+    pub block: Bytes,
+    pub height: Bytes,
+    pub extra_data: Bytes,
+    pub minting_params: Bytes,
+    pub eos_minting_params: Option<Bytes>, // Option ∴ backwards compatible
+}
+
+impl SerializedBlockInDbFormat {
+    pub fn get_btc_on_eos_minting_params(&self) -> Result<Option<BtcOnEosMintingParams>> {
+        let bytes = self.eos_minting_params.clone().unwrap_or(vec![]);
+        let empty_bytes: Vec<u8> = vec![];
+        if bytes == empty_bytes { Ok(None) } else { Ok(Some(BtcOnEosMintingParams::from_bytes(&bytes)?)) }
+    }
+
+    pub fn get_btc_on_eth_minting_params(&self) -> Result<Option<BtcOnEthMintingParams>> {
+        let params = BtcOnEthMintingParams::from_bytes(&self.minting_params)?;
+        if params.is_empty() { Ok(None) } else { Ok(Some(params)) }
     }
 }
