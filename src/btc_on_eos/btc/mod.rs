@@ -10,7 +10,6 @@ pub(crate) mod sign_transactions;
 pub(crate) mod get_btc_output_json;
 pub(crate) mod filter_too_short_names;
 pub(crate) mod update_btc_linker_hash;
-pub(crate) mod filter_p2sh_deposit_txs;
 pub(crate) mod validate_btc_difficulty;
 pub(crate) mod validate_btc_merkle_root;
 pub(crate) mod set_btc_canon_block_hash;

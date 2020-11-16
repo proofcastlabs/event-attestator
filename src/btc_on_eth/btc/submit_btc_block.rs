@@ -5,6 +5,7 @@ use crate::{
         btc_state::BtcState,
         add_btc_block_to_db::maybe_add_btc_block_to_db,
         check_btc_parent_exists::check_for_parent_of_btc_block_in_state,
+        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
         filter_minting_params::maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state,
         extract_utxos_from_op_return_txs::maybe_extract_utxos_from_op_return_txs_and_put_in_state,
         btc_database_utils::{
@@ -27,7 +28,6 @@ use crate::{
             update_btc_canon_block_hash::maybe_update_btc_canon_block_hash,
             parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
             update_btc_latest_block_hash::maybe_update_btc_latest_block_hash,
-            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
             increment_any_sender_nonce::maybe_increment_any_sender_nonce_in_db,
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,

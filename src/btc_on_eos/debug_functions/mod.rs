@@ -51,8 +51,9 @@ use crate::{
         },
         btc::{
             btc_state::BtcState,
-            filter_minting_params::maybe_filter_out_value_too_low_btc_on_eos_minting_params_in_state,
+            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             increment_btc_account_nonce::maybe_increment_btc_signature_nonce_and_return_eos_state,
+            filter_minting_params::maybe_filter_out_value_too_low_btc_on_eos_minting_params_in_state,
             btc_database_utils::{
                 start_btc_db_transaction,
                 get_btc_latest_block_from_db,
@@ -79,7 +80,6 @@ use crate::{
             get_btc_output_json::get_btc_output_as_string,
             validate_btc_merkle_root::validate_btc_merkle_root,
             validate_btc_block_header::validate_btc_block_header_in_state,
-            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
             filter_too_short_names::maybe_filter_name_too_short_params_in_state,
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,

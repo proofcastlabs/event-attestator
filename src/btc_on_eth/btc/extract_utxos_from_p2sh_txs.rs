@@ -108,13 +108,15 @@ pub fn maybe_extract_utxos_from_p2sh_txs_and_put_in_state<D>(
 mod tests {
     use super::*;
     use std::str::FromStr;
-    use crate::btc_on_eth::btc::{
-        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
-        get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
-        btc_test_utils::{
-            get_sample_btc_block_n,
-            get_sample_btc_pub_key_bytes,
-            get_sample_p2sh_utxo_and_value,
+    use crate::{
+        chains::btc::filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
+        btc_on_eth::btc::{
+            get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
+            btc_test_utils::{
+                get_sample_btc_block_n,
+                get_sample_btc_pub_key_bytes,
+                get_sample_p2sh_utxo_and_value,
+            },
         },
     };
 
