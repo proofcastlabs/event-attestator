@@ -6,8 +6,8 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::btc_state::BtcState,
     chains::btc::{
+        btc_state::BtcState,
         btc_utils::get_p2sh_redeem_script_sig,
         deposit_address_info::DepositInfoHashMap,
         btc_types::{
@@ -36,10 +36,7 @@ fn is_address_locked_to_pub_key(
         }
         Some(deposit_info) => {
             let address_from_script = BtcAddress::p2sh(
-                &get_p2sh_redeem_script_sig(
-                    enclave_public_key_slice,
-                    &deposit_info.commitment_hash,
-                ),
+                &get_p2sh_redeem_script_sig(enclave_public_key_slice, &deposit_info.commitment_hash),
                 btc_network
             );
             debug!("Deposit info: {:?}", deposit_info);

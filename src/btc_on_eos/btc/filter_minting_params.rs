@@ -47,8 +47,8 @@ pub fn maybe_filter_minting_params_in_state<D>(
     where D: DatabaseInterface
 {
     info!("✔ Filtering out any minting params below minimum # of Satoshis...");
-    filter_minting_params(&state.minting_params)
-        .and_then(|new_params| state.replace_minting_params(new_params))
+    filter_minting_params(&state.btc_on_eos_minting_params)
+        .and_then(|new_params| state.replace_btc_on_eos_minting_params(new_params))
 }
 
 #[cfg(test)]

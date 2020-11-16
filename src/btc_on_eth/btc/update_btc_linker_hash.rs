@@ -5,8 +5,8 @@ use bitcoin_hashes::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::btc_state::BtcState,
     chains::btc::{
+        btc_state::BtcState,
         btc_constants::PTOKEN_GENESIS_HASH,
         btc_database_utils::{
             put_btc_linker_hash_in_db,

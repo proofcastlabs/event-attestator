@@ -33,5 +33,6 @@ fn filter_too_short_account_names(minting_params: &[BtcOnEosMintingParamStruct])
 
 pub fn maybe_filter_name_too_short_params_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Filtering out any minting params w/ too short account names...");
-    filter_too_short_account_names(&state.minting_params).and_then(|params| state.replace_minting_params(params))
+    filter_too_short_account_names(&state.btc_on_eos_minting_params)
+        .and_then(|params| state.replace_btc_on_eos_minting_params(params))
 }

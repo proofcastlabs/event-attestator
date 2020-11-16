@@ -2,8 +2,8 @@ use bitcoin_hashes::sha256d;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::btc_state::BtcState,
     chains::btc::{
+        btc_state::BtcState,
         btc_types::BtcBlockInDbFormat,
         btc_database_utils::{
             get_btc_block_from_db,
@@ -13,12 +13,7 @@ use crate::{
     },
 };
 
-fn is_anchor_block<D>(
-    db: &D,
-    btc_block_hash: &sha256d::Hash,
-) -> Result<bool>
-    where D: DatabaseInterface
-{
+fn is_anchor_block<D: DatabaseInterface>(db: &D, btc_block_hash: &sha256d::Hash) -> Result<bool> {
     match get_btc_anchor_block_hash_from_db(db) {
         Ok(ref hash) => Ok(hash == btc_block_hash),
         _ => Err("✘ No anchor hash found in db!".into())
@@ -31,10 +26,7 @@ fn remove_parents_if_not_anchor<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    match get_btc_block_from_db(
-        db,
-        &block_whose_parents_to_be_removed.block.header.prev_blockhash,
-    ) {
+    match get_btc_block_from_db(db, &block_whose_parents_to_be_removed.block.header.prev_blockhash) {
         Err(_) => {
             info!("✔ No block found ∵ doing nothing!");
             Ok(())
@@ -59,16 +51,11 @@ fn remove_parents_if_not_anchor<D>(
     }
 }
 
-pub fn maybe_remove_old_btc_tail_block<D>(
-    state: BtcState<D>
-) -> Result<BtcState<D>>
-    where D: DatabaseInterface
-{
+pub fn maybe_remove_old_btc_tail_block<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Maybe removing old BTC tail block...");
     get_btc_tail_block_from_db(&state.db)
-        .and_then(|tail_block|
-            remove_parents_if_not_anchor(&state.db, &tail_block)
-        ).map(|_| state)
+        .and_then(|tail_block| remove_parents_if_not_anchor(&state.db, &tail_block))
+        .and(Ok(state))
 }
 
 #[cfg(test)]

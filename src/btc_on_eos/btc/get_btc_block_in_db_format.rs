@@ -15,7 +15,7 @@ pub fn create_btc_block_in_db_format_and_put_in_state<D: DatabaseInterface>(stat
         block_in_state.id,
         block_in_state.block.clone(),
         vec![], // NOTE: As yet unused `extra_data` param
-        Some(state.minting_params.clone()),
+        Some(state.btc_on_eos_minting_params.clone()),
         None,
     )
         .and_then(|block_in_db_format| state.add_btc_block_in_db_format(block_in_db_format))

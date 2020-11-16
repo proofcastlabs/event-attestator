@@ -1,8 +1,8 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::btc_state::BtcState,
     chains::btc::{
+        btc_state::BtcState,
         btc_types::BtcBlockInDbFormat,
         btc_constants::BTC_TAIL_LENGTH,
         btc_database_utils::{

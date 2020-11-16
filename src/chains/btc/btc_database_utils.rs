@@ -7,7 +7,6 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
-    btc_on_eth::btc::btc_state::BtcState as BtcOnEthBtcState,
     database_utils::{
         put_u64_in_db,
         get_u64_from_db,
@@ -81,28 +80,6 @@ pub fn end_btc_db_transaction<D>(
 {
     state.db.end_transaction().map(|_| {
         info!("✔ Database transaction ended for `btc-on-eos` BTC block submission!");
-        state
-    })
-}
-
-pub fn start_btc_on_eth_btc_db_transaction<D>(
-    state: BtcOnEthBtcState<D>,
-) -> Result<BtcOnEthBtcState<D>>
-    where D: DatabaseInterface
-{
-    state.db.start_transaction().map(|_| {
-        info!("✔ Database transaction begun for `btc-on-eth` BTC block submission!");
-        state
-    })
-}
-
-pub fn end_btc_on_eth_btc_db_transaction<D>(
-    state: BtcOnEthBtcState<D>,
-) -> Result<BtcOnEthBtcState<D>>
-    where D: DatabaseInterface
-{
-    state.db.end_transaction().map(|_| {
-        info!("✔ Database transaction ended for `btc-on-eth` BTC block submission!");
         state
     })
 }

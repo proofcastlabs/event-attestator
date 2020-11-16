@@ -7,17 +7,15 @@ use crate::{
     types::{NoneError, Result},
     traits::DatabaseInterface,
     chains::btc::{
+        btc_state::BtcState,
         deposit_address_info::DepositInfoHashMap,
         btc_database_utils::get_btc_network_from_db,
     },
     btc_on_eth::{
         utils::convert_satoshis_to_ptoken,
-        btc::{
-            btc_state::BtcState,
-            minting_params::{
-                BtcOnEthMintingParams,
-                BtcOnEthMintingParamStruct,
-            },
+        btc::minting_params::{
+            BtcOnEthMintingParams,
+            BtcOnEthMintingParamStruct,
         },
     },
 };
@@ -99,7 +97,7 @@ pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D>(
         state.get_deposit_info_hash_map()?,
         get_btc_network_from_db(&state.db)?,
     )
-        .and_then(|minting_params| state.add_minting_params(minting_params))
+        .and_then(|minting_params| state.add_btc_on_eth_minting_params(minting_params))
 }
 
 #[cfg(test)]

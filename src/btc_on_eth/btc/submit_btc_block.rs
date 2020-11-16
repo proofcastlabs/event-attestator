@@ -2,16 +2,16 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::btc::{
+        btc_state::BtcState,
         extract_utxos_from_op_return_txs::maybe_extract_utxos_from_op_return_txs_and_put_in_state,
         btc_database_utils::{
-            end_btc_on_eth_btc_db_transaction,
-            start_btc_on_eth_btc_db_transaction,
+            end_btc_db_transaction,
+            start_btc_db_transaction,
         },
     },
     btc_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
         btc::{
-            btc_state::BtcState,
             set_flags::set_any_sender_flag_in_state,
             save_utxos_to_db::maybe_save_utxos_to_db,
             add_btc_block_to_db::maybe_add_btc_block_to_db,
@@ -63,7 +63,7 @@ pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(set_any_sender_flag_in_state)
         .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
-        .and_then(start_btc_on_eth_btc_db_transaction)
+        .and_then(start_btc_db_transaction)
         .and_then(check_for_parent_of_btc_block_in_state)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_difficulty_of_btc_block_in_state)
@@ -92,6 +92,6 @@ pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_remove_old_btc_tail_block)
         .and_then(create_btc_output_json_and_put_in_state)
         .and_then(remove_minting_params_from_canon_block_and_return_state)
-        .and_then(end_btc_on_eth_btc_db_transaction)
+        .and_then(end_btc_db_transaction)
         .and_then(get_btc_output_as_string)
 }

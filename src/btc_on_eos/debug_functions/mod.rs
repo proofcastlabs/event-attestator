@@ -193,7 +193,7 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
 		&get_eos_chain_id_from_db(&state.db)?,
 		&EosPrivateKey::get_from_db(&state.db)?,
 		&get_eos_account_name_string_from_db(&state.db)?,
-		&state.minting_params,
+		&state.btc_on_eos_minting_params,
 	    )
 		.and_then(|signed_txs| {
 			info!("✔ EOS Signed Txs: {:?}", signed_txs);
@@ -212,7 +212,7 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
 			_ =>
 			    get_eos_signed_tx_info_from_eth_txs(
 				&state.signed_txs,
-				&state.minting_params,
+				&state.btc_on_eos_minting_params,
 				get_eos_account_nonce_from_db(&state.db)?,
 			    )?,
 		    }

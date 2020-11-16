@@ -1,9 +1,9 @@
 use bitcoin::blockdata::script::Script as BtcScript;
 use crate::{
-    btc_on_eth::btc::btc_state::BtcState,
     types::Result,
     traits::DatabaseInterface,
     chains::btc::{
+        btc_state::BtcState,
         btc_types::BtcTransaction,
         btc_database_utils::get_btc_address_from_db,
         btc_utils::{

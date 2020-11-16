@@ -5,8 +5,10 @@ use std::time::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eth::btc::minting_params::BtcOnEthMintingParamStruct,
     chains::{
         btc::{
+            btc_state::BtcState,
             btc_constants::DEFAULT_BTC_ADDRESS,
             btc_database_utils::{
                 get_btc_canon_block_from_db,
@@ -22,10 +24,6 @@ use crate::{
                 get_eth_account_nonce_from_db,
             },
         },
-    },
-    btc_on_eth::btc::{
-        btc_state::BtcState,
-        minting_params::BtcOnEthMintingParamStruct,
     },
 };
 

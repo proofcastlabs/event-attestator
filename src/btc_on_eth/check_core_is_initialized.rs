@@ -1,13 +1,13 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::eth::{
-        eth_state::EthState,
-        core_initialization::check_eth_core_is_initialized::is_eth_core_initialized,
-    },
-    btc_on_eth::btc::{
-        btc_state::BtcState,
-        initialize_btc::is_btc_initialized::is_btc_enclave_initialized,
+    btc_on_eth::btc::initialize_btc::is_btc_initialized::is_btc_enclave_initialized,
+    chains::{
+        btc::btc_state::BtcState,
+        eth::{
+            eth_state::EthState,
+            core_initialization::check_eth_core_is_initialized::is_eth_core_initialized,
+        },
     },
 };
 

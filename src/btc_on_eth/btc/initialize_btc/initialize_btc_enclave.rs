@@ -1,12 +1,14 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::btc_database_utils::{
-        end_btc_on_eth_btc_db_transaction,
-        start_btc_on_eth_btc_db_transaction,
+    chains::btc::{
+        btc_state::BtcState,
+        btc_database_utils::{
+            end_btc_db_transaction,
+            start_btc_db_transaction,
+        },
     },
     btc_on_eth::btc::{
-        btc_state::BtcState,
         set_flags::set_any_sender_flag_in_state,
         add_btc_block_to_db::maybe_add_btc_block_to_db,
         validate_btc_merkle_root::validate_btc_merkle_root,
@@ -56,7 +58,7 @@ pub fn maybe_initialize_btc_enclave<D>(
                 }
                 false => {
                     info!("✔ Initializing enclave for BTC...");
-                    start_btc_on_eth_btc_db_transaction(state)
+                    start_btc_db_transaction(state)
                         .and_then(|state| put_difficulty_threshold_in_db(difficulty, state))
                         .and_then(|state| put_btc_network_in_db_and_return_state(&network, state))
                         .and_then(|state| put_btc_fee_in_db_and_return_state(fee, state))
@@ -77,7 +79,7 @@ pub fn maybe_initialize_btc_enclave<D>(
                         .and_then(put_btc_account_nonce_in_db_and_return_state)
                         .and_then(|state| generate_and_store_btc_private_key(&network, state))
                         .and_then(generate_and_store_btc_address)
-                        .and_then(end_btc_on_eth_btc_db_transaction)
+                        .and_then(end_btc_db_transaction)
                         .and_then(get_btc_init_output_json)
                 }
             }

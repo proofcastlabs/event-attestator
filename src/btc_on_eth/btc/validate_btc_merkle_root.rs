@@ -2,7 +2,7 @@ use bitcoin::blockdata::block::Block as BtcBlock;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::btc_state::BtcState,
+    chains::btc::btc_state::BtcState,
     constants::{
         DEBUG_MODE,
         CORE_IS_VALIDATING,

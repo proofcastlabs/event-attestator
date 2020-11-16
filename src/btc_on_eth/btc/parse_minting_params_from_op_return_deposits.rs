@@ -27,6 +27,7 @@ use crate::{
         Result,
     },
     chains::btc::{
+        btc_state::BtcState,
         btc_constants::DEFAULT_BTC_ADDRESS,
         btc_utils::get_pay_to_pub_key_hash_script,
         btc_database_utils::{
@@ -36,12 +37,9 @@ use crate::{
     },
     btc_on_eth::{
         utils::convert_satoshis_to_ptoken,
-        btc::{
-            btc_state::BtcState,
-            minting_params::{
-                BtcOnEthMintingParams,
-                BtcOnEthMintingParamStruct,
-            },
+        btc::minting_params::{
+            BtcOnEthMintingParams,
+            BtcOnEthMintingParamStruct,
         },
     },
 };
@@ -188,7 +186,7 @@ pub fn parse_minting_params_from_op_return_deposits_and_add_to_state<D>(
                 get_btc_network_from_db(&state.db)?,
             )
         )
-        .and_then(|minting_params| state.add_minting_params(minting_params))
+        .and_then(|minting_params| state.add_btc_on_eth_minting_params(minting_params))
 }
 
 #[cfg(test)]

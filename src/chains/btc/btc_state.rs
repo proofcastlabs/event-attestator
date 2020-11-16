@@ -1,6 +1,7 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eth::btc::minting_params::BtcOnEthMintingParams,
     btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
     utils::{
         get_not_in_state_err,
@@ -8,6 +9,10 @@ use crate::{
     },
     chains::{
         eos::eos_types::EosSignedTransactions,
+        eth::eth_types::{
+            EthTransactions,
+            RelayTransactions,
+        },
         btc::{
             deposit_address_info::DepositInfoHashMap,
             utxo_manager::utxo_types::BtcUtxosAndValues,
@@ -17,6 +22,7 @@ use crate::{
                 BtcTransactions,
                 SubmissionMaterial,
                 BtcBlockInDbFormat,
+                BtcSubmissionMaterialJson,
             },
         },
     },
@@ -27,32 +33,106 @@ pub struct BtcState<D: DatabaseInterface> {
     pub db: D,
     pub ref_block_num: u16,
     pub ref_block_prefix: u32,
-    pub minting_params: BtcOnEosMintingParams,
+    pub any_sender: Option<bool>,
     pub signed_txs: EosSignedTransactions,
     pub output_json_string: Option<String>,
     pub utxos_and_values: BtcUtxosAndValues,
+    pub eth_signed_txs: Option<EthTransactions>,
     pub btc_block_and_id: Option<BtcBlockAndId>,
     pub p2sh_deposit_txs: Option<BtcTransactions>,
     pub op_return_deposit_txs: Option<BtcTransactions>,
+    pub btc_on_eos_minting_params: BtcOnEosMintingParams,
+    pub btc_on_eth_minting_params: BtcOnEthMintingParams,
     pub deposit_info_hash_map: Option<DepositInfoHashMap>,
+    pub any_sender_signed_txs: Option<RelayTransactions>,
     pub btc_block_in_db_format: Option<BtcBlockInDbFormat>,
+    pub submission_json: Option<BtcSubmissionMaterialJson>,
 }
 
 impl<D> BtcState<D> where D: DatabaseInterface {
     pub fn init(db: D) -> BtcState<D> {
         BtcState {
             db,
+            any_sender: None,
             ref_block_num: 0,
             signed_txs: vec![],
             ref_block_prefix: 0,
+            eth_signed_txs: None,
+            submission_json: None,
             btc_block_and_id: None,
             p2sh_deposit_txs: None,
             output_json_string: None,
+            any_sender_signed_txs: None,
             op_return_deposit_txs: None,
             deposit_info_hash_map: None,
             btc_block_in_db_format: None,
             utxos_and_values: vec![].into(),
-            minting_params: BtcOnEosMintingParams::new(vec![]),
+            btc_on_eos_minting_params: BtcOnEosMintingParams::new(vec![]),
+            btc_on_eth_minting_params: BtcOnEthMintingParams::new(vec![]),
+        }
+    }
+
+    pub fn add_btc_submission_json(mut self, submission_json: BtcSubmissionMaterialJson) -> Result<BtcState<D>> {
+        info!("✔ Adding BTC submission json to BTC state...");
+        self.submission_json = Some(submission_json);
+        Ok(self)
+    }
+
+    pub fn add_op_return_deposit_txs(mut self, op_return_deposit_txs: BtcTransactions) -> Result<BtcState<D>> {
+        match self.op_return_deposit_txs {
+            Some(_) => Err(get_no_overwrite_state_err("op_return_deposit_txs").into()),
+            None => {
+                info!("✔ Adding `op_return` deposit txs to BTC state...");
+                self.op_return_deposit_txs = Some(op_return_deposit_txs);
+                Ok(self)
+            }
+        }
+    }
+
+    pub fn get_op_return_deposit_txs(&self) -> Result<&[BtcTransaction]> {
+        match &self.op_return_deposit_txs {
+            Some(op_return_deposit_txs) => {
+                info!("✔ Getting `op_return` deposit txs from BTC state...");
+                Ok(&op_return_deposit_txs)
+            }
+            None => Err(get_not_in_state_err("op_return_deposit_txs").into())
+        }
+    }
+
+    pub fn add_btc_block_and_id(mut self, btc_block_and_id: BtcBlockAndId) -> Result<BtcState<D>> {
+        match self.btc_block_and_id {
+            Some(_) => Err(get_no_overwrite_state_err("btc_block_and_id").into()),
+            None => {
+                info!("✔ Adding BTC block and ID to BTC state...");
+                self.btc_block_and_id = Some(btc_block_and_id);
+                Ok(self)
+            }
+        }
+    }
+
+    pub fn add_eth_signed_txs(
+        mut self,
+        eth_signed_txs: EthTransactions,
+    ) -> Result<BtcState<D>> {
+        match self.eth_signed_txs {
+            Some(_) => Err(get_no_overwrite_state_err("eth_signed_txs").into()),
+            None => {
+                info!("✔ Adding ETH signed txs to BTC state...");
+                self.eth_signed_txs = Some(eth_signed_txs);
+                Ok(self)
+            }
+        }
+    }
+
+    pub fn get_eth_signed_txs(
+        &self
+    ) -> Result<&EthTransactions> {
+        match &self.eth_signed_txs {
+            Some(eth_signed_txs) => {
+                info!("✔ Getting ETH signed txs from BTC state...");
+                Ok(&eth_signed_txs)
+            }
+            None => Err(get_not_in_state_err("eth_signed_txs").into())
         }
     }
 
@@ -128,13 +208,15 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn add_minting_params(
-        mut self,
-        mut new_minting_params: BtcOnEosMintingParams,
-    ) -> Result<BtcState<D>> {
-        info!("✔ Adding minting params to state...");
-        self.minting_params
-            .append(&mut new_minting_params);
+    pub fn add_btc_on_eos_minting_params(mut self, mut params: BtcOnEosMintingParams) -> Result<BtcState<D>> {
+        info!("✔ Adding `btc-on-eos` minting params to state...");
+        self.btc_on_eos_minting_params.append(&mut params);
+        Ok(self)
+    }
+
+    pub fn add_btc_on_eth_minting_params(mut self, mut params: BtcOnEthMintingParams) -> Result<BtcState<D>> {
+        info!("✔ Adding `btc-on-eth` minting params to state...");
+        self.btc_on_eth_minting_params.append(&mut params);
         Ok(self)
     }
 
@@ -144,12 +226,21 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn replace_minting_params(
+    pub fn replace_btc_on_eos_minting_params(
         mut self,
         replacement_params: BtcOnEosMintingParams
     ) -> Result<BtcState<D>> {
-        info!("✔ Replacing minting params in state...");
-        self.minting_params = replacement_params;
+        info!("✔ Replacing `btc-on-eos` minting params in state...");
+        self.btc_on_eos_minting_params = replacement_params;
+        Ok(self)
+    }
+
+    pub fn replace_btc_on_eth_minting_params(
+        mut self,
+        replacement_params: BtcOnEthMintingParams
+    ) -> Result<BtcState<D>> {
+        info!("✔ Replacing `btc-on-eth` minting params in state...");
+        self.btc_on_eth_minting_params = replacement_params;
         Ok(self)
     }
 
@@ -230,6 +321,40 @@ impl<D> BtcState<D> where D: DatabaseInterface {
                 Ok(&output_json_string)
             }
             None => Err(get_not_in_state_err("output_json_string").into())
+        }
+    }
+
+    pub fn add_any_sender_flag(mut self, any_sender: Option<bool>) -> Result<BtcState<D>> {
+        info!("✔ Adding AnySender flag to BTC state...");
+        self.any_sender = any_sender;
+        Ok(self)
+    }
+
+    pub fn use_any_sender_tx_type(&self) -> bool {
+        self.any_sender == Some(true)
+    }
+
+    pub fn add_any_sender_signed_txs(
+        mut self,
+        any_sender_signed_txs: RelayTransactions,
+    ) -> Result<BtcState<D>> {
+        match self.any_sender_signed_txs {
+            Some(_) => Err(get_no_overwrite_state_err("any_sender_signed_txs").into()),
+            None => {
+                info!("✔ Adding AnySender signed txs to BTC state...");
+                self.any_sender_signed_txs = Some(any_sender_signed_txs);
+                Ok(self)
+            }
+        }
+    }
+
+    pub fn get_btc_submission_json(&self) -> Result<&BtcSubmissionMaterialJson> {
+        match self.submission_json {
+            Some(ref submission_json) => {
+                info!("✔ Getting BTC submission json from BTC state...");
+                Ok(submission_json)
+            }
+            None => Err(get_not_in_state_err("submission_json").into())
         }
     }
 }

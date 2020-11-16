@@ -5,15 +5,17 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::btc_state::BtcState,
     constants::{
         DEBUG_MODE,
         CORE_IS_VALIDATING,
         NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR,
     },
-    chains::btc::btc_database_utils::{
-        get_btc_network_from_db,
-        get_btc_difficulty_from_db,
+    chains::btc::{
+        btc_state::BtcState,
+        btc_database_utils::{
+            get_btc_network_from_db,
+            get_btc_difficulty_from_db,
+        },
     },
 };
 

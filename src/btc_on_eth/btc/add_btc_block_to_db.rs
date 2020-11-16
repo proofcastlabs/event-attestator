@@ -1,18 +1,16 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::btc_state::BtcState,
-    chains::btc::btc_database_utils::{
-        put_btc_block_in_db,
-        btc_block_exists_in_db,
+    chains::btc::{
+        btc_state::BtcState,
+        btc_database_utils::{
+            put_btc_block_in_db,
+            btc_block_exists_in_db,
+        },
     },
 };
 
-pub fn maybe_add_btc_block_to_db<D>(
-    state: BtcState<D>
-) -> Result<BtcState<D>>
-    where D: DatabaseInterface
-{
+pub fn maybe_add_btc_block_to_db<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Checking if BTC block is already in the db...");
     match btc_block_exists_in_db(&state.db, &state.get_btc_block_and_id()?.id) {
         true => Err("✘ BTC Block Rejected - it's already in the db!".into()),

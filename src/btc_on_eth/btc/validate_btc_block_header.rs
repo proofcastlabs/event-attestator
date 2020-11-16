@@ -2,8 +2,10 @@ use bitcoin::util::hash::BitcoinHash;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::btc_state::BtcState,
-    chains::btc::btc_types::BtcBlockAndId,
+    chains::btc::{
+        btc_state::BtcState,
+        btc_types::BtcBlockAndId,
+    },
     constants::{
         DEBUG_MODE,
         CORE_IS_VALIDATING,

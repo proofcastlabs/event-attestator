@@ -11,8 +11,8 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::btc_state::BtcState,
     chains::btc::{
+        btc_state::BtcState,
         btc_types::{
             BtcBlockJson,
             BtcBlockAndId,

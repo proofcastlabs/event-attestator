@@ -47,6 +47,7 @@ use crate::{
             },
         },
         btc::{
+            btc_state::BtcState,
             extract_utxos_from_op_return_txs::maybe_extract_utxos_from_op_return_txs_and_put_in_state,
             btc_constants::{
                 get_btc_constants_db_keys,
@@ -58,8 +59,8 @@ use crate::{
                 utxo_constants::get_utxo_constants_db_keys,
             },
             btc_database_utils::{
-                end_btc_on_eth_btc_db_transaction,
-                start_btc_on_eth_btc_db_transaction,
+                end_btc_db_transaction,
+                start_btc_db_transaction,
                 get_btc_account_nonce_from_db,
             },
         },
@@ -75,7 +76,6 @@ use crate::{
             check_core_is_initialized_and_return_btc_state,
         },
         btc::{
-            btc_state::BtcState,
             sign_normal_eth_transactions::get_eth_signed_txs,
             save_utxos_to_db::maybe_save_utxos_to_db,
             validate_btc_merkle_root::validate_btc_merkle_root,
@@ -161,7 +161,7 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
         .and_then(set_any_sender_flag_in_state)
         .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
-        .and_then(start_btc_on_eth_btc_db_transaction)
+        .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)
@@ -176,7 +176,7 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
         .and_then(maybe_save_utxos_to_db)
         .and_then(maybe_filter_minting_params_in_state)
         .and_then(|state| {
-            get_eth_signed_txs(&get_signing_params_from_db(&state.db)?, &state.minting_params)
+            get_eth_signed_txs(&get_signing_params_from_db(&state.db)?, &state.btc_on_eth_minting_params)
                 .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
         })
         .and_then(maybe_increment_eth_nonce_in_db)
@@ -187,7 +187,7 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
                     Some(txs) =>
                         get_eth_signed_tx_info_from_eth_txs(
                             txs,
-                            &state.minting_params,
+                            &state.btc_on_eth_minting_params,
                             get_eth_account_nonce_from_db(&state.db)?,
                             state.use_any_sender_tx_type(),
                             get_any_sender_nonce_from_db(&state.db)?,
@@ -197,7 +197,7 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
             info!("✔ BTC signatures: {}", signatures);
             state.add_output_json_string(signatures)
         })
-        .and_then(end_btc_on_eth_btc_db_transaction)
+        .and_then(end_btc_db_transaction)
         .map(|state|
             match state.output_json_string {
                 None => "✘ No signatures signed ∴ no output!".to_string(),
@@ -427,7 +427,7 @@ pub fn debug_maybe_add_utxo_to_db<D>(
         .and_then(set_any_sender_flag_in_state)
         .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
-        .and_then(start_btc_on_eth_btc_db_transaction)
+        .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)
@@ -439,7 +439,7 @@ pub fn debug_maybe_add_utxo_to_db<D>(
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(filter_out_utxos_extant_in_db_from_state)
         .and_then(maybe_save_utxos_to_db)
-        .and_then(end_btc_on_eth_btc_db_transaction)
+        .and_then(end_btc_db_transaction)
         .map(|_| "{add_utxo_to_db_succeeded:true}".to_string())
         .map(prepend_debug_output_marker_to_string)
 }

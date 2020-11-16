@@ -1,20 +1,15 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::btc_state::BtcState,
-    chains::btc::btc_database_utils::get_btc_block_from_db,
+    chains::btc::{
+        btc_state::BtcState,
+        btc_database_utils::get_btc_block_from_db,
+    },
 };
 
-pub fn check_for_parent_of_btc_block_in_state<D>(
-    state: BtcState<D>
-) -> Result<BtcState<D>>
-    where D: DatabaseInterface
-{
+pub fn check_for_parent_of_btc_block_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Checking BTC block's parent exists in database...");
-    match get_btc_block_from_db(
-        &state.db,
-        &state.get_btc_block_and_id()?.block.header.prev_blockhash,
-    ) {
+    match get_btc_block_from_db(&state.db, &state.get_btc_block_and_id()?.block.header.prev_blockhash) {
         Ok(_)=> {
             info!("✔ BTC block's parent exists in database!");
             Ok(state)

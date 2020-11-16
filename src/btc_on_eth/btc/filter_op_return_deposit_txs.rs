@@ -10,8 +10,8 @@ use bitcoin::{
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::btc_state::BtcState,
     chains::btc::{
+        btc_state::BtcState,
         btc_types::BtcTransactions,
         btc_utils::get_pay_to_pub_key_hash_script,
         btc_crypto::btc_private_key::BtcPrivateKey,

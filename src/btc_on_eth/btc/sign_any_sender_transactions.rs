@@ -1,20 +1,20 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eth::btc::minting_params::BtcOnEthMintingParamStruct,
     chains::{
-        btc::btc_database_utils::get_btc_canon_block_from_db,
+        btc::{
+            btc_state::BtcState,
+            btc_database_utils::get_btc_canon_block_from_db,
+        },
         eth::{
             any_sender::relay_transaction::RelayTransaction,
             eth_database_utils::get_any_sender_signing_params_from_db,
             eth_types::{
+                RelayTransactions,
                 AnySenderSigningParams,
-                RelayTransactions
             },
         },
-    },
-    btc_on_eth::btc::{
-        btc_state::BtcState,
-        minting_params::BtcOnEthMintingParamStruct,
     },
 };
 

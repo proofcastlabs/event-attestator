@@ -1,10 +1,12 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::btc_state::BtcState,
-    chains::btc::btc_database_utils::{
-        get_btc_latest_block_from_db,
-        put_btc_latest_block_hash_in_db,
+    chains::btc::{
+        btc_state::BtcState,
+        btc_database_utils::{
+            get_btc_latest_block_from_db,
+            put_btc_latest_block_hash_in_db,
+        },
     },
 };
 
