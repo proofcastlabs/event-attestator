@@ -7,25 +7,25 @@ use crate::{
     traits::DatabaseInterface,
     btc_on_eos::{
         eos::redeem_info::BtcOnEosRedeemInfos,
-        btc::btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
     },
     chains::{
         eos::eos_state::EosState,
         btc::{
             btc_utils::calculate_btc_tx_fee,
+            btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
             btc_types::{
                 BtcRecipientAndAmount,
                 BtcRecipientsAndAmounts,
-            },
-            utxo_manager::{
-                utxo_types::BtcUtxosAndValues,
-                utxo_database_utils::get_utxo_and_value,
             },
             btc_database_utils::{
                 get_btc_fee_from_db,
                 get_btc_network_from_db,
                 get_btc_address_from_db,
                 get_btc_private_key_from_db,
+            },
+            utxo_manager::{
+                utxo_types::BtcUtxosAndValues,
+                utxo_database_utils::get_utxo_and_value,
             },
         },
     },
@@ -110,11 +110,7 @@ fn sign_txs_from_redeem_infos<D>(
     )
 }
 
-pub fn maybe_sign_txs_and_add_to_state<D>(
-    state: EosState<D>
-) -> Result<EosState<D>>
-    where D: DatabaseInterface
-{
+pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Maybe signing tx(s) from redeem params...");
     match &state.btc_on_eos_redeem_infos.len() {
         0 => {

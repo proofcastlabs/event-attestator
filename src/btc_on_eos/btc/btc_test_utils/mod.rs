@@ -1,11 +1,8 @@
 #![cfg(test)]
 use std::fs::read_to_string;
-use bitcoin::{
-    blockdata::transaction::Transaction as BtcTransaction,
-    hashes::{
-        Hash,
-        sha256d,
-    },
+use bitcoin::hashes::{
+    Hash,
+    sha256d,
 };
 use crate::{
     errors::AppError,
@@ -39,9 +36,6 @@ use crate::{
         },
     },
 };
-
-pub const SAMPLE_TRANSACTION_INDEX: usize = 1;
-pub const SAMPLE_OUTPUT_INDEX_OF_UTXO: u32 = 0;
 
 pub const SAMPLE_TARGET_BTC_ADDRESS: &str =
     "moBSQbHn7N9BC9pdtAMnA7GBiALzNMQJyE";
@@ -218,33 +212,6 @@ pub fn get_sample_testnet_block_and_txs() -> Result<BtcBlockAndId> {
         .and_then(|json| parse_btc_block_from_submission_material(&json))
 }
 
-pub fn get_sample_btc_tx() -> BtcTransaction {
-    get_sample_testnet_block_and_txs()
-        .unwrap()
-        .block
-        .txdata[SAMPLE_TRANSACTION_INDEX]
-        .clone()
-}
-
-pub fn get_sample_op_return_utxo_and_value() -> BtcUtxoAndValue {
-    create_op_return_btc_utxo_and_value_from_tx_output(
-        &get_sample_btc_tx(),
-        SAMPLE_OUTPUT_INDEX_OF_UTXO,
-    )
-}
-
-fn create_op_return_btc_utxo_and_value_from_tx_output(
-    tx: &BtcTransaction,
-    output_index: u32,
-) -> BtcUtxoAndValue {
-    BtcUtxoAndValue::new(
-        tx.output[output_index as usize].value,
-        &create_unsigned_utxo_from_tx(tx, output_index),
-        None,
-        None,
-    )
-}
-
 pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
     get_sample_btc_block_n(5)
         .and_then(|block_and_id| {
@@ -355,20 +322,6 @@ pub fn get_sample_btc_block_n(n: usize) -> Result<BtcBlockAndId> {
     }.unwrap();
     parse_submission_material_to_json(&read_to_string(&block_path)?)
         .and_then(|json| parse_btc_block_from_submission_material(&json))
-}
-
-pub fn get_sample_op_return_utxo_and_value_n(n: usize) -> Result<BtcUtxoAndValue> {
-    // NOTE: Tuple = path on disk, block_index of utxo & output_index of utxo!
-    let tuple = match n {
-        2 => Ok((SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_2, 18, 2)),
-        3 => Ok((SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_3, 28, 0)),
-        4 => Ok((SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_3, 28, 1)),
-        _ => Err(AppError::Custom("✘ Don't have sample for that number!".into()))
-    }.unwrap();
-    parse_submission_material_to_json(&read_to_string(&tuple.0)?)
-        .and_then(|json| parse_btc_block_from_submission_material(&json))
-        .map(|block_and_id| block_and_id.block.txdata[tuple.1].clone())
-        .map(|tx| create_op_return_btc_utxo_and_value_from_tx_output(&tx, tuple.2))
 }
 
 pub fn get_sample_btc_private_key() -> BtcPrivateKey {

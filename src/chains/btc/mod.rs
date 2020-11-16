@@ -7,6 +7,7 @@ pub mod deposit_address_info;
 pub(crate) mod btc_state;
 pub(crate) mod btc_types;
 pub(crate) mod btc_crypto;
+pub(crate) mod btc_transaction;
 pub(crate) mod btc_database_utils;
 pub(crate) mod add_btc_block_to_db;
 pub(crate) mod filter_minting_params;
