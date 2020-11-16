@@ -282,28 +282,6 @@ pub fn get_btc_private_key_from_db<D>(db: &D) -> Result<BtcPrivateKey>
         )
 }
 
-#[cfg(test)] // TODO Move to test utils!
-pub fn put_btc_anchor_block_in_db<D>(
-    db: &D,
-    block: &BtcBlockInDbFormat,
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    trace!("✔ Putting BTC anchor block in db...");
-    put_special_btc_block_in_db(db, block, "anchor")
-}
-
-#[cfg(test)] // TODO Move to test utils!
-pub fn put_btc_tail_block_in_db<D>(
-    db: &D,
-    block: &BtcBlockInDbFormat
-) -> Result<()>
-    where D: DatabaseInterface
-{
-    trace!("✔ Putting BTC tail block in db...");
-    put_special_btc_block_in_db(db, block, "tail")
-}
-
 pub fn put_btc_canon_block_in_db<D>(
     db: &D,
     block: &BtcBlockInDbFormat

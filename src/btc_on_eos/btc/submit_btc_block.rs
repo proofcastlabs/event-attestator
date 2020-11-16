@@ -4,6 +4,7 @@ use crate::{
     chains::btc::{
         btc_state::BtcState,
         add_btc_block_to_db::maybe_add_btc_block_to_db,
+        remove_old_btc_tail_block::maybe_remove_old_btc_tail_block,
         check_btc_parent_exists::check_for_parent_of_btc_block_in_state,
         filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
         get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
@@ -24,7 +25,6 @@ use crate::{
             validate_btc_merkle_root::validate_btc_merkle_root,
             update_btc_linker_hash::maybe_update_btc_linker_hash,
             increment_signature_nonce::maybe_increment_signature_nonce,
-            remove_old_btc_tail_block::maybe_remove_old_btc_tail_block,
             update_btc_tail_block_hash::maybe_update_btc_tail_block_hash,
             validate_btc_block_header::validate_btc_block_header_in_state,
             sign_transactions::maybe_sign_canon_block_txs_and_add_to_state,
