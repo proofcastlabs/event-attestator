@@ -110,7 +110,7 @@ fn convert_hex_tx_to_btc_transaction(hex: String) -> Result<BtcTransaction> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::btc::btc_test_utils::{
+    use crate::chains::btc::btc_test_utils::{
         get_sample_btc_submission_material_json,
     };
 

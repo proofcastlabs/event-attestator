@@ -353,10 +353,12 @@ mod tests {
     use crate::{
         errors::AppError,
         test_utils::get_test_database,
-        chains::btc::btc_database_utils::key_exists_in_db,
-        btc_on_eth::btc::btc_test_utils::{
-            get_sample_utxo_and_values,
-            get_sample_op_return_utxo_and_value,
+        chains::btc::{
+            btc_database_utils::key_exists_in_db,
+            btc_test_utils::{
+                get_sample_utxo_and_values,
+                get_sample_op_return_utxo_and_value,
+            },
         },
     };
 

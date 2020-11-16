@@ -1,7 +1,6 @@
 pub mod submit_btc_block;
 pub mod initialize_btc_enclave;
 
-pub(crate) mod btc_test_utils;
 pub(crate) mod parse_submission_material_json;
 pub(crate) mod minting_params;
 pub(crate) mod sign_normal_eth_transactions;

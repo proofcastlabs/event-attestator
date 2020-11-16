@@ -77,19 +77,17 @@ where
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::eth_types::EthAddress,
+        chains::{
+            eth::eth_types::EthAddress,
+            btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
+        },
         btc_on_eth::{
-            btc::{
-                minting_params::BtcOnEthMintingParamStruct,
-                btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
-            },
-            eth::{
-                eth_test_utils::{
-                    get_sample_eth_address,
-                    get_sample_eth_private_key
-                },
-            },
             utils::convert_satoshis_to_ptoken,
+            btc::minting_params::BtcOnEthMintingParamStruct,
+            eth::eth_test_utils::{
+                get_sample_eth_address,
+                get_sample_eth_private_key
+            },
         }
     };
     use bitcoin::util::address::Address as BtcAddress;

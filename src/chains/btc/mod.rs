@@ -8,6 +8,7 @@ pub(crate) mod btc_state;
 pub(crate) mod btc_types;
 pub(crate) mod set_flags;
 pub(crate) mod btc_crypto;
+pub(crate) mod btc_test_utils;
 pub(crate) mod btc_transaction;
 pub(crate) mod save_utxos_to_db;
 pub(crate) mod btc_database_utils;

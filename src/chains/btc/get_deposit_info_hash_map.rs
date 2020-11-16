@@ -30,7 +30,7 @@ pub fn get_deposit_info_hash_map_and_put_in_state<D: DatabaseInterface>(state: B
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::btc::btc_test_utils::get_sample_btc_block_and_id;
+    use crate::chains::btc::btc_test_utils::get_sample_btc_block_and_id;
 
     #[test]
     fn should_create_hash_map_from_deposit_info_list() {

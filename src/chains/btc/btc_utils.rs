@@ -266,27 +266,27 @@ mod tests {
         },
     };
     use crate::{
-        chains::btc::utxo_manager::utxo_types::BtcUtxosAndValues,
+        chains::btc::{
+            utxo_manager::utxo_types::BtcUtxosAndValues,
+            btc_test_utils::{
+                get_sample_btc_utxo,
+                SAMPLE_TRANSACTION_INDEX,
+                SAMPLE_TARGET_BTC_ADDRESS,
+                SAMPLE_SERIALIZED_BTC_UTXO,
+                get_sample_btc_private_key,
+                SAMPLE_OUTPUT_INDEX_OF_UTXO,
+                get_sample_testnet_block_and_txs,
+                get_sample_p2sh_redeem_script_sig,
+                get_sample_btc_block_in_db_format,
+                get_sample_op_return_utxo_and_value_n,
+                create_op_return_btc_utxo_and_value_from_tx_output,
+            },
+        },
         btc_on_eth::{
             utils::convert_satoshis_to_ptoken,
-            btc::{
-                minting_params::{
-                    BtcOnEthMintingParams,
-                    BtcOnEthMintingParamStruct,
-                },
-                btc_test_utils::{
-                    get_sample_btc_utxo,
-                    SAMPLE_TRANSACTION_INDEX,
-                    SAMPLE_TARGET_BTC_ADDRESS,
-                    SAMPLE_SERIALIZED_BTC_UTXO,
-                    get_sample_btc_private_key,
-                    SAMPLE_OUTPUT_INDEX_OF_UTXO,
-                    get_sample_testnet_block_and_txs,
-                    get_sample_p2sh_redeem_script_sig,
-                    get_sample_btc_block_in_db_format,
-                    get_sample_op_return_utxo_and_value_n,
-                    create_op_return_btc_utxo_and_value_from_tx_output,
-                },
+            btc::minting_params::{
+                BtcOnEthMintingParams,
+                BtcOnEthMintingParamStruct,
             },
         },
     };

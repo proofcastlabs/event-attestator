@@ -43,8 +43,8 @@ mod tests {
     use bitcoin_hashes::sha256d;
     use crate::{
         errors::AppError,
-        chains::btc::btc_types::BtcBlockAndId,
-        btc_on_eth::btc::{
+        chains::btc::{
+            btc_types::BtcBlockAndId,
             btc_test_utils::get_sample_btc_block_and_id,
         },
     };

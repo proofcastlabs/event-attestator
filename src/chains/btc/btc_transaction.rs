@@ -156,8 +156,6 @@ mod tests {
                 get_tx_id_from_signed_btc_tx,
                 get_hex_tx_from_signed_btc_tx,
             },
-        },
-        btc_on_eth::btc::{
             btc_test_utils::{
                 SAMPLE_TARGET_BTC_ADDRESS,
                 get_sample_btc_private_key,

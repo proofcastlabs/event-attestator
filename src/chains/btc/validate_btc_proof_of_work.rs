@@ -40,7 +40,7 @@ pub fn validate_proof_of_work_of_btc_block_in_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::btc::btc_test_utils::get_sample_btc_block_and_id;
+    use crate::chains::btc::btc_test_utils::get_sample_btc_block_and_id;
 
     #[test]
     fn should_validate_proof_of_work_in_valid_block() {

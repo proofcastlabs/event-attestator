@@ -76,8 +76,10 @@ pub fn filter_out_value_too_low_utxos_from_state<D: DatabaseInterface>(state: Bt
 mod tests {
     use super::*;
     use crate::{
-        btc_on_eth::btc::btc_test_utils::get_sample_utxo_and_values,
-        chains::btc::utxo_manager::utxo_database_utils::save_utxos_to_db,
+        chains::btc::{
+            btc_test_utils::get_sample_utxo_and_values,
+            utxo_manager::utxo_database_utils::save_utxos_to_db,
+        },
         test_utils::{
             get_test_database,
             get_random_num_between,

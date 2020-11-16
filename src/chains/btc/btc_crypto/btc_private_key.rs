@@ -94,7 +94,7 @@ mod tests {
         Hash,
         sha256d,
     };
-    use crate::btc_on_eth::btc::btc_test_utils::{
+    use crate::chains::btc::btc_test_utils::{
         SAMPLE_BTC_PUBLIC_KEY,
         SAMPLE_TARGET_BTC_ADDRESS,
         get_sample_btc_private_key,

@@ -66,14 +66,14 @@ mod tests {
         chains::btc::{
             btc_utils::create_unsigned_utxo_from_tx,
             utxo_manager::utxo_types::BtcUtxosAndValues,
-        },
-        btc_on_eth::btc::btc_test_utils::{
-            get_sample_btc_tx,
-            get_sample_btc_utxo,
-            SAMPLE_OUTPUT_INDEX_OF_UTXO,
-            get_sample_testnet_block_and_txs,
-            get_sample_op_return_utxo_and_value,
-            get_sample_pay_to_pub_key_hash_script,
+            btc_test_utils::{
+                get_sample_btc_tx,
+                get_sample_btc_utxo,
+                SAMPLE_OUTPUT_INDEX_OF_UTXO,
+                get_sample_testnet_block_and_txs,
+                get_sample_op_return_utxo_and_value,
+                get_sample_pay_to_pub_key_hash_script,
+            },
         },
     };
 

@@ -48,13 +48,13 @@ mod tests {
     use crate::{
         errors::AppError,
         test_utils::get_test_database,
+        btc_on_eth::eth::eth_test_utils::get_sample_eth_address,
         chains::{
-            btc::btc_database_utils::put_btc_address_in_db,
             eth::eth_database_utils::put_public_eth_address_in_db,
-        },
-        btc_on_eth::{
-            eth::eth_test_utils::get_sample_eth_address,
-            btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
+            btc::{
+                btc_database_utils::put_btc_address_in_db,
+                btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
+            },
         },
     };
 

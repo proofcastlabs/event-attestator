@@ -22,8 +22,10 @@ mod tests {
     use super::*;
     use crate::{
         test_utils::get_test_database,
-        chains::btc::btc_database_utils::put_btc_address_in_db,
-        btc_on_eth::btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
+        chains::btc::{
+            btc_database_utils::put_btc_address_in_db,
+            btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
+        },
     };
 
     #[test]

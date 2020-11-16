@@ -28,7 +28,7 @@ pub fn parse_btc_submission_json_and_put_in_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::btc::btc_test_utils::get_sample_btc_submission_material_json_string;
+    use crate::chains::btc::btc_test_utils::get_sample_btc_submission_material_json_string;
 
     #[test]
     fn should_parse_btc_block_json() {

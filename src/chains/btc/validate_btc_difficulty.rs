@@ -71,7 +71,7 @@ pub fn validate_difficulty_of_btc_block_in_state<D: DatabaseInterface>(state: Bt
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::btc::btc_test_utils::get_sample_btc_block_and_id;
+    use crate::chains::btc::btc_test_utils::get_sample_btc_block_and_id;
 
     #[test]
     fn should_not_err_if_difficulty_is_above_threshold() {

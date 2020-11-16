@@ -79,7 +79,7 @@ pub const SAMPLE_TARGET_BTC_ADDRESS: &str =
     "moBSQbHn7N9BC9pdtAMnA7GBiALzNMQJyE";
 
 pub const SAMPLE_BTC_BLOCK_JSON_PATH: &str =
-    "src/btc_on_eth/btc/btc_test_utils/604700-btc-block-and-txs.json";
+    "src/chains/btc/btc_test_utils/604700-btc-block-and-txs.json";
 
 pub const SAMPLE_BTC_PRIVATE_KEY_WIF: &str =
     "cP2Dv4mx1DwJzN8iF6CCyPZmuS27bT9MV4Qmgb9h6cNQNq2Jgpmy";
@@ -88,40 +88,40 @@ pub const SAMPLE_BTC_PUBLIC_KEY: &str =
     "03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH: &str =
-    "src/btc_on_eth/btc/btc_test_utils/1610046-testnet-block-with-tx-to-test-address.json";
+    "src/chains/btc/btc_test_utils/1610046-testnet-block-with-tx-to-test-address.json";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_2: &str =
-    "src/btc_on_eth/btc/btc_test_utils/1610166-testnet-block-with-tx-to-test-address.json";
+    "src/chains/btc/btc_test_utils/1610166-testnet-block-with-tx-to-test-address.json";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_3: &str =
-    "src/btc_on_eth/btc/btc_test_utils/1610161-testnet-block-with-tx-to-test-address.json";
+    "src/chains/btc/btc_test_utils/1610161-testnet-block-with-tx-to-test-address.json";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_5: &str =
-    "src/btc_on_eth/btc/btc_test_utils/1637173-testnet-block-and-txs-with-p2sh-deposit.json";
+    "src/chains/btc/btc_test_utils/1637173-testnet-block-and-txs-with-p2sh-deposit.json";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_6: &str =
-    "src/btc_on_eth/btc/btc_test_utils/1660807-testnet-block-and-txs-with-2-p2sh-deposits.json";
+    "src/chains/btc/btc_test_utils/1660807-testnet-block-and-txs-with-2-p2sh-deposits.json";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_7: &str =
-    "src/btc_on_eth/btc/btc_test_utils/btc-1661479-btc-block-and-txs-with-deposit-originating-from-enclave-key.json";
+    "src/chains/btc/btc_test_utils/btc-1661479-btc-block-and-txs-with-deposit-originating-from-enclave-key.json";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_8: &str =
-    "src/btc_on_eth/btc/btc_test_utils/1661611-block-and-txs-with-no-op-return.json";
+    "src/chains/btc/btc_test_utils/1661611-block-and-txs-with-no-op-return.json";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_9: &str =
-    "src/btc_on_eth/btc/btc_test_utils/1666951-block-and-txs-p2sh-and-op-return-below-threshold.json";
+    "src/chains/btc/btc_test_utils/1666951-block-and-txs-p2sh-and-op-return-below-threshold.json";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_10: &str =
-    "src/btc_on_eth/btc/btc_test_utils/btc-1670411-block-and-txs.json";
+    "src/chains/btc/btc_test_utils/btc-1670411-block-and-txs.json";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_11: &str =
-    "src/btc_on_eth/btc/btc_test_utils/btc-1670534-block-and-txs.json";
+    "src/chains/btc/btc_test_utils/btc-1670534-block-and-txs.json";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_12: &str =
-    "src/btc_on_eth/btc/btc_test_utils/btc-1670541-block-and-txs.json";
+    "src/chains/btc/btc_test_utils/btc-1670541-block-and-txs.json";
 
 pub const SAMPLE_TESTNET_OP_RETURN_BTC_BLOCK_JSON: &str =
-    "src/btc_on_eth/btc/btc_test_utils/1610826-testnet-block-with-tx-to-test-address.json";
+    "src/chains/btc/btc_test_utils/1610826-testnet-block-with-tx-to-test-address.json";
 
 pub const SAMPLE_SERIALIZED_BTC_UTXO: &str = "0e8d588f88d5624148070a8cd79508da8cb76625e4fcdb19a5fc996aa843bf04000000001976a91454102783c8640c5144d039cea53eb7dbb470081488acffffffff";
 
@@ -213,7 +213,7 @@ pub fn get_sample_minting_params() -> BtcOnEthMintingParams {
 pub fn get_sample_sequential_btc_blocks_in_db_format(
 ) -> Vec<BtcBlockInDbFormat> {
     let start_num = 1_611_090;
-    let path_prefix = "src/btc_on_eth/btc/btc_test_utils/sequential_block_and_ids/";
+    let path_prefix = "src/chains/btc/btc_test_utils/sequential_block_and_ids/";
     let path_suffix = "-btc-block-and-txs.json";
     let mut paths = Vec::new();
     for i in 0..11 {

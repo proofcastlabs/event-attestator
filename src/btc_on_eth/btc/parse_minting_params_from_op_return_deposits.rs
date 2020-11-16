@@ -192,11 +192,9 @@ pub fn parse_minting_params_from_op_return_deposits_and_add_to_state<D>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::btc::{
-        filter_op_return_deposit_txs::{
-            filter_txs_for_op_return_deposits
-        },
-        btc_test_utils::{
+    use crate::{
+        btc_on_eth::btc::filter_op_return_deposit_txs::filter_txs_for_op_return_deposits,
+        chains::btc::btc_test_utils::{
             get_sample_btc_tx,
             get_sample_btc_block_n,
             get_sample_btc_private_key,

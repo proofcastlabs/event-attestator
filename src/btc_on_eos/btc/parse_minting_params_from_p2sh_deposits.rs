@@ -115,13 +115,13 @@ mod tests {
         hashes::sha256d,
         util::address::Address as BtcAddress,
     };
-    use crate::btc_on_eos::{
-        btc::{
+    use crate::{
+        chains::btc::btc_test_utils::{
+            get_sample_btc_block_n,
+            get_sample_btc_pub_key_bytes,
+        },
+        btc_on_eos::btc::{
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
-            btc_test_utils::{
-                get_sample_btc_block_n,
-                get_sample_btc_pub_key_bytes,
-            },
             get_deposit_info_hash_map::{
                 create_hash_map_from_deposit_info_list,
             },

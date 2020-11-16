@@ -98,8 +98,6 @@ mod tests {
         chains::btc::{
             btc_types::BtcBlockAndId,
             btc_utils::get_script_sig,
-        },
-        btc_on_eth::btc::{
             btc_test_utils::{
                 get_sample_btc_block_n,
                 SAMPLE_TARGET_BTC_ADDRESS,

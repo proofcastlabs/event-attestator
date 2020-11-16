@@ -36,7 +36,7 @@ pub fn validate_btc_merkle_root<D>(state: BtcState<D>) -> Result<BtcState<D>> wh
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::btc::btc_test_utils::get_sample_btc_block_and_id;
+    use crate::chains::btc::btc_test_utils::get_sample_btc_block_and_id;
 
     #[test]
     fn should_validate_sample_merkle_root() {

@@ -131,10 +131,12 @@ mod tests {
     use super::*;
     use crate::{
         test_utils::get_test_database,
-        chains::btc::utxo_manager::utxo_database_utils::save_new_utxo_and_value,
-        btc_on_eth::btc::btc_test_utils::{
-            get_sample_p2sh_utxo_and_value,
-            get_sample_op_return_utxo_and_value,
+        chains::btc::{
+            utxo_manager::utxo_database_utils::save_new_utxo_and_value,
+            btc_test_utils::{
+                get_sample_p2sh_utxo_and_value,
+                get_sample_op_return_utxo_and_value,
+            },
         },
     };
 

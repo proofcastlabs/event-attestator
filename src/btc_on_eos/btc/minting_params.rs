@@ -94,7 +94,7 @@ impl BtcOnEosMintingParamStruct {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::btc::btc_test_utils::get_sample_btc_on_eos_minting_params;
+    use crate::chains::btc::btc_test_utils::get_sample_btc_on_eos_minting_params;
 
     #[test]
     fn should_filter_minting_params() {
