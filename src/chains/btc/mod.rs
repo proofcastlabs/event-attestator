@@ -9,6 +9,7 @@ pub(crate) mod btc_types;
 pub(crate) mod btc_crypto;
 pub(crate) mod btc_database_utils;
 pub(crate) mod add_btc_block_to_db;
+pub(crate) mod filter_minting_params;
 pub(crate) mod check_btc_parent_exists;
 pub(crate) mod increment_btc_account_nonce;
 pub(crate) mod extract_utxos_from_op_return_txs;

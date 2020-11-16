@@ -11,7 +11,6 @@ pub(crate) mod sign_normal_eth_transactions;
 pub(crate) mod sign_any_sender_transactions;
 pub(crate) mod get_btc_output_json;
 pub(crate) mod increment_eth_nonce;
-pub(crate) mod filter_minting_params;
 pub(crate) mod update_btc_linker_hash;
 pub(crate) mod filter_p2sh_deposit_txs;
 pub(crate) mod validate_btc_difficulty;

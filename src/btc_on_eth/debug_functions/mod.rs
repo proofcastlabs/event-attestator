@@ -48,20 +48,21 @@ use crate::{
         },
         btc::{
             btc_state::BtcState,
+            filter_minting_params::maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state,
             extract_utxos_from_op_return_txs::maybe_extract_utxos_from_op_return_txs_and_put_in_state,
             btc_constants::{
                 get_btc_constants_db_keys,
                 BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
             },
-            utxo_manager::{
-                debug_utxo_utils::clear_all_utxos,
-                utxo_utils::get_all_utxos_as_json_string,
-                utxo_constants::get_utxo_constants_db_keys,
-            },
             btc_database_utils::{
                 end_btc_db_transaction,
                 start_btc_db_transaction,
                 get_btc_account_nonce_from_db,
+            },
+            utxo_manager::{
+                debug_utxo_utils::clear_all_utxos,
+                utxo_utils::get_all_utxos_as_json_string,
+                utxo_constants::get_utxo_constants_db_keys,
             },
         },
     },
@@ -89,7 +90,6 @@ use crate::{
             parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
-            filter_minting_params::maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             parse_minting_params_from_op_return_deposits::parse_minting_params_from_op_return_deposits_and_add_to_state,
             filter_utxos::{

@@ -5,6 +5,7 @@ use crate::{
         btc_state::BtcState,
         add_btc_block_to_db::maybe_add_btc_block_to_db,
         check_btc_parent_exists::check_for_parent_of_btc_block_in_state,
+        filter_minting_params::maybe_filter_out_value_too_low_btc_on_eos_minting_params_in_state,
         btc_database_utils::{
             end_btc_db_transaction,
             start_btc_db_transaction,
@@ -32,7 +33,6 @@ use crate::{
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
             get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
-            filter_minting_params::maybe_filter_out_value_too_low_btc_on_eos_minting_params_in_state,
             remove_minting_params_from_canon_block::remove_minting_params_from_canon_block_and_return_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             get_btc_output_json::{

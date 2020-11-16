@@ -13,10 +13,6 @@ use crate::{
         set_key_in_db_to_value,
     },
     chains::{
-        btc::btc_database_utils::{
-            start_btc_db_transaction,
-            get_btc_latest_block_from_db,
-        },
         eos::{
             eos_state::EosState,
             eos_crypto::eos_private_key::EosPrivateKey,
@@ -55,7 +51,12 @@ use crate::{
         },
         btc::{
             btc_state::BtcState,
+            filter_minting_params::maybe_filter_out_value_too_low_btc_on_eos_minting_params_in_state,
             increment_btc_account_nonce::maybe_increment_btc_signature_nonce_and_return_eos_state,
+            btc_database_utils::{
+                start_btc_db_transaction,
+                get_btc_latest_block_from_db,
+            },
             btc_constants::{
                 get_btc_constants_db_keys,
                 BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
@@ -85,7 +86,6 @@ use crate::{
             parse_submission_material::parse_submission_material_and_put_in_state,
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
             get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
-            filter_minting_params::maybe_filter_out_value_too_low_btc_on_eos_minting_params_in_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             get_btc_output_json::{
                     BtcOutput,
