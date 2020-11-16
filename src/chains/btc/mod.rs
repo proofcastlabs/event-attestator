@@ -8,3 +8,4 @@ pub(crate) mod btc_types;
 pub(crate) mod btc_crypto;
 pub(crate) mod btc_database_utils;
 pub(crate) mod increment_btc_account_nonce;
+pub(crate) mod extract_utxos_from_op_return_txs;

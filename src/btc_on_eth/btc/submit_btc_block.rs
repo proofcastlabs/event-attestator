@@ -1,9 +1,12 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::btc_database_utils::{
-        end_btc_on_eth_btc_db_transaction,
-        start_btc_on_eth_btc_db_transaction,
+    chains::btc::{
+        extract_utxos_from_op_return_txs::maybe_extract_utxos_from_op_return_txs_and_put_in_state,
+        btc_database_utils::{
+            end_btc_on_eth_btc_db_transaction,
+            start_btc_on_eth_btc_db_transaction,
+        },
     },
     btc_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
@@ -35,7 +38,6 @@ use crate::{
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
             sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,
             sign_any_sender_transactions::maybe_sign_any_sender_canon_block_txs_and_add_to_state,
-            extract_utxos_from_op_return_txs::maybe_extract_utxos_from_op_return_txs_and_put_in_state,
             remove_minting_params_from_canon_block::remove_minting_params_from_canon_block_and_return_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             parse_minting_params_from_op_return_deposits::parse_minting_params_from_op_return_deposits_and_add_to_state,

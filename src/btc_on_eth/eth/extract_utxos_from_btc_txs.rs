@@ -1,12 +1,12 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::extract_utxos_from_op_return_txs::extract_utxos_from_txs,
     chains::{
         eth::eth_state::EthState,
         btc::{
             btc_utils::get_pay_to_pub_key_hash_script,
             btc_database_utils::get_btc_address_from_db,
+            extract_utxos_from_op_return_txs::extract_utxos_from_txs,
         },
     },
 };
