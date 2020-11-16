@@ -48,6 +48,14 @@ use crate::{
             },
         },
     },
+
+    btc_on_eos::{
+        utils::convert_u64_to_8_decimal_eos_asset,
+        btc::minting_params::{
+            BtcOnEosMintingParams,
+            BtcOnEosMintingParamStruct,
+        },
+    },
     btc_on_eth::{
         utils::convert_satoshis_to_ptoken,
         btc::{
@@ -102,6 +110,15 @@ pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_8: &str =
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_9: &str =
     "src/btc_on_eth/btc/btc_test_utils/1666951-block-and-txs-p2sh-and-op-return-below-threshold.json";
+
+pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_10: &str =
+    "src/btc_on_eth/btc/btc_test_utils/btc-1670411-block-and-txs.json";
+
+pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_11: &str =
+    "src/btc_on_eth/btc/btc_test_utils/btc-1670534-block-and-txs.json";
+
+pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_12: &str =
+    "src/btc_on_eth/btc/btc_test_utils/btc-1670541-block-and-txs.json";
 
 pub const SAMPLE_TESTNET_OP_RETURN_BTC_BLOCK_JSON: &str =
     "src/btc_on_eth/btc/btc_test_utils/1610826-testnet-block-with-tx-to-test-address.json";
@@ -338,6 +355,9 @@ pub fn get_sample_btc_block_n(n: usize) -> Result<BtcBlockAndId> {
         7 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_7),
         8 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_8),
         9 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_9),
+        10 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_10),
+        11 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_11),
+        12 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_12),
         _ => Err(AppError::Custom("✘ Don't have sample for that number!".into()))
     }.unwrap();
     parse_btc_block_string_to_json(&read_to_string(&block_path)?)
@@ -364,4 +384,112 @@ pub fn get_sample_pay_to_pub_key_hash_script() -> BtcScript {
 
 pub fn get_sample_btc_private_key() -> BtcPrivateKey {
     BtcPrivateKey::from_wif(SAMPLE_BTC_PRIVATE_KEY_WIF).unwrap()
+}
+
+pub fn get_sample_btc_on_eos_minting_params() -> BtcOnEosMintingParams {
+    let symbol = "PBTC".to_string();
+    let originating_tx_address_1 = "eosaccount1x".to_string();
+    let originating_tx_address_2 = "eosaccount2x".to_string();
+    let originating_tx_address_3 = "eosaccount3x".to_string();
+    let eos_address_1 = originating_tx_address_1.clone();
+    let eos_address_2 = originating_tx_address_2.clone();
+    let eos_address_3 = originating_tx_address_3.clone();
+    let amount_1 = convert_u64_to_8_decimal_eos_asset(
+        MINIMUM_REQUIRED_SATOSHIS,
+        &symbol
+    );
+    let amount_2 = convert_u64_to_8_decimal_eos_asset(
+        MINIMUM_REQUIRED_SATOSHIS + 1,
+        &symbol
+    );
+    let amount_3 = convert_u64_to_8_decimal_eos_asset(
+        MINIMUM_REQUIRED_SATOSHIS - 1,
+        &symbol
+    );
+    let originating_tx_hash_1 = sha256d::Hash::hash(b"something_1").to_string();
+    let originating_tx_hash_2 = sha256d::Hash::hash(b"something_2").to_string();
+    let originating_tx_hash_3 = sha256d::Hash::hash(b"something_3").to_string();
+    let minting_params_1 = BtcOnEosMintingParamStruct {
+        amount: amount_1,
+        to: eos_address_1,
+        originating_tx_hash: originating_tx_hash_1,
+        originating_tx_address: originating_tx_address_1,
+    };
+    let minting_params_2 = BtcOnEosMintingParamStruct {
+        amount: amount_2,
+        to: eos_address_2,
+        originating_tx_hash: originating_tx_hash_2,
+        originating_tx_address: originating_tx_address_2,
+    };
+    let minting_params_3 = BtcOnEosMintingParamStruct {
+        amount: amount_3,
+        to: eos_address_3,
+        originating_tx_hash: originating_tx_hash_3,
+        originating_tx_address: originating_tx_address_3,
+    };
+    BtcOnEosMintingParams::new(vec![minting_params_1, minting_params_2, minting_params_3])
+}
+
+pub fn get_sample_p2sh_utxo_and_value_2() -> Result<BtcUtxoAndValue> {
+    get_sample_btc_block_n(10)
+        .and_then(|block_and_id| {
+            let output_index = 0;
+            let tx = block_and_id.block.txdata[50].clone();
+            let nonce = 1_584_612_094;
+            let btc_deposit_address = "2NB1SRPSujETy9zYbXRZAGkk1zuDZHFAtyk"
+                .to_string();
+            let eth_address = "provabletest"
+                .to_string();
+            let eth_address_and_nonce_hash =
+            "1729dce0b4e54e39610a95376a8bc96335fd93da68ae6aa27a62d4c282fb1ad3"
+                    .to_string();
+            let version = Some("1".to_string());
+            let user_data = vec![];
+            let deposit_info_json = DepositAddressInfoJson::new(
+                nonce,
+                eth_address,
+                btc_deposit_address,
+                eth_address_and_nonce_hash,
+                version,
+                &user_data,
+            )?;
+            Ok(BtcUtxoAndValue::new(
+                tx.output[output_index].value,
+                &create_unsigned_utxo_from_tx(&tx, output_index as u32),
+                Some(deposit_info_json),
+                None,
+            ))
+        })
+}
+
+pub fn get_sample_p2sh_utxo_and_value_3() -> Result<BtcUtxoAndValue> {
+    get_sample_btc_block_n(11)
+        .map(|block_and_id| {
+            let output_index = 0;
+            let tx = block_and_id.block.txdata[95].clone();
+            let nonce = 1_584_696_514;
+            let btc_deposit_address = "2My5iu4S78DRiH9capTKo8sXEa98yHVkQXg"
+                .to_string();
+            let eth_address = "provabletest"
+                .to_string();
+            let eth_address_and_nonce_hash =
+            "d11539e07a521c78c20381c98cc546e3ccdd8a5c97f1cffe83ae5537f61a6e39"
+                .to_string();
+            let version = Some("1".to_string());
+            let user_data = vec![];
+            let deposit_info_json = DepositAddressInfoJson::new(
+                nonce,
+                eth_address,
+                btc_deposit_address,
+                eth_address_and_nonce_hash,
+                version,
+                &user_data,
+            ).unwrap();
+            BtcUtxoAndValue::new(
+                tx.output[output_index].value,
+                &create_unsigned_utxo_from_tx(&tx, output_index as u32),
+                Some(deposit_info_json),
+                None,
+            )
+        })
 }

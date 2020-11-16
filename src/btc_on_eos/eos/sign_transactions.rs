@@ -139,6 +139,11 @@ mod tests {
     use bitcoin::network::constants::Network as BtcNetwork;
     use crate::{
         test_utils::get_test_database,
+        btc_on_eos::eos::eos_test_utils::get_sample_eos_submission_material_json_n,
+        btc_on_eth::btc::btc_test_utils::{
+            get_sample_p2sh_utxo_and_value_2,
+            get_sample_p2sh_utxo_and_value_3,
+        },
         chains::{
             eos::eos_action_proofs::EosActionProof,
             btc::{
@@ -150,13 +155,6 @@ mod tests {
                     put_btc_network_in_db,
                     put_btc_address_in_db,
                 },
-            },
-        },
-        btc_on_eos::{
-            eos::eos_test_utils::get_sample_eos_submission_material_json_n,
-            btc::btc_test_utils::{
-                get_sample_p2sh_utxo_and_value_2,
-                get_sample_p2sh_utxo_and_value_3,
             },
         },
     };

@@ -38,5 +38,5 @@ pub mod debug_functions;
 pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
 
-mod utils;
-mod check_core_is_initialized;
+pub(crate) mod utils;
+pub(crate) mod check_core_is_initialized;

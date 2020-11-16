@@ -94,13 +94,13 @@ impl BtcOnEosMintingParamStruct {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::btc::btc_test_utils::get_sample_minting_params;
+    use crate::btc_on_eth::btc::btc_test_utils::get_sample_btc_on_eos_minting_params;
 
     #[test]
     fn should_filter_minting_params() {
         let expected_length_before = 3;
         let expected_length_after = 2;
-        let minting_params = get_sample_minting_params();
+        let minting_params = get_sample_btc_on_eos_minting_params();
         let length_before = minting_params.len();
         assert_eq!(length_before, expected_length_before);
         let result = minting_params.filter_out_value_too_low().unwrap();

@@ -499,7 +499,7 @@ mod tests {
     use super::*;
     use crate::{
         test_utils::get_test_database,
-        btc_on_eos::btc::btc_test_utils::{
+        btc_on_eth::btc::btc_test_utils::{
             SAMPLE_TARGET_BTC_ADDRESS,
             get_sample_btc_private_key,
             get_sample_btc_block_in_db_format,
