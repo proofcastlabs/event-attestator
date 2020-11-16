@@ -49,6 +49,7 @@ use crate::{
         btc::{
             btc_state::BtcState,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
+            get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
             filter_minting_params::maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state,
             extract_utxos_from_op_return_txs::maybe_extract_utxos_from_op_return_txs_and_put_in_state,
@@ -86,7 +87,6 @@ use crate::{
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
             validate_btc_block_header::validate_btc_block_header_in_state,
             parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
-            get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
             parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,

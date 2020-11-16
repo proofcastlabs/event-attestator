@@ -164,14 +164,14 @@ mod tests {
         }
     };
     use crate::{
-        chains::btc::btc_types::BtcBlockAndId,
-        btc_on_eth::btc::{
+        chains::btc::{
+            btc_types::BtcBlockAndId,
             get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
-            btc_test_utils::{
-                get_sample_btc_block_n,
-                SAMPLE_TARGET_BTC_ADDRESS,
-                get_sample_btc_pub_key_bytes,
-            },
+        },
+        btc_on_eth::btc::btc_test_utils::{
+            get_sample_btc_block_n,
+            SAMPLE_TARGET_BTC_ADDRESS,
+            get_sample_btc_pub_key_bytes,
         },
     };
 

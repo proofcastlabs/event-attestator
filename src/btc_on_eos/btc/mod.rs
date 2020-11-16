@@ -13,7 +13,6 @@ pub(crate) mod validate_btc_difficulty;
 pub(crate) mod validate_btc_merkle_root;
 pub(crate) mod set_btc_canon_block_hash;
 pub(crate) mod parse_submission_material;
-pub(crate) mod get_deposit_info_hash_map;
 pub(crate) mod set_btc_latest_block_hash;
 pub(crate) mod set_btc_anchor_block_hash;
 pub(crate) mod validate_btc_block_header;
