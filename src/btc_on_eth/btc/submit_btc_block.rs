@@ -4,6 +4,7 @@ use crate::{
     chains::btc::{
         btc_state::BtcState,
         set_flags::set_any_sender_flag_in_state,
+        save_utxos_to_db::maybe_save_utxos_to_db,
         add_btc_block_to_db::maybe_add_btc_block_to_db,
         validate_btc_merkle_root::validate_btc_merkle_root,
         remove_old_btc_tail_block::maybe_remove_old_btc_tail_block,
@@ -26,7 +27,6 @@ use crate::{
     btc_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
         btc::{
-            save_utxos_to_db::maybe_save_utxos_to_db,
             update_btc_linker_hash::maybe_update_btc_linker_hash,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
             filter_utxos::filter_out_value_too_low_utxos_from_state,
