@@ -24,7 +24,6 @@ pub(crate) mod get_btc_block_in_db_format;
 pub(crate) mod update_btc_tail_block_hash;
 pub(crate) mod validate_btc_proof_of_work;
 pub(crate) mod update_btc_canon_block_hash;
-pub(crate) mod extract_utxos_from_p2sh_txs;
 pub(crate) mod filter_op_return_deposit_txs;
 pub(crate) mod update_btc_latest_block_hash;
 pub(crate) mod remove_minting_params_from_canon_block;

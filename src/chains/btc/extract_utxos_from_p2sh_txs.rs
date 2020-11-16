@@ -34,10 +34,7 @@ fn maybe_extract_p2sh_utxo(
     match tx_output.script_pubkey.is_p2sh() {
         false => None,
         true => {
-            match BtcAddress::from_script(
-                &tx_output.script_pubkey,
-                btc_network,
-            ) {
+            match BtcAddress::from_script(&tx_output.script_pubkey, btc_network) {
                 None => {
                     info!("✘ Could not derive BTC address from tx outout: {:?}", tx_output);
                     None
