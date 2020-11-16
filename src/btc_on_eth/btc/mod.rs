@@ -9,7 +9,6 @@ pub(crate) mod btc_transaction;
 pub(crate) mod save_utxos_to_db;
 pub(crate) mod sign_normal_eth_transactions;
 pub(crate) mod sign_any_sender_transactions;
-pub(crate) mod add_btc_block_to_db;
 pub(crate) mod get_btc_output_json;
 pub(crate) mod increment_eth_nonce;
 pub(crate) mod filter_minting_params;

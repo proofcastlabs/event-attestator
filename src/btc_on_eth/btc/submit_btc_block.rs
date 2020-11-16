@@ -3,6 +3,7 @@ use crate::{
     traits::DatabaseInterface,
     chains::btc::{
         btc_state::BtcState,
+        add_btc_block_to_db::maybe_add_btc_block_to_db,
         extract_utxos_from_op_return_txs::maybe_extract_utxos_from_op_return_txs_and_put_in_state,
         btc_database_utils::{
             end_btc_db_transaction,
@@ -14,7 +15,6 @@ use crate::{
         btc::{
             set_flags::set_any_sender_flag_in_state,
             save_utxos_to_db::maybe_save_utxos_to_db,
-            add_btc_block_to_db::maybe_add_btc_block_to_db,
             validate_btc_merkle_root::validate_btc_merkle_root,
             update_btc_linker_hash::maybe_update_btc_linker_hash,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,

@@ -3,13 +3,13 @@ use crate::{
     traits::DatabaseInterface,
     chains::btc::{
         btc_state::BtcState,
+        add_btc_block_to_db::maybe_add_btc_block_to_db,
         btc_database_utils::{
             end_btc_db_transaction,
             start_btc_db_transaction,
         },
     },
     btc_on_eos::btc::{
-        add_btc_block_to_db::maybe_add_btc_block_to_db,
         validate_btc_merkle_root::validate_btc_merkle_root,
         set_btc_canon_block_hash::maybe_set_btc_canon_block_hash,
         set_btc_latest_block_hash::maybe_set_btc_latest_block_hash,

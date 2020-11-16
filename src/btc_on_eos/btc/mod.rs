@@ -7,7 +7,6 @@ pub(crate) mod minting_params;
 pub(crate) mod btc_transaction;
 pub(crate) mod save_utxos_to_db;
 pub(crate) mod sign_transactions;
-pub(crate) mod add_btc_block_to_db;
 pub(crate) mod get_btc_output_json;
 pub(crate) mod filter_minting_params;
 pub(crate) mod filter_too_short_names;
