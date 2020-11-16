@@ -4,6 +4,7 @@ use crate::{
     chains::btc::{
         btc_state::BtcState,
         save_utxos_to_db::maybe_save_utxos_to_db,
+        increment_eos_nonce::maybe_increment_eos_nonce,
         add_btc_block_to_db::maybe_add_btc_block_to_db,
         validate_btc_merkle_root::validate_btc_merkle_root,
         update_btc_linker_hash::maybe_update_btc_linker_hash,
@@ -30,7 +31,6 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
         btc::{
             filter_utxos::filter_out_value_too_low_utxos_from_state,
-            increment_signature_nonce::maybe_increment_signature_nonce,
             sign_transactions::maybe_sign_canon_block_txs_and_add_to_state,
 	    filter_too_short_names::maybe_filter_name_too_short_params_in_state,
             parse_submission_material::parse_submission_material_and_put_in_state,
@@ -68,7 +68,7 @@ pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(maybe_update_btc_tail_block_hash)
         .and_then(maybe_update_btc_linker_hash)
         .and_then(maybe_sign_canon_block_txs_and_add_to_state)
-        .and_then(maybe_increment_signature_nonce)
+        .and_then(maybe_increment_eos_nonce)
         .and_then(maybe_remove_old_btc_tail_block)
         .and_then(create_btc_output_json_and_put_in_state)
         .and_then(remove_minting_params_from_canon_block_and_return_state)

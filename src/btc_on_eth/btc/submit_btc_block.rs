@@ -8,6 +8,7 @@ use crate::{
         add_btc_block_to_db::maybe_add_btc_block_to_db,
         validate_btc_merkle_root::validate_btc_merkle_root,
         update_btc_linker_hash::maybe_update_btc_linker_hash,
+        increment_eth_nonce::maybe_increment_eth_nonce_in_db,
         remove_old_btc_tail_block::maybe_remove_old_btc_tail_block,
         update_btc_tail_block_hash::maybe_update_btc_tail_block_hash,
         validate_btc_block_header::validate_btc_block_header_in_state,
@@ -15,6 +16,7 @@ use crate::{
         check_btc_parent_exists::check_for_parent_of_btc_block_in_state,
         update_btc_latest_block_hash::maybe_update_btc_latest_block_hash,
         filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
+        increment_any_sender_nonce::maybe_increment_any_sender_nonce_in_db,
         validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
         get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
@@ -31,10 +33,8 @@ use crate::{
     btc_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
         btc::{
-            increment_eth_nonce::maybe_increment_eth_nonce_in_db,
             filter_utxos::filter_out_value_too_low_utxos_from_state,
             parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
-            increment_any_sender_nonce::maybe_increment_any_sender_nonce_in_db,
             parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
             sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,
