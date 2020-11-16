@@ -19,7 +19,6 @@ use crate::{
             update_btc_linker_hash::maybe_update_btc_linker_hash,
             increment_signature_nonce::maybe_increment_signature_nonce,
             remove_old_btc_tail_block::maybe_remove_old_btc_tail_block,
-            filter_minting_params::maybe_filter_minting_params_in_state,
             update_btc_tail_block_hash::maybe_update_btc_tail_block_hash,
             validate_btc_block_header::validate_btc_block_header_in_state,
             sign_transactions::maybe_sign_canon_block_txs_and_add_to_state,
@@ -33,6 +32,7 @@ use crate::{
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
             get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
+            filter_minting_params::maybe_filter_out_value_too_low_btc_on_eos_minting_params_in_state,
             remove_minting_params_from_canon_block::remove_minting_params_from_canon_block_and_return_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             get_btc_output_json::{
@@ -59,7 +59,7 @@ pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
-        .and_then(maybe_filter_minting_params_in_state)
+        .and_then(maybe_filter_out_value_too_low_btc_on_eos_minting_params_in_state)
         .and_then(maybe_filter_name_too_short_params_in_state)
         .and_then(create_btc_block_in_db_format_and_put_in_state)
         .and_then(maybe_add_btc_block_to_db)

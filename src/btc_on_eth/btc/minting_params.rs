@@ -1,9 +1,13 @@
 use crate::{
-    chains::eth::eth_utils::safely_convert_hex_to_eth_address,
+    btc_on_eth::utils::convert_satoshis_to_ptoken,
     types::{
         Byte,
         Bytes,
         Result,
+    },
+    chains::{
+        eth::eth_utils::safely_convert_hex_to_eth_address,
+        btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
     },
 };
 use derive_more::{
@@ -31,6 +35,27 @@ impl BtcOnEthMintingParams {
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         Ok(serde_json::from_slice(bytes)?)
     }
+
+    pub fn filter_out_value_too_low(&self) -> Result<BtcOnEthMintingParams> {
+        info!("✔ Filtering out any minting params below a minimum of {} Satoshis...", MINIMUM_REQUIRED_SATOSHIS);
+        let threshold = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
+        Ok(BtcOnEthMintingParams::new(
+            self
+                .iter()
+                .filter(|params| {
+                    match params.amount >= threshold {
+                        true => true,
+                        false => {
+                            info!("✘ Filtering minting params ∵ value too low: {:?}", params);
+                            false
+                        }
+                    }
+                })
+                .cloned()
+                .collect::<Vec<BtcOnEthMintingParamStruct>>()
+        ))
+    }
+
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -57,3 +82,22 @@ impl BtcOnEthMintingParamStruct {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::btc_on_eth::btc::btc_test_utils::get_sample_minting_params;
+
+    #[test]
+    fn should_filter_minting_params() {
+        let expected_length_before = 3;
+        let expected_length_after = 2;
+        let minting_params = get_sample_minting_params();
+        let threshold = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
+        let length_before = minting_params.len();
+        assert_eq!(length_before, expected_length_before);
+        let result = minting_params.filter_out_value_too_low().unwrap();
+        let length_after = result.len();
+        assert_eq!(length_after, expected_length_after);
+        result.iter().map(|params| assert!(params.amount >= threshold)).for_each(drop);
+    }
+}

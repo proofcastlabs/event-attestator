@@ -80,16 +80,16 @@ use crate::{
             save_utxos_to_db::maybe_save_utxos_to_db,
             validate_btc_merkle_root::validate_btc_merkle_root,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
-            parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
-            parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
-            filter_minting_params::maybe_filter_minting_params_in_state,
             validate_btc_block_header::validate_btc_block_header_in_state,
+            parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
+            parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
+            filter_minting_params::maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             parse_minting_params_from_op_return_deposits::parse_minting_params_from_op_return_deposits_and_add_to_state,
             filter_utxos::{
@@ -174,7 +174,7 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
-        .and_then(maybe_filter_minting_params_in_state)
+        .and_then(maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state)
         .and_then(|state| {
             get_eth_signed_txs(&get_signing_params_from_db(&state.db)?, &state.btc_on_eth_minting_params)
                 .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))

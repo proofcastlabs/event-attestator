@@ -21,7 +21,6 @@ use crate::{
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
             filter_utxos::filter_out_value_too_low_utxos_from_state,
             remove_old_btc_tail_block::maybe_remove_old_btc_tail_block,
-            filter_minting_params::maybe_filter_minting_params_in_state,
             update_btc_tail_block_hash::maybe_update_btc_tail_block_hash,
             validate_btc_block_header::validate_btc_block_header_in_state,
             update_btc_canon_block_hash::maybe_update_btc_canon_block_hash,
@@ -38,6 +37,7 @@ use crate::{
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
             sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,
             sign_any_sender_transactions::maybe_sign_any_sender_canon_block_txs_and_add_to_state,
+            filter_minting_params::maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state,
             remove_minting_params_from_canon_block::remove_minting_params_from_canon_block_and_return_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             parse_minting_params_from_op_return_deposits::parse_minting_params_from_op_return_deposits_and_add_to_state,
@@ -78,7 +78,7 @@ pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
-        .and_then(maybe_filter_minting_params_in_state)
+        .and_then(maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state)
         .and_then(create_btc_block_in_db_format_and_put_in_state)
         .and_then(maybe_add_btc_block_to_db)
         .and_then(maybe_update_btc_latest_block_hash)

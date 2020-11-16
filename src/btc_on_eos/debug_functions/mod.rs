@@ -77,7 +77,6 @@ use crate::{
             sign_transactions::get_signed_txs,
             get_btc_output_json::get_btc_output_as_string,
             validate_btc_merkle_root::validate_btc_merkle_root,
-            filter_minting_params::maybe_filter_minting_params_in_state,
             validate_btc_block_header::validate_btc_block_header_in_state,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
@@ -86,6 +85,7 @@ use crate::{
             parse_submission_material::parse_submission_material_and_put_in_state,
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
             get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
+            filter_minting_params::maybe_filter_out_value_too_low_btc_on_eos_minting_params_in_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             get_btc_output_json::{
                     BtcOutput,
@@ -182,7 +182,7 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
         .and_then(get_deposit_info_hash_map_and_put_in_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
         .and_then(parse_minting_params_from_p2sh_deposits_and_add_to_state)
-        .and_then(maybe_filter_minting_params_in_state)
+        .and_then(maybe_filter_out_value_too_low_btc_on_eos_minting_params_in_state)
         .and_then(maybe_filter_name_too_short_params_in_state)
         .and_then(create_btc_block_in_db_format_and_put_in_state)
         .and_then(|state| {
