@@ -68,6 +68,10 @@ use crate::{
                 start_btc_db_transaction,
                 get_btc_account_nonce_from_db,
             },
+            filter_utxos::{
+                filter_out_utxos_extant_in_db_from_state,
+                filter_out_value_too_low_utxos_from_state,
+            },
             utxo_manager::{
                 debug_utxo_utils::clear_all_utxos,
                 utxo_utils::get_all_utxos_as_json_string,
@@ -93,10 +97,6 @@ use crate::{
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             parse_minting_params_from_op_return_deposits::parse_minting_params_from_op_return_deposits_and_add_to_state,
-            filter_utxos::{
-                filter_out_utxos_extant_in_db_from_state,
-                filter_out_value_too_low_utxos_from_state,
-            },
         },
         eth::{
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,

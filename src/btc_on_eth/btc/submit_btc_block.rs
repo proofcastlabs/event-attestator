@@ -9,6 +9,7 @@ use crate::{
         validate_btc_merkle_root::validate_btc_merkle_root,
         update_btc_linker_hash::maybe_update_btc_linker_hash,
         increment_eth_nonce::maybe_increment_eth_nonce_in_db,
+        filter_utxos::filter_out_value_too_low_utxos_from_state,
         remove_old_btc_tail_block::maybe_remove_old_btc_tail_block,
         update_btc_tail_block_hash::maybe_update_btc_tail_block_hash,
         validate_btc_block_header::validate_btc_block_header_in_state,
@@ -33,7 +34,6 @@ use crate::{
     btc_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
         btc::{
-            filter_utxos::filter_out_value_too_low_utxos_from_state,
             parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
             parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
