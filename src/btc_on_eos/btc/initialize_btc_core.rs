@@ -1,6 +1,7 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eos::btc::parse_submission_material::parse_submission_material_and_put_in_state,
     chains::btc::{
         btc_state::BtcState,
         add_btc_block_to_db::maybe_add_btc_block_to_db,
@@ -16,11 +17,8 @@ use crate::{
             end_btc_db_transaction,
             start_btc_db_transaction,
         },
-    },
-    btc_on_eos::btc::{
-        parse_submission_material::parse_submission_material_and_put_in_state,
-        initialize_btc::{
-            is_btc_core_initialized::is_btc_core_initialized,
+        core_initialization::{
+            is_btc_initialized::is_btc_enclave_initialized,
             get_btc_init_output_json::get_btc_init_output_json,
             generate_btc_address::generate_and_store_btc_address,
             generate_btc_private_key::generate_and_store_btc_private_key,
@@ -49,7 +47,7 @@ pub fn maybe_initialize_btc_core<D>(
     trace!("✔ Maybe initializing BTC core...");
     Ok(BtcState::init(db))
         .and_then(|state|
-            match is_btc_core_initialized(&state.db) {
+            match is_btc_enclave_initialized(&state.db) {
                 true => {
                     info!("✔ BTC core already initialized!");
                     Ok("{btc_core_initialized:true}".to_string())

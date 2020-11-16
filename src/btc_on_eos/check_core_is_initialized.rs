@@ -1,19 +1,21 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::btc::initialize_btc::is_btc_core_initialized::is_btc_core_initialized,
     chains::{
-        btc::btc_state::BtcState,
         eos::{
             eos_state::EosState,
             check_eos_core_is_initialized::is_eos_core_initialized,
+        },
+        btc::{
+            btc_state::BtcState,
+            core_initialization::is_btc_initialized::is_btc_enclave_initialized,
         },
     },
 };
 
 pub fn check_btc_core_is_initialized<D>(db: &D) -> Result<()> where D: DatabaseInterface {
     info!("✔ Checking BTC core is initialized...");
-    match is_btc_core_initialized(db) {
+    match is_btc_enclave_initialized(db) {
         false => Err("✘ BTC side of core not initialized!".into()),
         true => Ok(())
     }

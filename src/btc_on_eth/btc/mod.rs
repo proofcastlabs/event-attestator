@@ -1,5 +1,5 @@
-pub mod initialize_btc;
 pub mod submit_btc_block;
+pub mod initialize_btc_enclave;
 
 pub(crate) mod btc_test_utils;
 pub(crate) mod parse_submission_material_json;

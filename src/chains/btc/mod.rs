@@ -13,6 +13,7 @@ pub(crate) mod save_utxos_to_db;
 pub(crate) mod btc_database_utils;
 pub(crate) mod increment_eos_nonce;
 pub(crate) mod increment_eth_nonce;
+pub(crate) mod core_initialization;
 pub(crate) mod add_btc_block_to_db;
 pub(crate) mod filter_minting_params;
 pub(crate) mod update_btc_linker_hash;

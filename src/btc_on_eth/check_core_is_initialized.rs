@@ -1,9 +1,11 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::initialize_btc::is_btc_initialized::is_btc_enclave_initialized,
     chains::{
-        btc::btc_state::BtcState,
+        btc::{
+            btc_state::BtcState,
+            core_initialization::is_btc_initialized::is_btc_enclave_initialized,
+        },
         eth::{
             eth_state::EthState,
             core_initialization::check_eth_core_is_initialized::is_eth_core_initialized,

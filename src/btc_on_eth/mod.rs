@@ -35,7 +35,7 @@ pub use crate::btc_on_eth::{
     },
     btc::{
         submit_btc_block::submit_btc_block_to_enclave,
-        initialize_btc::initialize_btc_enclave::maybe_initialize_btc_enclave,
+        initialize_btc_enclave::maybe_initialize_btc_enclave,
     },
 };
 

@@ -17,11 +17,7 @@ use crate::{
             end_btc_db_transaction,
             start_btc_db_transaction,
         },
-    },
-    btc_on_eth::btc::{
-        parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
-        parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
-        initialize_btc::{
+        core_initialization::{
             is_btc_initialized::is_btc_enclave_initialized,
             get_btc_init_output_json::get_btc_init_output_json,
             generate_btc_address::generate_and_store_btc_address,
@@ -35,6 +31,10 @@ use crate::{
                 put_canon_to_tip_length_in_db_and_return_state,
             },
         }
+    },
+    btc_on_eth::btc::{
+        parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
+        parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
     },
 };
 
