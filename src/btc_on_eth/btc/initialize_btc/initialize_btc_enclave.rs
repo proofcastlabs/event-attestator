@@ -4,6 +4,10 @@ use crate::{
     chains::btc::{
         btc_state::BtcState,
         add_btc_block_to_db::maybe_add_btc_block_to_db,
+        validate_btc_merkle_root::validate_btc_merkle_root,
+        validate_btc_block_header::validate_btc_block_header_in_state,
+        validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
+        validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
         get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
         btc_database_utils::{
             end_btc_db_transaction,
@@ -12,14 +16,10 @@ use crate::{
     },
     btc_on_eth::btc::{
         set_flags::set_any_sender_flag_in_state,
-        validate_btc_merkle_root::validate_btc_merkle_root,
         set_btc_canon_block_hash::maybe_set_btc_canon_block_hash,
         set_btc_latest_block_hash::maybe_set_btc_latest_block_hash,
         set_btc_anchor_block_hash::maybe_set_btc_anchor_block_hash,
-        validate_btc_block_header::validate_btc_block_header_in_state,
         parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
-        validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
-        validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
         parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
         initialize_btc::{
             is_btc_initialized::is_btc_enclave_initialized,

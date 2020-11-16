@@ -51,18 +51,14 @@ fn check_difficulty_is_above_threshold(
     }
 }
 
-pub fn validate_difficulty_of_btc_block_in_state<D>(
-    state: BtcState<D>
-) -> Result<BtcState<D>>
-    where D: DatabaseInterface
-{
+pub fn validate_difficulty_of_btc_block_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     if CORE_IS_VALIDATING {
         info!("✔ Validating BTC block difficulty...");
         check_difficulty_is_above_threshold(
             get_btc_difficulty_from_db(&state.db)?,
             &state.get_btc_block_and_id()?.block.header,
             get_btc_network_from_db(&state.db)?,
-        ).map(|_| state)
+        ).and(Ok(state))
     } else {
         info!("✔ Skipping BTC block difficulty validation!");
         match DEBUG_MODE {
@@ -79,52 +75,25 @@ mod tests {
 
     #[test]
     fn should_not_err_if_difficulty_is_above_threshold() {
-        let block_header = get_sample_btc_block_and_id()
-            .unwrap()
-            .block
-            .header;
+        let block_header = get_sample_btc_block_and_id().unwrap().block.header;
         let threshold: u64 = 1;
-        if let Err(e) = check_difficulty_is_above_threshold(
-            threshold,
-            &block_header,
-            BtcNetwork::Bitcoin,
-        ) {
-            panic!("Difficulty should be above threshold: {}", e);
-        }
+        check_difficulty_is_above_threshold(threshold, &block_header, BtcNetwork::Bitcoin).unwrap();
     }
 
     #[test]
     fn should_err_if_difficulty_is_below_threshold() {
-        let block_header = get_sample_btc_block_and_id()
-            .unwrap()
-            .block
-            .header;
+        let block_header = get_sample_btc_block_and_id().unwrap().block.header;
         let threshold = u64::max_value();
-        if check_difficulty_is_above_threshold(
-            threshold,
-            &block_header,
-            BtcNetwork::Bitcoin,
-        ).is_ok() {
-            panic!("Difficulty should not be above threshold!");
-        }
+        assert!(check_difficulty_is_above_threshold(threshold, &block_header, BtcNetwork::Bitcoin).is_err());
     }
 
     #[test]
     fn should_skip_difficulty_check_if_not_on_mainnet() {
         let threshold = 0;
-        let block_header = get_sample_btc_block_and_id()
-            .unwrap()
-            .block
-            .header;
+        let block_header = get_sample_btc_block_and_id().unwrap().block.header;
         let network = BtcNetwork::Testnet;
         let difficulty = block_header.difficulty(network);
         assert!(difficulty > threshold);
-        if check_difficulty_is_above_threshold(
-            threshold,
-            &block_header,
-            network,
-        ).is_err() {
-            panic!("Difficulty check should be skipped on testnet!");
-        }
+        assert!(check_difficulty_is_above_threshold(threshold, &block_header, network,).is_ok());
     }
 }
