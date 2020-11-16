@@ -22,5 +22,4 @@ pub(crate) mod update_btc_tail_block_hash;
 pub(crate) mod validate_btc_proof_of_work;
 pub(crate) mod update_btc_canon_block_hash;
 pub(crate) mod update_btc_latest_block_hash;
-pub(crate) mod remove_minting_params_from_canon_block;
 pub(crate) mod parse_minting_params_from_p2sh_deposits;

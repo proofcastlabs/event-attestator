@@ -18,3 +18,4 @@ pub(crate) mod get_btc_block_in_db_format;
 pub(crate) mod extract_utxos_from_p2sh_txs;
 pub(crate) mod increment_btc_account_nonce;
 pub(crate) mod extract_utxos_from_op_return_txs;
+pub(crate) mod remove_minting_params_from_canon_block;
