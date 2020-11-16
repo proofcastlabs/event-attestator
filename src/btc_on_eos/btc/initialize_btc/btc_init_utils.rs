@@ -2,14 +2,16 @@ use bitcoin::network::constants::Network as BtcNetwork;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::btc::btc_state::BtcState,
-    chains::btc::btc_database_utils::{
-        put_btc_fee_in_db,
-        put_btc_network_in_db,
-        put_btc_difficulty_in_db,
-        put_btc_account_nonce_in_db,
-        put_btc_tail_block_hash_in_db,
-        put_btc_canon_to_tip_length_in_db,
+    chains::btc::{
+        btc_state::BtcState,
+            btc_database_utils::{
+            put_btc_fee_in_db,
+            put_btc_network_in_db,
+            put_btc_difficulty_in_db,
+            put_btc_account_nonce_in_db,
+            put_btc_tail_block_hash_in_db,
+            put_btc_canon_to_tip_length_in_db,
+        },
     },
 };
 

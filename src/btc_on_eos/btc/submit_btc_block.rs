@@ -1,14 +1,16 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    chains::btc::btc_database_utils::{
-        end_btc_db_transaction,
-        start_btc_db_transaction,
+    chains::btc::{
+        btc_state::BtcState,
+        btc_database_utils::{
+            end_btc_db_transaction,
+            start_btc_db_transaction,
+        },
     },
     btc_on_eos::{
         check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
         btc::{
-            btc_state::BtcState,
             save_utxos_to_db::maybe_save_utxos_to_db,
             filter_utxos::filter_out_value_too_low_utxos_from_state,
             add_btc_block_to_db::maybe_add_btc_block_to_db,

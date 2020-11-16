@@ -6,9 +6,12 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     chains::{
-        btc::btc_database_utils::{
-            get_btc_canon_block_from_db,
-            get_btc_latest_block_from_db,
+        btc::{
+            btc_state::BtcState,
+            btc_database_utils::{
+                get_btc_canon_block_from_db,
+                get_btc_latest_block_from_db,
+            },
         },
         eos::{
             eos_types::EosSignedTransaction,
@@ -17,10 +20,7 @@ use crate::{
     },
     btc_on_eos::{
         utils::convert_eos_asset_to_u64,
-        btc::{
-            btc_state::BtcState,
-            minting_params::BtcOnEosMintingParamStruct,
-        },
+        btc::minting_params::BtcOnEosMintingParamStruct,
     },
 };
 

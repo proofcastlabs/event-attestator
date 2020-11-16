@@ -9,16 +9,14 @@ use crate::{
     chains::{
         eos::eos_database_utils::get_eos_token_symbol_from_db,
         btc::{
+            btc_state::BtcState,
             deposit_address_info::DepositInfoHashMap,
             btc_database_utils::get_btc_network_from_db,
         },
     },
-    btc_on_eos::btc::{
-        btc_state::BtcState,
-        minting_params::{
-            BtcOnEosMintingParams,
-            BtcOnEosMintingParamStruct,
-        },
+    btc_on_eos::btc::minting_params::{
+        BtcOnEosMintingParams,
+        BtcOnEosMintingParamStruct,
     },
 };
 

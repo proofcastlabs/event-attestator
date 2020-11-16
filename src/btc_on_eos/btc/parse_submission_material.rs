@@ -14,8 +14,8 @@ use crate::{
         Result,
         NoneError,
     },
-    btc_on_eos::btc::btc_state::BtcState,
     chains::btc::{
+        btc_state::BtcState,
         btc_types::{
             BtcBlockJson,
             BtcBlockAndId,

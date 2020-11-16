@@ -1,7 +1,6 @@
 pub mod initialize_btc;
 pub mod submit_btc_block;
 
-pub(crate) mod btc_state;
 pub(crate) mod filter_utxos;
 pub(crate) mod btc_test_utils;
 pub(crate) mod minting_params;

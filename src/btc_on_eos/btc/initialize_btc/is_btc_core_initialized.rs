@@ -3,11 +3,7 @@ use crate::{
     chains::btc::btc_database_utils::get_btc_address_from_db,
 };
 
-pub fn is_btc_core_initialized<D>(
-    db: &D
-) -> bool
-    where D: DatabaseInterface
-{
+pub fn is_btc_core_initialized<D: DatabaseInterface>(db: &D) -> bool {
     trace!("✔ Checking if BTC core has been initialized...");
     match get_btc_address_from_db(db) {
         Ok(_)=> {

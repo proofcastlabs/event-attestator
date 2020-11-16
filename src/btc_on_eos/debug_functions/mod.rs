@@ -54,6 +54,7 @@ use crate::{
             },
         },
         btc::{
+            btc_state::BtcState,
             increment_btc_account_nonce::maybe_increment_btc_signature_nonce_and_return_eos_state,
             btc_constants::{
                 get_btc_constants_db_keys,
@@ -73,7 +74,6 @@ use crate::{
             check_core_is_initialized_and_return_eos_state,
         },
         btc::{
-            btc_state::BtcState,
             sign_transactions::get_signed_txs,
             get_btc_output_json::get_btc_output_as_string,
             validate_btc_merkle_root::validate_btc_merkle_root,

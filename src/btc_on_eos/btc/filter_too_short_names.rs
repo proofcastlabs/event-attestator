@@ -2,12 +2,10 @@ use crate::{
     types::Result,
     traits::DatabaseInterface,
     constants::SAFE_EOS_ADDRESS,
-    btc_on_eos::btc::{
-        btc_state::BtcState,
-        minting_params::{
-            BtcOnEosMintingParams,
-            BtcOnEosMintingParamStruct
-        },
+    chains::btc::btc_state::BtcState,
+    btc_on_eos::btc::minting_params::{
+        BtcOnEosMintingParams,
+        BtcOnEosMintingParamStruct
     },
 };
 
@@ -33,12 +31,7 @@ fn filter_too_short_account_names(minting_params: &[BtcOnEosMintingParamStruct])
     ))
 }
 
-pub fn maybe_filter_name_too_short_params_in_state<D>(
-    state: BtcState<D>
-) -> Result<BtcState<D>>
-    where D: DatabaseInterface
-{
+pub fn maybe_filter_name_too_short_params_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Filtering out any minting params w/ too short account names...");
-    filter_too_short_account_names(&state.minting_params)
-        .and_then(|new_params| state.replace_minting_params(new_params))
+    filter_too_short_account_names(&state.minting_params).and_then(|params| state.replace_minting_params(params))
 }

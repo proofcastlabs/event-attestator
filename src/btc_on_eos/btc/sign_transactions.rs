@@ -1,8 +1,12 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
     chains::{
-        btc::btc_database_utils::get_btc_canon_block_from_db,
+        btc::{
+            btc_state::BtcState,
+            btc_database_utils::get_btc_canon_block_from_db,
+        },
         eos::{
             eos_crypto::{
                 eos_private_key::EosPrivateKey,
@@ -25,10 +29,6 @@ use crate::{
                 EosSignedTransactions,
             },
         },
-    },
-    btc_on_eos::btc::{
-        btc_state::BtcState,
-        minting_params::BtcOnEosMintingParams,
     },
 };
 
@@ -79,11 +79,7 @@ pub fn get_signed_txs(
         .collect()
 }
 
-pub fn maybe_sign_canon_block_txs_and_add_to_state<D>(
-    state: BtcState<D>
-) -> Result<BtcState<D>>
-    where D: DatabaseInterface
-{
+pub fn maybe_sign_canon_block_txs_and_add_to_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Maybe signing minting txs...");
     get_signed_txs(
         state.ref_block_num,

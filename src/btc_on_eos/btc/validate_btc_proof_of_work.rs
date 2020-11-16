@@ -2,7 +2,7 @@ use bitcoin::blockdata::block::BlockHeader as BtcBlockHeader;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::btc::btc_state::BtcState,
+    chains::btc::btc_state::BtcState,
     constants::{
         DEBUG_MODE,
         CORE_IS_VALIDATING,
@@ -20,11 +20,7 @@ fn validate_proof_of_work_in_block(btc_block_header: &BtcBlockHeader) -> Result<
     }
 }
 
-pub fn validate_proof_of_work_of_btc_block_in_state<D>(
-    state: BtcState<D>,
-) -> Result<BtcState<D>>
-    where D: DatabaseInterface
-{
+pub fn validate_proof_of_work_of_btc_block_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     if CORE_IS_VALIDATING {
         info!("✔ Validating BTC block's proof-of-work...");
         validate_proof_of_work_in_block(&state.get_btc_block_and_id()?.block.header).map(|_| state)
@@ -44,12 +40,7 @@ mod tests {
 
     #[test]
     fn should_validate_proof_of_work_in_valid_block() {
-        let block_header = get_sample_btc_block_and_id()
-            .unwrap()
-            .block
-            .header;
-        if let Err(e) = validate_proof_of_work_in_block(&block_header) {
-            panic!("PoW should be valid in sample block: {}", e);
-        }
+        let block_header = get_sample_btc_block_and_id().unwrap().block.header;
+        validate_proof_of_work_in_block(&block_header).unwrap();
     }
 }

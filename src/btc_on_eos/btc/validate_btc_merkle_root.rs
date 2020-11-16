@@ -2,7 +2,7 @@ use bitcoin::blockdata::block::Block as BtcBlock;
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::btc::btc_state::BtcState,
+    chains::btc::btc_state::BtcState,
     constants::{
         DEBUG_MODE,
         CORE_IS_VALIDATING,
@@ -23,8 +23,7 @@ fn validate_merkle_root(btc_block: &BtcBlock) -> Result<()> {
 pub fn validate_btc_merkle_root<D>(state: BtcState<D>) -> Result<BtcState<D>> where D: DatabaseInterface {
     if CORE_IS_VALIDATING {
         info!("✔ Validating merkle-root in BTC block...");
-        validate_merkle_root(&state.get_btc_block_and_id()?.block)
-            .and(Ok(state))
+        validate_merkle_root(&state.get_btc_block_and_id()?.block).and(Ok(state))
     } else {
         info!("✔ Skipping BTC merkle root validation!");
         info!("✔ Skipping BTC difficulty validation!");
@@ -42,13 +41,8 @@ mod tests {
 
     #[test]
     fn should_validate_sample_merkle_root() {
-        let block = get_sample_btc_block_and_id()
-            .unwrap()
-            .block;
-        if let Err(e) = validate_merkle_root(&block) {
-            panic!("Merkle root should be valid for samle block: {}", e);
-        }
-
+        let block = get_sample_btc_block_and_id().unwrap().block;
+        validate_merkle_root(&block).unwrap();
     }
 }
 

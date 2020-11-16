@@ -1,15 +1,13 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eos::btc::btc_state::BtcState,
-    chains::btc::btc_types::BtcBlockInDbFormat,
+    chains::btc::{
+        btc_state::BtcState,
+        btc_types::BtcBlockInDbFormat,
+    },
 };
 
-pub fn create_btc_block_in_db_format_and_put_in_state<D>(
-    state: BtcState<D>
-) -> Result<BtcState<D>>
-    where D: DatabaseInterface
-{
+pub fn create_btc_block_in_db_format_and_put_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Creating DB formatted BTC block from block in state...");
     let block_in_state = &state.get_btc_block_and_id()?;
     BtcBlockInDbFormat::new(
