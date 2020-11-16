@@ -19,7 +19,6 @@ pub(crate) mod set_btc_anchor_block_hash;
 pub(crate) mod validate_btc_block_header;
 pub(crate) mod remove_old_btc_tail_block;
 pub(crate) mod increment_signature_nonce;
-pub(crate) mod get_btc_block_in_db_format;
 pub(crate) mod update_btc_tail_block_hash;
 pub(crate) mod validate_btc_proof_of_work;
 pub(crate) mod update_btc_canon_block_hash;

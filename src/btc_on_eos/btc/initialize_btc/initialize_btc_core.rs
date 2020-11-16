@@ -4,6 +4,7 @@ use crate::{
     chains::btc::{
         btc_state::BtcState,
         add_btc_block_to_db::maybe_add_btc_block_to_db,
+        get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
         btc_database_utils::{
             end_btc_db_transaction,
             start_btc_db_transaction,
@@ -18,7 +19,6 @@ use crate::{
         validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
         parse_submission_material::parse_submission_material_and_put_in_state,
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
-        get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
         initialize_btc::{
             is_btc_core_initialized::is_btc_core_initialized,
             get_btc_init_output_json::get_btc_init_output_json,
