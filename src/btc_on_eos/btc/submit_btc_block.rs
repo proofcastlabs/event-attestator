@@ -4,6 +4,7 @@ use crate::{
     chains::btc::{
         btc_state::BtcState,
         add_btc_block_to_db::maybe_add_btc_block_to_db,
+        check_btc_parent_exists::check_for_parent_of_btc_block_in_state,
         btc_database_utils::{
             end_btc_db_transaction,
             start_btc_db_transaction,
@@ -23,7 +24,6 @@ use crate::{
             validate_btc_block_header::validate_btc_block_header_in_state,
             sign_transactions::maybe_sign_canon_block_txs_and_add_to_state,
             update_btc_canon_block_hash::maybe_update_btc_canon_block_hash,
-            check_btc_parent_exists::check_for_parent_of_btc_block_in_state,
             update_btc_latest_block_hash::maybe_update_btc_latest_block_hash,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
