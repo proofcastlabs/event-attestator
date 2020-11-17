@@ -45,6 +45,7 @@ mod tests {
         errors::AppError,
         chains::btc::{
             btc_types::BtcBlockAndId,
+            deposit_address_info::DepositInfoList,
             btc_test_utils::get_sample_btc_block_and_id,
         },
     };
@@ -64,8 +65,8 @@ mod tests {
         let wrong_block_id = "c0ffee0000000000000c084f2a5fa68ef814144d350a601688248b421258dd3f";
         let invalid_block_and_id = BtcBlockAndId {
             height: 1,
-            deposit_address_list: Vec::new(),
             block: block_and_id.block,
+            deposit_address_list: DepositInfoList::new(vec![]),
             id: sha256d::Hash::from_str(&wrong_block_id).unwrap(),
         };
         match validate_btc_block_header(&invalid_block_and_id) {

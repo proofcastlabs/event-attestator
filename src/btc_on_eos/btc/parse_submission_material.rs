@@ -80,10 +80,12 @@ fn convert_hex_txs_to_btc_transactions(
 fn parse_deposit_info_jsons_to_deposit_info_list(
     deposit_address_json_list: &[DepositAddressInfoJson]
 ) -> Result<DepositInfoList> {
-    deposit_address_json_list
-        .iter()
-        .map(DepositAddressInfo::from_json)
-        .collect::<Result<DepositInfoList>>()
+    Ok(DepositInfoList::new(
+        deposit_address_json_list
+            .iter()
+            .map(DepositAddressInfo::from_json)
+            .collect::<Result<Vec<DepositAddressInfo>>>()?
+    ))
 }
 
 pub fn parse_btc_block_from_submission_material(

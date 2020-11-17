@@ -1,3 +1,7 @@
+use derive_more::{
+    Deref,
+    Constructor,
+};
 use bitcoin::{
     util::address::Address as BtcAddress,
     hashes::{
@@ -19,9 +23,13 @@ use crate::{
     },
 };
 
-pub type DepositInfoList = Vec<DepositAddressInfo>;
-pub type DepositAddressInfoJsonList = Vec<DepositAddressInfoJson>;
 pub type DepositInfoHashMap =  HashMap<BtcAddress, DepositAddressInfo>;
+
+#[derive(Clone, Debug, PartialEq, Eq, Deref, Constructor)]
+pub struct DepositInfoList(pub Vec<DepositAddressInfo>);
+
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Deref, Constructor)]
+pub struct DepositAddressInfoJsonList(pub Vec<DepositAddressInfoJson>);
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum DepositAddressInfoVersion {
