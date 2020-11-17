@@ -90,22 +90,15 @@ impl BtcBlockInDbFormat {
         eos_minting_params: Option<BtcOnEosMintingParams>,
         eth_minting_params: Option<BtcOnEthMintingParams>,
     ) -> Result<Self> {
-        Ok(BtcBlockInDbFormat{
-            id,
-            block,
-            height,
-            extra_data,
-            eth_minting_params: eth_minting_params,
-            eos_minting_params: eos_minting_params,
-        })
+        Ok(BtcBlockInDbFormat{ id, block, height, extra_data, eth_minting_params, eos_minting_params })
     }
 
     pub fn get_eos_minting_params(&self) -> BtcOnEosMintingParams {
-        self.eos_minting_params.clone().unwrap_or(BtcOnEosMintingParams::new(vec![]))
+        self.eos_minting_params.clone().unwrap_or_else(|| BtcOnEosMintingParams::new(vec![]))
     }
 
     pub fn get_eth_minting_params(&self) -> BtcOnEthMintingParams {
-        self.eth_minting_params.clone().unwrap_or(BtcOnEthMintingParams::new(vec![]))
+        self.eth_minting_params.clone().unwrap_or_else(|| BtcOnEthMintingParams::new(vec![]))
     }
 
     pub fn get_eos_minting_param_bytes(&self) -> Result<Option<Bytes>> {
@@ -138,7 +131,7 @@ pub struct SerializedBlockInDbFormat {
 
 impl SerializedBlockInDbFormat {
     pub fn get_btc_on_eos_minting_params(&self) -> Result<Option<BtcOnEosMintingParams>> {
-        let bytes = self.eos_minting_params.clone().unwrap_or(vec![]);
+        let bytes = self.eos_minting_params.clone().unwrap_or_default();
         let empty_bytes: Vec<u8> = vec![];
         if bytes == empty_bytes { Ok(None) } else { Ok(Some(BtcOnEosMintingParams::from_bytes(&bytes)?)) }
     }
