@@ -18,6 +18,7 @@ pub(crate) mod core_initialization;
 pub(crate) mod add_btc_block_to_db;
 pub(crate) mod filter_minting_params;
 pub(crate) mod update_btc_linker_hash;
+pub(crate) mod btc_submission_material;
 pub(crate) mod filter_p2sh_deposit_txs;
 pub(crate) mod check_btc_parent_exists;
 pub(crate) mod validate_btc_difficulty;

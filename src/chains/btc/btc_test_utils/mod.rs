@@ -32,10 +32,10 @@ use crate::{
             btc_crypto::btc_private_key::BtcPrivateKey,
             deposit_address_info::DepositAddressInfoJson,
             btc_database_utils::put_special_btc_block_in_db,
+            btc_submission_material::BtcSubmissionMaterialJson,
             btc_types::{
                 BtcBlockAndId,
                 BtcBlockInDbFormat,
-                BtcSubmissionMaterialJson,
             },
             utxo_manager::utxo_types::{
                 BtcUtxoAndValue,

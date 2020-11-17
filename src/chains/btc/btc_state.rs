@@ -16,13 +16,15 @@ use crate::{
         btc::{
             deposit_address_info::DepositInfoHashMap,
             utxo_manager::utxo_types::BtcUtxosAndValues,
+            btc_submission_material::{
+                BtcSubmissionMaterial,
+                BtcSubmissionMaterialJson,
+            },
             btc_types::{
                 BtcBlockAndId,
                 BtcTransaction,
                 BtcTransactions,
                 BtcBlockInDbFormat,
-                BtcSubmissionMaterial,
-                BtcSubmissionMaterialJson,
             },
         },
     },
