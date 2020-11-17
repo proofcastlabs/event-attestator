@@ -30,8 +30,16 @@ pub fn parse_btc_submission_json_and_put_in_state<D>(
 ) -> Result<BtcState<D>>
     where D: DatabaseInterface
 {
-    info!("✔ Parsing BTC submission json...");
+    info!("✔ Parsing BTC submission json and adding to state...");
     BtcSubmissionMaterialJson::from_str(&json_str).and_then(|result| state.add_btc_submission_json(result))
+}
+
+pub fn parse_submission_material_and_put_in_state<D: DatabaseInterface>(
+    json_str: &str,
+    state: BtcState<D>,
+) -> Result<BtcState<D>> {
+    info!("✔ Parsing BTC submisson material and adding to state...");
+    BtcSubmissionMaterial::from_str(&json_str).and_then(|result| state.add_btc_submission_material(result))
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
