@@ -19,7 +19,7 @@ use crate::{
         btc_types::{
             BtcBlockJson,
             BtcBlockAndId,
-            SubmissionMaterial,
+            BtcSubmissionMaterial,
             BtcSubmissionMaterialJson,
         },
         deposit_address_info::{
@@ -106,9 +106,9 @@ pub fn parse_btc_block_from_submission_material(
 
 fn parse_submission_json(
     submission_json: &BtcSubmissionMaterialJson,
-) -> Result<SubmissionMaterial> {
+) -> Result<BtcSubmissionMaterial> {
     Ok(
-        SubmissionMaterial {
+        BtcSubmissionMaterial {
             block_and_id: parse_btc_block_from_submission_material(submission_json)?,
             ref_block_num:
                 submission_json.ref_block_num.ok_or(NoneError("No `ref_block_num` in submission material!"))?,

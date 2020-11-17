@@ -89,7 +89,7 @@ pub struct BtcSubmissionMaterialJson {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct SubmissionMaterial {
+pub struct BtcSubmissionMaterial {
     pub ref_block_num: u16,
     pub ref_block_prefix: u32,
     pub block_and_id: BtcBlockAndId,

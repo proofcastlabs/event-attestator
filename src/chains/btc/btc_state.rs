@@ -20,8 +20,8 @@ use crate::{
                 BtcBlockAndId,
                 BtcTransaction,
                 BtcTransactions,
-                SubmissionMaterial,
                 BtcBlockInDbFormat,
+                BtcSubmissionMaterial,
                 BtcSubmissionMaterialJson,
             },
         },
@@ -138,7 +138,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
 
     pub fn add_btc_submission_material(
         mut self,
-        submission_material: SubmissionMaterial,
+        submission_material: BtcSubmissionMaterial,
     ) -> Result<BtcState<D>> {
         match self.btc_block_and_id {
             Some(_) => Err(get_no_overwrite_state_err("btc_block_and_id").into()),
