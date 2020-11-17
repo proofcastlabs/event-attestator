@@ -96,7 +96,7 @@ mod tests {
     };
     use crate::{
         chains::btc::{
-            btc_types::BtcBlockAndId,
+            btc_block::BtcBlockAndId,
             btc_utils::get_script_sig,
             btc_test_utils::{
                 get_sample_btc_block_n,

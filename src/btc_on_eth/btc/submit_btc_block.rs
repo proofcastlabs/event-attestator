@@ -6,6 +6,7 @@ use crate::{
         set_flags::set_any_sender_flag_in_state,
         save_utxos_to_db::maybe_save_utxos_to_db,
         add_btc_block_to_db::maybe_add_btc_block_to_db,
+        btc_block::parse_btc_block_and_id_and_put_in_state,
         validate_btc_merkle_root::validate_btc_merkle_root,
         update_btc_linker_hash::maybe_update_btc_linker_hash,
         increment_eth_nonce::maybe_increment_eth_nonce_in_db,
@@ -34,7 +35,6 @@ use crate::{
     btc_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
         btc::{
-            parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
             parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
             sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,

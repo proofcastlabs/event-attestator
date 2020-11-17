@@ -38,7 +38,7 @@ use crate::{
         convert_u64_to_bytes,
     },
     chains::btc::{
-        btc_types::BtcBlockInDbFormat,
+        btc_block::BtcBlockInDbFormat,
         btc_crypto::btc_private_key::BtcPrivateKey,
         btc_utils::{
             convert_btc_network_to_bytes,

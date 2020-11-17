@@ -3,7 +3,7 @@ use crate::{
     traits::DatabaseInterface,
     chains::btc::{
         btc_state::BtcState,
-        btc_types::BtcBlockInDbFormat,
+        btc_block::BtcBlockInDbFormat,
         btc_constants::BTC_TAIL_LENGTH,
         btc_database_utils::{
             get_btc_tail_block_from_db,

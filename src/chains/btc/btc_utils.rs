@@ -20,7 +20,7 @@ use crate::{
             convert_u64_to_bytes,
         },
         btc::{
-            btc_types::{
+            btc_block::{
                 BtcBlockInDbFormat,
                 SerializedBlockInDbFormat,
             },

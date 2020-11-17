@@ -15,7 +15,7 @@ use crate::{
     },
     chains::btc::{
         deposit_address_info::DepositAddressInfoJsonList,
-        btc_types::{
+        btc_block::{
             BtcBlockJson,
             BtcBlockAndId,
         },

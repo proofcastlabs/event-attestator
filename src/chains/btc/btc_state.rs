@@ -21,9 +21,11 @@ use crate::{
                 BtcSubmissionMaterialJson,
             },
             btc_types::{
-                BtcBlockAndId,
                 BtcTransaction,
                 BtcTransactions,
+            },
+            btc_block::{
+                BtcBlockAndId,
                 BtcBlockInDbFormat,
             },
         },

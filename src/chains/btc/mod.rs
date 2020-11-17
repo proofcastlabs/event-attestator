@@ -5,6 +5,7 @@ pub mod btc_constants;
 pub mod deposit_address_info;
 
 pub(crate) mod btc_state;
+pub(crate) mod btc_block;
 pub(crate) mod btc_types;
 pub(crate) mod set_flags;
 pub(crate) mod btc_crypto;

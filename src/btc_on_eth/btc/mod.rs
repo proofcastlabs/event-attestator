@@ -9,4 +9,3 @@ pub(crate) mod get_btc_output_json;
 pub(crate) mod filter_op_return_deposit_txs;
 pub(crate) mod parse_minting_params_from_p2sh_deposits;
 pub(crate) mod parse_minting_params_from_op_return_deposits;
-pub(crate) mod parse_btc_block_and_id;

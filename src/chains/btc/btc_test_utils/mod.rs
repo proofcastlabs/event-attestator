@@ -33,7 +33,7 @@ use crate::{
             deposit_address_info::DepositAddressInfoJson,
             btc_database_utils::put_special_btc_block_in_db,
             btc_submission_material::BtcSubmissionMaterialJson,
-            btc_types::{
+            btc_block::{
                 BtcBlockAndId,
                 BtcBlockInDbFormat,
             },

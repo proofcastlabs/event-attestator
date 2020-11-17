@@ -165,7 +165,7 @@ mod tests {
     };
     use crate::{
         chains::btc::{
-            btc_types::BtcBlockAndId,
+            btc_block::BtcBlockAndId,
             get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
             btc_test_utils::{
                 get_sample_btc_block_n,

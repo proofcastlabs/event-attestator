@@ -3,7 +3,7 @@ use crate::{
     traits::DatabaseInterface,
     chains::btc::{
         btc_state::BtcState,
-        btc_types::BtcBlockInDbFormat,
+        btc_block::BtcBlockInDbFormat,
         btc_database_utils::{
             get_btc_canon_block_from_db,
             get_btc_latest_block_from_db,

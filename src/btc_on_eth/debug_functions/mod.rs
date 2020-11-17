@@ -50,6 +50,7 @@ use crate::{
             btc_state::BtcState,
             set_flags::set_any_sender_flag_in_state,
             save_utxos_to_db::maybe_save_utxos_to_db,
+            btc_block::parse_btc_block_and_id_and_put_in_state,
             validate_btc_merkle_root::validate_btc_merkle_root,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
             validate_btc_block_header::validate_btc_block_header_in_state,
@@ -92,7 +93,6 @@ use crate::{
         btc::{
             sign_normal_eth_transactions::get_eth_signed_txs,
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
-            parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
             parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,

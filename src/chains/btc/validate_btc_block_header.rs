@@ -4,7 +4,7 @@ use crate::{
     traits::DatabaseInterface,
     chains::btc::{
         btc_state::BtcState,
-        btc_types::BtcBlockAndId,
+        btc_block::BtcBlockAndId,
     },
     constants::{
         DEBUG_MODE,
@@ -44,7 +44,7 @@ mod tests {
     use crate::{
         errors::AppError,
         chains::btc::{
-            btc_types::BtcBlockAndId,
+            btc_block::BtcBlockAndId,
             deposit_address_info::DepositInfoList,
             btc_test_utils::get_sample_btc_block_and_id,
         },

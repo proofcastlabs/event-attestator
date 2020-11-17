@@ -1,11 +1,13 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eth::btc::parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
     chains::btc::{
         btc_state::BtcState,
         set_flags::set_any_sender_flag_in_state,
         add_btc_block_to_db::maybe_add_btc_block_to_db,
         validate_btc_merkle_root::validate_btc_merkle_root,
+        btc_block::parse_btc_block_and_id_and_put_in_state,
         set_btc_canon_block_hash::maybe_set_btc_canon_block_hash,
         set_btc_latest_block_hash::maybe_set_btc_latest_block_hash,
         set_btc_anchor_block_hash::maybe_set_btc_anchor_block_hash,
@@ -31,10 +33,6 @@ use crate::{
                 put_canon_to_tip_length_in_db_and_return_state,
             },
         }
-    },
-    btc_on_eth::btc::{
-        parse_btc_block_and_id::parse_btc_block_and_id_and_put_in_state,
-        parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
     },
 };
 
