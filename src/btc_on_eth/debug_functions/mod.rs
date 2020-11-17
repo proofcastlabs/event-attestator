@@ -94,8 +94,8 @@ use crate::{
         btc::{
             sign_normal_eth_transactions::get_eth_signed_txs,
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
+            minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
-            parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             parse_minting_params_from_op_return_deposits::parse_minting_params_from_op_return_deposits_and_add_to_state,
         },
         eth::{
