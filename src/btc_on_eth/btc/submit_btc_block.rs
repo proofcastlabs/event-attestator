@@ -20,6 +20,7 @@ use crate::{
         filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
         increment_any_sender_nonce::maybe_increment_any_sender_nonce_in_db,
         validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
+        btc_submission_material::parse_btc_submission_json_and_put_in_state,
         get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
         get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
@@ -35,7 +36,6 @@ use crate::{
     btc_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
         btc::{
-            parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
             sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,
             sign_any_sender_transactions::maybe_sign_any_sender_canon_block_txs_and_add_to_state,

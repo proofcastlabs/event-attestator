@@ -1,7 +1,6 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
-    btc_on_eth::btc::parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
     chains::btc::{
         btc_state::BtcState,
         set_flags::set_any_sender_flag_in_state,
@@ -13,6 +12,7 @@ use crate::{
         set_btc_anchor_block_hash::maybe_set_btc_anchor_block_hash,
         validate_btc_block_header::validate_btc_block_header_in_state,
         validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
+        btc_submission_material::parse_btc_submission_json_and_put_in_state,
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
         get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
         btc_database_utils::{

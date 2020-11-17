@@ -55,6 +55,7 @@ use crate::{
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
             validate_btc_block_header::validate_btc_block_header_in_state,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
+            btc_submission_material::parse_btc_submission_json_and_put_in_state,
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
@@ -93,7 +94,6 @@ use crate::{
         btc::{
             sign_normal_eth_transactions::get_eth_signed_txs,
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
-            parse_submission_material_json::parse_btc_submission_json_and_put_in_state,
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
             parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             parse_minting_params_from_op_return_deposits::parse_minting_params_from_op_return_deposits_and_add_to_state,

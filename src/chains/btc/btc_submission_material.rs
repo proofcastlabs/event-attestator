@@ -9,11 +9,13 @@ pub use bitcoin::{
     },
 };
 use crate::{
+    traits::DatabaseInterface,
     types::{
         Result,
         NoneError,
     },
     chains::btc::{
+        btc_state::BtcState,
         deposit_address_info::DepositAddressInfoJsonList,
         btc_block::{
             BtcBlockJson,
@@ -21,6 +23,16 @@ use crate::{
         },
     },
 };
+
+pub fn parse_btc_submission_json_and_put_in_state<D>(
+    json_str: &str,
+    state: BtcState<D>,
+) -> Result<BtcState<D>>
+    where D: DatabaseInterface
+{
+    info!("✔ Parsing BTC submission json...");
+    BtcSubmissionMaterialJson::from_str(&json_str).and_then(|result| state.add_btc_submission_json(result))
+}
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
 pub struct BtcSubmissionMaterialJson {
@@ -78,5 +90,18 @@ impl BtcSubmissionMaterial {
 
     pub fn from_str(string: &str) -> Result<Self> {
         BtcSubmissionMaterialJson::from_str(string).and_then(|json| Self::from_json(&json))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::chains::btc::btc_test_utils::get_sample_btc_submission_material_json_string;
+
+    #[test]
+    fn should_get_submission_material_json_from_str() {
+        let string = get_sample_btc_submission_material_json_string();
+        let result = BtcSubmissionMaterialJson::from_str(&string);
+        assert!(result.is_ok());
     }
 }
