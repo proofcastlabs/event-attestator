@@ -84,7 +84,7 @@ use crate::{
         btc::{
             sign_transactions::get_signed_txs,
             get_btc_output_json::get_btc_output_as_string,
-            parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
+            minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             get_btc_output_json::{
                     BtcOutput,
                     get_eos_signed_tx_info_from_eth_txs,

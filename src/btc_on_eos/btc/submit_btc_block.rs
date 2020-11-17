@@ -32,7 +32,7 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
         btc::{
             sign_transactions::maybe_sign_canon_block_txs_and_add_to_state,
-            parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
+            minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             get_btc_output_json::{
                 get_btc_output_as_string,
                 create_btc_output_json_and_put_in_state,

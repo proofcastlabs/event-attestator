@@ -78,9 +78,7 @@ pub fn get_eos_signed_tx_info_from_eth_txs(
     txs
         .iter()
         .enumerate()
-        .map(|(i, tx)|
-            TxInfo::new(tx, &minting_params[i], start_nonce + i as u64)
-        )
+        .map(|(i, tx)| TxInfo::new(tx, &minting_params[i], start_nonce + i as u64))
         .collect::<Result<Vec<TxInfo>>>()
 }
 
@@ -108,11 +106,7 @@ pub fn create_btc_output_json_and_put_in_state<D>(
         .and_then(|output| state.add_output_json_string(output))
 }
 
-pub fn get_btc_output_as_string<D>(
-    state: BtcState<D>
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn get_btc_output_as_string<D: DatabaseInterface>(state: BtcState<D>) -> Result<String> {
     info!("✔ Getting BTC output as string...");
     let output = state.get_output_json_string()?.to_string();
     info!("✔ BTC Output: {}", output);
