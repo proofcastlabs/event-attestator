@@ -36,14 +36,16 @@ use crate::{
     btc_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
         btc::{
-            minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             filter_op_return_deposit_txs::filter_op_return_deposit_txs_and_add_to_state,
             sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,
             sign_any_sender_transactions::maybe_sign_any_sender_canon_block_txs_and_add_to_state,
-            parse_minting_params_from_op_return_deposits::parse_minting_params_from_op_return_deposits_and_add_to_state,
             get_btc_output_json::{
                 get_btc_output_as_string,
                 create_btc_output_json_and_put_in_state,
+            },
+            minting_params::{
+                parse_minting_params_from_p2sh_deposits_and_add_to_state,
+                parse_minting_params_from_op_return_deposits_and_add_to_state,
             },
         },
     },
