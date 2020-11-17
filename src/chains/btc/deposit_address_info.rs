@@ -25,11 +25,17 @@ use crate::{
 
 pub type DepositInfoHashMap =  HashMap<BtcAddress, DepositAddressInfo>;
 
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Deref, Constructor)]
+pub struct DepositAddressInfoJsonList(pub Vec<DepositAddressInfoJson>);
+
 #[derive(Clone, Debug, PartialEq, Eq, Deref, Constructor)]
 pub struct DepositInfoList(pub Vec<DepositAddressInfo>);
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Deref, Constructor)]
-pub struct DepositAddressInfoJsonList(pub Vec<DepositAddressInfoJson>);
+impl DepositInfoList {
+    pub fn from_json(json: &DepositAddressInfoJsonList) -> Result<Self> {
+        Ok(Self::new(json.iter().map(DepositAddressInfo::from_json).collect::<Result<Vec<DepositAddressInfo>>>()?))
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum DepositAddressInfoVersion {
