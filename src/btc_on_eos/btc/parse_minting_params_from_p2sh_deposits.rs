@@ -90,6 +90,7 @@ fn parse_minting_params_from_p2sh_deposit_txs(
    ))
 }
 
+// FIXME impl this on the type!
 pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D>(
     state: BtcState<D>
 ) -> Result<BtcState<D>>
@@ -102,7 +103,8 @@ pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D>(
         get_btc_network_from_db(&state.db)?,
         &get_eos_token_symbol_from_db(&state.db)?,
     )
-        .and_then(|minting_params| state.add_btc_on_eos_minting_params(minting_params))
+        .and_then(|minting_params| minting_params.filter_params())
+        .and_then(|filtered_params| state.add_btc_on_eos_minting_params(filtered_params))
 }
 
 /* TODO Reinstate!

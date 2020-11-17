@@ -230,15 +230,6 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         Ok(self)
     }
 
-    pub fn replace_btc_on_eos_minting_params(
-        mut self,
-        replacement_params: BtcOnEosMintingParams
-    ) -> Result<BtcState<D>> {
-        info!("✔ Replacing `btc-on-eos` minting params in state...");
-        self.btc_on_eos_minting_params = replacement_params;
-        Ok(self)
-    }
-
     pub fn replace_btc_on_eth_minting_params(
         mut self,
         replacement_params: BtcOnEthMintingParams

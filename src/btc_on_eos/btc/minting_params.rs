@@ -33,7 +33,7 @@ impl BtcOnEosMintingParams {
         Ok(serde_json::from_slice(bytes)?)
     }
 
-    pub fn filter_out_value_too_low(&self) -> Result<BtcOnEosMintingParams> {
+    pub fn filter_out_value_too_low(&self) -> Result<Self> {
         info!("✔ Filtering out any minting params below a minimum of {} Satoshis...", MINIMUM_REQUIRED_SATOSHIS);
         Ok(BtcOnEosMintingParams::new(
             self
@@ -56,12 +56,39 @@ impl BtcOnEosMintingParams {
                 .collect::<Vec<BtcOnEosMintingParamStruct>>()
         ))
     }
+
+    pub fn fix_params_with_too_short_account_names(&self) -> Result<Self> {
+        Ok(BtcOnEosMintingParams::new(
+            self
+                .iter()
+                .map(|params| {
+                    match params.to.is_empty() {
+                        false => params.clone(),
+                        true => {
+                            info!("✘ Redirecting to safe address {:?} ∵ name too short:", params);
+                            BtcOnEosMintingParamStruct {
+                                amount: params.amount.clone(),
+                                to: SAFE_EOS_ADDRESS.to_string(),
+                                originating_tx_hash: params.originating_tx_hash.clone(),
+                                originating_tx_address: params.originating_tx_address.clone(),
+                            }
+                        }
+                    }
+                })
+                .collect::<Vec<BtcOnEosMintingParamStruct>>()
+        ))
+    }
+
+    pub fn filter_params(&self) -> Result<Self> {
+        self.fix_params_with_too_short_account_names()
+            .and_then(|params| params.filter_out_value_too_low())
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BtcOnEosMintingParamStruct {
-    pub amount: String,
     pub to: String,
+    pub amount: String,
     pub originating_tx_hash: String,
     pub originating_tx_address: String,
 }
