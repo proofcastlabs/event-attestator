@@ -188,8 +188,8 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
         .and_then(|state| {
 	    info!("✔ Maybe signing reprocessed minting txs...");
 	    get_signed_txs(
-		state.ref_block_num,
-		state.ref_block_prefix,
+		state.get_eos_ref_block_num()?,
+		state.get_eos_ref_block_prefix()?,
 		&get_eos_chain_id_from_db(&state.db)?,
 		&EosPrivateKey::get_from_db(&state.db)?,
 		&get_eos_account_name_string_from_db(&state.db)?,

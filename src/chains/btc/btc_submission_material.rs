@@ -9,11 +9,8 @@ pub use bitcoin::{
     },
 };
 use crate::{
+    types::Result,
     traits::DatabaseInterface,
-    types::{
-        Result,
-        NoneError,
-    },
     chains::btc::{
         btc_state::BtcState,
         deposit_address_info::DepositAddressInfoJsonList,
@@ -52,9 +49,8 @@ pub struct BtcSubmissionMaterialJson {
     pub deposit_address_list: DepositAddressInfoJsonList,
 }
 
-// TODO test versions both with and without ref block info!
 impl BtcSubmissionMaterialJson {
-    fn convert_hex_txs_to_btc_transactions(hex_txs: Vec<String>) -> Result<Vec<BtcTransaction>> { // TODO FIXME Make this a tuple struct & impl on there!
+    fn convert_hex_txs_to_btc_transactions(hex_txs: Vec<String>) -> Result<Vec<BtcTransaction>> {
         hex_txs.into_iter().map(Self::convert_hex_tx_to_btc_transaction).collect::<Result<Vec<BtcTransaction>>>()
     }
 
@@ -79,20 +75,19 @@ impl BtcSubmissionMaterialJson {
     }
 }
 
-// FIXME This could cause issues now if these aren't here in case of btc-on-eth!! TODO change to options!
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BtcSubmissionMaterial {
-    pub ref_block_num: u16,
-    pub ref_block_prefix: u32,
+    pub ref_block_num: Option<u16>,
     pub block_and_id: BtcBlockAndId,
+    pub ref_block_prefix: Option<u32>,
 }
 
 impl BtcSubmissionMaterial {
     pub fn from_json(json: &BtcSubmissionMaterialJson) -> Result<Self> {
         Ok(Self {
+            ref_block_num: json.ref_block_num,
+            ref_block_prefix: json.ref_block_prefix,
             block_and_id: BtcBlockAndId::from_json(json)?,
-            ref_block_num: json.ref_block_num.ok_or(NoneError("No `ref_block_num` in submission material!"))?,
-            ref_block_prefix: json.ref_block_prefix.ok_or(NoneError("No `ref_block_prefix` in submission material!"))?,
         })
     }
 
@@ -110,6 +105,13 @@ mod tests {
     fn should_get_submission_material_json_from_str() {
         let string = get_sample_btc_submission_material_json_string();
         let result = BtcSubmissionMaterialJson::from_str(&string);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_get_submission_material_from_str() {
+        let string = get_sample_btc_submission_material_json_string();
+        let result = BtcSubmissionMaterial::from_str(&string);
         assert!(result.is_ok());
     }
 }

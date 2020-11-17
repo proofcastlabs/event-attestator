@@ -1,8 +1,11 @@
 use crate::{
-    types::Result,
     traits::DatabaseInterface,
     btc_on_eth::btc::minting_params::BtcOnEthMintingParams,
     btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
+    types::{
+        Result,
+        NoneError,
+    },
     utils::{
         get_not_in_state_err,
         get_no_overwrite_state_err,
@@ -35,9 +38,9 @@ use crate::{
 #[derive(Clone, PartialEq, Eq)]
 pub struct BtcState<D: DatabaseInterface> {
     pub db: D,
-    pub ref_block_num: u16,
-    pub ref_block_prefix: u32,
     pub any_sender: Option<bool>,
+    pub ref_block_num: Option<u16>,
+    pub ref_block_prefix: Option<u32>,
     pub signed_txs: EosSignedTransactions,
     pub output_json_string: Option<String>,
     pub utxos_and_values: BtcUtxosAndValues,
@@ -58,12 +61,12 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         BtcState {
             db,
             any_sender: None,
-            ref_block_num: 0,
             signed_txs: vec![],
-            ref_block_prefix: 0,
+            ref_block_num: None,
             eth_signed_txs: None,
             submission_json: None,
             btc_block_and_id: None,
+            ref_block_prefix: None,
             p2sh_deposit_txs: None,
             output_json_string: None,
             any_sender_signed_txs: None,
@@ -140,10 +143,7 @@ impl<D> BtcState<D> where D: DatabaseInterface {
         }
     }
 
-    pub fn add_btc_submission_material(
-        mut self,
-        submission_material: BtcSubmissionMaterial,
-    ) -> Result<BtcState<D>> {
+    pub fn add_btc_submission_material(mut self, submission_material: BtcSubmissionMaterial) -> Result<BtcState<D>> {
         match self.btc_block_and_id {
             Some(_) => Err(get_no_overwrite_state_err("btc_block_and_id").into()),
             None => {
@@ -360,6 +360,14 @@ impl<D> BtcState<D> where D: DatabaseInterface {
             }
             None => Err(get_not_in_state_err("submission_json").into())
         }
+    }
+
+    pub fn get_eos_ref_block_num(&self) -> Result<u16> {
+        self.ref_block_num.ok_or(NoneError("No `ref_block_num` in submission material!"))
+    }
+
+    pub fn get_eos_ref_block_prefix(&self) -> Result<u32> {
+        self.ref_block_prefix.ok_or(NoneError("No `ref_block_prefix` in submission material!"))
     }
 }
 
