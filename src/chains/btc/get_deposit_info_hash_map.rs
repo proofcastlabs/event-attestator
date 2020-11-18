@@ -17,8 +17,7 @@ pub fn create_hash_map_from_deposit_info_list(
     let mut hash_map = HashMap::new();
     deposit_info_list
         .iter()
-        .map(|deposit_info| hash_map.insert(deposit_info.btc_deposit_address.clone(), deposit_info.clone()))
-        .for_each(drop);
+        .for_each(|deposit_info| {hash_map.insert(deposit_info.btc_deposit_address.clone(), deposit_info.clone());});
     Ok(hash_map)
 }
 

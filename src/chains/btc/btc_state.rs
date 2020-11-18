@@ -134,10 +134,10 @@ impl<D> BtcState<D> where D: DatabaseInterface {
     pub fn get_eth_signed_txs(
         &self
     ) -> Result<&EthTransactions> {
-        match &self.eth_signed_txs {
-            Some(eth_signed_txs) => {
+        match self.eth_signed_txs {
+            Some(ref eth_signed_txs) => {
                 info!("✔ Getting ETH signed txs from BTC state...");
-                Ok(&eth_signed_txs)
+                Ok(eth_signed_txs)
             }
             None => Err(get_not_in_state_err("eth_signed_txs").into())
         }

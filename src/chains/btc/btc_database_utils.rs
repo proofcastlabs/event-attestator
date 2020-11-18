@@ -575,7 +575,7 @@ mod tests {
         match get_special_btc_block_from_db(&db, non_existent_block_type) {
             Ok(_) => panic!("Should not have got special block!"),
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
-            _ =>  panic!("Wrong error when getting non-existent block type!"),
+            _ => panic!("Wrong error when getting non-existent block type!"),
         }
     }
 
@@ -617,7 +617,7 @@ mod tests {
         let db = get_test_database();
         let linker_hash = get_sample_btc_block_in_db_format().unwrap().id;
         put_btc_linker_hash_in_db(&db, &linker_hash).unwrap();
-        let result =  get_btc_linker_hash_from_db(&db).unwrap();
+        let result = get_btc_linker_hash_from_db(&db).unwrap();
         assert_eq!(result, linker_hash);
     }
 
@@ -626,7 +626,7 @@ mod tests {
         let db = get_test_database();
         let hash = get_sample_btc_block_in_db_format().unwrap().id;
         put_btc_hash_in_db(&db, &BTC_LINKER_HASH_KEY.to_vec(), &hash).unwrap();
-        let result =  get_btc_hash_from_db(&db, &BTC_LINKER_HASH_KEY.to_vec()).unwrap();
+        let result = get_btc_hash_from_db(&db, &BTC_LINKER_HASH_KEY.to_vec()).unwrap();
         assert_eq!(result, hash);
     }
 
@@ -662,7 +662,7 @@ mod tests {
     fn should_get_and_put_btc_address_in_database() {
         let db = get_test_database();
         put_btc_address_in_db(&db, &SAMPLE_TARGET_BTC_ADDRESS.to_string()).unwrap();
-        let result =  get_btc_address_from_db(&db).unwrap();
+        let result = get_btc_address_from_db(&db).unwrap();
         assert_eq!(result, SAMPLE_TARGET_BTC_ADDRESS);
     }
 
@@ -671,7 +671,7 @@ mod tests {
         let fee = 666;
         let db = get_test_database();
         put_btc_fee_in_db(&db, fee).unwrap();
-        let result =  get_btc_fee_from_db(&db).unwrap();
+        let result = get_btc_fee_from_db(&db).unwrap();
         assert_eq!(result, fee)
     }
 
@@ -680,7 +680,7 @@ mod tests {
         let db = get_test_database();
         let network = BtcNetwork::Bitcoin;
         put_btc_network_in_db(&db, network).unwrap();
-        let result =  get_btc_network_from_db(&db).unwrap();
+        let result = get_btc_network_from_db(&db).unwrap();
         assert_eq!(result, network)
     }
 

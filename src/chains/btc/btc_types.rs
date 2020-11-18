@@ -45,7 +45,7 @@ impl BtcRecipientAndAmount {
                 Ok(address) => address,
                 Err(error) => {
                     info!("✔ Error parsing BTC address for recipient: {}", error);
-                    info!("✔ Defaulting to SAFE BTC address: {}", SAFE_BTC_ADDRESS,);
+                    info!("✔ Defaulting to SAFE BTC address: {}", SAFE_BTC_ADDRESS);
                     BtcAddress::from_str(SAFE_BTC_ADDRESS)?
                 }
             },

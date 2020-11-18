@@ -132,8 +132,7 @@ pub struct SerializedBlockInDbFormat {
 impl SerializedBlockInDbFormat {
     pub fn get_btc_on_eos_minting_params(&self) -> Result<Option<BtcOnEosMintingParams>> {
         let bytes = self.eos_minting_params.clone().unwrap_or_default();
-        let empty_bytes: Vec<u8> = vec![];
-        if bytes == empty_bytes { Ok(None) } else { Ok(Some(BtcOnEosMintingParams::from_bytes(&bytes)?)) }
+        if bytes.is_empty() { Ok(None) } else { Ok(Some(BtcOnEosMintingParams::from_bytes(&bytes)?)) }
     }
 
     pub fn get_btc_on_eth_minting_params(&self) -> Result<Option<BtcOnEthMintingParams>> {

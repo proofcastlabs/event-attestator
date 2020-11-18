@@ -238,7 +238,7 @@ pub fn get_sample_p2sh_redeem_script_sig() -> BtcScript {
 pub fn convert_sample_block_to_db_format(
     btc_block_and_id: BtcBlockAndId,
 ) -> Result<BtcBlockInDbFormat> {
-    get_btc_block_in_db_format(btc_block_and_id, BtcOnEthMintingParams::new(Vec::new()), Vec::new())
+    get_btc_block_in_db_format(btc_block_and_id, BtcOnEthMintingParams::new(vec![]), vec![])
 }
 
 pub fn get_sample_btc_submission_material_json_string() -> String {

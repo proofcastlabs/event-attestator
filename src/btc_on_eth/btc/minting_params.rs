@@ -522,6 +522,7 @@ mod tests {
         let result = BtcOnEthMintingParamStruct::extract_spender_address_from_p2pkh_input(&input, network).unwrap();
         assert_eq!(result.to_string(), expected_origin_address);
     }
+
     #[test]
     fn should_parse_minting_params_from_op_return_tx() {
         let tx_index = 56;

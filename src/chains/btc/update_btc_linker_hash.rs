@@ -23,12 +23,12 @@ fn calculate_linker_hash(
     anchor_block_hash: &sha256d::Hash,
     linker_hash: &sha256d::Hash,
 ) -> sha256d::Hash {
-    trace!("✔ Calculating linker hash...");
-    trace!("✔ Hash to link to: {}", hex::encode(hash_to_link_to));
+    debug!("✔ Calculating linker hash...");
+    debug!("✔ Hash to link to: {}", hex::encode(hash_to_link_to));
     let mut data = Vec::new();
-    hash_to_link_to.to_vec().iter().cloned().map(|byte| data.push(byte)).for_each(drop);
-    anchor_block_hash.to_vec().iter().cloned().map(|byte| data.push(byte)).for_each(drop);
-    linker_hash.to_vec().iter().cloned().map(|byte| data.push(byte)).for_each(drop);
+    hash_to_link_to.to_vec().iter().cloned().for_each(|byte| data.push(byte));
+    anchor_block_hash.to_vec().iter().cloned().for_each(|byte| data.push(byte));
+    linker_hash.to_vec().iter().cloned().for_each(|byte| data.push(byte));
     sha256d::Hash::hash(&data)
 }
 
