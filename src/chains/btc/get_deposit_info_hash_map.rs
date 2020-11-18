@@ -38,6 +38,6 @@ mod tests {
         let result = create_hash_map_from_deposit_info_list(&address_info_list).unwrap();
         assert!(!result.is_empty());
         assert_eq!(result.len(), address_info_list.len());
-        result.iter().map(|(key, value)| assert_eq!(key, &value.btc_deposit_address)).for_each(drop);
+        result.iter().for_each(|(key, value)| assert_eq!(key, &value.btc_deposit_address));
     }
 }

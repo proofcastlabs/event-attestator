@@ -722,8 +722,7 @@ mod tests {
             .0
             .iter()
             .enumerate()
-            .map(|(i, _)| assert!(key_exists_in_db(&db, &get_utxo_and_value_db_key((i + 1) as u64), None)))
-            .for_each(drop);
+            .for_each(|(i, _)| assert!(key_exists_in_db(&db, &get_utxo_and_value_db_key((i + 1) as u64), None)));
         assert_eq!(get_utxo_nonce_from_db(&db).unwrap(), utxos.len() as u64);
         assert_eq!(get_first_utxo_pointer(&db).unwrap(), get_utxo_and_value_db_key(1));
         if let Err(e) = get_utxo_and_value(&db) {

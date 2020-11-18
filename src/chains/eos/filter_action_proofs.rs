@@ -129,11 +129,7 @@ pub fn filter_duplicate_proofs(
     let mut filtered: EosActionProofs = Vec::new();
     action_proofs
         .iter()
-        .map(|proof| {
-            if !filtered.contains(&proof) {
-                filtered.push(proof.clone())
-            }
-        })
+        .map(|proof| { if !filtered.contains(&proof) { filtered.push(proof.clone()) }})
         .for_each(drop);
     debug!("Num proofs before: {}", action_proofs.len());
     debug!("Num proofs after : {}", filtered.len());

@@ -179,10 +179,9 @@ mod tests {
             .unwrap();
         blocks
             .iter()
-            .map(|block| {
+            .for_each(|block| {
                 assert!(btc_block_exists_in_db(&db, &block.id))
-            })
-            .for_each(drop);
+            });
         if let Err(e) = remove_parents_if_not_anchor(
             &db,
             &tail_block,
@@ -191,8 +190,7 @@ mod tests {
         };
         blocks
             .iter()
-            .map(|block| assert!(!btc_block_exists_in_db(&db, &block.id)))
-            .for_each(drop);
+            .for_each(|block| assert!(!btc_block_exists_in_db(&db, &block.id)));
         assert!(btc_block_exists_in_db(&db, &tail_block.id));
         assert!(btc_block_exists_in_db(&db, &anchor_block.id));
     }

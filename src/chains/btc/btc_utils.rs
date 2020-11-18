@@ -428,8 +428,7 @@ mod tests {
         deserialized
             .iter()
             .enumerate()
-            .map(|(i, minting_param_struct)| assert_eq!(minting_param_struct, &minting_params[i]))
-            .for_each(drop);
+            .for_each(|(i, minting_param_struct)| assert_eq!(minting_param_struct, &minting_params[i]));
     }
 
     #[test]

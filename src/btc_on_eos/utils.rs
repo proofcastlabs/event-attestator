@@ -88,8 +88,7 @@ mod tests {
             .iter()
             .map(|eos_asset| convert_eos_asset_to_u64(eos_asset).unwrap())
             .zip(expected_results.iter())
-            .map(|(result, expected_result)| assert_eq!(&result, expected_result))
-            .for_each(drop);
+            .for_each(|(result, expected_result)| assert_eq!(&result, expected_result));
     }
 
     #[test]
@@ -140,7 +139,6 @@ mod tests {
             .iter()
             .map(|u_64| convert_u64_to_8_decimal_eos_asset(*u_64, symbol))
             .zip(expected_results.iter())
-            .map(|(result, expected_result)| assert_eq!(&result, expected_result))
-            .for_each(drop);
+            .for_each(|(result, expected_result)| assert_eq!(&result, expected_result));
     }
 }

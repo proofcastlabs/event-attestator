@@ -363,7 +363,7 @@ mod tests {
         let result = minting_params.filter_out_value_too_low().unwrap();
         let length_after = result.len();
         assert_eq!(length_after, expected_length_after);
-        result.iter().map(|params| assert!(params.amount >= threshold)).for_each(drop);
+        result.iter().for_each(|params| assert!(params.amount >= threshold));
     }
 
     #[test]

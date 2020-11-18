@@ -225,7 +225,6 @@ mod tests {
         assert_eq!(length_after, expected_length_after);
         result
             .iter()
-            .map(|params| assert!(convert_eos_asset_to_u64(&params.amount).unwrap() >= MINIMUM_REQUIRED_SATOSHIS))
-            .for_each(drop);
+            .for_each(|params| assert!(convert_eos_asset_to_u64(&params.amount).unwrap() >= MINIMUM_REQUIRED_SATOSHIS));
     }
 }
