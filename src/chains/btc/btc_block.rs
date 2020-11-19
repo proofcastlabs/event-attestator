@@ -8,6 +8,7 @@ use crate::{
         Byte,
         Bytes,
         Result,
+        NoneError,
     },
     utils::{
         convert_u64_to_bytes,
@@ -82,28 +83,17 @@ impl BtcBlockJson {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Constructor)]
 pub struct BtcBlockInDbFormat {
     pub height: u64,
-    pub block: BtcBlock,
     pub id: sha256d::Hash,
     pub extra_data: Bytes,
     pub eos_minting_params: Option<BtcOnEosMintingParams>,
     pub eth_minting_params: Option<BtcOnEthMintingParams>,
+    pub prev_blockhash: sha256d::Hash,
 }
 
 impl BtcBlockInDbFormat {
-    pub fn new(
-        height: u64,
-        id: sha256d::Hash,
-        block: BtcBlock,
-        extra_data: Bytes,
-        eos_minting_params: Option<BtcOnEosMintingParams>,
-        eth_minting_params: Option<BtcOnEthMintingParams>,
-    ) -> Result<Self> {
-        Ok(BtcBlockInDbFormat{ id, block, height, extra_data, eth_minting_params, eos_minting_params })
-    }
-
     pub fn get_eos_minting_params(&self) -> BtcOnEosMintingParams {
         self.eos_minting_params.clone().unwrap_or_else(|| BtcOnEosMintingParams::new(vec![]))
     }
@@ -113,7 +103,6 @@ impl BtcBlockInDbFormat {
     }
 
     pub fn get_eos_minting_param_bytes(&self) -> Result<Option<Bytes>> {
-        // NOTE: This returns the option required for the serialized structure to be backwards compatible.
         if self.eos_minting_params.is_some() {
             Ok(Some(self.get_eos_minting_params().to_bytes()?))
         } else {
@@ -126,18 +115,22 @@ impl BtcBlockInDbFormat {
     }
 
     pub fn remove_minting_params(&self) -> Result<Self> {
-        Self::new(self.height, self.id, self.block.clone(), self.extra_data.clone(), None, None)
+        Ok(Self::new(self.height, self.id, self.extra_data.clone(), None, None, self.prev_blockhash))
+    }
+
+    fn get_prev_block_hash_bytes(&self) -> Bytes {
+        self.prev_blockhash.to_vec()
     }
 
     pub fn to_bytes(&self) -> Result<Bytes> {
         let serialized_id = self.id.to_vec();
         Ok(serde_json::to_vec(&SerializedBlockInDbFormat::new(
             serialized_id,
-            btc_serialize(&self.block),
             convert_u64_to_bytes(self.height),
             self.extra_data.clone(),
             self.get_eth_minting_param_bytes()?,
             self.get_eos_minting_param_bytes()?,
+            Some(self.get_prev_block_hash_bytes()),
         ))?)
     }
 
@@ -145,30 +138,42 @@ impl BtcBlockInDbFormat {
         self.id.to_vec()
     }
 
-    pub fn from_bytes(serialized_block_in_db_format: &[Byte]) -> Result<BtcBlockInDbFormat> {
-        let serialized_struct: SerializedBlockInDbFormat = serde_json::from_slice(&serialized_block_in_db_format)?;
-        BtcBlockInDbFormat::new(
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        let serialized_struct = serde_json::from_slice::<SerializedBlockInDbFormat>(&bytes)?;
+        Ok(Self::new(
             convert_bytes_to_u64(&serialized_struct.height)?,
             sha256d::Hash::from_slice(&serialized_struct.id)?,
-            btc_deserialize(&serialized_struct.block)?,
             serialized_struct.extra_data.clone(),
             serialized_struct.get_btc_on_eos_minting_params()?,
             serialized_struct.get_btc_on_eth_minting_params()?,
-        )
+            serialized_struct.get_prev_blockhash()?,
+        ))
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Constructor)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SerializedBlockInDbFormat {
     pub id: Bytes,
-    pub block: Bytes,
     pub height: Bytes,
     pub extra_data: Bytes,
+    pub block: Option<Bytes>,
     pub minting_params: Bytes,
-    pub eos_minting_params: Option<Bytes>, // Option ∴ backwards compatible
+    pub eos_minting_params: Option<Bytes>,
+    pub prev_blockhash: Option<Bytes>,
 }
 
 impl SerializedBlockInDbFormat {
+    pub fn new(
+        id: Bytes,
+        height: Bytes,
+        extra_data: Bytes,
+        minting_params: Bytes,
+        eos_minting_params: Option<Bytes>,
+        prev_blockhash: Option<Bytes>,
+    ) -> Self {
+        Self { id, height, extra_data, minting_params, eos_minting_params, block: None, prev_blockhash }
+    }
+
     pub fn get_btc_on_eos_minting_params(&self) -> Result<Option<BtcOnEosMintingParams>> {
         let bytes = self.eos_minting_params.clone().unwrap_or_default();
         if bytes.is_empty() { Ok(None) } else { Ok(Some(BtcOnEosMintingParams::from_bytes(&bytes)?)) }
@@ -177,6 +182,26 @@ impl SerializedBlockInDbFormat {
     pub fn get_btc_on_eth_minting_params(&self) -> Result<Option<BtcOnEthMintingParams>> {
         let params = BtcOnEthMintingParams::from_bytes(&self.minting_params)?;
         if params.is_empty() { Ok(None) } else { Ok(Some(params)) }
+    }
+
+    pub fn get_prev_blockhash(&self) -> Result<sha256d::Hash> {
+        if self.prev_blockhash.is_some() {
+            self
+                .prev_blockhash
+                .clone()
+                .ok_or(NoneError("No `prev_blockhash` in `SerializedBlockInDbFormat`!"))
+                .and_then(|bytes| Ok(sha256d::Hash::from_slice(&bytes)?))
+        } else { // NOTE: Blocks saved into the DB pre core v2.0.0 contain the block itself.
+            self.get_block().map(|block| block.header.prev_blockhash)
+        }
+    }
+
+     fn get_block(&self) -> Result<BtcBlock> {
+        self
+            .block
+            .clone()
+            .ok_or(NoneError("No BTC block in serialized struct!"))
+            .and_then(|bytes| Ok(btc_deserialize(&bytes)?))
     }
 }
 

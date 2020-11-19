@@ -413,23 +413,15 @@ pub fn maybe_get_nth_ancestor_btc_block_and_id<D>(
 ) -> Option<BtcBlockInDbFormat>
     where D: DatabaseInterface
 {
-    trace!(
-        "✔ Maybe getting ancestor #{} of BTC block id: {}",
-        n,
-        hex::encode(id.to_vec()),
-    );
+    debug!("✔ Maybe getting ancestor #{} of BTC block id: {}", n, hex::encode(id.to_vec()));
     match maybe_get_btc_block_from_db(db, id) {
         None => {
-            trace!("✘ No ancestor #{} BTC block found!", n);
+            debug!("✘ No ancestor #{} BTC block found!", n);
             None
         }
         Some(block_in_db_format) => match n {
             0 => Some(block_in_db_format),
-            _ => maybe_get_nth_ancestor_btc_block_and_id(
-                db,
-                &block_in_db_format.block.header.prev_blockhash,
-                n - 1,
-            )
+            _ => maybe_get_nth_ancestor_btc_block_and_id(db, &block_in_db_format.prev_blockhash, n - 1)
         }
     }
 }
@@ -438,11 +430,7 @@ pub fn put_btc_address_in_db<D>(db: &D, btc_address: &str) -> Result<()>
     where D: DatabaseInterface
 {
     trace!("✔ Putting BTC address {} in db...", btc_address);
-    db.put(
-        BTC_ADDRESS_KEY.to_vec(),
-        convert_btc_address_to_bytes(btc_address)?,
-        MIN_DATA_SENSITIVITY_LEVEL,
-    )
+    db.put(BTC_ADDRESS_KEY.to_vec(), convert_btc_address_to_bytes(btc_address)?, MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn get_btc_address_from_db<D>(db: &D) -> Result<String>
@@ -640,7 +628,7 @@ mod tests {
         blocks.iter().map(|block| put_btc_block_in_db(&db, &block)).collect::<Result<()>>().unwrap();
         let result = maybe_get_parent_btc_block_and_id(&db, &test_block.id).unwrap();
         assert_eq!(result, expected_result);
-        assert!(result.id == test_block.block.header.prev_blockhash);
+        assert!(result.id == test_block.prev_blockhash);
     }
 
     #[test]

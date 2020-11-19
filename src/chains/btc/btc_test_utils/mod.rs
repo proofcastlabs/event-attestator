@@ -126,14 +126,14 @@ pub fn get_btc_block_in_db_format(
     eth_minting_params: BtcOnEthMintingParams,
     extra_data: Bytes,
 ) -> Result<BtcBlockInDbFormat> {
-    BtcBlockInDbFormat::new(
+    Ok(BtcBlockInDbFormat::new(
         btc_block_and_id.height,
         btc_block_and_id.id,
-        btc_block_and_id.block,
         extra_data,
         None,
         if eth_minting_params.is_empty() { None } else { Some(eth_minting_params) },
-    )
+        btc_block_and_id.block.header.prev_blockhash,
+    ))
 }
 
 pub fn create_op_return_btc_utxo_and_value_from_tx_output(

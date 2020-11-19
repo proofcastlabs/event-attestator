@@ -26,7 +26,7 @@ fn remove_parents_if_not_anchor<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    match get_btc_block_from_db(db, &block_whose_parents_to_be_removed.block.header.prev_blockhash) {
+    match get_btc_block_from_db(db, &block_whose_parents_to_be_removed.prev_blockhash) {
         Err(_) => {
             info!("✔ No block found ∵ doing nothing!");
             Ok(())
@@ -117,7 +117,7 @@ mod tests {
             .clone();
         let parent_block = blocks[1]
             .clone();
-        assert_eq!(parent_block.id, block.block.header.prev_blockhash);
+        assert_eq!(parent_block.id, block.prev_blockhash);
         if let Err(e) = put_btc_anchor_block_in_db(&db, &anchor_block) {
             panic!("Error putting btc anchor block in db: {}", e);
         };
@@ -142,7 +142,7 @@ mod tests {
             .clone();
         let block = blocks[1]
             .clone();
-        assert_eq!(block.block.header.prev_blockhash, anchor_block.id);
+        assert_eq!(block.prev_blockhash, anchor_block.id);
         if let Err(e) = put_btc_anchor_block_in_db(&db, &anchor_block) {
             panic!("Error putting btc anchor block in db: {}", e);
         };

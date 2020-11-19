@@ -236,9 +236,9 @@ mod tests {
                 SAMPLE_SERIALIZED_BTC_UTXO,
                 get_sample_btc_private_key,
                 SAMPLE_OUTPUT_INDEX_OF_UTXO,
+                get_sample_btc_block_and_id,
                 get_sample_testnet_block_and_txs,
                 get_sample_p2sh_redeem_script_sig,
-                get_sample_btc_block_in_db_format,
                 get_sample_op_return_utxo_and_value_n,
                 create_op_return_btc_utxo_and_value_from_tx_output,
             },
@@ -414,7 +414,7 @@ mod tests {
     fn should_create_unsigned_utxo_from_tx() {
         let expected_result = "f80c2f7c35f5df8441a5a5b52e2820793fc7e69f4603d38ba7217be41c20691d0000000016001497cfc76442fe717f2a3f0cc9c175f7561b661997ffffffff";
         let index = 0;
-        let tx = get_sample_btc_block_in_db_format().unwrap().block.txdata[0].clone();
+        let tx = get_sample_btc_block_and_id().unwrap().block.txdata[0].clone();
         let result = create_unsigned_utxo_from_tx(&tx, index);
         let result_hex = hex::encode(btc_serialize(&result));
         assert_eq!(result_hex, expected_result);
@@ -425,7 +425,7 @@ mod tests {
         let expected_value = 1261602424;
         let expected_utxo = "f80c2f7c35f5df8441a5a5b52e2820793fc7e69f4603d38ba7217be41c20691d0000000016001497cfc76442fe717f2a3f0cc9c175f7561b661997ffffffff";
         let index = 0;
-        let tx = get_sample_btc_block_in_db_format().unwrap().block.txdata[0] .clone();
+        let tx = get_sample_btc_block_and_id().unwrap().block.txdata[0].clone();
         let result = create_op_return_btc_utxo_and_value_from_tx_output(&tx, index);
         assert_eq!(result.maybe_pointer, None);
         assert_eq!(result.value, expected_value);
