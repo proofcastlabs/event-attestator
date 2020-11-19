@@ -129,23 +129,20 @@ impl BtcBlockInDbFormat {
         Self::new(self.height, self.id, self.block.clone(), self.extra_data.clone(), None, None)
     }
 
-    pub fn to_bytes(&self) -> Result<(Bytes, Bytes)> { // FIXME Rm the tuple!
+    pub fn to_bytes(&self) -> Result<Bytes> {
         let serialized_id = self.id.to_vec();
-        Ok(
-            (
-                serialized_id.clone(),
-                serde_json::to_vec(
-                    &SerializedBlockInDbFormat::new(
-                        serialized_id,
-                        btc_serialize(&self.block),
-                        convert_u64_to_bytes(self.height),
-                        self.extra_data.clone(),
-                        self.get_eth_minting_param_bytes()?,
-                        self.get_eos_minting_param_bytes()?,
-                    )
-                )?
-            )
-        )
+        Ok(serde_json::to_vec(&SerializedBlockInDbFormat::new(
+            serialized_id,
+            btc_serialize(&self.block),
+            convert_u64_to_bytes(self.height),
+            self.extra_data.clone(),
+            self.get_eth_minting_param_bytes()?,
+            self.get_eos_minting_param_bytes()?,
+        ))?)
+    }
+
+    pub fn get_db_key(&self) -> Bytes {
+        self.id.to_vec()
     }
 
     pub fn from_bytes(serialized_block_in_db_format: &[Byte]) -> Result<BtcBlockInDbFormat> {
@@ -216,7 +213,7 @@ mod tests {
     #[test]
     fn should_serde_btc_block_in_db_format() {
         let block = get_sample_btc_block_in_db_format().unwrap();
-        let (_db_key, serialized_block) = block.to_bytes().unwrap();
+        let serialized_block = block.to_bytes().unwrap();
         let result = BtcBlockInDbFormat::from_bytes(&serialized_block).unwrap();
         assert_eq!(result, block);
     }

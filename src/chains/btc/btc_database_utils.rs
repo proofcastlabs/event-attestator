@@ -455,12 +455,12 @@ pub fn get_btc_address_from_db<D>(db: &D) -> Result<String>
 
 pub fn put_btc_block_in_db<D>(
     db: &D,
-    btc_block_in_db_format: &BtcBlockInDbFormat
+    block: &BtcBlockInDbFormat
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    debug!("✔ Putting BTC block in db: {:?}", btc_block_in_db_format);
-    btc_block_in_db_format.to_bytes().and_then(|(id, block)| db.put(id, block, MIN_DATA_SENSITIVITY_LEVEL))
+    debug!("✔ Putting BTC block in db: {:?}", block);
+    block.to_bytes().and_then(|bytes| db.put(block.get_db_key(), bytes, MIN_DATA_SENSITIVITY_LEVEL))
 }
 
 pub fn maybe_get_btc_block_from_db<D>(
