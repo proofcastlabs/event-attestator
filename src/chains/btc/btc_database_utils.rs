@@ -45,8 +45,6 @@ use crate::{
             convert_bytes_to_btc_network,
             convert_bytes_to_btc_address,
             convert_btc_address_to_bytes,
-            serialize_btc_block_in_db_format,
-            deserialize_btc_block_in_db_format,
         },
     },
 };
@@ -461,12 +459,8 @@ pub fn put_btc_block_in_db<D>(
 ) -> Result<()>
     where D: DatabaseInterface
 {
-    debug!(
-        "✔ Putting BTC block in db: {:?}",
-        btc_block_in_db_format,
-    );
-    serialize_btc_block_in_db_format(btc_block_in_db_format)
-        .and_then(|(id, block)| db.put(id, block, MIN_DATA_SENSITIVITY_LEVEL))
+    debug!("✔ Putting BTC block in db: {:?}", btc_block_in_db_format);
+    btc_block_in_db_format.to_bytes().and_then(|(id, block)| db.put(id, block, MIN_DATA_SENSITIVITY_LEVEL))
 }
 
 pub fn maybe_get_btc_block_from_db<D>(
@@ -491,7 +485,7 @@ pub fn maybe_get_btc_block_from_db<D>(
 pub fn get_btc_block_from_db<D: DatabaseInterface>(db: &D, id: &sha256d::Hash) -> Result<BtcBlockInDbFormat> {
     trace!("✔ Getting BTC block from db via id: {}", hex::encode(id.to_vec()));
     db.get(id.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
-        .and_then(|bytes| deserialize_btc_block_in_db_format(&bytes))
+        .and_then(|bytes| BtcBlockInDbFormat::from_bytes(&bytes))
 }
 
 #[cfg(test)]

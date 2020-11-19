@@ -19,15 +19,9 @@ use crate::{
             convert_bytes_to_u64,
             convert_u64_to_bytes,
         },
-        btc::{
-            btc_block::{
-                BtcBlockInDbFormat,
-                SerializedBlockInDbFormat,
-            },
-            btc_constants::{
-                DEFAULT_BTC_SEQUENCE,
-                PTOKEN_P2SH_SCRIPT_BYTES,
-            },
+        btc::btc_constants::{
+            DEFAULT_BTC_SEQUENCE,
+            PTOKEN_P2SH_SCRIPT_BYTES,
         },
     },
 };
@@ -127,39 +121,6 @@ pub fn convert_bytes_to_btc_network(bytes: &[Byte]) -> Result<BtcNetwork> {
         2 => Ok(BtcNetwork::Regtest),
         _ => Ok(BtcNetwork::Bitcoin),
     }
-}
-
-// FIXME Impl this on the type!
-pub fn serialize_btc_block_in_db_format(btc_block_in_db_format: &BtcBlockInDbFormat) -> Result<(Bytes, Bytes)> {
-    let serialized_id = btc_block_in_db_format.id.to_vec();
-    Ok(
-        (
-            serialized_id.clone(),
-            serde_json::to_vec(
-                &SerializedBlockInDbFormat::new(
-                    serialized_id,
-                    btc_serialize(&btc_block_in_db_format.block),
-                    convert_u64_to_bytes(btc_block_in_db_format.height),
-                    btc_block_in_db_format.extra_data.clone(),
-                    btc_block_in_db_format.get_eth_minting_param_bytes()?,
-                    btc_block_in_db_format.get_eos_minting_param_bytes()?,
-                )
-            )?
-        )
-    )
-}
-
-// FIXME Impl this on the type!
-pub fn deserialize_btc_block_in_db_format(serialized_block_in_db_format: &[Byte]) -> Result<BtcBlockInDbFormat> {
-    let serialized_struct: SerializedBlockInDbFormat = serde_json::from_slice(&serialized_block_in_db_format)?;
-    BtcBlockInDbFormat::new(
-        convert_bytes_to_u64(&serialized_struct.height)?,
-        sha256d::Hash::from_slice(&serialized_struct.id)?,
-        btc_deserialize(&serialized_struct.block)?,
-        serialized_struct.extra_data.clone(),
-        serialized_struct.get_btc_on_eos_minting_params()?,
-        serialized_struct.get_btc_on_eth_minting_params()?,
-    )
 }
 
 pub fn get_hex_tx_from_signed_btc_tx(
@@ -429,14 +390,6 @@ mod tests {
             .iter()
             .enumerate()
             .for_each(|(i, minting_param_struct)| assert_eq!(minting_param_struct, &minting_params[i]));
-    }
-
-    #[test]
-    fn should_serde_btc_block_in_db_format() {
-        let block = get_sample_btc_block_in_db_format().unwrap();
-        let (_db_key, serialized_block)= serialize_btc_block_in_db_format(&block).unwrap();
-        let result = deserialize_btc_block_in_db_format(&serialized_block).unwrap();
-        assert_eq!(result, block);
     }
 
     #[test]

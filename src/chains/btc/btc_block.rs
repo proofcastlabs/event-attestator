@@ -5,8 +5,13 @@ use crate::{
     btc_on_eth::btc::minting_params::BtcOnEthMintingParams,
     btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
     types::{
+        Byte,
         Bytes,
         Result,
+    },
+    utils::{
+        convert_u64_to_bytes,
+        convert_bytes_to_u64,
     },
     chains::btc::{
         btc_state::BtcState,
@@ -15,9 +20,15 @@ use crate::{
     },
 };
 pub use bitcoin::{
-    hashes::sha256d,
     util::address::Address as BtcAddress,
-    consensus::encode::deserialize as btc_deserialize,
+    hashes::{
+        Hash,
+        sha256d,
+    },
+    consensus::encode::{
+        serialize as btc_serialize,
+        deserialize as btc_deserialize,
+    },
     blockdata::{
         block::Block as BtcBlock,
         block::BlockHeader as BtcBlockHeader,
@@ -117,6 +128,37 @@ impl BtcBlockInDbFormat {
     pub fn remove_minting_params(&self) -> Result<Self> {
         Self::new(self.height, self.id, self.block.clone(), self.extra_data.clone(), None, None)
     }
+
+    pub fn to_bytes(&self) -> Result<(Bytes, Bytes)> { // FIXME Rm the tuple!
+        let serialized_id = self.id.to_vec();
+        Ok(
+            (
+                serialized_id.clone(),
+                serde_json::to_vec(
+                    &SerializedBlockInDbFormat::new(
+                        serialized_id,
+                        btc_serialize(&self.block),
+                        convert_u64_to_bytes(self.height),
+                        self.extra_data.clone(),
+                        self.get_eth_minting_param_bytes()?,
+                        self.get_eos_minting_param_bytes()?,
+                    )
+                )?
+            )
+        )
+    }
+
+    pub fn from_bytes(serialized_block_in_db_format: &[Byte]) -> Result<BtcBlockInDbFormat> {
+        let serialized_struct: SerializedBlockInDbFormat = serde_json::from_slice(&serialized_block_in_db_format)?;
+        BtcBlockInDbFormat::new(
+            convert_bytes_to_u64(&serialized_struct.height)?,
+            sha256d::Hash::from_slice(&serialized_struct.id)?,
+            btc_deserialize(&serialized_struct.block)?,
+            serialized_struct.extra_data.clone(),
+            serialized_struct.get_btc_on_eos_minting_params()?,
+            serialized_struct.get_btc_on_eth_minting_params()?,
+        )
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Constructor)]
@@ -152,7 +194,10 @@ mod tests {
         consensus::encode::deserialize as btc_deserialize,
         blockdata::transaction::Transaction as BtcTransaction,
     };
-    use crate::chains::btc::btc_test_utils::get_sample_btc_submission_material_json;
+    use crate::chains::btc::btc_test_utils::{
+        get_sample_btc_block_in_db_format,
+        get_sample_btc_submission_material_json,
+    };
 
     #[test]
     fn should_parse_block_and_tx_json_to_struct() {
@@ -166,5 +211,13 @@ mod tests {
         let tx_bytes = hex::decode("0200000000010117c33a062c8d0c2ce104c9988599f6ba382ff9f786ad48519425e39af23da9880000000000feffffff022c920b00000000001976a914be8a09363cd4719b1c05b2703797ca890b718b5088acf980d30d000000001600147448bbdfe47ec14f27c68393e766567ac7c9c77102473044022073fc2b43d5c5f56d7bc92b47a28db989e04988411721db96fb0eea6689fb83ab022034b7ce2729e867962891fec894210d0faf538b971d3ae9059ebb34358209ec9e012102a51b8eb0eb8ef6b2a421fb1aae3d7308e6cdae165b90f78074c2493af98e3612c43b0900").unwrap();
         let result = btc_deserialize::<BtcTransaction>(&tx_bytes);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_serde_btc_block_in_db_format() {
+        let block = get_sample_btc_block_in_db_format().unwrap();
+        let (_db_key, serialized_block) = block.to_bytes().unwrap();
+        let result = BtcBlockInDbFormat::from_bytes(&serialized_block).unwrap();
+        assert_eq!(result, block);
     }
 }
