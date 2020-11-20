@@ -50,7 +50,20 @@ use crate::{
             },
         },
         btc::{
+            btc_state::BtcState,
+            validate_btc_merkle_root::validate_btc_merkle_root,
+            validate_btc_block_header::validate_btc_block_header_in_state,
+            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
+            validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
+            btc_submission_material::parse_submission_material_and_put_in_state,
+            get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
+            validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
+            get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
             increment_btc_account_nonce::maybe_increment_btc_signature_nonce_and_return_eos_state,
+            btc_database_utils::{
+                start_btc_db_transaction,
+                get_btc_latest_block_from_db,
+            },
             btc_constants::{
                 get_btc_constants_db_keys,
                 BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
@@ -69,22 +82,9 @@ use crate::{
             check_core_is_initialized_and_return_eos_state,
         },
         btc::{
-            btc_state::BtcState,
             sign_transactions::get_signed_txs,
-            btc_database_utils::start_btc_db_transaction,
             get_btc_output_json::get_btc_output_as_string,
-            btc_database_utils::get_btc_latest_block_from_db,
-            validate_btc_merkle_root::validate_btc_merkle_root,
-            filter_minting_params::maybe_filter_minting_params_in_state,
-            validate_btc_block_header::validate_btc_block_header_in_state,
-            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
-            validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
-            filter_too_short_names::maybe_filter_name_too_short_params_in_state,
-            get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
-            parse_submission_material::parse_submission_material_and_put_in_state,
-            validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
-            get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
-            parse_minting_params_from_p2sh_deposits::parse_minting_params_from_p2sh_deposits_and_add_to_state,
+            minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             get_btc_output_json::{
                     BtcOutput,
                     get_eos_signed_tx_info_from_eth_txs,
@@ -180,18 +180,16 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
         .and_then(get_deposit_info_hash_map_and_put_in_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
         .and_then(parse_minting_params_from_p2sh_deposits_and_add_to_state)
-        .and_then(maybe_filter_minting_params_in_state)
-        .and_then(maybe_filter_name_too_short_params_in_state)
         .and_then(create_btc_block_in_db_format_and_put_in_state)
         .and_then(|state| {
 	    info!("✔ Maybe signing reprocessed minting txs...");
 	    get_signed_txs(
-		state.ref_block_num,
-		state.ref_block_prefix,
+		state.get_eos_ref_block_num()?,
+		state.get_eos_ref_block_prefix()?,
 		&get_eos_chain_id_from_db(&state.db)?,
 		&EosPrivateKey::get_from_db(&state.db)?,
 		&get_eos_account_name_string_from_db(&state.db)?,
-		&state.minting_params,
+		&state.btc_on_eos_minting_params,
 	    )
 		.and_then(|signed_txs| {
 			info!("✔ EOS Signed Txs: {:?}", signed_txs);
@@ -210,7 +208,7 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(
 			_ =>
 			    get_eos_signed_tx_info_from_eth_txs(
 				&state.signed_txs,
-				&state.minting_params,
+				&state.btc_on_eos_minting_params,
 				get_eos_account_nonce_from_db(&state.db)?,
 			    )?,
 		    }

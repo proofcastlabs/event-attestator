@@ -1,6 +1,14 @@
 use crate::{
     types::Result,
     traits::DatabaseInterface,
+    btc_on_eos:: check_core_is_initialized::check_core_is_initialized,
+    constants::{
+        DEBUG_MODE,
+        DB_KEY_PREFIX,
+        SAFE_EOS_ADDRESS,
+        SAFE_BTC_ADDRESS,
+        CORE_IS_VALIDATING,
+    },
     chains::{
         eos::{
             eos_types::EosKnownSchedulesJsons,
@@ -19,25 +27,11 @@ use crate::{
         },
         btc::{
             btc_constants::BTC_TAIL_LENGTH,
+            update_btc_linker_hash::get_linker_hash_or_genesis_hash as get_btc_linker_hash,
             utxo_manager::utxo_database_utils::{
                 get_utxo_nonce_from_db,
                 get_total_utxo_balance_from_db,
                 get_total_number_of_utxos_from_db,
-            },
-        },
-    },
-    constants::{
-        DEBUG_MODE,
-        DB_KEY_PREFIX,
-        SAFE_EOS_ADDRESS,
-        SAFE_BTC_ADDRESS,
-        CORE_IS_VALIDATING,
-    },
-    btc_on_eos::{
-        check_core_is_initialized::check_core_is_initialized,
-        btc::{
-            update_btc_linker_hash::{
-                get_linker_hash_or_genesis_hash as get_btc_linker_hash,
             },
             btc_database_utils::{
                 get_btc_fee_from_db,

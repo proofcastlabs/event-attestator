@@ -30,7 +30,7 @@ pub use debug_functions::{
     debug_reprocess_btc_block_for_stale_eos_tx,
 };
 pub use eos::initialize_eos_core::maybe_initialize_eos_core;
-pub use btc::initialize_btc::initialize_btc_core::maybe_initialize_btc_core;
+pub use btc::initialize_btc_core::maybe_initialize_btc_core;
 
 pub mod eos;
 pub mod btc;
@@ -38,6 +38,5 @@ pub mod debug_functions;
 pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
 
-mod utils;
-mod crypto_utils;
-mod check_core_is_initialized;
+pub(crate) mod utils;
+pub(crate) mod check_core_is_initialized;

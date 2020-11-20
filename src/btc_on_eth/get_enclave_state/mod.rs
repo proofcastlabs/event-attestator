@@ -10,6 +10,7 @@ use crate::{
         SAFE_ETH_ADDRESS,
         SAFE_BTC_ADDRESS,
     },
+    btc_on_eth::check_core_is_initialized::check_core_is_initialized,
     chains::{
         eth::{
             eth_constants::ETH_TAIL_LENGTH,
@@ -30,17 +31,12 @@ use crate::{
         },
         btc::{
             btc_constants::BTC_TAIL_LENGTH,
+            update_btc_linker_hash::get_linker_hash_or_genesis_hash as get_btc_linker_hash,
             utxo_manager::utxo_database_utils::{
                 get_utxo_nonce_from_db,
                 get_total_utxo_balance_from_db,
                 get_total_number_of_utxos_from_db,
             },
-        },
-    },
-    btc_on_eth::{
-        check_core_is_initialized::check_core_is_initialized,
-        btc::{
-            update_btc_linker_hash::get_linker_hash_or_genesis_hash as get_btc_linker_hash,
             btc_database_utils::{
                 get_btc_fee_from_db,
                 get_btc_network_from_db,
