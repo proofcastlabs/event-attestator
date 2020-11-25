@@ -25,7 +25,7 @@ use crate::{
             },
             utxo_manager::{
                 utxo_types::BtcUtxosAndValues,
-                utxo_database_utils::get_utxo_and_value,
+                utxo_database_utils::get_first_utxo_and_value,
             },
         },
     },
@@ -41,7 +41,7 @@ fn get_enough_utxos_to_cover_total<D>(
     where D: DatabaseInterface
 {
     info!("✔ Getting UTXO from db...");
-    get_utxo_and_value(db)
+    get_first_utxo_and_value(db)
         .and_then(|utxo_and_value| {
             debug!("✔ Retrieved UTXO of value: {}", utxo_and_value.value);
             let fee = calculate_btc_tx_fee(inputs.len() + 1, num_outputs, sats_per_byte);
