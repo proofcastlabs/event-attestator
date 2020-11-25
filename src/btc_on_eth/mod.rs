@@ -25,6 +25,7 @@ pub use crate::btc_on_eth::{
         debug_reprocess_eth_block,
         debug_maybe_add_utxo_to_db,
         debug_set_key_in_db_to_value,
+        debug_get_child_pays_for_parent_btc_tx,
         debug_get_signed_erc777_change_pnetwork_tx,
         debug_get_signed_erc777_proxy_change_pnetwork_tx,
         debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
