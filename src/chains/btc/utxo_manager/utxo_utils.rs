@@ -32,12 +32,8 @@ use crate::{
     errors::AppError,
 };
 
-pub fn get_utxo_and_value_db_key(
-    utxo_number: u64,
-) -> Bytes {
-    sha256d::Hash::hash(
-        format!("utxo-number-{}", utxo_number).as_bytes()
-    ).to_vec()
+pub fn get_utxo_and_value_db_key(utxo_number: u64) -> Bytes {
+    sha256d::Hash::hash(format!("utxo-number-{}", utxo_number).as_bytes()).to_vec()
 }
 
 pub fn serialize_btc_utxo_and_value(

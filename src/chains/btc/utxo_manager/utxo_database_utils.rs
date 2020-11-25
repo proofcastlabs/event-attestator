@@ -37,21 +37,14 @@ pub fn save_utxos_to_db<D>(db: &D, utxos_and_values: &BtcUtxosAndValues) -> Resu
     utxos_and_values.0.iter().map(|utxo_and_value| save_new_utxo_and_value(db, utxo_and_value)).collect()
 }
 
-pub fn get_all_utxo_db_keys<D>(db: &D) -> Vec<Bytes>
-    where D: DatabaseInterface
-{
-    fn get_utxo_pointers_recursively<D>(
-        db: &D,
-        mut pointers: Vec<Bytes>
-    ) -> Vec<Bytes>
-        where D: DatabaseInterface
-    {
+pub fn get_all_utxo_db_keys<D>(db: &D) -> Vec<Bytes> where D: DatabaseInterface {
+    fn get_utxo_pointers_recursively<D>(db: &D, mut pointers: Vec<Bytes>) -> Vec<Bytes> where D: DatabaseInterface {
         match maybe_get_next_utxo_pointer_from_utxo_pointer(db, &pointers[pointers.len() - 1]) {
+            None => pointers,
             Some(next_pointer) => {
                 pointers.push(next_pointer);
                 get_utxo_pointers_recursively(db, pointers)
             }
-            None => pointers
         }
     }
     match get_first_utxo_pointer(db) {
@@ -75,7 +68,7 @@ fn maybe_get_next_utxo_pointer_from_utxo_pointer<D>(
     }
 }
 
-pub fn get_utxo_and_value<D>(db: &D) -> Result<BtcUtxoAndValue> where D: DatabaseInterface {
+pub fn get_first_utxo_and_value<D>(db: &D) -> Result<BtcUtxoAndValue> where D: DatabaseInterface {
     get_first_utxo_pointer(db)
         .and_then(|pointer| get_utxo_from_db(db, &pointer))
         .and_then(|utxo|
@@ -551,7 +544,7 @@ mod tests {
         assert_eq!(first_pointer, hash1);
         let mut last_pointer = get_last_utxo_pointer(&db).unwrap();
         assert_eq!(last_pointer, hash2);
-        let utxo = get_utxo_and_value(&db).unwrap();
+        let utxo = get_first_utxo_and_value(&db).unwrap();
         assert_eq!(utxo, expected_utxo1);
         first_pointer = get_first_utxo_pointer(&db).unwrap();
         assert_eq!(first_pointer, hash2);
@@ -567,7 +560,7 @@ mod tests {
         let first_pointer_before = get_first_utxo_pointer(&db).unwrap();
         let last_pointer_before = get_last_utxo_pointer(&db).unwrap();
         let utxo_total_before = get_total_utxo_balance_from_db(&db).unwrap();
-        get_utxo_and_value(&db).unwrap();
+        get_first_utxo_and_value(&db).unwrap();
         let first_pointer_after = get_first_utxo_pointer(&db);
         let last_pointer_after = get_last_utxo_pointer(&db);
         let utxo_total_after = get_total_utxo_balance_from_db(&db).unwrap();
@@ -602,7 +595,7 @@ mod tests {
             .for_each(|(i, _)| assert!(key_exists_in_db(&db, &get_utxo_and_value_db_key((i + 1) as u64), None)));
         assert_eq!(get_utxo_nonce_from_db(&db).unwrap(), utxos.len() as u64);
         assert_eq!(get_first_utxo_pointer(&db).unwrap(), get_utxo_and_value_db_key(1));
-        get_utxo_and_value(&db).unwrap();
+        get_first_utxo_and_value(&db).unwrap();
         assert_eq!(get_first_utxo_pointer(&db).unwrap(), get_utxo_and_value_db_key(2));
         assert!(!key_exists_in_db(&db, &get_utxo_and_value_db_key(1), None));
     }
