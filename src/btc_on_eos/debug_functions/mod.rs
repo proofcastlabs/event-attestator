@@ -1,4 +1,8 @@
 pub use serde_json::json;
+use bitcoin_hashes::{
+    Hash,
+    sha256d,
+};
 use crate::{
     types::Result,
     traits::DatabaseInterface,
@@ -52,7 +56,9 @@ use crate::{
         btc::{
             btc_state::BtcState,
             validate_btc_merkle_root::validate_btc_merkle_root,
+            extract_utxos_from_op_return_txs::extract_utxos_from_txs,
             validate_btc_block_header::validate_btc_block_header_in_state,
+            btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
             btc_submission_material::parse_submission_material_and_put_in_state,
@@ -60,8 +66,15 @@ use crate::{
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
             get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
             increment_btc_account_nonce::maybe_increment_btc_signature_nonce_and_return_eos_state,
+            btc_utils::{
+                get_hex_tx_from_signed_btc_tx,
+                get_pay_to_pub_key_hash_script,
+            },
             btc_database_utils::{
+                get_btc_fee_from_db,
+                get_btc_address_from_db,
                 start_btc_db_transaction,
+                get_btc_private_key_from_db,
                 get_btc_latest_block_from_db,
             },
             btc_constants::{
@@ -69,9 +82,14 @@ use crate::{
                 BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
             },
             utxo_manager::{
+                utxo_types::BtcUtxosAndValues,
                 debug_utxo_utils::clear_all_utxos,
                 utxo_utils::get_all_utxos_as_json_string,
                 utxo_constants::get_utxo_constants_db_keys,
+                utxo_database_utils::{
+                    save_utxos_to_db,
+                    get_utxo_with_tx_id_and_v_out,
+                },
             },
         },
     },
@@ -304,4 +322,58 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
 pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
     check_debug_mode()
         .and_then(|_| get_all_utxos_as_json_string(db))
+}
+
+/// # Debug Get Child-Pays-For-Parent BTC Transaction
+///
+/// This function attempts to find the UTXO via the passed in transaction hash and vOut values, and
+/// upon success creates a transaction spending that UTXO, sending it entirely to itself minus the
+/// passed in fee.
+///
+/// ### BEWARE:
+/// This function spends UTXOs and outputs the signed transactions. If the output trnsaction is NOT
+/// broadcast, the change output saved in the DB will NOT be spendable, leaving the enclave
+/// bricked. Use ONLY if you know exactly what you're doing and why!
+pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
+    db: D,
+    fee: u64,
+    tx_id_str: &str,
+    v_out: u32,
+) -> Result<String> {
+    let tx_id_bytes = match hex::decode(tx_id_str) {
+        Ok(bytes) => Ok(bytes),
+        Err(_) => Err("Could not decode tx_id hex string!".to_string())
+    }?;
+    let tx_id = sha256d::Hash::from_slice(&tx_id_bytes)?;
+    check_core_is_initialized(&db)
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| get_utxo_with_tx_id_and_v_out(&db, v_out, &tx_id))
+        .and_then(|utxo| {
+            let fee_from_db = get_btc_fee_from_db(&db)?;
+            let btc_address = &get_btc_address_from_db(&db)?;
+            let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
+            if fee > fee_from_db * 10 {
+                return Err("Passed in fee is > 10x the fee saved in the db!".into())
+            };
+            let btc_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
+                fee,
+                vec![],
+                btc_address,
+                get_btc_private_key_from_db(&db)?,
+                BtcUtxosAndValues::new(vec![utxo]),
+            )?;
+            let change_utxos = extract_utxos_from_txs(&target_script, &[btc_tx.clone()]);
+            save_utxos_to_db(&db, &change_utxos)?;
+            db.end_transaction()?;
+            Ok(btc_tx)
+        })
+        .map(|btc_tx| json!({
+            "fee": fee,
+            "v_out_of_spent_utxo": v_out,
+            "tx_id_of_spent_utxo": tx_id_str,
+            "btc_tx_hash": btc_tx.txid().to_string(),
+            "btc_tx_hex": get_hex_tx_from_signed_btc_tx(&btc_tx),
+        }).to_string())
+        .map(prepend_debug_output_marker_to_string)
 }
