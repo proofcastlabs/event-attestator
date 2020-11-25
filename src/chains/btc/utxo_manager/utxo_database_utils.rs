@@ -280,16 +280,12 @@ pub fn set_first_utxo_pointer<D>(
     db.put(UTXO_FIRST.to_vec(), hash.to_vec(), None)
 }
 
-pub fn get_first_utxo_pointer<D>(db: &D) -> Result<Bytes>
-    where D: DatabaseInterface
-{
+pub fn get_first_utxo_pointer<D>(db: &D) -> Result<Bytes> where D: DatabaseInterface {
     debug!("✔ Getting `UTXO_FIRST` pointer...");
     db.get(UTXO_FIRST.to_vec(), None)
 }
 
-pub fn get_utxo_nonce_from_db<D>(db: &D) -> Result<u64>
-    where D: DatabaseInterface
-{
+pub fn get_utxo_nonce_from_db<D>(db: &D) -> Result<u64> where D: DatabaseInterface {
     debug!("✔ Getting UTXO nonce from db...");
     match db.get(UTXO_NONCE.to_vec(), None) {
         Err(_) => {
@@ -303,26 +299,17 @@ pub fn get_utxo_nonce_from_db<D>(db: &D) -> Result<u64>
     }
 }
 
-pub fn get_total_number_of_utxos_from_db<D>(db: &D) -> Result<u64>
-    where D: DatabaseInterface
-{
+pub fn get_total_number_of_utxos_from_db<D>(db: &D) -> Result<u64> where D: DatabaseInterface {
     debug!("✔ Getting total number of UTXOs from db...");
     Ok(get_all_utxo_db_keys(db).len() as u64)
 }
 
-pub fn put_utxo_nonce_in_db<D>(
-    db: &D,
-    utxo_nonce: u64,
-) -> Result<()>
-    where D: DatabaseInterface
-{
+pub fn put_utxo_nonce_in_db<D>(db: &D, utxo_nonce: u64,) -> Result<()> where D: DatabaseInterface {
     debug!("✔ Setting UTXO nonce to: {}", utxo_nonce);
     db.put(UTXO_NONCE.to_vec(), convert_u64_to_bytes(utxo_nonce), None)
 }
 
-pub fn increment_utxo_nonce_in_db<D>(db: &D) -> Result<()>
-    where D: DatabaseInterface
-{
+pub fn increment_utxo_nonce_in_db<D>(db: &D) -> Result<()> where D: DatabaseInterface {
     debug!("✔ Incrementing UTXO nonce in db by 1...");
     get_utxo_nonce_from_db(db).and_then(|num| put_utxo_nonce_in_db(db, num + 1))
 }
@@ -341,6 +328,29 @@ mod tests {
             },
         },
     };
+
+    fn get_all_utxos_without_removing_from_db<D: DatabaseInterface>(db: &D) -> Result<BtcUtxosAndValues> {
+        Ok(BtcUtxosAndValues::new(
+            get_all_utxo_db_keys(db)
+                .iter()
+                .map(|key| get_utxo_from_db(db, key))
+                .collect::<Result<Vec<BtcUtxoAndValue>>>()
+                .unwrap()
+        ))
+    }
+
+    fn remove_utxo_pointers(utxos: &BtcUtxosAndValues) -> BtcUtxosAndValues {
+        BtcUtxosAndValues::new(
+            utxos
+                .iter()
+                .map(|utxo| {
+                    let mut utxo_with_no_pointer = utxo.clone();
+                    utxo_with_no_pointer.maybe_pointer = None;
+                    utxo_with_no_pointer
+                })
+                .collect()
+        )
+    }
 
     #[test]
     fn should_be_zero_utxos_when_non_in_db() {
@@ -598,5 +608,15 @@ mod tests {
         get_first_utxo_and_value(&db).unwrap();
         assert_eq!(get_first_utxo_pointer(&db).unwrap(), get_utxo_and_value_db_key(2));
         assert!(!key_exists_in_db(&db, &get_utxo_and_value_db_key(1), None));
+    }
+
+    #[test]
+    fn should_get_all_utxos_from_db_without_removing_them() {
+        let db = get_test_database();
+        let utxos = get_sample_utxo_and_values();
+        save_utxos_to_db(&db, &utxos).unwrap();
+        let utxos_from_db = get_all_utxos_without_removing_from_db(&db).unwrap();
+        let result = remove_utxo_pointers(&utxos_from_db);
+        assert_eq!(result, utxos);
     }
 }
