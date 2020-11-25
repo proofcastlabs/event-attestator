@@ -545,16 +545,17 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_utxo_with_tx_id_and_v_out(&db, v_out, &tx_id))
         .and_then(|utxo| {
+            const MAX_FEE_MULTIPLE: u64 = 10;
             let fee_from_db = get_btc_fee_from_db(&db)?;
-            let btc_address = &get_btc_address_from_db(&db)?;
+            let btc_address = get_btc_address_from_db(&db)?;
             let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
-            if fee > fee_from_db * 10 {
+            if fee > fee_from_db * MAX_FEE_MULTIPLE {
                 return Err("Passed in fee is > 10x the fee saved in the db!".into())
             };
             let btc_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
                 fee,
                 vec![],
-                btc_address,
+                &btc_address,
                 get_btc_private_key_from_db(&db)?,
                 BtcUtxosAndValues::new(vec![utxo]),
             )?;
