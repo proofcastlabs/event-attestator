@@ -322,8 +322,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
 ///
 /// This function will return a JSON containing all the UTXOs the encrypted database currently has.
 pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| get_all_utxos_as_json_string(db))
+    check_debug_mode().and_then(|_| check_core_is_initialized(&db)).and_then(|_| get_all_utxos_as_json_string(&db))
 }
 
 /// # Debug Get Child-Pays-For-Parent BTC Transaction
