@@ -36,40 +36,31 @@ pub fn get_utxo_and_value_db_key(utxo_number: u64) -> Bytes {
     sha256d::Hash::hash(format!("utxo-number-{}", utxo_number).as_bytes()).to_vec()
 }
 
-pub fn serialize_btc_utxo_and_value(
-    btc_utxo_and_value: &BtcUtxoAndValue
-) -> Result<Bytes> {
+pub fn serialize_btc_utxo_and_value(btc_utxo_and_value: &BtcUtxoAndValue) -> Result<Bytes> {
     Ok(serde_json::to_vec(btc_utxo_and_value)?)
 }
 
-pub fn deserialize_utxo_and_value(
-    bytes: &[Byte]
-) -> Result<BtcUtxoAndValue> {
+pub fn deserialize_utxo_and_value(bytes: &[Byte]) -> Result<BtcUtxoAndValue> {
     Ok(serde_json::from_slice(bytes)?)
 }
 
-pub fn get_all_utxos_as_json_string<D>(
-    db: D
-) -> Result<String>
-    where D: DatabaseInterface
-{
+pub fn get_all_utxos_as_json_string<D: DatabaseInterface>(db: &D) -> Result<String> {
     #[derive(Serialize, Deserialize)]
     struct UtxoDetails {
         pub db_key: String,
         pub db_value: String,
-        pub utxo_and_value: JsonValue,
+        pub serialized_utxo_and_value: JsonValue,
     }
-
     Ok(
         serde_json::to_string(
-            &get_all_utxo_db_keys(&db)
+            &get_all_utxo_db_keys(db)
                 .iter()
                 .map(|db_key| {
                     Ok::<UtxoDetails, AppError>(
                         UtxoDetails {
                             db_key: hex::encode(db_key.to_vec()),
                             db_value: hex::encode(db.get(db_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)?),
-                            utxo_and_value: get_utxo_from_db(&db, &db_key.to_vec())
+                            serialized_utxo_and_value: get_utxo_from_db(db, &db_key.to_vec())
                                 .map(|utxo_and_value|
                                     json!({
                                         "value": utxo_and_value.value,
@@ -128,8 +119,12 @@ mod tests {
     use crate::{
         test_utils::get_test_database,
         chains::btc::{
-            utxo_manager::utxo_database_utils::save_new_utxo_and_value,
+            utxo_manager::utxo_database_utils::{
+                save_utxos_to_db,
+                save_new_utxo_and_value,
+            },
             btc_test_utils::{
+                get_sample_utxo_and_values,
                 get_sample_p2sh_utxo_and_value,
                 get_sample_op_return_utxo_and_value,
             },
@@ -197,5 +192,14 @@ mod tests {
         save_new_utxo_and_value(&db, &utxo_and_value_2).unwrap();
         let result = utxos_exist_in_db(&db, &BtcUtxosAndValues::new(vec![utxo_and_value_1, utxo_and_value_2])).unwrap();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_all_utxos_as_json_string() {
+        let db = get_test_database();
+        let utxos = get_sample_utxo_and_values();
+        save_utxos_to_db(&db, &utxos).unwrap();
+        let result = get_all_utxos_as_json_string(&db);
+        assert!(result.is_ok());
     }
 }
