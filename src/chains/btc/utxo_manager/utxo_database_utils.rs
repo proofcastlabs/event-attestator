@@ -33,6 +33,29 @@ use crate::{
     },
 };
 
+pub fn get_x_utxos<D: DatabaseInterface>(db: &D, num_utxos_to_get: usize) -> Result<BtcUtxosAndValues> {
+    let total_num_utxos = get_total_number_of_utxos_from_db(db);
+    if total_num_utxos < num_utxos_to_get {
+        return Err(format!("Can't get {} UTXOS, there're only {} in the db!", num_utxos_to_get, total_num_utxos).into())
+    };
+    fn get_utxos_recursively<D: DatabaseInterface>(
+        db: &D,
+        num_utxos_to_get: usize,
+        mut utxos: Vec<BtcUtxoAndValue>,
+    ) -> Result<BtcUtxosAndValues> {
+        get_first_utxo_and_value(db)
+            .and_then(|utxo| {
+                utxos.push(utxo);
+                if utxos.len() == num_utxos_to_get {
+                    Ok(BtcUtxosAndValues::new(utxos))
+                } else {
+                    get_utxos_recursively(db, num_utxos_to_get, utxos)
+                }
+            })
+    }
+    get_utxos_recursively(db, num_utxos_to_get, vec![])
+}
+
 fn remove_utxo_pointer(utxo: &BtcUtxoAndValue) -> BtcUtxoAndValue {
     let mut utxo_with_no_pointer = utxo.clone();
     utxo_with_no_pointer.maybe_pointer = None;
@@ -707,6 +730,7 @@ mod tests {
             .iter()
             .for_each(|utxo| assert!(remove_utxo_pointers(&utxos).contains(&utxo)));
     }
+
     #[test]
     fn should_get_total_number_of_utxos_from_db() {
         let db = get_test_database();
@@ -715,5 +739,35 @@ mod tests {
         let expected_result = utxos.len();
         let result = get_total_number_of_utxos_from_db(&db);
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_x_utxos() {
+        let num_utxos_to_get = 4;
+        let db = get_test_database();
+        let utxos = get_sample_utxo_and_values();
+        save_utxos_to_db(&db, &utxos).unwrap();
+        let result = get_x_utxos(&db, num_utxos_to_get).unwrap();
+        assert_eq!(result.len(), num_utxos_to_get);
+        let num_utxos_remaining = get_total_number_of_utxos_from_db(&db);
+        assert_eq!(num_utxos_remaining, utxos.len() - num_utxos_to_get);
+    }
+
+    #[test]
+    fn should_fail_to_get_x_utxos_correctly() {
+        let db = get_test_database();
+        let utxos = get_sample_utxo_and_values();
+        let num_utxos_to_get = utxos.len() + 1;
+        save_utxos_to_db(&db, &utxos).unwrap();
+        let expected_err = format!(
+            "Can't get {} UTXOS, there're only {} in the db!",
+            num_utxos_to_get,
+            utxos.len()
+        );
+        match get_x_utxos(&db, num_utxos_to_get) {
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(_) => panic!("Wrong error receieved!"),
+            Ok(_) => panic!("Should not have succeeded!"),
+        };
     }
 }
