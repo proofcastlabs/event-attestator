@@ -87,8 +87,10 @@ use crate::{
                 utxo_utils::get_all_utxos_as_json_string,
                 utxo_constants::get_utxo_constants_db_keys,
                 utxo_database_utils::{
+                    get_x_utxos,
                     save_utxos_to_db,
                     get_utxo_with_tx_id_and_v_out,
+                    get_total_number_of_utxos_from_db,
                 },
             },
         },
@@ -331,7 +333,7 @@ pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
 /// passed in fee.
 ///
 /// ### BEWARE:
-/// This function spends UTXOs and outputs the signed transactions. If the output trnsaction is NOT
+/// This function spends UTXOs and outputs the signed transactions. If the outputted transaction is NOT
 /// broadcast, the change output saved in the DB will NOT be spendable, leaving the enclave
 /// bricked. Use ONLY if you know exactly what you're doing and why!
 pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
@@ -376,5 +378,52 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
             "btc_tx_hash": btc_tx.txid().to_string(),
             "btc_tx_hex": get_hex_tx_from_signed_btc_tx(&btc_tx),
         }).to_string())
+        .map(prepend_debug_output_marker_to_string)
+}
+
+/// # Debug Consolidate Utxos
+///
+/// This function removes X number of UTXOs from the database then crafts them into a single
+/// transcation to itself before returning the serialized output ready for broadcasting, thus
+/// consolidating those X UTXOs into a single one.
+///
+/// ### BEWARE:
+/// This function spends UTXOs and outputs a signed transaction. If the outputted transaction is NOT
+/// broadcast, the consolidated  output saved in the DB will NOT be spendable, leaving the enclave
+/// bricked. Use ONLY if you know exactly what you're doing and why!
+pub fn debug_consolidate_utxos<D: DatabaseInterface>(
+    db: D,
+    fee: u64,
+    num_utxos: usize,
+) -> Result<String> {
+    check_core_is_initialized(&db)
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| get_x_utxos(&db, num_utxos))
+        .and_then(|utxos| {
+            let btc_address = get_btc_address_from_db(&db)?;
+            let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
+            let btc_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
+                fee,
+                vec![],
+                &btc_address,
+                get_btc_private_key_from_db(&db)?,
+                utxos
+            )?;
+            let change_utxos = extract_utxos_from_txs(&target_script, &[btc_tx.clone()]);
+            save_utxos_to_db(&db, &change_utxos)?;
+            Ok(btc_tx)
+        })
+        .and_then(|btc_tx| {
+            let output = json!({
+                "fee": fee,
+                "num_utxos_spent": num_utxos,
+                "btc_tx_hash": btc_tx.txid().to_string(),
+                "btc_tx_hex": get_hex_tx_from_signed_btc_tx(&btc_tx),
+                "num_utxos_remaining": get_total_number_of_utxos_from_db(&db),
+            }).to_string();
+            db.end_transaction()?;
+            Ok(output)
+        })
         .map(prepend_debug_output_marker_to_string)
 }
