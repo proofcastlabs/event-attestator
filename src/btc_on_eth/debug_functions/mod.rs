@@ -596,6 +596,7 @@ pub fn debug_consolidate_utxos<D: DatabaseInterface>(
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_x_utxos(&db, num_utxos))
         .and_then(|utxos| {
+            if num_utxos <= 1 { return Err("Can only consolidate > 1 UTXO!".into()) };
             let btc_address = get_btc_address_from_db(&db)?;
             let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
             let btc_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
