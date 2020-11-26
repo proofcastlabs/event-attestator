@@ -338,9 +338,9 @@ pub fn get_utxo_nonce_from_db<D>(db: &D) -> Result<u64> where D: DatabaseInterfa
     }
 }
 
-pub fn get_total_number_of_utxos_from_db<D>(db: &D) -> Result<u64> where D: DatabaseInterface {
+pub fn get_total_number_of_utxos_from_db<D: DatabaseInterface>(db: &D) -> usize {
     debug!("✔ Getting total number of UTXOs from db...");
-    Ok(get_all_utxo_db_keys(db).len() as u64)
+    get_all_utxo_db_keys(db).len()
 }
 
 pub fn put_utxo_nonce_in_db<D>(db: &D, utxo_nonce: u64,) -> Result<()> where D: DatabaseInterface {
@@ -706,5 +706,14 @@ mod tests {
         remove_utxo_pointers(&utxos_from_db_after)
             .iter()
             .for_each(|utxo| assert!(remove_utxo_pointers(&utxos).contains(&utxo)));
+    }
+    #[test]
+    fn should_get_total_number_of_utxos_from_db() {
+        let db = get_test_database();
+        let utxos = get_sample_utxo_and_values();
+        save_utxos_to_db(&db, &utxos).unwrap();
+        let expected_result = utxos.len();
+        let result = get_total_number_of_utxos_from_db(&db);
+        assert_eq!(result, expected_result);
     }
 }
