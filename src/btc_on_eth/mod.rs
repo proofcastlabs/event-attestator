@@ -21,6 +21,7 @@ pub use crate::btc_on_eth::{
         debug_get_all_db_keys,
         debug_get_key_from_db,
         debug_clear_all_utxos,
+        debug_consolidate_utxos,
         debug_reprocess_btc_block,
         debug_reprocess_eth_block,
         debug_maybe_add_utxo_to_db,
