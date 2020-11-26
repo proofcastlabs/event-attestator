@@ -17,6 +17,7 @@ pub use crate::btc_on_eth::{
     get_latest_block_numbers::get_latest_block_numbers,
     debug_functions::{
         debug_mint_pbtc,
+        debug_remove_utxo,
         debug_get_all_utxos,
         debug_get_all_db_keys,
         debug_get_key_from_db,
