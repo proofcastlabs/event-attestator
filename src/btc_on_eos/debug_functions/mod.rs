@@ -322,8 +322,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
 ///
 /// This function will return a JSON containing all the UTXOs the encrypted database currently has.
 pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| get_all_utxos_as_json_string(db))
+    check_debug_mode().and_then(|_| check_core_is_initialized(&db)).and_then(|_| get_all_utxos_as_json_string(&db))
 }
 
 /// # Debug Get Child-Pays-For-Parent BTC Transaction
@@ -391,11 +390,7 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
 /// This function spends UTXOs and outputs a signed transaction. If the outputted transaction is NOT
 /// broadcast, the consolidated  output saved in the DB will NOT be spendable, leaving the enclave
 /// bricked. Use ONLY if you know exactly what you're doing and why!
-pub fn debug_consolidate_utxos<D: DatabaseInterface>(
-    db: D,
-    fee: u64,
-    num_utxos: usize,
-) -> Result<String> {
+pub fn debug_consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize) -> Result<String> {
     check_core_is_initialized(&db)
         .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
@@ -426,5 +421,30 @@ pub fn debug_consolidate_utxos<D: DatabaseInterface>(
             db.end_transaction()?;
             Ok(output)
         })
+        .map(prepend_debug_output_marker_to_string)
+}
+
+/// # Debug Remove UTXO
+///
+/// Pluck a UTXO from the UTXO set and discard it, locating it via its transaction ID and v-out values.
+///
+/// ### BEWARE:
+/// Use ONLY if you know exactly what you're doing and why!
+pub fn debug_remove_utxo<D: DatabaseInterface>(db: D, tx_id_str: &str, v_out: u32) -> Result<String> {
+    let tx_id_bytes = match hex::decode(tx_id_str) {
+        Ok(bytes) => Ok(bytes),
+        Err(_) => Err("Could not decode tx_id hex string!".to_string())
+    }?;
+    let tx_id = sha256d::Hash::from_slice(&tx_id_bytes)?;
+    check_core_is_initialized(&db)
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| get_utxo_with_tx_id_and_v_out(&db, v_out, &tx_id))
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({
+            "success": "true",
+            "v_out_of_removed_utxo": v_out,
+            "tx_id_of_removed_utxo": tx_id_str,
+        }).to_string())
         .map(prepend_debug_output_marker_to_string)
 }
