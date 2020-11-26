@@ -49,7 +49,7 @@ pub fn get_all_utxos_as_json_string<D: DatabaseInterface>(db: &D) -> Result<Stri
     struct UtxoDetails {
         pub db_key: String,
         pub db_value: String,
-        pub serialized_utxo_and_value: JsonValue,
+        pub utxo_info: JsonValue,
     }
     Ok(
         serde_json::to_string(
@@ -60,15 +60,17 @@ pub fn get_all_utxos_as_json_string<D: DatabaseInterface>(db: &D) -> Result<Stri
                         UtxoDetails {
                             db_key: hex::encode(db_key.to_vec()),
                             db_value: hex::encode(db.get(db_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)?),
-                            serialized_utxo_and_value: get_utxo_from_db(db, &db_key.to_vec())
-                                .map(|utxo_and_value|
-                                    json!({
+                            utxo_info: get_utxo_from_db(db, &db_key.to_vec())
+                                .and_then(|utxo_and_value|
+                                    Ok(json!({
                                         "value": utxo_and_value.value,
+                                        "tx_id":utxo_and_value.get_tx_id()?,
+                                        "v_out":utxo_and_value.get_v_out()?,
                                         "maybe_pointer": utxo_and_value.maybe_pointer,
                                         "maybe_extra_data": utxo_and_value.maybe_extra_data,
                                         "serialized_utxo": hex::encode(utxo_and_value.serialized_utxo),
                                         "maybe_deposit_info_json": utxo_and_value.maybe_deposit_info_json,
-                                    })
+                                    }))
                                 )?,
                         }
                     )
