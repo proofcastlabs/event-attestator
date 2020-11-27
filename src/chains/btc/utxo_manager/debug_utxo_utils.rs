@@ -1,8 +1,4 @@
 use serde_json::json;
-use bitcoin_hashes::{
-    Hash,
-    sha256d,
-};
 use crate::{
     types::Result,
     traits::DatabaseInterface,
@@ -11,6 +7,7 @@ use crate::{
         extract_utxos_from_op_return_txs::extract_utxos_from_txs,
         btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
         btc_utils::{
+            get_btc_tx_id_from_str,
             get_hex_tx_from_signed_btc_tx,
             get_pay_to_pub_key_hash_script,
         },
@@ -48,20 +45,12 @@ pub fn clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
 }
 
 pub fn remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -> Result<String> {
-    let tx_id_bytes = match hex::decode(tx_id) {
-        Ok(bytes) => Ok(bytes),
-        Err(_) => Err("Could not decode tx_id hex string!".to_string())
-    }?;
-    let id = sha256d::Hash::from_slice(&tx_id_bytes)?;
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| get_utxo_with_tx_id_and_v_out(&db, v_out, &id))
+        .and_then(|_| get_btc_tx_id_from_str(tx_id))
+        .and_then(|id| get_utxo_with_tx_id_and_v_out(&db, v_out, &id))
         .and_then(|_| db.end_transaction())
-        .map(|_| json!({
-            "success": "true",
-            "v_out_of_removed_utxo": v_out,
-            "tx_id_of_removed_utxo": tx_id,
-        }).to_string())
+        .map(|_| json!({ "v_out_of_removed_utxo": v_out, "tx_id_of_removed_utxo": tx_id }).to_string())
 }
 
 pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize) -> Result<String> {
@@ -102,14 +91,10 @@ pub fn get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
     tx_id: &str,
     v_out: u32,
 ) -> Result<String> {
-    let tx_id_bytes = match hex::decode(tx_id) { // TODO factor this out!
-        Ok(bytes) => Ok(bytes),
-        Err(_) => Err("Could not decode tx_id hex string!".to_string())
-    }?;
-    let id = sha256d::Hash::from_slice(&tx_id_bytes)?;
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| get_utxo_with_tx_id_and_v_out(&db, v_out, &id))
+        .and_then(|_| get_btc_tx_id_from_str(tx_id))
+        .and_then(|id| get_utxo_with_tx_id_and_v_out(&db, v_out, &id))
         .and_then(|utxo| {
             const MAX_FEE_MULTIPLE: u64 = 10;
             let fee_from_db = get_btc_fee_from_db(&db)?;
