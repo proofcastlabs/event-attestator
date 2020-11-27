@@ -15,18 +15,22 @@ use crate::{
             get_pay_to_pub_key_hash_script,
         },
         btc_database_utils::{
+            get_btc_fee_from_db,
             get_btc_address_from_db,
             get_btc_private_key_from_db,
         },
-        utxo_manager::utxo_database_utils::{
-            get_x_utxos,
-            save_utxos_to_db,
-            get_all_utxo_db_keys,
-            delete_last_utxo_key,
-            delete_first_utxo_key,
-            put_total_utxo_balance_in_db,
-            get_utxo_with_tx_id_and_v_out,
-            get_total_number_of_utxos_from_db,
+        utxo_manager::{
+            utxo_types::BtcUtxosAndValues,
+            utxo_database_utils::{
+                get_x_utxos,
+                save_utxos_to_db,
+                get_all_utxo_db_keys,
+                delete_last_utxo_key,
+                delete_first_utxo_key,
+                put_total_utxo_balance_in_db,
+                get_utxo_with_tx_id_and_v_out,
+                get_total_number_of_utxos_from_db,
+            },
         },
     },
 };
@@ -90,4 +94,47 @@ pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize
             db.end_transaction()?;
             Ok(output)
         })
+}
+
+pub fn get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
+    db: D,
+    fee: u64,
+    tx_id: &str,
+    v_out: u32,
+) -> Result<String> {
+    let tx_id_bytes = match hex::decode(tx_id) { // TODO factor this out!
+        Ok(bytes) => Ok(bytes),
+        Err(_) => Err("Could not decode tx_id hex string!".to_string())
+    }?;
+    let id = sha256d::Hash::from_slice(&tx_id_bytes)?;
+    check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| get_utxo_with_tx_id_and_v_out(&db, v_out, &id))
+        .and_then(|utxo| {
+            const MAX_FEE_MULTIPLE: u64 = 10;
+            let fee_from_db = get_btc_fee_from_db(&db)?;
+            let btc_address = get_btc_address_from_db(&db)?;
+            let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
+            if fee > fee_from_db * MAX_FEE_MULTIPLE {
+                return Err("Passed in fee is > 10x the fee saved in the db!".into())
+            };
+            let btc_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
+                fee,
+                vec![],
+                &btc_address,
+                get_btc_private_key_from_db(&db)?,
+                BtcUtxosAndValues::new(vec![utxo]),
+            )?;
+            let change_utxos = extract_utxos_from_txs(&target_script, &[btc_tx.clone()]);
+            save_utxos_to_db(&db, &change_utxos)?;
+            db.end_transaction()?;
+            Ok(btc_tx)
+        })
+        .map(|btc_tx| json!({
+            "fee": fee,
+            "v_out_of_spent_utxo": v_out,
+            "tx_id_of_spent_utxo": tx_id,
+            "btc_tx_hash": btc_tx.txid().to_string(),
+            "btc_tx_hex": get_hex_tx_from_signed_btc_tx(&btc_tx),
+        }).to_string())
 }
