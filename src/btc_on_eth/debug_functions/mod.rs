@@ -94,12 +94,11 @@ use crate::{
                 debug_utxo_utils::{
                     remove_utxo,
                     clear_all_utxos,
+                    consolidate_utxos,
                 },
                 utxo_database_utils::{
-                    get_x_utxos,
                     save_utxos_to_db,
                     get_utxo_with_tx_id_and_v_out,
-                    get_total_number_of_utxos_from_db,
                 },
             },
         },
@@ -586,41 +585,9 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
 /// This function spends UTXOs and outputs a signed transaction. If the outputted transaction is NOT
 /// broadcast, the consolidated  output saved in the DB will NOT be spendable, leaving the enclave
 /// bricked. Use ONLY if you know exactly what you're doing and why!
-pub fn debug_consolidate_utxos<D: DatabaseInterface>(
-    db: D,
-    fee: u64,
-    num_utxos: usize,
-) -> Result<String> {
+pub fn debug_consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize) -> Result<String> {
     check_core_is_initialized(&db)
-        .and_then(|_| check_debug_mode())
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| get_x_utxos(&db, num_utxos))
-        .and_then(|utxos| {
-            if num_utxos <= 1 { return Err("Can only consolidate > 1 UTXO!".into()) };
-            let btc_address = get_btc_address_from_db(&db)?;
-            let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
-            let btc_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
-                fee,
-                vec![],
-                &btc_address,
-                get_btc_private_key_from_db(&db)?,
-                utxos
-            )?;
-            let change_utxos = extract_utxos_from_txs(&target_script, &[btc_tx.clone()]);
-            save_utxos_to_db(&db, &change_utxos)?;
-            Ok(btc_tx)
-        })
-        .and_then(|btc_tx| {
-            let output = json!({
-                "fee": fee,
-                "num_utxos_spent": num_utxos,
-                "btc_tx_hash": btc_tx.txid().to_string(),
-                "btc_tx_hex": get_hex_tx_from_signed_btc_tx(&btc_tx),
-                "num_utxos_remaining": get_total_number_of_utxos_from_db(&db),
-            }).to_string();
-            db.end_transaction()?;
-            Ok(output)
-        })
+        .and_then(|_| consolidate_utxos(db, fee, num_utxos))
         .map(prepend_debug_output_marker_to_string)
 }
 
