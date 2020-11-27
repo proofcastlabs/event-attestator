@@ -203,6 +203,13 @@ pub fn get_pay_to_pub_key_hash_script(btc_address: &str) -> Result<BtcScript> {
     )
 }
 
+pub fn get_btc_tx_id_from_str(tx_id: &str) -> Result<sha256d::Hash> {
+    match hex::decode(tx_id) {
+        Err(_) => Err("Could not decode tx_id hex string!".into()),
+        Ok(bytes) => Ok(sha256d::Hash::from_slice(&bytes)?),
+    }
+}
+
 #[cfg(test)] // TODO Create then move this to chains/btc_test_utils!
 pub fn get_tx_id_from_signed_btc_tx(
     signed_btc_tx: &BtcTransaction
