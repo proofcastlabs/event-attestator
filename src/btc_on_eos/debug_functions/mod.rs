@@ -83,9 +83,12 @@ use crate::{
             },
             utxo_manager::{
                 utxo_types::BtcUtxosAndValues,
-                debug_utxo_utils::clear_all_utxos,
                 utxo_utils::get_all_utxos_as_json_string,
                 utxo_constants::get_utxo_constants_db_keys,
+                debug_utxo_utils::{
+                    remove_utxo,
+                    clear_all_utxos,
+                },
                 utxo_database_utils::{
                     get_x_utxos,
                     save_utxos_to_db,
@@ -430,21 +433,8 @@ pub fn debug_consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos:
 ///
 /// ### BEWARE:
 /// Use ONLY if you know exactly what you're doing and why!
-pub fn debug_remove_utxo<D: DatabaseInterface>(db: D, tx_id_str: &str, v_out: u32) -> Result<String> {
-    let tx_id_bytes = match hex::decode(tx_id_str) {
-        Ok(bytes) => Ok(bytes),
-        Err(_) => Err("Could not decode tx_id hex string!".to_string())
-    }?;
-    let tx_id = sha256d::Hash::from_slice(&tx_id_bytes)?;
+pub fn debug_remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -> Result<String> {
     check_core_is_initialized(&db)
-        .and_then(|_| check_debug_mode())
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| get_utxo_with_tx_id_and_v_out(&db, v_out, &tx_id))
-        .and_then(|_| db.end_transaction())
-        .map(|_| json!({
-            "success": "true",
-            "v_out_of_removed_utxo": v_out,
-            "tx_id_of_removed_utxo": tx_id_str,
-        }).to_string())
+        .and_then(|_| remove_utxo(db, tx_id, v_out))
         .map(prepend_debug_output_marker_to_string)
 }
