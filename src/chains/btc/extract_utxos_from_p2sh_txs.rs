@@ -1,26 +1,18 @@
 use crate::{
-    types::Result,
-    traits::DatabaseInterface,
     chains::btc::{
+        btc_database_utils::get_btc_network_from_db,
         btc_state::BtcState,
         btc_utils::create_unsigned_utxo_from_tx,
         deposit_address_info::DepositInfoHashMap,
-        btc_database_utils::get_btc_network_from_db,
-        utxo_manager::utxo_types::{
-            BtcUtxoAndValue,
-            BtcUtxosAndValues,
-        },
+        utxo_manager::utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
     },
+    traits::DatabaseInterface,
+    types::Result,
 };
 use bitcoin::{
-    util::address::Address as BtcAddress,
+    blockdata::transaction::{Transaction as BtcTransaction, TxOut as BtcTxOut},
     network::constants::Network as BtcNetwork,
-    blockdata::{
-        transaction::{
-            TxOut as BtcTxOut,
-            Transaction as BtcTransaction,
-        },
-    },
+    util::address::Address as BtcAddress,
 };
 
 fn maybe_extract_p2sh_utxo(
@@ -33,35 +25,33 @@ fn maybe_extract_p2sh_utxo(
     info!("✔ Extracting UTXOs from single `p2sh` transaction...");
     match tx_output.script_pubkey.is_p2sh() {
         false => None,
-        true => {
-            match BtcAddress::from_script(&tx_output.script_pubkey, btc_network) {
-                None => {
-                    info!("✘ Could not derive BTC address from tx outout: {:?}", tx_output);
-                    None
-                },
-                Some(btc_address) => {
-                    info!("✔ BTC address extracted from `tx_out`: {}", btc_address);
-                    match deposit_info_hash_map.get(&btc_address) {
-                        None => {
-                            info!("✘ BTC address {} not in deposit hash map ∴ NOT extracting UTXO!", btc_address);
-                            None
-                        }
-                        Some(deposit_info) => {
-                            info!("✔ Deposit info extracted from hash map: {:?}", deposit_info);
-                            Some(
-                                BtcUtxoAndValue::new(
-                                    tx_output.value,
-                                    &create_unsigned_utxo_from_tx(full_tx, output_index),
-                                    Some(deposit_info.to_json()),
-                                    None,
-                                )
-                            )
-                        }
-
-                    }
+        true => match BtcAddress::from_script(&tx_output.script_pubkey, btc_network) {
+            None => {
+                info!("✘ Could not derive BTC address from tx outout: {:?}", tx_output);
+                None
+            },
+            Some(btc_address) => {
+                info!("✔ BTC address extracted from `tx_out`: {}", btc_address);
+                match deposit_info_hash_map.get(&btc_address) {
+                    None => {
+                        info!(
+                            "✘ BTC address {} not in deposit hash map ∴ NOT extracting UTXO!",
+                            btc_address
+                        );
+                        None
+                    },
+                    Some(deposit_info) => {
+                        info!("✔ Deposit info extracted from hash map: {:?}", deposit_info);
+                        Some(BtcUtxoAndValue::new(
+                            tx_output.value,
+                            &create_unsigned_utxo_from_tx(full_tx, output_index),
+                            Some(deposit_info.to_json()),
+                            None,
+                        ))
+                    },
                 }
-            }
-        }
+            },
+        },
     }
 }
 
@@ -74,25 +64,24 @@ pub fn extract_p2sh_utxos_from_txs(
     Ok(BtcUtxosAndValues::new(
         transactions
             .iter()
-            .map(|full_tx|
+            .map(|full_tx| {
                 full_tx
                     .output
                     .iter()
                     .enumerate()
-                    .filter_map(|(i, tx_output)|
-                         maybe_extract_p2sh_utxo(i as u32, tx_output, full_tx, btc_network, deposit_info_hash_map)
-                    )
+                    .filter_map(|(i, tx_output)| {
+                        maybe_extract_p2sh_utxo(i as u32, tx_output, full_tx, btc_network, deposit_info_hash_map)
+                    })
                     .collect::<Vec<BtcUtxoAndValue>>()
-            )
+            })
             .flatten()
-            .collect::<Vec<BtcUtxoAndValue>>()
+            .collect::<Vec<BtcUtxoAndValue>>(),
     ))
 }
 
-pub fn maybe_extract_utxos_from_p2sh_txs_and_put_in_state<D>(
-    state: BtcState<D>
-) -> Result<BtcState<D>>
-    where D: DatabaseInterface
+pub fn maybe_extract_utxos_from_p2sh_txs_and_put_in_state<D>(state: BtcState<D>) -> Result<BtcState<D>>
+where
+    D: DatabaseInterface,
 {
     info!("✔ Maybe extracting UTXOs from `p2sh` txs...");
     extract_p2sh_utxos_from_txs(
@@ -100,28 +89,22 @@ pub fn maybe_extract_utxos_from_p2sh_txs_and_put_in_state<D>(
         state.get_deposit_info_hash_map()?,
         get_btc_network_from_db(&state.db)?,
     )
-        .and_then(|utxos| {
-            debug!("✔ Extracted `p2sh` UTXOs: {:?}", utxos);
-            info!("✔ Extracted {} `p2sh` UTXOs", utxos.len());
-            state.add_utxos_and_values(utxos)
-        })
+    .and_then(|utxos| {
+        debug!("✔ Extracted `p2sh` UTXOs: {:?}", utxos);
+        info!("✔ Extracted {} `p2sh` UTXOs", utxos.len());
+        state.add_utxos_and_values(utxos)
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::str::FromStr;
-    use crate::{
-        chains::btc::{
-            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
-            get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
-            btc_test_utils::{
-                get_sample_btc_block_n,
-                get_sample_btc_pub_key_bytes,
-                get_sample_p2sh_utxo_and_value,
-            },
-        },
+    use crate::chains::btc::{
+        btc_test_utils::{get_sample_btc_block_n, get_sample_btc_pub_key_bytes, get_sample_p2sh_utxo_and_value},
+        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
+        get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
     };
+    use std::str::FromStr;
 
     #[test]
     fn should_maybe_extract_p2sh_utxo() {

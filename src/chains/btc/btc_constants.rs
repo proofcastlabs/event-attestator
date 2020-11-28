@@ -1,8 +1,5 @@
-pub use serde_json::{
-    json,
-    Value as JsonValue,
-};
 use crate::utils::get_prefixed_db_key;
+pub use serde_json::{json, Value as JsonValue};
 
 #[cfg(test)] // NOTE Because of real BTC tx test-vectors
 pub const PTOKEN_P2SH_SCRIPT_BYTES: usize = 0;
@@ -49,78 +46,52 @@ pub fn get_btc_constants_db_keys() -> JsonValue {
 }
 
 lazy_static! {
-    pub static ref BTC_DIFFICULTY_THRESHOLD: [u8; 32] = get_prefixed_db_key(
-        "btc-difficulty"
-    );
+    pub static ref BTC_DIFFICULTY_THRESHOLD: [u8; 32] = get_prefixed_db_key("btc-difficulty");
 }
 
 lazy_static! {
-    pub static ref BTC_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key(
-        "btc-address"
-    );
+    pub static ref BTC_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key("btc-address");
 }
 
 lazy_static! {
-    pub static ref BTC_CANON_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key(
-        "btc-canon-block"
-    );
+    pub static ref BTC_CANON_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("btc-canon-block");
 }
 
 lazy_static! {
-    pub static ref BTC_LATEST_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key(
-        "btc-latest-block"
-    );
+    pub static ref BTC_LATEST_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("btc-latest-block");
 }
 
 lazy_static! {
-    pub static ref BTC_LINKER_HASH_KEY: [u8; 32] = get_prefixed_db_key(
-        "btc-linker-hash"
-    );
+    pub static ref BTC_LINKER_HASH_KEY: [u8; 32] = get_prefixed_db_key("btc-linker-hash");
 }
 
 lazy_static! {
-    pub static ref BTC_ANCHOR_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key(
-        "btc-anchor-block"
-    );
+    pub static ref BTC_ANCHOR_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("btc-anchor-block");
 }
 lazy_static! {
-    pub static ref BTC_PRIVATE_KEY_DB_KEY: [u8; 32] = get_prefixed_db_key(
-        "btc-private-key"
-    );
+    pub static ref BTC_PRIVATE_KEY_DB_KEY: [u8; 32] = get_prefixed_db_key("btc-private-key");
 }
 
 lazy_static! {
-    pub static ref BTC_CANON_TO_TIP_LENGTH_KEY: [u8; 32] = get_prefixed_db_key(
-        "btc-canon-to-tip-length"
-    );
+    pub static ref BTC_CANON_TO_TIP_LENGTH_KEY: [u8; 32] = get_prefixed_db_key("btc-canon-to-tip-length");
 }
 
 lazy_static! {
-    pub static ref PTOKEN_GENESIS_HASH: [u8; 32] = get_prefixed_db_key(
-        "provable-ptoken"
-    );
+    pub static ref PTOKEN_GENESIS_HASH: [u8; 32] = get_prefixed_db_key("provable-ptoken");
 }
 
 lazy_static! {
-    pub static ref BTC_NETWORK_KEY: [u8; 32] = get_prefixed_db_key(
-        "btc-network-key"
-    );
+    pub static ref BTC_NETWORK_KEY: [u8; 32] = get_prefixed_db_key("btc-network-key");
 }
 
 lazy_static! {
-    pub static ref BTC_FEE_KEY: [u8; 32] = get_prefixed_db_key(
-        "btc-fee-key"
-    );
+    pub static ref BTC_FEE_KEY: [u8; 32] = get_prefixed_db_key("btc-fee-key");
 }
 
 lazy_static! {
-    pub static ref BTC_ACCOUNT_NONCE_KEY: [u8; 32] = get_prefixed_db_key(
-        "btc-account-nonce-key"
-    );
+    pub static ref BTC_ACCOUNT_NONCE_KEY: [u8; 32] = get_prefixed_db_key("btc-account-nonce-key");
 }
 
 lazy_static! {
-    pub static ref BTC_TAIL_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key(
-        "btc-tail-block-hash-key"
-    );
+    pub static ref BTC_TAIL_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("btc-tail-block-hash-key");
 }
