@@ -1,41 +1,26 @@
-use std::str::FromStr;
-use derive_more::Constructor;
 use crate::{
-    traits::DatabaseInterface,
-    btc_on_eth::btc::minting_params::BtcOnEthMintingParams,
     btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
-    types::{
-        Byte,
-        Bytes,
-        Result,
-        NoneError,
-    },
-    utils::{
-        convert_u64_to_bytes,
-        convert_bytes_to_u64,
-    },
+    btc_on_eth::btc::minting_params::BtcOnEthMintingParams,
     chains::btc::{
         btc_state::BtcState,
-        deposit_address_info::DepositInfoList,
         btc_submission_material::BtcSubmissionMaterialJson,
+        deposit_address_info::DepositInfoList,
     },
+    traits::DatabaseInterface,
+    types::{Byte, Bytes, NoneError, Result},
+    utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
 pub use bitcoin::{
-    util::address::Address as BtcAddress,
-    hashes::{
-        Hash,
-        sha256d,
-    },
-    consensus::encode::{
-        serialize as btc_serialize,
-        deserialize as btc_deserialize,
-    },
     blockdata::{
-        block::Block as BtcBlock,
-        block::BlockHeader as BtcBlockHeader,
+        block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
         transaction::Transaction as BtcTransaction,
     },
+    consensus::encode::{deserialize as btc_deserialize, serialize as btc_serialize},
+    hashes::{sha256d, Hash},
+    util::address::Address as BtcAddress,
 };
+use derive_more::Constructor;
+use std::str::FromStr;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BtcBlockAndId {
@@ -95,11 +80,15 @@ pub struct BtcBlockInDbFormat {
 
 impl BtcBlockInDbFormat {
     pub fn get_eos_minting_params(&self) -> BtcOnEosMintingParams {
-        self.eos_minting_params.clone().unwrap_or_else(|| BtcOnEosMintingParams::new(vec![]))
+        self.eos_minting_params
+            .clone()
+            .unwrap_or_else(|| BtcOnEosMintingParams::new(vec![]))
     }
 
     pub fn get_eth_minting_params(&self) -> BtcOnEthMintingParams {
-        self.eth_minting_params.clone().unwrap_or_else(|| BtcOnEthMintingParams::new(vec![]))
+        self.eth_minting_params
+            .clone()
+            .unwrap_or_else(|| BtcOnEthMintingParams::new(vec![]))
     }
 
     pub fn get_eos_minting_param_bytes(&self) -> Result<Option<Bytes>> {
@@ -115,7 +104,14 @@ impl BtcBlockInDbFormat {
     }
 
     pub fn remove_minting_params(&self) -> Result<Self> {
-        Ok(Self::new(self.height, self.id, self.extra_data.clone(), None, None, self.prev_blockhash))
+        Ok(Self::new(
+            self.height,
+            self.id,
+            self.extra_data.clone(),
+            None,
+            None,
+            self.prev_blockhash,
+        ))
     }
 
     fn get_prev_block_hash_bytes(&self) -> Bytes {
@@ -171,34 +167,49 @@ impl SerializedBlockInDbFormat {
         eos_minting_params: Option<Bytes>,
         prev_blockhash: Option<Bytes>,
     ) -> Self {
-        Self { id, height, extra_data, minting_params, eos_minting_params, block: None, prev_blockhash }
+        Self {
+            id,
+            height,
+            extra_data,
+            minting_params,
+            eos_minting_params,
+            block: None,
+            prev_blockhash,
+        }
     }
 
     pub fn get_btc_on_eos_minting_params(&self) -> Result<Option<BtcOnEosMintingParams>> {
         let bytes = self.eos_minting_params.clone().unwrap_or_default();
-        if bytes.is_empty() { Ok(None) } else { Ok(Some(BtcOnEosMintingParams::from_bytes(&bytes)?)) }
+        if bytes.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(BtcOnEosMintingParams::from_bytes(&bytes)?))
+        }
     }
 
     pub fn get_btc_on_eth_minting_params(&self) -> Result<Option<BtcOnEthMintingParams>> {
         let params = BtcOnEthMintingParams::from_bytes(&self.minting_params)?;
-        if params.is_empty() { Ok(None) } else { Ok(Some(params)) }
+        if params.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(params))
+        }
     }
 
     pub fn get_prev_blockhash(&self) -> Result<sha256d::Hash> {
         if self.prev_blockhash.is_some() {
-            self
-                .prev_blockhash
+            self.prev_blockhash
                 .clone()
                 .ok_or(NoneError("No `prev_blockhash` in `SerializedBlockInDbFormat`!"))
                 .and_then(|bytes| Ok(sha256d::Hash::from_slice(&bytes)?))
-        } else { // NOTE: Blocks saved into the DB pre core v2.0.0 contain the block itself.
+        } else {
+            // NOTE: Blocks saved into the DB pre core v2.0.0 contain the block itself.
             self.get_block().map(|block| block.header.prev_blockhash)
         }
     }
 
-     fn get_block(&self) -> Result<BtcBlock> {
-        self
-            .block
+    fn get_block(&self) -> Result<BtcBlock> {
+        self.block
             .clone()
             .ok_or(NoneError("No BTC block in serialized struct!"))
             .and_then(|bytes| Ok(btc_deserialize(&bytes)?))
@@ -212,13 +223,13 @@ pub fn parse_btc_block_and_id_and_put_in_state<D: DatabaseInterface>(state: BtcS
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bitcoin::{
-        consensus::encode::deserialize as btc_deserialize,
-        blockdata::transaction::Transaction as BtcTransaction,
-    };
     use crate::chains::btc::btc_test_utils::{
         get_sample_btc_block_in_db_format,
         get_sample_btc_submission_material_json,
+    };
+    use bitcoin::{
+        blockdata::transaction::Transaction as BtcTransaction,
+        consensus::encode::deserialize as btc_deserialize,
     };
 
     #[test]

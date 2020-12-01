@@ -1,13 +1,10 @@
 use crate::{
-    types::Result,
-    traits::DatabaseInterface,
     chains::btc::{
+        btc_database_utils::{get_btc_private_key_from_db, put_btc_address_in_db},
         btc_state::BtcState,
-        btc_database_utils::{
-            put_btc_address_in_db,
-            get_btc_private_key_from_db,
-        },
     },
+    traits::DatabaseInterface,
+    types::Result,
 };
 
 pub fn generate_and_store_btc_address<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
