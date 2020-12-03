@@ -3,7 +3,6 @@ use crate::{
         btc_types::BtcPubKeySlice,
         btc_block::BtcBlockInDbFormat,
         btc_constants::{
-            BTC_PUB_KEY_SLICE_LENGTH,
             BTC_ACCOUNT_NONCE_KEY,
             BTC_ADDRESS_KEY,
             BTC_PUBLIC_KEY_DB_KEY,
@@ -25,6 +24,7 @@ use crate::{
             convert_btc_network_to_bytes,
             convert_bytes_to_btc_address,
             convert_bytes_to_btc_network,
+            convert_bytes_to_btc_pub_key_slice,
         },
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
@@ -49,18 +49,7 @@ where
     D: DatabaseInterface,
 {
     db.get(BTC_PUBLIC_KEY_DB_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
-        .and_then(|bytes| {
-            match bytes.len() {
-                0..=32 => Err("✘ Too few bytes to convert to BTC pub key slice!".into()),
-                BTC_PUB_KEY_SLICE_LENGTH => {
-                    let mut arr = [0u8; BTC_PUB_KEY_SLICE_LENGTH];
-                    let bytes = &bytes[..BTC_PUB_KEY_SLICE_LENGTH];
-                    arr.copy_from_slice(bytes);
-                    Ok(arr)
-                },
-                _ => Err("✘ Too many bytes to convert to BTC pub key slice!".into()),
-            }
-        })
+        .and_then(|bytes|  convert_bytes_to_btc_pub_key_slice(&bytes))
 }
 
 pub fn increment_btc_account_nonce_in_db<D>(db: &D, amount_to_increment_by: u64) -> Result<()>
