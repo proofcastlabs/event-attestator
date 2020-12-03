@@ -3,7 +3,7 @@ use crate::{
         check_eos_core_is_initialized::is_eos_core_initialized,
         core_initialization::eos_init_utils::{
             generate_and_put_incremerkle_in_db_and_return_state,
-            generated_eos_key_save_in_db_and_return_state,
+            generate_and_save_eos_keys_and_return_state,
             get_eos_init_output,
             maybe_enable_protocol_features_and_return_state,
             maybe_put_erc20_dictionary_in_db_and_return_state,
@@ -53,7 +53,7 @@ where
                 })
                 .and_then(|state| maybe_put_erc20_dictionary_in_db_and_return_state(&init_json, state))
                 .and_then(|state| test_block_validation_and_return_state(&init_json.block, state))
-                .and_then(generated_eos_key_save_in_db_and_return_state)
+                .and_then(generate_and_save_eos_keys_and_return_state)
                 .and_then(put_eos_account_nonce_in_db_and_return_state)
                 .and_then(end_eos_db_transaction_and_return_state)
                 .and_then(get_eos_init_output)

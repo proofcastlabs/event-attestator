@@ -2,6 +2,7 @@ use crate::{
     chains::eos::{
         eos_crypto::eos_private_key::EosPrivateKey,
         eos_database_utils::{
+            put_eos_public_key_in_db,
             get_eos_schedule_from_db,
             get_incremerkle_from_db,
             get_latest_eos_block_number,
@@ -207,12 +208,15 @@ where
         .and(Ok(state))
 }
 
-pub fn generated_eos_key_save_in_db_and_return_state<D>(state: EosState<D>) -> Result<EosState<D>>
+pub fn generate_and_save_eos_keys_and_return_state<D>(state: EosState<D>) -> Result<EosState<D>>
 where
     D: DatabaseInterface,
 {
-    info!("✔ Generating EOS private key & putting into db...");
-    EosPrivateKey::generate_random()?.write_to_db(&state.db).and(Ok(state))
+    info!("✔ Generating EOS keys & putting into db...");
+    let private_key = EosPrivateKey::generate_random()?;
+    put_eos_public_key_in_db(&state.db, &private_key.to_public_key())
+        .and_then(|_| private_key.write_to_db(&state.db))
+        .and(Ok(state))
 }
 
 pub fn get_eos_init_output<D>(_state: EosState<D>) -> Result<String>
