@@ -18,6 +18,7 @@ use crate::{
             btc_utils::{create_unsigned_utxo_from_tx, get_p2sh_redeem_script_sig, get_pay_to_pub_key_hash_script},
             deposit_address_info::DepositAddressInfoJson,
             utxo_manager::utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
+            btc_types::BtcPubKeySlice,
         },
         eth::eth_types::EthAddress,
     },
@@ -127,10 +128,6 @@ where
     put_special_btc_block_in_db(db, block, "tail")
 }
 
-pub fn get_sample_btc_pub_key_bytes() -> Bytes {
-    hex::decode(SAMPLE_BTC_PUBLIC_KEY).unwrap()
-}
-
 pub fn get_sample_minting_params() -> BtcOnEthMintingParams {
     let originating_tx_address_1 = "335cC6c8e77ECD56402Fa7d4007622A6841a8B6A".to_string();
     let originating_tx_address_2 = "c2f16d5040deDa48Fe9292c183c5D76321e83467".to_string();
@@ -186,7 +183,7 @@ pub fn get_sample_sequential_btc_blocks_in_db_format() -> Vec<BtcBlockInDbFormat
 }
 
 pub fn get_sample_p2sh_redeem_script_sig() -> BtcScript {
-    let pub_key_slice = get_sample_btc_private_key().to_public_key_slice();
+    let pub_key_slice = get_sample_btc_pub_key_slice();
     let hash = sha256d::Hash::hash(b"some text");
     get_p2sh_redeem_script_sig(&pub_key_slice, &hash)
 }
@@ -335,6 +332,14 @@ pub fn get_sample_pay_to_pub_key_hash_script() -> BtcScript {
 
 pub fn get_sample_btc_private_key() -> BtcPrivateKey {
     BtcPrivateKey::from_wif(SAMPLE_BTC_PRIVATE_KEY_WIF).unwrap()
+}
+
+pub fn get_sample_btc_pub_key_slice() -> BtcPubKeySlice {
+    get_sample_btc_private_key().to_public_key_slice()
+}
+
+pub fn get_sample_btc_p2pkh_address() -> String {
+    get_sample_btc_private_key().to_p2pkh_btc_address()
 }
 
 pub fn get_sample_btc_on_eos_minting_params() -> BtcOnEosMintingParams {

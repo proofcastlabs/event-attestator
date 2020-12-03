@@ -12,7 +12,7 @@ use crate::{
                 get_btc_fee_from_db,
                 get_btc_latest_block_from_db,
                 get_btc_network_from_db,
-                get_btc_private_key_from_db,
+                get_btc_public_key_slice_from_db,
                 get_btc_tail_block_from_db,
             },
             update_btc_linker_hash::get_linker_hash_or_genesis_hash as get_btc_linker_hash,
@@ -100,12 +100,11 @@ where
         let btc_tail_block = get_btc_tail_block_from_db(&db)?;
         let eth_canon_block = get_eth_canon_block_from_db(&db)?;
         let btc_canon_block = get_btc_canon_block_from_db(&db)?;
-        let btc_private_key = get_btc_private_key_from_db(&db)?;
         let eth_anchor_block = get_eth_anchor_block_from_db(&db)?;
         let btc_anchor_block = get_btc_anchor_block_from_db(&db)?;
         let eth_latest_block = get_eth_latest_block_from_db(&db)?;
         let btc_latest_block = get_btc_latest_block_from_db(&db)?;
-        let btc_public_key_hex = hex::encode(&btc_private_key.to_public_key_slice().to_vec());
+        let btc_public_key_hex = hex::encode(&get_btc_public_key_slice_from_db(&db)?.to_vec());
         Ok(serde_json::to_string(&EnclaveState {
             debug_mode: DEBUG_MODE,
             btc_tail_length: BTC_TAIL_LENGTH,

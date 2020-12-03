@@ -280,17 +280,18 @@ mod tests {
     use crate::{
         btc_on_eth::btc::filter_op_return_deposit_txs::filter_txs_for_op_return_deposits,
         chains::btc::{
+            btc_utils::convert_bytes_to_btc_pub_key_slice,
             btc_test_utils::{
                 get_sample_btc_block_n,
                 get_sample_btc_op_return_tx,
-                get_sample_btc_private_key,
-                get_sample_btc_pub_key_bytes,
                 get_sample_btc_tx,
                 get_sample_minting_params,
                 get_sample_op_return_btc_block_and_txs,
                 get_sample_op_return_output,
                 get_sample_pay_to_pub_key_hash_script,
                 SAMPLE_OP_RETURN_TRANSACTION_OUTPUT_INDEX,
+                get_sample_btc_pub_key_slice,
+                get_sample_btc_p2pkh_address,
             },
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
             get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
@@ -320,7 +321,7 @@ mod tests {
 
     #[test]
     fn should_parse_minting_params_struct_from_p2sh_deposit_tx() {
-        let pub_key = get_sample_btc_pub_key_bytes();
+        let pub_key = get_sample_btc_pub_key_slice();
         let expected_amount = convert_satoshis_to_ptoken(10000);
         let expected_num_results = 1;
         let expected_eth_address_bytes = hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap();
@@ -331,7 +332,7 @@ mod tests {
         let deposit_address_list = block_and_id.deposit_address_list.clone();
         let txs = block_and_id.block.txdata;
         let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
-        let tx = filter_p2sh_deposit_txs(&hash_map, &pub_key[..], &txs, btc_network).unwrap()[0].clone();
+        let tx = filter_p2sh_deposit_txs(&hash_map, &pub_key, &txs, btc_network).unwrap()[0].clone();
         let result = BtcOnEthMintingParams::from_btc_tx(&tx, &hash_map, btc_network).unwrap();
         assert_eq!(result[0].amount, expected_amount);
         assert_eq!(result.len(), expected_num_results);
@@ -375,7 +376,9 @@ mod tests {
             sha256d::Hash::from_str("ee022f1be2981fbdd51f7c7ac2e07c1233bb7806e481df9c52b8077a628b2ea8").unwrap();
         let expected_originating_tx_hash_2 =
             sha256d::Hash::from_str("130a150ff71f8cabf02d4315f7d61f801ced234c7fcc3144d858816033578110").unwrap();
-        let pub_key_bytes = hex::decode("03a3bea6d8d15a38d9c96074d994c788bc1286d557ef5bdbb548741ddf265637ce").unwrap();
+        let pub_key_slice = convert_bytes_to_btc_pub_key_slice(
+            &hex::decode("03a3bea6d8d15a38d9c96074d994c788bc1286d557ef5bdbb548741ddf265637ce").unwrap(),
+        ).unwrap();
         let expected_result_1 = BtcOnEthMintingParamStruct::new(
             expected_amount_1,
             hex::encode(expected_eth_address_1),
@@ -395,7 +398,7 @@ mod tests {
         let deposit_address_list = block_and_id.deposit_address_list.clone();
         let txs = block_and_id.block.txdata;
         let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
-        let filtered_txs = filter_p2sh_deposit_txs(&hash_map, &pub_key_bytes[..], &txs, btc_network).unwrap();
+        let filtered_txs = filter_p2sh_deposit_txs(&hash_map, &pub_key_slice, &txs, btc_network).unwrap();
         let result = BtcOnEthMintingParams::from_btc_txs(&filtered_txs, &hash_map, btc_network).unwrap();
         let result_1 = result[0].clone();
         let result_2 = result[1].clone();
@@ -467,7 +470,13 @@ mod tests {
         let network = BtcNetwork::Testnet;
         let expected_origin_address = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
         let block = get_sample_op_return_btc_block_and_txs().block;
-        let filtered_txs = filter_txs_for_op_return_deposits(&get_sample_btc_private_key(), &block.txdata).unwrap();
+        let sample_pub_key_hash = get_sample_btc_pub_key_slice();
+        let sample_address = get_sample_btc_p2pkh_address();
+        let filtered_txs = filter_txs_for_op_return_deposits(
+            &sample_address,
+            &sample_pub_key_hash,
+            &block.txdata,
+        ).unwrap();
         let input = filtered_txs[0].input[0].clone();
         let result = BtcOnEthMintingParamStruct::extract_spender_address_from_p2pkh_input(&input, network).unwrap();
         assert_eq!(result.to_string(), expected_origin_address);
@@ -517,10 +526,13 @@ mod tests {
         let network = BtcNetwork::Testnet;
         let expected_address = get_expected_eth_address();
         let expected_value = convert_satoshis_to_ptoken(1337);
+        let sample_pub_key_hash = get_sample_btc_pub_key_slice();
+        let sample_address = get_sample_btc_p2pkh_address();
         let expected_origin_address = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
         let expected_tx_hash = "183d4334c0e06d38cebfe2387e192c3a5f24f13c612214945af95f0aec696c6b".to_string();
         let block = get_sample_op_return_btc_block_and_txs().block;
-        let filtered_txs = filter_txs_for_op_return_deposits(&get_sample_btc_private_key(), &block.txdata).unwrap();
+        let filtered_txs = filter_txs_for_op_return_deposits(&sample_address, &sample_pub_key_hash, &block.txdata)
+            .unwrap();
         let target_deposit_script = get_sample_pay_to_pub_key_hash_script();
         let result =
             BtcOnEthMintingParams::from_btc_op_return_txs(&target_deposit_script, &filtered_txs, network).unwrap();

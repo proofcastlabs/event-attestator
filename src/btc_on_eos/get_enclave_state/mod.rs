@@ -6,6 +6,7 @@ use crate::{
             btc_database_utils::{
                 get_btc_account_nonce_from_db,
                 get_btc_address_from_db,
+                get_btc_public_key_slice_from_db,
                 get_btc_anchor_block_from_db,
                 get_btc_canon_block_from_db,
                 get_btc_canon_to_tip_length_from_db,
@@ -13,7 +14,6 @@ use crate::{
                 get_btc_fee_from_db,
                 get_btc_latest_block_from_db,
                 get_btc_network_from_db,
-                get_btc_private_key_from_db,
                 get_btc_tail_block_from_db,
             },
             update_btc_linker_hash::get_linker_hash_or_genesis_hash as get_btc_linker_hash,
@@ -92,9 +92,8 @@ where
         let btc_canon_block = get_btc_canon_block_from_db(&db)?;
         let btc_anchor_block = get_btc_anchor_block_from_db(&db)?;
         let btc_latest_block = get_btc_latest_block_from_db(&db)?;
-        let btc_private_key = get_btc_private_key_from_db(&db)?;
         let eos_public_key = EosPrivateKey::get_from_db(&db)?.to_public_key().to_string();
-        let btc_public_key_hex = hex::encode(&btc_private_key.to_public_key_slice().to_vec());
+        let btc_public_key_hex = hex::encode(&get_btc_public_key_slice_from_db(&db)?.to_vec());
         Ok(serde_json::to_string(&EnclaveState {
             eos_public_key,
             debug_mode: DEBUG_MODE,

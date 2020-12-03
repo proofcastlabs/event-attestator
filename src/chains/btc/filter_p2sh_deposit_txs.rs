@@ -1,8 +1,8 @@
 use crate::{
     chains::btc::{
-        btc_database_utils::{get_btc_network_from_db, get_btc_private_key_from_db},
+        btc_database_utils::{get_btc_network_from_db, get_btc_public_key_slice_from_db},
         btc_state::BtcState,
-        btc_types::{BtcTransaction, BtcTransactions},
+        btc_types::{BtcTransaction, BtcTransactions, BtcPubKeySlice},
         btc_utils::get_p2sh_redeem_script_sig,
         deposit_address_info::DepositInfoHashMap,
     },
@@ -17,7 +17,7 @@ use bitcoin::{
 
 fn is_address_locked_to_pub_key(
     btc_network: BtcNetwork,
-    enclave_public_key_slice: &[u8],
+    enclave_public_key_slice: &BtcPubKeySlice,
     address_from_utxo: &BtcAddress,
     deposit_info: &DepositInfoHashMap,
 ) -> bool {
@@ -52,7 +52,7 @@ fn is_address_locked_to_pub_key(
 fn is_output_address_locked_to_pub_key(
     tx_output: &BtcTxOut,
     btc_network: BtcNetwork,
-    enclave_public_key_slice: &[u8],
+    enclave_public_key_slice: &BtcPubKeySlice,
     deposit_info: &DepositInfoHashMap,
 ) -> bool {
     match BtcAddress::from_script(&tx_output.script_pubkey, btc_network) {
@@ -86,7 +86,7 @@ fn is_output_address_in_hash_map(
 
 pub fn filter_p2sh_deposit_txs(
     deposit_info: &DepositInfoHashMap,
-    enclave_public_key_slice: &[u8],
+    enclave_public_key_slice: &BtcPubKeySlice,
     transactions: &[BtcTransaction],
     btc_network: BtcNetwork,
 ) -> Result<BtcTransactions> {
@@ -113,7 +113,7 @@ where
     info!("✔ Filtering out `p2sh` deposits & adding to state...");
     filter_p2sh_deposit_txs(
         state.get_deposit_info_hash_map()?,
-        &get_btc_private_key_from_db(&state.db)?.to_public_key_slice(),
+        &get_btc_public_key_slice_from_db(&state.db)?,
         &state.get_btc_block_and_id()?.block.txdata,
         get_btc_network_from_db(&state.db)?,
     )
@@ -128,7 +128,7 @@ mod tests {
     use super::*;
     use crate::chains::btc::{
         btc_block::BtcBlockAndId,
-        btc_test_utils::{get_sample_btc_block_n, get_sample_btc_pub_key_bytes, SAMPLE_TARGET_BTC_ADDRESS},
+        btc_test_utils::{get_sample_btc_block_n, get_sample_btc_pub_key_slice, SAMPLE_TARGET_BTC_ADDRESS},
         get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
     };
     use bitcoin::{
@@ -163,7 +163,7 @@ mod tests {
 
     #[test]
     fn address_should_be_locked_to_pub_key() {
-        let enclave_public_key_slice = &get_sample_btc_pub_key_bytes()[..];
+        let enclave_public_key_slice = get_sample_btc_pub_key_slice();
         let btc_network = BtcNetwork::Testnet;
         let deposit_address_list = get_sample_btc_block_with_p2sh_deposit().deposit_address_list;
         let deposit_info = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
@@ -179,7 +179,7 @@ mod tests {
 
     #[test]
     fn wrong_address_should_not_be_locked_to_pub_key() {
-        let enclave_public_key_slice = &get_sample_btc_pub_key_bytes()[..];
+        let enclave_public_key_slice = get_sample_btc_pub_key_slice();
         let btc_network = BtcNetwork::Testnet;
         let deposit_address_list = get_sample_btc_block_with_p2sh_deposit().deposit_address_list;
         let deposit_info = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
@@ -195,7 +195,7 @@ mod tests {
 
     #[test]
     fn address_from_output_should_be_locked_to_pub_key() {
-        let enclave_public_key_slice = &get_sample_btc_pub_key_bytes()[..];
+        let enclave_public_key_slice = get_sample_btc_pub_key_slice();
         let btc_network = BtcNetwork::Testnet;
         let deposit_address_list = get_sample_btc_block_with_p2sh_deposit().deposit_address_list;
         let deposit_info = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
@@ -207,7 +207,7 @@ mod tests {
 
     #[test]
     fn address_from_wrong_output_should_not_be_locked_to_pub_key() {
-        let enclave_public_key_slice = &get_sample_btc_pub_key_bytes()[..];
+        let enclave_public_key_slice = get_sample_btc_pub_key_slice();
         let btc_network = BtcNetwork::Testnet;
         let deposit_address_list = get_sample_btc_block_with_p2sh_deposit().deposit_address_list;
         let deposit_info = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
@@ -239,7 +239,7 @@ mod tests {
 
     #[test]
     fn should_filter_txs_for_outputs_to_addresses_in_hash_map() {
-        let pub_key = get_sample_btc_pub_key_bytes();
+        let pub_key_slice = get_sample_btc_pub_key_slice();
         let expected_num_txs = 1;
         let expected_tx_hash = "4d19fed40e7d1944c8590a8a2e21d1f16f65c060244277a3d207770d1c848352";
         let btc_network = BtcNetwork::Testnet;
@@ -248,7 +248,7 @@ mod tests {
         let txs = block_and_id.block.txdata;
         let num_txs_before = txs.len();
         let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
-        let result = filter_p2sh_deposit_txs(&hash_map, &pub_key[..], &txs, btc_network).unwrap();
+        let result = filter_p2sh_deposit_txs(&hash_map, &pub_key_slice, &txs, btc_network).unwrap();
         let num_txs_after = result.len();
         assert!(num_txs_before != num_txs_after);
         assert_eq!(num_txs_after, expected_num_txs);

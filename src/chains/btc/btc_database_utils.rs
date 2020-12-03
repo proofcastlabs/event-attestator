@@ -473,6 +473,7 @@ mod tests {
             get_sample_btc_private_key,
             get_sample_sequential_btc_blocks_in_db_format,
             SAMPLE_TARGET_BTC_ADDRESS,
+            get_sample_btc_pub_key_slice,
         },
         test_utils::get_test_database,
     };

@@ -200,6 +200,7 @@ mod tests {
                 SAMPLE_OUTPUT_INDEX_OF_UTXO,
                 SAMPLE_SERIALIZED_BTC_UTXO,
                 SAMPLE_TARGET_BTC_ADDRESS,
+                get_sample_btc_pub_key_slice,
                 SAMPLE_TRANSACTION_INDEX,
             },
             utxo_manager::utxo_types::BtcUtxosAndValues,
@@ -305,7 +306,7 @@ mod tests {
         let signature = btc_pk
             .sign_hash_and_append_btc_hash_type(hash.to_vec(), hash_type)
             .unwrap();
-        let pub_key_slice = btc_pk.to_public_key_slice();
+        let pub_key_slice = get_sample_btc_pub_key_slice();
         let result_script = get_script_sig(&signature, &pub_key_slice);
         let hex_result = hex::encode(result_script.as_bytes());
         assert_eq!(hex_result, expected_result);
