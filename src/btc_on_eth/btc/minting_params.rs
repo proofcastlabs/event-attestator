@@ -2,7 +2,7 @@ use crate::{
     btc_on_eth::utils::convert_satoshis_to_ptoken,
     chains::{
         btc::{
-            btc_constants::{PLACEHOLDER_BTC_ADDRESS, MINIMUM_REQUIRED_SATOSHIS},
+            btc_constants::{MINIMUM_REQUIRED_SATOSHIS, PLACEHOLDER_BTC_ADDRESS},
             btc_database_utils::{get_btc_address_from_db, get_btc_network_from_db},
             btc_state::BtcState,
             btc_utils::get_pay_to_pub_key_hash_script,

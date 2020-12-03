@@ -181,7 +181,15 @@ impl SerializedBlockInDbFormat {
         eos_minting_params: Option<Bytes>,
         prev_blockhash: Option<Bytes>,
     ) -> Self {
-        Self { id, height, extra_data, eth_minting_params, eos_minting_params, block: None, prev_blockhash }
+        Self {
+            id,
+            height,
+            extra_data,
+            eth_minting_params,
+            eos_minting_params,
+            block: None,
+            prev_blockhash,
+        }
     }
 
     pub fn from_legacy(legacy_struct: &SerializedBlockInDbFormatLegacy) -> Self {
@@ -237,7 +245,7 @@ impl SerializedBlockInDbFormat {
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         match serde_json::from_slice(&bytes) {
             Ok(serialized_block) => Ok(serialized_block),
-            Err(_) => Ok(Self::from_legacy(&SerializedBlockInDbFormatLegacy::from_bytes(&bytes)?))
+            Err(_) => Ok(Self::from_legacy(&SerializedBlockInDbFormatLegacy::from_bytes(&bytes)?)),
         }
     }
 }
@@ -267,7 +275,15 @@ impl SerializedBlockInDbFormatLegacy {
         eos_minting_params: Option<Bytes>,
         prev_blockhash: Option<Bytes>,
     ) -> Self {
-        Self { id, height, extra_data, minting_params, eos_minting_params, block: None, prev_blockhash }
+        Self {
+            id,
+            height,
+            extra_data,
+            minting_params,
+            eos_minting_params,
+            block: None,
+            prev_blockhash,
+        }
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
