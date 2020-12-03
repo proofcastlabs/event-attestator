@@ -16,7 +16,7 @@ use crate::{
             BTC_TAIL_BLOCK_HASH_KEY,
         },
         btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_state::BtcState as BtcOnEosBtcState,
+        btc_state::BtcState,
         btc_utils::{
             convert_btc_address_to_bytes,
             convert_btc_network_to_bytes,
@@ -42,22 +42,22 @@ where
     get_btc_account_nonce_from_db(db).and_then(|nonce| put_btc_account_nonce_in_db(db, nonce + amount_to_increment_by))
 }
 
-pub fn start_btc_db_transaction<D>(state: BtcOnEosBtcState<D>) -> Result<BtcOnEosBtcState<D>>
+pub fn start_btc_db_transaction<D>(state: BtcState<D>) -> Result<BtcState<D>>
 where
     D: DatabaseInterface,
 {
     state.db.start_transaction().map(|_| {
-        info!("✔ Database transaction begun for `btc-on-eos` BTC block submission!");
+        info!("✔ Database transaction begun for BTC block submission!");
         state
     })
 }
 
-pub fn end_btc_db_transaction<D>(state: BtcOnEosBtcState<D>) -> Result<BtcOnEosBtcState<D>>
+pub fn end_btc_db_transaction<D>(state: BtcState<D>) -> Result<BtcState<D>>
 where
     D: DatabaseInterface,
 {
     state.db.end_transaction().map(|_| {
-        info!("✔ Database transaction ended for `btc-on-eos` BTC block submission!");
+        info!("✔ Database transaction ended for BTC block submission!");
         state
     })
 }
