@@ -6,7 +6,7 @@ use crate::{
         eos_hash::ripemd160,
     },
     errors::AppError,
-    types::{Bytes, Result},
+    types::{Byte, Bytes, Result},
 };
 use secp256k1::{self, key::PublicKey, Secp256k1};
 use std::{fmt, io, str::FromStr};
@@ -23,9 +23,9 @@ impl EosPublicKey {
     }
 
     pub fn to_bytes(&self) -> Bytes {
-        let mut bugger = Vec::new();
-        self.write_into(&mut bugger);
-        bugger
+        let mut bytes = Vec::new();
+        self.write_into(&mut bytes);
+        bytes
     }
 
     pub fn to_eos_format(&self) -> String {
@@ -36,7 +36,7 @@ impl EosPublicKey {
         format!("EOS{}", base58::encode_slice(&public_key))
     }
 
-    pub fn from_slice(data: &[u8]) -> Result<EosPublicKey> {
+    pub fn from_bytes(data: &[Byte]) -> Result<EosPublicKey> {
         let compressed: bool = match data.len() {
             33 => true,
             64 => false,
@@ -52,7 +52,7 @@ impl EosPublicKey {
         digest: &secp256k1::Message,
         recoverable_signature: &EosSignature,
     ) -> Result<EosPublicKey> {
-        Self::from_slice(&Secp256k1::new().recover(&digest, &recoverable_signature.0)?.serialize())
+        Self::from_bytes(&Secp256k1::new().recover(&digest, &recoverable_signature.0)?.serialize())
     }
 }
 
@@ -210,8 +210,8 @@ mod test {
     }
 
     #[test]
-    fn should_get_public_key_from_slice_correctly() {
-        let result = EosPublicKey::from_slice(&get_sample_eos_public_key_bytes()).unwrap();
+    fn should_get_public_key_from_bytes_correctly() {
+        let result = EosPublicKey::from_bytes(&get_sample_eos_public_key_bytes()).unwrap();
         let expected_result = get_sample_eos_public_key();
         assert_eq!(result, expected_result);
     }
@@ -222,5 +222,13 @@ mod test {
         let public_key = get_sample_eos_public_key();
         let result = public_key.to_eos_format();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_perform_bytes_roundtrip_correctly() {
+        let key = get_sample_eos_public_key();
+        let bytes = key.to_bytes();
+        let result = EosPublicKey::from_bytes(&bytes).unwrap();
+        assert_eq!(key, result);
     }
 }
