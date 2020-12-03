@@ -1,14 +1,8 @@
 use crate::{
     chains::btc::{
-        btc_database_utils::{
-            get_btc_address_from_db,
-            get_btc_public_key_slice_from_db,
-        },
+        btc_database_utils::{get_btc_address_from_db, get_btc_public_key_slice_from_db},
         btc_state::BtcState,
-        btc_types::{
-            BtcTransactions,
-            BtcPubKeySlice
-        },
+        btc_types::{BtcPubKeySlice, BtcTransactions},
         btc_utils::get_pay_to_pub_key_hash_script,
     },
     traits::DatabaseInterface,
@@ -24,7 +18,9 @@ fn sig_script_contains_pub_key(script_sig: &BtcScript, btc_pub_key_slice: &BtcPu
 }
 
 fn tx_has_input_locked_to_pub_key(tx: &BtcTransaction, btc_pub_key_slice: &BtcPubKeySlice) -> bool {
-    tx.input.iter().any(|input| sig_script_contains_pub_key(&input.script_sig, &btc_pub_key_slice))
+    tx.input
+        .iter()
+        .any(|input| sig_script_contains_pub_key(&input.script_sig, &btc_pub_key_slice))
 }
 
 fn tx_has_output_with_target_script(tx: &BtcTransaction, target_script: &BtcScript) -> bool {
@@ -69,10 +65,10 @@ mod tests {
         btc_block::BtcBlockAndId,
         btc_test_utils::{
             get_sample_btc_block_n,
-            get_sample_btc_private_key,
-            get_sample_testnet_block_and_txs,
-            get_sample_btc_pub_key_slice,
             get_sample_btc_p2pkh_address,
+            get_sample_btc_private_key,
+            get_sample_btc_pub_key_slice,
+            get_sample_testnet_block_and_txs,
             SAMPLE_TARGET_BTC_ADDRESS,
         },
         btc_utils::get_script_sig,
@@ -119,7 +115,8 @@ mod tests {
         let sample_pub_key_hash = get_sample_btc_pub_key_slice();
         let sample_address = get_sample_btc_p2pkh_address();
         let filtered_txs =
-            filter_txs_for_op_return_deposits(&sample_address, &sample_pub_key_hash, &block_and_id.block.txdata).unwrap();
+            filter_txs_for_op_return_deposits(&sample_address, &sample_pub_key_hash, &block_and_id.block.txdata)
+                .unwrap();
         let prev_id = filtered_txs[0].input[0].previous_output.txid;
         assert_eq!(prev_id, expected_prev_id);
         assert_eq!(filtered_txs.len(), expected_num_txs);
@@ -132,7 +129,8 @@ mod tests {
         let sample_pub_key_hash = get_sample_btc_pub_key_slice();
         let sample_address = get_sample_btc_p2pkh_address();
         let filtered_txs =
-            filter_txs_for_op_return_deposits(&sample_address, &sample_pub_key_hash, &block_and_id.block.txdata).unwrap();
+            filter_txs_for_op_return_deposits(&sample_address, &sample_pub_key_hash, &block_and_id.block.txdata)
+                .unwrap();
         assert_eq!(filtered_txs.len(), expected_num_txs);
     }
 

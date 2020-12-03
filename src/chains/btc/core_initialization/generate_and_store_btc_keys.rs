@@ -1,7 +1,7 @@
 use crate::{
     chains::btc::{
         btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_database_utils::{put_btc_private_key_in_db, pub_btc_pub_key_slice_in_db, put_btc_address_in_db},
+        btc_database_utils::{pub_btc_pub_key_slice_in_db, put_btc_address_in_db, put_btc_private_key_in_db},
         btc_state::BtcState,
         core_initialization::btc_init_utils::get_btc_network_from_arg,
     },

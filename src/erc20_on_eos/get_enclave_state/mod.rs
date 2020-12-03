@@ -4,10 +4,10 @@ use crate::{
             eos_database_utils::{
                 get_eos_account_nonce_from_db,
                 get_eos_chain_id_from_db,
-                get_eos_public_key_from_db,
                 get_eos_enabled_protocol_features_from_db,
                 get_eos_known_schedules_from_db,
                 get_eos_last_seen_block_id_from_db,
+                get_eos_public_key_from_db,
                 get_latest_eos_block_number,
             },
             eos_erc20_dictionary::{EosErc20Dictionary, EosErc20DictionaryJson},

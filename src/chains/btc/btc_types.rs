@@ -1,8 +1,5 @@
 use crate::{
-    chains::btc::{
-        btc_constants::BTC_PUB_KEY_SLICE_LENGTH,
-        deposit_address_info::DepositAddressInfoJson,
-    },
+    chains::btc::{btc_constants::BTC_PUB_KEY_SLICE_LENGTH, deposit_address_info::DepositAddressInfoJson},
     constants::SAFE_BTC_ADDRESS,
     types::{Byte, Bytes, Result},
 };

@@ -100,8 +100,8 @@ where
 mod tests {
     use super::*;
     use crate::chains::btc::{
-        btc_utils::convert_bytes_to_btc_pub_key_slice,
         btc_test_utils::{get_sample_btc_block_n, get_sample_btc_pub_key_slice, get_sample_p2sh_utxo_and_value},
+        btc_utils::convert_bytes_to_btc_pub_key_slice,
         filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
         get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
     };
@@ -147,8 +147,9 @@ mod tests {
         let expected_btc_address_1 = BtcAddress::from_str("2NCfNHvNAecRyXPBDaAkfgMLL7NjvPrC6GU").unwrap();
         let expected_btc_address_2 = BtcAddress::from_str("2N6DgNSaX3D5rUYXuMM3b5Ujgw4sPrddSHp").unwrap();
         let pub_key_bytes = convert_bytes_to_btc_pub_key_slice(
-            &hex::decode("03a3bea6d8d15a38d9c96074d994c788bc1286d557ef5bdbb548741ddf265637ce").unwrap()
-        ).unwrap();
+            &hex::decode("03a3bea6d8d15a38d9c96074d994c788bc1286d557ef5bdbb548741ddf265637ce").unwrap(),
+        )
+        .unwrap();
         let btc_network = BtcNetwork::Testnet;
         let block_and_id = get_sample_btc_block_n(6).unwrap();
         let deposit_address_list = block_and_id.deposit_address_list.clone();

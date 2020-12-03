@@ -2,7 +2,7 @@ use crate::{
     chains::btc::{
         btc_database_utils::{get_btc_network_from_db, get_btc_public_key_slice_from_db},
         btc_state::BtcState,
-        btc_types::{BtcTransaction, BtcTransactions, BtcPubKeySlice},
+        btc_types::{BtcPubKeySlice, BtcTransaction, BtcTransactions},
         btc_utils::get_p2sh_redeem_script_sig,
         deposit_address_info::DepositInfoHashMap,
     },

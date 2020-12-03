@@ -1,8 +1,5 @@
 use crate::{
-    chains::btc::{
-        btc_types::BtcPubKeySlice,
-        btc_utils::get_btc_one_key,
-    },
+    chains::btc::{btc_types::BtcPubKeySlice, btc_utils::get_btc_one_key},
     constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
     crypto_utils::generate_random_private_key,
     traits::DatabaseInterface,

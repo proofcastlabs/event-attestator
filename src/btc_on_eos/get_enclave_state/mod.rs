@@ -6,7 +6,6 @@ use crate::{
             btc_database_utils::{
                 get_btc_account_nonce_from_db,
                 get_btc_address_from_db,
-                get_btc_public_key_slice_from_db,
                 get_btc_anchor_block_from_db,
                 get_btc_canon_block_from_db,
                 get_btc_canon_to_tip_length_from_db,
@@ -14,6 +13,7 @@ use crate::{
                 get_btc_fee_from_db,
                 get_btc_latest_block_from_db,
                 get_btc_network_from_db,
+                get_btc_public_key_slice_from_db,
                 get_btc_tail_block_from_db,
             },
             update_btc_linker_hash::get_linker_hash_or_genesis_hash as get_btc_linker_hash,
@@ -25,13 +25,13 @@ use crate::{
         },
         eos::{
             eos_database_utils::{
-                get_eos_public_key_from_db,
                 get_eos_account_name_string_from_db,
                 get_eos_account_nonce_from_db,
                 get_eos_chain_id_from_db,
                 get_eos_enabled_protocol_features_from_db,
                 get_eos_known_schedules_from_db,
                 get_eos_last_seen_block_id_from_db,
+                get_eos_public_key_from_db,
                 get_eos_token_symbol_from_db,
                 get_latest_eos_block_number,
             },

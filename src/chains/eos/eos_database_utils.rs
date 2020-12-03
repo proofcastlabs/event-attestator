@@ -2,20 +2,20 @@ use crate::{
     chains::eos::{
         eos_constants::{
             EOS_ACCOUNT_NAME_KEY,
-            EOS_PUBLIC_KEY_DB_KEY,
             EOS_ACCOUNT_NONCE,
             EOS_CHAIN_ID_DB_KEY,
             EOS_INCREMERKLE,
             EOS_LAST_SEEN_BLOCK_ID,
             EOS_LAST_SEEN_BLOCK_NUM,
             EOS_PROTOCOL_FEATURES,
+            EOS_PUBLIC_KEY_DB_KEY,
             EOS_SCHEDULE_LIST,
             EOS_TOKEN_SYMBOL_KEY,
             PROCESSED_TX_IDS_KEY,
         },
+        eos_crypto::eos_public_key::EosPublicKey,
         eos_merkle_utils::{Incremerkle, IncremerkleJson},
         eos_types::{EosKnownSchedules, ProcessedTxIds},
-        eos_crypto::eos_public_key::EosPublicKey,
         eos_utils::{convert_hex_to_checksum256, get_eos_schedule_db_key},
         parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
         protocol_features::EnabledFeatures,
@@ -32,7 +32,11 @@ pub fn put_eos_public_key_in_db<D>(db: &D, public_key: &EosPublicKey) -> Result<
 where
     D: DatabaseInterface,
 {
-    db.put(EOS_PUBLIC_KEY_DB_KEY.to_vec(), public_key.to_bytes(), MIN_DATA_SENSITIVITY_LEVEL)
+    db.put(
+        EOS_PUBLIC_KEY_DB_KEY.to_vec(),
+        public_key.to_bytes(),
+        MIN_DATA_SENSITIVITY_LEVEL,
+    )
 }
 
 pub fn get_eos_public_key_from_db<D>(db: &D) -> Result<EosPublicKey>
@@ -258,10 +262,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        test_utils::get_test_database,
-        btc_on_eos::eos::eos_test_utils::get_sample_eos_public_key,
-    };
+    use crate::{btc_on_eos::eos::eos_test_utils::get_sample_eos_public_key, test_utils::get_test_database};
 
     #[test]
     fn should_put_and_get_eos_public_key_in_db_correctly() {

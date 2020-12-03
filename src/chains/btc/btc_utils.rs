@@ -2,8 +2,8 @@ use crate::{
     base58::{encode_slice as base58_encode_slice, from as from_base58},
     chains::{
         btc::{
-            btc_types::BtcPubKeySlice,
             btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, DEFAULT_BTC_SEQUENCE, PTOKEN_P2SH_SCRIPT_BYTES},
+            btc_types::BtcPubKeySlice,
         },
         eth::eth_utils::{convert_bytes_to_u64, convert_u64_to_bytes},
     },
@@ -23,7 +23,7 @@ use bitcoin::{
 };
 use secp256k1::key::ONE_KEY;
 
-pub fn convert_bytes_to_btc_pub_key_slice(bytes: &Bytes) -> Result<BtcPubKeySlice> {
+pub fn convert_bytes_to_btc_pub_key_slice(bytes: &[Byte]) -> Result<BtcPubKeySlice> {
     match bytes.len() {
         0..=32 => Err("✘ Too few bytes to convert to BTC pub key slice!".into()),
         BTC_PUB_KEY_SLICE_LENGTH => {
@@ -183,7 +183,6 @@ pub fn get_tx_id_from_signed_btc_tx(signed_btc_tx: &BtcTransaction) -> String {
 mod tests {
     use super::*;
     use crate::{
-        errors::AppError,
         btc_on_eth::{
             btc::minting_params::{BtcOnEthMintingParamStruct, BtcOnEthMintingParams},
             utils::convert_satoshis_to_ptoken,
@@ -193,6 +192,7 @@ mod tests {
                 create_op_return_btc_utxo_and_value_from_tx_output,
                 get_sample_btc_block_and_id,
                 get_sample_btc_private_key,
+                get_sample_btc_pub_key_slice,
                 get_sample_btc_utxo,
                 get_sample_op_return_utxo_and_value_n,
                 get_sample_p2sh_redeem_script_sig,
@@ -200,11 +200,11 @@ mod tests {
                 SAMPLE_OUTPUT_INDEX_OF_UTXO,
                 SAMPLE_SERIALIZED_BTC_UTXO,
                 SAMPLE_TARGET_BTC_ADDRESS,
-                get_sample_btc_pub_key_slice,
                 SAMPLE_TRANSACTION_INDEX,
             },
             utxo_manager::utxo_types::BtcUtxosAndValues,
         },
+        errors::AppError,
     };
     use bitcoin::{
         hashes::{sha256d, Hash},

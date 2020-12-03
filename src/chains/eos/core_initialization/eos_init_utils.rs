@@ -2,7 +2,6 @@ use crate::{
     chains::eos::{
         eos_crypto::eos_private_key::EosPrivateKey,
         eos_database_utils::{
-            put_eos_public_key_in_db,
             get_eos_schedule_from_db,
             get_incremerkle_from_db,
             get_latest_eos_block_number,
@@ -12,6 +11,7 @@ use crate::{
             put_eos_known_schedules_in_db,
             put_eos_last_seen_block_id_in_db,
             put_eos_last_seen_block_num_in_db,
+            put_eos_public_key_in_db,
             put_eos_schedule_in_db,
             put_eos_token_symbol_in_db,
             put_incremerkle_in_db,
