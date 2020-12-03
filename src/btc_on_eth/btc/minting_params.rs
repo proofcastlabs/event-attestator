@@ -2,7 +2,7 @@ use crate::{
     btc_on_eth::utils::convert_satoshis_to_ptoken,
     chains::{
         btc::{
-            btc_constants::{DEFAULT_BTC_ADDRESS, MINIMUM_REQUIRED_SATOSHIS},
+            btc_constants::{PLACEHOLDER_BTC_ADDRESS, MINIMUM_REQUIRED_SATOSHIS},
             btc_database_utils::{get_btc_address_from_db, get_btc_network_from_db},
             btc_state::BtcState,
             btc_utils::get_pay_to_pub_key_hash_script,
@@ -267,7 +267,7 @@ impl BtcOnEthMintingParamStruct {
                 true => Self::extract_spender_address_from_p2pkh_input(&tx.input[0].clone(), btc_network)?,
                 false => {
                     info!("✔ Not a p2pkh script, can't get sender address");
-                    BtcAddress::from_str(&DEFAULT_BTC_ADDRESS)?
+                    BtcAddress::from_str(&PLACEHOLDER_BTC_ADDRESS)?
                 },
             },
         )?)
