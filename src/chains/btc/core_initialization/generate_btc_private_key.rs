@@ -1,7 +1,7 @@
 use crate::{
     chains::btc::{
         btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_database_utils::put_btc_private_key_in_db,
+        btc_database_utils::{ put_btc_private_key_in_db, pub_btc_pub_key_slice_in_db},
         btc_state::BtcState,
         core_initialization::btc_init_utils::get_btc_network_from_arg,
     },
@@ -14,9 +14,8 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Generating & storing BTC private key...");
-    put_btc_private_key_in_db(
-        &state.db,
-        &BtcPrivateKey::generate_random(get_btc_network_from_arg(network))?,
-    )
-    .and(Ok(state))
+    let pk = BtcPrivateKey::generate_random(get_btc_network_from_arg(network))?;
+    put_btc_private_key_in_db(&state.db, &pk)
+        .and_then(|_| pub_btc_pub_key_slice_in_db(&state.db, &pk.to_public_key_slice()))
+        .and(Ok(state))
 }
