@@ -14,8 +14,7 @@ use crate::{
                 put_canon_to_tip_length_in_db_and_return_state,
                 put_difficulty_threshold_in_db,
             },
-            generate_btc_address::generate_and_store_btc_address,
-            generate_btc_private_key::generate_and_store_btc_private_key,
+            generate_and_store_btc_keys::generate_and_store_btc_keys,
             get_btc_init_output_json::get_btc_init_output_json,
             is_btc_initialized::is_btc_enclave_initialized,
         },
@@ -71,8 +70,7 @@ where
                 .and_then(create_btc_block_in_db_format_and_put_in_state)
                 .and_then(maybe_add_btc_block_to_db)
                 .and_then(put_btc_account_nonce_in_db_and_return_state)
-                .and_then(|state| generate_and_store_btc_private_key(&network, state))
-                .and_then(generate_and_store_btc_address)
+                .and_then(|state| generate_and_store_btc_keys(&network, state))
                 .and_then(end_btc_db_transaction)
                 .and_then(get_btc_init_output_json)
         },
