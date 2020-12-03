@@ -12,7 +12,7 @@ pub const MINIMUM_REQUIRED_SATOSHIS: u64 = 5000;
 pub const DEFAULT_BTC_SEQUENCE: u32 = 4_294_967_295; // NOTE: 0xFFFFFFFF
 
 // NOTE: Following is used as placeholder for bad address parsing in ETH params!
-pub const DEFAULT_BTC_ADDRESS: &str = "msTgHeQgPZ11LRcUdtfzagEfiZyKF57DhR";
+pub const PLACEHOLDER_BTC_ADDRESS: &str = "msTgHeQgPZ11LRcUdtfzagEfiZyKF57DhR";
 
 pub fn get_btc_constants_db_keys() -> JsonValue {
     json!({

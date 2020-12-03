@@ -2,7 +2,7 @@ use crate::{
     btc_on_eth::btc::minting_params::BtcOnEthMintingParamStruct,
     chains::{
         btc::{
-            btc_constants::DEFAULT_BTC_ADDRESS,
+            btc_constants::PLACEHOLDER_BTC_ADDRESS,
             btc_database_utils::{get_btc_canon_block_from_db, get_btc_latest_block_from_db},
             btc_state::BtcState,
         },
@@ -38,7 +38,7 @@ impl EthTxInfo {
         minting_param_struct: &BtcOnEthMintingParamStruct,
         nonce: Option<u64>,
     ) -> Result<EthTxInfo> {
-        let default_address = DEFAULT_BTC_ADDRESS.to_string();
+        let default_address = PLACEHOLDER_BTC_ADDRESS.to_string();
         let retrieved_address = minting_param_struct.originating_tx_address.to_string();
         let address_string = match default_address == retrieved_address {
             false => retrieved_address,
