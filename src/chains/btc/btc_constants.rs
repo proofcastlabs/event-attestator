@@ -8,9 +8,9 @@ pub const PTOKEN_P2SH_SCRIPT_BYTES: usize = 0;
 pub const PTOKEN_P2SH_SCRIPT_BYTES: usize = 101;
 
 pub const BTC_TAIL_LENGTH: u64 = 10;
+pub const BTC_PUB_KEY_SLICE_LENGTH: usize = 33;
 pub const MINIMUM_REQUIRED_SATOSHIS: u64 = 5000;
 pub const DEFAULT_BTC_SEQUENCE: u32 = 4_294_967_295; // NOTE: 0xFFFFFFFF
-pub const BTC_PUB_KEY_SLICE_LENGTH: usize = 33; // NOTE: 0xFFFFFFFF
 
 // NOTE: Following is used as placeholder for bad address parsing in ETH params!
 pub const PLACEHOLDER_BTC_ADDRESS: &str = "msTgHeQgPZ11LRcUdtfzagEfiZyKF57DhR";
@@ -22,11 +22,11 @@ pub fn get_btc_constants_db_keys() -> JsonValue {
         "BTC_NETWORK_KEY": hex::encode(BTC_NETWORK_KEY.to_vec()),
         "BTC_DIFFICULTY": hex::encode(BTC_DIFFICULTY_THRESHOLD.to_vec()),
         "BTC_LINKER_HASH_KEY": hex::encode(BTC_LINKER_HASH_KEY.to_vec()),
-        "PTOKEN_GENESIS_HASH": hex::encode(PTOKEN_GENESIS_HASH.to_vec()),
         "BTC_PUBLIC_KEY_DB_KEY": hex::encode(BTC_PUBLIC_KEY_DB_KEY.to_vec()),
         "BTC_ACCOUNT_NONCE_KEY": hex::encode(BTC_ACCOUNT_NONCE_KEY.to_vec()),
         "BTC_PRIVATE_KEY_DB_KEY": hex::encode(BTC_PRIVATE_KEY_DB_KEY.to_vec()),
         "BTC_TAIL_BLOCK_HASH_KEY": hex::encode(BTC_TAIL_BLOCK_HASH_KEY.to_vec()),
+        "PTOKEN_GENESIS_HASH_KEY": hex::encode(PTOKEN_GENESIS_HASH_KEY.to_vec()),
         "BTC_CANON_BLOCK_HASH_KEY": hex::encode(BTC_CANON_BLOCK_HASH_KEY.to_vec()),
         "BTC_LATEST_BLOCK_HASH_KEY": hex::encode(BTC_LATEST_BLOCK_HASH_KEY.to_vec()),
         "BTC_ANCHOR_BLOCK_HASH_KEY": hex::encode(BTC_ANCHOR_BLOCK_HASH_KEY.to_vec()),
@@ -47,10 +47,6 @@ lazy_static! {
 }
 
 lazy_static! {
-    pub static ref PTOKEN_GENESIS_HASH: [u8; 32] = get_prefixed_db_key("provable-ptoken");
-}
-
-lazy_static! {
     pub static ref BTC_LINKER_HASH_KEY: [u8; 32] = get_prefixed_db_key("btc-linker-hash");
 }
 
@@ -60,6 +56,10 @@ lazy_static! {
 
 lazy_static! {
     pub static ref BTC_DIFFICULTY_THRESHOLD: [u8; 32] = get_prefixed_db_key("btc-difficulty");
+}
+
+lazy_static! {
+    pub static ref PTOKEN_GENESIS_HASH_KEY: [u8; 32] = get_prefixed_db_key("provable-ptoken");
 }
 
 lazy_static! {

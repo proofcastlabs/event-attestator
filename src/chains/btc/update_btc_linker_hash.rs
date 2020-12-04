@@ -1,6 +1,6 @@
 use crate::{
     chains::btc::{
-        btc_constants::PTOKEN_GENESIS_HASH,
+        btc_constants::PTOKEN_GENESIS_HASH_KEY,
         btc_database_utils::{
             get_btc_anchor_block_from_db,
             get_btc_linker_hash_from_db,
@@ -48,7 +48,7 @@ where
         },
         _ => {
             trace!("✔ No BTC linker has in db, using genesis hash...");
-            Ok(sha256d::Hash::from_slice(&PTOKEN_GENESIS_HASH.to_vec())?)
+            Ok(sha256d::Hash::from_slice(&PTOKEN_GENESIS_HASH_KEY.to_vec())?)
         },
     }
 }

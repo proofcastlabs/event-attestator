@@ -2,14 +2,14 @@ use crate::{
     chains::eos::{
         eos_constants::{
             EOS_ACCOUNT_NAME_KEY,
-            EOS_ACCOUNT_NONCE,
+            EOS_ACCOUNT_NONCE_KEY,
             EOS_CHAIN_ID_DB_KEY,
-            EOS_INCREMERKLE,
-            EOS_LAST_SEEN_BLOCK_ID,
-            EOS_LAST_SEEN_BLOCK_NUM,
-            EOS_PROTOCOL_FEATURES,
+            EOS_INCREMERKLE_KEY,
+            EOS_LAST_SEEN_BLOCK_ID_KEY,
+            EOS_LAST_SEEN_BLOCK_NUM_KEY,
+            EOS_PROTOCOL_FEATURES_KEY,
             EOS_PUBLIC_KEY_DB_KEY,
-            EOS_SCHEDULE_LIST,
+            EOS_SCHEDULE_LIST_KEY,
             EOS_TOKEN_SYMBOL_KEY,
             PROCESSED_TX_IDS_KEY,
         },
@@ -52,7 +52,7 @@ where
     D: DatabaseInterface,
 {
     db.put(
-        EOS_PROTOCOL_FEATURES.to_vec(),
+        EOS_PROTOCOL_FEATURES_KEY.to_vec(),
         serde_json::to_vec(&protocol_features)?,
         MIN_DATA_SENSITIVITY_LEVEL,
     )
@@ -63,7 +63,7 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Getting EOS enabled protocol features from db...");
-    match db.get(EOS_PROTOCOL_FEATURES.to_vec(), MIN_DATA_SENSITIVITY_LEVEL) {
+    match db.get(EOS_PROTOCOL_FEATURES_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL) {
         Ok(bytes) => Ok(serde_json::from_slice(&bytes)?),
         Err(_) => {
             info!("✔ No features found in db! Initting empty features...");
@@ -76,14 +76,14 @@ pub fn put_eos_last_seen_block_num_in_db<D>(db: &D, num: u64) -> Result<()>
 where
     D: DatabaseInterface,
 {
-    put_u64_in_db(db, &EOS_LAST_SEEN_BLOCK_NUM.to_vec(), num)
+    put_u64_in_db(db, &EOS_LAST_SEEN_BLOCK_NUM_KEY.to_vec(), num)
 }
 
 pub fn get_latest_eos_block_number<D>(db: &D) -> Result<u64>
 where
     D: DatabaseInterface,
 {
-    get_u64_from_db(db, &EOS_LAST_SEEN_BLOCK_NUM.to_vec())
+    get_u64_from_db(db, &EOS_LAST_SEEN_BLOCK_NUM_KEY.to_vec())
 }
 
 pub fn put_eos_last_seen_block_id_in_db<D>(db: &D, latest_block_id: &Checksum256) -> Result<()>
@@ -92,7 +92,7 @@ where
 {
     let block_id_string = latest_block_id.to_string();
     info!("✔ Putting EOS latest block ID {} in db...", block_id_string);
-    put_string_in_db(db, &EOS_LAST_SEEN_BLOCK_ID.to_vec(), &block_id_string)
+    put_string_in_db(db, &EOS_LAST_SEEN_BLOCK_ID_KEY.to_vec(), &block_id_string)
 }
 
 pub fn get_eos_last_seen_block_id_from_db<D>(db: &D) -> Result<Checksum256>
@@ -100,7 +100,7 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Getting EOS last seen block ID from db...");
-    get_string_from_db(db, &EOS_LAST_SEEN_BLOCK_ID.to_vec()).and_then(convert_hex_to_checksum256)
+    get_string_from_db(db, &EOS_LAST_SEEN_BLOCK_ID_KEY.to_vec()).and_then(convert_hex_to_checksum256)
 }
 
 pub fn put_incremerkle_in_db<D>(db: &D, incremerkle: &Incremerkle) -> Result<()>
@@ -109,7 +109,7 @@ where
 {
     info!("✔ Putting EOS incremerkle in db...");
     db.put(
-        EOS_INCREMERKLE.to_vec(),
+        EOS_INCREMERKLE_KEY.to_vec(),
         serde_json::to_vec(&incremerkle.to_json())?,
         MIN_DATA_SENSITIVITY_LEVEL,
     )
@@ -120,7 +120,7 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Getting EOS incremerkle from db...");
-    db.get(EOS_INCREMERKLE.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+    db.get(EOS_INCREMERKLE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
         .and_then(|json: IncremerkleJson| json.to_incremerkle())
 }
@@ -130,7 +130,7 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Getting EOS known schedules from db...");
-    db.get(EOS_SCHEDULE_LIST.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+    db.get(EOS_SCHEDULE_LIST_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
 }
 
@@ -140,7 +140,7 @@ where
 {
     info!("✔ Putting EOS known schedules in db: {}", &eos_known_schedules);
     db.put(
-        EOS_SCHEDULE_LIST.to_vec(),
+        EOS_SCHEDULE_LIST_KEY.to_vec(),
         serde_json::to_vec(eos_known_schedules)?,
         MIN_DATA_SENSITIVITY_LEVEL,
     )
@@ -181,14 +181,14 @@ pub fn get_eos_account_nonce_from_db<D>(db: &D) -> Result<u64>
 where
     D: DatabaseInterface,
 {
-    get_u64_from_db(db, &EOS_ACCOUNT_NONCE.to_vec())
+    get_u64_from_db(db, &EOS_ACCOUNT_NONCE_KEY.to_vec())
 }
 
 pub fn put_eos_account_nonce_in_db<D>(db: &D, new_nonce: u64) -> Result<()>
 where
     D: DatabaseInterface,
 {
-    put_u64_in_db(db, &EOS_ACCOUNT_NONCE.to_vec(), new_nonce)
+    put_u64_in_db(db, &EOS_ACCOUNT_NONCE_KEY.to_vec(), new_nonce)
 }
 
 pub fn put_eos_token_symbol_in_db<D>(db: &D, name: &str) -> Result<()>

@@ -1,6 +1,6 @@
 use crate::{
     chains::eth::{
-        eth_constants::{ETH_LINKER_HASH_KEY, PTOKEN_GENESIS_HASH},
+        eth_constants::{ETH_LINKER_HASH_KEY, PTOKEN_GENESIS_HASH_KEY},
         eth_database_utils::get_hash_from_db_via_hash_key,
         eth_types::EthHash,
     },
@@ -16,7 +16,7 @@ where
         Some(hash) => Ok(hash),
         None => {
             info!("✔ No linker-hash set yet, using pToken genesis hash...");
-            Ok(EthHash::from_slice(&PTOKEN_GENESIS_HASH[..]))
+            Ok(EthHash::from_slice(&PTOKEN_GENESIS_HASH_KEY[..]))
         },
     }
 }
@@ -39,6 +39,6 @@ mod tests {
     fn get_linker_or_genesis_should_get_genesis_hash_if_linker_not_set() {
         let db = get_test_database();
         let result = get_linker_hash_or_genesis_hash(&db).unwrap();
-        assert_eq!(result, EthHash::from_slice(&PTOKEN_GENESIS_HASH[..]));
+        assert_eq!(result, EthHash::from_slice(&PTOKEN_GENESIS_HASH_KEY[..]));
     }
 }

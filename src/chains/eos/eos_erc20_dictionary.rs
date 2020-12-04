@@ -1,6 +1,6 @@
 use crate::{
     chains::{
-        eos::{eos_constants::EOS_ERC20_DICTIONARY, eos_state::EosState, eos_utils::remove_symbol_from_eos_asset},
+        eos::{eos_constants::EOS_ERC20_DICTIONARY_KEY, eos_state::EosState, eos_utils::remove_symbol_from_eos_asset},
         eth::eth_state::EthState,
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
@@ -75,7 +75,7 @@ impl EosErc20Dictionary {
         D: DatabaseInterface,
     {
         db.put(
-            EOS_ERC20_DICTIONARY.to_vec(),
+            EOS_ERC20_DICTIONARY_KEY.to_vec(),
             self.to_bytes()?,
             MIN_DATA_SENSITIVITY_LEVEL,
         )
@@ -86,7 +86,7 @@ impl EosErc20Dictionary {
         D: DatabaseInterface,
     {
         info!("✔ Getting `EosErc20DictionaryJson` from db...");
-        match db.get(EOS_ERC20_DICTIONARY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL) {
+        match db.get(EOS_ERC20_DICTIONARY_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL) {
             Ok(bytes) => Self::from_bytes(&bytes),
             Err(_) => {
                 info!("✔ No `EosErc20DictionaryJson` in db! Initializing a new one...");
@@ -419,7 +419,7 @@ mod tests {
         let dictionary_entries = get_sample_eos_erc20_dictionary();
         dictionary_entries.save_to_db(&db).unwrap();
         let result = db
-            .get(EOS_ERC20_DICTIONARY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+            .get(EOS_ERC20_DICTIONARY_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
             .unwrap();
         assert_eq!(result, dictionary_entries.to_bytes().unwrap());
     }
