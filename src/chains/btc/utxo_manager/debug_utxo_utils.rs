@@ -55,8 +55,8 @@ pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_x_utxos(&db, num_utxos))
         .and_then(|utxos| {
-            if num_utxos <= 1 {
-                return Err("Can only consolidate > 1 UTXO!".into());
+            if num_utxos < 1 {
+                return Err("Cannot consolidate 0 UTXOs!".into());
             };
             let btc_address = get_btc_address_from_db(&db)?;
             let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
