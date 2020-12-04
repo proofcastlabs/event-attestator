@@ -1,7 +1,7 @@
 use crate::{
-    chains::btc::deposit_address_info::DepositAddressInfoJson,
+    chains::btc::{btc_constants::BTC_PUB_KEY_SLICE_LENGTH, deposit_address_info::DepositAddressInfoJson},
     constants::SAFE_BTC_ADDRESS,
-    types::{Bytes, Result},
+    types::{Byte, Bytes, Result},
 };
 pub use bitcoin::{
     blockdata::{
@@ -15,6 +15,7 @@ pub use bitcoin::{
 use std::str::FromStr;
 
 pub type BtcTransactions = Vec<BtcTransaction>;
+pub type BtcPubKeySlice = [Byte; BTC_PUB_KEY_SLICE_LENGTH];
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct BtcUtxoAndValue {

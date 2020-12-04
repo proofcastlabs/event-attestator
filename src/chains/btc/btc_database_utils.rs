@@ -13,15 +13,18 @@ use crate::{
             BTC_LINKER_HASH_KEY,
             BTC_NETWORK_KEY,
             BTC_PRIVATE_KEY_DB_KEY,
+            BTC_PUBLIC_KEY_DB_KEY,
             BTC_TAIL_BLOCK_HASH_KEY,
         },
         btc_crypto::btc_private_key::BtcPrivateKey,
         btc_state::BtcState,
+        btc_types::BtcPubKeySlice,
         btc_utils::{
             convert_btc_address_to_bytes,
             convert_btc_network_to_bytes,
             convert_bytes_to_btc_address,
             convert_bytes_to_btc_network,
+            convert_bytes_to_btc_pub_key_slice,
         },
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
@@ -33,6 +36,25 @@ use crate::{
 };
 use bitcoin::network::constants::Network as BtcNetwork;
 use bitcoin_hashes::{sha256d, Hash};
+
+pub fn pub_btc_pub_key_slice_in_db<D>(db: &D, pub_key_slice: &BtcPubKeySlice) -> Result<()>
+where
+    D: DatabaseInterface,
+{
+    db.put(
+        BTC_PUBLIC_KEY_DB_KEY.to_vec(),
+        pub_key_slice.to_vec(),
+        MIN_DATA_SENSITIVITY_LEVEL,
+    )
+}
+
+pub fn get_btc_public_key_slice_from_db<D>(db: &D) -> Result<BtcPubKeySlice>
+where
+    D: DatabaseInterface,
+{
+    db.get(BTC_PUBLIC_KEY_DB_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+        .and_then(|bytes| convert_bytes_to_btc_pub_key_slice(&bytes))
+}
 
 pub fn increment_btc_account_nonce_in_db<D>(db: &D, amount_to_increment_by: u64) -> Result<()>
 where
@@ -453,6 +475,7 @@ mod tests {
         chains::btc::btc_test_utils::{
             get_sample_btc_block_in_db_format,
             get_sample_btc_private_key,
+            get_sample_btc_pub_key_slice,
             get_sample_sequential_btc_blocks_in_db_format,
             SAMPLE_TARGET_BTC_ADDRESS,
         },
@@ -683,5 +706,17 @@ mod tests {
         let block_hash = block.id;
         let result = btc_block_exists_in_db(&db, &block_hash);
         assert!(result);
+    }
+
+    #[test]
+    fn should_save_and_get_btc_pub_key_slice_from_db() {
+        let db = get_test_database();
+        let pub_key_slice = get_sample_btc_pub_key_slice();
+        pub_btc_pub_key_slice_in_db(&db, &pub_key_slice).unwrap();
+        let result = get_btc_public_key_slice_from_db(&db).unwrap();
+        result
+            .iter()
+            .enumerate()
+            .for_each(|(i, e)| assert_eq!(e, &pub_key_slice[i]));
     }
 }

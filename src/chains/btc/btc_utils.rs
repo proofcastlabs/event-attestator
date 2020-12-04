@@ -1,7 +1,10 @@
 use crate::{
     base58::{encode_slice as base58_encode_slice, from as from_base58},
     chains::{
-        btc::btc_constants::{DEFAULT_BTC_SEQUENCE, PTOKEN_P2SH_SCRIPT_BYTES},
+        btc::{
+            btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, DEFAULT_BTC_SEQUENCE, PTOKEN_P2SH_SCRIPT_BYTES},
+            btc_types::BtcPubKeySlice,
+        },
         eth::eth_utils::{convert_bytes_to_u64, convert_u64_to_bytes},
     },
     types::{Byte, Bytes, Result},
@@ -19,6 +22,19 @@ use bitcoin::{
     util::key::PrivateKey,
 };
 use secp256k1::key::ONE_KEY;
+
+pub fn convert_bytes_to_btc_pub_key_slice(bytes: &[Byte]) -> Result<BtcPubKeySlice> {
+    match bytes.len() {
+        0..=32 => Err("✘ Too few bytes to convert to BTC pub key slice!".into()),
+        BTC_PUB_KEY_SLICE_LENGTH => {
+            let mut arr = [0u8; BTC_PUB_KEY_SLICE_LENGTH];
+            let bytes = &bytes[..BTC_PUB_KEY_SLICE_LENGTH];
+            arr.copy_from_slice(bytes);
+            Ok(arr)
+        },
+        _ => Err("✘ Too many bytes to convert to BTC pub key slice!".into()),
+    }
+}
 
 pub fn convert_hex_to_sha256_hash(hex: &str) -> Result<sha256d::Hash> {
     Ok(sha256d::Hash::from_slice(&hex::decode(strip_hex_prefix(&hex)?)?)?)
@@ -176,6 +192,7 @@ mod tests {
                 create_op_return_btc_utxo_and_value_from_tx_output,
                 get_sample_btc_block_and_id,
                 get_sample_btc_private_key,
+                get_sample_btc_pub_key_slice,
                 get_sample_btc_utxo,
                 get_sample_op_return_utxo_and_value_n,
                 get_sample_p2sh_redeem_script_sig,
@@ -187,6 +204,7 @@ mod tests {
             },
             utxo_manager::utxo_types::BtcUtxosAndValues,
         },
+        errors::AppError,
     };
     use bitcoin::{
         hashes::{sha256d, Hash},
@@ -288,7 +306,7 @@ mod tests {
         let signature = btc_pk
             .sign_hash_and_append_btc_hash_type(hash.to_vec(), hash_type)
             .unwrap();
-        let pub_key_slice = btc_pk.to_public_key_slice();
+        let pub_key_slice = get_sample_btc_pub_key_slice();
         let result_script = get_script_sig(&signature, &pub_key_slice);
         let hex_result = hex::encode(result_script.as_bytes());
         assert_eq!(hex_result, expected_result);
@@ -393,5 +411,34 @@ mod tests {
         let bytes = convert_btc_network_to_bytes(network).unwrap();
         let result = convert_bytes_to_btc_network(&bytes).unwrap();
         assert_eq!(result, network);
+    }
+
+    #[test]
+    fn should_convert_bytes_to_btc_pub_key_slice() {
+        let bytes = hex::decode("03a3bea6d8d15a38d9c96074d994c788bc1286d557ef5bdbb548741ddf265637ce").unwrap();
+        let result = convert_bytes_to_btc_pub_key_slice(&bytes);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_fail_to_convert_too_short_bytes_to_btc_pub_key_slice_correctly() {
+        let expected_err = "✘ Too few bytes to convert to BTC pub key slice!".to_string();
+        let bytes = hex::decode("03a3bea6d8d15a38d9c96074d994c788bc1286d557ef5bdbb548741ddf265637").unwrap();
+        match convert_bytes_to_btc_pub_key_slice(&bytes) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(_) => panic!("Got wrong error when failing to convert bytes to `BtcPubKeySlice`!"),
+        }
+    }
+
+    #[test]
+    fn should_fail_to_convert_too_long_bytes_to_btc_pub_key_slice_correctly() {
+        let expected_err = "✘ Too many bytes to convert to BTC pub key slice!".to_string();
+        let bytes = hex::decode("03a3bea6d8d15a38d9c96074d994c788bc1286d557ef5bdbb548741ddf265637abab").unwrap();
+        match convert_bytes_to_btc_pub_key_slice(&bytes) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(_) => panic!("Got wrong error when failing to convert bytes to `BtcPubKeySlice`!"),
+        }
     }
 }

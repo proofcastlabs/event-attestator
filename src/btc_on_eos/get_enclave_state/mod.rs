@@ -13,7 +13,7 @@ use crate::{
                 get_btc_fee_from_db,
                 get_btc_latest_block_from_db,
                 get_btc_network_from_db,
-                get_btc_private_key_from_db,
+                get_btc_public_key_slice_from_db,
                 get_btc_tail_block_from_db,
             },
             update_btc_linker_hash::get_linker_hash_or_genesis_hash as get_btc_linker_hash,
@@ -24,7 +24,6 @@ use crate::{
             },
         },
         eos::{
-            eos_crypto::eos_private_key::EosPrivateKey,
             eos_database_utils::{
                 get_eos_account_name_string_from_db,
                 get_eos_account_nonce_from_db,
@@ -32,6 +31,7 @@ use crate::{
                 get_eos_enabled_protocol_features_from_db,
                 get_eos_known_schedules_from_db,
                 get_eos_last_seen_block_id_from_db,
+                get_eos_public_key_from_db,
                 get_eos_token_symbol_from_db,
                 get_latest_eos_block_number,
             },
@@ -92,11 +92,8 @@ where
         let btc_canon_block = get_btc_canon_block_from_db(&db)?;
         let btc_anchor_block = get_btc_anchor_block_from_db(&db)?;
         let btc_latest_block = get_btc_latest_block_from_db(&db)?;
-        let btc_private_key = get_btc_private_key_from_db(&db)?;
-        let eos_public_key = EosPrivateKey::get_from_db(&db)?.to_public_key().to_string();
-        let btc_public_key_hex = hex::encode(&btc_private_key.to_public_key_slice().to_vec());
+        let btc_public_key_hex = hex::encode(&get_btc_public_key_slice_from_db(&db)?.to_vec());
         Ok(serde_json::to_string(&EnclaveState {
-            eos_public_key,
             debug_mode: DEBUG_MODE,
             btc_tail_length: BTC_TAIL_LENGTH,
             btc_public_key: btc_public_key_hex,
@@ -122,11 +119,12 @@ where
             btc_network: get_btc_network_from_db(&db)?.to_string(),
             eos_signature_nonce: get_eos_account_nonce_from_db(&db)?,
             btc_signature_nonce: get_btc_account_nonce_from_db(&db)?,
+            eos_last_seen_block_num: get_latest_eos_block_number(&db)?,
             btc_utxo_total_value: get_total_utxo_balance_from_db(&db)?,
             eos_account_name: get_eos_account_name_string_from_db(&db)?,
             btc_number_of_utxos: get_total_number_of_utxos_from_db(&db),
+            eos_public_key: get_eos_public_key_from_db(&db)?.to_string(),
             btc_canon_to_tip_length: get_btc_canon_to_tip_length_from_db(&db)?,
-            eos_last_seen_block_num: get_latest_eos_block_number(&db)?,
             eos_last_seen_block_id: get_eos_last_seen_block_id_from_db(&db)?.to_string(),
             eos_enabled_protocol_features: get_eos_enabled_protocol_features_from_db(&db)?,
             eos_known_schedules: EosKnownSchedulesJsons::from_schedules(get_eos_known_schedules_from_db(&db)?),

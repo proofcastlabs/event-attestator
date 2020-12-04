@@ -1,5 +1,5 @@
 use crate::{
-    chains::btc::btc_utils::get_btc_one_key,
+    chains::btc::{btc_types::BtcPubKeySlice, btc_utils::get_btc_one_key},
     constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
     crypto_utils::generate_random_private_key,
     traits::DatabaseInterface,
@@ -58,7 +58,7 @@ impl BtcPrivateKey {
         PublicKey::from_secret_key(&Secp256k1::new(), &self.0.key)
     }
 
-    pub fn to_public_key_slice(&self) -> [u8; 33] {
+    pub fn to_public_key_slice(&self) -> BtcPubKeySlice {
         self.to_public_key().serialize()
     }
 
