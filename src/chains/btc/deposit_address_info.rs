@@ -83,6 +83,11 @@ impl DepositAddressInfoJson {
     pub fn to_string(&self) -> Result<String> {
         Ok(serde_json::to_string(self)?)
     }
+
+    #[cfg(test)]
+    pub fn from_str(json_string: &str) -> Result<Self> {
+        Ok(serde_json::from_str(&json_string)?)
+    }
 }
 
 #[cfg(test)]
@@ -284,6 +289,11 @@ impl DepositAddressInfo {
     pub fn validate(&self) -> Result<()> {
         self.validate_commitment_hash()
     }
+
+    #[cfg(test)]
+    pub fn from_str(s: &str) -> Result<Self> {
+        Self::from_json(&DepositAddressInfoJson::from_str(s)?)
+    }
 }
 
 #[cfg(test)]
@@ -458,27 +468,67 @@ mod tests {
         }
     }
 
+    fn get_sample_deposit_info_json_string_v0() -> String {
+        "{\"btc_deposit_address\":\"2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2\",\"eth_address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"eth_address_and_nonce_hash\":\"0x98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e\",\"nonce\":1337,\"public_key\":\"03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7\",\"version\":\"0\"}".to_string()
+    }
+
+    fn get_sample_deposit_info_json_string_v1() -> String {
+        "{\"address\":\"0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\",\"address_and_nonce_hash\":\"0x5364a60af6f1e0e8a0b0e38b8812e3c02b98727247d749500ee1e90066aa360e\",\"btc_deposit_address\":\"2NEqdGbbaHdCUBbSHRBgFVPNjgw3Gnt1zm5\",\"nonce\":1337,\"public_key\":\"03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7\",\"version\":\"1\"}".to_string()
+    }
+
+    fn get_sample_deposit_info_json_string_v2() -> String {
+        "{\"address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"address_and_nonce_hash\":\"0x693777b55c79e66153181b67faa43662be576e5896003444d0479fe9b7a23d38\",\"btc_deposit_address\":\"2NFHg6i6R5N29MB7B1oK7PsLZhqRg456rWD\",\"calldata\":\"0x404092\",\"nonce\":1337,\"public_key\":\"03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7\",\"version\":\"2\"}".to_string()
+    }
+
     #[test]
     fn should_convert_v0_deposit_info_string_to_deposit_info() {
-        let json_str = "{\"btc_deposit_address\":\"2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2\",\"eth_address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"eth_address_and_nonce_hash\":\"0x98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e\",\"nonce\":1337,\"public_key\":\"03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7\",\"version\":\"0\"}";
-        let json: DepositAddressInfoJson = serde_json::from_str(json_str).unwrap();
-        let result = DepositAddressInfo::from_json(&json);
+        let json_str = get_sample_deposit_info_json_string_v0();
+        let result = DepositAddressInfo::from_str(&json_str);
         assert!(result.is_ok());
     }
 
     #[test]
     fn should_convert_v1_deposit_info_string_to_deposit_info() {
-        let json_str = "{\"address\":\"0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\",\"address_and_nonce_hash\":\"0x5364a60af6f1e0e8a0b0e38b8812e3c02b98727247d749500ee1e90066aa360e\",\"btc_deposit_address\":\"2NEqdGbbaHdCUBbSHRBgFVPNjgw3Gnt1zm5\",\"nonce\":1337,\"public_key\":\"03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7\",\"version\":\"1\"}";
-        let json: DepositAddressInfoJson = serde_json::from_str(json_str).unwrap();
-        let result = DepositAddressInfo::from_json(&json);
+        let json_str = get_sample_deposit_info_json_string_v1();
+        let result = DepositAddressInfo::from_str(&json_str);
         assert!(result.is_ok());
     }
 
     #[test]
     fn should_convert_v2_deposit_info_string_to_deposit_info() {
-        let json_str = "{\"address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"address_and_nonce_hash\":\"0x693777b55c79e66153181b67faa43662be576e5896003444d0479fe9b7a23d38\",\"btc_deposit_address\":\"2NFHg6i6R5N29MB7B1oK7PsLZhqRg456rWD\",\"calldata\":\"0x404092\",\"nonce\":1337,\"public_key\":\"03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7\",\"version\":\"2\"}";
-        let json: DepositAddressInfoJson = serde_json::from_str(json_str).unwrap();
-        let result = DepositAddressInfo::from_json(&json);
+        let json_str = get_sample_deposit_info_json_string_v2();
+        let result = DepositAddressInfo::from_str(&json_str);
         assert!(result.is_ok())
     }
+
+    /*
+    #[test]
+    fn should_fail_to_convert_invalid_deposit_info_json_to_deposit_info() {
+        let expected_err = "✘ Deposit info error - commitment hash is not valid!";
+        let nonce = 1578079722;
+        let calldata = None;
+        let address = Some("0xedb86cd455ef3ca43f0e227e00469c3bdfa40628".to_string());
+        let btc_deposit_address = "2NCbnp5Lp1eNeT9iBz9UrjwKCTUeQtjEcyy".to_string();
+        let invalid_address_and_nonce_hash =
+            Some("0x8d1fc5859f7c21ef5253e576185e744078a269919c9b43ddeee524889d6dd12c".to_string());
+        let eth_address = None;
+        let eth_address_and_nonce_hash = None;
+        let version = Some("1.0.0".to_string());
+        let deposit_json = DepositAddressInfoJson {
+            nonce,
+            address,
+            version,
+            calldata,
+            eth_address,
+            btc_deposit_address,
+            eth_address_and_nonce_hash,
+            address_and_nonce_hash: invalid_address_and_nonce_hash,
+        };
+        match DepositAddressInfo::from_json(&deposit_json) {
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Ok(_) => panic!("Should not have succeeded!"),
+            _ => panic!("Wrong error received"),
+        }
+    }
+    */
 }
