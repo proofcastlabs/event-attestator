@@ -26,6 +26,10 @@ impl DepositInfoList {
                 .collect::<Result<Vec<DepositAddressInfo>>>()?,
         ))
     }
+
+    pub fn validate(&self) -> Result<()> {
+        self.iter().map(|info| info.validate()).collect()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -180,7 +184,7 @@ impl DepositAddressInfo {
         }
     }
 
-    fn from_json_with_no_validation(deposit_address_info_json: &DepositAddressInfoJson) -> Result<Self> {
+    pub fn from_json(deposit_address_info_json: &DepositAddressInfoJson) -> Result<Self> {
         Ok(DepositAddressInfo {
             nonce: deposit_address_info_json.nonce,
             address: Self::extract_address_string_from_json(deposit_address_info_json)?,
@@ -190,10 +194,7 @@ impl DepositAddressInfo {
             calldata: match &deposit_address_info_json.calldata {
                 Some(hex_string) => decode_hex_with_err_msg(
                     hex_string,
-                    &format!(
-                        "✘ Could not decode hex in calldata in {}: ",
-                        deposit_address_info_json.to_string()?
-                    ),
+                    &format!("✘ Could not decode hex in calldata in {}: ", deposit_address_info_json.to_string()?),
                 )?,
                 None => vec![],
             },
@@ -237,10 +238,10 @@ impl DepositAddressInfo {
         }
     }
 
-    fn validate_commitment_hash(self) -> Result<Self> {
+    fn validate_commitment_hash(&self) -> Result<()> {
         self.calculate_commitment_hash()
             .and_then(|calculated_hash| match calculated_hash == self.commitment_hash {
-                true => Ok(self),
+                true => Ok(()),
                 false => {
                     debug!("          Deposit info nonce: {}", &self.nonce);
                     debug!("        Deposit info adresss: {}", &self.address);
@@ -249,11 +250,6 @@ impl DepositAddressInfo {
                     Err("✘ Deposit info error - commitment hash is not valid!".into())
                 },
             })
-    }
-
-    pub fn from_json(deposit_address_info_json: &DepositAddressInfoJson) -> Result<Self> {
-        Self::from_json_with_no_validation(deposit_address_info_json)
-            .and_then(DepositAddressInfo::validate_commitment_hash)
     }
 
     pub fn to_json(&self) -> DepositAddressInfoJson {
@@ -283,6 +279,10 @@ impl DepositAddressInfo {
                 DepositAddressInfoVersion::V1 | DepositAddressInfoVersion::V2 => Some(hash_string),
             },
         }
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        self.validate_commitment_hash()
     }
 }
 
@@ -455,35 +455,6 @@ mod tests {
         };
         if let Err(e) = DepositAddressInfo::from_json(&deposit_json) {
             panic!("Error parsing deposit info json: {}", e);
-        }
-    }
-
-    #[test]
-    fn should_fail_to_convert_invalid_deposit_info_json_to_deposit_info() {
-        let expected_err = "✘ Deposit info error - commitment hash is not valid!";
-        let nonce = 1578079722;
-        let calldata = None;
-        let address = Some("0xedb86cd455ef3ca43f0e227e00469c3bdfa40628".to_string());
-        let btc_deposit_address = "2NCbnp5Lp1eNeT9iBz9UrjwKCTUeQtjEcyy".to_string();
-        let invalid_address_and_nonce_hash =
-            Some("0x8d1fc5859f7c21ef5253e576185e744078a269919c9b43ddeee524889d6dd12c".to_string());
-        let eth_address = None;
-        let eth_address_and_nonce_hash = None;
-        let version = Some("1.0.0".to_string());
-        let deposit_json = DepositAddressInfoJson {
-            nonce,
-            address,
-            version,
-            calldata,
-            eth_address,
-            btc_deposit_address,
-            eth_address_and_nonce_hash,
-            address_and_nonce_hash: invalid_address_and_nonce_hash,
-        };
-        match DepositAddressInfo::from_json(&deposit_json) {
-            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
-            Ok(_) => panic!("Should not have succeeded!"),
-            _ => panic!("Wrong error received"),
         }
     }
 
