@@ -26,6 +26,7 @@ use crate::{
         filter_utxos::filter_out_value_too_low_utxos_from_state,
         get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
         get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
+        deposit_address_info::validate_deposit_address_list_in_state,
         increment_any_sender_nonce::maybe_increment_any_sender_nonce_in_db,
         increment_eth_nonce::maybe_increment_eth_nonce_in_db,
         remove_minting_params_from_canon_block::remove_minting_params_from_canon_block_and_return_state,
@@ -65,6 +66,7 @@ pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)
         .and_then(get_deposit_info_hash_map_and_put_in_state)
+        .and_then(validate_deposit_address_list_in_state)
         .and_then(filter_op_return_deposit_txs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
         .and_then(parse_minting_params_from_op_return_deposits_and_add_to_state)

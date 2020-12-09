@@ -1,9 +1,15 @@
 use crate::{
+    traits::DatabaseInterface,
     chains::btc::{
         btc_types::BtcPubKeySlice,
+        btc_state::BtcState,
         btc_utils::{
             convert_hex_to_sha256_hash,
             get_p2sh_redeem_script_sig,
+        },
+        btc_database_utils::{
+            get_btc_public_key_slice_from_db,
+            get_btc_network_from_db,
         },
     },
     types::{Bytes, Result},
@@ -335,6 +341,15 @@ impl DepositAddressInfo {
                 },
             })
     }
+}
+
+pub fn validate_deposit_address_list_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
+    state.get_deposit_info_list()
+        .and_then(|deposit_info_list| deposit_info_list.validate(
+            &get_btc_public_key_slice_from_db(&state.db)?,
+            &get_btc_network_from_db(&state.db)?,
+        ))
+        .and(Ok(state))
 }
 
 #[cfg(test)]
