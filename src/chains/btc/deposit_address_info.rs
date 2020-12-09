@@ -533,4 +533,40 @@ mod tests {
         let result = deposit_info.validate();
         assert!(result.is_ok());
     }
+
+    #[test]
+    fn v0_invalid_commitment_hash_should_fail_validation() {
+        let mut deposit_info = get_sample_deposit_info_v0();
+        let expected_err = "✘ Deposit info error - commitment hash is not valid!".to_string();
+        deposit_info.nonce = deposit_info.nonce + 1;
+        match deposit_info.validate() {
+            Ok(_) => panic!("Should not be valid!"),
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(_) => panic!("Wrong error received!"),
+        }
+    }
+
+    #[test]
+    fn v1_invalid_commitment_hash_should_fail_validation() {
+        let mut deposit_info = get_sample_deposit_info_v1();
+        let expected_err = "✘ Deposit info error - commitment hash is not valid!".to_string();
+        deposit_info.nonce = deposit_info.nonce + 1;
+        match deposit_info.validate() {
+            Ok(_) => panic!("Should not be valid!"),
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(_) => panic!("Wrong error received!"),
+        }
+    }
+
+    #[test]
+    fn v2_invalid_commitment_hash_should_fail_validation() {
+        let mut deposit_info = get_sample_deposit_info_v2();
+        let expected_err = "✘ Deposit info error - commitment hash is not valid!".to_string();
+        deposit_info.nonce = deposit_info.nonce + 1;
+        match deposit_info.validate() {
+            Ok(_) => panic!("Should not be valid!"),
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(_) => panic!("Wrong error received!"),
+        }
+    }
 }
