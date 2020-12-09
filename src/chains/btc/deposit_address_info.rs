@@ -1,11 +1,18 @@
 use crate::{
-    chains::btc::btc_utils::convert_hex_to_sha256_hash,
+    chains::btc::{
+        btc_types::BtcPubKeySlice,
+        btc_utils::{
+            convert_hex_to_sha256_hash,
+            get_p2sh_redeem_script_sig,
+        },
+    },
     types::{Bytes, Result},
     utils::decode_hex_with_err_msg,
 };
 use bitcoin::{
     hashes::{sha256d, Hash},
     util::address::Address as BtcAddress,
+    network::constants::Network as BtcNetwork,
 };
 use derive_more::{Constructor, Deref};
 use std::{collections::HashMap, fmt, str::FromStr};
@@ -27,8 +34,8 @@ impl DepositInfoList {
         ))
     }
 
-    pub fn validate(&self) -> Result<()> {
-        self.iter().map(|info| info.validate()).collect()
+    pub fn validate(&self, btc_pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<()> {
+        self.iter().map(|info| info.validate(btc_pub_key, network)).collect()
     }
 }
 
@@ -286,13 +293,47 @@ impl DepositAddressInfo {
         }
     }
 
-    pub fn validate(&self) -> Result<()> {
+    pub fn validate(&self, btc_pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<()> {
         self.validate_commitment_hash()
+            .and_then(|_| self.validate_btc_deposit_address(btc_pub_key, network))
     }
 
     #[cfg(test)]
     pub fn from_str(s: &str) -> Result<Self> {
         Self::from_json(&DepositAddressInfoJson::from_str(s)?)
+    }
+
+    fn calculate_btc_deposit_address(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<BtcAddress> {
+        match self.version {
+            DepositAddressInfoVersion::V0 => self.calculate_btc_deposit_address_v0(pub_key, network),
+            DepositAddressInfoVersion::V1 => self.calculate_btc_deposit_address_v1(pub_key, network),
+            DepositAddressInfoVersion::V2 => self.calculate_btc_deposit_address_v2(pub_key, network),
+        }
+    }
+
+    fn calculate_btc_deposit_address_v0(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<BtcAddress> {
+        let btc_script = get_p2sh_redeem_script_sig(&pub_key[..], &self.commitment_hash);
+        Ok(BtcAddress::p2sh(&btc_script, *network))
+    }
+
+    fn calculate_btc_deposit_address_v1(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<BtcAddress> {
+        self.calculate_btc_deposit_address_v0(pub_key, network)
+    }
+
+    fn calculate_btc_deposit_address_v2(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<BtcAddress> {
+        self.calculate_btc_deposit_address_v0(pub_key, network)
+    }
+
+    fn validate_btc_deposit_address(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<()> {
+        self.calculate_btc_deposit_address(pub_key, network)
+            .and_then(|calculated_address| match calculated_address == self.btc_deposit_address {
+                true => Ok(()),
+                false => {
+                    debug!("   BTC deposit address: {}", self.btc_deposit_address);
+                    debug!("Calculated BTC address: {}", calculated_address);
+                    Err("✘ Deposit info error - BTC deposit address is not valid!".into())
+                },
+            })
     }
 }
 
@@ -323,6 +364,17 @@ mod tests {
 
     fn get_sample_deposit_info_v2() -> DepositAddressInfo {
         DepositAddressInfo::from_str(&get_sample_deposit_info_json_string_v2()).unwrap()
+    }
+
+    fn get_sample_btc_network() -> BtcNetwork {
+        BtcNetwork::Testnet
+    }
+
+    fn get_sample_btc_pub_key_slice() -> BtcPubKeySlice {
+        let bytes = hex::decode("03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7").unwrap();
+        let mut arr = [0u8; 33];
+        arr.copy_from_slice(&bytes);
+        arr
     }
 
     #[test]
@@ -516,21 +568,27 @@ mod tests {
     #[test]
     fn v0_deposit_info_should_be_valid() {
         let deposit_info = get_sample_deposit_info_v0();
-        let result = deposit_info.validate();
+        let pub_key_slice = get_sample_btc_pub_key_slice();
+        let network = get_sample_btc_network();
+        let result = deposit_info.validate(&pub_key_slice, &network);
         assert!(result.is_ok());
     }
 
     #[test]
     fn v1_deposit_info_should_be_valid() {
         let deposit_info = get_sample_deposit_info_v1();
-        let result = deposit_info.validate();
+        let pub_key_slice = get_sample_btc_pub_key_slice();
+        let network = get_sample_btc_network();
+        let result = deposit_info.validate(&pub_key_slice, &network);
         assert!(result.is_ok());
     }
 
     #[test]
     fn v2_deposit_info_should_be_valid() {
         let deposit_info = get_sample_deposit_info_v2();
-        let result = deposit_info.validate();
+        let pub_key_slice = get_sample_btc_pub_key_slice();
+        let network = get_sample_btc_network();
+        let result = deposit_info.validate(&pub_key_slice, &network);
         assert!(result.is_ok());
     }
 
@@ -539,7 +597,9 @@ mod tests {
         let mut deposit_info = get_sample_deposit_info_v0();
         let expected_err = "✘ Deposit info error - commitment hash is not valid!".to_string();
         deposit_info.nonce = deposit_info.nonce + 1;
-        match deposit_info.validate() {
+        let pub_key_slice = get_sample_btc_pub_key_slice();
+        let network = get_sample_btc_network();
+        match deposit_info.validate(&pub_key_slice, &network) {
             Ok(_) => panic!("Should not be valid!"),
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
             Err(_) => panic!("Wrong error received!"),
@@ -551,7 +611,9 @@ mod tests {
         let mut deposit_info = get_sample_deposit_info_v1();
         let expected_err = "✘ Deposit info error - commitment hash is not valid!".to_string();
         deposit_info.nonce = deposit_info.nonce + 1;
-        match deposit_info.validate() {
+        let pub_key_slice = get_sample_btc_pub_key_slice();
+        let network = get_sample_btc_network();
+        match deposit_info.validate(&pub_key_slice, &network) {
             Ok(_) => panic!("Should not be valid!"),
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
             Err(_) => panic!("Wrong error received!"),
@@ -563,7 +625,9 @@ mod tests {
         let mut deposit_info = get_sample_deposit_info_v2();
         let expected_err = "✘ Deposit info error - commitment hash is not valid!".to_string();
         deposit_info.nonce = deposit_info.nonce + 1;
-        match deposit_info.validate() {
+        let pub_key_slice = get_sample_btc_pub_key_slice();
+        let network = get_sample_btc_network();
+        match deposit_info.validate(&pub_key_slice, &network) {
             Ok(_) => panic!("Should not be valid!"),
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
             Err(_) => panic!("Wrong error received!"),
