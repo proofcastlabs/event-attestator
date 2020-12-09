@@ -342,39 +342,135 @@ mod tests {
     use super::*;
     use crate::errors::AppError;
 
-    fn get_sample_deposit_info_json_string_v0() -> String {
-        "{\"btc_deposit_address\":\"2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2\",\"eth_address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"eth_address_and_nonce_hash\":\"0x98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e\",\"nonce\":1337,\"public_key\":\"03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7\",\"version\":\"0\"}".to_string()
+    fn get_sample_testnet_pub_key_hex() -> String {
+        "03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7".to_string()
     }
 
-    fn get_sample_deposit_info_json_string_v1() -> String {
-        "{\"address\":\"0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\",\"address_and_nonce_hash\":\"0x5364a60af6f1e0e8a0b0e38b8812e3c02b98727247d749500ee1e90066aa360e\",\"btc_deposit_address\":\"2NEqdGbbaHdCUBbSHRBgFVPNjgw3Gnt1zm5\",\"nonce\":1337,\"public_key\":\"03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7\",\"version\":\"1\"}".to_string()
+    fn get_sample_mainnet_pub_key_hex() -> String {
+        "0367663eeb293b978b495c20dee62cbfba551bf7e05a8381b374af84861ab6de39".to_string()
     }
 
-    fn get_sample_deposit_info_json_string_v2() -> String {
-        "{\"address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"address_and_nonce_hash\":\"0x693777b55c79e66153181b67faa43662be576e5896003444d0479fe9b7a23d38\",\"btc_deposit_address\":\"2NFHg6i6R5N29MB7B1oK7PsLZhqRg456rWD\",\"calldata\":\"0x404092\",\"nonce\":1337,\"public_key\":\"03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7\",\"version\":\"2\"}".to_string()
+    fn get_sample_testnet_deposit_info_json_string_v0() -> String {
+        format!(
+            "{{\"btc_deposit_address\":\"2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2\",\"eth_address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"eth_address_and_nonce_hash\":\"0x98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e\",\"nonce\":1337,\"public_key\":\"{}\",\"version\":\"0\"}}",
+            get_sample_testnet_pub_key_hex(),
+        )
     }
 
-    fn get_sample_deposit_info_v0() -> DepositAddressInfo {
-        DepositAddressInfo::from_str(&get_sample_deposit_info_json_string_v0()).unwrap()
+    fn get_sample_testnet_deposit_info_json_string_v1() -> String {
+        format!(
+            "{{\"address\":\"0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\",\"address_and_nonce_hash\":\"0x5364a60af6f1e0e8a0b0e38b8812e3c02b98727247d749500ee1e90066aa360e\",\"btc_deposit_address\":\"2NEqdGbbaHdCUBbSHRBgFVPNjgw3Gnt1zm5\",\"nonce\":1337,\"public_key\":\"{}\",\"version\":\"1\"}}",
+            get_sample_testnet_pub_key_hex(),
+        )
     }
 
-    fn get_sample_deposit_info_v1() -> DepositAddressInfo {
-        DepositAddressInfo::from_str(&get_sample_deposit_info_json_string_v1()).unwrap()
+    fn get_sample_testnet_deposit_info_json_string_v2() -> String {
+        format!(
+            "{{\"address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"address_and_nonce_hash\":\"0x693777b55c79e66153181b67faa43662be576e5896003444d0479fe9b7a23d38\",\"btc_deposit_address\":\"2NFHg6i6R5N29MB7B1oK7PsLZhqRg456rWD\",\"calldata\":\"0x404092\",\"nonce\":1337,\"public_key\":\"{}\",\"version\":\"2\"}}",
+            get_sample_testnet_pub_key_hex(),
+        )
     }
 
-    fn get_sample_deposit_info_v2() -> DepositAddressInfo {
-        DepositAddressInfo::from_str(&get_sample_deposit_info_json_string_v2()).unwrap()
+    fn get_sample_mainnet_deposit_info_json_string_v0() -> String {
+        format!(
+            "{{\"btc_deposit_address\":\"3QtLZUeyy45utKbZnCt6tWFUoUQJ3vaME6\",\"eth_address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"eth_address_and_nonce_hash\":\"0x98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e\",\"nonce\":1337,\"public_key\":\"{}\",\"tool_version\":\"1.6.0\",\"version\":\"0\"}}",
+            get_sample_mainnet_pub_key_hex(),
+        )
     }
 
-    fn get_sample_btc_network() -> BtcNetwork {
+    fn get_sample_mainnet_deposit_info_json_string_v1() -> String {
+        format!(
+            "{{\"address\":\"0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\",\"address_and_nonce_hash\":\"0x5364a60af6f1e0e8a0b0e38b8812e3c02b98727247d749500ee1e90066aa360e\",\"btc_deposit_address\":\"3JQSxdUeiS6ss8UvAdwR52rzQiRnruuS4G\",\"nonce\":1337,\"public_key\":\"{}\",\"tool_version\":\"1.6.0\",\"version\":\"1\"}}",
+            get_sample_mainnet_pub_key_hex(),
+        )
+    }
+
+    fn get_sample_mainnet_deposit_info_json_string_v2() -> String {
+        format!(
+            "{{\"address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"address_and_nonce_hash\":\"0x693777b55c79e66153181b67faa43662be576e5896003444d0479fe9b7a23d38\",\"btc_deposit_address\":\"3DHhv1yvKG7W8xPWbDFCGCtFFGiJnfE8kK\",\"calldata\":\"0x404092\",\"nonce\":1337,\"public_key\":\"{}\",\"tool_version\":\"1.6.0\",\"version\":\"2\"}}",
+            get_sample_mainnet_pub_key_hex(),
+
+        )
+    }
+
+    fn get_sample_testnet_deposit_info_v0() -> DepositAddressInfo {
+        DepositAddressInfo::from_str(&get_sample_testnet_deposit_info_json_string_v0()).unwrap()
+    }
+
+    fn get_sample_testnet_deposit_info_v1() -> DepositAddressInfo {
+        DepositAddressInfo::from_str(&get_sample_testnet_deposit_info_json_string_v1()).unwrap()
+    }
+
+    fn get_sample_testnet_deposit_info_v2() -> DepositAddressInfo {
+        DepositAddressInfo::from_str(&get_sample_testnet_deposit_info_json_string_v2()).unwrap()
+    }
+
+    fn get_sample_mainnet_deposit_info_v0() -> DepositAddressInfo {
+        DepositAddressInfo::from_str(&get_sample_mainnet_deposit_info_json_string_v0()).unwrap()
+    }
+
+    fn get_sample_mainnet_deposit_info_v1() -> DepositAddressInfo {
+        DepositAddressInfo::from_str(&get_sample_mainnet_deposit_info_json_string_v1()).unwrap()
+    }
+
+    fn get_sample_mainnet_deposit_info_v2() -> DepositAddressInfo {
+        DepositAddressInfo::from_str(&get_sample_mainnet_deposit_info_json_string_v2()).unwrap()
+    }
+
+    fn get_sample_testnet_btc_network() -> BtcNetwork {
         BtcNetwork::Testnet
     }
 
-    fn get_sample_btc_pub_key_slice() -> BtcPubKeySlice {
-        let bytes = hex::decode("03d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7").unwrap();
+    fn get_sample_mainnet_btc_network() -> BtcNetwork {
+        BtcNetwork::Bitcoin
+    }
+
+    fn get_sample_pub_key_slice(hex: &str) -> BtcPubKeySlice {
+        let bytes = hex::decode(hex).unwrap();
         let mut arr = [0u8; 33];
         arr.copy_from_slice(&bytes);
         arr
+    }
+
+    fn get_sample_testnet_pub_key_slice() -> BtcPubKeySlice {
+        get_sample_pub_key_slice(&get_sample_testnet_pub_key_hex())
+    }
+
+    fn get_sample_mainnet_pub_key_slice() -> BtcPubKeySlice {
+        get_sample_pub_key_slice(&get_sample_mainnet_pub_key_hex())
+    }
+
+    fn get_sample_testnet_deposit_info_list() -> DepositInfoList {
+        DepositInfoList::new(vec![
+            get_sample_testnet_deposit_info_v0(),
+            get_sample_testnet_deposit_info_v1(),
+            get_sample_testnet_deposit_info_v2(),
+        ])
+    }
+
+    fn get_sample_mainnet_deposit_info_list() -> DepositInfoList {
+        DepositInfoList::new(vec![
+            get_sample_mainnet_deposit_info_v0(),
+            get_sample_mainnet_deposit_info_v1(),
+            get_sample_mainnet_deposit_info_v2(),
+        ])
+    }
+
+    fn get_sample_invalidate_testnet_deposit_info_list() -> DepositInfoList {
+        DepositInfoList::new(
+            get_sample_testnet_deposit_info_list().iter().map(|info| invalidate_commitment_hash(info.clone())).collect()
+        )
+    }
+
+    fn get_sample_invalidate_mainnet_deposit_info_list() -> DepositInfoList {
+        DepositInfoList::new(
+            get_sample_mainnet_deposit_info_list().iter().map(|info| invalidate_commitment_hash(info.clone())).collect()
+        )
+    }
+
+    fn invalidate_commitment_hash(mut deposit_info: DepositAddressInfo) -> DepositAddressInfo {
+        deposit_info.nonce = deposit_info.nonce + 1;
+        deposit_info
     }
 
     #[test]
@@ -519,118 +615,71 @@ mod tests {
     }
 
     #[test]
-    fn should_convert_valid_deposit_info_json_to_deposit_info() {
-        let nonce = 1578079722;
-        let address = Some("0xedb86cd455ef3ca43f0e227e00469c3bdfa40628".to_string());
-        let btc_deposit_address = "2NCbnp5Lp1eNeT9iBz9UrjwKCTUeQtjEcyy".to_string();
-        let address_and_nonce_hash =
-            Some("0x5b455d06e29f2b65279b947304f03ebb327cbf7d3fb2d7cd488a27c1bbf00ae9".to_string());
-        let calldata = None;
-        let eth_address = None;
-        let eth_address_and_nonce_hash = None;
-        let version = Some("1.0.0".to_string());
-        let deposit_json = DepositAddressInfoJson {
-            nonce,
-            address,
-            version,
-            calldata,
-            eth_address,
-            btc_deposit_address,
-            address_and_nonce_hash,
-            eth_address_and_nonce_hash,
-        };
-        if let Err(e) = DepositAddressInfo::from_json(&deposit_json) {
-            panic!("Error parsing deposit info json: {}", e);
-        }
-    }
-
-    #[test]
-    fn should_convert_v0_deposit_info_string_to_deposit_info() {
-        let json_str = get_sample_deposit_info_json_string_v0();
+    fn should_convert_v0_testnet_deposit_info_string_to_deposit_info() {
+        let json_str = get_sample_testnet_deposit_info_json_string_v0();
         let result = DepositAddressInfo::from_str(&json_str);
         assert!(result.is_ok());
     }
 
     #[test]
-    fn should_convert_v1_deposit_info_string_to_deposit_info() {
-        let json_str = get_sample_deposit_info_json_string_v1();
+    fn should_convert_v1_testnet_deposit_info_string_to_deposit_info() {
+        let json_str = get_sample_testnet_deposit_info_json_string_v1();
         let result = DepositAddressInfo::from_str(&json_str);
         assert!(result.is_ok());
     }
 
     #[test]
-    fn should_convert_v2_deposit_info_string_to_deposit_info() {
-        let json_str = get_sample_deposit_info_json_string_v2();
+    fn should_convert_v2_testnet_deposit_info_string_to_deposit_info() {
+        let json_str = get_sample_testnet_deposit_info_json_string_v2();
         let result = DepositAddressInfo::from_str(&json_str);
         assert!(result.is_ok())
     }
 
     #[test]
-    fn v0_deposit_info_should_be_valid() {
-        let deposit_info = get_sample_deposit_info_v0();
-        let pub_key_slice = get_sample_btc_pub_key_slice();
-        let network = get_sample_btc_network();
-        let result = deposit_info.validate(&pub_key_slice, &network);
-        assert!(result.is_ok());
+    fn testnet_deposit_info_list_should_be_valid() {
+        let list = get_sample_testnet_deposit_info_list();
+        let network = get_sample_testnet_btc_network();
+        let pub_key = get_sample_testnet_pub_key_slice();
+        let result = list.validate(&pub_key, &network);
+        assert!(result.is_ok())
     }
 
     #[test]
-    fn v1_deposit_info_should_be_valid() {
-        let deposit_info = get_sample_deposit_info_v1();
-        let pub_key_slice = get_sample_btc_pub_key_slice();
-        let network = get_sample_btc_network();
-        let result = deposit_info.validate(&pub_key_slice, &network);
-        assert!(result.is_ok());
+    fn mainnet_deposit_info_list_should_be_valid() {
+        let list = get_sample_mainnet_deposit_info_list();
+        let network = get_sample_mainnet_btc_network();
+        let pub_key = get_sample_mainnet_pub_key_slice();
+        let result = list.validate(&pub_key, &network);
+        assert!(result.is_ok())
     }
 
     #[test]
-    fn v2_deposit_info_should_be_valid() {
-        let deposit_info = get_sample_deposit_info_v2();
-        let pub_key_slice = get_sample_btc_pub_key_slice();
-        let network = get_sample_btc_network();
-        let result = deposit_info.validate(&pub_key_slice, &network);
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn v0_invalid_commitment_hash_should_fail_validation() {
-        let mut deposit_info = get_sample_deposit_info_v0();
+    fn invalid_commitment_hash_testnet_deposit_info_should_fail_validation() {
         let expected_err = "✘ Deposit info error - commitment hash is not valid!".to_string();
-        deposit_info.nonce = deposit_info.nonce + 1;
-        let pub_key_slice = get_sample_btc_pub_key_slice();
-        let network = get_sample_btc_network();
-        match deposit_info.validate(&pub_key_slice, &network) {
-            Ok(_) => panic!("Should not be valid!"),
-            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
-            Err(_) => panic!("Wrong error received!"),
-        }
+        let pub_key_slice = get_sample_testnet_pub_key_slice();
+        let network = get_sample_testnet_btc_network();
+        let invalid_list = get_sample_invalidate_testnet_deposit_info_list();
+        invalid_list
+            .iter()
+            .for_each(|invalid_info| match invalid_info.validate(&pub_key_slice, &network) {
+                Ok(_) => panic!("Should not be valid!"),
+                Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+                Err(_) => panic!("Wrong error received!"),
+            });
     }
 
     #[test]
-    fn v1_invalid_commitment_hash_should_fail_validation() {
-        let mut deposit_info = get_sample_deposit_info_v1();
+    fn invalid_commitment_hash_mainnet_deposit_info_should_fail_validation() {
         let expected_err = "✘ Deposit info error - commitment hash is not valid!".to_string();
-        deposit_info.nonce = deposit_info.nonce + 1;
-        let pub_key_slice = get_sample_btc_pub_key_slice();
-        let network = get_sample_btc_network();
-        match deposit_info.validate(&pub_key_slice, &network) {
-            Ok(_) => panic!("Should not be valid!"),
-            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
-            Err(_) => panic!("Wrong error received!"),
-        }
-    }
-
-    #[test]
-    fn v2_invalid_commitment_hash_should_fail_validation() {
-        let mut deposit_info = get_sample_deposit_info_v2();
-        let expected_err = "✘ Deposit info error - commitment hash is not valid!".to_string();
-        deposit_info.nonce = deposit_info.nonce + 1;
-        let pub_key_slice = get_sample_btc_pub_key_slice();
-        let network = get_sample_btc_network();
-        match deposit_info.validate(&pub_key_slice, &network) {
-            Ok(_) => panic!("Should not be valid!"),
-            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
-            Err(_) => panic!("Wrong error received!"),
-        }
+        let pub_key_slice = get_sample_mainnet_pub_key_slice();
+        let network = get_sample_mainnet_btc_network();
+        let invalid_list = get_sample_invalidate_mainnet_deposit_info_list();
+        invalid_list
+            .iter()
+            .for_each(|invalid_info| match invalid_info.validate(&pub_key_slice, &network) {
+                Ok(_) => panic!("Should not be valid!"),
+                Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+                Err(_) => panic!("Wrong error received!"),
+            });
     }
 }
