@@ -1,24 +1,18 @@
 use crate::{
-    traits::DatabaseInterface,
     chains::btc::{
-        btc_types::BtcPubKeySlice,
+        btc_database_utils::{get_btc_network_from_db, get_btc_public_key_slice_from_db},
         btc_state::BtcState,
-        btc_utils::{
-            convert_hex_to_sha256_hash,
-            get_p2sh_redeem_script_sig,
-        },
-        btc_database_utils::{
-            get_btc_public_key_slice_from_db,
-            get_btc_network_from_db,
-        },
+        btc_types::BtcPubKeySlice,
+        btc_utils::{convert_hex_to_sha256_hash, get_p2sh_redeem_script_sig},
     },
+    traits::DatabaseInterface,
     types::{Bytes, Result},
     utils::decode_hex_with_err_msg,
 };
 use bitcoin::{
     hashes::{sha256d, Hash},
-    util::address::Address as BtcAddress,
     network::constants::Network as BtcNetwork,
+    util::address::Address as BtcAddress,
 };
 use derive_more::{Constructor, Deref};
 use std::{collections::HashMap, fmt, str::FromStr};
@@ -212,7 +206,10 @@ impl DepositAddressInfo {
             calldata: match &deposit_address_info_json.calldata {
                 Some(hex_string) => decode_hex_with_err_msg(
                     hex_string,
-                    &format!("✘ Could not decode hex in calldata in {}: ", deposit_address_info_json.to_string()?),
+                    &format!(
+                        "✘ Could not decode hex in calldata in {}: ",
+                        deposit_address_info_json.to_string()?
+                    ),
                 )?,
                 None => vec![],
             },
@@ -332,23 +329,28 @@ impl DepositAddressInfo {
 
     fn validate_btc_deposit_address(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<()> {
         self.calculate_btc_deposit_address(pub_key, network)
-            .and_then(|calculated_address| match calculated_address == self.btc_deposit_address {
-                true => Ok(()),
-                false => {
-                    debug!("   BTC deposit address: {}", self.btc_deposit_address);
-                    debug!("Calculated BTC address: {}", calculated_address);
-                    Err("✘ Deposit info error - BTC deposit address is not valid!".into())
+            .and_then(
+                |calculated_address| match calculated_address == self.btc_deposit_address {
+                    true => Ok(()),
+                    false => {
+                        debug!("   BTC deposit address: {}", self.btc_deposit_address);
+                        debug!("Calculated BTC address: {}", calculated_address);
+                        Err("✘ Deposit info error - BTC deposit address is not valid!".into())
+                    },
                 },
-            })
+            )
     }
 }
 
 pub fn validate_deposit_address_list_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
-    state.get_deposit_info_list()
-        .and_then(|deposit_info_list| deposit_info_list.validate(
-            &get_btc_public_key_slice_from_db(&state.db)?,
-            &get_btc_network_from_db(&state.db)?,
-        ))
+    state
+        .get_deposit_info_list()
+        .and_then(|deposit_info_list| {
+            deposit_info_list.validate(
+                &get_btc_public_key_slice_from_db(&state.db)?,
+                &get_btc_network_from_db(&state.db)?,
+            )
+        })
         .and(Ok(state))
 }
 
@@ -480,7 +482,7 @@ mod tests {
             get_sample_testnet_deposit_info_list()
                 .iter()
                 .cloned()
-                .map(|info| invalidate_commitment_hash(info))
+                .map(invalidate_commitment_hash)
                 .collect(),
         )
     }
@@ -490,7 +492,7 @@ mod tests {
             get_sample_mainnet_deposit_info_list()
                 .iter()
                 .cloned()
-                .map(|info| invalidate_commitment_hash(info))
+                .map(invalidate_commitment_hash)
                 .collect(),
         )
     }
@@ -500,7 +502,7 @@ mod tests {
             get_sample_testnet_deposit_info_list()
                 .iter()
                 .cloned()
-                .map(|info| invalidate_btc_address(info))
+                .map(invalidate_btc_address)
                 .collect(),
         )
     }
@@ -510,7 +512,7 @@ mod tests {
             get_sample_mainnet_deposit_info_list()
                 .iter()
                 .cloned()
-                .map(|info| invalidate_btc_address(info))
+                .map(invalidate_btc_address)
                 .collect(),
         )
     }
