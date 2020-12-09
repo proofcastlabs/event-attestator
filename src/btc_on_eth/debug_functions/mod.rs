@@ -480,7 +480,8 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
     tx_id: &str,
     v_out: u32,
 ) -> Result<String> {
-    check_core_is_initialized(&db)
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| get_child_pays_for_parent_btc_tx(db, fee, tx_id, v_out))
         .map(prepend_debug_output_marker_to_string)
 }
@@ -496,7 +497,8 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
 /// broadcast, the consolidated  output saved in the DB will NOT be spendable, leaving the enclave
 /// bricked. Use ONLY if you know exactly what you're doing and why!
 pub fn debug_consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize) -> Result<String> {
-    check_core_is_initialized(&db)
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| consolidate_utxos(db, fee, num_utxos))
         .map(prepend_debug_output_marker_to_string)
 }
@@ -508,7 +510,8 @@ pub fn debug_consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos:
 /// ### BEWARE:
 /// Use ONLY if you know exactly what you're doing and why!
 pub fn debug_remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -> Result<String> {
-    check_core_is_initialized(&db)
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| remove_utxo(db, tx_id, v_out))
         .map(prepend_debug_output_marker_to_string)
 }
