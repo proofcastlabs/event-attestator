@@ -41,7 +41,7 @@ impl DepositInfoList {
     }
 
     pub fn validate(&self, btc_pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<()> {
-        self.iter().map(|info| info.validate(btc_pub_key, network)).collect()
+        self.iter().try_for_each(|info| info.validate(btc_pub_key, network))
     }
 }
 
@@ -365,6 +365,10 @@ mod tests {
         "0367663eeb293b978b495c20dee62cbfba551bf7e05a8381b374af84861ab6de39".to_string()
     }
 
+    fn get_sample_btc_address() -> BtcAddress {
+        BtcAddress::from_str("1DSh7vX6ed2cgTeKPwufV5i4hSi4pp373h").unwrap()
+    }
+
     fn get_sample_testnet_deposit_info_json_string_v0() -> String {
         format!(
             "{{\"btc_deposit_address\":\"2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2\",\"eth_address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"eth_address_and_nonce_hash\":\"0x98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e\",\"nonce\":1337,\"public_key\":\"{}\",\"version\":\"0\"}}",
@@ -432,11 +436,11 @@ mod tests {
         DepositAddressInfo::from_str(&get_sample_mainnet_deposit_info_json_string_v2()).unwrap()
     }
 
-    fn get_sample_testnet_btc_network() -> BtcNetwork {
+    fn get_sample_btc_testnet_network() -> BtcNetwork {
         BtcNetwork::Testnet
     }
 
-    fn get_sample_mainnet_btc_network() -> BtcNetwork {
+    fn get_sample_btc_mainnet_network() -> BtcNetwork {
         BtcNetwork::Bitcoin
     }
 
@@ -471,20 +475,53 @@ mod tests {
         ])
     }
 
-    fn get_sample_invalidate_testnet_deposit_info_list() -> DepositInfoList {
+    fn get_sample_invalid_commitment_hash_testnet_deposit_info_list() -> DepositInfoList {
         DepositInfoList::new(
-            get_sample_testnet_deposit_info_list().iter().map(|info| invalidate_commitment_hash(info.clone())).collect()
+            get_sample_testnet_deposit_info_list()
+                .iter()
+                .cloned()
+                .map(|info| invalidate_commitment_hash(info))
+                .collect(),
         )
     }
 
-    fn get_sample_invalidate_mainnet_deposit_info_list() -> DepositInfoList {
+    fn get_sample_invalid_commitment_hash_mainnet_list() -> DepositInfoList {
         DepositInfoList::new(
-            get_sample_mainnet_deposit_info_list().iter().map(|info| invalidate_commitment_hash(info.clone())).collect()
+            get_sample_mainnet_deposit_info_list()
+                .iter()
+                .cloned()
+                .map(|info| invalidate_commitment_hash(info))
+                .collect(),
+        )
+    }
+
+    fn get_sample_invalid_btc_address_testnet_deposit_info_list() -> DepositInfoList {
+        DepositInfoList::new(
+            get_sample_testnet_deposit_info_list()
+                .iter()
+                .cloned()
+                .map(|info| invalidate_btc_address(info))
+                .collect(),
+        )
+    }
+
+    fn get_sample_invalid_btc_address_mainnet_deposit_info_list() -> DepositInfoList {
+        DepositInfoList::new(
+            get_sample_mainnet_deposit_info_list()
+                .iter()
+                .cloned()
+                .map(|info| invalidate_btc_address(info))
+                .collect(),
         )
     }
 
     fn invalidate_commitment_hash(mut deposit_info: DepositAddressInfo) -> DepositAddressInfo {
-        deposit_info.nonce = deposit_info.nonce + 1;
+        deposit_info.nonce += 1;
+        deposit_info
+    }
+
+    fn invalidate_btc_address(mut deposit_info: DepositAddressInfo) -> DepositAddressInfo {
+        deposit_info.btc_deposit_address = get_sample_btc_address();
         deposit_info
     }
 
@@ -653,7 +690,7 @@ mod tests {
     #[test]
     fn testnet_deposit_info_list_should_be_valid() {
         let list = get_sample_testnet_deposit_info_list();
-        let network = get_sample_testnet_btc_network();
+        let network = get_sample_btc_testnet_network();
         let pub_key = get_sample_testnet_pub_key_slice();
         let result = list.validate(&pub_key, &network);
         assert!(result.is_ok())
@@ -662,7 +699,7 @@ mod tests {
     #[test]
     fn mainnet_deposit_info_list_should_be_valid() {
         let list = get_sample_mainnet_deposit_info_list();
-        let network = get_sample_mainnet_btc_network();
+        let network = get_sample_btc_mainnet_network();
         let pub_key = get_sample_mainnet_pub_key_slice();
         let result = list.validate(&pub_key, &network);
         assert!(result.is_ok())
@@ -672,8 +709,8 @@ mod tests {
     fn invalid_commitment_hash_testnet_deposit_info_should_fail_validation() {
         let expected_err = "✘ Deposit info error - commitment hash is not valid!".to_string();
         let pub_key_slice = get_sample_testnet_pub_key_slice();
-        let network = get_sample_testnet_btc_network();
-        let invalid_list = get_sample_invalidate_testnet_deposit_info_list();
+        let network = get_sample_btc_testnet_network();
+        let invalid_list = get_sample_invalid_commitment_hash_testnet_deposit_info_list();
         invalid_list
             .iter()
             .for_each(|invalid_info| match invalid_info.validate(&pub_key_slice, &network) {
@@ -687,8 +724,38 @@ mod tests {
     fn invalid_commitment_hash_mainnet_deposit_info_should_fail_validation() {
         let expected_err = "✘ Deposit info error - commitment hash is not valid!".to_string();
         let pub_key_slice = get_sample_mainnet_pub_key_slice();
-        let network = get_sample_mainnet_btc_network();
-        let invalid_list = get_sample_invalidate_mainnet_deposit_info_list();
+        let network = get_sample_btc_mainnet_network();
+        let invalid_list = get_sample_invalid_commitment_hash_mainnet_list();
+        invalid_list
+            .iter()
+            .for_each(|invalid_info| match invalid_info.validate(&pub_key_slice, &network) {
+                Ok(_) => panic!("Should not be valid!"),
+                Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+                Err(_) => panic!("Wrong error received!"),
+            });
+    }
+
+    #[test]
+    fn invalid_btc_address_testnet_deposit_info_should_fail_validation() {
+        let expected_err = "✘ Deposit info error - BTC deposit address is not valid!".to_string();
+        let pub_key_slice = get_sample_testnet_pub_key_slice();
+        let network = get_sample_btc_testnet_network();
+        let invalid_list = get_sample_invalid_btc_address_testnet_deposit_info_list();
+        invalid_list
+            .iter()
+            .for_each(|invalid_info| match invalid_info.validate(&pub_key_slice, &network) {
+                Ok(_) => panic!("Should not be valid!"),
+                Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+                Err(_) => panic!("Wrong error received!"),
+            });
+    }
+
+    #[test]
+    fn invalid_btc_address_hash_mainnet_deposit_info_should_fail_validation() {
+        let expected_err = "✘ Deposit info error - BTC deposit address is not valid!".to_string();
+        let pub_key_slice = get_sample_mainnet_pub_key_slice();
+        let network = get_sample_btc_mainnet_network();
+        let invalid_list = get_sample_invalid_btc_address_mainnet_deposit_info_list();
         invalid_list
             .iter()
             .for_each(|invalid_info| match invalid_info.validate(&pub_key_slice, &network) {
