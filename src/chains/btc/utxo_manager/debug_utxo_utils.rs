@@ -30,7 +30,12 @@ use serde_json::json;
 pub fn clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     db.start_transaction()?;
     Ok(get_all_utxo_db_keys(db).to_vec())
-        .and_then(|db_keys| db_keys.iter().map(|db_key| db.delete(db_key.to_vec())).collect::<Result<Vec<()>>>())
+        .and_then(|db_keys| {
+            db_keys
+                .iter()
+                .map(|db_key| db.delete(db_key.to_vec()))
+                .collect::<Result<Vec<()>>>()
+        })
         .and_then(|_| delete_last_utxo_key(db))
         .and_then(|_| delete_first_utxo_key(db))
         .and_then(|_| put_total_utxo_balance_in_db(db, 0))
@@ -133,11 +138,13 @@ pub fn add_multiple_utxos<D: DatabaseInterface>(db: &D, json_str: &str) -> Resul
                 .collect::<Result<Vec<bool>>>()?
                 .iter()
                 .zip(utxos.iter())
-                .filter_map(|(exists, utxo)| if *exists {
-                    warn!("Not adding UTXO because it already exists!");
-                    None
-                } else {
-                    Some(utxo)
+                .filter_map(|(exists, utxo)| {
+                    if *exists {
+                        warn!("Not adding UTXO because it already exists!");
+                        None
+                    } else {
+                        Some(utxo)
+                    }
                 })
                 .map(|utxo| save_new_utxo_and_value(db, &utxo))
                 .collect::<Result<Vec<()>>>()
@@ -149,15 +156,14 @@ pub fn add_multiple_utxos<D: DatabaseInterface>(db: &D, json_str: &str) -> Resul
 mod tests {
     use super::*;
     use crate::{
-        test_utils::get_test_database,
-        chains::btc::btc_test_utils::get_sample_utxo_and_values,
-        chains::btc::utxo_manager::{
-            utxo_database_utils::{
-                save_utxos_to_db,
-                get_total_utxo_balance_from_db,
+        chains::btc::{
+            btc_test_utils::get_sample_utxo_and_values,
+            utxo_manager::{
+                utxo_database_utils::{get_total_utxo_balance_from_db, save_utxos_to_db},
+                utxo_utils::get_all_utxos_as_json_string,
             },
-            utxo_utils::get_all_utxos_as_json_string,
         },
+        test_utils::get_test_database,
     };
 
     #[test]
