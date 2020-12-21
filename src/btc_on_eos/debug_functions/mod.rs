@@ -33,7 +33,13 @@ use crate::{
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
             increment_btc_account_nonce::maybe_increment_btc_signature_nonce_and_return_eos_state,
             utxo_manager::{
-                debug_utxo_utils::{clear_all_utxos, consolidate_utxos, get_child_pays_for_parent_btc_tx, remove_utxo},
+                debug_utxo_utils::{
+                    add_multiple_utxos,
+                    clear_all_utxos,
+                    consolidate_utxos,
+                    get_child_pays_for_parent_btc_tx,
+                    remove_utxo,
+                },
                 utxo_constants::get_utxo_constants_db_keys,
                 utxo_utils::get_all_utxos_as_json_string,
             },
@@ -334,4 +340,21 @@ pub fn debug_remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| remove_utxo(db, tx_id, v_out))
         .map(prepend_debug_output_marker_to_string)
+}
+
+/// # Debug Add Multiple Utxos
+///
+/// Add multiple UTXOs to the databsae. This function first checks if that UTXO already exists in
+/// the encrypted database, skipping it if so.
+///
+/// ### NOTE:
+///
+/// This function takes as it's argument and valid JSON string in the format that the
+/// `debug_get_all_utxos` returns. In this way, it's useful for migrating a UTXO set from one core
+/// to another.
+///
+/// ### BEWARE:
+/// Use ONLY if you know exactly what you're doing and why!
+pub fn debug_add_multiple_utxos<D: DatabaseInterface>(db: D, json_str: &str) -> Result<String> {
+    add_multiple_utxos(&db, json_str).map(prepend_debug_output_marker_to_string)
 }

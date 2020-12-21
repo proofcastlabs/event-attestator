@@ -44,7 +44,8 @@ pub fn get_all_utxos_as_json_string<D: DatabaseInterface>(db: &D) -> Result<Stri
                 })
                 .map(|output_json| output_json.to_string())
         })
-        .collect::<Result<Vec<String>>>()?).to_string())
+        .collect::<Result<Vec<String>>>()?)
+    .to_string())
 }
 
 fn get_all_utxos_from_db<D: DatabaseInterface>(db: &D) -> Result<Vec<BtcUtxoAndValue>> {

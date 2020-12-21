@@ -13,9 +13,11 @@ use crate::{
                 get_utxo_with_tx_id_and_v_out,
                 get_x_utxos,
                 put_total_utxo_balance_in_db,
+                save_new_utxo_and_value,
                 save_utxos_to_db,
             },
             utxo_types::BtcUtxosAndValues,
+            utxo_utils::utxo_exists_in_db,
         },
     },
     check_debug_mode::check_debug_mode,
@@ -125,4 +127,20 @@ pub fn get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
             })
             .to_string()
         })
+}
+
+pub fn add_multiple_utxos<D: DatabaseInterface>(db: &D, json_str: &str) -> Result<String> {
+    BtcUtxosAndValues::from_str(json_str)
+        .and_then(|utxos| {
+            utxos
+                .iter()
+                .map(|utxo| utxo_exists_in_db(db, &utxo))
+                .collect::<Result<Vec<bool>>>()?
+                .iter()
+                .zip(utxos.iter())
+                .filter_map(|(exists, utxo)| if *exists { Some(utxo) } else { None })
+                .map(|utxo| save_new_utxo_and_value(db, &utxo))
+                .collect::<Result<Vec<()>>>()
+        })
+        .map(|_| json!({"add_multiple_utxos_success":"true"}).to_string())
 }
