@@ -234,7 +234,7 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &st
 /// Use with extreme caution, and only if you know exactly what you are doing and why.
 pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     info!("✔ Debug clearing all UTXOs...");
-    clear_all_utxos(db).map(prepend_debug_output_marker_to_string)
+    check_debug_mode().and_then(|_| clear_all_utxos(db)).map(prepend_debug_output_marker_to_string)
 }
 
 /// # Debug Add New Eos Schedule
