@@ -9,7 +9,7 @@ use crate::{
 };
 use bitcoin::{blockdata::transaction::TxIn as BtcUtxo, consensus::encode::deserialize as btc_deserialize};
 use bitcoin_hashes::{sha256d, Hash};
-use serde_json::json;
+use serde_json::{Value as JsonValue, json};
 
 pub fn get_utxo_and_value_db_key(utxo_number: u64) -> Bytes {
     sha256d::Hash::hash(format!("utxo-number-{}", utxo_number).as_bytes()).to_vec()
@@ -41,10 +41,10 @@ pub fn get_all_utxos_as_json_string<D: DatabaseInterface>(db: &D) -> Result<Stri
                         "maybe_deposit_info_json": utxo_and_value_json.maybe_deposit_info_json,
                         "db_value": hex::encode(db.get(db_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)?),
                     })
-                    .to_string())
+                    )
                 })
         })
-        .collect::<Result<Vec<String>>>()?)
+        .collect::<Result<Vec<JsonValue>>>()?)
     .to_string())
 }
 
