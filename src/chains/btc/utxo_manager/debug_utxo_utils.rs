@@ -21,6 +21,7 @@ use crate::{
         },
     },
     check_debug_mode::check_debug_mode,
+    constants::SUCCESS_JSON,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -40,7 +41,7 @@ pub fn clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
         .and_then(|_| delete_first_utxo_key(db))
         .and_then(|_| put_total_utxo_balance_in_db(db, 0))
         .and_then(|_| db.end_transaction())
-        .map(|_| "{clear_all_utxos_succeeded:true}".to_string())
+        .map(|_| SUCCESS_JSON.to_string())
 }
 
 pub fn remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -> Result<String> {
@@ -142,5 +143,5 @@ pub fn add_multiple_utxos<D: DatabaseInterface>(db: &D, json_str: &str) -> Resul
                 .map(|utxo| save_new_utxo_and_value(db, &utxo))
                 .collect::<Result<Vec<()>>>()
         })
-        .map(|_| json!({"add_multiple_utxos_success":"true"}).to_string())
+        .map(|_| SUCCESS_JSON.to_string())
 }

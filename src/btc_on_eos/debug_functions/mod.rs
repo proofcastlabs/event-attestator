@@ -83,7 +83,7 @@ use crate::{
         },
     },
     check_debug_mode::check_debug_mode,
-    constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL},
+    constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
     traits::DatabaseInterface,
     types::Result,
@@ -222,7 +222,7 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &st
         .and_then(|_| db.start_transaction())
         .and_then(|_| generate_and_put_incremerkle_in_db(db, &init_json.blockroot_merkle))
         .and_then(|_| db.end_transaction())
-        .map(|_| "{debug_update_blockroot_merkle_success:true}".to_string())
+        .map(|_| SUCCESS_JSON.to_string())
         .map(prepend_debug_output_marker_to_string)
 }
 
@@ -250,7 +250,7 @@ pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &s
         .and_then(|_| parse_v2_schedule_string_to_v2_schedule(&schedule_json))
         .and_then(|schedule| put_eos_schedule_in_db(&db, &schedule))
         .and_then(|_| db.end_transaction())
-        .map(|_| "{debug_adding_eos_schedule_succeeded:true}".to_string())
+        .map(|_| SUCCESS_JSON.to_string())
         .map(prepend_debug_output_marker_to_string)
 }
 

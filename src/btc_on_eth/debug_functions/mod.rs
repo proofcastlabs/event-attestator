@@ -84,7 +84,7 @@ use crate::{
         },
     },
     check_debug_mode::check_debug_mode,
-    constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL},
+    constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
     traits::DatabaseInterface,
     types::Result,
@@ -121,7 +121,7 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
         .and_then(|_| db.start_transaction())
         .and_then(|_| clear_all_utxos(db))
         .and_then(|_| db.end_transaction())
-        .map(|_| "{debug_clear_all_utxos_succeeded:true}".to_string())
+        .map(|_| SUCCESS_JSON.to_string())
         .map(prepend_debug_output_marker_to_string)
 }
 
@@ -408,7 +408,7 @@ where
         .and_then(filter_out_utxos_extant_in_db_from_state)
         .and_then(maybe_save_utxos_to_db)
         .and_then(end_btc_db_transaction)
-        .map(|_| "{add_utxo_to_db_succeeded:true}".to_string())
+        .map(|_| SUCCESS_JSON.to_string())
         .map(prepend_debug_output_marker_to_string)
 }
 
