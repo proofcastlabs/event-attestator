@@ -40,9 +40,9 @@ pub fn get_all_utxos_as_json_string<D: DatabaseInterface>(db: &D) -> Result<Stri
                         "maybe_extra_data": utxo_and_value_json.maybe_extra_data,
                         "maybe_deposit_info_json": utxo_and_value_json.maybe_deposit_info_json,
                         "db_value": hex::encode(db.get(db_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)?),
-                    }))
+                    })
+                    .to_string())
                 })
-                .map(|output_json| output_json.to_string())
         })
         .collect::<Result<Vec<String>>>()?)
     .to_string())
