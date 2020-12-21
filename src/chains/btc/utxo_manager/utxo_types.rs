@@ -10,11 +10,31 @@ use bitcoin::{
     hashes::{sha256d, Hash},
 };
 use derive_more::{Constructor, Deref, DerefMut, From, Into, IntoIterator};
+use serde_json::json;
 
 #[derive(
     Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Constructor, Deref, DerefMut, From, Into, IntoIterator,
 )]
 pub struct BtcUtxosAndValues(pub Vec<BtcUtxoAndValue>);
+
+impl BtcUtxosAndValues {
+    pub fn to_string(&self) -> Result<String> {
+        Ok(json!(self
+            .iter()
+            .map(|utxo| utxo.to_json())
+            .collect::<Result<Vec<BtcUtxoAndValueJson>>>()?)
+        .to_string())
+    }
+
+    pub fn from_str(s: &str) -> Result<Self> {
+        let jsons: Vec<BtcUtxoAndValueJson> = serde_json::from_str(s)?;
+        let structs = jsons
+            .iter()
+            .map(|json| BtcUtxoAndValue::from_json(&json))
+            .collect::<Result<Vec<BtcUtxoAndValue>>>()?;
+        Ok(Self::new(structs))
+    }
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct BtcUtxoAndValue {
@@ -133,7 +153,7 @@ impl BtcUtxoAndValueJson {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::btc::btc_test_utils::get_sample_p2sh_utxo_and_value;
+    use crate::chains::btc::btc_test_utils::{get_sample_p2sh_utxo_and_value, get_sample_utxo_and_values};
 
     #[test]
     fn should_make_utxo_and_value_to_json_round_trip() {
@@ -149,5 +169,13 @@ mod tests {
         let json_string = utxo_and_value.to_string().unwrap();
         let result = BtcUtxoAndValue::from_str(&json_string).unwrap();
         assert_eq!(result, utxo_and_value);
+    }
+
+    #[test]
+    fn should_make_utxos_and_values_to_string_round_trip() {
+        let utxos = get_sample_utxo_and_values();
+        let json_string = utxos.to_string().unwrap();
+        let result = BtcUtxosAndValues::from_str(&json_string).unwrap();
+        assert_eq!(result, utxos);
     }
 }
