@@ -34,6 +34,11 @@ impl BtcUtxosAndValues {
             .collect::<Result<Vec<BtcUtxoAndValue>>>()?;
         Ok(Self::new(structs))
     }
+
+    #[cfg(test)]
+    pub fn sum(&self) -> u64 {
+        self.iter().map(|utxo| utxo.value).sum()
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
