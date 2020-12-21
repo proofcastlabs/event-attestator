@@ -28,9 +28,8 @@ use crate::{
 use serde_json::json;
 
 pub fn clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .map(|_| get_all_utxo_db_keys(db).to_vec())
+    db.start_transaction()?;
+    Ok(get_all_utxo_db_keys(db).to_vec())
         .and_then(|db_keys| {
             db_keys
                 .iter()
@@ -139,9 +138,61 @@ pub fn add_multiple_utxos<D: DatabaseInterface>(db: &D, json_str: &str) -> Resul
                 .collect::<Result<Vec<bool>>>()?
                 .iter()
                 .zip(utxos.iter())
-                .filter_map(|(exists, utxo)| if *exists { Some(utxo) } else { None })
+                .filter_map(|(exists, utxo)| {
+                    if *exists {
+                        warn!("Not adding UTXO because it already exists!");
+                        None
+                    } else {
+                        Some(utxo)
+                    }
+                })
                 .map(|utxo| save_new_utxo_and_value(db, &utxo))
                 .collect::<Result<Vec<()>>>()
         })
         .map(|_| SUCCESS_JSON.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        chains::btc::{
+            btc_test_utils::get_sample_utxo_and_values,
+            utxo_manager::{
+                utxo_database_utils::{get_total_utxo_balance_from_db, save_utxos_to_db},
+                utxo_utils::get_all_utxos_as_json_string,
+            },
+        },
+        test_utils::get_test_database,
+    };
+
+    #[test]
+    fn should_clear_all_utxos() {
+        let db = get_test_database();
+        let utxos = get_sample_utxo_and_values();
+        let expected_balance = utxos.sum();
+        save_utxos_to_db(&db, &utxos).unwrap();
+        let mut balance = get_total_utxo_balance_from_db(&db).unwrap();
+        assert_eq!(expected_balance, balance);
+        clear_all_utxos(&db).unwrap();
+        balance = get_total_utxo_balance_from_db(&db).unwrap();
+        assert_eq!(0, balance);
+    }
+
+    #[test]
+    fn should_insert_multiple_utxos() {
+        let db = get_test_database();
+        let utxos = get_sample_utxo_and_values();
+        let expected_balance = utxos.sum();
+        save_utxos_to_db(&db, &utxos).unwrap();
+        let mut balance = get_total_utxo_balance_from_db(&db).unwrap();
+        assert_eq!(expected_balance, balance);
+        let json = get_all_utxos_as_json_string(&db).unwrap();
+        clear_all_utxos(&db).unwrap();
+        balance = get_total_utxo_balance_from_db(&db).unwrap();
+        assert_eq!(0, balance);
+        add_multiple_utxos(&db, &json).unwrap();
+        balance = get_total_utxo_balance_from_db(&db).unwrap();
+        assert_eq!(expected_balance, balance);
+    }
 }
