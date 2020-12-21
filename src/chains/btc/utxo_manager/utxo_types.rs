@@ -81,8 +81,8 @@ impl BtcUtxoAndValue {
     pub fn to_json(&self) -> Result<BtcUtxoAndValueJson> {
         Ok(BtcUtxoAndValueJson {
             value: self.value,
-            maybe_v_out: Some(self.get_v_out()?),
-            maybe_tx_id: Some(self.get_tx_id()?.to_string()),
+            v_out: Some(self.get_v_out()?),
+            tx_id: Some(self.get_tx_id()?.to_string()),
             serialized_utxo: hex::encode(self.serialized_utxo.clone()),
             maybe_deposit_info_json: self.maybe_deposit_info_json.clone(),
             maybe_pointer: match self.maybe_pointer {
@@ -122,8 +122,8 @@ pub struct BtcUtxoAndValueJson {
     pub maybe_extra_data: Option<String>,
     pub maybe_pointer: Option<String>,
     pub maybe_deposit_info_json: Option<DepositAddressInfoJson>,
-    pub maybe_tx_id: Option<String>,
-    pub maybe_v_out: Option<u32>,
+    pub tx_id: Option<String>,
+    pub v_out: Option<u32>,
 }
 
 impl BtcUtxoAndValueJson {
