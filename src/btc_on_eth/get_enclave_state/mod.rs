@@ -18,7 +18,7 @@ impl EnclaveState {
         Ok(Self {
             info: EnclaveInfo::new(),
             btc: BtcEnclaveState::new(db)?,
-            eth: EthEnclaveState::new(db)?,
+            eth: EthEnclaveState::new_for_btc_on_eth(db)?,
         })
     }
 

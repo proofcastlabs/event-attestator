@@ -18,7 +18,7 @@ impl EnclaveState {
         Ok(Self {
             info: EnclaveInfo::new(),
             eos: EosEnclaveState::new(db)?,
-            eth: EthEnclaveState::new(db)?,
+            eth: EthEnclaveState::new_for_erc20_on_eos(db)?,
         })
     }
 
