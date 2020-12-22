@@ -13,13 +13,21 @@ struct EnclaveState {
     eth: EthEnclaveState,
 }
 
+impl EnclaveState {
+    pub fn new<D: DatabaseInterface>(db: &D) -> Result<Self> {
+        Ok(Self {
+            info: EnclaveInfo::new(),
+            btc: BtcEnclaveState::new(db)?,
+            eth: EthEnclaveState::new(db)?,
+        })
+    }
+
+    pub fn to_string(&self) -> Result<String> {
+        Ok(serde_json::to_string(self)?)
+    }
+}
+
 pub fn get_enclave_state<D: DatabaseInterface>(db: D) -> Result<String> {
     info!("✔ Getting enclave state...");
-    check_core_is_initialized(&db).and_then(|_| {
-        Ok(serde_json::to_string(&EnclaveState {
-            info: EnclaveInfo::new(),
-            btc: BtcEnclaveState::new(&db)?,
-            eth: EthEnclaveState::new(&db)?,
-        })?)
-    })
+    check_core_is_initialized(&db).and_then(|_| EnclaveState::new(&db)?.to_string())
 }
