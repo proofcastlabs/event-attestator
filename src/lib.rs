@@ -30,6 +30,7 @@ mod constants;
 mod crypto_utils;
 mod database_utils;
 mod debug_database_utils;
+mod enclave_info;
 mod utils;
 
 #[cfg(test)]
