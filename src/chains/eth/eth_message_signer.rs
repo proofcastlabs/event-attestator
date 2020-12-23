@@ -2,6 +2,7 @@ use crate::{
     chains::eth::{eth_database_utils::get_eth_private_key_from_db, eth_types::EthSignature},
     traits::DatabaseInterface,
     types::Result,
+    utils::decode_hex_with_err_msg,
 };
 use serde_json::{json, Value as JsonValue};
 
@@ -21,12 +22,23 @@ pub fn sign_ascii_msg_with_eth_key_with_no_prefix<D: DatabaseInterface>(db: &D, 
         .map(|json| json.to_string())
 }
 
+pub fn sign_hex_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, message: &str) -> Result<String> {
+    decode_hex_with_err_msg(message, "Message to sign is NOT valid hex!")
+        .and_then(|bytes| {
+            let key = get_eth_private_key_from_db(db)?;
+            key.sign_eth_prefixed_msg_bytes(&bytes)
+        })
+        .and_then(|signature| encode_eth_signed_message_as_json(&message, &signature))
+        .map(|json| json.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
         btc_on_eth::eth::eth_test_utils::get_sample_eth_private_key,
         chains::eth::eth_database_utils::put_eth_private_key_in_db,
+        errors::AppError,
         test_utils::get_test_database,
     };
 
@@ -59,5 +71,32 @@ mod tests {
         });
         let result = encode_eth_signed_message_as_json("Arbitrary message", &[0u8; 65]).unwrap();
         assert_eq!(result, expected_result, "✘ Message signature json is invalid!")
+    }
+
+    #[test]
+    fn should_sign_hex_msg_with_eth_key_with_prefix() {
+        let db = get_test_database();
+        let eth_private_key = get_sample_eth_private_key();
+        put_eth_private_key_in_db(&db, &eth_private_key).unwrap();
+        let hex_to_sign = "0xc0ffee";
+        let result = sign_hex_msg_with_eth_key_with_prefix(&db, &hex_to_sign).unwrap();
+        let expected_result = json!({
+            "message":"0xc0ffee",
+            "signature":"0xb2ba6c72332f321a100d4a686f4ecc7d5fc13707b62b292ef36270981e4276d70dc177553bf719ab4bbec181ab7b5fe530437a149d9a9dec449f2aa42b7c1add1c"}).to_string();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_fail_to_sign_invalid_hex_msg_with_eth_key_with_prefix() {
+        let db = get_test_database();
+        let eth_private_key = get_sample_eth_private_key();
+        put_eth_private_key_in_db(&db, &eth_private_key).unwrap();
+        let invalid_hex_to_sign = "0xcoffee";
+        let expected_err = "Message to sign is NOT valid hex! Invalid character \'o\' at position 1";
+        match sign_hex_msg_with_eth_key_with_prefix(&db, &invalid_hex_to_sign) {
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(_) => panic!("Got wrong error!"),
+        };
     }
 }
