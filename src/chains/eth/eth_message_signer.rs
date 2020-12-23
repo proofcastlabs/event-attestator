@@ -11,6 +11,11 @@ fn encode_eth_signed_message_as_json(message: &str, signature: &EthSignature) ->
     Ok(json!({"message": message, "signature": format!("0x{}", hex::encode(&signature[..]))}))
 }
 
+/// # Sign ASCII Message With ETH Key
+///
+/// Signs a given ASCII message with the ETH private key from the encrypted database. The function first
+/// checks if the message to be signed is valid ASCII, and errors if not. This signing function
+/// uses a recoverable `secp256k1` signature scheme with NO prefix prepended to the message.
 pub fn sign_ascii_msg_with_eth_key_with_no_prefix<D: DatabaseInterface>(db: &D, message: &str) -> Result<String> {
     info!("✔ Checking message is valid ASCII...");
     if !message.is_ascii() {
@@ -22,6 +27,17 @@ pub fn sign_ascii_msg_with_eth_key_with_no_prefix<D: DatabaseInterface>(db: &D, 
         .map(|json| json.to_string())
 }
 
+/// # Sign HEX Message With ETH Key
+///
+/// Signs a given HEX message with the ETH private key from the encrypted database. The function first
+/// checks if the message to be signed is valid HEX, and errors if not. This signing function uses
+/// a recoverable `secp256k1` signature scheme with the ethereum-specific prefix:
+///
+/// ```no_compile
+/// "\x19Ethereum Signed Message:\n32"
+/// ```
+///
+/// prepended to the message before signing.
 pub fn sign_hex_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, message: &str) -> Result<String> {
     decode_hex_with_err_msg(message, "Message to sign is NOT valid hex!")
         .and_then(|bytes| {
