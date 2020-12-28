@@ -1,5 +1,7 @@
 use ethereum_types::Address as EthAddress;
 
+pub const CORE_VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
+
 #[cfg(feature = "debug")]
 pub const DEBUG_MODE: bool = true;
 

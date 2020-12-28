@@ -15,6 +15,7 @@
 pub use errors::AppError;
 pub use traits::DatabaseInterface;
 pub use types::{Bytes, Result};
+pub use utils::get_core_version;
 
 pub mod btc_on_eos;
 pub mod btc_on_eth;

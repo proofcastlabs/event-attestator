@@ -1,5 +1,5 @@
 use crate::{
-    constants::{DB_KEY_PREFIX, DEBUG_OUTPUT_MARKER, U64_NUM_BYTES},
+    constants::{CORE_VERSION, DB_KEY_PREFIX, DEBUG_OUTPUT_MARKER, U64_NUM_BYTES},
     types::{Byte, Bytes, Result},
 };
 use tiny_keccak::keccak256;
@@ -94,6 +94,10 @@ pub fn get_not_in_state_err(substring: &str) -> String {
 
 pub fn get_no_overwrite_state_err(substring: &str) -> String {
     format!("✘ Cannot overwrite {} in state!", substring)
+}
+
+pub fn get_core_version() -> String {
+    CORE_VERSION.unwrap_or("Unknown").to_string()
 }
 
 #[cfg(test)]
