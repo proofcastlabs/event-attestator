@@ -7,10 +7,7 @@ use crate::{
     types::Result,
 };
 
-pub fn check_core_is_initialized<D>(db: &D) -> Result<()>
-where
-    D: DatabaseInterface,
-{
+pub fn check_core_is_initialized<D: DatabaseInterface>(db: &D) -> Result<()> {
     info!("✔ Checking core is initialized...");
     match is_btc_enclave_initialized(db) {
         false => Err("✘ BTC core not initialized!".into()),
@@ -21,17 +18,11 @@ where
     }
 }
 
-pub fn check_core_is_initialized_and_return_btc_state<D>(state: BtcState<D>) -> Result<BtcState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn check_core_is_initialized_and_return_btc_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     check_core_is_initialized(&state.db).and(Ok(state))
 }
 
-pub fn check_core_is_initialized_and_return_eth_state<D>(state: EthState<D>) -> Result<EthState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn check_core_is_initialized_and_return_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     check_core_is_initialized(&state.db).and(Ok(state))
 }
 
