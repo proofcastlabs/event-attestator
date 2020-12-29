@@ -57,6 +57,24 @@ pub fn initialize_eos_core<D: DatabaseInterface>(
         .and_then(get_eos_init_output)
 }
 
+/// # Maybe Initialize EOS Core
+///
+/// This function first checks to see if the EOS side of a core has been initialized, and will
+/// initialize it if not. The initialization procedure takes as its input a database, the
+/// `chain_id` of the desired EOS chain, an account name for the EOS smart-contract, the token
+/// symbol of the EOS smart-contract and an EOS init JSON string.
+///
+/// The EOS init JSON string is of the format:
+///
+/// ```no_compile
+/// {
+///    block: EosBlockHeaderJson,
+///    blockroot_merkle: [txHash...],
+///    active_schedule: EosProducerScheduleJsonV2,
+///    maybe_protocol_features_to_enable: [protocolFeatureHash...],
+///    erc20_on_eos_token_dictionary: EosErc20DictionaryJson,
+/// }
+/// ```
 pub fn maybe_initialize_eos_core<D: DatabaseInterface>(
     db: D,
     chain_id: &str,
