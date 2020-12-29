@@ -740,8 +740,8 @@ pub fn put_in_trie_recursively(trie: Trie, key_value_tuples: Vec<(Nibbles, Bytes
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        btc_on_eth::eth::eth_test_utils::{
+    use crate::chains::eth::{
+        eth_test_utils::{
             convert_h256_to_prefixed_hex,
             convert_hex_string_to_nibbles,
             get_sample_branch_node,
@@ -751,7 +751,8 @@ mod tests {
             get_sample_leaf_node,
             get_valid_state_with_invalid_block_and_receipts,
         },
-        chains::eth::{eth_utils::convert_hex_to_h256, get_trie_hash_map::get_thing_from_trie_hash_map},
+        eth_utils::convert_hex_to_h256,
+        get_trie_hash_map::get_thing_from_trie_hash_map,
     };
     #[allow(unused_imports)]
     use simplelog::{Config, LevelFilter, TermLogger, TerminalMode};

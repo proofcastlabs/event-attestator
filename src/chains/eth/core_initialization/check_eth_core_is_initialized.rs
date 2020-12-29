@@ -24,8 +24,7 @@ pub fn check_eth_core_is_initialized<D: DatabaseInterface>(db: &D) -> Result<()>
 mod tests {
     use super::*;
     use crate::{
-        btc_on_eth::eth::eth_test_utils::get_sample_eth_address,
-        chains::eth::eth_database_utils::put_public_eth_address_in_db,
+        chains::eth::{eth_database_utils::put_public_eth_address_in_db, eth_test_utils::get_sample_eth_address},
         errors::AppError,
         test_utils::get_test_database,
     };

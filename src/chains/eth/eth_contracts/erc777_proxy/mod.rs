@@ -96,7 +96,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::eth_test_utils::{get_sample_eth_address, get_sample_eth_private_key};
+    use crate::chains::eth::eth_test_utils::{get_sample_eth_address, get_sample_eth_private_key};
 
     #[test]
     fn should_encode_mint_by_proxy_tx_data() {

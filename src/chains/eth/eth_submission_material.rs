@@ -307,25 +307,21 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        btc_on_eth::eth::eth_test_utils::{
-            get_expected_block,
-            get_expected_receipt,
-            get_sample_contract_address,
-            get_sample_contract_topics,
-            get_sample_eth_submission_material,
-            get_sample_eth_submission_material_n,
-            get_sample_eth_submission_material_string,
-            SAMPLE_RECEIPT_INDEX,
-        },
-        chains::{
-            eos::{eos_erc20_dictionary::EosErc20DictionaryEntry, eos_test_utils::get_sample_eos_erc20_dictionary},
-            eth::{
-                eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
-                eth_test_utils::{
-                    get_sample_erc20_on_eos_peg_in_infos,
-                    get_sample_submission_material_with_erc20_peg_in_event,
-                },
+    use crate::chains::{
+        eos::{eos_erc20_dictionary::EosErc20DictionaryEntry, eos_test_utils::get_sample_eos_erc20_dictionary},
+        eth::{
+            eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
+            eth_test_utils::{
+                get_expected_block,
+                get_expected_receipt,
+                get_sample_contract_address,
+                get_sample_contract_topics,
+                get_sample_erc20_on_eos_peg_in_infos,
+                get_sample_eth_submission_material,
+                get_sample_eth_submission_material_n,
+                get_sample_eth_submission_material_string,
+                get_sample_submission_material_with_erc20_peg_in_event,
+                SAMPLE_RECEIPT_INDEX,
             },
         },
     };

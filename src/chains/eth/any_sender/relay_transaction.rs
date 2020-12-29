@@ -236,7 +236,7 @@ impl EthTxInfoCompatible for RelayTransaction {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::eth_test_utils::get_sample_unsigned_eth_transaction;
+    use crate::chains::eth::eth_test_utils::get_sample_unsigned_eth_transaction;
 
     #[test]
     fn should_create_new_signed_relay_tx_from_data() {

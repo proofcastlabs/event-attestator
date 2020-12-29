@@ -593,7 +593,7 @@ where
 mod tests {
     use super::*;
     use crate::{
-        btc_on_eth::eth::eth_test_utils::{
+        chains::eth::eth_test_utils::{
             get_sample_contract_address,
             get_sample_eth_address,
             get_sample_eth_private_key,

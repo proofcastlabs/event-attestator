@@ -70,10 +70,7 @@ where
 mod tests {
     use super::*;
     use crate::{
-        btc_on_eth::{
-            eth::eth_test_utils::{get_sample_eth_address, get_sample_eth_private_key},
-            utils::convert_satoshis_to_ptoken,
-        },
+        btc_on_eth::utils::convert_satoshis_to_ptoken,
         chains::{
             btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
             eth::{
@@ -84,6 +81,7 @@ mod tests {
                     put_eth_gas_price_in_db,
                     put_eth_private_key_in_db,
                 },
+                eth_test_utils::{get_sample_eth_address, get_sample_eth_private_key},
                 eth_types::EthAddress,
             },
         },

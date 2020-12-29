@@ -24,14 +24,14 @@ pub fn check_core_is_initialized_and_return_eth_state<D: DatabaseInterface>(stat
 mod tests {
     use super::*;
     use crate::{
-        btc_on_eth::eth::eth_test_utils::get_sample_eth_address,
         chains::{
             btc::{btc_database_utils::put_btc_address_in_db, btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS},
-            eth::eth_database_utils::put_public_eth_address_in_db,
+            eth::{eth_database_utils::put_public_eth_address_in_db, eth_test_utils::get_sample_eth_address},
         },
         test_utils::get_test_database,
     };
 
+    #[test]
     fn should_err_if_core_not_initialized() {
         let db = get_test_database();
         let result = check_core_is_initialized(&db);

@@ -63,12 +63,14 @@ where
 mod tests {
     use super::*;
     use crate::{
-        btc_on_eth::eth::eth_test_utils::{
-            get_sequential_eth_blocks_and_receipts,
-            put_eth_anchor_block_in_db,
-            put_eth_tail_block_in_db,
+        chains::eth::{
+            eth_database_utils::{eth_block_exists_in_db, put_eth_submission_material_in_db},
+            eth_test_utils::{
+                get_sequential_eth_blocks_and_receipts,
+                put_eth_anchor_block_in_db,
+                put_eth_tail_block_in_db,
+            },
         },
-        chains::eth::eth_database_utils::{eth_block_exists_in_db, put_eth_submission_material_in_db},
         test_utils::get_test_database,
     };
 
