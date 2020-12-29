@@ -1,11 +1,7 @@
 use crate::{chains::btc::btc_database_utils::get_btc_address_from_db, traits::DatabaseInterface, types::Result};
 
 pub fn is_btc_core_initialized<D: DatabaseInterface>(db: &D) -> bool {
-    debug!("✔ Checking if BTC core has been initialized...");
-    match get_btc_address_from_db(db) {
-        Ok(_) => true,
-        _ => false,
-    }
+    get_btc_address_from_db(db).is_ok()
 }
 
 pub fn check_btc_core_is_initialized<D: DatabaseInterface>(db: &D) -> Result<()> {
@@ -25,15 +21,15 @@ mod tests {
     };
 
     #[test]
-    fn should_return_false_if_btc_enc_not_initialized() {
+    fn should_return_false_if_btc_core_not_initialized() {
         let db = get_test_database();
         assert!(!is_btc_core_initialized(&db));
     }
 
     #[test]
-    fn should_return_true_if_btc_enc_initialized() {
+    fn should_return_true_if_btc_core_initialized() {
         let db = get_test_database();
-        put_btc_address_in_db(&db, &SAMPLE_TARGET_BTC_ADDRESS.to_string()).unwrap();
+        put_btc_address_in_db(&db, &SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         assert!(is_btc_core_initialized(&db));
     }
 }

@@ -1,11 +1,7 @@
 use crate::{types::Result, chains::btc::btc_database_utils::get_btc_address_from_db, traits::DatabaseInterface};
 
 pub fn is_btc_enclave_initialized<D: DatabaseInterface>(db: &D) -> bool {
-    debug!("✔ Checking if BTC enclave has been initialized...");
-    match get_btc_address_from_db(db) {
-        Ok(_) => true,
-        _ => false,
-    }
+    get_btc_address_from_db(db).is_ok()
 }
 
 pub fn check_btc_core_is_initialized<D: DatabaseInterface>(db: &D) -> Result<()> {

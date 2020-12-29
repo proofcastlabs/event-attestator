@@ -99,21 +99,18 @@ pub struct EosInitAndSubsequentBlocksJson {
 
 impl EosInitAndSubsequentBlocksJson {
     pub fn is_msig_enabled(&self) -> bool {
-        match &self.init_block.maybe_protocol_features_to_enable {
+        match self.init_block.maybe_protocol_features_to_enable {
             None => false,
-            Some(features) => features.contains(&hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)),
+            Some(ref features) => features.contains(&hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)),
         }
     }
 
     pub fn from_json_string(json_string: &str) -> Result<Self> {
-        match serde_json::from_str(&json_string) {
-            Ok(result) => Ok(result),
-            Err(err) => Err(err.into()),
-        }
+        Ok(serde_json::from_str(&json_string)?)
     }
 
     pub fn total_num_blocks(&self) -> usize {
-        self.subsequent_blocks.len() + 1
+        self.num_subsequent_blocks() + 1
     }
 
     pub fn num_subsequent_blocks(&self) -> usize {
@@ -462,17 +459,4 @@ pub fn get_sample_eos_erc20_dictionary() -> EosErc20Dictionary {
 
 pub fn get_sample_eos_erc20_dictionary_json() -> EosErc20DictionaryJson {
     get_sample_eos_erc20_dictionary().to_json().unwrap()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn should_get_sample_eos_blocks_n() {
-        let max = 1;
-        for i in 1..max {
-            get_sample_eos_submission_material_json_n(i);
-        }
-    }
 }

@@ -5,11 +5,7 @@ use crate::{
 };
 
 pub fn is_eth_core_initialized<D: DatabaseInterface>(db: &D) -> bool {
-    trace!("✔ Checking if ETH enclave has been initialized...");
-    match get_public_eth_address_from_db(db) {
-        Ok(_) => true,
-        _ => false,
-    }
+    get_public_eth_address_from_db(db).is_ok()
 }
 
 pub fn check_eth_core_is_initialized<D: DatabaseInterface>(db: &D) -> Result<()> {

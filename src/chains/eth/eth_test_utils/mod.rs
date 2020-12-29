@@ -38,7 +38,8 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON: &str = "src/chains/eth/eth_test_utils/s
 
 pub const SAMPLE_INVALID_BLOCK_AND_RECEIPT_JSON: &str =
     "src/chains/eth/eth_test_utils/sample-invalid-eth-block-and-receipts-json";
-// ERC20: Transfer(address,address,uint256)
+
+// NOTE: Hash of an ERC20 transfer fxn signature: keccak256("Transfer(address,address,uint256)")
 pub const TEMPORARY_CONTRACT_TOPIC: &str = "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
 pub const SAMPLE_SEQUENTIAL_BLOCK_AND_RECEIPT_JSONS_PATH_PREFIX: &str =
@@ -70,13 +71,6 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_8: &str =
 
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_9: &str =
     "src/chains/eth/eth_test_utils/eth-submission-material-block-11087536-with-erc20-peg-in-event.json";
-
-pub const LOG_INDEX_OF_LOG_WITH_SAMPLE_TOPIC: usize = 0;
-pub const LOG_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS: usize = 0;
-pub const LOG_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC: usize = 0;
-pub const RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_TOPIC: usize = 2;
-pub const RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS: usize = 2;
-pub const RECEIPT_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC: usize = 9;
 
 pub fn put_eth_latest_block_in_db<D>(db: &D, eth_submission_material: &EthSubmissionMaterial) -> Result<()>
 where
@@ -126,8 +120,8 @@ where
     get_special_eth_hash_from_db(db, "linker")
 }
 
-pub fn convert_h256_to_prefixed_hex(hash: EthHash) -> Result<String> {
-    Ok(format!("0x{}", hex::encode(hash)))
+pub fn convert_h256_to_prefixed_hex(hash: EthHash) -> String {
+    format!("0x{}", hex::encode(hash))
 }
 
 pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
@@ -151,7 +145,7 @@ pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
 }
 
 pub fn get_sample_eth_submission_material_n(num: usize) -> Result<EthSubmissionMaterial> {
-    get_sample_eth_submission_material_string(num).and_then(|string| EthSubmissionMaterial::from_str(&string))
+    get_sample_eth_submission_material_string(num).and_then(|s| EthSubmissionMaterial::from_str(&s))
 }
 
 pub fn get_sample_receipt_n(sample_block_num: usize, receipt_index: usize) -> Result<EthReceipt> {
@@ -176,7 +170,7 @@ pub fn get_sample_contract_address() -> EthAddress {
 
 pub fn get_sample_eth_private_key_slice() -> [u8; 32] {
     [
-        // NOTE: pEOS-test-eth-acct.
+        // NOTE: pEOS-test-eth-account.
         232, 238, 178, 99, 26, 180, 118, 218, 205, 104, 248, 78, 176, 185, 238, 85, 139, 135, 47, 81, 85, 160, 136, 191,
         116, 56, 27, 95, 44, 99, 161, 48,
     ]
@@ -214,19 +208,18 @@ pub fn get_sequential_eth_blocks_and_receipts() -> Vec<EthSubmissionMaterial> {
             SAMPLE_SEQUENTIAL_BLOCK_AND_RECEIPT_JSONS_PATH_PREFIX,
             SEQUENTIAL_BLOCKS_FIRST_NUMBER + i,
         );
-        let string = read_to_string(path).unwrap();
-        let block_and_receipt = EthSubmissionMaterial::from_str(&string).unwrap();
+        let block_and_receipt = EthSubmissionMaterial::from_str(&read_to_string(path).unwrap()).unwrap();
         block_and_receipts.push(block_and_receipt)
     }
     block_and_receipts
 }
 
 pub fn get_sample_receipt_with_desired_topic() -> EthReceipt {
-    get_sample_eth_submission_material().receipts.0[RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_TOPIC].clone()
+    get_sample_eth_submission_material().receipts.0[2].clone()
 }
 
 pub fn get_sample_receipt_with_desired_address() -> EthReceipt {
-    get_sample_eth_submission_material().receipts.0[RECEIPT_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS].clone()
+    get_sample_eth_submission_material().receipts.0[2].clone()
 }
 
 pub fn get_sample_logs_with_desired_topic() -> EthLogs {
@@ -238,15 +231,15 @@ pub fn get_sample_logs_with_desired_address() -> EthLogs {
 }
 
 pub fn get_sample_log_with_desired_topic() -> EthLog {
-    get_sample_logs_with_desired_topic().0[LOG_INDEX_OF_LOG_WITH_SAMPLE_TOPIC].clone()
+    get_sample_logs_with_desired_topic().0[0].clone()
 }
 
 pub fn get_sample_log_with_desired_address() -> EthLog {
-    get_sample_logs_with_desired_address().0[LOG_INDEX_OF_LOG_WITH_SAMPLE_ADDRESS].clone()
+    get_sample_logs_with_desired_address().0[0].clone()
 }
 
 pub fn get_sample_receipt_without_desired_topic() -> EthReceipt {
-    get_sample_eth_submission_material().receipts.0[RECEIPT_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC].clone()
+    get_sample_eth_submission_material().receipts.0[9].clone()
 }
 
 pub fn get_sample_receipt_without_desired_address() -> EthReceipt {
@@ -259,7 +252,7 @@ pub fn get_sample_logs_without_desired_topic() -> EthLogs {
 }
 
 pub fn get_sample_log_without_desired_topic() -> EthLog {
-    get_sample_logs_without_desired_topic().0[LOG_INDEX_OF_LOG_WITHOUT_SAMPLE_TOPIC].clone()
+    get_sample_logs_without_desired_topic().0[0].clone()
 }
 
 pub fn get_sample_log_without_desired_address() -> EthLog {
@@ -306,7 +299,10 @@ pub fn get_thing_to_put_in_trie_hash_map() -> Bytes {
 
 pub fn get_trie_hash_map_with_thing_in_it() -> Result<TrieHashMap> {
     let mut trie_hash_map: TrieHashMap = std::collections::HashMap::new();
-    trie_hash_map.insert(get_expected_key_of_thing_in_trie_hash_map(), b"Provable".to_vec());
+    trie_hash_map.insert(
+        get_expected_key_of_thing_in_trie_hash_map(),
+        get_thing_to_put_in_trie_hash_map(),
+    );
     Ok(trie_hash_map)
 }
 
@@ -318,8 +314,8 @@ pub fn get_valid_state_with_invalid_block_and_receipts() -> Result<EthState<Test
     match Path::new(&SAMPLE_BLOCK_AND_RECEIPT_JSON).exists() {
         false => Err("✘ Cannot find sample-eth-block-and-receipts-json file!".into()),
         true => {
-            let string = read_to_string(SAMPLE_INVALID_BLOCK_AND_RECEIPT_JSON).unwrap();
-            let invalid_struct = EthSubmissionMaterial::from_str(&string).unwrap();
+            let s = read_to_string(SAMPLE_INVALID_BLOCK_AND_RECEIPT_JSON).unwrap();
+            let invalid_struct = EthSubmissionMaterial::from_str(&s).unwrap();
             let state = get_valid_eth_state().unwrap();
             let final_state = state.add_eth_submission_material(invalid_struct).unwrap();
             Ok(final_state)
@@ -334,17 +330,13 @@ pub fn get_sample_invalid_block() -> EthBlock {
 }
 
 pub fn get_sample_eth_submission_material_json() -> Result<EthSubmissionMaterialJson> {
-    get_sample_eth_submission_material_string(0).and_then(|eth_submission_material_json_string| {
-        match serde_json::from_str(&eth_submission_material_json_string) {
-            Ok(eth_submission_material_json) => Ok(eth_submission_material_json),
-            Err(err) => Err(err.into()),
-        }
-    })
+    get_sample_eth_submission_material_string(0)
+        .and_then(|eth_submission_material_json_string| Ok(serde_json::from_str(&eth_submission_material_json_string)?))
 }
 
 pub fn get_sample_eth_submission_material() -> EthSubmissionMaterial {
-    let string = get_sample_eth_submission_material_string(0).unwrap();
-    EthSubmissionMaterial::from_str(&string).unwrap()
+    let s = get_sample_eth_submission_material_string(0).unwrap();
+    EthSubmissionMaterial::from_str(&s).unwrap()
 }
 
 pub fn get_valid_state_with_block_and_receipts() -> Result<EthState<TestDB>> {
@@ -352,8 +344,8 @@ pub fn get_valid_state_with_block_and_receipts() -> Result<EthState<TestDB>> {
 }
 
 pub fn get_expected_block() -> EthBlock {
-    let string = read_to_string(SAMPLE_BLOCK_JSON_PATH).unwrap();
-    let eth_block_json: EthBlockJson = serde_json::from_str(&string).unwrap();
+    let s = read_to_string(SAMPLE_BLOCK_JSON_PATH).unwrap();
+    let eth_block_json: EthBlockJson = serde_json::from_str(&s).unwrap();
     EthBlock::from_json(&eth_block_json).unwrap()
 }
 
