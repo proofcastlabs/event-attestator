@@ -138,14 +138,16 @@ impl Drop for EosPrivateKey {
 mod test {
     use super::*;
     use crate::{
-        btc_on_eos::eos::eos_test_utils::{
-            get_sample_eos_private_key,
-            get_sample_eos_private_key_str,
-            get_sample_eos_public_key,
-            get_sample_eos_public_key_str,
-            get_sample_eos_signature,
+        chains::eos::{
+            eos_crypto::eos_private_key::EosPrivateKey,
+            eos_test_utils::{
+                get_sample_eos_private_key,
+                get_sample_eos_private_key_str,
+                get_sample_eos_public_key,
+                get_sample_eos_public_key_str,
+                get_sample_eos_signature,
+            },
         },
-        chains::eos::eos_crypto::eos_private_key::EosPrivateKey,
         test_utils::get_sample_message_to_sign_bytes,
     };
     use bitcoin_hashes::{sha256, Hash as HashTrait};

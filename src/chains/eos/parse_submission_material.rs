@@ -157,7 +157,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::eos::eos_test_utils::get_sample_eos_submission_material_string_n;
+    use crate::chains::eos::eos_test_utils::get_sample_eos_submission_material_string_n;
 
     #[test]
     fn should_parse_eos_submission_material_string_to_json() {

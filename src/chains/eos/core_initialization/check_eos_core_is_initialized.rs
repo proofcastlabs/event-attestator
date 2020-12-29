@@ -21,7 +21,7 @@ pub fn check_eos_core_is_initialized<D: DatabaseInterface>(db: &D) -> Result<()>
 mod tests {
     use super::*;
     use crate::{
-        btc_on_eos::eos::eos_test_utils::get_sample_eos_private_key,
+        chains::eos::eos_test_utils::get_sample_eos_private_key,
         errors::AppError,
         test_utils::get_test_database,
     };

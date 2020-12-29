@@ -188,8 +188,9 @@ where
 mod tests {
     use super::*;
 
-    use crate::{
-        btc_on_eos::eos::eos_test_utils::{
+    use crate::chains::eos::{
+        eos_merkle_utils::Incremerkle,
+        eos_test_utils::{
             get_init_and_subsequent_blocks_json_n,
             get_sample_eos_submission_material_json_n,
             get_sample_eos_submission_material_n,
@@ -198,7 +199,7 @@ mod tests {
             get_sample_v2_schedule,
             EosInitAndSubsequentBlocksJson,
         },
-        chains::eos::{eos_merkle_utils::Incremerkle, eos_utils::convert_hex_to_checksum256},
+        eos_utils::convert_hex_to_checksum256,
     };
     use eos_primitives::Checksum256;
 

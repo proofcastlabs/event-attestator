@@ -206,7 +206,7 @@ pub struct AuthorizationJson {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::eos::eos_test_utils::get_sample_eos_submission_material_n;
+    use crate::chains::eos::eos_test_utils::get_sample_eos_submission_material_n;
     use std::str::FromStr;
 
     #[test]

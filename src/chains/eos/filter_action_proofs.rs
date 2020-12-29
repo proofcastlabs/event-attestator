@@ -209,10 +209,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        btc_on_eos::eos::eos_test_utils::get_sample_action_proof_n,
-        chains::eos::eos_utils::convert_hex_to_checksum256,
-    };
+    use crate::chains::eos::{eos_test_utils::get_sample_action_proof_n, eos_utils::convert_hex_to_checksum256};
 
     #[test]
     fn should_not_filter_out_proofs_with_action_digests_in_action_receipts() {

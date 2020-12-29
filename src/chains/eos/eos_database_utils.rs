@@ -262,7 +262,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{btc_on_eos::eos::eos_test_utils::get_sample_eos_public_key, test_utils::get_test_database};
+    use crate::{chains::eos::eos_test_utils::get_sample_eos_public_key, test_utils::get_test_database};
 
     #[test]
     fn should_put_and_get_eos_public_key_in_db_correctly() {

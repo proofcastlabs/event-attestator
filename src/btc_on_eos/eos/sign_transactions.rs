@@ -135,7 +135,6 @@ pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>)
 mod tests {
     use super::*;
     use crate::{
-        btc_on_eos::eos::eos_test_utils::get_sample_eos_submission_material_json_n,
         chains::{
             btc::{
                 btc_constants::BTC_PRIVATE_KEY_DB_KEY,
@@ -145,7 +144,7 @@ mod tests {
                 btc_utils::get_hex_tx_from_signed_btc_tx,
                 utxo_manager::utxo_database_utils::save_utxos_to_db,
             },
-            eos::eos_action_proofs::EosActionProof,
+            eos::{eos_action_proofs::EosActionProof, eos_test_utils::get_sample_eos_submission_material_json_n},
         },
         test_utils::get_test_database,
     };
