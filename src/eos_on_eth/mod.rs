@@ -20,5 +20,6 @@ pub mod get_latest_block_numbers;
 
 pub(crate) mod check_core_is_initialized;
 
+pub use eth::initialize_eth_core::maybe_initialize_eth_core;
 pub use get_enclave_state::get_enclave_state;
 pub use get_latest_block_numbers::get_latest_block_numbers;
