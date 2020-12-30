@@ -12,6 +12,7 @@ use crate::{
         },
         eth::eth_types::EthTransactions,
     },
+    eos_on_eth::eos::eos_tx_info::EosOnEthEosTxInfos,
     erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfos,
     traits::DatabaseInterface,
     types::Result,
@@ -33,6 +34,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub erc20_on_eos_signed_txs: EthTransactions,
     pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub enabled_protocol_features: EnabledFeatures,
+    pub eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos,
     pub btc_on_eos_redeem_infos: BtcOnEosRedeemInfos,
     pub active_schedule: Option<EosProducerScheduleV2>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
@@ -60,6 +62,7 @@ where
             incremerkle: Incremerkle::default(),
             processed_tx_ids: ProcessedTxIds::init(),
             enabled_protocol_features: EnabledFeatures::init(),
+            eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos::new(vec![]),
             btc_on_eos_redeem_infos: BtcOnEosRedeemInfos::new(vec![]),
             erc20_on_eos_redeem_infos: Erc20OnEosRedeemInfos::new(vec![]),
         }
@@ -123,6 +126,11 @@ where
         Ok(self)
     }
 
+    pub fn add_eos_on_eth_eos_tx_info(mut self, infos: EosOnEthEosTxInfos) -> Result<EosState<D>> {
+        self.eos_on_eth_eos_tx_infos = infos;
+        Ok(self)
+    }
+
     pub fn add_erc20_on_eos_redeem_infos(mut self, infos: Erc20OnEosRedeemInfos) -> Result<EosState<D>> {
         self.erc20_on_eos_redeem_infos = infos;
         Ok(self)
@@ -179,6 +187,12 @@ where
     pub fn replace_btc_on_eos_redeem_infos(mut self, replacements: BtcOnEosRedeemInfos) -> Result<EosState<D>> {
         info!("✔ Replacing redeem infos in state...");
         self.btc_on_eos_redeem_infos = replacements;
+        Ok(self)
+    }
+
+    pub fn replace_eos_on_eth_eos_tx_infos(mut self, replacements: EosOnEthEosTxInfos) -> Result<EosState<D>> {
+        info!("✔ Replacing `EosOnEthEosTxInfos` in state...");
+        self.eos_on_eth_eos_tx_infos = replacements;
         Ok(self)
     }
 

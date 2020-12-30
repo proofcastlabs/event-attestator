@@ -7,6 +7,7 @@ use crate::{
         parse_eos_action_receipts::parse_eos_action_receipt_json,
     },
     constants::SAFE_ETH_ADDRESS,
+    eos_on_eth::eos::eos_tx_info::EosOnEthEosTxInfo,
     erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfo,
     types::{Bytes, Result},
     utils::{convert_bytes_to_u64, maybe_strip_hex_prefix},
@@ -56,7 +57,7 @@ impl EosActionProof {
             .and_then(|eos_asset| dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset))
     }
 
-    fn get_redeem_action_sender(&self) -> Result<EosAccountName> {
+    fn get_action_sender(&self) -> Result<EosAccountName> {
         let account_name = EosAccountName::new(convert_bytes_to_u64(&self.action.data[..8].to_vec())?);
         debug!("✔ Account name parsed from redeem action: {}", account_name);
         Ok(account_name)
@@ -64,6 +65,17 @@ impl EosActionProof {
 
     fn get_btc_on_eos_btc_redeem_address(&self) -> Result<String> {
         Ok(from_utf8(&self.action.data[25..])?.to_string())
+    }
+
+    fn get_eos_on_eth_eth_address(&self) -> EthAddress {
+        // TODO Need sample to test this!
+        EthAddress::from_slice(&self.action.data[25..])
+    }
+
+    fn get_eos_on_eth_eth_amount(&self) -> Result<U256> {
+        Ok(U256::from_dec_str(
+            &convert_bytes_to_u64(&self.action.data[8..16].to_vec())?.to_string(),
+        )?) // TODO Need sampe to test thist!k
     }
 
     fn get_memo_string(&self) -> Result<String> {
@@ -104,9 +116,20 @@ impl EosActionProof {
         info!("✔ Converting action proof to `btc-on-eos` redeem info...");
         Ok(BtcOnEosRedeemInfo {
             originating_tx_id: self.tx_id,
-            from: self.get_redeem_action_sender()?,
+            from: self.get_action_sender()?,
             amount: self.get_btc_on_eos_eos_amount()?,
             recipient: self.get_btc_on_eos_btc_redeem_address()?,
+            global_sequence: self.action_receipt.global_sequence,
+        })
+    }
+
+    pub fn to_eos_on_eth_eos_tx_info(&self) -> Result<EosOnEthEosTxInfo> {
+        info!("✔ Converting action proof to `eos-on-eth` eos tx info...");
+        Ok(EosOnEthEosTxInfo {
+            originating_tx_id: self.tx_id,
+            from: self.get_action_sender()?,
+            amount: self.get_eos_on_eth_eth_amount()?,
+            recipient: self.get_eos_on_eth_eth_address(),
             global_sequence: self.action_receipt.global_sequence,
         })
     }
@@ -123,7 +146,7 @@ impl EosActionProof {
                     eos_tx_amount,
                     originating_tx_id: self.tx_id,
                     eth_token_address: entry.eth_address,
-                    from: self.get_redeem_action_sender()?,
+                    from: self.get_action_sender()?,
                     eos_token_address: entry.eos_address,
                     global_sequence: self.action_receipt.global_sequence,
                     recipient: self.get_erc20_on_eos_eth_redeem_address_or_default_to_safe_address()?,
@@ -213,7 +236,7 @@ mod tests {
     fn should_get_sender() {
         let expected_result = EosAccountName::from_str("provtestable").unwrap();
         let result = get_sample_eos_submission_material_n(1).action_proofs[0]
-            .get_redeem_action_sender()
+            .get_action_sender()
             .unwrap();
         assert_eq!(result, expected_result);
     }
