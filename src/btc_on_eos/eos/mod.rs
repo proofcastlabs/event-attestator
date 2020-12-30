@@ -1,4 +1,3 @@
-pub mod enable_protocol_feature;
 pub mod submit_eos_block;
 
 pub(crate) mod extract_utxos_from_btc_txs;

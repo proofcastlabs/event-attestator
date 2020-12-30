@@ -24,6 +24,7 @@ pub use crate::{
     chains::eos::{
         core_initialization::initialize_eos_core::maybe_initialize_eos_core,
         disable_protocol_feature::disable_protocol_feature,
+        enable_protocol_feature::enable_eos_protocol_feature,
     },
     eos_on_eth::{
         eth::initialize_eth_core::maybe_initialize_eth_core,

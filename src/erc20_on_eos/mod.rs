@@ -13,7 +13,10 @@
 //! ```
 pub use crate::{
     chains::{
-        eos::disable_protocol_feature::disable_eos_protocol_feature,
+        eos::{
+            disable_protocol_feature::disable_eos_protocol_feature,
+            enable_protocol_feature::enable_eos_protocol_feature,
+        },
         eth::eth_message_signer::{sign_ascii_msg_with_eth_key_with_no_prefix, sign_hex_msg_with_eth_key_with_prefix},
     },
     erc20_on_eos::{
@@ -31,11 +34,7 @@ pub use crate::{
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
         },
-        eos::{
-            enable_protocol_feature::enable_eos_protocol_feature,
-            initialize_eos_core::maybe_initialize_eos_core,
-            submit_eos_block::submit_eos_block_to_core,
-        },
+        eos::{initialize_eos_core::maybe_initialize_eos_core, submit_eos_block::submit_eos_block_to_core},
         eth::{
             initialize_eth_core::maybe_initialize_eth_enclave as maybe_initialize_eth_core,
             submit_eth_block::submit_eth_block_to_core,
