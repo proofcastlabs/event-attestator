@@ -19,6 +19,7 @@ use ethereum_types::{Address as EthAddress, U256};
 
 pub const EMPTY_DATA: Bytes = vec![];
 pub const ERC777_CHANGE_PNETWORK_GAS_LIMIT: usize = 30_000;
+pub const ERC777_MINT_WITH_NO_DATA_GAS_LIMIT: usize = 180_000;
 
 pub const ERC777_CHANGE_PNETWORK_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"newPNetwork\",\"type\":\"address\"}],\"name\":\"changePNetwork\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0xfd4add66\"}]";
 
@@ -33,7 +34,7 @@ pub fn encode_erc777_change_pnetwork_fxn_data(new_ptoken_address: EthAddress) ->
     )])
 }
 
-fn encode_erc777_mint_with_no_data_fxn(recipient: &EthAddress, value: &U256) -> Result<Bytes> {
+pub fn encode_erc777_mint_with_no_data_fxn(recipient: &EthAddress, value: &U256) -> Result<Bytes> {
     encode_fxn_call(ERC777_MINT_WITH_NO_DATA_ABI, "mint", &[
         Token::Address(*recipient),
         Token::Uint(*value),
