@@ -12,7 +12,7 @@ use crate::{
             eth_traits::EthTxInfoCompatible,
         },
     },
-    erc20_on_eos::eos::redeem_info::{Erc20OnEosRedeemInfo, Erc20OnEosRedeemInfos},
+    eos_on_eth::eos::eos_tx_info::{EosOnEthEosTxInfo, EosOnEthEosTxInfos},
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };
@@ -30,13 +30,10 @@ pub struct EthTxInfo {
     pub broadcast: bool,
     pub eth_tx_hash: String,
     pub eth_tx_amount: String,
-    pub eos_tx_amount: String,
     pub eth_tx_recipient: String,
     pub witnessed_timestamp: u64,
-    pub host_token_address: String,
     pub originating_tx_hash: String,
     pub originating_address: String,
-    pub native_token_address: String,
     pub eth_signed_tx: Option<String>,
     pub any_sender_nonce: Option<u64>,
     pub eth_account_nonce: Option<u64>,
@@ -49,7 +46,7 @@ pub struct EthTxInfo {
 impl EthTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
         tx: &T,
-        redeem_info: &Erc20OnEosRedeemInfo,
+        tx_info: &EosOnEthEosTxInfo,
         maybe_nonce: Option<u64>,
         eth_latest_block_number: usize,
     ) -> Result<EthTxInfo> {
@@ -62,28 +59,25 @@ impl EthTxInfo {
             eth_signed_tx: tx.eth_tx_hex(),
             any_sender_tx: tx.any_sender_tx(),
             _id: if tx.is_any_sender() {
-                format!("perc20-on-eos-any-sender-{}", nonce)
+                format!("eos-on-eth-any-sender-{}", nonce)
             } else {
-                format!("perc20-on-eos-eth-{}", nonce)
+                format!("eos-on-eth-eth-{}", nonce)
             },
-            eth_tx_amount: redeem_info.amount.to_string(),
+            eth_tx_amount: tx_info.amount.to_string(),
             eth_tx_hash: format!("0x{}", tx.get_tx_hash()),
-            originating_address: redeem_info.from.to_string(),
-            eos_tx_amount: redeem_info.eos_tx_amount.to_string(),
-            host_token_address: redeem_info.eos_token_address.to_string(),
-            originating_tx_hash: redeem_info.originating_tx_id.to_string(),
+            originating_address: tx_info.from.to_string(),
+            originating_tx_hash: tx_info.originating_tx_id.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             eth_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            eth_tx_recipient: format!("0x{}", hex::encode(redeem_info.recipient.as_bytes())),
-            native_token_address: format!("0x{}", hex::encode(&redeem_info.eth_token_address)),
+            eth_tx_recipient: format!("0x{}", hex::encode(tx_info.recipient.as_bytes())),
         })
     }
 }
 
 pub fn get_eth_signed_tx_info_from_eth_txs(
     txs: &[EthTransaction],
-    redeem_info: &Erc20OnEosRedeemInfos,
+    tx_info: &EosOnEthEosTxInfos,
     eth_account_nonce: u64,
     use_any_sender_tx_type: bool,
     any_sender_nonce: u64,
@@ -98,14 +92,7 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
     };
     txs.iter()
         .enumerate()
-        .map(|(i, tx)| {
-            EthTxInfo::new(
-                tx,
-                &redeem_info[i],
-                Some(start_nonce + i as u64),
-                eth_latest_block_number,
-            )
-        })
+        .map(|(i, tx)| EthTxInfo::new(tx, &tx_info[i], Some(start_nonce + i as u64), eth_latest_block_number))
         .collect::<Result<Vec<EthTxInfo>>>()
 }
 
@@ -120,7 +107,7 @@ where
             0 => vec![],
             _ => get_eth_signed_tx_info_from_eth_txs(
                 &state.eth_signed_txs,
-                &state.erc20_on_eos_redeem_infos,
+                &state.eos_on_eth_eos_tx_infos,
                 get_eth_account_nonce_from_db(&state.db)?,
                 false, // TODO Get this from state submission material when/if we support AnySender
                 get_any_sender_nonce_from_db(&state.db)?,

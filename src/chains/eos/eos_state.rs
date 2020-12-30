@@ -29,9 +29,9 @@ pub struct EosState<D: DatabaseInterface> {
     pub producer_signature: String,
     pub action_proofs: EosActionProofs,
     pub interim_block_ids: Checksum256s,
+    pub eth_signed_txs: EthTransactions,
     pub processed_tx_ids: ProcessedTxIds,
     pub block_header: Option<EosBlockHeader>,
-    pub erc20_on_eos_signed_txs: EthTransactions,
     pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub enabled_protocol_features: EnabledFeatures,
     pub eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos,
@@ -53,11 +53,11 @@ where
             block_header: None,
             action_proofs: vec![],
             active_schedule: None,
+            eth_signed_txs: vec![],
             interim_block_ids: vec![],
             btc_utxos_and_values: None,
             eos_erc20_dictionary: None,
             btc_on_eos_signed_txs: vec![],
-            erc20_on_eos_signed_txs: vec![],
             producer_signature: String::new(),
             incremerkle: Incremerkle::default(),
             processed_tx_ids: ProcessedTxIds::init(),
@@ -96,11 +96,11 @@ where
         Ok(self)
     }
 
-    pub fn add_erc20_on_eos_signed_txs(mut self, erc20_on_eos_signed_txs: EthTransactions) -> Result<EosState<D>>
+    pub fn add_eth_signed_txs(mut self, txs: EthTransactions) -> Result<EosState<D>>
     where
         D: DatabaseInterface,
     {
-        self.erc20_on_eos_signed_txs = erc20_on_eos_signed_txs;
+        self.eth_signed_txs = txs;
         Ok(self)
     }
 
