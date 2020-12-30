@@ -139,18 +139,12 @@ pub fn filter_duplicate_proofs(action_proofs: &[EosActionProof]) -> Result<EosAc
     Ok(filtered)
 }
 
-pub fn maybe_filter_duplicate_proofs_from_state<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_filter_duplicate_proofs_from_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Maybe filtering duplicate proofs from state...");
     filter_duplicate_proofs(&state.action_proofs).and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
-pub fn maybe_filter_out_proofs_for_non_erc20_accounts<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_filter_out_proofs_for_non_erc20_accounts<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Filtering out proofs for accounts we don't care about...");
     filter_proofs_for_accounts(
         &state.action_proofs,
@@ -160,47 +154,42 @@ where
     .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
-pub fn maybe_filter_out_proofs_for_wrong_eos_account_name<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_filter_out_proofs_for_wrong_eos_account_name<D: DatabaseInterface>(
+    state: EosState<D>,
+) -> Result<EosState<D>> {
     info!("✔ Filtering out proofs for accounts we don't care about...");
     filter_proofs_for_account(&state.action_proofs, get_eos_account_name_from_db(&state.db)?)
         .and_then(|proofs| filter_out_proofs_for_other_actions(&proofs))
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
-pub fn maybe_filter_out_action_proof_receipt_mismatches_and_return_state<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_filter_out_action_proof_receipt_mismatches_and_return_state<D: DatabaseInterface>(
+    state: EosState<D>,
+) -> Result<EosState<D>> {
     info!("✔ Filtering proofs w/ action digests NOT in action receipts...");
     filter_out_proofs_with_action_digests_not_in_action_receipts(&state.action_proofs)
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
-pub fn maybe_filter_out_invalid_action_receipt_digests<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_filter_out_invalid_action_receipt_digests<D: DatabaseInterface>(
+    state: EosState<D>,
+) -> Result<EosState<D>> {
     info!("✔ Filtering out invalid action digests...");
     filter_out_invalid_action_receipt_digests(&state.action_proofs)
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
-pub fn maybe_filter_out_proofs_with_invalid_merkle_proofs<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_filter_out_proofs_with_invalid_merkle_proofs<D: DatabaseInterface>(
+    state: EosState<D>,
+) -> Result<EosState<D>> {
     info!("✔ Filtering out invalid merkle proofs...");
     filter_out_proofs_with_invalid_merkle_proofs(&state.action_proofs)
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
-pub fn maybe_filter_out_proofs_with_wrong_action_mroot<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_filter_out_proofs_with_wrong_action_mroot<D: DatabaseInterface>(
+    state: EosState<D>,
+) -> Result<EosState<D>> {
     info!("✔ Filtering out proofs with wrong `action_mroot`...");
     filter_proofs_with_wrong_action_mroot(&state.get_eos_block_header()?.action_mroot, &state.action_proofs)
         .and_then(|proofs| state.replace_action_proofs(proofs))
