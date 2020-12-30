@@ -1,4 +1,3 @@
-pub mod disable_protocol_feature;
 pub mod enable_protocol_feature;
 pub mod submit_eos_block;
 

@@ -12,9 +12,9 @@
 //! ptokens_core = { version = "1", features = ["debug"] }
 //! ```
 pub use crate::{
-    chains::eth::eth_message_signer::{
-        sign_ascii_msg_with_eth_key_with_no_prefix,
-        sign_hex_msg_with_eth_key_with_prefix,
+    chains::{
+        eos::disable_protocol_feature::disable_eos_protocol_feature,
+        eth::eth_message_signer::{sign_ascii_msg_with_eth_key_with_no_prefix, sign_hex_msg_with_eth_key_with_prefix},
     },
     erc20_on_eos::{
         debug_functions::{
@@ -32,7 +32,6 @@ pub use crate::{
             debug_update_incremerkle,
         },
         eos::{
-            disable_protocol_feature::disable_eos_protocol_feature,
             enable_protocol_feature::enable_eos_protocol_feature,
             initialize_eos_core::maybe_initialize_eos_core,
             submit_eos_block::submit_eos_block_to_core,

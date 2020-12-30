@@ -21,7 +21,10 @@ pub mod get_latest_block_numbers;
 pub(crate) mod check_core_is_initialized;
 
 pub use crate::{
-    chains::eos::core_initialization::initialize_eos_core::maybe_initialize_eos_core,
+    chains::eos::{
+        core_initialization::initialize_eos_core::maybe_initialize_eos_core,
+        disable_protocol_feature::disable_protocol_feature,
+    },
     eos_on_eth::{
         eth::initialize_eth_core::maybe_initialize_eth_core,
         get_enclave_state::get_enclave_state,

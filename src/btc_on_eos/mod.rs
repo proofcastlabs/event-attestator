@@ -30,15 +30,14 @@ pub use crate::{
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
         },
-        eos::{
-            disable_protocol_feature::disable_eos_protocol_feature,
-            enable_protocol_feature::enable_eos_protocol_feature,
-            submit_eos_block::submit_eos_block_to_core,
-        },
+        eos::{enable_protocol_feature::enable_eos_protocol_feature, submit_eos_block::submit_eos_block_to_core},
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
     },
-    chains::eos::core_initialization::initialize_eos_core::maybe_initialize_eos_core,
+    chains::eos::{
+        core_initialization::initialize_eos_core::maybe_initialize_eos_core,
+        disable_protocol_feature::disable_eos_protocol_feature,
+    },
 };
 
 pub mod btc;
