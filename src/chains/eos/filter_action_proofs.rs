@@ -160,7 +160,7 @@ where
     .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
-pub fn maybe_filter_out_proofs_for_non_btc_on_eos_accounts<D>(state: EosState<D>) -> Result<EosState<D>>
+pub fn maybe_filter_out_proofs_for_wrong_eos_account_name<D>(state: EosState<D>) -> Result<EosState<D>>
 where
     D: DatabaseInterface,
 {
