@@ -72,7 +72,7 @@ use crate::{
         },
         eos::{
             get_eos_output::get_eos_output,
-            increment_eth_nonce::maybe_increment_eth_nonce_in_db_and_return_state,
+            increment_eth_nonce::maybe_increment_eth_nonce_in_db_and_return_eos_state,
             redeem_info::maybe_parse_redeem_infos_and_put_in_state,
             sign_normal_eth_txs::maybe_sign_normal_eth_txs_and_add_to_state,
         },
@@ -434,7 +434,7 @@ where
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
         .and_then(maybe_parse_redeem_infos_and_put_in_state)
         .and_then(maybe_sign_normal_eth_txs_and_add_to_state)
-        .and_then(maybe_increment_eth_nonce_in_db_and_return_state)
+        .and_then(maybe_increment_eth_nonce_in_db_and_return_eos_state)
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(get_eos_output)
         .map(prepend_debug_output_marker_to_string)

@@ -32,7 +32,7 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
         eos::{
             get_eos_output::get_eos_output,
-            increment_eth_nonce::maybe_increment_eth_nonce_in_db_and_return_state,
+            increment_eth_nonce::maybe_increment_eth_nonce_in_db_and_return_eos_state,
             redeem_info::{
                 maybe_filter_out_already_processed_tx_ids_from_state,
                 maybe_parse_redeem_infos_and_put_in_state,
@@ -78,7 +78,7 @@ where
         .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
         .and_then(maybe_sign_normal_eth_txs_and_add_to_state)
-        .and_then(maybe_increment_eth_nonce_in_db_and_return_state)
+        .and_then(maybe_increment_eth_nonce_in_db_and_return_eos_state)
         .and_then(save_latest_block_id_to_db)
         .and_then(save_latest_block_num_to_db)
         .and_then(save_incremerkle_from_state_to_db)
