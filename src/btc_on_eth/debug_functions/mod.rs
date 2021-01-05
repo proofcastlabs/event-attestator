@@ -17,6 +17,7 @@ use crate::{
         eth::{
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
+            filter_receipts_in_state::filter_receipts_for_btc_on_eth_redeem_events_in_state,
             get_eth_output_json::{get_btc_signed_tx_info_from_btc_txs, EthOutput},
             increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db_and_return_state,
@@ -79,7 +80,6 @@ use crate::{
             eth_network::EthNetwork,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
-            filter_receipts_in_state::filter_receipts_for_btc_on_eth_redeem_events_in_state,
             validate_block_in_state::validate_block_in_state,
         },
     },
