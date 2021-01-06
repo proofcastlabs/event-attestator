@@ -202,11 +202,14 @@ where
         Ok(self)
     }
 
-    pub fn get_global_sequences_from_redeem_info(&self) -> GlobalSequences {
-        match (self.btc_on_eos_redeem_infos.len(), self.erc20_on_eos_redeem_infos.len()) {
-            (0, 0) => vec![],
-            (0, _) => self.erc20_on_eos_redeem_infos.get_global_sequences(),
-            (..) => self.btc_on_eos_redeem_infos.get_global_sequences(),
-        }
+    pub fn get_global_sequences(&self) -> GlobalSequences {
+        GlobalSequences::new(
+            vec![
+                self.eos_on_eth_eos_tx_infos.get_global_sequences().to_vec(),
+                self.btc_on_eos_redeem_infos.get_global_sequences().to_vec(),
+                self.erc20_on_eos_redeem_infos.get_global_sequences().to_vec(),
+            ]
+            .concat(),
+        )
     }
 }

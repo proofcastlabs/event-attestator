@@ -17,7 +17,7 @@ use crate::{
     types::{Byte, Bytes, Result},
 };
 use derive_more::Constructor;
-use ethabi::{decode as eth_abi_decode, ParamType, Token};
+use ethabi::Token;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 pub const EMPTY_DATA: Bytes = vec![];
