@@ -3,7 +3,7 @@ use crate::{
     chains::{
         eos::eos_erc20_dictionary::EosErc20Dictionary,
         eth::{
-            eth_log::{EthLogJson, EthLogs},
+            eth_log::{EthLog, EthLogJson, EthLogs},
             eth_utils::{convert_hex_to_address, convert_hex_to_h256, convert_json_value_to_string},
             nibble_utils::{get_nibbles_from_bytes, Nibbles},
             trie::{put_in_trie_recursively, Trie},
@@ -72,6 +72,21 @@ impl EthReceipts {
                 .flatten()
                 .collect(),
         )
+    }
+
+    fn get_logs(&self) -> EthLogs {
+        EthLogs::new(
+            self.iter()
+                .cloned()
+                .map(|receipt| receipt.logs.0)
+                .flatten()
+                .collect::<Vec<EthLog>>(),
+        )
+    }
+
+    pub fn get_logs_from_address_with_topic(&self, address: &EthAddress, topic: &EthHash) -> EthLogs {
+        self.get_logs()
+            .filter_for_those_from_address_containing_topic(address, topic)
     }
 
     pub fn get_rlp_encoded_receipts_and_nibble_tuples(&self) -> Result<Vec<(Nibbles, Bytes)>> {
@@ -528,5 +543,27 @@ mod tests {
         let result = receipt.get_supported_erc20_peg_in_logs(&dictionary);
         assert_eq!(result.len(), expected_num_logs);
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_eth_logs_from_receipts() {
+        let receipts = get_sample_eth_submission_material().receipts;
+        let result = receipts.get_logs();
+        assert_eq!(result.len(), 51);
+    }
+
+    #[test]
+    fn should_get_logs_from_address_with_topic() {
+        let topic = get_sample_contract_topic();
+        let address = get_sample_contract_address();
+        let receipts = get_sample_eth_submission_material().receipts;
+        let logs_before = receipts.clone().get_logs();
+        let logs_after = receipts.get_logs_from_address_with_topic(&address, &topic);
+        assert!(logs_before.len() > logs_after.len());
+        assert_eq!(logs_after.len(), 1);
+        logs_after.iter().for_each(|log| {
+            assert!(log.contains_address(&address));
+            assert!(log.contains_topic(&topic));
+        })
     }
 }
