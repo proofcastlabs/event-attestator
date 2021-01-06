@@ -2,6 +2,7 @@ use crate::{
     chains::eos::eos_utils::get_eos_schedule_db_key,
     types::{Bytes, Result},
 };
+use derive_more::{Constructor, Deref, DerefMut};
 pub use eos_primitives::Checksum256;
 use eos_primitives::ProducerKey as EosProducerKey;
 use serde_json::Value as JsonValue;
@@ -11,11 +12,13 @@ pub type GlobalSequence = u64;
 pub type MerkleProof = Vec<String>;
 pub type Checksum256s = Vec<Checksum256>;
 pub type ProducerKeys = Vec<EosProducerKey>;
-pub type GlobalSequences = Vec<GlobalSequence>;
 pub type EosSignedTransactions = Vec<EosSignedTransaction>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EosKnownSchedules(Vec<EosKnownSchedule>);
+
+#[derive(Clone, Debug, PartialEq, Eq, Constructor, Deref, DerefMut)]
+pub struct GlobalSequences(Vec<GlobalSequence>);
 
 impl EosKnownSchedules {
     pub fn new(version: u32) -> Self {

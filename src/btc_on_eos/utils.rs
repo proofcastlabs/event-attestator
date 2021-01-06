@@ -1,7 +1,4 @@
-use crate::{
-    constants::BTC_NUM_DECIMALS,
-    types::{NoneError, Result},
-};
+use crate::constants::BTC_NUM_DECIMALS;
 
 pub fn convert_u64_to_8_decimal_eos_asset(value: u64, token_symbol: &str) -> String {
     let mut amount_string = value.to_string();

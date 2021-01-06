@@ -29,7 +29,11 @@ pub struct Erc20OnEosRedeemInfos(pub Vec<Erc20OnEosRedeemInfo>);
 
 impl Erc20OnEosRedeemInfos {
     pub fn get_global_sequences(&self) -> GlobalSequences {
-        self.iter().map(|infos| infos.global_sequence).collect()
+        GlobalSequences::new(
+            self.iter()
+                .map(|infos| infos.global_sequence)
+                .collect::<Vec<GlobalSequence>>(),
+        )
     }
 
     pub fn from_action_proofs(

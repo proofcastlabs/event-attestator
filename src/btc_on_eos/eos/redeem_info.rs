@@ -31,7 +31,12 @@ impl BtcOnEosRedeemInfos {
     }
 
     pub fn get_global_sequences(&self) -> GlobalSequences {
-        self.0.iter().map(|infos| infos.global_sequence).collect()
+        GlobalSequences::new(
+            self.0
+                .iter()
+                .map(|infos| infos.global_sequence)
+                .collect::<Vec<GlobalSequence>>(),
+        )
     }
 
     pub fn from_action_proofs(action_proofs: &[EosActionProof]) -> Result<BtcOnEosRedeemInfos> {
