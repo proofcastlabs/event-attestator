@@ -1,5 +1,5 @@
 use crate::{
-    btc_on_eos::utils::{convert_eos_asset_to_u64, convert_u64_to_8_decimal_eos_asset},
+    btc_on_eos::utils::convert_u64_to_8_decimal_eos_asset,
     chains::{
         btc::{
             btc_constants::MINIMUM_REQUIRED_SATOSHIS,
@@ -7,7 +7,7 @@ use crate::{
             btc_state::BtcState,
             deposit_address_info::DepositInfoHashMap,
         },
-        eos::eos_database_utils::get_eos_token_symbol_from_db,
+        eos::{eos_database_utils::get_eos_token_symbol_from_db, eos_unit_conversions::convert_eos_asset_to_u64},
     },
     constants::SAFE_EOS_ADDRESS,
     traits::DatabaseInterface,

@@ -17,6 +17,7 @@ pub(crate) mod eos_merkle_utils;
 pub(crate) mod eos_state;
 pub(crate) mod eos_test_utils;
 pub(crate) mod eos_types;
+pub(crate) mod eos_unit_conversions;
 pub(crate) mod eos_utils;
 pub(crate) mod extract_utxos_from_btc_txs;
 pub(crate) mod filter_action_proofs;
