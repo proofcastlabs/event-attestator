@@ -309,39 +309,18 @@ mod tests {
                 get_sample_log_with_desired_topic,
                 get_sample_log_with_erc20_peg_in_event,
                 get_sample_log_with_erc20_peg_in_event_2,
+                get_sample_log_with_erc777_redeem,
                 get_sample_log_without_desired_address,
                 get_sample_logs_with_desired_topic,
                 get_sample_logs_without_desired_topic,
                 get_sample_receipt_with_desired_address,
+                get_sample_receipt_with_erc777_redeem,
                 get_sample_receipt_without_desired_address,
                 SAMPLE_RECEIPT_INDEX,
             },
         },
     };
     use std::str::FromStr;
-
-    fn get_tx_hash_of_redeem_tx() -> &'static str {
-        "442612aba789ce873bb3804ff62ced770dcecb07d19ddcf9b651c357eebaed40"
-    }
-
-    fn get_sample_block_with_redeem() -> EthSubmissionMaterial {
-        get_sample_eth_submission_material_n(4).unwrap()
-    }
-
-    fn get_sample_receipt_with_redeem() -> EthReceipt {
-        let hash = EthHash::from_str(get_tx_hash_of_redeem_tx()).unwrap();
-        get_sample_block_with_redeem()
-            .receipts
-            .0
-            .iter()
-            .filter(|receipt| receipt.transaction_hash == hash)
-            .collect::<Vec<&EthReceipt>>()[0]
-            .clone()
-    }
-
-    fn get_sample_log_with_redeem() -> EthLog {
-        get_sample_receipt_with_redeem().logs.0[2].clone()
-    }
 
     fn get_sample_log_with_p2sh_redeem() -> EthLog {
         get_sample_log_n(5, 23, 2).unwrap()
@@ -449,13 +428,13 @@ mod tests {
 
     #[test]
     fn redeem_log_should_be_redeem() {
-        let result = get_sample_log_with_redeem().is_btc_on_eth_redeem().unwrap();
+        let result = get_sample_log_with_erc777_redeem().is_btc_on_eth_redeem().unwrap();
         assert!(result);
     }
 
     #[test]
     fn non_redeem_log_should_not_be_redeem() {
-        let result = &get_sample_receipt_with_redeem().logs.0[1]
+        let result = &get_sample_receipt_with_erc777_redeem().logs.0[1]
             .is_btc_on_eth_redeem()
             .unwrap();
         assert!(!result);
@@ -464,7 +443,7 @@ mod tests {
     #[test]
     fn should_parse_redeem_amount_from_log() {
         let expected_result = U256::from_dec_str("666").unwrap();
-        let log = get_sample_log_with_redeem();
+        let log = get_sample_log_with_erc777_redeem();
         let result = log.get_btc_on_eth_redeem_amount().unwrap();
         assert_eq!(result, expected_result);
     }
@@ -472,7 +451,7 @@ mod tests {
     #[test]
     fn should_parse_btc_address_from_log() {
         let expected_result = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
-        let log = get_sample_log_with_redeem();
+        let log = get_sample_log_with_erc777_redeem();
         let result = log.get_btc_on_eth_btc_redeem_address().unwrap();
         assert_eq!(result, expected_result);
     }
