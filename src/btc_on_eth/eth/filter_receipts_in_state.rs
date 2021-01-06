@@ -14,7 +14,7 @@ pub fn filter_receipts_for_btc_on_eth_redeem_events_in_state<D: DatabaseInterfac
     info!("✔ Filtering receipts for those containing `btc-on-eth` redeem events...");
     state
         .get_eth_submission_material()?
-        .filter_for_receipts_containing_log_with_address_and_topics(
+        .get_receipts_containing_log_from_address_and_with_topics(
             &get_erc777_contract_address_from_db(&state.db)?,
             &BTC_ON_ETH_REDEEM_EVENT_TOPIC.to_vec(),
         )

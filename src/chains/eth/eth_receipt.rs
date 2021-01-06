@@ -32,17 +32,17 @@ impl EthReceipts {
         ))
     }
 
-    fn filter_for_receipts_containing_log_with_address(&self, address: &EthAddress) -> Self {
+    fn get_receipts_containing_log_from_address(&self, address: &EthAddress) -> Self {
         Self::new(
             self.0
                 .iter()
-                .filter(|receipt| receipt.contains_log_with_address(address))
+                .filter(|receipt| receipt.contains_log_from_address(address))
                 .cloned()
                 .collect(),
         )
     }
 
-    fn filter_for_receipts_containing_log_with_topic(&self, topic: &EthHash) -> Self {
+    fn get_receipts_containing_log_with_topic(&self, topic: &EthHash) -> Self {
         Self::new(
             self.0
                 .iter()
@@ -52,12 +52,12 @@ impl EthReceipts {
         )
     }
 
-    fn filter_for_receipts_containing_log_with_address_and_topic(&self, address: &EthAddress, topic: &EthHash) -> Self {
-        self.filter_for_receipts_containing_log_with_address(address)
-            .filter_for_receipts_containing_log_with_topic(topic)
+    fn get_receipts_containing_logs_from_address_and_with_topic(&self, address: &EthAddress, topic: &EthHash) -> Self {
+        self.get_receipts_containing_log_from_address(address)
+            .get_receipts_containing_log_with_topic(topic)
     }
 
-    pub fn filter_for_receipts_containing_log_with_address_and_topics(
+    pub fn get_receipts_containing_log_from_address_and_with_topics(
         &self,
         address: &EthAddress,
         topics: &[EthHash],
@@ -66,7 +66,7 @@ impl EthReceipts {
             topics
                 .iter()
                 .map(|topic| {
-                    self.filter_for_receipts_containing_log_with_address_and_topic(address, topic)
+                    self.get_receipts_containing_logs_from_address_and_with_topic(address, topic)
                         .0
                 })
                 .flatten()
@@ -188,7 +188,7 @@ impl EthReceipt {
         self.logs.contain_topic(topic)
     }
 
-    pub fn contains_log_with_address(&self, address: &EthAddress) -> bool {
+    pub fn contains_log_from_address(&self, address: &EthAddress) -> bool {
         self.logs.contain_address(address)
     }
 
@@ -416,7 +416,7 @@ mod tests {
         let topic = get_sample_contract_topic();
         let topics = vec![topic];
         let address = get_sample_contract_address();
-        let result = receipts.filter_for_receipts_containing_log_with_address_and_topics(&address, &topics);
+        let result = receipts.get_receipts_containing_log_from_address_and_with_topics(&address, &topics);
         let num_receipts_after = result.len();
         assert_eq!(num_receipts_after, expected_num_receipts_after);
         assert!(num_receipts_before > num_receipts_after);
@@ -562,7 +562,7 @@ mod tests {
         assert!(logs_before.len() > logs_after.len());
         assert_eq!(logs_after.len(), 1);
         logs_after.iter().for_each(|log| {
-            assert!(log.contains_address(&address));
+            assert!(log.is_from_address(&address));
             assert!(log.contains_topic(&topic));
         })
     }

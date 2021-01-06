@@ -167,7 +167,7 @@ impl EthSubmissionMaterial {
         Ok(self.to_json()?.to_string())
     }
 
-    pub fn filter_for_receipts_containing_log_with_address_and_topics(
+    pub fn get_receipts_containing_log_from_address_and_with_topics(
         &self,
         address: &EthAddress,
         topics: &[EthHash],
@@ -176,7 +176,7 @@ impl EthSubmissionMaterial {
         let filtered = Self::new(
             self.get_block()?,
             self.receipts
-                .filter_for_receipts_containing_log_with_address_and_topics(address, topics),
+                .get_receipts_containing_log_from_address_and_with_topics(address, topics),
             self.eos_ref_block_num,
             self.eos_ref_block_prefix,
         );
@@ -385,7 +385,7 @@ mod tests {
         let address = get_sample_contract_address();
         let topics = get_sample_contract_topics();
         let result = block_and_receipts
-            .filter_for_receipts_containing_log_with_address_and_topics(&address, &topics)
+            .get_receipts_containing_log_from_address_and_with_topics(&address, &topics)
             .unwrap();
         let num_receipts_after = result.receipts.len();
         assert!(num_receipts_before > num_receipts_after);
@@ -410,7 +410,7 @@ mod tests {
             &hex::decode(BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX).unwrap(),
         )];
         let result = block_and_receipts
-            .filter_for_receipts_containing_log_with_address_and_topics(&address, &topics)
+            .get_receipts_containing_log_from_address_and_with_topics(&address, &topics)
             .unwrap();
         let num_receipts_after = result.receipts.len();
         assert!(num_receipts_before > num_receipts_after);

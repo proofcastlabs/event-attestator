@@ -14,7 +14,7 @@ pub fn filter_receipts_for_erc20_on_eos_peg_in_events_in_state<D: DatabaseInterf
     info!("✔ Filtering receipts for those containing `erc20-on-eos` peg in events...");
     state
         .get_eth_submission_material()?
-        .filter_for_receipts_containing_log_with_address_and_topics(
+        .get_receipts_containing_log_from_address_and_with_topics(
             &get_erc20_on_eos_smart_contract_address_from_db(&state.db)?,
             &ERC20_ON_EOS_PEG_IN_EVENT_TOPIC.to_vec(),
         )

@@ -79,12 +79,12 @@ impl EthLog {
         self.topics.iter().any(|log_topic| log_topic == topic)
     }
 
-    pub fn contains_address(&self, address: &EthAddress) -> bool {
+    pub fn is_from_address(&self, address: &EthAddress) -> bool {
         self.address == *address
     }
 
-    pub fn contains_address_and_topic(&self, address: &EthAddress, topic: &EthHash) -> bool {
-        self.contains_address(address) && self.contains_topic(topic)
+    pub fn is_from_address_and_contains_topic(&self, address: &EthAddress, topic: &EthHash) -> bool {
+        self.is_from_address(address) && self.contains_topic(topic)
     }
 
     pub fn is_btc_on_eth_redeem(&self) -> Result<bool> {
@@ -277,14 +277,14 @@ impl EthLogs {
     }
 
     pub fn contain_address(&self, address: &EthAddress) -> bool {
-        self.0.iter().any(|log| log.contains_address(address))
+        self.0.iter().any(|log| log.is_from_address(address))
     }
 
     pub fn filter_for_those_from_address_containing_topic(&self, address: &EthAddress, topic: &EthHash) -> Self {
         EthLogs::new(
             self.iter()
                 .cloned()
-                .filter(|log| log.contains_address_and_topic(address, topic))
+                .filter(|log| log.is_from_address_and_contains_topic(address, topic))
                 .collect(),
         )
     }
@@ -419,7 +419,7 @@ mod tests {
     fn sample_log_receipt_with_desired_address_should_return_true() {
         let log = get_sample_log_with_desired_address();
         let address = get_sample_contract_address();
-        let result = log.contains_address(&address);
+        let result = log.is_from_address(&address);
         assert!(result);
     }
 
@@ -427,7 +427,7 @@ mod tests {
     fn sample_log_without_desired_address_should_return_false() {
         let log = get_sample_log_without_desired_address();
         let address = get_sample_contract_address();
-        let result = log.contains_address(&address);
+        let result = log.is_from_address(&address);
         assert!(!result);
     }
 
@@ -610,7 +610,7 @@ mod tests {
         );
         let log = get_sample_log_with_desired_address();
         let desired_address = get_sample_contract_address();
-        let result = log.contains_address_and_topic(&desired_address, &desired_topic);
+        let result = log.is_from_address_and_contains_topic(&desired_address, &desired_topic);
         assert!(result);
     }
 
