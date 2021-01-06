@@ -5,6 +5,7 @@ use crate::{
         eth::{
             eth_constants::{
                 BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
+                EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC_HEX,
                 ERC20_PEG_IN_EVENT_TOPIC_HEX,
                 ETH_ADDRESS_SIZE_IN_BYTES,
                 ETH_WORD_SIZE_IN_BYTES,
@@ -82,9 +83,19 @@ impl EthLog {
         self.address == *address
     }
 
+    pub fn contains_address_and_topic(&self, address: &EthAddress, topic: &EthHash) -> bool {
+        self.contains_address(address) && self.contains_topic(topic)
+    }
+
     pub fn is_btc_on_eth_redeem(&self) -> Result<bool> {
         Ok(self.contains_topic(&EthHash::from_slice(
             &hex::decode(&BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX)?[..],
+        )))
+    }
+
+    pub fn is_eos_on_eth_tx(&self) -> Result<bool> {
+        Ok(self.contains_topic(&EthHash::from_slice(
+            &hex::decode(&EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC_HEX)?[..],
         )))
     }
 
@@ -114,6 +125,14 @@ impl EthLog {
         match self.is_erc20_peg_in()? {
             true => Ok(()),
             false => Err("✘ Log is not from a erc20 peg in event!".into()),
+        }
+    }
+
+    fn check_is_eos_on_eth_tx(&self) -> Result<()> {
+        trace!("✔ Checking if log is an `eos-on-eth` tx...");
+        match self.is_eos_on_eth_tx()? {
+            true => Ok(()),
+            false => Err("✘ Log is not from a 'eos-on-eth` tx!".into()),
         }
     }
 
@@ -259,6 +278,15 @@ impl EthLogs {
 
     pub fn contain_address(&self, address: &EthAddress) -> bool {
         self.0.iter().any(|log| log.contains_address(address))
+    }
+
+    pub fn filter_for_those_from_address_containing_topic(&self, address: &EthAddress, topic: &EthHash) -> Self {
+        EthLogs::new(
+            self.iter()
+                .cloned()
+                .filter(|log| log.contains_address_and_topic(address, topic))
+                .collect(),
+        )
     }
 }
 
@@ -573,5 +601,33 @@ mod tests {
         let log = get_sample_log_with_erc20_peg_in_event_2().unwrap();
         let result = log.is_supported_erc20_peg_in(&eos_erc20_account_names).unwrap();
         assert!(result);
+    }
+
+    #[test]
+    fn log_should_contain_desired_address_and_topic() {
+        let desired_topic = EthHash::from_slice(
+            &hex::decode("ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef").unwrap(),
+        );
+        let log = get_sample_log_with_desired_address();
+        let desired_address = get_sample_contract_address();
+        let result = log.contains_address_and_topic(&desired_address, &desired_topic);
+        assert!(result);
+    }
+
+    #[test]
+    fn should_filter_logs_for_those_from_desired_address_containing_topic() {
+        let desired_topic = EthHash::from_slice(
+            &hex::decode("ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef").unwrap(),
+        );
+        let desired_address = get_sample_contract_address();
+        let expected_log = get_sample_log_with_desired_address();
+        let expected_result = EthLogs::new(vec![expected_log.clone()]);
+        let logs = EthLogs::new(vec![expected_log, get_sample_log_without_desired_address()]);
+        let num_logs_before = logs.len();
+        assert_eq!(num_logs_before, 2);
+        let result = logs.filter_for_those_from_address_containing_topic(&desired_address, &desired_topic);
+        let num_logs_after = result.len();
+        assert_eq!(num_logs_after, 1);
+        assert_eq!(result, expected_result);
     }
 }
