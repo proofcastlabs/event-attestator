@@ -29,7 +29,7 @@ pub use crate::{
     },
     eos_on_eth::{
         eos::submit_eos_block::submit_eos_block_to_core,
-        eth::initialize_eth_core::maybe_initialize_eth_core,
+        eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
     },
