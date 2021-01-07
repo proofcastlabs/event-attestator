@@ -120,7 +120,7 @@ fn get_redeemer_address_from_redeem_log(log: &EthLog) -> Result<EthAddress> {
 
 fn get_redeem_amount_from_redeem_log(log: &EthLog) -> Result<U256> {
     if log.data.len() >= ETH_WORD_SIZE_IN_BYTES {
-        Ok(U256::from(U256::from(&log.data[..ETH_WORD_SIZE_IN_BYTES])))
+        Ok(U256::from(&log.data[..ETH_WORD_SIZE_IN_BYTES]))
     } else {
         Err("Not enough bytes in log data to get redeem amount!".into())
     }

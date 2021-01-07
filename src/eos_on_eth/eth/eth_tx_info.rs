@@ -87,7 +87,7 @@ impl EosOnEthEthTxInfo {
                 eos_asset_amount: convert_u64_to_eos_asset(params.value.as_u64()),
                 token_sender: params.redeemer,
                 eth_token_address: get_eos_on_eth_smart_contract_address_from_db(db)?,
-                originating_tx_hash: tx_hash.clone(),
+                originating_tx_hash: *tx_hash,
             })
         })
     }

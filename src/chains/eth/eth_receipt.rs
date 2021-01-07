@@ -575,7 +575,7 @@ mod tests {
         let topic = get_sample_contract_topic();
         let address = get_sample_contract_address();
         let receipts = get_sample_eth_submission_material().receipts;
-        let logs_before = receipts.clone().get_logs();
+        let logs_before = receipts.get_logs();
         let logs_after = receipts.get_logs_from_address_with_topic(&address, &topic);
         assert!(logs_before.len() > logs_after.len());
         assert_eq!(logs_after.len(), 1);

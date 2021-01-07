@@ -19,7 +19,7 @@ pub fn add_tx_ids_to_processed_tx_ids<D: DatabaseInterface>(
 pub fn maybe_add_global_sequences_to_processed_list_and_return_state<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
-    let global_sequences = state.get_global_sequences().clone();
+    let global_sequences = state.get_global_sequences();
     match global_sequences.len() {
         0 => {
             info!("✔ No `global_sequences` to add to processed tx list!");
