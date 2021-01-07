@@ -264,8 +264,10 @@ impl EthReceipt {
                         token_contract_address,
                         log.get_erc20_on_eos_peg_in_eos_address()?,
                         self.transaction_hash,
-                        eos_eth_token_dictionary.get_eos_account_name_from_eth_token_address(&token_contract_address)?,
-                        eos_eth_token_dictionary.convert_u256_to_eos_asset_string(&token_contract_address, &eth_amount)?,
+                        eos_eth_token_dictionary
+                            .get_eos_account_name_from_eth_token_address(&token_contract_address)?,
+                        eos_eth_token_dictionary
+                            .convert_u256_to_eos_asset_string(&token_contract_address, &eth_amount)?,
                     );
                     info!("✔ Parsed peg-in info: {:?}", peg_in_info);
                     Ok(peg_in_info)
@@ -315,7 +317,10 @@ impl Encodable for EthReceipt {
 mod tests {
     use super::*;
     use crate::chains::{
-        eos::{eos_eth_token_dictionary::EosEthTokenDictionaryEntry, eos_test_utils::get_sample_eos_eth_token_dictionary},
+        eos::{
+            eos_eth_token_dictionary::EosEthTokenDictionaryEntry,
+            eos_test_utils::get_sample_eos_eth_token_dictionary,
+        },
         eth::{
             eth_log::EthLog,
             eth_submission_material::EthSubmissionMaterial,
@@ -534,7 +539,9 @@ mod tests {
         let expected_num_results = 1;
         let expected_result = get_sample_erc20_on_eos_peg_in_info().unwrap();
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_eth_token_dictionary).unwrap();
+        let result = receipt
+            .get_erc20_on_eos_peg_in_infos(&eos_eth_token_dictionary)
+            .unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result.0[0], expected_result);
     }
@@ -544,7 +551,9 @@ mod tests {
         let eos_eth_token_dictionary = EosEthTokenDictionary::new(vec![]);
         let expected_num_results = 0;
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_eth_token_dictionary).unwrap();
+        let result = receipt
+            .get_erc20_on_eos_peg_in_infos(&eos_eth_token_dictionary)
+            .unwrap();
         assert_eq!(result.len(), expected_num_results);
     }
 

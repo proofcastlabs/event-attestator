@@ -71,7 +71,11 @@ impl EosEthTokenDictionary {
     }
 
     pub fn save_to_db<D: DatabaseInterface>(&self, db: &D) -> Result<()> {
-        db.put(EOS_ETH_DICTIONARY_KEY.to_vec(), self.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
+        db.put(
+            EOS_ETH_DICTIONARY_KEY.to_vec(),
+            self.to_bytes()?,
+            MIN_DATA_SENSITIVITY_LEVEL,
+        )
     }
 
     pub fn get_from_db<D: DatabaseInterface>(db: &D) -> Result<Self> {
@@ -105,7 +109,7 @@ impl EosEthTokenDictionary {
     pub fn remove_entry_via_eth_address_and_update_in_db<D: DatabaseInterface>(
         self,
         eth_address: &EthAddress,
-        db: &D
+        db: &D,
     ) -> Result<Self> {
         self.get_entry_via_eth_token_address(eth_address)
             .and_then(|entry| self.remove_and_update_in_db(&entry, db))
@@ -121,7 +125,11 @@ impl EosEthTokenDictionary {
     pub fn get_entry_via_eos_address(&self, eos_address: &str) -> Result<EosEthTokenDictionaryEntry> {
         match self.iter().find(|entry| entry.eos_address == eos_address) {
             Some(entry) => Ok(entry.clone()),
-            None => Err(format!("No `EosEthTokenDictionaryEntry` exists with EOS address: {}", eos_address).into()),
+            None => Err(format!(
+                "No `EosEthTokenDictionaryEntry` exists with EOS address: {}",
+                eos_address
+            )
+            .into()),
         }
     }
 
@@ -313,14 +321,14 @@ impl EosEthTokenDictionaryEntryJson {
 }
 
 pub fn get_eos_eth_token_dictionary_from_db_and_add_to_eos_state<D: DatabaseInterface>(
-    state: EosState<D>
+    state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Getting `EosERc20Dictionary` and adding to EOS state...");
     EosEthTokenDictionary::get_from_db(&state.db).and_then(|dictionary| state.add_eos_eth_token_dictionary(dictionary))
 }
 
 pub fn get_eos_eth_token_dictionary_from_db_and_add_to_eth_state<D: DatabaseInterface>(
-    state: EthState<D>
+    state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Getting `EosERc20Dictionary` and adding to ETH state...");
     EosEthTokenDictionary::get_from_db(&state.db).and_then(|dictionary| state.add_eos_eth_token_dictionary(dictionary))

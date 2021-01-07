@@ -7,6 +7,7 @@ use crate::{
                 generate_and_save_eos_keys_and_return_state,
                 get_eos_init_output,
                 maybe_enable_protocol_features_and_return_state,
+                maybe_put_eos_eth_token_dictionary_in_db_and_return_state,
                 put_empty_processed_tx_ids_in_db_and_return_state,
                 put_eos_account_name_in_db_and_return_state,
                 put_eos_account_nonce_in_db_and_return_state,
@@ -50,6 +51,7 @@ pub fn initialize_eos_core<D: DatabaseInterface>(
         .and_then(|state| {
             maybe_enable_protocol_features_and_return_state(&init_json.maybe_protocol_features_to_enable, state)
         })
+        .and_then(|state| maybe_put_eos_eth_token_dictionary_in_db_and_return_state(&init_json, state))
         .and_then(|state| test_block_validation_and_return_state(&init_json.block, state))
         .and_then(generate_and_save_eos_keys_and_return_state)
         .and_then(put_eos_account_nonce_in_db_and_return_state)

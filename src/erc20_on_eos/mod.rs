@@ -14,6 +14,7 @@
 pub use crate::{
     chains::{
         eos::{
+            core_initialization::initialize_eos_core::maybe_initialize_eos_core,
             disable_protocol_feature::disable_eos_protocol_feature,
             enable_protocol_feature::enable_eos_protocol_feature,
         },
@@ -34,7 +35,7 @@ pub use crate::{
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
         },
-        eos::{initialize_eos_core::maybe_initialize_eos_core, submit_eos_block::submit_eos_block_to_core},
+        eos::submit_eos_block::submit_eos_block_to_core,
         eth::{
             initialize_eth_core::maybe_initialize_eth_enclave as maybe_initialize_eth_core,
             submit_eth_block::submit_eth_block_to_core,

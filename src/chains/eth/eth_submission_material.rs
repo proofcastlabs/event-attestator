@@ -308,7 +308,10 @@ where
 mod tests {
     use super::*;
     use crate::chains::{
-        eos::{eos_eth_token_dictionary::EosEthTokenDictionaryEntry, eos_test_utils::get_sample_eos_eth_token_dictionary},
+        eos::{
+            eos_eth_token_dictionary::EosEthTokenDictionaryEntry,
+            eos_test_utils::get_sample_eos_eth_token_dictionary,
+        },
         eth::{
             eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
             eth_test_utils::{
