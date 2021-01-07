@@ -1,5 +1,4 @@
 use crate::{
-    btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
     chains::eos::{
         eos_database_utils::put_processed_tx_ids_in_db,
         eos_state::EosState,
