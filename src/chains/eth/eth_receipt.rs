@@ -52,7 +52,11 @@ impl EthReceipts {
         )
     }
 
-    fn get_receipts_containing_logs_from_address_and_with_topic(&self, address: &EthAddress, topic: &EthHash) -> Self {
+    pub fn get_receipts_containing_logs_from_address_and_with_topic(
+        &self,
+        address: &EthAddress,
+        topic: &EthHash,
+    ) -> Self {
         self.get_receipts_containing_log_from_address(address)
             .get_receipts_containing_log_with_topic(topic)
     }
@@ -209,6 +213,7 @@ impl EthReceipt {
             .map(|bytes| (get_nibbles_from_bytes(self.rlp_encode_transaction_index()), bytes))
     }
 
+    // TODO Move this logic to the `btc_on_eth` dir!
     pub fn get_btc_on_eth_redeem_infos(&self) -> Result<Vec<BtcOnEthRedeemInfo>> {
         info!("✔ Getting redeem `btc_on_eth` redeem infos from receipt...");
         self.logs
@@ -230,6 +235,7 @@ impl EthReceipt {
         self.get_supported_erc20_peg_in_logs(eos_erc20_dictionary).len() > 0
     }
 
+    // TODO Move this logic to the `erc20_on_eos` dir!
     fn get_supported_erc20_peg_in_logs(&self, eos_erc20_dictionary: &EosErc20Dictionary) -> EthLogs {
         EthLogs::new(
             self.logs
@@ -240,6 +246,7 @@ impl EthReceipt {
         )
     }
 
+    // TODO Move this logic to the `erc20_on_eos` dir!
     pub fn get_erc20_on_eos_peg_in_infos(
         &self,
         eos_erc20_dictionary: &EosErc20Dictionary,
@@ -265,6 +272,17 @@ impl EthReceipt {
                 })
                 .collect::<Result<Vec<Erc20OnEosPegInInfo>>>()?,
         ))
+    }
+
+    pub fn get_logs_from_address_with_topic(&self, address: &EthAddress, topic: &EthHash) -> EthLogs {
+        EthLogs::new(
+            self.logs
+                .iter()
+                .filter(|log| log.is_from_address(address))
+                .filter(|log| log.contains_topic(topic))
+                .cloned()
+                .collect(),
+        )
     }
 }
 
