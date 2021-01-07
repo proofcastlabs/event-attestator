@@ -19,6 +19,7 @@ pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
 
 pub(crate) mod check_core_is_initialized;
+pub(crate) mod constants;
 
 pub use crate::{
     chains::eos::{
