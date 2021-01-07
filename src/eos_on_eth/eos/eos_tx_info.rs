@@ -4,6 +4,7 @@ use crate::{
         eos_state::EosState,
         eos_types::{GlobalSequence, GlobalSequences, ProcessedTxIds},
     },
+    eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -24,10 +25,6 @@ pub struct EosOnEthEosTxInfo {
 pub struct EosOnEthEosTxInfos(pub Vec<EosOnEthEosTxInfo>);
 
 impl EosOnEthEosTxInfos {
-    pub fn get_global_sequences(&self) -> GlobalSequences {
-        self.iter().map(|infos| infos.global_sequence).collect()
-    }
-
     pub fn from_action_proofs(action_proofs: &[EosActionProof]) -> Result<EosOnEthEosTxInfos> {
         Ok(EosOnEthEosTxInfos::new(
             action_proofs
@@ -41,6 +38,31 @@ impl EosOnEthEosTxInfos {
         Ok(EosOnEthEosTxInfos::new(
             self.iter()
                 .filter(|info| !processed_tx_ids.contains(&info.global_sequence))
+                .cloned()
+                .collect::<Vec<EosOnEthEosTxInfo>>(),
+        ))
+    }
+
+    pub fn get_global_sequences(&self) -> GlobalSequences {
+        GlobalSequences::new(
+            self.iter()
+                .map(|infos| infos.global_sequence)
+                .collect::<Vec<GlobalSequence>>(),
+        )
+    }
+
+    pub fn filter_out_those_with_value_too_low(&self) -> Result<Self> {
+        let min_amount = U256::from_dec_str(MINIMUM_WEI_AMOUNT)?;
+        Ok(EosOnEthEosTxInfos::new(
+            self.iter()
+                .filter(|info| {
+                    if info.amount >= min_amount {
+                        true
+                    } else {
+                        info!("✘ Filtering out tx info ∵ value too low: {:?}", info);
+                        false
+                    }
+                })
                 .cloned()
                 .collect::<Vec<EosOnEthEosTxInfo>>(),
         ))
@@ -65,4 +87,12 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface
         .eos_on_eth_eos_tx_infos
         .filter_out_already_processed_txs(&state.processed_tx_ids)
         .and_then(|filtered| state.add_eos_on_eth_eos_tx_info(filtered))
+}
+
+pub fn maybe_filter_out_value_too_low_txs_from_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
+    info!("✔ Filtering out value too low txs from state...");
+    state
+        .eos_on_eth_eos_tx_infos
+        .filter_out_those_with_value_too_low()
+        .and_then(|filtered| state.replace_eos_on_eth_eos_tx_infos(filtered))
 }

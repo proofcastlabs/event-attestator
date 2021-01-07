@@ -32,6 +32,7 @@ use crate::{
         eos::{
             eos_tx_info::{
                 maybe_filter_out_already_processed_tx_ids_from_state,
+                maybe_filter_out_value_too_low_txs_from_state,
                 maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state,
             },
             get_eos_output::get_eos_output,
@@ -71,6 +72,7 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: D, block_json: &str) -
         .and_then(maybe_filter_out_proofs_for_wrong_eos_account_name)
         .and_then(maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state)
         .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
+        .and_then(maybe_filter_out_value_too_low_txs_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
         .and_then(maybe_sign_normal_eth_txs_and_add_to_state)
         .and_then(maybe_increment_eth_nonce_in_db_and_return_eos_state)
