@@ -7,6 +7,7 @@ use crate::{
             end_eos_db_transaction_and_return_state,
             start_eos_db_transaction_and_return_state,
         },
+        eos_eth_token_dictionary::get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
         eos_state::EosState,
         filter_action_proofs::{
             maybe_filter_duplicate_proofs_from_state,
@@ -60,6 +61,7 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: D, block_json: &str) -
         .and_then(get_incremerkle_and_add_to_state)
         .and_then(append_interim_block_ids_to_incremerkle_in_state)
         .and_then(get_active_schedule_from_db_and_add_to_state)
+        .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eos_state)
         .and_then(validate_producer_slot_of_block_in_state)
         .and_then(validate_block_header_signature)
         .and_then(maybe_add_new_eos_schedule_to_db_and_return_state)
