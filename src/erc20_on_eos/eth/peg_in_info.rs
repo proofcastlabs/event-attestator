@@ -1,6 +1,6 @@
 use crate::{
     chains::{
-        eos::{eos_erc20_dictionary::EosErc20Dictionary, eos_utils::remove_symbol_from_eos_asset},
+        eos::{eos_eth_token_dictionary::EosEthTokenDictionary, eos_utils::remove_symbol_from_eos_asset},
         eth::{eth_database_utils::get_eth_canon_block_from_db, eth_state::EthState},
     },
     traits::DatabaseInterface,
@@ -89,7 +89,7 @@ where
                     "✔ {} receipts in canon block ∴ parsing info...",
                     submission_material.receipts.len()
                 );
-                EosErc20Dictionary::get_from_db(&state.db)
+                EosEthTokenDictionary::get_from_db(&state.db)
                     .and_then(|account_names| submission_material.get_erc20_on_eos_peg_in_infos(&account_names))
                     .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
             },

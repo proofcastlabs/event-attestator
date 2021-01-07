@@ -17,7 +17,7 @@ use crate::{
             put_incremerkle_in_db,
             put_processed_tx_ids_in_db,
         },
-        eos_erc20_dictionary::{EosErc20Dictionary, EosErc20DictionaryJson},
+        eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
         eos_merkle_utils::Incremerkle,
         eos_state::EosState,
         eos_types::{Checksum256s, EosBlockHeaderJson, EosKnownSchedules, ProcessedTxIds},
@@ -38,7 +38,7 @@ pub struct EosInitJson {
     pub blockroot_merkle: Vec<String>,
     pub active_schedule: EosProducerScheduleJsonV2,
     pub maybe_protocol_features_to_enable: Option<Vec<String>>,
-    pub erc20_on_eos_token_dictionary: Option<EosErc20DictionaryJson>,
+    pub erc20_on_eos_token_dictionary: Option<EosEthTokenDictionaryJson>,
 }
 
 impl EosInitJson {
@@ -265,7 +265,7 @@ where
     info!("✔ Putting EOS chain ID '{}' into db...", chain_id);
     put_eos_chain_id_in_db(&state.db, chain_id).and(Ok(state))
 }
-pub fn maybe_put_erc20_dictionary_in_db_and_return_state<D>(
+pub fn maybe_put_eos_eth_token_dictionary_in_db_and_return_state<D>(
     init_json: &EosInitJson,
     state: EosState<D>,
 ) -> Result<EosState<D>>
@@ -274,12 +274,12 @@ where
 {
     match init_json.erc20_on_eos_token_dictionary {
         None => {
-            info!("✔ No `EosErc20DictionaryJson` in `init-json` ∴ doing nothing!");
+            info!("✔ No `EosEthTokenDictionaryJson` in `init-json` ∴ doing nothing!");
             Ok(state)
         },
         Some(ref dictionary_json) => {
-            info!("✔ `EosErc20Dictionary` in `init-json` ∴ putting it in db...");
-            EosErc20Dictionary::from_json(dictionary_json)
+            info!("✔ `EosEthTokenDictionary` in `init-json` ∴ putting it in db...");
+            EosEthTokenDictionary::from_json(dictionary_json)
                 .and_then(|dict| dict.save_to_db(&state.db))
                 .and(Ok(state))
         },
@@ -291,7 +291,7 @@ mod tests {
     use crate::chains::eos::eos_test_utils::{
         get_j3_init_json_n,
         get_mainnet_init_json_n,
-        get_sample_mainnet_init_json_with_erc20_dictionary,
+        get_sample_mainnet_init_json_with_eos_eth_token_dictionary,
         NUM_J3_INIT_SAMPLES,
         NUM_MAINNET_INIT_SAMPLES,
     };
@@ -313,8 +313,8 @@ mod tests {
     }
 
     #[test]
-    fn should_parse_init_json_with_erc20_dictionary() {
-        let init_json_with_erc20_dictionary = get_sample_mainnet_init_json_with_erc20_dictionary();
-        assert!(init_json_with_erc20_dictionary.is_ok());
+    fn should_parse_init_json_with_eos_eth_token_dictionary() {
+        let init_json_with_eos_eth_token_dictionary = get_sample_mainnet_init_json_with_eos_eth_token_dictionary();
+        assert!(init_json_with_eos_eth_token_dictionary.is_ok());
     }
 }

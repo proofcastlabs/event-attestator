@@ -72,7 +72,7 @@ pub fn initialize_eos_core<D: DatabaseInterface>(
 ///    blockroot_merkle: [txHash...],
 ///    active_schedule: EosProducerScheduleJsonV2,
 ///    maybe_protocol_features_to_enable: [protocolFeatureHash...],
-///    erc20_on_eos_token_dictionary: EosErc20DictionaryJson,
+///    erc20_on_eos_token_dictionary: EosEthTokenDictionaryJson,
 /// }
 /// ```
 pub fn maybe_initialize_eos_core<D: DatabaseInterface>(

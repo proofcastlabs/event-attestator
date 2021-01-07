@@ -4,7 +4,7 @@ use crate::{
         core_initialization::eos_init_utils::EosInitJson,
         eos_action_proofs::{EosActionProof, EosActionProofs},
         eos_crypto::{eos_private_key::EosPrivateKey, eos_public_key::EosPublicKey, eos_signature::EosSignature},
-        eos_erc20_dictionary::{EosErc20Dictionary, EosErc20DictionaryEntry, EosErc20DictionaryJson},
+        eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry, EosEthTokenDictionaryJson},
         eos_merkle_utils::Incremerkle,
         eos_types::{Checksum256s, EosBlockHeaderJson},
         eos_utils::convert_hex_to_checksum256,
@@ -81,7 +81,7 @@ pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_3: &str =
     "src/chains/eos/eos_test_utils/mainnet-init-block-125293952.json";
 
 pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_4: &str =
-    "src/chains/eos/eos_test_utils/mainnet-init-block-125293952_with_erc20_dictionary.json";
+    "src/chains/eos/eos_test_utils/mainnet-init-block-125293952_with_eos_eth_token_dictionary.json";
 
 pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_JUNGLE_3_JSON_1: &str =
     "src/chains/eos/eos_test_utils/eos-init-and-subsequent-blocks-jungle-3-1.json";
@@ -258,7 +258,7 @@ pub fn get_mainnet_init_json_n(num: usize) -> Result<EosInitJson> {
     EosInitJson::from_json_string(&string)
 }
 
-pub fn get_sample_mainnet_init_json_with_erc20_dictionary() -> Result<EosInitJson> {
+pub fn get_sample_mainnet_init_json_with_eos_eth_token_dictionary() -> Result<EosInitJson> {
     get_mainnet_init_json_n(4)
 }
 
@@ -426,9 +426,9 @@ pub fn get_sample_action_proof_n(n: usize) -> EosActionProof {
     get_sample_action_proofs_n(n)[0].clone()
 }
 
-pub fn get_sample_eos_erc20_dictionary_entry_1() -> EosErc20DictionaryEntry {
+pub fn get_sample_eos_eth_token_dictionary_entry_1() -> EosEthTokenDictionaryEntry {
     let token_address_hex = "9f57CB2a4F462a5258a49E88B4331068a391DE66".to_string();
-    EosErc20DictionaryEntry::new(
+    EosEthTokenDictionaryEntry::new(
         18,
         9,
         "SAM1".to_string(),
@@ -438,9 +438,9 @@ pub fn get_sample_eos_erc20_dictionary_entry_1() -> EosErc20DictionaryEntry {
     )
 }
 
-pub fn get_sample_eos_erc20_dictionary_entry_2() -> EosErc20DictionaryEntry {
+pub fn get_sample_eos_eth_token_dictionary_entry_2() -> EosEthTokenDictionaryEntry {
     let token_address_hex = "9e57CB2a4F462a5258a49E88B4331068a391DE66".to_string();
-    EosErc20DictionaryEntry::new(
+    EosEthTokenDictionaryEntry::new(
         18,
         9,
         "SAM2".to_string(),
@@ -450,13 +450,13 @@ pub fn get_sample_eos_erc20_dictionary_entry_2() -> EosErc20DictionaryEntry {
     )
 }
 
-pub fn get_sample_eos_erc20_dictionary() -> EosErc20Dictionary {
-    EosErc20Dictionary::new(vec![
-        get_sample_eos_erc20_dictionary_entry_1(),
-        get_sample_eos_erc20_dictionary_entry_2(),
+pub fn get_sample_eos_eth_token_dictionary() -> EosEthTokenDictionary {
+    EosEthTokenDictionary::new(vec![
+        get_sample_eos_eth_token_dictionary_entry_1(),
+        get_sample_eos_eth_token_dictionary_entry_2(),
     ])
 }
 
-pub fn get_sample_eos_erc20_dictionary_json() -> EosErc20DictionaryJson {
-    get_sample_eos_erc20_dictionary().to_json().unwrap()
+pub fn get_sample_eos_eth_token_dictionary_json() -> EosEthTokenDictionaryJson {
+    get_sample_eos_eth_token_dictionary().to_json().unwrap()
 }

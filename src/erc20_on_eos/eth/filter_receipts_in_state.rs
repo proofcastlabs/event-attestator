@@ -19,7 +19,7 @@ pub fn filter_receipts_for_erc20_on_eos_peg_in_events_in_state<D: DatabaseInterf
             &ERC20_ON_EOS_PEG_IN_EVENT_TOPIC.to_vec(),
         )
         .and_then(|filtered| {
-            filtered.filter_receipts_containing_supported_erc20_peg_ins(state.get_eos_erc20_dictionary()?)
+            filtered.filter_receipts_containing_supported_erc20_peg_ins(state.get_eos_eth_token_dictionary()?)
         })
         .and_then(|filtered_submission_material| state.update_eth_submission_material(filtered_submission_material))
 }

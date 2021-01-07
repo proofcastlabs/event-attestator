@@ -1,7 +1,7 @@
 use crate::{
     btc_on_eth::utils::convert_ptoken_to_satoshis,
     chains::{
-        eos::eos_erc20_dictionary::EosErc20Dictionary,
+        eos::eos_eth_token_dictionary::EosEthTokenDictionary,
         eth::{
             eth_constants::{
                 BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
@@ -96,12 +96,12 @@ impl EthLog {
         Ok(self.contains_topic(&EthHash::from_slice(&hex::decode(&ERC20_PEG_IN_EVENT_TOPIC_HEX)?[..])))
     }
 
-    pub fn is_supported_erc20_peg_in(&self, eos_erc20_dictionary: &EosErc20Dictionary) -> Result<bool> {
+    pub fn is_supported_erc20_peg_in(&self, eos_eth_token_dictionary: &EosEthTokenDictionary) -> Result<bool> {
         match self.is_erc20_peg_in()? {
             false => Ok(false),
             true => self
                 .get_erc20_on_eos_peg_in_token_contract_address()
-                .map(|token_contract_address| eos_erc20_dictionary.is_token_supported(&token_contract_address)),
+                .map(|token_contract_address| eos_eth_token_dictionary.is_token_supported(&token_contract_address)),
         }
     }
 
@@ -279,7 +279,7 @@ impl EthLogs {
 mod tests {
     use super::*;
     use crate::chains::{
-        eos::eos_erc20_dictionary::EosErc20DictionaryEntry,
+        eos::eos_eth_token_dictionary::EosEthTokenDictionaryEntry,
         eth::eth_test_utils::{
             get_expected_log,
             get_sample_contract_address,
@@ -504,7 +504,7 @@ mod tests {
         let eos_symbol = "SYM".to_string();
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(&hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
-        let eos_erc20_account_names = EosErc20Dictionary::new(vec![EosErc20DictionaryEntry::new(
+        let eos_erc20_account_names = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
             eth_symbol,
@@ -525,7 +525,7 @@ mod tests {
         let eos_symbol = "SYM".to_string();
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(&hex::decode("8f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
-        let eos_erc20_account_names = EosErc20Dictionary::new(vec![EosErc20DictionaryEntry::new(
+        let eos_erc20_account_names = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
             eth_symbol,
@@ -548,7 +548,7 @@ mod tests {
         let token_address = EthAddress::from_slice(
             &hex::decode("c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2").unwrap(), // NOTE wETH address on mainnet!
         );
-        let eos_erc20_account_names = EosErc20Dictionary::new(vec![EosErc20DictionaryEntry::new(
+        let eos_erc20_account_names = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
             eth_symbol,

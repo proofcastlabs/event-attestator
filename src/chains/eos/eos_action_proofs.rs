@@ -1,7 +1,7 @@
 use crate::{
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfo,
     chains::eos::{
-        eos_erc20_dictionary::{EosErc20Dictionary, EosErc20DictionaryEntry},
+        eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
         eos_types::MerkleProof,
         eos_utils::convert_hex_to_checksum256,
         parse_eos_action_receipts::parse_eos_action_receipt_json,
@@ -51,7 +51,7 @@ impl EosActionProof {
         convert_bytes_to_u64(&self.action.data[8..16].to_vec())
     }
 
-    fn get_erc20_on_eos_eth_redeem_amount(&self, dictionary_entry: &EosErc20DictionaryEntry) -> Result<U256> {
+    fn get_erc20_on_eos_eth_redeem_amount(&self, dictionary_entry: &EosEthTokenDictionaryEntry) -> Result<U256> {
         dictionary_entry
             .convert_u64_to_eos_asset(convert_bytes_to_u64(&self.action.data[8..16].to_vec())?)
             .and_then(|eos_asset| dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset))
@@ -134,7 +134,7 @@ impl EosActionProof {
         })
     }
 
-    pub fn to_erc20_on_eos_redeem_info(&self, dictionary: &EosErc20Dictionary) -> Result<Erc20OnEosRedeemInfo> {
+    pub fn to_erc20_on_eos_redeem_info(&self, dictionary: &EosEthTokenDictionary) -> Result<Erc20OnEosRedeemInfo> {
         dictionary
             .get_entry_via_eos_address(&self.action.account.to_string())
             .and_then(|entry| {
@@ -342,7 +342,7 @@ mod tests {
 
     #[test]
     fn should_get_erc20_on_eos_eth_redeem_amount() {
-        let dictionary_entry = EosErc20DictionaryEntry::new(
+        let dictionary_entry = EosEthTokenDictionaryEntry::new(
             18,
             9,
             "PETH".to_string(),
@@ -377,7 +377,7 @@ mod tests {
             eos_account_name.clone(),
             "0.000001337 PETH".to_string(),
         );
-        let dictionary = EosErc20Dictionary::new(vec![EosErc20DictionaryEntry::new(
+        let dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             18,
             9,
             "PETH".to_string(),

@@ -1,7 +1,7 @@
 use crate::{
     chains::{
         eos::{
-            eos_erc20_dictionary::get_erc20_dictionary_from_db_and_add_to_eth_state,
+            eos_eth_token_dictionary::get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
             sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
         },
         eth::{
@@ -52,7 +52,7 @@ pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
-        .and_then(get_erc20_dictionary_from_db_and_add_to_eth_state)
+        .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(check_for_parent_of_block_in_state)
         .and_then(validate_receipts_in_state)
         .and_then(filter_receipts_for_erc20_on_eos_peg_in_events_in_state)

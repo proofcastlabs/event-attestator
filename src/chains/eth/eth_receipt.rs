@@ -1,7 +1,7 @@
 use crate::{
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfo,
     chains::{
-        eos::eos_erc20_dictionary::EosErc20Dictionary,
+        eos::eos_eth_token_dictionary::EosEthTokenDictionary,
         eth::{
             eth_log::{EthLog, EthLogJson, EthLogs},
             eth_utils::{convert_hex_to_address, convert_hex_to_h256, convert_json_value_to_string},
@@ -231,16 +231,16 @@ impl EthReceipt {
             .collect()
     }
 
-    pub fn contains_supported_erc20_peg_in(&self, eos_erc20_dictionary: &EosErc20Dictionary) -> bool {
-        self.get_supported_erc20_peg_in_logs(eos_erc20_dictionary).len() > 0
+    pub fn contains_supported_erc20_peg_in(&self, eos_eth_token_dictionary: &EosEthTokenDictionary) -> bool {
+        self.get_supported_erc20_peg_in_logs(eos_eth_token_dictionary).len() > 0
     }
 
     // TODO Move this logic to the `erc20_on_eos` dir!
-    fn get_supported_erc20_peg_in_logs(&self, eos_erc20_dictionary: &EosErc20Dictionary) -> EthLogs {
+    fn get_supported_erc20_peg_in_logs(&self, eos_eth_token_dictionary: &EosEthTokenDictionary) -> EthLogs {
         EthLogs::new(
             self.logs
                 .iter()
-                .filter(|log| matches!(log.is_supported_erc20_peg_in(eos_erc20_dictionary), Ok(true)))
+                .filter(|log| matches!(log.is_supported_erc20_peg_in(eos_eth_token_dictionary), Ok(true)))
                 .cloned()
                 .collect(),
         )
@@ -249,11 +249,11 @@ impl EthReceipt {
     // TODO Move this logic to the `erc20_on_eos` dir!
     pub fn get_erc20_on_eos_peg_in_infos(
         &self,
-        eos_erc20_dictionary: &EosErc20Dictionary,
+        eos_eth_token_dictionary: &EosEthTokenDictionary,
     ) -> Result<Erc20OnEosPegInInfos> {
         info!("✔ Getting `erc20-on-eos` peg in infos from receipt...");
         Ok(Erc20OnEosPegInInfos::new(
-            self.get_supported_erc20_peg_in_logs(eos_erc20_dictionary)
+            self.get_supported_erc20_peg_in_logs(eos_eth_token_dictionary)
                 .iter()
                 .map(|log| {
                     let token_contract_address = log.get_erc20_on_eos_peg_in_token_contract_address()?;
@@ -264,8 +264,8 @@ impl EthReceipt {
                         token_contract_address,
                         log.get_erc20_on_eos_peg_in_eos_address()?,
                         self.transaction_hash,
-                        eos_erc20_dictionary.get_eos_account_name_from_eth_token_address(&token_contract_address)?,
-                        eos_erc20_dictionary.convert_u256_to_eos_asset_string(&token_contract_address, &eth_amount)?,
+                        eos_eth_token_dictionary.get_eos_account_name_from_eth_token_address(&token_contract_address)?,
+                        eos_eth_token_dictionary.convert_u256_to_eos_asset_string(&token_contract_address, &eth_amount)?,
                     );
                     info!("✔ Parsed peg-in info: {:?}", peg_in_info);
                     Ok(peg_in_info)
@@ -315,7 +315,7 @@ impl Encodable for EthReceipt {
 mod tests {
     use super::*;
     use crate::chains::{
-        eos::{eos_erc20_dictionary::EosErc20DictionaryEntry, eos_test_utils::get_sample_eos_erc20_dictionary},
+        eos::{eos_eth_token_dictionary::EosEthTokenDictionaryEntry, eos_test_utils::get_sample_eos_eth_token_dictionary},
         eth::{
             eth_log::EthLog,
             eth_submission_material::EthSubmissionMaterial,
@@ -501,7 +501,7 @@ mod tests {
 
     #[test]
     fn should_return_true_if_receipt_contains_log_with_erc20_peg_in() {
-        let dictionary = get_sample_eos_erc20_dictionary();
+        let dictionary = get_sample_eos_eth_token_dictionary();
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
         let result = receipt.contains_supported_erc20_peg_in(&dictionary);
         assert!(result);
@@ -509,7 +509,7 @@ mod tests {
 
     #[test]
     fn should_return_false_if_receipt_does_not_contain_log_with_erc20_peg_in() {
-        let dictionary = EosErc20Dictionary::new(vec![]);
+        let dictionary = EosEthTokenDictionary::new(vec![]);
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
         let result = receipt.contains_supported_erc20_peg_in(&dictionary);
         assert!(!result);
@@ -523,7 +523,7 @@ mod tests {
         let eos_symbol = "SAM".to_string();
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(&hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
-        let eos_erc20_dictionary = EosErc20Dictionary::new(vec![EosErc20DictionaryEntry::new(
+        let eos_eth_token_dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
             eth_symbol,
@@ -534,17 +534,17 @@ mod tests {
         let expected_num_results = 1;
         let expected_result = get_sample_erc20_on_eos_peg_in_info().unwrap();
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_erc20_dictionary).unwrap();
+        let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_eth_token_dictionary).unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result.0[0], expected_result);
     }
 
     #[test]
     fn should_not_get_get_erc20_redeem_infos_from_receipt_if_token_not_supported() {
-        let eos_erc20_dictionary = EosErc20Dictionary::new(vec![]);
+        let eos_eth_token_dictionary = EosEthTokenDictionary::new(vec![]);
         let expected_num_results = 0;
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_erc20_dictionary).unwrap();
+        let result = receipt.get_erc20_on_eos_peg_in_infos(&eos_eth_token_dictionary).unwrap();
         assert_eq!(result.len(), expected_num_results);
     }
 
@@ -556,7 +556,7 @@ mod tests {
             data: hex::decode("0000000000000000000000009f57cb2a4f462a5258a49e88b4331068a391de66000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac00000000000000000000000000000000000000000000000000000000000005390000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000c616e656f73616464726573730000000000000000000000000000000000000000").unwrap(),
         }]);
         let expected_num_logs = 1;
-        let dictionary = get_sample_eos_erc20_dictionary();
+        let dictionary = get_sample_eos_eth_token_dictionary();
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
         let result = receipt.get_supported_erc20_peg_in_logs(&dictionary);
         assert_eq!(result.len(), expected_num_logs);

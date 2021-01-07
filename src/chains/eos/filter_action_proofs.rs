@@ -148,7 +148,7 @@ pub fn maybe_filter_out_proofs_for_non_erc20_accounts<D: DatabaseInterface>(stat
     info!("✔ Filtering out proofs for accounts we don't care about...");
     filter_proofs_for_accounts(
         &state.action_proofs,
-        &state.get_eos_erc20_dictionary()?.to_eos_accounts()?,
+        &state.get_eos_eth_token_dictionary()?.to_eos_accounts()?,
     )
     .and_then(|proofs| filter_out_proofs_for_other_actions(&proofs))
     .and_then(|proofs| state.replace_action_proofs(proofs))

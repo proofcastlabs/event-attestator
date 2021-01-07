@@ -1,7 +1,7 @@
 use crate::{
     btc_on_eth::eth::redeem_info::{BtcOnEthRedeemInfo, BtcOnEthRedeemInfos},
     chains::{
-        eos::eos_erc20_dictionary::EosErc20Dictionary,
+        eos::eos_eth_token_dictionary::EosEthTokenDictionary,
         eth::{
             eth_block::{EthBlock, EthBlockJson},
             eth_receipt::{EthReceipt, EthReceiptJson, EthReceipts},
@@ -186,7 +186,7 @@ impl EthSubmissionMaterial {
 
     pub fn filter_receipts_containing_supported_erc20_peg_ins(
         &self,
-        erc20_dictionary: &EosErc20Dictionary,
+        eos_eth_token_dictionary: &EosEthTokenDictionary,
     ) -> Result<Self> {
         info!(
             "✔ Num receipts before filtering for those pertaining to ERC20 dictionary: {}",
@@ -195,7 +195,7 @@ impl EthSubmissionMaterial {
         let filtered_receipts = EthReceipts::new(
             self.receipts
                 .iter()
-                .filter(|receipt| receipt.contains_supported_erc20_peg_in(erc20_dictionary))
+                .filter(|receipt| receipt.contains_supported_erc20_peg_in(eos_eth_token_dictionary))
                 .cloned()
                 .collect(),
         );
@@ -233,13 +233,13 @@ impl EthSubmissionMaterial {
 
     pub fn get_erc20_on_eos_peg_in_infos(
         &self,
-        eos_erc20_dictionary: &EosErc20Dictionary,
+        eos_eth_token_dictionary: &EosEthTokenDictionary,
     ) -> Result<Erc20OnEosPegInInfos> {
         info!("✔ Getting `erc20-on-eos` peg in infos from submission material...");
         Ok(Erc20OnEosPegInInfos::new(
             self.get_receipts()
                 .iter()
-                .map(|receipt| receipt.get_erc20_on_eos_peg_in_infos(eos_erc20_dictionary))
+                .map(|receipt| receipt.get_erc20_on_eos_peg_in_infos(eos_eth_token_dictionary))
                 .collect::<Result<Vec<Erc20OnEosPegInInfos>>>()?
                 .iter()
                 .map(|infos| infos.iter().cloned().collect())
@@ -308,7 +308,7 @@ where
 mod tests {
     use super::*;
     use crate::chains::{
-        eos::{eos_erc20_dictionary::EosErc20DictionaryEntry, eos_test_utils::get_sample_eos_erc20_dictionary},
+        eos::{eos_eth_token_dictionary::EosEthTokenDictionaryEntry, eos_test_utils::get_sample_eos_eth_token_dictionary},
         eth::{
             eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
             eth_test_utils::{
@@ -474,7 +474,7 @@ mod tests {
         let eos_symbol = "SAM".to_string();
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(&hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
-        let eos_erc20_account_names = EosErc20Dictionary::new(vec![EosErc20DictionaryEntry::new(
+        let eos_erc20_account_names = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
             eth_symbol,
@@ -496,12 +496,12 @@ mod tests {
     fn should_filter_submission_material_for_receipts_containing_supported_erc20_peg_ins() {
         let expected_num_receipts_after = 1;
         let expected_num_receipts_before = 69;
-        let erc20_dictionary = get_sample_eos_erc20_dictionary();
+        let eos_eth_token_dictionary = get_sample_eos_eth_token_dictionary();
         let submission_material = get_sample_submission_material_with_erc20_peg_in_event().unwrap();
         let num_receipts_before = submission_material.receipts.len();
         assert_eq!(num_receipts_before, expected_num_receipts_before);
         let filtered_submission_material = submission_material
-            .filter_receipts_containing_supported_erc20_peg_ins(&erc20_dictionary)
+            .filter_receipts_containing_supported_erc20_peg_ins(&eos_eth_token_dictionary)
             .unwrap();
         let num_receipts_after = filtered_submission_material.receipts.len();
         assert_eq!(num_receipts_after, expected_num_receipts_after);

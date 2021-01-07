@@ -2,7 +2,7 @@ use crate::{
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
     chains::{
         btc::{btc_types::BtcTransactions, utxo_manager::utxo_types::BtcUtxosAndValues},
-        eos::{eos_erc20_dictionary::EosErc20Dictionary, eos_types::EosSignedTransactions},
+        eos::{eos_eth_token_dictionary::EosEthTokenDictionary, eos_types::EosSignedTransactions},
         eth::eth_submission_material::EthSubmissionMaterial,
     },
     eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfos,
@@ -23,7 +23,7 @@ pub struct EthState<D: DatabaseInterface> {
     pub eos_transactions: Option<EosSignedTransactions>,
     pub erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
-    pub eos_erc20_dictionary: Option<EosErc20Dictionary>,
+    pub eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
 }
 
@@ -35,7 +35,7 @@ impl<D: DatabaseInterface> EthState<D> {
             btc_transactions: None,
             eos_transactions: None,
             btc_utxos_and_values: None,
-            eos_erc20_dictionary: None,
+            eos_eth_token_dictionary: None,
             eth_submission_material: None,
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
             btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(vec![]),
@@ -159,20 +159,20 @@ impl<D: DatabaseInterface> EthState<D> {
         }
     }
 
-    pub fn add_eos_erc20_dictionary(mut self, dictionary: EosErc20Dictionary) -> Result<EthState<D>> {
-        match self.eos_erc20_dictionary {
-            Some(_) => Err(get_no_overwrite_state_err("eos_erc20_dictionary").into()),
+    pub fn add_eos_eth_token_dictionary(mut self, dictionary: EosEthTokenDictionary) -> Result<EthState<D>> {
+        match self.eos_eth_token_dictionary {
+            Some(_) => Err(get_no_overwrite_state_err("eos_eth_token_dictionary").into()),
             None => {
-                self.eos_erc20_dictionary = Some(dictionary);
+                self.eos_eth_token_dictionary = Some(dictionary);
                 Ok(self)
             },
         }
     }
 
-    pub fn get_eos_erc20_dictionary(&self) -> Result<&EosErc20Dictionary> {
-        match self.eos_erc20_dictionary {
+    pub fn get_eos_eth_token_dictionary(&self) -> Result<&EosEthTokenDictionary> {
+        match self.eos_eth_token_dictionary {
             Some(ref dictionary) => Ok(dictionary),
-            None => Err(get_not_in_state_err("eos_erc20_dictionary").into()),
+            None => Err(get_not_in_state_err("eos_eth_token_dictionary").into()),
         }
     }
 }

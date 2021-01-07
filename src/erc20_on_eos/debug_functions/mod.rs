@@ -13,11 +13,11 @@ use crate::{
                 start_eos_db_transaction_and_return_state,
             },
             eos_database_utils::put_eos_schedule_in_db,
-            eos_erc20_dictionary::{
-                get_erc20_dictionary_from_db_and_add_to_eos_state,
-                get_erc20_dictionary_from_db_and_add_to_eth_state,
-                EosErc20Dictionary,
-                EosErc20DictionaryEntry,
+            eos_eth_token_dictionary::{
+                get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
+                get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
+                EosEthTokenDictionary,
+                EosEthTokenDictionaryEntry,
             },
             eos_state::EosState,
             filter_action_proofs::{
@@ -172,7 +172,7 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 
 /// # Debug Add ERC20 Dictionary Entry
 ///
-/// This function will add an entry to the `EosErc20Dictionary` held in the encrypted database. The
+/// This function will add an entry to the `EosEthTokenDictionary` held in the encrypted database. The
 /// dictionary defines the relationship between ERC20 etheruem addresses and their pToken EOS
 /// address counterparts.
 ///
@@ -185,16 +185,16 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 ///     "eth_token_decimals": <num-decimals>,
 ///     "eos_token_decimals": <num-decimals>,
 /// }
-pub fn debug_add_erc20_dictionary_entry<D>(db: D, dictionary_entry_json_string: &str) -> Result<String>
+pub fn debug_add_eos_eth_token_dictionary_entry<D>(db: D, dictionary_entry_json_string: &str) -> Result<String>
 where
     D: DatabaseInterface,
 {
-    info!("✔ Debug adding entry to `EosErc20Dictionary`...");
-    let dictionary = EosErc20Dictionary::get_from_db(&db)?;
+    info!("✔ Debug adding entry to `EosEthTokenDictionary`...");
+    let dictionary = EosEthTokenDictionary::get_from_db(&db)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| db.start_transaction())
-        .and_then(|_| EosErc20DictionaryEntry::from_str(dictionary_entry_json_string))
+        .and_then(|_| EosEthTokenDictionaryEntry::from_str(dictionary_entry_json_string))
         .and_then(|entry| dictionary.add_and_update_in_db(entry, &db))
         .and_then(|_| db.end_transaction())
         .and(Ok(json!({"adding_dictionary_entry_sucess":true}).to_string()))
@@ -203,14 +203,14 @@ where
 /// # Debug Remove ERC20 Dictionary Entry
 ///
 /// This function will remove an entry pertaining to the passed in ETH address from the
-/// `EosErc20Dictionary` held in the encrypted database, should that entry exist. If it is
+/// `EosEthTokenDictionary` held in the encrypted database, should that entry exist. If it is
 /// not extant, nothing is changed.
-pub fn debug_remove_erc20_dictionary_entry<D>(db: D, eth_address_str: &str) -> Result<String>
+pub fn debug_remove_eos_eth_token_dictionary_entry<D>(db: D, eth_address_str: &str) -> Result<String>
 where
     D: DatabaseInterface,
 {
-    info!("✔ Debug removing entry from `EosErc20Dictionary`...");
-    let dictionary = EosErc20Dictionary::get_from_db(&db)?;
+    info!("✔ Debug removing entry from `EosEthTokenDictionary`...");
+    let dictionary = EosEthTokenDictionary::get_from_db(&db)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| db.start_transaction())
@@ -379,7 +379,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
     parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(validate_block_in_state)
-        .and_then(get_erc20_dictionary_from_db_and_add_to_eth_state)
+        .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(validate_receipts_in_state)
         .and_then(filter_receipts_for_erc20_on_eos_peg_in_events_in_state)
         .and_then(|state| {
@@ -394,7 +394,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
                         "✔ {} receipts in block ∴ parsing info...",
                         submission_material.get_block_number()?
                     );
-                    EosErc20Dictionary::get_from_db(&state.db)
+                    EosEthTokenDictionary::get_from_db(&state.db)
                         .and_then(|accounts| submission_material.get_erc20_on_eos_peg_in_infos(&accounts))
                         .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
                 },
@@ -427,7 +427,7 @@ where
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_active_schedule_from_db_and_add_to_state)
         .and_then(start_eos_db_transaction_and_return_state)
-        .and_then(get_erc20_dictionary_from_db_and_add_to_eos_state)
+        .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eos_state)
         .and_then(maybe_add_new_eos_schedule_to_db_and_return_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)
         .and_then(maybe_filter_out_proofs_for_non_erc20_accounts)

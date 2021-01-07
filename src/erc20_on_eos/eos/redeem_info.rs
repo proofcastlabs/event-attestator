@@ -1,7 +1,7 @@
 use crate::{
     chains::eos::{
         eos_action_proofs::EosActionProof,
-        eos_erc20_dictionary::EosErc20Dictionary,
+        eos_eth_token_dictionary::EosEthTokenDictionary,
         eos_state::EosState,
         eos_types::{GlobalSequence, GlobalSequences, ProcessedTxIds},
     },
@@ -38,7 +38,7 @@ impl Erc20OnEosRedeemInfos {
 
     pub fn from_action_proofs(
         action_proofs: &[EosActionProof],
-        dictionary: &EosErc20Dictionary,
+        dictionary: &EosEthTokenDictionary,
     ) -> Result<Erc20OnEosRedeemInfos> {
         Ok(Erc20OnEosRedeemInfos::new(
             action_proofs
@@ -63,7 +63,7 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Parsing redeem params from actions data...");
-    Erc20OnEosRedeemInfos::from_action_proofs(&state.action_proofs, state.get_eos_erc20_dictionary()?).and_then(
+    Erc20OnEosRedeemInfos::from_action_proofs(&state.action_proofs, state.get_eos_eth_token_dictionary()?).and_then(
         |redeem_infos| {
             info!("✔ Parsed {} sets of redeem info!", redeem_infos.len());
             state.add_erc20_on_eos_redeem_infos(redeem_infos)
