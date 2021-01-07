@@ -5,7 +5,6 @@ use crate::{
         eth::{
             eth_constants::{
                 BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
-                EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC_HEX,
                 ERC20_PEG_IN_EVENT_TOPIC_HEX,
                 ETH_ADDRESS_SIZE_IN_BYTES,
                 ETH_WORD_SIZE_IN_BYTES,
@@ -93,12 +92,6 @@ impl EthLog {
         )))
     }
 
-    pub fn is_eos_on_eth_tx(&self) -> Result<bool> {
-        Ok(self.contains_topic(&EthHash::from_slice(
-            &hex::decode(&EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC_HEX)?[..],
-        )))
-    }
-
     fn is_erc20_peg_in(&self) -> Result<bool> {
         Ok(self.contains_topic(&EthHash::from_slice(&hex::decode(&ERC20_PEG_IN_EVENT_TOPIC_HEX)?[..])))
     }
@@ -125,14 +118,6 @@ impl EthLog {
         match self.is_erc20_peg_in()? {
             true => Ok(()),
             false => Err("✘ Log is not from a erc20 peg in event!".into()),
-        }
-    }
-
-    fn check_is_eos_on_eth_tx(&self) -> Result<()> {
-        trace!("✔ Checking if log is an `eos-on-eth` tx...");
-        match self.is_eos_on_eth_tx()? {
-            true => Ok(()),
-            false => Err("✘ Log is not from a 'eos-on-eth` tx!".into()),
         }
     }
 
@@ -295,32 +280,26 @@ mod tests {
     use super::*;
     use crate::chains::{
         eos::eos_erc20_dictionary::EosErc20DictionaryEntry,
-        eth::{
-            eth_receipt::EthReceipt,
-            eth_submission_material::EthSubmissionMaterial,
-            eth_test_utils::{
-                get_expected_log,
-                get_sample_contract_address,
-                get_sample_contract_topic,
-                get_sample_eth_submission_material_json,
-                get_sample_eth_submission_material_n,
-                get_sample_log_n,
-                get_sample_log_with_desired_address,
-                get_sample_log_with_desired_topic,
-                get_sample_log_with_erc20_peg_in_event,
-                get_sample_log_with_erc20_peg_in_event_2,
-                get_sample_log_with_erc777_redeem,
-                get_sample_log_without_desired_address,
-                get_sample_logs_with_desired_topic,
-                get_sample_logs_without_desired_topic,
-                get_sample_receipt_with_desired_address,
-                get_sample_receipt_with_erc777_redeem,
-                get_sample_receipt_without_desired_address,
-                SAMPLE_RECEIPT_INDEX,
-            },
+        eth::eth_test_utils::{
+            get_expected_log,
+            get_sample_contract_address,
+            get_sample_contract_topic,
+            get_sample_eth_submission_material_json,
+            get_sample_log_n,
+            get_sample_log_with_desired_address,
+            get_sample_log_with_desired_topic,
+            get_sample_log_with_erc20_peg_in_event,
+            get_sample_log_with_erc20_peg_in_event_2,
+            get_sample_log_with_erc777_redeem,
+            get_sample_log_without_desired_address,
+            get_sample_logs_with_desired_topic,
+            get_sample_logs_without_desired_topic,
+            get_sample_receipt_with_desired_address,
+            get_sample_receipt_with_erc777_redeem,
+            get_sample_receipt_without_desired_address,
+            SAMPLE_RECEIPT_INDEX,
         },
     };
-    use std::str::FromStr;
 
     fn get_sample_log_with_p2sh_redeem() -> EthLog {
         get_sample_log_n(5, 23, 2).unwrap()
