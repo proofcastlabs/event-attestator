@@ -30,15 +30,14 @@ use crate::{
     types::Result,
 };
 
-pub fn initialize_eth_core<D: DatabaseInterface>(
+pub fn initialize_eth_core_maybe_with_contract_tx<D: DatabaseInterface>(
     block_json: &str,
     chain_id: u8,
     gas_price: u64,
     canon_to_tip_length: u64,
-    bytecode_path: &str,
+    maybe_bytecode_path: Option<&str>,
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    info!("✔ Initializing ETH core...");
     parse_eth_submission_material_and_put_in_state(block_json, state)
         .and_then(validate_eth_block_in_state)
         .and_then(remove_receipts_from_block_in_state)
@@ -55,6 +54,38 @@ pub fn initialize_eth_core<D: DatabaseInterface>(
         .and_then(put_eth_account_nonce_in_db_and_return_state)
         .and_then(put_any_sender_nonce_in_db_and_return_state)
         .and_then(generate_and_store_eth_address)
-        .and_then(|state| generate_eth_contract_tx_and_put_in_state(chain_id, gas_price, &bytecode_path, state))
+        .and_then(|state| match maybe_bytecode_path {
+            Some(ref path) => generate_eth_contract_tx_and_put_in_state(chain_id, gas_price, path, state),
+            None => Ok(state),
+        })
         .and_then(end_eth_db_transaction_and_return_state)
+}
+pub fn initialize_eth_core<D: DatabaseInterface>(
+    block_json: &str,
+    chain_id: u8,
+    gas_price: u64,
+    canon_to_tip_length: u64,
+    bytecode_path: &str,
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    info!("✔ Initializing ETH core with contract tx...");
+    initialize_eth_core_maybe_with_contract_tx(
+        block_json,
+        chain_id,
+        gas_price,
+        canon_to_tip_length,
+        Some(bytecode_path),
+        state,
+    )
+}
+
+pub fn initialize_eth_core_with_no_contract_tx<D: DatabaseInterface>(
+    block_json: &str,
+    chain_id: u8,
+    gas_price: u64,
+    canon_to_tip_length: u64,
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    info!("✔ Initializing ETH core with NO contract tx...");
+    initialize_eth_core_maybe_with_contract_tx(block_json, chain_id, gas_price, canon_to_tip_length, None, state)
 }
