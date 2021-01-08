@@ -7,7 +7,7 @@ use crate::{
         },
         eth::{
             eth_constants::EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC,
-            eth_contracts::erc777::get_redeem_event_params_from_log,
+            eth_contracts::erc777::Erc777RedeemEvent,
             eth_database_utils::{get_eos_on_eth_smart_contract_address_from_db, get_eth_canon_block_from_db},
             eth_log::EthLog,
             eth_state::EthState,
@@ -81,7 +81,7 @@ pub struct EosOnEthEthTxInfo {
 
 impl EosOnEthEthTxInfo {
     pub fn from_eth_log<D: DatabaseInterface>(db: &D, log: &EthLog, tx_hash: &EthHash) -> Result<Self> {
-        get_redeem_event_params_from_log(log).and_then(|params| {
+        Erc777RedeemEvent::from_eth_log(log).and_then(|params| {
             Ok(Self {
                 token_amount: params.value,
                 eos_address: params.underlying_asset_recipient,

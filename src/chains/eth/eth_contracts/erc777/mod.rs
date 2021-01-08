@@ -104,56 +104,58 @@ pub fn get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(db: &D, new_ad
 }
 
 #[derive(Debug, Clone, Constructor, Eq, PartialEq)]
-pub struct Erc777RedeemEventParams {
+pub struct Erc777RedeemEvent {
     pub redeemer: EthAddress,
     pub value: U256,
     pub underlying_asset_recipient: String,
 }
 
-fn get_redeemer_address_from_redeem_log(log: &EthLog) -> Result<EthAddress> {
-    if log.topics.len() < 2 {
-        Err("Not enough topics to get redeemer address from ERC777 log!".into())
-    } else {
-        Ok(EthAddress::from_slice(&log.topics[1].as_bytes()[12..]))
+impl Erc777RedeemEvent {
+    fn get_redeemer_address_from_redeem_log(log: &EthLog) -> Result<EthAddress> {
+        if log.topics.len() < 2 {
+            Err("Not enough topics to get redeemer address from ERC777 log!".into())
+        } else {
+            Ok(EthAddress::from_slice(&log.topics[1].as_bytes()[12..]))
+        }
     }
-}
 
-fn get_redeem_amount_from_redeem_log(log: &EthLog) -> Result<U256> {
-    if log.data.len() >= ETH_WORD_SIZE_IN_BYTES {
-        Ok(U256::from(&log.data[..ETH_WORD_SIZE_IN_BYTES]))
-    } else {
-        Err("Not enough bytes in log data to get redeem amount!".into())
+    fn get_redeem_amount_from_redeem_log(log: &EthLog) -> Result<U256> {
+        if log.data.len() >= ETH_WORD_SIZE_IN_BYTES {
+            Ok(U256::from(&log.data[..ETH_WORD_SIZE_IN_BYTES]))
+        } else {
+            Err("Not enough bytes in log data to get redeem amount!".into())
+        }
     }
-}
 
-fn get_underlying_asset_address_from_redeem_log(log: &EthLog) -> Result<String> {
-    let start_index = ETH_WORD_SIZE_IN_BYTES * 3;
-    if log.data.len() >= start_index {
-        Ok(log.data[start_index..]
-            .iter()
-            .filter(|byte| *byte != &0u8)
-            .map(|byte| *byte as char)
-            .collect::<String>())
-    } else {
-        Err("Not enough bytes in redeem log data to parse underlying asset string!".into())
+    fn get_underlying_asset_address_from_redeem_log(log: &EthLog) -> Result<String> {
+        let start_index = ETH_WORD_SIZE_IN_BYTES * 3;
+        if log.data.len() >= start_index {
+            Ok(log.data[start_index..]
+                .iter()
+                .filter(|byte| *byte != &0u8)
+                .map(|byte| *byte as char)
+                .collect::<String>())
+        } else {
+            Err("Not enough bytes in redeem log data to parse underlying asset string!".into())
+        }
     }
-}
 
-fn check_log_is_erc777_redeem_event(log: &EthLog) -> Result<()> {
-    match log.topics[0] == *ERC_777_REDEEM_EVENT_TOPIC {
-        true => Ok(()),
-        false => Err("Log is NOT from an ERC777 redeem event!".into()),
+    fn check_log_is_erc777_redeem_event(log: &EthLog) -> Result<()> {
+        match log.topics[0] == *ERC_777_REDEEM_EVENT_TOPIC {
+            true => Ok(()),
+            false => Err("Log is NOT from an ERC777 redeem event!".into()),
+        }
     }
-}
 
-pub fn get_redeem_event_params_from_log(log: &EthLog) -> Result<Erc777RedeemEventParams> {
-    check_log_is_erc777_redeem_event(log).and_then(|_| {
-        Ok(Erc777RedeemEventParams {
-            redeemer: get_redeemer_address_from_redeem_log(log)?,
-            value: get_redeem_amount_from_redeem_log(log)?,
-            underlying_asset_recipient: get_underlying_asset_address_from_redeem_log(log)?,
+    pub fn from_eth_log(log: &EthLog) -> Result<Self> {
+        Erc777RedeemEvent::check_log_is_erc777_redeem_event(log).and_then(|_| {
+            Ok(Erc777RedeemEvent {
+                value: Erc777RedeemEvent::get_redeem_amount_from_redeem_log(log)?,
+                redeemer: Erc777RedeemEvent::get_redeemer_address_from_redeem_log(log)?,
+                underlying_asset_recipient: Erc777RedeemEvent::get_underlying_asset_address_from_redeem_log(log)?,
+            })
         })
-    })
+    }
 }
 
 #[cfg(test)]
@@ -195,7 +197,7 @@ mod tests {
     #[test]
     fn should_get_redeemer_address_from_redeem_log() {
         let log = get_sample_log_with_erc777_redeem();
-        let result = get_redeemer_address_from_redeem_log(&log).unwrap();
+        let result = Erc777RedeemEvent::get_redeemer_address_from_redeem_log(&log).unwrap();
         let expected_result = EthAddress::from_slice(&hex::decode("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap());
         assert_eq!(result, expected_result);
     }
@@ -203,7 +205,7 @@ mod tests {
     #[test]
     fn should_get_redeem_amount_from_redeem_log() {
         let log = get_sample_log_with_erc777_redeem();
-        let result = get_redeem_amount_from_redeem_log(&log).unwrap();
+        let result = Erc777RedeemEvent::get_redeem_amount_from_redeem_log(&log).unwrap();
         let expected_result = U256::from_dec_str("6660000000000").unwrap();
         assert_eq!(result, expected_result);
     }
@@ -211,7 +213,7 @@ mod tests {
     #[test]
     fn should_get_underlying_asset_address_from_redeem_log() {
         let log = get_sample_log_with_erc777_redeem();
-        let result = get_underlying_asset_address_from_redeem_log(&log).unwrap();
+        let result = Erc777RedeemEvent::get_underlying_asset_address_from_redeem_log(&log).unwrap();
         let expected_result = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string();
         assert_eq!(result, expected_result);
     }
@@ -219,26 +221,26 @@ mod tests {
     #[test]
     fn should_check_log_is_erc777_redeem_event() {
         let log = get_sample_log_with_erc777_redeem();
-        let result = check_log_is_erc777_redeem_event(&log);
+        let result = Erc777RedeemEvent::check_log_is_erc777_redeem_event(&log);
         assert!(result.is_ok());
     }
 
     #[test]
     fn non_erc777_log_should_not_pass_erc777_check() {
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = check_log_is_erc777_redeem_event(&log);
+        let result = Erc777RedeemEvent::check_log_is_erc777_redeem_event(&log);
         assert!(result.is_err());
     }
 
     #[test]
     fn should_get_redeem_event_params_from_log() {
         let log = get_sample_log_with_erc777_redeem();
-        let expected_result = Erc777RedeemEventParams::new(
+        let expected_result = Erc777RedeemEvent::new(
             EthAddress::from_slice(&hex::decode("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap()),
             U256::from_dec_str("6660000000000").unwrap(),
             "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
         );
-        let result = get_redeem_event_params_from_log(&log).unwrap();
+        let result = Erc777RedeemEvent::from_eth_log(&log).unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -246,7 +248,7 @@ mod tests {
     fn should_fail_to_get_params_from_non_erc777_redeem_event() {
         let expected_err = "Log is NOT from an ERC777 redeem event!".to_string();
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        match get_redeem_event_params_from_log(&log) {
+        match Erc777RedeemEvent::from_eth_log(&log) {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
             Err(_) => panic!("Wrong error received!"),
