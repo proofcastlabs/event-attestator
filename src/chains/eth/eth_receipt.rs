@@ -73,8 +73,8 @@ impl EthReceipts {
                     self.get_receipts_containing_logs_from_address_and_with_topic(address, topic)
                         .0
                 })
-                .flatten()
-                .collect(),
+                .collect::<Vec<Vec<EthReceipt>>>()
+                .concat(),
         )
     }
 
@@ -90,8 +90,8 @@ impl EthReceipts {
                     self.get_receipts_containing_log_from_address_and_with_topics(address, topics)
                         .0
                 })
-                .flatten()
-                .collect(),
+                .collect::<Vec<Vec<EthReceipt>>>()
+                .concat(),
         )
     }
 
@@ -100,8 +100,8 @@ impl EthReceipts {
             self.iter()
                 .cloned()
                 .map(|receipt| receipt.logs.0)
-                .flatten()
-                .collect::<Vec<EthLog>>(),
+                .collect::<Vec<Vec<EthLog>>>()
+                .concat(),
         )
     }
 
@@ -301,6 +301,16 @@ impl EthReceipt {
                 .filter(|log| log.contains_topic(topic))
                 .cloned()
                 .collect(),
+        )
+    }
+
+    pub fn get_logs_from_addresses_with_topic(&self, addresses: &[EthAddress], topic: &EthHash) -> EthLogs {
+        EthLogs::new(
+            addresses
+                .iter()
+                .map(|address| self.get_logs_from_address_with_topic(address, topic).0)
+                .collect::<Vec<Vec<EthLog>>>()
+                .concat(),
         )
     }
 }
