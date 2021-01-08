@@ -1,7 +1,6 @@
 use crate::{
     chains::eth::{
         eth_database_utils::{
-            get_eos_on_eth_smart_contract_address_from_db,
             get_erc20_on_eos_smart_contract_address_from_db,
             get_erc777_contract_address_from_db,
             get_latest_eth_block_number,
