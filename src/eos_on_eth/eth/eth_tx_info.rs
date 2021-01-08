@@ -1,10 +1,6 @@
 use crate::{
     chains::{
-        eos::{
-            eos_database_utils::get_eos_account_name_string_from_db,
-            eos_eth_token_dictionary::EosEthTokenDictionary,
-            eos_unit_conversions::convert_u64_to_eos_asset,
-        },
+        eos::eos_eth_token_dictionary::EosEthTokenDictionary,
         eth::{
             eth_constants::EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC,
             eth_contracts::erc777::Erc777RedeemEvent,
@@ -42,7 +38,7 @@ impl EosOnEthEthTxInfos {
                     receipt
                         .get_logs_from_addresses_with_topic(&token_dictionary.to_eth_addresses(), topic)
                         .iter()
-                        .map(|log| EosOnEthEthTxInfo::from_eth_log(db, &log, &receipt.transaction_hash))
+                        .map(|log| EosOnEthEthTxInfo::from_eth_log(&log, &receipt.transaction_hash, token_dictionary))
                         .collect::<Result<Vec<EosOnEthEthTxInfo>>>()
                 })
                 .collect::<Result<Vec<Vec<EosOnEthEthTxInfo>>>>()?
@@ -80,16 +76,16 @@ pub struct EosOnEthEthTxInfo {
 }
 
 impl EosOnEthEthTxInfo {
-    pub fn from_eth_log<D: DatabaseInterface>(db: &D, log: &EthLog, tx_hash: &EthHash) -> Result<Self> {
+    pub fn from_eth_log(log: &EthLog, tx_hash: &EthHash, token_dictionary: &EosEthTokenDictionary) -> Result<Self> {
         Erc777RedeemEvent::from_eth_log(log).and_then(|params| {
             Ok(Self {
                 token_amount: params.value,
-                eos_address: params.underlying_asset_recipient,
-                eos_token_address: get_eos_account_name_string_from_db(db)?,
-                eos_asset_amount: convert_u64_to_eos_asset(params.value.as_u64()),
-                token_sender: params.redeemer,
-                eth_token_address: get_eos_on_eth_smart_contract_address_from_db(db)?,
                 originating_tx_hash: *tx_hash,
+                token_sender: params.redeemer,
+                eth_token_address: log.address,
+                eos_address: params.underlying_asset_recipient,
+                eos_token_address: token_dictionary.get_eos_account_name_from_eth_token_address(&log.address)?,
+                eos_asset_amount: token_dictionary.convert_u256_to_eos_asset_string(&log.address, &params.value)?,
             })
         })
     }
