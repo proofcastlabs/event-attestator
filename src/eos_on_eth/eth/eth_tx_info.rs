@@ -2,6 +2,7 @@ use crate::{
     chains::{
         eos::{
             eos_database_utils::get_eos_account_name_string_from_db,
+            eos_eth_token_dictionary::EosEthTokenDictionary,
             eos_unit_conversions::convert_u64_to_eos_asset,
         },
         eth::{
@@ -28,6 +29,7 @@ impl EosOnEthEthTxInfos {
     pub fn from_eth_submission_material<D: DatabaseInterface>(
         db: &D,
         material: &EthSubmissionMaterial,
+        token_dictionary: &EosEthTokenDictionary,
     ) -> Result<Self> {
         let address = get_eos_on_eth_smart_contract_address_from_db(db)?;
         let topic = &EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC[0];
@@ -38,7 +40,7 @@ impl EosOnEthEthTxInfos {
                 .iter()
                 .map(|receipt| {
                     receipt
-                        .get_logs_from_address_with_topic(&address, topic)
+                        .get_logs_from_addresses_with_topic(&token_dictionary.to_eth_addresses(), topic)
                         .iter()
                         .map(|log| EosOnEthEthTxInfo::from_eth_log(db, &log, &receipt.transaction_hash))
                         .collect::<Result<Vec<EosOnEthEthTxInfo>>>()
@@ -107,8 +109,12 @@ pub fn maybe_parse_eth_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
                 "✔ {} receipts in canon block ∴ parsing ETH tx info...",
                 material.receipts.len()
             );
-            EosOnEthEthTxInfos::from_eth_submission_material(&state.db, &material)
-                .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
+            EosOnEthEthTxInfos::from_eth_submission_material(
+                &state.db,
+                &material,
+                state.get_eos_eth_token_dictionary()?,
+            )
+            .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
         },
     })
 }
