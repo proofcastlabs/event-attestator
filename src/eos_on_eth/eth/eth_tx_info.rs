@@ -1,6 +1,12 @@
 use crate::{
     chains::{
-        eos::eos_eth_token_dictionary::EosEthTokenDictionary,
+        eos::{
+            eos_crypto::eos_private_key::EosPrivateKey,
+            eos_database_utils::get_eos_chain_id_from_db,
+            eos_eth_token_dictionary::EosEthTokenDictionary,
+            eos_types::EosSignedTransactions,
+            sign_eos_transactions::get_signed_tx,
+        },
         eth::{
             eth_constants::EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC,
             eth_contracts::erc777::Erc777RedeemEvent,
@@ -61,6 +67,30 @@ impl EosOnEthEthTxInfos {
                 .cloned()
                 .collect::<Vec<EosOnEthEthTxInfo>>(),
         ))
+    }
+
+    pub fn to_eos_signed_txs(
+        &self,
+        ref_block_num: u16,
+        ref_block_prefix: u32,
+        chain_id: &str,
+        private_key: &EosPrivateKey,
+    ) -> Result<EosSignedTransactions> {
+        info!("✔ Signing {} EOS txs from `erc20-on-eos` peg in infos...", self.len());
+        self.iter()
+            .map(|tx_info| {
+                info!("✔ Signing EOS tx from `erc20-on-eos` peg in info: {:?}", tx_info);
+                get_signed_tx(
+                    ref_block_num,
+                    ref_block_prefix,
+                    &tx_info.eos_address,
+                    &tx_info.eos_asset_amount,
+                    chain_id,
+                    private_key,
+                    &tx_info.eos_token_address,
+                )
+            })
+            .collect()
     }
 }
 
@@ -127,4 +157,18 @@ pub fn maybe_filter_out_eth_tx_info_with_value_too_low_in_state<D: DatabaseInter
             debug!("✔ Num tx infos after: {}", filtered_infos.len());
             state.replace_eos_on_eth_eth_tx_infos(filtered_infos)
         })
+}
+
+pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
+    info!("✔ Maybe signing `erc20-on-eos` peg in txs...");
+    let submission_material = state.get_eth_submission_material()?;
+    state
+        .eos_on_eth_eth_tx_infos
+        .to_eos_signed_txs(
+            submission_material.get_eos_ref_block_num()?,
+            submission_material.get_eos_ref_block_prefix()?,
+            &get_eos_chain_id_from_db(&state.db)?,
+            &EosPrivateKey::get_from_db(&state.db)?,
+        )
+        .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
 }

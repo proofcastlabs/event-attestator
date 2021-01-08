@@ -1,9 +1,6 @@
 use crate::{
     chains::{
-        eos::{
-            eos_eth_token_dictionary::get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
-            sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
-        },
+        eos::eos_eth_token_dictionary::get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
         eth::{
             add_block_and_receipts_to_db::maybe_add_block_and_receipts_to_db_and_return_state,
             check_parent_exists::check_for_parent_of_block_in_state,
@@ -30,6 +27,7 @@ use crate::{
             eth_tx_info::{
                 maybe_filter_out_eth_tx_info_with_value_too_low_in_state,
                 maybe_parse_eth_tx_info_from_canon_block_and_add_to_state,
+                maybe_sign_eos_txs_and_add_to_eth_state,
             },
             filter_receipts_in_state::filter_receipts_for_eos_on_eth_eth_tx_info_in_state,
             get_output_json::get_output_json,
