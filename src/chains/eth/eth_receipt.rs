@@ -78,6 +78,23 @@ impl EthReceipts {
         )
     }
 
+    pub fn get_receipts_containing_log_from_addresses_and_with_topics(
+        &self,
+        addresses: &[EthAddress],
+        topics: &[EthHash],
+    ) -> Self {
+        Self::new(
+            addresses
+                .iter()
+                .map(|address| {
+                    self.get_receipts_containing_log_from_address_and_with_topics(address, topics)
+                        .0
+                })
+                .flatten()
+                .collect(),
+        )
+    }
+
     fn get_logs(&self) -> EthLogs {
         EthLogs::new(
             self.iter()

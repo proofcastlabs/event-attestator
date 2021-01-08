@@ -184,6 +184,23 @@ impl EthSubmissionMaterial {
         Ok(filtered)
     }
 
+    pub fn get_receipts_containing_log_from_addresses_and_with_topics(
+        &self,
+        addresses: &[EthAddress],
+        topics: &[EthHash],
+    ) -> Result<Self> {
+        info!("✔ Number of receipts before filtering: {}", self.receipts.len());
+        let filtered = Self::new(
+            self.get_block()?,
+            self.receipts
+                .get_receipts_containing_log_from_addresses_and_with_topics(addresses, topics),
+            self.eos_ref_block_num,
+            self.eos_ref_block_prefix,
+        );
+        info!("✔ Number of receipts after filtering:  {}", filtered.receipts.len());
+        Ok(filtered)
+    }
+
     pub fn filter_receipts_containing_supported_erc20_peg_ins(
         &self,
         eos_eth_token_dictionary: &EosEthTokenDictionary,
