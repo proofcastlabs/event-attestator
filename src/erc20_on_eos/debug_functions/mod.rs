@@ -32,7 +32,6 @@ use crate::{
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
             parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
             parse_submission_material::parse_submission_material_and_add_to_state,
-            sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
         },
         eth::{
             eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY},
@@ -79,6 +78,7 @@ use crate::{
             filter_receipts_in_state::filter_receipts_for_erc20_on_eos_peg_in_events_in_state,
             get_output_json::get_output_json,
             peg_in_info::maybe_filter_peg_in_info_in_state,
+            sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
         },
     },
     traits::DatabaseInterface,

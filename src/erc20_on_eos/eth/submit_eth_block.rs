@@ -1,9 +1,6 @@
 use crate::{
     chains::{
-        eos::{
-            eos_eth_token_dictionary::get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
-            sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
-        },
+        eos::eos_eth_token_dictionary::get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
         eth::{
             add_block_and_receipts_to_db::maybe_add_block_and_receipts_to_db_and_return_state,
             check_parent_exists::check_for_parent_of_block_in_state,
@@ -33,6 +30,7 @@ use crate::{
                 maybe_filter_peg_in_info_in_state,
                 maybe_parse_peg_in_info_from_canon_block_and_add_to_state,
             },
+            sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
         },
     },
     traits::DatabaseInterface,
