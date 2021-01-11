@@ -3,7 +3,7 @@ use crate::{
         eos::{
             eos_action_proofs::EosActionProof,
             eos_eth_token_dictionary::EosEthTokenDictionary,
-            eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedTxIds},
+            eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
             eos_state::EosState,
         },
         eth::{
@@ -82,7 +82,7 @@ impl EosOnEthEosTxInfos {
         ))
     }
 
-    pub fn filter_out_already_processed_txs(&self, processed_tx_ids: &ProcessedTxIds) -> Result<Self> {
+    pub fn filter_out_already_processed_txs(&self, processed_tx_ids: &ProcessedGlobalSequences) -> Result<Self> {
         Ok(EosOnEthEosTxInfos::new(
             self.iter()
                 .filter(|info| !processed_tx_ids.contains(&info.global_sequence))

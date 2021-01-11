@@ -8,11 +8,11 @@ pub type GlobalSequence = u64;
 pub struct GlobalSequences(Vec<GlobalSequence>);
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-pub struct ProcessedTxIds(pub Vec<GlobalSequence>);
+pub struct ProcessedGlobalSequences(pub Vec<GlobalSequence>);
 
-impl ProcessedTxIds {
+impl ProcessedGlobalSequences {
     pub fn init() -> Self {
-        ProcessedTxIds(vec![])
+        ProcessedGlobalSequences(vec![])
     }
 
     pub fn add_multi(mut self, global_sequences: &mut GlobalSequences) -> Result<Self> {

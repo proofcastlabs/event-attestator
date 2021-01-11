@@ -5,7 +5,7 @@ use crate::{
         eos::{
             eos_action_proofs::EosActionProofs,
             eos_eth_token_dictionary::EosEthTokenDictionary,
-            eos_global_sequences::{GlobalSequences, ProcessedTxIds},
+            eos_global_sequences::{GlobalSequences, ProcessedGlobalSequences},
             eos_merkle_utils::Incremerkle,
             eos_types::Checksum256s,
             parse_submission_material::EosSubmissionMaterial,
@@ -31,7 +31,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub action_proofs: EosActionProofs,
     pub interim_block_ids: Checksum256s,
     pub eth_signed_txs: EthTransactions,
-    pub processed_tx_ids: ProcessedTxIds,
+    pub processed_tx_ids: ProcessedGlobalSequences,
     pub block_header: Option<EosBlockHeader>,
     pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub enabled_protocol_features: EnabledFeatures,
@@ -61,7 +61,7 @@ where
             btc_on_eos_signed_txs: vec![],
             producer_signature: String::new(),
             incremerkle: Incremerkle::default(),
-            processed_tx_ids: ProcessedTxIds::init(),
+            processed_tx_ids: ProcessedGlobalSequences::init(),
             enabled_protocol_features: EnabledFeatures::init(),
             eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos::new(vec![]),
             btc_on_eos_redeem_infos: BtcOnEosRedeemInfos::new(vec![]),
@@ -137,7 +137,7 @@ where
         Ok(self)
     }
 
-    pub fn add_processed_tx_ids(mut self, tx_ids: ProcessedTxIds) -> Result<Self> {
+    pub fn add_processed_tx_ids(mut self, tx_ids: ProcessedGlobalSequences) -> Result<Self> {
         self.processed_tx_ids = tx_ids;
         Ok(self)
     }

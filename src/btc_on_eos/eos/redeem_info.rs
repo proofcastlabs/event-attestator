@@ -3,7 +3,7 @@ use crate::{
         btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
         eos::{
             eos_action_proofs::EosActionProof,
-            eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedTxIds},
+            eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
             eos_state::EosState,
         },
     },
@@ -48,7 +48,10 @@ impl BtcOnEosRedeemInfos {
         ))
     }
 
-    pub fn filter_out_already_processed_txs(&self, processed_tx_ids: &ProcessedTxIds) -> Result<BtcOnEosRedeemInfos> {
+    pub fn filter_out_already_processed_txs(
+        &self,
+        processed_tx_ids: &ProcessedGlobalSequences,
+    ) -> Result<BtcOnEosRedeemInfos> {
         Ok(BtcOnEosRedeemInfos::new(
             self.iter()
                 .filter(|info| !processed_tx_ids.contains(&info.global_sequence))

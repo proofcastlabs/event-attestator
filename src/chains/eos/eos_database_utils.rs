@@ -14,7 +14,7 @@ use crate::{
             PROCESSED_TX_IDS_KEY,
         },
         eos_crypto::eos_public_key::EosPublicKey,
-        eos_global_sequences::ProcessedTxIds,
+        eos_global_sequences::ProcessedGlobalSequences,
         eos_merkle_utils::{Incremerkle, IncremerkleJson},
         eos_types::EosKnownSchedules,
         eos_utils::{convert_hex_to_checksum256, get_eos_schedule_db_key},
@@ -178,12 +178,15 @@ pub fn get_eos_chain_id_from_db<D: DatabaseInterface>(db: &D) -> Result<String> 
     get_string_from_db(db, &EOS_CHAIN_ID_DB_KEY.to_vec())
 }
 
-pub fn get_processed_tx_ids_from_db<D: DatabaseInterface>(db: &D) -> Result<ProcessedTxIds> {
+pub fn get_processed_tx_ids_from_db<D: DatabaseInterface>(db: &D) -> Result<ProcessedGlobalSequences> {
     db.get(PROCESSED_TX_IDS_KEY.to_vec(), None)
         .and_then(|bytes| Ok(serde_json::from_slice(&bytes[..])?))
 }
 
-pub fn put_processed_tx_ids_in_db<D: DatabaseInterface>(db: &D, processed_tx_ids: &ProcessedTxIds) -> Result<()> {
+pub fn put_processed_tx_ids_in_db<D: DatabaseInterface>(
+    db: &D,
+    processed_tx_ids: &ProcessedGlobalSequences,
+) -> Result<()> {
     db.put(
         PROCESSED_TX_IDS_KEY.to_vec(),
         serde_json::to_vec(processed_tx_ids)?,

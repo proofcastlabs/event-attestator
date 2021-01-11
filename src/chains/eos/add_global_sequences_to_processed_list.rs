@@ -1,7 +1,7 @@
 use crate::{
     chains::eos::{
         eos_database_utils::put_processed_tx_ids_in_db,
-        eos_global_sequences::{GlobalSequences, ProcessedTxIds},
+        eos_global_sequences::{GlobalSequences, ProcessedGlobalSequences},
         eos_state::EosState,
     },
     traits::DatabaseInterface,
@@ -10,7 +10,7 @@ use crate::{
 
 pub fn add_tx_ids_to_processed_tx_ids<D: DatabaseInterface>(
     db: &D,
-    processed_tx_ids: &ProcessedTxIds,
+    processed_tx_ids: &ProcessedGlobalSequences,
     mut global_sequences: GlobalSequences,
 ) -> Result<()> {
     put_processed_tx_ids_in_db(db, &processed_tx_ids.clone().add_multi(&mut global_sequences)?)
