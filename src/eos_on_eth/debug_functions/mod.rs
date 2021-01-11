@@ -12,6 +12,7 @@ use crate::{
             eos_debug_functions::{
                 add_eos_eth_token_dictionary_entry,
                 add_new_eos_schedule,
+                get_processed_actions_list,
                 remove_eos_eth_token_dictionary_entry,
                 update_incremerkle,
             },
@@ -261,4 +262,11 @@ pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) 
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(get_eos_output)
         .map(prepend_debug_output_marker_to_string)
+}
+
+/// # Debug Get Processed Actions List
+///
+/// This function returns the list of already-processed action global sequences in JSON format.
+pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String> {
+    check_core_is_initialized(db).and_then(|_| get_processed_actions_list(db))
 }

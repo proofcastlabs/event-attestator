@@ -62,7 +62,7 @@ use crate::{
                 get_eos_account_nonce_from_db,
                 get_eos_chain_id_from_db,
             },
-            eos_debug_functions::{add_new_eos_schedule, update_incremerkle},
+            eos_debug_functions::{add_new_eos_schedule, get_processed_actions_list, update_incremerkle},
             eos_state::EosState,
             filter_action_proofs::{
                 maybe_filter_duplicate_proofs_from_state,
@@ -335,4 +335,11 @@ pub fn debug_remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -
 /// Use ONLY if you know exactly what you're doing and why!
 pub fn debug_add_multiple_utxos<D: DatabaseInterface>(db: D, json_str: &str) -> Result<String> {
     check_debug_mode().and_then(|_| add_multiple_utxos(&db, json_str).map(prepend_debug_output_marker_to_string))
+}
+
+/// # Debug Get Processed Actions List
+///
+/// This function returns the list of already-processed action global sequences in JSON format.
+pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String> {
+    check_core_is_initialized(db).and_then(|_| get_processed_actions_list(db))
 }

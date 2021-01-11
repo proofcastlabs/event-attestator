@@ -5,7 +5,7 @@ use crate::{
 use derive_more::{Constructor, Deref, DerefMut};
 pub use eos_primitives::Checksum256;
 use eos_primitives::ProducerKey as EosProducerKey;
-use serde_json::Value as JsonValue;
+use serde_json::{json, Value as JsonValue};
 use std::fmt;
 
 pub type GlobalSequence = u64;
@@ -179,5 +179,9 @@ impl ProcessedTxIds {
 
     pub fn contains(&self, global_sequence: &GlobalSequence) -> bool {
         self.0.contains(global_sequence)
+    }
+
+    pub fn to_json(&self) -> JsonValue {
+        json!({"processed_global_sequences":self.0})
     }
 }

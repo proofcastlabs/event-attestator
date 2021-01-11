@@ -24,6 +24,7 @@ pub use crate::{
             debug_get_all_utxos,
             debug_get_child_pays_for_parent_btc_tx,
             debug_get_key_from_db,
+            debug_get_processed_actions_list,
             debug_remove_utxo,
             debug_reprocess_btc_block_for_stale_eos_tx,
             debug_reprocess_eos_block,

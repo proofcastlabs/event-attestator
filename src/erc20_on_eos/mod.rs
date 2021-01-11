@@ -28,6 +28,7 @@ pub use crate::{
             debug_get_all_db_keys,
             debug_get_key_from_db,
             debug_get_perc20_migration_tx,
+            debug_get_processed_actions_list,
             debug_get_remove_supported_token_tx,
             debug_remove_eos_eth_token_dictionary_entry,
             debug_reprocess_eos_block,
