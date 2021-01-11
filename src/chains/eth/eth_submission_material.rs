@@ -87,6 +87,10 @@ impl EthSubmissionMaterial {
         self.receipts.0.clone()
     }
 
+    pub fn get_num_receipts(&self) -> usize {
+        self.receipts.len()
+    }
+
     pub fn to_json(&self) -> Result<JsonValue> {
         let block_json = match &self.block {
             Some(block) => Some(block.to_json()?),
