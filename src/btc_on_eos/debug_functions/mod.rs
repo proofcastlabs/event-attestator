@@ -49,7 +49,6 @@ use crate::{
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
         },
         eos::{
-            add_global_sequences_to_processed_list::maybe_add_global_sequences_to_processed_list_and_return_state,
             core_initialization::eos_init_utils::EosInitJson,
             eos_constants::{get_eos_constants_db_keys, EOS_PRIVATE_KEY_DB_KEY as EOS_KEY},
             eos_crypto::eos_private_key::EosPrivateKey,
@@ -63,6 +62,7 @@ use crate::{
                 get_eos_chain_id_from_db,
             },
             eos_debug_functions::{add_new_eos_schedule, get_processed_actions_list, update_incremerkle},
+            eos_global_sequences::maybe_add_global_sequences_to_processed_list_and_return_state,
             eos_state::EosState,
             filter_action_proofs::{
                 maybe_filter_duplicate_proofs_from_state,

@@ -20,6 +20,7 @@ use crate::{
                 get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
                 EosEthTokenDictionary,
             },
+            eos_global_sequences::maybe_add_global_sequences_to_processed_list_and_return_state,
             eos_state::EosState,
             filter_action_proofs::{
                 maybe_filter_duplicate_proofs_from_state,
@@ -405,6 +406,7 @@ where
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
         .and_then(maybe_parse_redeem_infos_and_put_in_state)
         .and_then(maybe_sign_normal_eth_txs_and_add_to_state)
+        .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
         .and_then(maybe_increment_eth_nonce_in_db_and_return_eos_state)
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(get_eos_output)

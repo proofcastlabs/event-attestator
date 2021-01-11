@@ -1,6 +1,5 @@
 use crate::{
     chains::eos::{
-        add_global_sequences_to_processed_list::maybe_add_global_sequences_to_processed_list_and_return_state,
         add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
         append_interim_block_ids::append_interim_block_ids_to_incremerkle_in_state,
         eos_database_transactions::{
@@ -8,6 +7,7 @@ use crate::{
             start_eos_db_transaction_and_return_state,
         },
         eos_eth_token_dictionary::get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
+        eos_global_sequences::maybe_add_global_sequences_to_processed_list_and_return_state,
         eos_state::EosState,
         filter_action_proofs::{
             maybe_filter_duplicate_proofs_from_state,

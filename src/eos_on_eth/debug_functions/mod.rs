@@ -1,7 +1,6 @@
 use crate::{
     chains::{
         eos::{
-            add_global_sequences_to_processed_list::maybe_add_global_sequences_to_processed_list_and_return_state,
             add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
             core_initialization::eos_init_utils::EosInitJson,
             eos_constants::{get_eos_constants_db_keys, EOS_PRIVATE_KEY_DB_KEY},
@@ -20,6 +19,7 @@ use crate::{
                 get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
                 get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
             },
+            eos_global_sequences::maybe_add_global_sequences_to_processed_list_and_return_state,
             eos_state::EosState,
             filter_action_proofs::{
                 maybe_filter_duplicate_proofs_from_state,
