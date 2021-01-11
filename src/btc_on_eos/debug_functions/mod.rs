@@ -67,7 +67,7 @@ use crate::{
                 get_eos_chain_id_from_db,
                 put_eos_schedule_in_db,
             },
-            eos_debug_functions::update_incremerkle,
+            eos_debug_functions::{add_new_eos_schedule, update_incremerkle},
             eos_state::EosState,
             filter_action_proofs::{
                 maybe_filter_duplicate_proofs_from_state,
@@ -215,9 +215,7 @@ where
 /// transaction replays. Use with extreme caution and only if you know exactly what you are doing
 /// and why.
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
-    check_core_is_initialized(db)
-        .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(&eos_init_json)?))
-        .map(prepend_debug_output_marker_to_string)
+    check_core_is_initialized(db).and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(&eos_init_json)?))
 }
 
 /// # Debug Clear All UTXOS
@@ -235,19 +233,9 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
 
 /// # Debug Add New Eos Schedule
 ///
-/// Does exactly what it says on the tin. It's currently required due to an open ticket on the
-/// validation of EOS blocks containing new schedules. Once that ticket is cleared, new schedules
-/// can be brought in "organically" by syncing to the core up to the block containing said new
-/// schedule. Meanwhile, this function must suffice.
+/// Adds a new EOS schedule to the core's encrypted database.
 pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &str) -> Result<String> {
-    info!("✔ Debug adding new EOS schedule...");
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| parse_v2_schedule_string_to_v2_schedule(&schedule_json))
-        .and_then(|schedule| put_eos_schedule_in_db(&db, &schedule))
-        .and_then(|_| db.end_transaction())
-        .map(|_| SUCCESS_JSON.to_string())
-        .map(prepend_debug_output_marker_to_string)
+    check_core_is_initialized(&db).and_then(|_| add_new_eos_schedule(db, schedule_json))
 }
 
 /// # Debug Set Key in DB to Value
