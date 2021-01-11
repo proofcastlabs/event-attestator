@@ -13,6 +13,7 @@ use crate::{
                 start_eos_db_transaction_and_return_state,
             },
             eos_database_utils::put_eos_schedule_in_db,
+            eos_debug_functions::update_incremerkle,
             eos_eth_token_dictionary::{
                 get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
                 get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
@@ -98,15 +99,8 @@ pub use serde_json::json;
 /// transaction replays. Use with extreme caution and only if you know exactly what you are doing
 /// and why.
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
-    info!("✔ Debug updating blockroot merkle...");
-    let init_json = EosInitJson::from_json_string(&eos_init_json)?;
-    check_debug_mode()
-        .and_then(|_| check_core_is_initialized(db))
-        .and_then(|_| put_eos_latest_block_info_in_db(db, &init_json.block))
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| generate_and_put_incremerkle_in_db(db, &init_json.blockroot_merkle))
-        .and_then(|_| db.end_transaction())
-        .and(Ok("{debug_update_blockroot_merkle_success:true}".to_string()))
+    check_core_is_initialized(db)
+        .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(&eos_init_json)?))
         .map(prepend_debug_output_marker_to_string)
 }
 

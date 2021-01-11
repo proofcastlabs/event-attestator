@@ -67,6 +67,7 @@ use crate::{
                 get_eos_chain_id_from_db,
                 put_eos_schedule_in_db,
             },
+            eos_debug_functions::update_incremerkle,
             eos_state::EosState,
             filter_action_proofs::{
                 maybe_filter_duplicate_proofs_from_state,
@@ -214,15 +215,8 @@ where
 /// transaction replays. Use with extreme caution and only if you know exactly what you are doing
 /// and why.
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
-    info!("✔ Debug updating blockroot merkle...");
-    let init_json = EosInitJson::from_json_string(&eos_init_json)?;
-    check_debug_mode()
-        .and_then(|_| check_core_is_initialized(db))
-        .and_then(|_| put_eos_latest_block_info_in_db(db, &init_json.block))
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| generate_and_put_incremerkle_in_db(db, &init_json.blockroot_merkle))
-        .and_then(|_| db.end_transaction())
-        .map(|_| SUCCESS_JSON.to_string())
+    check_core_is_initialized(db)
+        .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(&eos_init_json)?))
         .map(prepend_debug_output_marker_to_string)
 }
 
