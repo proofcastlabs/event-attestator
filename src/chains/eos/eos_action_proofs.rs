@@ -7,7 +7,6 @@ use crate::{
         parse_eos_action_receipts::parse_eos_action_receipt_json,
     },
     constants::SAFE_ETH_ADDRESS,
-    eos_on_eth::eos::eos_tx_info::EosOnEthEosTxInfo,
     erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfo,
     types::{Bytes, Result},
     utils::{convert_bytes_to_u64, maybe_strip_hex_prefix},
@@ -57,7 +56,7 @@ impl EosActionProof {
             .and_then(|eos_asset| dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset))
     }
 
-    fn get_action_sender(&self) -> Result<EosAccountName> {
+    pub fn get_action_sender(&self) -> Result<EosAccountName> {
         let account_name = EosAccountName::new(convert_bytes_to_u64(&self.action.data[..8].to_vec())?);
         debug!("✔ Account name parsed from redeem action: {}", account_name);
         Ok(account_name)
@@ -65,17 +64,6 @@ impl EosActionProof {
 
     fn get_btc_on_eos_btc_redeem_address(&self) -> Result<String> {
         Ok(from_utf8(&self.action.data[25..])?.to_string())
-    }
-
-    fn get_eos_on_eth_eth_address(&self) -> EthAddress {
-        // TODO Need sample to test this!
-        EthAddress::from_slice(&self.action.data[25..])
-    }
-
-    fn get_eos_on_eth_eth_amount(&self) -> Result<U256> {
-        Ok(U256::from_dec_str(
-            &convert_bytes_to_u64(&self.action.data[8..16].to_vec())?.to_string(),
-        )?) // TODO Need sampe to test thist!k
     }
 
     fn get_memo_string(&self) -> Result<String> {
@@ -112,6 +100,7 @@ impl EosActionProof {
         })
     }
 
+    // TODO Impl this on the `BtcOnEosRedeemInfo` type instead of here!
     pub fn to_btc_on_eos_redeem_info(&self) -> Result<BtcOnEosRedeemInfo> {
         info!("✔ Converting action proof to `btc-on-eos` redeem info...");
         Ok(BtcOnEosRedeemInfo {
@@ -123,20 +112,14 @@ impl EosActionProof {
         })
     }
 
-    pub fn to_eos_on_eth_eos_tx_info(&self) -> Result<EosOnEthEosTxInfo> {
-        info!("✔ Converting action proof to `eos-on-eth` eos tx info...");
-        Ok(EosOnEthEosTxInfo {
-            originating_tx_id: self.tx_id,
-            from: self.get_action_sender()?,
-            amount: self.get_eos_on_eth_eth_amount()?,
-            recipient: self.get_eos_on_eth_eth_address(),
-            global_sequence: self.action_receipt.global_sequence,
-        })
+    fn get_action_eos_account(&self) -> EosAccountName {
+        self.action.account
     }
 
+    // TODO Impl this on the `Erc20OnEosRedeemInfo` type instead of here!
     pub fn to_erc20_on_eos_redeem_info(&self, dictionary: &EosEthTokenDictionary) -> Result<Erc20OnEosRedeemInfo> {
         dictionary
-            .get_entry_via_eos_address(&self.action.account.to_string())
+            .get_entry_via_eos_address(&self.get_action_eos_account().to_string())
             .and_then(|entry| {
                 let amount = self.get_erc20_on_eos_eth_redeem_amount(&entry)?;
                 let eos_tx_amount = entry.convert_u256_to_eos_asset_string(&amount)?;
