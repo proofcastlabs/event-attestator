@@ -2,17 +2,12 @@ use crate::{
     chains::{
         eos::{
             add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
-            core_initialization::eos_init_utils::{
-                generate_and_put_incremerkle_in_db,
-                put_eos_latest_block_info_in_db,
-                EosInitJson,
-            },
+            core_initialization::eos_init_utils::EosInitJson,
             eos_constants::{get_eos_constants_db_keys, EOS_PRIVATE_KEY_DB_KEY},
             eos_database_transactions::{
                 end_eos_db_transaction_and_return_state,
                 start_eos_db_transaction_and_return_state,
             },
-            eos_database_utils::put_eos_schedule_in_db,
             eos_debug_functions::{
                 add_eos_eth_token_dictionary_entry,
                 add_new_eos_schedule,
@@ -23,7 +18,6 @@ use crate::{
                 get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
                 get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
                 EosEthTokenDictionary,
-                EosEthTokenDictionaryEntry,
             },
             eos_state::EosState,
             filter_action_proofs::{
@@ -36,7 +30,6 @@ use crate::{
             },
             get_active_schedule::get_active_schedule_from_db_and_add_to_state,
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
-            parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
             parse_submission_material::parse_submission_material_and_add_to_state,
         },
         eth::{
