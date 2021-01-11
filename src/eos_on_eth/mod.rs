@@ -28,6 +28,17 @@ pub use crate::{
         enable_protocol_feature::enable_eos_protocol_feature,
     },
     eos_on_eth::{
+        debug_functions::{
+            debug_add_eos_eth_token_dictionary_entry,
+            debug_add_new_eos_schedule,
+            debug_get_all_db_keys,
+            debug_get_key_from_db,
+            debug_remove_eos_eth_token_dictionary_entry,
+            debug_reprocess_eos_block,
+            debug_reprocess_eth_block,
+            debug_set_key_in_db_to_value,
+            debug_update_incremerkle,
+        },
         eos::submit_eos_block::submit_eos_block_to_core,
         eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
         get_enclave_state::get_enclave_state,
