@@ -13,7 +13,12 @@ use crate::{
                 start_eos_db_transaction_and_return_state,
             },
             eos_database_utils::put_eos_schedule_in_db,
-            eos_debug_functions::{add_new_eos_schedule, update_incremerkle},
+            eos_debug_functions::{
+                add_eos_eth_token_dictionary_entry,
+                add_new_eos_schedule,
+                remove_eos_eth_token_dictionary_entry,
+                update_incremerkle,
+            },
             eos_eth_token_dictionary::{
                 get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
                 get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
@@ -108,7 +113,7 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &st
 ///
 /// Adds a new EOS schedule to the core's encrypted database.
 pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &str) -> Result<String> {
-    check_core_is_initialized(&db).and_then(|_| add_new_eos_schedule(db, schedule_json))
+    check_core_is_initialized(&db).and_then(|_| add_new_eos_schedule(&db, schedule_json))
 }
 
 /// # Debug Set Key in DB to Value
@@ -169,19 +174,11 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 ///     "eth_token_decimals": <num-decimals>,
 ///     "eos_token_decimals": <num-decimals>,
 /// }
-pub fn debug_add_eos_eth_token_dictionary_entry<D>(db: D, dictionary_entry_json_string: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
-    info!("✔ Debug adding entry to `EosEthTokenDictionary`...");
-    let dictionary = EosEthTokenDictionary::get_from_db(&db)?;
-    check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| EosEthTokenDictionaryEntry::from_str(dictionary_entry_json_string))
-        .and_then(|entry| dictionary.add_and_update_in_db(entry, &db))
-        .and_then(|_| db.end_transaction())
-        .and(Ok(json!({"adding_dictionary_entry_sucess":true}).to_string()))
+pub fn debug_add_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
+    db: D,
+    dictionary_entry_json_string: &str,
+) -> Result<String> {
+    check_core_is_initialized(&db).and_then(|_| add_eos_eth_token_dictionary_entry(&db, dictionary_entry_json_string))
 }
 
 /// # Debug Remove ERC20 Dictionary Entry
@@ -189,20 +186,13 @@ where
 /// This function will remove an entry pertaining to the passed in ETH address from the
 /// `EosEthTokenDictionary` held in the encrypted database, should that entry exist. If it is
 /// not extant, nothing is changed.
-pub fn debug_remove_eos_eth_token_dictionary_entry<D>(db: D, eth_address_str: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
-    info!("✔ Debug removing entry from `EosEthTokenDictionary`...");
-    let dictionary = EosEthTokenDictionary::get_from_db(&db)?;
-    check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| get_eth_address_from_str(eth_address_str))
-        .and_then(|eth_address| dictionary.remove_entry_via_eth_address_and_update_in_db(&eth_address, &db))
-        .and_then(|_| db.end_transaction())
-        .and(Ok(json!({"removing_dictionary_entry_sucess":true}).to_string()))
+pub fn debug_remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
+    db: D,
+    eth_address_str: &str,
+) -> Result<String> {
+    check_core_is_initialized(&db).and_then(|_| remove_eos_eth_token_dictionary_entry(&db, eth_address_str))
 }
+
 /// # Debug Get PERC20 Migration Transaction
 ///
 /// This function will create and sign a transaction that calls the `migrate` function on the
