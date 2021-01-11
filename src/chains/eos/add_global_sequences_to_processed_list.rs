@@ -1,8 +1,8 @@
 use crate::{
     chains::eos::{
         eos_database_utils::put_processed_tx_ids_in_db,
+        eos_global_sequences::{GlobalSequences, ProcessedTxIds},
         eos_state::EosState,
-        eos_types::{GlobalSequences, ProcessedTxIds},
     },
     traits::DatabaseInterface,
     types::Result,

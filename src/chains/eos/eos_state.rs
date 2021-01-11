@@ -5,8 +5,9 @@ use crate::{
         eos::{
             eos_action_proofs::EosActionProofs,
             eos_eth_token_dictionary::EosEthTokenDictionary,
+            eos_global_sequences::{GlobalSequences, ProcessedTxIds},
             eos_merkle_utils::Incremerkle,
-            eos_types::{Checksum256s, GlobalSequences, ProcessedTxIds},
+            eos_types::Checksum256s,
             parse_submission_material::EosSubmissionMaterial,
             protocol_features::EnabledFeatures,
         },

@@ -1,14 +1,9 @@
-use crate::{
-    chains::eos::eos_utils::get_eos_schedule_db_key,
-    types::{Bytes, Result},
-};
-use derive_more::{Constructor, Deref, DerefMut};
+use crate::{chains::eos::eos_utils::get_eos_schedule_db_key, types::Bytes};
 pub use eos_primitives::Checksum256;
 use eos_primitives::ProducerKey as EosProducerKey;
-use serde_json::{json, Value as JsonValue};
+use serde_json::Value as JsonValue;
 use std::fmt;
 
-pub type GlobalSequence = u64;
 pub type MerkleProof = Vec<String>;
 pub type Checksum256s = Vec<Checksum256>;
 pub type ProducerKeys = Vec<EosProducerKey>;
@@ -16,9 +11,6 @@ pub type EosSignedTransactions = Vec<EosSignedTransaction>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EosKnownSchedules(Vec<EosKnownSchedule>);
-
-#[derive(Clone, Debug, PartialEq, Eq, Constructor, Deref, DerefMut)]
-pub struct GlobalSequences(Vec<GlobalSequence>);
 
 impl EosKnownSchedules {
     pub fn new(version: u32) -> Self {
@@ -162,26 +154,4 @@ pub struct EosRawTxData {
     pub asset_amount: u64,
     pub asset_name: String,
     pub eth_address: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-pub struct ProcessedTxIds(pub Vec<GlobalSequence>);
-
-impl ProcessedTxIds {
-    pub fn init() -> Self {
-        ProcessedTxIds(vec![])
-    }
-
-    pub fn add_multi(mut self, global_sequences: &mut GlobalSequences) -> Result<Self> {
-        self.0.append(global_sequences);
-        Ok(self)
-    }
-
-    pub fn contains(&self, global_sequence: &GlobalSequence) -> bool {
-        self.0.contains(global_sequence)
-    }
-
-    pub fn to_json(&self) -> JsonValue {
-        json!({"processed_global_sequences":self.0})
-    }
 }

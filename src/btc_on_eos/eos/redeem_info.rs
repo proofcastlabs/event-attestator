@@ -3,8 +3,8 @@ use crate::{
         btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
         eos::{
             eos_action_proofs::EosActionProof,
+            eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedTxIds},
             eos_state::EosState,
-            eos_types::{GlobalSequence, GlobalSequences, ProcessedTxIds},
         },
     },
     traits::DatabaseInterface,

@@ -2,8 +2,8 @@ use crate::{
     chains::eos::{
         eos_action_proofs::EosActionProof,
         eos_eth_token_dictionary::EosEthTokenDictionary,
+        eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedTxIds},
         eos_state::EosState,
-        eos_types::{GlobalSequence, GlobalSequences, ProcessedTxIds},
     },
     traits::DatabaseInterface,
     types::Result,
