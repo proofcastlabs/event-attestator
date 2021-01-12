@@ -1,5 +1,8 @@
 use crate::{
-    chains::eos::{eos_database_utils::put_processed_tx_ids_in_db, eos_state::EosState},
+    chains::eos::{
+        eos_database_utils::{get_processed_tx_ids_from_db, put_processed_tx_ids_in_db},
+        eos_state::EosState,
+    },
     traits::DatabaseInterface,
     types::Result,
 };
@@ -30,6 +33,10 @@ impl ProcessedGlobalSequences {
 
     pub fn to_json(&self) -> JsonValue {
         json!({"processed_global_sequences":self.0})
+    }
+
+    pub fn get_from_db<D: DatabaseInterface>(db: &D) -> Result<Self> {
+        get_processed_tx_ids_from_db(db)
     }
 }
 

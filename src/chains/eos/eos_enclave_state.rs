@@ -10,6 +10,7 @@ use crate::{
             get_latest_eos_block_number,
         },
         eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
+        eos_global_sequences::ProcessedGlobalSequences,
         eos_types::EosKnownSchedulesJsons,
         protocol_features::EnabledFeatures,
     },
@@ -29,6 +30,7 @@ pub struct EosEnclaveState {
     eos_known_schedules: EosKnownSchedulesJsons,
     eos_eth_token_dictionary: EosEthTokenDictionaryJson,
     eos_enabled_protocol_features: EnabledFeatures,
+    processed_global_sequences: ProcessedGlobalSequences,
 }
 
 impl EosEnclaveState {
@@ -40,8 +42,9 @@ impl EosEnclaveState {
             eos_signature_nonce: get_eos_account_nonce_from_db(db)?,
             eos_last_seen_block_num: get_latest_eos_block_number(db)?,
             eos_public_key: get_eos_public_key_from_db(db)?.to_string(),
-            eos_eth_token_dictionary: EosEthTokenDictionary::get_from_db(db)?.to_json()?,
+            processed_global_sequences: ProcessedGlobalSequences::get_from_db(db)?,
             eos_last_seen_block_id: get_eos_last_seen_block_id_from_db(db)?.to_string(),
+            eos_eth_token_dictionary: EosEthTokenDictionary::get_from_db(db)?.to_json()?,
             eos_enabled_protocol_features: get_eos_enabled_protocol_features_from_db(db)?,
             eos_known_schedules: EosKnownSchedulesJsons::from_schedules(get_eos_known_schedules_from_db(db)?),
         })
