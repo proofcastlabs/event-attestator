@@ -22,10 +22,13 @@ pub(crate) mod check_core_is_initialized;
 pub(crate) mod constants;
 
 pub use crate::{
-    chains::eos::{
-        core_initialization::initialize_eos_core::maybe_initialize_eos_core,
-        disable_protocol_feature::disable_protocol_feature,
-        enable_protocol_feature::enable_eos_protocol_feature,
+    chains::{
+        eos::{
+            core_initialization::initialize_eos_core::maybe_initialize_eos_core_without_eos_account as maybe_initialize_eos_core,
+            disable_protocol_feature::{disable_eos_protocol_feature, disable_protocol_feature},
+            enable_protocol_feature::enable_eos_protocol_feature,
+        },
+        eth::eth_message_signer::{sign_ascii_msg_with_eth_key_with_no_prefix, sign_hex_msg_with_eth_key_with_prefix},
     },
     eos_on_eth::{
         debug_functions::{

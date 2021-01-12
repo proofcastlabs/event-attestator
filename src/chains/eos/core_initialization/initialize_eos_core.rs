@@ -33,8 +33,8 @@ use crate::{
 pub fn initialize_eos_core<D: DatabaseInterface>(
     db: D,
     chain_id: &str,
-    account_name: &str,
-    token_symbol: &str,
+    maybe_account_name: Option<&str>,
+    maybe_token_symbol: Option<&str>,
     eos_init_json: &str,
 ) -> Result<String> {
     let init_json = EosInitJson::from_json_string(&eos_init_json)?;
@@ -42,8 +42,14 @@ pub fn initialize_eos_core<D: DatabaseInterface>(
     start_eos_db_transaction_and_return_state(EosState::init(db))
         .and_then(put_empty_processed_tx_ids_in_db_and_return_state)
         .and_then(|state| put_eos_chain_id_in_db_and_return_state(chain_id, state))
-        .and_then(|state| put_eos_account_name_in_db_and_return_state(account_name, state))
-        .and_then(|state| put_eos_token_symbol_in_db_and_return_state(token_symbol, state))
+        .and_then(|state| match maybe_account_name {
+            Some(account_name) => put_eos_account_name_in_db_and_return_state(account_name, state),
+            None => Ok(state),
+        })
+        .and_then(|state| match maybe_token_symbol {
+            Some(token_symbol) => put_eos_token_symbol_in_db_and_return_state(token_symbol, state),
+            None => Ok(state),
+        })
         .and_then(|state| put_eos_known_schedule_in_db_and_return_state(&init_json.active_schedule, state))
         .and_then(|state| put_eos_schedule_in_db_and_return_state(&init_json.active_schedule, state))
         .and_then(|state| put_eos_latest_block_info_in_db_and_return_state(&init_json.block, state))
@@ -59,7 +65,7 @@ pub fn initialize_eos_core<D: DatabaseInterface>(
         .and_then(get_eos_init_output)
 }
 
-/// # Maybe Initialize EOS Core
+/// # Maybe Initialize EOS Core With Eos Account
 ///
 /// This function first checks to see if the EOS side of a core has been initialized, and will
 /// initialize it if not. The initialization procedure takes as its input a database, the
@@ -77,7 +83,7 @@ pub fn initialize_eos_core<D: DatabaseInterface>(
 ///    erc20_on_eos_token_dictionary: EosEthTokenDictionaryJson,
 /// }
 /// ```
-pub fn maybe_initialize_eos_core<D: DatabaseInterface>(
+pub fn maybe_initialize_eos_core_with_eos_account<D: DatabaseInterface>(
     db: D,
     chain_id: &str,
     account_name: &str,
@@ -87,6 +93,37 @@ pub fn maybe_initialize_eos_core<D: DatabaseInterface>(
     info!("✔ Maybe initializing EOS core...");
     match is_eos_core_initialized(&db) {
         true => Ok("{eos_core_initialized:true}".to_string()),
-        false => initialize_eos_core(db, chain_id, account_name, token_symbol, eos_init_json),
+        false => initialize_eos_core(db, chain_id, Some(account_name), Some(token_symbol), eos_init_json),
+    }
+}
+
+/// # Maybe Initialize EOS Core Without Eos Account
+///
+/// This function first checks to see if the EOS side of a core has been initialized, and will
+/// initialize it if not. The initialization procedure takes as its input a database, the
+/// `chain_id` of the desired EOS chain and an EOS init JSON string. This versiokn of the init
+/// function does not requite an EOS account name and symbol, and is therefore useful for EOS
+/// related instances that use a token dictionary to define the bridges instead.
+///
+/// The EOS init JSON string is of the format:
+///
+/// ```no_compile
+/// {
+///    block: EosBlockHeaderJson,
+///    blockroot_merkle: [txHash...],
+///    active_schedule: EosProducerScheduleJsonV2,
+///    maybe_protocol_features_to_enable: [protocolFeatureHash...],
+///    erc20_on_eos_token_dictionary: EosEthTokenDictionaryJson,
+/// }
+/// ```
+pub fn maybe_initialize_eos_core_without_eos_account<D: DatabaseInterface>(
+    db: D,
+    chain_id: &str,
+    eos_init_json: &str,
+) -> Result<String> {
+    info!("✔ Maybe initializing EOS core...");
+    match is_eos_core_initialized(&db) {
+        true => Ok("{eos_core_initialized:true}".to_string()),
+        false => initialize_eos_core(db, chain_id, None, None, eos_init_json),
     }
 }

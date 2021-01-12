@@ -14,7 +14,7 @@
 pub use crate::{
     chains::{
         eos::{
-            core_initialization::initialize_eos_core::maybe_initialize_eos_core,
+            core_initialization::initialize_eos_core::maybe_initialize_eos_core_without_eos_account as maybe_initialize_eos_core,
             disable_protocol_feature::disable_eos_protocol_feature,
             enable_protocol_feature::enable_eos_protocol_feature,
         },
@@ -22,7 +22,7 @@ pub use crate::{
     },
     erc20_on_eos::{
         debug_functions::{
-            debug_add_eos_eth_token_dictionary_entry,
+            debug_add_eos_eth_token_dictionary_entry as debug_add_erc20_dictionary_entry,
             debug_add_new_eos_schedule,
             debug_get_add_supported_token_tx,
             debug_get_all_db_keys,
@@ -30,7 +30,7 @@ pub use crate::{
             debug_get_perc20_migration_tx,
             debug_get_processed_actions_list,
             debug_get_remove_supported_token_tx,
-            debug_remove_eos_eth_token_dictionary_entry,
+            debug_remove_eos_eth_token_dictionary_entry as debug_remove_erc20_dictionary_entry,
             debug_reprocess_eos_block,
             debug_reprocess_eth_block,
             debug_set_key_in_db_to_value,
