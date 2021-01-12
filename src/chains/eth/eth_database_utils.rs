@@ -374,7 +374,7 @@ pub fn get_erc20_on_eos_smart_contract_address_from_db<D: DatabaseInterface>(db:
 
 pub fn get_eos_on_eth_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
     info!("✔ Getting 'EOS_ON_ETH' smart-contract address from db...");
-    get_eth_address_from_db(db, &*EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY)
+    Ok(get_eth_address_from_db(db, &*EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY).unwrap_or_else(|_| EthAddress::zero()))
 }
 
 fn get_eth_address_from_db<D: DatabaseInterface>(db: &D, key: &[Byte]) -> Result<EthAddress> {
