@@ -65,7 +65,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::eth_test_utils::get_sample_eth_address;
+    use crate::chains::eth::eth_test_utils::get_sample_eth_address;
 
     #[test]
     fn should_calculate_contract_address() {

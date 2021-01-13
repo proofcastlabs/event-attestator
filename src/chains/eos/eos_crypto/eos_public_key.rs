@@ -91,15 +91,17 @@ impl FromStr for EosPublicKey {
 mod test {
     use super::*;
     use crate::{
-        btc_on_eos::eos::eos_test_utils::{
-            get_sample_eos_private_key,
-            get_sample_eos_public_key,
-            get_sample_eos_public_key_bytes,
-            get_sample_eos_public_key_str,
-            get_sample_eos_signature,
-            sha256_hash_message_bytes,
+        chains::eos::{
+            eos_crypto::eos_signature::EosSignature,
+            eos_test_utils::{
+                get_sample_eos_private_key,
+                get_sample_eos_public_key,
+                get_sample_eos_public_key_bytes,
+                get_sample_eos_public_key_str,
+                get_sample_eos_signature,
+                sha256_hash_message_bytes,
+            },
         },
-        chains::eos::eos_crypto::eos_signature::EosSignature,
         test_utils::get_sample_message_to_sign_bytes,
     };
     use bitcoin_hashes::{sha256, Hash};

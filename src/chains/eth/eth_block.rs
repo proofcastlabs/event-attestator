@@ -172,7 +172,7 @@ pub struct EthBlockJson {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::eth_test_utils::{
+    use crate::chains::eth::eth_test_utils::{
         get_expected_block,
         get_sample_eth_submission_material,
         get_sample_eth_submission_material_json,

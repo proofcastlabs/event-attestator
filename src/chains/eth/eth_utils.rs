@@ -125,7 +125,7 @@ pub fn safely_convert_hex_to_eth_address(hex: &str) -> Result<EthAddress> {
 mod tests {
     use super::*;
     use crate::{
-        btc_on_eth::eth::eth_test_utils::{HASH_HEX_CHARS, HEX_PREFIX_LENGTH},
+        chains::eth::eth_test_utils::{HASH_HEX_CHARS, HEX_PREFIX_LENGTH},
         errors::AppError,
     };
 

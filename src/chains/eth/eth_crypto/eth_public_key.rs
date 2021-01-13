@@ -21,7 +21,7 @@ impl EthPublicKey {
 
 #[cfg(test)]
 mod tests {
-    use crate::btc_on_eth::eth::eth_test_utils::{
+    use crate::chains::eth::eth_test_utils::{
         get_sample_eth_address_string,
         get_sample_eth_public_key,
         get_sample_eth_public_key_bytes,

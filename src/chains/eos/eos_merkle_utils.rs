@@ -261,7 +261,7 @@ impl Incremerkle {
 mod tests {
     #![allow(clippy::needless_range_loop)]
     use super::*;
-    use crate::btc_on_eos::eos::eos_test_utils::{get_sample_action_digests, get_sample_eos_submission_material_n};
+    use crate::chains::eos::eos_test_utils::{get_sample_action_digests, get_sample_eos_submission_material_n};
     use eos_primitives::{
         AccountName,
         Action,

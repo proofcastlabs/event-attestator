@@ -151,7 +151,7 @@ pub fn parse_v2_schedule_string_to_v2_schedule(schedule_string: &str) -> Result<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eos::eos::eos_test_utils::{
+    use crate::chains::eos::eos_test_utils::{
         get_sample_v1_schedule,
         get_sample_v1_schedule_json,
         get_sample_v1_schedule_json_string,

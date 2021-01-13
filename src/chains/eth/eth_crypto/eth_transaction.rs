@@ -229,7 +229,7 @@ pub fn get_signed_minting_tx(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::eth_test_utils::{
+    use crate::chains::eth::eth_test_utils::{
         get_sample_eth_address,
         get_sample_eth_private_key,
         get_sample_unsigned_eth_transaction,

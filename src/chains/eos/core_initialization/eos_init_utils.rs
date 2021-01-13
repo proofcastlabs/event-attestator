@@ -288,7 +288,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::btc_on_eos::eos::eos_test_utils::{
+    use crate::chains::eos::eos_test_utils::{
         get_j3_init_json_n,
         get_mainnet_init_json_n,
         get_sample_mainnet_init_json_with_erc20_dictionary,

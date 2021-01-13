@@ -265,29 +265,28 @@ impl EthLogs {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        btc_on_eth::eth::eth_test_utils::{
-            get_expected_log,
-            get_sample_contract_address,
-            get_sample_contract_topic,
-            get_sample_eth_submission_material_json,
-            get_sample_eth_submission_material_n,
-            get_sample_log_n,
-            get_sample_log_with_desired_address,
-            get_sample_log_with_desired_topic,
-            get_sample_log_without_desired_address,
-            get_sample_logs_with_desired_topic,
-            get_sample_logs_without_desired_topic,
-            get_sample_receipt_with_desired_address,
-            get_sample_receipt_without_desired_address,
-            SAMPLE_RECEIPT_INDEX,
-        },
-        chains::{
-            eos::eos_erc20_dictionary::EosErc20DictionaryEntry,
-            eth::{
-                eth_receipt::EthReceipt,
-                eth_submission_material::EthSubmissionMaterial,
-                eth_test_utils::{get_sample_log_with_erc20_peg_in_event, get_sample_log_with_erc20_peg_in_event_2},
+    use crate::chains::{
+        eos::eos_erc20_dictionary::EosErc20DictionaryEntry,
+        eth::{
+            eth_receipt::EthReceipt,
+            eth_submission_material::EthSubmissionMaterial,
+            eth_test_utils::{
+                get_expected_log,
+                get_sample_contract_address,
+                get_sample_contract_topic,
+                get_sample_eth_submission_material_json,
+                get_sample_eth_submission_material_n,
+                get_sample_log_n,
+                get_sample_log_with_desired_address,
+                get_sample_log_with_desired_topic,
+                get_sample_log_with_erc20_peg_in_event,
+                get_sample_log_with_erc20_peg_in_event_2,
+                get_sample_log_without_desired_address,
+                get_sample_logs_with_desired_topic,
+                get_sample_logs_without_desired_topic,
+                get_sample_receipt_with_desired_address,
+                get_sample_receipt_without_desired_address,
+                SAMPLE_RECEIPT_INDEX,
             },
         },
     };
@@ -298,7 +297,6 @@ mod tests {
     }
 
     fn get_sample_block_with_redeem() -> EthSubmissionMaterial {
-        // TODO coalesce these three!
         get_sample_eth_submission_material_n(4).unwrap()
     }
 

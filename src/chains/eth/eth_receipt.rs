@@ -281,24 +281,23 @@ impl Encodable for EthReceipt {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        btc_on_eth::eth::eth_test_utils::{
-            get_expected_receipt,
-            get_sample_contract_address,
-            get_sample_contract_topic,
-            get_sample_eth_submission_material,
-            get_sample_eth_submission_material_json,
-            get_sample_eth_submission_material_n,
-            get_sample_receipt_with_desired_topic,
-            get_valid_state_with_invalid_block_and_receipts,
-            SAMPLE_RECEIPT_INDEX,
-        },
-        chains::{
-            eos::{eos_erc20_dictionary::EosErc20DictionaryEntry, eos_test_utils::get_sample_eos_erc20_dictionary},
-            eth::{
-                eth_log::EthLog,
-                eth_submission_material::EthSubmissionMaterial,
-                eth_test_utils::{get_sample_erc20_on_eos_peg_in_info, get_sample_receipt_with_erc20_peg_in_event},
+    use crate::chains::{
+        eos::{eos_erc20_dictionary::EosErc20DictionaryEntry, eos_test_utils::get_sample_eos_erc20_dictionary},
+        eth::{
+            eth_log::EthLog,
+            eth_submission_material::EthSubmissionMaterial,
+            eth_test_utils::{
+                get_expected_receipt,
+                get_sample_contract_address,
+                get_sample_contract_topic,
+                get_sample_erc20_on_eos_peg_in_info,
+                get_sample_eth_submission_material,
+                get_sample_eth_submission_material_json,
+                get_sample_eth_submission_material_n,
+                get_sample_receipt_with_desired_topic,
+                get_sample_receipt_with_erc20_peg_in_event,
+                get_valid_state_with_invalid_block_and_receipts,
+                SAMPLE_RECEIPT_INDEX,
             },
         },
     };

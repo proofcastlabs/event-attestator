@@ -79,9 +79,9 @@ pub fn sign_peos_transaction(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        btc_on_eos::eos::eos_test_utils::EOS_JUNGLE_CHAIN_ID,
-        chains::eos::eos_constants::{EOS_MAX_EXPIRATION_SECS, PEOS_ACCOUNT_PERMISSION_LEVEL},
+    use crate::chains::eos::{
+        eos_constants::{EOS_MAX_EXPIRATION_SECS, PEOS_ACCOUNT_PERMISSION_LEVEL},
+        eos_test_utils::EOS_JUNGLE_CHAIN_ID,
     };
 
     #[test]

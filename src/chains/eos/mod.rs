@@ -3,7 +3,6 @@ pub mod eos_constants;
 pub(crate) mod add_global_sequences_to_processed_list;
 pub(crate) mod add_schedule;
 pub(crate) mod append_interim_block_ids;
-pub(crate) mod check_eos_core_is_initialized;
 pub(crate) mod core_initialization;
 pub(crate) mod disable_protocol_feature;
 pub(crate) mod enable_protocol_feature;

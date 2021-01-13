@@ -13,9 +13,9 @@ use crate::{
                 put_canon_to_tip_length_in_db_and_return_state,
                 put_difficulty_threshold_in_db,
             },
+            check_btc_core_is_initialized::is_btc_core_initialized,
             generate_and_store_btc_keys::generate_and_store_btc_keys,
             get_btc_init_output_json::get_btc_init_output_json,
-            is_btc_initialized::is_btc_enclave_initialized,
         },
         get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
         set_btc_anchor_block_hash::maybe_set_btc_anchor_block_hash,
@@ -42,7 +42,7 @@ where
     D: DatabaseInterface,
 {
     trace!("✔ Maybe initializing BTC core...");
-    Ok(BtcState::init(db)).and_then(|state| match is_btc_enclave_initialized(&state.db) {
+    Ok(BtcState::init(db)).and_then(|state| match is_btc_core_initialized(&state.db) {
         true => {
             info!("✔ BTC core already initialized!");
             Ok("{btc_core_initialized:true}".to_string())

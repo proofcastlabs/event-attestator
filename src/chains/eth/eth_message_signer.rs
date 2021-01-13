@@ -67,8 +67,7 @@ where
 mod tests {
     use super::*;
     use crate::{
-        btc_on_eth::eth::eth_test_utils::get_sample_eth_private_key,
-        chains::eth::eth_database_utils::put_eth_private_key_in_db,
+        chains::eth::{eth_database_utils::put_eth_private_key_in_db, eth_test_utils::get_sample_eth_private_key},
         errors::AppError,
         test_utils::get_test_database,
     };

@@ -22,8 +22,7 @@ mod tests {
 
     #[test]
     fn should_instantiate_pnetwork_contract_from_abi() {
-        if let Err(e) = instantiate_contract_from_abi(ERC777_PROXY_ABI) {
-            panic!("Error instantiating contract from abi: {}", e);
-        }
+        let result = instantiate_contract_from_abi(ERC777_PROXY_ABI);
+        assert!(result.is_ok());
     }
 }

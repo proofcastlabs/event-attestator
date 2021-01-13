@@ -245,8 +245,8 @@ pub fn get_node_from_trie_hash_map(trie_hash_map: &TrieHashMap, key: &H256) -> R
 mod tests {
     use super::*;
     use crate::{
-        btc_on_eth::eth::eth_test_utils::{get_sample_branch_node, get_sample_extension_node, get_sample_leaf_node},
         chains::eth::{
+            eth_test_utils::{get_sample_branch_node, get_sample_extension_node, get_sample_leaf_node},
             eth_utils::convert_hex_to_h256,
             get_trie_hash_map::{get_new_trie_hash_map, put_thing_in_trie_hash_map},
             nibble_utils::{get_length_in_nibbles, get_nibbles_from_bytes},

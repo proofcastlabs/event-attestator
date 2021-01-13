@@ -93,7 +93,7 @@ impl Drop for EthPrivateKey {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::eth_test_utils::{get_sample_eth_private_key, get_sample_eth_private_key_slice};
+    use crate::chains::eth::eth_test_utils::{get_sample_eth_private_key, get_sample_eth_private_key_slice};
 
     #[test]
     fn should_create_random_eth_private_key() {

@@ -30,7 +30,7 @@ pub fn get_thing_from_trie_hash_map(trie_hash_map: &TrieHashMap, key: &H256) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::btc_on_eth::eth::eth_test_utils::{
+    use crate::chains::eth::eth_test_utils::{
         get_expected_key_of_thing_in_trie_hash_map,
         get_thing_to_put_in_trie_hash_map,
         get_trie_hash_map_with_thing_in_it,
