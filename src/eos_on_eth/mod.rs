@@ -36,7 +36,6 @@ pub use crate::{
             debug_add_new_eos_schedule,
             debug_get_all_db_keys,
             debug_get_key_from_db,
-            debug_get_processed_actions_list,
             debug_remove_eos_eth_token_dictionary_entry,
             debug_reprocess_eos_block,
             debug_reprocess_eth_block,
