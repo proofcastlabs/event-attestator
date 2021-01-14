@@ -192,7 +192,8 @@ pub fn debug_remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
 /// the outputted reports to slot into the external database correctly.
 pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
+    check_debug_mode()
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(validate_block_in_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
@@ -239,7 +240,8 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
 /// extreme caution and when you know exactly what you are doing and why.
 pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
     info!("✔ Debug reprocessing EOS block...");
-    parse_submission_material_and_add_to_state(block_json, EosState::init(db))
+    check_debug_mode()
+        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_active_schedule_from_db_and_add_to_state)
@@ -268,5 +270,7 @@ pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) 
 ///
 /// This function returns the list of already-processed action global sequences in JSON format.
 pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String> {
-    check_core_is_initialized(db).and_then(|_| get_processed_actions_list(db))
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(db))
+        .and_then(|_| get_processed_actions_list(db))
 }
