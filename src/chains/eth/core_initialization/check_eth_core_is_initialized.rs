@@ -11,7 +11,7 @@ pub fn is_eth_core_initialized<D: DatabaseInterface>(db: &D) -> bool {
 pub fn check_eth_core_is_initialized<D: DatabaseInterface>(db: &D) -> Result<()> {
     info!("✔ Checking ETH core is initialized...");
     match is_eth_core_initialized(db) {
-        false => Err("✘ ETh side of core not initialized!".into()),
+        false => Err("✘ ETH side of core not initialized!".into()),
         true => Ok(()),
     }
 }
@@ -51,7 +51,7 @@ mod tests {
     #[test]
     fn should_err_if_core_not_initialized() {
         let db = get_test_database();
-        let expected_err = "✘ ETh side of core not initialized!".to_string();
+        let expected_err = "✘ ETH side of core not initialized!".to_string();
         match check_eth_core_is_initialized(&db) {
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
             Ok(_) => panic!("Should not have succeeded!"),

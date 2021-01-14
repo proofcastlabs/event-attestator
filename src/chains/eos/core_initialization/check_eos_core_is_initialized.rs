@@ -13,7 +13,6 @@ pub fn check_eos_core_is_initialized<D: DatabaseInterface>(db: &D) -> Result<()>
 }
 
 #[cfg(test)]
-
 mod tests {
     use super::*;
     use crate::{

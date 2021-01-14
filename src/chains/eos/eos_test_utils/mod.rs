@@ -158,18 +158,6 @@ impl EosInitAndSubsequentBlocksJson {
             .map(|block_json| block_json.producer_signature)
     }
 
-    #[allow(dead_code)]
-    pub fn get_interim_ids_for_block_n(&self, n: usize) -> Result<Checksum256s> {
-        match n < 1 && n <= self.total_num_blocks() {
-            false => Err(format!("✘ Error getting interim IDs for block {}", n).into()),
-            true => self.subsequent_blocks[n]
-                .interim_block_ids
-                .iter()
-                .map(convert_hex_to_checksum256)
-                .collect::<Result<Checksum256s>>(),
-        }
-    }
-
     pub fn get_incremerkle_for_block_n(&self, n: usize) -> Result<Incremerkle> {
         self.check_n(n).and_then(|_| {
             let mut incremerkle = self.get_incremerkle_for_initial_block()?;
@@ -209,14 +197,11 @@ pub fn get_init_and_subsequent_blocks_json_n(num: usize) -> Result<EosInitAndSub
         2 => Ok(SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_1),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num))),
     }?;
-    let string = match Path::new(&path).exists() {
-        true => Ok(read_to_string(path)?),
-        false => Err(AppError::Custom(format!(
-            "✘ Can't find sample init block json file @ path: {}",
-            path
-        ))),
-    }?;
-    EosInitAndSubsequentBlocksJson::from_json_string(&string)
+    if let Ok(contents) = read_to_string(path) {
+        EosInitAndSubsequentBlocksJson::from_json_string(&contents)
+    } else {
+        Err(format!("✘ Can't find sample init block json file @ path: {}", path).into())
+    }
 }
 
 pub const NUM_J3_INIT_SAMPLES: usize = 3;
@@ -228,14 +213,11 @@ pub fn get_j3_init_json_n(num: usize) -> Result<EosInitJson> {
         3 => Ok(SAMPLE_J3_INIT_BLOCK_JSON_PATH_3),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num))),
     }?;
-    let string = match Path::new(&path).exists() {
-        true => Ok(read_to_string(path)?),
-        false => Err(AppError::Custom(format!(
-            "✘ Can't find sample init block json file @ path: {}",
-            path
-        ))),
-    }?;
-    EosInitJson::from_json_string(&string)
+    if let Ok(contents) = read_to_string(path) {
+        EosInitJson::from_json_string(&contents)
+    } else {
+        Err(format!("✘ Can't find sample init block json file @ path: {}", path).into())
+    }
 }
 
 pub const NUM_MAINNET_INIT_SAMPLES: usize = 2;
@@ -248,14 +230,11 @@ pub fn get_mainnet_init_json_n(num: usize) -> Result<EosInitJson> {
         4 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_4),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num))),
     }?;
-    let string = match Path::new(&path).exists() {
-        true => Ok(read_to_string(path)?),
-        false => Err(AppError::Custom(format!(
-            "✘ Can't find sample init block json file @ path: {}",
-            path
-        ))),
-    }?;
-    EosInitJson::from_json_string(&string)
+    if let Ok(contents) = read_to_string(path) {
+        EosInitJson::from_json_string(&contents)
+    } else {
+        Err(format!("✘ Can't find sample init block json file @ path: {}", path).into())
+    }
 }
 
 pub fn get_sample_mainnet_init_json_with_eos_eth_token_dictionary() -> Result<EosInitJson> {

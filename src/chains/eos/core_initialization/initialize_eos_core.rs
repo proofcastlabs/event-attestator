@@ -66,7 +66,7 @@ pub fn initialize_eos_core<D: DatabaseInterface>(
         .and_then(get_eos_init_output)
 }
 
-/// # Maybe Initialize EOS Core With Eos Account
+/// # Maybe Initialize EOS Core With EOS Account
 ///
 /// This function first checks to see if the EOS side of a core has been initialized, and will
 /// initialize it if not. The initialization procedure takes as its input a database, the
@@ -98,11 +98,11 @@ pub fn maybe_initialize_eos_core_with_eos_account<D: DatabaseInterface>(
     }
 }
 
-/// # Maybe Initialize EOS Core Without Eos Account
+/// # Maybe Initialize EOS Core Without EOS Account
 ///
 /// This function first checks to see if the EOS side of a core has been initialized, and will
 /// initialize it if not. The initialization procedure takes as its input a database, the
-/// `chain_id` of the desired EOS chain and an EOS init JSON string. This versiokn of the init
+/// `chain_id` of the desired EOS chain and an EOS init JSON string. This version of the init
 /// function does not requite an EOS account name and symbol, and is therefore useful for EOS
 /// related instances that use a token dictionary to define the bridges instead.
 ///

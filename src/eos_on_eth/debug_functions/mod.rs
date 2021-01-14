@@ -107,9 +107,10 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
     let key_bytes = hex::decode(&key)?;
     let is_private_key =
         { key_bytes == EOS_PRIVATE_KEY_DB_KEY.to_vec() || key_bytes == ETH_PRIVATE_KEY_DB_KEY.to_vec() };
-    let sensitivity = match is_private_key {
-        true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-        false => None,
+    let sensitivity = if is_private_key {
+        PRIVATE_KEY_DATA_SENSITIVITY_LEVEL
+    } else {
+        None
     };
     set_key_in_db_to_value(db, key, value, sensitivity).map(prepend_debug_output_marker_to_string)
 }

@@ -184,7 +184,7 @@ impl EthSubmissionMaterial {
             self.eos_ref_block_num,
             self.eos_ref_block_prefix,
         );
-        info!("✔ Number of receipts after filtering:  {}", filtered.receipts.len());
+        info!("✔ Number of receipts after filtering: {}", filtered.receipts.len());
         Ok(filtered)
     }
 

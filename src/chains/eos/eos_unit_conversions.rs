@@ -5,7 +5,7 @@ pub fn convert_eos_asset_to_u64(eos_asset: &str) -> Result<u64> {
         .replace(".", "")
         .split_whitespace()
         .next()
-        .ok_or(NoneError("Error converting EOS asset to u64!"))?
+        .ok_or(NoneError("Error converting EOS asset to unsigned 64 bit integer!"))?
         .parse()?)
 }
 

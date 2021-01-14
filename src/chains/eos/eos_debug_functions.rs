@@ -37,7 +37,7 @@ pub fn add_new_eos_schedule<D: DatabaseInterface>(db: &D, schedule_json: &str) -
         .and_then(|_| parse_v2_schedule_string_to_v2_schedule(&schedule_json))
         .and_then(|schedule| put_eos_schedule_in_db(db, &schedule))
         .and_then(|_| db.end_transaction())
-        .and(Ok("{debug_adding_eos_schedule_succeeded:true}".to_string()))
+        .and(Ok("{debug_adding_eos_schedule_success:true}".to_string()))
         .map(prepend_debug_output_marker_to_string)
 }
 

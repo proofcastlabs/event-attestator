@@ -31,14 +31,8 @@ impl EthInitializationOutput {
         Ok(Self {
             eth_address: format!("0x{}", hex::encode(get_public_eth_address_from_db(db)?.as_bytes())),
             eth_latest_block_num: get_latest_eth_block_number(db)?,
-            eth_ptoken_contract_tx: match contract_tx {
-                Some(tx) => Some(tx.to_string()),
-                None => None,
-            },
-            smart_contract_address: match contract_address {
-                Some(address) => Some(format!("0x{}", hex::encode(address))),
-                None => None,
-            },
+            eth_ptoken_contract_tx: contract_tx.map(|tx| tx.to_string()),
+            smart_contract_address: contract_address.map(|address| format!("0x{}", hex::encode(address))),
         })
     }
 

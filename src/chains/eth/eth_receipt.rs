@@ -297,8 +297,7 @@ impl EthReceipt {
         EthLogs::new(
             self.logs
                 .iter()
-                .filter(|log| log.is_from_address(address))
-                .filter(|log| log.contains_topic(topic))
+                .filter(|log| log.is_from_address(address) && log.contains_topic(topic))
                 .cloned()
                 .collect(),
         )
