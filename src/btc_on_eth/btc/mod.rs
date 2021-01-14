@@ -1,4 +1,3 @@
-pub mod initialize_btc_enclave;
 pub mod submit_btc_block;
 
 pub(crate) mod filter_op_return_deposit_txs;

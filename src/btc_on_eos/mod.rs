@@ -14,7 +14,7 @@
 
 pub use crate::{
     btc_on_eos::{
-        btc::{initialize_btc_core::maybe_initialize_btc_core, submit_btc_block::submit_btc_block_to_core},
+        btc::submit_btc_block::submit_btc_block_to_core,
         debug_functions::{
             debug_add_multiple_utxos,
             debug_add_new_eos_schedule,
@@ -35,10 +35,13 @@ pub use crate::{
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
     },
-    chains::eos::{
-        core_initialization::initialize_eos_core::maybe_initialize_eos_core_with_eos_account as maybe_initialize_eos_core,
-        disable_protocol_feature::disable_eos_protocol_feature,
-        enable_protocol_feature::enable_eos_protocol_feature,
+    chains::{
+        btc::core_initialization::initialize_btc_core::maybe_initialize_btc_core,
+        eos::{
+            core_initialization::initialize_eos_core::maybe_initialize_eos_core_with_eos_account as maybe_initialize_eos_core,
+            disable_protocol_feature::disable_eos_protocol_feature,
+            enable_protocol_feature::enable_eos_protocol_feature,
+        },
     },
 };
 
