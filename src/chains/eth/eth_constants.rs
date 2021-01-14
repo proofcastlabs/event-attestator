@@ -19,6 +19,7 @@ pub const LOG_DATA_BTC_ADDRESS_START_INDEX: usize = 96;
 pub const GAS_LIMIT_FOR_PTOKEN_DEPLOY: usize = 4_000_000;
 pub static EXTENSION_NODE_STRING: &str = "extension";
 pub const HASHED_NULL_NODE: EthHash = EthHash(HASHED_NULL_NODE_BYTES);
+pub const ETH_CORE_IS_INITIALIZED_JSON: &str = "{eth_core_initialized:true}";
 pub const EMPTY_NIBBLES: Nibbles = Nibbles {
     data: Vec::new(),
     offset: 0,

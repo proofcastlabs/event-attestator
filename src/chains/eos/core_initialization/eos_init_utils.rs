@@ -1,5 +1,6 @@
 use crate::{
     chains::eos::{
+        eos_constants::EOS_CORE_IS_INITIALIZED_JSON,
         eos_crypto::eos_private_key::EosPrivateKey,
         eos_database_utils::{
             get_eos_schedule_from_db,
@@ -220,11 +221,8 @@ where
         .and(Ok(state))
 }
 
-pub fn get_eos_init_output<D>(_state: EosState<D>) -> Result<String>
-where
-    D: DatabaseInterface,
-{
-    Ok("{eos_core_initialized:true}".to_string())
+pub fn get_eos_init_output<D: DatabaseInterface>(_state: EosState<D>) -> Result<String> {
+    Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string())
 }
 
 pub fn put_eos_account_name_in_db_and_return_state<D>(account_name: &str, state: EosState<D>) -> Result<EosState<D>>

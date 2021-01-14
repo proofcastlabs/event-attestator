@@ -7,6 +7,7 @@ use crate::{
             get_eth_core_init_output_json::EthInitializationOutput,
             initialize_eth_core::initialize_eth_core,
         },
+        eth_constants::ETH_CORE_IS_INITIALIZED_JSON,
         eth_state::EthState,
     },
     traits::DatabaseInterface,
@@ -22,7 +23,7 @@ pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
     bytecode_path: &str,
 ) -> Result<String> {
     check_for_existence_of_eth_contract_byte_code(bytecode_path).and_then(|_| match is_eth_core_initialized(&db) {
-        true => Ok("{eth_core_initialized:true}".to_string()),
+        true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
         false => initialize_eth_core(
             block_json,
             chain_id,
