@@ -63,12 +63,6 @@ impl Erc20OnEosPegInInfo {
 pub struct Erc20OnEosPegInInfos(pub Vec<Erc20OnEosPegInInfo>);
 
 impl Erc20OnEosPegInInfos {
-    pub fn sum(&self) -> U256 {
-        self.0
-            .iter()
-            .fold(U256::zero(), |acc, params| acc + params.token_amount)
-    }
-
     pub fn filter_out_zero_eos_values(&self) -> Result<Self> {
         Ok(Self::new(
             self.iter()

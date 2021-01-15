@@ -11,17 +11,12 @@ use crate::{
 use derive_more::{Constructor, Deref, DerefMut};
 use eos_primitives::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, U256 as EthAmount};
-use serde_json::Value as JsonValue;
 use std::{cmp::Ordering, str::FromStr};
 
 #[derive(Debug, Clone, Eq, PartialEq, Constructor, Deref, DerefMut)]
 pub struct EosEthTokenDictionary(pub Vec<EosEthTokenDictionaryEntry>);
 
 impl EosEthTokenDictionary {
-    pub fn from_str(json_string: &str) -> Result<Self> {
-        Self::from_json(&EosEthTokenDictionaryJson::from_str(json_string)?)
-    }
-
     pub fn to_json(&self) -> Result<EosEthTokenDictionaryJson> {
         Ok(EosEthTokenDictionaryJson::new(
             self.iter().map(|entry| entry.to_json()).collect(),
@@ -152,11 +147,6 @@ impl EosEthTokenDictionary {
             .collect()
     }
 
-    pub fn convert_eos_asset_to_eth_amount(&self, address: &EthAddress, eos_asset: &str) -> Result<EthAmount> {
-        self.get_entry_via_eth_token_address(address)
-            .and_then(|entry| entry.convert_eos_asset_to_eth_amount(eos_asset))
-    }
-
     pub fn convert_u256_to_eos_asset_string(&self, address: &EthAddress, eth_amount: &EthAmount) -> Result<String> {
         self.get_entry_via_eth_token_address(address)
             .and_then(|entry| entry.convert_u256_to_eos_asset_string(eth_amount))
@@ -173,17 +163,6 @@ impl EosEthTokenDictionaryJson {
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         Ok(serde_json::from_slice(bytes)?)
-    }
-
-    pub fn from_str(json_string: &str) -> Result<Self> {
-        let intermediary: Vec<JsonValue> = serde_json::from_str(json_string)?;
-        Ok(Self::new(
-            intermediary
-                .iter()
-                .map(|json_value| json_value.to_string())
-                .map(|entry_json_string| EosEthTokenDictionaryEntryJson::from_str(&entry_json_string))
-                .collect::<Result<Vec<EosEthTokenDictionaryEntryJson>>>()?,
-        ))
     }
 }
 
@@ -218,14 +197,6 @@ impl EosEthTokenDictionaryEntry {
             eos_address: json.eos_address.to_string(),
             eth_address: EthAddress::from_slice(&hex::decode(&maybe_strip_hex_prefix(&json.eth_address)?)?),
         })
-    }
-
-    pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(&self)?)
-    }
-
-    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
-        Self::from_json(&serde_json::from_slice(bytes)?)
     }
 
     pub fn from_str(json_string: &str) -> Result<Self> {
@@ -308,10 +279,6 @@ pub struct EosEthTokenDictionaryEntryJson {
 }
 
 impl EosEthTokenDictionaryEntryJson {
-    pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(&self)?)
-    }
-
     pub fn from_str(json_string: &str) -> Result<Self> {
         match serde_json::from_str(json_string) {
             Ok(result) => Ok(result),
@@ -535,10 +502,6 @@ mod tests {
         "{\"eos_token_decimals\":9,\"eth_token_decimals\":18,\"eos_symbol\":\"SYM\",\"eth_symbol\":\"SYM\",\"eos_address\":\"account_name\",\"eth_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"}".to_string()
     }
 
-    fn get_sample_dictionary_json_string() -> String {
-        "[{\"eos_token_decimals\":9,\"eth_token_decimals\":18,\"eos_symbol\":\"SYM\",\"eth_symbol\":\"SYM2\",\"eos_address\":\"somename1\",\"eth_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"},{\"eos_token_decimals\":9,\"eth_token_decimals\":18,\"eos_symbol\":\"SYM\",\"eth_symbol\":\"SYM2\",\"eos_address\":\"somename2\",\"eth_address\":\"edB86cd455ef3ca43f0e227e00469C3bDFA40628\"}]".to_string()
-    }
-
     #[test]
     fn should_get_dictionary_entry_json_from_str() {
         let json_string = get_sample_dictionary_entry_json_string();
@@ -550,20 +513,6 @@ mod tests {
     fn should_get_dictionary_entry_from_str() {
         let json_string = get_sample_dictionary_entry_json_string();
         let result = EosEthTokenDictionaryEntry::from_str(&json_string);
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn should_get_dictionary_json_from_str() {
-        let json_string = get_sample_dictionary_json_string();
-        let result = EosEthTokenDictionaryJson::from_str(&json_string);
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn should_get_dictionary_from_str() {
-        let json_string = get_sample_dictionary_json_string();
-        let result = EosEthTokenDictionary::from_str(&json_string);
         assert!(result.is_ok());
     }
 
