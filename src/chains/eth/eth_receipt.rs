@@ -1,14 +1,10 @@
 use crate::{
-    chains::{
-        eos::eos_eth_token_dictionary::EosEthTokenDictionary,
-        eth::{
-            eth_log::{EthLog, EthLogJson, EthLogs},
-            eth_utils::{convert_hex_to_address, convert_hex_to_h256, convert_json_value_to_string},
-            nibble_utils::{get_nibbles_from_bytes, Nibbles},
-            trie::{put_in_trie_recursively, Trie},
-        },
+    chains::eth::{
+        eth_log::{EthLog, EthLogJson, EthLogs},
+        eth_utils::{convert_hex_to_address, convert_hex_to_h256, convert_json_value_to_string},
+        nibble_utils::{get_nibbles_from_bytes, Nibbles},
+        trie::{put_in_trie_recursively, Trie},
     },
-    erc20_on_eos::eth::peg_in_info::{Erc20OnEosPegInInfo, Erc20OnEosPegInInfos},
     types::{Bytes, Result},
 };
 use derive_more::{Constructor, Deref, From, Into};
@@ -229,51 +225,6 @@ impl EthReceipt {
             .map(|bytes| (get_nibbles_from_bytes(self.rlp_encode_transaction_index()), bytes))
     }
 
-    pub fn contains_supported_erc20_peg_in(&self, eos_eth_token_dictionary: &EosEthTokenDictionary) -> bool {
-        self.get_supported_erc20_peg_in_logs(eos_eth_token_dictionary).len() > 0
-    }
-
-    // TODO Move this logic to the `erc20_on_eos` dir!
-    fn get_supported_erc20_peg_in_logs(&self, eos_eth_token_dictionary: &EosEthTokenDictionary) -> EthLogs {
-        EthLogs::new(
-            self.logs
-                .iter()
-                .filter(|log| matches!(log.is_supported_erc20_peg_in(eos_eth_token_dictionary), Ok(true)))
-                .cloned()
-                .collect(),
-        )
-    }
-
-    // TODO Move this logic to the `erc20_on_eos` dir!
-    pub fn get_erc20_on_eos_peg_in_infos(
-        &self,
-        eos_eth_token_dictionary: &EosEthTokenDictionary,
-    ) -> Result<Erc20OnEosPegInInfos> {
-        info!("✔ Getting `erc20-on-eos` peg in infos from receipt...");
-        Ok(Erc20OnEosPegInInfos::new(
-            self.get_supported_erc20_peg_in_logs(eos_eth_token_dictionary)
-                .iter()
-                .map(|log| {
-                    let token_contract_address = log.get_erc20_on_eos_peg_in_token_contract_address()?;
-                    let eth_amount = log.get_erc20_on_eos_peg_in_amount()?;
-                    let peg_in_info = Erc20OnEosPegInInfo::new(
-                        eth_amount,
-                        log.get_erc20_on_eos_peg_in_token_sender_address()?,
-                        token_contract_address,
-                        log.get_erc20_on_eos_peg_in_eos_address()?,
-                        self.transaction_hash,
-                        eos_eth_token_dictionary
-                            .get_eos_account_name_from_eth_token_address(&token_contract_address)?,
-                        eos_eth_token_dictionary
-                            .convert_u256_to_eos_asset_string(&token_contract_address, &eth_amount)?,
-                    );
-                    info!("✔ Parsed peg-in info: {:?}", peg_in_info);
-                    Ok(peg_in_info)
-                })
-                .collect::<Result<Vec<Erc20OnEosPegInInfo>>>()?,
-        ))
-    }
-
     pub fn get_logs_from_address_with_topic(&self, address: &EthAddress, topic: &EthHash) -> EthLogs {
         EthLogs::new(
             self.logs
@@ -323,26 +274,15 @@ impl Encodable for EthReceipt {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::{
-        eos::{
-            eos_eth_token_dictionary::EosEthTokenDictionaryEntry,
-            eos_test_utils::get_sample_eos_eth_token_dictionary,
-        },
-        eth::{
-            eth_log::EthLog,
-            eth_test_utils::{
-                get_expected_receipt,
-                get_sample_contract_address,
-                get_sample_contract_topic,
-                get_sample_erc20_on_eos_peg_in_info,
-                get_sample_eth_submission_material,
-                get_sample_eth_submission_material_json,
-                get_sample_receipt_with_desired_topic,
-                get_sample_receipt_with_erc20_peg_in_event,
-                get_valid_state_with_invalid_block_and_receipts,
-                SAMPLE_RECEIPT_INDEX,
-            },
-        },
+    use crate::chains::eth::eth_test_utils::{
+        get_expected_receipt,
+        get_sample_contract_address,
+        get_sample_contract_topic,
+        get_sample_eth_submission_material,
+        get_sample_eth_submission_material_json,
+        get_sample_receipt_with_desired_topic,
+        get_valid_state_with_invalid_block_and_receipts,
+        SAMPLE_RECEIPT_INDEX,
     };
 
     #[test]
@@ -471,74 +411,6 @@ mod tests {
         let block_and_receipts = state.get_eth_submission_material().unwrap();
         let result = block_and_receipts.receipts_are_valid().unwrap();
         assert!(!result);
-    }
-
-    #[test]
-    fn should_return_true_if_receipt_contains_log_with_erc20_peg_in() {
-        let dictionary = get_sample_eos_eth_token_dictionary();
-        let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = receipt.contains_supported_erc20_peg_in(&dictionary);
-        assert!(result);
-    }
-
-    #[test]
-    fn should_return_false_if_receipt_does_not_contain_log_with_erc20_peg_in() {
-        let dictionary = EosEthTokenDictionary::new(vec![]);
-        let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = receipt.contains_supported_erc20_peg_in(&dictionary);
-        assert!(!result);
-    }
-
-    #[test]
-    fn should_get_get_erc20_redeem_infos_from_receipt() {
-        let eth_token_decimals = 18;
-        let eos_token_decimals = 9;
-        let eth_symbol = "SAM".to_string();
-        let eos_symbol = "SAM".to_string();
-        let token_name = "SampleToken".to_string();
-        let token_address = EthAddress::from_slice(&hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
-        let eos_eth_token_dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
-            eth_token_decimals,
-            eos_token_decimals,
-            eth_symbol,
-            eos_symbol,
-            token_name,
-            token_address,
-        )]);
-        let expected_num_results = 1;
-        let expected_result = get_sample_erc20_on_eos_peg_in_info().unwrap();
-        let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = receipt
-            .get_erc20_on_eos_peg_in_infos(&eos_eth_token_dictionary)
-            .unwrap();
-        assert_eq!(result.len(), expected_num_results);
-        assert_eq!(result.0[0], expected_result);
-    }
-
-    #[test]
-    fn should_not_get_get_erc20_redeem_infos_from_receipt_if_token_not_supported() {
-        let eos_eth_token_dictionary = EosEthTokenDictionary::new(vec![]);
-        let expected_num_results = 0;
-        let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = receipt
-            .get_erc20_on_eos_peg_in_infos(&eos_eth_token_dictionary)
-            .unwrap();
-        assert_eq!(result.len(), expected_num_results);
-    }
-
-    #[test]
-    fn should_get_supported_erc20_peg_in_logs() {
-        let expected_result = EthLogs::new(vec![EthLog {
-            address: EthAddress::from_slice(&hex::decode("d0a3d2d3d19a6ac58e60254fd606ec766638c3ba").unwrap()),
-            topics: vec![EthHash::from_slice(&hex::decode("42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36").unwrap())],
-            data: hex::decode("0000000000000000000000009f57cb2a4f462a5258a49e88b4331068a391de66000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac00000000000000000000000000000000000000000000000000000000000005390000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000c616e656f73616464726573730000000000000000000000000000000000000000").unwrap(),
-        }]);
-        let expected_num_logs = 1;
-        let dictionary = get_sample_eos_eth_token_dictionary();
-        let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = receipt.get_supported_erc20_peg_in_logs(&dictionary);
-        assert_eq!(result.len(), expected_num_logs);
-        assert_eq!(result, expected_result);
     }
 
     #[test]

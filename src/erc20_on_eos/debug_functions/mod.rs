@@ -76,9 +76,12 @@ use crate::{
             sign_normal_eth_txs::maybe_sign_normal_eth_txs_and_add_to_state,
         },
         eth::{
-            filter_receipts_in_state::filter_receipts_for_erc20_on_eos_peg_in_events_in_state,
             get_output_json::get_output_json,
-            peg_in_info::maybe_filter_peg_in_info_in_state,
+            peg_in_info::{
+                filter_out_zero_value_peg_ins_from_state,
+                filter_submission_material_for_peg_in_events_in_state,
+                Erc20OnEosPegInInfos,
+            },
             sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
         },
     },
@@ -350,7 +353,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
         .and_then(validate_block_in_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(validate_receipts_in_state)
-        .and_then(filter_receipts_for_erc20_on_eos_peg_in_events_in_state)
+        .and_then(filter_submission_material_for_peg_in_events_in_state)
         .and_then(|state| {
             let submission_material = state.get_eth_submission_material()?.clone();
             match submission_material.receipts.is_empty() {
@@ -364,12 +367,14 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
                         submission_material.get_block_number()?
                     );
                     EosEthTokenDictionary::get_from_db(&state.db)
-                        .and_then(|accounts| submission_material.get_erc20_on_eos_peg_in_infos(&accounts))
+                        .and_then(|token_dictionary| {
+                            Erc20OnEosPegInInfos::from_submission_material(&submission_material, &token_dictionary)
+                        })
                         .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
                 },
             }
         })
-        .and_then(maybe_filter_peg_in_info_in_state)
+        .and_then(filter_out_zero_value_peg_ins_from_state)
         .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
         .and_then(get_output_json)
 }

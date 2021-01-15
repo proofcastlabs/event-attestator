@@ -24,10 +24,10 @@ use crate::{
     erc20_on_eos::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
-            filter_receipts_in_state::filter_receipts_for_erc20_on_eos_peg_in_events_in_state,
             get_output_json::get_output_json,
             peg_in_info::{
-                maybe_filter_peg_in_info_in_state,
+                filter_out_zero_value_peg_ins_from_state,
+                filter_submission_material_for_peg_in_events_in_state,
                 maybe_parse_peg_in_info_from_canon_block_and_add_to_state,
             },
             sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
@@ -53,14 +53,14 @@ pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(check_for_parent_of_block_in_state)
         .and_then(validate_receipts_in_state)
-        .and_then(filter_receipts_for_erc20_on_eos_peg_in_events_in_state)
+        .and_then(filter_submission_material_for_peg_in_events_in_state)
         .and_then(maybe_add_block_and_receipts_to_db_and_return_state)
         .and_then(maybe_update_latest_block_hash_and_return_state)
         .and_then(maybe_update_eth_canon_block_hash_and_return_state)
         .and_then(maybe_update_eth_tail_block_hash_and_return_state)
         .and_then(maybe_update_eth_linker_hash_and_return_state)
         .and_then(maybe_parse_peg_in_info_from_canon_block_and_add_to_state)
-        .and_then(maybe_filter_peg_in_info_in_state)
+        .and_then(filter_out_zero_value_peg_ins_from_state)
         .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
         .and_then(maybe_increment_eos_account_nonce_and_return_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)
