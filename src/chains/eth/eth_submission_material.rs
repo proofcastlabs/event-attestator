@@ -1,5 +1,4 @@
 use crate::{
-    btc_on_eth::eth::redeem_info::{BtcOnEthRedeemInfo, BtcOnEthRedeemInfos},
     chains::{
         eos::eos_eth_token_dictionary::EosEthTokenDictionary,
         eth::{
@@ -241,17 +240,6 @@ impl EthSubmissionMaterial {
         })
     }
 
-    pub fn get_btc_on_eth_redeem_infos(&self) -> Result<BtcOnEthRedeemInfos> {
-        info!("✔ Getting `btc-on-eth` redeem infos from submission material...");
-        Ok(BtcOnEthRedeemInfos::new(
-            self.get_receipts()
-                .iter()
-                .map(|receipt| receipt.get_btc_on_eth_redeem_infos())
-                .collect::<Result<Vec<Vec<BtcOnEthRedeemInfo>>>>()?
-                .concat(),
-        ))
-    }
-
     pub fn get_erc20_on_eos_peg_in_infos(
         &self,
         eos_eth_token_dictionary: &EosEthTokenDictionary,
@@ -349,7 +337,6 @@ mod tests {
             },
         },
     };
-    use std::str::FromStr;
 
     #[test]
     fn should_parse_eth_submission_material_json_string() {
@@ -455,29 +442,6 @@ mod tests {
         let block_and_receipts = get_sample_eth_submission_material();
         let result = block_and_receipts.receipts_are_valid().unwrap();
         assert!(result);
-    }
-
-    fn get_sample_block_with_redeem() -> EthSubmissionMaterial {
-        get_sample_eth_submission_material_n(4).unwrap()
-    }
-
-    fn get_tx_hash_of_redeem_tx() -> &'static str {
-        "442612aba789ce873bb3804ff62ced770dcecb07d19ddcf9b651c357eebaed40"
-    }
-
-    #[test]
-    fn should_parse_btc_on_eth_redeem_params_from_block() {
-        let result = get_sample_block_with_redeem().get_btc_on_eth_redeem_infos().unwrap();
-        let expected_result = BtcOnEthRedeemInfo {
-            amount: U256::from_dec_str("666").unwrap(),
-            from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),
-            recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
-            originating_tx_hash: EthHash::from_slice(&hex::decode(get_tx_hash_of_redeem_tx()).unwrap()[..]),
-        };
-        assert_eq!(expected_result.from, result.0[0].from);
-        assert_eq!(expected_result.amount, result.0[0].amount);
-        assert_eq!(expected_result.recipient, result.0[0].recipient);
-        assert_eq!(expected_result.originating_tx_hash, result.0[0].originating_tx_hash);
     }
 
     #[test]

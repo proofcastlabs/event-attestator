@@ -8,7 +8,7 @@ use crate::{
             filter_redeem_infos_in_state::maybe_filter_redeem_infos_in_state,
             get_eth_output_json::get_eth_output_json,
             increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
-            parse_redeem_infos::maybe_parse_redeem_infos_and_add_to_state,
+            redeem_info::maybe_parse_redeem_infos_and_add_to_state,
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db_and_return_state,
         },
     },

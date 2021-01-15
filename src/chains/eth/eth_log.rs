@@ -1,23 +1,15 @@
 use crate::{
-    btc_on_eth::utils::convert_ptoken_to_satoshis,
     chains::{
         eos::eos_eth_token_dictionary::EosEthTokenDictionary,
         eth::{
-            eth_constants::{
-                BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
-                ERC20_PEG_IN_EVENT_TOPIC_HEX,
-                ETH_ADDRESS_SIZE_IN_BYTES,
-                ETH_WORD_SIZE_IN_BYTES,
-                LOG_DATA_BTC_ADDRESS_START_INDEX,
-            },
+            eth_constants::{ERC20_PEG_IN_EVENT_TOPIC_HEX, ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
             eth_receipt::EthReceiptJson,
             eth_utils::{convert_hex_strings_to_h256s, convert_hex_to_address, convert_hex_to_bytes},
         },
     },
-    constants::{SAFE_BTC_ADDRESS, SAFE_EOS_ADDRESS},
+    constants::SAFE_EOS_ADDRESS,
     types::{Bytes, Result},
 };
-use bitcoin::util::address::Address as BtcAddress;
 use derive_more::{Constructor, Deref};
 use eos_primitives::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, Bloom, BloomInput, H256 as EthHash, U256};
@@ -86,12 +78,6 @@ impl EthLog {
         self.is_from_address(address) && self.contains_topic(topic)
     }
 
-    pub fn is_btc_on_eth_redeem(&self) -> Result<bool> {
-        Ok(self.contains_topic(&EthHash::from_slice(
-            &hex::decode(&BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX)?[..],
-        )))
-    }
-
     fn is_erc20_peg_in(&self) -> Result<bool> {
         Ok(self.contains_topic(&EthHash::from_slice(&hex::decode(&ERC20_PEG_IN_EVENT_TOPIC_HEX)?[..])))
     }
@@ -105,57 +91,12 @@ impl EthLog {
         }
     }
 
-    fn check_is_btc_on_eth_redeem(&self) -> Result<()> {
-        trace!("✔ Checking if log is a `btc_on_eth` redeem...");
-        match self.is_btc_on_eth_redeem()? {
-            true => Ok(()),
-            false => Err("✘ Log is not from a pToken redeem event!".into()),
-        }
-    }
-
     fn check_is_erc20_peg_in(&self) -> Result<()> {
         trace!("✔ Checking if log is a erc20 peg in...");
         match self.is_erc20_peg_in()? {
             true => Ok(()),
             false => Err("✘ Log is not from a erc20 peg in event!".into()),
         }
-    }
-
-    pub fn get_btc_on_eth_redeem_amount(&self) -> Result<U256> {
-        self.check_is_btc_on_eth_redeem().and_then(|_| {
-            info!("✔ Parsing redeem amount from log...");
-            if self.data.len() >= ETH_WORD_SIZE_IN_BYTES {
-                Ok(U256::from(convert_ptoken_to_satoshis(U256::from(
-                    &self.data[..ETH_WORD_SIZE_IN_BYTES],
-                ))))
-            } else {
-                Err("✘ Not enough bytes in log data to get redeem amount!".into())
-            }
-        })
-    }
-
-    pub fn get_btc_on_eth_btc_redeem_address(&self) -> Result<String> {
-        self.check_is_btc_on_eth_redeem().map(|_| {
-            info!("✔ Parsing BTC address from log...");
-            let default_address_error_string = format!("✔ Defaulting to safe BTC address: {}!", SAFE_BTC_ADDRESS);
-            let maybe_btc_address = self.data[LOG_DATA_BTC_ADDRESS_START_INDEX..]
-                .iter()
-                .filter(|byte| *byte != &0u8)
-                .map(|byte| *byte as char)
-                .collect::<String>();
-            info!("✔ Maybe BTC address parsed from log: {}", maybe_btc_address);
-            match BtcAddress::from_str(&maybe_btc_address) {
-                Ok(address) => {
-                    info!("✔ Good BTC address parsed from log: {}", address);
-                    address.to_string()
-                },
-                Err(_) => {
-                    info!("✔ Failed to parse BTC address from log!");
-                    info!("{}", default_address_error_string);
-                    SAFE_BTC_ADDRESS.to_string()
-                },
-            }
-        })
     }
 
     pub fn get_erc20_on_eos_peg_in_amount(&self) -> Result<U256> {
@@ -285,25 +226,18 @@ mod tests {
             get_sample_contract_address,
             get_sample_contract_topic,
             get_sample_eth_submission_material_json,
-            get_sample_log_n,
             get_sample_log_with_desired_address,
             get_sample_log_with_desired_topic,
             get_sample_log_with_erc20_peg_in_event,
             get_sample_log_with_erc20_peg_in_event_2,
-            get_sample_log_with_erc777_redeem,
             get_sample_log_without_desired_address,
             get_sample_logs_with_desired_topic,
             get_sample_logs_without_desired_topic,
             get_sample_receipt_with_desired_address,
-            get_sample_receipt_with_erc777_redeem,
             get_sample_receipt_without_desired_address,
             SAMPLE_RECEIPT_INDEX,
         },
     };
-
-    fn get_sample_log_with_p2sh_redeem() -> EthLog {
-        get_sample_log_n(5, 23, 2).unwrap()
-    }
 
     #[test]
     fn should_get_logs_bloom_from_logs() {
@@ -406,44 +340,6 @@ mod tests {
     }
 
     #[test]
-    fn redeem_log_should_be_redeem() {
-        let result = get_sample_log_with_erc777_redeem().is_btc_on_eth_redeem().unwrap();
-        assert!(result);
-    }
-
-    #[test]
-    fn non_redeem_log_should_not_be_redeem() {
-        let result = &get_sample_receipt_with_erc777_redeem().logs.0[1]
-            .is_btc_on_eth_redeem()
-            .unwrap();
-        assert!(!result);
-    }
-
-    #[test]
-    fn should_parse_redeem_amount_from_log() {
-        let expected_result = U256::from_dec_str("666").unwrap();
-        let log = get_sample_log_with_erc777_redeem();
-        let result = log.get_btc_on_eth_redeem_amount().unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_parse_btc_address_from_log() {
-        let expected_result = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
-        let log = get_sample_log_with_erc777_redeem();
-        let result = log.get_btc_on_eth_btc_redeem_address().unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_parse_p2sh_btc_address_from_log() {
-        let expected_result = "2MyT7cyDnsHFwkhGDJa3LhayYtPN3cSE7wx";
-        let log = get_sample_log_with_p2sh_redeem();
-        let result = log.get_btc_on_eth_btc_redeem_address().unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
     fn check_is_erc20_peg_in_should_be_ok() {
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = log.check_is_erc20_peg_in();
@@ -455,13 +351,6 @@ mod tests {
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = log.is_erc20_peg_in().unwrap();
         assert!(result);
-    }
-
-    #[test]
-    fn erc20_log_with_peg_in_should_not_be_a_btc_on_eth_redeem() {
-        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = log.is_btc_on_eth_redeem().unwrap();
-        assert!(!result);
     }
 
     #[test]

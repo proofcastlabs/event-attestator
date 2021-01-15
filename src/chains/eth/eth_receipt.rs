@@ -1,5 +1,4 @@
 use crate::{
-    btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfo,
     chains::{
         eos::eos_eth_token_dictionary::EosEthTokenDictionary,
         eth::{
@@ -230,24 +229,6 @@ impl EthReceipt {
             .map(|bytes| (get_nibbles_from_bytes(self.rlp_encode_transaction_index()), bytes))
     }
 
-    // TODO Move this logic to the `btc_on_eth` dir!
-    pub fn get_btc_on_eth_redeem_infos(&self) -> Result<Vec<BtcOnEthRedeemInfo>> {
-        info!("✔ Getting redeem `btc_on_eth` redeem infos from receipt...");
-        self.logs
-            .0
-            .iter()
-            .filter(|log| matches!(log.is_btc_on_eth_redeem(), Ok(true)))
-            .map(|log| {
-                Ok(BtcOnEthRedeemInfo::new(
-                    log.get_btc_on_eth_redeem_amount()?,
-                    self.from,
-                    log.get_btc_on_eth_btc_redeem_address()?,
-                    self.transaction_hash,
-                ))
-            })
-            .collect()
-    }
-
     pub fn contains_supported_erc20_peg_in(&self, eos_eth_token_dictionary: &EosEthTokenDictionary) -> bool {
         self.get_supported_erc20_peg_in_logs(eos_eth_token_dictionary).len() > 0
     }
@@ -349,7 +330,6 @@ mod tests {
         },
         eth::{
             eth_log::EthLog,
-            eth_submission_material::EthSubmissionMaterial,
             eth_test_utils::{
                 get_expected_receipt,
                 get_sample_contract_address,
@@ -357,7 +337,6 @@ mod tests {
                 get_sample_erc20_on_eos_peg_in_info,
                 get_sample_eth_submission_material,
                 get_sample_eth_submission_material_json,
-                get_sample_eth_submission_material_n,
                 get_sample_receipt_with_desired_topic,
                 get_sample_receipt_with_erc20_peg_in_event,
                 get_valid_state_with_invalid_block_and_receipts,
@@ -365,34 +344,6 @@ mod tests {
             },
         },
     };
-    use std::str::FromStr;
-
-    fn get_sample_block_with_redeem() -> EthSubmissionMaterial {
-        get_sample_eth_submission_material_n(4).unwrap()
-    }
-
-    fn get_tx_hash_of_redeem_tx() -> &'static str {
-        "442612aba789ce873bb3804ff62ced770dcecb07d19ddcf9b651c357eebaed40"
-    }
-
-    fn get_sample_receipt_with_redeem() -> EthReceipt {
-        let hash = EthHash::from_str(get_tx_hash_of_redeem_tx()).unwrap();
-        get_sample_block_with_redeem()
-            .receipts
-            .0
-            .iter()
-            .filter(|receipt| receipt.transaction_hash == hash)
-            .collect::<Vec<&EthReceipt>>()[0]
-            .clone()
-    }
-
-    fn get_expected_redeem_params() -> BtcOnEthRedeemInfo {
-        let amount = U256::from_dec_str("666").unwrap();
-        let from = EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap();
-        let recipient = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string();
-        let originating_tx_hash = EthHash::from_slice(&hex::decode(get_tx_hash_of_redeem_tx()).unwrap()[..]);
-        BtcOnEthRedeemInfo::new(amount, from, recipient, originating_tx_hash)
-    }
 
     #[test]
     fn should_encode_eth_receipt_as_json() {
@@ -520,14 +471,6 @@ mod tests {
         let block_and_receipts = state.get_eth_submission_material().unwrap();
         let result = block_and_receipts.receipts_are_valid().unwrap();
         assert!(!result);
-    }
-
-    #[test]
-    fn should_parse_btc_on_eth_redeem_params_from_receipt() {
-        let expected_num_results = 1;
-        let result = get_sample_receipt_with_redeem().get_btc_on_eth_redeem_infos().unwrap();
-        assert_eq!(result.len(), expected_num_results);
-        assert_eq!(result[0], get_expected_redeem_params());
     }
 
     #[test]
