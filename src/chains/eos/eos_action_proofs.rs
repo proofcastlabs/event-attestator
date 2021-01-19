@@ -119,7 +119,7 @@ impl EosActionProof {
     // TODO Impl this on the `Erc20OnEosRedeemInfo` type instead of here!
     pub fn to_erc20_on_eos_redeem_info(&self, dictionary: &EosEthTokenDictionary) -> Result<Erc20OnEosRedeemInfo> {
         dictionary
-            .get_entry_via_eos_address(&self.get_action_eos_account().to_string())
+            .get_entry_via_eos_address(&self.get_action_eos_account())
             .and_then(|entry| {
                 let amount = self.get_erc20_on_eos_eth_redeem_amount(&entry)?;
                 let eos_tx_amount = entry.convert_u256_to_eos_asset_string(&amount)?;

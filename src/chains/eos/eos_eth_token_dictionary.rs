@@ -117,8 +117,8 @@ impl EosEthTokenDictionary {
         }
     }
 
-    pub fn get_entry_via_eos_address(&self, eos_address: &str) -> Result<EosEthTokenDictionaryEntry> {
-        match self.iter().find(|entry| entry.eos_address == eos_address) {
+    pub fn get_entry_via_eos_address(&self, eos_address: &EosAccountName) -> Result<EosEthTokenDictionaryEntry> {
+        match self.iter().find(|entry| entry.eos_address == eos_address.to_string()) {
             Some(entry) => Ok(entry.clone()),
             None => Err(format!(
                 "No `EosEthTokenDictionaryEntry` exists with EOS address: {}",
@@ -650,8 +650,8 @@ mod tests {
     fn should_get_entry_via_eos_address() {
         let dictionary = get_sample_eos_eth_token_dictionary();
         let expected_result = get_sample_eos_eth_token_dictionary_entry_2();
-        let eos_address = "SampleToken_2";
-        let result = dictionary.get_entry_via_eos_address(eos_address).unwrap();
+        let eos_address = EosAccountName::from_str("sampletokens").unwrap();
+        let result = dictionary.get_entry_via_eos_address(&eos_address).unwrap();
         assert_eq!(result, expected_result);
     }
 }

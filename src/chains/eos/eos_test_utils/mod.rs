@@ -418,7 +418,7 @@ pub fn get_sample_eos_eth_token_dictionary_entry_2() -> EosEthTokenDictionaryEnt
         9,
         "SAM2".to_string(),
         "SAM2".to_string(),
-        "SampleToken_2".to_string(),
+        "sampletokens".to_string(),
         EthAddress::from_slice(&hex::decode(&token_address_hex).unwrap()),
     )
 }
