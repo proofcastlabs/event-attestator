@@ -2,6 +2,7 @@ use crate::{
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfo,
     chains::eos::{
         eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
+        eos_global_sequences::GlobalSequence,
         eos_types::MerkleProof,
         eos_utils::convert_hex_to_checksum256,
         parse_eos_action_receipts::parse_eos_action_receipt_json,
@@ -20,6 +21,7 @@ use eos_primitives::{
     Checksum256,
     PermissionLevel,
     PermissionLevels,
+    SerializeData,
     Symbol as EosSymbol,
 };
 use ethereum_types::{Address as EthAddress, U256};
@@ -39,6 +41,14 @@ pub struct EosActionProof {
 }
 
 impl EosActionProof {
+    pub fn get_global_sequence(&self) -> GlobalSequence {
+        self.action_receipt.global_sequence
+    }
+
+    pub fn get_serialized_action(&self) -> Bytes {
+        self.action.to_serialize_data()
+    }
+
     #[allow(dead_code)] // TODO Use when checking for correct symbol!
     fn get_eos_symbol(&self) -> Result<EosSymbol> {
         Ok(EosSymbol::new(convert_bytes_to_u64(
