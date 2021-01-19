@@ -24,6 +24,7 @@ use crate::{
             },
             eos_global_sequences::maybe_add_global_sequences_to_processed_list_and_return_state,
             eos_state::EosState,
+            eos_submission_material::parse_submission_material_and_add_to_state,
             filter_action_proofs::{
                 maybe_filter_duplicate_proofs_from_state,
                 maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
@@ -36,7 +37,6 @@ use crate::{
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
             get_eos_incremerkle::get_incremerkle_and_add_to_state,
             get_processed_tx_ids::get_processed_tx_ids_and_add_to_state,
-            parse_submission_material::parse_submission_material_and_add_to_state,
             save_incremerkle::save_incremerkle_from_state_to_db,
             save_latest_block_id::save_latest_block_id_to_db,
             save_latest_block_num::save_latest_block_num_to_db,

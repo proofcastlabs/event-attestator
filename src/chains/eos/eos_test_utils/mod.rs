@@ -6,6 +6,7 @@ use crate::{
         eos_crypto::{eos_private_key::EosPrivateKey, eos_public_key::EosPublicKey, eos_signature::EosSignature},
         eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry, EosEthTokenDictionaryJson},
         eos_merkle_utils::Incremerkle,
+        eos_submission_material::{EosSubmissionMaterial, EosSubmissionMaterialJson},
         eos_types::{Checksum256s, EosBlockHeaderJson},
         eos_utils::convert_hex_to_checksum256,
         parse_eos_schedule::{
@@ -16,13 +17,6 @@ use crate::{
             parse_v2_schedule_string_to_v2_schedule_json,
             EosProducerScheduleJsonV1,
             EosProducerScheduleJsonV2,
-        },
-        parse_submission_material::{
-            parse_eos_block_header_from_json,
-            parse_eos_submission_material_string_to_json,
-            parse_eos_submission_material_string_to_struct,
-            EosSubmissionMaterial,
-            EosSubmissionMaterialJson,
         },
         protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
     },
@@ -149,7 +143,7 @@ impl EosInitAndSubsequentBlocksJson {
     }
 
     pub fn get_block_n(&self, n: usize) -> Result<EosBlockHeader> {
-        parse_eos_block_header_from_json(&self.get_block_json_n(n)?)
+        EosSubmissionMaterial::parse_eos_block_header_from_json(&self.get_block_json_n(n)?)
     }
 
     pub fn get_producer_signature_for_block_n(&self, n: usize) -> Result<String> {
@@ -292,11 +286,11 @@ pub fn get_sample_v2_schedule() -> Result<EosProducerScheduleV2> {
 }
 
 pub fn get_sample_eos_submission_material_n(n: usize) -> EosSubmissionMaterial {
-    parse_eos_submission_material_string_to_struct(&get_sample_eos_submission_material_string_n(n).unwrap()).unwrap()
+    EosSubmissionMaterial::from_str(&get_sample_eos_submission_material_string_n(n).unwrap()).unwrap()
 }
 
 pub fn get_sample_eos_submission_material_json_n(n: usize) -> EosSubmissionMaterialJson {
-    parse_eos_submission_material_string_to_json(&get_sample_eos_submission_material_string_n(n).unwrap()).unwrap()
+    EosSubmissionMaterialJson::from_str(&get_sample_eos_submission_material_string_n(n).unwrap()).unwrap()
 }
 
 pub fn get_sample_eos_submission_material_string_n(num: usize) -> Result<String> {

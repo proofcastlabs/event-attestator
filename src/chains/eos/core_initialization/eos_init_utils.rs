@@ -22,10 +22,10 @@ use crate::{
         eos_global_sequences::ProcessedGlobalSequences,
         eos_merkle_utils::Incremerkle,
         eos_state::EosState,
+        eos_submission_material::EosSubmissionMaterial,
         eos_types::{Checksum256s, EosBlockHeaderJson, EosKnownSchedules},
         eos_utils::convert_hex_to_checksum256,
         parse_eos_schedule::{convert_v2_schedule_json_to_v2_schedule, EosProducerScheduleJsonV2},
-        parse_submission_material::parse_eos_block_header_from_json,
         protocol_features::{EnabledFeatures, WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH},
         validate_signature::check_block_signature_is_valid,
     },
@@ -59,7 +59,7 @@ impl EosInitJson {
             Some(features) => features.contains(&hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)),
         };
         let schedule = convert_v2_schedule_json_to_v2_schedule(&self.active_schedule).unwrap();
-        let block_header = parse_eos_block_header_from_json(&self.block).unwrap();
+        let block_header = EosSubmissionMaterial::parse_eos_block_header_from_json(&self.block).unwrap();
         let blockroot_merkle = self
             .blockroot_merkle
             .iter()
@@ -124,7 +124,7 @@ where
                 .is_enabled(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec()),
             &get_incremerkle_from_db(&state.db)?.get_root().to_bytes().to_vec(),
             &block_json.producer_signature,
-            &parse_eos_block_header_from_json(&block_json)?,
+            &EosSubmissionMaterial::parse_eos_block_header_from_json(&block_json)?,
             &get_eos_schedule_from_db(&state.db, block_json.schedule_version)?,
         )
         .and(Ok(state))
