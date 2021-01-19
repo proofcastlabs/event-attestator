@@ -133,6 +133,11 @@ impl EosEthTokenDictionary {
             .map(|entry| entry.eos_address)
     }
 
+    pub fn get_eth_address_via_eos_address(&self, eos_address: &EosAccountName) -> Result<EthAddress> {
+        self.get_entry_via_eos_address(&eos_address)
+            .map(|entry| entry.eth_address)
+    }
+
     pub fn is_token_supported(&self, address: &EthAddress) -> bool {
         self.get_eos_account_name_from_eth_token_address(address).is_ok()
     }
