@@ -46,7 +46,6 @@ pub fn filter_proofs_for_accounts(
     action_proofs: &[EosActionProof],
     account_names: &[EosAccountName],
 ) -> Result<EosActionProofs> {
-    info!("✔ Filtering proofs for EOS accounts...");
     Ok(account_names
         .iter()
         .map(|account_name| filter_proofs_for_account(action_proofs, *account_name))
@@ -144,14 +143,20 @@ pub fn maybe_filter_duplicate_proofs_from_state<D: DatabaseInterface>(state: Eos
     filter_duplicate_proofs(&state.action_proofs).and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
-pub fn maybe_filter_out_proofs_for_non_erc20_accounts<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    info!("✔ Filtering out proofs for accounts we don't care about...");
+pub fn maybe_filter_out_proofs_for_accounts_not_in_token_dictionary<D: DatabaseInterface>(
+    state: EosState<D>,
+) -> Result<EosState<D>> {
+    info!("✔ Filtering out proofs for accounts NOT in the token dictionary...");
+    debug!("✔ Number of proofs before: {}", &state.action_proofs.len());
     filter_proofs_for_accounts(
         &state.action_proofs,
         &state.get_eos_eth_token_dictionary()?.to_eos_accounts()?,
     )
     .and_then(|proofs| filter_out_proofs_for_other_actions(&proofs))
-    .and_then(|proofs| state.replace_action_proofs(proofs))
+    .and_then(|proofs| {
+        debug!("✔ Number of proofs after: {}", &proofs.len());
+        state.replace_action_proofs(proofs)
+    })
 }
 
 pub fn maybe_filter_out_proofs_for_wrong_eos_account_name<D: DatabaseInterface>(

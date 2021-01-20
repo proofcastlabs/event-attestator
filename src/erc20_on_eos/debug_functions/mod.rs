@@ -27,7 +27,7 @@ use crate::{
                 maybe_filter_duplicate_proofs_from_state,
                 maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
                 maybe_filter_out_invalid_action_receipt_digests,
-                maybe_filter_out_proofs_for_non_erc20_accounts,
+                maybe_filter_out_proofs_for_accounts_not_in_token_dictionary,
                 maybe_filter_out_proofs_with_invalid_merkle_proofs,
                 maybe_filter_out_proofs_with_wrong_action_mroot,
             },
@@ -402,7 +402,7 @@ where
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eos_state)
         .and_then(maybe_add_new_eos_schedule_to_db_and_return_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)
-        .and_then(maybe_filter_out_proofs_for_non_erc20_accounts)
+        .and_then(maybe_filter_out_proofs_for_accounts_not_in_token_dictionary)
         .and_then(maybe_filter_out_action_proof_receipt_mismatches_and_return_state)
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
