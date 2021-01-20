@@ -1,3 +1,4 @@
+#![cfg(test)]
 use crate::{chains::eos::eos_submission_material::EosSubmissionMaterial, errors::AppError, types::Result};
 use std::{fs::read_to_string, path::Path};
 
@@ -19,7 +20,6 @@ pub fn get_eos_on_eth_submission_material_n(n: usize) -> Result<EosSubmissionMat
     EosSubmissionMaterial::from_str(&get_sample_eos_on_eth_submission_material_string_n(n)?)
 }
 
-#[cfg(test)]
 mod tests {
     use super::*;
 
