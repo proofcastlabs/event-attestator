@@ -30,6 +30,7 @@ use eos_primitives::{AccountName as EosAccountName, Checksum256, ProducerSchedul
 use std::str::FromStr;
 
 pub fn put_eos_public_key_in_db<D: DatabaseInterface>(db: &D, public_key: &EosPublicKey) -> Result<()> {
+    debug!("✔ Putting EOS public key from db...");
     db.put(
         EOS_PUBLIC_KEY_DB_KEY.to_vec(),
         public_key.to_bytes(),
@@ -38,6 +39,7 @@ pub fn put_eos_public_key_in_db<D: DatabaseInterface>(db: &D, public_key: &EosPu
 }
 
 pub fn get_eos_public_key_from_db<D: DatabaseInterface>(db: &D) -> Result<EosPublicKey> {
+    debug!("✔ Getting EOS public key from db...");
     db.get(EOS_PUBLIC_KEY_DB_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| EosPublicKey::from_bytes(&bytes))
 }
@@ -46,6 +48,7 @@ pub fn put_eos_enabled_protocol_features_in_db<D: DatabaseInterface>(
     db: &D,
     protocol_features: &EnabledFeatures,
 ) -> Result<()> {
+    debug!("✔ Putting EOS enabled protocol features in db...");
     db.put(
         EOS_PROTOCOL_FEATURES_KEY.to_vec(),
         serde_json::to_vec(&protocol_features)?,
@@ -54,7 +57,7 @@ pub fn put_eos_enabled_protocol_features_in_db<D: DatabaseInterface>(
 }
 
 pub fn get_eos_enabled_protocol_features_from_db<D: DatabaseInterface>(db: &D) -> Result<EnabledFeatures> {
-    info!("✔ Getting EOS enabled protocol features from db...");
+    debug!("✔ Getting EOS enabled protocol features from db...");
     match db.get(EOS_PROTOCOL_FEATURES_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL) {
         Ok(bytes) => Ok(serde_json::from_slice(&bytes)?),
         Err(_) => {
@@ -65,26 +68,28 @@ pub fn get_eos_enabled_protocol_features_from_db<D: DatabaseInterface>(db: &D) -
 }
 
 pub fn put_eos_last_seen_block_num_in_db<D: DatabaseInterface>(db: &D, num: u64) -> Result<()> {
+    debug!("✔ Putting EOS last seen block num in db...");
     put_u64_in_db(db, &EOS_LAST_SEEN_BLOCK_NUM_KEY.to_vec(), num)
 }
 
 pub fn get_latest_eos_block_number<D: DatabaseInterface>(db: &D) -> Result<u64> {
+    debug!("✔ Getting EOS latest block number from DB...");
     get_u64_from_db(db, &EOS_LAST_SEEN_BLOCK_NUM_KEY.to_vec())
 }
 
 pub fn put_eos_last_seen_block_id_in_db<D: DatabaseInterface>(db: &D, latest_block_id: &Checksum256) -> Result<()> {
     let block_id_string = latest_block_id.to_string();
-    info!("✔ Putting EOS latest block ID {} in db...", block_id_string);
+    debug!("✔ Putting EOS latest block ID {} in db...", block_id_string);
     put_string_in_db(db, &EOS_LAST_SEEN_BLOCK_ID_KEY.to_vec(), &block_id_string)
 }
 
 pub fn get_eos_last_seen_block_id_from_db<D: DatabaseInterface>(db: &D) -> Result<Checksum256> {
-    info!("✔ Getting EOS last seen block ID from db...");
+    debug!("✔ Getting EOS last seen block ID from db...");
     get_string_from_db(db, &EOS_LAST_SEEN_BLOCK_ID_KEY.to_vec()).and_then(convert_hex_to_checksum256)
 }
 
 pub fn put_incremerkle_in_db<D: DatabaseInterface>(db: &D, incremerkle: &Incremerkle) -> Result<()> {
-    info!("✔ Putting EOS incremerkle in db...");
+    debug!("✔ Putting EOS incremerkle in db...");
     db.put(
         EOS_INCREMERKLE_KEY.to_vec(),
         serde_json::to_vec(&incremerkle.to_json())?,
@@ -93,14 +98,14 @@ pub fn put_incremerkle_in_db<D: DatabaseInterface>(db: &D, incremerkle: &Increme
 }
 
 pub fn get_incremerkle_from_db<D: DatabaseInterface>(db: &D) -> Result<Incremerkle> {
-    info!("✔ Getting EOS incremerkle from db...");
+    debug!("✔ Getting EOS incremerkle from db...");
     db.get(EOS_INCREMERKLE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
         .and_then(|json: IncremerkleJson| json.to_incremerkle())
 }
 
 pub fn get_eos_known_schedules_from_db<D: DatabaseInterface>(db: &D) -> Result<EosKnownSchedules> {
-    info!("✔ Getting EOS known schedules from db...");
+    debug!("✔ Getting EOS known schedules from db...");
     db.get(EOS_SCHEDULE_LIST_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
 }
@@ -109,7 +114,7 @@ pub fn put_eos_known_schedules_in_db<D: DatabaseInterface>(
     db: &D,
     eos_known_schedules: &EosKnownSchedules,
 ) -> Result<()> {
-    info!("✔ Putting EOS known schedules in db: {}", &eos_known_schedules);
+    debug!("✔ Putting EOS known schedules in db: {}", &eos_known_schedules);
     db.put(
         EOS_SCHEDULE_LIST_KEY.to_vec(),
         serde_json::to_vec(eos_known_schedules)?,
@@ -135,7 +140,7 @@ pub fn put_eos_schedule_in_db<D: DatabaseInterface>(db: &D, schedule: &EosProduc
 }
 
 pub fn get_eos_schedule_from_db<D: DatabaseInterface>(db: &D, version: u32) -> Result<EosProducerScheduleV2> {
-    trace!("✔ Getting EOS schedule from db...");
+    debug!("✔ Getting EOS schedule from db...");
     match get_string_from_db(db, &get_eos_schedule_db_key(version)) {
         Ok(json) => parse_v2_schedule_string_to_v2_schedule(&json),
         Err(_) => Err(format!("✘ Core does not have EOS schedule version: {}", version).into()),
@@ -143,42 +148,52 @@ pub fn get_eos_schedule_from_db<D: DatabaseInterface>(db: &D, version: u32) -> R
 }
 
 pub fn get_eos_account_nonce_from_db<D: DatabaseInterface>(db: &D) -> Result<u64> {
+    debug!("✔ Getting EOS account nonce from DB...");
     get_u64_from_db(db, &EOS_ACCOUNT_NONCE_KEY.to_vec())
 }
 
 pub fn put_eos_account_nonce_in_db<D: DatabaseInterface>(db: &D, new_nonce: u64) -> Result<()> {
+    debug!("✔ Putting EOS account nonce in db...");
     put_u64_in_db(db, &EOS_ACCOUNT_NONCE_KEY.to_vec(), new_nonce)
 }
 
 pub fn put_eos_token_symbol_in_db<D: DatabaseInterface>(db: &D, name: &str) -> Result<()> {
+    debug!("✔ Putting EOS token symbol in db...");
     put_string_in_db(db, &EOS_TOKEN_SYMBOL_KEY.to_vec(), name)
 }
 
 pub fn get_eos_token_symbol_from_db<D: DatabaseInterface>(db: &D) -> Result<String> {
+    debug!("✔ Getting EOS token symbol from DB...");
     get_string_from_db(db, &EOS_TOKEN_SYMBOL_KEY.to_vec())
 }
 
 pub fn put_eos_account_name_in_db<D: DatabaseInterface>(db: &D, name: &str) -> Result<()> {
+    debug!("✔ Putting EOS account name in db...");
     put_string_in_db(db, &EOS_ACCOUNT_NAME_KEY.to_vec(), name)
 }
 
 pub fn get_eos_account_name_string_from_db<D: DatabaseInterface>(db: &D) -> Result<String> {
+    debug!("✔ Getting EOS account name string from db...");
     get_string_from_db(db, &EOS_ACCOUNT_NAME_KEY.to_vec())
 }
 
 pub fn get_eos_account_name_from_db<D: DatabaseInterface>(db: &D) -> Result<EosAccountName> {
+    debug!("✔ Getting EOS account name from db...");
     Ok(EosAccountName::from_str(&get_eos_account_name_string_from_db(db)?)?)
 }
 
 pub fn put_eos_chain_id_in_db<D: DatabaseInterface>(db: &D, chain_id: &str) -> Result<()> {
+    debug!("✔ Putting EOS chain ID in db...");
     put_string_in_db(db, &EOS_CHAIN_ID_DB_KEY.to_vec(), chain_id)
 }
 
 pub fn get_eos_chain_id_from_db<D: DatabaseInterface>(db: &D) -> Result<String> {
+    debug!("✔ Getting EOS chain ID from db...");
     get_string_from_db(db, &EOS_CHAIN_ID_DB_KEY.to_vec())
 }
 
 pub fn get_processed_tx_ids_from_db<D: DatabaseInterface>(db: &D) -> Result<ProcessedGlobalSequences> {
+    debug!("✔ Getting EOS processed actions from DB...");
     db.get(PROCESSED_TX_IDS_KEY.to_vec(), None)
         .and_then(|bytes| Ok(serde_json::from_slice(&bytes[..])?))
 }
@@ -187,6 +202,7 @@ pub fn put_processed_tx_ids_in_db<D: DatabaseInterface>(
     db: &D,
     processed_tx_ids: &ProcessedGlobalSequences,
 ) -> Result<()> {
+    debug!("✔ Putting EOS processed tx IDs in db...");
     db.put(
         PROCESSED_TX_IDS_KEY.to_vec(),
         serde_json::to_vec(processed_tx_ids)?,
