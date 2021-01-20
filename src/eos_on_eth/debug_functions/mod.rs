@@ -29,7 +29,6 @@ use crate::{
                 maybe_filter_out_proofs_with_invalid_merkle_proofs,
                 maybe_filter_out_proofs_with_wrong_action_mroot,
             },
-            get_active_schedule::get_active_schedule_from_db_and_add_to_state,
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
             get_processed_tx_ids::get_processed_tx_ids_and_add_to_state,
         },
@@ -244,7 +243,6 @@ pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) 
         .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
-        .and_then(get_active_schedule_from_db_and_add_to_state)
         .and_then(start_eos_db_transaction_and_return_state)
         .and_then(get_processed_tx_ids_and_add_to_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eos_state)
