@@ -36,6 +36,8 @@ use eos_primitives::{
 use ethereum_types::{Address as EthAddress, U256};
 use std::str::from_utf8;
 
+const REQUIRED_ACTION_NAME: &str = "pegin";
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Constructor)]
 pub struct EosOnEthEosTxInfo {
     pub amount: U256,
@@ -113,12 +115,14 @@ impl EosOnEthEosTxInfo {
 
     pub fn from_eos_action_proof(proof: &EosActionProof, token_dictionary: &EosEthTokenDictionary) -> Result<Self> {
         info!("✔ Converting action proof to `eos-on-eth` eos tx info...");
-        let eos_address = Self::get_token_account_name_from_proof(&proof)?;
-        let dictionary_entry = token_dictionary.get_entry_via_eos_address(&eos_address)?;
         let action_name = Self::get_action_name_from_proof(&proof)?.to_string();
         if action_name != REQUIRED_ACTION_NAME {
             return Err(format!("Proof does not appear to be for an '{}' action!", REQUIRED_ACTION_NAME).into());
         };
+        let token_symbol = Self::get_token_symbol_from_proof(&proof)?;
+        let token_address = Self::get_token_account_name_from_proof(&proof)?;
+        let dictionary_entry =
+            token_dictionary.get_entry_via_token_address_and_symbol(&token_address, &token_symbol)?;
         let eos_asset = dictionary_entry.convert_u64_to_eos_asset(Self::get_eos_amount_from_proof(proof)?)?;
         let eth_amount = dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset.to_string())?;
         Ok(Self {
@@ -127,7 +131,7 @@ impl EosOnEthEosTxInfo {
             global_sequence: proof.get_global_sequence(),
             from: Self::get_token_sender_from_proof(proof)?,
             recipient: Self::get_eth_address_from_proof_or_revert_to_safe_eth_address(proof)?,
-            eth_token_address: token_dictionary.get_eth_address_via_eos_address(&eos_address)?,
+            eth_token_address: token_dictionary.get_eth_address_via_eos_address(&token_address)?,
         })
     }
 }

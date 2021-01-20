@@ -118,7 +118,8 @@ impl EosEthTokenDictionary {
     }
 
     pub fn get_entry_via_eos_address(&self, eos_address: &EosAccountName) -> Result<EosEthTokenDictionaryEntry> {
-        match self.iter().find(|entry| entry.eos_address == eos_address.to_string()) {
+        info!("✔ Getting dictionary entry via EOS token address...");
+        match self.iter().find(|entry| &entry.eos_address == eos_address) {
             Some(entry) => Ok(entry.clone()),
             None => Err(format!(
                 "No `EosEthTokenDictionaryEntry` exists with EOS address: {}",
@@ -126,6 +127,24 @@ impl EosEthTokenDictionary {
             )
             .into()),
         }
+    }
+
+    pub fn get_entry_via_token_address_and_symbol(
+        &self,
+        token_address: &EosAccountName,
+        token_symbol: &str,
+    ) -> Result<EosEthTokenDictionaryEntry> {
+        info!("✔ Getting dictionary entry via token address and symbol...");
+        self.get_entry_via_eos_address(token_address).and_then(|entry| {
+            match entry.eos_symbol == token_symbol {
+                true => Ok(entry),
+                false => Err(format!(
+                    "No `EosEthTokenDictionaryEntry` exists with EOS token symbol: {}",
+                    token_symbol
+                )
+                .into()),
+            }
+        })
     }
 
     pub fn get_eos_account_name_from_eth_token_address(&self, address: &EthAddress) -> Result<String> {
