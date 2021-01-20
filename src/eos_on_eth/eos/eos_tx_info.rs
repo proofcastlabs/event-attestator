@@ -2,6 +2,7 @@ use crate::{
     chains::{
         eos::{
             eos_action_proofs::EosActionProof,
+            eos_database_utils::get_eos_account_name_from_db,
             eos_eth_token_dictionary::EosEthTokenDictionary,
             eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
             eos_state::EosState,
@@ -67,10 +68,8 @@ impl EosOnEthEosTxInfo {
         Ok(result)
     }
 
-    // TODO Maybe we'll store the EOS vault account and check it against this?
-    #[allow(dead_code)]
-    fn get_action_sender_account_name_from_proof(proof: &EosActionProof) -> Result<EosName> {
-        let result = EosName::new(convert_bytes_to_u64(&proof.get_serialized_action()[..8])?);
+    fn get_action_sender_account_name_from_proof(proof: &EosActionProof) -> Result<EosAccountName> {
+        let result = EosAccountName::new(convert_bytes_to_u64(&proof.get_serialized_action()[..8])?);
         debug!("✔ Action sender account name parsed from action proof: {}", result);
         Ok(result)
     }
@@ -113,26 +112,52 @@ impl EosOnEthEosTxInfo {
         }
     }
 
-    pub fn from_eos_action_proof(proof: &EosActionProof, token_dictionary: &EosEthTokenDictionary) -> Result<Self> {
-        info!("✔ Converting action proof to `eos-on-eth` eos tx info...");
-        let action_name = Self::get_action_name_from_proof(&proof)?.to_string();
-        if action_name != REQUIRED_ACTION_NAME {
-            return Err(format!("Proof does not appear to be for an '{}' action!", REQUIRED_ACTION_NAME).into());
-        };
-        let token_symbol = Self::get_token_symbol_from_proof(&proof)?;
-        let token_address = Self::get_token_account_name_from_proof(&proof)?;
-        let dictionary_entry =
-            token_dictionary.get_entry_via_token_address_and_symbol(&token_address, &token_symbol)?;
-        let eos_asset = dictionary_entry.convert_u64_to_eos_asset(Self::get_eos_amount_from_proof(proof)?)?;
-        let eth_amount = dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset.to_string())?;
-        Ok(Self {
-            amount: eth_amount,
-            originating_tx_id: proof.tx_id,
-            global_sequence: proof.get_global_sequence(),
-            from: Self::get_token_sender_from_proof(proof)?,
-            recipient: Self::get_eth_address_from_proof_or_revert_to_safe_eth_address(proof)?,
-            eth_token_address: token_dictionary.get_eth_address_via_eos_address(&token_address)?,
+    fn check_proof_is_from_contract(proof: &EosActionProof, contract: &EosAccountName) -> Result<()> {
+        Self::get_action_sender_account_name_from_proof(&proof).and_then(|ref action_sender| {
+            if action_sender != contract {
+                return Err(format!(
+                    "Proof does not appear to be for an action from the EOS smart-contract: {}!",
+                    contract
+                )
+                .into());
+            }
+            Ok(())
         })
+    }
+
+    fn check_proof_is_for_action(proof: &EosActionProof, required_action_name: &str) -> Result<()> {
+        Self::get_action_name_from_proof(&proof).and_then(|action_name| {
+            if action_name.to_string() != required_action_name {
+                return Err(format!("Proof does not appear to be for a '{}' action!", REQUIRED_ACTION_NAME).into());
+            }
+            Ok(())
+        })
+    }
+
+    pub fn from_eos_action_proof(
+        proof: &EosActionProof,
+        token_dictionary: &EosEthTokenDictionary,
+        eos_smart_contract: &EosAccountName,
+    ) -> Result<Self> {
+        Self::check_proof_is_from_contract(proof, eos_smart_contract)
+            .and_then(|_| Self::check_proof_is_for_action(proof, REQUIRED_ACTION_NAME))
+            .and_then(|_| {
+                info!("✔ Converting action proof to `eos-on-eth` eos tx info...");
+                let token_symbol = Self::get_token_symbol_from_proof(&proof)?;
+                let token_address = Self::get_token_account_name_from_proof(&proof)?;
+                let dictionary_entry =
+                    token_dictionary.get_entry_via_token_address_and_symbol(&token_address, &token_symbol)?;
+                let eos_asset = dictionary_entry.convert_u64_to_eos_asset(Self::get_eos_amount_from_proof(proof)?)?;
+                let eth_amount = dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset)?;
+                Ok(Self {
+                    amount: eth_amount,
+                    originating_tx_id: proof.tx_id,
+                    global_sequence: proof.get_global_sequence(),
+                    from: Self::get_token_sender_from_proof(proof)?,
+                    recipient: Self::get_eth_address_from_proof_or_revert_to_safe_eth_address(proof)?,
+                    eth_token_address: token_dictionary.get_eth_address_via_eos_address(&token_address)?,
+                })
+            })
     }
 }
 
@@ -143,11 +168,12 @@ impl EosOnEthEosTxInfos {
     pub fn from_eos_action_proofs(
         action_proofs: &[EosActionProof],
         token_dictionary: &EosEthTokenDictionary,
+        eos_smart_contract: &EosAccountName,
     ) -> Result<Self> {
         Ok(EosOnEthEosTxInfos::new(
             action_proofs
                 .iter()
-                .map(|ref proof| EosOnEthEosTxInfo::from_eos_action_proof(proof, token_dictionary))
+                .map(|ref proof| EosOnEthEosTxInfo::from_eos_action_proof(proof, token_dictionary, eos_smart_contract))
                 .collect::<Result<Vec<EosOnEthEosTxInfo>>>()?,
         ))
     }
@@ -220,12 +246,15 @@ pub fn maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state<D: DatabaseInterface
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Parsing redeem params from actions data...");
-    EosOnEthEosTxInfos::from_eos_action_proofs(&state.action_proofs, state.get_eos_eth_token_dictionary()?).and_then(
-        |tx_infos| {
-            info!("✔ Parsed {} sets of redeem info!", tx_infos.len());
-            state.add_eos_on_eth_eos_tx_info(tx_infos)
-        },
+    EosOnEthEosTxInfos::from_eos_action_proofs(
+        &state.action_proofs,
+        state.get_eos_eth_token_dictionary()?,
+        &get_eos_account_name_from_db(&state.db)?,
     )
+    .and_then(|tx_infos| {
+        info!("✔ Parsed {} sets of redeem info!", tx_infos.len());
+        state.add_eos_on_eth_eos_tx_info(tx_infos)
+    })
 }
 
 pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface>(
@@ -318,7 +347,7 @@ mod tests {
     fn should_get_action_sender_account_name_from_proof() {
         let proof = get_sample_proof();
         let result = EosOnEthEosTxInfo::get_action_sender_account_name_from_proof(&proof).unwrap();
-        let expected_result = EosName::from_str("t11ppntoneos").unwrap();
+        let expected_result = EosAccountName::from_str("t11ppntoneos").unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -357,8 +386,9 @@ mod tests {
     #[test]
     fn should_get_eos_on_eth_eth_tx_info_from_action_proof() {
         let proof = get_sample_proof();
+        let smart_contract_name = EosAccountName::from_str("t11ppntoneos").unwrap();
         let dictionary = get_sample_eos_eth_token_dictionary();
-        let result = EosOnEthEosTxInfo::from_eos_action_proof(&proof, &dictionary).unwrap();
+        let result = EosOnEthEosTxInfo::from_eos_action_proof(&proof, &dictionary, &smart_contract_name).unwrap();
         let expected_amount = U256::from_dec_str("100000000000000").unwrap();
         let expected_from = EosAccountName::from_str("oraclizetest").unwrap();
         let expected_recipient =
