@@ -31,11 +31,10 @@ use eos_primitives::{
     AccountName as EosAccountName,
     Checksum256,
     Name as EosName,
-    SerializeData,
     Symbol as EosSymbol,
 };
 use ethereum_types::{Address as EthAddress, U256};
-use std::str::{from_utf8, FromStr};
+use std::str::from_utf8;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Constructor)]
 pub struct EosOnEthEosTxInfo {
@@ -66,6 +65,8 @@ impl EosOnEthEosTxInfo {
         Ok(result)
     }
 
+    // TODO Maybe we'll store the EOS vault account and check it against this?
+    #[allow(dead_code)]
     fn get_action_sender_account_name_from_proof(proof: &EosActionProof) -> Result<EosName> {
         let result = EosName::new(convert_bytes_to_u64(&proof.get_serialized_action()[..8])?);
         debug!("✔ Action sender account name parsed from action proof: {}", result);
@@ -114,6 +115,10 @@ impl EosOnEthEosTxInfo {
         info!("✔ Converting action proof to `eos-on-eth` eos tx info...");
         let eos_address = Self::get_token_account_name_from_proof(&proof)?;
         let dictionary_entry = token_dictionary.get_entry_via_eos_address(&eos_address)?;
+        let action_name = Self::get_action_name_from_proof(&proof)?.to_string();
+        if action_name != REQUIRED_ACTION_NAME {
+            return Err(format!("Proof does not appear to be for an '{}' action!", REQUIRED_ACTION_NAME).into());
+        };
         let eos_asset = dictionary_entry.convert_u64_to_eos_asset(Self::get_eos_amount_from_proof(proof)?)?;
         let eth_amount = dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset.to_string())?;
         Ok(Self {
@@ -269,8 +274,8 @@ mod tests {
             eos_utils::convert_hex_to_checksum256,
         },
         eos_on_eth::eos::eos_test_utils::get_eos_on_eth_submission_material_n,
-        utils::convert_u64_to_bytes,
     };
+    use std::str::FromStr;
 
     fn get_sample_eos_eth_token_dictionary() -> EosEthTokenDictionary {
         EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::from_str(&
