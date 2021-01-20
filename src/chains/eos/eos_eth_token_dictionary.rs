@@ -135,16 +135,15 @@ impl EosEthTokenDictionary {
         token_symbol: &str,
     ) -> Result<EosEthTokenDictionaryEntry> {
         info!("✔ Getting dictionary entry via token address and symbol...");
-        self.get_entry_via_eos_address(token_address).and_then(|entry| {
-            match entry.eos_symbol == token_symbol {
+        self.get_entry_via_eos_address(token_address)
+            .and_then(|entry| match entry.eos_symbol == token_symbol {
                 true => Ok(entry),
                 false => Err(format!(
                     "No `EosEthTokenDictionaryEntry` exists with EOS token symbol: {}",
                     token_symbol
                 )
                 .into()),
-            }
-        })
+            })
     }
 
     pub fn get_eos_account_name_from_eth_token_address(&self, address: &EthAddress) -> Result<String> {
