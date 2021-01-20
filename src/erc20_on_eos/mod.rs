@@ -14,7 +14,7 @@
 pub use crate::{
     chains::{
         eos::{
-            core_initialization::initialize_eos_core::maybe_initialize_eos_core_without_eos_account as maybe_initialize_eos_core,
+            core_initialization::initialize_eos_core::maybe_initialize_eos_core_without_eos_account_or_symbol as maybe_initialize_eos_core,
             disable_protocol_feature::disable_eos_protocol_feature,
             enable_protocol_feature::enable_eos_protocol_feature,
         },

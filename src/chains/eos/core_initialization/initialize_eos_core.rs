@@ -66,7 +66,7 @@ pub fn initialize_eos_core<D: DatabaseInterface>(
         .and_then(get_eos_init_output)
 }
 
-/// # Maybe Initialize EOS Core With EOS Account
+/// # Maybe Initialize EOS Core With EOS Account & Symbol
 ///
 /// This function first checks to see if the EOS side of a core has been initialized, and will
 /// initialize it if not. The initialization procedure takes as its input a database, the
@@ -84,7 +84,7 @@ pub fn initialize_eos_core<D: DatabaseInterface>(
 ///    erc20_on_eos_token_dictionary: EosEthTokenDictionaryJson,
 /// }
 /// ```
-pub fn maybe_initialize_eos_core_with_eos_account<D: DatabaseInterface>(
+pub fn maybe_initialize_eos_core_with_eos_account_and_symbol<D: DatabaseInterface>(
     db: D,
     chain_id: &str,
     account_name: &str,
@@ -98,12 +98,12 @@ pub fn maybe_initialize_eos_core_with_eos_account<D: DatabaseInterface>(
     }
 }
 
-/// # Maybe Initialize EOS Core Without EOS Account
+/// # Maybe Initialize EOS Core Without EOS Account or Symbol
 ///
 /// This function first checks to see if the EOS side of a core has been initialized, and will
 /// initialize it if not. The initialization procedure takes as its input a database, the
 /// `chain_id` of the desired EOS chain and an EOS init JSON string. This version of the init
-/// function does not requite an EOS account name and symbol, and is therefore useful for EOS
+/// function does not requite an EOS account name or symbol, and is therefore useful for EOS
 /// related instances that use a token dictionary to define the bridges instead.
 ///
 /// The EOS init JSON string is of the format:
@@ -117,7 +117,7 @@ pub fn maybe_initialize_eos_core_with_eos_account<D: DatabaseInterface>(
 ///    erc20_on_eos_token_dictionary: EosEthTokenDictionaryJson,
 /// }
 /// ```
-pub fn maybe_initialize_eos_core_without_eos_account<D: DatabaseInterface>(
+pub fn maybe_initialize_eos_core_without_eos_account_or_symbol<D: DatabaseInterface>(
     db: D,
     chain_id: &str,
     eos_init_json: &str,
@@ -126,5 +126,38 @@ pub fn maybe_initialize_eos_core_without_eos_account<D: DatabaseInterface>(
     match is_eos_core_initialized(&db) {
         true => Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string()),
         false => initialize_eos_core(db, chain_id, None, None, eos_init_json),
+    }
+}
+/// # Maybe Initialize EOS Core With EOS Account Without Symbol
+///
+/// This function first checks to see if the EOS side of a core has been initialized, and will
+/// initialize it if not. The initialization procedure takes as its input a database, the
+/// `chain_id` of the desired EOS chain and an EOS init JSON string. This version of the init
+/// function does not requite an EOS token symbol and is therefore useful for EOS related
+/// instances which use a token dictionary to define the bridges instead. The EOS account name is
+/// used to define the vault contract on EOS, against which name the incoming action proofs are
+/// checked to ensure the correct originating smart-contract.
+///
+/// The EOS init JSON string is of the format:
+///
+/// ```no_compile
+/// {
+///    block: EosBlockHeaderJson,
+///    blockroot_merkle: [txHash...],
+///    active_schedule: EosProducerScheduleJsonV2,
+///    maybe_protocol_features_to_enable: [protocolFeatureHash...],
+///    erc20_on_eos_token_dictionary: EosEthTokenDictionaryJson,
+/// }
+/// ```
+pub fn maybe_initialize_eos_core_with_eos_account_without_symbol<D: DatabaseInterface>(
+    db: D,
+    chain_id: &str,
+    eos_account_name: &str,
+    eos_init_json: &str,
+) -> Result<String> {
+    info!("✔ Maybe initializing EOS core...");
+    match is_eos_core_initialized(&db) {
+        true => Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string()),
+        false => initialize_eos_core(db, chain_id, Some(eos_account_name), None, eos_init_json),
     }
 }
