@@ -51,7 +51,10 @@ pub fn initialize_eth_core_maybe_with_contract_tx<D: DatabaseInterface>(
         .and_then(put_eth_tail_block_hash_in_db_and_return_state)
         .and_then(|state| put_eth_chain_id_in_db_and_return_state(chain_id, state))
         .and_then(|state| put_eth_gas_price_in_db_and_return_state(gas_price, state))
-        .and_then(put_eth_account_nonce_in_db_and_return_state)
+        .and_then(|state| match maybe_bytecode_path {
+            Some(_) => put_eth_account_nonce_in_db_and_return_state(state, 1),
+            None => put_eth_account_nonce_in_db_and_return_state(state, 0),
+        })
         .and_then(put_any_sender_nonce_in_db_and_return_state)
         .and_then(generate_and_store_eth_address)
         .and_then(|state| match maybe_bytecode_path {
