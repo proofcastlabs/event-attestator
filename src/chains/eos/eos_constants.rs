@@ -4,6 +4,7 @@ pub use serde_json::{json, Value as JsonValue};
 pub const MEMO: &str = "";
 pub const PRODUCER_REPS: u64 = 12;
 pub const PUBLIC_KEY_SIZE: usize = 33;
+pub const PEGIN_ACTION_NAME: &str = "pegin";
 pub const PBTC_MINT_FXN_NAME: &str = "issue";
 pub const REDEEM_ACTION_NAME: &str = "redeem";
 pub const PUBLIC_KEY_CHECKSUM_SIZE: usize = 4;
