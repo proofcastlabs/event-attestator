@@ -261,18 +261,26 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Filtering out already processed tx IDs...");
+    debug!("Num tx infos before: {}", &state.eos_on_eth_eos_tx_infos.len());
     state
         .eos_on_eth_eos_tx_infos
         .filter_out_already_processed_txs(&state.processed_tx_ids)
-        .and_then(|filtered| state.add_eos_on_eth_eos_tx_info(filtered))
+        .and_then(|filtered| {
+            debug!("Num tx infos after: {}", filtered.len());
+            state.add_eos_on_eth_eos_tx_info(filtered)
+        })
 }
 
 pub fn maybe_filter_out_value_too_low_txs_from_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Filtering out value too low txs from state...");
+    debug!("Num tx infos before: {}", &state.eos_on_eth_eos_tx_infos.len());
     state
         .eos_on_eth_eos_tx_infos
         .filter_out_those_with_value_too_low()
-        .and_then(|filtered| state.replace_eos_on_eth_eos_tx_infos(filtered))
+        .and_then(|filtered| {
+            debug!("Num tx infos after: {}", &filtered.len());
+            state.replace_eos_on_eth_eos_tx_infos(filtered)
+        })
 }
 
 pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
