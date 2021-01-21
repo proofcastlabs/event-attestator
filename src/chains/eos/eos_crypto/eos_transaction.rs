@@ -1,6 +1,6 @@
 use crate::{
     chains::eos::{
-        eos_constants::PBTC_MINT_FXN_NAME,
+        eos_constants::{EOS_MAX_EXPIRATION_SECS, MEMO, PBTC_MINT_FXN_NAME, PEOS_ACCOUNT_PERMISSION_LEVEL},
         eos_crypto::eos_private_key::EosPrivateKey,
         eos_types::EosSignedTransaction,
     },
@@ -74,6 +74,31 @@ pub fn sign_peos_transaction(
         to.to_string(),
         amount.to_string(),
     ))
+}
+
+pub fn get_signed_tx(
+    // FIXME Rename for clarity!
+    ref_block_num: u16,
+    ref_block_prefix: u32,
+    to: &str,
+    amount: &str,
+    chain_id: &str,
+    private_key: &EosPrivateKey,
+    account_name: &str,
+) -> Result<EosSignedTransaction> {
+    info!("✔ Signing eos tx for {} to {}...", &amount, &to);
+    get_unsigned_eos_minting_tx(
+        to,
+        account_name,
+        MEMO,
+        account_name,
+        amount,
+        ref_block_num,
+        ref_block_prefix,
+        EOS_MAX_EXPIRATION_SECS,
+        PEOS_ACCOUNT_PERMISSION_LEVEL,
+    )
+    .and_then(|unsigned_tx| sign_peos_transaction(to, amount, chain_id, private_key, &unsigned_tx))
 }
 
 #[cfg(test)]

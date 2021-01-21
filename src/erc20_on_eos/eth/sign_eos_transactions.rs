@@ -1,10 +1,9 @@
 use crate::{
     chains::{
         eos::{
-            eos_crypto::eos_private_key::EosPrivateKey,
+            eos_crypto::{eos_private_key::EosPrivateKey, eos_transaction::get_signed_tx},
             eos_database_utils::get_eos_chain_id_from_db,
             eos_types::EosSignedTransactions,
-            sign_eos_transactions::get_signed_tx,
         },
         eth::eth_state::EthState,
     },

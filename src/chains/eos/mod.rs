@@ -33,6 +33,5 @@ pub(crate) mod protocol_features;
 pub(crate) mod save_incremerkle;
 pub(crate) mod save_latest_block_id;
 pub(crate) mod save_latest_block_num;
-pub(crate) mod sign_eos_transactions;
 pub(crate) mod validate_producer_slot;
 pub(crate) mod validate_signature;
