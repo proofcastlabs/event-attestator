@@ -1,4 +1,3 @@
-pub(crate) mod eos_test_utils;
 pub(crate) mod eos_tx_info;
 pub(crate) mod get_eos_output;
 pub(crate) mod increment_eth_nonce;

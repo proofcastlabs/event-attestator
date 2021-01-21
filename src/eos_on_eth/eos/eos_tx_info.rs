@@ -310,19 +310,13 @@ pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: E
 mod tests {
     use super::*;
     use crate::{
-        chains::eos::{
-            eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
-            eos_utils::convert_hex_to_checksum256,
-        },
-        eos_on_eth::{
-            eos::eos_test_utils::get_eos_on_eth_submission_material_n,
-            test_utils::get_sample_eos_eth_token_dictionary,
-        },
+        chains::eos::eos_utils::convert_hex_to_checksum256,
+        eos_on_eth::test_utils::{get_eos_submission_material_n, get_sample_eos_eth_token_dictionary},
     };
     use std::str::FromStr;
 
     fn get_sample_proof() -> EosActionProof {
-        get_eos_on_eth_submission_material_n(1).unwrap().action_proofs[0].clone()
+        get_eos_submission_material_n(1).unwrap().action_proofs[0].clone()
     }
 
     #[test]
