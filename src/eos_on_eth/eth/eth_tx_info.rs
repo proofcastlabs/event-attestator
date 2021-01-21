@@ -170,3 +170,42 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
         )
         .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::eos_on_eth::test_utils::{get_eth_submission_material_n, get_sample_eos_eth_token_dictionary};
+
+    #[test]
+    fn should_get_tx_info_from_eth_submission_material() {
+        let smart_contract_address =
+            EthAddress::from_slice(&hex::decode("711c50b31ee0b9e8ed4d434819ac20b4fbbb5532").unwrap());
+        let submission_material = get_eth_submission_material_n(1).unwrap();
+        let token_dictionary = get_sample_eos_eth_token_dictionary();
+        let tx_infos = EosOnEthEthTxInfos::from_eth_submission_material(
+            &submission_material,
+            &token_dictionary,
+            &smart_contract_address,
+        )
+        .unwrap();
+        let result = tx_infos[0].clone();
+        let expected_token_amount = U256::from_dec_str("100000000000000").unwrap();
+        let expected_eos_address = "whateverxxxx";
+        let expected_eos_token_address = "eosio.token".to_string();
+        let expected_eos_asset_amount = "0.0001 EOS".to_string();
+        let expected_token_sender =
+            EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap());
+        let expected_eth_token_address =
+            EthAddress::from_slice(&hex::decode("711c50b31ee0b9e8ed4d434819ac20b4fbbb5532").unwrap());
+        let expected_originating_tx_hash = EthHash::from_slice(
+            &hex::decode("9b9b2b88bdd495c132704154003d2deb65bd34ce6f8836ed6efdf0ba9def2b3e").unwrap(),
+        );
+        assert_eq!(result.token_amount, expected_token_amount);
+        assert_eq!(result.eos_address, expected_eos_address);
+        assert_eq!(result.eos_token_address, expected_eos_token_address);
+        assert_eq!(result.eos_asset_amount, expected_eos_asset_amount);
+        assert_eq!(result.token_sender, expected_token_sender);
+        assert_eq!(result.eth_token_address, expected_eth_token_address);
+        assert_eq!(result.originating_tx_hash, expected_originating_tx_hash);
+    }
+}
