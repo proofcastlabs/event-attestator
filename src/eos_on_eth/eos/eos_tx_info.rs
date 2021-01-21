@@ -284,7 +284,7 @@ pub fn maybe_filter_out_value_too_low_txs_from_state<D: DatabaseInterface>(state
 }
 
 pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    if state.erc20_on_eos_redeem_infos.len() == 0 {
+    if state.eos_on_eth_eos_tx_infos.len() == 0 {
         info!("✔ No EOS tx info in state ∴ no ETH transactions to sign!");
         Ok(state)
     } else {
