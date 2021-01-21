@@ -193,7 +193,7 @@ pub fn get_sample_eth_address() -> EthAddress {
 }
 
 pub fn get_sample_eth_private_key() -> EthPrivateKey {
-    EthPrivateKey::from_slice(get_sample_eth_private_key_slice()).unwrap()
+    EthPrivateKey::from_slice(&get_sample_eth_private_key_slice()).unwrap()
 }
 
 pub fn get_sample_eth_public_key() -> EthPublicKey {

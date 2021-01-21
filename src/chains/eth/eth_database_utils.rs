@@ -354,7 +354,7 @@ pub fn get_eth_private_key_from_db<D: DatabaseInterface>(db: &D) -> Result<EthPr
     db.get(ETH_PRIVATE_KEY_DB_KEY.to_vec(), Some(255)).and_then(|pk_bytes| {
         let mut array = [0; 32];
         array.copy_from_slice(&pk_bytes[..32]);
-        EthPrivateKey::from_slice(array)
+        EthPrivateKey::from_slice(&array)
     })
 }
 
