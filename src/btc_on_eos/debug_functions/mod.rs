@@ -50,7 +50,7 @@ use crate::{
         },
         eos::{
             core_initialization::eos_init_utils::EosInitJson,
-            eos_constants::{get_eos_constants_db_keys, EOS_PRIVATE_KEY_DB_KEY as EOS_KEY},
+            eos_constants::{get_eos_constants_db_keys, EOS_PRIVATE_KEY_DB_KEY as EOS_KEY, REDEEM_ACTION_NAME},
             eos_crypto::eos_private_key::EosPrivateKey,
             eos_database_transactions::{
                 end_eos_db_transaction_and_return_state,
@@ -72,6 +72,7 @@ use crate::{
                 maybe_filter_out_proofs_for_wrong_eos_account_name,
                 maybe_filter_out_proofs_with_invalid_merkle_proofs,
                 maybe_filter_out_proofs_with_wrong_action_mroot,
+                maybe_filter_proofs_for_action_name,
             },
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
             get_processed_tx_ids::get_processed_tx_ids_and_add_to_state,
@@ -125,6 +126,7 @@ where
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
+        .and_then(|state| maybe_filter_proofs_for_action_name(state, REDEEM_ACTION_NAME))
         .and_then(maybe_parse_redeem_infos_and_put_in_state)
         .and_then(maybe_filter_value_too_low_redeem_infos_in_state)
         .and_then(maybe_filter_out_already_processed_tx_ids_from_state)

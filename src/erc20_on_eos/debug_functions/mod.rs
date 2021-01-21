@@ -3,7 +3,7 @@ use crate::{
         eos::{
             add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
             core_initialization::eos_init_utils::EosInitJson,
-            eos_constants::{get_eos_constants_db_keys, EOS_PRIVATE_KEY_DB_KEY},
+            eos_constants::{get_eos_constants_db_keys, EOS_PRIVATE_KEY_DB_KEY, REDEEM_ACTION_NAME},
             eos_database_transactions::{
                 end_eos_db_transaction_and_return_state,
                 start_eos_db_transaction_and_return_state,
@@ -30,6 +30,7 @@ use crate::{
                 maybe_filter_out_proofs_for_accounts_not_in_token_dictionary,
                 maybe_filter_out_proofs_with_invalid_merkle_proofs,
                 maybe_filter_out_proofs_with_wrong_action_mroot,
+                maybe_filter_proofs_for_action_name,
             },
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
         },
@@ -407,6 +408,7 @@ where
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
+        .and_then(|state| maybe_filter_proofs_for_action_name(state, REDEEM_ACTION_NAME))
         .and_then(maybe_parse_redeem_infos_and_put_in_state)
         .and_then(maybe_sign_normal_eth_txs_and_add_to_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
