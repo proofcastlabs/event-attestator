@@ -1,6 +1,6 @@
 use crate::{
     chains::eos::{
-        eos_database_utils::{get_processed_tx_ids_from_db, put_processed_tx_ids_in_db},
+        eos_database_utils::{get_processed_global_sequences_from_db, put_processed_tx_ids_in_db},
         eos_state::EosState,
     },
     traits::DatabaseInterface,
@@ -36,7 +36,7 @@ impl ProcessedGlobalSequences {
     }
 
     pub fn get_from_db<D: DatabaseInterface>(db: &D) -> Result<Self> {
-        get_processed_tx_ids_from_db(db)
+        get_processed_global_sequences_from_db(db)
     }
 }
 
@@ -58,4 +58,10 @@ pub fn maybe_add_global_sequences_to_processed_list_and_return_state<D: Database
             .and(Ok(state))
         },
     }
+}
+
+pub fn get_processed_global_sequences_and_add_to_state<D: DatabaseInterface>(
+    state: EosState<D>,
+) -> Result<EosState<D>> {
+    get_processed_global_sequences_from_db(&state.db).and_then(|tx_ids| state.add_processed_tx_ids(tx_ids))
 }

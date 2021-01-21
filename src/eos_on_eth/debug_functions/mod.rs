@@ -18,7 +18,10 @@ use crate::{
                 get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
                 get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
             },
-            eos_global_sequences::maybe_add_global_sequences_to_processed_list_and_return_state,
+            eos_global_sequences::{
+                get_processed_global_sequences_and_add_to_state,
+                maybe_add_global_sequences_to_processed_list_and_return_state,
+            },
             eos_state::EosState,
             eos_submission_material::parse_submission_material_and_add_to_state,
             filter_action_proofs::{
@@ -31,7 +34,6 @@ use crate::{
                 maybe_filter_proofs_for_action_name,
             },
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
-            get_processed_tx_ids::get_processed_tx_ids_and_add_to_state,
         },
         eth::{
             eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY},
@@ -244,8 +246,8 @@ pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) 
         .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
+        .and_then(get_processed_global_sequences_and_add_to_state)
         .and_then(start_eos_db_transaction_and_return_state)
-        .and_then(get_processed_tx_ids_and_add_to_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eos_state)
         .and_then(maybe_add_new_eos_schedule_to_db_and_return_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)

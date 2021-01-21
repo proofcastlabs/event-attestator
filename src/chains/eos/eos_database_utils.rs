@@ -192,7 +192,7 @@ pub fn get_eos_chain_id_from_db<D: DatabaseInterface>(db: &D) -> Result<String> 
     get_string_from_db(db, &EOS_CHAIN_ID_DB_KEY.to_vec())
 }
 
-pub fn get_processed_tx_ids_from_db<D: DatabaseInterface>(db: &D) -> Result<ProcessedGlobalSequences> {
+pub fn get_processed_global_sequences_from_db<D: DatabaseInterface>(db: &D) -> Result<ProcessedGlobalSequences> {
     debug!("✔ Getting EOS processed actions from DB...");
     db.get(PROCESSED_TX_IDS_KEY.to_vec(), None)
         .and_then(|bytes| Ok(serde_json::from_slice(&bytes[..])?))

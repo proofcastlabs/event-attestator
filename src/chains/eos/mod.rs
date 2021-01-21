@@ -26,7 +26,6 @@ pub(crate) mod filter_action_proofs;
 pub(crate) mod get_active_schedule;
 pub(crate) mod get_enabled_protocol_features;
 pub(crate) mod get_eos_incremerkle;
-pub(crate) mod get_processed_tx_ids;
 pub(crate) mod increment_eos_account_nonce;
 pub(crate) mod parse_eos_action_receipts;
 pub(crate) mod parse_eos_schedule;

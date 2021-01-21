@@ -6,7 +6,7 @@ use crate::{
                 put_eos_latest_block_info_in_db,
                 EosInitJson,
             },
-            eos_database_utils::{get_processed_tx_ids_from_db, put_eos_schedule_in_db},
+            eos_database_utils::{get_processed_global_sequences_from_db, put_eos_schedule_in_db},
             eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
             parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
         },
@@ -72,7 +72,7 @@ pub fn get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String
     info!("✔ Debug getting processed actions list...");
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| get_processed_tx_ids_from_db(db))
+        .and_then(|_| get_processed_global_sequences_from_db(db))
         .and_then(|processed_global_sequences| {
             db.end_transaction()?;
             Ok(processed_global_sequences.to_json().to_string())

@@ -20,7 +20,10 @@ use crate::{
                 get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
                 EosEthTokenDictionary,
             },
-            eos_global_sequences::maybe_add_global_sequences_to_processed_list_and_return_state,
+            eos_global_sequences::{
+                get_processed_global_sequences_and_add_to_state,
+                maybe_add_global_sequences_to_processed_list_and_return_state,
+            },
             eos_state::EosState,
             eos_submission_material::parse_submission_material_and_add_to_state,
             filter_action_proofs::{
@@ -72,7 +75,10 @@ use crate::{
         eos::{
             get_eos_output::get_eos_output,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db_and_return_eos_state,
-            redeem_info::maybe_parse_redeem_infos_and_put_in_state,
+            redeem_info::{
+                maybe_filter_out_already_processed_tx_ids_from_state,
+                maybe_parse_redeem_infos_and_put_in_state,
+            },
             sign_normal_eth_txs::maybe_sign_normal_eth_txs_and_add_to_state,
         },
         eth::{
@@ -400,6 +406,7 @@ where
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(start_eos_db_transaction_and_return_state)
+        .and_then(get_processed_global_sequences_and_add_to_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eos_state)
         .and_then(maybe_add_new_eos_schedule_to_db_and_return_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)
@@ -410,6 +417,7 @@ where
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
         .and_then(|state| maybe_filter_proofs_for_action_name(state, REDEEM_ACTION_NAME))
         .and_then(maybe_parse_redeem_infos_and_put_in_state)
+        .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
         .and_then(maybe_sign_normal_eth_txs_and_add_to_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
         .and_then(maybe_increment_eth_nonce_in_db_and_return_eos_state)
