@@ -320,7 +320,7 @@ mod tests {
 
     fn get_sample_eos_eth_token_dictionary() -> EosEthTokenDictionary {
         EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::from_str(&
-        "{\"eos_token_decimals\":4,\"eth_token_decimals\":18,\"eos_symbol\":\"EOS\",\"eth_symbol\":\"PEOS\",\"eos_address\":\"eosio.token\",\"eth_address\":\"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC\"}").unwrap()])
+        "{\"eos_token_decimals\":4,\"eth_token_decimals\":18,\"eos_symbol\":\"EOS\",\"eth_symbol\":\"PEOS\",\"eos_address\":\"eosio.token\",\"eth_address\":\"711c50b31ee0b9e8ed4d434819ac20b4fbbb5532\"}").unwrap()])
     }
 
     fn get_sample_proof() -> EosActionProof {
@@ -405,12 +405,33 @@ mod tests {
             convert_hex_to_checksum256("cb2e6fbd5c82fb50b3c2e0658a887aa359f9f6b398457448322d86968a28e794").unwrap();
         let expected_global_sequence = 323917921677;
         let expected_eth_token_address =
-            EthAddress::from_slice(&hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap());
+            EthAddress::from_slice(&hex::decode("711c50b31ee0b9e8ed4d434819ac20b4fbbb5532").unwrap());
         assert_eq!(result.amount, expected_amount);
         assert_eq!(result.from, expected_from);
         assert_eq!(result.recipient, expected_recipient);
         assert_eq!(result.global_sequence, expected_global_sequence);
         assert_eq!(result.originating_tx_id, expected_originating_tx_id);
         assert_eq!(result.eth_token_address, expected_eth_token_address);
+    }
+
+    #[test]
+    fn should_get_correct_signed_tx() {
+        // NOTE Real tx: https://rinkeby.etherscan.io/tx/0x2181a9009da8e2418d67b95501e6c37347f9cce65ea97f9bf3737d5efaf9be89
+        let expected_result = "f8aa808504a817c8008302bf2094711c50b31ee0b9e8ed4d434819ac20b4fbbb553280b84440c10f190000000000000000000000005fdaef0a0b11774db68c38ab36957de8646af1b500000000000000000000000000000000000000000000000000005af3107a40002ca0162392250af5a68aec146384043e109b00ff8d13a8565dcf286ea3e68cd2d097a067842749990070b15a7d4bf989dd6ddb264132fe77e83c9285c949e77a60d826";
+        let proof = get_sample_proof();
+        let smart_contract_name = EosAccountName::from_str("t11ppntoneos").unwrap();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let pk = EthPrivateKey::from_slice(
+            &hex::decode("e3925cf65ad0baa57cc67eae8fbea03eeeb8464f7ad17b34b28d24f531de71cb").unwrap(),
+        )
+        .unwrap();
+        let tx_infos =
+            EosOnEthEosTxInfos::from_eos_action_proofs(&vec![proof], &dictionary, &smart_contract_name).unwrap();
+        let chain_id: u8 = 4; // NOTE Rinkeby
+        let gas_price = 20_000_000_000;
+        let nonce = 0;
+        let signed_txs = tx_infos.to_eth_signed_txs(nonce, chain_id, gas_price, pk).unwrap();
+        let result = signed_txs[0].serialize_hex();
+        assert_eq!(result, expected_result);
     }
 }
