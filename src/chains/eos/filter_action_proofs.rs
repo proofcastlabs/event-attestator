@@ -1,7 +1,6 @@
 use crate::{
     chains::eos::{
         eos_action_proofs::{EosActionProof, EosActionProofs},
-        eos_constants::REDEEM_ACTION_NAME,
         eos_database_utils::get_eos_account_name_from_db,
         eos_merkle_utils::verify_merkle_proof,
         eos_state::EosState,
@@ -53,14 +52,13 @@ pub fn filter_proofs_for_accounts(
         .concat())
 }
 
-pub fn filter_out_proofs_for_other_actions(action_proofs: &[EosActionProof]) -> Result<EosActionProofs> {
-    let required_action = EosActionName::from_str(REDEEM_ACTION_NAME)?;
+fn filter_for_proofs_with_action_name(action_proofs: &[EosActionProof], action_name: &str) -> Result<EosActionProofs> {
+    let required_action_name = EosActionName::from_str(action_name)?;
     let filtered: EosActionProofs = action_proofs
         .iter()
-        .filter(|proof| proof.action.name == required_action)
+        .filter(|proof| proof.action.name == required_action_name)
         .cloned()
         .collect();
-    info!("✔ Filtering out proofs for other actions...");
     debug!("Num proofs before: {}", action_proofs.len());
     debug!(" Num proofs after: {}", filtered.len());
     Ok(filtered)
@@ -152,7 +150,6 @@ pub fn maybe_filter_out_proofs_for_accounts_not_in_token_dictionary<D: DatabaseI
         &state.action_proofs,
         &state.get_eos_eth_token_dictionary()?.to_eos_accounts()?,
     )
-    .and_then(|proofs| filter_out_proofs_for_other_actions(&proofs))
     .and_then(|proofs| {
         debug!("✔ Number of proofs after: {}", &proofs.len());
         state.replace_action_proofs(proofs)
@@ -164,7 +161,15 @@ pub fn maybe_filter_out_proofs_for_wrong_eos_account_name<D: DatabaseInterface>(
 ) -> Result<EosState<D>> {
     info!("✔ Filtering out proofs for accounts we don't care about...");
     filter_proofs_for_account(&state.action_proofs, get_eos_account_name_from_db(&state.db)?)
-        .and_then(|proofs| filter_out_proofs_for_other_actions(&proofs))
+        .and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_proofs_for_action_name<D: DatabaseInterface>(
+    state: EosState<D>,
+    action_name: &str,
+) -> Result<EosState<D>> {
+    info!("✔ Filtering for proofs with action name: {}", &action_name);
+    filter_for_proofs_with_action_name(&state.action_proofs, &action_name)
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
@@ -203,7 +208,11 @@ pub fn maybe_filter_out_proofs_with_wrong_action_mroot<D: DatabaseInterface>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eos::{eos_test_utils::get_sample_action_proof_n, eos_utils::convert_hex_to_checksum256};
+    use crate::chains::eos::{
+        eos_constants::REDEEM_ACTION_NAME,
+        eos_test_utils::get_sample_action_proof_n,
+        eos_utils::convert_hex_to_checksum256,
+    };
 
     #[test]
     fn should_not_filter_out_proofs_with_action_digests_in_action_receipts() {
@@ -333,23 +342,27 @@ mod tests {
 
     #[test]
     fn should_not_filter_out_proofs_for_valid_actions() {
+        let required_action_name = REDEEM_ACTION_NAME;
         let action_proofs = vec![get_sample_action_proof_n(4), get_sample_action_proof_n(1)];
-        let result = filter_out_proofs_for_other_actions(&action_proofs).unwrap();
+        let result = filter_for_proofs_with_action_name(&action_proofs, &required_action_name).unwrap();
 
         assert_eq!(result, action_proofs);
     }
 
     #[test]
     fn should_filter_out_proofs_for_other_actions() {
-        let valid_action_name = EosActionName::from_str(REDEEM_ACTION_NAME).unwrap();
+        let required_action_name = REDEEM_ACTION_NAME;
         let invalid_action_name = EosActionName::from_str("setproducers").unwrap();
 
         let mut dirty_action_proofs = vec![get_sample_action_proof_n(4), get_sample_action_proof_n(1)];
         dirty_action_proofs[0].action.name = invalid_action_name;
 
-        assert_ne!(dirty_action_proofs[0].action.name, valid_action_name);
+        assert_ne!(
+            dirty_action_proofs[0].action.name,
+            EosActionName::from_str(required_action_name).unwrap()
+        );
 
-        let result = filter_out_proofs_for_other_actions(&dirty_action_proofs).unwrap();
+        let result = filter_for_proofs_with_action_name(&dirty_action_proofs, &required_action_name).unwrap();
 
         assert_eq!(result, [get_sample_action_proof_n(1)]);
     }
