@@ -37,6 +37,7 @@ use crate::{
         },
         eth::{
             eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY},
+            eth_database_utils::get_eos_on_eth_smart_contract_address_from_db,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             validate_block_in_state::validate_block_in_state,
@@ -214,9 +215,9 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
                         submission_material.get_num_receipts()
                     );
                     EosOnEthEthTxInfos::from_eth_submission_material(
-                        &state.db,
                         state.get_eth_submission_material()?,
                         state.get_eos_eth_token_dictionary()?,
+                        &get_eos_on_eth_smart_contract_address_from_db(&state.db)?,
                     )
                     .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
                 },

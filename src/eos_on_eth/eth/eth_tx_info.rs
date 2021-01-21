@@ -27,18 +27,16 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 pub struct EosOnEthEthTxInfos(pub Vec<EosOnEthEthTxInfo>);
 
 impl EosOnEthEthTxInfos {
-    // TODO Test once we have sample material!
-    pub fn from_eth_submission_material<D: DatabaseInterface>(
-        db: &D,
+    pub fn from_eth_submission_material(
         material: &EthSubmissionMaterial,
         token_dictionary: &EosEthTokenDictionary,
+        smart_contract_address: &EthAddress,
     ) -> Result<Self> {
-        let address = get_eos_on_eth_smart_contract_address_from_db(db)?;
         let topic = &EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC[0];
         Ok(Self(
             material
                 .receipts
-                .get_receipts_containing_logs_from_address_and_with_topic(&address, topic)
+                .get_receipts_containing_logs_from_address_and_with_topic(&smart_contract_address, topic)
                 .iter()
                 .map(|receipt| {
                     receipt
@@ -136,9 +134,9 @@ pub fn maybe_parse_eth_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
                 material.receipts.len()
             );
             EosOnEthEthTxInfos::from_eth_submission_material(
-                &state.db,
                 &material,
                 state.get_eos_eth_token_dictionary()?,
+                &get_eos_on_eth_smart_contract_address_from_db(&state.db)?,
             )
             .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
         },
