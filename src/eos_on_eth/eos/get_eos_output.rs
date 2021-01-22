@@ -59,9 +59,9 @@ impl EthTxInfo {
             eth_signed_tx: tx.eth_tx_hex(),
             any_sender_tx: tx.any_sender_tx(),
             _id: if tx.is_any_sender() {
-                format!("eos-on-eth-any-sender-{}", nonce)
+                format!("peos-on-eth-any-sender-{}", nonce)
             } else {
-                format!("eos-on-eth-eth-{}", nonce)
+                format!("peos-on-eth-eth-{}", nonce)
             },
             eth_tx_amount: tx_info.amount.to_string(),
             eth_tx_hash: format!("0x{}", tx.get_tx_hash()),
