@@ -46,7 +46,6 @@ where
         BtcState {
             db,
             any_sender: None,
-            signed_txs: vec![],
             ref_block_num: None,
             eth_signed_txs: None,
             submission_json: None,
@@ -59,6 +58,7 @@ where
             deposit_info_hash_map: None,
             btc_block_in_db_format: None,
             utxos_and_values: vec![].into(),
+            signed_txs: EosSignedTransactions::new(vec![]),
             btc_on_eos_minting_params: BtcOnEosMintingParams::new(vec![]),
             btc_on_eth_minting_params: BtcOnEthMintingParams::new(vec![]),
         }

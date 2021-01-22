@@ -6,8 +6,8 @@ use crate::{
             btc_state::BtcState,
         },
         eos::{
+            eos_crypto::eos_transaction::EosSignedTransaction,
             eos_database_utils::get_eos_account_nonce_from_db,
-            eos_types::EosSignedTransaction,
             eos_unit_conversions::convert_eos_asset_to_u64,
         },
     },

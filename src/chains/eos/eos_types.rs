@@ -97,25 +97,6 @@ pub enum EosNetwork {
     Testnet,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
-pub struct EosSignedTransaction {
-    pub amount: String,
-    pub recipient: String,
-    pub signature: String,
-    pub transaction: String,
-}
-
-impl EosSignedTransaction {
-    pub fn new(signature: String, transaction: String, recipient: String, amount: String) -> EosSignedTransaction {
-        EosSignedTransaction {
-            signature,
-            transaction,
-            amount,
-            recipient,
-        }
-    }
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosBlockHeaderJson {
     pub block_num: u64,

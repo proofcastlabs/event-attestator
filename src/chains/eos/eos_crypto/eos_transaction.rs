@@ -2,10 +2,10 @@ use crate::{
     chains::eos::{
         eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, EOS_MAX_EXPIRATION_SECS, MEMO},
         eos_crypto::eos_private_key::EosPrivateKey,
-        eos_types::EosSignedTransaction,
     },
     types::Result,
 };
+use derive_more::{Constructor, Deref};
 use eos_primitives::{
     Action as EosAction,
     ActionPTokenMint,
@@ -14,7 +14,36 @@ use eos_primitives::{
     Transaction as EosTransaction,
 };
 
-pub type EosSignedTransactions = Vec<EosSignedTransaction>;
+#[derive(Debug, Clone, Eq, PartialEq, Deref, Constructor)]
+pub struct EosSignedTransactions(pub Vec<EosSignedTransaction>);
+
+#[derive(Clone, Debug, Eq, PartialEq, Constructor, Deserialize, Serialize)]
+pub struct EosSignedTransaction {
+    pub amount: String,
+    pub recipient: String,
+    pub signature: String,
+    pub transaction: String,
+}
+
+impl EosSignedTransaction {
+    pub fn from_unsigned_tx(
+        to: &str,
+        amount: &str,
+        chain_id: &str,
+        eos_private_key: &EosPrivateKey,
+        unsigned_tx: &EosTransaction,
+    ) -> Result<EosSignedTransaction> {
+        Ok(Self::new(
+            amount.to_string(),
+            to.to_string(),
+            format!(
+                "{}",
+                eos_private_key.sign_message_bytes(&unsigned_tx.get_signing_data(chain_id)?)?
+            ),
+            hex::encode(&unsigned_tx.to_serialize_data()[..]),
+        ))
+    }
+}
 
 fn get_eos_ptoken_issue_action(
     to: &str,
@@ -30,24 +59,6 @@ fn get_eos_ptoken_issue_action(
         vec![PermissionLevel::from_str(actor, permission_level)?],
         ActionPTokenMint::from_str(to, amount, memo)?,
     )?)
-}
-
-pub fn sign_eos_transaction(
-    to: &str,
-    amount: &str,
-    chain_id: &str,
-    eos_private_key: &EosPrivateKey,
-    unsigned_transaction: &EosTransaction,
-) -> Result<EosSignedTransaction> {
-    Ok(EosSignedTransaction::new(
-        format!(
-            "{}",
-            eos_private_key.sign_message_bytes(&unsigned_transaction.get_signing_data(chain_id)?)?
-        ),
-        hex::encode(&unsigned_transaction.to_serialize_data()[..]),
-        to.to_string(),
-        amount.to_string(),
-    ))
 }
 
 pub fn get_signed_eos_ptoken_issue_tx(
@@ -69,7 +80,7 @@ pub fn get_signed_eos_ptoken_issue_tx(
         EOS_ACCOUNT_PERMISSION_LEVEL,
     )
     .map(|action| EosTransaction::new(EOS_MAX_EXPIRATION_SECS, ref_block_num, ref_block_prefix, vec![action]))
-    .and_then(|unsigned_tx| sign_eos_transaction(to, amount, chain_id, private_key, &unsigned_tx))
+    .and_then(|ref unsigned_tx| EosSignedTransaction::from_unsigned_tx(to, amount, chain_id, private_key, unsigned_tx))
 }
 
 #[cfg(test)]
@@ -122,7 +133,7 @@ mod tests {
         let amount = "1.00000042 PFFF";
         let ref_block_num = 44391;
         let ref_block_prefix = 1355491504;
-        let unsigned_transaction = get_unsigned_eos_ptoken_issue_tx(
+        let unsigned_tx = get_unsigned_eos_ptoken_issue_tx(
             to,
             "ptokensbtc1a",
             "BTC -> pBTC complete!",
@@ -138,7 +149,7 @@ mod tests {
             &hex::decode("0bc331469a2c834b26ff3af7a72e3faab3ee806c368e7a8008f57904237c6057").unwrap(),
         )
         .unwrap();
-        let result = sign_eos_transaction(to, amount, EOS_JUNGLE_CHAIN_ID, &pk, &unsigned_transaction)
+        let result = EosSignedTransaction::from_unsigned_tx(to, amount, EOS_JUNGLE_CHAIN_ID, &pk, &unsigned_tx)
             .unwrap()
             .transaction;
         // NOTE: First 4 bytes are the timestamp (8 hex chars...)

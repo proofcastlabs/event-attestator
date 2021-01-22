@@ -3,7 +3,7 @@ use crate::{
         eos::{
             eos_crypto::{
                 eos_private_key::EosPrivateKey,
-                eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransactions},
+                eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
             },
             eos_database_utils::get_eos_chain_id_from_db,
         },
@@ -25,21 +25,23 @@ pub fn get_signed_eos_ptoken_issue_txs_from_erc20_on_eos_peg_in_infos(
         "✔ Signing {} EOS txs from `erc20-on-eos` peg in infos...",
         peg_in_infos.len()
     );
-    peg_in_infos
-        .iter()
-        .map(|peg_in_info| {
-            info!("✔ Signing EOS tx from `erc20-on-eos` peg in info: {:?}", peg_in_info);
-            get_signed_eos_ptoken_issue_tx(
-                ref_block_num,
-                ref_block_prefix,
-                &peg_in_info.eos_address,
-                &peg_in_info.eos_asset_amount,
-                chain_id,
-                private_key,
-                &peg_in_info.eos_token_address,
-            )
-        })
-        .collect()
+    Ok(EosSignedTransactions::new(
+        peg_in_infos
+            .iter()
+            .map(|peg_in_info| {
+                info!("✔ Signing EOS tx from `erc20-on-eos` peg in info: {:?}", peg_in_info);
+                get_signed_eos_ptoken_issue_tx(
+                    ref_block_num,
+                    ref_block_prefix,
+                    &peg_in_info.eos_address,
+                    &peg_in_info.eos_asset_amount,
+                    chain_id,
+                    private_key,
+                    &peg_in_info.eos_token_address,
+                )
+            })
+            .collect::<Result<Vec<EosSignedTransaction>>>()?,
+    ))
 }
 
 pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {

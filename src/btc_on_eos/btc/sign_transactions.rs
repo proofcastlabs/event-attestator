@@ -5,7 +5,7 @@ use crate::{
         eos::{
             eos_crypto::{
                 eos_private_key::EosPrivateKey,
-                eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransactions},
+                eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
             },
             eos_database_utils::{get_eos_account_name_string_from_db, get_eos_chain_id_from_db},
         },
@@ -23,20 +23,22 @@ pub fn get_signed_eos_ptoken_issue_txs(
     minting_params: &BtcOnEosMintingParams,
 ) -> Result<EosSignedTransactions> {
     info!("✔ Signing {} txs...", minting_params.len());
-    minting_params
-        .iter()
-        .map(|params| {
-            get_signed_eos_ptoken_issue_tx(
-                ref_block_num,
-                ref_block_prefix,
-                &params.to,
-                &params.amount,
-                chain_id,
-                pk,
-                account,
-            )
-        })
-        .collect()
+    Ok(EosSignedTransactions::new(
+        minting_params
+            .iter()
+            .map(|params| {
+                get_signed_eos_ptoken_issue_tx(
+                    ref_block_num,
+                    ref_block_prefix,
+                    &params.to,
+                    &params.amount,
+                    chain_id,
+                    pk,
+                    account,
+                )
+            })
+            .collect::<Result<Vec<EosSignedTransaction>>>()?,
+    ))
 }
 
 pub fn maybe_sign_canon_block_txs_and_add_to_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
