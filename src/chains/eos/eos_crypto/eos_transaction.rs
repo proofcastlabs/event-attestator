@@ -1,6 +1,6 @@
 use crate::{
     chains::eos::{
-        eos_constants::{EOS_MAX_EXPIRATION_SECS, MEMO, PBTC_MINT_FXN_NAME, PEOS_ACCOUNT_PERMISSION_LEVEL},
+        eos_constants::{EOS_MAX_EXPIRATION_SECS, MEMO, PEOS_ACCOUNT_PERMISSION_LEVEL},
         eos_crypto::eos_private_key::EosPrivateKey,
         eos_types::EosSignedTransaction,
     },
@@ -14,15 +14,9 @@ use eos_primitives::{
     Transaction as EosTransaction,
 };
 
-fn get_peos_permission_level(actor: &str, permission_level: &str) -> Result<PermissionLevel> {
-    Ok(PermissionLevel::from_str(actor, permission_level)?)
-}
+// pub const PBTC_MINT_FXN_NAME: &str = "issue";
 
-fn get_peos_transfer_action(to: &str, _from: &str, memo: &str, amount: &str) -> Result<ActionPTokenMint> {
-    Ok(ActionPTokenMint::from_str(to, amount, memo)?)
-}
-
-fn get_eos_minting_action(
+fn get_eos_ptoken_issue_action(
     to: &str,
     from: &str,
     memo: &str,
@@ -32,14 +26,14 @@ fn get_eos_minting_action(
 ) -> Result<EosAction> {
     Ok(EosAction::from_str(
         from,
-        PBTC_MINT_FXN_NAME,
-        vec![get_peos_permission_level(actor, permission_level)?],
-        get_peos_transfer_action(to, from, memo, amount)?,
+        "issue",
+        vec![PermissionLevel::from_str(actor, permission_level)?],
+        ActionPTokenMint::from_str(to, amount, memo)?,
     )?)
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn get_unsigned_eos_minting_tx(
+fn get_unsigned_eos_ptoken_issue_tx(
     to: &str,
     from: &str,
     memo: &str,
@@ -54,11 +48,18 @@ pub fn get_unsigned_eos_minting_tx(
         seconds_from_now,
         ref_block_num,
         ref_block_prefix,
-        vec![get_eos_minting_action(to, from, memo, actor, amount, permission_level)?],
+        vec![get_eos_ptoken_issue_action(
+            to,
+            from,
+            memo,
+            actor,
+            amount,
+            permission_level,
+        )?],
     ))
 }
 
-pub fn sign_peos_transaction(
+fn sign_peos_transaction(
     to: &str,
     amount: &str,
     chain_id: &str,
@@ -87,7 +88,7 @@ pub fn get_signed_tx(
     account_name: &str,
 ) -> Result<EosSignedTransaction> {
     info!("✔ Signing eos tx for {} to {}...", &amount, &to);
-    get_unsigned_eos_minting_tx(
+    get_unsigned_eos_ptoken_issue_tx(
         to,
         account_name,
         MEMO,
@@ -115,7 +116,7 @@ mod tests {
         let amount = "1.00000042 PFFF";
         let ref_block_num = 44391;
         let ref_block_prefix = 1355491504;
-        let unsigned_transaction = get_unsigned_eos_minting_tx(
+        let unsigned_transaction = get_unsigned_eos_ptoken_issue_tx(
             to,
             "ptokensbtc1a",
             "BTC -> pBTC complete!",
