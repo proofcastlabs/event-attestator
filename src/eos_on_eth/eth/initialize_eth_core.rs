@@ -2,7 +2,6 @@ use crate::{
     chains::eth::{
         core_initialization::{
             check_eth_core_is_initialized::is_eth_core_initialized,
-            eth_core_init_utils::check_for_existence_of_eth_contract_byte_code,
             generate_eth_contract_address::generate_and_store_eos_on_eth_contract_address,
             get_eth_core_init_output_json::EthInitializationOutput,
             initialize_eth_core::initialize_eth_core_with_no_contract_tx,
@@ -49,9 +48,8 @@ pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
     chain_id: u8,
     gas_price: u64,
     canon_to_tip_length: u64,
-    bytecode_path: &str,
 ) -> Result<String> {
-    check_for_existence_of_eth_contract_byte_code(bytecode_path).and_then(|_| match is_eth_core_initialized(&db) {
+    match is_eth_core_initialized(&db) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
         false => initialize_eth_core_with_no_contract_tx(
             block_json,
@@ -62,5 +60,5 @@ pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
         )
         .and_then(generate_and_store_eos_on_eth_contract_address)
         .and_then(EthInitializationOutput::new_for_eos_on_eth),
-    })
+    }
 }
