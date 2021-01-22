@@ -7,7 +7,6 @@ use std::fmt;
 pub type MerkleProof = Vec<String>;
 pub type Checksum256s = Vec<Checksum256>;
 pub type ProducerKeys = Vec<EosProducerKey>;
-pub type EosSignedTransactions = Vec<EosSignedTransaction>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EosKnownSchedules(Vec<EosKnownSchedule>);

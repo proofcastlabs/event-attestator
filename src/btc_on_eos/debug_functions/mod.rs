@@ -3,7 +3,7 @@ use crate::{
         btc::{
             get_btc_output_json::{get_btc_output_as_string, get_eos_signed_tx_info_from_eth_txs, BtcOutput},
             minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
-            sign_transactions::get_signed_txs,
+            sign_transactions::get_signed_eos_ptoken_issue_txs,
         },
         check_core_is_initialized::{
             check_core_is_initialized,
@@ -170,7 +170,7 @@ where
         .and_then(create_btc_block_in_db_format_and_put_in_state)
         .and_then(|state| {
             info!("✔ Maybe signing reprocessed minting txs...");
-            get_signed_txs(
+            get_signed_eos_ptoken_issue_txs(
                 state.get_eos_ref_block_num()?,
                 state.get_eos_ref_block_prefix()?,
                 &get_eos_chain_id_from_db(&state.db)?,

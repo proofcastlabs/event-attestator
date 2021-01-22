@@ -9,7 +9,7 @@ use crate::{
             deposit_address_info::{DepositInfoHashMap, DepositInfoList},
             utxo_manager::utxo_types::BtcUtxosAndValues,
         },
-        eos::eos_types::EosSignedTransactions,
+        eos::eos_crypto::eos_transaction::EosSignedTransactions,
         eth::eth_types::{EthTransactions, RelayTransactions},
     },
     traits::DatabaseInterface,

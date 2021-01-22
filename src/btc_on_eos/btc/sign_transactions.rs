@@ -3,16 +3,18 @@ use crate::{
     chains::{
         btc::{btc_database_utils::get_btc_canon_block_from_db, btc_state::BtcState},
         eos::{
-            eos_crypto::{eos_private_key::EosPrivateKey, eos_transaction::get_signed_tx},
+            eos_crypto::{
+                eos_private_key::EosPrivateKey,
+                eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransactions},
+            },
             eos_database_utils::{get_eos_account_name_string_from_db, get_eos_chain_id_from_db},
-            eos_types::EosSignedTransactions,
         },
     },
     traits::DatabaseInterface,
     types::Result,
 };
 
-pub fn get_signed_txs(
+pub fn get_signed_eos_ptoken_issue_txs(
     ref_block_num: u16,
     ref_block_prefix: u32,
     chain_id: &str,
@@ -24,7 +26,7 @@ pub fn get_signed_txs(
     minting_params
         .iter()
         .map(|params| {
-            get_signed_tx(
+            get_signed_eos_ptoken_issue_tx(
                 ref_block_num,
                 ref_block_prefix,
                 &params.to,
@@ -39,7 +41,7 @@ pub fn get_signed_txs(
 
 pub fn maybe_sign_canon_block_txs_and_add_to_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Maybe signing minting txs...");
-    get_signed_txs(
+    get_signed_eos_ptoken_issue_txs(
         state.get_eos_ref_block_num()?,
         state.get_eos_ref_block_prefix()?,
         &get_eos_chain_id_from_db(&state.db)?,

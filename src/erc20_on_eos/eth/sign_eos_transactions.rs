@@ -1,9 +1,11 @@
 use crate::{
     chains::{
         eos::{
-            eos_crypto::{eos_private_key::EosPrivateKey, eos_transaction::get_signed_tx},
+            eos_crypto::{
+                eos_private_key::EosPrivateKey,
+                eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransactions},
+            },
             eos_database_utils::get_eos_chain_id_from_db,
-            eos_types::EosSignedTransactions,
         },
         eth::eth_state::EthState,
     },
@@ -12,7 +14,7 @@ use crate::{
     types::Result,
 };
 
-pub fn get_signed_txs_from_erc20_on_eos_peg_in_infos(
+pub fn get_signed_eos_ptoken_issue_txs_from_erc20_on_eos_peg_in_infos(
     ref_block_num: u16,
     ref_block_prefix: u32,
     chain_id: &str,
@@ -27,7 +29,7 @@ pub fn get_signed_txs_from_erc20_on_eos_peg_in_infos(
         .iter()
         .map(|peg_in_info| {
             info!("✔ Signing EOS tx from `erc20-on-eos` peg in info: {:?}", peg_in_info);
-            get_signed_tx(
+            get_signed_eos_ptoken_issue_tx(
                 ref_block_num,
                 ref_block_prefix,
                 &peg_in_info.eos_address,
@@ -43,7 +45,7 @@ pub fn get_signed_txs_from_erc20_on_eos_peg_in_infos(
 pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Maybe signing `erc20-on-eos` peg in txs...");
     let submission_material = state.get_eth_submission_material()?;
-    get_signed_txs_from_erc20_on_eos_peg_in_infos(
+    get_signed_eos_ptoken_issue_txs_from_erc20_on_eos_peg_in_infos(
         submission_material.get_eos_ref_block_num()?,
         submission_material.get_eos_ref_block_prefix()?,
         &get_eos_chain_id_from_db(&state.db)?,
