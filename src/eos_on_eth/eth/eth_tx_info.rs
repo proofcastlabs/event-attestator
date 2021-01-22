@@ -26,7 +26,7 @@ use derive_more::{Constructor, Deref};
 use eos_primitives::{
     AccountName as EosAccountName,
     Action as EosAction,
-    ActionPTokenPegIn,
+    ActionPTokenPegOut,
     PermissionLevel,
     Transaction as EosTransaction,
 };
@@ -132,7 +132,7 @@ impl EosOnEthEthTxInfo {
         })
     }
 
-    fn get_eos_ptoken_peg_in_action(
+    fn get_eos_ptoken_peg_out_action(
         from: &str,
         actor: &str,
         permission_level: &str,
@@ -147,9 +147,9 @@ impl EosOnEthEthTxInfo {
         );
         Ok(EosAction::from_str(
             from,
-            "pegin",
+            "pegout",
             vec![PermissionLevel::from_str(actor, permission_level)?],
-            ActionPTokenPegIn::from_str(token_contract, quantity, recipient, metadata)?,
+            ActionPTokenPegOut::from_str(token_contract, quantity, recipient, metadata)?,
         )?)
     }
 
@@ -167,14 +167,14 @@ impl EosOnEthEthTxInfo {
             "smart-contract: {}\namount: {}\nchain ID: {}",
             &eos_smart_contract, &amount, &chain_id
         );
-        Self::get_eos_ptoken_peg_in_action(
+        Self::get_eos_ptoken_peg_out_action(
             &eos_smart_contract.to_string(),
             &eos_smart_contract.to_string(),
             EOS_ACCOUNT_PERMISSION_LEVEL,
             &self.eos_token_address,
             &self.eos_asset_amount,
             &self.eos_address,
-            &vec![], // NOTE: Empty  metadata for now.
+            &vec![], // NOTE: Empty metadata for now.
         )
         .map(|action| EosTransaction::new(EOS_MAX_EXPIRATION_SECS, ref_block_num, ref_block_prefix, vec![action]))
         .and_then(|ref unsigned_tx| {
