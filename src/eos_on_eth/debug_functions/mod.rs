@@ -37,7 +37,6 @@ use crate::{
         },
         eth::{
             eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY},
-            eth_database_utils::get_eos_on_eth_smart_contract_address_from_db,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             validate_block_in_state::validate_block_in_state,
@@ -70,7 +69,7 @@ use crate::{
                 EosOnEthEthTxInfos,
             },
             filter_receipts_in_state::filter_receipts_for_eos_on_eth_eth_tx_info_in_state,
-            get_output_json::get_output_json,
+            get_output_json::get_debug_reprocess_output_json,
         },
     },
     traits::DatabaseInterface,
@@ -217,7 +216,6 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
                     EosOnEthEthTxInfos::from_eth_submission_material(
                         state.get_eth_submission_material()?,
                         state.get_eos_eth_token_dictionary()?,
-                        &get_eos_on_eth_smart_contract_address_from_db(&state.db)?,
                     )
                     .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
                 },
@@ -225,7 +223,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
         })
         .and_then(maybe_filter_out_eth_tx_info_with_value_too_low_in_state)
         .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
-        .and_then(get_output_json)
+        .and_then(get_debug_reprocess_output_json)
         .map(prepend_debug_output_marker_to_string)
 }
 

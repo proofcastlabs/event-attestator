@@ -66,14 +66,22 @@ pub struct EosOnEthEthOutput {
     pub eos_signed_transactions: Vec<EosOnEthEthOutputDetails>,
 }
 
-pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
-    info!("✔ Getting `eos-on-eth` ETH submission output json...");
+pub fn get_output_json_with_start_nonce<D: DatabaseInterface>(
+    state: EthState<D>,
+    use_db_nonce: bool,
+) -> Result<String> {
     Ok(serde_json::to_string(&EosOnEthEthOutput {
         eth_latest_block_number: get_eth_latest_block_from_db(&state.db)?.get_block_number()?.as_u64(),
         eos_signed_transactions: match state.eos_transactions {
             None => vec![],
             Some(ref eos_txs) => {
-                let start_nonce = get_eos_account_nonce_from_db(&state.db)? - eos_txs.len() as u64;
+                let start_nonce = if use_db_nonce {
+                    get_eos_account_nonce_from_db(&state.db)? - eos_txs.len() as u64
+                } else {
+                    // NOTE: In case ETH block reprocess happens where num txs outputted are >
+                    // current EOS nonce in db. This path is only used when getting a debug output.
+                    eos_txs.len() as u64
+                };
                 eos_txs
                     .iter()
                     .enumerate()
@@ -89,4 +97,14 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
             },
         },
     })?)
+}
+
+pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+    info!("✔ Getting `eos-on-eth` ETH submission output json...");
+    get_output_json_with_start_nonce(state, true)
+}
+
+pub fn get_debug_reprocess_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+    info!("✔ Getting `debug_reprocess_eth_block` output...");
+    get_output_json_with_start_nonce(state, false)
 }
