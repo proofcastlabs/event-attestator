@@ -30,7 +30,7 @@ use eos_primitives::{AccountName as EosAccountName, Checksum256, ProducerSchedul
 use std::str::FromStr;
 
 pub fn put_eos_public_key_in_db<D: DatabaseInterface>(db: &D, public_key: &EosPublicKey) -> Result<()> {
-    debug!("✔ Putting EOS public key from db...");
+    debug!("✔ Putting EOS public key in db...");
     db.put(
         EOS_PUBLIC_KEY_DB_KEY.to_vec(),
         public_key.to_bytes(),

@@ -50,7 +50,7 @@ impl EosOnEthEthOutputDetails {
             eos_tx_recipient: eos_tx.recipient.clone(),
             eos_serialized_tx: eos_tx.transaction.clone(),
             eth_tx_amount: tx_info.token_amount.to_string(),
-            _id: format!("peos-on-eth-{}", eos_account_nonce),
+            _id: format!("peos-on-eth-eos-{}", eos_account_nonce),
             host_token_address: tx_info.eos_token_address.to_string(),
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender)),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),

@@ -32,6 +32,8 @@ use eos_primitives::{
 };
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
+const ZERO_ETH_ASSET_STR: &str = "0.0000 EOS";
+
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
 pub struct EosOnEthEthTxInfos(pub Vec<EosOnEthEthTxInfo>);
 
@@ -95,7 +97,7 @@ impl EosOnEthEthTxInfos {
                         ref_block_num,
                         ref_block_prefix,
                         &eos_smart_contract,
-                        "0.0000 EOS", // FIXME Should this be a constant?
+                        ZERO_ETH_ASSET_STR,
                         chain_id,
                         pk,
                     )
@@ -174,7 +176,7 @@ impl EosOnEthEthTxInfo {
             &self.eos_token_address,
             &self.eos_asset_amount,
             &self.eos_address,
-            &vec![], // NOTE: Empty metadata for now.
+            &[], // NOTE: Empty metadata for now.
         )
         .map(|action| EosTransaction::new(EOS_MAX_EXPIRATION_SECS, ref_block_num, ref_block_prefix, vec![action]))
         .and_then(|ref unsigned_tx| {
