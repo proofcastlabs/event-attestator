@@ -236,13 +236,13 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
 mod tests {
     use super::*;
     use crate::eos_on_eth::test_utils::{get_eth_submission_material_n, get_sample_eos_eth_token_dictionary};
+    use std::str::FromStr;
 
     #[test]
     fn should_get_tx_info_from_eth_submission_material() {
-        let submission_material = get_eth_submission_material_n(1).unwrap();
-        let token_dictionary = get_sample_eos_eth_token_dictionary();
-        let tx_infos =
-            EosOnEthEthTxInfos::from_eth_submission_material(&submission_material, &token_dictionary).unwrap();
+        let material = get_eth_submission_material_n(1).unwrap();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let tx_infos = EosOnEthEthTxInfos::from_eth_submission_material(&material, &dictionary).unwrap();
         let result = tx_infos[0].clone();
         let expected_token_amount = U256::from_dec_str("100000000000000").unwrap();
         let expected_eos_address = "whateverxxxx";
@@ -262,5 +262,28 @@ mod tests {
         assert_eq!(result.token_sender, expected_token_sender);
         assert_eq!(result.eth_token_address, expected_eth_token_address);
         assert_eq!(result.originating_tx_hash, expected_originating_tx_hash);
+    }
+
+    #[test]
+    fn should_get_eos_signed_txs_from_tx_info() {
+        let material = get_eth_submission_material_n(1).unwrap();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let tx_infos = EosOnEthEthTxInfos::from_eth_submission_material(&material, &dictionary).unwrap();
+        let ref_block_num = 1;
+        let ref_block_prefix = 1;
+        let chain_id = "aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906";
+        let pk = EosPrivateKey::from_slice(
+            &hex::decode("17b116e5e55af3b9985ff6c6e0320578176b83ca55570a66683d3b36d9deca64").unwrap(),
+        )
+        .unwrap();
+        let eos_smart_contract = EosAccountName::from_str("11ppntoneos").unwrap();
+        let result = tx_infos
+            .to_eos_signed_txs(ref_block_num, ref_block_prefix, chain_id, &pk, &eos_smart_contract)
+            .unwrap()[0]
+            .transaction
+            .clone();
+        let expected_result = "010001000000000000000100305593e6596b0800000000644d99aa0100305593e6596b0800000000a8ed32322100a6823403ea3055010000000000000004454f5300000000d07bef576d954de30000";
+        let result_with_no_timestamp = &result[8..];
+        assert_eq!(result_with_no_timestamp, expected_result);
     }
 }
