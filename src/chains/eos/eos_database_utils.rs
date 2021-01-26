@@ -73,7 +73,7 @@ pub fn put_eos_last_seen_block_num_in_db<D: DatabaseInterface>(db: &D, num: u64)
 }
 
 pub fn get_latest_eos_block_number<D: DatabaseInterface>(db: &D) -> Result<u64> {
-    debug!("✔ Getting EOS latest block number from DB...");
+    debug!("✔ Getting EOS latest block number from db...");
     get_u64_from_db(db, &EOS_LAST_SEEN_BLOCK_NUM_KEY.to_vec())
 }
 
@@ -148,7 +148,7 @@ pub fn get_eos_schedule_from_db<D: DatabaseInterface>(db: &D, version: u32) -> R
 }
 
 pub fn get_eos_account_nonce_from_db<D: DatabaseInterface>(db: &D) -> Result<u64> {
-    debug!("✔ Getting EOS account nonce from DB...");
+    debug!("✔ Getting EOS account nonce from db...");
     get_u64_from_db(db, &EOS_ACCOUNT_NONCE_KEY.to_vec())
 }
 
@@ -163,7 +163,7 @@ pub fn put_eos_token_symbol_in_db<D: DatabaseInterface>(db: &D, name: &str) -> R
 }
 
 pub fn get_eos_token_symbol_from_db<D: DatabaseInterface>(db: &D) -> Result<String> {
-    debug!("✔ Getting EOS token symbol from DB...");
+    debug!("✔ Getting EOS token symbol from db...");
     get_string_from_db(db, &EOS_TOKEN_SYMBOL_KEY.to_vec())
 }
 
@@ -193,7 +193,7 @@ pub fn get_eos_chain_id_from_db<D: DatabaseInterface>(db: &D) -> Result<String> 
 }
 
 pub fn get_processed_global_sequences_from_db<D: DatabaseInterface>(db: &D) -> Result<ProcessedGlobalSequences> {
-    debug!("✔ Getting EOS processed actions from DB...");
+    debug!("✔ Getting EOS processed actions from db...");
     db.get(PROCESSED_TX_IDS_KEY.to_vec(), None)
         .and_then(|bytes| Ok(serde_json::from_slice(&bytes[..])?))
 }

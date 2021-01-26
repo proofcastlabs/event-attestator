@@ -36,10 +36,9 @@ impl EosSignedTransaction {
         Ok(Self::new(
             amount.to_string(),
             to.to_string(),
-            format!(
-                "{}",
-                eos_private_key.sign_message_bytes(&unsigned_tx.get_signing_data(chain_id)?)?
-            ),
+            eos_private_key
+                .sign_message_bytes(&unsigned_tx.get_signing_data(chain_id)?)?
+                .to_string(),
             hex::encode(&unsigned_tx.to_serialize_data()[..]),
         ))
     }

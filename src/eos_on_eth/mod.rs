@@ -9,7 +9,7 @@
 //! built with the `debug` feaure flag enabled in the `Cargo.toml`:
 //!
 //! ```no_compile
-//! ptokens_core = { version = "1.0.0", features = ["debug"] }
+//! ptokens_core = { version = "4.5.0", features = ["debug"] }
 //! ```
 
 pub mod debug_functions;

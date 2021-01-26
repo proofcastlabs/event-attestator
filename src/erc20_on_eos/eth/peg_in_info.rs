@@ -96,10 +96,10 @@ impl Erc20OnEosPegInInfos {
     }
 
     fn check_log_is_erc20_peg_in(log: &EthLog) -> Result<()> {
-        trace!("✔ Checking if log is a erc20 peg in...");
+        trace!("✔ Checking if log is an erc20 peg in...");
         match Self::is_log_erc20_peg_in(log)? {
             true => Ok(()),
-            false => Err("✘ Log is not from a erc20 peg in event!".into()),
+            false => Err("✘ Log is not from an erc20 peg in event!".into()),
         }
     }
 
@@ -147,7 +147,7 @@ impl Erc20OnEosPegInInfos {
     }
 
     fn extract_eos_address_from_log(log: &EthLog) -> Result<String> {
-        info!("✔ Parsing  EOS address from log...");
+        info!("✔ Parsing EOS address from log...");
         const START_INDEX: usize = ETH_WORD_SIZE_IN_BYTES * 5;
         Ok(log.data[START_INDEX..]
             .iter()
@@ -204,7 +204,7 @@ impl Erc20OnEosPegInInfos {
                         token_dictionary.get_eos_account_name_from_eth_token_address(&token_contract_address)?,
                         token_dictionary.convert_u256_to_eos_asset_string(&token_contract_address, &eth_amount)?,
                     );
-                    info!("✔ Parsed peg-in info: {:?}", peg_in_info);
+                    info!("✔ Parsed peg in info: {:?}", peg_in_info);
                     Ok(peg_in_info)
                 })
                 .collect::<Result<Vec<Erc20OnEosPegInInfo>>>()?,
@@ -215,7 +215,7 @@ impl Erc20OnEosPegInInfos {
         submission_material: &EthSubmissionMaterial,
         token_dictionary: &EosEthTokenDictionary,
     ) -> Result<EthSubmissionMaterial> {
-        info!("✔ Filtering submission material receipts for those pertaining to `Erc20-on-eos` peg-ins...");
+        info!("✔ Filtering submission material receipts for those pertaining to `erc20-on-eos` peg-ins...");
         info!(
             "✔ Num receipts before filtering: {}",
             submission_material.receipts.len()
