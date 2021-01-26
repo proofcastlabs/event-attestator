@@ -417,8 +417,7 @@ mod tests {
             &hex::decode("e3925cf65ad0baa57cc67eae8fbea03eeeb8464f7ad17b34b28d24f531de71cb").unwrap(),
         )
         .unwrap();
-        let tx_infos =
-            EosOnEthEosTxInfos::from_eos_action_proofs(&[proof], &dictionary, &smart_contract_name).unwrap();
+        let tx_infos = EosOnEthEosTxInfos::from_eos_action_proofs(&[proof], &dictionary, &smart_contract_name).unwrap();
         let chain_id: u8 = 4; // NOTE Rinkeby
         let gas_price = 20_000_000_000;
         let nonce = 0;

@@ -31,7 +31,7 @@ use crate::{
     },
     constants::CORE_IS_VALIDATING,
     traits::DatabaseInterface,
-    types::{Bytes, Result},
+    types::{Bytes, NoneError, Result},
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -40,6 +40,7 @@ pub struct EosInitJson {
     pub blockroot_merkle: Vec<String>,
     pub active_schedule: EosProducerScheduleJsonV2,
     pub maybe_protocol_features_to_enable: Option<Vec<String>>,
+    pub eos_eth_token_dictionary: Option<EosEthTokenDictionaryJson>,
     pub erc20_on_eos_token_dictionary: Option<EosEthTokenDictionaryJson>,
 }
 
@@ -264,25 +265,28 @@ where
     info!("✔ Putting EOS chain ID '{}' into db...", chain_id);
     put_eos_chain_id_in_db(&state.db, chain_id).and(Ok(state))
 }
-pub fn maybe_put_eos_eth_token_dictionary_in_db_and_return_state<D>(
+pub fn maybe_put_eos_eth_token_dictionary_in_db_and_return_state<D: DatabaseInterface>(
     init_json: &EosInitJson,
     state: EosState<D>,
-) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
-    match init_json.erc20_on_eos_token_dictionary {
-        None => {
-            info!("✔ No `EosEthTokenDictionaryJson` in `init-json` ∴ doing nothing!");
-            Ok(state)
-        },
-        Some(ref dictionary_json) => {
-            info!("✔ `EosEthTokenDictionary` in `init-json` ∴ putting it in db...");
-            EosEthTokenDictionary::from_json(dictionary_json)
-                .and_then(|dict| dict.save_to_db(&state.db))
-                .and(Ok(state))
-        },
-    }
+) -> Result<EosState<D>> {
+    let json = if init_json.erc20_on_eos_token_dictionary.is_some() {
+        init_json
+            .erc20_on_eos_token_dictionary
+            .as_ref()
+            .ok_or(NoneError("✘ Could not unwrap `erc20_on_eos_token_dictionary`!"))?
+    } else if init_json.eos_eth_token_dictionary.is_some() {
+        init_json
+            .eos_eth_token_dictionary
+            .as_ref()
+            .ok_or(NoneError("✘ Could not unwrap `eos_eth_token_dictionary`!"))?
+    } else {
+        info!("✔ No `eos_eth_token_dictionary` in `init-json` ∴ doing nothing!");
+        return Ok(state);
+    };
+    info!("✔ `EosEthTokenDictionary` found in `init-json` ∴ putting it in db...");
+    EosEthTokenDictionary::from_json(json)
+        .and_then(|dict| dict.save_to_db(&state.db))
+        .and(Ok(state))
 }
 
 #[cfg(test)]

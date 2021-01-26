@@ -28,8 +28,8 @@ pub struct EosEnclaveState {
     eos_last_seen_block_num: u64,
     eos_last_seen_block_id: String,
     eos_known_schedules: EosKnownSchedulesJsons,
-    eos_eth_token_dictionary: EosEthTokenDictionaryJson,
     eos_enabled_protocol_features: EnabledFeatures,
+    eos_eth_token_dictionary: EosEthTokenDictionaryJson,
     processed_global_sequences: ProcessedGlobalSequences,
 }
 
