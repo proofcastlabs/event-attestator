@@ -19,7 +19,7 @@ use crate::{
     types::{Bytes, Result},
 };
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
-use std::{fs::read_to_string, path::Path};
+use std::{fs::read_to_string, path::Path, str::FromStr};
 
 pub const HASH_HEX_CHARS: usize = 64;
 pub const HEX_PREFIX_LENGTH: usize = 2;
@@ -193,7 +193,7 @@ pub fn get_sample_eth_address() -> EthAddress {
 }
 
 pub fn get_sample_eth_private_key() -> EthPrivateKey {
-    EthPrivateKey::from_slice(get_sample_eth_private_key_slice()).unwrap()
+    EthPrivateKey::from_slice(&get_sample_eth_private_key_slice()).unwrap()
 }
 
 pub fn get_sample_eth_public_key() -> EthPublicKey {
@@ -584,4 +584,27 @@ pub fn get_sample_erc20_on_eos_peg_in_info() -> Result<Erc20OnEosPegInInfo> {
 
 pub fn get_sample_erc20_on_eos_peg_in_infos() -> Result<Erc20OnEosPegInInfos> {
     Ok(Erc20OnEosPegInInfos::new(vec![get_sample_erc20_on_eos_peg_in_info()?]))
+}
+
+fn get_tx_hash_of_erc777_redeem() -> &'static str {
+    "442612aba789ce873bb3804ff62ced770dcecb07d19ddcf9b651c357eebaed40"
+}
+
+fn get_sample_block_with_erc777_redeem() -> EthSubmissionMaterial {
+    get_sample_eth_submission_material_n(4).unwrap()
+}
+
+pub fn get_sample_receipt_with_erc777_redeem() -> EthReceipt {
+    let hash = EthHash::from_str(get_tx_hash_of_erc777_redeem()).unwrap();
+    get_sample_block_with_erc777_redeem()
+        .receipts
+        .0
+        .iter()
+        .filter(|receipt| receipt.transaction_hash == hash)
+        .collect::<Vec<&EthReceipt>>()[0]
+        .clone()
+}
+
+pub fn get_sample_log_with_erc777_redeem() -> EthLog {
+    get_sample_receipt_with_erc777_redeem().logs.0[2].clone()
 }

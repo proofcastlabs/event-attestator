@@ -1,7 +1,8 @@
 use crate::{
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfo,
     chains::eos::{
-        eos_erc20_dictionary::{EosErc20Dictionary, EosErc20DictionaryEntry},
+        eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
+        eos_global_sequences::GlobalSequence,
         eos_types::MerkleProof,
         eos_utils::convert_hex_to_checksum256,
         parse_eos_action_receipts::parse_eos_action_receipt_json,
@@ -20,6 +21,7 @@ use eos_primitives::{
     Checksum256,
     PermissionLevel,
     PermissionLevels,
+    SerializeData,
     Symbol as EosSymbol,
 };
 use ethereum_types::{Address as EthAddress, U256};
@@ -39,6 +41,14 @@ pub struct EosActionProof {
 }
 
 impl EosActionProof {
+    pub fn get_global_sequence(&self) -> GlobalSequence {
+        self.action_receipt.global_sequence
+    }
+
+    pub fn get_serialized_action(&self) -> Bytes {
+        self.action.to_serialize_data()
+    }
+
     #[allow(dead_code)] // TODO Use when checking for correct symbol!
     fn get_eos_symbol(&self) -> Result<EosSymbol> {
         Ok(EosSymbol::new(convert_bytes_to_u64(
@@ -50,13 +60,13 @@ impl EosActionProof {
         convert_bytes_to_u64(&self.action.data[8..16].to_vec())
     }
 
-    fn get_erc20_on_eos_eth_redeem_amount(&self, dictionary_entry: &EosErc20DictionaryEntry) -> Result<U256> {
+    fn get_erc20_on_eos_eth_redeem_amount(&self, dictionary_entry: &EosEthTokenDictionaryEntry) -> Result<U256> {
         dictionary_entry
             .convert_u64_to_eos_asset(convert_bytes_to_u64(&self.action.data[8..16].to_vec())?)
             .and_then(|eos_asset| dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset))
     }
 
-    fn get_redeem_action_sender(&self) -> Result<EosAccountName> {
+    pub fn get_action_sender(&self) -> Result<EosAccountName> {
         let account_name = EosAccountName::new(convert_bytes_to_u64(&self.action.data[..8].to_vec())?);
         debug!("✔ Account name parsed from redeem action: {}", account_name);
         Ok(account_name)
@@ -100,20 +110,26 @@ impl EosActionProof {
         })
     }
 
+    // TODO Impl this on the `BtcOnEosRedeemInfo` type instead of here!
     pub fn to_btc_on_eos_redeem_info(&self) -> Result<BtcOnEosRedeemInfo> {
         info!("✔ Converting action proof to `btc-on-eos` redeem info...");
         Ok(BtcOnEosRedeemInfo {
             originating_tx_id: self.tx_id,
-            from: self.get_redeem_action_sender()?,
+            from: self.get_action_sender()?,
             amount: self.get_btc_on_eos_eos_amount()?,
             recipient: self.get_btc_on_eos_btc_redeem_address()?,
             global_sequence: self.action_receipt.global_sequence,
         })
     }
 
-    pub fn to_erc20_on_eos_redeem_info(&self, dictionary: &EosErc20Dictionary) -> Result<Erc20OnEosRedeemInfo> {
+    fn get_action_eos_account(&self) -> EosAccountName {
+        self.action.account
+    }
+
+    // TODO Impl this on the `Erc20OnEosRedeemInfo` type instead of here!
+    pub fn to_erc20_on_eos_redeem_info(&self, dictionary: &EosEthTokenDictionary) -> Result<Erc20OnEosRedeemInfo> {
         dictionary
-            .get_entry_via_eos_address(&self.action.account.to_string())
+            .get_entry_via_eos_address(&self.get_action_eos_account())
             .and_then(|entry| {
                 let amount = self.get_erc20_on_eos_eth_redeem_amount(&entry)?;
                 let eos_tx_amount = entry.convert_u256_to_eos_asset_string(&amount)?;
@@ -123,7 +139,7 @@ impl EosActionProof {
                     eos_tx_amount,
                     originating_tx_id: self.tx_id,
                     eth_token_address: entry.eth_address,
-                    from: self.get_redeem_action_sender()?,
+                    from: self.get_action_sender()?,
                     eos_token_address: entry.eos_address,
                     global_sequence: self.action_receipt.global_sequence,
                     recipient: self.get_erc20_on_eos_eth_redeem_address_or_default_to_safe_address()?,
@@ -213,7 +229,7 @@ mod tests {
     fn should_get_sender() {
         let expected_result = EosAccountName::from_str("provtestable").unwrap();
         let result = get_sample_eos_submission_material_n(1).action_proofs[0]
-            .get_redeem_action_sender()
+            .get_action_sender()
             .unwrap();
         assert_eq!(result, expected_result);
     }
@@ -319,7 +335,7 @@ mod tests {
 
     #[test]
     fn should_get_erc20_on_eos_eth_redeem_amount() {
-        let dictionary_entry = EosErc20DictionaryEntry::new(
+        let dictionary_entry = EosEthTokenDictionaryEntry::new(
             18,
             9,
             "PETH".to_string(),
@@ -354,7 +370,7 @@ mod tests {
             eos_account_name.clone(),
             "0.000001337 PETH".to_string(),
         );
-        let dictionary = EosErc20Dictionary::new(vec![EosErc20DictionaryEntry::new(
+        let dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             18,
             9,
             "PETH".to_string(),

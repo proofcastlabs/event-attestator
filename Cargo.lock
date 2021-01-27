@@ -272,7 +272,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "eos-keys"
 version = "0.1.0"
-source = "git+https://github.com/provable-things/rust-eos.git?branch=provable-additions#83f8b8c9bf6e4c928c57347cbdd7ce2af89e4afb"
+source = "git+https://github.com/provable-things/rust-eos.git?branch=provable-additions#9567908d78d948d5412b0473df104d375e4a808b"
 dependencies = [
  "bitcoin_hashes",
  "byteorder",
@@ -284,7 +284,7 @@ dependencies = [
 [[package]]
 name = "eos-primitives"
 version = "0.2.0"
-source = "git+https://github.com/provable-things/rust-eos.git?branch=provable-additions#83f8b8c9bf6e4c928c57347cbdd7ce2af89e4afb"
+source = "git+https://github.com/provable-things/rust-eos.git?branch=provable-additions#9567908d78d948d5412b0473df104d375e4a808b"
 dependencies = [
  "bitcoin_hashes",
  "chrono",
@@ -299,7 +299,7 @@ dependencies = [
 [[package]]
 name = "eosio-core-derive"
 version = "0.2.1"
-source = "git+https://github.com/provable-things/rust-eos.git?branch=provable-additions#83f8b8c9bf6e4c928c57347cbdd7ce2af89e4afb"
+source = "git+https://github.com/provable-things/rust-eos.git?branch=provable-additions#9567908d78d948d5412b0473df104d375e4a808b"
 dependencies = [
  "proc-macro2 0.4.30",
  "quote 0.6.13",
@@ -546,7 +546,7 @@ dependencies = [
 
 [[package]]
 name = "ptokens_core"
-version = "4.4.0"
+version = "4.5.0"
 dependencies = [
  "base58",
  "bitcoin",

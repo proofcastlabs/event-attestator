@@ -4,8 +4,9 @@ use crate::{
         core_initialization::eos_init_utils::EosInitJson,
         eos_action_proofs::{EosActionProof, EosActionProofs},
         eos_crypto::{eos_private_key::EosPrivateKey, eos_public_key::EosPublicKey, eos_signature::EosSignature},
-        eos_erc20_dictionary::{EosErc20Dictionary, EosErc20DictionaryEntry, EosErc20DictionaryJson},
+        eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry, EosEthTokenDictionaryJson},
         eos_merkle_utils::Incremerkle,
+        eos_submission_material::{EosSubmissionMaterial, EosSubmissionMaterialJson},
         eos_types::{Checksum256s, EosBlockHeaderJson},
         eos_utils::convert_hex_to_checksum256,
         parse_eos_schedule::{
@@ -16,13 +17,6 @@ use crate::{
             parse_v2_schedule_string_to_v2_schedule_json,
             EosProducerScheduleJsonV1,
             EosProducerScheduleJsonV2,
-        },
-        parse_submission_material::{
-            parse_eos_block_header_from_json,
-            parse_eos_submission_material_string_to_json,
-            parse_eos_submission_material_string_to_struct,
-            EosSubmissionMaterial,
-            EosSubmissionMaterialJson,
         },
         protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
     },
@@ -81,7 +75,7 @@ pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_3: &str =
     "src/chains/eos/eos_test_utils/mainnet-init-block-125293952.json";
 
 pub const SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_4: &str =
-    "src/chains/eos/eos_test_utils/mainnet-init-block-125293952_with_erc20_dictionary.json";
+    "src/chains/eos/eos_test_utils/mainnet-init-block-125293952_with_eos_eth_token_dictionary.json";
 
 pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_JUNGLE_3_JSON_1: &str =
     "src/chains/eos/eos_test_utils/eos-init-and-subsequent-blocks-jungle-3-1.json";
@@ -149,25 +143,13 @@ impl EosInitAndSubsequentBlocksJson {
     }
 
     pub fn get_block_n(&self, n: usize) -> Result<EosBlockHeader> {
-        parse_eos_block_header_from_json(&self.get_block_json_n(n)?)
+        EosSubmissionMaterial::parse_eos_block_header_from_json(&self.get_block_json_n(n)?)
     }
 
     pub fn get_producer_signature_for_block_n(&self, n: usize) -> Result<String> {
         self.check_n(n)
             .and_then(|_| self.get_block_json_n(n))
             .map(|block_json| block_json.producer_signature)
-    }
-
-    #[allow(dead_code)]
-    pub fn get_interim_ids_for_block_n(&self, n: usize) -> Result<Checksum256s> {
-        match n < 1 && n <= self.total_num_blocks() {
-            false => Err(format!("✘ Error getting interim IDs for block {}", n).into()),
-            true => self.subsequent_blocks[n]
-                .interim_block_ids
-                .iter()
-                .map(convert_hex_to_checksum256)
-                .collect::<Result<Checksum256s>>(),
-        }
     }
 
     pub fn get_incremerkle_for_block_n(&self, n: usize) -> Result<Incremerkle> {
@@ -209,14 +191,11 @@ pub fn get_init_and_subsequent_blocks_json_n(num: usize) -> Result<EosInitAndSub
         2 => Ok(SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_1),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num))),
     }?;
-    let string = match Path::new(&path).exists() {
-        true => Ok(read_to_string(path)?),
-        false => Err(AppError::Custom(format!(
-            "✘ Can't find sample init block json file @ path: {}",
-            path
-        ))),
-    }?;
-    EosInitAndSubsequentBlocksJson::from_json_string(&string)
+    if let Ok(contents) = read_to_string(path) {
+        EosInitAndSubsequentBlocksJson::from_json_string(&contents)
+    } else {
+        Err(format!("✘ Can't find sample init block json file @ path: {}", path).into())
+    }
 }
 
 pub const NUM_J3_INIT_SAMPLES: usize = 3;
@@ -228,14 +207,11 @@ pub fn get_j3_init_json_n(num: usize) -> Result<EosInitJson> {
         3 => Ok(SAMPLE_J3_INIT_BLOCK_JSON_PATH_3),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num))),
     }?;
-    let string = match Path::new(&path).exists() {
-        true => Ok(read_to_string(path)?),
-        false => Err(AppError::Custom(format!(
-            "✘ Can't find sample init block json file @ path: {}",
-            path
-        ))),
-    }?;
-    EosInitJson::from_json_string(&string)
+    if let Ok(contents) = read_to_string(path) {
+        EosInitJson::from_json_string(&contents)
+    } else {
+        Err(format!("✘ Can't find sample init block json file @ path: {}", path).into())
+    }
 }
 
 pub const NUM_MAINNET_INIT_SAMPLES: usize = 2;
@@ -248,17 +224,14 @@ pub fn get_mainnet_init_json_n(num: usize) -> Result<EosInitJson> {
         4 => Ok(SAMPLE_MAINNET_INIT_BLOCK_JSON_PATH_4),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num))),
     }?;
-    let string = match Path::new(&path).exists() {
-        true => Ok(read_to_string(path)?),
-        false => Err(AppError::Custom(format!(
-            "✘ Can't find sample init block json file @ path: {}",
-            path
-        ))),
-    }?;
-    EosInitJson::from_json_string(&string)
+    if let Ok(contents) = read_to_string(path) {
+        EosInitJson::from_json_string(&contents)
+    } else {
+        Err(format!("✘ Can't find sample init block json file @ path: {}", path).into())
+    }
 }
 
-pub fn get_sample_mainnet_init_json_with_erc20_dictionary() -> Result<EosInitJson> {
+pub fn get_sample_mainnet_init_json_with_eos_eth_token_dictionary() -> Result<EosInitJson> {
     get_mainnet_init_json_n(4)
 }
 
@@ -313,11 +286,11 @@ pub fn get_sample_v2_schedule() -> Result<EosProducerScheduleV2> {
 }
 
 pub fn get_sample_eos_submission_material_n(n: usize) -> EosSubmissionMaterial {
-    parse_eos_submission_material_string_to_struct(&get_sample_eos_submission_material_string_n(n).unwrap()).unwrap()
+    EosSubmissionMaterial::from_str(&get_sample_eos_submission_material_string_n(n).unwrap()).unwrap()
 }
 
 pub fn get_sample_eos_submission_material_json_n(n: usize) -> EosSubmissionMaterialJson {
-    parse_eos_submission_material_string_to_json(&get_sample_eos_submission_material_string_n(n).unwrap()).unwrap()
+    EosSubmissionMaterialJson::from_str(&get_sample_eos_submission_material_string_n(n).unwrap()).unwrap()
 }
 
 pub fn get_sample_eos_submission_material_string_n(num: usize) -> Result<String> {
@@ -426,9 +399,9 @@ pub fn get_sample_action_proof_n(n: usize) -> EosActionProof {
     get_sample_action_proofs_n(n)[0].clone()
 }
 
-pub fn get_sample_eos_erc20_dictionary_entry_1() -> EosErc20DictionaryEntry {
+pub fn get_sample_eos_eth_token_dictionary_entry_1() -> EosEthTokenDictionaryEntry {
     let token_address_hex = "9f57CB2a4F462a5258a49E88B4331068a391DE66".to_string();
-    EosErc20DictionaryEntry::new(
+    EosEthTokenDictionaryEntry::new(
         18,
         9,
         "SAM1".to_string(),
@@ -438,25 +411,25 @@ pub fn get_sample_eos_erc20_dictionary_entry_1() -> EosErc20DictionaryEntry {
     )
 }
 
-pub fn get_sample_eos_erc20_dictionary_entry_2() -> EosErc20DictionaryEntry {
+pub fn get_sample_eos_eth_token_dictionary_entry_2() -> EosEthTokenDictionaryEntry {
     let token_address_hex = "9e57CB2a4F462a5258a49E88B4331068a391DE66".to_string();
-    EosErc20DictionaryEntry::new(
+    EosEthTokenDictionaryEntry::new(
         18,
         9,
         "SAM2".to_string(),
         "SAM2".to_string(),
-        "SampleToken_2".to_string(),
+        "sampletokens".to_string(),
         EthAddress::from_slice(&hex::decode(&token_address_hex).unwrap()),
     )
 }
 
-pub fn get_sample_eos_erc20_dictionary() -> EosErc20Dictionary {
-    EosErc20Dictionary::new(vec![
-        get_sample_eos_erc20_dictionary_entry_1(),
-        get_sample_eos_erc20_dictionary_entry_2(),
+pub fn get_sample_eos_eth_token_dictionary() -> EosEthTokenDictionary {
+    EosEthTokenDictionary::new(vec![
+        get_sample_eos_eth_token_dictionary_entry_1(),
+        get_sample_eos_eth_token_dictionary_entry_2(),
     ])
 }
 
-pub fn get_sample_eos_erc20_dictionary_json() -> EosErc20DictionaryJson {
-    get_sample_eos_erc20_dictionary().to_json().unwrap()
+pub fn get_sample_eos_eth_token_dictionary_json() -> EosEthTokenDictionaryJson {
+    get_sample_eos_eth_token_dictionary().to_json().unwrap()
 }

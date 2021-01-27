@@ -22,7 +22,7 @@ use std::fmt;
 pub struct EthPrivateKey(SecretKey);
 
 impl EthPrivateKey {
-    pub fn from_slice(slice: [u8; 32]) -> Result<Self> {
+    pub fn from_slice(slice: &[Byte]) -> Result<Self> {
         Ok(Self(SecretKey::from_slice(&slice)?))
     }
 
@@ -104,7 +104,7 @@ mod tests {
 
     #[test]
     fn should_create_eth_private_key_from_slice() {
-        if let Err(e) = EthPrivateKey::from_slice(get_sample_eth_private_key_slice()) {
+        if let Err(e) = EthPrivateKey::from_slice(&get_sample_eth_private_key_slice()) {
             panic!("Error generating eth private key from slice: {}", e);
         }
     }
@@ -139,7 +139,7 @@ mod tests {
 
     #[test]
     fn should_sign_eth_prefixed_msg_bytes_recoverable_with_solidity() {
-        let eth_private_key = EthPrivateKey::from_slice([
+        let eth_private_key = EthPrivateKey::from_slice(&[
             132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169, 234, 47, 186, 237, 88,
             161, 200, 177, 24, 142, 207, 242, 168, 221,
         ])
