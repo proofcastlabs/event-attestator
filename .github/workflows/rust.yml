@@ -10,21 +10,43 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    runs-on: ubuntu-20.04
-
+  build_and_test:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
 
       - name: Check
-        run: cargo check --verbose
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --all-features
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+
+      - name: Format
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
 
       - name: Clippy
-        run: rustup component add clippy
-      - uses: actions-rs/clippy-check@v1
+        uses: actions-rs/cargo@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features
+          command: clippy
+          args: -- -D warnings
 
       - uses: actions/cache@v2
         with:
@@ -35,4 +57,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Test
-        run: cargo test --verbose
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release --all-features
