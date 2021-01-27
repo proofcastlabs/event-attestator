@@ -137,15 +137,52 @@ pub struct AuthorizationJson {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eos::eos_test_utils::get_sample_eos_submission_material_n;
+    use crate::chains::eos::eos_test_utils::{
+        get_sample_eos_submission_material_json_n,
+        get_sample_eos_submission_material_n,
+    };
     use std::str::FromStr;
+
+    fn get_sample_action_proof() -> EosActionProof {
+        get_sample_eos_submission_material_n(1).action_proofs[0].clone()
+    }
 
     #[test]
     fn should_get_sender() {
+        let proof = get_sample_action_proof();
         let expected_result = EosAccountName::from_str("provtestable").unwrap();
-        let result = get_sample_eos_submission_material_n(1).action_proofs[0]
-            .get_action_sender()
-            .unwrap();
+        let result = proof.get_action_sender().unwrap();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_global_sequence_from_proof() {
+        let proof = get_sample_action_proof();
+        let result = proof.get_global_sequence();
+        let expected_result = 579838915;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_action_eos_account_from_proof() {
+        let proof = get_sample_action_proof();
+        let result = proof.get_action_eos_account();
+        let expected_result = EosAccountName::from_str("pbtctokenxxx").unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_serialized_action_from_proof() {
+        let proof = get_sample_action_proof();
+        let result = proof.get_serialized_action();
+        let expected_result = "d07b9f0ad28cf2a90000000048a592ba01a0e23119abbce9ad00000000a8ed32323ba0e23119abbce9adf7130000000000000850464646000000226d75647a7843713961435134556e61394d6d6179764a56434631546a39667970694d";
+        assert_eq!(hex::encode(result), expected_result);
+    }
+
+    #[test]
+    fn should_get_action_proof_from_json() {
+        let json = get_sample_eos_submission_material_json_n(1).action_proofs[0].clone();
+        let result = EosActionProof::from_json(&json);
+        assert!(result.is_ok());
     }
 }
