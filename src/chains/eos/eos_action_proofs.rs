@@ -64,7 +64,7 @@ impl EosActionProof {
 
     pub fn check_proof_action_data_length(&self, required_len: usize, err_msg: &str) -> Result<()> {
         if self.action.data.len() < required_len {
-            return Err(err_msg.into());
+            Err(err_msg.into())
         } else {
             Ok(())
         }
