@@ -65,17 +65,25 @@ pub struct BtcOnEosRedeemInfo {
 
 impl BtcOnEosRedeemInfo {
     pub fn get_eos_amount_from_proof(proof: &EosActionProof) -> Result<u64> {
-        convert_bytes_to_u64(&proof.action.data[8..16].to_vec())
+        proof
+            .check_proof_action_data_length(15, "Not enough data to parse `BtcOnEosRedeemInfo` amount from proof!")
+            .and_then(|_| convert_bytes_to_u64(&proof.action.data[8..=15].to_vec()))
     }
 
     pub fn get_action_sender_from_proof(proof: &EosActionProof) -> Result<EosAccountName> {
-        let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[..8].to_vec())?);
-        debug!("✔ Account name parsed from redeem action: {}", result);
-        Ok(result)
+        proof
+            .check_proof_action_data_length(7, "Not enough data to parse `BtcOnEosRedeemInfo` sender from proof!")
+            .and_then(|_| {
+                let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[..=7].to_vec())?);
+                debug!("✔ Account name parsed from redeem action: {}", result);
+                Ok(result)
+            })
     }
 
     pub fn get_redeem_address_from_proof(proof: &EosActionProof) -> Result<String> {
-        Ok(from_utf8(&proof.action.data[25..])?.to_string())
+        proof
+            .check_proof_action_data_length(25, "Not enough data to parse `BtcOnEosRedeemInfo` redeemer from proof!")
+            .and_then(|_| Ok(from_utf8(&proof.action.data[25..])?.to_string()))
     }
 
     pub fn from_action_proof(proof: &EosActionProof) -> Result<Self> {

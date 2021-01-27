@@ -51,33 +51,55 @@ pub struct EosOnEthEosTxInfo {
 
 impl EosOnEthEosTxInfo {
     fn get_token_sender_from_proof(proof: &EosActionProof) -> Result<EosAccountName> {
-        let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[..8])?);
-        debug!("✔ Token sender parsed from action proof: {}", result);
-        Ok(result)
+        proof
+            .check_proof_action_data_length(7, "Not enough data to parse `EosOnEthEosTxInfo` sender from proof!")
+            .and_then(|_| {
+                let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[..=7])?);
+                debug!("✔ Token sender parsed from action proof: {}", result);
+                Ok(result)
+            })
     }
 
     fn get_token_account_name_from_proof(proof: &EosActionProof) -> Result<EosAccountName> {
-        let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[8..16])?);
-        debug!("✔ Token account name parsed from action proof: {}", result);
-        Ok(result)
+        proof
+            .check_proof_action_data_length(15, "Not enough data to parse `EosOnEthEosTxInfo` account from proof!")
+            .and_then(|_| {
+                let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[8..=15])?);
+                debug!("✔ Token account name parsed from action proof: {}", result);
+                Ok(result)
+            })
     }
 
     fn get_action_name_from_proof(proof: &EosActionProof) -> Result<EosName> {
-        let result = EosName::new(convert_bytes_to_u64(&proof.get_serialized_action()[8..16])?);
-        debug!("✔ Action name parsed from action proof: {}", result);
-        Ok(result)
+        let serialized_action = proof.get_serialized_action();
+        if serialized_action.len() < 15 {
+            Err("Not enough data to parse `EosOnEthEosTxInfo` action name from proof!".into())
+        } else {
+            let result = EosName::new(convert_bytes_to_u64(&proof.get_serialized_action()[8..=15])?);
+            debug!("✔ Action name parsed from action proof: {}", result);
+            Ok(result)
+        }
     }
 
     fn get_action_sender_account_name_from_proof(proof: &EosActionProof) -> Result<EosAccountName> {
-        let result = EosAccountName::new(convert_bytes_to_u64(&proof.get_serialized_action()[..8])?);
-        debug!("✔ Action sender account name parsed from action proof: {}", result);
-        Ok(result)
+        let serialized_action = proof.get_serialized_action();
+        if serialized_action.len() < 7 {
+            Err("Not enough data to parse `EosOnEthEosTxInfo` action sender from proof!".into())
+        } else {
+            let result = EosAccountName::new(convert_bytes_to_u64(&serialized_action[..=7])?);
+            debug!("✔ Action sender account name parsed from action proof: {}", result);
+            Ok(result)
+        }
     }
 
     fn get_eos_symbol_from_proof(proof: &EosActionProof) -> Result<EosSymbol> {
-        let result = EosSymbol::new(convert_bytes_to_u64(&proof.action.data[24..32])?);
-        debug!("✔ Eos symbol parsed from action proof: {}", result);
-        Ok(result)
+        proof
+            .check_proof_action_data_length(31, "Not enough data to parse `EosOnEthEosTxInfo` symbol from proof!")
+            .and_then(|_| {
+                let result = EosSymbol::new(convert_bytes_to_u64(&proof.action.data[24..=31])?);
+                debug!("✔ Eos symbol parsed from action proof: {}", result);
+                Ok(result)
+            })
     }
 
     fn get_token_symbol_from_proof(proof: &EosActionProof) -> Result<String> {
@@ -87,15 +109,24 @@ impl EosOnEthEosTxInfo {
     }
 
     fn get_eos_amount_from_proof(proof: &EosActionProof) -> Result<u64> {
-        convert_bytes_to_u64(&proof.action.data[16..24].to_vec())
+        proof
+            .check_proof_action_data_length(23, "Not enough data to parse `EosOnEthEosTxInfo` amount from proof!")
+            .and_then(|_| convert_bytes_to_u64(&proof.action.data[16..=23].to_vec()))
     }
 
     fn get_eth_address_from_proof(proof: &EosActionProof) -> Result<EthAddress> {
-        let result = EthAddress::from_slice(&hex::decode(maybe_strip_hex_prefix(&from_utf8(
-            &proof.action.data[33..75],
-        )?)?)?);
-        debug!("✔ ETH address parsed from action proof: {}", result);
-        Ok(result)
+        proof
+            .check_proof_action_data_length(
+                74,
+                "Not enough data to parse `EosOnEthEosTxInfo` ETH address from proof!",
+            )
+            .and_then(|_| {
+                let result = EthAddress::from_slice(&hex::decode(maybe_strip_hex_prefix(&from_utf8(
+                    &proof.action.data[33..=74],
+                )?)?)?);
+                debug!("✔ ETH address parsed from action proof: {}", result);
+                Ok(result)
+            })
     }
 
     fn get_eth_address_from_proof_or_revert_to_safe_eth_address(proof: &EosActionProof) -> Result<EthAddress> {
