@@ -270,7 +270,10 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::eos_on_eth::test_utils::{get_eth_submission_material_n, get_sample_eos_eth_token_dictionary};
+    use crate::{
+        chains::eos::eos_eth_token_dictionary::EosEthTokenDictionaryEntry,
+        eos_on_eth::test_utils::{get_eth_submission_material_n, get_sample_eos_eth_token_dictionary},
+    };
     use std::str::FromStr;
 
     #[test]
@@ -320,5 +323,22 @@ mod tests {
         let expected_result = "010001000000000000000100305593e6596b0800000000644d99aa0100305593e6596b0800000000a8ed32322100a6823403ea3055010000000000000004454f5300000000d07bef576d954de30000";
         let result_with_no_timestamp = &result[8..];
         assert_eq!(result_with_no_timestamp, expected_result);
+    }
+
+    #[test]
+    fn should_filter_out_zero_eth_amounts() {
+        let dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::from_str(
+            "{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"TOK\",\"eos_symbol\":\"EOS\",\"eth_address\":\"9a74c1e17b31745199b229b5c05b61081465b329\",\"eos_address\":\"eosio.token\"}"
+        ).unwrap()]);
+        let submission_material = get_eth_submission_material_n(2).unwrap();
+        let expected_result_before = 1;
+        let expected_result_after = 0;
+        let result_before =
+            EosOnEthEthTxInfos::from_eth_submission_material_without_filtering(&submission_material, &dictionary)
+                .unwrap();
+        assert_eq!(result_before.len(), expected_result_before);
+        assert_eq!(result_before[0].eos_asset_amount, "0.0000 EOS");
+        let result_after = result_before.filter_out_those_with_zero_eos_asset_amount(&dictionary);
+        assert_eq!(result_after.len(), expected_result_after);
     }
 }

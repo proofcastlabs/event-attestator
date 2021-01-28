@@ -27,13 +27,7 @@ fn get_sample_eos_submission_material_string_n(n: usize) -> Result<String> {
 }
 
 fn get_sample_eth_submission_material_string_n(n: usize) -> Result<String> {
-    let path = match n {
-        1 => Ok("src/eos_on_eth/test_utils/eth-submission-material-1.json"),
-        _ => Err(AppError::Custom(format!(
-            "Cannot find ETH submission material num: {}",
-            n
-        ))),
-    }?;
+    let path = format!("src/eos_on_eth/test_utils/eth-submission-material-{}.json", n);
     match Path::new(&path).exists() {
         true => Ok(read_to_string(path)?),
         false => Err("✘ Cannot find sample ETH submission material file!".into()),
