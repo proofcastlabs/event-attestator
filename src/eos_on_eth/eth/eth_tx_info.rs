@@ -42,10 +42,22 @@ impl EosOnEthEthTxInfos {
         material: &EthSubmissionMaterial,
         token_dictionary: &EosEthTokenDictionary,
     ) -> Result<Self> {
+        Self::from_eth_submission_material_without_filtering(material, token_dictionary).map(|tx_infos| {
+            debug!("Num tx infos before filtering: {}", tx_infos.len());
+            let filtered = tx_infos.filter_out_those_with_zero_eos_asset_amount(token_dictionary);
+            debug!("Num tx infos after filtering: {}", filtered.len());
+            filtered
+        })
+    }
+
+    fn from_eth_submission_material_without_filtering(
+        material: &EthSubmissionMaterial,
+        token_dictionary: &EosEthTokenDictionary,
+    ) -> Result<Self> {
         let topic = &EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC[0];
         let eth_contract_addresses = token_dictionary.to_eth_addresses();
-        debug!("addresses from dict: {:?}", eth_contract_addresses);
-        debug!("the topic: {}", hex::encode(EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC[0]));
+        debug!("Addresses from dict: {:?}", eth_contract_addresses);
+        debug!("The topic: {}", hex::encode(EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC[0]));
         Ok(Self(
             material
                 .receipts
@@ -104,6 +116,27 @@ impl EosOnEthEthTxInfos {
                 })
                 .collect::<Result<Vec<EosSignedTransaction>>>()?,
         ))
+    }
+
+    fn filter_out_those_with_zero_eos_asset_amount(&self, dictionary: &EosEthTokenDictionary) -> Self {
+        info!("✔ Filtering out `EosOnEthEthTxInfos` if they have a zero EOS asset amount...");
+        Self::new(
+            self.iter()
+                .filter(|tx_info| {
+                    match dictionary.get_zero_eos_asset_amount_via_eth_token_address(&tx_info.eth_token_address) {
+                        Err(_) => {
+                            info!(
+                                "✘ Filtering out tx ∵ cannot determine zero EOS asset amount! {:?}",
+                                tx_info
+                            );
+                            false
+                        },
+                        Ok(zero_asset_amount) => tx_info.eos_asset_amount != zero_asset_amount,
+                    }
+                })
+                .cloned()
+                .collect::<Vec<EosOnEthEthTxInfo>>(),
+        )
     }
 }
 
