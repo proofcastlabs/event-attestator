@@ -127,20 +127,28 @@ impl EosEthTokenDictionary {
         }
     }
 
-    pub fn get_entry_via_token_address_and_symbol(
+    pub fn get_entry_via_eos_address_symbol_and_decimals(
         &self,
         token_address: &EosAccountName,
         token_symbol: &str,
+        num_decimals: usize,
     ) -> Result<EosEthTokenDictionaryEntry> {
-        info!("✔ Getting dictionary entry via token address and symbol...");
+        info!("✔ Getting dictionary entry via EOS token address, symbol & decimals...");
         self.get_entry_via_eos_address(token_address)
             .and_then(|entry| match entry.eos_symbol == token_symbol {
-                true => Ok(entry),
                 false => Err(format!(
                     "No `EosEthTokenDictionaryEntry` exists with EOS token symbol: {}",
                     token_symbol
                 )
                 .into()),
+                true => match entry.eos_token_decimals == num_decimals {
+                    false => Err(format!(
+                        "No `EosEthTokenDictionaryEntry` exists with num decimals: {}",
+                        num_decimals
+                    )
+                    .into()),
+                    true => Ok(entry),
+                },
             })
     }
 
