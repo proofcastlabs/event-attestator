@@ -172,6 +172,11 @@ impl EosEthTokenDictionary {
         self.get_entry_via_eth_token_address(address)
             .and_then(|entry| entry.convert_u256_to_eos_asset_string(eth_amount))
     }
+
+    pub fn get_zero_eos_asset_amount_via_eth_token_address(&self, eth_address: &EthAddress) -> Result<String> {
+        self.get_entry_via_eth_token_address(eth_address)
+            .and_then(|entry| entry.get_zero_eos_asset())
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
@@ -286,6 +291,10 @@ impl EosEthTokenDictionaryEntry {
                 Ok(format!("{}.{} {}", decimal_part, fraction_part, self.eos_symbol))
             },
         }
+    }
+
+    pub fn get_zero_eos_asset(&self) -> Result<String> {
+        self.convert_u64_to_eos_asset(0)
     }
 }
 
@@ -667,6 +676,30 @@ mod tests {
         let expected_result = get_sample_eos_eth_token_dictionary_entry_2();
         let eos_address = EosAccountName::from_str("sampletokens").unwrap();
         let result = dictionary.get_entry_via_eos_address(&eos_address).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_zero_eos_asset() {
+        let entry = EosEthTokenDictionaryEntry::from_str(
+            "{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"TOK\",\"eos_symbol\":\"EOS\",\"eth_address\":\"9a74c1e17b31745199b229b5c05b61081465b329\",\"eos_address\":\"eosio.token\"}"
+        ).unwrap();
+        let result = entry.get_zero_eos_asset().unwrap();
+        let expected_result = "0.0000 EOS";
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_zero_eos_asset_via_eth_address() {
+        let eth_address_str = "9a74c1e17b31745199b229b5c05b61081465b329";
+        let eth_address = EthAddress::from_slice(&hex::decode(eth_address_str).unwrap());
+        let dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::from_str(
+            &format!("{{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"TOK\",\"eos_symbol\":\"EOS\",\"eth_address\":\"{}\",\"eos_address\":\"eosio.token\"}}", eth_address_str)
+        ).unwrap()]);
+        let result = dictionary
+            .get_zero_eos_asset_amount_via_eth_token_address(&eth_address)
+            .unwrap();
+        let expected_result = "0.0000 EOS";
         assert_eq!(result, expected_result);
     }
 }
