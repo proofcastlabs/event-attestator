@@ -175,7 +175,7 @@ impl EosEthTokenDictionary {
 
     pub fn get_zero_eos_asset_amount_via_eth_token_address(&self, eth_address: &EthAddress) -> Result<String> {
         self.get_entry_via_eth_token_address(eth_address)
-            .and_then(|entry| entry.get_zero_eos_asset())
+            .map(|entry| entry.get_zero_eos_asset())
     }
 }
 
@@ -278,22 +278,22 @@ impl EosEthTokenDictionaryEntry {
         }
     }
 
-    pub fn convert_u64_to_eos_asset(&self, u_64: u64) -> Result<String> {
+    pub fn convert_u64_to_eos_asset(&self, u_64: u64) -> String {
         let amount_str = u_64.to_string();
         match amount_str.len().cmp(&self.eos_token_decimals) {
-            Ordering::Equal => Ok(format!("0.{} {}", amount_str, self.eos_symbol)),
+            Ordering::Equal => format!("0.{} {}", amount_str, self.eos_symbol),
             Ordering::Less => {
                 let fraction_part = left_pad_with_zeroes(&amount_str, self.eos_token_decimals);
-                Ok(format!("0.{} {}", fraction_part, self.eos_symbol))
+                format!("0.{} {}", fraction_part, self.eos_symbol)
             },
             Ordering::Greater => {
                 let (decimal_part, fraction_part) = &amount_str.split_at(amount_str.len() - self.eos_token_decimals);
-                Ok(format!("{}.{} {}", decimal_part, fraction_part, self.eos_symbol))
+                format!("{}.{} {}", decimal_part, fraction_part, self.eos_symbol)
             },
         }
     }
 
-    pub fn get_zero_eos_asset(&self) -> Result<String> {
+    pub fn get_zero_eos_asset(&self) -> String {
         self.convert_u64_to_eos_asset(0)
     }
 }
@@ -656,7 +656,7 @@ mod tests {
             0 as u64,
         ]
         .iter()
-        .map(|u_64| entry.convert_u64_to_eos_asset(*u_64).unwrap())
+        .map(|u_64| entry.convert_u64_to_eos_asset(*u_64))
         .zip(expected_results.iter())
         .for_each(|(result, expected_result)| assert_eq!(&result, expected_result));
     }
@@ -684,7 +684,7 @@ mod tests {
         let entry = EosEthTokenDictionaryEntry::from_str(
             "{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"TOK\",\"eos_symbol\":\"EOS\",\"eth_address\":\"9a74c1e17b31745199b229b5c05b61081465b329\",\"eos_address\":\"eosio.token\"}"
         ).unwrap();
-        let result = entry.get_zero_eos_asset().unwrap();
+        let result = entry.get_zero_eos_asset();
         let expected_result = "0.0000 EOS";
         assert_eq!(result, expected_result);
     }

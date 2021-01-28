@@ -95,7 +95,8 @@ impl Erc20OnEosRedeemInfo {
         proof
             .check_proof_action_data_length(15, "Not enough data to parse `Erc20OnEosRedeemInfo` amount from proof!")
             .and_then(|_| {
-                dictionary_entry.convert_u64_to_eos_asset(convert_bytes_to_u64(&proof.action.data[8..=15].to_vec())?)
+                Ok(dictionary_entry
+                    .convert_u64_to_eos_asset(convert_bytes_to_u64(&proof.action.data[8..=15].to_vec())?))
             })
             .and_then(|eos_asset| dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset))
     }
