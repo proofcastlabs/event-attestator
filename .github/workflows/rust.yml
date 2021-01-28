@@ -21,6 +21,7 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
+          override: true
 
       - name: Cache stable
         uses: Swatinem/rust-cache@v1
@@ -30,6 +31,15 @@ jobs:
 
       - name: Build code
         run: cargo build
+
+      - name: Run tests
+        run: cargo test
+
+  check_formating_and_clippy:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout ptokens_core
+        uses: actions/checkout@v2
 
       - name: Install nightly Rust (minimal with clippy and rustfmt)
         uses: actions-rs/toolchain@v1
@@ -53,6 +63,3 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: -- -D warnings
-
-      - name: Run tests
-        run: cargo test
