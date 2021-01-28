@@ -213,7 +213,7 @@ pub fn get_signed_minting_tx(
     user_data: Option<&[Byte]>,
     operator_data: Option<&[Byte]>,
 ) -> Result<EthTransaction> {
-    Ok(get_unsigned_minting_tx(
+    get_unsigned_minting_tx(
         nonce,
         amount,
         chain_id,
@@ -223,7 +223,7 @@ pub fn get_signed_minting_tx(
         user_data,
         operator_data,
     )?
-    .sign(eth_private_key)?)
+    .sign(eth_private_key)
 }
 
 #[cfg(test)]

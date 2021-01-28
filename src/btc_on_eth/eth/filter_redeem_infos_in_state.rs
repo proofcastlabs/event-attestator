@@ -6,8 +6,8 @@ use crate::{
 };
 use ethereum_types::U256;
 
-fn filter_redeem_infos(redeem_infos: &BtcOnEthRedeemInfos) -> Result<BtcOnEthRedeemInfos> {
-    Ok(BtcOnEthRedeemInfos::new(
+fn filter_redeem_infos(redeem_infos: &BtcOnEthRedeemInfos) -> BtcOnEthRedeemInfos {
+    BtcOnEthRedeemInfos::new(
         redeem_infos
             .0
             .iter()
@@ -20,16 +20,16 @@ fn filter_redeem_infos(redeem_infos: &BtcOnEthRedeemInfos) -> Result<BtcOnEthRed
             })
             .cloned()
             .collect::<Vec<BtcOnEthRedeemInfo>>(),
-    ))
+    )
 }
 
 pub fn maybe_filter_redeem_infos_in_state<D>(state: EthState<D>) -> Result<EthState<D>>
 where
     D: DatabaseInterface,
 {
-    info!("✔ Maybe filtering any `btc-on-eth` redeem infos for amounts below minimum # of Satoshis...");
-    filter_redeem_infos(&state.btc_on_eth_redeem_infos)
-        .and_then(|new_infos| state.replace_btc_on_eth_redeem_infos(new_infos))
+    info!("✔ Filtering any `btc-on-eth` redeem infos for amounts below minimum # of Satoshis...");
+    let new_infos = filter_redeem_infos(&state.btc_on_eth_redeem_infos);
+    state.replace_btc_on_eth_redeem_infos(new_infos)
 }
 
 #[cfg(test)]
@@ -72,7 +72,7 @@ mod tests {
             },
         ]);
         let length_before = infos.len();
-        let result = filter_redeem_infos(&infos).unwrap();
+        let result = filter_redeem_infos(&infos);
         let length_after = result.len();
         assert!(length_before > length_after);
         assert_eq!(length_after, expected_length);

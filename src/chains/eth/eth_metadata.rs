@@ -71,10 +71,10 @@ impl EthMetadataFromBtc {
         Ok(hex::decode(self.originating_tx_hash.to_string())?)
     }
 
-    fn get_originating_address_bytes(&self) -> Result<Bytes> {
+    fn get_originating_address_bytes(&self) -> Bytes {
         match &self.originating_tx_address {
-            None => Ok(vec![]),
-            Some(btc_address) => Ok(btc_address.to_string().as_bytes().to_vec()),
+            None => vec![],
+            Some(btc_address) => btc_address.to_string().as_bytes().to_vec(),
         }
     }
 
@@ -112,7 +112,7 @@ impl EthMetadataFromBtc {
             EthMetadataVersion::V1 => Ok(vec![
                 vec![self.get_version_byte()],
                 self.get_originating_hash_bytes()?,
-                self.get_originating_address_bytes()?,
+                self.get_originating_address_bytes(),
             ]
             .concat()),
         }

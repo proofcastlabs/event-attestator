@@ -86,8 +86,7 @@ where
     utxos_and_values
         .0
         .iter()
-        .map(|utxo_and_value| save_new_utxo_and_value(db, utxo_and_value))
-        .collect()
+        .try_for_each(|utxo_and_value| save_new_utxo_and_value(db, utxo_and_value))
 }
 
 pub fn get_all_utxo_db_keys<D>(db: &D) -> Vec<Bytes>

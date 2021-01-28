@@ -149,7 +149,7 @@ impl<D: DatabaseInterface> EthState<D> {
     }
 
     pub fn get_parent_hash(&self) -> Result<EthHash> {
-        Ok(self.get_eth_submission_material()?.get_parent_hash()?)
+        self.get_eth_submission_material()?.get_parent_hash()
     }
 
     pub fn get_num_eos_txs(&self) -> usize {

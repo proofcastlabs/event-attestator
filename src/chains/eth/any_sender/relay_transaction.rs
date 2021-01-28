@@ -185,7 +185,7 @@ impl RelayTransaction {
         to: EthAddress,
         token_recipient: EthAddress,
     ) -> Result<RelayTransaction> {
-        Ok(RelayTransaction::new_unsigned(
+        RelayTransaction::new_unsigned(
             chain_id,
             from,
             encode_mint_by_proxy_tx_data(eth_private_key, token_recipient, token_amount, any_sender_nonce)?,
@@ -195,7 +195,7 @@ impl RelayTransaction {
             RelayContract::from_eth_chain_id(chain_id)?.address()?,
             to,
         )?
-        .sign(eth_private_key)?)
+        .sign(eth_private_key)
     }
 
     #[cfg(test)]

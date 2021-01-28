@@ -436,7 +436,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
 ) -> Result<String> {
     check_core_is_initialized(&db)
         .and_then(|_| check_debug_mode())
-        .and_then(|_| strip_hex_prefix(&recipient))
+        .map(|_| strip_hex_prefix(&recipient))
         .and_then(|hex_no_prefix| {
             decode_hex_with_err_msg(
                 &hex_no_prefix,

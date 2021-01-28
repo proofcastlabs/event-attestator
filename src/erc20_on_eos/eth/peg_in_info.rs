@@ -143,30 +143,29 @@ impl Erc20OnEosPegInInfos {
     }
 
     fn get_eos_address_from_log(log: &EthLog) -> Result<String> {
-        Self::check_log_is_erc20_peg_in(log).and_then(|_| Self::extract_eos_address_or_default_to_safe_address(log))
+        Self::check_log_is_erc20_peg_in(log).and(Ok(Self::extract_eos_address_or_default_to_safe_address(log)))
     }
 
-    fn extract_eos_address_from_log(log: &EthLog) -> Result<String> {
+    fn extract_eos_address_from_log(log: &EthLog) -> String {
         info!("✔ Parsing EOS address from log...");
         const START_INDEX: usize = ETH_WORD_SIZE_IN_BYTES * 5;
-        Ok(log.data[START_INDEX..]
+        log.data[START_INDEX..]
             .iter()
             .filter(|byte| *byte != &0u8)
             .map(|byte| *byte as char)
-            .collect())
+            .collect()
     }
 
-    fn extract_eos_address_or_default_to_safe_address(log: &EthLog) -> Result<String> {
-        Self::extract_eos_address_from_log(log).map(|maybe_eos_address: String| {
-            match EosAccountName::from_str(&maybe_eos_address) {
-                Ok(_) => maybe_eos_address,
-                Err(_) => {
-                    info!("✘ Could not parse EOS address from: {}", maybe_eos_address);
-                    info!("✔ Defaulting to safe EOS address: {}", SAFE_EOS_ADDRESS);
-                    SAFE_EOS_ADDRESS.to_string()
-                },
-            }
-        })
+    fn extract_eos_address_or_default_to_safe_address(log: &EthLog) -> String {
+        let maybe_eos_address = Self::extract_eos_address_from_log(log);
+        match EosAccountName::from_str(&maybe_eos_address) {
+            Ok(_) => maybe_eos_address,
+            Err(_) => {
+                info!("✘ Could not parse EOS address from: {}", maybe_eos_address);
+                info!("✔ Defaulting to safe EOS address: {}", SAFE_EOS_ADDRESS);
+                SAFE_EOS_ADDRESS.to_string()
+            },
+        }
     }
 
     fn receipt_contains_supported_erc20_peg_in(receipt: &EthReceipt, token_dictionary: &EosEthTokenDictionary) -> bool {

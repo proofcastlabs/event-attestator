@@ -140,8 +140,7 @@ impl Trie {
                         )?;
                         new_stack.push(new_branch);
                         new_stack.push(new_leaf);
-                        let mut stack_to_delete = Vec::new();
-                        stack_to_delete.push(current_ext_node);
+                        let stack_to_delete = vec![current_ext_node];
                         Ok((self, target_key, found_stack, new_stack, stack_to_delete))
                     }),
                     _ => split_at_first_nibble(&node_key_remainder).and_then(|(ext_first_nibble, ext_nibbles)| {
@@ -364,9 +363,7 @@ impl Trie {
                 let new_leaf_hash = convert_h256_to_bytes(new_leaf.get_hash()?);
                 let updated_branch = current_branch_node
                     .update_branch_at_index(Some(new_leaf_hash), convert_nibble_to_usize(first_nibble))?;
-                let mut new_stack: NodeStack = Vec::new();
-                new_stack.push(updated_branch);
-                new_stack.push(new_leaf);
+                let new_stack: NodeStack = vec![updated_branch, new_leaf];
                 Ok(new_stack)
             })
             .map(|new_stack| (self, target_key, found_stack, new_stack, Vec::new()))

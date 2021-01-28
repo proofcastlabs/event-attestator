@@ -8,7 +8,7 @@ use crate::{
     constants::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
     types::Result,
-    utils::{convert_bytes_to_u64, maybe_strip_hex_prefix},
+    utils::{convert_bytes_to_u64, strip_hex_prefix},
 };
 use derive_more::{Constructor, Deref};
 use eos_primitives::{AccountName as EosAccountName, Checksum256};
@@ -69,9 +69,9 @@ impl Erc20OnEosRedeemInfo {
     }
 
     fn get_erc20_on_eos_eth_redeem_address(proof: &EosActionProof) -> Result<EthAddress> {
-        Ok(EthAddress::from_slice(&hex::decode(&maybe_strip_hex_prefix(
+        Ok(EthAddress::from_slice(&hex::decode(&strip_hex_prefix(
             &Self::get_memo_string_from_proof(&proof)?,
-        )?)?))
+        ))?))
     }
 
     fn get_redeem_address_from_proof_or_default_to_safe_address(proof: &EosActionProof) -> Result<EthAddress> {

@@ -24,7 +24,7 @@ use crate::{
     eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
     traits::DatabaseInterface,
     types::Result,
-    utils::{convert_bytes_to_u64, maybe_strip_hex_prefix},
+    utils::{convert_bytes_to_u64, strip_hex_prefix},
 };
 use derive_more::{Constructor, Deref};
 use eos_primitives::{
@@ -121,9 +121,9 @@ impl EosOnEthEosTxInfo {
                 "Not enough data to parse `EosOnEthEosTxInfo` ETH address from proof!",
             )
             .and_then(|_| {
-                let result = EthAddress::from_slice(&hex::decode(maybe_strip_hex_prefix(&from_utf8(
+                let result = EthAddress::from_slice(&hex::decode(strip_hex_prefix(&from_utf8(
                     &proof.action.data[33..=74],
-                )?)?)?);
+                )?))?);
                 debug!("✔ ETH address parsed from action proof: {}", result);
                 Ok(result)
             })

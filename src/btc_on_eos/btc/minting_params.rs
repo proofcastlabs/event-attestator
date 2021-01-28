@@ -140,9 +140,7 @@ impl BtcOnEosMintingParams {
                     }
                 })
                 .filter(|maybe_minting_params| maybe_minting_params.is_some())
-                .map(|maybe_minting_params| {
-                    Ok(maybe_minting_params.ok_or(NoneError("Could not unwrap minting params!"))?)
-                })
+                .map(|maybe_minting_params| maybe_minting_params.ok_or(NoneError("Could not unwrap minting params!")))
                 .collect::<Result<Vec<BtcOnEosMintingParamStruct>>>()?,
         ))
     }

@@ -98,7 +98,7 @@ impl Node {
                 extension: None,
                 branch: Some(BranchNode {
                     value: branch.value,
-                    branches: update_child_nodes(branch.branches, new_value, index)?,
+                    branches: update_child_nodes(branch.branches, new_value, index),
                 }),
             })
         } else {
@@ -229,9 +229,9 @@ fn get_empty_child_nodes() -> ChildNodes {
     ]
 }
 
-fn update_child_nodes(mut child_nodes: ChildNodes, new_value: Option<Bytes>, index: usize) -> Result<ChildNodes> {
+fn update_child_nodes(mut child_nodes: ChildNodes, new_value: Option<Bytes>, index: usize) -> ChildNodes {
     child_nodes[index] = new_value;
-    Ok(child_nodes)
+    child_nodes
 }
 
 pub fn get_node_from_trie_hash_map(trie_hash_map: &TrieHashMap, key: &H256) -> Result<Option<Node>> {

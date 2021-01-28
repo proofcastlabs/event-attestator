@@ -6,9 +6,9 @@ use crate::{
 };
 use serde_json::{json, Value as JsonValue};
 
-fn encode_eth_signed_message_as_json(message: &str, signature: &EthSignature) -> Result<JsonValue> {
+fn encode_eth_signed_message_as_json(message: &str, signature: &EthSignature) -> JsonValue {
     info!("✔ Encoding eth signed message as json...");
-    Ok(json!({"message": message, "signature": format!("0x{}", hex::encode(&signature[..]))}))
+    json!({"message": message, "signature": format!("0x{}", hex::encode(&signature[..]))})
 }
 
 /// # Sign ASCII Message With ETH Key
@@ -23,8 +23,7 @@ pub fn sign_ascii_msg_with_eth_key_with_no_prefix<D: DatabaseInterface>(db: &D, 
     }
     get_eth_private_key_from_db(db)
         .and_then(|key| key.sign_message_bytes(message.as_bytes()))
-        .and_then(|signature| encode_eth_signed_message_as_json(&message, &signature))
-        .map(|json| json.to_string())
+        .map(|signature| encode_eth_signed_message_as_json(&message, &signature).to_string())
 }
 
 /// # Sign HEX Message With ETH Key
@@ -44,8 +43,7 @@ pub fn sign_hex_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, messa
             let key = get_eth_private_key_from_db(db)?;
             key.sign_eth_prefixed_msg_bytes(&bytes)
         })
-        .and_then(|signature| encode_eth_signed_message_as_json(&message, &signature))
-        .map(|json| json.to_string())
+        .map(|signature| encode_eth_signed_message_as_json(&message, &signature).to_string())
 }
 
 #[deprecated(
@@ -99,7 +97,7 @@ mod tests {
             "message": "Arbitrary message",
             "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
         });
-        let result = encode_eth_signed_message_as_json("Arbitrary message", &[0u8; 65]).unwrap();
+        let result = encode_eth_signed_message_as_json("Arbitrary message", &[0u8; 65]);
         assert_eq!(result, expected_result, "✘ Message signature json is invalid!")
     }
 

@@ -258,7 +258,7 @@ impl BtcOnEthMintingParamStruct {
         tx: &BtcTransaction,
         btc_network: BtcNetwork,
     ) -> Result<Self> {
-        Ok(Self::new(
+        Self::new(
             convert_satoshis_to_ptoken(Self::sum_deposit_values_from_tx_outputs(&tx, &target_deposit_script)),
             Self::get_eth_address_from_op_return_in_tx_else_safe_address(&tx),
             tx.txid(),
@@ -270,7 +270,7 @@ impl BtcOnEthMintingParamStruct {
                     BtcAddress::from_str(&PLACEHOLDER_BTC_ADDRESS)?
                 },
             },
-        )?)
+        )
     }
 }
 

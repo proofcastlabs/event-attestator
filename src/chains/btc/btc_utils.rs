@@ -37,7 +37,7 @@ pub fn convert_bytes_to_btc_pub_key_slice(bytes: &[Byte]) -> Result<BtcPubKeySli
 }
 
 pub fn convert_hex_to_sha256_hash(hex: &str) -> Result<sha256d::Hash> {
-    Ok(sha256d::Hash::from_slice(&hex::decode(strip_hex_prefix(&hex)?)?)?)
+    Ok(sha256d::Hash::from_slice(&hex::decode(strip_hex_prefix(&hex))?)?)
 }
 
 pub fn get_btc_one_key() -> PrivateKey {

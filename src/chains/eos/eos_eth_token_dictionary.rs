@@ -6,7 +6,7 @@ use crate::{
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
-    utils::{left_pad_with_zeroes, maybe_strip_hex_prefix, right_pad_or_truncate, right_pad_with_zeroes, truncate_str},
+    utils::{left_pad_with_zeroes, right_pad_or_truncate, right_pad_with_zeroes, strip_hex_prefix, truncate_str},
 };
 use derive_more::{Constructor, Deref, DerefMut};
 use eos_primitives::AccountName as EosAccountName;
@@ -39,28 +39,28 @@ impl EosEthTokenDictionary {
         EosEthTokenDictionaryJson::from_bytes(bytes).and_then(|json| Self::from_json(&json))
     }
 
-    fn add(mut self, entry: EosEthTokenDictionaryEntry) -> Result<Self> {
+    fn add(mut self, entry: EosEthTokenDictionaryEntry) -> Self {
         info!("✔ Adding `EosEthTokenDictionary` entry: {:?}...", entry);
         match self.contains(&entry) {
             true => {
                 info!("Not adding new `EosEthTokenDictionaryEntry` ∵ account name already extant!");
-                Ok(self)
+                self
             },
             false => {
                 self.push(entry);
-                Ok(self)
+                self
             },
         }
     }
 
-    fn remove(mut self, entry: &EosEthTokenDictionaryEntry) -> Result<Self> {
+    fn remove(mut self, entry: &EosEthTokenDictionaryEntry) -> Self {
         info!("✔ Removing `EosEthTokenDictionary` entry: {:?}...", entry);
         match self.contains(&entry) {
-            false => Ok(self),
+            false => self,
             true => {
                 info!("Removing `EosEthTokenDictionaryEntry`: {:?}", entry);
                 self.retain(|x| x != entry);
-                Ok(self)
+                self
             },
         }
     }
@@ -85,20 +85,18 @@ impl EosEthTokenDictionary {
     }
 
     pub fn add_and_update_in_db<D: DatabaseInterface>(self, entry: EosEthTokenDictionaryEntry, db: &D) -> Result<Self> {
-        self.add(entry).and_then(|new_self| {
-            new_self.save_to_db(db)?;
-            Ok(new_self)
-        })
+        let new_self = self.add(entry);
+        new_self.save_to_db(db)?;
+        Ok(new_self)
     }
 
     fn remove_and_update_in_db<D: DatabaseInterface>(self, entry: &EosEthTokenDictionaryEntry, db: &D) -> Result<Self> {
-        match self.contains(entry) {
-            false => Ok(self),
-            true => self.remove(entry).and_then(|new_self| {
-                new_self.save_to_db(db)?;
-                Ok(new_self)
-            }),
+        if self.contains(entry) {
+            let new_self = self.remove(entry);
+            new_self.save_to_db(db)?;
+            return Ok(new_self);
         }
+        Ok(self)
     }
 
     pub fn remove_entry_via_eth_address_and_update_in_db<D: DatabaseInterface>(
@@ -218,7 +216,7 @@ impl EosEthTokenDictionaryEntry {
             eos_symbol: json.eos_symbol.to_string(),
             eth_symbol: json.eth_symbol.to_string(),
             eos_address: json.eos_address.to_string(),
-            eth_address: EthAddress::from_slice(&hex::decode(&maybe_strip_hex_prefix(&json.eth_address)?)?),
+            eth_address: EthAddress::from_slice(&hex::decode(strip_hex_prefix(&json.eth_address))?),
         })
     }
 
@@ -365,9 +363,7 @@ mod tests {
         let expected_num_entries_after = 2;
         let dictionary_entries = EosEthTokenDictionary::new(vec![get_sample_eos_eth_token_dictionary_entry_1()]);
         assert_eq!(dictionary_entries.len(), expected_num_entries_before);
-        let updated_dictionary = dictionary_entries
-            .add(get_sample_eos_eth_token_dictionary_entry_2())
-            .unwrap();
+        let updated_dictionary = dictionary_entries.add(get_sample_eos_eth_token_dictionary_entry_2());
         assert_eq!(updated_dictionary.len(), expected_num_entries_after);
     }
 
@@ -376,9 +372,7 @@ mod tests {
         let expected_num_account_names = 2;
         let dictionary_entries = get_sample_eos_eth_token_dictionary();
         assert_eq!(dictionary_entries.len(), expected_num_account_names);
-        let updated_dictionary = dictionary_entries
-            .add(get_sample_eos_eth_token_dictionary_entry_1())
-            .unwrap();
+        let updated_dictionary = dictionary_entries.add(get_sample_eos_eth_token_dictionary_entry_1());
         assert_eq!(updated_dictionary.len(), expected_num_account_names);
     }
 
@@ -388,9 +382,7 @@ mod tests {
         let expected_num_entries_after = 1;
         let dictionary_entries = get_sample_eos_eth_token_dictionary();
         assert_eq!(dictionary_entries.len(), expected_num_entries_before);
-        let updated_dictionary = dictionary_entries
-            .remove(&get_sample_eos_eth_token_dictionary_entry_2())
-            .unwrap();
+        let updated_dictionary = dictionary_entries.remove(&get_sample_eos_eth_token_dictionary_entry_2());
         assert_eq!(updated_dictionary.len(), expected_num_entries_after);
     }
 
