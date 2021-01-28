@@ -156,6 +156,18 @@ impl EosOnEthEosTxInfo {
         })
     }
 
+    fn get_asset_num_decimals_from_proof(proof: &EosActionProof) -> Result<usize> {
+        Self::get_eos_symbol_from_proof(proof).and_then(|symbol| {
+            let symbol_string = symbol.to_string();
+            let pieces = symbol_string.split(',').collect::<Vec<&str>>();
+            if pieces.is_empty() {
+                Err("Error getting number of decimals from `EosSymbol`!".into())
+            } else {
+                Ok(pieces[0].parse::<usize>()?)
+            }
+        })
+    }
+
     fn check_proof_is_for_action(proof: &EosActionProof, required_action_name: &str) -> Result<()> {
         Self::get_action_name_from_proof(&proof).and_then(|action_name| {
             if action_name.to_string() != required_action_name {
@@ -178,7 +190,7 @@ impl EosOnEthEosTxInfo {
                 let token_address = Self::get_token_account_name_from_proof(&proof)?;
                 let dictionary_entry =
                     token_dictionary.get_entry_via_token_address_and_symbol(&token_address, &token_symbol)?;
-                let eos_asset = dictionary_entry.convert_u64_to_eos_asset(Self::get_eos_amount_from_proof(proof)?);
+                let eos_asset = dictionary_entry.convert_u64_to_eos_asset(Self::get_eos_amount_from_proof(proof)?)?;
                 let eth_amount = dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset)?;
                 Ok(Self {
                     amount: eth_amount,
@@ -454,6 +466,14 @@ mod tests {
         let nonce = 0;
         let signed_txs = tx_infos.to_eth_signed_txs(nonce, chain_id, gas_price, pk).unwrap();
         let result = signed_txs[0].serialize_hex();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_asset_num_decimals_from_proof() {
+        let proof = get_sample_proof();
+        let expected_result = 4;
+        let result = EosOnEthEosTxInfo::get_asset_num_decimals_from_proof(&proof).unwrap();
         assert_eq!(result, expected_result);
     }
 }
