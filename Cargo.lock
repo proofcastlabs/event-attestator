@@ -546,7 +546,7 @@ dependencies = [
 
 [[package]]
 name = "ptokens_core"
-version = "4.8.1"
+version = "4.8.2"
 dependencies = [
  "base58",
  "bitcoin",
