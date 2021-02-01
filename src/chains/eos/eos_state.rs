@@ -1,3 +1,6 @@
+pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
+use eos_primitives::{BlockHeader as EosBlockHeader, ProducerScheduleV2 as EosProducerScheduleV2};
+
 use crate::{
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
     chains::{
@@ -19,8 +22,6 @@ use crate::{
     types::Result,
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
 };
-pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-use eos_primitives::{BlockHeader as EosBlockHeader, ProducerScheduleV2 as EosProducerScheduleV2};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EosState<D: DatabaseInterface> {

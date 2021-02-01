@@ -1,3 +1,5 @@
+use serde_json::json;
+
 use crate::{
     chains::btc::{
         btc_database_utils::{get_btc_address_from_db, get_btc_fee_from_db, get_btc_private_key_from_db},
@@ -25,7 +27,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-use serde_json::json;
 
 pub fn clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     db.start_transaction()?;

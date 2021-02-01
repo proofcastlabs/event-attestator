@@ -1,3 +1,5 @@
+use ethereum_types::{Address as EthAddress, H256 as EthHash};
+
 use crate::{
     chains::eth::{
         eth_constants::{
@@ -30,7 +32,6 @@ use crate::{
     types::{Byte, DataSensitivity, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
-use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 pub fn get_signing_params_from_db<D: DatabaseInterface>(db: &D) -> Result<EthSigningParams> {
     trace!("✔ Getting signing params from db...");

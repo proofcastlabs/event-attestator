@@ -1,5 +1,6 @@
-use crate::utils::get_prefixed_db_key;
 pub use serde_json::{json, Value as JsonValue};
+
+use crate::utils::get_prefixed_db_key;
 
 #[cfg(test)] // NOTE Because of real BTC tx test-vectors
 pub const PTOKEN_P2SH_SCRIPT_BYTES: usize = 0;

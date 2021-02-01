@@ -1,12 +1,3 @@
-use crate::{
-    chains::btc::{
-        btc_block::{BtcBlockAndId, BtcBlockJson},
-        btc_state::BtcState,
-        deposit_address_info::DepositAddressInfoJsonList,
-    },
-    traits::DatabaseInterface,
-    types::Result,
-};
 pub use bitcoin::{
     blockdata::{
         block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
@@ -15,6 +6,16 @@ pub use bitcoin::{
     consensus::encode::deserialize as btc_deserialize,
     hashes::sha256d,
     util::address::Address as BtcAddress,
+};
+
+use crate::{
+    chains::btc::{
+        btc_block::{BtcBlockAndId, BtcBlockJson},
+        btc_state::BtcState,
+        deposit_address_info::DepositAddressInfoJsonList,
+    },
+    traits::DatabaseInterface,
+    types::Result,
 };
 
 pub fn parse_btc_submission_json_and_put_in_state<D: DatabaseInterface>(

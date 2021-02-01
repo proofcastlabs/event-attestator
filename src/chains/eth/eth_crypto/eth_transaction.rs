@@ -1,3 +1,8 @@
+use std::fs;
+
+use ethereum_types::{Address as EthAddress, U256};
+use rlp::RlpStream;
+
 use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
@@ -15,9 +20,6 @@ use crate::{
     },
     types::{Byte, Bytes, Result},
 };
-use ethereum_types::{Address as EthAddress, U256};
-use rlp::RlpStream;
-use std::fs;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct EthTransaction {

@@ -1,3 +1,6 @@
+use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use serde_json::{json, Value as JsonValue};
+
 use crate::{
     chains::eth::{
         eth_block::{EthBlock, EthBlockJson},
@@ -7,8 +10,6 @@ use crate::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
-use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
-use serde_json::{json, Value as JsonValue};
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 pub struct EthSubmissionMaterial {

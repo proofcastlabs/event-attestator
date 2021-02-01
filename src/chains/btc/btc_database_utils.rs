@@ -1,3 +1,6 @@
+use bitcoin::network::constants::Network as BtcNetwork;
+use bitcoin_hashes::{sha256d, Hash};
+
 use crate::{
     chains::btc::{
         btc_block::BtcBlockInDbFormat,
@@ -34,8 +37,6 @@ use crate::{
     types::{Byte, DataSensitivity, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
-use bitcoin::network::constants::Network as BtcNetwork;
-use bitcoin_hashes::{sha256d, Hash};
 
 pub fn put_btc_pub_key_slice_in_db<D: DatabaseInterface>(db: &D, pub_key_slice: &BtcPubKeySlice) -> Result<()> {
     db.put(

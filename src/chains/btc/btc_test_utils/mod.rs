@@ -1,4 +1,14 @@
 #![cfg(test)]
+use std::{fs::read_to_string, str::FromStr};
+
+use bitcoin::{
+    blockdata::{
+        script::Script as BtcScript,
+        transaction::{OutPoint as BtcOutPoint, Transaction as BtcTransaction, TxIn as BtcUtxo, TxOut as BtcTxOut},
+    },
+    hashes::{sha256d, Hash},
+};
+
 use crate::{
     btc_on_eos::{
         btc::minting_params::{BtcOnEosMintingParamStruct, BtcOnEosMintingParams},
@@ -26,14 +36,6 @@ use crate::{
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
-use bitcoin::{
-    blockdata::{
-        script::Script as BtcScript,
-        transaction::{OutPoint as BtcOutPoint, Transaction as BtcTransaction, TxIn as BtcUtxo, TxOut as BtcTxOut},
-    },
-    hashes::{sha256d, Hash},
-};
-use std::{fs::read_to_string, str::FromStr};
 
 pub const SAMPLE_TRANSACTION_INDEX: usize = 1;
 pub const SAMPLE_OUTPUT_INDEX_OF_UTXO: u32 = 0;

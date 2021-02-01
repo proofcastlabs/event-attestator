@@ -1,6 +1,8 @@
-use crate::{base58, chains::eos::eos_hash::ripemd160, errors::AppError, types::Result};
-use secp256k1::recovery::{RecoverableSignature, RecoveryId};
 use std::{fmt, str::FromStr};
+
+use secp256k1::recovery::{RecoverableSignature, RecoveryId};
+
+use crate::{base58, chains::eos::eos_hash::ripemd160, errors::AppError, types::Result};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct EosSignature(pub RecoverableSignature);
@@ -52,8 +54,9 @@ impl fmt::Display for EosSignature {
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use std::str::FromStr;
+
+    use super::*;
 
     #[test]
     fn should_get_get_signature_from_string_with_prefix() {

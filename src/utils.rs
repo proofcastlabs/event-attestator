@@ -1,8 +1,9 @@
+use tiny_keccak::keccak256;
+
 use crate::{
     constants::{CORE_VERSION, DB_KEY_PREFIX, DEBUG_OUTPUT_MARKER, U64_NUM_BYTES},
     types::{Byte, Bytes, Result},
 };
-use tiny_keccak::keccak256;
 
 pub fn right_pad_or_truncate(s: &str, width: usize) -> String {
     if s.len() >= width {

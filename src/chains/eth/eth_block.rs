@@ -1,3 +1,7 @@
+use ethereum_types::{Address as EthAddress, Bloom, H256 as EthHash, U256};
+use rlp::{Encodable, RlpStream};
+use serde_json::{json, Value as JsonValue};
+
 use crate::{
     chains::eth::{
         eth_crypto_utils::keccak_hash_bytes,
@@ -12,9 +16,6 @@ use crate::{
     },
     types::{Bytes, Result},
 };
-use ethereum_types::{Address as EthAddress, Bloom, H256 as EthHash, U256};
-use rlp::{Encodable, RlpStream};
-use serde_json::{json, Value as JsonValue};
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 pub struct EthBlock {

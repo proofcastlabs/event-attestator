@@ -1,4 +1,6 @@
 #![cfg(test)]
+use std::{fs::read_to_string, path::Path};
+
 use crate::{
     chains::{
         eos::{
@@ -10,7 +12,6 @@ use crate::{
     errors::AppError,
     types::Result,
 };
-use std::{fs::read_to_string, path::Path};
 
 fn get_sample_eos_submission_material_string_n(n: usize) -> Result<String> {
     let path = match n {

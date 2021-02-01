@@ -1,3 +1,5 @@
+use serde_json::json;
+
 use crate::{
     chains::{
         eos::{
@@ -17,7 +19,6 @@ use crate::{
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-use serde_json::json;
 
 pub fn update_incremerkle<D: DatabaseInterface>(db: &D, init_json: &EosInitJson) -> Result<String> {
     info!("✔ Debug updating blockroot merkle...");

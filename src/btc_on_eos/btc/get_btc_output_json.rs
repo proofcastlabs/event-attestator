@@ -1,3 +1,5 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use crate::{
     btc_on_eos::btc::minting_params::BtcOnEosMintingParamStruct,
     chains::{
@@ -14,7 +16,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TxInfo {

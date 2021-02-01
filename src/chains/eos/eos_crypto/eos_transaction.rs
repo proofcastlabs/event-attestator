@@ -1,10 +1,3 @@
-use crate::{
-    chains::eos::{
-        eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, EOS_MAX_EXPIRATION_SECS, MEMO},
-        eos_crypto::eos_private_key::EosPrivateKey,
-    },
-    types::Result,
-};
 use derive_more::{Constructor, Deref};
 use eos_primitives::{
     Action as EosAction,
@@ -12,6 +5,14 @@ use eos_primitives::{
     PermissionLevel,
     SerializeData,
     Transaction as EosTransaction,
+};
+
+use crate::{
+    chains::eos::{
+        eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, EOS_MAX_EXPIRATION_SECS, MEMO},
+        eos_crypto::eos_private_key::EosPrivateKey,
+    },
+    types::Result,
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, Deref, Constructor)]

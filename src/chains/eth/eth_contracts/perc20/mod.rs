@@ -1,9 +1,10 @@
+use ethabi::Token;
+use ethereum_types::{Address as EthAddress, U256};
+
 use crate::{
     chains::eth::eth_contracts::encode_fxn_call,
     types::{Bytes, Result},
 };
-use ethabi::Token;
-use ethereum_types::{Address as EthAddress, U256};
 
 pub const PERC20_PEGOUT_GAS_LIMIT: usize = 180_000;
 pub const PERC20_MIGRATE_GAS_LIMIT: usize = 6_000_000;

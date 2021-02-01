@@ -1,3 +1,9 @@
+use std::str::from_utf8;
+
+use derive_more::{Constructor, Deref};
+use eos_primitives::{AccountName as EosAccountName, Checksum256};
+use ethereum_types::{Address as EthAddress, U256};
+
 use crate::{
     chains::eos::{
         eos_action_proofs::EosActionProof,
@@ -10,10 +16,6 @@ use crate::{
     types::Result,
     utils::{convert_bytes_to_u64, strip_hex_prefix},
 };
-use derive_more::{Constructor, Deref};
-use eos_primitives::{AccountName as EosAccountName, Checksum256};
-use ethereum_types::{Address as EthAddress, U256};
-use std::str::from_utf8;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
 pub struct Erc20OnEosRedeemInfos(pub Vec<Erc20OnEosRedeemInfo>);
@@ -144,12 +146,13 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
     use crate::chains::eos::{
         eos_test_utils::get_sample_eos_submission_material_n,
         eos_utils::convert_hex_to_checksum256,
     };
-    use std::str::FromStr;
 
     fn get_sample_action_proof_for_erc20_redeem() -> EosActionProof {
         get_sample_eos_submission_material_n(10).action_proofs[0].clone()

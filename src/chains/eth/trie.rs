@@ -1,3 +1,5 @@
+use ethereum_types::H256;
+
 use crate::{
     chains::eth::{
         eth_constants::{EMPTY_NIBBLES, HASHED_NULL_NODE},
@@ -16,7 +18,6 @@ use crate::{
     },
     types::{Bytes, NoneError, Result},
 };
-use ethereum_types::H256;
 
 #[derive(Clone)]
 pub struct Trie {
@@ -736,6 +737,9 @@ pub fn put_in_trie_recursively(trie: Trie, key_value_tuples: Vec<(Nibbles, Bytes
 
 #[cfg(test)]
 mod tests {
+    #[allow(unused_imports)]
+    use simplelog::{Config, LevelFilter, TermLogger, TerminalMode};
+
     use super::*;
     use crate::chains::eth::{
         eth_test_utils::{
@@ -751,8 +755,6 @@ mod tests {
         eth_utils::convert_hex_to_h256,
         get_trie_hash_map::get_thing_from_trie_hash_map,
     };
-    #[allow(unused_imports)]
-    use simplelog::{Config, LevelFilter, TermLogger, TerminalMode};
 
     #[test]
     fn should_get_empty_trie() {

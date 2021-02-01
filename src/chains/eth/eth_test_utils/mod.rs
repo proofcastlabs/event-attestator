@@ -1,4 +1,8 @@
 #![cfg(test)]
+use std::{fs::read_to_string, path::Path, str::FromStr};
+
+use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+
 use crate::{
     chains::eth::{
         eth_block::{EthBlock, EthBlockJson},
@@ -18,8 +22,6 @@ use crate::{
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
-use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
-use std::{fs::read_to_string, path::Path, str::FromStr};
 
 pub const HASH_HEX_CHARS: usize = 64;
 pub const HEX_PREFIX_LENGTH: usize = 2;

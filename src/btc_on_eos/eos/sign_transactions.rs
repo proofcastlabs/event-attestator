@@ -1,3 +1,5 @@
+use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, network::constants::Network as BtcNetwork};
+
 use crate::{
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
     chains::{
@@ -18,7 +20,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, network::constants::Network as BtcNetwork};
 
 fn get_enough_utxos_to_cover_total<D>(
     db: &D,
@@ -133,6 +134,8 @@ pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>)
 
 #[cfg(test)]
 mod tests {
+    use bitcoin::network::constants::Network as BtcNetwork;
+
     use super::*;
     use crate::{
         chains::{
@@ -148,7 +151,6 @@ mod tests {
         },
         test_utils::get_test_database,
     };
-    use bitcoin::network::constants::Network as BtcNetwork;
 
     #[test]
     fn should_get_correct_signed_btc_tx_3() {

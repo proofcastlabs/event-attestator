@@ -1,10 +1,11 @@
+use serde_json::{json, Value as JsonValue};
+
 use crate::{
     chains::eth::{eth_database_utils::get_eth_private_key_from_db, eth_types::EthSignature},
     traits::DatabaseInterface,
     types::Result,
     utils::decode_hex_with_err_msg,
 };
-use serde_json::{json, Value as JsonValue};
 
 fn encode_eth_signed_message_as_json(message: &str, signature: &EthSignature) -> JsonValue {
     info!("✔ Encoding eth signed message as json...");

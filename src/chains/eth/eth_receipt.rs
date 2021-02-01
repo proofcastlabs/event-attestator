@@ -1,3 +1,10 @@
+use std::cmp::Ordering;
+
+use derive_more::{Constructor, Deref, From, Into};
+use ethereum_types::{Address as EthAddress, Bloom, H160, H256 as EthHash, U256};
+use rlp::{Encodable, RlpStream};
+use serde_json::{json, Value as JsonValue};
+
 use crate::{
     chains::eth::{
         eth_log::{EthLog, EthLogJson, EthLogs},
@@ -7,11 +14,6 @@ use crate::{
     },
     types::{Bytes, Result},
 };
-use derive_more::{Constructor, Deref, From, Into};
-use ethereum_types::{Address as EthAddress, Bloom, H160, H256 as EthHash, U256};
-use rlp::{Encodable, RlpStream};
-use serde_json::{json, Value as JsonValue};
-use std::cmp::Ordering;
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Constructor, Deref, From, Into)]
 pub struct EthReceipts(pub Vec<EthReceipt>);

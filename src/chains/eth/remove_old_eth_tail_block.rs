@@ -1,3 +1,5 @@
+use ethereum_types::H256 as EthHash;
+
 use crate::{
     chains::eth::{
         eth_database_utils::{
@@ -11,7 +13,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-use ethereum_types::H256 as EthHash;
 
 fn is_anchor_block<D>(db: &D, eth_block_hash: &EthHash) -> Result<bool>
 where

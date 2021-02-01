@@ -1,3 +1,14 @@
+use std::str::FromStr;
+
+use bitcoin::{
+    blockdata::transaction::Transaction as BtcTransaction,
+    hashes::sha256d,
+    network::constants::Network as BtcNetwork,
+    util::address::Address as BtcAddress,
+};
+use derive_more::{Constructor, Deref, DerefMut};
+use eos_primitives::AccountName as EosAccountName;
+
 use crate::{
     btc_on_eos::utils::convert_u64_to_8_decimal_eos_asset,
     chains::{
@@ -13,15 +24,6 @@ use crate::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
-use bitcoin::{
-    blockdata::transaction::Transaction as BtcTransaction,
-    hashes::sha256d,
-    network::constants::Network as BtcNetwork,
-    util::address::Address as BtcAddress,
-};
-use derive_more::{Constructor, Deref, DerefMut};
-use eos_primitives::AccountName as EosAccountName;
-use std::str::FromStr;
 
 pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D: DatabaseInterface>(
     state: BtcState<D>,

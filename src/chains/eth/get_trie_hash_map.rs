@@ -1,8 +1,9 @@
+use ethereum_types::H256;
+
 use crate::{
     chains::eth::eth_types::TrieHashMap,
     types::{Bytes, Result},
 };
-use ethereum_types::H256;
 
 pub fn get_new_trie_hash_map() -> Result<TrieHashMap> {
     Ok(std::collections::HashMap::new())

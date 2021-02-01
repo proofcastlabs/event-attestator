@@ -1,3 +1,8 @@
+use bitcoin::{
+    blockdata::{script::Script as BtcScript, transaction::Transaction as BtcTransaction},
+    consensus::encode::serialize as btc_serialize,
+};
+
 use crate::{
     chains::btc::{
         btc_database_utils::{get_btc_address_from_db, get_btc_public_key_slice_from_db},
@@ -7,10 +12,6 @@ use crate::{
     },
     traits::DatabaseInterface,
     types::Result,
-};
-use bitcoin::{
-    blockdata::{script::Script as BtcScript, transaction::Transaction as BtcTransaction},
-    consensus::encode::serialize as btc_serialize,
 };
 
 fn sig_script_contains_pub_key(script_sig: &BtcScript, btc_pub_key_slice: &BtcPubKeySlice) -> bool {
@@ -60,6 +61,10 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
+    use bitcoin::hashes::{sha256d, Hash};
+
     use super::*;
     use crate::chains::btc::{
         btc_block::BtcBlockAndId,
@@ -73,8 +78,6 @@ mod tests {
         },
         btc_utils::get_script_sig,
     };
-    use bitcoin::hashes::{sha256d, Hash};
-    use std::str::FromStr;
 
     fn get_block_with_external_p2pkh_deposit_tx() -> BtcBlockAndId {
         get_sample_testnet_block_and_txs().unwrap()
