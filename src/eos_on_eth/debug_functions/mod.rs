@@ -54,7 +54,6 @@ use crate::{
         },
         eos::{
             eos_tx_info::{
-                maybe_filter_out_already_processed_tx_ids_from_state,
                 maybe_filter_out_value_too_low_txs_from_state,
                 maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state,
                 maybe_sign_normal_eth_txs_and_add_to_state,
@@ -257,7 +256,6 @@ pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) 
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
         .and_then(|state| maybe_filter_proofs_for_action_name(state, PEGIN_ACTION_NAME))
         .and_then(maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state)
-        .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
         .and_then(maybe_filter_out_value_too_low_txs_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
         .and_then(maybe_sign_normal_eth_txs_and_add_to_state)
