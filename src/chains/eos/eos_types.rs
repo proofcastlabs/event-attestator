@@ -1,8 +1,10 @@
-use crate::{chains::eos::eos_utils::get_eos_schedule_db_key, types::Bytes};
+use std::fmt;
+
 pub use eos_primitives::Checksum256;
 use eos_primitives::ProducerKey as EosProducerKey;
 use serde_json::Value as JsonValue;
-use std::fmt;
+
+use crate::{chains::eos::eos_utils::get_eos_schedule_db_key, types::Bytes};
 
 pub type MerkleProof = Vec<String>;
 pub type Checksum256s = Vec<Checksum256>;

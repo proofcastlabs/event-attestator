@@ -1,6 +1,7 @@
-use crate::{chains::eth::nibble_utils::Nibbles, types::Byte, utils::get_prefixed_db_key};
 use ethereum_types::H256 as EthHash;
 pub use serde_json::{json, Value as JsonValue};
+
+use crate::{chains::eth::nibble_utils::Nibbles, types::Byte, utils::get_prefixed_db_key};
 
 pub const ZERO_BYTE: u8 = 0u8;
 pub const ZERO_ETH_VALUE: usize = 0;

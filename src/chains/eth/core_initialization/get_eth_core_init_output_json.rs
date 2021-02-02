@@ -1,3 +1,6 @@
+use ethereum_types::Address as EthAddress;
+use serde_json::to_string;
+
 use crate::{
     chains::eth::{
         eth_database_utils::{
@@ -11,8 +14,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-use ethereum_types::Address as EthAddress;
-use serde_json::to_string;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EthInitializationOutput {

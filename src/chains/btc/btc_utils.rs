@@ -1,15 +1,3 @@
-use crate::{
-    base58::{encode_slice as base58_encode_slice, from as from_base58},
-    chains::{
-        btc::{
-            btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, DEFAULT_BTC_SEQUENCE, PTOKEN_P2SH_SCRIPT_BYTES},
-            btc_types::BtcPubKeySlice,
-        },
-        eth::eth_utils::{convert_bytes_to_u64, convert_u64_to_bytes},
-    },
-    types::{Byte, Bytes, Result},
-    utils::strip_hex_prefix,
-};
 use bitcoin::{
     blockdata::{
         opcodes,
@@ -22,6 +10,19 @@ use bitcoin::{
     util::key::PrivateKey,
 };
 use secp256k1::key::ONE_KEY;
+
+use crate::{
+    base58::{encode_slice as base58_encode_slice, from as from_base58},
+    chains::{
+        btc::{
+            btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, DEFAULT_BTC_SEQUENCE, PTOKEN_P2SH_SCRIPT_BYTES},
+            btc_types::BtcPubKeySlice,
+        },
+        eth::eth_utils::{convert_bytes_to_u64, convert_u64_to_bytes},
+    },
+    types::{Byte, Bytes, Result},
+    utils::strip_hex_prefix,
+};
 
 pub fn convert_bytes_to_btc_pub_key_slice(bytes: &[Byte]) -> Result<BtcPubKeySlice> {
     match bytes.len() {
@@ -181,6 +182,14 @@ pub fn get_tx_id_from_signed_btc_tx(signed_btc_tx: &BtcTransaction) -> String {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
+    use bitcoin::{
+        hashes::{sha256d, Hash},
+        util::address::Address as BtcAddress,
+    };
+    use ethereum_types::Address as EthAddress;
+
     use super::*;
     use crate::{
         btc_on_eth::{
@@ -206,12 +215,6 @@ mod tests {
         },
         errors::AppError,
     };
-    use bitcoin::{
-        hashes::{sha256d, Hash},
-        util::address::Address as BtcAddress,
-    };
-    use ethereum_types::Address as EthAddress;
-    use std::str::FromStr;
 
     #[test]
     fn should_create_new_pay_to_pub_key_hash_output() {

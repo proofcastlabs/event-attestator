@@ -1,3 +1,7 @@
+use std::str::FromStr;
+
+use eos_primitives::{AccountName as EosAccountName, ActionName as EosActionName, Checksum256};
+
 use crate::{
     chains::eos::{
         eos_action_proofs::{EosActionProof, EosActionProofs},
@@ -9,8 +13,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-use eos_primitives::{AccountName as EosAccountName, ActionName as EosActionName, Checksum256};
-use std::str::FromStr;
 
 pub fn filter_proofs_with_wrong_action_mroot(
     action_mroot: &Checksum256,

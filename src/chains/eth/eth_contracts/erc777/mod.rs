@@ -1,3 +1,7 @@
+use derive_more::Constructor;
+use ethabi::Token;
+use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+
 use crate::{
     chains::eth::{
         eth_constants::ETH_WORD_SIZE_IN_BYTES,
@@ -16,9 +20,6 @@ use crate::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
-use derive_more::Constructor;
-use ethabi::Token;
-use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 pub const EMPTY_DATA: Bytes = vec![];
 pub const ERC777_CHANGE_PNETWORK_GAS_LIMIT: usize = 30_000;

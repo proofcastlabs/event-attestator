@@ -1,10 +1,11 @@
+use ethereum_types::U256;
+
 use crate::{
     btc_on_eth::eth::redeem_info::{BtcOnEthRedeemInfo, BtcOnEthRedeemInfos},
     chains::{btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS, eth::eth_state::EthState},
     traits::DatabaseInterface,
     types::Result,
 };
-use ethereum_types::U256;
 
 fn filter_redeem_infos(redeem_infos: &BtcOnEthRedeemInfos) -> BtcOnEthRedeemInfos {
     BtcOnEthRedeemInfos::new(
@@ -34,13 +35,15 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
+    use ethereum_types::U256;
+
     use super::*;
     use crate::{
         btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfo,
         chains::eth::eth_types::{EthAddress, EthHash},
     };
-    use ethereum_types::U256;
-    use std::str::FromStr;
 
     #[test]
     fn should_filter_redeem_infos() {

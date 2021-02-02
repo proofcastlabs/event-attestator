@@ -2,8 +2,9 @@ pub(crate) mod erc777;
 pub(crate) mod erc777_proxy;
 pub(crate) mod perc20;
 
-use crate::types::{Bytes, Result};
 use ethabi::{Contract as EthContract, Token};
+
+use crate::types::{Bytes, Result};
 
 pub fn instantiate_contract_from_abi(abi: &str) -> Result<EthContract> {
     Ok(EthContract::load(abi.as_bytes())?)

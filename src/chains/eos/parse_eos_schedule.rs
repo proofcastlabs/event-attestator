@@ -1,4 +1,5 @@
-use crate::types::Result;
+use std::str::FromStr;
+
 use eos_primitives::{
     AccountName as EosAccountName,
     Key as EosKey,
@@ -10,7 +11,8 @@ use eos_primitives::{
     ProducerScheduleV2 as EosProducerScheduleV2,
     PublicKey as EosPublicKey,
 };
-use std::str::FromStr;
+
+use crate::types::Result;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct EosProducerScheduleJsonV1 {

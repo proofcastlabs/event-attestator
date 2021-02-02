@@ -1,10 +1,11 @@
+use ethereum_types::{Address as EthAddress, H256, U256};
+use serde_json::Value as JsonValue;
+
 use crate::{
     constants::{ETH_HASH_LENGTH, SAFE_ETH_ADDRESS, U64_NUM_BYTES},
     types::{Byte, Bytes, NoneError, Result},
     utils::decode_hex_with_no_padding_with_err_msg,
 };
-use ethereum_types::{Address as EthAddress, H256, U256};
-use serde_json::Value as JsonValue;
 
 pub fn get_eth_address_from_str(eth_address_str: &str) -> Result<EthAddress> {
     info!("✔ Getting ETH address from str...");

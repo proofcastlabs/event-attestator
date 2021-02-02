@@ -1,3 +1,12 @@
+use std::fmt;
+
+use ethereum_types::H256;
+use secp256k1::{
+    key::{PublicKey, SecretKey, ONE_KEY},
+    Message,
+    Secp256k1,
+};
+
 use crate::{
     chains::eth::{
         eth_constants::{ETH_MESSAGE_PREFIX, PREFIXED_MESSAGE_HASH_LEN},
@@ -10,13 +19,6 @@ use crate::{
     traits::DatabaseInterface,
     types::{Byte, Result},
 };
-use ethereum_types::H256;
-use secp256k1::{
-    key::{PublicKey, SecretKey, ONE_KEY},
-    Message,
-    Secp256k1,
-};
-use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EthPrivateKey(SecretKey);

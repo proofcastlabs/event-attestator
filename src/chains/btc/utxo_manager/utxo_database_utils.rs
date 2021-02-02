@@ -1,3 +1,5 @@
+use bitcoin_hashes::{sha256d, Hash};
+
 use crate::{
     chains::btc::utxo_manager::{
         utxo_constants::{UTXO_BALANCE, UTXO_FIRST, UTXO_LAST, UTXO_NONCE},
@@ -9,7 +11,6 @@ use crate::{
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
-use bitcoin_hashes::{sha256d, Hash};
 
 pub fn get_x_utxos<D: DatabaseInterface>(db: &D, num_utxos_to_get: usize) -> Result<BtcUtxosAndValues> {
     let total_num_utxos = get_total_number_of_utxos_from_db(db);

@@ -1,13 +1,5 @@
-use crate::{
-    chains::eos::{
-        eos_global_sequences::GlobalSequence,
-        eos_types::MerkleProof,
-        eos_utils::convert_hex_to_checksum256,
-        parse_eos_action_receipts::parse_eos_action_receipt_json,
-    },
-    types::{Bytes, Result},
-    utils::convert_bytes_to_u64,
-};
+use std::str::FromStr;
+
 use eos_primitives::{
     AccountName as EosAccountName,
     AccountName,
@@ -19,7 +11,17 @@ use eos_primitives::{
     PermissionLevels,
     SerializeData,
 };
-use std::str::FromStr;
+
+use crate::{
+    chains::eos::{
+        eos_global_sequences::GlobalSequence,
+        eos_types::MerkleProof,
+        eos_utils::convert_hex_to_checksum256,
+        parse_eos_action_receipts::parse_eos_action_receipt_json,
+    },
+    types::{Bytes, Result},
+    utils::convert_bytes_to_u64,
+};
 
 pub type EosActionProofs = Vec<EosActionProof>;
 pub type EosActionProofJsons = Vec<EosActionProofJson>;
@@ -144,12 +146,13 @@ pub struct AuthorizationJson {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
     use crate::chains::eos::eos_test_utils::{
         get_sample_eos_submission_material_json_n,
         get_sample_eos_submission_material_n,
     };
-    use std::str::FromStr;
 
     fn get_sample_action_proof() -> EosActionProof {
         get_sample_eos_submission_material_n(1).action_proofs[0].clone()

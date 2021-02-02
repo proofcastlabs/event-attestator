@@ -1,3 +1,13 @@
+use derive_more::{Constructor, Deref};
+use eos_primitives::{
+    AccountName as EosAccountName,
+    Action as EosAction,
+    ActionPTokenPegOut,
+    PermissionLevel,
+    Transaction as EosTransaction,
+};
+use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+
 use crate::{
     chains::{
         eos::{
@@ -22,15 +32,6 @@ use crate::{
     traits::DatabaseInterface,
     types::{Byte, Result},
 };
-use derive_more::{Constructor, Deref};
-use eos_primitives::{
-    AccountName as EosAccountName,
-    Action as EosAction,
-    ActionPTokenPegOut,
-    PermissionLevel,
-    Transaction as EosTransaction,
-};
-use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 const ZERO_ETH_ASSET_STR: &str = "0.0000 EOS";
 
@@ -269,12 +270,13 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
     use crate::{
         chains::eos::eos_eth_token_dictionary::EosEthTokenDictionaryEntry,
         eos_on_eth::test_utils::{get_eth_submission_material_n, get_sample_eos_eth_token_dictionary},
     };
-    use std::str::FromStr;
 
     #[test]
     fn should_get_tx_info_from_eth_submission_material() {

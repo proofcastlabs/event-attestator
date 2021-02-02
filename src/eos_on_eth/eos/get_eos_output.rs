@@ -1,3 +1,5 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use crate::{
     chains::{
         eos::{eos_database_utils::get_latest_eos_block_number, eos_state::EosState},
@@ -16,7 +18,6 @@ use crate::{
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };
-use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EosOutput {

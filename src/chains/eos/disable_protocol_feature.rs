@@ -5,16 +5,13 @@ use crate::{
             end_eos_db_transaction_and_return_state,
             start_eos_db_transaction_and_return_state,
         },
+        eos_database_utils::put_eos_enabled_protocol_features_in_db,
         eos_state::EosState,
         get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
+        protocol_features::{EnabledFeatures, AVAILABLE_FEATURES},
     },
     traits::DatabaseInterface,
     types::{Byte, Result},
-};
-
-use crate::chains::eos::{
-    eos_database_utils::put_eos_enabled_protocol_features_in_db,
-    protocol_features::{EnabledFeatures, AVAILABLE_FEATURES},
 };
 
 pub fn disable_protocol_feature<D: DatabaseInterface>(

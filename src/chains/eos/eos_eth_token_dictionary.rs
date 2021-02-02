@@ -1,3 +1,9 @@
+use std::{cmp::Ordering, str::FromStr};
+
+use derive_more::{Constructor, Deref, DerefMut};
+use eos_primitives::AccountName as EosAccountName;
+use ethereum_types::{Address as EthAddress, U256 as EthAmount};
+
 use crate::{
     chains::{
         eos::{eos_constants::EOS_ETH_DICTIONARY_KEY, eos_state::EosState, eos_utils::remove_symbol_from_eos_asset},
@@ -8,10 +14,6 @@ use crate::{
     types::{Byte, Bytes, Result},
     utils::{left_pad_with_zeroes, right_pad_or_truncate, right_pad_with_zeroes, strip_hex_prefix, truncate_str},
 };
-use derive_more::{Constructor, Deref, DerefMut};
-use eos_primitives::AccountName as EosAccountName;
-use ethereum_types::{Address as EthAddress, U256 as EthAmount};
-use std::{cmp::Ordering, str::FromStr};
 
 #[derive(Debug, Clone, Eq, PartialEq, Constructor, Deref, DerefMut)]
 pub struct EosEthTokenDictionary(pub Vec<EosEthTokenDictionaryEntry>);

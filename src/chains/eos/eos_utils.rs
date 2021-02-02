@@ -1,8 +1,9 @@
+use eos_primitives::Checksum256;
+
 use crate::{
     chains::eos::eos_constants::EOS_SCHEDULE_DB_PREFIX,
     types::{Byte, Bytes, Result},
 };
-use eos_primitives::Checksum256;
 
 pub fn convert_hex_to_checksum256<T: AsRef<[u8]>>(hex: T) -> Result<Checksum256> {
     convert_bytes_to_checksum256(&hex::decode(hex)?)

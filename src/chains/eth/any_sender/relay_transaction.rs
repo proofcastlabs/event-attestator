@@ -1,3 +1,7 @@
+use ethabi::{encode, Token};
+use ethereum_types::{Address as EthAddress, Signature as EthSignature, U256};
+use rlp::RlpStream;
+
 use crate::{
     chains::eth::{
         any_sender::{
@@ -11,9 +15,6 @@ use crate::{
     },
     types::{Byte, Bytes, Result},
 };
-use ethabi::{encode, Token};
-use ethereum_types::{Address as EthAddress, Signature as EthSignature, U256};
-use rlp::RlpStream;
 
 pub const ANY_SENDER_GAS_LIMIT: u32 = 300_000;
 pub const ANY_SENDER_MAX_DATA_LEN: usize = 3_000;

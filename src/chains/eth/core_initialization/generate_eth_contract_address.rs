@@ -1,3 +1,7 @@
+use ethereum_types::Address as EthAddress;
+use rlp::RlpStream;
+use tiny_keccak::keccak256;
+
 use crate::{
     chains::eth::{
         eth_database_utils::{
@@ -11,9 +15,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-use ethereum_types::Address as EthAddress;
-use rlp::RlpStream;
-use tiny_keccak::keccak256;
 
 const INITIAL_NONCE: usize = 0;
 

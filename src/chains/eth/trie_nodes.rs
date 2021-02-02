@@ -1,3 +1,6 @@
+use ethereum_types::H256;
+use rlp::{Rlp, RlpStream};
+
 use crate::{
     chains::eth::{
         eth_constants::{BRANCH_NODE_STRING, EMPTY_NIBBLES, EXTENSION_NODE_STRING, LEAF_NODE_STRING},
@@ -13,8 +16,6 @@ use crate::{
     },
     types::{Bytes, Result},
 };
-use ethereum_types::H256;
-use rlp::{Rlp, RlpStream};
 
 static NO_NODE_IN_STRUCT_ERR: &str = "✘ No node present in struct to rlp-encode!";
 

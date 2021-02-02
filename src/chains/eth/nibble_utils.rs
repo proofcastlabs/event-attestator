@@ -1,8 +1,9 @@
+use std::fmt;
+
 use crate::{
     chains::eth::eth_constants::{EMPTY_NIBBLES, HIGH_NIBBLE_MASK, NUM_BITS_IN_NIBBLE, NUM_NIBBLES_IN_BYTE, ZERO_BYTE},
     types::{Byte, Bytes, Result},
 };
-use std::fmt;
 
 #[derive(Clone, Eq)]
 pub struct Nibbles {

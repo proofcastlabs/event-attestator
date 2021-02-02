@@ -1,5 +1,6 @@
-use crate::utils::get_prefixed_db_key;
 pub use serde_json::{json, Value as JsonValue};
+
+use crate::utils::get_prefixed_db_key;
 
 pub const MEMO: &str = "";
 pub const PRODUCER_REPS: u64 = 12;

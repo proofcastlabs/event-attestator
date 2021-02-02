@@ -1,3 +1,5 @@
+use bitcoin::blockdata::script::Script as BtcScript;
+
 use crate::{
     chains::btc::{
         btc_database_utils::get_btc_address_from_db,
@@ -9,7 +11,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-use bitcoin::blockdata::script::Script as BtcScript;
 
 pub fn extract_utxos_from_txs(target_script: &BtcScript, txs: &[BtcTransaction]) -> BtcUtxosAndValues {
     info!("✔ Extracting UTXOs from {} `op_return` txs...", txs.len());

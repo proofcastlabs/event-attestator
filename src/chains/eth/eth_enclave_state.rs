@@ -1,3 +1,5 @@
+use ethereum_types::Address as EthAddress;
+
 use crate::{
     chains::eth::{
         eth_constants::ETH_TAIL_LENGTH,
@@ -23,7 +25,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-use ethereum_types::Address as EthAddress;
 
 #[derive(Serialize, Deserialize)]
 pub struct EthEnclaveState {

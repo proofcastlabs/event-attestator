@@ -1,3 +1,9 @@
+use std::str::FromStr;
+
+use bitcoin::util::address::Address as BtcAddress;
+use derive_more::{Constructor, Deref, IntoIterator};
+use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+
 use crate::{
     btc_on_eth::utils::convert_ptoken_to_satoshis,
     chains::{
@@ -19,10 +25,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-use bitcoin::util::address::Address as BtcAddress;
-use derive_more::{Constructor, Deref, IntoIterator};
-use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
-use std::str::FromStr;
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor)]
 pub struct BtcOnEthRedeemInfo {

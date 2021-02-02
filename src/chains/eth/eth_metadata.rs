@@ -1,14 +1,15 @@
+use std::{fmt, str, str::FromStr};
+
+#[cfg(test)]
+use bitcoin::hashes::Hash;
+use bitcoin::{hashes::sha256d, util::address::Address as BtcAddress};
+
+#[cfg(test)]
+use crate::errors::AppError;
 use crate::{
     btc_on_eth::btc::minting_params::BtcOnEthMintingParamStruct,
     types::{Byte, Bytes, Result},
 };
-use bitcoin::{hashes::sha256d, util::address::Address as BtcAddress};
-use std::{fmt, str, str::FromStr};
-
-#[cfg(test)]
-use crate::errors::AppError;
-#[cfg(test)]
-use bitcoin::hashes::Hash;
 
 #[cfg(test)]
 pub const MINIMUM_METADATA_BYTES: usize = 33;
@@ -150,10 +151,11 @@ impl EthMetadataFromBtc {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::{btc_on_eth::utils::convert_satoshis_to_ptoken, chains::btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS};
     use bitcoin::hashes::Hash;
     use ethereum_types::Address as EthAddress;
+
+    use super::*;
+    use crate::{btc_on_eth::utils::convert_satoshis_to_ptoken, chains::btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS};
 
     fn get_sample_minting_param_struct() -> BtcOnEthMintingParamStruct {
         let originating_tx_address = "moBSQbHn7N9BC9pdtAMnA7GBiALzNMQJyE".to_string();

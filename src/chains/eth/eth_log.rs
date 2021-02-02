@@ -1,3 +1,8 @@
+use derive_more::{Constructor, Deref};
+use ethereum_types::{Address as EthAddress, Bloom, BloomInput, H256 as EthHash};
+use rlp::{Encodable, RlpStream};
+use serde_json::{json, Value as JsonValue};
+
 use crate::{
     chains::eth::{
         eth_receipt::EthReceiptJson,
@@ -5,10 +10,6 @@ use crate::{
     },
     types::{Bytes, Result},
 };
-use derive_more::{Constructor, Deref};
-use ethereum_types::{Address as EthAddress, Bloom, BloomInput, H256 as EthHash};
-use rlp::{Encodable, RlpStream};
-use serde_json::{json, Value as JsonValue};
 
 #[allow(non_snake_case)]
 #[derive(Clone, Debug, Deserialize)]

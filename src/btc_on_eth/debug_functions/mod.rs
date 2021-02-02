@@ -1,3 +1,6 @@
+use ethereum_types::Address as EthAddress;
+use serde_json::json;
+
 use crate::{
     btc_on_eth::{
         btc::{
@@ -91,8 +94,6 @@ use crate::{
     types::Result,
     utils::{decode_hex_with_err_msg, prepend_debug_output_marker_to_string, strip_hex_prefix},
 };
-use ethereum_types::Address as EthAddress;
-use serde_json::json;
 
 /// # Debug Get All Db Keys
 ///

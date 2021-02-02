@@ -1,3 +1,18 @@
+use std::str::FromStr;
+
+use bitcoin::{
+    blockdata::{
+        script::{Instruction, Script as BtcScript},
+        transaction::{Transaction as BtcTransaction, TxIn as BtcTxIn, TxOut as BtcTxOut},
+    },
+    consensus::encode::serialize as btc_serialize,
+    hashes::sha256d,
+    network::constants::Network as BtcNetwork,
+    util::{address::Address as BtcAddress, key::PublicKey as BtcPublicKey},
+};
+use derive_more::{Constructor, Deref, DerefMut};
+use ethereum_types::{Address as EthAddress, U256};
+
 use crate::{
     btc_on_eth::utils::convert_satoshis_to_ptoken,
     chains::{
@@ -14,19 +29,6 @@ use crate::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
-use bitcoin::{
-    blockdata::{
-        script::{Instruction, Script as BtcScript},
-        transaction::{Transaction as BtcTransaction, TxIn as BtcTxIn, TxOut as BtcTxOut},
-    },
-    consensus::encode::serialize as btc_serialize,
-    hashes::sha256d,
-    network::constants::Network as BtcNetwork,
-    util::{address::Address as BtcAddress, key::PublicKey as BtcPublicKey},
-};
-use derive_more::{Constructor, Deref, DerefMut};
-use ethereum_types::{Address as EthAddress, U256};
-use std::str::FromStr;
 
 const NUM_BYTES_IN_SCRIPT: u8 = 22;
 const OP_RETURN_AS_DECIMAL: u8 = 106;
@@ -276,6 +278,11 @@ impl BtcOnEthMintingParamStruct {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
+    use bitcoin::{hashes::sha256d, util::address::Address as BtcAddress};
+    use ethereum_types::H160 as EthAddress;
+
     use super::*;
     use crate::{
         btc_on_eth::btc::filter_op_return_deposit_txs::filter_txs_for_op_return_deposits,
@@ -297,9 +304,6 @@ mod tests {
             get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
         },
     };
-    use bitcoin::{hashes::sha256d, util::address::Address as BtcAddress};
-    use ethereum_types::H160 as EthAddress;
-    use std::str::FromStr;
 
     fn get_expected_eth_address() -> EthAddress {
         EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap())

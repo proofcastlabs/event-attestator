@@ -1,3 +1,15 @@
+use std::str::from_utf8;
+
+use derive_more::{Constructor, Deref};
+use eos_primitives::{
+    symbol::symbol_to_string as eos_symbol_to_string,
+    AccountName as EosAccountName,
+    Checksum256,
+    Name as EosName,
+    Symbol as EosSymbol,
+};
+use ethereum_types::{Address as EthAddress, U256};
+
 use crate::{
     chains::{
         eos::{
@@ -26,16 +38,6 @@ use crate::{
     types::Result,
     utils::{convert_bytes_to_u64, strip_hex_prefix},
 };
-use derive_more::{Constructor, Deref};
-use eos_primitives::{
-    symbol::symbol_to_string as eos_symbol_to_string,
-    AccountName as EosAccountName,
-    Checksum256,
-    Name as EosName,
-    Symbol as EosSymbol,
-};
-use ethereum_types::{Address as EthAddress, U256};
-use std::str::from_utf8;
 
 const REQUIRED_ACTION_NAME: &str = "pegin";
 
@@ -353,12 +355,13 @@ pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: E
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
     use crate::{
         chains::eos::eos_utils::convert_hex_to_checksum256,
         eos_on_eth::test_utils::{get_eos_submission_material_n, get_sample_eos_eth_token_dictionary},
     };
-    use std::str::FromStr;
 
     fn get_sample_proof() -> EosActionProof {
         get_eos_submission_material_n(1).unwrap().action_proofs[0].clone()

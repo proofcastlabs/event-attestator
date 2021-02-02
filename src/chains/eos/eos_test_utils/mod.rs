@@ -1,4 +1,17 @@
 #![cfg(test)]
+use std::{fs::read_to_string, path::Path};
+
+use bitcoin_hashes::{sha256, Hash as HashTrait};
+use eos_primitives::{
+    ActionReceipt as EosActionReceipt,
+    AuthSequence,
+    BlockHeader as EosBlockHeader,
+    ProducerSchedule as EosProducerScheduleV1,
+    ProducerScheduleV2 as EosProducerScheduleV2,
+};
+use ethereum_types::Address as EthAddress;
+use secp256k1::Message as Secp256k1Message;
+
 use crate::{
     chains::eos::{
         core_initialization::eos_init_utils::EosInitJson,
@@ -24,17 +37,6 @@ use crate::{
     test_utils::get_sample_message_to_sign_bytes,
     types::{Byte, Bytes, Result},
 };
-use bitcoin_hashes::{sha256, Hash as HashTrait};
-use eos_primitives::{
-    ActionReceipt as EosActionReceipt,
-    AuthSequence,
-    BlockHeader as EosBlockHeader,
-    ProducerSchedule as EosProducerScheduleV1,
-    ProducerScheduleV2 as EosProducerScheduleV2,
-};
-use ethereum_types::Address as EthAddress;
-use secp256k1::Message as Secp256k1Message;
-use std::{fs::read_to_string, path::Path};
 
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1: &str = "src/chains/eos/eos_test_utils/eos-block-81784220.json";
 

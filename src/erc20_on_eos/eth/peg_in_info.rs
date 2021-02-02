@@ -1,3 +1,9 @@
+use std::str::FromStr;
+
+use derive_more::{Constructor, Deref};
+use eos_primitives::AccountName as EosAccountName;
+use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+
 use crate::{
     chains::{
         eos::{eos_eth_token_dictionary::EosEthTokenDictionary, eos_utils::remove_symbol_from_eos_asset},
@@ -19,10 +25,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-use derive_more::{Constructor, Deref};
-use eos_primitives::AccountName as EosAccountName;
-use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
-use std::str::FromStr;
 
 pub const NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR: &str = "Not enough bytes in log data!";
 

@@ -1,10 +1,11 @@
+use bitcoin_hashes::{sha256, Hash};
+use eos_primitives::Checksum256;
+
 use crate::{
     chains::eos::eos_utils::convert_hex_to_checksum256,
     errors::AppError,
     types::{Byte, Bytes, NoneError, Result},
 };
-use bitcoin_hashes::{sha256, Hash};
-use eos_primitives::Checksum256;
 
 pub type CanonicalLeft = Bytes;
 pub type CanonicalRight = Bytes;
@@ -260,8 +261,8 @@ impl Incremerkle {
 #[cfg(test)]
 mod tests {
     #![allow(clippy::needless_range_loop)]
-    use super::*;
-    use crate::chains::eos::eos_test_utils::{get_sample_action_digests, get_sample_eos_submission_material_n};
+    use std::str::FromStr;
+
     use eos_primitives::{
         AccountName,
         Action,
@@ -272,7 +273,9 @@ mod tests {
         PermissionName,
         SerializeData,
     };
-    use std::str::FromStr;
+
+    use super::*;
+    use crate::chains::eos::eos_test_utils::{get_sample_action_digests, get_sample_eos_submission_material_n};
 
     fn get_expected_digest_1() -> &'static str {
         "9b9babebfbdff48ce4002b5f3c7f999c0ee74707b6d121c47ef5db68c6be7262"

@@ -68,6 +68,11 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
+    use bitcoin::util::address::Address as BtcAddress;
+    use bitcoin_hashes::{sha256d, Hash};
+
     use super::*;
     use crate::{
         btc_on_eth::utils::convert_satoshis_to_ptoken,
@@ -87,9 +92,6 @@ mod tests {
         },
         test_utils::get_test_database,
     };
-    use bitcoin::util::address::Address as BtcAddress;
-    use bitcoin_hashes::{sha256d, Hash};
-    use std::str::FromStr;
 
     #[test]
     fn should_get_eth_signing_params() {

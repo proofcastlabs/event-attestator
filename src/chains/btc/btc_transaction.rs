@@ -1,3 +1,8 @@
+use bitcoin::{
+    blockdata::transaction::{Transaction as BtcTransaction, TxIn as BtcUtxo, TxOut as BtcTxOut},
+    hashes::sha256d,
+};
+
 use crate::{
     chains::btc::{
         btc_crypto::btc_private_key::BtcPrivateKey,
@@ -14,10 +19,6 @@ use crate::{
         utxo_manager::utxo_types::BtcUtxosAndValues,
     },
     types::{Bytes, Result},
-};
-use bitcoin::{
-    blockdata::transaction::{Transaction as BtcTransaction, TxIn as BtcUtxo, TxOut as BtcTxOut},
-    hashes::sha256d,
 };
 
 // NOTE: Current tx constants. Could make generic in future if needed.

@@ -1,3 +1,7 @@
+use std::{fmt, io, str::FromStr};
+
+use secp256k1::{self, key::PublicKey, Secp256k1};
+
 use crate::{
     base58,
     chains::eos::{
@@ -8,8 +12,6 @@ use crate::{
     errors::AppError,
     types::{Byte, Bytes, Result},
 };
-use secp256k1::{self, key::PublicKey, Secp256k1};
-use std::{fmt, io, str::FromStr};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct EosPublicKey {
@@ -89,6 +91,11 @@ impl FromStr for EosPublicKey {
 
 #[cfg(test)]
 mod test {
+    use std::str::FromStr;
+
+    use bitcoin_hashes::{sha256, Hash};
+    use secp256k1::Message;
+
     use super::*;
     use crate::{
         chains::eos::{
@@ -104,9 +111,6 @@ mod test {
         },
         test_utils::get_sample_message_to_sign_bytes,
     };
-    use bitcoin_hashes::{sha256, Hash};
-    use secp256k1::Message;
-    use std::str::FromStr;
 
     impl EosPublicKey {
         pub fn verify_signature(&self, message_slice: &[u8], signature: &EosSignature) -> Result<()> {

@@ -1,3 +1,8 @@
+use std::str::from_utf8;
+
+use derive_more::{Constructor, Deref};
+use eos_primitives::{AccountName as EosAccountName, Checksum256};
+
 use crate::{
     chains::{
         btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
@@ -11,9 +16,6 @@ use crate::{
     types::Result,
     utils::convert_bytes_to_u64,
 };
-use derive_more::{Constructor, Deref};
-use eos_primitives::{AccountName as EosAccountName, Checksum256};
-use std::str::from_utf8;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
 pub struct BtcOnEosRedeemInfos(pub Vec<BtcOnEosRedeemInfo>);
@@ -146,12 +148,13 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
     use crate::chains::eos::{
         eos_test_utils::get_sample_eos_submission_material_n,
         eos_utils::convert_hex_to_checksum256,
     };
-    use std::str::FromStr;
 
     #[test]
     fn should_get_amount_from_proof() {

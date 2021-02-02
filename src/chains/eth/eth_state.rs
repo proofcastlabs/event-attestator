@@ -1,3 +1,5 @@
+use ethereum_types::H256 as EthHash;
+
 use crate::{
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
     chains::{
@@ -11,7 +13,6 @@ use crate::{
     types::Result,
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
 };
-use ethereum_types::H256 as EthHash;
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct EthState<D: DatabaseInterface> {

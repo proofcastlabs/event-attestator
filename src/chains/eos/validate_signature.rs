@@ -1,13 +1,5 @@
-use crate::{
-    chains::eos::{
-        eos_crypto::{eos_public_key::EosPublicKey, eos_signature::EosSignature},
-        eos_state::EosState,
-        protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
-    },
-    constants::{CORE_IS_VALIDATING, DEBUG_MODE, NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR},
-    traits::DatabaseInterface,
-    types::{Byte, Bytes, Result},
-};
+use std::str::FromStr;
+
 use bitcoin_hashes::{sha256, Hash};
 use eos_primitives::{
     AccountName as EosAccountName,
@@ -19,7 +11,17 @@ use eos_primitives::{
     PublicKey as EosProducerKey,
 };
 use secp256k1::Message;
-use std::str::FromStr;
+
+use crate::{
+    chains::eos::{
+        eos_crypto::{eos_public_key::EosPublicKey, eos_signature::EosSignature},
+        eos_state::EosState,
+        protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
+    },
+    constants::{CORE_IS_VALIDATING, DEBUG_MODE, NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR},
+    traits::DatabaseInterface,
+    types::{Byte, Bytes, Result},
+};
 
 fn create_eos_signing_digest(block_mroot: &[Byte], schedule_hash: &[Byte], block_header_digest: &[Byte]) -> Bytes {
     let hash_1 = sha256::Hash::hash(&[&block_header_digest[..], &block_mroot[..]].concat());
@@ -186,8 +188,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use eos_primitives::Checksum256;
 
+    use super::*;
     use crate::chains::eos::{
         eos_merkle_utils::Incremerkle,
         eos_test_utils::{
@@ -201,7 +204,6 @@ mod tests {
         },
         eos_utils::convert_hex_to_checksum256,
     };
-    use eos_primitives::Checksum256;
 
     fn validate_subsequent_block(block_num: usize, blocks_json: &EosInitAndSubsequentBlocksJson) {
         println!("Checking subsequent block #{} is valid...", block_num);

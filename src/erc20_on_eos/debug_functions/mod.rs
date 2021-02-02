@@ -1,3 +1,5 @@
+pub use serde_json::json;
+
 use crate::{
     chains::{
         eos::{
@@ -92,7 +94,6 @@ use crate::{
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-pub use serde_json::json;
 
 /// # Debug Update Incremerkle
 ///

@@ -1,3 +1,6 @@
+use derive_more::{Constructor, Deref, DerefMut};
+use serde_json::{json, Value as JsonValue};
+
 use crate::{
     chains::eos::{
         eos_database_utils::{get_processed_global_sequences_from_db, put_processed_tx_ids_in_db},
@@ -6,8 +9,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-use derive_more::{Constructor, Deref, DerefMut};
-use serde_json::{json, Value as JsonValue};
 
 pub type GlobalSequence = u64;
 

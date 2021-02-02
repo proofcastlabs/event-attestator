@@ -1,3 +1,16 @@
+use std::str::FromStr;
+
+use chrono::prelude::*;
+use eos_primitives::{
+    AccountName,
+    BlockHeader as EosBlockHeader,
+    BlockTimestamp,
+    Extension,
+    ProducerScheduleV2 as EosProducerScheduleV2,
+    TimePoint,
+};
+use serde_json::Value as JsonValue;
+
 use crate::{
     chains::eos::{
         eos_action_proofs::{EosActionProof, EosActionProofJson, EosActionProofJsons, EosActionProofs},
@@ -15,17 +28,6 @@ use crate::{
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };
-use chrono::prelude::*;
-use eos_primitives::{
-    AccountName,
-    BlockHeader as EosBlockHeader,
-    BlockTimestamp,
-    Extension,
-    ProducerScheduleV2 as EosProducerScheduleV2,
-    TimePoint,
-};
-use serde_json::Value as JsonValue;
-use std::str::FromStr;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterial {

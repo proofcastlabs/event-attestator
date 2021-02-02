@@ -1,3 +1,12 @@
+use std::{collections::HashMap, fmt, str::FromStr};
+
+use bitcoin::{
+    hashes::{sha256d, Hash},
+    network::constants::Network as BtcNetwork,
+    util::address::Address as BtcAddress,
+};
+use derive_more::{Constructor, Deref};
+
 use crate::{
     chains::btc::{
         btc_database_utils::{get_btc_network_from_db, get_btc_public_key_slice_from_db},
@@ -9,13 +18,6 @@ use crate::{
     types::{Bytes, Result},
     utils::decode_hex_with_err_msg,
 };
-use bitcoin::{
-    hashes::{sha256d, Hash},
-    network::constants::Network as BtcNetwork,
-    util::address::Address as BtcAddress,
-};
-use derive_more::{Constructor, Deref};
-use std::{collections::HashMap, fmt, str::FromStr};
 
 pub type DepositInfoHashMap = HashMap<BtcAddress, DepositAddressInfo>;
 
