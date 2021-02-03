@@ -7,6 +7,10 @@ use crate::{
             initialize_eth_core::initialize_eth_core_with_no_contract_tx,
         },
         eth_constants::ETH_CORE_IS_INITIALIZED_JSON,
+        eth_database_transactions::{
+            end_eth_db_transaction_and_return_state,
+            start_eth_db_transaction_and_return_state,
+        },
         eth_state::EthState,
     },
     traits::DatabaseInterface,
@@ -47,18 +51,14 @@ pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
     block_json: &str,
     chain_id: u8,
     gas_price: u64,
-    canon_to_tip_length: u64,
+    confs: u64,
 ) -> Result<String> {
     match is_eth_core_initialized(&db) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
-        false => initialize_eth_core_with_no_contract_tx(
-            block_json,
-            chain_id,
-            gas_price,
-            canon_to_tip_length,
-            EthState::init(db),
-        )
-        .and_then(generate_and_store_eos_on_eth_contract_address)
-        .and_then(EthInitializationOutput::new_for_eos_on_eth),
+        false => start_eth_db_transaction_and_return_state(EthState::init(db))
+            .and_then(|state| initialize_eth_core_with_no_contract_tx(block_json, chain_id, gas_price, confs, state))
+            .and_then(generate_and_store_eos_on_eth_contract_address)
+            .and_then(end_eth_db_transaction_and_return_state)
+            .and_then(EthInitializationOutput::new_for_eos_on_eth),
     }
 }
