@@ -98,7 +98,7 @@ impl EthTransaction {
     }
 
     fn calculate_v_from_chain_id(sig_v: u8, chain_id: u8) -> u64 {
-        ((chain_id * 2) + (sig_v + 35)).into() // Per EIP155
+        chain_id as u64 * 2 + sig_v as u64 + 35 // Per EIP155
     }
 
     pub fn sign(self, eth_private_key: EthPrivateKey) -> Result<Self> {
