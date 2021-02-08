@@ -34,10 +34,9 @@ pub fn filter_txs_for_p2pkh_deposits(
     transactions: &[BtcTransaction],
     include_change_outputs: bool,
 ) -> Result<BtcTransactions> {
-    let prefix = if include_change_outputs { "IN" } else { "EX" };
     info!(
         "✔ Filtering `p2pkh` deposits {}CLUDING enclave's own change outputs...",
-        prefix
+        if include_change_outputs { "IN" } else { "EX" },
     );
     let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
     info!("✔ Num `p2pkh` deposits before: {}", transactions.len());
@@ -61,10 +60,9 @@ fn filter_for_p2pkh_deposit_txs_and_add_to_state<D: DatabaseInterface>(
     state: BtcState<D>,
     include_change_outputs: bool,
 ) -> Result<BtcState<D>> {
-    let prefix = if include_change_outputs { "IN" } else { "EX" };
     info!(
         "✔ Filtering for `p2pkh` deposits, {}CLUDING enclave's own change outputs & adding to state...",
-        prefix
+        if include_change_outputs { "IN" } else { "EX" },
     );
     filter_txs_for_p2pkh_deposits(
         &get_btc_address_from_db(&state.db)?,

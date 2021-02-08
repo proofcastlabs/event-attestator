@@ -430,7 +430,7 @@ mod tests {
     fn incorrect_output_should_not_be_desired_op_return() {
         #[allow(non_snake_case)]
         let INDEX_OF_NON_P2PKH_OUTPUT = 0;
-        assert!(INDEX_OF_NON_P2PKH_OUTPUT != SAMPLE_P2PKH_TRANSACTION_OUTPUT_INDEX);
+        assert_ne!(INDEX_OF_NON_P2PKH_OUTPUT, SAMPLE_P2PKH_TRANSACTION_OUTPUT_INDEX);
         let tx = get_sample_btc_p2pkh_tx();
         let wrong_output = tx.output[INDEX_OF_NON_P2PKH_OUTPUT].clone();
         let result = BtcOnEthMintingParamStruct::output_is_desired_op_return(&wrong_output);
@@ -476,12 +476,12 @@ mod tests {
         let block = get_sample_p2pkh_btc_block_and_txs().block;
         let sample_pub_key_hash = get_sample_btc_pub_key_slice();
         let sample_address = get_sample_btc_p2pkh_address();
-        let include_change_putputs = false;
+        let include_change_outputs = false;
         let filtered_txs = filter_txs_for_p2pkh_deposits(
             &sample_address,
             &sample_pub_key_hash,
             &block.txdata,
-            include_change_putputs,
+            include_change_outputs,
         )
         .unwrap();
         let input = filtered_txs[0].input[0].clone();
@@ -540,12 +540,12 @@ mod tests {
         let expected_origin_address = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
         let expected_tx_hash = "183d4334c0e06d38cebfe2387e192c3a5f24f13c612214945af95f0aec696c6b".to_string();
         let block = get_sample_p2pkh_btc_block_and_txs().block;
-        let include_change_putputs = false;
+        let include_change_outputs = false;
         let filtered_txs = filter_txs_for_p2pkh_deposits(
             &sample_address,
             &sample_pub_key_hash,
             &block.txdata,
-            include_change_putputs,
+            include_change_outputs,
         )
         .unwrap();
         let target_deposit_script = get_sample_pay_to_pub_key_hash_script();

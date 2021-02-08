@@ -83,9 +83,9 @@ where
 
     pub fn get_p2pkh_deposit_txs(&self) -> Result<&[BtcTransaction]> {
         match &self.p2pkh_deposit_txs {
-            Some(p2pkh_deposit_txs) => {
+            Some(ref p2pkh_deposit_txs) => {
                 info!("✔ Getting `p2pkh` deposit txs from BTC state...");
-                Ok(&p2pkh_deposit_txs)
+                Ok(p2pkh_deposit_txs)
             },
             None => Err(get_not_in_state_err("p2pkh_deposit_txs").into()),
         }
