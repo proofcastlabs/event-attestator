@@ -1,7 +1,7 @@
 use crate::{
     btc_on_eth::{
         btc::{
-            filter_p2pkh_deposit_txs::filter_p2pkh_deposit_txs_and_add_to_state,
+            filter_p2pkh_deposit_txs::filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state,
             get_btc_output_json::{create_btc_output_json_and_put_in_state, get_btc_output_as_string},
             minting_params::{
                 parse_minting_params_from_p2pkh_deposits_and_add_to_state,
@@ -67,7 +67,7 @@ pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(validate_btc_merkle_root)
         .and_then(get_deposit_info_hash_map_and_put_in_state)
         .and_then(validate_deposit_address_list_in_state)
-        .and_then(filter_p2pkh_deposit_txs_and_add_to_state)
+        .and_then(filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
         .and_then(parse_minting_params_from_p2pkh_deposits_and_add_to_state)
         .and_then(parse_minting_params_from_p2sh_deposits_and_add_to_state)
