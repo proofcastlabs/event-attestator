@@ -28,7 +28,7 @@ fn tx_has_output_with_target_script(tx: &BtcTransaction, target_script: &BtcScri
     tx.output.iter().any(|output| &output.script_pubkey == target_script)
 }
 
-pub fn filter_txs_for_op_return_deposits(
+pub fn filter_txs_for_p2pkh_deposits(
     btc_address: &str,
     btc_pub_key_slice: &BtcPubKeySlice,
     transactions: &[BtcTransaction],
@@ -46,16 +46,16 @@ pub fn filter_txs_for_op_return_deposits(
     Ok(filtered)
 }
 
-pub fn filter_op_return_deposit_txs_and_add_to_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
+pub fn filter_p2pkh_deposit_txs_and_add_to_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Filtering `p2pkh || p2pkh` deposits & adding to state...");
-    filter_txs_for_op_return_deposits(
+    filter_txs_for_p2pkh_deposits(
         &get_btc_address_from_db(&state.db)?,
         &get_btc_public_key_slice_from_db(&state.db)?,
         &state.get_btc_block_and_id()?.block.txdata,
     )
     .and_then(|txs| {
-        info!("✔ Found {} `p2pkh || OP_RETURN` deposits", txs.len());
-        state.add_op_return_deposit_txs(txs)
+        info!("✔ Found {} `p2pkh || P2PKH` deposits", txs.len());
+        state.add_p2pkh_deposit_txs(txs)
     })
 }
 
@@ -118,8 +118,7 @@ mod tests {
         let sample_pub_key_hash = get_sample_btc_pub_key_slice();
         let sample_address = get_sample_btc_p2pkh_address();
         let filtered_txs =
-            filter_txs_for_op_return_deposits(&sample_address, &sample_pub_key_hash, &block_and_id.block.txdata)
-                .unwrap();
+            filter_txs_for_p2pkh_deposits(&sample_address, &sample_pub_key_hash, &block_and_id.block.txdata).unwrap();
         let prev_id = filtered_txs[0].input[0].previous_output.txid;
         assert_eq!(prev_id, expected_prev_id);
         assert_eq!(filtered_txs.len(), expected_num_txs);
@@ -132,8 +131,7 @@ mod tests {
         let sample_pub_key_hash = get_sample_btc_pub_key_slice();
         let sample_address = get_sample_btc_p2pkh_address();
         let filtered_txs =
-            filter_txs_for_op_return_deposits(&sample_address, &sample_pub_key_hash, &block_and_id.block.txdata)
-                .unwrap();
+            filter_txs_for_p2pkh_deposits(&sample_address, &sample_pub_key_hash, &block_and_id.block.txdata).unwrap();
         assert_eq!(filtered_txs.len(), expected_num_txs);
     }
 
