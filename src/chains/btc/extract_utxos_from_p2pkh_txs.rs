@@ -13,7 +13,7 @@ use crate::{
 };
 
 pub fn extract_utxos_from_txs(target_script: &BtcScript, txs: &[BtcTransaction]) -> BtcUtxosAndValues {
-    info!("✔ Extracting UTXOs from {} `op_return` txs...", txs.len());
+    info!("✔ Extracting UTXOs from {} `p2pkh` txs...", txs.len());
     BtcUtxosAndValues::new(
         txs.iter()
             .map(|tx_data| {
@@ -37,22 +37,17 @@ pub fn extract_utxos_from_txs(target_script: &BtcScript, txs: &[BtcTransaction])
     )
 }
 
-pub fn maybe_extract_utxos_from_op_return_txs_and_put_in_state<D>(state: BtcState<D>) -> Result<BtcState<D>>
+pub fn maybe_extract_utxos_from_p2pkh_txs_and_put_in_state<D>(state: BtcState<D>) -> Result<BtcState<D>>
 where
     D: DatabaseInterface,
 {
-    info!("✔ Maybe extracting UTXOs from `op_return` txs...");
+    info!("✔ Maybe extracting UTXOs from `p2pkh` txs...");
     get_btc_address_from_db(&state.db)
         .and_then(|btc_address| get_pay_to_pub_key_hash_script(&btc_address))
-        .and_then(|target_script| {
-            Ok(extract_utxos_from_txs(
-                &target_script,
-                state.get_op_return_deposit_txs()?,
-            ))
-        })
+        .and_then(|target_script| Ok(extract_utxos_from_txs(&target_script, state.get_p2pkh_deposit_txs()?)))
         .and_then(|utxos| {
             debug!("✔ Extracted UTXOs: {:?}", utxos);
-            info!("✔ Extracted {} `op_return` UTXOs", utxos.len());
+            info!("✔ Extracted {} `p2pkh` UTXOs", utxos.len());
             state.add_utxos_and_values(utxos)
         })
 }
@@ -64,7 +59,7 @@ mod tests {
         btc_test_utils::{
             get_sample_btc_tx,
             get_sample_btc_utxo,
-            get_sample_op_return_utxo_and_value,
+            get_sample_p2pkh_utxo_and_value,
             get_sample_pay_to_pub_key_hash_script,
             get_sample_testnet_block_and_txs,
             SAMPLE_OUTPUT_INDEX_OF_UTXO,
@@ -84,7 +79,7 @@ mod tests {
     #[test]
     fn should_extract_utxos_from_relevant_txs() {
         let expected_num_utxos = 1;
-        let expected_utxo_and_value = get_sample_op_return_utxo_and_value();
+        let expected_utxo_and_value = get_sample_p2pkh_utxo_and_value();
         let txs = get_sample_testnet_block_and_txs().unwrap().block.txdata;
         let target_script = get_sample_pay_to_pub_key_hash_script();
         let result = extract_utxos_from_txs(&target_script, &txs);

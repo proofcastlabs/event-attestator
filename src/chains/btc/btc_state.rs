@@ -29,7 +29,7 @@ pub struct BtcState<D: DatabaseInterface> {
     pub eth_signed_txs: Option<EthTransactions>,
     pub btc_block_and_id: Option<BtcBlockAndId>,
     pub p2sh_deposit_txs: Option<BtcTransactions>,
-    pub op_return_deposit_txs: Option<BtcTransactions>,
+    pub p2pkh_deposit_txs: Option<BtcTransactions>,
     pub btc_on_eos_minting_params: BtcOnEosMintingParams,
     pub btc_on_eth_minting_params: BtcOnEthMintingParams,
     pub deposit_info_hash_map: Option<DepositInfoHashMap>,
@@ -54,7 +54,7 @@ where
             p2sh_deposit_txs: None,
             output_json_string: None,
             any_sender_signed_txs: None,
-            op_return_deposit_txs: None,
+            p2pkh_deposit_txs: None,
             deposit_info_hash_map: None,
             btc_block_in_db_format: None,
             utxos_and_values: vec![].into(),
@@ -70,24 +70,24 @@ where
         Ok(self)
     }
 
-    pub fn add_op_return_deposit_txs(mut self, op_return_deposit_txs: BtcTransactions) -> Result<BtcState<D>> {
-        match self.op_return_deposit_txs {
-            Some(_) => Err(get_no_overwrite_state_err("op_return_deposit_txs").into()),
+    pub fn add_p2pkh_deposit_txs(mut self, p2pkh_deposit_txs: BtcTransactions) -> Result<BtcState<D>> {
+        match self.p2pkh_deposit_txs {
+            Some(_) => Err(get_no_overwrite_state_err("p2pkh_deposit_txs").into()),
             None => {
-                info!("✔ Adding `op_return` deposit txs to BTC state...");
-                self.op_return_deposit_txs = Some(op_return_deposit_txs);
+                info!("✔ Adding `p2pkh` deposit txs to BTC state...");
+                self.p2pkh_deposit_txs = Some(p2pkh_deposit_txs);
                 Ok(self)
             },
         }
     }
 
-    pub fn get_op_return_deposit_txs(&self) -> Result<&[BtcTransaction]> {
-        match &self.op_return_deposit_txs {
-            Some(op_return_deposit_txs) => {
-                info!("✔ Getting `op_return` deposit txs from BTC state...");
-                Ok(&op_return_deposit_txs)
+    pub fn get_p2pkh_deposit_txs(&self) -> Result<&[BtcTransaction]> {
+        match &self.p2pkh_deposit_txs {
+            Some(ref p2pkh_deposit_txs) => {
+                info!("✔ Getting `p2pkh` deposit txs from BTC state...");
+                Ok(p2pkh_deposit_txs)
             },
-            None => Err(get_not_in_state_err("op_return_deposit_txs").into()),
+            None => Err(get_not_in_state_err("p2pkh_deposit_txs").into()),
         }
     }
 

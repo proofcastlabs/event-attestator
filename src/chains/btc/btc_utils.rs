@@ -198,12 +198,12 @@ mod tests {
         },
         chains::btc::{
             btc_test_utils::{
-                create_op_return_btc_utxo_and_value_from_tx_output,
+                create_p2pkh_btc_utxo_and_value_from_tx_output,
                 get_sample_btc_block_and_id,
                 get_sample_btc_private_key,
                 get_sample_btc_pub_key_slice,
                 get_sample_btc_utxo,
-                get_sample_op_return_utxo_and_value_n,
+                get_sample_p2pkh_utxo_and_value_n,
                 get_sample_p2sh_redeem_script_sig,
                 get_sample_testnet_block_and_txs,
                 SAMPLE_OUTPUT_INDEX_OF_UTXO,
@@ -319,9 +319,9 @@ mod tests {
     fn should_get_total_value_of_utxos_and_values() {
         let expected_result = 1942233;
         let utxos = BtcUtxosAndValues::new(vec![
-            get_sample_op_return_utxo_and_value_n(2).unwrap(),
-            get_sample_op_return_utxo_and_value_n(3).unwrap(),
-            get_sample_op_return_utxo_and_value_n(4).unwrap(),
+            get_sample_p2pkh_utxo_and_value_n(2).unwrap(),
+            get_sample_p2pkh_utxo_and_value_n(3).unwrap(),
+            get_sample_p2pkh_utxo_and_value_n(4).unwrap(),
         ]);
         let result = utxos.iter().fold(0, |acc, utxo_and_value| acc + utxo_and_value.value);
         assert_eq!(result, expected_result);
@@ -395,12 +395,12 @@ mod tests {
     }
 
     #[test]
-    fn should_create_op_return_btc_utxo_and_value_from_tx_output() {
+    fn should_create_p2pkh_btc_utxo_and_value_from_tx_output() {
         let expected_value = 1261602424;
         let expected_utxo = "f80c2f7c35f5df8441a5a5b52e2820793fc7e69f4603d38ba7217be41c20691d0000000016001497cfc76442fe717f2a3f0cc9c175f7561b661997ffffffff";
         let index = 0;
         let tx = get_sample_btc_block_and_id().unwrap().block.txdata[0].clone();
-        let result = create_op_return_btc_utxo_and_value_from_tx_output(&tx, index);
+        let result = create_p2pkh_btc_utxo_and_value_from_tx_output(&tx, index);
         assert_eq!(result.maybe_pointer, None);
         assert_eq!(result.value, expected_value);
         assert_eq!(result.maybe_extra_data, None);
