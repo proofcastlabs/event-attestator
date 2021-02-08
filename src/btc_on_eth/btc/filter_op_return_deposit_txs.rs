@@ -35,19 +35,19 @@ pub fn filter_txs_for_op_return_deposits(
 ) -> Result<BtcTransactions> {
     info!("✔ Filtering `p2pkh` deposits that are NOT enclave's own change outputs...");
     let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
-    Ok(transactions
+    info!("✔ Num `p2pkh` deposits before: {}", transactions.len());
+    let filtered = transactions
         .iter()
-        .filter(|tx| !tx_has_input_locked_to_pub_key(tx, &btc_pub_key_slice))
+        .filter(|tx| tx_has_input_locked_to_pub_key(tx, &btc_pub_key_slice) == false) // NOTE: True == enclave change output.
         .filter(|tx| tx_has_output_with_target_script(tx, &target_script))
         .cloned()
-        .collect::<BtcTransactions>())
+        .collect::<BtcTransactions>();
+    info!("✔ Num `p2pkh` deposits after: {}", filtered.len());
+    Ok(filtered)
 }
 
-pub fn filter_op_return_deposit_txs_and_add_to_state<D>(state: BtcState<D>) -> Result<BtcState<D>>
-where
-    D: DatabaseInterface,
-{
-    info!("✔ Filtering `p2pkh || OP_RETURN` deposits & adding to state...");
+pub fn filter_op_return_deposit_txs_and_add_to_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
+    info!("✔ Filtering `p2pkh || p2pkh` deposits & adding to state...");
     filter_txs_for_op_return_deposits(
         &get_btc_address_from_db(&state.db)?,
         &get_btc_public_key_slice_from_db(&state.db)?,
