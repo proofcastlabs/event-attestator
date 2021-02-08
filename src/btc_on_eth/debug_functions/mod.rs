@@ -4,7 +4,10 @@ use serde_json::json;
 use crate::{
     btc_on_eth::{
         btc::{
-            filter_p2pkh_deposit_txs::filter_p2pkh_deposit_txs_and_add_to_state,
+            filter_p2pkh_deposit_txs::{
+                filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state,
+                filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state,
+            },
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
             minting_params::{
                 parse_minting_params_from_p2pkh_deposits_and_add_to_state,
@@ -150,7 +153,7 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)
         .and_then(get_deposit_info_hash_map_and_put_in_state)
-        .and_then(filter_p2pkh_deposit_txs_and_add_to_state)
+        .and_then(filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
         .and_then(parse_minting_params_from_p2pkh_deposits_and_add_to_state)
         .and_then(parse_minting_params_from_p2sh_deposits_and_add_to_state)
@@ -384,7 +387,7 @@ where
 /// This function accepts as its param BTC submission material, in which it inspects all the
 /// transactions looking for any pertaining to the core's own public key, or deposit addresses
 /// derived from it. Any it finds it will extract the UTXO from and add it to the encrypted
-/// database.
+/// database. Note that this fxn WILL extract the enclave's own change UTXOs from blocks!
 ///
 /// ### NOTE:
 /// The core won't accept UTXOs it already has in its encrypted database.
@@ -402,7 +405,7 @@ where
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)
         .and_then(get_deposit_info_hash_map_and_put_in_state)
-        .and_then(filter_p2pkh_deposit_txs_and_add_to_state)
+        .and_then(filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
         .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_state)
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
