@@ -6,6 +6,7 @@ pub(crate) mod core_initialization;
 pub(crate) mod disable_protocol_feature;
 pub(crate) mod enable_protocol_feature;
 pub(crate) mod eos_action_proofs;
+pub(crate) mod eos_action_receipt;
 pub(crate) mod eos_actions;
 pub(crate) mod eos_crypto;
 pub(crate) mod eos_database_transactions;

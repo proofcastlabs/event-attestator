@@ -41,12 +41,7 @@ pub struct PTokenPegOutAction {
 }
 
 impl PTokenPegOutAction {
-    pub fn from_str(
-        token_contract: &str,
-        quantity: &str,
-        recipient: &str,
-        metadata: &[u8],
-    ) -> crate::Result<Self> {
+    pub fn from_str(token_contract: &str, quantity: &str, recipient: &str, metadata: &[u8]) -> crate::Result<Self> {
         Ok(Self {
             metadata: metadata.to_vec(),
             quantity: EosAsset::from_str(quantity)?,

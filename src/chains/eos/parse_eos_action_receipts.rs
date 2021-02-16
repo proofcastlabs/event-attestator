@@ -1,15 +1,17 @@
 use std::str::FromStr;
 
-use eos_primitives::{AccountName, ActionReceipt as EosActionReceipt, AuthSequence, AuthSequences};
+use eos_primitives::{AccountName, AuthSequence, AuthSequences};
 
 use crate::{
     chains::eos::{
         eos_action_proofs::{AuthSequenceJson, EosActionReceiptJson},
+        eos_action_receipt::EosActionReceipt,
         eos_utils::convert_hex_to_checksum256,
     },
     types::Result,
 };
 
+// TODO/FIXME move this to the eos_action_receipt mod!
 fn parse_auth_sequence_json(auth_sequence_json: &AuthSequenceJson) -> Result<AuthSequence> {
     Ok(AuthSequence::new(&auth_sequence_json.0, auth_sequence_json.1)?)
 }
