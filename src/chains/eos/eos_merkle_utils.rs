@@ -415,7 +415,12 @@ mod tests {
         let data = hex::decode(
             "e0d2b86b1a3962343021cd2a1eb3e9ad672b00000000000004454f53000000002a3078303236644336413433353631444138413641373735353338623139324133653933366330463239422301000000000000"
             ).unwrap();
-        let action = Action::new(account_name, action_name, authorization, data);
+        let action = Action {
+            account: account_name,
+            name: action_name,
+            authorization,
+            data,
+        };
         let serialized_action = action.to_serialize_data();
         let result = sha256::Hash::hash(&serialized_action).to_string();
         assert_eq!(result, get_expected_digest_1());

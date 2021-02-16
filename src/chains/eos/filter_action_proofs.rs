@@ -8,7 +8,7 @@ use crate::{
         eos_database_utils::get_eos_account_name_from_db,
         eos_merkle_utils::verify_merkle_proof,
         eos_state::EosState,
-        eos_utils::convert_bytes_to_checksum256,
+        eos_utils::{convert_bytes_to_checksum256, get_digest_from_eos_action},
     },
     traits::DatabaseInterface,
     types::Result,
@@ -107,7 +107,7 @@ pub fn filter_out_proofs_with_action_digests_not_in_action_receipts(
 ) -> Result<EosActionProofs> {
     let filtered = action_proofs
         .iter()
-        .map(|proof| proof.action.to_digest())
+        .map(|proof| get_digest_from_eos_action(&proof.action))
         .map(|digest_bytes| convert_bytes_to_checksum256(&digest_bytes))
         .collect::<Result<Vec<Checksum256>>>()?
         .into_iter()
