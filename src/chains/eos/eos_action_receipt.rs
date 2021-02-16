@@ -1,16 +1,7 @@
 use std::str::FromStr;
 
 use bitcoin_hashes::{sha256, Hash};
-use eos_primitives::{
-    AccountName as EosAccountName,
-    AuthSequence,
-    AuthSequences,
-    Checksum256,
-    NumBytes,
-    Read,
-    SerializeData,
-    Write,
-};
+use eos_primitives::{AccountName as EosAccountName, Checksum256, NumBytes, Read, SerializeData, Write};
 
 use crate::{
     chains::eos::{
@@ -19,6 +10,20 @@ use crate::{
     },
     types::Bytes,
 };
+
+pub type AuthSequences = Vec<AuthSequence>;
+
+#[derive(Clone, Debug, Deserialize, Serialize, Read, Write, NumBytes, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[eosio_core_root_path = "::eos_primitives"]
+pub struct AuthSequence(EosAccountName, u64);
+
+impl SerializeData for AuthSequence {}
+
+impl AuthSequence {
+    pub fn new(recipient: &str, number: u64) -> crate::Result<Self> {
+        Ok(AuthSequence(EosAccountName::from_str(recipient.as_ref())?, number))
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize, Read, Write, NumBytes, Default, PartialEq, Eq, PartialOrd, Ord)]
 #[eosio_core_root_path = "::eos_primitives"]

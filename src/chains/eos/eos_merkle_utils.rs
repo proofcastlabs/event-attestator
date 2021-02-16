@@ -263,19 +263,11 @@ mod tests {
     #![allow(clippy::needless_range_loop)]
     use std::str::FromStr;
 
-    use eos_primitives::{
-        AccountName,
-        Action,
-        ActionName,
-        AuthSequence,
-        PermissionLevel,
-        PermissionName,
-        SerializeData,
-    };
+    use eos_primitives::{AccountName, Action, ActionName, PermissionLevel, PermissionName, SerializeData};
 
     use super::*;
     use crate::chains::eos::{
-        eos_action_receipt::EosActionReceipt,
+        eos_action_receipt::{AuthSequence, EosActionReceipt},
         eos_test_utils::{get_sample_action_digests, get_sample_eos_submission_material_n},
     };
 
