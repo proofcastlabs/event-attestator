@@ -5,7 +5,6 @@ use eos_primitives::{AccountName as EosAccountName, Asset as EosAsset, NumBytes,
 
 use crate::types::Bytes;
 
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[eosio_core_root_path = "::eos_primitives"]
 #[derive(Clone, Debug, Default, Read, Write, NumBytes)]
 pub struct PTokenMintAction {
@@ -32,7 +31,6 @@ impl PTokenMintAction {
     }
 }
 
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, Read, Write, NumBytes, Default)]
 #[eosio_core_root_path = "::eos_primitives"]
 pub struct PTokenPegOutAction {
