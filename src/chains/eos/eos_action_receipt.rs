@@ -1,9 +1,24 @@
 use std::str::FromStr;
 
 use bitcoin_hashes::{sha256, Hash};
-use eos_primitives::{AccountName as EosAccountName, AuthSequences, Checksum256, NumBytes, Read, SerializeData, Write};
+use eos_primitives::{
+    AccountName as EosAccountName,
+    AuthSequence,
+    AuthSequences,
+    Checksum256,
+    NumBytes,
+    Read,
+    SerializeData,
+    Write,
+};
 
-use crate::{chains::eos::eos_utils::convert_hex_to_checksum256, types::Bytes};
+use crate::{
+    chains::eos::{
+        eos_action_proofs::{AuthSequenceJson, EosActionReceiptJson},
+        eos_utils::convert_hex_to_checksum256,
+    },
+    types::Bytes,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize, Read, Write, NumBytes, Default, PartialEq, Eq, PartialOrd, Ord)]
 #[eosio_core_root_path = "::eos_primitives"]
@@ -20,6 +35,7 @@ pub struct EosActionReceipt {
 impl SerializeData for EosActionReceipt {}
 
 impl EosActionReceipt {
+    #[cfg(test)]
     pub fn new(
         recipient: &str,
         act_digest_string: &str,
@@ -46,5 +62,25 @@ impl EosActionReceipt {
 
     pub fn to_digest(&self) -> Bytes {
         sha256::Hash::hash(&self.serialize()).to_vec()
+    }
+
+    fn parse_auth_sequence_jsons(auth_sequence_jsons: &[AuthSequenceJson]) -> crate::Result<AuthSequences> {
+        auth_sequence_jsons.iter().map(Self::parse_auth_sequence_json).collect()
+    }
+
+    fn parse_auth_sequence_json(auth_sequence_json: &AuthSequenceJson) -> crate::Result<AuthSequence> {
+        Ok(AuthSequence::new(&auth_sequence_json.0, auth_sequence_json.1)?)
+    }
+
+    pub fn from_json(json: &EosActionReceiptJson) -> crate::Result<EosActionReceipt> {
+        Ok(EosActionReceipt {
+            abi_sequence: json.abi_sequence,
+            code_sequence: json.code_sequence,
+            recv_sequence: json.recv_sequence,
+            global_sequence: json.global_sequence,
+            recipient: EosAccountName::from_str(&json.receiver)?,
+            act_digest: convert_hex_to_checksum256(&json.act_digest)?,
+            auth_sequence: Self::parse_auth_sequence_jsons(&json.auth_sequence)?,
+        })
     }
 }
