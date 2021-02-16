@@ -87,6 +87,10 @@ quick_error! {
             from()
             display("✘ Ethereum types `from_dec_str` err: {}", err)
         }
+        EosParseAssetErr(err: eos_primitives::ParseAssetError) {
+            from()
+            display("✘ EOS parse asset error: {:?}", err)
+        }
         NoneError(err: &'static str) {
             display("✘ None Error!\n✘ {}", err)
         }
