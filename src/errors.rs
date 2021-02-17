@@ -91,6 +91,10 @@ quick_error! {
             from()
             display("✘ EOS parse asset error: {:?}", err)
         }
+        EosWriteError(err: eos_primitives::WriteError) {
+            from()
+            display("✘ EOS write error: {:?}", err)
+        }
         NoneError(err: &'static str) {
             display("✘ None Error!\n✘ {}", err)
         }

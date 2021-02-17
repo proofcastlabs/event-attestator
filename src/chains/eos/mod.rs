@@ -8,6 +8,7 @@ pub(crate) mod enable_protocol_feature;
 pub(crate) mod eos_action_proofs;
 pub(crate) mod eos_action_receipt;
 pub(crate) mod eos_actions;
+pub(crate) mod eos_block_header_v1;
 pub(crate) mod eos_crypto;
 pub(crate) mod eos_database_transactions;
 pub(crate) mod eos_database_utils;
