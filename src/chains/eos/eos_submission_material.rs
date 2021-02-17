@@ -153,7 +153,7 @@ pub fn parse_submission_material_and_add_to_state<D: DatabaseInterface>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eos::eos_test_utils::get_sample_eos_submission_material_string_n;
+    use crate::chains::eos::eos_test_utils::{get_sample_eos_submission_material_string_n, serialize_block_header_v2};
 
     #[test]
     fn should_parse_eos_submission_material_string_to_json() {
@@ -228,7 +228,7 @@ mod tests {
         };
         let result = EosSubmissionMaterial::parse_eos_block_header_from_json(&json).unwrap();
         let expected_serialized = "f3f615477055c6d2343fa75e000000002a2fb72da881babc192b80bab59c289e2db1b4318160a4c0ab5e50618f57000000000000000000000000000000000000000000000000000000000000000033cfa41c93d0d37dd162d1341114122d76446ec6ce5ff6686205fa15f2fe6d46020000000000";
-        let result_serialized = hex::encode(result.serialize().unwrap());
+        let result_serialized = hex::encode(serialize_block_header_v2(&result).unwrap());
         assert_eq!(result.id().unwrap(), expected_block_id);
         assert_eq!(result_serialized, expected_serialized);
     }
@@ -257,7 +257,7 @@ mod tests {
         };
         let result = EosSubmissionMaterial::parse_eos_block_header_from_json(&json).unwrap();
         let expected_serialized = "f4f615477015a7d5c4e82e65f00000002a304f2dcbb2dc2078356f6e71b2168296e64e7166eec08b78a157390bda0000000000000000000000000000000000000000000000000000000000000000ff146c3b50187542da35111cc9057031d1d5a6961110725cc4409e0895de572b020000000000";
-        let result_serialized = hex::encode(result.serialize().unwrap());
+        let result_serialized = hex::encode(serialize_block_header_v2(&result).unwrap());
         assert_eq!(result.id().unwrap(), expected_block_id);
         assert_eq!(result_serialized, expected_serialized);
     }
@@ -286,7 +286,7 @@ mod tests {
         };
         let result = EosSubmissionMaterial::parse_eos_block_header_from_json(&json).unwrap();
         let expected_serialized = "6b5baa4b4055521cabc8a67e0000047bef1059cd1da401e09bda1617bc2b58c6dfdb11d7f05db14c55f442d036ad000000000000000000000000000000000000000000000000000000000000000074ef05af4a312a8f010e3e442f3097dc33ec4b22738504ab38d8e30724f24d4b7b0100000000";
-        let result_serialized = hex::encode(result.serialize().unwrap());
+        let result_serialized = hex::encode(serialize_block_header_v2(&result).unwrap());
         assert_eq!(result.id().unwrap(), expected_block_id);
         assert_eq!(result_serialized, expected_serialized);
     }
