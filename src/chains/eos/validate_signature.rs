@@ -3,7 +3,6 @@ use std::str::FromStr;
 use bitcoin_hashes::{sha256, Hash};
 use eos_primitives::{
     AccountName as EosAccountName,
-    BlockHeader as EosBlockHeaderV2,
     ProducerKey as EosProducerKeyV1,
     ProducerSchedule as EosProducerScheduleV1,
     ProducerScheduleV2 as EosProducerScheduleV2,
@@ -13,7 +12,7 @@ use secp256k1::Message;
 
 use crate::{
     chains::eos::{
-        eos_block_header_v1::EosBlockHeaderV1,
+        eos_block_header::{EosBlockHeaderV1, EosBlockHeaderV2},
         eos_crypto::{eos_public_key::EosPublicKey, eos_signature::EosSignature},
         eos_state::EosState,
         protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,

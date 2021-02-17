@@ -3,7 +3,6 @@ use std::{fs::read_to_string, path::Path};
 
 use bitcoin_hashes::{sha256, Hash as HashTrait};
 use eos_primitives::{
-    BlockHeader as EosBlockHeaderV2,
     NumBytes,
     ProducerSchedule as EosProducerScheduleV1,
     ProducerScheduleV2 as EosProducerScheduleV2,
@@ -17,6 +16,7 @@ use crate::{
         core_initialization::eos_init_utils::EosInitJson,
         eos_action_proofs::{EosActionProof, EosActionProofs},
         eos_action_receipt::{AuthSequence, EosActionReceipt},
+        eos_block_header::EosBlockHeaderV2,
         eos_crypto::{eos_private_key::EosPrivateKey, eos_public_key::EosPublicKey, eos_signature::EosSignature},
         eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry, EosEthTokenDictionaryJson},
         eos_merkle_utils::Incremerkle,

@@ -1,19 +1,13 @@
 use std::str::FromStr;
 
 use chrono::prelude::*;
-use eos_primitives::{
-    AccountName,
-    BlockHeader as EosBlockHeader,
-    BlockTimestamp,
-    Extension,
-    ProducerScheduleV2 as EosProducerScheduleV2,
-    TimePoint,
-};
+use eos_primitives::{AccountName, BlockTimestamp, Extension, ProducerScheduleV2 as EosProducerScheduleV2, TimePoint};
 use serde_json::Value as JsonValue;
 
 use crate::{
     chains::eos::{
         eos_action_proofs::{EosActionProof, EosActionProofJson, EosActionProofJsons, EosActionProofs},
+        eos_block_header::EosBlockHeaderV2,
         eos_state::EosState,
         eos_types::{Checksum256s, EosBlockHeaderJson},
         eos_utils::convert_hex_to_checksum256,
@@ -34,7 +28,7 @@ pub struct EosSubmissionMaterial {
     pub block_num: u64,
     pub producer_signature: String,
     pub action_proofs: EosActionProofs,
-    pub block_header: EosBlockHeader,
+    pub block_header: EosBlockHeaderV2,
     pub interim_block_ids: Checksum256s,
 }
 
@@ -84,7 +78,7 @@ impl EosSubmissionMaterial {
         interim_block_ids_json.iter().map(convert_hex_to_checksum256).collect()
     }
 
-    pub fn parse_eos_block_header_from_json(eos_block_header_json: &EosBlockHeaderJson) -> Result<EosBlockHeader> {
+    pub fn parse_eos_block_header_from_json(eos_block_header_json: &EosBlockHeaderJson) -> Result<EosBlockHeaderV2> {
         let schedule = if eos_block_header_json.new_producers.is_some() {
             debug!("✔ `new_producers` field in EOS block json!");
             Some(Self::convert_schedule_json_value_to_v2_schedule_json(
@@ -104,7 +98,7 @@ impl EosSubmissionMaterial {
             debug!("✔ No producers field in EOS block json!");
             None
         };
-        Ok(EosBlockHeader::new(
+        Ok(EosBlockHeaderV2::new(
             Self::convert_timestamp_string_to_block_timestamp(&eos_block_header_json.timestamp)?,
             AccountName::from_str(&eos_block_header_json.producer)?,
             eos_block_header_json.confirmed,

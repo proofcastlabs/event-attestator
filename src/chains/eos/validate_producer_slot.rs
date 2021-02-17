@@ -1,7 +1,7 @@
-use eos_primitives::{BlockHeader as EosBlockHeader, ProducerScheduleV2 as EosProducerScheduleV2};
+use eos_primitives::ProducerScheduleV2 as EosProducerScheduleV2;
 
 use crate::{
-    chains::eos::{eos_constants::PRODUCER_REPS, eos_state::EosState},
+    chains::eos::{eos_block_header::EosBlockHeaderV2, eos_constants::PRODUCER_REPS, eos_state::EosState},
     constants::{CORE_IS_VALIDATING, DEBUG_MODE, NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR},
     traits::DatabaseInterface,
     types::Result,
@@ -13,7 +13,7 @@ fn get_producer_index(num_producers: u64, block_timestamp: u64) -> u64 {
     (block_timestamp % (num_producers * PRODUCER_REPS)) / PRODUCER_REPS
 }
 
-fn validate_producer_slot(schedule: &EosProducerScheduleV2, block: &EosBlockHeader) -> Result<()> {
+fn validate_producer_slot(schedule: &EosProducerScheduleV2, block: &EosBlockHeaderV2) -> Result<()> {
     let index = get_producer_index(schedule.producers.len() as u64, block.timestamp.as_u32() as u64) as usize;
     match block.producer == schedule.producers[index].producer_name {
         true => Ok(()),
