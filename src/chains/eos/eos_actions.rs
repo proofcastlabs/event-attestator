@@ -5,8 +5,8 @@ use eos_primitives::{AccountName as EosAccountName, Asset as EosAsset, NumBytes,
 
 use crate::types::Bytes;
 
-#[eosio_core_root_path = "::eos_primitives"]
 #[derive(Clone, Debug, Default, Read, Write, NumBytes)]
+#[eosio_core_root_path = "eos_primitives"]
 pub struct PTokenMintAction {
     pub to: EosAccountName,
     pub quantity: EosAsset,
@@ -32,7 +32,7 @@ impl PTokenMintAction {
 }
 
 #[derive(Clone, Debug, Read, Write, NumBytes, Default)]
-#[eosio_core_root_path = "::eos_primitives"]
+#[eosio_core_root_path = "eos_primitives"]
 pub struct PTokenPegOutAction {
     pub tokenContract: EosAccountName,
     pub quantity: EosAsset,

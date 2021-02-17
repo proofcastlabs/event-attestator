@@ -46,7 +46,7 @@ impl fmt::Display for EosSignature {
         let checksum = &checksum_h160[..4];
         let mut sig_slice: [u8; 69] = [0u8; 69];
         sig_slice[..65].copy_from_slice(&checksum_data[..65]);
-        sig_slice[65..].copy_from_slice(&checksum[..]);
+        sig_slice[65..].copy_from_slice(checksum);
         write!(f, "SIG_K1_{}", base58::encode_slice(&sig_slice))?;
         Ok(())
     }

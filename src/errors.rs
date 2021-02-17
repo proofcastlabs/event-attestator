@@ -7,7 +7,7 @@ quick_error! {
             from(err: &str) -> (err.into())
             display("✘ Program Error!\n{}", err)
         }
-        IOError(err: std::io::Error) {
+        IoError(err: std::io::Error) {
             from()
             display("✘ I/O Error!\n✘ {}", err)
         }

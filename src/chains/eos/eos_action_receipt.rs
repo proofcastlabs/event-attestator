@@ -14,19 +14,19 @@ use crate::{
 pub type AuthSequences = Vec<AuthSequence>;
 
 #[derive(Clone, Debug, Deserialize, Serialize, Read, Write, NumBytes, Default, PartialEq, Eq, PartialOrd, Ord)]
-#[eosio_core_root_path = "::eos_primitives"]
+#[eosio_core_root_path = "eos_primitives"]
 pub struct AuthSequence(EosAccountName, u64);
 
 impl SerializeData for AuthSequence {}
 
 impl AuthSequence {
     pub fn new(recipient: &str, number: u64) -> crate::Result<Self> {
-        Ok(AuthSequence(EosAccountName::from_str(recipient.as_ref())?, number))
+        Ok(AuthSequence(EosAccountName::from_str(recipient)?, number))
     }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Read, Write, NumBytes, Default, PartialEq, Eq, PartialOrd, Ord)]
-#[eosio_core_root_path = "::eos_primitives"]
+#[eosio_core_root_path = "eos_primitives"]
 pub struct EosActionReceipt {
     pub recipient: EosAccountName,
     pub act_digest: Checksum256,
@@ -74,7 +74,7 @@ impl EosActionReceipt {
     }
 
     fn parse_auth_sequence_json(auth_sequence_json: &AuthSequenceJson) -> crate::Result<AuthSequence> {
-        Ok(AuthSequence::new(&auth_sequence_json.0, auth_sequence_json.1)?)
+        AuthSequence::new(&auth_sequence_json.0, auth_sequence_json.1)
     }
 
     pub fn from_json(json: &EosActionReceiptJson) -> crate::Result<EosActionReceipt> {
