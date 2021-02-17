@@ -2,12 +2,7 @@
 use std::{fs::read_to_string, path::Path};
 
 use bitcoin_hashes::{sha256, Hash as HashTrait};
-use eos_primitives::{
-    NumBytes,
-    ProducerSchedule as EosProducerScheduleV1,
-    ProducerScheduleV2 as EosProducerScheduleV2,
-    Write,
-};
+use eos_primitives::{NumBytes, Write};
 use ethereum_types::Address as EthAddress;
 use secp256k1::Message as Secp256k1Message;
 
@@ -20,6 +15,7 @@ use crate::{
         eos_crypto::{eos_private_key::EosPrivateKey, eos_public_key::EosPublicKey, eos_signature::EosSignature},
         eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry, EosEthTokenDictionaryJson},
         eos_merkle_utils::Incremerkle,
+        eos_producer_schedule::{EosProducerScheduleV1, EosProducerScheduleV2},
         eos_submission_material::{EosSubmissionMaterial, EosSubmissionMaterialJson},
         eos_types::{Checksum256s, EosBlockHeaderJson},
         eos_utils::convert_hex_to_checksum256,

@@ -1,17 +1,9 @@
-use eos_primitives::{
-    bitutil,
-    AccountName,
-    BlockTimestamp,
-    Checksum256,
-    NumBytes,
-    ProducerSchedule as ProducerScheduleV1,
-    ProducerScheduleV2 as EosProducerScheduleV2,
-    Read,
-    Write,
+use eos_primitives::{bitutil, AccountName, BlockTimestamp, Checksum256, NumBytes, Read, Write};
+
+use crate::chains::eos::{
+    eos_extension::EosExtension,
+    eos_producer_schedule::{EosProducerScheduleV1, EosProducerScheduleV2},
 };
-
-use crate::chains::eos::eos_extension::EosExtension;
-
 #[derive(Debug, Clone, Default, Read, Write, NumBytes, PartialEq, Deserialize, Serialize)]
 #[eosio_core_root_path = "eos_primitives"]
 pub struct EosBlockHeaderV1 {
@@ -22,7 +14,7 @@ pub struct EosBlockHeaderV1 {
     pub transaction_mroot: Checksum256,
     pub action_mroot: Checksum256,
     pub schedule_version: u32,
-    pub new_producers: Option<ProducerScheduleV1>,
+    pub new_producers: Option<EosProducerScheduleV1>,
     pub header_extensions: Vec<EosExtension>,
 }
 
@@ -65,7 +57,7 @@ impl EosBlockHeaderV1 {
         transaction_mroot: Checksum256,
         action_mroot: Checksum256,
         schedule_version: u32,
-        new_producers: Option<ProducerScheduleV1>,
+        new_producers: Option<EosProducerScheduleV1>,
         header_extensions: Vec<EosExtension>,
     ) -> Self {
         Self {

@@ -1,5 +1,4 @@
 pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-use eos_primitives::ProducerScheduleV2 as EosProducerScheduleV2;
 
 use crate::{
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
@@ -11,6 +10,7 @@ use crate::{
             eos_eth_token_dictionary::EosEthTokenDictionary,
             eos_global_sequences::{GlobalSequences, ProcessedGlobalSequences},
             eos_merkle_utils::Incremerkle,
+            eos_producer_schedule::EosProducerScheduleV2,
             eos_submission_material::EosSubmissionMaterial,
             eos_types::Checksum256s,
             protocol_features::EnabledFeatures,

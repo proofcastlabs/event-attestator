@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use eos_primitives::{AccountName as EosAccountName, Checksum256, ProducerScheduleV2 as EosProducerScheduleV2};
+use eos_primitives::{AccountName as EosAccountName, Checksum256};
 
 use crate::{
     chains::eos::{
@@ -20,6 +20,7 @@ use crate::{
         eos_crypto::eos_public_key::EosPublicKey,
         eos_global_sequences::ProcessedGlobalSequences,
         eos_merkle_utils::{Incremerkle, IncremerkleJson},
+        eos_producer_schedule::EosProducerScheduleV2,
         eos_types::EosKnownSchedules,
         eos_utils::{convert_hex_to_checksum256, get_eos_schedule_db_key},
         parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,

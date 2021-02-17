@@ -1,3 +1,4 @@
+// TODO Move this mod to the new eos_schedule one and impl on the types etc.
 use std::str::FromStr;
 
 use eos_primitives::{
@@ -7,12 +8,13 @@ use eos_primitives::{
     KeysAndThreshold as EosKeysAndThreshold,
     ProducerKey as EosProducerKeyV1,
     ProducerKeyV2 as EosProducerKeyV2,
-    ProducerSchedule as EosProducerScheduleV1,
-    ProducerScheduleV2 as EosProducerScheduleV2,
     PublicKey as EosPublicKey,
 };
 
-use crate::types::Result;
+use crate::{
+    chains::eos::eos_producer_schedule::{EosProducerScheduleV1, EosProducerScheduleV2},
+    types::Result,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct EosProducerScheduleJsonV1 {

@@ -1,7 +1,10 @@
-use eos_primitives::ProducerScheduleV2 as EosProducerScheduleV2;
-
 use crate::{
-    chains::eos::{eos_block_header::EosBlockHeaderV2, eos_constants::PRODUCER_REPS, eos_state::EosState},
+    chains::eos::{
+        eos_block_header::EosBlockHeaderV2,
+        eos_constants::PRODUCER_REPS,
+        eos_producer_schedule::EosProducerScheduleV2,
+        eos_state::EosState,
+    },
     constants::{CORE_IS_VALIDATING, DEBUG_MODE, NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR},
     traits::DatabaseInterface,
     types::Result,

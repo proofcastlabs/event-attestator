@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use chrono::prelude::*;
-use eos_primitives::{AccountName, BlockTimestamp, ProducerScheduleV2 as EosProducerScheduleV2, TimePoint};
+use eos_primitives::{AccountName, BlockTimestamp, TimePoint};
 use serde_json::Value as JsonValue;
 
 use crate::{
@@ -9,6 +9,7 @@ use crate::{
         eos_action_proofs::{EosActionProof, EosActionProofJson, EosActionProofJsons, EosActionProofs},
         eos_block_header::EosBlockHeaderV2,
         eos_extension::EosExtensions,
+        eos_producer_schedule::EosProducerScheduleV2,
         eos_state::EosState,
         eos_types::{Checksum256s, EosBlockHeaderJson},
         eos_utils::convert_hex_to_checksum256,
