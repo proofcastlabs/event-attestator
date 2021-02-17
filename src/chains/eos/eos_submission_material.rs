@@ -49,7 +49,12 @@ impl EosSubmissionMaterial {
     }
 
     fn convert_hex_to_extension(hex_string: &str) -> Result<Extension> {
-        Ok(Extension::new(hex::decode(hex_string)?))
+        let bytes = hex::decode(hex_string)?;
+        let mut array = [0; 2];
+        let u16_bytes = &bytes[..array.len()];
+        array.copy_from_slice(u16_bytes);
+        let u_16 = u16::from_le_bytes(array);
+        Ok(Extension(u_16, bytes[2..].to_vec()))
     }
 
     fn convert_hex_to_extensions(extension_strings: &[String]) -> Result<Vec<Extension>> {
