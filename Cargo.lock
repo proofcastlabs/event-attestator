@@ -272,7 +272,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "eos-keys"
 version = "0.1.0"
-source = "git+https://github.com/provable-things/rust-eos.git?branch=provable-additions#9456ca069e8aadee0c73cdbe23671fda003198fd"
+source = "git+https://github.com/bifrost-finance/rust-eos.git?rev=16c8ca990a4096a43073ac596882d62b9c04e2f9#16c8ca990a4096a43073ac596882d62b9c04e2f9"
 dependencies = [
  "bitcoin_hashes",
  "byteorder",
@@ -283,12 +283,11 @@ dependencies = [
 
 [[package]]
 name = "eos-primitives"
-version = "0.2.0"
-source = "git+https://github.com/provable-things/rust-eos.git?branch=provable-additions#9456ca069e8aadee0c73cdbe23671fda003198fd"
+version = "0.1.0"
+source = "git+https://github.com/bifrost-finance/rust-eos.git?rev=16c8ca990a4096a43073ac596882d62b9c04e2f9#16c8ca990a4096a43073ac596882d62b9c04e2f9"
 dependencies = [
  "bitcoin_hashes",
  "chrono",
- "derive_more",
  "eos-keys",
  "eosio-core-derive",
  "hex 0.4.0",
@@ -299,7 +298,7 @@ dependencies = [
 [[package]]
 name = "eosio-core-derive"
 version = "0.2.1"
-source = "git+https://github.com/provable-things/rust-eos.git?branch=provable-additions#9456ca069e8aadee0c73cdbe23671fda003198fd"
+source = "git+https://github.com/bifrost-finance/rust-eos.git?rev=16c8ca990a4096a43073ac596882d62b9c04e2f9#16c8ca990a4096a43073ac596882d62b9c04e2f9"
 dependencies = [
  "proc-macro2 0.4.30",
  "quote 0.6.13",
@@ -546,7 +545,7 @@ dependencies = [
 
 [[package]]
 name = "ptokens_core"
-version = "4.10.0"
+version = "4.11.0"
 dependencies = [
  "base58",
  "bitcoin",
