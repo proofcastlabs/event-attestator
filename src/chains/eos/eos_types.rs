@@ -1,7 +1,9 @@
 use std::fmt;
 
-pub use eos_primitives::Checksum256;
+use eos_primitives::{Checksum256, PermissionLevel as EosPermissionLevel};
 use serde_json::Value as JsonValue;
+
+pub type PermissionLevels = Vec<EosPermissionLevel>;
 
 use crate::{
     chains::eos::{eos_producer_key::EosProducerKeyV1, eos_utils::get_eos_schedule_db_key},

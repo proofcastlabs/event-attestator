@@ -7,7 +7,6 @@ use eos_primitives::{
     ActionName,
     Checksum256,
     PermissionLevel,
-    PermissionLevels,
     SerializeData,
 };
 
@@ -15,7 +14,7 @@ use crate::{
     chains::eos::{
         eos_action_receipt::EosActionReceipt,
         eos_global_sequences::GlobalSequence,
-        eos_types::MerkleProof,
+        eos_types::{MerkleProof, PermissionLevels},
         eos_utils::convert_hex_to_checksum256,
     },
     types::{Bytes, Result},

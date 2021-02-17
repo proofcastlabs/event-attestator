@@ -1,6 +1,6 @@
 use core::default::Default;
 
-use eos_primitives::{AccountName as EosAccountName, Checksum256, NumBytes, PublicKey, Read, Write};
+use eos_primitives::{Checksum256, NumBytes, Read, Write};
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
@@ -38,15 +38,6 @@ pub struct EosProducerScheduleV1 {
 impl EosProducerScheduleV1 {
     pub fn new(version: u32, producers: Vec<EosProducerKeyV1>) -> Self {
         Self { version, producers }
-    }
-
-    pub fn get_producer_key(&self, p: EosAccountName) -> PublicKey {
-        for i in self.producers.iter() {
-            if i.producer_name == p {
-                return i.block_signing_key.clone();
-            }
-        }
-        Default::default()
     }
 
     pub fn schedule_hash(&self) -> crate::Result<Checksum256> {
