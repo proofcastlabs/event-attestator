@@ -23,7 +23,7 @@ use crate::{
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
 };
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct EosState<D: DatabaseInterface> {
     pub db: D,
     pub block_num: Option<u64>,
@@ -32,8 +32,8 @@ pub struct EosState<D: DatabaseInterface> {
     pub action_proofs: EosActionProofs,
     pub interim_block_ids: Checksum256s,
     pub eth_signed_txs: EthTransactions,
-    pub processed_tx_ids: ProcessedGlobalSequences,
     pub block_header: Option<EosBlockHeader>,
+    pub processed_tx_ids: ProcessedGlobalSequences,
     pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub enabled_protocol_features: EnabledFeatures,
     pub eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos,
