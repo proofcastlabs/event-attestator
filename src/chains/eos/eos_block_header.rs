@@ -3,13 +3,14 @@ use eos_primitives::{
     AccountName,
     BlockTimestamp,
     Checksum256,
-    Extension,
     NumBytes,
     ProducerSchedule as ProducerScheduleV1,
     ProducerScheduleV2 as EosProducerScheduleV2,
     Read,
     Write,
 };
+
+use crate::chains::eos::eos_extension::EosExtension;
 
 #[derive(Debug, Clone, Default, Read, Write, NumBytes, PartialEq, Deserialize, Serialize)]
 #[eosio_core_root_path = "eos_primitives"]
@@ -22,7 +23,7 @@ pub struct EosBlockHeaderV1 {
     pub action_mroot: Checksum256,
     pub schedule_version: u32,
     pub new_producers: Option<ProducerScheduleV1>,
-    pub header_extensions: Vec<Extension>,
+    pub header_extensions: Vec<EosExtension>,
 }
 
 impl core::fmt::Display for EosBlockHeaderV1 {
@@ -65,7 +66,7 @@ impl EosBlockHeaderV1 {
         action_mroot: Checksum256,
         schedule_version: u32,
         new_producers: Option<ProducerScheduleV1>,
-        header_extensions: Vec<Extension>,
+        header_extensions: Vec<EosExtension>,
     ) -> Self {
         Self {
             timestamp,
@@ -113,7 +114,7 @@ pub struct EosBlockHeaderV2 {
     pub action_mroot: Checksum256,
     pub schedule_version: u32,
     pub new_producer_schedule: Option<EosProducerScheduleV2>,
-    pub header_extensions: Vec<Extension>,
+    pub header_extensions: Vec<EosExtension>,
 }
 
 impl core::fmt::Display for EosBlockHeaderV2 {
@@ -156,7 +157,7 @@ impl EosBlockHeaderV2 {
         action_mroot: Checksum256,
         schedule_version: u32,
         new_producer_schedule: Option<EosProducerScheduleV2>,
-        header_extensions: Vec<Extension>,
+        header_extensions: Vec<EosExtension>,
     ) -> Self {
         Self {
             timestamp,

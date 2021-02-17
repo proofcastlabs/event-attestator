@@ -1,13 +1,14 @@
 use std::str::FromStr;
 
 use chrono::prelude::*;
-use eos_primitives::{AccountName, BlockTimestamp, Extension, ProducerScheduleV2 as EosProducerScheduleV2, TimePoint};
+use eos_primitives::{AccountName, BlockTimestamp, ProducerScheduleV2 as EosProducerScheduleV2, TimePoint};
 use serde_json::Value as JsonValue;
 
 use crate::{
     chains::eos::{
         eos_action_proofs::{EosActionProof, EosActionProofJson, EosActionProofJsons, EosActionProofs},
         eos_block_header::EosBlockHeaderV2,
+        eos_extension::EosExtensions,
         eos_state::EosState,
         eos_types::{Checksum256s, EosBlockHeaderJson},
         eos_utils::convert_hex_to_checksum256,
@@ -40,22 +41,6 @@ impl EosSubmissionMaterial {
                 .and_then(|v1_json| convert_v1_schedule_json_to_v1_schedule(&v1_json))
                 .map(|v1_schedule| convert_v1_schedule_to_v2(&v1_schedule)),
         }
-    }
-
-    fn convert_hex_to_extension(hex_string: &str) -> Result<Extension> {
-        let bytes = hex::decode(hex_string)?;
-        let mut array = [0; 2];
-        let u16_bytes = &bytes[..array.len()];
-        array.copy_from_slice(u16_bytes);
-        let u_16 = u16::from_le_bytes(array);
-        Ok(Extension(u_16, bytes[2..].to_vec()))
-    }
-
-    fn convert_hex_to_extensions(extension_strings: &[String]) -> Result<Vec<Extension>> {
-        extension_strings
-            .iter()
-            .map(|hex| Self::convert_hex_to_extension(&hex))
-            .collect::<Result<Vec<Extension>>>()
     }
 
     fn convert_timestamp_string_to_block_timestamp(timestamp: &str) -> Result<BlockTimestamp> {
@@ -109,7 +94,7 @@ impl EosSubmissionMaterial {
             schedule,
             match eos_block_header_json.header_extension {
                 None => vec![],
-                Some(ref hex_extensions) => Self::convert_hex_to_extensions(&hex_extensions)?,
+                Some(ref hex_extensions) => EosExtensions::from_hex_strings(&hex_extensions)?.to_vec(),
             },
         ))
     }
@@ -169,16 +154,6 @@ mod tests {
             .unwrap()
             .as_u32();
         assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_convert_hex_string_to_extension() {
-        let hex = "01030307";
-        let expected_u16 = 769;
-        let expected_bytes = [3u8, 7u8];
-        let result = EosSubmissionMaterial::convert_hex_to_extension(&hex).unwrap();
-        assert_eq!(result.0, expected_u16);
-        assert_eq!(result.1, expected_bytes);
     }
 
     #[test]
