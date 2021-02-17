@@ -1,14 +1,16 @@
 use std::fmt;
 
 pub use eos_primitives::Checksum256;
-use eos_primitives::ProducerKey as EosProducerKey;
 use serde_json::Value as JsonValue;
 
-use crate::{chains::eos::eos_utils::get_eos_schedule_db_key, types::Bytes};
+use crate::{
+    chains::eos::{eos_producer_key::EosProducerKeyV1, eos_utils::get_eos_schedule_db_key},
+    types::Bytes,
+};
 
 pub type MerkleProof = Vec<String>;
 pub type Checksum256s = Vec<Checksum256>;
-pub type ProducerKeys = Vec<EosProducerKey>;
+pub type ProducerKeys = Vec<EosProducerKeyV1>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EosKnownSchedules(Vec<EosKnownSchedule>);

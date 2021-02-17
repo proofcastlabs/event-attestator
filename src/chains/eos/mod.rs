@@ -19,6 +19,7 @@ pub(crate) mod eos_extension;
 pub(crate) mod eos_global_sequences;
 pub(crate) mod eos_hash;
 pub(crate) mod eos_merkle_utils;
+pub(crate) mod eos_producer_key;
 pub(crate) mod eos_producer_schedule;
 pub(crate) mod eos_state;
 pub(crate) mod eos_submission_material;

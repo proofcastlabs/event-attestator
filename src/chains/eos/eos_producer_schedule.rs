@@ -1,24 +1,17 @@
 use core::default::Default;
 
-use eos_primitives::{
-    AccountName as EosAccountName,
-    Checksum256,
-    NumBytes,
-    ProducerKey,
-    ProducerKeyV2,
-    PublicKey,
-    Read,
-    Write,
-};
+use eos_primitives::{AccountName as EosAccountName, Checksum256, NumBytes, PublicKey, Read, Write};
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
+
+use crate::chains::eos::eos_producer_key::{EosProducerKeyV1, EosProducerKeyV2};
 
 #[derive(Read, Write, NumBytes, Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[eosio_core_root_path = "eos_primitives"]
 #[repr(C)]
 pub struct EosProducerScheduleV2 {
     pub version: u32,
-    pub producers: Vec<ProducerKeyV2>,
+    pub producers: Vec<EosProducerKeyV2>,
 }
 
 impl EosProducerScheduleV2 {
@@ -40,10 +33,10 @@ impl Default for EosProducerScheduleV2 {
 #[eosio_core_root_path = "eos_primitives"]
 pub struct EosProducerScheduleV1 {
     pub version: u32,
-    pub producers: Vec<ProducerKey>,
+    pub producers: Vec<EosProducerKeyV1>,
 }
 impl EosProducerScheduleV1 {
-    pub fn new(version: u32, producers: Vec<ProducerKey>) -> Self {
+    pub fn new(version: u32, producers: Vec<EosProducerKeyV1>) -> Self {
         Self { version, producers }
     }
 
