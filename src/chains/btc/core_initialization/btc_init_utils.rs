@@ -40,7 +40,7 @@ where
 }
 
 pub fn get_btc_network_from_arg(network_arg: &str) -> BtcNetwork {
-    match &network_arg[..] {
+    match network_arg {
         "Testnet" => {
             trace!("✔ Using 'TESTNET' for bitcoin network!");
             BtcNetwork::Testnet

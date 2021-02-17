@@ -23,7 +23,7 @@ pub fn convert_h256_to_bytes(hash: H256) -> Bytes {
 
 pub fn convert_bytes_to_h256(bytes: &[Byte]) -> Result<H256> {
     match bytes.len() {
-        32 => Ok(H256::from_slice(&bytes[..])),
+        32 => Ok(H256::from_slice(bytes)),
         _ => Err("✘ Not enough bytes to convert to h256!".into()),
     }
 }

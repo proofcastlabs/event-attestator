@@ -2,7 +2,6 @@ use derive_more::{Constructor, Deref};
 use eos_primitives::{
     AccountName as EosAccountName,
     Action as EosAction,
-    ActionPTokenPegOut,
     PermissionLevel,
     Transaction as EosTransaction,
 };
@@ -11,6 +10,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use crate::{
     chains::{
         eos::{
+            eos_actions::PTokenPegOutAction,
             eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, EOS_MAX_EXPIRATION_SECS},
             eos_crypto::{
                 eos_private_key::EosPrivateKey,
@@ -185,7 +185,7 @@ impl EosOnEthEthTxInfo {
             from,
             "pegout",
             vec![PermissionLevel::from_str(actor, permission_level)?],
-            ActionPTokenPegOut::from_str(token_contract, quantity, recipient, metadata)?,
+            PTokenPegOutAction::from_str(token_contract, quantity, recipient, metadata)?,
         )?)
     }
 

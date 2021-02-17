@@ -24,8 +24,8 @@ use crate::{
 };
 
 fn create_eos_signing_digest(block_mroot: &[Byte], schedule_hash: &[Byte], block_header_digest: &[Byte]) -> Bytes {
-    let hash_1 = sha256::Hash::hash(&[&block_header_digest[..], &block_mroot[..]].concat());
-    sha256::Hash::hash(&[&hash_1[..], &schedule_hash[..]].concat()).to_vec()
+    let hash_1 = sha256::Hash::hash(&[block_header_digest, block_mroot].concat());
+    sha256::Hash::hash(&[&hash_1[..], schedule_hash].concat()).to_vec()
 }
 
 fn get_block_digest(msig_enabled: bool, block_header: &EosBlockHeaderV2) -> Result<Bytes> {

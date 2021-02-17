@@ -1,14 +1,9 @@
 use derive_more::{Constructor, Deref};
-use eos_primitives::{
-    Action as EosAction,
-    ActionPTokenMint,
-    PermissionLevel,
-    SerializeData,
-    Transaction as EosTransaction,
-};
+use eos_primitives::{Action as EosAction, PermissionLevel, SerializeData, Transaction as EosTransaction};
 
 use crate::{
     chains::eos::{
+        eos_actions::PTokenMintAction,
         eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, EOS_MAX_EXPIRATION_SECS, MEMO},
         eos_crypto::eos_private_key::EosPrivateKey,
     },
@@ -57,7 +52,7 @@ fn get_eos_ptoken_issue_action(
         from,
         "issue",
         vec![PermissionLevel::from_str(actor, permission_level)?],
-        ActionPTokenMint::from_str(to, amount, memo)?,
+        PTokenMintAction::from_str(to, amount, memo)?,
     )?)
 }
 

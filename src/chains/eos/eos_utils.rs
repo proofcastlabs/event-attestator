@@ -1,4 +1,5 @@
-use eos_primitives::Checksum256;
+use bitcoin_hashes::{sha256, Hash};
+use eos_primitives::{Action as EosAction, Checksum256, SerializeData};
 
 use crate::{
     chains::eos::eos_constants::EOS_SCHEDULE_DB_PREFIX,
@@ -26,6 +27,10 @@ pub fn get_eos_schedule_db_key(version: u32) -> Bytes {
 
 pub fn remove_symbol_from_eos_asset(eos_asset: &str) -> &str {
     eos_asset.split_whitespace().collect::<Vec<&str>>()[0]
+}
+
+pub fn get_digest_from_eos_action(action: &EosAction) -> Bytes {
+    sha256::Hash::hash(&action.to_serialize_data()).to_vec()
 }
 
 #[cfg(test)]

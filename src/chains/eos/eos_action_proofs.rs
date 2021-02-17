@@ -5,7 +5,6 @@ use eos_primitives::{
     AccountName,
     Action as EosAction,
     ActionName,
-    ActionReceipt as EosActionReceipt,
     Checksum256,
     PermissionLevel,
     PermissionLevels,
@@ -14,10 +13,10 @@ use eos_primitives::{
 
 use crate::{
     chains::eos::{
+        eos_action_receipt::EosActionReceipt,
         eos_global_sequences::GlobalSequence,
         eos_types::MerkleProof,
         eos_utils::convert_hex_to_checksum256,
-        parse_eos_action_receipts::parse_eos_action_receipt_json,
     },
     types::{Bytes, Result},
     utils::convert_bytes_to_u64,
@@ -56,7 +55,7 @@ impl EosActionProof {
             action: json.action_json.to_action()?,
             action_proof: json.action_proof.clone(),
             tx_id: convert_hex_to_checksum256(&json.tx_id)?,
-            action_receipt: parse_eos_action_receipt_json(&json.action_receipt_json)?,
+            action_receipt: EosActionReceipt::from_json(&json.action_receipt_json)?,
         })
     }
 
