@@ -164,10 +164,11 @@ mod tests {
 
     #[test]
     fn should_convert_timestamp_string_to_block_timestamp() {
-        let expected_result = BlockTimestamp(1192621811);
+        let expected_result: u32 = 1192621811;
         let eos_time_stamp_string = "2018-11-23T17:55:05.500";
-        let result =
-            EosSubmissionMaterial::convert_timestamp_string_to_block_timestamp(&eos_time_stamp_string).unwrap();
+        let result = EosSubmissionMaterial::convert_timestamp_string_to_block_timestamp(&eos_time_stamp_string)
+            .unwrap()
+            .as_u32();
         assert_eq!(result, expected_result);
     }
 
