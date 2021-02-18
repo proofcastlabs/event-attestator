@@ -53,7 +53,7 @@ fn convert_v2_schedule_block_header_to_v1_schedule_block_header(
             None => None,
             Some(v2_schedule) => Some(convert_v2_schedule_to_v1(&v2_schedule.clone())),
         },
-        v2_block_header.header_extensions.clone(),
+        &v2_block_header.header_extensions,
     )
 }
 

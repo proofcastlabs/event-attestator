@@ -23,12 +23,7 @@ pub struct EosSignedTransaction {
 
 impl EosSignedTransaction {
     fn get_signing_data_from_unsigned_tx(unsigned_tx: &EosTransaction, chain_id: &str) -> Result<Bytes> {
-        let mut sign_data: Vec<u8> = Vec::new();
-        let mut chain_id_hex = hex::decode(chain_id)?;
-        sign_data.append(&mut chain_id_hex);
-        sign_data.append(&mut unsigned_tx.to_serialize_data());
-        sign_data.append(&mut vec![0u8; 32]);
-        Ok(sign_data)
+        Ok([hex::decode(chain_id)?, unsigned_tx.to_serialize_data(), vec![0u8; 32]].concat())
     }
 
     pub fn from_unsigned_tx(

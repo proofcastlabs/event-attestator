@@ -84,6 +84,10 @@ impl EosSubmissionMaterial {
             debug!("✔ No producers field in EOS block json!");
             None
         };
+        let extensions = match eos_block_header_json.header_extension {
+            None => vec![],
+            Some(ref hex_extensions) => EosExtensions::from_hex_strings(hex_extensions)?.to_vec(),
+        };
         Ok(EosBlockHeaderV2::new(
             Self::convert_timestamp_string_to_block_timestamp(&eos_block_header_json.timestamp)?,
             AccountName::from_str(&eos_block_header_json.producer)?,
@@ -93,10 +97,7 @@ impl EosSubmissionMaterial {
             convert_hex_to_checksum256(&eos_block_header_json.action_mroot)?,
             eos_block_header_json.schedule_version,
             schedule,
-            match eos_block_header_json.header_extension {
-                None => vec![],
-                Some(ref hex_extensions) => EosExtensions::from_hex_strings(&hex_extensions)?.to_vec(),
-            },
+            &extensions,
         ))
     }
 
