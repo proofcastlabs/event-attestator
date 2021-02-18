@@ -7,7 +7,6 @@ use eos_primitives::{
     ActionName,
     Checksum256,
     PermissionLevel,
-    PermissionLevels,
     SerializeData,
 };
 
@@ -15,7 +14,7 @@ use crate::{
     chains::eos::{
         eos_action_receipt::EosActionReceipt,
         eos_global_sequences::GlobalSequence,
-        eos_types::MerkleProof,
+        eos_types::{MerkleProof, PermissionLevels},
         eos_utils::convert_hex_to_checksum256,
     },
     types::{Bytes, Result},
@@ -27,13 +26,27 @@ pub type EosActionProofJsons = Vec<EosActionProofJson>;
 pub type AuthSequenceJsons = Vec<AuthSequenceJson>;
 pub type AuthorizationJsons = Vec<AuthorizationJson>;
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosActionProof {
     pub action: EosAction,
     pub tx_id: Checksum256,
     pub action_proof: MerkleProof,
     pub action_receipt: EosActionReceipt,
 }
+
+impl PartialEq for EosActionProof {
+    fn eq(&self, other: &Self) -> bool {
+        self.tx_id == other.tx_id
+            && self.action.name == other.action.name
+            && self.action.data == other.action.data
+            && self.action_proof == other.action_proof
+            && self.action_receipt == other.action_receipt
+            && self.action.account == other.action.account
+            && self.action.authorization == other.action.authorization
+    }
+}
+
+impl Eq for EosActionProof {}
 
 impl EosActionProof {
     pub fn get_global_sequence(&self) -> GlobalSequence {

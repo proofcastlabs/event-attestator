@@ -7,7 +7,7 @@ use crate::{
         eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, EOS_MAX_EXPIRATION_SECS, MEMO},
         eos_crypto::eos_private_key::EosPrivateKey,
     },
-    types::Result,
+    types::{Bytes, Result},
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, Deref, Constructor)]
@@ -22,6 +22,10 @@ pub struct EosSignedTransaction {
 }
 
 impl EosSignedTransaction {
+    fn get_signing_data_from_unsigned_tx(unsigned_tx: &EosTransaction, chain_id: &str) -> Result<Bytes> {
+        Ok([hex::decode(chain_id)?, unsigned_tx.to_serialize_data(), vec![0u8; 32]].concat())
+    }
+
     pub fn from_unsigned_tx(
         to: &str,
         amount: &str,
@@ -33,7 +37,7 @@ impl EosSignedTransaction {
             amount.to_string(),
             to.to_string(),
             eos_private_key
-                .sign_message_bytes(&unsigned_tx.get_signing_data(chain_id)?)?
+                .sign_message_bytes(&Self::get_signing_data_from_unsigned_tx(unsigned_tx, chain_id)?)?
                 .to_string(),
             hex::encode(&unsigned_tx.to_serialize_data()[..]),
         ))

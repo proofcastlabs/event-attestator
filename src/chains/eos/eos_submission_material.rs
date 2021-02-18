@@ -1,19 +1,15 @@
 use std::str::FromStr;
 
 use chrono::prelude::*;
-use eos_primitives::{
-    AccountName,
-    BlockHeader as EosBlockHeader,
-    BlockTimestamp,
-    Extension,
-    ProducerScheduleV2 as EosProducerScheduleV2,
-    TimePoint,
-};
+use eos_primitives::{AccountName, BlockTimestamp, TimePoint};
 use serde_json::Value as JsonValue;
 
 use crate::{
     chains::eos::{
         eos_action_proofs::{EosActionProof, EosActionProofJson, EosActionProofJsons, EosActionProofs},
+        eos_block_header::EosBlockHeaderV2,
+        eos_extension::EosExtensions,
+        eos_producer_schedule::EosProducerScheduleV2,
         eos_state::EosState,
         eos_types::{Checksum256s, EosBlockHeaderJson},
         eos_utils::convert_hex_to_checksum256,
@@ -34,7 +30,7 @@ pub struct EosSubmissionMaterial {
     pub block_num: u64,
     pub producer_signature: String,
     pub action_proofs: EosActionProofs,
-    pub block_header: EosBlockHeader,
+    pub block_header: EosBlockHeaderV2,
     pub interim_block_ids: Checksum256s,
 }
 
@@ -46,17 +42,6 @@ impl EosSubmissionMaterial {
                 .and_then(|v1_json| convert_v1_schedule_json_to_v1_schedule(&v1_json))
                 .map(|v1_schedule| convert_v1_schedule_to_v2(&v1_schedule)),
         }
-    }
-
-    fn convert_hex_to_extension(hex_string: &str) -> Result<Extension> {
-        Ok(Extension::new(hex::decode(hex_string)?))
-    }
-
-    fn convert_hex_to_extensions(extension_strings: &[String]) -> Result<Vec<Extension>> {
-        extension_strings
-            .iter()
-            .map(|hex| Self::convert_hex_to_extension(&hex))
-            .collect::<Result<Vec<Extension>>>()
     }
 
     fn convert_timestamp_string_to_block_timestamp(timestamp: &str) -> Result<BlockTimestamp> {
@@ -79,7 +64,7 @@ impl EosSubmissionMaterial {
         interim_block_ids_json.iter().map(convert_hex_to_checksum256).collect()
     }
 
-    pub fn parse_eos_block_header_from_json(eos_block_header_json: &EosBlockHeaderJson) -> Result<EosBlockHeader> {
+    pub fn parse_eos_block_header_from_json(eos_block_header_json: &EosBlockHeaderJson) -> Result<EosBlockHeaderV2> {
         let schedule = if eos_block_header_json.new_producers.is_some() {
             debug!("✔ `new_producers` field in EOS block json!");
             Some(Self::convert_schedule_json_value_to_v2_schedule_json(
@@ -99,7 +84,11 @@ impl EosSubmissionMaterial {
             debug!("✔ No producers field in EOS block json!");
             None
         };
-        Ok(EosBlockHeader::new(
+        let extensions = match eos_block_header_json.header_extension {
+            None => vec![],
+            Some(ref hex_extensions) => EosExtensions::from_hex_strings(hex_extensions)?.to_vec(),
+        };
+        Ok(EosBlockHeaderV2::new(
             Self::convert_timestamp_string_to_block_timestamp(&eos_block_header_json.timestamp)?,
             AccountName::from_str(&eos_block_header_json.producer)?,
             eos_block_header_json.confirmed,
@@ -108,10 +97,7 @@ impl EosSubmissionMaterial {
             convert_hex_to_checksum256(&eos_block_header_json.action_mroot)?,
             eos_block_header_json.schedule_version,
             schedule,
-            match eos_block_header_json.header_extension {
-                None => vec![],
-                Some(ref hex_extensions) => Self::convert_hex_to_extensions(&hex_extensions)?,
-            },
+            &extensions,
         ))
     }
 
@@ -153,7 +139,7 @@ pub fn parse_submission_material_and_add_to_state<D: DatabaseInterface>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eos::eos_test_utils::get_sample_eos_submission_material_string_n;
+    use crate::chains::eos::eos_test_utils::{get_sample_eos_submission_material_string_n, serialize_block_header_v2};
 
     #[test]
     fn should_parse_eos_submission_material_string_to_json() {
@@ -164,21 +150,12 @@ mod tests {
 
     #[test]
     fn should_convert_timestamp_string_to_block_timestamp() {
-        let expected_result = BlockTimestamp(1192621811);
+        let expected_result: u32 = 1192621811;
         let eos_time_stamp_string = "2018-11-23T17:55:05.500";
-        let result =
-            EosSubmissionMaterial::convert_timestamp_string_to_block_timestamp(&eos_time_stamp_string).unwrap();
+        let result = EosSubmissionMaterial::convert_timestamp_string_to_block_timestamp(&eos_time_stamp_string)
+            .unwrap()
+            .as_u32();
         assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_convert_hex_string_to_extension() {
-        let hex = "01030307";
-        let expected_u16 = 769;
-        let expected_bytes = [3u8, 7u8];
-        let result = EosSubmissionMaterial::convert_hex_to_extension(&hex).unwrap();
-        assert_eq!(result.0, expected_u16);
-        assert_eq!(result.1, expected_bytes);
     }
 
     #[test]
@@ -228,7 +205,7 @@ mod tests {
         };
         let result = EosSubmissionMaterial::parse_eos_block_header_from_json(&json).unwrap();
         let expected_serialized = "f3f615477055c6d2343fa75e000000002a2fb72da881babc192b80bab59c289e2db1b4318160a4c0ab5e50618f57000000000000000000000000000000000000000000000000000000000000000033cfa41c93d0d37dd162d1341114122d76446ec6ce5ff6686205fa15f2fe6d46020000000000";
-        let result_serialized = hex::encode(result.serialize().unwrap());
+        let result_serialized = hex::encode(serialize_block_header_v2(&result).unwrap());
         assert_eq!(result.id().unwrap(), expected_block_id);
         assert_eq!(result_serialized, expected_serialized);
     }
@@ -257,7 +234,7 @@ mod tests {
         };
         let result = EosSubmissionMaterial::parse_eos_block_header_from_json(&json).unwrap();
         let expected_serialized = "f4f615477015a7d5c4e82e65f00000002a304f2dcbb2dc2078356f6e71b2168296e64e7166eec08b78a157390bda0000000000000000000000000000000000000000000000000000000000000000ff146c3b50187542da35111cc9057031d1d5a6961110725cc4409e0895de572b020000000000";
-        let result_serialized = hex::encode(result.serialize().unwrap());
+        let result_serialized = hex::encode(serialize_block_header_v2(&result).unwrap());
         assert_eq!(result.id().unwrap(), expected_block_id);
         assert_eq!(result_serialized, expected_serialized);
     }
@@ -286,7 +263,7 @@ mod tests {
         };
         let result = EosSubmissionMaterial::parse_eos_block_header_from_json(&json).unwrap();
         let expected_serialized = "6b5baa4b4055521cabc8a67e0000047bef1059cd1da401e09bda1617bc2b58c6dfdb11d7f05db14c55f442d036ad000000000000000000000000000000000000000000000000000000000000000074ef05af4a312a8f010e3e442f3097dc33ec4b22738504ab38d8e30724f24d4b7b0100000000";
-        let result_serialized = hex::encode(result.serialize().unwrap());
+        let result_serialized = hex::encode(serialize_block_header_v2(&result).unwrap());
         assert_eq!(result.id().unwrap(), expected_block_id);
         assert_eq!(result_serialized, expected_serialized);
     }

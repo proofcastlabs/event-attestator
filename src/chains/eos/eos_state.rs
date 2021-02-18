@@ -1,5 +1,4 @@
 pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-use eos_primitives::{BlockHeader as EosBlockHeader, ProducerScheduleV2 as EosProducerScheduleV2};
 
 use crate::{
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
@@ -7,9 +6,11 @@ use crate::{
         btc::utxo_manager::utxo_types::BtcUtxosAndValues,
         eos::{
             eos_action_proofs::EosActionProofs,
+            eos_block_header::EosBlockHeaderV2,
             eos_eth_token_dictionary::EosEthTokenDictionary,
             eos_global_sequences::{GlobalSequences, ProcessedGlobalSequences},
             eos_merkle_utils::Incremerkle,
+            eos_producer_schedule::EosProducerScheduleV2,
             eos_submission_material::EosSubmissionMaterial,
             eos_types::Checksum256s,
             protocol_features::EnabledFeatures,
@@ -23,7 +24,7 @@ use crate::{
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
 };
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct EosState<D: DatabaseInterface> {
     pub db: D,
     pub block_num: Option<u64>,
@@ -32,8 +33,8 @@ pub struct EosState<D: DatabaseInterface> {
     pub action_proofs: EosActionProofs,
     pub interim_block_ids: Checksum256s,
     pub eth_signed_txs: EthTransactions,
+    pub block_header: Option<EosBlockHeaderV2>,
     pub processed_tx_ids: ProcessedGlobalSequences,
-    pub block_header: Option<EosBlockHeader>,
     pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub enabled_protocol_features: EnabledFeatures,
     pub eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos,
@@ -148,7 +149,7 @@ where
         Ok(self)
     }
 
-    pub fn get_eos_block_header(&self) -> Result<&EosBlockHeader> {
+    pub fn get_eos_block_header(&self) -> Result<&EosBlockHeaderV2> {
         match self.block_header {
             Some(ref block_header) => Ok(block_header),
             None => Err(get_not_in_state_err("block_header").into()),

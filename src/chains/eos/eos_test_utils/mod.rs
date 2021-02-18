@@ -2,11 +2,7 @@
 use std::{fs::read_to_string, path::Path};
 
 use bitcoin_hashes::{sha256, Hash as HashTrait};
-use eos_primitives::{
-    BlockHeader as EosBlockHeader,
-    ProducerSchedule as EosProducerScheduleV1,
-    ProducerScheduleV2 as EosProducerScheduleV2,
-};
+use eos_primitives::{NumBytes, Write};
 use ethereum_types::Address as EthAddress;
 use secp256k1::Message as Secp256k1Message;
 
@@ -15,9 +11,11 @@ use crate::{
         core_initialization::eos_init_utils::EosInitJson,
         eos_action_proofs::{EosActionProof, EosActionProofs},
         eos_action_receipt::{AuthSequence, EosActionReceipt},
+        eos_block_header::EosBlockHeaderV2,
         eos_crypto::{eos_private_key::EosPrivateKey, eos_public_key::EosPublicKey, eos_signature::EosSignature},
         eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry, EosEthTokenDictionaryJson},
         eos_merkle_utils::Incremerkle,
+        eos_producer_schedule::{EosProducerScheduleV1, EosProducerScheduleV2},
         eos_submission_material::{EosSubmissionMaterial, EosSubmissionMaterialJson},
         eos_types::{Checksum256s, EosBlockHeaderJson},
         eos_utils::convert_hex_to_checksum256,
@@ -143,7 +141,7 @@ impl EosInitAndSubsequentBlocksJson {
         })
     }
 
-    pub fn get_block_n(&self, n: usize) -> Result<EosBlockHeader> {
+    pub fn get_block_n(&self, n: usize) -> Result<EosBlockHeaderV2> {
         EosSubmissionMaterial::parse_eos_block_header_from_json(&self.get_block_json_n(n)?)
     }
 
@@ -433,4 +431,10 @@ pub fn get_sample_eos_eth_token_dictionary() -> EosEthTokenDictionary {
 
 pub fn get_sample_eos_eth_token_dictionary_json() -> EosEthTokenDictionaryJson {
     get_sample_eos_eth_token_dictionary().to_json().unwrap()
+}
+
+pub fn serialize_block_header_v2(header: &EosBlockHeaderV2) -> Result<Bytes> {
+    let mut data = vec![0u8; header.num_bytes()];
+    header.write(&mut data, &mut 0)?;
+    Ok(data)
 }
