@@ -6,7 +6,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
     chains::{
-        eos::{eos_eth_token_dictionary::EosEthTokenDictionary, eos_utils::remove_symbol_from_eos_asset},
+        eos::eos_utils::remove_symbol_from_eos_asset,
         eth::{
             eth_constants::{
                 ERC20_ON_EOS_PEG_IN_EVENT_TOPIC,
@@ -22,6 +22,7 @@ use crate::{
         },
     },
     constants::SAFE_EOS_ADDRESS,
+    dictionaries::eos_eth::EosEthTokenDictionary,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -296,12 +297,8 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::{
-        eos::{
-            eos_eth_token_dictionary::EosEthTokenDictionaryEntry,
-            eos_test_utils::get_sample_eos_eth_token_dictionary,
-        },
-        eth::eth_test_utils::{
+    use crate::{
+        chains::eth::eth_test_utils::{
             get_sample_erc20_on_eos_peg_in_info,
             get_sample_erc20_on_eos_peg_in_infos,
             get_sample_log_with_erc20_peg_in_event,
@@ -309,6 +306,7 @@ mod tests {
             get_sample_receipt_with_erc20_peg_in_event,
             get_sample_submission_material_with_erc20_peg_in_event,
         },
+        dictionaries::eos_eth::{test_utils::get_sample_eos_eth_token_dictionary, EosEthTokenDictionaryEntry},
     };
 
     fn get_sample_zero_eos_asset_peg_in_info() -> Erc20OnEosPegInInfo {

@@ -14,7 +14,6 @@ pub(crate) mod eos_database_transactions;
 pub(crate) mod eos_database_utils;
 pub(crate) mod eos_debug_functions;
 pub(crate) mod eos_enclave_state;
-pub(crate) mod eos_eth_token_dictionary;
 pub(crate) mod eos_extension;
 pub(crate) mod eos_global_sequences;
 pub(crate) mod eos_hash;

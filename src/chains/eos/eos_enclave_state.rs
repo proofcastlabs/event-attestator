@@ -11,12 +11,12 @@ use crate::{
             get_eos_public_key_from_db,
             get_latest_eos_block_number,
         },
-        eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
         eos_global_sequences::ProcessedGlobalSequences,
         eos_types::EosKnownSchedulesJsons,
         protocol_features::EnabledFeatures,
     },
     constants::SAFE_EOS_ADDRESS,
+    dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
     traits::DatabaseInterface,
     types::Result,
 };

@@ -4,9 +4,10 @@ use crate::{
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
     chains::{
         btc::{btc_types::BtcTransactions, utxo_manager::utxo_types::BtcUtxosAndValues},
-        eos::{eos_crypto::eos_transaction::EosSignedTransactions, eos_eth_token_dictionary::EosEthTokenDictionary},
+        eos::eos_crypto::eos_transaction::EosSignedTransactions,
         evm::eth_submission_material::EthSubmissionMaterial,
     },
+    dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfos,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
     traits::DatabaseInterface,

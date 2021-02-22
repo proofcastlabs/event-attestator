@@ -16,7 +16,6 @@ use crate::{
         eos::{
             eos_action_proofs::EosActionProof,
             eos_database_utils::get_eos_account_name_from_db,
-            eos_eth_token_dictionary::EosEthTokenDictionary,
             eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
             eos_state::EosState,
         },
@@ -34,6 +33,7 @@ use crate::{
         },
     },
     constants::SAFE_ETH_ADDRESS_HEX,
+    dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
     traits::DatabaseInterface,
     types::Result,

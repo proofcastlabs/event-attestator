@@ -16,6 +16,7 @@ use crate::{
         eth::eth_utils::get_eth_address_from_str,
     },
     check_debug_mode::check_debug_mode,
+    dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,

@@ -19,7 +19,6 @@ use crate::{
             put_eos_token_symbol_in_db,
             put_incremerkle_in_db,
         },
-        eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
         eos_global_sequences::ProcessedGlobalSequences,
         eos_merkle_utils::Incremerkle,
         eos_state::EosState,
@@ -31,6 +30,7 @@ use crate::{
         validate_signature::check_block_signature_is_valid,
     },
     constants::CORE_IS_VALIDATING,
+    dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
     traits::DatabaseInterface,
     types::{Bytes, NoneError, Result},
 };

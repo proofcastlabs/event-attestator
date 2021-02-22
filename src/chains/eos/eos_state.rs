@@ -7,7 +7,6 @@ use crate::{
         eos::{
             eos_action_proofs::EosActionProofs,
             eos_block_header::EosBlockHeaderV2,
-            eos_eth_token_dictionary::EosEthTokenDictionary,
             eos_global_sequences::{GlobalSequences, ProcessedGlobalSequences},
             eos_merkle_utils::Incremerkle,
             eos_producer_schedule::EosProducerScheduleV2,
@@ -17,6 +16,7 @@ use crate::{
         },
         eth::eth_types::EthTransactions,
     },
+    dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::eos::eos_tx_info::EosOnEthEosTxInfos,
     erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfos,
     traits::DatabaseInterface,

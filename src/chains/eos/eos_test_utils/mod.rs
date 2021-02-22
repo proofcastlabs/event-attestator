@@ -14,7 +14,6 @@ use crate::{
         eos_action_receipt::{AuthSequence, EosActionReceipt},
         eos_block_header::EosBlockHeaderV2,
         eos_crypto::{eos_private_key::EosPrivateKey, eos_public_key::EosPublicKey, eos_signature::EosSignature},
-        eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry, EosEthTokenDictionaryJson},
         eos_merkle_utils::Incremerkle,
         eos_producer_schedule::{EosProducerScheduleV1, EosProducerScheduleV2},
         eos_submission_material::{EosSubmissionMaterial, EosSubmissionMaterialJson},
@@ -397,41 +396,6 @@ fn get_sample_action_proofs_n(n: usize) -> EosActionProofs {
 
 pub fn get_sample_action_proof_n(n: usize) -> EosActionProof {
     get_sample_action_proofs_n(n)[0].clone()
-}
-
-pub fn get_sample_eos_eth_token_dictionary_entry_1() -> EosEthTokenDictionaryEntry {
-    let token_address_hex = "9f57CB2a4F462a5258a49E88B4331068a391DE66".to_string();
-    EosEthTokenDictionaryEntry::new(
-        18,
-        9,
-        "SAM1".to_string(),
-        "SAM1".to_string(),
-        "SampleToken_1".to_string(),
-        EthAddress::from_slice(&hex::decode(&token_address_hex).unwrap()),
-    )
-}
-
-pub fn get_sample_eos_eth_token_dictionary_entry_2() -> EosEthTokenDictionaryEntry {
-    let token_address_hex = "9e57CB2a4F462a5258a49E88B4331068a391DE66".to_string();
-    EosEthTokenDictionaryEntry::new(
-        18,
-        9,
-        "SAM2".to_string(),
-        "SAM2".to_string(),
-        "sampletokens".to_string(),
-        EthAddress::from_slice(&hex::decode(&token_address_hex).unwrap()),
-    )
-}
-
-pub fn get_sample_eos_eth_token_dictionary() -> EosEthTokenDictionary {
-    EosEthTokenDictionary::new(vec![
-        get_sample_eos_eth_token_dictionary_entry_1(),
-        get_sample_eos_eth_token_dictionary_entry_2(),
-    ])
-}
-
-pub fn get_sample_eos_eth_token_dictionary_json() -> EosEthTokenDictionaryJson {
-    get_sample_eos_eth_token_dictionary().to_json().unwrap()
 }
 
 pub fn serialize_block_header_v2(header: &EosBlockHeaderV2) -> Result<Bytes> {

@@ -3,12 +3,10 @@ use std::{fs::read_to_string, path::Path};
 
 use crate::{
     chains::{
-        eos::{
-            eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
-            eos_submission_material::EosSubmissionMaterial,
-        },
+        eos::eos_submission_material::EosSubmissionMaterial,
         eth::eth_submission_material::EthSubmissionMaterial,
     },
+    dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     errors::AppError,
     types::Result,
 };

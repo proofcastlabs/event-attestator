@@ -12,7 +12,6 @@ use crate::{
                 eos_transaction::{EosSignedTransaction, EosSignedTransactions},
             },
             eos_database_utils::{get_eos_account_name_from_db, get_eos_chain_id_from_db},
-            eos_eth_token_dictionary::EosEthTokenDictionary,
         },
         eth::{
             eth_constants::EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC,
@@ -23,6 +22,7 @@ use crate::{
             eth_submission_material::EthSubmissionMaterial,
         },
     },
+    dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
     traits::DatabaseInterface,
     types::{Byte, Result},
@@ -277,7 +277,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        chains::eos::eos_eth_token_dictionary::EosEthTokenDictionaryEntry,
+        dictionaries::eos_eth::EosEthTokenDictionaryEntry,
         eos_on_eth::test_utils::{get_eth_submission_material_n, get_sample_eos_eth_token_dictionary},
     };
 
