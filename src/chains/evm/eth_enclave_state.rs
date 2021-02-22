@@ -16,6 +16,7 @@ use crate::{
             get_eth_chain_id_from_db,
             get_eth_gas_price_from_db,
             get_eth_latest_block_from_db,
+            get_eth_on_evm_vault_contract_from_db,
             get_eth_tail_block_from_db,
             get_public_eth_address_from_db,
         },
@@ -87,7 +88,7 @@ impl EthEnclaveState {
         Self::new(db, &get_erc20_on_eos_smart_contract_address_from_db(db)?)
     }
 
-    pub fn new_for_eos_on_eth<D: DatabaseInterface>(db: &D) -> Result<Self> {
-        Self::new(db, &get_eos_on_eth_smart_contract_address_from_db(db)?)
+    pub fn new_for_eth_on_evm<D: DatabaseInterface>(db: &D) -> Result<Self> {
+        Self::new(db, &get_eth_on_evm_vault_contract_from_db(db)?)
     }
 }

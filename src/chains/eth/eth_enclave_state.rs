@@ -91,4 +91,8 @@ impl EthEnclaveState {
     pub fn new_for_eos_on_eth<D: DatabaseInterface>(db: &D) -> Result<Self> {
         Self::new(db, &get_eos_on_eth_smart_contract_address_from_db(db)?)
     }
+
+    pub fn new_for_eth_on_evm<D: DatabaseInterface>(db: &D) -> Result<Self> {
+        Self::new(db, &EthAddress::zero())
+    }
 }
