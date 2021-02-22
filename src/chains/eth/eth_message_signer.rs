@@ -77,6 +77,7 @@ pub fn sign_hex_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, messa
     since = "4.1.0",
     note = "Please use `sign_ascii_msg_with_eth_key_with_no_prefix` instead"
 )]
+#[allow(dead_code)]
 pub fn sign_message_with_eth_key<D, T>(db: &D, message: T) -> Result<JsonValue>
 where
     D: DatabaseInterface,
