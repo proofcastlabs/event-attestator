@@ -98,76 +98,76 @@ pub fn get_eth_constants_db_keys() -> JsonValue {
 }
 
 lazy_static! {
-    pub static ref ETH_CHAIN_ID_KEY: [u8; 32] = get_prefixed_db_key("eth-chain-id");
+    pub static ref ETH_CHAIN_ID_KEY: [u8; 32] = get_prefixed_db_key("evm-chain-id");
 }
 
 lazy_static! {
-    pub static ref ETH_GAS_PRICE_KEY: [u8; 32] = get_prefixed_db_key("eth-gas-price");
+    pub static ref ETH_GAS_PRICE_KEY: [u8; 32] = get_prefixed_db_key("evm-gas-price");
 }
 
 lazy_static! {
-    pub static ref ETH_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key("eth-address-key");
+    pub static ref ETH_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key("evm-address-key");
 }
 
 lazy_static! {
-    pub static ref ETH_LINKER_HASH_KEY: [u8; 32] = get_prefixed_db_key("linker-hash-key");
+    pub static ref ETH_LINKER_HASH_KEY: [u8; 32] = get_prefixed_db_key("evm-linker-hash-key");
 }
 
 lazy_static! {
-    pub static ref ANY_SENDER_NONCE_KEY: [u8; 32] = get_prefixed_db_key("any-sender-nonce");
+    pub static ref ANY_SENDER_NONCE_KEY: [u8; 32] = get_prefixed_db_key("evm-any-sender-nonce");
 }
 
 lazy_static! {
-    pub static ref ETH_ACCOUNT_NONCE_KEY: [u8; 32] = get_prefixed_db_key("eth-account-nonce");
+    pub static ref ETH_ACCOUNT_NONCE_KEY: [u8; 32] = get_prefixed_db_key("evm-account-nonce");
 }
 
 lazy_static! {
-    pub static ref PTOKEN_GENESIS_HASH_KEY: [u8; 32] = get_prefixed_db_key("provable-ptoken");
+    pub static ref PTOKEN_GENESIS_HASH_KEY: [u8; 32] = get_prefixed_db_key("evm-provable-ptoken");
 }
 
 lazy_static! {
-    pub static ref ETH_PRIVATE_KEY_DB_KEY: [u8; 32] = get_prefixed_db_key("eth-private-key-key");
+    pub static ref ETH_PRIVATE_KEY_DB_KEY: [u8; 32] = get_prefixed_db_key("evm-private-key-key");
 }
 
 lazy_static! {
-    pub static ref ETH_CANON_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("canon-block-hash-key");
+    pub static ref ETH_CANON_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("evm-canon-block-hash-key");
 }
 
 lazy_static! {
-    pub static ref ETH_TAIL_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("eth-tail-block-hash-key");
+    pub static ref ETH_TAIL_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("evm-tail-block-hash-key");
 }
 
 lazy_static! {
-    pub static ref ETH_ANCHOR_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("anchor-block-hash-key");
+    pub static ref ETH_ANCHOR_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("evm-anchor-block-hash-key");
 }
 
 lazy_static! {
-    pub static ref ETH_LATEST_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("latest-block-hash-key");
+    pub static ref ETH_LATEST_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("evm-latest-block-hash-key");
 }
 
 lazy_static! {
-    pub static ref ETH_CANON_TO_TIP_LENGTH_KEY: [u8; 32] = get_prefixed_db_key("canon-to-tip-length-key");
+    pub static ref ETH_CANON_TO_TIP_LENGTH_KEY: [u8; 32] = get_prefixed_db_key("evm-canon-to-tip-length-key");
 }
 
 lazy_static! {
-    pub static ref BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key("eth-smart-contract");
+    pub static ref BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key("evm-smart-contract");
 }
 
 lazy_static! {
-    pub static ref ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key("eth-on-evm-smart-contract");
+    pub static ref ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key("evm-on-evm-smart-contract");
 }
 
 lazy_static! {
     pub static ref ERC777_PROXY_CONTACT_ADDRESS_KEY: [u8; 32] =
-        get_prefixed_db_key("erc-777-proxy-contract-address-key");
+        get_prefixed_db_key("evm-erc-777-proxy-contract-address-key");
 }
 
 lazy_static! {
     pub static ref ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
-        get_prefixed_db_key("erc20-on-eos-smart-contract-address-key");
+        get_prefixed_db_key("evm-erc20-on-eos-smart-contract-address-key");
 }
 
 lazy_static! {
     pub static ref EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
-        get_prefixed_db_key("eos-on-eth-smart-contract-address-key");
+        get_prefixed_db_key("evm-eos-on-eth-smart-contract-address-key");
 }
