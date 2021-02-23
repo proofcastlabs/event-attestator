@@ -26,7 +26,6 @@ pub fn get_eos_constants_db_keys() -> JsonValue {
         "EOS_ACCOUNT_NONCE_KEY": hex::encode(EOS_ACCOUNT_NONCE_KEY.to_vec()),
         "EOS_SCHEDULE_LIST_KEY": hex::encode(EOS_SCHEDULE_LIST_KEY.to_vec()),
         "EOS_PRIVATE_KEY_DB_KEY": hex::encode(EOS_PRIVATE_KEY_DB_KEY.to_vec()),
-        "EOS_ETH_DICTIONARY_KEY": hex::encode(EOS_ETH_DICTIONARY_KEY.to_vec()),
         "EOS_PROTOCOL_FEATURES_KEY": hex::encode(EOS_PROTOCOL_FEATURES_KEY.to_vec()),
         "EOS_LAST_SEEN_BLOCK_ID_KEY": hex::encode(EOS_LAST_SEEN_BLOCK_ID_KEY.to_vec()),
         "EOS_LAST_SEEN_BLOCK_NUM_KEY": hex::encode(EOS_LAST_SEEN_BLOCK_NUM_KEY.to_vec()),
@@ -63,11 +62,6 @@ lazy_static! {
 
 lazy_static! {
     pub static ref EOS_PUBLIC_KEY_DB_KEY: [u8; 32] = get_prefixed_db_key("eos-public-key-db-key");
-}
-
-lazy_static! {
-    // NOTE: The actual string hashed remains as it was originally for backwards compatibility.
-    pub static ref EOS_ETH_DICTIONARY_KEY: [u8; 32] = get_prefixed_db_key("eos-erc20-dictionary");
 }
 
 lazy_static! {

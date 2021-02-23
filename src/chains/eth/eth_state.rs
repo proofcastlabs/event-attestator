@@ -7,7 +7,7 @@ use crate::{
         eos::eos_crypto::eos_transaction::EosSignedTransactions,
         eth::eth_submission_material::EthSubmissionMaterial,
     },
-    dictionaries::eos_eth::EosEthTokenDictionary,
+    dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary},
     eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfos,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
     traits::DatabaseInterface,
@@ -25,8 +25,9 @@ pub struct EthState<D: DatabaseInterface> {
     pub eos_transactions: Option<EosSignedTransactions>,
     pub erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
-    pub eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
+    pub eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
+    pub eth_evm_token_dictionary: Option<EthEvmTokenDictionary>,
 }
 
 impl<D: DatabaseInterface> EthState<D> {
@@ -37,18 +38,16 @@ impl<D: DatabaseInterface> EthState<D> {
             btc_transactions: None,
             eos_transactions: None,
             btc_utxos_and_values: None,
-            eos_eth_token_dictionary: None,
             eth_submission_material: None,
+            eth_evm_token_dictionary: None,
+            eos_eth_token_dictionary: None,
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
             btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(vec![]),
             erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos::new(vec![]),
         }
     }
 
-    pub fn add_eth_submission_material(
-        mut self,
-        eth_submission_material: EthSubmissionMaterial,
-    ) -> Result<EthState<D>> {
+    pub fn add_eth_submission_material(mut self, eth_submission_material: EthSubmissionMaterial) -> Result<Self> {
         match self.eth_submission_material {
             Some(_) => Err(get_no_overwrite_state_err("eth_submission_material").into()),
             None => {
@@ -58,40 +57,40 @@ impl<D: DatabaseInterface> EthState<D> {
         }
     }
 
-    pub fn add_btc_on_eth_redeem_infos(self, mut infos: BtcOnEthRedeemInfos) -> Result<EthState<D>> {
+    pub fn add_btc_on_eth_redeem_infos(self, mut infos: BtcOnEthRedeemInfos) -> Result<Self> {
         let mut new_infos = self.btc_on_eth_redeem_infos.clone().0;
         new_infos.append(&mut infos.0);
         self.replace_btc_on_eth_redeem_infos(BtcOnEthRedeemInfos::new(new_infos))
     }
 
-    pub fn add_erc20_on_eos_peg_in_infos(self, mut infos: Erc20OnEosPegInInfos) -> Result<EthState<D>> {
+    pub fn add_erc20_on_eos_peg_in_infos(self, mut infos: Erc20OnEosPegInInfos) -> Result<Self> {
         let mut new_infos = self.erc20_on_eos_peg_in_infos.clone().0;
         new_infos.append(&mut infos.0);
         self.replace_erc20_on_eos_peg_in_infos(Erc20OnEosPegInInfos::new(new_infos))
     }
 
-    pub fn add_eos_on_eth_eth_tx_infos(self, mut infos: EosOnEthEthTxInfos) -> Result<EthState<D>> {
+    pub fn add_eos_on_eth_eth_tx_infos(self, mut infos: EosOnEthEthTxInfos) -> Result<Self> {
         let mut new_infos = self.eos_on_eth_eth_tx_infos.clone().0;
         new_infos.append(&mut infos.0);
         self.replace_eos_on_eth_eth_tx_infos(EosOnEthEthTxInfos::new(new_infos))
     }
 
-    pub fn replace_btc_on_eth_redeem_infos(mut self, replacements: BtcOnEthRedeemInfos) -> Result<EthState<D>> {
+    pub fn replace_btc_on_eth_redeem_infos(mut self, replacements: BtcOnEthRedeemInfos) -> Result<Self> {
         self.btc_on_eth_redeem_infos = replacements;
         Ok(self)
     }
 
-    pub fn replace_erc20_on_eos_peg_in_infos(mut self, replacements: Erc20OnEosPegInInfos) -> Result<EthState<D>> {
+    pub fn replace_erc20_on_eos_peg_in_infos(mut self, replacements: Erc20OnEosPegInInfos) -> Result<Self> {
         self.erc20_on_eos_peg_in_infos = replacements;
         Ok(self)
     }
 
-    pub fn replace_eos_on_eth_eth_tx_infos(mut self, replacements: EosOnEthEthTxInfos) -> Result<EthState<D>> {
+    pub fn replace_eos_on_eth_eth_tx_infos(mut self, replacements: EosOnEthEthTxInfos) -> Result<Self> {
         self.eos_on_eth_eth_tx_infos = replacements;
         Ok(self)
     }
 
-    pub fn add_misc_string_to_state(mut self, misc_string: String) -> Result<EthState<D>> {
+    pub fn add_misc_string_to_state(mut self, misc_string: String) -> Result<Self> {
         match self.misc {
             Some(_) => Err(get_no_overwrite_state_err("misc_string").into()),
             None => {
@@ -101,7 +100,7 @@ impl<D: DatabaseInterface> EthState<D> {
         }
     }
 
-    pub fn add_btc_transactions(mut self, btc_transactions: BtcTransactions) -> Result<EthState<D>> {
+    pub fn add_btc_transactions(mut self, btc_transactions: BtcTransactions) -> Result<Self> {
         match self.btc_transactions {
             Some(_) => Err(get_no_overwrite_state_err("btc_transaction").into()),
             None => {
@@ -111,7 +110,7 @@ impl<D: DatabaseInterface> EthState<D> {
         }
     }
 
-    pub fn add_eos_transactions(mut self, eos_transactions: EosSignedTransactions) -> Result<EthState<D>> {
+    pub fn add_eos_transactions(mut self, eos_transactions: EosSignedTransactions) -> Result<Self> {
         match self.eos_transactions {
             Some(_) => Err(get_no_overwrite_state_err("eos_transaction").into()),
             None => {
@@ -121,7 +120,7 @@ impl<D: DatabaseInterface> EthState<D> {
         }
     }
 
-    pub fn add_btc_utxos_and_values(mut self, btc_utxos_and_values: BtcUtxosAndValues) -> Result<EthState<D>> {
+    pub fn add_btc_utxos_and_values(mut self, btc_utxos_and_values: BtcUtxosAndValues) -> Result<Self> {
         match self.btc_utxos_and_values {
             Some(_) => Err(get_no_overwrite_state_err("btc_utxos_and_values").into()),
             None => {
@@ -134,7 +133,7 @@ impl<D: DatabaseInterface> EthState<D> {
     pub fn update_eth_submission_material(
         mut self,
         new_eth_submission_material: EthSubmissionMaterial,
-    ) -> Result<EthState<D>> {
+    ) -> Result<Self> {
         self.eth_submission_material = Some(new_eth_submission_material);
         Ok(self)
     }
@@ -161,7 +160,7 @@ impl<D: DatabaseInterface> EthState<D> {
         }
     }
 
-    pub fn add_eos_eth_token_dictionary(mut self, dictionary: EosEthTokenDictionary) -> Result<EthState<D>> {
+    pub fn add_eos_eth_token_dictionary(mut self, dictionary: EosEthTokenDictionary) -> Result<Self> {
         match self.eos_eth_token_dictionary {
             Some(_) => Err(get_no_overwrite_state_err("eos_eth_token_dictionary").into()),
             None => {
@@ -175,6 +174,23 @@ impl<D: DatabaseInterface> EthState<D> {
         match self.eos_eth_token_dictionary {
             Some(ref dictionary) => Ok(dictionary),
             None => Err(get_not_in_state_err("eos_eth_token_dictionary").into()),
+        }
+    }
+
+    pub fn add_eth_evm_token_dictionary(mut self, dictionary: EthEvmTokenDictionary) -> Result<Self> {
+        match self.eos_eth_token_dictionary {
+            Some(_) => Err(get_no_overwrite_state_err("eth_evm_token_dictionary").into()),
+            None => {
+                self.eth_evm_token_dictionary = Some(dictionary);
+                Ok(self)
+            },
+        }
+    }
+
+    pub fn get_eth_evm_token_dictionary(&self) -> Result<&EthEvmTokenDictionary> {
+        match self.eth_evm_token_dictionary {
+            Some(ref dictionary) => Ok(dictionary),
+            None => Err(get_not_in_state_err("eth_evm_token_dictionary").into()),
         }
     }
 }

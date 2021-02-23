@@ -9,10 +9,11 @@ pub(crate) mod test_utils;
 
 use crate::{
     chains::{
-        eos::{eos_constants::EOS_ETH_DICTIONARY_KEY, eos_state::EosState, eos_utils::remove_symbol_from_eos_asset},
+        eos::{eos_state::EosState, eos_utils::remove_symbol_from_eos_asset},
         eth::eth_state::EthState,
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
+    dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{left_pad_with_zeroes, right_pad_or_truncate, right_pad_with_zeroes, strip_hex_prefix, truncate_str},

@@ -63,10 +63,13 @@ use crate::{
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
-    dictionaries::eos_eth::{
-        get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
-        get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
-        EosEthTokenDictionary,
+    dictionaries::{
+        dictionary_constants::EOS_ETH_DICTIONARY_KEY,
+        eos_eth::{
+            get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
+            get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
+            EosEthTokenDictionary,
+        },
     },
     erc20_on_eos::{
         check_core_is_initialized::{
@@ -157,6 +160,7 @@ pub fn debug_get_all_db_keys() -> Result<String> {
         "eth": get_eth_constants_db_keys(),
         "eos": get_eos_constants_db_keys(),
         "db-key-prefix": DB_KEY_PREFIX.to_string(),
+        "dictionary": hex::encode(EOS_ETH_DICTIONARY_KEY.to_vec()),
     })
     .to_string()))
 }
