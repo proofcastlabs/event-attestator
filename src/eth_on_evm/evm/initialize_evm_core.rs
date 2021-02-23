@@ -46,7 +46,7 @@ use crate::{
 /// The `ETH-on-EVM` core does NOT require any bytecode passing in since the initialization does NOT
 /// return a signed, smart-contract-deploying transaction. This is because the `ETH-on-EVM` bridge
 /// works with an ETH<->EVM token dictionary which defines the contract addresses to be bridged.
-pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
+pub fn maybe_initialize_evm_core<D: DatabaseInterface>(
     db: D,
     block_json: &str,
     chain_id: u8,

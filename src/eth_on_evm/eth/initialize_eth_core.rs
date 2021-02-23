@@ -44,7 +44,7 @@ use crate::{
 /// a signature is signed. The final parameter is the bytecode of the vault contract with which
 /// (the bytecode) a transaction will be made, signed & outputted by this initialization function
 /// ready for braodcasting.
-pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
+pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
     db: D,
     block_json: &str,
     chain_id: u8,
