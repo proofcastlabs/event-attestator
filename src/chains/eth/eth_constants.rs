@@ -92,6 +92,7 @@ pub fn get_eth_constants_db_keys() -> JsonValue {
         "ERC777_PROXY_CONTACT_ADDRESS_KEY": hex::encode(ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec()),
         "BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY": hex::encode(BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
         "EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY": hex::encode(EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY": hex::encode(ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
         "ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY": hex::encode(ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
     })
 }
@@ -165,4 +166,9 @@ lazy_static! {
 lazy_static! {
     pub static ref EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
         get_prefixed_db_key("eos-on-eth-smart-contract-address-key");
+}
+
+lazy_static! {
+    pub static ref ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
+        get_prefixed_db_key("eth-on-evm--smart-contract-address-key");
 }

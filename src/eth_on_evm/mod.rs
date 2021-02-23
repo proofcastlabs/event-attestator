@@ -1,7 +1,7 @@
-//! # The `pETH-on-ETH` pToken Core
+//! # The `pETH-on-EVM` pToken Core
 //!
 //! Here lies the functionality required for the cross-chain conversions between
-//! native ETH tokens and their ETH ERC777 pToken equivalents on EVM compliant chains.
+//! native ETH tokens and their ERC777 pToken equivalents on EVM compliant chains.
 //! This core consists of two light clients that manage the state of the two chains,
 //! along with the creation and signing of transactions related to each chain.
 //!

@@ -58,4 +58,12 @@ impl EthInitializationOutput {
             Some(&state.get_misc_string()?),
         )?)?)
     }
+
+    pub fn new_for_eth_on_evm<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+        Ok(to_string(&Self::init(
+            &state.db,
+            Some(&EthAddress::zero()),
+            Some(&state.get_misc_string()?),
+        )?)?)
+    }
 }

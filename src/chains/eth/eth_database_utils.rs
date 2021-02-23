@@ -17,6 +17,7 @@ use crate::{
             ETH_GAS_PRICE_KEY,
             ETH_LATEST_BLOCK_HASH_KEY,
             ETH_LINKER_HASH_KEY,
+            ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
             ETH_PRIVATE_KEY_DB_KEY,
             ETH_TAIL_BLOCK_HASH_KEY,
         },
@@ -380,6 +381,11 @@ pub fn get_eos_on_eth_smart_contract_address_from_db<D: DatabaseInterface>(db: &
     Ok(get_eth_address_from_db(db, &*EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY).unwrap_or_else(|_| EthAddress::zero()))
 }
 
+pub fn get_eth_on_evm_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
+    info!("✔ Getting `ETH_ON_EVM` smart-contract address from db...");
+    get_eth_address_from_db(db, &*ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY)
+}
+
 fn get_eth_address_from_db<D: DatabaseInterface>(db: &D, key: &[Byte]) -> Result<EthAddress> {
     db.get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .map(|address_bytes| EthAddress::from_slice(&address_bytes[..]))
@@ -434,6 +440,18 @@ pub fn put_eos_on_eth_smart_contract_address_in_db<D: DatabaseInterface>(
     put_eth_address_in_db(
         db,
         &EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+        smart_contract_address,
+    )
+}
+
+pub fn put_eth_on_evm_smart_contract_address_in_db<D: DatabaseInterface>(
+    db: &D,
+    smart_contract_address: &EthAddress,
+) -> Result<()> {
+    trace!("✔ Putting 'ETH_ON_EVM' smart-contract address in db...");
+    put_eth_address_in_db(
+        db,
+        &ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
         smart_contract_address,
     )
 }
