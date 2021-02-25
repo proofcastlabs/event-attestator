@@ -25,12 +25,22 @@ pub const EMPTY_NIBBLES: Nibbles = Nibbles {
     offset: 0,
 };
 pub const ERC20_PEG_IN_EVENT_TOPIC_HEX: &str = "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
+pub const ETH_ON_EVM_PEG_IN_EVENT_TOPIC_HEX: &str = ERC20_PEG_IN_EVENT_TOPIC_HEX;
 pub const BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX: &str = "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65";
 pub const EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC_HEX: &str = BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX;
 pub const ETH_MESSAGE_PREFIX: &[u8; 26] = b"\x19Ethereum Signed Message:\n";
 pub const PREFIXED_MESSAGE_HASH_LEN: &[u8; 2] = b"32";
 pub const ETH_MAINNET_CHAIN_ID: u8 = 1;
 pub const ETH_ROPSTEN_CHAIN_ID: u8 = 3;
+
+lazy_static! {
+    pub static ref ETH_ON_EVM_PEG_IN_EVENT_TOPIC: [EthHash; 1] = {
+        [EthHash::from_slice(
+            // NOTE: Same topic as `ERC20_on_EOS`!
+            &hex::decode(ERC20_PEG_IN_EVENT_TOPIC_HEX).expect("✘ Invalid hex in `ETH_ON_EVM_PEG_IN_EVENT_TOPIC_HEX`!"),
+        )]
+    };
+}
 
 lazy_static! {
     pub static ref ERC20_ON_EOS_PEG_IN_EVENT_TOPIC: [EthHash; 1] = {
