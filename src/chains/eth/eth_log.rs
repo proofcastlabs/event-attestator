@@ -7,6 +7,7 @@ use serde_json::{json, Value as JsonValue};
 use crate::{
     chains::eth::{
         eth_receipt::EthReceiptJson,
+        eth_traits::EthLogCompatible,
         eth_utils::{convert_hex_strings_to_h256s, convert_hex_to_address, convert_hex_to_bytes},
     },
     types::{Bytes, Result},
@@ -25,6 +26,12 @@ pub struct EthLog {
     pub address: EthAddress,
     pub topics: Vec<EthHash>,
     pub data: Bytes,
+}
+
+impl EthLogCompatible for EthLog {
+    fn get_data(&self) -> Bytes {
+        self.data.clone()
+    }
 }
 
 impl EthLog {

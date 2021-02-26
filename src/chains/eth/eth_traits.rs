@@ -24,3 +24,7 @@ pub trait EthSigningCapabilities {
     fn sign_message_bytes(&self, message: &[Byte]) -> Result<EthSignature>;
     fn sign_eth_prefixed_msg_bytes(&self, message: &[Byte]) -> Result<EthSignature>;
 }
+
+pub trait EthLogCompatible {
+    fn get_data(&self) -> Bytes;
+}

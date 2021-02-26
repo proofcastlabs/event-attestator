@@ -15,6 +15,7 @@ use crate::{
             increment_eth_account_nonce_in_db,
         },
         eth_log::EthLog,
+        eth_traits::EthLogCompatible,
     },
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
@@ -111,7 +112,7 @@ impl EthOnEvmErc777RedeemEvent {
         format!("Error getting `{}` from `EthOnEvmErc777RedeemEvent`!", field)
     }
 
-    pub fn from_log(log: &EthLog) -> Result<Self> {
+    pub fn from_log<T: EthLogCompatible>(log: &T) -> Result<Self> {
         let tokens = eth_abi_decode(
             &vec![
                 EthAbiParamType::Address,
@@ -119,7 +120,7 @@ impl EthOnEvmErc777RedeemEvent {
                 EthAbiParamType::Address,
                 EthAbiParamType::Bytes,
             ],
-            &log.data,
+            &log.get_data(),
         )?;
         Ok(Self {
             redeemer: match tokens[0] {

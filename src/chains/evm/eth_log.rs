@@ -4,9 +4,12 @@ use rlp::{Encodable, RlpStream};
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::evm::{
-        eth_receipt::EthReceiptJson,
-        eth_utils::{convert_hex_strings_to_h256s, convert_hex_to_address, convert_hex_to_bytes},
+    chains::{
+        eth::eth_traits::EthLogCompatible,
+        evm::{
+            eth_receipt::EthReceiptJson,
+            eth_utils::{convert_hex_strings_to_h256s, convert_hex_to_address, convert_hex_to_bytes},
+        },
     },
     types::{Bytes, Result},
 };
@@ -17,6 +20,12 @@ pub struct EthLogJson {
     pub data: String,
     pub address: String,
     pub topics: Vec<String>,
+}
+
+impl EthLogCompatible for EthLog {
+    fn get_data(&self) -> Bytes {
+        self.data.clone()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
