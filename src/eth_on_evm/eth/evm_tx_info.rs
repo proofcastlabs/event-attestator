@@ -17,7 +17,7 @@ use crate::{
             },
             eth_contracts::{
                 erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_DATA_GAS_LIMIT},
-                eth_on_evm::EthOnEvmPegInEventParams,
+                eth_on_evm_vault::EthOnEvmVaultPegInEventParams,
             },
             eth_crypto::eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
             eth_database_utils::{
@@ -93,7 +93,7 @@ impl EthOnEvmEvmTxInfos {
     }
 
     fn get_token_contract_address_from_log(log: &EthLog) -> Result<EthAddress> {
-        EthOnEvmPegInEventParams::from_log(log).map(|params| params.token_address)
+        EthOnEvmVaultPegInEventParams::from_log(log).map(|params| params.token_address)
     }
 
     fn check_log_is_eth_on_evm_peg_in(log: &EthLog) -> Result<()> {
@@ -126,7 +126,7 @@ impl EthOnEvmEvmTxInfos {
                 .iter()
                 .enumerate()
                 .map(|(i, log)| {
-                    let event_params = EthOnEvmPegInEventParams::from_log(log)?;
+                    let event_params = EthOnEvmVaultPegInEventParams::from_log(log)?;
                     let tx_info = EthOnEvmEvmTxInfo {
                         eth_token_address: log.address,
                         user_data: event_params.user_data.clone(),

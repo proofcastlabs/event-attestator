@@ -22,8 +22,9 @@ pub(crate) mod check_core_is_initialized;
 // pub(crate) mod constants;
 // pub(crate) mod test_utils;
 //
-pub use crate::{
-    eth_on_evm::eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
+pub use crate::eth_on_evm::eth::{
+    initialize_eth_core::maybe_initialize_eth_core,
+    submit_eth_block::submit_eth_block_to_core,
 };
 // chains::{
 // eos::{

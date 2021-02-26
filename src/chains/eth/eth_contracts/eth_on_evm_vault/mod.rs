@@ -38,7 +38,7 @@ pub fn encode_eth_on_evm_remove_supported_token_fx_data(token_to_remove: EthAddr
 }
 
 #[derive(Debug, PartialEq, Constructor)]
-pub struct EthOnEvmPegInEventParams {
+pub struct EthOnEvmVaultPegInEventParams {
     pub user_data: Bytes,
     pub token_amount: U256,
     pub token_sender: EthAddress,
@@ -46,7 +46,7 @@ pub struct EthOnEvmPegInEventParams {
     pub destination_address: EthAddress,
 }
 
-impl EthOnEvmPegInEventParams {
+impl EthOnEvmVaultPegInEventParams {
     fn get_err_msg(field: &str) -> String {
         format!("Error getting `{}` from `EthOnEvm` peg in event!!", field)
     }
@@ -90,7 +90,7 @@ impl EthOnEvmPegInEventParams {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eth::eth_test_utils::{get_sample_eth_address, get_sample_log_with_erc20_peg_in_event_2};
+    use crate::chains::eth::eth_test_utils::get_sample_eth_address;
 
     #[test]
     fn should_encode_peg_out_fxn_data() {
@@ -131,8 +131,8 @@ mod tests {
     fn should_get_eth_on_evm_peg_in_event_params_from_log() {
         // FIXME TODO!
         // let log = get_sample_log_with_erc20_peg_in_event_2().unwrap();
-        // let result = EthOnEvmPegInEventParams::from_log(&log).unwrap();
-        // let expected_result = EthOnEvmPegInEventParams {
+        // let result = EthOnEvmVaultPegInEventParams::from_log(&log).unwrap();
+        // let expected_result = EthOnEvmVaultPegInEventParams {
         // user_data: vec![],
         // token_amount: U256::from_dec_str("50000000000000").unwrap(),
         // token_sender: EthAddress::from_slice(&hex::decode("7344d31d7025f72bd1d3c08645fa6b12d406fc05").unwrap()),
