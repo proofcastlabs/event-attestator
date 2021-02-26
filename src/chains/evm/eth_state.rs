@@ -5,11 +5,13 @@ use crate::{
     chains::{
         btc::{btc_types::BtcTransactions, utxo_manager::utxo_types::BtcUtxosAndValues},
         eos::eos_crypto::eos_transaction::EosSignedTransactions,
+        eth::eth_crypto::eth_transaction::EthTransactions,
         evm::eth_submission_material::EthSubmissionMaterial,
     },
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary},
     eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfos,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
+    eth_on_evm::evm::eth_tx_info::EthOnEvmEthTxInfos,
     traits::DatabaseInterface,
     types::Result,
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
@@ -20,7 +22,9 @@ pub struct EthState<D: DatabaseInterface> {
     pub db: D,
     pub misc: Option<String>,
     pub btc_transactions: Option<BtcTransactions>,
+    pub eth_on_evm_eth_signed_txs: EthTransactions,
     pub eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos,
+    pub eth_on_evm_eth_tx_infos: EthOnEvmEthTxInfos,
     pub btc_on_eth_redeem_infos: BtcOnEthRedeemInfos,
     pub eos_transactions: Option<EosSignedTransactions>,
     pub erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos,
@@ -41,9 +45,31 @@ impl<D: DatabaseInterface> EthState<D> {
             eth_submission_material: None,
             eos_eth_token_dictionary: None,
             eth_evm_token_dictionary: None,
+            eth_on_evm_eth_signed_txs: EthTransactions::new(vec![]),
+            eth_on_evm_eth_tx_infos: EthOnEvmEthTxInfos::new(vec![]),
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
             btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(vec![]),
             erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos::new(vec![]),
+        }
+    }
+
+    pub fn add_eth_on_evm_eth_tx_infos(self, mut infos: EthOnEvmEthTxInfos) -> Result<Self> {
+        let mut new_infos = self.eth_on_evm_eth_tx_infos.clone().0;
+        new_infos.append(&mut infos.0);
+        self.replace_eth_on_evm_eth_tx_infos(EthOnEvmEthTxInfos::new(new_infos))
+    }
+
+    pub fn replace_eth_on_evm_eth_tx_infos(mut self, replacements: EthOnEvmEthTxInfos) -> Result<Self> {
+        self.eth_on_evm_eth_tx_infos = replacements;
+        Ok(self)
+    }
+
+    pub fn add_eth_on_evm_eth_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {
+        if self.eth_on_evm_eth_signed_txs.is_empty() {
+            self.eth_on_evm_eth_signed_txs = txs;
+            Ok(self)
+        } else {
+            Err(get_no_overwrite_state_err("eth_on_evm_eth_signed_txs").into())
         }
     }
 
