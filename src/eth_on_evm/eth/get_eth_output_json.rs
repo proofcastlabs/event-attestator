@@ -115,11 +115,11 @@ pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
     info!("✔ Getting EVM output json...");
     let output = serde_json::to_string(&EthOutput {
         eth_latest_block_number: get_latest_eth_block_number(&state.db)?,
-        evm_signed_transactions: if state.evm_signed_txs.is_empty() {
+        evm_signed_transactions: if state.eth_on_evm_evm_signed_txs.is_empty() {
             vec![]
         } else {
             get_evm_signed_tx_info_from_evm_txs(
-                &state.evm_signed_txs,
+                &state.eth_on_evm_evm_signed_txs,
                 &state.eth_on_evm_evm_tx_infos,
                 get_eth_account_nonce_from_db(&state.db)?,
                 false, // TODO Get this from state submission material when/if we support AnySender

@@ -22,7 +22,9 @@ pub(crate) mod check_core_is_initialized;
 // pub(crate) mod constants;
 // pub(crate) mod test_utils;
 //
-// pub use crate::{
+pub use crate::{
+    eth_on_evm::eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
+};
 // chains::{
 // eos::{
 // core_initialization::initialize_eos_core::maybe_initialize_eos_core_with_eos_account_without_symbol as
@@ -44,7 +46,6 @@ pub(crate) mod check_core_is_initialized;
 // debug_update_incremerkle,
 // },
 // eos::submit_eos_block::submit_eos_block_to_core,
-// eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
 // get_enclave_state::get_enclave_state,
 // get_latest_block_numbers::get_latest_block_numbers,
 // },

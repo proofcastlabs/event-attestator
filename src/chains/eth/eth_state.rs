@@ -20,8 +20,8 @@ use crate::{
 pub struct EthState<D: DatabaseInterface> {
     pub db: D,
     pub misc: Option<String>,
-    pub evm_signed_txs: EthTransactions,
     pub btc_transactions: Option<BtcTransactions>,
+    pub eth_on_evm_evm_signed_txs: EthTransactions,
     pub eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos,
     pub eth_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos,
     pub btc_on_eth_redeem_infos: BtcOnEthRedeemInfos,
@@ -44,7 +44,7 @@ impl<D: DatabaseInterface> EthState<D> {
             eth_submission_material: None,
             eth_evm_token_dictionary: None,
             eos_eth_token_dictionary: None,
-            evm_signed_txs: EthTransactions::new(vec![]),
+            eth_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
             eth_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos::new(vec![]),
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
             btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(vec![]),
@@ -136,9 +136,9 @@ impl<D: DatabaseInterface> EthState<D> {
         }
     }
 
-    pub fn add_evm_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {
-        if self.evm_signed_txs.is_empty() {
-            self.evm_signed_txs = txs;
+    pub fn add_eth_on_evm_evm_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {
+        if self.eth_on_evm_evm_signed_txs.is_empty() {
+            self.eth_on_evm_evm_signed_txs = txs;
             Ok(self)
         } else {
             Err(get_no_overwrite_state_err("evm_transaction").into())

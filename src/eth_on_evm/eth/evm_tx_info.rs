@@ -279,7 +279,7 @@ pub fn filter_out_zero_value_tx_infos_from_state<D: DatabaseInterface>(state: Et
     info!("✔ Maybe filtering out zero value `EthOnEvmEvmTxInfos`...");
     debug!(
         "✔ Num `EthOnEvmEvmTxInfos` before: {}",
-        state.erc20_on_eos_peg_in_infos.len()
+        state.eth_on_evm_evm_signed_txs.len()
     );
     state
         .eth_on_evm_evm_tx_infos
@@ -328,7 +328,7 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
                 {
                     debug!("✔ Signed transactions: {:?}", signed_txs);
                 }
-                state.add_evm_signed_txs(signed_txs)
+                state.add_eth_on_evm_evm_signed_txs(signed_txs)
             })
     }
 }
