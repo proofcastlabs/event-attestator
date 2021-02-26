@@ -5,7 +5,7 @@ use ethereum_types::{Address, H256};
 use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
-        eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
+        eth_crypto::eth_private_key::EthPrivateKey,
         trie_nodes::Node,
     },
     types::Bytes,

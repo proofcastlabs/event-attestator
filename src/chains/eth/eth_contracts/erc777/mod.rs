@@ -23,6 +23,7 @@ use crate::{
 
 pub const EMPTY_DATA: Bytes = vec![];
 pub const ERC777_CHANGE_PNETWORK_GAS_LIMIT: usize = 30_000;
+pub const ERC777_MINT_WITH_DATA_GAS_LIMIT: usize = 300_000;
 pub const ERC777_MINT_WITH_NO_DATA_GAS_LIMIT: usize = 180_000;
 
 pub const ERC777_CHANGE_PNETWORK_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"newPNetwork\",\"type\":\"address\"}],\"name\":\"changePNetwork\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0xfd4add66\"}]";

@@ -13,8 +13,13 @@ use crate::{
                 ETH_ON_EVM_PEG_IN_EVENT_TOPIC,
                 ETH_ON_EVM_PEG_IN_EVENT_TOPIC_HEX,
                 ETH_WORD_SIZE_IN_BYTES,
+                ZERO_ETH_VALUE,
             },
-            eth_contracts::eth_on_evm::EthOnEvmPegInEventParams,
+            eth_contracts::{
+                erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_DATA_GAS_LIMIT},
+                eth_on_evm::EthOnEvmPegInEventParams,
+            },
+            eth_crypto::eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
             eth_database_utils::{
                 get_erc20_on_eos_smart_contract_address_from_db,
                 get_eth_canon_block_from_db,
@@ -24,6 +29,15 @@ use crate::{
             eth_receipt::{EthReceipt, EthReceipts},
             eth_state::EthState,
             eth_submission_material::EthSubmissionMaterial,
+        },
+        evm::{
+            eth_crypto::eth_private_key::EthPrivateKey as EvmPrivateKey,
+            eth_database_utils::{
+                get_eth_account_nonce_from_db as get_evm_account_nonce_from_db,
+                get_eth_chain_id_from_db as get_evm_chain_id_from_db,
+                get_eth_gas_price_from_db as get_evm_gas_price_from_db,
+                get_eth_private_key_from_db as get_evm_private_key_from_db,
+            },
         },
     },
     constants::SAFE_ETH_ADDRESS,
@@ -174,7 +188,66 @@ impl EthOnEvmEvmTxInfos {
                 .concat(),
         ))
     }
-    // TODO To signed EVM txs!
+
+    fn to_evm_signed_tx(
+        tx_info: &EthOnEvmEvmTxInfo,
+        nonce: u64,
+        chain_id: u8,
+        gas_limit: usize,
+        gas_price: u64,
+        evm_private_key: &EvmPrivateKey,
+    ) -> Result<EvmTransaction> {
+        info!("✔ Signing EVM transaction for tx info: {:?}", tx_info);
+        debug!("✔ Signing with nonce:     {}", nonce);
+        debug!("✔ Signing with chain id:  {}", chain_id);
+        debug!("✔ Signing with gas limit: {}", gas_limit);
+        debug!("✔ Signing with gas price: {}", gas_price);
+        let operator_data = None;
+        encode_erc777_mint_fxn_maybe_with_data(
+            &tx_info.destination_address,
+            &tx_info.token_amount,
+            Some(&tx_info.user_data),
+            operator_data,
+        )
+        .map(|data| {
+            EvmTransaction::new_unsigned(
+                data,
+                nonce,
+                ZERO_ETH_VALUE,
+                tx_info.evm_token_address,
+                chain_id,
+                gas_limit,
+                gas_price,
+            )
+        })
+        .and_then(|unsigned_tx| unsigned_tx.sign(evm_private_key))
+    }
+
+    pub fn to_evm_signed_txs(
+        &self,
+        start_nonce: u64,
+        chain_id: u8,
+        gas_limit: usize,
+        gas_price: u64,
+        evm_private_key: &EvmPrivateKey,
+    ) -> Result<EvmTransactions> {
+        info!("✔ Signing `ETH-on-EVM` EVM transactions...");
+        Ok(EvmTransactions::new(
+            self.iter()
+                .enumerate()
+                .map(|(i, ref tx_info)| {
+                    Self::to_evm_signed_tx(
+                        tx_info,
+                        start_nonce + i as u64,
+                        chain_id,
+                        gas_limit,
+                        gas_price,
+                        evm_private_key,
+                    )
+                })
+                .collect::<Result<Vec<EvmTransaction>>>()?,
+        ))
+    }
 }
 
 pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterface>(
@@ -234,4 +307,28 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
             )
         })
         .and_then(|filtered_submission_material| state.update_eth_submission_material(filtered_submission_material))
+}
+
+pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
+    if state.eth_on_evm_evm_tx_infos.is_empty() {
+        info!("✔ No tx infos in state ∴ no EVM transactions to sign!");
+        Ok(state)
+    } else {
+        state
+            .eth_on_evm_evm_tx_infos
+            .to_evm_signed_txs(
+                get_evm_account_nonce_from_db(&state.db)?,
+                get_evm_chain_id_from_db(&state.db)?,
+                ERC777_MINT_WITH_DATA_GAS_LIMIT,
+                get_evm_gas_price_from_db(&state.db)?,
+                &get_evm_private_key_from_db(&state.db)?,
+            )
+            .and_then(|signed_txs| {
+                #[cfg(feature = "debug")]
+                {
+                    debug!("✔ Signed transactions: {:?}", signed_txs);
+                }
+                state.add_evm_signed_txs(signed_txs)
+            })
+    }
 }
