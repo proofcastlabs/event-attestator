@@ -18,7 +18,6 @@ pub type EthSignature = [u8; 65];
 pub type EthSignedTransaction = String;
 pub type ChildNodes = [Option<Bytes>; 16];
 pub type TrieHashMap = HashMap<H256, Bytes>;
-pub type EthTransactions = Vec<EthTransaction>;
 pub type RelayTransactions = Vec<RelayTransaction>;
 
 #[derive(Debug)]

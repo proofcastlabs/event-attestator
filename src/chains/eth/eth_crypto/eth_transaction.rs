@@ -1,5 +1,6 @@
 use std::fs;
 
+use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, U256};
 use rlp::RlpStream;
 
@@ -20,6 +21,9 @@ use crate::{
     },
     types::{Byte, Bytes, Result},
 };
+
+#[derive(Debug, Clone, Eq, PartialEq, Deref, Constructor)]
+pub struct EthTransactions(pub Vec<EthTransaction>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct EthTransaction {

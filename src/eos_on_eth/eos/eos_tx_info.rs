@@ -22,14 +22,16 @@ use crate::{
         eth::{
             eth_constants::ZERO_ETH_VALUE,
             eth_contracts::erc777::{encode_erc777_mint_with_no_data_fxn, ERC777_MINT_WITH_NO_DATA_GAS_LIMIT},
-            eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
+            eth_crypto::{
+                eth_private_key::EthPrivateKey,
+                eth_transaction::{EthTransaction, EthTransactions},
+            },
             eth_database_utils::{
                 get_eth_account_nonce_from_db,
                 get_eth_chain_id_from_db,
                 get_eth_gas_price_from_db,
                 get_eth_private_key_from_db,
             },
-            eth_types::EthTransactions,
         },
     },
     constants::SAFE_ETH_ADDRESS_HEX,
@@ -270,25 +272,27 @@ impl EosOnEthEosTxInfos {
         eth_private_key: EthPrivateKey,
     ) -> Result<EthTransactions> {
         info!("✔ Getting ETH signed transactions from `erc20-on-eos` redeem infos...");
-        self.iter()
-            .enumerate()
-            .map(|(i, tx_info)| {
-                info!(
-                    "✔ Signing ETH tx for amount: {}, to address: {}",
-                    tx_info.amount, tx_info.recipient
-                );
-                EthTransaction::new_unsigned(
-                    encode_erc777_mint_with_no_data_fxn(&tx_info.recipient, &tx_info.amount)?,
-                    eth_account_nonce + i as u64,
-                    ZERO_ETH_VALUE,
-                    tx_info.eth_token_address,
-                    chain_id,
-                    ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
-                    gas_price,
-                )
-                .sign(eth_private_key.clone())
-            })
-            .collect::<Result<EthTransactions>>()
+        Ok(EthTransactions::new(
+            self.iter()
+                .enumerate()
+                .map(|(i, tx_info)| {
+                    info!(
+                        "✔ Signing ETH tx for amount: {}, to address: {}",
+                        tx_info.amount, tx_info.recipient
+                    );
+                    EthTransaction::new_unsigned(
+                        encode_erc777_mint_with_no_data_fxn(&tx_info.recipient, &tx_info.amount)?,
+                        eth_account_nonce + i as u64,
+                        ZERO_ETH_VALUE,
+                        tx_info.eth_token_address,
+                        chain_id,
+                        ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
+                        gas_price,
+                    )
+                    .sign(eth_private_key.clone())
+                })
+                .collect::<Result<Vec<EthTransaction>>>()?,
+        ))
     }
 }
 
