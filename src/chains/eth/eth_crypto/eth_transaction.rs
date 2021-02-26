@@ -15,7 +15,7 @@ use crate::{
         },
         eth_contracts::erc777::encode_erc777_mint_fxn_maybe_with_data,
         eth_crypto::eth_private_key::EthPrivateKey,
-        eth_traits::EthTxInfoCompatible,
+        eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
         eth_types::{EthSignature, EthSignedTransaction},
         eth_utils::strip_new_line_chars,
     },
@@ -105,9 +105,8 @@ impl EthTransaction {
         chain_id as u64 * 2 + sig_v as u64 + 35 // Per EIP155
     }
 
-    pub fn sign(self, eth_private_key: EthPrivateKey) -> Result<Self> {
-        eth_private_key
-            .sign_message_bytes(&self.serialize_bytes())
+    pub fn sign<T: EthSigningCapabilities>(self, pk: &T) -> Result<Self> {
+        pk.sign_message_bytes(&self.serialize_bytes())
             .map(|sig| self.add_signature_to_transaction(sig))
     }
 
@@ -176,7 +175,7 @@ fn get_unsigned_ptoken_smart_contract_tx(
 pub fn get_signed_ptoken_smart_contract_tx(
     nonce: u64,
     chain_id: u8,
-    eth_private_key: EthPrivateKey,
+    eth_private_key: &EthPrivateKey,
     gas_price: u64,
     bytecode_path: &str,
 ) -> Result<EthSignedTransaction> {
@@ -215,7 +214,7 @@ pub fn get_signed_minting_tx(
     to: EthAddress,
     gas_price: u64,
     recipient: &EthAddress,
-    eth_private_key: EthPrivateKey,
+    eth_private_key: &EthPrivateKey,
     user_data: Option<&[Byte]>,
     operator_data: Option<&[Byte]>,
 ) -> Result<EthTransaction> {
@@ -260,7 +259,7 @@ mod tests {
             .to_string();
         let private_key = get_sample_eth_private_key();
         let tx = get_sample_unsigned_eth_transaction();
-        let result = tx.sign(private_key).unwrap().serialize_hex();
+        let result = tx.sign(&private_key).unwrap().serialize_hex();
         assert_eq!(result, expected_result);
     }
 
@@ -295,7 +294,7 @@ mod tests {
         let result = get_signed_ptoken_smart_contract_tx(
             nonce,
             chain_id,
-            eth_private_key,
+            &eth_private_key,
             gas_price,
             &ETH_SMART_CONTRACT_BYTECODE_PATH.to_string(),
         )
@@ -351,7 +350,7 @@ mod tests {
             to,
             gas_price,
             &recipient,
-            eth_private_key,
+            &eth_private_key,
             user_data,
             operator_data,
         )

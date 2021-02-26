@@ -3,15 +3,18 @@ use ethereum_types::{Address as EthAddress, Signature as EthSignature, U256};
 use rlp::RlpStream;
 
 use crate::{
-    chains::evm::{
-        any_sender::{
-            relay_contract::RelayContract,
-            serde::{compensation, data},
+    chains::{
+        eth::eth_traits::EthSigningCapabilities,
+        evm::{
+            any_sender::{
+                relay_contract::RelayContract,
+                serde::{compensation, data},
+            },
+            eth_constants::{ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID},
+            eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
+            eth_crypto::eth_private_key::EthPrivateKey,
+            eth_traits::EthTxInfoCompatible,
         },
-        eth_constants::{ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID},
-        eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
-        eth_crypto::eth_private_key::EthPrivateKey,
-        eth_traits::EthTxInfoCompatible,
     },
     types::{Byte, Bytes, Result},
 };

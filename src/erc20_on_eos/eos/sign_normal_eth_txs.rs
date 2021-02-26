@@ -30,7 +30,7 @@ pub fn get_eth_signed_txs(
     eth_account_nonce: u64,
     chain_id: u8,
     gas_price: u64,
-    eth_private_key: EthPrivateKey,
+    eth_private_key: &EthPrivateKey,
 ) -> Result<EthTransactions> {
     info!("✔ Getting ETH signed transactions from `erc20-on-eos` redeem infos...");
     Ok(EthTransactions::new(
@@ -55,7 +55,7 @@ pub fn get_eth_signed_txs(
                     PERC20_PEGOUT_GAS_LIMIT,
                     gas_price,
                 )
-                .sign(eth_private_key.clone())
+                .sign(eth_private_key)
             })
             .collect::<Result<Vec<EthTransaction>>>()?,
     ))
@@ -72,7 +72,7 @@ pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: E
             get_eth_account_nonce_from_db(&state.db)?,
             get_eth_chain_id_from_db(&state.db)?,
             get_eth_gas_price_from_db(&state.db)?,
-            get_eth_private_key_from_db(&state.db)?,
+            &get_eth_private_key_from_db(&state.db)?,
         )
         .and_then(|signed_txs| {
             #[cfg(feature = "debug")]

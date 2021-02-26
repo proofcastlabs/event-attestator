@@ -4,19 +4,22 @@ use ethereum_types::{Address as EthAddress, U256};
 use rlp::RlpStream;
 
 use crate::{
-    chains::evm::{
-        any_sender::relay_transaction::RelayTransaction,
-        eth_constants::{
-            GAS_LIMIT_FOR_MINTING_TX,
-            GAS_LIMIT_FOR_PTOKEN_DEPLOY,
-            VALUE_FOR_MINTING_TX,
-            VALUE_FOR_PTOKEN_DEPLOY,
+    chains::{
+        eth::eth_traits::EthSigningCapabilities,
+        evm::{
+            any_sender::relay_transaction::RelayTransaction,
+            eth_constants::{
+                GAS_LIMIT_FOR_MINTING_TX,
+                GAS_LIMIT_FOR_PTOKEN_DEPLOY,
+                VALUE_FOR_MINTING_TX,
+                VALUE_FOR_PTOKEN_DEPLOY,
+            },
+            eth_contracts::erc777::encode_erc777_mint_fxn_maybe_with_data,
+            eth_crypto::eth_private_key::EthPrivateKey,
+            eth_traits::EthTxInfoCompatible,
+            eth_types::{EthSignature, EthSignedTransaction},
+            eth_utils::strip_new_line_chars,
         },
-        eth_contracts::erc777::encode_erc777_mint_fxn_maybe_with_data,
-        eth_crypto::eth_private_key::EthPrivateKey,
-        eth_traits::EthTxInfoCompatible,
-        eth_types::{EthSignature, EthSignedTransaction},
-        eth_utils::strip_new_line_chars,
     },
     types::{Byte, Bytes, Result},
 };

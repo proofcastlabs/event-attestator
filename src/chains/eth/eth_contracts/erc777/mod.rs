@@ -109,7 +109,7 @@ pub fn get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(db: &D, new_ad
         ERC777_CHANGE_PNETWORK_GAS_LIMIT,
         get_eth_gas_price_from_db(db)?,
     )
-    .sign(get_eth_private_key_from_db(db)?)?
+    .sign(&get_eth_private_key_from_db(db)?)?
     .serialize_hex()))
 }
 

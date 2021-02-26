@@ -238,7 +238,7 @@ where
                 get_eth_gas_price_from_db(&db)?,
             ))
         })
-        .and_then(|unsigned_tx| unsigned_tx.sign(get_eth_private_key_from_db(&db)?))
+        .and_then(|unsigned_tx| unsigned_tx.sign(&get_eth_private_key_from_db(&db)?))
         .map(|signed_tx| signed_tx.serialize_hex())
         .and_then(|hex_tx| {
             db.end_transaction()?;
@@ -287,7 +287,7 @@ where
                 get_eth_gas_price_from_db(&db)?,
             ))
         })
-        .and_then(|unsigned_tx| unsigned_tx.sign(get_eth_private_key_from_db(&db)?))
+        .and_then(|unsigned_tx| unsigned_tx.sign(&get_eth_private_key_from_db(&db)?))
         .map(|signed_tx| signed_tx.serialize_hex())
         .and_then(|hex_tx| {
             db.end_transaction()?;
@@ -331,7 +331,7 @@ where
                 get_eth_gas_price_from_db(&db)?,
             ))
         })
-        .and_then(|unsigned_tx| unsigned_tx.sign(get_eth_private_key_from_db(&db)?))
+        .and_then(|unsigned_tx| unsigned_tx.sign(&get_eth_private_key_from_db(&db)?))
         .map(|signed_tx| signed_tx.serialize_hex())
         .and_then(|hex_tx| {
             db.end_transaction()?;

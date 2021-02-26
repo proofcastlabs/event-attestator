@@ -269,7 +269,7 @@ impl EosOnEthEosTxInfos {
         eth_account_nonce: u64,
         chain_id: u8,
         gas_price: u64,
-        eth_private_key: EthPrivateKey,
+        eth_private_key: &EthPrivateKey,
     ) -> Result<EthTransactions> {
         info!("✔ Getting ETH signed transactions from `erc20-on-eos` redeem infos...");
         Ok(EthTransactions::new(
@@ -289,7 +289,7 @@ impl EosOnEthEosTxInfos {
                         ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
                         gas_price,
                     )
-                    .sign(eth_private_key.clone())
+                    .sign(eth_private_key)
                 })
                 .collect::<Result<Vec<EthTransaction>>>()?,
         ))
@@ -348,7 +348,7 @@ pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: E
                 get_eth_account_nonce_from_db(&state.db)?,
                 get_eth_chain_id_from_db(&state.db)?,
                 get_eth_gas_price_from_db(&state.db)?,
-                get_eth_private_key_from_db(&state.db)?,
+                &get_eth_private_key_from_db(&state.db)?,
             )
             .and_then(|signed_txs| {
                 #[cfg(feature = "debug")]
@@ -476,7 +476,7 @@ mod tests {
         let chain_id: u8 = 4; // NOTE Rinkeby
         let gas_price = 20_000_000_000;
         let nonce = 0;
-        let signed_txs = tx_infos.to_eth_signed_txs(nonce, chain_id, gas_price, pk).unwrap();
+        let signed_txs = tx_infos.to_eth_signed_txs(nonce, chain_id, gas_price, &pk).unwrap();
         let result = signed_txs[0].serialize_hex();
         assert_eq!(result, expected_result);
     }

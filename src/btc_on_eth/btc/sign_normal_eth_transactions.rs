@@ -34,7 +34,7 @@ pub fn get_eth_signed_txs(
                     signing_params.smart_contract_address,
                     signing_params.gas_price,
                     &minting_param_struct.eth_address,
-                    signing_params.eth_private_key.clone(),
+                    &signing_params.eth_private_key,
                     None,
                     Some(
                         &EthMetadataFromBtc::from_btc_minting_params(&EthMetadataVersion::V1, minting_param_struct)

@@ -2,16 +2,19 @@ use ethabi::{encode, Token};
 use ethereum_types::{Address as EthAddress, U256};
 
 use crate::{
-    chains::evm::{
-        eth_contracts::{encode_fxn_call, erc777::ERC777_CHANGE_PNETWORK_GAS_LIMIT},
-        eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
-        eth_database_utils::{
-            get_erc777_proxy_contract_address_from_db,
-            get_eth_account_nonce_from_db,
-            get_eth_chain_id_from_db,
-            get_eth_gas_price_from_db,
-            get_eth_private_key_from_db,
-            increment_eth_account_nonce_in_db,
+    chains::{
+        eth::eth_traits::EthSigningCapabilities,
+        evm::{
+            eth_contracts::{encode_fxn_call, erc777::ERC777_CHANGE_PNETWORK_GAS_LIMIT},
+            eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
+            eth_database_utils::{
+                get_erc777_proxy_contract_address_from_db,
+                get_eth_account_nonce_from_db,
+                get_eth_chain_id_from_db,
+                get_eth_gas_price_from_db,
+                get_eth_private_key_from_db,
+                increment_eth_account_nonce_in_db,
+            },
         },
     },
     traits::DatabaseInterface,

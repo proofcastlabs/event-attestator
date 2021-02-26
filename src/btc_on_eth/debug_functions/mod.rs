@@ -456,7 +456,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
                 get_erc777_contract_address_from_db(&db)?,
                 gas_price,
                 &recipient_eth_address,
-                get_eth_private_key_from_db(&db)?,
+                &get_eth_private_key_from_db(&db)?,
                 None,
                 None,
             )

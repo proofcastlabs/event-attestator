@@ -1,7 +1,10 @@
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::evm::{eth_database_utils::get_eth_private_key_from_db, eth_types::EthSignature},
+    chains::{
+        eth::eth_traits::EthSigningCapabilities,
+        evm::{eth_database_utils::get_eth_private_key_from_db, eth_types::EthSignature},
+    },
     traits::DatabaseInterface,
     types::Result,
     utils::decode_hex_with_err_msg,
