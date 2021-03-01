@@ -255,7 +255,7 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Initializing EOS processed tx ids & putting into db...");
-    put_processed_tx_ids_in_db(&state.db, &ProcessedGlobalSequences::init()).and(Ok(state))
+    put_processed_tx_ids_in_db(&state.db, &ProcessedGlobalSequences::new(vec![])).and(Ok(state))
 }
 
 pub fn put_eos_chain_id_in_db_and_return_state<D>(chain_id: &str, state: EosState<D>) -> Result<EosState<D>>

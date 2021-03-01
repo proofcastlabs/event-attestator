@@ -17,7 +17,7 @@ pub type GlobalSequence = u64;
 #[derive(Clone, Debug, PartialEq, Eq, Constructor, Deref, DerefMut)]
 pub struct GlobalSequences(Vec<GlobalSequence>);
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Deref, DerefMut)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Deref, DerefMut, Constructor)]
 pub struct ProcessedGlobalSequences(pub Vec<GlobalSequence>);
 
 impl ProcessedGlobalSequences {
@@ -27,10 +27,6 @@ impl ProcessedGlobalSequences {
 
     fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         Ok(serde_json::from_slice(bytes)?)
-    }
-
-    pub fn init() -> Self {
-        ProcessedGlobalSequences(vec![])
     }
 
     pub fn add(mut self, global_sequence: GlobalSequence) -> Self {
@@ -123,7 +119,7 @@ mod teets {
     use crate::test_utils::get_test_database;
 
     fn get_sample_processed_global_sequence_list() -> ProcessedGlobalSequences {
-        ProcessedGlobalSequences::init()
+        ProcessedGlobalSequences::new(vec![])
             .add_multi(&mut GlobalSequences::new(vec![1u64, 2u64, 3u64]))
             .unwrap()
     }
