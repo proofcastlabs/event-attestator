@@ -61,6 +61,19 @@ impl ProcessedGlobalSequences {
         self.retain(|item| item != global_sequence);
         self
     }
+
+    fn remove_global_sequence_from_list_in_db<D: DatabaseInterface>(
+        db: &D,
+        global_sequence: &GlobalSequence,
+    ) -> Result<()> {
+        info!(
+            "✔ Removing global sequence: '{}' from `ProcessedGlobalSequences` in db...",
+            global_sequence
+        );
+        Self::get_from_db(db)
+            .map(|list| list.remove(global_sequence))
+            .and_then(|updated_list| updated_list.put_in_db(db))
+    }
 }
 
 pub fn maybe_add_global_sequences_to_processed_list_and_return_state<D: DatabaseInterface>(
@@ -103,17 +116,17 @@ mod teets {
     #[test]
     fn should_remove_extant_glob_sequence() {
         let list = get_sample_processed_global_sequence_list();
-        let glob_seq = 2u64;
-        let result = list.remove(&glob_seq);
-        assert!(!result.contains(&glob_seq));
+        let global_sequence = 2u64;
+        let result = list.remove(&global_sequence);
+        assert!(!result.contains(&global_sequence));
     }
 
     #[test]
     fn should_not_remove_non_extant_glob_sequence() {
         let list = get_sample_processed_global_sequence_list();
-        let glob_seq = 5u64;
-        assert!(!list.contains(&glob_seq));
-        let result = list.remove(&glob_seq);
+        let global_sequence = 5u64;
+        assert!(!list.contains(&global_sequence));
+        let result = list.remove(&global_sequence);
         assert_eq!(result, get_sample_processed_global_sequence_list());
     }
 
@@ -132,5 +145,16 @@ mod teets {
         list.put_in_db(&db).unwrap();
         let result = ProcessedGlobalSequences::get_from_db(&db).unwrap();
         assert_eq!(result, list);
+    }
+
+    #[test]
+    fn should_remove_global_sequence_from_list_in_db() {
+        let db = get_test_database();
+        let list = get_sample_processed_global_sequence_list();
+        let global_sequence = 2u64;
+        list.put_in_db(&db).unwrap();
+        ProcessedGlobalSequences::remove_global_sequence_from_list_in_db(&db, &global_sequence).unwrap();
+        let result = ProcessedGlobalSequences::get_from_db(&db).unwrap();
+        assert!(!result.contains(&global_sequence));
     }
 }
