@@ -33,8 +33,13 @@ impl ProcessedGlobalSequences {
         ProcessedGlobalSequences(vec![])
     }
 
+    pub fn add(mut self, global_sequence: GlobalSequence) -> Self {
+        self.push(global_sequence);
+        self
+    }
+
     pub fn add_multi(mut self, global_sequences: &mut GlobalSequences) -> Result<Self> {
-        self.0.append(global_sequences);
+        self.append(global_sequences);
         Ok(self)
     }
 
@@ -156,5 +161,24 @@ mod teets {
         ProcessedGlobalSequences::remove_global_sequence_from_list_in_db(&db, &global_sequence).unwrap();
         let result = ProcessedGlobalSequences::get_from_db(&db).unwrap();
         assert!(!result.contains(&global_sequence));
+    }
+
+    #[test]
+    fn should_add_single_glob_sequence_to_list() {
+        let list = get_sample_processed_global_sequence_list();
+        let global_sequence = 1337u64;
+        let result = list.add(global_sequence);
+        assert!(result.contains(&global_sequence));
+    }
+
+    #[test]
+    fn should_add_multi_glob_sequences_to_list() {
+        let list = get_sample_processed_global_sequence_list();
+        let global_sequence_1 = 1337u64;
+        let global_sequence_2 = 1338u64;
+        let mut global_sequences = GlobalSequences::new(vec![global_sequence_1, global_sequence_2]);
+        let result = list.add_multi(&mut global_sequences).unwrap();
+        assert!(result.contains(&global_sequence_1));
+        assert!(result.contains(&global_sequence_2));
     }
 }
