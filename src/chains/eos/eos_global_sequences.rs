@@ -79,6 +79,16 @@ impl ProcessedGlobalSequences {
             .map(|list| list.remove(global_sequence))
             .and_then(|updated_list| updated_list.put_in_db(db))
     }
+
+    fn add_global_sequence_to_list_in_db<D: DatabaseInterface>(db: &D, global_sequence: GlobalSequence) -> Result<()> {
+        info!(
+            "✔ Adding global sequence: '{}' from `ProcessedGlobalSequences` in db...",
+            global_sequence
+        );
+        Self::get_from_db(db)
+            .map(|list| list.add(global_sequence))
+            .and_then(|updated_list| updated_list.put_in_db(db))
+    }
 }
 
 pub fn maybe_add_global_sequences_to_processed_list_and_return_state<D: DatabaseInterface>(
@@ -180,5 +190,17 @@ mod teets {
         let result = list.add_multi(&mut global_sequences).unwrap();
         assert!(result.contains(&global_sequence_1));
         assert!(result.contains(&global_sequence_2));
+    }
+
+    #[test]
+    fn should_add_global_sequence_to_list_in_db() {
+        let db = get_test_database();
+        let list = get_sample_processed_global_sequence_list();
+        let global_sequence = 1337u64;
+        assert!(!list.contains(&global_sequence));
+        list.put_in_db(&db).unwrap();
+        ProcessedGlobalSequences::add_global_sequence_to_list_in_db(&db, global_sequence).unwrap();
+        let result = ProcessedGlobalSequences::get_from_db(&db).unwrap();
+        assert!(result.contains(&global_sequence));
     }
 }
