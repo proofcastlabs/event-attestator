@@ -28,6 +28,10 @@ pub use crate::{
             core_initialization::initialize_eos_core::maybe_initialize_eos_core_with_eos_account_without_symbol as maybe_initialize_eos_core,
             disable_protocol_feature::{disable_eos_protocol_feature, disable_protocol_feature},
             enable_protocol_feature::enable_eos_protocol_feature,
+            eos_debug_functions::{
+                debug_add_global_sequences_to_processed_list,
+                debug_remove_global_sequences_from_processed_list,
+            },
         },
         eth::eth_message_signer::{sign_ascii_msg_with_eth_key_with_no_prefix, sign_hex_msg_with_eth_key_with_prefix},
     },

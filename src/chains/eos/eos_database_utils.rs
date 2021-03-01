@@ -15,10 +15,8 @@ use crate::{
             EOS_PUBLIC_KEY_DB_KEY,
             EOS_SCHEDULE_LIST_KEY,
             EOS_TOKEN_SYMBOL_KEY,
-            PROCESSED_TX_IDS_KEY,
         },
         eos_crypto::eos_public_key::EosPublicKey,
-        eos_global_sequences::ProcessedGlobalSequences,
         eos_merkle_utils::{Incremerkle, IncremerkleJson},
         eos_producer_schedule::EosProducerScheduleV2,
         eos_types::EosKnownSchedules,
@@ -193,24 +191,6 @@ pub fn put_eos_chain_id_in_db<D: DatabaseInterface>(db: &D, chain_id: &str) -> R
 pub fn get_eos_chain_id_from_db<D: DatabaseInterface>(db: &D) -> Result<String> {
     debug!("✔ Getting EOS chain ID from db...");
     get_string_from_db(db, &EOS_CHAIN_ID_DB_KEY.to_vec())
-}
-
-pub fn get_processed_global_sequences_from_db<D: DatabaseInterface>(db: &D) -> Result<ProcessedGlobalSequences> {
-    debug!("✔ Getting EOS processed actions from db...");
-    db.get(PROCESSED_TX_IDS_KEY.to_vec(), None)
-        .and_then(|bytes| Ok(serde_json::from_slice(&bytes[..])?))
-}
-
-pub fn put_processed_tx_ids_in_db<D: DatabaseInterface>(
-    db: &D,
-    processed_tx_ids: &ProcessedGlobalSequences,
-) -> Result<()> {
-    debug!("✔ Putting EOS processed tx IDs in db...");
-    db.put(
-        PROCESSED_TX_IDS_KEY.to_vec(),
-        serde_json::to_vec(processed_tx_ids)?,
-        None,
-    )
 }
 
 #[cfg(test)]

@@ -16,7 +16,6 @@ use crate::{
             put_eos_schedule_in_db,
             put_eos_token_symbol_in_db,
             put_incremerkle_in_db,
-            put_processed_tx_ids_in_db,
         },
         eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
         eos_global_sequences::ProcessedGlobalSequences,
@@ -250,12 +249,13 @@ where
     put_eos_token_symbol_in_db(&state.db, &token_symbol).and(Ok(state))
 }
 
-pub fn put_empty_processed_tx_ids_in_db_and_return_state<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn put_empty_processed_tx_ids_in_db_and_return_state<D: DatabaseInterface>(
+    state: EosState<D>,
+) -> Result<EosState<D>> {
     info!("✔ Initializing EOS processed tx ids & putting into db...");
-    put_processed_tx_ids_in_db(&state.db, &ProcessedGlobalSequences::init()).and(Ok(state))
+    ProcessedGlobalSequences::new(vec![])
+        .put_in_db(&state.db)
+        .and(Ok(state))
 }
 
 pub fn put_eos_chain_id_in_db_and_return_state<D>(chain_id: &str, state: EosState<D>) -> Result<EosState<D>>

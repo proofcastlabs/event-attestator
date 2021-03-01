@@ -28,37 +28,15 @@ use crate::{
 
 pub const NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR: &str = "Not enough bytes in log data!";
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Constructor)]
 pub struct Erc20OnEosPegInInfo {
     pub token_amount: U256,
-    pub eos_address: String,
-    pub eos_token_address: String,
-    pub eos_asset_amount: String,
     pub token_sender: EthAddress,
     pub eth_token_address: EthAddress,
+    pub eos_address: String,
     pub originating_tx_hash: EthHash,
-}
-
-impl Erc20OnEosPegInInfo {
-    pub fn new(
-        token_amount: U256,
-        token_sender: EthAddress,
-        eth_token_address: EthAddress,
-        eos_address: String,
-        originating_tx_hash: EthHash,
-        eos_token_address: String,
-        eos_asset_amount: String,
-    ) -> Erc20OnEosPegInInfo {
-        Erc20OnEosPegInInfo {
-            token_amount,
-            eth_token_address,
-            eos_address,
-            originating_tx_hash,
-            token_sender,
-            eos_token_address,
-            eos_asset_amount,
-        }
-    }
+    pub eos_token_address: String,
+    pub eos_asset_amount: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]

@@ -1,3 +1,4 @@
+#![allow(clippy::manual_map)]
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde_json::{json, Value as JsonValue};
 

@@ -22,10 +22,7 @@ pub fn remove_thing_from_trie_hash_map(mut trie_hash_map: TrieHashMap, key: &H25
 }
 
 pub fn get_thing_from_trie_hash_map(trie_hash_map: &TrieHashMap, key: &H256) -> Option<Bytes> {
-    match trie_hash_map.get(&key) {
-        Some(thing) => Some(thing.to_vec()),
-        None => None,
-    }
+    trie_hash_map.get(&key).map(|thing| thing.to_vec())
 }
 
 #[cfg(test)]
