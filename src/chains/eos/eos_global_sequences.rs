@@ -13,6 +13,12 @@ pub type GlobalSequence = u64;
 #[derive(Clone, Debug, PartialEq, Eq, Constructor, Deref, DerefMut)]
 pub struct GlobalSequences(Vec<GlobalSequence>);
 
+impl GlobalSequences {
+    pub fn from_str(s: &str) -> Result<Self> {
+        Ok(Self::new(serde_json::from_str::<Vec<u64>>(&s)?))
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Deref, DerefMut, Constructor)]
 pub struct ProcessedGlobalSequences(pub Vec<GlobalSequence>);
 
@@ -129,8 +135,7 @@ mod teets {
     use crate::test_utils::get_test_database;
 
     fn get_sample_processed_global_sequence_list() -> ProcessedGlobalSequences {
-        ProcessedGlobalSequences::new(vec![])
-            .add_multi(&mut GlobalSequences::new(vec![1u64, 2u64, 3u64]))
+        ProcessedGlobalSequences::new(vec![]).add_multi(&mut GlobalSequences::new(vec![1u64, 2u64, 3u64]))
     }
 
     #[test]
@@ -223,5 +228,12 @@ mod teets {
         let result = ProcessedGlobalSequences::get_from_db(&db).unwrap();
         assert!(result.contains(&global_sequence_1));
         assert!(result.contains(&global_sequence_2));
+    }
+
+    #[test]
+    fn should_get_global_sequences_from_json() {
+        let json_str = "[1,2,3,4,5]";
+        let result = GlobalSequences::from_str(json_str);
+        assert!(result.is_ok());
     }
 }
