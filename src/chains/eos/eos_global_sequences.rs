@@ -65,6 +65,13 @@ impl ProcessedGlobalSequences {
         self
     }
 
+    fn remove_multi(mut self, global_sequences: &GlobalSequences) -> Self {
+        global_sequences
+            .iter()
+            .for_each(|global_sequence| self.retain(|item| item != global_sequence));
+        self
+    }
+
     fn remove_global_sequence_from_list_in_db<D: DatabaseInterface>(
         db: &D,
         global_sequence: &GlobalSequence,
@@ -78,6 +85,19 @@ impl ProcessedGlobalSequences {
             .and_then(|updated_list| updated_list.put_in_db(db))
     }
 
+    pub fn remove_global_sequences_from_list_in_db<D: DatabaseInterface>(
+        db: &D,
+        global_sequences: &GlobalSequences,
+    ) -> Result<()> {
+        info!(
+            "✔ Removing global sequences: '{:?}' from `ProcessedGlobalSequences` in db...",
+            global_sequences
+        );
+        Self::get_from_db(db)
+            .map(|list| list.remove_multi(global_sequences))
+            .and_then(|updated_list| updated_list.put_in_db(db))
+    }
+
     fn add_global_sequence_to_list_in_db<D: DatabaseInterface>(db: &D, global_sequence: GlobalSequence) -> Result<()> {
         info!(
             "✔ Adding global sequence: '{}' from `ProcessedGlobalSequences` in db...",
@@ -88,7 +108,7 @@ impl ProcessedGlobalSequences {
             .and_then(|updated_list| updated_list.put_in_db(db))
     }
 
-    fn add_global_sequences_to_list_in_db<D: DatabaseInterface>(
+    pub fn add_global_sequences_to_list_in_db<D: DatabaseInterface>(
         db: &D,
         global_sequences: &mut GlobalSequences,
     ) -> Result<()> {
@@ -235,5 +255,34 @@ mod teets {
         let json_str = "[1,2,3,4,5]";
         let result = GlobalSequences::from_str(json_str);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_remove_multi_global_sequences() {
+        let list = get_sample_processed_global_sequence_list();
+        let global_sequence_1 = 1u64;
+        let global_sequence_2 = 2u64;
+        assert!(list.contains(&global_sequence_1));
+        assert!(list.contains(&global_sequence_2));
+        let global_sequences = GlobalSequences::new(vec![global_sequence_1, global_sequence_2]);
+        let result = list.remove_multi(&global_sequences);
+        assert!(!result.contains(&global_sequence_1));
+        assert!(!result.contains(&global_sequence_2));
+    }
+
+    #[test]
+    fn should_remove_multi_global_sequences_from_db() {
+        let db = get_test_database();
+        let list = get_sample_processed_global_sequence_list();
+        let global_sequence_1 = 1u64;
+        let global_sequence_2 = 2u64;
+        assert!(list.contains(&global_sequence_1));
+        assert!(list.contains(&global_sequence_2));
+        let global_sequences = GlobalSequences::new(vec![global_sequence_1, global_sequence_2]);
+        list.put_in_db(&db).unwrap();
+        ProcessedGlobalSequences::remove_global_sequences_from_list_in_db(&db, &global_sequences).unwrap();
+        let result = ProcessedGlobalSequences::get_from_db(&db).unwrap();
+        assert!(!result.contains(&global_sequence_1));
+        assert!(!result.contains(&global_sequence_2));
     }
 }
