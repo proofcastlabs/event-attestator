@@ -30,9 +30,9 @@ impl ProcessedGlobalSequences {
         self
     }
 
-    pub fn add_multi(mut self, global_sequences: &mut GlobalSequences) -> Result<Self> {
+    pub fn add_multi(mut self, global_sequences: &mut GlobalSequences) -> Self {
         self.append(global_sequences);
-        Ok(self)
+        self
     }
 
     pub fn to_json(&self) -> JsonValue {
@@ -91,7 +91,7 @@ impl ProcessedGlobalSequences {
             global_sequences
         );
         Self::get_from_db(db)
-            .and_then(|list| list.add_multi(global_sequences))
+            .map(|list| list.add_multi(global_sequences))
             .and_then(|updated_list| updated_list.put_in_db(db))
     }
 }
@@ -131,7 +131,6 @@ mod teets {
     fn get_sample_processed_global_sequence_list() -> ProcessedGlobalSequences {
         ProcessedGlobalSequences::new(vec![])
             .add_multi(&mut GlobalSequences::new(vec![1u64, 2u64, 3u64]))
-            .unwrap()
     }
 
     #[test]
@@ -193,7 +192,7 @@ mod teets {
         let global_sequence_1 = 1337u64;
         let global_sequence_2 = 1338u64;
         let mut global_sequences = GlobalSequences::new(vec![global_sequence_1, global_sequence_2]);
-        let result = list.add_multi(&mut global_sequences).unwrap();
+        let result = list.add_multi(&mut global_sequences);
         assert!(result.contains(&global_sequence_1));
         assert!(result.contains(&global_sequence_2));
     }
