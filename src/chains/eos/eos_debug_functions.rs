@@ -10,7 +10,7 @@ use crate::{
             },
             eos_database_utils::put_eos_schedule_in_db,
             eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
-            eos_global_sequences::ProcessedGlobalSequences,
+            eos_global_sequences::{GlobalSequences, ProcessedGlobalSequences},
             parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
         },
         eth::eth_utils::get_eth_address_from_str,
@@ -79,4 +79,42 @@ pub fn get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String
             db.end_transaction()?;
             Ok(processed_global_sequences.to_json().to_string())
         })
+}
+
+pub fn debug_add_global_sequences_to_processed_list<D: DatabaseInterface>(
+    db: &D,
+    global_sequences_json: &str,
+) -> Result<String> {
+    info!("✔ Debug adding global sequences to processed list...");
+    check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| {
+            ProcessedGlobalSequences::add_global_sequences_to_list_in_db(
+                db,
+                &mut GlobalSequences::from_str(global_sequences_json)?,
+            )
+        })
+        .and_then(|_| db.end_transaction())
+        .and(Ok(json!({"added_global_sequences_to_processed_list":true}).to_string()))
+        .map(prepend_debug_output_marker_to_string)
+}
+
+pub fn debug_remove_global_sequences_from_processed_list<D: DatabaseInterface>(
+    db: &D,
+    global_sequences_json: &str,
+) -> Result<String> {
+    info!("✔ Debug adding global sequences to processed list...");
+    check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| {
+            ProcessedGlobalSequences::remove_global_sequences_from_list_in_db(
+                db,
+                &mut GlobalSequences::from_str(global_sequences_json)?,
+            )
+        })
+        .and_then(|_| db.end_transaction())
+        .and(Ok(
+            json!({"removed_global_sequences_to_processed_list":true}).to_string()
+        ))
+        .map(prepend_debug_output_marker_to_string)
 }
