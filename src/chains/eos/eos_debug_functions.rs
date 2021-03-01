@@ -109,7 +109,7 @@ pub fn debug_remove_global_sequences_from_processed_list<D: DatabaseInterface>(
         .and_then(|_| {
             ProcessedGlobalSequences::remove_global_sequences_from_list_in_db(
                 db,
-                &mut GlobalSequences::from_str(global_sequences_json)?,
+                &GlobalSequences::from_str(global_sequences_json)?,
             )
         })
         .and_then(|_| db.end_transaction())

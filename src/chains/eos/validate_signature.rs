@@ -49,10 +49,10 @@ fn convert_v2_schedule_block_header_to_v1_schedule_block_header(
         v2_block_header.transaction_mroot,
         v2_block_header.action_mroot,
         v2_block_header.schedule_version,
-        match &v2_block_header.new_producer_schedule {
-            None => None,
-            Some(v2_schedule) => Some(convert_v2_schedule_to_v1(&v2_schedule.clone())),
-        },
+        v2_block_header
+            .new_producer_schedule
+            .as_ref()
+            .map(|v2_schedule| convert_v2_schedule_to_v1(&v2_schedule.clone())),
         &v2_block_header.header_extensions,
     )
 }

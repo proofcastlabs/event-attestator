@@ -31,11 +31,6 @@ impl ProcessedGlobalSequences {
         Ok(serde_json::from_slice(bytes)?)
     }
 
-    pub fn add(mut self, global_sequence: GlobalSequence) -> Self {
-        self.push(global_sequence);
-        self
-    }
-
     pub fn add_multi(mut self, global_sequences: &mut GlobalSequences) -> Self {
         self.append(global_sequences);
         self
@@ -60,29 +55,11 @@ impl ProcessedGlobalSequences {
         )
     }
 
-    fn remove(mut self, global_sequence: &GlobalSequence) -> Self {
-        self.retain(|item| item != global_sequence);
-        self
-    }
-
     fn remove_multi(mut self, global_sequences: &GlobalSequences) -> Self {
         global_sequences
             .iter()
             .for_each(|global_sequence| self.retain(|item| item != global_sequence));
         self
-    }
-
-    fn remove_global_sequence_from_list_in_db<D: DatabaseInterface>(
-        db: &D,
-        global_sequence: &GlobalSequence,
-    ) -> Result<()> {
-        info!(
-            "✔ Removing global sequence: '{}' from `ProcessedGlobalSequences` in db...",
-            global_sequence
-        );
-        Self::get_from_db(db)
-            .map(|list| list.remove(global_sequence))
-            .and_then(|updated_list| updated_list.put_in_db(db))
     }
 
     pub fn remove_global_sequences_from_list_in_db<D: DatabaseInterface>(
@@ -95,16 +72,6 @@ impl ProcessedGlobalSequences {
         );
         Self::get_from_db(db)
             .map(|list| list.remove_multi(global_sequences))
-            .and_then(|updated_list| updated_list.put_in_db(db))
-    }
-
-    fn add_global_sequence_to_list_in_db<D: DatabaseInterface>(db: &D, global_sequence: GlobalSequence) -> Result<()> {
-        info!(
-            "✔ Adding global sequence: '{}' from `ProcessedGlobalSequences` in db...",
-            global_sequence
-        );
-        Self::get_from_db(db)
-            .map(|list| list.add(global_sequence))
             .and_then(|updated_list| updated_list.put_in_db(db))
     }
 
@@ -159,23 +126,6 @@ mod teets {
     }
 
     #[test]
-    fn should_remove_extant_glob_sequence() {
-        let list = get_sample_processed_global_sequence_list();
-        let global_sequence = 2u64;
-        let result = list.remove(&global_sequence);
-        assert!(!result.contains(&global_sequence));
-    }
-
-    #[test]
-    fn should_not_remove_non_extant_glob_sequence() {
-        let list = get_sample_processed_global_sequence_list();
-        let global_sequence = 5u64;
-        assert!(!list.contains(&global_sequence));
-        let result = list.remove(&global_sequence);
-        assert_eq!(result, get_sample_processed_global_sequence_list());
-    }
-
-    #[test]
     fn should_make_to_and_from_bytes_roundtrip() {
         let list = get_sample_processed_global_sequence_list();
         let bytes = list.to_bytes().unwrap();
@@ -193,25 +143,6 @@ mod teets {
     }
 
     #[test]
-    fn should_remove_global_sequence_from_list_in_db() {
-        let db = get_test_database();
-        let list = get_sample_processed_global_sequence_list();
-        let global_sequence = 2u64;
-        list.put_in_db(&db).unwrap();
-        ProcessedGlobalSequences::remove_global_sequence_from_list_in_db(&db, &global_sequence).unwrap();
-        let result = ProcessedGlobalSequences::get_from_db(&db).unwrap();
-        assert!(!result.contains(&global_sequence));
-    }
-
-    #[test]
-    fn should_add_single_glob_sequence_to_list() {
-        let list = get_sample_processed_global_sequence_list();
-        let global_sequence = 1337u64;
-        let result = list.add(global_sequence);
-        assert!(result.contains(&global_sequence));
-    }
-
-    #[test]
     fn should_add_multi_glob_sequences_to_list() {
         let list = get_sample_processed_global_sequence_list();
         let global_sequence_1 = 1337u64;
@@ -220,18 +151,6 @@ mod teets {
         let result = list.add_multi(&mut global_sequences);
         assert!(result.contains(&global_sequence_1));
         assert!(result.contains(&global_sequence_2));
-    }
-
-    #[test]
-    fn should_add_global_sequence_to_list_in_db() {
-        let db = get_test_database();
-        let list = get_sample_processed_global_sequence_list();
-        let global_sequence = 1337u64;
-        assert!(!list.contains(&global_sequence));
-        list.put_in_db(&db).unwrap();
-        ProcessedGlobalSequences::add_global_sequence_to_list_in_db(&db, global_sequence).unwrap();
-        let result = ProcessedGlobalSequences::get_from_db(&db).unwrap();
-        assert!(result.contains(&global_sequence));
     }
 
     #[test]

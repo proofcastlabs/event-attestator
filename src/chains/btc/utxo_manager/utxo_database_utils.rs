@@ -118,10 +118,7 @@ where
 {
     match maybe_get_utxo_from_db(db, &utxo_pointer) {
         None => None,
-        Some(utxo) => match utxo.maybe_pointer {
-            Some(pointer) => Some(pointer.to_vec()),
-            None => None,
-        },
+        Some(utxo) => utxo.maybe_pointer.map(|pointer| pointer.to_vec()),
     }
 }
 
