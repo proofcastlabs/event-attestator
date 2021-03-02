@@ -70,8 +70,7 @@ where
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::util::address::Address as BtcAddress;
-    use bitcoin_hashes::{sha256d, Hash};
+    use bitcoin::{hashes::Hash, util::address::Address as BtcAddress, Txid};
 
     use super::*;
     use crate::{
@@ -148,14 +147,14 @@ mod tests {
             BtcOnEthMintingParamStruct::new(
                 convert_satoshis_to_ptoken(1337),
                 hex::encode(recipient_1),
-                sha256d::Hash::hash(&[0xc0]),
+                Txid::from_hash(Hash::hash(&[0xc0])),
                 originating_address.clone(),
             )
             .unwrap(),
             BtcOnEthMintingParamStruct::new(
                 convert_satoshis_to_ptoken(666),
                 hex::encode(recipient_2),
-                sha256d::Hash::hash(&[0xc0]),
+                Txid::from_hash(Hash::hash(&[0xc0])),
                 originating_address,
             )
             .unwrap(),

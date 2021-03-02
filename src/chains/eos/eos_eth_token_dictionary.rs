@@ -1,8 +1,9 @@
 use std::{cmp::Ordering, str::FromStr};
 
 use derive_more::{Constructor, Deref, DerefMut};
-use eos_primitives::AccountName as EosAccountName;
+use eos_chain::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, U256 as EthAmount};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{

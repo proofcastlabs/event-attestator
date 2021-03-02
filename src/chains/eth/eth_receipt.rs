@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 use derive_more::{Constructor, Deref, From, Into};
 use ethereum_types::{Address as EthAddress, Bloom, H160, H256 as EthHash, U256};
 use rlp::{Encodable, RlpStream};
+use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
@@ -213,13 +214,13 @@ impl EthReceipt {
     pub fn rlp_encode(&self) -> Result<Bytes> {
         let mut rlp_stream = RlpStream::new();
         rlp_stream.append(self);
-        Ok(rlp_stream.out())
+        Ok(rlp_stream.out().to_vec())
     }
 
     fn rlp_encode_transaction_index(&self) -> Bytes {
         let mut rlp_stream = RlpStream::new();
         rlp_stream.append(&self.transaction_index.as_usize());
-        rlp_stream.out()
+        rlp_stream.out().to_vec()
     }
 
     pub fn get_rlp_encoded_receipt_and_encoded_key_tuple(&self) -> Result<(Nibbles, Bytes)> {

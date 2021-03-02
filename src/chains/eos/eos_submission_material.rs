@@ -1,7 +1,8 @@
 use std::str::FromStr;
 
 use chrono::prelude::*;
-use eos_primitives::{AccountName, BlockTimestamp, TimePoint};
+use eos_chain::{AccountName, BlockTimestamp, TimePoint};
+use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
 use crate::{

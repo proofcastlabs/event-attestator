@@ -1,4 +1,5 @@
 use derive_more::{Constructor, Deref, DerefMut};
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 
 use crate::{

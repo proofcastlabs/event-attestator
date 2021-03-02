@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::{
     constants::{CORE_IS_VALIDATING, DB_KEY_PREFIX, DEBUG_MODE},
     utils::get_core_version,

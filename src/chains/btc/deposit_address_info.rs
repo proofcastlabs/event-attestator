@@ -6,6 +6,7 @@ use bitcoin::{
     util::address::Address as BtcAddress,
 };
 use derive_more::{Constructor, Deref};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::btc::{
@@ -101,6 +102,7 @@ impl DepositAddressInfoJson {
 
 #[cfg(test)]
 use crate::types::Byte;
+
 #[cfg(test)]
 impl DepositAddressInfoJson {
     pub fn new(

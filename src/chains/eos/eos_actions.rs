@@ -1,12 +1,12 @@
 #![allow(non_snake_case)]
 use std::str::FromStr;
 
-use eos_primitives::{AccountName as EosAccountName, Asset as EosAsset, NumBytes, Read, SerializeData, Write};
+use eos_chain::{AccountName as EosAccountName, Asset as EosAsset, NumBytes, Read, SerializeData, Write};
 
 use crate::types::Bytes;
 
-#[derive(Clone, Debug, Default, Read, Write, NumBytes)]
-#[eosio_core_root_path = "eos_primitives"]
+#[derive(Clone, Debug, Read, Write, NumBytes, PartialEq, Default, SerializeData)]
+#[eosio_core_root_path = "eos_chain"]
 pub struct PTokenMintAction {
     pub to: EosAccountName,
     pub quantity: EosAsset,
@@ -31,8 +31,8 @@ impl PTokenMintAction {
     }
 }
 
-#[derive(Clone, Debug, Read, Write, NumBytes, Default)]
-#[eosio_core_root_path = "eos_primitives"]
+#[derive(Clone, Debug, Read, Write, NumBytes, Default, SerializeData)]
+#[eosio_core_root_path = "eos_chain"]
 pub struct PTokenPegOutAction {
     pub tokenContract: EosAccountName,
     pub quantity: EosAsset,
@@ -50,9 +50,6 @@ impl PTokenPegOutAction {
         })
     }
 }
-
-impl SerializeData for PTokenMintAction {}
-impl SerializeData for PTokenPegOutAction {}
 
 #[cfg(test)]
 mod tests {

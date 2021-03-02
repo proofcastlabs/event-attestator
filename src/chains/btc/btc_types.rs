@@ -9,6 +9,7 @@ pub use bitcoin::{
     hashes::sha256d,
     util::address::Address as BtcAddress,
 };
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::btc::{btc_constants::BTC_PUB_KEY_SLICE_LENGTH, deposit_address_info::DepositAddressInfoJson},

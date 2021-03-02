@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::{
     chains::btc::{
         btc_constants::BTC_TAIL_LENGTH,

@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::{
     chains::{
         eos::eos_database_utils::get_latest_eos_block_number,

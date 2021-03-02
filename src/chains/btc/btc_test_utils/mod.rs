@@ -7,6 +7,7 @@ use bitcoin::{
         transaction::{OutPoint as BtcOutPoint, Transaction as BtcTransaction, TxIn as BtcUtxo, TxOut as BtcTxOut},
     },
     hashes::{sha256d, Hash},
+    Txid,
 };
 
 use crate::{
@@ -140,9 +141,9 @@ pub fn get_sample_minting_params() -> BtcOnEthMintingParams {
     let amount_1 = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
     let amount_2 = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS + 1);
     let amount_3 = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS - 1);
-    let originating_tx_hash_1 = sha256d::Hash::hash(b"something_1");
-    let originating_tx_hash_2 = sha256d::Hash::hash(b"something_2");
-    let originating_tx_hash_3 = sha256d::Hash::hash(b"something_3");
+    let originating_tx_hash_1 = Txid::hash(b"something_1");
+    let originating_tx_hash_2 = Txid::hash(b"something_2");
+    let originating_tx_hash_3 = Txid::hash(b"something_3");
     let minting_params_1 = BtcOnEthMintingParamStruct {
         amount: amount_1,
         eth_address: eth_address_1,

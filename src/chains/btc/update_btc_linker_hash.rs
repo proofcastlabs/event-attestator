@@ -1,4 +1,4 @@
-use bitcoin_hashes::{sha256d, Hash};
+use bitcoin::{hashes::Hash, BlockHash};
 
 use crate::{
     chains::btc::{
@@ -17,10 +17,10 @@ use crate::{
 };
 
 fn calculate_linker_hash(
-    hash_to_link_to: &sha256d::Hash,
-    anchor_block_hash: &sha256d::Hash,
-    linker_hash: &sha256d::Hash,
-) -> sha256d::Hash {
+    hash_to_link_to: &BlockHash,
+    anchor_block_hash: &BlockHash,
+    linker_hash: &BlockHash,
+) -> Result<BlockHash> {
     debug!("✔ Calculating linker hash...");
     debug!("✔ Hash to link to: {}", hex::encode(hash_to_link_to));
     let mut data = Vec::new();
@@ -35,10 +35,10 @@ fn calculate_linker_hash(
         .cloned()
         .for_each(|byte| data.push(byte));
     linker_hash.to_vec().iter().cloned().for_each(|byte| data.push(byte));
-    sha256d::Hash::hash(&data)
+    Ok(BlockHash::from_slice(&data)?)
 }
 
-pub fn get_linker_hash_or_genesis_hash<D>(db: &D) -> Result<sha256d::Hash>
+pub fn get_linker_hash_or_genesis_hash<D>(db: &D) -> Result<BlockHash>
 where
     D: DatabaseInterface,
 {
@@ -49,22 +49,22 @@ where
         },
         _ => {
             trace!("✔ No BTC linker has in db, using genesis hash...");
-            Ok(sha256d::Hash::from_slice(&PTOKEN_GENESIS_HASH_KEY.to_vec())?)
+            Ok(BlockHash::from_slice(&PTOKEN_GENESIS_HASH_KEY.to_vec())?)
         },
     }
 }
 
-fn get_new_linker_hash<D>(db: &D, block_hash_to_link_to: &sha256d::Hash) -> Result<sha256d::Hash>
+fn get_new_linker_hash<D>(db: &D, block_hash_to_link_to: &BlockHash) -> Result<BlockHash>
 where
     D: DatabaseInterface,
 {
     info!("✔ Calculating new linker hash...");
     get_btc_anchor_block_from_db(db).and_then(|anchor_block| {
-        Ok(calculate_linker_hash(
+        calculate_linker_hash(
             &block_hash_to_link_to,
             &anchor_block.id,
             &get_linker_hash_or_genesis_hash(db)?,
-        ))
+        )
     })
 }
 

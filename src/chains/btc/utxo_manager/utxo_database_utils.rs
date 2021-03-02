@@ -1,4 +1,7 @@
-use bitcoin_hashes::{sha256d, Hash};
+use bitcoin::{
+    hashes::{sha256d, Hash},
+    Txid,
+};
 
 use crate::{
     chains::btc::utxo_manager::{
@@ -47,12 +50,12 @@ fn remove_utxo_pointer(utxo: &BtcUtxoAndValue) -> BtcUtxoAndValue {
 pub fn get_utxo_with_tx_id_and_v_out<D: DatabaseInterface>(
     db: &D,
     v_out: u32,
-    tx_id: &sha256d::Hash,
+    tx_id: &Txid,
 ) -> Result<BtcUtxoAndValue> {
     fn find_utxo_recursively<D: DatabaseInterface>(
         db: &D,
         v_out: u32,
-        tx_id: &sha256d::Hash,
+        tx_id: &Txid,
         mut utxos: Vec<BtcUtxoAndValue>,
     ) -> Result<(Option<BtcUtxoAndValue>, BtcUtxosAndValues)> {
         match get_first_utxo_and_value(db) {

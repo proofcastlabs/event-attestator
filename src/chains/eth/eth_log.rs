@@ -1,6 +1,7 @@
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, Bloom, BloomInput, H256 as EthHash};
 use rlp::{Encodable, RlpStream};
+use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
 
 use crate::{

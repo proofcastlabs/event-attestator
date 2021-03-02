@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::{
     chains::eos::{
         eos_constants::EOS_CORE_IS_INITIALIZED_JSON,
@@ -53,7 +55,7 @@ impl EosInitJson {
 
     #[cfg(test)]
     pub fn validate(&self) {
-        use eos_primitives::Checksum256;
+        use eos_chain::Checksum256;
         let msig_enabled = match &self.maybe_protocol_features_to_enable {
             None => false,
             Some(features) => features.contains(&hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)),

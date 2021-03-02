@@ -1,13 +1,12 @@
 use core::default::Default;
 
-use eos_primitives::{Checksum256, NumBytes, Read, Write};
-#[cfg(feature = "std")]
+use eos_chain::{Checksum256, NumBytes, Read, Write};
 use serde::{Deserialize, Serialize};
 
 use crate::chains::eos::eos_producer_key::{EosProducerKeyV1, EosProducerKeyV2};
 
 #[derive(Read, Write, NumBytes, Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[eosio_core_root_path = "eos_primitives"]
+#[eosio_core_root_path = "eos_chain"]
 #[repr(C)]
 pub struct EosProducerScheduleV2 {
     pub version: u32,
@@ -30,7 +29,7 @@ impl Default for EosProducerScheduleV2 {
 }
 
 #[derive(Deserialize, Serialize, Read, Write, NumBytes, Clone, Default, Debug, PartialEq)]
-#[eosio_core_root_path = "eos_primitives"]
+#[eosio_core_root_path = "eos_chain"]
 pub struct EosProducerScheduleV1 {
     pub version: u32,
     pub producers: Vec<EosProducerKeyV1>,

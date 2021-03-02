@@ -6,12 +6,13 @@ use bitcoin::{
         transaction::{Transaction as BtcTransaction, TxIn as BtcTxIn, TxOut as BtcTxOut},
     },
     consensus::encode::serialize as btc_serialize,
-    hashes::sha256d,
     network::constants::Network as BtcNetwork,
     util::{address::Address as BtcAddress, key::PublicKey as BtcPublicKey},
+    Txid,
 };
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, U256};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     btc_on_eth::utils::convert_satoshis_to_ptoken,
@@ -167,7 +168,7 @@ impl BtcOnEthMintingParams {
 pub struct BtcOnEthMintingParamStruct {
     pub amount: U256,
     pub eth_address: EthAddress,
-    pub originating_tx_hash: sha256d::Hash,
+    pub originating_tx_hash: Txid,
     pub originating_tx_address: String,
 }
 
@@ -175,7 +176,7 @@ impl BtcOnEthMintingParamStruct {
     pub fn new(
         amount: U256,
         eth_address_hex: String,
-        originating_tx_hash: sha256d::Hash,
+        originating_tx_hash: Txid,
         originating_tx_address: BtcAddress,
     ) -> Result<BtcOnEthMintingParamStruct> {
         Ok(BtcOnEthMintingParamStruct {
@@ -201,16 +202,16 @@ impl BtcOnEthMintingParamStruct {
         info!("✔ Extracting spender address from OP_RETURN input...");
         Ok(input
             .script_sig
-            .iter(false)
-            .enumerate()
-            .filter(|(i, _)| i == &1)
-            .map(|(_, script_instruction)| -> Result<BtcAddress> {
-                let byte = [0u8];
-                let data = match script_instruction {
+            .instructions_minimal()
+            .skip(1)
+            .map(|script_instruction| -> Result<BtcAddress> {
+                let instruction = script_instruction?;
+                const BYTE: [u8; 1] = [0u8];
+                let data = match instruction {
                     Instruction::PushBytes(bytes) => bytes,
-                    _ => &byte,
+                    _ => &BYTE,
                 };
-                info!("✔ Instruction: {:?}", script_instruction);
+                info!("✔ Instruction: {:?}", instruction);
                 info!("✔ data: {:?}", data);
                 Ok(BtcAddress::p2pkh(&BtcPublicKey::from_slice(data)?, btc_network))
             })
@@ -279,7 +280,7 @@ impl BtcOnEthMintingParamStruct {
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::{hashes::sha256d, util::address::Address as BtcAddress};
+    use bitcoin::util::address::Address as BtcAddress;
     use ethereum_types::H160 as EthAddress;
 
     use super::*;
@@ -376,9 +377,9 @@ mod tests {
         let expected_eth_address_2 =
             EthAddress::from_slice(&hex::decode("7344d31d7025f72bd1d3c08645fa6b12d406fc05").unwrap()[..]);
         let expected_originating_tx_hash_1 =
-            sha256d::Hash::from_str("ee022f1be2981fbdd51f7c7ac2e07c1233bb7806e481df9c52b8077a628b2ea8").unwrap();
+            Txid::from_str("ee022f1be2981fbdd51f7c7ac2e07c1233bb7806e481df9c52b8077a628b2ea8").unwrap();
         let expected_originating_tx_hash_2 =
-            sha256d::Hash::from_str("130a150ff71f8cabf02d4315f7d61f801ced234c7fcc3144d858816033578110").unwrap();
+            Txid::from_str("130a150ff71f8cabf02d4315f7d61f801ced234c7fcc3144d858816033578110").unwrap();
         let pub_key_slice = convert_bytes_to_btc_pub_key_slice(
             &hex::decode("03a3bea6d8d15a38d9c96074d994c788bc1286d557ef5bdbb548741ddf265637ce").unwrap(),
         )

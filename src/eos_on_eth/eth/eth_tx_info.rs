@@ -1,10 +1,5 @@
 use derive_more::{Constructor, Deref};
-use eos_primitives::{
-    AccountName as EosAccountName,
-    Action as EosAction,
-    PermissionLevel,
-    Transaction as EosTransaction,
-};
+use eos_chain::{AccountName as EosAccountName, Action as EosAction, PermissionLevel, Transaction as EosTransaction};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{

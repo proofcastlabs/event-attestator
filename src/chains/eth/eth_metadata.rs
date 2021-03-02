@@ -2,7 +2,8 @@ use std::{fmt, str, str::FromStr};
 
 #[cfg(test)]
 use bitcoin::hashes::Hash;
-use bitcoin::{hashes::sha256d, util::address::Address as BtcAddress};
+use bitcoin::{util::address::Address as BtcAddress, Txid};
+use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
 use crate::errors::AppError;
@@ -46,7 +47,7 @@ impl fmt::Display for EthMetadataVersion {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EthMetadataFromBtc {
     pub version: EthMetadataVersion,
-    pub originating_tx_hash: sha256d::Hash,
+    pub originating_tx_hash: Txid,
     pub originating_tx_address: Option<BtcAddress>,
 }
 
@@ -101,8 +102,8 @@ impl EthMetadataFromBtc {
     }
 
     #[cfg(test)]
-    fn get_sha_hash_from_bytes(bytes: &[Byte]) -> Result<sha256d::Hash> {
-        match sha256d::Hash::from_slice(&Self::reverse_endianess_of_bytes(bytes)) {
+    fn get_sha_hash_from_bytes(bytes: &[Byte]) -> Result<Txid> {
+        match Txid::from_slice(&Self::reverse_endianess_of_bytes(bytes)) {
             Ok(hash) => Ok(hash),
             Err(err) => Err(format!("✘ Error extracting hash from bytes in `EthMetadataVersion`: {}", err).into()),
         }
@@ -151,7 +152,6 @@ impl EthMetadataFromBtc {
 
 #[cfg(test)]
 mod tests {
-    use bitcoin::hashes::Hash;
     use ethereum_types::Address as EthAddress;
 
     use super::*;
@@ -161,7 +161,7 @@ mod tests {
         let originating_tx_address = "moBSQbHn7N9BC9pdtAMnA7GBiALzNMQJyE".to_string();
         let eth_address = EthAddress::from_str(&"fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap();
         let amount = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
-        let originating_tx_hash = sha256d::Hash::hash(b"something to hash");
+        let originating_tx_hash = Hash::hash(b"something to hash");
         BtcOnEthMintingParamStruct {
             amount,
             eth_address,

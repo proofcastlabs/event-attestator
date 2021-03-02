@@ -1,10 +1,11 @@
 #![cfg(test)]
 use std::{fs::read_to_string, path::Path};
 
-use bitcoin_hashes::{sha256, Hash as HashTrait};
-use eos_primitives::{NumBytes, Write};
+use bitcoin::hashes::{sha256, Hash as HashTrait};
+use eos_chain::{NumBytes, Write};
 use ethereum_types::Address as EthAddress;
 use secp256k1::Message as Secp256k1Message;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eos::{
@@ -383,7 +384,7 @@ fn get_sample_action_receipts() -> Vec<EosActionReceipt> {
     ]
 }
 
-pub fn get_sample_action_digests() -> Vec<Bytes> {
+pub fn get_sample_action_digests() -> Result<Vec<Bytes>> {
     get_sample_action_receipts()
         .into_iter()
         .map(|receipt| receipt.to_digest())

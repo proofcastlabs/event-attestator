@@ -1,7 +1,8 @@
 use std::str::from_utf8;
 
 use derive_more::{Constructor, Deref};
-use eos_primitives::{AccountName as EosAccountName, Checksum256};
+use eos_chain::{AccountName as EosAccountName, Checksum256};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{

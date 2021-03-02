@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use eos_primitives::{
+use eos_chain::{
     AccountName as EosAccountName,
     AccountName,
     Action as EosAction,
@@ -9,6 +9,7 @@ use eos_primitives::{
     PermissionLevel,
     SerializeData,
 };
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eos::{
@@ -53,8 +54,8 @@ impl EosActionProof {
         self.action_receipt.global_sequence
     }
 
-    pub fn get_serialized_action(&self) -> Bytes {
-        self.action.to_serialize_data()
+    pub fn get_serialized_action(&self) -> Result<Bytes> {
+        Ok(self.action.to_serialize_data()?)
     }
 
     pub fn get_action_sender(&self) -> Result<EosAccountName> {
@@ -197,7 +198,7 @@ mod tests {
     #[test]
     fn should_get_serialized_action_from_proof() {
         let proof = get_sample_action_proof();
-        let result = proof.get_serialized_action();
+        let result = proof.get_serialized_action().unwrap();
         let expected_result = "d07b9f0ad28cf2a90000000048a592ba01a0e23119abbce9ad00000000a8ed32323ba0e23119abbce9adf7130000000000000850464646000000226d75647a7843713961435134556e61394d6d6179764a56434631546a39667970694d";
         assert_eq!(hex::encode(result), expected_result);
     }
