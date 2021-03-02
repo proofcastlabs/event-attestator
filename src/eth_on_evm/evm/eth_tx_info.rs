@@ -301,7 +301,7 @@ pub fn filter_submission_material_for_redeem_events_in_state<D: DatabaseInterfac
         .and_then(|filtered_submission_material| state.update_eth_submission_material(filtered_submission_material))
 }
 
-pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EvmState<D>) -> Result<EvmState<D>> {
+pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EvmState<D>) -> Result<EvmState<D>> {
     if state.eth_on_evm_eth_tx_infos.is_empty() {
         info!("✔ No tx infos in state ∴ no ETH transactions to sign!");
         Ok(state)

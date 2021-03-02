@@ -10,7 +10,7 @@ use crate::{
     types::Result,
 };
 
-pub fn increment_eth_account_nonce_and_return_evm_state<D: DatabaseInterface>(
+pub fn maybe_increment_eth_account_nonce_and_return_evm_state<D: DatabaseInterface>(
     state: EvmState<D>,
 ) -> Result<EvmState<D>> {
     let num_txs = state.eth_on_evm_eth_signed_txs.len();

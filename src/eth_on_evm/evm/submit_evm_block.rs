@@ -8,7 +8,7 @@ use crate::{
         },
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
-        increment_eth_account_nonce_and_return_evm_state::increment_eth_account_nonce_and_return_evm_state,
+        increment_eth_account_nonce_and_return_evm_state::maybe_increment_eth_account_nonce_and_return_evm_state,
         remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
         remove_receipts_from_canon_block::maybe_remove_receipts_from_canon_block_and_return_state,
         update_eth_canon_block_hash::maybe_update_eth_canon_block_hash_and_return_state,
@@ -26,7 +26,7 @@ use crate::{
                 filter_out_zero_value_tx_infos_from_state,
                 filter_submission_material_for_redeem_events_in_state,
                 maybe_parse_tx_info_from_canon_block_and_add_to_state,
-                maybe_sign_evm_txs_and_add_to_eth_state,
+                maybe_sign_eth_txs_and_add_to_evm_state,
             },
             get_evm_output_json::get_evm_output_json,
         },
@@ -59,8 +59,8 @@ pub fn submit_evm_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(maybe_update_eth_linker_hash_and_return_state)
         .and_then(maybe_parse_tx_info_from_canon_block_and_add_to_state)
         .and_then(filter_out_zero_value_tx_infos_from_state)
-        .and_then(maybe_sign_evm_txs_and_add_to_eth_state)
-        .and_then(increment_eth_account_nonce_and_return_evm_state)
+        .and_then(maybe_sign_eth_txs_and_add_to_evm_state)
+        .and_then(maybe_increment_eth_account_nonce_and_return_evm_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)
         .and_then(maybe_remove_receipts_from_canon_block_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)

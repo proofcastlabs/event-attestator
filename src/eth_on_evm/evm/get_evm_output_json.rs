@@ -23,7 +23,7 @@ use crate::{
 };
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct EthOutput {
+pub struct EvmOutput {
     pub evm_latest_block_number: usize,
     pub eth_signed_transactions: Vec<EthTxInfo>,
 }
@@ -85,7 +85,7 @@ impl EthTxInfo {
     }
 }
 
-pub fn get_evm_signed_tx_info_from_evm_txs(
+pub fn get_eth_signed_tx_info_from_evm_txs(
     txs: &[EthTransaction],
     evm_tx_info: &EthOnEvmEthTxInfos,
     eth_account_nonce: u64,
@@ -115,12 +115,12 @@ pub fn get_evm_signed_tx_info_from_evm_txs(
 
 pub fn get_evm_output_json<D: DatabaseInterface>(state: EvmState<D>) -> Result<String> {
     info!("✔ Getting EVM output json...");
-    let output = serde_json::to_string(&EthOutput {
+    let output = serde_json::to_string(&EvmOutput {
         evm_latest_block_number: get_latest_evm_block_number(&state.db)?,
         eth_signed_transactions: if state.eth_on_evm_eth_signed_txs.is_empty() {
             vec![]
         } else {
-            get_evm_signed_tx_info_from_evm_txs(
+            get_eth_signed_tx_info_from_evm_txs(
                 &state.eth_on_evm_eth_signed_txs,
                 &state.eth_on_evm_eth_tx_infos,
                 get_evm_account_nonce_from_db(&state.db)?,
