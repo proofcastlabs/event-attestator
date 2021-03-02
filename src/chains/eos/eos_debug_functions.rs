@@ -9,7 +9,6 @@ use crate::{
                 EosInitJson,
             },
             eos_database_utils::put_eos_schedule_in_db,
-            eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
             eos_global_sequences::{GlobalSequences, ProcessedGlobalSequences},
             parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
         },
