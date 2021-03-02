@@ -266,8 +266,8 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                     submission_material.receipts.len()
                 );
                 EthEvmTokenDictionary::get_from_db(&state.db)
-                    .and_then(|account_names| {
-                        EthOnEvmEvmTxInfos::from_submission_material(&submission_material, &account_names)
+                    .and_then(|ref dictionary| {
+                        EthOnEvmEvmTxInfos::from_submission_material(&submission_material, dictionary)
                     })
                     .and_then(|tx_infos| state.add_eth_on_evm_evm_tx_infos(tx_infos))
             },

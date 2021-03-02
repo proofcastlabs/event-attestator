@@ -5,15 +5,15 @@ use crate::{
         eth::{
             any_sender::relay_transaction::RelayTransaction,
             eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::{
-                get_any_sender_nonce_from_db,
-                get_eth_account_nonce_from_db,
-                get_latest_eth_block_number,
-            },
+            eth_database_utils::get_latest_eth_block_number,
             eth_state::EthState,
             eth_traits::EthTxInfoCompatible,
         },
-        evm::eth_database_utils::get_latest_eth_block_number as get_latest_evm_block_number,
+        evm::eth_database_utils::{
+            get_any_sender_nonce_from_db as get_evm_any_sender_nonce_from_db,
+            get_eth_account_nonce_from_db as get_evm_account_nonce_from_db,
+            get_latest_eth_block_number as get_latest_evm_block_number,
+        },
     },
     eth_on_evm::eth::evm_tx_info::{EthOnEvmEvmTxInfo, EthOnEvmEvmTxInfos},
     traits::DatabaseInterface,
@@ -121,9 +121,9 @@ pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
             get_evm_signed_tx_info_from_evm_txs(
                 &state.eth_on_evm_evm_signed_txs,
                 &state.eth_on_evm_evm_tx_infos,
-                get_eth_account_nonce_from_db(&state.db)?,
+                get_evm_account_nonce_from_db(&state.db)?,
                 false, // TODO Get this from state submission material when/if we support AnySender
-                get_any_sender_nonce_from_db(&state.db)?,
+                get_evm_any_sender_nonce_from_db(&state.db)?,
                 get_latest_evm_block_number(&state.db)?,
             )?
         },
