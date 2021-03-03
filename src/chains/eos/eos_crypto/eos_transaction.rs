@@ -1,5 +1,6 @@
 use derive_more::{Constructor, Deref};
-use eos_primitives::{Action as EosAction, PermissionLevel, SerializeData, Transaction as EosTransaction};
+use eos_chain::{Action as EosAction, PermissionLevel, SerializeData, Transaction as EosTransaction};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eos::{
@@ -23,7 +24,7 @@ pub struct EosSignedTransaction {
 
 impl EosSignedTransaction {
     fn get_signing_data_from_unsigned_tx(unsigned_tx: &EosTransaction, chain_id: &str) -> Result<Bytes> {
-        Ok([hex::decode(chain_id)?, unsigned_tx.to_serialize_data(), vec![0u8; 32]].concat())
+        Ok([hex::decode(chain_id)?, unsigned_tx.to_serialize_data()?, vec![0u8; 32]].concat())
     }
 
     pub fn from_unsigned_tx(
@@ -39,7 +40,7 @@ impl EosSignedTransaction {
             eos_private_key
                 .sign_message_bytes(&Self::get_signing_data_from_unsigned_tx(unsigned_tx, chain_id)?)?
                 .to_string(),
-            hex::encode(&unsigned_tx.to_serialize_data()[..]),
+            hex::encode(&unsigned_tx.to_serialize_data()?[..]),
         ))
     }
 }

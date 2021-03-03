@@ -1,5 +1,6 @@
 use ethereum_types::{Address as EthAddress, Bloom, H256 as EthHash, U256};
 use rlp::{Encodable, RlpStream};
+use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
@@ -107,7 +108,7 @@ impl EthBlock {
     pub fn rlp_encode(&self) -> Result<Bytes> {
         let mut rlp_stream = RlpStream::new();
         rlp_stream.append(self);
-        Ok(rlp_stream.out())
+        Ok(rlp_stream.out().to_vec())
     }
 
     pub fn hash(&self) -> Result<EthHash> {

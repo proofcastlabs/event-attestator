@@ -1,8 +1,10 @@
 use bitcoin::{
     blockdata::transaction::TxIn as BtcUtxo,
+    hash_types::Txid,
     hashes::{sha256d, Hash},
 };
 use derive_more::{Constructor, Deref, DerefMut, From, Into, IntoIterator};
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
@@ -76,7 +78,7 @@ impl BtcUtxoAndValue {
         self
     }
 
-    pub fn get_tx_id(&self) -> Result<sha256d::Hash> {
+    pub fn get_tx_id(&self) -> Result<Txid> {
         Ok(self.get_utxo()?.previous_output.txid)
     }
 

@@ -1,6 +1,7 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     btc_on_eth::eth::redeem_info::{BtcOnEthRedeemInfo, BtcOnEthRedeemInfos},

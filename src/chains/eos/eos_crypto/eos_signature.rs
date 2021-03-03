@@ -1,8 +1,12 @@
 use std::{fmt, str::FromStr};
 
-use secp256k1::recovery::{RecoverableSignature, RecoveryId};
+use bitcoin::util::base58;
+use secp256k1::{
+    recovery::{RecoverableSignature, RecoveryId},
+    Error::InvalidSignature,
+};
 
-use crate::{base58, chains::eos::eos_hash::ripemd160, errors::AppError, types::Result};
+use crate::{chains::eos::eos_hash::ripemd160, errors::AppError, types::Result};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct EosSignature(pub RecoverableSignature);
@@ -18,7 +22,7 @@ impl FromStr for EosSignature {
 
     fn from_str(string: &str) -> Result<EosSignature> {
         if !string.starts_with("SIG_K1_") {
-            return Err(AppError::CryptoError(secp256k1::Error::InvalidSignature));
+            return Err(AppError::CryptoError(InvalidSignature));
         }
         let string_hex = base58::from(&string[7..])?;
         let recid = match RecoveryId::from_i32((string_hex[0] - 4 - 27) as i32) {

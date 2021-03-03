@@ -1,11 +1,11 @@
 use derive_more::{Constructor, Deref};
-use eos_primitives::{NumBytes, Read, Write};
+use eos_chain::{NumBytes, Read, Write};
 use serde::{Deserialize, Serialize};
 
 #[derive(
-    Deserialize, Serialize, Read, Write, NumBytes, PartialEq, Eq, PartialOrd, Ord, Debug, Clone, Hash, Default,
+    Read, Write, Deserialize, Serialize, NumBytes, PartialEq, Eq, PartialOrd, Ord, Debug, Clone, Hash, Default,
 )]
-#[eosio_core_root_path = "eos_primitives"]
+#[eosio_core_root_path = "eos_chain"]
 pub struct EosExtension(pub u16, pub Vec<u8>);
 
 impl EosExtension {

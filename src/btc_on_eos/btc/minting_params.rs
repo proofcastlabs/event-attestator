@@ -2,12 +2,13 @@ use std::str::FromStr;
 
 use bitcoin::{
     blockdata::transaction::Transaction as BtcTransaction,
-    hashes::sha256d,
     network::constants::Network as BtcNetwork,
     util::address::Address as BtcAddress,
+    Txid,
 };
 use derive_more::{Constructor, Deref, DerefMut};
-use eos_primitives::AccountName as EosAccountName;
+use eos_chain::AccountName as EosAccountName;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     btc_on_eos::utils::convert_u64_to_8_decimal_eos_asset,
@@ -177,7 +178,7 @@ impl BtcOnEosMintingParamStruct {
     pub fn new(
         amount: u64,
         to: String,
-        originating_tx_hash: sha256d::Hash,
+        originating_tx_hash: Txid,
         originating_tx_address: BtcAddress,
         symbol: &str,
     ) -> BtcOnEosMintingParamStruct {

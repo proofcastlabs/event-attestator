@@ -1,7 +1,8 @@
 // TODO Move this mod to the new eos_schedule one and impl on the types etc.
 use std::str::FromStr;
 
-use eos_primitives::{AccountName as EosAccountName, PublicKey as EosPublicKey};
+use eos_chain::{AccountName as EosAccountName, PublicKey as EosPublicKey};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eos::{

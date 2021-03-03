@@ -1,9 +1,9 @@
 use std::{fmt, io, str::FromStr};
 
-use secp256k1::{self, key::PublicKey, Secp256k1};
+use bitcoin::util::base58;
+use secp256k1::{self, key::PublicKey, Error::InvalidPublicKey, Secp256k1};
 
 use crate::{
-    base58,
     chains::eos::{
         eos_constants::{PUBLIC_KEY_CHECKSUM_SIZE, PUBLIC_KEY_SIZE, PUBLIC_KEY_WITH_CHECKSUM_SIZE},
         eos_crypto::eos_signature::EosSignature,
@@ -46,7 +46,7 @@ impl EosPublicKey {
         };
         Ok(EosPublicKey {
             compressed,
-            public_key: secp256k1::key::PublicKey::from_slice(data)?,
+            public_key: PublicKey::from_slice(data)?,
         })
     }
 
@@ -76,7 +76,7 @@ impl FromStr for EosPublicKey {
 
     fn from_str(s: &str) -> Result<EosPublicKey> {
         if !s.starts_with("EOS") {
-            return Err(AppError::CryptoError(secp256k1::Error::InvalidPublicKey));
+            return Err(AppError::CryptoError(InvalidPublicKey));
         }
         let s_hex = base58::from(&s[3..])?;
         let raw = &s_hex[..PUBLIC_KEY_SIZE];
@@ -93,7 +93,7 @@ impl FromStr for EosPublicKey {
 mod test {
     use std::str::FromStr;
 
-    use bitcoin_hashes::{sha256, Hash};
+    use bitcoin::hashes::{sha256, Hash};
     use secp256k1::Message;
 
     use super::*;
@@ -140,7 +140,7 @@ mod test {
     fn should_error_getting_public_key_from_invalid_str() {
         let invalid_str = "not-a-valid-public-key";
         match EosPublicKey::from_str(invalid_str) {
-            Err(AppError::CryptoError(e)) => assert_eq!(e, secp256k1::Error::InvalidPublicKey),
+            Err(AppError::CryptoError(e)) => assert_eq!(e, InvalidPublicKey),
             Ok(_) => panic!("SHould not have succeeded!"),
             Err(e) => panic!("Wrong error received: {}", e),
         }

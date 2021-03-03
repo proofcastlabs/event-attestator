@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use eos_primitives::{AccountName as EosAccountName, Checksum256};
+use eos_chain::{AccountName as EosAccountName, Checksum256};
 
 use crate::{
     chains::eos::{

@@ -1,6 +1,7 @@
 use ethabi::{encode, Token};
 use ethereum_types::{Address as EthAddress, Signature as EthSignature, U256};
 use rlp::RlpStream;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eth::{
@@ -230,7 +231,7 @@ impl EthTxInfoCompatible for RelayTransaction {
         rlp_stream.append(&self.chain_id);
         rlp_stream.append(&self.relay_contract_address);
         rlp_stream.append(&self.signature);
-        rlp_stream.out()
+        rlp_stream.out().to_vec()
     }
 }
 

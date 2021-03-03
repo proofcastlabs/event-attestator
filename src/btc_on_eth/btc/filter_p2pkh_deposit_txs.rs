@@ -92,7 +92,10 @@ pub fn filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state<D:
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::hashes::{sha256d, Hash};
+    use bitcoin::{
+        hashes::{sha256d, Hash},
+        Txid,
+    };
 
     use super::*;
     use crate::chains::btc::{
@@ -141,7 +144,7 @@ mod tests {
     #[test]
     fn should_not_filter_out_external_p2pkh_deposits() {
         let expected_prev_id =
-            sha256d::Hash::from_str("65c5ea468d8a51e6f9120076ff0f5717b8fd1547e6311d5f89f85b21291da96f").unwrap();
+            Txid::from_str("65c5ea468d8a51e6f9120076ff0f5717b8fd1547e6311d5f89f85b21291da96f").unwrap();
         let expected_num_txs = 1;
         let block_and_id = get_block_with_external_p2pkh_deposit_tx();
         let sample_pub_key_hash = get_sample_btc_pub_key_slice();

@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
-use bitcoin_hashes::{sha256, Hash};
-use eos_primitives::{AccountName as EosAccountName, PublicKey as EosProducerKey};
+use bitcoin::hashes::{sha256, Hash};
+use eos_chain::{AccountName as EosAccountName, PublicKey as EosProducerKey};
 use secp256k1::Message;
 
 use crate::{
@@ -183,7 +183,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use eos_primitives::Checksum256;
+    use eos_chain::Checksum256;
 
     use super::*;
     use crate::chains::eos::{

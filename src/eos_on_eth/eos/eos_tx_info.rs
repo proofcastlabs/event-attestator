@@ -1,7 +1,7 @@
 use std::str::from_utf8;
 
 use derive_more::{Constructor, Deref};
-use eos_primitives::{
+use eos_chain::{
     symbol::symbol_to_string as eos_symbol_to_string,
     AccountName as EosAccountName,
     Checksum256,
@@ -9,6 +9,7 @@ use eos_primitives::{
     Symbol as EosSymbol,
 };
 use ethereum_types::{Address as EthAddress, U256};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{
@@ -73,18 +74,18 @@ impl EosOnEthEosTxInfo {
     }
 
     fn get_action_name_from_proof(proof: &EosActionProof) -> Result<EosName> {
-        let serialized_action = proof.get_serialized_action();
+        let serialized_action = proof.get_serialized_action()?;
         if serialized_action.len() < 15 {
             Err("Not enough data to parse `EosOnEthEosTxInfo` action name from proof!".into())
         } else {
-            let result = EosName::new(convert_bytes_to_u64(&proof.get_serialized_action()[8..=15])?);
+            let result = EosName::new(convert_bytes_to_u64(&proof.get_serialized_action()?[8..=15])?);
             debug!("✔ Action name parsed from action proof: {}", result);
             Ok(result)
         }
     }
 
     fn get_action_sender_account_name_from_proof(proof: &EosActionProof) -> Result<EosAccountName> {
-        let serialized_action = proof.get_serialized_action();
+        let serialized_action = proof.get_serialized_action()?;
         if serialized_action.len() < 7 {
             Err("Not enough data to parse `EosOnEthEosTxInfo` action sender from proof!".into())
         } else {

@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::{
     chains::eos::eos_database_utils::put_eos_enabled_protocol_features_in_db,
     traits::DatabaseInterface,

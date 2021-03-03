@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::{
     btc_on_eos::check_core_is_initialized::check_core_is_initialized,
     chains::{

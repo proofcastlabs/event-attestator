@@ -1,6 +1,7 @@
 use std::fmt;
 
-use eos_primitives::{Checksum256, PermissionLevel as EosPermissionLevel};
+use eos_chain::{Checksum256, PermissionLevel as EosPermissionLevel};
+use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
 pub type PermissionLevels = Vec<EosPermissionLevel>;

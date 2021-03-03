@@ -7,6 +7,7 @@ pub use bitcoin::{
     hashes::sha256d,
     util::address::Address as BtcAddress,
 };
+use serde::Deserialize;
 
 use crate::{
     chains::btc::{
@@ -58,10 +59,10 @@ impl BtcSubmissionMaterialJson {
 
     pub fn to_btc_block(&self) -> Result<BtcBlock> {
         info!("✔ Parsing `BtcSubmissionMaterialJson` to `BtcBlock`...");
-        Ok(BtcBlock::new(
-            self.block.to_block_header()?,
-            Self::convert_hex_txs_to_btc_transactions(self.transactions.clone())?,
-        ))
+        Ok(BtcBlock {
+            header: self.block.to_block_header()?,
+            txdata: Self::convert_hex_txs_to_btc_transactions(self.transactions.clone())?,
+        })
     }
 
     pub fn from_str(string: &str) -> Result<Self> {

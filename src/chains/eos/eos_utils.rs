@@ -1,5 +1,5 @@
-use bitcoin_hashes::{sha256, Hash};
-use eos_primitives::{Action as EosAction, Checksum256, SerializeData};
+use bitcoin::hashes::{sha256, Hash};
+use eos_chain::{Action as EosAction, Checksum256, SerializeData};
 
 use crate::{
     chains::eos::eos_constants::EOS_SCHEDULE_DB_PREFIX,
@@ -29,8 +29,8 @@ pub fn remove_symbol_from_eos_asset(eos_asset: &str) -> &str {
     eos_asset.split_whitespace().collect::<Vec<&str>>()[0]
 }
 
-pub fn get_digest_from_eos_action(action: &EosAction) -> Bytes {
-    sha256::Hash::hash(&action.to_serialize_data()).to_vec()
+pub fn get_digest_from_eos_action(action: &EosAction) -> Result<Bytes> {
+    Ok(sha256::Hash::hash(&action.to_serialize_data()?).to_vec())
 }
 
 #[cfg(test)]

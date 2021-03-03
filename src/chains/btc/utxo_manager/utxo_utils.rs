@@ -1,5 +1,8 @@
-use bitcoin::{blockdata::transaction::TxIn as BtcUtxo, consensus::encode::deserialize as btc_deserialize};
-use bitcoin_hashes::{sha256d, Hash};
+use bitcoin::{
+    blockdata::transaction::TxIn as BtcUtxo,
+    consensus::encode::deserialize as btc_deserialize,
+    hashes::{sha256d, Hash},
+};
 use serde_json::{json, Value as JsonValue};
 
 use crate::{

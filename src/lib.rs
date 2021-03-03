@@ -26,7 +26,6 @@ pub mod errors;
 pub mod traits;
 pub mod types;
 
-mod base58;
 mod check_debug_mode;
 mod constants;
 mod crypto_utils;
@@ -44,7 +43,5 @@ extern crate simple_logger;
 extern crate log;
 #[macro_use]
 extern crate lazy_static;
-#[macro_use]
-extern crate serde_derive;
 #[macro_use]
 extern crate quick_error;

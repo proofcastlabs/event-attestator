@@ -1,6 +1,9 @@
 use std::{fmt, str::FromStr};
 
-use bitcoin_hashes::{sha256, Hash as HashTrait};
+use bitcoin::{
+    hashes::{sha256, Hash as HashTrait},
+    util::base58,
+};
 use secp256k1::{
     key::{PublicKey, SecretKey, ONE_KEY},
     Message,
@@ -8,7 +11,6 @@ use secp256k1::{
 };
 
 use crate::{
-    base58,
     chains::eos::{
         eos_constants::EOS_PRIVATE_KEY_DB_KEY,
         eos_crypto::{eos_public_key::EosPublicKey, eos_signature::EosSignature},
@@ -138,7 +140,7 @@ impl Drop for EosPrivateKey {
 
 #[cfg(test)]
 mod test {
-    use bitcoin_hashes::{sha256, Hash as HashTrait};
+    use bitcoin::hashes::{sha256, Hash as HashTrait};
 
     use super::*;
     use crate::{

@@ -1,4 +1,4 @@
-use tiny_keccak::keccak256;
+use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
     constants::{CORE_VERSION, DB_KEY_PREFIX, DEBUG_OUTPUT_MARKER, U64_NUM_BYTES},
@@ -21,7 +21,11 @@ pub fn truncate_str(s: &str, num_chars: usize) -> &str {
 }
 
 pub fn get_prefixed_db_key(suffix: &str) -> [u8; 32] {
-    keccak256(format!("{}{}", DB_KEY_PREFIX.to_string(), suffix).as_bytes())
+    let mut keccak = Keccak::v256();
+    let mut hashed = [0u8; 32];
+    keccak.update(format!("{}{}", DB_KEY_PREFIX.to_string(), suffix).as_bytes());
+    keccak.finalize(&mut hashed);
+    hashed
 }
 
 pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
