@@ -11,6 +11,7 @@ use crate::{
             eth_database_utils::get_latest_eth_block_number,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
+            eth_utils::convert_hex_to_address,
             increment_evm_account_nonce::maybe_increment_evm_account_nonce_and_return_eth_state,
             remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
             remove_receipts_from_canon_block::maybe_remove_receipts_from_canon_block_and_return_state,
@@ -45,9 +46,11 @@ use crate::{
         get_eth_evm_token_dictionary_from_db_and_add_to_eth_state,
         get_eth_evm_token_dictionary_from_db_and_add_to_evm_state,
         EthEvmTokenDictionary,
+        EthEvmTokenDictionaryEntry,
     },
     eth_on_evm::{
         check_core_is_initialized::{
+            check_core_is_initialized,
             check_core_is_initialized_and_return_eth_state,
             check_core_is_initialized_and_return_evm_state,
         },
@@ -243,4 +246,44 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
             get_key_from_db(db, key, sensitivity)
         })
         .map(prepend_debug_output_marker_to_string)
+}
+
+/// # Debug Add Dictionary Entry
+///
+/// This function will add an entry to the `EthEvmTokenDictionary` held in the encrypted database. The
+/// dictionary defines the relationship between ETH token addresses and the address of their pTokenized,
+/// EVM-compliant counterparts.
+///
+/// The required format of an entry is:
+/// {
+///     "eth_symbol": <symbol>,
+///     "evm_symbol": <symbol>,
+///     "eth_address": <address>,
+///     "evm_address": <address>,
+/// }
+pub fn debug_add_dictionary_entry<D: DatabaseInterface>(db: D, json_str: &str) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
+        .and_then(|dictionary| dictionary.add_and_update_in_db(EthEvmTokenDictionaryEntry::from_str(json_str)?, &db))
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({"add_dictionary_entry_success:":"true"}).to_string())
+}
+
+/// # Debug Remove Dictionary Entry
+///
+/// This function will remove an entry pertaining to the passed in ETH address from the
+/// `EthEvmTokenDictionaryEntry` held in the encrypted database, should that entry exist. If it is
+/// not extant, nothing is changed.
+pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
+        .and_then(|dictionary| {
+            dictionary.remove_entry_via_eth_address_and_update_in_db(&convert_hex_to_address(eth_address_str)?, &db)
+        })
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({"remove_dictionary_entry_success:":"true"}).to_string())
 }
