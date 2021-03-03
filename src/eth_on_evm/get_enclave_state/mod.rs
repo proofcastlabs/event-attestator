@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{eth::eth_enclave_state::EthEnclaveState, evm::eth_enclave_state::EthEnclaveState as EvmEnclaveState},
+    dictionaries::eth_evm::EthEvmTokenDictionary,
     enclave_info::EnclaveInfo,
     eth_on_evm::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
@@ -13,6 +14,7 @@ struct EnclaveState {
     info: EnclaveInfo,
     eth: EthEnclaveState,
     evm: EvmEnclaveState,
+    token_dictionary: EthEvmTokenDictionary,
 }
 
 impl EnclaveState {
@@ -21,6 +23,7 @@ impl EnclaveState {
             info: EnclaveInfo::new(),
             evm: EvmEnclaveState::new_for_eth_on_evm(db)?,
             eth: EthEnclaveState::new_for_eth_on_evm(db)?,
+            token_dictionary: EthEvmTokenDictionary::get_from_db(db)?,
         })
     }
 

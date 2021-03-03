@@ -13,7 +13,7 @@ use crate::{
     utils::strip_hex_prefix,
 };
 
-#[derive(Debug, Clone, Eq, PartialEq, Constructor, Deref, DerefMut)]
+#[derive(Debug, Clone, Eq, PartialEq, Constructor, Deref, DerefMut, Serialize, Deserialize)]
 pub struct EthEvmTokenDictionary(pub Vec<EthEvmTokenDictionaryEntry>);
 
 impl EthEvmTokenDictionary {
