@@ -154,10 +154,6 @@ lazy_static! {
 }
 
 lazy_static! {
-    pub static ref ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key("evm-on-evm-smart-contract");
-}
-
-lazy_static! {
     pub static ref ERC777_PROXY_CONTACT_ADDRESS_KEY: [u8; 32] =
         get_prefixed_db_key("evm-erc-777-proxy-contract-address-key");
 }

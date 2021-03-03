@@ -17,7 +17,6 @@ use crate::{
             ETH_GAS_PRICE_KEY,
             ETH_LATEST_BLOCK_HASH_KEY,
             ETH_LINKER_HASH_KEY,
-            ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
             ETH_PRIVATE_KEY_DB_KEY,
             ETH_TAIL_BLOCK_HASH_KEY,
         },
@@ -372,11 +371,6 @@ pub fn get_erc777_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Resu
 pub fn get_erc20_on_eos_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
     info!("✔ Getting `pERC20-on-EOS` smart-contract address from db...");
     get_eth_address_from_db(db, &*ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY)
-}
-
-pub fn get_eth_on_evm_vault_contract_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
-    info!("✔ Getting `eth-on-evm` vault smart-contract address from db...");
-    get_eth_address_from_db(db, &*ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY)
 }
 
 pub fn get_eos_on_eth_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
