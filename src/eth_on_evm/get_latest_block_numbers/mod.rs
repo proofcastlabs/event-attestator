@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::{
     chains::{
         eth::eth_database_utils::get_latest_eth_block_number,

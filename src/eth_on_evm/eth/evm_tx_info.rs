@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use derive_more::{Constructor, Deref};
-use eos_primitives::AccountName as EosAccountName;
+use eos_chain::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{

@@ -140,7 +140,7 @@ impl EthTxInfoCompatible for EthTransaction {
         rlp_stream.append(&self.v);
         rlp_stream.append(&self.r);
         rlp_stream.append(&self.s);
-        rlp_stream.out()
+        rlp_stream.out().to_vec()
     }
 }
 

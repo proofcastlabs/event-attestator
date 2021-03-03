@@ -113,12 +113,12 @@ impl Node {
             rlp_stream.begin_list(2);
             rlp_stream.append(&leaf.encoded_path);
             rlp_stream.append(&leaf.value);
-            Ok(rlp_stream.out())
+            Ok(rlp_stream.out().to_vec())
         } else if let Some(extension) = &self.extension {
             rlp_stream.begin_list(2);
             rlp_stream.append(&extension.encoded_path);
             rlp_stream.append(&extension.value);
-            Ok(rlp_stream.out())
+            Ok(rlp_stream.out().to_vec())
         } else if let Some(branch) = &self.branch {
             rlp_stream.begin_list(17);
             for i in 0..branch.branches.len() {
@@ -131,7 +131,7 @@ impl Node {
                 None => rlp_stream.append_empty_data(),
                 Some(value) => rlp_stream.append(&value.clone()),
             };
-            Ok(rlp_stream.out())
+            Ok(rlp_stream.out().to_vec())
         } else {
             Err(NO_NODE_IN_STRUCT_ERR.into())
         }

@@ -1,5 +1,6 @@
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::Address as EthAddress;
+use serde::{Deserialize, Serialize};
 
 pub(crate) mod test_utils;
 

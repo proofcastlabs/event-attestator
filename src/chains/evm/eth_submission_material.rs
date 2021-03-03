@@ -1,4 +1,5 @@
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
 
 use crate::{

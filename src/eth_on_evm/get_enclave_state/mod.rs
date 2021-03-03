@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::{
     chains::{eth::eth_enclave_state::EthEnclaveState, evm::eth_enclave_state::EthEnclaveState as EvmEnclaveState},
     enclave_info::EnclaveInfo,

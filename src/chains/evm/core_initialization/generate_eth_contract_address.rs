@@ -1,6 +1,6 @@
 use ethereum_types::Address as EthAddress;
 use rlp::RlpStream;
-use tiny_keccak::keccak256;
+use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
     chains::evm::{
@@ -24,7 +24,10 @@ fn calculate_contract_address(eth_address: EthAddress, nonce: usize) -> EthAddre
     rlp_stream.append(&eth_address);
     rlp_stream.append(&nonce);
     let encoded = rlp_stream.out();
-    let hashed = keccak256(&encoded);
+    let mut keccak = Keccak::v256();
+    let mut hashed = [0u8; 32];
+    keccak.update(&encoded);
+    keccak.finalize(&mut hashed);
     EthAddress::from_slice(&hashed[12..])
 }
 
