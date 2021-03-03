@@ -5,7 +5,7 @@ use crate::{
         eth::eth_database_utils::get_latest_eth_block_number,
         evm::eth_database_utils::get_latest_eth_block_number as get_latest_evm_block_number,
     },
-    eos_on_eth::check_core_is_initialized::check_core_is_initialized,
+    eth_on_evm::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -21,7 +21,7 @@ struct BlockNumbers {
 /// This function returns a JSON containing the last processed block number of each of the
 /// blockchains this instance manages.
 pub fn get_latest_block_numbers<D: DatabaseInterface>(db: D) -> Result<String> {
-    info!("✔ Getting latest block numbers...");
+    info!("✔ Getting latest `ETH-on-EVM` block numbers...");
     check_core_is_initialized(&db).and_then(|_| {
         Ok(serde_json::to_string(&BlockNumbers {
             eth_latest_block_number: get_latest_eth_block_number(&db)?,

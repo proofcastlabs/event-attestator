@@ -15,13 +15,12 @@
 //! ptokens_core = { version = "4.5.0", features = ["debug"] }
 //! ```
 
-pub mod debug_functions;
-pub mod eth;
-pub mod evm;
-pub mod get_enclave_state;
-pub mod get_latest_block_numbers;
-
 pub(crate) mod check_core_is_initialized;
+pub(crate) mod debug_functions;
+pub(crate) mod eth;
+pub(crate) mod evm;
+pub(crate) mod get_enclave_state;
+pub(crate) mod get_latest_block_numbers;
 
 pub use crate::{
     chains::{
