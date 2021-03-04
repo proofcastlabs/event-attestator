@@ -4,11 +4,25 @@ use crate::{
     chains::{
         eth::{
             eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY as ETH_KEY},
+            eth_contracts::eth_on_evm_vault::{
+                encode_eth_on_evm_add_supported_token_fx_data,
+                encode_eth_on_evm_remove_supported_token_fx_data,
+                ETH_ON_EVM_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+            },
+            eth_crypto::eth_transaction::EthTransaction,
             eth_database_transactions::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
             },
-            eth_database_utils::get_latest_eth_block_number,
+            eth_database_utils::{
+                get_eth_account_nonce_from_db,
+                get_eth_chain_id_from_db,
+                get_eth_gas_price_from_db,
+                get_eth_on_evm_smart_contract_address_from_db,
+                get_eth_private_key_from_db,
+                get_latest_eth_block_number,
+                increment_eth_account_nonce_in_db,
+            },
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             eth_utils::convert_hex_to_address,
@@ -286,4 +300,85 @@ pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: D, eth_address_st
         })
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"remove_dictionary_entry_success:":"true"}).to_string())
+}
+/// # Debug Get Add Supported Token Transaction
+///
+/// This function will sign a transaction to add the given address as a supported token to
+/// the `perc20-on-eos` smart-contract.
+///
+/// ### NOTE:
+/// This function will increment the core's ETH nonce, meaning the outputted reports will have a
+/// gap in their report IDs!
+///
+/// ### BEWARE:
+/// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
+/// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
+/// and only if you know exactly what you are doing and why!
+pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
+    info!("✔ Debug getting `addSupportedToken` contract tx...");
+    db.start_transaction()?;
+    let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
+    let eth_address = convert_hex_to_address(eth_address_str)?;
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
+        .and_then(|_| encode_eth_on_evm_add_supported_token_fx_data(eth_address))
+        .and_then(|tx_data| {
+            Ok(EthTransaction::new_unsigned(
+                tx_data,
+                current_eth_account_nonce,
+                0,
+                get_eth_on_evm_smart_contract_address_from_db(&db)?,
+                get_eth_chain_id_from_db(&db)?,
+                ETH_ON_EVM_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+                get_eth_gas_price_from_db(&db)?,
+            ))
+        })
+        .and_then(|unsigned_tx| unsigned_tx.sign(&get_eth_private_key_from_db(&db)?))
+        .map(|signed_tx| signed_tx.serialize_hex())
+        .and_then(|hex_tx| {
+            db.end_transaction()?;
+            Ok(json!({ "success": true, "eth_signed_tx": hex_tx }).to_string())
+        })
+}
+
+/// # Debug Get Remove Supported Token Transaction
+///
+/// This function will sign a transaction to remove the given address as a supported token to
+/// the `perc20-on-eos` smart-contract.
+///
+/// ### NOTE:
+/// This function will increment the core's ETH nonce, meaning the outputted reports will have a
+/// gap in their report IDs!
+///
+/// ### BEWARE:
+/// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
+/// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
+/// and only if you know exactly what you are doing and why!
+pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
+    info!("✔ Debug getting `removeSupportedToken` contract tx...");
+    db.start_transaction()?;
+    let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
+    let eth_address = convert_hex_to_address(eth_address_str)?;
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
+        .and_then(|_| encode_eth_on_evm_remove_supported_token_fx_data(eth_address))
+        .and_then(|tx_data| {
+            Ok(EthTransaction::new_unsigned(
+                tx_data,
+                current_eth_account_nonce,
+                0,
+                get_eth_on_evm_smart_contract_address_from_db(&db)?,
+                get_eth_chain_id_from_db(&db)?,
+                ETH_ON_EVM_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+                get_eth_gas_price_from_db(&db)?,
+            ))
+        })
+        .and_then(|unsigned_tx| unsigned_tx.sign(&get_eth_private_key_from_db(&db)?))
+        .map(|signed_tx| signed_tx.serialize_hex())
+        .and_then(|hex_tx| {
+            db.end_transaction()?;
+            Ok(json!({ "success": true, "eth_signed_tx": hex_tx }).to_string())
+        })
 }
