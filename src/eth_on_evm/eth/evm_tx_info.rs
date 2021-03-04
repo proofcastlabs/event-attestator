@@ -79,6 +79,7 @@ impl EthOnEvmEvmTxInfos {
     }
 
     fn is_log_eth_on_evm_peg_in(log: &EthLog) -> Result<bool> {
+        debug!("✔ Checking log contains topic: {}", ETH_ON_EVM_PEG_IN_EVENT_TOPIC_HEX);
         Ok(log.contains_topic(&EthHash::from_slice(
             &hex::decode(&ETH_ON_EVM_PEG_IN_EVENT_TOPIC_HEX)?[..],
         )))
@@ -147,7 +148,7 @@ impl EthOnEvmEvmTxInfos {
         submission_material: &EthSubmissionMaterial,
         dictionary: &EthEvmTokenDictionary,
     ) -> Result<EthSubmissionMaterial> {
-        info!("✔ Filtering submission material receipts for those pertaining to `erc20-on-eos` peg-ins...");
+        info!("✔ Filtering submission material receipts for those pertaining to `ETH-on-EVM` peg-ins...");
         info!(
             "✔ Num receipts before filtering: {}",
             submission_material.receipts.len()
