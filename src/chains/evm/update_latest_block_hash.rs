@@ -46,12 +46,12 @@ mod tests {
     use crate::{
         chains::evm::{
             eth_constants::ETH_LATEST_BLOCK_HASH_KEY,
-            eth_database_utils::get_hash_from_db_via_hash_key,
-            eth_test_utils::{
+            eth_database_utils::{
                 get_eth_latest_block_hash_from_db,
-                get_sequential_eth_blocks_and_receipts,
+                get_hash_from_db_via_hash_key,
                 put_eth_latest_block_in_db,
             },
+            eth_test_utils::get_sequential_eth_blocks_and_receipts,
             eth_types::EthHash,
         },
         test_utils::get_test_database,
@@ -79,10 +79,7 @@ mod tests {
         put_eth_latest_block_in_db(&db, &latest_submission_material).unwrap();
         let non_subsequent_submission_material = get_sequential_eth_blocks_and_receipts()[0].clone();
         update_latest_block_hash_if_subsequent(&db, &non_subsequent_submission_material).unwrap();
-        let latest_block_hash_after =
-            get_hash_from_db_via_hash_key(&db, EthHash::from_slice(&ETH_LATEST_BLOCK_HASH_KEY[..]))
-                .unwrap()
-                .unwrap();
+        let latest_block_hash_after = get_eth_latest_block_hash_from_db(&db).unwrap();
         assert_eq!(latest_block_hash_before, latest_block_hash_after);
     }
 }

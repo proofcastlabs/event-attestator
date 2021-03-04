@@ -1,20 +1,17 @@
 use crate::{
     chains::evm::{
         eth_constants::{ETH_LINKER_HASH_KEY, PTOKEN_GENESIS_HASH_KEY},
-        eth_database_utils::get_hash_from_db_via_hash_key,
+        eth_database_utils::get_eth_linker_hash_from_db,
         eth_types::EthHash,
     },
     traits::DatabaseInterface,
     types::Result,
 };
 
-pub fn get_linker_hash_or_genesis_hash<D>(db: &D) -> Result<EthHash>
-where
-    D: DatabaseInterface,
-{
-    match get_hash_from_db_via_hash_key(db, EthHash::from_slice(&ETH_LINKER_HASH_KEY[..]))? {
-        Some(hash) => Ok(hash),
-        None => {
+pub fn get_linker_hash_or_genesis_hash<D: DatabaseInterface>(db: &D) -> Result<EthHash> {
+    match get_eth_linker_hash_from_db(db) {
+        Ok(hash) => Ok(hash),
+        Err(_) => {
             info!("✔ No linker-hash set yet, using pToken genesis hash...");
             Ok(EthHash::from_slice(&PTOKEN_GENESIS_HASH_KEY[..]))
         },

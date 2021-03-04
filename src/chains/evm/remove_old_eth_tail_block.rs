@@ -3,6 +3,7 @@ use ethereum_types::H256 as EthHash;
 use crate::{
     chains::evm::{
         eth_database_utils::{
+            delete_block_by_block_hash,
             get_eth_anchor_block_hash_from_db,
             get_eth_tail_block_from_db,
             get_submission_material_from_db,
@@ -14,20 +15,17 @@ use crate::{
     types::Result,
 };
 
-fn is_anchor_block<D>(db: &D, eth_block_hash: &EthHash) -> Result<bool>
-where
-    D: DatabaseInterface,
-{
+fn is_anchor_block<D: DatabaseInterface>(db: &D, eth_block_hash: &EthHash) -> Result<bool> {
     match get_eth_anchor_block_hash_from_db(db) {
         Ok(ref hash) => Ok(hash == eth_block_hash),
         _ => Err("✘ No anchor hash found in db!".into()),
     }
 }
 
-pub fn remove_parents_if_not_anchor<D>(db: &D, block_whose_parents_to_be_removed: &EthSubmissionMaterial) -> Result<()>
-where
-    D: DatabaseInterface,
-{
+pub fn remove_parents_if_not_anchor<D: DatabaseInterface>(
+    db: &D,
+    block_whose_parents_to_be_removed: &EthSubmissionMaterial,
+) -> Result<()> {
     match get_submission_material_from_db(db, &block_whose_parents_to_be_removed.get_parent_hash()?) {
         Err(_) => {
             info!("✔ No block found ∵ doing nothing!");
@@ -42,7 +40,7 @@ where
                 },
                 false => {
                     info!("✔ Block is NOT the anchor ∴ removing it...");
-                    db.delete(parent_block.get_block_hash()?.as_bytes().to_vec())
+                    delete_block_by_block_hash(db, &parent_block.get_block_hash()?)
                         .and_then(|_| remove_parents_if_not_anchor(db, &parent_block))
                 },
             }
@@ -50,10 +48,9 @@ where
     }
 }
 
-pub fn maybe_remove_old_eth_tail_block_and_return_state<D>(state: EthState<D>) -> Result<EthState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_remove_old_eth_tail_block_and_return_state<D: DatabaseInterface>(
+    state: EthState<D>,
+) -> Result<EthState<D>> {
     info!("✔ Maybe removing old ETH tail block...");
     get_eth_tail_block_from_db(&state.db)
         .and_then(|tail_block| remove_parents_if_not_anchor(&state.db, &tail_block))

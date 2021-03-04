@@ -23,15 +23,37 @@ use crate::{
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_submission_material::EthSubmissionMaterial,
         eth_types::{AnySenderSigningParams, EthSigningParams},
-        eth_utils::{convert_bytes_to_h256, convert_h256_to_bytes},
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
     traits::DatabaseInterface,
-    types::{Byte, DataSensitivity, Result},
+    types::{Byte, Bytes, DataSensitivity, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
+
+fn convert_h256_to_bytes(hash: &EthHash) -> Bytes {
+    // NOTE: We switch the endianness of the block hash to avoid DB collisions w/ ETH<->ETH bridges.
+    let mut bytes = hash.as_bytes().to_vec();
+    bytes.reverse();
+    bytes
+}
+
+fn convert_bytes_to_h256(bytes: &[Byte]) -> Result<EthHash> {
+    // NOTE: We switch the endianness of the block hash to avoid DB collisions w/ ETH<->ETH bridges.
+    match bytes.len() {
+        32 => {
+            let mut x = bytes.to_vec();
+            x.reverse();
+            Ok(EthHash::from_slice(&x))
+        },
+        _ => Err("✘ Not enough bytes to convert to h256!".into()),
+    }
+}
+
+pub fn delete_block_by_block_hash<D: DatabaseInterface>(db: &D, block_hash: &EthHash) -> Result<()> {
+    db.delete(convert_h256_to_bytes(block_hash))
+}
 
 pub fn get_signing_params_from_db<D: DatabaseInterface>(db: &D) -> Result<EthSigningParams> {
     trace!("✔ Getting signing params from db...");
@@ -78,6 +100,15 @@ pub fn put_eth_canon_block_in_db<D: DatabaseInterface>(
     put_special_eth_block_in_db(db, eth_submission_material, "canon")
 }
 
+#[cfg(test)]
+pub fn put_eth_latest_block_in_db<D: DatabaseInterface>(
+    db: &D,
+    eth_submission_material: &EthSubmissionMaterial,
+) -> Result<()> {
+    info!("✔ Putting ETH latest block in db...");
+    put_special_eth_block_in_db(db, eth_submission_material, "latest")
+}
+
 pub fn put_eth_latest_block_hash_in_db<D: DatabaseInterface>(db: &D, eth_hash: &EthHash) -> Result<()> {
     info!("✔ Putting ETH latest block hash in db...");
     put_special_eth_hash_in_db(db, "latest", eth_hash)
@@ -101,6 +132,11 @@ pub fn put_eth_tail_block_hash_in_db<D: DatabaseInterface>(db: &D, eth_hash: &Et
 pub fn put_eth_linker_hash_in_db<D: DatabaseInterface>(db: &D, eth_hash: EthHash) -> Result<()> {
     info!("✔ Putting ETH linker hash in db...");
     put_special_eth_hash_in_db(db, "linker", &eth_hash)
+}
+
+pub fn get_eth_linker_hash_from_db<D: DatabaseInterface>(db: &D) -> Result<EthHash> {
+    info!("✔ Getting ETH linker hash in db...");
+    get_special_eth_hash_from_db(db, "linker")
 }
 
 pub fn put_special_eth_block_in_db<D: DatabaseInterface>(
@@ -161,6 +197,12 @@ pub fn get_eth_anchor_block_hash_from_db<D: DatabaseInterface>(db: &D) -> Result
     get_special_eth_hash_from_db(db, "anchor")
 }
 
+#[cfg(test)]
+pub fn get_eth_latest_block_hash_from_db<D: DatabaseInterface>(db: &D) -> Result<EthHash> {
+    info!("✔ Getting ETH latest block hash from db...");
+    get_special_eth_hash_from_db(db, "latest")
+}
+
 pub fn get_special_eth_hash_from_db<D: DatabaseInterface>(db: &D, hash_type: &str) -> Result<EthHash> {
     let key = match hash_type {
         "linker" => Ok(ETH_LINKER_HASH_KEY.to_vec()),
@@ -180,8 +222,10 @@ pub fn get_special_eth_hash_from_db<D: DatabaseInterface>(db: &D, hash_type: &st
 pub fn get_eth_hash_from_db<D: DatabaseInterface>(db: &D, key: &[Byte]) -> Result<EthHash> {
     trace!("✔ Getting ETH hash from db under key: {}", hex::encode(&key));
 
-    db.get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
-        .map(|bytes| EthHash::from_slice(&bytes))
+    db.get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL).map(|mut bytes| {
+        bytes.reverse();
+        EthHash::from_slice(&bytes)
+    })
 }
 
 pub fn get_special_eth_block_from_db<D: DatabaseInterface>(db: &D, block_type: &str) -> Result<EthSubmissionMaterial> {
@@ -191,21 +235,19 @@ pub fn get_special_eth_block_from_db<D: DatabaseInterface>(db: &D, block_type: &
 pub fn put_eth_hash_in_db<D: DatabaseInterface>(db: &D, key: &[Byte], eth_hash: &EthHash) -> Result<()> {
     db.put(
         key.to_vec(),
-        convert_h256_to_bytes(*eth_hash),
+        convert_h256_to_bytes(eth_hash),
         MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
 pub fn eth_block_exists_in_db<D: DatabaseInterface>(db: &D, block_hash: &EthHash) -> bool {
-    info!(
-        "✔ Checking for existence of ETH block: {}",
-        hex::encode(block_hash.as_bytes().to_vec())
-    );
-    key_exists_in_db(db, &block_hash.as_bytes().to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+    let key = convert_h256_to_bytes(block_hash);
+    info!("✔ Checking for existence of ETH block: {}", hex::encode(&key));
+    key_exists_in_db(db, &key, MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn get_hash_from_db_via_hash_key<D: DatabaseInterface>(db: &D, hash_key: EthHash) -> Result<Option<EthHash>> {
-    match db.get(convert_h256_to_bytes(hash_key), MIN_DATA_SENSITIVITY_LEVEL) {
+    match db.get(convert_h256_to_bytes(&hash_key), MIN_DATA_SENSITIVITY_LEVEL) {
         Ok(bytes) => Ok(Some(convert_bytes_to_h256(&bytes)?)),
         Err(_) => Ok(None),
     }
@@ -215,7 +257,7 @@ pub fn put_eth_submission_material_in_db<D: DatabaseInterface>(
     db: &D,
     eth_submission_material: &EthSubmissionMaterial,
 ) -> Result<()> {
-    let key = convert_h256_to_bytes(eth_submission_material.get_block_hash()?);
+    let key = convert_h256_to_bytes(&eth_submission_material.get_block_hash()?);
     trace!("✔ Adding block to database under key: {:?}", hex::encode(&key));
     db.put(
         key,
@@ -255,7 +297,7 @@ pub fn maybe_get_eth_submission_material_from_db<D: DatabaseInterface>(
         "✔ Maybe getting ETH block and receipts from db under hash: {}",
         block_hash
     );
-    match db.get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL) {
+    match db.get(convert_h256_to_bytes(block_hash), MIN_DATA_SENSITIVITY_LEVEL) {
         Err(_) => None,
         Ok(bytes) => match EthSubmissionMaterial::from_bytes(&bytes) {
             Ok(block_and_receipts) => {
@@ -274,8 +316,9 @@ pub fn get_submission_material_from_db<D: DatabaseInterface>(
     db: &D,
     block_hash: &EthHash,
 ) -> Result<EthSubmissionMaterial> {
+    // FIXME flip endianess
     trace!("✔ Getting ETH block and receipts from db...");
-    db.get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL)
+    db.get(convert_h256_to_bytes(block_hash), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| EthSubmissionMaterial::from_bytes(&bytes))
 }
 
