@@ -21,6 +21,7 @@ pub(crate) mod eth;
 pub(crate) mod evm;
 pub(crate) mod get_enclave_state;
 pub(crate) mod get_latest_block_numbers;
+pub(crate) mod test_utils;
 
 pub use crate::{
     chains::{
