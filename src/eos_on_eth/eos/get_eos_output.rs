@@ -35,8 +35,10 @@ pub struct EthTxInfo {
     pub eth_tx_amount: String,
     pub eth_tx_recipient: String,
     pub witnessed_timestamp: u64,
+    pub host_token_address: String,
     pub originating_tx_hash: String,
     pub originating_address: String,
+    pub native_token_address: String,
     pub eth_signed_tx: Option<String>,
     pub any_sender_nonce: Option<u64>,
     pub eth_account_nonce: Option<u64>,
@@ -69,11 +71,13 @@ impl EthTxInfo {
             eth_tx_amount: tx_info.amount.to_string(),
             eth_tx_hash: format!("0x{}", tx.get_tx_hash()),
             originating_address: tx_info.from.to_string(),
+            host_token_address: tx_info.eos_token_address.to_string(),
             originating_tx_hash: tx_info.originating_tx_id.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             eth_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             eth_tx_recipient: format!("0x{}", hex::encode(tx_info.recipient.as_bytes())),
+            native_token_address: format!("0x{}", hex::encode(&tx_info.eth_token_address)),
         })
     }
 }
