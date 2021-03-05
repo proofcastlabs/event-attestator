@@ -54,11 +54,11 @@ impl EosOnEthEthOutputDetails {
             eth_tx_amount: tx_info.token_amount.to_string(),
             eos_tx_amount: tx_info.eos_asset_amount.clone(),
             _id: format!("peos-on-eth-eos-{}", eos_account_nonce),
-            host_token_address: tx_info.eos_token_address.to_string(),
+            host_token_address: format!("0x{}", hex::encode(&tx_info.eth_token_address)),
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender)),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             originating_tx_hash: format!("0x{}", hex::encode(&tx_info.originating_tx_hash)),
-            native_token_address: format!("0x{}", hex::encode(&tx_info.eth_token_address)),
+            native_token_address: tx_info.eos_token_address.to_string(),
         })
     }
 }

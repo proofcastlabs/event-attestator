@@ -634,7 +634,7 @@ dependencies = [
 
 [[package]]
 name = "ptokens_core"
-version = "4.13.1"
+version = "4.13.2"
 dependencies = [
  "bitcoin",
  "byteorder",
