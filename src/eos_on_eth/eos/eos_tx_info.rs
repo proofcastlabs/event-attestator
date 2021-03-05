@@ -50,6 +50,7 @@ pub struct EosOnEthEosTxInfo {
     pub originating_tx_id: Checksum256,
     pub global_sequence: GlobalSequence,
     pub eth_token_address: EthAddress,
+    pub eos_token_address: String,
 }
 
 impl EosOnEthEosTxInfo {
@@ -204,6 +205,7 @@ impl EosOnEthEosTxInfo {
                     from: Self::get_token_sender_from_proof(proof)?,
                     recipient: Self::get_eth_address_from_proof_or_revert_to_safe_eth_address(proof)?,
                     eth_token_address: token_dictionary.get_eth_address_via_eos_address(&token_address)?,
+                    eos_token_address: dictionary_entry.eos_address,
                 })
             })
     }
