@@ -29,6 +29,10 @@ pub struct EthLog {
 }
 
 impl EthLogCompatible for EthLog {
+    fn get_topics(&self) -> Vec<EthHash> {
+        self.topics.clone()
+    }
+
     fn get_data(&self) -> Bytes {
         self.data.clone()
     }

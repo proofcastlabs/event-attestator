@@ -1,4 +1,4 @@
-use ethereum_types::H256;
+use ethereum_types::H256 as EthHash;
 
 use crate::{
     chains::eth::{
@@ -20,11 +20,12 @@ pub trait EthTxInfoCompatible {
 }
 
 pub trait EthSigningCapabilities {
-    fn sign_hash(&self, hash: H256) -> Result<EthSignature>;
+    fn sign_hash(&self, hash: EthHash) -> Result<EthSignature>;
     fn sign_message_bytes(&self, message: &[Byte]) -> Result<EthSignature>;
     fn sign_eth_prefixed_msg_bytes(&self, message: &[Byte]) -> Result<EthSignature>;
 }
 
 pub trait EthLogCompatible {
     fn get_data(&self) -> Bytes;
+    fn get_topics(&self) -> Vec<EthHash>;
 }
