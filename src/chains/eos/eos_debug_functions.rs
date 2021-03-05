@@ -24,8 +24,8 @@ use crate::{
 pub fn update_incremerkle<D: DatabaseInterface>(db: &D, init_json: &EosInitJson) -> Result<String> {
     info!("✔ Debug updating blockroot merkle...");
     check_debug_mode()
-        .and_then(|_| put_eos_latest_block_info_in_db(db, &init_json.block))
         .and_then(|_| db.start_transaction())
+        .and_then(|_| put_eos_latest_block_info_in_db(db, &init_json.block))
         .and_then(|_| generate_and_put_incremerkle_in_db(db, &init_json.blockroot_merkle))
         .and_then(|_| db.end_transaction())
         .and(Ok("{debug_update_blockroot_merkle_success:true}".to_string()))
@@ -79,6 +79,7 @@ pub fn get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String
             db.end_transaction()?;
             Ok(processed_global_sequences.to_json().to_string())
         })
+        .map(prepend_debug_output_marker_to_string)
 }
 
 pub fn debug_add_global_sequences_to_processed_list<D: DatabaseInterface>(

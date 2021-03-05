@@ -12,6 +12,10 @@ authors = ["Provable Things <provable.xyz>", "Greg Kapka <greg@oraclize.it>"]
 debug = []
 non-validating = ["debug"]
 
+[profile.release]
+lto = "thin"
+overflow-checks = true
+
 [dependencies]
 hex = "0.4.2"
 log = "0.4.14"
