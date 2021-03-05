@@ -77,6 +77,26 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_9: &str =
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_10: &str =
     "src/chains/eth/eth_test_utils/eth-submission-material-with-new-erc777-event.json";
 
+pub fn get_sample_log_with_eth_on_evm_vault_peg_in() -> EthLog {
+    EthSubmissionMaterial::from_str(
+        &read_to_string("src/eth_on_evm/test_utils/eth-submission-material-1.json").unwrap(),
+    )
+    .unwrap()
+    .receipts[26]
+        .logs[2]
+        .clone()
+}
+
+pub fn get_sample_log_with_eth_on_evm_erc777_peg_out() -> EthLog {
+    EthSubmissionMaterial::from_str(
+        &read_to_string("src/eth_on_evm/test_utils/evm-submission-material-1.json").unwrap(),
+    )
+    .unwrap()
+    .receipts[42]
+        .logs[2]
+        .clone()
+}
+
 pub fn put_eth_latest_block_in_db<D>(db: &D, eth_submission_material: &EthSubmissionMaterial) -> Result<()>
 where
     D: DatabaseInterface,
