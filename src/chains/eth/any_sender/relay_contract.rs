@@ -26,9 +26,9 @@ impl RelayContract {
     /// Returns the address of the AnySender relay contract
     pub fn address(&self) -> Result<EthAddress> {
         match *self {
-            RelayContract::Mainnet | RelayContract::Ropsten => Ok(EthAddress::from_slice(
-                &hex::decode("9b4FA5A1D9f6812e2B56B36fBde62736Fa82c2a7").unwrap(),
-            )),
+            RelayContract::Mainnet | RelayContract::Ropsten => Ok(EthAddress::from_slice(&hex::decode(
+                "9b4FA5A1D9f6812e2B56B36fBde62736Fa82c2a7",
+            )?)),
         }
     }
 }
