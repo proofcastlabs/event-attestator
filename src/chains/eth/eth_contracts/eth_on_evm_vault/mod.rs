@@ -91,7 +91,7 @@ impl EthOnEvmVaultPegInEventParams {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eth::eth_test_utils::get_sample_eth_address;
+    use crate::chains::eth::eth_test_utils::{get_sample_eth_address, get_sample_log_with_eth_on_evm_vault_peg_in};
 
     #[test]
     fn should_encode_peg_out_fxn_data() {
@@ -130,17 +130,17 @@ mod tests {
 
     #[test]
     fn should_get_eth_on_evm_peg_in_event_params_from_log() {
-        // FIXME TODO!
-        // let log = get_sample_log_with_erc20_peg_in_event_2().unwrap();
-        // let result = EthOnEvmVaultPegInEventParams::from_log(&log).unwrap();
-        // let expected_result = EthOnEvmVaultPegInEventParams {
-        // user_data: vec![],
-        // token_amount: U256::from_dec_str("50000000000000").unwrap(),
-        // token_sender: EthAddress::from_slice(&hex::decode("7344d31d7025f72bd1d3c08645fa6b12d406fc05").unwrap()),
-        // token_address: EthAddress::from_slice(&hex::decode("c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2").unwrap()),
-        // destination_address: "whateverxxxx".to_string(),
-        // };
-        // assert_eq!(result, expected_result);
-        assert!(false);
+        let log = get_sample_log_with_eth_on_evm_vault_peg_in();
+        let result = EthOnEvmVaultPegInEventParams::from_log(&log).unwrap();
+        let expected_result = EthOnEvmVaultPegInEventParams {
+            user_data: vec![0xde, 0xca, 0xff],
+            token_amount: U256::from_dec_str("1337").unwrap(),
+            token_sender: EthAddress::from_slice(&hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap()),
+            token_address: EthAddress::from_slice(&hex::decode("bf6ab900f1A3d8f94bc98f1d2Ba1B8f00d532078").unwrap()),
+            destination_address: EthAddress::from_slice(
+                &hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap(),
+            ),
+        };
+        assert_eq!(result, expected_result);
     }
 }
