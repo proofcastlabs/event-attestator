@@ -25,14 +25,21 @@ use crate::{
     },
     chains::{
         btc::{
+            btc_block::parse_btc_block_and_id_and_put_in_state,
             btc_constants::{get_btc_constants_db_keys, BTC_PRIVATE_KEY_DB_KEY as BTC_KEY},
-            btc_database_utils::{get_btc_latest_block_from_db, start_btc_db_transaction},
+            btc_database_utils::{end_btc_db_transaction, get_btc_latest_block_from_db, start_btc_db_transaction},
             btc_state::BtcState,
             btc_submission_material::parse_submission_material_and_put_in_state,
+            extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_state,
+            extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
+            filter_p2pkh_deposit_txs::filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
+            filter_utxos::filter_out_utxos_extant_in_db_from_state,
             get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
             increment_btc_account_nonce::maybe_increment_btc_signature_nonce_and_return_eos_state,
+            save_utxos_to_db::maybe_save_utxos_to_db,
+            set_flags::set_any_sender_flag_in_state,
             utxo_manager::{
                 debug_utxo_utils::{
                     add_multiple_utxos,
@@ -82,7 +89,7 @@ use crate::{
         },
     },
     check_debug_mode::check_debug_mode,
-    constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL},
+    constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
     traits::DatabaseInterface,
     types::Result,
@@ -112,12 +119,10 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
 /// fail due to the core having an incorret set of UTXOs!
-pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
     info!("✔ Debug reprocessing EOS block...");
-    parse_submission_material_and_add_to_state(block_json, EosState::init(db))
+    check_debug_mode()
+        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_processed_global_sequences_and_add_to_state)
@@ -151,12 +156,13 @@ where
 /// ### NOTE:
 /// This function will increment the core's EOS nonce, meaning the outputted reports will have a
 /// gap in their report IDs!
-pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(db: D, block_json_string: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_reprocess_btc_block_for_stale_eos_tx<D: DatabaseInterface>(
+    db: D,
+    block_json_string: &str,
+) -> Result<String> {
     info!("✔ Reprocessing BTC block to core...");
-    parse_submission_material_and_put_in_state(block_json_string, BtcState::init(db))
+    check_debug_mode()
+        .and_then(|_| parse_submission_material_and_put_in_state(block_json_string, BtcState::init(db)))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
@@ -345,4 +351,36 @@ pub fn debug_add_multiple_utxos<D: DatabaseInterface>(db: D, json_str: &str) -> 
 /// This function returns the list of already-processed action global sequences in JSON format.
 pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String> {
     check_core_is_initialized(db).and_then(|_| get_processed_actions_list(db))
+}
+
+/// # Debug Maybe Add UTXO To DB
+///
+/// This function accepts as its param BTC submission material, in which it inspects all the
+/// transactions looking for any pertaining to the core's own public key, or deposit addresses
+/// derived from it. Any it finds it will extract the UTXO from and add it to the encrypted
+/// database. Note that this fxn WILL extract the enclave's own change UTXOs from blocks!
+///
+/// ### NOTE:
+/// The core won't accept UTXOs it already has in its encrypted database.
+pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| parse_submission_material_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
+        .and_then(check_core_is_initialized_and_return_btc_state)
+        .and_then(parse_btc_block_and_id_and_put_in_state)
+        .and_then(set_any_sender_flag_in_state)
+        .and_then(validate_btc_block_header_in_state)
+        .and_then(validate_difficulty_of_btc_block_in_state)
+        .and_then(validate_proof_of_work_of_btc_block_in_state)
+        .and_then(validate_btc_merkle_root)
+        .and_then(get_deposit_info_hash_map_and_put_in_state)
+        .and_then(filter_p2sh_deposit_txs_and_add_to_state)
+        .and_then(filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state)
+        .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_state)
+        .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
+        .and_then(start_btc_db_transaction)
+        .and_then(filter_out_utxos_extant_in_db_from_state)
+        .and_then(maybe_save_utxos_to_db)
+        .and_then(end_btc_db_transaction)
+        .map(|_| SUCCESS_JSON.to_string())
+        .map(prepend_debug_output_marker_to_string)
 }

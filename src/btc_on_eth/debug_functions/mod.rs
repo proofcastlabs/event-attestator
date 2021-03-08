@@ -4,10 +4,6 @@ use serde_json::json;
 use crate::{
     btc_on_eth::{
         btc::{
-            filter_p2pkh_deposit_txs::{
-                filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state,
-                filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state,
-            },
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
             minting_params::{
                 parse_minting_params_from_p2pkh_deposits_and_add_to_state,
@@ -40,6 +36,10 @@ use crate::{
             extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_state,
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
             filter_minting_params::maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state,
+            filter_p2pkh_deposit_txs::{
+                filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state,
+                filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state,
+            },
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             filter_utxos::{filter_out_utxos_extant_in_db_from_state, filter_out_value_too_low_utxos_from_state},
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
