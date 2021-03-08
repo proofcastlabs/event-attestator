@@ -284,25 +284,23 @@ mod tests {
     use ethereum_types::H160 as EthAddress;
 
     use super::*;
-    use crate::{
-        btc_on_eth::btc::filter_p2pkh_deposit_txs::filter_txs_for_p2pkh_deposits,
-        chains::btc::{
-            btc_test_utils::{
-                get_sample_btc_block_n,
-                get_sample_btc_p2pkh_address,
-                get_sample_btc_p2pkh_tx,
-                get_sample_btc_pub_key_slice,
-                get_sample_btc_tx,
-                get_sample_minting_params,
-                get_sample_p2pkh_btc_block_and_txs,
-                get_sample_p2pkh_op_return_output,
-                get_sample_pay_to_pub_key_hash_script,
-                SAMPLE_P2PKH_TRANSACTION_OUTPUT_INDEX,
-            },
-            btc_utils::convert_bytes_to_btc_pub_key_slice,
-            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
-            get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
+    use crate::chains::btc::{
+        btc_test_utils::{
+            get_sample_btc_block_n,
+            get_sample_btc_p2pkh_address,
+            get_sample_btc_p2pkh_tx,
+            get_sample_btc_pub_key_slice,
+            get_sample_btc_tx,
+            get_sample_minting_params,
+            get_sample_p2pkh_btc_block_and_txs,
+            get_sample_p2pkh_op_return_output,
+            get_sample_pay_to_pub_key_hash_script,
+            SAMPLE_P2PKH_TRANSACTION_OUTPUT_INDEX,
         },
+        btc_utils::convert_bytes_to_btc_pub_key_slice,
+        filter_p2pkh_deposit_txs::filter_txs_for_p2pkh_deposits,
+        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
+        get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
     };
 
     fn get_expected_eth_address() -> EthAddress {
