@@ -112,12 +112,10 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
 /// fail due to the core having an incorret set of UTXOs!
-pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
     info!("✔ Debug reprocessing EOS block...");
-    parse_submission_material_and_add_to_state(block_json, EosState::init(db))
+    check_debug_mode()
+        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_processed_global_sequences_and_add_to_state)
@@ -151,12 +149,13 @@ where
 /// ### NOTE:
 /// This function will increment the core's EOS nonce, meaning the outputted reports will have a
 /// gap in their report IDs!
-pub fn debug_reprocess_btc_block_for_stale_eos_tx<D>(db: D, block_json_string: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_reprocess_btc_block_for_stale_eos_tx<D: DatabaseInterface>(
+    db: D,
+    block_json_string: &str,
+) -> Result<String> {
     info!("✔ Reprocessing BTC block to core...");
-    parse_submission_material_and_put_in_state(block_json_string, BtcState::init(db))
+    check_debug_mode()
+        .and_then(|_| parse_submission_material_and_put_in_state(block_json_string, BtcState::init(db)))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
