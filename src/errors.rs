@@ -106,6 +106,10 @@ quick_error! {
             from()
             display("✘ EOS write error: {:?}", err)
         }
+        TryFromError(err: std::num::TryFromIntError) {
+            from()
+            display("✘ `TryFrom` error: {:?}", err)
+        }
         NoneError(err: &'static str) {
             display("✘ None Error!\n✘ {}", err)
         }

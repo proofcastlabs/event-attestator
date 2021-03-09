@@ -26,6 +26,7 @@ use crate::{
     eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
     traits::DatabaseInterface,
     types::{Byte, Result},
+    utils::get_unix_timestamp_as_u32,
 };
 
 const ZERO_ETH_ASSET_STR: &str = "0.0000 EOS";
@@ -207,7 +208,14 @@ impl EosOnEthEthTxInfo {
             &self.eos_address,
             &[], // NOTE: Empty metadata for now.
         )
-        .map(|action| EosTransaction::new(EOS_MAX_EXPIRATION_SECS, ref_block_num, ref_block_prefix, vec![action]))
+        .and_then(|action| {
+            Ok(EosTransaction::new(
+                get_unix_timestamp_as_u32()? + EOS_MAX_EXPIRATION_SECS,
+                ref_block_num,
+                ref_block_prefix,
+                vec![action],
+            ))
+        })
         .and_then(|ref unsigned_tx| {
             EosSignedTransaction::from_unsigned_tx(&eos_smart_contract.to_string(), amount, chain_id, pk, unsigned_tx)
         })

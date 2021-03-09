@@ -1,9 +1,22 @@
+use std::{
+    convert::TryFrom,
+    time::{SystemTime, UNIX_EPOCH},
+};
+
 use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
     constants::{CORE_VERSION, DB_KEY_PREFIX, DEBUG_OUTPUT_MARKER, U64_NUM_BYTES},
     types::{Byte, Bytes, Result},
 };
+
+fn get_unix_timestamp() -> Result<u64> {
+    Ok(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())
+}
+
+pub fn get_unix_timestamp_as_u32() -> Result<u32> {
+    Ok(u32::try_from(get_unix_timestamp()?)?)
+}
 
 pub fn right_pad_or_truncate(s: &str, width: usize) -> String {
     if s.len() >= width {
@@ -253,5 +266,17 @@ mod tests {
         let width = s.len() + 3;
         let result = right_pad_or_truncate(s, width);
         assert_eq!(result, "some string000");
+    }
+
+    #[test]
+    fn should_get_unix_timestamp() {
+        let result = get_unix_timestamp();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_get_unix_timestamp_as_u32() {
+        let result = get_unix_timestamp_as_u32();
+        assert!(result.is_ok());
     }
 }
