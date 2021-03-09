@@ -9,6 +9,7 @@ use crate::{
         eos_crypto::eos_private_key::EosPrivateKey,
     },
     types::{Bytes, Result},
+    utils::get_unix_timestamp_as_u32,
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, Deref, Constructor)]
@@ -79,7 +80,14 @@ pub fn get_signed_eos_ptoken_issue_tx(
         amount,
         EOS_ACCOUNT_PERMISSION_LEVEL,
     )
-    .map(|action| EosTransaction::new(EOS_MAX_EXPIRATION_SECS, ref_block_num, ref_block_prefix, vec![action]))
+    .and_then(|action| {
+        Ok(EosTransaction::new(
+            get_unix_timestamp_as_u32()? + EOS_MAX_EXPIRATION_SECS,
+            ref_block_num,
+            ref_block_prefix,
+            vec![action],
+        ))
+    })
     .and_then(|ref unsigned_tx| EosSignedTransaction::from_unsigned_tx(to, amount, chain_id, private_key, unsigned_tx))
 }
 
