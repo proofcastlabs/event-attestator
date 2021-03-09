@@ -25,7 +25,6 @@ use crate::{
     },
     chains::{
         btc::{
-            btc_block::parse_btc_block_and_id_and_put_in_state,
             btc_constants::{get_btc_constants_db_keys, BTC_PRIVATE_KEY_DB_KEY as BTC_KEY},
             btc_database_utils::{end_btc_db_transaction, get_btc_latest_block_from_db, start_btc_db_transaction},
             btc_state::BtcState,
@@ -39,7 +38,6 @@ use crate::{
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
             increment_btc_account_nonce::maybe_increment_btc_signature_nonce_and_return_eos_state,
             save_utxos_to_db::maybe_save_utxos_to_db,
-            set_flags::set_any_sender_flag_in_state,
             utxo_manager::{
                 debug_utxo_utils::{
                     add_multiple_utxos,
