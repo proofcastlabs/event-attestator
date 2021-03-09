@@ -367,7 +367,6 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_ma
         .and_then(|_| parse_submission_material_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(parse_btc_block_and_id_and_put_in_state)
-        .and_then(set_any_sender_flag_in_state)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_difficulty_of_btc_block_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)
