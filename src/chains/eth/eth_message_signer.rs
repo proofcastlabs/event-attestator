@@ -98,19 +98,46 @@ mod tests {
     };
 
     #[test]
-    fn should_return_error_if_message_is_not_valid_ascii() {
+    fn ascii_signer_should_return_error_if_message_is_not_valid_ascii() {
         let db = get_test_database();
         let message = "Grüße, 🦀";
         assert!(sign_ascii_msg_with_eth_key_with_no_prefix(&db, message).is_err());
+        assert!(sign_ascii_msg_with_eth_key_with_prefix(&db, message).is_err());
     }
 
     #[test]
-    fn should_return_error_if_message_is_valid_hex() {
+    fn ascii_signer_with_no_prefix_should_return_error_if_message_is_valid_hex() {
         let db = get_test_database();
         let hex_message = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
         let hex_message_no_prefix = "4d261b7d3101e9ff7e37f63449be8a9a1affef87e4952900dbb84ee3c29f45f3";
-        assert!(sign_ascii_msg_with_eth_key_with_no_prefix(&db, hex_message).is_err());
-        assert!(sign_ascii_msg_with_eth_key_with_no_prefix(&db, hex_message_no_prefix).is_err());
+        let expected_error =
+            "✘ Program Error!\n✘ HEX message passed. Signing HEX messages without prefix is not allowed.".to_string();
+        assert_eq!(
+            sign_ascii_msg_with_eth_key_with_no_prefix(&db, hex_message)
+                .unwrap_err()
+                .to_string(),
+            expected_error
+        );
+        assert_eq!(
+            sign_ascii_msg_with_eth_key_with_no_prefix(&db, hex_message_no_prefix)
+                .unwrap_err()
+                .to_string(),
+            expected_error
+        );
+    }
+
+    #[test]
+    fn ascii_signer_with_prefix_should_sign_valid_hex() {
+        let db = get_test_database();
+        let eth_private_key = get_sample_eth_private_key();
+        put_eth_private_key_in_db(&db, &eth_private_key).unwrap();
+        let message = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
+        let expected_result = json!({
+            "message": "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c",
+            "signature": "0xe83b6dcc17d0c7f35b4e807b4e4f8b3fde9602767f2229b72ba17bedaeb2960f52fc878d40aeddbaf9ee4d3ac4a1264218df14da2c5914be01190c91a53a41a51b"
+        }).to_string();
+        let result = sign_ascii_msg_with_eth_key_with_prefix(&db, message).unwrap();
+        assert_eq!(result, expected_result, "✘ Message signature is invalid!")
     }
 
     #[test]
