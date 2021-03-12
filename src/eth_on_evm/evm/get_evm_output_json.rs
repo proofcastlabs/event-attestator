@@ -15,10 +15,7 @@ use crate::{
             eth_traits::EthTxInfoCompatible,
         },
         evm::{
-            eth_database_utils::{
-                get_any_sender_nonce_from_db as get_evm_any_sender_nonce_from_db,
-                get_latest_eth_block_number as get_latest_evm_block_number,
-            },
+            eth_database_utils::get_latest_eth_block_number as get_latest_evm_block_number,
             eth_state::EthState as EvmState,
         },
     },

@@ -1,6 +1,6 @@
 use crate::{
     chains::evm::{
-        eth_constants::{ETH_LINKER_HASH_KEY, PTOKEN_GENESIS_HASH_KEY},
+        eth_constants::PTOKEN_GENESIS_HASH_KEY,
         eth_database_utils::get_eth_linker_hash_from_db,
         eth_types::EthHash,
     },

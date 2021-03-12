@@ -6,9 +6,6 @@ use crate::{
         eth_constants::ETH_TAIL_LENGTH,
         eth_database_utils::{
             get_any_sender_nonce_from_db,
-            get_eos_on_eth_smart_contract_address_from_db,
-            get_erc20_on_eos_smart_contract_address_from_db,
-            get_erc777_contract_address_from_db,
             get_erc777_proxy_contract_address_from_db,
             get_eth_account_nonce_from_db,
             get_eth_anchor_block_from_db,
@@ -78,14 +75,6 @@ impl EthEnclaveState {
             evm_latest_block_hash: hex::encode(evm_latest_block.get_block_hash()?.as_bytes()),
             erc777_proxy_contract_address: hex::encode(get_erc777_proxy_contract_address_from_db(db)?),
         })
-    }
-
-    pub fn new_for_btc_on_eth<D: DatabaseInterface>(db: &D) -> Result<Self> {
-        Self::new(db, &get_erc777_contract_address_from_db(db)?)
-    }
-
-    pub fn new_for_erc20_on_eos<D: DatabaseInterface>(db: &D) -> Result<Self> {
-        Self::new(db, &get_erc20_on_eos_smart_contract_address_from_db(db)?)
     }
 
     pub fn new_for_eth_on_evm<D: DatabaseInterface>(db: &D) -> Result<Self> {

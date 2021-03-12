@@ -27,7 +27,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{chains::evm::eth_test_utils::get_valid_state_with_block_and_receipts, errors::AppError};
+    use crate::chains::evm::eth_test_utils::get_valid_state_with_block_and_receipts;
 
     #[test]
     fn should_validate_block_in_state() {

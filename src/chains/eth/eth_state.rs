@@ -211,13 +211,6 @@ impl<D: DatabaseInterface> EthState<D> {
             },
         }
     }
-
-    pub fn get_eth_evm_token_dictionary(&self) -> Result<&EthEvmTokenDictionary> {
-        match self.eth_evm_token_dictionary {
-            Some(ref dictionary) => Ok(dictionary),
-            None => Err(get_not_in_state_err("eth_evm_token_dictionary").into()),
-        }
-    }
 }
 
 #[cfg(test)]

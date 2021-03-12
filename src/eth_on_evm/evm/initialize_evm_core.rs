@@ -2,7 +2,6 @@ use crate::{
     chains::evm::{
         core_initialization::{
             check_eth_core_is_initialized::is_eth_core_initialized,
-            generate_eth_contract_address::generate_and_store_eos_on_eth_contract_address,
             get_eth_core_init_output_json::EthInitializationOutput,
             initialize_eth_core::initialize_eth_core_with_no_contract_tx,
         },

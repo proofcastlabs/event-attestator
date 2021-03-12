@@ -4,12 +4,7 @@ use serde_json::to_string;
 
 use crate::{
     chains::evm::{
-        eth_database_utils::{
-            get_erc20_on_eos_smart_contract_address_from_db,
-            get_erc777_contract_address_from_db,
-            get_latest_eth_block_number,
-            get_public_eth_address_from_db,
-        },
+        eth_database_utils::{get_latest_eth_block_number, get_public_eth_address_from_db},
         eth_state::EthState,
     },
     traits::DatabaseInterface,
@@ -36,28 +31,6 @@ impl EthInitializationOutput {
             eth_ptoken_contract_tx: contract_tx.map(|tx| tx.to_string()),
             smart_contract_address: contract_address.map(|address| format!("0x{}", hex::encode(address))),
         })
-    }
-
-    pub fn new_for_eos_on_eth<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
-        let contract_tx = None;
-        let contract_address = None;
-        Ok(to_string(&Self::init(&state.db, contract_address, contract_tx)?)?)
-    }
-
-    pub fn new_for_btc_on_eth<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
-        Ok(to_string(&Self::init(
-            &state.db,
-            Some(&get_erc777_contract_address_from_db(&state.db)?),
-            Some(&state.get_misc_string()?),
-        )?)?)
-    }
-
-    pub fn new_for_erc20_on_eth<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
-        Ok(to_string(&Self::init(
-            &state.db,
-            Some(&get_erc20_on_eos_smart_contract_address_from_db(&state.db)?),
-            Some(&state.get_misc_string()?),
-        )?)?)
     }
 
     pub fn new_for_eth_on_evm<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {

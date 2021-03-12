@@ -2,8 +2,6 @@ use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
 
-pub(crate) mod test_utils;
-
 use crate::{
     chains::{eth::eth_state::EthState, evm::eth_state::EthState as EvmState},
     constants::MIN_DATA_SENSITIVITY_LEVEL,
@@ -130,16 +128,8 @@ impl EthEvmTokenDictionary {
         self.get_entry_via_evm_address(address).map(|entry| entry.eth_address)
     }
 
-    pub fn is_eth_token_supported(&self, address: &EthAddress) -> bool {
-        self.get_entry_via_eth_address(address).is_ok()
-    }
-
     pub fn is_evm_token_supported(&self, address: &EthAddress) -> bool {
         self.get_entry_via_evm_address(address).is_ok()
-    }
-
-    pub fn to_eth_addresses(&self) -> Vec<EthAddress> {
-        self.iter().map(|entry| entry.eth_address).collect()
     }
 
     pub fn to_evm_addresses(&self) -> Vec<EthAddress> {

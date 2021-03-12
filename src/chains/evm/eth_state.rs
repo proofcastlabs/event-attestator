@@ -83,74 +83,11 @@ impl<D: DatabaseInterface> EthState<D> {
         }
     }
 
-    pub fn add_btc_on_eth_redeem_infos(self, mut infos: BtcOnEthRedeemInfos) -> Result<Self> {
-        let mut new_infos = self.btc_on_eth_redeem_infos.clone().0;
-        new_infos.append(&mut infos.0);
-        self.replace_btc_on_eth_redeem_infos(BtcOnEthRedeemInfos::new(new_infos))
-    }
-
-    pub fn add_erc20_on_eos_peg_in_infos(self, mut infos: Erc20OnEosPegInInfos) -> Result<Self> {
-        let mut new_infos = self.erc20_on_eos_peg_in_infos.clone().0;
-        new_infos.append(&mut infos.0);
-        self.replace_erc20_on_eos_peg_in_infos(Erc20OnEosPegInInfos::new(new_infos))
-    }
-
-    pub fn add_eos_on_eth_eth_tx_infos(self, mut infos: EosOnEthEthTxInfos) -> Result<Self> {
-        let mut new_infos = self.eos_on_eth_eth_tx_infos.clone().0;
-        new_infos.append(&mut infos.0);
-        self.replace_eos_on_eth_eth_tx_infos(EosOnEthEthTxInfos::new(new_infos))
-    }
-
-    pub fn replace_btc_on_eth_redeem_infos(mut self, replacements: BtcOnEthRedeemInfos) -> Result<Self> {
-        self.btc_on_eth_redeem_infos = replacements;
-        Ok(self)
-    }
-
-    pub fn replace_erc20_on_eos_peg_in_infos(mut self, replacements: Erc20OnEosPegInInfos) -> Result<Self> {
-        self.erc20_on_eos_peg_in_infos = replacements;
-        Ok(self)
-    }
-
-    pub fn replace_eos_on_eth_eth_tx_infos(mut self, replacements: EosOnEthEthTxInfos) -> Result<Self> {
-        self.eos_on_eth_eth_tx_infos = replacements;
-        Ok(self)
-    }
-
     pub fn add_misc_string_to_state(mut self, misc_string: String) -> Result<Self> {
         match self.misc {
             Some(_) => Err(get_no_overwrite_state_err("misc_string").into()),
             None => {
                 self.misc = Some(misc_string);
-                Ok(self)
-            },
-        }
-    }
-
-    pub fn add_btc_transactions(mut self, btc_transactions: BtcTransactions) -> Result<Self> {
-        match self.btc_transactions {
-            Some(_) => Err(get_no_overwrite_state_err("btc_transaction").into()),
-            None => {
-                self.btc_transactions = Some(btc_transactions);
-                Ok(self)
-            },
-        }
-    }
-
-    pub fn add_eos_transactions(mut self, eos_transactions: EosSignedTransactions) -> Result<Self> {
-        match self.eos_transactions {
-            Some(_) => Err(get_no_overwrite_state_err("eos_transaction").into()),
-            None => {
-                self.eos_transactions = Some(eos_transactions);
-                Ok(self)
-            },
-        }
-    }
-
-    pub fn add_btc_utxos_and_values(mut self, btc_utxos_and_values: BtcUtxosAndValues) -> Result<Self> {
-        match self.btc_utxos_and_values {
-            Some(_) => Err(get_no_overwrite_state_err("btc_utxos_and_values").into()),
-            None => {
-                self.btc_utxos_and_values = Some(btc_utxos_and_values);
                 Ok(self)
             },
         }
@@ -179,30 +116,6 @@ impl<D: DatabaseInterface> EthState<D> {
         self.get_eth_submission_material()?.get_parent_hash()
     }
 
-    pub fn get_num_eos_txs(&self) -> usize {
-        match self.eos_transactions {
-            None => 0,
-            Some(ref txs) => txs.len(),
-        }
-    }
-
-    pub fn add_eos_eth_token_dictionary(mut self, dictionary: EosEthTokenDictionary) -> Result<Self> {
-        match self.eos_eth_token_dictionary {
-            Some(_) => Err(get_no_overwrite_state_err("eos_eth_token_dictionary").into()),
-            None => {
-                self.eos_eth_token_dictionary = Some(dictionary);
-                Ok(self)
-            },
-        }
-    }
-
-    pub fn get_eos_eth_token_dictionary(&self) -> Result<&EosEthTokenDictionary> {
-        match self.eos_eth_token_dictionary {
-            Some(ref dictionary) => Ok(dictionary),
-            None => Err(get_not_in_state_err("eos_eth_token_dictionary").into()),
-        }
-    }
-
     pub fn add_eth_evm_token_dictionary(mut self, dictionary: EthEvmTokenDictionary) -> Result<Self> {
         match self.eos_eth_token_dictionary {
             Some(_) => Err(get_no_overwrite_state_err("eth_evm_token_dictionary").into()),
@@ -228,7 +141,6 @@ mod tests {
         chains::evm::eth_test_utils::{
             get_expected_block,
             get_expected_receipt,
-            get_sample_erc20_on_eos_peg_in_infos,
             get_sample_eth_submission_material,
             get_sample_eth_submission_material_n,
             get_valid_state_with_block_and_receipts,
@@ -316,17 +228,5 @@ mod tests {
         let state = get_valid_state_with_block_and_receipts().unwrap();
         let result = state.get_parent_hash().unwrap();
         assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_add_erc20_on_eos_peg_in_info() {
-        let info = get_sample_erc20_on_eos_peg_in_infos().unwrap();
-        let state = get_valid_state_with_block_and_receipts().unwrap();
-        let new_state = state.add_erc20_on_eos_peg_in_infos(info.clone()).unwrap();
-        let mut len = new_state.erc20_on_eos_peg_in_infos.len();
-        assert_eq!(len, 1);
-        let final_state = new_state.add_erc20_on_eos_peg_in_infos(info).unwrap();
-        len = final_state.erc20_on_eos_peg_in_infos.len();
-        assert_eq!(len, 2);
     }
 }

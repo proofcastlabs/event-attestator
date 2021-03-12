@@ -3,33 +3,12 @@ use ethabi::Token;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
-    chains::evm::{
-        eth_constants::ETH_WORD_SIZE_IN_BYTES,
-        eth_contracts::encode_fxn_call,
-        eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::{
-            get_erc777_contract_address_from_db,
-            get_eth_account_nonce_from_db,
-            get_eth_chain_id_from_db,
-            get_eth_gas_price_from_db,
-            get_eth_private_key_from_db,
-            increment_eth_account_nonce_in_db,
-        },
-        eth_log::EthLog,
+    chains::{
+        eth::{eth_contracts::encode_fxn_call, eth_constants::ETH_WORD_SIZE_IN_BYTES},
+        evm::eth_log::EthLog,
     },
-    traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
-
-pub const EMPTY_DATA: Bytes = vec![];
-pub const ERC777_CHANGE_PNETWORK_GAS_LIMIT: usize = 30_000;
-pub const ERC777_MINT_WITH_NO_DATA_GAS_LIMIT: usize = 180_000;
-
-pub const ERC777_CHANGE_PNETWORK_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"newPNetwork\",\"type\":\"address\"}],\"name\":\"changePNetwork\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0xfd4add66\"}]";
-
-pub const ERC777_MINT_WITH_NO_DATA_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"recipient\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
-
-pub const ERC777_MINT_WITH_DATA_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"recipient\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"userData\",\"type\":\"bytes\"},{\"name\":\"operatorData\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
 
 lazy_static! {
     pub static ref ERC_777_REDEEM_EVENT_TOPIC: EthHash = {
@@ -68,7 +47,7 @@ fn encode_erc777_mint_with_data_fxn(
 }
 
 fn get_eth_calldata_from_maybe_data(maybe_data: Option<&[Byte]>) -> Bytes {
-    maybe_data.unwrap_or(&EMPTY_DATA).to_vec()
+    maybe_data.unwrap_or(&vec![]).to_vec()
 }
 
 pub fn encode_erc777_mint_fxn_maybe_with_data(
@@ -86,22 +65,6 @@ pub fn encode_erc777_mint_fxn_maybe_with_data(
             &get_eth_calldata_from_maybe_data(operator_data),
         ),
     }
-}
-
-pub fn get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(db: &D, new_address: EthAddress) -> Result<String> {
-    const ZERO_ETH_VALUE: usize = 0;
-    let nonce_before_incrementing = get_eth_account_nonce_from_db(db)?;
-    increment_eth_account_nonce_in_db(db, 1).and(Ok(EthTransaction::new_unsigned(
-        encode_erc777_change_pnetwork_fxn_data(new_address)?,
-        nonce_before_incrementing,
-        ZERO_ETH_VALUE,
-        get_erc777_contract_address_from_db(db)?,
-        get_eth_chain_id_from_db(db)?,
-        ERC777_CHANGE_PNETWORK_GAS_LIMIT,
-        get_eth_gas_price_from_db(db)?,
-    )
-    .sign(get_eth_private_key_from_db(db)?)?
-    .serialize_hex()))
 }
 
 #[derive(Debug, Clone, Constructor, Eq, PartialEq)]

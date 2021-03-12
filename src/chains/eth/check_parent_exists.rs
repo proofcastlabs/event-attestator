@@ -1,5 +1,5 @@
 use crate::{
-    chains::eth::{eth_database_utils::eth_block_exists_in_db, eth_state::EthState, eth_utils::convert_h256_to_bytes},
+    chains::eth::{eth_database_utils::eth_block_exists_in_db, eth_state::EthState},
     traits::DatabaseInterface,
     types::Result,
 };

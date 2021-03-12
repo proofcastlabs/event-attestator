@@ -12,7 +12,6 @@ use crate::{
         },
     },
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
-    errors::AppError,
     types::Result,
 };
 
@@ -65,12 +64,12 @@ mod tests {
 
     #[test]
     fn should_get_evm_submission_material_n() {
-        let result = get_evm_submission_material_n(1);
+        get_evm_submission_material_n(1);
     }
 
     #[test]
     fn should_get_eth_submission_material_n() {
-        let result = get_eth_submission_material_n(1);
+        get_eth_submission_material_n(1);
     }
 
     #[test]

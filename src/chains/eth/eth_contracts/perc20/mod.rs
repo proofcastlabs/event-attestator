@@ -1,3 +1,5 @@
+#![allow(dead_code)] // FIXME: rm!
+
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
 use ethereum_types::{Address as EthAddress, U256};
@@ -181,11 +183,5 @@ mod tests {
             destination_address: "whateverxxxx".to_string(),
         };
         assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_get_per20_peg_in_event_params_from_log_with_user_data() {
-        // TODO Get sample log from newer contract version for this
-        assert!(false);
     }
 }

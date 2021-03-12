@@ -1,20 +1,10 @@
-use std::str::FromStr;
-
 use derive_more::{Constructor, Deref};
-use eos_chain::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
     chains::{
-        eos::eos_utils::remove_symbol_from_eos_asset,
         eth::{
-            eth_constants::{
-                ETH_ADDRESS_SIZE_IN_BYTES,
-                ETH_ON_EVM_PEG_IN_EVENT_TOPIC,
-                ETH_ON_EVM_PEG_IN_EVENT_TOPIC_HEX,
-                ETH_WORD_SIZE_IN_BYTES,
-                ZERO_ETH_VALUE,
-            },
+            eth_constants::{ETH_ON_EVM_PEG_IN_EVENT_TOPIC, ETH_ON_EVM_PEG_IN_EVENT_TOPIC_HEX, ZERO_ETH_VALUE},
             eth_contracts::{
                 erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_DATA_GAS_LIMIT},
                 eth_on_evm_vault::EthOnEvmVaultPegInEventParams,
@@ -36,13 +26,10 @@ use crate::{
             },
         },
     },
-    constants::SAFE_ETH_ADDRESS,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
-
-pub const NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR: &str = "Not enough bytes in log data!";
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor)]
 pub struct EthOnEvmEvmTxInfo {
@@ -109,8 +96,7 @@ impl EthOnEvmEvmTxInfos {
         Ok(Self::new(
             Self::get_supported_eth_on_evm_logs_from_receipt(receipt, vault_address)
                 .iter()
-                .enumerate()
-                .map(|(i, log)| {
+                .map(|log| {
                     let event_params = EthOnEvmVaultPegInEventParams::from_log(log)?;
                     let tx_info = EthOnEvmEvmTxInfo {
                         user_data: event_params.user_data.clone(),

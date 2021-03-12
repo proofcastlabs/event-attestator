@@ -45,14 +45,8 @@ mod tests {
     use super::*;
     use crate::{
         chains::evm::{
-            eth_constants::ETH_LATEST_BLOCK_HASH_KEY,
-            eth_database_utils::{
-                get_eth_latest_block_hash_from_db,
-                get_hash_from_db_via_hash_key,
-                put_eth_latest_block_in_db,
-            },
+            eth_database_utils::{get_eth_latest_block_hash_from_db, put_eth_latest_block_in_db},
             eth_test_utils::get_sequential_eth_blocks_and_receipts,
-            eth_types::EthHash,
         },
         test_utils::get_test_database,
     };

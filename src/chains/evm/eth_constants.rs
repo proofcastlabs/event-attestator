@@ -4,20 +4,12 @@ pub use serde_json::{json, Value as JsonValue};
 use crate::{chains::evm::nibble_utils::Nibbles, types::Byte, utils::get_prefixed_db_key};
 
 pub const ZERO_BYTE: u8 = 0u8;
-pub const ZERO_ETH_VALUE: usize = 0;
 pub const ETH_TAIL_LENGTH: u64 = 100;
 pub const HIGH_NIBBLE_MASK: Byte = 15u8; // NOTE: 15u8 == [0,0,0,0,1,1,1,1]
 pub const NUM_BITS_IN_NIBBLE: usize = 4;
 pub const NUM_NIBBLES_IN_BYTE: usize = 2;
-pub const VALUE_FOR_MINTING_TX: usize = 0;
 pub static LEAF_NODE_STRING: &str = "leaf";
-pub const VALUE_FOR_PTOKEN_DEPLOY: usize = 0;
-pub const ETH_WORD_SIZE_IN_BYTES: usize = 32;
-pub const ETH_ADDRESS_SIZE_IN_BYTES: usize = 20;
-pub const GAS_LIMIT_FOR_MINTING_TX: usize = 180_000;
 pub static BRANCH_NODE_STRING: &str = "branch";
-pub const LOG_DATA_BTC_ADDRESS_START_INDEX: usize = 96;
-pub const GAS_LIMIT_FOR_PTOKEN_DEPLOY: usize = 4_000_000;
 pub static EXTENSION_NODE_STRING: &str = "extension";
 pub const HASHED_NULL_NODE: EthHash = EthHash(HASHED_NULL_NODE_BYTES);
 pub const ETH_CORE_IS_INITIALIZED_JSON: &str = "{eth_core_initialized:true}";
@@ -30,8 +22,6 @@ pub const BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX: &str = "78e6c3f67f57c26578f2487b930
 pub const EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC_HEX: &str = BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX;
 pub const ETH_MESSAGE_PREFIX: &[u8; 26] = b"\x19Ethereum Signed Message:\n";
 pub const PREFIXED_MESSAGE_HASH_LEN: &[u8; 2] = b"32";
-pub const ETH_MAINNET_CHAIN_ID: u8 = 1;
-pub const ETH_ROPSTEN_CHAIN_ID: u8 = 3;
 
 lazy_static! {
     pub static ref ERC20_ON_EOS_PEG_IN_EVENT_TOPIC: [EthHash; 1] = {

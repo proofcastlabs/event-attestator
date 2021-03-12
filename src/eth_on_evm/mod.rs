@@ -1,6 +1,3 @@
-#![allow(unused_imports)] // FIXME RM!
-#![allow(dead_code)] // FIXME RM!
-
 //! # The `pETH-on-EVM` pToken Core
 //!
 //! Here lies the functionality required for the cross-chain conversions between

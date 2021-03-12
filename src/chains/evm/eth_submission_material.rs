@@ -68,22 +68,8 @@ impl EthSubmissionMaterial {
             .ok_or(NoneError("✘ No `receipts_root` in ETH submission material!"))
     }
 
-    pub fn get_eos_ref_block_num(&self) -> Result<u16> {
-        self.eos_ref_block_num
-            .ok_or(NoneError("No `eos_ref_block_num` in submission material!"))
-    }
-
-    pub fn get_eos_ref_block_prefix(&self) -> Result<u32> {
-        self.eos_ref_block_prefix
-            .ok_or(NoneError("No `eos_ref_block_prefix` in submission material!"))
-    }
-
     pub fn get_receipts(&self) -> Vec<EthReceipt> {
         self.receipts.0.clone()
-    }
-
-    pub fn get_num_receipts(&self) -> usize {
-        self.receipts.len()
     }
 
     pub fn to_json(&self) -> Result<JsonValue> {
@@ -164,23 +150,6 @@ impl EthSubmissionMaterial {
     #[cfg(test)]
     pub fn to_string(&self) -> Result<String> {
         Ok(self.to_json()?.to_string())
-    }
-
-    pub fn get_receipts_containing_log_from_address_and_with_topics(
-        &self,
-        address: &EthAddress,
-        topics: &[EthHash],
-    ) -> Result<Self> {
-        info!("✔ Number of receipts before filtering: {}", self.receipts.len());
-        let filtered = Self::new(
-            self.get_block()?,
-            self.receipts
-                .get_receipts_containing_log_from_address_and_with_topics(address, topics),
-            self.eos_ref_block_num,
-            self.eos_ref_block_prefix,
-        );
-        info!("✔ Number of receipts after filtering: {}", filtered.receipts.len());
-        Ok(filtered)
     }
 
     pub fn get_receipts_containing_log_from_addresses_and_with_topics(
@@ -268,18 +237,12 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::evm::{
-        eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
-        eth_test_utils::{
-            get_expected_block,
-            get_expected_receipt,
-            get_sample_contract_address,
-            get_sample_contract_topics,
-            get_sample_eth_submission_material,
-            get_sample_eth_submission_material_n,
-            get_sample_eth_submission_material_string,
-            SAMPLE_RECEIPT_INDEX,
-        },
+    use crate::chains::evm::eth_test_utils::{
+        get_expected_block,
+        get_expected_receipt,
+        get_sample_eth_submission_material,
+        get_sample_eth_submission_material_string,
+        SAMPLE_RECEIPT_INDEX,
     };
 
     #[test]
@@ -331,54 +294,6 @@ mod tests {
         let bytes = block_and_receipts.to_bytes().unwrap();
         let result = EthSubmissionMaterial::from_bytes(&bytes).unwrap();
         assert_eq!(result, block_and_receipts);
-    }
-
-    #[test]
-    fn should_filter_eth_submission_material() {
-        let block_and_receipts = get_sample_eth_submission_material();
-        let num_receipts_before = block_and_receipts.receipts.len();
-        let address = get_sample_contract_address();
-        let topics = get_sample_contract_topics();
-        let result = block_and_receipts
-            .get_receipts_containing_log_from_address_and_with_topics(&address, &topics)
-            .unwrap();
-        let num_receipts_after = result.receipts.len();
-        assert!(num_receipts_before > num_receipts_after);
-        result
-            .receipts
-            .0
-            .iter()
-            .map(|receipt| {
-                assert!(receipt.logs.contain_topic(&topics[0]));
-                receipt
-            })
-            .for_each(|receipt| assert!(receipt.logs.contain_address(&address)));
-    }
-
-    #[test]
-    fn should_filter_eth_submission_material_2() {
-        let expected_num_receipts_after = 1;
-        let block_and_receipts = get_sample_eth_submission_material_n(6).unwrap();
-        let num_receipts_before = block_and_receipts.receipts.len();
-        let address = EthAddress::from_slice(&hex::decode("74630cfbc4066726107a4efe73956e219bbb46ab").unwrap());
-        let topics = vec![EthHash::from_slice(
-            &hex::decode(BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX).unwrap(),
-        )];
-        let result = block_and_receipts
-            .get_receipts_containing_log_from_address_and_with_topics(&address, &topics)
-            .unwrap();
-        let num_receipts_after = result.receipts.len();
-        assert!(num_receipts_before > num_receipts_after);
-        assert_eq!(num_receipts_after, expected_num_receipts_after);
-        result
-            .receipts
-            .0
-            .iter()
-            .map(|receipt| {
-                assert!(receipt.logs.contain_topic(&topics[0]));
-                receipt
-            })
-            .for_each(|receipt| assert!(receipt.logs.contain_address(&address)));
     }
 
     #[test]

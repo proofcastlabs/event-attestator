@@ -1,3 +1,4 @@
+#![cfg(test)]
 use ethereum_types::Address as EthAddress;
 
 use crate::dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry, EosEthTokenDictionaryJson};

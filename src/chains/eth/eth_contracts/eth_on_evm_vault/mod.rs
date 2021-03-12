@@ -1,3 +1,5 @@
+#![allow(dead_code)] // FIXME rm!
+
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
 use ethereum_types::{Address as EthAddress, U256};
@@ -7,7 +9,6 @@ use crate::{
     types::{Bytes, Result},
 };
 
-pub const ETH_ON_EVM_PEGOUT_GAS_LIMIT: usize = 180_000;
 pub const ETH_ON_EVM_MIGRATE_GAS_LIMIT: usize = 6_000_000;
 pub const ETH_ON_EVM_PEGOUT_WITH_USER_DATA_GAS_LIMIT: usize = 300_000;
 pub const ETH_ON_EVM_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT: usize = 100_000;

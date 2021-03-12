@@ -1,6 +1,5 @@
 use crate::{
     chains::evm::{
-        eth_crypto::eth_transaction::get_ptoken_smart_contract_bytecode,
         eth_database_utils::{
             put_any_sender_nonce_in_db,
             put_eth_account_nonce_in_db,
@@ -16,12 +15,8 @@ use crate::{
         eth_state::EthState,
     },
     traits::DatabaseInterface,
-    types::{Bytes, Result},
+    types::Result,
 };
-
-pub fn check_for_existence_of_eth_contract_byte_code(bytecode_path: &str) -> Result<Bytes> {
-    get_ptoken_smart_contract_bytecode(&bytecode_path)
-}
 
 pub fn put_eth_tail_block_hash_in_db_and_return_state<D>(state: EthState<D>) -> Result<EthState<D>>
 where

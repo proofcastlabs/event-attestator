@@ -3,25 +3,11 @@ use ethereum_types::{Address as EthAddress, U256};
 
 use crate::{
     chains::{
-        eth::eth_traits::EthSigningCapabilities,
-        evm::{
-            eth_contracts::{encode_fxn_call, erc777::ERC777_CHANGE_PNETWORK_GAS_LIMIT},
-            eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
-            eth_database_utils::{
-                get_erc777_proxy_contract_address_from_db,
-                get_eth_account_nonce_from_db,
-                get_eth_chain_id_from_db,
-                get_eth_gas_price_from_db,
-                get_eth_private_key_from_db,
-                increment_eth_account_nonce_in_db,
-            },
-        },
+        eth::{eth_contracts::encode_fxn_call, eth_traits::EthSigningCapabilities},
+        evm::eth_crypto::eth_private_key::EthPrivateKey,
     },
-    traits::DatabaseInterface,
     types::{Bytes, Result},
 };
-
-pub const ERC777_CHANGE_PNETWORK_BY_PROXY_GAS_LIMIT: usize = 33_000;
 
 pub const ERC777_PROXY_ABI: &str = "[{\"constant\":true,\"inputs\":[],\"name\":\"pTokenAddress\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\",\"signature\":\"0x521404d8\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"processTransactions\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\",\"signature\":\"0xafd5b776\"},{\"constant\":true,\"inputs\":[],\"name\":\"pNetwork\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\",\"signature\":\"0xca16814e\"},{\"inputs\":[{\"name\":\"_pTokenAddress\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\",\"signature\":\"constructor\"},{\"constant\":false,\"inputs\":[{\"name\":\"_newPNetwork\",\"type\":\"address\"}],\"name\":\"changePNetwork\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0xfd4add66\"},{\"constant\":false,\"inputs\":[{\"name\":\"_newPToken\",\"type\":\"address\"}],\"name\":\"changePTokenAddress\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0x28c14fa8\"},{\"constant\":false,\"inputs\":[{\"name\":\"_recipient\",\"type\":\"address\"},{\"name\":\"_amount\",\"type\":\"uint256\"},{\"name\":\"_nonce\",\"type\":\"uint256\"},{\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"mintByProxy\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0x7ad6ae47\"},{\"constant\":false,\"inputs\":[{\"name\":\"_newPNetwork\",\"type\":\"address\"}],\"name\":\"changePNetworkByProxy\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0x6f9d66b0\"}]";
 
@@ -57,44 +43,6 @@ pub fn encode_erc777_proxy_change_pnetwork_by_proxy_fxn_data(new_pnetwork_addres
     encode_fxn_call(ERC777_PROXY_ABI, "changePNetworkByProxy", &[Token::Address(
         new_pnetwork_address,
     )])
-}
-
-const ZERO_ETH_VALUE: usize = 0;
-
-pub fn get_signed_erc777_proxy_change_pnetwork_tx<D>(db: &D, new_address: EthAddress) -> Result<String>
-where
-    D: DatabaseInterface,
-{
-    let nonce_before_incrementing = get_eth_account_nonce_from_db(db)?;
-    increment_eth_account_nonce_in_db(db, 1).and(Ok(EthTransaction::new_unsigned(
-        encode_erc777_proxy_change_pnetwork_fxn_data(new_address)?,
-        nonce_before_incrementing,
-        ZERO_ETH_VALUE,
-        get_erc777_proxy_contract_address_from_db(db)?,
-        get_eth_chain_id_from_db(db)?,
-        ERC777_CHANGE_PNETWORK_GAS_LIMIT,
-        get_eth_gas_price_from_db(db)?,
-    )
-    .sign(get_eth_private_key_from_db(db)?)?
-    .serialize_hex()))
-}
-
-pub fn get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(db: &D, new_address: EthAddress) -> Result<String>
-where
-    D: DatabaseInterface,
-{
-    let nonce_before_incrementing = get_eth_account_nonce_from_db(db)?;
-    increment_eth_account_nonce_in_db(db, 1).and(Ok(EthTransaction::new_unsigned(
-        encode_erc777_proxy_change_pnetwork_by_proxy_fxn_data(new_address)?,
-        nonce_before_incrementing,
-        ZERO_ETH_VALUE,
-        get_erc777_proxy_contract_address_from_db(db)?,
-        get_eth_chain_id_from_db(db)?,
-        ERC777_CHANGE_PNETWORK_BY_PROXY_GAS_LIMIT,
-        get_eth_gas_price_from_db(db)?,
-    )
-    .sign(get_eth_private_key_from_db(db)?)?
-    .serialize_hex()))
 }
 
 #[cfg(test)]

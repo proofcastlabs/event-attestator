@@ -1,21 +1,12 @@
-use std::str::FromStr;
-
 use derive_more::{Constructor, Deref};
-use eos_chain::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
     chains::{
         eth::{
-            eth_constants::{
-                ETH_ADDRESS_SIZE_IN_BYTES,
-                ETH_ON_EVM_REDEEM_EVENT_TOPIC,
-                ETH_ON_EVM_REDEEM_EVENT_TOPIC_HEX,
-                ETH_WORD_SIZE_IN_BYTES,
-                ZERO_ETH_VALUE,
-            },
+            eth_constants::{ETH_ON_EVM_REDEEM_EVENT_TOPIC, ETH_ON_EVM_REDEEM_EVENT_TOPIC_HEX, ZERO_ETH_VALUE},
             eth_contracts::{
-                eth_on_evm_erc777::{encode_erc777_mint_fxn_maybe_with_data, EthOnEvmErc777RedeemEvent},
+                eth_on_evm_erc777::EthOnEvmErc777RedeemEvent,
                 eth_on_evm_vault::{encode_eth_on_evm_peg_out_fxn_data, ETH_ON_EVM_PEGOUT_WITH_USER_DATA_GAS_LIMIT},
             },
             eth_crypto::{
@@ -38,13 +29,10 @@ use crate::{
             eth_submission_material::EthSubmissionMaterial as EvmSubmissionMaterial,
         },
     },
-    constants::SAFE_ETH_ADDRESS,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
-
-pub const NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR: &str = "Not enough bytes in log data!";
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor)]
 pub struct EthOnEvmEthTxInfo {
@@ -114,8 +102,7 @@ impl EthOnEvmEthTxInfos {
         Ok(Self::new(
             Self::get_supported_eth_on_evm_logs_from_receipt(receipt, dictionary)
                 .iter()
-                .enumerate()
-                .map(|(i, log)| {
+                .map(|log| {
                     let event_params = EthOnEvmErc777RedeemEvent::from_log(log)?;
                     let tx_info = EthOnEvmEthTxInfo {
                         evm_token_address: log.address,
@@ -391,7 +378,6 @@ mod tests {
         let infos = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary).unwrap();
         let vault_address = EthAddress::from_slice(&hex::decode("e72479bf662ca5047301f80733cb1c5c23a338af").unwrap());
         let pk = get_sample_eth_private_key();
-        let expected_num_results = 1;
         let nonce = 0_u64;
         let chain_id = 4_u8;
         let gas_limit = 300_000_usize;

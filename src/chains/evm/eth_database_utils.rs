@@ -4,9 +4,6 @@ use crate::{
     chains::evm::{
         eth_constants::{
             ANY_SENDER_NONCE_KEY,
-            BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
-            EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
-            ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY,
             ERC777_PROXY_CONTACT_ADDRESS_KEY,
             ETH_ACCOUNT_NONCE_KEY,
             ETH_ADDRESS_KEY,
@@ -22,7 +19,6 @@ use crate::{
         },
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_submission_material::EthSubmissionMaterial,
-        eth_types::{AnySenderSigningParams, EthSigningParams},
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     database_utils::{get_u64_from_db, put_u64_in_db},
@@ -39,42 +35,8 @@ fn convert_h256_to_bytes(hash: &EthHash) -> Bytes {
     bytes
 }
 
-fn convert_bytes_to_h256(bytes: &[Byte]) -> Result<EthHash> {
-    // NOTE: We switch the endianness of the block hash to avoid DB collisions w/ ETH<->ETH bridges.
-    match bytes.len() {
-        32 => {
-            let mut x = bytes.to_vec();
-            x.reverse();
-            Ok(EthHash::from_slice(&x))
-        },
-        _ => Err("✘ Not enough bytes to convert to h256!".into()),
-    }
-}
-
 pub fn delete_block_by_block_hash<D: DatabaseInterface>(db: &D, block_hash: &EthHash) -> Result<()> {
     db.delete(convert_h256_to_bytes(block_hash))
-}
-
-pub fn get_signing_params_from_db<D: DatabaseInterface>(db: &D) -> Result<EthSigningParams> {
-    trace!("✔ Getting signing params from db...");
-    Ok(EthSigningParams {
-        chain_id: get_eth_chain_id_from_db(db)?,
-        gas_price: get_eth_gas_price_from_db(db)?,
-        eth_private_key: get_eth_private_key_from_db(db)?,
-        eth_account_nonce: get_eth_account_nonce_from_db(db)?,
-        smart_contract_address: get_erc777_contract_address_from_db(db)?,
-    })
-}
-
-pub fn get_any_sender_signing_params_from_db<D: DatabaseInterface>(db: &D) -> Result<AnySenderSigningParams> {
-    trace!("✔ Getting AnySender signing params from db...");
-    Ok(AnySenderSigningParams {
-        chain_id: get_eth_chain_id_from_db(db)?,
-        eth_private_key: get_eth_private_key_from_db(db)?,
-        any_sender_nonce: get_any_sender_nonce_from_db(db)?,
-        public_eth_address: get_public_eth_address_from_db(db)?,
-        erc777_proxy_address: get_erc777_proxy_contract_address_from_db(db)?,
-    })
 }
 
 pub fn put_eth_canon_to_tip_length_in_db<D: DatabaseInterface>(db: &D, length: u64) -> Result<()> {
@@ -246,13 +208,6 @@ pub fn eth_block_exists_in_db<D: DatabaseInterface>(db: &D, block_hash: &EthHash
     key_exists_in_db(db, &key, MIN_DATA_SENSITIVITY_LEVEL)
 }
 
-pub fn get_hash_from_db_via_hash_key<D: DatabaseInterface>(db: &D, hash_key: EthHash) -> Result<Option<EthHash>> {
-    match db.get(convert_h256_to_bytes(&hash_key), MIN_DATA_SENSITIVITY_LEVEL) {
-        Ok(bytes) => Ok(Some(convert_bytes_to_h256(&bytes)?)),
-        Err(_) => Ok(None),
-    }
-}
-
 pub fn put_eth_submission_material_in_db<D: DatabaseInterface>(
     db: &D,
     eth_submission_material: &EthSubmissionMaterial,
@@ -360,11 +315,6 @@ pub fn put_eth_account_nonce_in_db<D: DatabaseInterface>(db: &D, nonce: u64) -> 
     put_u64_in_db(db, &ETH_ACCOUNT_NONCE_KEY.to_vec(), nonce)
 }
 
-pub fn increment_eth_account_nonce_in_db<D: DatabaseInterface>(db: &D, amount_to_increment_by: u64) -> Result<()> {
-    trace!("✔ Incrementing ETH account nonce in db...");
-    get_eth_account_nonce_from_db(db).and_then(|nonce| put_eth_account_nonce_in_db(db, nonce + amount_to_increment_by))
-}
-
 pub fn put_eth_chain_id_in_db<D: DatabaseInterface>(db: &D, chain_id: u8) -> Result<()> {
     trace!("✔ Putting ETH `chain_id` in db of {} in db...", chain_id);
     db.put(
@@ -402,30 +352,6 @@ pub fn get_eth_private_key_from_db<D: DatabaseInterface>(db: &D) -> Result<EthPr
     })
 }
 
-pub fn get_erc777_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
-    trace!("✔ Getting ETH smart-contract address from db...");
-    db.get(
-        BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-        MIN_DATA_SENSITIVITY_LEVEL,
-    )
-    .map(|address_bytes| EthAddress::from_slice(&address_bytes[..]))
-}
-
-pub fn get_erc20_on_eos_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
-    info!("✔ Getting `pERC20-on-EOS` smart-contract address from db...");
-    get_eth_address_from_db(db, &*ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY)
-}
-
-pub fn get_eos_on_eth_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
-    info!("✔ Getting 'EOS_ON_ETH' smart-contract address from db...");
-    Ok(get_eth_address_from_db(db, &*EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY).unwrap_or_else(|_| EthAddress::zero()))
-}
-
-fn get_eth_address_from_db<D: DatabaseInterface>(db: &D, key: &[Byte]) -> Result<EthAddress> {
-    db.get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
-        .map(|address_bytes| EthAddress::from_slice(&address_bytes[..]))
-}
-
 pub fn get_erc777_proxy_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
     trace!("✔ Getting ERC777 proxy contract address from db...");
     match db.get(ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL) {
@@ -444,38 +370,6 @@ pub fn put_erc777_proxy_contract_address_in_db<D: DatabaseInterface>(
 ) -> Result<()> {
     trace!("✔ Putting ERC777 proxy contract address in db...");
     put_eth_address_in_db(db, &ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(), proxy_contract_address)
-}
-
-pub fn put_btc_on_eth_smart_contract_address_in_db<D: DatabaseInterface>(
-    db: &D,
-    smart_contract_address: &EthAddress,
-) -> Result<()> {
-    trace!("✔ Putting ETH smart-contract address in db...");
-    put_eth_address_in_db(db, &*BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY, smart_contract_address)
-}
-
-pub fn put_erc20_on_eos_smart_contract_address_in_db<D: DatabaseInterface>(
-    db: &D,
-    smart_contract_address: &EthAddress,
-) -> Result<()> {
-    trace!("✔ Putting 'ERC20-on-EOS` smart-contract address in db...");
-    put_eth_address_in_db(
-        db,
-        &ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-        smart_contract_address,
-    )
-}
-
-pub fn put_eos_on_eth_smart_contract_address_in_db<D: DatabaseInterface>(
-    db: &D,
-    smart_contract_address: &EthAddress,
-) -> Result<()> {
-    trace!("✔ Putting 'EOS_ON_ETH' smart-contract address in db...");
-    put_eth_address_in_db(
-        db,
-        &EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-        smart_contract_address,
-    )
 }
 
 pub fn get_public_eth_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
@@ -514,18 +408,12 @@ pub fn put_any_sender_nonce_in_db<D: DatabaseInterface>(db: &D, nonce: u64) -> R
     put_u64_in_db(db, &ANY_SENDER_NONCE_KEY.to_vec(), nonce)
 }
 
-pub fn increment_any_sender_nonce_in_db<D: DatabaseInterface>(db: &D, amount_to_increment_by: u64) -> Result<()> {
-    trace!("✔ Incrementing AnySender nonce in db...");
-    get_any_sender_nonce_from_db(db).and_then(|nonce| put_any_sender_nonce_in_db(db, nonce + amount_to_increment_by))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
         chains::evm::eth_test_utils::{
             get_sample_contract_address,
-            get_sample_eth_address,
             get_sample_eth_private_key,
             get_sample_eth_submission_material,
             get_sample_eth_submission_material_n,
@@ -583,15 +471,6 @@ mod tests {
     }
 
     #[test]
-    fn should_get_erc777_contract_address_from_db() {
-        let db = get_test_database();
-        let contract_address = get_sample_eth_address();
-        put_btc_on_eth_smart_contract_address_in_db(&db, &contract_address).unwrap();
-        let result = get_erc777_contract_address_from_db(&db).unwrap();
-        assert_eq!(result, contract_address);
-    }
-
-    #[test]
     fn should_get_eth_pk_from_database() {
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
@@ -599,19 +478,6 @@ mod tests {
         match get_eth_private_key_from_db(&db) {
             Ok(pk) => assert_eq!(pk, eth_private_key),
             Err(e) => panic!("Error getting eth private key from db: {}", e),
-        }
-    }
-
-    #[test]
-    fn should_increment_eth_account_nonce_in_db() {
-        let nonce = 666;
-        let db = get_test_database();
-        put_eth_account_nonce_in_db(&db, nonce).unwrap();
-        let amount_to_increment_by: u64 = 671;
-        increment_eth_account_nonce_in_db(&db, amount_to_increment_by).unwrap();
-        match get_eth_account_nonce_from_db(&db) {
-            Err(e) => panic!("Error getting nonce from db: {}", e),
-            Ok(nonce_from_db) => assert_eq!(nonce_from_db, nonce + amount_to_increment_by),
         }
     }
 

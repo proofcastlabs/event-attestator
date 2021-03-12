@@ -1,3 +1,5 @@
+#![allow(dead_code)] // FIXME rm!
+
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
@@ -15,7 +17,6 @@ use crate::{
             get_eth_private_key_from_db,
             increment_eth_account_nonce_in_db,
         },
-        eth_log::EthLog,
         eth_traits::EthLogCompatible,
     },
     traits::DatabaseInterface,

@@ -27,8 +27,6 @@ use crate::{
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             eth_utils::convert_hex_to_address,
             increment_evm_account_nonce::maybe_increment_evm_account_nonce_and_return_eth_state,
-            remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
-            remove_receipts_from_canon_block::maybe_remove_receipts_from_canon_block_and_return_state,
             validate_block_in_state::validate_block_in_state,
             validate_receipts_in_state::validate_receipts_in_state,
         },
@@ -75,7 +73,7 @@ use crate::{
                 maybe_sign_evm_txs_and_add_to_eth_state,
                 EthOnEvmEvmTxInfos,
             },
-            get_eth_output_json::{get_eth_output_json, get_evm_signed_tx_info_from_evm_txs, EthOutput},
+            get_eth_output_json::{get_evm_signed_tx_info_from_evm_txs, EthOutput},
         },
         evm::{
             eth_tx_info::{
@@ -84,7 +82,7 @@ use crate::{
                 maybe_sign_eth_txs_and_add_to_evm_state,
                 EthOnEvmEthTxInfos,
             },
-            get_evm_output_json::{get_eth_signed_tx_info_from_evm_txs, get_evm_output_json, EvmOutput},
+            get_evm_output_json::{get_eth_signed_tx_info_from_evm_txs, EvmOutput},
         },
     },
     traits::DatabaseInterface,

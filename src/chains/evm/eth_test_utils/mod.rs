@@ -1,5 +1,5 @@
 #![cfg(test)]
-use std::{fs::read_to_string, path::Path, str::FromStr};
+use std::{fs::read_to_string, path::Path};
 
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
@@ -16,7 +16,6 @@ use crate::{
         nibble_utils::{get_nibbles_from_bytes, get_nibbles_from_offset_bytes, Nibbles},
         trie_nodes::Node,
     },
-    erc20_on_eos::eth::peg_in_info::{Erc20OnEosPegInInfo, Erc20OnEosPegInInfos},
     errors::AppError,
     test_utils::{get_test_database, TestDB},
     traits::DatabaseInterface,
@@ -98,14 +97,6 @@ where
     put_special_eth_block_in_db(db, eth_submission_material, "tail")
 }
 
-pub fn get_eth_latest_block_hash_from_db<D>(db: &D) -> Result<EthHash>
-where
-    D: DatabaseInterface,
-{
-    info!("✔ Getting ETH latest block hash from db...");
-    get_special_eth_hash_from_db(db, "latest")
-}
-
 pub fn get_eth_canon_block_hash_from_db<D>(db: &D) -> Result<EthHash>
 where
     D: DatabaseInterface,
@@ -150,20 +141,8 @@ pub fn get_sample_eth_submission_material_n(num: usize) -> Result<EthSubmissionM
     get_sample_eth_submission_material_string(num).and_then(|s| EthSubmissionMaterial::from_str(&s))
 }
 
-pub fn get_sample_receipt_n(sample_block_num: usize, receipt_index: usize) -> Result<EthReceipt> {
-    get_sample_eth_submission_material_n(sample_block_num).map(|block| block.receipts.0[receipt_index].clone())
-}
-
-pub fn get_sample_log_n(sample_block_num: usize, receipt_index: usize, log_index: usize) -> Result<EthLog> {
-    get_sample_receipt_n(sample_block_num, receipt_index).map(|receipt| receipt.logs.0[log_index].clone())
-}
-
 pub fn get_sample_contract_topic() -> EthHash {
     EthHash::from_slice(&hex::decode(TEMPORARY_CONTRACT_TOPIC).unwrap())
-}
-
-pub fn get_sample_contract_topics() -> Vec<EthHash> {
-    vec![EthHash::from_slice(&hex::decode(TEMPORARY_CONTRACT_TOPIC).unwrap())]
 }
 
 pub fn get_sample_contract_address() -> EthAddress {
@@ -371,7 +350,16 @@ pub fn get_sample_unsigned_eth_transaction() -> EthTransaction {
     let chain_id = 4; // Rinkeby
     let gas_limit = 100_000;
     let gas_price = 20_000_000_000;
-    EthTransaction::new_unsigned(data, nonce, value, to, chain_id, gas_limit, gas_price)
+    // EthTransaction::{data, nonce, value, to, chain_id, gas_limit, gas_price}
+    EthTransaction::new_eth_tx(
+        to.as_bytes().to_vec(),
+        data,
+        nonce,
+        value,
+        chain_id,
+        gas_limit,
+        gas_price,
+    )
 }
 
 mod tests {
@@ -553,60 +541,4 @@ mod tests {
             )
         });
     }
-}
-
-pub fn get_sample_submission_material_with_erc20_peg_in_event() -> Result<EthSubmissionMaterial> {
-    get_sample_eth_submission_material_n(7)
-}
-
-pub fn get_sample_receipt_with_erc20_peg_in_event() -> Result<EthReceipt> {
-    get_sample_receipt_n(7, 17)
-}
-
-pub fn get_sample_log_with_erc20_peg_in_event() -> Result<EthLog> {
-    get_sample_log_n(7, 17, 1)
-}
-
-pub fn get_sample_log_with_erc20_peg_in_event_2() -> Result<EthLog> {
-    get_sample_log_n(9, 16, 1)
-}
-
-// TODO The eth->eos decimal conversion makes this a bad example now. Get a better one!
-pub fn get_sample_erc20_on_eos_peg_in_info() -> Result<Erc20OnEosPegInInfo> {
-    Ok(Erc20OnEosPegInInfo::new(
-        U256::from_dec_str("1337").unwrap(),
-        EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
-        EthAddress::from_slice(&hex::decode("9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap()),
-        "aneosaddress".to_string(),
-        EthHash::from_slice(&hex::decode("241f386690b715422102edf42f5c9edcddea16b64f17d02bad572f5f341725c0").unwrap()),
-        "SampleToken".to_string(),
-        "0.000000000 SAM".to_string(),
-    ))
-}
-
-pub fn get_sample_erc20_on_eos_peg_in_infos() -> Result<Erc20OnEosPegInInfos> {
-    Ok(Erc20OnEosPegInInfos::new(vec![get_sample_erc20_on_eos_peg_in_info()?]))
-}
-
-fn get_tx_hash_of_erc777_redeem() -> &'static str {
-    "442612aba789ce873bb3804ff62ced770dcecb07d19ddcf9b651c357eebaed40"
-}
-
-fn get_sample_block_with_erc777_redeem() -> EthSubmissionMaterial {
-    get_sample_eth_submission_material_n(4).unwrap()
-}
-
-pub fn get_sample_receipt_with_erc777_redeem() -> EthReceipt {
-    let hash = EthHash::from_str(get_tx_hash_of_erc777_redeem()).unwrap();
-    get_sample_block_with_erc777_redeem()
-        .receipts
-        .0
-        .iter()
-        .filter(|receipt| receipt.transaction_hash == hash)
-        .collect::<Vec<&EthReceipt>>()[0]
-        .clone()
-}
-
-pub fn get_sample_log_with_erc777_redeem() -> EthLog {
-    get_sample_receipt_with_erc777_redeem().logs.0[2].clone()
 }
