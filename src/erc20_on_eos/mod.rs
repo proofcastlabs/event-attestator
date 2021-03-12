@@ -22,7 +22,11 @@ pub use crate::{
                 debug_remove_global_sequences_from_processed_list,
             },
         },
-        eth::eth_message_signer::{sign_ascii_msg_with_eth_key_with_no_prefix, sign_hex_msg_with_eth_key_with_prefix},
+        eth::eth_message_signer::{
+            sign_ascii_msg_with_eth_key_with_no_prefix,
+            sign_ascii_msg_with_eth_key_with_prefix,
+            sign_hex_msg_with_eth_key_with_prefix,
+        },
     },
     erc20_on_eos::{
         debug_functions::{

@@ -115,6 +115,10 @@ pub fn get_core_version() -> String {
     CORE_VERSION.unwrap_or("Unknown").to_string()
 }
 
+pub fn is_hex(string: &str) -> bool {
+    hex::decode(strip_hex_prefix(string)).is_ok()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -278,5 +282,17 @@ mod tests {
     fn should_get_unix_timestamp_as_u32() {
         let result = get_unix_timestamp_as_u32();
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_check_if_string_is_hex() {
+        let hex = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
+        let hex_no_prefix = "4d261b7d3101e9ff7e37f63449be8a9a1affef87e4952900dbb84ee3c29f45f3";
+        let string_no_hex = "Arbitrary string";
+        let string_containing_hex = "the address is 0x82a59eA2B64B2A6FF0B8A778D0B3f3A1945d36Dd";
+        assert_eq!(is_hex(hex), true);
+        assert_eq!(is_hex(hex_no_prefix), true);
+        assert_eq!(is_hex(string_no_hex), false);
+        assert_eq!(is_hex(string_containing_hex), false);
     }
 }

@@ -39,7 +39,11 @@ pub use crate::{
     },
     chains::{
         btc::core_initialization::initialize_btc_core::maybe_initialize_btc_core as maybe_initialize_btc_enclave,
-        eth::eth_message_signer::{sign_ascii_msg_with_eth_key_with_no_prefix, sign_hex_msg_with_eth_key_with_prefix},
+        eth::eth_message_signer::{
+            sign_ascii_msg_with_eth_key_with_no_prefix,
+            sign_ascii_msg_with_eth_key_with_prefix,
+            sign_hex_msg_with_eth_key_with_prefix,
+        },
     },
 };
 
