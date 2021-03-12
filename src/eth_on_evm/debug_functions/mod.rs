@@ -181,6 +181,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
                 .and_then(|material| {
                     EthOnEvmEvmTxInfos::from_submission_material(
                         &material,
+                        &get_eth_on_evm_smart_contract_address_from_db(&state.db)?,
                         &EthEvmTokenDictionary::get_from_db(&state.db)?,
                     )
                 })
