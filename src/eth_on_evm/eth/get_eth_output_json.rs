@@ -66,21 +66,21 @@ impl EvmTxInfo {
             evm_signed_tx: tx.eth_tx_hex(),
             any_sender_tx: tx.any_sender_tx(),
             _id: if tx.is_any_sender() {
-                format!("peth-on-evm-any-sender-{}", nonce)
+                format!("peth-on-evm-evm-any-sender-{}", nonce)
             } else {
                 format!("peth-on-evm-evm-{}", nonce)
             },
             evm_tx_hash: format!("0x{}", tx.get_tx_hash()),
-            originating_address: evm_tx_info.token_sender.to_string(),
             evm_tx_amount: evm_tx_info.token_amount.to_string(),
             eth_tx_amount: evm_tx_info.token_amount.to_string(),
-            host_token_address: format!("0x{}", hex::encode(&evm_tx_info.eth_token_address)),
-            originating_tx_hash: evm_tx_info.originating_tx_hash.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             evm_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            evm_tx_recipient: format!("0x{}", hex::encode(evm_tx_info.destination_address.as_bytes())),
+            host_token_address: format!("0x{}", hex::encode(&evm_tx_info.eth_token_address)),
             native_token_address: format!("0x{}", hex::encode(&evm_tx_info.evm_token_address)),
+            originating_address: format!("0x{}", hex::encode(evm_tx_info.token_sender.as_bytes())),
+            evm_tx_recipient: format!("0x{}", hex::encode(evm_tx_info.destination_address.as_bytes())),
+            originating_tx_hash: format!("0x{}", hex::encode(evm_tx_info.originating_tx_hash.as_bytes())),
         })
     }
 }

@@ -7,13 +7,16 @@ use crate::{
         eth::{
             any_sender::relay_transaction::RelayTransaction,
             eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::get_latest_eth_block_number,
+            eth_database_utils::{
+                get_any_sender_nonce_from_db as get_eth_any_sender_nonce_from_db,
+                get_eth_account_nonce_from_db,
+                get_latest_eth_block_number,
+            },
             eth_traits::EthTxInfoCompatible,
         },
         evm::{
             eth_database_utils::{
                 get_any_sender_nonce_from_db as get_evm_any_sender_nonce_from_db,
-                get_eth_account_nonce_from_db as get_evm_account_nonce_from_db,
                 get_latest_eth_block_number as get_latest_evm_block_number,
             },
             eth_state::EthState as EvmState,
@@ -43,7 +46,7 @@ pub struct EthTxInfo {
     pub originating_tx_hash: String,
     pub originating_address: String,
     pub native_token_address: String,
-    pub evm_signed_tx: Option<String>,
+    pub eth_signed_tx: Option<String>,
     pub any_sender_nonce: Option<u64>,
     pub evm_account_nonce: Option<u64>,
     pub evm_latest_block_number: usize,
@@ -65,24 +68,24 @@ impl EthTxInfo {
             broadcast: false,
             broadcast_tx_hash: None,
             broadcast_timestamp: None,
-            evm_signed_tx: tx.eth_tx_hex(),
+            eth_signed_tx: tx.eth_tx_hex(),
             any_sender_tx: tx.any_sender_tx(),
             _id: if tx.is_any_sender() {
-                format!("peth-on-evm-any-sender-{}", nonce)
+                format!("peth-on-evm-eth-any-sender-{}", nonce)
             } else {
-                format!("peth-on-evm-evm-{}", nonce)
+                format!("peth-on-evm-eth-{}", nonce)
             },
             evm_tx_hash: format!("0x{}", tx.get_tx_hash()),
-            originating_address: evm_tx_info.token_sender.to_string(),
             evm_tx_amount: evm_tx_info.token_amount.to_string(),
             eth_tx_amount: evm_tx_info.token_amount.to_string(),
-            host_token_address: format!("0x{}", hex::encode(&evm_tx_info.eth_token_address)),
-            originating_tx_hash: evm_tx_info.originating_tx_hash.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             evm_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            evm_tx_recipient: format!("0x{}", hex::encode(evm_tx_info.destination_address.as_bytes())),
+            host_token_address: format!("0x{}", hex::encode(&evm_tx_info.eth_token_address)),
             native_token_address: format!("0x{}", hex::encode(&evm_tx_info.evm_token_address)),
+            originating_address: format!("0x{}", hex::encode(evm_tx_info.token_sender.as_bytes())),
+            evm_tx_recipient: format!("0x{}", hex::encode(evm_tx_info.destination_address.as_bytes())),
+            originating_tx_hash: format!("0x{}", hex::encode(evm_tx_info.originating_tx_hash.as_bytes())),
         })
     }
 }
@@ -125,9 +128,9 @@ pub fn get_evm_output_json<D: DatabaseInterface>(state: EvmState<D>) -> Result<S
             get_eth_signed_tx_info_from_evm_txs(
                 &state.eth_on_evm_eth_signed_txs,
                 &state.eth_on_evm_eth_tx_infos,
-                get_evm_account_nonce_from_db(&state.db)?,
+                get_eth_account_nonce_from_db(&state.db)?,
                 false, // TODO Get this from state submission material when/if we support AnySender
-                get_evm_any_sender_nonce_from_db(&state.db)?,
+                get_eth_any_sender_nonce_from_db(&state.db)?,
                 get_latest_eth_block_number(&state.db)?,
             )?
         },
