@@ -5,8 +5,11 @@ use ethereum_types::Address as EthAddress;
 
 use crate::{
     chains::{
-        eth::eth_submission_material::EthSubmissionMaterial,
-        evm::eth_submission_material::EthSubmissionMaterial as EvmSubmissionMaterial,
+        eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_submission_material::EthSubmissionMaterial},
+        evm::{
+            eth_crypto::eth_private_key::EthPrivateKey as EvmPrivateKey,
+            eth_submission_material::EthSubmissionMaterial as EvmSubmissionMaterial,
+        },
     },
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
     errors::AppError,
@@ -47,6 +50,16 @@ pub fn get_sample_vault_address() -> EthAddress {
     EthAddress::from_slice(&hex::decode("DAf39ecC934c69fc1035D4cb03f640630344bb42").unwrap())
 }
 
+pub fn get_sample_eth_private_key() -> EthPrivateKey {
+    EthPrivateKey::from_slice(&hex::decode("115bfcb3fd7cae5c2b996bf7bd1c012f804b98060f7e2f4d558542549e88440f").unwrap())
+        .unwrap()
+}
+
+pub fn get_sample_evm_private_key() -> EvmPrivateKey {
+    EvmPrivateKey::from_slice(&hex::decode("57a5a09577a0604b84870577598d4a24fe9e5b879650a0248ac96be7d9d3f3aa").unwrap())
+        .unwrap()
+}
+
 mod tests {
     use super::*;
 
@@ -58,5 +71,15 @@ mod tests {
     #[test]
     fn should_get_eth_submission_material_n() {
         let result = get_eth_submission_material_n(1);
+    }
+
+    #[test]
+    fn should_get_sample_eth_private_key() {
+        get_sample_eth_private_key();
+    }
+
+    #[test]
+    fn should_get_sample_evm_private_key() {
+        get_sample_evm_private_key();
     }
 }

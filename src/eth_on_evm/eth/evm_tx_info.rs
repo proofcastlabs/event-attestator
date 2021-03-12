@@ -20,11 +20,7 @@ use crate::{
                 eth_on_evm_vault::EthOnEvmVaultPegInEventParams,
             },
             eth_crypto::eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
-            eth_database_utils::{
-                get_erc20_on_eos_smart_contract_address_from_db,
-                get_eth_canon_block_from_db,
-                get_eth_on_evm_smart_contract_address_from_db,
-            },
+            eth_database_utils::{get_eth_canon_block_from_db, get_eth_on_evm_smart_contract_address_from_db},
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
             eth_state::EthState,
@@ -78,59 +74,47 @@ impl EthOnEvmEvmTxInfos {
         ))
     }
 
-    fn is_log_eth_on_evm_peg_in(log: &EthLog) -> Result<bool> {
-        debug!("✔ Checking log contains topic: {}", ETH_ON_EVM_PEG_IN_EVENT_TOPIC_HEX);
-        Ok(log.contains_topic(&EthHash::from_slice(
+    fn is_log_eth_on_evm_peg_in(log: &EthLog, vault_address: &EthAddress) -> Result<bool> {
+        let log_contains_topic = log.contains_topic(&EthHash::from_slice(
             &hex::decode(&ETH_ON_EVM_PEG_IN_EVENT_TOPIC_HEX)?[..],
-        )))
+        ));
+        let log_is_from_vault_address = &log.address == vault_address;
+        debug!("✔ Checking log contains topic: {}", ETH_ON_EVM_PEG_IN_EVENT_TOPIC_HEX);
+        debug!("✔ Log has correct topic: {}", log_contains_topic);
+        debug!("✔ Log is from vault address: {}", log_is_from_vault_address);
+        Ok(log_contains_topic && log_is_from_vault_address)
     }
 
-    pub fn is_log_supported_eth_on_evm_peg_in(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
-        match Self::is_log_eth_on_evm_peg_in(log)? {
-            false => Ok(false),
-            true => Self::get_token_contract_address_from_log(log)
-                .map(|token_contract_address| dictionary.is_eth_token_supported(&token_contract_address)),
-        }
+    fn receipt_contains_supported_eth_on_evm_peg_in(receipt: &EthReceipt, vault_address: &EthAddress) -> bool {
+        Self::get_supported_eth_on_evm_logs_from_receipt(receipt, vault_address).len() > 0
     }
 
-    fn get_token_contract_address_from_log(log: &EthLog) -> Result<EthAddress> {
-        EthOnEvmVaultPegInEventParams::from_log(log).map(|params| params.token_address)
-    }
-
-    fn check_log_is_eth_on_evm_peg_in(log: &EthLog) -> Result<()> {
-        trace!("✔ Checking if log is an `ETH-on-ETVM` peg in...");
-        match Self::is_log_eth_on_evm_peg_in(log)? {
-            true => Ok(()),
-            false => Err("✘ Log is not from an `ETH-on-EVM` peg in event!".into()),
-        }
-    }
-
-    fn receipt_contains_supported_eth_on_evm_peg_in(receipt: &EthReceipt, dictionary: &EthEvmTokenDictionary) -> bool {
-        Self::get_supported_eth_on_evm_logs_from_receipt(receipt, dictionary).len() > 0
-    }
-
-    fn get_supported_eth_on_evm_logs_from_receipt(receipt: &EthReceipt, dictionary: &EthEvmTokenDictionary) -> EthLogs {
+    fn get_supported_eth_on_evm_logs_from_receipt(receipt: &EthReceipt, vault_address: &EthAddress) -> EthLogs {
         EthLogs::new(
             receipt
                 .logs
                 .iter()
-                .filter(|log| matches!(Self::is_log_supported_eth_on_evm_peg_in(&log, dictionary), Ok(true)))
+                .filter(|log| matches!(Self::is_log_eth_on_evm_peg_in(&log, vault_address), Ok(true)))
                 .cloned()
                 .collect(),
         )
     }
 
-    fn from_eth_receipt(receipt: &EthReceipt, dictionary: &EthEvmTokenDictionary) -> Result<Self> {
+    fn from_eth_receipt(
+        receipt: &EthReceipt,
+        vault_address: &EthAddress,
+        dictionary: &EthEvmTokenDictionary,
+    ) -> Result<Self> {
         info!("✔ Getting `ETH-on-EVM` peg in infos from receipt...");
         Ok(Self::new(
-            Self::get_supported_eth_on_evm_logs_from_receipt(receipt, dictionary)
+            Self::get_supported_eth_on_evm_logs_from_receipt(receipt, vault_address)
                 .iter()
                 .enumerate()
                 .map(|(i, log)| {
                     let event_params = EthOnEvmVaultPegInEventParams::from_log(log)?;
                     let tx_info = EthOnEvmEvmTxInfo {
-                        eth_token_address: log.address,
                         user_data: event_params.user_data.clone(),
+                        eth_token_address: event_params.token_address,
                         originating_tx_hash: receipt.transaction_hash,
                         token_amount: event_params.token_amount.clone(),
                         token_sender: event_params.token_sender.clone(),
@@ -146,7 +130,7 @@ impl EthOnEvmEvmTxInfos {
 
     fn filter_eth_submission_material_for_supported_peg_ins(
         submission_material: &EthSubmissionMaterial,
-        dictionary: &EthEvmTokenDictionary,
+        vault_address: &EthAddress,
     ) -> Result<EthSubmissionMaterial> {
         info!("✔ Filtering submission material receipts for those pertaining to `ETH-on-EVM` peg-ins...");
         info!(
@@ -158,7 +142,7 @@ impl EthOnEvmEvmTxInfos {
                 .receipts
                 .iter()
                 .filter(|receipt| {
-                    EthOnEvmEvmTxInfos::receipt_contains_supported_eth_on_evm_peg_in(&receipt, dictionary)
+                    EthOnEvmEvmTxInfos::receipt_contains_supported_eth_on_evm_peg_in(&receipt, vault_address)
                 })
                 .cloned()
                 .collect(),
@@ -174,6 +158,7 @@ impl EthOnEvmEvmTxInfos {
 
     pub fn from_submission_material(
         submission_material: &EthSubmissionMaterial,
+        vault_address: &EthAddress,
         dictionary: &EthEvmTokenDictionary,
     ) -> Result<Self> {
         info!("✔ Getting `EthOnEvmEvmTxInfos` from submission material...");
@@ -181,7 +166,7 @@ impl EthOnEvmEvmTxInfos {
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(&receipt, dictionary))
+                .map(|receipt| Self::from_eth_receipt(&receipt, vault_address, dictionary))
                 .collect::<Result<Vec<EthOnEvmEvmTxInfos>>>()?
                 .iter()
                 .map(|infos| infos.iter().cloned().collect())
@@ -266,11 +251,12 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                     "✔ {} receipts in canon block ∴ parsing info...",
                     submission_material.receipts.len()
                 );
-                EthEvmTokenDictionary::get_from_db(&state.db)
-                    .and_then(|ref dictionary| {
-                        EthOnEvmEvmTxInfos::from_submission_material(&submission_material, dictionary)
-                    })
-                    .and_then(|tx_infos| state.add_eth_on_evm_evm_tx_infos(tx_infos))
+                EthOnEvmEvmTxInfos::from_submission_material(
+                    &submission_material,
+                    &get_eth_on_evm_smart_contract_address_from_db(&state.db)?,
+                    &EthEvmTokenDictionary::get_from_db(&state.db)?,
+                )
+                .and_then(|tx_infos| state.add_eth_on_evm_evm_tx_infos(tx_infos))
             },
         }
     })
@@ -295,16 +281,17 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Filtering receipts for those containing `ETH-on-EVM` peg in events...");
+    let vault_address = get_eth_on_evm_smart_contract_address_from_db(&state.db)?;
     state
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(
-            &get_eth_on_evm_smart_contract_address_from_db(&state.db)?,
+            &vault_address,
             &ETH_ON_EVM_PEG_IN_EVENT_TOPIC.to_vec(),
         )
         .and_then(|filtered_submission_material| {
             EthOnEvmEvmTxInfos::filter_eth_submission_material_for_supported_peg_ins(
                 &filtered_submission_material,
-                state.get_eth_evm_token_dictionary()?,
+                &vault_address,
             )
         })
         .and_then(|filtered_submission_material| state.update_eth_submission_material(filtered_submission_material))
@@ -331,5 +318,79 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
                 }
                 state.add_eth_on_evm_evm_signed_txs(signed_txs)
             })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        chains::eth::eth_traits::EthTxInfoCompatible,
+        eth_on_evm::test_utils::{
+            get_eth_submission_material_n,
+            get_sample_eth_evm_token_dictionary,
+            get_sample_evm_private_key,
+            get_sample_vault_address,
+        },
+    };
+
+    #[test]
+    fn should_filter_submission_info_for_supported_redeems() {
+        let material = get_eth_submission_material_n(1);
+        let vault_address = get_sample_vault_address();
+        let result =
+            EthOnEvmEvmTxInfos::filter_eth_submission_material_for_supported_peg_ins(&material, &vault_address)
+                .unwrap();
+        let expected_num_receipts = 1;
+        assert_eq!(result.receipts.len(), expected_num_receipts);
+    }
+
+    #[test]
+    fn should_get_eth_on_evm_evm_tx_info_from_submission_material() {
+        let material = get_eth_submission_material_n(1);
+        let vault_address = get_sample_vault_address();
+        let dictionary = get_sample_eth_evm_token_dictionary();
+        let result = EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary).unwrap();
+        let expected_num_results = 1;
+        assert_eq!(result.len(), expected_num_results);
+        let expected_result = EthOnEvmEvmTxInfos::new(vec![EthOnEvmEvmTxInfo {
+            user_data: vec![0xde, 0xca, 0xff],
+            token_amount: U256::from_dec_str("1337").unwrap(),
+            token_sender: EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
+            evm_token_address: EthAddress::from_slice(
+                &hex::decode("6819bbfdf803b8b87850916d3eeb3642dde6c24f").unwrap(),
+            ),
+            eth_token_address: EthAddress::from_slice(
+                &hex::decode("bf6ab900f1A3d8f94bc98f1d2Ba1B8f00d532078").unwrap(),
+            ),
+            destination_address: EthAddress::from_slice(
+                &hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
+            ),
+            originating_tx_hash: EthHash::from_slice(
+                &hex::decode("8cea0c409068e735a377119d1cc386c2b3a8aadf204d6da602736955a3fd06b5").unwrap(),
+            ),
+        }]);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_signaures_from_evm_tx_info() {
+        let material = get_eth_submission_material_n(1);
+        let pk = get_sample_evm_private_key();
+        let vault_address = get_sample_vault_address();
+        let dictionary = get_sample_eth_evm_token_dictionary();
+        let infos = EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary).unwrap();
+        let nonce = 0_u64;
+        let chain_id = 4_u8;
+        let gas_limit = 300_000_usize;
+        let gas_price = 20_000_000_000_u64;
+        let signed_txs = infos
+            .to_evm_signed_txs(nonce, chain_id, gas_limit, gas_price, &pk)
+            .unwrap();
+        let expected_num_results = 1;
+        assert_eq!(signed_txs.len(), expected_num_results);
+        let tx_hex = signed_txs[0].eth_tx_hex().unwrap();
+        let expected_tx_hex = "f9014a808504a817c800830493e0946819bbfdf803b8b87850916d3eeb3642dde6c24f80b8e4dcdc7dd0000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac0000000000000000000000000000000000000000000000000000000000000539000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003decaff00000000000000000000000000000000000000000000000000000000002ba0684dce069f0e7d134fa6e8783754afcc72dc09b6c46dc021957e883d85a1abb7a0443d0ecc7b27c8644f4efdc4a3bf9a6abacc91565219df6f9e9ba700a925c5d8";
+        assert_eq!(tx_hex, expected_tx_hex);
     }
 }
