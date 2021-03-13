@@ -42,6 +42,42 @@ pub struct EthOnEvmEvmTxInfo {
     pub user_data: Bytes,
 }
 
+impl EthOnEvmEvmTxInfo {
+    pub fn to_evm_signed_tx(
+        &self,
+        nonce: u64,
+        chain_id: u8,
+        gas_limit: usize,
+        gas_price: u64,
+        evm_private_key: &EvmPrivateKey,
+    ) -> Result<EvmTransaction> {
+        info!("✔ Signing EVM transaction for tx info: {:?}", self);
+        debug!("✔ Signing with nonce:     {}", nonce);
+        debug!("✔ Signing with chain id:  {}", chain_id);
+        debug!("✔ Signing with gas limit: {}", gas_limit);
+        debug!("✔ Signing with gas price: {}", gas_price);
+        let operator_data = None;
+        encode_erc777_mint_fxn_maybe_with_data(
+            &self.destination_address,
+            &self.token_amount,
+            Some(&self.user_data),
+            operator_data,
+        )
+        .map(|data| {
+            EvmTransaction::new_unsigned(
+                data,
+                nonce,
+                ZERO_ETH_VALUE,
+                self.evm_token_address,
+                chain_id,
+                gas_limit,
+                gas_price,
+            )
+        })
+        .and_then(|unsigned_tx| unsigned_tx.sign(evm_private_key))
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
 pub struct EthOnEvmEvmTxInfos(pub Vec<EthOnEvmEvmTxInfo>);
 
@@ -102,8 +138,8 @@ impl EthOnEvmEvmTxInfos {
                         user_data: event_params.user_data.clone(),
                         eth_token_address: event_params.token_address,
                         originating_tx_hash: receipt.transaction_hash,
-                        token_amount: event_params.token_amount.clone(),
-                        token_sender: event_params.token_sender.clone(),
+                        token_amount: event_params.token_amount,
+                        token_sender: event_params.token_sender,
                         destination_address: event_params.destination_address,
                         evm_token_address: dictionary.get_evm_address_from_eth_address(&event_params.token_address)?,
                     };
@@ -161,40 +197,6 @@ impl EthOnEvmEvmTxInfos {
         ))
     }
 
-    fn to_evm_signed_tx(
-        tx_info: &EthOnEvmEvmTxInfo,
-        nonce: u64,
-        chain_id: u8,
-        gas_limit: usize,
-        gas_price: u64,
-        evm_private_key: &EvmPrivateKey,
-    ) -> Result<EvmTransaction> {
-        info!("✔ Signing EVM transaction for tx info: {:?}", tx_info);
-        debug!("✔ Signing with nonce:     {}", nonce);
-        debug!("✔ Signing with chain id:  {}", chain_id);
-        debug!("✔ Signing with gas limit: {}", gas_limit);
-        debug!("✔ Signing with gas price: {}", gas_price);
-        let operator_data = None;
-        encode_erc777_mint_fxn_maybe_with_data(
-            &tx_info.destination_address,
-            &tx_info.token_amount,
-            Some(&tx_info.user_data),
-            operator_data,
-        )
-        .map(|data| {
-            EvmTransaction::new_unsigned(
-                data,
-                nonce,
-                ZERO_ETH_VALUE,
-                tx_info.evm_token_address,
-                chain_id,
-                gas_limit,
-                gas_price,
-            )
-        })
-        .and_then(|unsigned_tx| unsigned_tx.sign(evm_private_key))
-    }
-
     pub fn to_evm_signed_txs(
         &self,
         start_nonce: u64,
@@ -208,7 +210,7 @@ impl EthOnEvmEvmTxInfos {
             self.iter()
                 .enumerate()
                 .map(|(i, ref tx_info)| {
-                    Self::to_evm_signed_tx(
+                    EthOnEvmEvmTxInfo::to_evm_signed_tx(
                         tx_info,
                         start_nonce + i as u64,
                         chain_id,

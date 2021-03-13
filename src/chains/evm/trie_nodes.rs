@@ -59,8 +59,8 @@ impl Node {
             leaf: Some(LeafNode {
                 raw,
                 value,
-                path_nibbles,
                 encoded_path,
+                path_nibbles,
             }),
         })
     }
@@ -75,8 +75,8 @@ impl Node {
             extension: Some(ExtensionNode {
                 raw,
                 value,
-                path_nibbles,
                 encoded_path,
+                path_nibbles,
             }),
         })
     }

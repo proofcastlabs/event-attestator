@@ -53,7 +53,7 @@ impl EthOnEvmVaultPegInEventParams {
 
     pub fn from_log(log: &EthLog) -> Result<Self> {
         let tokens = eth_abi_decode(
-            &vec![
+            &[
                 EthAbiParamType::Address,
                 EthAbiParamType::Address,
                 EthAbiParamType::Uint(256),
@@ -65,23 +65,23 @@ impl EthOnEvmVaultPegInEventParams {
         Ok(Self {
             token_address: match tokens[0] {
                 EthAbiToken::Address(value) => Ok(value),
-                _ => Err(Self::get_err_msg("token_address").to_string()),
+                _ => Err(Self::get_err_msg("token_address")),
             }?,
             token_sender: match tokens[1] {
                 EthAbiToken::Address(value) => Ok(value),
-                _ => Err(Self::get_err_msg("token_sender").to_string()),
+                _ => Err(Self::get_err_msg("token_sender")),
             }?,
             token_amount: match tokens[2] {
                 EthAbiToken::Uint(value) => Ok(value),
-                _ => Err(Self::get_err_msg("token_amount").to_string()),
+                _ => Err(Self::get_err_msg("token_amount")),
             }?,
             destination_address: match tokens[3] {
                 EthAbiToken::Address(value) => Ok(value),
-                _ => Err(Self::get_err_msg("destination_address").to_string()),
+                _ => Err(Self::get_err_msg("destination_address")),
             }?,
             user_data: match tokens[4] {
                 EthAbiToken::Bytes(ref value) => Ok(value.clone()),
-                _ => Err(Self::get_err_msg("user_data").to_string()),
+                _ => Err(Self::get_err_msg("user_data")),
             }?,
         })
     }

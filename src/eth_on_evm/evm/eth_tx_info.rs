@@ -45,6 +45,47 @@ pub struct EthOnEvmEthTxInfo {
     pub user_data: Bytes,
 }
 
+impl EthOnEvmEthTxInfo {
+    pub fn to_eth_signed_tx(
+        &self,
+        nonce: u64,
+        chain_id: u8,
+        gas_limit: usize,
+        gas_price: u64,
+        evm_private_key: &EthPrivateKey,
+        vault_address: &EthAddress,
+    ) -> Result<EvmTransaction> {
+        info!("✔ Signing ETH transaction for tx info: {:?}", self);
+        debug!("✔ Signing with nonce:     {}", nonce);
+        debug!("✔ Signing with chain id:  {}", chain_id);
+        debug!("✔ Signing with gas limit: {}", gas_limit);
+        debug!("✔ Signing with gas price: {}", gas_price);
+        debug!(
+            "✔ Signing tx to token recipient: {}",
+            self.destination_address.to_string()
+        );
+        debug!(
+            "✔ Signing tx for token address : {}",
+            self.eth_token_address.to_string()
+        );
+        debug!("✔ Signing tx for token amount: {}", self.token_amount.to_string());
+        debug!("✔ Signing tx for vault address: {}", vault_address.to_string());
+        encode_eth_on_evm_peg_out_fxn_data(self.destination_address, self.eth_token_address, self.token_amount)
+            .map(|data| {
+                EvmTransaction::new_unsigned(
+                    data,
+                    nonce,
+                    ZERO_ETH_VALUE,
+                    *vault_address,
+                    chain_id,
+                    gas_limit,
+                    gas_price,
+                )
+            })
+            .and_then(|unsigned_tx| unsigned_tx.sign(evm_private_key))
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
 pub struct EthOnEvmEthTxInfos(pub Vec<EthOnEvmEthTxInfo>);
 
@@ -106,9 +147,9 @@ impl EthOnEvmEthTxInfos {
                     let event_params = EthOnEvmErc777RedeemEvent::from_log(log)?;
                     let tx_info = EthOnEvmEthTxInfo {
                         evm_token_address: log.address,
-                        token_amount: event_params.value.clone(),
+                        token_amount: event_params.value,
                         user_data: event_params.user_data.clone(),
-                        token_sender: event_params.redeemer.clone(),
+                        token_sender: event_params.redeemer,
                         originating_tx_hash: receipt.transaction_hash,
                         destination_address: event_params.underlying_asset_recipient,
                         eth_token_address: dictionary.get_eth_address_from_evm_address(&log.address)?,
@@ -166,50 +207,7 @@ impl EthOnEvmEthTxInfos {
         ))
     }
 
-    fn to_evm_signed_tx(
-        tx_info: &EthOnEvmEthTxInfo,
-        nonce: u64,
-        chain_id: u8,
-        gas_limit: usize,
-        gas_price: u64,
-        evm_private_key: &EthPrivateKey,
-        vault_address: &EthAddress,
-    ) -> Result<EvmTransaction> {
-        info!("✔ Signing ETH transaction for tx info: {:?}", tx_info);
-        debug!("✔ Signing with nonce:     {}", nonce);
-        debug!("✔ Signing with chain id:  {}", chain_id);
-        debug!("✔ Signing with gas limit: {}", gas_limit);
-        debug!("✔ Signing with gas price: {}", gas_price);
-        debug!(
-            "✔ Signing tx to token recipient: {}",
-            tx_info.destination_address.to_string()
-        );
-        debug!(
-            "✔ Signing tx for token address : {}",
-            tx_info.eth_token_address.to_string()
-        );
-        debug!("✔ Signing tx for token amount: {}", tx_info.token_amount.to_string());
-        debug!("✔ Signing tx for vault address: {}", vault_address.to_string());
-        encode_eth_on_evm_peg_out_fxn_data(
-            tx_info.destination_address.clone(), // TODO take references!
-            tx_info.eth_token_address.clone(),
-            tx_info.token_amount.clone(),
-        )
-        .map(|data| {
-            EvmTransaction::new_unsigned(
-                data,
-                nonce,
-                ZERO_ETH_VALUE,
-                vault_address.clone(),
-                chain_id,
-                gas_limit,
-                gas_price,
-            )
-        })
-        .and_then(|unsigned_tx| unsigned_tx.sign(evm_private_key))
-    }
-
-    pub fn to_evm_signed_txs(
+    pub fn to_eth_signed_txs(
         &self,
         start_nonce: u64,
         chain_id: u8,
@@ -223,7 +221,7 @@ impl EthOnEvmEthTxInfos {
             self.iter()
                 .enumerate()
                 .map(|(i, ref tx_info)| {
-                    Self::to_evm_signed_tx(
+                    EthOnEvmEthTxInfo::to_eth_signed_tx(
                         tx_info,
                         start_nonce + i as u64,
                         chain_id,
@@ -304,7 +302,7 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EvmS
     } else {
         state
             .eth_on_evm_eth_tx_infos
-            .to_evm_signed_txs(
+            .to_eth_signed_txs(
                 get_eth_account_nonce_from_db(&state.db)?,
                 get_eth_chain_id_from_db(&state.db)?,
                 ETH_ON_EVM_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
@@ -383,7 +381,7 @@ mod tests {
         let gas_limit = 300_000_usize;
         let gas_price = 20_000_000_000_u64;
         let signed_txs = infos
-            .to_evm_signed_txs(nonce, chain_id, gas_limit, gas_price, &pk, &vault_address)
+            .to_eth_signed_txs(nonce, chain_id, gas_limit, gas_price, &pk, &vault_address)
             .unwrap();
         let expected_num_results = 1;
         assert_eq!(signed_txs.len(), expected_num_results);

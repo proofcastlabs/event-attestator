@@ -34,7 +34,7 @@ impl EthOnEvmErc777RedeemEvent {
 
     pub fn from_log<T: EthLogCompatible>(log: &T) -> Result<Self> {
         let tokens = eth_abi_decode(
-            &vec![
+            &[
                 EthAbiParamType::Uint(256),
                 EthAbiParamType::Address,
                 EthAbiParamType::Bytes,
@@ -47,15 +47,15 @@ impl EthOnEvmErc777RedeemEvent {
             ),
             value: match tokens[0] {
                 EthAbiToken::Uint(value) => Ok(value),
-                _ => Err(Self::get_err_msg("value").to_string()),
+                _ => Err(Self::get_err_msg("value")),
             }?,
             underlying_asset_recipient: match tokens[1] {
                 EthAbiToken::Address(value) => Ok(value),
-                _ => Err(Self::get_err_msg("underlying_asset_recipient").to_string()),
+                _ => Err(Self::get_err_msg("underlying_asset_recipient")),
             }?,
             user_data: match tokens[2] {
                 EthAbiToken::Bytes(ref value) => Ok(value.clone()),
-                _ => Err(Self::get_err_msg("user_data").to_string()),
+                _ => Err(Self::get_err_msg("user_data")),
             }?,
         })
     }
