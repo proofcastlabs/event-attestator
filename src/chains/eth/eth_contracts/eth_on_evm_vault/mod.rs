@@ -1,5 +1,3 @@
-#![allow(dead_code)] // FIXME rm!
-
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
 use ethereum_types::{Address as EthAddress, U256};

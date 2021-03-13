@@ -6,8 +6,10 @@ use crate::{
             eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY as ETH_KEY},
             eth_contracts::eth_on_evm_vault::{
                 encode_eth_on_evm_add_supported_token_fx_data,
+                encode_eth_on_evm_migrate_fxn_data,
                 encode_eth_on_evm_remove_supported_token_fx_data,
                 ETH_ON_EVM_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+                ETH_ON_EVM_MIGRATE_GAS_LIMIT,
             },
             eth_crypto::eth_transaction::EthTransaction,
             eth_database_transactions::{
@@ -22,10 +24,11 @@ use crate::{
                 get_eth_private_key_from_db,
                 get_latest_eth_block_number,
                 increment_eth_account_nonce_in_db,
+                put_eth_on_evm_smart_contract_address_in_db,
             },
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
-            eth_utils::convert_hex_to_address,
+            eth_utils::{convert_hex_to_address, get_eth_address_from_str},
             increment_evm_account_nonce::maybe_increment_evm_account_nonce_and_return_eth_state,
             validate_block_in_state::validate_block_in_state,
             validate_receipts_in_state::validate_receipts_in_state,
@@ -379,5 +382,54 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
         .and_then(|hex_tx| {
             db.end_transaction()?;
             Ok(json!({ "success": true, "eth_signed_tx": hex_tx }).to_string())
+        })
+}
+
+/// # Debug Get EthOnEvmVault Migration Transaction
+///
+/// This function will create and sign a transaction that calls the `migrate` function on the
+/// current `pETH-on-EVM` vault smart-contract, migrationg it to the ETH address provided as an
+/// argument. It then updates the smart-contract address stored in the encrypted database to that
+/// new address.
+///
+/// ### NOTE:
+/// This function will increment the core's ETH nonce, meaning the outputted reports will have a
+/// gap in their report IDs!
+///
+/// ### BEWARE:
+/// This function outputs a signed transaction which if NOT broadcast will result in the enclave no
+/// longer working.  Use with extreme caution and only if you know exactly what you are doing!
+pub fn debug_get_eth_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, new_address: &str) -> Result<String> {
+    db.start_transaction()?;
+    info!("✔ Debug getting `ETH-on-EVM` migration transaction...");
+    let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
+    let current_smart_contract_address = get_eth_on_evm_smart_contract_address_from_db(&db)?;
+    let new_smart_contract_address = get_eth_address_from_str(new_address)?;
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
+        .and_then(|_| put_eth_on_evm_smart_contract_address_in_db(&db, &new_smart_contract_address))
+        .and_then(|_| encode_eth_on_evm_migrate_fxn_data(new_smart_contract_address))
+        .and_then(|tx_data| {
+            Ok(EthTransaction::new_unsigned(
+                tx_data,
+                current_eth_account_nonce,
+                0,
+                current_smart_contract_address,
+                get_eth_chain_id_from_db(&db)?,
+                ETH_ON_EVM_MIGRATE_GAS_LIMIT,
+                get_eth_gas_price_from_db(&db)?,
+            ))
+        })
+        .and_then(|unsigned_tx| unsigned_tx.sign(&get_eth_private_key_from_db(&db)?))
+        .map(|signed_tx| signed_tx.serialize_hex())
+        .and_then(|hex_tx| {
+            db.end_transaction()?;
+            Ok(json!({
+                "success": true,
+                "eth_signed_tx": hex_tx,
+                "migrated_to_address:": new_smart_contract_address.to_string(),
+            })
+            .to_string())
         })
 }
