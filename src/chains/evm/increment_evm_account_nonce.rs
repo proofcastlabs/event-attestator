@@ -1,6 +1,6 @@
 use crate::{chains::evm::eth_database_utils::put_eth_account_nonce_in_db, traits::DatabaseInterface, types::Result};
 
-pub fn increment_eth_account_nonce<D: DatabaseInterface>(
+pub fn increment_evm_account_nonce<D: DatabaseInterface>(
     db: &D,
     current_nonce: u64,
     num_signatures: u64,

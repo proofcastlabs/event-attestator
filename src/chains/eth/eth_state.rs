@@ -81,7 +81,7 @@ impl<D: DatabaseInterface> EthState<D> {
     }
 
     pub fn add_eth_on_evm_evm_tx_infos(self, mut infos: EthOnEvmEvmTxInfos) -> Result<Self> {
-        let mut new_infos = self.eth_on_evm_evm_tx_infos.clone().0;
+        let mut new_infos = self.eth_on_evm_evm_tx_infos.0.clone();
         new_infos.append(&mut infos.0);
         self.replace_eth_on_evm_evm_tx_infos(EthOnEvmEvmTxInfos::new(new_infos))
     }

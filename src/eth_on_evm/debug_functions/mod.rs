@@ -215,7 +215,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
         .map(prepend_debug_output_marker_to_string)
 }
 
-/// # Debug Get All Db Keys
+/// # Debug Get All DB Keys
 ///
 /// This function will return a JSON formatted list of all the database keys used in the encrypted database.
 pub fn debug_get_all_db_keys() -> Result<String> {

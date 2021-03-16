@@ -37,17 +37,12 @@ impl EthEvmTokenDictionary {
         EthEvmTokenDictionaryJson::from_bytes(bytes).and_then(|json| Self::from_json(&json))
     }
 
-    fn add(mut self, entry: EthEvmTokenDictionaryEntry) -> Self {
+    fn add(&mut self, entry: EthEvmTokenDictionaryEntry) {
         info!("✔ Adding `EthEvmTokenDictionary` entry: {:?}...", entry);
-        match self.contains(&entry) {
-            true => {
-                info!("Not adding new `EthEvmTokenDictionaryEntry` ∵ account name already extant!");
-                self
-            },
-            false => {
-                self.push(entry);
-                self
-            },
+        if !self.contains(&entry) {
+            self.push(entry);
+        } else {
+            info!("Not adding new `EthEvmTokenDictionaryEntry` ∵ account name already extant!");
         }
     }
 
@@ -82,10 +77,14 @@ impl EthEvmTokenDictionary {
         }
     }
 
-    pub fn add_and_update_in_db<D: DatabaseInterface>(self, entry: EthEvmTokenDictionaryEntry, db: &D) -> Result<Self> {
-        let new_self = self.add(entry);
-        new_self.save_to_db(db)?;
-        Ok(new_self)
+    pub fn add_and_update_in_db<D: DatabaseInterface>(
+        mut self,
+        entry: EthEvmTokenDictionaryEntry,
+        db: &D,
+    ) -> Result<Self> {
+        self.add(entry);
+        self.save_to_db(db)?;
+        Ok(self)
     }
 
     fn remove_and_update_in_db<D: DatabaseInterface>(self, entry: &EthEvmTokenDictionaryEntry, db: &D) -> Result<Self> {
@@ -107,7 +106,7 @@ impl EthEvmTokenDictionary {
     }
 
     pub fn get_entry_via_eth_address(&self, address: &EthAddress) -> Result<EthEvmTokenDictionaryEntry> {
-        match self.iter().find(|entry| &entry.eth_address == address) {
+        match self.iter().find(|ref entry| entry.eth_address == *address) {
             Some(entry) => Ok(entry.clone()),
             None => Err(format!("No `EthEvmTokenDictionaryEntry` exists with ETH address: {}", address).into()),
         }
@@ -191,11 +190,8 @@ pub struct EthEvmTokenDictionaryEntryJson {
 }
 
 impl EthEvmTokenDictionaryEntryJson {
-    pub fn from_str(json_string: &str) -> Result<Self> {
-        match serde_json::from_str(json_string) {
-            Ok(result) => Ok(result),
-            Err(err) => Err(err.into()),
-        }
+    pub fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
     }
 }
 

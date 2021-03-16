@@ -108,7 +108,7 @@ impl EthSubmissionMaterial {
             Some(ref block_json) => Some(EthBlock::from_json(block_json)?),
             None => None,
         };
-        let receipts = EthReceipts::from_jsons(&json.receipts.clone())?;
+        let receipts = EthReceipts::from_jsons(&json.receipts)?;
         match block {
             Some(block) => Ok(EthSubmissionMaterial {
                 receipts,
@@ -166,7 +166,7 @@ impl EthSubmissionMaterial {
             self.eos_ref_block_num,
             self.eos_ref_block_prefix,
         );
-        info!("✔ Number of receipts after filtering:  {}", filtered.receipts.len());
+        info!("✔ Number of receipts after filtering: {}", filtered.receipts.len());
         Ok(filtered)
     }
 

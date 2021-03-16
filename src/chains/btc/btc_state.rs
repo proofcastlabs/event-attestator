@@ -114,6 +114,7 @@ where
     }
 
     pub fn get_eth_signed_txs(&self) -> Result<&EthTransactions> {
+        info!("✔ Getting ETH signed txs from BTC state...");
         Ok(&self.eth_signed_txs)
     }
 

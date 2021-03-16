@@ -3,7 +3,7 @@ use crate::{
         eth::eth_state::EthState,
         evm::{
             eth_database_utils::get_eth_account_nonce_from_db as get_evm_account_nonce_from_db,
-            increment_eth_account_nonce::increment_eth_account_nonce as increment_evm_account_nonce,
+            increment_evm_account_nonce::increment_evm_account_nonce,
         },
     },
     traits::DatabaseInterface,

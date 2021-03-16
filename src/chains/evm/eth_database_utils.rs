@@ -271,7 +271,6 @@ pub fn get_submission_material_from_db<D: DatabaseInterface>(
     db: &D,
     block_hash: &EthHash,
 ) -> Result<EthSubmissionMaterial> {
-    // FIXME flip endianess
     trace!("✔ Getting ETH block and receipts from db...");
     db.get(convert_h256_to_bytes(block_hash), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| EthSubmissionMaterial::from_bytes(&bytes))
@@ -328,12 +327,7 @@ pub fn get_eth_chain_id_from_db<D: DatabaseInterface>(db: &D) -> Result<u8> {
     trace!("✔ Getting ETH `chain_id` from db...");
     db.get(ETH_CHAIN_ID_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| match bytes.len() == 1 {
-            true => {
-                let mut array = [0; 1];
-                let bytes = &bytes[..array.len()];
-                array.copy_from_slice(bytes);
-                Ok(u8::from_le_bytes(array))
-            },
+            true => Ok(u8::from_le_bytes([bytes[0]])),
             false => Err("✘ Wrong number of bytes to convert to usize!".into()),
         })
 }
