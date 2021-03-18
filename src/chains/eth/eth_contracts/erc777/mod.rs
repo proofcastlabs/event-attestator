@@ -168,7 +168,9 @@ impl Erc777RedeemEvent {
         )?;
         log.check_has_x_topics(2).and_then(|_| {
             Ok(Self {
-                redeemer: EthAddress::from_slice(&log.get_topics()[1][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..]),
+                redeemer: EthAddress::from_slice(
+                    &log.get_topics()[1][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..],
+                ),
                 value: match tokens[0] {
                     EthAbiToken::Uint(value) => Ok(value),
                     _ => Err(Self::get_err_msg("value")),
