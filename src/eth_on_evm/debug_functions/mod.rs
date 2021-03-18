@@ -306,7 +306,7 @@ pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: D, eth_address_st
 /// # Debug Get Add Supported Token Transaction
 ///
 /// This function will sign a transaction to add the given address as a supported token to
-/// the `perc20-on-eos` smart-contract.
+/// the `erc20-vault-on-eos` smart-contract.
 ///
 /// ### NOTE:
 /// This function will increment the core's ETH nonce, meaning the outputted reports will have a
@@ -347,7 +347,7 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address
 /// # Debug Get Remove Supported Token Transaction
 ///
 /// This function will sign a transaction to remove the given address as a supported token to
-/// the `perc20-on-eos` smart-contract.
+/// the `erc20-vault-on-eos` smart-contract.
 ///
 /// ### NOTE:
 /// This function will increment the core's ETH nonce, meaning the outputted reports will have a

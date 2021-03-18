@@ -203,7 +203,6 @@ impl Erc777RedeemEvent {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -9,7 +9,6 @@ use crate::{
                 erc777::Erc777RedeemEvent,
                 eth_on_evm_vault::{encode_eth_on_evm_peg_out_fxn_data, ETH_ON_EVM_PEGOUT_WITH_USER_DATA_GAS_LIMIT},
             },
-            eth_utils::safely_convert_hex_to_eth_address,
             eth_crypto::{
                 eth_private_key::EthPrivateKey,
                 eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
@@ -21,6 +20,7 @@ use crate::{
                 get_eth_on_evm_smart_contract_address_from_db,
                 get_eth_private_key_from_db,
             },
+            eth_utils::safely_convert_hex_to_eth_address,
         },
         evm::{
             eth_database_utils::get_eth_canon_block_from_db as get_evm_canon_block_from_db,
@@ -153,7 +153,9 @@ impl EthOnEvmEthTxInfos {
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
                         eth_token_address: dictionary.get_eth_address_from_evm_address(&log.address)?,
-                        destination_address: safely_convert_hex_to_eth_address(&event_params.underlying_asset_recipient)?,
+                        destination_address: safely_convert_hex_to_eth_address(
+                            &event_params.underlying_asset_recipient,
+                        )?,
                     };
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)
@@ -321,75 +323,75 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EvmS
     }
 }
 
-/* FIXME Re-instate once we have new sample material
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::{
-        chains::eth::eth_traits::EthTxInfoCompatible,
-        eth_on_evm::test_utils::{
-            get_evm_submission_material_n,
-            get_sample_eth_evm_token_dictionary,
-            get_sample_eth_private_key,
-        },
-    };
-
-    #[test]
-    fn should_filter_submission_info_for_supported_redeems() {
-        let dictionary = get_sample_eth_evm_token_dictionary();
-        let material = get_evm_submission_material_n(1);
-        let result =
-            EthOnEvmEthTxInfos::filter_eth_submission_material_for_supported_redeems(&material, &dictionary).unwrap();
-        let expected_num_receipts = 1;
-        assert_eq!(result.receipts.len(), expected_num_receipts);
-    }
-
-    #[test]
-    fn should_get_eth_on_evm_eth_tx_info_from_submission_material() {
-        let dictionary = get_sample_eth_evm_token_dictionary();
-        let material = get_evm_submission_material_n(1);
-        let result = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary).unwrap();
-        let expected_num_results = 1;
-        assert_eq!(result.len(), expected_num_results);
-        let expected_result = EthOnEvmEthTxInfos::new(vec![EthOnEvmEthTxInfo {
-            user_data: vec![0xde, 0xca, 0xff],
-            token_amount: U256::from_dec_str("666").unwrap(),
-            token_sender: EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
-            evm_token_address: EthAddress::from_slice(
-                &hex::decode("6819bbfdf803b8b87850916d3eeb3642dde6c24f").unwrap(),
-            ),
-            eth_token_address: EthAddress::from_slice(
-                &hex::decode("bf6ab900f1a3d8f94bc98f1d2ba1b8f00d532078").unwrap(),
-            ),
-            destination_address: EthAddress::from_slice(
-                &hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
-            ),
-            originating_tx_hash: EthHash::from_slice(
-                &hex::decode("27e094774335279a8ba2ca2f8675071cf5e3c09a9d80ce11b3f5ea49c806d268").unwrap(),
-            ),
-        }]);
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_get_signaures_from_eth_tx_info() {
-        let dictionary = get_sample_eth_evm_token_dictionary();
-        let material = get_evm_submission_material_n(1);
-        let infos = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary).unwrap();
-        let vault_address = EthAddress::from_slice(&hex::decode("e72479bf662ca5047301f80733cb1c5c23a338af").unwrap());
-        let pk = get_sample_eth_private_key();
-        let nonce = 0_u64;
-        let chain_id = 4_u8;
-        let gas_limit = 300_000_usize;
-        let gas_price = 20_000_000_000_u64;
-        let signed_txs = infos
-            .to_eth_signed_txs(nonce, chain_id, gas_limit, gas_price, &pk, &vault_address)
-            .unwrap();
-        let expected_num_results = 1;
-        assert_eq!(signed_txs.len(), expected_num_results);
-        let tx_hex = signed_txs[0].eth_tx_hex().unwrap();
-        let expected_tx_hex = "f8ca808504a817c800830493e094e72479bf662ca5047301f80733cb1c5c23a338af80b86483c09d42000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac000000000000000000000000bf6ab900f1a3d8f94bc98f1d2ba1b8f00d532078000000000000000000000000000000000000000000000000000000000000029a2ca0031c56126894d95ef87d515048877b3e3e213737506965d7dea74854fc934930a066eb76208b12e2b872e559d077fd7fa0aaa94ec501214b60fd454d4a7d4b418d";
-        assert_eq!(tx_hex, expected_tx_hex);
-    }
-}
-*/
+// FIXME Re-instate once we have new sample material
+// #[cfg(test)]
+// mod tests {
+// use super::*;
+// use crate::{
+// chains::eth::eth_traits::EthTxInfoCompatible,
+// eth_on_evm::test_utils::{
+// get_evm_submission_material_n,
+// get_sample_eth_evm_token_dictionary,
+// get_sample_eth_private_key,
+// },
+// };
+//
+// #[test]
+// fn should_filter_submission_info_for_supported_redeems() {
+// let dictionary = get_sample_eth_evm_token_dictionary();
+// let material = get_evm_submission_material_n(1);
+// let result =
+// EthOnEvmEthTxInfos::filter_eth_submission_material_for_supported_redeems(&material, &dictionary).unwrap();
+// let expected_num_receipts = 1;
+// assert_eq!(result.receipts.len(), expected_num_receipts);
+// }
+//
+// #[test]
+// fn should_get_eth_on_evm_eth_tx_info_from_submission_material() {
+// let dictionary = get_sample_eth_evm_token_dictionary();
+// let material = get_evm_submission_material_n(1);
+// let result = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary).unwrap();
+// let expected_num_results = 1;
+// assert_eq!(result.len(), expected_num_results);
+// let expected_result = EthOnEvmEthTxInfos::new(vec![EthOnEvmEthTxInfo {
+// user_data: vec![0xde, 0xca, 0xff],
+// token_amount: U256::from_dec_str("666").unwrap(),
+// token_sender: EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
+// evm_token_address: EthAddress::from_slice(
+// &hex::decode("6819bbfdf803b8b87850916d3eeb3642dde6c24f").unwrap(),
+// ),
+// eth_token_address: EthAddress::from_slice(
+// &hex::decode("bf6ab900f1a3d8f94bc98f1d2ba1b8f00d532078").unwrap(),
+// ),
+// destination_address: EthAddress::from_slice(
+// &hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
+// ),
+// originating_tx_hash: EthHash::from_slice(
+// &hex::decode("27e094774335279a8ba2ca2f8675071cf5e3c09a9d80ce11b3f5ea49c806d268").unwrap(),
+// ),
+// }]);
+// assert_eq!(result, expected_result);
+// }
+//
+// #[test]
+// fn should_get_signaures_from_eth_tx_info() {
+// let dictionary = get_sample_eth_evm_token_dictionary();
+// let material = get_evm_submission_material_n(1);
+// let infos = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary).unwrap();
+// let vault_address = EthAddress::from_slice(&hex::decode("e72479bf662ca5047301f80733cb1c5c23a338af").unwrap());
+// let pk = get_sample_eth_private_key();
+// let nonce = 0_u64;
+// let chain_id = 4_u8;
+// let gas_limit = 300_000_usize;
+// let gas_price = 20_000_000_000_u64;
+// let signed_txs = infos
+// .to_eth_signed_txs(nonce, chain_id, gas_limit, gas_price, &pk, &vault_address)
+// .unwrap();
+// let expected_num_results = 1;
+// assert_eq!(signed_txs.len(), expected_num_results);
+// let tx_hex = signed_txs[0].eth_tx_hex().unwrap();
+// let expected_tx_hex =
+// "f8ca808504a817c800830493e094e72479bf662ca5047301f80733cb1c5c23a338af80b86483c09d42000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac000000000000000000000000bf6ab900f1a3d8f94bc98f1d2ba1b8f00d532078000000000000000000000000000000000000000000000000000000000000029a2ca0031c56126894d95ef87d515048877b3e3e213737506965d7dea74854fc934930a066eb76208b12e2b872e559d077fd7fa0aaa94ec501214b60fd454d4a7d4b418d"
+// ; assert_eq!(tx_hex, expected_tx_hex);
+// }
+// }

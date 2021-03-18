@@ -36,12 +36,12 @@ use crate::{
         },
         eth::{
             eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY},
-            eth_contracts::perc20::{
-                encode_perc20_add_supported_token_fx_data,
-                encode_perc20_migrate_fxn_data,
-                encode_perc20_remove_supported_token_fx_data,
-                PERC20_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
-                PERC20_MIGRATE_GAS_LIMIT,
+            eth_contracts::erc20_vault::{
+                encode_erc20_vault_add_supported_token_fx_data,
+                encode_erc20_vault_migrate_fxn_data,
+                encode_erc20_vault_remove_supported_token_fx_data,
+                ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+                ERC20_VAULT_MIGRATE_GAS_LIMIT,
             },
             eth_crypto::eth_transaction::EthTransaction,
             eth_database_utils::{
@@ -199,7 +199,7 @@ pub fn debug_remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
     check_core_is_initialized(&db).and_then(|_| remove_eos_eth_token_dictionary_entry(&db, eth_address_str))
 }
 
-/// # Debug Get PERC20 Migration Transaction
+/// # Debug Get ERC20_VAULT Migration Transaction
 ///
 /// This function will create and sign a transaction that calls the `migrate` function on the
 /// current `pERC20-on-EOS` smart-contract, migrationg it to the ETH address provided as an
@@ -213,7 +213,7 @@ pub fn debug_remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
 /// ### BEWARE:
 /// This function outputs a signed transaction which if NOT broadcast will result in the enclave no
 /// longer working.  Use with extreme caution and only if you know exactly what you are doing!
-pub fn debug_get_perc20_migration_tx<D>(db: D, new_eos_erc20_smart_contract_address_string: &str) -> Result<String>
+pub fn debug_get_erc20_vault_migration_tx<D>(db: D, new_eos_erc20_smart_contract_address_string: &str) -> Result<String>
 where
     D: DatabaseInterface,
 {
@@ -226,7 +226,7 @@ where
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
         .and_then(|_| put_erc20_on_eos_smart_contract_address_in_db(&db, &new_eos_erc20_smart_contract_address))
-        .and_then(|_| encode_perc20_migrate_fxn_data(new_eos_erc20_smart_contract_address))
+        .and_then(|_| encode_erc20_vault_migrate_fxn_data(new_eos_erc20_smart_contract_address))
         .and_then(|tx_data| {
             Ok(EthTransaction::new_unsigned(
                 tx_data,
@@ -234,7 +234,7 @@ where
                 0,
                 current_eos_erc20_smart_contract_address,
                 get_eth_chain_id_from_db(&db)?,
-                PERC20_MIGRATE_GAS_LIMIT,
+                ERC20_VAULT_MIGRATE_GAS_LIMIT,
                 get_eth_gas_price_from_db(&db)?,
             ))
         })
@@ -254,7 +254,7 @@ where
 /// # Debug Get Add Supported Token Transaction
 ///
 /// This function will sign a transaction to add the given address as a supported token to
-/// the `perc20-on-eos` smart-contract.
+/// the `erc20-vault-on-eos` smart-contract.
 ///
 /// ### NOTE:
 /// This function will increment the core's ETH nonce, meaning the outputted reports will have a
@@ -275,7 +275,7 @@ where
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
-        .and_then(|_| encode_perc20_add_supported_token_fx_data(eth_address))
+        .and_then(|_| encode_erc20_vault_add_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
             Ok(EthTransaction::new_unsigned(
                 tx_data,
@@ -283,7 +283,7 @@ where
                 0,
                 get_erc20_on_eos_smart_contract_address_from_db(&db)?,
                 get_eth_chain_id_from_db(&db)?,
-                PERC20_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+                ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
                 get_eth_gas_price_from_db(&db)?,
             ))
         })
@@ -298,7 +298,7 @@ where
 /// # Debug Get Remove Supported Token Transaction
 ///
 /// This function will sign a transaction to remove the given address as a supported token to
-/// the `perc20-on-eos` smart-contract.
+/// the `erc20-vault-on-eos` smart-contract.
 ///
 /// ### NOTE:
 /// This function will increment the core's ETH nonce, meaning the outputted reports will have a
@@ -319,7 +319,7 @@ where
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
-        .and_then(|_| encode_perc20_remove_supported_token_fx_data(eth_address))
+        .and_then(|_| encode_erc20_vault_remove_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
             Ok(EthTransaction::new_unsigned(
                 tx_data,
@@ -327,7 +327,7 @@ where
                 0,
                 get_erc20_on_eos_smart_contract_address_from_db(&db)?,
                 get_eth_chain_id_from_db(&db)?,
-                PERC20_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+                ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
                 get_eth_gas_price_from_db(&db)?,
             ))
         })
