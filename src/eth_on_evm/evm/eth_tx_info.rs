@@ -6,9 +6,10 @@ use crate::{
         eth::{
             eth_constants::{ETH_ON_EVM_REDEEM_EVENT_TOPIC, ETH_ON_EVM_REDEEM_EVENT_TOPIC_HEX, ZERO_ETH_VALUE},
             eth_contracts::{
-                eth_on_evm_erc777::EthOnEvmErc777RedeemEvent,
+                erc777::Erc777RedeemEvent,
                 eth_on_evm_vault::{encode_eth_on_evm_peg_out_fxn_data, ETH_ON_EVM_PEGOUT_WITH_USER_DATA_GAS_LIMIT},
             },
+            eth_utils::safely_convert_hex_to_eth_address,
             eth_crypto::{
                 eth_private_key::EthPrivateKey,
                 eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
@@ -144,15 +145,15 @@ impl EthOnEvmEthTxInfos {
             Self::get_supported_eth_on_evm_logs_from_receipt(receipt, dictionary)
                 .iter()
                 .map(|log| {
-                    let event_params = EthOnEvmErc777RedeemEvent::from_log(log)?;
+                    let event_params = Erc777RedeemEvent::from_eth_log(log)?;
                     let tx_info = EthOnEvmEthTxInfo {
                         evm_token_address: log.address,
                         token_amount: event_params.value,
-                        user_data: event_params.user_data.clone(),
                         token_sender: event_params.redeemer,
+                        user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
-                        destination_address: event_params.underlying_asset_recipient,
                         eth_token_address: dictionary.get_eth_address_from_evm_address(&log.address)?,
+                        destination_address: safely_convert_hex_to_eth_address(&event_params.underlying_asset_recipient)?,
                     };
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)
@@ -320,6 +321,7 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EvmS
     }
 }
 
+/* FIXME Re-instate once we have new sample material
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -390,3 +392,4 @@ mod tests {
         assert_eq!(tx_hex, expected_tx_hex);
     }
 }
+*/

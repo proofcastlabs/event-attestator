@@ -1,6 +1,5 @@
 pub(crate) mod erc777;
 pub(crate) mod erc777_proxy;
-pub(crate) mod eth_on_evm_erc777;
 pub(crate) mod eth_on_evm_vault;
 pub(crate) mod perc20;
 
