@@ -7,7 +7,7 @@ use crate::{
             eth_constants::{ETH_ON_EVM_REDEEM_EVENT_TOPIC, ETH_ON_EVM_REDEEM_EVENT_TOPIC_HEX, ZERO_ETH_VALUE},
             eth_contracts::{
                 erc777::Erc777RedeemEvent,
-                eth_on_evm_vault::{encode_eth_on_evm_peg_out_fxn_data, ETH_ON_EVM_PEGOUT_WITH_USER_DATA_GAS_LIMIT},
+                erc20_vault::{encode_erc20_vault_peg_out_fxn_data, ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT},
             },
             eth_crypto::{
                 eth_private_key::EthPrivateKey,
@@ -71,7 +71,7 @@ impl EthOnEvmEthTxInfo {
         );
         debug!("✔ Signing tx for token amount: {}", self.token_amount.to_string());
         debug!("✔ Signing tx for vault address: {}", vault_address.to_string());
-        encode_eth_on_evm_peg_out_fxn_data(self.destination_address, self.eth_token_address, self.token_amount)
+        encode_erc20_vault_peg_out_fxn_data(self.destination_address, self.eth_token_address, self.token_amount)
             .map(|data| {
                 EvmTransaction::new_unsigned(
                     data,
@@ -308,7 +308,7 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EvmS
             .to_eth_signed_txs(
                 get_eth_account_nonce_from_db(&state.db)?,
                 get_eth_chain_id_from_db(&state.db)?,
-                ETH_ON_EVM_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
+                ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
                 get_eth_gas_price_from_db(&state.db)?,
                 &get_eth_private_key_from_db(&state.db)?,
                 &get_eth_on_evm_smart_contract_address_from_db(&state.db)?,
