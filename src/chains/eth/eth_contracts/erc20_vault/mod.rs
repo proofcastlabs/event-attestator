@@ -1,9 +1,11 @@
+#![allow(dead_code)] // FIXME TODO Rm!
+
 use derive_more::Constructor;
-use ethabi::Token as EthAbiToken;
+use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
 use ethereum_types::{Address as EthAddress, U256};
 
 use crate::{
-    chains::eth::eth_contracts::encode_fxn_call,
+    chains::eth::{eth_contracts::encode_fxn_call, eth_traits::EthLogCompatible},
     types::{Bytes, Result},
 };
 
@@ -50,10 +52,87 @@ pub struct Erc20VaultPegInEventParams {
     pub destination_address: String,
 }
 
+impl Erc20VaultPegInEventParams {
+    fn get_err_msg(field: &str) -> String {
+        format!("Error getting `{}` from `EthOnEvm` peg in event!!", field)
+    }
+
+    fn from_eth_log_without_user_data<L: EthLogCompatible>(log: &L) -> Result<Self> {
+        let tokens = eth_abi_decode(
+            &[
+                EthAbiParamType::Address,
+                EthAbiParamType::Address,
+                EthAbiParamType::Uint(256),
+                EthAbiParamType::String,
+            ],
+            &log.get_data(),
+        )?;
+        Ok(Self {
+            user_data: vec![],
+            token_address: match tokens[0] {
+                EthAbiToken::Address(value) => Ok(value),
+                _ => Err(Self::get_err_msg("token_address")),
+            }?,
+            token_sender: match tokens[1] {
+                EthAbiToken::Address(value) => Ok(value),
+                _ => Err(Self::get_err_msg("token_sender")),
+            }?,
+            token_amount: match tokens[2] {
+                EthAbiToken::Uint(value) => Ok(value),
+                _ => Err(Self::get_err_msg("token_amount")),
+            }?,
+            destination_address: match tokens[3] {
+                EthAbiToken::String(ref value) => Ok(value.clone()),
+                _ => Err(Self::get_err_msg("destination_address")),
+            }?,
+        })
+    }
+
+    fn from_eth_log_with_user_data<L: EthLogCompatible>(log: &L) -> Result<Self> {
+        let tokens = eth_abi_decode(
+            &[
+                EthAbiParamType::Address,
+                EthAbiParamType::Address,
+                EthAbiParamType::Uint(256),
+                EthAbiParamType::String,
+                EthAbiParamType::Bytes,
+            ],
+            &log.get_data(),
+        )?;
+        Ok(Self {
+            token_address: match tokens[0] {
+                EthAbiToken::Address(value) => Ok(value),
+                _ => Err(Self::get_err_msg("token_address")),
+            }?,
+            token_sender: match tokens[1] {
+                EthAbiToken::Address(value) => Ok(value),
+                _ => Err(Self::get_err_msg("token_sender")),
+            }?,
+            token_amount: match tokens[2] {
+                EthAbiToken::Uint(value) => Ok(value),
+                _ => Err(Self::get_err_msg("token_amount")),
+            }?,
+            destination_address: match tokens[3] {
+                EthAbiToken::String(ref value) => Ok(value.clone()),
+                _ => Err(Self::get_err_msg("destination_address")),
+            }?,
+            user_data: match tokens[4] {
+                EthAbiToken::Bytes(ref value) => Ok(value.clone()),
+                _ => Err(Self::get_err_msg("user_data")),
+            }?,
+        })
+    }
+
+    pub fn from_eth_log<L: EthLogCompatible>(log: &L) -> Result<Self> {
+        // TODO Test once we have samples!
+        Self::from_eth_log_with_user_data(log).or_else(|_| Self::from_eth_log_without_user_data(log))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eth::eth_test_utils::get_sample_eth_address;
+    use crate::chains::eth::eth_test_utils::{get_sample_eth_address, get_sample_log_with_eth_on_evm_vault_peg_in};
 
     #[test]
     fn should_encode_peg_out_fxn_data() {
@@ -62,7 +141,8 @@ mod tests {
             EthAddress::from_slice(&hex::decode("edB86cd455ef3ca43f0e227e00469C3bDFA40628").unwrap());
         let token_address = EthAddress::from_slice(&hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap());
         let expected_result = "83c09d42000000000000000000000000edb86cd455ef3ca43f0e227e00469c3bdfa40628000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac0000000000000000000000000000000000000000000000000000000000000539";
-        let result = hex::encode(encode_erc20_vault_peg_out_fxn_data(recipient_address, token_address, amount).unwrap());
+        let result =
+            hex::encode(encode_erc20_vault_peg_out_fxn_data(recipient_address, token_address, amount).unwrap());
         assert_eq!(result, expected_result)
     }
 
