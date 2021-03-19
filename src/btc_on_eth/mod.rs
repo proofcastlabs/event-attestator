@@ -1,3 +1,5 @@
+// FIXME This core no longer accepts the BYTECODE arg. Instead we need to expose a fxn to update
+// the ERC777 contract in the db after init.
 //! # The `pBTC-on-ETH` pToken Core
 //!
 //! Here lies the functionality required for the cross-chain conversions between
