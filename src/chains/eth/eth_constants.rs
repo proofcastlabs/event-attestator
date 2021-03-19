@@ -16,7 +16,6 @@ pub const ETH_WORD_SIZE_IN_BYTES: usize = 32;
 pub const ETH_ADDRESS_SIZE_IN_BYTES: usize = 20;
 pub const GAS_LIMIT_FOR_MINTING_TX: usize = 180_000;
 pub static BRANCH_NODE_STRING: &str = "branch";
-pub const LOG_DATA_BTC_ADDRESS_START_INDEX: usize = 96;
 pub const GAS_LIMIT_FOR_PTOKEN_DEPLOY: usize = 4_000_000;
 pub static EXTENSION_NODE_STRING: &str = "extension";
 pub const HASHED_NULL_NODE: EthHash = EthHash(HASHED_NULL_NODE_BYTES);
