@@ -29,6 +29,6 @@ pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
         false => start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| initialize_eth_core_with_no_contract_tx(block_json, chain_id, gas_price, confs, state))
             .and_then(end_eth_db_transaction_and_return_state)
-            .and_then(EthInitializationOutput::new_for_btc_on_eth),
+            .and_then(EthInitializationOutput::new_with_no_contract),
     }
 }
