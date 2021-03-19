@@ -38,9 +38,9 @@ impl EthInitializationOutput {
     }
 
     pub fn new_with_no_contract<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
-        let contract_tx = None;
-        let contract_address = None;
-        Ok(to_string(&Self::init(&state.db, contract_address, contract_tx)?)?)
+        const CONTRACT_TX: Option<&str> = None;
+        const CONTRACT_ADDRESS: Option<&EthAddress> = None;
+        Ok(to_string(&Self::init(&state.db, CONTRACT_ADDRESS, CONTRACT_TX)?)?)
     }
 
     pub fn new_for_eos_on_eth<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {

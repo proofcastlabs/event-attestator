@@ -57,15 +57,15 @@ impl BtcOnEthRedeemInfos {
     }
 
     fn get_btc_address_or_revert_to_safe_address(maybe_btc_address: &str) -> String {
-        info!("✔ Maybe BTC address parsed from log: {}", maybe_btc_address);
+        info!("✔ Maybe BTC address: {}", maybe_btc_address);
         match BtcAddress::from_str(maybe_btc_address) {
             Ok(address) => {
-                info!("✔ Good BTC address parsed from log: {}", address);
+                info!("✔ Good BTC address parsed: {}", address);
                 address.to_string()
             },
             Err(_) => {
                 info!(
-                    "✔ Failed to parse BTC address from log! Default to safe BTC address: {}",
+                    "✔ Failed to parse BTC address! Default to safe BTC address: {}",
                     SAFE_BTC_ADDRESS
                 );
                 SAFE_BTC_ADDRESS.to_string()

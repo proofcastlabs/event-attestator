@@ -123,12 +123,15 @@ pub struct Erc777RedeemEvent {
 
 impl Erc777RedeemEvent {
     fn check_log_is_erc777_redeem_event(log: &EthLog) -> Result<()> {
-        match log.topics[0] == *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA
-            || log.topics[0] == *ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA
-        {
-            true => Ok(()),
-            false => Err("Log is NOT from an ERC777 redeem event!".into()),
-        }
+        log.check_has_x_topics(1).and_then(|_| {
+            if log.topics[0] == *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA
+                || log.topics[0] == *ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA
+            {
+                Ok(())
+            } else {
+                Err("Log is NOT from an ERC777 redeem event!".into())
+            }
+        })
     }
 
     fn get_err_msg(field: &str) -> String {
@@ -162,30 +165,33 @@ impl Erc777RedeemEvent {
             ],
             &log.data,
         )?;
-        Ok(Self {
-            redeemer: EthAddress::from_slice(&log.topics[1][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..]),
-            value: match tokens[0] {
-                EthAbiToken::Uint(value) => Ok(value),
-                _ => Err(Self::get_err_msg("value")),
-            }?,
-            underlying_asset_recipient: match tokens[1] {
-                EthAbiToken::String(ref value) => Ok(value.clone()),
-                _ => Err(Self::get_err_msg("underlying_asset_recipient")),
-            }?,
-            user_data: match tokens[2] {
-                EthAbiToken::Bytes(ref bytes) => Ok(bytes.to_vec()),
-                _ => Err(Self::get_err_msg("user_data")),
-            }?,
+        log.check_has_x_topics(2).and_then(|_| {
+            Ok(Self {
+                redeemer: EthAddress::from_slice(&log.topics[1][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..]),
+                value: match tokens[0] {
+                    EthAbiToken::Uint(value) => Ok(value),
+                    _ => Err(Self::get_err_msg("value")),
+                }?,
+                underlying_asset_recipient: match tokens[1] {
+                    EthAbiToken::String(ref value) => Ok(value.clone()),
+                    _ => Err(Self::get_err_msg("underlying_asset_recipient")),
+                }?,
+                user_data: match tokens[2] {
+                    EthAbiToken::Bytes(ref bytes) => Ok(bytes.to_vec()),
+                    _ => Err(Self::get_err_msg("user_data")),
+                }?,
+            })
         })
     }
 
-    fn log_contains_user_data(log: &EthLog) -> bool {
-        log.topics[0] == *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA
+    fn log_contains_user_data(log: &EthLog) -> Result<bool> {
+        log.check_has_x_topics(1)
+            .map(|_| log.topics[0] == *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
     }
 
     pub fn from_eth_log(log: &EthLog) -> Result<Self> {
         Self::check_log_is_erc777_redeem_event(log).and_then(|_| {
-            if Self::log_contains_user_data(log) {
+            if Self::log_contains_user_data(log)? {
                 Self::from_log_with_user_data(log)
             } else {
                 Self::from_log_without_user_data(log)
