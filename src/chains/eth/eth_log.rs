@@ -28,6 +28,14 @@ pub struct EthLog {
 }
 
 impl EthLog {
+    pub fn check_has_x_topics(&self, x: usize) -> Result<()> {
+        if self.topics.len() >= x {
+            Ok(())
+        } else {
+            Err(format!("Log does not have {} topics!", x).into())
+        }
+    }
+
     pub fn from_json(log_json: &EthLogJson) -> Result<Self> {
         Ok(EthLog {
             data: convert_hex_to_bytes(&log_json.data)?,

@@ -9,10 +9,10 @@ use crate::{
     chains::{
         btc::btc_types::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
         eth::{
-            eth_constants::{
-                BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
-                ETH_WORD_SIZE_IN_BYTES,
-                LOG_DATA_BTC_ADDRESS_START_INDEX,
+            eth_contracts::erc777::{
+                Erc777RedeemEvent,
+                ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
+                ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
             },
             eth_database_utils::get_eth_canon_block_from_db,
             eth_log::EthLog,
@@ -56,43 +56,26 @@ impl BtcOnEthRedeemInfos {
             .collect()
     }
 
-    fn get_btc_on_eth_redeem_amount_from_log(log: &EthLog) -> Result<U256> {
-        info!("✔ Parsing redeem amount from log...");
-        if log.data.len() >= ETH_WORD_SIZE_IN_BYTES {
-            Ok(U256::from(convert_ptoken_to_satoshis(U256::from(
-                &log.data[..ETH_WORD_SIZE_IN_BYTES],
-            ))))
-        } else {
-            Err("✘ Not enough bytes in log data to get redeem amount!".into())
-        }
-    }
-
-    fn get_btc_on_eth_btc_redeem_address_from_log(log: &EthLog) -> String {
-        info!("✔ Parsing BTC address from log...");
-        let default_address_error_string = format!("✔ Defaulting to safe BTC address: {}!", SAFE_BTC_ADDRESS);
-        let maybe_btc_address = log.data[LOG_DATA_BTC_ADDRESS_START_INDEX..]
-            .iter()
-            .filter(|byte| *byte != &0u8)
-            .map(|byte| *byte as char)
-            .collect::<String>();
-        info!("✔ Maybe BTC address parsed from log: {}", maybe_btc_address);
-        match BtcAddress::from_str(&maybe_btc_address) {
+    fn get_btc_address_or_revert_to_safe_address(maybe_btc_address: &str) -> String {
+        info!("✔ Maybe BTC address: {}", maybe_btc_address);
+        match BtcAddress::from_str(maybe_btc_address) {
             Ok(address) => {
-                info!("✔ Good BTC address parsed from log: {}", address);
+                info!("✔ Good BTC address parsed: {}", address);
                 address.to_string()
             },
             Err(_) => {
-                info!("✔ Failed to parse BTC address from log!");
-                info!("{}", default_address_error_string);
+                info!(
+                    "✔ Failed to parse BTC address! Default to safe BTC address: {}",
+                    SAFE_BTC_ADDRESS
+                );
                 SAFE_BTC_ADDRESS.to_string()
             },
         }
     }
 
     fn log_is_btc_on_eth_redeem(log: &EthLog) -> Result<bool> {
-        Ok(log.contains_topic(&EthHash::from_slice(
-            &hex::decode(&BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX)?[..],
-        )))
+        Ok(log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
+            || log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA))
     }
 
     fn from_eth_receipt(receipt: &EthReceipt) -> Result<Self> {
@@ -104,12 +87,15 @@ impl BtcOnEthRedeemInfos {
                 .iter()
                 .filter(|log| matches!(BtcOnEthRedeemInfos::log_is_btc_on_eth_redeem(&log), Ok(true)))
                 .map(|log| {
-                    Ok(BtcOnEthRedeemInfo::new(
-                        Self::get_btc_on_eth_redeem_amount_from_log(&log)?,
-                        receipt.from,
-                        Self::get_btc_on_eth_btc_redeem_address_from_log(&log),
-                        receipt.transaction_hash,
-                    ))
+                    let event_params = Erc777RedeemEvent::from_eth_log(log)?;
+                    Ok(BtcOnEthRedeemInfo {
+                        from: event_params.redeemer,
+                        originating_tx_hash: receipt.transaction_hash,
+                        amount: U256::from(convert_ptoken_to_satoshis(event_params.value)),
+                        recipient: Self::get_btc_address_or_revert_to_safe_address(
+                            &event_params.underlying_asset_recipient,
+                        ),
+                    })
                 })
                 .collect::<Result<Vec<BtcOnEthRedeemInfo>>>()?,
         ))
@@ -152,15 +138,10 @@ mod tests {
         eth_submission_material::EthSubmissionMaterial,
         eth_test_utils::{
             get_sample_eth_submission_material_n,
-            get_sample_log_n,
             get_sample_log_with_erc777_redeem,
             get_sample_receipt_with_erc777_redeem,
         },
     };
-
-    fn get_sample_log_with_p2sh_redeem() -> EthLog {
-        get_sample_log_n(5, 23, 2).unwrap()
-    }
 
     fn get_tx_hash_of_redeem_tx() -> &'static str {
         "442612aba789ce873bb3804ff62ced770dcecb07d19ddcf9b651c357eebaed40"
@@ -187,30 +168,6 @@ mod tests {
         let recipient = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string();
         let originating_tx_hash = EthHash::from_slice(&hex::decode(get_tx_hash_of_redeem_tx()).unwrap()[..]);
         BtcOnEthRedeemInfo::new(amount, from, recipient, originating_tx_hash)
-    }
-
-    #[test]
-    fn should_parse_redeem_amount_from_log() {
-        let expected_result = U256::from_dec_str("666").unwrap();
-        let log = get_sample_log_with_erc777_redeem();
-        let result = BtcOnEthRedeemInfos::get_btc_on_eth_redeem_amount_from_log(&log).unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_parse_btc_address_from_log() {
-        let expected_result = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
-        let log = get_sample_log_with_erc777_redeem();
-        let result = BtcOnEthRedeemInfos::get_btc_on_eth_btc_redeem_address_from_log(&log);
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_parse_p2sh_btc_address_from_log() {
-        let expected_result = "2MyT7cyDnsHFwkhGDJa3LhayYtPN3cSE7wx";
-        let log = get_sample_log_with_p2sh_redeem();
-        let result = BtcOnEthRedeemInfos::get_btc_on_eth_btc_redeem_address_from_log(&log);
-        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -247,5 +204,44 @@ mod tests {
         assert_eq!(expected_result.amount, result.0[0].amount);
         assert_eq!(expected_result.recipient, result.0[0].recipient);
         assert_eq!(expected_result.originating_tx_hash, result.0[0].originating_tx_hash);
+    }
+
+    #[test]
+    fn new_erc777_contract_log_should_be_btc_on_eth_redeem() {
+        let log = get_sample_eth_submission_material_n(10).unwrap().receipts[0].logs[2].clone();
+        let result = BtcOnEthRedeemInfos::log_is_btc_on_eth_redeem(&log).unwrap();
+        assert!(result);
+    }
+
+    #[test]
+    fn should_get_redeem_info_from_new_style_erc777_contract() {
+        let submission_material = get_sample_eth_submission_material_n(10).unwrap();
+        let expected_num_results = 1;
+        let expected_result = BtcOnEthRedeemInfo {
+            amount: U256::from_dec_str("666").unwrap(),
+            from: EthAddress::from_str("7d39fB393C5597dddccf1c428f030913fe7F67Ab").unwrap(),
+            recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
+            originating_tx_hash: EthHash::from_slice(
+                &hex::decode("01920b62cd2e77204b2fa59932f9d6dd54fd43c99095aee808b700ed2b6ee9cf").unwrap(),
+            ),
+        };
+        let results = BtcOnEthRedeemInfos::from_eth_submission_material(&submission_material).unwrap();
+        let result = results[0].clone();
+        assert_eq!(results.len(), expected_num_results);
+        assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn should_get_btc_address_from_good_address() {
+        let good_address = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string();
+        let result = BtcOnEthRedeemInfos::get_btc_address_or_revert_to_safe_address(&good_address);
+        assert_eq!(result, good_address);
+    }
+
+    #[test]
+    fn should_get_safe_btc_address_from_bad_address() {
+        let bad_address = "not a BTC address".to_string();
+        let result = BtcOnEthRedeemInfos::get_btc_address_or_revert_to_safe_address(&bad_address);
+        assert_eq!(result, SAFE_BTC_ADDRESS.to_string());
     }
 }

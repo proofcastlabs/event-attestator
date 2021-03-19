@@ -403,6 +403,7 @@ pub fn put_erc777_proxy_contract_address_in_db<D: DatabaseInterface>(
     put_eth_address_in_db(db, &ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(), proxy_contract_address)
 }
 
+#[cfg(test)]
 pub fn put_btc_on_eth_smart_contract_address_in_db<D: DatabaseInterface>(
     db: &D,
     smart_contract_address: &EthAddress,

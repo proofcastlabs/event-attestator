@@ -6,7 +6,6 @@ use crate::{
     chains::eth::{
         eth_database_utils::{
             get_erc20_on_eos_smart_contract_address_from_db,
-            get_erc777_contract_address_from_db,
             get_latest_eth_block_number,
             get_public_eth_address_from_db,
         },
@@ -38,18 +37,14 @@ impl EthInitializationOutput {
         })
     }
 
-    pub fn new_for_eos_on_eth<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
-        let contract_tx = None;
-        let contract_address = None;
-        Ok(to_string(&Self::init(&state.db, contract_address, contract_tx)?)?)
+    pub fn new_with_no_contract<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+        const CONTRACT_TX: Option<&str> = None;
+        const CONTRACT_ADDRESS: Option<&EthAddress> = None;
+        Ok(to_string(&Self::init(&state.db, CONTRACT_ADDRESS, CONTRACT_TX)?)?)
     }
 
-    pub fn new_for_btc_on_eth<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
-        Ok(to_string(&Self::init(
-            &state.db,
-            Some(&get_erc777_contract_address_from_db(&state.db)?),
-            Some(&state.get_misc_string()?),
-        )?)?)
+    pub fn new_for_eos_on_eth<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+        Self::new_with_no_contract(state)
     }
 
     pub fn new_for_erc20_on_eth<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
