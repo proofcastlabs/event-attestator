@@ -142,17 +142,21 @@ impl Erc777RedeemEvent {
     fn from_log_without_user_data<L: EthLogCompatible>(log: &L) -> Result<Self> {
         info!("✔ Attemping to get `Erc777RedeemEvent` from log WITHOUT user data...");
         let tokens = eth_abi_decode(&[EthAbiParamType::Uint(256), EthAbiParamType::String], &log.get_data())?;
-        Ok(Self {
-            user_data: vec![],
-            redeemer: EthAddress::from_slice(&log.get_topics()[1][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..]),
-            value: match tokens[0] {
-                EthAbiToken::Uint(value) => Ok(value),
-                _ => Err(Self::get_err_msg("value")),
-            }?,
-            underlying_asset_recipient: match tokens[1] {
-                EthAbiToken::String(ref value) => Ok(value.clone()),
-                _ => Err(Self::get_err_msg("underlying_asset_recipient")),
-            }?,
+        log.check_has_x_topics(2).and_then(|_| {
+            Ok(Self {
+                user_data: vec![],
+                redeemer: EthAddress::from_slice(
+                    &log.get_topics()[1][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..],
+                ),
+                value: match tokens[0] {
+                    EthAbiToken::Uint(value) => Ok(value),
+                    _ => Err(Self::get_err_msg("value")),
+                }?,
+                underlying_asset_recipient: match tokens[1] {
+                    EthAbiToken::String(ref value) => Ok(value.clone()),
+                    _ => Err(Self::get_err_msg("underlying_asset_recipient")),
+                }?,
+            })
         })
     }
 
