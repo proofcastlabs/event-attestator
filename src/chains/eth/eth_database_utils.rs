@@ -360,12 +360,14 @@ pub fn get_eth_private_key_from_db<D: DatabaseInterface>(db: &D) -> Result<EthPr
 }
 
 pub fn get_erc777_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
-    trace!("✔ Getting ETH smart-contract address from db...");
-    db.get(
+    info!("✔ Getting ETH ERC777 smart-contract address from db...");
+    match db.get(
         BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
         MIN_DATA_SENSITIVITY_LEVEL,
-    )
-    .map(|address_bytes| EthAddress::from_slice(&address_bytes[..]))
+    ) {
+        Ok(address_bytes) => Ok(EthAddress::from_slice(&address_bytes[..])),
+        Err(_) => Err("No ERC777 contract address in DB! Did you forget to set it?".into()),
+    }
 }
 
 pub fn get_erc20_on_eos_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
