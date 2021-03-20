@@ -3,7 +3,11 @@ use serde_json::json;
 use crate::{
     chains::{
         eth::{
-            eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY as ETH_KEY},
+            eth_constants::{
+                get_eth_constants_db_keys,
+                ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
+                ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
+            },
             eth_contracts::erc20_vault::{
                 encode_erc20_vault_add_supported_token_fx_data,
                 encode_erc20_vault_migrate_fxn_data,
@@ -24,7 +28,7 @@ use crate::{
                 get_eth_private_key_from_db,
                 get_latest_eth_block_number,
                 increment_eth_account_nonce_in_db,
-                put_eth_on_evm_smart_contract_address_in_db,
+                put_eth_address_in_db,
             },
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
@@ -408,7 +412,13 @@ pub fn debug_get_eth_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, new_
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
-        .and_then(|_| put_eth_on_evm_smart_contract_address_in_db(&db, &new_smart_contract_address))
+        .and_then(|_| {
+            put_eth_address_in_db(
+                &db,
+                &ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+                &new_smart_contract_address,
+            )
+        })
         .and_then(|_| encode_erc20_vault_migrate_fxn_data(new_smart_contract_address))
         .and_then(|tx_data| {
             Ok(EthTransaction::new_unsigned(

@@ -6,7 +6,6 @@ use crate::{
     chains::eth::{
         eth_database_utils::{
             get_erc20_on_eos_smart_contract_address_from_db,
-            get_eth_on_evm_smart_contract_address_from_db,
             get_latest_eth_block_number,
             get_public_eth_address_from_db,
         },
@@ -52,14 +51,6 @@ impl EthInitializationOutput {
         Ok(to_string(&Self::init(
             &state.db,
             Some(&get_erc20_on_eos_smart_contract_address_from_db(&state.db)?),
-            Some(&state.get_misc_string()?),
-        )?)?)
-    }
-
-    pub fn new_for_eth_on_evm<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
-        Ok(to_string(&Self::init(
-            &state.db,
-            Some(&get_eth_on_evm_smart_contract_address_from_db(&state.db)?),
             Some(&state.get_misc_string()?),
         )?)?)
     }

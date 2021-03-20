@@ -383,7 +383,10 @@ pub fn get_eos_on_eth_smart_contract_address_from_db<D: DatabaseInterface>(db: &
 
 pub fn get_eth_on_evm_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
     info!("✔ Getting `ETH_ON_EVM` smart-contract address from db...");
-    get_eth_address_from_db(db, &*ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY)
+    match get_eth_address_from_db(db, &*ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY) {
+        Ok(address) => Ok(address),
+        Err(_) => Err("No `eth-on-evm` vault contract address in DB! Did you forget to set it?".into()),
+    }
 }
 
 fn get_eth_address_from_db<D: DatabaseInterface>(db: &D, key: &[Byte]) -> Result<EthAddress> {
@@ -444,16 +447,13 @@ pub fn put_eos_on_eth_smart_contract_address_in_db<D: DatabaseInterface>(
     )
 }
 
-pub fn put_eth_on_evm_smart_contract_address_in_db<D: DatabaseInterface>(
-    db: &D,
-    smart_contract_address: &EthAddress,
-) -> Result<()> {
-    trace!("✔ Putting 'ETH_ON_EVM' smart-contract address in db...");
-    put_eth_address_in_db(
-        db,
-        &ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-        smart_contract_address,
-    )
+pub fn put_eth_on_evm_smart_contract_address_in_db<D: DatabaseInterface>(db: &D, address: &EthAddress) -> Result<()> {
+    if get_eth_on_evm_smart_contract_address_from_db(db).is_ok() {
+        Err("`ETH-on-EVM`Vault contract address already set!".into())
+    } else {
+        info!("✔ Putting `ETH-on-EVM` vault contract address in db...");
+        put_eth_address_in_db(db, &ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(), address)
+    }
 }
 
 pub fn get_public_eth_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {

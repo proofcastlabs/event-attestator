@@ -41,7 +41,11 @@ pub use crate::{
             debug_reprocess_evm_block,
             debug_set_key_in_db_to_value,
         },
-        eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
+        eth::{
+            add_vault_contract_address::maybe_add_vault_contract_address,
+            initialize_eth_core::maybe_initialize_eth_core,
+            submit_eth_block::submit_eth_block_to_core,
+        },
         evm::{initialize_evm_core::maybe_initialize_evm_core, submit_evm_block::submit_evm_block_to_core},
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
