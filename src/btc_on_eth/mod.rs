@@ -1,5 +1,3 @@
-// FIXME This core no longer accepts the BYTECODE arg. Instead we need to expose a fxn to update
-// the ERC777 contract in the db after init.
 //! # The `pBTC-on-ETH` pToken Core
 //!
 //! Here lies the functionality required for the cross-chain conversions between
@@ -35,7 +33,11 @@ pub use crate::{
             debug_reprocess_eth_block,
             debug_set_key_in_db_to_value,
         },
-        eth::{initialize_eth_core::maybe_initialize_eth_enclave, submit_eth_block::submit_eth_block_to_enclave},
+        eth::{
+            add_erc777_contract_address::maybe_add_erc777_contract_address,
+            initialize_eth_core::maybe_initialize_eth_enclave,
+            submit_eth_block::submit_eth_block_to_enclave,
+        },
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
     },

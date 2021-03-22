@@ -360,12 +360,14 @@ pub fn get_eth_private_key_from_db<D: DatabaseInterface>(db: &D) -> Result<EthPr
 }
 
 pub fn get_erc777_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
-    trace!("✔ Getting ETH smart-contract address from db...");
-    db.get(
+    info!("✔ Getting ETH ERC777 smart-contract address from db...");
+    match db.get(
         BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
         MIN_DATA_SENSITIVITY_LEVEL,
-    )
-    .map(|address_bytes| EthAddress::from_slice(&address_bytes[..]))
+    ) {
+        Ok(address_bytes) => Ok(EthAddress::from_slice(&address_bytes[..])),
+        Err(_) => Err("No ERC777 contract address in DB! Did you forget to set it?".into()),
+    }
 }
 
 pub fn get_erc20_on_eos_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
@@ -403,13 +405,13 @@ pub fn put_erc777_proxy_contract_address_in_db<D: DatabaseInterface>(
     put_eth_address_in_db(db, &ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(), proxy_contract_address)
 }
 
-#[cfg(test)]
-pub fn put_btc_on_eth_smart_contract_address_in_db<D: DatabaseInterface>(
-    db: &D,
-    smart_contract_address: &EthAddress,
-) -> Result<()> {
-    trace!("✔ Putting ETH smart-contract address in db...");
-    put_eth_address_in_db(db, &*BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY, smart_contract_address)
+pub fn put_btc_on_eth_smart_contract_address_in_db<D: DatabaseInterface>(db: &D, address: &EthAddress) -> Result<()> {
+    if get_erc777_contract_address_from_db(db).is_ok() {
+        Err("ERC777 address already set!".into())
+    } else {
+        info!("✔ Putting ETH smart-contract address in db...");
+        put_eth_address_in_db(db, &*BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY, address)
+    }
 }
 
 pub fn put_erc20_on_eos_smart_contract_address_in_db<D: DatabaseInterface>(

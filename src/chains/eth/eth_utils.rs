@@ -2,9 +2,10 @@ use ethereum_types::{Address as EthAddress, H256, U256};
 use serde_json::Value as JsonValue;
 
 use crate::{
+    chains::eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES,
     constants::{ETH_HASH_LENGTH, SAFE_ETH_ADDRESS, U64_NUM_BYTES},
     types::{Byte, Bytes, NoneError, Result},
-    utils::decode_hex_with_no_padding_with_err_msg,
+    utils::{decode_hex_with_no_padding_with_err_msg, strip_hex_prefix},
 };
 
 pub fn get_eth_address_from_str(eth_address_str: &str) -> Result<EthAddress> {
@@ -45,19 +46,16 @@ pub fn convert_hex_strings_to_h256s(hex_strings: Vec<&str>) -> Result<Vec<H256>>
 }
 
 pub fn convert_hex_to_address(hex: &str) -> Result<EthAddress> {
-    Ok(EthAddress::from_slice(&decode_prefixed_hex(hex)?))
+    let bytes = hex::decode(strip_hex_prefix(hex))?;
+    if bytes.len() != ETH_ADDRESS_SIZE_IN_BYTES {
+        Err("Cannot convert `{}` into `EthAddress` - incorrect number of bytes!".into())
+    } else {
+        Ok(EthAddress::from_slice(&decode_prefixed_hex(hex)?))
+    }
 }
 
 pub fn convert_hex_to_bytes(hex: &str) -> Result<Bytes> {
     Ok(hex::decode(strip_hex_prefix(&hex))?)
-}
-
-pub fn strip_hex_prefix(prefixed_hex: &str) -> String {
-    let res = str::replace(prefixed_hex, "0x", "");
-    match res.len() % 2 {
-        0 => res,
-        _ => left_pad_with_zero(&res),
-    }
 }
 
 pub fn decode_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
@@ -101,10 +99,6 @@ pub fn convert_json_value_to_string(value: &JsonValue) -> Result<String> {
         .as_str()
         .ok_or(NoneError("Could not unwrap. JSON value isn't a String!"))?
         .to_string())
-}
-
-fn left_pad_with_zero(string: &str) -> String {
-    format!("0{}", string)
 }
 
 pub fn safely_convert_hex_to_eth_address(hex: &str) -> Result<EthAddress> {
@@ -209,14 +203,6 @@ mod tests {
         let expected_result = [192, 255, 238];
         let result = decode_hex(none_prefixed_hex).unwrap();
         assert_eq!(result, expected_result)
-    }
-
-    #[test]
-    fn should_left_pad_string_with_zero_correctly() {
-        let dummy_hex = "0xc0ffee";
-        let expected_result = "00xc0ffee".to_string();
-        let result = left_pad_with_zero(dummy_hex);
-        assert_eq!(result, expected_result);
     }
 
     #[test]

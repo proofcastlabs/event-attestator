@@ -4,6 +4,7 @@ use crate::{
     chains::btc::{
         btc_constants::BTC_TAIL_LENGTH,
         btc_database_utils::{
+            get_btc_account_nonce_from_db,
             get_btc_address_from_db,
             get_btc_anchor_block_from_db,
             get_btc_canon_block_from_db,
@@ -29,6 +30,7 @@ use crate::{
 
 #[derive(Serialize, Deserialize)]
 pub struct BtcEnclaveState {
+    btc_nonce: u64,
     btc_difficulty: u64,
     btc_network: String,
     btc_address: String,
@@ -66,6 +68,7 @@ impl BtcEnclaveState {
             btc_utxo_nonce: get_utxo_nonce_from_db(db)?,
             btc_tail_block_number: btc_tail_block.height,
             btc_sats_per_byte: get_btc_fee_from_db(db)?,
+            btc_nonce: get_btc_account_nonce_from_db(db)?,
             btc_canon_block_number: btc_canon_block.height,
             btc_safe_address: SAFE_BTC_ADDRESS.to_string(),
             btc_latest_block_number: btc_latest_block.height,
