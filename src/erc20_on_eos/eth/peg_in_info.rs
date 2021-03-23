@@ -9,7 +9,7 @@ use crate::{
         eos::eos_utils::remove_symbol_from_eos_asset,
         eth::{
             eth_constants::{ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
-            eth_contracts::erc20_vault::{ERC20_ON_EOS_PEG_IN_EVENT_TOPIC, ERC20_PEG_IN_EVENT_TOPIC_HEX},
+            eth_contracts::erc20_vault::{ERC20_VAULT_PEG_IN_EVENT_TOPIC, ERC20_VAULT_PEG_IN_EVENT_TOPIC_HEX},
             eth_database_utils::{get_erc20_on_eos_smart_contract_address_from_db, get_eth_canon_block_from_db},
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
@@ -61,7 +61,9 @@ impl Erc20OnEosPegInInfos {
     }
 
     fn is_log_erc20_peg_in(log: &EthLog) -> Result<bool> {
-        Ok(log.contains_topic(&EthHash::from_slice(&hex::decode(&ERC20_PEG_IN_EVENT_TOPIC_HEX)?[..])))
+        Ok(log.contains_topic(&EthHash::from_slice(
+            &hex::decode(&ERC20_VAULT_PEG_IN_EVENT_TOPIC_HEX)?[..],
+        )))
     }
 
     pub fn is_log_supported_erc20_peg_in(log: &EthLog, token_dictionary: &EosEthTokenDictionary) -> Result<bool> {
@@ -279,7 +281,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(
             &get_erc20_on_eos_smart_contract_address_from_db(&state.db)?,
-            &[*ERC20_ON_EOS_PEG_IN_EVENT_TOPIC],
+            &[*ERC20_VAULT_PEG_IN_EVENT_TOPIC],
         )
         .and_then(|filtered_submission_material| {
             Erc20OnEosPegInInfos::filter_eth_sub_mat_for_supported_peg_ins(

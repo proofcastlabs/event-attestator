@@ -6,7 +6,7 @@ use crate::{
         eth::{
             eth_constants::ZERO_ETH_VALUE,
             eth_contracts::{
-                erc20_vault::{Erc20VaultPegInEventParams, ERC20_PEG_IN_EVENT_WITH_USER_DATA_TOPIC},
+                erc20_vault::{Erc20VaultPegInEventParams, ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC},
                 erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_DATA_GAS_LIMIT},
             },
             eth_crypto::eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
@@ -99,7 +99,7 @@ impl EthOnEvmEvmTxInfos {
     }
 
     fn is_log_eth_on_evm_peg_in(log: &EthLog, vault_address: &EthAddress) -> Result<bool> {
-        let log_contains_topic = log.contains_topic(&ERC20_PEG_IN_EVENT_WITH_USER_DATA_TOPIC);
+        let log_contains_topic = log.contains_topic(&ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC);
         let log_is_from_vault_address = &log.address == vault_address;
         Ok(log_contains_topic && log_is_from_vault_address)
     }
@@ -269,7 +269,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
     state
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(&vault_address, &[
-            *ERC20_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
+            *ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
         ])
         .and_then(|filtered_submission_material| {
             EthOnEvmEvmTxInfos::filter_eth_submission_material_for_supported_peg_ins(
