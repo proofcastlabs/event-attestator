@@ -278,19 +278,8 @@ mod tests {
 
     #[test]
     fn should_fail_to_get_params_from_non_erc777_redeem_event() {
-        // FIXME This is wrong, but we expect it to be because the sample is wrong since it
-        // expectes an address arg, not a string.
-        // Also, the error type here is wrong too since this private fn doesn't actually check if
-        // the event is the correct sort first any more!
-        let expected_err = "Log is NOT from an ERC777 redeem event!".to_string();
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        match Erc777RedeemEvent::from_log_without_user_data(&log) {
-            Ok(_) => panic!("Should not have succeeded!"),
-            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
-            Err(e) => {
-                println!("{}", e);
-                panic!("Wrong error received!")
-            },
-        }
+        let result = Erc777RedeemEvent::from_log_without_user_data(&log);
+        assert!(result.is_err());
     }
 }
