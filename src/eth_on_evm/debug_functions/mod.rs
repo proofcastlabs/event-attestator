@@ -21,6 +21,7 @@ use crate::{
                 start_eth_db_transaction_and_return_state,
             },
             eth_database_utils::{
+                get_any_sender_nonce_from_db as get_eth_any_sender_nonce_from_db,
                 get_eth_account_nonce_from_db,
                 get_eth_chain_id_from_db,
                 get_eth_gas_price_from_db,
@@ -110,7 +111,7 @@ use crate::{
 /// If you don't broadcast the transaction outputted from this function, ALL future EVM transactions will
 /// fail due to the core having an incorret nonce!
 pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, evm_block_json: &str) -> Result<String> {
-    info!("✔ Submitting ETH block to core...");
+    info!("✔ Debug reprocessing EVM block...");
     check_debug_mode()
         .and_then(|_| parse_evm_submission_material_and_put_in_state(evm_block_json, EvmState::init(db)))
         .and_then(check_core_is_initialized_and_return_evm_state)
@@ -145,9 +146,9 @@ pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, evm_block_json: &s
                     get_eth_signed_tx_info_from_evm_txs(
                         &state.eth_on_evm_eth_signed_txs,
                         &state.eth_on_evm_eth_tx_infos,
-                        get_evm_account_nonce_from_db(&state.db)?,
+                        get_eth_account_nonce_from_db(&state.db)?,
                         use_any_sender_tx,
-                        get_evm_any_sender_nonce_from_db(&state.db)?,
+                        get_eth_any_sender_nonce_from_db(&state.db)?,
                         get_latest_eth_block_number(&state.db)?,
                     )?
                 },
@@ -171,7 +172,7 @@ pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, evm_block_json: &s
 /// If you don't broadcast the transaction outputted from this function, ALL future ETH transactions will
 /// fail due to the core having an incorret nonce!
 pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &str) -> Result<String> {
-    info!("✔ Submitting ETH block to core...");
+    info!("✔ Debug reprocessing ETH block...");
     check_debug_mode()
         .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
