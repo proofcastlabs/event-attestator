@@ -18,8 +18,6 @@ pub const EMPTY_NIBBLES: Nibbles = Nibbles {
     offset: 0,
 };
 pub const ERC20_PEG_IN_EVENT_TOPIC_HEX: &str = "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
-pub const BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX: &str = "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65";
-pub const EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC_HEX: &str = BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX;
 pub const ETH_MESSAGE_PREFIX: &[u8; 26] = b"\x19Ethereum Signed Message:\n";
 pub const PREFIXED_MESSAGE_HASH_LEN: &[u8; 2] = b"32";
 
@@ -27,34 +25,6 @@ lazy_static! {
     pub static ref ERC20_ON_EOS_PEG_IN_EVENT_TOPIC: [EthHash; 1] = {
         [EthHash::from_slice(
             &hex::decode(ERC20_PEG_IN_EVENT_TOPIC_HEX).expect("✘ Invalid hex in `ERC20_ON_EOS_PEG_IN_EVENT_TOPIC`!"),
-        )]
-    };
-}
-
-lazy_static! {
-    pub static ref EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC: [EthHash; 1] = {
-        [EthHash::from_slice(
-            &hex::decode(EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC_HEX)
-                .expect("✘ Invalid hex in `EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC`!"),
-        )]
-    };
-}
-
-#[cfg(not(test))]
-lazy_static! {
-    pub static ref BTC_ON_ETH_REDEEM_EVENT_TOPIC: [EthHash; 1] = {
-        [EthHash::from_slice(
-            &hex::decode(BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX).expect("✘ Invalid hex in `BTC_ON_ETH_REDEEM_EVENT_TOPIC`"),
-        )]
-    };
-}
-
-#[cfg(test)]
-lazy_static! {
-    pub static ref BTC_ON_ETH_REDEEM_EVENT_TOPIC: [EthHash; 1] = {
-        [EthHash::from_slice(
-            &hex::decode("fc62a6078634cc3b00bff541ac549ba6bfed8678765289f88f61e22c668198ba")
-                .expect("✘ Invalid hex in `BTC_ON_ETH_REDEEM_EVENT_TOPIC`!"),
         )]
     };
 }

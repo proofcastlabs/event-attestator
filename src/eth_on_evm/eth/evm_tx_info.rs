@@ -4,19 +4,23 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use crate::{
     chains::{
         eth::{
-            eth_constants::{ETH_ON_EVM_PEG_IN_EVENT_TOPIC, ETH_ON_EVM_PEG_IN_EVENT_TOPIC_HEX, ZERO_ETH_VALUE},
+            eth_constants::ZERO_ETH_VALUE,
             eth_contracts::{
-                erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_DATA_GAS_LIMIT},
                 erc20_vault::Erc20VaultPegInEventParams,
+                erc777::{
+                    encode_erc777_mint_fxn_maybe_with_data,
+                    ERC777_MINT_WITH_DATA_GAS_LIMIT,
+                    ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
+                    ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX,
+                },
             },
             eth_crypto::eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
-eth_utils::safely_convert_hex_to_eth_address,
-
             eth_database_utils::{get_eth_canon_block_from_db, get_eth_on_evm_smart_contract_address_from_db},
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
             eth_state::EthState,
             eth_submission_material::EthSubmissionMaterial,
+            eth_utils::safely_convert_hex_to_eth_address,
         },
         evm::{
             eth_crypto::eth_private_key::EthPrivateKey as EvmPrivateKey,
@@ -101,10 +105,13 @@ impl EthOnEvmEvmTxInfos {
 
     fn is_log_eth_on_evm_peg_in(log: &EthLog, vault_address: &EthAddress) -> Result<bool> {
         let log_contains_topic = log.contains_topic(&EthHash::from_slice(
-            &hex::decode(&ETH_ON_EVM_PEG_IN_EVENT_TOPIC_HEX)?[..],
+            &hex::decode(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX)?[..],
         ));
         let log_is_from_vault_address = &log.address == vault_address;
-        debug!("✔ Checking log contains topic: {}", ETH_ON_EVM_PEG_IN_EVENT_TOPIC_HEX);
+        debug!(
+            "✔ Checking log contains topic: {}",
+            ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX
+        );
         debug!("✔ Log has correct topic: {}", log_contains_topic);
         debug!("✔ Log is from vault address: {}", log_is_from_vault_address);
         Ok(log_contains_topic && log_is_from_vault_address)
@@ -274,10 +281,9 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
     let vault_address = get_eth_on_evm_smart_contract_address_from_db(&state.db)?;
     state
         .get_eth_submission_material()?
-        .get_receipts_containing_log_from_address_and_with_topics(
-            &vault_address,
-            &ETH_ON_EVM_PEG_IN_EVENT_TOPIC.to_vec(),
-        )
+        .get_receipts_containing_log_from_address_and_with_topics(&vault_address, &[
+            *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
+        ])
         .and_then(|filtered_submission_material| {
             EthOnEvmEvmTxInfos::filter_eth_submission_material_for_supported_peg_ins(
                 &filtered_submission_material,

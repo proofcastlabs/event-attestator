@@ -4,10 +4,10 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use crate::{
     chains::{
         eth::{
-            eth_constants::{ETH_ON_EVM_REDEEM_EVENT_TOPIC, ETH_ON_EVM_REDEEM_EVENT_TOPIC_HEX, ZERO_ETH_VALUE},
+            eth_constants::ZERO_ETH_VALUE,
             eth_contracts::{
-                erc777::Erc777RedeemEvent,
                 erc20_vault::{encode_erc20_vault_peg_out_fxn_data, ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT},
+                erc777::{Erc777RedeemEvent, ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA},
             },
             eth_crypto::{
                 eth_private_key::EthPrivateKey,
@@ -107,11 +107,16 @@ impl EthOnEvmEthTxInfos {
     }
 
     fn is_log_eth_on_evm_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
-        debug!("✔ Checking log contains topic: {}", ETH_ON_EVM_REDEEM_EVENT_TOPIC_HEX);
+        debug!(
+            "✔ Checking log contains topic: {}",
+            hex::encode(ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA.as_bytes())
+        );
         let token_is_supported = dictionary.is_evm_token_supported(&log.address);
-        let log_contains_topic = log.contains_topic(&EthHash::from_slice(
-            &hex::decode(&ETH_ON_EVM_REDEEM_EVENT_TOPIC_HEX)?[..],
-        ));
+        let log_contains_topic = log.contains_topic(
+            //&EthHash::from_slice(
+            //&hex::decode(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)?[..],
+            &ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
+        );
         debug!("✔ Log is supported: {}", token_is_supported);
         debug!("✔ Log has correct topic: {}", log_contains_topic);
         Ok(token_is_supported && log_contains_topic)
@@ -287,7 +292,7 @@ pub fn filter_submission_material_for_redeem_events_in_state<D: DatabaseInterfac
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_addresses_and_with_topics(
             &state.get_eth_evm_token_dictionary()?.to_evm_addresses(),
-            &ETH_ON_EVM_REDEEM_EVENT_TOPIC.to_vec(),
+            &[*ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA],
         )
         .and_then(|filtered_submission_material| {
             EthOnEvmEthTxInfos::filter_eth_submission_material_for_supported_redeems(

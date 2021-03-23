@@ -8,12 +8,8 @@ use crate::{
     chains::{
         eos::eos_utils::remove_symbol_from_eos_asset,
         eth::{
-            eth_constants::{
-                ERC20_ON_EOS_PEG_IN_EVENT_TOPIC,
-                ERC20_PEG_IN_EVENT_TOPIC_HEX,
-                ETH_ADDRESS_SIZE_IN_BYTES,
-                ETH_WORD_SIZE_IN_BYTES,
-            },
+            eth_constants::{ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
+            eth_contracts::erc20_vault::{ERC20_ON_EOS_PEG_IN_EVENT_TOPIC, ERC20_PEG_IN_EVENT_TOPIC_HEX},
             eth_database_utils::{get_erc20_on_eos_smart_contract_address_from_db, get_eth_canon_block_from_db},
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},

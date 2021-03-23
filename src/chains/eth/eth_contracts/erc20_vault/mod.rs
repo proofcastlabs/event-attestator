@@ -1,8 +1,6 @@
-#![allow(dead_code)] // FIXME TODO Rm!
-
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
-use ethereum_types::{Address as EthAddress, U256};
+use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
     chains::eth::{eth_contracts::encode_fxn_call, eth_traits::EthLogCompatible},
@@ -15,6 +13,16 @@ pub const ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT: usize = 300_000;
 pub const ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT: usize = 100_000;
 
 pub const ERC20_VAULT_ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"addresspayable\",\"name\":\"_to\",\"type\":\"address\"}],\"name\":\"migrate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"addSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"removeSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
+
+pub const ERC20_PEG_IN_EVENT_TOPIC_HEX: &str = "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
+
+lazy_static! {
+    pub static ref ERC20_ON_EOS_PEG_IN_EVENT_TOPIC: [EthHash; 1] = {
+        [EthHash::from_slice(
+            &hex::decode(ERC20_PEG_IN_EVENT_TOPIC_HEX).expect("✘ Invalid hex in `ERC20_ON_EOS_PEG_IN_EVENT_TOPIC`!"),
+        )]
+    };
+}
 
 pub fn encode_erc20_vault_peg_out_fxn_data(
     recipient: EthAddress,

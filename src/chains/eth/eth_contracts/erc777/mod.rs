@@ -32,20 +32,26 @@ pub const ERC777_MINT_WITH_NO_DATA_ABI: &str = "[{\"constant\":false,\"inputs\":
 
 pub const ERC777_MINT_WITH_DATA_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"recipient\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"userData\",\"type\":\"bytes\"},{\"name\":\"operatorData\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
 
+pub const ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX: &str =
+    "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65";
+
 lazy_static! {
     pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA: EthHash = {
         EthHash::from_slice(
-            &hex::decode("78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65")
-                .expect("✘ Invalid hex in `BTC_ON_ETH_REDEEM_EVENT_TOPIC`"),
+            &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX)
+                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA`"),
         )
     };
 }
 
+pub const ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX: &str =
+    "4599e9bf0d45c505e011d0e11f473510f083a4fdc45e3f795d58bb5379dbad68";
+
 lazy_static! {
     pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA: EthHash = {
         EthHash::from_slice(
-            &hex::decode("4599e9bf0d45c505e011d0e11f473510f083a4fdc45e3f795d58bb5379dbad68")
-                .expect("✘ Invalid hex in `BTC_ON_ETH_REDEEM_EVENT_TOPIC`"),
+            &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX)
+                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA`"),
         )
     };
 }
@@ -272,12 +278,19 @@ mod tests {
 
     #[test]
     fn should_fail_to_get_params_from_non_erc777_redeem_event() {
+        // FIXME This is wrong, but we expect it to be because the sample is wrong since it
+        // expectes an address arg, not a string.
+        // Also, the error type here is wrong too since this private fn doesn't actually check if
+        // the event is the correct sort first any more!
         let expected_err = "Log is NOT from an ERC777 redeem event!".to_string();
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         match Erc777RedeemEvent::from_log_without_user_data(&log) {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
-            Err(_) => panic!("Wrong error received!"),
+            Err(e) => {
+                println!("{}", e);
+                panic!("Wrong error received!")
+            },
         }
     }
 }
