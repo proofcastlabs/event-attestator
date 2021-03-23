@@ -34,10 +34,9 @@ pub struct EvmOutput {
 pub struct EthTxInfo {
     pub _id: String,
     pub broadcast: bool,
-    pub evm_tx_hash: String,
-    pub evm_tx_amount: String,
+    pub eth_tx_hash: String,
     pub eth_tx_amount: String,
-    pub evm_tx_recipient: String,
+    pub eth_tx_recipient: String,
     pub witnessed_timestamp: u64,
     pub host_token_address: String,
     pub originating_tx_hash: String,
@@ -45,7 +44,7 @@ pub struct EthTxInfo {
     pub native_token_address: String,
     pub eth_signed_tx: Option<String>,
     pub any_sender_nonce: Option<u64>,
-    pub evm_account_nonce: Option<u64>,
+    pub eth_account_nonce: Option<u64>,
     pub evm_latest_block_number: usize,
     pub broadcast_tx_hash: Option<String>,
     pub broadcast_timestamp: Option<String>,
@@ -72,16 +71,15 @@ impl EthTxInfo {
             } else {
                 format!("peth-on-evm-eth-{}", nonce)
             },
-            evm_tx_hash: format!("0x{}", tx.get_tx_hash()),
-            evm_tx_amount: evm_tx_info.token_amount.to_string(),
+            eth_tx_hash: format!("0x{}", tx.get_tx_hash()),
             eth_tx_amount: evm_tx_info.token_amount.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
-            evm_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
+            eth_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            host_token_address: format!("0x{}", hex::encode(&evm_tx_info.eth_token_address)),
-            native_token_address: format!("0x{}", hex::encode(&evm_tx_info.evm_token_address)),
+            host_token_address: format!("0x{}", hex::encode(&evm_tx_info.evm_token_address)),
+            native_token_address: format!("0x{}", hex::encode(&evm_tx_info.eth_token_address)),
             originating_address: format!("0x{}", hex::encode(evm_tx_info.token_sender.as_bytes())),
-            evm_tx_recipient: format!("0x{}", hex::encode(evm_tx_info.destination_address.as_bytes())),
+            eth_tx_recipient: format!("0x{}", hex::encode(evm_tx_info.destination_address.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(evm_tx_info.originating_tx_hash.as_bytes())),
         })
     }
