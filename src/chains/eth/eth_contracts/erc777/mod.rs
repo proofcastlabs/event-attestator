@@ -216,9 +216,9 @@ impl Erc777RedeemEvent {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        chains::eth::eth_test_utils::{get_sample_log_with_erc20_peg_in_event, get_sample_log_with_erc777_redeem},
-        errors::AppError,
+    use crate::chains::eth::eth_test_utils::{
+        get_sample_log_with_erc20_peg_in_event,
+        get_sample_log_with_erc777_redeem,
     };
 
     #[test]

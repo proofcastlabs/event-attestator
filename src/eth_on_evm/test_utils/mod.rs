@@ -15,7 +15,7 @@ use crate::{
             eth_submission_material::EthSubmissionMaterial as EvmSubmissionMaterial,
         },
     },
-    dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
+    dictionaries::eth_evm::EthEvmTokenDictionary,
     types::Result,
 };
 
