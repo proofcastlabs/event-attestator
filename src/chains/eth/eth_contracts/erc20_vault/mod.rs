@@ -145,7 +145,6 @@ impl Erc20VaultPegInEventParams {
     }
 
     pub fn from_eth_log<L: EthLogCompatible>(log: &L) -> Result<Self> {
-        // TODO Test once we have samples!
         Self::from_eth_log_with_user_data(log).or_else(|_| Self::from_eth_log_without_user_data(log))
     }
 }
@@ -153,7 +152,14 @@ impl Erc20VaultPegInEventParams {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eth::eth_test_utils::{get_sample_eth_address, get_sample_log_with_eth_on_evm_vault_peg_in};
+    use crate::{
+        chains::eth::eth_test_utils::{
+            get_sample_eth_address,
+            get_sample_log_with_erc20_peg_in_event,
+            get_sample_log_with_eth_on_evm_vault_peg_in,
+        },
+        eth_on_evm::test_utils::get_sample_erc20_vault_log_with_user_data,
+    };
 
     #[test]
     fn should_encode_peg_out_fxn_data() {
@@ -189,5 +195,36 @@ mod tests {
         let address = get_sample_eth_address();
         let result = encode_erc20_vault_remove_supported_token_fx_data(address).unwrap();
         assert_eq!(hex::encode(&result), expected_result);
+    }
+
+    #[test]
+    fn should_get_params_from_eth_log_without_user_data() {
+        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
+        let result = Erc20VaultPegInEventParams::from_eth_log(&log).unwrap();
+        let expected_result = Erc20VaultPegInEventParams {
+            user_data: vec![],
+            token_amount: U256::from_dec_str("1337").unwrap(),
+            token_sender: EthAddress::from_slice(&hex::decode(&"fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
+            token_address: EthAddress::from_slice(&hex::decode(&"9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap()),
+            destination_address: "aneosaddress".to_string(),
+        };
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_params_from_eth_log_with_user_data() {
+        // NOTE THis is the correct type of log, only the pegin wasn't made with any user data :/
+        // FIXME / TODO  Get a real sample WITH some actual user data & test that.
+        let log = get_sample_erc20_vault_log_with_user_data();
+        let result = Erc20VaultPegInEventParams::from_eth_log(&log).unwrap();
+        let expected_result = Erc20VaultPegInEventParams {
+            user_data: vec![],
+            token_amount: U256::from_dec_str("1000000000000000000").unwrap(),
+            token_sender: EthAddress::from_slice(&hex::decode(&"8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
+            token_address: EthAddress::from_slice(&hex::decode(&"89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap()),
+            // NOTE: This address was from when @bertani accidentally included the `"` chars in the string!
+            destination_address: "\"0x8127192c2e4703dfb47f087883cc3120fe061cb8\"".to_string(),
+        };
+        assert_eq!(result, expected_result);
     }
 }
