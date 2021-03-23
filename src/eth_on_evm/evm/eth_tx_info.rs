@@ -328,75 +328,77 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EvmS
     }
 }
 
-// FIXME Re-instate once we have new sample material
-// #[cfg(test)]
-// mod tests {
-// use super::*;
-// use crate::{
-// chains::eth::eth_traits::EthTxInfoCompatible,
-// eth_on_evm::test_utils::{
-// get_evm_submission_material_n,
-// get_sample_eth_evm_token_dictionary,
-// get_sample_eth_private_key,
-// },
-// };
-//
-// #[test]
-// fn should_filter_submission_info_for_supported_redeems() {
-// let dictionary = get_sample_eth_evm_token_dictionary();
-// let material = get_evm_submission_material_n(1);
-// let result =
-// EthOnEvmEthTxInfos::filter_eth_submission_material_for_supported_redeems(&material, &dictionary).unwrap();
-// let expected_num_receipts = 1;
-// assert_eq!(result.receipts.len(), expected_num_receipts);
-// }
-//
-// #[test]
-// fn should_get_eth_on_evm_eth_tx_info_from_submission_material() {
-// let dictionary = get_sample_eth_evm_token_dictionary();
-// let material = get_evm_submission_material_n(1);
-// let result = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary).unwrap();
-// let expected_num_results = 1;
-// assert_eq!(result.len(), expected_num_results);
-// let expected_result = EthOnEvmEthTxInfos::new(vec![EthOnEvmEthTxInfo {
-// user_data: vec![0xde, 0xca, 0xff],
-// token_amount: U256::from_dec_str("666").unwrap(),
-// token_sender: EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
-// evm_token_address: EthAddress::from_slice(
-// &hex::decode("6819bbfdf803b8b87850916d3eeb3642dde6c24f").unwrap(),
-// ),
-// eth_token_address: EthAddress::from_slice(
-// &hex::decode("bf6ab900f1a3d8f94bc98f1d2ba1b8f00d532078").unwrap(),
-// ),
-// destination_address: EthAddress::from_slice(
-// &hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
-// ),
-// originating_tx_hash: EthHash::from_slice(
-// &hex::decode("27e094774335279a8ba2ca2f8675071cf5e3c09a9d80ce11b3f5ea49c806d268").unwrap(),
-// ),
-// }]);
-// assert_eq!(result, expected_result);
-// }
-//
-// #[test]
-// fn should_get_signaures_from_eth_tx_info() {
-// let dictionary = get_sample_eth_evm_token_dictionary();
-// let material = get_evm_submission_material_n(1);
-// let infos = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary).unwrap();
-// let vault_address = EthAddress::from_slice(&hex::decode("e72479bf662ca5047301f80733cb1c5c23a338af").unwrap());
-// let pk = get_sample_eth_private_key();
-// let nonce = 0_u64;
-// let chain_id = 4_u8;
-// let gas_limit = 300_000_usize;
-// let gas_price = 20_000_000_000_u64;
-// let signed_txs = infos
-// .to_eth_signed_txs(nonce, chain_id, gas_limit, gas_price, &pk, &vault_address)
-// .unwrap();
-// let expected_num_results = 1;
-// assert_eq!(signed_txs.len(), expected_num_results);
-// let tx_hex = signed_txs[0].eth_tx_hex().unwrap();
-// let expected_tx_hex =
-// "f8ca808504a817c800830493e094e72479bf662ca5047301f80733cb1c5c23a338af80b86483c09d42000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac000000000000000000000000bf6ab900f1a3d8f94bc98f1d2ba1b8f00d532078000000000000000000000000000000000000000000000000000000000000029a2ca0031c56126894d95ef87d515048877b3e3e213737506965d7dea74854fc934930a066eb76208b12e2b872e559d077fd7fa0aaa94ec501214b60fd454d4a7d4b418d"
-// ; assert_eq!(tx_hex, expected_tx_hex);
-// }
-// }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        chains::eth::eth_traits::EthTxInfoCompatible,
+        eth_on_evm::test_utils::{
+            get_evm_submission_material_n,
+            get_sample_eth_evm_token_dictionary,
+            get_sample_eth_private_key,
+            get_sample_vault_address,
+        },
+    };
+
+    #[test]
+    fn should_filter_submission_info_for_supported_redeems() {
+        let dictionary = get_sample_eth_evm_token_dictionary();
+        let material = get_evm_submission_material_n(1);
+        let result =
+            EthOnEvmEthTxInfos::filter_eth_submission_material_for_supported_redeems(&material, &dictionary).unwrap();
+        let expected_num_receipts = 1;
+        assert_eq!(result.receipts.len(), expected_num_receipts);
+    }
+
+    // TODO Get a sample with actual user data & test that too.
+    #[test]
+    fn should_get_eth_on_evm_eth_tx_info_from_submission_material() {
+        let dictionary = get_sample_eth_evm_token_dictionary();
+        let material = get_evm_submission_material_n(1);
+        let result = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary).unwrap();
+        let expected_num_results = 1;
+        assert_eq!(result.len(), expected_num_results);
+        let expected_result = EthOnEvmEthTxInfos::new(vec![EthOnEvmEthTxInfo {
+            user_data: vec![],
+            token_amount: U256::from_dec_str("100000000000000000").unwrap(),
+            token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
+            evm_token_address: EthAddress::from_slice(
+                &hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap(),
+            ),
+            eth_token_address: EthAddress::from_slice(
+                &hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap(),
+            ),
+            destination_address: EthAddress::from_slice(
+                &hex::decode("71a440ee9fa7f99fb9a697e96ec7839b8a1643b8").unwrap(),
+            ),
+            originating_tx_hash: EthHash::from_slice(
+                &hex::decode("52c620012a6e278d56f582eb1dcb9241c9b2d14d7edc5dab15473b579ce2d2ea").unwrap(),
+            ),
+        }]);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_signaures_from_eth_tx_info() {
+        let dictionary = get_sample_eth_evm_token_dictionary();
+        let material = get_evm_submission_material_n(1);
+        let infos = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary).unwrap();
+        let vault_address = get_sample_vault_address();
+        let pk = get_sample_eth_private_key();
+        let nonce = 0_u64;
+        let chain_id = 4_u8;
+        let gas_limit = 300_000_usize;
+        let gas_price = 20_000_000_000_u64;
+        let signed_txs = infos
+            .to_eth_signed_txs(nonce, chain_id, gas_limit, gas_price, &pk, &vault_address)
+            .unwrap();
+        let expected_num_results = 1;
+        assert_eq!(signed_txs.len(), expected_num_results);
+        let tx_hex = signed_txs[0].eth_tx_hex().unwrap();
+        let expected_tx_hex =
+"f8ca808504a817c800830493e094d608367b33c52293201af7fb578916a7c0784bd780b86483c09d4200000000000000000000000071a440ee9fa7f99fb9a697e96ec7839b8a1643b800000000000000000000000089ab32156e46f46d02ade3fecbe5fc4243b9aaed000000000000000000000000000000000000000000000000016345785d8a00002ba06f5373dc0285c8b5a6fc39f2e74a4679fc73841273a79389bbd73b62e83e3aaba054993a579dc3e47c756397ef231effdf4bc3ab54721ef17bcc7f557c57d183ee"
+;
+        assert_eq!(tx_hex, expected_tx_hex);
+    }
+}

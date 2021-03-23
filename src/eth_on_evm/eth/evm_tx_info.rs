@@ -6,13 +6,8 @@ use crate::{
         eth::{
             eth_constants::ZERO_ETH_VALUE,
             eth_contracts::{
-                erc20_vault::Erc20VaultPegInEventParams,
-                erc777::{
-                    encode_erc777_mint_fxn_maybe_with_data,
-                    ERC777_MINT_WITH_DATA_GAS_LIMIT,
-                    ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
-                    ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX,
-                },
+                erc20_vault::{Erc20VaultPegInEventParams, ERC20_PEG_IN_EVENT_WITH_USER_DATA_TOPIC},
+                erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_DATA_GAS_LIMIT},
             },
             eth_crypto::eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
             eth_database_utils::{get_eth_canon_block_from_db, get_eth_on_evm_smart_contract_address_from_db},
@@ -104,16 +99,8 @@ impl EthOnEvmEvmTxInfos {
     }
 
     fn is_log_eth_on_evm_peg_in(log: &EthLog, vault_address: &EthAddress) -> Result<bool> {
-        let log_contains_topic = log.contains_topic(&EthHash::from_slice(
-            &hex::decode(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX)?[..],
-        ));
+        let log_contains_topic = log.contains_topic(&ERC20_PEG_IN_EVENT_WITH_USER_DATA_TOPIC);
         let log_is_from_vault_address = &log.address == vault_address;
-        debug!(
-            "✔ Checking log contains topic: {}",
-            ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX
-        );
-        debug!("✔ Log has correct topic: {}", log_contains_topic);
-        debug!("✔ Log is from vault address: {}", log_is_from_vault_address);
         Ok(log_contains_topic && log_is_from_vault_address)
     }
 
@@ -282,7 +269,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
     state
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(&vault_address, &[
-            *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
+            *ERC20_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
         ])
         .and_then(|filtered_submission_material| {
             EthOnEvmEvmTxInfos::filter_eth_submission_material_for_supported_peg_ins(
@@ -317,7 +304,6 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
     }
 }
 
-/* TODO Reinstate once we have new samples
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -351,24 +337,27 @@ mod tests {
         let expected_num_results = 1;
         assert_eq!(result.len(), expected_num_results);
         let expected_result = EthOnEvmEvmTxInfos::new(vec![EthOnEvmEvmTxInfo {
-            user_data: vec![0xde, 0xca, 0xff],
-            token_amount: U256::from_dec_str("1337").unwrap(),
-            token_sender: EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
+            user_data: vec![],
+            token_amount: U256::from_dec_str("1000000000000000000").unwrap(),
+            token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
             evm_token_address: EthAddress::from_slice(
-                &hex::decode("6819bbfdf803b8b87850916d3eeb3642dde6c24f").unwrap(),
+                &hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap(),
             ),
             eth_token_address: EthAddress::from_slice(
-                &hex::decode("bf6ab900f1A3d8f94bc98f1d2Ba1B8f00d532078").unwrap(),
+                &hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap(),
             ),
+            // NOTE It's the `SAFE_ETH_ADDRESS_HEX` ∵ @bertani accidentally included the `"`s in the pegin!
             destination_address: EthAddress::from_slice(
-                &hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
+                &hex::decode("71a440ee9fa7f99fb9a697e96ec7839b8a1643b8").unwrap(),
             ),
             originating_tx_hash: EthHash::from_slice(
-                &hex::decode("8cea0c409068e735a377119d1cc386c2b3a8aadf204d6da602736955a3fd06b5").unwrap(),
+                &hex::decode("578670d0e08ca172eb8e862352e731814564fd6a12c3143e88bfb28292cd1535").unwrap(),
             ),
         }]);
         assert_eq!(result, expected_result);
     }
+
+    // FIXME / TODO test one without the safe eth address!
 
     #[test]
     fn should_get_signaures_from_evm_tx_info() {
@@ -387,8 +376,9 @@ mod tests {
         let expected_num_results = 1;
         assert_eq!(signed_txs.len(), expected_num_results);
         let tx_hex = signed_txs[0].eth_tx_hex().unwrap();
-        let expected_tx_hex = "f9014a808504a817c800830493e0946819bbfdf803b8b87850916d3eeb3642dde6c24f80b8e4dcdc7dd0000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac0000000000000000000000000000000000000000000000000000000000000539000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003decaff00000000000000000000000000000000000000000000000000000000002ba0684dce069f0e7d134fa6e8783754afcc72dc09b6c46dc021957e883d85a1abb7a0443d0ecc7b27c8644f4efdc4a3bf9a6abacc91565219df6f9e9ba700a925c5d8";
+        let expected_tx_hex =
+"f9012a808504a817c800830493e094daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af9280b8c4dcdc7dd000000000000000000000000071a440ee9fa7f99fb9a697e96ec7839b8a1643b80000000000000000000000000000000000000000000000000de0b6b3a7640000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002ba0e692dd01449b9d70b4f6a98f07ea2ebab8de8f92a55f45dc92dae4e0cd962a0ba0113b961254c8a47f9b318157a6ffb172223093884e7c807ca8e92f9bc143464a"
+;
         assert_eq!(tx_hex, expected_tx_hex);
     }
 }
-*/

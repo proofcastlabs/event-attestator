@@ -134,6 +134,17 @@ impl EthEvmTokenDictionary {
     pub fn to_evm_addresses(&self) -> Vec<EthAddress> {
         self.iter().map(|entry| entry.evm_address).collect()
     }
+
+    #[cfg(test)]
+    pub fn from_str(s: &str) -> Result<Self> {
+        let entry_jsons: Vec<EthEvmTokenDictionaryEntryJson> = serde_json::from_str(s)?;
+        Ok(Self::new(
+            entry_jsons
+                .iter()
+                .map(|ref entry_json| EthEvmTokenDictionaryEntry::from_json(entry_json))
+                .collect::<Result<Vec<EthEvmTokenDictionaryEntry>>>()?,
+        ))
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
