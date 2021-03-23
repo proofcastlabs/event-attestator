@@ -5,7 +5,7 @@ use crate::{
         eth::{
             eth_constants::{
                 get_eth_constants_db_keys,
-                ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
+                ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
                 ETH_PRIVATE_KEY_DB_KEY as ETH_KEY,
             },
             eth_contracts::erc20_vault::{
@@ -22,10 +22,10 @@ use crate::{
             },
             eth_database_utils::{
                 get_any_sender_nonce_from_db as get_eth_any_sender_nonce_from_db,
+                get_erc20_on_evm_smart_contract_address_from_db,
                 get_eth_account_nonce_from_db,
                 get_eth_chain_id_from_db,
                 get_eth_gas_price_from_db,
-                get_eth_on_evm_smart_contract_address_from_db,
                 get_eth_private_key_from_db,
                 get_latest_eth_block_number,
                 increment_eth_account_nonce_in_db,
@@ -68,7 +68,7 @@ use crate::{
         EthEvmTokenDictionary,
         EthEvmTokenDictionaryEntry,
     },
-    eth_on_evm::{
+    erc20_on_evm::{
         check_core_is_initialized::{
             check_core_is_initialized,
             check_core_is_initialized_and_return_eth_state,
@@ -129,7 +129,7 @@ pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, evm_block_json: &s
                         &EthEvmTokenDictionary::get_from_db(&state.db)?,
                     )
                 })
-                .and_then(|params| state.add_eth_on_evm_eth_tx_infos(params))
+                .and_then(|params| state.add_erc20_on_evm_eth_tx_infos(params))
         })
         .and_then(filter_out_zero_value_eth_txs_from_state)
         .and_then(maybe_sign_eth_txs_and_add_to_evm_state)
@@ -139,13 +139,13 @@ pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, evm_block_json: &s
             info!("✔ Getting EVM output json...");
             let output = serde_json::to_string(&EvmOutput {
                 evm_latest_block_number: get_latest_evm_block_number(&state.db)?,
-                eth_signed_transactions: if state.eth_on_evm_eth_signed_txs.is_empty() {
+                eth_signed_transactions: if state.erc20_on_evm_eth_signed_txs.is_empty() {
                     vec![]
                 } else {
                     let use_any_sender_tx = false;
                     get_eth_signed_tx_info_from_evm_txs(
-                        &state.eth_on_evm_eth_signed_txs,
-                        &state.eth_on_evm_eth_tx_infos,
+                        &state.erc20_on_evm_eth_signed_txs,
+                        &state.erc20_on_evm_eth_tx_infos,
                         get_eth_account_nonce_from_db(&state.db)?,
                         use_any_sender_tx,
                         get_eth_any_sender_nonce_from_db(&state.db)?,
@@ -187,11 +187,11 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
                 .and_then(|material| {
                     EthOnEvmEvmTxInfos::from_submission_material(
                         &material,
-                        &get_eth_on_evm_smart_contract_address_from_db(&state.db)?,
+                        &get_erc20_on_evm_smart_contract_address_from_db(&state.db)?,
                         &EthEvmTokenDictionary::get_from_db(&state.db)?,
                     )
                 })
-                .and_then(|params| state.add_eth_on_evm_evm_tx_infos(params))
+                .and_then(|params| state.add_erc20_on_evm_evm_tx_infos(params))
         })
         .and_then(filter_out_zero_value_tx_infos_from_state)
         .and_then(maybe_sign_evm_txs_and_add_to_eth_state)
@@ -201,12 +201,12 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
             info!("✔ Getting ETH output json...");
             let output = serde_json::to_string(&EthOutput {
                 eth_latest_block_number: get_latest_eth_block_number(&state.db)?,
-                evm_signed_transactions: if state.eth_on_evm_evm_signed_txs.is_empty() {
+                evm_signed_transactions: if state.erc20_on_evm_evm_signed_txs.is_empty() {
                     vec![]
                 } else {
                     get_evm_signed_tx_info_from_evm_txs(
-                        &state.eth_on_evm_evm_signed_txs,
-                        &state.eth_on_evm_evm_tx_infos,
+                        &state.erc20_on_evm_evm_signed_txs,
+                        &state.erc20_on_evm_evm_tx_infos,
                         get_evm_account_nonce_from_db(&state.db)?,
                         false, // TODO Get this from state submission material when/if we support AnySender
                         get_evm_any_sender_nonce_from_db(&state.db)?,
@@ -335,7 +335,7 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address
                 tx_data,
                 current_eth_account_nonce,
                 0,
-                get_eth_on_evm_smart_contract_address_from_db(&db)?,
+                get_erc20_on_evm_smart_contract_address_from_db(&db)?,
                 get_eth_chain_id_from_db(&db)?,
                 ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
                 get_eth_gas_price_from_db(&db)?,
@@ -376,7 +376,7 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
                 tx_data,
                 current_eth_account_nonce,
                 0,
-                get_eth_on_evm_smart_contract_address_from_db(&db)?,
+                get_erc20_on_evm_smart_contract_address_from_db(&db)?,
                 get_eth_chain_id_from_db(&db)?,
                 ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
                 get_eth_gas_price_from_db(&db)?,
@@ -393,7 +393,7 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
 /// # Debug Get EthOnEvmVault Migration Transaction
 ///
 /// This function will create and sign a transaction that calls the `migrate` function on the
-/// current `pETH-on-EVM` vault smart-contract, migrationg it to the ETH address provided as an
+/// current `pERC20-on-EVM` vault smart-contract, migrationg it to the ETH address provided as an
 /// argument. It then updates the smart-contract address stored in the encrypted database to that
 /// new address.
 ///
@@ -404,11 +404,11 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
 /// ### BEWARE:
 /// This function outputs a signed transaction which if NOT broadcast will result in the enclave no
 /// longer working.  Use with extreme caution and only if you know exactly what you are doing!
-pub fn debug_get_eth_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, new_address: &str) -> Result<String> {
+pub fn debug_get_erc20_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, new_address: &str) -> Result<String> {
     db.start_transaction()?;
-    info!("✔ Debug getting `ETH-on-EVM` migration transaction...");
+    info!("✔ Debug getting `ERC20-on-EVM` migration transaction...");
     let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
-    let current_smart_contract_address = get_eth_on_evm_smart_contract_address_from_db(&db)?;
+    let current_smart_contract_address = get_erc20_on_evm_smart_contract_address_from_db(&db)?;
     let new_smart_contract_address = get_eth_address_from_str(new_address)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
@@ -416,7 +416,7 @@ pub fn debug_get_eth_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, new_
         .and_then(|_| {
             put_eth_address_in_db(
                 &db,
-                &ETH_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+                &ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
                 &new_smart_contract_address,
             )
         })

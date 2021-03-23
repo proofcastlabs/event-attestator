@@ -21,7 +21,7 @@ use crate::{
 
 fn get_sample_submission_material_string_n(chain_type: &str, n: usize) -> Result<String> {
     let path = format!(
-        "src/eth_on_evm/test_utils/{}-submission-material-{}.json",
+        "src/erc20_on_evm/test_utils/{}-submission-material-{}.json",
         chain_type, n
     );
     match Path::new(&path).exists() {

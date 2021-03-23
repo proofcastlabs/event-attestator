@@ -155,7 +155,7 @@ mod tests {
     use super::*;
     use crate::{
         chains::eth::eth_test_utils::{get_sample_eth_address, get_sample_log_with_erc20_peg_in_event},
-        eth_on_evm::test_utils::get_sample_erc20_vault_log_with_user_data,
+        erc20_on_evm::test_utils::get_sample_erc20_vault_log_with_user_data,
     };
 
     #[test]

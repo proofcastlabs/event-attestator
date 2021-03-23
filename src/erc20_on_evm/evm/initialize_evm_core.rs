@@ -42,8 +42,8 @@ use crate::{
 ///
 /// ### NOTE:
 ///
-/// The `ETH-on-EVM` core does NOT require any bytecode passing in since the initialization does NOT
-/// return a signed, smart-contract-deploying transaction. This is because the `ETH-on-EVM` bridge
+/// The `ERC20-on-EVM` core does NOT require any bytecode passing in since the initialization does NOT
+/// return a signed, smart-contract-deploying transaction. This is because the `ERC20-on-EVM` bridge
 /// works with an ETH<->EVM token dictionary which defines the contract addresses to be bridged.
 pub fn maybe_initialize_evm_core<D: DatabaseInterface>(
     db: D,
@@ -57,6 +57,6 @@ pub fn maybe_initialize_evm_core<D: DatabaseInterface>(
         false => start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| initialize_eth_core_with_no_contract_tx(block_json, chain_id, gas_price, confs, state))
             .and_then(end_eth_db_transaction_and_return_state)
-            .and_then(EthInitializationOutput::new_for_eth_on_evm),
+            .and_then(EthInitializationOutput::new_for_erc20_on_evm),
     }
 }

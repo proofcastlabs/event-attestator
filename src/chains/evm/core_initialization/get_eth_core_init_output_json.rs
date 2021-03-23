@@ -33,7 +33,7 @@ impl EthInitializationOutput {
         })
     }
 
-    pub fn new_for_eth_on_evm<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+    pub fn new_for_erc20_on_evm<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
         Ok(to_string(&Self::init(
             &state.db,
             Some(&EthAddress::zero()),

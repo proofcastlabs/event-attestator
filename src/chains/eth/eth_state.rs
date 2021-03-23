@@ -10,7 +10,7 @@ use crate::{
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary},
     eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfos,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
-    eth_on_evm::eth::evm_tx_info::EthOnEvmEvmTxInfos,
+    erc20_on_evm::eth::evm_tx_info::EthOnEvmEvmTxInfos,
     traits::DatabaseInterface,
     types::Result,
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
@@ -21,9 +21,9 @@ pub struct EthState<D: DatabaseInterface> {
     pub db: D,
     pub misc: Option<String>,
     pub btc_transactions: Option<BtcTransactions>,
-    pub eth_on_evm_evm_signed_txs: EthTransactions,
+    pub erc20_on_evm_evm_signed_txs: EthTransactions,
     pub eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos,
-    pub eth_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos,
+    pub erc20_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos,
     pub btc_on_eth_redeem_infos: BtcOnEthRedeemInfos,
     pub erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos,
     pub eos_transactions: Option<EosSignedTransactions>,
@@ -44,8 +44,8 @@ impl<D: DatabaseInterface> EthState<D> {
             eth_submission_material: None,
             eth_evm_token_dictionary: None,
             eos_eth_token_dictionary: None,
-            eth_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
-            eth_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos::new(vec![]),
+            erc20_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
+            erc20_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos::new(vec![]),
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
             btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(vec![]),
             erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos::new(vec![]),
@@ -80,10 +80,10 @@ impl<D: DatabaseInterface> EthState<D> {
         self.replace_eos_on_eth_eth_tx_infos(EosOnEthEthTxInfos::new(new_infos))
     }
 
-    pub fn add_eth_on_evm_evm_tx_infos(self, mut infos: EthOnEvmEvmTxInfos) -> Result<Self> {
-        let mut new_infos = self.eth_on_evm_evm_tx_infos.0.clone();
+    pub fn add_erc20_on_evm_evm_tx_infos(self, mut infos: EthOnEvmEvmTxInfos) -> Result<Self> {
+        let mut new_infos = self.erc20_on_evm_evm_tx_infos.0.clone();
         new_infos.append(&mut infos.0);
-        self.replace_eth_on_evm_evm_tx_infos(EthOnEvmEvmTxInfos::new(new_infos))
+        self.replace_erc20_on_evm_evm_tx_infos(EthOnEvmEvmTxInfos::new(new_infos))
     }
 
     pub fn replace_btc_on_eth_redeem_infos(mut self, replacements: BtcOnEthRedeemInfos) -> Result<Self> {
@@ -101,8 +101,8 @@ impl<D: DatabaseInterface> EthState<D> {
         Ok(self)
     }
 
-    pub fn replace_eth_on_evm_evm_tx_infos(mut self, replacements: EthOnEvmEvmTxInfos) -> Result<Self> {
-        self.eth_on_evm_evm_tx_infos = replacements;
+    pub fn replace_erc20_on_evm_evm_tx_infos(mut self, replacements: EthOnEvmEvmTxInfos) -> Result<Self> {
+        self.erc20_on_evm_evm_tx_infos = replacements;
         Ok(self)
     }
 
@@ -136,9 +136,9 @@ impl<D: DatabaseInterface> EthState<D> {
         }
     }
 
-    pub fn add_eth_on_evm_evm_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {
-        if self.eth_on_evm_evm_signed_txs.is_empty() {
-            self.eth_on_evm_evm_signed_txs = txs;
+    pub fn add_erc20_on_evm_evm_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {
+        if self.erc20_on_evm_evm_signed_txs.is_empty() {
+            self.erc20_on_evm_evm_signed_txs = txs;
             Ok(self)
         } else {
             Err(get_no_overwrite_state_err("evm_transaction").into())

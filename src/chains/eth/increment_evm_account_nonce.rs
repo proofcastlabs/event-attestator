@@ -13,7 +13,7 @@ use crate::{
 pub fn maybe_increment_evm_account_nonce_and_return_eth_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    let num_txs = state.eth_on_evm_evm_signed_txs.len();
+    let num_txs = state.erc20_on_evm_evm_signed_txs.len();
     if num_txs == 0 {
         info!("✔ No signatures in state ∴ not incrementing EVM account nonce");
         Ok(state)

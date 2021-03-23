@@ -77,7 +77,7 @@ impl EthEnclaveState {
         })
     }
 
-    pub fn new_for_eth_on_evm<D: DatabaseInterface>(db: &D) -> Result<Self> {
+    pub fn new_for_erc20_on_evm<D: DatabaseInterface>(db: &D) -> Result<Self> {
         Self::new(db, &EthAddress::zero())
     }
 }

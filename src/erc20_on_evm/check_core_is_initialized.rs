@@ -11,7 +11,7 @@ use crate::{
 };
 
 pub fn check_core_is_initialized<D: DatabaseInterface>(db: &D) -> Result<()> {
-    info!("✔ Checking `eth-on-evm` core is initialized...");
+    info!("✔ Checking `erc20-on-evm` core is initialized...");
     match is_evm_core_initialized(db) {
         false => Err("EVM core not initialized!".into()),
         true => match is_eth_core_initialized(db) {

@@ -10,7 +10,7 @@ use crate::{
                 erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_DATA_GAS_LIMIT},
             },
             eth_crypto::eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
-            eth_database_utils::{get_eth_canon_block_from_db, get_eth_on_evm_smart_contract_address_from_db},
+            eth_database_utils::{get_erc20_on_evm_smart_contract_address_from_db, get_eth_canon_block_from_db},
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
             eth_state::EthState,
@@ -98,22 +98,22 @@ impl EthOnEvmEvmTxInfos {
         ))
     }
 
-    fn is_log_eth_on_evm_peg_in(log: &EthLog, vault_address: &EthAddress) -> Result<bool> {
+    fn is_log_erc20_on_evm_peg_in(log: &EthLog, vault_address: &EthAddress) -> Result<bool> {
         let log_contains_topic = log.contains_topic(&ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC);
         let log_is_from_vault_address = &log.address == vault_address;
         Ok(log_contains_topic && log_is_from_vault_address)
     }
 
-    fn receipt_contains_supported_eth_on_evm_peg_in(receipt: &EthReceipt, vault_address: &EthAddress) -> bool {
-        Self::get_supported_eth_on_evm_logs_from_receipt(receipt, vault_address).len() > 0
+    fn receipt_contains_supported_erc20_on_evm_peg_in(receipt: &EthReceipt, vault_address: &EthAddress) -> bool {
+        Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, vault_address).len() > 0
     }
 
-    fn get_supported_eth_on_evm_logs_from_receipt(receipt: &EthReceipt, vault_address: &EthAddress) -> EthLogs {
+    fn get_supported_erc20_on_evm_logs_from_receipt(receipt: &EthReceipt, vault_address: &EthAddress) -> EthLogs {
         EthLogs::new(
             receipt
                 .logs
                 .iter()
-                .filter(|log| matches!(Self::is_log_eth_on_evm_peg_in(&log, vault_address), Ok(true)))
+                .filter(|log| matches!(Self::is_log_erc20_on_evm_peg_in(&log, vault_address), Ok(true)))
                 .cloned()
                 .collect(),
         )
@@ -124,9 +124,9 @@ impl EthOnEvmEvmTxInfos {
         vault_address: &EthAddress,
         dictionary: &EthEvmTokenDictionary,
     ) -> Result<Self> {
-        info!("✔ Getting `ETH-on-EVM` peg in infos from receipt...");
+        info!("✔ Getting `ERC20-on-EVM` peg in infos from receipt...");
         Ok(Self::new(
-            Self::get_supported_eth_on_evm_logs_from_receipt(receipt, vault_address)
+            Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, vault_address)
                 .iter()
                 .map(|log| {
                     let event_params = Erc20VaultPegInEventParams::from_eth_log(log)?;
@@ -150,7 +150,7 @@ impl EthOnEvmEvmTxInfos {
         submission_material: &EthSubmissionMaterial,
         vault_address: &EthAddress,
     ) -> Result<EthSubmissionMaterial> {
-        info!("✔ Filtering submission material receipts for those pertaining to `ETH-on-EVM` peg-ins...");
+        info!("✔ Filtering submission material receipts for those pertaining to `ERC20-on-EVM` peg-ins...");
         info!(
             "✔ Num receipts before filtering: {}",
             submission_material.receipts.len()
@@ -160,7 +160,7 @@ impl EthOnEvmEvmTxInfos {
                 .receipts
                 .iter()
                 .filter(|receipt| {
-                    EthOnEvmEvmTxInfos::receipt_contains_supported_eth_on_evm_peg_in(&receipt, vault_address)
+                    EthOnEvmEvmTxInfos::receipt_contains_supported_erc20_on_evm_peg_in(&receipt, vault_address)
                 })
                 .cloned()
                 .collect(),
@@ -201,7 +201,7 @@ impl EthOnEvmEvmTxInfos {
         gas_price: u64,
         evm_private_key: &EvmPrivateKey,
     ) -> Result<EvmTransactions> {
-        info!("✔ Signing `ETH-on-EVM` EVM transactions...");
+        info!("✔ Signing `ERC20-on-EVM` EVM transactions...");
         Ok(EvmTransactions::new(
             self.iter()
                 .enumerate()
@@ -223,7 +223,7 @@ impl EthOnEvmEvmTxInfos {
 pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    info!("✔ Maybe parsing `ETH-on-EVM` peg-in infos...");
+    info!("✔ Maybe parsing `ERC20-on-EVM` peg-in infos...");
     get_eth_canon_block_from_db(&state.db).and_then(|submission_material| {
         match submission_material.receipts.is_empty() {
             true => {
@@ -237,10 +237,10 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                 );
                 EthOnEvmEvmTxInfos::from_submission_material(
                     &submission_material,
-                    &get_eth_on_evm_smart_contract_address_from_db(&state.db)?,
+                    &get_erc20_on_evm_smart_contract_address_from_db(&state.db)?,
                     &EthEvmTokenDictionary::get_from_db(&state.db)?,
                 )
-                .and_then(|tx_infos| state.add_eth_on_evm_evm_tx_infos(tx_infos))
+                .and_then(|tx_infos| state.add_erc20_on_evm_evm_tx_infos(tx_infos))
             },
         }
     })
@@ -250,22 +250,22 @@ pub fn filter_out_zero_value_tx_infos_from_state<D: DatabaseInterface>(state: Et
     info!("✔ Maybe filtering out zero value `EthOnEvmEvmTxInfos`...");
     debug!(
         "✔ Num `EthOnEvmEvmTxInfos` before: {}",
-        state.eth_on_evm_evm_signed_txs.len()
+        state.erc20_on_evm_evm_signed_txs.len()
     );
     state
-        .eth_on_evm_evm_tx_infos
+        .erc20_on_evm_evm_tx_infos
         .filter_out_zero_values()
         .and_then(|filtered_tx_infos| {
             debug!("✔ Num `EthOnEvmEvmTxInfos` after: {}", filtered_tx_infos.len());
-            state.replace_eth_on_evm_evm_tx_infos(filtered_tx_infos)
+            state.replace_erc20_on_evm_evm_tx_infos(filtered_tx_infos)
         })
 }
 
 pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    info!("✔ Filtering receipts for those containing `ETH-on-EVM` peg in events...");
-    let vault_address = get_eth_on_evm_smart_contract_address_from_db(&state.db)?;
+    info!("✔ Filtering receipts for those containing `ERC20-on-EVM` peg in events...");
+    let vault_address = get_erc20_on_evm_smart_contract_address_from_db(&state.db)?;
     state
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(&vault_address, &[
@@ -281,12 +281,12 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
 }
 
 pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    if state.eth_on_evm_evm_tx_infos.is_empty() {
+    if state.erc20_on_evm_evm_tx_infos.is_empty() {
         info!("✔ No tx infos in state ∴ no EVM transactions to sign!");
         Ok(state)
     } else {
         state
-            .eth_on_evm_evm_tx_infos
+            .erc20_on_evm_evm_tx_infos
             .to_evm_signed_txs(
                 get_evm_account_nonce_from_db(&state.db)?,
                 get_evm_chain_id_from_db(&state.db)?,
@@ -299,7 +299,7 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
                 {
                     debug!("✔ Signed transactions: {:?}", signed_txs);
                 }
-                state.add_eth_on_evm_evm_signed_txs(signed_txs)
+                state.add_erc20_on_evm_evm_signed_txs(signed_txs)
             })
     }
 }
@@ -309,7 +309,7 @@ mod tests {
     use super::*;
     use crate::{
         chains::eth::eth_traits::EthTxInfoCompatible,
-        eth_on_evm::test_utils::{
+        erc20_on_evm::test_utils::{
             get_eth_submission_material_n,
             get_sample_eth_evm_token_dictionary,
             get_sample_evm_private_key,
@@ -329,7 +329,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_eth_on_evm_evm_tx_info_from_submission_material() {
+    fn should_get_erc20_on_evm_evm_tx_info_from_submission_material() {
         let material = get_eth_submission_material_n(1);
         let vault_address = get_sample_vault_address();
         let dictionary = get_sample_eth_evm_token_dictionary();
