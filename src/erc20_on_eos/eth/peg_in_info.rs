@@ -279,7 +279,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(
             &get_erc20_on_eos_smart_contract_address_from_db(&state.db)?,
-            &ERC20_ON_EOS_PEG_IN_EVENT_TOPIC.to_vec(),
+            &[*ERC20_ON_EOS_PEG_IN_EVENT_TOPIC],
         )
         .and_then(|filtered_submission_material| {
             Erc20OnEosPegInInfos::filter_eth_sub_mat_for_supported_peg_ins(

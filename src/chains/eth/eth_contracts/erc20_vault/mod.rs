@@ -17,10 +17,22 @@ pub const ERC20_VAULT_ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\
 pub const ERC20_PEG_IN_EVENT_TOPIC_HEX: &str = "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
 
 lazy_static! {
-    pub static ref ERC20_ON_EOS_PEG_IN_EVENT_TOPIC: [EthHash; 1] = {
-        [EthHash::from_slice(
+    pub static ref ERC20_ON_EOS_PEG_IN_EVENT_TOPIC: EthHash = {
+        EthHash::from_slice(
             &hex::decode(ERC20_PEG_IN_EVENT_TOPIC_HEX).expect("✘ Invalid hex in `ERC20_ON_EOS_PEG_IN_EVENT_TOPIC`!"),
-        )]
+        )
+    };
+}
+
+pub const ERC20_PEG_IN_EVENT_WITH_USER_DATA_TOPIC_HEX: &str =
+    "d45bf0460398ad3b27d2bd85144872898591943b81eca880e34fca0a229aa0dc";
+
+lazy_static! {
+    pub static ref ERC20_PEG_IN_EVENT_WITH_USER_DATA_TOPIC: EthHash = {
+        EthHash::from_slice(
+            &hex::decode(ERC20_PEG_IN_EVENT_WITH_USER_DATA_TOPIC_HEX)
+                .expect("✘ Invalid hex in `ERC20_PEG_IN_EVENT_WITH_USER_DATA_TOPIC`!"),
+        )
     };
 }
 
