@@ -10,7 +10,7 @@ pub enum BlockchainProtocolId {
 }
 
 impl BlockchainProtocolId {
-    pub fn as_byte(&self) -> Byte {
+    pub fn to_byte(&self) -> Byte {
         match self {
             BlockchainProtocolId::Ethereum => 0x00,
             BlockchainProtocolId::Bitcoin => 0x01,
@@ -25,6 +25,15 @@ impl BlockchainProtocolId {
             2u8 => Ok(BlockchainProtocolId::Eos),
             _ => Err(format!("✘ Unrecognized version byte for `BlockchainProtocolId`: {:?}", byte).into()),
         }
+    }
+
+    pub fn to_symbol(&self) -> String {
+        let s = match self {
+            BlockchainProtocolId::Ethereum => "ETH",
+            BlockchainProtocolId::Bitcoin => "BTC",
+            BlockchainProtocolId::Eos => "EOS",
+        };
+        s.to_string()
     }
 
     #[cfg(test)]
@@ -55,7 +64,7 @@ mod tests {
     #[test]
     fn should_perform_blockchain_protocol_ids_bytes_round_trip() {
         BlockchainProtocolId::get_all().iter().for_each(|id| {
-            let byte = id.as_byte();
+            let byte = id.to_byte();
             let result = BlockchainProtocolId::from_byte(&byte).unwrap();
             assert_eq!(&result, id);
         });

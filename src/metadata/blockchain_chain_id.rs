@@ -4,18 +4,19 @@ use ethereum_types::H256 as EthHash;
 
 use crate::{
     chains::eth::eth_crypto_utils::keccak_hash_bytes,
+    metadata::blockchain_protocol_id::BlockchainProtocolId,
     types::{Byte, Bytes, Result},
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BlockchainChainId {
-    EthereumMainnet, // NOTE: 0x5fe7f9
-    EthereumRinkeby, // NOTE: 0x69c322
-    EthereumRopsten, // NOTE: 0xf34368
-    BitcoinMainnet,  // NOTE: 0xec97de
-    BitcoinTestnet,  // NOTE: 0x8afeb2
-    EosMainnet,      // NOTE: 0xe7261c
-    TelosMainnet,    // NOTE: 0x8c7109
+    EthereumMainnet, // NOTE: 0x005fe7f9
+    EthereumRinkeby, // NOTE: 0x0069c322
+    EthereumRopsten, // NOTE: 0x00f34368
+    BitcoinMainnet,  // NOTE: 0x01ec97de
+    BitcoinTestnet,  // NOTE: 0x018afeb2
+    EosMainnet,      // NOTE: 0x02e7261c
+    TelosMainnet,    // NOTE: 0x028c7109
 }
 
 impl BlockchainChainId {
@@ -30,6 +31,14 @@ impl BlockchainChainId {
             Self::EosMainnet,
             Self::TelosMainnet,
         ]
+    }
+
+    pub fn to_protocol_id(&self) -> BlockchainProtocolId {
+        match self {
+            Self::EosMainnet | Self::TelosMainnet => BlockchainProtocolId::Eos,
+            Self::BitcoinMainnet | Self::BitcoinTestnet => BlockchainProtocolId::Bitcoin,
+            Self::EthereumMainnet | Self::EthereumRinkeby | Self::EthereumRopsten => BlockchainProtocolId::Ethereum,
+        }
     }
 
     fn to_hash(&self) -> EthHash {
@@ -69,11 +78,11 @@ impl BlockchainChainId {
         hex::encode(self.to_bytes())
     }
 
-    fn to_bytes(&self) -> Bytes {
-        self.to_hash()[..3].to_vec()
+    pub fn to_bytes(&self) -> Bytes {
+        vec![vec![self.to_protocol_id().to_byte()], self.to_hash()[..3].to_vec()].concat()
     }
 
-    fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         let maybe_self = Self::get_all()
             .iter()
             .map(|id| {
@@ -90,11 +99,7 @@ impl BlockchainChainId {
             1 => maybe_self[0]
                 .clone()
                 .ok_or_else(|| "Failed to unwrap `maybe_self` from option!".into()),
-            0 => Err(format!(
-                "Unrecognized version byte for `BlockchainChainId`: 0x{}",
-                hex::encode(bytes)
-            )
-            .into()),
+            0 => Err(format!("Unrecognized bytes for `BlockchainChainId`: 0x{}", hex::encode(bytes)).into()),
             _ => {
                 Err(format!("`BlockchainChainId` collision! > 1 chain ID has the same 1st 3 bytes when hashed!").into())
             },

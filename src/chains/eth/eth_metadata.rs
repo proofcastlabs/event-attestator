@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     btc_on_eth::btc::minting_params::BtcOnEthMintingParamStruct,
-    metadata::blockchain_id::BlockchainId,
+    metadata::blockchain_chain_id::BlockchainChainId,
     types::{Byte, Bytes, Result},
 };
 
@@ -46,7 +46,7 @@ pub struct EthMetadataFromBtc {
     pub version: EthMetadataVersion,
     pub originating_tx_hash: Txid,
     pub originating_tx_address: Option<BtcAddress>,
-    pub originating_blockchain_id: BlockchainId,
+    pub originating_blockchain_id: BlockchainChainId,
     // TODO the actual user data. Though _from_ BTC won't have any without a v3 deposit address.
 }
 
@@ -60,7 +60,7 @@ impl EthMetadataFromBtc {
                 version: version.clone(),
                 originating_tx_hash: minting_param_struct.originating_tx_hash,
                 originating_tx_address: Self::get_btc_address_from_str(&minting_param_struct.originating_tx_address),
-                originating_blockchain_id: BlockchainId::BitcoinMainnet,
+                originating_blockchain_id: BlockchainChainId::BitcoinMainnet,
             },
         }
     }
@@ -133,7 +133,7 @@ impl EthMetadataFromBtc {
             EthMetadataVersion::V1 => Ok(EthMetadataFromBtc {
                 version: EthMetadataVersion::from_byte(&bytes[0])?,
                 originating_tx_hash: Self::get_sha_hash_from_bytes(&bytes[1..33])?,
-                originating_blockchain_id: BlockchainId::BitcoinMainnet,
+                originating_blockchain_id: BlockchainChainId::BitcoinMainnet,
                 originating_tx_address: match str::from_utf8(&bytes[33..]) {
                     Ok(address_string) => Self::get_btc_address_from_str(address_string),
                     Err(err) => {
