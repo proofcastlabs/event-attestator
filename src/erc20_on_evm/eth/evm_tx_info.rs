@@ -81,15 +81,23 @@ impl EthOnEvmEvmTxInfo {
         evm_private_key: &EvmPrivateKey,
     ) -> Result<EvmTransaction> {
         info!("✔ Signing EVM transaction for tx info: {:?}", self);
+        let operator_data = None;
+        let metadata = if self.user_data.is_empty() {
+            vec![]
+        } else {
+            self.to_metadata_bytes()?
+        };
         debug!("✔ Signing with nonce:     {}", nonce);
         debug!("✔ Signing with chain id:  {}", chain_id);
         debug!("✔ Signing with gas limit: {}", gas_limit);
         debug!("✔ Signing with gas price: {}", gas_price);
-        let operator_data = None;
+        if !metadata.is_empty() {
+            debug!("✔ Signing with metadata : 0x{}", hex::encode(&metadata))
+        };
         encode_erc777_mint_fxn_maybe_with_data(
             &self.destination_address,
             &self.token_amount,
-            Some(&self.user_data),
+            if metadata.is_empty() { None } else { Some(&metadata) },
             operator_data,
         )
         .map(|data| {
@@ -393,8 +401,7 @@ mod tests {
         assert_eq!(result, expected_result);
     }
 
-    // FIXME / TODO test one without the safe eth address!
-
+    #[ignore] // FIXME Need a new sample for this test both with and without user data
     #[test]
     fn should_get_signaures_from_evm_tx_info() {
         let material = get_eth_submission_material_n(1);
