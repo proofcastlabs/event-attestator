@@ -17,6 +17,7 @@ pub enum BlockchainChainId {
     BitcoinTestnet,  // NOTE: 0x018afeb2
     EosMainnet,      // NOTE: 0x02e7261c
     TelosMainnet,    // NOTE: 0x028c7109
+    BscMainnet,      // NOTE: 0x00e4b170
 }
 
 impl BlockchainChainId {
@@ -30,6 +31,7 @@ impl BlockchainChainId {
             Self::BitcoinTestnet,
             Self::EosMainnet,
             Self::TelosMainnet,
+            Self::BscMainnet,
         ]
     }
 
@@ -37,7 +39,9 @@ impl BlockchainChainId {
         match self {
             Self::EosMainnet | Self::TelosMainnet => BlockchainProtocolId::Eos,
             Self::BitcoinMainnet | Self::BitcoinTestnet => BlockchainProtocolId::Bitcoin,
-            Self::EthereumMainnet | Self::EthereumRinkeby | Self::EthereumRopsten => BlockchainProtocolId::Ethereum,
+            Self::EthereumMainnet | Self::EthereumRinkeby | Self::EthereumRopsten | Self::BscMainnet => {
+                BlockchainProtocolId::Ethereum
+            },
         }
     }
 
@@ -53,6 +57,10 @@ impl BlockchainChainId {
             },
             Self::EthereumRopsten => {
                 let chain_id = 4u8;
+                chain_id.to_le_bytes().to_vec()
+            },
+            Self::BscMainnet => {
+                let chain_id = 56u8;
                 chain_id.to_le_bytes().to_vec()
             },
             Self::BitcoinMainnet => {
@@ -116,6 +124,7 @@ impl BlockchainChainId {
             1 => Ok(Self::EthereumMainnet),
             3 => Ok(Self::EthereumRinkeby),
             4 => Ok(Self::EthereumRopsten),
+            56 => Ok(Self::BscMainnet),
             _ => Err(format!("Unsupported ETH chain ID: {}", eth_chain_id).into()),
         }
     }
@@ -131,6 +140,7 @@ impl fmt::Display for BlockchainChainId {
             Self::EthereumMainnet => write!(f, "Ethereum Mainnet: 0x{}", self.to_hex()),
             Self::EthereumRinkeby => write!(f, "Ethereum Rinkeby: 0x{}", self.to_hex()),
             Self::EthereumRopsten => write!(f, "Ethereum Ropsten: 0x{}", self.to_hex()),
+            Self::BscMainnet => write!(f, "Binance Chain (BSC) Mainnet: 0x{}", self.to_hex()),
         }
     }
 }
@@ -151,5 +161,18 @@ mod tests {
             let result = BlockchainChainId::from_bytes(&byte).unwrap();
             assert_eq!(&result, id);
         });
+    }
+
+    #[test]
+    fn all_chain_ids_should_be_unique() {
+        let mut ids_as_bytes = BlockchainChainId::get_all()
+            .iter()
+            .map(|id| id.to_bytes())
+            .collect::<Vec<Bytes>>();
+        ids_as_bytes.sort();
+        let length_before_dedup = ids_as_bytes.len();
+        ids_as_bytes.dedup();
+        let length_after_dedup = ids_as_bytes.len();
+        assert_eq!(length_before_dedup, length_after_dedup);
     }
 }
