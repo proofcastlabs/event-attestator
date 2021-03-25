@@ -4,6 +4,7 @@ use serde_json::Value as JsonValue;
 use crate::{
     constants::ETH_HASH_LENGTH,
     types::{Byte, Bytes, NoneError, Result},
+    utils::strip_hex_prefix,
 };
 
 pub fn convert_h256_to_bytes(hash: H256) -> Bytes {
@@ -41,14 +42,6 @@ pub fn convert_hex_to_bytes(hex: &str) -> Result<Bytes> {
     Ok(hex::decode(strip_hex_prefix(&hex))?)
 }
 
-pub fn strip_hex_prefix(prefixed_hex: &str) -> String {
-    let res = str::replace(prefixed_hex, "0x", "");
-    match res.len() % 2 {
-        0 => res,
-        _ => left_pad_with_zero(&res),
-    }
-}
-
 pub fn decode_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
     Ok(hex::decode(hex_to_decode)?)
 }
@@ -73,10 +66,6 @@ pub fn convert_json_value_to_string(value: &JsonValue) -> Result<String> {
         .as_str()
         .ok_or(NoneError("Could not unwrap. JSON value isn't a String!"))?
         .to_string())
-}
-
-fn left_pad_with_zero(string: &str) -> String {
-    format!("0{}", string)
 }
 
 #[cfg(test)]
@@ -167,14 +156,6 @@ mod tests {
         let expected_result = [192, 255, 238];
         let result = decode_hex(none_prefixed_hex).unwrap();
         assert_eq!(result, expected_result)
-    }
-
-    #[test]
-    fn should_left_pad_string_with_zero_correctly() {
-        let dummy_hex = "0xc0ffee";
-        let expected_result = "00xc0ffee".to_string();
-        let result = left_pad_with_zero(dummy_hex);
-        assert_eq!(result, expected_result);
     }
 
     #[test]
