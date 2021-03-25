@@ -120,8 +120,8 @@ impl fmt::Display for BlockchainChainId {
             Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: 0x{}", self.to_hex()),
             Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: 0x{}", self.to_hex()),
             Self::EthereumMainnet => write!(f, "Ethereum Mainnet: 0x{}", self.to_hex()),
-            Self::EthereumRinkeby => write!(f, "Ethereum Rinkeby Testnet: 0x{}", self.to_hex()),
-            Self::EthereumRopsten => write!(f, "Ethereum Ropsten Testnet: 0x{}", self.to_hex()),
+            Self::EthereumRinkeby => write!(f, "Ethereum Rinkeby: 0x{}", self.to_hex()),
+            Self::EthereumRopsten => write!(f, "Ethereum Ropsten: 0x{}", self.to_hex()),
         }
     }
 }
