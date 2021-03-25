@@ -8,11 +8,11 @@ use serde::{Deserialize, Serialize};
 use crate::{
     chains::eos::{
         eos_action_proofs::EosActionProof,
-        eos_eth_token_dictionary::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
         eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
         eos_state::EosState,
     },
     constants::SAFE_ETH_ADDRESS,
+    dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     traits::DatabaseInterface,
     types::Result,
     utils::{convert_bytes_to_u64, strip_hex_prefix},

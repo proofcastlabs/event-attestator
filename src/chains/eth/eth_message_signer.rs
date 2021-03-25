@@ -1,7 +1,11 @@
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::eth::{eth_database_utils::get_eth_private_key_from_db, eth_types::EthSignature},
+    chains::eth::{
+        eth_database_utils::get_eth_private_key_from_db,
+        eth_traits::EthSigningCapabilities,
+        eth_types::EthSignature,
+    },
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, is_hex},
@@ -71,21 +75,6 @@ pub fn sign_hex_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, messa
             key.sign_eth_prefixed_msg_bytes(&bytes)
         })
         .map(|signature| encode_eth_signed_message_as_json(&message, &signature).to_string())
-}
-
-#[deprecated(
-    since = "4.1.0",
-    note = "Please use `sign_ascii_msg_with_eth_key_with_no_prefix` instead"
-)]
-pub fn sign_message_with_eth_key<D, T>(db: &D, message: T) -> Result<JsonValue>
-where
-    D: DatabaseInterface,
-    T: Into<String>,
-{
-    Ok(serde_json::from_str(&sign_ascii_msg_with_eth_key_with_no_prefix(
-        db,
-        &message.into(),
-    )?)?)
 }
 
 #[cfg(test)]

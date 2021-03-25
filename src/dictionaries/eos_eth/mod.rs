@@ -5,12 +5,15 @@ use eos_chain::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, U256 as EthAmount};
 use serde::{Deserialize, Serialize};
 
+pub(crate) mod test_utils;
+
 use crate::{
     chains::{
-        eos::{eos_constants::EOS_ETH_DICTIONARY_KEY, eos_state::EosState, eos_utils::remove_symbol_from_eos_asset},
+        eos::{eos_state::EosState, eos_utils::remove_symbol_from_eos_asset},
         eth::eth_state::EthState,
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
+    dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{left_pad_with_zeroes, right_pad_or_truncate, right_pad_with_zeroes, strip_hex_prefix, truncate_str},
@@ -346,7 +349,7 @@ pub fn get_eos_eth_token_dictionary_from_db_and_add_to_eth_state<D: DatabaseInte
 mod tests {
     use super::*;
     use crate::{
-        chains::eos::eos_test_utils::{
+        dictionaries::eos_eth::test_utils::{
             get_sample_eos_eth_token_dictionary,
             get_sample_eos_eth_token_dictionary_entry_1,
             get_sample_eos_eth_token_dictionary_entry_2,

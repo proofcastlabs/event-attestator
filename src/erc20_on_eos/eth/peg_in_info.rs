@@ -6,14 +6,10 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
     chains::{
-        eos::{eos_eth_token_dictionary::EosEthTokenDictionary, eos_utils::remove_symbol_from_eos_asset},
+        eos::eos_utils::remove_symbol_from_eos_asset,
         eth::{
-            eth_constants::{
-                ERC20_ON_EOS_PEG_IN_EVENT_TOPIC,
-                ERC20_PEG_IN_EVENT_TOPIC_HEX,
-                ETH_ADDRESS_SIZE_IN_BYTES,
-                ETH_WORD_SIZE_IN_BYTES,
-            },
+            eth_constants::{ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
+            eth_contracts::erc20_vault::{ERC20_VAULT_PEG_IN_EVENT_TOPIC, ERC20_VAULT_PEG_IN_EVENT_TOPIC_HEX},
             eth_database_utils::{get_erc20_on_eos_smart_contract_address_from_db, get_eth_canon_block_from_db},
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
@@ -22,6 +18,7 @@ use crate::{
         },
     },
     constants::SAFE_EOS_ADDRESS,
+    dictionaries::eos_eth::EosEthTokenDictionary,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -64,7 +61,9 @@ impl Erc20OnEosPegInInfos {
     }
 
     fn is_log_erc20_peg_in(log: &EthLog) -> Result<bool> {
-        Ok(log.contains_topic(&EthHash::from_slice(&hex::decode(&ERC20_PEG_IN_EVENT_TOPIC_HEX)?[..])))
+        Ok(log.contains_topic(&EthHash::from_slice(
+            &hex::decode(&ERC20_VAULT_PEG_IN_EVENT_TOPIC_HEX)?[..],
+        )))
     }
 
     pub fn is_log_supported_erc20_peg_in(log: &EthLog, token_dictionary: &EosEthTokenDictionary) -> Result<bool> {
@@ -282,7 +281,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(
             &get_erc20_on_eos_smart_contract_address_from_db(&state.db)?,
-            &ERC20_ON_EOS_PEG_IN_EVENT_TOPIC.to_vec(),
+            &[*ERC20_VAULT_PEG_IN_EVENT_TOPIC],
         )
         .and_then(|filtered_submission_material| {
             Erc20OnEosPegInInfos::filter_eth_sub_mat_for_supported_peg_ins(
@@ -296,12 +295,8 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::{
-        eos::{
-            eos_eth_token_dictionary::EosEthTokenDictionaryEntry,
-            eos_test_utils::get_sample_eos_eth_token_dictionary,
-        },
-        eth::eth_test_utils::{
+    use crate::{
+        chains::eth::eth_test_utils::{
             get_sample_erc20_on_eos_peg_in_info,
             get_sample_erc20_on_eos_peg_in_infos,
             get_sample_log_with_erc20_peg_in_event,
@@ -309,6 +304,7 @@ mod tests {
             get_sample_receipt_with_erc20_peg_in_event,
             get_sample_submission_material_with_erc20_peg_in_event,
         },
+        dictionaries::eos_eth::{test_utils::get_sample_eos_eth_token_dictionary, EosEthTokenDictionaryEntry},
     };
 
     fn get_sample_zero_eos_asset_peg_in_info() -> Erc20OnEosPegInInfo {

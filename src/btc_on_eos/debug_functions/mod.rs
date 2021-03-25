@@ -151,9 +151,12 @@ pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) 
 /// fact that EOS transactions have an intrinsic time limit, meaning a failure of upstream parts of
 /// the bridge (ie tx broadcasting) could lead to expired transactions that can't ever be mined.
 ///
-/// ### NOTE:
-/// This function will increment the core's EOS nonce, meaning the outputted reports will have a
-/// gap in their report IDs!
+/// ### BEWARE:
+/// This function does NOT increment the EOS  nonce (since it is not critical for correct
+/// transaction creation) and so outputted reports will NOT contain correct nonces. This is to ensure
+/// future transactions written by the proper submit-ETH-block pipeline will remain contiguous. The
+/// user of this function should understand why this is the case, and thus should be able to modify
+/// the outputted reports to slot into the external database correctly.
 pub fn debug_reprocess_btc_block_for_stale_eos_tx<D: DatabaseInterface>(
     db: D,
     block_json_string: &str,

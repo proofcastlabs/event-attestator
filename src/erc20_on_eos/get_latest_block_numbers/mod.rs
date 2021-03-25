@@ -16,10 +16,11 @@ struct BlockNumbers {
     eos_latest_block_number: u64,
 }
 
-pub fn get_latest_block_numbers<D>(db: D) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+/// # Get Latest Block Numbers
+///
+/// This function returns a JSON containing the last processed block number of each of the
+/// blockchains this instance manages.
+pub fn get_latest_block_numbers<D: DatabaseInterface>(db: D) -> Result<String> {
     info!("✔ Getting latest block numbers...");
     check_core_is_initialized(&db).and_then(|_| {
         Ok(serde_json::to_string(&BlockNumbers {

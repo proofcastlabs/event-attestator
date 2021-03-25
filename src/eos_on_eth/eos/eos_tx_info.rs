@@ -16,24 +16,26 @@ use crate::{
         eos::{
             eos_action_proofs::EosActionProof,
             eos_database_utils::get_eos_account_name_from_db,
-            eos_eth_token_dictionary::EosEthTokenDictionary,
             eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
             eos_state::EosState,
         },
         eth::{
             eth_constants::ZERO_ETH_VALUE,
             eth_contracts::erc777::{encode_erc777_mint_with_no_data_fxn, ERC777_MINT_WITH_NO_DATA_GAS_LIMIT},
-            eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
+            eth_crypto::{
+                eth_private_key::EthPrivateKey,
+                eth_transaction::{EthTransaction, EthTransactions},
+            },
             eth_database_utils::{
                 get_eth_account_nonce_from_db,
                 get_eth_chain_id_from_db,
                 get_eth_gas_price_from_db,
                 get_eth_private_key_from_db,
             },
-            eth_types::EthTransactions,
         },
     },
     constants::SAFE_ETH_ADDRESS_HEX,
+    dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
     traits::DatabaseInterface,
     types::Result,
@@ -267,28 +269,30 @@ impl EosOnEthEosTxInfos {
         eth_account_nonce: u64,
         chain_id: u8,
         gas_price: u64,
-        eth_private_key: EthPrivateKey,
+        eth_private_key: &EthPrivateKey,
     ) -> Result<EthTransactions> {
         info!("✔ Getting ETH signed transactions from `erc20-on-eos` redeem infos...");
-        self.iter()
-            .enumerate()
-            .map(|(i, tx_info)| {
-                info!(
-                    "✔ Signing ETH tx for amount: {}, to address: {}",
-                    tx_info.amount, tx_info.recipient
-                );
-                EthTransaction::new_unsigned(
-                    encode_erc777_mint_with_no_data_fxn(&tx_info.recipient, &tx_info.amount)?,
-                    eth_account_nonce + i as u64,
-                    ZERO_ETH_VALUE,
-                    tx_info.eth_token_address,
-                    chain_id,
-                    ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
-                    gas_price,
-                )
-                .sign(eth_private_key.clone())
-            })
-            .collect::<Result<EthTransactions>>()
+        Ok(EthTransactions::new(
+            self.iter()
+                .enumerate()
+                .map(|(i, tx_info)| {
+                    info!(
+                        "✔ Signing ETH tx for amount: {}, to address: {}",
+                        tx_info.amount, tx_info.recipient
+                    );
+                    EthTransaction::new_unsigned(
+                        encode_erc777_mint_with_no_data_fxn(&tx_info.recipient, &tx_info.amount)?,
+                        eth_account_nonce + i as u64,
+                        ZERO_ETH_VALUE,
+                        tx_info.eth_token_address,
+                        chain_id,
+                        ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
+                        gas_price,
+                    )
+                    .sign(eth_private_key)
+                })
+                .collect::<Result<Vec<EthTransaction>>>()?,
+        ))
     }
 }
 
@@ -344,7 +348,7 @@ pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: E
                 get_eth_account_nonce_from_db(&state.db)?,
                 get_eth_chain_id_from_db(&state.db)?,
                 get_eth_gas_price_from_db(&state.db)?,
-                get_eth_private_key_from_db(&state.db)?,
+                &get_eth_private_key_from_db(&state.db)?,
             )
             .and_then(|signed_txs| {
                 #[cfg(feature = "debug")]
@@ -472,7 +476,7 @@ mod tests {
         let chain_id: u8 = 4; // NOTE Rinkeby
         let gas_price = 20_000_000_000;
         let nonce = 0;
-        let signed_txs = tx_infos.to_eth_signed_txs(nonce, chain_id, gas_price, pk).unwrap();
+        let signed_txs = tx_infos.to_eth_signed_txs(nonce, chain_id, gas_price, &pk).unwrap();
         let result = signed_txs[0].serialize_hex();
         assert_eq!(result, expected_result);
     }

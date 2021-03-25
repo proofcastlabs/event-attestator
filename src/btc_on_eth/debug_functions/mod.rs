@@ -171,10 +171,10 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
         })
         .and_then(maybe_increment_eth_nonce_in_db)
         .and_then(|state| {
-            let signatures = serde_json::to_string(&match &state.eth_signed_txs {
-                None => Ok(vec![]),
-                Some(txs) => get_eth_signed_tx_info_from_eth_txs(
-                    txs,
+            let signatures = serde_json::to_string(&match &state.eth_signed_txs.len() {
+                0 => Ok(vec![]),
+                _ => get_eth_signed_tx_info_from_eth_txs(
+                    &state.eth_signed_txs,
                     &state.btc_on_eth_minting_params,
                     get_eth_account_nonce_from_db(&state.db)?,
                     state.use_any_sender_tx_type(),
@@ -456,7 +456,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
                 get_erc777_contract_address_from_db(&db)?,
                 gas_price,
                 &recipient_eth_address,
-                get_eth_private_key_from_db(&db)?,
+                &get_eth_private_key_from_db(&db)?,
                 None,
                 None,
             )

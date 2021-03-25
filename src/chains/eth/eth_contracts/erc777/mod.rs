@@ -15,7 +15,7 @@ use crate::{
             get_eth_private_key_from_db,
             increment_eth_account_nonce_in_db,
         },
-        eth_log::EthLog,
+        eth_traits::EthLogCompatible,
     },
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
@@ -23,6 +23,7 @@ use crate::{
 
 pub const EMPTY_DATA: Bytes = vec![];
 pub const ERC777_CHANGE_PNETWORK_GAS_LIMIT: usize = 30_000;
+pub const ERC777_MINT_WITH_DATA_GAS_LIMIT: usize = 300_000;
 pub const ERC777_MINT_WITH_NO_DATA_GAS_LIMIT: usize = 180_000;
 
 pub const ERC777_CHANGE_PNETWORK_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"newPNetwork\",\"type\":\"address\"}],\"name\":\"changePNetwork\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0xfd4add66\"}]";
@@ -31,20 +32,26 @@ pub const ERC777_MINT_WITH_NO_DATA_ABI: &str = "[{\"constant\":false,\"inputs\":
 
 pub const ERC777_MINT_WITH_DATA_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"recipient\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"userData\",\"type\":\"bytes\"},{\"name\":\"operatorData\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
 
+pub const ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX: &str =
+    "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65";
+
 lazy_static! {
     pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA: EthHash = {
         EthHash::from_slice(
-            &hex::decode("78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65")
-                .expect("✘ Invalid hex in `BTC_ON_ETH_REDEEM_EVENT_TOPIC`"),
+            &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX)
+                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA`"),
         )
     };
 }
 
+pub const ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX: &str =
+    "4599e9bf0d45c505e011d0e11f473510f083a4fdc45e3f795d58bb5379dbad68";
+
 lazy_static! {
     pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA: EthHash = {
         EthHash::from_slice(
-            &hex::decode("4599e9bf0d45c505e011d0e11f473510f083a4fdc45e3f795d58bb5379dbad68")
-                .expect("✘ Invalid hex in `BTC_ON_ETH_REDEEM_EVENT_TOPIC`"),
+            &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX)
+                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA`"),
         )
     };
 }
@@ -109,7 +116,7 @@ pub fn get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(db: &D, new_ad
         ERC777_CHANGE_PNETWORK_GAS_LIMIT,
         get_eth_gas_price_from_db(db)?,
     )
-    .sign(get_eth_private_key_from_db(db)?)?
+    .sign(&get_eth_private_key_from_db(db)?)?
     .serialize_hex()))
 }
 
@@ -122,40 +129,42 @@ pub struct Erc777RedeemEvent {
 }
 
 impl Erc777RedeemEvent {
-    fn check_log_is_erc777_redeem_event(log: &EthLog) -> Result<()> {
-        log.check_has_x_topics(1).and_then(|_| {
-            if log.topics[0] == *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA
-                || log.topics[0] == *ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA
-            {
-                Ok(())
-            } else {
-                Err("Log is NOT from an ERC777 redeem event!".into())
-            }
-        })
+    fn check_log_is_erc777_redeem_event<L: EthLogCompatible>(log: &L) -> Result<()> {
+        if log.get_topics().get(0) == Some(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
+            || log.get_topics().get(0) == Some(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA)
+        {
+            Ok(())
+        } else {
+            Err("Log is NOT from an ERC777 redeem event!".into())
+        }
     }
 
     fn get_err_msg(field: &str) -> String {
         format!("Error getting `{}` from `EthOnEvmErc777RedeemEvent`!", field)
     }
 
-    fn from_log_without_user_data(log: &EthLog) -> Result<Self> {
+    fn from_log_without_user_data<L: EthLogCompatible>(log: &L) -> Result<Self> {
         info!("✔ Attemping to get `Erc777RedeemEvent` from log WITHOUT user data...");
-        let tokens = eth_abi_decode(&[EthAbiParamType::Uint(256), EthAbiParamType::String], &log.data)?;
-        Ok(Self {
-            user_data: vec![],
-            redeemer: EthAddress::from_slice(&log.topics[1][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..]),
-            value: match tokens[0] {
-                EthAbiToken::Uint(value) => Ok(value),
-                _ => Err(Self::get_err_msg("value")),
-            }?,
-            underlying_asset_recipient: match tokens[1] {
-                EthAbiToken::String(ref value) => Ok(value.clone()),
-                _ => Err(Self::get_err_msg("underlying_asset_recipient")),
-            }?,
+        let tokens = eth_abi_decode(&[EthAbiParamType::Uint(256), EthAbiParamType::String], &log.get_data())?;
+        log.check_has_x_topics(2).and_then(|_| {
+            Ok(Self {
+                user_data: vec![],
+                redeemer: EthAddress::from_slice(
+                    &log.get_topics()[1][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..],
+                ),
+                value: match tokens[0] {
+                    EthAbiToken::Uint(value) => Ok(value),
+                    _ => Err(Self::get_err_msg("value")),
+                }?,
+                underlying_asset_recipient: match tokens[1] {
+                    EthAbiToken::String(ref value) => Ok(value.clone()),
+                    _ => Err(Self::get_err_msg("underlying_asset_recipient")),
+                }?,
+            })
         })
     }
 
-    fn from_log_with_user_data(log: &EthLog) -> Result<Self> {
+    fn from_log_with_user_data<L: EthLogCompatible>(log: &L) -> Result<Self> {
         info!("✔ Attemping to get `Erc777RedeemEvent` from log WITH user data...");
         let tokens = eth_abi_decode(
             &[
@@ -163,11 +172,13 @@ impl Erc777RedeemEvent {
                 EthAbiParamType::String,
                 EthAbiParamType::Bytes,
             ],
-            &log.data,
+            &log.get_data(),
         )?;
         log.check_has_x_topics(2).and_then(|_| {
             Ok(Self {
-                redeemer: EthAddress::from_slice(&log.topics[1][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..]),
+                redeemer: EthAddress::from_slice(
+                    &log.get_topics()[1][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..],
+                ),
                 value: match tokens[0] {
                     EthAbiToken::Uint(value) => Ok(value),
                     _ => Err(Self::get_err_msg("value")),
@@ -184,12 +195,12 @@ impl Erc777RedeemEvent {
         })
     }
 
-    fn log_contains_user_data(log: &EthLog) -> Result<bool> {
+    fn log_contains_user_data<L: EthLogCompatible>(log: &L) -> Result<bool> {
         log.check_has_x_topics(1)
-            .map(|_| log.topics[0] == *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
+            .map(|_| log.get_topics()[0] == *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
     }
 
-    pub fn from_eth_log(log: &EthLog) -> Result<Self> {
+    pub fn from_eth_log<L: EthLogCompatible>(log: &L) -> Result<Self> {
         Self::check_log_is_erc777_redeem_event(log).and_then(|_| {
             if Self::log_contains_user_data(log)? {
                 Self::from_log_with_user_data(log)
@@ -203,9 +214,9 @@ impl Erc777RedeemEvent {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        chains::eth::eth_test_utils::{get_sample_log_with_erc20_peg_in_event, get_sample_log_with_erc777_redeem},
-        errors::AppError,
+    use crate::chains::eth::eth_test_utils::{
+        get_sample_log_with_erc20_peg_in_event,
+        get_sample_log_with_erc777_redeem,
     };
 
     #[test]
@@ -259,18 +270,14 @@ mod tests {
             "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
             vec![],
         );
-        let result = Erc777RedeemEvent::from_eth_log(&log).unwrap();
+        let result = Erc777RedeemEvent::from_log_without_user_data(&log).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_fail_to_get_params_from_non_erc777_redeem_event() {
-        let expected_err = "Log is NOT from an ERC777 redeem event!".to_string();
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        match Erc777RedeemEvent::from_eth_log(&log) {
-            Ok(_) => panic!("Should not have succeeded!"),
-            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
-            Err(_) => panic!("Wrong error received!"),
-        }
+        let result = Erc777RedeemEvent::from_log_without_user_data(&log);
+        assert!(result.is_err());
     }
 }

@@ -16,6 +16,10 @@ struct BlockNumbers {
     eth_latest_block_number: usize,
 }
 
+/// # Get Latest Block Numbers
+///
+/// This function returns a JSON containing the last processed block number of each of the
+/// blockchains this instance manages.
 pub fn get_latest_block_numbers<D: DatabaseInterface>(db: D) -> Result<String> {
     info!("✔ Getting latest block numbers...");
     check_core_is_initialized(&db).and_then(|_| {

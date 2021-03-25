@@ -20,9 +20,12 @@ pub use utils::get_core_version;
 pub mod btc_on_eos;
 pub mod btc_on_eth;
 pub mod chains;
+pub(crate) mod dictionaries;
 pub mod eos_on_eth;
 pub mod erc20_on_eos;
+pub mod erc20_on_evm;
 pub mod errors;
+pub(crate) mod metadata;
 pub mod traits;
 pub mod types;
 

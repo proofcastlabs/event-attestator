@@ -12,17 +12,16 @@ use crate::{
                 eos_transaction::{EosSignedTransaction, EosSignedTransactions},
             },
             eos_database_utils::{get_eos_account_name_from_db, get_eos_chain_id_from_db},
-            eos_eth_token_dictionary::EosEthTokenDictionary,
         },
         eth::{
-            eth_constants::EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC,
-            eth_contracts::erc777::Erc777RedeemEvent,
+            eth_contracts::erc777::{Erc777RedeemEvent, ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA},
             eth_database_utils::get_eth_canon_block_from_db,
             eth_log::EthLog,
             eth_state::EthState,
             eth_submission_material::EthSubmissionMaterial,
         },
     },
+    dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
     traits::DatabaseInterface,
     types::{Byte, Result},
@@ -51,18 +50,21 @@ impl EosOnEthEthTxInfos {
         material: &EthSubmissionMaterial,
         token_dictionary: &EosEthTokenDictionary,
     ) -> Result<Self> {
-        let topic = &EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC[0];
         let eth_contract_addresses = token_dictionary.to_eth_addresses();
         debug!("Addresses from dict: {:?}", eth_contract_addresses);
-        debug!("The topic: {}", hex::encode(EOS_ON_ETH_ETH_TX_INFO_EVENT_TOPIC[0]));
         Ok(Self(
             material
                 .receipts
-                .get_receipts_containing_log_from_addresses_and_with_topics(&eth_contract_addresses, &[*topic])
+                .get_receipts_containing_log_from_addresses_and_with_topics(&eth_contract_addresses, &[
+                    *ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
+                ])
                 .iter()
                 .map(|receipt| {
                     receipt
-                        .get_logs_from_addresses_with_topic(&eth_contract_addresses, topic)
+                        .get_logs_from_addresses_with_topic(
+                            &eth_contract_addresses,
+                            &ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
+                        )
                         .iter()
                         .map(|log| EosOnEthEthTxInfo::from_eth_log(&log, &receipt.transaction_hash, token_dictionary))
                         .collect::<Result<Vec<EosOnEthEthTxInfo>>>()
@@ -277,7 +279,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        chains::eos::eos_eth_token_dictionary::EosEthTokenDictionaryEntry,
+        dictionaries::eos_eth::EosEthTokenDictionaryEntry,
         eos_on_eth::test_utils::{get_eth_submission_material_n, get_sample_eos_eth_token_dictionary},
     };
 

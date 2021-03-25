@@ -26,6 +26,8 @@ pub(crate) mod eth_utils;
 pub(crate) mod get_linker_hash;
 pub(crate) mod get_trie_hash_map;
 pub(crate) mod increment_eos_account_nonce;
+pub(crate) mod increment_eth_account_nonce;
+pub(crate) mod increment_evm_account_nonce;
 pub(crate) mod nibble_utils;
 pub(crate) mod path_codec;
 pub(crate) mod remove_old_eth_tail_block;

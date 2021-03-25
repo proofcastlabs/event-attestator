@@ -3,10 +3,10 @@ use crate::{
     chains::{
         btc::{btc_database_utils::get_btc_canon_block_from_db, btc_state::BtcState},
         eth::{
-            eth_crypto::eth_transaction::get_signed_minting_tx,
+            eth_crypto::eth_transaction::{get_signed_minting_tx, EthTransaction, EthTransactions},
             eth_database_utils::get_signing_params_from_db,
             eth_metadata::{EthMetadataFromBtc, EthMetadataVersion},
-            eth_types::{EthSigningParams, EthTransactions},
+            eth_types::EthSigningParams,
         },
     },
     traits::DatabaseInterface,
@@ -18,30 +18,32 @@ pub fn get_eth_signed_txs(
     minting_params: &[BtcOnEthMintingParamStruct],
 ) -> Result<EthTransactions> {
     trace!("✔ Getting ETH signed transactions...");
-    minting_params
-        .iter()
-        .enumerate()
-        .map(|(i, minting_param_struct)| {
-            info!(
-                "✔ Signing ETH tx for amount: {}, to address: {}",
-                minting_param_struct.amount, minting_param_struct.eth_address,
-            );
-            get_signed_minting_tx(
-                &minting_param_struct.amount,
-                signing_params.eth_account_nonce + i as u64,
-                signing_params.chain_id,
-                signing_params.smart_contract_address,
-                signing_params.gas_price,
-                &minting_param_struct.eth_address,
-                signing_params.eth_private_key.clone(),
-                None,
-                Some(
-                    &EthMetadataFromBtc::from_btc_minting_params(&EthMetadataVersion::V1, minting_param_struct)
-                        .serialize()?,
-                ),
-            )
-        })
-        .collect::<Result<EthTransactions>>()
+    Ok(EthTransactions::new(
+        minting_params
+            .iter()
+            .enumerate()
+            .map(|(i, minting_param_struct)| {
+                info!(
+                    "✔ Signing ETH tx for amount: {}, to address: {}",
+                    minting_param_struct.amount, minting_param_struct.eth_address,
+                );
+                get_signed_minting_tx(
+                    &minting_param_struct.amount,
+                    signing_params.eth_account_nonce + i as u64,
+                    signing_params.chain_id,
+                    signing_params.smart_contract_address,
+                    signing_params.gas_price,
+                    &minting_param_struct.eth_address,
+                    &signing_params.eth_private_key,
+                    None,
+                    Some(
+                        &EthMetadataFromBtc::from_btc_minting_params(&EthMetadataVersion::V1, minting_param_struct)
+                            .serialize()?,
+                    ),
+                )
+            })
+            .collect::<Result<Vec<EthTransaction>>>()?,
+    ))
 }
 
 pub fn maybe_sign_normal_canon_block_txs_and_add_to_state<D>(state: BtcState<D>) -> Result<BtcState<D>>

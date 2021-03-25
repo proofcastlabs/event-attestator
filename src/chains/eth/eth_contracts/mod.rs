@@ -1,6 +1,6 @@
+pub(crate) mod erc20_vault;
 pub(crate) mod erc777;
 pub(crate) mod erc777_proxy;
-pub(crate) mod perc20;
 
 use ethabi::{Contract as EthContract, Token};
 

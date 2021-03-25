@@ -18,6 +18,32 @@ use crate::{
     types::Result,
 };
 
+/// # Maybe Initialize ETH Core
+///
+/// This function first checks to see if the ETH core has already been initialized, and initializes
+/// it if not. The initialization procedure takes as its input a valid ETH block JSON of the
+/// format:
+///
+/// ```no_compile
+/// {
+///   'block': <eth-block>,
+///   'receipts': <block's-receipts>,
+/// }
+/// ```
+/// The function also requires an ETH Chain ID where:
+///
+/// ```no_compile
+/// 1  = Ethereum Mainnet
+/// 3  = Ropsten Testnet
+/// 4  = Rinkeby Testnet
+/// 42 = Kovan Testnet
+/// ```
+///
+/// The function also takes an ETH `gas_price` param, express in `Wei`, along with a `canon_to_tip`
+/// length param. This latter defines how many `confirmations` of a transactions are required before
+/// a signature is signed. The final parameter is the bytecode of the vault contract with which
+/// (the bytecode) a transaction will be made, signed & outputted by this initialization function
+/// ready for braodcasting.
 pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
     db: D,
     block_json: &str,

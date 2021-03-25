@@ -270,7 +270,7 @@ where
 mod tests {
     use super::*;
     use crate::chains::eth::{
-        eth_constants::BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX,
+        eth_contracts::erc777::ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX,
         eth_test_utils::{
             get_expected_block,
             get_expected_receipt,
@@ -363,7 +363,7 @@ mod tests {
         let num_receipts_before = block_and_receipts.receipts.len();
         let address = EthAddress::from_slice(&hex::decode("74630cfbc4066726107a4efe73956e219bbb46ab").unwrap());
         let topics = vec![EthHash::from_slice(
-            &hex::decode(BTC_ON_ETH_REDEEM_EVENT_TOPIC_HEX).unwrap(),
+            &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX).unwrap(),
         )];
         let result = block_and_receipts
             .get_receipts_containing_log_from_address_and_with_topics(&address, &topics)

@@ -15,7 +15,7 @@ pub const CORE_IS_VALIDATING: bool = false;
 pub const CORE_IS_VALIDATING: bool = true;
 
 pub const NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR: &str =
-    "✘ Not allowed to skip validation when core is not build in `DEBUG` mode!`";
+    "✘ Not allowed to skip validation when core is not built in `DEBUG` mode!`";
 
 pub const U64_NUM_BYTES: usize = 8;
 pub const BTC_NUM_DECIMALS: usize = 8;

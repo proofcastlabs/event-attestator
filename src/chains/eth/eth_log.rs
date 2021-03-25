@@ -7,6 +7,7 @@ use serde_json::{json, Value as JsonValue};
 use crate::{
     chains::eth::{
         eth_receipt::EthReceiptJson,
+        eth_traits::EthLogCompatible,
         eth_utils::{convert_hex_strings_to_h256s, convert_hex_to_address, convert_hex_to_bytes},
     },
     types::{Bytes, Result},
@@ -27,15 +28,17 @@ pub struct EthLog {
     pub data: Bytes,
 }
 
-impl EthLog {
-    pub fn check_has_x_topics(&self, x: usize) -> Result<()> {
-        if self.topics.len() >= x {
-            Ok(())
-        } else {
-            Err(format!("Log does not have {} topics!", x).into())
-        }
+impl EthLogCompatible for EthLog {
+    fn get_topics(&self) -> Vec<EthHash> {
+        self.topics.clone()
     }
 
+    fn get_data(&self) -> Bytes {
+        self.data.clone()
+    }
+}
+
+impl EthLog {
     pub fn from_json(log_json: &EthLogJson) -> Result<Self> {
         Ok(EthLog {
             data: convert_hex_to_bytes(&log_json.data)?,

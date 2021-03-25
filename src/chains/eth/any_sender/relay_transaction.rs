@@ -12,7 +12,7 @@ use crate::{
         eth_constants::{ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID},
         eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
         eth_crypto::eth_private_key::EthPrivateKey,
-        eth_traits::EthTxInfoCompatible,
+        eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
     },
     types::{Byte, Bytes, Result},
 };
