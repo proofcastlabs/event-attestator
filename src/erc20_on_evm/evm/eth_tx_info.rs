@@ -34,6 +34,12 @@ use crate::{
         },
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
+    metadata::{
+        blockchain_chain_id::BlockchainChainId,
+        metadata_origin_address::MetadataOriginAddress,
+        metadata_traits::ToMetadata,
+        Metadata,
+    },
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
@@ -48,6 +54,18 @@ pub struct EthOnEvmEthTxInfo {
     pub destination_address: EthAddress,
     pub user_data: Bytes,
     pub origin_chain_id: u8,
+}
+
+impl ToMetadata for EthOnEvmEthTxInfo {
+    fn to_metadata(&self) -> Result<Metadata> {
+        Ok(Metadata::new(
+            &self.user_data,
+            &MetadataOriginAddress::new_from_eth_address(
+                &self.token_sender,
+                &BlockchainChainId::from_eth_chain_id(self.origin_chain_id)?,
+            )?,
+        ))
+    }
 }
 
 impl EthOnEvmEthTxInfo {
