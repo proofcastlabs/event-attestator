@@ -12,9 +12,9 @@ pub static LEAF_NODE_STRING: &str = "leaf";
 pub static BRANCH_NODE_STRING: &str = "branch";
 pub static EXTENSION_NODE_STRING: &str = "extension";
 pub const HASHED_NULL_NODE: EthHash = EthHash(HASHED_NULL_NODE_BYTES);
-pub const ETH_CORE_IS_INITIALIZED_JSON: &str = "{eth_core_initialized:true}";
+pub const ETH_CORE_IS_INITIALIZED_JSON: &str = "{evm_core_initialized:true}";
 pub const EMPTY_NIBBLES: Nibbles = Nibbles {
-    data: Vec::new(),
+    data: vec![],
     offset: 0,
 };
 pub const ERC20_VAULT_PEG_IN_EVENT_TOPIC_HEX: &str = "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
@@ -60,71 +60,23 @@ pub fn get_eth_constants_db_keys() -> JsonValue {
 
 lazy_static! {
     pub static ref ETH_CHAIN_ID_KEY: [u8; 32] = get_prefixed_db_key("evm-chain-id");
-}
-
-lazy_static! {
     pub static ref ETH_GAS_PRICE_KEY: [u8; 32] = get_prefixed_db_key("evm-gas-price");
-}
-
-lazy_static! {
     pub static ref ETH_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key("evm-address-key");
-}
-
-lazy_static! {
     pub static ref ETH_LINKER_HASH_KEY: [u8; 32] = get_prefixed_db_key("evm-linker-hash-key");
-}
-
-lazy_static! {
     pub static ref ANY_SENDER_NONCE_KEY: [u8; 32] = get_prefixed_db_key("evm-any-sender-nonce");
-}
-
-lazy_static! {
     pub static ref ETH_ACCOUNT_NONCE_KEY: [u8; 32] = get_prefixed_db_key("evm-account-nonce");
-}
-
-lazy_static! {
     pub static ref PTOKEN_GENESIS_HASH_KEY: [u8; 32] = get_prefixed_db_key("evm-provable-ptoken");
-}
-
-lazy_static! {
     pub static ref ETH_PRIVATE_KEY_DB_KEY: [u8; 32] = get_prefixed_db_key("evm-private-key-key");
-}
-
-lazy_static! {
     pub static ref ETH_CANON_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("evm-canon-block-hash-key");
-}
-
-lazy_static! {
     pub static ref ETH_TAIL_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("evm-tail-block-hash-key");
-}
-
-lazy_static! {
     pub static ref ETH_ANCHOR_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("evm-anchor-block-hash-key");
-}
-
-lazy_static! {
     pub static ref ETH_LATEST_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("evm-latest-block-hash-key");
-}
-
-lazy_static! {
     pub static ref ETH_CANON_TO_TIP_LENGTH_KEY: [u8; 32] = get_prefixed_db_key("evm-canon-to-tip-length-key");
-}
-
-lazy_static! {
     pub static ref BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key("evm-smart-contract");
-}
-
-lazy_static! {
     pub static ref ERC777_PROXY_CONTACT_ADDRESS_KEY: [u8; 32] =
         get_prefixed_db_key("evm-erc-777-proxy-contract-address-key");
-}
-
-lazy_static! {
     pub static ref ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
         get_prefixed_db_key("evm-erc20-on-eos-smart-contract-address-key");
-}
-
-lazy_static! {
     pub static ref EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
         get_prefixed_db_key("evm-eos-on-eth-smart-contract-address-key");
 }

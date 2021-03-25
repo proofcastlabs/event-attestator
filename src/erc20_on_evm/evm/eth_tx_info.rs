@@ -1,4 +1,4 @@
-use derive_more::{Constructor, Deref};
+use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
@@ -87,7 +87,7 @@ impl EthOnEvmEthTxInfo {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
+#[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]
 pub struct EthOnEvmEthTxInfos(pub Vec<EthOnEvmEthTxInfo>);
 
 impl EthOnEvmEthTxInfos {
@@ -112,11 +112,7 @@ impl EthOnEvmEthTxInfos {
             hex::encode(ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA.as_bytes())
         );
         let token_is_supported = dictionary.is_evm_token_supported(&log.address);
-        let log_contains_topic = log.contains_topic(
-            //&EthHash::from_slice(
-            //&hex::decode(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)?[..],
-            &ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
-        );
+        let log_contains_topic = log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA);
         debug!("✔ Log is supported: {}", token_is_supported);
         debug!("✔ Log has correct topic: {}", log_contains_topic);
         Ok(token_is_supported && log_contains_topic)
@@ -214,10 +210,9 @@ impl EthOnEvmEthTxInfos {
                 .iter()
                 .map(|receipt| Self::from_eth_receipt(&receipt, dictionary))
                 .collect::<Result<Vec<EthOnEvmEthTxInfos>>>()?
-                .iter()
-                .map(|infos| infos.iter().cloned().collect())
-                .collect::<Vec<Vec<EthOnEvmEthTxInfo>>>()
-                .concat(),
+                .into_iter()
+                .flatten()
+                .collect(),
         ))
     }
 

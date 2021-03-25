@@ -130,15 +130,13 @@ pub struct Erc777RedeemEvent {
 
 impl Erc777RedeemEvent {
     fn check_log_is_erc777_redeem_event<L: EthLogCompatible>(log: &L) -> Result<()> {
-        log.check_has_x_topics(1).and_then(|_| {
-            if log.get_topics()[0] == *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA
-                || log.get_topics()[0] == *ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA
-            {
-                Ok(())
-            } else {
-                Err("Log is NOT from an ERC777 redeem event!".into())
-            }
-        })
+        if log.get_topics().get(0) == Some(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
+            || log.get_topics().get(0) == Some(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA)
+        {
+            Ok(())
+        } else {
+            Err("Log is NOT from an ERC777 redeem event!".into())
+        }
     }
 
     fn get_err_msg(field: &str) -> String {

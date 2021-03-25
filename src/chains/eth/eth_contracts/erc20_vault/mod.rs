@@ -76,7 +76,7 @@ pub struct Erc20VaultPegInEventParams {
 
 impl Erc20VaultPegInEventParams {
     fn get_err_msg(field: &str) -> String {
-        format!("Error getting `{}` from `EthOnEvm` peg in event!!", field)
+        format!("Error getting `{}` for `Erc20VaultPegInEventParams`!", field)
     }
 
     fn from_eth_log_without_user_data<L: EthLogCompatible>(log: &L) -> Result<Self> {
@@ -210,7 +210,7 @@ mod tests {
 
     #[test]
     fn should_get_params_from_eth_log_with_user_data() {
-        // NOTE THis is the correct type of log, only the pegin wasn't made with any user data :/
+        // NOTE This is the correct type of log, only the pegin wasn't made with any user data :/
         // FIXME / TODO  Get a real sample WITH some actual user data & test that.
         let log = get_sample_erc20_vault_log_with_user_data();
         let result = Erc20VaultPegInEventParams::from_eth_log(&log).unwrap();

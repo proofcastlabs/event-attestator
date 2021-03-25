@@ -100,7 +100,7 @@ impl EthOnEvmEvmTxInfos {
 
     fn is_log_erc20_on_evm_peg_in(log: &EthLog, vault_address: &EthAddress) -> Result<bool> {
         let log_contains_topic = log.contains_topic(&ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC);
-        let log_is_from_vault_address = &log.address == vault_address;
+        let log_is_from_vault_address = log.address == *vault_address;
         Ok(log_contains_topic && log_is_from_vault_address)
     }
 
