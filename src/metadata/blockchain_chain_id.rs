@@ -110,6 +110,15 @@ impl BlockchainChainId {
     fn print_all() {
         Self::get_all().iter().for_each(|id| println!("{}", id))
     }
+
+    pub fn from_eth_chain_id(eth_chain_id: u8) -> Result<Self> {
+        match eth_chain_id {
+            1 => Ok(Self::EthereumMainnet),
+            3 => Ok(Self::EthereumRinkeby),
+            4 => Ok(Self::EthereumRopsten),
+            _ => Err(format!("Unsupported ETH chain ID: {}", eth_chain_id).into()),
+        }
+    }
 }
 
 impl fmt::Display for BlockchainChainId {

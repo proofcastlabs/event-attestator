@@ -41,7 +41,7 @@ impl Metadata {
         Self::new_v1(user_data, origin_address)
     }
 
-    pub fn new_v1(user_data: &[Byte], origin_address: &MetadataOriginAddress) -> Self {
+    fn new_v1(user_data: &[Byte], origin_address: &MetadataOriginAddress) -> Self {
         Self {
             version: MetadataVersion::V1,
             user_data: user_data.to_vec(),
@@ -59,7 +59,7 @@ impl Metadata {
         ]))
     }
 
-    fn to_bytes(&self, destination_protocol: &BlockchainProtocolId) -> Result<Bytes> {
+    pub fn to_bytes(&self, destination_protocol: &BlockchainProtocolId) -> Result<Bytes> {
         match destination_protocol {
             BlockchainProtocolId::Ethereum => self.to_bytes_for_eth(),
             BlockchainProtocolId::Bitcoin | BlockchainProtocolId::Eos => {
