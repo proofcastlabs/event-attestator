@@ -21,11 +21,12 @@ use crate::{
         },
         eos_global_sequences::ProcessedGlobalSequences,
         eos_merkle_utils::Incremerkle,
+        eos_producer_schedule::EosProducerScheduleV2,
         eos_state::EosState,
         eos_submission_material::EosSubmissionMaterial,
         eos_types::{Checksum256s, EosBlockHeaderJson, EosKnownSchedules},
         eos_utils::convert_hex_to_checksum256,
-        parse_eos_schedule::{convert_v2_schedule_json_to_v2_schedule, EosProducerScheduleJsonV2},
+        parse_eos_schedule::EosProducerScheduleJsonV2,
         protocol_features::{EnabledFeatures, WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH},
         validate_signature::check_block_signature_is_valid,
     },
@@ -60,7 +61,7 @@ impl EosInitJson {
             None => false,
             Some(features) => features.contains(&hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)),
         };
-        let schedule = convert_v2_schedule_json_to_v2_schedule(&self.active_schedule).unwrap();
+        let schedule = EosProducerScheduleV2::from_schedule_json(&self.active_schedule).unwrap();
         let block_header = EosSubmissionMaterial::parse_eos_block_header_from_json(&self.block).unwrap();
         let blockroot_merkle = self
             .blockroot_merkle
@@ -193,7 +194,7 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Putting EOS known schedule into db...");
-    convert_v2_schedule_json_to_v2_schedule(schedule_json)
+    EosProducerScheduleV2::from_schedule_json(schedule_json)
         .map(|sched| EosKnownSchedules::new(sched.version))
         .and_then(|sched| put_eos_known_schedules_in_db(&state.db, &sched))
         .and(Ok(state))
@@ -207,7 +208,7 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Putting EOS schedule into db...");
-    convert_v2_schedule_json_to_v2_schedule(schedule_json)
+    EosProducerScheduleV2::from_schedule_json(schedule_json)
         .and_then(|schedule| put_eos_schedule_in_db(&state.db, &schedule))
         .and(Ok(state))
 }

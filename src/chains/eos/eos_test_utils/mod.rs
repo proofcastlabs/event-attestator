@@ -18,15 +18,7 @@ use crate::{
         eos_submission_material::{EosSubmissionMaterial, EosSubmissionMaterialJson},
         eos_types::{Checksum256s, EosBlockHeaderJson},
         eos_utils::convert_hex_to_checksum256,
-        parse_eos_schedule::{
-            convert_v1_schedule_json_to_v1_schedule,
-            convert_v1_schedule_to_v2,
-            convert_v2_schedule_json_to_v2_schedule,
-            parse_v1_schedule_string_to_v1_schedule_json,
-            parse_v2_schedule_string_to_v2_schedule_json,
-            EosProducerScheduleJsonV1,
-            EosProducerScheduleJsonV2,
-        },
+        parse_eos_schedule::{EosProducerScheduleJsonV1, EosProducerScheduleJsonV2},
         protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
     },
     errors::AppError,
@@ -128,7 +120,7 @@ impl EosInitAndSubsequentBlocksJson {
     }
 
     pub fn get_active_schedule(&self) -> Result<EosProducerScheduleV2> {
-        convert_v2_schedule_json_to_v2_schedule(&self.init_block.active_schedule)
+        EosProducerScheduleV2::from_schedule_json(&self.init_block.active_schedule)
     }
 
     pub fn get_block_json_n(&self, n: usize) -> Result<EosBlockHeaderJson> {
@@ -250,37 +242,35 @@ pub fn get_sample_v2_schedule_json_string() -> Result<String> {
 }
 
 pub fn get_sample_mainnet_schedule_1713() -> Result<EosProducerScheduleV2> {
-    parse_v1_schedule_string_to_v1_schedule_json(&read_to_string(
+    EosProducerScheduleJsonV1::from(&read_to_string(
         "src/chains/eos/eos_test_utils/sample-schedule-1713-v1.json",
     )?)
-    .and_then(|v1_json| convert_v1_schedule_json_to_v1_schedule(&v1_json))
-    .map(|v1_schedule| convert_v1_schedule_to_v2(&v1_schedule))
+    .and_then(|v1_json| EosProducerScheduleV1::from_schedule_json(&v1_json))
+    .map(|v1_schedule| EosProducerScheduleV2::from(v1_schedule))
 }
 
 pub fn get_sample_j3_schedule_37() -> Result<EosProducerScheduleV2> {
-    parse_v1_schedule_string_to_v1_schedule_json(&read_to_string(
+    EosProducerScheduleJsonV1::from(&read_to_string(
         "src/chains/eos/eos_test_utils/sample-j3-schedule-37.json",
     )?)
-    .and_then(|v1_json| convert_v1_schedule_json_to_v1_schedule(&v1_json))
-    .map(|v1_schedule| convert_v1_schedule_to_v2(&v1_schedule))
+    .and_then(|v1_json| EosProducerScheduleV1::from_schedule_json(&v1_json))
+    .map(|v1_schedule| EosProducerScheduleV2::from(v1_schedule))
 }
 
 pub fn get_sample_v1_schedule_json() -> Result<EosProducerScheduleJsonV1> {
-    get_sample_v1_schedule_json_string()
-        .and_then(|json_string| parse_v1_schedule_string_to_v1_schedule_json(&json_string))
+    get_sample_v1_schedule_json_string().and_then(|json_string| EosProducerScheduleJsonV1::from(&json_string))
 }
 
 pub fn get_sample_v1_schedule() -> Result<EosProducerScheduleV1> {
-    get_sample_v1_schedule_json().and_then(|json| convert_v1_schedule_json_to_v1_schedule(&json))
+    get_sample_v1_schedule_json().and_then(|json| EosProducerScheduleV1::from_schedule_json(&json))
 }
 
 pub fn get_sample_v2_schedule_json() -> Result<EosProducerScheduleJsonV2> {
-    get_sample_v2_schedule_json_string()
-        .and_then(|json_string| parse_v2_schedule_string_to_v2_schedule_json(&json_string))
+    get_sample_v2_schedule_json_string().and_then(|json_string| EosProducerScheduleJsonV2::from(&json_string))
 }
 
 pub fn get_sample_v2_schedule() -> Result<EosProducerScheduleV2> {
-    get_sample_v2_schedule_json().and_then(|json| convert_v2_schedule_json_to_v2_schedule(&json))
+    get_sample_v2_schedule_json().and_then(|json| EosProducerScheduleV2::from_schedule_json(&json))
 }
 
 pub fn get_sample_eos_submission_material_n(n: usize) -> EosSubmissionMaterial {

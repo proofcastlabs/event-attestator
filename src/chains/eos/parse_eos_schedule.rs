@@ -5,10 +5,8 @@ use eos_chain::{AccountName as EosAccountName, PublicKey as EosPublicKey};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::eos::{
-        eos_producer_key::{EosKey, EosKeysAndThreshold, EosProducerKeyV1, EosProducerKeyV2},
-        eos_producer_schedule::{EosProducerScheduleV1, EosProducerScheduleV2},
-    },
+    chains::eos::eos_producer_key::{EosKey, EosKeysAndThreshold, EosProducerKeyV1, EosProducerKeyV2},
+    errors::AppError,
     types::Result,
 };
 
@@ -16,6 +14,12 @@ use crate::{
 pub struct EosProducerScheduleJsonV1 {
     pub version: u32,
     pub producers: Vec<ProducerKeyJsonV1>,
+}
+
+impl EosProducerScheduleJsonV1 {
+    pub fn from(schedule_string: &str) -> Result<Self> {
+        serde_json::from_str::<Self>(schedule_string).map_err(AppError::SerdeJsonError)
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -28,6 +32,12 @@ pub struct ProducerKeyJsonV1 {
 pub struct EosProducerScheduleJsonV2 {
     pub version: u32,
     pub producers: Vec<FullProducerKeyJsonV2>,
+}
+
+impl EosProducerScheduleJsonV2 {
+    pub fn from(schedule_string: &str) -> Result<Self> {
+        serde_json::from_str::<Self>(schedule_string).map_err(AppError::SerdeJsonError)
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -48,27 +58,9 @@ pub struct ProducerKeyJsonV2 {
     key: String,
 }
 
-pub fn convert_v1_schedule_to_v2(v1_schedule: &EosProducerScheduleV1) -> EosProducerScheduleV2 {
-    EosProducerScheduleV2 {
-        version: v1_schedule.version,
-        producers: v1_schedule
-            .producers
-            .iter()
-            .map(|producer| EosProducerKeyV2 {
-                producer_name: producer.producer_name,
-                authority: (0, EosKeysAndThreshold {
-                    threshold: 0,
-                    keys: vec![EosKey {
-                        weight: 0,
-                        key: producer.block_signing_key.clone(),
-                    }],
-                }),
-            })
-            .collect::<Vec<EosProducerKeyV2>>(),
-    }
-}
-
-fn convert_v2_producer_key_jsons_to_v2_producer_keys(json: &[FullProducerKeyJsonV2]) -> Result<Vec<EosProducerKeyV2>> {
+pub fn convert_v2_producer_key_jsons_to_v2_producer_keys(
+    json: &[FullProducerKeyJsonV2],
+) -> Result<Vec<EosProducerKeyV2>> {
     json.iter()
         .map(convert_full_producer_key_json_to_v2_producer_key)
         .collect()
@@ -84,7 +76,7 @@ fn convert_full_producer_key_json_to_v2_producer_key(json: &FullProducerKeyJsonV
     })
 }
 
-fn convert_v1_producer_key_jsons_to_v1_producer_keys(json: &[ProducerKeyJsonV1]) -> Result<Vec<EosProducerKeyV1>> {
+pub fn convert_v1_producer_key_jsons_to_v1_producer_keys(json: &[ProducerKeyJsonV1]) -> Result<Vec<EosProducerKeyV1>> {
     json.iter()
         .map(convert_v1_producer_key_json_to_v1_producer_key)
         .collect()
@@ -115,54 +107,22 @@ pub fn convert_key_json_to_eos_key(key_json: &ProducerKeyJsonV2) -> Result<EosKe
     })
 }
 
-pub fn parse_v2_schedule_string_to_v2_schedule_json(schedule_string: &str) -> Result<EosProducerScheduleJsonV2> {
-    match serde_json::from_str(schedule_string) {
-        Ok(result) => Ok(result),
-        Err(err) => Err(err.into()),
-    }
-}
-
-pub fn parse_v1_schedule_string_to_v1_schedule_json(schedule_string: &str) -> Result<EosProducerScheduleJsonV1> {
-    match serde_json::from_str(schedule_string) {
-        Ok(result) => Ok(result),
-        Err(err) => Err(err.into()),
-    }
-}
-
-pub fn convert_v1_schedule_json_to_v1_schedule(json: &EosProducerScheduleJsonV1) -> Result<EosProducerScheduleV1> {
-    Ok(EosProducerScheduleV1 {
-        version: json.version,
-        producers: convert_v1_producer_key_jsons_to_v1_producer_keys(&json.producers)?,
-    })
-}
-
-pub fn convert_v2_schedule_json_to_v2_schedule(json: &EosProducerScheduleJsonV2) -> Result<EosProducerScheduleV2> {
-    Ok(EosProducerScheduleV2 {
-        version: json.version,
-        producers: convert_v2_producer_key_jsons_to_v2_producer_keys(&json.producers)?,
-    })
-}
-
-pub fn parse_v2_schedule_string_to_v2_schedule(schedule_string: &str) -> Result<EosProducerScheduleV2> {
-    parse_v2_schedule_string_to_v2_schedule_json(schedule_string)
-        .and_then(|json| convert_v2_schedule_json_to_v2_schedule(&json))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eos::eos_test_utils::{
-        get_sample_v1_schedule,
-        get_sample_v1_schedule_json,
-        get_sample_v1_schedule_json_string,
-        get_sample_v2_schedule_json,
-        get_sample_v2_schedule_json_string,
+    use crate::chains::eos::{
+        eos_producer_schedule::EosProducerScheduleV1,
+        eos_test_utils::{
+            get_sample_v1_schedule_json,
+            get_sample_v1_schedule_json_string,
+            get_sample_v2_schedule_json,
+        },
     };
 
     #[test]
     fn should_parse_v1_schedule_string_to_json() {
         let schedule_string = get_sample_v1_schedule_json_string().unwrap();
-        if let Err(e) = parse_v1_schedule_string_to_v1_schedule_json(&schedule_string) {
+        if let Err(e) = EosProducerScheduleJsonV1::from(&schedule_string) {
             panic!("Could not parse EOS schedule json V1: {}", e);
         }
     }
@@ -170,16 +130,8 @@ mod tests {
     #[test]
     fn should_convert_v1_schedule_json_to_v1_schedule() {
         let schedule_json = get_sample_v1_schedule_json().unwrap();
-        if let Err(e) = convert_v1_schedule_json_to_v1_schedule(&schedule_json) {
+        if let Err(e) = EosProducerScheduleV1::from_schedule_json(&schedule_json) {
             panic!("Error converting v1 schedule json to schedule: {}", e);
-        }
-    }
-
-    #[test]
-    fn should_parse_v2_schedule_string_to_json() {
-        let schedule_string = get_sample_v2_schedule_json_string().unwrap();
-        if let Err(e) = parse_v2_schedule_string_to_v2_schedule_json(&schedule_string) {
-            panic!("Could not parse EOS schedule json V2: {}", e);
         }
     }
 
@@ -189,27 +141,5 @@ mod tests {
         if let Err(e) = convert_full_producer_key_json_to_v2_producer_key(&producer_key_json) {
             panic!("Error converting producer key json: {}", e);
         }
-    }
-
-    #[test]
-    fn should_convert_v2_schedule_json_to_v2_schedule() {
-        let schedule_json = get_sample_v2_schedule_json().unwrap();
-        if let Err(e) = convert_v2_schedule_json_to_v2_schedule(&schedule_json) {
-            panic!("Error converting producer key json: {}", e);
-        }
-    }
-
-    #[test]
-    fn should_parse_v2_schedule_string_to_v2_schedule() {
-        let schedule_string = get_sample_v2_schedule_json_string().unwrap();
-        if let Err(e) = parse_v2_schedule_string_to_v2_schedule(&schedule_string) {
-            panic!("Error parseing schedule: {}", e);
-        }
-    }
-
-    #[test]
-    fn should_convert_v1_schedule_to_v2() {
-        let v1_schedule = get_sample_v1_schedule().unwrap();
-        convert_v1_schedule_to_v2(&v1_schedule);
     }
 }

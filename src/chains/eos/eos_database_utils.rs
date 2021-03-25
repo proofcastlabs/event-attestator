@@ -21,7 +21,6 @@ use crate::{
         eos_producer_schedule::EosProducerScheduleV2,
         eos_types::EosKnownSchedules,
         eos_utils::{convert_hex_to_checksum256, get_eos_schedule_db_key},
-        parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
         protocol_features::EnabledFeatures,
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
@@ -143,7 +142,7 @@ pub fn put_eos_schedule_in_db<D: DatabaseInterface>(db: &D, schedule: &EosProduc
 pub fn get_eos_schedule_from_db<D: DatabaseInterface>(db: &D, version: u32) -> Result<EosProducerScheduleV2> {
     debug!("✔ Getting EOS schedule from db...");
     match get_string_from_db(db, &get_eos_schedule_db_key(version)) {
-        Ok(json) => parse_v2_schedule_string_to_v2_schedule(&json),
+        Ok(json) => EosProducerScheduleV2::from_json(&json),
         Err(_) => Err(format!("✘ Core does not have EOS schedule version: {}", version).into()),
     }
 }
