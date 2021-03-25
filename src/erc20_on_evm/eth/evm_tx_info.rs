@@ -10,7 +10,11 @@ use crate::{
                 erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_DATA_GAS_LIMIT},
             },
             eth_crypto::eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
-            eth_database_utils::{get_erc20_on_evm_smart_contract_address_from_db, get_eth_canon_block_from_db},
+            eth_database_utils::{
+                get_erc20_on_evm_smart_contract_address_from_db,
+                get_eth_canon_block_from_db,
+                get_eth_chain_id_from_db,
+            },
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
             eth_state::EthState,
@@ -41,6 +45,7 @@ pub struct EthOnEvmEvmTxInfo {
     pub eth_token_address: EthAddress,
     pub destination_address: EthAddress,
     pub user_data: Bytes,
+    pub origin_chain_id: u8,
 }
 
 impl EthOnEvmEvmTxInfo {
@@ -123,6 +128,7 @@ impl EthOnEvmEvmTxInfos {
         receipt: &EthReceipt,
         vault_address: &EthAddress,
         dictionary: &EthEvmTokenDictionary,
+        origin_chain_id: u8,
     ) -> Result<Self> {
         info!("✔ Getting `ERC20-on-EVM` peg in infos from receipt...");
         Ok(Self::new(
@@ -131,6 +137,7 @@ impl EthOnEvmEvmTxInfos {
                 .map(|log| {
                     let event_params = Erc20VaultPegInEventParams::from_eth_log(log)?;
                     let tx_info = EthOnEvmEvmTxInfo {
+                        origin_chain_id,
                         user_data: event_params.user_data.clone(),
                         eth_token_address: event_params.token_address,
                         originating_tx_hash: receipt.transaction_hash,
@@ -178,13 +185,14 @@ impl EthOnEvmEvmTxInfos {
         submission_material: &EthSubmissionMaterial,
         vault_address: &EthAddress,
         dictionary: &EthEvmTokenDictionary,
+        origin_chain_id: u8,
     ) -> Result<Self> {
         info!("✔ Getting `EthOnEvmEvmTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(&receipt, vault_address, dictionary))
+                .map(|receipt| Self::from_eth_receipt(&receipt, vault_address, dictionary, origin_chain_id))
                 .collect::<Result<Vec<EthOnEvmEvmTxInfos>>>()?
                 .iter()
                 .map(|infos| infos.iter().cloned().collect())
@@ -239,6 +247,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                     &submission_material,
                     &get_erc20_on_evm_smart_contract_address_from_db(&state.db)?,
                     &EthEvmTokenDictionary::get_from_db(&state.db)?,
+                    get_eth_chain_id_from_db(&state.db)?,
                 )
                 .and_then(|tx_infos| state.add_erc20_on_evm_evm_tx_infos(tx_infos))
             },
@@ -333,7 +342,10 @@ mod tests {
         let material = get_eth_submission_material_n(1);
         let vault_address = get_sample_vault_address();
         let dictionary = get_sample_eth_evm_token_dictionary();
-        let result = EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary).unwrap();
+        let origin_chain_id = 0u8;
+        let result =
+            EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, origin_chain_id)
+                .unwrap();
         let expected_num_results = 1;
         assert_eq!(result.len(), expected_num_results);
         let expected_result = EthOnEvmEvmTxInfos::new(vec![EthOnEvmEvmTxInfo {
@@ -353,6 +365,7 @@ mod tests {
             originating_tx_hash: EthHash::from_slice(
                 &hex::decode("578670d0e08ca172eb8e862352e731814564fd6a12c3143e88bfb28292cd1535").unwrap(),
             ),
+            origin_chain_id,
         }]);
         assert_eq!(result, expected_result);
     }
@@ -365,7 +378,10 @@ mod tests {
         let pk = get_sample_evm_private_key();
         let vault_address = get_sample_vault_address();
         let dictionary = get_sample_eth_evm_token_dictionary();
-        let infos = EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary).unwrap();
+        let origin_chain_id = 0u8;
+        let infos =
+            EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, origin_chain_id)
+                .unwrap();
         let nonce = 0_u64;
         let chain_id = 4_u8;
         let gas_limit = 300_000_usize;

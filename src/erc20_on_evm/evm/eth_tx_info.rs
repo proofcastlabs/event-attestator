@@ -23,7 +23,10 @@ use crate::{
             eth_utils::safely_convert_hex_to_eth_address,
         },
         evm::{
-            eth_database_utils::get_eth_canon_block_from_db as get_evm_canon_block_from_db,
+            eth_database_utils::{
+                get_eth_canon_block_from_db as get_evm_canon_block_from_db,
+                get_eth_chain_id_from_db as get_evm_chain_id_from_db,
+            },
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
             eth_state::EthState as EvmState,
@@ -44,6 +47,7 @@ pub struct EthOnEvmEthTxInfo {
     pub eth_token_address: EthAddress,
     pub destination_address: EthAddress,
     pub user_data: Bytes,
+    pub origin_chain_id: u8,
 }
 
 impl EthOnEvmEthTxInfo {
@@ -146,7 +150,7 @@ impl EthOnEvmEthTxInfos {
         Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, dictionary).len() > 0
     }
 
-    fn from_eth_receipt(receipt: &EthReceipt, dictionary: &EthEvmTokenDictionary) -> Result<Self> {
+    fn from_eth_receipt(receipt: &EthReceipt, dictionary: &EthEvmTokenDictionary, origin_chain_id: u8) -> Result<Self> {
         info!("✔ Getting `EthOnEvmEthTxInfos` from receipt...");
         Ok(Self::new(
             Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, dictionary)
@@ -154,6 +158,7 @@ impl EthOnEvmEthTxInfos {
                 .map(|log| {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
                     let tx_info = EthOnEvmEthTxInfo {
+                        origin_chain_id,
                         evm_token_address: log.address,
                         token_amount: event_params.value,
                         token_sender: event_params.redeemer,
@@ -202,13 +207,14 @@ impl EthOnEvmEthTxInfos {
     pub fn from_submission_material(
         submission_material: &EvmSubmissionMaterial,
         dictionary: &EthEvmTokenDictionary,
+        origin_chain_id: u8,
     ) -> Result<Self> {
         info!("✔ Getting `EthOnEvmEthTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(&receipt, dictionary))
+                .map(|receipt| Self::from_eth_receipt(&receipt, dictionary, origin_chain_id))
                 .collect::<Result<Vec<EthOnEvmEthTxInfos>>>()?
                 .into_iter()
                 .flatten()
@@ -262,7 +268,11 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                 );
                 EthEvmTokenDictionary::get_from_db(&state.db)
                     .and_then(|account_names| {
-                        EthOnEvmEthTxInfos::from_submission_material(&submission_material, &account_names)
+                        EthOnEvmEthTxInfos::from_submission_material(
+                            &submission_material,
+                            &account_names,
+                            get_evm_chain_id_from_db(&state.db)?,
+                        )
                     })
                     .and_then(|tx_infos| state.add_erc20_on_evm_eth_tx_infos(tx_infos))
             },
@@ -356,11 +366,13 @@ mod tests {
     #[test]
     fn should_get_erc20_on_evm_eth_tx_info_from_submission_material() {
         let dictionary = get_sample_eth_evm_token_dictionary();
+        let origin_chain_id = 56u8;
         let material = get_evm_submission_material_n(1);
-        let result = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary).unwrap();
+        let result = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, origin_chain_id).unwrap();
         let expected_num_results = 1;
         assert_eq!(result.len(), expected_num_results);
         let expected_result = EthOnEvmEthTxInfos::new(vec![EthOnEvmEthTxInfo {
+            origin_chain_id,
             user_data: vec![],
             token_amount: U256::from_dec_str("100000000000000000").unwrap(),
             token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
@@ -384,7 +396,8 @@ mod tests {
     fn should_get_signaures_from_eth_tx_info() {
         let dictionary = get_sample_eth_evm_token_dictionary();
         let material = get_evm_submission_material_n(1);
-        let infos = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary).unwrap();
+        let origin_chain_id = 56u8;
+        let infos = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, origin_chain_id).unwrap();
         let vault_address = get_sample_vault_address();
         let pk = get_sample_eth_private_key();
         let nonce = 0_u64;
