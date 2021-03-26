@@ -10,7 +10,7 @@ use crate::{
             },
             eos_database_utils::put_eos_schedule_in_db,
             eos_global_sequences::{GlobalSequences, ProcessedGlobalSequences},
-            parse_eos_schedule::parse_v2_schedule_string_to_v2_schedule,
+            eos_producer_schedule::EosProducerScheduleV2,
         },
         eth::eth_utils::get_eth_address_from_str,
     },
@@ -36,7 +36,7 @@ pub fn add_new_eos_schedule<D: DatabaseInterface>(db: &D, schedule_json: &str) -
     info!("✔ Debug adding new EOS schedule...");
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| parse_v2_schedule_string_to_v2_schedule(&schedule_json))
+        .and_then(|_| EosProducerScheduleV2::from_json(&schedule_json))
         .and_then(|schedule| put_eos_schedule_in_db(db, &schedule))
         .and_then(|_| db.end_transaction())
         .and(Ok("{debug_adding_eos_schedule_success:true}".to_string()))

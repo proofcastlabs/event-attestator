@@ -127,12 +127,6 @@ pub struct ProducerSchedule {
     pub producers: ProducerKeys,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ProducerKeyJsonV2 {
-    pub producer_name: String,
-    pub block_signing_key: String,
-}
-
 #[derive(Debug)]
 pub struct EosRawTxData {
     pub sender: String,

@@ -32,7 +32,6 @@ pub(crate) mod get_active_schedule;
 pub(crate) mod get_enabled_protocol_features;
 pub(crate) mod get_eos_incremerkle;
 pub(crate) mod increment_eos_account_nonce;
-pub(crate) mod parse_eos_schedule;
 pub(crate) mod protocol_features;
 pub(crate) mod save_incremerkle;
 pub(crate) mod save_latest_block_id;
