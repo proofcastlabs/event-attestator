@@ -14,6 +14,7 @@ pub static LEAF_NODE_STRING: &str = "leaf";
 pub const VALUE_FOR_PTOKEN_DEPLOY: usize = 0;
 pub const ETH_WORD_SIZE_IN_BYTES: usize = 32;
 pub const ETH_ADDRESS_SIZE_IN_BYTES: usize = 20;
+pub const MAX_BYTES_FOR_ETH_USER_DATA: usize = 2000;
 pub const GAS_LIMIT_FOR_MINTING_TX: usize = 180_000;
 pub static BRANCH_NODE_STRING: &str = "branch";
 pub const GAS_LIMIT_FOR_PTOKEN_DEPLOY: usize = 4_000_000;
