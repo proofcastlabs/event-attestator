@@ -7,7 +7,9 @@ use crate::{
             eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
             eth_contracts::{
                 erc20_vault::{
+                    encode_erc20_vault_peg_out_fxn_data_with_user_data,
                     encode_erc20_vault_peg_out_fxn_data_without_user_data,
+                    ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
                     ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
                 },
                 erc777::{Erc777RedeemEvent, ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA},
@@ -79,14 +81,19 @@ impl ToMetadata for EthOnEvmEthTxInfo {
 
 impl EthOnEvmEthTxInfo {
     pub fn to_eth_signed_tx(
+        // TODO Get a sample with user data so we can use that test against!
         &self,
         nonce: u64,
         chain_id: u8,
-        gas_limit: usize,
         gas_price: u64,
         evm_private_key: &EthPrivateKey,
         vault_address: &EthAddress,
     ) -> Result<EvmTransaction> {
+        let gas_limit = if self.user_data.is_empty() {
+            ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT
+        } else {
+            ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT
+        };
         info!("✔ Signing ETH transaction for tx info: {:?}", self);
         debug!("✔ Signing with nonce:     {}", nonce);
         debug!("✔ Signing with chain id:  {}", chain_id);
@@ -102,23 +109,30 @@ impl EthOnEvmEthTxInfo {
         );
         debug!("✔ Signing tx for token amount: {}", self.token_amount.to_string());
         debug!("✔ Signing tx for vault address: {}", vault_address.to_string());
-        encode_erc20_vault_peg_out_fxn_data_without_user_data(
-            self.destination_address,
-            self.eth_token_address,
-            self.token_amount,
+        let encoded_tx_data = if self.user_data.is_empty() {
+            encode_erc20_vault_peg_out_fxn_data_without_user_data(
+                self.destination_address,
+                self.eth_token_address,
+                self.token_amount,
+            )?
+        } else {
+            encode_erc20_vault_peg_out_fxn_data_with_user_data(
+                self.destination_address,
+                self.eth_token_address,
+                self.token_amount,
+                self.to_metadata_bytes()?,
+            )?
+        };
+        EvmTransaction::new_unsigned(
+            encoded_tx_data,
+            nonce,
+            ZERO_ETH_VALUE,
+            *vault_address,
+            chain_id,
+            gas_limit,
+            gas_price,
         )
-        .map(|data| {
-            EvmTransaction::new_unsigned(
-                data,
-                nonce,
-                ZERO_ETH_VALUE,
-                *vault_address,
-                chain_id,
-                gas_limit,
-                gas_price,
-            )
-        })
-        .and_then(|unsigned_tx| unsigned_tx.sign(evm_private_key))
+        .sign(evm_private_key)
     }
 }
 
@@ -257,7 +271,6 @@ impl EthOnEvmEthTxInfos {
         &self,
         start_nonce: u64,
         chain_id: u8,
-        gas_limit: usize,
         gas_price: u64,
         evm_private_key: &EthPrivateKey,
         vault_address: &EthAddress,
@@ -271,7 +284,6 @@ impl EthOnEvmEthTxInfos {
                         tx_info,
                         start_nonce + i as u64,
                         chain_id,
-                        gas_limit,
                         gas_price,
                         evm_private_key,
                         vault_address,
@@ -355,7 +367,6 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EvmS
             .to_eth_signed_txs(
                 get_eth_account_nonce_from_db(&state.db)?,
                 get_eth_chain_id_from_db(&state.db)?,
-                ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
                 get_eth_gas_price_from_db(&state.db)?,
                 &get_eth_private_key_from_db(&state.db)?,
                 &get_erc20_on_evm_smart_contract_address_from_db(&state.db)?,
@@ -433,16 +444,15 @@ mod tests {
         let pk = get_sample_eth_private_key();
         let nonce = 0_u64;
         let chain_id = 4_u8;
-        let gas_limit = 300_000_usize;
         let gas_price = 20_000_000_000_u64;
         let signed_txs = infos
-            .to_eth_signed_txs(nonce, chain_id, gas_limit, gas_price, &pk, &vault_address)
+            .to_eth_signed_txs(nonce, chain_id, gas_price, &pk, &vault_address)
             .unwrap();
         let expected_num_results = 1;
         assert_eq!(signed_txs.len(), expected_num_results);
         let tx_hex = signed_txs[0].eth_tx_hex().unwrap();
         let expected_tx_hex =
-"f8ca808504a817c800830493e094d608367b33c52293201af7fb578916a7c0784bd780b86483c09d4200000000000000000000000071a440ee9fa7f99fb9a697e96ec7839b8a1643b800000000000000000000000089ab32156e46f46d02ade3fecbe5fc4243b9aaed000000000000000000000000000000000000000000000000016345785d8a00002ba06f5373dc0285c8b5a6fc39f2e74a4679fc73841273a79389bbd73b62e83e3aaba054993a579dc3e47c756397ef231effdf4bc3ab54721ef17bcc7f557c57d183ee"
+"f8ca808504a817c8008302bf2094d608367b33c52293201af7fb578916a7c0784bd780b86483c09d4200000000000000000000000071a440ee9fa7f99fb9a697e96ec7839b8a1643b800000000000000000000000089ab32156e46f46d02ade3fecbe5fc4243b9aaed000000000000000000000000000000000000000000000000016345785d8a00002ca01925ae7f64957984e057cb6f54c41560f354de622cee193a45ef657e40798c99a0752a5fa9235879d1ce45671308c461086fd1c73b9b533f1e63cb3c0ed4aedd98"
 ;
         assert_eq!(tx_hex, expected_tx_hex);
     }
