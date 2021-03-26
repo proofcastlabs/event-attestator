@@ -7,8 +7,8 @@ use crate::{
     types::{Bytes, Result},
 };
 
-pub const ERC20_VAULT_PEGOUT_GAS_LIMIT: usize = 180_000;
-pub const ERC20_VAULT_MIGRATE_GAS_LIMIT: usize = 6_000_000;
+pub const ERC20_VAULT_MIGRATE_GAS_LIMIT: usize = 2_000_000;
+pub const ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT: usize = 180_000;
 pub const ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT: usize = 300_000;
 pub const ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT: usize = 100_000;
 
