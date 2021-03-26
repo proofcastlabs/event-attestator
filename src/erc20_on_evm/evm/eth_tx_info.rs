@@ -4,7 +4,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use crate::{
     chains::{
         eth::{
-            eth_constants::ZERO_ETH_VALUE,
+            eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
             eth_contracts::{
                 erc20_vault::{
                     encode_erc20_vault_peg_out_fxn_data_without_user_data,
@@ -46,6 +46,7 @@ use crate::{
     },
     traits::DatabaseInterface,
     types::{Bytes, Result},
+    utils::maybe_truncate_bytes_to,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor)]
@@ -63,7 +64,7 @@ pub struct EthOnEvmEthTxInfo {
 impl ToMetadata for EthOnEvmEthTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         Ok(Metadata::new(
-            &self.user_data,
+            &maybe_truncate_bytes_to(&self.user_data, MAX_BYTES_FOR_ETH_USER_DATA),
             &MetadataOriginAddress::new_from_eth_address(
                 &self.token_sender,
                 &BlockchainChainId::from_eth_chain_id(self.origin_chain_id)?,

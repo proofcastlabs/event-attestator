@@ -4,7 +4,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use crate::{
     chains::{
         eth::{
-            eth_constants::ZERO_ETH_VALUE,
+            eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
             eth_contracts::{
                 erc20_vault::{Erc20VaultPegInEventParams, ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC},
                 erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_DATA_GAS_LIMIT},
@@ -41,6 +41,7 @@ use crate::{
     },
     traits::DatabaseInterface,
     types::{Bytes, Result},
+    utils::maybe_truncate_bytes_to,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor)]
@@ -58,7 +59,7 @@ pub struct EthOnEvmEvmTxInfo {
 impl ToMetadata for EthOnEvmEvmTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         Ok(Metadata::new(
-            &self.user_data,
+            &maybe_truncate_bytes_to(&self.user_data, MAX_BYTES_FOR_ETH_USER_DATA),
             &MetadataOriginAddress::new_from_eth_address(
                 &self.token_sender,
                 &BlockchainChainId::from_eth_chain_id(self.origin_chain_id)?,
