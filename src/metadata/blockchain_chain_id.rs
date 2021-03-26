@@ -108,9 +108,7 @@ impl BlockchainChainId {
                 .clone()
                 .ok_or_else(|| "Failed to unwrap `maybe_self` from option!".into()),
             0 => Err(format!("Unrecognized bytes for `BlockchainChainId`: 0x{}", hex::encode(bytes)).into()),
-            _ => {
-                Err(format!("`BlockchainChainId` collision! > 1 chain ID has the same 1st 3 bytes when hashed!").into())
-            },
+            _ => Err("`BlockchainChainId` collision! > 1 chain ID has the same 1st 3 bytes when hashed!".into()),
         }
     }
 

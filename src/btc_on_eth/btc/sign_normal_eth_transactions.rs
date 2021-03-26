@@ -5,7 +5,6 @@ use crate::{
         eth::{
             eth_crypto::eth_transaction::{get_signed_minting_tx, EthTransaction, EthTransactions},
             eth_database_utils::get_signing_params_from_db,
-            eth_metadata::{EthMetadataFromBtc, EthMetadataVersion},
             eth_types::EthSigningParams,
         },
     },
@@ -36,10 +35,7 @@ pub fn get_eth_signed_txs(
                     &minting_param_struct.eth_address,
                     &signing_params.eth_private_key,
                     None,
-                    Some(
-                        &EthMetadataFromBtc::from_btc_minting_params(&EthMetadataVersion::V1, minting_param_struct)
-                            .serialize()?,
-                    ),
+                    None,
                 )
             })
             .collect::<Result<Vec<EthTransaction>>>()?,
