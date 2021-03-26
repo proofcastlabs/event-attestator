@@ -5,7 +5,10 @@ use crate::{
         eos::eos_state::EosState,
         eth::{
             eth_constants::ZERO_ETH_VALUE,
-            eth_contracts::erc20_vault::{encode_erc20_vault_peg_out_fxn_data, ERC20_VAULT_PEGOUT_GAS_LIMIT},
+            eth_contracts::erc20_vault::{
+                encode_erc20_vault_peg_out_fxn_data_without_user_data,
+                ERC20_VAULT_PEGOUT_GAS_LIMIT,
+            },
             eth_crypto::{
                 eth_private_key::EthPrivateKey,
                 eth_transaction::{EthTransaction, EthTransactions},
@@ -43,7 +46,7 @@ pub fn get_eth_signed_txs(
                     redeem_info.amount, redeem_info.recipient
                 );
                 EthTransaction::new_unsigned(
-                    encode_erc20_vault_peg_out_fxn_data(
+                    encode_erc20_vault_peg_out_fxn_data_without_user_data(
                         redeem_info.recipient,
                         redeem_info.eth_token_address,
                         redeem_info.amount,

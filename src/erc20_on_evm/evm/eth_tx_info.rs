@@ -6,7 +6,10 @@ use crate::{
         eth::{
             eth_constants::ZERO_ETH_VALUE,
             eth_contracts::{
-                erc20_vault::{encode_erc20_vault_peg_out_fxn_data, ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT},
+                erc20_vault::{
+                    encode_erc20_vault_peg_out_fxn_data_without_user_data,
+                    ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
+                },
                 erc777::{Erc777RedeemEvent, ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA},
             },
             eth_crypto::{
@@ -98,19 +101,23 @@ impl EthOnEvmEthTxInfo {
         );
         debug!("✔ Signing tx for token amount: {}", self.token_amount.to_string());
         debug!("✔ Signing tx for vault address: {}", vault_address.to_string());
-        encode_erc20_vault_peg_out_fxn_data(self.destination_address, self.eth_token_address, self.token_amount)
-            .map(|data| {
-                EvmTransaction::new_unsigned(
-                    data,
-                    nonce,
-                    ZERO_ETH_VALUE,
-                    *vault_address,
-                    chain_id,
-                    gas_limit,
-                    gas_price,
-                )
-            })
-            .and_then(|unsigned_tx| unsigned_tx.sign(evm_private_key))
+        encode_erc20_vault_peg_out_fxn_data_without_user_data(
+            self.destination_address,
+            self.eth_token_address,
+            self.token_amount,
+        )
+        .map(|data| {
+            EvmTransaction::new_unsigned(
+                data,
+                nonce,
+                ZERO_ETH_VALUE,
+                *vault_address,
+                chain_id,
+                gas_limit,
+                gas_price,
+            )
+        })
+        .and_then(|unsigned_tx| unsigned_tx.sign(evm_private_key))
     }
 }
 

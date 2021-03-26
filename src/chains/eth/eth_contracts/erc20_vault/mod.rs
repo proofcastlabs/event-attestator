@@ -35,7 +35,7 @@ lazy_static! {
     };
 }
 
-pub fn encode_erc20_vault_peg_out_fxn_data(
+pub fn encode_erc20_vault_peg_out_fxn_data_without_user_data(
     recipient: EthAddress,
     token_contract_address: EthAddress,
     amount: U256,
@@ -157,14 +157,15 @@ mod tests {
     };
 
     #[test]
-    fn should_encode_peg_out_fxn_data() {
+    fn should_encode_peg_out_fxn_data_without_user_data() {
         let amount = U256::from(1337);
         let recipient_address =
             EthAddress::from_slice(&hex::decode("edB86cd455ef3ca43f0e227e00469C3bDFA40628").unwrap());
         let token_address = EthAddress::from_slice(&hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap());
         let expected_result = "83c09d42000000000000000000000000edb86cd455ef3ca43f0e227e00469c3bdfa40628000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac0000000000000000000000000000000000000000000000000000000000000539";
-        let result =
-            hex::encode(encode_erc20_vault_peg_out_fxn_data(recipient_address, token_address, amount).unwrap());
+        let result = hex::encode(
+            encode_erc20_vault_peg_out_fxn_data_without_user_data(recipient_address, token_address, amount).unwrap(),
+        );
         assert_eq!(result, expected_result)
     }
 
