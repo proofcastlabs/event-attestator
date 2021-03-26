@@ -427,8 +427,7 @@ mod tests {
 
     #[test]
     fn incorrect_output_should_not_be_desired_op_return() {
-        #[allow(non_snake_case)]
-        let INDEX_OF_NON_P2PKH_OUTPUT = 0;
+        const INDEX_OF_NON_P2PKH_OUTPUT: usize = 0;
         assert_ne!(INDEX_OF_NON_P2PKH_OUTPUT, SAMPLE_P2PKH_TRANSACTION_OUTPUT_INDEX);
         let tx = get_sample_btc_p2pkh_tx();
         let wrong_output = tx.output[INDEX_OF_NON_P2PKH_OUTPUT].clone();

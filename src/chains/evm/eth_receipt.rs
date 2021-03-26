@@ -122,21 +122,21 @@ impl EthReceipts {
     }
 }
 
-#[allow(non_snake_case)]
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EthReceiptJson {
     pub from: String,
     pub status: bool,
-    pub gasUsed: usize,
-    pub blockHash: String,
-    pub logsBloom: String,
+    pub gas_used: usize,
+    pub block_hash: String,
+    pub logs_bloom: String,
     pub logs: Vec<EthLogJson>,
-    pub blockNumber: usize,
+    pub block_number: usize,
     pub to: serde_json::Value,
-    pub transactionHash: String,
-    pub transactionIndex: usize,
-    pub cumulativeGasUsed: usize,
-    pub contractAddress: serde_json::Value,
+    pub transaction_hash: String,
+    pub transaction_index: usize,
+    pub cumulative_gas_used: usize,
+    pub contract_address: serde_json::Value,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
@@ -184,20 +184,20 @@ impl EthReceipt {
         Ok(EthReceipt {
             status: eth_receipt_json.status,
             logs_bloom: logs.get_bloom(),
-            gas_used: U256::from(eth_receipt_json.gasUsed),
+            gas_used: U256::from(eth_receipt_json.gas_used),
             from: convert_hex_to_address(&eth_receipt_json.from)?,
-            block_number: U256::from(eth_receipt_json.blockNumber),
-            block_hash: convert_hex_to_h256(&eth_receipt_json.blockHash)?,
-            transaction_index: U256::from(eth_receipt_json.transactionIndex),
-            cumulative_gas_used: U256::from(eth_receipt_json.cumulativeGasUsed),
-            transaction_hash: convert_hex_to_h256(&eth_receipt_json.transactionHash)?,
+            block_number: U256::from(eth_receipt_json.block_number),
+            block_hash: convert_hex_to_h256(&eth_receipt_json.block_hash)?,
+            transaction_index: U256::from(eth_receipt_json.transaction_index),
+            cumulative_gas_used: U256::from(eth_receipt_json.cumulative_gas_used),
+            transaction_hash: convert_hex_to_h256(&eth_receipt_json.transaction_hash)?,
             to: match eth_receipt_json.to {
                 serde_json::Value::Null => H160::zero(),
                 _ => convert_hex_to_address(&convert_json_value_to_string(&eth_receipt_json.to)?)?,
             },
-            contract_address: match eth_receipt_json.contractAddress {
+            contract_address: match eth_receipt_json.contract_address {
                 serde_json::Value::Null => EthAddress::zero(),
-                _ => convert_hex_to_address(&convert_json_value_to_string(&eth_receipt_json.contractAddress)?)?,
+                _ => convert_hex_to_address(&convert_json_value_to_string(&eth_receipt_json.contract_address)?)?,
             },
             logs,
         })
