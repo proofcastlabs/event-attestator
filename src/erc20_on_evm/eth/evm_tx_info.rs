@@ -41,7 +41,6 @@ use crate::{
     },
     traits::DatabaseInterface,
     types::{Bytes, Result},
-    utils::maybe_truncate_bytes_to,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor)]
@@ -58,8 +57,18 @@ pub struct EthOnEvmEvmTxInfo {
 
 impl ToMetadata for EthOnEvmEvmTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
+        let user_data = if self.user_data.len() > MAX_BYTES_FOR_ETH_USER_DATA {
+            // TODO Test for this case!
+            info!(
+                "✘ `user_data` redacted from `Metadata` ∵ it's > {} bytes",
+                MAX_BYTES_FOR_ETH_USER_DATA
+            );
+            vec![]
+        } else {
+            self.user_data.clone()
+        };
         Ok(Metadata::new(
-            &maybe_truncate_bytes_to(&self.user_data, MAX_BYTES_FOR_ETH_USER_DATA),
+            &user_data,
             &MetadataOriginAddress::new_from_eth_address(
                 &self.token_sender,
                 &BlockchainChainId::from_eth_chain_id(self.origin_chain_id)?,

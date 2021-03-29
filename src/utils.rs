@@ -10,14 +10,6 @@ use crate::{
     types::{Byte, Bytes, Result},
 };
 
-pub fn maybe_truncate_bytes_to(data: &[Byte], max_length: usize) -> Bytes {
-    if data.len() <= max_length {
-        data.to_vec()
-    } else {
-        data[..max_length].to_vec()
-    }
-}
-
 fn get_unix_timestamp() -> Result<u64> {
     Ok(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())
 }
@@ -302,23 +294,5 @@ mod tests {
         assert_eq!(is_hex(hex_no_prefix), true);
         assert_eq!(is_hex(string_no_hex), false);
         assert_eq!(is_hex(string_containing_hex), false);
-    }
-
-    #[test]
-    fn should_not_tuncate_bytes_if_lte_than_threshold() {
-        let bytes = vec![0xde, 0xca, 0xff];
-        let threshold = 5;
-        assert!(threshold >= bytes.len());
-        let result = maybe_truncate_bytes_to(&bytes, threshold);
-        assert_eq!(result, bytes);
-    }
-
-    #[test]
-    fn should_tuncate_bytes_if_gt_than_threshold() {
-        let bytes = vec![0xde, 0xca, 0xff, 0xc0, 0xff, 0xee];
-        let threshold = 5;
-        assert!(threshold < bytes.len());
-        let result = maybe_truncate_bytes_to(&bytes, threshold);
-        assert_eq!(result, bytes[..threshold].to_vec());
     }
 }
