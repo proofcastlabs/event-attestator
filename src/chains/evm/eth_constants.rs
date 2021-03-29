@@ -17,15 +17,16 @@ pub const EMPTY_NIBBLES: Nibbles = Nibbles {
     data: vec![],
     offset: 0,
 };
-pub const ERC20_VAULT_PEG_IN_EVENT_TOPIC_HEX: &str = "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
+pub const ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC_HEX: &str =
+    "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
 pub const ETH_MESSAGE_PREFIX: &[u8; 26] = b"\x19Ethereum Signed Message:\n";
 pub const PREFIXED_MESSAGE_HASH_LEN: &[u8; 2] = b"32";
 
 lazy_static! {
-    pub static ref ERC20_VAULT_PEG_IN_EVENT_TOPIC: [EthHash; 1] = {
+    pub static ref ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC: [EthHash; 1] = {
         [EthHash::from_slice(
-            &hex::decode(ERC20_VAULT_PEG_IN_EVENT_TOPIC_HEX)
-                .expect("✘ Invalid hex in `ERC20_VAULT_PEG_IN_EVENT_TOPIC`!"),
+            &hex::decode(ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC_HEX)
+                .expect("✘ Invalid hex in `ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC`!"),
         )]
     };
 }
