@@ -107,8 +107,8 @@ impl Metadata {
         Ok(Self {
             version,
             user_data,
-            origin_address,
             chain_id,
+            origin_address,
         })
     }
 
