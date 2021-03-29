@@ -9,7 +9,10 @@ use crate::{
         eos::eos_utils::remove_symbol_from_eos_asset,
         eth::{
             eth_constants::{ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
-            eth_contracts::erc20_vault::ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
+            eth_contracts::erc20_vault::{
+                ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
+                ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
+            },
             eth_database_utils::{get_erc20_on_eos_smart_contract_address_from_db, get_eth_canon_block_from_db},
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
@@ -61,7 +64,8 @@ impl Erc20OnEosPegInInfos {
     }
 
     fn is_log_erc20_peg_in(log: &EthLog) -> Result<bool> {
-        Ok(log.contains_topic(&ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC))
+        Ok(log.contains_topic(&ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC)
+            || log.contains_topic(&ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC))
     }
 
     pub fn is_log_supported_erc20_peg_in(log: &EthLog, token_dictionary: &EosEthTokenDictionary) -> Result<bool> {
