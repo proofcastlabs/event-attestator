@@ -8,8 +8,11 @@ use crate::{
     chains::{
         eos::eos_utils::remove_symbol_from_eos_asset,
         eth::{
-            eth_constants::{ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
-            eth_contracts::erc20_vault::{ERC20_VAULT_PEG_IN_EVENT_TOPIC, ERC20_VAULT_PEG_IN_EVENT_TOPIC_HEX},
+            eth_contracts::erc20_vault::{
+                Erc20VaultPegInEventParams,
+                ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
+                ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
+            },
             eth_database_utils::{get_erc20_on_eos_smart_contract_address_from_db, get_eth_canon_block_from_db},
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
@@ -22,8 +25,6 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
-
-pub const NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR: &str = "Not enough bytes in log data!";
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor)]
 pub struct Erc20OnEosPegInInfo {
@@ -61,86 +62,23 @@ impl Erc20OnEosPegInInfos {
     }
 
     fn is_log_erc20_peg_in(log: &EthLog) -> Result<bool> {
-        Ok(log.contains_topic(&EthHash::from_slice(
-            &hex::decode(&ERC20_VAULT_PEG_IN_EVENT_TOPIC_HEX)?[..],
-        )))
+        Ok(log.contains_topic(&ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC)
+            || log.contains_topic(&ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC))
     }
 
     pub fn is_log_supported_erc20_peg_in(log: &EthLog, token_dictionary: &EosEthTokenDictionary) -> Result<bool> {
         match Self::is_log_erc20_peg_in(log)? {
             false => Ok(false),
-            true => Self::get_token_contract_address_from_log(log)
-                .map(|token_contract_address| token_dictionary.is_token_supported(&token_contract_address)),
+            true => Erc20VaultPegInEventParams::from_eth_log(log)
+                .map(|params| token_dictionary.is_token_supported(&params.token_address)),
         }
     }
 
-    fn check_log_is_erc20_peg_in(log: &EthLog) -> Result<()> {
-        trace!("✔ Checking if log is an erc20 peg in...");
-        match Self::is_log_erc20_peg_in(log)? {
-            true => Ok(()),
-            false => Err("✘ Log is not from an erc20 peg in event!".into()),
-        }
-    }
-
-    fn get_peg_in_amount_from_log(log: &EthLog) -> Result<U256> {
-        Self::check_log_is_erc20_peg_in(log).and_then(|_| {
-            const START_INDEX: usize = ETH_WORD_SIZE_IN_BYTES * 2;
-            const END_INDEX: usize = ETH_WORD_SIZE_IN_BYTES * 3;
-            match log.data.len() >= END_INDEX {
-                true => {
-                    let amount = U256::from(&log.data[START_INDEX..END_INDEX]);
-                    info!("✔ Parsed `erc20-on-eos` peg in amount from log: {}", amount.to_string());
-                    Ok(amount)
-                },
-                false => Err(NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR.into()),
-            }
-        })
-    }
-
-    fn get_token_contract_address_from_log(log: &EthLog) -> Result<EthAddress> {
-        Self::check_log_is_erc20_peg_in(log).and_then(|_| {
-            info!("✔ Parsing `erc20-on-eos` peg in token contract address from log...");
-            const START_INDEX: usize = ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES;
-            const END_INDEX: usize = START_INDEX + ETH_ADDRESS_SIZE_IN_BYTES;
-            match log.data.len() >= END_INDEX {
-                true => Ok(EthAddress::from_slice(&log.data[START_INDEX..END_INDEX])),
-                false => Err(NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR.into()),
-            }
-        })
-    }
-
-    fn get_token_sender_address_from_log(log: &EthLog) -> Result<EthAddress> {
-        Self::check_log_is_erc20_peg_in(log).and_then(|_| {
-            info!("✔ Parsing `erc20-on-eos` peg in token sender address from log...");
-            const START_INDEX: usize = ETH_WORD_SIZE_IN_BYTES * 2 - ETH_ADDRESS_SIZE_IN_BYTES;
-            const END_INDEX: usize = START_INDEX + ETH_ADDRESS_SIZE_IN_BYTES;
-            match log.data.len() >= END_INDEX {
-                true => Ok(EthAddress::from_slice(&log.data[START_INDEX..END_INDEX])),
-                false => Err(NOT_ENOUGH_BYTES_IN_LOG_DATA_ERR.into()),
-            }
-        })
-    }
-
-    fn get_eos_address_from_log(log: &EthLog) -> Result<String> {
-        Self::check_log_is_erc20_peg_in(log).and(Ok(Self::extract_eos_address_or_default_to_safe_address(log)))
-    }
-
-    fn extract_eos_address_from_log(log: &EthLog) -> String {
-        info!("✔ Parsing EOS address from log...");
-        const START_INDEX: usize = ETH_WORD_SIZE_IN_BYTES * 5;
-        log.data[START_INDEX..]
-            .iter()
-            .filter(|byte| *byte != &0u8)
-            .map(|byte| *byte as char)
-            .collect()
-    }
-
-    fn extract_eos_address_or_default_to_safe_address(log: &EthLog) -> String {
-        let maybe_eos_address = Self::extract_eos_address_from_log(log);
-        match EosAccountName::from_str(&maybe_eos_address) {
-            Ok(_) => maybe_eos_address,
+    fn check_eos_address_or_default_to_safe_eos_address(potential_eos_address: &str) -> String {
+        match EosAccountName::from_str(potential_eos_address) {
+            Ok(_) => potential_eos_address.to_string(),
             Err(_) => {
-                info!("✘ Could not parse EOS address from: {}", maybe_eos_address);
+                info!("✘ Could not parse EOS address from: {}", potential_eos_address);
                 info!("✔ Defaulting to safe EOS address: {}", SAFE_EOS_ADDRESS);
                 SAFE_EOS_ADDRESS.to_string()
             },
@@ -171,17 +109,20 @@ impl Erc20OnEosPegInInfos {
             Self::get_supported_erc20_peg_in_logs_from_receipt(receipt, token_dictionary)
                 .iter()
                 .map(|log| {
-                    let token_contract_address = Self::get_token_contract_address_from_log(&log)?;
-                    let eth_amount = Self::get_peg_in_amount_from_log(&log)?;
-                    let peg_in_info = Erc20OnEosPegInInfo::new(
-                        eth_amount,
-                        Self::get_token_sender_address_from_log(&log)?,
-                        token_contract_address,
-                        Self::get_eos_address_from_log(&log)?,
-                        receipt.transaction_hash,
-                        token_dictionary.get_eos_account_name_from_eth_token_address(&token_contract_address)?,
-                        token_dictionary.convert_u256_to_eos_asset_string(&token_contract_address, &eth_amount)?,
-                    );
+                    let params = Erc20VaultPegInEventParams::from_eth_log(log)?;
+                    let peg_in_info = Erc20OnEosPegInInfo {
+                        token_sender: params.token_sender,
+                        originating_tx_hash: receipt.transaction_hash,
+                        eos_address: Self::check_eos_address_or_default_to_safe_eos_address(
+                            &params.destination_address,
+                        ),
+                        eos_token_address: token_dictionary
+                            .get_eos_account_name_from_eth_token_address(&params.token_address)?,
+                        eos_asset_amount: token_dictionary
+                            .convert_u256_to_eos_asset_string(&params.token_address, &params.token_amount)?,
+                        eth_token_address: params.token_address,
+                        token_amount: params.token_amount,
+                    };
                     info!("✔ Parsed peg in info: {:?}", peg_in_info);
                     Ok(peg_in_info)
                 })
@@ -281,7 +222,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(
             &get_erc20_on_eos_smart_contract_address_from_db(&state.db)?,
-            &[*ERC20_VAULT_PEG_IN_EVENT_TOPIC],
+            &[*ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC],
         )
         .and_then(|filtered_submission_material| {
             Erc20OnEosPegInInfos::filter_eth_sub_mat_for_supported_peg_ins(
@@ -401,45 +342,6 @@ mod tests {
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = Erc20OnEosPegInInfos::is_log_erc20_peg_in(&log).unwrap();
         assert!(result);
-    }
-
-    #[test]
-    fn check_is_erc20_peg_in_should_be_ok() {
-        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::check_log_is_erc20_peg_in(&log);
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn should_get_erc20_peg_in_amount() {
-        let expected_result = U256::from(1337);
-        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::get_peg_in_amount_from_log(&log).unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_get_erc20_peg_in_token_contract_address() {
-        let expected_result = EthAddress::from_slice(&hex::decode("9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap());
-        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::get_token_contract_address_from_log(&log).unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_get_erc20_peg_in_token_sender_address() {
-        let expected_result = EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap());
-        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::get_token_sender_address_from_log(&log).unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_get_erc20_peg_in_eos_address() {
-        let expected_result = "aneosaddress";
-        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::get_eos_address_from_log(&log).unwrap();
-        assert_eq!(result, expected_result);
     }
 
     #[test]

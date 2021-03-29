@@ -24,21 +24,10 @@ pub const EMPTY_NIBBLES: Nibbles = Nibbles {
     data: Vec::new(),
     offset: 0,
 };
-// FIXME Make sure we're using these from the respectiv contract mods!!
 pub const ETH_MESSAGE_PREFIX: &[u8; 26] = b"\x19Ethereum Signed Message:\n";
 pub const PREFIXED_MESSAGE_HASH_LEN: &[u8; 2] = b"32";
 pub const ETH_MAINNET_CHAIN_ID: u8 = 1;
 pub const ETH_ROPSTEN_CHAIN_ID: u8 = 3;
-
-#[cfg(test)]
-lazy_static! {
-    pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA: [EthHash; 1] = {
-        [EthHash::from_slice(
-            &hex::decode("fc62a6078634cc3b00bff541ac549ba6bfed8678765289f88f61e22c668198ba")
-                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA`!"),
-        )]
-    };
-}
 
 const HASHED_NULL_NODE_BYTES: [u8; 32] = [
     // NOTE: keccak hash of the RLP of null

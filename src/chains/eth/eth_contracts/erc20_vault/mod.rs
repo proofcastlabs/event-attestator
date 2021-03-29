@@ -14,21 +14,19 @@ pub const ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT: usize = 100_000;
 
 pub const ERC20_VAULT_ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"addresspayable\",\"name\":\"_to\",\"type\":\"address\"}],\"name\":\"migrate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"addSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"removeSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
 
-pub const ERC20_VAULT_PEG_IN_EVENT_TOPIC_HEX: &str = "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
-
-lazy_static! {
-    pub static ref ERC20_VAULT_PEG_IN_EVENT_TOPIC: EthHash = {
-        EthHash::from_slice(
-            &hex::decode(ERC20_VAULT_PEG_IN_EVENT_TOPIC_HEX)
-                .expect("✘ Invalid hex in `ERC20_VAULT_PEG_IN_EVENT_TOPIC`!"),
-        )
-    };
-}
+pub const ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC_HEX: &str =
+    "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
 
 pub const ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC_HEX: &str =
     "d45bf0460398ad3b27d2bd85144872898591943b81eca880e34fca0a229aa0dc";
 
 lazy_static! {
+    pub static ref ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC: EthHash = {
+        EthHash::from_slice(
+            &hex::decode(ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC_HEX)
+                .expect("✘ Invalid hex in `ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC`!"),
+        )
+    };
     pub static ref ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC: EthHash = {
         EthHash::from_slice(
             &hex::decode(ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC_HEX)
