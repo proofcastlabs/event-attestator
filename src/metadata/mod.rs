@@ -1,5 +1,3 @@
-#![allow(dead_code)] // FIXME Rm!
-
 pub(crate) mod metadata_chain_id;
 pub(crate) mod metadata_origin_address;
 pub(crate) mod metadata_protocol_id;
@@ -54,7 +52,7 @@ impl Metadata {
         Ok(eth_abi_encode(&[
             EthAbiToken::FixedBytes(self.version.to_bytes()),
             EthAbiToken::Bytes(self.user_data.clone()),
-            EthAbiToken::FixedBytes(self.chain_id.to_bytes()),
+            EthAbiToken::FixedBytes(self.chain_id.to_bytes()?),
             EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?)),
         ]))
     }

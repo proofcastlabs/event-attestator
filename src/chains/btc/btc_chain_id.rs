@@ -21,7 +21,10 @@ pub enum BtcChainId {
 
 impl ChainId for BtcChainId {
     fn keccak_hash(&self) -> Result<KeccakHash> {
-        Ok(keccak_hash_bytes(&self.to_bytes()))
+        Ok(keccak_hash_bytes(&match self {
+            Self::Bitcoin => "Bitcoin".as_bytes().to_vec(),
+            Self::Testnet => "Testnet".as_bytes().to_vec(),
+        }))
     }
 }
 
