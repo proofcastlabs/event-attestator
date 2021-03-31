@@ -1,0 +1,77 @@
+use std::fmt;
+
+use strum_macros::EnumIter;
+
+use crate::{metadata::blockchain_chain_id::BlockchainChainId, types::Result};
+
+#[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
+pub enum EthChainId {
+    Mainnet,
+    Rinkeby,
+    Ropsten,
+    BscMainnet,
+}
+
+impl EthChainId {
+    fn to_blockchain_chain_id(&self) -> Result<BlockchainChainId> {
+        match self {
+            Self::Mainnet => Ok(BlockchainChainId::EthereumMainnet),
+            Self::Rinkeby => Ok(BlockchainChainId::EthereumRinkeby),
+            Self::Ropsten => Ok(BlockchainChainId::EthereumRopsten),
+            Self::BscMainnet => Ok(BlockchainChainId::BscMainnet),
+        }
+    }
+
+    fn from_u8(chain_id: u8) -> Result<Self> {
+        match chain_id {
+            1 => Ok(Self::Mainnet),
+            3 => Ok(Self::Rinkeby),
+            4 => Ok(Self::Ropsten),
+            56 => Ok(Self::BscMainnet),
+            _ => Err(format!("`EthChainId` error! Unrecognized chain id: {}", chain_id).into()),
+        }
+    }
+
+    fn to_u8(&self) -> u8 {
+        match self {
+            Self::Mainnet => 1,
+            Self::Rinkeby => 3,
+            Self::Ropsten => 4,
+            Self::BscMainnet => 56,
+        }
+    }
+
+    #[cfg(test)]
+    fn get_all() -> Vec<Self> {
+        use strum::IntoEnumIterator;
+        Self::iter().collect()
+    }
+}
+
+impl fmt::Display for EthChainId {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::Mainnet => write!(f, "ETH Mainnet: {}", self.to_u8()),
+            Self::Rinkeby => write!(f, "Rinekby Testnet: {}", self.to_u8()),
+            Self::Ropsten => write!(f, "Ropsten Testnet: {}", self.to_u8()),
+            Self::BscMainnet => write!(f, "BSC Mainnet: {}", self.to_u8()),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_make_u8_roundtrip_for_all_eth_chain_ids() {
+        let ids = EthChainId::get_all();
+        let u8s = ids.iter().map(|id| id.to_u8()).collect::<Vec<u8>>();
+        let result = u8s
+            .iter()
+            .map(|u_8| EthChainId::from_u8(*u_8))
+            .collect::<Result<Vec<EthChainId>>>()
+            .unwrap();
+        assert_eq!(result, ids);
+    }
+}
