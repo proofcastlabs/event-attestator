@@ -1,7 +1,8 @@
-#![allow(clippy::redundant_closure)]
 use std::fmt;
 
 use ethereum_types::H256 as EthHash;
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
 use crate::{
     chains::eth::eth_crypto_utils::keccak_hash_bytes,
@@ -9,7 +10,7 @@ use crate::{
     types::{Byte, Bytes, Result},
 };
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
 pub enum MetadataChainId {
     EthereumMainnet, // 0x005fe7f9
     EthereumRinkeby, // 0x0069c322
@@ -23,17 +24,7 @@ pub enum MetadataChainId {
 
 impl MetadataChainId {
     fn get_all() -> Vec<Self> {
-        // TODO How to ensure this vec always contains all members?
-        vec![
-            Self::EthereumMainnet,
-            Self::EthereumRopsten,
-            Self::EthereumRinkeby,
-            Self::BitcoinMainnet,
-            Self::BitcoinTestnet,
-            Self::EosMainnet,
-            Self::TelosMainnet,
-            Self::BscMainnet,
-        ]
+        Self::iter().collect()
     }
 
     pub fn to_protocol_id(&self) -> MetadataProtocolId {
@@ -74,11 +65,11 @@ impl MetadataChainId {
             },
             Self::EosMainnet => {
                 let chain_id = "aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906";
-                hex::decode(chain_id).unwrap_or_else(|_| vec![])
+                hex::decode(chain_id).unwrap_or_default()
             },
             Self::TelosMainnet => {
                 let chain_id = "4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11";
-                hex::decode(chain_id).unwrap_or_else(|_| vec![])
+                hex::decode(chain_id).unwrap_or_default()
             },
         })
     }
@@ -173,5 +164,21 @@ mod tests {
         ids_as_bytes.dedup();
         let length_after_dedup = ids_as_bytes.len();
         assert_eq!(length_before_dedup, length_after_dedup);
+    }
+
+    #[test]
+    fn should_get_metadata_chain_id_from_bytes_correctly() {
+        let chain_ids_bytes = vec![
+            "005fe7f9", "0069c322", "00f34368", "01ec97de", "018afeb2", "02e7261c", "028c7109", "00e4b170",
+        ]
+        .iter()
+        .map(|ref hex| hex::decode(hex).unwrap())
+        .collect::<Vec<Bytes>>();
+        let result = chain_ids_bytes
+            .iter()
+            .map(|ref bytes| MetadataChainId::from_bytes(bytes))
+            .collect::<Result<Vec<MetadataChainId>>>()
+            .unwrap();
+        assert_eq!(result, MetadataChainId::get_all());
     }
 }
