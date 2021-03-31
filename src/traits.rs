@@ -12,3 +12,5 @@ pub trait DatabaseInterface {
 
     fn put(&self, key: Bytes, value: Bytes, data_sensitivity: Option<u8>) -> Result<()>;
 }
+
+pub trait ChainId {}

@@ -5,6 +5,7 @@ use strum_macros::EnumIter;
 
 use crate::{
     metadata::metadata_chain_id::MetadataChainId,
+    traits::ChainId,
     types::{Byte, Bytes, Result},
 };
 
@@ -13,6 +14,8 @@ pub enum EosChainId {
     EosMainnet,
     TelosMainnet,
 }
+
+impl ChainId for EosChainId {}
 
 lazy_static! {
     pub static ref EOS_MAINNET_BYTES: Bytes =

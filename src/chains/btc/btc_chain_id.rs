@@ -6,6 +6,7 @@ use strum_macros::EnumIter;
 
 use crate::{
     metadata::metadata_chain_id::MetadataChainId,
+    traits::ChainId,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
@@ -15,6 +16,8 @@ pub enum BtcChainId {
     Bitcoin,
     Testnet,
 }
+
+impl ChainId for BtcChainId {}
 
 impl BtcChainId {
     fn to_btc_network(&self) -> BtcNetwork {

@@ -2,7 +2,12 @@ use std::fmt;
 
 use strum_macros::EnumIter;
 
-use crate::{metadata::metadata_chain_id::MetadataChainId, types::Result};
+use crate::{
+    metadata::metadata_chain_id::MetadataChainId,
+    traits::ChainId,
+    types::{Byte, Bytes, Result},
+    utils::convert_bytes_to_u8,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
 pub enum EthChainId {
@@ -11,6 +16,8 @@ pub enum EthChainId {
     Ropsten,
     BscMainnet,
 }
+
+impl ChainId for EthChainId {}
 
 impl EthChainId {
     fn to_metadata_chain_id(&self) -> Result<MetadataChainId> {
