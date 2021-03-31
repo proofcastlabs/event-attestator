@@ -3,6 +3,7 @@ use bitcoin::{hashes::Hash, network::constants::Network as BtcNetwork, BlockHash
 use crate::{
     chains::btc::{
         btc_block::BtcBlockInDbFormat,
+        btc_chain_id::BtcChainId,
         btc_constants::{
             BTC_ACCOUNT_NONCE_KEY,
             BTC_ADDRESS_KEY,
@@ -21,13 +22,7 @@ use crate::{
         btc_crypto::btc_private_key::BtcPrivateKey,
         btc_state::BtcState,
         btc_types::BtcPubKeySlice,
-        btc_utils::{
-            convert_btc_address_to_bytes,
-            convert_btc_network_to_bytes,
-            convert_bytes_to_btc_address,
-            convert_bytes_to_btc_network,
-            convert_bytes_to_btc_pub_key_slice,
-        },
+        btc_utils::{convert_btc_address_to_bytes, convert_bytes_to_btc_address, convert_bytes_to_btc_pub_key_slice},
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     database_utils::{get_u64_from_db, put_u64_in_db},
@@ -96,14 +91,15 @@ pub fn put_btc_fee_in_db<D: DatabaseInterface>(db: &D, fee: u64) -> Result<()> {
 
 pub fn get_btc_network_from_db<D: DatabaseInterface>(db: &D) -> Result<BtcNetwork> {
     db.get(BTC_NETWORK_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
-        .and_then(|bytes| convert_bytes_to_btc_network(&bytes))
+        .and_then(|ref bytes| BtcChainId::from_bytes(bytes))
+        .map(|chain_id| chain_id.to_btc_network())
 }
 
 pub fn put_btc_network_in_db<D: DatabaseInterface>(db: &D, network: BtcNetwork) -> Result<()> {
-    trace!("✔ Adding BTC '{}' network to database...", network);
+    info!("✔ Adding BTC '{}' network to database...", network);
     db.put(
         BTC_NETWORK_KEY.to_vec(),
-        convert_btc_network_to_bytes(network)?,
+        BtcChainId::from_btc_network(&network)?.to_bytes(),
         MIN_DATA_SENSITIVITY_LEVEL,
     )
 }

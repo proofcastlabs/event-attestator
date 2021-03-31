@@ -2,7 +2,6 @@ use std::fmt;
 
 use bitcoin::network::constants::Network as BtcNetwork;
 use ethereum_types::H256 as KeccakHash;
-use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{
@@ -29,10 +28,18 @@ impl ChainId for BtcChainId {
 }
 
 impl BtcChainId {
-    fn to_btc_network(&self) -> BtcNetwork {
+    pub fn to_btc_network(&self) -> BtcNetwork {
         match self {
             Self::Bitcoin => BtcNetwork::Bitcoin,
             Self::Testnet => BtcNetwork::Testnet,
+        }
+    }
+
+    pub fn from_btc_network(btc_network: &BtcNetwork) -> Result<Self> {
+        match btc_network {
+            BtcNetwork::Bitcoin => Ok(Self::Bitcoin),
+            BtcNetwork::Testnet => Ok(Self::Testnet),
+            _ => Err(format!("`BtcChainId` error! Unsupported BtcNetwork: {}", btc_network).into()),
         }
     }
 
@@ -43,7 +50,7 @@ impl BtcChainId {
         }
     }
 
-    fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         match convert_bytes_to_u64(bytes)? {
             0 => Ok(Self::Bitcoin),
             1 => Ok(Self::Testnet),
@@ -51,7 +58,7 @@ impl BtcChainId {
         }
     }
 
-    fn to_bytes(&self) -> Bytes {
+    pub fn to_bytes(&self) -> Bytes {
         match self {
             Self::Bitcoin => convert_u64_to_bytes(0),
             Self::Testnet => convert_u64_to_bytes(1),
@@ -62,7 +69,9 @@ impl BtcChainId {
         hex::encode(&self.to_bytes())
     }
 
+    #[cfg(test)]
     fn get_all() -> Vec<Self> {
+        use strum::IntoEnumIterator;
         Self::iter().collect()
     }
 }
