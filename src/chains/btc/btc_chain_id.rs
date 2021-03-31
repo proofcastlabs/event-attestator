@@ -6,7 +6,7 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{
-    chains::eth::eth_crypto_utils::keccak_hash_bytes,
+    crypto_utils::keccak_hash_bytes,
     metadata::metadata_chain_id::MetadataChainId,
     traits::ChainId,
     types::{Byte, Bytes, Result},

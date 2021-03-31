@@ -4,7 +4,6 @@ use rlp::{Rlp, RlpStream};
 use crate::{
     chains::eth::{
         eth_constants::{BRANCH_NODE_STRING, EMPTY_NIBBLES, EXTENSION_NODE_STRING, LEAF_NODE_STRING},
-        eth_crypto_utils::keccak_hash_bytes,
         eth_types::{ChildNodes, TrieHashMap},
         get_trie_hash_map::get_thing_from_trie_hash_map,
         nibble_utils::Nibbles,
@@ -14,6 +13,7 @@ use crate::{
             encode_leaf_path_from_nibbles,
         },
     },
+    crypto_utils::keccak_hash_bytes,
     types::{Bytes, Result},
 };
 
