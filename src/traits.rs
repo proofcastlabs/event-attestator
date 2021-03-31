@@ -1,4 +1,6 @@
 //! # pToken-specific traits.
+use ethereum_types::H256 as KeccakHash;
+
 use crate::types::{Bytes, Result};
 
 pub trait DatabaseInterface {
@@ -13,4 +15,6 @@ pub trait DatabaseInterface {
     fn put(&self, key: Bytes, value: Bytes, data_sensitivity: Option<u8>) -> Result<()>;
 }
 
-pub trait ChainId {}
+pub trait ChainId {
+    fn keccak_hash(&self) -> Result<KeccakHash>;
+}

@@ -1,10 +1,12 @@
 use std::fmt;
 
 use bitcoin::network::constants::Network as BtcNetwork;
+use ethereum_types::H256 as KeccakHash;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{
+    chains::eth::eth_crypto_utils::keccak_hash_bytes,
     metadata::metadata_chain_id::MetadataChainId,
     traits::ChainId,
     types::{Byte, Bytes, Result},
@@ -17,7 +19,11 @@ pub enum BtcChainId {
     Testnet,
 }
 
-impl ChainId for BtcChainId {}
+impl ChainId for BtcChainId {
+    fn keccak_hash(&self) -> Result<KeccakHash> {
+        Ok(keccak_hash_bytes(&self.to_bytes()))
+    }
+}
 
 impl BtcChainId {
     fn to_btc_network(&self) -> BtcNetwork {

@@ -1,8 +1,10 @@
 use std::fmt;
 
+use ethereum_types::H256 as KeccakHash;
 use strum_macros::EnumIter;
 
 use crate::{
+    chains::eth::eth_crypto_utils::keccak_hash_bytes,
     metadata::metadata_chain_id::MetadataChainId,
     traits::ChainId,
     types::{Byte, Bytes, Result},
@@ -17,7 +19,11 @@ pub enum EthChainId {
     BscMainnet,
 }
 
-impl ChainId for EthChainId {}
+impl ChainId for EthChainId {
+    fn keccak_hash(&self) -> Result<KeccakHash> {
+        Ok(keccak_hash_bytes(&self.to_bytes()?))
+    }
+}
 
 impl EthChainId {
     fn to_bytes(&self) -> Result<Bytes> {
