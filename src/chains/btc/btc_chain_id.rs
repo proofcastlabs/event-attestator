@@ -5,7 +5,7 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{
-    metadata::blockchain_chain_id::BlockchainChainId,
+    metadata::metadata_chain_id::MetadataChainId,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
@@ -24,10 +24,10 @@ impl BtcChainId {
         }
     }
 
-    fn to_blockchain_chain_id(&self) -> Result<BlockchainChainId> {
+    fn to_metadata_chain_id(&self) -> Result<MetadataChainId> {
         match self {
-            Self::Bitcoin => Ok(BlockchainChainId::BitcoinMainnet),
-            Self::Testnet => Ok(BlockchainChainId::BitcoinTestnet),
+            Self::Bitcoin => Ok(MetadataChainId::BitcoinMainnet),
+            Self::Testnet => Ok(MetadataChainId::BitcoinTestnet),
         }
     }
 

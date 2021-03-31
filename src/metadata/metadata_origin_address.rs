@@ -6,7 +6,7 @@ use ethereum_types::Address as EthAddress;
 
 use crate::{
     chains::eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES,
-    metadata::{blockchain_chain_id::BlockchainChainId, blockchain_protocol_id::BlockchainProtocolId},
+    metadata::{metadata_chain_id::MetadataChainId, metadata_protocol_id::MetadataProtocolId},
     types::{Byte, Bytes, Result},
     utils::strip_hex_prefix,
 };
@@ -14,11 +14,11 @@ use crate::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct MetadataOriginAddress {
     pub address: String,
-    pub chain_id: BlockchainChainId,
+    pub chain_id: MetadataChainId,
 }
 
 impl MetadataOriginAddress {
-    fn get_err_msg(protocol: BlockchainProtocolId) -> String {
+    fn get_err_msg(protocol: MetadataProtocolId) -> String {
         let symbol = protocol.to_symbol();
         format!(
             "`MetadataOriginAddress` error - {} address supplied with non-{} chain ID!",
@@ -26,10 +26,10 @@ impl MetadataOriginAddress {
         )
     }
 
-    pub fn new_from_eth_address(eth_address: &EthAddress, chain_id: &BlockchainChainId) -> Result<Self> {
+    pub fn new_from_eth_address(eth_address: &EthAddress, chain_id: &MetadataChainId) -> Result<Self> {
         let protocol_id = chain_id.to_protocol_id();
         match protocol_id {
-            BlockchainProtocolId::Ethereum => Ok(Self {
+            MetadataProtocolId::Ethereum => Ok(Self {
                 chain_id: chain_id.clone(),
                 address: hex::encode(eth_address),
             }),
@@ -37,10 +37,10 @@ impl MetadataOriginAddress {
         }
     }
 
-    pub fn new_from_eos_address(eos_address: &EosAddress, chain_id: &BlockchainChainId) -> Result<Self> {
+    pub fn new_from_eos_address(eos_address: &EosAddress, chain_id: &MetadataChainId) -> Result<Self> {
         let protocol_id = chain_id.to_protocol_id();
         match protocol_id {
-            BlockchainProtocolId::Eos => Ok(Self {
+            MetadataProtocolId::Eos => Ok(Self {
                 chain_id: chain_id.clone(),
                 address: eos_address.to_string(),
             }),
@@ -48,10 +48,10 @@ impl MetadataOriginAddress {
         }
     }
 
-    pub fn new_from_btc_address(btc_address: &BtcAddress, chain_id: &BlockchainChainId) -> Result<Self> {
+    pub fn new_from_btc_address(btc_address: &BtcAddress, chain_id: &MetadataChainId) -> Result<Self> {
         let protocol_id = chain_id.to_protocol_id();
         match protocol_id {
-            BlockchainProtocolId::Bitcoin => Ok(Self {
+            MetadataProtocolId::Bitcoin => Ok(Self {
                 chain_id: chain_id.clone(),
                 address: btc_address.to_string(),
             }),
@@ -61,15 +61,15 @@ impl MetadataOriginAddress {
 
     pub fn to_bytes(&self) -> Result<Bytes> {
         match self.chain_id.to_protocol_id() {
-            BlockchainProtocolId::Bitcoin | BlockchainProtocolId::Eos => Ok(self.address.as_bytes().to_vec()),
-            BlockchainProtocolId::Ethereum => Ok(hex::decode(strip_hex_prefix(&self.address))?),
+            MetadataProtocolId::Bitcoin | MetadataProtocolId::Eos => Ok(self.address.as_bytes().to_vec()),
+            MetadataProtocolId::Ethereum => Ok(hex::decode(strip_hex_prefix(&self.address))?),
         }
     }
 
-    pub fn from_bytes(bytes: &[Byte], chain_id: &BlockchainChainId) -> Result<Self> {
+    pub fn from_bytes(bytes: &[Byte], chain_id: &MetadataChainId) -> Result<Self> {
         let protocol_id = chain_id.to_protocol_id();
         match protocol_id {
-            BlockchainProtocolId::Bitcoin => {
+            MetadataProtocolId::Bitcoin => {
                 info!("✔ Attempting to create `MetadataOriginAddress` from bytes for EOS...");
                 match from_utf8(bytes) {
                     Err(err) => {
@@ -85,7 +85,7 @@ impl MetadataOriginAddress {
                     },
                 }
             },
-            BlockchainProtocolId::Eos => {
+            MetadataProtocolId::Eos => {
                 info!("✔ Attempting to create `MetadataOriginAddress` from bytes for EOS...");
                 match from_utf8(bytes) {
                     Err(err) => {
@@ -101,7 +101,7 @@ impl MetadataOriginAddress {
                     },
                 }
             },
-            BlockchainProtocolId::Ethereum => {
+            MetadataProtocolId::Ethereum => {
                 info!("✔ Attempting to create `MetadataOriginAddress` from bytes for ETH...");
                 if bytes.len() == ETH_ADDRESS_SIZE_IN_BYTES {
                     Self::new_from_eth_address(&EthAddress::from_slice(bytes), chain_id)
@@ -127,21 +127,21 @@ mod tests {
 
     #[test]
     fn should_get_metadata_origin_address_from_eos_address() {
-        let chain_id = BlockchainChainId::TelosMainnet;
+        let chain_id = MetadataChainId::TelosMainnet;
         let result = MetadataOriginAddress::new_from_eos_address(&get_sample_eos_address(), &chain_id);
         assert!(result.is_ok());
     }
 
     #[test]
     fn should_get_metadata_origin_address_from_btc_address() {
-        let chain_id = BlockchainChainId::BitcoinMainnet;
+        let chain_id = MetadataChainId::BitcoinMainnet;
         let result = MetadataOriginAddress::new_from_btc_address(&get_sample_btc_address(), &chain_id);
         assert!(result.is_ok());
     }
 
     #[test]
     fn should_get_metadata_origin_address_from_eth_address() {
-        let chain_id = BlockchainChainId::EthereumRopsten;
+        let chain_id = MetadataChainId::EthereumRopsten;
         let result = MetadataOriginAddress::new_from_eth_address(&get_sample_eth_address(), &chain_id);
         assert!(result.is_ok());
     }
@@ -176,8 +176,8 @@ mod tests {
     // #[test]
     // fn should_fail_to_perform_bytes_round_trip_for_wrong_protocol_id() {
     // let metadata_origin_address = MetadataOriginAddress::new_from_btc_address(&get_sample_btc_address());
-    // let wrong_protocol_id = BlockchainProtocolId::Eos;
-    // assert_ne!(wrong_protocol_id, BlockchainProtocolId::Bitcoin);
+    // let wrong_protocol_id = MetadataProtocolId::Eos;
+    // assert_ne!(wrong_protocol_id, MetadataProtocolId::Bitcoin);
     // let bytes = metadata_origin_address.to_bytes().unwrap();
     // let result = MetadataOriginAddress::from_bytes(&bytes, &wrong_protocol_id);
     // assert!(result.is_err());

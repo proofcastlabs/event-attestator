@@ -2,7 +2,7 @@ use std::fmt;
 
 use strum_macros::EnumIter;
 
-use crate::{metadata::blockchain_chain_id::BlockchainChainId, types::Result};
+use crate::{metadata::metadata_chain_id::MetadataChainId, types::Result};
 
 #[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
 pub enum EthChainId {
@@ -13,12 +13,12 @@ pub enum EthChainId {
 }
 
 impl EthChainId {
-    fn to_blockchain_chain_id(&self) -> Result<BlockchainChainId> {
+    fn to_metadata_chain_id(&self) -> Result<MetadataChainId> {
         match self {
-            Self::Mainnet => Ok(BlockchainChainId::EthereumMainnet),
-            Self::Rinkeby => Ok(BlockchainChainId::EthereumRinkeby),
-            Self::Ropsten => Ok(BlockchainChainId::EthereumRopsten),
-            Self::BscMainnet => Ok(BlockchainChainId::BscMainnet),
+            Self::Mainnet => Ok(MetadataChainId::EthereumMainnet),
+            Self::Rinkeby => Ok(MetadataChainId::EthereumRinkeby),
+            Self::Ropsten => Ok(MetadataChainId::EthereumRopsten),
+            Self::BscMainnet => Ok(MetadataChainId::BscMainnet),
         }
     }
 

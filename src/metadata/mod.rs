@@ -1,8 +1,8 @@
 #![allow(dead_code)] // FIXME Rm!
 
-pub(crate) mod blockchain_chain_id;
-pub(crate) mod blockchain_protocol_id;
+pub(crate) mod metadata_chain_id;
 pub(crate) mod metadata_origin_address;
+pub(crate) mod metadata_protocol_id;
 pub(crate) mod metadata_traits;
 pub(crate) mod metadata_version;
 pub(crate) mod test_utils;
@@ -12,9 +12,9 @@ use ethereum_types::Address as EthAddress;
 
 use crate::{
     metadata::{
-        blockchain_chain_id::BlockchainChainId,
-        blockchain_protocol_id::BlockchainProtocolId,
+        metadata_chain_id::MetadataChainId,
         metadata_origin_address::MetadataOriginAddress,
+        metadata_protocol_id::MetadataProtocolId,
         metadata_version::MetadataVersion,
     },
     types::{Byte, Bytes, Result},
@@ -32,7 +32,7 @@ use crate::{
 pub struct Metadata {
     pub version: MetadataVersion,
     pub user_data: Bytes,
-    pub chain_id: BlockchainChainId,
+    pub chain_id: MetadataChainId,
     pub origin_address: MetadataOriginAddress,
 }
 
@@ -59,16 +59,16 @@ impl Metadata {
         ]))
     }
 
-    pub fn to_bytes(&self, destination_protocol: &BlockchainProtocolId) -> Result<Bytes> {
+    pub fn to_bytes(&self, destination_protocol: &MetadataProtocolId) -> Result<Bytes> {
         match destination_protocol {
-            BlockchainProtocolId::Ethereum => self.to_bytes_for_eth(),
-            BlockchainProtocolId::Bitcoin | BlockchainProtocolId::Eos => {
+            MetadataProtocolId::Ethereum => self.to_bytes_for_eth(),
+            MetadataProtocolId::Bitcoin | MetadataProtocolId::Eos => {
                 Err("Encoding metadata for Bitcoin || EOS is not implemented!".into())
             },
         }
     }
 
-    fn get_err_msg(field: &str, protocol: &BlockchainProtocolId) -> String {
+    fn get_err_msg(field: &str, protocol: &MetadataProtocolId) -> String {
         format!(
             "Error getting `{}` from bytes for {} metadata!",
             field,
@@ -77,7 +77,7 @@ impl Metadata {
     }
 
     fn from_bytes_from_eth(bytes: &[Byte]) -> Result<Self> {
-        let protocol = BlockchainProtocolId::Ethereum;
+        let protocol = MetadataProtocolId::Ethereum;
         let tokens = eth_abi_decode(
             &[
                 EthAbiParamType::FixedBytes(1),
@@ -88,7 +88,7 @@ impl Metadata {
             bytes,
         )?;
         let chain_id = match tokens[2] {
-            EthAbiToken::FixedBytes(ref bytes) => BlockchainChainId::from_bytes(bytes),
+            EthAbiToken::FixedBytes(ref bytes) => MetadataChainId::from_bytes(bytes),
             _ => Err(Self::get_err_msg("chain_id", &protocol).into()),
         }?;
         let eth_address = match tokens[3] {
@@ -112,10 +112,10 @@ impl Metadata {
         })
     }
 
-    pub fn from_bytes(bytes: &[Byte], protocol: &BlockchainProtocolId) -> Result<Self> {
+    pub fn from_bytes(bytes: &[Byte], protocol: &MetadataProtocolId) -> Result<Self> {
         match protocol {
-            BlockchainProtocolId::Ethereum => Self::from_bytes_from_eth(bytes),
-            BlockchainProtocolId::Bitcoin | BlockchainProtocolId::Eos => {
+            MetadataProtocolId::Ethereum => Self::from_bytes_from_eth(bytes),
+            MetadataProtocolId::Bitcoin | MetadataProtocolId::Eos => {
                 Err("Decoding metadata for Bitcoin || EOS is not implemented!".into())
             },
         }

@@ -5,7 +5,7 @@ use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
 
 use crate::{
-    metadata::{blockchain_chain_id::BlockchainChainId, metadata_origin_address::MetadataOriginAddress, Metadata},
+    metadata::{metadata_chain_id::MetadataChainId, metadata_origin_address::MetadataOriginAddress, Metadata},
     types::Bytes,
 };
 
@@ -26,15 +26,15 @@ fn get_sample_user_data() -> Bytes {
 }
 
 pub fn get_sample_eth_origin_address() -> MetadataOriginAddress {
-    MetadataOriginAddress::new_from_eth_address(&get_sample_eth_address(), &BlockchainChainId::EthereumMainnet).unwrap()
+    MetadataOriginAddress::new_from_eth_address(&get_sample_eth_address(), &MetadataChainId::EthereumMainnet).unwrap()
 }
 
 pub fn get_sample_eos_origin_address() -> MetadataOriginAddress {
-    MetadataOriginAddress::new_from_eos_address(&get_sample_eos_address(), &BlockchainChainId::EosMainnet).unwrap()
+    MetadataOriginAddress::new_from_eos_address(&get_sample_eos_address(), &MetadataChainId::EosMainnet).unwrap()
 }
 
 pub fn get_sample_btc_origin_address() -> MetadataOriginAddress {
-    MetadataOriginAddress::new_from_btc_address(&get_sample_btc_address(), &BlockchainChainId::BitcoinMainnet).unwrap()
+    MetadataOriginAddress::new_from_btc_address(&get_sample_btc_address(), &MetadataChainId::BitcoinMainnet).unwrap()
 }
 
 pub fn get_sample_eth_metadata() -> Metadata {

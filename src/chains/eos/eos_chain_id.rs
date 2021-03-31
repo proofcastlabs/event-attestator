@@ -4,7 +4,7 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{
-    metadata::blockchain_chain_id::BlockchainChainId,
+    metadata::metadata_chain_id::MetadataChainId,
     types::{Byte, Bytes, Result},
 };
 
@@ -24,10 +24,10 @@ lazy_static! {
 }
 
 impl EosChainId {
-    fn to_blockchain_chain_id(&self) -> Result<BlockchainChainId> {
+    fn to_metadata_chain_id(&self) -> Result<MetadataChainId> {
         match self {
-            Self::EosMainnet => Ok(BlockchainChainId::EosMainnet),
-            Self::TelosMainnet => Ok(BlockchainChainId::TelosMainnet),
+            Self::EosMainnet => Ok(MetadataChainId::EosMainnet),
+            Self::TelosMainnet => Ok(MetadataChainId::TelosMainnet),
         }
     }
 

@@ -33,9 +33,9 @@ use crate::{
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     metadata::{
-        blockchain_chain_id::BlockchainChainId,
-        blockchain_protocol_id::BlockchainProtocolId,
+        metadata_chain_id::MetadataChainId,
         metadata_origin_address::MetadataOriginAddress,
+        metadata_protocol_id::MetadataProtocolId,
         metadata_traits::ToMetadata,
         Metadata,
     },
@@ -71,13 +71,13 @@ impl ToMetadata for EthOnEvmEvmTxInfo {
             &user_data,
             &MetadataOriginAddress::new_from_eth_address(
                 &self.token_sender,
-                &BlockchainChainId::from_eth_chain_id(self.origin_chain_id)?,
+                &MetadataChainId::from_eth_chain_id(self.origin_chain_id)?,
             )?,
         ))
     }
 
     fn to_metadata_bytes(&self) -> Result<Bytes> {
-        self.to_metadata()?.to_bytes(&BlockchainProtocolId::Ethereum)
+        self.to_metadata()?.to_bytes(&MetadataProtocolId::Ethereum)
     }
 }
 
