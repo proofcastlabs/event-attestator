@@ -9,12 +9,14 @@ use crate::{
     metadata::metadata_chain_id::MetadataChainId,
     traits::ChainId,
     types::{Byte, Bytes, Result},
+    utils::decode_hex_with_err_msg,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
 pub enum EosChainId {
     EosMainnet,
     TelosMainnet,
+    EosJungleTestnet,
 }
 
 impl ChainId for EosChainId {
@@ -30,20 +32,30 @@ lazy_static! {
     pub static ref TELOS_MAINNET_BYTES: Bytes =
         hex::decode("4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11")
             .expect("✘ Invalid hex in `TELOS_MAINNET_BYTES`");
+    pub static ref EOS_JUNGLE_TESTNET_BYTES: Bytes =
+        hex::decode("e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473")
+            .expect("✘ Invalid hex in `EOS_JUNGLE_TESTNET_BYTES`");
 }
 
 impl EosChainId {
+    pub fn from_str(s: &str) -> Result<Self> {
+        decode_hex_with_err_msg(s, &format!("`EosChainId` error! Invalid hex: 0x{}", s))
+            .and_then(|ref bytes| Self::from_bytes(bytes))
+    }
+
     fn to_metadata_chain_id(&self) -> Result<MetadataChainId> {
         match self {
             Self::EosMainnet => Ok(MetadataChainId::EosMainnet),
             Self::TelosMainnet => Ok(MetadataChainId::TelosMainnet),
+            Self::EosJungleTestnet => Ok(MetadataChainId::EosJungleTestnet),
         }
     }
 
-    fn to_hex(&self) -> String {
+    pub fn to_hex(&self) -> String {
         match self {
             Self::EosMainnet => hex::encode(&*EOS_MAINNET_BYTES),
             Self::TelosMainnet => hex::encode(&*TELOS_MAINNET_BYTES),
+            Self::EosJungleTestnet => hex::encode(&*EOS_JUNGLE_TESTNET_BYTES),
         }
     }
 
@@ -69,10 +81,11 @@ impl EosChainId {
         }
     }
 
-    fn to_bytes(&self) -> Bytes {
+    pub fn to_bytes(&self) -> Bytes {
         match self {
             Self::EosMainnet => EOS_MAINNET_BYTES.to_vec(),
             Self::TelosMainnet => TELOS_MAINNET_BYTES.to_vec(),
+            Self::EosJungleTestnet => EOS_JUNGLE_TESTNET_BYTES.to_vec(),
         }
     }
 
@@ -86,6 +99,7 @@ impl fmt::Display for EosChainId {
         match self {
             Self::EosMainnet => write!(f, "EOS Mainnet: 0x{}", self.to_hex()),
             Self::TelosMainnet => write!(f, "Telos Mainnet: 0x{}", self.to_hex()),
+            Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", self.to_hex()),
         }
     }
 }

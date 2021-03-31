@@ -4,6 +4,7 @@ use eos_chain::{AccountName as EosAccountName, Checksum256};
 
 use crate::{
     chains::eos::{
+        eos_chain_id::EosChainId,
         eos_constants::{
             EOS_ACCOUNT_NAME_KEY,
             EOS_ACCOUNT_NONCE_KEY,
@@ -182,14 +183,14 @@ pub fn get_eos_account_name_from_db<D: DatabaseInterface>(db: &D) -> Result<EosA
     Ok(EosAccountName::from_str(&get_eos_account_name_string_from_db(db)?)?)
 }
 
-pub fn put_eos_chain_id_in_db<D: DatabaseInterface>(db: &D, chain_id: &str) -> Result<()> {
+pub fn put_eos_chain_id_in_db<D: DatabaseInterface>(db: &D, chain_id: &EosChainId) -> Result<()> {
     debug!("✔ Putting EOS chain ID in db...");
-    put_string_in_db(db, &EOS_CHAIN_ID_DB_KEY.to_vec(), chain_id)
+    put_string_in_db(db, &EOS_CHAIN_ID_DB_KEY.to_vec(), &chain_id.to_hex())
 }
 
-pub fn get_eos_chain_id_from_db<D: DatabaseInterface>(db: &D) -> Result<String> {
-    debug!("✔ Getting EOS chain ID from db...");
-    get_string_from_db(db, &EOS_CHAIN_ID_DB_KEY.to_vec())
+pub fn get_eos_chain_id_from_db<D: DatabaseInterface>(db: &D) -> Result<EosChainId> {
+    info!("✔ Getting EOS chain ID from db...");
+    EosChainId::from_str(&get_string_from_db(db, &EOS_CHAIN_ID_DB_KEY.to_vec())?)
 }
 
 #[cfg(test)]

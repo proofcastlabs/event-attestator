@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     chains::eos::{
         eos_actions::PTokenMintAction,
+        eos_chain_id::EosChainId,
         eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, EOS_MAX_EXPIRATION_SECS, MEMO},
         eos_crypto::eos_private_key::EosPrivateKey,
     },
@@ -24,14 +25,14 @@ pub struct EosSignedTransaction {
 }
 
 impl EosSignedTransaction {
-    fn get_signing_data_from_unsigned_tx(unsigned_tx: &EosTransaction, chain_id: &str) -> Result<Bytes> {
-        Ok([hex::decode(chain_id)?, unsigned_tx.to_serialize_data()?, vec![0u8; 32]].concat())
+    fn get_signing_data_from_unsigned_tx(unsigned_tx: &EosTransaction, chain_id: &EosChainId) -> Result<Bytes> {
+        Ok([chain_id.to_bytes(), unsigned_tx.to_serialize_data()?, vec![0u8; 32]].concat())
     }
 
     pub fn from_unsigned_tx(
         to: &str,
         amount: &str,
-        chain_id: &str,
+        chain_id: &EosChainId,
         eos_private_key: &EosPrivateKey,
         unsigned_tx: &EosTransaction,
     ) -> Result<EosSignedTransaction> {
@@ -67,7 +68,7 @@ pub fn get_signed_eos_ptoken_issue_tx(
     ref_block_prefix: u32,
     to: &str,
     amount: &str,
-    chain_id: &str,
+    chain_id: &EosChainId,
     private_key: &EosPrivateKey,
     account_name: &str,
 ) -> Result<EosSignedTransaction> {
@@ -157,7 +158,7 @@ mod tests {
             &hex::decode("0bc331469a2c834b26ff3af7a72e3faab3ee806c368e7a8008f57904237c6057").unwrap(),
         )
         .unwrap();
-        let result = EosSignedTransaction::from_unsigned_tx(to, amount, EOS_JUNGLE_CHAIN_ID, &pk, &unsigned_tx)
+        let result = EosSignedTransaction::from_unsigned_tx(to, amount, &EOS_JUNGLE_CHAIN_ID, &pk, &unsigned_tx)
             .unwrap()
             .transaction;
         // NOTE: First 4 bytes are the timestamp (8 hex chars...)
@@ -183,7 +184,7 @@ mod tests {
             ref_block_prefix,
             to,
             amount,
-            EOS_JUNGLE_CHAIN_ID,
+            &EOS_JUNGLE_CHAIN_ID,
             &pk,
             account_name,
         )

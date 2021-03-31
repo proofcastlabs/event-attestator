@@ -39,8 +39,8 @@ impl EosEnclaveState {
     pub fn new<D: DatabaseInterface>(db: &D) -> Result<Self> {
         info!("✔ Getting EOS enclave state...");
         Ok(EosEnclaveState {
-            eos_chain_id: get_eos_chain_id_from_db(db)?,
             eos_safe_address: SAFE_EOS_ADDRESS.to_string(),
+            eos_chain_id: get_eos_chain_id_from_db(db)?.to_hex(),
             eos_signature_nonce: get_eos_account_nonce_from_db(db)?,
             eos_last_seen_block_num: get_latest_eos_block_number(db)?,
             eos_public_key: get_eos_public_key_from_db(db)?.to_string(),

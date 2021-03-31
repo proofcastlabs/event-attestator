@@ -13,14 +13,15 @@ use crate::{
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter)]
 pub enum MetadataChainId {
-    EthereumMainnet, // 0x005fe7f9
-    EthereumRopsten, // 0x0069c322
-    EthereumRinkeby, // 0x00f34368
-    BitcoinMainnet,  // 0x01ec97de
-    BitcoinTestnet,  // 0x018afeb2
-    EosMainnet,      // 0x02e7261c
-    TelosMainnet,    // 0x028c7109
-    BscMainnet,      // 0x00e4b170
+    EthereumMainnet,  // 0x005fe7f9
+    EthereumRopsten,  // 0x0069c322
+    EthereumRinkeby,  // 0x00f34368
+    BitcoinMainnet,   // 0x01ec97de
+    BitcoinTestnet,   // 0x018afeb2
+    EosMainnet,       // 0x02e7261c
+    TelosMainnet,     // 0x028c7109
+    BscMainnet,       // 0x00e4b170
+    EosJungleTestnet, // 0x0282317f
 }
 
 impl MetadataChainId {
@@ -30,7 +31,7 @@ impl MetadataChainId {
 
     pub fn to_protocol_id(&self) -> MetadataProtocolId {
         match self {
-            Self::EosMainnet | Self::TelosMainnet => MetadataProtocolId::Eos,
+            Self::EosMainnet | Self::TelosMainnet | Self::EosJungleTestnet => MetadataProtocolId::Eos,
             Self::BitcoinMainnet | Self::BitcoinTestnet => MetadataProtocolId::Bitcoin,
             Self::EthereumMainnet | Self::EthereumRinkeby | Self::EthereumRopsten | Self::BscMainnet => {
                 MetadataProtocolId::Ethereum
@@ -48,6 +49,7 @@ impl MetadataChainId {
             Self::BitcoinTestnet => Box::new(BtcChainId::Testnet),
             Self::EosMainnet => Box::new(EosChainId::EosMainnet),
             Self::TelosMainnet => Box::new(EosChainId::TelosMainnet),
+            Self::EosJungleTestnet => Box::new(EosChainId::EosJungleTestnet),
         }
     }
 
@@ -122,6 +124,7 @@ impl fmt::Display for MetadataChainId {
             Self::EthereumMainnet => write!(f, "Ethereum Mainnet: 0x{}", self.to_hex().unwrap_or_else(|_| err_msg)),
             Self::EthereumRinkeby => write!(f, "Ethereum Rinkeby: 0x{}", self.to_hex().unwrap_or_else(|_| err_msg)),
             Self::EthereumRopsten => write!(f, "Ethereum Ropsten: 0x{}", self.to_hex().unwrap_or_else(|_| err_msg)),
+            Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", self.to_hex().unwrap_or_else(|_| err_msg)),
             Self::BscMainnet => write!(
                 f,
                 "Binance Chain (BSC) Mainnet: 0x{}",
@@ -165,7 +168,7 @@ mod tests {
     #[test]
     fn should_get_metadata_chain_id_from_bytes_correctly() {
         let chain_ids_bytes = vec![
-            "005fe7f9", "0069c322", "00f34368", "01ec97de", "018afeb2", "02e7261c", "028c7109", "00e4b170",
+            "005fe7f9", "0069c322", "00f34368", "01ec97de", "018afeb2", "02e7261c", "028c7109", "00e4b170", "0282317f",
         ]
         .iter()
         .map(|ref hex| hex::decode(hex).unwrap())

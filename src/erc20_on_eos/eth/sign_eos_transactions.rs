@@ -1,6 +1,7 @@
 use crate::{
     chains::{
         eos::{
+            eos_chain_id::EosChainId,
             eos_crypto::{
                 eos_private_key::EosPrivateKey,
                 eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
@@ -17,7 +18,7 @@ use crate::{
 pub fn get_signed_eos_ptoken_issue_txs_from_erc20_on_eos_peg_in_infos(
     ref_block_num: u16,
     ref_block_prefix: u32,
-    chain_id: &str,
+    chain_id: &EosChainId,
     private_key: &EosPrivateKey,
     peg_in_infos: &Erc20OnEosPegInInfos,
 ) -> Result<EosSignedTransactions> {

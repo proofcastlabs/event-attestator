@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eos::{
+        eos_chain_id::EosChainId,
         eos_constants::EOS_CORE_IS_INITIALIZED_JSON,
         eos_crypto::eos_private_key::EosPrivateKey,
         eos_database_utils::{
@@ -86,13 +87,10 @@ impl EosInitJson {
     }
 }
 
-pub fn maybe_enable_protocol_features_and_return_state<D>(
+pub fn maybe_enable_protocol_features_and_return_state<D: DatabaseInterface>(
     maybe_protocol_features_to_enable: &Option<Vec<String>>,
     state: EosState<D>,
-) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+) -> Result<EosState<D>> {
     match maybe_protocol_features_to_enable {
         None => {
             info!("✘ No protocol features to enable: Skipping!");
@@ -111,13 +109,10 @@ where
     }
 }
 
-pub fn test_block_validation_and_return_state<D>(
+pub fn test_block_validation_and_return_state<D: DatabaseInterface>(
     block_json: &EosBlockHeaderJson,
     state: EosState<D>,
-) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+) -> Result<EosState<D>> {
     if CORE_IS_VALIDATING {
         info!("✔ Checking block validation passes...");
         check_block_signature_is_valid(
@@ -136,10 +131,7 @@ where
     }
 }
 
-pub fn generate_and_put_incremerkle_in_db<D>(db: &D, blockroot_merkle: &[String]) -> Result<()>
-where
-    D: DatabaseInterface,
-{
+pub fn generate_and_put_incremerkle_in_db<D: DatabaseInterface>(db: &D, blockroot_merkle: &[String]) -> Result<()> {
     info!("✔ Generating and putting incremerkle in db...");
     put_incremerkle_in_db(
         db,
@@ -163,10 +155,7 @@ where
     generate_and_put_incremerkle_in_db(&state.db, &blockroot_merkle).and(Ok(state))
 }
 
-pub fn put_eos_latest_block_info_in_db<D>(db: &D, block_json: &EosBlockHeaderJson) -> Result<()>
-where
-    D: DatabaseInterface,
-{
+pub fn put_eos_latest_block_info_in_db<D: DatabaseInterface>(db: &D, block_json: &EosBlockHeaderJson) -> Result<()> {
     info!(
         "✔ Putting latest block number '{}' & ID '{}' into db...",
         &block_json.block_num, &block_json.block_id
@@ -175,23 +164,17 @@ where
         .and_then(|_| put_eos_last_seen_block_id_in_db(db, &convert_hex_to_checksum256(block_json.block_id.clone())?))
 }
 
-pub fn put_eos_latest_block_info_in_db_and_return_state<D>(
+pub fn put_eos_latest_block_info_in_db_and_return_state<D: DatabaseInterface>(
     block_json: &EosBlockHeaderJson,
     state: EosState<D>,
-) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+) -> Result<EosState<D>> {
     put_eos_latest_block_info_in_db(&state.db, block_json).and(Ok(state))
 }
 
-pub fn put_eos_known_schedule_in_db_and_return_state<D>(
+pub fn put_eos_known_schedule_in_db_and_return_state<D: DatabaseInterface>(
     schedule_json: &EosProducerScheduleJsonV2,
     state: EosState<D>,
-) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+) -> Result<EosState<D>> {
     info!("✔ Putting EOS known schedule into db...");
     EosProducerScheduleV2::from_schedule_json(schedule_json)
         .map(|sched| EosKnownSchedules::new(sched.version))
@@ -199,23 +182,17 @@ where
         .and(Ok(state))
 }
 
-pub fn put_eos_schedule_in_db_and_return_state<D>(
+pub fn put_eos_schedule_in_db_and_return_state<D: DatabaseInterface>(
     schedule_json: &EosProducerScheduleJsonV2,
     state: EosState<D>,
-) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+) -> Result<EosState<D>> {
     info!("✔ Putting EOS schedule into db...");
     EosProducerScheduleV2::from_schedule_json(schedule_json)
         .and_then(|schedule| put_eos_schedule_in_db(&state.db, &schedule))
         .and(Ok(state))
 }
 
-pub fn generate_and_save_eos_keys_and_return_state<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn generate_and_save_eos_keys_and_return_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Generating EOS keys & putting into db...");
     let private_key = EosPrivateKey::generate_random()?;
     put_eos_public_key_in_db(&state.db, &private_key.to_public_key())
@@ -227,26 +204,23 @@ pub fn get_eos_init_output<D: DatabaseInterface>(_state: EosState<D>) -> Result<
     Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string())
 }
 
-pub fn put_eos_account_name_in_db_and_return_state<D>(account_name: &str, state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn put_eos_account_name_in_db_and_return_state<D: DatabaseInterface>(
+    account_name: &str,
+    state: EosState<D>,
+) -> Result<EosState<D>> {
     info!("✔ Putting EOS account name '{}' into db...", account_name);
     put_eos_account_name_in_db(&state.db, &account_name).and(Ok(state))
 }
 
-pub fn put_eos_account_nonce_in_db_and_return_state<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn put_eos_account_nonce_in_db_and_return_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Putting EOS account nonce in db...");
     put_eos_account_nonce_in_db(&state.db, 0).and(Ok(state))
 }
 
-pub fn put_eos_token_symbol_in_db_and_return_state<D>(token_symbol: &str, state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn put_eos_token_symbol_in_db_and_return_state<D: DatabaseInterface>(
+    token_symbol: &str,
+    state: EosState<D>,
+) -> Result<EosState<D>> {
     info!("✔ Putting EOS token symbol '{}' into db...", token_symbol);
     put_eos_token_symbol_in_db(&state.db, &token_symbol).and(Ok(state))
 }
@@ -260,13 +234,14 @@ pub fn put_empty_processed_tx_ids_in_db_and_return_state<D: DatabaseInterface>(
         .and(Ok(state))
 }
 
-pub fn put_eos_chain_id_in_db_and_return_state<D>(chain_id: &str, state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn put_eos_chain_id_in_db_and_return_state<D: DatabaseInterface>(
+    chain_id: &str,
+    state: EosState<D>,
+) -> Result<EosState<D>> {
     info!("✔ Putting EOS chain ID '{}' into db...", chain_id);
-    put_eos_chain_id_in_db(&state.db, chain_id).and(Ok(state))
+    put_eos_chain_id_in_db(&state.db, &EosChainId::from_str(chain_id)?).and(Ok(state))
 }
+
 pub fn maybe_put_eos_eth_token_dictionary_in_db_and_return_state<D: DatabaseInterface>(
     init_json: &EosInitJson,
     state: EosState<D>,
