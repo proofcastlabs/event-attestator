@@ -54,6 +54,19 @@ pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
     }
 }
 
+pub fn convert_bytes_to_u8(bytes: &[Byte]) -> Result<u8> {
+    match bytes.len() {
+        0 => Err("✘ Not enough bytes to convert to u8!".into()),
+        1 => {
+            let mut arr = [0u8; 1];
+            let bytes = &bytes[..1];
+            arr.copy_from_slice(bytes);
+            Ok(u8::from_le_bytes(arr))
+        },
+        _ => Err("✘ Too many bytes to convert to u8 without overflowing!".into()),
+    }
+}
+
 pub fn right_pad_with_zeroes(s: &str, width: usize) -> String {
     format!("{:0<width$}", s, width = width)
 }

@@ -20,6 +20,21 @@ pub enum EthChainId {
 impl ChainId for EthChainId {}
 
 impl EthChainId {
+    fn to_bytes(&self) -> Result<Bytes> {
+        Ok(self.to_u8().to_le_bytes().to_vec())
+    }
+
+    fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        info!("✔ Getting `EthChainId` from bytes: {}", hex::encode(bytes));
+        match convert_bytes_to_u8(bytes)? {
+            1 => Ok(Self::Mainnet),
+            3 => Ok(Self::Ropsten),
+            4 => Ok(Self::Rinkeby),
+            56 => Ok(Self::BscMainnet),
+            _ => Err(format!("`EthChainId` error! Unrecognised bytes : {}", hex::encode(bytes)).into()),
+        }
+    }
+
     fn to_metadata_chain_id(&self) -> Result<MetadataChainId> {
         match self {
             Self::Mainnet => Ok(MetadataChainId::EthereumMainnet),
@@ -32,8 +47,8 @@ impl EthChainId {
     fn from_u8(chain_id: u8) -> Result<Self> {
         match chain_id {
             1 => Ok(Self::Mainnet),
-            3 => Ok(Self::Rinkeby),
-            4 => Ok(Self::Ropsten),
+            3 => Ok(Self::Ropsten),
+            4 => Ok(Self::Rinkeby),
             56 => Ok(Self::BscMainnet),
             _ => Err(format!("`EthChainId` error! Unrecognized chain id: {}", chain_id).into()),
         }
@@ -42,8 +57,8 @@ impl EthChainId {
     fn to_u8(&self) -> u8 {
         match self {
             Self::Mainnet => 1,
-            Self::Rinkeby => 3,
-            Self::Ropsten => 4,
+            Self::Ropsten => 3,
+            Self::Rinkeby => 4,
             Self::BscMainnet => 56,
         }
     }
@@ -77,6 +92,22 @@ mod tests {
         let result = u8s
             .iter()
             .map(|u_8| EthChainId::from_u8(*u_8))
+            .collect::<Result<Vec<EthChainId>>>()
+            .unwrap();
+        assert_eq!(result, ids);
+    }
+
+    #[test]
+    fn should_make_bytes_roundtrip_for_all_eth_chain_ids() {
+        let ids = EthChainId::get_all();
+        let vec_of_bytes = ids
+            .iter()
+            .map(|id| id.to_bytes())
+            .collect::<Result<Vec<Bytes>>>()
+            .unwrap();
+        let result = vec_of_bytes
+            .iter()
+            .map(|ref bytes| EthChainId::from_bytes(bytes))
             .collect::<Result<Vec<EthChainId>>>()
             .unwrap();
         assert_eq!(result, ids);
