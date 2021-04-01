@@ -5,7 +5,7 @@ pub(crate) mod metadata_traits;
 pub(crate) mod metadata_version;
 pub(crate) mod test_utils;
 
-use ethabi::{decode as eth_abi_decode, encode as eth_abi_encode, ParamType as EthAbiParamType, Token as EthAbiToken};
+use ethabi::{encode as eth_abi_encode, Token as EthAbiToken};
 use ethereum_types::Address as EthAddress;
 
 use crate::{
@@ -66,6 +66,7 @@ impl Metadata {
         }
     }
 
+    #[cfg(test)]
     fn get_err_msg(field: &str, protocol: &MetadataProtocolId) -> String {
         format!(
             "Error getting `{}` from bytes for {} metadata!",
@@ -74,7 +75,9 @@ impl Metadata {
         )
     }
 
+    #[cfg(test)]
     fn from_bytes_from_eth(bytes: &[Byte]) -> Result<Self> {
+        use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType};
         let protocol = MetadataProtocolId::Ethereum;
         let tokens = eth_abi_decode(
             &[
@@ -110,7 +113,8 @@ impl Metadata {
         })
     }
 
-    pub fn from_bytes(bytes: &[Byte], protocol: &MetadataProtocolId) -> Result<Self> {
+    #[cfg(test)]
+    fn from_bytes(bytes: &[Byte], protocol: &MetadataProtocolId) -> Result<Self> {
         match protocol {
             MetadataProtocolId::Ethereum => Self::from_bytes_from_eth(bytes),
             MetadataProtocolId::Bitcoin | MetadataProtocolId::Eos => {
@@ -131,7 +135,8 @@ mod tests {
         let bytes = metadata.to_bytes_for_eth().unwrap();
         let expected_bytes = hex::decode("01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080005fe7f9000000000000000000000000000000000000000000000000000000000000000000000000000000005a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c0000000000000000000000000000000000000000000000000000000000000003c0ffee0000000000000000000000000000000000000000000000000000000000").unwrap();
         assert_eq!(bytes, expected_bytes);
-        let result = Metadata::from_bytes_from_eth(&bytes).unwrap();
+        let protocol_id = MetadataProtocolId::Ethereum;
+        let result = Metadata::from_bytes(&bytes, &protocol_id).unwrap();
         assert_eq!(result, metadata);
     }
 }

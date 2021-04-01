@@ -6,7 +6,6 @@ use strum_macros::EnumIter;
 
 use crate::{
     crypto_utils::keccak_hash_bytes,
-    metadata::metadata_chain_id::MetadataChainId,
     traits::ChainId,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
@@ -40,13 +39,6 @@ impl BtcChainId {
             BtcNetwork::Bitcoin => Ok(Self::Bitcoin),
             BtcNetwork::Testnet => Ok(Self::Testnet),
             _ => Err(format!("`BtcChainId` error! Unsupported BtcNetwork: {}", btc_network).into()),
-        }
-    }
-
-    fn to_metadata_chain_id(&self) -> Result<MetadataChainId> {
-        match self {
-            Self::Bitcoin => Ok(MetadataChainId::BitcoinMainnet),
-            Self::Testnet => Ok(MetadataChainId::BitcoinTestnet),
         }
     }
 

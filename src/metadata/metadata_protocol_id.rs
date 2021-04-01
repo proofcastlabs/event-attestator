@@ -1,8 +1,14 @@
 use std::fmt;
 
-use crate::types::{Byte, Result};
+#[cfg(test)]
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+use crate::types::Byte;
+#[cfg(test)]
+use crate::types::Result;
+
+#[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
 pub enum MetadataProtocolId {
     Bitcoin,
     Ethereum,
@@ -18,7 +24,8 @@ impl MetadataProtocolId {
         }
     }
 
-    pub fn from_byte(byte: &Byte) -> Result<Self> {
+    #[cfg(test)]
+    fn from_byte(byte: &Byte) -> Result<Self> {
         match byte {
             0u8 => Ok(MetadataProtocolId::Ethereum),
             1u8 => Ok(MetadataProtocolId::Bitcoin),
@@ -38,12 +45,7 @@ impl MetadataProtocolId {
 
     #[cfg(test)]
     fn get_all() -> Vec<Self> {
-        // FIXME / TODO How to ensure this contains all variants?
-        vec![
-            MetadataProtocolId::Bitcoin,
-            MetadataProtocolId::Eos,
-            MetadataProtocolId::Ethereum,
-        ]
+        Self::iter().collect()
     }
 }
 

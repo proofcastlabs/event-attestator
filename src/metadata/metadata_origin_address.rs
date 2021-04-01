@@ -66,7 +66,8 @@ impl MetadataOriginAddress {
         }
     }
 
-    pub fn from_bytes(bytes: &[Byte], chain_id: &MetadataChainId) -> Result<Self> {
+    #[allow(dead_code)]
+    fn from_bytes(bytes: &[Byte], chain_id: &MetadataChainId) -> Result<Self> {
         let protocol_id = chain_id.to_protocol_id();
         match protocol_id {
             MetadataProtocolId::Bitcoin => {
@@ -172,14 +173,4 @@ mod tests {
         let result = MetadataOriginAddress::from_bytes(&bytes, &chain_id).unwrap();
         assert_eq!(result, metadata_origin_address);
     }
-
-    // #[test]
-    // fn should_fail_to_perform_bytes_round_trip_for_wrong_protocol_id() {
-    // let metadata_origin_address = MetadataOriginAddress::new_from_btc_address(&get_sample_btc_address());
-    // let wrong_protocol_id = MetadataProtocolId::Eos;
-    // assert_ne!(wrong_protocol_id, MetadataProtocolId::Bitcoin);
-    // let bytes = metadata_origin_address.to_bytes().unwrap();
-    // let result = MetadataOriginAddress::from_bytes(&bytes, &wrong_protocol_id);
-    // assert!(result.is_err());
-    // }
 }

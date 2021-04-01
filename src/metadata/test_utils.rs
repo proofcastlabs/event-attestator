@@ -1,3 +1,4 @@
+#![cfg(test)]
 use std::str::FromStr;
 
 use bitcoin::util::address::Address as BtcAddress;

@@ -1,14 +1,17 @@
 use std::fmt;
 
 use ethereum_types::H256 as KeccakHash;
+#[cfg(test)]
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
+#[cfg(test)]
+use crate::types::Byte;
 use crate::{
     chains::{btc::btc_chain_id::BtcChainId, eos::eos_chain_id::EosChainId, eth::eth_chain_id::EthChainId},
     metadata::metadata_protocol_id::MetadataProtocolId,
     traits::ChainId,
-    types::{Byte, Bytes, Result},
+    types::{Bytes, Result},
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter)]
@@ -25,10 +28,6 @@ pub enum MetadataChainId {
 }
 
 impl MetadataChainId {
-    fn get_all() -> Vec<Self> {
-        Self::iter().collect()
-    }
-
     pub fn to_protocol_id(&self) -> MetadataProtocolId {
         match self {
             Self::EosMainnet | Self::TelosMainnet | Self::EosJungleTestnet => MetadataProtocolId::Eos,
@@ -73,6 +72,7 @@ impl MetadataChainId {
         .concat())
     }
 
+    #[cfg(test)]
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         let maybe_self = Self::get_all()
             .iter()
@@ -102,14 +102,9 @@ impl MetadataChainId {
         Self::get_all().iter().for_each(|id| println!("{}", id))
     }
 
-    pub fn from_eth_chain_id(eth_chain_id: u8) -> Result<Self> {
-        match eth_chain_id {
-            1 => Ok(Self::EthereumMainnet),
-            3 => Ok(Self::EthereumRinkeby),
-            4 => Ok(Self::EthereumRopsten),
-            56 => Ok(Self::BscMainnet),
-            _ => Err(format!("Unsupported ETH chain ID: {}", eth_chain_id).into()),
-        }
+    #[cfg(test)]
+    fn get_all() -> Vec<Self> {
+        Self::iter().collect()
     }
 }
 

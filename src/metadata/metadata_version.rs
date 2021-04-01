@@ -1,6 +1,12 @@
-use crate::types::{Byte, Bytes, Result};
+#[cfg(test)]
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg(test)]
+use crate::types::Result;
+use crate::types::{Byte, Bytes};
+
+#[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
 pub enum MetadataVersion {
     V1,
 }
@@ -16,6 +22,7 @@ impl MetadataVersion {
         vec![self.to_byte()]
     }
 
+    #[cfg(test)]
     pub fn from_byte(byte: &Byte) -> Result<Self> {
         match byte {
             1u8 => Ok(Self::V1),
@@ -23,6 +30,7 @@ impl MetadataVersion {
         }
     }
 
+    #[cfg(test)]
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         if bytes.is_empty() {
             Err("Not enough bytes to get `MetadataVersion` from bytes!".into())
@@ -33,8 +41,7 @@ impl MetadataVersion {
 
     #[cfg(test)]
     fn get_all() -> Vec<Self> {
-        // TODO How to ensure this list is complete?
-        vec![Self::V1]
+        Self::iter().collect()
     }
 }
 

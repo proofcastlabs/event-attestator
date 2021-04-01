@@ -6,7 +6,6 @@ use strum_macros::EnumIter;
 
 use crate::{
     crypto_utils::keccak_hash_bytes,
-    metadata::metadata_chain_id::MetadataChainId,
     traits::ChainId,
     types::{Byte, Bytes, Result},
     utils::decode_hex_with_err_msg,
@@ -41,14 +40,6 @@ impl EosChainId {
     pub fn from_str(s: &str) -> Result<Self> {
         decode_hex_with_err_msg(s, &format!("`EosChainId` error! Invalid hex: 0x{}", s))
             .and_then(|ref bytes| Self::from_bytes(bytes))
-    }
-
-    fn to_metadata_chain_id(&self) -> Result<MetadataChainId> {
-        match self {
-            Self::EosMainnet => Ok(MetadataChainId::EosMainnet),
-            Self::TelosMainnet => Ok(MetadataChainId::TelosMainnet),
-            Self::EosJungleTestnet => Ok(MetadataChainId::EosJungleTestnet),
-        }
     }
 
     pub fn to_hex(&self) -> String {
