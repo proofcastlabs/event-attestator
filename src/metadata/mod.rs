@@ -18,19 +18,18 @@ use crate::{
     types::{Byte, Bytes, Result},
 };
 
-// Specification per @bertani:
-// [
-//  uint8 versionByte,
-//  bytes userData,
-//  bytes4 origin protocol (bytes1) + origin chainid ( keccak256(whateverchainid)[:3] ),
-//  origin sender
-// ]
-
+/// Metadata V1 Specification per @bertani:
+/// [
+///     uint8 versionByte,
+///     bytes userData,
+///     bytes4 originProtocol <bytes1 originProtocolId + bytes3 keccak256(originChainId)[:3]>,
+///     origin sender
+/// ]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Metadata {
     pub version: MetadataVersion,
     pub user_data: Bytes,
-    pub chain_id: MetadataChainId,
+    pub metadata_chain_id: MetadataChainId,
     pub origin_address: MetadataOriginAddress,
 }
 
@@ -44,7 +43,7 @@ impl Metadata {
             version: MetadataVersion::V1,
             user_data: user_data.to_vec(),
             origin_address: origin_address.clone(),
-            chain_id: origin_address.chain_id,
+            metadata_chain_id: origin_address.metadata_chain_id,
         }
     }
 
@@ -52,7 +51,7 @@ impl Metadata {
         Ok(eth_abi_encode(&[
             EthAbiToken::FixedBytes(self.version.to_bytes()),
             EthAbiToken::Bytes(self.user_data.clone()),
-            EthAbiToken::FixedBytes(self.chain_id.to_bytes()?),
+            EthAbiToken::FixedBytes(self.metadata_chain_id.to_bytes()?),
             EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?)),
         ]))
     }
@@ -88,9 +87,9 @@ impl Metadata {
             ],
             bytes,
         )?;
-        let chain_id = match tokens[2] {
+        let metadata_chain_id = match tokens[2] {
             EthAbiToken::FixedBytes(ref bytes) => MetadataChainId::from_bytes(bytes),
-            _ => Err(Self::get_err_msg("chain_id", &protocol).into()),
+            _ => Err(Self::get_err_msg("metadata_chain_id", &protocol).into()),
         }?;
         let eth_address = match tokens[3] {
             EthAbiToken::Address(address) => Ok(address),
@@ -104,11 +103,11 @@ impl Metadata {
             EthAbiToken::Bytes(ref bytes) => Ok(bytes.clone()),
             _ => Err(Self::get_err_msg("user_data", &protocol)),
         }?;
-        let origin_address = MetadataOriginAddress::new_from_eth_address(&eth_address, &chain_id)?;
+        let origin_address = MetadataOriginAddress::new_from_eth_address(&eth_address, &metadata_chain_id)?;
         Ok(Self {
             version,
             user_data,
-            chain_id,
+            metadata_chain_id,
             origin_address,
         })
     }
