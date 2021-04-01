@@ -279,7 +279,7 @@ mod tests {
         let expected_relay_transaction = RelayTransaction {
             signature: expected_signature,
             data: expected_data.clone(),
-            chain_id: 3u8,
+            chain_id: 3,
             deadline: 0,
             from,
             gas_limit,
@@ -317,7 +317,7 @@ mod tests {
         let expected_relay_transaction = RelayTransaction {
             signature: expected_signature,
             data: expected_data,
-            chain_id: 3u8,
+            chain_id: 3,
             deadline: 0,
             from,
             gas_limit,

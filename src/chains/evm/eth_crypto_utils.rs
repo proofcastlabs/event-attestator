@@ -28,4 +28,20 @@ mod tests {
         let expected_result = convert_hex_to_h256(expected_result_hex).unwrap();
         assert_eq!(result, expected_result);
     }
+
+    #[test]
+    fn should_not_set_eth_signature_recovery_param_correctly_if_byte_is_1() {
+        let sig_before = [1u8; 65];
+        let mut sig_after = sig_before.clone();
+        set_eth_signature_recovery_param(&mut sig_after);
+        assert_eq!(sig_after[64], 0x1c)
+    }
+
+    #[test]
+    fn should_not_set_eth_signature_recovery_param_correctly_if_byte_is_not_1() {
+        let sig_before = [0u8; 65];
+        let mut sig_after = sig_before.clone();
+        set_eth_signature_recovery_param(&mut sig_after);
+        assert_eq!(sig_after[64], 0x1b)
+    }
 }

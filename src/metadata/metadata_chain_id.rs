@@ -1,8 +1,6 @@
 use std::fmt;
 
 use ethereum_types::H256 as KeccakHash;
-#[cfg(test)]
-use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 #[cfg(test)]
@@ -104,6 +102,7 @@ impl MetadataChainId {
 
     #[cfg(test)]
     fn get_all() -> Vec<Self> {
+        use strum::IntoEnumIterator;
         Self::iter().collect()
     }
 }

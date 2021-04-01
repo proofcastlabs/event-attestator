@@ -27,14 +27,13 @@ impl ChainId for EthChainId {
 }
 
 impl EthChainId {
-    pub fn from_str(network_str: &str) -> Result<Self> {
-        let lowercase_network_str: &str = &network_str.to_lowercase();
-        match lowercase_network_str {
+    pub fn from_str(network: &str) -> Result<Self> {
+        match &*network.to_lowercase() {
             "mainnet" | "1" => Ok(Self::Mainnet),
             "ropsten" | "3" => Ok(Self::Ropsten),
             "rinkeby" | "4" => Ok(Self::Rinkeby),
             "bsc" | "56" => Ok(Self::BscMainnet),
-            _ => Err(format!("✘ Unrecognized ethereum network: '{}'!", network_str).into()),
+            _ => Err(format!("✘ Unrecognized ethereum network: '{}'!", network).into()),
         }
     }
 
@@ -44,10 +43,10 @@ impl EthChainId {
 
     pub fn to_byte(&self) -> Byte {
         match self {
-            Self::Mainnet => 1u8,
-            Self::Rinkeby => 4u8,
-            Self::Ropsten => 3u8,
-            Self::BscMainnet => 56u8,
+            Self::Mainnet => 1,
+            Self::Rinkeby => 4,
+            Self::Ropsten => 3,
+            Self::BscMainnet => 56,
         }
     }
 
@@ -101,13 +100,13 @@ impl fmt::Display for EthChainId {
 impl TryFrom<u8> for EthChainId {
     type Error = AppError;
 
-    fn try_from(u_8: u8) -> Result<Self> {
-        match u_8 {
+    fn try_from(byte: u8) -> Result<Self> {
+        match byte {
             1 => Ok(Self::Mainnet),
             3 => Ok(Self::Ropsten),
             4 => Ok(Self::Rinkeby),
             56 => Ok(Self::BscMainnet),
-            _ => Err(format!("`EthChainId` error! Unrecognized chain id: {}", u_8).into()),
+            _ => Err(format!("`EthChainId` error! Unrecognized chain id: {}", byte).into()),
         }
     }
 }
