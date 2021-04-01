@@ -274,7 +274,7 @@ mod tests {
     #[test]
     fn should_get_unsigned_eth_smart_contract_transaction() {
         let nonce = 1;
-        let chain_id = EthChainId::from_u8(4u8).unwrap();
+        let chain_id = EthChainId::Rinkeby;
         let gas_price = 20_000_000_000;
         if let Err(e) = get_unsigned_ptoken_smart_contract_tx(
             nonce,
@@ -289,7 +289,7 @@ mod tests {
     #[test]
     fn should_get_signed_eth_smart_contract_tx() {
         let nonce = 16;
-        let chain_id = EthChainId::from_u8(4u8).unwrap();
+        let chain_id = EthChainId::Rinkeby;
         let gas_price = 20_000_000_000;
         let eth_private_key = get_sample_eth_private_key();
         let result = get_signed_ptoken_smart_contract_tx(
@@ -310,7 +310,7 @@ mod tests {
         let recipient = get_sample_eth_address();
         let amount = U256::from_dec_str("1").unwrap();
         let nonce = 4;
-        let chain_id = EthChainId::from_u8(4u8).unwrap();
+        let chain_id = EthChainId::Rinkeby;
         let gas_price = 20_000_000_000;
         let test_contract_address = "c63b099efB18c8db573981fB64564f1564af4f30";
         let to = EthAddress::from_slice(&hex::decode(test_contract_address).unwrap());
@@ -337,7 +337,7 @@ mod tests {
         let recipient = get_sample_eth_address();
         let amount = U256::from_dec_str("1").unwrap();
         let nonce = 5;
-        let chain_id = EthChainId::from_u8(4u8).unwrap();
+        let chain_id = EthChainId::Rinkeby;
         let gas_price = 20_000_000_000;
         let eth_private_key = get_sample_eth_private_key();
         let test_contract_address = "c63b099efB18c8db573981fB64564f1564af4f30";

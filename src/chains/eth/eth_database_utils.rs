@@ -536,7 +536,7 @@ mod tests {
     #[test]
     fn should_put_chain_id_in_db() {
         let db = get_test_database();
-        let chain_id = EthChainId::from_u8(4u8).unwrap();
+        let chain_id = EthChainId::Rinkeby;
         put_eth_chain_id_in_db(&db, &chain_id).unwrap();
         let result = get_eth_chain_id_from_db(&db).unwrap();
         assert_eq!(result, chain_id);

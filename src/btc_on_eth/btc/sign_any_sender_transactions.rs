@@ -87,7 +87,7 @@ mod tests {
     #[test]
     fn should_get_any_sender_signatures() {
         let signing_params = AnySenderSigningParams {
-            chain_id: EthChainId::from_u8(1u8).unwrap(),
+            chain_id: EthChainId::Mainnet,
             any_sender_nonce: 0,
             eth_private_key: get_sample_eth_private_key(),
             public_eth_address: get_sample_eth_address(),

@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn should_create_new_signed_relay_tx_from_data() {
-        let chain_id = EthChainId::from_u8(3u8).unwrap();
+        let chain_id = EthChainId::Ropsten;
         let data = hex::decode("f15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000").unwrap();
         let deadline = Some(0);
         let gas_limit = 100000;
@@ -332,7 +332,7 @@ mod tests {
     #[test]
     fn should_create_new_any_sender_relayed_mint_by_proxy_tx() {
         let eth_transaction = get_sample_unsigned_eth_transaction();
-        let chain_id = EthChainId::from_u8(3u8).unwrap();
+        let chain_id = EthChainId::Ropsten;
         let eth_private_key = EthPrivateKey::from_slice(&[
             132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169, 234, 47, 186, 237, 88,
             161, 200, 177, 24, 142, 207, 242, 168, 221,
@@ -390,7 +390,7 @@ mod tests {
 
         let relay_transaction: RelayTransaction = serde_json::from_str(json_str).unwrap();
 
-        let chain_id = EthChainId::from_u8(3u8).unwrap();
+        let chain_id = EthChainId::Ropsten;
         let eth_private_key = EthPrivateKey::from_slice(&[
             132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169, 234, 47, 186, 237, 88,
             161, 200, 177, 24, 142, 207, 242, 168, 221,
@@ -441,7 +441,7 @@ mod tests {
         let expected_tx_hash = "e93eab63e9b863d4c93007b0a641c749af840c8c19602ea18f6546a308431cc4";
         let expected_tx_hex = "f8f394fde83bd51bddaa39f15c1bf50e222a7ae5831d8394736661736533bcfc9cc35649e6324acefb7d32c1b864f15da72900000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000004746573740000000000000000000000000000000000000000000000000000000080841dcd6500830186a003949b4fa5a1d9f6812e2b56b36fbde62736fa82c2a7b8415aa14a852439d9f5aa7b22c63a228d79c6822cf644badc9a63117dd7880d9a4c639eccd4aeeee91eaea63e36640d151be71346d785d2bd274fb82351c6bb2c101b";
 
-        let chain_id = EthChainId::from_u8(3u8).unwrap();
+        let chain_id = EthChainId::Ropsten;
         let eth_private_key = EthPrivateKey::from_slice(&[
             132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169, 234, 47, 186, 237, 88,
             161, 200, 177, 24, 142, 207, 242, 168, 221,

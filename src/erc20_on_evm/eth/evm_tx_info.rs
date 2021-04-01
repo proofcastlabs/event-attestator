@@ -383,7 +383,7 @@ mod tests {
         let material = get_eth_submission_material_n(1);
         let vault_address = get_sample_vault_address();
         let dictionary = get_sample_eth_evm_token_dictionary();
-        let origin_chain_id = EthChainId::from_u8(1u8).unwrap();
+        let origin_chain_id = EthChainId::Mainnet;
         let result =
             EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, &origin_chain_id)
                 .unwrap();
@@ -418,12 +418,12 @@ mod tests {
         let pk = get_sample_evm_private_key();
         let vault_address = get_sample_vault_address();
         let dictionary = get_sample_eth_evm_token_dictionary();
-        let origin_chain_id = EthChainId::from_u8(0u8).unwrap();
+        let origin_chain_id = EthChainId::Mainnet;
         let infos =
             EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, &origin_chain_id)
                 .unwrap();
         let nonce = 0_u64;
-        let chain_id = EthChainId::from_u8(4_u8).unwrap();
+        let chain_id = EthChainId::Rinkeby;
         let gas_limit = 300_000_usize;
         let gas_price = 20_000_000_000_u64;
         let signed_txs = infos

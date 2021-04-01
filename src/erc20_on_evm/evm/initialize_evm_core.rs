@@ -1,3 +1,5 @@
+use std::convert::TryFrom;
+
 use crate::{
     chains::{
         eth::eth_chain_id::EthChainId,
@@ -61,7 +63,7 @@ pub fn maybe_initialize_evm_core<D: DatabaseInterface>(
             .and_then(|state| {
                 initialize_eth_core_with_no_contract_tx(
                     block_json,
-                    &EthChainId::from_u8(chain_id)?,
+                    &EthChainId::try_from(chain_id)?,
                     gas_price,
                     confs,
                     state,

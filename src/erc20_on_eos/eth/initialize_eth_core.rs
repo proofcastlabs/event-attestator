@@ -1,3 +1,5 @@
+use std::convert::TryFrom;
+
 use crate::{
     chains::eth::{
         core_initialization::{
@@ -59,7 +61,7 @@ pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
             .and_then(|state| {
                 initialize_eth_core(
                     block_json,
-                    &EthChainId::from_u8(chain_id)?,
+                    &EthChainId::try_from(chain_id)?,
                     gas_price,
                     confs,
                     bytecode_path,

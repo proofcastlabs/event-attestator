@@ -93,7 +93,7 @@ mod tests {
     #[test]
     fn should_get_eth_signing_params() {
         let nonce = 6;
-        let chain_id = EthChainId::from_u8(1u8).unwrap();
+        let chain_id = EthChainId::Mainnet;
         let db = get_test_database();
         let gas_price = 20_000_000_000;
         let contract_address = get_sample_eth_address();
@@ -132,7 +132,7 @@ mod tests {
     #[test]
     fn should_get_eth_signatures() {
         let signing_params = EthSigningParams {
-            chain_id: EthChainId::from_u8(1u8).unwrap(),
+            chain_id: EthChainId::Mainnet,
             eth_account_nonce: 0,
             gas_price: 20_000_000_000,
             eth_private_key: get_sample_eth_private_key(),

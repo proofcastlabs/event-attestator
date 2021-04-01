@@ -36,20 +36,19 @@ mod tests {
 
     #[test]
     fn should_crete_new_relay_contract_from_eth_chain_id() {
-        let relay_contract = RelayContract::from_eth_chain_id(&EthChainId::from_u8(1u8).unwrap()).unwrap();
+        let relay_contract = RelayContract::from_eth_chain_id(&EthChainId::Mainnet).unwrap();
         assert_eq!(relay_contract, RelayContract::Mainnet);
 
-        let relay_contract = RelayContract::from_eth_chain_id(&EthChainId::from_u8(3u8).unwrap()).unwrap();
+        let relay_contract = RelayContract::from_eth_chain_id(&EthChainId::Ropsten).unwrap();
         assert_eq!(relay_contract, RelayContract::Ropsten);
 
-        RelayContract::from_eth_chain_id(&EthChainId::from_u8(56u8).unwrap())
-            .expect_err("Should fail with unknown chain id.");
+        RelayContract::from_eth_chain_id(&EthChainId::BscMainnet).expect_err("Should fail with unknown chain id.");
     }
 
     #[test]
     fn should_return_correct_eth_address() {
         // Mainnet
-        let relay_contract = RelayContract::from_eth_chain_id(&EthChainId::from_u8(1u8).unwrap()).unwrap();
+        let relay_contract = RelayContract::from_eth_chain_id(&EthChainId::Mainnet).unwrap();
         let relay_contract_address = relay_contract.address().unwrap();
         let expected_contract_address =
             EthAddress::from_slice(&hex::decode("9b4FA5A1D9f6812e2B56B36fBde62736Fa82c2a7").unwrap());
@@ -57,7 +56,7 @@ mod tests {
         assert_eq!(relay_contract_address, expected_contract_address);
 
         // Ropsten
-        let relay_contract = RelayContract::from_eth_chain_id(&EthChainId::from_u8(3u8).unwrap()).unwrap();
+        let relay_contract = RelayContract::from_eth_chain_id(&EthChainId::Ropsten).unwrap();
         let relay_contract_address = relay_contract.address().unwrap();
         let expected_contract_address =
             EthAddress::from_slice(&hex::decode("9b4FA5A1D9f6812e2B56B36fBde62736Fa82c2a7").unwrap());

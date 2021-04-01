@@ -474,7 +474,7 @@ mod tests {
         )
         .unwrap();
         let tx_infos = EosOnEthEosTxInfos::from_eos_action_proofs(&[proof], &dictionary, &smart_contract_name).unwrap();
-        let chain_id = EthChainId::from_u8(4u8).unwrap();
+        let chain_id = EthChainId::Rinkeby;
         let gas_price = 20_000_000_000;
         let nonce = 0;
         let signed_txs = tx_infos.to_eth_signed_txs(nonce, &chain_id, gas_price, &pk).unwrap();

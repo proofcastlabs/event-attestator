@@ -354,7 +354,7 @@ pub fn get_sample_unsigned_eth_transaction() -> EthTransaction {
     let nonce = 0;
     let value = 1;
     let to = EthAddress::from_slice(&hex::decode("53c2048dad4fcfab44C3ef3D16E882b5178df42b").unwrap());
-    let chain_id = EthChainId::from_u8(4u8).unwrap();
+    let chain_id = EthChainId::Rinkeby;
     let gas_limit = 100_000;
     let gas_price = 20_000_000_000;
     // EthTransaction::{data, nonce, value, to, chain_id, gas_limit, gas_price}

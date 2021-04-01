@@ -1,10 +1,11 @@
-use std::fmt;
+use std::{convert::TryFrom, fmt};
 
 use ethereum_types::H256 as KeccakHash;
 use strum_macros::EnumIter;
 
 use crate::{
     crypto_utils::keccak_hash_bytes,
+    errors::AppError,
     metadata::metadata_chain_id::MetadataChainId,
     traits::ChainId,
     types::{Byte, Bytes, Result},
@@ -64,16 +65,6 @@ impl EthChainId {
         }
     }
 
-    pub fn from_u8(chain_id: u8) -> Result<Self> {
-        match chain_id {
-            1 => Ok(Self::Mainnet),
-            3 => Ok(Self::Ropsten),
-            4 => Ok(Self::Rinkeby),
-            56 => Ok(Self::BscMainnet),
-            _ => Err(format!("`EthChainId` error! Unrecognized chain id: {}", chain_id).into()),
-        }
-    }
-
     pub fn to_u8(&self) -> u8 {
         match self {
             Self::Mainnet => 1,
@@ -101,6 +92,20 @@ impl fmt::Display for EthChainId {
     }
 }
 
+impl TryFrom<u8> for EthChainId {
+    type Error = AppError;
+
+    fn try_from(u_8: u8) -> Result<Self> {
+        match u_8 {
+            1 => Ok(Self::Mainnet),
+            3 => Ok(Self::Ropsten),
+            4 => Ok(Self::Rinkeby),
+            56 => Ok(Self::BscMainnet),
+            _ => Err(format!("`EthChainId` error! Unrecognized chain id: {}", u_8).into()),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -111,7 +116,7 @@ mod tests {
         let u8s = ids.iter().map(|id| id.to_u8()).collect::<Vec<u8>>();
         let result = u8s
             .iter()
-            .map(|u_8| EthChainId::from_u8(*u_8))
+            .map(|u_8| EthChainId::try_from(*u_8))
             .collect::<Result<Vec<EthChainId>>>()
             .unwrap();
         assert_eq!(result, ids);

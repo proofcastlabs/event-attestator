@@ -421,7 +421,7 @@ mod tests {
     #[test]
     fn should_get_erc20_on_evm_eth_tx_info_from_submission_material() {
         let dictionary = get_sample_eth_evm_token_dictionary();
-        let origin_chain_id = EthChainId::from_u8(56u8).unwrap();
+        let origin_chain_id = EthChainId::BscMainnet;
         let material = get_evm_submission_material_n(1);
         let result = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap();
         let expected_num_results = 1;
@@ -451,12 +451,12 @@ mod tests {
     fn should_get_signaures_from_eth_tx_info() {
         let dictionary = get_sample_eth_evm_token_dictionary();
         let material = get_evm_submission_material_n(1);
-        let origin_chain_id = EthChainId::from_u8(56u8).unwrap();
+        let origin_chain_id = EthChainId::BscMainnet;
         let infos = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap();
         let vault_address = get_sample_vault_address();
         let pk = get_sample_eth_private_key();
         let nonce = 0_u64;
-        let chain_id = EthChainId::from_u8(4_u8).unwrap();
+        let chain_id = EthChainId::Rinkeby;
         let gas_price = 20_000_000_000_u64;
         let signed_txs = infos
             .to_eth_signed_txs(nonce, &chain_id, gas_price, &pk, &vault_address)

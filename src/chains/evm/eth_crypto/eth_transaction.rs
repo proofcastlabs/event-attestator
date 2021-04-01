@@ -204,7 +204,7 @@ mod tests {
     #[test]
     fn should_get_unsigned_eth_smart_contract_transaction() {
         let nonce = 1;
-        let chain_id = EthChainId::from_u8(4u8).unwrap();
+        let chain_id = EthChainId::Rinkeby;
         let gas_price = 20_000_000_000;
         if let Err(e) = get_unsigned_ptoken_smart_contract_tx(
             nonce,
@@ -219,7 +219,7 @@ mod tests {
     #[test]
     fn should_get_signed_eth_smart_contract_tx() {
         let nonce = 16;
-        let chain_id = EthChainId::from_u8(4u8).unwrap();
+        let chain_id = EthChainId::Rinkeby;
         let gas_price = 20_000_000_000;
         let eth_private_key = get_sample_eth_private_key();
         let result = get_signed_ptoken_smart_contract_tx(
