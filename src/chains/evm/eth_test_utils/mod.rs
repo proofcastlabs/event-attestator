@@ -4,17 +4,24 @@ use std::{fs::read_to_string, path::Path};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
-    chains::evm::{
-        eth_block::{EthBlock, EthBlockJson},
-        eth_crypto::{eth_private_key::EthPrivateKey, eth_public_key::EthPublicKey, eth_transaction::EthTransaction},
-        eth_database_utils::{get_special_eth_hash_from_db, put_special_eth_block_in_db},
-        eth_log::{EthLog, EthLogs},
-        eth_receipt::EthReceipt,
-        eth_state::EthState,
-        eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
-        eth_types::TrieHashMap,
-        nibble_utils::{get_nibbles_from_bytes, get_nibbles_from_offset_bytes, Nibbles},
-        trie_nodes::Node,
+    chains::{
+        eth::eth_chain_id::EthChainId,
+        evm::{
+            eth_block::{EthBlock, EthBlockJson},
+            eth_crypto::{
+                eth_private_key::EthPrivateKey,
+                eth_public_key::EthPublicKey,
+                eth_transaction::EthTransaction,
+            },
+            eth_database_utils::{get_special_eth_hash_from_db, put_special_eth_block_in_db},
+            eth_log::{EthLog, EthLogs},
+            eth_receipt::EthReceipt,
+            eth_state::EthState,
+            eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
+            eth_types::TrieHashMap,
+            nibble_utils::{get_nibbles_from_bytes, get_nibbles_from_offset_bytes, Nibbles},
+            trie_nodes::Node,
+        },
     },
     errors::AppError,
     test_utils::{get_test_database, TestDB},
@@ -347,7 +354,7 @@ pub fn get_sample_unsigned_eth_transaction() -> EthTransaction {
     let nonce = 0;
     let value = 1;
     let to = EthAddress::from_slice(&hex::decode("53c2048dad4fcfab44C3ef3D16E882b5178df42b").unwrap());
-    let chain_id = 4; // Rinkeby
+    let chain_id = EthChainId::from_u8(4u8).unwrap();
     let gas_limit = 100_000;
     let gas_price = 20_000_000_000;
     // EthTransaction::{data, nonce, value, to, chain_id, gas_limit, gas_price}
@@ -356,7 +363,7 @@ pub fn get_sample_unsigned_eth_transaction() -> EthTransaction {
         data,
         nonce,
         value,
-        chain_id,
+        &chain_id,
         gas_limit,
         gas_price,
     )

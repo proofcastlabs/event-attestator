@@ -56,8 +56,8 @@ impl EthEnclaveState {
         let evm_latest_block = get_eth_latest_block_from_db(db)?;
         Ok(EthEnclaveState {
             evm_tail_length: ETH_TAIL_LENGTH,
-            evm_chain_id: get_eth_chain_id_from_db(db)?,
             evm_gas_price: get_eth_gas_price_from_db(db)?,
+            evm_chain_id: get_eth_chain_id_from_db(db)?.to_u8(),
             any_sender_nonce: get_any_sender_nonce_from_db(db)?,
             evm_account_nonce: get_eth_account_nonce_from_db(db)?,
             evm_safe_address: hex::encode(SAFE_ETH_ADDRESS.as_bytes()),

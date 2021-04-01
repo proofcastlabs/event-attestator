@@ -1,5 +1,6 @@
 use crate::{
     chains::eth::{
+        eth_chain_id::EthChainId,
         eth_crypto::eth_transaction::get_signed_ptoken_smart_contract_tx,
         eth_database_utils::get_eth_private_key_from_db,
         eth_state::EthState,
@@ -9,7 +10,7 @@ use crate::{
 };
 
 pub fn generate_eth_contract_tx_and_put_in_state<D: DatabaseInterface>(
-    chain_id: u8,
+    chain_id: &EthChainId,
     gas_price: u64,
     bytecode_path: &str,
     state: EthState<D>,

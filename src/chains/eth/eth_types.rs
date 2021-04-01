@@ -5,6 +5,7 @@ use ethereum_types::{Address, H256};
 use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
+        eth_chain_id::EthChainId,
         eth_crypto::eth_private_key::EthPrivateKey,
         trie_nodes::Node,
     },
@@ -22,7 +23,7 @@ pub type RelayTransactions = Vec<RelayTransaction>;
 
 #[derive(Debug)]
 pub struct EthSigningParams {
-    pub chain_id: u8,
+    pub chain_id: EthChainId,
     pub gas_price: u64,
     pub eth_account_nonce: u64,
     pub eth_private_key: EthPrivateKey,
@@ -31,7 +32,7 @@ pub struct EthSigningParams {
 
 #[derive(Debug)]
 pub struct AnySenderSigningParams {
-    pub chain_id: u8,
+    pub chain_id: EthChainId,
     pub any_sender_nonce: u64,
     pub eth_private_key: EthPrivateKey,
     pub public_eth_address: EthAddress,

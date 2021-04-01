@@ -7,6 +7,7 @@ use crate::{
             get_eth_core_init_output_json::EthInitializationOutput,
             initialize_eth_core::initialize_eth_core,
         },
+        eth_chain_id::EthChainId,
         eth_constants::ETH_CORE_IS_INITIALIZED_JSON,
         eth_database_transactions::{
             end_eth_db_transaction_and_return_state,
@@ -55,7 +56,16 @@ pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
     check_for_existence_of_eth_contract_byte_code(bytecode_path).and_then(|_| match is_eth_core_initialized(&db) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
         false => start_eth_db_transaction_and_return_state(EthState::init(db))
-            .and_then(|state| initialize_eth_core(block_json, chain_id, gas_price, confs, bytecode_path, state))
+            .and_then(|state| {
+                initialize_eth_core(
+                    block_json,
+                    &EthChainId::from_u8(chain_id)?,
+                    gas_price,
+                    confs,
+                    bytecode_path,
+                    state,
+                )
+            })
             .and_then(generate_and_store_erc20_on_eos_contract_address)
             .and_then(end_eth_db_transaction_and_return_state)
             .and_then(EthInitializationOutput::new_for_erc20_on_eth),

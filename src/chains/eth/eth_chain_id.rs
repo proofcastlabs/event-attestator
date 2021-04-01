@@ -26,11 +26,25 @@ impl ChainId for EthChainId {
 }
 
 impl EthChainId {
-    fn to_bytes(&self) -> Result<Bytes> {
+    pub fn from_str(_s: &str) -> Result<Self> {
+        // FIXME Impl this! Copy from EthNetwork then delete that mod!
+        Ok(Self::Mainnet)
+    }
+
+    pub fn to_bytes(&self) -> Result<Bytes> {
         Ok(self.to_u8().to_le_bytes().to_vec())
     }
 
-    fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+    pub fn to_byte(&self) -> Byte {
+        match self {
+            Self::Mainnet => 1u8,
+            Self::Rinkeby => 4u8,
+            Self::Ropsten => 3u8,
+            Self::BscMainnet => 56u8,
+        }
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         info!("✔ Getting `EthChainId` from bytes: {}", hex::encode(bytes));
         match convert_bytes_to_u8(bytes)? {
             1 => Ok(Self::Mainnet),
@@ -41,16 +55,16 @@ impl EthChainId {
         }
     }
 
-    fn to_metadata_chain_id(&self) -> Result<MetadataChainId> {
+    pub fn to_metadata_chain_id(&self) -> MetadataChainId {
         match self {
-            Self::Mainnet => Ok(MetadataChainId::EthereumMainnet),
-            Self::Rinkeby => Ok(MetadataChainId::EthereumRinkeby),
-            Self::Ropsten => Ok(MetadataChainId::EthereumRopsten),
-            Self::BscMainnet => Ok(MetadataChainId::BscMainnet),
+            Self::Mainnet => MetadataChainId::EthereumMainnet,
+            Self::Rinkeby => MetadataChainId::EthereumRinkeby,
+            Self::Ropsten => MetadataChainId::EthereumRopsten,
+            Self::BscMainnet => MetadataChainId::BscMainnet,
         }
     }
 
-    fn from_u8(chain_id: u8) -> Result<Self> {
+    pub fn from_u8(chain_id: u8) -> Result<Self> {
         match chain_id {
             1 => Ok(Self::Mainnet),
             3 => Ok(Self::Ropsten),
@@ -60,7 +74,7 @@ impl EthChainId {
         }
     }
 
-    fn to_u8(&self) -> u8 {
+    pub fn to_u8(&self) -> u8 {
         match self {
             Self::Mainnet => 1,
             Self::Ropsten => 3,

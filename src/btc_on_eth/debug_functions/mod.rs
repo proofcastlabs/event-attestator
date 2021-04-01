@@ -62,6 +62,7 @@ use crate::{
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
         },
         eth::{
+            eth_chain_id::EthChainId,
             eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY as ETH_KEY},
             eth_contracts::{
                 erc777::get_signed_erc777_change_pnetwork_tx,
@@ -84,7 +85,6 @@ use crate::{
                 get_latest_eth_block_number,
                 get_signing_params_from_db,
             },
-            eth_network::EthNetwork,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             validate_block_in_state::validate_block_in_state,
@@ -452,7 +452,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
             get_signed_minting_tx(
                 &amount.into(),
                 nonce,
-                EthNetwork::from_str(&eth_network)?.to_byte(),
+                &EthChainId::from_str(&eth_network)?,
                 get_erc777_contract_address_from_db(&db)?,
                 gas_price,
                 &recipient_eth_address,

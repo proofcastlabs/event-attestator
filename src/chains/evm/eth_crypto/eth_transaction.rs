@@ -7,6 +7,7 @@ use crate::{
     chains::{
         eth::{
             any_sender::relay_transaction::RelayTransaction,
+            eth_chain_id::EthChainId,
             eth_constants::{GAS_LIMIT_FOR_PTOKEN_DEPLOY, VALUE_FOR_PTOKEN_DEPLOY},
             eth_traits::EthSigningCapabilities,
         },
@@ -39,7 +40,7 @@ impl EthTransaction {
         data: Bytes,
         nonce: u64,
         value: usize,
-        chain_id: Byte,
+        chain_id: &EthChainId,
         gas_limit: usize,
         gas_price: u64,
     ) -> EthTransaction {
@@ -51,7 +52,7 @@ impl EthTransaction {
         data: Bytes,
         nonce: u64,
         value: usize,
-        chain_id: Byte,
+        chain_id: &EthChainId,
         gas_limit: usize,
         gas_price: u64,
     ) -> EthTransaction {
@@ -60,10 +61,10 @@ impl EthTransaction {
             data,
             r: U256::zero(),
             s: U256::zero(),
-            v: chain_id.into(), // Per EIP155
+            v: chain_id.to_byte().into(), // Per EIP155
             nonce: nonce.into(),
             value: value.into(),
-            chain_id,
+            chain_id: chain_id.to_byte(),
             gas_limit: gas_limit.into(),
             gas_price: gas_price.into(),
         }
@@ -134,7 +135,7 @@ pub fn get_ptoken_smart_contract_bytecode(path: &str) -> Result<Bytes> {
 
 fn get_unsigned_ptoken_smart_contract_tx(
     nonce: u64,
-    chain_id: u8,
+    chain_id: &EthChainId,
     gas_price: u64,
     bytecode_path: &str,
 ) -> Result<EthTransaction> {
@@ -150,7 +151,7 @@ fn get_unsigned_ptoken_smart_contract_tx(
 
 pub fn get_signed_ptoken_smart_contract_tx(
     nonce: u64,
-    chain_id: u8,
+    chain_id: &EthChainId,
     eth_private_key: EthPrivateKey,
     gas_price: u64,
     bytecode_path: &str,
@@ -203,11 +204,11 @@ mod tests {
     #[test]
     fn should_get_unsigned_eth_smart_contract_transaction() {
         let nonce = 1;
-        let chain_id = 4; // NOTE: Rinkeby
+        let chain_id = EthChainId::from_u8(4u8).unwrap();
         let gas_price = 20_000_000_000;
         if let Err(e) = get_unsigned_ptoken_smart_contract_tx(
             nonce,
-            chain_id,
+            &chain_id,
             gas_price,
             &ETH_SMART_CONTRACT_BYTECODE_PATH.to_string(),
         ) {
@@ -218,12 +219,12 @@ mod tests {
     #[test]
     fn should_get_signed_eth_smart_contract_tx() {
         let nonce = 16;
-        let chain_id = 4; // NOTE: Rinkeby
+        let chain_id = EthChainId::from_u8(4u8).unwrap();
         let gas_price = 20_000_000_000;
         let eth_private_key = get_sample_eth_private_key();
         let result = get_signed_ptoken_smart_contract_tx(
             nonce,
-            chain_id,
+            &chain_id,
             eth_private_key,
             gas_price,
             &ETH_SMART_CONTRACT_BYTECODE_PATH.to_string(),

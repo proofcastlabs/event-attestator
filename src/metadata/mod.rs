@@ -44,7 +44,7 @@ impl Metadata {
             version: MetadataVersion::V1,
             user_data: user_data.to_vec(),
             origin_address: origin_address.clone(),
-            chain_id: origin_address.chain_id.clone(),
+            chain_id: origin_address.chain_id,
         }
     }
 

@@ -30,7 +30,7 @@ impl MetadataOriginAddress {
         let protocol_id = chain_id.to_protocol_id();
         match protocol_id {
             MetadataProtocolId::Ethereum => Ok(Self {
-                chain_id: chain_id.clone(),
+                chain_id: *chain_id,
                 address: hex::encode(eth_address),
             }),
             _ => Err(Self::get_err_msg(protocol_id).into()),
@@ -41,7 +41,7 @@ impl MetadataOriginAddress {
         let protocol_id = chain_id.to_protocol_id();
         match protocol_id {
             MetadataProtocolId::Eos => Ok(Self {
-                chain_id: chain_id.clone(),
+                chain_id: *chain_id,
                 address: eos_address.to_string(),
             }),
             _ => Err(Self::get_err_msg(protocol_id).into()),
@@ -52,7 +52,7 @@ impl MetadataOriginAddress {
         let protocol_id = chain_id.to_protocol_id();
         match protocol_id {
             MetadataProtocolId::Bitcoin => Ok(Self {
-                chain_id: chain_id.clone(),
+                chain_id: *chain_id,
                 address: btc_address.to_string(),
             }),
             _ => Err(Self::get_err_msg(protocol_id).into()),

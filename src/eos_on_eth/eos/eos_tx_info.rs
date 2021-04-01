@@ -20,6 +20,7 @@ use crate::{
             eos_state::EosState,
         },
         eth::{
+            eth_chain_id::EthChainId,
             eth_constants::ZERO_ETH_VALUE,
             eth_contracts::erc777::{encode_erc777_mint_with_no_data_fxn, ERC777_MINT_WITH_NO_DATA_GAS_LIMIT},
             eth_crypto::{
@@ -267,7 +268,7 @@ impl EosOnEthEosTxInfos {
     pub fn to_eth_signed_txs(
         &self,
         eth_account_nonce: u64,
-        chain_id: u8,
+        chain_id: &EthChainId,
         gas_price: u64,
         eth_private_key: &EthPrivateKey,
     ) -> Result<EthTransactions> {
@@ -346,7 +347,7 @@ pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: E
             .eos_on_eth_eos_tx_infos
             .to_eth_signed_txs(
                 get_eth_account_nonce_from_db(&state.db)?,
-                get_eth_chain_id_from_db(&state.db)?,
+                &get_eth_chain_id_from_db(&state.db)?,
                 get_eth_gas_price_from_db(&state.db)?,
                 &get_eth_private_key_from_db(&state.db)?,
             )
@@ -473,10 +474,10 @@ mod tests {
         )
         .unwrap();
         let tx_infos = EosOnEthEosTxInfos::from_eos_action_proofs(&[proof], &dictionary, &smart_contract_name).unwrap();
-        let chain_id: u8 = 4; // NOTE Rinkeby
+        let chain_id = EthChainId::from_u8(4u8).unwrap();
         let gas_price = 20_000_000_000;
         let nonce = 0;
-        let signed_txs = tx_infos.to_eth_signed_txs(nonce, chain_id, gas_price, &pk).unwrap();
+        let signed_txs = tx_infos.to_eth_signed_txs(nonce, &chain_id, gas_price, &pk).unwrap();
         let result = signed_txs[0].serialize_hex();
         assert_eq!(result, expected_result);
     }

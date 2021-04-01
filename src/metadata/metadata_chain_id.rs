@@ -80,7 +80,7 @@ impl MetadataChainId {
                 Err(_) => None,
                 Ok(id_bytes) => {
                     if id_bytes == bytes {
-                        Some(id.clone())
+                        Some(*id)
                     } else {
                         None
                     }
@@ -117,19 +117,15 @@ impl fmt::Display for MetadataChainId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let err_msg = "Could not unwrap hex!".to_string();
         match self {
-            Self::EosMainnet => write!(f, "Eos Mainnet: 0x{}", self.to_hex().unwrap_or_else(|_| err_msg)),
-            Self::TelosMainnet => write!(f, "Telos Mainnet: 0x{}", self.to_hex().unwrap_or_else(|_| err_msg)),
-            Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: 0x{}", self.to_hex().unwrap_or_else(|_| err_msg)),
-            Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: 0x{}", self.to_hex().unwrap_or_else(|_| err_msg)),
-            Self::EthereumMainnet => write!(f, "Ethereum Mainnet: 0x{}", self.to_hex().unwrap_or_else(|_| err_msg)),
-            Self::EthereumRinkeby => write!(f, "Ethereum Rinkeby: 0x{}", self.to_hex().unwrap_or_else(|_| err_msg)),
-            Self::EthereumRopsten => write!(f, "Ethereum Ropsten: 0x{}", self.to_hex().unwrap_or_else(|_| err_msg)),
-            Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", self.to_hex().unwrap_or_else(|_| err_msg)),
-            Self::BscMainnet => write!(
-                f,
-                "Binance Chain (BSC) Mainnet: 0x{}",
-                self.to_hex().unwrap_or_else(|_| err_msg)
-            ),
+            Self::EosMainnet => write!(f, "Eos Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::TelosMainnet => write!(f, "Telos Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::EthereumMainnet => write!(f, "Ethereum Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::EthereumRinkeby => write!(f, "Ethereum Rinkeby: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::EthereumRopsten => write!(f, "Ethereum Ropsten: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::BscMainnet => write!(f, "Binance Chain (BSC) Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
         }
     }
 }

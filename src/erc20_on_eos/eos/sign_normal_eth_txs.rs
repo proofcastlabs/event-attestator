@@ -4,6 +4,7 @@ use crate::{
     chains::{
         eos::eos_state::EosState,
         eth::{
+            eth_chain_id::EthChainId,
             eth_constants::ZERO_ETH_VALUE,
             eth_contracts::erc20_vault::{
                 encode_erc20_vault_peg_out_fxn_data_without_user_data,
@@ -31,7 +32,7 @@ pub fn get_eth_signed_txs(
     redeem_infos: &Erc20OnEosRedeemInfos,
     erc20_on_eos_smart_contract_address: &EthAddress,
     eth_account_nonce: u64,
-    chain_id: u8,
+    chain_id: &EthChainId,
     gas_price: u64,
     eth_private_key: &EthPrivateKey,
 ) -> Result<EthTransactions> {
@@ -73,7 +74,7 @@ pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: E
             &state.erc20_on_eos_redeem_infos,
             &get_erc20_on_eos_smart_contract_address_from_db(&state.db)?,
             get_eth_account_nonce_from_db(&state.db)?,
-            get_eth_chain_id_from_db(&state.db)?,
+            &get_eth_chain_id_from_db(&state.db)?,
             get_eth_gas_price_from_db(&state.db)?,
             &get_eth_private_key_from_db(&state.db)?,
         )

@@ -1,16 +1,19 @@
 use crate::{
-    chains::evm::{
-        core_initialization::{
-            check_eth_core_is_initialized::is_eth_core_initialized,
-            get_eth_core_init_output_json::EthInitializationOutput,
-            initialize_eth_core::initialize_eth_core_with_no_contract_tx,
+    chains::{
+        eth::eth_chain_id::EthChainId,
+        evm::{
+            core_initialization::{
+                check_eth_core_is_initialized::is_eth_core_initialized,
+                get_eth_core_init_output_json::EthInitializationOutput,
+                initialize_eth_core::initialize_eth_core_with_no_contract_tx,
+            },
+            eth_constants::ETH_CORE_IS_INITIALIZED_JSON,
+            eth_database_transactions::{
+                end_eth_db_transaction_and_return_state,
+                start_eth_db_transaction_and_return_state,
+            },
+            eth_state::EthState,
         },
-        eth_constants::ETH_CORE_IS_INITIALIZED_JSON,
-        eth_database_transactions::{
-            end_eth_db_transaction_and_return_state,
-            start_eth_db_transaction_and_return_state,
-        },
-        eth_state::EthState,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -34,7 +37,7 @@ use crate::{
 /// 1  = Ethereum Mainnet
 /// 3  = Ropsten Testnet
 /// 4  = Rinkeby Testnet
-/// 42 = Kovan Testnet
+/// 56 = BSC Mainnet
 /// ```
 /// The function also takes an ETH `gas_price` param, express in `Wei`, along with a `canon_to_tip`
 /// length param. This latter defines how many `confirmations` of a transactions are required before
@@ -55,7 +58,15 @@ pub fn maybe_initialize_evm_core<D: DatabaseInterface>(
     match is_eth_core_initialized(&db) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
         false => start_eth_db_transaction_and_return_state(EthState::init(db))
-            .and_then(|state| initialize_eth_core_with_no_contract_tx(block_json, chain_id, gas_price, confs, state))
+            .and_then(|state| {
+                initialize_eth_core_with_no_contract_tx(
+                    block_json,
+                    &EthChainId::from_u8(chain_id)?,
+                    gas_price,
+                    confs,
+                    state,
+                )
+            })
             .and_then(end_eth_db_transaction_and_return_state)
             .and_then(EthInitializationOutput::new_for_erc20_on_evm),
     }

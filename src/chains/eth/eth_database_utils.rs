@@ -2,6 +2,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 use crate::{
     chains::eth::{
+        eth_chain_id::EthChainId,
         eth_constants::{
             ANY_SENDER_NONCE_KEY,
             BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
@@ -37,8 +38,8 @@ use crate::{
 pub fn get_signing_params_from_db<D: DatabaseInterface>(db: &D) -> Result<EthSigningParams> {
     trace!("✔ Getting signing params from db...");
     Ok(EthSigningParams {
-        chain_id: get_eth_chain_id_from_db(db)?,
         gas_price: get_eth_gas_price_from_db(db)?,
+        chain_id: get_eth_chain_id_from_db(db)?,
         eth_private_key: get_eth_private_key_from_db(db)?,
         eth_account_nonce: get_eth_account_nonce_from_db(db)?,
         smart_contract_address: get_erc777_contract_address_from_db(db)?,
@@ -323,27 +324,19 @@ pub fn increment_eth_account_nonce_in_db<D: DatabaseInterface>(db: &D, amount_to
     get_eth_account_nonce_from_db(db).and_then(|nonce| put_eth_account_nonce_in_db(db, nonce + amount_to_increment_by))
 }
 
-pub fn put_eth_chain_id_in_db<D: DatabaseInterface>(db: &D, chain_id: u8) -> Result<()> {
-    trace!("✔ Putting ETH `chain_id` in db of {} in db...", chain_id);
+pub fn put_eth_chain_id_in_db<D: DatabaseInterface>(db: &D, chain_id: &EthChainId) -> Result<()> {
+    info!("✔ Putting `EthChainId` in db: {}", chain_id);
     db.put(
         ETH_CHAIN_ID_KEY.to_vec(),
-        chain_id.to_le_bytes().to_vec(),
+        chain_id.to_bytes()?,
         MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
-pub fn get_eth_chain_id_from_db<D: DatabaseInterface>(db: &D) -> Result<u8> {
+pub fn get_eth_chain_id_from_db<D: DatabaseInterface>(db: &D) -> Result<EthChainId> {
     trace!("✔ Getting ETH `chain_id` from db...");
     db.get(ETH_CHAIN_ID_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
-        .and_then(|bytes| match bytes.len() == 1 {
-            true => {
-                let mut array = [0; 1];
-                let bytes = &bytes[..array.len()];
-                array.copy_from_slice(bytes);
-                Ok(u8::from_le_bytes(array))
-            },
-            false => Err("✘ Wrong number of bytes to convert to usize!".into()),
-        })
+        .and_then(|ref bytes| EthChainId::from_bytes(bytes))
 }
 
 pub fn put_eth_private_key_in_db<D: DatabaseInterface>(db: &D, pk: &EthPrivateKey) -> Result<()> {
@@ -543,8 +536,8 @@ mod tests {
     #[test]
     fn should_put_chain_id_in_db() {
         let db = get_test_database();
-        let chain_id = 6;
-        put_eth_chain_id_in_db(&db, chain_id).unwrap();
+        let chain_id = EthChainId::from_u8(4u8).unwrap();
+        put_eth_chain_id_in_db(&db, &chain_id).unwrap();
         let result = get_eth_chain_id_from_db(&db).unwrap();
         assert_eq!(result, chain_id);
     }

@@ -7,6 +7,7 @@ use rlp::RlpStream;
 use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
+        eth_chain_id::EthChainId,
         eth_constants::{
             GAS_LIMIT_FOR_MINTING_TX,
             GAS_LIMIT_FOR_PTOKEN_DEPLOY,
@@ -45,7 +46,7 @@ impl EthTransaction {
         nonce: u64,
         value: usize,
         to: EthAddress,
-        chain_id: Byte,
+        chain_id: &EthChainId,
         gas_limit: usize,
         gas_price: u64,
     ) -> EthTransaction {
@@ -64,7 +65,7 @@ impl EthTransaction {
         data: Bytes,
         nonce: u64,
         value: usize,
-        chain_id: Byte,
+        chain_id: &EthChainId,
         gas_limit: usize,
         gas_price: u64,
     ) -> EthTransaction {
@@ -76,7 +77,7 @@ impl EthTransaction {
         data: Bytes,
         nonce: u64,
         value: usize,
-        chain_id: Byte,
+        chain_id: &EthChainId,
         gas_limit: usize,
         gas_price: u64,
     ) -> EthTransaction {
@@ -85,10 +86,10 @@ impl EthTransaction {
             data,
             r: U256::zero(),
             s: U256::zero(),
-            v: chain_id.into(), // Per EIP155
+            v: chain_id.to_byte().into(), // Per EIP155
             nonce: nonce.into(),
             value: value.into(),
-            chain_id,
+            chain_id: chain_id.to_byte(),
             gas_limit: gas_limit.into(),
             gas_price: gas_price.into(),
         }
@@ -158,7 +159,7 @@ pub fn get_ptoken_smart_contract_bytecode(path: &str) -> Result<Bytes> {
 
 fn get_unsigned_ptoken_smart_contract_tx(
     nonce: u64,
-    chain_id: u8,
+    chain_id: &EthChainId,
     gas_price: u64,
     bytecode_path: &str,
 ) -> Result<EthTransaction> {
@@ -174,7 +175,7 @@ fn get_unsigned_ptoken_smart_contract_tx(
 
 pub fn get_signed_ptoken_smart_contract_tx(
     nonce: u64,
-    chain_id: u8,
+    chain_id: &EthChainId,
     eth_private_key: &EthPrivateKey,
     gas_price: u64,
     bytecode_path: &str,
@@ -189,7 +190,7 @@ pub fn get_signed_ptoken_smart_contract_tx(
 pub fn get_unsigned_minting_tx(
     nonce: u64,
     amount: &U256,
-    chain_id: u8,
+    chain_id: &EthChainId,
     to: EthAddress,
     gas_price: u64,
     recipient: &EthAddress,
@@ -210,7 +211,7 @@ pub fn get_unsigned_minting_tx(
 pub fn get_signed_minting_tx(
     amount: &U256,
     nonce: u64,
-    chain_id: u8,
+    chain_id: &EthChainId,
     to: EthAddress,
     gas_price: u64,
     recipient: &EthAddress,
@@ -273,11 +274,11 @@ mod tests {
     #[test]
     fn should_get_unsigned_eth_smart_contract_transaction() {
         let nonce = 1;
-        let chain_id = 4; // NOTE: Rinkeby
+        let chain_id = EthChainId::from_u8(4u8).unwrap();
         let gas_price = 20_000_000_000;
         if let Err(e) = get_unsigned_ptoken_smart_contract_tx(
             nonce,
-            chain_id,
+            &chain_id,
             gas_price,
             &ETH_SMART_CONTRACT_BYTECODE_PATH.to_string(),
         ) {
@@ -288,12 +289,12 @@ mod tests {
     #[test]
     fn should_get_signed_eth_smart_contract_tx() {
         let nonce = 16;
-        let chain_id = 4; // NOTE: Rinkeby
+        let chain_id = EthChainId::from_u8(4u8).unwrap();
         let gas_price = 20_000_000_000;
         let eth_private_key = get_sample_eth_private_key();
         let result = get_signed_ptoken_smart_contract_tx(
             nonce,
-            chain_id,
+            &chain_id,
             &eth_private_key,
             gas_price,
             &ETH_SMART_CONTRACT_BYTECODE_PATH.to_string(),
@@ -309,7 +310,7 @@ mod tests {
         let recipient = get_sample_eth_address();
         let amount = U256::from_dec_str("1").unwrap();
         let nonce = 4;
-        let chain_id = 4; // NOTE: Rinkeby
+        let chain_id = EthChainId::from_u8(4u8).unwrap();
         let gas_price = 20_000_000_000;
         let test_contract_address = "c63b099efB18c8db573981fB64564f1564af4f30";
         let to = EthAddress::from_slice(&hex::decode(test_contract_address).unwrap());
@@ -318,7 +319,7 @@ mod tests {
         let result = get_unsigned_minting_tx(
             nonce,
             &amount,
-            chain_id,
+            &chain_id,
             to,
             gas_price,
             &recipient,
@@ -336,7 +337,7 @@ mod tests {
         let recipient = get_sample_eth_address();
         let amount = U256::from_dec_str("1").unwrap();
         let nonce = 5;
-        let chain_id = 4; // NOTE: Rinkeby
+        let chain_id = EthChainId::from_u8(4u8).unwrap();
         let gas_price = 20_000_000_000;
         let eth_private_key = get_sample_eth_private_key();
         let test_contract_address = "c63b099efB18c8db573981fB64564f1564af4f30";
@@ -346,7 +347,7 @@ mod tests {
         let result = get_signed_minting_tx(
             &amount,
             nonce,
-            chain_id,
+            &chain_id,
             to,
             gas_price,
             &recipient,
