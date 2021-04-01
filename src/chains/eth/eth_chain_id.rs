@@ -27,9 +27,15 @@ impl ChainId for EthChainId {
 }
 
 impl EthChainId {
-    pub fn from_str(_s: &str) -> Result<Self> {
-        // FIXME Impl this! Copy from EthNetwork then delete that mod!
-        Ok(Self::Mainnet)
+    pub fn from_str(network_str: &str) -> Result<Self> {
+        let lowercase_network_str: &str = &network_str.to_lowercase();
+        match lowercase_network_str {
+            "mainnet" | "1" => Ok(Self::Mainnet),
+            "ropsten" | "3" => Ok(Self::Ropsten),
+            "rinkeby" | "4" => Ok(Self::Rinkeby),
+            "bsc" | "56" => Ok(Self::BscMainnet),
+            _ => Err(format!("✘ Unrecognized ethereum network: '{}'!", network_str).into()),
+        }
     }
 
     pub fn to_bytes(&self) -> Result<Bytes> {
