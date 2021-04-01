@@ -77,7 +77,7 @@ impl ToMetadata for EthOnEvmEvmTxInfo {
     }
 
     fn to_metadata_bytes(&self) -> Result<Bytes> {
-        self.to_metadata()?.to_bytes(&MetadataProtocolId::Ethereum)
+        self.to_metadata()?.to_bytes_for_protocol(&MetadataProtocolId::Ethereum)
     }
 }
 

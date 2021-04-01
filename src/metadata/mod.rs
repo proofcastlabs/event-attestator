@@ -57,7 +57,7 @@ impl Metadata {
         ]))
     }
 
-    pub fn to_bytes(&self, destination_protocol: &MetadataProtocolId) -> Result<Bytes> {
+    pub fn to_bytes_for_protocol(&self, destination_protocol: &MetadataProtocolId) -> Result<Bytes> {
         match destination_protocol {
             MetadataProtocolId::Ethereum => self.to_bytes_for_eth(),
             MetadataProtocolId::Bitcoin | MetadataProtocolId::Eos => {
