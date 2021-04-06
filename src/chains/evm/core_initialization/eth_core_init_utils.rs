@@ -1,18 +1,21 @@
 use crate::{
-    chains::evm::{
-        eth_database_utils::{
-            put_any_sender_nonce_in_db,
-            put_eth_account_nonce_in_db,
-            put_eth_anchor_block_hash_in_db,
-            put_eth_canon_block_hash_in_db,
-            put_eth_canon_to_tip_length_in_db,
-            put_eth_chain_id_in_db,
-            put_eth_gas_price_in_db,
-            put_eth_latest_block_hash_in_db,
-            put_eth_submission_material_in_db,
-            put_eth_tail_block_hash_in_db,
+    chains::{
+        eth::eth_chain_id::EthChainId,
+        evm::{
+            eth_database_utils::{
+                put_any_sender_nonce_in_db,
+                put_eth_account_nonce_in_db,
+                put_eth_anchor_block_hash_in_db,
+                put_eth_canon_block_hash_in_db,
+                put_eth_canon_to_tip_length_in_db,
+                put_eth_chain_id_in_db,
+                put_eth_gas_price_in_db,
+                put_eth_latest_block_hash_in_db,
+                put_eth_submission_material_in_db,
+                put_eth_tail_block_hash_in_db,
+            },
+            eth_state::EthState,
         },
-        eth_state::EthState,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -77,11 +80,11 @@ where
     put_eth_canon_to_tip_length_in_db(&state.db, canon_to_tip_length).and(Ok(state))
 }
 
-pub fn put_eth_chain_id_in_db_and_return_state<D>(chain_id: u8, state: EthState<D>) -> Result<EthState<D>>
-where
-    D: DatabaseInterface,
-{
-    info!("✔ Putting ETH chain ID of {} in db...", chain_id,);
+pub fn put_eth_chain_id_in_db_and_return_state<D: DatabaseInterface>(
+    chain_id: &EthChainId,
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    info!("✔ Putting ETH chain ID in db: {}", chain_id,);
     put_eth_chain_id_in_db(&state.db, chain_id).and(Ok(state))
 }
 

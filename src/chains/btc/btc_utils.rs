@@ -7,7 +7,7 @@ use bitcoin::{
     consensus::encode::{deserialize as btc_deserialize, serialize as btc_serialize},
     hash_types::Txid,
     hashes::{sha256d, Hash},
-    network::constants::{Network, Network as BtcNetwork},
+    network::constants::Network as BtcNetwork,
     secp256k1::key::ONE_KEY,
     util::{
         base58::{encode_slice as base58_encode_slice, from as from_base58},
@@ -16,12 +16,9 @@ use bitcoin::{
 };
 
 use crate::{
-    chains::{
-        btc::{
-            btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, DEFAULT_BTC_SEQUENCE, PTOKEN_P2SH_SCRIPT_BYTES},
-            btc_types::BtcPubKeySlice,
-        },
-        eth::eth_utils::{convert_bytes_to_u64, convert_u64_to_bytes},
+    chains::btc::{
+        btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, DEFAULT_BTC_SEQUENCE, PTOKEN_P2SH_SCRIPT_BYTES},
+        btc_types::BtcPubKeySlice,
     },
     types::{Byte, Bytes, Result},
     utils::strip_hex_prefix,
@@ -48,7 +45,7 @@ pub fn get_btc_one_key() -> PrivateKey {
     PrivateKey {
         key: ONE_KEY,
         compressed: false,
-        network: Network::Bitcoin,
+        network: BtcNetwork::Bitcoin,
     }
 }
 
@@ -87,23 +84,6 @@ pub fn create_unsigned_utxo_from_tx(tx: &BtcTransaction, output_index: u32) -> B
         previous_output: outpoint,
         sequence: DEFAULT_BTC_SEQUENCE,
         script_sig: tx.output[output_index as usize].script_pubkey.clone(),
-    }
-}
-
-pub fn convert_btc_network_to_bytes(network: BtcNetwork) -> Result<Bytes> {
-    match network {
-        BtcNetwork::Bitcoin => Ok(convert_u64_to_bytes(0)),
-        BtcNetwork::Testnet => Ok(convert_u64_to_bytes(1)),
-        BtcNetwork::Regtest => Ok(convert_u64_to_bytes(2)),
-        BtcNetwork::Signet => Ok(convert_u64_to_bytes(3)),
-    }
-}
-
-pub fn convert_bytes_to_btc_network(bytes: &[Byte]) -> Result<BtcNetwork> {
-    match convert_bytes_to_u64(bytes)? {
-        1 => Ok(BtcNetwork::Testnet),
-        2 => Ok(BtcNetwork::Regtest),
-        _ => Ok(BtcNetwork::Bitcoin),
     }
 }
 
@@ -408,14 +388,6 @@ mod tests {
         assert_eq!(result.maybe_extra_data, None);
         assert_eq!(result.maybe_deposit_info_json, None);
         assert_eq!(hex::encode(result.serialized_utxo), expected_utxo);
-    }
-
-    #[test]
-    fn should_serde_btc_network_correctly() {
-        let network = BtcNetwork::Bitcoin;
-        let bytes = convert_btc_network_to_bytes(network).unwrap();
-        let result = convert_bytes_to_btc_network(&bytes).unwrap();
-        assert_eq!(result, network);
     }
 
     #[test]

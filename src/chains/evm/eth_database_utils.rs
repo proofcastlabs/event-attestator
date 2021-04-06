@@ -1,24 +1,27 @@
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 use crate::{
-    chains::evm::{
-        eth_constants::{
-            ANY_SENDER_NONCE_KEY,
-            ERC777_PROXY_CONTACT_ADDRESS_KEY,
-            ETH_ACCOUNT_NONCE_KEY,
-            ETH_ADDRESS_KEY,
-            ETH_ANCHOR_BLOCK_HASH_KEY,
-            ETH_CANON_BLOCK_HASH_KEY,
-            ETH_CANON_TO_TIP_LENGTH_KEY,
-            ETH_CHAIN_ID_KEY,
-            ETH_GAS_PRICE_KEY,
-            ETH_LATEST_BLOCK_HASH_KEY,
-            ETH_LINKER_HASH_KEY,
-            ETH_PRIVATE_KEY_DB_KEY,
-            ETH_TAIL_BLOCK_HASH_KEY,
+    chains::{
+        eth::eth_chain_id::EthChainId,
+        evm::{
+            eth_constants::{
+                ANY_SENDER_NONCE_KEY,
+                ERC777_PROXY_CONTACT_ADDRESS_KEY,
+                ETH_ACCOUNT_NONCE_KEY,
+                ETH_ADDRESS_KEY,
+                ETH_ANCHOR_BLOCK_HASH_KEY,
+                ETH_CANON_BLOCK_HASH_KEY,
+                ETH_CANON_TO_TIP_LENGTH_KEY,
+                ETH_CHAIN_ID_KEY,
+                ETH_GAS_PRICE_KEY,
+                ETH_LATEST_BLOCK_HASH_KEY,
+                ETH_LINKER_HASH_KEY,
+                ETH_PRIVATE_KEY_DB_KEY,
+                ETH_TAIL_BLOCK_HASH_KEY,
+            },
+            eth_crypto::eth_private_key::EthPrivateKey,
+            eth_submission_material::EthSubmissionMaterial,
         },
-        eth_crypto::eth_private_key::EthPrivateKey,
-        eth_submission_material::EthSubmissionMaterial,
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     database_utils::{get_u64_from_db, put_u64_in_db},
@@ -314,22 +317,19 @@ pub fn put_eth_account_nonce_in_db<D: DatabaseInterface>(db: &D, nonce: u64) -> 
     put_u64_in_db(db, &ETH_ACCOUNT_NONCE_KEY.to_vec(), nonce)
 }
 
-pub fn put_eth_chain_id_in_db<D: DatabaseInterface>(db: &D, chain_id: u8) -> Result<()> {
-    trace!("✔ Putting ETH `chain_id` in db of {} in db...", chain_id);
+pub fn put_eth_chain_id_in_db<D: DatabaseInterface>(db: &D, chain_id: &EthChainId) -> Result<()> {
+    info!("✔ Putting `EthChainId` in db: {}", chain_id);
     db.put(
         ETH_CHAIN_ID_KEY.to_vec(),
-        chain_id.to_le_bytes().to_vec(),
+        chain_id.to_bytes()?,
         MIN_DATA_SENSITIVITY_LEVEL,
     )
 }
 
-pub fn get_eth_chain_id_from_db<D: DatabaseInterface>(db: &D) -> Result<u8> {
+pub fn get_eth_chain_id_from_db<D: DatabaseInterface>(db: &D) -> Result<EthChainId> {
     trace!("✔ Getting ETH `chain_id` from db...");
     db.get(ETH_CHAIN_ID_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
-        .and_then(|bytes| match bytes.len() == 1 {
-            true => Ok(u8::from_le_bytes([bytes[0]])),
-            false => Err("✘ Wrong number of bytes to convert to usize!".into()),
-        })
+        .and_then(|ref bytes| EthChainId::from_bytes(bytes))
 }
 
 pub fn put_eth_private_key_in_db<D: DatabaseInterface>(db: &D, pk: &EthPrivateKey) -> Result<()> {
@@ -447,8 +447,8 @@ mod tests {
     #[test]
     fn should_put_chain_id_in_db() {
         let db = get_test_database();
-        let chain_id = 6;
-        put_eth_chain_id_in_db(&db, chain_id).unwrap();
+        let chain_id = EthChainId::Rinkeby;
+        put_eth_chain_id_in_db(&db, &chain_id).unwrap();
         let result = get_eth_chain_id_from_db(&db).unwrap();
         assert_eq!(result, chain_id);
     }

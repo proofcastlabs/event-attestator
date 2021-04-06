@@ -4,8 +4,12 @@ use crate::{
     chains::{
         eos::eos_state::EosState,
         eth::{
+            eth_chain_id::EthChainId,
             eth_constants::ZERO_ETH_VALUE,
-            eth_contracts::erc20_vault::{encode_erc20_vault_peg_out_fxn_data, ERC20_VAULT_PEGOUT_GAS_LIMIT},
+            eth_contracts::erc20_vault::{
+                encode_erc20_vault_peg_out_fxn_data_without_user_data,
+                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
+            },
             eth_crypto::{
                 eth_private_key::EthPrivateKey,
                 eth_transaction::{EthTransaction, EthTransactions},
@@ -28,7 +32,7 @@ pub fn get_eth_signed_txs(
     redeem_infos: &Erc20OnEosRedeemInfos,
     erc20_on_eos_smart_contract_address: &EthAddress,
     eth_account_nonce: u64,
-    chain_id: u8,
+    chain_id: &EthChainId,
     gas_price: u64,
     eth_private_key: &EthPrivateKey,
 ) -> Result<EthTransactions> {
@@ -43,7 +47,7 @@ pub fn get_eth_signed_txs(
                     redeem_info.amount, redeem_info.recipient
                 );
                 EthTransaction::new_unsigned(
-                    encode_erc20_vault_peg_out_fxn_data(
+                    encode_erc20_vault_peg_out_fxn_data_without_user_data(
                         redeem_info.recipient,
                         redeem_info.eth_token_address,
                         redeem_info.amount,
@@ -52,7 +56,7 @@ pub fn get_eth_signed_txs(
                     ZERO_ETH_VALUE,
                     *erc20_on_eos_smart_contract_address,
                     chain_id,
-                    ERC20_VAULT_PEGOUT_GAS_LIMIT,
+                    ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
                     gas_price,
                 )
                 .sign(eth_private_key)
@@ -70,7 +74,7 @@ pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: E
             &state.erc20_on_eos_redeem_infos,
             &get_erc20_on_eos_smart_contract_address_from_db(&state.db)?,
             get_eth_account_nonce_from_db(&state.db)?,
-            get_eth_chain_id_from_db(&state.db)?,
+            &get_eth_chain_id_from_db(&state.db)?,
             get_eth_gas_price_from_db(&state.db)?,
             &get_eth_private_key_from_db(&state.db)?,
         )

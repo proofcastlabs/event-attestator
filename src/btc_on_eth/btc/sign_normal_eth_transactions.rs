@@ -5,7 +5,6 @@ use crate::{
         eth::{
             eth_crypto::eth_transaction::{get_signed_minting_tx, EthTransaction, EthTransactions},
             eth_database_utils::get_signing_params_from_db,
-            eth_metadata::{EthMetadataFromBtc, EthMetadataVersion},
             eth_types::EthSigningParams,
         },
     },
@@ -30,26 +29,22 @@ pub fn get_eth_signed_txs(
                 get_signed_minting_tx(
                     &minting_param_struct.amount,
                     signing_params.eth_account_nonce + i as u64,
-                    signing_params.chain_id,
+                    &signing_params.chain_id,
                     signing_params.smart_contract_address,
                     signing_params.gas_price,
                     &minting_param_struct.eth_address,
                     &signing_params.eth_private_key,
                     None,
-                    Some(
-                        &EthMetadataFromBtc::from_btc_minting_params(&EthMetadataVersion::V1, minting_param_struct)
-                            .serialize()?,
-                    ),
+                    None,
                 )
             })
             .collect::<Result<Vec<EthTransaction>>>()?,
     ))
 }
 
-pub fn maybe_sign_normal_canon_block_txs_and_add_to_state<D>(state: BtcState<D>) -> Result<BtcState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_sign_normal_canon_block_txs_and_add_to_state<D: DatabaseInterface>(
+    state: BtcState<D>,
+) -> Result<BtcState<D>> {
     if state.use_any_sender_tx_type() {
         info!("✔ Using AnySender therefore not signing normal ETH transactions!");
         return Ok(state);
@@ -80,6 +75,7 @@ mod tests {
         chains::{
             btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
             eth::{
+                eth_chain_id::EthChainId,
                 eth_database_utils::{
                     put_btc_on_eth_smart_contract_address_in_db,
                     put_eth_account_nonce_in_db,
@@ -97,7 +93,7 @@ mod tests {
     #[test]
     fn should_get_eth_signing_params() {
         let nonce = 6;
-        let chain_id = 2;
+        let chain_id = EthChainId::Mainnet;
         let db = get_test_database();
         let gas_price = 20_000_000_000;
         let contract_address = get_sample_eth_address();
@@ -105,7 +101,7 @@ mod tests {
         if let Err(e) = put_btc_on_eth_smart_contract_address_in_db(&db, &contract_address) {
             panic!("Error putting eth smart contract address in db: {}", e);
         };
-        if let Err(e) = put_eth_chain_id_in_db(&db, chain_id) {
+        if let Err(e) = put_eth_chain_id_in_db(&db, &chain_id) {
             panic!("Error putting eth chain id in db: {}", e);
         };
         if let Err(e) = put_eth_gas_price_in_db(&db, gas_price) {
@@ -136,7 +132,7 @@ mod tests {
     #[test]
     fn should_get_eth_signatures() {
         let signing_params = EthSigningParams {
-            chain_id: 1,
+            chain_id: EthChainId::Mainnet,
             eth_account_nonce: 0,
             gas_price: 20_000_000_000,
             eth_private_key: get_sample_eth_private_key(),

@@ -11,12 +11,12 @@ use crate::{
     chains::eth::{
         eth_constants::{ETH_MESSAGE_PREFIX, PREFIXED_MESSAGE_HASH_LEN},
         eth_crypto::eth_public_key::EthPublicKey,
-        eth_crypto_utils::{keccak_hash_bytes, set_eth_signature_recovery_param},
+        eth_crypto_utils::set_eth_signature_recovery_param,
         eth_traits::EthSigningCapabilities,
         eth_types::EthSignature,
     },
     constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-    crypto_utils::generate_random_private_key,
+    crypto_utils::{generate_random_private_key, keccak_hash_bytes},
     traits::DatabaseInterface,
     types::{Byte, Result},
 };

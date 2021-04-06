@@ -18,6 +18,7 @@ use crate::{
             generate_eth_contract_tx::generate_eth_contract_tx_and_put_in_state,
             generate_eth_private_key::generate_and_store_eth_private_key,
         },
+        eth_chain_id::EthChainId,
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::validate_block_in_state as validate_eth_block_in_state,
@@ -28,7 +29,7 @@ use crate::{
 
 pub fn initialize_eth_core_maybe_with_contract_tx<D: DatabaseInterface>(
     block_json: &str,
-    chain_id: u8,
+    chain_id: &EthChainId,
     gas_price: u64,
     canon_to_tip_length: u64,
     maybe_bytecode_path: Option<&str>,
@@ -60,7 +61,7 @@ pub fn initialize_eth_core_maybe_with_contract_tx<D: DatabaseInterface>(
 
 pub fn initialize_eth_core<D: DatabaseInterface>(
     block_json: &str,
-    chain_id: u8,
+    chain_id: &EthChainId,
     gas_price: u64,
     canon_to_tip_length: u64,
     bytecode_path: &str,
@@ -79,7 +80,7 @@ pub fn initialize_eth_core<D: DatabaseInterface>(
 
 pub fn initialize_eth_core_with_no_contract_tx<D: DatabaseInterface>(
     block_json: &str,
-    chain_id: u8,
+    chain_id: &EthChainId,
     gas_price: u64,
     canon_to_tip_length: u64,
     state: EthState<D>,

@@ -4,9 +4,15 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use crate::{
     chains::{
         eth::{
-            eth_constants::ZERO_ETH_VALUE,
+            eth_chain_id::EthChainId,
+            eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
             eth_contracts::{
-                erc20_vault::{encode_erc20_vault_peg_out_fxn_data, ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT},
+                erc20_vault::{
+                    encode_erc20_vault_peg_out_fxn_data_with_user_data,
+                    encode_erc20_vault_peg_out_fxn_data_without_user_data,
+                    ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
+                    ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
+                },
                 erc777::{Erc777RedeemEvent, ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA},
             },
             eth_crypto::{
@@ -23,7 +29,10 @@ use crate::{
             eth_utils::safely_convert_hex_to_eth_address,
         },
         evm::{
-            eth_database_utils::get_eth_canon_block_from_db as get_evm_canon_block_from_db,
+            eth_database_utils::{
+                get_eth_canon_block_from_db as get_evm_canon_block_from_db,
+                get_eth_chain_id_from_db as get_evm_chain_id_from_db,
+            },
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
             eth_state::EthState as EvmState,
@@ -31,6 +40,12 @@ use crate::{
         },
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
+    metadata::{
+        metadata_origin_address::MetadataOriginAddress,
+        metadata_protocol_id::MetadataProtocolId,
+        metadata_traits::ToMetadata,
+        Metadata,
+    },
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
@@ -44,18 +59,50 @@ pub struct EthOnEvmEthTxInfo {
     pub eth_token_address: EthAddress,
     pub destination_address: EthAddress,
     pub user_data: Bytes,
+    pub origin_chain_id: EthChainId,
+}
+
+impl ToMetadata for EthOnEvmEthTxInfo {
+    fn to_metadata(&self) -> Result<Metadata> {
+        let user_data = if self.user_data.len() > MAX_BYTES_FOR_ETH_USER_DATA {
+            // TODO Test for this case!
+            info!(
+                "✘ `user_data` redacted from `Metadata` ∵ it's > {} bytes",
+                MAX_BYTES_FOR_ETH_USER_DATA
+            );
+            vec![]
+        } else {
+            self.user_data.clone()
+        };
+        Ok(Metadata::new(
+            &user_data,
+            &MetadataOriginAddress::new_from_eth_address(
+                &self.token_sender,
+                &self.origin_chain_id.to_metadata_chain_id(),
+            )?,
+        ))
+    }
+
+    fn to_metadata_bytes(&self) -> Result<Bytes> {
+        self.to_metadata()?.to_bytes_for_protocol(&MetadataProtocolId::Ethereum)
+    }
 }
 
 impl EthOnEvmEthTxInfo {
     pub fn to_eth_signed_tx(
+        // TODO Get a sample with user data so we can use that test against!
         &self,
         nonce: u64,
-        chain_id: u8,
-        gas_limit: usize,
+        chain_id: &EthChainId,
         gas_price: u64,
         evm_private_key: &EthPrivateKey,
         vault_address: &EthAddress,
     ) -> Result<EvmTransaction> {
+        let gas_limit = if self.user_data.is_empty() {
+            ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT
+        } else {
+            ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT
+        };
         info!("✔ Signing ETH transaction for tx info: {:?}", self);
         debug!("✔ Signing with nonce:     {}", nonce);
         debug!("✔ Signing with chain id:  {}", chain_id);
@@ -71,19 +118,30 @@ impl EthOnEvmEthTxInfo {
         );
         debug!("✔ Signing tx for token amount: {}", self.token_amount.to_string());
         debug!("✔ Signing tx for vault address: {}", vault_address.to_string());
-        encode_erc20_vault_peg_out_fxn_data(self.destination_address, self.eth_token_address, self.token_amount)
-            .map(|data| {
-                EvmTransaction::new_unsigned(
-                    data,
-                    nonce,
-                    ZERO_ETH_VALUE,
-                    *vault_address,
-                    chain_id,
-                    gas_limit,
-                    gas_price,
-                )
-            })
-            .and_then(|unsigned_tx| unsigned_tx.sign(evm_private_key))
+        let encoded_tx_data = if self.user_data.is_empty() {
+            encode_erc20_vault_peg_out_fxn_data_without_user_data(
+                self.destination_address,
+                self.eth_token_address,
+                self.token_amount,
+            )?
+        } else {
+            encode_erc20_vault_peg_out_fxn_data_with_user_data(
+                self.destination_address,
+                self.eth_token_address,
+                self.token_amount,
+                self.to_metadata_bytes()?,
+            )?
+        };
+        EvmTransaction::new_unsigned(
+            encoded_tx_data,
+            nonce,
+            ZERO_ETH_VALUE,
+            *vault_address,
+            chain_id,
+            gas_limit,
+            gas_price,
+        )
+        .sign(evm_private_key)
     }
 }
 
@@ -146,7 +204,11 @@ impl EthOnEvmEthTxInfos {
         Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, dictionary).len() > 0
     }
 
-    fn from_eth_receipt(receipt: &EthReceipt, dictionary: &EthEvmTokenDictionary) -> Result<Self> {
+    fn from_eth_receipt(
+        receipt: &EthReceipt,
+        dictionary: &EthEvmTokenDictionary,
+        origin_chain_id: &EthChainId,
+    ) -> Result<Self> {
         info!("✔ Getting `EthOnEvmEthTxInfos` from receipt...");
         Ok(Self::new(
             Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, dictionary)
@@ -157,6 +219,7 @@ impl EthOnEvmEthTxInfos {
                         evm_token_address: log.address,
                         token_amount: event_params.value,
                         token_sender: event_params.redeemer,
+                        origin_chain_id: origin_chain_id.clone(),
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
                         eth_token_address: dictionary.get_eth_address_from_evm_address(&log.address)?,
@@ -202,13 +265,14 @@ impl EthOnEvmEthTxInfos {
     pub fn from_submission_material(
         submission_material: &EvmSubmissionMaterial,
         dictionary: &EthEvmTokenDictionary,
+        origin_chain_id: &EthChainId,
     ) -> Result<Self> {
         info!("✔ Getting `EthOnEvmEthTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(&receipt, dictionary))
+                .map(|receipt| Self::from_eth_receipt(&receipt, dictionary, origin_chain_id))
                 .collect::<Result<Vec<EthOnEvmEthTxInfos>>>()?
                 .into_iter()
                 .flatten()
@@ -219,8 +283,7 @@ impl EthOnEvmEthTxInfos {
     pub fn to_eth_signed_txs(
         &self,
         start_nonce: u64,
-        chain_id: u8,
-        gas_limit: usize,
+        chain_id: &EthChainId,
         gas_price: u64,
         evm_private_key: &EthPrivateKey,
         vault_address: &EthAddress,
@@ -234,7 +297,6 @@ impl EthOnEvmEthTxInfos {
                         tx_info,
                         start_nonce + i as u64,
                         chain_id,
-                        gas_limit,
                         gas_price,
                         evm_private_key,
                         vault_address,
@@ -262,7 +324,11 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                 );
                 EthEvmTokenDictionary::get_from_db(&state.db)
                     .and_then(|account_names| {
-                        EthOnEvmEthTxInfos::from_submission_material(&submission_material, &account_names)
+                        EthOnEvmEthTxInfos::from_submission_material(
+                            &submission_material,
+                            &account_names,
+                            &get_evm_chain_id_from_db(&state.db)?,
+                        )
                     })
                     .and_then(|tx_infos| state.add_erc20_on_evm_eth_tx_infos(tx_infos))
             },
@@ -313,8 +379,7 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EvmS
             .erc20_on_evm_eth_tx_infos
             .to_eth_signed_txs(
                 get_eth_account_nonce_from_db(&state.db)?,
-                get_eth_chain_id_from_db(&state.db)?,
-                ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
+                &get_eth_chain_id_from_db(&state.db)?,
                 get_eth_gas_price_from_db(&state.db)?,
                 &get_eth_private_key_from_db(&state.db)?,
                 &get_erc20_on_evm_smart_contract_address_from_db(&state.db)?,
@@ -356,11 +421,13 @@ mod tests {
     #[test]
     fn should_get_erc20_on_evm_eth_tx_info_from_submission_material() {
         let dictionary = get_sample_eth_evm_token_dictionary();
+        let origin_chain_id = EthChainId::BscMainnet;
         let material = get_evm_submission_material_n(1);
-        let result = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary).unwrap();
+        let result = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap();
         let expected_num_results = 1;
         assert_eq!(result.len(), expected_num_results);
         let expected_result = EthOnEvmEthTxInfos::new(vec![EthOnEvmEthTxInfo {
+            origin_chain_id,
             user_data: vec![],
             token_amount: U256::from_dec_str("100000000000000000").unwrap(),
             token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
@@ -384,21 +451,21 @@ mod tests {
     fn should_get_signaures_from_eth_tx_info() {
         let dictionary = get_sample_eth_evm_token_dictionary();
         let material = get_evm_submission_material_n(1);
-        let infos = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary).unwrap();
+        let origin_chain_id = EthChainId::BscMainnet;
+        let infos = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap();
         let vault_address = get_sample_vault_address();
         let pk = get_sample_eth_private_key();
         let nonce = 0_u64;
-        let chain_id = 4_u8;
-        let gas_limit = 300_000_usize;
+        let chain_id = EthChainId::Rinkeby;
         let gas_price = 20_000_000_000_u64;
         let signed_txs = infos
-            .to_eth_signed_txs(nonce, chain_id, gas_limit, gas_price, &pk, &vault_address)
+            .to_eth_signed_txs(nonce, &chain_id, gas_price, &pk, &vault_address)
             .unwrap();
         let expected_num_results = 1;
         assert_eq!(signed_txs.len(), expected_num_results);
         let tx_hex = signed_txs[0].eth_tx_hex().unwrap();
         let expected_tx_hex =
-"f8ca808504a817c800830493e094d608367b33c52293201af7fb578916a7c0784bd780b86483c09d4200000000000000000000000071a440ee9fa7f99fb9a697e96ec7839b8a1643b800000000000000000000000089ab32156e46f46d02ade3fecbe5fc4243b9aaed000000000000000000000000000000000000000000000000016345785d8a00002ba06f5373dc0285c8b5a6fc39f2e74a4679fc73841273a79389bbd73b62e83e3aaba054993a579dc3e47c756397ef231effdf4bc3ab54721ef17bcc7f557c57d183ee"
+"f8ca808504a817c8008302bf2094d608367b33c52293201af7fb578916a7c0784bd780b86483c09d4200000000000000000000000071a440ee9fa7f99fb9a697e96ec7839b8a1643b800000000000000000000000089ab32156e46f46d02ade3fecbe5fc4243b9aaed000000000000000000000000000000000000000000000000016345785d8a00002ca01925ae7f64957984e057cb6f54c41560f354de622cee193a45ef657e40798c99a0752a5fa9235879d1ce45671308c461086fd1c73b9b533f1e63cb3c0ed4aedd98"
 ;
         assert_eq!(tx_hex, expected_tx_hex);
     }

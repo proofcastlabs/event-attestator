@@ -2,7 +2,7 @@
 license = "MIT"
 publish = false
 edition = "2018"
-version = "4.22.0"
+version = "4.23.0"
 readme = "README.md"
 name = "ptokens_core"
 keywords = ["provable", "defi", "crypto"]
@@ -24,6 +24,7 @@ hex = "0.4.2"
 log = "0.4.14"
 rlp = "0.5.0"
 rand = "0.8.3"
+strum = "0.20.0"
 chrono = "0.4.19"
 ethabi = "13.0.0"
 byteorder = "1.4.2"
@@ -31,6 +32,7 @@ rustc-hex = "2.1.0"
 simplelog = "0.9.0"
 serde_json = "1.0.62"
 lazy_static = "1.4.0"
+strum_macros = "0.20.1"
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 # upgrade blocked by ethabi
 ethereum-types = "0.10.0"

@@ -1,7 +1,7 @@
 use ethereum_types::Address as EthAddress;
 use secp256k1::key::PublicKey;
 
-use crate::{chains::eth::eth_crypto_utils::keccak_hash_bytes, types::Bytes};
+use crate::{crypto_utils::keccak_hash_bytes, types::Bytes};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct EthPublicKey {

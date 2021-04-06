@@ -14,6 +14,7 @@ pub static LEAF_NODE_STRING: &str = "leaf";
 pub const VALUE_FOR_PTOKEN_DEPLOY: usize = 0;
 pub const ETH_WORD_SIZE_IN_BYTES: usize = 32;
 pub const ETH_ADDRESS_SIZE_IN_BYTES: usize = 20;
+pub const MAX_BYTES_FOR_ETH_USER_DATA: usize = 2000;
 pub const GAS_LIMIT_FOR_MINTING_TX: usize = 180_000;
 pub static BRANCH_NODE_STRING: &str = "branch";
 pub const GAS_LIMIT_FOR_PTOKEN_DEPLOY: usize = 4_000_000;
@@ -26,8 +27,6 @@ pub const EMPTY_NIBBLES: Nibbles = Nibbles {
 };
 pub const ETH_MESSAGE_PREFIX: &[u8; 26] = b"\x19Ethereum Signed Message:\n";
 pub const PREFIXED_MESSAGE_HASH_LEN: &[u8; 2] = b"32";
-pub const ETH_MAINNET_CHAIN_ID: u8 = 1;
-pub const ETH_ROPSTEN_CHAIN_ID: u8 = 3;
 
 const HASHED_NULL_NODE_BYTES: [u8; 32] = [
     // NOTE: keccak hash of the RLP of null

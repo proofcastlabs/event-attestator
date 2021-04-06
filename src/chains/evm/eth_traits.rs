@@ -1,5 +1,6 @@
 use crate::{
-    chains::eth::{any_sender::relay_transaction::RelayTransaction, eth_crypto_utils::keccak_hash_bytes},
+    chains::eth::any_sender::relay_transaction::RelayTransaction,
+    crypto_utils::keccak_hash_bytes,
     types::Bytes,
 };
 

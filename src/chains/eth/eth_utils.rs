@@ -3,7 +3,7 @@ use serde_json::Value as JsonValue;
 
 use crate::{
     chains::eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES,
-    constants::{ETH_HASH_LENGTH, SAFE_ETH_ADDRESS, U64_NUM_BYTES},
+    constants::{ETH_HASH_LENGTH, SAFE_ETH_ADDRESS},
     types::{Byte, Bytes, NoneError, Result},
     utils::{decode_hex_with_no_padding_with_err_msg, strip_hex_prefix},
 };
@@ -64,23 +64,6 @@ pub fn decode_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
 
 pub fn decode_prefixed_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
     decode_hex(&strip_hex_prefix(&hex_to_decode))
-}
-
-pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
-    match bytes.len() {
-        0..=7 => Err("✘ Not enough bytes to convert to u64!".into()),
-        U64_NUM_BYTES => {
-            let mut arr = [0u8; U64_NUM_BYTES];
-            let bytes = &bytes[..U64_NUM_BYTES];
-            arr.copy_from_slice(bytes);
-            Ok(u64::from_le_bytes(arr))
-        },
-        _ => Err("✘ Too many bytes to convert to u64 without overflowing!".into()),
-    }
-}
-
-pub fn convert_u64_to_bytes(u_64: u64) -> Bytes {
-    u_64.to_le_bytes().to_vec()
 }
 
 pub fn strip_new_line_chars(string: String) -> String {
@@ -319,45 +302,5 @@ mod tests {
         let length_after = result.len();
         assert!(length_after < length_before);
         assert_eq!(length_after, length_before - new_line_char.len());
-    }
-
-    #[test]
-    fn should_convert_u64_to_bytes() {
-        let u_64 = u64::max_value();
-        let expected_result = [255, 255, 255, 255, 255, 255, 255, 255];
-        let result = convert_u64_to_bytes(u_64);
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_convert_bytes_to_u64() {
-        let bytes = vec![255, 255, 255, 255, 255, 255, 255, 255];
-        let expected_result = u64::max_value();
-        let result = convert_bytes_to_u64(&bytes).unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_error_converting_too_few_bytes_to_u64() {
-        let expected_error = "✘ Not enough bytes to convert to u64!".to_string();
-        let bytes = vec![255, 255, 255, 255, 255, 255, 255];
-        assert!(bytes.len() < U64_NUM_BYTES);
-        match convert_bytes_to_u64(&bytes) {
-            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
-            Ok(_) => panic!("Shouldn't work!"),
-            _ => panic!("Wrong error!"),
-        }
-    }
-
-    #[test]
-    fn should_error_converting_too_many_bytes_to_u64() {
-        let expected_error = "✘ Too many bytes to convert to u64 without overflowing!".to_string();
-        let bytes = vec![255, 255, 255, 255, 255, 255, 255, 255, 255];
-        assert!(bytes.len() > U64_NUM_BYTES);
-        match convert_bytes_to_u64(&bytes) {
-            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
-            Ok(_) => panic!("Shouldn't work!"),
-            _ => panic!("Wrong error!"),
-        }
     }
 }

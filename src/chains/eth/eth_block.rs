@@ -4,17 +4,15 @@ use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::eth::{
-        eth_crypto_utils::keccak_hash_bytes,
-        eth_utils::{
-            convert_dec_str_to_u256,
-            convert_hex_strings_to_h256s,
-            convert_hex_to_address,
-            convert_hex_to_bytes,
-            convert_hex_to_h256,
-            decode_prefixed_hex,
-        },
+    chains::eth::eth_utils::{
+        convert_dec_str_to_u256,
+        convert_hex_strings_to_h256s,
+        convert_hex_to_address,
+        convert_hex_to_bytes,
+        convert_hex_to_h256,
+        decode_prefixed_hex,
     },
+    crypto_utils::keccak_hash_bytes,
     types::{Bytes, Result},
 };
 

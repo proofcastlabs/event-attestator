@@ -6,6 +6,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use crate::{
     chains::eth::{
         eth_block::{EthBlock, EthBlockJson},
+        eth_chain_id::EthChainId,
         eth_crypto::{eth_private_key::EthPrivateKey, eth_public_key::EthPublicKey, eth_transaction::EthTransaction},
         eth_database_utils::{get_special_eth_hash_from_db, put_special_eth_block_in_db},
         eth_log::{EthLog, EthLogs},
@@ -372,10 +373,10 @@ pub fn get_sample_unsigned_eth_transaction() -> EthTransaction {
     let nonce = 0;
     let value = 1;
     let to = EthAddress::from_slice(&hex::decode("53c2048dad4fcfab44C3ef3D16E882b5178df42b").unwrap());
-    let chain_id = 4; // Rinkeby
+    let chain_id = EthChainId::Rinkeby;
     let gas_limit = 100_000;
     let gas_price = 20_000_000_000;
-    EthTransaction::new_unsigned(data, nonce, value, to, chain_id, gas_limit, gas_price)
+    EthTransaction::new_unsigned(data, nonce, value, to, &chain_id, gas_limit, gas_price)
 }
 
 mod tests {

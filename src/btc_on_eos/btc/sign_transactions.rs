@@ -3,6 +3,7 @@ use crate::{
     chains::{
         btc::{btc_database_utils::get_btc_canon_block_from_db, btc_state::BtcState},
         eos::{
+            eos_chain_id::EosChainId,
             eos_crypto::{
                 eos_private_key::EosPrivateKey,
                 eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
@@ -17,7 +18,7 @@ use crate::{
 pub fn get_signed_eos_ptoken_issue_txs(
     ref_block_num: u16,
     ref_block_prefix: u32,
-    chain_id: &str,
+    chain_id: &EosChainId,
     pk: &EosPrivateKey,
     account: &str,
     minting_params: &BtcOnEosMintingParams,

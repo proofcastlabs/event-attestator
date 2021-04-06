@@ -9,6 +9,7 @@ pub(crate) mod eos_action_proofs;
 pub(crate) mod eos_action_receipt;
 pub(crate) mod eos_actions;
 pub(crate) mod eos_block_header;
+pub(crate) mod eos_chain_id;
 pub(crate) mod eos_crypto;
 pub(crate) mod eos_database_transactions;
 pub(crate) mod eos_database_utils;

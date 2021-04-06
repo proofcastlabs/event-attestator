@@ -29,7 +29,7 @@ pub fn get_any_sender_signed_txs(
             let any_sender_nonce = signing_params.any_sender_nonce + i as u64;
 
             RelayTransaction::new_mint_by_proxy_tx(
-                signing_params.chain_id,
+                &signing_params.chain_id,
                 signing_params.public_eth_address,
                 minting_param_struct.amount,
                 any_sender_nonce,
@@ -77,6 +77,7 @@ mod tests {
         chains::{
             btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
             eth::{
+                eth_chain_id::EthChainId,
                 eth_test_utils::{get_sample_eth_address, get_sample_eth_private_key},
                 eth_types::EthAddress,
             },
@@ -86,7 +87,7 @@ mod tests {
     #[test]
     fn should_get_any_sender_signatures() {
         let signing_params = AnySenderSigningParams {
-            chain_id: 1,
+            chain_id: EthChainId::Mainnet,
             any_sender_nonce: 0,
             eth_private_key: get_sample_eth_private_key(),
             public_eth_address: get_sample_eth_address(),

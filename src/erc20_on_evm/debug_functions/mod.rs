@@ -50,6 +50,7 @@ use crate::{
             eth_database_utils::{
                 get_any_sender_nonce_from_db as get_evm_any_sender_nonce_from_db,
                 get_eth_account_nonce_from_db as get_evm_account_nonce_from_db,
+                get_eth_chain_id_from_db as get_evm_chain_id_from_db,
                 get_latest_eth_block_number as get_latest_evm_block_number,
             },
             eth_state::EthState as EvmState,
@@ -127,6 +128,7 @@ pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, evm_block_json: &s
                     EthOnEvmEthTxInfos::from_submission_material(
                         &material,
                         &EthEvmTokenDictionary::get_from_db(&state.db)?,
+                        &get_evm_chain_id_from_db(&state.db)?,
                     )
                 })
                 .and_then(|params| state.add_erc20_on_evm_eth_tx_infos(params))
@@ -189,6 +191,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
                         &material,
                         &get_erc20_on_evm_smart_contract_address_from_db(&state.db)?,
                         &EthEvmTokenDictionary::get_from_db(&state.db)?,
+                        &get_eth_chain_id_from_db(&state.db)?,
                     )
                 })
                 .and_then(|params| state.add_erc20_on_evm_evm_tx_infos(params))
@@ -336,7 +339,7 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address
                 current_eth_account_nonce,
                 0,
                 get_erc20_on_evm_smart_contract_address_from_db(&db)?,
-                get_eth_chain_id_from_db(&db)?,
+                &get_eth_chain_id_from_db(&db)?,
                 ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
                 get_eth_gas_price_from_db(&db)?,
             ))
@@ -377,7 +380,7 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
                 current_eth_account_nonce,
                 0,
                 get_erc20_on_evm_smart_contract_address_from_db(&db)?,
-                get_eth_chain_id_from_db(&db)?,
+                &get_eth_chain_id_from_db(&db)?,
                 ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
                 get_eth_gas_price_from_db(&db)?,
             ))
@@ -427,7 +430,7 @@ pub fn debug_get_erc20_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, ne
                 current_eth_account_nonce,
                 0,
                 current_smart_contract_address,
-                get_eth_chain_id_from_db(&db)?,
+                &get_eth_chain_id_from_db(&db)?,
                 ERC20_VAULT_MIGRATE_GAS_LIMIT,
                 get_eth_gas_price_from_db(&db)?,
             ))

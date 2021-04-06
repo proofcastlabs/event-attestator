@@ -7,12 +7,15 @@ use crate::{
     types::{Bytes, Result},
 };
 
-pub const ERC20_VAULT_PEGOUT_GAS_LIMIT: usize = 180_000;
-pub const ERC20_VAULT_MIGRATE_GAS_LIMIT: usize = 6_000_000;
+pub const ERC20_VAULT_MIGRATE_GAS_LIMIT: usize = 2_000_000;
+pub const ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT: usize = 180_000;
 pub const ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT: usize = 300_000;
 pub const ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT: usize = 100_000;
 
-pub const ERC20_VAULT_ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"addresspayable\",\"name\":\"_to\",\"type\":\"address\"}],\"name\":\"migrate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"addSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"removeSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
+const ERC20_VAULT_ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"addresspayable\",\"name\":\"_to\",\"type\":\"address\"}],\"name\":\"migrate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"addSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"removeSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_userData\",\"type\":\"bytes\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0x22965469\"}]";
+
+// NOTE: Separate from the above ABI ∵ `ethabi` crate can't handle overloaded functions.
+const ERC20_VAULT_PEGOUT_WITH_USER_DATA_ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_userData\",\"type\":\"bytes\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0x22965469\"}]";
 
 pub const ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC_HEX: &str =
     "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
@@ -35,7 +38,7 @@ lazy_static! {
     };
 }
 
-pub fn encode_erc20_vault_peg_out_fxn_data(
+pub fn encode_erc20_vault_peg_out_fxn_data_without_user_data(
     recipient: EthAddress,
     token_contract_address: EthAddress,
     amount: U256,
@@ -44,6 +47,20 @@ pub fn encode_erc20_vault_peg_out_fxn_data(
         EthAbiToken::Address(recipient),
         EthAbiToken::Address(token_contract_address),
         EthAbiToken::Uint(amount),
+    ])
+}
+
+pub fn encode_erc20_vault_peg_out_fxn_data_with_user_data(
+    recipient: EthAddress,
+    token_contract_address: EthAddress,
+    amount: U256,
+    user_data: Bytes,
+) -> Result<Bytes> {
+    encode_fxn_call(ERC20_VAULT_PEGOUT_WITH_USER_DATA_ABI, "pegOut", &[
+        EthAbiToken::Address(recipient),
+        EthAbiToken::Address(token_contract_address),
+        EthAbiToken::Uint(amount),
+        EthAbiToken::Bytes(user_data),
     ])
 }
 
@@ -157,14 +174,30 @@ mod tests {
     };
 
     #[test]
-    fn should_encode_peg_out_fxn_data() {
+    fn should_encode_peg_out_fxn_data_without_user_data() {
         let amount = U256::from(1337);
         let recipient_address =
             EthAddress::from_slice(&hex::decode("edB86cd455ef3ca43f0e227e00469C3bDFA40628").unwrap());
         let token_address = EthAddress::from_slice(&hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap());
         let expected_result = "83c09d42000000000000000000000000edb86cd455ef3ca43f0e227e00469c3bdfa40628000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac0000000000000000000000000000000000000000000000000000000000000539";
-        let result =
-            hex::encode(encode_erc20_vault_peg_out_fxn_data(recipient_address, token_address, amount).unwrap());
+        let result = hex::encode(
+            encode_erc20_vault_peg_out_fxn_data_without_user_data(recipient_address, token_address, amount).unwrap(),
+        );
+        assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn should_encode_peg_out_fxn_data_with_user_data() {
+        let user_data = vec![0xde, 0xca, 0xff];
+        let amount = U256::from(1337);
+        let recipient_address =
+            EthAddress::from_slice(&hex::decode("edB86cd455ef3ca43f0e227e00469C3bDFA40628").unwrap());
+        let token_address = EthAddress::from_slice(&hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap());
+        let expected_result = "22965469000000000000000000000000edb86cd455ef3ca43f0e227e00469c3bdfa40628000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac000000000000000000000000000000000000000000000000000000000000053900000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000003decaff0000000000000000000000000000000000000000000000000000000000";
+        let result = hex::encode(
+            encode_erc20_vault_peg_out_fxn_data_with_user_data(recipient_address, token_address, amount, user_data)
+                .unwrap(),
+        );
         assert_eq!(result, expected_result)
     }
 

@@ -1,11 +1,8 @@
 use ethereum_types::H256 as EthHash;
 
 use crate::{
-    chains::eth::{
-        any_sender::relay_transaction::RelayTransaction,
-        eth_crypto_utils::keccak_hash_bytes,
-        eth_types::EthSignature,
-    },
+    chains::eth::{any_sender::relay_transaction::RelayTransaction, eth_types::EthSignature},
+    crypto_utils::keccak_hash_bytes,
     types::{Byte, Bytes, Result},
 };
 

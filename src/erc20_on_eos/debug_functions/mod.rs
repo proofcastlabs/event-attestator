@@ -233,7 +233,7 @@ where
                 current_eth_account_nonce,
                 0,
                 current_eos_erc20_smart_contract_address,
-                get_eth_chain_id_from_db(&db)?,
+                &get_eth_chain_id_from_db(&db)?,
                 ERC20_VAULT_MIGRATE_GAS_LIMIT,
                 get_eth_gas_price_from_db(&db)?,
             ))
@@ -282,7 +282,7 @@ where
                 current_eth_account_nonce,
                 0,
                 get_erc20_on_eos_smart_contract_address_from_db(&db)?,
-                get_eth_chain_id_from_db(&db)?,
+                &get_eth_chain_id_from_db(&db)?,
                 ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
                 get_eth_gas_price_from_db(&db)?,
             ))
@@ -326,7 +326,7 @@ where
                 current_eth_account_nonce,
                 0,
                 get_erc20_on_eos_smart_contract_address_from_db(&db)?,
-                get_eth_chain_id_from_db(&db)?,
+                &get_eth_chain_id_from_db(&db)?,
                 ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
                 get_eth_gas_price_from_db(&db)?,
             ))

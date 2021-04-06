@@ -12,6 +12,7 @@ use crate::{
         eos_action_proofs::{EosActionProof, EosActionProofs},
         eos_action_receipt::{AuthSequence, EosActionReceipt},
         eos_block_header::EosBlockHeaderV2,
+        eos_chain_id::EosChainId,
         eos_crypto::{eos_private_key::EosPrivateKey, eos_public_key::EosPublicKey, eos_signature::EosSignature},
         eos_merkle_utils::Incremerkle,
         eos_producer_schedule::{
@@ -77,7 +78,7 @@ pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_JUNGLE_3_JSON_1: &str =
 pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_1: &str =
     "src/chains/eos/eos_test_utils/eos-init-and-subsequent-blocks-mainnet-1.json";
 
-pub const EOS_JUNGLE_CHAIN_ID: &str = "e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473";
+pub const EOS_JUNGLE_CHAIN_ID: EosChainId = EosChainId::EosJungleTestnet;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosInitAndSubsequentBlocksJson {

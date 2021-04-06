@@ -6,6 +6,7 @@ use crate::{
     chains::{
         eos::{
             eos_actions::PTokenPegOutAction,
+            eos_chain_id::EosChainId,
             eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, EOS_MAX_EXPIRATION_SECS},
             eos_crypto::{
                 eos_private_key::EosPrivateKey,
@@ -95,7 +96,7 @@ impl EosOnEthEthTxInfos {
         &self,
         ref_block_num: u16,
         ref_block_prefix: u32,
-        chain_id: &str,
+        chain_id: &EosChainId,
         pk: &EosPrivateKey,
         eos_smart_contract: &EosAccountName,
     ) -> Result<EosSignedTransactions> {
@@ -193,13 +194,15 @@ impl EosOnEthEthTxInfo {
         ref_block_prefix: u32,
         eos_smart_contract: &EosAccountName,
         amount: &str,
-        chain_id: &str,
+        chain_id: &EosChainId,
         pk: &EosPrivateKey,
     ) -> Result<EosSignedTransaction> {
         info!("✔ Signing eos tx...");
         debug!(
             "smart-contract: {}\namount: {}\nchain ID: {}",
-            &eos_smart_contract, &amount, &chain_id
+            &eos_smart_contract,
+            &amount,
+            &chain_id.to_hex()
         );
         Self::get_eos_ptoken_peg_out_action(
             &eos_smart_contract.to_string(),
@@ -316,14 +319,14 @@ mod tests {
         let tx_infos = EosOnEthEthTxInfos::from_eth_submission_material(&material, &dictionary).unwrap();
         let ref_block_num = 1;
         let ref_block_prefix = 1;
-        let chain_id = "aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906";
+        let chain_id = EosChainId::EosMainnet;
         let pk = EosPrivateKey::from_slice(
             &hex::decode("17b116e5e55af3b9985ff6c6e0320578176b83ca55570a66683d3b36d9deca64").unwrap(),
         )
         .unwrap();
         let eos_smart_contract = EosAccountName::from_str("11ppntoneos").unwrap();
         let result = tx_infos
-            .to_eos_signed_txs(ref_block_num, ref_block_prefix, chain_id, &pk, &eos_smart_contract)
+            .to_eos_signed_txs(ref_block_num, ref_block_prefix, &chain_id, &pk, &eos_smart_contract)
             .unwrap()[0]
             .transaction
             .clone();

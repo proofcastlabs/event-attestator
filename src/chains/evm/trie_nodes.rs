@@ -297,10 +297,10 @@ mod tests {
         let node_type = result.get_type();
         assert_eq!(node_type, LEAF_NODE_STRING);
         if result.extension.is_some() || result.branch.is_some() {
-            panic!(panic_str)
+            panic!("{}", panic_str)
         }
         match result.leaf {
-            None => panic!(panic_str),
+            None => panic!("{}", panic_str),
             Some(leaf) => {
                 let nibble_length = get_length_in_nibbles(&leaf.path_nibbles);
                 assert_eq!(leaf.value, value);
@@ -343,10 +343,10 @@ mod tests {
         let mut expected_raw = expected_encoded_path.clone();
         expected_raw.append(&mut value.clone());
         if result.leaf.is_some() || result.branch.is_some() {
-            panic!(panic_str)
+            panic!("{}", panic_str)
         }
         match result.extension {
-            None => panic!(panic_str),
+            None => panic!("{}", panic_str),
             Some(extension) => {
                 let nibble_length = get_length_in_nibbles(&extension.path_nibbles);
                 assert_eq!(extension.value, value);
@@ -379,12 +379,12 @@ mod tests {
         let panic_str = "Node should be a branch node";
         let result = Node::new_branch(None).unwrap();
         if result.extension.is_some() || result.leaf.is_some() {
-            panic!(panic_str)
+            panic!("{}", panic_str)
         }
         let node_type = result.get_type();
         assert_eq!(node_type, BRANCH_NODE_STRING);
         match result.branch {
-            None => panic!(panic_str),
+            None => panic!("{}", panic_str),
             Some(branch) => {
                 if branch.value.is_some() {
                     panic!("Branch should not have a value!")
@@ -400,12 +400,12 @@ mod tests {
         let value = hex::decode("c0ffee").unwrap();
         let result = Node::new_branch(Some(value.clone())).unwrap();
         if result.extension.is_some() || result.leaf.is_some() {
-            panic!(panic_str)
+            panic!("{}", panic_str)
         }
         let node_type = result.get_type();
         assert_eq!(node_type, "branch");
         match result.branch {
-            None => panic!(panic_str),
+            None => panic!("{}", panic_str),
             Some(branch) => {
                 match branch.value {
                     Some(_value) => assert_eq!(_value, value),

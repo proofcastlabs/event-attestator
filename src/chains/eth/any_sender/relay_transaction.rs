@@ -9,7 +9,7 @@ use crate::{
             relay_contract::RelayContract,
             serde::{compensation, data},
         },
-        eth_constants::{ETH_MAINNET_CHAIN_ID, ETH_ROPSTEN_CHAIN_ID},
+        eth_chain_id::EthChainId,
         eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
@@ -83,7 +83,7 @@ impl RelayTransaction {
     #[cfg(test)]
     pub fn new(
         from: EthAddress,
-        chain_id: u8,
+        chain_id: &EthChainId,
         eth_private_key: EthPrivateKey,
         data: Bytes,
         deadline: Option<u64>,
@@ -112,7 +112,7 @@ impl RelayTransaction {
 
     /// Creates a new unsigned relay transaction from data.
     fn new_unsigned(
-        chain_id: u8,
+        chain_id: &EthChainId,
         from: EthAddress,
         data: Bytes,
         deadline: Option<u64>,
@@ -137,14 +137,14 @@ impl RelayTransaction {
             return Err("✘ AnySender compensation should be smaller than 0.05 ETH!".into());
         }
 
-        if chain_id != ETH_MAINNET_CHAIN_ID && chain_id != ETH_ROPSTEN_CHAIN_ID {
+        if *chain_id != EthChainId::Mainnet && *chain_id != EthChainId::Ropsten {
             return Err("✘ AnySender is not available on chain with the id provided!".into());
         }
 
         info!("✔ AnySender transaction constraints are satisfied. Returning unsigned transaction...");
 
         Ok(RelayTransaction {
-            chain_id,
+            chain_id: chain_id.to_byte(),
             from,
             data,
             deadline,
@@ -179,7 +179,7 @@ impl RelayTransaction {
 
     /// Creates a new AnySender relayed `mintByProxy` ERC777 proxy contract transaction.
     pub fn new_mint_by_proxy_tx(
-        chain_id: Byte,
+        chain_id: &EthChainId,
         from: EthAddress,
         token_amount: U256,
         any_sender_nonce: u64,
@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn should_create_new_signed_relay_tx_from_data() {
-        let chain_id = 3;
+        let chain_id = EthChainId::Ropsten;
         let data = hex::decode("f15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000").unwrap();
         let deadline = Some(0);
         let gas_limit = 100000;
@@ -262,7 +262,7 @@ mod tests {
 
         let relay_transaction = RelayTransaction::new(
             from,
-            chain_id,
+            &chain_id,
             eth_private_key,
             data.clone(),
             deadline,
@@ -300,7 +300,7 @@ mod tests {
 
         let relay_transaction = RelayTransaction::new(
             from,
-            chain_id,
+            &chain_id,
             eth_private_key,
             data,
             deadline,
@@ -332,7 +332,7 @@ mod tests {
     #[test]
     fn should_create_new_any_sender_relayed_mint_by_proxy_tx() {
         let eth_transaction = get_sample_unsigned_eth_transaction();
-        let chain_id = 3;
+        let chain_id = EthChainId::Ropsten;
         let eth_private_key = EthPrivateKey::from_slice(&[
             132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169, 234, 47, 186, 237, 88,
             161, 200, 177, 24, 142, 207, 242, 168, 221,
@@ -343,7 +343,7 @@ mod tests {
         let amount = U256::from(1337);
 
         let relay_transaction = RelayTransaction::new_mint_by_proxy_tx(
-            chain_id,
+            &chain_id,
             from,
             amount,
             any_sender_nonce,
@@ -353,7 +353,7 @@ mod tests {
         )
         .expect("Error creating AnySender relay transaction from eth transaction!");
         let expected_relay_transaction = RelayTransaction {
-            chain_id: 3,
+            chain_id: chain_id.to_byte(),
             from: EthAddress::from_slice(
                 &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap()),
             signature: EthSignature::from_slice(
@@ -390,7 +390,7 @@ mod tests {
 
         let relay_transaction: RelayTransaction = serde_json::from_str(json_str).unwrap();
 
-        let chain_id = 3;
+        let chain_id = EthChainId::Ropsten;
         let eth_private_key = EthPrivateKey::from_slice(&[
             132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169, 234, 47, 186, 237, 88,
             161, 200, 177, 24, 142, 207, 242, 168, 221,
@@ -405,7 +405,7 @@ mod tests {
 
         let expected_relay_transaction = RelayTransaction::new(
             from,
-            chain_id,
+            &chain_id,
             eth_private_key,
             data,
             deadline,
@@ -441,7 +441,7 @@ mod tests {
         let expected_tx_hash = "e93eab63e9b863d4c93007b0a641c749af840c8c19602ea18f6546a308431cc4";
         let expected_tx_hex = "f8f394fde83bd51bddaa39f15c1bf50e222a7ae5831d8394736661736533bcfc9cc35649e6324acefb7d32c1b864f15da72900000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000004746573740000000000000000000000000000000000000000000000000000000080841dcd6500830186a003949b4fa5a1d9f6812e2b56b36fbde62736fa82c2a7b8415aa14a852439d9f5aa7b22c63a228d79c6822cf644badc9a63117dd7880d9a4c639eccd4aeeee91eaea63e36640d151be71346d785d2bd274fb82351c6bb2c101b";
 
-        let chain_id = 3;
+        let chain_id = EthChainId::Ropsten;
         let eth_private_key = EthPrivateKey::from_slice(&[
             132, 23, 52, 203, 67, 154, 240, 53, 117, 195, 124, 41, 179, 50, 97, 159, 61, 169, 234, 47, 186, 237, 88,
             161, 200, 177, 24, 142, 207, 242, 168, 221,
@@ -456,7 +456,7 @@ mod tests {
 
         let relay_transaction = RelayTransaction::new(
             from,
-            chain_id,
+            &chain_id,
             eth_private_key,
             data,
             deadline,
