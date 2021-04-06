@@ -2,7 +2,7 @@
 license = "MIT"
 publish = false
 edition = "2018"
-version = "4.23.0"
+version = "4.23.1"
 readme = "README.md"
 name = "ptokens_core"
 keywords = ["provable", "defi", "crypto"]
@@ -20,28 +20,27 @@ lto = "thin"
 overflow-checks = true
 
 [dependencies]
-hex = "0.4.2"
+hex = "0.4.3"
 log = "0.4.14"
 rlp = "0.5.0"
 rand = "0.8.3"
 strum = "0.20.0"
 chrono = "0.4.19"
-ethabi = "13.0.0"
-byteorder = "1.4.2"
+ethabi = "14.0.0"
+byteorder = "1.4.3"
 rustc-hex = "2.1.0"
-simplelog = "0.9.0"
-serde_json = "1.0.62"
+simplelog = "0.10.0"
+serde_json = "1.0.64"
 lazy_static = "1.4.0"
 strum_macros = "0.20.1"
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
-# upgrade blocked by ethabi
-ethereum-types = "0.10.0"
-serde = { version = "1.0.123", features = ["derive"] }
+ethereum-types = "0.11.0"
+serde = { version = "1.0.125", features = ["derive"] }
 bitcoin = { version = "0.26.0", features = ["use-serde", "rand"] }
 eos-chain = { git = "https://github.com/bifrost-finance/rust-eos" }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"] }
 quick-error = "2.0.0"
-derive_more = "0.99.11"
+derive_more = "0.99.13"
 
 [dev-dependencies]
 simple_logger = "1.11.0"
