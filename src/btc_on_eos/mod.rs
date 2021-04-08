@@ -37,7 +37,10 @@ pub use crate::{
         get_latest_block_numbers::get_latest_block_numbers,
     },
     chains::{
-        btc::core_initialization::initialize_btc_core::maybe_initialize_btc_core,
+        btc::{
+            btc_debug_functions::{debug_set_btc_account_nonce, debug_set_btc_utxo_nonce},
+            core_initialization::initialize_btc_core::maybe_initialize_btc_core,
+        },
         eos::{
             core_initialization::initialize_eos_core::maybe_initialize_eos_core_with_eos_account_and_symbol as maybe_initialize_eos_core,
             disable_protocol_feature::disable_eos_protocol_feature,
@@ -45,6 +48,7 @@ pub use crate::{
             eos_debug_functions::{
                 debug_add_global_sequences_to_processed_list,
                 debug_remove_global_sequences_from_processed_list,
+                debug_set_eos_account_nonce,
             },
         },
     },
