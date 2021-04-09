@@ -19,6 +19,7 @@ pub(crate) mod eth_test_utils;
 pub(crate) mod eth_traits;
 pub(crate) mod eth_types;
 pub(crate) mod eth_utils;
+pub(crate) mod evm_debug_functions;
 pub(crate) mod get_linker_hash;
 pub(crate) mod get_trie_hash_map;
 pub(crate) mod increment_eth_account_nonce_and_return_evm_state;

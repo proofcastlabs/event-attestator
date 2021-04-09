@@ -31,12 +31,16 @@ pub use crate::{
             eos_debug_functions::{
                 debug_add_global_sequences_to_processed_list,
                 debug_remove_global_sequences_from_processed_list,
+                debug_set_eos_account_nonce,
             },
         },
-        eth::eth_message_signer::{
-            sign_ascii_msg_with_eth_key_with_no_prefix,
-            sign_ascii_msg_with_eth_key_with_prefix,
-            sign_hex_msg_with_eth_key_with_prefix,
+        eth::{
+            eth_debug_functions::{debug_set_eth_account_nonce, debug_set_eth_any_sender_nonce},
+            eth_message_signer::{
+                sign_ascii_msg_with_eth_key_with_no_prefix,
+                sign_ascii_msg_with_eth_key_with_prefix,
+                sign_hex_msg_with_eth_key_with_prefix,
+            },
         },
     },
     eos_on_eth::{

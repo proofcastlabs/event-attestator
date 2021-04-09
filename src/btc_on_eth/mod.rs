@@ -42,11 +42,17 @@ pub use crate::{
         get_latest_block_numbers::get_latest_block_numbers,
     },
     chains::{
-        btc::core_initialization::initialize_btc_core::maybe_initialize_btc_core as maybe_initialize_btc_enclave,
-        eth::eth_message_signer::{
-            sign_ascii_msg_with_eth_key_with_no_prefix,
-            sign_ascii_msg_with_eth_key_with_prefix,
-            sign_hex_msg_with_eth_key_with_prefix,
+        btc::{
+            btc_debug_functions::{debug_set_btc_account_nonce, debug_set_btc_utxo_nonce},
+            core_initialization::initialize_btc_core::maybe_initialize_btc_core as maybe_initialize_btc_enclave,
+        },
+        eth::{
+            eth_debug_functions::{debug_set_eth_account_nonce, debug_set_eth_any_sender_nonce},
+            eth_message_signer::{
+                sign_ascii_msg_with_eth_key_with_no_prefix,
+                sign_ascii_msg_with_eth_key_with_prefix,
+                sign_hex_msg_with_eth_key_with_prefix,
+            },
         },
     },
 };
