@@ -69,6 +69,15 @@ pub fn parse_minting_params_from_p2pkh_deposits_and_add_to_state<D: DatabaseInte
 pub struct BtcOnEthMintingParams(pub Vec<BtcOnEthMintingParamStruct>);
 
 impl BtcOnEthMintingParams {
+    fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
+        let fees = self
+            .iter()
+            .map(|minting_params| minting_params.calculate_fee(basis_points))
+            .collect::<Vec<u64>>();
+        let total_fee = fees.iter().cloned().fold(0, |a, b| a + b);
+        (fees, total_fee)
+    }
+
     pub fn to_bytes(&self) -> Result<Bytes> {
         Ok(serde_json::to_vec(&self.0)?)
     }
@@ -189,6 +198,10 @@ impl BtcOnEthMintingParamStruct {
 
     fn to_satoshi_amount(&self) -> u64 {
         convert_wei_to_satoshis(self.amount)
+    }
+
+    pub fn calculate_fee(&self, basis_points: u64) -> u64 {
+        (self.to_satoshi_amount() * basis_points) / 10000
     }
 
     pub fn subtract_satoshi_amount(&self, subtrahend: u64) -> Self {
@@ -591,5 +604,25 @@ mod tests {
         let expected_result = 4999;
         let result = subtracted_params.to_satoshi_amount();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_calculate_fee() {
+        let params = get_sample_minting_params()[0].clone();
+        let basis_points = 25;
+        let expected_result = 12;
+        let result = params.calculate_fee(basis_points);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_calculate_fees() {
+        let basis_points = 25;
+        let params = get_sample_minting_params();
+        let (fees, total_fee) = params.calculate_fees(basis_points);
+        let expected_total_fee = 36;
+        let expected_fees = vec![12, 12, 12];
+        assert_eq!(total_fee, expected_total_fee);
+        assert_eq!(fees, expected_fees);
     }
 }
