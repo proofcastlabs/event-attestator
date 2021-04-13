@@ -182,6 +182,7 @@ pub fn maybe_parse_redeem_infos_and_add_to_state<D: DatabaseInterface>(state: Et
             false => {
                 info!("✔ Receipts in canon block ∴ parsing infos...");
                 BtcOnEthRedeemInfos::from_eth_submission_material(&submission_material)
+                    .and_then(|infos| infos.maybe_account_for_fees(&state.db))
                     .and_then(|infos| state.add_btc_on_eth_redeem_infos(infos))
             },
         }
