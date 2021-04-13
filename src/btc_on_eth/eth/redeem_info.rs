@@ -48,6 +48,10 @@ impl BtcOnEthRedeemInfo {
             originating_tx_hash: self.originating_tx_hash.clone(),
         }
     }
+
+    pub fn calculate_fee(&self, basis_points: u64) -> u64 {
+        (self.amount_in_satoshis / 1000) * basis_points
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]
@@ -179,7 +183,7 @@ mod tests {
     }
     fn get_sample_btc_on_eth_redeem_info_1() -> BtcOnEthRedeemInfo {
         BtcOnEthRedeemInfo {
-            amount_in_satoshis: 1337,
+            amount_in_satoshis: 123456789,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
             from: EthAddress::from_slice(&hex::decode("7d39fb393c5597dddccf1c428f030913fe7f67ab").unwrap()),
             originating_tx_hash: EthHash::from_slice(
@@ -190,7 +194,7 @@ mod tests {
 
     fn get_sample_btc_on_eth_redeem_info_2() -> BtcOnEthRedeemInfo {
         BtcOnEthRedeemInfo {
-            amount_in_satoshis: 666,
+            amount_in_satoshis: 987654321,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
             from: EthAddress::from_slice(&hex::decode("7d39fb393c5597dddccf1c428f030913fe7f67ab").unwrap()),
             originating_tx_hash: EthHash::from_slice(
@@ -293,7 +297,16 @@ mod tests {
     fn should_subtract_amount_from_redeem_info() {
         let info = get_sample_btc_on_eth_redeem_info_1();
         let result = info.subtract_amount(1);
-        let expected_amount = 1336;
+        let expected_amount = 123456788;
         assert_eq!(result.amount_in_satoshis, expected_amount)
+    }
+
+    #[test]
+    fn should_calculate_fee() {
+        let basis_points = 25;
+        let info = get_sample_btc_on_eth_redeem_info_1();
+        let result = info.calculate_fee(basis_points);
+        let expected_result = 3086400;
+        assert_eq!(result, expected_result);
     }
 }
