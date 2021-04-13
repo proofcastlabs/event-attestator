@@ -178,7 +178,7 @@ mod tests {
     use crate::{
         btc_on_eth::{
             btc::minting_params::{BtcOnEthMintingParamStruct, BtcOnEthMintingParams},
-            utils::convert_satoshis_to_ptoken,
+            utils::convert_satoshis_to_wei,
         },
         chains::btc::{
             btc_test_utils::{
@@ -324,7 +324,7 @@ mod tests {
             114, 101, 115, 115, 34, 58, 34, 50, 78, 50, 76, 72, 89, 98, 116, 56, 75, 49, 75, 68, 66, 111, 103, 100, 54,
             88, 85, 71, 57, 86, 66, 118, 53, 89, 77, 54, 120, 101, 102, 100, 77, 50, 34, 125, 93,
         ];
-        let amount = convert_satoshis_to_ptoken(1337);
+        let amount = convert_satoshis_to_wei(1337);
         let originating_tx_address = BtcAddress::from_str("2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2").unwrap();
         let eth_address = EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap());
         let originating_tx_hash =

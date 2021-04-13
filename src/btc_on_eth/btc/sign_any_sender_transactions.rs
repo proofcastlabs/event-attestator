@@ -73,7 +73,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        btc_on_eth::{btc::minting_params::BtcOnEthMintingParamStruct, utils::convert_satoshis_to_ptoken},
+        btc_on_eth::{btc::minting_params::BtcOnEthMintingParamStruct, utils::convert_satoshis_to_wei},
         chains::{
             btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
             eth::{
@@ -98,14 +98,14 @@ mod tests {
         let recipient_2 = EthAddress::from_slice(&hex::decode("9360a5C047e8Eb44647f17672638c3bB8e2B8a53").unwrap());
         let minting_params = vec![
             BtcOnEthMintingParamStruct::new(
-                convert_satoshis_to_ptoken(1337),
+                convert_satoshis_to_wei(1337),
                 hex::encode(recipient_1),
                 Txid::from_hash(Hash::hash(&[0xc0])),
                 originating_address.clone(),
             )
             .unwrap(),
             BtcOnEthMintingParamStruct::new(
-                convert_satoshis_to_ptoken(666),
+                convert_satoshis_to_wei(666),
                 hex::encode(recipient_2),
                 Txid::from_hash(Hash::hash(&[0xc0])),
                 originating_address,

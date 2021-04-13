@@ -5,7 +5,7 @@ use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 use crate::{
-    btc_on_eth::utils::convert_ptoken_to_satoshis,
+    btc_on_eth::utils::convert_wei_to_satoshis,
     chains::{
         btc::btc_types::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
         eth::{
@@ -91,7 +91,7 @@ impl BtcOnEthRedeemInfos {
                     Ok(BtcOnEthRedeemInfo {
                         from: event_params.redeemer,
                         originating_tx_hash: receipt.transaction_hash,
-                        amount_in_satoshis: convert_ptoken_to_satoshis(event_params.value),
+                        amount_in_satoshis: convert_wei_to_satoshis(event_params.value),
                         recipient: Self::get_btc_address_or_revert_to_safe_address(
                             &event_params.underlying_asset_recipient,
                         ),
