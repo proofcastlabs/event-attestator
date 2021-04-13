@@ -33,6 +33,7 @@ use crate::{
             btc_database_utils::{end_btc_db_transaction, get_btc_account_nonce_from_db, start_btc_db_transaction},
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
+            btc_utils::get_hex_tx_from_signed_btc_tx,
             extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_state,
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
             filter_minting_params::maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state,
@@ -93,7 +94,7 @@ use crate::{
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
-    fees::fee_constants::get_fee_constants_db_keys,
+    fees::{fee_constants::get_fee_constants_db_keys, fee_withdrawals::get_btc_on_eth_fee_withdrawal_tx},
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, prepend_debug_output_marker_to_string, strip_hex_prefix},
@@ -544,4 +545,21 @@ pub fn debug_remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -
 /// Use ONLY if you know exactly what you're doing and why!
 pub fn debug_add_multiple_utxos<D: DatabaseInterface>(db: D, json_str: &str) -> Result<String> {
     check_debug_mode().and_then(|_| add_multiple_utxos(&db, json_str).map(prepend_debug_output_marker_to_string))
+}
+
+/// # Debug Get Fee Withdrawal Tx
+///
+/// This function crates a BTC transaction to the passed in address for the amount of accrued fees
+/// accounted for in the encrypted database. The function then reset this value back to zero. The
+/// signed transaction is returned to the caller.
+pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &str) -> Result<String> {
+    info!("✔ Debug getting `btc-on-eth` withdrawal tx...");
+    check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| get_btc_on_eth_fee_withdrawal_tx(&db, btc_address))
+        .and_then(|btc_tx| {
+            db.end_transaction()?;
+            Ok(json!({ "signed_btc_tx": get_hex_tx_from_signed_btc_tx(&btc_tx) }).to_string())
+        })
+        .map(prepend_debug_output_marker_to_string)
 }
