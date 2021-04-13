@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     fees::{
-        fee_constants::BTC_ON_ETH_ACCRUED_FEES_KEY,
+        fee_constants::{BTC_ON_ETH_ACCRUED_FEES_KEY, DISABLE_FEES},
         fee_database_utils::{
             get_btc_on_eth_accrued_fees_from_db,
             get_btc_on_eth_peg_in_basis_points_from_db,
@@ -19,6 +19,7 @@ pub struct FeeEnclaveState {
     peg_in_basis_points: u64,
     peg_out_basis_points: u64,
     accrued_fees_db_key: String,
+    fees_enabled: bool,
 }
 
 impl FeeEnclaveState {
@@ -28,6 +29,7 @@ impl FeeEnclaveState {
             accrued_fees_db_key: hex::encode(*BTC_ON_ETH_ACCRUED_FEES_KEY),
             peg_in_basis_points: get_btc_on_eth_peg_in_basis_points_from_db(db)?,
             peg_out_basis_points: get_btc_on_eth_peg_out_basis_points_from_db(db)?,
+            fees_enabled: !DISABLE_FEES,
         })
     }
 }
