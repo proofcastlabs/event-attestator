@@ -50,8 +50,12 @@ pub fn put_btc_on_eth_peg_out_basis_points_in_db<D: DatabaseInterface>(db: &D, b
 }
 
 fn put_btc_on_eth_accrued_fees_in_db<D: DatabaseInterface>(db: &D, amount: u64) -> Result<()> {
-    debug!("✔ Putting BTC accrued fees in db...");
+    debug!("✔ Putting BTC accrued fee value of {} in db...", amount);
     put_u64_in_db(db, &BTC_ON_ETH_ACCRUED_FEES_KEY.to_vec(), amount)
+}
+
+pub fn reset_btc_accrued_fees<D: DatabaseInterface>(db: &D) -> Result<()> {
+    put_btc_on_eth_accrued_fees_in_db(db, 0)
 }
 
 pub fn increment_btc_on_eth_accrued_fees<D: DatabaseInterface>(db: &D, increment_amount: u64) -> Result<()> {
@@ -130,5 +134,17 @@ mod tests {
         increment_btc_on_eth_accrued_fees(&db, increment_amount).unwrap();
         let result = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
         assert_eq!(result, start_value + increment_amount);
+    }
+
+    #[test]
+    fn should_reset_btc_accrued_fees() {
+        let fees = 1337;
+        let db = get_test_database();
+        put_btc_on_eth_accrued_fees_in_db(&db, fees).unwrap();
+        let fees_in_db_before = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
+        assert_eq!(fees_in_db_before, fees);
+        reset_btc_accrued_fees(&db).unwrap();
+        let fees_in_db_after = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
+        assert_eq!(fees_in_db_after, 0)
     }
 }
