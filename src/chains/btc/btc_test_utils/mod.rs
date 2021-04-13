@@ -145,19 +145,19 @@ pub fn get_sample_minting_params() -> BtcOnEthMintingParams {
     let originating_tx_hash_2 = Txid::hash(b"something_2");
     let originating_tx_hash_3 = Txid::hash(b"something_3");
     let minting_params_1 = BtcOnEthMintingParamStruct {
-        amount_in_wei: amount_1,
+        amount: amount_1,
         eth_address: eth_address_1,
         originating_tx_hash: originating_tx_hash_1,
         originating_tx_address: originating_tx_address_1,
     };
     let minting_params_2 = BtcOnEthMintingParamStruct {
-        amount_in_wei: amount_2,
+        amount: amount_2,
         eth_address: eth_address_2,
         originating_tx_hash: originating_tx_hash_2,
         originating_tx_address: originating_tx_address_2,
     };
     let minting_params_3 = BtcOnEthMintingParamStruct {
-        amount_in_wei: amount_3,
+        amount: amount_3,
         eth_address: eth_address_3,
         originating_tx_hash: originating_tx_hash_3,
         originating_tx_address: originating_tx_address_3,
