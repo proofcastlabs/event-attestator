@@ -54,7 +54,7 @@ impl BtcOnEthRedeemInfo {
     }
 
     pub fn calculate_fee(&self, basis_points: u64) -> u64 {
-        (self.amount_in_satoshis / 1000) * basis_points
+        (self.amount_in_satoshis * basis_points) / 1000
     }
 }
 
@@ -79,7 +79,7 @@ impl BtcOnEthRedeemInfos {
                 Self::new(
                     fees.iter()
                         .zip(self.iter())
-                        .map(|(fee, minting_params)| minting_params.subtract_amount(*fee))
+                        .map(|(fee, redeem_info)| redeem_info.subtract_amount(*fee))
                         .collect(),
                 )
             })
@@ -89,7 +89,7 @@ impl BtcOnEthRedeemInfos {
     fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
         let fees = self
             .iter()
-            .map(|minting_params| minting_params.calculate_fee(basis_points))
+            .map(|redeem_info| redeem_info.calculate_fee(basis_points))
             .collect::<Vec<u64>>();
         let total_fee = fees.iter().cloned().fold(0, |a, b| a + b);
         (fees, total_fee)
@@ -348,7 +348,7 @@ mod tests {
         let basis_points = 25;
         let info = get_sample_btc_on_eth_redeem_info_1();
         let result = info.calculate_fee(basis_points);
-        let expected_result = 3086400;
+        let expected_result = 3086419;
         assert_eq!(result, expected_result);
     }
 
@@ -357,8 +357,8 @@ mod tests {
         let basis_points = 25;
         let info = get_sample_btc_on_eth_redeem_infos();
         let (fees, total_fee) = info.calculate_fees(basis_points);
-        let expected_fees = vec![3086400, 24691350];
-        let expected_total_fee = 27777750;
+        let expected_fees = vec![3086419, 24691358];
+        let expected_total_fee = 27777777;
         assert_eq!(fees, expected_fees);
         assert_eq!(total_fee, expected_total_fee);
     }
@@ -372,14 +372,14 @@ mod tests {
         assert_eq!(accrued_fees_before, 0);
         let infos = get_sample_btc_on_eth_redeem_infos();
         let (_, total_fee) = infos.calculate_fees(fee_basis_points);
-        let expected_total_fee = 27777750;
+        let expected_total_fee = 27777777;
         assert_eq!(total_fee, expected_total_fee);
         let total_value_before = infos.sum();
         let resulting_infos = infos.maybe_account_for_fees(&db).unwrap();
         let total_value_after = resulting_infos.sum();
         let accrued_fees_after = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
-        let expected_peg_out_amount_after_1 = 120370389;
-        let expected_peg_out_amount_after_2 = 962962971;
+        let expected_peg_out_amount_after_1 = 120370370;
+        let expected_peg_out_amount_after_2 = 962962963;
         assert_eq!(total_value_after + total_fee, total_value_before);
         assert_eq!(accrued_fees_after, total_fee);
         assert_eq!(resulting_infos[0].amount_in_satoshis, expected_peg_out_amount_after_1);
