@@ -12,10 +12,10 @@ fn filter_redeem_infos(redeem_infos: &BtcOnEthRedeemInfos) -> BtcOnEthRedeemInfo
         redeem_infos
             .0
             .iter()
-            .filter(|infos| match infos.amount >= U256::from(MINIMUM_REQUIRED_SATOSHIS) {
+            .filter(|infos| match infos.amount >= MINIMUM_REQUIRED_SATOSHIS {
                 true => true,
                 false => {
-                    trace!("✘ Filtering redeem infos ∵ amount too low: {:?}", infos);
+                    info!("✘ Filtering redeem infos ∵ amount too low: {:?}", infos);
                     false
                 },
             })
@@ -24,10 +24,7 @@ fn filter_redeem_infos(redeem_infos: &BtcOnEthRedeemInfos) -> BtcOnEthRedeemInfo
     )
 }
 
-pub fn maybe_filter_redeem_infos_in_state<D>(state: EthState<D>) -> Result<EthState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_filter_redeem_infos_in_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Filtering any `btc-on-eth` redeem infos for amounts below minimum # of Satoshis...");
     let new_infos = filter_redeem_infos(&state.btc_on_eth_redeem_infos);
     state.replace_btc_on_eth_redeem_infos(new_infos)
@@ -50,7 +47,7 @@ mod tests {
         let expected_length = 2;
         let infos = BtcOnEthRedeemInfos::new(vec![
             BtcOnEthRedeemInfo {
-                amount: U256::from_dec_str("4999").unwrap(),
+                amount: 4999,
                 from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),
                 recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
                 originating_tx_hash: EthHash::from_slice(
@@ -58,7 +55,7 @@ mod tests {
                 ),
             },
             BtcOnEthRedeemInfo {
-                amount: U256::from_dec_str("5000").unwrap(),
+                amount: 5000,
                 from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),
                 recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
                 originating_tx_hash: EthHash::from_slice(
@@ -66,7 +63,7 @@ mod tests {
                 ),
             },
             BtcOnEthRedeemInfo {
-                amount: U256::from_dec_str("5001").unwrap(),
+                amount: 5001,
                 from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),
                 recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
                 originating_tx_hash: EthHash::from_slice(
