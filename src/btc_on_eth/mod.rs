@@ -55,6 +55,10 @@ pub use crate::{
             },
         },
     },
+    fees::fee_debug_functions::{
+        debug_put_btc_on_eth_peg_in_basis_points_in_db,
+        debug_put_btc_on_eth_peg_out_basis_points_in_db,
+    },
 };
 
 pub mod btc;
