@@ -47,9 +47,9 @@ impl BtcOnEthRedeemInfo {
         );
         Self {
             amount_in_satoshis: new_amount,
-            from: self.from.clone(),
+            from: self.from,
             recipient: self.recipient.clone(),
-            originating_tx_hash: self.originating_tx_hash.clone(),
+            originating_tx_hash: self.originating_tx_hash,
         }
     }
 
@@ -91,7 +91,7 @@ impl BtcOnEthRedeemInfos {
             .iter()
             .map(|redeem_info| redeem_info.calculate_fee(basis_points))
             .collect::<Vec<u64>>();
-        let total_fee = fees.iter().cloned().fold(0, |a, b| a + b);
+        let total_fee = fees.iter().sum();
         (fees, total_fee)
     }
 

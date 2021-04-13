@@ -109,7 +109,7 @@ impl BtcOnEthMintingParams {
             .iter()
             .map(|minting_params| minting_params.calculate_fee(basis_points))
             .collect::<Vec<u64>>();
-        let total_fee = fees.iter().cloned().fold(0, |a, b| a + b);
+        let total_fee = fees.iter().sum();
         (fees, total_fee)
     }
 
@@ -247,8 +247,8 @@ impl BtcOnEthMintingParamStruct {
         );
         Self {
             amount: convert_satoshis_to_wei(new_amount),
-            eth_address: self.eth_address.clone(),
-            originating_tx_hash: self.originating_tx_hash.clone(),
+            eth_address: self.eth_address,
+            originating_tx_hash: self.originating_tx_hash,
             originating_tx_address: self.originating_tx_address.clone(),
         }
     }
