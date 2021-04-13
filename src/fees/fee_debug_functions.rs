@@ -8,7 +8,7 @@ use crate::{
     utils::prepend_debug_output_marker_to_string,
 };
 
-/// # Debug Put BTC-on-ETH Basis Points In DB
+/// # Debug Put BTC-on-ETH Peg-In Basis-Points In DB
 ///
 /// This function sets to the given value the `BTC-on-ETH` peg-in basis-points in the encrypted
 /// database.
@@ -25,9 +25,9 @@ pub fn debug_put_btc_on_eth_peg_in_basis_points_in_db<D: DatabaseInterface>(
         .map(prepend_debug_output_marker_to_string)
 }
 
-/// # Debug Put BTC-on-ETH Basis Points In DB
+/// # Debug Put BTC-on-ETH Peg-Out Basis-Points In DB
 ///
-/// This function sets to the given value the `BTC-on-ETH` peg-in basis-points in the encrypted
+/// This function sets to the given value the `BTC-on-ETH` peg-out basis-points in the encrypted
 /// database.
 pub fn debug_put_btc_on_eth_peg_out_basis_points_in_db<D: DatabaseInterface>(
     db: &D,
