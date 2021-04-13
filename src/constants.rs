@@ -14,12 +14,6 @@ pub const CORE_IS_VALIDATING: bool = false;
 #[cfg(not(feature = "non-validating"))]
 pub const CORE_IS_VALIDATING: bool = true;
 
-#[cfg(not(feature = "disable-fees"))]
-pub const DISABLE_FEES: bool = false;
-
-#[cfg(feature = "disable-fees")]
-pub const DISABLE_FEES: bool = true;
-
 pub const NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR: &str =
     "✘ Not allowed to skip validation when core is not built in `DEBUG` mode!`";
 

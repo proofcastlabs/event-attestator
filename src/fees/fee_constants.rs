@@ -2,6 +2,12 @@ pub use serde_json::{json, Value as JsonValue};
 
 use crate::utils::get_prefixed_db_key;
 
+#[cfg(not(feature = "disable-fees"))]
+pub const DISABLE_FEES: bool = false;
+
+#[cfg(feature = "disable-fees")]
+pub const DISABLE_FEES: bool = true;
+
 pub fn get_fee_constants_db_keys() -> JsonValue {
     json!({
         "BTC_ON_ETH_ACCRUED_FEES_KEY": hex::encode(BTC_ON_ETH_ACCRUED_FEES_KEY.to_vec()),

@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     constants::{CORE_IS_VALIDATING, DB_KEY_PREFIX, DEBUG_MODE},
+    fees::fee_constants::DISABLE_FEES,
     utils::get_core_version,
 };
 
@@ -11,6 +12,7 @@ pub struct EnclaveInfo {
     db_key_prefix: String,
     core_is_validating: bool,
     core_version: String,
+    fees_enabled: bool,
 }
 
 impl EnclaveInfo {
@@ -20,6 +22,7 @@ impl EnclaveInfo {
             core_is_validating: CORE_IS_VALIDATING,
             db_key_prefix: DB_KEY_PREFIX.to_string(),
             core_version: get_core_version(),
+            fees_enabled: !DISABLE_FEES,
         }
     }
 }
