@@ -58,6 +58,15 @@ impl BtcOnEthRedeemInfo {
 pub struct BtcOnEthRedeemInfos(pub Vec<BtcOnEthRedeemInfo>);
 
 impl BtcOnEthRedeemInfos {
+    fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
+        let fees = self
+            .iter()
+            .map(|minting_params| minting_params.calculate_fee(basis_points))
+            .collect::<Vec<u64>>();
+        let total_fee = fees.iter().cloned().fold(0, |a, b| a + b);
+        (fees, total_fee)
+    }
+
     pub fn sum(&self) -> u64 {
         self.iter().fold(0, |acc, params| acc + params.amount_in_satoshis)
     }
@@ -308,5 +317,16 @@ mod tests {
         let result = info.calculate_fee(basis_points);
         let expected_result = 3086400;
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_calculate_fees() {
+        let basis_points = 25;
+        let info = get_sample_btc_on_eth_redeem_infos();
+        let (fees, total_fee) = info.calculate_fees(basis_points);
+        let expected_fees = vec![3086400, 24691350];
+        let expected_total_fee = 27777750;
+        assert_eq!(fees, expected_fees);
+        assert_eq!(total_fee, expected_total_fee);
     }
 }
