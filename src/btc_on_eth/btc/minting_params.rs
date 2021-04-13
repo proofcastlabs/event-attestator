@@ -15,7 +15,7 @@ use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    btc_on_eth::utils::convert_satoshis_to_wei,
+    btc_on_eth::utils::{convert_satoshis_to_wei, convert_wei_to_satoshis},
     chains::{
         btc::{
             btc_constants::{MINIMUM_REQUIRED_SATOSHIS, PLACEHOLDER_BTC_ADDRESS},
@@ -185,6 +185,10 @@ impl BtcOnEthMintingParamStruct {
             originating_tx_address: originating_tx_address.to_string(),
             eth_address: safely_convert_hex_to_eth_address(&eth_address_hex)?,
         })
+    }
+
+    fn to_satoshi_amount(&self) -> u64 {
+        convert_wei_to_satoshis(self.amount_in_wei)
     }
 
     fn serialized_script_pubkey_should_be_desired_op_return(serialized_script: &[Byte]) -> bool {
@@ -559,6 +563,15 @@ mod tests {
             BtcOnEthMintingParamStruct::extract_spender_address_from_op_return_input(&input, network).unwrap();
         assert_eq!(address.to_string(), expected_origin_address);
     }
+
+    #[test]
+    fn should_get_amount_in_satoshi() {
+        let params = get_sample_minting_params()[0].clone();
+        let result = params.to_satoshi_amount();
+        let expected_result = 5000;
+        assert_eq!(result, expected_result);
+    }
+
     // TODO Fashion a transaction w/ > 1 deposit output in P2PKH
     // plus another output that's NOT a deposit & use that as test vector.
 }
