@@ -24,10 +24,10 @@ pub fn get_eth_signed_txs(
             .map(|(i, minting_param_struct)| {
                 info!(
                     "✔ Signing ETH tx for amount: {}, to address: {}",
-                    minting_param_struct.amount, minting_param_struct.eth_address,
+                    minting_param_struct.amount_in_wei, minting_param_struct.eth_address,
                 );
                 get_signed_minting_tx(
-                    &minting_param_struct.amount,
+                    &minting_param_struct.amount_in_wei,
                     signing_params.eth_account_nonce + i as u64,
                     &signing_params.chain_id,
                     signing_params.smart_contract_address,

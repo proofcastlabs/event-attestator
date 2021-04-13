@@ -53,7 +53,7 @@ impl EthTxInfo {
             eth_tx_hash: format!("0x{}", tx.get_tx_hash()),
             eth_tx_hex: tx.eth_tx_hex(),
             originating_address: address_string,
-            eth_tx_amount: minting_param_struct.amount.to_string(),
+            eth_tx_amount: minting_param_struct.amount_in_wei.to_string(),
             originating_tx_hash: minting_param_struct.originating_tx_hash.to_string(),
             eth_tx_recipient: format!("0x{}", hex::encode(minting_param_struct.eth_address.as_bytes())),
             signature_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),

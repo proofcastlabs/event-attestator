@@ -23,7 +23,7 @@ pub fn get_any_sender_signed_txs(
         .map(|(i, minting_param_struct)| {
             info!(
                 "✔ Signing AnySender tx for amount: {}, to address: {}",
-                minting_param_struct.amount, minting_param_struct.eth_address,
+                minting_param_struct.amount_in_wei, minting_param_struct.eth_address,
             );
 
             let any_sender_nonce = signing_params.any_sender_nonce + i as u64;
@@ -31,7 +31,7 @@ pub fn get_any_sender_signed_txs(
             RelayTransaction::new_mint_by_proxy_tx(
                 &signing_params.chain_id,
                 signing_params.public_eth_address,
-                minting_param_struct.amount,
+                minting_param_struct.amount_in_wei,
                 any_sender_nonce,
                 &signing_params.eth_private_key,
                 signing_params.erc777_proxy_address,

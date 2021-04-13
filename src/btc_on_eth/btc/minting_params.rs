@@ -85,7 +85,7 @@ impl BtcOnEthMintingParams {
         let threshold = convert_satoshis_to_wei(MINIMUM_REQUIRED_SATOSHIS);
         Ok(BtcOnEthMintingParams::new(
             self.iter()
-                .filter(|params| match params.amount >= threshold {
+                .filter(|params| match params.amount_in_wei >= threshold {
                     true => true,
                     false => {
                         info!("✘ Filtering minting params ∵ value too low: {:?}", params);
@@ -166,7 +166,7 @@ impl BtcOnEthMintingParams {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BtcOnEthMintingParamStruct {
-    pub amount: U256,
+    pub amount_in_wei: U256,
     pub eth_address: EthAddress,
     pub originating_tx_hash: Txid,
     pub originating_tx_address: String,
@@ -174,13 +174,13 @@ pub struct BtcOnEthMintingParamStruct {
 
 impl BtcOnEthMintingParamStruct {
     pub fn new(
-        amount: U256,
+        amount_in_wei: U256,
         eth_address_hex: String,
         originating_tx_hash: Txid,
         originating_tx_address: BtcAddress,
     ) -> Result<BtcOnEthMintingParamStruct> {
         Ok(BtcOnEthMintingParamStruct {
-            amount,
+            amount_in_wei,
             originating_tx_hash,
             originating_tx_address: originating_tx_address.to_string(),
             eth_address: safely_convert_hex_to_eth_address(&eth_address_hex)?,
@@ -318,7 +318,9 @@ mod tests {
         let result = minting_params.filter_out_value_too_low().unwrap();
         let length_after = result.len();
         assert_eq!(length_after, expected_length_after);
-        result.iter().for_each(|params| assert!(params.amount >= threshold));
+        result
+            .iter()
+            .for_each(|params| assert!(params.amount_in_wei >= threshold));
     }
 
     #[test]
@@ -336,7 +338,7 @@ mod tests {
         let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
         let tx = filter_p2sh_deposit_txs(&hash_map, &pub_key, &txs, btc_network).unwrap()[0].clone();
         let result = BtcOnEthMintingParams::from_btc_tx(&tx, &hash_map, btc_network).unwrap();
-        assert_eq!(result[0].amount, expected_amount);
+        assert_eq!(result[0].amount_in_wei, expected_amount);
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result[0].originating_tx_hash.to_string(), expected_tx_hash);
         assert_eq!(result[0].originating_tx_address.to_string(), expected_btc_address);
@@ -357,7 +359,7 @@ mod tests {
         let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
         let result = BtcOnEthMintingParams::from_btc_txs(&txs, &hash_map, btc_network).unwrap();
         assert_eq!(result.len(), expected_num_results);
-        assert_eq!(result[0].amount, expected_amount);
+        assert_eq!(result[0].amount_in_wei, expected_amount);
         assert_eq!(result[0].originating_tx_hash.to_string(), expected_tx_hash);
         assert_eq!(result[0].originating_tx_address.to_string(), expected_btc_address);
         assert_eq!(result[0].eth_address.as_bytes(), &expected_eth_address_bytes[..]);
@@ -499,7 +501,7 @@ mod tests {
         let tx = block.txdata[tx_index].clone();
         let target_deposit_script = get_sample_pay_to_pub_key_hash_script();
         let result = BtcOnEthMintingParamStruct::from_p2pkh_tx(&target_deposit_script, &tx, network).unwrap();
-        assert_eq!(result.amount, expected_value);
+        assert_eq!(result.amount_in_wei, expected_value);
         assert_eq!(result.eth_address, expected_address);
         assert_eq!(result.originating_tx_hash.to_string(), expected_tx_hash);
         let input = tx.input[0].clone();
@@ -519,7 +521,7 @@ mod tests {
         let tx = block.txdata[tx_index].clone();
         let target_deposit_script = get_sample_pay_to_pub_key_hash_script();
         let result = BtcOnEthMintingParamStruct::from_p2pkh_tx(&target_deposit_script, &tx, network).unwrap();
-        assert_eq!(result.amount, expected_value);
+        assert_eq!(result.amount_in_wei, expected_value);
         assert_eq!(result.eth_address, *SAFE_ETH_ADDRESS);
         assert_eq!(result.originating_tx_hash.to_string(), expected_tx_hash);
         let input = tx.input[0].clone();
@@ -549,7 +551,7 @@ mod tests {
         let target_deposit_script = get_sample_pay_to_pub_key_hash_script();
         let result = BtcOnEthMintingParams::from_btc_p2pkh_txs(&target_deposit_script, &filtered_txs, network).unwrap();
         assert_eq!(result.len(), 1);
-        assert_eq!(result[0].amount, expected_value);
+        assert_eq!(result[0].amount_in_wei, expected_value);
         assert_eq!(result[0].eth_address, expected_address);
         assert_eq!(result[0].originating_tx_hash.to_string(), expected_tx_hash);
         let input = filtered_txs[0].input[0].clone();
