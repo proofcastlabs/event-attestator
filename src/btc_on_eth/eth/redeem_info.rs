@@ -34,6 +34,22 @@ pub struct BtcOnEthRedeemInfo {
     pub originating_tx_hash: EthHash,
 }
 
+impl BtcOnEthRedeemInfo {
+    fn subtract_amount(&self, subtrahend: u64) -> Self {
+        let new_amount = self.amount_in_satoshis - subtrahend;
+        debug!(
+            "Subtracted amount of {} from current redeem info amount of {} to get final amount of {}",
+            subtrahend, self.amount_in_satoshis, new_amount
+        );
+        Self {
+            amount_in_satoshis: new_amount,
+            from: self.from.clone(),
+            recipient: self.recipient.clone(),
+            originating_tx_hash: self.originating_tx_hash.clone(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]
 pub struct BtcOnEthRedeemInfos(pub Vec<BtcOnEthRedeemInfo>);
 
@@ -161,6 +177,34 @@ mod tests {
             .collect::<Vec<&EthReceipt>>()[0]
             .clone()
     }
+    fn get_sample_btc_on_eth_redeem_info_1() -> BtcOnEthRedeemInfo {
+        BtcOnEthRedeemInfo {
+            amount_in_satoshis: 1337,
+            recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
+            from: EthAddress::from_slice(&hex::decode("7d39fb393c5597dddccf1c428f030913fe7f67ab").unwrap()),
+            originating_tx_hash: EthHash::from_slice(
+                &hex::decode("01920b62cd2e77204b2fa59932f9d6dd54fd43c99095aee808b700ed2b6ee9cf").unwrap(),
+            ),
+        }
+    }
+
+    fn get_sample_btc_on_eth_redeem_info_2() -> BtcOnEthRedeemInfo {
+        BtcOnEthRedeemInfo {
+            amount_in_satoshis: 666,
+            recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
+            from: EthAddress::from_slice(&hex::decode("7d39fb393c5597dddccf1c428f030913fe7f67ab").unwrap()),
+            originating_tx_hash: EthHash::from_slice(
+                &hex::decode("01920b62cd2e77204b2fa59932f9d6dd54fd43c99095aee808b700ed2b6ee9cf").unwrap(),
+            ),
+        }
+    }
+
+    fn get_sample_btc_on_eth_redeem_infos() -> BtcOnEthRedeemInfos {
+        BtcOnEthRedeemInfos::new(vec![
+            get_sample_btc_on_eth_redeem_info_1(),
+            get_sample_btc_on_eth_redeem_info_2(),
+        ])
+    }
 
     fn get_expected_btc_on_eth_redeem_info() -> BtcOnEthRedeemInfo {
         let amount = 666;
@@ -243,5 +287,13 @@ mod tests {
         let bad_address = "not a BTC address".to_string();
         let result = BtcOnEthRedeemInfos::get_btc_address_or_revert_to_safe_address(&bad_address);
         assert_eq!(result, SAFE_BTC_ADDRESS.to_string());
+    }
+
+    #[test]
+    fn should_subtract_amount_from_redeem_info() {
+        let info = get_sample_btc_on_eth_redeem_info_1();
+        let result = info.subtract_amount(1);
+        let expected_amount = 1336;
+        assert_eq!(result.amount_in_satoshis, expected_amount)
     }
 }
