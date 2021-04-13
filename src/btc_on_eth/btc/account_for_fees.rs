@@ -87,7 +87,7 @@ mod tests {
     }
 
     #[test]
-    fn should_not_account_for_fees_of_basis_points_are_zero() {
+    fn should_not_account_for_fees_if_basis_points_are_zero() {
         let fee_basis_points = 0;
         assert_eq!(fee_basis_points, 0);
         let db = get_test_database();

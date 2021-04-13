@@ -45,7 +45,7 @@ pub fn debug_put_btc_on_eth_peg_out_basis_points_in_db<D: DatabaseInterface>(
     db: &D,
     basis_points: u64,
 ) -> Result<String> {
-    info!("✔ Debug setting `BTC-on-ETh` peg-out basis-points to {}", basis_points);
+    info!("✔ Debug setting `BTC-on-ETH` peg-out basis-points to {}", basis_points);
     check_debug_mode()
         .and_then(|_| sanity_check_basis_points_value(basis_points))
         .and_then(|_| db.start_transaction())
@@ -72,8 +72,8 @@ mod tests {
         let expected_err = format!("Error! Basis points exceeds maximum of {}!", MAX_FEE_BASIS_POINTS);
         let basis_points = MAX_FEE_BASIS_POINTS + 1;
         match sanity_check_basis_points_value(basis_points) {
-            Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Ok(_) => panic!("Should not have succeeded!"),
             Err(_) => panic!("Wrong error received!"),
         }
     }

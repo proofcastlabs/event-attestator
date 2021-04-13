@@ -105,8 +105,8 @@ mod tests {
         let expected_err = "Cannot get `btc-on-eth` withdrawal tx - there are no fees to withdraw!".to_string();
         let recipient_address = "msgbp2MiwL6M1qkhZx9N46ipPn12tzLzZ7";
         match get_btc_on_eth_fee_withdrawal_tx(&db, recipient_address) {
-            Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Ok(_) => panic!("Should not have succeeded!"),
             Err(_) => panic!("Wrong error received!"),
         }
     }
