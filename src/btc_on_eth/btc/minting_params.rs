@@ -191,6 +191,20 @@ impl BtcOnEthMintingParamStruct {
         convert_wei_to_satoshis(self.amount_in_wei)
     }
 
+    pub fn subtract_satoshi_amount(&self, subtrahend: u64) -> Self {
+        let new_amount = self.to_satoshi_amount() - subtrahend;
+        debug!(
+            "Subtracted amount of {} from current minting params amount of {} to get final amount of {}",
+            subtrahend, self.amount_in_wei, new_amount
+        );
+        Self {
+            amount_in_wei: convert_satoshis_to_wei(new_amount),
+            eth_address: self.eth_address.clone(),
+            originating_tx_hash: self.originating_tx_hash.clone(),
+            originating_tx_address: self.originating_tx_address.clone(),
+        }
+    }
+
     fn serialized_script_pubkey_should_be_desired_op_return(serialized_script: &[Byte]) -> bool {
         serialized_script.len() == NUM_BYTES_IN_SCRIPT_WITH_LEN_PREFIX
             && serialized_script[0] == NUM_BYTES_IN_SCRIPT
@@ -572,6 +586,12 @@ mod tests {
         assert_eq!(result, expected_result);
     }
 
-    // TODO Fashion a transaction w/ > 1 deposit output in P2PKH
-    // plus another output that's NOT a deposit & use that as test vector.
+    #[test]
+    fn should_subtract_satoshi_amount() {
+        let params = get_sample_minting_params()[0].clone();
+        let subtracted_params = params.subtract_satoshi_amount(1);
+        let expected_result = 4999;
+        let result = subtracted_params.to_satoshi_amount();
+        assert_eq!(result, expected_result);
+    }
 }
