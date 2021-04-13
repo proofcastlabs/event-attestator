@@ -1,5 +1,3 @@
-use ethereum_types::U256;
-
 use crate::{
     btc_on_eth::eth::redeem_info::{BtcOnEthRedeemInfo, BtcOnEthRedeemInfos},
     chains::{btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS, eth::eth_state::EthState},
@@ -12,7 +10,7 @@ fn filter_redeem_infos(redeem_infos: &BtcOnEthRedeemInfos) -> BtcOnEthRedeemInfo
         redeem_infos
             .0
             .iter()
-            .filter(|infos| match infos.amount >= MINIMUM_REQUIRED_SATOSHIS {
+            .filter(|infos| match infos.amount_in_satoshis >= MINIMUM_REQUIRED_SATOSHIS {
                 true => true,
                 false => {
                     info!("✘ Filtering redeem infos ∵ amount too low: {:?}", infos);
@@ -34,8 +32,6 @@ pub fn maybe_filter_redeem_infos_in_state<D: DatabaseInterface>(state: EthState<
 mod tests {
     use std::str::FromStr;
 
-    use ethereum_types::U256;
-
     use super::*;
     use crate::{
         btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfo,
@@ -47,7 +43,7 @@ mod tests {
         let expected_length = 2;
         let infos = BtcOnEthRedeemInfos::new(vec![
             BtcOnEthRedeemInfo {
-                amount: 4999,
+                amount_in_satoshis: 4999,
                 from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),
                 recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
                 originating_tx_hash: EthHash::from_slice(
@@ -55,7 +51,7 @@ mod tests {
                 ),
             },
             BtcOnEthRedeemInfo {
-                amount: 5000,
+                amount_in_satoshis: 5000,
                 from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),
                 recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
                 originating_tx_hash: EthHash::from_slice(
@@ -63,7 +59,7 @@ mod tests {
                 ),
             },
             BtcOnEthRedeemInfo {
-                amount: 5001,
+                amount_in_satoshis: 5001,
                 from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),
                 recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
                 originating_tx_hash: EthHash::from_slice(

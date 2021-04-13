@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use bitcoin::util::address::Address as BtcAddress;
 use derive_more::{Constructor, Deref, IntoIterator};
-use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 use crate::{
     btc_on_eth::utils::convert_ptoken_to_satoshis,
@@ -28,7 +28,7 @@ use crate::{
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor)]
 pub struct BtcOnEthRedeemInfo {
-    pub amount: u64,
+    pub amount_in_satoshis: u64,
     pub from: EthAddress,
     pub recipient: String,
     pub originating_tx_hash: EthHash,
@@ -39,14 +39,14 @@ pub struct BtcOnEthRedeemInfos(pub Vec<BtcOnEthRedeemInfo>);
 
 impl BtcOnEthRedeemInfos {
     pub fn sum(&self) -> u64 {
-        self.iter().fold(0, |acc, params| acc + params.amount)
+        self.iter().fold(0, |acc, params| acc + params.amount_in_satoshis)
     }
 
     pub fn to_btc_addresses_and_amounts(&self) -> Result<BtcRecipientsAndAmounts> {
         info!("✔ Getting BTC addresses & amounts from redeem params...");
         self.iter()
             .map(|params| {
-                let recipient_and_amount = BtcRecipientAndAmount::new(&params.recipient[..], params.amount);
+                let recipient_and_amount = BtcRecipientAndAmount::new(&params.recipient[..], params.amount_in_satoshis);
                 info!(
                     "✔ Recipients & amount retrieved from redeem: {:?}",
                     recipient_and_amount
@@ -91,7 +91,7 @@ impl BtcOnEthRedeemInfos {
                     Ok(BtcOnEthRedeemInfo {
                         from: event_params.redeemer,
                         originating_tx_hash: receipt.transaction_hash,
-                        amount: convert_ptoken_to_satoshis(event_params.value),
+                        amount_in_satoshis: convert_ptoken_to_satoshis(event_params.value),
                         recipient: Self::get_btc_address_or_revert_to_safe_address(
                             &event_params.underlying_asset_recipient,
                         ),
@@ -195,14 +195,14 @@ mod tests {
     fn should_get_btc_on_eth_redeem_infos_from_eth_submission_material() {
         let result = BtcOnEthRedeemInfos::from_eth_submission_material(&get_sample_block_with_redeem()).unwrap();
         let expected_result = BtcOnEthRedeemInfo {
-            amount: 666,
+            amount_in_satoshis: 666,
             from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
             originating_tx_hash: EthHash::from_slice(&hex::decode(get_tx_hash_of_redeem_tx()).unwrap()[..]),
         };
         assert_eq!(expected_result.from, result.0[0].from);
-        assert_eq!(expected_result.amount, result.0[0].amount);
         assert_eq!(expected_result.recipient, result.0[0].recipient);
+        assert_eq!(expected_result.amount_in_satoshis, result.0[0].amount_in_satoshis);
         assert_eq!(expected_result.originating_tx_hash, result.0[0].originating_tx_hash);
     }
 
@@ -218,7 +218,7 @@ mod tests {
         let submission_material = get_sample_eth_submission_material_n(10).unwrap();
         let expected_num_results = 1;
         let expected_result = BtcOnEthRedeemInfo {
-            amount: 666,
+            amount_in_satoshis: 666,
             from: EthAddress::from_str("7d39fB393C5597dddccf1c428f030913fe7F67Ab").unwrap(),
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
             originating_tx_hash: EthHash::from_slice(
