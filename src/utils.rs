@@ -1,8 +1,9 @@
 use std::{
     convert::TryFrom,
-    time::{SystemTime, UNIX_EPOCH},
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
+use chrono::{prelude::DateTime, Utc};
 use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
@@ -10,12 +11,18 @@ use crate::{
     types::{Byte, Bytes, Result},
 };
 
-fn get_unix_timestamp() -> Result<u64> {
+pub fn get_unix_timestamp() -> Result<u64> {
     Ok(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())
 }
 
 pub fn get_unix_timestamp_as_u32() -> Result<u32> {
     Ok(u32::try_from(get_unix_timestamp()?)?)
+}
+
+pub fn convert_unix_timestamp_to_human_readable(timestamp: u64) -> String {
+    DateTime::<Utc>::from(UNIX_EPOCH + Duration::from_secs(timestamp))
+        .format("%d/%m/%Y,%H:%M:%S")
+        .to_string()
 }
 
 pub fn right_pad_or_truncate(s: &str, width: usize) -> String {
@@ -307,5 +314,13 @@ mod tests {
         assert_eq!(is_hex(hex_no_prefix), true);
         assert_eq!(is_hex(string_no_hex), false);
         assert_eq!(is_hex(string_containing_hex), false);
+    }
+
+    #[test]
+    fn should_convert_unix_timestamp_to_human_readable() {
+        let timestamp = 1618406537;
+        let result = convert_unix_timestamp_to_human_readable(timestamp);
+        let expected_result = "14/04/2021,13:22:17";
+        assert_eq!(result, expected_result);
     }
 }

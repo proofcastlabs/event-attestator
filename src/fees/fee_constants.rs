@@ -20,6 +20,8 @@ pub fn get_fee_constants_db_keys() -> JsonValue {
 
 lazy_static! {
     pub static ref BTC_ON_ETH_ACCRUED_FEES_KEY: [u8; 32] = get_prefixed_db_key("btc-on-eth-accrued-fees-key");
+    pub static ref BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP: [u8; 32] =
+        get_prefixed_db_key("btc-on-eth-last-fee-withdrawal-timestamp");
     pub static ref BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY: [u8; 32] =
         get_prefixed_db_key("btc-on-eth-peg-in-basis-points-key");
     pub static ref BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY: [u8; 32] =

@@ -9,9 +9,14 @@ use crate::{
         btc_types::BtcRecipientAndAmount,
         utxo_manager::{utxo_types::BtcUtxosAndValues, utxo_utils::get_enough_utxos_to_cover_total},
     },
-    fees::fee_database_utils::{get_btc_on_eth_accrued_fees_from_db, reset_btc_accrued_fees},
+    fees::fee_database_utils::{
+        get_btc_on_eth_accrued_fees_from_db,
+        put_btc_on_eth_last_fee_withdrawal_timestamp_in_db,
+        reset_btc_accrued_fees,
+    },
     traits::DatabaseInterface,
     types::Result,
+    utils::get_unix_timestamp,
 };
 
 pub fn get_btc_on_eth_fee_withdrawal_tx<D: DatabaseInterface>(db: &D, btc_address: &str) -> Result<BtcTransaction> {
@@ -24,26 +29,29 @@ pub fn get_btc_on_eth_fee_withdrawal_tx<D: DatabaseInterface>(db: &D, btc_addres
             recipient: BtcAddress::from_str(btc_address)?,
             amount: withdrawal_amount,
         }];
-        get_enough_utxos_to_cover_total(
-            db,
-            withdrawal_amount,
-            recipients_and_amounts.len(),
-            fee,
-            BtcUtxosAndValues::new(vec![]),
-        )
-        .and_then(|utxos| {
-            create_signed_raw_btc_tx_for_n_input_n_outputs(
-                fee,
-                recipients_and_amounts,
-                &get_btc_address_from_db(db)?,
-                get_btc_private_key_from_db(db)?,
-                utxos,
-            )
-        })
-        .and_then(|signed_btc_tx| {
-            reset_btc_accrued_fees(db)?;
-            Ok(signed_btc_tx)
-        })
+        put_btc_on_eth_last_fee_withdrawal_timestamp_in_db(db, get_unix_timestamp()?)
+            .and_then(|_| {
+                get_enough_utxos_to_cover_total(
+                    db,
+                    withdrawal_amount,
+                    recipients_and_amounts.len(),
+                    fee,
+                    BtcUtxosAndValues::new(vec![]),
+                )
+            })
+            .and_then(|utxos| {
+                create_signed_raw_btc_tx_for_n_input_n_outputs(
+                    fee,
+                    recipients_and_amounts,
+                    &get_btc_address_from_db(db)?,
+                    get_btc_private_key_from_db(db)?,
+                    utxos,
+                )
+            })
+            .and_then(|signed_btc_tx| {
+                reset_btc_accrued_fees(db)?;
+                Ok(signed_btc_tx)
+            })
     }
 }
 

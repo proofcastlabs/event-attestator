@@ -2,6 +2,7 @@ use crate::{
     database_utils::{get_u64_from_db, put_u64_in_db},
     fees::fee_constants::{
         BTC_ON_ETH_ACCRUED_FEES_KEY,
+        BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP,
         BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY,
         BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY,
     },
@@ -67,6 +68,16 @@ pub fn increment_btc_on_eth_accrued_fees<D: DatabaseInterface>(db: &D, increment
         debug!("✔        Total after incremeneting: {}", total_after_incrementing);
         put_btc_on_eth_accrued_fees_in_db(db, total_after_incrementing)
     })
+}
+
+pub fn put_btc_on_eth_last_fee_withdrawal_timestamp_in_db<D: DatabaseInterface>(db: &D, timestamp: u64) -> Result<()> {
+    debug!("✔ Putting BTC last fee withdrawal timestamp into db...");
+    put_u64_in_db(db, &BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP.to_vec(), timestamp)
+}
+
+pub fn get_btc_on_eth_last_fee_withdrawal_timestamp_from_db<D: DatabaseInterface>(db: &D) -> Result<u64> {
+    debug!("✔ Getting BTC last fee withdrawal timestamp from db...");
+    Ok(get_u64_from_db(db, &BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP.to_vec()).unwrap_or_default())
 }
 
 #[cfg(test)]
@@ -146,5 +157,14 @@ mod tests {
         reset_btc_accrued_fees(&db).unwrap();
         let fees_in_db_after = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
         assert_eq!(fees_in_db_after, 0)
+    }
+
+    #[test]
+    fn should_get_and_put_btc_on_eth_last_fee_withdrawal_timestamp_in_db() {
+        let timestamp = 1337;
+        let db = get_test_database();
+        put_btc_on_eth_last_fee_withdrawal_timestamp_in_db(&db, timestamp).unwrap();
+        let result = get_btc_on_eth_last_fee_withdrawal_timestamp_from_db(&db).unwrap();
+        assert_eq!(result, timestamp);
     }
 }

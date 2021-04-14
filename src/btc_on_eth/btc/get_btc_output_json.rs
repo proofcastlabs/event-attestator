@@ -1,5 +1,3 @@
-use std::time::{SystemTime, UNIX_EPOCH};
-
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -19,6 +17,7 @@ use crate::{
     },
     traits::DatabaseInterface,
     types::Result,
+    utils::get_unix_timestamp,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -56,7 +55,7 @@ impl EthTxInfo {
             eth_tx_amount: minting_param_struct.amount.to_string(),
             originating_tx_hash: minting_param_struct.originating_tx_hash.to_string(),
             eth_tx_recipient: format!("0x{}", hex::encode(minting_param_struct.eth_address.as_bytes())),
-            signature_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
+            signature_timestamp: get_unix_timestamp()?,
             any_sender_tx: tx.any_sender_tx(),
             any_sender_nonce: if tx.is_any_sender() { nonce } else { None },
         })
