@@ -4,7 +4,7 @@ use crate::{
     btc_on_eth::check_core_is_initialized::check_core_is_initialized,
     chains::{btc::btc_enclave_state::BtcEnclaveState, eth::eth_enclave_state::EthEnclaveState},
     enclave_info::EnclaveInfo,
-    fees::fee_enclave_state::FeeEnclaveState,
+    fees::fee_enclave_state::FeesEnclaveState,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -14,7 +14,7 @@ struct EnclaveState {
     info: EnclaveInfo,
     btc: BtcEnclaveState,
     eth: EthEnclaveState,
-    fees: FeeEnclaveState,
+    fees: FeesEnclaveState,
 }
 
 impl EnclaveState {
@@ -23,7 +23,7 @@ impl EnclaveState {
             info: EnclaveInfo::new(),
             btc: BtcEnclaveState::new(db)?,
             eth: EthEnclaveState::new_for_btc_on_eth(db)?,
-            fees: FeeEnclaveState::new_for_btc_on_eth(db)?,
+            fees: FeesEnclaveState::new_for_btc_on_eth(db)?,
         })
     }
 
