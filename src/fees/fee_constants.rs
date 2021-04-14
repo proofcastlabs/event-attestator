@@ -8,6 +8,8 @@ pub const DISABLE_FEES: bool = false;
 #[cfg(feature = "disable-fees")]
 pub const DISABLE_FEES: bool = true;
 
+pub const MAX_FEE_BASIS_POINTS: u64 = 1000;
+
 pub fn get_fee_constants_db_keys() -> JsonValue {
     json!({
         "BTC_ON_ETH_ACCRUED_FEES_KEY": hex::encode(BTC_ON_ETH_ACCRUED_FEES_KEY.to_vec()),

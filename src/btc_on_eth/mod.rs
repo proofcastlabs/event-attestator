@@ -16,13 +16,13 @@ pub use crate::{
     btc_on_eth::{
         btc::submit_btc_block::submit_btc_block_to_enclave,
         debug_functions::{
-            debug_get_fee_withdrawal_tx,
             debug_add_multiple_utxos,
             debug_clear_all_utxos,
             debug_consolidate_utxos,
             debug_get_all_db_keys,
             debug_get_all_utxos,
             debug_get_child_pays_for_parent_btc_tx,
+            debug_get_fee_withdrawal_tx,
             debug_get_key_from_db,
             debug_get_signed_erc777_change_pnetwork_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
