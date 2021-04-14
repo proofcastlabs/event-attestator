@@ -4,6 +4,7 @@ use serde_json::json;
 use crate::{
     btc_on_eth::{
         btc::{
+            account_for_fees::maybe_account_for_fees as maybe_account_for_minting_fees,
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
             minting_params::{
                 parse_minting_params_from_p2pkh_deposits_and_add_to_state,
@@ -166,6 +167,7 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
         .and_then(maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state)
+        .and_then(maybe_account_for_minting_fees)
         .and_then(|state| {
             get_eth_signed_txs(
                 &get_signing_params_from_db(&state.db)?,
