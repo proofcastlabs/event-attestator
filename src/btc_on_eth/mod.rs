@@ -69,4 +69,5 @@ pub mod get_latest_block_numbers;
 
 mod check_core_is_initialized;
 
+pub(crate) mod test_utils;
 pub(crate) mod utils;
