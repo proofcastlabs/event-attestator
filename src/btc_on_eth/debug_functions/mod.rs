@@ -17,6 +17,7 @@ use crate::{
             check_core_is_initialized_and_return_eth_state,
         },
         eth::{
+            account_for_fees::maybe_account_for_fees,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
             filter_receipts_in_state::filter_receipts_for_btc_on_eth_redeem_events_in_state,
@@ -220,6 +221,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
                 .and_then(|material| BtcOnEthRedeemInfos::from_eth_submission_material(&material))
                 .and_then(|params| state.add_btc_on_eth_redeem_infos(params))
         })
+        .and_then(maybe_account_for_fees)
         .and_then(maybe_create_btc_txs_and_add_to_state)
         .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
         .and_then(maybe_extract_btc_utxo_from_btc_tx_in_state)
@@ -300,10 +302,7 @@ pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
-pub fn debug_get_signed_erc777_change_pnetwork_tx<D>(db: D, new_address: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(db: D, new_address: &str) -> Result<String> {
     check_core_is_initialized(&db)
         .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
@@ -337,10 +336,10 @@ fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()>
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
-pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D>(db: D, new_address: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
+    db: D,
+    new_address: &str,
+) -> Result<String> {
     check_core_is_initialized(&db)
         .and_then(|_| check_debug_mode())
         .and_then(|_| check_erc777_proxy_address_is_set(&db))
@@ -367,10 +366,10 @@ where
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
-pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(db: D, new_address: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D: DatabaseInterface>(
+    db: D,
+    new_address: &str,
+) -> Result<String> {
     check_core_is_initialized(&db)
         .and_then(|_| check_debug_mode())
         .and_then(|_| check_erc777_proxy_address_is_set(&db))
@@ -394,10 +393,7 @@ where
 ///
 /// ### NOTE:
 /// The core won't accept UTXOs it already has in its encrypted database.
-pub fn debug_maybe_add_utxo_to_db<D>(db: D, btc_submission_material_json: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
     check_debug_mode()
         .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
         .and_then(set_any_sender_flag_in_state)
