@@ -22,10 +22,6 @@ use crate::{
         },
     },
     constants::SAFE_BTC_ADDRESS,
-    fees::{
-        fee_constants::DISABLE_FEES,
-        fee_database_utils::{get_btc_on_eth_peg_out_basis_points_from_db, increment_btc_on_eth_accrued_fees},
-    },
     traits::DatabaseInterface,
     types::Result,
 };
@@ -62,31 +58,7 @@ impl BtcOnEthRedeemInfo {
 pub struct BtcOnEthRedeemInfos(pub Vec<BtcOnEthRedeemInfo>);
 
 impl BtcOnEthRedeemInfos {
-    pub fn maybe_account_for_fees<D: DatabaseInterface>(&self, db: &D) -> Result<Self> {
-        let fee_basis_points = get_btc_on_eth_peg_out_basis_points_from_db(db)?;
-        if DISABLE_FEES {
-            info!("✔ Taking fees is disabled ∴ not taking any fees!");
-            Ok(self.clone())
-        } else if fee_basis_points == 0 {
-            info!("✔ BtcOnEth peg-out fees are set to zero ∴ not taking any fees!");
-            Ok(self.clone())
-        } else {
-            info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);
-            let (fees, total_fee) = self.calculate_fees(fee_basis_points);
-            debug!("Fees: {:?}", fees);
-            debug!("Total fee: {}", total_fee);
-            increment_btc_on_eth_accrued_fees(db, total_fee).map(|_| {
-                Self::new(
-                    fees.iter()
-                        .zip(self.iter())
-                        .map(|(fee, redeem_info)| redeem_info.subtract_amount(*fee))
-                        .collect(),
-                )
-            })
-        }
-    }
-
-    fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
+    pub fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
         let fees = self
             .iter()
             .map(|redeem_info| redeem_info.calculate_fee(basis_points))
@@ -182,7 +154,6 @@ pub fn maybe_parse_redeem_infos_and_add_to_state<D: DatabaseInterface>(state: Et
             false => {
                 info!("✔ Receipts in canon block ∴ parsing infos...");
                 BtcOnEthRedeemInfos::from_eth_submission_material(&submission_material)
-                    .and_then(|infos| infos.maybe_account_for_fees(&state.db))
                     .and_then(|infos| state.add_btc_on_eth_redeem_infos(infos))
             },
         }
@@ -193,6 +164,7 @@ pub fn maybe_parse_redeem_infos_and_add_to_state<D: DatabaseInterface>(state: Et
 mod tests {
     use super::*;
     use crate::{
+        btc_on_eth::test_utils::{get_sample_btc_on_eth_redeem_info_1, get_sample_btc_on_eth_redeem_infos},
         chains::eth::{
             eth_submission_material::EthSubmissionMaterial,
             eth_test_utils::{
@@ -201,8 +173,6 @@ mod tests {
                 get_sample_receipt_with_erc777_redeem,
             },
         },
-        fees::fee_database_utils::{get_btc_on_eth_accrued_fees_from_db, put_btc_on_eth_peg_out_basis_points_in_db},
-        test_utils::get_test_database,
     };
 
     fn get_tx_hash_of_redeem_tx() -> &'static str {
@@ -222,34 +192,6 @@ mod tests {
             .filter(|receipt| receipt.transaction_hash == hash)
             .collect::<Vec<&EthReceipt>>()[0]
             .clone()
-    }
-    fn get_sample_btc_on_eth_redeem_info_1() -> BtcOnEthRedeemInfo {
-        BtcOnEthRedeemInfo {
-            amount_in_satoshis: 123456789,
-            recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
-            from: EthAddress::from_slice(&hex::decode("7d39fb393c5597dddccf1c428f030913fe7f67ab").unwrap()),
-            originating_tx_hash: EthHash::from_slice(
-                &hex::decode("01920b62cd2e77204b2fa59932f9d6dd54fd43c99095aee808b700ed2b6ee9cf").unwrap(),
-            ),
-        }
-    }
-
-    fn get_sample_btc_on_eth_redeem_info_2() -> BtcOnEthRedeemInfo {
-        BtcOnEthRedeemInfo {
-            amount_in_satoshis: 987654321,
-            recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
-            from: EthAddress::from_slice(&hex::decode("7d39fb393c5597dddccf1c428f030913fe7f67ab").unwrap()),
-            originating_tx_hash: EthHash::from_slice(
-                &hex::decode("01920b62cd2e77204b2fa59932f9d6dd54fd43c99095aee808b700ed2b6ee9cf").unwrap(),
-            ),
-        }
-    }
-
-    fn get_sample_btc_on_eth_redeem_infos() -> BtcOnEthRedeemInfos {
-        BtcOnEthRedeemInfos::new(vec![
-            get_sample_btc_on_eth_redeem_info_1(),
-            get_sample_btc_on_eth_redeem_info_2(),
-        ])
     }
 
     fn get_expected_btc_on_eth_redeem_info() -> BtcOnEthRedeemInfo {
@@ -361,47 +303,5 @@ mod tests {
         let expected_total_fee = 27777777;
         assert_eq!(fees, expected_fees);
         assert_eq!(total_fee, expected_total_fee);
-    }
-
-    #[test]
-    fn should_account_for_fees_in_btc_on_eth_redeem_infos() {
-        let fee_basis_points = 25;
-        let db = get_test_database();
-        put_btc_on_eth_peg_out_basis_points_in_db(&db, fee_basis_points).unwrap();
-        let accrued_fees_before = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
-        assert_eq!(accrued_fees_before, 0);
-        let infos = get_sample_btc_on_eth_redeem_infos();
-        let (_, total_fee) = infos.calculate_fees(fee_basis_points);
-        let expected_total_fee = 27777777;
-        assert_eq!(total_fee, expected_total_fee);
-        let total_value_before = infos.sum();
-        let resulting_infos = infos.maybe_account_for_fees(&db).unwrap();
-        let total_value_after = resulting_infos.sum();
-        let accrued_fees_after = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
-        let expected_peg_out_amount_after_1 = 120370370;
-        let expected_peg_out_amount_after_2 = 962962963;
-        assert_eq!(total_value_after + total_fee, total_value_before);
-        assert_eq!(accrued_fees_after, total_fee);
-        assert_eq!(resulting_infos[0].amount_in_satoshis, expected_peg_out_amount_after_1);
-        assert_eq!(resulting_infos[1].amount_in_satoshis, expected_peg_out_amount_after_2);
-    }
-
-    #[test]
-    fn should_not_account_for_fees_of_basis_points_are_zero() {
-        let fee_basis_points = 0;
-        let db = get_test_database();
-        put_btc_on_eth_peg_out_basis_points_in_db(&db, fee_basis_points).unwrap();
-        let accrued_fees_before = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
-        assert_eq!(accrued_fees_before, 0);
-        let infos = get_sample_btc_on_eth_redeem_infos();
-        let (_, total_fee) = infos.calculate_fees(fee_basis_points);
-        let expected_total_fee = 0;
-        assert_eq!(total_fee, expected_total_fee);
-        let total_value_before = infos.sum();
-        let resulting_infos = infos.maybe_account_for_fees(&db).unwrap();
-        let total_value_after = resulting_infos.sum();
-        assert_eq!(total_value_before, total_value_after);
-        let accrued_fees_after = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
-        assert_eq!(accrued_fees_after, 0);
     }
 }
