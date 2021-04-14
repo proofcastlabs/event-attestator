@@ -168,7 +168,7 @@ impl_hash!(H520, 65);
 
 impl H256 {
     #[inline]
-    pub fn to_reversed_str(&self) -> String {
+    pub fn to_reversed_str(self) -> String {
         self.reversed().to_string()
     }
 }

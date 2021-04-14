@@ -9,11 +9,11 @@ pub struct EthPublicKey {
 }
 
 impl EthPublicKey {
-    pub fn to_bytes(&self) -> Bytes {
+    pub fn to_bytes(self) -> Bytes {
         self.public_key.serialize_uncompressed().to_vec()
     }
 
-    pub fn to_address(&self) -> EthAddress {
+    pub fn to_address(self) -> EthAddress {
         let mut eth_address = EthAddress::zero();
         eth_address.assign_from_slice(&keccak_hash_bytes(&self.to_bytes()[1..65].to_vec())[12..]);
         eth_address

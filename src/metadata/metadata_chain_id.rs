@@ -28,7 +28,7 @@ pub enum MetadataChainId {
 }
 
 impl MetadataChainId {
-    pub fn to_protocol_id(&self) -> MetadataProtocolId {
+    pub fn to_protocol_id(self) -> MetadataProtocolId {
         match self {
             Self::EosMainnet | Self::TelosMainnet | Self::EosJungleTestnet => MetadataProtocolId::Eos,
             Self::BitcoinMainnet | Self::BitcoinTestnet => MetadataProtocolId::Bitcoin,
@@ -41,7 +41,7 @@ impl MetadataChainId {
         }
     }
 
-    fn to_chain_id(&self) -> Box<dyn ChainId> {
+    fn to_chain_id(self) -> Box<dyn ChainId> {
         match self {
             Self::EthereumMainnet => Box::new(EthChainId::Mainnet),
             Self::EthereumRinkeby => Box::new(EthChainId::Rinkeby),
@@ -57,11 +57,11 @@ impl MetadataChainId {
         }
     }
 
-    fn to_hex(&self) -> Result<String> {
+    fn to_hex(self) -> Result<String> {
         Ok(hex::encode(self.to_bytes()?))
     }
 
-    fn to_keccak_hash(&self) -> Result<KeccakHash> {
+    fn to_keccak_hash(self) -> Result<KeccakHash> {
         self.to_chain_id().keccak_hash()
     }
 
@@ -69,7 +69,7 @@ impl MetadataChainId {
         Ok(self.to_keccak_hash()?[..3].to_vec())
     }
 
-    pub fn to_bytes(&self) -> Result<Bytes> {
+    pub fn to_bytes(self) -> Result<Bytes> {
         Ok(vec![
             vec![self.to_protocol_id().to_byte()],
             self.to_first_three_bytes_of_keccak_hash()?,
