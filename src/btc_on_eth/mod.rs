@@ -16,6 +16,7 @@ pub use crate::{
     btc_on_eth::{
         btc::submit_btc_block::submit_btc_block_to_enclave,
         debug_functions::{
+            debug_get_fee_withdrawal_tx,
             debug_add_multiple_utxos,
             debug_clear_all_utxos,
             debug_consolidate_utxos,
