@@ -85,6 +85,7 @@ mod tests {
     #[test]
     fn should_not_account_for_fees_of_basis_points_are_zero() {
         let fee_basis_points = 0;
+        assert_eq!(fee_basis_points, 0);
         let db = get_test_database();
         let accrued_fees_before = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
         assert_eq!(accrued_fees_before, 0);
@@ -103,6 +104,7 @@ mod tests {
     #[test]
     fn should_account_for_fees_correctly_if_no_redeem_infos() {
         let fee_basis_points = 25;
+        assert!(fee_basis_points > 0);
         let db = get_test_database();
         let accrued_fees_before = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
         assert_eq!(accrued_fees_before, 0);

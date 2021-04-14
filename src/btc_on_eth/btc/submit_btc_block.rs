@@ -1,6 +1,7 @@
 use crate::{
     btc_on_eth::{
         btc::{
+            account_for_fees::maybe_account_for_fees,
             get_btc_output_json::{create_btc_output_json_and_put_in_state, get_btc_output_as_string},
             minting_params::{
                 parse_minting_params_from_p2pkh_deposits_and_add_to_state,
@@ -82,6 +83,7 @@ pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_update_btc_canon_block_hash)
         .and_then(maybe_update_btc_tail_block_hash)
         .and_then(maybe_update_btc_linker_hash)
+        .and_then(maybe_account_for_fees)
         .and_then(maybe_sign_normal_canon_block_txs_and_add_to_state)
         .and_then(maybe_sign_any_sender_canon_block_txs_and_add_to_state)
         .and_then(maybe_increment_eth_nonce_in_db)

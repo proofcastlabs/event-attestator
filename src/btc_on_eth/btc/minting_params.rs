@@ -27,10 +27,6 @@ use crate::{
         eth::eth_utils::safely_convert_hex_to_eth_address,
     },
     constants::SAFE_ETH_ADDRESS,
-    fees::{
-        fee_constants::DISABLE_FEES,
-        fee_database_utils::{get_btc_on_eth_peg_in_basis_points_from_db, increment_btc_on_eth_accrued_fees},
-    },
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
@@ -50,7 +46,6 @@ pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D: DatabaseInter
         state.get_deposit_info_hash_map()?,
         get_btc_network_from_db(&state.db)?,
     )
-    .and_then(|params| params.maybe_account_for_fees(&state.db))
     .and_then(|params| state.add_btc_on_eth_minting_params(params))
 }
 
@@ -67,7 +62,6 @@ pub fn parse_minting_params_from_p2pkh_deposits_and_add_to_state<D: DatabaseInte
                 get_btc_network_from_db(&state.db)?,
             )
         })
-        .and_then(|params| params.maybe_account_for_fees(&state.db))
         .and_then(|minting_params| state.add_btc_on_eth_minting_params(minting_params))
 }
 
@@ -76,35 +70,11 @@ pub struct BtcOnEthMintingParams(pub Vec<BtcOnEthMintingParamStruct>);
 
 impl BtcOnEthMintingParams {
     #[cfg(test)]
-    fn sum(&self) -> U256 {
+    pub fn sum(&self) -> U256 {
         self.iter().fold(U256::zero(), |a, params| a + params.amount)
     }
 
-    pub fn maybe_account_for_fees<D: DatabaseInterface>(&self, db: &D) -> Result<Self> {
-        let fee_basis_points = get_btc_on_eth_peg_in_basis_points_from_db(db)?;
-        if DISABLE_FEES {
-            info!("✔ Taking fees is disabled ∴ not taking any fees!");
-            Ok(self.clone())
-        } else if fee_basis_points == 0 {
-            info!("✔ BtcOnEth peg-out fees are set to zero ∴ not taking any fees!");
-            Ok(self.clone())
-        } else {
-            info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);
-            let (fees, total_fee) = self.calculate_fees(fee_basis_points);
-            debug!("Fees: {:?}", fees);
-            debug!("Total fee: {}", total_fee);
-            increment_btc_on_eth_accrued_fees(db, total_fee).map(|_| {
-                Self::new(
-                    fees.iter()
-                        .zip(self.iter())
-                        .map(|(fee, minting_params)| minting_params.subtract_satoshi_amount(*fee))
-                        .collect(),
-                )
-            })
-        }
-    }
-
-    fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
+    pub fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
         let fees = self
             .iter()
             .map(|minting_params| minting_params.calculate_fee(basis_points))
@@ -350,27 +320,23 @@ mod tests {
     use ethereum_types::H160 as EthAddress;
 
     use super::*;
-    use crate::{
-        chains::btc::{
-            btc_test_utils::{
-                get_sample_btc_block_n,
-                get_sample_btc_p2pkh_address,
-                get_sample_btc_p2pkh_tx,
-                get_sample_btc_pub_key_slice,
-                get_sample_btc_tx,
-                get_sample_minting_params,
-                get_sample_p2pkh_btc_block_and_txs,
-                get_sample_p2pkh_op_return_output,
-                get_sample_pay_to_pub_key_hash_script,
-                SAMPLE_P2PKH_TRANSACTION_OUTPUT_INDEX,
-            },
-            btc_utils::convert_bytes_to_btc_pub_key_slice,
-            filter_p2pkh_deposit_txs::filter_txs_for_p2pkh_deposits,
-            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
-            get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
+    use crate::chains::btc::{
+        btc_test_utils::{
+            get_sample_btc_block_n,
+            get_sample_btc_p2pkh_address,
+            get_sample_btc_p2pkh_tx,
+            get_sample_btc_pub_key_slice,
+            get_sample_btc_tx,
+            get_sample_minting_params,
+            get_sample_p2pkh_btc_block_and_txs,
+            get_sample_p2pkh_op_return_output,
+            get_sample_pay_to_pub_key_hash_script,
+            SAMPLE_P2PKH_TRANSACTION_OUTPUT_INDEX,
         },
-        fees::fee_database_utils::{get_btc_on_eth_accrued_fees_from_db, put_btc_on_eth_peg_in_basis_points_in_db},
-        test_utils::get_test_database,
+        btc_utils::convert_bytes_to_btc_pub_key_slice,
+        filter_p2pkh_deposit_txs::filter_txs_for_p2pkh_deposits,
+        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
+        get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
     };
 
     fn get_expected_eth_address() -> EthAddress {
@@ -663,52 +629,5 @@ mod tests {
         let expected_fees = vec![12, 12, 12];
         assert_eq!(total_fee, expected_total_fee);
         assert_eq!(fees, expected_fees);
-    }
-
-    #[test]
-    fn should_account_for_fees_in_btc_on_eth_redeem_infos() {
-        let fee_basis_points = 25;
-        let db = get_test_database();
-        put_btc_on_eth_peg_in_basis_points_in_db(&db, fee_basis_points).unwrap();
-        let accrued_fees_before = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
-        assert_eq!(accrued_fees_before, 0);
-        let minting_params = get_sample_minting_params();
-        let (_, total_fee) = minting_params.calculate_fees(fee_basis_points);
-        let expected_total_fee = 36;
-        assert_eq!(total_fee, expected_total_fee);
-        let total_value_before = minting_params.sum();
-        let resulting_params = minting_params.maybe_account_for_fees(&db).unwrap();
-        let total_value_after = resulting_params.sum();
-        let accrued_fees_after = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
-        let expected_amount_after_1 = convert_satoshis_to_wei(4988);
-        let expected_amount_after_2 = convert_satoshis_to_wei(4989);
-        let expected_amount_after_3 = convert_satoshis_to_wei(4987);
-        assert_eq!(
-            total_value_after + convert_satoshis_to_wei(total_fee),
-            total_value_before
-        );
-        assert_eq!(accrued_fees_after, total_fee);
-        assert_eq!(resulting_params[0].amount, expected_amount_after_1);
-        assert_eq!(resulting_params[1].amount, expected_amount_after_2);
-        assert_eq!(resulting_params[2].amount, expected_amount_after_3);
-    }
-
-    #[test]
-    fn should_not_account_for_fees_of_basis_points_are_zero() {
-        let fee_basis_points = 0;
-        let db = get_test_database();
-        put_btc_on_eth_peg_in_basis_points_in_db(&db, fee_basis_points).unwrap();
-        let accrued_fees_before = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
-        assert_eq!(accrued_fees_before, 0);
-        let minting_params = get_sample_minting_params();
-        let (_, total_fee) = minting_params.calculate_fees(fee_basis_points);
-        let expected_total_fee = 0;
-        assert_eq!(total_fee, expected_total_fee);
-        let total_value_before = minting_params.sum();
-        let resulting_infos = minting_params.maybe_account_for_fees(&db).unwrap();
-        let total_value_after = resulting_infos.sum();
-        assert_eq!(total_value_before, total_value_after);
-        let accrued_fees_after = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
-        assert_eq!(accrued_fees_after, 0);
     }
 }
