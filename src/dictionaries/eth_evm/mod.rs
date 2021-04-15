@@ -225,11 +225,23 @@ pub fn get_eth_evm_token_dictionary_from_db_and_add_to_eth_state<D: DatabaseInte
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dictionaries::eth_evm::test_utils::get_sample_eth_evm_dictionary_json_str;
+    use crate::dictionaries::eth_evm::test_utils::{
+        get_sample_eth_evm_dictionary,
+        get_sample_eth_evm_dictionary_json_str,
+    };
 
     #[test]
     fn should_get_dictionary_from_str() {
         let result = EthEvmTokenDictionary::from_str(&get_sample_eth_evm_dictionary_json_str().unwrap());
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_perform_dict_json_bytes_roundtrip() {
+        let json = get_sample_eth_evm_dictionary().unwrap().to_json().unwrap();
+        let bytes = json.to_bytes().unwrap();
+        println!("{}", hex::encode(&bytes));
+        let result = EthEvmTokenDictionaryJson::from_bytes(&bytes).unwrap();
+        assert_eq!(result, json);
     }
 }
