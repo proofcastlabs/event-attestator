@@ -11,6 +11,8 @@ use crate::{
     utils::strip_hex_prefix,
 };
 
+pub(crate) mod test_utils;
+
 #[derive(Debug, Clone, Eq, PartialEq, Constructor, Deref, DerefMut, Serialize, Deserialize)]
 pub struct EthEvmTokenDictionary(pub Vec<EthEvmTokenDictionaryEntry>);
 
@@ -218,4 +220,16 @@ pub fn get_eth_evm_token_dictionary_from_db_and_add_to_eth_state<D: DatabaseInte
 ) -> Result<EthState<D>> {
     info!("✔ Getting `EthEvmTokenDictionary` and adding to ETH state...");
     EthEvmTokenDictionary::get_from_db(&state.db).and_then(|dictionary| state.add_eth_evm_token_dictionary(dictionary))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::dictionaries::eth_evm::test_utils::get_sample_eth_evm_dictionary_json_str;
+
+    #[test]
+    fn should_get_dictionary_from_str() {
+        let result = EthEvmTokenDictionary::from_str(&get_sample_eth_evm_dictionary_json_str().unwrap());
+        assert!(result.is_ok());
+    }
 }
