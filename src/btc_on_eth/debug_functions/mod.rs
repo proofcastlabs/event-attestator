@@ -542,7 +542,13 @@ pub fn debug_remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -
 /// ### BEWARE:
 /// Use ONLY if you know exactly what you're doing and why!
 pub fn debug_add_multiple_utxos<D: DatabaseInterface>(db: D, json_str: &str) -> Result<String> {
-    check_debug_mode().and_then(|_| add_multiple_utxos(&db, json_str).map(prepend_debug_output_marker_to_string))
+    check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| add_multiple_utxos(&db, json_str))
+        .and_then(|output| {
+            db.end_transaction()?;
+            Ok(prepend_debug_output_marker_to_string(output))
+        })
 }
 
 /// # Debug Get Fee Withdrawal Tx
