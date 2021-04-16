@@ -30,7 +30,7 @@ use crate::{
 
 #[derive(Serialize, Deserialize)]
 pub struct BtcEnclaveState {
-    btc_nonce: u64,
+    btc_account_nonce: u64,
     btc_difficulty: u64,
     btc_network: String,
     btc_address: String,
@@ -68,7 +68,6 @@ impl BtcEnclaveState {
             btc_utxo_nonce: get_utxo_nonce_from_db(db)?,
             btc_tail_block_number: btc_tail_block.height,
             btc_sats_per_byte: get_btc_fee_from_db(db)?,
-            btc_nonce: get_btc_account_nonce_from_db(db)?,
             btc_canon_block_number: btc_canon_block.height,
             btc_safe_address: SAFE_BTC_ADDRESS.to_string(),
             btc_latest_block_number: btc_latest_block.height,
@@ -76,10 +75,11 @@ impl BtcEnclaveState {
             btc_anchor_block_number: btc_anchor_block.height,
             btc_tail_block_hash: btc_tail_block.id.to_string(),
             btc_canon_block_hash: btc_canon_block.id.to_string(),
-            btc_latest_block_hash: btc_latest_block.id.to_string(),
-            btc_anchor_block_hash: btc_anchor_block.id.to_string(),
+            btc_account_nonce: get_btc_account_nonce_from_db(db)?,
             btc_linker_hash: get_btc_linker_hash(db)?.to_string(),
             btc_network: get_btc_network_from_db(db)?.to_string(),
+            btc_latest_block_hash: btc_latest_block.id.to_string(),
+            btc_anchor_block_hash: btc_anchor_block.id.to_string(),
             btc_utxo_total_value: get_total_utxo_balance_from_db(db)?,
             btc_number_of_utxos: get_total_number_of_utxos_from_db(db),
             btc_canon_to_tip_length: get_btc_canon_to_tip_length_from_db(db)?,
