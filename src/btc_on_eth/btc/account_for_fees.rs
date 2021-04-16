@@ -20,8 +20,6 @@ fn account_for_fees_in_minting_params<D: DatabaseInterface>(
     } else {
         info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);
         let (fees, total_fee) = minting_params.calculate_fees(fee_basis_points);
-        debug!("     `MintingParams` fees: {:?}", fees);
-        debug!("`MintingParams` total fee: {}", total_fee);
         increment_btc_on_eth_accrued_fees(db, total_fee).map(|_| {
             BtcOnEthMintingParams::new(
                 fees.iter()

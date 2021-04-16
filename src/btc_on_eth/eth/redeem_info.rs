@@ -37,7 +37,7 @@ pub struct BtcOnEthRedeemInfo {
 impl BtcOnEthRedeemInfo {
     pub fn subtract_amount(&self, subtrahend: u64) -> Self {
         let new_amount = self.amount_in_satoshis - subtrahend;
-        debug!(
+        info!(
             "Subtracted amount of {} from current redeem info amount of {} to get final amount of {}",
             subtrahend, self.amount_in_satoshis, new_amount
         );

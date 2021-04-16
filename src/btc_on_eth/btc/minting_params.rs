@@ -75,11 +75,14 @@ impl BtcOnEthMintingParams {
     }
 
     pub fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
+        info!("✔ Calculating fees in `BtcOnEthMintingParams`...");
         let fees = self
             .iter()
             .map(|minting_params| minting_params.calculate_fee(basis_points))
             .collect::<Vec<u64>>();
         let total_fee = fees.iter().sum();
+        info!("✔      Fees: {:?}", fees);
+        info!("✔ Total fee: {:?}", fees);
         (fees, total_fee)
     }
 
@@ -210,13 +213,14 @@ impl BtcOnEthMintingParamStruct {
     }
 
     pub fn subtract_satoshi_amount(&self, subtrahend: u64) -> Self {
-        let new_amount = self.to_satoshi_amount() - subtrahend;
+        let self_amount_in_satoshis = self.to_satoshi_amount();
+        let amount_minus_fee = self_amount_in_satoshis - subtrahend;
         debug!(
             "Subtracted amount of {} from current minting params amount of {} to get final amount of {}",
-            subtrahend, self.amount, new_amount
+            subtrahend, self_amount_in_satoshis, amount_minus_fee
         );
         Self {
-            amount: convert_satoshis_to_wei(new_amount),
+            amount: convert_satoshis_to_wei(amount_minus_fee),
             eth_address: self.eth_address,
             originating_tx_hash: self.originating_tx_hash,
             originating_tx_address: self.originating_tx_address.clone(),

@@ -20,8 +20,8 @@ fn account_for_fees_in_redeem_infos<D: DatabaseInterface>(
     } else {
         info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);
         let (fees, total_fee) = redeem_infos.calculate_fees(fee_basis_points);
-        debug!("     `RedeemInfo` fees: {:?}", fees);
-        debug!("`RedeemInfo` total fee: {}", total_fee);
+        info!("     `RedeemInfo` fees: {:?}", fees);
+        info!("`RedeemInfo` total fee: {}", total_fee);
         increment_btc_on_eth_accrued_fees(db, total_fee).map(|_| {
             BtcOnEthRedeemInfos::new(
                 fees.iter()
