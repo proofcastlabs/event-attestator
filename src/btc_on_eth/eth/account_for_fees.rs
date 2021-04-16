@@ -68,14 +68,14 @@ mod tests {
         assert_eq!(accrued_fees_before, 0);
         let redeem_infos = get_sample_btc_on_eth_redeem_infos();
         let (_, total_fee) = redeem_infos.calculate_fees(fee_basis_points);
-        let expected_total_fee = 27777777;
+        let expected_total_fee = 2777776;
         assert_eq!(total_fee, expected_total_fee);
         let total_value_before = redeem_infos.sum();
         let resulting_infos = account_for_fees_in_redeem_infos(&db, &redeem_infos, fee_basis_points).unwrap();
         let total_value_after = resulting_infos.sum();
         let accrued_fees_after = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
-        let expected_peg_out_amount_after_1 = 120370370;
-        let expected_peg_out_amount_after_2 = 962962963;
+        let expected_peg_out_amount_after_1 = 123148148;
+        let expected_peg_out_amount_after_2 = 985185186;
         assert_eq!(total_value_after + total_fee, total_value_before);
         assert_eq!(accrued_fees_after, total_fee);
         assert_eq!(resulting_infos[0].amount_in_satoshis, expected_peg_out_amount_after_1);

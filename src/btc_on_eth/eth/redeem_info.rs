@@ -50,7 +50,7 @@ impl BtcOnEthRedeemInfo {
     }
 
     pub fn calculate_fee(&self, basis_points: u64) -> u64 {
-        (self.amount_in_satoshis * basis_points) / 1000
+        (self.amount_in_satoshis * basis_points) / 10_000
     }
 }
 
@@ -290,7 +290,7 @@ mod tests {
         let basis_points = 25;
         let info = get_sample_btc_on_eth_redeem_info_1();
         let result = info.calculate_fee(basis_points);
-        let expected_result = 3086419;
+        let expected_result = 308641;
         assert_eq!(result, expected_result);
     }
 
@@ -299,8 +299,8 @@ mod tests {
         let basis_points = 25;
         let info = get_sample_btc_on_eth_redeem_infos();
         let (fees, total_fee) = info.calculate_fees(basis_points);
-        let expected_fees = vec![3086419, 24691358];
-        let expected_total_fee = 27777777;
+        let expected_fees = vec![308641, 2469135];
+        let expected_total_fee = 2777776;
         assert_eq!(fees, expected_fees);
         assert_eq!(total_fee, expected_total_fee);
     }

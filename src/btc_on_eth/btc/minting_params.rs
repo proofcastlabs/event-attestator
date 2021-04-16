@@ -209,7 +209,7 @@ impl BtcOnEthMintingParamStruct {
     }
 
     pub fn calculate_fee(&self, basis_points: u64) -> u64 {
-        (self.to_satoshi_amount() * basis_points) / 10000
+        (self.to_satoshi_amount() * basis_points) / 10_000
     }
 
     pub fn subtract_satoshi_amount(&self, subtrahend: u64) -> Self {
