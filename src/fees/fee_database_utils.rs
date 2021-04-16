@@ -2,7 +2,7 @@ use crate::{
     database_utils::{get_u64_from_db, put_u64_in_db},
     fees::fee_constants::{
         BTC_ON_ETH_ACCRUED_FEES_KEY,
-        BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP,
+        BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY,
         BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY,
         BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY,
     },
@@ -72,12 +72,12 @@ pub fn increment_btc_on_eth_accrued_fees<D: DatabaseInterface>(db: &D, increment
 
 pub fn put_btc_on_eth_last_fee_withdrawal_timestamp_in_db<D: DatabaseInterface>(db: &D, timestamp: u64) -> Result<()> {
     debug!("✔ Putting BTC last fee withdrawal timestamp into db...");
-    put_u64_in_db(db, &BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP.to_vec(), timestamp)
+    put_u64_in_db(db, &BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY.to_vec(), timestamp)
 }
 
 pub fn get_btc_on_eth_last_fee_withdrawal_timestamp_from_db<D: DatabaseInterface>(db: &D) -> Result<u64> {
     debug!("✔ Getting BTC last fee withdrawal timestamp from db...");
-    Ok(get_u64_from_db(db, &BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP.to_vec()).unwrap_or_default())
+    Ok(get_u64_from_db(db, &BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY.to_vec()).unwrap_or_default())
 }
 
 #[cfg(test)]

@@ -15,12 +15,13 @@ pub fn get_fee_constants_db_keys() -> JsonValue {
         "BTC_ON_ETH_ACCRUED_FEES_KEY": hex::encode(BTC_ON_ETH_ACCRUED_FEES_KEY.to_vec()),
         "BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY": hex::encode(BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY.to_vec()),
         "BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY": hex::encode(BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY.to_vec()),
+        "BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY": hex::encode(BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY.to_vec()),
     })
 }
 
 lazy_static! {
     pub static ref BTC_ON_ETH_ACCRUED_FEES_KEY: [u8; 32] = get_prefixed_db_key("btc-on-eth-accrued-fees-key");
-    pub static ref BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP: [u8; 32] =
+    pub static ref BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY: [u8; 32] =
         get_prefixed_db_key("btc-on-eth-last-fee-withdrawal-timestamp");
     pub static ref BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY: [u8; 32] =
         get_prefixed_db_key("btc-on-eth-peg-in-basis-points-key");
