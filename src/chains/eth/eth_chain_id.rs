@@ -18,6 +18,8 @@ pub enum EthChainId {
     Rinkeby,
     Ropsten,
     BscMainnet,
+    XDaiMainnet,
+    PolygonMainnet,
 }
 
 impl ChainId for EthChainId {
@@ -33,6 +35,8 @@ impl EthChainId {
             "ropsten" | "3" => Ok(Self::Ropsten),
             "rinkeby" | "4" => Ok(Self::Rinkeby),
             "bsc" | "56" => Ok(Self::BscMainnet),
+            "xdai" | "100" => Ok(Self::XDaiMainnet),
+            "polygon" | "137" => Ok(Self::PolygonMainnet),
             _ => Err(format!("✘ Unrecognized ethereum network: '{}'!", network).into()),
         }
     }
@@ -47,6 +51,8 @@ impl EthChainId {
             Self::Rinkeby => 4,
             Self::Ropsten => 3,
             Self::BscMainnet => 56,
+            Self::XDaiMainnet => 100,
+            Self::PolygonMainnet => 137,
         }
     }
 
@@ -57,6 +63,8 @@ impl EthChainId {
             3 => Ok(Self::Ropsten),
             4 => Ok(Self::Rinkeby),
             56 => Ok(Self::BscMainnet),
+            100 => Ok(Self::XDaiMainnet),
+            137 => Ok(Self::PolygonMainnet),
             _ => Err(format!("`EthChainId` error! Unrecognised bytes : {}", hex::encode(bytes)).into()),
         }
     }
@@ -67,6 +75,8 @@ impl EthChainId {
             Self::Rinkeby => MetadataChainId::EthereumRinkeby,
             Self::Ropsten => MetadataChainId::EthereumRopsten,
             Self::BscMainnet => MetadataChainId::BscMainnet,
+            Self::XDaiMainnet => MetadataChainId::XDaiMainnet,
+            Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
         }
     }
 
@@ -76,6 +86,8 @@ impl EthChainId {
             Self::Ropsten => 3,
             Self::Rinkeby => 4,
             Self::BscMainnet => 56,
+            Self::XDaiMainnet => 100,
+            Self::PolygonMainnet => 137,
         }
     }
 
@@ -93,6 +105,8 @@ impl fmt::Display for EthChainId {
             Self::Rinkeby => write!(f, "Rinekby Testnet: {}", self.to_u8()),
             Self::Ropsten => write!(f, "Ropsten Testnet: {}", self.to_u8()),
             Self::BscMainnet => write!(f, "BSC Mainnet: {}", self.to_u8()),
+            Self::XDaiMainnet => write!(f, "xDai Mainnet: {}", self.to_u8()),
+            Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", self.to_u8()),
         }
     }
 }
@@ -106,6 +120,8 @@ impl TryFrom<u8> for EthChainId {
             3 => Ok(Self::Ropsten),
             4 => Ok(Self::Rinkeby),
             56 => Ok(Self::BscMainnet),
+            100 => Ok(Self::XDaiMainnet),
+            137 => Ok(Self::PolygonMainnet),
             _ => Err(format!("`EthChainId` error! Unrecognized chain id: {}", byte).into()),
         }
     }

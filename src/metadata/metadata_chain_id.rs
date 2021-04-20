@@ -23,6 +23,8 @@ pub enum MetadataChainId {
     TelosMainnet,     // 0x028c7109
     BscMainnet,       // 0x00e4b170
     EosJungleTestnet, // 0x0282317f
+    XDaiMainnet,      // 0x00f1918e
+    PolygonMainnet,   // 0x0075dd4c
 }
 
 impl MetadataChainId {
@@ -30,9 +32,12 @@ impl MetadataChainId {
         match self {
             Self::EosMainnet | Self::TelosMainnet | Self::EosJungleTestnet => MetadataProtocolId::Eos,
             Self::BitcoinMainnet | Self::BitcoinTestnet => MetadataProtocolId::Bitcoin,
-            Self::EthereumMainnet | Self::EthereumRinkeby | Self::EthereumRopsten | Self::BscMainnet => {
-                MetadataProtocolId::Ethereum
-            },
+            Self::EthereumMainnet
+            | Self::EthereumRinkeby
+            | Self::EthereumRopsten
+            | Self::BscMainnet
+            | Self::XDaiMainnet
+            | Self::PolygonMainnet => MetadataProtocolId::Ethereum,
         }
     }
 
@@ -42,6 +47,8 @@ impl MetadataChainId {
             Self::EthereumRinkeby => Box::new(EthChainId::Rinkeby),
             Self::EthereumRopsten => Box::new(EthChainId::Ropsten),
             Self::BscMainnet => Box::new(EthChainId::BscMainnet),
+            Self::XDaiMainnet => Box::new(EthChainId::XDaiMainnet),
+            Self::PolygonMainnet => Box::new(EthChainId::PolygonMainnet),
             Self::BitcoinMainnet => Box::new(BtcChainId::Bitcoin),
             Self::BitcoinTestnet => Box::new(BtcChainId::Testnet),
             Self::EosMainnet => Box::new(EosChainId::EosMainnet),
@@ -120,6 +127,8 @@ impl fmt::Display for MetadataChainId {
             Self::EthereumRopsten => write!(f, "Ethereum Ropsten: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::BscMainnet => write!(f, "Binance Chain (BSC) Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::XDaiMainnet => write!(f, "xDai Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::PolygonMainnet => write!(f, "Polygon Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
         }
     }
 }
@@ -159,6 +168,7 @@ mod tests {
     fn should_get_metadata_chain_id_from_bytes_correctly() {
         let chain_ids_bytes = vec![
             "005fe7f9", "0069c322", "00f34368", "01ec97de", "018afeb2", "02e7261c", "028c7109", "00e4b170", "0282317f",
+            "00f1918e", "0075dd4c",
         ]
         .iter()
         .map(|ref hex| hex::decode(hex).unwrap())
