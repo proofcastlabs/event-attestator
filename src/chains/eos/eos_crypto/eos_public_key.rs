@@ -24,13 +24,13 @@ impl EosPublicKey {
         writer.write_all(&self.public_key.serialize()).ok();
     }
 
-    pub fn to_bytes(&self) -> Bytes {
+    pub fn to_bytes(self) -> Bytes {
         let mut bytes = Vec::new();
         self.write_into(&mut bytes);
         bytes
     }
 
-    pub fn to_eos_format(&self) -> String {
+    pub fn to_eos_format(self) -> String {
         let h160 = ripemd160(&self.public_key.serialize());
         let mut public_key: [u8; PUBLIC_KEY_WITH_CHECKSUM_SIZE] = [0u8; PUBLIC_KEY_WITH_CHECKSUM_SIZE];
         public_key[..PUBLIC_KEY_SIZE].copy_from_slice(self.to_bytes().as_ref());
