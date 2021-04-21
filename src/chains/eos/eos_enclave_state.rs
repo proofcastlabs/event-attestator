@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     chains::eos::{
         eos_database_utils::{
+            get_eos_account_name_string_from_db,
             get_eos_account_nonce_from_db,
             get_eos_chain_id_from_db,
             get_eos_enabled_protocol_features_from_db,
@@ -23,6 +24,7 @@ use crate::{
 
 #[derive(Serialize, Deserialize)]
 pub struct EosEnclaveState {
+    eos_account_name: String,
     eos_chain_id: String,
     eos_public_key: String,
     eos_safe_address: String,
@@ -39,6 +41,7 @@ impl EosEnclaveState {
     pub fn new<D: DatabaseInterface>(db: &D) -> Result<Self> {
         info!("✔ Getting EOS enclave state...");
         Ok(EosEnclaveState {
+            eos_account_name: get_eos_account_name_string_from_db(db)?,
             eos_safe_address: SAFE_EOS_ADDRESS.to_string(),
             eos_chain_id: get_eos_chain_id_from_db(db)?.to_hex(),
             eos_signature_nonce: get_eos_account_nonce_from_db(db)?,
