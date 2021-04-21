@@ -15,7 +15,7 @@ use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    btc_on_eth::utils::convert_satoshis_to_ptoken,
+    btc_on_eth::utils::{convert_satoshis_to_wei, convert_wei_to_satoshis},
     chains::{
         btc::{
             btc_constants::{MINIMUM_REQUIRED_SATOSHIS, PLACEHOLDER_BTC_ADDRESS},
@@ -69,6 +69,23 @@ pub fn parse_minting_params_from_p2pkh_deposits_and_add_to_state<D: DatabaseInte
 pub struct BtcOnEthMintingParams(pub Vec<BtcOnEthMintingParamStruct>);
 
 impl BtcOnEthMintingParams {
+    #[cfg(test)]
+    pub fn sum(&self) -> U256 {
+        self.iter().fold(U256::zero(), |a, params| a + params.amount)
+    }
+
+    pub fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
+        info!("✔ Calculating fees in `BtcOnEthMintingParams`...");
+        let fees = self
+            .iter()
+            .map(|minting_params| minting_params.calculate_fee(basis_points))
+            .collect::<Vec<u64>>();
+        let total_fee = fees.iter().sum();
+        info!("✔      Fees: {:?}", fees);
+        info!("✔ Total fee: {:?}", fees);
+        (fees, total_fee)
+    }
+
     pub fn to_bytes(&self) -> Result<Bytes> {
         Ok(serde_json::to_vec(&self.0)?)
     }
@@ -82,7 +99,7 @@ impl BtcOnEthMintingParams {
             "✔ Filtering out any minting params below a minimum of {} Satoshis...",
             MINIMUM_REQUIRED_SATOSHIS
         );
-        let threshold = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
+        let threshold = convert_satoshis_to_wei(MINIMUM_REQUIRED_SATOSHIS);
         Ok(BtcOnEthMintingParams::new(
             self.iter()
                 .filter(|params| match params.amount >= threshold {
@@ -126,7 +143,7 @@ impl BtcOnEthMintingParams {
                         Some(deposit_info) => {
                             info!("✔ Deposit info from list: {:?}", deposit_info);
                             BtcOnEthMintingParamStruct::new(
-                                convert_satoshis_to_ptoken(tx_out.value),
+                                convert_satoshis_to_wei(tx_out.value),
                                 deposit_info.address.clone(),
                                 tx.txid(),
                                 address.ok_or(NoneError("Could not unwrap BTC address!"))?,
@@ -185,6 +202,29 @@ impl BtcOnEthMintingParamStruct {
             originating_tx_address: originating_tx_address.to_string(),
             eth_address: safely_convert_hex_to_eth_address(&eth_address_hex)?,
         })
+    }
+
+    fn to_satoshi_amount(&self) -> u64 {
+        convert_wei_to_satoshis(self.amount)
+    }
+
+    pub fn calculate_fee(&self, basis_points: u64) -> u64 {
+        (self.to_satoshi_amount() * basis_points) / 10_000
+    }
+
+    pub fn subtract_satoshi_amount(&self, subtrahend: u64) -> Self {
+        let self_amount_in_satoshis = self.to_satoshi_amount();
+        let amount_minus_fee = self_amount_in_satoshis - subtrahend;
+        debug!(
+            "Subtracted amount of {} from current minting params amount of {} to get final amount of {}",
+            subtrahend, self_amount_in_satoshis, amount_minus_fee
+        );
+        Self {
+            amount: convert_satoshis_to_wei(amount_minus_fee),
+            eth_address: self.eth_address,
+            originating_tx_hash: self.originating_tx_hash,
+            originating_tx_address: self.originating_tx_address.clone(),
+        }
     }
 
     fn serialized_script_pubkey_should_be_desired_op_return(serialized_script: &[Byte]) -> bool {
@@ -261,7 +301,7 @@ impl BtcOnEthMintingParamStruct {
         btc_network: BtcNetwork,
     ) -> Result<Self> {
         Self::new(
-            convert_satoshis_to_ptoken(Self::sum_deposit_values_from_tx_outputs(&tx, &target_deposit_script)),
+            convert_satoshis_to_wei(Self::sum_deposit_values_from_tx_outputs(&tx, &target_deposit_script)),
             Self::get_eth_address_from_op_return_in_tx_else_safe_address(&tx),
             tx.txid(),
             // NOTE: Currently not supporting the getting of the origin from witness data.
@@ -312,7 +352,7 @@ mod tests {
         let expected_length_before = 3;
         let expected_length_after = 2;
         let minting_params = get_sample_minting_params();
-        let threshold = convert_satoshis_to_ptoken(MINIMUM_REQUIRED_SATOSHIS);
+        let threshold = convert_satoshis_to_wei(MINIMUM_REQUIRED_SATOSHIS);
         let length_before = minting_params.len();
         assert_eq!(length_before, expected_length_before);
         let result = minting_params.filter_out_value_too_low().unwrap();
@@ -324,7 +364,7 @@ mod tests {
     #[test]
     fn should_parse_minting_params_struct_from_p2sh_deposit_tx() {
         let pub_key = get_sample_btc_pub_key_slice();
-        let expected_amount = convert_satoshis_to_ptoken(10000);
+        let expected_amount = convert_satoshis_to_wei(10000);
         let expected_num_results = 1;
         let expected_eth_address_bytes = hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap();
         let expected_btc_address = "2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2";
@@ -346,7 +386,7 @@ mod tests {
     #[test]
     fn should_parse_minting_params_struct_from_p2sh_deposit_txs() {
         let expected_num_results = 1;
-        let expected_amount = convert_satoshis_to_ptoken(10000);
+        let expected_amount = convert_satoshis_to_wei(10000);
         let expected_eth_address_bytes = hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap();
         let expected_btc_address = "2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2";
         let expected_tx_hash = "4d19fed40e7d1944c8590a8a2e21d1f16f65c060244277a3d207770d1c848352";
@@ -366,9 +406,9 @@ mod tests {
     #[test]
     fn should_parse_minting_params_struct_from_two_p2sh_deposit_txs() {
         let expected_num_results = 2;
-        let expected_amount_1 = convert_satoshis_to_ptoken(314159);
+        let expected_amount_1 = convert_satoshis_to_wei(314159);
         let expected_btc_address_1 = BtcAddress::from_str("2NCfNHvNAecRyXPBDaAkfgMLL7NjvPrC6GU").unwrap();
-        let expected_amount_2 = convert_satoshis_to_ptoken(1000000);
+        let expected_amount_2 = convert_satoshis_to_wei(1000000);
         let expected_btc_address_2 = BtcAddress::from_str("2N6DgNSaX3D5rUYXuMM3b5Ujgw4sPrddSHp").unwrap();
         let expected_eth_address_1 =
             EthAddress::from_slice(&hex::decode("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap()[..]);
@@ -492,7 +532,7 @@ mod tests {
         let tx_index = 56;
         let network = BtcNetwork::Testnet;
         let expected_address = get_expected_eth_address();
-        let expected_value = convert_satoshis_to_ptoken(1337);
+        let expected_value = convert_satoshis_to_wei(1337);
         let expected_origin_address = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
         let expected_tx_hash = "183d4334c0e06d38cebfe2387e192c3a5f24f13c612214945af95f0aec696c6b".to_string();
         let block = get_sample_p2pkh_btc_block_and_txs().block;
@@ -512,7 +552,7 @@ mod tests {
     fn should_default_to_safe_address_if_no_op_return_present() {
         let tx_index = 36;
         let network = BtcNetwork::Testnet;
-        let expected_value = convert_satoshis_to_ptoken(4610922);
+        let expected_value = convert_satoshis_to_wei(4610922);
         let expected_origin_address = "moBSQbHn7N9BC9pdtAMnA7GBiALzNMQJyE";
         let expected_tx_hash = "9ac032f07cacce63d66fc3937ea04c032eb33852bed705e3e7a309baa8bedf19".to_string();
         let block = get_sample_btc_block_n(8).unwrap().block;
@@ -532,7 +572,7 @@ mod tests {
     fn should_parse_minting_params_from_txs() {
         let network = BtcNetwork::Testnet;
         let expected_address = get_expected_eth_address();
-        let expected_value = convert_satoshis_to_ptoken(1337);
+        let expected_value = convert_satoshis_to_wei(1337);
         let sample_pub_key_hash = get_sample_btc_pub_key_slice();
         let sample_address = get_sample_btc_p2pkh_address();
         let expected_origin_address = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
@@ -557,6 +597,41 @@ mod tests {
             BtcOnEthMintingParamStruct::extract_spender_address_from_op_return_input(&input, network).unwrap();
         assert_eq!(address.to_string(), expected_origin_address);
     }
-    // TODO Fashion a transaction w/ > 1 deposit output in P2PKH
-    // plus another output that's NOT a deposit & use that as test vector.
+
+    #[test]
+    fn should_get_amount_in_satoshi() {
+        let params = get_sample_minting_params()[0].clone();
+        let result = params.to_satoshi_amount();
+        let expected_result = 5000;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_subtract_satoshi_amount() {
+        let params = get_sample_minting_params()[0].clone();
+        let subtracted_params = params.subtract_satoshi_amount(1);
+        let expected_result = 4999;
+        let result = subtracted_params.to_satoshi_amount();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_calculate_fee() {
+        let params = get_sample_minting_params()[0].clone();
+        let basis_points = 25;
+        let expected_result = 12;
+        let result = params.calculate_fee(basis_points);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_calculate_fees() {
+        let basis_points = 25;
+        let params = get_sample_minting_params();
+        let (fees, total_fee) = params.calculate_fees(basis_points);
+        let expected_total_fee = 36;
+        let expected_fees = vec![12, 12, 12];
+        assert_eq!(total_fee, expected_total_fee);
+        assert_eq!(fees, expected_fees);
+    }
 }

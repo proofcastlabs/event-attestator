@@ -29,7 +29,7 @@ pub struct BtcUtxoAndValue {
     pub maybe_deposit_info_json: Option<DepositAddressInfoJson>,
 }
 
-pub type BtcRecipientsAndAmounts = Vec<BtcRecipientAndAmount>;
+pub type BtcRecipientsAndAmounts = Vec<BtcRecipientAndAmount>; // TODO Make this a proper type.
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BtcRecipientAndAmount {

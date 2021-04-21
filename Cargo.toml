@@ -2,7 +2,7 @@
 license = "MIT"
 publish = false
 edition = "2018"
-version = "4.25.0"
+version = "4.26.0"
 readme = "README.md"
 name = "ptokens_core"
 keywords = ["provable", "defi", "crypto"]
@@ -10,6 +10,7 @@ authors = ["Provable Things <provable.xyz>", "Greg Kapka <greg@oraclize.it>"]
 
 [features]
 debug = []
+disable-fees = ["debug"]
 non-validating = ["debug"]
 
 [profile.dev]

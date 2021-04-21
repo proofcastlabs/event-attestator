@@ -4,6 +4,7 @@ use serde_json::json;
 use crate::{
     btc_on_eth::{
         btc::{
+            account_for_fees::maybe_account_for_fees as maybe_account_for_minting_fees,
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
             minting_params::{
                 parse_minting_params_from_p2pkh_deposits_and_add_to_state,
@@ -17,6 +18,7 @@ use crate::{
             check_core_is_initialized_and_return_eth_state,
         },
         eth::{
+            account_for_fees::maybe_account_for_fees,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
             filter_receipts_in_state::filter_receipts_for_btc_on_eth_redeem_events_in_state,
@@ -33,6 +35,7 @@ use crate::{
             btc_database_utils::{end_btc_db_transaction, get_btc_account_nonce_from_db, start_btc_db_transaction},
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
+            btc_utils::get_hex_tx_from_signed_btc_tx,
             extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_state,
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
             filter_minting_params::maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state,
@@ -93,6 +96,7 @@ use crate::{
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
+    fees::{fee_constants::get_fee_constants_db_keys, fee_withdrawals::get_btc_on_eth_fee_withdrawal_tx},
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, prepend_debug_output_marker_to_string, strip_hex_prefix},
@@ -106,6 +110,7 @@ pub fn debug_get_all_db_keys() -> Result<String> {
         json!({
             "btc": get_btc_constants_db_keys(),
             "eth": get_eth_constants_db_keys(),
+            "fees": get_fee_constants_db_keys(),
             "db-key-prefix": DB_KEY_PREFIX.to_string(),
             "utxo-manager": get_utxo_constants_db_keys(),
         })
@@ -162,6 +167,7 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
         .and_then(maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state)
+        .and_then(maybe_account_for_minting_fees)
         .and_then(|state| {
             get_eth_signed_txs(
                 &get_signing_params_from_db(&state.db)?,
@@ -217,6 +223,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
                 .and_then(|material| BtcOnEthRedeemInfos::from_eth_submission_material(&material))
                 .and_then(|params| state.add_btc_on_eth_redeem_infos(params))
         })
+        .and_then(maybe_account_for_fees)
         .and_then(maybe_create_btc_txs_and_add_to_state)
         .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
         .and_then(maybe_extract_btc_utxo_from_btc_tx_in_state)
@@ -297,10 +304,7 @@ pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
-pub fn debug_get_signed_erc777_change_pnetwork_tx<D>(db: D, new_address: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(db: D, new_address: &str) -> Result<String> {
     check_core_is_initialized(&db)
         .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
@@ -334,10 +338,10 @@ fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()>
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
-pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D>(db: D, new_address: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
+    db: D,
+    new_address: &str,
+) -> Result<String> {
     check_core_is_initialized(&db)
         .and_then(|_| check_debug_mode())
         .and_then(|_| check_erc777_proxy_address_is_set(&db))
@@ -364,10 +368,10 @@ where
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
-pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D>(db: D, new_address: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D: DatabaseInterface>(
+    db: D,
+    new_address: &str,
+) -> Result<String> {
     check_core_is_initialized(&db)
         .and_then(|_| check_debug_mode())
         .and_then(|_| check_erc777_proxy_address_is_set(&db))
@@ -391,10 +395,7 @@ where
 ///
 /// ### NOTE:
 /// The core won't accept UTXOs it already has in its encrypted database.
-pub fn debug_maybe_add_utxo_to_db<D>(db: D, btc_submission_material_json: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
     check_debug_mode()
         .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
         .and_then(set_any_sender_flag_in_state)
@@ -541,5 +542,28 @@ pub fn debug_remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -
 /// ### BEWARE:
 /// Use ONLY if you know exactly what you're doing and why!
 pub fn debug_add_multiple_utxos<D: DatabaseInterface>(db: D, json_str: &str) -> Result<String> {
-    check_debug_mode().and_then(|_| add_multiple_utxos(&db, json_str).map(prepend_debug_output_marker_to_string))
+    check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| add_multiple_utxos(&db, json_str))
+        .and_then(|output| {
+            db.end_transaction()?;
+            Ok(prepend_debug_output_marker_to_string(output))
+        })
+}
+
+/// # Debug Get Fee Withdrawal Tx
+///
+/// This function crates a BTC transaction to the passed in address for the amount of accrued fees
+/// accounted for in the encrypted database. The function then reset this value back to zero. The
+/// signed transaction is returned to the caller.
+pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &str) -> Result<String> {
+    info!("✔ Debug getting `btc-on-eth` withdrawal tx...");
+    check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| get_btc_on_eth_fee_withdrawal_tx(&db, btc_address))
+        .and_then(|btc_tx| {
+            db.end_transaction()?;
+            Ok(json!({ "signed_btc_tx": get_hex_tx_from_signed_btc_tx(&btc_tx) }).to_string())
+        })
+        .map(prepend_debug_output_marker_to_string)
 }

@@ -22,6 +22,7 @@ pub use crate::{
             debug_get_all_db_keys,
             debug_get_all_utxos,
             debug_get_child_pays_for_parent_btc_tx,
+            debug_get_fee_withdrawal_tx,
             debug_get_key_from_db,
             debug_get_signed_erc777_change_pnetwork_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
@@ -55,6 +56,10 @@ pub use crate::{
             },
         },
     },
+    fees::fee_debug_functions::{
+        debug_put_btc_on_eth_peg_in_basis_points_in_db,
+        debug_put_btc_on_eth_peg_out_basis_points_in_db,
+    },
 };
 
 pub mod btc;
@@ -65,4 +70,5 @@ pub mod get_latest_block_numbers;
 
 mod check_core_is_initialized;
 
+pub(crate) mod test_utils;
 pub(crate) mod utils;
