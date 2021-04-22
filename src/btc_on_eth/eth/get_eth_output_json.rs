@@ -51,7 +51,7 @@ pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_txs: Vec<BtcTransaction>,
     redeem_info: &BtcOnEthRedeemInfos,
 ) -> Result<Vec<BtcTxInfo>> {
-    info!("✔ Getting BTC tx info from BTC txs...");
+    info!("✔ Getting BTC tx info from {} BTC tx(s)...", btc_txs.len());
     let start_nonce = btc_account_nonce - btc_txs.len() as u64;
     btc_txs
         .iter()
