@@ -447,7 +447,7 @@ mod tests {
         logs_after.iter().for_each(|log| {
             assert!(log.is_from_address(&address));
             assert!(log.contains_topic(&topic));
-        })
+        });
     }
 
     #[test]
@@ -463,7 +463,7 @@ mod tests {
         result.iter().for_each(|log| {
             assert!(log.is_from_address(&addresses[0]));
             assert!(log.contains_topic(&topic));
-        })
+        });
     }
 
     #[test]
@@ -479,6 +479,6 @@ mod tests {
         result.iter().for_each(|log| {
             assert!(log.is_from_address(&addresses[0]));
             assert!(log.contains_topic(&topics[0]));
-        })
+        });
     }
 }
