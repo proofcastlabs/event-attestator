@@ -247,6 +247,18 @@ impl EthReceipt {
                 .concat(),
         )
     }
+
+    pub fn get_logs_from_addresses_with_topics(&self, addresses: &[EthAddress], topics: &[EthHash]) -> EthLogs {
+        debug!("Getting logs from addresses: {:?}", addresses);
+        debug!("Getting logs with topics: {:?}", topics);
+        EthLogs::new(
+            topics
+                .iter()
+                .map(|ref topic| self.get_logs_from_addresses_with_topic(addresses, topic).0)
+                .collect::<Vec<Vec<EthLog>>>()
+                .concat(),
+        )
+    }
 }
 
 impl Ord for EthReceipt {
@@ -435,6 +447,38 @@ mod tests {
         logs_after.iter().for_each(|log| {
             assert!(log.is_from_address(&address));
             assert!(log.contains_topic(&topic));
+        })
+    }
+
+    #[test]
+    fn should_get_logs_from_addresses_and_with_topic_from_receipt() {
+        let topic = get_sample_contract_topic();
+        let addresses = vec![get_sample_contract_address()];
+        let receipt = get_sample_eth_submission_material()
+            .receipts
+            .get_receipts_containing_log_from_addresses_and_with_topics(&addresses, &vec![topic])[0]
+            .clone();
+        let result = receipt.get_logs_from_addresses_with_topic(&addresses, &topic);
+        assert_eq!(result.len(), 1);
+        result.iter().for_each(|log| {
+            assert!(log.is_from_address(&addresses[0]));
+            assert!(log.contains_topic(&topic));
+        })
+    }
+
+    #[test]
+    fn should_get_logs_from_addresses_and_with_topics_from_receipt() {
+        let topics = vec![get_sample_contract_topic()];
+        let addresses = vec![get_sample_contract_address()];
+        let receipt = get_sample_eth_submission_material()
+            .receipts
+            .get_receipts_containing_log_from_addresses_and_with_topics(&addresses, &topics)[0]
+            .clone();
+        let result = receipt.get_logs_from_addresses_with_topics(&addresses, &topics);
+        assert_eq!(result.len(), 1);
+        result.iter().for_each(|log| {
+            assert!(log.is_from_address(&addresses[0]));
+            assert!(log.contains_topic(&topics[0]));
         })
     }
 }
