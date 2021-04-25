@@ -33,6 +33,7 @@ use crate::{
         },
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
+    erc20_on_evm::traits::{FeeCalculator, FeesCalculator},
     metadata::{
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
@@ -78,6 +79,12 @@ impl ToMetadata for EthOnEvmEvmTxInfo {
 
     fn to_metadata_bytes(&self) -> Result<Bytes> {
         self.to_metadata()?.to_bytes_for_protocol(&MetadataProtocolId::Ethereum)
+    }
+}
+
+impl FeeCalculator for EthOnEvmEvmTxInfo {
+    fn get_amount(&self) -> U256 {
+        self.token_amount.clone()
     }
 }
 
@@ -127,6 +134,12 @@ impl EthOnEvmEvmTxInfo {
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
 pub struct EthOnEvmEvmTxInfos(pub Vec<EthOnEvmEvmTxInfo>);
+
+impl FeesCalculator for EthOnEvmEvmTxInfos {
+    fn get_fees(&self, fee_basis_points: u64) -> Vec<U256> {
+        self.iter().map(|info| info.calculate_fee(fee_basis_points)).collect()
+    }
+}
 
 impl EthOnEvmEvmTxInfos {
     pub fn filter_out_zero_values(&self) -> Result<Self> {
@@ -436,5 +449,37 @@ mod tests {
 "f9012a808504a817c800830493e094daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af9280b8c4dcdc7dd000000000000000000000000071a440ee9fa7f99fb9a697e96ec7839b8a1643b80000000000000000000000000000000000000000000000000de0b6b3a7640000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002ba0e692dd01449b9d70b4f6a98f07ea2ebab8de8f92a55f45dc92dae4e0cd962a0ba0113b961254c8a47f9b318157a6ffb172223093884e7c807ca8e92f9bc143464a"
 ;
         assert_eq!(tx_hex, expected_tx_hex);
+    }
+
+    #[test]
+    fn should_calculate_eth_on_evm_evm_tx_info_fee() {
+        let material = get_eth_submission_material_n(1);
+        let vault_address = get_sample_vault_address();
+        let dictionary = get_sample_eth_evm_token_dictionary();
+        let origin_chain_id = EthChainId::Mainnet;
+        let info =
+            EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, &origin_chain_id)
+                .unwrap()[0]
+                .clone();
+        let fee_basis_points = 25;
+        let result = info.calculate_fee(fee_basis_points);
+        let expected_result = U256::from_dec_str("2500000000000000").unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_calculate_eth_on_evm_evm_tx_info_fees() {
+        let material = get_eth_submission_material_n(1);
+        let vault_address = get_sample_vault_address();
+        let dictionary = get_sample_eth_evm_token_dictionary();
+        let origin_chain_id = EthChainId::Mainnet;
+        let infos =
+            EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, &origin_chain_id)
+                .unwrap();
+        let fee_basis_points = 25;
+        let result = infos.calculate_fees(fee_basis_points);
+        let expected_fee = U256::from_dec_str("2500000000000000").unwrap();
+        let expected_result = (vec![expected_fee], expected_fee);
+        assert_eq!(result, expected_result);
     }
 }
