@@ -6,6 +6,8 @@ pub trait FeeCalculator {
     fn calculate_fee(&self, fee_basis_points: u64) -> U256 {
         (self.get_amount() * U256::from(fee_basis_points)) / U256::from(10_000)
     }
+
+    fn subtract_amount(&self, subtrahend: U256) -> Self;
 }
 
 pub trait FeesCalculator {

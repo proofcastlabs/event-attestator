@@ -93,6 +93,19 @@ impl FeeCalculator for EthOnEvmEthTxInfo {
     fn get_amount(&self) -> U256 {
         self.token_amount.clone()
     }
+
+    fn subtract_amount(&self, subtrahend: U256) -> Self {
+        Self {
+            token_amount: self.token_amount - subtrahend,
+            token_sender: self.token_sender.clone(),
+            originating_tx_hash: self.originating_tx_hash.clone(),
+            evm_token_address: self.evm_token_address.clone(),
+            eth_token_address: self.eth_token_address.clone(),
+            destination_address: self.destination_address.clone(),
+            user_data: self.user_data.clone(),
+            origin_chain_id: self.origin_chain_id.clone(),
+        }
+    }
 }
 
 impl EthOnEvmEthTxInfo {
@@ -420,6 +433,17 @@ mod tests {
         },
     };
 
+    fn get_sample_tx_infos() -> EthOnEvmEthTxInfos {
+        let dictionary = get_sample_eth_evm_token_dictionary();
+        let material = get_evm_submission_material_n(1);
+        let origin_chain_id = EthChainId::BscMainnet;
+        EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap()
+    }
+
+    fn get_sample_tx_info() -> EthOnEvmEthTxInfo {
+        get_sample_tx_infos()[0].clone()
+    }
+
     #[test]
     fn should_filter_submission_info_for_supported_redeems() {
         let dictionary = get_sample_eth_evm_token_dictionary();
@@ -462,10 +486,7 @@ mod tests {
 
     #[test]
     fn should_get_signaures_from_eth_tx_info() {
-        let dictionary = get_sample_eth_evm_token_dictionary();
-        let material = get_evm_submission_material_n(1);
-        let origin_chain_id = EthChainId::BscMainnet;
-        let infos = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap();
+        let infos = get_sample_tx_infos();
         let vault_address = get_sample_vault_address();
         let pk = get_sample_eth_private_key();
         let nonce = 0_u64;
@@ -485,11 +506,7 @@ mod tests {
 
     #[test]
     fn should_calculate_eth_on_evm_eth_tx_info_fee() {
-        let dictionary = get_sample_eth_evm_token_dictionary();
-        let material = get_evm_submission_material_n(1);
-        let origin_chain_id = EthChainId::BscMainnet;
-        let info =
-            EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap()[0].clone();
+        let info = get_sample_tx_info();
         let fee_basis_points = 25;
         let result = info.calculate_fee(fee_basis_points);
         let expected_result = U256::from_dec_str("250000000000000").unwrap();
@@ -498,14 +515,20 @@ mod tests {
 
     #[test]
     fn should_calculate_eth_on_evm_eth_tx_info_fees() {
-        let dictionary = get_sample_eth_evm_token_dictionary();
-        let material = get_evm_submission_material_n(1);
-        let origin_chain_id = EthChainId::BscMainnet;
-        let infos = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap();
+        let infos = get_sample_tx_infos();
         let fee_basis_points = 25;
         let result = infos.calculate_fees(fee_basis_points);
         let expected_fee = U256::from_dec_str("250000000000000").unwrap();
         let expected_result = (vec![expected_fee], expected_fee);
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_subtract_amount_from_eth_on_evm_eth_tx_info() {
+        let info = get_sample_tx_info();
+        let subtrahend = U256::from(1337);
+        let result = info.subtract_amount(subtrahend);
+        let expected_token_amount = U256::from_dec_str("99999999999998663").unwrap();
+        assert_eq!(result.token_amount, expected_token_amount)
     }
 }
