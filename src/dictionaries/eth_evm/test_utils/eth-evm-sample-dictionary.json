@@ -3,7 +3,9 @@
     "eth_symbol": "PNT",
     "evm_symbol": "PNT",
     "evm_address": "0xdaacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92",
-    "eth_address": "0x89ab32156e46f46d02ade3fecbe5fc4243b9aaed"
+    "eth_address": "0x89ab32156e46f46d02ade3fecbe5fc4243b9aaed",
+    "eth_fee_basis_points": 10,
+    "evm_fee_basis_points": 20
   },
   {
     "eth_symbol": "OPIUM",

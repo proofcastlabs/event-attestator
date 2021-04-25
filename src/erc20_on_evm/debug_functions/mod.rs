@@ -311,6 +311,7 @@ pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: D, eth_address_st
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"remove_dictionary_entry_success:":"true"}).to_string())
 }
+
 /// # Debug Get Add Supported Token Transaction
 ///
 /// This function will sign a transaction to add the given address as a supported token to
