@@ -147,6 +147,19 @@ impl EthEvmTokenDictionary {
                 .collect::<Result<Vec<EthEvmTokenDictionaryEntry>>>()?,
         ))
     }
+
+    fn get_eth_fee_basis_points(&self, eth_address: &EthAddress) -> Result<u64> {
+        Ok(self.get_entry_via_eth_address(eth_address)?.eth_fee_basis_points)
+    }
+
+    fn get_evm_fee_basis_points(&self, evm_address: &EthAddress) -> Result<u64> {
+        Ok(self.get_entry_via_evm_address(evm_address)?.evm_fee_basis_points)
+    }
+
+    pub fn get_fee_basis_points(&self, address: &EthAddress) -> Result<u64> {
+        self.get_eth_fee_basis_points(address)
+            .or_else(|_| self.get_evm_fee_basis_points(address))
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
@@ -269,5 +282,32 @@ mod tests {
         let entry = dictionary.get_entry_via_eth_address(&pnt_address).unwrap();
         assert!(entry.eth_fee_basis_points > 0);
         assert!(entry.evm_fee_basis_points > 0);
+    }
+
+    #[test]
+    fn should_get_eth_fee_basis_points() {
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let eth_address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
+        let result = dictionary.get_eth_fee_basis_points(&eth_address).unwrap();
+        let expected_result = 10;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_evm_fee_basis_points() {
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let result = dictionary.get_evm_fee_basis_points(&evm_address).unwrap();
+        let expected_result = 20;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_fee_basis_points() {
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let result = dictionary.get_fee_basis_points(&evm_address).unwrap();
+        let expected_result = 20;
+        assert_eq!(result, expected_result);
     }
 }
