@@ -1,4 +1,6 @@
-use ethereum_types::U256;
+use ethereum_types::{Address as EthAddress, U256};
+
+use crate::{dictionaries::eth_evm::EthEvmTokenDictionary, types::Result};
 
 pub trait FeeCalculator {
     fn get_amount(&self) -> U256;
@@ -8,6 +10,8 @@ pub trait FeeCalculator {
     }
 
     fn subtract_amount(&self, subtrahend: U256) -> Self;
+
+    fn get_fee_basis_points(&self, dictionary: &EthEvmTokenDictionary) -> Result<u64>;
 }
 
 pub trait FeesCalculator {

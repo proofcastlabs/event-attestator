@@ -83,6 +83,11 @@ impl ToMetadata for EthOnEvmEvmTxInfo {
 }
 
 impl FeeCalculator for EthOnEvmEvmTxInfo {
+    fn get_fee_basis_points(&self, dictionary: &EthEvmTokenDictionary) -> Result<u64> {
+        // TODO test
+        dictionary.get_eth_fee_basis_points(&self.eth_token_address)
+    }
+
     fn get_amount(&self) -> U256 {
         self.token_amount.clone()
     }
