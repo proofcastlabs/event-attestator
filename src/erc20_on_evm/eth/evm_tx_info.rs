@@ -163,7 +163,7 @@ impl EthOnEvmEvmTxInfo {
 pub struct EthOnEvmEvmTxInfos(pub Vec<EthOnEvmEvmTxInfo>);
 
 impl FeesCalculator for EthOnEvmEvmTxInfos {
-    fn get_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<U256>> {
+    fn get_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
         debug!("Calculating fees in `EthOnEvmEvmTxInfo`...");
         self.iter()
             .map(|info| info.calculate_fee_via_dictionary(dictionary))
@@ -171,11 +171,11 @@ impl FeesCalculator for EthOnEvmEvmTxInfos {
     }
 
     fn subtract_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Self> {
-        self.get_fees(dictionary).and_then(|fees| {
+        self.get_fees(dictionary).and_then(|fee_tuples| {
             Ok(Self::new(
                 self.iter()
-                    .zip(fees.iter())
-                    .map(|(info, fee)| info.subtract_amount(*fee))
+                    .zip(fee_tuples.iter())
+                    .map(|(info, (_, fee))| info.subtract_amount(*fee))
                     .collect::<Vec<EthOnEvmEvmTxInfo>>(),
             ))
         })

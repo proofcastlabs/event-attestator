@@ -13,13 +13,17 @@ pub trait FeeCalculator {
         (self.get_amount() * U256::from(fee_basis_points)) / U256::from(10_000)
     }
 
-    fn calculate_fee_via_dictionary(&self, dictionary: &EthEvmTokenDictionary) -> Result<U256> {
-        Ok(self.calculate_fee(dictionary.get_fee_basis_points(&self.get_token_address())?))
+    fn calculate_fee_via_dictionary(&self, dictionary: &EthEvmTokenDictionary) -> Result<(EthAddress, U256)> {
+        let token_address = self.get_token_address();
+        Ok((
+            token_address,
+            self.calculate_fee(dictionary.get_fee_basis_points(&token_address)?),
+        ))
     }
 }
 
 pub trait FeesCalculator {
-    fn get_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<U256>>;
+    fn get_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<(EthAddress, U256)>>;
 
     fn subtract_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Self>
     where
