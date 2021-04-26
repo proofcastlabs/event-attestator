@@ -9,7 +9,7 @@ use crate::{
     fees::fee_utils::get_last_withdrawal_date_as_human_readable_string,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
-    utils::{get_unix_timestamp, strip_hex_prefix},
+    utils::strip_hex_prefix,
 };
 
 pub(crate) mod test_utils;
@@ -222,6 +222,7 @@ pub struct EthEvmTokenDictionaryEntry {
     pub evm_fee_basis_points: u64,
     pub accrued_fees: U256,
     pub last_withdrawal: u64,
+    pub accrued_fees_human_readable: u128,
     pub last_withdrawal_human_readable: String,
 }
 
@@ -234,13 +235,14 @@ impl EthEvmTokenDictionaryEntry {
             eth_address: hex::encode(self.eth_address),
             eth_fee_basis_points: Some(self.eth_fee_basis_points),
             evm_fee_basis_points: Some(self.evm_fee_basis_points),
-            accrued_fees: Some(self.accrued_fees.to_string()),
+            accrued_fees: Some(self.accrued_fees.as_u128()),
             last_withdrawal: Some(self.last_withdrawal),
         }
     }
 
     pub fn from_json(json: &EthEvmTokenDictionaryEntryJson) -> Result<Self> {
         let timestamp = json.last_withdrawal.unwrap_or_default();
+        let accrued_fees = U256::from(json.accrued_fees.unwrap_or_default());
         Ok(Self {
             evm_symbol: json.evm_symbol.clone(),
             eth_symbol: json.eth_symbol.clone(),
@@ -248,9 +250,10 @@ impl EthEvmTokenDictionaryEntry {
             evm_address: EthAddress::from_slice(&hex::decode(strip_hex_prefix(&json.evm_address))?),
             eth_fee_basis_points: json.eth_fee_basis_points.unwrap_or_default(),
             evm_fee_basis_points: json.evm_fee_basis_points.unwrap_or_default(),
-            accrued_fees: U256::from_dec_str(&json.accrued_fees.clone().unwrap_or_else(|| "0".to_string()))?,
+            accrued_fees_human_readable: accrued_fees.as_u128(),
             last_withdrawal: timestamp,
             last_withdrawal_human_readable: get_last_withdrawal_date_as_human_readable_string(timestamp),
+            accrued_fees,
         })
     }
 
@@ -259,29 +262,23 @@ impl EthEvmTokenDictionaryEntry {
     }
 
     pub fn add_to_accrued_fees(&self, addend: U256) -> Result<Self> {
-        get_unix_timestamp().and_then(|new_timestamp| {
-            let new_timestamp_human_readable = get_last_withdrawal_date_as_human_readable_string(new_timestamp);
-            let new_accrued_fees = self.accrued_fees + addend;
-            debug!("Adding to accrued fees in {:?}...", self);
-            debug!(
-                "Updating last withdrawal timestamp from {} to {}...",
-                self.last_withdrawal_human_readable, new_timestamp_human_readable
-            );
-            debug!(
-                "Updating total accrued fees from {} to {}...",
-                self.accrued_fees, new_accrued_fees
-            );
-            Ok(Self {
-                eth_symbol: self.eth_symbol.clone(),
-                evm_symbol: self.evm_symbol.clone(),
-                evm_address: self.evm_address.clone(),
-                eth_address: self.eth_address.clone(),
-                eth_fee_basis_points: self.eth_fee_basis_points,
-                evm_fee_basis_points: self.evm_fee_basis_points,
-                accrued_fees: new_accrued_fees,
-                last_withdrawal: new_timestamp,
-                last_withdrawal_human_readable: new_timestamp_human_readable,
-            })
+        let new_accrued_fees = self.accrued_fees + addend;
+        debug!("Adding to accrued fees in {:?}...", self);
+        debug!(
+            "Updating accrued fees from {} to {}...",
+            self.accrued_fees, new_accrued_fees
+        );
+        Ok(Self {
+            eth_symbol: self.eth_symbol.clone(),
+            evm_symbol: self.evm_symbol.clone(),
+            evm_address: self.evm_address.clone(),
+            eth_address: self.eth_address.clone(),
+            eth_fee_basis_points: self.eth_fee_basis_points,
+            evm_fee_basis_points: self.evm_fee_basis_points,
+            accrued_fees: new_accrued_fees,
+            accrued_fees_human_readable: new_accrued_fees.as_u128(),
+            last_withdrawal: self.last_withdrawal,
+            last_withdrawal_human_readable: self.last_withdrawal_human_readable.clone(),
         })
     }
 }
@@ -294,7 +291,7 @@ pub struct EthEvmTokenDictionaryEntryJson {
     evm_address: String,
     eth_fee_basis_points: Option<u64>,
     evm_fee_basis_points: Option<u64>,
-    accrued_fees: Option<String>,
+    accrued_fees: Option<u128>,
     last_withdrawal: Option<u64>,
 }
 
@@ -336,7 +333,6 @@ mod tests {
     fn should_perform_dict_json_bytes_roundtrip() {
         let json = get_sample_eth_evm_dictionary().unwrap().to_json().unwrap();
         let bytes = json.to_bytes().unwrap();
-        println!("{}", hex::encode(&bytes));
         let result = EthEvmTokenDictionaryJson::from_bytes(&bytes).unwrap();
         assert_eq!(result, json);
     }
@@ -396,7 +392,6 @@ mod tests {
         let fee_to_add = U256::from(1337);
         let result = entry.add_to_accrued_fees(fee_to_add).unwrap();
         assert_eq!(result.accrued_fees, fee_to_add);
-        assert!(result.last_withdrawal > 0);
     }
 
     #[test]
@@ -426,7 +421,5 @@ mod tests {
         let entry_2_after = result.get_entry_via_address(&address_2).unwrap();
         assert_eq!(entry_1_after.accrued_fees, fee_1);
         assert_eq!(entry_2_after.accrued_fees, fee_2);
-        assert!(entry_1_after.last_withdrawal > 0);
-        assert!(entry_2_after.last_withdrawal > 0);
     }
 }
