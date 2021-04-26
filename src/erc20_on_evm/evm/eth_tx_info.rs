@@ -90,18 +90,27 @@ impl ToMetadata for EthOnEvmEthTxInfo {
 }
 
 impl FeeCalculator for EthOnEvmEthTxInfo {
-    fn get_fee_basis_points(&self, dictionary: &EthEvmTokenDictionary) -> Result<u64> {
-        // TODO test!
-        dictionary.get_evm_fee_basis_points(&self.evm_token_address)
+    fn get_token_address(&self) -> EthAddress {
+        debug!(
+            "Getting token address in `EthOnEvmEthTxInfo` of {}",
+            self.evm_token_address
+        );
+        self.evm_token_address.clone()
     }
 
     fn get_amount(&self) -> U256 {
+        debug!("Getting token amount in `EthOnEvmEthTxInfo` of {}", self.token_amount);
         self.token_amount.clone()
     }
 
     fn subtract_amount(&self, subtrahend: U256) -> Self {
+        let new_amount = self.token_amount - subtrahend;
+        debug!(
+            "Subtracting {} from {} to get final amount of {} in `EthOnEvmEthTxInfo`!",
+            subtrahend, self.token_amount, new_amount
+        );
         Self {
-            token_amount: self.token_amount - subtrahend,
+            token_amount: new_amount,
             token_sender: self.token_sender.clone(),
             originating_tx_hash: self.originating_tx_hash.clone(),
             evm_token_address: self.evm_token_address.clone(),
@@ -174,17 +183,22 @@ impl EthOnEvmEthTxInfo {
 pub struct EthOnEvmEthTxInfos(pub Vec<EthOnEvmEthTxInfo>);
 
 impl FeesCalculator for EthOnEvmEthTxInfos {
-    fn get_fees(&self, fee_basis_points: u64) -> Vec<U256> {
-        self.iter().map(|info| info.calculate_fee(fee_basis_points)).collect()
+    fn get_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<U256>> {
+        debug!("Calculating fees in `EthOnEvmEthTxInfo`...");
+        self.iter()
+            .map(|info| info.calculate_fee_via_dictionary(dictionary))
+            .collect()
     }
 
-    fn subtract_fees(&self, fee_basis_points: u64) -> Self {
-        Self::new(
-            self.iter()
-                .zip(self.get_fees(fee_basis_points).iter())
-                .map(|(info, fee)| info.subtract_amount(*fee))
-                .collect::<Vec<EthOnEvmEthTxInfo>>(),
-        )
+    fn subtract_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Self> {
+        self.get_fees(dictionary).and_then(|fees| {
+            Ok(Self::new(
+                self.iter()
+                    .zip(fees.iter())
+                    .map(|(info, fee)| info.subtract_amount(*fee))
+                    .collect::<Vec<EthOnEvmEthTxInfo>>(),
+            ))
+        })
     }
 }
 
@@ -524,16 +538,6 @@ mod tests {
         let fee_basis_points = 25;
         let result = info.calculate_fee(fee_basis_points);
         let expected_result = U256::from_dec_str("250000000000000").unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_calculate_eth_on_evm_eth_tx_info_fees() {
-        let infos = get_sample_tx_infos();
-        let fee_basis_points = 25;
-        let result = infos.calculate_fees(fee_basis_points);
-        let expected_fee = U256::from_dec_str("250000000000000").unwrap();
-        let expected_result = (vec![expected_fee], expected_fee);
         assert_eq!(result, expected_result);
     }
 

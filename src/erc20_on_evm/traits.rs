@@ -5,25 +5,23 @@ use crate::{dictionaries::eth_evm::EthEvmTokenDictionary, types::Result};
 pub trait FeeCalculator {
     fn get_amount(&self) -> U256;
 
+    fn get_token_address(&self) -> EthAddress;
+
+    fn subtract_amount(&self, subtrahend: U256) -> Self;
+
     fn calculate_fee(&self, fee_basis_points: u64) -> U256 {
         (self.get_amount() * U256::from(fee_basis_points)) / U256::from(10_000)
     }
 
-    fn subtract_amount(&self, subtrahend: U256) -> Self;
-
-    fn get_fee_basis_points(&self, dictionary: &EthEvmTokenDictionary) -> Result<u64>;
+    fn calculate_fee_via_dictionary(&self, dictionary: &EthEvmTokenDictionary) -> Result<U256> {
+        Ok(self.calculate_fee(dictionary.get_fee_basis_points(&self.get_token_address())?))
+    }
 }
 
 pub trait FeesCalculator {
-    fn get_fees(&self, fee_basis_points: u64) -> Vec<U256>;
+    fn get_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<U256>>;
 
-    fn calculate_fees(&self, fee_basis_points: u64) -> (Vec<U256>, U256) {
-        let fees = self.get_fees(fee_basis_points);
-        let total_fee = fees.iter().fold(U256::zero(), |a, b| a + b);
-        info!("✔      Fees: {:?}", fees);
-        info!("✔ Total fee: {:?}", fees);
-        (fees, total_fee)
-    }
-
-    fn subtract_fees(&self, fee_basis_points: u64) -> Self;
+    fn subtract_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Self>
+    where
+        Self: Sized;
 }
