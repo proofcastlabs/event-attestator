@@ -271,8 +271,8 @@ impl EthEvmTokenDictionaryEntry {
         Ok(Self {
             eth_symbol: self.eth_symbol.clone(),
             evm_symbol: self.evm_symbol.clone(),
-            evm_address: self.evm_address.clone(),
-            eth_address: self.eth_address.clone(),
+            evm_address: self.evm_address,
+            eth_address: self.eth_address,
             eth_fee_basis_points: self.eth_fee_basis_points,
             evm_fee_basis_points: self.evm_fee_basis_points,
             accrued_fees: new_accrued_fees,

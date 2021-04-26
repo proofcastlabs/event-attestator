@@ -95,12 +95,12 @@ impl FeeCalculator for EthOnEvmEthTxInfo {
             "Getting token address in `EthOnEvmEthTxInfo` of {}",
             self.evm_token_address
         );
-        self.evm_token_address.clone()
+        self.evm_token_address
     }
 
     fn get_amount(&self) -> U256 {
         debug!("Getting token amount in `EthOnEvmEthTxInfo` of {}", self.token_amount);
-        self.token_amount.clone()
+        self.token_amount
     }
 
     fn subtract_amount(&self, subtrahend: U256) -> Self {
@@ -111,11 +111,11 @@ impl FeeCalculator for EthOnEvmEthTxInfo {
         );
         Self {
             token_amount: new_amount,
-            token_sender: self.token_sender.clone(),
-            originating_tx_hash: self.originating_tx_hash.clone(),
-            evm_token_address: self.evm_token_address.clone(),
-            eth_token_address: self.eth_token_address.clone(),
-            destination_address: self.destination_address.clone(),
+            token_sender: self.token_sender,
+            originating_tx_hash: self.originating_tx_hash,
+            evm_token_address: self.evm_token_address,
+            eth_token_address: self.eth_token_address,
+            destination_address: self.destination_address,
             user_data: self.user_data.clone(),
             origin_chain_id: self.origin_chain_id.clone(),
         }
@@ -191,13 +191,13 @@ impl FeesCalculator for EthOnEvmEthTxInfos {
     }
 
     fn subtract_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Self> {
-        self.get_fees(dictionary).and_then(|fee_tuples| {
-            Ok(Self::new(
+        self.get_fees(dictionary).map(|fee_tuples| {
+            Self::new(
                 self.iter()
                     .zip(fee_tuples.iter())
                     .map(|(info, (_, fee))| info.subtract_amount(*fee))
                     .collect::<Vec<EthOnEvmEthTxInfo>>(),
-            ))
+            )
         })
     }
 }
