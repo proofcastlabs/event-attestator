@@ -234,7 +234,7 @@ impl EthEvmTokenDictionaryEntry {
             eth_address: hex::encode(self.eth_address),
             eth_fee_basis_points: Some(self.eth_fee_basis_points),
             evm_fee_basis_points: Some(self.evm_fee_basis_points),
-            accrued_fees: Some(self.accrued_fees),
+            accrued_fees: Some(self.accrued_fees.to_string()),
             last_withdrawal: Some(self.last_withdrawal),
         }
     }
@@ -248,7 +248,7 @@ impl EthEvmTokenDictionaryEntry {
             evm_address: EthAddress::from_slice(&hex::decode(strip_hex_prefix(&json.evm_address))?),
             eth_fee_basis_points: json.eth_fee_basis_points.unwrap_or_default(),
             evm_fee_basis_points: json.evm_fee_basis_points.unwrap_or_default(),
-            accrued_fees: json.accrued_fees.unwrap_or_default(),
+            accrued_fees: U256::from_dec_str(&json.accrued_fees.clone().unwrap_or_else(|| "0".to_string()))?,
             last_withdrawal: timestamp,
             last_withdrawal_human_readable: get_last_withdrawal_date_as_human_readable_string(timestamp),
         })
@@ -294,7 +294,7 @@ pub struct EthEvmTokenDictionaryEntryJson {
     evm_address: String,
     eth_fee_basis_points: Option<u64>,
     evm_fee_basis_points: Option<u64>,
-    accrued_fees: Option<U256>,
+    accrued_fees: Option<String>,
     last_withdrawal: Option<u64>,
 }
 
