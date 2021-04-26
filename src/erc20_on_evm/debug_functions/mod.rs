@@ -76,6 +76,7 @@ use crate::{
             check_core_is_initialized_and_return_evm_state,
         },
         eth::{
+            account_for_fees::maybe_account_for_fees as maybe_account_for_fees_in_eth_submission,
             evm_tx_info::{
                 filter_out_zero_value_tx_infos_from_state,
                 filter_submission_material_for_peg_in_events_in_state,
@@ -85,6 +86,7 @@ use crate::{
             get_eth_output_json::{get_evm_signed_tx_info_from_evm_txs, EthOutput},
         },
         evm::{
+            account_for_fees::maybe_account_for_fees as maybe_account_for_fees_in_evm_submission,
             eth_tx_info::{
                 filter_out_zero_value_tx_infos_from_state as filter_out_zero_value_eth_txs_from_state,
                 filter_submission_material_for_redeem_events_in_state,
@@ -134,6 +136,7 @@ pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, evm_block_json: &s
                 .and_then(|params| state.add_erc20_on_evm_eth_tx_infos(params))
         })
         .and_then(filter_out_zero_value_eth_txs_from_state)
+        .and_then(maybe_account_for_fees_in_evm_submission)
         .and_then(maybe_sign_eth_txs_and_add_to_evm_state)
         .and_then(maybe_increment_eth_account_nonce_and_return_evm_state)
         .and_then(end_evm_db_tx_and_return_state)
@@ -197,6 +200,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
                 .and_then(|params| state.add_erc20_on_evm_evm_tx_infos(params))
         })
         .and_then(filter_out_zero_value_tx_infos_from_state)
+        .and_then(maybe_account_for_fees_in_eth_submission)
         .and_then(maybe_sign_evm_txs_and_add_to_eth_state)
         .and_then(maybe_increment_evm_account_nonce_and_return_eth_state)
         .and_then(end_eth_db_transaction_and_return_state)
