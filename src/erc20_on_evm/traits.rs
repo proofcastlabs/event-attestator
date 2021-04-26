@@ -20,4 +20,6 @@ pub trait FeesCalculator {
         info!("✔ Total fee: {:?}", fees);
         (fees, total_fee)
     }
+
+    fn subtract_fees(&self, fee_basis_points: u64) -> Self;
 }

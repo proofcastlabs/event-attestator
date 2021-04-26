@@ -172,6 +172,15 @@ impl FeesCalculator for EthOnEvmEthTxInfos {
     fn get_fees(&self, fee_basis_points: u64) -> Vec<U256> {
         self.iter().map(|info| info.calculate_fee(fee_basis_points)).collect()
     }
+
+    fn subtract_fees(&self, fee_basis_points: u64) -> Self {
+        Self::new(
+            self.iter()
+                .zip(self.get_fees(fee_basis_points).iter())
+                .map(|(info, fee)| info.subtract_amount(*fee))
+                .collect::<Vec<EthOnEvmEthTxInfo>>(),
+        )
+    }
 }
 
 impl EthOnEvmEthTxInfos {
