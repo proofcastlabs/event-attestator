@@ -197,6 +197,29 @@ impl EthEvmTokenDictionary {
             Ok(new_dictionary)
         })
     }
+
+    fn change_eth_fee_basis_points(&mut self, eth_address: &EthAddress, new_fee: u64) -> Result<Self> {
+        info!(
+            "Changing ETH fee basis points for address {} to {}...",
+            eth_address, new_fee
+        );
+        self.get_entry_via_eth_address(eth_address)
+            .map(|entry| self.replace_entry(&entry, entry.change_eth_fee_basis_points(new_fee)))
+    }
+
+    fn change_evm_fee_basis_points(&mut self, evm_address: &EthAddress, new_fee: u64) -> Result<Self> {
+        info!(
+            "Changing EVM fee basis points for address {} to {}...",
+            evm_address, new_fee
+        );
+        self.get_entry_via_evm_address(evm_address)
+            .map(|entry| self.replace_entry(&entry, entry.change_evm_fee_basis_points(new_fee)))
+    }
+
+    fn change_fee_basis_points(&mut self, address: &EthAddress, new_fee: u64) -> Result<Self> {
+        self.change_eth_fee_basis_points(address, new_fee)
+            .or_else(|_| self.change_evm_fee_basis_points(address, new_fee))
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
@@ -284,7 +307,7 @@ impl EthEvmTokenDictionaryEntry {
 
     pub fn change_eth_fee_basis_points(&self, new_fee: u64) -> Self {
         debug!(
-            "Chaing ETH fee basis points for address {} from {} to {}...",
+            "Changing ETH fee basis points for address {} from {} to {}...",
             self.eth_address, self.eth_fee_basis_points, new_fee
         );
         Self {
@@ -303,7 +326,7 @@ impl EthEvmTokenDictionaryEntry {
 
     pub fn change_evm_fee_basis_points(&self, new_fee: u64) -> Self {
         debug!(
-            "Chaing EVM fee basis points for address {} from {} to {}...",
+            "Changing EVM fee basis points for address {} from {} to {}...",
             self.evm_address, self.evm_fee_basis_points, new_fee
         );
         Self {
@@ -465,8 +488,8 @@ mod tests {
     fn should_change_eth_fee_basis_points() {
         let new_fee = 1337;
         let dictionary = get_sample_eth_evm_dictionary().unwrap();
-        let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
-        let entry = dictionary.get_entry_via_address(&evm_address).unwrap();
+        let eth_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let entry = dictionary.get_entry_via_address(&eth_address).unwrap();
         let fee_before = entry.eth_fee_basis_points;
         assert_ne!(fee_before, new_fee);
         let result = entry.change_eth_fee_basis_points(new_fee);
@@ -483,5 +506,29 @@ mod tests {
         assert_ne!(fee_before, new_fee);
         let result = entry.change_evm_fee_basis_points(new_fee);
         assert_eq!(result.evm_fee_basis_points, new_fee);
+    }
+
+    #[test]
+    fn should_change_eth_fee_basis_points_via_dictionary() {
+        let new_fee = 1337;
+        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let eth_address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
+        let fee_before = dictionary.get_eth_fee_basis_points(&eth_address).unwrap();
+        assert_ne!(fee_before, new_fee);
+        let updated_dictionary = dictionary.change_fee_basis_points(&eth_address, new_fee).unwrap();
+        let result = updated_dictionary.get_eth_fee_basis_points(&eth_address).unwrap();
+        assert_eq!(result, new_fee)
+    }
+
+    #[test]
+    fn should_change_evm_fee_basis_points_via_dictionary() {
+        let new_fee = 1337;
+        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let fee_before = dictionary.get_evm_fee_basis_points(&evm_address).unwrap();
+        assert_ne!(fee_before, new_fee);
+        let updated_dictionary = dictionary.change_fee_basis_points(&evm_address, new_fee).unwrap();
+        let result = updated_dictionary.get_evm_fee_basis_points(&evm_address).unwrap();
+        assert_eq!(result, new_fee)
     }
 }
