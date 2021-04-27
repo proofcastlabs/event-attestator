@@ -61,7 +61,7 @@ impl EthEvmTokenDictionary {
         }
     }
 
-    pub fn save_to_db<D: DatabaseInterface>(&self, db: &D) -> Result<()> {
+    pub fn save_in_db<D: DatabaseInterface>(&self, db: &D) -> Result<()> {
         db.put(
             ETH_EVM_DICTIONARY_KEY.to_vec(),
             self.to_bytes()?,
@@ -86,14 +86,14 @@ impl EthEvmTokenDictionary {
         db: &D,
     ) -> Result<Self> {
         self.add(entry);
-        self.save_to_db(db)?;
+        self.save_in_db(db)?;
         Ok(self)
     }
 
     fn remove_and_update_in_db<D: DatabaseInterface>(self, entry: &EthEvmTokenDictionaryEntry, db: &D) -> Result<Self> {
         if self.contains(entry) {
             let new_self = self.remove(entry);
-            new_self.save_to_db(db)?;
+            new_self.save_in_db(db)?;
             return Ok(new_self);
         }
         Ok(self)
@@ -193,7 +193,7 @@ impl EthEvmTokenDictionary {
         fee_tuples: Vec<(EthAddress, U256)>,
     ) -> Result<Self> {
         self.increment_accrued_fees(fee_tuples).and_then(|new_dictionary| {
-            new_dictionary.save_to_db(db)?;
+            new_dictionary.save_in_db(db)?;
             Ok(new_dictionary)
         })
     }
@@ -219,6 +219,16 @@ impl EthEvmTokenDictionary {
     fn change_fee_basis_points(&mut self, address: &EthAddress, new_fee: u64) -> Result<Self> {
         self.change_eth_fee_basis_points(address, new_fee)
             .or_else(|_| self.change_evm_fee_basis_points(address, new_fee))
+    }
+
+    pub fn change_fee_basis_points_and_update_in_db<D: DatabaseInterface>(
+        &mut self,
+        db: &D,
+        address: &EthAddress,
+        new_fee: u64,
+    ) -> Result<()> {
+        self.change_fee_basis_points(address, new_fee)
+            .and_then(|updated_dictionary| updated_dictionary.save_in_db(db))
     }
 }
 
@@ -379,9 +389,9 @@ pub fn get_eth_evm_token_dictionary_from_db_and_add_to_eth_state<D: DatabaseInte
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dictionaries::eth_evm::test_utils::{
-        get_sample_eth_evm_dictionary,
-        get_sample_eth_evm_dictionary_json_str,
+    use crate::{
+        dictionaries::eth_evm::test_utils::{get_sample_eth_evm_dictionary, get_sample_eth_evm_dictionary_json_str},
+        test_utils::get_test_database,
     };
 
     #[test]
@@ -529,6 +539,22 @@ mod tests {
         assert_ne!(fee_before, new_fee);
         let updated_dictionary = dictionary.change_fee_basis_points(&evm_address, new_fee).unwrap();
         let result = updated_dictionary.get_evm_fee_basis_points(&evm_address).unwrap();
+        assert_eq!(result, new_fee)
+    }
+
+    #[test]
+    fn should_change_fee_basis_points_and_update_in_db() {
+        let db = get_test_database();
+        let new_fee = 1337;
+        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let eth_address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
+        let fee_before = dictionary.get_eth_fee_basis_points(&eth_address).unwrap();
+        assert_ne!(fee_before, new_fee);
+        dictionary
+            .change_fee_basis_points_and_update_in_db(&db, &eth_address, new_fee)
+            .unwrap();
+        let dictionary_from_db = EthEvmTokenDictionary::get_from_db(&db).unwrap();
+        let result = dictionary_from_db.get_eth_fee_basis_points(&eth_address).unwrap();
         assert_eq!(result, new_fee)
     }
 }
