@@ -175,7 +175,14 @@ impl FeesCalculator for EthOnEvmEvmTxInfos {
             Self::new(
                 self.iter()
                     .zip(fee_tuples.iter())
-                    .map(|(info, (_, fee))| info.subtract_amount(*fee))
+                    .map(|(info, (_, fee))| {
+                        if *fee == U256::zero() {
+                            debug!("Not subtracting fee because `fee` is 0!");
+                            info.clone()
+                        } else {
+                            info.subtract_amount(*fee)
+                        }
+                    })
                     .collect::<Vec<EthOnEvmEvmTxInfo>>(),
             )
         })
