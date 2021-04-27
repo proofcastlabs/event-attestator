@@ -25,12 +25,16 @@ pub enum MetadataChainId {
     EosJungleTestnet, // 0x0282317f
     XDaiMainnet,      // 0x00f1918e
     PolygonMainnet,   // 0x0075dd4c
+    UltraMainnet,     // 0x025d3c68
+    FioMainnet,       // 0x02174f20
 }
 
 impl MetadataChainId {
     pub fn to_protocol_id(self) -> MetadataProtocolId {
         match self {
-            Self::EosMainnet | Self::TelosMainnet | Self::EosJungleTestnet => MetadataProtocolId::Eos,
+            Self::EosMainnet | Self::TelosMainnet | Self::EosJungleTestnet | Self::UltraMainnet | Self::FioMainnet => {
+                MetadataProtocolId::Eos
+            },
             Self::BitcoinMainnet | Self::BitcoinTestnet => MetadataProtocolId::Bitcoin,
             Self::EthereumMainnet
             | Self::EthereumRinkeby
@@ -54,6 +58,8 @@ impl MetadataChainId {
             Self::EosMainnet => Box::new(EosChainId::EosMainnet),
             Self::TelosMainnet => Box::new(EosChainId::TelosMainnet),
             Self::EosJungleTestnet => Box::new(EosChainId::EosJungleTestnet),
+            Self::UltraMainnet => Box::new(EosChainId::UltraMainnet),
+            Self::FioMainnet => Box::new(EosChainId::FioMainnet),
         }
     }
 
@@ -129,6 +135,8 @@ impl fmt::Display for MetadataChainId {
             Self::BscMainnet => write!(f, "Binance Chain (BSC) Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::XDaiMainnet => write!(f, "xDai Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::UltraMainnet => write!(f, "Ultra Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::FioMainnet => write!(f, "FIO Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
         }
     }
 }
@@ -168,7 +176,7 @@ mod tests {
     fn should_get_metadata_chain_id_from_bytes_correctly() {
         let chain_ids_bytes = vec![
             "005fe7f9", "0069c322", "00f34368", "01ec97de", "018afeb2", "02e7261c", "028c7109", "00e4b170", "0282317f",
-            "00f1918e", "0075dd4c",
+            "00f1918e", "0075dd4c", "025d3c68", "02174f20",
         ]
         .iter()
         .map(|ref hex| hex::decode(hex).unwrap())

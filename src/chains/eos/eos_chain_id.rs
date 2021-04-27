@@ -16,6 +16,8 @@ pub enum EosChainId {
     EosMainnet,
     TelosMainnet,
     EosJungleTestnet,
+    UltraMainnet,
+    FioMainnet,
 }
 
 impl ChainId for EosChainId {
@@ -34,6 +36,12 @@ lazy_static! {
     pub static ref EOS_JUNGLE_TESTNET_BYTES: Bytes =
         hex::decode("e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473")
             .expect("✘ Invalid hex in `EOS_JUNGLE_TESTNET_BYTES`");
+    pub static ref ULTRA_MAINNET_BYTES: Bytes =
+        hex::decode("9d4ce4f29989020912def3bd130481ad4d34ab7a6b2cae969a62b11b86f32d7f")
+            .expect("✘ Invalid hex in `ULTRA_MAINNET_BYTES`");
+    pub static ref FIO_MAINNET_BYTES: Bytes =
+        hex::decode("21dcae42c0182200e93f954a074011f9048a7624c6fe81d3c9541a614a88bd1c")
+            .expect("✘ Invalid hex in `FIO_MAINNET_BYTES`");
 }
 
 impl EosChainId {
@@ -47,6 +55,8 @@ impl EosChainId {
             Self::EosMainnet => hex::encode(&*EOS_MAINNET_BYTES),
             Self::TelosMainnet => hex::encode(&*TELOS_MAINNET_BYTES),
             Self::EosJungleTestnet => hex::encode(&*EOS_JUNGLE_TESTNET_BYTES),
+            Self::UltraMainnet => hex::encode(&*ULTRA_MAINNET_BYTES),
+            Self::FioMainnet => hex::encode(&*FIO_MAINNET_BYTES),
         }
     }
 
@@ -77,6 +87,8 @@ impl EosChainId {
             Self::EosMainnet => EOS_MAINNET_BYTES.to_vec(),
             Self::TelosMainnet => TELOS_MAINNET_BYTES.to_vec(),
             Self::EosJungleTestnet => EOS_JUNGLE_TESTNET_BYTES.to_vec(),
+            Self::UltraMainnet => ULTRA_MAINNET_BYTES.to_vec(),
+            Self::FioMainnet => FIO_MAINNET_BYTES.to_vec(),
         }
     }
 
@@ -91,6 +103,8 @@ impl fmt::Display for EosChainId {
             Self::EosMainnet => write!(f, "EOS Mainnet: 0x{}", self.to_hex()),
             Self::TelosMainnet => write!(f, "Telos Mainnet: 0x{}", self.to_hex()),
             Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", self.to_hex()),
+            Self::UltraMainnet => write!(f, "Ultra Mainnet: 0x{}", self.to_hex()),
+            Self::FioMainnet => write!(f, "FIO Mainnet: 0x{}", self.to_hex()),
         }
     }
 }
