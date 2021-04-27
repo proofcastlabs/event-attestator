@@ -1,6 +1,6 @@
 use ethereum_types::{Address as EthAddress, U256};
 
-use crate::{dictionaries::eth_evm::EthEvmTokenDictionary, types::Result};
+use crate::{constants::FEE_BASIS_POINTS_DIVISOR, dictionaries::eth_evm::EthEvmTokenDictionary, types::Result};
 
 pub trait FeeCalculator {
     fn get_amount(&self) -> U256;
@@ -12,7 +12,7 @@ pub trait FeeCalculator {
     fn calculate_fee(&self, fee_basis_points: u64) -> U256 {
         if fee_basis_points > 0 {
             debug!("Calculating fee using `fee_basis_points` of {}", fee_basis_points);
-            (self.get_amount() * U256::from(fee_basis_points)) / U256::from(10_000)
+            (self.get_amount() * U256::from(fee_basis_points)) / U256::from(FEE_BASIS_POINTS_DIVISOR)
         } else {
             debug!("Not calculating fee because `fee_basis_points` are zero!");
             U256::zero()
