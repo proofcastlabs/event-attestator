@@ -281,6 +281,44 @@ impl EthEvmTokenDictionaryEntry {
             last_withdrawal_human_readable: self.last_withdrawal_human_readable.clone(),
         })
     }
+
+    pub fn change_eth_fee_basis_points(&self, new_fee: u64) -> Self {
+        debug!(
+            "Chaing ETH fee basis points for address {} from {} to {}...",
+            self.eth_address, self.eth_fee_basis_points, new_fee
+        );
+        Self {
+            eth_symbol: self.eth_symbol.clone(),
+            evm_symbol: self.evm_symbol.clone(),
+            evm_address: self.evm_address,
+            eth_address: self.eth_address,
+            eth_fee_basis_points: new_fee,
+            evm_fee_basis_points: self.evm_fee_basis_points,
+            accrued_fees: self.accrued_fees,
+            accrued_fees_human_readable: self.accrued_fees_human_readable,
+            last_withdrawal: self.last_withdrawal,
+            last_withdrawal_human_readable: self.last_withdrawal_human_readable.clone(),
+        }
+    }
+
+    pub fn change_evm_fee_basis_points(&self, new_fee: u64) -> Self {
+        debug!(
+            "Chaing EVM fee basis points for address {} from {} to {}...",
+            self.evm_address, self.evm_fee_basis_points, new_fee
+        );
+        Self {
+            eth_symbol: self.eth_symbol.clone(),
+            evm_symbol: self.evm_symbol.clone(),
+            evm_address: self.evm_address,
+            eth_address: self.eth_address,
+            eth_fee_basis_points: self.eth_fee_basis_points,
+            evm_fee_basis_points: new_fee,
+            accrued_fees: self.accrued_fees,
+            accrued_fees_human_readable: self.accrued_fees_human_readable,
+            last_withdrawal: self.last_withdrawal,
+            last_withdrawal_human_readable: self.last_withdrawal_human_readable.clone(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -421,5 +459,29 @@ mod tests {
         let entry_2_after = result.get_entry_via_address(&address_2).unwrap();
         assert_eq!(entry_1_after.accrued_fees, fee_1);
         assert_eq!(entry_2_after.accrued_fees, fee_2);
+    }
+
+    #[test]
+    fn should_change_eth_fee_basis_points() {
+        let new_fee = 1337;
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let entry = dictionary.get_entry_via_address(&evm_address).unwrap();
+        let fee_before = entry.eth_fee_basis_points;
+        assert_ne!(fee_before, new_fee);
+        let result = entry.change_eth_fee_basis_points(new_fee);
+        assert_eq!(result.eth_fee_basis_points, new_fee);
+    }
+
+    #[test]
+    fn should_change_evm_fee_basis_points() {
+        let new_fee = 1337;
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let entry = dictionary.get_entry_via_address(&evm_address).unwrap();
+        let fee_before = entry.evm_fee_basis_points;
+        assert_ne!(fee_before, new_fee);
+        let result = entry.change_evm_fee_basis_points(new_fee);
+        assert_eq!(result.evm_fee_basis_points, new_fee);
     }
 }
