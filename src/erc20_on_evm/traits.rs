@@ -10,7 +10,13 @@ pub trait FeeCalculator {
     fn subtract_amount(&self, subtrahend: U256) -> Self;
 
     fn calculate_fee(&self, fee_basis_points: u64) -> U256 {
-        (self.get_amount() * U256::from(fee_basis_points)) / U256::from(10_000)
+        if fee_basis_points > 0 {
+            debug!("Calculating fee using `fee_basis_points` of {}", fee_basis_points);
+            (self.get_amount() * U256::from(fee_basis_points)) / U256::from(10_000)
+        } else {
+            debug!("Not calculating fee because `fee_basis_points` are zero!");
+            U256::zero()
+        }
     }
 
     fn calculate_fee_via_dictionary(&self, dictionary: &EthEvmTokenDictionary) -> Result<(EthAddress, U256)> {
