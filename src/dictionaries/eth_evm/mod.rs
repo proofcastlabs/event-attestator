@@ -352,6 +352,23 @@ impl EthEvmTokenDictionaryEntry {
             last_withdrawal_human_readable: self.last_withdrawal_human_readable.clone(),
         }
     }
+
+    fn set_last_withdrawal_date(&self, timestamp: u64) -> Self {
+        let timestamp_human_readable = get_last_withdrawal_date_as_human_readable_string(timestamp);
+        debug!("Setting withdrawal date to {}", timestamp_human_readable);
+        Self {
+            eth_symbol: self.eth_symbol.clone(),
+            evm_symbol: self.evm_symbol.clone(),
+            evm_address: self.evm_address,
+            eth_address: self.eth_address,
+            eth_fee_basis_points: self.eth_fee_basis_points,
+            evm_fee_basis_points: self.evm_fee_basis_points,
+            accrued_fees: self.accrued_fees,
+            accrued_fees_human_readable: self.accrued_fees_human_readable,
+            last_withdrawal: timestamp,
+            last_withdrawal_human_readable: timestamp_human_readable,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -392,6 +409,7 @@ mod tests {
     use crate::{
         dictionaries::eth_evm::test_utils::{get_sample_eth_evm_dictionary, get_sample_eth_evm_dictionary_json_str},
         test_utils::get_test_database,
+        utils::get_unix_timestamp,
     };
 
     #[test]
@@ -556,5 +574,17 @@ mod tests {
         let dictionary_from_db = EthEvmTokenDictionary::get_from_db(&db).unwrap();
         let result = dictionary_from_db.get_eth_fee_basis_points(&eth_address).unwrap();
         assert_eq!(result, new_fee)
+    }
+
+    #[test]
+    fn should_set_last_withdrawal_date() {
+        let timestamp = get_unix_timestamp().unwrap();
+        let human_readable_timestamp = get_last_withdrawal_date_as_human_readable_string(timestamp);
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let entry = dictionary.get_entry_via_address(&evm_address).unwrap();
+        let result = entry.set_last_withdrawal_date(timestamp);
+        assert_eq!(result.last_withdrawal, timestamp);
+        assert_eq!(result.last_withdrawal_human_readable, human_readable_timestamp);
     }
 }
