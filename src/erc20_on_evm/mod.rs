@@ -48,6 +48,7 @@ pub use crate::{
             debug_reprocess_evm_block,
             debug_set_fee_basis_points,
             debug_set_key_in_db_to_value,
+            debug_withdraw_fees,
         },
         eth::{
             add_vault_contract_address::maybe_add_vault_contract_address,
