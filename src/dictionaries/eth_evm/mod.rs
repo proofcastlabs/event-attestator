@@ -9,7 +9,7 @@ use crate::{
     fees::fee_utils::get_last_withdrawal_date_as_human_readable_string,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
-    utils::strip_hex_prefix,
+    utils::{get_unix_timestamp, strip_hex_prefix},
 };
 
 pub(crate) mod test_utils;
@@ -178,7 +178,7 @@ impl EthEvmTokenDictionary {
 
     pub fn increment_accrued_fee(&mut self, address: &EthAddress, addend: U256) -> Result<Self> {
         self.get_entry_via_address(address)
-            .and_then(|entry| Ok(self.replace_entry(&entry, entry.add_to_accrued_fees(addend))))
+            .map(|entry| self.replace_entry(&entry, entry.add_to_accrued_fees(addend)))
     }
 
     pub fn increment_accrued_fees(&mut self, fee_tuples: Vec<(EthAddress, U256)>) -> Result<Self> {
@@ -231,7 +231,7 @@ impl EthEvmTokenDictionary {
             .and_then(|updated_dictionary| updated_dictionary.save_in_db(db))
     }
 
-    fn set_last_withdrawal_date_in_entry(&mut self, address: &EthAddress, timestamp: u64) -> Result<Self> {
+    fn set_last_withdrawal_timestamp_in_entry(&mut self, address: &EthAddress, timestamp: u64) -> Result<Self> {
         self.get_entry_via_address(address)
             .map(|entry| self.replace_entry(&entry, entry.set_last_withdrawal_timestamp(timestamp)))
     }
@@ -243,6 +243,15 @@ impl EthEvmTokenDictionary {
 
     fn get_fee_withdrawal_amount(&self, address: &EthAddress) -> Result<U256> {
         self.get_entry_via_address(address).map(|entry| entry.accrued_fees)
+    }
+
+    pub fn withdraw_fees<D: DatabaseInterface>(&mut self, db: &D, address: &EthAddress) -> Result<(EthAddress, U256)> {
+        let token_address = self.get_entry_via_address(address)?.eth_address;
+        let withdrawal_amount = self.get_fee_withdrawal_amount(address)?;
+        self.set_last_withdrawal_timestamp_in_entry(address, get_unix_timestamp()?)
+            .and_then(|mut dict| dict.zero_accrued_fees_in_entry(address))
+            .and_then(|dict| dict.save_in_db(db))
+            .map(|_| (token_address, withdrawal_amount))
     }
 }
 
@@ -439,7 +448,6 @@ mod tests {
     use crate::{
         dictionaries::eth_evm::test_utils::{get_sample_eth_evm_dictionary, get_sample_eth_evm_dictionary_json_str},
         test_utils::get_test_database,
-        utils::get_unix_timestamp,
     };
 
     #[test]
@@ -607,7 +615,7 @@ mod tests {
     }
 
     #[test]
-    fn should_set_last_withdrawal_date_in_dictionary_entry() {
+    fn should_set_last_withdrawal_timestamp_in_dictionary_entry() {
         let timestamp = get_unix_timestamp().unwrap();
         let human_readable_timestamp = get_last_withdrawal_date_as_human_readable_string(timestamp);
         let dictionary = get_sample_eth_evm_dictionary().unwrap();
@@ -632,14 +640,14 @@ mod tests {
     }
 
     #[test]
-    fn should_set_last_withdrawal_date_in_entry_via_dictionary() {
+    fn should_set_last_withdrawal_timestamp_in_entry_via_dictionary() {
         let timestamp = get_unix_timestamp().unwrap();
         let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
         let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let entry_before = dictionary.get_entry_via_address(&address).unwrap();
         assert_eq!(entry_before.last_withdrawal, 0);
         let updated_dictionary = dictionary
-            .set_last_withdrawal_date_in_entry(&address, timestamp)
+            .set_last_withdrawal_timestamp_in_entry(&address, timestamp)
             .unwrap();
         let result = updated_dictionary.get_entry_via_address(&address).unwrap();
         assert_eq!(result.last_withdrawal, timestamp);
@@ -656,7 +664,7 @@ mod tests {
         assert_eq!(entry.accrued_fees, fees_before);
         let final_dictionary = updated_dictionary.zero_accrued_fees_in_entry(&address).unwrap();
         let result = final_dictionary.get_entry_via_address(&address).unwrap();
-        assert_eq!(result.accrued_fees, U256::zero());
+        assert_eq!(result.accrued_fees, fees_after);
     }
 
     #[test]
@@ -667,5 +675,27 @@ mod tests {
         let updated_dictionary = dictionary.increment_accrued_fee(&address, expected_fee).unwrap();
         let result = updated_dictionary.get_fee_withdrawal_amount(&address).unwrap();
         assert_eq!(result, expected_fee);
+    }
+
+    #[test]
+    fn should_withdraw_fees() {
+        let timestamp = get_unix_timestamp().unwrap();
+        let db = get_test_database();
+        let expected_fee = U256::from(1337);
+        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let expected_token_address =
+            EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
+        let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let mut updated_dictionary = dictionary.increment_accrued_fee(&address, expected_fee).unwrap();
+        let entry_before = updated_dictionary.get_entry_via_address(&address).unwrap();
+        assert_eq!(entry_before.accrued_fees, expected_fee);
+        assert_eq!(entry_before.last_withdrawal, 0);
+        let (token_address, withdrawal_amount) = updated_dictionary.withdraw_fees(&db, &address).unwrap();
+        assert_eq!(withdrawal_amount, expected_fee);
+        assert_eq!(token_address, expected_token_address);
+        let dictionary_from_db = EthEvmTokenDictionary::get_from_db(&db).unwrap();
+        let entry_after = dictionary_from_db.get_entry_via_address(&address).unwrap();
+        assert_eq!(entry_after.accrued_fees, U256::zero());
+        assert!(entry_after.last_withdrawal >= timestamp);
     }
 }
