@@ -369,6 +369,22 @@ impl EthEvmTokenDictionaryEntry {
             last_withdrawal_human_readable: timestamp_human_readable,
         }
     }
+
+    fn zero_accrued_fees(&self) -> Self {
+        debug!("Zeroing accrued fees in {:?}...", self);
+        Self {
+            eth_symbol: self.eth_symbol.clone(),
+            evm_symbol: self.evm_symbol.clone(),
+            evm_address: self.evm_address,
+            eth_address: self.eth_address,
+            eth_fee_basis_points: self.eth_fee_basis_points,
+            evm_fee_basis_points: self.evm_fee_basis_points,
+            accrued_fees: U256::zero(),
+            accrued_fees_human_readable: 0,
+            last_withdrawal: self.last_withdrawal,
+            last_withdrawal_human_readable: self.last_withdrawal_human_readable.clone(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -577,7 +593,7 @@ mod tests {
     }
 
     #[test]
-    fn should_set_last_withdrawal_date() {
+    fn should_set_last_withdrawal_date_in_dictionary_entry() {
         let timestamp = get_unix_timestamp().unwrap();
         let human_readable_timestamp = get_last_withdrawal_date_as_human_readable_string(timestamp);
         let dictionary = get_sample_eth_evm_dictionary().unwrap();
@@ -586,5 +602,18 @@ mod tests {
         let result = entry.set_last_withdrawal_date(timestamp);
         assert_eq!(result.last_withdrawal, timestamp);
         assert_eq!(result.last_withdrawal_human_readable, human_readable_timestamp);
+    }
+
+    #[test]
+    fn should_zero_accrued_fees_in_dictionary_entry() {
+        let fees_before = U256::from(1337);
+        let fees_after = U256::zero();
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let entry = dictionary.get_entry_via_address(&evm_address).unwrap();
+        let updated_entry = entry.add_to_accrued_fees(fees_before).unwrap();
+        assert_eq!(updated_entry.accrued_fees, fees_before);
+        let result = entry.zero_accrued_fees();
+        assert_eq!(result.accrued_fees, fees_after);
     }
 }
