@@ -178,7 +178,7 @@ impl EthEvmTokenDictionary {
 
     pub fn increment_accrued_fee(&mut self, address: &EthAddress, addend: U256) -> Result<Self> {
         self.get_entry_via_address(address)
-            .and_then(|entry| Ok(self.replace_entry(&entry, entry.add_to_accrued_fees(addend)?)))
+            .and_then(|entry| Ok(self.replace_entry(&entry, entry.add_to_accrued_fees(addend))))
     }
 
     pub fn increment_accrued_fees(&mut self, fee_tuples: Vec<(EthAddress, U256)>) -> Result<Self> {
@@ -294,14 +294,14 @@ impl EthEvmTokenDictionaryEntry {
         EthEvmTokenDictionaryEntryJson::from_str(json_string).and_then(|entry_json| Self::from_json(&entry_json))
     }
 
-    pub fn add_to_accrued_fees(&self, addend: U256) -> Result<Self> {
+    pub fn add_to_accrued_fees(&self, addend: U256) -> Self {
         let new_accrued_fees = self.accrued_fees + addend;
         debug!("Adding to accrued fees in {:?}...", self);
         debug!(
             "Updating accrued fees from {} to {}...",
             self.accrued_fees, new_accrued_fees
         );
-        Ok(Self {
+        Self {
             eth_symbol: self.eth_symbol.clone(),
             evm_symbol: self.evm_symbol.clone(),
             evm_address: self.evm_address,
@@ -312,7 +312,7 @@ impl EthEvmTokenDictionaryEntry {
             accrued_fees_human_readable: new_accrued_fees.as_u128(),
             last_withdrawal: self.last_withdrawal,
             last_withdrawal_human_readable: self.last_withdrawal_human_readable.clone(),
-        })
+        }
     }
 
     pub fn change_eth_fee_basis_points(&self, new_fee: u64) -> Self {
@@ -495,7 +495,7 @@ mod tests {
         assert_eq!(entry.last_withdrawal, 0);
         assert_eq!(entry.accrued_fees, U256::zero());
         let fee_to_add = U256::from(1337);
-        let result = entry.add_to_accrued_fees(fee_to_add).unwrap();
+        let result = entry.add_to_accrued_fees(fee_to_add);
         assert_eq!(result.accrued_fees, fee_to_add);
     }
 
@@ -611,7 +611,7 @@ mod tests {
         let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let entry = dictionary.get_entry_via_address(&evm_address).unwrap();
-        let updated_entry = entry.add_to_accrued_fees(fees_before).unwrap();
+        let updated_entry = entry.add_to_accrued_fees(fees_before);
         assert_eq!(updated_entry.accrued_fees, fees_before);
         let result = entry.zero_accrued_fees();
         assert_eq!(result.accrued_fees, fees_after);
