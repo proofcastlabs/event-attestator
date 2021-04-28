@@ -235,6 +235,11 @@ impl EthEvmTokenDictionary {
         self.get_entry_via_address(address)
             .map(|entry| self.replace_entry(&entry, entry.set_last_withdrawal_timestamp(timestamp)))
     }
+
+    fn zero_accrued_fees_in_entry(&mut self, address: &EthAddress) -> Result<Self> {
+        self.get_entry_via_address(address)
+            .map(|entry| self.replace_entry(&entry, entry.zero_accrued_fees()))
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
@@ -634,5 +639,19 @@ mod tests {
             .unwrap();
         let result = updated_dictionary.get_entry_via_address(&address).unwrap();
         assert_eq!(result.last_withdrawal, timestamp);
+    }
+
+    #[test]
+    fn should_zero_accrued_fees_in_entry_via_dictionary() {
+        let fees_before = U256::from(1337);
+        let fees_after = U256::zero();
+        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let mut updated_dictionary = dictionary.increment_accrued_fee(&address, fees_before).unwrap();
+        let entry = updated_dictionary.get_entry_via_address(&address).unwrap();
+        assert_eq!(entry.accrued_fees, fees_before);
+        let final_dictionary = updated_dictionary.zero_accrued_fees_in_entry(&address).unwrap();
+        let result = final_dictionary.get_entry_via_address(&address).unwrap();
+        assert_eq!(result.accrued_fees, U256::zero());
     }
 }
