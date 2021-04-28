@@ -240,6 +240,10 @@ impl EthEvmTokenDictionary {
         self.get_entry_via_address(address)
             .map(|entry| self.replace_entry(&entry, entry.zero_accrued_fees()))
     }
+
+    fn get_fee_withdrawal_amount(&self, address: &EthAddress) -> Result<U256> {
+        self.get_entry_via_address(address).map(|entry| entry.accrued_fees)
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
@@ -653,5 +657,15 @@ mod tests {
         let final_dictionary = updated_dictionary.zero_accrued_fees_in_entry(&address).unwrap();
         let result = final_dictionary.get_entry_via_address(&address).unwrap();
         assert_eq!(result.accrued_fees, U256::zero());
+    }
+
+    #[test]
+    fn should_get_fee_withdrawal_amount_via_dictionary() {
+        let expected_fee = U256::from(1337);
+        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let updated_dictionary = dictionary.increment_accrued_fee(&address, expected_fee).unwrap();
+        let result = updated_dictionary.get_fee_withdrawal_amount(&address).unwrap();
+        assert_eq!(result, expected_fee);
     }
 }
