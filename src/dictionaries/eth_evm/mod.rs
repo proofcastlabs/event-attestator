@@ -230,6 +230,11 @@ impl EthEvmTokenDictionary {
         self.change_fee_basis_points(address, new_fee)
             .and_then(|updated_dictionary| updated_dictionary.save_in_db(db))
     }
+
+    fn set_last_withdrawal_date_in_entry(&mut self, address: &EthAddress, timestamp: u64) -> Result<Self> {
+        self.get_entry_via_address(address)
+            .map(|entry| self.replace_entry(&entry, entry.set_last_withdrawal_timestamp(timestamp)))
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
@@ -353,7 +358,7 @@ impl EthEvmTokenDictionaryEntry {
         }
     }
 
-    fn set_last_withdrawal_date(&self, timestamp: u64) -> Self {
+    fn set_last_withdrawal_timestamp(&self, timestamp: u64) -> Self {
         let timestamp_human_readable = get_last_withdrawal_date_as_human_readable_string(timestamp);
         debug!("Setting withdrawal date to {}", timestamp_human_readable);
         Self {
@@ -599,7 +604,7 @@ mod tests {
         let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let entry = dictionary.get_entry_via_address(&evm_address).unwrap();
-        let result = entry.set_last_withdrawal_date(timestamp);
+        let result = entry.set_last_withdrawal_timestamp(timestamp);
         assert_eq!(result.last_withdrawal, timestamp);
         assert_eq!(result.last_withdrawal_human_readable, human_readable_timestamp);
     }
@@ -615,5 +620,19 @@ mod tests {
         assert_eq!(updated_entry.accrued_fees, fees_before);
         let result = entry.zero_accrued_fees();
         assert_eq!(result.accrued_fees, fees_after);
+    }
+
+    #[test]
+    fn should_set_last_withdrawal_date_in_entry_via_dictionary() {
+        let timestamp = get_unix_timestamp().unwrap();
+        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let entry_before = dictionary.get_entry_via_address(&address).unwrap();
+        assert_eq!(entry_before.last_withdrawal, 0);
+        let updated_dictionary = dictionary
+            .set_last_withdrawal_date_in_entry(&address, timestamp)
+            .unwrap();
+        let result = updated_dictionary.get_entry_via_address(&address).unwrap();
+        assert_eq!(result.last_withdrawal, timestamp);
     }
 }
