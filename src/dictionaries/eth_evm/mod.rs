@@ -61,7 +61,7 @@ impl EthEvmTokenDictionary {
         }
     }
 
-    pub fn save_in_db<D: DatabaseInterface>(&self, db: &D) -> Result<()> {
+    fn save_in_db<D: DatabaseInterface>(&self, db: &D) -> Result<()> {
         db.put(
             ETH_EVM_DICTIONARY_KEY.to_vec(),
             self.to_bytes()?,
@@ -697,5 +697,37 @@ mod tests {
         let entry_after = dictionary_from_db.get_entry_via_address(&address).unwrap();
         assert_eq!(entry_after.accrued_fees, U256::zero());
         assert!(entry_after.last_withdrawal >= timestamp);
+    }
+
+    fn get_pnt_address() -> EthAddress {
+        EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap())
+    }
+
+    fn get_pnt_dictionary_entry() -> EthEvmTokenDictionaryEntry {
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        dictionary.get_entry_via_address(&get_pnt_address()).unwrap()
+    }
+
+    #[test]
+    fn should_add_entry_and_update_in_db() {
+        let db = get_test_database();
+        let dictionary = EthEvmTokenDictionary::new(vec![]);
+        let entry = get_pnt_dictionary_entry();
+        dictionary.add_and_update_in_db(entry.clone(), &db).unwrap();
+        let dictionary_from_db = EthEvmTokenDictionary::get_from_db(&db).unwrap();
+        assert!(dictionary_from_db.contains(&entry));
+    }
+
+    #[test]
+    fn should_remove_entry_via_eth_address_and_update_in_db() {
+        let db = get_test_database();
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let address = get_pnt_address();
+        let entry = get_pnt_dictionary_entry();
+        dictionary
+            .remove_entry_via_eth_address_and_update_in_db(&address, &db)
+            .unwrap();
+        let dictionary_from_db = EthEvmTokenDictionary::get_from_db(&db).unwrap();
+        assert!(!dictionary_from_db.contains(&entry));
     }
 }
