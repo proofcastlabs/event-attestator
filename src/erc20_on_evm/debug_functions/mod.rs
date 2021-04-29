@@ -65,11 +65,14 @@ use crate::{
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
-    dictionaries::eth_evm::{
-        get_eth_evm_token_dictionary_from_db_and_add_to_eth_state,
-        get_eth_evm_token_dictionary_from_db_and_add_to_evm_state,
-        EthEvmTokenDictionary,
-        EthEvmTokenDictionaryEntry,
+    dictionaries::{
+        dictionary_constants::ETH_EVM_DICTIONARY_KEY,
+        eth_evm::{
+            get_eth_evm_token_dictionary_from_db_and_add_to_eth_state,
+            get_eth_evm_token_dictionary_from_db_and_add_to_evm_state,
+            EthEvmTokenDictionary,
+            EthEvmTokenDictionaryEntry,
+        },
     },
     erc20_on_evm::{
         check_core_is_initialized::{
@@ -238,6 +241,7 @@ pub fn debug_get_all_db_keys() -> Result<String> {
             "evm": get_evm_constants_db_keys(),
             "eth": get_eth_constants_db_keys(),
             "db-key-prefix": DB_KEY_PREFIX.to_string(),
+            "dictionary": hex::encode(ETH_EVM_DICTIONARY_KEY.to_vec()),
         })
         .to_string()
     })
