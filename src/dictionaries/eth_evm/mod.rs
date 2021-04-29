@@ -730,4 +730,18 @@ mod tests {
         let dictionary_from_db = EthEvmTokenDictionary::get_from_db(&db).unwrap();
         assert!(!dictionary_from_db.contains(&entry));
     }
+
+    #[test]
+    fn should_replace_entry() {
+        let new_accrued_fees = U256::from(1337);
+        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let pnt_address = get_pnt_address();
+        let entry_before = dictionary.get_entry_via_address(&pnt_address).unwrap();
+        assert_eq!(entry_before.accrued_fees, U256::zero());
+        let entry_after = entry_before.add_to_accrued_fees(new_accrued_fees);
+        assert_eq!(entry_after.accrued_fees, new_accrued_fees);
+        let final_dictionary = dictionary.replace_entry(&entry_before, entry_after);
+        let final_entry = final_dictionary.get_entry_via_address(&pnt_address).unwrap();
+        assert_eq!(final_entry.accrued_fees, new_accrued_fees);
+    }
 }
