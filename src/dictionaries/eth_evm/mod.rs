@@ -84,26 +84,26 @@ impl EthEvmTokenDictionary {
         mut self,
         entry: EthEvmTokenDictionaryEntry,
         db: &D,
-    ) -> Result<Self> {
+    ) -> Result<()> {
         self.add(entry);
         self.save_in_db(db)?;
-        Ok(self)
+        Ok(())
     }
 
-    fn remove_and_update_in_db<D: DatabaseInterface>(self, entry: &EthEvmTokenDictionaryEntry, db: &D) -> Result<Self> {
+    fn remove_and_update_in_db<D: DatabaseInterface>(self, entry: &EthEvmTokenDictionaryEntry, db: &D) -> Result<()> {
         if self.contains(entry) {
             let new_self = self.remove(entry);
             new_self.save_in_db(db)?;
-            return Ok(new_self);
+            return Ok(());
         }
-        Ok(self)
+        Ok(())
     }
 
     pub fn remove_entry_via_eth_address_and_update_in_db<D: DatabaseInterface>(
         self,
         eth_address: &EthAddress,
         db: &D,
-    ) -> Result<Self> {
+    ) -> Result<()> {
         self.get_entry_via_eth_address(eth_address)
             .and_then(|entry| self.remove_and_update_in_db(&entry, db))
     }
@@ -208,11 +208,9 @@ impl EthEvmTokenDictionary {
         &mut self,
         db: &D,
         fee_tuples: Vec<(EthAddress, U256)>,
-    ) -> Result<Self> {
-        self.increment_accrued_fees(fee_tuples).and_then(|new_dictionary| {
-            new_dictionary.save_in_db(db)?;
-            Ok(new_dictionary)
-        })
+    ) -> Result<()> {
+        self.increment_accrued_fees(fee_tuples)
+            .and_then(|new_dictionary| new_dictionary.save_in_db(db))
     }
 
     fn change_eth_fee_basis_points(&mut self, eth_address: &EthAddress, new_fee: u64) -> Result<Self> {
@@ -265,7 +263,7 @@ impl EthEvmTokenDictionary {
     pub fn withdraw_fees_and_save_in_db<D: DatabaseInterface>(
         &mut self,
         db: &D,
-        address: &EthAddress
+        address: &EthAddress,
     ) -> Result<(EthAddress, U256)> {
         let token_address = self.get_entry_via_address(address)?.eth_address;
         let withdrawal_amount = self.get_fee_withdrawal_amount(address)?;
@@ -669,7 +667,8 @@ mod tests {
         let entry_before = updated_dictionary.get_entry_via_address(&address).unwrap();
         assert_eq!(entry_before.accrued_fees, expected_fee);
         assert_eq!(entry_before.last_withdrawal, 0);
-        let (token_address, withdrawal_amount) = updated_dictionary.withdraw_fees_and_save_in_db(&db, &address).unwrap();
+        let (token_address, withdrawal_amount) =
+            updated_dictionary.withdraw_fees_and_save_in_db(&db, &address).unwrap();
         assert_eq!(withdrawal_amount, expected_fee);
         assert_eq!(token_address, expected_token_address);
         let dictionary_from_db = EthEvmTokenDictionary::get_from_db(&db).unwrap();
