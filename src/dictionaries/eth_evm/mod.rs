@@ -262,7 +262,11 @@ impl EthEvmTokenDictionary {
         self.get_entry_via_address(address).map(|entry| entry.accrued_fees)
     }
 
-    pub fn withdraw_fees<D: DatabaseInterface>(&mut self, db: &D, address: &EthAddress) -> Result<(EthAddress, U256)> {
+    pub fn withdraw_fees_and_save_in_db<D: DatabaseInterface>(
+        &mut self,
+        db: &D,
+        address: &EthAddress
+    ) -> Result<(EthAddress, U256)> {
         let token_address = self.get_entry_via_address(address)?.eth_address;
         let withdrawal_amount = self.get_fee_withdrawal_amount(address)?;
         self.set_last_withdrawal_timestamp_in_entry(address, get_unix_timestamp()?)
@@ -653,7 +657,7 @@ mod tests {
     }
 
     #[test]
-    fn should_withdraw_fees() {
+    fn should_withdraw_fees_and_save_in_db() {
         let timestamp = get_unix_timestamp().unwrap();
         let db = get_test_database();
         let expected_fee = U256::from(1337);
@@ -665,7 +669,7 @@ mod tests {
         let entry_before = updated_dictionary.get_entry_via_address(&address).unwrap();
         assert_eq!(entry_before.accrued_fees, expected_fee);
         assert_eq!(entry_before.last_withdrawal, 0);
-        let (token_address, withdrawal_amount) = updated_dictionary.withdraw_fees(&db, &address).unwrap();
+        let (token_address, withdrawal_amount) = updated_dictionary.withdraw_fees_and_save_in_db(&db, &address).unwrap();
         assert_eq!(withdrawal_amount, expected_fee);
         assert_eq!(token_address, expected_token_address);
         let dictionary_from_db = EthEvmTokenDictionary::get_from_db(&db).unwrap();

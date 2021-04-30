@@ -491,7 +491,7 @@ pub fn debug_set_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, ne
 ///
 /// #### NOTE: This function will increment the ETH nonce and so the output transation MUST be
 /// broadcast otherwise future transactions are liable to fail.
-pub fn debug_withdraw_fees<D: DatabaseInterface>(
+pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
     db: D,
     token_address: &str,
     recipient_address: &str,
@@ -500,7 +500,7 @@ pub fn debug_withdraw_fees<D: DatabaseInterface>(
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
-        .and_then(|mut dictionary| dictionary.withdraw_fees(&db, &convert_hex_to_address(token_address)?))
+        .and_then(|mut dictionary| dictionary.withdraw_fees_and_save_in_db(&db, &convert_hex_to_address(token_address)?))
         .and_then(|(token_address, fee_amount)| {
             Ok(EthTransaction::new_unsigned(
                 encode_erc20_vault_peg_out_fxn_data_without_user_data(
