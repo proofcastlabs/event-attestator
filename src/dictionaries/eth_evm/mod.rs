@@ -341,18 +341,10 @@ impl EthEvmTokenDictionaryEntry {
             "✔ Updating accrued fees from {} to {}...",
             self.accrued_fees, new_accrued_fees
         );
-        Self {
-            eth_symbol: self.eth_symbol.clone(),
-            evm_symbol: self.evm_symbol.clone(),
-            evm_address: self.evm_address,
-            eth_address: self.eth_address,
-            eth_fee_basis_points: self.eth_fee_basis_points,
-            evm_fee_basis_points: self.evm_fee_basis_points,
-            accrued_fees: new_accrued_fees,
-            accrued_fees_human_readable: new_accrued_fees.as_u128(),
-            last_withdrawal: self.last_withdrawal,
-            last_withdrawal_human_readable: self.last_withdrawal_human_readable.clone(),
-        }
+        let mut new_entry = self.clone();
+        new_entry.accrued_fees = new_accrued_fees;
+        new_entry.accrued_fees_human_readable = new_accrued_fees.as_u128();
+        new_entry
     }
 
     pub fn change_eth_fee_basis_points(&self, new_fee: u64) -> Self {
@@ -360,18 +352,9 @@ impl EthEvmTokenDictionaryEntry {
             "✔ Changing ETH fee basis points for address {} from {} to {}...",
             self.eth_address, self.eth_fee_basis_points, new_fee
         );
-        Self {
-            eth_symbol: self.eth_symbol.clone(),
-            evm_symbol: self.evm_symbol.clone(),
-            evm_address: self.evm_address,
-            eth_address: self.eth_address,
-            eth_fee_basis_points: new_fee,
-            evm_fee_basis_points: self.evm_fee_basis_points,
-            accrued_fees: self.accrued_fees,
-            accrued_fees_human_readable: self.accrued_fees_human_readable,
-            last_withdrawal: self.last_withdrawal,
-            last_withdrawal_human_readable: self.last_withdrawal_human_readable.clone(),
-        }
+        let mut new_entry = self.clone();
+        new_entry.eth_fee_basis_points = new_fee;
+        new_entry
     }
 
     pub fn change_evm_fee_basis_points(&self, new_fee: u64) -> Self {
@@ -379,51 +362,26 @@ impl EthEvmTokenDictionaryEntry {
             "✔ Changing EVM fee basis points for address {} from {} to {}...",
             self.evm_address, self.evm_fee_basis_points, new_fee
         );
-        Self {
-            eth_symbol: self.eth_symbol.clone(),
-            evm_symbol: self.evm_symbol.clone(),
-            evm_address: self.evm_address,
-            eth_address: self.eth_address,
-            eth_fee_basis_points: self.eth_fee_basis_points,
-            evm_fee_basis_points: new_fee,
-            accrued_fees: self.accrued_fees,
-            accrued_fees_human_readable: self.accrued_fees_human_readable,
-            last_withdrawal: self.last_withdrawal,
-            last_withdrawal_human_readable: self.last_withdrawal_human_readable.clone(),
-        }
+        let mut new_entry = self.clone();
+        new_entry.evm_fee_basis_points = new_fee;
+        new_entry
     }
 
     fn set_last_withdrawal_timestamp(&self, timestamp: u64) -> Self {
         let timestamp_human_readable = get_last_withdrawal_date_as_human_readable_string(timestamp);
         info!("✔ Setting withdrawal date to {}", timestamp_human_readable);
-        Self {
-            eth_symbol: self.eth_symbol.clone(),
-            evm_symbol: self.evm_symbol.clone(),
-            evm_address: self.evm_address,
-            eth_address: self.eth_address,
-            eth_fee_basis_points: self.eth_fee_basis_points,
-            evm_fee_basis_points: self.evm_fee_basis_points,
-            accrued_fees: self.accrued_fees,
-            accrued_fees_human_readable: self.accrued_fees_human_readable,
-            last_withdrawal: timestamp,
-            last_withdrawal_human_readable: timestamp_human_readable,
-        }
+        let mut new_entry = self.clone();
+        new_entry.last_withdrawal = timestamp;
+        new_entry.last_withdrawal_human_readable = timestamp_human_readable;
+        new_entry
     }
 
     fn zero_accrued_fees(&self) -> Self {
         info!("✔ Zeroing accrued fees in {:?}...", self);
-        Self {
-            eth_symbol: self.eth_symbol.clone(),
-            evm_symbol: self.evm_symbol.clone(),
-            evm_address: self.evm_address,
-            eth_address: self.eth_address,
-            eth_fee_basis_points: self.eth_fee_basis_points,
-            evm_fee_basis_points: self.evm_fee_basis_points,
-            accrued_fees: U256::zero(),
-            accrued_fees_human_readable: 0,
-            last_withdrawal: self.last_withdrawal,
-            last_withdrawal_human_readable: self.last_withdrawal_human_readable.clone(),
-        }
+        let mut new_entry = self.clone();
+        new_entry.accrued_fees = U256::zero();
+        new_entry.accrued_fees_human_readable = 0;
+        new_entry
     }
 }
 
