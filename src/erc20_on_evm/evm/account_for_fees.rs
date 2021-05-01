@@ -18,7 +18,7 @@ pub fn maybe_account_for_fees<D: DatabaseInterface>(state: EvmState<D>) -> Resul
     } else {
         info!("✔ Accounting for fees in `EthOnEvmEthTxInfos` during EVM block submission...");
         let tx_infos = state.erc20_on_evm_eth_tx_infos.clone();
-        let mut dictionary = EthEvmTokenDictionary::get_from_db(&state.db)?;
+        let dictionary = EthEvmTokenDictionary::get_from_db(&state.db)?;
         dictionary.increment_accrued_fees_and_save_in_db(&state.db, tx_infos.get_fees(&dictionary)?)?;
         state.replace_erc20_on_evm_eth_tx_infos(tx_infos.subtract_fees(&dictionary)?)
     }

@@ -473,7 +473,7 @@ pub fn debug_set_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, ne
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
-        .and_then(|mut dictionary| {
+        .and_then(|dictionary| {
             dictionary.change_fee_basis_points_and_update_in_db(&db, &convert_hex_to_address(address)?, new_fee)
         })
         .and_then(|_| db.end_transaction())
@@ -500,9 +500,7 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
-        .and_then(|mut dictionary| {
-            dictionary.withdraw_fees_and_save_in_db(&db, &convert_hex_to_address(token_address)?)
-        })
+        .and_then(|dictionary| dictionary.withdraw_fees_and_save_in_db(&db, &convert_hex_to_address(token_address)?))
         .and_then(|(token_address, fee_amount)| {
             Ok(EthTransaction::new_unsigned(
                 encode_erc20_vault_peg_out_fxn_data_without_user_data(

@@ -40,23 +40,35 @@ impl EthEvmTokenDictionary {
         EthEvmTokenDictionaryJson::from_bytes(bytes).and_then(|json| Self::from_json(&json))
     }
 
-    fn add(&mut self, entry: EthEvmTokenDictionaryEntry) {
-        info!("✔ Adding `EthEvmTokenDictionary` entry: {:?}...", entry);
-        if !self.contains(&entry) {
-            self.push(entry);
-        } else {
-            info!("✘ Not adding new `EthEvmTokenDictionaryEntry` ∵ entry already extant!");
+    fn add(&self, entry: EthEvmTokenDictionaryEntry) -> Self {
+        let mut new_self = self.clone();
+        match self.contains(&entry) {
+            true => {
+                info!("✘ Not adding new `EthEvmTokenDictionaryEntry` ∵ entry already extant!");
+                new_self
+            },
+            false => {
+                info!("✔ Adding `EthEvmTokenDictionary` entry: {:?}...", entry);
+                new_self.push(entry);
+                new_self
+            },
         }
     }
 
-    fn remove(mut self, entry: &EthEvmTokenDictionaryEntry) -> Self {
-        info!("✔ Removing `EthEvmTokenDictionary` entry: {:?}...", entry);
+    fn remove(&self, entry: &EthEvmTokenDictionaryEntry) -> Self {
+        let mut new_self = self.clone();
         match self.contains(&entry) {
-            false => self,
+            false => {
+                info!(
+                    "✔ Not removing `EthEvmTokenDictionary` entry ∵ it's not in the dictionary! {:?}",
+                    entry
+                );
+                new_self
+            },
             true => {
                 info!("✔ Removing `EthEvmTokenDictionaryEntry`: {:?}", entry);
-                self.retain(|x| x != entry);
-                self
+                new_self.retain(|x| x != entry);
+                new_self
             },
         }
     }
@@ -80,27 +92,22 @@ impl EthEvmTokenDictionary {
         }
     }
 
-    pub fn add_and_update_in_db<D: DatabaseInterface>(
-        mut self,
-        entry: EthEvmTokenDictionaryEntry,
-        db: &D,
-    ) -> Result<()> {
-        self.add(entry);
-        self.save_in_db(db)?;
-        Ok(())
+    pub fn add_and_update_in_db<D: DatabaseInterface>(&self, entry: EthEvmTokenDictionaryEntry, db: &D) -> Result<()> {
+        self.add(entry).save_in_db(db)
     }
 
-    fn remove_and_update_in_db<D: DatabaseInterface>(self, entry: &EthEvmTokenDictionaryEntry, db: &D) -> Result<()> {
+    fn remove_and_update_in_db<D: DatabaseInterface>(&self, entry: &EthEvmTokenDictionaryEntry, db: &D) -> Result<()> {
         if self.contains(entry) {
-            let new_self = self.remove(entry);
-            new_self.save_in_db(db)?;
-            return Ok(());
+            info!("✔ Removing entry & updating in db...");
+            self.remove(entry).save_in_db(db)
+        } else {
+            info!("✘ Not removing entry || updating in db ∵ entry not extant!");
+            Ok(())
         }
-        Ok(())
     }
 
     pub fn remove_entry_via_eth_address_and_update_in_db<D: DatabaseInterface>(
-        self,
+        &self,
         eth_address: &EthAddress,
         db: &D,
     ) -> Result<()> {
@@ -168,26 +175,25 @@ impl EthEvmTokenDictionary {
     }
 
     pub fn replace_entry(
-        &mut self,
+        &self,
         entry_to_remove: &EthEvmTokenDictionaryEntry,
         entry_to_add: EthEvmTokenDictionaryEntry,
     ) -> Self {
-        info!("✔ Replacing dictionary entry...");
         if entry_to_add == *entry_to_remove {
             info!("✘ Entry to replace is identical to new entry, doing nothing!");
             self.clone()
         } else {
-            self.add(entry_to_add);
-            self.clone().remove(entry_to_remove)
+            info!("✔ Replacing dictionary entry...");
+            self.add(entry_to_add).remove(entry_to_remove)
         }
     }
 
-    pub fn increment_accrued_fee(&mut self, address: &EthAddress, addend: U256) -> Result<Self> {
+    pub fn increment_accrued_fee(&self, address: &EthAddress, addend: U256) -> Result<Self> {
         self.get_entry_via_address(address)
             .map(|entry| self.replace_entry(&entry, entry.add_to_accrued_fees(addend)))
     }
 
-    pub fn increment_accrued_fees(&mut self, fee_tuples: Vec<(EthAddress, U256)>) -> Result<Self> {
+    pub fn increment_accrued_fees(&self, fee_tuples: Vec<(EthAddress, U256)>) -> Result<Self> {
         info!("✔ Incrementing accrued fees...");
         fee_tuples
             .iter()
@@ -199,13 +205,13 @@ impl EthEvmTokenDictionary {
                     false
                 }
             })
-            .try_fold(self.clone(), |mut s, (address, addend)| {
-                s.increment_accrued_fee(address, *addend)
+            .try_fold(self.clone(), |new_self, (address, addend)| {
+                new_self.increment_accrued_fee(address, *addend)
             })
     }
 
     pub fn increment_accrued_fees_and_save_in_db<D: DatabaseInterface>(
-        &mut self,
+        &self,
         db: &D,
         fee_tuples: Vec<(EthAddress, U256)>,
     ) -> Result<()> {
@@ -213,7 +219,7 @@ impl EthEvmTokenDictionary {
             .and_then(|new_dictionary| new_dictionary.save_in_db(db))
     }
 
-    fn change_eth_fee_basis_points(&mut self, eth_address: &EthAddress, new_fee: u64) -> Result<Self> {
+    fn change_eth_fee_basis_points(&self, eth_address: &EthAddress, new_fee: u64) -> Result<Self> {
         info!(
             "✔ Changing ETH fee basis points for address {} to {}...",
             eth_address, new_fee
@@ -222,7 +228,7 @@ impl EthEvmTokenDictionary {
             .map(|entry| self.replace_entry(&entry, entry.change_eth_fee_basis_points(new_fee)))
     }
 
-    fn change_evm_fee_basis_points(&mut self, evm_address: &EthAddress, new_fee: u64) -> Result<Self> {
+    fn change_evm_fee_basis_points(&self, evm_address: &EthAddress, new_fee: u64) -> Result<Self> {
         info!(
             "✔ Changing EVM fee basis points for address {} to {}...",
             evm_address, new_fee
@@ -231,13 +237,13 @@ impl EthEvmTokenDictionary {
             .map(|entry| self.replace_entry(&entry, entry.change_evm_fee_basis_points(new_fee)))
     }
 
-    fn change_fee_basis_points(&mut self, address: &EthAddress, new_fee: u64) -> Result<Self> {
+    fn change_fee_basis_points(&self, address: &EthAddress, new_fee: u64) -> Result<Self> {
         self.change_eth_fee_basis_points(address, new_fee)
             .or_else(|_| self.change_evm_fee_basis_points(address, new_fee))
     }
 
     pub fn change_fee_basis_points_and_update_in_db<D: DatabaseInterface>(
-        &mut self,
+        &self,
         db: &D,
         address: &EthAddress,
         new_fee: u64,
@@ -246,12 +252,12 @@ impl EthEvmTokenDictionary {
             .and_then(|updated_dictionary| updated_dictionary.save_in_db(db))
     }
 
-    fn set_last_withdrawal_timestamp_in_entry(&mut self, address: &EthAddress, timestamp: u64) -> Result<Self> {
+    fn set_last_withdrawal_timestamp_in_entry(&self, address: &EthAddress, timestamp: u64) -> Result<Self> {
         self.get_entry_via_address(address)
             .map(|entry| self.replace_entry(&entry, entry.set_last_withdrawal_timestamp(timestamp)))
     }
 
-    fn zero_accrued_fees_in_entry(&mut self, address: &EthAddress) -> Result<Self> {
+    fn zero_accrued_fees_in_entry(&self, address: &EthAddress) -> Result<Self> {
         self.get_entry_via_address(address)
             .map(|entry| self.replace_entry(&entry, entry.zero_accrued_fees()))
     }
@@ -261,15 +267,15 @@ impl EthEvmTokenDictionary {
     }
 
     pub fn withdraw_fees_and_save_in_db<D: DatabaseInterface>(
-        &mut self,
+        &self,
         db: &D,
         address: &EthAddress,
     ) -> Result<(EthAddress, U256)> {
         let token_address = self.get_entry_via_address(address)?.eth_address;
         let withdrawal_amount = self.get_fee_withdrawal_amount(address)?;
         self.set_last_withdrawal_timestamp_in_entry(address, get_unix_timestamp()?)
-            .and_then(|mut dict| dict.zero_accrued_fees_in_entry(address))
-            .and_then(|dict| dict.save_in_db(db))
+            .and_then(|dictionary| dictionary.zero_accrued_fees_in_entry(address))
+            .and_then(|dictionary| dictionary.save_in_db(db))
             .map(|_| (token_address, withdrawal_amount))
     }
 }
@@ -508,7 +514,7 @@ mod tests {
 
     #[test]
     fn should_increment_accrued_fees() {
-        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let fee_1 = U256::from(666);
         let fee_2 = U256::from(1337);
         let address_1 = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
@@ -554,7 +560,7 @@ mod tests {
     #[test]
     fn should_change_eth_fee_basis_points_via_dictionary() {
         let new_fee = 1337;
-        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let eth_address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
         let fee_before = dictionary.get_eth_fee_basis_points(&eth_address).unwrap();
         assert_ne!(fee_before, new_fee);
@@ -566,7 +572,7 @@ mod tests {
     #[test]
     fn should_change_evm_fee_basis_points_via_dictionary() {
         let new_fee = 1337;
-        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let fee_before = dictionary.get_evm_fee_basis_points(&evm_address).unwrap();
         assert_ne!(fee_before, new_fee);
@@ -579,7 +585,7 @@ mod tests {
     fn should_change_fee_basis_points_and_update_in_db() {
         let db = get_test_database();
         let new_fee = 1337;
-        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let eth_address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
         let fee_before = dictionary.get_eth_fee_basis_points(&eth_address).unwrap();
         assert_ne!(fee_before, new_fee);
@@ -619,7 +625,7 @@ mod tests {
     #[test]
     fn should_set_last_withdrawal_timestamp_in_entry_via_dictionary() {
         let timestamp = get_unix_timestamp().unwrap();
-        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let entry_before = dictionary.get_entry_via_address(&address).unwrap();
         assert_eq!(entry_before.last_withdrawal, 0);
@@ -634,9 +640,9 @@ mod tests {
     fn should_zero_accrued_fees_in_entry_via_dictionary() {
         let fees_before = U256::from(1337);
         let fees_after = U256::zero();
-        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
-        let mut updated_dictionary = dictionary.increment_accrued_fee(&address, fees_before).unwrap();
+        let updated_dictionary = dictionary.increment_accrued_fee(&address, fees_before).unwrap();
         let entry = updated_dictionary.get_entry_via_address(&address).unwrap();
         assert_eq!(entry.accrued_fees, fees_before);
         let final_dictionary = updated_dictionary.zero_accrued_fees_in_entry(&address).unwrap();
@@ -647,7 +653,7 @@ mod tests {
     #[test]
     fn should_get_fee_withdrawal_amount_via_dictionary() {
         let expected_fee = U256::from(1337);
-        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let updated_dictionary = dictionary.increment_accrued_fee(&address, expected_fee).unwrap();
         let result = updated_dictionary.get_fee_withdrawal_amount(&address).unwrap();
@@ -659,11 +665,11 @@ mod tests {
         let timestamp = get_unix_timestamp().unwrap();
         let db = get_test_database();
         let expected_fee = U256::from(1337);
-        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let expected_token_address =
             EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
         let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
-        let mut updated_dictionary = dictionary.increment_accrued_fee(&address, expected_fee).unwrap();
+        let updated_dictionary = dictionary.increment_accrued_fee(&address, expected_fee).unwrap();
         let entry_before = updated_dictionary.get_entry_via_address(&address).unwrap();
         assert_eq!(entry_before.accrued_fees, expected_fee);
         assert_eq!(entry_before.last_withdrawal, 0);
@@ -712,7 +718,7 @@ mod tests {
     #[test]
     fn should_replace_entry() {
         let new_accrued_fees = U256::from(1337);
-        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let pnt_address = get_pnt_address();
         let entry_before = dictionary.get_entry_via_address(&pnt_address).unwrap();
         assert_eq!(entry_before.accrued_fees, U256::zero());
@@ -726,7 +732,7 @@ mod tests {
     #[test]
     fn should_increment_accrued_fees_and_save_in_db() {
         let db = get_test_database();
-        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let fee_1 = U256::from(666);
         let fee_2 = U256::from(1337);
         let address_1 = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
@@ -751,7 +757,7 @@ mod tests {
     #[test]
     fn incrementing_accrued_fees_by_0_and_saving_in_db_should_work() {
         let db = get_test_database();
-        let mut dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let fee_1 = U256::from(0);
         let fee_2 = U256::from(1337);
         let address_1 = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
