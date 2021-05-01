@@ -7,7 +7,9 @@ pub trait FeeCalculator {
 
     fn get_token_address(&self) -> EthAddress;
 
-    fn subtract_amount(&self, subtrahend: U256) -> Self;
+    fn subtract_amount(&self, subtrahend: U256) -> Result<Self>
+    where
+        Self: Sized;
 
     fn calculate_fee(&self, fee_basis_points: u64) -> U256 {
         if fee_basis_points > 0 {

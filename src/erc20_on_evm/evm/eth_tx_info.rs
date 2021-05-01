@@ -103,21 +103,18 @@ impl FeeCalculator for EthOnEvmEthTxInfo {
         self.token_amount
     }
 
-    fn subtract_amount(&self, subtrahend: U256) -> Self {
-        let new_amount = self.token_amount - subtrahend;
-        debug!(
-            "Subtracting {} from {} to get final amount of {} in `EthOnEvmEthTxInfo`!",
-            subtrahend, self.token_amount, new_amount
-        );
-        Self {
-            token_amount: new_amount,
-            token_sender: self.token_sender,
-            originating_tx_hash: self.originating_tx_hash,
-            evm_token_address: self.evm_token_address,
-            eth_token_address: self.eth_token_address,
-            destination_address: self.destination_address,
-            user_data: self.user_data.clone(),
-            origin_chain_id: self.origin_chain_id.clone(),
+    fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
+        if subtrahend >= self.token_amount {
+            Err("Cannot subtract amount from `EthOnEvmEthTxInfo`: subtrahend too large!".into())
+        } else {
+            let new_amount = self.token_amount - subtrahend;
+            debug!(
+                "Subtracting {} from {} to get final amount of {} in `EthOnEvmEthTxInfo`!",
+                subtrahend, self.token_amount, new_amount
+            );
+            let mut new_self = self.clone();
+            new_self.token_amount = new_amount;
+            Ok(new_self)
         }
     }
 }
@@ -191,20 +188,20 @@ impl FeesCalculator for EthOnEvmEthTxInfos {
     }
 
     fn subtract_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Self> {
-        self.get_fees(dictionary).map(|fee_tuples| {
-            Self::new(
+        self.get_fees(dictionary).and_then(|fee_tuples| {
+            Ok(Self::new(
                 self.iter()
                     .zip(fee_tuples.iter())
                     .map(|(info, (_, fee))| {
                         if *fee == U256::zero() {
                             debug!("Not subtracting fee because `fee` is 0!");
-                            info.clone()
+                            Ok(info.clone())
                         } else {
                             info.subtract_amount(*fee)
                         }
                     })
-                    .collect::<Vec<EthOnEvmEthTxInfo>>(),
-            )
+                    .collect::<Result<Vec<EthOnEvmEthTxInfo>>>()?,
+            ))
         })
     }
 }
@@ -552,8 +549,16 @@ mod tests {
     fn should_subtract_amount_from_eth_on_evm_eth_tx_info() {
         let info = get_sample_tx_info();
         let subtrahend = U256::from(1337);
-        let result = info.subtract_amount(subtrahend);
+        let result = info.subtract_amount(subtrahend).unwrap();
         let expected_token_amount = U256::from_dec_str("99999999999998663").unwrap();
         assert_eq!(result.token_amount, expected_token_amount)
+    }
+
+    #[test]
+    fn should_fail_to_subtract_too_large_amount_from_eth_on_evm_eth_tx_info() {
+        let info = get_sample_tx_info();
+        let subtrahend = U256::from(info.token_amount + 1);
+        let result = info.subtract_amount(subtrahend);
+        assert!(result.is_err());
     }
 }
