@@ -262,19 +262,16 @@ impl EthEvmTokenDictionary {
             .map(|entry| self.replace_entry(&entry, entry.zero_accrued_fees()))
     }
 
-    fn get_fee_withdrawal_amount(&self, address: &EthAddress) -> Result<U256> {
-        self.get_entry_via_address(address).map(|entry| entry.accrued_fees)
-    }
-
     pub fn withdraw_fees_and_save_in_db<D: DatabaseInterface>(
         &self,
         db: &D,
-        address: &EthAddress,
+        maybe_entry_address: &EthAddress,
     ) -> Result<(EthAddress, U256)> {
-        let token_address = self.get_entry_via_address(address)?.eth_address;
-        let withdrawal_amount = self.get_fee_withdrawal_amount(address)?;
-        self.set_last_withdrawal_timestamp_in_entry(address, get_unix_timestamp()?)
-            .and_then(|dictionary| dictionary.zero_accrued_fees_in_entry(address))
+        let entry = self.get_entry_via_address(maybe_entry_address)?;
+        let token_address = entry.eth_address;
+        let withdrawal_amount = entry.accrued_fees;
+        self.set_last_withdrawal_timestamp_in_entry(&token_address, get_unix_timestamp()?)
+            .and_then(|dictionary| dictionary.zero_accrued_fees_in_entry(&token_address))
             .and_then(|dictionary| dictionary.save_in_db(db))
             .map(|_| (token_address, withdrawal_amount))
     }
@@ -648,16 +645,6 @@ mod tests {
         let final_dictionary = updated_dictionary.zero_accrued_fees_in_entry(&address).unwrap();
         let result = final_dictionary.get_entry_via_address(&address).unwrap();
         assert_eq!(result.accrued_fees, fees_after);
-    }
-
-    #[test]
-    fn should_get_fee_withdrawal_amount_via_dictionary() {
-        let expected_fee = U256::from(1337);
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
-        let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
-        let updated_dictionary = dictionary.increment_accrued_fee(&address, expected_fee).unwrap();
-        let result = updated_dictionary.get_fee_withdrawal_amount(&address).unwrap();
-        assert_eq!(result, expected_fee);
     }
 
     #[test]
