@@ -19,6 +19,7 @@ pub(crate) mod evm;
 pub(crate) mod get_enclave_state;
 pub(crate) mod get_latest_block_numbers;
 pub(crate) mod test_utils;
+pub(crate) mod traits;
 
 pub use crate::{
     chains::{
@@ -45,7 +46,9 @@ pub use crate::{
             debug_remove_dictionary_entry,
             debug_reprocess_eth_block,
             debug_reprocess_evm_block,
+            debug_set_fee_basis_points,
             debug_set_key_in_db_to_value,
+            debug_withdraw_fees_and_save_in_db,
         },
         eth::{
             add_vault_contract_address::maybe_add_vault_contract_address,

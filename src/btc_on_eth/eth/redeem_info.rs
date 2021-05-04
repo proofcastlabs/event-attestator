@@ -21,7 +21,7 @@ use crate::{
             eth_submission_material::EthSubmissionMaterial,
         },
     },
-    constants::SAFE_BTC_ADDRESS,
+    constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_BTC_ADDRESS},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -50,7 +50,7 @@ impl BtcOnEthRedeemInfo {
     }
 
     pub fn calculate_fee(&self, basis_points: u64) -> u64 {
-        (self.amount_in_satoshis * basis_points) / 10_000
+        (self.amount_in_satoshis * basis_points) / FEE_BASIS_POINTS_DIVISOR
     }
 }
 

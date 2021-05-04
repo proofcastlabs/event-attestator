@@ -11,9 +11,11 @@ use crate::{
             eth_contracts::erc20_vault::{
                 encode_erc20_vault_add_supported_token_fx_data,
                 encode_erc20_vault_migrate_fxn_data,
+                encode_erc20_vault_peg_out_fxn_data_without_user_data,
                 encode_erc20_vault_remove_supported_token_fx_data,
                 ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
                 ERC20_VAULT_MIGRATE_GAS_LIMIT,
+                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
             },
             eth_crypto::eth_transaction::EthTransaction,
             eth_database_transactions::{
@@ -63,11 +65,14 @@ use crate::{
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
-    dictionaries::eth_evm::{
-        get_eth_evm_token_dictionary_from_db_and_add_to_eth_state,
-        get_eth_evm_token_dictionary_from_db_and_add_to_evm_state,
-        EthEvmTokenDictionary,
-        EthEvmTokenDictionaryEntry,
+    dictionaries::{
+        dictionary_constants::ETH_EVM_DICTIONARY_KEY,
+        eth_evm::{
+            get_eth_evm_token_dictionary_from_db_and_add_to_eth_state,
+            get_eth_evm_token_dictionary_from_db_and_add_to_evm_state,
+            EthEvmTokenDictionary,
+            EthEvmTokenDictionaryEntry,
+        },
     },
     erc20_on_evm::{
         check_core_is_initialized::{
@@ -76,6 +81,7 @@ use crate::{
             check_core_is_initialized_and_return_evm_state,
         },
         eth::{
+            account_for_fees::maybe_account_for_fees as maybe_account_for_fees_in_eth_submission,
             evm_tx_info::{
                 filter_out_zero_value_tx_infos_from_state,
                 filter_submission_material_for_peg_in_events_in_state,
@@ -85,6 +91,7 @@ use crate::{
             get_eth_output_json::{get_evm_signed_tx_info_from_evm_txs, EthOutput},
         },
         evm::{
+            account_for_fees::maybe_account_for_fees as maybe_account_for_fees_in_evm_submission,
             eth_tx_info::{
                 filter_out_zero_value_tx_infos_from_state as filter_out_zero_value_eth_txs_from_state,
                 filter_submission_material_for_redeem_events_in_state,
@@ -134,6 +141,7 @@ pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, evm_block_json: &s
                 .and_then(|params| state.add_erc20_on_evm_eth_tx_infos(params))
         })
         .and_then(filter_out_zero_value_eth_txs_from_state)
+        .and_then(maybe_account_for_fees_in_evm_submission)
         .and_then(maybe_sign_eth_txs_and_add_to_evm_state)
         .and_then(maybe_increment_eth_account_nonce_and_return_evm_state)
         .and_then(end_evm_db_tx_and_return_state)
@@ -197,6 +205,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
                 .and_then(|params| state.add_erc20_on_evm_evm_tx_infos(params))
         })
         .and_then(filter_out_zero_value_tx_infos_from_state)
+        .and_then(maybe_account_for_fees_in_eth_submission)
         .and_then(maybe_sign_evm_txs_and_add_to_eth_state)
         .and_then(maybe_increment_evm_account_nonce_and_return_eth_state)
         .and_then(end_eth_db_transaction_and_return_state)
@@ -232,6 +241,7 @@ pub fn debug_get_all_db_keys() -> Result<String> {
             "evm": get_evm_constants_db_keys(),
             "eth": get_eth_constants_db_keys(),
             "db-key-prefix": DB_KEY_PREFIX.to_string(),
+            "dictionary": hex::encode(ETH_EVM_DICTIONARY_KEY.to_vec()),
         })
         .to_string()
     })
@@ -311,6 +321,7 @@ pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: D, eth_address_st
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"remove_dictionary_entry_success:":"true"}).to_string())
 }
+
 /// # Debug Get Add Supported Token Transaction
 ///
 /// This function will sign a transaction to add the given address as a supported token to
@@ -445,5 +456,71 @@ pub fn debug_get_erc20_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, ne
                 "migrated_to_address:": new_smart_contract_address.to_string(),
             })
             .to_string())
+        })
+}
+
+/// Debug Set Fee Basis Points
+///
+/// This function takes an address and a new fee param. It gets the `EthEvmTokenDictionary` from
+/// the database then finds the entry pertaining to the address in question and if successful,
+/// updates the fee associated with that address before saving the dictionary back into the
+/// database. If no entry is found for a given `address` the function will return an error saying
+/// as such.
+///
+/// #### NOTE: Using a fee of 0 will mean no fees are taken.
+pub fn debug_set_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
+        .and_then(|dictionary| {
+            dictionary.change_fee_basis_points_and_update_in_db(&db, &convert_hex_to_address(address)?, new_fee)
+        })
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({"success":true, "address": address, "new_fee": new_fee}).to_string())
+        .map(prepend_debug_output_marker_to_string)
+}
+
+/// Debug Withdraw Fees
+///
+/// This function takes an address and uses it to search through the token dictionary to find a
+/// corresponding entry. Once found, that entry's accrued fees are zeroed, a timestamp set in that
+/// entry to mark the withdrawal date and the dictionary saved back in the database. Finally, an
+/// ETH transaction is created to transfer the `<accrued_fees>` amount of tokens to the passed in
+/// recipient address.
+///
+/// #### NOTE: This function will increment the ETH nonce and so the output transation MUST be
+/// broadcast otherwise future transactions are liable to fail.
+pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
+    db: D,
+    token_address: &str,
+    recipient_address: &str,
+) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
+        .and_then(|dictionary| dictionary.withdraw_fees_and_save_in_db(&db, &convert_hex_to_address(token_address)?))
+        .and_then(|(token_address, fee_amount)| {
+            Ok(EthTransaction::new_unsigned(
+                encode_erc20_vault_peg_out_fxn_data_without_user_data(
+                    convert_hex_to_address(recipient_address)?,
+                    token_address,
+                    fee_amount,
+                )?,
+                get_eth_account_nonce_from_db(&db)?,
+                0,
+                get_erc20_on_evm_smart_contract_address_from_db(&db)?,
+                &get_eth_chain_id_from_db(&db)?,
+                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
+                get_eth_gas_price_from_db(&db)?,
+            ))
+        })
+        .and_then(|unsigned_tx| unsigned_tx.sign(&get_eth_private_key_from_db(&db)?))
+        .map(|signed_tx| signed_tx.serialize_hex())
+        .and_then(|hex_tx| {
+            increment_eth_account_nonce_in_db(&db, 1)?;
+            db.end_transaction()?;
+            Ok(json!({"success": true, "eth_signed_tx": hex_tx}).to_string())
         })
 }

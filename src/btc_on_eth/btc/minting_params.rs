@@ -26,7 +26,7 @@ use crate::{
         },
         eth::eth_utils::safely_convert_hex_to_eth_address,
     },
-    constants::SAFE_ETH_ADDRESS,
+    constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_ETH_ADDRESS},
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
@@ -209,7 +209,7 @@ impl BtcOnEthMintingParamStruct {
     }
 
     pub fn calculate_fee(&self, basis_points: u64) -> u64 {
-        (self.to_satoshi_amount() * basis_points) / 10_000
+        (self.to_satoshi_amount() * basis_points) / FEE_BASIS_POINTS_DIVISOR
     }
 
     pub fn subtract_satoshi_amount(&self, subtrahend: u64) -> Self {

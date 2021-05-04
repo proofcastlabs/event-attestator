@@ -40,6 +40,7 @@ use crate::{
         },
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
+    erc20_on_evm::traits::{FeeCalculator, FeesCalculator},
     metadata::{
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
@@ -85,6 +86,36 @@ impl ToMetadata for EthOnEvmEthTxInfo {
 
     fn to_metadata_bytes(&self) -> Result<Bytes> {
         self.to_metadata()?.to_bytes_for_protocol(&MetadataProtocolId::Ethereum)
+    }
+}
+
+impl FeeCalculator for EthOnEvmEthTxInfo {
+    fn get_token_address(&self) -> EthAddress {
+        debug!(
+            "Getting token address in `EthOnEvmEthTxInfo` of {}",
+            self.evm_token_address
+        );
+        self.evm_token_address
+    }
+
+    fn get_amount(&self) -> U256 {
+        debug!("Getting token amount in `EthOnEvmEthTxInfo` of {}", self.token_amount);
+        self.token_amount
+    }
+
+    fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
+        if subtrahend >= self.token_amount {
+            Err("Cannot subtract amount from `EthOnEvmEthTxInfo`: subtrahend too large!".into())
+        } else {
+            let new_amount = self.token_amount - subtrahend;
+            debug!(
+                "Subtracting {} from {} to get final amount of {} in `EthOnEvmEthTxInfo`!",
+                subtrahend, self.token_amount, new_amount
+            );
+            let mut new_self = self.clone();
+            new_self.token_amount = new_amount;
+            Ok(new_self)
+        }
     }
 }
 
@@ -147,6 +178,33 @@ impl EthOnEvmEthTxInfo {
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]
 pub struct EthOnEvmEthTxInfos(pub Vec<EthOnEvmEthTxInfo>);
+
+impl FeesCalculator for EthOnEvmEthTxInfos {
+    fn get_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
+        debug!("Calculating fees in `EthOnEvmEthTxInfo`...");
+        self.iter()
+            .map(|info| info.calculate_fee_via_dictionary(dictionary))
+            .collect()
+    }
+
+    fn subtract_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Self> {
+        self.get_fees(dictionary).and_then(|fee_tuples| {
+            Ok(Self::new(
+                self.iter()
+                    .zip(fee_tuples.iter())
+                    .map(|(info, (_, fee))| {
+                        if *fee == U256::zero() {
+                            debug!("Not subtracting fee because `fee` is 0!");
+                            Ok(info.clone())
+                        } else {
+                            info.subtract_amount(*fee)
+                        }
+                    })
+                    .collect::<Result<Vec<EthOnEvmEthTxInfo>>>()?,
+            ))
+        })
+    }
+}
 
 impl EthOnEvmEthTxInfos {
     pub fn filter_out_zero_values(&self) -> Result<Self> {
@@ -407,6 +465,17 @@ mod tests {
         },
     };
 
+    fn get_sample_tx_infos() -> EthOnEvmEthTxInfos {
+        let dictionary = get_sample_eth_evm_token_dictionary();
+        let material = get_evm_submission_material_n(1);
+        let origin_chain_id = EthChainId::BscMainnet;
+        EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap()
+    }
+
+    fn get_sample_tx_info() -> EthOnEvmEthTxInfo {
+        get_sample_tx_infos()[0].clone()
+    }
+
     #[test]
     fn should_filter_submission_info_for_supported_redeems() {
         let dictionary = get_sample_eth_evm_token_dictionary();
@@ -449,10 +518,7 @@ mod tests {
 
     #[test]
     fn should_get_signaures_from_eth_tx_info() {
-        let dictionary = get_sample_eth_evm_token_dictionary();
-        let material = get_evm_submission_material_n(1);
-        let origin_chain_id = EthChainId::BscMainnet;
-        let infos = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap();
+        let infos = get_sample_tx_infos();
         let vault_address = get_sample_vault_address();
         let pk = get_sample_eth_private_key();
         let nonce = 0_u64;
@@ -468,5 +534,31 @@ mod tests {
 "f8ca808504a817c8008302bf2094d608367b33c52293201af7fb578916a7c0784bd780b86483c09d4200000000000000000000000071a440ee9fa7f99fb9a697e96ec7839b8a1643b800000000000000000000000089ab32156e46f46d02ade3fecbe5fc4243b9aaed000000000000000000000000000000000000000000000000016345785d8a00002ca01925ae7f64957984e057cb6f54c41560f354de622cee193a45ef657e40798c99a0752a5fa9235879d1ce45671308c461086fd1c73b9b533f1e63cb3c0ed4aedd98"
 ;
         assert_eq!(tx_hex, expected_tx_hex);
+    }
+
+    #[test]
+    fn should_calculate_eth_on_evm_eth_tx_info_fee() {
+        let info = get_sample_tx_info();
+        let fee_basis_points = 25;
+        let result = info.calculate_fee(fee_basis_points);
+        let expected_result = U256::from_dec_str("250000000000000").unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_subtract_amount_from_eth_on_evm_eth_tx_info() {
+        let info = get_sample_tx_info();
+        let subtrahend = U256::from(1337);
+        let result = info.subtract_amount(subtrahend).unwrap();
+        let expected_token_amount = U256::from_dec_str("99999999999998663").unwrap();
+        assert_eq!(result.token_amount, expected_token_amount)
+    }
+
+    #[test]
+    fn should_fail_to_subtract_too_large_amount_from_eth_on_evm_eth_tx_info() {
+        let info = get_sample_tx_info();
+        let subtrahend = U256::from(info.token_amount + 1);
+        let result = info.subtract_amount(subtrahend);
+        assert!(result.is_err());
     }
 }

@@ -153,7 +153,12 @@ pub fn get_pay_to_pub_key_hash_script(btc_address: &str) -> Result<BtcScript> {
 pub fn get_btc_tx_id_from_str(tx_id: &str) -> Result<Txid> {
     match hex::decode(tx_id) {
         Err(_) => Err("Could not decode tx_id hex string!".into()),
-        Ok(bytes) => Ok(Txid::from_slice(&bytes)?),
+        Ok(mut bytes) => {
+            // NOTE: Weird endianess switch quirk of how BTC displays Txids:
+            // NOTE: https://bitcoin.stackexchange.com/questions/39363/compute-txid-of-bitcoin-transaction
+            bytes.reverse();
+            Ok(Txid::from_slice(&bytes)?)
+        },
     }
 }
 
@@ -417,5 +422,15 @@ mod tests {
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
             Err(_) => panic!("Got wrong error when failing to convert bytes to `BtcPubKeySlice`!"),
         }
+    }
+
+    #[test]
+    fn should_get_btc_id_from_str() {
+        let tx_id = "2704c7318a189ea87ec68c101fe3e17aaa62e5f5ede30f43a018301ee814e348";
+        let mut bytes = hex::decode(tx_id).unwrap();
+        bytes.reverse();
+        let result = get_btc_tx_id_from_str(tx_id).unwrap();
+        let expected_result = Txid::from_slice(&bytes).unwrap();
+        assert_eq!(result, expected_result);
     }
 }

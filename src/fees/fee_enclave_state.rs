@@ -10,10 +10,10 @@ use crate::{
             get_btc_on_eth_peg_in_basis_points_from_db,
             get_btc_on_eth_peg_out_basis_points_from_db,
         },
+        fee_utils::get_last_withdrawal_date_as_human_readable_string,
     },
     traits::DatabaseInterface,
     types::Result,
-    utils::convert_unix_timestamp_to_human_readable,
 };
 
 #[derive(Serialize, Deserialize)]
@@ -45,14 +45,6 @@ pub struct FeeStateForToken {
 pub struct FeeStateForTokens(Vec<FeeStateForToken>);
 
 impl FeeStateForTokens {
-    fn get_last_withdrawal_date_as_human_readable_string(timestamp: u64) -> String {
-        if timestamp == 0 {
-            "Fees have not yet been withdrawn!".to_string()
-        } else {
-            convert_unix_timestamp_to_human_readable(timestamp)
-        }
-    }
-
     pub fn new_for_btc_on_eth<D: DatabaseInterface>(db: &D) -> Result<Self> {
         Ok(Self::new(vec![FeeStateForToken {
             token_symbol: "BTC".to_string(),
@@ -60,7 +52,7 @@ impl FeeStateForTokens {
             accrued_fees_db_key: hex::encode(*BTC_ON_ETH_ACCRUED_FEES_KEY),
             peg_in_basis_points: get_btc_on_eth_peg_in_basis_points_from_db(db)?,
             peg_out_basis_points: get_btc_on_eth_peg_out_basis_points_from_db(db)?,
-            last_withdrawal: Self::get_last_withdrawal_date_as_human_readable_string(
+            last_withdrawal: get_last_withdrawal_date_as_human_readable_string(
                 get_btc_on_eth_last_fee_withdrawal_timestamp_from_db(db)?,
             ),
         }]))
