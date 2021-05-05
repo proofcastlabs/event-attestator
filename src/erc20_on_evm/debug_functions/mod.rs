@@ -81,7 +81,7 @@ use crate::{
             check_core_is_initialized_and_return_evm_state,
         },
         eth::{
-            account_for_fees::maybe_account_for_fees as maybe_account_for_fees_in_eth_submission,
+            account_for_fees::account_for_fees_in_evm_tx_infos_in_state,
             evm_tx_info::{
                 filter_out_zero_value_tx_infos_from_state,
                 filter_submission_material_for_peg_in_events_in_state,
@@ -91,7 +91,7 @@ use crate::{
             get_eth_output_json::{get_evm_signed_tx_info_from_evm_txs, EthOutput},
         },
         evm::{
-            account_for_fees::maybe_account_for_fees as maybe_account_for_fees_in_evm_submission,
+            account_for_fees::account_for_fees_in_eth_tx_infos_in_state,
             eth_tx_info::{
                 filter_out_zero_value_tx_infos_from_state as filter_out_zero_value_eth_txs_from_state,
                 filter_submission_material_for_redeem_events_in_state,
@@ -111,9 +111,14 @@ use crate::{
 /// This function will take a passed in EVM block submission material and run it through the
 /// submission pipeline, signing any signatures for pegouts it may find in the block
 ///
-/// ### NOTE:
-/// This function will increment the core's EVM nonce, meaning the outputted reports will have a
+/// ### NOTES:
+///
+///  - This function will increment the core's EVM nonce, meaning the outputted reports will have a
 /// gap in their report IDs!
+///
+///  - This version of the EVM block reprocessor __will__ deduct fees from any transaction info(s) it
+///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
+///  dictionary. This is to avoid accounting for fees twice.
 ///
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future EVM transactions will
@@ -141,7 +146,7 @@ pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, evm_block_json: &s
                 .and_then(|params| state.add_erc20_on_evm_eth_tx_infos(params))
         })
         .and_then(filter_out_zero_value_eth_txs_from_state)
-        .and_then(maybe_account_for_fees_in_evm_submission)
+        .and_then(account_for_fees_in_eth_tx_infos_in_state)
         .and_then(maybe_sign_eth_txs_and_add_to_evm_state)
         .and_then(maybe_increment_eth_account_nonce_and_return_evm_state)
         .and_then(end_evm_db_tx_and_return_state)
@@ -174,9 +179,13 @@ pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, evm_block_json: &s
 /// This function will take a passed in ETH block submission material and run it through the
 /// submission pipeline, signing any signatures for pegouts it may find in the block
 ///
-/// ### NOTE:
-/// This function will increment the core's ETH nonce, meaning the outputted reports will have a
+/// ### NOTES:
+///  - This function will increment the core's ETH nonce, meaning the outputted reports will have a
 /// gap in their report IDs!
+///
+///  - This version of the ETH block reprocessor __will__ deduct fees from any transaction info(s) it
+///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
+///  dictionary. This is to avoid accounting for fees twice.
 ///
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future ETH transactions will
@@ -205,7 +214,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
                 .and_then(|params| state.add_erc20_on_evm_evm_tx_infos(params))
         })
         .and_then(filter_out_zero_value_tx_infos_from_state)
-        .and_then(maybe_account_for_fees_in_eth_submission)
+        .and_then(account_for_fees_in_evm_tx_infos_in_state)
         .and_then(maybe_sign_evm_txs_and_add_to_eth_state)
         .and_then(maybe_increment_evm_account_nonce_and_return_eth_state)
         .and_then(end_eth_db_transaction_and_return_state)
