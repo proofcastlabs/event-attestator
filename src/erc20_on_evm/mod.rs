@@ -37,7 +37,12 @@ pub use crate::{
     },
     erc20_on_evm::{
         debug_functions::{
-            block_reprocessors::{debug_reprocess_eth_block, debug_reprocess_evm_block},
+            block_reprocessors::{
+                debug_reprocess_eth_block,
+                debug_reprocess_eth_block_with_fee_accrual,
+                debug_reprocess_evm_block,
+                debug_reprocess_evm_block_with_fee_accrual,
+            },
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
             debug_get_all_db_keys,

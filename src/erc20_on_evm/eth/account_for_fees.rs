@@ -7,7 +7,9 @@ use crate::{
     types::Result,
 };
 
-fn update_accrued_fees_in_dictionary_and_return_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
+pub fn update_accrued_fees_in_dictionary_and_return_state<D: DatabaseInterface>(
+    state: EthState<D>,
+) -> Result<EthState<D>> {
     if DISABLE_FEES {
         info!("✔ Fees are disabled ∴ not accounting for any in `EthOnEvmEvmTxInfos`!");
         Ok(state)
