@@ -50,6 +50,8 @@ pub use crate::{
             debug_get_key_from_db,
             debug_get_remove_supported_token_tx,
             debug_remove_dictionary_entry,
+            debug_set_eth_gas_price,
+            debug_set_evm_gas_price,
             debug_set_fee_basis_points,
             debug_set_key_in_db_to_value,
             debug_withdraw_fees_and_save_in_db,

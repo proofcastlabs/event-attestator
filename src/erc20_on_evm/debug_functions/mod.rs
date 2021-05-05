@@ -28,12 +28,16 @@ use crate::{
                 get_eth_private_key_from_db,
                 increment_eth_account_nonce_in_db,
                 put_eth_address_in_db,
+                put_eth_gas_price_in_db,
             },
             eth_utils::{convert_hex_to_address, get_eth_address_from_str},
         },
-        evm::eth_constants::{
-            get_eth_constants_db_keys as get_evm_constants_db_keys,
-            ETH_PRIVATE_KEY_DB_KEY as EVM_KEY,
+        evm::{
+            eth_constants::{
+                get_eth_constants_db_keys as get_evm_constants_db_keys,
+                ETH_PRIVATE_KEY_DB_KEY as EVM_KEY,
+            },
+            eth_database_utils::put_eth_gas_price_in_db as put_evm_gas_price_in_db,
         },
     },
     check_debug_mode::check_debug_mode,
@@ -340,4 +344,30 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
             db.end_transaction()?;
             Ok(json!({"success": true, "eth_signed_tx": hex_tx}).to_string())
         })
+}
+
+/// Debug Set ETH Gas Price
+///
+/// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
+pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| put_eth_gas_price_in_db(&db, gas_price))
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({"sucess":true,"new_eth_gas_price":gas_price}).to_string())
+        .map(prepend_debug_output_marker_to_string)
+}
+
+/// Debug Set EVM Gas Price
+///
+/// This function sets the EVM gas price to use when making EVM transactions. It's unit is `Wei`.
+pub fn debug_set_evm_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| put_evm_gas_price_in_db(&db, gas_price))
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({"sucess":true,"new_evm_gas_price":gas_price}).to_string())
+        .map(prepend_debug_output_marker_to_string)
 }
