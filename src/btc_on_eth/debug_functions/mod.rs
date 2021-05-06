@@ -20,7 +20,7 @@ use crate::{
         eth::{
             account_for_fees::maybe_account_for_fees,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
-            extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
+            extract_utxos_from_btc_txs::{extract_btc_utxos_from_btc_txs, maybe_extract_btc_utxo_from_btc_tx_in_state},
             filter_receipts_in_state::filter_receipts_for_btc_on_eth_redeem_events_in_state,
             get_eth_output_json::{get_btc_signed_tx_info_from_btc_txs, EthOutput},
             increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
@@ -32,7 +32,12 @@ use crate::{
         btc::{
             btc_block::parse_btc_block_and_id_and_put_in_state,
             btc_constants::{get_btc_constants_db_keys, BTC_PRIVATE_KEY_DB_KEY as BTC_KEY},
-            btc_database_utils::{end_btc_db_transaction, get_btc_account_nonce_from_db, start_btc_db_transaction},
+            btc_database_utils::{
+                end_btc_db_transaction,
+                get_btc_account_nonce_from_db,
+                get_btc_address_from_db,
+                start_btc_db_transaction,
+            },
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
             btc_utils::get_hex_tx_from_signed_btc_tx,
@@ -58,6 +63,7 @@ use crate::{
                     remove_utxo,
                 },
                 utxo_constants::get_utxo_constants_db_keys,
+                utxo_database_utils::save_utxos_to_db,
                 utxo_utils::get_all_utxos_as_json_string,
             },
             validate_btc_block_header::validate_btc_block_header_in_state,
@@ -562,6 +568,8 @@ pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &st
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_btc_on_eth_fee_withdrawal_tx(&db, btc_address))
         .and_then(|btc_tx| {
+            let change_utxos = extract_btc_utxos_from_btc_txs(&get_btc_address_from_db(&db)?, &[btc_tx.clone()])?;
+            save_utxos_to_db(&db, &change_utxos)?;
             db.end_transaction()?;
             Ok(json!({ "signed_btc_tx": get_hex_tx_from_signed_btc_tx(&btc_tx) }).to_string())
         })
