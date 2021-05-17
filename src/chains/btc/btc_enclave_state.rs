@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::btc::{
-        btc_constants::BTC_TAIL_LENGTH,
+        btc_constants::{BTC_TAIL_LENGTH, MINIMUM_REQUIRED_SATOSHIS},
         btc_database_utils::{
             get_btc_account_nonce_from_db,
             get_btc_address_from_db,
@@ -51,6 +51,7 @@ pub struct BtcEnclaveState {
     btc_canon_to_tip_length: u64,
     btc_latest_block_hash: String,
     btc_anchor_block_hash: String,
+    btc_minimum_required_satoshis: u64,
 }
 
 impl BtcEnclaveState {
@@ -80,6 +81,7 @@ impl BtcEnclaveState {
             btc_network: get_btc_network_from_db(db)?.to_string(),
             btc_latest_block_hash: btc_latest_block.id.to_string(),
             btc_anchor_block_hash: btc_anchor_block.id.to_string(),
+            btc_minimum_required_satoshis: MINIMUM_REQUIRED_SATOSHIS,
             btc_utxo_total_value: get_total_utxo_balance_from_db(db)?,
             btc_number_of_utxos: get_total_number_of_utxos_from_db(db),
             btc_canon_to_tip_length: get_btc_canon_to_tip_length_from_db(db)?,
