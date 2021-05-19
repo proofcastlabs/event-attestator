@@ -9,26 +9,47 @@ use crate::{
     types::Result,
 };
 
+pub fn subtract_fees_from_minting_params(
+    minting_params: &BtcOnEthMintingParams,
+    fee_basis_points: u64,
+) -> BtcOnEthMintingParams {
+    if fee_basis_points == 0 {
+        info!("✔ `BTC-on-ETH` peg-in fees are set to zero ∴ not taking any fees!");
+        minting_params.clone()
+    } else {
+        info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);
+        let (fees, _) = minting_params.calculate_fees(fee_basis_points);
+        BtcOnEthMintingParams::new(
+            fees.iter()
+                .zip(minting_params.iter())
+                .map(|(fee, minting_params)| minting_params.subtract_satoshi_amount(*fee))
+                .collect(),
+        )
+    }
+}
+
+fn accrue_fees_from_minting_params<D: DatabaseInterface>(
+    db: &D,
+    minting_params: &BtcOnEthMintingParams,
+    fee_basis_points: u64,
+) -> Result<()> {
+    if fee_basis_points == 0 {
+        info!("✔ `BTC-on-ETH` peg-in fees are set to zero ∴ not taking any fees!");
+        Ok(())
+    } else {
+        info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);
+        let (_, total_fee) = minting_params.calculate_fees(fee_basis_points);
+        increment_btc_on_eth_accrued_fees(db, total_fee)
+    }
+}
+
 fn account_for_fees_in_minting_params<D: DatabaseInterface>(
     db: &D,
     minting_params: &BtcOnEthMintingParams,
     fee_basis_points: u64,
 ) -> Result<BtcOnEthMintingParams> {
-    if fee_basis_points == 0 {
-        info!("✔ `BTC-on-ETH` peg-in fees are set to zero ∴ not taking any fees!");
-        Ok(minting_params.clone())
-    } else {
-        info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);
-        let (fees, total_fee) = minting_params.calculate_fees(fee_basis_points);
-        increment_btc_on_eth_accrued_fees(db, total_fee).map(|_| {
-            BtcOnEthMintingParams::new(
-                fees.iter()
-                    .zip(minting_params.iter())
-                    .map(|(fee, minting_params)| minting_params.subtract_satoshi_amount(*fee))
-                    .collect(),
-            )
-        })
-    }
+    accrue_fees_from_minting_params(db, minting_params, fee_basis_points)
+        .map(|_| subtract_fees_from_minting_params(minting_params, fee_basis_points))
 }
 
 pub fn maybe_account_for_fees<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
