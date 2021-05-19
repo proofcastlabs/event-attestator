@@ -1,7 +1,10 @@
 use crate::{
     btc_on_eth::{
         btc::{
-            account_for_fees::maybe_account_for_fees as maybe_account_for_minting_fees,
+            account_for_fees::{
+                maybe_account_for_fees as maybe_account_for_minting_fees,
+                subtract_fees_from_minting_params,
+            },
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
             minting_params::{
                 parse_minting_params_from_p2pkh_deposits_and_add_to_state,
@@ -61,24 +64,17 @@ use crate::{
         },
     },
     check_debug_mode::check_debug_mode,
+    fees::fee_database_utils::get_btc_on_eth_peg_in_basis_points_from_db,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
 
-/// # Debug Reprocess BTC Block
-///
-/// This function will take a passed in ETH block submission material and run it through the
-/// submission pipeline, signing any signatures for pegins it may find in the block
-///
-/// ### NOTE:
-/// This does not yet work with AnySender type transactions.
-///
-/// ### BEWARE:
-/// If you don't broadcast the transaction outputted from this function, future ETH transactions will
-/// fail due to the nonce being too high!
-// TODO/FIXME: This doesn't work with AnySender yet!
-pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
+fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
+    db: D,
+    btc_submission_material_json: &str,
+    accrue_fees: bool,
+) -> Result<String> {
     check_debug_mode()
         .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
         .and_then(set_any_sender_flag_in_state)
@@ -98,7 +94,18 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
         .and_then(maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state)
-        .and_then(maybe_account_for_minting_fees)
+        .and_then(|state| {
+            if accrue_fees {
+                maybe_account_for_minting_fees(state)
+            } else {
+                info!("✘ Not accruing fees during BTC block reprocessing...");
+                let minting_params_minus_fees = subtract_fees_from_minting_params(
+                    &state.btc_on_eth_minting_params,
+                    get_btc_on_eth_peg_in_basis_points_from_db(&state.db)?,
+                );
+                state.replace_btc_on_eth_minting_params(minting_params_minus_fees)
+            }
+        })
         .and_then(|state| {
             get_eth_signed_txs(
                 &get_signing_params_from_db(&state.db)?,
@@ -127,6 +134,50 @@ pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_mat
             Some(output) => output,
         })
         .map(prepend_debug_output_marker_to_string)
+}
+
+/// # Debug Reprocess BTC Block
+///
+/// This function will take a passed in ETH block submission material and run it through the
+/// submission pipeline, signing any signatures for pegins it may find in the block
+///
+/// ### NOTE:
+///
+///  - This does not yet work with AnySender type transactions.
+///
+///  - This version of the BTC block reprocessor __will__ deduct fees from any transaction info(s) it
+///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
+///  dictionary. This is to avoid accounting for fees twice.
+///
+/// ### BEWARE:
+/// If you don't broadcast the transaction outputted from this function, future ETH transactions will
+/// fail due to an incorrect nonce!
+pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
+    debug_reprocess_btc_block_maybe_accruing_fees(db, btc_submission_material_json, false)
+}
+
+/// # Debug Reprocess BTC Block With Fee Accrual
+///
+/// This function will take a passed in ETH block submission material and run it through the
+/// submission pipeline, signing any signatures for pegins it may find in the block
+///
+/// ### NOTE:
+///
+///  - This does not yet work with AnySender type transactions.
+///
+///  - This version of the BTC block reprocessor __will__ deduct fees from any transaction info(s) it
+///  parses from the submitted block, and __will__ accrue those fees on to the total. Only use this if
+///  you know what you're doing and why, and make sure you're avoiding accruing the fees twice if the
+///  block has already been processed through the non-debug BTC block submission pipeline.
+///
+/// ### BEWARE:
+/// If you don't broadcast the transaction outputted from this function, future ETH transactions will
+/// fail due to an incorrect nonce!
+pub fn debug_reprocess_btc_block_with_fee_accrual<D: DatabaseInterface>(
+    db: D,
+    btc_submission_material_json: &str,
+) -> Result<String> {
+    debug_reprocess_btc_block_maybe_accruing_fees(db, btc_submission_material_json, true)
 }
 
 /// # Debug Reprocess ETH Block
