@@ -20,6 +20,7 @@ pub use crate::{
                 debug_reprocess_btc_block,
                 debug_reprocess_btc_block_with_fee_accrual,
                 debug_reprocess_eth_block,
+                debug_reprocess_eth_block_with_fee_accrual,
             },
             debug_add_multiple_utxos,
             debug_clear_all_utxos,

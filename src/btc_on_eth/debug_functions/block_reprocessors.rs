@@ -17,7 +17,7 @@ use crate::{
             check_core_is_initialized_and_return_eth_state,
         },
         eth::{
-            account_for_fees::maybe_account_for_fees,
+            account_for_fees::{maybe_account_for_fees, subtract_fees_from_redeem_infos},
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
             filter_receipts_in_state::filter_receipts_for_btc_on_eth_redeem_events_in_state,
@@ -64,7 +64,10 @@ use crate::{
         },
     },
     check_debug_mode::check_debug_mode,
-    fees::fee_database_utils::get_btc_on_eth_peg_in_basis_points_from_db,
+    fees::fee_database_utils::{
+        get_btc_on_eth_peg_in_basis_points_from_db,
+        get_btc_on_eth_peg_out_basis_points_from_db,
+    },
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -136,6 +139,59 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
         .map(prepend_debug_output_marker_to_string)
 }
 
+fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
+    db: D,
+    eth_block_json: &str,
+    accrue_fees: bool,
+) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(db)))
+        .and_then(check_core_is_initialized_and_return_eth_state)
+        .and_then(start_eth_db_transaction_and_return_state)
+        .and_then(validate_block_in_state)
+        .and_then(filter_receipts_for_btc_on_eth_redeem_events_in_state)
+        .and_then(|state| {
+            state
+                .get_eth_submission_material()
+                .and_then(|material| BtcOnEthRedeemInfos::from_eth_submission_material(&material))
+                .and_then(|params| state.add_btc_on_eth_redeem_infos(params))
+        })
+        .and_then(|state| {
+            if accrue_fees {
+                maybe_account_for_fees(state)
+            } else {
+                info!("✘ Not accruing fees during ETH block reprocessing...");
+                let redeem_infos_minus_fees = subtract_fees_from_redeem_infos(
+                    &state.btc_on_eth_redeem_infos,
+                    get_btc_on_eth_peg_out_basis_points_from_db(&state.db)?,
+                );
+                state.replace_btc_on_eth_redeem_infos(redeem_infos_minus_fees)
+            }
+        })
+        .and_then(maybe_create_btc_txs_and_add_to_state)
+        .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
+        .and_then(maybe_extract_btc_utxo_from_btc_tx_in_state)
+        .and_then(maybe_save_btc_utxos_to_db_and_return_state)
+        .and_then(end_eth_db_transaction_and_return_state)
+        .and_then(|state| {
+            info!("✔ Getting ETH output json...");
+            let output = serde_json::to_string(&EthOutput {
+                eth_latest_block_number: get_latest_eth_block_number(&state.db)?,
+                btc_signed_transactions: match state.btc_transactions {
+                    Some(txs) => get_btc_signed_tx_info_from_btc_txs(
+                        get_btc_account_nonce_from_db(&state.db)?,
+                        txs,
+                        &state.btc_on_eth_redeem_infos,
+                    )?,
+                    None => vec![],
+                },
+            })?;
+            info!("✔ ETH Output: {}", output);
+            Ok(output)
+        })
+        .map(prepend_debug_output_marker_to_string)
+}
+
 /// # Debug Reprocess BTC Block
 ///
 /// This function will take a passed in ETH block submission material and run it through the
@@ -186,46 +242,39 @@ pub fn debug_reprocess_btc_block_with_fee_accrual<D: DatabaseInterface>(
 /// submission pipeline, signing any signatures for pegouts it may find in the block
 ///
 /// ### NOTE:
-/// This function will increment the core's ETH nonce, meaning the outputted reports will have a
+///
+///  - This function will increment the core's ETH nonce, meaning the outputted reports will have a
 /// gap in their report IDs!
+///
+///  - This version of the ETH block reprocessor __will__ deduct fees from any transaction info(s) it
+///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
+///  dictionary. This is to avoid accounting for fees twice.
 ///
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
 /// fail due to the core having an incorret set of UTXOs!
 pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &str) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(db)))
-        .and_then(check_core_is_initialized_and_return_eth_state)
-        .and_then(start_eth_db_transaction_and_return_state)
-        .and_then(validate_block_in_state)
-        .and_then(filter_receipts_for_btc_on_eth_redeem_events_in_state)
-        .and_then(|state| {
-            state
-                .get_eth_submission_material()
-                .and_then(|material| BtcOnEthRedeemInfos::from_eth_submission_material(&material))
-                .and_then(|params| state.add_btc_on_eth_redeem_infos(params))
-        })
-        .and_then(maybe_account_for_fees)
-        .and_then(maybe_create_btc_txs_and_add_to_state)
-        .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
-        .and_then(maybe_extract_btc_utxo_from_btc_tx_in_state)
-        .and_then(maybe_save_btc_utxos_to_db_and_return_state)
-        .and_then(end_eth_db_transaction_and_return_state)
-        .and_then(|state| {
-            info!("✔ Getting ETH output json...");
-            let output = serde_json::to_string(&EthOutput {
-                eth_latest_block_number: get_latest_eth_block_number(&state.db)?,
-                btc_signed_transactions: match state.btc_transactions {
-                    Some(txs) => get_btc_signed_tx_info_from_btc_txs(
-                        get_btc_account_nonce_from_db(&state.db)?,
-                        txs,
-                        &state.btc_on_eth_redeem_infos,
-                    )?,
-                    None => vec![],
-                },
-            })?;
-            info!("✔ ETH Output: {}", output);
-            Ok(output)
-        })
-        .map(prepend_debug_output_marker_to_string)
+    debug_reprocess_eth_block_maybe_with_fee_accrual(db, eth_block_json, false)
+}
+
+/// # Debug Reprocess ETH Block With Fee Accrual
+///
+/// This function will take a passed in ETH block submission material and run it through the
+/// submission pipeline, signing any signatures for pegouts it may find in the block
+///
+/// ### NOTE:
+///
+///  - This function will increment the core's ETH nonce, meaning the outputted reports will have a
+/// gap in their report IDs!
+///
+///  - This version of the ETH block reprocessor __will__ deduct fees from any transaction info(s) it
+///  parses from the submitted block, and __will__ accrue those fees on to the total. Only use this if
+///  you know what you're doing and why, and make sure you're avoiding accruing the fees twice if the
+///  block has already been processed through the non-debug BTC block submission pipeline.
+///
+/// ### BEWARE:
+/// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
+/// fail due to the core having an incorret set of UTXOs!
+pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(db: D, eth_block_json: &str) -> Result<String> {
+    debug_reprocess_eth_block_maybe_with_fee_accrual(db, eth_block_json, true)
 }
