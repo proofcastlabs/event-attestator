@@ -9,6 +9,30 @@ use crate::{
     types::Result,
 };
 
+pub fn subtract_fees_from_redeem_infos(
+    redeem_infos: &BtcOnEthRedeemInfos,
+    fee_basis_points: u64,
+) -> BtcOnEthRedeemInfos {
+    let (fees, _) = redeem_infos.calculate_fees(fee_basis_points);
+    info!("ETH `RedeemInfos` fees: {:?}", fees);
+    BtcOnEthRedeemInfos::new(
+        fees.iter()
+            .zip(redeem_infos.iter())
+            .map(|(fee, redeem_info)| redeem_info.subtract_amount(*fee))
+            .collect(),
+    )
+}
+
+fn accrue_fees_from_redeem_infos<D: DatabaseInterface>(
+    db: &D,
+    redeem_infos: &BtcOnEthRedeemInfos,
+    fee_basis_points: u64,
+) -> Result<()> {
+    let (_, total_fee) = redeem_infos.calculate_fees(fee_basis_points);
+    info!("ETH `RedeemInfos` total fee: {}", total_fee);
+    increment_btc_on_eth_accrued_fees(db, total_fee)
+}
+
 fn account_for_fees_in_redeem_infos<D: DatabaseInterface>(
     db: &D,
     redeem_infos: &BtcOnEthRedeemInfos,
@@ -19,17 +43,8 @@ fn account_for_fees_in_redeem_infos<D: DatabaseInterface>(
         Ok(redeem_infos.clone())
     } else {
         info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);
-        let (fees, total_fee) = redeem_infos.calculate_fees(fee_basis_points);
-        info!("     `RedeemInfo` fees: {:?}", fees);
-        info!("`RedeemInfo` total fee: {}", total_fee);
-        increment_btc_on_eth_accrued_fees(db, total_fee).map(|_| {
-            BtcOnEthRedeemInfos::new(
-                fees.iter()
-                    .zip(redeem_infos.iter())
-                    .map(|(fee, redeem_info)| redeem_info.subtract_amount(*fee))
-                    .collect(),
-            )
-        })
+        accrue_fees_from_redeem_infos(db, redeem_infos, fee_basis_points)
+            .map(|_| subtract_fees_from_redeem_infos(redeem_infos, fee_basis_points))
     }
 }
 

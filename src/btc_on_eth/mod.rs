@@ -16,6 +16,12 @@ pub use crate::{
     btc_on_eth::{
         btc::submit_btc_block::submit_btc_block_to_enclave,
         debug_functions::{
+            block_reprocessors::{
+                debug_reprocess_btc_block,
+                debug_reprocess_btc_block_with_fee_accrual,
+                debug_reprocess_eth_block,
+                debug_reprocess_eth_block_with_fee_accrual,
+            },
             debug_add_multiple_utxos,
             debug_clear_all_utxos,
             debug_consolidate_utxos,
@@ -30,8 +36,6 @@ pub use crate::{
             debug_maybe_add_utxo_to_db,
             debug_mint_pbtc,
             debug_remove_utxo,
-            debug_reprocess_btc_block,
-            debug_reprocess_eth_block,
             debug_set_key_in_db_to_value,
         },
         eth::{
