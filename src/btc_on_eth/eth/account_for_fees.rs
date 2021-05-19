@@ -14,7 +14,7 @@ pub fn subtract_fees_from_redeem_infos(
     fee_basis_points: u64,
 ) -> BtcOnEthRedeemInfos {
     let (fees, _) = redeem_infos.calculate_fees(fee_basis_points);
-    info!("`RedeemInfo` fees: {:?}", fees);
+    info!("ETH `RedeemInfos` fees: {:?}", fees);
     BtcOnEthRedeemInfos::new(
         fees.iter()
             .zip(redeem_infos.iter())
@@ -29,7 +29,7 @@ fn accrue_fees_from_redeem_infos<D: DatabaseInterface>(
     fee_basis_points: u64,
 ) -> Result<()> {
     let (_, total_fee) = redeem_infos.calculate_fees(fee_basis_points);
-    info!("`RedeemInfo` total fee: {}", total_fee);
+    info!("ETH `RedeemInfos` total fee: {}", total_fee);
     increment_btc_on_eth_accrued_fees(db, total_fee)
 }
 
