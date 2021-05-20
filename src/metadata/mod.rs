@@ -52,7 +52,14 @@ impl Metadata {
             EthAbiToken::FixedBytes(self.version.to_bytes()),
             EthAbiToken::Bytes(self.user_data.clone()),
             EthAbiToken::FixedBytes(self.metadata_chain_id.to_bytes()?),
-            EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?)),
+            match self.origin_address.metadata_chain_id.to_protocol_id() {
+                MetadataProtocolId::Ethereum => {
+                    EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?))
+                },
+                MetadataProtocolId::Eos | MetadataProtocolId::Bitcoin => {
+                    EthAbiToken::Bytes(self.origin_address.to_bytes()?)
+                },
+            },
         ]))
     }
 
