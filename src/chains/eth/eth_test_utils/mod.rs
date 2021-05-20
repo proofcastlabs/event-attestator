@@ -578,6 +578,7 @@ pub fn get_sample_log_with_erc20_peg_in_event_2() -> Result<EthLog> {
 
 // TODO The eth->eos decimal conversion makes this a bad example now. Get a better one!
 pub fn get_sample_erc20_on_eos_peg_in_info() -> Result<Erc20OnEosPegInInfo> {
+    let user_data = vec![];
     Ok(Erc20OnEosPegInInfo::new(
         U256::from_dec_str("1337").unwrap(),
         EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
@@ -586,6 +587,7 @@ pub fn get_sample_erc20_on_eos_peg_in_info() -> Result<Erc20OnEosPegInInfo> {
         EthHash::from_slice(&hex::decode("241f386690b715422102edf42f5c9edcddea16b64f17d02bad572f5f341725c0").unwrap()),
         "SampleToken".to_string(),
         "0.000000000 SAM".to_string(),
+        user_data,
     ))
 }
 

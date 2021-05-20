@@ -19,7 +19,7 @@ use crate::{
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     traits::DatabaseInterface,
-    types::Result,
+    types::{Bytes, Result},
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor)]
@@ -31,6 +31,7 @@ pub struct Erc20OnEosPegInInfo {
     pub originating_tx_hash: EthHash,
     pub eos_token_address: String,
     pub eos_asset_amount: String,
+    pub user_data: Bytes,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
@@ -106,6 +107,7 @@ impl Erc20OnEosPegInInfos {
                             .convert_u256_to_eos_asset_string(&params.token_address, &params.token_amount)?,
                         eth_token_address: params.token_address,
                         token_amount: params.token_amount,
+                        user_data: params.user_data,
                     };
                     info!("✔ Parsed peg in info: {:?}", peg_in_info);
                     Ok(peg_in_info)
@@ -236,6 +238,7 @@ mod tests {
     };
 
     fn get_sample_zero_eos_asset_peg_in_info() -> Erc20OnEosPegInInfo {
+        let user_data = vec![0xde, 0xca, 0xff];
         Erc20OnEosPegInInfo::new(
             U256::from_dec_str("1337").unwrap(),
             EthAddress::from_slice(&hex::decode("edB86cd455ef3ca43f0e227e00469C3bDFA40628").unwrap()),
@@ -246,6 +249,7 @@ mod tests {
             ),
             "aneosaccount".to_string(),
             "0.000000000 SAM".to_string(),
+            user_data,
         )
     }
 
