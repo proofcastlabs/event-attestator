@@ -24,6 +24,12 @@ use crate::{
         },
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
+    metadata::{
+        metadata_origin_address::MetadataOriginAddress,
+        metadata_protocol_id::MetadataProtocolId,
+        metadata_traits::{ToMetadata, ToMetadataChainId},
+        Metadata,
+    },
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
@@ -39,6 +45,22 @@ pub struct Erc20OnEosPegInInfo {
     pub eos_asset_amount: String,
     pub user_data: Bytes,
     pub origin_chain_id: EthChainId,
+}
+
+impl ToMetadata for Erc20OnEosPegInInfo {
+    fn to_metadata(&self) -> Result<Metadata> {
+        Ok(Metadata::new(
+            &self.user_data,
+            &MetadataOriginAddress::new_from_eth_address(
+                &self.token_sender,
+                &self.origin_chain_id.to_metadata_chain_id(),
+            )?,
+        ))
+    }
+
+    fn to_metadata_bytes(&self) -> Result<Bytes> {
+        self.to_metadata()?.to_bytes_for_protocol(&MetadataProtocolId::Eos)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
@@ -459,5 +481,20 @@ mod tests {
                 .unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_erc20_on_eos_peg_in_info_to_metadata() {
+        let info = get_sample_erc20_on_eos_peg_in_info().unwrap();
+        let result = info.to_metadata();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_convert_erc20_on_eos_peg_in_info_to_metadata_bytes() {
+        let info = get_sample_zero_eos_asset_peg_in_info();
+        let result = info.to_metadata_bytes().unwrap();
+        let expected_result = "01005fe7f9edb86cd455ef3ca43f0e227e00469c3bdfa40628decaff";
+        assert_eq!(hex::encode(result), expected_result);
     }
 }
