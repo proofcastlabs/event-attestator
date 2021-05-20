@@ -37,7 +37,7 @@ use crate::{
     metadata::{
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
-        metadata_traits::ToMetadata,
+        metadata_traits::{ToMetadata, ToMetadataChainId},
         Metadata,
     },
     traits::DatabaseInterface,
