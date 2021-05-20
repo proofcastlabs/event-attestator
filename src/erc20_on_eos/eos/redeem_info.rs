@@ -3,11 +3,12 @@ use std::str::from_utf8;
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Checksum256};
 use ethereum_types::{Address as EthAddress, U256};
-use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eos::{
         eos_action_proofs::EosActionProof,
+        eos_chain_id::EosChainId,
+        eos_database_utils::get_eos_chain_id_from_db,
         eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
         eos_state::EosState,
     },
@@ -18,7 +19,7 @@ use crate::{
     utils::{convert_bytes_to_u64, strip_hex_prefix},
 };
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
+#[derive(Clone, Debug, PartialEq, Eq, Deref, Constructor)]
 pub struct Erc20OnEosRedeemInfos(pub Vec<Erc20OnEosRedeemInfo>);
 
 impl Erc20OnEosRedeemInfos {
@@ -33,11 +34,14 @@ impl Erc20OnEosRedeemInfos {
     pub fn from_action_proofs(
         action_proofs: &[EosActionProof],
         dictionary: &EosEthTokenDictionary,
+        origin_chain_id: &EosChainId,
     ) -> Result<Erc20OnEosRedeemInfos> {
         Ok(Erc20OnEosRedeemInfos::new(
             action_proofs
                 .iter()
-                .map(|ref action_proof| Erc20OnEosRedeemInfo::from_action_proof(action_proof, dictionary))
+                .map(|ref action_proof| {
+                    Erc20OnEosRedeemInfo::from_action_proof(action_proof, dictionary, origin_chain_id)
+                })
                 .collect::<Result<Vec<Erc20OnEosRedeemInfo>>>()?,
         ))
     }
@@ -52,7 +56,7 @@ impl Erc20OnEosRedeemInfos {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Constructor)]
+#[derive(Clone, Debug, PartialEq, Eq, Constructor)]
 pub struct Erc20OnEosRedeemInfo {
     pub amount: U256,
     pub from: EosAccountName,
@@ -63,6 +67,7 @@ pub struct Erc20OnEosRedeemInfo {
     pub eos_token_address: String,
     pub eos_tx_amount: String,
     pub user_data: Bytes,
+    pub origin_chain_id: EosChainId,
 }
 
 impl Erc20OnEosRedeemInfo {
@@ -105,7 +110,11 @@ impl Erc20OnEosRedeemInfo {
             .and_then(|eos_asset| dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset))
     }
 
-    pub fn from_action_proof(proof: &EosActionProof, dictionary: &EosEthTokenDictionary) -> Result<Self> {
+    pub fn from_action_proof(
+        proof: &EosActionProof,
+        dictionary: &EosEthTokenDictionary,
+        origin_chain_id: &EosChainId,
+    ) -> Result<Self> {
         dictionary
             .get_entry_via_eos_address(&proof.get_action_eos_account())
             .and_then(|entry| {
@@ -122,6 +131,7 @@ impl Erc20OnEosRedeemInfo {
                     global_sequence: proof.action_receipt.global_sequence,
                     recipient: Self::get_redeem_address_from_proof_or_default_to_safe_address(proof)?,
                     user_data: proof.get_user_data(),
+                    origin_chain_id: origin_chain_id.clone(),
                 })
             })
     }
@@ -129,12 +139,15 @@ impl Erc20OnEosRedeemInfo {
 
 pub fn maybe_parse_redeem_infos_and_put_in_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Parsing redeem params from actions data...");
-    Erc20OnEosRedeemInfos::from_action_proofs(&state.action_proofs, state.get_eos_eth_token_dictionary()?).and_then(
-        |redeem_infos| {
-            info!("✔ Parsed {} sets of redeem info!", redeem_infos.len());
-            state.add_erc20_on_eos_redeem_infos(redeem_infos)
-        },
+    Erc20OnEosRedeemInfos::from_action_proofs(
+        &state.action_proofs,
+        state.get_eos_eth_token_dictionary()?,
+        &get_eos_chain_id_from_db(&state.db)?,
     )
+    .and_then(|redeem_infos| {
+        info!("✔ Parsed {} sets of redeem info!", redeem_infos.len());
+        state.add_erc20_on_eos_redeem_infos(redeem_infos)
+    })
 }
 
 pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface>(
@@ -189,6 +202,7 @@ mod tests {
     fn should_convert_proof_to_erc20_on_eos_redeem_info() {
         let user_data = vec![];
         let eos_account_name = "testpethxxxx".to_string();
+        let origin_chain_id = EosChainId::EosMainnet;
         let expected_result = Erc20OnEosRedeemInfo::new(
             U256::from_dec_str("1337000000000").unwrap(),
             EosAccountName::from_str("t11ptokens11").unwrap(),
@@ -199,6 +213,7 @@ mod tests {
             eos_account_name.clone(),
             "0.000001337 PETH".to_string(),
             user_data,
+            origin_chain_id.clone(),
         );
         let dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             18,
@@ -209,7 +224,7 @@ mod tests {
             EthAddress::from_slice(&hex::decode("32eF9e9a622736399DB5Ee78A68B258dadBB4353").unwrap()),
         )]);
         let proof = get_sample_action_proof_for_erc20_redeem();
-        let result = Erc20OnEosRedeemInfo::from_action_proof(&proof, &dictionary).unwrap();
+        let result = Erc20OnEosRedeemInfo::from_action_proof(&proof, &dictionary, &origin_chain_id).unwrap();
         assert_eq!(result, expected_result);
     }
 }
