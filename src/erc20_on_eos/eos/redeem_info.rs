@@ -14,7 +14,7 @@ use crate::{
     constants::SAFE_ETH_ADDRESS,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     traits::DatabaseInterface,
-    types::Result,
+    types::{Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},
 };
 
@@ -62,6 +62,7 @@ pub struct Erc20OnEosRedeemInfo {
     pub global_sequence: GlobalSequence,
     pub eos_token_address: String,
     pub eos_tx_amount: String,
+    pub user_data: Bytes,
 }
 
 impl Erc20OnEosRedeemInfo {
@@ -120,6 +121,7 @@ impl Erc20OnEosRedeemInfo {
                     eos_token_address: entry.eos_address,
                     global_sequence: proof.action_receipt.global_sequence,
                     recipient: Self::get_redeem_address_from_proof_or_default_to_safe_address(proof)?,
+                    user_data: proof.get_user_data(),
                 })
             })
     }
@@ -185,6 +187,7 @@ mod tests {
 
     #[test]
     fn should_convert_proof_to_erc20_on_eos_redeem_info() {
+        let user_data = vec![];
         let eos_account_name = "testpethxxxx".to_string();
         let expected_result = Erc20OnEosRedeemInfo::new(
             U256::from_dec_str("1337000000000").unwrap(),
@@ -195,6 +198,7 @@ mod tests {
             250255005734,
             eos_account_name.clone(),
             "0.000001337 PETH".to_string(),
+            user_data,
         );
         let dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             18,

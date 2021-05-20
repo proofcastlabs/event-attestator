@@ -84,6 +84,11 @@ impl EosActionProof {
             Ok(())
         }
     }
+
+    pub fn get_user_data(&self) -> Bytes {
+        // FIXME/TODO Implement this!
+        vec![]
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
