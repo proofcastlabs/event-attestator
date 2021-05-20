@@ -377,7 +377,11 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
                     );
                     EosEthTokenDictionary::get_from_db(&state.db)
                         .and_then(|token_dictionary| {
-                            Erc20OnEosPegInInfos::from_submission_material(&submission_material, &token_dictionary)
+                            Erc20OnEosPegInInfos::from_submission_material(
+                                &submission_material,
+                                &token_dictionary,
+                                &get_eth_chain_id_from_db(&state.db)?,
+                            )
                         })
                         .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
                 },

@@ -5,12 +5,18 @@ use crate::{
     chains::{
         eos::eos_utils::{parse_eos_account_name_or_default_to_safe_address, remove_symbol_from_eos_asset},
         eth::{
+            eth_chain_id::EthChainId,
+            eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
             eth_contracts::erc20_vault::{
                 Erc20VaultPegInEventParams,
                 ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
                 ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
             },
-            eth_database_utils::{get_erc20_on_eos_smart_contract_address_from_db, get_eth_canon_block_from_db},
+            eth_database_utils::{
+                get_erc20_on_eos_smart_contract_address_from_db,
+                get_eth_canon_block_from_db,
+                get_eth_chain_id_from_db,
+            },
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
             eth_state::EthState,
@@ -32,6 +38,7 @@ pub struct Erc20OnEosPegInInfo {
     pub eos_token_address: String,
     pub eos_asset_amount: String,
     pub user_data: Bytes,
+    pub origin_chain_id: EthChainId,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
@@ -89,7 +96,11 @@ impl Erc20OnEosPegInInfos {
         )
     }
 
-    fn from_eth_receipt(receipt: &EthReceipt, token_dictionary: &EosEthTokenDictionary) -> Result<Self> {
+    fn from_eth_receipt(
+        receipt: &EthReceipt,
+        token_dictionary: &EosEthTokenDictionary,
+        origin_chain_id: &EthChainId,
+    ) -> Result<Self> {
         info!("✔ Getting `erc20-on-eos` peg in infos from receipt...");
         Ok(Self::new(
             Self::get_supported_erc20_peg_in_logs_from_receipt(receipt, token_dictionary)
@@ -108,6 +119,7 @@ impl Erc20OnEosPegInInfos {
                         eth_token_address: params.token_address,
                         token_amount: params.token_amount,
                         user_data: params.user_data,
+                        origin_chain_id: origin_chain_id.clone(),
                     };
                     info!("✔ Parsed peg in info: {:?}", peg_in_info);
                     Ok(peg_in_info)
@@ -147,13 +159,14 @@ impl Erc20OnEosPegInInfos {
     pub fn from_submission_material(
         submission_material: &EthSubmissionMaterial,
         eos_eth_token_dictionary: &EosEthTokenDictionary,
+        origin_chain_id: &EthChainId,
     ) -> Result<Self> {
         info!("✔ Getting `Erc20OnEosPegInInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(&receipt, eos_eth_token_dictionary))
+                .map(|receipt| Self::from_eth_receipt(&receipt, eos_eth_token_dictionary, origin_chain_id))
                 .collect::<Result<Vec<Erc20OnEosPegInInfos>>>()?
                 .iter()
                 .map(|infos| infos.iter().cloned().collect())
@@ -180,7 +193,11 @@ pub fn maybe_parse_peg_in_info_from_canon_block_and_add_to_state<D: DatabaseInte
                 );
                 EosEthTokenDictionary::get_from_db(&state.db)
                     .and_then(|account_names| {
-                        Erc20OnEosPegInInfos::from_submission_material(&submission_material, &account_names)
+                        Erc20OnEosPegInInfos::from_submission_material(
+                            &submission_material,
+                            &account_names,
+                            &get_eth_chain_id_from_db(&state.db)?,
+                        )
                     })
                     .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
             },
@@ -250,6 +267,7 @@ mod tests {
             "aneosaccount".to_string(),
             "0.000000000 SAM".to_string(),
             user_data,
+            EthChainId::Mainnet,
         )
     }
 
@@ -385,7 +403,8 @@ mod tests {
         let expected_num_results = 1;
         let expected_result = get_sample_erc20_on_eos_peg_in_info().unwrap();
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::from_eth_receipt(&receipt, &token_dictionary).unwrap();
+        let origin_chain_id = EthChainId::Mainnet;
+        let result = Erc20OnEosPegInInfos::from_eth_receipt(&receipt, &token_dictionary, &origin_chain_id).unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result.0[0], expected_result);
     }
@@ -394,8 +413,9 @@ mod tests {
     fn should_not_get_get_erc20_redeem_infos_from_receipt_if_token_not_supported() {
         let token_dictionary = EosEthTokenDictionary::new(vec![]);
         let expected_num_results = 0;
+        let origin_chain_id = EthChainId::Mainnet;
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::from_eth_receipt(&receipt, &token_dictionary).unwrap();
+        let result = Erc20OnEosPegInInfos::from_eth_receipt(&receipt, &token_dictionary, &origin_chain_id).unwrap();
         assert_eq!(result.len(), expected_num_results);
     }
 
@@ -432,8 +452,11 @@ mod tests {
         )]);
         let expected_num_results = 1;
         let submission_material = get_sample_submission_material_with_erc20_peg_in_event().unwrap();
+        let origin_chain_id = EthChainId::Mainnet;
         let expected_result = get_sample_erc20_on_eos_peg_in_infos().unwrap();
-        let result = Erc20OnEosPegInInfos::from_submission_material(&submission_material, &token_dictionary).unwrap();
+        let result =
+            Erc20OnEosPegInInfos::from_submission_material(&submission_material, &token_dictionary, &origin_chain_id)
+                .unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result, expected_result);
     }
