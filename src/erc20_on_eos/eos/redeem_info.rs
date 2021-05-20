@@ -5,15 +5,24 @@ use eos_chain::{AccountName as EosAccountName, Checksum256};
 use ethereum_types::{Address as EthAddress, U256};
 
 use crate::{
-    chains::eos::{
-        eos_action_proofs::EosActionProof,
-        eos_chain_id::EosChainId,
-        eos_database_utils::get_eos_chain_id_from_db,
-        eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
-        eos_state::EosState,
+    chains::{
+        eos::{
+            eos_action_proofs::EosActionProof,
+            eos_chain_id::EosChainId,
+            eos_database_utils::get_eos_chain_id_from_db,
+            eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
+            eos_state::EosState,
+        },
+        eth::eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
     },
     constants::SAFE_ETH_ADDRESS,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
+    metadata::{
+        metadata_origin_address::MetadataOriginAddress,
+        metadata_protocol_id::MetadataProtocolId,
+        metadata_traits::{ToMetadata, ToMetadataChainId},
+        Metadata,
+    },
     traits::DatabaseInterface,
     types::{Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},
@@ -68,6 +77,28 @@ pub struct Erc20OnEosRedeemInfo {
     pub eos_tx_amount: String,
     pub user_data: Bytes,
     pub origin_chain_id: EosChainId,
+}
+
+impl ToMetadata for Erc20OnEosRedeemInfo {
+    fn to_metadata(&self) -> Result<Metadata> {
+        let user_data = if self.user_data.len() > MAX_BYTES_FOR_ETH_USER_DATA {
+            info!(
+                "✘ `user_data` redacted from `Metadata` ∵ it's > {} bytes!",
+                MAX_BYTES_FOR_ETH_USER_DATA
+            );
+            vec![]
+        } else {
+            self.user_data.clone()
+        };
+        Ok(Metadata::new(
+            &user_data,
+            &MetadataOriginAddress::new_from_eos_address(&self.from, &self.origin_chain_id.to_metadata_chain_id())?,
+        ))
+    }
+
+    fn to_metadata_bytes(&self) -> Result<Bytes> {
+        self.to_metadata()?.to_bytes_for_protocol(&MetadataProtocolId::Ethereum)
+    }
 }
 
 impl Erc20OnEosRedeemInfo {
@@ -174,6 +205,24 @@ mod tests {
         get_sample_eos_submission_material_n(10).action_proofs[0].clone()
     }
 
+    fn get_sample_erc20_on_eos_redeem_info() -> Erc20OnEosRedeemInfo {
+        let user_data = vec![];
+        let origin_chain_id = EosChainId::EosMainnet;
+        let eos_account_name = "testpethxxxx".to_string();
+        Erc20OnEosRedeemInfo::new(
+            U256::from_dec_str("1337000000000").unwrap(),
+            EosAccountName::from_str("t11ptokens11").unwrap(),
+            EthAddress::from_slice(&hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap()),
+            EthAddress::from_slice(&hex::decode("32eF9e9a622736399DB5Ee78A68B258dadBB4353").unwrap()),
+            convert_hex_to_checksum256("ed991197c5d571f39b4605f91bf1374dd69237070d44b46d4550527c245a01b9").unwrap(),
+            250255005734,
+            eos_account_name.clone(),
+            "0.000001337 PETH".to_string(),
+            user_data,
+            origin_chain_id.clone(),
+        )
+    }
+
     #[test]
     fn should_get_erc20_on_eos_eth_redeem_amount() {
         let dictionary_entry = EosEthTokenDictionaryEntry::new(
@@ -200,21 +249,9 @@ mod tests {
 
     #[test]
     fn should_convert_proof_to_erc20_on_eos_redeem_info() {
-        let user_data = vec![];
         let eos_account_name = "testpethxxxx".to_string();
+        let expected_result = get_sample_erc20_on_eos_redeem_info();
         let origin_chain_id = EosChainId::EosMainnet;
-        let expected_result = Erc20OnEosRedeemInfo::new(
-            U256::from_dec_str("1337000000000").unwrap(),
-            EosAccountName::from_str("t11ptokens11").unwrap(),
-            EthAddress::from_slice(&hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap()),
-            EthAddress::from_slice(&hex::decode("32eF9e9a622736399DB5Ee78A68B258dadBB4353").unwrap()),
-            convert_hex_to_checksum256("ed991197c5d571f39b4605f91bf1374dd69237070d44b46d4550527c245a01b9").unwrap(),
-            250255005734,
-            eos_account_name.clone(),
-            "0.000001337 PETH".to_string(),
-            user_data,
-            origin_chain_id.clone(),
-        );
         let dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             18,
             9,
@@ -226,5 +263,20 @@ mod tests {
         let proof = get_sample_action_proof_for_erc20_redeem();
         let result = Erc20OnEosRedeemInfo::from_action_proof(&proof, &dictionary, &origin_chain_id).unwrap();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_erc20_on_eos_redeem_info_to_metadata() {
+        let info = get_sample_erc20_on_eos_redeem_info();
+        let result = info.to_metadata();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_convert_erc20_on_eos_redeem_info_to_metadata_bytes() {
+        let info = get_sample_erc20_on_eos_redeem_info();
+        let result = info.to_metadata_bytes().unwrap();
+        let expected_result = "0100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008002e7261c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000810029e0ad25c43c8000000000000000000000000000000000000000000000000";
+        assert_eq!(hex::encode(result), expected_result);
     }
 }
