@@ -6,6 +6,7 @@ use strum_macros::EnumIter;
 
 use crate::{
     crypto_utils::keccak_hash_bytes,
+    metadata::{metadata_chain_id::MetadataChainId, metadata_traits::ToMetadataChainId},
     traits::ChainId,
     types::{Byte, Bytes, Result},
     utils::decode_hex_with_err_msg,
@@ -23,6 +24,18 @@ pub enum EosChainId {
 impl ChainId for EosChainId {
     fn keccak_hash(&self) -> Result<KeccakHash> {
         Ok(keccak_hash_bytes(&self.to_bytes()))
+    }
+}
+
+impl ToMetadataChainId for EosChainId {
+    fn to_metadata_chain_id(&self) -> MetadataChainId {
+        match self {
+            Self::EosMainnet => MetadataChainId::EosMainnet,
+            Self::FioMainnet => MetadataChainId::FioMainnet,
+            Self::TelosMainnet => MetadataChainId::TelosMainnet,
+            Self::UltraMainnet => MetadataChainId::UltraMainnet,
+            Self::EosJungleTestnet => MetadataChainId::EosJungleTestnet,
+        }
     }
 }
 
