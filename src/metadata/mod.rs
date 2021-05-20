@@ -56,12 +56,21 @@ impl Metadata {
         ]))
     }
 
+    fn to_bytes_for_eos(&self) -> Result<Bytes> {
+        Ok(vec![
+            self.version.to_bytes(),
+            self.metadata_chain_id.to_bytes()?,
+            self.origin_address.to_bytes()?,
+            self.user_data.clone(),
+        ]
+        .concat())
+    }
+
     pub fn to_bytes_for_protocol(&self, destination_protocol: &MetadataProtocolId) -> Result<Bytes> {
         match destination_protocol {
+            MetadataProtocolId::Eos => self.to_bytes_for_eos(),
             MetadataProtocolId::Ethereum => self.to_bytes_for_eth(),
-            MetadataProtocolId::Bitcoin | MetadataProtocolId::Eos => {
-                Err("Encoding metadata for Bitcoin || EOS is not implemented!".into())
-            },
+            MetadataProtocolId::Bitcoin => Err("Encoding metadata for Bitcoin is not implemented!".into()),
         }
     }
 
