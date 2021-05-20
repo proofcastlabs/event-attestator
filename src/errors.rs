@@ -110,6 +110,10 @@ quick_error! {
             from()
             display("✘ `TryFrom` error: {:?}", err)
         }
+        TryFromSliceError(err: std::array::TryFromSliceError) {
+            from()
+            display("✘ `TryFromSlice` error: {:?}", err)
+        }
         NoneError(err: &'static str) {
             display("✘ None Error!\n✘ {}", err)
         }

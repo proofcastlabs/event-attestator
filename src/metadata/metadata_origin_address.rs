@@ -1,14 +1,22 @@
-use std::str::{from_utf8, FromStr};
+use std::str::FromStr;
+#[cfg(test)]
+use std::{convert::TryInto, str::from_utf8};
 
+#[cfg(test)]
 use bitcoin::util::address::Address as BtcAddress;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
 
+#[cfg(test)]
 use crate::{
-    chains::eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES,
+    chains::{eos::eos_constants::EOS_ADDRESS_LENGTH_IN_BYTES, eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES},
+    types::Byte,
+};
+use crate::{
     metadata::{metadata_chain_id::MetadataChainId, metadata_protocol_id::MetadataProtocolId},
-    types::{Byte, Bytes, Result},
+    types::Bytes,
     utils::strip_hex_prefix,
+    Result,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -37,6 +45,7 @@ impl MetadataOriginAddress {
         }
     }
 
+    #[allow(dead_code)]
     pub fn new_from_eos_address(eos_address: &EosAddress, metadata_chain_id: &MetadataChainId) -> Result<Self> {
         let protocol_id = metadata_chain_id.to_protocol_id();
         match protocol_id {
@@ -48,6 +57,7 @@ impl MetadataOriginAddress {
         }
     }
 
+    #[cfg(test)]
     pub fn new_from_btc_address(btc_address: &BtcAddress, metadata_chain_id: &MetadataChainId) -> Result<Self> {
         let protocol_id = metadata_chain_id.to_protocol_id();
         match protocol_id {
@@ -61,55 +71,62 @@ impl MetadataOriginAddress {
 
     pub fn to_bytes(&self) -> Result<Bytes> {
         match self.metadata_chain_id.to_protocol_id() {
-            MetadataProtocolId::Bitcoin | MetadataProtocolId::Eos => Ok(self.address.as_bytes().to_vec()),
+            MetadataProtocolId::Bitcoin => Ok(self.address.as_bytes().to_vec()),
             MetadataProtocolId::Ethereum => Ok(hex::decode(strip_hex_prefix(&self.address))?),
+            MetadataProtocolId::Eos => Ok(EosAddress::from_str(&self.address)?.as_u64().to_le_bytes().to_vec()),
         }
     }
 
-    #[allow(dead_code)]
+    #[cfg(test)]
     fn from_bytes(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
-        let protocol_id = metadata_chain_id.to_protocol_id();
-        match protocol_id {
-            MetadataProtocolId::Bitcoin => {
-                info!("✔ Attempting to create `MetadataOriginAddress` from bytes for EOS...");
-                match from_utf8(bytes) {
-                    Err(err) => {
-                        Err(format!("Error converting bytes to utf8 in `MetadataOriginAddress`: {}", err).into())
-                    },
-                    Ok(btc_address_str) => match BtcAddress::from_str(btc_address_str) {
-                        Ok(ref btc_address) => Self::new_from_btc_address(btc_address, metadata_chain_id),
-                        Err(err) => Err(format!(
-                            "Error converting bytes to BTC address in `MetadataOriginAddress`: {}",
-                            err
-                        )
-                        .into()),
-                    },
-                }
+        match metadata_chain_id.to_protocol_id() {
+            MetadataProtocolId::Eos => Self::from_bytes_for_eos(bytes, metadata_chain_id),
+            MetadataProtocolId::Bitcoin => Self::from_bytes_for_btc(bytes, metadata_chain_id),
+            MetadataProtocolId::Ethereum => Self::from_bytes_for_eth(bytes, metadata_chain_id),
+        }
+    }
+
+    #[cfg(test)]
+    fn from_bytes_for_eth(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
+        info!("✔ Attempting to create `MetadataOriginAddress` from bytes for ETH...");
+        if bytes.len() == ETH_ADDRESS_SIZE_IN_BYTES {
+            Self::new_from_eth_address(&EthAddress::from_slice(bytes), metadata_chain_id)
+        } else {
+            Err("Incorrect number of bytes to convert to ETH address in `MetadataOriginAddress`!".into())
+        }
+    }
+
+    #[cfg(test)]
+    fn from_bytes_for_btc(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
+        info!("✔ Attempting to create `MetadataOriginAddress` from bytes for EOS...");
+        match from_utf8(bytes) {
+            Err(err) => Err(format!("Error converting bytes to utf8 in `MetadataOriginAddress`: {}", err).into()),
+            Ok(btc_address_str) => match BtcAddress::from_str(btc_address_str) {
+                Ok(ref btc_address) => Self::new_from_btc_address(btc_address, metadata_chain_id),
+                Err(err) => Err(format!(
+                    "Error converting bytes to BTC address in `MetadataOriginAddress`: {}",
+                    err
+                )
+                .into()),
             },
-            MetadataProtocolId::Eos => {
-                info!("✔ Attempting to create `MetadataOriginAddress` from bytes for EOS...");
-                match from_utf8(bytes) {
-                    Err(err) => {
-                        Err(format!("Error converting bytes to utf8 in `MetadataOriginAddress`: {}", err).into())
-                    },
-                    Ok(eos_address_str) => match EosAddress::from_str(eos_address_str) {
-                        Ok(ref eos_address) => Self::new_from_eos_address(eos_address, metadata_chain_id),
-                        Err(err) => Err(format!(
-                            "Error converting bytes to EOS address in `MetadataOriginAddress`: {}",
-                            err
-                        )
-                        .into()),
-                    },
-                }
-            },
-            MetadataProtocolId::Ethereum => {
-                info!("✔ Attempting to create `MetadataOriginAddress` from bytes for ETH...");
-                if bytes.len() == ETH_ADDRESS_SIZE_IN_BYTES {
-                    Self::new_from_eth_address(&EthAddress::from_slice(bytes), metadata_chain_id)
-                } else {
-                    Err("Incorrect number of bytes to convert to ETH address in `MetadataOriginAddress`!".into())
-                }
-            },
+        }
+    }
+
+    #[cfg(test)]
+    fn from_bytes_for_eos(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
+        info!("✔ Attempting to create `MetadataOriginAddress` from bytes for EOS...");
+        let num_bytes = bytes.len();
+        if num_bytes != EOS_ADDRESS_LENGTH_IN_BYTES {
+            Err(format!(
+                "Incorrect number of bytes for EOS address. Expected {}, got {}!",
+                EOS_ADDRESS_LENGTH_IN_BYTES, num_bytes
+            )
+            .into())
+        } else {
+            Self::new_from_eos_address(
+                &EosAddress::from(u64::from_le_bytes(bytes.try_into()?)),
+                metadata_chain_id,
+            )
         }
     }
 }
