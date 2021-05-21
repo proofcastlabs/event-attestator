@@ -56,6 +56,7 @@ use crate::{
                 get_erc777_proxy_contract_address_from_db,
                 get_eth_private_key_from_db,
             },
+            eth_debug_functions::debug_set_eth_gas_price_in_db,
         },
     },
     check_debug_mode::check_debug_mode,
@@ -420,4 +421,11 @@ pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &st
             Ok(json!({ "signed_btc_tx": get_hex_tx_from_signed_btc_tx(&btc_tx) }).to_string())
         })
         .map(prepend_debug_output_marker_to_string)
+}
+
+/// Debug Set ETH Gas Price
+///
+/// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
+pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
+    debug_set_eth_gas_price_in_db(&db, gas_price)
 }
