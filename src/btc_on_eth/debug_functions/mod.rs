@@ -13,6 +13,7 @@ use crate::{
             btc_block::parse_btc_block_and_id_and_put_in_state,
             btc_constants::{get_btc_constants_db_keys, BTC_PRIVATE_KEY_DB_KEY as BTC_KEY},
             btc_database_utils::{end_btc_db_transaction, get_btc_address_from_db, start_btc_db_transaction},
+            btc_debug_functions::debug_put_btc_fee_in_db,
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
             btc_utils::get_hex_tx_from_signed_btc_tx,
@@ -428,4 +429,11 @@ pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &st
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
 pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
     debug_set_eth_gas_price_in_db(&db, gas_price)
+}
+
+/// Debug Set BTC fee
+///
+/// This function sets the BTC fee to the given value. The unit is satoshis per byte.
+pub fn debug_set_btc_fee<D: DatabaseInterface>(db: D, fee: u64) -> Result<String> {
+    debug_put_btc_fee_in_db(&db, fee)
 }
