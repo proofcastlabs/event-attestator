@@ -6,7 +6,6 @@ use crate::{
         eos::eos_utils::{parse_eos_account_name_or_default_to_safe_address, remove_symbol_from_eos_asset},
         eth::{
             eth_chain_id::EthChainId,
-            eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
             eth_contracts::erc20_vault::{
                 Erc20VaultPegInEventParams,
                 ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
