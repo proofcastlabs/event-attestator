@@ -53,6 +53,7 @@ use crate::{
                 increment_eth_account_nonce_in_db,
                 put_erc20_on_eos_smart_contract_address_in_db,
             },
+            eth_debug_functions::debug_set_eth_gas_price_in_db,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             eth_utils::get_eth_address_from_str,
@@ -432,4 +433,11 @@ where
 /// This function returns the list of already-processed action global sequences in JSON format.
 pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String> {
     check_core_is_initialized(db).and_then(|_| get_processed_actions_list(db))
+}
+
+/// Debug Set ETH Gas Price
+///
+/// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
+pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
+    debug_set_eth_gas_price_in_db(&db, gas_price)
 }

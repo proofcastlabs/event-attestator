@@ -45,6 +45,7 @@ pub use crate::{
             debug_remove_eos_eth_token_dictionary_entry as debug_remove_erc20_dictionary_entry,
             debug_reprocess_eos_block,
             debug_reprocess_eth_block,
+            debug_set_eth_gas_price,
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
         },
