@@ -27,6 +27,7 @@ use crate::{
         btc::{
             btc_constants::{get_btc_constants_db_keys, BTC_PRIVATE_KEY_DB_KEY as BTC_KEY},
             btc_database_utils::{end_btc_db_transaction, get_btc_latest_block_from_db, start_btc_db_transaction},
+            btc_debug_functions::debug_put_btc_fee_in_db,
             btc_state::BtcState,
             btc_submission_material::parse_submission_material_and_put_in_state,
             extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_state,
@@ -388,4 +389,11 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_ma
         .and_then(end_btc_db_transaction)
         .map(|_| SUCCESS_JSON.to_string())
         .map(prepend_debug_output_marker_to_string)
+}
+
+/// Debug Set BTC fee
+///
+/// This function sets the BTC fee to the given value. The unit is satoshis per byte.
+pub fn debug_set_btc_fee<D: DatabaseInterface>(db: D, fee: u64) -> Result<String> {
+    debug_put_btc_fee_in_db(&db, fee)
 }
