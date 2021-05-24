@@ -36,6 +36,8 @@ pub use crate::{
             debug_maybe_add_utxo_to_db,
             debug_mint_pbtc,
             debug_remove_utxo,
+            debug_set_btc_fee,
+            debug_set_eth_gas_price,
             debug_set_key_in_db_to_value,
         },
         eth::{

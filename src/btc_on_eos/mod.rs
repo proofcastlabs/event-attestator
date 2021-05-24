@@ -29,6 +29,7 @@ pub use crate::{
             debug_remove_utxo,
             debug_reprocess_btc_block_for_stale_eos_tx,
             debug_reprocess_eos_block,
+            debug_set_btc_fee,
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
         },
