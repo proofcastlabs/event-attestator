@@ -205,7 +205,7 @@ mod tests {
         let msig_enabled = blocks_json.is_msig_enabled();
         let producer_signature = blocks_json.get_producer_signature_for_block_n(block_num).unwrap();
         let block_header = blocks_json.get_block_n(block_num).unwrap();
-        let active_schedule = blocks_json.get_active_schedule().unwrap();
+        let active_schedule = blocks_json.init_block.active_schedule.clone();
         let block_mroot = blocks_json.get_block_mroot_for_block_n(block_num).unwrap();
         if let Err(e) = check_block_signature_is_valid(
             msig_enabled,
