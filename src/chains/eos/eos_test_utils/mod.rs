@@ -78,6 +78,9 @@ pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_JUNGLE_3_JSON_1: &str =
 pub const SAMPLE_INIT_AND_SUBSEQUENT_BLOCKS_MAINNET_JSON_1: &str =
     "src/chains/eos/eos_test_utils/eos-init-and-subsequent-blocks-mainnet-1.json";
 
+pub const SAMPLE_INIT_BLOCK_WITH_V1_SCHEDULE: &str =
+    "src/chains/eos/eos_test_utils/sample_init_block_with_v1_schedule.json";
+
 pub const EOS_JUNGLE_CHAIN_ID: EosChainId = EosChainId::EosJungleTestnet;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -122,10 +125,6 @@ impl EosInitAndSubsequentBlocksJson {
                 .map(convert_hex_to_checksum256)
                 .collect::<Result<Checksum256s>>()?,
         ))
-    }
-
-    pub fn get_active_schedule(&self) -> Result<EosProducerScheduleV2> {
-        EosProducerScheduleV2::from_schedule_json(&self.init_block.active_schedule)
     }
 
     pub fn get_block_json_n(&self, n: usize) -> Result<EosBlockHeaderJson> {
@@ -224,6 +223,10 @@ pub fn get_mainnet_init_json_n(num: usize) -> Result<EosInitJson> {
     } else {
         Err(format!("✘ Can't find sample init block json file @ path: {}", path).into())
     }
+}
+
+pub fn get_sample_init_block_with_v1_schedule() -> Result<String> {
+    Ok(read_to_string(SAMPLE_INIT_BLOCK_WITH_V1_SCHEDULE)?)
 }
 
 pub fn get_sample_mainnet_init_json_with_eos_eth_token_dictionary() -> Result<EosInitJson> {
