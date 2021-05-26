@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 
 use crate::{
     chains::eos::{
@@ -22,7 +23,7 @@ use crate::{
         },
         eos_global_sequences::ProcessedGlobalSequences,
         eos_merkle_utils::Incremerkle,
-        eos_producer_schedule::{EosProducerScheduleJsonV2, EosProducerScheduleV2},
+        eos_producer_schedule::EosProducerScheduleV2,
         eos_state::EosState,
         eos_submission_material::EosSubmissionMaterial,
         eos_types::{Checksum256s, EosBlockHeaderJson, EosKnownSchedules},
@@ -40,7 +41,7 @@ use crate::{
 pub struct EosInitJson {
     pub block: EosBlockHeaderJson,
     pub blockroot_merkle: Vec<String>,
-    pub active_schedule: EosProducerScheduleJsonV2,
+    pub active_schedule: EosProducerScheduleV2,
     pub maybe_protocol_features_to_enable: Option<Vec<String>>,
     pub eos_eth_token_dictionary: Option<EosEthTokenDictionaryJson>,
     pub erc20_on_eos_token_dictionary: Option<EosEthTokenDictionaryJson>,
@@ -48,10 +49,27 @@ pub struct EosInitJson {
 
 impl EosInitJson {
     pub fn from_json_string(json_string: &str) -> Result<Self> {
-        match serde_json::from_str(&json_string) {
-            Ok(result) => Ok(result),
-            Err(err) => Err(err.into()),
+        // NOTE: This inefficient way allows us ot deail with init block with EITHER v1 || v2 schedules.
+        // The inefficiency is moot however since this function only gets called once in a core's lifetime
+        #[derive(Deserialize)]
+        pub struct InterimInitJson {
+            pub block: EosBlockHeaderJson,
+            pub active_schedule: JsonValue,
+            pub blockroot_merkle: Vec<String>,
+            pub maybe_protocol_features_to_enable: Option<Vec<String>>,
+            pub eos_eth_token_dictionary: Option<EosEthTokenDictionaryJson>,
+            pub erc20_on_eos_token_dictionary: Option<EosEthTokenDictionaryJson>,
         }
+        let interim_init_json = serde_json::from_str::<InterimInitJson>(&json_string)?;
+        let producer_schedule = EosProducerScheduleV2::from_json(&interim_init_json.active_schedule.to_string())?;
+        Ok(EosInitJson {
+            block: interim_init_json.block.clone(),
+            blockroot_merkle: interim_init_json.blockroot_merkle.clone(),
+            active_schedule: producer_schedule,
+            maybe_protocol_features_to_enable: interim_init_json.maybe_protocol_features_to_enable,
+            eos_eth_token_dictionary: interim_init_json.eos_eth_token_dictionary.clone(),
+            erc20_on_eos_token_dictionary: interim_init_json.erc20_on_eos_token_dictionary,
+        })
     }
 
     #[cfg(test)]
@@ -61,7 +79,6 @@ impl EosInitJson {
             None => false,
             Some(features) => features.contains(&hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)),
         };
-        let schedule = EosProducerScheduleV2::from_schedule_json(&self.active_schedule).unwrap();
         let block_header = EosSubmissionMaterial::parse_eos_block_header_from_json(&self.block).unwrap();
         let blockroot_merkle = self
             .blockroot_merkle
@@ -78,7 +95,7 @@ impl EosInitJson {
             &block_mroot,
             &producer_signature,
             &block_header,
-            &schedule,
+            &self.active_schedule,
         )
         .is_err()
         {
@@ -172,24 +189,19 @@ pub fn put_eos_latest_block_info_in_db_and_return_state<D: DatabaseInterface>(
 }
 
 pub fn put_eos_known_schedule_in_db_and_return_state<D: DatabaseInterface>(
-    schedule_json: &EosProducerScheduleJsonV2,
+    schedule: &EosProducerScheduleV2,
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Putting EOS known schedule into db...");
-    EosProducerScheduleV2::from_schedule_json(schedule_json)
-        .map(|sched| EosKnownSchedules::new(sched.version))
-        .and_then(|sched| put_eos_known_schedules_in_db(&state.db, &sched))
-        .and(Ok(state))
+    put_eos_known_schedules_in_db(&state.db, &EosKnownSchedules::new(schedule.version)).and(Ok(state))
 }
 
 pub fn put_eos_schedule_in_db_and_return_state<D: DatabaseInterface>(
-    schedule_json: &EosProducerScheduleJsonV2,
+    schedule: &EosProducerScheduleV2,
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Putting EOS schedule into db...");
-    EosProducerScheduleV2::from_schedule_json(schedule_json)
-        .and_then(|schedule| put_eos_schedule_in_db(&state.db, &schedule))
-        .and(Ok(state))
+    put_eos_schedule_in_db(&state.db, &schedule).and(Ok(state))
 }
 
 pub fn generate_and_save_eos_keys_and_return_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
@@ -268,9 +280,11 @@ pub fn maybe_put_eos_eth_token_dictionary_in_db_and_return_state<D: DatabaseInte
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::chains::eos::eos_test_utils::{
         get_j3_init_json_n,
         get_mainnet_init_json_n,
+        get_sample_init_block_with_v1_schedule,
         get_sample_mainnet_init_json_with_eos_eth_token_dictionary,
         NUM_J3_INIT_SAMPLES,
         NUM_MAINNET_INIT_SAMPLES,
@@ -296,5 +310,12 @@ mod tests {
     fn should_parse_init_json_with_eos_eth_token_dictionary() {
         let init_json_with_eos_eth_token_dictionary = get_sample_mainnet_init_json_with_eos_eth_token_dictionary();
         assert!(init_json_with_eos_eth_token_dictionary.is_ok());
+    }
+
+    #[test]
+    fn should_get_init_json_from_init_block_with_v1_schedule() {
+        let fio_init_json_string = get_sample_init_block_with_v1_schedule().unwrap();
+        let result = EosInitJson::from_json_string(&fio_init_json_string);
+        assert!(result.is_ok());
     }
 }
