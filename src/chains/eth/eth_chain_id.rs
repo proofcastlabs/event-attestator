@@ -20,6 +20,7 @@ pub enum EthChainId {
     BscMainnet,
     XDaiMainnet,
     PolygonMainnet,
+    Unknown(u8),
 }
 
 impl ChainId for EthChainId {
@@ -42,15 +43,18 @@ impl ToMetadataChainId for EthChainId {
 }
 
 impl EthChainId {
-    pub fn from_str(network: &str) -> Result<Self> {
-        match &*network.to_lowercase() {
+    pub fn from_str(s: &str) -> Result<Self> {
+        match &*s.to_lowercase() {
             "mainnet" | "1" => Ok(Self::Mainnet),
             "ropsten" | "3" => Ok(Self::Ropsten),
             "rinkeby" | "4" => Ok(Self::Rinkeby),
             "bsc" | "56" => Ok(Self::BscMainnet),
             "xdai" | "100" => Ok(Self::XDaiMainnet),
             "polygon" | "137" => Ok(Self::PolygonMainnet),
-            _ => Err(format!("✘ Unrecognized ethereum network: '{}'!", network).into()),
+            _ => match s.parse::<u8>() {
+                Ok(u_8) => Ok(Self::Unknown(u_8)),
+                Err(_) => Err(format!("✘ Unrecognized ETH network: '{}'!", s).into()),
+            },
         }
     }
 
@@ -66,6 +70,7 @@ impl EthChainId {
             Self::BscMainnet => 56,
             Self::XDaiMainnet => 100,
             Self::PolygonMainnet => 137,
+            Self::Unknown(u_8) => *u_8,
         }
     }
 
@@ -82,6 +87,18 @@ impl EthChainId {
         }
     }
 
+    pub fn to_metadata_chain_id(&self) -> MetadataChainId {
+        match self {
+            Self::Mainnet => MetadataChainId::EthereumMainnet,
+            Self::Rinkeby => MetadataChainId::EthereumRinkeby,
+            Self::Ropsten => MetadataChainId::EthereumRopsten,
+            Self::BscMainnet => MetadataChainId::BscMainnet,
+            Self::XDaiMainnet => MetadataChainId::XDaiMainnet,
+            Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
+            Self::Unknown(_) => MetadataChainId::EthUnknown,
+        }
+    }
+
     pub fn to_u8(&self) -> u8 {
         match self {
             Self::Mainnet => 1,
@@ -90,13 +107,19 @@ impl EthChainId {
             Self::BscMainnet => 56,
             Self::XDaiMainnet => 100,
             Self::PolygonMainnet => 137,
+            Self::Unknown(u_8) => *u_8,
         }
     }
 
     #[cfg(test)]
     fn get_all() -> Vec<Self> {
         use strum::IntoEnumIterator;
-        Self::iter().collect()
+        Self::iter()
+            .filter(|x| match x {
+                Self::Unknown(_) => false,
+                _ => true,
+            })
+            .collect()
     }
 }
 
@@ -109,6 +132,7 @@ impl fmt::Display for EthChainId {
             Self::BscMainnet => write!(f, "BSC Mainnet: {}", self.to_u8()),
             Self::XDaiMainnet => write!(f, "xDai Mainnet: {}", self.to_u8()),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", self.to_u8()),
+            Self::Unknown(_) => write!(f, "Polygon Mainnet: {}", self.to_u8()),
         }
     }
 }
