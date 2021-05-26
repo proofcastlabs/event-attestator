@@ -15,6 +15,7 @@ use crate::{
 pub enum BtcChainId {
     Bitcoin,
     Testnet,
+    Unknown(Bytes),
 }
 
 impl ChainId for BtcChainId {
@@ -22,6 +23,7 @@ impl ChainId for BtcChainId {
         Ok(keccak_hash_bytes(match self {
             Self::Bitcoin => "Bitcoin".as_bytes(),
             Self::Testnet => "Testnet".as_bytes(),
+            Self::Unknown(bytes) => bytes,
         }))
     }
 }
@@ -29,8 +31,8 @@ impl ChainId for BtcChainId {
 impl BtcChainId {
     pub fn to_btc_network(&self) -> BtcNetwork {
         match self {
-            Self::Bitcoin => BtcNetwork::Bitcoin,
             Self::Testnet => BtcNetwork::Testnet,
+            _ => BtcNetwork::Bitcoin,
         }
     }
 
@@ -46,7 +48,7 @@ impl BtcChainId {
         match convert_bytes_to_u64(bytes)? {
             0 => Ok(Self::Bitcoin),
             1 => Ok(Self::Testnet),
-            _ => Err(format!("`BtcChainId` error! Unrecognised byte: 0x{}", hex::encode(bytes)).into()),
+            _ => Ok(Self::Unknown(bytes.to_vec())),
         }
     }
 
@@ -54,6 +56,7 @@ impl BtcChainId {
         match self {
             Self::Bitcoin => convert_u64_to_bytes(0),
             Self::Testnet => convert_u64_to_bytes(1),
+            Self::Unknown(bytes) => bytes.to_vec(),
         }
     }
 
@@ -64,7 +67,12 @@ impl BtcChainId {
     #[cfg(test)]
     fn get_all() -> Vec<Self> {
         use strum::IntoEnumIterator;
-        Self::iter().collect()
+        Self::iter()
+            .filter(|x| match x {
+                Self::Unknown(_) => false,
+                _ => true,
+            })
+            .collect()
     }
 }
 
@@ -73,6 +81,7 @@ impl fmt::Display for BtcChainId {
         match self {
             Self::Bitcoin => write!(f, "Bitcoin Mainnet: 0x{}", self.to_hex()),
             Self::Testnet => write!(f, "Bitcoin Testnet: 0x{}", self.to_hex()),
+            Self::Unknown(_) => write!(f, "Bitcoin Testnet: 0x{}", self.to_hex()),
         }
     }
 }
