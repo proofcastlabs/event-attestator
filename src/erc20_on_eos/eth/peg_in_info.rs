@@ -1,12 +1,9 @@
-use std::str::FromStr;
-
 use derive_more::{Constructor, Deref};
-use eos_chain::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
     chains::{
-        eos::eos_utils::remove_symbol_from_eos_asset,
+        eos::eos_utils::{parse_eos_account_name_or_default_to_safe_address, remove_symbol_from_eos_asset},
         eth::{
             eth_contracts::erc20_vault::{
                 Erc20VaultPegInEventParams,
@@ -20,7 +17,6 @@ use crate::{
             eth_submission_material::EthSubmissionMaterial,
         },
     },
-    constants::SAFE_EOS_ADDRESS,
     dictionaries::eos_eth::EosEthTokenDictionary,
     traits::DatabaseInterface,
     types::Result,
@@ -74,17 +70,6 @@ impl Erc20OnEosPegInInfos {
         }
     }
 
-    fn check_eos_address_or_default_to_safe_eos_address(potential_eos_address: &str) -> String {
-        match EosAccountName::from_str(potential_eos_address) {
-            Ok(_) => potential_eos_address.to_string(),
-            Err(_) => {
-                info!("✘ Could not parse EOS address from: {}", potential_eos_address);
-                info!("✔ Defaulting to safe EOS address: {}", SAFE_EOS_ADDRESS);
-                SAFE_EOS_ADDRESS.to_string()
-            },
-        }
-    }
-
     fn receipt_contains_supported_erc20_peg_in(receipt: &EthReceipt, token_dictionary: &EosEthTokenDictionary) -> bool {
         Self::get_supported_erc20_peg_in_logs_from_receipt(receipt, token_dictionary).len() > 0
     }
@@ -113,9 +98,8 @@ impl Erc20OnEosPegInInfos {
                     let peg_in_info = Erc20OnEosPegInInfo {
                         token_sender: params.token_sender,
                         originating_tx_hash: receipt.transaction_hash,
-                        eos_address: Self::check_eos_address_or_default_to_safe_eos_address(
-                            &params.destination_address,
-                        ),
+                        eos_address: parse_eos_account_name_or_default_to_safe_address(&params.destination_address)?
+                            .to_string(),
                         eos_token_address: token_dictionary
                             .get_eos_account_name_from_eth_token_address(&params.token_address)?,
                         eos_asset_amount: token_dictionary
