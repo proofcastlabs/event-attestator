@@ -13,6 +13,7 @@ use crate::{
                 eos_transaction::{EosSignedTransaction, EosSignedTransactions},
             },
             eos_database_utils::{get_eos_account_name_from_db, get_eos_chain_id_from_db},
+            eos_utils::parse_eos_account_name_or_default_to_safe_address,
         },
         eth::{
             eth_contracts::erc777::{
@@ -165,9 +166,10 @@ impl EosOnEthEthTxInfo {
                 originating_tx_hash: *tx_hash,
                 token_sender: params.redeemer,
                 eth_token_address: log.address,
-                eos_address: params.underlying_asset_recipient,
                 eos_token_address: token_dictionary.get_eos_account_name_from_eth_token_address(&log.address)?,
                 eos_asset_amount: token_dictionary.convert_u256_to_eos_asset_string(&log.address, &params.value)?,
+                eos_address: parse_eos_account_name_or_default_to_safe_address(&params.underlying_asset_recipient)?
+                    .to_string(),
             })
         })
     }
@@ -288,8 +290,19 @@ mod tests {
     use super::*;
     use crate::{
         dictionaries::eos_eth::EosEthTokenDictionaryEntry,
-        eos_on_eth::test_utils::{get_eth_submission_material_n, get_sample_eos_eth_token_dictionary},
+        eos_on_eth::test_utils::{
+            get_eth_submission_material_n,
+            get_eth_submission_material_with_bad_eos_account_name,
+            get_sample_eos_eth_token_dictionary,
+        },
     };
+
+    fn get_sample_eos_private_key() -> EosPrivateKey {
+        EosPrivateKey::from_slice(
+            &hex::decode("17b116e5e55af3b9985ff6c6e0320578176b83ca55570a66683d3b36d9deca64").unwrap(),
+        )
+        .unwrap()
+    }
 
     #[test]
     fn should_get_tx_info_from_eth_submission_material() {
@@ -325,10 +338,7 @@ mod tests {
         let ref_block_num = 1;
         let ref_block_prefix = 1;
         let chain_id = EosChainId::EosMainnet;
-        let pk = EosPrivateKey::from_slice(
-            &hex::decode("17b116e5e55af3b9985ff6c6e0320578176b83ca55570a66683d3b36d9deca64").unwrap(),
-        )
-        .unwrap();
+        let pk = get_sample_eos_private_key();
         let eos_smart_contract = EosAccountName::from_str("11ppntoneos").unwrap();
         let result = tx_infos
             .to_eos_signed_txs(ref_block_num, ref_block_prefix, &chain_id, &pk, &eos_smart_contract)
@@ -355,5 +365,24 @@ mod tests {
         assert_eq!(result_before[0].eos_asset_amount, "0.0000 EOS");
         let result_after = result_before.filter_out_those_with_zero_eos_asset_amount(&dictionary);
         assert_eq!(result_after.len(), expected_result_after);
+    }
+
+    #[test]
+    fn should_default_to_safe_address_when_signing_tx_with_bad_eos_account_name_in_submission_material() {
+        let token_dictionary_entry_str = "{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"TLOS\",\"eos_symbol\":\"TLOS\",\"eth_address\":\"b6c53431608e626ac81a9776ac3e999c5556717c\",\"eos_address\":\"eosio.token\"}";
+        let token_dictionary =
+            EosEthTokenDictionary::new(vec![
+                EosEthTokenDictionaryEntry::from_str(&token_dictionary_entry_str).unwrap()
+            ]);
+        let submission_material = get_eth_submission_material_with_bad_eos_account_name();
+        let tx_infos =
+            EosOnEthEthTxInfos::from_eth_submission_material(&submission_material, &token_dictionary).unwrap();
+        let ref_block_num = 1;
+        let ref_block_prefix = 2;
+        let chain_id = EosChainId::EosMainnet;
+        let eos_smart_contract = EosAccountName::from_str("11ppntoneos").unwrap();
+        let pk = get_sample_eos_private_key();
+        let result = tx_infos.to_eos_signed_txs(ref_block_num, ref_block_prefix, &chain_id, &pk, &eos_smart_contract);
+        assert!(result.is_ok());
     }
 }
