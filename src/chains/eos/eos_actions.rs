@@ -7,15 +7,15 @@ use crate::types::Bytes;
 
 #[derive(Clone, Debug, Read, Write, NumBytes, PartialEq, Default, SerializeData)]
 #[eosio_core_root_path = "eos_chain"]
-pub struct PTokenMintAction {
+pub struct PTokenMintActionWithoutMetadata {
     pub to: EosAccountName,
     pub quantity: EosAsset,
     pub memo: String,
 }
 
-impl PTokenMintAction {
+impl PTokenMintActionWithoutMetadata {
     pub fn new(to: EosAccountName, quantity: EosAsset, memo: &str) -> Self {
-        PTokenMintAction {
+        PTokenMintActionWithoutMetadata {
             to,
             quantity,
             memo: memo.into(),
@@ -57,7 +57,7 @@ mod tests {
 
     #[test]
     fn should_create_ptoken_mint_action_from_str() {
-        let result = PTokenMintAction::from_str("whateverxxx", "1.000 EOS", "a memo");
+        let result = PTokenMintActionWithoutMetadata::from_str("whateverxxx", "1.000 EOS", "a memo");
         assert!(result.is_ok());
     }
 

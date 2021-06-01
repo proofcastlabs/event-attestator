@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eos::{
-        eos_actions::PTokenMintAction,
+        eos_actions::PTokenMintActionWithoutMetadata,
         eos_chain_id::EosChainId,
         eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, MEMO},
         eos_crypto::eos_private_key::EosPrivateKey,
@@ -58,7 +58,7 @@ fn get_eos_ptoken_issue_action(
         from,
         "issue",
         vec![PermissionLevel::from_str(actor, permission_level)?],
-        PTokenMintAction::from_str(to, amount, memo)?,
+        PTokenMintActionWithoutMetadata::from_str(to, amount, memo)?,
     )?)
 }
 
