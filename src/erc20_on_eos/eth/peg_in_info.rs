@@ -562,7 +562,7 @@ mod tests {
     fn should_convert_erc20_on_eos_peg_in_info_to_metadata_bytes() {
         let info = get_sample_zero_eos_asset_peg_in_info();
         let result = info.to_metadata_bytes().unwrap();
-        let expected_result = "01005fe7f9edb86cd455ef3ca43f0e227e00469c3bdfa40628decaff";
+        let expected_result = "010104005fe7f914edb86cd455ef3ca43f0e227e00469c3bdfa4062803decaff";
         assert_eq!(hex::encode(result), expected_result);
     }
 

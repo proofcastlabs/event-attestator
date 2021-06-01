@@ -5,10 +5,13 @@ pub(crate) mod metadata_traits;
 pub(crate) mod metadata_version;
 pub(crate) mod test_utils;
 
+
 use ethabi::{encode as eth_abi_encode, Token as EthAbiToken};
 use ethereum_types::Address as EthAddress;
 
+
 use crate::{
+    chains::eos::eos_metadata::EosMetadata,
     metadata::{
         metadata_chain_id::MetadataChainId,
         metadata_origin_address::MetadataOriginAddress,
@@ -64,13 +67,12 @@ impl Metadata {
     }
 
     fn to_bytes_for_eos(&self) -> Result<Bytes> {
-        Ok(vec![
+        EosMetadata::new(
             self.version.to_bytes(),
             self.metadata_chain_id.to_bytes()?,
             self.origin_address.to_bytes()?,
             self.user_data.clone(),
-        ]
-        .concat())
+        ).to_bytes()
     }
 
     pub fn to_bytes_for_protocol(&self, destination_protocol: &MetadataProtocolId) -> Result<Bytes> {
@@ -153,5 +155,14 @@ mod tests {
         let protocol_id = MetadataProtocolId::Ethereum;
         let result = Metadata::from_bytes(&bytes, &protocol_id).unwrap();
         assert_eq!(result, metadata);
+    }
+
+    #[test]
+    fn should_encode_eth_metadata_for_eos() {
+        let metadata = get_sample_eth_metadata();
+        let bytes = metadata.to_bytes_for_eos().unwrap();
+        let hex_encoded_bytes = hex::encode(&bytes);
+        let expected_hex_encode_bytes = "010104005fe7f9145a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c03c0ffee";
+        assert_eq!(hex_encoded_bytes, expected_hex_encode_bytes);
     }
 }
