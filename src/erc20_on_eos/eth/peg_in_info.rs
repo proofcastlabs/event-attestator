@@ -315,13 +315,16 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::eth_test_utils::{
-            get_sample_erc20_on_eos_peg_in_info,
-            get_sample_erc20_on_eos_peg_in_infos,
-            get_sample_log_with_erc20_peg_in_event,
-            get_sample_log_with_erc20_peg_in_event_2,
-            get_sample_receipt_with_erc20_peg_in_event,
-            get_sample_submission_material_with_erc20_peg_in_event,
+        chains::{
+            eos::eos_test_utils::get_sample_eos_private_key,
+            eth::eth_test_utils::{
+                get_sample_erc20_on_eos_peg_in_info,
+                get_sample_erc20_on_eos_peg_in_infos,
+                get_sample_log_with_erc20_peg_in_event,
+                get_sample_log_with_erc20_peg_in_event_2,
+                get_sample_receipt_with_erc20_peg_in_event,
+                get_sample_submission_material_with_erc20_peg_in_event,
+            },
         },
         dictionaries::eos_eth::{test_utils::get_sample_eos_eth_token_dictionary, EosEthTokenDictionaryEntry},
     };
@@ -546,5 +549,39 @@ mod tests {
         let result = info.to_metadata_bytes().unwrap();
         let expected_result = "01005fe7f9edb86cd455ef3ca43f0e227e00469c3bdfa40628decaff";
         assert_eq!(hex::encode(result), expected_result);
+    }
+
+    #[test]
+    fn should_get_eos_signed_txs_from_peg_in_infos() {
+        let user_data = vec![];
+        let info = Erc20OnEosPegInInfo::new(
+            U256::from_dec_str("1337").unwrap(),
+            EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
+            EthAddress::from_slice(&hex::decode("9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap()),
+            "aneosaddress".to_string(),
+            EthHash::from_slice(
+                &hex::decode("241f386690b715422102edf42f5c9edcddea16b64f17d02bad572f5f341725c0").unwrap(),
+            ),
+            "sampletoken".to_string(),
+            "0.000000000 SAM".to_string(),
+            user_data,
+            EthChainId::Mainnet,
+        );
+        let infos = Erc20OnEosPegInInfos::new(vec![info]);
+        let pk = get_sample_eos_private_key();
+        let ref_block_num = 1;
+        let ref_block_prefix = 2;
+        let chain_id = EosChainId::EosMainnet;
+        let result = get_signed_eos_ptoken_issue_txs_from_erc20_on_eos_peg_in_infos(
+            ref_block_num,
+            ref_block_prefix,
+            &chain_id,
+            &pk,
+            &infos,
+        )
+        .unwrap();
+        let expected_result = "010002000000000000000100a68234ab58a5c10000000000a531760100a68234ab58a5c100000000a8ed32321980b1ba29194cd53400000000000000000953414d000000000000";
+        let result_without_timestamp = &result[0].transaction[8..];
+        assert_eq!(result_without_timestamp, expected_result);
     }
 }
