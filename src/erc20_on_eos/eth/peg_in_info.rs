@@ -70,10 +70,46 @@ impl ToMetadata for Erc20OnEosPegInInfo {
     }
 }
 
+impl Erc20OnEosPegInInfo {
+    pub fn to_eos_signed_tx(
+        &self,
+        ref_block_num: u16,
+        ref_block_prefix: u32,
+        chain_id: &EosChainId,
+        private_key: &EosPrivateKey,
+    ) -> Result<EosSignedTransaction> {
+        info!("✔ Signing EOS tx from `Erc20OnEosPegInInfo`: {:?}", self);
+        get_signed_eos_ptoken_issue_tx(
+            ref_block_num,
+            ref_block_prefix,
+            &self.eos_address,
+            &self.eos_asset_amount,
+            chain_id,
+            private_key,
+            &self.eos_token_address,
+        )
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
 pub struct Erc20OnEosPegInInfos(pub Vec<Erc20OnEosPegInInfo>);
 
 impl Erc20OnEosPegInInfos {
+    pub fn to_eos_signed_txs(
+        &self,
+        ref_block_num: u16,
+        ref_block_prefix: u32,
+        chain_id: &EosChainId,
+        private_key: &EosPrivateKey,
+    ) -> Result<EosSignedTransactions> {
+        info!("✔ Signing {} EOS txs from `erc20-on-eos` peg in infos...", self.len());
+        Ok(EosSignedTransactions::new(
+            self.iter()
+                .map(|info| info.to_eos_signed_tx(ref_block_num, ref_block_prefix, chain_id, private_key))
+                .collect::<Result<Vec<EosSignedTransaction>>>()?,
+        ))
+    }
+
     pub fn filter_out_zero_eos_values(&self) -> Result<Self> {
         Ok(Self::new(
             self.iter()
@@ -268,47 +304,18 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
         .and_then(|filtered_submission_material| state.update_eth_submission_material(filtered_submission_material))
 }
 
-pub fn get_signed_eos_ptoken_issue_txs_from_erc20_on_eos_peg_in_infos(
-    ref_block_num: u16,
-    ref_block_prefix: u32,
-    chain_id: &EosChainId,
-    private_key: &EosPrivateKey,
-    peg_in_infos: &Erc20OnEosPegInInfos,
-) -> Result<EosSignedTransactions> {
-    info!(
-        "✔ Signing {} EOS txs from `erc20-on-eos` peg in infos...",
-        peg_in_infos.len()
-    );
-    Ok(EosSignedTransactions::new(
-        peg_in_infos
-            .iter()
-            .map(|peg_in_info| {
-                info!("✔ Signing EOS tx from `erc20-on-eos` peg in info: {:?}", peg_in_info);
-                get_signed_eos_ptoken_issue_tx(
-                    ref_block_num,
-                    ref_block_prefix,
-                    &peg_in_info.eos_address,
-                    &peg_in_info.eos_asset_amount,
-                    chain_id,
-                    private_key,
-                    &peg_in_info.eos_token_address,
-                )
-            })
-            .collect::<Result<Vec<EosSignedTransaction>>>()?,
-    ))
-}
-
 pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Maybe signing `erc20-on-eos` peg in txs...");
     let submission_material = state.get_eth_submission_material()?;
-    get_signed_eos_ptoken_issue_txs_from_erc20_on_eos_peg_in_infos(
-        submission_material.get_eos_ref_block_num()?,
-        submission_material.get_eos_ref_block_prefix()?,
-        &get_eos_chain_id_from_db(&state.db)?,
-        &EosPrivateKey::get_from_db(&state.db)?,
-        &state.erc20_on_eos_peg_in_infos,
-    )
-    .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
+    state
+        .erc20_on_eos_peg_in_infos
+        .to_eos_signed_txs(
+            submission_material.get_eos_ref_block_num()?,
+            submission_material.get_eos_ref_block_prefix()?,
+            &get_eos_chain_id_from_db(&state.db)?,
+            &EosPrivateKey::get_from_db(&state.db)?,
+        )
+        .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
 }
 
 #[cfg(test)]
@@ -572,14 +579,9 @@ mod tests {
         let ref_block_num = 1;
         let ref_block_prefix = 2;
         let chain_id = EosChainId::EosMainnet;
-        let result = get_signed_eos_ptoken_issue_txs_from_erc20_on_eos_peg_in_infos(
-            ref_block_num,
-            ref_block_prefix,
-            &chain_id,
-            &pk,
-            &infos,
-        )
-        .unwrap();
+        let result = infos
+            .to_eos_signed_txs(ref_block_num, ref_block_prefix, &chain_id, &pk)
+            .unwrap();
         let expected_result = "010002000000000000000100a68234ab58a5c10000000000a531760100a68234ab58a5c100000000a8ed32321980b1ba29194cd53400000000000000000953414d000000000000";
         let result_without_timestamp = &result[0].transaction[8..];
         assert_eq!(result_without_timestamp, expected_result);
