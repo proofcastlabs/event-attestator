@@ -89,9 +89,9 @@ use crate::{
             peg_in_info::{
                 filter_out_zero_value_peg_ins_from_state,
                 filter_submission_material_for_peg_in_events_in_state,
+                maybe_sign_eos_txs_and_add_to_eth_state,
                 Erc20OnEosPegInInfos,
             },
-            sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
         },
     },
     traits::DatabaseInterface,
