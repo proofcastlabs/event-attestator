@@ -90,6 +90,7 @@ impl Erc20OnEosPegInInfo {
             if self.user_data.is_empty() {
                 None
             } else {
+                info!("✔ Wrapping `user_data` in metadata for `Erc20OnEosPegInInfo¬");
                 Some(
                     self.to_metadata()?
                         .to_bytes_for_protocol(&chain_id.to_metadata_chain_id().to_protocol_id())?,
@@ -562,7 +563,7 @@ mod tests {
     fn should_convert_erc20_on_eos_peg_in_info_to_metadata_bytes() {
         let info = get_sample_zero_eos_asset_peg_in_info();
         let result = info.to_metadata_bytes().unwrap();
-        let expected_result = "010104005fe7f914edb86cd455ef3ca43f0e227e00469c3bdfa4062803decaff";
+        let expected_result = "0104005fe7f914edb86cd455ef3ca43f0e227e00469c3bdfa4062803decaff";
         assert_eq!(hex::encode(result), expected_result);
     }
 
