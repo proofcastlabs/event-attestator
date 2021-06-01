@@ -79,6 +79,7 @@ impl Erc20OnEosPegInInfo {
         private_key: &EosPrivateKey,
     ) -> Result<EosSignedTransaction> {
         info!("✔ Signing EOS tx from `Erc20OnEosPegInInfo`: {:?}", self);
+        let metadata = None;
         get_signed_eos_ptoken_issue_tx(
             ref_block_num,
             ref_block_prefix,
@@ -87,6 +88,7 @@ impl Erc20OnEosPegInInfo {
             chain_id,
             private_key,
             &self.eos_token_address,
+            metadata,
         )
     }
 }
