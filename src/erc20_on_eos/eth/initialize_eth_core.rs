@@ -4,10 +4,9 @@ use crate::{
     chains::eth::{
         core_initialization::{
             check_eth_core_is_initialized::is_eth_core_initialized,
-            eth_core_init_utils::check_for_existence_of_eth_contract_byte_code,
             generate_eth_contract_address::generate_and_store_erc20_on_eos_contract_address,
             get_eth_core_init_output_json::EthInitializationOutput,
-            initialize_eth_core::initialize_eth_core,
+            initialize_eth_core::initialize_eth_core_with_no_contract_tx,
         },
         eth_chain_id::EthChainId,
         eth_constants::ETH_CORE_IS_INITIALIZED_JSON,
@@ -44,32 +43,29 @@ use crate::{
 ///
 /// The function also takes an ETH `gas_price` param, express in `Wei`, along with a `canon_to_tip`
 /// length param. This latter defines how many `confirmations` of a transactions are required before
-/// a signature is signed. The final parameter is the bytecode of the vault contract with which
-/// (the bytecode) a transaction will be made, signed & outputted by this initialization function
-/// ready for braodcasting.
+/// a signature is signed.
 pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
     db: D,
     block_json: &str,
     chain_id: u8,
     gas_price: u64,
     confs: u64,
-    bytecode_path: &str,
+    _bytecode_path: &str, // NOTE: Deprecated as of v4.30.0
 ) -> Result<String> {
-    check_for_existence_of_eth_contract_byte_code(bytecode_path).and_then(|_| match is_eth_core_initialized(&db) {
+    match is_eth_core_initialized(&db) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
         false => start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| {
-                initialize_eth_core(
+                initialize_eth_core_with_no_contract_tx(
                     block_json,
                     &EthChainId::try_from(chain_id)?,
                     gas_price,
                     confs,
-                    bytecode_path,
                     state,
                 )
             })
             .and_then(generate_and_store_erc20_on_eos_contract_address)
             .and_then(end_eth_db_transaction_and_return_state)
             .and_then(EthInitializationOutput::new_for_erc20_on_eth),
-    })
+    }
 }

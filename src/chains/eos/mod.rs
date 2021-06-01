@@ -2,7 +2,6 @@ pub mod eos_constants;
 
 pub(crate) mod add_schedule;
 pub(crate) mod append_interim_block_ids;
-pub(crate) mod eos_metadata;
 pub(crate) mod core_initialization;
 pub(crate) mod disable_protocol_feature;
 pub(crate) mod enable_protocol_feature;
@@ -20,6 +19,7 @@ pub(crate) mod eos_extension;
 pub(crate) mod eos_global_sequences;
 pub(crate) mod eos_hash;
 pub(crate) mod eos_merkle_utils;
+pub(crate) mod eos_metadata;
 pub(crate) mod eos_producer_key;
 pub(crate) mod eos_producer_schedule;
 pub(crate) mod eos_state;
