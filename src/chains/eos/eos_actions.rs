@@ -37,8 +37,8 @@ impl PTokenMintActionWithoutMetadata {
 pub struct PTokenMintActionWithMetadata {
     pub to: EosAccountName,
     pub quantity: EosAsset,
-    pub metadata: Bytes,
     pub memo: String,
+    pub metadata: Bytes,
 }
 
 #[derive(Clone, Debug, Read, Write, NumBytes, Default, SerializeData)]
