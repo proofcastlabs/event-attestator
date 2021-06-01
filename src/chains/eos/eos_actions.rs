@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 use std::str::FromStr;
 
+use derive_more::Constructor;
 use eos_chain::{AccountName as EosAccountName, Asset as EosAsset, NumBytes, Read, SerializeData, Write};
 
 use crate::types::Bytes;
@@ -29,6 +30,15 @@ impl PTokenMintActionWithoutMetadata {
             memo,
         ))
     }
+}
+
+#[derive(Clone, Debug, Read, Write, NumBytes, PartialEq, Default, SerializeData, Constructor)]
+#[eosio_core_root_path = "eos_chain"]
+pub struct PTokenMintActionWithMetadata {
+    pub to: EosAccountName,
+    pub quantity: EosAsset,
+    pub metadata: Bytes,
+    pub memo: String,
 }
 
 #[derive(Clone, Debug, Read, Write, NumBytes, Default, SerializeData)]
