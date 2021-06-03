@@ -67,9 +67,9 @@ impl Metadata {
     fn to_bytes_for_eos(&self) -> Result<Bytes> {
         EosMetadata::new(
             self.version.to_byte(),
-            self.metadata_chain_id.to_bytes()?,
-            self.origin_address.to_bytes()?,
             self.user_data.clone(),
+            self.metadata_chain_id.to_bytes()?,
+            format!("0x{}", hex::encode(self.origin_address.to_bytes()?)),
         )
         .to_bytes()
     }
@@ -161,7 +161,7 @@ mod tests {
         let metadata = get_sample_eth_metadata();
         let bytes = metadata.to_bytes_for_eos().unwrap();
         let hex_encoded_bytes = hex::encode(&bytes);
-        let expected_hex_encode_bytes = "0104005fe7f9145a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c03c0ffee";
+        let expected_hex_encode_bytes = "0103c0ffee04005fe7f92a307835613062353464356463313765306161646333383364326462343362306130643365303239633463";
         assert_eq!(hex_encoded_bytes, expected_hex_encode_bytes);
     }
 }
