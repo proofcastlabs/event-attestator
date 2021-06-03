@@ -88,8 +88,8 @@ fn get_eos_ptoken_mint_action_with_metadata(
         PTokenMintActionWithMetadata::new(
             EosAccountName::from_str(to)?,
             EosAsset::from_str(amount)?,
-            metadata.to_vec(),
             memo.to_string(),
+            metadata.to_vec(),
         ),
     )?)
 }
@@ -107,23 +107,29 @@ pub fn get_signed_eos_ptoken_issue_tx(
 ) -> Result<EosSignedTransaction> {
     info!("✔ Signing eos tx for {} to {}...", &amount, &to);
     let action = match metadata {
-        None => get_eos_ptoken_mint_action_without_metadata(
-            to,
-            account_name,
-            MEMO,
-            account_name,
-            amount,
-            EOS_ACCOUNT_PERMISSION_LEVEL,
-        )?,
-        Some(ref bytes) => get_eos_ptoken_mint_action_with_metadata(
-            to,
-            account_name,
-            MEMO,
-            account_name,
-            amount,
-            EOS_ACCOUNT_PERMISSION_LEVEL,
-            bytes,
-        )?,
+        None => {
+            info!("✔ Using pToken mint action WITHOUT metadata...");
+            get_eos_ptoken_mint_action_without_metadata(
+                to,
+                account_name,
+                MEMO,
+                account_name,
+                amount,
+                EOS_ACCOUNT_PERMISSION_LEVEL,
+            )?
+        },
+        Some(ref bytes) => {
+            info!("✔ Using pToken mint action WITH metadata...");
+            get_eos_ptoken_mint_action_with_metadata(
+                to,
+                account_name,
+                MEMO,
+                account_name,
+                amount,
+                EOS_ACCOUNT_PERMISSION_LEVEL,
+                bytes,
+            )?
+        },
     };
     EosTransaction::new(timestamp, ref_block_num, ref_block_prefix, vec![action])
         .and_then(|ref unsigned_tx| EosSignedTransaction::from_unsigned_tx(to, amount, chain_id, private_key, unsigned_tx))
