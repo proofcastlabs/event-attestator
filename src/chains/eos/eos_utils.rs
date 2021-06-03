@@ -4,9 +4,10 @@ use bitcoin::hashes::{sha256, Hash};
 use eos_chain::{AccountName as EosAccountName, Action as EosAction, Checksum256, SerializeData};
 
 use crate::{
-    chains::eos::eos_constants::EOS_SCHEDULE_DB_PREFIX,
+    chains::eos::eos_constants::{EOS_MAX_EXPIRATION_SECS, EOS_SCHEDULE_DB_PREFIX},
     constants::SAFE_EOS_ADDRESS,
     types::{Byte, Bytes, Result},
+    utils::get_unix_timestamp_as_u32,
 };
 
 pub fn convert_hex_to_checksum256<T: AsRef<[u8]>>(hex: T) -> Result<Checksum256> {
@@ -44,6 +45,13 @@ pub fn parse_eos_account_name_or_default_to_safe_address(s: &str) -> Result<EosA
         );
         Ok(EosAccountName::from_str(SAFE_EOS_ADDRESS)?)
     })
+}
+
+pub fn get_eos_tx_expiration_timestamp_with_offset(offset: u32) -> Result<u32> {
+    // NOTE: An EOS tx over the same params w/ the same timestamp results in the same
+    // signature. This CAN happen organically such as a user pegging in the exact
+    // same amount twice in a single block.
+    get_unix_timestamp_as_u32().map(|timestamp| timestamp + EOS_MAX_EXPIRATION_SECS - offset)
 }
 
 #[cfg(test)]

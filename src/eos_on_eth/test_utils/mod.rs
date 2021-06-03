@@ -6,7 +6,7 @@ use crate::{
         eos::eos_submission_material::EosSubmissionMaterial,
         eth::eth_submission_material::EthSubmissionMaterial,
     },
-    dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
+    dictionaries::eos_eth::EosEthTokenDictionary,
     errors::AppError,
     types::Result,
 };

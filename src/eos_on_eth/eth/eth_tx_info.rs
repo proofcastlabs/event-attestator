@@ -7,13 +7,16 @@ use crate::{
         eos::{
             eos_actions::PTokenPegOutAction,
             eos_chain_id::EosChainId,
-            eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, EOS_MAX_EXPIRATION_SECS},
+            eos_constants::EOS_ACCOUNT_PERMISSION_LEVEL,
             eos_crypto::{
                 eos_private_key::EosPrivateKey,
                 eos_transaction::{EosSignedTransaction, EosSignedTransactions},
             },
             eos_database_utils::{get_eos_account_name_from_db, get_eos_chain_id_from_db},
-            eos_utils::parse_eos_account_name_or_default_to_safe_address,
+            eos_utils::{
+                get_eos_tx_expiration_timestamp_with_offset,
+                parse_eos_account_name_or_default_to_safe_address,
+            },
         },
         eth::{
             eth_contracts::erc777::{
@@ -31,7 +34,6 @@ use crate::{
     eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
     traits::DatabaseInterface,
     types::{Byte, Result},
-    utils::get_unix_timestamp_as_u32,
 };
 
 const ZERO_ETH_ASSET_STR: &str = "0.0000 EOS";
@@ -112,11 +114,6 @@ impl EosOnEthEthTxInfos {
                 .enumerate()
                 .map(|(i, tx_info)| {
                     info!("✔ Signing EOS tx from `EosOnEthEthTxInfo`: {:?}", tx_info);
-                    // NOTE: An EOS tx over the same params w/ the same timestamp results in the same
-                    // signature. This CAN happen organically such as a user pegging in the exact
-                    // same amount twice in a single block.
-                    let timestamp_offset = i as u32;
-                    let timestamp = get_unix_timestamp_as_u32()? + EOS_MAX_EXPIRATION_SECS - timestamp_offset;
                     tx_info.to_eos_signed_tx(
                         ref_block_num,
                         ref_block_prefix,
@@ -124,7 +121,7 @@ impl EosOnEthEthTxInfos {
                         ZERO_ETH_ASSET_STR,
                         chain_id,
                         pk,
-                        timestamp,
+                        get_eos_tx_expiration_timestamp_with_offset(i as u32)?,
                     )
                 })
                 .collect::<Result<Vec<EosSignedTransaction>>>()?,
