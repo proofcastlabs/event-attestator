@@ -9,6 +9,7 @@ use crate::{
                 eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
             },
             eos_database_utils::{get_eos_account_name_string_from_db, get_eos_chain_id_from_db},
+            eos_utils::get_eos_tx_expiration_timestamp_with_offset,
         },
     },
     traits::DatabaseInterface,
@@ -27,7 +28,8 @@ pub fn get_signed_eos_ptoken_issue_txs(
     Ok(EosSignedTransactions::new(
         minting_params
             .iter()
-            .map(|params| {
+            .enumerate()
+            .map(|(i, params)| {
                 get_signed_eos_ptoken_issue_tx(
                     ref_block_num,
                     ref_block_prefix,
@@ -36,6 +38,7 @@ pub fn get_signed_eos_ptoken_issue_txs(
                     chain_id,
                     pk,
                     account,
+                    get_eos_tx_expiration_timestamp_with_offset(i as u32)?,
                 )
             })
             .collect::<Result<Vec<EosSignedTransaction>>>()?,

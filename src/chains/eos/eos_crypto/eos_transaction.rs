@@ -6,11 +6,10 @@ use crate::{
     chains::eos::{
         eos_actions::PTokenMintAction,
         eos_chain_id::EosChainId,
-        eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, EOS_MAX_EXPIRATION_SECS, MEMO},
+        eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, MEMO},
         eos_crypto::eos_private_key::EosPrivateKey,
     },
     types::{Bytes, Result},
-    utils::get_unix_timestamp_as_u32,
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, Deref, Constructor)]
@@ -71,6 +70,7 @@ pub fn get_signed_eos_ptoken_issue_tx(
     chain_id: &EosChainId,
     private_key: &EosPrivateKey,
     account_name: &str,
+    timestamp: u32,
 ) -> Result<EosSignedTransaction> {
     info!("✔ Signing eos tx for {} to {}...", &amount, &to);
     get_eos_ptoken_issue_action(
@@ -81,23 +81,19 @@ pub fn get_signed_eos_ptoken_issue_tx(
         amount,
         EOS_ACCOUNT_PERMISSION_LEVEL,
     )
-    .and_then(|action| {
-        Ok(EosTransaction::new(
-            get_unix_timestamp_as_u32()? + EOS_MAX_EXPIRATION_SECS,
-            ref_block_num,
-            ref_block_prefix,
-            vec![action],
-        ))
-    })
+    .map(|action| EosTransaction::new(timestamp, ref_block_num, ref_block_prefix, vec![action]))
     .and_then(|ref unsigned_tx| EosSignedTransaction::from_unsigned_tx(to, amount, chain_id, private_key, unsigned_tx))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eos::{
-        eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, EOS_MAX_EXPIRATION_SECS},
-        eos_test_utils::EOS_JUNGLE_CHAIN_ID,
+    use crate::{
+        chains::eos::{
+            eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, EOS_MAX_EXPIRATION_SECS},
+            eos_test_utils::EOS_JUNGLE_CHAIN_ID,
+        },
+        utils::get_unix_timestamp_as_u32,
     };
 
     fn get_unsigned_eos_tx(
@@ -179,6 +175,7 @@ mod tests {
             &hex::decode("0bc331469a2c834b26ff3af7a72e3faab3ee806c368e7a8008f57904237c6057").unwrap(),
         )
         .unwrap();
+        let timestamp = get_unix_timestamp_as_u32().unwrap() + EOS_MAX_EXPIRATION_SECS;
         let result = get_signed_eos_ptoken_issue_tx(
             ref_block_num,
             ref_block_prefix,
@@ -187,6 +184,7 @@ mod tests {
             &EOS_JUNGLE_CHAIN_ID,
             &pk,
             account_name,
+            timestamp,
         )
         .unwrap()
         .transaction;
