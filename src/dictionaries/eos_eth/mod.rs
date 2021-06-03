@@ -191,6 +191,17 @@ impl EosEthTokenDictionary {
         self.get_entry_via_eth_token_address(eth_address)
             .map(|entry| entry.get_zero_eos_asset())
     }
+
+    #[cfg(test)]
+    pub fn from_str(s: &str) -> Result<Self> {
+        let entry_jsons: Vec<EosEthTokenDictionaryEntryJson> = serde_json::from_str(s)?;
+        Ok(Self::new(
+            entry_jsons
+                .iter()
+                .map(|ref entry_json| EosEthTokenDictionaryEntry::from_json(entry_json))
+                .collect::<Result<Vec<EosEthTokenDictionaryEntry>>>()?,
+        ))
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
@@ -715,5 +726,12 @@ mod tests {
             .unwrap();
         let expected_result = "0.0000 EOS";
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_dictionary_from_str() {
+        let s = "[{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"TLOS\",\"eos_symbol\":\"TLOS\",\"eth_address\":\"7825e833d495f3d1c28872415a4aee339d26ac88\",\"eos_address\":\"eosio.token\"},{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"pSEEDS\",\"eos_symbol\":\"SEEDS\",\"eth_address\":\"6db338e6ed75f67cd5a4ef8bdf59163b32d4bd46\",\"eos_address\":\"token.seeds\"}]";
+        let result = EosEthTokenDictionary::from_str(s);
+        assert!(result.is_ok());
     }
 }
