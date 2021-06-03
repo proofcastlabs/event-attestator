@@ -109,8 +109,14 @@ impl EosOnEthEthTxInfos {
         info!("✔ Signing {} EOS txs from `EosOnEthEthTxInfos`...", self.len());
         Ok(EosSignedTransactions::new(
             self.iter()
-                .map(|tx_info| {
+                .enumerate()
+                .map(|(i, tx_info)| {
                     info!("✔ Signing EOS tx from `EosOnEthEthTxInfo`: {:?}", tx_info);
+                    // NOTE: An EOS tx over the same params w/ the same timestamp results in the same
+                    // signature. This CAN happen organically such as a user pegging in the exact
+                    // same amount twice in a single block.
+                    let timestamp_offset = i as u32;
+                    let timestamp = get_unix_timestamp_as_u32()? + EOS_MAX_EXPIRATION_SECS - timestamp_offset;
                     tx_info.to_eos_signed_tx(
                         ref_block_num,
                         ref_block_prefix,
@@ -118,6 +124,7 @@ impl EosOnEthEthTxInfos {
                         ZERO_ETH_ASSET_STR,
                         chain_id,
                         pk,
+                        timestamp,
                     )
                 })
                 .collect::<Result<Vec<EosSignedTransaction>>>()?,
@@ -203,6 +210,7 @@ impl EosOnEthEthTxInfo {
         amount: &str,
         chain_id: &EosChainId,
         pk: &EosPrivateKey,
+        timestamp: u32,
     ) -> Result<EosSignedTransaction> {
         info!("✔ Signing eos tx...");
         debug!(
@@ -220,14 +228,7 @@ impl EosOnEthEthTxInfo {
             &self.eos_address,
             &[], // NOTE: Empty metadata for now.
         )
-        .and_then(|action| {
-            Ok(EosTransaction::new(
-                get_unix_timestamp_as_u32()? + EOS_MAX_EXPIRATION_SECS,
-                ref_block_num,
-                ref_block_prefix,
-                vec![action],
-            ))
-        })
+        .map(|action| EosTransaction::new(timestamp, ref_block_num, ref_block_prefix, vec![action]))
         .and_then(|ref unsigned_tx| {
             EosSignedTransaction::from_unsigned_tx(&eos_smart_contract.to_string(), amount, chain_id, pk, unsigned_tx)
         })
@@ -293,6 +294,7 @@ mod tests {
         eos_on_eth::test_utils::{
             get_eth_submission_material_n,
             get_eth_submission_material_with_bad_eos_account_name,
+            get_eth_submission_material_with_two_peg_ins,
             get_sample_eos_eth_token_dictionary,
         },
     };
@@ -384,5 +386,22 @@ mod tests {
         let pk = get_sample_eos_private_key();
         let result = tx_infos.to_eos_signed_txs(ref_block_num, ref_block_prefix, &chain_id, &pk, &eos_smart_contract);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn same_param_tx_infos_should_not_create_same_signatures() {
+        let submission_material = get_eth_submission_material_with_two_peg_ins();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let tx_infos = EosOnEthEthTxInfos::from_eth_submission_material(&submission_material, &dictionary).unwrap();
+        let ref_block_num = 1;
+        let ref_block_prefix = 2;
+        let chain_id = EosChainId::EosMainnet;
+        let eos_smart_contract = EosAccountName::from_str("11ppntoneos").unwrap();
+        let pk = get_sample_eos_private_key();
+        let result = tx_infos
+            .to_eos_signed_txs(ref_block_num, ref_block_prefix, &chain_id, &pk, &eos_smart_contract)
+            .unwrap();
+        assert_eq!(result.len(), 2);
+        assert_ne!(result[0], result[1]);
     }
 }
