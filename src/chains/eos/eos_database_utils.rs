@@ -180,7 +180,10 @@ pub fn get_eos_account_name_string_from_db<D: DatabaseInterface>(db: &D) -> Resu
 
 pub fn get_eos_account_name_from_db<D: DatabaseInterface>(db: &D) -> Result<EosAccountName> {
     debug!("✔ Getting EOS account name from db...");
-    Ok(EosAccountName::from_str(&get_eos_account_name_string_from_db(db)?)?)
+    match get_eos_account_name_string_from_db(db) {
+        Err(_) => Err("No EOS account name in DB! Did you forget to set it?".into()),
+        Ok(ref s) => Ok(EosAccountName::from_str(s)?),
+    }
 }
 
 pub fn put_eos_chain_id_in_db<D: DatabaseInterface>(db: &D, chain_id: &EosChainId) -> Result<()> {
