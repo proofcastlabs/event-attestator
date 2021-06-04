@@ -10,7 +10,11 @@ use crate::{
                 eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
             },
             eos_database_utils::get_eos_chain_id_from_db,
-            eos_utils::{parse_eos_account_name_or_default_to_safe_address, remove_symbol_from_eos_asset},
+            eos_utils::{
+                get_eos_tx_expiration_timestamp_with_offset,
+                parse_eos_account_name_or_default_to_safe_address,
+                remove_symbol_from_eos_asset,
+            },
         },
         eth::{
             eth_chain_id::EthChainId,
@@ -77,6 +81,7 @@ impl Erc20OnEosPegInInfo {
         ref_block_prefix: u32,
         chain_id: &EosChainId,
         private_key: &EosPrivateKey,
+        timestamp: u32,
     ) -> Result<EosSignedTransaction> {
         info!("✔ Signing EOS tx from `Erc20OnEosPegInInfo`: {:?}", self);
         get_signed_eos_ptoken_issue_tx(
@@ -87,6 +92,7 @@ impl Erc20OnEosPegInInfo {
             chain_id,
             private_key,
             &self.eos_token_address,
+            timestamp,
             if self.user_data.is_empty() {
                 None
             } else {
@@ -114,7 +120,16 @@ impl Erc20OnEosPegInInfos {
         info!("✔ Signing {} EOS txs from `erc20-on-eos` peg in infos...", self.len());
         Ok(EosSignedTransactions::new(
             self.iter()
-                .map(|info| info.to_eos_signed_tx(ref_block_num, ref_block_prefix, chain_id, private_key))
+                .enumerate()
+                .map(|(i, info)| {
+                    info.to_eos_signed_tx(
+                        ref_block_num,
+                        ref_block_prefix,
+                        chain_id,
+                        private_key,
+                        get_eos_tx_expiration_timestamp_with_offset(i as u32)?,
+                    )
+                })
                 .collect::<Result<Vec<EosSignedTransaction>>>()?,
         ))
     }
