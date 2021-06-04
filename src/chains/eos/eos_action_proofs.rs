@@ -85,9 +85,9 @@ impl EosActionProof {
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_user_data(&self) -> Bytes {
-        // FIXME/TODO Implement this!
-        vec![]
+        unimplemented!("Cannot yet `get_user_data` for `EosActionProof!`");
     }
 }
 

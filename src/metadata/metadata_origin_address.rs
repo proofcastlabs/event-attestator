@@ -45,7 +45,6 @@ impl MetadataOriginAddress {
         }
     }
 
-    #[allow(dead_code)]
     pub fn new_from_eos_address(eos_address: &EosAddress, metadata_chain_id: &MetadataChainId) -> Result<Self> {
         let protocol_id = metadata_chain_id.to_protocol_id();
         match protocol_id {

@@ -161,7 +161,7 @@ impl Erc20OnEosRedeemInfo {
                     eos_token_address: entry.eos_address,
                     global_sequence: proof.action_receipt.global_sequence,
                     recipient: Self::get_redeem_address_from_proof_or_default_to_safe_address(proof)?,
-                    user_data: proof.get_user_data(),
+                    user_data: vec![], // NOTE: proof.get_user_data() currently unimplemented!,
                     origin_chain_id: origin_chain_id.clone(),
                 })
             })
