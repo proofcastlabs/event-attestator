@@ -59,25 +59,6 @@ pub fn initialize_eth_core_maybe_with_contract_tx<D: DatabaseInterface>(
         })
 }
 
-pub fn initialize_eth_core<D: DatabaseInterface>(
-    block_json: &str,
-    chain_id: &EthChainId,
-    gas_price: u64,
-    canon_to_tip_length: u64,
-    bytecode_path: &str,
-    state: EthState<D>,
-) -> Result<EthState<D>> {
-    info!("✔ Initializing ETH core with contract tx...");
-    initialize_eth_core_maybe_with_contract_tx(
-        block_json,
-        chain_id,
-        gas_price,
-        canon_to_tip_length,
-        Some(bytecode_path),
-        state,
-    )
-}
-
 pub fn initialize_eth_core_with_no_contract_tx<D: DatabaseInterface>(
     block_json: &str,
     chain_id: &EthChainId,
