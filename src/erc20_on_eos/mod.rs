@@ -33,6 +33,7 @@ pub use crate::{
         },
     },
     erc20_on_eos::{
+        add_vault_contract_address_to_db::maybe_add_vault_contract_address_to_db,
         debug_functions::{
             debug_add_eos_eth_token_dictionary_entry as debug_add_erc20_dictionary_entry,
             debug_add_new_eos_schedule,
@@ -65,4 +66,5 @@ pub mod eth;
 pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
 
+pub(crate) mod add_vault_contract_address_to_db;
 pub(crate) mod check_core_is_initialized;

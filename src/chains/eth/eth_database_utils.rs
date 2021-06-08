@@ -366,7 +366,10 @@ pub fn get_erc777_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Resu
 
 pub fn get_erc20_on_eos_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
     info!("✔ Getting `pERC20-on-EOS` smart-contract address from db...");
-    get_eth_address_from_db(db, &*ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY)
+    match get_eth_address_from_db(db, &*ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY) {
+        Ok(address) => Ok(address),
+        Err(_) => Err("No `erc20-on-eos` vault contract address in DB! Did you forget to set it?".into()),
+    }
 }
 
 pub fn get_eos_on_eth_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
