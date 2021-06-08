@@ -180,7 +180,7 @@ impl EthReceipt {
     }
 
     pub fn from_json(eth_receipt_json: &EthReceiptJson) -> Result<Self> {
-        let logs = EthLogs::from_receipt_json(&eth_receipt_json)?;
+        let logs = EthLogs::from_receipt_json(eth_receipt_json)?;
         Ok(EthReceipt {
             status: eth_receipt_json.status,
             logs_bloom: logs.get_bloom(),
@@ -254,7 +254,7 @@ impl EthReceipt {
         EthLogs::new(
             topics
                 .iter()
-                .map(|ref topic| self.get_logs_from_addresses_with_topic(addresses, topic).0)
+                .map(|topic| self.get_logs_from_addresses_with_topic(addresses, topic).0)
                 .collect::<Vec<Vec<EthLog>>>()
                 .concat(),
         )

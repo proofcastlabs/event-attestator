@@ -179,7 +179,7 @@ impl Erc20OnEosPegInInfos {
             receipt
                 .logs
                 .iter()
-                .filter(|log| matches!(Self::is_log_supported_erc20_peg_in(&log, token_dictionary), Ok(true)))
+                .filter(|log| matches!(Self::is_log_supported_erc20_peg_in(log, token_dictionary), Ok(true)))
                 .cloned()
                 .collect(),
         )
@@ -231,7 +231,7 @@ impl Erc20OnEosPegInInfos {
                 .receipts
                 .iter()
                 .filter(|receipt| {
-                    Erc20OnEosPegInInfos::receipt_contains_supported_erc20_peg_in(&receipt, token_dictionary)
+                    Erc20OnEosPegInInfos::receipt_contains_supported_erc20_peg_in(receipt, token_dictionary)
                 })
                 .cloned()
                 .collect(),
@@ -255,7 +255,7 @@ impl Erc20OnEosPegInInfos {
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(&receipt, eos_eth_token_dictionary, origin_chain_id))
+                .map(|receipt| Self::from_eth_receipt(receipt, eos_eth_token_dictionary, origin_chain_id))
                 .collect::<Result<Vec<Erc20OnEosPegInInfos>>>()?
                 .iter()
                 .map(|infos| infos.iter().cloned().collect())

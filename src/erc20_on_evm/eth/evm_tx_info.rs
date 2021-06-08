@@ -217,7 +217,7 @@ impl EthOnEvmEvmTxInfos {
             receipt
                 .logs
                 .iter()
-                .filter(|log| matches!(Self::is_log_erc20_on_evm_peg_in(&log, vault_address), Ok(true)))
+                .filter(|log| matches!(Self::is_log_erc20_on_evm_peg_in(log, vault_address), Ok(true)))
                 .cloned()
                 .collect(),
         )
@@ -266,7 +266,7 @@ impl EthOnEvmEvmTxInfos {
                 .receipts
                 .iter()
                 .filter(|receipt| {
-                    EthOnEvmEvmTxInfos::receipt_contains_supported_erc20_on_evm_peg_in(&receipt, vault_address)
+                    EthOnEvmEvmTxInfos::receipt_contains_supported_erc20_on_evm_peg_in(receipt, vault_address)
                 })
                 .cloned()
                 .collect(),
@@ -291,7 +291,7 @@ impl EthOnEvmEvmTxInfos {
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(&receipt, vault_address, dictionary, origin_chain_id))
+                .map(|receipt| Self::from_eth_receipt(receipt, vault_address, dictionary, origin_chain_id))
                 .collect::<Result<Vec<EthOnEvmEvmTxInfos>>>()?
                 .iter()
                 .map(|infos| infos.iter().cloned().collect())
@@ -312,7 +312,7 @@ impl EthOnEvmEvmTxInfos {
         Ok(EvmTransactions::new(
             self.iter()
                 .enumerate()
-                .map(|(i, ref tx_info)| {
+                .map(|(i, tx_info)| {
                     EthOnEvmEvmTxInfo::to_evm_signed_tx(
                         tx_info,
                         start_nonce + i as u64,

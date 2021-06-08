@@ -111,7 +111,7 @@ use crate::{
 /// and why.
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
     check_core_is_initialized(db)
-        .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(&eos_init_json)?))
+        .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(eos_init_json)?))
         .map(prepend_debug_output_marker_to_string)
 }
 

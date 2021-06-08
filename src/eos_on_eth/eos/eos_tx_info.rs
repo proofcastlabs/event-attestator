@@ -128,9 +128,8 @@ impl EosOnEthEosTxInfo {
                 "Not enough data to parse `EosOnEthEosTxInfo` ETH address from proof!",
             )
             .and_then(|_| {
-                let result = EthAddress::from_slice(&hex::decode(strip_hex_prefix(&from_utf8(
-                    &proof.action.data[33..=74],
-                )?))?);
+                let result =
+                    EthAddress::from_slice(&hex::decode(strip_hex_prefix(from_utf8(&proof.action.data[33..=74])?))?);
                 debug!("✔ ETH address parsed from action proof: {}", result);
                 Ok(result)
             })
@@ -151,7 +150,7 @@ impl EosOnEthEosTxInfo {
     }
 
     fn check_proof_is_from_contract(proof: &EosActionProof, contract: &EosAccountName) -> Result<()> {
-        Self::get_action_sender_account_name_from_proof(&proof).and_then(|ref action_sender| {
+        Self::get_action_sender_account_name_from_proof(proof).and_then(|ref action_sender| {
             if action_sender != contract {
                 return Err(format!(
                     "Proof does not appear to be for an action from the EOS smart-contract: {}!",
@@ -176,7 +175,7 @@ impl EosOnEthEosTxInfo {
     }
 
     fn check_proof_is_for_action(proof: &EosActionProof, required_action_name: &str) -> Result<()> {
-        Self::get_action_name_from_proof(&proof).and_then(|action_name| {
+        Self::get_action_name_from_proof(proof).and_then(|action_name| {
             if action_name.to_string() != required_action_name {
                 return Err(format!("Proof does not appear to be for a '{}' action!", REQUIRED_ACTION_NAME).into());
             }
@@ -193,11 +192,11 @@ impl EosOnEthEosTxInfo {
             .and_then(|_| Self::check_proof_is_for_action(proof, REQUIRED_ACTION_NAME))
             .and_then(|_| {
                 info!("✔ Converting action proof to `eos-on-eth` eos tx info...");
-                let token_address = Self::get_token_account_name_from_proof(&proof)?;
+                let token_address = Self::get_token_account_name_from_proof(proof)?;
                 let dictionary_entry = token_dictionary.get_entry_via_eos_address_symbol_and_decimals(
                     &token_address,
-                    &Self::get_token_symbol_from_proof(&proof)?,
-                    Self::get_asset_num_decimals_from_proof(&proof)?,
+                    &Self::get_token_symbol_from_proof(proof)?,
+                    Self::get_asset_num_decimals_from_proof(proof)?,
                 )?;
                 let eos_asset = dictionary_entry.convert_u64_to_eos_asset(Self::get_eos_amount_from_proof(proof)?);
                 let eth_amount = dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset)?;
@@ -226,7 +225,7 @@ impl EosOnEthEosTxInfos {
         Ok(EosOnEthEosTxInfos::new(
             action_proofs
                 .iter()
-                .map(|ref proof| EosOnEthEosTxInfo::from_eos_action_proof(proof, token_dictionary, eos_smart_contract))
+                .map(|proof| EosOnEthEosTxInfo::from_eos_action_proof(proof, token_dictionary, eos_smart_contract))
                 .collect::<Result<Vec<EosOnEthEosTxInfo>>>()?,
         ))
     }

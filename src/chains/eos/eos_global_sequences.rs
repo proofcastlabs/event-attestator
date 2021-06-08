@@ -16,7 +16,7 @@ pub struct GlobalSequences(Vec<GlobalSequence>);
 
 impl GlobalSequences {
     pub fn from_str(s: &str) -> Result<Self> {
-        Ok(Self::new(serde_json::from_str::<Vec<u64>>(&s)?))
+        Ok(Self::new(serde_json::from_str::<Vec<u64>>(s)?))
     }
 }
 

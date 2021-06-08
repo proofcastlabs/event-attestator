@@ -301,15 +301,15 @@ impl BtcOnEthMintingParamStruct {
         btc_network: BtcNetwork,
     ) -> Result<Self> {
         Self::new(
-            convert_satoshis_to_wei(Self::sum_deposit_values_from_tx_outputs(&tx, &target_deposit_script)),
-            Self::get_eth_address_from_op_return_in_tx_else_safe_address(&tx),
+            convert_satoshis_to_wei(Self::sum_deposit_values_from_tx_outputs(tx, target_deposit_script)),
+            Self::get_eth_address_from_op_return_in_tx_else_safe_address(tx),
             tx.txid(),
             // NOTE: Currently not supporting the getting of the origin from witness data.
             match tx.input[0].witness.is_empty() {
                 true => Self::extract_spender_address_from_op_return_input(&tx.input[0].clone(), btc_network)?,
                 false => {
                     info!("✔ Not an op_return script, can't get sender address");
-                    BtcAddress::from_str(&PLACEHOLDER_BTC_ADDRESS)?
+                    BtcAddress::from_str(PLACEHOLDER_BTC_ADDRESS)?
                 },
             },
         )

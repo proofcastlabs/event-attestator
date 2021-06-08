@@ -38,7 +38,7 @@ pub fn convert_bytes_to_btc_pub_key_slice(bytes: &[Byte]) -> Result<BtcPubKeySli
 }
 
 pub fn convert_hex_to_sha256_hash(hex: &str) -> Result<sha256d::Hash> {
-    Ok(sha256d::Hash::from_slice(&hex::decode(strip_hex_prefix(&hex))?)?)
+    Ok(sha256d::Hash::from_slice(&hex::decode(strip_hex_prefix(hex))?)?)
 }
 
 pub fn get_btc_one_key() -> PrivateKey {
@@ -62,14 +62,14 @@ pub fn get_p2sh_redeem_script_sig(
     BtcScriptBuilder::new()
         .push_slice(&eth_address_and_nonce_hash[..])
         .push_opcode(opcodes::all::OP_DROP)
-        .push_slice(&utxo_spender_pub_key_slice)
+        .push_slice(utxo_spender_pub_key_slice)
         .push_opcode(opcodes::all::OP_CHECKSIG)
         .into_script()
 }
 
 pub fn get_p2sh_script_sig_from_redeem_script(signature_slice: &[u8], redeem_script: &BtcScript) -> BtcScript {
     BtcScriptBuilder::new()
-        .push_slice(&signature_slice)
+        .push_slice(signature_slice)
         .push_slice(redeem_script.as_bytes())
         .into_script()
 }
@@ -94,8 +94,8 @@ pub fn get_hex_tx_from_signed_btc_tx(signed_btc_tx: &BtcTransaction) -> String {
 pub fn get_script_sig<'a>(signature_slice: &'a [u8], utxo_spender_pub_key_slice: &'a [u8]) -> BtcScript {
     let script_builder = BtcScriptBuilder::new();
     script_builder
-        .push_slice(&signature_slice)
-        .push_slice(&utxo_spender_pub_key_slice)
+        .push_slice(signature_slice)
+        .push_slice(utxo_spender_pub_key_slice)
         .into_script()
 }
 

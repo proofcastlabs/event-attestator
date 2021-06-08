@@ -16,7 +16,7 @@ use crate::{
         eos_types::EosKnownSchedulesJsons,
         protocol_features::EnabledFeatures,
     },
-    constants::SAFE_EOS_ADDRESS,
+    constants::{FIELD_NOT_SET_MSG, SAFE_EOS_ADDRESS},
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
     traits::DatabaseInterface,
     types::Result,
@@ -39,7 +39,6 @@ pub struct EosEnclaveState {
 
 impl EosEnclaveState {
     pub fn new<D: DatabaseInterface>(db: &D) -> Result<Self> {
-        info!("✔ Getting EOS enclave state...");
         Self::new_maybe_with_account_name(db, true)
     }
 
@@ -63,7 +62,7 @@ impl EosEnclaveState {
             eos_account_name: if include_account_name {
                 get_eos_account_name_string_from_db(db)?
             } else {
-                "None set!".to_string()
+                FIELD_NOT_SET_MSG.to_string()
             },
         })
     }

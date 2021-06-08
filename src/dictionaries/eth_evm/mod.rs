@@ -27,7 +27,7 @@ impl EthEvmTokenDictionary {
     pub fn from_json(json: &EthEvmTokenDictionaryJson) -> Result<Self> {
         Ok(Self(
             json.iter()
-                .map(|entry_json| EthEvmTokenDictionaryEntry::from_json(&entry_json))
+                .map(|entry_json| EthEvmTokenDictionaryEntry::from_json(entry_json))
                 .collect::<Result<Vec<EthEvmTokenDictionaryEntry>>>()?,
         ))
     }
@@ -57,7 +57,7 @@ impl EthEvmTokenDictionary {
 
     fn remove(&self, entry: &EthEvmTokenDictionaryEntry) -> Self {
         let mut new_self = self.clone();
-        match self.contains(&entry) {
+        match self.contains(entry) {
             false => {
                 info!(
                     "✔ Not removing `EthEvmTokenDictionary` entry ∵ it's not in the dictionary! {:?}",
@@ -116,7 +116,7 @@ impl EthEvmTokenDictionary {
     }
 
     pub fn get_entry_via_eth_address(&self, address: &EthAddress) -> Result<EthEvmTokenDictionaryEntry> {
-        match self.iter().find(|ref entry| entry.eth_address == *address) {
+        match self.iter().find(|entry| entry.eth_address == *address) {
             Some(entry) => Ok(entry.clone()),
             None => Err(format!("No `EthEvmTokenDictionaryEntry` exists with ETH address: {}", address).into()),
         }
@@ -282,7 +282,7 @@ pub struct EthEvmTokenDictionaryJson(pub Vec<EthEvmTokenDictionaryEntryJson>);
 
 impl EthEvmTokenDictionaryJson {
     pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(&self)?)
+        Ok(serde_json::to_vec(self)?)
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {

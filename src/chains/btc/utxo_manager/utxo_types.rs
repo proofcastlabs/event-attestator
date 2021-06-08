@@ -33,7 +33,7 @@ impl BtcUtxosAndValues {
         let jsons: Vec<BtcUtxoAndValueJson> = serde_json::from_str(s)?;
         let structs = jsons
             .iter()
-            .map(|json| BtcUtxoAndValue::from_json(&json))
+            .map(|json| BtcUtxoAndValue::from_json(json))
             .collect::<Result<Vec<BtcUtxoAndValue>>>()?;
         Ok(Self::new(structs))
     }

@@ -164,7 +164,7 @@ fn get_unsigned_ptoken_smart_contract_tx(
     bytecode_path: &str,
 ) -> Result<EthTransaction> {
     Ok(EthTransaction::new_contract(
-        get_ptoken_smart_contract_bytecode(&bytecode_path)?,
+        get_ptoken_smart_contract_bytecode(bytecode_path)?,
         nonce,
         VALUE_FOR_PTOKEN_DEPLOY,
         chain_id,

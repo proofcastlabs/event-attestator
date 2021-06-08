@@ -37,7 +37,7 @@ impl BtcTxInfo {
             btc_tx_amount: redeem_info.amount,
             btc_tx_hash: btc_tx.txid().to_string(),
             btc_tx_recipient: redeem_info.recipient.clone(),
-            btc_tx_hex: get_hex_tx_from_signed_btc_tx(&btc_tx),
+            btc_tx_hex: get_hex_tx_from_signed_btc_tx(btc_tx),
             originating_address: format!("{}", redeem_info.from),
             originating_tx_hash: format!("{}", redeem_info.originating_tx_id),
             signature_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),

@@ -165,7 +165,7 @@ impl<D: DatabaseInterface> EthState<D> {
 
     pub fn get_eth_submission_material(&self) -> Result<&EthSubmissionMaterial> {
         match self.eth_submission_material {
-            Some(ref eth_submission_material) => Ok(&eth_submission_material),
+            Some(ref eth_submission_material) => Ok(eth_submission_material),
             None => Err(get_not_in_state_err("eth_submission_material").into()),
         }
     }

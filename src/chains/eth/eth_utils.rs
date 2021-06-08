@@ -55,7 +55,7 @@ pub fn convert_hex_to_address(hex: &str) -> Result<EthAddress> {
 }
 
 pub fn convert_hex_to_bytes(hex: &str) -> Result<Bytes> {
-    Ok(hex::decode(strip_hex_prefix(&hex))?)
+    Ok(hex::decode(strip_hex_prefix(hex))?)
 }
 
 pub fn decode_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
@@ -63,7 +63,7 @@ pub fn decode_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
 }
 
 pub fn decode_prefixed_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
-    decode_hex(&strip_hex_prefix(&hex_to_decode))
+    decode_hex(&strip_hex_prefix(hex_to_decode))
 }
 
 pub fn strip_new_line_chars(string: String) -> String {

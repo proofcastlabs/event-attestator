@@ -111,8 +111,8 @@ pub fn put_special_eth_block_in_db<D: DatabaseInterface>(
     block_type: &str,
 ) -> Result<()> {
     trace!("✔ Putting ETH special block in db of type: {}", block_type);
-    put_eth_submission_material_in_db(db, &eth_submission_material)
-        .and_then(|_| put_special_eth_hash_in_db(db, &block_type, &eth_submission_material.get_block_hash()?))
+    put_eth_submission_material_in_db(db, eth_submission_material)
+        .and_then(|_| put_special_eth_hash_in_db(db, block_type, &eth_submission_material.get_block_hash()?))
 }
 
 pub fn put_special_eth_hash_in_db<D: DatabaseInterface>(db: &D, hash_type: &str, hash: &EthHash) -> Result<()> {
@@ -355,21 +355,14 @@ pub fn get_eth_private_key_from_db<D: DatabaseInterface>(db: &D) -> Result<EthPr
 
 pub fn get_erc777_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
     info!("✔ Getting ETH ERC777 smart-contract address from db...");
-    match db.get(
-        BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-        MIN_DATA_SENSITIVITY_LEVEL,
-    ) {
-        Ok(address_bytes) => Ok(EthAddress::from_slice(&address_bytes[..])),
-        Err(_) => Err("No ERC777 contract address in DB! Did you forget to set it?".into()),
-    }
+    get_eth_address_from_db(db, &*BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY)
+        .map_err(|_| "No ERC777 contract address in DB! Did you forget to set it?".into())
 }
 
 pub fn get_erc20_on_eos_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
     info!("✔ Getting `pERC20-on-EOS` smart-contract address from db...");
-    match get_eth_address_from_db(db, &*ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY) {
-        Ok(address) => Ok(address),
-        Err(_) => Err("No `erc20-on-eos` vault contract address in DB! Did you forget to set it?".into()),
-    }
+    get_eth_address_from_db(db, &*ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY)
+        .map_err(|_| "No `erc20-on-eos` vault contract address in DB! Did you forget to set it?".into())
 }
 
 pub fn get_eos_on_eth_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
@@ -379,10 +372,8 @@ pub fn get_eos_on_eth_smart_contract_address_from_db<D: DatabaseInterface>(db: &
 
 pub fn get_erc20_on_evm_smart_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
     info!("✔ Getting `ERC20_ON_EVM` smart-contract address from db...");
-    match get_eth_address_from_db(db, &*ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY) {
-        Ok(address) => Ok(address),
-        Err(_) => Err("No `erc20-on-evm` vault contract address in DB! Did you forget to set it?".into()),
-    }
+    get_eth_address_from_db(db, &*ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY)
+        .map_err(|_| "No `erc20-on-evm` vault contract address in DB! Did you forget to set it?".into())
 }
 
 fn get_eth_address_from_db<D: DatabaseInterface>(db: &D, key: &[Byte]) -> Result<EthAddress> {
@@ -411,11 +402,12 @@ pub fn put_erc777_proxy_contract_address_in_db<D: DatabaseInterface>(
 }
 
 pub fn put_btc_on_eth_smart_contract_address_in_db<D: DatabaseInterface>(db: &D, address: &EthAddress) -> Result<()> {
-    if get_erc777_contract_address_from_db(db).is_ok() {
-        Err("ERC777 address already set!".into())
-    } else {
-        info!("✔ Putting ETH smart-contract address in db...");
-        put_eth_address_in_db(db, &*BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY, address)
+    match get_erc777_contract_address_from_db(db) {
+        Ok(address) => Err(format!("ERC777 address already set to 0x{}!", hex::encode(address)).into()),
+        _ => {
+            info!("✔ Putting ETH smart-contract address in db...");
+            put_eth_address_in_db(db, &*BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY, address)
+        },
     }
 }
 
@@ -423,15 +415,20 @@ pub fn put_erc20_on_eos_smart_contract_address_in_db<D: DatabaseInterface>(
     db: &D,
     smart_contract_address: &EthAddress,
 ) -> Result<()> {
-    if get_erc20_on_eos_smart_contract_address_from_db(db).is_ok() {
-        Err("`erc20-on-eos` vault address is already set!".into())
-    } else {
-        info!("✔ Putting 'ERC20-on-EOS` smart-contract address in db...");
-        put_eth_address_in_db(
-            db,
-            &ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-            smart_contract_address,
+    match get_erc20_on_eos_smart_contract_address_from_db(db) {
+        Ok(address) => Err(format!(
+            "`erc20-on-eos` vault address is already set to {}!",
+            hex::encode(address)
         )
+        .into()),
+        _ => {
+            info!("✔ Putting 'ERC20-on-EOS` smart-contract address in db...");
+            put_eth_address_in_db(
+                db,
+                &ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+                smart_contract_address,
+            )
+        },
     }
 }
 

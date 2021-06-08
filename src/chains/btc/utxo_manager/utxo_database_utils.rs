@@ -119,7 +119,7 @@ fn maybe_get_next_utxo_pointer_from_utxo_pointer<D>(db: &D, utxo_pointer: &[Byte
 where
     D: DatabaseInterface,
 {
-    match maybe_get_utxo_from_db(db, &utxo_pointer) {
+    match maybe_get_utxo_from_db(db, utxo_pointer) {
         None => None,
         Some(utxo) => utxo.maybe_pointer.map(|pointer| pointer.to_vec()),
     }

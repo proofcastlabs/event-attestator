@@ -220,7 +220,7 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D: DatabaseInterface>(
 /// transaction replays. Use with extreme caution and only if you know exactly what you are doing
 /// and why.
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
-    check_core_is_initialized(db).and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(&eos_init_json)?))
+    check_core_is_initialized(db).and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(eos_init_json)?))
 }
 
 /// # Debug Clear All UTXOS

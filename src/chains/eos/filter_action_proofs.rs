@@ -129,7 +129,7 @@ pub fn filter_out_proofs_with_action_digests_not_in_action_receipts(
 pub fn filter_duplicate_proofs(action_proofs: &[EosActionProof]) -> Result<EosActionProofs> {
     let mut filtered: EosActionProofs = Vec::new();
     action_proofs.iter().for_each(|proof| {
-        if !filtered.contains(&proof) {
+        if !filtered.contains(proof) {
             filtered.push(proof.clone());
         }
     });
@@ -170,8 +170,8 @@ pub fn maybe_filter_proofs_for_action_name<D: DatabaseInterface>(
     state: EosState<D>,
     action_name: &str,
 ) -> Result<EosState<D>> {
-    info!("✔ Filtering for proofs with action name: {}", &action_name);
-    filter_for_proofs_with_action_name(&state.action_proofs, &action_name)
+    info!("✔ Filtering for proofs with action name: {}", action_name);
+    filter_for_proofs_with_action_name(&state.action_proofs, action_name)
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 

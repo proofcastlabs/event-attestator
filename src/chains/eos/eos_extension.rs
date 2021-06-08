@@ -33,7 +33,7 @@ impl EosExtensions {
         Ok(Self(
             hex_strings
                 .iter()
-                .map(|ref hex| EosExtension::from_hex(hex))
+                .map(|hex| EosExtension::from_hex(hex))
                 .collect::<crate::Result<Vec<EosExtension>>>()?,
         ))
     }

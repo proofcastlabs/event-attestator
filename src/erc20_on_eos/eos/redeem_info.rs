@@ -48,9 +48,7 @@ impl Erc20OnEosRedeemInfos {
         Ok(Erc20OnEosRedeemInfos::new(
             action_proofs
                 .iter()
-                .map(|ref action_proof| {
-                    Erc20OnEosRedeemInfo::from_action_proof(action_proof, dictionary, origin_chain_id)
-                })
+                .map(|action_proof| Erc20OnEosRedeemInfo::from_action_proof(action_proof, dictionary, origin_chain_id))
                 .collect::<Result<Vec<Erc20OnEosRedeemInfo>>>()?,
         ))
     }
@@ -110,7 +108,7 @@ impl Erc20OnEosRedeemInfo {
 
     fn get_erc20_on_eos_eth_redeem_address(proof: &EosActionProof) -> Result<EthAddress> {
         Ok(EthAddress::from_slice(&hex::decode(&strip_hex_prefix(
-            &Self::get_memo_string_from_proof(&proof)?,
+            &Self::get_memo_string_from_proof(proof)?,
         ))?))
     }
 
@@ -176,7 +174,7 @@ pub fn maybe_parse_redeem_infos_and_put_in_state<D: DatabaseInterface>(state: Eo
         &get_eos_chain_id_from_db(&state.db)?,
     )
     .and_then(|redeem_infos| {
-        info!("✔ Parsed {} sets of redeem info!", redeem_infos.len());
+        info!("✔ Parsed {} redeem infos!", redeem_infos.len());
         state.add_erc20_on_eos_redeem_infos(redeem_infos)
     })
 }

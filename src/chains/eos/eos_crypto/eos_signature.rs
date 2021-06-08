@@ -31,7 +31,7 @@ impl FromStr for EosSignature {
         };
         let data = &string_hex[1..65];
         let _checksum = &string_hex[65..];
-        let rec_sig = match RecoverableSignature::from_compact(&data, recid) {
+        let rec_sig = match RecoverableSignature::from_compact(data, recid) {
             Err(err) => return Err(err.into()),
             Ok(rec_sig) => rec_sig,
         };

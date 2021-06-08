@@ -15,14 +15,14 @@ pub fn put_thing_in_trie_hash_map(mut trie_hash_map: TrieHashMap, key: H256, val
 }
 
 pub fn remove_thing_from_trie_hash_map(mut trie_hash_map: TrieHashMap, key: &H256) -> Result<TrieHashMap> {
-    match trie_hash_map.remove(&key) {
+    match trie_hash_map.remove(key) {
         Some(_) => Ok(trie_hash_map),
         None => Ok(trie_hash_map),
     }
 }
 
 pub fn get_thing_from_trie_hash_map(trie_hash_map: &TrieHashMap, key: &H256) -> Option<Bytes> {
-    trie_hash_map.get(&key).map(|thing| thing.to_vec())
+    trie_hash_map.get(key).map(|thing| thing.to_vec())
 }
 
 #[cfg(test)]

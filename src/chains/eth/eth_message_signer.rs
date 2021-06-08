@@ -33,7 +33,7 @@ pub fn sign_ascii_msg_with_eth_key_with_no_prefix<D: DatabaseInterface>(db: &D, 
     }
     get_eth_private_key_from_db(db)
         .and_then(|key| key.sign_message_bytes(message.as_bytes()))
-        .map(|signature| encode_eth_signed_message_as_json(&message, &signature).to_string())
+        .map(|signature| encode_eth_signed_message_as_json(message, &signature).to_string())
 }
 
 /// # Sign ASCII Message With ETH Key
@@ -54,7 +54,7 @@ pub fn sign_ascii_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, mes
     }
     get_eth_private_key_from_db(db)
         .and_then(|key| key.sign_eth_prefixed_msg_bytes(message.as_bytes()))
-        .map(|signature| encode_eth_signed_message_as_json(&message, &signature).to_string())
+        .map(|signature| encode_eth_signed_message_as_json(message, &signature).to_string())
 }
 
 /// # Sign HEX Message With ETH Key
@@ -74,7 +74,7 @@ pub fn sign_hex_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, messa
             let key = get_eth_private_key_from_db(db)?;
             key.sign_eth_prefixed_msg_bytes(&bytes)
         })
-        .map(|signature| encode_eth_signed_message_as_json(&message, &signature).to_string())
+        .map(|signature| encode_eth_signed_message_as_json(message, &signature).to_string())
 }
 
 #[cfg(test)]

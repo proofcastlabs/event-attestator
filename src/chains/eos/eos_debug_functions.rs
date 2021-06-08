@@ -36,7 +36,7 @@ pub fn add_new_eos_schedule<D: DatabaseInterface>(db: &D, schedule_json: &str) -
     info!("✔ Debug adding new EOS schedule...");
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| EosProducerScheduleV2::from_json(&schedule_json))
+        .and_then(|_| EosProducerScheduleV2::from_json(schedule_json))
         .and_then(|schedule| put_eos_schedule_in_db(db, &schedule))
         .and_then(|_| db.end_transaction())
         .and(Ok("{debug_adding_eos_schedule_success:true}".to_string()))

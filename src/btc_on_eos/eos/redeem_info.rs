@@ -39,7 +39,7 @@ impl BtcOnEosRedeemInfos {
         Ok(BtcOnEosRedeemInfos::new(
             action_proofs
                 .iter()
-                .map(|ref action_proof| BtcOnEosRedeemInfo::from_action_proof(action_proof))
+                .map(|action_proof| BtcOnEosRedeemInfo::from_action_proof(action_proof))
                 .collect::<Result<Vec<BtcOnEosRedeemInfo>>>()?,
         ))
     }

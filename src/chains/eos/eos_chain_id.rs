@@ -56,7 +56,7 @@ lazy_static! {
             .expect("✘ Invalid hex in `ULTRA_MAINNET_BYTES`");
     pub static ref ULTRA_TESTNET_BYTES: Bytes =
         hex::decode("7fc56be645bb76ab9d747b53089f132dcb7681db06f0852cfa03eaf6f7ac80e9")
-            .expect("✘ Invalid hex in `ULTRA_MAINNET_BYTES`");
+            .expect("✘ Invalid hex in `ULTRA_TESTNET_BYTES`");
     pub static ref FIO_MAINNET_BYTES: Bytes =
         hex::decode("21dcae42c0182200e93f954a074011f9048a7624c6fe81d3c9541a614a88bd1c")
             .expect("✘ Invalid hex in `FIO_MAINNET_BYTES`");

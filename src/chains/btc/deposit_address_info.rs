@@ -53,7 +53,7 @@ impl DepositAddressInfoVersion {
     pub fn from_maybe_string(maybe_string: &Option<String>) -> Result<Self> {
         match maybe_string {
             None => Ok(DepositAddressInfoVersion::V0),
-            Some(version_string) => DepositAddressInfoVersion::from_string(&version_string),
+            Some(version_string) => DepositAddressInfoVersion::from_string(version_string),
         }
     }
 

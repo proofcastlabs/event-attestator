@@ -687,7 +687,7 @@ impl Trie {
                     Ok((self, target_key, found_stack, key))
                 },
                 Some(bytes) => {
-                    match get_node_from_trie_hash_map(&self.trie_hash_map, &convert_bytes_to_h256(&bytes)?)? {
+                    match get_node_from_trie_hash_map(&self.trie_hash_map, &convert_bytes_to_h256(bytes)?)? {
                         Some(next_node) => {
                             trace!("✔ Next node retrieved from hash in {}", "branch, continuing...");
                             found_stack.push(next_node);

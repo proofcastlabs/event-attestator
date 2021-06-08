@@ -295,7 +295,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
 ) -> Result<String> {
     check_core_is_initialized(&db)
         .and_then(|_| check_debug_mode())
-        .map(|_| strip_hex_prefix(&recipient))
+        .map(|_| strip_hex_prefix(recipient))
         .and_then(|hex_no_prefix| {
             decode_hex_with_err_msg(
                 &hex_no_prefix,
@@ -307,7 +307,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
             get_signed_minting_tx(
                 &amount.into(),
                 nonce,
-                &EthChainId::from_str(&eth_network)?,
+                &EthChainId::from_str(eth_network)?,
                 get_erc777_contract_address_from_db(&db)?,
                 gas_price,
                 &recipient_eth_address,

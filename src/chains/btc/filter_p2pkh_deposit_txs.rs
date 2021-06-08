@@ -21,7 +21,7 @@ fn sig_script_contains_pub_key(script_sig: &BtcScript, btc_pub_key_slice: &BtcPu
 fn tx_has_input_locked_to_pub_key(tx: &BtcTransaction, btc_pub_key_slice: &BtcPubKeySlice) -> bool {
     tx.input
         .iter()
-        .any(|input| sig_script_contains_pub_key(&input.script_sig, &btc_pub_key_slice))
+        .any(|input| sig_script_contains_pub_key(&input.script_sig, btc_pub_key_slice))
 }
 
 fn tx_has_output_with_target_script(tx: &BtcTransaction, target_script: &BtcScript) -> bool {
@@ -38,7 +38,7 @@ pub fn filter_txs_for_p2pkh_deposits(
         "✔ Filtering `p2pkh` deposits {}CLUDING enclave's own change outputs...",
         if include_change_outputs { "IN" } else { "EX" },
     );
-    let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
+    let target_script = get_pay_to_pub_key_hash_script(btc_address)?;
     info!("✔ Num `p2pkh` deposits before: {}", transactions.len());
     let filtered = transactions
         .iter()
@@ -46,7 +46,7 @@ pub fn filter_txs_for_p2pkh_deposits(
             if include_change_outputs {
                 true
             } else {
-                !tx_has_input_locked_to_pub_key(tx, &btc_pub_key_slice) // NOTE: True here == an enclave change output.
+                !tx_has_input_locked_to_pub_key(tx, btc_pub_key_slice) // NOTE: True here == an enclave change output.
             }
         })
         .filter(|tx| tx_has_output_with_target_script(tx, &target_script))

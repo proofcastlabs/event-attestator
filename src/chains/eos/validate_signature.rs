@@ -124,9 +124,9 @@ fn recover_block_signer_public_key(
     EosPublicKey::recover_from_digest(
         &Message::from_slice(&get_signing_digest(
             msig_enabled,
-            &block_mroot,
-            &block_header,
-            &v2_schedule,
+            block_mroot,
+            block_header,
+            v2_schedule,
         )?)?,
         &EosSignature::from_str(producer_signature)?,
     )

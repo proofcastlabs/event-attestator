@@ -27,9 +27,9 @@ pub fn convert_unix_timestamp_to_human_readable(timestamp: u64) -> String {
 
 pub fn right_pad_or_truncate(s: &str, width: usize) -> String {
     if s.len() >= width {
-        truncate_str(&s, width).to_string()
+        truncate_str(s, width).to_string()
     } else {
-        right_pad_with_zeroes(&s, width)
+        right_pad_with_zeroes(s, width)
     }
 }
 
@@ -97,7 +97,7 @@ pub fn strip_hex_prefix(hex: &str) -> String {
     };
     match hex_no_prefix.len() % 2 {
         0 => hex_no_prefix.to_string(),
-        _ => left_pad_with_zero(&hex_no_prefix),
+        _ => left_pad_with_zero(hex_no_prefix),
     }
 }
 

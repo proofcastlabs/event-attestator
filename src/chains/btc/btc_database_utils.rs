@@ -149,7 +149,7 @@ pub fn put_special_btc_block_in_db<D: DatabaseInterface>(
     block_type: &str,
 ) -> Result<()> {
     trace!("✔ Putting special BTC block in db of type: {}", block_type);
-    put_btc_block_in_db(db, &block_and_id).and_then(|_| put_special_btc_hash_in_db(db, &block_type, &block_and_id.id))
+    put_btc_block_in_db(db, block_and_id).and_then(|_| put_special_btc_hash_in_db(db, block_type, &block_and_id.id))
 }
 
 pub fn put_special_btc_hash_in_db<D: DatabaseInterface>(db: &D, hash_type: &str, hash: &BlockHash) -> Result<()> {

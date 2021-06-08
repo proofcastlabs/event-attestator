@@ -28,7 +28,7 @@ pub struct EthPrivateKey(SecretKey);
 
 impl EthPrivateKey {
     pub fn from_slice(slice: &[Byte]) -> Result<Self> {
-        Ok(Self(SecretKey::from_slice(&slice)?))
+        Ok(Self(SecretKey::from_slice(slice)?))
     }
 
     pub fn generate_random() -> Result<Self> {
@@ -69,7 +69,7 @@ impl EthSigningCapabilities for EthPrivateKey {
     }
 
     fn sign_eth_prefixed_msg_bytes(&self, message: &[Byte]) -> Result<EthSignature> {
-        let message_hash = keccak_hash_bytes(&message);
+        let message_hash = keccak_hash_bytes(message);
         let message_bytes = [
             ETH_MESSAGE_PREFIX,
             PREFIXED_MESSAGE_HASH_LEN.as_ref(),

@@ -70,7 +70,7 @@ where
     info!("✔ Calculating new linker hash...");
     get_btc_anchor_block_from_db(db).and_then(|anchor_block| {
         calculate_linker_hash(
-            &block_hash_to_link_to,
+            block_hash_to_link_to,
             &anchor_block.id,
             &get_linker_hash_or_genesis_hash(db)?,
         )

@@ -54,7 +54,7 @@ pub fn initialize_eth_core_maybe_with_contract_tx<D: DatabaseInterface>(
         .and_then(put_any_sender_nonce_in_db_and_return_state)
         .and_then(generate_and_store_eth_address)
         .and_then(|state| match maybe_bytecode_path {
-            Some(ref path) => generate_eth_contract_tx_and_put_in_state(chain_id, gas_price, path, state),
+            Some(path) => generate_eth_contract_tx_and_put_in_state(chain_id, gas_price, path, state),
             None => Ok(state),
         })
 }
