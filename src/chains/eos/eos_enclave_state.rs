@@ -40,8 +40,16 @@ pub struct EosEnclaveState {
 impl EosEnclaveState {
     pub fn new<D: DatabaseInterface>(db: &D) -> Result<Self> {
         info!("✔ Getting EOS enclave state...");
+        Self::new_maybe_with_account_name(db, true)
+    }
+
+    pub fn new_without_account_name<D: DatabaseInterface>(db: &D) -> Result<Self> {
+        Self::new_maybe_with_account_name(db, false)
+    }
+
+    pub fn new_maybe_with_account_name<D: DatabaseInterface>(db: &D, include_account_name: bool) -> Result<Self> {
+        info!("✔ Getting EOS enclave state...");
         Ok(EosEnclaveState {
-            eos_account_name: get_eos_account_name_string_from_db(db)?,
             eos_safe_address: SAFE_EOS_ADDRESS.to_string(),
             eos_chain_id: get_eos_chain_id_from_db(db)?.to_hex(),
             eos_signature_nonce: get_eos_account_nonce_from_db(db)?,
@@ -52,6 +60,11 @@ impl EosEnclaveState {
             eos_eth_token_dictionary: EosEthTokenDictionary::get_from_db(db)?.to_json()?,
             eos_enabled_protocol_features: get_eos_enabled_protocol_features_from_db(db)?,
             eos_known_schedules: EosKnownSchedulesJsons::from_schedules(get_eos_known_schedules_from_db(db)?),
+            eos_account_name: if include_account_name {
+                get_eos_account_name_string_from_db(db)?
+            } else {
+                "None set!".to_string()
+            },
         })
     }
 }
