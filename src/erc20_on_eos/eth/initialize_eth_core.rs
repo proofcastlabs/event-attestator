@@ -4,7 +4,6 @@ use crate::{
     chains::eth::{
         core_initialization::{
             check_eth_core_is_initialized::is_eth_core_initialized,
-            generate_eth_contract_address::generate_and_store_erc20_on_eos_contract_address,
             get_eth_core_init_output_json::EthInitializationOutput,
             initialize_eth_core::initialize_eth_core_with_no_contract_tx,
         },
@@ -64,8 +63,7 @@ pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
                     state,
                 )
             })
-            .and_then(generate_and_store_erc20_on_eos_contract_address)
             .and_then(end_eth_db_transaction_and_return_state)
-            .and_then(EthInitializationOutput::new_for_erc20_on_eth),
+            .and_then(EthInitializationOutput::new_with_no_contract),
     }
 }

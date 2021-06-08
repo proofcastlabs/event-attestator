@@ -170,10 +170,6 @@ impl<D: DatabaseInterface> EthState<D> {
         }
     }
 
-    pub fn get_misc_string(&self) -> Result<String> {
-        Ok(self.misc.clone().unwrap_or_default())
-    }
-
     pub fn get_parent_hash(&self) -> Result<EthHash> {
         self.get_eth_submission_material()?.get_parent_hash()
     }
