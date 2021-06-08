@@ -82,7 +82,7 @@ fn get_eos_ptoken_mint_action_with_metadata(
 ) -> Result<EosAction> {
     Ok(EosAction::from_str(
         from,
-        "issue",
+        "issuewdata",
         vec![PermissionLevel::from_str(actor, permission_level)?],
         PTokenMintActionWithMetadata::new(
             EosAccountName::from_str(to)?,
