@@ -423,12 +423,16 @@ pub fn put_erc20_on_eos_smart_contract_address_in_db<D: DatabaseInterface>(
     db: &D,
     smart_contract_address: &EthAddress,
 ) -> Result<()> {
-    trace!("✔ Putting 'ERC20-on-EOS` smart-contract address in db...");
-    put_eth_address_in_db(
-        db,
-        &ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-        smart_contract_address,
-    )
+    if get_erc20_on_eos_smart_contract_address_from_db(db).is_ok() {
+        Err("`erc20-on-eos` vault address is already set!".into())
+    } else {
+        info!("✔ Putting 'ERC20-on-EOS` smart-contract address in db...");
+        put_eth_address_in_db(
+            db,
+            &ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+            smart_contract_address,
+        )
+    }
 }
 
 pub fn put_eos_on_eth_smart_contract_address_in_db<D: DatabaseInterface>(
