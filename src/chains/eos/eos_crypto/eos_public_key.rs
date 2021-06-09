@@ -54,7 +54,7 @@ impl EosPublicKey {
         digest: &secp256k1::Message,
         recoverable_signature: &EosSignature,
     ) -> Result<EosPublicKey> {
-        Self::from_bytes(&Secp256k1::new().recover(&digest, &recoverable_signature.0)?.serialize())
+        Self::from_bytes(&Secp256k1::new().recover(digest, &recoverable_signature.0)?.serialize())
     }
 }
 
@@ -81,7 +81,7 @@ impl FromStr for EosPublicKey {
         let s_hex = base58::from(&s[3..])?;
         let raw = &s_hex[..PUBLIC_KEY_SIZE];
         let _checksum = &s_hex[PUBLIC_KEY_SIZE..];
-        let public_key = secp256k1::key::PublicKey::from_slice(&raw)?;
+        let public_key = secp256k1::key::PublicKey::from_slice(raw)?;
         Ok(EosPublicKey {
             public_key,
             compressed: true,

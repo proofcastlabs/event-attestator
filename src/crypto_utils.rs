@@ -8,7 +8,7 @@ use crate::types::{Byte, Result};
 pub fn keccak_hash_bytes(bytes: &[Byte]) -> KeccakHash {
     let mut keccak = Keccak::v256();
     let mut hashed = [0u8; 32];
-    keccak.update(&bytes);
+    keccak.update(bytes);
     keccak.finalize(&mut hashed);
     KeccakHash::from(hashed)
 }

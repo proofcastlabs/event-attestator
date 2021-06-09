@@ -84,6 +84,11 @@ impl EosActionProof {
             Ok(())
         }
     }
+
+    #[allow(dead_code)]
+    pub fn get_user_data(&self) -> Bytes {
+        unimplemented!("Cannot yet `get_user_data` for `EosActionProof!`");
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

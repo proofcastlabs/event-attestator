@@ -44,7 +44,7 @@ use crate::{
     metadata::{
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
-        metadata_traits::ToMetadata,
+        metadata_traits::{ToMetadata, ToMetadataChainId},
         Metadata,
     },
     traits::DatabaseInterface,
@@ -249,7 +249,7 @@ impl EthOnEvmEthTxInfos {
             receipt
                 .logs
                 .iter()
-                .filter(|log| matches!(Self::is_log_supported_erc20_on_evm_redeem(&log, dictionary), Ok(true)))
+                .filter(|log| matches!(Self::is_log_supported_erc20_on_evm_redeem(log, dictionary), Ok(true)))
                 .cloned()
                 .collect(),
         )
@@ -306,7 +306,7 @@ impl EthOnEvmEthTxInfos {
                 .receipts
                 .iter()
                 .filter(|receipt| {
-                    EthOnEvmEthTxInfos::receipt_contains_supported_erc20_on_evm_redeem(&receipt, dictionary)
+                    EthOnEvmEthTxInfos::receipt_contains_supported_erc20_on_evm_redeem(receipt, dictionary)
                 })
                 .cloned()
                 .collect(),
@@ -330,7 +330,7 @@ impl EthOnEvmEthTxInfos {
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(&receipt, dictionary, origin_chain_id))
+                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, origin_chain_id))
                 .collect::<Result<Vec<EthOnEvmEthTxInfos>>>()?
                 .into_iter()
                 .flatten()
@@ -350,7 +350,7 @@ impl EthOnEvmEthTxInfos {
         Ok(EvmTransactions::new(
             self.iter()
                 .enumerate()
-                .map(|(i, ref tx_info)| {
+                .map(|(i, tx_info)| {
                     EthOnEvmEthTxInfo::to_eth_signed_tx(
                         tx_info,
                         start_nonce + i as u64,

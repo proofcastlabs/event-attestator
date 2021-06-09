@@ -110,8 +110,8 @@ pub fn put_special_eth_block_in_db<D: DatabaseInterface>(
     block_type: &str,
 ) -> Result<()> {
     trace!("✔ Putting ETH special block in db of type: {}", block_type);
-    put_eth_submission_material_in_db(db, &eth_submission_material)
-        .and_then(|_| put_special_eth_hash_in_db(db, &block_type, &eth_submission_material.get_block_hash()?))
+    put_eth_submission_material_in_db(db, eth_submission_material)
+        .and_then(|_| put_special_eth_hash_in_db(db, block_type, &eth_submission_material.get_block_hash()?))
 }
 
 pub fn put_special_eth_hash_in_db<D: DatabaseInterface>(db: &D, hash_type: &str, hash: &EthHash) -> Result<()> {

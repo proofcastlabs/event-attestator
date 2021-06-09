@@ -32,7 +32,7 @@ impl EosEthTokenDictionary {
     pub fn from_json(json: &EosEthTokenDictionaryJson) -> Result<Self> {
         Ok(Self(
             json.iter()
-                .map(|entry_json| EosEthTokenDictionaryEntry::from_json(&entry_json))
+                .map(|entry_json| EosEthTokenDictionaryEntry::from_json(entry_json))
                 .collect::<Result<Vec<EosEthTokenDictionaryEntry>>>()?,
         ))
     }
@@ -61,7 +61,7 @@ impl EosEthTokenDictionary {
 
     fn remove(mut self, entry: &EosEthTokenDictionaryEntry) -> Self {
         info!("✔ Removing `EosEthTokenDictionary` entry: {:?}...", entry);
-        match self.contains(&entry) {
+        match self.contains(entry) {
             false => self,
             true => {
                 info!("Removing `EosEthTokenDictionaryEntry`: {:?}", entry);
@@ -164,7 +164,7 @@ impl EosEthTokenDictionary {
     }
 
     pub fn get_eth_address_via_eos_address(&self, eos_address: &EosAccountName) -> Result<EthAddress> {
-        self.get_entry_via_eos_address(&eos_address)
+        self.get_entry_via_eos_address(eos_address)
             .map(|entry| entry.eth_address)
     }
 
@@ -282,7 +282,7 @@ impl EosEthTokenDictionaryEntry {
             Ordering::Greater | Ordering::Equal => {
                 let decimal_point_index = amount_str.len() - self.eth_token_decimals;
                 let (decimal_str, fraction_str) = &amount_str.split_at(decimal_point_index);
-                let augmented_fraction_str = right_pad_or_truncate(&fraction_str, self.eos_token_decimals);
+                let augmented_fraction_str = right_pad_or_truncate(fraction_str, self.eos_token_decimals);
                 let augmented_decimal_str = if decimal_str == &"" { "0" } else { decimal_str };
                 Ok(format!(
                     "{}.{} {}",

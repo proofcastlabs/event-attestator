@@ -39,6 +39,7 @@ pub fn get_signed_eos_ptoken_issue_txs(
                     pk,
                     account,
                     get_eos_tx_expiration_timestamp_with_offset(i as u32)?,
+                    None,
                 )
             })
             .collect::<Result<Vec<EosSignedTransaction>>>()?,

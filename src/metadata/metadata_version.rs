@@ -12,7 +12,7 @@ pub enum MetadataVersion {
 }
 
 impl MetadataVersion {
-    fn to_byte(&self) -> Byte {
+    pub fn to_byte(&self) -> Byte {
         match self {
             Self::V1 => 0x01,
         }

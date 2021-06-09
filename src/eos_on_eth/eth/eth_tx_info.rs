@@ -75,7 +75,7 @@ impl EosOnEthEthTxInfos {
                             *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
                         ])
                         .iter()
-                        .map(|log| EosOnEthEthTxInfo::from_eth_log(&log, &receipt.transaction_hash, token_dictionary))
+                        .map(|log| EosOnEthEthTxInfo::from_eth_log(log, &receipt.transaction_hash, token_dictionary))
                         .collect::<Result<Vec<EosOnEthEthTxInfo>>>()
                 })
                 .collect::<Result<Vec<Vec<EosOnEthEthTxInfo>>>>()?
@@ -117,7 +117,7 @@ impl EosOnEthEthTxInfos {
                     tx_info.to_eos_signed_tx(
                         ref_block_num,
                         ref_block_prefix,
-                        &eos_smart_contract,
+                        eos_smart_contract,
                         ZERO_ETH_ASSET_STR,
                         chain_id,
                         pk,

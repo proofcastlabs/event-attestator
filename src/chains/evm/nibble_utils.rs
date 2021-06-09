@@ -22,8 +22,8 @@ impl fmt::Debug for Nibbles {
         match self == &EMPTY_NIBBLES {
             true => write!(f, "Nibble array is empty!")?,
             false => {
-                for i in 0..get_length_in_nibbles(&self) {
-                    write!(f, "0x{:01x} ", get_nibble_at_index(&self, i).unwrap_or(0u8))?;
+                for i in 0..get_length_in_nibbles(self) {
+                    write!(f, "0x{:01x} ", get_nibble_at_index(self, i).unwrap_or(0u8))?;
                 }
             },
         };
@@ -33,11 +33,11 @@ impl fmt::Debug for Nibbles {
 
 impl Nibbles {
     pub fn len(&self) -> usize {
-        get_length_in_nibbles(&self)
+        get_length_in_nibbles(self)
     }
 
     pub fn is_empty(&self) -> bool {
-        get_length_in_nibbles(&self) == 0
+        get_length_in_nibbles(self) == 0
     }
 }
 
@@ -281,9 +281,9 @@ pub fn get_length_in_nibbles(nibbles: &Nibbles) -> usize {
 }
 
 pub fn split_at_first_nibble(nibbles: &Nibbles) -> Result<(Nibbles, Nibbles)> {
-    if get_length_in_nibbles(&nibbles) > 0 {
+    if get_length_in_nibbles(nibbles) > 0 {
         return Ok((
-            get_nibbles_from_offset_bytes(vec![get_nibble_at_index(&nibbles, 0)?]),
+            get_nibbles_from_offset_bytes(vec![get_nibble_at_index(nibbles, 0)?]),
             slice_nibbles_at_nibble_index(nibbles.clone(), 1),
         ));
     }
@@ -291,17 +291,17 @@ pub fn split_at_first_nibble(nibbles: &Nibbles) -> Result<(Nibbles, Nibbles)> {
 }
 
 pub fn get_nibble_at_index(nibbles: &Nibbles, nibble_index: usize) -> Result<Byte> {
-    if nibble_index > get_length_in_nibbles(&nibbles) {
+    if nibble_index > get_length_in_nibbles(nibbles) {
         return Err(format!("✘ Index {} is out-of-bounds in nibble vector!", nibble_index).into());
     }
     Ok(match nibbles.offset {
         0 => match nibble_index % 2 {
-            0 => get_high_nibble_from_byte(&nibbles, nibble_index),
-            _ => get_low_nibble_from_byte(&nibbles, nibble_index),
+            0 => get_high_nibble_from_byte(nibbles, nibble_index),
+            _ => get_low_nibble_from_byte(nibbles, nibble_index),
         },
         _ => match nibble_index % 2 {
-            0 => get_low_nibble_from_byte(&nibbles, nibble_index),
-            _ => get_high_nibble_from_byte(&nibbles, nibble_index + 1),
+            0 => get_low_nibble_from_byte(nibbles, nibble_index),
+            _ => get_high_nibble_from_byte(nibbles, nibble_index + 1),
         },
     })
 }

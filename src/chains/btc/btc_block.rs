@@ -247,9 +247,9 @@ impl SerializedBlockInDbFormat {
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
-        match serde_json::from_slice(&bytes) {
+        match serde_json::from_slice(bytes) {
             Ok(serialized_block) => Ok(serialized_block),
-            Err(_) => Ok(Self::from_legacy(&SerializedBlockInDbFormatLegacy::from_bytes(&bytes)?)),
+            Err(_) => Ok(Self::from_legacy(&SerializedBlockInDbFormatLegacy::from_bytes(bytes)?)),
         }
     }
 }
@@ -291,7 +291,7 @@ impl SerializedBlockInDbFormatLegacy {
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
-        Ok(serde_json::from_slice::<Self>(&bytes)?)
+        Ok(serde_json::from_slice::<Self>(bytes)?)
     }
 }
 

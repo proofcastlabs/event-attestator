@@ -19,8 +19,8 @@ impl EnclaveState {
     pub fn new<D: DatabaseInterface>(db: &D) -> Result<Self> {
         Ok(Self {
             info: EnclaveInfo::new(),
-            eos: EosEnclaveState::new(db)?,
             eth: EthEnclaveState::new_for_erc20_on_eos(db)?,
+            eos: EosEnclaveState::new_without_account_name(db)?,
         })
     }
 

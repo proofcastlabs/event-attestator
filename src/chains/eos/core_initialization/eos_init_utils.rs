@@ -60,7 +60,7 @@ impl EosInitJson {
             pub eos_eth_token_dictionary: Option<EosEthTokenDictionaryJson>,
             pub erc20_on_eos_token_dictionary: Option<EosEthTokenDictionaryJson>,
         }
-        let interim_init_json = serde_json::from_str::<InterimInitJson>(&json_string)?;
+        let interim_init_json = serde_json::from_str::<InterimInitJson>(json_string)?;
         let producer_schedule = EosProducerScheduleV2::from_json(&interim_init_json.active_schedule.to_string())?;
         Ok(EosInitJson {
             block: interim_init_json.block.clone(),
@@ -138,7 +138,7 @@ pub fn test_block_validation_and_return_state<D: DatabaseInterface>(
                 .is_enabled(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec()),
             &get_incremerkle_from_db(&state.db)?.get_root().to_bytes().to_vec(),
             &block_json.producer_signature,
-            &EosSubmissionMaterial::parse_eos_block_header_from_json(&block_json)?,
+            &EosSubmissionMaterial::parse_eos_block_header_from_json(block_json)?,
             &get_eos_schedule_from_db(&state.db, block_json.schedule_version)?,
         )
         .and(Ok(state))
@@ -169,7 +169,7 @@ pub fn generate_and_put_incremerkle_in_db_and_return_state<D>(
 where
     D: DatabaseInterface,
 {
-    generate_and_put_incremerkle_in_db(&state.db, &blockroot_merkle).and(Ok(state))
+    generate_and_put_incremerkle_in_db(&state.db, blockroot_merkle).and(Ok(state))
 }
 
 pub fn put_eos_latest_block_info_in_db<D: DatabaseInterface>(db: &D, block_json: &EosBlockHeaderJson) -> Result<()> {
@@ -201,7 +201,7 @@ pub fn put_eos_schedule_in_db_and_return_state<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Putting EOS schedule into db...");
-    put_eos_schedule_in_db(&state.db, &schedule).and(Ok(state))
+    put_eos_schedule_in_db(&state.db, schedule).and(Ok(state))
 }
 
 pub fn generate_and_save_eos_keys_and_return_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
@@ -221,7 +221,7 @@ pub fn put_eos_account_name_in_db_and_return_state<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Putting EOS account name '{}' into db...", account_name);
-    put_eos_account_name_in_db(&state.db, &account_name).and(Ok(state))
+    put_eos_account_name_in_db(&state.db, account_name).and(Ok(state))
 }
 
 pub fn put_eos_account_nonce_in_db_and_return_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
@@ -234,7 +234,7 @@ pub fn put_eos_token_symbol_in_db_and_return_state<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Putting EOS token symbol '{}' into db...", token_symbol);
-    put_eos_token_symbol_in_db(&state.db, &token_symbol).and(Ok(state))
+    put_eos_token_symbol_in_db(&state.db, token_symbol).and(Ok(state))
 }
 
 pub fn put_empty_processed_tx_ids_in_db_and_return_state<D: DatabaseInterface>(

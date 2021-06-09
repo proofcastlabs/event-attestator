@@ -153,7 +153,7 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
         .and_then(|state| {
             state
                 .get_eth_submission_material()
-                .and_then(|material| BtcOnEthRedeemInfos::from_eth_submission_material(&material))
+                .and_then(|material| BtcOnEthRedeemInfos::from_eth_submission_material(material))
                 .and_then(|params| state.add_btc_on_eth_redeem_infos(params))
         })
         .and_then(|state| {

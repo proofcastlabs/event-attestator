@@ -50,7 +50,7 @@ impl EosPrivateKey {
         Ok(Self {
             compressed: false,
             network: EosNetwork::Mainnet, // NOTE: Since they're all same.
-            private_key: SecretKey::from_slice(&slice)?,
+            private_key: SecretKey::from_slice(slice)?,
         })
     }
 
@@ -74,7 +74,7 @@ impl EosPrivateKey {
     }
 
     pub fn sign_hash(&self, hash: &[u8]) -> Result<EosSignature> {
-        let msg = match Message::from_slice(&hash) {
+        let msg = match Message::from_slice(hash) {
             Ok(msg) => msg,
             Err(err) => return Err(err.into()),
         };
@@ -86,7 +86,7 @@ impl EosPrivateKey {
     }
 
     pub fn sign_message_bytes(&self, message_slice: &[u8]) -> Result<EosSignature> {
-        let msg_hash = sha256::Hash::hash(&message_slice);
+        let msg_hash = sha256::Hash::hash(message_slice);
         self.sign_hash(&msg_hash)
     }
 

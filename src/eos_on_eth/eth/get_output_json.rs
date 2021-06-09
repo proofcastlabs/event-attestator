@@ -90,7 +90,7 @@ pub fn get_output_json_with_start_nonce<D: DatabaseInterface>(
                     .enumerate()
                     .map(|(i, eos_tx)| {
                         EosOnEthEthOutputDetails::new(
-                            &eos_tx,
+                            eos_tx,
                             &state.eos_on_eth_eth_tx_infos[i],
                             start_nonce + i as u64,
                             get_latest_eos_block_number(&state.db)?,

@@ -89,9 +89,9 @@ use crate::{
             peg_in_info::{
                 filter_out_zero_value_peg_ins_from_state,
                 filter_submission_material_for_peg_in_events_in_state,
+                maybe_sign_eos_txs_and_add_to_eth_state,
                 Erc20OnEosPegInInfos,
             },
-            sign_eos_transactions::maybe_sign_eos_txs_and_add_to_eth_state,
         },
     },
     traits::DatabaseInterface,
@@ -111,7 +111,7 @@ use crate::{
 /// and why.
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
     check_core_is_initialized(db)
-        .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(&eos_init_json)?))
+        .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(eos_init_json)?))
         .map(prepend_debug_output_marker_to_string)
 }
 
@@ -377,7 +377,11 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
                     );
                     EosEthTokenDictionary::get_from_db(&state.db)
                         .and_then(|token_dictionary| {
-                            Erc20OnEosPegInInfos::from_submission_material(&submission_material, &token_dictionary)
+                            Erc20OnEosPegInInfos::from_submission_material(
+                                &submission_material,
+                                &token_dictionary,
+                                &get_eth_chain_id_from_db(&state.db)?,
+                            )
                         })
                         .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
                 },

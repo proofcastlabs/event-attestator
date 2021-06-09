@@ -114,7 +114,7 @@ impl BtcOnEthRedeemInfos {
                 .logs
                 .0
                 .iter()
-                .filter(|log| matches!(BtcOnEthRedeemInfos::log_is_btc_on_eth_redeem(&log), Ok(true)))
+                .filter(|log| matches!(BtcOnEthRedeemInfos::log_is_btc_on_eth_redeem(log), Ok(true)))
                 .map(|log| {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
                     Ok(BtcOnEthRedeemInfo {

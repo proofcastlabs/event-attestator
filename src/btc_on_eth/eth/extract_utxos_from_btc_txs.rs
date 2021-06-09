@@ -14,8 +14,7 @@ use crate::{
 };
 
 pub fn extract_btc_utxos_from_btc_txs(enclave_address: &str, btc_txs: &[BtcTransaction]) -> Result<BtcUtxosAndValues> {
-    get_pay_to_pub_key_hash_script(&enclave_address)
-        .map(|target_script| extract_utxos_from_txs(&target_script, btc_txs))
+    get_pay_to_pub_key_hash_script(enclave_address).map(|target_script| extract_utxos_from_txs(&target_script, btc_txs))
 }
 
 pub fn maybe_extract_btc_utxo_from_btc_tx_in_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {

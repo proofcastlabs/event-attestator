@@ -31,7 +31,7 @@ impl BtcTxInfo {
             btc_account_nonce,
             btc_tx_hash: btc_tx.txid().to_string(),
             btc_tx_amount: redeem_info.amount_in_satoshis,
-            btc_tx_hex: get_hex_tx_from_signed_btc_tx(&btc_tx),
+            btc_tx_hex: get_hex_tx_from_signed_btc_tx(btc_tx),
             btc_tx_recipient: redeem_info.recipient.clone(),
             originating_address: format!("0x{}", hex::encode(redeem_info.from.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(redeem_info.originating_tx_hash.as_bytes())),

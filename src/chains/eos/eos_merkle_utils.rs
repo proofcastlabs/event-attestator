@@ -75,12 +75,12 @@ pub fn verify_merkle_proof(merkle_proof: &[String]) -> Result<bool> {
         .map(|hex| Ok(hex::decode(hex)?))
         .collect::<Result<Vec<Bytes>>>()?;
     for leaf in leaves.iter().skip(1) {
-        match is_canonical_right(&leaf) {
+        match is_canonical_right(leaf) {
             true => {
-                node = make_and_hash_canonical_pair(&node, &leaf);
+                node = make_and_hash_canonical_pair(&node, leaf);
             },
             false => {
-                node = make_and_hash_canonical_pair(&leaf, &node);
+                node = make_and_hash_canonical_pair(leaf, &node);
             },
         }
     }

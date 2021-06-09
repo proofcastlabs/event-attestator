@@ -74,7 +74,7 @@ impl EnabledFeatures {
         feature_hashes.dedup();
         let features = feature_hashes
             .iter()
-            .filter_map(|hash| AVAILABLE_FEATURES.maybe_get_feature_from_hash(&hash));
+            .filter_map(|hash| AVAILABLE_FEATURES.maybe_get_feature_from_hash(hash));
         for feature in features {
             info!("✔ Adding feature: {}", feature.to_json()?);
             self.0.push(feature);

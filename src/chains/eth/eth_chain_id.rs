@@ -6,7 +6,7 @@ use strum_macros::EnumIter;
 use crate::{
     crypto_utils::keccak_hash_bytes,
     errors::AppError,
-    metadata::metadata_chain_id::MetadataChainId,
+    metadata::{metadata_chain_id::MetadataChainId, metadata_traits::ToMetadataChainId},
     traits::ChainId,
     types::{Byte, Bytes, Result},
     utils::convert_bytes_to_u8,
@@ -25,6 +25,19 @@ pub enum EthChainId {
 impl ChainId for EthChainId {
     fn keccak_hash(&self) -> Result<KeccakHash> {
         Ok(keccak_hash_bytes(&self.to_bytes()?))
+    }
+}
+
+impl ToMetadataChainId for EthChainId {
+    fn to_metadata_chain_id(&self) -> MetadataChainId {
+        match self {
+            Self::Mainnet => MetadataChainId::EthereumMainnet,
+            Self::Rinkeby => MetadataChainId::EthereumRinkeby,
+            Self::Ropsten => MetadataChainId::EthereumRopsten,
+            Self::BscMainnet => MetadataChainId::BscMainnet,
+            Self::XDaiMainnet => MetadataChainId::XDaiMainnet,
+            Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
+        }
     }
 }
 
@@ -66,17 +79,6 @@ impl EthChainId {
             100 => Ok(Self::XDaiMainnet),
             137 => Ok(Self::PolygonMainnet),
             _ => Err(format!("`EthChainId` error! Unrecognised bytes : {}", hex::encode(bytes)).into()),
-        }
-    }
-
-    pub fn to_metadata_chain_id(&self) -> MetadataChainId {
-        match self {
-            Self::Mainnet => MetadataChainId::EthereumMainnet,
-            Self::Rinkeby => MetadataChainId::EthereumRinkeby,
-            Self::Ropsten => MetadataChainId::EthereumRopsten,
-            Self::BscMainnet => MetadataChainId::BscMainnet,
-            Self::XDaiMainnet => MetadataChainId::XDaiMainnet,
-            Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
         }
     }
 

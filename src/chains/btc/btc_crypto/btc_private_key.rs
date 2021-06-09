@@ -31,7 +31,7 @@ impl BtcPrivateKey {
         Ok(Self(PrivateKey {
             network,
             compressed: true,
-            key: SecretKey::from_slice(&slice)?,
+            key: SecretKey::from_slice(slice)?,
         }))
     }
 

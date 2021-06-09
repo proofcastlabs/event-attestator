@@ -220,7 +220,7 @@ pub struct EthSubmissionMaterialJson {
 
 impl EthSubmissionMaterialJson {
     pub fn from_str(json_str: &str) -> Result<Self> {
-        match serde_json::from_str(&json_str) {
+        match serde_json::from_str(json_str) {
             Ok(result) => Ok(result),
             Err(e) => Err(e.into()),
         }
@@ -232,7 +232,7 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Parsing ETH block & receipts...");
-    EthSubmissionMaterial::from_str(&block_json).and_then(|result| state.add_eth_submission_material(result))
+    EthSubmissionMaterial::from_str(block_json).and_then(|result| state.add_eth_submission_material(result))
 }
 
 #[cfg(test)]

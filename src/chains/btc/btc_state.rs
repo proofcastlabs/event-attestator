@@ -223,7 +223,7 @@ where
         match &self.btc_block_and_id {
             Some(btc_block_and_id) => {
                 info!("✔ Getting BTC block & ID from BTC state...");
-                Ok(&btc_block_and_id)
+                Ok(btc_block_and_id)
             },
             None => Err(get_not_in_state_err("btc_block_and_id").into()),
         }
@@ -238,7 +238,7 @@ where
         match &self.deposit_info_hash_map {
             Some(deposit_info_hash_map) => {
                 info!("✔ Getting deposit info hash map from BTC state...");
-                Ok(&deposit_info_hash_map)
+                Ok(deposit_info_hash_map)
             },
             None => Err(get_not_in_state_err("deposit_info_hash_map").into()),
         }
@@ -248,7 +248,7 @@ where
         match &self.p2sh_deposit_txs {
             Some(p2sh_deposit_txs) => {
                 info!("✔ Getting `p2sh` deposit txs from BTC state...");
-                Ok(&p2sh_deposit_txs)
+                Ok(p2sh_deposit_txs)
             },
             None => Err(get_not_in_state_err("p2sh_deposit_txs").into()),
         }
@@ -258,7 +258,7 @@ where
         match &self.btc_block_in_db_format {
             Some(btc_block_in_db_format) => {
                 info!("✔ Getting BTC block in DB format from BTC state...");
-                Ok(&btc_block_in_db_format)
+                Ok(btc_block_in_db_format)
             },
             None => Err(get_not_in_state_err("btc_block_in_db_format").into()),
         }
@@ -268,7 +268,7 @@ where
         match &self.output_json_string {
             Some(output_json_string) => {
                 info!("✔ Getting BTC output json string from state...");
-                Ok(&output_json_string)
+                Ok(output_json_string)
             },
             None => Err(get_not_in_state_err("output_json_string").into()),
         }

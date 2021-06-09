@@ -165,13 +165,9 @@ impl<D: DatabaseInterface> EthState<D> {
 
     pub fn get_eth_submission_material(&self) -> Result<&EthSubmissionMaterial> {
         match self.eth_submission_material {
-            Some(ref eth_submission_material) => Ok(&eth_submission_material),
+            Some(ref eth_submission_material) => Ok(eth_submission_material),
             None => Err(get_not_in_state_err("eth_submission_material").into()),
         }
-    }
-
-    pub fn get_misc_string(&self) -> Result<String> {
-        Ok(self.misc.clone().unwrap_or_default())
     }
 
     pub fn get_parent_hash(&self) -> Result<EthHash> {

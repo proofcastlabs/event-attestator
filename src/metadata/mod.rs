@@ -9,6 +9,7 @@ use ethabi::{encode as eth_abi_encode, Token as EthAbiToken};
 use ethereum_types::Address as EthAddress;
 
 use crate::{
+    chains::eos::eos_metadata::EosMetadata,
     metadata::{
         metadata_chain_id::MetadataChainId,
         metadata_origin_address::MetadataOriginAddress,
@@ -52,16 +53,32 @@ impl Metadata {
             EthAbiToken::FixedBytes(self.version.to_bytes()),
             EthAbiToken::Bytes(self.user_data.clone()),
             EthAbiToken::FixedBytes(self.metadata_chain_id.to_bytes()?),
-            EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?)),
+            match self.origin_address.metadata_chain_id.to_protocol_id() {
+                MetadataProtocolId::Ethereum => {
+                    EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?))
+                },
+                MetadataProtocolId::Eos | MetadataProtocolId::Bitcoin => {
+                    EthAbiToken::Bytes(self.origin_address.to_bytes()?)
+                },
+            },
         ]))
+    }
+
+    fn to_bytes_for_eos(&self) -> Result<Bytes> {
+        EosMetadata::new(
+            self.version.to_byte(),
+            self.user_data.clone(),
+            self.metadata_chain_id.to_bytes()?,
+            format!("0x{}", hex::encode(self.origin_address.to_bytes()?)),
+        )
+        .to_bytes()
     }
 
     pub fn to_bytes_for_protocol(&self, destination_protocol: &MetadataProtocolId) -> Result<Bytes> {
         match destination_protocol {
+            MetadataProtocolId::Eos => self.to_bytes_for_eos(),
             MetadataProtocolId::Ethereum => self.to_bytes_for_eth(),
-            MetadataProtocolId::Bitcoin | MetadataProtocolId::Eos => {
-                Err("Encoding metadata for Bitcoin || EOS is not implemented!".into())
-            },
+            MetadataProtocolId::Bitcoin => Err("Encoding metadata for Bitcoin is not implemented!".into()),
         }
     }
 
@@ -137,5 +154,14 @@ mod tests {
         let protocol_id = MetadataProtocolId::Ethereum;
         let result = Metadata::from_bytes(&bytes, &protocol_id).unwrap();
         assert_eq!(result, metadata);
+    }
+
+    #[test]
+    fn should_encode_eth_metadata_for_eos() {
+        let metadata = get_sample_eth_metadata();
+        let bytes = metadata.to_bytes_for_eos().unwrap();
+        let hex_encoded_bytes = hex::encode(&bytes);
+        let expected_hex_encode_bytes = "0103c0ffee04005fe7f92a307835613062353464356463313765306161646333383364326462343362306130643365303239633463";
+        assert_eq!(hex_encoded_bytes, expected_hex_encode_bytes);
     }
 }

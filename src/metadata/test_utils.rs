@@ -42,6 +42,10 @@ pub fn get_sample_eth_metadata() -> Metadata {
     Metadata::new(&get_sample_user_data(), &get_sample_eth_origin_address())
 }
 
+pub fn get_sample_eos_metadata() -> Metadata {
+    Metadata::new(&get_sample_user_data(), &get_sample_eos_origin_address())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -49,5 +53,10 @@ mod tests {
     #[test]
     fn should_get_sample_eth_metadata() {
         get_sample_eth_metadata();
+    }
+
+    #[test]
+    fn should_get_sample_eos_metadata() {
+        get_sample_eos_metadata();
     }
 }

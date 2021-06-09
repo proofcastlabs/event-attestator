@@ -98,7 +98,7 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
                 .get_eth_submission_material()
                 .and_then(|material| {
                     EthOnEvmEthTxInfos::from_submission_material(
-                        &material,
+                        material,
                         &EthEvmTokenDictionary::get_from_db(&state.db)?,
                         &get_evm_chain_id_from_db(&state.db)?,
                     )
@@ -161,7 +161,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                 .get_eth_submission_material()
                 .and_then(|material| {
                     EthOnEvmEvmTxInfos::from_submission_material(
-                        &material,
+                        material,
                         &get_erc20_on_evm_smart_contract_address_from_db(&state.db)?,
                         &EthEvmTokenDictionary::get_from_db(&state.db)?,
                         &get_eth_chain_id_from_db(&state.db)?,
