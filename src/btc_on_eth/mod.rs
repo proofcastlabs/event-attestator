@@ -54,6 +54,7 @@ pub use crate::{
             core_initialization::initialize_btc_core::maybe_initialize_btc_core as maybe_initialize_btc_enclave,
         },
         eth::{
+            core_initialization::reset_eth_chain::debug_reset_eth_chain,
             eth_debug_functions::{debug_set_eth_account_nonce, debug_set_eth_any_sender_nonce},
             eth_message_signer::{
                 sign_ascii_msg_with_eth_key_with_no_prefix,
