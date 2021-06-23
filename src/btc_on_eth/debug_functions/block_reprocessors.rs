@@ -64,10 +64,7 @@ use crate::{
         },
     },
     check_debug_mode::check_debug_mode,
-    fees::fee_database_utils::{
-        get_btc_on_eth_peg_in_basis_points_from_db,
-        get_btc_on_eth_peg_out_basis_points_from_db,
-    },
+    fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -104,7 +101,7 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
                 info!("✘ Not accruing fees during BTC block reprocessing...");
                 let minting_params_minus_fees = subtract_fees_from_minting_params(
                     &state.btc_on_eth_minting_params,
-                    get_btc_on_eth_peg_in_basis_points_from_db(&state.db)?,
+                    FeeDatabaseUtils::new_for_btc_on_eth().get_peg_in_basis_points_from_db(&state.db)?,
                 );
                 state.replace_btc_on_eth_minting_params(minting_params_minus_fees)
             }
@@ -163,7 +160,7 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
                 info!("✘ Not accruing fees during ETH block reprocessing...");
                 let redeem_infos_minus_fees = subtract_fees_from_redeem_infos(
                     &state.btc_on_eth_redeem_infos,
-                    get_btc_on_eth_peg_out_basis_points_from_db(&state.db)?,
+                    FeeDatabaseUtils::new_for_btc_on_eth().get_peg_out_basis_points_from_db(&state.db)?,
                 );
                 state.replace_btc_on_eth_redeem_infos(redeem_infos_minus_fees)
             }

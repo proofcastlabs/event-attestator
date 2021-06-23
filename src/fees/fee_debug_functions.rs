@@ -2,10 +2,7 @@ use serde_json::json;
 
 use crate::{
     check_debug_mode::check_debug_mode,
-    fees::{
-        fee_constants::MAX_FEE_BASIS_POINTS,
-        fee_database_utils::{put_btc_on_eth_peg_in_basis_points_in_db, put_btc_on_eth_peg_out_basis_points_in_db},
-    },
+    fees::{fee_constants::MAX_FEE_BASIS_POINTS, fee_database_utils::FeeDatabaseUtils},
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -31,7 +28,7 @@ pub fn debug_put_btc_on_eth_peg_in_basis_points_in_db<D: DatabaseInterface>(
     check_debug_mode()
         .and_then(|_| sanity_check_basis_points_value(basis_points))
         .and_then(|_| db.start_transaction())
-        .and_then(|_| put_btc_on_eth_peg_in_basis_points_in_db(db, basis_points))
+        .and_then(|_| FeeDatabaseUtils::new_for_btc_on_eth().put_peg_in_basis_points_in_db(db, basis_points))
         .and_then(|_| db.end_transaction())
         .and(Ok(json!({"set_btc_on_eth_peg_in_basis_points":true}).to_string()))
         .map(prepend_debug_output_marker_to_string)
@@ -49,7 +46,7 @@ pub fn debug_put_btc_on_eth_peg_out_basis_points_in_db<D: DatabaseInterface>(
     check_debug_mode()
         .and_then(|_| sanity_check_basis_points_value(basis_points))
         .and_then(|_| db.start_transaction())
-        .and_then(|_| put_btc_on_eth_peg_out_basis_points_in_db(db, basis_points))
+        .and_then(|_| FeeDatabaseUtils::new_for_btc_on_eth().put_peg_out_basis_points_in_db(db, basis_points))
         .and_then(|_| db.end_transaction())
         .and(Ok(json!({"set_btc_on_eth_peg_out_basis_points":true}).to_string()))
         .map(prepend_debug_output_marker_to_string)

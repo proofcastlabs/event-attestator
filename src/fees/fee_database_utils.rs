@@ -1,83 +1,199 @@
 use crate::{
     database_utils::{get_u64_from_db, put_u64_in_db},
     fees::fee_constants::{
+        BTC_ON_EOS_ACCRUED_FEES_KEY,
+        BTC_ON_EOS_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY,
+        BTC_ON_EOS_PEG_IN_BASIS_POINTS_KEY,
+        BTC_ON_EOS_PEG_OUT_BASIS_POINTS_KEY,
         BTC_ON_ETH_ACCRUED_FEES_KEY,
         BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY,
         BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY,
         BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY,
     },
     traits::DatabaseInterface,
-    types::Result,
+    types::{Byte, Result},
 };
 
-pub fn get_btc_on_eth_accrued_fees_from_db<D: DatabaseInterface>(db: &D) -> Result<u64> {
-    debug!("✔ Getting BTC accrued fees from db...");
-    get_u64_from_db(db, &BTC_ON_ETH_ACCRUED_FEES_KEY.to_vec()).or_else(|_| {
-        debug!("✔ No `BTC_ON_ETH_ACCRUED_FEES_KEY` value set in db, defaulting to 0!");
-        Ok(0)
-    })
+// TODO maybe even make this at the top level since the enum could come in useful elsewhere?
+enum FeeTakingCoreType {
+    // TODO maybe move this to somewhere where it'll be more useful to use elsewhere.
+    BtcOnEth,
+    BtcOnEos,
 }
 
-pub fn get_btc_on_eth_peg_in_basis_points_from_db<D: DatabaseInterface>(db: &D) -> Result<u64> {
-    debug!("✔ Getting `BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY` from db...");
-    get_u64_from_db(db, &BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY.to_vec()).or_else(|_| {
-        debug!("✔ No `BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY` value set in db, defaulting to 0!");
-        Ok(0)
-    })
-}
+pub struct FeeDatabaseUtils(FeeTakingCoreType);
 
-pub fn get_btc_on_eth_peg_out_basis_points_from_db<D: DatabaseInterface>(db: &D) -> Result<u64> {
-    debug!("✔ Getting `BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY` from db...");
-    get_u64_from_db(db, &BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY.to_vec()).or_else(|_| {
-        debug!("✔ No `BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY` value set in db, defaulting to 0!");
-        Ok(0)
-    })
-}
+impl FeeDatabaseUtils {
+    fn new(core_type: FeeTakingCoreType) -> Self {
+        Self(core_type)
+    }
 
-pub fn put_btc_on_eth_peg_in_basis_points_in_db<D: DatabaseInterface>(db: &D, basis_points: u64) -> Result<()> {
-    debug!(
-        "✔ Putting `BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY` of {} in db...",
-        basis_points
-    );
-    put_u64_in_db(db, &BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY.to_vec(), basis_points)
-}
+    pub fn new_for_btc_on_eth() -> Self {
+        Self::new(FeeTakingCoreType::BtcOnEth)
+    }
 
-pub fn put_btc_on_eth_peg_out_basis_points_in_db<D: DatabaseInterface>(db: &D, basis_points: u64) -> Result<()> {
-    debug!(
-        "✔ Putting `BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY` of {} in db...",
-        basis_points
-    );
-    put_u64_in_db(db, &BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY.to_vec(), basis_points)
-}
+    pub fn new_for_btc_on_eos() -> Self {
+        Self::new(FeeTakingCoreType::BtcOnEos)
+    }
 
-fn put_btc_on_eth_accrued_fees_in_db<D: DatabaseInterface>(db: &D, amount: u64) -> Result<()> {
-    debug!("✔ Putting BTC accrued fee value of {} in db...", amount);
-    put_u64_in_db(db, &BTC_ON_ETH_ACCRUED_FEES_KEY.to_vec(), amount)
-}
+    fn get_u64_from_db_or_else_return_zero<D: DatabaseInterface>(
+        db: &D,
+        key: &[Byte],
+        debug_msg: &str,
+        debug_err_msg: &str,
+    ) -> Result<u64> {
+        debug!("{}", debug_msg);
+        get_u64_from_db(db, key).or_else(|_| {
+            debug!("{}", debug_err_msg);
+            Ok(0)
+        })
+    }
 
-pub fn reset_btc_accrued_fees<D: DatabaseInterface>(db: &D) -> Result<()> {
-    put_btc_on_eth_accrued_fees_in_db(db, 0)
-}
+    pub fn get_accrued_fees_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<u64> {
+        match self.0 {
+            FeeTakingCoreType::BtcOnEth => Self::get_u64_from_db_or_else_return_zero(
+                db,
+                &BTC_ON_ETH_ACCRUED_FEES_KEY.to_vec(),
+                "✔ Getting `btc-on-eth` accrued fees from db...",
+                "✔ No `BTC_ON_ETH_ACCRUED_FEES_KEY` value set in db, defaulting to 0!",
+            ),
+            FeeTakingCoreType::BtcOnEos => Self::get_u64_from_db_or_else_return_zero(
+                db,
+                &BTC_ON_EOS_ACCRUED_FEES_KEY.to_vec(),
+                "✔ Getting `btc-on-eos` accrued fees from db...",
+                "✔ No `BTC_ON_EOS_ACCRUED_FEES_KEY` value set in db, defaulting to 0!",
+            ),
+        }
+    }
 
-pub fn increment_btc_on_eth_accrued_fees<D: DatabaseInterface>(db: &D, increment_amount: u64) -> Result<()> {
-    debug!("✔ Incrementing BTC accrued fees in db...");
-    get_btc_on_eth_accrued_fees_from_db(db).and_then(|accrued_fees| {
-        let total_after_incrementing = accrued_fees + increment_amount;
-        debug!("✔ Accrued fees before incrementing: {}", accrued_fees);
-        debug!("✔           Incrementing by amount: {}", increment_amount);
-        debug!("✔        Total after incremeneting: {}", total_after_incrementing);
-        put_btc_on_eth_accrued_fees_in_db(db, total_after_incrementing)
-    })
-}
+    pub fn get_peg_in_basis_points_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<u64> {
+        match self.0 {
+            FeeTakingCoreType::BtcOnEth => Self::get_u64_from_db_or_else_return_zero(
+                db,
+                &BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY.to_vec(),
+                "✔ Getting `BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY` from db...",
+                "✔ No `BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY` value set in db, defaulting to 0!",
+            ),
+            FeeTakingCoreType::BtcOnEos => Self::get_u64_from_db_or_else_return_zero(
+                db,
+                &BTC_ON_EOS_PEG_IN_BASIS_POINTS_KEY.to_vec(),
+                "✔ Getting `BTC_ON_EOS_PEG_IN_BASIS_POINTS_KEY` from db...",
+                "✔ No `BTC_ON_EOS_PEG_IN_BASIS_POINTS_KEY` value set in db, defaulting to 0!",
+            ),
+        }
+    }
 
-pub fn put_btc_on_eth_last_fee_withdrawal_timestamp_in_db<D: DatabaseInterface>(db: &D, timestamp: u64) -> Result<()> {
-    debug!("✔ Putting BTC last fee withdrawal timestamp into db...");
-    put_u64_in_db(db, &BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY.to_vec(), timestamp)
-}
+    pub fn get_peg_out_basis_points_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<u64> {
+        match self.0 {
+            FeeTakingCoreType::BtcOnEth => Self::get_u64_from_db_or_else_return_zero(
+                db,
+                &BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY.to_vec(),
+                "✔ Getting `BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY` from db...",
+                "✔ No `BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY` value set in db, defaulting to 0!",
+            ),
+            FeeTakingCoreType::BtcOnEos => Self::get_u64_from_db_or_else_return_zero(
+                db,
+                &BTC_ON_EOS_PEG_OUT_BASIS_POINTS_KEY.to_vec(),
+                "✔ Getting `BTC_ON_EOS_PEG_OUT_BASIS_POINTS_KEY` from db...",
+                "✔ No `BTC_ON_EOS_PEG_OUT_BASIS_POINTS_KEY` value set in db, defaulting to 0!",
+            ),
+        }
+    }
 
-pub fn get_btc_on_eth_last_fee_withdrawal_timestamp_from_db<D: DatabaseInterface>(db: &D) -> Result<u64> {
-    debug!("✔ Getting BTC last fee withdrawal timestamp from db...");
-    Ok(get_u64_from_db(db, &BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY.to_vec()).unwrap_or_default())
+    pub fn put_peg_in_basis_points_in_db<D: DatabaseInterface>(&self, db: &D, basis_points: u64) -> Result<()> {
+        match self.0 {
+            FeeTakingCoreType::BtcOnEth => {
+                debug!(
+                    "✔ Putting `BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY` of {} in db...",
+                    basis_points
+                );
+                put_u64_in_db(db, &BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY.to_vec(), basis_points)
+            },
+            FeeTakingCoreType::BtcOnEos => {
+                debug!(
+                    "✔ Putting `BTC_ON_EOS_PEG_IN_BASIS_POINTS_KEY` of {} in db...",
+                    basis_points
+                );
+                put_u64_in_db(db, &BTC_ON_EOS_PEG_IN_BASIS_POINTS_KEY.to_vec(), basis_points)
+            },
+        }
+    }
+
+    pub fn put_peg_out_basis_points_in_db<D: DatabaseInterface>(&self, db: &D, basis_points: u64) -> Result<()> {
+        match self.0 {
+            FeeTakingCoreType::BtcOnEth => {
+                debug!(
+                    "✔ Putting `BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY` of {} in db...",
+                    basis_points
+                );
+                put_u64_in_db(db, &BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY.to_vec(), basis_points)
+            },
+            FeeTakingCoreType::BtcOnEos => {
+                debug!(
+                    "✔ Putting `BTC_ON_EOS_PEG_OUT_BASIS_POINTS_KEY` of {} in db...",
+                    basis_points
+                );
+                put_u64_in_db(db, &BTC_ON_EOS_PEG_OUT_BASIS_POINTS_KEY.to_vec(), basis_points)
+            },
+        }
+    }
+
+    pub fn put_accrued_fees_in_db<D: DatabaseInterface>(&self, db: &D, amount: u64) -> Result<()> {
+        match self.0 {
+            FeeTakingCoreType::BtcOnEth => {
+                debug!("✔ Putting `btc-on-eth` accrued fee value of {} in db...", amount);
+                put_u64_in_db(db, &BTC_ON_ETH_ACCRUED_FEES_KEY.to_vec(), amount)
+            },
+            FeeTakingCoreType::BtcOnEos => {
+                debug!("✔ Putting `btc-on-eos` accrued fee value of {} in db...", amount);
+                put_u64_in_db(db, &BTC_ON_EOS_ACCRUED_FEES_KEY.to_vec(), amount)
+            },
+        }
+    }
+
+    pub fn reset_accrued_fees<D: DatabaseInterface>(&self, db: &D) -> Result<()> {
+        match self.0 {
+            FeeTakingCoreType::BtcOnEth => Self::new_for_btc_on_eth().put_accrued_fees_in_db(db, 0),
+            FeeTakingCoreType::BtcOnEos => Self::new_for_btc_on_eos().put_accrued_fees_in_db(db, 0),
+        }
+    }
+
+    pub fn increment_accrued_fees<D: DatabaseInterface>(&self, db: &D, increment_amount: u64) -> Result<()> {
+        debug!("✔ Incrementing `btc-on-eth` accrued fees in db...");
+        self.get_accrued_fees_from_db(db).and_then(|accrued_fees| {
+            let total_after_incrementing = accrued_fees + increment_amount;
+            debug!("✔ Accrued fees before incrementing: {}", accrued_fees);
+            debug!("✔           Incrementing by amount: {}", increment_amount);
+            debug!("✔        Total after incremeneting: {}", total_after_incrementing);
+            self.put_accrued_fees_in_db(db, total_after_incrementing)
+        })
+    }
+
+    pub fn put_last_fee_withdrawal_timestamp_in_db<D: DatabaseInterface>(&self, db: &D, timestamp: u64) -> Result<()> {
+        match self.0 {
+            FeeTakingCoreType::BtcOnEth => {
+                debug!("✔ Putting `btc-on-eth` last fee withdrawal timestamp into db...");
+                put_u64_in_db(db, &BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY.to_vec(), timestamp)
+            },
+            FeeTakingCoreType::BtcOnEos => {
+                debug!("✔ Putting `btc-on-eos` last fee withdrawal timestamp into db...");
+                put_u64_in_db(db, &BTC_ON_EOS_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY.to_vec(), timestamp)
+            },
+        }
+    }
+
+    pub fn get_last_fee_withdrawal_timestamp_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<u64> {
+        match self.0 {
+            FeeTakingCoreType::BtcOnEth => {
+                debug!("✔ Getting `btc-on-eth` last fee withdrawal timestamp from db...");
+                Ok(get_u64_from_db(db, &BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY.to_vec()).unwrap_or_default())
+            },
+            FeeTakingCoreType::BtcOnEos => {
+                debug!("✔ Getting `btc-on-eos` last fee withdrawal timestamp from db...");
+                Ok(get_u64_from_db(db, &BTC_ON_EOS_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY.to_vec()).unwrap_or_default())
+            },
+        }
+    }
 }
 
 #[cfg(test)]
@@ -89,8 +205,12 @@ mod tests {
     fn should_put_and_get_btc_on_eth_peg_in_basis_points_in_db() {
         let basis_points: u64 = 1337;
         let db = get_test_database();
-        put_btc_on_eth_peg_in_basis_points_in_db(&db, basis_points).unwrap();
-        let result = get_btc_on_eth_peg_in_basis_points_from_db(&db).unwrap();
+        FeeDatabaseUtils::new_for_btc_on_eth()
+            .put_peg_in_basis_points_in_db(&db, basis_points)
+            .unwrap();
+        let result = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_peg_in_basis_points_from_db(&db)
+            .unwrap();
         assert_eq!(result, basis_points);
     }
 
@@ -98,17 +218,25 @@ mod tests {
     fn should_put_and_get_btc_on_eth_peg_out_basis_points_in_db() {
         let basis_points: u64 = 1337;
         let db = get_test_database();
-        put_btc_on_eth_peg_out_basis_points_in_db(&db, basis_points).unwrap();
-        let result = get_btc_on_eth_peg_out_basis_points_from_db(&db).unwrap();
+        FeeDatabaseUtils::new_for_btc_on_eth()
+            .put_peg_out_basis_points_in_db(&db, basis_points)
+            .unwrap();
+        let result = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_peg_out_basis_points_from_db(&db)
+            .unwrap();
         assert_eq!(result, basis_points);
     }
 
     #[test]
-    fn should_put_and_get_btc_on_eth_accrued_fees_in_db() {
+    fn should_put_and_get_accrued_fees_in_db() {
         let fees: u64 = 1337;
         let db = get_test_database();
-        put_btc_on_eth_accrued_fees_in_db(&db, fees).unwrap();
-        let result = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
+        FeeDatabaseUtils::new_for_btc_on_eth()
+            .put_accrued_fees_in_db(&db, fees)
+            .unwrap();
+        let result = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_accrued_fees_from_db(&db)
+            .unwrap();
         assert_eq!(result, fees);
     }
 
@@ -116,7 +244,9 @@ mod tests {
     fn get_btc_on_eth_peg_in_basis_points_from_db_should_default_to_zero() {
         let db = get_test_database();
         let expected_result = 0;
-        let result = get_btc_on_eth_peg_in_basis_points_from_db(&db).unwrap();
+        let result = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_peg_in_basis_points_from_db(&db)
+            .unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -124,38 +254,54 @@ mod tests {
     fn get_btc_on_eth_peg_out_basis_points_from_db_should_default_to_zero() {
         let db = get_test_database();
         let expected_result = 0;
-        let result = get_btc_on_eth_peg_out_basis_points_from_db(&db).unwrap();
+        let result = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_peg_out_basis_points_from_db(&db)
+            .unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn get_btc_on_eth_accrued_fees_from_db_should_default_to_zero() {
+    fn get_accrued_fees_from_db_should_default_to_zero() {
         let db = get_test_database();
         let expected_result = 0;
-        let result = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
+        let result = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_accrued_fees_from_db(&db)
+            .unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_increment_btc_on_eth_accrued_fees_in_db() {
+    fn should_increment_accrued_fees_in_db() {
         let db = get_test_database();
         let start_value = 1337;
         let increment_amount = 1;
-        put_btc_on_eth_accrued_fees_in_db(&db, start_value).unwrap();
-        increment_btc_on_eth_accrued_fees(&db, increment_amount).unwrap();
-        let result = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
+        FeeDatabaseUtils::new_for_btc_on_eth()
+            .put_accrued_fees_in_db(&db, start_value)
+            .unwrap();
+        FeeDatabaseUtils::new_for_btc_on_eth()
+            .increment_accrued_fees(&db, increment_amount)
+            .unwrap();
+        let result = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_accrued_fees_from_db(&db)
+            .unwrap();
         assert_eq!(result, start_value + increment_amount);
     }
 
     #[test]
-    fn should_reset_btc_accrued_fees() {
+    fn should_reset_accrued_fees() {
         let fees = 1337;
         let db = get_test_database();
-        put_btc_on_eth_accrued_fees_in_db(&db, fees).unwrap();
-        let fees_in_db_before = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
+        FeeDatabaseUtils::new_for_btc_on_eth()
+            .put_accrued_fees_in_db(&db, fees)
+            .unwrap();
+        let fees_in_db_before = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_accrued_fees_from_db(&db)
+            .unwrap();
         assert_eq!(fees_in_db_before, fees);
-        reset_btc_accrued_fees(&db).unwrap();
-        let fees_in_db_after = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
+        FeeDatabaseUtils::new_for_btc_on_eth().reset_accrued_fees(&db).unwrap();
+        let fees_in_db_after = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_accrued_fees_from_db(&db)
+            .unwrap();
         assert_eq!(fees_in_db_after, 0)
     }
 
@@ -163,8 +309,31 @@ mod tests {
     fn should_get_and_put_btc_on_eth_last_fee_withdrawal_timestamp_in_db() {
         let timestamp = 1337;
         let db = get_test_database();
-        put_btc_on_eth_last_fee_withdrawal_timestamp_in_db(&db, timestamp).unwrap();
-        let result = get_btc_on_eth_last_fee_withdrawal_timestamp_from_db(&db).unwrap();
+        FeeDatabaseUtils::new_for_btc_on_eth()
+            .put_last_fee_withdrawal_timestamp_in_db(&db, timestamp)
+            .unwrap();
+        let result = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_last_fee_withdrawal_timestamp_from_db(&db)
+            .unwrap();
         assert_eq!(result, timestamp);
+    }
+
+    #[test]
+    fn get_u64_from_db_or_else_return_zero_should_return_zero_if_nothing_in_db() {
+        let db = get_test_database();
+        let expected_result = 0;
+        let bytes = vec![0xde, 0xca, 0xff];
+        let result = FeeDatabaseUtils::get_u64_from_db_or_else_return_zero(&db, &bytes, "", "").unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn get_u64_from_db_or_else_return_zero_should_return_value_if_in_db() {
+        let db = get_test_database();
+        let expected_result = 1337;
+        let key = vec![0xde, 0xca, 0xff];
+        put_u64_in_db(&db, &key, expected_result).unwrap();
+        let result = FeeDatabaseUtils::get_u64_from_db_or_else_return_zero(&db, &key, "", "").unwrap();
+        assert_eq!(result, expected_result);
     }
 }
