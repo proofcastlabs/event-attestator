@@ -63,7 +63,7 @@ use crate::{
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
-    fees::{fee_constants::get_fee_constants_db_keys, fee_withdrawals::get_btc_on_eth_fee_withdrawal_tx},
+    fees::{fee_constants::BTC_ON_ETH_FEE_DB_KEYS, fee_withdrawals::get_btc_on_eth_fee_withdrawal_tx},
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, prepend_debug_output_marker_to_string, strip_hex_prefix},
@@ -77,7 +77,7 @@ pub fn debug_get_all_db_keys() -> Result<String> {
         json!({
             "btc": get_btc_constants_db_keys(),
             "eth": get_eth_constants_db_keys(),
-            "fees": get_fee_constants_db_keys(),
+            "fees": BTC_ON_ETH_FEE_DB_KEYS.to_json(),
             "db-key-prefix": DB_KEY_PREFIX.to_string(),
             "utxo-manager": get_utxo_constants_db_keys(),
         })
