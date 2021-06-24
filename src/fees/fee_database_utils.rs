@@ -1,16 +1,7 @@
 use crate::{
     core_type::CoreType,
     database_utils::{get_u64_from_db, put_u64_in_db},
-    fees::fee_constants::{
-        BTC_ON_EOS_ACCRUED_FEES_KEY,
-        BTC_ON_EOS_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY,
-        BTC_ON_EOS_PEG_IN_BASIS_POINTS_KEY,
-        BTC_ON_EOS_PEG_OUT_BASIS_POINTS_KEY,
-        BTC_ON_ETH_ACCRUED_FEES_KEY,
-        BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY,
-        BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY,
-        BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY,
-    },
+    fees::fee_constants::{BTC_ON_EOS_FEE_DB_KEYS, BTC_ON_ETH_FEE_DB_KEYS},
     traits::DatabaseInterface,
     types::{Byte, Result},
 };
@@ -47,13 +38,13 @@ impl FeeDatabaseUtils {
         match self.0 {
             CoreType::BtcOnEth => Self::get_u64_from_db_or_else_return_zero(
                 db,
-                &BTC_ON_ETH_ACCRUED_FEES_KEY.to_vec(),
+                &BTC_ON_ETH_FEE_DB_KEYS.accrued_fees_db_key,
                 "✔ Getting `btc-on-eth` accrued fees from db...",
                 "✔ No `BTC_ON_ETH_ACCRUED_FEES_KEY` value set in db, defaulting to 0!",
             ),
             CoreType::BtcOnEos => Self::get_u64_from_db_or_else_return_zero(
                 db,
-                &BTC_ON_EOS_ACCRUED_FEES_KEY.to_vec(),
+                &BTC_ON_EOS_FEE_DB_KEYS.accrued_fees_db_key,
                 "✔ Getting `btc-on-eos` accrued fees from db...",
                 "✔ No `BTC_ON_EOS_ACCRUED_FEES_KEY` value set in db, defaulting to 0!",
             ),
@@ -65,13 +56,13 @@ impl FeeDatabaseUtils {
         match self.0 {
             CoreType::BtcOnEth => Self::get_u64_from_db_or_else_return_zero(
                 db,
-                &BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY.to_vec(),
+                &BTC_ON_ETH_FEE_DB_KEYS.peg_in_basis_points_db_key,
                 "✔ Getting `BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY` from db...",
                 "✔ No `BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY` value set in db, defaulting to 0!",
             ),
             CoreType::BtcOnEos => Self::get_u64_from_db_or_else_return_zero(
                 db,
-                &BTC_ON_EOS_PEG_IN_BASIS_POINTS_KEY.to_vec(),
+                &BTC_ON_EOS_FEE_DB_KEYS.peg_in_basis_points_db_key,
                 "✔ Getting `BTC_ON_EOS_PEG_IN_BASIS_POINTS_KEY` from db...",
                 "✔ No `BTC_ON_EOS_PEG_IN_BASIS_POINTS_KEY` value set in db, defaulting to 0!",
             ),
@@ -87,13 +78,13 @@ impl FeeDatabaseUtils {
         match self.0 {
             CoreType::BtcOnEth => Self::get_u64_from_db_or_else_return_zero(
                 db,
-                &BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY.to_vec(),
+                &BTC_ON_ETH_FEE_DB_KEYS.peg_out_basis_points_db_key,
                 "✔ Getting `BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY` from db...",
                 "✔ No `BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY` value set in db, defaulting to 0!",
             ),
             CoreType::BtcOnEos => Self::get_u64_from_db_or_else_return_zero(
                 db,
-                &BTC_ON_EOS_PEG_OUT_BASIS_POINTS_KEY.to_vec(),
+                &BTC_ON_EOS_FEE_DB_KEYS.peg_out_basis_points_db_key,
                 "✔ Getting `BTC_ON_EOS_PEG_OUT_BASIS_POINTS_KEY` from db...",
                 "✔ No `BTC_ON_EOS_PEG_OUT_BASIS_POINTS_KEY` value set in db, defaulting to 0!",
             ),
@@ -112,14 +103,14 @@ impl FeeDatabaseUtils {
                     "✔ Putting `BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY` of {} in db...",
                     basis_points
                 );
-                put_u64_in_db(db, &BTC_ON_ETH_PEG_IN_BASIS_POINTS_KEY.to_vec(), basis_points)
+                put_u64_in_db(db, &BTC_ON_ETH_FEE_DB_KEYS.peg_in_basis_points_db_key, basis_points)
             },
             CoreType::BtcOnEos => {
                 debug!(
                     "✔ Putting `BTC_ON_EOS_PEG_IN_BASIS_POINTS_KEY` of {} in db...",
                     basis_points
                 );
-                put_u64_in_db(db, &BTC_ON_EOS_PEG_IN_BASIS_POINTS_KEY.to_vec(), basis_points)
+                put_u64_in_db(db, &BTC_ON_EOS_FEE_DB_KEYS.peg_in_basis_points_db_key, basis_points)
             },
             _ => Err(format!(
                 "`put_peg_in_basis_points_in_db` not implemented for core type: {}",
@@ -136,14 +127,14 @@ impl FeeDatabaseUtils {
                     "✔ Putting `BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY` of {} in db...",
                     basis_points
                 );
-                put_u64_in_db(db, &BTC_ON_ETH_PEG_OUT_BASIS_POINTS_KEY.to_vec(), basis_points)
+                put_u64_in_db(db, &BTC_ON_ETH_FEE_DB_KEYS.peg_out_basis_points_db_key, basis_points)
             },
             CoreType::BtcOnEos => {
                 debug!(
                     "✔ Putting `BTC_ON_EOS_PEG_OUT_BASIS_POINTS_KEY` of {} in db...",
                     basis_points
                 );
-                put_u64_in_db(db, &BTC_ON_EOS_PEG_OUT_BASIS_POINTS_KEY.to_vec(), basis_points)
+                put_u64_in_db(db, &BTC_ON_EOS_FEE_DB_KEYS.peg_out_basis_points_db_key, basis_points)
             },
             _ => Err(format!(
                 "`put_peg_out_basis_points_in_db` not implemented for core type: {}",
@@ -157,11 +148,11 @@ impl FeeDatabaseUtils {
         match self.0 {
             CoreType::BtcOnEth => {
                 debug!("✔ Putting `btc-on-eth` accrued fee value of {} in db...", amount);
-                put_u64_in_db(db, &BTC_ON_ETH_ACCRUED_FEES_KEY.to_vec(), amount)
+                put_u64_in_db(db, &BTC_ON_ETH_FEE_DB_KEYS.accrued_fees_db_key, amount)
             },
             CoreType::BtcOnEos => {
                 debug!("✔ Putting `btc-on-eos` accrued fee value of {} in db...", amount);
-                put_u64_in_db(db, &BTC_ON_EOS_ACCRUED_FEES_KEY.to_vec(), amount)
+                put_u64_in_db(db, &BTC_ON_EOS_FEE_DB_KEYS.accrued_fees_db_key, amount)
             },
             _ => Err(format!("`put_accrued_fees_in_db` not implemented for core type: {}", self.0).into()),
         }
@@ -190,11 +181,11 @@ impl FeeDatabaseUtils {
         match self.0 {
             CoreType::BtcOnEth => {
                 debug!("✔ Putting `btc-on-eth` last fee withdrawal timestamp into db...");
-                put_u64_in_db(db, &BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY.to_vec(), timestamp)
+                put_u64_in_db(db, &BTC_ON_ETH_FEE_DB_KEYS.last_fee_withdrawal_db_key, timestamp)
             },
             CoreType::BtcOnEos => {
                 debug!("✔ Putting `btc-on-eos` last fee withdrawal timestamp into db...");
-                put_u64_in_db(db, &BTC_ON_EOS_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY.to_vec(), timestamp)
+                put_u64_in_db(db, &BTC_ON_EOS_FEE_DB_KEYS.last_fee_withdrawal_db_key, timestamp)
             },
             _ => Err(format!(
                 "`put_last_fee_withdrawal_timestamp_in_db` not implemented for core type: {}",
@@ -208,11 +199,11 @@ impl FeeDatabaseUtils {
         match self.0 {
             CoreType::BtcOnEth => {
                 debug!("✔ Getting `btc-on-eth` last fee withdrawal timestamp from db...");
-                Ok(get_u64_from_db(db, &BTC_ON_ETH_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY.to_vec()).unwrap_or_default())
+                Ok(get_u64_from_db(db, &BTC_ON_ETH_FEE_DB_KEYS.last_fee_withdrawal_db_key).unwrap_or_default())
             },
             CoreType::BtcOnEos => {
                 debug!("✔ Getting `btc-on-eos` last fee withdrawal timestamp from db...");
-                Ok(get_u64_from_db(db, &BTC_ON_EOS_LAST_FEE_WITHDRAWAL_TIMESTAMP_KEY.to_vec()).unwrap_or_default())
+                Ok(get_u64_from_db(db, &BTC_ON_EOS_FEE_DB_KEYS.last_fee_withdrawal_db_key).unwrap_or_default())
             },
             _ => Err(format!(
                 "`get_last_fee_withdrawal_timestamp_from_db` not implemented for core type: {}",

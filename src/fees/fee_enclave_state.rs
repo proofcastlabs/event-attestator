@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     fees::{
-        fee_constants::{BTC_ON_ETH_ACCRUED_FEES_KEY, DISABLE_FEES},
+        fee_constants::{BTC_ON_ETH_FEE_DB_KEYS, DISABLE_FEES},
         fee_database_utils::FeeDatabaseUtils,
         fee_utils::get_last_withdrawal_date_as_human_readable_string,
     },
@@ -44,7 +44,7 @@ impl FeeStateForTokens {
         Ok(Self::new(vec![FeeStateForToken {
             token_symbol: "BTC".to_string(),
             accrued_fees: FeeDatabaseUtils::new_for_btc_on_eth().get_accrued_fees_from_db(db)?,
-            accrued_fees_db_key: hex::encode(*BTC_ON_ETH_ACCRUED_FEES_KEY),
+            accrued_fees_db_key: hex::encode(&BTC_ON_ETH_FEE_DB_KEYS.accrued_fees_db_key),
             peg_in_basis_points: FeeDatabaseUtils::new_for_btc_on_eth().get_peg_in_basis_points_from_db(db)?,
             peg_out_basis_points: FeeDatabaseUtils::new_for_btc_on_eth().get_peg_out_basis_points_from_db(db)?,
             last_withdrawal: get_last_withdrawal_date_as_human_readable_string(
