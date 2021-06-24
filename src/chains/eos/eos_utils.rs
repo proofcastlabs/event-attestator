@@ -33,6 +33,10 @@ pub fn remove_symbol_from_eos_asset(eos_asset: &str) -> &str {
     eos_asset.split_whitespace().collect::<Vec<&str>>()[0]
 }
 
+pub fn get_symbol_from_eos_asset(eos_asset: &str) -> &str {
+    eos_asset.split_whitespace().collect::<Vec<&str>>()[1]
+}
+
 pub fn get_digest_from_eos_action(action: &EosAction) -> Result<Bytes> {
     Ok(sha256::Hash::hash(&action.to_serialize_data()?).to_vec())
 }
@@ -79,6 +83,14 @@ mod tests {
         let s = "Bighead.gm";
         let result = parse_eos_account_name_or_default_to_safe_address(&s).unwrap();
         let expected_result = EosAccountName::from_str(&SAFE_EOS_ADDRESS).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_symbol_from_eos_asset() {
+        let asset = "1.234 SAM";
+        let result = get_symbol_from_eos_asset(asset);
+        let expected_result = "SAM";
         assert_eq!(result, expected_result);
     }
 }
