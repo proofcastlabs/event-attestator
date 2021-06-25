@@ -279,6 +279,7 @@ pub fn set_first_utxo_pointer<D: DatabaseInterface>(db: &D, hash: &sha256d::Hash
 pub fn get_first_utxo_pointer<D: DatabaseInterface>(db: &D) -> Result<Bytes> {
     debug!("✔ Getting `UTXO_FIRST` pointer...");
     db.get(UTXO_FIRST.to_vec(), None)
+        .map_err(|_| "✘ No UTXOs in the database! Have you bricked this core?".into())
 }
 
 pub fn get_utxo_nonce_from_db<D: DatabaseInterface>(db: &D) -> Result<u64> {
@@ -702,6 +703,17 @@ mod tests {
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
             Err(_) => panic!("Wrong error receieved!"),
             Ok(_) => panic!("Should not have succeeded!"),
+        };
+    }
+
+    #[test]
+    fn should_have_helpful_error_message_if_no_utxos_in_db() {
+        let db = get_test_database();
+        let expected_err_msg = "✘ No UTXOs in the database! Have you bricked this core?";
+        match get_first_utxo_and_value(&db) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(err_msg)) => assert_eq!(err_msg, expected_err_msg),
+            Err(_) => panic!("Wrong error received!"),
         };
     }
 }
