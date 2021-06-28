@@ -32,17 +32,22 @@ impl ChainId for EthChainId {
 impl ToMetadataChainId for EthChainId {
     fn to_metadata_chain_id(&self) -> MetadataChainId {
         match self {
+            Self::Unknown(_) => MetadataChainId::EthUnknown,
+            Self::BscMainnet => MetadataChainId::BscMainnet,
+            Self::XDaiMainnet => MetadataChainId::XDaiMainnet,
             Self::Mainnet => MetadataChainId::EthereumMainnet,
             Self::Rinkeby => MetadataChainId::EthereumRinkeby,
             Self::Ropsten => MetadataChainId::EthereumRopsten,
-            Self::BscMainnet => MetadataChainId::BscMainnet,
-            Self::XDaiMainnet => MetadataChainId::XDaiMainnet,
             Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
         }
     }
 }
 
 impl EthChainId {
+    pub fn unknown() -> Self {
+        Self::Unknown(0)
+    }
+
     pub fn from_str(s: &str) -> Result<Self> {
         match &*s.to_lowercase() {
             "mainnet" | "1" => Ok(Self::Mainnet),

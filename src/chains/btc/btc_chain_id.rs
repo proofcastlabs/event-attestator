@@ -29,6 +29,10 @@ impl ChainId for BtcChainId {
 }
 
 impl BtcChainId {
+    pub fn unknown() -> Self {
+        Self::Unknown(vec![0])
+    }
+
     pub fn to_btc_network(&self) -> BtcNetwork {
         match self {
             Self::Testnet => BtcNetwork::Testnet,

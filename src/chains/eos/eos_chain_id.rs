@@ -5,6 +5,7 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{
+    constants::THIRTY_TWO_ZERO_BYTES,
     crypto_utils::keccak_hash_bytes,
     metadata::{metadata_chain_id::MetadataChainId, metadata_traits::ToMetadataChainId},
     traits::ChainId,
@@ -34,6 +35,7 @@ impl ChainId for EosChainId {
 impl ToMetadataChainId for EosChainId {
     fn to_metadata_chain_id(&self) -> MetadataChainId {
         match self {
+            Self::Unknown(_) => MetadataChainId::EosUnknown,
             Self::EosMainnet => MetadataChainId::EosMainnet,
             Self::FioMainnet => MetadataChainId::FioMainnet,
             Self::TelosMainnet => MetadataChainId::TelosMainnet,
@@ -66,6 +68,10 @@ lazy_static! {
 }
 
 impl EosChainId {
+    pub fn unknown() -> Self {
+        Self::Unknown(THIRTY_TWO_ZERO_BYTES.to_vec())
+    }
+
     pub fn from_str(s: &str) -> Result<Self> {
         decode_hex_with_err_msg(s, &format!("`EosChainId` error! Invalid hex: 0x{}", s))
             .and_then(|ref bytes| Self::from_bytes(bytes))
