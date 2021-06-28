@@ -144,7 +144,7 @@ impl fmt::Display for EthChainId {
             Self::BscMainnet => write!(f, "BSC Mainnet: {}", self.to_u8()),
             Self::XDaiMainnet => write!(f, "xDai Mainnet: {}", self.to_u8()),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", self.to_u8()),
-            Self::Unknown(_) => write!(f, "Polygon Mainnet: {}", self.to_u8()),
+            Self::Unknown(_) => write!(f, "Unkown ETH chain ID: {}", self.to_u8()),
         }
     }
 }
@@ -153,15 +153,7 @@ impl TryFrom<u8> for EthChainId {
     type Error = AppError;
 
     fn try_from(byte: u8) -> Result<Self> {
-        match byte {
-            1 => Ok(Self::Mainnet),
-            3 => Ok(Self::Ropsten),
-            4 => Ok(Self::Rinkeby),
-            56 => Ok(Self::BscMainnet),
-            100 => Ok(Self::XDaiMainnet),
-            137 => Ok(Self::PolygonMainnet),
-            _ => Err(format!("`EthChainId` error! Unrecognized chain id: {}", byte).into()),
-        }
+        Self::from_bytes(&[byte])
     }
 }
 
