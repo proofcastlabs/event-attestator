@@ -7,14 +7,11 @@ use strum_macros::EnumIter;
 use crate::types::Byte;
 use crate::{
     chains::{btc::btc_chain_id::BtcChainId, eos::eos_chain_id::EosChainId, eth::eth_chain_id::EthChainId},
+    constants::THIRTY_TWO_ZERO_BYTES,
     metadata::metadata_protocol_id::MetadataProtocolId,
     traits::ChainId,
     types::{Bytes, Result},
 };
-
-lazy_static! {
-    static ref THIRTY_TWO_ZERO_BYTES: Vec<u8> = vec![0; 32];
-}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter)]
 pub enum MetadataChainId {
@@ -62,7 +59,9 @@ impl MetadataChainId {
         match self {
             Self::EosMainnet => Box::new(EosChainId::EosMainnet),
             Self::FioMainnet => Box::new(EosChainId::FioMainnet),
-            Self::EthUnknown => Box::new(EthChainId::Unknown(0)),
+            Self::BtcUnknown => Box::new(BtcChainId::unknown()),
+            Self::EosUnknown => Box::new(EosChainId::unknown()),
+            Self::EthUnknown => Box::new(EthChainId::unknown()),
             Self::BscMainnet => Box::new(EthChainId::BscMainnet),
             Self::BitcoinMainnet => Box::new(BtcChainId::Bitcoin),
             Self::BitcoinTestnet => Box::new(BtcChainId::Testnet),
@@ -73,11 +72,8 @@ impl MetadataChainId {
             Self::TelosMainnet => Box::new(EosChainId::TelosMainnet),
             Self::UltraMainnet => Box::new(EosChainId::UltraMainnet),
             Self::UltraTestnet => Box::new(EosChainId::UltraTestnet),
-            Self::FioMainnet => Box::new(EosChainId::FioMainnet),
             Self::PolygonMainnet => Box::new(EthChainId::PolygonMainnet),
-            Self::BtcUnknown => Box::new(BtcChainId::Unknown(vec![0x00])),
             Self::EosJungleTestnet => Box::new(EosChainId::EosJungleTestnet),
-            Self::EosUnknown => Box::new(EosChainId::Unknown(THIRTY_TWO_ZERO_BYTES.to_vec())),
         }
     }
 
@@ -154,6 +150,7 @@ impl fmt::Display for MetadataChainId {
             Self::FioMainnet => write!(f, "FIO Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::XDaiMainnet => write!(f, "xDai Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::TelosMainnet => write!(f, "Telos Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::UltraTestnet => write!(f, "Ultra Testnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::UltraMainnet => write!(f, "Ultra Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
@@ -163,11 +160,6 @@ impl fmt::Display for MetadataChainId {
             Self::EthereumRopsten => write!(f, "Ethereum Ropsten: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::BscMainnet => write!(f, "Binance Chain (BSC) Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::XDaiMainnet => write!(f, "xDai Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::PolygonMainnet => write!(f, "Polygon Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::UltraMainnet => write!(f, "Ultra Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::UltraTestnet => write!(f, "Ultra Testnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::FioMainnet => write!(f, "FIO Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
         }
     }
 }
