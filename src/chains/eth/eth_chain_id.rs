@@ -92,7 +92,7 @@ impl EthChainId {
             _ => {
                 info!("✔ Using unknown ETH chain ID: 0x{}", hex::encode(bytes));
                 Ok(Self::Unknown(byte))
-            }
+            },
         }
     }
 
@@ -121,14 +121,17 @@ impl EthChainId {
     }
 
     #[cfg(test)]
+    fn is_unknown(&self) -> bool {
+        match self {
+            Self::Unknown(_) => true,
+            _ => false,
+        }
+    }
+
+    #[cfg(test)]
     fn get_all() -> Vec<Self> {
         use strum::IntoEnumIterator;
-        Self::iter()
-            .filter(|x| match x {
-                Self::Unknown(_) => false,
-                _ => true,
-            })
-            .collect()
+        Self::iter().filter(|chain_id| !chain_id.is_unknown()).collect()
     }
 }
 
