@@ -5,12 +5,15 @@ use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{
+    constants::THIRTY_TWO_ZERO_BYTES,
     crypto_utils::keccak_hash_bytes,
     metadata::{metadata_chain_id::MetadataChainId, metadata_traits::ToMetadataChainId},
     traits::ChainId,
     types::{Byte, Bytes, Result},
     utils::decode_hex_with_err_msg,
 };
+
+const EOS_CHAIN_ID_LENGTH_IN_BYTES: usize = 32;
 
 #[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
 pub enum EosChainId {
@@ -20,6 +23,7 @@ pub enum EosChainId {
     UltraMainnet,
     UltraTestnet,
     FioMainnet,
+    Unknown(Bytes),
 }
 
 impl ChainId for EosChainId {
@@ -31,6 +35,7 @@ impl ChainId for EosChainId {
 impl ToMetadataChainId for EosChainId {
     fn to_metadata_chain_id(&self) -> MetadataChainId {
         match self {
+            Self::Unknown(_) => MetadataChainId::EosUnknown,
             Self::EosMainnet => MetadataChainId::EosMainnet,
             Self::FioMainnet => MetadataChainId::FioMainnet,
             Self::TelosMainnet => MetadataChainId::TelosMainnet,
@@ -63,6 +68,10 @@ lazy_static! {
 }
 
 impl EosChainId {
+    pub fn unknown() -> Self {
+        Self::Unknown(THIRTY_TWO_ZERO_BYTES.to_vec())
+    }
+
     pub fn from_str(s: &str) -> Result<Self> {
         decode_hex_with_err_msg(s, &format!("`EosChainId` error! Invalid hex: 0x{}", s))
             .and_then(|ref bytes| Self::from_bytes(bytes))
@@ -76,6 +85,7 @@ impl EosChainId {
             Self::UltraMainnet => hex::encode(&*ULTRA_MAINNET_BYTES),
             Self::UltraTestnet => hex::encode(&*ULTRA_TESTNET_BYTES),
             Self::FioMainnet => hex::encode(&*FIO_MAINNET_BYTES),
+            Self::Unknown(ref bytes) => hex::encode(bytes),
         }
     }
 
@@ -97,7 +107,20 @@ impl EosChainId {
             1 => maybe_self[0]
                 .clone()
                 .ok_or_else(|| "Failed to unwrap `maybe_self` from option!".into()),
-            _ => Err(format!("Unrecognized bytes for `EosChainId`: 0x{}", hex::encode(bytes)).into()),
+            _ => {
+                let num_bytes = bytes.len();
+                match num_bytes {
+                    EOS_CHAIN_ID_LENGTH_IN_BYTES => {
+                        info!("✔ Using unknown EOS chain ID: 0x{}", hex::encode(bytes));
+                        Ok(Self::Unknown(bytes.to_vec()))
+                    },
+                    _ => Err(format!(
+                        "Incorrect number of bytes for `EosChainId`. Got {}, expected {}!",
+                        num_bytes, EOS_CHAIN_ID_LENGTH_IN_BYTES
+                    )
+                    .into()),
+                }
+            },
         }
     }
 
@@ -109,6 +132,7 @@ impl EosChainId {
             Self::UltraMainnet => ULTRA_MAINNET_BYTES.to_vec(),
             Self::UltraTestnet => ULTRA_TESTNET_BYTES.to_vec(),
             Self::FioMainnet => FIO_MAINNET_BYTES.to_vec(),
+            Self::Unknown(ref bytes) => bytes.to_vec(),
         }
     }
 
@@ -126,6 +150,7 @@ impl fmt::Display for EosChainId {
             Self::UltraMainnet => write!(f, "Ultra Mainnet: 0x{}", self.to_hex()),
             Self::UltraTestnet => write!(f, "Ultra Testnet: 0x{}", self.to_hex()),
             Self::FioMainnet => write!(f, "FIO Mainnet: 0x{}", self.to_hex()),
+            Self::Unknown(_) => write!(f, "Unknown EOS chain ID: 0x{}", self.to_hex()),
         }
     }
 }
@@ -133,6 +158,7 @@ impl fmt::Display for EosChainId {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::errors::AppError;
 
     #[test]
     fn should_make_bytes_roundtrip_for_all_eos_chain_ids() {
@@ -144,5 +170,44 @@ mod tests {
             .collect::<Result<Vec<EosChainId>>>()
             .unwrap();
         assert_eq!(result, ids);
+    }
+
+    #[test]
+    fn should_create_unknown_chain_id_if_bytes_unrecognised() {
+        let unknown_chain_id_hex = "7013417c68fcf077c1ef0b8b800d1f91d1bbdb6f5e08e5e5f3d9020dc37cd2d5";
+        let unknown_chain_id_bytes = hex::decode(unknown_chain_id_hex).unwrap();
+        let result = EosChainId::from_bytes(&unknown_chain_id_bytes).unwrap();
+        let expected_result = EosChainId::Unknown(unknown_chain_id_bytes);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn unknown_eos_chain_id_must_be_exactly_32_bytes() {
+        let unknown_chain_id_bytes_too_short =
+            hex::decode("7013417c68fcf077c1ef0b8b800d1f91d1bbdb6f5e08e5e5f3d9020dc37c").unwrap();
+        let unknown_chain_id_bytes_too_long =
+            hex::decode("7013417c68fcf077c1ef0b8b800d1f91d1bbdb6f5e08e5e5f3d9020dc37cd2d50000").unwrap();
+        assert!(unknown_chain_id_bytes_too_short.len() < EOS_CHAIN_ID_LENGTH_IN_BYTES);
+        assert!(unknown_chain_id_bytes_too_long.len() > EOS_CHAIN_ID_LENGTH_IN_BYTES);
+        let expected_err_1 = format!(
+            "Incorrect number of bytes for `EosChainId`. Got {}, expected {}!",
+            unknown_chain_id_bytes_too_short.len(),
+            EOS_CHAIN_ID_LENGTH_IN_BYTES
+        );
+        let expected_err_2 = format!(
+            "Incorrect number of bytes for `EosChainId`. Got {}, expected {}!",
+            unknown_chain_id_bytes_too_long.len(),
+            EOS_CHAIN_ID_LENGTH_IN_BYTES
+        );
+        match EosChainId::from_bytes(&unknown_chain_id_bytes_too_short) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err_1),
+            Err(_) => panic!("Wrong err received!"),
+        };
+        match EosChainId::from_bytes(&unknown_chain_id_bytes_too_long) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err_2),
+            Err(_) => panic!("Wrong err received!"),
+        };
     }
 }
