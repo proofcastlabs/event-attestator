@@ -52,7 +52,10 @@ impl BtcChainId {
         match convert_bytes_to_u64(bytes)? {
             0 => Ok(Self::Bitcoin),
             1 => Ok(Self::Testnet),
-            _ => Ok(Self::Unknown(bytes.to_vec())),
+            _ => {
+                info!("✔ Using unknown BTC chain id: 0x{}", hex::encode(bytes));
+                Ok(Self::Unknown(bytes.to_vec()))
+            },
         }
     }
 
@@ -85,7 +88,7 @@ impl fmt::Display for BtcChainId {
         match self {
             Self::Bitcoin => write!(f, "Bitcoin Mainnet: 0x{}", self.to_hex()),
             Self::Testnet => write!(f, "Bitcoin Testnet: 0x{}", self.to_hex()),
-            Self::Unknown(_) => write!(f, "Bitcoin Testnet: 0x{}", self.to_hex()),
+            Self::Unknown(_) => write!(f, "Bitcoin Unknown: 0x{}", self.to_hex()),
         }
     }
 }

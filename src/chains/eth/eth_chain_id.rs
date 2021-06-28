@@ -57,7 +57,7 @@ impl EthChainId {
             "xdai" | "100" => Ok(Self::XDaiMainnet),
             "polygon" | "137" => Ok(Self::PolygonMainnet),
             _ => match s.parse::<u8>() {
-                Ok(u_8) => Ok(Self::Unknown(u_8)),
+                Ok(byte) => Ok(Self::Unknown(byte)),
                 Err(_) => Err(format!("✘ Unrecognized ETH network: '{}'!", s).into()),
             },
         }
@@ -75,20 +75,24 @@ impl EthChainId {
             Self::BscMainnet => 56,
             Self::XDaiMainnet => 100,
             Self::PolygonMainnet => 137,
-            Self::Unknown(u_8) => *u_8,
+            Self::Unknown(byte) => *byte,
         }
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         info!("✔ Getting `EthChainId` from bytes: {}", hex::encode(bytes));
-        match convert_bytes_to_u8(bytes)? {
+        let byte = convert_bytes_to_u8(bytes)?;
+        match byte {
             1 => Ok(Self::Mainnet),
             3 => Ok(Self::Ropsten),
             4 => Ok(Self::Rinkeby),
             56 => Ok(Self::BscMainnet),
             100 => Ok(Self::XDaiMainnet),
             137 => Ok(Self::PolygonMainnet),
-            _ => Err(format!("`EthChainId` error! Unrecognised bytes : {}", hex::encode(bytes)).into()),
+            _ => {
+                info!("✔ Using unknown ETH chain ID: 0x{}", hex::encode(bytes));
+                Ok(Self::Unknown(byte))
+            }
         }
     }
 
@@ -112,7 +116,7 @@ impl EthChainId {
             Self::BscMainnet => 56,
             Self::XDaiMainnet => 100,
             Self::PolygonMainnet => 137,
-            Self::Unknown(u_8) => *u_8,
+            Self::Unknown(byte) => *byte,
         }
     }
 
@@ -165,10 +169,10 @@ mod tests {
     #[test]
     fn should_make_u8_roundtrip_for_all_eth_chain_ids() {
         let ids = EthChainId::get_all();
-        let u8s = ids.iter().map(|id| id.to_u8()).collect::<Vec<u8>>();
-        let result = u8s
+        let bytes = ids.iter().map(|id| id.to_u8()).collect::<Vec<u8>>();
+        let result = bytes
             .iter()
-            .map(|u_8| EthChainId::try_from(*u_8))
+            .map(|byte| EthChainId::try_from(*byte))
             .collect::<Result<Vec<EthChainId>>>()
             .unwrap();
         assert_eq!(result, ids);

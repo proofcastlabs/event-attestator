@@ -111,7 +111,7 @@ impl EosChainId {
                 let num_bytes = bytes.len();
                 match num_bytes {
                     EOS_CHAIN_ID_LENGTH_IN_BYTES => {
-                        info!("✔ Using unknown EOS chain ID...");
+                        info!("✔ Using unknown EOS chain ID: 0x{}", hex::encode(bytes));
                         Ok(Self::Unknown(bytes.to_vec()))
                     },
                     _ => Err(format!(
