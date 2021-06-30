@@ -25,7 +25,7 @@ use crate::{
             eos_utils::get_symbol_from_eos_asset,
         },
     },
-    constants::SAFE_EOS_ADDRESS,
+    constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_EOS_ADDRESS},
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
@@ -48,6 +48,18 @@ pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D: DatabaseInter
 pub struct BtcOnEosMintingParams(pub Vec<BtcOnEosMintingParamStruct>);
 
 impl BtcOnEosMintingParams {
+    pub fn calculate_fees(&self, basis_points: u64) -> Result<(Vec<u64>, u64)> {
+        info!("✔ Calculating fees in `BtcOnEosMintingParams`...");
+        let fees = self
+            .iter()
+            .map(|minting_params| minting_params.calculate_fee(basis_points))
+            .collect::<Result<Vec<u64>>>()?;
+        let total_fee = fees.iter().sum();
+        info!("✔      Fees: {:?}", fees);
+        info!("✔ Total fee: {:?}", fees);
+        Ok((fees, total_fee))
+    }
+
     pub fn to_bytes(&self) -> Result<Bytes> {
         Ok(serde_json::to_vec(&self.0)?)
     }
@@ -179,6 +191,10 @@ pub struct BtcOnEosMintingParamStruct {
 }
 
 impl BtcOnEosMintingParamStruct {
+    pub fn calculate_fee(&self, basis_points: u64) -> Result<u64> {
+        convert_eos_asset_to_u64(&self.amount).map(|amount| (amount * basis_points) / FEE_BASIS_POINTS_DIVISOR)
+    }
+
     pub fn subtract_amount(&self, subtrahend: u64) -> Result<Self> {
         info!("✔ Subtracting {} from {:?}", subtrahend, self);
         let symbol = get_symbol_from_eos_asset(&self.amount);
@@ -253,5 +269,25 @@ mod tests {
         assert_eq!(result.originating_tx_hash, params.originating_tx_hash);
         assert_eq!(result.originating_tx_address, params.originating_tx_address);
         assert_eq!(result.amount, expected_result);
+    }
+
+    #[test]
+    fn should_calculate_fee_from_btc_on_eos_minting_param() {
+        let params = get_sample_btc_on_eos_minting_params()[0].clone();
+        let basis_points = 25;
+        let result = params.calculate_fee(basis_points).unwrap();
+        let expected_result = 12;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_calculate_fee_from_btc_on_eos_minting_params() {
+        let params = get_sample_btc_on_eos_minting_params();
+        let basis_points = 25;
+        let (fees, total) = params.calculate_fees(basis_points).unwrap();
+        let expected_fees = vec![12, 12, 12];
+        let expected_total: u64 = expected_fees.iter().sum();
+        assert_eq!(total, expected_total);
+        assert_eq!(fees, expected_fees);
     }
 }
