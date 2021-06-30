@@ -19,7 +19,11 @@ use crate::{
             btc_state::BtcState,
             deposit_address_info::DepositInfoHashMap,
         },
-        eos::{eos_database_utils::get_eos_token_symbol_from_db, eos_unit_conversions::convert_eos_asset_to_u64},
+        eos::{
+            eos_database_utils::get_eos_token_symbol_from_db,
+            eos_unit_conversions::convert_eos_asset_to_u64,
+            eos_utils::get_symbol_from_eos_asset,
+        },
     },
     constants::SAFE_EOS_ADDRESS,
     traits::DatabaseInterface,
@@ -175,6 +179,27 @@ pub struct BtcOnEosMintingParamStruct {
 }
 
 impl BtcOnEosMintingParamStruct {
+    pub fn subtract_amount(&self, subtrahend: u64) -> Result<Self> {
+        info!("✔ Subtracting {} from {:?}", subtrahend, self);
+        let symbol = get_symbol_from_eos_asset(&self.amount);
+        let amount = convert_eos_asset_to_u64(&self.amount)?;
+        let amount_minus_fee = amount - subtrahend;
+        if subtrahend > amount {
+            Err(format!("Cannot subtract {} from {}!", subtrahend, amount).into())
+        } else {
+            info!(
+                "✔ Subtracted amount of {} from current minting params amount of {} to get final amount of {}",
+                subtrahend, self.amount, amount_minus_fee
+            );
+            Ok(Self {
+                to: self.to.clone(),
+                originating_tx_hash: self.originating_tx_hash.clone(),
+                originating_tx_address: self.originating_tx_address.clone(),
+                amount: convert_u64_to_8_decimal_eos_asset(amount_minus_fee, &symbol),
+            })
+        }
+    }
+
     pub fn new(
         amount: u64,
         to: String,
@@ -216,5 +241,17 @@ mod tests {
         result
             .iter()
             .for_each(|params| assert!(convert_eos_asset_to_u64(&params.amount).unwrap() >= MINIMUM_REQUIRED_SATOSHIS));
+    }
+
+    #[test]
+    fn should_subtract_amount_from_btc_on_eos_minting_params() {
+        let params = get_sample_btc_on_eos_minting_params()[0].clone();
+        let subtrahend = 1337;
+        let result = params.subtract_amount(subtrahend).unwrap();
+        let expected_result = "0.00003663 PBTC".to_string();
+        assert_eq!(result.to, params.to);
+        assert_eq!(result.originating_tx_hash, params.originating_tx_hash);
+        assert_eq!(result.originating_tx_address, params.originating_tx_address);
+        assert_eq!(result.amount, expected_result);
     }
 }
