@@ -80,6 +80,21 @@ pub struct BtcOnEosRedeemInfo {
 }
 
 impl BtcOnEosRedeemInfo {
+    pub fn subtract_amount(&self, subtrahend: u64) -> Self {
+        let new_amount = self.amount - subtrahend;
+        info!(
+            "Subtracted amount of {} from current redeem info amount of {} to get final amount of {}",
+            subtrahend, self.amount, new_amount
+        );
+        Self {
+            from: self.from,
+            amount: new_amount,
+            recipient: self.recipient.clone(),
+            global_sequence: self.global_sequence,
+            originating_tx_id: self.originating_tx_id,
+        }
+    }
+
     pub fn calculate_fee(&self, basis_points: u64) -> u64 {
         (self.amount * basis_points) / FEE_BASIS_POINTS_DIVISOR
     }
@@ -289,5 +304,14 @@ mod tests {
         let expected_total_fee: u64 = expected_fees.iter().sum();
         assert_eq!(total_fee, expected_total_fee);
         assert_eq!(fees, expected_fees);
+    }
+
+    #[test]
+    fn should_subtract_amount_from_btc_on_eos_redeem_params() {
+        let params = get_sample_redeem_params();
+        let subtrahend = 1337;
+        let result = params.subtract_amount(subtrahend);
+        let expected_result = 3774;
+        assert_eq!(result.amount, expected_result)
     }
 }
