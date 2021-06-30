@@ -13,6 +13,7 @@ use crate::{
             eos_state::EosState,
         },
     },
+    constants::FEE_BASIS_POINTS_DIVISOR,
     traits::DatabaseInterface,
     types::Result,
     utils::convert_bytes_to_u64,
@@ -22,6 +23,18 @@ use crate::{
 pub struct BtcOnEosRedeemInfos(pub Vec<BtcOnEosRedeemInfo>);
 
 impl BtcOnEosRedeemInfos {
+    pub fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
+        info!("✔ Calculating fees in `BtcOnEosRedeemInfos`...");
+        let fees = self
+            .iter()
+            .map(|redeem_info| redeem_info.calculate_fee(basis_points))
+            .collect::<Vec<u64>>();
+        let total_fee = fees.iter().sum();
+        info!("✔      Fees: {:?}", fees);
+        info!("✔ Total fee: {:?}", fees);
+        (fees, total_fee)
+    }
+
     pub fn sum(&self) -> u64 {
         self.0.iter().fold(0, |acc, infos| acc + infos.amount)
     }
@@ -67,6 +80,10 @@ pub struct BtcOnEosRedeemInfo {
 }
 
 impl BtcOnEosRedeemInfo {
+    pub fn calculate_fee(&self, basis_points: u64) -> u64 {
+        (self.amount * basis_points) / FEE_BASIS_POINTS_DIVISOR
+    }
+
     pub fn get_eos_amount_from_proof(proof: &EosActionProof) -> Result<u64> {
         proof
             .check_proof_action_data_length(15, "Not enough data to parse `BtcOnEosRedeemInfo` amount from proof!")
@@ -156,6 +173,11 @@ mod tests {
         eos_test_utils::get_sample_eos_submission_material_n,
         eos_utils::convert_hex_to_checksum256,
     };
+
+    fn get_sample_redeem_params() -> BtcOnEosRedeemInfo {
+        let action_proof = get_sample_eos_submission_material_n(1).action_proofs[0].clone();
+        BtcOnEosRedeemInfo::from_action_proof(&action_proof).unwrap()
+    }
 
     #[test]
     fn should_get_amount_from_proof() {
@@ -247,5 +269,25 @@ mod tests {
         let action_proof = get_sample_eos_submission_material_n(1).action_proofs[0].clone();
         let result = BtcOnEosRedeemInfo::from_action_proof(&action_proof).unwrap();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_calculate_fee_in_btc_on_eos_redeem_param() {
+        let params = get_sample_redeem_params();
+        let basis_points = 25;
+        let result = params.calculate_fee(basis_points);
+        let expected_result = 12;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_calculate_fee_in_btc_on_eos_redeem_params() {
+        let params = BtcOnEosRedeemInfos::new(vec![get_sample_redeem_params(), get_sample_redeem_params()]);
+        let basis_points = 25;
+        let (fees, total_fee) = params.calculate_fees(basis_points);
+        let expected_fees = vec![12, 12];
+        let expected_total_fee: u64 = expected_fees.iter().sum();
+        assert_eq!(total_fee, expected_total_fee);
+        assert_eq!(fees, expected_fees);
     }
 }
