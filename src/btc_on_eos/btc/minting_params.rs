@@ -48,6 +48,16 @@ pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D: DatabaseInter
 pub struct BtcOnEosMintingParams(pub Vec<BtcOnEosMintingParamStruct>);
 
 impl BtcOnEosMintingParams {
+    #[cfg(test)]
+    pub fn sum(&self) -> u64 {
+        self.iter()
+            .map(|params| convert_eos_asset_to_u64(&params.amount))
+            .collect::<Result<Vec<u64>>>()
+            .unwrap()
+            .iter()
+            .sum()
+    }
+
     pub fn calculate_fees(&self, basis_points: u64) -> Result<(Vec<u64>, u64)> {
         info!("✔ Calculating fees in `BtcOnEosMintingParams`...");
         let fees = self
