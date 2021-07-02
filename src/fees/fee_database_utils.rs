@@ -12,6 +12,14 @@ pub struct FeeDatabaseUtils {
 }
 
 impl FeeDatabaseUtils {
+    pub fn new_for_core_type(core_type: &CoreType) -> Result<Self> {
+        match core_type {
+            CoreType::BtcOnEth => Ok(Self::new_for_btc_on_eth()),
+            CoreType::BtcOnEos => Ok(Self::new_for_btc_on_eos()),
+            _ => Err(format!("`FeeDatabaseUtils` no implemented for core type: {}", core_type).into()),
+        }
+    }
+
     pub fn new_for_btc_on_eth() -> Self {
         Self {
             core_type: CoreType::BtcOnEth,

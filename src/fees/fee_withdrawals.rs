@@ -9,23 +9,33 @@ use crate::{
         btc_types::BtcRecipientAndAmount,
         utxo_manager::{utxo_types::BtcUtxosAndValues, utxo_utils::get_enough_utxos_to_cover_total},
     },
+    core_type::CoreType,
     fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
     types::Result,
     utils::get_unix_timestamp,
 };
 
-pub fn get_btc_on_eth_fee_withdrawal_tx<D: DatabaseInterface>(db: &D, btc_address: &str) -> Result<BtcTransaction> {
-    let withdrawal_amount = FeeDatabaseUtils::new_for_btc_on_eth().get_accrued_fees_from_db(db)?;
+pub fn get_fee_withdrawal_btc_tx_for_core_type<D: DatabaseInterface>(
+    core_type: &CoreType,
+    db: &D,
+    btc_address: &str,
+) -> Result<BtcTransaction> {
+    let fee_db_utils = FeeDatabaseUtils::new_for_core_type(core_type)?;
+    let withdrawal_amount = fee_db_utils.get_accrued_fees_from_db(db)?;
     if withdrawal_amount == 0 {
-        Err("Cannot get `btc-on-eth` withdrawal tx - there are no fees to withdraw!".into())
+        Err(format!(
+            "Cannot get `{}` withdrawal tx - there are no fees to withdraw!",
+            core_type
+        )
+        .into())
     } else {
         let fee = get_btc_fee_from_db(db)?;
         let recipients_and_amounts = vec![BtcRecipientAndAmount {
             recipient: BtcAddress::from_str(btc_address)?,
             amount: withdrawal_amount,
         }];
-        FeeDatabaseUtils::new_for_btc_on_eth()
+        fee_db_utils
             .put_last_fee_withdrawal_timestamp_in_db(db, get_unix_timestamp()?)
             .and_then(|_| {
                 get_enough_utxos_to_cover_total(
@@ -46,10 +56,18 @@ pub fn get_btc_on_eth_fee_withdrawal_tx<D: DatabaseInterface>(db: &D, btc_addres
                 )
             })
             .and_then(|signed_btc_tx| {
-                FeeDatabaseUtils::new_for_btc_on_eth().reset_accrued_fees(db)?;
+                fee_db_utils.reset_accrued_fees(db)?;
                 Ok(signed_btc_tx)
             })
     }
+}
+
+pub fn get_btc_on_eth_fee_withdrawal_tx<D: DatabaseInterface>(db: &D, btc_address: &str) -> Result<BtcTransaction> {
+    get_fee_withdrawal_btc_tx_for_core_type(&CoreType::BtcOnEth, db, btc_address)
+}
+
+pub fn get_btc_on_eos_fee_withdrawal_tx<D: DatabaseInterface>(db: &D, btc_address: &str) -> Result<BtcTransaction> {
+    get_fee_withdrawal_btc_tx_for_core_type(&CoreType::BtcOnEos, db, btc_address)
 }
 
 #[cfg(test)]
@@ -104,7 +122,7 @@ mod tests {
     #[test]
     fn get_btc_on_eth_accrued_fees_from_db_should_err_if_no_fees_to_withdraw() {
         let db = get_test_database();
-        let expected_err = "Cannot get `btc-on-eth` withdrawal tx - there are no fees to withdraw!".to_string();
+        let expected_err = "Cannot get `BTC_ON_ETH` withdrawal tx - there are no fees to withdraw!".to_string();
         let recipient_address = "msgbp2MiwL6M1qkhZx9N46ipPn12tzLzZ7";
         match get_btc_on_eth_fee_withdrawal_tx(&db, recipient_address) {
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),

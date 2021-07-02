@@ -26,11 +26,20 @@ use crate::{
     chains::{
         btc::{
             btc_constants::{get_btc_constants_db_keys, BTC_PRIVATE_KEY_DB_KEY as BTC_KEY},
-            btc_database_utils::{end_btc_db_transaction, get_btc_latest_block_from_db, start_btc_db_transaction},
+            btc_database_utils::{
+                end_btc_db_transaction,
+                get_btc_address_from_db,
+                get_btc_latest_block_from_db,
+                start_btc_db_transaction,
+            },
             btc_debug_functions::debug_put_btc_fee_in_db,
             btc_state::BtcState,
             btc_submission_material::parse_submission_material_and_put_in_state,
-            extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_state,
+            btc_utils::{get_hex_tx_from_signed_btc_tx, get_pay_to_pub_key_hash_script},
+            extract_utxos_from_p2pkh_txs::{
+                extract_utxos_from_txs,
+                maybe_extract_utxos_from_p2pkh_txs_and_put_in_state,
+            },
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
             filter_p2pkh_deposit_txs::filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
@@ -48,6 +57,7 @@ use crate::{
                     remove_utxo,
                 },
                 utxo_constants::get_utxo_constants_db_keys,
+                utxo_database_utils::save_utxos_to_db,
                 utxo_utils::get_all_utxos_as_json_string,
             },
             validate_btc_block_header::validate_btc_block_header_in_state,
@@ -90,7 +100,11 @@ use crate::{
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
-    fees::{fee_database_utils::FeeDatabaseUtils, fee_utils::sanity_check_basis_points_value},
+    fees::{
+        fee_database_utils::FeeDatabaseUtils,
+        fee_utils::sanity_check_basis_points_value,
+        fee_withdrawals::get_btc_on_eos_fee_withdrawal_tx,
+    },
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -448,4 +462,24 @@ pub fn debug_put_btc_on_eos_peg_out_basis_points_in_db<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Debug setting `BtcOnEos` peg-out basis-points to {}", basis_points);
     debug_put_btc_on_eos_basis_points_in_db(db, basis_points, false)
+}
+
+/// # Debug Get Fee Withdrawal Tx
+///
+/// This function crates a BTC transaction to the passed in address for the amount of accrued fees
+/// accounted for in the encrypted database. The function then reset this value back to zero. The
+/// signed transaction is returned to the caller.
+pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &str) -> Result<String> {
+    info!("✔ Debug getting `BtcOnEos` withdrawal tx...");
+    check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| get_btc_on_eos_fee_withdrawal_tx(&db, btc_address))
+        .and_then(|btc_tx| {
+            let change_utxos = get_pay_to_pub_key_hash_script(&get_btc_address_from_db(&db)?)
+                .map(|target_script| extract_utxos_from_txs(&target_script, &[btc_tx.clone()]))?;
+            save_utxos_to_db(&db, &change_utxos)?;
+            db.end_transaction()?;
+            Ok(json!({ "signed_btc_tx": get_hex_tx_from_signed_btc_tx(&btc_tx) }).to_string())
+        })
+        .map(prepend_debug_output_marker_to_string)
 }
