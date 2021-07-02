@@ -13,7 +13,7 @@ pub enum CoreType {
 }
 
 impl CoreType {
-    pub fn to_db_key_prefix(&self) -> String {
+    pub fn as_db_key_prefix(&self) -> String {
         self.to_string().to_lowercase().replace("_", "-")
     }
 }
@@ -42,6 +42,6 @@ mod tests {
         let expected_results = vec!["btc-on-eth", "btc-on-eos", "eos-on-eth", "erc20-on-eos", "erc20-on-evm"];
         CoreType::iter()
             .zip(expected_results.iter())
-            .for_each(|(core_type, expected_result)| assert_eq!(&core_type.to_db_key_prefix(), *expected_result))
+            .for_each(|(core_type, expected_result)| assert_eq!(&core_type.as_db_key_prefix(), *expected_result))
     }
 }

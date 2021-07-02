@@ -28,21 +28,21 @@ impl FeeConstantDbKeys {
     pub fn new(core_type: CoreType) -> Self {
         Self {
             core_type,
-            accrued_fees_db_key: get_prefixed_db_key(&format!("{}-accrued-fees-key", core_type.to_db_key_prefix()))
+            accrued_fees_db_key: get_prefixed_db_key(&format!("{}-accrued-fees-key", core_type.as_db_key_prefix()))
                 .to_vec(),
             peg_in_basis_points_db_key: get_prefixed_db_key(&format!(
                 "{}-last-fee-withdrawal-timestamp",
-                core_type.to_db_key_prefix()
+                core_type.as_db_key_prefix()
             ))
             .to_vec(),
             last_fee_withdrawal_db_key: get_prefixed_db_key(&format!(
                 "{}-peg-in-basis-points-key",
-                core_type.to_db_key_prefix()
+                core_type.as_db_key_prefix()
             ))
             .to_vec(),
             peg_out_basis_points_db_key: get_prefixed_db_key(&format!(
                 "{}-peg-out-basis-points-key",
-                core_type.to_db_key_prefix()
+                core_type.as_db_key_prefix()
             ))
             .to_vec(),
         }
