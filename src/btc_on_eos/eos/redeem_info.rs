@@ -23,6 +23,17 @@ use crate::{
 pub struct BtcOnEosRedeemInfos(pub Vec<BtcOnEosRedeemInfo>);
 
 impl BtcOnEosRedeemInfos {
+    pub fn subtract_fees(&self, fee_basis_points: u64) -> Self {
+        let (fees, _) = self.calculate_fees(fee_basis_points);
+        info!("`BtcOnEosRedeemInfos` fees: {:?}", fees);
+        Self::new(
+            fees.iter()
+                .zip(self.iter())
+                .map(|(fee, redeem_info)| redeem_info.subtract_amount(*fee))
+                .collect::<Vec<BtcOnEosRedeemInfo>>(),
+        )
+    }
+
     pub fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
         info!("✔ Calculating fees in `BtcOnEosRedeemInfos`...");
         let fees = self
@@ -134,7 +145,7 @@ impl BtcOnEosRedeemInfo {
 }
 
 pub fn maybe_parse_redeem_infos_and_put_in_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    info!("✔ Parsing redeem params from actions data...");
+    info!("✔ Parsing redeem infos from actions data...");
     BtcOnEosRedeemInfos::from_action_proofs(&state.action_proofs).and_then(|redeem_infos| {
         info!("✔ Parsed {} sets of redeem info!", redeem_infos.len());
         state.add_btc_on_eos_redeem_infos(redeem_infos)
@@ -189,9 +200,13 @@ mod tests {
         eos_utils::convert_hex_to_checksum256,
     };
 
-    fn get_sample_redeem_params() -> BtcOnEosRedeemInfo {
+    fn get_sample_redeem_info() -> BtcOnEosRedeemInfo {
         let action_proof = get_sample_eos_submission_material_n(1).action_proofs[0].clone();
         BtcOnEosRedeemInfo::from_action_proof(&action_proof).unwrap()
+    }
+
+    fn get_sample_redeem_infos() -> BtcOnEosRedeemInfos {
+        BtcOnEosRedeemInfos::new(vec![get_sample_redeem_info(), get_sample_redeem_info()])
     }
 
     #[test]
@@ -288,18 +303,18 @@ mod tests {
 
     #[test]
     fn should_calculate_fee_in_btc_on_eos_redeem_param() {
-        let params = get_sample_redeem_params();
+        let infos = get_sample_redeem_info();
         let basis_points = 25;
-        let result = params.calculate_fee(basis_points);
+        let result = infos.calculate_fee(basis_points);
         let expected_result = 12;
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_calculate_fee_in_btc_on_eos_redeem_params() {
-        let params = BtcOnEosRedeemInfos::new(vec![get_sample_redeem_params(), get_sample_redeem_params()]);
+    fn should_calculate_fee_in_btc_on_eos_redeem_infos() {
+        let infos = get_sample_redeem_infos();
         let basis_points = 25;
-        let (fees, total_fee) = params.calculate_fees(basis_points);
+        let (fees, total_fee) = infos.calculate_fees(basis_points);
         let expected_fees = vec![12, 12];
         let expected_total_fee: u64 = expected_fees.iter().sum();
         assert_eq!(total_fee, expected_total_fee);
@@ -307,11 +322,20 @@ mod tests {
     }
 
     #[test]
-    fn should_subtract_amount_from_btc_on_eos_redeem_params() {
-        let params = get_sample_redeem_params();
+    fn should_subtract_amount_from_btc_on_eos_redeem_infos() {
+        let infos = get_sample_redeem_info();
         let subtrahend = 1337;
-        let result = params.subtract_amount(subtrahend);
+        let result = infos.subtract_amount(subtrahend);
         let expected_result = 3774;
         assert_eq!(result.amount, expected_result)
+    }
+
+    #[test]
+    fn should_subtract_fees_from_btc_on_eos_redeem_infos() {
+        let infos = get_sample_redeem_infos();
+        let basis_points = 25;
+        let result = infos.subtract_fees(basis_points);
+        let expected_amount = 5099;
+        result.iter().for_each(|info| assert_eq!(info.amount, expected_amount));
     }
 }
