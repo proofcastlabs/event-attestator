@@ -4,6 +4,7 @@ use crate::{
     btc_on_eos::check_core_is_initialized::check_core_is_initialized,
     chains::{btc::btc_enclave_state::BtcEnclaveState, eos::eos_enclave_state::EosEnclaveState},
     enclave_info::EnclaveInfo,
+    fees::fee_enclave_state::FeesEnclaveState,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -13,6 +14,7 @@ struct EnclaveState {
     info: EnclaveInfo,
     eos: EosEnclaveState,
     btc: BtcEnclaveState,
+    fees: FeesEnclaveState,
 }
 
 impl EnclaveState {
@@ -21,6 +23,7 @@ impl EnclaveState {
             info: EnclaveInfo::new(),
             eos: EosEnclaveState::new(db)?,
             btc: BtcEnclaveState::new(db)?,
+            fees: FeesEnclaveState::new_for_btc_on_eos(db)?,
         })
     }
 

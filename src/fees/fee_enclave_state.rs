@@ -24,6 +24,13 @@ impl FeesEnclaveState {
             fees: FeeStateForTokens::new_for_btc_on_eth(db)?,
         })
     }
+
+    pub fn new_for_btc_on_eos<D: DatabaseInterface>(db: &D) -> Result<Self> {
+        Ok(Self {
+            fees_enabled: !DISABLE_FEES,
+            fees: FeeStateForTokens::new_for_btc_on_eos(db)?,
+        })
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -49,6 +56,19 @@ impl FeeStateForTokens {
             peg_out_basis_points: FeeDatabaseUtils::new_for_btc_on_eth().get_peg_out_basis_points_from_db(db)?,
             last_withdrawal: get_last_withdrawal_date_as_human_readable_string(
                 FeeDatabaseUtils::new_for_btc_on_eth().get_last_fee_withdrawal_timestamp_from_db(db)?,
+            ),
+        }]))
+    }
+
+    pub fn new_for_btc_on_eos<D: DatabaseInterface>(db: &D) -> Result<Self> {
+        Ok(Self::new(vec![FeeStateForToken {
+            token_symbol: "BTC".to_string(),
+            accrued_fees: FeeDatabaseUtils::new_for_btc_on_eos().get_accrued_fees_from_db(db)?,
+            accrued_fees_db_key: hex::encode(&BTC_ON_ETH_FEE_DB_KEYS.accrued_fees_db_key),
+            peg_in_basis_points: FeeDatabaseUtils::new_for_btc_on_eos().get_peg_in_basis_points_from_db(db)?,
+            peg_out_basis_points: FeeDatabaseUtils::new_for_btc_on_eos().get_peg_out_basis_points_from_db(db)?,
+            last_withdrawal: get_last_withdrawal_date_as_human_readable_string(
+                FeeDatabaseUtils::new_for_btc_on_eos().get_last_fee_withdrawal_timestamp_from_db(db)?,
             ),
         }]))
     }
