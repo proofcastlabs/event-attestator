@@ -2,19 +2,11 @@ use serde_json::json;
 
 use crate::{
     check_debug_mode::check_debug_mode,
-    fees::{fee_constants::MAX_FEE_BASIS_POINTS, fee_database_utils::FeeDatabaseUtils},
+    fees::{fee_database_utils::FeeDatabaseUtils, fee_utils::sanity_check_basis_points_value},
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-
-fn sanity_check_basis_points_value(basis_points: u64) -> Result<u64> {
-    if basis_points <= MAX_FEE_BASIS_POINTS {
-        Ok(basis_points)
-    } else {
-        Err(format!("Error! Basis points exceeds maximum of {}!", MAX_FEE_BASIS_POINTS).into())
-    }
-}
 
 /// # Debug Put BTC-on-ETH Peg-In Basis-Points In DB
 ///
@@ -55,7 +47,7 @@ pub fn debug_put_btc_on_eth_peg_out_basis_points_in_db<D: DatabaseInterface>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::errors::AppError;
+    use crate::{errors::AppError, fees::fee_constants::MAX_FEE_BASIS_POINTS};
 
     #[test]
     fn should_pass_basis_points_sanity_check() {
