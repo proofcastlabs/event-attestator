@@ -26,6 +26,8 @@ pub use crate::{
             debug_get_key_from_db,
             debug_get_processed_actions_list,
             debug_maybe_add_utxo_to_db,
+            debug_put_btc_on_eos_peg_in_basis_points_in_db,
+            debug_put_btc_on_eos_peg_out_basis_points_in_db,
             debug_remove_utxo,
             debug_reprocess_btc_block_for_stale_eos_tx,
             debug_reprocess_eos_block,
