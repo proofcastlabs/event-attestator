@@ -9,8 +9,8 @@ pub enum CoreType {
     Erc20OnEvm,
 }
 
-impl CoreType {
-    pub fn to_string(&self) -> String {
+impl fmt::Display for CoreType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let s = match self {
             Self::BtcOnEth => "BTC_ON_ETH",
             Self::BtcOnEos => "BTC_ON_EOS",
@@ -18,12 +18,6 @@ impl CoreType {
             Self::Erc20OnEos => "ERC20_ON_EOS",
             Self::Erc20OnEvm => "ERC20_ON_EVM",
         };
-        s.to_string()
-    }
-}
-
-impl fmt::Display for CoreType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        write!(f, "{}", s)
     }
 }

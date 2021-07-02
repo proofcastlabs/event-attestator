@@ -52,11 +52,7 @@ pub fn maybe_account_for_fees<D: DatabaseInterface>(state: EosState<D>) -> Resul
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        btc_on_eos::test_utils::{get_sample_redeem_info, get_sample_redeem_infos},
-        chains::eos::eos_unit_conversions::convert_eos_asset_to_u64,
-        test_utils::get_test_database,
-    };
+    use crate::{btc_on_eos::test_utils::get_sample_redeem_infos, test_utils::get_test_database};
 
     #[test]
     fn should_account_for_fees_in_btc_on_eos_redeem_infos() {
