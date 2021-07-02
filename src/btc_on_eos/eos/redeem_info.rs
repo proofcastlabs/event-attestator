@@ -195,19 +195,10 @@ mod tests {
     use std::str::FromStr;
 
     use super::*;
-    use crate::chains::eos::{
-        eos_test_utils::get_sample_eos_submission_material_n,
-        eos_utils::convert_hex_to_checksum256,
+    use crate::{
+        btc_on_eos::test_utils::{get_sample_redeem_info, get_sample_redeem_infos},
+        chains::eos::{eos_test_utils::get_sample_eos_submission_material_n, eos_utils::convert_hex_to_checksum256},
     };
-
-    fn get_sample_redeem_info() -> BtcOnEosRedeemInfo {
-        let action_proof = get_sample_eos_submission_material_n(1).action_proofs[0].clone();
-        BtcOnEosRedeemInfo::from_action_proof(&action_proof).unwrap()
-    }
-
-    fn get_sample_redeem_infos() -> BtcOnEosRedeemInfos {
-        BtcOnEosRedeemInfos::new(vec![get_sample_redeem_info(), get_sample_redeem_info()])
-    }
 
     #[test]
     fn should_get_amount_from_proof() {
