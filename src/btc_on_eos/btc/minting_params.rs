@@ -58,6 +58,18 @@ impl BtcOnEosMintingParams {
             .sum()
     }
 
+    pub fn subtract_fees(&self, fee_basis_points: u64) -> Result<Self> {
+        self.calculate_fees(fee_basis_points).and_then(|(fees, _)| {
+            info!("`BtcOnEosMintingParams` fees: {:?}", fees);
+            Ok(Self::new(
+                fees.iter()
+                    .zip(self.iter())
+                    .map(|(fee, params)| params.subtract_amount(*fee))
+                    .collect::<Result<Vec<BtcOnEosMintingParamStruct>>>()?,
+            ))
+        })
+    }
+
     pub fn calculate_fees(&self, basis_points: u64) -> Result<(Vec<u64>, u64)> {
         info!("✔ Calculating fees in `BtcOnEosMintingParams`...");
         let fees = self
@@ -299,5 +311,16 @@ mod tests {
         let expected_total: u64 = expected_fees.iter().sum();
         assert_eq!(total, expected_total);
         assert_eq!(fees, expected_fees);
+    }
+
+    #[test]
+    fn should_subtract_fees_from_btc_on_eos_minting_params() {
+        let params = get_sample_btc_on_eos_minting_params();
+        let basis_points = 25;
+        let result = params.subtract_fees(basis_points).unwrap();
+        let expected_amount_0 = 4988;
+        let expected_amount_1 = 4989;
+        assert_eq!(convert_eos_asset_to_u64(&result[0].amount).unwrap(), expected_amount_0);
+        assert_eq!(convert_eos_asset_to_u64(&result[1].amount).unwrap(), expected_amount_1);
     }
 }
