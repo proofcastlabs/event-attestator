@@ -167,7 +167,7 @@ impl FeeDatabaseUtils {
     }
 
     pub fn increment_accrued_fees<D: DatabaseInterface>(&self, db: &D, increment_amount: u64) -> Result<()> {
-        debug!("✔ Incrementing `btc-on-eth` accrued fees in db...");
+        debug!("✔ Incrementing accrued fees in db...");
         self.get_accrued_fees_from_db(db).and_then(|accrued_fees| {
             let total_after_incrementing = accrued_fees + increment_amount;
             debug!("✔ Accrued fees before incrementing: {}", accrued_fees);

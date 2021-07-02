@@ -233,7 +233,7 @@ impl BtcOnEosMintingParamStruct {
                 to: self.to.clone(),
                 originating_tx_hash: self.originating_tx_hash.clone(),
                 originating_tx_address: self.originating_tx_address.clone(),
-                amount: convert_u64_to_8_decimal_eos_asset(amount_minus_fee, &symbol),
+                amount: convert_u64_to_8_decimal_eos_asset(amount_minus_fee, symbol),
             })
         }
     }
