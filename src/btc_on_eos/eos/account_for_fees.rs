@@ -43,7 +43,7 @@ pub fn maybe_account_for_fees<D: DatabaseInterface>(state: EosState<D>) -> Resul
         account_for_fees_in_redeem_infos(
             &state.db,
             &state.btc_on_eos_redeem_infos,
-            FeeDatabaseUtils::new_for_btc_on_eos().get_peg_in_basis_points_from_db(&state.db)?,
+            FeeDatabaseUtils::new_for_btc_on_eos().get_peg_out_basis_points_from_db(&state.db)?,
         )
         .and_then(|updated_redeem_info| state.replace_btc_on_eos_redeem_infos(updated_redeem_info))
     }
