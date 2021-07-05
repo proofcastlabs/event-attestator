@@ -16,6 +16,7 @@ pub use crate::{
     btc_on_eos::{
         btc::submit_btc_block::submit_btc_block_to_core,
         debug_functions::{
+            block_reprocessors::{debug_reprocess_btc_block_for_stale_eos_tx, debug_reprocess_eos_block},
             debug_add_multiple_utxos,
             debug_add_new_eos_schedule,
             debug_clear_all_utxos,
@@ -29,8 +30,6 @@ pub use crate::{
             debug_put_btc_on_eos_peg_in_basis_points_in_db,
             debug_put_btc_on_eos_peg_out_basis_points_in_db,
             debug_remove_utxo,
-            debug_reprocess_btc_block_for_stale_eos_tx,
-            debug_reprocess_eos_block,
             debug_set_btc_fee,
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
