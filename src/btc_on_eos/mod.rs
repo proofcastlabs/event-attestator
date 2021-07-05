@@ -29,6 +29,7 @@ pub use crate::{
             debug_get_all_db_keys,
             debug_get_all_utxos,
             debug_get_child_pays_for_parent_btc_tx,
+            debug_get_fee_withdrawal_tx,
             debug_get_key_from_db,
             debug_get_processed_actions_list,
             debug_maybe_add_utxo_to_db,
