@@ -16,7 +16,12 @@ pub use crate::{
     btc_on_eos::{
         btc::submit_btc_block::submit_btc_block_to_core,
         debug_functions::{
-            block_reprocessors::{debug_reprocess_btc_block_for_stale_eos_tx, debug_reprocess_eos_block},
+            block_reprocessors::{
+                debug_reprocess_btc_block_for_stale_eos_tx,
+                debug_reprocess_btc_block_for_stale_eos_tx_with_fee_accrual,
+                debug_reprocess_eos_block,
+                debug_reprocess_eos_block_with_fee_accrual,
+            },
             debug_add_multiple_utxos,
             debug_add_new_eos_schedule,
             debug_clear_all_utxos,
