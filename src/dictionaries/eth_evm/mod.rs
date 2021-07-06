@@ -410,6 +410,54 @@ impl EthEvmTokenDictionaryEntry {
         self.evm_token_decimals
             .ok_or_else(|| format!("Dictionary entry does NOT have EVM token decimals set! {:?}", self).into())
     }
+
+    fn convert_eth_amount_to_evm_amount(&self, amount: U256) -> Result<U256> {
+        info!("✔ Converting from ETH amount to EVM amount...");
+        self.convert_amount(amount, true)
+    }
+
+    fn convert_evm_amount_to_eth_amount(&self, amount: U256) -> Result<U256> {
+        info!("✔ Converting from EVM amount to ETH amount...");
+        self.convert_amount(amount, false)
+    }
+
+    fn convert_amount(&self, amount: U256, eth_to_evm: bool) -> Result<U256> {
+        if self.requires_decimal_conversion() {
+            let eth_token_decimals = self.get_eth_token_decimals()?;
+            let evm_token_decimals = self.get_evm_token_decimals()?;
+            let multiplicand = U256::from(10).pow(U256::from(if eth_to_evm {
+                evm_token_decimals
+            } else {
+                eth_token_decimals
+            }));
+            let divisor = U256::from(10).pow(U256::from(if eth_to_evm {
+                eth_token_decimals
+            } else {
+                evm_token_decimals
+            }));
+            info!(
+                "✔ Converting {} from {} decimals to {}...",
+                amount,
+                if eth_to_evm {
+                    eth_token_decimals
+                } else {
+                    evm_token_decimals
+                },
+                if eth_to_evm {
+                    evm_token_decimals
+                } else {
+                    eth_token_decimals
+                }
+            );
+            Ok((amount * multiplicand) / divisor)
+        } else {
+            info!(
+                "✔ Amounts for this dictionary entry do NOT require decimal conversion! {:?}",
+                self,
+            );
+            Ok(amount)
+        }
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -851,5 +899,109 @@ mod tests {
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
             Err(_) => panic!("Wrong error received!"),
         }
+    }
+
+    #[test]
+    fn should_convert_evm_amount_to_eth_amount() {
+        let amounts = vec![
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("1").unwrap(),
+            U256::from_dec_str("12").unwrap(),
+            U256::from_dec_str("123").unwrap(),
+            U256::from_dec_str("1234").unwrap(),
+            U256::from_dec_str("12345").unwrap(),
+            U256::from_dec_str("123456").unwrap(),
+            U256::from_dec_str("1234567").unwrap(),
+            U256::from_dec_str("12345678").unwrap(),
+            U256::from_dec_str("123456789").unwrap(),
+            U256::from_dec_str("1234567891").unwrap(),
+            U256::from_dec_str("12345678912").unwrap(),
+            U256::from_dec_str("123456789123").unwrap(),
+            U256::from_dec_str("1234567891234").unwrap(),
+            U256::from_dec_str("12345678912345").unwrap(),
+            U256::from_dec_str("123456789123456").unwrap(),
+            U256::from_dec_str("1234567891234567").unwrap(),
+            U256::from_dec_str("12345678912345678").unwrap(),
+            U256::from_dec_str("123456789123456789").unwrap(),
+            U256::from_dec_str("1234567891234567891").unwrap(),
+            U256::from_dec_str("12345678912345678912").unwrap(),
+        ];
+        let expected_results = vec![
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("1").unwrap(),
+            U256::from_dec_str("12").unwrap(),
+            U256::from_dec_str("123").unwrap(),
+            U256::from_dec_str("1234").unwrap(),
+            U256::from_dec_str("12345").unwrap(),
+            U256::from_dec_str("123456").unwrap(),
+            U256::from_dec_str("1234567").unwrap(),
+            U256::from_dec_str("12345678").unwrap(),
+            U256::from_dec_str("123456789").unwrap(),
+            U256::from_dec_str("1234567891").unwrap(),
+        ];
+        let entry = get_dictionary_entry_with_different_decimals();
+        let expected_eth_token_decimals = 8;
+        let expected_evm_token_decimals = 18;
+        let eth_token_decimals = entry.get_eth_token_decimals().unwrap();
+        let evm_token_decimals = entry.get_evm_token_decimals().unwrap();
+        assert_eq!(eth_token_decimals, expected_eth_token_decimals);
+        assert_eq!(evm_token_decimals, expected_evm_token_decimals);
+        amounts.iter().enumerate().for_each(|(i, amount)| {
+            let result = entry.convert_evm_amount_to_eth_amount(*amount).unwrap();
+            let expected_result = expected_results[i];
+            assert_eq!(result, expected_result);
+        });
+    }
+
+    #[test]
+    fn should_convert_eth_amount_to_evm_amount() {
+        let amounts = vec![
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("1").unwrap(),
+            U256::from_dec_str("12").unwrap(),
+            U256::from_dec_str("123").unwrap(),
+            U256::from_dec_str("1234").unwrap(),
+            U256::from_dec_str("12345").unwrap(),
+            U256::from_dec_str("123456").unwrap(),
+            U256::from_dec_str("1234567").unwrap(),
+            U256::from_dec_str("12345678").unwrap(),
+            U256::from_dec_str("123456789").unwrap(),
+            U256::from_dec_str("1234567891").unwrap(),
+        ];
+        let expected_results = vec![
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("10000000000").unwrap(),
+            U256::from_dec_str("120000000000").unwrap(),
+            U256::from_dec_str("1230000000000").unwrap(),
+            U256::from_dec_str("12340000000000").unwrap(),
+            U256::from_dec_str("123450000000000").unwrap(),
+            U256::from_dec_str("1234560000000000").unwrap(),
+            U256::from_dec_str("12345670000000000").unwrap(),
+            U256::from_dec_str("123456780000000000").unwrap(),
+            U256::from_dec_str("1234567890000000000").unwrap(),
+            U256::from_dec_str("12345678910000000000").unwrap(),
+        ];
+        let entry = get_dictionary_entry_with_different_decimals();
+        let expected_eth_token_decimals = 8;
+        let expected_evm_token_decimals = 18;
+        let eth_token_decimals = entry.get_eth_token_decimals().unwrap();
+        let evm_token_decimals = entry.get_evm_token_decimals().unwrap();
+        assert_eq!(eth_token_decimals, expected_eth_token_decimals);
+        assert_eq!(evm_token_decimals, expected_evm_token_decimals);
+        amounts.iter().enumerate().for_each(|(i, amount)| {
+            let result = entry.convert_eth_amount_to_evm_amount(*amount).unwrap();
+            let expected_result = expected_results[i];
+            assert_eq!(result, expected_result);
+        });
     }
 }
