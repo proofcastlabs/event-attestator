@@ -307,6 +307,12 @@ pub struct EthEvmTokenDictionaryEntry {
 }
 
 impl EthEvmTokenDictionaryEntry {
+    fn requires_decimal_conversion(&self) -> bool {
+        self.eth_token_decimals.is_some()
+            && self.evm_token_decimals.is_some()
+            && self.eth_token_decimals != self.evm_token_decimals
+    }
+
     fn to_json(&self) -> EthEvmTokenDictionaryEntryJson {
         EthEvmTokenDictionaryEntryJson {
             evm_symbol: self.evm_symbol.to_string(),
@@ -772,5 +778,27 @@ mod tests {
         let entry_2_after = result.get_entry_via_address(&address_2).unwrap();
         assert_eq!(entry_1_after.accrued_fees, fee_1);
         assert_eq!(entry_2_after.accrued_fees, fee_2);
+    }
+
+    #[test]
+    fn dictionary_entry_with_different_decimals_should_require_decimal_conversion() {
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let eth_address = EthAddress::from_slice(&hex::decode("15D4c048F83bd7e37d49eA4C83a07267Ec4203dA").unwrap());
+        let entry = dictionary.get_entry_via_eth_address(&eth_address).unwrap();
+        assert_ne!(entry.eth_token_decimals, entry.evm_token_decimals);
+        let expected_result = true;
+        let result = entry.requires_decimal_conversion();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn dictionary_entry_with_same_decimals_not_should_require_decimal_conversion() {
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let eth_address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
+        let entry = dictionary.get_entry_via_eth_address(&eth_address).unwrap();
+        assert_eq!(entry.eth_token_decimals, entry.evm_token_decimals);
+        let expected_result = false;
+        let result = entry.requires_decimal_conversion();
+        assert_eq!(result, expected_result);
     }
 }
