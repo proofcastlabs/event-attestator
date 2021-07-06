@@ -400,6 +400,16 @@ impl EthEvmTokenDictionaryEntry {
         new_entry.accrued_fees_human_readable = 0;
         new_entry
     }
+
+    fn get_eth_token_decimals(&self) -> Result<u16> {
+        self.eth_token_decimals
+            .ok_or_else(|| format!("Dictionary entry does NOT have ETH token decimals set! {:?}", self).into())
+    }
+
+    fn get_evm_token_decimals(&self) -> Result<u16> {
+        self.evm_token_decimals
+            .ok_or_else(|| format!("Dictionary entry does NOT have EVM token decimals set! {:?}", self).into())
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -441,8 +451,26 @@ mod tests {
     use super::*;
     use crate::{
         dictionaries::eth_evm::test_utils::{get_sample_eth_evm_dictionary, get_sample_eth_evm_dictionary_json_str},
+        errors::AppError,
         test_utils::get_test_database,
     };
+
+    fn get_dictionary_entry_with_different_decimals() -> EthEvmTokenDictionaryEntry {
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let eth_address = EthAddress::from_slice(&hex::decode("15D4c048F83bd7e37d49eA4C83a07267Ec4203dA").unwrap());
+        dictionary.get_entry_via_eth_address(&eth_address).unwrap()
+    }
+
+    fn get_dictionary_entry_with_same_decimals() -> EthEvmTokenDictionaryEntry {
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let eth_address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
+        dictionary.get_entry_via_eth_address(&eth_address).unwrap()
+    }
+
+    fn get_dictionary_entry_with_no_decimals() -> EthEvmTokenDictionaryEntry {
+        // NOTE: "same" here meaning `None`
+        get_dictionary_entry_with_same_decimals()
+    }
 
     #[test]
     fn should_get_dictionary_from_str() {
@@ -782,9 +810,7 @@ mod tests {
 
     #[test]
     fn dictionary_entry_with_different_decimals_should_require_decimal_conversion() {
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
-        let eth_address = EthAddress::from_slice(&hex::decode("15D4c048F83bd7e37d49eA4C83a07267Ec4203dA").unwrap());
-        let entry = dictionary.get_entry_via_eth_address(&eth_address).unwrap();
+        let entry = get_dictionary_entry_with_different_decimals();
         assert_ne!(entry.eth_token_decimals, entry.evm_token_decimals);
         let expected_result = true;
         let result = entry.requires_decimal_conversion();
@@ -793,12 +819,37 @@ mod tests {
 
     #[test]
     fn dictionary_entry_with_same_decimals_not_should_require_decimal_conversion() {
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
-        let eth_address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
-        let entry = dictionary.get_entry_via_eth_address(&eth_address).unwrap();
+        let entry = get_dictionary_entry_with_same_decimals();
         assert_eq!(entry.eth_token_decimals, entry.evm_token_decimals);
         let expected_result = false;
         let result = entry.requires_decimal_conversion();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_eth_token_decimals_if_set() {
+        let entry = get_dictionary_entry_with_different_decimals();
+        let result = entry.get_eth_token_decimals().unwrap();
+        let expected_result = 8;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_evm_token_decimals_if_set() {
+        let entry = get_dictionary_entry_with_different_decimals();
+        let result = entry.get_evm_token_decimals().unwrap();
+        let expected_result = 18;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_fail_to_get_decimals_if_none_set() {
+        let entry = get_dictionary_entry_with_no_decimals();
+        let expected_err = format!("Dictionary entry does NOT have ETH token decimals set! {:?}", entry);
+        match entry.get_eth_token_decimals() {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(_) => panic!("Wrong error received!"),
+        }
     }
 }
