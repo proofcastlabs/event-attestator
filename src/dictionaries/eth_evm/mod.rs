@@ -302,6 +302,8 @@ pub struct EthEvmTokenDictionaryEntry {
     pub last_withdrawal: u64,
     pub accrued_fees_human_readable: u128,
     pub last_withdrawal_human_readable: String,
+    pub eth_token_decimals: Option<u16>,
+    pub evm_token_decimals: Option<u16>,
 }
 
 impl EthEvmTokenDictionaryEntry {
@@ -315,6 +317,8 @@ impl EthEvmTokenDictionaryEntry {
             evm_fee_basis_points: Some(self.evm_fee_basis_points),
             accrued_fees: Some(self.accrued_fees.as_u128()),
             last_withdrawal: Some(self.last_withdrawal),
+            eth_token_decimals: self.eth_token_decimals,
+            evm_token_decimals: self.evm_token_decimals,
         }
     }
 
@@ -332,6 +336,8 @@ impl EthEvmTokenDictionaryEntry {
             last_withdrawal: timestamp,
             last_withdrawal_human_readable: get_last_withdrawal_date_as_human_readable_string(timestamp),
             accrued_fees,
+            eth_token_decimals: json.eth_token_decimals,
+            evm_token_decimals: json.evm_token_decimals,
         })
     }
 
@@ -400,6 +406,8 @@ pub struct EthEvmTokenDictionaryEntryJson {
     evm_fee_basis_points: Option<u64>,
     accrued_fees: Option<u128>,
     last_withdrawal: Option<u64>,
+    eth_token_decimals: Option<u16>,
+    evm_token_decimals: Option<u16>,
 }
 
 impl EthEvmTokenDictionaryEntryJson {

@@ -36,5 +36,13 @@
     "evm_symbol": "CGG",
     "evm_address": "0x1613957159e9b0ac6c80e824f7eea748a32a0ae2",
     "eth_address": "0x1fe24f25b1cf609b9c4e7e12d802e3640dfa5e43"
+  },
+  {
+    "eth_symbol": "GALA",
+    "evm_symbol": "GALA",
+    "evm_address": "0xbe807dddb074639cd9fa61b47676c064fc50d62c",
+    "eth_address": "0x15D4c048F83bd7e37d49eA4C83a07267Ec4203dA",
+    "eth_token_decimals": 8,
+    "evm_token_decimals": 18
   }
 ]
