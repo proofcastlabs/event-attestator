@@ -394,7 +394,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
     })
 }
 
-pub fn filter_out_zero_value_tx_infos_from_state<D: DatabaseInterface>(state: EvmState<D>) -> Result<EvmState<D>> {
+pub fn filter_out_zero_value_eth_tx_infos_from_state<D: DatabaseInterface>(state: EvmState<D>) -> Result<EvmState<D>> {
     info!("✔ Maybe filtering out zero value `EthOnEvmEthTxInfos`...");
     debug!(
         "✔ Num `EthOnEvmEthTxInfos` before: {}",

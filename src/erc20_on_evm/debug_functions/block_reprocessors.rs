@@ -53,7 +53,7 @@ use crate::{
                 update_accrued_fees_in_dictionary_and_return_state as update_accrued_fees_in_dictionary_and_return_eth_state,
             },
             evm_tx_info::{
-                filter_out_zero_value_tx_infos_from_state,
+                filter_out_zero_value_evm_tx_infos_from_state,
                 filter_submission_material_for_peg_in_events_in_state,
                 maybe_sign_evm_txs_and_add_to_eth_state,
                 EthOnEvmEvmTxInfos,
@@ -66,7 +66,7 @@ use crate::{
                 update_accrued_fees_in_dictionary_and_return_state as update_accrued_fees_in_dictionary_and_return_evm_state,
             },
             eth_tx_info::{
-                filter_out_zero_value_tx_infos_from_state as filter_out_zero_value_eth_txs_from_state,
+                filter_out_zero_value_eth_tx_infos_from_state,
                 filter_submission_material_for_redeem_events_in_state,
                 maybe_sign_eth_txs_and_add_to_evm_state,
                 EthOnEvmEthTxInfos,
@@ -105,7 +105,7 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
                 })
                 .and_then(|params| state.add_erc20_on_evm_eth_tx_infos(params))
         })
-        .and_then(filter_out_zero_value_eth_txs_from_state)
+        .and_then(filter_out_zero_value_eth_tx_infos_from_state)
         .and_then(account_for_fees_in_eth_tx_infos_in_state)
         .and_then(|state| {
             if accrue_fees {
@@ -169,7 +169,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                 })
                 .and_then(|params| state.add_erc20_on_evm_evm_tx_infos(params))
         })
-        .and_then(filter_out_zero_value_tx_infos_from_state)
+        .and_then(filter_out_zero_value_evm_tx_infos_from_state)
         .and_then(account_for_fees_in_evm_tx_infos_in_state)
         .and_then(|state| {
             if accrue_fees {
