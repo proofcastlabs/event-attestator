@@ -18,6 +18,16 @@ pub(crate) mod test_utils;
 pub struct EthEvmTokenDictionary(pub Vec<EthEvmTokenDictionaryEntry>);
 
 impl EthEvmTokenDictionary {
+    pub fn convert_eth_amount_to_evm_amount(&self, address: &EthAddress, amount: U256) -> Result<U256> {
+        self.get_entry_via_address(address)
+            .and_then(|entry| entry.convert_eth_amount_to_evm_amount(amount))
+    }
+
+    pub fn convert_evm_amount_to_eth_amount(&self, address: &EthAddress, amount: U256) -> Result<U256> {
+        self.get_entry_via_address(address)
+            .and_then(|entry| entry.convert_evm_amount_to_eth_amount(amount))
+    }
+
     pub fn to_json(&self) -> Result<EthEvmTokenDictionaryJson> {
         Ok(EthEvmTokenDictionaryJson::new(
             self.iter().map(|entry| entry.to_json()).collect(),
@@ -411,12 +421,12 @@ impl EthEvmTokenDictionaryEntry {
             .ok_or_else(|| format!("Dictionary entry does NOT have EVM token decimals set! {:?}", self).into())
     }
 
-    fn convert_eth_amount_to_evm_amount(&self, amount: U256) -> Result<U256> {
+    pub fn convert_eth_amount_to_evm_amount(&self, amount: U256) -> Result<U256> {
         info!("✔ Converting from ETH amount to EVM amount...");
         self.convert_amount(amount, true)
     }
 
-    fn convert_evm_amount_to_eth_amount(&self, amount: U256) -> Result<U256> {
+    pub fn convert_evm_amount_to_eth_amount(&self, amount: U256) -> Result<U256> {
         info!("✔ Converting from EVM amount to ETH amount...");
         self.convert_amount(amount, false)
     }
