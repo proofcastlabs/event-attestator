@@ -275,7 +275,6 @@ impl EthOnEvmEthTxInfos {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
                     let tx_info = EthOnEvmEthTxInfo {
                         evm_token_address: log.address,
-                        token_amount: event_params.value,
                         token_sender: event_params.redeemer,
                         origin_chain_id: origin_chain_id.clone(),
                         user_data: event_params.user_data.clone(),
@@ -284,6 +283,7 @@ impl EthOnEvmEthTxInfos {
                         destination_address: safely_convert_hex_to_eth_address(
                             &event_params.underlying_asset_recipient,
                         )?,
+                        token_amount: dictionary.convert_evm_amount_to_eth_amount(&log.address, event_params.value)?,
                     };
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)

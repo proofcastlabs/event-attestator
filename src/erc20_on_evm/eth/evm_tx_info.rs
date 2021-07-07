@@ -240,10 +240,11 @@ impl EthOnEvmEvmTxInfos {
                         user_data: event_params.user_data.clone(),
                         eth_token_address: event_params.token_address,
                         originating_tx_hash: receipt.transaction_hash,
-                        token_amount: event_params.token_amount,
                         token_sender: event_params.token_sender,
                         destination_address: safely_convert_hex_to_eth_address(&event_params.destination_address)?,
                         evm_token_address: dictionary.get_evm_address_from_eth_address(&event_params.token_address)?,
+                        token_amount: dictionary
+                            .convert_eth_amount_to_evm_amount(&event_params.token_address, event_params.token_amount)?,
                     };
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)
