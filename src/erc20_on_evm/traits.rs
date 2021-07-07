@@ -11,22 +11,22 @@ pub trait FeeCalculator {
     where
         Self: Sized;
 
-    fn calculate_fee(&self, fee_basis_points: u64) -> U256 {
-        if fee_basis_points > 0 {
-            debug!("Calculating fee using `fee_basis_points` of {}", fee_basis_points);
-            (self.get_amount() * U256::from(fee_basis_points)) / U256::from(FEE_BASIS_POINTS_DIVISOR)
-        } else {
-            debug!("Not calculating fee because `fee_basis_points` are zero!");
-            U256::zero()
-        }
+    fn calculate_fee(&self, dictionary: &EthEvmTokenDictionary) -> Result<U256> {
+        dictionary
+            .get_fee_basis_points(&self.get_token_address())
+            .map(|fee_basis_points| {
+                if fee_basis_points > 0 {
+                    debug!("Calculating fee using `fee_basis_points` of {}", fee_basis_points);
+                    (self.get_amount() * U256::from(fee_basis_points)) / U256::from(FEE_BASIS_POINTS_DIVISOR)
+                } else {
+                    debug!("Not calculating fee because `fee_basis_points` are zero!");
+                    U256::zero()
+                }
+            })
     }
 
     fn calculate_fee_via_dictionary(&self, dictionary: &EthEvmTokenDictionary) -> Result<(EthAddress, U256)> {
-        let token_address = self.get_token_address();
-        Ok((
-            token_address,
-            self.calculate_fee(dictionary.get_fee_basis_points(&token_address)?),
-        ))
+        Ok((self.get_token_address(), self.calculate_fee(dictionary)?))
     }
 }
 
