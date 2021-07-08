@@ -464,7 +464,6 @@ mod tests {
     use super::*;
     use crate::{
         chains::eth::eth_traits::EthTxInfoCompatible,
-        dictionaries::eth_evm::EthEvmTokenDictionaryEntry,
         erc20_on_evm::test_utils::{
             get_evm_submission_material_n,
             get_sample_eth_evm_token_dictionary,
@@ -546,22 +545,9 @@ mod tests {
 
     #[test]
     fn should_calculate_eth_on_evm_eth_tx_info_fee() {
-        let token_dictionary = EthEvmTokenDictionary::new(vec![EthEvmTokenDictionaryEntry {
-            eth_symbol: "ETH".to_string(),
-            evm_symbol: "EVM".to_string(),
-            evm_address: EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap()),
-            eth_address: EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap()),
-            eth_fee_basis_points: 25,
-            evm_fee_basis_points: 25,
-            accrued_fees: U256::zero(),
-            last_withdrawal: 0,
-            accrued_fees_human_readable: 0,
-            last_withdrawal_human_readable: "".to_string(),
-            eth_token_decimals: None,
-            evm_token_decimals: None,
-        }]);
+        let fee_basis_points = 25;
         let info = get_sample_tx_info();
-        let result = info.calculate_fee(&token_dictionary).unwrap();
+        let result = info.calculate_fee(fee_basis_points);
         let expected_result = U256::from_dec_str("250000000000000").unwrap();
         assert_eq!(result, expected_result);
     }
