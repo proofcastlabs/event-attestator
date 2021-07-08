@@ -9,8 +9,8 @@ pub fn get_sample_eth_evm_dictionary_json_str() -> Result<String> {
     )?)
 }
 
-pub fn get_sample_eth_evm_dictionary() -> Result<EthEvmTokenDictionary> {
-    EthEvmTokenDictionary::from_str(&get_sample_eth_evm_dictionary_json_str()?)
+pub fn get_sample_eth_evm_dictionary() -> EthEvmTokenDictionary {
+    EthEvmTokenDictionary::from_str(&get_sample_eth_evm_dictionary_json_str().unwrap()).unwrap()
 }
 
 mod tests {

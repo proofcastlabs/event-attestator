@@ -491,7 +491,7 @@ mod tests {
 
     #[test]
     fn should_get_signaures_from_evm_tx_info() {
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let pk = get_sample_evm_private_key();
         let infos = get_sample_tx_infos();
         let nonce = 0_u64;
