@@ -141,7 +141,7 @@ impl EthOnEvmEvmTxInfo {
         };
         encode_erc777_mint_fxn_maybe_with_data(
             &self.destination_address,
-            &dictionary.convert_eth_amount_to_evm_amount(&self.eth_token_address, self.native_token_amount)?,
+            &self.get_host_token_amount(dictionary)?,
             if metadata.is_empty() { None } else { Some(&metadata) },
             operator_data,
         )
