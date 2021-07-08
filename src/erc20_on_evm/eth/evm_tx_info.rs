@@ -123,6 +123,7 @@ impl EthOnEvmEvmTxInfo {
         gas_limit: usize,
         gas_price: u64,
         evm_private_key: &EvmPrivateKey,
+        dictionary: &EthEvmTokenDictionary,
     ) -> Result<EvmTransaction> {
         info!("✔ Signing EVM transaction for tx info: {:?}", self);
         let operator_data = None;
@@ -140,7 +141,7 @@ impl EthOnEvmEvmTxInfo {
         };
         encode_erc777_mint_fxn_maybe_with_data(
             &self.destination_address,
-            &self.native_token_amount,
+            &dictionary.convert_eth_amount_to_evm_amount(&self.eth_token_address, self.native_token_amount)?,
             if metadata.is_empty() { None } else { Some(&metadata) },
             operator_data,
         )
@@ -239,15 +240,14 @@ impl EthOnEvmEvmTxInfos {
                 .map(|log| {
                     let event_params = Erc20VaultPegInEventParams::from_eth_log(log)?;
                     let tx_info = EthOnEvmEvmTxInfo {
+                        token_sender: event_params.token_sender,
                         origin_chain_id: origin_chain_id.clone(),
                         user_data: event_params.user_data.clone(),
                         eth_token_address: event_params.token_address,
                         originating_tx_hash: receipt.transaction_hash,
-                        token_sender: event_params.token_sender,
+                        native_token_amount: event_params.token_amount,
                         destination_address: safely_convert_hex_to_eth_address(&event_params.destination_address)?,
                         evm_token_address: dictionary.get_evm_address_from_eth_address(&event_params.token_address)?,
-                        native_token_amount: dictionary
-                            .convert_eth_amount_to_evm_amount(&event_params.token_address, event_params.token_amount)?,
                     };
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)
@@ -311,6 +311,7 @@ impl EthOnEvmEvmTxInfos {
         gas_limit: usize,
         gas_price: u64,
         evm_private_key: &EvmPrivateKey,
+        dictionary: &EthEvmTokenDictionary,
     ) -> Result<EvmTransactions> {
         info!("✔ Signing `ERC20-on-EVM` EVM transactions...");
         Ok(EvmTransactions::new(
@@ -324,6 +325,7 @@ impl EthOnEvmEvmTxInfos {
                         gas_limit,
                         gas_price,
                         evm_private_key,
+                        dictionary,
                     )
                 })
                 .collect::<Result<Vec<EvmTransaction>>>()?,
@@ -405,6 +407,7 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
                 ERC777_MINT_WITH_DATA_GAS_LIMIT,
                 get_evm_gas_price_from_db(&state.db)?,
                 &get_evm_private_key_from_db(&state.db)?,
+                &EthEvmTokenDictionary::get_from_db(&state.db)?,
             )
             .and_then(|signed_txs| {
                 #[cfg(feature = "debug")]
@@ -421,7 +424,7 @@ mod tests {
     use super::*;
     use crate::{
         chains::eth::eth_traits::EthTxInfoCompatible,
-        dictionaries::eth_evm::EthEvmTokenDictionaryEntry,
+        dictionaries::eth_evm::{test_utils::get_sample_eth_evm_dictionary, EthEvmTokenDictionaryEntry},
         erc20_on_evm::test_utils::{
             get_eth_submission_material_n,
             get_sample_eth_evm_token_dictionary,
@@ -488,6 +491,7 @@ mod tests {
 
     #[test]
     fn should_get_signaures_from_evm_tx_info() {
+        let dictionary = get_sample_eth_evm_dictionary().unwrap();
         let pk = get_sample_evm_private_key();
         let infos = get_sample_tx_infos();
         let nonce = 0_u64;
@@ -495,7 +499,7 @@ mod tests {
         let gas_limit = 300_000_usize;
         let gas_price = 20_000_000_000_u64;
         let signed_txs = infos
-            .to_evm_signed_txs(nonce, &chain_id, gas_limit, gas_price, &pk)
+            .to_evm_signed_txs(nonce, &chain_id, gas_limit, gas_price, &pk, &dictionary)
             .unwrap();
         let expected_num_results = 1;
         assert_eq!(signed_txs.len(), expected_num_results);
