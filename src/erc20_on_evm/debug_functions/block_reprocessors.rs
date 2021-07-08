@@ -197,6 +197,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                         use_any_sender_tx,
                         get_evm_any_sender_nonce_from_db(&state.db)?,
                         get_latest_evm_block_number(&state.db)?,
+                        &EthEvmTokenDictionary::get_from_db(&state.db)?,
                     )?
                 },
             })?;
