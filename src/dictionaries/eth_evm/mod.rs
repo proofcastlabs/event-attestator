@@ -435,30 +435,19 @@ impl EthEvmTokenDictionaryEntry {
         if self.require_decimal_conversion() {
             let eth_token_decimals = self.get_eth_token_decimals()?;
             let evm_token_decimals = self.get_evm_token_decimals()?;
-            let multiplicand = U256::from(10).pow(U256::from(if eth_to_evm {
+            let to = if eth_to_evm {
                 evm_token_decimals
             } else {
                 eth_token_decimals
-            }));
-            let divisor = U256::from(10).pow(U256::from(if eth_to_evm {
+            };
+            let from = if eth_to_evm {
                 eth_token_decimals
             } else {
                 evm_token_decimals
-            }));
-            info!(
-                "✔ Converting {} from {} decimals to {}...",
-                amount,
-                if eth_to_evm {
-                    eth_token_decimals
-                } else {
-                    evm_token_decimals
-                },
-                if eth_to_evm {
-                    evm_token_decimals
-                } else {
-                    eth_token_decimals
-                }
-            );
+            };
+            let multiplicand = U256::from(10).pow(U256::from(to));
+            let divisor = U256::from(10).pow(U256::from(from));
+            info!("✔ Converting {} from {} decimals to {}...", amount, from, to);
             Ok((amount * multiplicand) / divisor)
         } else {
             info!(
@@ -526,7 +515,7 @@ mod tests {
     }
 
     fn get_dictionary_entry_with_no_decimals() -> EthEvmTokenDictionaryEntry {
-        // NOTE: "same" here meaning `None`
+        // NOTE:The decimals here are techincally the same, but in this case happen to be "None"
         get_dictionary_entry_with_same_decimals()
     }
 
