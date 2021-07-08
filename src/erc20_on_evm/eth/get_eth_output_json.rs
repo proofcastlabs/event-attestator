@@ -70,7 +70,7 @@ impl EvmTxInfo {
                 format!("perc20-on-evm-evm-{}", nonce)
             },
             evm_tx_hash: format!("0x{}", tx.get_tx_hash()),
-            evm_tx_amount: evm_tx_info.token_amount.to_string(),
+            evm_tx_amount: evm_tx_info.native_token_amount.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             evm_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),

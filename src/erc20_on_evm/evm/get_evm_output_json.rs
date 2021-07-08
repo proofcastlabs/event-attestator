@@ -72,7 +72,7 @@ impl EthTxInfo {
                 format!("perc20-on-evm-eth-{}", nonce)
             },
             eth_tx_hash: format!("0x{}", tx.get_tx_hash()),
-            eth_tx_amount: evm_tx_info.token_amount.to_string(),
+            eth_tx_amount: evm_tx_info.native_token_amount.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             eth_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
