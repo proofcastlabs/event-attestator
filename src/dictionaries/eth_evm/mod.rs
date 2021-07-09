@@ -18,6 +18,16 @@ pub(crate) mod test_utils;
 pub struct EthEvmTokenDictionary(pub Vec<EthEvmTokenDictionaryEntry>);
 
 impl EthEvmTokenDictionary {
+    pub fn convert_eth_amount_to_evm_amount(&self, address: &EthAddress, amount: U256) -> Result<U256> {
+        self.get_entry_via_address(address)
+            .and_then(|entry| entry.convert_eth_amount_to_evm_amount(amount))
+    }
+
+    pub fn convert_evm_amount_to_eth_amount(&self, address: &EthAddress, amount: U256) -> Result<U256> {
+        self.get_entry_via_address(address)
+            .and_then(|entry| entry.convert_evm_amount_to_eth_amount(amount))
+    }
+
     pub fn to_json(&self) -> Result<EthEvmTokenDictionaryJson> {
         Ok(EthEvmTokenDictionaryJson::new(
             self.iter().map(|entry| entry.to_json()).collect(),
@@ -302,9 +312,17 @@ pub struct EthEvmTokenDictionaryEntry {
     pub last_withdrawal: u64,
     pub accrued_fees_human_readable: u128,
     pub last_withdrawal_human_readable: String,
+    pub eth_token_decimals: Option<u16>,
+    pub evm_token_decimals: Option<u16>,
 }
 
 impl EthEvmTokenDictionaryEntry {
+    fn require_decimal_conversion(&self) -> bool {
+        self.eth_token_decimals.is_some()
+            && self.evm_token_decimals.is_some()
+            && self.eth_token_decimals != self.evm_token_decimals
+    }
+
     fn to_json(&self) -> EthEvmTokenDictionaryEntryJson {
         EthEvmTokenDictionaryEntryJson {
             evm_symbol: self.evm_symbol.to_string(),
@@ -315,6 +333,8 @@ impl EthEvmTokenDictionaryEntry {
             evm_fee_basis_points: Some(self.evm_fee_basis_points),
             accrued_fees: Some(self.accrued_fees.as_u128()),
             last_withdrawal: Some(self.last_withdrawal),
+            eth_token_decimals: self.eth_token_decimals,
+            evm_token_decimals: self.evm_token_decimals,
         }
     }
 
@@ -332,6 +352,8 @@ impl EthEvmTokenDictionaryEntry {
             last_withdrawal: timestamp,
             last_withdrawal_human_readable: get_last_withdrawal_date_as_human_readable_string(timestamp),
             accrued_fees,
+            eth_token_decimals: json.eth_token_decimals,
+            evm_token_decimals: json.evm_token_decimals,
         })
     }
 
@@ -388,6 +410,53 @@ impl EthEvmTokenDictionaryEntry {
         new_entry.accrued_fees_human_readable = 0;
         new_entry
     }
+
+    fn get_eth_token_decimals(&self) -> Result<u16> {
+        self.eth_token_decimals
+            .ok_or_else(|| format!("Dictionary entry does NOT have ETH token decimals set! {:?}", self).into())
+    }
+
+    fn get_evm_token_decimals(&self) -> Result<u16> {
+        self.evm_token_decimals
+            .ok_or_else(|| format!("Dictionary entry does NOT have EVM token decimals set! {:?}", self).into())
+    }
+
+    pub fn convert_eth_amount_to_evm_amount(&self, amount: U256) -> Result<U256> {
+        info!("✔ Converting from ETH amount to EVM amount...");
+        self.convert_amount(amount, true)
+    }
+
+    pub fn convert_evm_amount_to_eth_amount(&self, amount: U256) -> Result<U256> {
+        info!("✔ Converting from EVM amount to ETH amount...");
+        self.convert_amount(amount, false)
+    }
+
+    fn convert_amount(&self, amount: U256, eth_to_evm: bool) -> Result<U256> {
+        if self.require_decimal_conversion() {
+            let eth_token_decimals = self.get_eth_token_decimals()?;
+            let evm_token_decimals = self.get_evm_token_decimals()?;
+            let to = if eth_to_evm {
+                evm_token_decimals
+            } else {
+                eth_token_decimals
+            };
+            let from = if eth_to_evm {
+                eth_token_decimals
+            } else {
+                evm_token_decimals
+            };
+            let multiplicand = U256::from(10).pow(U256::from(to));
+            let divisor = U256::from(10).pow(U256::from(from));
+            info!("✔ Converting {} from {} decimals to {}...", amount, from, to);
+            Ok((amount * multiplicand) / divisor)
+        } else {
+            info!(
+                "✔ Amounts for this dictionary entry do NOT require decimal conversion! {:?}",
+                self,
+            );
+            Ok(amount)
+        }
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -400,6 +469,8 @@ pub struct EthEvmTokenDictionaryEntryJson {
     evm_fee_basis_points: Option<u64>,
     accrued_fees: Option<u128>,
     last_withdrawal: Option<u64>,
+    eth_token_decimals: Option<u16>,
+    evm_token_decimals: Option<u16>,
 }
 
 impl EthEvmTokenDictionaryEntryJson {
@@ -427,8 +498,26 @@ mod tests {
     use super::*;
     use crate::{
         dictionaries::eth_evm::test_utils::{get_sample_eth_evm_dictionary, get_sample_eth_evm_dictionary_json_str},
+        errors::AppError,
         test_utils::get_test_database,
     };
+
+    fn get_dictionary_entry_with_different_decimals() -> EthEvmTokenDictionaryEntry {
+        let dictionary = get_sample_eth_evm_dictionary();
+        let eth_address = EthAddress::from_slice(&hex::decode("15D4c048F83bd7e37d49eA4C83a07267Ec4203dA").unwrap());
+        dictionary.get_entry_via_eth_address(&eth_address).unwrap()
+    }
+
+    fn get_dictionary_entry_with_same_decimals() -> EthEvmTokenDictionaryEntry {
+        let dictionary = get_sample_eth_evm_dictionary();
+        let eth_address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
+        dictionary.get_entry_via_eth_address(&eth_address).unwrap()
+    }
+
+    fn get_dictionary_entry_with_no_decimals() -> EthEvmTokenDictionaryEntry {
+        // NOTE:The decimals here are techincally the same, but in this case happen to be "None"
+        get_dictionary_entry_with_same_decimals()
+    }
 
     #[test]
     fn should_get_dictionary_from_str() {
@@ -438,7 +527,7 @@ mod tests {
 
     #[test]
     fn should_perform_dict_json_bytes_roundtrip() {
-        let json = get_sample_eth_evm_dictionary().unwrap().to_json().unwrap();
+        let json = get_sample_eth_evm_dictionary().to_json().unwrap();
         let bytes = json.to_bytes().unwrap();
         let result = EthEvmTokenDictionaryJson::from_bytes(&bytes).unwrap();
         assert_eq!(result, json);
@@ -455,7 +544,7 @@ mod tests {
 
     #[test]
     fn pnt_token_in_sample_dictionary_should_have_fees_set() {
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let pnt_address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
         let entry = dictionary.get_entry_via_eth_address(&pnt_address).unwrap();
         assert!(entry.eth_fee_basis_points > 0);
@@ -464,7 +553,7 @@ mod tests {
 
     #[test]
     fn should_get_eth_fee_basis_points() {
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let eth_address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
         let result = dictionary.get_eth_fee_basis_points(&eth_address).unwrap();
         let expected_result = 10;
@@ -473,7 +562,7 @@ mod tests {
 
     #[test]
     fn should_get_evm_fee_basis_points() {
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let result = dictionary.get_evm_fee_basis_points(&evm_address).unwrap();
         let expected_result = 20;
@@ -482,7 +571,7 @@ mod tests {
 
     #[test]
     fn should_get_fee_basis_points() {
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let result = dictionary.get_fee_basis_points(&evm_address).unwrap();
         let expected_result = 20;
@@ -491,7 +580,7 @@ mod tests {
 
     #[test]
     fn should_add_to_accrued_fees_in_dictionary_entry() {
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let entry = dictionary.get_entry_via_evm_address(&evm_address).unwrap();
         assert_eq!(entry.last_withdrawal, 0);
@@ -503,7 +592,7 @@ mod tests {
 
     #[test]
     fn should_get_entry_via_address() {
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let result = dictionary.get_entry_via_address(&evm_address).unwrap();
         assert_eq!(result.evm_address, evm_address);
@@ -511,7 +600,7 @@ mod tests {
 
     #[test]
     fn should_increment_accrued_fees() {
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let fee_1 = U256::from(666);
         let fee_2 = U256::from(1337);
         let address_1 = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
@@ -533,7 +622,7 @@ mod tests {
     #[test]
     fn should_change_eth_fee_basis_points() {
         let new_fee = 1337;
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let eth_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let entry = dictionary.get_entry_via_address(&eth_address).unwrap();
         let fee_before = entry.eth_fee_basis_points;
@@ -545,7 +634,7 @@ mod tests {
     #[test]
     fn should_change_evm_fee_basis_points() {
         let new_fee = 1337;
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let entry = dictionary.get_entry_via_address(&evm_address).unwrap();
         let fee_before = entry.evm_fee_basis_points;
@@ -557,7 +646,7 @@ mod tests {
     #[test]
     fn should_change_eth_fee_basis_points_via_dictionary() {
         let new_fee = 1337;
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let eth_address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
         let fee_before = dictionary.get_eth_fee_basis_points(&eth_address).unwrap();
         assert_ne!(fee_before, new_fee);
@@ -569,7 +658,7 @@ mod tests {
     #[test]
     fn should_change_evm_fee_basis_points_via_dictionary() {
         let new_fee = 1337;
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let fee_before = dictionary.get_evm_fee_basis_points(&evm_address).unwrap();
         assert_ne!(fee_before, new_fee);
@@ -582,7 +671,7 @@ mod tests {
     fn should_change_fee_basis_points_and_update_in_db() {
         let db = get_test_database();
         let new_fee = 1337;
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let eth_address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
         let fee_before = dictionary.get_eth_fee_basis_points(&eth_address).unwrap();
         assert_ne!(fee_before, new_fee);
@@ -598,7 +687,7 @@ mod tests {
     fn should_set_last_withdrawal_timestamp_in_dictionary_entry() {
         let timestamp = get_unix_timestamp().unwrap();
         let human_readable_timestamp = get_last_withdrawal_date_as_human_readable_string(timestamp);
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let entry = dictionary.get_entry_via_address(&evm_address).unwrap();
         let result = entry.set_last_withdrawal_timestamp(timestamp);
@@ -610,7 +699,7 @@ mod tests {
     fn should_zero_accrued_fees_in_dictionary_entry() {
         let fees_before = U256::from(1337);
         let fees_after = U256::zero();
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let evm_address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let entry = dictionary.get_entry_via_address(&evm_address).unwrap();
         let updated_entry = entry.add_to_accrued_fees(fees_before);
@@ -622,7 +711,7 @@ mod tests {
     #[test]
     fn should_set_last_withdrawal_timestamp_in_entry_via_dictionary() {
         let timestamp = get_unix_timestamp().unwrap();
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let entry_before = dictionary.get_entry_via_address(&address).unwrap();
         assert_eq!(entry_before.last_withdrawal, 0);
@@ -637,7 +726,7 @@ mod tests {
     fn should_zero_accrued_fees_in_entry_via_dictionary() {
         let fees_before = U256::from(1337);
         let fees_after = U256::zero();
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
         let updated_dictionary = dictionary.increment_accrued_fee(&address, fees_before).unwrap();
         let entry = updated_dictionary.get_entry_via_address(&address).unwrap();
@@ -652,7 +741,7 @@ mod tests {
         let timestamp = get_unix_timestamp().unwrap();
         let db = get_test_database();
         let expected_fee = U256::from(1337);
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let expected_token_address =
             EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
         let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
@@ -675,7 +764,7 @@ mod tests {
     }
 
     fn get_pnt_dictionary_entry() -> EthEvmTokenDictionaryEntry {
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         dictionary.get_entry_via_address(&get_pnt_address()).unwrap()
     }
 
@@ -692,7 +781,7 @@ mod tests {
     #[test]
     fn should_remove_entry_via_eth_address_and_update_in_db() {
         let db = get_test_database();
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let address = get_pnt_address();
         let entry = get_pnt_dictionary_entry();
         dictionary
@@ -705,7 +794,7 @@ mod tests {
     #[test]
     fn should_replace_entry() {
         let new_accrued_fees = U256::from(1337);
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let pnt_address = get_pnt_address();
         let entry_before = dictionary.get_entry_via_address(&pnt_address).unwrap();
         assert_eq!(entry_before.accrued_fees, U256::zero());
@@ -719,7 +808,7 @@ mod tests {
     #[test]
     fn should_increment_accrued_fees_and_save_in_db() {
         let db = get_test_database();
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let fee_1 = U256::from(666);
         let fee_2 = U256::from(1337);
         let address_1 = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
@@ -744,7 +833,7 @@ mod tests {
     #[test]
     fn incrementing_accrued_fees_by_0_and_saving_in_db_should_work() {
         let db = get_test_database();
-        let dictionary = get_sample_eth_evm_dictionary().unwrap();
+        let dictionary = get_sample_eth_evm_dictionary();
         let fee_1 = U256::from(0);
         let fee_2 = U256::from(1337);
         let address_1 = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
@@ -764,5 +853,154 @@ mod tests {
         let entry_2_after = result.get_entry_via_address(&address_2).unwrap();
         assert_eq!(entry_1_after.accrued_fees, fee_1);
         assert_eq!(entry_2_after.accrued_fees, fee_2);
+    }
+
+    #[test]
+    fn dictionary_entry_with_different_decimals_should_require_decimal_conversion() {
+        let entry = get_dictionary_entry_with_different_decimals();
+        assert_ne!(entry.eth_token_decimals, entry.evm_token_decimals);
+        let expected_result = true;
+        let result = entry.require_decimal_conversion();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn dictionary_entry_with_same_decimals_not_should_require_decimal_conversion() {
+        let entry = get_dictionary_entry_with_same_decimals();
+        assert_eq!(entry.eth_token_decimals, entry.evm_token_decimals);
+        let expected_result = false;
+        let result = entry.require_decimal_conversion();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_eth_token_decimals_if_set() {
+        let entry = get_dictionary_entry_with_different_decimals();
+        let result = entry.get_eth_token_decimals().unwrap();
+        let expected_result = 8;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_evm_token_decimals_if_set() {
+        let entry = get_dictionary_entry_with_different_decimals();
+        let result = entry.get_evm_token_decimals().unwrap();
+        let expected_result = 18;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_fail_to_get_decimals_if_none_set() {
+        let entry = get_dictionary_entry_with_no_decimals();
+        let expected_err = format!("Dictionary entry does NOT have ETH token decimals set! {:?}", entry);
+        match entry.get_eth_token_decimals() {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(_) => panic!("Wrong error received!"),
+        }
+    }
+
+    #[test]
+    fn should_convert_evm_amount_to_eth_amount() {
+        let amounts = vec![
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("1").unwrap(),
+            U256::from_dec_str("12").unwrap(),
+            U256::from_dec_str("123").unwrap(),
+            U256::from_dec_str("1234").unwrap(),
+            U256::from_dec_str("12345").unwrap(),
+            U256::from_dec_str("123456").unwrap(),
+            U256::from_dec_str("1234567").unwrap(),
+            U256::from_dec_str("12345678").unwrap(),
+            U256::from_dec_str("123456789").unwrap(),
+            U256::from_dec_str("1234567891").unwrap(),
+            U256::from_dec_str("12345678912").unwrap(),
+            U256::from_dec_str("123456789123").unwrap(),
+            U256::from_dec_str("1234567891234").unwrap(),
+            U256::from_dec_str("12345678912345").unwrap(),
+            U256::from_dec_str("123456789123456").unwrap(),
+            U256::from_dec_str("1234567891234567").unwrap(),
+            U256::from_dec_str("12345678912345678").unwrap(),
+            U256::from_dec_str("123456789123456789").unwrap(),
+            U256::from_dec_str("1234567891234567891").unwrap(),
+            U256::from_dec_str("12345678912345678912").unwrap(),
+        ];
+        let expected_results = vec![
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("1").unwrap(),
+            U256::from_dec_str("12").unwrap(),
+            U256::from_dec_str("123").unwrap(),
+            U256::from_dec_str("1234").unwrap(),
+            U256::from_dec_str("12345").unwrap(),
+            U256::from_dec_str("123456").unwrap(),
+            U256::from_dec_str("1234567").unwrap(),
+            U256::from_dec_str("12345678").unwrap(),
+            U256::from_dec_str("123456789").unwrap(),
+            U256::from_dec_str("1234567891").unwrap(),
+        ];
+        let entry = get_dictionary_entry_with_different_decimals();
+        let expected_eth_token_decimals = 8;
+        let expected_evm_token_decimals = 18;
+        let eth_token_decimals = entry.get_eth_token_decimals().unwrap();
+        let evm_token_decimals = entry.get_evm_token_decimals().unwrap();
+        assert_eq!(eth_token_decimals, expected_eth_token_decimals);
+        assert_eq!(evm_token_decimals, expected_evm_token_decimals);
+        amounts.iter().enumerate().for_each(|(i, amount)| {
+            let result = entry.convert_evm_amount_to_eth_amount(*amount).unwrap();
+            let expected_result = expected_results[i];
+            assert_eq!(result, expected_result);
+        });
+    }
+
+    #[test]
+    fn should_convert_eth_amount_to_evm_amount() {
+        let amounts = vec![
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("1").unwrap(),
+            U256::from_dec_str("12").unwrap(),
+            U256::from_dec_str("123").unwrap(),
+            U256::from_dec_str("1234").unwrap(),
+            U256::from_dec_str("12345").unwrap(),
+            U256::from_dec_str("123456").unwrap(),
+            U256::from_dec_str("1234567").unwrap(),
+            U256::from_dec_str("12345678").unwrap(),
+            U256::from_dec_str("123456789").unwrap(),
+            U256::from_dec_str("1234567891").unwrap(),
+        ];
+        let expected_results = vec![
+            U256::from_dec_str("0").unwrap(),
+            U256::from_dec_str("10000000000").unwrap(),
+            U256::from_dec_str("120000000000").unwrap(),
+            U256::from_dec_str("1230000000000").unwrap(),
+            U256::from_dec_str("12340000000000").unwrap(),
+            U256::from_dec_str("123450000000000").unwrap(),
+            U256::from_dec_str("1234560000000000").unwrap(),
+            U256::from_dec_str("12345670000000000").unwrap(),
+            U256::from_dec_str("123456780000000000").unwrap(),
+            U256::from_dec_str("1234567890000000000").unwrap(),
+            U256::from_dec_str("12345678910000000000").unwrap(),
+        ];
+        let entry = get_dictionary_entry_with_different_decimals();
+        let expected_eth_token_decimals = 8;
+        let expected_evm_token_decimals = 18;
+        let eth_token_decimals = entry.get_eth_token_decimals().unwrap();
+        let evm_token_decimals = entry.get_evm_token_decimals().unwrap();
+        assert_eq!(eth_token_decimals, expected_eth_token_decimals);
+        assert_eq!(evm_token_decimals, expected_evm_token_decimals);
+        amounts.iter().enumerate().for_each(|(i, amount)| {
+            let result = entry.convert_eth_amount_to_evm_amount(*amount).unwrap();
+            let expected_result = expected_results[i];
+            assert_eq!(result, expected_result);
+        });
     }
 }

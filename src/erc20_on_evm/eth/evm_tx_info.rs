@@ -46,7 +46,7 @@ use crate::{
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor)]
 pub struct EthOnEvmEvmTxInfo {
-    pub token_amount: U256,
+    pub native_token_amount: U256,
     pub token_sender: EthAddress,
     pub originating_tx_hash: EthHash,
     pub evm_token_address: EthAddress,
@@ -84,8 +84,11 @@ impl ToMetadata for EthOnEvmEvmTxInfo {
 
 impl FeeCalculator for EthOnEvmEvmTxInfo {
     fn get_amount(&self) -> U256 {
-        debug!("Getting token amount in `EthOnEvmEvmTxInfo` of {}", self.token_amount);
-        self.token_amount
+        debug!(
+            "Getting token amount in `EthOnEvmEvmTxInfo` of {}",
+            self.native_token_amount
+        );
+        self.native_token_amount
     }
 
     fn get_token_address(&self) -> EthAddress {
@@ -97,16 +100,16 @@ impl FeeCalculator for EthOnEvmEvmTxInfo {
     }
 
     fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
-        if subtrahend >= self.token_amount {
+        if subtrahend >= self.native_token_amount {
             Err("Cannot subtract amount from `EthOnEvmEvmTxInfo`: subtrahend too large!".into())
         } else {
-            let new_amount = self.token_amount - subtrahend;
+            let new_amount = self.native_token_amount - subtrahend;
             debug!(
                 "Subtracting {} from {} to get final amount of {} in `EthOnEvmEthTxInfo`!",
-                subtrahend, self.token_amount, new_amount
+                subtrahend, self.native_token_amount, new_amount
             );
             let mut new_self = self.clone();
-            new_self.token_amount = new_amount;
+            new_self.native_token_amount = new_amount;
             Ok(new_self)
         }
     }
@@ -120,6 +123,7 @@ impl EthOnEvmEvmTxInfo {
         gas_limit: usize,
         gas_price: u64,
         evm_private_key: &EvmPrivateKey,
+        dictionary: &EthEvmTokenDictionary,
     ) -> Result<EvmTransaction> {
         info!("✔ Signing EVM transaction for tx info: {:?}", self);
         let operator_data = None;
@@ -137,7 +141,7 @@ impl EthOnEvmEvmTxInfo {
         };
         encode_erc777_mint_fxn_maybe_with_data(
             &self.destination_address,
-            &self.token_amount,
+            &self.get_host_token_amount(dictionary)?,
             if metadata.is_empty() { None } else { Some(&metadata) },
             operator_data,
         )
@@ -153,6 +157,10 @@ impl EthOnEvmEvmTxInfo {
             )
         })
         .and_then(|unsigned_tx| unsigned_tx.sign(evm_private_key))
+    }
+
+    pub fn get_host_token_amount(&self, dictionary: &EthEvmTokenDictionary) -> Result<U256> {
+        dictionary.convert_eth_amount_to_evm_amount(&self.eth_token_address, self.native_token_amount)
     }
 }
 
@@ -187,16 +195,28 @@ impl FeesCalculator for EthOnEvmEvmTxInfos {
 }
 
 impl EthOnEvmEvmTxInfos {
-    pub fn filter_out_zero_values(&self) -> Result<Self> {
+    fn get_host_token_amounts(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<U256>> {
+        self.iter()
+            .map(|tx_info| tx_info.get_host_token_amount(dictionary))
+            .collect::<Result<Vec<U256>>>()
+    }
+
+    pub fn filter_out_zero_values(&self, dictionary: &EthEvmTokenDictionary) -> Result<Self> {
+        let host_token_amounts = self.get_host_token_amounts(dictionary)?;
         Ok(Self::new(
             self.iter()
-                .filter(|tx_info| match tx_info.token_amount != U256::zero() {
+                .zip(host_token_amounts.iter())
+                .filter(|(tx_info, evm_amount)| match *evm_amount != &U256::zero() {
                     true => true,
                     false => {
-                        info!("✘ Filtering out peg in info due to zero asset amount: {:?}", tx_info);
+                        info!(
+                            "✘ Filtering out peg in info due to zero EVM asset amount: {:?}",
+                            tx_info
+                        );
                         false
                     },
                 })
+                .map(|(info, _)| info)
                 .cloned()
                 .collect::<Vec<EthOnEvmEvmTxInfo>>(),
         ))
@@ -236,12 +256,12 @@ impl EthOnEvmEvmTxInfos {
                 .map(|log| {
                     let event_params = Erc20VaultPegInEventParams::from_eth_log(log)?;
                     let tx_info = EthOnEvmEvmTxInfo {
+                        token_sender: event_params.token_sender,
                         origin_chain_id: origin_chain_id.clone(),
                         user_data: event_params.user_data.clone(),
                         eth_token_address: event_params.token_address,
                         originating_tx_hash: receipt.transaction_hash,
-                        token_amount: event_params.token_amount,
-                        token_sender: event_params.token_sender,
+                        native_token_amount: event_params.token_amount,
                         destination_address: safely_convert_hex_to_eth_address(&event_params.destination_address)?,
                         evm_token_address: dictionary.get_evm_address_from_eth_address(&event_params.token_address)?,
                     };
@@ -307,6 +327,7 @@ impl EthOnEvmEvmTxInfos {
         gas_limit: usize,
         gas_price: u64,
         evm_private_key: &EvmPrivateKey,
+        dictionary: &EthEvmTokenDictionary,
     ) -> Result<EvmTransactions> {
         info!("✔ Signing `ERC20-on-EVM` EVM transactions...");
         Ok(EvmTransactions::new(
@@ -320,6 +341,7 @@ impl EthOnEvmEvmTxInfos {
                         gas_limit,
                         gas_price,
                         evm_private_key,
+                        dictionary,
                     )
                 })
                 .collect::<Result<Vec<EvmTransaction>>>()?,
@@ -354,7 +376,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
     })
 }
 
-pub fn filter_out_zero_value_tx_infos_from_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
+pub fn filter_out_zero_value_evm_tx_infos_from_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Maybe filtering out zero value `EthOnEvmEvmTxInfos`...");
     debug!(
         "✔ Num `EthOnEvmEvmTxInfos` before: {}",
@@ -362,7 +384,7 @@ pub fn filter_out_zero_value_tx_infos_from_state<D: DatabaseInterface>(state: Et
     );
     state
         .erc20_on_evm_evm_tx_infos
-        .filter_out_zero_values()
+        .filter_out_zero_values(&EthEvmTokenDictionary::get_from_db(&state.db)?)
         .and_then(|filtered_tx_infos| {
             debug!("✔ Num `EthOnEvmEvmTxInfos` after: {}", filtered_tx_infos.len());
             state.replace_erc20_on_evm_evm_tx_infos(filtered_tx_infos)
@@ -401,6 +423,7 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
                 ERC777_MINT_WITH_DATA_GAS_LIMIT,
                 get_evm_gas_price_from_db(&state.db)?,
                 &get_evm_private_key_from_db(&state.db)?,
+                &EthEvmTokenDictionary::get_from_db(&state.db)?,
             )
             .and_then(|signed_txs| {
                 #[cfg(feature = "debug")]
@@ -417,6 +440,7 @@ mod tests {
     use super::*;
     use crate::{
         chains::eth::eth_traits::EthTxInfoCompatible,
+        dictionaries::eth_evm::test_utils::get_sample_eth_evm_dictionary,
         erc20_on_evm::test_utils::{
             get_eth_submission_material_n,
             get_sample_eth_evm_token_dictionary,
@@ -461,7 +485,7 @@ mod tests {
         assert_eq!(result.len(), expected_num_results);
         let expected_result = EthOnEvmEvmTxInfos::new(vec![EthOnEvmEvmTxInfo {
             user_data: vec![],
-            token_amount: U256::from_dec_str("1000000000000000000").unwrap(),
+            native_token_amount: U256::from_dec_str("1000000000000000000").unwrap(),
             token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
             evm_token_address: EthAddress::from_slice(
                 &hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap(),
@@ -483,6 +507,7 @@ mod tests {
 
     #[test]
     fn should_get_signaures_from_evm_tx_info() {
+        let dictionary = get_sample_eth_evm_dictionary();
         let pk = get_sample_evm_private_key();
         let infos = get_sample_tx_infos();
         let nonce = 0_u64;
@@ -490,7 +515,7 @@ mod tests {
         let gas_limit = 300_000_usize;
         let gas_price = 20_000_000_000_u64;
         let signed_txs = infos
-            .to_evm_signed_txs(nonce, &chain_id, gas_limit, gas_price, &pk)
+            .to_evm_signed_txs(nonce, &chain_id, gas_limit, gas_price, &pk, &dictionary)
             .unwrap();
         let expected_num_results = 1;
         assert_eq!(signed_txs.len(), expected_num_results);
@@ -514,14 +539,14 @@ mod tests {
         let info = get_sample_tx_info();
         let subtrahend = U256::from(1337);
         let result = info.subtract_amount(subtrahend).unwrap();
-        let expected_token_amount = U256::from_dec_str("999999999999998663").unwrap();
-        assert_eq!(result.token_amount, expected_token_amount)
+        let expected_native_token_amount = U256::from_dec_str("999999999999998663").unwrap();
+        assert_eq!(result.native_token_amount, expected_native_token_amount)
     }
 
     #[test]
     fn should_fail_to_subtract_too_large_amount_from_eth_on_evm_evm_tx_info() {
         let info = get_sample_tx_info();
-        let subtrahend = U256::from(info.token_amount + 1);
+        let subtrahend = U256::from(info.native_token_amount + 1);
         let result = info.subtract_amount(subtrahend);
         assert!(result.is_err());
     }

@@ -53,7 +53,7 @@ use crate::{
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor)]
 pub struct EthOnEvmEthTxInfo {
-    pub token_amount: U256,
+    pub native_token_amount: U256,
     pub token_sender: EthAddress,
     pub originating_tx_hash: EthHash,
     pub evm_token_address: EthAddress,
@@ -99,21 +99,24 @@ impl FeeCalculator for EthOnEvmEthTxInfo {
     }
 
     fn get_amount(&self) -> U256 {
-        debug!("Getting token amount in `EthOnEvmEthTxInfo` of {}", self.token_amount);
-        self.token_amount
+        debug!(
+            "Getting token amount in `EthOnEvmEthTxInfo` of {}",
+            self.native_token_amount
+        );
+        self.native_token_amount
     }
 
     fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
-        if subtrahend >= self.token_amount {
+        if subtrahend >= self.native_token_amount {
             Err("Cannot subtract amount from `EthOnEvmEthTxInfo`: subtrahend too large!".into())
         } else {
-            let new_amount = self.token_amount - subtrahend;
+            let new_amount = self.native_token_amount - subtrahend;
             debug!(
                 "Subtracting {} from {} to get final amount of {} in `EthOnEvmEthTxInfo`!",
-                subtrahend, self.token_amount, new_amount
+                subtrahend, self.native_token_amount, new_amount
             );
             let mut new_self = self.clone();
-            new_self.token_amount = new_amount;
+            new_self.native_token_amount = new_amount;
             Ok(new_self)
         }
     }
@@ -147,19 +150,22 @@ impl EthOnEvmEthTxInfo {
             "✔ Signing tx for token address : {}",
             self.eth_token_address.to_string()
         );
-        debug!("✔ Signing tx for token amount: {}", self.token_amount.to_string());
+        debug!(
+            "✔ Signing tx for token amount: {}",
+            self.native_token_amount.to_string()
+        );
         debug!("✔ Signing tx for vault address: {}", vault_address.to_string());
         let encoded_tx_data = if self.user_data.is_empty() {
             encode_erc20_vault_peg_out_fxn_data_without_user_data(
                 self.destination_address,
                 self.eth_token_address,
-                self.token_amount,
+                self.native_token_amount,
             )?
         } else {
             encode_erc20_vault_peg_out_fxn_data_with_user_data(
                 self.destination_address,
                 self.eth_token_address,
-                self.token_amount,
+                self.native_token_amount,
                 self.to_metadata_bytes()?,
             )?
         };
@@ -210,7 +216,7 @@ impl EthOnEvmEthTxInfos {
     pub fn filter_out_zero_values(&self) -> Result<Self> {
         Ok(Self::new(
             self.iter()
-                .filter(|tx_info| match tx_info.token_amount != U256::zero() {
+                .filter(|tx_info| match tx_info.native_token_amount != U256::zero() {
                     true => true,
                     false => {
                         info!("✘ Filtering out redeem info due to zero asset amount: {:?}", tx_info);
@@ -275,7 +281,6 @@ impl EthOnEvmEthTxInfos {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
                     let tx_info = EthOnEvmEthTxInfo {
                         evm_token_address: log.address,
-                        token_amount: event_params.value,
                         token_sender: event_params.redeemer,
                         origin_chain_id: origin_chain_id.clone(),
                         user_data: event_params.user_data.clone(),
@@ -284,6 +289,8 @@ impl EthOnEvmEthTxInfos {
                         destination_address: safely_convert_hex_to_eth_address(
                             &event_params.underlying_asset_recipient,
                         )?,
+                        native_token_amount: dictionary
+                            .convert_evm_amount_to_eth_amount(&log.address, event_params.value)?,
                     };
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)
@@ -394,7 +401,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
     })
 }
 
-pub fn filter_out_zero_value_tx_infos_from_state<D: DatabaseInterface>(state: EvmState<D>) -> Result<EvmState<D>> {
+pub fn filter_out_zero_value_eth_tx_infos_from_state<D: DatabaseInterface>(state: EvmState<D>) -> Result<EvmState<D>> {
     info!("✔ Maybe filtering out zero value `EthOnEvmEthTxInfos`...");
     debug!(
         "✔ Num `EthOnEvmEthTxInfos` before: {}",
@@ -498,7 +505,7 @@ mod tests {
         let expected_result = EthOnEvmEthTxInfos::new(vec![EthOnEvmEthTxInfo {
             origin_chain_id,
             user_data: vec![],
-            token_amount: U256::from_dec_str("100000000000000000").unwrap(),
+            native_token_amount: U256::from_dec_str("100000000000000000").unwrap(),
             token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
             evm_token_address: EthAddress::from_slice(
                 &hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap(),
@@ -538,8 +545,8 @@ mod tests {
 
     #[test]
     fn should_calculate_eth_on_evm_eth_tx_info_fee() {
-        let info = get_sample_tx_info();
         let fee_basis_points = 25;
+        let info = get_sample_tx_info();
         let result = info.calculate_fee(fee_basis_points);
         let expected_result = U256::from_dec_str("250000000000000").unwrap();
         assert_eq!(result, expected_result);
@@ -550,14 +557,14 @@ mod tests {
         let info = get_sample_tx_info();
         let subtrahend = U256::from(1337);
         let result = info.subtract_amount(subtrahend).unwrap();
-        let expected_token_amount = U256::from_dec_str("99999999999998663").unwrap();
-        assert_eq!(result.token_amount, expected_token_amount)
+        let expected_native_token_amount = U256::from_dec_str("99999999999998663").unwrap();
+        assert_eq!(result.native_token_amount, expected_native_token_amount)
     }
 
     #[test]
     fn should_fail_to_subtract_too_large_amount_from_eth_on_evm_eth_tx_info() {
         let info = get_sample_tx_info();
-        let subtrahend = U256::from(info.token_amount + 1);
+        let subtrahend = U256::from(info.native_token_amount + 1);
         let result = info.subtract_amount(subtrahend);
         assert!(result.is_err());
     }

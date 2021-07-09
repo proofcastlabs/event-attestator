@@ -17,6 +17,7 @@ use crate::{
             get_latest_eth_block_number as get_latest_evm_block_number,
         },
     },
+    dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_evm::eth::evm_tx_info::{EthOnEvmEvmTxInfo, EthOnEvmEvmTxInfos},
     traits::DatabaseInterface,
     types::{NoneError, Result},
@@ -55,6 +56,7 @@ impl EvmTxInfo {
         evm_tx_info: &EthOnEvmEvmTxInfo,
         maybe_nonce: Option<u64>,
         evm_latest_block_number: usize,
+        dictionary: &EthEvmTokenDictionary,
     ) -> Result<EvmTxInfo> {
         let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
         Ok(EvmTxInfo {
@@ -70,7 +72,6 @@ impl EvmTxInfo {
                 format!("perc20-on-evm-evm-{}", nonce)
             },
             evm_tx_hash: format!("0x{}", tx.get_tx_hash()),
-            evm_tx_amount: evm_tx_info.token_amount.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             evm_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
@@ -79,6 +80,9 @@ impl EvmTxInfo {
             originating_address: format!("0x{}", hex::encode(evm_tx_info.token_sender.as_bytes())),
             evm_tx_recipient: format!("0x{}", hex::encode(evm_tx_info.destination_address.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(evm_tx_info.originating_tx_hash.as_bytes())),
+            evm_tx_amount: dictionary
+                .convert_eth_amount_to_evm_amount(&evm_tx_info.eth_token_address, evm_tx_info.native_token_amount)?
+                .to_string(),
         })
     }
 }
@@ -90,6 +94,7 @@ pub fn get_evm_signed_tx_info_from_evm_txs(
     use_any_sender_tx_type: bool,
     any_sender_nonce: u64,
     eth_latest_block_number: usize,
+    dictionary: &EthEvmTokenDictionary,
 ) -> Result<Vec<EvmTxInfo>> {
     let start_nonce = if use_any_sender_tx_type {
         info!("✔ Getting AnySender tx info from ETH txs...");
@@ -106,6 +111,7 @@ pub fn get_evm_signed_tx_info_from_evm_txs(
                 &evm_tx_info[i],
                 Some(start_nonce + i as u64),
                 eth_latest_block_number,
+                dictionary,
             )
         })
         .collect::<Result<Vec<EvmTxInfo>>>()
@@ -125,6 +131,7 @@ pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
                 false, // TODO Get this from state submission material when/if we support AnySender
                 get_evm_any_sender_nonce_from_db(&state.db)?,
                 get_latest_evm_block_number(&state.db)?,
+                &EthEvmTokenDictionary::get_from_db(&state.db)?,
             )?
         },
     })?;
