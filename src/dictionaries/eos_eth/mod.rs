@@ -24,6 +24,14 @@ use crate::{
 pub struct EosEthTokenDictionary(pub Vec<EosEthTokenDictionaryEntry>);
 
 impl EosEthTokenDictionary {
+    pub fn get_eth_fee_basis_points(&self, eth_address: &EthAddress) -> Result<u64> {
+        Ok(self.get_entry_via_eth_token_address(eth_address)?.eth_fee_basis_points)
+    }
+
+    pub fn get_eos_fee_basis_points(&self, eos_address: &EosAccountName) -> Result<u64> {
+        Ok(self.get_entry_via_eos_address(eos_address)?.eos_fee_basis_points)
+    }
+
     pub fn to_json(&self) -> Result<EosEthTokenDictionaryJson> {
         Ok(EosEthTokenDictionaryJson::new(
             self.iter().map(|entry| entry.to_json()).collect(),
