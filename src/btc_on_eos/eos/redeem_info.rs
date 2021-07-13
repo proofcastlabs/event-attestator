@@ -203,6 +203,7 @@ mod tests {
     use crate::{
         btc_on_eos::test_utils::{get_sample_redeem_info, get_sample_redeem_infos},
         chains::eos::{eos_test_utils::get_sample_eos_submission_material_n, eos_utils::convert_hex_to_checksum256},
+        errors::AppError,
     };
 
     #[test]
@@ -333,5 +334,17 @@ mod tests {
         let result = infos.subtract_fees(basis_points).unwrap();
         let expected_amount = 5099;
         result.iter().for_each(|info| assert_eq!(info.amount, expected_amount));
+    }
+
+    #[test]
+    fn should_fail_to_subtact_too_large_an_amount_from_btc_on_eos_redeem_info() {
+        let info = get_sample_redeem_infos()[0].clone();
+        let subtrahend = info.amount + 1;
+        let expected_err = format!("Cannot subtract {} from {}!", subtrahend, info.amount);
+        match info.subtract_amount(subtrahend) {
+            Ok(_) => panic!("Should not have suceeded!"),
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(_) => panic!("Wrong error received!"),
+        };
     }
 }

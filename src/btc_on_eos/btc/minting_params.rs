@@ -264,7 +264,7 @@ impl BtcOnEosMintingParamStruct {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::btc::btc_test_utils::get_sample_btc_on_eos_minting_params;
+    use crate::{chains::btc::btc_test_utils::get_sample_btc_on_eos_minting_params, errors::AppError};
 
     #[test]
     fn should_filter_minting_params() {
@@ -322,5 +322,18 @@ mod tests {
         let expected_amount_1 = 4989;
         assert_eq!(convert_eos_asset_to_u64(&result[0].amount).unwrap(), expected_amount_0);
         assert_eq!(convert_eos_asset_to_u64(&result[1].amount).unwrap(), expected_amount_1);
+    }
+
+    #[test]
+    fn should_fail_to_subtact_too_large_an_amount_from_btc_on_eos_minting_params() {
+        let params = get_sample_btc_on_eos_minting_params()[0].clone();
+        let amount = convert_eos_asset_to_u64(&params.amount).unwrap();
+        let subtrahend = amount + 1;
+        let expected_err = format!("Cannot subtract {} from {}!", subtrahend, amount);
+        match params.subtract_amount(subtrahend) {
+            Ok(_) => panic!("Should not have suceeded!"),
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(_) => panic!("Wrong error received!"),
+        };
     }
 }
