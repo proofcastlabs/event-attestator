@@ -100,6 +100,21 @@ impl ToMetadata for Erc20OnEosRedeemInfo {
 }
 
 impl Erc20OnEosRedeemInfo {
+    fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
+        if subtrahend >= self.amount {
+            Err("Cannot subtract amount from `Erc20OnEosRedeemInfo`: subtrahend too large!".into())
+        } else {
+            let new_amount = self.amount - subtrahend;
+            debug!(
+                "Subtracting {} from {} to get final amount of {} in `Erc20OnEosRedeemInfo`!",
+                subtrahend, self.amount, new_amount
+            );
+            let mut new_self = self.clone();
+            new_self.amount = new_amount;
+            Ok(new_self)
+        }
+    }
+
     fn get_memo_string_from_proof(proof: &EosActionProof) -> Result<String> {
         proof
             .check_proof_action_data_length(25, "Not enough data to parse `Erc20OnEosRedeemInfo` memo from proof!")
@@ -194,9 +209,9 @@ mod tests {
     use std::str::FromStr;
 
     use super::*;
-    use crate::chains::eos::{
-        eos_test_utils::get_sample_eos_submission_material_n,
-        eos_utils::convert_hex_to_checksum256,
+    use crate::{
+        chains::eos::{eos_test_utils::get_sample_eos_submission_material_n, eos_utils::convert_hex_to_checksum256},
+        errors::AppError,
     };
 
     fn get_sample_action_proof_for_erc20_redeem() -> EosActionProof {
@@ -276,5 +291,26 @@ mod tests {
         let result = info.to_metadata_bytes().unwrap();
         let expected_result = "0100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008002e7261c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000810029e0ad25c43c8000000000000000000000000000000000000000000000000";
         assert_eq!(hex::encode(result), expected_result);
+    }
+
+    #[test]
+    fn should_subtract_amount_from_erc20_on_eos_redeem_info() {
+        let info = get_sample_erc20_on_eos_redeem_info();
+        let subtrahend = U256::from(1);
+        let expected_result = U256::from_dec_str("1336999999999").unwrap();
+        let result = info.subtract_amount(subtrahend).unwrap().amount;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_fail_to_subtract_too_large_amount_from_erc20_on_eos_redeem_info() {
+        let info = get_sample_erc20_on_eos_redeem_info();
+        let expected_err = "Cannot subtract amount from `Erc20OnEosRedeemInfo`: subtrahend too large!".to_string();
+        let subtrahend = info.amount + 1;
+        match info.subtract_amount(subtrahend) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(_) => panic!("Wrong error received!"),
+        };
     }
 }
