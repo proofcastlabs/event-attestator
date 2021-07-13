@@ -238,6 +238,8 @@ mod tests {
 
     #[test]
     fn should_get_erc20_on_eos_eth_redeem_amount() {
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let dictionary_entry = EosEthTokenDictionaryEntry::new(
             18,
             9,
@@ -245,6 +247,12 @@ mod tests {
             "SAM".to_string(),
             "testpethxxxx".to_string(),
             EthAddress::from_slice(&hex::decode("32eF9e9a622736399DB5Ee78A68B258dadBB4353").unwrap()),
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         );
         let proof = get_sample_action_proof_for_erc20_redeem();
         let result = Erc20OnEosRedeemInfo::get_redeem_amount_from_proof(&proof, &dictionary_entry).unwrap();
@@ -265,6 +273,8 @@ mod tests {
         let eos_account_name = "testpethxxxx".to_string();
         let expected_result = get_sample_erc20_on_eos_redeem_info();
         let origin_chain_id = EosChainId::EosMainnet;
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             18,
             9,
@@ -272,6 +282,12 @@ mod tests {
             "SAM".to_string(),
             eos_account_name,
             EthAddress::from_slice(&hex::decode("32eF9e9a622736399DB5Ee78A68B258dadBB4353").unwrap()),
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         )]);
         let proof = get_sample_action_proof_for_erc20_redeem();
         let result = Erc20OnEosRedeemInfo::from_action_proof(&proof, &dictionary, &origin_chain_id).unwrap();

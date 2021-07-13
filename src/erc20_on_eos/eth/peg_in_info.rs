@@ -395,6 +395,8 @@ mod tests {
         let eos_symbol = "SYM".to_string();
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(&hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let token_dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
@@ -402,6 +404,12 @@ mod tests {
             eos_symbol,
             token_name,
             token_address,
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         )]);
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = Erc20OnEosPegInInfos::is_log_supported_erc20_peg_in(&log, &token_dictionary).unwrap();
@@ -416,6 +424,8 @@ mod tests {
         let eos_symbol = "SYM".to_string();
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(&hex::decode("8f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let token_dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
@@ -423,6 +433,12 @@ mod tests {
             eos_symbol,
             token_name,
             token_address,
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         )]);
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = Erc20OnEosPegInInfos::is_log_supported_erc20_peg_in(&log, &token_dictionary).unwrap();
@@ -439,6 +455,8 @@ mod tests {
         let token_address = EthAddress::from_slice(
             &hex::decode("c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2").unwrap(), // NOTE wETH address on mainnet!
         );
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let token_dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
@@ -446,6 +464,12 @@ mod tests {
             eos_symbol,
             token_name,
             token_address,
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         )]);
         let log = get_sample_log_with_erc20_peg_in_event_2().unwrap();
         let result = Erc20OnEosPegInInfos::is_log_supported_erc20_peg_in(&log, &token_dictionary).unwrap();
@@ -498,6 +522,8 @@ mod tests {
         let eos_symbol = "SAM".to_string();
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(&hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let token_dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
@@ -505,6 +531,12 @@ mod tests {
             eos_symbol,
             token_name,
             token_address,
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         )]);
         let expected_num_results = 1;
         let expected_result = get_sample_erc20_on_eos_peg_in_info().unwrap();
@@ -548,6 +580,8 @@ mod tests {
         let eos_symbol = "SAM".to_string();
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(&hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let token_dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
@@ -555,6 +589,12 @@ mod tests {
             eos_symbol,
             token_name,
             token_address,
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         )]);
         let expected_num_results = 1;
         let submission_material = get_sample_submission_material_with_erc20_peg_in_event().unwrap();

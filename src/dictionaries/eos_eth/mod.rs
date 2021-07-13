@@ -17,15 +17,129 @@ use crate::{
     fees::fee_utils::get_last_withdrawal_date_as_human_readable_string,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
-    utils::{left_pad_with_zeroes, right_pad_or_truncate, right_pad_with_zeroes, strip_hex_prefix, truncate_str},
+    utils::{
+        get_unix_timestamp,
+        left_pad_with_zeroes,
+        right_pad_or_truncate,
+        right_pad_with_zeroes,
+        strip_hex_prefix,
+        truncate_str,
+    },
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, Constructor, Deref, DerefMut)]
 pub struct EosEthTokenDictionary(pub Vec<EosEthTokenDictionaryEntry>);
 
 impl EosEthTokenDictionary {
+    pub fn increment_accrued_fee(&self, address: &EthAddress, addend: U256) -> Result<Self> {
+        self.get_entry_via_eth_address(address)
+            .map(|entry| self.replace_entry(&entry, entry.add_to_accrued_fees(addend)))
+    }
+
+    pub fn increment_accrued_fees(&self, fee_tuples: Vec<(EthAddress, U256)>) -> Result<Self> {
+        info!("✔ Incrementing accrued fees...");
+        fee_tuples
+            .iter()
+            .filter(|(address, addend)| {
+                if *addend > U256::zero() {
+                    true
+                } else {
+                    info!("✘ Not adding to accrued fees for {} ∵ increment is 0!", address);
+                    false
+                }
+            })
+            .try_fold(self.clone(), |new_self, (address, addend)| {
+                new_self.increment_accrued_fee(address, *addend)
+            })
+    }
+
+    pub fn increment_accrued_fees_and_save_in_db<D: DatabaseInterface>(
+        &self,
+        db: &D,
+        fee_tuples: Vec<(EthAddress, U256)>,
+    ) -> Result<()> {
+        self.increment_accrued_fees(fee_tuples)
+            .and_then(|new_dictionary| new_dictionary.save_to_db(db))
+    }
+
+    pub fn change_eth_fee_basis_points_and_update_in_db<D: DatabaseInterface>(
+        &self,
+        db: &D,
+        address: &EthAddress,
+        new_fee: u64,
+    ) -> Result<()> {
+        self.change_eth_fee_basis_points(address, new_fee)
+            .and_then(|updated_dictionary| updated_dictionary.save_to_db(db))
+    }
+
+    pub fn change_eos_fee_basis_points_and_update_in_db<D: DatabaseInterface>(
+        &self,
+        db: &D,
+        address: &EosAccountName,
+        new_fee: u64,
+    ) -> Result<()> {
+        self.change_eos_fee_basis_points(address, new_fee)
+            .and_then(|updated_dictionary| updated_dictionary.save_to_db(db))
+    }
+
+    fn set_last_withdrawal_timestamp_in_entry(&self, address: &EthAddress, timestamp: u64) -> Result<Self> {
+        self.get_entry_via_eth_address(address)
+            .map(|entry| self.replace_entry(&entry, entry.set_last_withdrawal_timestamp(timestamp)))
+    }
+
+    fn zero_accrued_fees_in_entry(&self, address: &EthAddress) -> Result<Self> {
+        self.get_entry_via_eth_address(address)
+            .map(|entry| self.replace_entry(&entry, entry.zero_accrued_fees()))
+    }
+
+    pub fn withdraw_fees_and_save_in_db<D: DatabaseInterface>(
+        &self,
+        db: &D,
+        maybe_entry_address: &EthAddress,
+    ) -> Result<(EthAddress, U256)> {
+        let entry = self.get_entry_via_eth_address(maybe_entry_address)?;
+        let token_address = entry.eth_address;
+        let withdrawal_amount = entry.accrued_fees;
+        self.set_last_withdrawal_timestamp_in_entry(&token_address, get_unix_timestamp()?)
+            .and_then(|dictionary| dictionary.zero_accrued_fees_in_entry(&token_address))
+            .and_then(|dictionary| dictionary.save_to_db(db))
+            .map(|_| (token_address, withdrawal_amount))
+    }
+
+    fn change_eth_fee_basis_points(&self, eth_address: &EthAddress, new_fee: u64) -> Result<Self> {
+        info!(
+            "✔ Changing ETH fee basis points for address {} to {}...",
+            eth_address, new_fee
+        );
+        self.get_entry_via_eth_address(eth_address)
+            .map(|entry| self.replace_entry(&entry, entry.change_eth_fee_basis_points(new_fee)))
+    }
+
+    fn change_eos_fee_basis_points(&self, eos_address: &EosAccountName, new_fee: u64) -> Result<Self> {
+        info!(
+            "✔ Changing EOS fee basis points for address {} to {}...",
+            eos_address, new_fee
+        );
+        self.get_entry_via_eos_address(eos_address)
+            .map(|entry| self.replace_entry(&entry, entry.change_eos_fee_basis_points(new_fee)))
+    }
+
+    pub fn replace_entry(
+        &self,
+        entry_to_remove: &EosEthTokenDictionaryEntry,
+        entry_to_add: EosEthTokenDictionaryEntry,
+    ) -> Self {
+        if entry_to_add == *entry_to_remove {
+            info!("✘ Entry to replace is identical to new entry, doing nothing!");
+            self.clone()
+        } else {
+            info!("✔ Replacing dictionary entry...");
+            self.add(entry_to_add).remove(entry_to_remove)
+        }
+    }
+
     pub fn get_eth_fee_basis_points(&self, eth_address: &EthAddress) -> Result<u64> {
-        Ok(self.get_entry_via_eth_token_address(eth_address)?.eth_fee_basis_points)
+        Ok(self.get_entry_via_eth_address(eth_address)?.eth_fee_basis_points)
     }
 
     pub fn get_eos_fee_basis_points(&self, eos_address: &EosAccountName) -> Result<u64> {
@@ -54,16 +168,17 @@ impl EosEthTokenDictionary {
         EosEthTokenDictionaryJson::from_bytes(bytes).and_then(|json| Self::from_json(&json))
     }
 
-    fn add(mut self, entry: EosEthTokenDictionaryEntry) -> Self {
+    fn add(&self, entry: EosEthTokenDictionaryEntry) -> Self {
+        let mut new_self = self.clone();
         info!("✔ Adding `EosEthTokenDictionary` entry: {:?}...", entry);
         match self.contains(&entry) {
             true => {
                 info!("Not adding new `EosEthTokenDictionaryEntry` ∵ account name already extant!");
-                self
+                new_self
             },
             false => {
-                self.push(entry);
-                self
+                new_self.push(entry);
+                new_self
             },
         }
     }
@@ -119,11 +234,11 @@ impl EosEthTokenDictionary {
         eth_address: &EthAddress,
         db: &D,
     ) -> Result<Self> {
-        self.get_entry_via_eth_token_address(eth_address)
+        self.get_entry_via_eth_address(eth_address)
             .and_then(|entry| self.remove_and_update_in_db(&entry, db))
     }
 
-    pub fn get_entry_via_eth_token_address(&self, address: &EthAddress) -> Result<EosEthTokenDictionaryEntry> {
+    pub fn get_entry_via_eth_address(&self, address: &EthAddress) -> Result<EosEthTokenDictionaryEntry> {
         match self.iter().find(|entry| &entry.eth_address == address) {
             Some(entry) => Ok(entry.clone()),
             None => Err(format!("No `EosEthTokenDictionaryEntry` exists with ETH address: {}", address).into()),
@@ -131,7 +246,7 @@ impl EosEthTokenDictionary {
     }
 
     pub fn get_entry_via_eos_address(&self, eos_address: &EosAccountName) -> Result<EosEthTokenDictionaryEntry> {
-        info!("✔ Getting dictionary entry via EOS token address...");
+        info!("✔ Getting dictionary entry via EOS token address: {}", eos_address);
         match self.iter().find(|entry| &entry.eos_address == eos_address) {
             Some(entry) => Ok(entry.clone()),
             None => Err(format!(
@@ -168,8 +283,7 @@ impl EosEthTokenDictionary {
     }
 
     pub fn get_eos_account_name_from_eth_token_address(&self, address: &EthAddress) -> Result<String> {
-        self.get_entry_via_eth_token_address(address)
-            .map(|entry| entry.eos_address)
+        self.get_entry_via_eth_address(address).map(|entry| entry.eos_address)
     }
 
     pub fn get_eth_address_via_eos_address(&self, eos_address: &EosAccountName) -> Result<EthAddress> {
@@ -192,12 +306,12 @@ impl EosEthTokenDictionary {
     }
 
     pub fn convert_u256_to_eos_asset_string(&self, address: &EthAddress, eth_amount: &U256) -> Result<String> {
-        self.get_entry_via_eth_token_address(address)
+        self.get_entry_via_eth_address(address)
             .and_then(|entry| entry.convert_u256_to_eos_asset_string(eth_amount))
     }
 
     pub fn get_zero_eos_asset_amount_via_eth_token_address(&self, eth_address: &EthAddress) -> Result<String> {
-        self.get_entry_via_eth_token_address(eth_address)
+        self.get_entry_via_eth_address(eth_address)
             .map(|entry| entry.get_zero_eos_asset())
     }
 
@@ -243,6 +357,56 @@ pub struct EosEthTokenDictionaryEntry {
 }
 
 impl EosEthTokenDictionaryEntry {
+    fn set_last_withdrawal_timestamp(&self, timestamp: u64) -> Self {
+        let timestamp_human_readable = get_last_withdrawal_date_as_human_readable_string(timestamp);
+        info!("✔ Setting withdrawal date to {}", timestamp_human_readable);
+        let mut new_entry = self.clone();
+        new_entry.last_withdrawal = timestamp;
+        new_entry.last_withdrawal_human_readable = timestamp_human_readable;
+        new_entry
+    }
+
+    fn zero_accrued_fees(&self) -> Self {
+        info!("✔ Zeroing accrued fees in {:?}...", self);
+        let mut new_entry = self.clone();
+        new_entry.accrued_fees = U256::zero();
+        new_entry.accrued_fees_human_readable = 0;
+        new_entry
+    }
+
+    pub fn add_to_accrued_fees(&self, addend: U256) -> Self {
+        let new_accrued_fees = self.accrued_fees + addend;
+        info!("✔ Adding to accrued fees in {:?}...", self);
+        info!(
+            "✔ Updating accrued fees from {} to {}...",
+            self.accrued_fees, new_accrued_fees
+        );
+        let mut new_entry = self.clone();
+        new_entry.accrued_fees = new_accrued_fees;
+        new_entry.accrued_fees_human_readable = new_accrued_fees.as_u128();
+        new_entry
+    }
+
+    pub fn change_eth_fee_basis_points(&self, new_fee: u64) -> Self {
+        info!(
+            "✔ Changing ETH fee basis points for address {} from {} to {}...",
+            self.eth_address, self.eth_fee_basis_points, new_fee
+        );
+        let mut new_entry = self.clone();
+        new_entry.eth_fee_basis_points = new_fee;
+        new_entry
+    }
+
+    pub fn change_eos_fee_basis_points(&self, new_fee: u64) -> Self {
+        info!(
+            "✔ Changing EOS fee basis points for address {} from {} to {}...",
+            self.eos_address, self.eos_fee_basis_points, new_fee
+        );
+        let mut new_entry = self.clone();
+        new_entry.eos_fee_basis_points = new_fee;
+        new_entry
+    }
+
     fn to_json(&self) -> EosEthTokenDictionaryEntryJson {
         EosEthTokenDictionaryEntryJson {
             eth_token_decimals: self.eth_token_decimals,
@@ -395,6 +559,7 @@ mod tests {
             get_sample_eos_eth_token_dictionary,
             get_sample_eos_eth_token_dictionary_entry_1,
             get_sample_eos_eth_token_dictionary_entry_2,
+            get_sample_eos_eth_token_dictionary_entry_3,
             get_sample_eos_eth_token_dictionary_json,
         },
         test_utils::get_test_database,
@@ -442,7 +607,7 @@ mod tests {
 
     #[test]
     fn should_not_push_into_eos_eth_token_dictionary_if_entry_extant() {
-        let expected_num_account_names = 2;
+        let expected_num_account_names = 3;
         let dictionary_entries = get_sample_eos_eth_token_dictionary();
         assert_eq!(dictionary_entries.len(), expected_num_account_names);
         let updated_dictionary = dictionary_entries.add(get_sample_eos_eth_token_dictionary_entry_1());
@@ -451,8 +616,8 @@ mod tests {
 
     #[test]
     fn should_remove_entry_from_eos_eth_token_dictionary() {
-        let expected_num_entries_before = 2;
-        let expected_num_entries_after = 1;
+        let expected_num_entries_before = 3;
+        let expected_num_entries_after = 2;
         let dictionary_entries = get_sample_eos_eth_token_dictionary();
         assert_eq!(dictionary_entries.len(), expected_num_entries_before);
         let updated_dictionary = dictionary_entries.remove(&get_sample_eos_eth_token_dictionary_entry_2());
@@ -490,9 +655,12 @@ mod tests {
     #[test]
     fn eos_eth_token_dictionary_should_add_new_entry_and_update_in_db() {
         let db = get_test_database();
-        let dictionary_entries = EosEthTokenDictionary::new(vec![get_sample_eos_eth_token_dictionary_entry_1()]);
+        let dictionary_entries = EosEthTokenDictionary::new(vec![
+            get_sample_eos_eth_token_dictionary_entry_1(),
+            get_sample_eos_eth_token_dictionary_entry_2(),
+        ]);
         dictionary_entries
-            .add_and_update_in_db(get_sample_eos_eth_token_dictionary_entry_2(), &db)
+            .add_and_update_in_db(get_sample_eos_eth_token_dictionary_entry_3(), &db)
             .unwrap();
         let result = EosEthTokenDictionary::get_from_db(&db).unwrap();
         assert_eq!(result, get_sample_eos_eth_token_dictionary());
@@ -507,7 +675,10 @@ mod tests {
             .remove_and_update_in_db(&get_sample_eos_eth_token_dictionary_entry_1(), &db)
             .unwrap();
         let result = EosEthTokenDictionary::get_from_db(&db).unwrap();
-        let expected_result = EosEthTokenDictionary::new(vec![get_sample_eos_eth_token_dictionary_entry_2()]);
+        let expected_result = EosEthTokenDictionary::new(vec![
+            get_sample_eos_eth_token_dictionary_entry_2(),
+            get_sample_eos_eth_token_dictionary_entry_3(),
+        ]);
         assert_eq!(result, expected_result);
     }
 
@@ -521,7 +692,10 @@ mod tests {
             .remove_entry_via_eth_address_and_update_in_db(&token_address, &db)
             .unwrap();
         let result = EosEthTokenDictionary::get_from_db(&db).unwrap();
-        let expected_result = EosEthTokenDictionary::new(vec![get_sample_eos_eth_token_dictionary_entry_2()]);
+        let expected_result = EosEthTokenDictionary::new(vec![
+            get_sample_eos_eth_token_dictionary_entry_2(),
+            get_sample_eos_eth_token_dictionary_entry_3(),
+        ]);
         assert_eq!(result, expected_result);
     }
 
@@ -726,11 +900,11 @@ mod tests {
     }
 
     #[test]
-    fn should_get_entry_via_eth_token_address() {
+    fn should_get_entry_via_eth_address() {
         let dictionary = get_sample_eos_eth_token_dictionary();
         let expected_result = get_sample_eos_eth_token_dictionary_entry_2();
         let eth_address = EthAddress::from_slice(&hex::decode("9e57cb2a4f462a5258a49e88b4331068a391de66").unwrap());
-        let result = dictionary.get_entry_via_eth_token_address(&eth_address).unwrap();
+        let result = dictionary.get_entry_via_eth_address(&eth_address).unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -772,5 +946,86 @@ mod tests {
         let s = "[{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"TLOS\",\"eos_symbol\":\"TLOS\",\"eth_address\":\"7825e833d495f3d1c28872415a4aee339d26ac88\",\"eos_address\":\"eosio.token\"},{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"pSEEDS\",\"eos_symbol\":\"SEEDS\",\"eth_address\":\"6db338e6ed75f67cd5a4ef8bdf59163b32d4bd46\",\"eos_address\":\"token.seeds\"}]";
         let result = EosEthTokenDictionary::from_str(s);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_change_eth_fee_basis_points_in_eos_eth_token_dictionary_and_save_in_db() {
+        let db = get_test_database();
+        let eth_address = EthAddress::from_slice(&hex::decode("9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap());
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let entry = dictionary.get_entry_via_eth_address(&eth_address).unwrap();
+        assert_eq!(entry.eth_fee_basis_points, 0);
+        let basis_points = 25;
+        dictionary
+            .change_eth_fee_basis_points_and_update_in_db(&db, &eth_address, basis_points)
+            .unwrap();
+        let dictionary_from_db = EosEthTokenDictionary::get_from_db(&db).unwrap();
+        let result = dictionary_from_db.get_entry_via_eth_address(&eth_address).unwrap();
+        assert_eq!(result.eth_fee_basis_points, basis_points);
+    }
+
+    #[test]
+    fn should_change_eos_fee_basis_points_in_eos_eth_token_dictionary_and_save_in_db() {
+        let db = get_test_database();
+        let eos_address = EosAccountName::from_str("sampletokens").unwrap();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let entry = dictionary.get_entry_via_eos_address(&eos_address).unwrap();
+        assert_eq!(entry.eos_fee_basis_points, 0);
+        let basis_points = 25;
+        dictionary
+            .change_eos_fee_basis_points_and_update_in_db(&db, &eos_address, basis_points)
+            .unwrap();
+        let dictionary_from_db = EosEthTokenDictionary::get_from_db(&db).unwrap();
+        let result = dictionary_from_db.get_entry_via_eos_address(&eos_address).unwrap();
+        assert_eq!(result.eos_fee_basis_points, basis_points);
+    }
+
+    #[test]
+    fn should_increment_accrued_fees_and_save_in_db() {
+        let db = get_test_database();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let eth_address_1 = EthAddress::from_slice(&hex::decode("9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap());
+        let eth_address_2 = EthAddress::from_slice(&hex::decode("9e57cb2a4f462a5258a49e88b4331068a391de66").unwrap());
+        let expected_fee_1 = U256::from(1337);
+        let expected_fee_2 = U256::from(666);
+        let fee_tuples = vec![(eth_address_1, expected_fee_1), (eth_address_2, expected_fee_2)];
+        let entry_1_before = dictionary.get_entry_via_eth_address(&eth_address_1).unwrap();
+        let entry_2_before = dictionary.get_entry_via_eth_address(&eth_address_2).unwrap();
+        assert_eq!(entry_1_before.accrued_fees, U256::zero());
+        assert_eq!(entry_2_before.accrued_fees, U256::zero());
+        dictionary
+            .increment_accrued_fees_and_save_in_db(&db, fee_tuples)
+            .unwrap();
+        let dictionary_from_db = EosEthTokenDictionary::get_from_db(&db).unwrap();
+        let entry_1_after = dictionary_from_db.get_entry_via_eth_address(&eth_address_1).unwrap();
+        let entry_2_after = dictionary_from_db.get_entry_via_eth_address(&eth_address_2).unwrap();
+        assert_eq!(entry_1_after.accrued_fees, expected_fee_1);
+        assert_eq!(entry_2_after.accrued_fees, expected_fee_2);
+    }
+
+    #[test]
+    fn should_withdraw_fees_from_eos_eth_token_dictionary() {
+        let db = get_test_database();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let eth_address = EthAddress::from_slice(&hex::decode("9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap());
+        let expected_fee = U256::from(1337);
+        let fee_tuples = vec![(eth_address, expected_fee)];
+        let entry_1_before = dictionary.get_entry_via_eth_address(&eth_address).unwrap();
+        assert_eq!(entry_1_before.accrued_fees, U256::zero());
+        dictionary
+            .increment_accrued_fees_and_save_in_db(&db, fee_tuples)
+            .unwrap();
+        let dictionary_from_db = EosEthTokenDictionary::get_from_db(&db).unwrap();
+        let entry_1_after = dictionary_from_db.get_entry_via_eth_address(&eth_address).unwrap();
+        assert_eq!(entry_1_after.accrued_fees, expected_fee);
+        let result = dictionary_from_db
+            .withdraw_fees_and_save_in_db(&db, &eth_address)
+            .unwrap();
+        let final_dictionary = EosEthTokenDictionary::get_from_db(&db).unwrap();
+        let final_entry = final_dictionary.get_entry_via_eth_address(&eth_address).unwrap();
+        assert_eq!(final_entry.accrued_fees, U256::zero());
+        assert_ne!(final_entry.last_withdrawal, 0);
+        assert_eq!(result.0, eth_address);
+        assert_eq!(result.1, expected_fee);
     }
 }

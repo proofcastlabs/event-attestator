@@ -39,10 +39,29 @@ pub fn get_sample_eos_eth_token_dictionary_entry_2() -> EosEthTokenDictionaryEnt
     )
 }
 
+pub fn get_sample_eos_eth_token_dictionary_entry_3() -> EosEthTokenDictionaryEntry {
+    let token_address_hex = "32ef9e9a622736399db5ee78a68b258dadbb4353".to_string();
+    EosEthTokenDictionaryEntry::new(
+        18,
+        9,
+        "SAM3".to_string(),
+        "SAM4".to_string(),
+        "testpethxxxx".to_string(),
+        EthAddress::from_slice(&hex::decode(&token_address_hex).unwrap()),
+        25,
+        25,
+        U256::zero(),
+        0,
+        0,
+        "Fees have not yet been withdrawn!".to_string(),
+    )
+}
+
 pub fn get_sample_eos_eth_token_dictionary() -> EosEthTokenDictionary {
     EosEthTokenDictionary::new(vec![
         get_sample_eos_eth_token_dictionary_entry_1(),
         get_sample_eos_eth_token_dictionary_entry_2(),
+        get_sample_eos_eth_token_dictionary_entry_3(),
     ])
 }
 
