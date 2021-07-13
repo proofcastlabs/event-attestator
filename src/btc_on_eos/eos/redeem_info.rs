@@ -23,15 +23,15 @@ use crate::{
 pub struct BtcOnEosRedeemInfos(pub Vec<BtcOnEosRedeemInfo>);
 
 impl BtcOnEosRedeemInfos {
-    pub fn subtract_fees(&self, fee_basis_points: u64) -> Self {
+    pub fn subtract_fees(&self, fee_basis_points: u64) -> Result<Self> {
         let (fees, _) = self.calculate_fees(fee_basis_points);
         info!("`BtcOnEosRedeemInfos` fees: {:?}", fees);
-        Self::new(
+        Ok(Self::new(
             fees.iter()
                 .zip(self.iter())
                 .map(|(fee, redeem_info)| redeem_info.subtract_amount(*fee))
-                .collect::<Vec<BtcOnEosRedeemInfo>>(),
-        )
+                .collect::<Result<Vec<BtcOnEosRedeemInfo>>>()?,
+        ))
     }
 
     pub fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
@@ -91,18 +91,23 @@ pub struct BtcOnEosRedeemInfo {
 }
 
 impl BtcOnEosRedeemInfo {
-    pub fn subtract_amount(&self, subtrahend: u64) -> Self {
-        let new_amount = self.amount - subtrahend;
-        info!(
-            "Subtracted amount of {} from current redeem info amount of {} to get final amount of {}",
-            subtrahend, self.amount, new_amount
-        );
-        Self {
-            from: self.from,
-            amount: new_amount,
-            recipient: self.recipient.clone(),
-            global_sequence: self.global_sequence,
-            originating_tx_id: self.originating_tx_id,
+    pub fn subtract_amount(&self, subtrahend: u64) -> Result<Self> {
+        info!("✔ Subtracting {} from `BtcOnEosRedeemInfo`...", subtrahend);
+        if subtrahend > self.amount {
+            Err(format!("Cannot subtract {} from {}!", subtrahend, self.amount).into())
+        } else {
+            let new_amount = self.amount - subtrahend;
+            info!(
+                "Subtracted amount of {} from current redeem info amount of {} to get final amount of {}",
+                subtrahend, self.amount, new_amount
+            );
+            Ok(Self {
+                from: self.from,
+                amount: new_amount,
+                recipient: self.recipient.clone(),
+                global_sequence: self.global_sequence,
+                originating_tx_id: self.originating_tx_id,
+            })
         }
     }
 
@@ -316,7 +321,7 @@ mod tests {
     fn should_subtract_amount_from_btc_on_eos_redeem_infos() {
         let infos = get_sample_redeem_info();
         let subtrahend = 1337;
-        let result = infos.subtract_amount(subtrahend);
+        let result = infos.subtract_amount(subtrahend).unwrap();
         let expected_result = 3774;
         assert_eq!(result.amount, expected_result)
     }
@@ -325,7 +330,7 @@ mod tests {
     fn should_subtract_fees_from_btc_on_eos_redeem_infos() {
         let infos = get_sample_redeem_infos();
         let basis_points = 25;
-        let result = infos.subtract_fees(basis_points);
+        let result = infos.subtract_fees(basis_points).unwrap();
         let expected_amount = 5099;
         result.iter().for_each(|info| assert_eq!(info.amount, expected_amount));
     }

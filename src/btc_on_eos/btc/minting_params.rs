@@ -218,16 +218,16 @@ impl BtcOnEosMintingParamStruct {
     }
 
     pub fn subtract_amount(&self, subtrahend: u64) -> Result<Self> {
-        info!("✔ Subtracting {} from {:?}", subtrahend, self);
+        info!("✔ Subtracting {} from `BtcOnEosMintingParamStruct`...", subtrahend);
         let symbol = get_symbol_from_eos_asset(&self.amount);
         let amount = convert_eos_asset_to_u64(&self.amount)?;
-        let amount_minus_fee = amount - subtrahend;
         if subtrahend > amount {
             Err(format!("Cannot subtract {} from {}!", subtrahend, amount).into())
         } else {
+            let amount_minus_fee = amount - subtrahend;
             info!(
                 "✔ Subtracted amount of {} from current minting params amount of {} to get final amount of {}",
-                subtrahend, self.amount, amount_minus_fee
+                subtrahend, amount, amount_minus_fee
             );
             Ok(Self {
                 to: self.to.clone(),

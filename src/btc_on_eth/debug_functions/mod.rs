@@ -478,7 +478,7 @@ pub fn debug_put_btc_on_eth_peg_in_basis_points_in_db<D: DatabaseInterface>(
     db: &D,
     basis_points: u64,
 ) -> Result<String> {
-    info!("✔ Debug setting `BTC-on-ETh` peg-in basis-points to {}", basis_points);
+    info!("✔ Debug setting `BTC-on-ETH` peg-in basis-points to {}", basis_points);
     debug_put_btc_on_eth_basis_points_in_db(db, basis_points, true)
 }
 

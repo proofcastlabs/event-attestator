@@ -22,12 +22,12 @@ fn account_for_fees_in_redeem_infos<D: DatabaseInterface>(
     fee_basis_points: u64,
 ) -> Result<BtcOnEosRedeemInfos> {
     if fee_basis_points == 0 {
-        info!("✔ `BTC-on-Eos` peg-in fees are set to zero ∴ not taking any fees!");
+        info!("✔ `BTC-on-EOS` peg-in fees are set to zero ∴ not taking any fees!");
         Ok(redeem_infos.clone())
     } else {
         info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);
         accrue_fees_from_redeem_info(db, redeem_infos, fee_basis_points)
-            .map(|_| redeem_infos.subtract_fees(fee_basis_points))
+            .and_then(|_| redeem_infos.subtract_fees(fee_basis_points))
     }
 }
 

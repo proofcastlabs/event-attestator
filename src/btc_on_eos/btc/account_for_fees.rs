@@ -25,7 +25,7 @@ fn account_for_fees_in_minting_params<D: DatabaseInterface>(
     fee_basis_points: u64,
 ) -> Result<BtcOnEosMintingParams> {
     if fee_basis_points == 0 {
-        info!("✔ `BTC-on-Eos` peg-in fees are set to zero ∴ not taking any fees!");
+        info!("✔ `BTC-on-EOS` peg-in fees are set to zero ∴ not taking any fees!");
         Ok(minting_params.clone())
     } else {
         info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);

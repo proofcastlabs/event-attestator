@@ -107,7 +107,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
                 info!("✔ Accounting for fees in signing params but NOT accruing them!");
                 let basis_points =
                     FeeDatabaseUtils::new_for_btc_on_eos().get_peg_out_basis_points_from_db(&state.db)?;
-                let updated_redeem_infos = state.btc_on_eos_redeem_infos.subtract_fees(basis_points);
+                let updated_redeem_infos = state.btc_on_eos_redeem_infos.subtract_fees(basis_points)?;
                 state.replace_btc_on_eos_redeem_infos(updated_redeem_infos)
             }
         })
