@@ -2,7 +2,7 @@ use std::{cmp::Ordering, str::FromStr};
 
 use derive_more::{Constructor, Deref, DerefMut};
 use eos_chain::AccountName as EosAccountName;
-use ethereum_types::{Address as EthAddress, U256 as EthAmount};
+use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
 
 pub(crate) mod test_utils;
@@ -14,6 +14,7 @@ use crate::{
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
+    fees::fee_utils::get_last_withdrawal_date_as_human_readable_string,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{left_pad_with_zeroes, right_pad_or_truncate, right_pad_with_zeroes, strip_hex_prefix, truncate_str},
@@ -182,7 +183,7 @@ impl EosEthTokenDictionary {
             .collect()
     }
 
-    pub fn convert_u256_to_eos_asset_string(&self, address: &EthAddress, eth_amount: &EthAmount) -> Result<String> {
+    pub fn convert_u256_to_eos_asset_string(&self, address: &EthAddress, eth_amount: &U256) -> Result<String> {
         self.get_entry_via_eth_token_address(address)
             .and_then(|entry| entry.convert_u256_to_eos_asset_string(eth_amount))
     }
@@ -225,6 +226,12 @@ pub struct EosEthTokenDictionaryEntry {
     pub eth_symbol: String,
     pub eos_address: String,
     pub eth_address: EthAddress,
+    pub eth_fee_basis_points: u64,
+    pub eos_fee_basis_points: u64,
+    pub accrued_fees: U256,
+    pub last_withdrawal: u64,
+    pub accrued_fees_human_readable: u128,
+    pub last_withdrawal_human_readable: String,
 }
 
 impl EosEthTokenDictionaryEntry {
@@ -236,10 +243,16 @@ impl EosEthTokenDictionaryEntry {
             eth_symbol: self.eth_symbol.to_string(),
             eos_address: self.eos_address.to_string(),
             eth_address: hex::encode(self.eth_address),
+            eth_fee_basis_points: Some(self.eth_fee_basis_points),
+            eos_fee_basis_points: Some(self.eos_fee_basis_points),
+            accrued_fees: Some(self.accrued_fees.as_u128()),
+            last_withdrawal: Some(self.last_withdrawal),
         }
     }
 
     pub fn from_json(json: &EosEthTokenDictionaryEntryJson) -> Result<Self> {
+        let timestamp = json.last_withdrawal.unwrap_or_default();
+        let accrued_fees = U256::from(json.accrued_fees.unwrap_or_default());
         Ok(Self {
             eth_token_decimals: json.eth_token_decimals,
             eos_token_decimals: json.eos_token_decimals,
@@ -247,6 +260,12 @@ impl EosEthTokenDictionaryEntry {
             eth_symbol: json.eth_symbol.to_string(),
             eos_address: json.eos_address.to_string(),
             eth_address: EthAddress::from_slice(&hex::decode(strip_hex_prefix(&json.eth_address))?),
+            eth_fee_basis_points: json.eth_fee_basis_points.unwrap_or_default(),
+            eos_fee_basis_points: json.eos_fee_basis_points.unwrap_or_default(),
+            accrued_fees_human_readable: accrued_fees.as_u128(),
+            last_withdrawal: timestamp,
+            last_withdrawal_human_readable: get_last_withdrawal_date_as_human_readable_string(timestamp),
+            accrued_fees,
         })
     }
 
@@ -263,20 +282,20 @@ impl EosEthTokenDictionaryEntry {
         (decimal_part, fractional_part)
     }
 
-    pub fn convert_eos_asset_to_eth_amount(&self, eos_asset: &str) -> Result<EthAmount> {
+    pub fn convert_eos_asset_to_eth_amount(&self, eos_asset: &str) -> Result<U256> {
         let (decimal_str, fraction_str) = Self::get_decimal_and_fractional_parts_of_eos_asset(eos_asset);
         let augmented_fraction_str = match self.eth_token_decimals.cmp(&self.eos_token_decimals) {
             Ordering::Greater => right_pad_with_zeroes(fraction_str, self.eth_token_decimals),
             Ordering::Equal => fraction_str.to_string(),
             Ordering::Less => truncate_str(fraction_str, self.eos_token_decimals - self.eth_token_decimals).to_string(),
         };
-        Ok(EthAmount::from_dec_str(&format!(
+        Ok(U256::from_dec_str(&format!(
             "{}{}",
             decimal_str, augmented_fraction_str
         ))?)
     }
 
-    pub fn convert_u256_to_eos_asset_string(&self, amount: &EthAmount) -> Result<String> {
+    pub fn convert_u256_to_eos_asset_string(&self, amount: &U256) -> Result<String> {
         let amount_str = amount.to_string();
         match amount_str.len().cmp(&self.eth_token_decimals) {
             Ordering::Greater | Ordering::Equal => {
@@ -331,6 +350,10 @@ pub struct EosEthTokenDictionaryEntryJson {
     eos_symbol: String,
     eth_address: String,
     eos_address: String,
+    eth_fee_basis_points: Option<u64>,
+    eos_fee_basis_points: Option<u64>,
+    accrued_fees: Option<u128>,
+    last_withdrawal: Option<u64>,
 }
 
 impl EosEthTokenDictionaryEntryJson {
@@ -379,6 +402,8 @@ mod tests {
     #[test]
     fn eos_eth_token_dictionary_should_no_contain_other_eos_eth_token_dictionary_entry() {
         let token_address_hex = "9e57CB2a4F462a5258a49E88B4331068a391DE66".to_string();
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let other_dictionary_entry = EosEthTokenDictionaryEntry::new(
             18,
             9,
@@ -386,6 +411,12 @@ mod tests {
             "SYM".to_string(),
             "SampleTokenx".to_string(),
             EthAddress::from_slice(&hex::decode(&token_address_hex).unwrap()),
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         );
         let dictionary = get_sample_eos_eth_token_dictionary();
         assert!(!dictionary.contains(&other_dictionary_entry));
@@ -569,17 +600,17 @@ mod tests {
     fn should_convert_eos_asset_to_eth_amount() {
         let entry = get_sample_eos_eth_token_dictionary_entry_1();
         let expected_results = vec![
-            EthAmount::from_dec_str("1234567891000000000").unwrap(),
-            EthAmount::from_dec_str("123456789000000000").unwrap(),
-            EthAmount::from_dec_str("12345678000000000").unwrap(),
-            EthAmount::from_dec_str("1234567000000000").unwrap(),
-            EthAmount::from_dec_str("123456000000000").unwrap(),
-            EthAmount::from_dec_str("12345000000000").unwrap(),
-            EthAmount::from_dec_str("1234000000000").unwrap(),
-            EthAmount::from_dec_str("123000000000").unwrap(),
-            EthAmount::from_dec_str("12000000000").unwrap(),
-            EthAmount::from_dec_str("1000000000").unwrap(),
-            EthAmount::from_dec_str("0").unwrap(),
+            U256::from_dec_str("1234567891000000000").unwrap(),
+            U256::from_dec_str("123456789000000000").unwrap(),
+            U256::from_dec_str("12345678000000000").unwrap(),
+            U256::from_dec_str("1234567000000000").unwrap(),
+            U256::from_dec_str("123456000000000").unwrap(),
+            U256::from_dec_str("12345000000000").unwrap(),
+            U256::from_dec_str("1234000000000").unwrap(),
+            U256::from_dec_str("123000000000").unwrap(),
+            U256::from_dec_str("12000000000").unwrap(),
+            U256::from_dec_str("1000000000").unwrap(),
+            U256::from_dec_str("0").unwrap(),
         ];
         vec![
             "1.234567891 SAM1".to_string(),
@@ -617,17 +648,17 @@ mod tests {
             "0.000000000 SAM1".to_string(),
         ];
         vec![
-            EthAmount::from_dec_str("1234567891234567891").unwrap(),
-            EthAmount::from_dec_str("123456789123456789").unwrap(),
-            EthAmount::from_dec_str("12345678912345678").unwrap(),
-            EthAmount::from_dec_str("1234567891234567").unwrap(),
-            EthAmount::from_dec_str("123456789123456").unwrap(),
-            EthAmount::from_dec_str("12345678912345").unwrap(),
-            EthAmount::from_dec_str("1234567891234").unwrap(),
-            EthAmount::from_dec_str("123456789123").unwrap(),
-            EthAmount::from_dec_str("12345678912").unwrap(),
-            EthAmount::from_dec_str("1234567891").unwrap(),
-            EthAmount::from_dec_str("123456789").unwrap(),
+            U256::from_dec_str("1234567891234567891").unwrap(),
+            U256::from_dec_str("123456789123456789").unwrap(),
+            U256::from_dec_str("12345678912345678").unwrap(),
+            U256::from_dec_str("1234567891234567").unwrap(),
+            U256::from_dec_str("123456789123456").unwrap(),
+            U256::from_dec_str("12345678912345").unwrap(),
+            U256::from_dec_str("1234567891234").unwrap(),
+            U256::from_dec_str("123456789123").unwrap(),
+            U256::from_dec_str("12345678912").unwrap(),
+            U256::from_dec_str("1234567891").unwrap(),
+            U256::from_dec_str("123456789").unwrap(),
         ]
         .iter()
         .map(|eth_amount| entry.convert_u256_to_eos_asset_string(&eth_amount).unwrap())
