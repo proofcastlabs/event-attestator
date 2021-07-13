@@ -63,7 +63,12 @@ use crate::{
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
-    fees::{fee_constants::get_fee_constants_db_keys, fee_withdrawals::get_btc_on_eth_fee_withdrawal_tx},
+    fees::{
+        fee_constants::BTC_ON_ETH_FEE_DB_KEYS,
+        fee_database_utils::FeeDatabaseUtils,
+        fee_utils::sanity_check_basis_points_value,
+        fee_withdrawals::get_btc_on_eth_fee_withdrawal_tx,
+    },
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, prepend_debug_output_marker_to_string, strip_hex_prefix},
@@ -77,7 +82,7 @@ pub fn debug_get_all_db_keys() -> Result<String> {
         json!({
             "btc": get_btc_constants_db_keys(),
             "eth": get_eth_constants_db_keys(),
-            "fees": get_fee_constants_db_keys(),
+            "fees": BTC_ON_ETH_FEE_DB_KEYS.to_json(),
             "db-key-prefix": DB_KEY_PREFIX.to_string(),
             "utxo-manager": get_utxo_constants_db_keys(),
         })
@@ -436,4 +441,55 @@ pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> R
 /// This function sets the BTC fee to the given value. The unit is satoshis per byte.
 pub fn debug_set_btc_fee<D: DatabaseInterface>(db: D, fee: u64) -> Result<String> {
     debug_put_btc_fee_in_db(&db, fee)
+}
+
+fn debug_put_btc_on_eth_basis_points_in_db<D: DatabaseInterface>(
+    db: &D,
+    basis_points: u64,
+    peg_in: bool,
+) -> Result<String> {
+    let suffix = if peg_in { "in" } else { "out" };
+    info!(
+        "✔ Debug setting `BtcOnEth` peg-{} basis-points to {}",
+        suffix, basis_points
+    );
+    check_debug_mode()
+        .and_then(|_| sanity_check_basis_points_value(basis_points))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| {
+            if peg_in {
+                FeeDatabaseUtils::new_for_btc_on_eth().put_peg_in_basis_points_in_db(db, basis_points)
+            } else {
+                FeeDatabaseUtils::new_for_btc_on_eth().put_peg_out_basis_points_in_db(db, basis_points)
+            }
+        })
+        .and_then(|_| db.end_transaction())
+        .and(Ok(
+            json!({format!("set_btc_on_eth_peg_{}_basis_points", suffix):true}).to_string()
+        ))
+        .map(prepend_debug_output_marker_to_string)
+}
+
+/// # Debug Put BTC-on-ETH Peg-In Basis-Points In DB
+///
+/// This function sets to the given value the `BTC-on-ETH` peg-in basis-points in the encrypted
+/// database.
+pub fn debug_put_btc_on_eth_peg_in_basis_points_in_db<D: DatabaseInterface>(
+    db: &D,
+    basis_points: u64,
+) -> Result<String> {
+    info!("✔ Debug setting `BTC-on-ETH` peg-in basis-points to {}", basis_points);
+    debug_put_btc_on_eth_basis_points_in_db(db, basis_points, true)
+}
+
+/// # Debug Put BTC-on-ETH Peg-Out Basis-Points In DB
+///
+/// This function sets to the given value the `BTC-on-ETH` peg-out basis-points in the encrypted
+/// database.
+pub fn debug_put_btc_on_eth_peg_out_basis_points_in_db<D: DatabaseInterface>(
+    db: &D,
+    basis_points: u64,
+) -> Result<String> {
+    info!("✔ Debug setting `BTC-on-ETH` peg-out basis-points to {}", basis_points);
+    debug_put_btc_on_eth_basis_points_in_db(db, basis_points, false)
 }

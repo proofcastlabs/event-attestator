@@ -35,6 +35,8 @@ pub use crate::{
             debug_get_signed_erc777_proxy_change_pnetwork_tx,
             debug_maybe_add_utxo_to_db,
             debug_mint_pbtc,
+            debug_put_btc_on_eth_peg_in_basis_points_in_db,
+            debug_put_btc_on_eth_peg_out_basis_points_in_db,
             debug_remove_utxo,
             debug_set_btc_fee,
             debug_set_eth_gas_price,
@@ -62,10 +64,6 @@ pub use crate::{
                 sign_hex_msg_with_eth_key_with_prefix,
             },
         },
-    },
-    fees::fee_debug_functions::{
-        debug_put_btc_on_eth_peg_in_basis_points_in_db,
-        debug_put_btc_on_eth_peg_out_basis_points_in_db,
     },
 };
 

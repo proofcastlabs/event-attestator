@@ -16,6 +16,12 @@ pub use crate::{
     btc_on_eos::{
         btc::submit_btc_block::submit_btc_block_to_core,
         debug_functions::{
+            block_reprocessors::{
+                debug_reprocess_btc_block_for_stale_eos_tx,
+                debug_reprocess_btc_block_for_stale_eos_tx_with_fee_accrual,
+                debug_reprocess_eos_block,
+                debug_reprocess_eos_block_with_fee_accrual,
+            },
             debug_add_multiple_utxos,
             debug_add_new_eos_schedule,
             debug_clear_all_utxos,
@@ -23,12 +29,13 @@ pub use crate::{
             debug_get_all_db_keys,
             debug_get_all_utxos,
             debug_get_child_pays_for_parent_btc_tx,
+            debug_get_fee_withdrawal_tx,
             debug_get_key_from_db,
             debug_get_processed_actions_list,
             debug_maybe_add_utxo_to_db,
+            debug_put_btc_on_eos_peg_in_basis_points_in_db,
+            debug_put_btc_on_eos_peg_out_basis_points_in_db,
             debug_remove_utxo,
-            debug_reprocess_btc_block_for_stale_eos_tx,
-            debug_reprocess_eos_block,
             debug_set_btc_fee,
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
@@ -62,4 +69,5 @@ pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
 
 pub(crate) mod check_core_is_initialized;
+pub(crate) mod test_utils;
 pub(crate) mod utils;

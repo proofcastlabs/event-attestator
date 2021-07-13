@@ -1,10 +1,7 @@
 use crate::{
     btc_on_eth::btc::minting_params::BtcOnEthMintingParams,
     chains::btc::btc_state::BtcState,
-    fees::{
-        fee_constants::DISABLE_FEES,
-        fee_database_utils::{get_btc_on_eth_peg_in_basis_points_from_db, increment_btc_on_eth_accrued_fees},
-    },
+    fees::{fee_constants::DISABLE_FEES, fee_database_utils::FeeDatabaseUtils},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -30,7 +27,7 @@ fn accrue_fees_from_minting_params<D: DatabaseInterface>(
 ) -> Result<()> {
     let (_, total_fee) = minting_params.calculate_fees(fee_basis_points);
     info!("BTC `MintingParams` total fee: {}", total_fee);
-    increment_btc_on_eth_accrued_fees(db, total_fee)
+    FeeDatabaseUtils::new_for_btc_on_eth().increment_accrued_fees(db, total_fee)
 }
 
 fn account_for_fees_in_minting_params<D: DatabaseInterface>(
@@ -60,7 +57,7 @@ pub fn maybe_account_for_fees<D: DatabaseInterface>(state: BtcState<D>) -> Resul
         account_for_fees_in_minting_params(
             &state.db,
             &state.btc_on_eth_minting_params,
-            get_btc_on_eth_peg_in_basis_points_from_db(&state.db)?,
+            FeeDatabaseUtils::new_for_btc_on_eth().get_peg_in_basis_points_from_db(&state.db)?,
         )
         .and_then(|updated_minting_params| state.replace_btc_on_eth_minting_params(updated_minting_params))
     }
@@ -72,7 +69,7 @@ mod tests {
     use crate::{
         btc_on_eth::utils::convert_satoshis_to_wei,
         chains::btc::btc_test_utils::get_sample_minting_params,
-        fees::fee_database_utils::get_btc_on_eth_accrued_fees_from_db,
+        fees::fee_database_utils::FeeDatabaseUtils,
         test_utils::get_test_database,
     };
 
@@ -80,7 +77,9 @@ mod tests {
     fn should_account_for_fees_in_btc_on_eth_minting_params() {
         let fee_basis_points = 25;
         let db = get_test_database();
-        let accrued_fees_before = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
+        let accrued_fees_before = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_accrued_fees_from_db(&db)
+            .unwrap();
         assert_eq!(accrued_fees_before, 0);
         let minting_params = get_sample_minting_params();
         let (_, total_fee) = minting_params.calculate_fees(fee_basis_points);
@@ -89,7 +88,9 @@ mod tests {
         let total_value_before = minting_params.sum();
         let resulting_params = account_for_fees_in_minting_params(&db, &minting_params, fee_basis_points).unwrap();
         let total_value_after = resulting_params.sum();
-        let accrued_fees_after = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
+        let accrued_fees_after = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_accrued_fees_from_db(&db)
+            .unwrap();
         let expected_amount_after_1 = convert_satoshis_to_wei(4988);
         let expected_amount_after_2 = convert_satoshis_to_wei(4989);
         let expected_amount_after_3 = convert_satoshis_to_wei(4987);
@@ -108,7 +109,9 @@ mod tests {
         let fee_basis_points = 0;
         assert_eq!(fee_basis_points, 0);
         let db = get_test_database();
-        let accrued_fees_before = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
+        let accrued_fees_before = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_accrued_fees_from_db(&db)
+            .unwrap();
         assert_eq!(accrued_fees_before, 0);
         let minting_params = get_sample_minting_params();
         let (_, total_fee) = minting_params.calculate_fees(fee_basis_points);
@@ -118,7 +121,9 @@ mod tests {
         let resulting_params = account_for_fees_in_minting_params(&db, &minting_params, fee_basis_points).unwrap();
         let total_value_after = resulting_params.sum();
         assert_eq!(total_value_before, total_value_after);
-        let accrued_fees_after = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
+        let accrued_fees_after = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_accrued_fees_from_db(&db)
+            .unwrap();
         assert_eq!(accrued_fees_after, 0);
     }
 
@@ -127,7 +132,9 @@ mod tests {
         let fee_basis_points = 25;
         assert!(fee_basis_points > 0);
         let db = get_test_database();
-        let accrued_fees_before = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
+        let accrued_fees_before = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_accrued_fees_from_db(&db)
+            .unwrap();
         assert_eq!(accrued_fees_before, 0);
         let minting_params = BtcOnEthMintingParams::new(vec![]);
         let (_, total_fee) = minting_params.calculate_fees(fee_basis_points);
@@ -137,7 +144,9 @@ mod tests {
         let resulting_params = account_for_fees_in_minting_params(&db, &minting_params, fee_basis_points).unwrap();
         let total_value_after = resulting_params.sum();
         assert_eq!(total_value_before, total_value_after);
-        let accrued_fees_after = get_btc_on_eth_accrued_fees_from_db(&db).unwrap();
+        let accrued_fees_after = FeeDatabaseUtils::new_for_btc_on_eth()
+            .get_accrued_fees_from_db(&db)
+            .unwrap();
         assert_eq!(accrued_fees_after, 0);
     }
 }

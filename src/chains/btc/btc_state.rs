@@ -197,8 +197,17 @@ where
         mut self,
         replacement_params: BtcOnEthMintingParams,
     ) -> Result<BtcState<D>> {
-        info!("✔ Replacing `btc-on-eth` minting params in state...");
+        info!("✔ Replacing `BtcOnEth` minting params in state...");
         self.btc_on_eth_minting_params = replacement_params;
+        Ok(self)
+    }
+
+    pub fn replace_btc_on_eos_minting_params(
+        mut self,
+        replacement_params: BtcOnEosMintingParams,
+    ) -> Result<BtcState<D>> {
+        info!("✔ Replacing `BtcOnEos` minting params in state...");
+        self.btc_on_eos_minting_params = replacement_params;
         Ok(self)
     }
 
