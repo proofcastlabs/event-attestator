@@ -58,52 +58,71 @@ pub struct EosOnEthEosTxInfo {
 
 impl EosOnEthEosTxInfo {
     fn get_token_sender_from_proof(proof: &EosActionProof) -> Result<EosAccountName> {
+        let end_index = 7;
         proof
-            .check_proof_action_data_length(7, "Not enough data to parse `EosOnEthEosTxInfo` sender from proof!")
+            .check_proof_action_data_length(
+                end_index,
+                "Not enough data to parse `EosOnEthEosTxInfo` sender from proof!",
+            )
             .and_then(|_| {
-                let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[..=7])?);
+                let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[..=end_index])?);
                 debug!("✔ Token sender parsed from action proof: {}", result);
                 Ok(result)
             })
     }
 
     fn get_token_account_name_from_proof(proof: &EosActionProof) -> Result<EosAccountName> {
+        let end_index = 15;
+        let start_index = 8;
         proof
-            .check_proof_action_data_length(15, "Not enough data to parse `EosOnEthEosTxInfo` account from proof!")
+            .check_proof_action_data_length(
+                end_index,
+                "Not enough data to parse `EosOnEthEosTxInfo` account from proof!",
+            )
             .and_then(|_| {
-                let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[8..=15])?);
+                let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[start_index..=end_index])?);
                 debug!("✔ Token account name parsed from action proof: {}", result);
                 Ok(result)
             })
     }
 
     fn get_action_name_from_proof(proof: &EosActionProof) -> Result<EosName> {
+        let end_index = 15;
+        let start_index = 8;
         let serialized_action = proof.get_serialized_action()?;
-        if serialized_action.len() < 15 {
+        if serialized_action.len() < end_index + 1 {
             Err("Not enough data to parse `EosOnEthEosTxInfo` action name from proof!".into())
         } else {
-            let result = EosName::new(convert_bytes_to_u64(&proof.get_serialized_action()?[8..=15])?);
+            let result = EosName::new(convert_bytes_to_u64(
+                &proof.get_serialized_action()?[start_index..=end_index],
+            )?);
             debug!("✔ Action name parsed from action proof: {}", result);
             Ok(result)
         }
     }
 
     fn get_action_sender_account_name_from_proof(proof: &EosActionProof) -> Result<EosAccountName> {
+        let end_index = 7;
         let serialized_action = proof.get_serialized_action()?;
-        if serialized_action.len() < 7 {
+        if serialized_action.len() < end_index + 1 {
             Err("Not enough data to parse `EosOnEthEosTxInfo` action sender from proof!".into())
         } else {
-            let result = EosAccountName::new(convert_bytes_to_u64(&serialized_action[..=7])?);
+            let result = EosAccountName::new(convert_bytes_to_u64(&serialized_action[..=end_index])?);
             debug!("✔ Action sender account name parsed from action proof: {}", result);
             Ok(result)
         }
     }
 
     fn get_eos_symbol_from_proof(proof: &EosActionProof) -> Result<EosSymbol> {
+        let start_index = 24;
+        let end_index = 31;
         proof
-            .check_proof_action_data_length(31, "Not enough data to parse `EosOnEthEosTxInfo` symbol from proof!")
+            .check_proof_action_data_length(
+                end_index,
+                "Not enough data to parse `EosOnEthEosTxInfo` symbol from proof!",
+            )
             .and_then(|_| {
-                let result = EosSymbol::new(convert_bytes_to_u64(&proof.action.data[24..=31])?);
+                let result = EosSymbol::new(convert_bytes_to_u64(&proof.action.data[start_index..=end_index])?);
                 debug!("✔ Eos symbol parsed from action proof: {}", result);
                 Ok(result)
             })
@@ -116,20 +135,28 @@ impl EosOnEthEosTxInfo {
     }
 
     fn get_eos_amount_from_proof(proof: &EosActionProof) -> Result<u64> {
+        let start_index = 16;
+        let end_index = 23;
         proof
-            .check_proof_action_data_length(23, "Not enough data to parse `EosOnEthEosTxInfo` amount from proof!")
-            .and_then(|_| convert_bytes_to_u64(&proof.action.data[16..=23].to_vec()))
+            .check_proof_action_data_length(
+                end_index,
+                "Not enough data to parse `EosOnEthEosTxInfo` amount from proof!",
+            )
+            .and_then(|_| convert_bytes_to_u64(&proof.action.data[start_index..=end_index].to_vec()))
     }
 
     fn get_eth_address_from_proof(proof: &EosActionProof) -> Result<EthAddress> {
+        let start_index = 33;
+        let end_index = 74;
         proof
             .check_proof_action_data_length(
-                74,
+                end_index,
                 "Not enough data to parse `EosOnEthEosTxInfo` ETH address from proof!",
             )
             .and_then(|_| {
-                let result =
-                    EthAddress::from_slice(&hex::decode(strip_hex_prefix(from_utf8(&proof.action.data[33..=74])?))?);
+                let result = EthAddress::from_slice(&hex::decode(strip_hex_prefix(from_utf8(
+                    &proof.action.data[start_index..=end_index],
+                )?))?);
                 debug!("✔ ETH address parsed from action proof: {}", result);
                 Ok(result)
             })
@@ -366,7 +393,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        chains::eos::eos_utils::convert_hex_to_checksum256,
+        chains::eos::{eos_test_utils::get_sample_eos_submission_material_n, eos_utils::convert_hex_to_checksum256},
         eos_on_eth::test_utils::{get_eos_submission_material_n, get_sample_eos_eth_token_dictionary},
     };
 
@@ -487,5 +514,18 @@ mod tests {
         let expected_result = 4;
         let result = EosOnEthEosTxInfo::get_asset_num_decimals_from_proof(&proof).unwrap();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_not_panic_due_to_out_of_range_error() {
+        // NOTE This sample has a badly formed ETH address in it which caused a panic. This test
+        // asserts that this is no longer the case.
+        let proof = get_sample_eos_submission_material_n(11).action_proofs[0].clone();
+        let dictionary_str = "[{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"pSEEDS\",\"eos_symbol\":\"SEEDS\",\"eth_address\":\"6db338e6ed75f67cd5a4ef8bdf59163b32d4bd46\",\"eos_address\":\"token.seeds\"},{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"TLOS\",\"eos_symbol\":\"TLOS\",\"eth_address\":\"7825e833d495f3d1c28872415a4aee339d26ac88\",\"eos_address\":\"eosio.token\"}]";
+        let dictionary = EosEthTokenDictionary::from_str(dictionary_str).unwrap();
+        let eos_smart_contract = EosAccountName::from_str("xeth.ptokens").unwrap();
+        let result = EosOnEthEosTxInfo::from_eos_action_proof(&proof, &dictionary, &eos_smart_contract).unwrap();
+        let expected_recipient = EthAddress::from_slice(&hex::decode(SAFE_ETH_ADDRESS_HEX).unwrap());
+        assert_eq!(result.recipient, expected_recipient);
     }
 }
