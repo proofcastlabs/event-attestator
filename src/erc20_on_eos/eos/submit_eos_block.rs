@@ -35,6 +35,7 @@ use crate::{
     erc20_on_eos::{
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
         eos::{
+            account_for_fees::maybe_account_for_fees,
             get_eos_output::get_eos_output,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db_and_return_eos_state,
             redeem_info::{
@@ -55,10 +56,7 @@ use crate::{
 /// incremerkle accordingly. Any proofs submitted with the block and transaction IDs will then be
 /// parsed and if found to pertain to peg outs made in the block in question, an ETH transaction
 /// will be signed and returned to the caller.
-pub fn submit_eos_block_to_core<D>(db: D, block_json: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
     info!("✔ Submitting EOS block to core...");
     parse_submission_material_and_add_to_state(block_json, EosState::init(db))
         .and_then(check_core_is_initialized_and_return_eos_state)
@@ -82,6 +80,7 @@ where
         .and_then(maybe_parse_redeem_infos_and_put_in_state)
         .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
+        .and_then(maybe_account_for_fees)
         .and_then(maybe_sign_normal_eth_txs_and_add_to_state)
         .and_then(maybe_increment_eth_nonce_in_db_and_return_eos_state)
         .and_then(save_latest_block_id_to_db)
