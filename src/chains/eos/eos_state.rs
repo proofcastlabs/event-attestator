@@ -193,6 +193,12 @@ where
         Ok(self)
     }
 
+    pub fn replace_erc20_on_eos_redeem_infos(mut self, replacements: Erc20OnEosRedeemInfos) -> Result<EosState<D>> {
+        info!("✔ Replacing redeem infos in state...");
+        self.erc20_on_eos_redeem_infos = replacements;
+        Ok(self)
+    }
+
     pub fn replace_eos_on_eth_eos_tx_infos(mut self, replacements: EosOnEthEosTxInfos) -> Result<EosState<D>> {
         info!("✔ Replacing `EosOnEthEosTxInfos` in state...");
         self.eos_on_eth_eos_tx_infos = replacements;
