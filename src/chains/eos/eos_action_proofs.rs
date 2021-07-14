@@ -77,8 +77,8 @@ impl EosActionProof {
         self.action.account
     }
 
-    pub fn check_proof_action_data_length(&self, required_len: usize, err_msg: &str) -> Result<()> {
-        if self.action.data.len() < required_len {
+    pub fn check_proof_action_data_length(&self, required_last_index: usize, err_msg: &str) -> Result<()> {
+        if self.action.data.len() < required_last_index + 1 {
             Err(err_msg.into())
         } else {
             Ok(())
