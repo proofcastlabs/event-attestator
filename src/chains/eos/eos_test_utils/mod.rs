@@ -54,6 +54,9 @@ pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_9: &str =
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_10: &str =
     "src/chains/eos/eos_test_utils/mainnet-submission-material-with-perc20-redeem.json";
 
+pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_11: &str =
+    "src/chains/eos/eos_test_utils/sample-submission-material-with-bad-account-name-parsing.json";
+
 pub const SAMPLE_J3_INIT_BLOCK_JSON_PATH_1: &str = "src/chains/eos/eos_test_utils/jungle-3-init-block-10857380.json";
 
 pub const SAMPLE_J3_INIT_BLOCK_JSON_PATH_2: &str = "src/chains/eos/eos_test_utils/jungle-3-init-block-11879805.json";
@@ -301,6 +304,7 @@ pub fn get_sample_eos_submission_material_string_n(num: usize) -> Result<String>
         8 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_8),
         9 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_9),
         10 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_10),
+        11 => Ok(SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_11),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num))),
     }?;
     match Path::new(&path).exists() {
