@@ -107,7 +107,7 @@ pub struct Erc20OnEosRedeemInfo {
 
 impl FeeCalculator for Erc20OnEosRedeemInfo {
     fn get_amount(&self) -> U256 {
-        debug!("Getting token amount in `Erc20OnEosRedeemInfo` of {}", self.amount);
+        info!("✔Getting token amount in `Erc20OnEosRedeemInfo` of {}", self.amount);
         self.amount
     }
 

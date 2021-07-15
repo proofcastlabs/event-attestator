@@ -16,8 +16,9 @@ pub trait FeeCalculator {
 
     fn calculate_fee(&self, fee_basis_points: u64) -> U256 {
         if fee_basis_points > 0 {
-            debug!("Calculating fee using `fee_basis_points` of {}", fee_basis_points);
-            (self.get_amount() * U256::from(fee_basis_points)) / U256::from(FEE_BASIS_POINTS_DIVISOR)
+            let fee = (self.get_amount() * U256::from(fee_basis_points)) / U256::from(FEE_BASIS_POINTS_DIVISOR);
+            info!("Calculated fee of {} using `fee_basis_points` of {}", fee.as_u128(), fee_basis_points);
+            fee
         } else {
             debug!("Not calculating fee because `fee_basis_points` are zero!");
             U256::zero()
