@@ -55,6 +55,7 @@ use crate::{
             evm_tx_info::{
                 filter_out_zero_value_evm_tx_infos_from_state,
                 filter_submission_material_for_peg_in_events_in_state,
+                maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address,
                 maybe_sign_evm_txs_and_add_to_eth_state,
                 EthOnEvmEvmTxInfos,
             },
@@ -68,6 +69,7 @@ use crate::{
             eth_tx_info::{
                 filter_out_zero_value_eth_tx_infos_from_state,
                 filter_submission_material_for_redeem_events_in_state,
+                maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address,
                 maybe_sign_eth_txs_and_add_to_evm_state,
                 EthOnEvmEthTxInfos,
             },
@@ -115,6 +117,7 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
                 Ok(state)
             }
         })
+        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address)
         .and_then(maybe_sign_eth_txs_and_add_to_evm_state)
         .and_then(maybe_increment_eth_account_nonce_and_return_evm_state)
         .and_then(end_evm_db_tx_and_return_state)
@@ -179,6 +182,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                 Ok(state)
             }
         })
+        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address)
         .and_then(maybe_sign_evm_txs_and_add_to_eth_state)
         .and_then(maybe_increment_evm_account_nonce_and_return_eth_state)
         .and_then(end_eth_db_transaction_and_return_state)
