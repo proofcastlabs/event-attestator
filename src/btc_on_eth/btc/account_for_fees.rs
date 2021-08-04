@@ -1,5 +1,5 @@
 use crate::{
-    btc_on_eth::btc::minting_params::BtcOnEthMintingParams,
+    btc_on_eth::btc::minting_params::{BtcOnEthMintingParamStruct, BtcOnEthMintingParams},
     chains::btc::btc_state::BtcState,
     fees::{fee_constants::DISABLE_FEES, fee_database_utils::FeeDatabaseUtils},
     traits::DatabaseInterface,
@@ -9,15 +9,15 @@ use crate::{
 pub fn subtract_fees_from_minting_params(
     minting_params: &BtcOnEthMintingParams,
     fee_basis_points: u64,
-) -> BtcOnEthMintingParams {
+) -> Result<BtcOnEthMintingParams> {
     let (fees, _) = minting_params.calculate_fees(fee_basis_points);
     info!("BTC `MintingParam` fees: {:?}", fees);
-    BtcOnEthMintingParams::new(
+    Ok(BtcOnEthMintingParams::new(
         fees.iter()
             .zip(minting_params.iter())
             .map(|(fee, minting_params)| minting_params.subtract_satoshi_amount(*fee))
-            .collect(),
-    )
+            .collect::<Result<Vec<BtcOnEthMintingParamStruct>>>()?,
+    ))
 }
 
 fn accrue_fees_from_minting_params<D: DatabaseInterface>(
@@ -41,7 +41,7 @@ fn account_for_fees_in_minting_params<D: DatabaseInterface>(
     } else {
         info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);
         accrue_fees_from_minting_params(db, minting_params, fee_basis_points)
-            .map(|_| subtract_fees_from_minting_params(minting_params, fee_basis_points))
+            .and_then(|_| subtract_fees_from_minting_params(minting_params, fee_basis_points))
     }
 }
 

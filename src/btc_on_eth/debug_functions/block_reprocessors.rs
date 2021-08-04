@@ -102,7 +102,7 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
                 let minting_params_minus_fees = subtract_fees_from_minting_params(
                     &state.btc_on_eth_minting_params,
                     FeeDatabaseUtils::new_for_btc_on_eth().get_peg_in_basis_points_from_db(&state.db)?,
-                );
+                )?;
                 state.replace_btc_on_eth_minting_params(minting_params_minus_fees)
             }
         })
@@ -161,7 +161,7 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
                 let redeem_infos_minus_fees = subtract_fees_from_redeem_infos(
                     &state.btc_on_eth_redeem_infos,
                     FeeDatabaseUtils::new_for_btc_on_eth().get_peg_out_basis_points_from_db(&state.db)?,
-                );
+                )?;
                 state.replace_btc_on_eth_redeem_infos(redeem_infos_minus_fees)
             }
         })

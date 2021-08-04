@@ -1,5 +1,5 @@
 use crate::{
-    btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
+    btc_on_eth::eth::redeem_info::{BtcOnEthRedeemInfo, BtcOnEthRedeemInfos},
     chains::eth::eth_state::EthState,
     fees::{fee_constants::DISABLE_FEES, fee_database_utils::FeeDatabaseUtils},
     traits::DatabaseInterface,
@@ -9,15 +9,15 @@ use crate::{
 pub fn subtract_fees_from_redeem_infos(
     redeem_infos: &BtcOnEthRedeemInfos,
     fee_basis_points: u64,
-) -> BtcOnEthRedeemInfos {
+) -> Result<BtcOnEthRedeemInfos> {
     let (fees, _) = redeem_infos.calculate_fees(fee_basis_points);
     info!("ETH `RedeemInfos` fees: {:?}", fees);
-    BtcOnEthRedeemInfos::new(
+    Ok(BtcOnEthRedeemInfos::new(
         fees.iter()
             .zip(redeem_infos.iter())
             .map(|(fee, redeem_info)| redeem_info.subtract_amount(*fee))
-            .collect(),
-    )
+            .collect::<Result<Vec<BtcOnEthRedeemInfo>>>()?,
+    ))
 }
 
 fn accrue_fees_from_redeem_infos<D: DatabaseInterface>(
@@ -41,7 +41,7 @@ fn account_for_fees_in_redeem_infos<D: DatabaseInterface>(
     } else {
         info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);
         accrue_fees_from_redeem_infos(db, redeem_infos, fee_basis_points)
-            .map(|_| subtract_fees_from_redeem_infos(redeem_infos, fee_basis_points))
+            .and_then(|_| subtract_fees_from_redeem_infos(redeem_infos, fee_basis_points))
     }
 }
 

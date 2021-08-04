@@ -35,17 +35,18 @@ pub struct BtcOnEthRedeemInfo {
 }
 
 impl BtcOnEthRedeemInfo {
-    pub fn subtract_amount(&self, subtrahend: u64) -> Self {
-        let new_amount = self.amount_in_satoshis - subtrahend;
-        info!(
-            "Subtracted amount of {} from current redeem info amount of {} to get final amount of {}",
-            subtrahend, self.amount_in_satoshis, new_amount
-        );
-        Self {
-            amount_in_satoshis: new_amount,
-            from: self.from,
-            recipient: self.recipient.clone(),
-            originating_tx_hash: self.originating_tx_hash,
+    pub fn subtract_amount(&self, subtrahend: u64) -> Result<Self> {
+        if subtrahend > self.amount_in_satoshis {
+            Err("Cannot subtract amount from `BtcOnEthRedeemInfo`: subtrahend too large!".into())
+        } else {
+            let new_amount = self.amount_in_satoshis - subtrahend;
+            info!(
+                "Subtracted amount of {} from current redeem info amount of {} to get final amount of {}",
+                subtrahend, self.amount_in_satoshis, new_amount
+            );
+            let mut new_self = self.clone();
+            new_self.amount_in_satoshis = new_amount;
+            Ok(new_self)
         }
     }
 
@@ -173,6 +174,7 @@ mod tests {
                 get_sample_receipt_with_erc777_redeem,
             },
         },
+        errors::AppError,
     };
 
     fn get_tx_hash_of_redeem_tx() -> &'static str {
@@ -280,7 +282,7 @@ mod tests {
     #[test]
     fn should_subtract_amount_from_redeem_info() {
         let info = get_sample_btc_on_eth_redeem_info_1();
-        let result = info.subtract_amount(1);
+        let result = info.subtract_amount(1).unwrap();
         let expected_amount = 123456788;
         assert_eq!(result.amount_in_satoshis, expected_amount)
     }
@@ -303,5 +305,17 @@ mod tests {
         let expected_total_fee = 2777776;
         assert_eq!(fees, expected_fees);
         assert_eq!(total_fee, expected_total_fee);
+    }
+
+    #[test]
+    fn should_error_if_subtrahend_too_large_when_subtracting_amount() {
+        let params = get_sample_btc_on_eth_redeem_info_1();
+        let subtrahend = params.amount_in_satoshis + 1;
+        let expected_error = "Cannot subtract amount from `BtcOnEthRedeemInfo`: subtrahend too large!";
+        match params.subtract_amount(subtrahend) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
     }
 }
