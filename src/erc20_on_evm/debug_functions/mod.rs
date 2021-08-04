@@ -48,6 +48,7 @@ use crate::{
         eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
     },
     erc20_on_evm::check_core_is_initialized::check_core_is_initialized,
+    fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -292,6 +293,7 @@ pub fn debug_get_erc20_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, ne
 pub fn debug_set_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
+        .map(|_| sanity_check_basis_points_value(new_fee))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
         .and_then(|dictionary| {
