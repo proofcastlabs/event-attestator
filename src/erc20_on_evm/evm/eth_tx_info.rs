@@ -115,14 +115,18 @@ impl FeeCalculator for EthOnEvmEthTxInfo {
                 "Subtracting {} from {} to get final amount of {} in `EthOnEvmEthTxInfo`!",
                 subtrahend, self.native_token_amount, new_amount
             );
-            let mut new_self = self.clone();
-            new_self.native_token_amount = new_amount;
-            Ok(new_self)
+            Ok(self.update_amount(new_amount))
         }
     }
 }
 
 impl EthOnEvmEthTxInfo {
+    fn update_amount(&self, new_amount: U256) -> Self {
+        let mut new_self = self.clone();
+        new_self.native_token_amount = new_amount;
+        new_self
+    }
+
     pub fn to_eth_signed_tx(
         // TODO Get a sample with user data so we can use that test against!
         &self,

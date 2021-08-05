@@ -36,6 +36,12 @@ pub struct BtcOnEthRedeemInfo {
 }
 
 impl BtcOnEthRedeemInfo {
+    fn update_amount(&self, new_amount: u64) -> Self {
+        let mut new_self = self.clone();
+        new_self.amount_in_satoshis = new_amount;
+        new_self
+    }
+
     pub fn subtract_amount(&self, subtrahend: u64) -> Result<Self> {
         if subtrahend > self.amount_in_satoshis {
             Err("Cannot subtract amount from `BtcOnEthRedeemInfo`: subtrahend too large!".into())
@@ -45,9 +51,7 @@ impl BtcOnEthRedeemInfo {
                 "Subtracted amount of {} from current redeem info amount of {} to get final amount of {}",
                 subtrahend, self.amount_in_satoshis, new_amount
             );
-            let mut new_self = self.clone();
-            new_self.amount_in_satoshis = new_amount;
-            Ok(new_self)
+            Ok(self.update_amount(new_amount))
         }
     }
 

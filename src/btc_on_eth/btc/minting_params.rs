@@ -215,6 +215,12 @@ impl BtcOnEthMintingParamStruct {
         (self.to_satoshi_amount() * basis_points) / FEE_BASIS_POINTS_DIVISOR
     }
 
+    fn update_amount(&self, new_amount: U256) -> Self {
+        let mut new_self = self.clone();
+        new_self.amount = new_amount;
+        new_self
+    }
+
     pub fn subtract_satoshi_amount(&self, subtrahend: u64) -> Result<Self> {
         let self_amount_in_satoshis = self.to_satoshi_amount();
         if subtrahend > self_amount_in_satoshis {
@@ -225,9 +231,7 @@ impl BtcOnEthMintingParamStruct {
                 "Subtracted amount of {} from current minting params amount of {} to get final amount of {}",
                 subtrahend, self_amount_in_satoshis, amount_minus_fee
             );
-            let mut new_self = self.clone();
-            new_self.amount = convert_satoshis_to_wei(amount_minus_fee);
-            Ok(new_self)
+            Ok(self.update_amount(convert_satoshis_to_wei(amount_minus_fee)))
         }
     }
 
