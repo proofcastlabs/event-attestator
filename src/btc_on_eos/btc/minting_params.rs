@@ -26,6 +26,7 @@ use crate::{
         },
     },
     constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_EOS_ADDRESS},
+    fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
@@ -59,15 +60,16 @@ impl BtcOnEosMintingParams {
     }
 
     pub fn subtract_fees(&self, fee_basis_points: u64) -> Result<Self> {
-        self.calculate_fees(fee_basis_points).and_then(|(fees, _)| {
-            info!("`BtcOnEosMintingParams` fees: {:?}", fees);
-            Ok(Self::new(
-                fees.iter()
-                    .zip(self.iter())
-                    .map(|(fee, params)| params.subtract_amount(*fee))
-                    .collect::<Result<Vec<BtcOnEosMintingParamStruct>>>()?,
-            ))
-        })
+        self.calculate_fees(sanity_check_basis_points_value(fee_basis_points)?)
+            .and_then(|(fees, _)| {
+                info!("`BtcOnEosMintingParams` fees: {:?}", fees);
+                Ok(Self::new(
+                    fees.iter()
+                        .zip(self.iter())
+                        .map(|(fee, params)| params.subtract_amount(*fee))
+                        .collect::<Result<Vec<BtcOnEosMintingParamStruct>>>()?,
+                ))
+            })
     }
 
     pub fn calculate_fees(&self, basis_points: u64) -> Result<(Vec<u64>, u64)> {
