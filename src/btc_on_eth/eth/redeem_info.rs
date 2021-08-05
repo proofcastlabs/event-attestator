@@ -22,6 +22,7 @@ use crate::{
         },
     },
     constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_BTC_ADDRESS},
+    fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -35,17 +36,22 @@ pub struct BtcOnEthRedeemInfo {
 }
 
 impl BtcOnEthRedeemInfo {
-    pub fn subtract_amount(&self, subtrahend: u64) -> Self {
-        let new_amount = self.amount_in_satoshis - subtrahend;
-        info!(
-            "Subtracted amount of {} from current redeem info amount of {} to get final amount of {}",
-            subtrahend, self.amount_in_satoshis, new_amount
-        );
-        Self {
-            amount_in_satoshis: new_amount,
-            from: self.from,
-            recipient: self.recipient.clone(),
-            originating_tx_hash: self.originating_tx_hash,
+    fn update_amount(&self, new_amount: u64) -> Self {
+        let mut new_self = self.clone();
+        new_self.amount_in_satoshis = new_amount;
+        new_self
+    }
+
+    pub fn subtract_amount(&self, subtrahend: u64) -> Result<Self> {
+        if subtrahend > self.amount_in_satoshis {
+            Err("Cannot subtract amount from `BtcOnEthRedeemInfo`: subtrahend too large!".into())
+        } else {
+            let new_amount = self.amount_in_satoshis - subtrahend;
+            info!(
+                "Subtracted amount of {} from current redeem info amount of {} to get final amount of {}",
+                subtrahend, self.amount_in_satoshis, new_amount
+            );
+            Ok(self.update_amount(new_amount))
         }
     }
 
@@ -58,13 +64,15 @@ impl BtcOnEthRedeemInfo {
 pub struct BtcOnEthRedeemInfos(pub Vec<BtcOnEthRedeemInfo>);
 
 impl BtcOnEthRedeemInfos {
-    pub fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
-        let fees = self
-            .iter()
-            .map(|redeem_info| redeem_info.calculate_fee(basis_points))
-            .collect::<Vec<u64>>();
-        let total_fee = fees.iter().sum();
-        (fees, total_fee)
+    pub fn calculate_fees(&self, basis_points: u64) -> Result<(Vec<u64>, u64)> {
+        sanity_check_basis_points_value(basis_points).map(|_| {
+            let fees = self
+                .iter()
+                .map(|redeem_info| redeem_info.calculate_fee(basis_points))
+                .collect::<Vec<u64>>();
+            let total_fee = fees.iter().sum();
+            (fees, total_fee)
+        })
     }
 
     pub fn sum(&self) -> u64 {
@@ -173,6 +181,7 @@ mod tests {
                 get_sample_receipt_with_erc777_redeem,
             },
         },
+        errors::AppError,
     };
 
     fn get_tx_hash_of_redeem_tx() -> &'static str {
@@ -280,7 +289,7 @@ mod tests {
     #[test]
     fn should_subtract_amount_from_redeem_info() {
         let info = get_sample_btc_on_eth_redeem_info_1();
-        let result = info.subtract_amount(1);
+        let result = info.subtract_amount(1).unwrap();
         let expected_amount = 123456788;
         assert_eq!(result.amount_in_satoshis, expected_amount)
     }
@@ -298,10 +307,22 @@ mod tests {
     fn should_calculate_fees() {
         let basis_points = 25;
         let info = get_sample_btc_on_eth_redeem_infos();
-        let (fees, total_fee) = info.calculate_fees(basis_points);
+        let (fees, total_fee) = info.calculate_fees(basis_points).unwrap();
         let expected_fees = vec![308641, 2469135];
         let expected_total_fee = 2777776;
         assert_eq!(fees, expected_fees);
         assert_eq!(total_fee, expected_total_fee);
+    }
+
+    #[test]
+    fn should_error_if_subtrahend_too_large_when_subtracting_amount() {
+        let params = get_sample_btc_on_eth_redeem_info_1();
+        let subtrahend = params.amount_in_satoshis + 1;
+        let expected_error = "Cannot subtract amount from `BtcOnEthRedeemInfo`: subtrahend too large!";
+        match params.subtract_amount(subtrahend) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
     }
 }

@@ -14,6 +14,7 @@ use crate::{
         },
     },
     constants::FEE_BASIS_POINTS_DIVISOR,
+    fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
     utils::convert_bytes_to_u64,
@@ -24,7 +25,7 @@ pub struct BtcOnEosRedeemInfos(pub Vec<BtcOnEosRedeemInfo>);
 
 impl BtcOnEosRedeemInfos {
     pub fn subtract_fees(&self, fee_basis_points: u64) -> Result<Self> {
-        let (fees, _) = self.calculate_fees(fee_basis_points);
+        let (fees, _) = self.calculate_fees(sanity_check_basis_points_value(fee_basis_points)?);
         info!("`BtcOnEosRedeemInfos` fees: {:?}", fees);
         Ok(Self::new(
             fees.iter()

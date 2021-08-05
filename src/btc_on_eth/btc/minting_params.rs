@@ -27,6 +27,7 @@ use crate::{
         eth::eth_utils::safely_convert_hex_to_eth_address,
     },
     constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_ETH_ADDRESS},
+    fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
@@ -74,16 +75,18 @@ impl BtcOnEthMintingParams {
         self.iter().fold(U256::zero(), |a, params| a + params.amount)
     }
 
-    pub fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
-        info!("✔ Calculating fees in `BtcOnEthMintingParams`...");
-        let fees = self
-            .iter()
-            .map(|minting_params| minting_params.calculate_fee(basis_points))
-            .collect::<Vec<u64>>();
-        let total_fee = fees.iter().sum();
-        info!("✔      Fees: {:?}", fees);
-        info!("✔ Total fee: {:?}", fees);
-        (fees, total_fee)
+    pub fn calculate_fees(&self, basis_points: u64) -> Result<(Vec<u64>, u64)> {
+        sanity_check_basis_points_value(basis_points).map(|_| {
+            info!("✔ Calculating fees in `BtcOnEthMintingParams`...");
+            let fees = self
+                .iter()
+                .map(|minting_params| minting_params.calculate_fee(basis_points))
+                .collect::<Vec<u64>>();
+            let total_fee = fees.iter().sum();
+            info!("✔      Fees: {:?}", fees);
+            info!("✔ Total fee: {:?}", fees);
+            (fees, total_fee)
+        })
     }
 
     pub fn to_bytes(&self) -> Result<Bytes> {
@@ -212,18 +215,23 @@ impl BtcOnEthMintingParamStruct {
         (self.to_satoshi_amount() * basis_points) / FEE_BASIS_POINTS_DIVISOR
     }
 
-    pub fn subtract_satoshi_amount(&self, subtrahend: u64) -> Self {
+    fn update_amount(&self, new_amount: U256) -> Self {
+        let mut new_self = self.clone();
+        new_self.amount = new_amount;
+        new_self
+    }
+
+    pub fn subtract_satoshi_amount(&self, subtrahend: u64) -> Result<Self> {
         let self_amount_in_satoshis = self.to_satoshi_amount();
-        let amount_minus_fee = self_amount_in_satoshis - subtrahend;
-        debug!(
-            "Subtracted amount of {} from current minting params amount of {} to get final amount of {}",
-            subtrahend, self_amount_in_satoshis, amount_minus_fee
-        );
-        Self {
-            amount: convert_satoshis_to_wei(amount_minus_fee),
-            eth_address: self.eth_address,
-            originating_tx_hash: self.originating_tx_hash,
-            originating_tx_address: self.originating_tx_address.clone(),
+        if subtrahend > self_amount_in_satoshis {
+            Err("Cannot subtract amount from `BtcOnEthMintingParamStruct`: subtrahend too large!".into())
+        } else {
+            let amount_minus_fee = self_amount_in_satoshis - subtrahend;
+            debug!(
+                "Subtracted amount of {} from current minting params amount of {} to get final amount of {}",
+                subtrahend, self_amount_in_satoshis, amount_minus_fee
+            );
+            Ok(self.update_amount(convert_satoshis_to_wei(amount_minus_fee)))
         }
     }
 
@@ -324,23 +332,26 @@ mod tests {
     use ethereum_types::H160 as EthAddress;
 
     use super::*;
-    use crate::chains::btc::{
-        btc_test_utils::{
-            get_sample_btc_block_n,
-            get_sample_btc_p2pkh_address,
-            get_sample_btc_p2pkh_tx,
-            get_sample_btc_pub_key_slice,
-            get_sample_btc_tx,
-            get_sample_minting_params,
-            get_sample_p2pkh_btc_block_and_txs,
-            get_sample_p2pkh_op_return_output,
-            get_sample_pay_to_pub_key_hash_script,
-            SAMPLE_P2PKH_TRANSACTION_OUTPUT_INDEX,
+    use crate::{
+        chains::btc::{
+            btc_test_utils::{
+                get_sample_btc_block_n,
+                get_sample_btc_p2pkh_address,
+                get_sample_btc_p2pkh_tx,
+                get_sample_btc_pub_key_slice,
+                get_sample_btc_tx,
+                get_sample_minting_params,
+                get_sample_p2pkh_btc_block_and_txs,
+                get_sample_p2pkh_op_return_output,
+                get_sample_pay_to_pub_key_hash_script,
+                SAMPLE_P2PKH_TRANSACTION_OUTPUT_INDEX,
+            },
+            btc_utils::convert_bytes_to_btc_pub_key_slice,
+            filter_p2pkh_deposit_txs::filter_txs_for_p2pkh_deposits,
+            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
+            get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
         },
-        btc_utils::convert_bytes_to_btc_pub_key_slice,
-        filter_p2pkh_deposit_txs::filter_txs_for_p2pkh_deposits,
-        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
-        get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
+        errors::AppError,
     };
 
     fn get_expected_eth_address() -> EthAddress {
@@ -609,7 +620,7 @@ mod tests {
     #[test]
     fn should_subtract_satoshi_amount() {
         let params = get_sample_minting_params()[0].clone();
-        let subtracted_params = params.subtract_satoshi_amount(1);
+        let subtracted_params = params.subtract_satoshi_amount(1).unwrap();
         let expected_result = 4999;
         let result = subtracted_params.to_satoshi_amount();
         assert_eq!(result, expected_result);
@@ -628,10 +639,22 @@ mod tests {
     fn should_calculate_fees() {
         let basis_points = 25;
         let params = get_sample_minting_params();
-        let (fees, total_fee) = params.calculate_fees(basis_points);
+        let (fees, total_fee) = params.calculate_fees(basis_points).unwrap();
         let expected_total_fee = 36;
         let expected_fees = vec![12, 12, 12];
         assert_eq!(total_fee, expected_total_fee);
         assert_eq!(fees, expected_fees);
+    }
+
+    #[test]
+    fn should_error_subtracting_amount_if_subtrahend_is_too_large() {
+        let params = get_sample_minting_params()[0].clone();
+        let subtrahend = (params.amount + 1).as_u64();
+        let expected_error = "Cannot subtract amount from `BtcOnEthMintingParamStruct`: subtrahend too large!";
+        match params.subtract_satoshi_amount(subtrahend) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
     }
 }
