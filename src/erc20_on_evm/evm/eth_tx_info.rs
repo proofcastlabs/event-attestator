@@ -128,14 +128,20 @@ impl EthOnEvmEthTxInfo {
         new_self
     }
 
+    fn update_destination_address(&self, new_address: EthAddress) -> Self {
+        let mut new_self = self.clone();
+        new_self.destination_address = new_address;
+        new_self
+    }
+
     pub fn divert_to_safe_address_if_destination_is_token_contract_address(&self) -> Self {
         info!("✔ Checking if the destination address is the same as the token contract address...");
-        let mut new_self = self.clone();
         if self.destination_address == self.eth_token_address {
             info!("✔ Recipient address is same as ETH token address! Diverting to safe address...");
-            new_self.destination_address = *SAFE_ETH_ADDRESS;
+            self.update_destination_address(*SAFE_ETH_ADDRESS)
+        } else {
+            self.clone()
         }
-        new_self
     }
 
     pub fn to_eth_signed_tx(
