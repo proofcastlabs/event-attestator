@@ -10,14 +10,15 @@ pub fn subtract_fees_from_redeem_infos(
     redeem_infos: &BtcOnEthRedeemInfos,
     fee_basis_points: u64,
 ) -> Result<BtcOnEthRedeemInfos> {
-    let (fees, _) = redeem_infos.calculate_fees(fee_basis_points);
-    info!("ETH `RedeemInfos` fees: {:?}", fees);
-    Ok(BtcOnEthRedeemInfos::new(
-        fees.iter()
-            .zip(redeem_infos.iter())
-            .map(|(fee, redeem_info)| redeem_info.subtract_amount(*fee))
-            .collect::<Result<Vec<BtcOnEthRedeemInfo>>>()?,
-    ))
+    redeem_infos.calculate_fees(fee_basis_points).and_then(|(fees, _)| {
+        info!("ETH `RedeemInfos` fees: {:?}", fees);
+        Ok(BtcOnEthRedeemInfos::new(
+            fees.iter()
+                .zip(redeem_infos.iter())
+                .map(|(fee, redeem_info)| redeem_info.subtract_amount(*fee))
+                .collect::<Result<Vec<BtcOnEthRedeemInfo>>>()?,
+        ))
+    })
 }
 
 fn accrue_fees_from_redeem_infos<D: DatabaseInterface>(
@@ -25,9 +26,12 @@ fn accrue_fees_from_redeem_infos<D: DatabaseInterface>(
     redeem_infos: &BtcOnEthRedeemInfos,
     fee_basis_points: u64,
 ) -> Result<()> {
-    let (_, total_fee) = redeem_infos.calculate_fees(fee_basis_points);
-    info!("ETH `RedeemInfos` total fee: {}", total_fee);
-    FeeDatabaseUtils::new_for_btc_on_eth().increment_accrued_fees(db, total_fee)
+    redeem_infos
+        .calculate_fees(fee_basis_points)
+        .and_then(|(_, total_fee)| {
+            info!("ETH `RedeemInfos` total fee: {}", total_fee);
+            FeeDatabaseUtils::new_for_btc_on_eth().increment_accrued_fees(db, total_fee)
+        })
 }
 
 fn account_for_fees_in_redeem_infos<D: DatabaseInterface>(
@@ -77,7 +81,7 @@ mod tests {
             .unwrap();
         assert_eq!(accrued_fees_before, 0);
         let redeem_infos = get_sample_btc_on_eth_redeem_infos();
-        let (_, total_fee) = redeem_infos.calculate_fees(fee_basis_points);
+        let (_, total_fee) = redeem_infos.calculate_fees(fee_basis_points).unwrap();
         let expected_total_fee = 2777776;
         assert_eq!(total_fee, expected_total_fee);
         let total_value_before = redeem_infos.sum();
@@ -104,7 +108,7 @@ mod tests {
             .unwrap();
         assert_eq!(accrued_fees_before, 0);
         let redeem_infos = get_sample_btc_on_eth_redeem_infos();
-        let (_, total_fee) = redeem_infos.calculate_fees(fee_basis_points);
+        let (_, total_fee) = redeem_infos.calculate_fees(fee_basis_points).unwrap();
         let expected_total_fee = 0;
         assert_eq!(total_fee, expected_total_fee);
         let total_value_before = redeem_infos.sum();
@@ -127,7 +131,7 @@ mod tests {
             .unwrap();
         assert_eq!(accrued_fees_before, 0);
         let redeem_infos = BtcOnEthRedeemInfos::new(vec![]);
-        let (fees, total_fee) = redeem_infos.calculate_fees(fee_basis_points);
+        let (fees, total_fee) = redeem_infos.calculate_fees(fee_basis_points).unwrap();
         assert_eq!(fees, Vec::<u64>::new());
         let expected_total_fee = 0;
         assert_eq!(total_fee, expected_total_fee);

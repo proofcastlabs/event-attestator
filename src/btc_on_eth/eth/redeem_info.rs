@@ -22,6 +22,7 @@ use crate::{
         },
     },
     constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_BTC_ADDRESS},
+    fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -59,13 +60,15 @@ impl BtcOnEthRedeemInfo {
 pub struct BtcOnEthRedeemInfos(pub Vec<BtcOnEthRedeemInfo>);
 
 impl BtcOnEthRedeemInfos {
-    pub fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
-        let fees = self
-            .iter()
-            .map(|redeem_info| redeem_info.calculate_fee(basis_points))
-            .collect::<Vec<u64>>();
-        let total_fee = fees.iter().sum();
-        (fees, total_fee)
+    pub fn calculate_fees(&self, basis_points: u64) -> Result<(Vec<u64>, u64)> {
+        sanity_check_basis_points_value(basis_points).map(|_| {
+            let fees = self
+                .iter()
+                .map(|redeem_info| redeem_info.calculate_fee(basis_points))
+                .collect::<Vec<u64>>();
+            let total_fee = fees.iter().sum();
+            (fees, total_fee)
+        })
     }
 
     pub fn sum(&self) -> u64 {
@@ -300,7 +303,7 @@ mod tests {
     fn should_calculate_fees() {
         let basis_points = 25;
         let info = get_sample_btc_on_eth_redeem_infos();
-        let (fees, total_fee) = info.calculate_fees(basis_points);
+        let (fees, total_fee) = info.calculate_fees(basis_points).unwrap();
         let expected_fees = vec![308641, 2469135];
         let expected_total_fee = 2777776;
         assert_eq!(fees, expected_fees);

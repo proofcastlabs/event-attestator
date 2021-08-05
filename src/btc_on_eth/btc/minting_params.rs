@@ -27,6 +27,7 @@ use crate::{
         eth::eth_utils::safely_convert_hex_to_eth_address,
     },
     constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_ETH_ADDRESS},
+    fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
@@ -74,16 +75,18 @@ impl BtcOnEthMintingParams {
         self.iter().fold(U256::zero(), |a, params| a + params.amount)
     }
 
-    pub fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
-        info!("✔ Calculating fees in `BtcOnEthMintingParams`...");
-        let fees = self
-            .iter()
-            .map(|minting_params| minting_params.calculate_fee(basis_points))
-            .collect::<Vec<u64>>();
-        let total_fee = fees.iter().sum();
-        info!("✔      Fees: {:?}", fees);
-        info!("✔ Total fee: {:?}", fees);
-        (fees, total_fee)
+    pub fn calculate_fees(&self, basis_points: u64) -> Result<(Vec<u64>, u64)> {
+        sanity_check_basis_points_value(basis_points).map(|_| {
+            info!("✔ Calculating fees in `BtcOnEthMintingParams`...");
+            let fees = self
+                .iter()
+                .map(|minting_params| minting_params.calculate_fee(basis_points))
+                .collect::<Vec<u64>>();
+            let total_fee = fees.iter().sum();
+            info!("✔      Fees: {:?}", fees);
+            info!("✔ Total fee: {:?}", fees);
+            (fees, total_fee)
+        })
     }
 
     pub fn to_bytes(&self) -> Result<Bytes> {
@@ -632,7 +635,7 @@ mod tests {
     fn should_calculate_fees() {
         let basis_points = 25;
         let params = get_sample_minting_params();
-        let (fees, total_fee) = params.calculate_fees(basis_points);
+        let (fees, total_fee) = params.calculate_fees(basis_points).unwrap();
         let expected_total_fee = 36;
         let expected_fees = vec![12, 12, 12];
         assert_eq!(total_fee, expected_total_fee);
