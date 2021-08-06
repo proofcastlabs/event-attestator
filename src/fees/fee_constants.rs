@@ -8,7 +8,7 @@ pub const DISABLE_FEES: bool = false;
 #[cfg(feature = "disable-fees")]
 pub const DISABLE_FEES: bool = true;
 
-pub const MAX_FEE_BASIS_POINTS: u64 = 1000;
+pub const MAX_FEE_BASIS_POINTS: u64 = 100;
 
 lazy_static! {
     pub static ref BTC_ON_ETH_FEE_DB_KEYS: FeeConstantDbKeys = FeeConstantDbKeys::new_for_btc_on_eth();
