@@ -32,7 +32,7 @@ use crate::{
             },
         },
     },
-    constants::SAFE_ETH_ADDRESS,
+    constants::SAFE_EVM_ADDRESS,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_evm::traits::{FeeCalculator, FeesCalculator},
     metadata::{
@@ -131,7 +131,7 @@ impl EthOnEvmEvmTxInfo {
         info!("✔ Checking if the destination address is the same as the EVM token contract address...");
         if self.destination_address == self.evm_token_address {
             info!("✔ Recipient address is same as EVM token address! Diverting to safe address...");
-            self.update_destination_address(*SAFE_ETH_ADDRESS)
+            self.update_destination_address(*SAFE_EVM_ADDRESS)
         } else {
             self.clone()
         }
@@ -536,7 +536,7 @@ mod tests {
             eth_token_address: EthAddress::from_slice(
                 &hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap(),
             ),
-            // NOTE It's the `SAFE_ETH_ADDRESS_HEX` ∵ @bertani accidentally included the `"`s in the pegin!
+            // NOTE It's the `SAFE_EVM_ADDRESS_HEX` ∵ @bertani accidentally included the `"`s in the pegin!
             destination_address: EthAddress::from_slice(
                 &hex::decode("71a440ee9fa7f99fb9a697e96ec7839b8a1643b8").unwrap(),
             ),
@@ -616,6 +616,6 @@ mod tests {
         };
         assert_eq!(info.destination_address, destination_address);
         let result = info.divert_to_safe_address_if_destination_is_token_contract_address();
-        assert_eq!(result.destination_address, *SAFE_ETH_ADDRESS);
+        assert_eq!(result.destination_address, *SAFE_EVM_ADDRESS);
     }
 }

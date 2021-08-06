@@ -35,7 +35,7 @@ use crate::{
             },
         },
     },
-    constants::SAFE_ETH_ADDRESS_HEX,
+    constants::SAFE_ETH_ADDRESS,
     dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
     traits::DatabaseInterface,
@@ -163,15 +163,14 @@ impl EosOnEthEosTxInfo {
     }
 
     fn get_eth_address_from_proof_or_revert_to_safe_eth_address(proof: &EosActionProof) -> Result<EthAddress> {
-        let safe_address = EthAddress::from_slice(&hex::decode(SAFE_ETH_ADDRESS_HEX)?);
         match Self::get_eth_address_from_proof(proof) {
             Ok(eth_address) => Ok(eth_address),
             Err(_) => {
                 info!(
                     "✘ Error getting ETH addess from proof! Default to `SAFE_ETH_ADDRESS`: {}",
-                    safe_address
+                    SAFE_ETH_ADDRESS.to_string()
                 );
-                Ok(safe_address)
+                Ok(*SAFE_ETH_ADDRESS)
             },
         }
     }
@@ -525,7 +524,7 @@ mod tests {
         let dictionary = EosEthTokenDictionary::from_str(dictionary_str).unwrap();
         let eos_smart_contract = EosAccountName::from_str("xeth.ptokens").unwrap();
         let result = EosOnEthEosTxInfo::from_eos_action_proof(&proof, &dictionary, &eos_smart_contract).unwrap();
-        let expected_recipient = EthAddress::from_slice(&hex::decode(SAFE_ETH_ADDRESS_HEX).unwrap());
+        let expected_recipient = *SAFE_ETH_ADDRESS;
         assert_eq!(result.recipient, expected_recipient);
     }
 }
