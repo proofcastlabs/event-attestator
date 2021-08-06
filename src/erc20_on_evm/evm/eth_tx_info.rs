@@ -135,7 +135,7 @@ impl EthOnEvmEthTxInfo {
     }
 
     pub fn divert_to_safe_address_if_destination_is_token_contract_address(&self) -> Self {
-        info!("✔ Checking if the destination address is the same as the token contract address...");
+        info!("✔ Checking if the destination address is the same as the ETH token contract address...");
         if self.destination_address == self.eth_token_address {
             info!("✔ Recipient address is same as ETH token address! Diverting to safe address...");
             self.update_destination_address(*SAFE_ETH_ADDRESS)
