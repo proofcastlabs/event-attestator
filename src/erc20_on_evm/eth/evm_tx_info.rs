@@ -32,6 +32,7 @@ use crate::{
             },
         },
     },
+    constants::SAFE_EVM_ADDRESS,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_evm::traits::{FeeCalculator, FeesCalculator},
     metadata::{
@@ -120,6 +121,22 @@ impl EthOnEvmEvmTxInfo {
         new_self
     }
 
+    fn update_destination_address(&self, new_address: EthAddress) -> Self {
+        let mut new_self = self.clone();
+        new_self.destination_address = new_address;
+        new_self
+    }
+
+    pub fn divert_to_safe_address_if_destination_is_token_contract_address(&self) -> Self {
+        info!("✔ Checking if the destination address is the same as the EVM token contract address...");
+        if self.destination_address == self.evm_token_address {
+            info!("✔ Recipient address is same as EVM token address! Diverting to safe address...");
+            self.update_destination_address(*SAFE_EVM_ADDRESS)
+        } else {
+            self.clone()
+        }
+    }
+
     pub fn to_evm_signed_tx(
         &self,
         nonce: u64,
@@ -199,6 +216,14 @@ impl FeesCalculator for EthOnEvmEvmTxInfos {
 }
 
 impl EthOnEvmEvmTxInfos {
+    pub fn divert_to_safe_address_if_destination_is_token_contract_address(&self) -> Self {
+        Self::new(
+            self.iter()
+                .map(|info| info.divert_to_safe_address_if_destination_is_token_contract_address())
+                .collect::<Vec<EthOnEvmEvmTxInfo>>(),
+        )
+    }
+
     fn get_host_token_amounts(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<U256>> {
         self.iter()
             .map(|tx_info| tx_info.get_host_token_amount(dictionary))
@@ -439,6 +464,20 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
     }
 }
 
+pub fn maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address<D: DatabaseInterface>(
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    if state.erc20_on_evm_evm_tx_infos.is_empty() {
+        Ok(state)
+    } else {
+        info!("✔ Maybe diverting EVM txs to safe address if destination address is the token contract address...");
+        let new_infos = state
+            .erc20_on_evm_evm_tx_infos
+            .divert_to_safe_address_if_destination_is_token_contract_address();
+        state.replace_erc20_on_evm_evm_tx_infos(new_infos)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -497,7 +536,7 @@ mod tests {
             eth_token_address: EthAddress::from_slice(
                 &hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap(),
             ),
-            // NOTE It's the `SAFE_ETH_ADDRESS_HEX` ∵ @bertani accidentally included the `"`s in the pegin!
+            // NOTE It's the `SAFE_EVM_ADDRESS_HEX` ∵ @bertani accidentally included the `"`s in the pegin!
             destination_address: EthAddress::from_slice(
                 &hex::decode("71a440ee9fa7f99fb9a697e96ec7839b8a1643b8").unwrap(),
             ),
@@ -553,5 +592,30 @@ mod tests {
         let subtrahend = U256::from(info.native_token_amount + 1);
         let result = info.subtract_amount(subtrahend);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn should_divert_to_safe_address_if_destination_is_token_address() {
+        let destination_address =
+            EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let info = EthOnEvmEvmTxInfo {
+            user_data: vec![],
+            destination_address,
+            native_token_amount: U256::from_dec_str("1000000000000000000").unwrap(),
+            token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
+            evm_token_address: EthAddress::from_slice(
+                &hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap(),
+            ),
+            eth_token_address: EthAddress::from_slice(
+                &hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap(),
+            ),
+            originating_tx_hash: EthHash::from_slice(
+                &hex::decode("578670d0e08ca172eb8e862352e731814564fd6a12c3143e88bfb28292cd1535").unwrap(),
+            ),
+            origin_chain_id: EthChainId::Mainnet,
+        };
+        assert_eq!(info.destination_address, destination_address);
+        let result = info.divert_to_safe_address_if_destination_is_token_contract_address();
+        assert_eq!(result.destination_address, *SAFE_EVM_ADDRESS);
     }
 }
