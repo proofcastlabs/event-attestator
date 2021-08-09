@@ -78,8 +78,7 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_9: &str =
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_10: &str =
     "src/chains/eth/eth_test_utils/eth-submission-material-with-new-erc777-event.json";
 
-pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_11: &str =
-    "src/chains/eth/eth_test_utils/ropsten-eip1558-block.json";
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_11: &str = "src/chains/eth/eth_test_utils/ropsten-eip1558-block.json";
 
 pub fn put_eth_latest_block_in_db<D>(db: &D, eth_submission_material: &EthSubmissionMaterial) -> Result<()>
 where

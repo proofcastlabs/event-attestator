@@ -5,6 +5,7 @@ pub(crate) mod any_sender;
 pub(crate) mod calculate_linker_hash;
 pub(crate) mod check_parent_exists;
 pub(crate) mod core_initialization;
+pub(crate) mod eip_1559;
 pub(crate) mod eth_block;
 pub(crate) mod eth_chain_id;
 pub(crate) mod eth_constants;
