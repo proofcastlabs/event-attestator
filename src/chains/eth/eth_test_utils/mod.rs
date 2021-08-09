@@ -80,6 +80,8 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_10: &str =
 
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_11: &str = "src/chains/eth/eth_test_utils/ropsten-eip1558-block.json";
 
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_12: &str = "src/chains/eth/eth_test_utils/mainnet-eip1559-block-12991830.json";
+
 pub fn put_eth_latest_block_in_db<D>(db: &D, eth_submission_material: &EthSubmissionMaterial) -> Result<()>
 where
     D: DatabaseInterface,
@@ -146,6 +148,7 @@ pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
         9 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_9),
         10 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_10),
         11 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_11),
+        12 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_12),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num))),
     }?;
     match Path::new(&path).exists() {
@@ -158,8 +161,12 @@ pub fn get_sample_eth_submission_material_n(num: usize) -> Result<EthSubmissionM
     get_sample_eth_submission_material_string(num).and_then(|s| EthSubmissionMaterial::from_str(&s))
 }
 
-pub fn get_sample_eip1559_submission_material() -> EthSubmissionMaterial {
+pub fn get_sample_eip1559_ropsten_submission_material() -> EthSubmissionMaterial {
     get_sample_eth_submission_material_n(11).unwrap()
+}
+
+pub fn get_sample_eip1559_mainnet_submission_material() -> EthSubmissionMaterial {
+    get_sample_eth_submission_material_n(12).unwrap()
 }
 
 pub fn get_sample_receipt_n(sample_block_num: usize, receipt_index: usize) -> Result<EthReceipt> {

@@ -48,8 +48,7 @@ pub struct EthBlock {
 
 impl EthBlock {
     pub fn get_base_fee_per_gas(&self) -> Result<U256> {
-        self
-            .base_fee_per_gas
+        self.base_fee_per_gas
             .ok_or(NoneError("Could not unwrap 'base_fee' from ETH block!"))
     }
 
@@ -111,9 +110,7 @@ impl EthBlock {
             uncles: convert_hex_strings_to_h256s(json.uncles.iter().map(AsRef::as_ref).collect())?,
             transactions: convert_hex_strings_to_h256s(json.transactions.iter().map(AsRef::as_ref).collect())?,
             base_fee_per_gas: match json.base_fee_per_gas {
-                Some(ref hex) => {
-                    Some(U256::from_big_endian(&hex::decode(strip_hex_prefix(hex))?))
-                },
+                Some(ref hex) => Some(U256::from_big_endian(&hex::decode(strip_hex_prefix(hex))?)),
                 None => None,
             },
         })
@@ -189,7 +186,8 @@ mod tests {
     use super::*;
     use crate::chains::eth::eth_test_utils::{
         get_expected_block,
-        get_sample_eip1559_submission_material,
+        get_sample_eip1559_mainnet_submission_material,
+        get_sample_eip1559_ropsten_submission_material,
         get_sample_eth_submission_material,
         get_sample_eth_submission_material_json,
         get_sample_invalid_block,
@@ -297,16 +295,24 @@ mod tests {
 
     #[test]
     fn eip_1559_block_should_have_base_fee() {
-        let block = get_sample_eip1559_submission_material().block.unwrap().clone();
+        let block = get_sample_eip1559_ropsten_submission_material().block.unwrap().clone();
         let result = block.get_base_fee_per_gas().unwrap();
         let expected_result = U256::from(13);
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn eip1559_block_should_be_valid() {
-        let block = get_sample_eip1559_submission_material().block.unwrap().clone();
+    fn ropsten_eip1559_block_should_be_valid() {
+        let block = get_sample_eip1559_ropsten_submission_material().block.unwrap().clone();
         let chain_id = EthChainId::Ropsten;
+        let result = block.is_valid(&chain_id).unwrap();
+        assert!(result);
+    }
+
+    #[test]
+    fn mainnet_eip1559_block_should_be_valid() {
+        let block = get_sample_eip1559_mainnet_submission_material().block.unwrap().clone();
+        let chain_id = EthChainId::Mainnet;
         let result = block.is_valid(&chain_id).unwrap();
         assert!(result);
     }
