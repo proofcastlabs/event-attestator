@@ -462,19 +462,21 @@ mod tests {
     #[test]
     fn should_get_sample_invalid_block() {
         let invalid_block = get_sample_invalid_block();
-        let is_valid = invalid_block.is_valid().unwrap();
+        let chain_id = EthChainId::Mainnet;
+        let is_valid = invalid_block.is_valid(&chain_id).unwrap();
         assert!(!is_valid)
     }
 
     #[test]
     fn should_get_valid_state_with_invalid_block_and_receipts() {
         let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
+        let chain_id = EthChainId::Mainnet;
         let is_valid = state
             .get_eth_submission_material()
             .unwrap()
             .get_block()
             .unwrap()
-            .is_valid()
+            .is_valid(&chain_id)
             .unwrap();
         assert!(!is_valid);
     }
