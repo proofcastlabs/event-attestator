@@ -13,7 +13,8 @@ use crate::{
         decode_prefixed_hex,
     },
     crypto_utils::keccak_hash_bytes,
-    types::{Bytes, Result},
+    types::{Bytes, NoneError, Result},
+    utils::strip_hex_prefix,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
@@ -38,9 +39,16 @@ pub struct EthBlock {
     pub transactions: Vec<EthHash>,
     pub transactions_root: EthHash,
     pub uncles: Vec<EthHash>,
+    pub base_fee_per_gas: Option<U256>,
 }
 
 impl EthBlock {
+    pub fn get_base_fee_per_gas(&self) -> Result<U256> {
+        Ok(self
+            .base_fee_per_gas
+            .ok_or(NoneError("Could not unwrap 'base_fee' from ETH block!"))?)
+    }
+
     pub fn to_json(&self) -> Result<JsonValue> {
         let encoded_transactions = self
             .transactions
@@ -76,30 +84,35 @@ impl EthBlock {
         }))
     }
 
-    pub fn from_json(eth_block_json: &EthBlockJson) -> Result<Self> {
+    pub fn from_json(json: &EthBlockJson) -> Result<Self> {
         Ok(EthBlock {
-            size: U256::from(eth_block_json.size),
-            number: U256::from(eth_block_json.number),
-            gas_used: U256::from(eth_block_json.gas_used),
-            gas_limit: U256::from(eth_block_json.gas_limit),
-            hash: convert_hex_to_h256(&eth_block_json.hash)?,
-            timestamp: U256::from(eth_block_json.timestamp),
-            nonce: decode_prefixed_hex(&eth_block_json.nonce)?,
-            miner: convert_hex_to_address(&eth_block_json.miner)?,
-            mix_hash: convert_hex_to_h256(&eth_block_json.mix_hash)?,
-            state_root: convert_hex_to_h256(&eth_block_json.state_root)?,
-            extra_data: convert_hex_to_bytes(&eth_block_json.extra_data)?,
-            parent_hash: convert_hex_to_h256(&eth_block_json.parent_hash)?,
-            sha3_uncles: convert_hex_to_h256(&eth_block_json.sha3_uncles)?,
-            difficulty: convert_dec_str_to_u256(&eth_block_json.difficulty)?,
-            receipts_root: convert_hex_to_h256(&eth_block_json.receipts_root)?,
-            transactions_root: convert_hex_to_h256(&eth_block_json.transactions_root)?,
-            total_difficulty: convert_dec_str_to_u256(&eth_block_json.total_difficulty)?,
-            logs_bloom: Bloom::from_slice(&convert_hex_to_bytes(&eth_block_json.logs_bloom)?[..]),
-            uncles: convert_hex_strings_to_h256s(eth_block_json.uncles.iter().map(AsRef::as_ref).collect())?,
-            transactions: convert_hex_strings_to_h256s(
-                eth_block_json.transactions.iter().map(AsRef::as_ref).collect(),
-            )?,
+            size: U256::from(json.size),
+            number: U256::from(json.number),
+            gas_used: U256::from(json.gas_used),
+            gas_limit: U256::from(json.gas_limit),
+            hash: convert_hex_to_h256(&json.hash)?,
+            timestamp: U256::from(json.timestamp),
+            nonce: decode_prefixed_hex(&json.nonce)?,
+            miner: convert_hex_to_address(&json.miner)?,
+            mix_hash: convert_hex_to_h256(&json.mix_hash)?,
+            state_root: convert_hex_to_h256(&json.state_root)?,
+            extra_data: convert_hex_to_bytes(&json.extra_data)?,
+            parent_hash: convert_hex_to_h256(&json.parent_hash)?,
+            sha3_uncles: convert_hex_to_h256(&json.sha3_uncles)?,
+            difficulty: convert_dec_str_to_u256(&json.difficulty)?,
+            receipts_root: convert_hex_to_h256(&json.receipts_root)?,
+            transactions_root: convert_hex_to_h256(&json.transactions_root)?,
+            total_difficulty: convert_dec_str_to_u256(&json.total_difficulty)?,
+            logs_bloom: Bloom::from_slice(&convert_hex_to_bytes(&json.logs_bloom)?[..]),
+            uncles: convert_hex_strings_to_h256s(json.uncles.iter().map(AsRef::as_ref).collect())?,
+            transactions: convert_hex_strings_to_h256s(json.transactions.iter().map(AsRef::as_ref).collect())?,
+            base_fee_per_gas: match json.base_fee_per_gas {
+                Some(ref hex) => {
+                    println!("the hex: {:?}", strip_hex_prefix(hex));
+                    Some(U256::from_little_endian(&hex::decode(strip_hex_prefix(hex))?))
+                },
+                None => None,
+            },
         })
     }
 
@@ -167,6 +180,7 @@ pub struct EthBlockJson {
     pub transactions: Vec<String>,
     pub transactions_root: String,
     pub uncles: Vec<String>,
+    pub base_fee_per_gas: Option<String>,
 }
 
 #[cfg(test)]
@@ -174,6 +188,7 @@ mod tests {
     use super::*;
     use crate::chains::eth::eth_test_utils::{
         get_expected_block,
+        get_sample_eip1559_submission_material,
         get_sample_eth_submission_material,
         get_sample_eth_submission_material_json,
         get_sample_invalid_block,
@@ -273,5 +288,13 @@ mod tests {
         let invalid_block = get_sample_invalid_block();
         let result = invalid_block.is_valid().unwrap();
         assert!(!result);
+    }
+
+    #[test]
+    fn eip_1559_block_should_have_base_fee() {
+        let block = get_sample_eip1559_submission_material().block.unwrap().clone();
+        let result = block.get_base_fee_per_gas().unwrap();
+        let expected_result = U256::from(13);
+        assert_eq!(result, expected_result);
     }
 }
