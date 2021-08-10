@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use derive_more::{Constructor, Deref, From, Into};
 use ethereum_types::{Address as EthAddress, Bloom, H160, H256 as EthHash, U256};
-use rlp::{Encodable, RlpStream};
+use rlp::RlpStream;
 use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
 
@@ -213,7 +213,15 @@ impl EthReceipt {
 
     pub fn rlp_encode(&self) -> Result<Bytes> {
         let mut rlp_stream = RlpStream::new();
-        rlp_stream.append(self);
+        rlp_stream.begin_list(4);
+        match &self.status {
+            true => rlp_stream.append(&self.status),
+            false => rlp_stream.append_empty_data(),
+        };
+        rlp_stream
+            .append(&self.cumulative_gas_used)
+            .append(&self.logs_bloom)
+            .append_list(&self.logs.0);
         Ok(rlp_stream.out().to_vec())
     }
 
@@ -270,19 +278,6 @@ impl Ord for EthReceipt {
 impl PartialOrd for EthReceipt {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
-    }
-}
-
-impl Encodable for EthReceipt {
-    fn rlp_append(&self, rlp_stream: &mut RlpStream) {
-        let rlp = rlp_stream.begin_list(4);
-        match &self.status {
-            true => rlp.append(&self.status),
-            false => rlp.append_empty_data(),
-        };
-        rlp.append(&self.cumulative_gas_used)
-            .append(&self.logs_bloom)
-            .append_list(&self.logs.0);
     }
 }
 
