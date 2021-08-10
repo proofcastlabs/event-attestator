@@ -78,7 +78,7 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_9: &str =
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_10: &str =
     "src/chains/eth/eth_test_utils/eth-submission-material-with-new-erc777-event.json";
 
-pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_11: &str = "src/chains/eth/eth_test_utils/ropsten-eip1558-block.json";
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_11: &str = "src/chains/eth/eth_test_utils/ropsten-eip1559-block.json";
 
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_12: &str = "src/chains/eth/eth_test_utils/mainnet-eip1559-block-12991830.json";
 
