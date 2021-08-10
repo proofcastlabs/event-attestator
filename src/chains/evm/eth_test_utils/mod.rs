@@ -445,7 +445,7 @@ mod tests {
     #[test]
     fn should_get_sample_invalid_block() {
         let invalid_block = get_sample_invalid_block();
-        let is_valid = invalid_block.is_valid().unwrap();
+        let is_valid = invalid_block.is_valid(&EthChainId::Mainnet).unwrap();
         assert!(!is_valid)
     }
 
@@ -457,7 +457,7 @@ mod tests {
             .unwrap()
             .get_block()
             .unwrap()
-            .is_valid()
+            .is_valid(&EthChainId::Mainnet)
             .unwrap();
         assert!(!is_valid);
     }

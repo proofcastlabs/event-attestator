@@ -1,21 +1,25 @@
 use ethereum_types::{Address as EthAddress, Bloom, H256 as EthHash, U256};
-use rlp::{Encodable, RlpStream};
+use rlp::RlpStream;
 use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::evm::{
-        eth_crypto_utils::keccak_hash_bytes,
-        eth_utils::{
-            convert_dec_str_to_u256,
-            convert_hex_strings_to_h256s,
-            convert_hex_to_address,
-            convert_hex_to_bytes,
-            convert_hex_to_h256,
-            decode_prefixed_hex,
+    chains::{
+        eth::{eip_1559::Eip1559, eth_chain_id::EthChainId},
+        evm::{
+            eth_crypto_utils::keccak_hash_bytes,
+            eth_utils::{
+                convert_dec_str_to_u256,
+                convert_hex_strings_to_h256s,
+                convert_hex_to_address,
+                convert_hex_to_bytes,
+                convert_hex_to_h256,
+                decode_prefixed_hex,
+            },
         },
     },
-    types::{Bytes, Result},
+    types::{Bytes, NoneError, Result},
+    utils::strip_hex_prefix,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
@@ -40,9 +44,15 @@ pub struct EthBlock {
     pub transactions: Vec<EthHash>,
     pub transactions_root: EthHash,
     pub uncles: Vec<EthHash>,
+    pub base_fee_per_gas: Option<U256>,
 }
 
 impl EthBlock {
+    pub fn get_base_fee_per_gas(&self) -> Result<U256> {
+        self.base_fee_per_gas
+            .ok_or(NoneError("Could not unwrap 'base_fee' from ETH block!"))
+    }
+
     pub fn to_json(&self) -> Result<JsonValue> {
         let encoded_transactions = self
             .transactions
@@ -78,56 +88,40 @@ impl EthBlock {
         }))
     }
 
-    pub fn from_json(eth_block_json: &EthBlockJson) -> Result<Self> {
+    pub fn from_json(json: &EthBlockJson) -> Result<Self> {
         Ok(EthBlock {
-            size: U256::from(eth_block_json.size),
-            number: U256::from(eth_block_json.number),
-            gas_used: U256::from(eth_block_json.gas_used),
-            gas_limit: U256::from(eth_block_json.gas_limit),
-            hash: convert_hex_to_h256(&eth_block_json.hash)?,
-            timestamp: U256::from(eth_block_json.timestamp),
-            nonce: decode_prefixed_hex(&eth_block_json.nonce)?,
-            miner: convert_hex_to_address(&eth_block_json.miner)?,
-            mix_hash: convert_hex_to_h256(&eth_block_json.mix_hash)?,
-            state_root: convert_hex_to_h256(&eth_block_json.state_root)?,
-            extra_data: convert_hex_to_bytes(&eth_block_json.extra_data)?,
-            parent_hash: convert_hex_to_h256(&eth_block_json.parent_hash)?,
-            sha3_uncles: convert_hex_to_h256(&eth_block_json.sha3_uncles)?,
-            difficulty: convert_dec_str_to_u256(&eth_block_json.difficulty)?,
-            receipts_root: convert_hex_to_h256(&eth_block_json.receipts_root)?,
-            transactions_root: convert_hex_to_h256(&eth_block_json.transactions_root)?,
-            total_difficulty: convert_dec_str_to_u256(&eth_block_json.total_difficulty)?,
-            logs_bloom: Bloom::from_slice(&convert_hex_to_bytes(&eth_block_json.logs_bloom)?[..]),
-            uncles: convert_hex_strings_to_h256s(eth_block_json.uncles.iter().map(AsRef::as_ref).collect())?,
-            transactions: convert_hex_strings_to_h256s(
-                eth_block_json.transactions.iter().map(AsRef::as_ref).collect(),
-            )?,
+            size: U256::from(json.size),
+            number: U256::from(json.number),
+            gas_used: U256::from(json.gas_used),
+            gas_limit: U256::from(json.gas_limit),
+            hash: convert_hex_to_h256(&json.hash)?,
+            timestamp: U256::from(json.timestamp),
+            nonce: decode_prefixed_hex(&json.nonce)?,
+            miner: convert_hex_to_address(&json.miner)?,
+            mix_hash: convert_hex_to_h256(&json.mix_hash)?,
+            state_root: convert_hex_to_h256(&json.state_root)?,
+            extra_data: convert_hex_to_bytes(&json.extra_data)?,
+            parent_hash: convert_hex_to_h256(&json.parent_hash)?,
+            sha3_uncles: convert_hex_to_h256(&json.sha3_uncles)?,
+            difficulty: convert_dec_str_to_u256(&json.difficulty)?,
+            receipts_root: convert_hex_to_h256(&json.receipts_root)?,
+            transactions_root: convert_hex_to_h256(&json.transactions_root)?,
+            total_difficulty: convert_dec_str_to_u256(&json.total_difficulty)?,
+            logs_bloom: Bloom::from_slice(&convert_hex_to_bytes(&json.logs_bloom)?[..]),
+            uncles: convert_hex_strings_to_h256s(json.uncles.iter().map(AsRef::as_ref).collect())?,
+            transactions: convert_hex_strings_to_h256s(json.transactions.iter().map(AsRef::as_ref).collect())?,
+            base_fee_per_gas: match json.base_fee_per_gas {
+                Some(ref hex) => Some(U256::from_big_endian(&hex::decode(strip_hex_prefix(hex))?)),
+                None => None,
+            },
         })
     }
 
-    pub fn rlp_encode(&self) -> Result<Bytes> {
+    pub fn rlp_encode(&self, chain_id: &EthChainId) -> Result<Bytes> {
         let mut rlp_stream = RlpStream::new();
-        rlp_stream.append(self);
-        Ok(rlp_stream.out().to_vec())
-    }
-
-    pub fn hash(&self) -> Result<EthHash> {
-        self.rlp_encode().map(|bytes| keccak_hash_bytes(&bytes))
-    }
-
-    pub fn is_valid(&self) -> Result<bool> {
-        self.hash().map(|calculated_hash| {
-            debug!("✔ Block hash from from block: {}", self.hash);
-            debug!("✔ Calculated block hash: {}", calculated_hash);
-            calculated_hash == self.hash
-        })
-    }
-}
-
-impl Encodable for EthBlock {
-    fn rlp_append(&self, rlp_stream: &mut RlpStream) {
+        let eip_1556_is_active = Eip1559::new().is_active(chain_id, self.number)?;
         rlp_stream
-            .begin_list(15)
+            .begin_list(if eip_1556_is_active { 16 } else { 15 })
             .append(&self.parent_hash)
             .append(&self.sha3_uncles)
             .append(&self.miner)
@@ -143,6 +137,22 @@ impl Encodable for EthBlock {
             .append(&self.extra_data)
             .append(&self.mix_hash)
             .append(&self.nonce);
+        if eip_1556_is_active {
+            rlp_stream.append(&self.get_base_fee_per_gas()?);
+        };
+        Ok(rlp_stream.out().to_vec())
+    }
+
+    pub fn hash(&self, chain_id: &EthChainId) -> Result<EthHash> {
+        self.rlp_encode(chain_id).map(|bytes| keccak_hash_bytes(&bytes))
+    }
+
+    pub fn is_valid(&self, chain_id: &EthChainId) -> Result<bool> {
+        self.hash(chain_id).map(|calculated_hash| {
+            debug!("✔ Block hash from from block: {}", self.hash);
+            debug!("✔ Calculated block hash: {}", calculated_hash);
+            calculated_hash == self.hash
+        })
     }
 }
 
@@ -169,6 +179,7 @@ pub struct EthBlockJson {
     pub transactions: Vec<String>,
     pub transactions_root: String,
     pub uncles: Vec<String>,
+    pub base_fee_per_gas: Option<String>,
 }
 
 #[cfg(test)]
@@ -251,7 +262,8 @@ mod tests {
         let expected_log_bloom = "10040060000810a000180002060000042000328000101012000204800010010000412401000100080012600209a005001200048a0c048008413ca08d8021414000000012002200004880b408400810408000040401c0005000018009804b000480020000122004003200004004080920080020058081444000080a9000a000004080000041100202000000004006040080a80001a12000100000400020340050020080040200200008000082104010040080010481020080000220000124051640075007890200000040c420000820400020800028420018000800020000208080322000000a200008a002000000800101044000000920418600200666900601";
         let expected_encoded_block = "f9021aa026e9930dafaf07f59b6c8fe2963819b7d9319ad4ff556cb12eefba0dbd3af3fba01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347945a0b54d5dc17e0aadc383d2db43b0a0d3e029c4ca0061d01dd552a3538b3eadf6234382aeb27cd80cd5cd88b3825fd6990fd762824a0989081ea9213babd8e82b99b579b3012c3d33434b420c3f97af0e9f6f8b8e047a0937e08f03388b32d7c776e7a02371b930d71e3ec096d495230b6735e7f9b20aeb9010010040060000810a000180002060000042000328000101012000204800010010000412401000100080012600209a005001200048a0c048008413ca08d8021414000000012002200004880b408400810408000040401c0005000018009804b000480020000122004003200004004080920080020058081444000080a9000a000004080000041100202000000004006040080a80001a12000100000400020340050020080040200200008000082104010040080010481020080000220000124051640075007890200000040c420000820400020800028420018000800020000208080322000000a200008a00200000080010104400000092041860020066690060187081366f7e754dc8381c1fc837a21398379ef51845d73d38a995050594520737061726b706f6f6c2d6574682d636e2d687a33a0b3a1d476b9632a39df2edd3116692165a7bc363b7f5647c069f54b670cd564ae889f6d788005a450ed";
         let block = get_sample_eth_submission_material().get_block().unwrap();
-        let result = hex::encode(block.rlp_encode().unwrap());
+        let chain_id = EthChainId::Mainnet;
+        let result = hex::encode(block.rlp_encode(&chain_id).unwrap());
         assert_eq!(expected_log_bloom, hex::encode(block.logs_bloom));
         assert_eq!(result, expected_encoded_block);
     }
@@ -259,21 +271,24 @@ mod tests {
     #[test]
     fn should_hash_block() {
         let block = get_sample_eth_submission_material().get_block().unwrap();
-        let result = block.hash().unwrap();
+        let chain_id = EthChainId::Mainnet;
+        let result = block.hash(&chain_id).unwrap();
         assert_eq!(result, block.hash)
     }
 
     #[test]
     fn valid_block_header_should_return_true() {
         let block = get_sample_eth_submission_material().get_block().unwrap();
-        let result = block.is_valid().unwrap();
+        let chain_id = EthChainId::Mainnet;
+        let result = block.is_valid(&chain_id).unwrap();
         assert!(result);
     }
 
     #[test]
     fn invalid_block_header_should_return_true() {
         let invalid_block = get_sample_invalid_block();
-        let result = invalid_block.is_valid().unwrap();
+        let chain_id = EthChainId::Mainnet;
+        let result = invalid_block.is_valid(&chain_id).unwrap();
         assert!(!result);
     }
 }
