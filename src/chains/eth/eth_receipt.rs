@@ -14,6 +14,7 @@ use crate::{
         trie::{put_in_trie_recursively, Trie},
     },
     types::{Bytes, Result},
+    utils::strip_hex_prefix,
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Constructor, Deref, From, Into)]
@@ -137,6 +138,14 @@ pub struct EthReceiptJson {
     pub transaction_index: usize,
     pub cumulative_gas_used: usize,
     pub contract_address: serde_json::Value,
+    #[serde(rename = "type")]
+    pub receipt_type: Option<String>,
+}
+
+impl EthReceiptJson {
+    pub fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
@@ -153,9 +162,22 @@ pub struct EthReceipt {
     pub contract_address: EthAddress,
     pub logs: EthLogs,
     pub logs_bloom: Bloom,
+    pub receipt_type: Option<Bytes>,
 }
 
 impl EthReceipt {
+    pub fn to_string(&self) -> Result<String> {
+        Ok(self.to_json()?.to_string())
+    }
+
+    pub fn from_str(s: &str) -> Result<Self> {
+        Self::from_json(&EthReceiptJson::from_str(s)?)
+    }
+
+    pub fn is_legacy(&self) -> bool {
+        self.receipt_type.is_none()
+    }
+
     pub fn to_json(&self) -> Result<JsonValue> {
         let encoded_logs = self
             .logs
@@ -163,6 +185,15 @@ impl EthReceipt {
             .iter()
             .map(|eth_log| eth_log.to_json())
             .collect::<Result<Vec<JsonValue>>>()?;
+        if self.is_legacy() {
+            self.to_json_legacy(encoded_logs)
+        } else {
+            self.to_json_non_legacy(encoded_logs)
+        }
+    }
+
+    fn to_json_non_legacy(&self, encoded_logs: Vec<JsonValue>) -> Result<JsonValue> {
+        // FIXME Add element the the legacy version to remove the duplicate code!
         Ok(json!({
             "logs": encoded_logs,
             "status": self.status,
@@ -175,29 +206,54 @@ impl EthReceipt {
             "contractAddress": format!("0x{:x}", self.contract_address),
             "blockHash": format!("0x{}", hex::encode(self.block_hash.as_bytes())),
             "logsBloom": format!("0x{}", hex::encode(self.logs_bloom.as_bytes())),
-            "transactionHash": format!("0x{}", hex::encode( self.transaction_hash.as_bytes())),
+            "transactionHash": format!("0x{}", hex::encode(self.transaction_hash.as_bytes())),
+            "type": match self.receipt_type {
+                Some(ref bytes) => Some(format!("0x{}", hex::encode(bytes))),
+                None => None,
+            },
         }))
     }
 
-    pub fn from_json(eth_receipt_json: &EthReceiptJson) -> Result<Self> {
-        let logs = EthLogs::from_receipt_json(eth_receipt_json)?;
-        Ok(EthReceipt {
-            status: eth_receipt_json.status,
+    fn to_json_legacy(&self, encoded_logs: Vec<JsonValue>) -> Result<JsonValue> {
+        Ok(json!({
+            "logs": encoded_logs,
+            "status": self.status,
+            "gasUsed": self.gas_used.as_usize(),
+            "blockNumber": self.block_number.as_usize(),
+            "transactionIndex": self.transaction_index.as_usize(),
+            "to": format!("0x{}", hex::encode(self.to.as_bytes())),
+            "cumulativeGasUsed": self.cumulative_gas_used.as_usize(),
+            "from": format!("0x{}", hex::encode(self.from.as_bytes())),
+            "contractAddress": format!("0x{:x}", self.contract_address),
+            "blockHash": format!("0x{}", hex::encode(self.block_hash.as_bytes())),
+            "logsBloom": format!("0x{}", hex::encode(self.logs_bloom.as_bytes())),
+            "transactionHash": format!("0x{}", hex::encode(self.transaction_hash.as_bytes())),
+        }))
+    }
+
+    pub fn from_json(json: &EthReceiptJson) -> Result<Self> {
+        let logs = EthLogs::from_receipt_json(json)?;
+        Ok(Self {
+            status: json.status,
             logs_bloom: logs.get_bloom(),
-            gas_used: U256::from(eth_receipt_json.gas_used),
-            from: convert_hex_to_address(&eth_receipt_json.from)?,
-            block_number: U256::from(eth_receipt_json.block_number),
-            block_hash: convert_hex_to_h256(&eth_receipt_json.block_hash)?,
-            transaction_index: U256::from(eth_receipt_json.transaction_index),
-            cumulative_gas_used: U256::from(eth_receipt_json.cumulative_gas_used),
-            transaction_hash: convert_hex_to_h256(&eth_receipt_json.transaction_hash)?,
-            to: match eth_receipt_json.to {
+            gas_used: U256::from(json.gas_used),
+            from: convert_hex_to_address(&json.from)?,
+            block_number: U256::from(json.block_number),
+            block_hash: convert_hex_to_h256(&json.block_hash)?,
+            transaction_index: U256::from(json.transaction_index),
+            cumulative_gas_used: U256::from(json.cumulative_gas_used),
+            transaction_hash: convert_hex_to_h256(&json.transaction_hash)?,
+            to: match json.to {
                 serde_json::Value::Null => H160::zero(),
-                _ => convert_hex_to_address(&convert_json_value_to_string(&eth_receipt_json.to)?)?,
+                _ => convert_hex_to_address(&convert_json_value_to_string(&json.to)?)?,
             },
-            contract_address: match eth_receipt_json.contract_address {
+            contract_address: match json.contract_address {
                 serde_json::Value::Null => EthAddress::zero(),
-                _ => convert_hex_to_address(&convert_json_value_to_string(&eth_receipt_json.contract_address)?)?,
+                _ => convert_hex_to_address(&convert_json_value_to_string(&json.contract_address)?)?,
+            },
+            receipt_type: match json.receipt_type {
+                Some(ref hex) => Some(hex::decode(&strip_hex_prefix(hex))?),
+                None => None,
             },
             logs,
         })
@@ -288,12 +344,21 @@ mod tests {
         get_expected_receipt,
         get_sample_contract_address,
         get_sample_contract_topic,
+        get_sample_eip1559_mainnet_submission_material,
         get_sample_eth_submission_material,
         get_sample_eth_submission_material_json,
         get_sample_receipt_with_desired_topic,
         get_valid_state_with_invalid_block_and_receipts,
         SAMPLE_RECEIPT_INDEX,
     };
+
+    fn get_eip1559_non_legacy_receipt() -> EthReceipt {
+        get_sample_eip1559_mainnet_submission_material().receipts[0].clone()
+    }
+
+    fn get_eip1559_legacy_receipt() -> EthReceipt {
+        get_sample_eip1559_mainnet_submission_material().receipts[1].clone()
+    }
 
     #[test]
     fn should_encode_eth_receipt_as_json() {
@@ -475,5 +540,39 @@ mod tests {
             assert!(log.is_from_address(&addresses[0]));
             assert!(log.contains_topic(&topics[0]));
         });
+    }
+
+    #[test]
+    fn non_legacy_mainnet_eip1559_receipt_should_have_receipt_type_field() {
+        let receipt = get_eip1559_non_legacy_receipt();
+        assert!(receipt.receipt_type.is_some())
+    }
+
+    #[test]
+    fn non_legacy_mainnet_eip1559_receipt_should_be_not_legacy() {
+        let receipt = get_eip1559_non_legacy_receipt();
+        assert!(!receipt.is_legacy());
+    }
+
+    #[test]
+    fn legacy_mainnet_eip1559_receipt_should_be_legacy() {
+        let receipt = get_eip1559_legacy_receipt();
+        assert!(receipt.is_legacy());
+    }
+
+    #[test]
+    fn non_legacy_eip1559_receipt_should_make_json_str_roundtrip() {
+        let receipt = get_eip1559_non_legacy_receipt();
+        let s = receipt.to_string().unwrap();
+        let result = EthReceipt::from_str(&s).unwrap();
+        assert_eq!(result, receipt);
+    }
+
+    #[test]
+    fn legacy_eip1559_receipt_should_make_json_str_roundtrip() {
+        let receipt = get_eip1559_legacy_receipt();
+        let s = receipt.to_string().unwrap();
+        let result = EthReceipt::from_str(&s).unwrap();
+        assert_eq!(result, receipt);
     }
 }
