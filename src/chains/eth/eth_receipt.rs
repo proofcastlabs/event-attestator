@@ -13,7 +13,7 @@ use crate::{
         nibble_utils::{get_nibbles_from_bytes, Nibbles},
         trie::{put_in_trie_recursively, Trie},
     },
-    types::{Bytes, Result},
+    types::{Bytes, NoneError, Result},
     utils::{add_key_and_value_to_json, strip_hex_prefix},
 };
 
@@ -178,6 +178,12 @@ impl EthReceipt {
         self.receipt_type.is_none()
     }
 
+    fn get_receipt_type(&self) -> Result<Bytes> {
+        self.receipt_type
+            .clone()
+            .ok_or(NoneError("Could not get receipt type from receipt!"))
+    }
+
     pub fn to_json(&self) -> Result<JsonValue> {
         let encoded_logs = self
             .logs
@@ -199,7 +205,7 @@ impl EthReceipt {
                 Some(ref bytes) => Some(format!("0x{}", hex::encode(bytes))),
                 None => None,
             }),
-            self.to_json_legacy(encoded_logs)?
+            self.to_json_legacy(encoded_logs)?,
         )
     }
 
@@ -329,16 +335,19 @@ impl PartialOrd for EthReceipt {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eth::eth_test_utils::{
-        get_expected_receipt,
-        get_sample_contract_address,
-        get_sample_contract_topic,
-        get_sample_eip1559_mainnet_submission_material,
-        get_sample_eth_submission_material,
-        get_sample_eth_submission_material_json,
-        get_sample_receipt_with_desired_topic,
-        get_valid_state_with_invalid_block_and_receipts,
-        SAMPLE_RECEIPT_INDEX,
+    use crate::{
+        chains::eth::eth_test_utils::{
+            get_expected_receipt,
+            get_sample_contract_address,
+            get_sample_contract_topic,
+            get_sample_eip1559_mainnet_submission_material,
+            get_sample_eth_submission_material,
+            get_sample_eth_submission_material_json,
+            get_sample_receipt_with_desired_topic,
+            get_valid_state_with_invalid_block_and_receipts,
+            SAMPLE_RECEIPT_INDEX,
+        },
+        errors::AppError,
     };
 
     fn get_eip1559_non_legacy_receipt() -> EthReceipt {
@@ -563,5 +572,24 @@ mod tests {
         let s = receipt.to_string().unwrap();
         let result = EthReceipt::from_str(&s).unwrap();
         assert_eq!(result, receipt);
+    }
+
+    #[test]
+    fn should_get_receipt_type_from_non_legacy_receipt() {
+        let receipt = get_eip1559_non_legacy_receipt();
+        let expected_result = vec![0x02];
+        let result = receipt.get_receipt_type().unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_error_getting_receipt_type_from_legacy_receipt() {
+        let receipt = get_eip1559_legacy_receipt();
+        let expected_error = "Could not get receipt type from receipt!".to_string();
+        match receipt.get_receipt_type() {
+            Ok(_) => panic!("Should not have suceeded!"),
+            Err(AppError::NoneError(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        };
     }
 }
