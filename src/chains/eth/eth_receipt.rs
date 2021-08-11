@@ -14,7 +14,7 @@ use crate::{
         trie::{put_in_trie_recursively, Trie},
     },
     types::{Bytes, Result},
-    utils::strip_hex_prefix,
+    utils::{add_key_and_value_to_json, strip_hex_prefix},
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Constructor, Deref, From, Into)]
@@ -193,25 +193,14 @@ impl EthReceipt {
     }
 
     fn to_json_non_legacy(&self, encoded_logs: Vec<JsonValue>) -> Result<JsonValue> {
-        // FIXME Add element the the legacy version to remove the duplicate code!
-        Ok(json!({
-            "logs": encoded_logs,
-            "status": self.status,
-            "gasUsed": self.gas_used.as_usize(),
-            "blockNumber": self.block_number.as_usize(),
-            "transactionIndex": self.transaction_index.as_usize(),
-            "to": format!("0x{}", hex::encode(self.to.as_bytes())),
-            "cumulativeGasUsed": self.cumulative_gas_used.as_usize(),
-            "from": format!("0x{}", hex::encode(self.from.as_bytes())),
-            "contractAddress": format!("0x{:x}", self.contract_address),
-            "blockHash": format!("0x{}", hex::encode(self.block_hash.as_bytes())),
-            "logsBloom": format!("0x{}", hex::encode(self.logs_bloom.as_bytes())),
-            "transactionHash": format!("0x{}", hex::encode(self.transaction_hash.as_bytes())),
-            "type": match self.receipt_type {
+        add_key_and_value_to_json(
+            "type",
+            json!(match self.receipt_type {
                 Some(ref bytes) => Some(format!("0x{}", hex::encode(bytes))),
                 None => None,
-            },
-        }))
+            }),
+            self.to_json_legacy(encoded_logs)?
+        )
     }
 
     fn to_json_legacy(&self, encoded_logs: Vec<JsonValue>) -> Result<JsonValue> {
