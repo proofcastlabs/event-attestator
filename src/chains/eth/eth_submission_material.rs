@@ -258,10 +258,10 @@ impl EthSubmissionMaterialJson {
     }
 }
 
-pub fn parse_eth_submission_material_and_put_in_state<D>(block_json: &str, state: EthState<D>) -> Result<EthState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn parse_eth_submission_material_and_put_in_state<D: DatabaseInterface>(
+    block_json: &str,
+    state: EthState<D>,
+) -> Result<EthState<D>> {
     info!("✔ Parsing ETH block & receipts...");
     EthSubmissionMaterial::from_str(block_json).and_then(|result| state.add_eth_submission_material(result))
 }
@@ -276,6 +276,9 @@ mod tests {
             get_expected_receipt,
             get_sample_contract_address,
             get_sample_contract_topics,
+            get_sample_eip1559_mainnet_submission_material,
+            get_sample_eip1559_ropsten_submission_material,
+            get_sample_eip2718_ropsten_submission_material,
             get_sample_eth_submission_material,
             get_sample_eth_submission_material_n,
             get_sample_eth_submission_material_string,
@@ -397,5 +400,26 @@ mod tests {
         let result = block_and_receipts.remove_receipts();
         let num_receipts_after = result.receipts.len();
         assert_eq!(num_receipts_after, 0);
+    }
+
+    #[test]
+    fn mainnet_eip1559_blocks_receipts_should_be_valid() {
+        let submission_material = get_sample_eip1559_mainnet_submission_material();
+        let result = submission_material.receipts_are_valid().unwrap();
+        assert!(result);
+    }
+
+    #[test]
+    fn ropsten_eip1559_blocks_receipts_should_be_valid() {
+        let submission_material = get_sample_eip1559_ropsten_submission_material();
+        let result = submission_material.receipts_are_valid().unwrap();
+        assert!(result);
+    }
+
+    #[test]
+    fn ropsten_block_with_one_eip2718_tx_should_be_valid() {
+        let submission_material = get_sample_eip2718_ropsten_submission_material();
+        let result = submission_material.receipts_are_valid().unwrap();
+        assert!(result);
     }
 }
