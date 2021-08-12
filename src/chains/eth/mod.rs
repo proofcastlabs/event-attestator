@@ -31,6 +31,7 @@ pub(crate) mod increment_eth_account_nonce;
 pub(crate) mod increment_evm_account_nonce;
 pub(crate) mod nibble_utils;
 pub(crate) mod path_codec;
+pub(crate) mod eth_receipt_type;
 pub(crate) mod remove_old_eth_tail_block;
 pub(crate) mod remove_receipts_from_canon_block;
 pub(crate) mod trie;
