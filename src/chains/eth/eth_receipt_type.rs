@@ -1,8 +1,11 @@
+use std::fmt;
+
+use serde::Deserialize;
 use strum_macros::EnumIter;
 
 use crate::types::Byte;
 
-#[derive(Clone, Debug, EnumIter, Eq, PartialEq)]
+#[derive(Clone, Debug, EnumIter, Eq, PartialEq, Deserialize)]
 pub enum EthReceiptType {
     Legacy,
     EIP2718,
@@ -22,6 +25,20 @@ impl EthReceiptType {
             Self::Legacy => 0x00,
             Self::EIP2718 => 0x02,
         }
+    }
+
+    pub fn is_legacy(&self) -> bool {
+        matches!(self, Self::Legacy)
+    }
+}
+
+impl fmt::Display for EthReceiptType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let s = match self {
+            Self::Legacy => "0x0",
+            Self::EIP2718 => "0x2",
+        };
+        write!(f, "{}", s)
     }
 }
 
@@ -43,5 +60,19 @@ mod tests {
             .map(|ref byte| EthReceiptType::from_byte(byte))
             .collect::<Vec<EthReceiptType>>();
         assert_eq!(results, expected_results);
+    }
+
+    #[test]
+    fn legacy_receipt_type_should_be_legacy() {
+        let legacy_receipt_type = EthReceiptType::Legacy;
+        let result = legacy_receipt_type.is_legacy();
+        assert!(result)
+    }
+
+    #[test]
+    fn none_legacy_receipt_type_should_not_be_legacy() {
+        let legacy_receipt_type = EthReceiptType::EIP2718;
+        let result = legacy_receipt_type.is_legacy();
+        assert!(!result)
     }
 }
