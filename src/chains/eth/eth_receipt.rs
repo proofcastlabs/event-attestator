@@ -187,11 +187,11 @@ impl EthReceipt {
         if self.receipt_type.is_none() {
             self.to_json_legacy(encoded_logs)
         } else {
-            self.to_json_non_legacy(encoded_logs)
+            self.to_eip_2718_json(encoded_logs)
         }
     }
 
-    fn to_json_non_legacy(&self, encoded_logs: Vec<JsonValue>) -> Result<JsonValue> {
+    fn to_eip_2718_json(&self, encoded_logs: Vec<JsonValue>) -> Result<JsonValue> {
         add_key_and_value_to_json(
             "type",
             json!(self

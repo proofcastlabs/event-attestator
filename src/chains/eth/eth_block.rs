@@ -118,9 +118,9 @@ impl EthBlock {
 
     pub fn rlp_encode(&self, chain_id: &EthChainId) -> Result<Bytes> {
         let mut rlp_stream = RlpStream::new();
-        let eip_1556_is_active = Eip1559::new().is_active(chain_id, self.number)?;
+        let eip_1559_is_active = Eip1559::new().is_active(chain_id, self.number)?;
         rlp_stream
-            .begin_list(if eip_1556_is_active { 16 } else { 15 })
+            .begin_list(if eip_1559_is_active { 16 } else { 15 })
             .append(&self.parent_hash)
             .append(&self.sha3_uncles)
             .append(&self.miner)
@@ -136,7 +136,7 @@ impl EthBlock {
             .append(&self.extra_data)
             .append(&self.mix_hash)
             .append(&self.nonce);
-        if eip_1556_is_active {
+        if eip_1559_is_active {
             rlp_stream.append(&self.get_base_fee_per_gas()?);
         };
         Ok(rlp_stream.out().to_vec())
@@ -286,7 +286,7 @@ mod tests {
     }
 
     #[test]
-    fn invalid_block_header_should_return_true() {
+    fn invalid_block_header_should_return_false() {
         let invalid_block = get_sample_invalid_block();
         let chain_id = EthChainId::Mainnet;
         let result = invalid_block.is_valid(&chain_id).unwrap();
@@ -315,5 +315,15 @@ mod tests {
         let chain_id = EthChainId::Mainnet;
         let result = block.is_valid(&chain_id).unwrap();
         assert!(result);
+    }
+
+    #[test]
+    fn invalid_mainnet_eip1559_block_should_not_be_valid() {
+        let mut block = get_sample_eip1559_mainnet_submission_material().block.unwrap().clone();
+        // NOTE: Alter the new EIP1559 block header additional field to render the block invalid.
+        block.base_fee_per_gas = Some(block.base_fee_per_gas.unwrap() - 1);
+        let chain_id = EthChainId::Mainnet;
+        let result = block.is_valid(&chain_id).unwrap();
+        assert!(!result);
     }
 }

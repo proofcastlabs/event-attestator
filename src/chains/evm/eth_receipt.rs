@@ -221,7 +221,7 @@ impl EthReceipt {
         rlp_stream
             .append(&self.cumulative_gas_used)
             .append(&self.logs_bloom)
-            .append_list(&self.logs.0);
+            .append_list(&self.logs);
         Ok(rlp_stream.out().to_vec())
     }
 

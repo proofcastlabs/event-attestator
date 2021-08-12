@@ -119,9 +119,9 @@ impl EthBlock {
 
     pub fn rlp_encode(&self, chain_id: &EthChainId) -> Result<Bytes> {
         let mut rlp_stream = RlpStream::new();
-        let eip_1556_is_active = Eip1559::new().is_active(chain_id, self.number)?;
+        let eip_1559_is_active = Eip1559::new().is_active(chain_id, self.number)?;
         rlp_stream
-            .begin_list(if eip_1556_is_active { 16 } else { 15 })
+            .begin_list(if eip_1559_is_active { 16 } else { 15 })
             .append(&self.parent_hash)
             .append(&self.sha3_uncles)
             .append(&self.miner)
@@ -137,7 +137,7 @@ impl EthBlock {
             .append(&self.extra_data)
             .append(&self.mix_hash)
             .append(&self.nonce);
-        if eip_1556_is_active {
+        if eip_1559_is_active {
             rlp_stream.append(&self.get_base_fee_per_gas()?);
         };
         Ok(rlp_stream.out().to_vec())
