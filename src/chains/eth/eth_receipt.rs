@@ -9,6 +9,7 @@ use serde_json::{json, Value as JsonValue};
 use crate::{
     chains::eth::{
         eth_log::{EthLog, EthLogJson, EthLogs},
+        eth_receipt_type::EthReceiptType,
         eth_utils::{convert_hex_to_address, convert_hex_to_h256, convert_json_value_to_string},
         nibble_utils::{get_nibbles_from_bytes, Nibbles},
         trie::{put_in_trie_recursively, Trie},
@@ -33,8 +34,7 @@ impl EthReceipts {
 
     fn get_receipts_containing_log_from_address(&self, address: &EthAddress) -> Self {
         Self::new(
-            self.0
-                .iter()
+            self.iter()
                 .filter(|receipt| receipt.contains_log_from_address(address))
                 .cloned()
                 .collect(),
@@ -43,8 +43,7 @@ impl EthReceipts {
 
     fn get_receipts_containing_log_with_topic(&self, topic: &EthHash) -> Self {
         Self::new(
-            self.0
-                .iter()
+            self.iter()
                 .filter(|receipt| receipt.contains_log_with_topic(topic))
                 .cloned()
                 .collect(),
@@ -162,7 +161,7 @@ pub struct EthReceipt {
     pub contract_address: EthAddress,
     pub logs: EthLogs,
     pub logs_bloom: Bloom,
-    pub receipt_type: Option<Bytes>,
+    pub receipt_type: Option<EthReceiptType>,
 }
 
 impl EthReceipt {
@@ -174,11 +173,7 @@ impl EthReceipt {
         Self::from_json(&EthReceiptJson::from_str(s)?)
     }
 
-    pub fn is_legacy(&self) -> bool {
-        self.receipt_type.is_none()
-    }
-
-    fn get_receipt_type(&self) -> Result<Bytes> {
+    fn get_receipt_type(&self) -> Result<EthReceiptType> {
         self.receipt_type
             .clone()
             .ok_or(NoneError("Could not get receipt type from receipt!"))
@@ -187,11 +182,10 @@ impl EthReceipt {
     pub fn to_json(&self) -> Result<JsonValue> {
         let encoded_logs = self
             .logs
-            .0
             .iter()
             .map(|eth_log| eth_log.to_json())
             .collect::<Result<Vec<JsonValue>>>()?;
-        if self.is_legacy() {
+        if self.receipt_type.is_none() {
             self.to_json_legacy(encoded_logs)
         } else {
             self.to_json_non_legacy(encoded_logs)
@@ -201,10 +195,10 @@ impl EthReceipt {
     fn to_json_non_legacy(&self, encoded_logs: Vec<JsonValue>) -> Result<JsonValue> {
         add_key_and_value_to_json(
             "type",
-            json!(match self.receipt_type {
-                Some(ref bytes) => Some(format!("0x{}", hex::encode(bytes))),
-                None => None,
-            }),
+            json!(self
+                .receipt_type
+                .as_ref()
+                .map(|eth_receipt_type| eth_receipt_type.to_string())),
             self.to_json_legacy(encoded_logs)?,
         )
     }
@@ -247,7 +241,7 @@ impl EthReceipt {
                 _ => convert_hex_to_address(&convert_json_value_to_string(&json.contract_address)?)?,
             },
             receipt_type: match json.receipt_type {
-                Some(ref hex) => Some(hex::decode(&strip_hex_prefix(hex))?),
+                Some(ref hex) => Some(EthReceiptType::from_byte(&hex::decode(&strip_hex_prefix(hex))?[0])),
                 None => None,
             },
             logs,
@@ -263,6 +257,28 @@ impl EthReceipt {
     }
 
     pub fn rlp_encode(&self) -> Result<Bytes> {
+        match self.get_receipt_type() {
+            Ok(EthReceiptType::EIP2718) => {
+                debug!("RLP encoding EIP2718 receipt...");
+                self.encode_eip_2718_receipt()
+            },
+            Ok(EthReceiptType::Legacy) | Err(_) => {
+                debug!("RLP encoding LEGACY receipt...");
+                self.rlp_encode_legacy()
+            },
+        }
+    }
+
+    fn encode_eip_2718_receipt(&self) -> Result<Bytes> {
+        // NOTE: Per EIP-2718: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2718.md
+        // the encoding for these transactions are `TransactionType concatenated w/ ReceiptPayload`
+        // The `ReceiptPayload` for this transaction type is rlp([
+        //   status, cumulative_transaction_gas_used, logs_bloom, logs
+        // ]), which is the same as the RLP encoding for legacy receipts.
+        Ok([vec![0x02], self.rlp_encode_legacy()?].concat())
+    }
+
+    fn rlp_encode_legacy(&self) -> Result<Bytes> {
         let mut rlp_stream = RlpStream::new();
         rlp_stream.begin_list(4);
         match &self.status {
@@ -272,7 +288,7 @@ impl EthReceipt {
         rlp_stream
             .append(&self.cumulative_gas_used)
             .append(&self.logs_bloom)
-            .append_list(&self.logs.0);
+            .append_list(&self.logs);
         Ok(rlp_stream.out().to_vec())
     }
 
@@ -335,19 +351,16 @@ impl PartialOrd for EthReceipt {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        chains::eth::eth_test_utils::{
-            get_expected_receipt,
-            get_sample_contract_address,
-            get_sample_contract_topic,
-            get_sample_eip1559_mainnet_submission_material,
-            get_sample_eth_submission_material,
-            get_sample_eth_submission_material_json,
-            get_sample_receipt_with_desired_topic,
-            get_valid_state_with_invalid_block_and_receipts,
-            SAMPLE_RECEIPT_INDEX,
-        },
-        errors::AppError,
+    use crate::chains::eth::eth_test_utils::{
+        get_expected_receipt,
+        get_sample_contract_address,
+        get_sample_contract_topic,
+        get_sample_eip1559_mainnet_submission_material,
+        get_sample_eth_submission_material,
+        get_sample_eth_submission_material_json,
+        get_sample_receipt_with_desired_topic,
+        get_valid_state_with_invalid_block_and_receipts,
+        SAMPLE_RECEIPT_INDEX,
     };
 
     fn get_eip1559_non_legacy_receipt() -> EthReceipt {
@@ -434,7 +447,6 @@ mod tests {
         assert_eq!(num_receipts_after, expected_num_receipts_after);
         assert!(num_receipts_before > num_receipts_after);
         result
-            .0
             .iter()
             .for_each(|receipt| assert!(receipt.logs.contain_topic(&topic)));
     }
@@ -547,18 +559,6 @@ mod tests {
     }
 
     #[test]
-    fn non_legacy_mainnet_eip1559_receipt_should_be_not_legacy() {
-        let receipt = get_eip1559_non_legacy_receipt();
-        assert!(!receipt.is_legacy());
-    }
-
-    #[test]
-    fn legacy_mainnet_eip1559_receipt_should_be_legacy() {
-        let receipt = get_eip1559_legacy_receipt();
-        assert!(receipt.is_legacy());
-    }
-
-    #[test]
     fn non_legacy_eip1559_receipt_should_make_json_str_roundtrip() {
         let receipt = get_eip1559_non_legacy_receipt();
         let s = receipt.to_string().unwrap();
@@ -577,19 +577,24 @@ mod tests {
     #[test]
     fn should_get_receipt_type_from_non_legacy_receipt() {
         let receipt = get_eip1559_non_legacy_receipt();
-        let expected_result = vec![0x02];
+        let expected_result = EthReceiptType::EIP2718;
         let result = receipt.get_receipt_type().unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_error_getting_receipt_type_from_legacy_receipt() {
+    fn should_encode_legacy_receipt_correctly() {
         let receipt = get_eip1559_legacy_receipt();
-        let expected_error = "Could not get receipt type from receipt!".to_string();
-        match receipt.get_receipt_type() {
-            Ok(_) => panic!("Should not have suceeded!"),
-            Err(AppError::NoneError(error)) => assert_eq!(error, expected_error),
-            Err(_) => panic!("Wrong error received!"),
-        };
+        let result = receipt.rlp_encode().unwrap();
+        let expected_result = "f905bd0183062c30b9010000000002010000000000000000000000000000000000000000000000040000000000000000000000000008000000000002000000080020008000000000000000000000000000000808000008000000000000000000000000000000000000000000000000000000000000100002000000000000000000000200000014000800002000000000002000000000000400001000000000010000000000000000000000000100000800200000000008800000000000000000000000002000000008000000000002000000000000000000000000000000000000000000000000000000000000200000000000000010000000000100000000000000000000000000000000f904b2f89b94c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2f863a0ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3efa000000000000000000000000088e6a0c2ddd26feeb64f039a2c41296fcb3f5640a0000000000000000000000000e592427a0aece92de3edee1f18e0157c05861564a00000000000000000000000000000000000000000000000026064e85c5caf57dff89b94a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48f863a0ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3efa00000000000000000000000007238a14518d70b6d8fe63878dd19cb89210c5c66a000000000000000000000000088e6a0c2ddd26feeb64f039a2c41296fcb3f5640a0000000000000000000000000000000000000000000000000000000203b169961f9011c9488e6a0c2ddd26feeb64f039a2c41296fcb3f5640f863a0c42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67a0000000000000000000000000e592427a0aece92de3edee1f18e0157c05861564a0000000000000000000000000e592427a0aece92de3edee1f18e0157c05861564b8a0000000000000000000000000000000000000000000000000000000203b169961fffffffffffffffffffffffffffffffffffffffffffffffd9f9b17a3a350a8210000000000000000000000000000000000004585c7a608dbfc4835aa9f44a8740000000000000000000000000000000000000000000000007c5de12db7429eb8000000000000000000000000000000000000000000000000000000000002fca2f89b948762db106b2c2a0bccb3a80d1ed41273552616e8f863a0ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3efa0000000000000000000000000ba8eb224b656681b2b8cce9c3fc920d98594675ba00000000000000000000000007238a14518d70b6d8fe63878dd19cb89210c5c66a000000000000000000000000000000000000000000002cb527e45ebb1f39485bdf89b94c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2f863a0ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3efa0000000000000000000000000e592427a0aece92de3edee1f18e0157c05861564a0000000000000000000000000ba8eb224b656681b2b8cce9c3fc920d98594675ba00000000000000000000000000000000000000000000000026064e85c5caf57dff9011c94ba8eb224b656681b2b8cce9c3fc920d98594675bf863a0c42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67a0000000000000000000000000e592427a0aece92de3edee1f18e0157c05861564a00000000000000000000000007238a14518d70b6d8fe63878dd19cb89210c5c66b8a0fffffffffffffffffffffffffffffffffffffffffffd34ad81ba144e0c6b7a430000000000000000000000000000000000000000000000026064e85c5caf57df000000000000000000000000000000000000000000ee653c0e75c3b7a964179d0000000000000000000000000000000000000000000068c0e87a58032f4082ddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe4931";
+        assert_eq!(hex::encode(result), expected_result);
+    }
+
+    #[test]
+    fn should_encode_non_legacy_receipt_correctly() {
+        let receipt = get_eip1559_non_legacy_receipt();
+        let result = receipt.rlp_encode().unwrap();
+        let expected_result = "02f903640183019b2bb9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000100080020000000000000000000000000000000000800000008000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000014000800002000000000002000000000000400001000000000000000000000000000000000000100000800000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000200000000000000100000000000100000000000000000000000000000000f90259f89b948762db106b2c2a0bccb3a80d1ed41273552616e8f863a0ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3efa0000000000000000000000000ba8eb224b656681b2b8cce9c3fc920d98594675ba000000000000000000000000000000000003b3cc22af3ae1eac0440bcee416b40a000000000000000000000000000000000000000000000541eb0a0ce7492aaf122f89b94c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2f863a0ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3efa000000000000000000000000000000000003b3cc22af3ae1eac0440bcee416b40a0000000000000000000000000ba8eb224b656681b2b8cce9c3fc920d98594675ba000000000000000000000000000000000000000000000000045cf942999229eb4f9011c94ba8eb224b656681b2b8cce9c3fc920d98594675bf863a0c42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67a000000000000000000000000000000000003b3cc22af3ae1eac0440bcee416b40a000000000000000000000000000000000003b3cc22af3ae1eac0440bcee416b40b8a0ffffffffffffffffffffffffffffffffffffffffffffabe14f5f318b6d550ede00000000000000000000000000000000000000000000000045cf942999229eb4000000000000000000000000000000000000000000e9290d4fa549b17685b3750000000000000000000000000000000000000000000074f082db6efc6c9d3457fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe4775";
+        assert_eq!(hex::encode(result), expected_result);
     }
 }
