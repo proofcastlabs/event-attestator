@@ -3,7 +3,7 @@ use std::fmt;
 use serde::Deserialize;
 use strum_macros::EnumIter;
 
-use crate::types::Byte;
+use crate::types::{Byte, Bytes};
 
 #[derive(Clone, Debug, EnumIter, Eq, PartialEq, Deserialize)]
 pub enum EthReceiptType {
@@ -25,6 +25,10 @@ impl EthReceiptType {
             Self::Legacy => 0x00,
             Self::EIP2718 => 0x02,
         }
+    }
+
+    pub fn to_bytes(&self) -> Bytes {
+        vec![self.to_byte()]
     }
 
     pub fn is_legacy(&self) -> bool {

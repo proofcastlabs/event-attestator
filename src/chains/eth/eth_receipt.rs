@@ -275,7 +275,7 @@ impl EthReceipt {
         // The `ReceiptPayload` for this transaction type is rlp([
         //   status, cumulative_transaction_gas_used, logs_bloom, logs
         // ]), which is the same as the RLP encoding for legacy receipts.
-        Ok([vec![0x02], self.rlp_encode_legacy()?].concat())
+        Ok([EthReceiptType::EIP2718.to_bytes(), self.rlp_encode_legacy()?].concat())
     }
 
     fn rlp_encode_legacy(&self) -> Result<Bytes> {
