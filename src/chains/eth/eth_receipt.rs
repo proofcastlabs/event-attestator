@@ -2,17 +2,17 @@ use std::cmp::Ordering;
 
 use derive_more::{Constructor, Deref, From, Into};
 use ethereum_types::{Address as EthAddress, Bloom, H160, H256 as EthHash, U256};
+use keccak_hasher::KeccakHasher;
 use rlp::RlpStream;
 use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
+use triehash::trie_root;
 
 use crate::{
     chains::eth::{
         eth_log::{EthLog, EthLogJson, EthLogs},
         eth_receipt_type::EthReceiptType,
         eth_utils::{convert_hex_to_address, convert_hex_to_h256, convert_json_value_to_string},
-        nibble_utils::{get_nibbles_from_bytes, Nibbles},
-        trie::{put_in_trie_recursively, Trie},
     },
     types::{Bytes, NoneError, Result},
     utils::{add_key_and_value_to_json, strip_hex_prefix},
@@ -108,17 +108,16 @@ impl EthReceipts {
             .filter_for_those_from_address_containing_topic(address, topic)
     }
 
-    pub fn get_rlp_encoded_receipts_and_nibble_tuples(&self) -> Result<Vec<(Nibbles, Bytes)>> {
+    pub fn get_rlp_encoded_indicies_and_rlp_encoded_receipt_tuples(&self) -> Result<Vec<(Bytes, Bytes)>> {
         self.0
             .iter()
-            .map(|receipt| receipt.get_rlp_encoded_receipt_and_encoded_key_tuple())
+            .map(|receipt| receipt.get_rlp_encoded_index_and_rlp_encoded_receipt_tuple())
             .collect()
     }
 
     pub fn get_merkle_root(&self) -> Result<EthHash> {
-        self.get_rlp_encoded_receipts_and_nibble_tuples()
-            .and_then(|key_value_tuples| put_in_trie_recursively(Trie::get_new_trie()?, key_value_tuples, 0))
-            .map(|trie| trie.root)
+        self.get_rlp_encoded_indicies_and_rlp_encoded_receipt_tuples()
+            .map(|key_value_tuples| EthHash::from_slice(&trie_root::<KeccakHasher, _, _, _>(key_value_tuples)))
     }
 }
 
@@ -298,9 +297,9 @@ impl EthReceipt {
         rlp_stream.out().to_vec()
     }
 
-    pub fn get_rlp_encoded_receipt_and_encoded_key_tuple(&self) -> Result<(Nibbles, Bytes)> {
+    pub fn get_rlp_encoded_index_and_rlp_encoded_receipt_tuple(&self) -> Result<(Bytes, Bytes)> {
         self.rlp_encode()
-            .map(|bytes| (get_nibbles_from_bytes(self.rlp_encode_transaction_index()), bytes))
+            .map(|bytes| (self.rlp_encode_transaction_index(), bytes))
     }
 
     pub fn get_logs_from_address_with_topic(&self, address: &EthAddress, topic: &EthHash) -> EthLogs {
@@ -459,35 +458,6 @@ mod tests {
     fn should_rlp_encode_receipt() {
         let result = get_expected_receipt().rlp_encode().unwrap();
         assert_eq!(hex::encode(result), get_encoded_receipt())
-    }
-
-    #[test]
-    fn should_get_encoded_receipt_and_hash_tuple() {
-        let result = get_expected_receipt()
-            .get_rlp_encoded_receipt_and_encoded_key_tuple()
-            .unwrap();
-        let expected_encoded_nibbles = get_nibbles_from_bytes(vec![0x02]); // NOTE: The tx index of sample receipt
-        assert_eq!(result.0, expected_encoded_nibbles);
-        assert_eq!(hex::encode(result.1), get_encoded_receipt());
-    }
-
-    #[test]
-    fn should_get_encoded_receipts_and_hash_tuples() {
-        let expected_encoded_nibbles = get_nibbles_from_bytes(vec![0x02]);
-        let receipts = EthReceipts::new(vec![get_expected_receipt(), get_expected_receipt()]);
-        let results = receipts.get_rlp_encoded_receipts_and_nibble_tuples().unwrap();
-        results.iter().for_each(|result| {
-            assert_eq!(result.0, expected_encoded_nibbles);
-            assert_eq!(hex::encode(&result.1), get_encoded_receipt());
-        });
-    }
-
-    #[test]
-    fn should_get_receipts_merkle_root_from_receipts() {
-        let block_and_receipts = get_sample_eth_submission_material();
-        let result = block_and_receipts.receipts.get_merkle_root().unwrap();
-        let expected_result = block_and_receipts.get_receipts_root().unwrap();
-        assert_eq!(result, expected_result);
     }
 
     #[test]

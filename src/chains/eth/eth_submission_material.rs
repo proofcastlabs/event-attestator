@@ -419,7 +419,22 @@ mod tests {
     #[test]
     fn ropsten_block_with_one_eip2718_tx_should_be_valid() {
         let submission_material = get_sample_eip2718_ropsten_submission_material();
+        println!(
+            "receipts_root: {}",
+            hex::encode(submission_material.block.clone().unwrap().receipts_root.as_bytes())
+        );
         let result = submission_material.receipts_are_valid().unwrap();
         assert!(result);
+    }
+
+    #[test]
+    fn receipts_roots_of_eth_submission_material_should_be_valid() {
+        for i in 0..15 {
+            let submission_material = get_sample_eth_submission_material_n(i).unwrap();
+            let receipts = submission_material.receipts.clone();
+            let expected_root = submission_material.block.unwrap().receipts_root;
+            let calculated_root = receipts.get_merkle_root().unwrap();
+            assert_eq!(expected_root, calculated_root);
+        }
     }
 }

@@ -1,38 +1,19 @@
-use ethereum_types::H256 as EthHash;
 pub use serde_json::{json, Value as JsonValue};
 
-use crate::{chains::eth::nibble_utils::Nibbles, types::Byte, utils::get_prefixed_db_key};
+use crate::utils::get_prefixed_db_key;
 
-pub const ZERO_BYTE: u8 = 0u8;
 pub const ZERO_ETH_VALUE: usize = 0;
 pub const ETH_TAIL_LENGTH: u64 = 100;
-pub const HIGH_NIBBLE_MASK: Byte = 15u8; // NOTE: 15u8 == [0,0,0,0,1,1,1,1]
-pub const NUM_BITS_IN_NIBBLE: usize = 4;
-pub const NUM_NIBBLES_IN_BYTE: usize = 2;
 pub const VALUE_FOR_MINTING_TX: usize = 0;
-pub static LEAF_NODE_STRING: &str = "leaf";
 pub const VALUE_FOR_PTOKEN_DEPLOY: usize = 0;
 pub const ETH_WORD_SIZE_IN_BYTES: usize = 32;
 pub const ETH_ADDRESS_SIZE_IN_BYTES: usize = 20;
 pub const MAX_BYTES_FOR_ETH_USER_DATA: usize = 2000;
 pub const GAS_LIMIT_FOR_MINTING_TX: usize = 180_000;
-pub static BRANCH_NODE_STRING: &str = "branch";
 pub const GAS_LIMIT_FOR_PTOKEN_DEPLOY: usize = 4_000_000;
-pub static EXTENSION_NODE_STRING: &str = "extension";
-pub const HASHED_NULL_NODE: EthHash = EthHash(HASHED_NULL_NODE_BYTES);
 pub const ETH_CORE_IS_INITIALIZED_JSON: &str = "{eth_core_initialized:true}";
-pub const EMPTY_NIBBLES: Nibbles = Nibbles {
-    data: Vec::new(),
-    offset: 0,
-};
 pub const ETH_MESSAGE_PREFIX: &[u8; 26] = b"\x19Ethereum Signed Message:\n";
 pub const PREFIXED_MESSAGE_HASH_LEN: &[u8; 2] = b"32";
-
-const HASHED_NULL_NODE_BYTES: [u8; 32] = [
-    // NOTE: keccak hash of the RLP of null
-    0x56, 0xe8, 0x1f, 0x17, 0x1b, 0xcc, 0x55, 0xa6, 0xff, 0x83, 0x45, 0xe6, 0x92, 0xc0, 0xf8, 0x6e, 0x5b, 0x48, 0xe0,
-    0x1b, 0x99, 0x6c, 0xad, 0xc0, 0x01, 0x62, 0x2f, 0xb5, 0xe3, 0x63, 0xb4, 0x21,
-];
 
 pub fn get_eth_constants_db_keys() -> JsonValue {
     json!({
