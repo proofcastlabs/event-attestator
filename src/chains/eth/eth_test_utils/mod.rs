@@ -85,6 +85,12 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_12: &str = "src/chains/eth/eth_test_util
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_13: &str =
     "src/chains/eth/eth_test_utils/ropsten-submission-material-with-eip-2718-tx.json";
 
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_14: &str =
+    "src/chains/eth/eth_test_utils/eth-submission-material-block-13041925.json";
+
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_15: &str =
+    "src/chains/eth/eth_test_utils/eth-submission-material-block-13041927.json";
+
 pub fn put_eth_latest_block_in_db<D>(db: &D, eth_submission_material: &EthSubmissionMaterial) -> Result<()>
 where
     D: DatabaseInterface,
@@ -153,6 +159,8 @@ pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
         11 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_11),
         12 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_12),
         13 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_13),
+        14 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_14),
+        15 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_15),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num))),
     }?;
     match Path::new(&path).exists() {
