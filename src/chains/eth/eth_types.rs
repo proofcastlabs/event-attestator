@@ -1,24 +1,15 @@
-use std::collections::HashMap;
-
 use ethereum_types::{Address, H256};
 
-use crate::{
-    chains::eth::{
-        any_sender::relay_transaction::RelayTransaction,
-        eth_chain_id::EthChainId,
-        eth_crypto::eth_private_key::EthPrivateKey,
-        trie_nodes::Node,
-    },
-    types::Bytes,
+use crate::chains::eth::{
+    any_sender::relay_transaction::RelayTransaction,
+    eth_chain_id::EthChainId,
+    eth_crypto::eth_private_key::EthPrivateKey,
 };
 
 pub type EthHash = H256;
 pub type EthAddress = Address;
-pub type NodeStack = Vec<Node>;
 pub type EthSignature = [u8; 65];
 pub type EthSignedTransaction = String;
-pub type ChildNodes = [Option<Bytes>; 16];
-pub type TrieHashMap = HashMap<H256, Bytes>;
 pub type RelayTransactions = Vec<RelayTransaction>;
 
 #[derive(Debug)]

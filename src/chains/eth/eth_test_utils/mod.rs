@@ -13,9 +13,6 @@ use crate::{
         eth_receipt::EthReceipt,
         eth_state::EthState,
         eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
-        eth_types::TrieHashMap,
-        nibble_utils::{get_nibbles_from_bytes, get_nibbles_from_offset_bytes, Nibbles},
-        trie_nodes::Node,
     },
     erc20_on_eos::eth::peg_in_info::{Erc20OnEosPegInInfo, Erc20OnEosPegInInfos},
     errors::AppError,
@@ -77,6 +74,19 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_9: &str =
 
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_10: &str =
     "src/chains/eth/eth_test_utils/eth-submission-material-with-new-erc777-event.json";
+
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_11: &str = "src/chains/eth/eth_test_utils/ropsten-eip1559-block.json";
+
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_12: &str = "src/chains/eth/eth_test_utils/mainnet-eip1559-block-12991830.json";
+
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_13: &str =
+    "src/chains/eth/eth_test_utils/ropsten-submission-material-with-eip-2718-tx.json";
+
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_14: &str =
+    "src/chains/eth/eth_test_utils/eth-submission-material-block-13041925.json";
+
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_15: &str =
+    "src/chains/eth/eth_test_utils/eth-submission-material-block-13041927.json";
 
 pub fn put_eth_latest_block_in_db<D>(db: &D, eth_submission_material: &EthSubmissionMaterial) -> Result<()>
 where
@@ -143,6 +153,11 @@ pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
         8 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_8),
         9 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_9),
         10 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_10),
+        11 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_11),
+        12 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_12),
+        13 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_13),
+        14 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_14),
+        15 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_15),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num))),
     }?;
     match Path::new(&path).exists() {
@@ -153,6 +168,18 @@ pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
 
 pub fn get_sample_eth_submission_material_n(num: usize) -> Result<EthSubmissionMaterial> {
     get_sample_eth_submission_material_string(num).and_then(|s| EthSubmissionMaterial::from_str(&s))
+}
+
+pub fn get_sample_eip1559_ropsten_submission_material() -> EthSubmissionMaterial {
+    get_sample_eth_submission_material_n(11).unwrap()
+}
+
+pub fn get_sample_eip2718_ropsten_submission_material() -> EthSubmissionMaterial {
+    get_sample_eth_submission_material_n(13).unwrap()
+}
+
+pub fn get_sample_eip1559_mainnet_submission_material() -> EthSubmissionMaterial {
+    get_sample_eth_submission_material_n(12).unwrap()
 }
 
 pub fn get_sample_receipt_n(sample_block_num: usize, receipt_index: usize) -> Result<EthReceipt> {
@@ -265,52 +292,6 @@ pub fn get_sample_log_without_desired_topic() -> EthLog {
 pub fn get_sample_log_without_desired_address() -> EthLog {
     // NOTE: Has neither topic nor log
     get_sample_log_without_desired_topic()
-}
-
-pub fn convert_hex_string_to_nibbles(hex_string: String) -> Result<Nibbles> {
-    match hex_string.len() % 2 == 0 {
-        true => Ok(get_nibbles_from_bytes(hex::decode(hex_string)?)),
-        false => Ok(get_nibbles_from_offset_bytes(hex::decode(format!("0{}", hex_string))?)),
-    }
-}
-
-pub fn get_sample_leaf_node() -> Node {
-    let path_bytes = vec![0x12, 0x34, 0x56];
-    let path_nibbles = get_nibbles_from_bytes(path_bytes);
-    let value = hex::decode("c0ffee".to_string()).unwrap();
-    Node::new_leaf(path_nibbles, value).unwrap()
-}
-
-pub fn get_sample_extension_node() -> Node {
-    let path_bytes = vec![0xc0, 0xff, 0xee];
-    let path_nibbles = get_nibbles_from_bytes(path_bytes);
-    let value = hex::decode("1d237c84432c78d82886cb7d6549c179ca51ebf3b324d2a3fa01af6a563a9377".to_string()).unwrap();
-    Node::new_extension(path_nibbles, value).unwrap()
-}
-
-pub fn get_sample_branch_node() -> Node {
-    let branch_value_1 = hex::decode("4f81663d4c7aeb115e49625430e3fa114445dc0a9ed73a7598a31cd60808a758").unwrap();
-    let branch_value_2 = hex::decode("d55a192f93e0576f46019553e2b4c0ff4b8de57cd73020f751aed18958e9ecdb").unwrap();
-    let index_1 = 1;
-    let index_2 = 2;
-    let value = None;
-    Node::new_branch(value)
-        .and_then(|node| node.update_branch_at_index(Some(branch_value_1), index_1))
-        .and_then(|node| node.update_branch_at_index(Some(branch_value_2), index_2))
-        .unwrap()
-}
-
-pub fn get_thing_to_put_in_trie_hash_map() -> Bytes {
-    b"Provable".to_vec()
-}
-
-pub fn get_trie_hash_map_with_thing_in_it() -> Result<TrieHashMap> {
-    let mut trie_hash_map: TrieHashMap = std::collections::HashMap::new();
-    trie_hash_map.insert(
-        get_expected_key_of_thing_in_trie_hash_map(),
-        get_thing_to_put_in_trie_hash_map(),
-    );
-    Ok(trie_hash_map)
 }
 
 pub fn get_expected_key_of_thing_in_trie_hash_map() -> EthHash {
@@ -455,39 +436,23 @@ mod tests {
     #[test]
     fn should_get_sample_invalid_block() {
         let invalid_block = get_sample_invalid_block();
-        let is_valid = invalid_block.is_valid().unwrap();
+        let chain_id = EthChainId::Mainnet;
+        let is_valid = invalid_block.is_valid(&chain_id).unwrap();
         assert!(!is_valid)
     }
 
     #[test]
     fn should_get_valid_state_with_invalid_block_and_receipts() {
         let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
+        let chain_id = EthChainId::Mainnet;
         let is_valid = state
             .get_eth_submission_material()
             .unwrap()
             .get_block()
             .unwrap()
-            .is_valid()
+            .is_valid(&chain_id)
             .unwrap();
         assert!(!is_valid);
-    }
-
-    #[test]
-    fn should_convert_hex_string_to_nibbles() {
-        let bytes = vec![0xc0, 0xff, 0xee];
-        let hex_string = "c0ffee".to_string();
-        let expected_result = get_nibbles_from_bytes(bytes);
-        let result = convert_hex_string_to_nibbles(hex_string).unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_convert_offset_hex_string_to_nibbles() {
-        let bytes = vec![0xdu8, 0xec, 0xaf];
-        let hex_string = "decaf".to_string();
-        let expected_result = get_nibbles_from_offset_bytes(bytes);
-        let result = convert_hex_string_to_nibbles(hex_string).unwrap();
-        assert_eq!(result, expected_result);
     }
 
     #[test]

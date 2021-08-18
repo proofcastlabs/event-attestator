@@ -4,12 +4,23 @@ use std::{
 };
 
 use chrono::{prelude::DateTime, Utc};
+use serde_json::Value as JsonValue;
 use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
     constants::{CORE_VERSION, DB_KEY_PREFIX, DEBUG_OUTPUT_MARKER, U64_NUM_BYTES},
     types::{Byte, Bytes, Result},
 };
+
+pub fn add_key_and_value_to_json(key: &str, value: JsonValue, json: JsonValue) -> Result<JsonValue> {
+    match json {
+        JsonValue::Object(mut map) => {
+            map.insert(key.to_string(), value);
+            Ok(JsonValue::Object(map))
+        },
+        _ => Err("Error adding field to json!".into()),
+    }
+}
 
 pub fn get_unix_timestamp() -> Result<u64> {
     Ok(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())
@@ -141,6 +152,8 @@ pub fn is_hex(string: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
     use crate::errors::AppError;
 
@@ -321,6 +334,19 @@ mod tests {
         let timestamp = 1618406537;
         let result = convert_unix_timestamp_to_human_readable(timestamp);
         let expected_result = "14/04/2021,13:22:17";
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_add_key_and_value_to_json() {
+        let key = "c";
+        let value = json!("d");
+        let json = json!({"a":"b"});
+        let expected_result = json!({
+            "a": "b",
+            "c": "d",
+        });
+        let result = add_key_and_value_to_json(key, value, json).unwrap();
         assert_eq!(result, expected_result);
     }
 }
