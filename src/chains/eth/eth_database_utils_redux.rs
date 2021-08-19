@@ -19,8 +19,8 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub struct EthDatabaseUtils<D: 'static + DatabaseInterface> {
-    db: &'static D,
+pub struct EthDatabaseUtils<'a, D: DatabaseInterface> {
+    db: &'a D,
     any_sender_nonce_key: Bytes,
     btc_on_eth_smart_contract_address_key: Bytes,
     eos_on_eth_smart_contract_address_key: Bytes,
@@ -40,8 +40,8 @@ pub struct EthDatabaseUtils<D: 'static + DatabaseInterface> {
     eth_tail_block_hash_key: Bytes,
 }
 
-impl<D: 'static + DatabaseInterface> EthDatabaseUtils<D> {
-    pub fn new_for_eth(db: &'static D) -> Self {
+impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
+    pub fn new_for_eth(db: &'a D) -> Self {
         use crate::chains::eth::eth_constants::{
             ANY_SENDER_NONCE_KEY,
             BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
