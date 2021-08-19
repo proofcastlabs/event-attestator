@@ -19,7 +19,8 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub struct EthDatabseUtils {
+pub struct EthDatabseUtils<D: 'static + DatabaseInterface> {
+    db: &'static D,
     any_sender_nonce_key: Bytes,
     btc_on_eth_smart_contract_address_key: Bytes,
     eos_on_eth_smart_contract_address_key: Bytes,
@@ -39,8 +40,8 @@ pub struct EthDatabseUtils {
     eth_tail_block_hash_key: Bytes,
 }
 
-impl EthDatabseUtils {
-    pub fn new_for_eth() -> Self {
+impl<D: 'static + DatabaseInterface> EthDatabseUtils<D> {
+    pub fn new_for_eth(db: &'static D) -> Self {
         use crate::chains::eth::eth_constants::{
             ANY_SENDER_NONCE_KEY,
             BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
@@ -61,6 +62,7 @@ impl EthDatabseUtils {
             ETH_TAIL_BLOCK_HASH_KEY,
         };
         Self {
+            db,
             any_sender_nonce_key: ANY_SENDER_NONCE_KEY.to_vec(),
             btc_on_eth_smart_contract_address_key: BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
             eos_on_eth_smart_contract_address_key: EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
@@ -81,7 +83,7 @@ impl EthDatabseUtils {
         }
     }
 
-    pub fn get_signing_params_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthSigningParams> {
+    pub fn get_signing_params_from_db(&self, db: &D) -> Result<EthSigningParams> {
         trace!("✔ Getting signing params from db...");
         Ok(EthSigningParams {
             gas_price: self.get_eth_gas_price_from_db(db)?,
@@ -92,7 +94,7 @@ impl EthDatabseUtils {
         })
     }
 
-    pub fn get_any_sender_signing_params_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<AnySenderSigningParams> {
+    pub fn get_any_sender_signing_params_from_db(&self, db: &D) -> Result<AnySenderSigningParams> {
         trace!("✔ Getting AnySender signing params from db...");
         Ok(AnySenderSigningParams {
             chain_id: self.get_eth_chain_id_from_db(db)?,
@@ -103,7 +105,7 @@ impl EthDatabseUtils {
         })
     }
 
-    pub fn put_eth_canon_to_tip_length_in_db<D: DatabaseInterface>(&self, db: &D, length: u64) -> Result<()> {
+    pub fn put_eth_canon_to_tip_length_in_db(&self, db: &D, length: u64) -> Result<()> {
         debug!("✔ Putting ETH canon-to-tip length of {} in db...", length);
         db.put(
             self.eth_canon_to_tip_length_key.to_vec(),
@@ -112,47 +114,43 @@ impl EthDatabseUtils {
         )
     }
 
-    pub fn get_eth_canon_to_tip_length_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<u64> {
+    pub fn get_eth_canon_to_tip_length_from_db(&self, db: &D) -> Result<u64> {
         info!("✔ Getting ETH canon-to-tip length from db...");
         db.get(self.eth_canon_to_tip_length_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| convert_bytes_to_u64(&bytes))
     }
 
-    pub fn put_eth_canon_block_in_db<D: DatabaseInterface>(
-        &self,
-        db: &D,
-        eth_submission_material: &EthSubmissionMaterial,
-    ) -> Result<()> {
+    pub fn put_eth_canon_block_in_db(&self, db: &D, eth_submission_material: &EthSubmissionMaterial) -> Result<()> {
         info!("✔ Putting ETH canon block in db...");
         self.put_special_eth_block_in_db(db, eth_submission_material, "canon")
     }
 
-    pub fn put_eth_latest_block_hash_in_db<D: DatabaseInterface>(&self, db: &D, eth_hash: &EthHash) -> Result<()> {
+    pub fn put_eth_latest_block_hash_in_db(&self, db: &D, eth_hash: &EthHash) -> Result<()> {
         info!("✔ Putting ETH latest block hash in db...");
         self.put_special_eth_hash_in_db(db, "latest", eth_hash)
     }
 
-    pub fn put_eth_anchor_block_hash_in_db<D: DatabaseInterface>(&self, db: &D, eth_hash: &EthHash) -> Result<()> {
+    pub fn put_eth_anchor_block_hash_in_db(&self, db: &D, eth_hash: &EthHash) -> Result<()> {
         info!("✔ Putting ETH anchor block hash in db...");
         self.put_special_eth_hash_in_db(db, "anchor", eth_hash)
     }
 
-    pub fn put_eth_canon_block_hash_in_db<D: DatabaseInterface>(&self, db: &D, eth_hash: &EthHash) -> Result<()> {
+    pub fn put_eth_canon_block_hash_in_db(&self, db: &D, eth_hash: &EthHash) -> Result<()> {
         info!("✔ Putting ETH canon block hash in db...");
         self.put_special_eth_hash_in_db(db, "canon", eth_hash)
     }
 
-    pub fn put_eth_tail_block_hash_in_db<D: DatabaseInterface>(&self, db: &D, eth_hash: &EthHash) -> Result<()> {
+    pub fn put_eth_tail_block_hash_in_db(&self, db: &D, eth_hash: &EthHash) -> Result<()> {
         info!("✔ Putting ETH tail block hash in db...");
         self.put_special_eth_hash_in_db(db, "tail", eth_hash)
     }
 
-    pub fn put_eth_linker_hash_in_db<D: DatabaseInterface>(&self, db: &D, eth_hash: EthHash) -> Result<()> {
+    pub fn put_eth_linker_hash_in_db(&self, db: &D, eth_hash: EthHash) -> Result<()> {
         info!("✔ Putting ETH linker hash in db...");
         self.put_special_eth_hash_in_db(db, "linker", &eth_hash)
     }
 
-    pub fn put_special_eth_block_in_db<D: DatabaseInterface>(
+    pub fn put_special_eth_block_in_db(
         &self,
         db: &D,
         eth_submission_material: &EthSubmissionMaterial,
@@ -163,7 +161,7 @@ impl EthDatabseUtils {
             .and_then(|_| self.put_special_eth_hash_in_db(db, block_type, &eth_submission_material.get_block_hash()?))
     }
 
-    pub fn put_special_eth_hash_in_db<D: DatabaseInterface>(&self, db: &D, hash_type: &str, hash: &EthHash) -> Result<()> {
+    pub fn put_special_eth_hash_in_db(&self, db: &D, hash_type: &str, hash: &EthHash) -> Result<()> {
         let key = match hash_type {
             "linker" => Ok(self.eth_linker_hash_key.to_vec()),
             "canon" => Ok(self.eth_canon_block_hash_key.to_vec()),
@@ -178,7 +176,7 @@ impl EthDatabseUtils {
         Self::put_eth_hash_in_db(db, &key, hash)
     }
 
-    pub fn get_latest_eth_block_number<D: DatabaseInterface>(&self, db: &D) -> Result<usize> {
+    pub fn get_latest_eth_block_number(&self, db: &D) -> Result<usize> {
         info!("✔ Getting latest ETH block number from db...");
         match self.get_special_eth_block_from_db(db, "latest") {
             Ok(result) => Ok(result.get_block_number()?.as_usize()),
@@ -186,32 +184,32 @@ impl EthDatabseUtils {
         }
     }
 
-    pub fn get_eth_tail_block_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthSubmissionMaterial> {
+    pub fn get_eth_tail_block_from_db(&self, db: &D) -> Result<EthSubmissionMaterial> {
         info!("✔ Getting ETH tail block from db...");
         self.get_special_eth_block_from_db(db, "tail")
     }
 
-    pub fn get_eth_latest_block_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthSubmissionMaterial> {
+    pub fn get_eth_latest_block_from_db(&self, db: &D) -> Result<EthSubmissionMaterial> {
         info!("✔ Getting ETH latest block from db...");
         self.get_special_eth_block_from_db(db, "latest")
     }
 
-    pub fn get_eth_anchor_block_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthSubmissionMaterial> {
+    pub fn get_eth_anchor_block_from_db(&self, db: &D) -> Result<EthSubmissionMaterial> {
         info!("✔ Getting ETH anchor block from db...");
         self.get_special_eth_block_from_db(db, "anchor")
     }
 
-    pub fn get_eth_canon_block_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthSubmissionMaterial> {
+    pub fn get_eth_canon_block_from_db(&self, db: &D) -> Result<EthSubmissionMaterial> {
         info!("✔ Getting ETH canon block from db...");
         self.get_special_eth_block_from_db(db, "canon")
     }
 
-    pub fn get_eth_anchor_block_hash_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthHash> {
+    pub fn get_eth_anchor_block_hash_from_db(&self, db: &D) -> Result<EthHash> {
         info!("✔ Getting ETH anchor block hash from db...");
         self.get_special_eth_hash_from_db(db, "anchor")
     }
 
-    pub fn get_special_eth_hash_from_db<D: DatabaseInterface>(&self, db: &D, hash_type: &str) -> Result<EthHash> {
+    pub fn get_special_eth_hash_from_db(&self, db: &D, hash_type: &str) -> Result<EthHash> {
         let key = match hash_type {
             "linker" => Ok(self.eth_linker_hash_key.to_vec()),
             "canon" => Ok(self.eth_canon_block_hash_key.to_vec()),
@@ -227,23 +225,19 @@ impl EthDatabseUtils {
         Self::get_eth_hash_from_db(db, &key.to_vec())
     }
 
-    pub fn get_eth_hash_from_db<D: DatabaseInterface>(db: &D, key: &[Byte]) -> Result<EthHash> {
+    pub fn get_eth_hash_from_db(db: &D, key: &[Byte]) -> Result<EthHash> {
         trace!("✔ Getting ETH hash from db under key: {}", hex::encode(&key));
 
         db.get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
             .map(|bytes| EthHash::from_slice(&bytes))
     }
 
-    pub fn get_special_eth_block_from_db<D: DatabaseInterface>(
-        &self,
-        db: &D,
-        block_type: &str,
-    ) -> Result<EthSubmissionMaterial> {
+    pub fn get_special_eth_block_from_db(&self, db: &D, block_type: &str) -> Result<EthSubmissionMaterial> {
         self.get_special_eth_hash_from_db(db, block_type)
             .and_then(|block_hash| Self::get_submission_material_from_db(db, &block_hash))
     }
 
-    pub fn put_eth_hash_in_db<D: DatabaseInterface>(db: &D, key: &[Byte], eth_hash: &EthHash) -> Result<()> {
+    pub fn put_eth_hash_in_db(db: &D, key: &[Byte], eth_hash: &EthHash) -> Result<()> {
         db.put(
             key.to_vec(),
             convert_h256_to_bytes(*eth_hash),
@@ -251,7 +245,7 @@ impl EthDatabseUtils {
         )
     }
 
-    pub fn eth_block_exists_in_db<D: DatabaseInterface>(db: &D, block_hash: &EthHash) -> bool {
+    pub fn eth_block_exists_in_db(db: &D, block_hash: &EthHash) -> bool {
         info!(
             "✔ Checking for existence of ETH block: {}",
             hex::encode(block_hash.as_bytes().to_vec())
@@ -259,17 +253,14 @@ impl EthDatabseUtils {
         Self::key_exists_in_db(db, &block_hash.as_bytes().to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
     }
 
-    pub fn get_hash_from_db_via_hash_key<D: DatabaseInterface>(db: &D, hash_key: EthHash) -> Result<Option<EthHash>> {
+    pub fn get_hash_from_db_via_hash_key(db: &D, hash_key: EthHash) -> Result<Option<EthHash>> {
         match db.get(convert_h256_to_bytes(hash_key), MIN_DATA_SENSITIVITY_LEVEL) {
             Ok(bytes) => Ok(Some(convert_bytes_to_h256(&bytes)?)),
             Err(_) => Ok(None),
         }
     }
 
-    pub fn put_eth_submission_material_in_db<D: DatabaseInterface>(
-        db: &D,
-        eth_submission_material: &EthSubmissionMaterial,
-    ) -> Result<()> {
+    pub fn put_eth_submission_material_in_db(db: &D, eth_submission_material: &EthSubmissionMaterial) -> Result<()> {
         let key = convert_h256_to_bytes(eth_submission_material.get_block_hash()?);
         trace!("✔ Adding block to database under key: {:?}", hex::encode(&key));
         db.put(
@@ -279,15 +270,12 @@ impl EthDatabseUtils {
         )
     }
 
-    pub fn maybe_get_parent_eth_submission_material<D: DatabaseInterface>(
-        db: &D,
-        block_hash: &EthHash,
-    ) -> Option<EthSubmissionMaterial> {
+    pub fn maybe_get_parent_eth_submission_material(db: &D, block_hash: &EthHash) -> Option<EthSubmissionMaterial> {
         debug!("✔ Maybe getting parent ETH block from db...");
         Self::maybe_get_nth_ancestor_eth_submission_material(db, block_hash, 1).ok()?
     }
 
-    pub fn maybe_get_nth_ancestor_eth_submission_material<D: DatabaseInterface>(
+    pub fn maybe_get_nth_ancestor_eth_submission_material(
         db: &D,
         block_hash: &EthHash,
         n: u64,
@@ -306,10 +294,7 @@ impl EthDatabseUtils {
         }
     }
 
-    pub fn maybe_get_eth_submission_material_from_db<D: DatabaseInterface>(
-        db: &D,
-        block_hash: &EthHash,
-    ) -> Option<EthSubmissionMaterial> {
+    pub fn maybe_get_eth_submission_material_from_db(db: &D, block_hash: &EthHash) -> Option<EthSubmissionMaterial> {
         trace!(
             "✔ Maybe getting ETH block and receipts from db under hash: {}",
             block_hash
@@ -329,21 +314,18 @@ impl EthDatabseUtils {
         }
     }
 
-    pub fn get_submission_material_from_db<D: DatabaseInterface>(
-        db: &D,
-        block_hash: &EthHash,
-    ) -> Result<EthSubmissionMaterial> {
+    pub fn get_submission_material_from_db(db: &D, block_hash: &EthHash) -> Result<EthSubmissionMaterial> {
         trace!("✔ Getting ETH block and receipts from db...");
         db.get(convert_h256_to_bytes(*block_hash), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| EthSubmissionMaterial::from_bytes(&bytes))
     }
 
-    pub fn key_exists_in_db<D: DatabaseInterface>(db: &D, key: &[Byte], sensitivity: DataSensitivity) -> bool {
+    pub fn key_exists_in_db(db: &D, key: &[Byte], sensitivity: DataSensitivity) -> bool {
         trace!("✔ Checking for existence of key: {}", hex::encode(key));
         db.get(key.to_vec(), sensitivity).is_ok()
     }
 
-    pub fn put_eth_gas_price_in_db<D: DatabaseInterface>(&self, db: &D, gas_price: u64) -> Result<()> {
+    pub fn put_eth_gas_price_in_db(&self, db: &D, gas_price: u64) -> Result<()> {
         trace!("✔ Putting ETH gas price of {} in db...", gas_price);
         db.put(
             self.eth_gas_price_key.to_vec(),
@@ -352,7 +334,7 @@ impl EthDatabseUtils {
         )
     }
 
-    pub fn get_eth_gas_price_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<u64> {
+    pub fn get_eth_gas_price_from_db(&self, db: &D) -> Result<u64> {
         trace!("✔ Getting ETH gas price from db...");
         db.get(self.eth_gas_price_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| match bytes.len() <= 8 {
@@ -366,27 +348,23 @@ impl EthDatabseUtils {
             })
     }
 
-    pub fn get_eth_account_nonce_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<u64> {
+    pub fn get_eth_account_nonce_from_db(&self, db: &D) -> Result<u64> {
         trace!("✔ Getting ETH account nonce from db...");
         get_u64_from_db(db, &self.eth_account_nonce_key.to_vec())
     }
 
-    pub fn put_eth_account_nonce_in_db<D: DatabaseInterface>(&self, db: &D, nonce: u64) -> Result<()> {
+    pub fn put_eth_account_nonce_in_db(&self, db: &D, nonce: u64) -> Result<()> {
         trace!("✔ Putting ETH account nonce of {} in db...", nonce);
         put_u64_in_db(db, &self.eth_account_nonce_key.to_vec(), nonce)
     }
 
-    pub fn increment_eth_account_nonce_in_db<D: DatabaseInterface>(
-        &self,
-        db: &D,
-        amount_to_increment_by: u64
-    ) -> Result<()> {
+    pub fn increment_eth_account_nonce_in_db(&self, db: &D, amount_to_increment_by: u64) -> Result<()> {
         trace!("✔ Incrementing ETH account nonce in db...");
         self.get_eth_account_nonce_from_db(db)
             .and_then(|nonce| self.put_eth_account_nonce_in_db(db, nonce + amount_to_increment_by))
     }
 
-    pub fn put_eth_chain_id_in_db<D: DatabaseInterface>(&self, db: &D, chain_id: &EthChainId) -> Result<()> {
+    pub fn put_eth_chain_id_in_db(&self, db: &D, chain_id: &EthChainId) -> Result<()> {
         info!("✔ Putting `EthChainId` in db: {}", chain_id);
         db.put(
             self.eth_chain_id_key.to_vec(),
@@ -395,39 +373,40 @@ impl EthDatabseUtils {
         )
     }
 
-    pub fn get_eth_chain_id_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthChainId> {
+    pub fn get_eth_chain_id_from_db(&self, db: &D) -> Result<EthChainId> {
         trace!("✔ Getting ETH `chain_id` from db...");
         db.get(self.eth_chain_id_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|ref bytes| EthChainId::from_bytes(bytes))
     }
 
-    pub fn put_eth_private_key_in_db<D: DatabaseInterface>(self, db: &D, pk: &EthPrivateKey) -> Result<()> {
+    pub fn put_eth_private_key_in_db(self, db: &D, pk: &EthPrivateKey) -> Result<()> {
         trace!("✔ Putting ETH private key in db...");
         pk.write_to_database(db, &self.eth_private_key_db_key.to_vec())
     }
 
-    pub fn get_eth_private_key_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthPrivateKey> {
+    pub fn get_eth_private_key_from_db(&self, db: &D) -> Result<EthPrivateKey> {
         trace!("✔ Getting ETH private key from db...");
-        db.get(self.eth_private_key_db_key.to_vec(), Some(255)).and_then(|pk_bytes| {
-            let mut array = [0; 32];
-            array.copy_from_slice(&pk_bytes[..32]);
-            EthPrivateKey::from_slice(&array)
-        })
+        db.get(self.eth_private_key_db_key.to_vec(), Some(255))
+            .and_then(|pk_bytes| {
+                let mut array = [0; 32];
+                array.copy_from_slice(&pk_bytes[..32]);
+                EthPrivateKey::from_slice(&array)
+            })
     }
 
-    pub fn get_erc777_contract_address_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthAddress> {
+    pub fn get_erc777_contract_address_from_db(&self, db: &D) -> Result<EthAddress> {
         info!("✔ Getting ETH ERC777 smart-contract address from db...");
         Self::get_eth_address_from_db(db, &self.btc_on_eth_smart_contract_address_key)
             .map_err(|_| "No ERC777 contract address in DB! Did you forget to set it?".into())
     }
 
-    pub fn get_erc20_on_eos_smart_contract_address_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthAddress> {
+    pub fn get_erc20_on_eos_smart_contract_address_from_db(&self, db: &D) -> Result<EthAddress> {
         info!("✔ Getting `pERC20-on-EOS` smart-contract address from db...");
         Self::get_eth_address_from_db(db, &self.erc20_on_eos_smart_contract_address_key)
             .map_err(|_| "No `erc20-on-eos` vault contract address in DB! Did you forget to set it?".into())
     }
 
-    pub fn get_eos_on_eth_smart_contract_address_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthAddress> {
+    pub fn get_eos_on_eth_smart_contract_address_from_db(&self, db: &D) -> Result<EthAddress> {
         info!("✔ Getting 'EOS_ON_ETH' smart-contract address from db...");
         Ok(
             Self::get_eth_address_from_db(db, &self.eos_on_eth_smart_contract_address_key)
@@ -435,20 +414,23 @@ impl EthDatabseUtils {
         )
     }
 
-    pub fn get_erc20_on_evm_smart_contract_address_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthAddress> {
+    pub fn get_erc20_on_evm_smart_contract_address_from_db(&self, db: &D) -> Result<EthAddress> {
         info!("✔ Getting `ERC20_ON_EVM` smart-contract address from db...");
         Self::get_eth_address_from_db(db, &self.erc20_on_evm_smart_contract_address_key)
             .map_err(|_| "No `erc20-on-evm` vault contract address in DB! Did you forget to set it?".into())
     }
 
-    fn get_eth_address_from_db<D: DatabaseInterface>(db: &D, key: &[Byte]) -> Result<EthAddress> {
+    fn get_eth_address_from_db(db: &D, key: &[Byte]) -> Result<EthAddress> {
         db.get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
             .map(|address_bytes| EthAddress::from_slice(&address_bytes[..]))
     }
 
-    pub fn get_erc777_proxy_contract_address_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthAddress> {
+    pub fn get_erc777_proxy_contract_address_from_db(&self, db: &D) -> Result<EthAddress> {
         trace!("✔ Getting ERC777 proxy contract address from db...");
-        match db.get(self.erc777_proxy_contact_address_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL) {
+        match db.get(
+            self.erc777_proxy_contact_address_key.to_vec(),
+            MIN_DATA_SENSITIVITY_LEVEL,
+        ) {
             Ok(address_bytes) => Ok(EthAddress::from_slice(&address_bytes[..])),
             Err(_) => {
                 debug!("✘ No ERC777 proxy address in db, defaulting to zero ETH address!");
@@ -458,20 +440,16 @@ impl EthDatabseUtils {
     }
 
     #[allow(dead_code)]
-    pub fn put_erc777_proxy_contract_address_in_db<D: DatabaseInterface>(
-        &self,
-        db: &D,
-        proxy_contract_address: &EthAddress,
-    ) -> Result<()> {
+    pub fn put_erc777_proxy_contract_address_in_db(&self, db: &D, proxy_contract_address: &EthAddress) -> Result<()> {
         trace!("✔ Putting ERC777 proxy contract address in db...");
-        self.put_eth_address_in_db(db, &self.erc777_proxy_contact_address_key.to_vec(), proxy_contract_address)
+        self.put_eth_address_in_db(
+            db,
+            &self.erc777_proxy_contact_address_key.to_vec(),
+            proxy_contract_address,
+        )
     }
 
-    pub fn put_btc_on_eth_smart_contract_address_in_db<D: DatabaseInterface>(
-        &self,
-        db: &D,
-        address: &EthAddress,
-    ) -> Result<()> {
+    pub fn put_btc_on_eth_smart_contract_address_in_db(&self, db: &D, address: &EthAddress) -> Result<()> {
         match self.get_erc777_contract_address_from_db(db) {
             Ok(address) => Err(format!("ERC777 address already set to 0x{}!", hex::encode(address)).into()),
             _ => {
@@ -481,7 +459,7 @@ impl EthDatabseUtils {
         }
     }
 
-    pub fn put_erc20_on_eos_smart_contract_address_in_db<D: DatabaseInterface>(
+    pub fn put_erc20_on_eos_smart_contract_address_in_db(
         &self,
         db: &D,
         smart_contract_address: &EthAddress,
@@ -503,7 +481,7 @@ impl EthDatabseUtils {
         }
     }
 
-    pub fn put_eos_on_eth_smart_contract_address_in_db<D: DatabaseInterface>(
+    pub fn put_eos_on_eth_smart_contract_address_in_db(
         &self,
         db: &D,
         smart_contract_address: &EthAddress,
@@ -516,11 +494,7 @@ impl EthDatabseUtils {
         )
     }
 
-    pub fn put_erc20_on_evm_smart_contract_address_in_db<D: DatabaseInterface>(
-        &self,
-        db: &D,
-        address: &EthAddress,
-    ) -> Result<()> {
+    pub fn put_erc20_on_evm_smart_contract_address_in_db(&self, db: &D, address: &EthAddress) -> Result<()> {
         if self.get_erc20_on_evm_smart_contract_address_from_db(db).is_ok() {
             Err("`ERC20-on-EVM`Vault contract address already set!".into())
         } else {
@@ -529,13 +503,13 @@ impl EthDatabseUtils {
         }
     }
 
-    pub fn get_public_eth_address_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<EthAddress> {
+    pub fn get_public_eth_address_from_db(&self, db: &D) -> Result<EthAddress> {
         trace!("✔ Getting public ETH address from db...");
         db.get(self.eth_address_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
             .map(|bytes| EthAddress::from_slice(&bytes))
     }
 
-    pub fn put_public_eth_address_in_db<D: DatabaseInterface>(&self, db: &D, eth_address: &EthAddress) -> Result<()> {
+    pub fn put_public_eth_address_in_db(&self, db: &D, eth_address: &EthAddress) -> Result<()> {
         trace!("✔ Putting public ETH address in db...");
         db.put(
             self.eth_address_key.to_vec(),
@@ -544,7 +518,7 @@ impl EthDatabseUtils {
         )
     }
 
-    pub fn put_eth_address_in_db<D: DatabaseInterface>(&self, db: &D, key: &[Byte], eth_address: &EthAddress) -> Result<()> {
+    pub fn put_eth_address_in_db(&self, db: &D, key: &[Byte], eth_address: &EthAddress) -> Result<()> {
         db.put(
             key.to_vec(),
             eth_address.as_bytes().to_vec(),
@@ -552,24 +526,22 @@ impl EthDatabseUtils {
         )
     }
 
-    pub fn get_any_sender_nonce_from_db<D: DatabaseInterface>(&self, db: &D) -> Result<u64> {
+    pub fn get_any_sender_nonce_from_db(&self, db: &D) -> Result<u64> {
         trace!("✔ Getting AnySender nonce from db...");
-        Ok(get_u64_from_db(db, &self.any_sender_nonce_key.to_vec()).unwrap_or_else(|_| {
-            info!("✘ Could not find `AnySender` nonce in db, defaulting to `0`");
-            0
-        }))
+        Ok(
+            get_u64_from_db(db, &self.any_sender_nonce_key.to_vec()).unwrap_or_else(|_| {
+                info!("✘ Could not find `AnySender` nonce in db, defaulting to `0`");
+                0
+            }),
+        )
     }
 
-    pub fn put_any_sender_nonce_in_db<D: DatabaseInterface>(&self, db: &D, nonce: u64) -> Result<()> {
+    pub fn put_any_sender_nonce_in_db(&self, db: &D, nonce: u64) -> Result<()> {
         trace!("✔ Putting AnySender nonce of {} in db...", nonce);
         put_u64_in_db(db, &self.any_sender_nonce_key.to_vec(), nonce)
     }
 
-    pub fn increment_any_sender_nonce_in_db<D: DatabaseInterface>(
-        &self,
-        db: &D,
-        amount_to_increment_by: u64
-    ) -> Result<()> {
+    pub fn increment_any_sender_nonce_in_db(&self, db: &D, amount_to_increment_by: u64) -> Result<()> {
         trace!("✔ Incrementing AnySender nonce in db...");
         self.get_any_sender_nonce_from_db(db)
             .and_then(|nonce| self.put_any_sender_nonce_in_db(db, nonce + amount_to_increment_by))
