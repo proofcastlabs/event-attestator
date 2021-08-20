@@ -51,7 +51,7 @@ pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
 ) -> Result<String> {
     match is_eth_core_initialized(&db) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
-        false => start_eth_db_transaction_and_return_state(EthState::init(db))
+        false => start_eth_db_transaction_and_return_state(EthState::init(&db))
             .and_then(|state| {
                 initialize_eth_core_with_no_contract_tx(
                     block_json,

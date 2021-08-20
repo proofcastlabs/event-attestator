@@ -513,7 +513,7 @@ pub fn get_eth_evm_token_dictionary_from_db_and_add_to_eth_state<D: DatabaseInte
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Getting `EthEvmTokenDictionary` and adding to ETH state...");
-    EthEvmTokenDictionary::get_from_db(&state.db).and_then(|dictionary| state.add_eth_evm_token_dictionary(dictionary))
+    EthEvmTokenDictionary::get_from_db(state.db).and_then(|dictionary| state.add_eth_evm_token_dictionary(dictionary))
 }
 
 #[cfg(test)]

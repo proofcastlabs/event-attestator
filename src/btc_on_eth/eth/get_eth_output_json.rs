@@ -73,10 +73,10 @@ pub fn get_btc_signed_tx_info_from_btc_txs(
 pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
     info!("✔ Getting ETH output json...");
     let output = serde_json::to_string(&EthOutput {
-        eth_latest_block_number: get_eth_latest_block_from_db(&state.db)?.get_block_number()?.as_usize(),
+        eth_latest_block_number: get_eth_latest_block_from_db(state.db)?.get_block_number()?.as_usize(),
         btc_signed_transactions: match state.btc_transactions {
             Some(txs) => get_btc_signed_tx_info_from_btc_txs(
-                get_btc_account_nonce_from_db(&state.db)?,
+                get_btc_account_nonce_from_db(state.db)?,
                 txs,
                 &state.btc_on_eth_redeem_infos,
             )?,

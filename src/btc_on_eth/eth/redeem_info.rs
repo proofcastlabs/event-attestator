@@ -202,7 +202,7 @@ impl BtcOnEthRedeemInfos {
 
 pub fn maybe_parse_redeem_infos_and_add_to_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Maybe parsing redeem infos...");
-    get_eth_canon_block_from_db(&state.db).and_then(|submission_material| {
+    get_eth_canon_block_from_db(state.db).and_then(|submission_material| {
         match submission_material.receipts.is_empty() {
             true => {
                 info!("✔ No receipts in canon block ∴ no infos to parse!");

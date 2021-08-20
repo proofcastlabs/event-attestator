@@ -18,7 +18,7 @@ use crate::{
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EthDatabaseUtils<'a, D: DatabaseInterface> {
     db: &'a D,
     any_sender_nonce_key: Bytes,

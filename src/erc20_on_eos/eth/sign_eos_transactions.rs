@@ -54,8 +54,8 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
     get_signed_eos_ptoken_issue_txs_from_erc20_on_eos_peg_in_infos(
         submission_material.get_eos_ref_block_num()?,
         submission_material.get_eos_ref_block_prefix()?,
-        &get_eos_chain_id_from_db(&state.db)?,
-        &EosPrivateKey::get_from_db(&state.db)?,
+        &get_eos_chain_id_from_db(state.db)?,
+        &EosPrivateKey::get_from_db(state.db)?,
         &state.erc20_on_eos_peg_in_infos,
     )
     .and_then(|signed_txs| state.add_eos_transactions(signed_txs))

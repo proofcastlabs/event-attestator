@@ -341,7 +341,7 @@ pub fn maybe_parse_peg_in_info_from_canon_block_and_add_to_state<D: DatabaseInte
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Maybe parsing `erc20-on-eos` peg-in infos...");
-    get_eth_canon_block_from_db(&state.db).and_then(|submission_material| {
+    get_eth_canon_block_from_db(state.db).and_then(|submission_material| {
         match submission_material.receipts.is_empty() {
             true => {
                 info!("✔ No receipts in canon block ∴ no info to parse!");
@@ -352,12 +352,12 @@ pub fn maybe_parse_peg_in_info_from_canon_block_and_add_to_state<D: DatabaseInte
                     "✔ {} receipts in canon block ∴ parsing info...",
                     submission_material.receipts.len()
                 );
-                EosEthTokenDictionary::get_from_db(&state.db)
+                EosEthTokenDictionary::get_from_db(state.db)
                     .and_then(|account_names| {
                         Erc20OnEosPegInInfos::from_submission_material(
                             &submission_material,
                             &account_names,
-                            &get_eth_chain_id_from_db(&state.db)?,
+                            &get_eth_chain_id_from_db(state.db)?,
                         )
                     })
                     .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
@@ -385,7 +385,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
     state
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(
-            &get_erc20_on_eos_smart_contract_address_from_db(&state.db)?,
+            &get_erc20_on_eos_smart_contract_address_from_db(state.db)?,
             &[
                 *ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
                 *ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
@@ -408,8 +408,8 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
         .to_eos_signed_txs(
             submission_material.get_eos_ref_block_num()?,
             submission_material.get_eos_ref_block_prefix()?,
-            &get_eos_chain_id_from_db(&state.db)?,
-            &EosPrivateKey::get_from_db(&state.db)?,
+            &get_eos_chain_id_from_db(state.db)?,
+            &EosPrivateKey::get_from_db(state.db)?,
         )
         .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
 }

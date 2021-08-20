@@ -26,31 +26,3 @@ where
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::chains::eth::eth_test_utils::get_valid_state_with_block_and_receipts;
-    #[cfg(not(feature = "non-validating"))]
-    use crate::{chains::eth::eth_test_utils::get_valid_state_with_invalid_block_and_receipts, errors::AppError};
-
-    #[test]
-    fn should_validate_receipts_in_state() {
-        let state = get_valid_state_with_block_and_receipts().unwrap();
-        if validate_receipts_in_state(state).is_err() {
-            panic!("Receipts should be valid!")
-        }
-    }
-
-    #[cfg(not(feature = "non-validating"))]
-    #[test]
-    fn should_not_validate_invalid_receipts_in_state() {
-        let expected_error = "✘ Not accepting ETH block - receipts root not valid!".to_string();
-        let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
-        match validate_receipts_in_state(state) {
-            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
-            Ok(_) => panic!("Receipts should not be valid!"),
-            _ => panic!("Wrong error message!"),
-        }
-    }
-}

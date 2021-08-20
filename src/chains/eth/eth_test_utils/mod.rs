@@ -297,19 +297,6 @@ pub fn get_sample_log_without_desired_address() -> EthLog {
     get_sample_log_without_desired_topic()
 }
 
-pub fn get_valid_state_with_invalid_block_and_receipts() -> Result<EthState<TestDB>> {
-    match Path::new(&SAMPLE_BLOCK_AND_RECEIPT_JSON).exists() {
-        false => Err("✘ Cannot find sample-eth-block-and-receipts-json file!".into()),
-        true => {
-            let s = read_to_string(SAMPLE_INVALID_BLOCK_AND_RECEIPT_JSON).unwrap();
-            let invalid_struct = EthSubmissionMaterial::from_str(&s).unwrap();
-            let state = get_valid_eth_state().unwrap();
-            let final_state = state.add_eth_submission_material(invalid_struct).unwrap();
-            Ok(final_state)
-        },
-    }
-}
-
 pub fn get_sample_invalid_block() -> EthBlock {
     let mut invalid_block = get_sample_eth_submission_material().get_block().unwrap();
     invalid_block.timestamp = U256::from(1234);
@@ -326,10 +313,6 @@ pub fn get_sample_eth_submission_material() -> EthSubmissionMaterial {
     EthSubmissionMaterial::from_str(&s).unwrap()
 }
 
-pub fn get_valid_state_with_block_and_receipts() -> Result<EthState<TestDB>> {
-    get_valid_eth_state().and_then(|state| state.add_eth_submission_material(get_sample_eth_submission_material()))
-}
-
 pub fn get_expected_block() -> EthBlock {
     let s = read_to_string(SAMPLE_BLOCK_JSON_PATH).unwrap();
     let eth_block_json: EthBlockJson = serde_json::from_str(&s).unwrap();
@@ -342,10 +325,6 @@ pub fn get_expected_receipt() -> EthReceipt {
 
 pub fn get_expected_log() -> EthLog {
     get_expected_receipt().logs.0[0].clone()
-}
-
-pub fn get_valid_eth_state() -> Result<EthState<TestDB>> {
-    Ok(EthState::init(get_test_database()))
 }
 
 pub fn get_sample_unsigned_eth_transaction() -> EthTransaction {
@@ -418,40 +397,11 @@ mod tests {
     }
 
     #[test]
-    fn should_get_valid_eth_state() {
-        if let Err(e) = get_valid_eth_state() {
-            panic!("Error getting state: {}", e);
-        }
-    }
-
-    #[test]
-    fn should_get_valid_state_with_blocks_and_receipts() {
-        let result = get_valid_state_with_block_and_receipts().unwrap();
-        if let Err(e) = result.get_eth_submission_material() {
-            panic!("Error getting eth block and receipt from state: {}", e)
-        }
-    }
-
-    #[test]
     fn should_get_sample_invalid_block() {
         let invalid_block = get_sample_invalid_block();
         let chain_id = EthChainId::Mainnet;
         let is_valid = invalid_block.is_valid(&chain_id).unwrap();
         assert!(!is_valid)
-    }
-
-    #[test]
-    fn should_get_valid_state_with_invalid_block_and_receipts() {
-        let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
-        let chain_id = EthChainId::Mainnet;
-        let is_valid = state
-            .get_eth_submission_material()
-            .unwrap()
-            .get_block()
-            .unwrap()
-            .is_valid(&chain_id)
-            .unwrap();
-        assert!(!is_valid);
     }
 
     #[test]

@@ -264,10 +264,10 @@ impl EthSubmissionMaterialJson {
     }
 }
 
-pub fn parse_eth_submission_material_and_put_in_state<D: DatabaseInterface>(
+pub fn parse_eth_submission_material_and_put_in_state<'a, D: DatabaseInterface>(
     block_json: &str,
-    state: EthState<D>,
-) -> Result<EthState<D>> {
+    state: EthState<'a, D>,
+) -> Result<EthState<'a, D>> {
     info!("✔ Parsing ETH block & receipts...");
     EthSubmissionMaterial::from_str(block_json).and_then(|result| state.add_eth_submission_material(result))
 }

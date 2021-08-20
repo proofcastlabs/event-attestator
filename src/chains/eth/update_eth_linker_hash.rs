@@ -66,7 +66,7 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Maybe updating the ETH linker hash...");
-    maybe_update_eth_linker_hash(&state.db).and(Ok(state))
+    maybe_update_eth_linker_hash(state.db).and(Ok(state))
 }
 
 #[cfg(test)]

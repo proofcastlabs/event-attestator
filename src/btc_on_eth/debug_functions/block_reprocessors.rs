@@ -143,7 +143,7 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
     accrue_fees: bool,
 ) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(db)))
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
@@ -166,7 +166,7 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
                 info!("✘ Not accruing fees during ETH block reprocessing...");
                 let redeem_infos_minus_fees = subtract_fees_from_redeem_infos(
                     &state.btc_on_eth_redeem_infos,
-                    FeeDatabaseUtils::new_for_btc_on_eth().get_peg_out_basis_points_from_db(&state.db)?,
+                    FeeDatabaseUtils::new_for_btc_on_eth().get_peg_out_basis_points_from_db(state.db)?,
                 )?;
                 state.replace_btc_on_eth_redeem_infos(redeem_infos_minus_fees)
             }
@@ -177,10 +177,10 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
         .and_then(|state| {
             info!("✔ Getting ETH output json...");
             let output = serde_json::to_string(&EthOutput {
-                eth_latest_block_number: get_latest_eth_block_number(&state.db)?,
+                eth_latest_block_number: get_latest_eth_block_number(state.db)?,
                 btc_signed_transactions: match state.btc_transactions {
                     Some(txs) => get_btc_signed_tx_info_from_btc_txs(
-                        get_btc_account_nonce_from_db(&state.db)?,
+                        get_btc_account_nonce_from_db(state.db)?,
                         txs,
                         &state.btc_on_eth_redeem_infos,
                     )?,

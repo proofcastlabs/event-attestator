@@ -18,6 +18,6 @@ pub fn maybe_increment_evm_account_nonce_and_return_eth_state<D: DatabaseInterfa
         info!("✔ No signatures in state ∴ not incrementing EVM account nonce");
         Ok(state)
     } else {
-        increment_evm_account_nonce(&state.db, get_evm_account_nonce_from_db(&state.db)?, num_txs as u64).and(Ok(state))
+        increment_evm_account_nonce(state.db, get_evm_account_nonce_from_db(state.db)?, num_txs as u64).and(Ok(state))
     }
 }

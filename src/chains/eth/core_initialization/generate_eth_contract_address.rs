@@ -35,10 +35,10 @@ fn get_eth_contract_address<D: DatabaseInterface>(db: &D) -> Result<EthAddress> 
 
 pub fn generate_and_store_eos_on_eth_contract_address<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Calculating `EOS_ON_ETH` contract address...");
-    get_eth_contract_address(&state.db)
+    get_eth_contract_address(state.db)
         .and_then(|ref smart_contract_address| {
             info!("✔ Storing `pERC20-on-EOS` contract address in db...");
-            put_eos_on_eth_smart_contract_address_in_db(&state.db, smart_contract_address)
+            put_eos_on_eth_smart_contract_address_in_db(state.db, smart_contract_address)
         })
         .and(Ok(state))
 }

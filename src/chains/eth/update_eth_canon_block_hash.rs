@@ -69,8 +69,8 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Maybe updating ETH canon block hash...");
-    get_eth_canon_to_tip_length_from_db(&state.db)
-        .and_then(|canon_to_tip_length| maybe_update_canon_block_hash(&state.db, canon_to_tip_length))
+    get_eth_canon_to_tip_length_from_db(state.db)
+        .and_then(|canon_to_tip_length| maybe_update_canon_block_hash(state.db, canon_to_tip_length))
         .and(Ok(state))
 }
 

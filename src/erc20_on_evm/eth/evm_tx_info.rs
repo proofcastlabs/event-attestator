@@ -382,7 +382,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Maybe parsing `ERC20-on-EVM` peg-in infos...");
-    get_eth_canon_block_from_db(&state.db).and_then(|submission_material| {
+    get_eth_canon_block_from_db(state.db).and_then(|submission_material| {
         match submission_material.receipts.is_empty() {
             true => {
                 info!("✔ No receipts in canon block ∴ no info to parse!");
@@ -395,9 +395,9 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                 );
                 EthOnEvmEvmTxInfos::from_submission_material(
                     &submission_material,
-                    &get_erc20_on_evm_smart_contract_address_from_db(&state.db)?,
-                    &EthEvmTokenDictionary::get_from_db(&state.db)?,
-                    &get_eth_chain_id_from_db(&state.db)?,
+                    &get_erc20_on_evm_smart_contract_address_from_db(state.db)?,
+                    &EthEvmTokenDictionary::get_from_db(state.db)?,
+                    &get_eth_chain_id_from_db(state.db)?,
                 )
                 .and_then(|tx_infos| state.add_erc20_on_evm_evm_tx_infos(tx_infos))
             },
@@ -413,7 +413,7 @@ pub fn filter_out_zero_value_evm_tx_infos_from_state<D: DatabaseInterface>(state
     );
     state
         .erc20_on_evm_evm_tx_infos
-        .filter_out_zero_values(&EthEvmTokenDictionary::get_from_db(&state.db)?)
+        .filter_out_zero_values(&EthEvmTokenDictionary::get_from_db(state.db)?)
         .and_then(|filtered_tx_infos| {
             debug!("✔ Num `EthOnEvmEvmTxInfos` after: {}", filtered_tx_infos.len());
             state.replace_erc20_on_evm_evm_tx_infos(filtered_tx_infos)
@@ -424,7 +424,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Filtering receipts for those containing `ERC20-on-EVM` peg in events...");
-    let vault_address = get_erc20_on_evm_smart_contract_address_from_db(&state.db)?;
+    let vault_address = get_erc20_on_evm_smart_contract_address_from_db(state.db)?;
     state
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(&vault_address, &[
@@ -447,12 +447,12 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
         state
             .erc20_on_evm_evm_tx_infos
             .to_evm_signed_txs(
-                get_evm_account_nonce_from_db(&state.db)?,
-                &get_evm_chain_id_from_db(&state.db)?,
+                get_evm_account_nonce_from_db(state.db)?,
+                &get_evm_chain_id_from_db(state.db)?,
                 ERC777_MINT_WITH_DATA_GAS_LIMIT,
-                get_evm_gas_price_from_db(&state.db)?,
-                &get_evm_private_key_from_db(&state.db)?,
-                &EthEvmTokenDictionary::get_from_db(&state.db)?,
+                get_evm_gas_price_from_db(state.db)?,
+                &get_evm_private_key_from_db(state.db)?,
+                &EthEvmTokenDictionary::get_from_db(state.db)?,
             )
             .and_then(|signed_txs| {
                 #[cfg(feature = "debug")]

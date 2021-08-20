@@ -16,5 +16,5 @@ pub fn check_core_is_initialized_and_return_eos_state<D: DatabaseInterface>(stat
 }
 
 pub fn check_core_is_initialized_and_return_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    check_core_is_initialized(&state.db).and(Ok(state))
+    check_core_is_initialized(state.db).and(Ok(state))
 }

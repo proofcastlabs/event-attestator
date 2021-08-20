@@ -120,18 +120,18 @@ pub fn get_evm_signed_tx_info_from_evm_txs(
 pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
     info!("✔ Getting ETH output json...");
     let output = serde_json::to_string(&EthOutput {
-        eth_latest_block_number: get_latest_eth_block_number(&state.db)?,
+        eth_latest_block_number: get_latest_eth_block_number(state.db)?,
         evm_signed_transactions: if state.erc20_on_evm_evm_signed_txs.is_empty() {
             vec![]
         } else {
             get_evm_signed_tx_info_from_evm_txs(
                 &state.erc20_on_evm_evm_signed_txs,
                 &state.erc20_on_evm_evm_tx_infos,
-                get_evm_account_nonce_from_db(&state.db)?,
+                get_evm_account_nonce_from_db(state.db)?,
                 false, // TODO Get this from state submission material when/if we support AnySender
-                get_evm_any_sender_nonce_from_db(&state.db)?,
-                get_latest_evm_block_number(&state.db)?,
-                &EthEvmTokenDictionary::get_from_db(&state.db)?,
+                get_evm_any_sender_nonce_from_db(state.db)?,
+                get_latest_evm_block_number(state.db)?,
+                &EthEvmTokenDictionary::get_from_db(state.db)?,
             )?
         },
     })?;

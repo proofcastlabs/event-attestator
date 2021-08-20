@@ -77,8 +77,8 @@ fn delete_all_relevant_db_keys<D: DatabaseInterface>(db: &D) -> Result<()> {
 }
 
 fn delete_all_blocks_and_db_keys_and_return_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    delete_all_eth_blocks(&state.db)
-        .and_then(|_| delete_all_relevant_db_keys(&state.db))
+    delete_all_eth_blocks(state.db)
+        .and_then(|_| delete_all_relevant_db_keys(state.db))
         .and(Ok(state))
 }
 
@@ -99,7 +99,7 @@ pub fn debug_reset_eth_chain<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("Debug resetting ETH chain...");
     check_debug_mode()
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(submission_material_json, EthState::init(db)))
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(submission_material_json, EthState::init(&db)))
         .and_then(validate_eth_block_in_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(delete_all_blocks_and_db_keys_and_return_state)

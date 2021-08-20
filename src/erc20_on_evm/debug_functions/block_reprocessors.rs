@@ -152,7 +152,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
     check_debug_mode()
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(db)))
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
@@ -165,9 +165,9 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                 .and_then(|material| {
                     EthOnEvmEvmTxInfos::from_submission_material(
                         material,
-                        &get_erc20_on_evm_smart_contract_address_from_db(&state.db)?,
-                        &EthEvmTokenDictionary::get_from_db(&state.db)?,
-                        &get_eth_chain_id_from_db(&state.db)?,
+                        &get_erc20_on_evm_smart_contract_address_from_db(state.db)?,
+                        &EthEvmTokenDictionary::get_from_db(state.db)?,
+                        &get_eth_chain_id_from_db(state.db)?,
                     )
                 })
                 .and_then(|params| state.add_erc20_on_evm_evm_tx_infos(params))
@@ -189,7 +189,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
         .and_then(|state| {
             info!("✔ Getting ETH output json...");
             let output = serde_json::to_string(&EthOutput {
-                eth_latest_block_number: get_latest_eth_block_number(&state.db)?,
+                eth_latest_block_number: get_latest_eth_block_number(state.db)?,
                 evm_signed_transactions: if state.erc20_on_evm_evm_signed_txs.is_empty() {
                     vec![]
                 } else {
@@ -197,11 +197,11 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                     get_evm_signed_tx_info_from_evm_txs(
                         &state.erc20_on_evm_evm_signed_txs,
                         &state.erc20_on_evm_evm_tx_infos,
-                        get_evm_account_nonce_from_db(&state.db)?,
+                        get_evm_account_nonce_from_db(state.db)?,
                         use_any_sender_tx,
-                        get_evm_any_sender_nonce_from_db(&state.db)?,
-                        get_latest_evm_block_number(&state.db)?,
-                        &EthEvmTokenDictionary::get_from_db(&state.db)?,
+                        get_evm_any_sender_nonce_from_db(state.db)?,
+                        get_latest_evm_block_number(state.db)?,
+                        &EthEvmTokenDictionary::get_from_db(state.db)?,
                     )?
                 },
             })?;

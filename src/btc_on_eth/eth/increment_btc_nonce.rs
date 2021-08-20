@@ -15,7 +15,7 @@ where
         },
         Some(signed_txs) => {
             info!("✔ Incrementing BTC account nonce by {}", signed_txs.len());
-            increment_btc_account_nonce_in_db(&state.db, signed_txs.len() as u64).and(Ok(state))
+            increment_btc_account_nonce_in_db(state.db, signed_txs.len() as u64).and(Ok(state))
         },
     }
 }
