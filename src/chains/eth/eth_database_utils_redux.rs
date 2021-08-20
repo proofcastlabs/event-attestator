@@ -539,18 +539,20 @@ impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
     }
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::eth_test_utils::{
-            get_sample_contract_address,
-            get_sample_eth_address,
-            get_sample_eth_private_key,
-            get_sample_eth_submission_material,
-            get_sample_eth_submission_material_n,
-            get_sequential_eth_blocks_and_receipts,
+        chains::eth::{
+            eth_constants::{ETH_ACCOUNT_NONCE_KEY, ETH_ADDRESS_KEY},
+            eth_test_utils::{
+                get_sample_contract_address,
+                get_sample_eth_address,
+                get_sample_eth_private_key,
+                get_sample_eth_submission_material,
+                get_sample_eth_submission_material_n,
+                get_sequential_eth_blocks_and_receipts,
+            },
         },
         test_utils::get_test_database,
     };
@@ -558,7 +560,8 @@ mod tests {
     #[test]
     fn non_existing_key_should_not_exist_in_db() {
         let db = get_test_database();
-        let result = key_exists_in_db(&db, &ETH_ACCOUNT_NONCE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
+        let result = db_utils.key_exists_in_db(&ETH_ACCOUNT_NONCE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
         assert!(!result);
     }
 
@@ -566,38 +569,41 @@ mod tests {
     fn existing_key_should_exist_in_db() {
         let thing = vec![0xc0];
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let key = *ETH_ACCOUNT_NONCE_KEY;
         db.put(key.to_vec(), thing, MIN_DATA_SENSITIVITY_LEVEL).unwrap();
-        let result = key_exists_in_db(&db, &ETH_ACCOUNT_NONCE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
+        let result = db_utils.key_exists_in_db(&ETH_ACCOUNT_NONCE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
         assert!(result);
     }
 
     #[test]
     fn should_put_eth_gas_price_in_db() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let gas_price = 20_000_000;
-        put_eth_gas_price_in_db(&db, gas_price).unwrap();
-        match get_eth_gas_price_from_db(&db) {
+        db_utils.put_eth_gas_price_in_db(gas_price).unwrap();
+        match db_utils.get_eth_gas_price_from_db() {
             Ok(gas_price_from_db) => assert_eq!(gas_price_from_db, gas_price),
             Err(e) => panic!("Error getting gas price from db: {}", e),
         }
     }
-
     #[test]
     fn should_put_chain_id_in_db() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let chain_id = EthChainId::Rinkeby;
-        put_eth_chain_id_in_db(&db, &chain_id).unwrap();
-        let result = get_eth_chain_id_from_db(&db).unwrap();
+        db_utils.put_eth_chain_id_in_db(&chain_id).unwrap();
+        let result = db_utils.get_eth_chain_id_from_db().unwrap();
         assert_eq!(result, chain_id);
     }
 
     #[test]
     fn should_save_nonce_to_db_and_get_nonce_from_db() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let nonce = 1227;
-        put_eth_account_nonce_in_db(&db, nonce).unwrap();
-        match get_eth_account_nonce_from_db(&db) {
+        db_utils.put_eth_account_nonce_in_db(nonce).unwrap();
+        match db_utils.get_eth_account_nonce_from_db() {
             Ok(nonce_from_db) => assert_eq!(nonce_from_db, nonce),
             Err(e) => panic!("Error getting nonce from db: {}", e),
         }
@@ -606,18 +612,22 @@ mod tests {
     #[test]
     fn should_get_erc777_contract_address_from_db() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let contract_address = get_sample_eth_address();
-        put_btc_on_eth_smart_contract_address_in_db(&db, &contract_address).unwrap();
-        let result = get_erc777_contract_address_from_db(&db).unwrap();
+        db_utils
+            .put_btc_on_eth_smart_contract_address_in_db(&contract_address)
+            .unwrap();
+        let result = db_utils.get_erc777_contract_address_from_db().unwrap();
         assert_eq!(result, contract_address);
     }
 
     #[test]
     fn should_get_eth_pk_from_database() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let eth_private_key = get_sample_eth_private_key();
-        put_eth_private_key_in_db(&db, &eth_private_key).unwrap();
-        match get_eth_private_key_from_db(&db) {
+        db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
+        match db_utils.get_eth_private_key_from_db() {
             Ok(pk) => assert_eq!(pk, eth_private_key),
             Err(e) => panic!("Error getting eth private key from db: {}", e),
         }
@@ -627,10 +637,13 @@ mod tests {
     fn should_increment_eth_account_nonce_in_db() {
         let nonce = 666;
         let db = get_test_database();
-        put_eth_account_nonce_in_db(&db, nonce).unwrap();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
+        db_utils.put_eth_account_nonce_in_db(nonce).unwrap();
         let amount_to_increment_by: u64 = 671;
-        increment_eth_account_nonce_in_db(&db, amount_to_increment_by).unwrap();
-        match get_eth_account_nonce_from_db(&db) {
+        db_utils
+            .increment_eth_account_nonce_in_db(amount_to_increment_by)
+            .unwrap();
+        match db_utils.get_eth_account_nonce_from_db() {
             Err(e) => panic!("Error getting nonce from db: {}", e),
             Ok(nonce_from_db) => assert_eq!(nonce_from_db, nonce + amount_to_increment_by),
         }
@@ -639,13 +652,14 @@ mod tests {
     #[test]
     fn should_put_and_get_special_eth_hash_in_db() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let hash_type = "linker";
         let hash = get_sample_eth_submission_material_n(1)
             .unwrap()
             .get_block_hash()
             .unwrap();
-        put_special_eth_hash_in_db(&db, &hash_type, &hash).unwrap();
-        match get_special_eth_hash_from_db(&db, hash_type) {
+        db_utils.put_special_eth_hash_in_db(&hash_type, &hash).unwrap();
+        match db_utils.get_special_eth_hash_from_db(hash_type) {
             Ok(hash_from_db) => assert_eq!(hash_from_db, hash),
             Err(e) => panic!("Error getting ETH special hash from db: {}", e),
         }
@@ -654,13 +668,14 @@ mod tests {
     #[test]
     fn should_put_and_get_eth_hash_in_db() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let hash_key = vec![6u8, 6u8, 6u8];
         let hash = get_sample_eth_submission_material_n(1)
             .unwrap()
             .get_block_hash()
             .unwrap();
-        put_eth_hash_in_db(&db, &hash_key, &hash).unwrap();
-        match get_eth_hash_from_db(&db, &hash_key) {
+        db_utils.put_eth_hash_in_db(&hash_key, &hash).unwrap();
+        match db_utils.get_eth_hash_from_db(&hash_key) {
             Ok(hash_from_db) => assert_eq!(hash_from_db, hash),
             Err(e) => panic!("Error getting ETH hash from db: {}", e),
         }
@@ -669,11 +684,14 @@ mod tests {
     #[test]
     fn should_put_and_get_special_eth_block_in_db() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let block_type = "anchor";
         let submission_material = get_sample_eth_submission_material_n(1).unwrap();
         let expected_result = submission_material.remove_block();
-        put_special_eth_block_in_db(&db, &submission_material, &block_type).unwrap();
-        match get_special_eth_block_from_db(&db, block_type) {
+        db_utils
+            .put_special_eth_block_in_db(&submission_material, &block_type)
+            .unwrap();
+        match db_utils.get_special_eth_block_from_db(block_type) {
             Ok(result) => assert_eq!(result, expected_result),
             Err(e) => panic!("Error getting ETH special submission_material from db: {}", e),
         }
@@ -682,11 +700,14 @@ mod tests {
     #[test]
     fn should_get_submission_material_block_from_db() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let submission_material = get_sample_eth_submission_material_n(1).unwrap();
         let expected_result = submission_material.remove_block();
         let block_hash = submission_material.get_block_hash().unwrap();
-        put_eth_submission_material_in_db(&db, &submission_material).unwrap();
-        match get_submission_material_from_db(&db, &block_hash) {
+        db_utils
+            .put_eth_submission_material_in_db(&submission_material)
+            .unwrap();
+        match db_utils.get_submission_material_from_db(&block_hash) {
             Ok(result) => assert_eq!(result, expected_result),
             Err(e) => panic!("Error getting ETH submission_material from db: {}", e),
         }
@@ -695,18 +716,20 @@ mod tests {
     #[test]
     fn should_put_eth_address_in_db() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let key = ETH_ADDRESS_KEY.to_vec();
         let eth_address = get_sample_contract_address();
-        let result = put_eth_address_in_db(&db, &key, &eth_address);
+        let result = db_utils.put_eth_address_in_db(&key, &eth_address);
         assert!(result.is_ok());
     }
 
     #[test]
     fn should_put_and_get_public_eth_address_in_db() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let eth_address = get_sample_contract_address();
-        put_public_eth_address_in_db(&db, &eth_address).unwrap();
-        match get_public_eth_address_from_db(&db) {
+        db_utils.put_public_eth_address_in_db(&eth_address).unwrap();
+        match db_utils.get_public_eth_address_from_db() {
             Ok(eth_address_from_db) => assert_eq!(eth_address_from_db, eth_address),
             Err(e) => panic!("Error getting ETH address from db: {}", e),
         }
@@ -715,11 +738,15 @@ mod tests {
     #[test]
     fn maybe_get_block_should_be_none_if_block_not_extant() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let block_hash = get_sample_eth_submission_material_n(1)
             .unwrap()
             .get_block_hash()
             .unwrap();
-        if maybe_get_eth_submission_material_from_db(&db, &block_hash).is_some() {
+        if db_utils
+            .maybe_get_eth_submission_material_from_db(&block_hash)
+            .is_some()
+        {
             panic!("Maybe getting none existing block should be 'None'");
         };
     }
@@ -727,11 +754,14 @@ mod tests {
     #[test]
     fn should_maybe_get_some_block_if_exists() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let submission_material = get_sample_eth_submission_material_n(1).unwrap();
         let expected_result = submission_material.remove_block();
         let block_hash = submission_material.get_block_hash().unwrap();
-        put_eth_submission_material_in_db(&db, &submission_material).unwrap();
-        match maybe_get_eth_submission_material_from_db(&db, &block_hash) {
+        db_utils
+            .put_eth_submission_material_in_db(&submission_material)
+            .unwrap();
+        match db_utils.maybe_get_eth_submission_material_from_db(&block_hash) {
             None => panic!("`submission_material` should exist in db!"),
             Some(result) => assert_eq!(result, expected_result),
         };
@@ -740,24 +770,26 @@ mod tests {
     #[test]
     fn should_return_none_if_no_parent_block_exists() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let block = get_sample_eth_submission_material_n(1).unwrap();
         let block_hash = block.get_block_hash().unwrap();
-        put_eth_submission_material_in_db(&db, &block).unwrap();
-        let result = maybe_get_parent_eth_submission_material(&db, &block_hash);
+        db_utils.put_eth_submission_material_in_db(&block).unwrap();
+        let result = db_utils.maybe_get_parent_eth_submission_material(&block_hash);
         assert!(result.is_none());
     }
 
     #[test]
     fn should_maybe_get_parent_block_if_it_exists() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let blocks = get_sequential_eth_blocks_and_receipts();
         let block = blocks[1].clone();
         let parent_block = blocks[0].clone();
         let expected_result = parent_block.remove_block();
         let block_hash = block.get_block_hash().unwrap();
-        put_eth_submission_material_in_db(&db, &block).unwrap();
-        put_eth_submission_material_in_db(&db, &parent_block).unwrap();
-        match maybe_get_parent_eth_submission_material(&db, &block_hash) {
+        db_utils.put_eth_submission_material_in_db(&block).unwrap();
+        db_utils.put_eth_submission_material_in_db(&parent_block).unwrap();
+        match db_utils.maybe_get_parent_eth_submission_material(&block_hash) {
             None => panic!("Block should have parent in the DB!"),
             Some(result) => assert_eq!(result, expected_result),
         };
@@ -767,52 +799,66 @@ mod tests {
     fn should_get_no_nth_ancestor_if_not_extant() {
         let ancestor_number = 3;
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let block = get_sample_eth_submission_material_n(1).unwrap();
         let block_hash = block.get_block_hash().unwrap();
-        put_eth_submission_material_in_db(&db, &block).unwrap();
-        let result = maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, ancestor_number).unwrap();
+        db_utils.put_eth_submission_material_in_db(&block).unwrap();
+        let result = db_utils
+            .maybe_get_nth_ancestor_eth_submission_material(&block_hash, ancestor_number)
+            .unwrap();
         assert!(result.is_none());
     }
 
     #[test]
     fn should_get_nth_ancestor_if_extant() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let blocks = get_sequential_eth_blocks_and_receipts();
         let block_hash = blocks[blocks.len() - 1].get_block_hash().unwrap();
         blocks
             .iter()
-            .map(|block| put_eth_submission_material_in_db(&db, block))
+            .map(|block| db_utils.put_eth_submission_material_in_db(block))
             .collect::<Result<()>>()
             .unwrap();
         blocks.iter().enumerate().for_each(|(i, _)| {
-            match maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, i as u64).unwrap() {
+            match db_utils
+                .maybe_get_nth_ancestor_eth_submission_material(&block_hash, i as u64)
+                .unwrap()
+            {
                 None => panic!("Ancestor number {} should exist!", i),
                 Some(ancestor) => assert_eq!(ancestor, blocks[blocks.len() - i - 1].remove_block()),
             }
         });
-        let result = maybe_get_nth_ancestor_eth_submission_material(&db, &block_hash, blocks.len() as u64).unwrap();
+        let result = db_utils
+            .maybe_get_nth_ancestor_eth_submission_material(&block_hash, blocks.len() as u64)
+            .unwrap();
         assert!(result.is_none());
     }
 
     #[test]
     fn saving_submission_material_should_remove_block() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let submission_material = get_sample_eth_submission_material();
         let db_key = submission_material.get_block_hash().unwrap();
         assert!(submission_material.block.is_some());
-        put_eth_submission_material_in_db(&db, &submission_material).unwrap();
-        let result = get_submission_material_from_db(&db, &db_key).unwrap();
+        db_utils
+            .put_eth_submission_material_in_db(&submission_material)
+            .unwrap();
+        let result = db_utils.get_submission_material_from_db(&db_key).unwrap();
         assert!(result.block.is_none());
     }
 
     #[test]
     fn should_save_submission_material_if_block_already_removed() {
         let db = get_test_database();
+        let db_utils = EthDatabaseUtils::new_for_eth(&db);
         let submission_material = get_sample_eth_submission_material().remove_block();
         let db_key = submission_material.get_block_hash().unwrap();
-        put_eth_submission_material_in_db(&db, &submission_material).unwrap();
-        let result = get_submission_material_from_db(&db, &db_key).unwrap();
+        db_utils
+            .put_eth_submission_material_in_db(&submission_material)
+            .unwrap();
+        let result = db_utils.get_submission_material_from_db(&db_key).unwrap();
         assert_eq!(result, submission_material);
     }
 }
-*/
