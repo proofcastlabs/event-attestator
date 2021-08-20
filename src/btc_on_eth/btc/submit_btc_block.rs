@@ -53,7 +53,7 @@ use crate::{
 /// transaction will be signed & returned to the caller.
 pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting BTC block to enclave...");
-    parse_btc_submission_json_and_put_in_state(block_json_string, BtcState::init(db))
+    parse_btc_submission_json_and_put_in_state(block_json_string, BtcState::init(&db))
         .and_then(set_any_sender_flag_in_state)
         .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)

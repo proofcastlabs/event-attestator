@@ -19,18 +19,18 @@ use crate::{
     types::Result,
 };
 
-pub fn parse_btc_submission_json_and_put_in_state<D: DatabaseInterface>(
+pub fn parse_btc_submission_json_and_put_in_state<'a, D: DatabaseInterface>(
     json_str: &str,
-    state: BtcState<D>,
-) -> Result<BtcState<D>> {
+    state: BtcState<'a, D>,
+) -> Result<BtcState<'a, D>> {
     info!("✔ Parsing BTC submission json and adding to state...");
     BtcSubmissionMaterialJson::from_str(json_str).and_then(|result| state.add_btc_submission_json(result))
 }
 
-pub fn parse_submission_material_and_put_in_state<D: DatabaseInterface>(
+pub fn parse_submission_material_and_put_in_state<'a, D: DatabaseInterface>(
     json_str: &str,
-    state: BtcState<D>,
-) -> Result<BtcState<D>> {
+    state: BtcState<'a, D>,
+) -> Result<BtcState<'a, D>> {
     info!("✔ Parsing BTC submisson material and adding to state...");
     BtcSubmissionMaterial::from_str(json_str).and_then(|result| state.add_btc_submission_material(result))
 }

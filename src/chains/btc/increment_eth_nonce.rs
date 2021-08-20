@@ -16,7 +16,7 @@ pub fn maybe_increment_eth_nonce_in_db<D: DatabaseInterface>(state: BtcState<D>)
         },
         Ok(signed_txs) => {
             info!("✔ Incrementing ETH account nonce by {}", signed_txs.len());
-            increment_eth_account_nonce_in_db(&state.db, signed_txs.len() as u64).and(Ok(state))
+            increment_eth_account_nonce_in_db(state.db, signed_txs.len() as u64).and(Ok(state))
         },
     }
 }

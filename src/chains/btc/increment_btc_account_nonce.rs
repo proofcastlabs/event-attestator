@@ -7,10 +7,11 @@ use crate::{
     types::Result,
 };
 
-pub fn increment_btc_account_nonce<D>(db: &D, current_nonce: u64, num_signatures: u64) -> Result<()>
-where
-    D: DatabaseInterface,
-{
+pub fn increment_btc_account_nonce<D: DatabaseInterface>(
+    db: &D,
+    current_nonce: u64,
+    num_signatures: u64,
+) -> Result<()> {
     let new_nonce = num_signatures + current_nonce;
     info!(
         "✔ Incrementing btc account nonce by {} nonce from {} to {}",
@@ -19,10 +20,9 @@ where
     put_btc_account_nonce_in_db(db, new_nonce)
 }
 
-pub fn maybe_increment_btc_signature_nonce_and_return_eos_state<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_increment_btc_signature_nonce_and_return_eos_state<D: DatabaseInterface>(
+    state: EosState<D>,
+) -> Result<EosState<D>> {
     let num_txs = &state.btc_on_eos_signed_txs.len();
     match num_txs {
         0 => {

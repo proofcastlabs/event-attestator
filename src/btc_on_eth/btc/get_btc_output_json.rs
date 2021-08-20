@@ -96,15 +96,15 @@ where
 {
     info!("✔ Getting BTC output json and putting in state...");
     Ok(serde_json::to_string(&BtcOutput {
-        btc_latest_block_number: get_btc_latest_block_from_db(&state.db)?.height,
+        btc_latest_block_number: get_btc_latest_block_from_db(state.db)?.height,
         eth_signed_transactions: match &state.eth_signed_txs.len() {
             0 => vec![],
             _ => get_eth_signed_tx_info_from_eth_txs(
                 &state.eth_signed_txs,
-                &get_btc_canon_block_from_db(&state.db)?.get_eth_minting_params(),
-                get_eth_account_nonce_from_db(&state.db)?,
+                &get_btc_canon_block_from_db(state.db)?.get_eth_minting_params(),
+                get_eth_account_nonce_from_db(state.db)?,
                 state.use_any_sender_tx_type(),
-                get_any_sender_nonce_from_db(&state.db)?,
+                get_any_sender_nonce_from_db(state.db)?,
             )?,
         },
     })?)

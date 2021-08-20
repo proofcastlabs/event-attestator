@@ -239,7 +239,7 @@ pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<
 /// The core won't accept UTXOs it already has in its encrypted database.
 pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| parse_submission_material_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
+        .and_then(|_| parse_submission_material_and_put_in_state(btc_submission_material_json, BtcState::init(&db)))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_difficulty_of_btc_block_in_state)

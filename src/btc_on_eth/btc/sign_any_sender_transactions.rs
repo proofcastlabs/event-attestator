@@ -53,8 +53,8 @@ where
     info!("✔ Maybe signing AnySender txs...");
 
     get_any_sender_signed_txs(
-        &get_any_sender_signing_params_from_db(&state.db)?,
-        &get_btc_canon_block_from_db(&state.db)?.get_eth_minting_params(),
+        &get_any_sender_signing_params_from_db(state.db)?,
+        &get_btc_canon_block_from_db(state.db)?.get_eth_minting_params(),
     )
     .and_then(|signed_txs| {
         #[cfg(feature = "debug")]

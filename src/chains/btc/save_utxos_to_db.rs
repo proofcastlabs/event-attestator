@@ -11,6 +11,6 @@ pub fn maybe_save_utxos_to_db<D: DatabaseInterface>(state: BtcState<D>) -> Resul
             info!("✔ No UTXOs in state to save!");
             Ok(state)
         },
-        _ => save_utxos_to_db(&state.db, &state.utxos_and_values).and(Ok(state)),
+        _ => save_utxos_to_db(state.db, &state.utxos_and_values).and(Ok(state)),
     }
 }

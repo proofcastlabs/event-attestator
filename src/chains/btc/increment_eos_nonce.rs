@@ -19,6 +19,6 @@ pub fn maybe_increment_eos_nonce<D: DatabaseInterface>(state: BtcState<D>) -> Re
             info!("✔ No EOS signatures in state ∴ not incrementing nonce");
             Ok(state)
         },
-        _ => increment_eos_nonce(&state.db, get_eos_account_nonce_from_db(&state.db)?, *num_txs as u64).and(Ok(state)),
+        _ => increment_eos_nonce(state.db, get_eos_account_nonce_from_db(state.db)?, *num_txs as u64).and(Ok(state)),
     }
 }

@@ -82,11 +82,11 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Maybe updating BTC linker hash...");
-    get_btc_tail_block_from_db(&state.db).and_then(|btc_tail_block| {
-        match maybe_get_parent_btc_block_and_id(&state.db, &btc_tail_block.id) {
+    get_btc_tail_block_from_db(state.db).and_then(|btc_tail_block| {
+        match maybe_get_parent_btc_block_and_id(state.db, &btc_tail_block.id) {
             Some(parent_btc_block) => {
                 info!("✔ BTC tail block has parent in db ∴ updating BTC linker hash!");
-                put_btc_linker_hash_in_db(&state.db, &get_new_linker_hash(&state.db, &parent_btc_block.id)?)
+                put_btc_linker_hash_in_db(state.db, &get_new_linker_hash(state.db, &parent_btc_block.id)?)
                     .and(Ok(state))
             },
             None => {

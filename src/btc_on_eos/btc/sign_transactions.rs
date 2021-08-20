@@ -63,11 +63,11 @@ pub fn maybe_sign_canon_block_txs_and_add_to_state<D: DatabaseInterface>(state: 
     get_signed_eos_ptoken_issue_txs(
         state.get_eos_ref_block_num()?,
         state.get_eos_ref_block_prefix()?,
-        &get_eos_chain_id_from_db(&state.db)?,
-        &EosPrivateKey::get_from_db(&state.db)?,
-        &get_eos_account_name_string_from_db(&state.db)?,
-        &get_btc_canon_block_from_db(&state.db)?.get_eos_minting_params(),
-        &get_btc_chain_id_from_db(&state.db)?,
+        &get_eos_chain_id_from_db(state.db)?,
+        &EosPrivateKey::get_from_db(state.db)?,
+        &get_eos_account_name_string_from_db(state.db)?,
+        &get_btc_canon_block_from_db(state.db)?.get_eos_minting_params(),
+        &get_btc_chain_id_from_db(state.db)?,
     )
     .and_then(|eos_signed_txs| state.add_eos_signed_txs(eos_signed_txs))
 }

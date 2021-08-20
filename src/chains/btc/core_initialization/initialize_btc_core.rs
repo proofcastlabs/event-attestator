@@ -40,7 +40,7 @@ pub fn maybe_initialize_btc_core<D: DatabaseInterface>(
     canon_to_tip_length: u64,
 ) -> Result<String> {
     debug!("✔ Maybe initializing BTC core...");
-    Ok(BtcState::init(db)).and_then(|state| match is_btc_core_initialized(&state.db) {
+    Ok(BtcState::init(&db)).and_then(|state| match is_btc_core_initialized(state.db) {
         true => Ok(BTC_CORE_IS_INITIALIZED_JSON.to_string()),
         false => {
             info!("✔ Initializing enclave for BTC...");

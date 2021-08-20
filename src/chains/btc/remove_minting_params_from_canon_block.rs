@@ -18,5 +18,5 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Removing minting params from canon block...");
-    remove_minting_params_from_canon_block(&state.db).and(Ok(state))
+    remove_minting_params_from_canon_block(state.db).and(Ok(state))
 }

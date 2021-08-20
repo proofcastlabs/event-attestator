@@ -9,7 +9,7 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Checking BTC block's parent exists in database...");
-    match get_btc_block_from_db(&state.db, &state.get_btc_block_and_id()?.block.header.prev_blockhash) {
+    match get_btc_block_from_db(state.db, &state.get_btc_block_and_id()?.block.header.prev_blockhash) {
         Ok(_) => {
             info!("✔ BTC block's parent exists in database!");
             Ok(state)

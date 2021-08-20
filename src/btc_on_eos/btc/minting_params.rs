@@ -39,8 +39,8 @@ pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D: DatabaseInter
     BtcOnEosMintingParams::from_btc_txs(
         state.get_p2sh_deposit_txs()?,
         state.get_deposit_info_hash_map()?,
-        get_btc_network_from_db(&state.db)?,
-        &get_eos_token_symbol_from_db(&state.db)?,
+        get_btc_network_from_db(state.db)?,
+        &get_eos_token_symbol_from_db(state.db)?,
     )
     .and_then(|minting_params| minting_params.filter_params())
     .and_then(|filtered_params| state.add_btc_on_eos_minting_params(filtered_params))

@@ -21,12 +21,12 @@ pub fn generate_and_store_btc_keys<D: DatabaseInterface>(network: &str, db: &D) 
         .and_then(|_| put_btc_address_in_db(db, &get_btc_private_key_from_db(db)?.to_p2pkh_btc_address()))
 }
 
-pub fn generate_and_store_btc_keys_and_return_state<D: DatabaseInterface>(
+pub fn generate_and_store_btc_keys_and_return_state<'a, D: DatabaseInterface>(
     network: &str,
-    state: BtcState<D>,
-) -> Result<BtcState<D>> {
+    state: BtcState<'a, D>,
+) -> Result<BtcState<'a, D>> {
     info!("✔ Generating & storing BTC private key...");
-    generate_and_store_btc_keys(network, &state.db).and(Ok(state))
+    generate_and_store_btc_keys(network, state.db).and(Ok(state))
 }
 
 #[cfg(test)]

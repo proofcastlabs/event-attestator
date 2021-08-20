@@ -77,7 +77,7 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
     accrue_fees: bool,
 ) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
+        .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(&db)))
         .and_then(set_any_sender_flag_in_state)
         .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
@@ -101,18 +101,14 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
                 info!("✘ Not accruing fees during BTC block reprocessing...");
                 let minting_params_minus_fees = subtract_fees_from_minting_params(
                     &state.btc_on_eth_minting_params,
-                    FeeDatabaseUtils::new_for_btc_on_eth().get_peg_in_basis_points_from_db(&state.db)?,
+                    FeeDatabaseUtils::new_for_btc_on_eth().get_peg_in_basis_points_from_db(state.db)?,
                 )?;
                 state.replace_btc_on_eth_minting_params(minting_params_minus_fees)
             }
         })
         .and_then(|state| {
-            get_eth_signed_txs(
-                &get_signing_params_from_db(&state.db)?,
-                &state.btc_on_eth_minting_params,
-                &get_btc_chain_id_from_db(&state.db)?,
-            )
-            .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
+            get_eth_signed_txs(&get_signing_params_from_db(state.db)?, &state.btc_on_eth_minting_params)
+                .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
         })
         .and_then(maybe_increment_eth_nonce_in_db)
         .and_then(|state| {
@@ -121,9 +117,9 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
                 _ => get_eth_signed_tx_info_from_eth_txs(
                     &state.eth_signed_txs,
                     &state.btc_on_eth_minting_params,
-                    get_eth_account_nonce_from_db(&state.db)?,
+                    get_eth_account_nonce_from_db(state.db)?,
                     state.use_any_sender_tx_type(),
-                    get_any_sender_nonce_from_db(&state.db)?,
+                    get_any_sender_nonce_from_db(state.db)?,
                 ),
             }?)?;
             info!("✔ BTC signatures: {}", signatures);

@@ -16,7 +16,7 @@ pub fn maybe_increment_any_sender_nonce_in_db<D: DatabaseInterface>(state: BtcSt
         },
         Ok(signed_txs) => {
             info!("✔ Incrementing AnySender nonce by {}", signed_txs.len());
-            increment_any_sender_nonce_in_db(&state.db, signed_txs.len() as u64).map(|_| state)
+            increment_any_sender_nonce_in_db(state.db, signed_txs.len() as u64).map(|_| state)
         },
     }
 }
