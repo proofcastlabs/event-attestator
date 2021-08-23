@@ -74,7 +74,7 @@ pub fn get_eos_output<D: DatabaseInterface>(state: EosState<D>) -> Result<String
         btc_signed_transactions: match &state.btc_on_eos_signed_txs.len() {
             0 => vec![],
             _ => get_btc_signed_tx_info_from_btc_txs(
-                get_btc_account_nonce_from_db(&state.db)?,
+                get_btc_account_nonce_from_db(state.db)?,
                 &state.btc_on_eos_signed_txs,
                 &state.btc_on_eos_redeem_infos,
             )?,

@@ -40,7 +40,7 @@ pub fn initialize_eos_core<D: DatabaseInterface>(
 ) -> Result<String> {
     let init_json = EosInitJson::from_json_string(eos_init_json)?;
     info!("✔ Initializing core for EOS...");
-    start_eos_db_transaction_and_return_state(EosState::init(db))
+    start_eos_db_transaction_and_return_state(EosState::init(&db))
         .and_then(put_empty_processed_tx_ids_in_db_and_return_state)
         .and_then(|state| put_eos_chain_id_in_db_and_return_state(chain_id, state))
         .and_then(|state| match maybe_account_name {

@@ -162,14 +162,14 @@ pub fn maybe_filter_out_proofs_for_wrong_eos_account_name<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Filtering out proofs for accounts we don't care about...");
-    filter_proofs_for_account(&state.action_proofs, get_eos_account_name_from_db(&state.db)?)
+    filter_proofs_for_account(&state.action_proofs, get_eos_account_name_from_db(state.db)?)
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
-pub fn maybe_filter_proofs_for_action_name<D: DatabaseInterface>(
-    state: EosState<D>,
+pub fn maybe_filter_proofs_for_action_name<'a, D: DatabaseInterface>(
+    state: EosState<'a, D>,
     action_name: &str,
-) -> Result<EosState<D>> {
+) -> Result<EosState<'a, D>> {
     info!("✔ Filtering for proofs with action name: {}", action_name);
     filter_for_proofs_with_action_name(&state.action_proofs, action_name)
         .and_then(|proofs| state.replace_action_proofs(proofs))

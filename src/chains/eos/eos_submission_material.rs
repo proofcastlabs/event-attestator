@@ -124,10 +124,10 @@ impl EosSubmissionMaterialJson {
     }
 }
 
-pub fn parse_submission_material_and_add_to_state<D: DatabaseInterface>(
+pub fn parse_submission_material_and_add_to_state<'a, D: DatabaseInterface>(
     submission_material: &str,
-    state: EosState<D>,
-) -> Result<EosState<D>> {
+    state: EosState<'a, D>,
+) -> Result<EosState<'a, D>> {
     EosSubmissionMaterial::from_str(submission_material).and_then(|material| state.add_submission_material(material))
 }
 

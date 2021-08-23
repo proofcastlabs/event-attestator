@@ -58,7 +58,7 @@ use crate::{
 /// will be signed and returned to the caller.
 pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
     info!("✔ Submitting EOS block to core...");
-    parse_submission_material_and_add_to_state(block_json, EosState::init(db))
+    parse_submission_material_and_add_to_state(block_json, EosState::init(&db))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_incremerkle_and_add_to_state)

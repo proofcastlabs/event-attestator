@@ -25,8 +25,8 @@ use crate::{
 };
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct EosState<D: DatabaseInterface> {
-    pub db: D,
+pub struct EosState<'a, D: DatabaseInterface> {
+    pub db: &'a D,
     pub block_num: Option<u64>,
     pub incremerkle: Incremerkle,
     pub producer_signature: String,
@@ -45,8 +45,8 @@ pub struct EosState<D: DatabaseInterface> {
     pub eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
 }
 
-impl<D: DatabaseInterface> EosState<D> {
-    pub fn init(db: D) -> EosState<D> {
+impl<'a, D: DatabaseInterface> EosState<'a, D> {
+    pub fn init(db: &'a D) -> EosState<'a, D> {
         EosState {
             db,
             block_num: None,
@@ -68,7 +68,7 @@ impl<D: DatabaseInterface> EosState<D> {
         }
     }
 
-    pub fn add_btc_utxos_and_values(mut self, btc_utxos_and_values: BtcUtxosAndValues) -> Result<EosState<D>> {
+    pub fn add_btc_utxos_and_values(mut self, btc_utxos_and_values: BtcUtxosAndValues) -> Result<EosState<'a, D>> {
         match self.btc_utxos_and_values {
             Some(_) => Err(get_no_overwrite_state_err("btc_utxos_and_values").into()),
             None => {
@@ -78,7 +78,7 @@ impl<D: DatabaseInterface> EosState<D> {
         }
     }
 
-    pub fn add_active_schedule(mut self, active_schedule: EosProducerScheduleV2) -> Result<EosState<D>> {
+    pub fn add_active_schedule(mut self, active_schedule: EosProducerScheduleV2) -> Result<EosState<'a, D>> {
         match self.active_schedule {
             Some(_) => Err(get_no_overwrite_state_err("active_schedule").into()),
             None => {
@@ -88,22 +88,31 @@ impl<D: DatabaseInterface> EosState<D> {
         }
     }
 
-    pub fn add_btc_on_eos_signed_txs(mut self, btc_on_eos_signed_txs: &[BtcTransaction]) -> Result<EosState<D>> {
-        self.btc_on_eos_signed_txs = btc_on_eos_signed_txs.to_vec();
+    pub fn add_btc_on_eos_signed_txs(mut self, btc_on_eos_signed_txs: Vec<BtcTransaction>) -> Result<EosState<'a, D>>
+    where
+        D: DatabaseInterface,
+    {
+        self.btc_on_eos_signed_txs = btc_on_eos_signed_txs;
         Ok(self)
     }
 
-    pub fn add_eth_signed_txs(mut self, txs: EthTransactions) -> Result<EosState<D>> {
+    pub fn add_eth_signed_txs(mut self, txs: EthTransactions) -> Result<EosState<'a, D>>
+    where
+        D: DatabaseInterface,
+    {
         self.eth_signed_txs = txs;
         Ok(self)
     }
 
-    pub fn add_incremerkle(mut self, incremerkle: Incremerkle) -> EosState<D> {
+    pub fn add_incremerkle(mut self, incremerkle: Incremerkle) -> EosState<'a, D>
+    where
+        D: DatabaseInterface,
+    {
         self.incremerkle = incremerkle;
         self
     }
 
-    pub fn add_submission_material(mut self, submission_material: EosSubmissionMaterial) -> Result<EosState<D>> {
+    pub fn add_submission_material(mut self, submission_material: EosSubmissionMaterial) -> Result<EosState<'a, D>> {
         self.block_num = Some(submission_material.block_num);
         self.action_proofs = submission_material.action_proofs;
         self.block_header = Some(submission_material.block_header);
@@ -112,17 +121,17 @@ impl<D: DatabaseInterface> EosState<D> {
         Ok(self)
     }
 
-    pub fn add_btc_on_eos_redeem_infos(mut self, infos: BtcOnEosRedeemInfos) -> Result<EosState<D>> {
+    pub fn add_btc_on_eos_redeem_infos(mut self, infos: BtcOnEosRedeemInfos) -> Result<EosState<'a, D>> {
         self.btc_on_eos_redeem_infos = infos;
         Ok(self)
     }
 
-    pub fn add_eos_on_eth_eos_tx_info(mut self, infos: EosOnEthEosTxInfos) -> Result<EosState<D>> {
+    pub fn add_eos_on_eth_eos_tx_info(mut self, infos: EosOnEthEosTxInfos) -> Result<EosState<'a, D>> {
         self.eos_on_eth_eos_tx_infos = infos;
         Ok(self)
     }
 
-    pub fn add_erc20_on_eos_redeem_infos(mut self, infos: Erc20OnEosRedeemInfos) -> Result<EosState<D>> {
+    pub fn add_erc20_on_eos_redeem_infos(mut self, infos: Erc20OnEosRedeemInfos) -> Result<EosState<'a, D>> {
         self.erc20_on_eos_redeem_infos = infos;
         Ok(self)
     }
@@ -144,7 +153,7 @@ impl<D: DatabaseInterface> EosState<D> {
         }
     }
 
-    pub fn add_eos_eth_token_dictionary(mut self, dictionary: EosEthTokenDictionary) -> Result<EosState<D>> {
+    pub fn add_eos_eth_token_dictionary(mut self, dictionary: EosEthTokenDictionary) -> Result<EosState<'a, D>> {
         match self.eos_eth_token_dictionary {
             Some(_) => Err(get_no_overwrite_state_err("eos_eth_token_dictionary").into()),
             None => {
@@ -175,31 +184,25 @@ impl<D: DatabaseInterface> EosState<D> {
         }
     }
 
-    pub fn replace_btc_on_eos_signed_txs(mut self, replacements: BtcTransactions) -> Self {
-        info!("✔ Replacing signed BTC txs infos in state...");
-        self.btc_on_eos_signed_txs = replacements;
-        self
-    }
-
-    pub fn replace_btc_on_eos_redeem_infos(mut self, replacements: BtcOnEosRedeemInfos) -> Result<EosState<D>> {
+    pub fn replace_btc_on_eos_redeem_infos(mut self, replacements: BtcOnEosRedeemInfos) -> Result<EosState<'a, D>> {
         info!("✔ Replacing redeem infos in state...");
         self.btc_on_eos_redeem_infos = replacements;
         Ok(self)
     }
 
-    pub fn replace_erc20_on_eos_redeem_infos(mut self, replacements: Erc20OnEosRedeemInfos) -> Result<EosState<D>> {
+    pub fn replace_erc20_on_eos_redeem_infos(mut self, replacements: Erc20OnEosRedeemInfos) -> Result<EosState<'a, D>> {
         info!("✔ Replacing redeem infos in state...");
         self.erc20_on_eos_redeem_infos = replacements;
         Ok(self)
     }
 
-    pub fn replace_eos_on_eth_eos_tx_infos(mut self, replacements: EosOnEthEosTxInfos) -> Result<EosState<D>> {
+    pub fn replace_eos_on_eth_eos_tx_infos(mut self, replacements: EosOnEthEosTxInfos) -> Result<EosState<'a, D>> {
         info!("✔ Replacing `EosOnEthEosTxInfos` in state...");
         self.eos_on_eth_eos_tx_infos = replacements;
         Ok(self)
     }
 
-    pub fn replace_action_proofs(mut self, replacements: EosActionProofs) -> Result<EosState<D>> {
+    pub fn replace_action_proofs(mut self, replacements: EosActionProofs) -> Result<EosState<'a, D>> {
         info!("✔ Replacing `action_proofs` in state...");
         self.action_proofs = replacements;
         Ok(self)

@@ -92,7 +92,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
         if accrue_fees { "WITH" } else { "WITHOUT" }
     );
     check_debug_mode()
-        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
+        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_processed_global_sequences_and_add_to_state)
@@ -112,8 +112,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
                 maybe_account_for_peg_out_fees(state)
             } else {
                 info!("✔ Accounting for fees in signing params but NOT accruing them!");
-                let basis_points =
-                    FeeDatabaseUtils::new_for_btc_on_eos().get_peg_out_basis_points_from_db(&state.db)?;
+                let basis_points = FeeDatabaseUtils::new_for_btc_on_eos().get_peg_out_basis_points_from_db(state.db)?;
                 let updated_redeem_infos = state.btc_on_eos_redeem_infos.subtract_fees(basis_points)?;
                 state.replace_btc_on_eos_redeem_infos(updated_redeem_infos)
             }

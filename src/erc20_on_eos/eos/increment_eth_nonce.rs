@@ -15,7 +15,7 @@ pub fn maybe_increment_eth_nonce_in_db_and_return_eos_state<D: DatabaseInterface
         },
         _ => {
             info!("✔ Incrementing ETH account nonce by {}", num_txs);
-            increment_eth_account_nonce_in_db(&state.db, num_txs).and(Ok(state))
+            increment_eth_account_nonce_in_db(state.db, num_txs).and(Ok(state))
         },
     }
 }
