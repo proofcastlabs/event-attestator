@@ -4,23 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     chains::eth::{
         eth_constants::ETH_TAIL_LENGTH,
-        eth_database_utils::{
-            get_any_sender_nonce_from_db,
-            get_eos_on_eth_smart_contract_address_from_db,
-            get_erc20_on_eos_smart_contract_address_from_db,
-            get_erc20_on_evm_smart_contract_address_from_db,
-            get_erc777_contract_address_from_db,
-            get_erc777_proxy_contract_address_from_db,
-            get_eth_account_nonce_from_db,
-            get_eth_anchor_block_from_db,
-            get_eth_canon_block_from_db,
-            get_eth_canon_to_tip_length_from_db,
-            get_eth_chain_id_from_db,
-            get_eth_gas_price_from_db,
-            get_eth_latest_block_from_db,
-            get_eth_tail_block_from_db,
-            get_public_eth_address_from_db,
-        },
+        eth_database_utils_redux::EthDatabaseUtils,
         get_linker_hash::get_linker_hash_or_genesis_hash as get_eth_linker_hash,
     },
     constants::SAFE_ETH_ADDRESS,
@@ -52,48 +36,60 @@ pub struct EthEnclaveState {
 }
 
 impl EthEnclaveState {
-    fn new<D: DatabaseInterface>(db: &D, smart_contract_address: &EthAddress) -> Result<Self> {
+    fn new<D: DatabaseInterface>(
+        eth_db_utils: &EthDatabaseUtils<D>,
+        smart_contract_address: &EthAddress,
+    ) -> Result<Self> {
         info!("✔ Getting ETH enclave state...");
-        let eth_tail_block = get_eth_tail_block_from_db(db)?;
-        let eth_canon_block = get_eth_canon_block_from_db(db)?;
-        let eth_anchor_block = get_eth_anchor_block_from_db(db)?;
-        let eth_latest_block = get_eth_latest_block_from_db(db)?;
+        let eth_tail_block = eth_db_utils.get_eth_tail_block_from_db()?;
+        let eth_canon_block = eth_db_utils.get_eth_canon_block_from_db()?;
+        let eth_anchor_block = eth_db_utils.get_eth_anchor_block_from_db()?;
+        let eth_latest_block = eth_db_utils.get_eth_latest_block_from_db()?;
         Ok(EthEnclaveState {
             eth_tail_length: ETH_TAIL_LENGTH,
-            eth_gas_price: get_eth_gas_price_from_db(db)?,
-            eth_chain_id: get_eth_chain_id_from_db(db)?.to_u8(),
-            any_sender_nonce: get_any_sender_nonce_from_db(db)?,
-            eth_account_nonce: get_eth_account_nonce_from_db(db)?,
+            eth_gas_price: eth_db_utils.get_eth_gas_price_from_db()?,
             eth_safe_address: hex::encode(SAFE_ETH_ADDRESS.as_bytes()),
-            eth_linker_hash: hex::encode(get_eth_linker_hash(db)?.as_bytes()),
-            eth_canon_to_tip_length: get_eth_canon_to_tip_length_from_db(db)?,
+            any_sender_nonce: eth_db_utils.get_any_sender_nonce_from_db()?,
+            eth_chain_id: eth_db_utils.get_eth_chain_id_from_db()?.to_u8(),
+            eth_account_nonce: eth_db_utils.get_eth_account_nonce_from_db()?,
             eth_tail_block_number: eth_tail_block.get_block_number()?.as_usize(),
             eth_canon_block_number: eth_canon_block.get_block_number()?.as_usize(),
             smart_contract_address: hex::encode(smart_contract_address.as_bytes()),
             eth_anchor_block_number: eth_anchor_block.get_block_number()?.as_usize(),
             eth_latest_block_number: eth_latest_block.get_block_number()?.as_usize(),
-            eth_address: hex::encode(get_public_eth_address_from_db(db)?.as_bytes()),
+            eth_linker_hash: hex::encode(get_eth_linker_hash(eth_db_utils)?.as_bytes()),
+            eth_canon_to_tip_length: eth_db_utils.get_eth_canon_to_tip_length_from_db()?,
             eth_tail_block_hash: hex::encode(eth_tail_block.get_block_hash()?.as_bytes()),
             eth_canon_block_hash: hex::encode(eth_canon_block.get_block_hash()?.as_bytes()),
             eth_anchor_block_hash: hex::encode(eth_anchor_block.get_block_hash()?.as_bytes()),
             eth_latest_block_hash: hex::encode(eth_latest_block.get_block_hash()?.as_bytes()),
-            erc777_proxy_contract_address: hex::encode(get_erc777_proxy_contract_address_from_db(db)?),
+            eth_address: hex::encode(eth_db_utils.get_public_eth_address_from_db()?.as_bytes()),
+            erc777_proxy_contract_address: hex::encode(eth_db_utils.get_erc777_proxy_contract_address_from_db()?),
         })
     }
 
-    pub fn new_for_btc_on_eth<D: DatabaseInterface>(db: &D) -> Result<Self> {
-        Self::new(db, &get_erc777_contract_address_from_db(db)?)
+    pub fn new_for_btc_on_eth<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<Self> {
+        Self::new(eth_db_utils, &eth_db_utils.get_erc777_contract_address_from_db()?)
     }
 
-    pub fn new_for_erc20_on_eos<D: DatabaseInterface>(db: &D) -> Result<Self> {
-        Self::new(db, &get_erc20_on_eos_smart_contract_address_from_db(db)?)
+    pub fn new_for_erc20_on_eos<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<Self> {
+        Self::new(
+            eth_db_utils,
+            &eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
+        )
     }
 
-    pub fn new_for_eos_on_eth<D: DatabaseInterface>(db: &D) -> Result<Self> {
-        Self::new(db, &get_eos_on_eth_smart_contract_address_from_db(db)?)
+    pub fn new_for_eos_on_eth<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<Self> {
+        Self::new(
+            eth_db_utils,
+            &eth_db_utils.get_eos_on_eth_smart_contract_address_from_db()?,
+        )
     }
 
-    pub fn new_for_erc20_on_evm<D: DatabaseInterface>(db: &D) -> Result<Self> {
-        Self::new(db, &get_erc20_on_evm_smart_contract_address_from_db(db)?)
+    pub fn new_for_erc20_on_evm<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<Self> {
+        Self::new(
+            eth_db_utils,
+            &eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+        )
     }
 }

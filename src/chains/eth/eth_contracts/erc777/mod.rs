@@ -7,14 +7,7 @@ use crate::{
         eth_constants::{ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
         eth_contracts::encode_fxn_call,
         eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::{
-            get_erc777_contract_address_from_db,
-            get_eth_account_nonce_from_db,
-            get_eth_chain_id_from_db,
-            get_eth_gas_price_from_db,
-            get_eth_private_key_from_db,
-            increment_eth_account_nonce_in_db,
-        },
+        eth_database_utils_redux::EthDatabaseUtils,
         eth_traits::EthLogCompatible,
     },
     traits::DatabaseInterface,
@@ -104,20 +97,26 @@ pub fn encode_erc777_mint_fxn_maybe_with_data(
     }
 }
 
-pub fn get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(db: &D, new_address: EthAddress) -> Result<String> {
+pub fn get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(
+    eth_db_utils: &EthDatabaseUtils<D>,
+    db: &D,
+    new_address: EthAddress,
+) -> Result<String> {
     const ZERO_ETH_VALUE: usize = 0;
-    let nonce_before_incrementing = get_eth_account_nonce_from_db(db)?;
-    increment_eth_account_nonce_in_db(db, 1).and(Ok(EthTransaction::new_unsigned(
-        encode_erc777_change_pnetwork_fxn_data(new_address)?,
-        nonce_before_incrementing,
-        ZERO_ETH_VALUE,
-        get_erc777_contract_address_from_db(db)?,
-        &get_eth_chain_id_from_db(db)?,
-        ERC777_CHANGE_PNETWORK_GAS_LIMIT,
-        get_eth_gas_price_from_db(db)?,
-    )
-    .sign(&get_eth_private_key_from_db(db)?)?
-    .serialize_hex()))
+    let nonce_before_incrementing = eth_db_utils.get_eth_account_nonce_from_db()?;
+    eth_db_utils
+        .increment_eth_account_nonce_in_db(1)
+        .and(Ok(EthTransaction::new_unsigned(
+            encode_erc777_change_pnetwork_fxn_data(new_address)?,
+            nonce_before_incrementing,
+            ZERO_ETH_VALUE,
+            eth_db_utils.get_erc777_contract_address_from_db()?,
+            &eth_db_utils.get_eth_chain_id_from_db()?,
+            ERC777_CHANGE_PNETWORK_GAS_LIMIT,
+            eth_db_utils.get_eth_gas_price_from_db()?,
+        )
+        .sign(&eth_db_utils.get_eth_private_key_from_db()?)?
+        .serialize_hex()))
 }
 
 #[derive(Debug, Clone, Constructor, Eq, PartialEq)]

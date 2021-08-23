@@ -2,7 +2,7 @@ use serde_json::{json, Value as JsonValue};
 
 use crate::{
     chains::eth::{
-        eth_database_utils::get_eth_private_key_from_db,
+        eth_database_utils_redux::EthDatabaseUtils,
         eth_traits::EthSigningCapabilities,
         eth_types::EthSignature,
     },
@@ -31,7 +31,8 @@ pub fn sign_ascii_msg_with_eth_key_with_no_prefix<D: DatabaseInterface>(db: &D, 
     if is_hex(message) {
         return Err("✘ HEX message passed. Signing HEX messages without prefix is not allowed.".into());
     }
-    get_eth_private_key_from_db(db)
+    EthDatabaseUtils::new(db)
+        .get_eth_private_key_from_db()
         .and_then(|key| key.sign_message_bytes(message.as_bytes()))
         .map(|signature| encode_eth_signed_message_as_json(message, &signature).to_string())
 }
@@ -52,7 +53,8 @@ pub fn sign_ascii_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, mes
     if !message.is_ascii() {
         return Err("✘ Non-ASCII message passed. Only valid ASCII messages are supported.".into());
     }
-    get_eth_private_key_from_db(db)
+    EthDatabaseUtils::new(db)
+        .get_eth_private_key_from_db()
         .and_then(|key| key.sign_eth_prefixed_msg_bytes(message.as_bytes()))
         .map(|signature| encode_eth_signed_message_as_json(message, &signature).to_string())
 }
@@ -71,7 +73,7 @@ pub fn sign_ascii_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, mes
 pub fn sign_hex_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, message: &str) -> Result<String> {
     decode_hex_with_err_msg(message, "Message to sign is NOT valid hex!")
         .and_then(|bytes| {
-            let key = get_eth_private_key_from_db(db)?;
+            let key = EthDatabaseUtils::new(db).get_eth_private_key_from_db()?;
             key.sign_eth_prefixed_msg_bytes(&bytes)
         })
         .map(|signature| encode_eth_signed_message_as_json(message, &signature).to_string())
@@ -81,7 +83,7 @@ pub fn sign_hex_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, messa
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::{eth_database_utils::put_eth_private_key_in_db, eth_test_utils::get_sample_eth_private_key},
+        chains::eth::{eth_database_utils_redux::EthDatabaseUtils, eth_test_utils::get_sample_eth_private_key},
         errors::AppError,
         test_utils::get_test_database,
     };
@@ -118,8 +120,9 @@ mod tests {
     #[test]
     fn ascii_signer_with_prefix_should_sign_valid_hex() {
         let db = get_test_database();
+        let eth_db_utils = EthDatabaseUtils::new(&db);
         let eth_private_key = get_sample_eth_private_key();
-        put_eth_private_key_in_db(&db, &eth_private_key).unwrap();
+        eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let message = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
         let expected_result = json!({
             "message": "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c",
@@ -133,7 +136,8 @@ mod tests {
     fn should_sign_ascii_msg_with_eth_key_with_no_prefix() {
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
-        put_eth_private_key_in_db(&db, &eth_private_key).unwrap();
+        let eth_db_utils = EthDatabaseUtils::new(&db);
+        eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let message = "Arbitrary message";
         let expected_result = json!({
             "message": "Arbitrary message",
@@ -157,7 +161,8 @@ mod tests {
     fn should_sign_hex_msg_with_eth_key_with_prefix() {
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
-        put_eth_private_key_in_db(&db, &eth_private_key).unwrap();
+        let eth_db_utils = EthDatabaseUtils::new(&db);
+        eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let hex_to_sign = "0xc0ffee";
         let result = sign_hex_msg_with_eth_key_with_prefix(&db, &hex_to_sign).unwrap();
         let expected_result = json!({
@@ -170,7 +175,8 @@ mod tests {
     fn should_fail_to_sign_invalid_hex_msg_with_eth_key_with_prefix() {
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
-        put_eth_private_key_in_db(&db, &eth_private_key).unwrap();
+        let eth_db_utils = EthDatabaseUtils::new(&db);
+        eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let invalid_hex_to_sign = "0xcoffee";
         let expected_err = "Message to sign is NOT valid hex! Invalid character \'o\' at position 1";
         match sign_hex_msg_with_eth_key_with_prefix(&db, &invalid_hex_to_sign) {
@@ -184,7 +190,8 @@ mod tests {
     fn should_sign_ascii_msg_with_eth_key_with_prefix() {
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
-        put_eth_private_key_in_db(&db, &eth_private_key).unwrap();
+        let eth_db_utils = EthDatabaseUtils::new(&db);
+        eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let message = "Arbitrary message";
         let expected_result = json!({
             "message": "Arbitrary message",

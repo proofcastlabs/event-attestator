@@ -7,11 +7,7 @@ use crate::{
         eth::{
             any_sender::relay_transaction::RelayTransaction,
             eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::{
-                get_any_sender_nonce_from_db as get_eth_any_sender_nonce_from_db,
-                get_eth_account_nonce_from_db,
-                get_latest_eth_block_number,
-            },
+            eth_database_utils_redux::EthDatabaseUtils,
             eth_traits::EthTxInfoCompatible,
         },
         evm::{
@@ -115,6 +111,8 @@ pub fn get_eth_signed_tx_info_from_evm_txs(
 
 pub fn get_evm_output_json<D: DatabaseInterface>(state: EvmState<D>) -> Result<String> {
     info!("✔ Getting EVM output json...");
+    let eth_db_utils = EthDatabaseUtils::new(&state.db);
+    // FIXME / TODO The above WILL be in state once chains::evm has been removed!
     let output = serde_json::to_string(&EvmOutput {
         evm_latest_block_number: get_latest_evm_block_number(&state.db)?,
         eth_signed_transactions: if state.erc20_on_evm_eth_signed_txs.is_empty() {
@@ -123,10 +121,10 @@ pub fn get_evm_output_json<D: DatabaseInterface>(state: EvmState<D>) -> Result<S
             get_eth_signed_tx_info_from_evm_txs(
                 &state.erc20_on_evm_eth_signed_txs,
                 &state.erc20_on_evm_eth_tx_infos,
-                get_eth_account_nonce_from_db(&state.db)?,
+                eth_db_utils.get_eth_account_nonce_from_db()?,
                 false, // TODO Get this from state submission material when/if we support AnySender
-                get_eth_any_sender_nonce_from_db(&state.db)?,
-                get_latest_eth_block_number(&state.db)?,
+                eth_db_utils.get_any_sender_nonce_from_db()?,
+                eth_db_utils.get_latest_eth_block_number()?,
             )?
         },
     })?;

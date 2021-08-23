@@ -1,3 +1,5 @@
+#![allow(dead_code)] // FIXME rm!
+
 use std::str::FromStr;
 
 use eos_chain::{AccountName as EosAccountName, Checksum256};

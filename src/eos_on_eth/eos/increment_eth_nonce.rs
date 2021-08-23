@@ -1,8 +1,4 @@
-use crate::{
-    chains::{eos::eos_state::EosState, eth::eth_database_utils::increment_eth_account_nonce_in_db},
-    traits::DatabaseInterface,
-    types::Result,
-};
+use crate::{chains::eos::eos_state::EosState, traits::DatabaseInterface, types::Result};
 
 pub fn maybe_increment_eth_nonce_in_db_and_return_eos_state<D: DatabaseInterface>(
     state: EosState<D>,
@@ -15,7 +11,10 @@ pub fn maybe_increment_eth_nonce_in_db_and_return_eos_state<D: DatabaseInterface
         },
         _ => {
             info!("✔ Incrementing ETH account nonce by {}", num_txs);
-            increment_eth_account_nonce_in_db(state.db, num_txs).and(Ok(state))
+            state
+                .eth_db_utils
+                .increment_eth_account_nonce_in_db(num_txs)
+                .and(Ok(state))
         },
     }
 }

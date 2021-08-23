@@ -8,7 +8,7 @@ use crate::{
             eos_crypto::eos_transaction::{EosSignedTransaction, EosSignedTransactions},
             eos_database_utils::{get_eos_account_nonce_from_db, get_latest_eos_block_number},
         },
-        eth::{eth_database_utils::get_eth_latest_block_from_db, eth_state::EthState},
+        eth::eth_state::EthState,
     },
     eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfo,
     traits::DatabaseInterface,
@@ -82,7 +82,11 @@ fn check_eos_nonce_is_sufficient<D: DatabaseInterface>(db: &D, eos_txs: &EosSign
 pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
     info!("✔ Getting `eos-on-eth` ETH submission output json...");
     Ok(serde_json::to_string(&EosOnEthEthOutput {
-        eth_latest_block_number: get_eth_latest_block_from_db(state.db)?.get_block_number()?.as_u64(),
+        eth_latest_block_number: state
+            .eth_db_utils
+            .get_eth_latest_block_from_db()?
+            .get_block_number()?
+            .as_u64(),
         eos_signed_transactions: match state.eos_transactions {
             None => vec![],
             Some(ref eos_txs) => {

@@ -1,11 +1,7 @@
 use serde_json::json;
 
 use crate::{
-    chains::eth::eth_database_utils::{
-        put_any_sender_nonce_in_db,
-        put_eth_account_nonce_in_db,
-        put_eth_gas_price_in_db,
-    },
+    chains::eth::eth_database_utils_redux::EthDatabaseUtils,
     check_debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,
@@ -19,7 +15,7 @@ pub fn debug_set_eth_account_nonce<D: DatabaseInterface>(db: &D, new_nonce: u64)
     info!("✔ Debug setting ETH account nonce...");
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| put_eth_account_nonce_in_db(db, new_nonce))
+        .and_then(|_| EthDatabaseUtils::new(db).put_eth_account_nonce_in_db(new_nonce))
         .and_then(|_| db.end_transaction())
         .and(Ok(json!({"set_eth_account_nonce":true}).to_string()))
         .map(prepend_debug_output_marker_to_string)
@@ -32,7 +28,7 @@ pub fn debug_set_eth_any_sender_nonce<D: DatabaseInterface>(db: &D, new_nonce: u
     info!("✔ Debug setting ETH AnySender nonce...");
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| put_any_sender_nonce_in_db(db, new_nonce))
+        .and_then(|_| EthDatabaseUtils::new(db).put_any_sender_nonce_in_db(new_nonce))
         .and_then(|_| db.end_transaction())
         .and(Ok(json!({"set_eth_any_sender_nonce":true}).to_string()))
         .map(prepend_debug_output_marker_to_string)
@@ -44,7 +40,7 @@ pub fn debug_set_eth_any_sender_nonce<D: DatabaseInterface>(db: &D, new_nonce: u
 pub fn debug_set_eth_gas_price_in_db<D: DatabaseInterface>(db: &D, gas_price: u64) -> Result<String> {
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| put_eth_gas_price_in_db(db, gas_price))
+        .and_then(|_| EthDatabaseUtils::new(db).put_eth_gas_price_in_db(gas_price))
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"sucess":true,"new_eth_gas_price":gas_price}).to_string())
         .map(prepend_debug_output_marker_to_string)

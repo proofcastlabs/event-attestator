@@ -20,7 +20,6 @@ use crate::{
                 ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
                 ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
             },
-            eth_database_utils::{get_erc777_contract_address_from_db, get_eth_canon_block_from_db},
             eth_log::EthLog,
             eth_receipt::EthReceipt,
             eth_state::EthState,
@@ -202,8 +201,10 @@ impl BtcOnEthRedeemInfos {
 
 pub fn maybe_parse_redeem_infos_and_add_to_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Maybe parsing redeem infos...");
-    get_eth_canon_block_from_db(state.db).and_then(|submission_material| {
-        match submission_material.receipts.is_empty() {
+    state
+        .eth_db_utils
+        .get_eth_canon_block_from_db()
+        .and_then(|submission_material| match submission_material.receipts.is_empty() {
             true => {
                 info!("✔ No receipts in canon block ∴ no infos to parse!");
                 Ok(state)
@@ -212,12 +213,11 @@ pub fn maybe_parse_redeem_infos_and_add_to_state<D: DatabaseInterface>(state: Et
                 info!("✔ Receipts in canon block ∴ parsing infos...");
                 BtcOnEthRedeemInfos::from_eth_submission_material(
                     &submission_material,
-                    &get_erc777_contract_address_from_db(&state.db)?,
+                    &state.eth_db_utils.get_erc777_contract_address_from_db()?,
                 )
                 .and_then(|infos| state.add_btc_on_eth_redeem_infos(infos))
             },
-        }
-    })
+        })
 }
 
 #[cfg(test)]

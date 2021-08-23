@@ -26,11 +26,6 @@ use crate::{
                 ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
                 ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
             },
-            eth_database_utils::{
-                get_erc20_on_eos_smart_contract_address_from_db,
-                get_eth_canon_block_from_db,
-                get_eth_chain_id_from_db,
-            },
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
             eth_state::EthState,
@@ -341,8 +336,10 @@ pub fn maybe_parse_peg_in_info_from_canon_block_and_add_to_state<D: DatabaseInte
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Maybe parsing `erc20-on-eos` peg-in infos...");
-    get_eth_canon_block_from_db(state.db).and_then(|submission_material| {
-        match submission_material.receipts.is_empty() {
+    state
+        .eth_db_utils
+        .get_eth_canon_block_from_db()
+        .and_then(|submission_material| match submission_material.receipts.is_empty() {
             true => {
                 info!("✔ No receipts in canon block ∴ no info to parse!");
                 Ok(state)
@@ -357,13 +354,12 @@ pub fn maybe_parse_peg_in_info_from_canon_block_and_add_to_state<D: DatabaseInte
                         Erc20OnEosPegInInfos::from_submission_material(
                             &submission_material,
                             &account_names,
-                            &get_eth_chain_id_from_db(state.db)?,
+                            &state.eth_db_utils.get_eth_chain_id_from_db()?,
                         )
                     })
                     .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
             },
-        }
-    })
+        })
 }
 
 pub fn filter_out_zero_value_peg_ins_from_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
@@ -385,7 +381,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
     state
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(
-            &get_erc20_on_eos_smart_contract_address_from_db(state.db)?,
+            &state.eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
             &[
                 *ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
                 *ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,

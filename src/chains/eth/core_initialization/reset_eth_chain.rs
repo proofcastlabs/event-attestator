@@ -25,7 +25,7 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::{get_eth_latest_block_from_db, get_submission_material_from_db},
+        eth_database_utils_redux::EthDatabaseUtils,
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::validate_block_in_state as validate_eth_block_in_state,
@@ -35,19 +35,22 @@ use crate::{
     types::Result,
 };
 
-fn delete_all_eth_blocks<D: DatabaseInterface>(db: &D) -> Result<()> {
+fn delete_all_eth_blocks<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<()> {
     fn recursively_delete_all_eth_blocks<D: DatabaseInterface>(
-        db: &D,
+        eth_db_utils: &EthDatabaseUtils<D>,
         maybe_block_hash: Option<EthHash>,
     ) -> Result<()> {
         match maybe_block_hash {
             None => {
                 info!("✔ Deleting all ETH blocks from db, starting with the latest block...");
-                recursively_delete_all_eth_blocks(db, Some(get_eth_latest_block_from_db(db)?.get_parent_hash()?))
+                recursively_delete_all_eth_blocks(
+                    eth_db_utils,
+                    Some(eth_db_utils.get_eth_latest_block_from_db()?.get_parent_hash()?),
+                )
             },
-            Some(ref hash) => match get_submission_material_from_db(db, hash) {
+            Some(ref hash) => match eth_db_utils.get_submission_material_from_db(hash) {
                 Ok(submission_material) => {
-                    recursively_delete_all_eth_blocks(db, Some(submission_material.get_parent_hash()?))
+                    recursively_delete_all_eth_blocks(eth_db_utils, Some(submission_material.get_parent_hash()?))
                 },
                 Err(_) => {
                     info!("✔ All ETH blocks deleted!");
@@ -56,7 +59,7 @@ fn delete_all_eth_blocks<D: DatabaseInterface>(db: &D) -> Result<()> {
             },
         }
     }
-    recursively_delete_all_eth_blocks(db, None)
+    recursively_delete_all_eth_blocks(eth_db_utils, None)
 }
 
 fn delete_all_relevant_db_keys<D: DatabaseInterface>(db: &D) -> Result<()> {
@@ -77,7 +80,7 @@ fn delete_all_relevant_db_keys<D: DatabaseInterface>(db: &D) -> Result<()> {
 }
 
 fn delete_all_blocks_and_db_keys_and_return_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    delete_all_eth_blocks(state.db)
+    delete_all_eth_blocks(&state.eth_db_utils)
         .and_then(|_| delete_all_relevant_db_keys(state.db))
         .and(Ok(state))
 }

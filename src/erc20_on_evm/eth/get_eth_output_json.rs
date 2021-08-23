@@ -7,7 +7,6 @@ use crate::{
         eth::{
             any_sender::relay_transaction::RelayTransaction,
             eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::get_latest_eth_block_number,
             eth_state::EthState,
             eth_traits::EthTxInfoCompatible,
         },
@@ -120,7 +119,7 @@ pub fn get_evm_signed_tx_info_from_evm_txs(
 pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
     info!("✔ Getting ETH output json...");
     let output = serde_json::to_string(&EthOutput {
-        eth_latest_block_number: get_latest_eth_block_number(state.db)?,
+        eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
         evm_signed_transactions: if state.erc20_on_evm_evm_signed_txs.is_empty() {
             vec![]
         } else {

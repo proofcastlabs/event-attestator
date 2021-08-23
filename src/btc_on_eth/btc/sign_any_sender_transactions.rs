@@ -4,7 +4,6 @@ use crate::{
         btc::{btc_database_utils::get_btc_canon_block_from_db, btc_state::BtcState},
         eth::{
             any_sender::relay_transaction::RelayTransaction,
-            eth_database_utils::get_any_sender_signing_params_from_db,
             eth_types::{AnySenderSigningParams, RelayTransactions},
         },
     },
@@ -41,19 +40,16 @@ pub fn get_any_sender_signed_txs(
         .collect::<Result<RelayTransactions>>()
 }
 
-pub fn maybe_sign_any_sender_canon_block_txs_and_add_to_state<D>(state: BtcState<D>) -> Result<BtcState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_sign_any_sender_canon_block_txs_and_add_to_state<D: DatabaseInterface>(
+    state: BtcState<D>,
+) -> Result<BtcState<D>> {
     if !state.use_any_sender_tx_type() {
         info!("✔ Using normal ETH therefore not signing AnySender transactions!");
         return Ok(state);
     }
-
     info!("✔ Maybe signing AnySender txs...");
-
     get_any_sender_signed_txs(
-        &get_any_sender_signing_params_from_db(state.db)?,
+        &state.eth_db_utils.get_any_sender_signing_params_from_db()?,
         &get_btc_canon_block_from_db(state.db)?.get_eth_minting_params(),
     )
     .and_then(|signed_txs| {

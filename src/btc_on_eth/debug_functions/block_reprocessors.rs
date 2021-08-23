@@ -52,13 +52,6 @@ use crate::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
             },
-            eth_database_utils::{
-                get_any_sender_nonce_from_db,
-                get_erc777_contract_address_from_db,
-                get_eth_account_nonce_from_db,
-                get_latest_eth_block_number,
-                get_signing_params_from_db,
-            },
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             validate_block_in_state::validate_block_in_state,
@@ -107,8 +100,11 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
             }
         })
         .and_then(|state| {
-            get_eth_signed_txs(&get_signing_params_from_db(state.db)?, &state.btc_on_eth_minting_params)
-                .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
+            get_eth_signed_txs(
+                &state.eth_db_utils.get_signing_params_from_db()?,
+                &state.btc_on_eth_minting_params,
+            )
+            .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
         })
         .and_then(maybe_increment_eth_nonce_in_db)
         .and_then(|state| {
@@ -117,9 +113,9 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
                 _ => get_eth_signed_tx_info_from_eth_txs(
                     &state.eth_signed_txs,
                     &state.btc_on_eth_minting_params,
-                    get_eth_account_nonce_from_db(state.db)?,
+                    state.eth_db_utils.get_eth_account_nonce_from_db()?,
                     state.use_any_sender_tx_type(),
-                    get_any_sender_nonce_from_db(state.db)?,
+                    state.eth_db_utils.get_any_sender_nonce_from_db()?,
                 ),
             }?)?;
             info!("✔ BTC signatures: {}", signatures);
@@ -150,7 +146,7 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
                 .and_then(|material| {
                     BtcOnEthRedeemInfos::from_eth_submission_material(
                         material,
-                        &get_erc777_contract_address_from_db(&state.db)?,
+                        &state.eth_db_utils.get_erc777_contract_address_from_db()?,
                     )
                 })
                 .and_then(|params| state.add_btc_on_eth_redeem_infos(params))
@@ -173,7 +169,7 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
         .and_then(|state| {
             info!("✔ Getting ETH output json...");
             let output = serde_json::to_string(&EthOutput {
-                eth_latest_block_number: get_latest_eth_block_number(state.db)?,
+                eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
                 btc_signed_transactions: match state.btc_transactions {
                     Some(txs) => get_btc_signed_tx_info_from_btc_txs(
                         get_btc_account_nonce_from_db(state.db)?,

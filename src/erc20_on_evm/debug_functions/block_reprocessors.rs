@@ -5,13 +5,7 @@ use crate::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
             },
-            eth_database_utils::{
-                get_any_sender_nonce_from_db as get_eth_any_sender_nonce_from_db,
-                get_erc20_on_evm_smart_contract_address_from_db,
-                get_eth_account_nonce_from_db,
-                get_eth_chain_id_from_db,
-                get_latest_eth_block_number,
-            },
+            eth_database_utils_redux::EthDatabaseUtils,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             increment_evm_account_nonce::maybe_increment_evm_account_nonce_and_return_eth_state,
@@ -128,14 +122,16 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
                 eth_signed_transactions: if state.erc20_on_evm_eth_signed_txs.is_empty() {
                     vec![]
                 } else {
+                    let eth_db_utils = EthDatabaseUtils::new(&state.db);
+                    // FIXME / TODO The above will eventually be in state when chains::evm is no more.
                     let use_any_sender_tx = false;
                     get_eth_signed_tx_info_from_evm_txs(
                         &state.erc20_on_evm_eth_signed_txs,
                         &state.erc20_on_evm_eth_tx_infos,
-                        get_eth_account_nonce_from_db(&state.db)?,
+                        eth_db_utils.get_eth_account_nonce_from_db()?,
                         use_any_sender_tx,
-                        get_eth_any_sender_nonce_from_db(&state.db)?,
-                        get_latest_eth_block_number(&state.db)?,
+                        eth_db_utils.get_any_sender_nonce_from_db()?,
+                        eth_db_utils.get_latest_eth_block_number()?,
                     )?
                 },
             })?;
@@ -165,9 +161,9 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                 .and_then(|material| {
                     EthOnEvmEvmTxInfos::from_submission_material(
                         material,
-                        &get_erc20_on_evm_smart_contract_address_from_db(state.db)?,
+                        &state.eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
                         &EthEvmTokenDictionary::get_from_db(state.db)?,
-                        &get_eth_chain_id_from_db(state.db)?,
+                        &state.eth_db_utils.get_eth_chain_id_from_db()?,
                     )
                 })
                 .and_then(|params| state.add_erc20_on_evm_evm_tx_infos(params))
@@ -189,7 +185,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
         .and_then(|state| {
             info!("✔ Getting ETH output json...");
             let output = serde_json::to_string(&EthOutput {
-                eth_latest_block_number: get_latest_eth_block_number(state.db)?,
+                eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
                 evm_signed_transactions: if state.erc20_on_evm_evm_signed_txs.is_empty() {
                     vec![]
                 } else {

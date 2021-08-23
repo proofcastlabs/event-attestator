@@ -10,7 +10,6 @@ use crate::{
         eth::{
             eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
             eth_crypto::eth_transaction::{get_signed_minting_tx, EthTransaction, EthTransactions},
-            eth_database_utils::get_signing_params_from_db,
             eth_types::EthSigningParams,
         },
     },
@@ -63,7 +62,7 @@ pub fn maybe_sign_normal_canon_block_txs_and_add_to_state<D: DatabaseInterface>(
     }
     info!("✔ Maybe signing normal ETH txs...");
     get_eth_signed_txs(
-        &get_signing_params_from_db(state.db)?,
+        &state.eth_db_utils.get_signing_params_from_db()?,
         &get_btc_canon_block_from_db(state.db)?.get_eth_minting_params(),
     )
     .and_then(|signed_txs| {
@@ -88,13 +87,7 @@ mod tests {
             btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
             eth::{
                 eth_chain_id::EthChainId,
-                eth_database_utils::{
-                    put_btc_on_eth_smart_contract_address_in_db,
-                    put_eth_account_nonce_in_db,
-                    put_eth_chain_id_in_db,
-                    put_eth_gas_price_in_db,
-                    put_eth_private_key_in_db,
-                },
+                eth_database_utils_redux::EthDatabaseUtils,
                 eth_test_utils::{get_sample_eth_address, get_sample_eth_private_key},
                 eth_types::EthAddress,
             },
@@ -107,38 +100,26 @@ mod tests {
         let nonce = 6;
         let chain_id = EthChainId::Mainnet;
         let db = get_test_database();
+        let eth_db_utils = EthDatabaseUtils::new(&db);
         let gas_price = 20_000_000_000;
         let contract_address = get_sample_eth_address();
         let eth_private_key = get_sample_eth_private_key();
-        if let Err(e) = put_btc_on_eth_smart_contract_address_in_db(&db, &contract_address) {
-            panic!("Error putting eth smart contract address in db: {}", e);
-        };
-        if let Err(e) = put_eth_chain_id_in_db(&db, &chain_id) {
-            panic!("Error putting eth chain id in db: {}", e);
-        };
-        if let Err(e) = put_eth_gas_price_in_db(&db, gas_price) {
-            panic!("Error putting eth gas price in db: {}", e);
-        };
-        if let Err(e) = put_eth_account_nonce_in_db(&db, nonce) {
-            panic!("Error putting eth account nonce in db: {}", e);
-        };
-        if let Err(e) = put_eth_private_key_in_db(&db, &eth_private_key) {
-            panic!("Error putting eth private key in db: {}", e);
-        }
-        match get_signing_params_from_db(&db) {
-            Ok(signing_params) => {
-                assert!(
-                    signing_params.chain_id == chain_id
-                        && signing_params.gas_price == gas_price
-                        && signing_params.eth_account_nonce == nonce
-                        && signing_params.eth_private_key == eth_private_key
-                        && signing_params.smart_contract_address == contract_address
-                );
-            },
-            Err(e) => {
-                panic!("Error getting signing parms from db: {}", e);
-            },
-        }
+        eth_db_utils
+            .put_btc_on_eth_smart_contract_address_in_db(&contract_address)
+            .unwrap();
+        eth_db_utils.put_eth_chain_id_in_db(&chain_id).unwrap();
+        eth_db_utils.put_eth_gas_price_in_db(gas_price).unwrap();
+        eth_db_utils.put_eth_account_nonce_in_db(nonce).unwrap();
+        eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
+        let db_utils = EthDatabaseUtils::new(&db);
+        let result = db_utils.get_signing_params_from_db().unwrap();
+        assert!(
+            result.chain_id == chain_id
+                && result.gas_price == gas_price
+                && result.eth_account_nonce == nonce
+                && result.eth_private_key == eth_private_key
+                && result.smart_contract_address == contract_address
+        );
     }
 
     #[test]

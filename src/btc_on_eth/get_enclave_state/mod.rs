@@ -2,7 +2,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     btc_on_eth::check_core_is_initialized::check_core_is_initialized,
-    chains::{btc::btc_enclave_state::BtcEnclaveState, eth::eth_enclave_state::EthEnclaveState},
+    chains::{
+        btc::btc_enclave_state::BtcEnclaveState,
+        eth::{eth_database_utils_redux::EthDatabaseUtils, eth_enclave_state::EthEnclaveState},
+    },
     enclave_info::EnclaveInfo,
     fees::fee_enclave_state::FeesEnclaveState,
     traits::DatabaseInterface,
@@ -18,11 +21,11 @@ struct EnclaveState {
 }
 
 impl EnclaveState {
-    pub fn new<D: DatabaseInterface>(db: &D) -> Result<Self> {
+    pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>, db: &D) -> Result<Self> {
         Ok(Self {
             info: EnclaveInfo::new(),
             btc: BtcEnclaveState::new(db)?,
-            eth: EthEnclaveState::new_for_btc_on_eth(db)?,
+            eth: EthEnclaveState::new_for_btc_on_eth(eth_db_utils)?,
             fees: FeesEnclaveState::new_for_btc_on_eth(db)?,
         })
     }
@@ -38,5 +41,6 @@ impl EnclaveState {
 /// blockchain controlled by this instance.
 pub fn get_enclave_state<D: DatabaseInterface>(db: D) -> Result<String> {
     info!("✔ Getting enclave state...");
-    check_core_is_initialized(&db).and_then(|_| EnclaveState::new(&db)?.to_string())
+    let eth_db_utils = EthDatabaseUtils::new(&db);
+    check_core_is_initialized(&eth_db_utils, &db).and_then(|_| EnclaveState::new(&eth_db_utils, &db)?.to_string())
 }

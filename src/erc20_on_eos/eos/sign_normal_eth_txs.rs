@@ -14,13 +14,6 @@ use crate::{
                 eth_private_key::EthPrivateKey,
                 eth_transaction::{EthTransaction, EthTransactions},
             },
-            eth_database_utils::{
-                get_erc20_on_eos_smart_contract_address_from_db,
-                get_eth_account_nonce_from_db,
-                get_eth_chain_id_from_db,
-                get_eth_gas_price_from_db,
-                get_eth_private_key_from_db,
-            },
         },
     },
     erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfos,
@@ -72,11 +65,11 @@ pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: E
     } else {
         get_eth_signed_txs(
             &state.erc20_on_eos_redeem_infos,
-            &get_erc20_on_eos_smart_contract_address_from_db(state.db)?,
-            get_eth_account_nonce_from_db(state.db)?,
-            &get_eth_chain_id_from_db(state.db)?,
-            get_eth_gas_price_from_db(state.db)?,
-            &get_eth_private_key_from_db(state.db)?,
+            &state.eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
+            state.eth_db_utils.get_eth_account_nonce_from_db()?,
+            &state.eth_db_utils.get_eth_chain_id_from_db()?,
+            state.eth_db_utils.get_eth_gas_price_from_db()?,
+            &state.eth_db_utils.get_eth_private_key_from_db()?,
         )
         .and_then(|signed_txs| {
             #[cfg(feature = "debug")]
