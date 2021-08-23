@@ -41,7 +41,11 @@ pub struct EthDatabaseUtils<'a, D: DatabaseInterface> {
 }
 
 impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
-    pub fn new_for_eth(db: &'a D) -> Self {
+    pub fn new(db: &'a D) -> Self {
+        Self::new_for_eth(db)
+    }
+
+    fn new_for_eth(db: &'a D) -> Self {
         use crate::chains::eth::eth_constants::{
             ANY_SENDER_NONCE_KEY,
             BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
