@@ -388,17 +388,19 @@ fn end_btc_db_transaction<D: DatabaseInterface>(state: BtcState<D>) -> Result<Bt
     })
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
-        chains::btc::btc_test_utils::{
-            get_sample_btc_block_in_db_format,
-            get_sample_btc_private_key,
-            get_sample_btc_pub_key_slice,
-            get_sample_sequential_btc_blocks_in_db_format,
-            SAMPLE_TARGET_BTC_ADDRESS,
+        chains::btc::{
+            btc_constants::{BTC_CANON_TO_TIP_LENGTH_KEY, BTC_LINKER_HASH_KEY},
+            btc_test_utils::{
+                get_sample_btc_block_in_db_format,
+                get_sample_btc_private_key,
+                get_sample_btc_pub_key_slice,
+                get_sample_sequential_btc_blocks_in_db_format,
+                SAMPLE_TARGET_BTC_ADDRESS,
+            },
         },
         test_utils::get_test_database,
     };
@@ -406,7 +408,8 @@ mod tests {
     #[test]
     fn non_existing_key_should_not_exist_in_db() {
         let db = get_test_database();
-        let result = key_exists_in_db(&db, &BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
+        let db_utils = BtcDatabaseUtils::new(&db);
+        let result = db_utils.key_exists_in_db(&BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
         assert!(!result);
     }
 
@@ -415,8 +418,8 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let length = 5;
-        put_btc_canon_to_tip_length_in_db(&db, length).unwrap();
-        let result = key_exists_in_db(&db, &BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
+        db_utils.put_btc_canon_to_tip_length_in_db(length).unwrap();
+        let result = db_utils.key_exists_in_db(&BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
         assert!(result);
     }
 
@@ -425,8 +428,8 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let length = 6;
-        put_btc_canon_to_tip_length_in_db(&db, length).unwrap();
-        let result = get_btc_canon_to_tip_length_from_db(&db).unwrap();
+        db_utils.put_btc_canon_to_tip_length_in_db(length).unwrap();
+        let result = db_utils.get_btc_canon_to_tip_length_from_db().unwrap();
         assert_eq!(result, length);
     }
 
@@ -434,10 +437,10 @@ mod tests {
     fn should_get_and_save_btc_private_key_in_db() {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
-        put_btc_network_in_db(&db, BtcNetwork::Testnet).unwrap();
+        db_utils.put_btc_network_in_db(BtcNetwork::Testnet).unwrap();
         let pk = get_sample_btc_private_key();
-        put_btc_private_key_in_db(&db, &pk).unwrap();
-        let result = get_btc_private_key_from_db(&db).unwrap();
+        db_utils.put_btc_private_key_in_db(&pk).unwrap();
+        let result = db_utils.get_btc_private_key_from_db().unwrap();
         assert_eq!(result.to_public_key(), pk.to_public_key());
     }
 
@@ -448,7 +451,7 @@ mod tests {
         let non_existent_block_type = "non-existent block type!";
         let block = get_sample_btc_block_in_db_format().unwrap();
         let expected_error = format!("✘ Cannot store special BTC hash of type: {}!", non_existent_block_type);
-        match put_special_btc_block_in_db(&db, &block, non_existent_block_type) {
+        match db_utils.put_special_btc_block_in_db(&block, non_existent_block_type) {
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Should not have succeeded!"),
             _ => panic!("Wrong error received!"),
@@ -461,8 +464,8 @@ mod tests {
         let db_utils = BtcDatabaseUtils::new(&db);
         let block = get_sample_btc_block_in_db_format().unwrap();
         let block_type = "canon";
-        put_special_btc_block_in_db(&db, &block, block_type).unwrap();
-        match get_btc_canon_block_from_db(&db) {
+        db_utils.put_special_btc_block_in_db(&block, block_type).unwrap();
+        match db_utils.get_btc_canon_block_from_db() {
             Err(e) => panic!("Error geting canon block: {}", e),
             Ok(block_from_db) => assert_eq!(block_from_db, block),
         }
@@ -474,7 +477,7 @@ mod tests {
         let db_utils = BtcDatabaseUtils::new(&db);
         let non_existent_block_type = "does not exist";
         let expected_error = format!("✘ Cannot get special BTC hash of type: {}!", non_existent_block_type);
-        match get_special_btc_block_from_db(&db, non_existent_block_type) {
+        match db_utils.get_special_btc_block_from_db(non_existent_block_type) {
             Ok(_) => panic!("Should not have got special block!"),
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             _ => panic!("Wrong error when getting non-existent block type!"),
@@ -486,9 +489,9 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let block = get_sample_btc_block_in_db_format().unwrap();
-        put_btc_block_in_db(&db, &block).unwrap();
-        put_btc_anchor_block_hash_in_db(&db, &block.id).unwrap();
-        let result = get_special_btc_block_from_db(&db, "anchor").unwrap();
+        db_utils.put_btc_block_in_db(&block).unwrap();
+        db_utils.put_btc_anchor_block_hash_in_db(&block.id).unwrap();
+        let result = db_utils.get_special_btc_block_from_db("anchor").unwrap();
         assert_eq!(result, block);
     }
 
@@ -497,8 +500,8 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let anchor_block_hash = get_sample_btc_block_in_db_format().unwrap().id;
-        put_btc_anchor_block_hash_in_db(&db, &anchor_block_hash).unwrap();
-        let result = get_btc_anchor_block_hash_from_db(&db).unwrap();
+        db_utils.put_btc_anchor_block_hash_in_db(&anchor_block_hash).unwrap();
+        let result = db_utils.get_btc_anchor_block_hash_from_db().unwrap();
         assert_eq!(result, anchor_block_hash);
     }
 
@@ -507,7 +510,7 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let latest_block_hash = get_sample_btc_block_in_db_format().unwrap().id;
-        put_btc_latest_block_hash_in_db(&db, &latest_block_hash).unwrap();
+        db_utils.put_btc_latest_block_hash_in_db(&latest_block_hash).unwrap();
     }
 
     #[test]
@@ -515,7 +518,7 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let canon_block_hash = get_sample_btc_block_in_db_format().unwrap().id;
-        put_btc_canon_block_hash_in_db(&db, &canon_block_hash).unwrap();
+        db_utils.put_btc_canon_block_hash_in_db(&canon_block_hash).unwrap();
     }
 
     #[test]
@@ -523,8 +526,8 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let linker_hash = get_sample_btc_block_in_db_format().unwrap().id;
-        put_btc_linker_hash_in_db(&db, &linker_hash).unwrap();
-        let result = get_btc_linker_hash_from_db(&db).unwrap();
+        db_utils.put_btc_linker_hash_in_db(&linker_hash).unwrap();
+        let result = db_utils.get_btc_linker_hash_from_db().unwrap();
         assert_eq!(result, linker_hash);
     }
 
@@ -533,8 +536,10 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let hash = get_sample_btc_block_in_db_format().unwrap().id;
-        put_btc_hash_in_db(&db, &BTC_LINKER_HASH_KEY.to_vec(), &hash).unwrap();
-        let result = get_btc_hash_from_db(&db, &BTC_LINKER_HASH_KEY.to_vec()).unwrap();
+        db_utils
+            .put_btc_hash_in_db(&BTC_LINKER_HASH_KEY.to_vec(), &hash)
+            .unwrap();
+        let result = db_utils.get_btc_hash_from_db(&BTC_LINKER_HASH_KEY.to_vec()).unwrap();
         assert_eq!(result, hash);
     }
 
@@ -543,7 +548,8 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let test_block = get_sample_btc_block_in_db_format().unwrap();
-        assert!(maybe_get_parent_btc_block_and_id(&db, &test_block.id).is_none());
+        let result = db_utils.maybe_get_parent_btc_block_and_id(&test_block.id);
+        assert!(result.is_none());
     }
 
     #[test]
@@ -555,10 +561,10 @@ mod tests {
         let expected_result = blocks[blocks.len() - 2].clone();
         blocks
             .iter()
-            .map(|block| put_btc_block_in_db(&db, &block))
+            .map(|block| db_utils.put_btc_block_in_db(&block))
             .collect::<Result<()>>()
             .unwrap();
-        let result = maybe_get_parent_btc_block_and_id(&db, &test_block.id).unwrap();
+        let result = db_utils.maybe_get_parent_btc_block_and_id(&test_block.id).unwrap();
         assert_eq!(result, expected_result);
         assert!(result.id == test_block.prev_blockhash);
     }
@@ -568,8 +574,8 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let block_and_id = get_sample_btc_block_in_db_format().unwrap();
-        put_btc_block_in_db(&db, &block_and_id).unwrap();
-        let result = get_btc_block_from_db(&db, &block_and_id.id).unwrap();
+        db_utils.put_btc_block_in_db(&block_and_id).unwrap();
+        let result = db_utils.get_btc_block_from_db(&block_and_id.id).unwrap();
         assert_eq!(result, block_and_id);
     }
 
@@ -577,8 +583,10 @@ mod tests {
     fn should_get_and_put_btc_address_in_database() {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
-        put_btc_address_in_db(&db, &SAMPLE_TARGET_BTC_ADDRESS.to_string()).unwrap();
-        let result = get_btc_address_from_db(&db).unwrap();
+        db_utils
+            .put_btc_address_in_db(&SAMPLE_TARGET_BTC_ADDRESS.to_string())
+            .unwrap();
+        let result = db_utils.get_btc_address_from_db().unwrap();
         assert_eq!(result, SAMPLE_TARGET_BTC_ADDRESS);
     }
 
@@ -587,8 +595,8 @@ mod tests {
         let fee = 666;
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
-        put_btc_fee_in_db(&db, fee).unwrap();
-        let result = get_btc_fee_from_db(&db).unwrap();
+        db_utils.put_btc_fee_in_db(fee).unwrap();
+        let result = db_utils.get_btc_fee_from_db().unwrap();
         assert_eq!(result, fee)
     }
 
@@ -597,8 +605,8 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let network = BtcNetwork::Bitcoin;
-        put_btc_network_in_db(&db, network).unwrap();
-        let result = get_btc_network_from_db(&db).unwrap();
+        db_utils.put_btc_network_in_db(network).unwrap();
+        let result = db_utils.get_btc_network_from_db().unwrap();
         assert_eq!(result, network)
     }
 
@@ -607,8 +615,8 @@ mod tests {
         let difficulty = 1337;
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
-        put_btc_difficulty_in_db(&db, difficulty).unwrap();
-        let result = get_btc_difficulty_from_db(&db).unwrap();
+        db_utils.put_btc_difficulty_in_db(difficulty).unwrap();
+        let result = db_utils.get_btc_difficulty_from_db().unwrap();
         assert_eq!(result, difficulty)
     }
 
@@ -618,7 +626,8 @@ mod tests {
         let db_utils = BtcDatabaseUtils::new(&db);
         let block = get_sample_btc_block_in_db_format().unwrap();
         let block_hash = block.id;
-        assert!(maybe_get_btc_block_from_db(&db, &block_hash).is_none());
+        let result = db_utils.maybe_get_btc_block_from_db(&block_hash);
+        assert!(result.is_none());
     }
 
     #[test]
@@ -626,9 +635,9 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let block = get_sample_btc_block_in_db_format().unwrap();
-        put_btc_block_in_db(&db, &block).unwrap();
+        db_utils.put_btc_block_in_db(&block).unwrap();
         let block_hash = block.id;
-        let result = maybe_get_btc_block_from_db(&db, &block_hash).unwrap();
+        let result = db_utils.maybe_get_btc_block_from_db(&block_hash).unwrap();
         assert_eq!(result, block);
     }
 
@@ -637,7 +646,7 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let block_hash = get_sample_btc_block_in_db_format().unwrap().id;
-        let result = btc_block_exists_in_db(&db, &block_hash);
+        let result = db_utils.btc_block_exists_in_db(&block_hash);
         assert!(!result);
     }
 
@@ -646,9 +655,9 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let block = get_sample_btc_block_in_db_format().unwrap();
-        put_btc_block_in_db(&db, &block).unwrap();
+        db_utils.put_btc_block_in_db(&block).unwrap();
         let block_hash = block.id;
-        let result = btc_block_exists_in_db(&db, &block_hash);
+        let result = db_utils.btc_block_exists_in_db(&block_hash);
         assert!(result);
     }
 
@@ -657,12 +666,11 @@ mod tests {
         let db = get_test_database();
         let db_utils = BtcDatabaseUtils::new(&db);
         let pub_key_slice = get_sample_btc_pub_key_slice();
-        put_btc_pub_key_slice_in_db(&db, &pub_key_slice).unwrap();
-        let result = get_btc_public_key_slice_from_db(&db).unwrap();
+        db_utils.put_btc_pub_key_slice_in_db(&pub_key_slice).unwrap();
+        let result = db_utils.get_btc_public_key_slice_from_db().unwrap();
         result
             .iter()
             .enumerate()
             .for_each(|(i, e)| assert_eq!(e, &pub_key_slice[i]));
     }
 }
-*/
