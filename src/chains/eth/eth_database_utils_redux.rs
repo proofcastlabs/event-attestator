@@ -10,7 +10,7 @@ use crate::{
         eth_types::{AnySenderSigningParams, EthSigningParams},
         eth_utils::{convert_bytes_to_h256, convert_h256_to_bytes},
     },
-    constants::MIN_DATA_SENSITIVITY_LEVEL,
+    constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
     database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
     traits::DatabaseInterface,
@@ -443,7 +443,7 @@ impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
     fn get_eth_private_key_from_db(&self) -> Result<EthPrivateKey> {
         trace!("✔ Getting ETH private key from db...");
         self.db
-            .get(self.eth_private_key_db_key.to_vec(), Some(255))
+            .get(self.eth_private_key_db_key.to_vec(), MAX_DATA_SENSITIVITY_LEVEL)
             .and_then(|pk_bytes| {
                 let mut array = [0; 32];
                 array.copy_from_slice(&pk_bytes[..32]);

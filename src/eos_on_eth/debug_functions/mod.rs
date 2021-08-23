@@ -34,7 +34,7 @@ use crate::{
         },
     },
     check_debug_mode::check_debug_mode,
-    constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL},
+    constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
     dictionaries::{dictionary_constants::EOS_ETH_DICTIONARY_KEY, eos_eth::EosEthTokenDictionary},
     eos_on_eth::check_core_is_initialized::check_core_is_initialized,
@@ -76,7 +76,7 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
     let is_private_key =
         { key_bytes == EOS_PRIVATE_KEY_DB_KEY.to_vec() || key_bytes == ETH_PRIVATE_KEY_DB_KEY.to_vec() };
     let sensitivity = if is_private_key {
-        PRIVATE_KEY_DATA_SENSITIVITY_LEVEL
+        MAX_DATA_SENSITIVITY_LEVEL
     } else {
         None
     };
@@ -91,7 +91,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
     let is_private_key =
         { key_bytes == EOS_PRIVATE_KEY_DB_KEY.to_vec() || key_bytes == ETH_PRIVATE_KEY_DB_KEY.to_vec() };
     let sensitivity = match is_private_key {
-        true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+        true => MAX_DATA_SENSITIVITY_LEVEL,
         false => None,
     };
     get_key_from_db(db, key, sensitivity).map(prepend_debug_output_marker_to_string)

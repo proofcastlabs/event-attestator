@@ -27,7 +27,7 @@ use crate::{
         eth_types::{AnySenderSigningParams, EthSigningParams},
         eth_utils::{convert_bytes_to_h256, convert_h256_to_bytes},
     },
-    constants::MIN_DATA_SENSITIVITY_LEVEL,
+    constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
     database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
     traits::DatabaseInterface,
@@ -346,11 +346,12 @@ pub fn put_eth_private_key_in_db<D: DatabaseInterface>(db: &D, pk: &EthPrivateKe
 
 pub fn get_eth_private_key_from_db<D: DatabaseInterface>(db: &D) -> Result<EthPrivateKey> {
     trace!("✔ Getting ETH private key from db...");
-    db.get(ETH_PRIVATE_KEY_DB_KEY.to_vec(), Some(255)).and_then(|pk_bytes| {
-        let mut array = [0; 32];
-        array.copy_from_slice(&pk_bytes[..32]);
-        EthPrivateKey::from_slice(&array)
-    })
+    db.get(ETH_PRIVATE_KEY_DB_KEY.to_vec(), MAX_DATA_SENSITIVITY_LEVEL)
+        .and_then(|pk_bytes| {
+            let mut array = [0; 32];
+            array.copy_from_slice(&pk_bytes[..32]);
+            EthPrivateKey::from_slice(&array)
+        })
 }
 
 pub fn get_erc777_contract_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {

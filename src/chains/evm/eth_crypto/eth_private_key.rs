@@ -17,7 +17,7 @@ use crate::{
             eth_types::EthSignature,
         },
     },
-    constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+    constants::MAX_DATA_SENSITIVITY_LEVEL,
     crypto_utils::generate_random_private_key,
     traits::DatabaseInterface,
     types::{Byte, Result},
@@ -46,7 +46,7 @@ impl EthPrivateKey {
     where
         D: DatabaseInterface,
     {
-        db.put(key.to_vec(), self.0[..].to_vec(), PRIVATE_KEY_DATA_SENSITIVITY_LEVEL)
+        db.put(key.to_vec(), self.0[..].to_vec(), MAX_DATA_SENSITIVITY_LEVEL)
     }
 }
 

@@ -60,7 +60,7 @@ use crate::{
         },
     },
     check_debug_mode::check_debug_mode,
-    constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
+    constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
     fees::{
         fee_constants::BTC_ON_ETH_FEE_DB_KEYS,
@@ -117,7 +117,7 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
             let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
-                true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+                true => MAX_DATA_SENSITIVITY_LEVEL,
                 false => None,
             };
             set_key_in_db_to_value(db, key, value, sensitivity)
@@ -133,7 +133,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
             let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
-                true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+                true => MAX_DATA_SENSITIVITY_LEVEL,
                 false => None,
             };
             get_key_from_db(db, key, sensitivity)
