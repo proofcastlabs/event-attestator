@@ -5,7 +5,7 @@ use crate::{
     chains::{
         btc::{btc_types::BtcTransactions, utxo_manager::utxo_types::BtcUtxosAndValues},
         eos::eos_crypto::eos_transaction::EosSignedTransactions,
-        eth::eth_crypto::eth_transaction::EthTransactions,
+        eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils_redux::EthDatabaseUtils},
         evm::eth_submission_material::EthSubmissionMaterial,
     },
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary},
@@ -21,6 +21,8 @@ use crate::{
 pub struct EthState<'a, D: DatabaseInterface> {
     pub db: &'a D,
     pub misc: Option<String>,
+    pub eth_db_utils: EthDatabaseUtils<'a, D>,
+    pub evm_db_utils: EthDatabaseUtils<'a, D>,
     pub btc_transactions: Option<BtcTransactions>,
     pub erc20_on_evm_eth_signed_txs: EthTransactions,
     pub eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos,
@@ -45,6 +47,8 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             eth_submission_material: None,
             eos_eth_token_dictionary: None,
             eth_evm_token_dictionary: None,
+            eth_db_utils: EthDatabaseUtils::new(db),
+            evm_db_utils: EthDatabaseUtils::new_for_evm(db),
             erc20_on_evm_eth_signed_txs: EthTransactions::new(vec![]),
             erc20_on_evm_eth_tx_infos: EthOnEvmEthTxInfos::new(vec![]),
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
