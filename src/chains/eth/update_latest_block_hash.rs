@@ -63,7 +63,6 @@ mod tests {
         put_eth_latest_block_in_db(&eth_db_utils, &latest_submission_material).unwrap();
         let subsequent_submission_material = get_sequential_eth_blocks_and_receipts()[1].clone();
         let expected_block_hash_after = subsequent_submission_material.get_block_hash().unwrap();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
         update_latest_block_hash_if_subsequent(&eth_db_utils, &subsequent_submission_material).unwrap();
         let latest_block_hash_after = get_eth_latest_block_hash_from_db(&eth_db_utils).unwrap();
         assert_ne!(latest_block_hash_before, latest_block_hash_after);
@@ -78,7 +77,6 @@ mod tests {
         let latest_block_hash_before = latest_submission_material.get_block_hash().unwrap();
         put_eth_latest_block_in_db(&eth_db_utils, &latest_submission_material).unwrap();
         let non_subsequent_submission_material = get_sequential_eth_blocks_and_receipts()[0].clone();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
         update_latest_block_hash_if_subsequent(&eth_db_utils, &non_subsequent_submission_material).unwrap();
         let latest_block_hash_after = eth_db_utils
             .get_hash_from_db_via_hash_key(EthHash::from_slice(&ETH_LATEST_BLOCK_HASH_KEY[..]))

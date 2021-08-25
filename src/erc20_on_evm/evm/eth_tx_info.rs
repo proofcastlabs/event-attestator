@@ -463,15 +463,14 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EvmS
         info!("✔ No tx infos in state ∴ no ETH transactions to sign!");
         Ok(state)
     } else {
-        let eth_db_utils = EthDatabaseUtils::new(state.db); // FIXME get from state!
         state
             .erc20_on_evm_eth_tx_infos
             .to_eth_signed_txs(
-                eth_db_utils.get_eth_account_nonce_from_db()?,
-                &eth_db_utils.get_eth_chain_id_from_db()?,
-                eth_db_utils.get_eth_gas_price_from_db()?,
-                &eth_db_utils.get_eth_private_key_from_db()?,
-                &eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+                state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                state.eth_db_utils.get_eth_gas_price_from_db()?,
+                &state.eth_db_utils.get_eth_private_key_from_db()?,
+                &state.eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
             )
             .and_then(|signed_txs| {
                 #[cfg(feature = "debug")]

@@ -81,12 +81,11 @@ mod tests {
     #[test]
     fn should_return_true_if_canon_block_requires_updating() {
         let db = get_test_database();
+        let eth_db_utils = EthDatabaseUtils::new(&db);
         let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
         let canon_block = blocks_and_receipts[0].clone();
         let calculated_canon_block = blocks_and_receipts[1].clone();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
         eth_db_utils.put_eth_canon_block_in_db(&canon_block).unwrap();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
         let result = does_canon_block_require_updating(&eth_db_utils, &calculated_canon_block).unwrap();
         assert!(result);
     }

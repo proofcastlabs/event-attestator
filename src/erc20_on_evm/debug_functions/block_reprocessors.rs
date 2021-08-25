@@ -122,16 +122,14 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
                 eth_signed_transactions: if state.erc20_on_evm_eth_signed_txs.is_empty() {
                     vec![]
                 } else {
-                    let eth_db_utils = EthDatabaseUtils::new(state.db);
-                    // FIXME / TODO The above will eventually be in state when chains::evm is no more.
                     let use_any_sender_tx = false;
                     get_eth_signed_tx_info_from_evm_txs(
                         &state.erc20_on_evm_eth_signed_txs,
                         &state.erc20_on_evm_eth_tx_infos,
-                        eth_db_utils.get_eth_account_nonce_from_db()?,
+                        state.eth_db_utils.get_eth_account_nonce_from_db()?,
                         use_any_sender_tx,
-                        eth_db_utils.get_any_sender_nonce_from_db()?,
-                        eth_db_utils.get_latest_eth_block_number()?,
+                        state.eth_db_utils.get_any_sender_nonce_from_db()?,
+                        state.eth_db_utils.get_latest_eth_block_number()?,
                     )?
                 },
             })?;

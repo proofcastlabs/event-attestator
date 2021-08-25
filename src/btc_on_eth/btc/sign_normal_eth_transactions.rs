@@ -111,8 +111,7 @@ mod tests {
         eth_db_utils.put_eth_gas_price_in_db(gas_price).unwrap();
         eth_db_utils.put_eth_account_nonce_in_db(nonce).unwrap();
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
-        let db_utils = EthDatabaseUtils::new(&db);
-        let result = db_utils.get_signing_params_from_db().unwrap();
+        let result = eth_db_utils.get_signing_params_from_db().unwrap();
         assert!(
             result.chain_id == chain_id
                 && result.gas_price == gas_price
