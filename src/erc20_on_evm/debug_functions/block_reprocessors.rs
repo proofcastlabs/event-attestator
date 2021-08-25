@@ -82,7 +82,7 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Debug reprocessing EVM block...");
     check_debug_mode()
-        .and_then(|_| parse_evm_submission_material_and_put_in_state(evm_block_json, EvmState::init(db)))
+        .and_then(|_| parse_evm_submission_material_and_put_in_state(evm_block_json, EvmState::init(&db)))
         .and_then(check_core_is_initialized_and_return_evm_state)
         .and_then(start_evm_db_tx_and_return_state)
         .and_then(validate_evm_block_in_state)
@@ -95,8 +95,8 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
                 .and_then(|material| {
                     EthOnEvmEthTxInfos::from_submission_material(
                         material,
-                        &EthEvmTokenDictionary::get_from_db(&state.db)?,
-                        &get_evm_chain_id_from_db(&state.db)?,
+                        &EthEvmTokenDictionary::get_from_db(state.db)?,
+                        &get_evm_chain_id_from_db(state.db)?,
                     )
                 })
                 .and_then(|params| state.add_erc20_on_evm_eth_tx_infos(params))
@@ -118,11 +118,11 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
         .and_then(|state| {
             info!("✔ Getting EVM output json...");
             let output = serde_json::to_string(&EvmOutput {
-                evm_latest_block_number: get_latest_evm_block_number(&state.db)?,
+                evm_latest_block_number: get_latest_evm_block_number(state.db)?,
                 eth_signed_transactions: if state.erc20_on_evm_eth_signed_txs.is_empty() {
                     vec![]
                 } else {
-                    let eth_db_utils = EthDatabaseUtils::new(&state.db);
+                    let eth_db_utils = EthDatabaseUtils::new(state.db);
                     // FIXME / TODO The above will eventually be in state when chains::evm is no more.
                     let use_any_sender_tx = false;
                     get_eth_signed_tx_info_from_evm_txs(

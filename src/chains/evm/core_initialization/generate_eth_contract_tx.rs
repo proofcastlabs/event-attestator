@@ -11,13 +11,13 @@ use crate::{
     types::Result,
 };
 
-pub fn generate_eth_contract_tx_and_put_in_state<D: DatabaseInterface>(
+pub fn generate_eth_contract_tx_and_put_in_state<'a, D: DatabaseInterface>(
     chain_id: &EthChainId,
     gas_price: u64,
     bytecode_path: &str,
-    state: EthState<D>,
-) -> Result<EthState<D>> {
-    get_eth_private_key_from_db(&state.db)
+    state: EthState<'a, D>,
+) -> Result<EthState<'a, D>> {
+    get_eth_private_key_from_db(state.db)
         .and_then(|eth_private_key| {
             get_signed_ptoken_smart_contract_tx(0, chain_id, eth_private_key, gas_price, bytecode_path)
         })

@@ -48,6 +48,7 @@ pub struct EthState<'a, D: DatabaseInterface> {
 impl<'a, D: DatabaseInterface> EthState<'a, D> {
     pub fn init(db: &'a D) -> EthState<'a, D> {
         EthState {
+            db,
             misc: None,
             btc_transactions: None,
             eos_transactions: None,
@@ -64,7 +65,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
             btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(vec![]),
             erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos::new(vec![]),
-            db,
         }
     }
 

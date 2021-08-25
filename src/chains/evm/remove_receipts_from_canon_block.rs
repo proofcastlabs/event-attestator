@@ -19,7 +19,7 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Removing receipts from canon block...");
-    remove_receipts_from_canon_block_and_save_in_db(&state.db).and(Ok(state))
+    remove_receipts_from_canon_block_and_save_in_db(state.db).and(Ok(state))
 }
 
 #[cfg(test)]

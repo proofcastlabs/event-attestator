@@ -15,7 +15,7 @@ pub fn maybe_increment_eth_account_nonce_and_return_evm_state<D: DatabaseInterfa
         info!("✔ No signatures in state ∴ not incrementing ETH account nonce");
         Ok(state)
     } else {
-        let eth_db_utils = EthDatabaseUtils::new(&state.db); // FIXME Get from state eventually!
+        let eth_db_utils = EthDatabaseUtils::new(state.db); // FIXME Get from state eventually!
         increment_eth_account_nonce(
             &eth_db_utils,
             eth_db_utils.get_eth_account_nonce_from_db()?,

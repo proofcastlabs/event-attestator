@@ -279,7 +279,6 @@ mod tests {
         get_sample_eth_submission_material,
         get_sample_eth_submission_material_json,
         get_sample_receipt_with_desired_topic,
-        get_valid_state_with_invalid_block_and_receipts,
         SAMPLE_RECEIPT_INDEX,
     };
 
@@ -401,14 +400,6 @@ mod tests {
         let result = block_and_receipts.receipts.get_merkle_root().unwrap();
         let expected_result = block_and_receipts.get_receipts_root().unwrap();
         assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_return_false_if_receipts_root_is_not_correct() {
-        let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
-        let block_and_receipts = state.get_eth_submission_material().unwrap();
-        let result = block_and_receipts.receipts_are_valid().unwrap();
-        assert!(!result);
     }
 
     #[test]

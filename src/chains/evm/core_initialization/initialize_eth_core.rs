@@ -29,14 +29,14 @@ use crate::{
     types::Result,
 };
 
-pub fn initialize_eth_core_maybe_with_contract_tx<D: DatabaseInterface>(
+pub fn initialize_eth_core_maybe_with_contract_tx<'a, D: DatabaseInterface>(
     block_json: &str,
     chain_id: &EthChainId,
     gas_price: u64,
     canon_to_tip_length: u64,
     maybe_bytecode_path: Option<&str>,
-    state: EthState<D>,
-) -> Result<EthState<D>> {
+    state: EthState<'a, D>,
+) -> Result<EthState<'a, D>> {
     parse_eth_submission_material_and_put_in_state(block_json, state)
         .and_then(|state| put_eth_chain_id_in_db_and_return_state(chain_id, state))
         .and_then(validate_eth_block_in_state)
@@ -61,13 +61,13 @@ pub fn initialize_eth_core_maybe_with_contract_tx<D: DatabaseInterface>(
         })
 }
 
-pub fn initialize_eth_core_with_no_contract_tx<D: DatabaseInterface>(
+pub fn initialize_eth_core_with_no_contract_tx<'a, D: DatabaseInterface>(
     block_json: &str,
     chain_id: &EthChainId,
     gas_price: u64,
     canon_to_tip_length: u64,
-    state: EthState<D>,
-) -> Result<EthState<D>> {
+    state: EthState<'a, D>,
+) -> Result<EthState<'a, D>> {
     info!("✔ Initializing ETH core with NO contract tx...");
     initialize_eth_core_maybe_with_contract_tx(block_json, chain_id, gas_price, canon_to_tip_length, None, state)
 }

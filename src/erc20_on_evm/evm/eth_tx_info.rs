@@ -399,7 +399,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
     state: EvmState<D>,
 ) -> Result<EvmState<D>> {
     info!("✔ Maybe parsing `EthOnEvmEthTxInfos`...");
-    get_evm_canon_block_from_db(&state.db).and_then(|submission_material| {
+    get_evm_canon_block_from_db(state.db).and_then(|submission_material| {
         match submission_material.receipts.is_empty() {
             true => {
                 info!("✔ No receipts in canon block ∴ no info to parse!");
@@ -410,12 +410,12 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                     "✔ {} receipts in canon block ∴ parsing info...",
                     submission_material.receipts.len()
                 );
-                EthEvmTokenDictionary::get_from_db(&state.db)
+                EthEvmTokenDictionary::get_from_db(state.db)
                     .and_then(|account_names| {
                         EthOnEvmEthTxInfos::from_submission_material(
                             &submission_material,
                             &account_names,
-                            &get_evm_chain_id_from_db(&state.db)?,
+                            &get_evm_chain_id_from_db(state.db)?,
                         )
                     })
                     .and_then(|tx_infos| state.add_erc20_on_evm_eth_tx_infos(tx_infos))
@@ -463,7 +463,7 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EvmS
         info!("✔ No tx infos in state ∴ no ETH transactions to sign!");
         Ok(state)
     } else {
-        let eth_db_utils = EthDatabaseUtils::new(&state.db); // FIXME get from state!
+        let eth_db_utils = EthDatabaseUtils::new(state.db); // FIXME get from state!
         state
             .erc20_on_evm_eth_tx_infos
             .to_eth_signed_txs(

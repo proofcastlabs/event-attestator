@@ -71,5 +71,5 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Maybe updating ETH tail block hash...");
-    maybe_update_eth_tail_block_hash(&state.db).and(Ok(state))
+    maybe_update_eth_tail_block_hash(state.db).and(Ok(state))
 }

@@ -18,10 +18,10 @@ pub fn update_accrued_fees_in_dictionary_and_return_state<D: DatabaseInterface>(
         Ok(state)
     } else {
         info!("✔ Accruing fees during EVM block submission...");
-        EthEvmTokenDictionary::get_from_db(&state.db)
+        EthEvmTokenDictionary::get_from_db(state.db)
             .and_then(|ref dictionary| {
                 dictionary.increment_accrued_fees_and_save_in_db(
-                    &state.db,
+                    state.db,
                     state.erc20_on_evm_eth_tx_infos.get_fees(dictionary)?,
                 )
             })
@@ -38,7 +38,7 @@ pub fn account_for_fees_in_eth_tx_infos_in_state<D: DatabaseInterface>(state: Ev
         Ok(state)
     } else {
         info!("✔ Accounting for fees in `EthOnEvmEthTxInfos` during EVM block submission...");
-        EthEvmTokenDictionary::get_from_db(&state.db).and_then(|ref dictionary| {
+        EthEvmTokenDictionary::get_from_db(state.db).and_then(|ref dictionary| {
             let tx_infos = state.erc20_on_evm_eth_tx_infos.clone();
             state.replace_erc20_on_evm_eth_tx_infos(tx_infos.subtract_fees(dictionary)?)
         })

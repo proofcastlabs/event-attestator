@@ -10,5 +10,5 @@ use crate::{
 
 pub fn generate_and_store_eth_private_key<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Generating & storing ETH private key...");
-    put_eth_private_key_in_db(&state.db, &EthPrivateKey::generate_random()?).and(Ok(state))
+    put_eth_private_key_in_db(state.db, &EthPrivateKey::generate_random()?).and(Ok(state))
 }

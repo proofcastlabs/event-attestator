@@ -506,7 +506,7 @@ pub fn get_eth_evm_token_dictionary_from_db_and_add_to_evm_state<D: DatabaseInte
     state: EvmState<D>,
 ) -> Result<EvmState<D>> {
     info!("✔ Getting `EthEvmTokenDictionary` and adding to EVM state...");
-    EthEvmTokenDictionary::get_from_db(&state.db).and_then(|dictionary| state.add_eth_evm_token_dictionary(dictionary))
+    EthEvmTokenDictionary::get_from_db(state.db).and_then(|dictionary| state.add_eth_evm_token_dictionary(dictionary))
 }
 
 pub fn get_eth_evm_token_dictionary_from_db_and_add_to_eth_state<D: DatabaseInterface>(

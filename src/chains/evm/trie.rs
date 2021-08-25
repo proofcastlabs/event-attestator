@@ -750,7 +750,6 @@ mod tests {
             get_sample_eth_submission_material_n,
             get_sample_extension_node,
             get_sample_leaf_node,
-            get_valid_state_with_invalid_block_and_receipts,
         },
         eth_utils::convert_hex_to_h256,
         get_trie_hash_map::get_thing_from_trie_hash_map,
@@ -839,20 +838,6 @@ mod tests {
         let updated_trie = put_in_trie_recursively(trie, key_value_tuples, index).unwrap();
         let root_hex = convert_h256_to_prefixed_hex(updated_trie.root);
         assert_eq!(root_hex, expected_root_hex);
-    }
-
-    #[test]
-    fn should_put_invalid_sample_receipts_in_trie_correctly() {
-        let index = 0;
-        let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
-        let block_and_receipts = state.get_eth_submission_material().unwrap();
-        let expected_root_hex = convert_h256_to_prefixed_hex(block_and_receipts.get_receipts_root().unwrap());
-        let receipts = block_and_receipts.receipts.clone();
-        let trie = Trie::get_new_trie().unwrap();
-        let key_value_tuples = receipts.get_rlp_encoded_receipts_and_nibble_tuples().unwrap();
-        let updated_trie = put_in_trie_recursively(trie, key_value_tuples, index).unwrap();
-        let root_hex = convert_h256_to_prefixed_hex(updated_trie.root);
-        assert!(root_hex != expected_root_hex);
     }
 
     #[test]

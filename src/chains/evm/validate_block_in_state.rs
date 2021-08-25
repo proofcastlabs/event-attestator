@@ -14,7 +14,7 @@ where
         match state
             .get_eth_submission_material()?
             .get_block()?
-            .is_valid(&get_eth_chain_id_from_db(&state.db)?)?
+            .is_valid(&get_eth_chain_id_from_db(state.db)?)?
         {
             true => Ok(state),
             false => Err("✘ Not accepting ETH block - header hash not valid!".into()),

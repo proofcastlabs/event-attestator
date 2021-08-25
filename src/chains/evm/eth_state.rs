@@ -18,8 +18,8 @@ use crate::{
 };
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct EthState<D: DatabaseInterface> {
-    pub db: D,
+pub struct EthState<'a, D: DatabaseInterface> {
+    pub db: &'a D,
     pub misc: Option<String>,
     pub btc_transactions: Option<BtcTransactions>,
     pub erc20_on_evm_eth_signed_txs: EthTransactions,
@@ -34,8 +34,8 @@ pub struct EthState<D: DatabaseInterface> {
     pub eth_evm_token_dictionary: Option<EthEvmTokenDictionary>,
 }
 
-impl<D: DatabaseInterface> EthState<D> {
-    pub fn init(db: D) -> EthState<D> {
+impl<'a, D: DatabaseInterface> EthState<'a, D> {
+    pub fn init(db: &'a D) -> EthState<'a, D> {
         EthState {
             db,
             misc: None,
@@ -143,7 +143,6 @@ mod tests {
             get_expected_receipt,
             get_sample_eth_submission_material,
             get_sample_eth_submission_material_n,
-            get_valid_state_with_block_and_receipts,
             SAMPLE_RECEIPT_INDEX,
         },
         errors::AppError,
@@ -153,7 +152,8 @@ mod tests {
     #[test]
     fn should_fail_to_get_eth_submission_material_in_state() {
         let expected_error = get_not_in_state_err("eth_submission_material");
-        let initial_state = EthState::init(get_test_database());
+        let db = get_test_database();
+        let initial_state = EthState::init(&db);
         match initial_state.get_eth_submission_material() {
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Eth block should not be in state yet!"),
@@ -165,7 +165,8 @@ mod tests {
     fn should_add_eth_submission_material_state() {
         let expected_error = get_not_in_state_err("eth_submission_material");
         let eth_submission_material = get_sample_eth_submission_material();
-        let initial_state = EthState::init(get_test_database());
+        let db = get_test_database();
+        let initial_state = EthState::init(&db);
         match initial_state.get_eth_submission_material() {
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Eth block should not be in state yet!"),
@@ -187,7 +188,8 @@ mod tests {
     fn should_err_when_overwriting_eth_submission_material_in_state() {
         let expected_error = get_no_overwrite_state_err("eth_submission_material");
         let eth_submission_material = get_sample_eth_submission_material();
-        let initial_state = EthState::init(get_test_database());
+        let db = get_test_database();
+        let initial_state = EthState::init(&db);
         let updated_state = initial_state
             .add_eth_submission_material(eth_submission_material.clone())
             .unwrap();
@@ -202,7 +204,8 @@ mod tests {
     fn should_update_eth_submission_material() {
         let eth_submission_material_1 = get_sample_eth_submission_material_n(0).unwrap();
         let eth_submission_material_2 = get_sample_eth_submission_material_n(1).unwrap();
-        let initial_state = EthState::init(get_test_database());
+        let db = get_test_database();
+        let initial_state = EthState::init(&db);
         let updated_state = initial_state
             .add_eth_submission_material(eth_submission_material_1)
             .unwrap();
@@ -220,13 +223,5 @@ mod tests {
             .get_block_number()
             .unwrap();
         assert_ne!(final_state_block_number, initial_state_block_num);
-    }
-
-    #[test]
-    fn should_get_eth_parent_hash() {
-        let expected_result = get_sample_eth_submission_material().get_parent_hash().unwrap();
-        let state = get_valid_state_with_block_and_receipts().unwrap();
-        let result = state.get_parent_hash().unwrap();
-        assert_eq!(result, expected_result);
     }
 }
