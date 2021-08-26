@@ -6,7 +6,11 @@ use serde_json::json;
 use crate::{
     chains::{
         eth::{
-            eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY as ETH_KEY},
+            eth_constants::{
+                get_eth_constants_db_keys,
+                ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
+                ETH_PRIVATE_KEY_DB_KEY,
+            },
             eth_contracts::erc20_vault::{
                 encode_erc20_vault_add_supported_token_fx_data,
                 encode_erc20_vault_migrate_fxn_data,
@@ -17,17 +21,12 @@ use crate::{
                 ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
             },
             eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils_redux::EthDatabaseUtils,
+            eth_database_utils::EthDatabaseUtils,
             eth_debug_functions::debug_set_eth_gas_price_in_db,
-            eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
+            eth_utils::{convert_hex_to_address, get_eth_address_from_str},
+            evm_constants::{get_evm_constants_db_keys, EVM_PRIVATE_KEY_DB_KEY},
         },
-        evm::{
-            eth_constants::{
-                get_eth_constants_db_keys as get_evm_constants_db_keys,
-                ETH_PRIVATE_KEY_DB_KEY as EVM_KEY,
-            },
-            eth_database_utils::put_eth_gas_price_in_db as put_evm_gas_price_in_db,
-        },
+        evm::eth_database_utils::put_eth_gas_price_in_db as put_evm_gas_price_in_db,
     },
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
@@ -68,10 +67,11 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
-            let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == EVM_KEY.to_vec() {
-                true => MAX_DATA_SENSITIVITY_LEVEL,
-                false => None,
-            };
+            let sensitivity =
+                match key_bytes == ETH_PRIVATE_KEY_DB_KEY.to_vec() || key_bytes == EVM_PRIVATE_KEY_DB_KEY.to_vec() {
+                    true => MAX_DATA_SENSITIVITY_LEVEL,
+                    false => None,
+                };
             set_key_in_db_to_value(db, key, value, sensitivity)
         })
         .map(prepend_debug_output_marker_to_string)
@@ -84,10 +84,11 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
-            let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == EVM_KEY.to_vec() {
-                true => MAX_DATA_SENSITIVITY_LEVEL,
-                false => None,
-            };
+            let sensitivity =
+                match key_bytes == ETH_PRIVATE_KEY_DB_KEY.to_vec() || key_bytes == EVM_PRIVATE_KEY_DB_KEY.to_vec() {
+                    true => MAX_DATA_SENSITIVITY_LEVEL,
+                    false => None,
+                };
             get_key_from_db(db, key, sensitivity)
         })
         .map(prepend_debug_output_marker_to_string)

@@ -2,7 +2,7 @@ use crate::{
     chains::{
         eth::{
             core_initialization::check_eth_core_is_initialized::is_eth_core_initialized,
-            eth_database_utils_redux::EthDatabaseUtils,
+            eth_database_utils::EthDatabaseUtils,
             eth_state::EthState,
         },
         evm::{

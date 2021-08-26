@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{
-        eth::eth_database_utils_redux::EthDatabaseUtils,
+        eth::eth_database_utils::EthDatabaseUtils,
         evm::eth_database_utils::get_latest_eth_block_number as get_latest_evm_block_number,
     },
     erc20_on_evm::check_core_is_initialized::check_core_is_initialized,

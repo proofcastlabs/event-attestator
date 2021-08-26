@@ -1,4 +1,4 @@
-use crate::{chains::eth::eth_database_utils_redux::EthDatabaseUtils, traits::DatabaseInterface, types::Result};
+use crate::{chains::eth::eth_database_utils::EthDatabaseUtils, traits::DatabaseInterface, types::Result};
 
 pub fn is_eth_core_initialized<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> bool {
     eth_db_utils.get_public_eth_address_from_db().is_ok()
@@ -16,7 +16,7 @@ pub fn check_eth_core_is_initialized<D: DatabaseInterface>(eth_db_utils: &EthDat
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::{eth_database_utils_redux::EthDatabaseUtils, eth_test_utils::get_sample_eth_address},
+        chains::eth::{eth_database_utils::EthDatabaseUtils, eth_test_utils::get_sample_eth_address},
         errors::AppError,
         test_utils::get_test_database,
     };

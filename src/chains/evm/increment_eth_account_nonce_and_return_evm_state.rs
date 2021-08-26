@@ -1,8 +1,5 @@
 use crate::{
-    chains::{
-        eth::{eth_database_utils_redux::EthDatabaseUtils, increment_eth_account_nonce::increment_eth_account_nonce},
-        evm::eth_state::EthState as EvmState,
-    },
+    chains::{eth::increment_eth_account_nonce::increment_eth_account_nonce, evm::eth_state::EthState as EvmState},
     traits::DatabaseInterface,
     types::Result,
 };

@@ -3,7 +3,7 @@ use crate::{
         btc::{btc_state::BtcState, core_initialization::check_btc_core_is_initialized::check_btc_core_is_initialized},
         eth::{
             core_initialization::check_eth_core_is_initialized::check_eth_core_is_initialized,
-            eth_database_utils_redux::EthDatabaseUtils,
+            eth_database_utils::EthDatabaseUtils,
             eth_state::EthState,
         },
     },
@@ -30,7 +30,7 @@ mod tests {
     use crate::{
         chains::{
             btc::{btc_database_utils::put_btc_address_in_db, btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS},
-            eth::{eth_database_utils_redux::EthDatabaseUtils, eth_test_utils::get_sample_eth_address},
+            eth::{eth_database_utils::EthDatabaseUtils, eth_test_utils::get_sample_eth_address},
         },
         test_utils::get_test_database,
     };

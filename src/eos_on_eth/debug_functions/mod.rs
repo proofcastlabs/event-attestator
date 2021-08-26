@@ -29,7 +29,7 @@ use crate::{
         },
         eth::{
             eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY},
-            eth_database_utils_redux::EthDatabaseUtils,
+            eth_database_utils::EthDatabaseUtils,
             eth_debug_functions::debug_set_eth_gas_price_in_db,
             eth_utils::convert_hex_to_eth_address,
         },
@@ -56,7 +56,7 @@ use crate::{
 /// transaction replays. Use with extreme caution and only if you know exactly what you are doing
 /// and why.
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
-    check_core_is_initialized(&EthDatabaseUtils::new(db), &db)
+    check_core_is_initialized(&EthDatabaseUtils::new(db), db)
         .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(eos_init_json)?))
 }
 

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{
-        eth::{eth_database_utils_redux::EthDatabaseUtils, eth_enclave_state::EthEnclaveState},
+        eth::{eth_database_utils::EthDatabaseUtils, eth_enclave_state::EthEnclaveState},
         evm::eth_enclave_state::EthEnclaveState as EvmEnclaveState,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,

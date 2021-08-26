@@ -51,7 +51,7 @@ use crate::{
                 },
             },
             eth_crypto::eth_transaction::get_signed_minting_tx,
-            eth_database_utils_redux::EthDatabaseUtils,
+            eth_database_utils::EthDatabaseUtils,
             eth_debug_functions::debug_set_eth_gas_price_in_db,
         },
     },
@@ -163,12 +163,11 @@ pub fn debug_get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(
     db: D,
     new_address: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDatabaseUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &db)
+    check_core_is_initialized(eth_db_utils, &db)
         .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
         .and_then(|_| {
-            get_signed_erc777_change_pnetwork_tx(&eth_db_utils, &db, EthAddress::from_slice(&hex::decode(new_address)?))
+            get_signed_erc777_change_pnetwork_tx(eth_db_utils, EthAddress::from_slice(&hex::decode(new_address)?))
         })
         .and_then(|signed_tx_hex| {
             db.end_transaction()?;
@@ -211,7 +210,6 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
         .and_then(|_| {
             get_signed_erc777_proxy_change_pnetwork_tx(
                 &eth_db_utils,
-                &db,
                 EthAddress::from_slice(&hex::decode(new_address)?),
             )
         })
@@ -246,7 +244,6 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D: DatabaseInte
         .and_then(|_| {
             get_signed_erc777_proxy_change_pnetwork_by_proxy_tx(
                 &eth_db_utils,
-                &db,
                 EthAddress::from_slice(&hex::decode(new_address)?),
             )
         })

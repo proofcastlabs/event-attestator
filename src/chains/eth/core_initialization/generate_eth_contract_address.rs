@@ -3,7 +3,7 @@ use rlp::RlpStream;
 use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
-    chains::eth::{eth_database_utils_redux::EthDatabaseUtils, eth_state::EthState},
+    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_state::EthState},
     traits::DatabaseInterface,
     types::Result,
 };

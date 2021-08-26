@@ -1,5 +1,5 @@
 use crate::{
-    chains::eth::{eth_database_utils_redux::EthDatabaseUtils, eth_state::EthState},
+    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_state::EthState},
     traits::DatabaseInterface,
     types::Result,
 };

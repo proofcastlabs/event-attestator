@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::{eos::eos_database_utils::get_latest_eos_block_number, eth::eth_database_utils_redux::EthDatabaseUtils},
+    chains::{eos::eos_database_utils::get_latest_eos_block_number, eth::eth_database_utils::EthDatabaseUtils},
     eos_on_eth::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,

@@ -3,7 +3,7 @@ use crate::{
         eos::{core_initialization::check_eos_core_is_initialized::is_eos_core_initialized, eos_state::EosState},
         eth::{
             core_initialization::check_eth_core_is_initialized::is_eth_core_initialized,
-            eth_database_utils_redux::EthDatabaseUtils,
+            eth_database_utils::EthDatabaseUtils,
             eth_state::EthState,
         },
     },

@@ -1,7 +1,7 @@
 use serde_json::json;
 
 use crate::{
-    chains::eth::eth_database_utils_redux::EthDatabaseUtils,
+    chains::eth::eth_database_utils::EthDatabaseUtils,
     check_debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,

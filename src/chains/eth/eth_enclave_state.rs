@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     chains::eth::{
         eth_constants::ETH_TAIL_LENGTH,
-        eth_database_utils_redux::EthDatabaseUtils,
+        eth_database_utils::EthDatabaseUtils,
         get_linker_hash::get_linker_hash_or_genesis_hash as get_eth_linker_hash,
     },
     constants::SAFE_ETH_ADDRESS,

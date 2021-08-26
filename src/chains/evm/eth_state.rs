@@ -5,7 +5,7 @@ use crate::{
     chains::{
         btc::{btc_types::BtcTransactions, utxo_manager::utxo_types::BtcUtxosAndValues},
         eos::eos_crypto::eos_transaction::EosSignedTransactions,
-        eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils_redux::EthDatabaseUtils},
+        eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils::EthDatabaseUtils},
         evm::eth_submission_material::EthSubmissionMaterial,
     },
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary},

@@ -2,7 +2,7 @@ use ethereum_types::H256 as EthHash;
 
 use crate::{
     chains::eth::{
-        eth_database_utils_redux::EthDatabaseUtils,
+        eth_database_utils::EthDatabaseUtils,
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
     },
@@ -29,7 +29,7 @@ pub fn remove_parents_if_not_anchor<D: DatabaseInterface>(
         },
         Ok(parent_block) => {
             info!("✔ Block found, checking if it's the anchor block...");
-            match is_anchor_block(&eth_db_utils, &parent_block.get_block_hash()?)? {
+            match is_anchor_block(eth_db_utils, &parent_block.get_block_hash()?)? {
                 true => {
                     info!("✔ Block IS the anchor block ∴ not removing it!");
                     Ok(())
@@ -61,7 +61,7 @@ mod tests {
     use super::*;
     use crate::{
         chains::eth::{
-            eth_database_utils_redux::EthDatabaseUtils,
+            eth_database_utils::EthDatabaseUtils,
             eth_test_utils::{
                 get_sequential_eth_blocks_and_receipts,
                 put_eth_anchor_block_in_db,

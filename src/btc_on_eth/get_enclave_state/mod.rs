@@ -4,7 +4,7 @@ use crate::{
     btc_on_eth::check_core_is_initialized::check_core_is_initialized,
     chains::{
         btc::btc_enclave_state::BtcEnclaveState,
-        eth::{eth_database_utils_redux::EthDatabaseUtils, eth_enclave_state::EthEnclaveState},
+        eth::{eth_database_utils::EthDatabaseUtils, eth_enclave_state::EthEnclaveState},
     },
     enclave_info::EnclaveInfo,
     fees::fee_enclave_state::FeesEnclaveState,

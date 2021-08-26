@@ -15,7 +15,7 @@ use crate::{
             eos_types::Checksum256s,
             protocol_features::EnabledFeatures,
         },
-        eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils_redux::EthDatabaseUtils},
+        eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils::EthDatabaseUtils},
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::eos::eos_tx_info::EosOnEthEosTxInfos,

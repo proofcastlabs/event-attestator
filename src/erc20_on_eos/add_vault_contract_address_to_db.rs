@@ -1,7 +1,7 @@
 use serde_json::json;
 
 use crate::{
-    chains::eth::{eth_database_utils_redux::EthDatabaseUtils, eth_utils::get_eth_address_from_str},
+    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_utils::get_eth_address_from_str},
     check_debug_mode::check_debug_mode,
     erc20_on_eos::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,

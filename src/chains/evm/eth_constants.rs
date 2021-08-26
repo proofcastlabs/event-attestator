@@ -37,28 +37,6 @@ const HASHED_NULL_NODE_BYTES: [u8; 32] = [
     0x1b, 0x99, 0x6c, 0xad, 0xc0, 0x01, 0x62, 0x2f, 0xb5, 0xe3, 0x63, 0xb4, 0x21,
 ];
 
-pub fn get_eth_constants_db_keys() -> JsonValue {
-    json!({
-        "ETH_ADDRESS_KEY": hex::encode(ETH_ADDRESS_KEY.to_vec()),
-        "ETH_CHAIN_ID_KEY": hex::encode(ETH_CHAIN_ID_KEY.to_vec()),
-        "ETH_GAS_PRICE_KEY": hex::encode(ETH_GAS_PRICE_KEY.to_vec()),
-        "ETH_LINKER_HASH_KEY": hex::encode(ETH_LINKER_HASH_KEY.to_vec()),
-        "ANY_SENDER_NONCE_KEY": hex::encode(ANY_SENDER_NONCE_KEY.to_vec()),
-        "ETH_ACCOUNT_NONCE_KEY": hex::encode(ETH_ACCOUNT_NONCE_KEY.to_vec()),
-        "ETH_PRIVATE_KEY_DB_KEY": hex::encode(ETH_PRIVATE_KEY_DB_KEY.to_vec()),
-        "ETH_TAIL_BLOCK_HASH_KEY": hex::encode(ETH_TAIL_BLOCK_HASH_KEY.to_vec()),
-        "PTOKEN_GENESIS_HASH_KEY": hex::encode(PTOKEN_GENESIS_HASH_KEY.to_vec()),
-        "ETH_CANON_BLOCK_HASH_KEY": hex::encode(ETH_CANON_BLOCK_HASH_KEY.to_vec()),
-        "ETH_ANCHOR_BLOCK_HASH_KEY": hex::encode(ETH_ANCHOR_BLOCK_HASH_KEY.to_vec()),
-        "ETH_LATEST_BLOCK_HASH_KEY": hex::encode(ETH_LATEST_BLOCK_HASH_KEY.to_vec()),
-        "ETH_CANON_TO_TIP_LENGTH_KEY": hex::encode(ETH_CANON_TO_TIP_LENGTH_KEY.to_vec()),
-        "ERC777_PROXY_CONTACT_ADDRESS_KEY": hex::encode(ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec()),
-        "BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY": hex::encode(BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
-        "EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY": hex::encode(EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
-        "ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY": hex::encode(ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
-    })
-}
-
 lazy_static! {
     pub static ref ETH_CHAIN_ID_KEY: [u8; 32] = get_prefixed_db_key("evm-chain-id");
     pub static ref ETH_GAS_PRICE_KEY: [u8; 32] = get_prefixed_db_key("evm-gas-price");

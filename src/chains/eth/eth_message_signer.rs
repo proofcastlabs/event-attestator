@@ -1,11 +1,7 @@
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::eth::{
-        eth_database_utils_redux::EthDatabaseUtils,
-        eth_traits::EthSigningCapabilities,
-        eth_types::EthSignature,
-    },
+    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_traits::EthSigningCapabilities, eth_types::EthSignature},
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, is_hex},
@@ -83,7 +79,7 @@ pub fn sign_hex_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, messa
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::{eth_database_utils_redux::EthDatabaseUtils, eth_test_utils::get_sample_eth_private_key},
+        chains::eth::{eth_database_utils::EthDatabaseUtils, eth_test_utils::get_sample_eth_private_key},
         errors::AppError,
         test_utils::get_test_database,
     };

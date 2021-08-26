@@ -1,6 +1,6 @@
 use crate::{
     btc_on_eth::check_core_is_initialized::check_core_is_initialized,
-    chains::eth::{eth_database_utils_redux::EthDatabaseUtils, eth_utils::convert_hex_to_address},
+    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_utils::convert_hex_to_address},
     traits::DatabaseInterface,
     types::Result,
 };

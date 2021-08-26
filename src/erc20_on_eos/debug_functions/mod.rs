@@ -31,7 +31,7 @@ use crate::{
                 ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
             },
             eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils_redux::EthDatabaseUtils,
+            eth_database_utils::EthDatabaseUtils,
             eth_debug_functions::debug_set_eth_gas_price_in_db,
             eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
         },

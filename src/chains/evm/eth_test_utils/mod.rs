@@ -16,7 +16,6 @@ use crate::{
             eth_database_utils::{get_special_eth_hash_from_db, put_special_eth_block_in_db},
             eth_log::{EthLog, EthLogs},
             eth_receipt::EthReceipt,
-            eth_state::EthState,
             eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
             eth_types::TrieHashMap,
             nibble_utils::{get_nibbles_from_bytes, get_nibbles_from_offset_bytes, Nibbles},
@@ -24,7 +23,6 @@ use crate::{
         },
     },
     errors::AppError,
-    test_utils::get_test_database,
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
@@ -43,9 +41,6 @@ pub const SAMPLE_RECEIPT_JSON_PATH: &str = "src/chains/eth/eth_test_utils/sample
 pub const SAMPLE_PTOKEN_CONTRACT_ADDRESS: &str = "60a640e2d10e020fee94217707bfa9543c8b59e0";
 
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON: &str = "src/chains/eth/eth_test_utils/sample-eth-block-and-receipts-json";
-
-pub const SAMPLE_INVALID_BLOCK_AND_RECEIPT_JSON: &str =
-    "src/chains/eth/eth_test_utils/sample-invalid-eth-block-and-receipts-json";
 
 // NOTE: Hash of an ERC20 transfer fxn signature: keccak256("Transfer(address,address,uint256)")
 pub const TEMPORARY_CONTRACT_TOPIC: &str = "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";

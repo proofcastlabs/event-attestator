@@ -11,7 +11,7 @@ use crate::{
         eos::{eos_crypto::eos_transaction::EosSignedTransactions, eos_database_utils_redux::EosDatabaseUtils},
         eth::{
             eth_crypto::eth_transaction::EthTransactions,
-            eth_database_utils_redux::EthDatabaseUtils,
+            eth_database_utils::EthDatabaseUtils,
             eth_submission_material::EthSubmissionMaterial,
         },
     },

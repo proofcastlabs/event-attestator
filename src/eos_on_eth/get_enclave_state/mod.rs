@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     chains::{
         eos::eos_enclave_state::EosEnclaveState,
-        eth::{eth_database_utils_redux::EthDatabaseUtils, eth_enclave_state::EthEnclaveState},
+        eth::{eth_database_utils::EthDatabaseUtils, eth_enclave_state::EthEnclaveState},
     },
     enclave_info::EnclaveInfo,
     eos_on_eth::check_core_is_initialized::check_core_is_initialized,

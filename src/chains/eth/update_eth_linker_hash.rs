@@ -1,7 +1,7 @@
 use crate::{
     chains::eth::{
         calculate_linker_hash::calculate_linker_hash,
-        eth_database_utils_redux::EthDatabaseUtils,
+        eth_database_utils::EthDatabaseUtils,
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
         eth_types::EthHash,

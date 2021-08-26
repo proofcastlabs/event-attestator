@@ -1,7 +1,7 @@
 use crate::{
     chains::eth::{
         eth_constants::{ETH_LINKER_HASH_KEY, PTOKEN_GENESIS_HASH_KEY},
-        eth_database_utils_redux::EthDatabaseUtils,
+        eth_database_utils::EthDatabaseUtils,
         eth_types::EthHash,
     },
     traits::DatabaseInterface,
@@ -21,7 +21,7 @@ pub fn get_linker_hash_or_genesis_hash<D: DatabaseInterface>(eth_db_utils: &EthD
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{chains::eth::eth_database_utils_redux::EthDatabaseUtils, test_utils::get_test_database};
+    use crate::{chains::eth::eth_database_utils::EthDatabaseUtils, test_utils::get_test_database};
 
     #[test]
     fn get_linker_or_genesis_should_get_linker_hash_from_db_if_extant() {

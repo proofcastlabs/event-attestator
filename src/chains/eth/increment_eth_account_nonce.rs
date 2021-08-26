@@ -1,4 +1,4 @@
-use crate::{chains::eth::eth_database_utils_redux::EthDatabaseUtils, traits::DatabaseInterface, types::Result};
+use crate::{chains::eth::eth_database_utils::EthDatabaseUtils, traits::DatabaseInterface, types::Result};
 
 pub fn increment_eth_account_nonce<D: DatabaseInterface>(
     eth_db_utils: &EthDatabaseUtils<D>,

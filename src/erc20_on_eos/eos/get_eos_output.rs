@@ -8,7 +8,6 @@ use crate::{
         eth::{
             any_sender::relay_transaction::RelayTransaction,
             eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils_redux::EthDatabaseUtils,
             eth_traits::EthTxInfoCompatible,
         },
     },

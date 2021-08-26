@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     btc_on_eth::check_core_is_initialized::check_core_is_initialized,
-    chains::{btc::btc_database_utils::get_latest_btc_block_number, eth::eth_database_utils_redux::EthDatabaseUtils},
+    chains::{btc::btc_database_utils::get_latest_btc_block_number, eth::eth_database_utils::EthDatabaseUtils},
     traits::DatabaseInterface,
     types::Result,
 };

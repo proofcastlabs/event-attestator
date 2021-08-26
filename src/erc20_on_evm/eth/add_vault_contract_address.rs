@@ -1,5 +1,5 @@
 use crate::{
-    chains::eth::{eth_database_utils_redux::EthDatabaseUtils, eth_utils::convert_hex_to_address},
+    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_utils::convert_hex_to_address},
     erc20_on_evm::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,

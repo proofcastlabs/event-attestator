@@ -19,7 +19,6 @@ use crate::{
                 eth_private_key::EthPrivateKey,
                 eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
             },
-            eth_database_utils_redux::EthDatabaseUtils,
             eth_utils::safely_convert_hex_to_eth_address,
         },
         evm::{

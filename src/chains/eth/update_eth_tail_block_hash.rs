@@ -1,7 +1,7 @@
 use crate::{
     chains::eth::{
         eth_constants::ETH_TAIL_LENGTH,
-        eth_database_utils_redux::EthDatabaseUtils,
+        eth_database_utils::EthDatabaseUtils,
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
     },
@@ -44,7 +44,7 @@ pub fn maybe_update_eth_tail_block_hash<D: DatabaseInterface>(eth_db_utils: &Eth
             },
             Some(ancestor_block) => {
                 info!("✔ {}th ancestor block found...", canon_to_tip_length + ETH_TAIL_LENGTH);
-                match does_tail_block_require_updating(&eth_db_utils, &ancestor_block)? {
+                match does_tail_block_require_updating(eth_db_utils, &ancestor_block)? {
                     false => {
                         info!("✔ ETH tail block does not require updating");
                         Ok(())
