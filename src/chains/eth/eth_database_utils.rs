@@ -19,6 +19,7 @@ use crate::{
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EthDatabaseUtils<'a, D: DatabaseInterface> {
     db: &'a D,
+    is_for_evm: bool,
     eth_address_key: Bytes,
     eth_chain_id_key: Bytes,
     eth_gas_price_key: Bytes,
@@ -65,6 +66,7 @@ impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
         };
         Self {
             db,
+            is_for_evm: false,
             eth_address_key: ETH_ADDRESS_KEY.to_vec(),
             eth_chain_id_key: ETH_CHAIN_ID_KEY.to_vec(),
             eth_gas_price_key: ETH_GAS_PRICE_KEY.to_vec(),
@@ -106,6 +108,7 @@ impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
         };
         Self {
             db,
+            is_for_evm: true,
             any_sender_nonce_key: EVM_ANY_SENDER_NONCE_KEY.to_vec(),
             btc_on_eth_smart_contract_address_key: Some(EVM_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
             eos_on_eth_smart_contract_address_key: EVM_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
@@ -123,6 +126,22 @@ impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
             eth_linker_hash_key: EVM_LINKER_HASH_KEY.to_vec(),
             eth_private_key_db_key: EVM_PRIVATE_KEY_DB_KEY.to_vec(),
             eth_tail_block_hash_key: EVM_TAIL_BLOCK_HASH_KEY.to_vec(),
+        }
+    }
+
+    fn reverse_endianess(bytes: Bytes) -> Bytes {
+        debug!("Reversing endianess of bytes: 0x{}", hex::encode(&bytes));
+        // NOTE: We switch the endianness of the block hash for EVM bridges to avoid DB collisions w/ ETH<->ETH bridges.
+        let mut reversed_bytes = bytes.clone();
+        reversed_bytes.reverse();
+        reversed_bytes.to_vec()
+    }
+
+    fn normalize_key(&self, key: Bytes) -> Bytes {
+        if self.is_for_evm {
+            Self::reverse_endianess(key)
+        } else {
+            key
         }
     }
 
@@ -283,7 +302,7 @@ impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
     fn get_eth_hash_from_db(&self, key: &[Byte]) -> Result<EthHash> {
         debug!("✔ Getting ETH hash from db under key: {}", hex::encode(key));
         self.db
-            .get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+            .get(self.normalize_key(key.to_vec()), MIN_DATA_SENSITIVITY_LEVEL)
             .map(|bytes| EthHash::from_slice(&bytes))
     }
 
@@ -294,7 +313,7 @@ impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
 
     fn put_eth_hash_in_db(&self, key: &[Byte], eth_hash: &EthHash) -> Result<()> {
         self.db.put(
-            key.to_vec(),
+            self.normalize_key(key.to_vec()),
             convert_h256_to_bytes(*eth_hash),
             MIN_DATA_SENSITIVITY_LEVEL,
         )
@@ -310,7 +329,7 @@ impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
 
     pub fn get_hash_from_db_via_hash_key(&self, hash_key: EthHash) -> Result<Option<EthHash>> {
         match self.db.get(
-            convert_h256_to_bytes(hash_key),
+            self.normalize_key(convert_h256_to_bytes(hash_key)),
             MIN_DATA_SENSITIVITY_LEVEL,
         ) {
             Ok(bytes) => Ok(Some(convert_bytes_to_h256(&bytes)?)),
@@ -319,7 +338,7 @@ impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
     }
 
     pub fn put_eth_submission_material_in_db(&self, eth_submission_material: &EthSubmissionMaterial) -> Result<()> {
-        let key = convert_h256_to_bytes(eth_submission_material.get_block_hash()?);
+        let key = self.normalize_key(convert_h256_to_bytes(eth_submission_material.get_block_hash()?));
         debug!("✔ Adding block to database under key: {:?}", hex::encode(&key));
         self.db.put(
             key,
@@ -350,7 +369,7 @@ impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
     }
 
     fn maybe_get_eth_submission_material_from_db(&self, block_hash: &EthHash) -> Option<EthSubmissionMaterial> {
-        let key = convert_h256_to_bytes(*block_hash);
+        let key = self.normalize_key(convert_h256_to_bytes(*block_hash));
         debug!(
             "✔ Maybe getting ETH block and receipts from db under hash: {}",
             hex::encode(&key)
@@ -374,7 +393,7 @@ impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
         debug!("✔ Getting ETH block and receipts from db...");
         self.db
             .get(
-                convert_h256_to_bytes(*block_hash),
+                self.normalize_key(convert_h256_to_bytes(*block_hash)),
                 MIN_DATA_SENSITIVITY_LEVEL,
             )
             .and_then(|bytes| EthSubmissionMaterial::from_bytes(&bytes))
