@@ -22,11 +22,32 @@ pub fn add_block_and_receipts_to_db_if_not_extant<D: DatabaseInterface>(
     }
 }
 
-pub fn maybe_add_block_and_receipts_to_db_and_return_state<D: DatabaseInterface>(
+fn maybe_add_block_and_receipts_to_db_and_return_state<D: DatabaseInterface>(
+    is_for_eth: bool,
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Maybe adding ETH block and receipts if not in db...");
-    add_block_and_receipts_to_db_if_not_extant(&state.eth_db_utils, state.get_eth_submission_material()?).and(Ok(state))
+    add_block_and_receipts_to_db_if_not_extant(
+        if is_for_eth {
+            &state.eth_db_utils
+        } else {
+            &state.evm_db_utils
+        },
+        state.get_eth_submission_material()?,
+    )
+    .and(Ok(state))
+}
+
+pub fn maybe_add_eth_block_and_receipts_to_db_and_return_state<D: DatabaseInterface>(
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    maybe_add_block_and_receipts_to_db_and_return_state(true, state)
+}
+
+pub fn maybe_add_evm_block_and_receipts_to_db_and_return_state<D: DatabaseInterface>(
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    maybe_add_block_and_receipts_to_db_and_return_state(false, state)
 }
 
 #[cfg(test)]
@@ -42,9 +63,7 @@ mod tests {
         let eth_block_hash = block_and_receipts.get_block_hash().unwrap();
         let bool_before = eth_db_utils.eth_block_exists_in_db(&eth_block_hash);
         assert!(!bool_before);
-        if let Err(e) = add_block_and_receipts_to_db_if_not_extant(&eth_db_utils, &block_and_receipts) {
-            panic!("Error when maybe adding block to database: {}", e);
-        }
+        add_block_and_receipts_to_db_if_not_extant(&eth_db_utils, &block_and_receipts).unwrap();
         let bool_after = eth_db_utils.eth_block_exists_in_db(&eth_block_hash);
         assert!(bool_after);
     }
@@ -57,13 +76,9 @@ mod tests {
         let eth_block_hash = block_and_receipts.get_block_hash().unwrap();
         let bool_before = eth_db_utils.eth_block_exists_in_db(&eth_block_hash);
         assert!(!bool_before);
-        if let Err(e) = add_block_and_receipts_to_db_if_not_extant(&eth_db_utils, &block_and_receipts) {
-            panic!("Error when maybe adding block to database: {}", e);
-        };
+        add_block_and_receipts_to_db_if_not_extant(&eth_db_utils, &block_and_receipts).unwrap();
         let bool_after = eth_db_utils.eth_block_exists_in_db(&eth_block_hash);
-        if add_block_and_receipts_to_db_if_not_extant(&eth_db_utils, &block_and_receipts).is_ok() {
-            panic!("Should error ∵ block already in db!");
-        }
+        assert!(add_block_and_receipts_to_db_if_not_extant(&eth_db_utils, &block_and_receipts).is_err());
         assert!(bool_after);
     }
 }

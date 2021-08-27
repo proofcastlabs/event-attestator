@@ -4,7 +4,7 @@ use crate::{
     types::Result,
 };
 
-pub fn remove_receipts_from_canon_block_and_save_in_db<D: DatabaseInterface>(
+fn remove_receipts_from_canon_block_and_save_in_db<D: DatabaseInterface>(
     eth_db_utils: &EthDatabaseUtils<D>,
 ) -> Result<()> {
     eth_db_utils
@@ -12,11 +12,18 @@ pub fn remove_receipts_from_canon_block_and_save_in_db<D: DatabaseInterface>(
         .and_then(|block| eth_db_utils.put_eth_canon_block_in_db(&block.remove_receipts()))
 }
 
-pub fn maybe_remove_receipts_from_canon_block_and_return_state<D: DatabaseInterface>(
+pub fn maybe_remove_receipts_from_eth_canon_block_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    info!("✔ Removing receipts from canon block...");
+    info!("✔ Removing receipts from ETH canon block...");
     remove_receipts_from_canon_block_and_save_in_db(&state.eth_db_utils).and(Ok(state))
+}
+
+pub fn maybe_remove_receipts_from_evm_canon_block_and_return_state<D: DatabaseInterface>(
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    info!("✔ Removing receipts from EVM canon block...");
+    remove_receipts_from_canon_block_and_save_in_db(&state.evm_db_utils).and(Ok(state))
 }
 
 #[cfg(test)]

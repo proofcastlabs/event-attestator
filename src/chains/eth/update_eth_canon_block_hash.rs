@@ -55,15 +55,40 @@ pub fn maybe_update_canon_block_hash<D: DatabaseInterface>(
     }
 }
 
+fn maybe_update_canon_block_hash_and_return_state<D: DatabaseInterface>(
+    is_for_eth: bool,
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    info!(
+        "✔ Maybe updating {} canon block hash...",
+        if is_for_eth { "ETH" } else { "EVM" }
+    );
+    let canon_to_tip_length = if is_for_eth {
+        state.eth_db_utils.get_eth_canon_to_tip_length_from_db()?
+    } else {
+        state.evm_db_utils.get_eth_canon_to_tip_length_from_db()?
+    };
+    maybe_update_canon_block_hash(
+        if is_for_eth {
+            &state.eth_db_utils
+        } else {
+            &state.evm_db_utils
+        },
+        canon_to_tip_length,
+    )
+    .and(Ok(state))
+}
+
 pub fn maybe_update_eth_canon_block_hash_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    info!("✔ Maybe updating ETH canon block hash...");
-    state
-        .eth_db_utils
-        .get_eth_canon_to_tip_length_from_db()
-        .and_then(|canon_to_tip_length| maybe_update_canon_block_hash(&state.eth_db_utils, canon_to_tip_length))
-        .and(Ok(state))
+    maybe_update_canon_block_hash_and_return_state(true, state)
+}
+
+pub fn maybe_update_evm_canon_block_hash_and_return_state<D: DatabaseInterface>(
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    maybe_update_canon_block_hash_and_return_state(false, state)
 }
 
 #[cfg(test)]

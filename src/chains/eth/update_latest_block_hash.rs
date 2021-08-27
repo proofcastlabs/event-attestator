@@ -31,11 +31,32 @@ pub fn update_latest_block_hash_if_subsequent<D: DatabaseInterface>(
         })
 }
 
-pub fn maybe_update_latest_block_hash_and_return_state<D: DatabaseInterface>(
+fn maybe_update_latest_block_hash_and_return_state<D: DatabaseInterface>(
+    is_for_eth: bool,
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Maybe updating latest ETH block hash if subsequent...");
-    update_latest_block_hash_if_subsequent(&state.eth_db_utils, state.get_eth_submission_material()?).and(Ok(state))
+    update_latest_block_hash_if_subsequent(
+        if is_for_eth {
+            &state.eth_db_utils
+        } else {
+            &state.evm_db_utils
+        },
+        state.get_eth_submission_material()?,
+    )
+    .and(Ok(state))
+}
+
+pub fn maybe_update_latest_eth_block_hash_and_return_state<D: DatabaseInterface>(
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    maybe_update_latest_block_hash_and_return_state(true, state)
+}
+
+pub fn maybe_update_latest_evm_block_hash_and_return_state<D: DatabaseInterface>(
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    maybe_update_latest_block_hash_and_return_state(false, state)
 }
 
 #[cfg(test)]

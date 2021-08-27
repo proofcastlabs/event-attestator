@@ -28,7 +28,3 @@ pub fn check_core_is_initialized<D: DatabaseInterface>(eth_db_utils: &EthDatabas
 pub fn check_core_is_initialized_and_return_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     check_core_is_initialized(&state.eth_db_utils, state.db).and(Ok(state))
 }
-
-pub fn check_core_is_initialized_and_return_evm_state<D: DatabaseInterface>(state: EvmState<D>) -> Result<EvmState<D>> {
-    check_core_is_initialized(&state.eth_db_utils, state.db).and(Ok(state))
-}

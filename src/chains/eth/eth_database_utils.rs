@@ -129,6 +129,15 @@ impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
         }
     }
 
+    // TODO also put_eth_latest_block_in_db & get_eth_linker_hash_from_db are in EVM db utils but
+    // not here?
+
+    pub fn delete_block_by_block_hash(&self, block: &EthSubmissionMaterial) -> Result<()> {
+        let key = self.normalize_key(block.get_block_hash()?.as_bytes().to_vec());
+        debug!("Deleting block by blockhash under key: 0x{}", hex::encode(&key));
+        self.db.delete(key)
+    }
+
     fn reverse_endianess(bytes: Bytes) -> Bytes {
         debug!("Reversing endianess of bytes: 0x{}", hex::encode(&bytes));
         // NOTE: We switch the endianness of the block hash for EVM bridges to avoid DB collisions w/ ETH<->ETH bridges.

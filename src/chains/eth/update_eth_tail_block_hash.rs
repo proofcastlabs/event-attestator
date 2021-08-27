@@ -19,8 +19,14 @@ fn does_tail_block_require_updating<D: DatabaseInterface>(
         .and_then(|db_tail_block| Ok(db_tail_block.get_block_number()? < calculated_tail_block.get_block_number()?))
 }
 
-pub fn maybe_update_eth_tail_block_hash<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<()> {
-    info!("✔ Maybe updating ETH tail block hash...");
+fn maybe_update_eth_tail_block_hash<D: DatabaseInterface>(
+    is_for_eth: bool,
+    eth_db_utils: &EthDatabaseUtils<D>,
+) -> Result<()> {
+    info!(
+        "✔ Maybe updating {} tail block hash...",
+        if is_for_eth { "ETH" } else { "EVM" }
+    );
     let canon_to_tip_length = eth_db_utils.get_eth_canon_to_tip_length_from_db()?;
     eth_db_utils
         .get_eth_latest_block_from_db()
@@ -61,6 +67,11 @@ pub fn maybe_update_eth_tail_block_hash<D: DatabaseInterface>(eth_db_utils: &Eth
 pub fn maybe_update_eth_tail_block_hash_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    info!("✔ Maybe updating ETH tail block hash...");
-    maybe_update_eth_tail_block_hash(&state.eth_db_utils).and(Ok(state))
+    maybe_update_eth_tail_block_hash(true, &state.eth_db_utils).and(Ok(state))
+}
+
+pub fn maybe_update_evm_tail_block_hash_and_return_state<D: DatabaseInterface>(
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    maybe_update_eth_tail_block_hash(false, &state.evm_db_utils).and(Ok(state))
 }

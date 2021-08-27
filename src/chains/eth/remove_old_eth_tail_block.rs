@@ -10,50 +10,74 @@ use crate::{
     types::Result,
 };
 
-fn is_anchor_block<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>, eth_block_hash: &EthHash) -> Result<bool> {
-    match eth_db_utils.get_eth_anchor_block_hash_from_db() {
+fn is_anchor_block<D: DatabaseInterface>(db_utils: &EthDatabaseUtils<D>, eth_block_hash: &EthHash) -> Result<bool> {
+    match db_utils.get_eth_anchor_block_hash_from_db() {
         Ok(ref hash) => Ok(hash == eth_block_hash),
         _ => Err("✘ No anchor hash found in db!".into()),
     }
 }
 
 pub fn remove_parents_if_not_anchor<D: DatabaseInterface>(
-    eth_db_utils: &EthDatabaseUtils<D>,
-    db: &D,
+    db_utils: &EthDatabaseUtils<D>,
     block_whose_parents_to_be_removed: &EthSubmissionMaterial,
 ) -> Result<()> {
-    match eth_db_utils.get_submission_material_from_db(&block_whose_parents_to_be_removed.get_parent_hash()?) {
+    match db_utils.get_submission_material_from_db(&block_whose_parents_to_be_removed.get_parent_hash()?) {
         Err(_) => {
             info!("✔ No block found ∵ doing nothing!");
             Ok(())
         },
         Ok(parent_block) => {
             info!("✔ Block found, checking if it's the anchor block...");
-            match is_anchor_block(eth_db_utils, &parent_block.get_block_hash()?)? {
+            match is_anchor_block(db_utils, &parent_block.get_block_hash()?)? {
                 true => {
                     info!("✔ Block IS the anchor block ∴ not removing it!");
                     Ok(())
                 },
                 false => {
                     info!("✔ Block is NOT the anchor ∴ removing it...");
-                    // FIXME / TODO: This should be a db util of some sort!
-                    db.delete(parent_block.get_block_hash()?.as_bytes().to_vec())
-                        .and_then(|_| remove_parents_if_not_anchor(eth_db_utils, db, &parent_block))
+                    db_utils
+                        .delete_block_by_block_hash(&parent_block)
+                        .and_then(|_| remove_parents_if_not_anchor(db_utils, &parent_block))
                 },
             }
         },
     }
 }
 
+fn maybe_remove_old_tail_block_and_return_state<D: DatabaseInterface>(
+    is_for_eth: bool,
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    info!(
+        "✔ Maybe removing old {} tail block...",
+        if is_for_eth { "ETH" } else { "EVM" }
+    );
+    let tail_block = if is_for_eth {
+        state.eth_db_utils.get_eth_tail_block_from_db()?
+    } else {
+        state.evm_db_utils.get_eth_tail_block_from_db()?
+    };
+    remove_parents_if_not_anchor(
+        if is_for_eth {
+            &state.eth_db_utils
+        } else {
+            &state.evm_db_utils
+        },
+        &tail_block,
+    )
+    .and(Ok(state))
+}
+
+pub fn maybe_remove_old_evm_tail_block_and_return_state<D: DatabaseInterface>(
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    maybe_remove_old_tail_block_and_return_state(false, state)
+}
+
 pub fn maybe_remove_old_eth_tail_block_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    info!("✔ Maybe removing old ETH tail block...");
-    state
-        .eth_db_utils
-        .get_eth_tail_block_from_db()
-        .and_then(|tail_block| remove_parents_if_not_anchor(&state.eth_db_utils, state.db, &tail_block))
-        .and(Ok(state))
+    maybe_remove_old_tail_block_and_return_state(true, state)
 }
 
 #[cfg(test)]
@@ -108,7 +132,7 @@ mod tests {
         eth_db_utils.put_eth_submission_material_in_db(&block).unwrap();
         eth_db_utils.put_eth_submission_material_in_db(&parent_block).unwrap();
         assert!(eth_db_utils.eth_block_exists_in_db(&parent_block.get_block_hash().unwrap()));
-        remove_parents_if_not_anchor(&eth_db_utils, &db, &block).unwrap();
+        remove_parents_if_not_anchor(&eth_db_utils, &block).unwrap();
         assert!(!eth_db_utils.eth_block_exists_in_db(&parent_block.get_block_hash().unwrap()));
     }
 
@@ -123,7 +147,7 @@ mod tests {
         put_eth_anchor_block_in_db(&eth_db_utils, &anchor_block).unwrap();
         eth_db_utils.put_eth_submission_material_in_db(&block).unwrap();
         assert!(eth_db_utils.eth_block_exists_in_db(&anchor_block.get_block_hash().unwrap()));
-        remove_parents_if_not_anchor(&eth_db_utils, &db, &block).unwrap();
+        remove_parents_if_not_anchor(&eth_db_utils, &block).unwrap();
         assert!(eth_db_utils.eth_block_exists_in_db(&block.get_block_hash().unwrap()));
     }
 
@@ -146,7 +170,7 @@ mod tests {
         blocks
             .iter()
             .for_each(|block| assert!(eth_db_utils.eth_block_exists_in_db(&block.get_block_hash().unwrap())));
-        remove_parents_if_not_anchor(&eth_db_utils, &db, &tail_block).unwrap();
+        remove_parents_if_not_anchor(&eth_db_utils, &tail_block).unwrap();
         blocks
             .iter()
             .for_each(|block| assert!(!eth_db_utils.eth_block_exists_in_db(&block.get_block_hash().unwrap())));

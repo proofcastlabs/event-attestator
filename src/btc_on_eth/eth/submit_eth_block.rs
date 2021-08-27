@@ -11,8 +11,8 @@ use crate::{
         },
     },
     chains::eth::{
-        add_block_and_receipts_to_db::maybe_add_block_and_receipts_to_db_and_return_state,
-        check_parent_exists::check_for_parent_of_block_in_state,
+        add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,
+        check_parent_exists::check_for_parent_of_eth_block_in_state,
         eth_database_transactions::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
@@ -20,11 +20,11 @@ use crate::{
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
-        remove_receipts_from_canon_block::maybe_remove_receipts_from_canon_block_and_return_state,
+        remove_receipts_from_canon_block::maybe_remove_receipts_from_eth_canon_block_and_return_state,
         update_eth_canon_block_hash::maybe_update_eth_canon_block_hash_and_return_state,
         update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
         update_eth_tail_block_hash::maybe_update_eth_tail_block_hash_and_return_state,
-        update_latest_block_hash::maybe_update_latest_block_hash_and_return_state,
+        update_latest_block_hash::maybe_update_latest_eth_block_hash_and_return_state,
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
@@ -45,11 +45,11 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
-        .and_then(check_for_parent_of_block_in_state)
+        .and_then(check_for_parent_of_eth_block_in_state)
         .and_then(validate_receipts_in_state)
         .and_then(filter_receipts_for_btc_on_eth_redeem_events_in_state)
-        .and_then(maybe_add_block_and_receipts_to_db_and_return_state)
-        .and_then(maybe_update_latest_block_hash_and_return_state)
+        .and_then(maybe_add_eth_block_and_receipts_to_db_and_return_state)
+        .and_then(maybe_update_latest_eth_block_hash_and_return_state)
         .and_then(maybe_update_eth_canon_block_hash_and_return_state)
         .and_then(maybe_update_eth_tail_block_hash_and_return_state)
         .and_then(maybe_update_eth_linker_hash_and_return_state)
@@ -58,7 +58,7 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_create_btc_txs_and_add_to_state)
         .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)
-        .and_then(maybe_remove_receipts_from_canon_block_and_return_state)
+        .and_then(maybe_remove_receipts_from_eth_canon_block_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(get_eth_output_json)
 }

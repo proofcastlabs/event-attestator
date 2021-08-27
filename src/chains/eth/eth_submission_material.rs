@@ -425,10 +425,6 @@ mod tests {
     #[test]
     fn ropsten_block_with_one_eip2718_tx_should_be_valid() {
         let submission_material = get_sample_eip2718_ropsten_submission_material();
-        println!(
-            "receipts_root: {}",
-            hex::encode(submission_material.block.clone().unwrap().receipts_root.as_bytes())
-        );
         let result = submission_material.receipts_are_valid().unwrap();
         assert!(result);
     }

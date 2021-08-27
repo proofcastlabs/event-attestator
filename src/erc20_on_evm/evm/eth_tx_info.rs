@@ -2,35 +2,27 @@ use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
-    chains::{
-        eth::{
-            eth_chain_id::EthChainId,
-            eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
-            eth_contracts::{
-                erc20_vault::{
-                    encode_erc20_vault_peg_out_fxn_data_with_user_data,
-                    encode_erc20_vault_peg_out_fxn_data_without_user_data,
-                    ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
-                    ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
-                },
-                erc777::{Erc777RedeemEvent, ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA},
+    chains::eth::{
+        eth_chain_id::EthChainId,
+        eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
+        eth_contracts::{
+            erc20_vault::{
+                encode_erc20_vault_peg_out_fxn_data_with_user_data,
+                encode_erc20_vault_peg_out_fxn_data_without_user_data,
+                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
+                ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
             },
-            eth_crypto::{
-                eth_private_key::EthPrivateKey,
-                eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
-            },
-            eth_utils::safely_convert_hex_to_eth_address,
+            erc777::{Erc777RedeemEvent, ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA},
         },
-        evm::{
-            eth_database_utils::{
-                get_eth_canon_block_from_db as get_evm_canon_block_from_db,
-                get_eth_chain_id_from_db as get_evm_chain_id_from_db,
-            },
-            eth_log::{EthLog, EthLogs},
-            eth_receipt::{EthReceipt, EthReceipts},
-            eth_state::EthState as EvmState,
-            eth_submission_material::EthSubmissionMaterial as EvmSubmissionMaterial,
+        eth_crypto::{
+            eth_private_key::EthPrivateKey,
+            eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
         },
+        eth_log::{EthLog, EthLogs},
+        eth_receipt::{EthReceipt, EthReceipts},
+        eth_state::EthState,
+        eth_submission_material::EthSubmissionMaterial,
+        eth_utils::safely_convert_hex_to_eth_address,
     },
     constants::SAFE_ETH_ADDRESS,
     dictionaries::eth_evm::EthEvmTokenDictionary,
@@ -322,9 +314,9 @@ impl EthOnEvmEthTxInfos {
     }
 
     fn filter_eth_submission_material_for_supported_redeems(
-        submission_material: &EvmSubmissionMaterial,
+        submission_material: &EthSubmissionMaterial,
         dictionary: &EthEvmTokenDictionary,
-    ) -> Result<EvmSubmissionMaterial> {
+    ) -> Result<EthSubmissionMaterial> {
         info!("✔ Filtering submission material receipts for those pertaining to `ERC20-on-EVM` redeems...");
         info!(
             "✔ Num receipts before filtering: {}",
@@ -341,7 +333,7 @@ impl EthOnEvmEthTxInfos {
                 .collect(),
         );
         info!("✔ Num receipts after filtering: {}", filtered_receipts.len());
-        Ok(EvmSubmissionMaterial::new(
+        Ok(EthSubmissionMaterial::new(
             submission_material.get_block()?,
             filtered_receipts,
             None,
@@ -350,7 +342,7 @@ impl EthOnEvmEthTxInfos {
     }
 
     pub fn from_submission_material(
-        submission_material: &EvmSubmissionMaterial,
+        submission_material: &EthSubmissionMaterial,
         dictionary: &EthEvmTokenDictionary,
         origin_chain_id: &EthChainId,
     ) -> Result<Self> {
@@ -395,11 +387,13 @@ impl EthOnEvmEthTxInfos {
 }
 
 pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterface>(
-    state: EvmState<D>,
-) -> Result<EvmState<D>> {
+    state: EthState<D>,
+) -> Result<EthState<D>> {
     info!("✔ Maybe parsing `EthOnEvmEthTxInfos`...");
-    get_evm_canon_block_from_db(state.db).and_then(|submission_material| {
-        match submission_material.receipts.is_empty() {
+    state
+        .evm_db_utils
+        .get_eth_canon_block_from_db()
+        .and_then(|submission_material| match submission_material.receipts.is_empty() {
             true => {
                 info!("✔ No receipts in canon block ∴ no info to parse!");
                 Ok(state)
@@ -414,16 +408,15 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                         EthOnEvmEthTxInfos::from_submission_material(
                             &submission_material,
                             &account_names,
-                            &get_evm_chain_id_from_db(state.db)?,
+                            &state.evm_db_utils.get_eth_chain_id_from_db()?,
                         )
                     })
                     .and_then(|tx_infos| state.add_erc20_on_evm_eth_tx_infos(tx_infos))
             },
-        }
-    })
+        })
 }
 
-pub fn filter_out_zero_value_eth_tx_infos_from_state<D: DatabaseInterface>(state: EvmState<D>) -> Result<EvmState<D>> {
+pub fn filter_out_zero_value_eth_tx_infos_from_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Maybe filtering out zero value `EthOnEvmEthTxInfos`...");
     debug!(
         "✔ Num `EthOnEvmEthTxInfos` before: {}",
@@ -439,8 +432,8 @@ pub fn filter_out_zero_value_eth_tx_infos_from_state<D: DatabaseInterface>(state
 }
 
 pub fn filter_submission_material_for_redeem_events_in_state<D: DatabaseInterface>(
-    state: EvmState<D>,
-) -> Result<EvmState<D>> {
+    state: EthState<D>,
+) -> Result<EthState<D>> {
     info!("✔ Filtering receipts for those containing `ERC20-on-EVM` redeem events...");
     state
         .get_eth_submission_material()?
@@ -457,7 +450,7 @@ pub fn filter_submission_material_for_redeem_events_in_state<D: DatabaseInterfac
         .and_then(|filtered_submission_material| state.update_eth_submission_material(filtered_submission_material))
 }
 
-pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EvmState<D>) -> Result<EvmState<D>> {
+pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     if state.erc20_on_evm_eth_tx_infos.is_empty() {
         info!("✔ No tx infos in state ∴ no ETH transactions to sign!");
         Ok(state)
@@ -482,8 +475,8 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EvmS
 }
 
 pub fn maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address<D: DatabaseInterface>(
-    state: EvmState<D>,
-) -> Result<EvmState<D>> {
+    state: EthState<D>,
+) -> Result<EthState<D>> {
     if state.erc20_on_evm_eth_tx_infos.is_empty() {
         Ok(state)
     } else {
@@ -495,6 +488,7 @@ pub fn maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address<D: D
     }
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -630,3 +624,4 @@ mod tests {
         assert_eq!(result.destination_address, *SAFE_ETH_ADDRESS);
     }
 }
+*/

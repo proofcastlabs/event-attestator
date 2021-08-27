@@ -12,46 +12,51 @@ use crate::{
 };
 
 fn get_new_linker_hash<D: DatabaseInterface>(
-    eth_db_utils: &EthDatabaseUtils<D>,
+    db_utils: &EthDatabaseUtils<D>,
     block_hash_to_link_to: &EthHash,
 ) -> Result<EthHash> {
     info!("✔ Calculating new linker hash...");
-    eth_db_utils.get_eth_anchor_block_from_db().and_then(|anchor_block| {
+    db_utils.get_eth_anchor_block_from_db().and_then(|anchor_block| {
         Ok(calculate_linker_hash(
             *block_hash_to_link_to,
             anchor_block.get_block_hash()?,
-            get_linker_hash_or_genesis_hash(eth_db_utils)?,
+            get_linker_hash_or_genesis_hash(db_utils)?,
         ))
     })
 }
 
 fn maybe_get_parent_of_eth_tail_block<D: DatabaseInterface>(
-    eth_db_utils: &EthDatabaseUtils<D>,
+    db_utils: &EthDatabaseUtils<D>,
 ) -> Result<Option<EthSubmissionMaterial>> {
-    info!("✔ Maybe getting parent of ETH tail block from db...");
-    eth_db_utils.get_eth_tail_block_from_db().and_then(|canon_block| {
-        Ok(eth_db_utils.maybe_get_parent_eth_submission_material(&canon_block.get_block_hash()?))
-    })
+    info!("✔ Maybe getting parent of tail block from db...");
+    db_utils
+        .get_eth_tail_block_from_db()
+        .and_then(|canon_block| Ok(db_utils.maybe_get_parent_eth_submission_material(&canon_block.get_block_hash()?)))
 }
 
-pub fn maybe_update_eth_linker_hash<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<()> {
-    match maybe_get_parent_of_eth_tail_block(eth_db_utils)? {
+fn maybe_update_linker_hash<D: DatabaseInterface>(is_for_eth: bool, db_utils: &EthDatabaseUtils<D>) -> Result<()> {
+    let block_type = if is_for_eth { "ETH" } else { "EVM" };
+    info!("✔ Maybe updating the {} linker hash...", block_type);
+    match maybe_get_parent_of_eth_tail_block(db_utils)? {
         Some(parent_of_eth_tail_block) => {
-            info!("✔ Updating ETH linker hash...");
-            get_new_linker_hash(eth_db_utils, &parent_of_eth_tail_block.get_block_hash()?)
-                .and_then(|linker_hash| eth_db_utils.put_eth_linker_hash_in_db(linker_hash))
+            info!("✔ Updating {} linker hash...", block_type);
+            get_new_linker_hash(db_utils, &parent_of_eth_tail_block.get_block_hash()?)
+                .and_then(|linker_hash| db_utils.put_eth_linker_hash_in_db(linker_hash))
                 .map(|_| ())
         },
         None => {
-            info!("✔ ETH tail has no parent in db ∴ NOT updating linker hash");
+            info!("✔ {} tail has no parent in db ∴ NOT updating linker hash", block_type);
             Ok(())
         },
     }
 }
 
 pub fn maybe_update_eth_linker_hash_and_return_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    info!("✔ Maybe updating the ETH linker hash...");
-    maybe_update_eth_linker_hash(&state.eth_db_utils).and(Ok(state))
+    maybe_update_linker_hash(true, &state.eth_db_utils).and(Ok(state))
+}
+
+pub fn maybe_update_evm_linker_hash_and_return_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
+    maybe_update_linker_hash(false, &state.evm_db_utils).and(Ok(state))
 }
 
 #[cfg(test)]
@@ -127,7 +132,8 @@ mod tests {
         eth_db_utils
             .put_eth_submission_material_in_db(&parent_of_eth_tail_block)
             .unwrap();
-        maybe_update_eth_linker_hash(&eth_db_utils).unwrap();
+        let is_for_eth = true;
+        maybe_update_linker_hash(is_for_eth, &eth_db_utils).unwrap();
         let linker_hash_after = get_eth_linker_hash_from_db(&eth_db_utils).unwrap();
         let result_hex = hex::encode(linker_hash_after.as_bytes());
         assert!(linker_hash_after != linker_hash_before);
@@ -146,7 +152,8 @@ mod tests {
         eth_db_utils.put_eth_linker_hash_in_db(linker_hash_before).unwrap();
         put_eth_anchor_block_in_db(&eth_db_utils, &anchor_block).unwrap();
         put_eth_tail_block_in_db(&eth_db_utils, &canon_block).unwrap();
-        maybe_update_eth_linker_hash(&eth_db_utils).unwrap();
+        let is_for_eth = true;
+        maybe_update_linker_hash(is_for_eth, &eth_db_utils).unwrap();
         let linker_hash_after = get_eth_linker_hash_from_db(&eth_db_utils).unwrap();
         let result_hex = hex::encode(linker_hash_after.as_bytes());
         assert_eq!(linker_hash_after, linker_hash_before);

@@ -1,5 +1,5 @@
 use crate::{
-    chains::evm::eth_state::EthState as EvmState,
+    chains::eth::eth_state::EthState,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_evm::fees_calculator::FeesCalculator,
     fees::fee_constants::DISABLE_FEES,
@@ -8,8 +8,8 @@ use crate::{
 };
 
 pub fn update_accrued_fees_in_dictionary_and_return_state<D: DatabaseInterface>(
-    state: EvmState<D>,
-) -> Result<EvmState<D>> {
+    state: EthState<D>,
+) -> Result<EthState<D>> {
     if DISABLE_FEES {
         info!("✔ Fees are disabled ∴ not accounting for any in `EthOnEvmEthTxInfos`!");
         Ok(state)
@@ -29,7 +29,7 @@ pub fn update_accrued_fees_in_dictionary_and_return_state<D: DatabaseInterface>(
     }
 }
 
-pub fn account_for_fees_in_eth_tx_infos_in_state<D: DatabaseInterface>(state: EvmState<D>) -> Result<EvmState<D>> {
+pub fn account_for_fees_in_eth_tx_infos_in_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     if DISABLE_FEES {
         info!("✔ Fees are disabled ∴ not accounting for any in `EthOnEvmEthTxInfos`!");
         Ok(state)
@@ -45,7 +45,7 @@ pub fn account_for_fees_in_eth_tx_infos_in_state<D: DatabaseInterface>(state: Ev
     }
 }
 
-pub fn maybe_account_for_fees<D: DatabaseInterface>(state: EvmState<D>) -> Result<EvmState<D>> {
+pub fn maybe_account_for_fees<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Accounting for fees in `EthOnEvmEthTxInfos` during EVM block submission...");
     update_accrued_fees_in_dictionary_and_return_state(state).and_then(account_for_fees_in_eth_tx_infos_in_state)
 }
