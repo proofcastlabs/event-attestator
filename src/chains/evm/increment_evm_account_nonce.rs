@@ -1,4 +1,4 @@
-use crate::{chains::evm::eth_database_utils::put_eth_account_nonce_in_db, traits::DatabaseInterface, types::Result};
+use crate::{chains::eth::eth_database_utils::EthDatabaseUtils, traits::DatabaseInterface, types::Result};
 
 pub fn increment_evm_account_nonce<D: DatabaseInterface>(
     db: &D,
@@ -10,5 +10,5 @@ pub fn increment_evm_account_nonce<D: DatabaseInterface>(
         "✔ Incrementing EVM account nonce by {} from {} to {}",
         num_signatures, current_nonce, new_nonce
     );
-    put_eth_account_nonce_in_db(db, new_nonce)
+    EthDatabaseUtils::new_for_evm(db).put_eth_account_nonce_in_db(new_nonce) // TODO pass in db utils!
 }
