@@ -5,7 +5,7 @@ use crate::{
     chains::eth::{
         core_initialization::eth_core_init_utils::{
             add_eth_block_to_db_and_return_state,
-            put_canon_to_tip_length_in_db_and_return_state,
+            put_eth_canon_to_tip_length_in_db_and_return_state,
             put_eth_tail_block_hash_in_db_and_return_state,
             remove_receipts_from_block_in_state,
             set_eth_anchor_block_hash_and_return_state,
@@ -108,7 +108,7 @@ pub fn debug_reset_eth_chain<D: DatabaseInterface>(
         .and_then(delete_all_blocks_and_db_keys_and_return_state)
         .and_then(remove_receipts_from_block_in_state)
         .and_then(add_eth_block_to_db_and_return_state)
-        .and_then(|state| put_canon_to_tip_length_in_db_and_return_state(canon_to_tip_length, state))
+        .and_then(|state| put_eth_canon_to_tip_length_in_db_and_return_state(canon_to_tip_length, state))
         .and_then(set_eth_anchor_block_hash_and_return_state)
         .and_then(set_eth_latest_block_hash_and_return_state)
         .and_then(set_eth_canon_block_hash_and_return_state)

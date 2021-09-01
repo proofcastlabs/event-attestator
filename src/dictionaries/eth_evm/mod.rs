@@ -3,7 +3,7 @@ use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::{eth::eth_state::EthState, evm::eth_state::EthState as EvmState},
+    chains::eth::eth_state::EthState,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     dictionaries::dictionary_constants::ETH_EVM_DICTIONARY_KEY,
     fees::fee_utils::get_last_withdrawal_date_as_human_readable_string,
