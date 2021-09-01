@@ -6,7 +6,7 @@ fn check_for_parent_of_block_in_state<D: DatabaseInterface>(
 ) -> Result<EthState<D>> {
     let block_type = if is_for_eth { "ETH" } else { "EVM" };
     info!("✔ Checking if {} block's parent exists in database...", block_type);
-    let parent_hash = state.get_parent_hash()?.clone();
+    let parent_hash = state.get_parent_hash()?;
     let parent_exists = if is_for_eth {
         state.eth_db_utils.eth_block_exists_in_db(&parent_hash)
     } else {

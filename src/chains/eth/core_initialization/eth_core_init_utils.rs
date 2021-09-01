@@ -234,11 +234,11 @@ fn add_block_to_db_and_return_state<D: DatabaseInterface>(is_for_eth: bool, stat
     if is_for_eth {
         state
             .eth_db_utils
-            .put_eth_submission_material_in_db(&submission_material)?;
+            .put_eth_submission_material_in_db(submission_material)?;
     } else {
         state
             .evm_db_utils
-            .put_eth_submission_material_in_db(&submission_material)?;
+            .put_eth_submission_material_in_db(submission_material)?;
     };
     Ok(state)
 }

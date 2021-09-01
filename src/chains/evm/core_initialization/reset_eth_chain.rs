@@ -2,52 +2,55 @@ use ethereum_types::H256 as EthHash;
 use serde_json::json;
 
 use crate::{
-    chains::evm::{
+    chains::eth::{
         core_initialization::eth_core_init_utils::{
-            add_eth_block_to_db_and_return_state,
-            put_canon_to_tip_length_in_db_and_return_state,
-            put_eth_tail_block_hash_in_db_and_return_state,
+            add_evm_block_to_db_and_return_state,
+            put_evm_canon_to_tip_length_in_db_and_return_state,
+            put_evm_tail_block_hash_in_db_and_return_state,
             remove_receipts_from_block_in_state,
-            set_eth_anchor_block_hash_and_return_state,
-            set_eth_canon_block_hash_and_return_state,
-            set_eth_latest_block_hash_and_return_state,
-        },
-        eth_constants::{
-            ETH_ANCHOR_BLOCK_HASH_KEY,
-            ETH_CANON_BLOCK_HASH_KEY,
-            ETH_CANON_TO_TIP_LENGTH_KEY,
-            ETH_LATEST_BLOCK_HASH_KEY,
-            ETH_LINKER_HASH_KEY,
-            ETH_TAIL_BLOCK_HASH_KEY,
-            PTOKEN_GENESIS_HASH_KEY,
+            set_evm_anchor_block_hash_and_return_state,
+            set_evm_canon_block_hash_and_return_state,
+            set_evm_latest_block_hash_and_return_state,
         },
         eth_database_transactions::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::{get_eth_latest_block_from_db, get_submission_material_from_db},
+        eth_database_utils::EthDatabaseUtils,
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
-        validate_block_in_state::validate_block_in_state as validate_eth_block_in_state,
+        evm_constants::{
+            EVM_ANCHOR_BLOCK_HASH_KEY,
+            EVM_CANON_BLOCK_HASH_KEY,
+            EVM_CANON_TO_TIP_LENGTH_KEY,
+            EVM_LATEST_BLOCK_HASH_KEY,
+            EVM_LINKER_HASH_KEY,
+            EVM_PTOKEN_GENESIS_HASH_KEY,
+            EVM_TAIL_BLOCK_HASH_KEY,
+        },
+        validate_block_in_state::validate_block_in_state,
     },
     check_debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,
 };
 
-fn delete_all_eth_blocks<D: DatabaseInterface>(db: &D) -> Result<()> {
+fn delete_all_eth_blocks<D: DatabaseInterface>(db_utils: &EthDatabaseUtils<D>) -> Result<()> {
     fn recursively_delete_all_eth_blocks<D: DatabaseInterface>(
-        db: &D,
+        db_utils: &EthDatabaseUtils<D>,
         maybe_block_hash: Option<EthHash>,
     ) -> Result<()> {
         match maybe_block_hash {
             None => {
                 info!("✔ Deleting all EVM blocks from db, starting with the latest block...");
-                recursively_delete_all_eth_blocks(db, Some(get_eth_latest_block_from_db(db)?.get_parent_hash()?))
+                recursively_delete_all_eth_blocks(
+                    db_utils,
+                    Some(db_utils.get_eth_latest_block_from_db()?.get_parent_hash()?),
+                )
             },
-            Some(ref hash) => match get_submission_material_from_db(db, hash) {
+            Some(ref hash) => match db_utils.get_submission_material_from_db(hash) {
                 Ok(submission_material) => {
-                    recursively_delete_all_eth_blocks(db, Some(submission_material.get_parent_hash()?))
+                    recursively_delete_all_eth_blocks(db_utils, Some(submission_material.get_parent_hash()?))
                 },
                 Err(_) => {
                     info!("✔ All EVM blocks deleted!");
@@ -56,19 +59,19 @@ fn delete_all_eth_blocks<D: DatabaseInterface>(db: &D) -> Result<()> {
             },
         }
     }
-    recursively_delete_all_eth_blocks(db, None)
+    recursively_delete_all_eth_blocks(db_utils, None)
 }
 
 fn delete_all_relevant_db_keys<D: DatabaseInterface>(db: &D) -> Result<()> {
     vec![
-        *ETH_LINKER_HASH_KEY,
-        *ETH_CANON_BLOCK_HASH_KEY,
-        *ETH_TAIL_BLOCK_HASH_KEY,
-        *PTOKEN_GENESIS_HASH_KEY,
-        *ETH_ANCHOR_BLOCK_HASH_KEY,
-        *ETH_LATEST_BLOCK_HASH_KEY,
-        *ETH_CANON_BLOCK_HASH_KEY,
-        *ETH_CANON_TO_TIP_LENGTH_KEY,
+        *EVM_LINKER_HASH_KEY,
+        *EVM_CANON_BLOCK_HASH_KEY,
+        *EVM_TAIL_BLOCK_HASH_KEY,
+        *EVM_PTOKEN_GENESIS_HASH_KEY,
+        *EVM_ANCHOR_BLOCK_HASH_KEY,
+        *EVM_LATEST_BLOCK_HASH_KEY,
+        *EVM_CANON_BLOCK_HASH_KEY,
+        *EVM_CANON_TO_TIP_LENGTH_KEY,
     ]
     .iter()
     .map(|key| db.delete(key.to_vec()))
@@ -77,7 +80,7 @@ fn delete_all_relevant_db_keys<D: DatabaseInterface>(db: &D) -> Result<()> {
 }
 
 fn delete_all_blocks_and_db_keys_and_return_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    delete_all_eth_blocks(state.db)
+    delete_all_eth_blocks(&state.evm_db_utils)
         .and_then(|_| delete_all_relevant_db_keys(state.db))
         .and(Ok(state))
 }
@@ -101,15 +104,15 @@ pub fn debug_reset_eth_chain<D: DatabaseInterface>(
     check_debug_mode()
         .and_then(|_| parse_eth_submission_material_and_put_in_state(submission_material_json, EthState::init(&db)))
         .and_then(start_eth_db_transaction_and_return_state)
-        .and_then(validate_eth_block_in_state)
+        .and_then(validate_block_in_state)
         .and_then(remove_receipts_from_block_in_state)
         .and_then(delete_all_blocks_and_db_keys_and_return_state)
-        .and_then(add_eth_block_to_db_and_return_state)
-        .and_then(|state| put_canon_to_tip_length_in_db_and_return_state(canon_to_tip_length, state))
-        .and_then(set_eth_anchor_block_hash_and_return_state)
-        .and_then(set_eth_latest_block_hash_and_return_state)
-        .and_then(set_eth_canon_block_hash_and_return_state)
-        .and_then(put_eth_tail_block_hash_in_db_and_return_state)
+        .and_then(add_evm_block_to_db_and_return_state)
+        .and_then(|state| put_evm_canon_to_tip_length_in_db_and_return_state(canon_to_tip_length, state))
+        .and_then(set_evm_anchor_block_hash_and_return_state)
+        .and_then(set_evm_latest_block_hash_and_return_state)
+        .and_then(set_evm_canon_block_hash_and_return_state)
+        .and_then(put_evm_tail_block_hash_in_db_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)
         .map(|_| json!({"evm-chain-reset-success":true}).to_string())
 }
