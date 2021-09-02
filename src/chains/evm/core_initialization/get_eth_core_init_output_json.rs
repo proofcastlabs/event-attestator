@@ -3,10 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 
 use crate::{
-    chains::evm::{
-        eth_database_utils::{get_latest_eth_block_number, get_public_eth_address_from_db},
-        eth_state::EthState,
-    },
+    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_state::EthState},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -25,9 +22,13 @@ impl EthInitializationOutput {
         contract_address: Option<&EthAddress>,
         contract_tx: Option<&str>,
     ) -> Result<Self> {
+        let evm_db_utils = EthDatabaseUtils::new_for_evm(db);
         Ok(Self {
-            eth_address: format!("0x{}", hex::encode(get_public_eth_address_from_db(db)?.as_bytes())),
-            eth_latest_block_num: get_latest_eth_block_number(db)?,
+            eth_address: format!(
+                "0x{}",
+                hex::encode(evm_db_utils.get_public_eth_address_from_db()?.as_bytes())
+            ),
+            eth_latest_block_num: evm_db_utils.get_latest_eth_block_number()?,
             eth_ptoken_contract_tx: contract_tx.map(|tx| tx.to_string()),
             smart_contract_address: contract_address.map(|address| format!("0x{}", hex::encode(address))),
         })

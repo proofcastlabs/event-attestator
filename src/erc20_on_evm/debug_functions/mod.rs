@@ -4,29 +4,22 @@ use ethereum_types::U256;
 use serde_json::json;
 
 use crate::{
-    chains::{
-        eth::{
-            eth_constants::{
-                get_eth_constants_db_keys,
-                ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
-                ETH_PRIVATE_KEY_DB_KEY,
-            },
-            eth_contracts::erc20_vault::{
-                encode_erc20_vault_add_supported_token_fx_data,
-                encode_erc20_vault_migrate_fxn_data,
-                encode_erc20_vault_peg_out_fxn_data_without_user_data,
-                encode_erc20_vault_remove_supported_token_fx_data,
-                ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
-                ERC20_VAULT_MIGRATE_GAS_LIMIT,
-                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
-            },
-            eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::EthDatabaseUtils,
-            eth_debug_functions::debug_set_eth_gas_price_in_db,
-            eth_utils::{convert_hex_to_address, get_eth_address_from_str},
-            evm_constants::{get_evm_constants_db_keys, EVM_PRIVATE_KEY_DB_KEY},
+    chains::eth::{
+        eth_constants::{get_eth_constants_db_keys, ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY, ETH_PRIVATE_KEY_DB_KEY},
+        eth_contracts::erc20_vault::{
+            encode_erc20_vault_add_supported_token_fx_data,
+            encode_erc20_vault_migrate_fxn_data,
+            encode_erc20_vault_peg_out_fxn_data_without_user_data,
+            encode_erc20_vault_remove_supported_token_fx_data,
+            ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+            ERC20_VAULT_MIGRATE_GAS_LIMIT,
+            ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
         },
-        evm::eth_database_utils::put_eth_gas_price_in_db as put_evm_gas_price_in_db,
+        eth_crypto::eth_transaction::EthTransaction,
+        eth_database_utils::EthDatabaseUtils,
+        eth_debug_functions::debug_set_eth_gas_price_in_db,
+        eth_utils::{convert_hex_to_address, get_eth_address_from_str},
+        evm_constants::{get_evm_constants_db_keys, EVM_PRIVATE_KEY_DB_KEY},
     },
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
@@ -109,7 +102,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
 /// }
 pub fn debug_add_dictionary_entry<D: DatabaseInterface>(db: D, json_str: &str) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &EthDatabaseUtils::new_for_evm(&db)))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
         .and_then(|dictionary| dictionary.add_and_update_in_db(EthEvmTokenDictionaryEntry::from_str(json_str)?, &db))
@@ -124,7 +117,7 @@ pub fn debug_add_dictionary_entry<D: DatabaseInterface>(db: D, json_str: &str) -
 /// not extant, nothing is changed.
 pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &EthDatabaseUtils::new_for_evm(&db)))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
         .and_then(|dictionary| {
@@ -151,10 +144,11 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address
     info!("✔ Debug getting `addSupportedToken` contract tx...");
     db.start_transaction()?;
     let eth_db_utils = EthDatabaseUtils::new(&db);
+    let evm_db_utils = EthDatabaseUtils::new_for_evm(&db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = convert_hex_to_address(eth_address_str)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_add_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
@@ -193,10 +187,11 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
     info!("✔ Debug getting `removeSupportedToken` contract tx...");
     db.start_transaction()?;
     let eth_db_utils = EthDatabaseUtils::new(&db);
+    let evm_db_utils = EthDatabaseUtils::new_for_evm(&db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = convert_hex_to_address(eth_address_str)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_remove_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
@@ -236,11 +231,12 @@ pub fn debug_get_erc20_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, ne
     db.start_transaction()?;
     info!("✔ Debug getting `ERC20-on-EVM` migration transaction...");
     let eth_db_utils = EthDatabaseUtils::new(&db);
+    let evm_db_utils = EthDatabaseUtils::new_for_evm(&db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let current_smart_contract_address = eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?;
     let new_smart_contract_address = get_eth_address_from_str(new_address)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(eth_db_utils, &db))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| {
             eth_db_utils.put_eth_address_in_db(
@@ -284,7 +280,7 @@ pub fn debug_get_erc20_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, ne
 /// #### NOTE: Using a fee of 0 will mean no fees are taken.
 pub fn debug_set_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &EthDatabaseUtils::new_for_evm(&db)))
         .map(|_| sanity_check_basis_points_value(new_fee))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
@@ -312,8 +308,9 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
     recipient_address: &str,
 ) -> Result<String> {
     let eth_db_utils = EthDatabaseUtils::new(&db);
+    let evm_db_utils = EthDatabaseUtils::new_for_evm(&db);
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
         .and_then(|dictionary| {
@@ -347,10 +344,12 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
 ///
 /// This function sets the EVM gas price to use when making EVM transactions. It's unit is `Wei`.
 pub fn debug_set_evm_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
+    let evm_db_utils = EthDatabaseUtils::new_for_evm(&db);
+    let eth_db_utils = EthDatabaseUtils::new(&db);
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
         .and_then(|_| db.start_transaction())
-        .and_then(|_| put_evm_gas_price_in_db(&db, gas_price))
+        .and_then(|_| evm_db_utils.put_eth_gas_price_in_db(gas_price))
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"sucess":true,"new_evm_gas_price":gas_price}).to_string())
         .map(prepend_debug_output_marker_to_string)

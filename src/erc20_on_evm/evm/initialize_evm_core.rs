@@ -1,18 +1,21 @@
 use crate::{
     chains::{
-        eth::eth_chain_id::EthChainId,
-        evm::{
-            core_initialization::{
-                check_eth_core_is_initialized::is_eth_core_initialized,
-                get_eth_core_init_output_json::EthInitializationOutput,
-                initialize_eth_core::initialize_eth_core_with_no_contract_tx,
-            },
-            eth_constants::ETH_CORE_IS_INITIALIZED_JSON,
+        eth::{
+            eth_chain_id::EthChainId,
             eth_database_transactions::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
             },
+            eth_database_utils::EthDatabaseUtils,
             eth_state::EthState,
+        },
+        evm::{
+            core_initialization::{
+                check_eth_core_is_initialized::is_evm_core_initialized,
+                get_eth_core_init_output_json::EthInitializationOutput,
+                initialize_eth_core::initialize_eth_core_with_no_contract_tx,
+            },
+            eth_constants::ETH_CORE_IS_INITIALIZED_JSON,
         },
     },
     traits::DatabaseInterface,
@@ -55,7 +58,7 @@ pub fn maybe_initialize_evm_core<D: DatabaseInterface>(
     gas_price: u64,
     confs: u64,
 ) -> Result<String> {
-    match is_eth_core_initialized(&db) {
+    match is_evm_core_initialized(&EthDatabaseUtils::new_for_evm(&db)) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
         false => start_eth_db_transaction_and_return_state(EthState::init(&db))
             .and_then(|state| {

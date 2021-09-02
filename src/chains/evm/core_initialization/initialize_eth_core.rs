@@ -1,28 +1,36 @@
 use crate::{
     chains::{
-        eth::eth_chain_id::EthChainId,
-        evm::{
+        eth::{
             core_initialization::{
                 eth_core_init_utils::{
-                    add_eth_block_to_db_and_return_state,
-                    put_any_sender_nonce_in_db_and_return_state,
-                    put_canon_to_tip_length_in_db_and_return_state,
-                    put_eth_account_nonce_in_db_and_return_state,
-                    put_eth_chain_id_in_db_and_return_state,
                     put_eth_gas_price_in_db_and_return_state,
-                    put_eth_tail_block_hash_in_db_and_return_state,
-                    remove_receipts_from_block_in_state,
+                    put_eth_account_nonce_in_db_and_return_state,
+                    add_evm_block_to_db_and_return_state,
+                    put_eth_chain_id_in_db_and_return_state,
                     set_eth_anchor_block_hash_and_return_state,
+                    put_evm_account_nonce_in_db_and_return_state,
+                    put_evm_any_sender_nonce_in_db_and_return_state,
+                    put_evm_canon_to_tip_length_in_db_and_return_state,
+                    put_eth_tail_block_hash_in_db_and_return_state,
                     set_eth_canon_block_hash_and_return_state,
                     set_eth_latest_block_hash_and_return_state,
+                    put_evm_chain_id_in_db_and_return_state,
+                    put_evm_gas_price_in_db_and_return_state,
+                    put_evm_tail_block_hash_in_db_and_return_state,
+                    remove_receipts_from_block_in_state,
+                    set_evm_anchor_block_hash_and_return_state,
+                    set_evm_canon_block_hash_and_return_state,
+                    set_evm_latest_block_hash_and_return_state,
                 },
-                generate_eth_address::generate_and_store_eth_address,
-                generate_eth_contract_tx::generate_eth_contract_tx_and_put_in_state,
                 generate_eth_private_key::generate_and_store_eth_private_key,
+                generate_eth_contract_tx::generate_evm_contract_tx_and_put_in_state,
+                generate_eth_address::generate_and_store_evm_address,
             },
+            eth_chain_id::EthChainId,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             validate_block_in_state::validate_block_in_state as validate_eth_block_in_state,
+            validate_block_in_state::validate_block_in_state,
         },
     },
     traits::DatabaseInterface,
@@ -40,9 +48,10 @@ pub fn initialize_eth_core_maybe_with_contract_tx<'a, D: DatabaseInterface>(
     parse_eth_submission_material_and_put_in_state(block_json, state)
         .and_then(|state| put_eth_chain_id_in_db_and_return_state(chain_id, state))
         .and_then(validate_eth_block_in_state)
+        .and_then(validate_block_in_state)
         .and_then(remove_receipts_from_block_in_state)
-        .and_then(add_eth_block_to_db_and_return_state)
-        .and_then(|state| put_canon_to_tip_length_in_db_and_return_state(canon_to_tip_length, state))
+        .and_then(add_evm_block_to_db_and_return_state)
+        .and_then(|state| put_evm_canon_to_tip_length_in_db_and_return_state(canon_to_tip_length, state))
         .and_then(set_eth_anchor_block_hash_and_return_state)
         .and_then(set_eth_latest_block_hash_and_return_state)
         .and_then(set_eth_canon_block_hash_and_return_state)
@@ -53,10 +62,10 @@ pub fn initialize_eth_core_maybe_with_contract_tx<'a, D: DatabaseInterface>(
             Some(_) => put_eth_account_nonce_in_db_and_return_state(state, 1),
             None => put_eth_account_nonce_in_db_and_return_state(state, 0),
         })
-        .and_then(put_any_sender_nonce_in_db_and_return_state)
-        .and_then(generate_and_store_eth_address)
+        .and_then(put_evm_any_sender_nonce_in_db_and_return_state)
+        .and_then(generate_and_store_evm_address)
         .and_then(|state| match maybe_bytecode_path {
-            Some(path) => generate_eth_contract_tx_and_put_in_state(chain_id, gas_price, path, state),
+            Some(path) => generate_evm_contract_tx_and_put_in_state(chain_id, gas_price, path, state),
             None => Ok(state),
         })
 }

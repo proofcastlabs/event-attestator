@@ -16,7 +16,8 @@ use crate::{
 /// This vault contract setter can only be set ONCE. Further attempts to do so will not succeed.
 pub fn maybe_add_vault_contract_address<D: DatabaseInterface>(db: D, hex_address: &str) -> Result<String> {
     let eth_db_utils = EthDatabaseUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &db)
+    let evm_db_utils = EthDatabaseUtils::new_for_evm(&db);
+    check_core_is_initialized(&eth_db_utils, &evm_db_utils)
         .and_then(|_| db.start_transaction())
         .and_then(|_| convert_hex_to_address(hex_address))
         .and_then(|ref address| eth_db_utils.put_erc20_on_evm_smart_contract_address_in_db(address))

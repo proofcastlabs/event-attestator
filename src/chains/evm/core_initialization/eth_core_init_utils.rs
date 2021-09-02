@@ -21,6 +21,7 @@ use crate::{
     types::Result,
 };
 
+/*
 pub fn put_eth_tail_block_hash_in_db_and_return_state<D>(state: EthState<D>) -> Result<EthState<D>>
 where
     D: DatabaseInterface,
@@ -28,6 +29,7 @@ where
     info!("✔ Putting ETH tail block has in db...");
     put_eth_tail_block_hash_in_db(state.db, &state.get_eth_submission_material()?.get_block_hash()?).and(Ok(state))
 }
+*/
 
 fn set_hash_from_block_in_state<'a, D: DatabaseInterface>(
     state: EthState<'a, D>,

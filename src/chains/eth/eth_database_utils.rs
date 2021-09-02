@@ -18,7 +18,7 @@ use crate::{
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EthDatabaseUtils<'a, D: DatabaseInterface> {
-    db: &'a D,
+    pub db: &'a D,
     is_for_evm: bool,
     eth_address_key: Bytes,
     eth_chain_id_key: Bytes,
