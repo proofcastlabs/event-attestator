@@ -1,5 +1,8 @@
 pub(crate) mod block_reprocessors;
 
+use std::str::FromStr;
+
+use eos_chain::AccountName as EosAccountName;
 pub use serde_json::json;
 
 use crate::{
@@ -35,14 +38,15 @@ use crate::{
                 put_erc20_on_eos_smart_contract_address_in_db,
             },
             eth_debug_functions::debug_set_eth_gas_price_in_db,
-            eth_utils::get_eth_address_from_str,
+            eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
         },
     },
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
-    dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
+    dictionaries::{dictionary_constants::EOS_ETH_DICTIONARY_KEY, eos_eth::EosEthTokenDictionary},
     erc20_on_eos::check_core_is_initialized::check_core_is_initialized,
+    fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -301,4 +305,50 @@ pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
 pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
     debug_set_eth_gas_price_in_db(&db, gas_price)
+}
+
+/// Debug Set ETH Fee Basis Points
+///
+/// This function takes an address and a new fee param. It gets the `EosEthTokenDictionary` from
+/// the database then finds the entry pertaining to the address in question and if successful,
+/// updates the fee associated with that address before saving the dictionary back into the
+/// database. If no entry is found for a given `address` the function will return an error saying
+/// as such.
+///
+/// #### NOTE: Using a fee of 0 will mean no fees are taken.
+pub fn debug_set_eth_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .map(|_| sanity_check_basis_points_value(new_fee))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
+        .and_then(|dictionary| {
+            dictionary.change_eth_fee_basis_points_and_update_in_db(&db, &convert_hex_to_eth_address(address)?, new_fee)
+        })
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({"success":true, "address": address, "new_fee": new_fee}).to_string())
+        .map(prepend_debug_output_marker_to_string)
+}
+
+/// Debug Set EOS Fee Basis Points
+///
+/// This function takes an address and a new fee param. It gets the `EosEthTokenDictionary` from
+/// the database then finds the entry pertaining to the address in question and if successful,
+/// updates the fee associated with that address before saving the dictionary back into the
+/// database. If no entry is found for a given `address` the function will return an error saying
+/// as such.
+///
+/// #### NOTE: Using a fee of 0 will mean no fees are taken.
+pub fn debug_set_eos_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .map(|_| sanity_check_basis_points_value(new_fee))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
+        .and_then(|dictionary| {
+            dictionary.change_eos_fee_basis_points_and_update_in_db(&db, &EosAccountName::from_str(address)?, new_fee)
+        })
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({"success":true, "address": address, "new_fee": new_fee}).to_string())
+        .map(prepend_debug_output_marker_to_string)
 }
