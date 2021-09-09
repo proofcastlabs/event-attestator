@@ -78,6 +78,33 @@ impl ToMetadata for Erc20OnEosPegInInfo {
     }
 }
 
+impl FeesCalculator for Erc20OnEosPegInInfos {
+    fn get_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
+        debug!("Calculating fees in `Erc20OnEosPegInInfos`...");
+        self.iter()
+            .map(|info| info.calculate_peg_in_fee_via_dictionary(dictionary))
+            .collect()
+    }
+
+    fn subtract_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Self> {
+        self.get_fees(dictionary).and_then(|fee_tuples| {
+            Ok(Self::new(
+                self.iter()
+                    .zip(fee_tuples.iter())
+                    .map(|(info, (_, fee))| {
+                        if *fee == U256::zero() {
+                            debug!("Not subtracting fee because `fee` is 0!");
+                            Ok(info.clone())
+                        } else {
+                            info.subtract_amount(*fee)
+                        }
+                    })
+                    .collect::<Result<Vec<_>>>()?,
+            ))
+        })
+    }
+}
+
 impl FeeCalculator for Erc20OnEosPegInInfo {
     fn get_amount(&self) -> U256 {
         info!(
@@ -707,5 +734,29 @@ mod tests {
         let result = info_after.get_amount();
         let expected_result = U256::from(1000);
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_fees_from_eos_on_eth_peg_in_infos() {
+        let eth_address = EthAddress::from_slice(&hex::decode("9e57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
+        let expected_result = vec![
+            (eth_address, U256::from_dec_str("3342500000").unwrap()),
+            (eth_address, U256::from_dec_str("1665000000").unwrap()),
+        ];
+        let infos = get_sample_erc20_on_eos_peg_in_infos_2();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let result = infos.get_fees(&dictionary).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_subtract_fees_from_eos_on_eth_peg_in_infos() {
+        let infos = get_sample_erc20_on_eos_peg_in_infos_2();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let result = infos.subtract_fees(&dictionary).unwrap();
+        let expected_amount_1 = U256::from_dec_str("1333657500000").unwrap();
+        let expected_amount_2 = U256::from_dec_str("664335000000").unwrap();
+        assert_eq!(result[0].token_amount, expected_amount_1);
+        assert_eq!(result[1].token_amount, expected_amount_2);
     }
 }
