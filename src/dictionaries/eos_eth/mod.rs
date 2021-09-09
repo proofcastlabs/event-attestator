@@ -970,14 +970,17 @@ mod tests {
         let eos_address = EosAccountName::from_str("sampletokens").unwrap();
         let dictionary = get_sample_eos_eth_token_dictionary();
         let entry = dictionary.get_entry_via_eos_address(&eos_address).unwrap();
-        assert_eq!(entry.eos_fee_basis_points, 0);
-        let basis_points = 25;
+        let basis_points_before = entry.eos_fee_basis_points;
+        let new_basis_points = basis_points_before + 1;
         dictionary
-            .change_eos_fee_basis_points_and_update_in_db(&db, &eos_address, basis_points)
+            .change_eos_fee_basis_points_and_update_in_db(&db, &eos_address, new_basis_points)
             .unwrap();
         let dictionary_from_db = EosEthTokenDictionary::get_from_db(&db).unwrap();
-        let result = dictionary_from_db.get_entry_via_eos_address(&eos_address).unwrap();
-        assert_eq!(result.eos_fee_basis_points, basis_points);
+        let result = dictionary_from_db
+            .get_entry_via_eos_address(&eos_address)
+            .unwrap()
+            .eos_fee_basis_points;
+        assert_eq!(result, new_basis_points);
     }
 
     #[test]
