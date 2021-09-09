@@ -14,7 +14,6 @@ use crate::{
         eth_state::EthState,
         eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
     },
-    erc20_on_eos::eth::peg_in_info::{Erc20OnEosPegInInfo, Erc20OnEosPegInInfos},
     errors::AppError,
     test_utils::{get_test_database, TestDB},
     traits::DatabaseInterface,
@@ -134,10 +133,6 @@ where
 {
     info!("✔ Getting ETH linker hash from db...");
     get_special_eth_hash_from_db(db, "linker")
-}
-
-pub fn convert_h256_to_prefixed_hex(hash: EthHash) -> String {
-    format!("0x{}", hex::encode(hash))
 }
 
 pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
@@ -292,10 +287,6 @@ pub fn get_sample_log_without_desired_topic() -> EthLog {
 pub fn get_sample_log_without_desired_address() -> EthLog {
     // NOTE: Has neither topic nor log
     get_sample_log_without_desired_topic()
-}
-
-pub fn get_expected_key_of_thing_in_trie_hash_map() -> EthHash {
-    EthHash::zero()
 }
 
 pub fn get_valid_state_with_invalid_block_and_receipts() -> Result<EthState<TestDB>> {
