@@ -9,7 +9,7 @@ use serde_json::{json, Value as JsonValue};
 use crate::{
     chains::evm::{
         eth_log::{EthLog, EthLogJson, EthLogs},
-        eth_utils::{convert_hex_to_address, convert_hex_to_h256, convert_json_value_to_string},
+        eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256, convert_json_value_to_string},
         nibble_utils::{get_nibbles_from_bytes, Nibbles},
         trie::{put_in_trie_recursively, Trie},
     },
@@ -185,7 +185,7 @@ impl EthReceipt {
             status: eth_receipt_json.status,
             logs_bloom: logs.get_bloom(),
             gas_used: U256::from(eth_receipt_json.gas_used),
-            from: convert_hex_to_address(&eth_receipt_json.from)?,
+            from: convert_hex_to_eth_address(&eth_receipt_json.from)?,
             block_number: U256::from(eth_receipt_json.block_number),
             block_hash: convert_hex_to_h256(&eth_receipt_json.block_hash)?,
             transaction_index: U256::from(eth_receipt_json.transaction_index),
@@ -193,11 +193,11 @@ impl EthReceipt {
             transaction_hash: convert_hex_to_h256(&eth_receipt_json.transaction_hash)?,
             to: match eth_receipt_json.to {
                 serde_json::Value::Null => H160::zero(),
-                _ => convert_hex_to_address(&convert_json_value_to_string(&eth_receipt_json.to)?)?,
+                _ => convert_hex_to_eth_address(&convert_json_value_to_string(&eth_receipt_json.to)?)?,
             },
             contract_address: match eth_receipt_json.contract_address {
                 serde_json::Value::Null => EthAddress::zero(),
-                _ => convert_hex_to_address(&convert_json_value_to_string(&eth_receipt_json.contract_address)?)?,
+                _ => convert_hex_to_eth_address(&convert_json_value_to_string(&eth_receipt_json.contract_address)?)?,
             },
             logs,
         })

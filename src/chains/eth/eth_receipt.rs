@@ -12,7 +12,7 @@ use crate::{
     chains::eth::{
         eth_log::{EthLog, EthLogJson, EthLogs},
         eth_receipt_type::EthReceiptType,
-        eth_utils::{convert_hex_to_address, convert_hex_to_h256, convert_json_value_to_string},
+        eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256, convert_json_value_to_string},
     },
     types::{Bytes, NoneError, Result},
     utils::{add_key_and_value_to_json, strip_hex_prefix},
@@ -225,7 +225,7 @@ impl EthReceipt {
             status: json.status,
             logs_bloom: logs.get_bloom(),
             gas_used: U256::from(json.gas_used),
-            from: convert_hex_to_address(&json.from)?,
+            from: convert_hex_to_eth_address(&json.from)?,
             block_number: U256::from(json.block_number),
             block_hash: convert_hex_to_h256(&json.block_hash)?,
             transaction_index: U256::from(json.transaction_index),
@@ -233,11 +233,11 @@ impl EthReceipt {
             transaction_hash: convert_hex_to_h256(&json.transaction_hash)?,
             to: match json.to {
                 serde_json::Value::Null => H160::zero(),
-                _ => convert_hex_to_address(&convert_json_value_to_string(&json.to)?)?,
+                _ => convert_hex_to_eth_address(&convert_json_value_to_string(&json.to)?)?,
             },
             contract_address: match json.contract_address {
                 serde_json::Value::Null => EthAddress::zero(),
-                _ => convert_hex_to_address(&convert_json_value_to_string(&json.contract_address)?)?,
+                _ => convert_hex_to_eth_address(&convert_json_value_to_string(&json.contract_address)?)?,
             },
             receipt_type: match json.receipt_type {
                 Some(ref hex) => Some(EthReceiptType::from_byte(&hex::decode(&strip_hex_prefix(hex))?[0])),
