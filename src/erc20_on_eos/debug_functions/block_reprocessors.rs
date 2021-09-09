@@ -45,13 +45,20 @@ use crate::{
             check_core_is_initialized_and_return_eth_state,
         },
         eos::{
-            account_for_fees::{account_for_fees_in_redeem_infos_in_state, maybe_account_for_fees},
+            account_for_fees::{
+                account_for_fees_in_redeem_infos_in_state,
+                update_accrued_fees_in_dictionary_and_return_eos_state,
+            },
             get_eos_output::get_eos_output,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db_and_return_eos_state,
             redeem_info::maybe_parse_redeem_infos_and_put_in_state,
             sign_normal_eth_txs::maybe_sign_normal_eth_txs_and_add_to_state,
         },
         eth::{
+            account_for_fees::{
+                account_for_fees_in_peg_in_infos_in_state,
+                update_accrued_fees_in_dictionary_and_return_eth_state,
+            },
             get_output_json::get_output_json,
             peg_in_info::{
                 filter_out_zero_value_peg_ins_from_state,
@@ -69,7 +76,7 @@ use crate::{
 fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
     db: D,
     block_json_string: &str,
-    _accrue_fees: bool, // FIXME Use this once `account_for_fees` logic is in on ETH side.
+    accrue_fees: bool,
 ) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
     parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
@@ -103,6 +110,15 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
             }
         })
         .and_then(filter_out_zero_value_peg_ins_from_state)
+        .and_then(account_for_fees_in_peg_in_infos_in_state)
+        .and_then(|state| {
+            if accrue_fees {
+                update_accrued_fees_in_dictionary_and_return_eth_state(state)
+            } else {
+                info!("✘ Not accruing fees during ETH block reprocessing...");
+                Ok(state)
+            }
+        })
         .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
         .and_then(get_output_json)
 }
@@ -128,12 +144,13 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
         .and_then(|state| maybe_filter_proofs_for_action_name(state, REDEEM_ACTION_NAME))
         .and_then(maybe_parse_redeem_infos_and_put_in_state)
+        .and_then(account_for_fees_in_redeem_infos_in_state)
         .and_then(|state| {
             if accrue_fees {
-                maybe_account_for_fees(state)
+                update_accrued_fees_in_dictionary_and_return_eos_state(state)
             } else {
                 info!("✘ Not accruing fees during EOS block reprocessing...");
-                account_for_fees_in_redeem_infos_in_state(state)
+                Ok(state)
             }
         })
         .and_then(maybe_sign_normal_eth_txs_and_add_to_state)
