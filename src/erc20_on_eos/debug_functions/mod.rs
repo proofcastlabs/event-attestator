@@ -23,9 +23,11 @@ use crate::{
             eth_contracts::erc20_vault::{
                 encode_erc20_vault_add_supported_token_fx_data,
                 encode_erc20_vault_migrate_fxn_data,
+                encode_erc20_vault_peg_out_fxn_data_without_user_data,
                 encode_erc20_vault_remove_supported_token_fx_data,
                 ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
                 ERC20_VAULT_MIGRATE_GAS_LIMIT,
+                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
             },
             eth_crypto::eth_transaction::EthTransaction,
             eth_database_utils::{
@@ -351,4 +353,50 @@ pub fn debug_set_eos_fee_basis_points<D: DatabaseInterface>(db: D, address: &str
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"success":true, "address": address, "new_fee": new_fee}).to_string())
         .map(prepend_debug_output_marker_to_string)
+}
+
+/// Debug Withdraw Fees
+///
+/// This function takes an address and uses it to search through the token dictionary to find a
+/// corresponding entry. Once found, that entry's accrued fees are zeroed, a timestamp set in that
+/// entry to mark the withdrawal date and the dictionary saved back in the database. Finally, an
+/// ETH transaction is created to transfer the `<accrued_fees>` amount of tokens to the passed in
+/// recipient address.
+///
+/// #### NOTE: This function will increment the ETH nonce and so the output transation MUST be
+/// broadcast otherwise future transactions are liable to fail.
+pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
+    db: D,
+    token_address: &str,
+    recipient_address: &str,
+) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
+        .and_then(|dictionary| {
+            dictionary.withdraw_fees_and_save_in_db(&db, &convert_hex_to_eth_address(token_address)?)
+        })
+        .and_then(|(token_address, fee_amount)| {
+            Ok(EthTransaction::new_unsigned(
+                encode_erc20_vault_peg_out_fxn_data_without_user_data(
+                    convert_hex_to_eth_address(recipient_address)?,
+                    token_address,
+                    fee_amount,
+                )?,
+                get_eth_account_nonce_from_db(&db)?,
+                0,
+                get_erc20_on_eos_smart_contract_address_from_db(&db)?,
+                &get_eth_chain_id_from_db(&db)?,
+                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
+                get_eth_gas_price_from_db(&db)?,
+            ))
+        })
+        .and_then(|unsigned_tx| unsigned_tx.sign(&get_eth_private_key_from_db(&db)?))
+        .map(|signed_tx| signed_tx.serialize_hex())
+        .and_then(|hex_tx| {
+            increment_eth_account_nonce_in_db(&db, 1)?;
+            db.end_transaction()?;
+            Ok(json!({"success": true, "eth_signed_tx": hex_tx}).to_string())
+        })
 }

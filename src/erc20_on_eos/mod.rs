@@ -56,6 +56,7 @@ pub use crate::{
             debug_set_eth_gas_price,
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
+            debug_withdraw_fees_and_save_in_db,
         },
         eos::submit_eos_block::submit_eos_block_to_core,
         eth::{
