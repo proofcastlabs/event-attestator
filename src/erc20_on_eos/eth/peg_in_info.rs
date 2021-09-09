@@ -1,4 +1,7 @@
+use std::str::FromStr;
+
 use derive_more::{Constructor, Deref};
+use eos_chain::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
@@ -35,6 +38,7 @@ use crate::{
         },
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
+    erc20_on_eos::traits::{FeeCalculator, FeesCalculator},
     metadata::{
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
@@ -71,6 +75,47 @@ impl ToMetadata for Erc20OnEosPegInInfo {
 
     fn to_metadata_bytes(&self) -> Result<Bytes> {
         self.to_metadata()?.to_bytes_for_protocol(&MetadataProtocolId::Eos)
+    }
+}
+
+impl FeeCalculator for Erc20OnEosPegInInfo {
+    fn get_amount(&self) -> U256 {
+        info!(
+            "✔Getting token amount in `Erc20OnEosPegInInfo` of {}",
+            self.token_amount
+        );
+        self.token_amount
+    }
+
+    fn get_eth_token_address(&self) -> EthAddress {
+        debug!(
+            "Getting EOS token address in `Erc20OnEosPegInInfo` of {}",
+            self.eth_token_address
+        );
+        self.eth_token_address
+    }
+
+    fn get_eos_token_address(&self) -> Result<EosAccountName> {
+        debug!(
+            "Getting EOS token address in `Erc20OnEosPegInInfo` of {}",
+            self.eos_token_address
+        );
+        Ok(EosAccountName::from_str(&self.eos_token_address)?)
+    }
+
+    fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
+        if subtrahend >= self.token_amount {
+            Err("Cannot subtract amount from `Erc20OnEosPegInInfo`: subtrahend too large!".into())
+        } else {
+            let new_amount = self.token_amount - subtrahend;
+            debug!(
+                "Subtracting {} from {} to get final amount of {} in `Erc20OnEosPegInInfo`!",
+                subtrahend, self.token_amount, new_amount
+            );
+            let mut new_self = self.clone();
+            new_self.token_amount = new_amount;
+            Ok(new_self)
+        }
     }
 }
 
@@ -649,5 +694,15 @@ mod tests {
         let expected_result = "010002000000000000000100a68234ab58a5c10000000000a531760100a68234ab58a5c100000000a8ed32321980b1ba29194cd53400000000000000000953414d000000000000";
         let result_without_timestamp = &result[0].transaction[8..];
         assert_eq!(result_without_timestamp, expected_result);
+    }
+
+    #[test]
+    fn should_subtract_amount_from_eos_on_eth_peg_in_info() {
+        let info = get_sample_erc20_on_eos_peg_in_info().unwrap();
+        let subtrahend = U256::from(337);
+        let info_after = info.subtract_amount(subtrahend).unwrap();
+        let result = info_after.get_amount();
+        let expected_result = U256::from(1000);
+        assert_eq!(result, expected_result);
     }
 }
