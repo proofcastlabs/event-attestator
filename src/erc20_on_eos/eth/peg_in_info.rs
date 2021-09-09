@@ -394,8 +394,6 @@ mod tests {
         chains::{
             eos::eos_test_utils::get_sample_eos_private_key,
             eth::eth_test_utils::{
-                get_sample_erc20_on_eos_peg_in_info,
-                get_sample_erc20_on_eos_peg_in_infos,
                 get_sample_log_with_erc20_peg_in_event,
                 get_sample_log_with_erc20_peg_in_event_2,
                 get_sample_receipt_with_erc20_peg_in_event,
@@ -403,6 +401,11 @@ mod tests {
             },
         },
         dictionaries::eos_eth::{test_utils::get_sample_eos_eth_token_dictionary, EosEthTokenDictionaryEntry},
+        erc20_on_eos::test_utils::{
+            get_sample_erc20_on_eos_peg_in_info,
+            get_sample_erc20_on_eos_peg_in_infos,
+            get_sample_erc20_on_eos_peg_in_infos_2,
+        },
     };
 
     fn get_sample_zero_eos_asset_peg_in_info() -> Erc20OnEosPegInInfo {

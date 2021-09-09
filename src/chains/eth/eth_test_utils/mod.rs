@@ -541,26 +541,6 @@ pub fn get_sample_log_with_erc20_peg_in_event_2() -> Result<EthLog> {
     get_sample_log_n(9, 16, 1)
 }
 
-// TODO The eth->eos decimal conversion makes this a bad example now. Get a better one!
-pub fn get_sample_erc20_on_eos_peg_in_info() -> Result<Erc20OnEosPegInInfo> {
-    let user_data = vec![];
-    Ok(Erc20OnEosPegInInfo::new(
-        U256::from_dec_str("1337").unwrap(),
-        EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
-        EthAddress::from_slice(&hex::decode("9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap()),
-        "aneosaddress".to_string(),
-        EthHash::from_slice(&hex::decode("241f386690b715422102edf42f5c9edcddea16b64f17d02bad572f5f341725c0").unwrap()),
-        "SampleToken".to_string(),
-        "0.000000000 SAM".to_string(),
-        user_data,
-        EthChainId::Mainnet,
-    ))
-}
-
-pub fn get_sample_erc20_on_eos_peg_in_infos() -> Result<Erc20OnEosPegInInfos> {
-    Ok(Erc20OnEosPegInInfos::new(vec![get_sample_erc20_on_eos_peg_in_info()?]))
-}
-
 fn get_tx_hash_of_erc777_redeem() -> &'static str {
     "442612aba789ce873bb3804ff62ced770dcecb07d19ddcf9b651c357eebaed40"
 }

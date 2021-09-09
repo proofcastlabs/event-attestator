@@ -73,4 +73,5 @@ pub mod get_latest_block_numbers;
 
 pub(crate) mod add_vault_contract_address_to_db;
 pub(crate) mod check_core_is_initialized;
+pub(crate) mod test_utils;
 pub(crate) mod traits;
