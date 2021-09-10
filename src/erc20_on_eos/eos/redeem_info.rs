@@ -394,7 +394,7 @@ mod tests {
         let basis_points = 25;
         let info = get_sample_erc20_on_eos_redeem_info();
         let expected_result = U256::from_dec_str("3342500000").unwrap();
-        let result = info.calculate_fee(basis_points);
+        let result = info.calculate_fee(basis_points).unwrap();
         assert_eq!(result, expected_result);
     }
 
