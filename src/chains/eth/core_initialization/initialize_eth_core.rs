@@ -36,6 +36,7 @@ pub fn initialize_eth_core_maybe_with_contract_tx<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     parse_eth_submission_material_and_put_in_state(block_json, state)
+        .and_then(|state| put_eth_chain_id_in_db_and_return_state(chain_id, state))
         .and_then(validate_eth_block_in_state)
         .and_then(remove_receipts_from_block_in_state)
         .and_then(add_eth_block_to_db_and_return_state)
@@ -45,7 +46,6 @@ pub fn initialize_eth_core_maybe_with_contract_tx<D: DatabaseInterface>(
         .and_then(set_eth_canon_block_hash_and_return_state)
         .and_then(generate_and_store_eth_private_key)
         .and_then(put_eth_tail_block_hash_in_db_and_return_state)
-        .and_then(|state| put_eth_chain_id_in_db_and_return_state(chain_id, state))
         .and_then(|state| put_eth_gas_price_in_db_and_return_state(gas_price, state))
         .and_then(|state| match maybe_bytecode_path {
             Some(_) => put_eth_account_nonce_in_db_and_return_state(state, 1),
