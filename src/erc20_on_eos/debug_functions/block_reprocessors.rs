@@ -31,7 +31,7 @@ use crate::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
             },
-            eth_database_utils::get_eth_chain_id_from_db,
+            eth_database_utils::EthDatabaseUtils,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             increment_eos_account_nonce::maybe_increment_eos_account_nonce_and_return_state,
@@ -84,7 +84,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
     accrue_fees: bool,
 ) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
+    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(&db))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
@@ -103,12 +103,12 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                         "✔ {} receipts in block ∴ parsing info...",
                         submission_material.get_block_number()?
                     );
-                    EosEthTokenDictionary::get_from_db(&state.db)
+                    EosEthTokenDictionary::get_from_db(state.db)
                         .and_then(|token_dictionary| {
                             Erc20OnEosPegInInfos::from_submission_material(
                                 &submission_material,
                                 &token_dictionary,
-                                &get_eth_chain_id_from_db(&state.db)?,
+                                &EthDatabaseUtils::new_for_eth(&db).get_eth_chain_id_from_db()?,
                             )
                         })
                         .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
@@ -137,7 +137,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
     accrue_fees: bool,
 ) -> Result<String> {
     info!("✔ Debug reprocessing EOS block...");
-    parse_submission_material_and_add_to_state(block_json, EosState::init(db))
+    parse_submission_material_and_add_to_state(block_json, EosState::init(&db))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(start_eos_db_transaction_and_return_state)

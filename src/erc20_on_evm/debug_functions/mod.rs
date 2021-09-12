@@ -18,7 +18,7 @@ use crate::{
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::EthDatabaseUtils,
         eth_debug_functions::debug_set_eth_gas_price_in_db,
-        eth_utils::{convert_hex_to_address, get_eth_address_from_str},
+        eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
         evm_constants::{get_evm_constants_db_keys, EVM_PRIVATE_KEY_DB_KEY},
     },
     check_debug_mode::check_debug_mode,
@@ -146,7 +146,7 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address
     let eth_db_utils = EthDatabaseUtils::new(&db);
     let evm_db_utils = EthDatabaseUtils::new_for_evm(&db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
-    let eth_address = convert_hex_to_address(eth_address_str)?;
+    let eth_address = convert_hex_to_eth_address(eth_address_str)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
@@ -189,7 +189,7 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
     let eth_db_utils = EthDatabaseUtils::new(&db);
     let evm_db_utils = EthDatabaseUtils::new_for_evm(&db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
-    let eth_address = convert_hex_to_address(eth_address_str)?;
+    let eth_address = convert_hex_to_eth_address(eth_address_str)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))

@@ -312,7 +312,7 @@ pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> R
 /// #### NOTE: Using a fee of 0 will mean no fees are taken.
 pub fn debug_set_eth_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &db))
         .map(|_| sanity_check_basis_points_value(new_fee))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
@@ -335,7 +335,7 @@ pub fn debug_set_eth_fee_basis_points<D: DatabaseInterface>(db: D, address: &str
 /// #### NOTE: Using a fee of 0 will mean no fees are taken.
 pub fn debug_set_eos_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &db))
         .map(|_| sanity_check_basis_points_value(new_fee))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
@@ -362,9 +362,9 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
     token_address: &str,
     recipient_address: &str,
 ) -> Result<String> {
-    let db_utils = EthDatabaseUtils::new_for_eth(&db);
+    let eth_db_utils = EthDatabaseUtils::new(&db);
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &db))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
         .and_then(|dictionary| {
@@ -377,18 +377,18 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
                     token_address,
                     fee_amount,
                 )?,
-                db_utils.get_eth_account_nonce_from_db()?,
+                eth_db_utils.get_eth_account_nonce_from_db()?,
                 0,
-                db_utils.get_erc20_on_eos_smart_contract_address_from_db(&db)?,
-                &db_utils.get_eth_chain_id_from_db(&db)?,
+                eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
+                &eth_db_utils.get_eth_chain_id_from_db()?,
                 ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
-                &db_utils.get_eth_gas_price_from_db()?,
+                eth_db_utils.get_eth_gas_price_from_db()?,
             ))
         })
-        .and_then(|unsigned_tx| unsigned_tx.sign(&db_utils.get_eth_private_key_from_db()?))
+        .and_then(|unsigned_tx| unsigned_tx.sign(&eth_db_utils.get_eth_private_key_from_db()?))
         .map(|signed_tx| signed_tx.serialize_hex())
         .and_then(|hex_tx| {
-            db_utils.increment_eth_account_nonce_in_db(1)?;
+            eth_db_utils.increment_eth_account_nonce_in_db(1)?;
             db.end_transaction()?;
             Ok(json!({"success": true, "eth_signed_tx": hex_tx}).to_string())
         })

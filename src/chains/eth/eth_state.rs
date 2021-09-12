@@ -261,7 +261,6 @@ mod tests {
             get_sample_eth_submission_material_n,
             SAMPLE_RECEIPT_INDEX,
         },
-        erc20_on_eos::test_utils::get_sample_erc20_on_eos_peg_in_infos,
         errors::AppError,
         test_utils::get_test_database,
     };

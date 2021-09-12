@@ -1,6 +1,6 @@
 use crate::{
     btc_on_eth::check_core_is_initialized::check_core_is_initialized,
-    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_utils::convert_hex_to_address},
+    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_utils::convert_hex_to_eth_address},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -18,7 +18,7 @@ pub fn maybe_add_erc777_contract_address<D: DatabaseInterface>(db: D, hex_addres
     let eth_db_utils = EthDatabaseUtils::new(&db);
     check_core_is_initialized(&eth_db_utils, &db)
         .and_then(|_| db.start_transaction())
-        .and_then(|_| convert_hex_to_address(hex_address))
+        .and_then(|_| convert_hex_to_eth_address(hex_address))
         .and_then(|ref address| eth_db_utils.put_btc_on_eth_smart_contract_address_in_db(address))
         .and_then(|_| db.end_transaction())
         .map(|_| "{add_erc777_address_success:true}".to_string())
