@@ -57,7 +57,7 @@ pub struct ProducerKeyJsonV2 {
     key: String,
 }
 
-#[derive(Read, Write, NumBytes, Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Read, Write, NumBytes, Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[eosio_core_root_path = "eos_chain"]
 #[repr(C)]
 pub struct EosProducerScheduleV2 {
@@ -86,15 +86,6 @@ impl EosProducerScheduleV2 {
             version: json.version,
             producers: convert_v2_producer_key_jsons_to_v2_producer_keys(&json.producers)?,
         })
-    }
-}
-
-impl Default for EosProducerScheduleV2 {
-    fn default() -> Self {
-        Self {
-            version: 0,
-            producers: vec![],
-        }
     }
 }
 
