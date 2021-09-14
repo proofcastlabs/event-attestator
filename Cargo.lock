@@ -45,18 +45,18 @@ checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
 name = "bech32"
-version = "0.7.3"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2dabbe35f96fb9507f7330793dc490461b2962659ac5d427181e451a623751d1"
+checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 
 [[package]]
 name = "bitcoin"
-version = "0.26.2"
+version = "0.27.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6742ec672d3f12506f4ac5c0d853926ff1f94e675f60ffd3224039972bf663f1"
+checksum = "9a41df6ad9642c5c15ae312dd3d074de38fd3eb7cc87ad4ce10f90292a83fe4d"
 dependencies = [
  "bech32",
- "bitcoin_hashes 0.9.7",
+ "bitcoin_hashes 0.10.0",
  "secp256k1 0.20.3",
  "serde",
 ]
@@ -69,9 +69,9 @@ checksum = "b375d62f341cef9cd9e77793ec8f1db3fc9ce2e4d57e982c8fe697a2c16af3b6"
 
 [[package]]
 name = "bitcoin_hashes"
-version = "0.9.7"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ce18265ec2324ad075345d5814fbeed4f41f0a660055dc78840b74d19b874b1"
+checksum = "006cc91e1a1d99819bc5b8214be3555c1f0611b169f527a1fdc54ed1f2b745b0"
 dependencies = [
  "serde",
 ]
@@ -292,9 +292,9 @@ dependencies = [
 
 [[package]]
 name = "ethabi"
-version = "14.1.0"
+version = "15.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a01317735d563b3bad2d5f90d2e1799f414165408251abb762510f40e790e69a"
+checksum = "f76ef192b63e8a44b3d08832acebbb984c3fba154b5c26f70037c860202a0d4b"
 dependencies = [
  "anyhow",
  "ethereum-types",
@@ -321,9 +321,9 @@ dependencies = [
 
 [[package]]
 name = "ethereum-types"
-version = "0.11.0"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f64b5df66a228d85e4b17e5d6c6aa43b0310898ffe8a85988c4c032357aaabfd"
+checksum = "05136f7057fe789f06e6d41d07b34e6f70d8c86e5693b60f97aaa6553553bdaf"
 dependencies = [
  "ethbloom",
  "fixed-hash",
@@ -635,9 +635,9 @@ checksum = "c3ca011bd0129ff4ae15cd04c4eef202cadf6c51c21e47aba319b4e0501db741"
 
 [[package]]
 name = "primitive-types"
-version = "0.9.1"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06345ee39fbccfb06ab45f3a1a5798d9dafa04cb8921a76d227040003a234b0e"
+checksum = "05e4722c697a58a99d5d06a08c30821d7c082a4632198de1eaa5a6c22ef42373"
 dependencies = [
  "fixed-hash",
  "impl-codec",
@@ -1077,15 +1077,15 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "strum"
-version = "0.20.0"
+version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7318c509b5ba57f18533982607f24070a55d353e90d4cae30c467cdb2ad5ac5c"
+checksum = "f7ac893c7d471c8a21f31cfe213ec4f6d9afeed25537c772e08ef3f005f8729e"
 
 [[package]]
 name = "strum_macros"
-version = "0.20.1"
+version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee8bc6b87a5112aeeab1f4a9f7ab634fe6cbefc4850006df31267f4cfb9e3149"
+checksum = "339f799d8b549e3744c7ac7feb216383e4005d94bdb22561b3ab8f3b808ae9fb"
 dependencies = [
  "heck",
  "proc-macro2",
