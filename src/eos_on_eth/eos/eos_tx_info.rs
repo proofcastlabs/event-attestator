@@ -400,6 +400,19 @@ mod tests {
         get_eos_submission_material_n(1).unwrap().action_proofs[0].clone()
     }
 
+    fn get_sample_eos_on_eth_eos_tx_info() -> EosOnEthEosTxInfo {
+        EosOnEthEosTxInfo::from_eos_action_proof(
+            &get_sample_proof(),
+            &get_sample_eos_eth_token_dictionary(),
+            &EosAccountName::from_str("t11ppntoneos").unwrap(),
+        )
+        .unwrap()
+    }
+
+    fn get_sample_eos_on_eth_eos_tx_infos() -> EosOnEthEosTxInfos {
+        EosOnEthEosTxInfos::new(vec![get_sample_eos_on_eth_eos_tx_info()])
+    }
+
     #[test]
     fn should_get_token_sender_from_proof() {
         let proof = get_sample_proof();
@@ -466,10 +479,7 @@ mod tests {
 
     #[test]
     fn should_get_eos_on_eth_eth_tx_info_from_action_proof() {
-        let proof = get_sample_proof();
-        let smart_contract_name = EosAccountName::from_str("t11ppntoneos").unwrap();
-        let dictionary = get_sample_eos_eth_token_dictionary();
-        let result = EosOnEthEosTxInfo::from_eos_action_proof(&proof, &dictionary, &smart_contract_name).unwrap();
+        let result = get_sample_eos_on_eth_eos_tx_info();
         let expected_amount = U256::from_dec_str("100000000000000").unwrap();
         let expected_from = EosAccountName::from_str("oraclizetest").unwrap();
         let expected_recipient =
@@ -491,14 +501,11 @@ mod tests {
     fn should_get_correct_signed_tx() {
         // NOTE Real tx: https://rinkeby.etherscan.io/tx/0x2181a9009da8e2418d67b95501e6c37347f9cce65ea97f9bf3737d5efaf9be89
         let expected_result = "f8aa808504a817c8008302bf2094711c50b31ee0b9e8ed4d434819ac20b4fbbb553280b84440c10f190000000000000000000000005fdaef0a0b11774db68c38ab36957de8646af1b500000000000000000000000000000000000000000000000000005af3107a40002ca0162392250af5a68aec146384043e109b00ff8d13a8565dcf286ea3e68cd2d097a067842749990070b15a7d4bf989dd6ddb264132fe77e83c9285c949e77a60d826";
-        let proof = get_sample_proof();
-        let smart_contract_name = EosAccountName::from_str("t11ppntoneos").unwrap();
-        let dictionary = get_sample_eos_eth_token_dictionary();
         let pk = EthPrivateKey::from_slice(
             &hex::decode("e3925cf65ad0baa57cc67eae8fbea03eeeb8464f7ad17b34b28d24f531de71cb").unwrap(),
         )
         .unwrap();
-        let tx_infos = EosOnEthEosTxInfos::from_eos_action_proofs(&[proof], &dictionary, &smart_contract_name).unwrap();
+        let tx_infos = get_sample_eos_on_eth_eos_tx_infos();
         let chain_id = EthChainId::Rinkeby;
         let gas_price = 20_000_000_000;
         let nonce = 0;
