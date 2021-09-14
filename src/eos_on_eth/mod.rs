@@ -47,13 +47,12 @@ pub use crate::{
     },
     eos_on_eth::{
         debug_functions::{
+            block_reprocessors::{debug_reprocess_eos_block, debug_reprocess_eth_block},
             debug_add_eos_eth_token_dictionary_entry,
             debug_add_new_eos_schedule,
             debug_get_all_db_keys,
             debug_get_key_from_db,
             debug_remove_eos_eth_token_dictionary_entry,
-            debug_reprocess_eos_block,
-            debug_reprocess_eth_block,
             debug_set_eth_gas_price,
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
