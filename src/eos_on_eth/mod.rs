@@ -53,6 +53,8 @@ pub use crate::{
             debug_get_all_db_keys,
             debug_get_key_from_db,
             debug_remove_eos_eth_token_dictionary_entry,
+            debug_set_eos_fee_basis_points,
+            debug_set_eth_fee_basis_points,
             debug_set_eth_gas_price,
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
