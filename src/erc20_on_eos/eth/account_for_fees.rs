@@ -1,7 +1,7 @@
 use crate::{
     chains::eth::eth_state::EthState,
     dictionaries::eos_eth::EosEthTokenDictionary,
-    erc20_on_eos::traits::FeesCalculator,
+    erc20_on_eos::fees_calculator::FeesCalculator,
     fees::fee_constants::DISABLE_FEES,
     traits::DatabaseInterface,
     types::Result,

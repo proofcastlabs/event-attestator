@@ -17,7 +17,7 @@ use crate::{
     },
     constants::SAFE_ETH_ADDRESS,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
-    erc20_on_eos::traits::{FeeCalculator, FeesCalculator},
+    erc20_on_eos::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
