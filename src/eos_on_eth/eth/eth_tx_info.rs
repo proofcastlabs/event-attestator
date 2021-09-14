@@ -46,6 +46,33 @@ const ZERO_ETH_ASSET_STR: &str = "0.0000 EOS";
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
 pub struct EosOnEthEthTxInfos(pub Vec<EosOnEthEthTxInfo>);
 
+impl FeesCalculator for EosOnEthEthTxInfos {
+    fn get_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
+        debug!("Calculating fees in `EosOnEthEthTxInfos`...");
+        self.iter()
+            .map(|info| info.calculate_peg_out_fee_via_dictionary(dictionary))
+            .collect()
+    }
+
+    fn subtract_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Self> {
+        self.get_fees(dictionary).and_then(|fee_tuples| {
+            Ok(Self::new(
+                self.iter()
+                    .zip(fee_tuples.iter())
+                    .map(|(info, (_, fee))| {
+                        if *fee == U256::zero() {
+                            debug!("Not subtracting fee because `fee` is 0!");
+                            Ok(info.clone())
+                        } else {
+                            info.subtract_amount(*fee)
+                        }
+                    })
+                    .collect::<Result<_>>()?,
+            ))
+        })
+    }
+}
+
 impl EosOnEthEthTxInfos {
     pub fn from_eth_submission_material(
         material: &EthSubmissionMaterial,
@@ -323,6 +350,7 @@ mod tests {
     use crate::{
         dictionaries::eos_eth::EosEthTokenDictionaryEntry,
         eos_on_eth::test_utils::{
+            get_dictionary_for_fee_calculations,
             get_eth_submission_material_n,
             get_eth_submission_material_with_bad_eos_account_name,
             get_eth_submission_material_with_two_peg_ins,
@@ -451,6 +479,29 @@ mod tests {
         let mut expected_result = info.clone();
         expected_result.token_amount = U256::from_dec_str("99999999998663").unwrap();
         let result = info.subtract_amount(subtrahend).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_fees_from_eos_on_eth_eth_tx_infos() {
+        let dictionary = get_dictionary_for_fee_calculations();
+        let infos = get_sample_eos_on_eth_eth_tx_infos();
+        let result = infos.get_fees(&dictionary).unwrap();
+        let expected_result = vec![(
+            EthAddress::from_slice(&hex::decode("711c50b31ee0b9e8ed4d434819ac20b4fbbb5532").unwrap()),
+            U256::from_dec_str("120000000000").unwrap(),
+        )];
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_subtract_fees_from_eos_on_eth_eth_tx_infos() {
+        let dictionary = get_dictionary_for_fee_calculations();
+        let infos = get_sample_eos_on_eth_eth_tx_infos();
+        let result = infos.subtract_fees(&dictionary).unwrap();
+        let expected_amount = U256::from_dec_str("99880000000000").unwrap();
+        let expected_result =
+            EosOnEthEthTxInfos::new(vec![get_sample_eos_on_eth_eth_tx_info().update_amount(expected_amount)]);
         assert_eq!(result, expected_result);
     }
 }
