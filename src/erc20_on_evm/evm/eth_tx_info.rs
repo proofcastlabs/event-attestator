@@ -41,7 +41,7 @@ use crate::{
     },
     constants::SAFE_ETH_ADDRESS,
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    erc20_on_evm::traits::{FeeCalculator, FeesCalculator},
+    erc20_on_evm::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
