@@ -52,17 +52,17 @@ pub trait FeeCalculator {
     }
 
     fn calculate_peg_out_fee_via_dictionary(&self, dictionary: &EosEthTokenDictionary) -> Result<(EthAddress, U256)> {
-        Ok((
-            self.get_eth_token_address(),
-            self.calculate_fee(dictionary.get_eos_fee_basis_points(&self.get_eos_token_address()?)?)?,
-        ))
-    }
-
-    fn calculate_peg_in_fee_via_dictionary(&self, dictionary: &EosEthTokenDictionary) -> Result<(EthAddress, U256)> {
         let eth_token_address = self.get_eth_token_address();
         Ok((
             eth_token_address,
             self.calculate_fee(dictionary.get_eth_fee_basis_points(&eth_token_address)?)?,
+        ))
+    }
+
+    fn calculate_peg_in_fee_via_dictionary(&self, dictionary: &EosEthTokenDictionary) -> Result<(EthAddress, U256)> {
+        Ok((
+            self.get_eth_token_address(),
+            self.calculate_fee(dictionary.get_eos_fee_basis_points(&self.get_eos_token_address()?)?)?,
         ))
     }
 }
