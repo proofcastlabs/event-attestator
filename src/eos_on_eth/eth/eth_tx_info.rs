@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Action as EosAction, PermissionLevel, Transaction as EosTransaction};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
@@ -31,7 +33,10 @@ use crate::{
         },
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
-    eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
+    eos_on_eth::{
+        constants::MINIMUM_WEI_AMOUNT,
+        fees_calculator::{FeeCalculator, FeesCalculator},
+    },
     traits::DatabaseInterface,
     types::{Byte, Result},
 };
@@ -159,6 +164,45 @@ pub struct EosOnEthEthTxInfo {
     pub token_sender: EthAddress,
     pub eth_token_address: EthAddress,
     pub originating_tx_hash: EthHash,
+}
+
+impl FeeCalculator for EosOnEthEthTxInfo {
+    fn get_amount(&self) -> U256 {
+        info!("✔Getting token amount in `EosOnEthEthTxInfo` of {}", self.token_amount);
+        self.token_amount
+    }
+
+    fn get_eth_token_address(&self) -> EthAddress {
+        debug!(
+            "Getting EOS token address in `EosOnEthEthTxInfo` of {}",
+            self.eth_token_address
+        );
+        self.eth_token_address
+    }
+
+    fn get_eos_token_address(&self) -> Result<EosAccountName> {
+        debug!(
+            "Getting EOS token address in `EosOnEthEthTxInfo` of {}",
+            self.eos_token_address
+        );
+        Ok(EosAccountName::from_str(&self.eos_token_address)?)
+    }
+
+    // FIXME: Can I not impl this on the trait itself?
+    fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
+        if subtrahend >= self.token_amount {
+            Err("Cannot subtract amount from `EosOnEthEthTxInfo`: subtrahend too large!".into())
+        } else {
+            let new_amount = self.token_amount - subtrahend;
+            debug!(
+                "Subtracting {} from {} to get final amount of {} in `EosOnEthEthTxInfo`!",
+                subtrahend, self.token_amount, new_amount
+            );
+            let mut new_self = self.clone();
+            new_self.token_amount = new_amount;
+            Ok(new_self)
+        }
+    }
 }
 
 impl EosOnEthEthTxInfo {
@@ -303,11 +347,21 @@ mod tests {
         .unwrap()
     }
 
+    fn get_sample_eos_on_eth_eth_tx_infos() -> EosOnEthEthTxInfos {
+        EosOnEthEthTxInfos::from_eth_submission_material(
+            &get_eth_submission_material_n(1).unwrap(),
+            &get_sample_eos_eth_token_dictionary(),
+        )
+        .unwrap()
+    }
+
+    fn get_sample_eos_on_eth_eth_tx_info() -> EosOnEthEthTxInfo {
+        get_sample_eos_on_eth_eth_tx_infos()[0].clone()
+    }
+
     #[test]
     fn should_get_tx_info_from_eth_submission_material() {
-        let material = get_eth_submission_material_n(1).unwrap();
-        let dictionary = get_sample_eos_eth_token_dictionary();
-        let tx_infos = EosOnEthEthTxInfos::from_eth_submission_material(&material, &dictionary).unwrap();
+        let tx_infos = get_sample_eos_on_eth_eth_tx_infos();
         let result = tx_infos[0].clone();
         let expected_token_amount = U256::from_dec_str("100000000000000").unwrap();
         let expected_eos_address = "whateverxxxx";
@@ -331,9 +385,7 @@ mod tests {
 
     #[test]
     fn should_get_eos_signed_txs_from_tx_info() {
-        let material = get_eth_submission_material_n(1).unwrap();
-        let dictionary = get_sample_eos_eth_token_dictionary();
-        let tx_infos = EosOnEthEthTxInfos::from_eth_submission_material(&material, &dictionary).unwrap();
+        let tx_infos = get_sample_eos_on_eth_eth_tx_infos();
         let ref_block_num = 1;
         let ref_block_prefix = 1;
         let chain_id = EosChainId::EosMainnet;
@@ -400,5 +452,15 @@ mod tests {
             .unwrap();
         assert_eq!(result.len(), 2);
         assert_ne!(result[0], result[1]);
+    }
+
+    #[test]
+    fn should_subtract_amount_from_eos_on_eth_eth_tx_info() {
+        let info = get_sample_eos_on_eth_eth_tx_info();
+        let subtrahend = U256::from(1337);
+        let mut expected_result = info.clone();
+        expected_result.token_amount = U256::from_dec_str("99999999998663").unwrap();
+        let result = info.subtract_amount(subtrahend).unwrap();
+        assert_eq!(result, expected_result);
     }
 }
