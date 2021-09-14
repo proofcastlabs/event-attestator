@@ -1,4 +1,4 @@
-use std::str::from_utf8;
+use std::str::{from_utf8, FromStr};
 
 use derive_more::{Constructor, Deref};
 use eos_chain::{
@@ -37,7 +37,10 @@ use crate::{
     },
     constants::SAFE_ETH_ADDRESS,
     dictionaries::eos_eth::EosEthTokenDictionary,
-    eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
+    eos_on_eth::{
+        constants::MINIMUM_WEI_AMOUNT,
+        fees_calculator::{FeeCalculator, FeesCalculator},
+    },
     traits::DatabaseInterface,
     types::Result,
     utils::{convert_bytes_to_u64, strip_hex_prefix},
@@ -54,6 +57,44 @@ pub struct EosOnEthEosTxInfo {
     pub global_sequence: GlobalSequence,
     pub eth_token_address: EthAddress,
     pub eos_token_address: String,
+}
+
+impl FeeCalculator for EosOnEthEosTxInfo {
+    fn get_amount(&self) -> U256 {
+        info!("✔Getting token amount in `EosOnEthEosTxInfo` of {}", self.amount);
+        self.amount
+    }
+
+    fn get_eth_token_address(&self) -> EthAddress {
+        debug!(
+            "Getting EOS token address in `EthOnEvmEvmTxInfo` of {}",
+            self.eth_token_address
+        );
+        self.eth_token_address
+    }
+
+    fn get_eos_token_address(&self) -> Result<EosAccountName> {
+        debug!(
+            "Getting EOS token address in `EthOnEvmEvmTxInfo` of {}",
+            self.eos_token_address
+        );
+        Ok(EosAccountName::from_str(&self.eos_token_address)?)
+    }
+
+    fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
+        if subtrahend >= self.amount {
+            Err("Cannot subtract amount from `EosOnEthEosTxInfo`: subtrahend too large!".into())
+        } else {
+            let new_amount = self.amount - subtrahend;
+            debug!(
+                "Subtracting {} from {} to get final amount of {} in `EosOnEthEosTxInfo`!",
+                subtrahend, self.amount, new_amount
+            );
+            let mut new_self = self.clone();
+            new_self.amount = new_amount;
+            Ok(new_self)
+        }
+    }
 }
 
 impl EosOnEthEosTxInfo {
@@ -533,5 +574,15 @@ mod tests {
         let result = EosOnEthEosTxInfo::from_eos_action_proof(&proof, &dictionary, &eos_smart_contract).unwrap();
         let expected_recipient = *SAFE_ETH_ADDRESS;
         assert_eq!(result.recipient, expected_recipient);
+    }
+
+    #[test]
+    fn should_subtract_amount_from_eos_on_eth_eos_tx_info() {
+        let info = get_sample_eos_on_eth_eos_tx_info();
+        let subtrahend = U256::from(1337);
+        let mut expected_result = info.clone();
+        expected_result.amount = U256::from_dec_str("99999999998663").unwrap();
+        let result = info.subtract_amount(subtrahend).unwrap();
+        assert_eq!(result, expected_result);
     }
 }
