@@ -188,20 +188,10 @@ impl FeeCalculator for EosOnEthEthTxInfo {
         Ok(EosAccountName::from_str(&self.eos_token_address)?)
     }
 
-    // FIXME: Can I not impl this on the trait itself?
-    fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
-        if subtrahend >= self.token_amount {
-            Err("Cannot subtract amount from `EosOnEthEthTxInfo`: subtrahend too large!".into())
-        } else {
-            let new_amount = self.token_amount - subtrahend;
-            debug!(
-                "Subtracting {} from {} to get final amount of {} in `EosOnEthEthTxInfo`!",
-                subtrahend, self.token_amount, new_amount
-            );
-            let mut new_self = self.clone();
-            new_self.token_amount = new_amount;
-            Ok(new_self)
-        }
+    fn update_amount(&self, new_amount: U256) -> Self {
+        let mut new_self = self.clone();
+        new_self.token_amount = new_amount;
+        new_self
     }
 }
 

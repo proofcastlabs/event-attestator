@@ -50,7 +50,7 @@ const REQUIRED_ACTION_NAME: &str = "pegin";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Constructor)]
 pub struct EosOnEthEosTxInfo {
-    pub amount: U256,
+    pub amount: U256, // TODO change this to token_amount
     pub from: EosAccountName,
     pub recipient: EthAddress,
     pub originating_tx_id: Checksum256,
@@ -81,19 +81,10 @@ impl FeeCalculator for EosOnEthEosTxInfo {
         Ok(EosAccountName::from_str(&self.eos_token_address)?)
     }
 
-    fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
-        if subtrahend >= self.amount {
-            Err("Cannot subtract amount from `EosOnEthEosTxInfo`: subtrahend too large!".into())
-        } else {
-            let new_amount = self.amount - subtrahend;
-            debug!(
-                "Subtracting {} from {} to get final amount of {} in `EosOnEthEosTxInfo`!",
-                subtrahend, self.amount, new_amount
-            );
-            let mut new_self = self.clone();
-            new_self.amount = new_amount;
-            Ok(new_self)
-        }
+    fn update_amount(&self, new_amount: U256) -> Self {
+        let mut new_self = self.clone();
+        new_self.amount = new_amount;
+        new_self
     }
 }
 

@@ -15,9 +15,24 @@ pub trait FeeCalculator {
 
     fn get_eos_token_address(&self) -> Result<EosAccountName>;
 
+    fn update_amount(&self, new_amount: U256) -> Self;
+
     fn subtract_amount(&self, subtrahend: U256) -> Result<Self>
     where
-        Self: Sized;
+        Self: Sized,
+    {
+        let amount = self.get_amount();
+        if subtrahend >= amount {
+            Err(format!("Cannot subtract amount, subtrahend of {} is too large!", subtrahend).into())
+        } else {
+            let new_amount = amount - subtrahend;
+            debug!(
+                "Subtracting {} from {} to get final amount of {}.",
+                subtrahend, amount, new_amount
+            );
+            Ok(self.update_amount(new_amount))
+        }
+    }
 
     fn calculate_fee(&self, fee_basis_points: u64) -> Result<U256> {
         sanity_check_basis_points_value(fee_basis_points).map(|_| {
