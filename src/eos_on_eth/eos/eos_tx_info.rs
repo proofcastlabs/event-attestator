@@ -50,7 +50,7 @@ const REQUIRED_ACTION_NAME: &str = "pegin";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Constructor)]
 pub struct EosOnEthEosTxInfo {
-    pub amount: U256, // TODO change this to token_amount
+    pub token_amount: U256,
     pub from: EosAccountName,
     pub recipient: EthAddress,
     pub originating_tx_id: Checksum256,
@@ -61,8 +61,8 @@ pub struct EosOnEthEosTxInfo {
 
 impl FeeCalculator for EosOnEthEosTxInfo {
     fn get_amount(&self) -> U256 {
-        info!("✔Getting token amount in `EosOnEthEosTxInfo` of {}", self.amount);
-        self.amount
+        info!("✔Getting token amount in `EosOnEthEosTxInfo` of {}", self.token_amount);
+        self.token_amount
     }
 
     fn get_eth_token_address(&self) -> EthAddress {
@@ -83,7 +83,7 @@ impl FeeCalculator for EosOnEthEosTxInfo {
 
     fn update_amount(&self, new_amount: U256) -> Self {
         let mut new_self = self.clone();
-        new_self.amount = new_amount;
+        new_self.token_amount = new_amount;
         new_self
     }
 }
@@ -259,7 +259,7 @@ impl EosOnEthEosTxInfo {
                 let eos_asset = dictionary_entry.convert_u64_to_eos_asset(Self::get_eos_amount_from_proof(proof)?);
                 let eth_amount = dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset)?;
                 Ok(Self {
-                    amount: eth_amount,
+                    token_amount: eth_amount,
                     originating_tx_id: proof.tx_id,
                     global_sequence: proof.get_global_sequence(),
                     from: Self::get_token_sender_from_proof(proof)?,
@@ -310,7 +310,7 @@ impl EosOnEthEosTxInfos {
         Ok(EosOnEthEosTxInfos::new(
             self.iter()
                 .filter(|info| {
-                    if info.amount >= min_amount {
+                    if info.token_amount >= min_amount {
                         true
                     } else {
                         info!("✘ Filtering out tx info ∵ value too low: {:?}", info);
@@ -336,10 +336,10 @@ impl EosOnEthEosTxInfos {
                 .map(|(i, tx_info)| {
                     info!(
                         "✔ Signing ETH tx for amount: {}, to address: {}",
-                        tx_info.amount, tx_info.recipient
+                        tx_info.token_amount, tx_info.recipient
                     );
                     EthTransaction::new_unsigned(
-                        encode_erc777_mint_with_no_data_fxn(&tx_info.recipient, &tx_info.amount)?,
+                        encode_erc777_mint_with_no_data_fxn(&tx_info.recipient, &tx_info.token_amount)?,
                         eth_account_nonce + i as u64,
                         ZERO_ETH_VALUE,
                         tx_info.eth_token_address,
@@ -521,7 +521,7 @@ mod tests {
         let expected_global_sequence = 323917921677;
         let expected_eth_token_address =
             EthAddress::from_slice(&hex::decode("711c50b31ee0b9e8ed4d434819ac20b4fbbb5532").unwrap());
-        assert_eq!(result.amount, expected_amount);
+        assert_eq!(result.token_amount, expected_amount);
         assert_eq!(result.from, expected_from);
         assert_eq!(result.recipient, expected_recipient);
         assert_eq!(result.global_sequence, expected_global_sequence);
@@ -572,7 +572,7 @@ mod tests {
         let info = get_sample_eos_on_eth_eos_tx_info();
         let subtrahend = U256::from(1337);
         let mut expected_result = info.clone();
-        expected_result.amount = U256::from_dec_str("99999999998663").unwrap();
+        expected_result.token_amount = U256::from_dec_str("99999999998663").unwrap();
         let result = info.subtract_amount(subtrahend).unwrap();
         assert_eq!(result, expected_result);
     }
