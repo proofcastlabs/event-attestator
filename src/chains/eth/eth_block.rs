@@ -10,8 +10,8 @@ use crate::{
         eth_utils::{
             convert_dec_str_to_u256,
             convert_hex_strings_to_h256s,
-            convert_hex_to_address,
             convert_hex_to_bytes,
+            convert_hex_to_eth_address,
             convert_hex_to_h256,
             decode_prefixed_hex,
         },
@@ -96,7 +96,7 @@ impl EthBlock {
             hash: convert_hex_to_h256(&json.hash)?,
             timestamp: U256::from(json.timestamp),
             nonce: decode_prefixed_hex(&json.nonce)?,
-            miner: convert_hex_to_address(&json.miner)?,
+            miner: convert_hex_to_eth_address(&json.miner)?,
             mix_hash: convert_hex_to_h256(&json.mix_hash)?,
             state_root: convert_hex_to_h256(&json.state_root)?,
             extra_data: convert_hex_to_bytes(&json.extra_data)?,

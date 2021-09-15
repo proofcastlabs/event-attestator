@@ -1,15 +1,15 @@
+pub(crate) mod block_reprocessors;
+
+use std::str::FromStr;
+
+use eos_chain::AccountName as EosAccountName;
 pub use serde_json::json;
 
 use crate::{
     chains::{
         eos::{
-            add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
             core_initialization::eos_init_utils::EosInitJson,
-            eos_constants::{get_eos_constants_db_keys, EOS_PRIVATE_KEY_DB_KEY, REDEEM_ACTION_NAME},
-            eos_database_transactions::{
-                end_eos_db_transaction_and_return_state,
-                start_eos_db_transaction_and_return_state,
-            },
+            eos_constants::{get_eos_constants_db_keys, EOS_PRIVATE_KEY_DB_KEY},
             eos_debug_functions::{
                 add_eos_eth_token_dictionary_entry,
                 add_new_eos_schedule,
@@ -17,31 +17,17 @@ use crate::{
                 remove_eos_eth_token_dictionary_entry,
                 update_incremerkle,
             },
-            eos_global_sequences::{
-                get_processed_global_sequences_and_add_to_state,
-                maybe_add_global_sequences_to_processed_list_and_return_state,
-            },
-            eos_state::EosState,
-            eos_submission_material::parse_submission_material_and_add_to_state,
-            filter_action_proofs::{
-                maybe_filter_duplicate_proofs_from_state,
-                maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
-                maybe_filter_out_invalid_action_receipt_digests,
-                maybe_filter_out_proofs_for_accounts_not_in_token_dictionary,
-                maybe_filter_out_proofs_with_invalid_merkle_proofs,
-                maybe_filter_out_proofs_with_wrong_action_mroot,
-                maybe_filter_proofs_for_action_name,
-            },
-            get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
         },
         eth::{
             eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY},
             eth_contracts::erc20_vault::{
                 encode_erc20_vault_add_supported_token_fx_data,
                 encode_erc20_vault_migrate_fxn_data,
+                encode_erc20_vault_peg_out_fxn_data_without_user_data,
                 encode_erc20_vault_remove_supported_token_fx_data,
                 ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
                 ERC20_VAULT_MIGRATE_GAS_LIMIT,
+                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
             },
             eth_crypto::eth_transaction::EthTransaction,
             eth_database_utils::{
@@ -54,46 +40,15 @@ use crate::{
                 put_erc20_on_eos_smart_contract_address_in_db,
             },
             eth_debug_functions::debug_set_eth_gas_price_in_db,
-            eth_state::EthState,
-            eth_submission_material::parse_eth_submission_material_and_put_in_state,
-            eth_utils::get_eth_address_from_str,
-            validate_block_in_state::validate_block_in_state,
-            validate_receipts_in_state::validate_receipts_in_state,
+            eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
         },
     },
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
-    dictionaries::{
-        dictionary_constants::EOS_ETH_DICTIONARY_KEY,
-        eos_eth::{
-            get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
-            get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
-            EosEthTokenDictionary,
-        },
-    },
-    erc20_on_eos::{
-        check_core_is_initialized::{
-            check_core_is_initialized,
-            check_core_is_initialized_and_return_eos_state,
-            check_core_is_initialized_and_return_eth_state,
-        },
-        eos::{
-            get_eos_output::get_eos_output,
-            increment_eth_nonce::maybe_increment_eth_nonce_in_db_and_return_eos_state,
-            redeem_info::maybe_parse_redeem_infos_and_put_in_state,
-            sign_normal_eth_txs::maybe_sign_normal_eth_txs_and_add_to_state,
-        },
-        eth::{
-            get_output_json::get_output_json,
-            peg_in_info::{
-                filter_out_zero_value_peg_ins_from_state,
-                filter_submission_material_for_peg_in_events_in_state,
-                maybe_sign_eos_txs_and_add_to_eth_state,
-                Erc20OnEosPegInInfos,
-            },
-        },
-    },
+    dictionaries::{dictionary_constants::EOS_ETH_DICTIONARY_KEY, eos_eth::EosEthTokenDictionary},
+    erc20_on_eos::check_core_is_initialized::check_core_is_initialized,
+    fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -340,98 +295,6 @@ where
         })
 }
 
-/// # Debug Reprocess ETH Block For Stale EOS Transaction
-///
-/// This function will take a passed in ETH block submission material and run it through the
-/// simplified submission pipeline, signing any EOS signatures for peg-ins it may find in the block
-///
-/// ### NOTE:
-/// This function has no database transactional capabilities and thus cannot modifiy the state of
-/// the encrypted database in any way.
-///
-/// ### BEWARE:
-/// Per above, this function does NOT increment the EOS  nonce (since it is not critical for correct
-/// transaction creation) and so outputted reports will NOT contain correct nonces. This is to ensure
-/// future transactions written by the proper submit-ETH-block pipeline will remain contiguous. The
-/// user of this function should understand why this is the case, and thus should be able to modify
-/// the outputted reports to slot into the external database correctly.
-pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
-    info!("✔ Debug reprocessing ETH block...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
-        .and_then(check_core_is_initialized_and_return_eth_state)
-        .and_then(validate_block_in_state)
-        .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
-        .and_then(validate_receipts_in_state)
-        .and_then(filter_submission_material_for_peg_in_events_in_state)
-        .and_then(|state| {
-            let submission_material = state.get_eth_submission_material()?.clone();
-            match submission_material.receipts.is_empty() {
-                true => {
-                    info!("✔ No receipts in block ∴ no info to parse!");
-                    Ok(state)
-                },
-                false => {
-                    info!(
-                        "✔ {} receipts in block ∴ parsing info...",
-                        submission_material.get_block_number()?
-                    );
-                    EosEthTokenDictionary::get_from_db(&state.db)
-                        .and_then(|token_dictionary| {
-                            Erc20OnEosPegInInfos::from_submission_material(
-                                &submission_material,
-                                &token_dictionary,
-                                &get_eth_chain_id_from_db(&state.db)?,
-                            )
-                        })
-                        .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
-                },
-            }
-        })
-        .and_then(filter_out_zero_value_peg_ins_from_state)
-        .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
-        .and_then(get_output_json)
-}
-
-/// # Debug Reprocess EOS Block
-///
-/// This function will take passed in EOS submission material and run it through the simplified
-/// submission pipeline, signing and ETH transactions based on valid proofs therein.
-///
-/// ### NOTE:
-/// This function does NOT validate the block to which the proofs (may) pertain.
-///
-/// ### BEWARE:
-/// This function will incrememnt the ETH nonce in the encrypted database, and so not broadcasting
-/// any outputted transactions will result in all future transactions failing. Use only with
-/// extreme caution and when you know exactly what you are doing and why.
-pub fn debug_reprocess_eos_block<D>(db: D, block_json: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
-    info!("✔ Debug reprocessing EOS block...");
-    parse_submission_material_and_add_to_state(block_json, EosState::init(db))
-        .and_then(check_core_is_initialized_and_return_eos_state)
-        .and_then(get_enabled_protocol_features_and_add_to_state)
-        .and_then(start_eos_db_transaction_and_return_state)
-        .and_then(get_processed_global_sequences_and_add_to_state)
-        .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eos_state)
-        .and_then(maybe_add_new_eos_schedule_to_db_and_return_state)
-        .and_then(maybe_filter_duplicate_proofs_from_state)
-        .and_then(maybe_filter_out_proofs_for_accounts_not_in_token_dictionary)
-        .and_then(maybe_filter_out_action_proof_receipt_mismatches_and_return_state)
-        .and_then(maybe_filter_out_invalid_action_receipt_digests)
-        .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
-        .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
-        .and_then(|state| maybe_filter_proofs_for_action_name(state, REDEEM_ACTION_NAME))
-        .and_then(maybe_parse_redeem_infos_and_put_in_state)
-        .and_then(maybe_sign_normal_eth_txs_and_add_to_state)
-        .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
-        .and_then(maybe_increment_eth_nonce_in_db_and_return_eos_state)
-        .and_then(end_eos_db_transaction_and_return_state)
-        .and_then(get_eos_output)
-        .map(prepend_debug_output_marker_to_string)
-}
-
 /// # Debug Get Processed Actions List
 ///
 /// This function returns the list of already-processed action global sequences in JSON format.
@@ -444,4 +307,96 @@ pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
 pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
     debug_set_eth_gas_price_in_db(&db, gas_price)
+}
+
+/// Debug Set ETH Fee Basis Points
+///
+/// This function takes an address and a new fee param. It gets the `EosEthTokenDictionary` from
+/// the database then finds the entry pertaining to the address in question and if successful,
+/// updates the fee associated with that address before saving the dictionary back into the
+/// database. If no entry is found for a given `address` the function will return an error saying
+/// as such.
+///
+/// #### NOTE: Using a fee of 0 will mean no fees are taken.
+pub fn debug_set_eth_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .map(|_| sanity_check_basis_points_value(new_fee))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
+        .and_then(|dictionary| {
+            dictionary.change_eth_fee_basis_points_and_update_in_db(&db, &convert_hex_to_eth_address(address)?, new_fee)
+        })
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({"success":true, "address": address, "new_fee": new_fee}).to_string())
+        .map(prepend_debug_output_marker_to_string)
+}
+
+/// Debug Set EOS Fee Basis Points
+///
+/// This function takes an address and a new fee param. It gets the `EosEthTokenDictionary` from
+/// the database then finds the entry pertaining to the address in question and if successful,
+/// updates the fee associated with that address before saving the dictionary back into the
+/// database. If no entry is found for a given `address` the function will return an error saying
+/// as such.
+///
+/// #### NOTE: Using a fee of 0 will mean no fees are taken.
+pub fn debug_set_eos_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .map(|_| sanity_check_basis_points_value(new_fee))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
+        .and_then(|dictionary| {
+            dictionary.change_eos_fee_basis_points_and_update_in_db(&db, &EosAccountName::from_str(address)?, new_fee)
+        })
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({"success":true, "address": address, "new_fee": new_fee}).to_string())
+        .map(prepend_debug_output_marker_to_string)
+}
+
+/// Debug Withdraw Fees
+///
+/// This function takes an address and uses it to search through the token dictionary to find a
+/// corresponding entry. Once found, that entry's accrued fees are zeroed, a timestamp set in that
+/// entry to mark the withdrawal date and the dictionary saved back in the database. Finally, an
+/// ETH transaction is created to transfer the `<accrued_fees>` amount of tokens to the passed in
+/// recipient address.
+///
+/// #### NOTE: This function will increment the ETH nonce and so the output transation MUST be
+/// broadcast otherwise future transactions are liable to fail.
+pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
+    db: D,
+    token_address: &str,
+    recipient_address: &str,
+) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
+        .and_then(|dictionary| {
+            dictionary.withdraw_fees_and_save_in_db(&db, &convert_hex_to_eth_address(token_address)?)
+        })
+        .and_then(|(token_address, fee_amount)| {
+            Ok(EthTransaction::new_unsigned(
+                encode_erc20_vault_peg_out_fxn_data_without_user_data(
+                    convert_hex_to_eth_address(recipient_address)?,
+                    token_address,
+                    fee_amount,
+                )?,
+                get_eth_account_nonce_from_db(&db)?,
+                0,
+                get_erc20_on_eos_smart_contract_address_from_db(&db)?,
+                &get_eth_chain_id_from_db(&db)?,
+                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
+                get_eth_gas_price_from_db(&db)?,
+            ))
+        })
+        .and_then(|unsigned_tx| unsigned_tx.sign(&get_eth_private_key_from_db(&db)?))
+        .map(|signed_tx| signed_tx.serialize_hex())
+        .and_then(|hex_tx| {
+            increment_eth_account_nonce_in_db(&db, 1)?;
+            db.end_transaction()?;
+            Ok(json!({"success": true, "eth_signed_tx": hex_tx}).to_string())
+        })
 }

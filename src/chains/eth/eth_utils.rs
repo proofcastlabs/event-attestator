@@ -45,7 +45,7 @@ pub fn convert_hex_strings_to_h256s(hex_strings: Vec<&str>) -> Result<Vec<H256>>
     hex_strings.into_iter().map(convert_hex_to_h256).collect()
 }
 
-pub fn convert_hex_to_address(hex: &str) -> Result<EthAddress> {
+pub fn convert_hex_to_eth_address(hex: &str) -> Result<EthAddress> {
     let bytes = hex::decode(strip_hex_prefix(hex))?;
     if bytes.len() != ETH_ADDRESS_SIZE_IN_BYTES {
         Err("Cannot convert `{}` into `EthAddress` - incorrect number of bytes!".into())
@@ -85,7 +85,7 @@ pub fn convert_json_value_to_string(value: &JsonValue) -> Result<String> {
 }
 
 pub fn safely_convert_hex_to_eth_address(hex: &str) -> Result<EthAddress> {
-    match convert_hex_to_address(hex) {
+    match convert_hex_to_eth_address(hex) {
         Ok(address) => Ok(address),
         Err(_) => {
             info!("✔ Could not parse hex: '{}'!", hex);
@@ -148,9 +148,9 @@ mod tests {
     }
 
     #[test]
-    fn should_convert_hex_to_address_correctly() {
+    fn should_convert_hex_to_eth_address_correctly() {
         let address_hex = "0xb2930b35844a230f00e51431acae96fe543a0347";
-        let result = convert_hex_to_address(address_hex).unwrap();
+        let result = convert_hex_to_eth_address(address_hex).unwrap();
         let expected_result = decode_prefixed_hex(address_hex).unwrap();
         let expected_result_bytes = &expected_result[..];
         assert_eq!(result.as_bytes(), expected_result_bytes);
@@ -159,7 +159,7 @@ mod tests {
     #[test]
     fn should_fail_to_convert_bad_hex_to_address_correctly() {
         let bad_hex = "https://somewhere.com/address/0xb2930b35844a230f00e51431acae96fe543a0347";
-        let result = convert_hex_to_address(bad_hex);
+        let result = convert_hex_to_eth_address(bad_hex);
         assert!(result.is_err());
     }
 

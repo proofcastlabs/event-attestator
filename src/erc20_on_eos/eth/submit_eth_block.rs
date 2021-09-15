@@ -22,6 +22,7 @@ use crate::{
     erc20_on_eos::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
+            account_for_fees::maybe_account_for_fees,
             get_output_json::get_output_json,
             peg_in_info::{
                 filter_out_zero_value_peg_ins_from_state,
@@ -59,6 +60,7 @@ pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(maybe_update_eth_linker_hash_and_return_state)
         .and_then(maybe_parse_peg_in_info_from_canon_block_and_add_to_state)
         .and_then(filter_out_zero_value_peg_ins_from_state)
+        .and_then(maybe_account_for_fees)
         .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
         .and_then(maybe_increment_eos_account_nonce_and_return_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)

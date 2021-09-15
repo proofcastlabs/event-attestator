@@ -1,4 +1,7 @@
+use std::str::FromStr;
+
 use derive_more::{Constructor, Deref};
+use eos_chain::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
@@ -35,6 +38,7 @@ use crate::{
         },
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
+    erc20_on_eos::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
@@ -71,6 +75,74 @@ impl ToMetadata for Erc20OnEosPegInInfo {
 
     fn to_metadata_bytes(&self) -> Result<Bytes> {
         self.to_metadata()?.to_bytes_for_protocol(&MetadataProtocolId::Eos)
+    }
+}
+
+impl FeesCalculator for Erc20OnEosPegInInfos {
+    fn get_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
+        debug!("Calculating fees in `Erc20OnEosPegInInfos`...");
+        self.iter()
+            .map(|info| info.calculate_peg_in_fee_via_dictionary(dictionary))
+            .collect()
+    }
+
+    fn subtract_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Self> {
+        self.get_fees(dictionary).and_then(|fee_tuples| {
+            Ok(Self::new(
+                self.iter()
+                    .zip(fee_tuples.iter())
+                    .map(|(info, (_, fee))| {
+                        if fee.is_zero() {
+                            debug!("Not subtracting fee because `fee` is 0!");
+                            Ok(info.clone())
+                        } else {
+                            info.subtract_amount(*fee)
+                        }
+                    })
+                    .collect::<Result<Vec<_>>>()?,
+            ))
+        })
+    }
+}
+
+impl FeeCalculator for Erc20OnEosPegInInfo {
+    fn get_amount(&self) -> U256 {
+        info!(
+            "✔ Getting token amount in `Erc20OnEosPegInInfo` of {}",
+            self.token_amount
+        );
+        self.token_amount
+    }
+
+    fn get_eth_token_address(&self) -> EthAddress {
+        debug!(
+            "Getting EOS token address in `Erc20OnEosPegInInfo` of {}",
+            self.eth_token_address
+        );
+        self.eth_token_address
+    }
+
+    fn get_eos_token_address(&self) -> Result<EosAccountName> {
+        debug!(
+            "Getting EOS token address in `Erc20OnEosPegInInfo` of {}",
+            self.eos_token_address
+        );
+        Ok(EosAccountName::from_str(&self.eos_token_address)?)
+    }
+
+    fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
+        if subtrahend >= self.token_amount {
+            Err("Cannot subtract amount from `Erc20OnEosPegInInfo`: subtrahend too large!".into())
+        } else {
+            let new_amount = self.token_amount - subtrahend;
+            debug!(
+                "Subtracting {} from {} to get final amount of {} in `Erc20OnEosPegInInfo`!",
+                subtrahend, self.token_amount, new_amount
+            );
+            let mut new_self = self.clone();
+            new_self.token_amount = new_amount;
+            Ok(new_self)
+        }
     }
 }
 
@@ -349,8 +421,6 @@ mod tests {
         chains::{
             eos::eos_test_utils::get_sample_eos_private_key,
             eth::eth_test_utils::{
-                get_sample_erc20_on_eos_peg_in_info,
-                get_sample_erc20_on_eos_peg_in_infos,
                 get_sample_log_with_erc20_peg_in_event,
                 get_sample_log_with_erc20_peg_in_event_2,
                 get_sample_receipt_with_erc20_peg_in_event,
@@ -358,6 +428,11 @@ mod tests {
             },
         },
         dictionaries::eos_eth::{test_utils::get_sample_eos_eth_token_dictionary, EosEthTokenDictionaryEntry},
+        erc20_on_eos::test_utils::{
+            get_sample_erc20_on_eos_peg_in_info,
+            get_sample_erc20_on_eos_peg_in_infos,
+            get_sample_erc20_on_eos_peg_in_infos_2,
+        },
     };
 
     fn get_sample_zero_eos_asset_peg_in_info() -> Erc20OnEosPegInInfo {
@@ -395,6 +470,8 @@ mod tests {
         let eos_symbol = "SYM".to_string();
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(&hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let token_dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
@@ -402,6 +479,12 @@ mod tests {
             eos_symbol,
             token_name,
             token_address,
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         )]);
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = Erc20OnEosPegInInfos::is_log_supported_erc20_peg_in(&log, &token_dictionary).unwrap();
@@ -416,6 +499,8 @@ mod tests {
         let eos_symbol = "SYM".to_string();
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(&hex::decode("8f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let token_dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
@@ -423,6 +508,12 @@ mod tests {
             eos_symbol,
             token_name,
             token_address,
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         )]);
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = Erc20OnEosPegInInfos::is_log_supported_erc20_peg_in(&log, &token_dictionary).unwrap();
@@ -439,6 +530,8 @@ mod tests {
         let token_address = EthAddress::from_slice(
             &hex::decode("c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2").unwrap(), // NOTE wETH address on mainnet!
         );
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let token_dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
@@ -446,6 +539,12 @@ mod tests {
             eos_symbol,
             token_name,
             token_address,
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         )]);
         let log = get_sample_log_with_erc20_peg_in_event_2().unwrap();
         let result = Erc20OnEosPegInInfos::is_log_supported_erc20_peg_in(&log, &token_dictionary).unwrap();
@@ -498,6 +597,8 @@ mod tests {
         let eos_symbol = "SAM".to_string();
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(&hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let token_dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
@@ -505,6 +606,12 @@ mod tests {
             eos_symbol,
             token_name,
             token_address,
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         )]);
         let expected_num_results = 1;
         let expected_result = get_sample_erc20_on_eos_peg_in_info().unwrap();
@@ -548,6 +655,8 @@ mod tests {
         let eos_symbol = "SAM".to_string();
         let token_name = "SampleToken".to_string();
         let token_address = EthAddress::from_slice(&hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let token_dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             eth_token_decimals,
             eos_token_decimals,
@@ -555,6 +664,12 @@ mod tests {
             eos_symbol,
             token_name,
             token_address,
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         )]);
         let expected_num_results = 1;
         let submission_material = get_sample_submission_material_with_erc20_peg_in_event().unwrap();
@@ -609,5 +724,39 @@ mod tests {
         let expected_result = "010002000000000000000100a68234ab58a5c10000000000a531760100a68234ab58a5c100000000a8ed32321980b1ba29194cd53400000000000000000953414d000000000000";
         let result_without_timestamp = &result[0].transaction[8..];
         assert_eq!(result_without_timestamp, expected_result);
+    }
+
+    #[test]
+    fn should_subtract_amount_from_eos_on_eth_peg_in_info() {
+        let info = get_sample_erc20_on_eos_peg_in_info().unwrap();
+        let subtrahend = U256::from(337);
+        let info_after = info.subtract_amount(subtrahend).unwrap();
+        let result = info_after.get_amount();
+        let expected_result = U256::from(1000);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_fees_from_eos_on_eth_peg_in_infos() {
+        let eth_address = EthAddress::from_slice(&hex::decode("9e57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
+        let expected_result = vec![
+            (eth_address, U256::from_dec_str("3342500000").unwrap()),
+            (eth_address, U256::from_dec_str("1665000000").unwrap()),
+        ];
+        let infos = get_sample_erc20_on_eos_peg_in_infos_2();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let result = infos.get_fees(&dictionary).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_subtract_fees_from_eos_on_eth_peg_in_infos() {
+        let infos = get_sample_erc20_on_eos_peg_in_infos_2();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let result = infos.subtract_fees(&dictionary).unwrap();
+        let expected_amount_1 = U256::from_dec_str("1333657500000").unwrap();
+        let expected_amount_2 = U256::from_dec_str("664335000000").unwrap();
+        assert_eq!(result[0].token_amount, expected_amount_1);
+        assert_eq!(result[1].token_amount, expected_amount_2);
     }
 }

@@ -9,7 +9,7 @@ use crate::{
         eth::eth_traits::EthLogCompatible,
         evm::{
             eth_receipt::EthReceiptJson,
-            eth_utils::{convert_hex_strings_to_h256s, convert_hex_to_address, convert_hex_to_bytes},
+            eth_utils::{convert_hex_strings_to_h256s, convert_hex_to_bytes, convert_hex_to_eth_address},
         },
     },
     types::{Bytes, Result},
@@ -43,7 +43,7 @@ impl EthLog {
     pub fn from_json(log_json: &EthLogJson) -> Result<Self> {
         Ok(EthLog {
             data: convert_hex_to_bytes(&log_json.data)?,
-            address: convert_hex_to_address(&log_json.address)?,
+            address: convert_hex_to_eth_address(&log_json.address)?,
             topics: convert_hex_strings_to_h256s(log_json.topics.iter().map(AsRef::as_ref).collect())?,
         })
     }

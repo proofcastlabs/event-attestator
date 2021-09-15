@@ -30,7 +30,7 @@ use crate::{
                 put_eth_address_in_db,
             },
             eth_debug_functions::debug_set_eth_gas_price_in_db,
-            eth_utils::{convert_hex_to_address, get_eth_address_from_str},
+            eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
         },
         evm::{
             eth_constants::{
@@ -138,7 +138,7 @@ pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: D, eth_address_st
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
         .and_then(|dictionary| {
-            dictionary.remove_entry_via_eth_address_and_update_in_db(&convert_hex_to_address(eth_address_str)?, &db)
+            dictionary.remove_entry_via_eth_address_and_update_in_db(&convert_hex_to_eth_address(eth_address_str)?, &db)
         })
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"remove_dictionary_entry_success:":"true"}).to_string())
@@ -161,7 +161,7 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address
     info!("✔ Debug getting `addSupportedToken` contract tx...");
     db.start_transaction()?;
     let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
-    let eth_address = convert_hex_to_address(eth_address_str)?;
+    let eth_address = convert_hex_to_eth_address(eth_address_str)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
@@ -202,7 +202,7 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
     info!("✔ Debug getting `removeSupportedToken` contract tx...");
     db.start_transaction()?;
     let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
-    let eth_address = convert_hex_to_address(eth_address_str)?;
+    let eth_address = convert_hex_to_eth_address(eth_address_str)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
@@ -297,7 +297,7 @@ pub fn debug_set_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, ne
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
         .and_then(|dictionary| {
-            dictionary.change_fee_basis_points_and_update_in_db(&db, &convert_hex_to_address(address)?, new_fee)
+            dictionary.change_fee_basis_points_and_update_in_db(&db, &convert_hex_to_eth_address(address)?, new_fee)
         })
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"success":true, "address": address, "new_fee": new_fee}).to_string())
@@ -323,11 +323,13 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
-        .and_then(|dictionary| dictionary.withdraw_fees_and_save_in_db(&db, &convert_hex_to_address(token_address)?))
+        .and_then(|dictionary| {
+            dictionary.withdraw_fees_and_save_in_db(&db, &convert_hex_to_eth_address(token_address)?)
+        })
         .and_then(|(token_address, fee_amount)| {
             Ok(EthTransaction::new_unsigned(
                 encode_erc20_vault_peg_out_fxn_data_without_user_data(
-                    convert_hex_to_address(recipient_address)?,
+                    convert_hex_to_eth_address(recipient_address)?,
                     token_address,
                     fee_amount,
                 )?,

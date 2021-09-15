@@ -1,4 +1,4 @@
-use std::str::from_utf8;
+use std::str::{from_utf8, FromStr};
 
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Checksum256};
@@ -17,6 +17,7 @@ use crate::{
     },
     constants::SAFE_ETH_ADDRESS,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
+    erc20_on_eos::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
@@ -30,6 +31,33 @@ use crate::{
 
 #[derive(Clone, Debug, PartialEq, Eq, Deref, Constructor)]
 pub struct Erc20OnEosRedeemInfos(pub Vec<Erc20OnEosRedeemInfo>);
+
+impl FeesCalculator for Erc20OnEosRedeemInfos {
+    fn get_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
+        debug!("Calculating fees in `Erc20OnEosRedeemInfos`...");
+        self.iter()
+            .map(|info| info.calculate_peg_out_fee_via_dictionary(dictionary))
+            .collect()
+    }
+
+    fn subtract_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Self> {
+        self.get_fees(dictionary).and_then(|fee_tuples| {
+            Ok(Self::new(
+                self.iter()
+                    .zip(fee_tuples.iter())
+                    .map(|(info, (_, fee))| {
+                        if fee.is_zero() {
+                            debug!("Not subtracting fee because `fee` is 0!");
+                            Ok(info.clone())
+                        } else {
+                            info.subtract_amount(*fee)
+                        }
+                    })
+                    .collect::<Result<Vec<Erc20OnEosRedeemInfo>>>()?,
+            ))
+        })
+    }
+}
 
 impl Erc20OnEosRedeemInfos {
     pub fn get_global_sequences(&self) -> GlobalSequences {
@@ -75,6 +103,44 @@ pub struct Erc20OnEosRedeemInfo {
     pub eos_tx_amount: String,
     pub user_data: Bytes,
     pub origin_chain_id: EosChainId,
+}
+
+impl FeeCalculator for Erc20OnEosRedeemInfo {
+    fn get_amount(&self) -> U256 {
+        info!("✔ Getting token amount in `Erc20OnEosRedeemInfo` of {}", self.amount);
+        self.amount
+    }
+
+    fn get_eth_token_address(&self) -> EthAddress {
+        debug!(
+            "Getting EOS token address in `EthOnEvmEvmTxInfo` of {}",
+            self.eth_token_address
+        );
+        self.eth_token_address
+    }
+
+    fn get_eos_token_address(&self) -> Result<EosAccountName> {
+        debug!(
+            "Getting EOS token address in `EthOnEvmEvmTxInfo` of {}",
+            self.eos_token_address
+        );
+        Ok(EosAccountName::from_str(&self.eos_token_address)?)
+    }
+
+    fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
+        if subtrahend >= self.amount {
+            Err("Cannot subtract amount from `Erc20OnEosRedeemInfo`: subtrahend too large!".into())
+        } else {
+            let new_amount = self.amount - subtrahend;
+            debug!(
+                "Subtracting {} from {} to get final amount of {} in `Erc20OnEosRedeemInfo`!",
+                subtrahend, self.amount, new_amount
+            );
+            let mut new_self = self.clone();
+            new_self.amount = new_amount;
+            Ok(new_self)
+        }
+    }
 }
 
 impl ToMetadata for Erc20OnEosRedeemInfo {
@@ -194,9 +260,10 @@ mod tests {
     use std::str::FromStr;
 
     use super::*;
-    use crate::chains::eos::{
-        eos_test_utils::get_sample_eos_submission_material_n,
-        eos_utils::convert_hex_to_checksum256,
+    use crate::{
+        chains::eos::{eos_test_utils::get_sample_eos_submission_material_n, eos_utils::convert_hex_to_checksum256},
+        dictionaries::eos_eth::test_utils::get_sample_eos_eth_token_dictionary,
+        errors::AppError,
     };
 
     fn get_sample_action_proof_for_erc20_redeem() -> EosActionProof {
@@ -221,8 +288,17 @@ mod tests {
         )
     }
 
+    fn get_sample_erc20_on_eos_redeem_infos() -> Erc20OnEosRedeemInfos {
+        Erc20OnEosRedeemInfos::new(vec![
+            get_sample_erc20_on_eos_redeem_info(),
+            get_sample_erc20_on_eos_redeem_info(),
+        ])
+    }
+
     #[test]
     fn should_get_erc20_on_eos_eth_redeem_amount() {
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let dictionary_entry = EosEthTokenDictionaryEntry::new(
             18,
             9,
@@ -230,6 +306,12 @@ mod tests {
             "SAM".to_string(),
             "testpethxxxx".to_string(),
             EthAddress::from_slice(&hex::decode("32eF9e9a622736399DB5Ee78A68B258dadBB4353").unwrap()),
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         );
         let proof = get_sample_action_proof_for_erc20_redeem();
         let result = Erc20OnEosRedeemInfo::get_redeem_amount_from_proof(&proof, &dictionary_entry).unwrap();
@@ -250,6 +332,8 @@ mod tests {
         let eos_account_name = "testpethxxxx".to_string();
         let expected_result = get_sample_erc20_on_eos_redeem_info();
         let origin_chain_id = EosChainId::EosMainnet;
+        let eth_basis_points = 0;
+        let eos_basis_points = 0;
         let dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::new(
             18,
             9,
@@ -257,6 +341,12 @@ mod tests {
             "SAM".to_string(),
             eos_account_name,
             EthAddress::from_slice(&hex::decode("32eF9e9a622736399DB5Ee78A68B258dadBB4353").unwrap()),
+            eth_basis_points,
+            eos_basis_points,
+            U256::zero(),
+            0,
+            0,
+            "".to_string(),
         )]);
         let proof = get_sample_action_proof_for_erc20_redeem();
         let result = Erc20OnEosRedeemInfo::from_action_proof(&proof, &dictionary, &origin_chain_id).unwrap();
@@ -276,5 +366,52 @@ mod tests {
         let result = info.to_metadata_bytes().unwrap();
         let expected_result = "0100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008002e7261c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000810029e0ad25c43c8000000000000000000000000000000000000000000000000";
         assert_eq!(hex::encode(result), expected_result);
+    }
+
+    #[test]
+    fn should_subtract_amount_from_erc20_on_eos_redeem_info() {
+        let info = get_sample_erc20_on_eos_redeem_info();
+        let subtrahend = U256::from(1);
+        let expected_result = U256::from_dec_str("1336999999999").unwrap();
+        let result = info.subtract_amount(subtrahend).unwrap().amount;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_fail_to_subtract_too_large_amount_from_erc20_on_eos_redeem_info() {
+        let info = get_sample_erc20_on_eos_redeem_info();
+        let expected_err = "Cannot subtract amount from `Erc20OnEosRedeemInfo`: subtrahend too large!".to_string();
+        let subtrahend = info.amount + 1;
+        match info.subtract_amount(subtrahend) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+            Err(_) => panic!("Wrong error received!"),
+        };
+    }
+
+    #[test]
+    fn should_calculate_fee_in_erc20_on_eos_redeem_info() {
+        let basis_points = 25;
+        let info = get_sample_erc20_on_eos_redeem_info();
+        let expected_result = U256::from_dec_str("3342500000").unwrap();
+        let result = info.calculate_fee(basis_points).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_calculate_fees_in_erc20_on_eos_redeem_infos() {
+        let infos = get_sample_erc20_on_eos_redeem_infos();
+        let expected_fee = U256::from_dec_str("3342500000").unwrap();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let result = infos.get_fees(&dictionary).unwrap();
+        let expected_addresses = vec![
+            EthAddress::from_slice(&hex::decode("32ef9e9a622736399db5ee78a68b258dadbb4353").unwrap()),
+            EthAddress::from_slice(&hex::decode("32ef9e9a622736399db5ee78a68b258dadbb4353").unwrap()),
+        ];
+        assert_eq!(result.len(), infos.len());
+        result.iter().enumerate().for_each(|(i, (address, fee))| {
+            assert_eq!(*fee, expected_fee);
+            assert_eq!(*address, expected_addresses[i])
+        });
     }
 }

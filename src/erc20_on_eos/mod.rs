@@ -36,6 +36,12 @@ pub use crate::{
     erc20_on_eos::{
         add_vault_contract_address_to_db::maybe_add_vault_contract_address_to_db,
         debug_functions::{
+            block_reprocessors::{
+                debug_reprocess_eos_block,
+                debug_reprocess_eos_block_with_fee_accrual,
+                debug_reprocess_eth_block,
+                debug_reprocess_eth_block_with_fee_accrual,
+            },
             debug_add_eos_eth_token_dictionary_entry as debug_add_erc20_dictionary_entry,
             debug_add_new_eos_schedule,
             debug_get_add_supported_token_tx,
@@ -45,11 +51,12 @@ pub use crate::{
             debug_get_processed_actions_list,
             debug_get_remove_supported_token_tx,
             debug_remove_eos_eth_token_dictionary_entry as debug_remove_erc20_dictionary_entry,
-            debug_reprocess_eos_block,
-            debug_reprocess_eth_block,
+            debug_set_eos_fee_basis_points,
+            debug_set_eth_fee_basis_points,
             debug_set_eth_gas_price,
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
+            debug_withdraw_fees_and_save_in_db,
         },
         eos::submit_eos_block::submit_eos_block_to_core,
         eth::{
@@ -69,3 +76,5 @@ pub mod get_latest_block_numbers;
 
 pub(crate) mod add_vault_contract_address_to_db;
 pub(crate) mod check_core_is_initialized;
+pub(crate) mod fees_calculator;
+pub(crate) mod test_utils;
