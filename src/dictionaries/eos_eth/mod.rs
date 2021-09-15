@@ -36,16 +36,16 @@ impl EosEthTokenDictionary {
             .map(|entry| self.replace_entry(&entry, entry.add_to_accrued_fees(addend)))
     }
 
-    pub fn increment_accrued_fees(&self, fee_tuples: Vec<(EthAddress, U256)>) -> Result<Self> {
+    pub fn increment_accrued_fees(&self, fee_tuples: &[(EthAddress, U256)]) -> Result<Self> {
         info!("✔ Incrementing accrued fees...");
         fee_tuples
             .iter()
             .filter(|(address, addend)| {
-                if *addend > U256::zero() {
-                    true
-                } else {
+                if addend.is_zero() {
                     info!("✘ Not adding to accrued fees for {} ∵ increment is 0!", address);
                     false
+                } else {
+                    true
                 }
             })
             .try_fold(self.clone(), |new_self, (address, addend)| {
@@ -56,7 +56,7 @@ impl EosEthTokenDictionary {
     pub fn increment_accrued_fees_and_save_in_db<D: DatabaseInterface>(
         &self,
         db: &D,
-        fee_tuples: Vec<(EthAddress, U256)>,
+        fee_tuples: &[(EthAddress, U256)],
     ) -> Result<()> {
         self.increment_accrued_fees(fee_tuples)
             .and_then(|new_dictionary| new_dictionary.save_to_db(db))
@@ -997,7 +997,7 @@ mod tests {
         assert_eq!(entry_1_before.accrued_fees, U256::zero());
         assert_eq!(entry_2_before.accrued_fees, U256::zero());
         dictionary
-            .increment_accrued_fees_and_save_in_db(&db, fee_tuples)
+            .increment_accrued_fees_and_save_in_db(&db, &fee_tuples)
             .unwrap();
         let dictionary_from_db = EosEthTokenDictionary::get_from_db(&db).unwrap();
         let entry_1_after = dictionary_from_db.get_entry_via_eth_address(&eth_address_1).unwrap();
@@ -1016,7 +1016,7 @@ mod tests {
         let entry_1_before = dictionary.get_entry_via_eth_address(&eth_address).unwrap();
         assert_eq!(entry_1_before.accrued_fees, U256::zero());
         dictionary
-            .increment_accrued_fees_and_save_in_db(&db, fee_tuples)
+            .increment_accrued_fees_and_save_in_db(&db, &fee_tuples)
             .unwrap();
         let dictionary_from_db = EosEthTokenDictionary::get_from_db(&db).unwrap();
         let entry_1_after = dictionary_from_db.get_entry_via_eth_address(&eth_address).unwrap();

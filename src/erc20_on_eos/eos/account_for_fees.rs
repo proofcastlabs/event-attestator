@@ -22,7 +22,7 @@ pub fn update_accrued_fees_in_dictionary_and_return_eos_state<D: DatabaseInterfa
             .and_then(|dictionary| {
                 dictionary.increment_accrued_fees_and_save_in_db(
                     &state.db,
-                    state.erc20_on_eos_redeem_infos.get_fees(&dictionary)?,
+                    &state.erc20_on_eos_redeem_infos.get_fees(&dictionary)?,
                 )
             })
             .and(Ok(state))

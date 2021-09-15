@@ -46,7 +46,7 @@ impl FeesCalculator for Erc20OnEosRedeemInfos {
                 self.iter()
                     .zip(fee_tuples.iter())
                     .map(|(info, (_, fee))| {
-                        if *fee == U256::zero() {
+                        if fee.is_zero() {
                             debug!("Not subtracting fee because `fee` is 0!");
                             Ok(info.clone())
                         } else {
@@ -107,7 +107,7 @@ pub struct Erc20OnEosRedeemInfo {
 
 impl FeeCalculator for Erc20OnEosRedeemInfo {
     fn get_amount(&self) -> U256 {
-        info!("✔Getting token amount in `Erc20OnEosRedeemInfo` of {}", self.amount);
+        info!("✔ Getting token amount in `Erc20OnEosRedeemInfo` of {}", self.amount);
         self.amount
     }
 

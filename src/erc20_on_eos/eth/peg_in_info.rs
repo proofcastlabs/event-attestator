@@ -92,7 +92,7 @@ impl FeesCalculator for Erc20OnEosPegInInfos {
                 self.iter()
                     .zip(fee_tuples.iter())
                     .map(|(info, (_, fee))| {
-                        if *fee == U256::zero() {
+                        if fee.is_zero() {
                             debug!("Not subtracting fee because `fee` is 0!");
                             Ok(info.clone())
                         } else {
@@ -108,7 +108,7 @@ impl FeesCalculator for Erc20OnEosPegInInfos {
 impl FeeCalculator for Erc20OnEosPegInInfo {
     fn get_amount(&self) -> U256 {
         info!(
-            "✔Getting token amount in `Erc20OnEosPegInInfo` of {}",
+            "✔ Getting token amount in `Erc20OnEosPegInInfo` of {}",
             self.token_amount
         );
         self.token_amount
