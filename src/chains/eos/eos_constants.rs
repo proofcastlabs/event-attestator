@@ -9,6 +9,7 @@ pub const MEMO: &str = "";
 pub const PRODUCER_REPS: u64 = 12;
 pub const PUBLIC_KEY_SIZE: usize = 33;
 pub const PEGIN_ACTION_NAME: &str = "pegin";
+pub const PEGOUT_ACTION_NAME: &str = "pegout";
 pub const REDEEM_ACTION_NAME: &str = "redeem";
 pub const PUBLIC_KEY_CHECKSUM_SIZE: usize = 4;
 pub const EOS_SCHEDULE_DB_PREFIX: &str = "EOS_SCHEDULE_";

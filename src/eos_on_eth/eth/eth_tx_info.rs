@@ -9,7 +9,7 @@ use crate::{
         eos::{
             eos_actions::PTokenPegOutAction,
             eos_chain_id::EosChainId,
-            eos_constants::EOS_ACCOUNT_PERMISSION_LEVEL,
+            eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, PEGOUT_ACTION_NAME},
             eos_crypto::{
                 eos_private_key::EosPrivateKey,
                 eos_transaction::{EosSignedTransaction, EosSignedTransactions},
@@ -254,7 +254,7 @@ impl EosOnEthEthTxInfo {
         );
         Ok(EosAction::from_str(
             from,
-            "pegout",
+            PEGOUT_ACTION_NAME,
             vec![PermissionLevel::from_str(actor, permission_level)?],
             PTokenPegOutAction::from_str(token_contract, quantity, recipient, metadata)?,
         )?)
