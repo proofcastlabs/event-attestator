@@ -2,14 +2,22 @@ pub(crate) mod block_reprocessors;
 
 use std::str::FromStr;
 
-use eos_chain::AccountName as EosAccountName;
+use eos_chain::{AccountName as EosAccountName, Action as EosAction, PermissionLevel, Transaction as EosTransaction};
 use serde_json::json;
 
 use crate::{
     chains::{
         eos::{
             core_initialization::eos_init_utils::EosInitJson,
-            eos_constants::{get_eos_constants_db_keys, EOS_PRIVATE_KEY_DB_KEY},
+            eos_actions::PTokenPegOutAction,
+            eos_constants::{
+                get_eos_constants_db_keys,
+                EOS_ACCOUNT_PERMISSION_LEVEL,
+                EOS_PRIVATE_KEY_DB_KEY,
+                PEGOUT_ACTION_NAME,
+            },
+            eos_crypto::{eos_private_key::EosPrivateKey, eos_transaction::EosSignedTransaction},
+            eos_database_utils::{get_eos_account_name_from_db, get_eos_chain_id_from_db},
             eos_debug_functions::{
                 add_eos_eth_token_dictionary_entry,
                 add_new_eos_schedule,
@@ -31,7 +39,7 @@ use crate::{
     fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
-    utils::prepend_debug_output_marker_to_string,
+    utils::{get_unix_timestamp_as_u32, prepend_debug_output_marker_to_string},
 };
 
 /// # Debug Update Incremerkle
@@ -185,4 +193,64 @@ pub fn debug_set_eos_fee_basis_points<D: DatabaseInterface>(db: D, address: &str
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"success":true, "address": address, "new_fee": new_fee}).to_string())
         .map(prepend_debug_output_marker_to_string)
+}
+
+/// Debug Withwdraw Fees
+///
+/// This function takes an ETH address and uses it to search through the token dictionary to find a
+/// corresponding entry. Once found, that entry's accrued fees are zeroed, a timestamp set in that
+/// entry to mark the withdrawal date and the dictionary saved back in the database. Finally, an
+/// EOS transaction is created to transfer the `<accrued_fees>` amount of tokens to the passed in
+/// recipient address.
+pub fn debug_withdraw_fees<D: DatabaseInterface>(
+    db: D,
+    token_address: &str,
+    recipient_address: &str,
+    ref_block_num: u16,
+    ref_block_prefix: u32,
+) -> Result<String> {
+    let dictionary = EosEthTokenDictionary::get_from_db(&db)?;
+    let dictionary_entry_eth_address = convert_hex_to_eth_address(token_address)?;
+    let eos_smart_contract_address = get_eos_account_name_from_db(&db)?.to_string();
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| dictionary.withdraw_fees_and_save_in_db(&db, &dictionary_entry_eth_address))
+        .and_then(|(_, fee_amount)| {
+            let amount = dictionary.convert_u256_to_eos_asset_string(&dictionary_entry_eth_address, &fee_amount)?;
+            let eos_action = EosAction::from_str(
+                &eos_smart_contract_address,
+                &PEGOUT_ACTION_NAME.to_string(),
+                vec![PermissionLevel::from_str(
+                    &eos_smart_contract_address,
+                    &EOS_ACCOUNT_PERMISSION_LEVEL.to_string(),
+                )?],
+                PTokenPegOutAction::from_str(
+                    &dictionary
+                        .get_entry_via_eth_address(&dictionary_entry_eth_address)?
+                        .eos_address,
+                    &amount,
+                    recipient_address,
+                    &[],
+                )?,
+            )?;
+            EosSignedTransaction::from_unsigned_tx(
+                &eos_smart_contract_address,
+                &amount,
+                &get_eos_chain_id_from_db(&db)?,
+                &EosPrivateKey::get_from_db(&db)?,
+                &EosTransaction::new(get_unix_timestamp_as_u32()?, ref_block_num, ref_block_prefix, vec![
+                    eos_action,
+                ]),
+            )
+        })
+        .and_then(|eos_signed_tx| {
+            db.end_transaction()?;
+            Ok(json!({
+                "success": true,
+                "eos_tx_signature": eos_signed_tx.signature,
+                "eos_serialized_tx": eos_signed_tx.transaction,
+            })
+            .to_string())
+        })
 }
