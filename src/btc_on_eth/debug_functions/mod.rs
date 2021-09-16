@@ -429,14 +429,14 @@ pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &st
         .map(prepend_debug_output_marker_to_string)
 }
 
-/// Debug Set ETH Gas Price
+/// # Debug Set ETH Gas Price
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
 pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
     debug_set_eth_gas_price_in_db(&db, gas_price)
 }
 
-/// Debug Set BTC fee
+/// # Debug Set BTC fee
 ///
 /// This function sets the BTC fee to the given value. The unit is satoshis per byte.
 pub fn debug_set_btc_fee<D: DatabaseInterface>(db: D, fee: u64) -> Result<String> {

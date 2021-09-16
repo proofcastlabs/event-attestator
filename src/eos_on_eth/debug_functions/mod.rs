@@ -142,14 +142,14 @@ pub fn debug_remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
     check_core_is_initialized(&db).and_then(|_| remove_eos_eth_token_dictionary_entry(&db, eth_address_str))
 }
 
-/// Debug Set ETH Gas Price
+/// # Debug Set ETH Gas Price
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
 pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
     debug_set_eth_gas_price_in_db(&db, gas_price)
 }
 
-/// Debug Set ETH Fee Basis Points
+/// # Debug Set ETH Fee Basis Points
 ///
 /// This function takes an address and a new fee param. It gets the `EosEthTokenDictionary` from
 /// the database then finds the entry pertaining to the address in question and if successful,
@@ -172,7 +172,7 @@ pub fn debug_set_eth_fee_basis_points<D: DatabaseInterface>(db: D, address: &str
         .map(prepend_debug_output_marker_to_string)
 }
 
-/// Debug Set EOS Fee Basis Points
+/// # Debug Set EOS Fee Basis Points
 ///
 /// This function takes an address and a new fee param. It gets the `EosEthTokenDictionary` from
 /// the database then finds the entry pertaining to the address in question and if successful,
@@ -195,7 +195,7 @@ pub fn debug_set_eos_fee_basis_points<D: DatabaseInterface>(db: D, address: &str
         .map(prepend_debug_output_marker_to_string)
 }
 
-/// Debug Withwdraw Fees
+/// # Debug Withwdraw Fees
 ///
 /// This function takes an ETH address and uses it to search through the token dictionary to find a
 /// corresponding entry. Once found, that entry's accrued fees are zeroed, a timestamp set in that

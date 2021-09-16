@@ -281,7 +281,7 @@ pub fn debug_get_erc20_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, ne
         })
 }
 
-/// Debug Set Fee Basis Points
+/// # Debug Set Fee Basis Points
 ///
 /// This function takes an address and a new fee param. It gets the `EthEvmTokenDictionary` from
 /// the database then finds the entry pertaining to the address in question and if successful,
@@ -304,7 +304,7 @@ pub fn debug_set_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, ne
         .map(prepend_debug_output_marker_to_string)
 }
 
-/// Debug Withdraw Fees
+/// # Debug Withdraw Fees
 ///
 /// This function takes an address and uses it to search through the token dictionary to find a
 /// corresponding entry. Once found, that entry's accrued fees are zeroed, a timestamp set in that
@@ -350,7 +350,7 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
         })
 }
 
-/// Debug Set EVM Gas Price
+/// # Debug Set EVM Gas Price
 ///
 /// This function sets the EVM gas price to use when making EVM transactions. It's unit is `Wei`.
 pub fn debug_set_evm_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
@@ -363,7 +363,7 @@ pub fn debug_set_evm_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> R
         .map(prepend_debug_output_marker_to_string)
 }
 
-/// Debug Set ETH Gas Price
+/// # Debug Set ETH Gas Price
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
 pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {

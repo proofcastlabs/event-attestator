@@ -60,7 +60,7 @@ impl FeesCalculator for EosOnEthEthTxInfos {
                 self.iter()
                     .zip(fee_tuples.iter())
                     .map(|(info, (_, fee))| {
-                        if *fee == U256::zero() {
+                        if fee.is_zero() {
                             debug!("Not subtracting fee because `fee` is 0!");
                             Ok(info.clone())
                         } else {
@@ -195,7 +195,7 @@ pub struct EosOnEthEthTxInfo {
 
 impl FeeCalculator for EosOnEthEthTxInfo {
     fn get_amount(&self) -> U256 {
-        info!("✔Getting token amount in `EosOnEthEthTxInfo` of {}", self.token_amount);
+        info!("✔ Getting token amount in `EosOnEthEthTxInfo` of {}", self.token_amount);
         self.token_amount
     }
 

@@ -258,7 +258,7 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_ma
         .map(prepend_debug_output_marker_to_string)
 }
 
-/// Debug Set BTC fee
+/// # Debug Set BTC fee
 ///
 /// This function sets the BTC fee to the given value. The unit is satoshis per byte.
 pub fn debug_set_btc_fee<D: DatabaseInterface>(db: D, fee: u64) -> Result<String> {
