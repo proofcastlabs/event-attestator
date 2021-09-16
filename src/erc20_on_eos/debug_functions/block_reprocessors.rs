@@ -233,7 +233,7 @@ pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) 
     debug_reprocess_eos_block_maybe_accruing_fees(db, block_json, false)
 }
 
-/// # Debug Reprocess EOS Block
+/// # Debug Reprocess EOS Block With Fee Accrual
 ///
 /// This function will take passed in EOS submission material and run it through the simplified
 /// submission pipeline, signing and ETH transactions based on valid proofs therein.

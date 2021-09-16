@@ -29,7 +29,7 @@ pub fn update_accrued_fees_in_dictionary_and_return_eos_state<D: DatabaseInterfa
     }
 }
 
-pub fn account_for_fees_in_redeem_infos_in_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
+pub fn account_for_fees_in_eos_tx_infos_in_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     if DISABLE_FEES {
         info!("✔ Fees are disabled ∴ not accounting for any in `EosOnEthEosTxInfos`!");
         Ok(state)
@@ -47,5 +47,5 @@ pub fn account_for_fees_in_redeem_infos_in_state<D: DatabaseInterface>(state: Eo
 
 pub fn maybe_account_for_fees<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Accounting for fees in `EosOnEthEosTxInfos` during EOS block submission...");
-    update_accrued_fees_in_dictionary_and_return_eos_state(state).and_then(account_for_fees_in_redeem_infos_in_state)
+    update_accrued_fees_in_dictionary_and_return_eos_state(state).and_then(account_for_fees_in_eos_tx_infos_in_state)
 }
