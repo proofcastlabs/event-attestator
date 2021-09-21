@@ -62,6 +62,22 @@ impl<D: DatabaseInterface> EthState<D> {
         }
     }
 
+    pub fn get_btc_transactions(&self) -> Result<BtcTransactions> {
+        match self.btc_transactions {
+            Some(ref txs) => Ok(txs.clone()),
+            _ => Ok(vec![]),
+        }
+    }
+
+    pub fn replace_btc_transactions(mut self, replacements: BtcTransactions) -> Result<Self> {
+        self.btc_transactions = if replacements.is_empty() {
+            None
+        } else {
+            Some(replacements)
+        };
+        Ok(self)
+    }
+
     pub fn add_btc_on_eth_redeem_infos(self, mut infos: BtcOnEthRedeemInfos) -> Result<Self> {
         let mut new_infos = self.btc_on_eth_redeem_infos.clone().0;
         new_infos.append(&mut infos.0);
