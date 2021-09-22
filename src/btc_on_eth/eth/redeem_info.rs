@@ -97,6 +97,26 @@ impl BtcOnEthRedeemInfo {
 pub struct BtcOnEthRedeemInfos(pub Vec<BtcOnEthRedeemInfo>);
 
 impl BtcOnEthRedeemInfos {
+    pub fn filter_out_any_whose_value_is_too_low(&self) -> Self {
+        info!("✘ Filtering out `BtcOnEthRedeemInfo` whose amounts are too low...");
+        Self::new(
+            self.iter()
+                .filter(|redeem_info| {
+                    if redeem_info.amount_in_satoshis >= MINIMUM_REQUIRED_SATOSHIS {
+                        info!(
+                            "✘ Filtering out `BtcOnEthRedeemInfo` ∵ amount too low: {:?}",
+                            redeem_info
+                        );
+                        false
+                    } else {
+                        true
+                    }
+                })
+                .cloned()
+                .collect::<Vec<BtcOnEthRedeemInfo>>(),
+        )
+    }
+
     pub fn calculate_fees(&self, basis_points: u64) -> Result<(Vec<u64>, u64)> {
         sanity_check_basis_points_value(basis_points).map(|_| {
             let fees = self
