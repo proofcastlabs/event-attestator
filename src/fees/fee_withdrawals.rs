@@ -37,15 +37,7 @@ pub fn get_fee_withdrawal_btc_tx_for_core_type<D: DatabaseInterface>(
         }];
         fee_db_utils
             .put_last_fee_withdrawal_timestamp_in_db(db, get_unix_timestamp()?)
-            .and_then(|_| {
-                get_enough_utxos_to_cover_total(
-                    db,
-                    withdrawal_amount,
-                    recipients_and_amounts.len(),
-                    fee,
-                    BtcUtxosAndValues::new(vec![]),
-                )
-            })
+            .and_then(|_| get_enough_utxos_to_cover_total(db, withdrawal_amount, recipients_and_amounts.len(), fee))
             .and_then(|utxos| {
                 create_signed_raw_btc_tx_for_n_input_n_outputs(
                     fee,

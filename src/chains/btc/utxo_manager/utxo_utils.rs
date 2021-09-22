@@ -94,6 +94,15 @@ pub fn get_enough_utxos_to_cover_total<D: DatabaseInterface>(
     required_btc_amount: u64,
     num_outputs: usize,
     sats_per_byte: u64,
+) -> Result<BtcUtxosAndValues> {
+    get_enough_utxos_to_cover_total_recursively(db, required_btc_amount, num_outputs, sats_per_byte, vec![].into())
+}
+
+fn get_enough_utxos_to_cover_total_recursively<D: DatabaseInterface>(
+    db: &D,
+    required_btc_amount: u64,
+    num_outputs: usize,
+    sats_per_byte: u64,
     inputs: BtcUtxosAndValues,
 ) -> Result<BtcUtxosAndValues> {
     info!("✔ Getting UTXO from db...");
@@ -120,7 +129,13 @@ pub fn get_enough_utxos_to_cover_total<D: DatabaseInterface>(
         match total_cost > total_utxo_value {
             true => {
                 trace!("✔ UTXOs do not cover fee + amount, need another!");
-                get_enough_utxos_to_cover_total(db, required_btc_amount, num_outputs, sats_per_byte, updated_inputs)
+                get_enough_utxos_to_cover_total_recursively(
+                    db,
+                    required_btc_amount,
+                    num_outputs,
+                    sats_per_byte,
+                    updated_inputs,
+                )
             },
             false => {
                 trace!("✔ UTXO(s) covers fee and required btc amount!");
