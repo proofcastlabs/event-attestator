@@ -5,7 +5,6 @@ pub(crate) mod account_for_fees;
 pub(crate) mod add_erc777_contract_address;
 pub(crate) mod create_btc_transactions;
 pub(crate) mod filter_receipts_in_state;
-pub(crate) mod filter_redeem_infos_in_state;
 pub(crate) mod get_eth_output_json;
 pub(crate) mod increment_btc_nonce;
 pub(crate) mod redeem_info;

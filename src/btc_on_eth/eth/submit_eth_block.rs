@@ -5,7 +5,6 @@ use crate::{
             account_for_fees::maybe_account_for_fees,
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
             filter_receipts_in_state::filter_receipts_for_btc_on_eth_redeem_events_in_state,
-            filter_redeem_infos_in_state::maybe_filter_redeem_infos_in_state,
             get_eth_output_json::get_eth_output_json,
             increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
             redeem_info::maybe_parse_redeem_infos_and_add_to_state,
@@ -55,7 +54,6 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_update_eth_tail_block_hash_and_return_state)
         .and_then(maybe_update_eth_linker_hash_and_return_state)
         .and_then(maybe_parse_redeem_infos_and_add_to_state)
-        .and_then(maybe_filter_redeem_infos_in_state)
         .and_then(maybe_account_for_fees)
         .and_then(maybe_create_btc_txs_and_add_to_state)
         .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
