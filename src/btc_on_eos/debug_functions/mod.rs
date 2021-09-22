@@ -16,7 +16,7 @@ use crate::{
             btc_submission_material::parse_submission_material_and_put_in_state,
             btc_utils::{get_hex_tx_from_signed_btc_tx, get_pay_to_pub_key_hash_script},
             extract_utxos_from_p2pkh_txs::{
-                extract_utxos_from_txs,
+                extract_utxos_from_p2pkh_txs,
                 maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
             },
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
@@ -328,7 +328,7 @@ pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &st
         .and_then(|_| get_btc_on_eos_fee_withdrawal_tx(&db, btc_address))
         .and_then(|btc_tx| {
             let change_utxos = get_pay_to_pub_key_hash_script(&get_btc_address_from_db(&db)?)
-                .map(|target_script| extract_utxos_from_txs(&target_script, &[btc_tx.clone()]))?;
+                .map(|target_script| extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]))?;
             save_utxos_to_db(&db, &change_utxos)?;
             db.end_transaction()?;
             Ok(json!({ "signed_btc_tx": get_hex_tx_from_signed_btc_tx(&btc_tx) }).to_string())
