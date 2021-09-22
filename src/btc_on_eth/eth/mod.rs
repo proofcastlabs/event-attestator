@@ -9,4 +9,3 @@ pub(crate) mod filter_redeem_infos_in_state;
 pub(crate) mod get_eth_output_json;
 pub(crate) mod increment_btc_nonce;
 pub(crate) mod redeem_info;
-pub(crate) mod save_btc_utxos_to_db;

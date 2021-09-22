@@ -23,7 +23,6 @@ use crate::{
             get_eth_output_json::{get_btc_signed_tx_info_from_btc_txs, EthOutput},
             increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
             redeem_info::BtcOnEthRedeemInfos,
-            save_btc_utxos_to_db::maybe_save_btc_utxos_to_db_and_return_state,
         },
     },
     chains::{
@@ -172,7 +171,6 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
         })
         .and_then(maybe_create_btc_txs_and_add_to_state)
         .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
-        .and_then(maybe_save_btc_utxos_to_db_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting ETH output json...");
