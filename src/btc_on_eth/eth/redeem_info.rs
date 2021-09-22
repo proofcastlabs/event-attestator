@@ -128,6 +128,7 @@ impl BtcOnEthRedeemInfos {
         })
     }
 
+    #[cfg(test)]
     pub fn sum(&self) -> u64 {
         self.iter().fold(0, |acc, params| acc + params.amount_in_satoshis)
     }

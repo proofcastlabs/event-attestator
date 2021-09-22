@@ -34,7 +34,6 @@ use crate::{
                     remove_utxo,
                 },
                 utxo_constants::get_utxo_constants_db_keys,
-                utxo_database_utils::save_utxos_to_db,
                 utxo_utils::get_all_utxos_as_json_string,
             },
             validate_btc_block_header::validate_btc_block_header_in_state,
