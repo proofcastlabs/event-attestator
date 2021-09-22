@@ -20,7 +20,6 @@ use crate::{
             account_for_fees::{maybe_account_for_fees, subtract_fees_from_redeem_infos},
             create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
-            filter_btc_txs_in_state::maybe_filter_btc_txs_in_state,
             filter_receipts_in_state::filter_receipts_for_btc_on_eth_redeem_events_in_state,
             get_eth_output_json::{get_btc_signed_tx_info_from_btc_txs, EthOutput},
             increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
@@ -173,7 +172,6 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
             }
         })
         .and_then(maybe_create_btc_txs_and_add_to_state)
-        .and_then(maybe_filter_btc_txs_in_state)
         .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
         .and_then(maybe_extract_btc_utxo_from_btc_tx_in_state)
         .and_then(maybe_save_btc_utxos_to_db_and_return_state)
