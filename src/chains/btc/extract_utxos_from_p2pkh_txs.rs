@@ -37,7 +37,7 @@ pub fn extract_utxos_from_txs(target_script: &BtcScript, txs: &[BtcTransaction])
     )
 }
 
-pub fn maybe_extract_utxos_from_p2pkh_txs_and_put_in_state<D>(state: BtcState<D>) -> Result<BtcState<D>>
+pub fn maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state<D>(state: BtcState<D>) -> Result<BtcState<D>>
 where
     D: DatabaseInterface,
 {
