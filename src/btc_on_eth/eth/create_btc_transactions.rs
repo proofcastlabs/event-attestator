@@ -16,7 +16,7 @@ use crate::{
     types::Result,
 };
 
-fn extract_change_utxo_from_btc_tx_and_save_in_db<D: DatabaseInterface>(
+pub fn extract_change_utxo_from_btc_tx_and_save_in_db<D: DatabaseInterface>(
     db: &D,
     btc_address: &str,
     btc_tx: BtcTransaction,

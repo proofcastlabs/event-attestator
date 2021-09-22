@@ -6,7 +6,7 @@ pub(crate) mod block_reprocessors;
 use crate::{
     btc_on_eth::{
         check_core_is_initialized::{check_core_is_initialized, check_core_is_initialized_and_return_btc_state},
-        eth::extract_utxos_from_btc_txs::extract_btc_utxos_from_btc_txs,
+        eth::create_btc_transactions::extract_change_utxo_from_btc_tx_and_save_in_db,
     },
     chains::{
         btc::{
@@ -421,8 +421,7 @@ pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &st
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_btc_on_eth_fee_withdrawal_tx(&db, btc_address))
         .and_then(|btc_tx| {
-            let change_utxos = extract_btc_utxos_from_btc_txs(&get_btc_address_from_db(&db)?, &[btc_tx.clone()])?;
-            save_utxos_to_db(&db, &change_utxos)?;
+            extract_change_utxo_from_btc_tx_and_save_in_db(&db, &get_btc_address_from_db(&db)?, btc_tx.clone())?;
             db.end_transaction()?;
             Ok(json!({ "signed_btc_tx": get_hex_tx_from_signed_btc_tx(&btc_tx) }).to_string())
         })
