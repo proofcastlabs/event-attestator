@@ -36,6 +36,12 @@ pub struct BtcOnEthRedeemInfo {
 }
 
 impl BtcOnEthRedeemInfo {
+    pub fn to_recipient_and_amount(&self) -> Result<BtcRecipientAndAmount> {
+        let recipient_and_amount = BtcRecipientAndAmount::new(&self.recipient[..], self.amount_in_satoshis);
+        info!("✔ Recipient & amount retrieved from redeem: {:?}", recipient_and_amount);
+        recipient_and_amount
+    }
+
     fn update_amount(&self, new_amount: u64) -> Self {
         let mut new_self = self.clone();
         new_self.amount_in_satoshis = new_amount;
@@ -81,16 +87,7 @@ impl BtcOnEthRedeemInfos {
 
     pub fn to_btc_addresses_and_amounts(&self) -> Result<BtcRecipientsAndAmounts> {
         info!("✔ Getting BTC addresses & amounts from redeem params...");
-        self.iter()
-            .map(|params| {
-                let recipient_and_amount = BtcRecipientAndAmount::new(&params.recipient[..], params.amount_in_satoshis);
-                info!(
-                    "✔ Recipients & amount retrieved from redeem: {:?}",
-                    recipient_and_amount
-                );
-                recipient_and_amount
-            })
-            .collect()
+        self.iter().map(|params| params.to_recipient_and_amount()).collect()
     }
 
     fn get_btc_address_or_revert_to_safe_address(maybe_btc_address: &str) -> String {
