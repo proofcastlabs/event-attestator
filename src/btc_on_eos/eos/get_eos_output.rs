@@ -51,6 +51,15 @@ pub fn get_btc_signed_tx_info_from_btc_txs(
     redeem_infos: &BtcOnEosRedeemInfos,
 ) -> Result<Vec<BtcTxInfo>> {
     info!("✔ Getting BTC tx info from BTC txs...");
+    let num_btc_txs = btc_txs.len();
+    let num_redeem_infos = redeem_infos.len();
+    if num_btc_txs != num_redeem_infos {
+        return Err(format!(
+            "BTC tx mismatch. BTC txs: #{}, RedeemInfos: #{}",
+            num_btc_txs, num_redeem_infos
+        )
+        .into());
+    };
     let start_nonce = btc_account_nonce - btc_txs.len() as u64;
     btc_txs
         .iter()
@@ -59,10 +68,7 @@ pub fn get_btc_signed_tx_info_from_btc_txs(
         .collect()
 }
 
-pub fn get_eos_output<D>(state: EosState<D>) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn get_eos_output<D: DatabaseInterface>(state: EosState<D>) -> Result<String> {
     info!("✔ Getting EOS output json...");
     let output = serde_json::to_string(&EosOutput {
         btc_signed_transactions: match &state.btc_on_eos_signed_txs.len() {

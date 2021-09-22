@@ -49,15 +49,24 @@ pub struct EthOutput {
 pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_account_nonce: u64,
     btc_txs: Vec<BtcTransaction>,
-    redeem_info: &BtcOnEthRedeemInfos,
+    redeem_infos: &BtcOnEthRedeemInfos,
 ) -> Result<Vec<BtcTxInfo>> {
     info!("✔ Getting BTC tx info from {} BTC tx(s)...", btc_txs.len());
+    let num_btc_txs = btc_txs.len();
+    let num_redeem_infos = redeem_infos.len();
+    if num_btc_txs != num_redeem_infos {
+        return Err(format!(
+            "BTC tx mismatch. BTC txs: #{}, RedeemInfos: #{}",
+            num_btc_txs, num_redeem_infos
+        )
+        .into());
+    };
     let start_nonce = btc_account_nonce - btc_txs.len() as u64;
     btc_txs
         .iter()
         .enumerate()
-        .map(|(i, btc_tx)| BtcTxInfo::new(btc_tx, &redeem_info.0[i], start_nonce + i as u64))
-        .collect::<Result<Vec<BtcTxInfo>>>()
+        .map(|(i, btc_tx)| BtcTxInfo::new(btc_tx, &redeem_infos.0[i], start_nonce + i as u64))
+        .collect::<Result<Vec<_>>>()
 }
 
 pub fn get_eth_output_json<D>(state: EthState<D>) -> Result<String>
