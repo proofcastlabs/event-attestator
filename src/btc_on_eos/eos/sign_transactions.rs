@@ -52,7 +52,7 @@ fn sign_txs_from_redeem_infos<D: DatabaseInterface>(
         sats_per_byte,
         get_address_and_amounts_from_redeem_infos(redeem_infos)?,
         &get_btc_address_from_db(db)?[..],
-        get_btc_private_key_from_db(db)?,
+        &get_btc_private_key_from_db(db)?,
         utxos_and_values,
     )
 }

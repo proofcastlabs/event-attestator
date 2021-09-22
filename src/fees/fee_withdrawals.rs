@@ -43,7 +43,7 @@ pub fn get_fee_withdrawal_btc_tx_for_core_type<D: DatabaseInterface>(
                     fee,
                     recipients_and_amounts,
                     &get_btc_address_from_db(db)?,
-                    get_btc_private_key_from_db(db)?,
+                    &get_btc_private_key_from_db(db)?,
                     utxos,
                 )
             })

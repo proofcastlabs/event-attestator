@@ -67,7 +67,7 @@ pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize
                 fee,
                 vec![],
                 &btc_address,
-                get_btc_private_key_from_db(&db)?,
+                &get_btc_private_key_from_db(&db)?,
                 utxos,
             )?;
             let change_utxos = extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]);
@@ -110,7 +110,7 @@ pub fn get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
                 fee,
                 vec![],
                 &btc_address,
-                get_btc_private_key_from_db(&db)?,
+                &get_btc_private_key_from_db(&db)?,
                 BtcUtxosAndValues::new(vec![utxo]),
             )?;
             let change_utxos = extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]);
