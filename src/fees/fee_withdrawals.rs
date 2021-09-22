@@ -7,7 +7,7 @@ use crate::{
         btc_database_utils::{get_btc_address_from_db, get_btc_fee_from_db, get_btc_private_key_from_db},
         btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
         btc_types::BtcRecipientAndAmount,
-        utxo_manager::{utxo_types::BtcUtxosAndValues, utxo_utils::get_enough_utxos_to_cover_total},
+        utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
     },
     core_type::CoreType,
     fees::fee_database_utils::FeeDatabaseUtils,
