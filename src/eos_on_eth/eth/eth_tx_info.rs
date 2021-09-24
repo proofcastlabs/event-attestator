@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Action as EosAction, PermissionLevel, Transaction as EosTransaction};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
@@ -7,7 +9,7 @@ use crate::{
         eos::{
             eos_actions::PTokenPegOutAction,
             eos_chain_id::EosChainId,
-            eos_constants::EOS_ACCOUNT_PERMISSION_LEVEL,
+            eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, PEGOUT_ACTION_NAME},
             eos_crypto::{
                 eos_private_key::EosPrivateKey,
                 eos_transaction::{EosSignedTransaction, EosSignedTransactions},
@@ -31,7 +33,10 @@ use crate::{
         },
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
-    eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
+    eos_on_eth::{
+        constants::MINIMUM_WEI_AMOUNT,
+        fees_calculator::{FeeCalculator, FeesCalculator},
+    },
     traits::DatabaseInterface,
     types::{Byte, Result},
 };
@@ -40,6 +45,33 @@ const ZERO_ETH_ASSET_STR: &str = "0.0000 EOS";
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
 pub struct EosOnEthEthTxInfos(pub Vec<EosOnEthEthTxInfo>);
+
+impl FeesCalculator for EosOnEthEthTxInfos {
+    fn get_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
+        debug!("Calculating fees in `EosOnEthEthTxInfos`...");
+        self.iter()
+            .map(|info| info.calculate_peg_out_fee_via_dictionary(dictionary))
+            .collect()
+    }
+
+    fn subtract_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Self> {
+        self.get_fees(dictionary).and_then(|fee_tuples| {
+            Ok(Self::new(
+                self.iter()
+                    .zip(fee_tuples.iter())
+                    .map(|(info, (_, fee))| {
+                        if fee.is_zero() {
+                            debug!("Not subtracting fee because `fee` is 0!");
+                            Ok(info.clone())
+                        } else {
+                            info.subtract_amount(*fee)
+                        }
+                    })
+                    .collect::<Result<_>>()?,
+            ))
+        })
+    }
+}
 
 impl EosOnEthEthTxInfos {
     pub fn from_eth_submission_material(
@@ -161,6 +193,35 @@ pub struct EosOnEthEthTxInfo {
     pub originating_tx_hash: EthHash,
 }
 
+impl FeeCalculator for EosOnEthEthTxInfo {
+    fn get_amount(&self) -> U256 {
+        info!("✔ Getting token amount in `EosOnEthEthTxInfo` of {}", self.token_amount);
+        self.token_amount
+    }
+
+    fn get_eth_token_address(&self) -> EthAddress {
+        debug!(
+            "Getting EOS token address in `EosOnEthEthTxInfo` of {}",
+            self.eth_token_address
+        );
+        self.eth_token_address
+    }
+
+    fn get_eos_token_address(&self) -> Result<EosAccountName> {
+        debug!(
+            "Getting EOS token address in `EosOnEthEthTxInfo` of {}",
+            self.eos_token_address
+        );
+        Ok(EosAccountName::from_str(&self.eos_token_address)?)
+    }
+
+    fn update_amount(&self, new_amount: U256) -> Self {
+        let mut new_self = self.clone();
+        new_self.token_amount = new_amount;
+        new_self
+    }
+}
+
 impl EosOnEthEthTxInfo {
     pub fn from_eth_log(log: &EthLog, tx_hash: &EthHash, token_dictionary: &EosEthTokenDictionary) -> Result<Self> {
         info!("✔ Parsing `EosOnEthEthTxInfo` from ETH log...");
@@ -193,7 +254,7 @@ impl EosOnEthEthTxInfo {
         );
         Ok(EosAction::from_str(
             from,
-            "pegout",
+            PEGOUT_ACTION_NAME,
             vec![PermissionLevel::from_str(actor, permission_level)?],
             PTokenPegOutAction::from_str(token_contract, quantity, recipient, metadata)?,
         )?)
@@ -289,6 +350,7 @@ mod tests {
     use crate::{
         dictionaries::eos_eth::EosEthTokenDictionaryEntry,
         eos_on_eth::test_utils::{
+            get_dictionary_for_fee_calculations,
             get_eth_submission_material_n,
             get_eth_submission_material_with_bad_eos_account_name,
             get_eth_submission_material_with_two_peg_ins,
@@ -303,11 +365,21 @@ mod tests {
         .unwrap()
     }
 
+    fn get_sample_eos_on_eth_eth_tx_infos() -> EosOnEthEthTxInfos {
+        EosOnEthEthTxInfos::from_eth_submission_material(
+            &get_eth_submission_material_n(1).unwrap(),
+            &get_sample_eos_eth_token_dictionary(),
+        )
+        .unwrap()
+    }
+
+    fn get_sample_eos_on_eth_eth_tx_info() -> EosOnEthEthTxInfo {
+        get_sample_eos_on_eth_eth_tx_infos()[0].clone()
+    }
+
     #[test]
     fn should_get_tx_info_from_eth_submission_material() {
-        let material = get_eth_submission_material_n(1).unwrap();
-        let dictionary = get_sample_eos_eth_token_dictionary();
-        let tx_infos = EosOnEthEthTxInfos::from_eth_submission_material(&material, &dictionary).unwrap();
+        let tx_infos = get_sample_eos_on_eth_eth_tx_infos();
         let result = tx_infos[0].clone();
         let expected_token_amount = U256::from_dec_str("100000000000000").unwrap();
         let expected_eos_address = "whateverxxxx";
@@ -331,9 +403,7 @@ mod tests {
 
     #[test]
     fn should_get_eos_signed_txs_from_tx_info() {
-        let material = get_eth_submission_material_n(1).unwrap();
-        let dictionary = get_sample_eos_eth_token_dictionary();
-        let tx_infos = EosOnEthEthTxInfos::from_eth_submission_material(&material, &dictionary).unwrap();
+        let tx_infos = get_sample_eos_on_eth_eth_tx_infos();
         let ref_block_num = 1;
         let ref_block_prefix = 1;
         let chain_id = EosChainId::EosMainnet;
@@ -400,5 +470,38 @@ mod tests {
             .unwrap();
         assert_eq!(result.len(), 2);
         assert_ne!(result[0], result[1]);
+    }
+
+    #[test]
+    fn should_subtract_amount_from_eos_on_eth_eth_tx_info() {
+        let info = get_sample_eos_on_eth_eth_tx_info();
+        let subtrahend = U256::from(1337);
+        let mut expected_result = info.clone();
+        expected_result.token_amount = U256::from_dec_str("99999999998663").unwrap();
+        let result = info.subtract_amount(subtrahend).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_fees_from_eos_on_eth_eth_tx_infos() {
+        let dictionary = get_dictionary_for_fee_calculations();
+        let infos = get_sample_eos_on_eth_eth_tx_infos();
+        let result = infos.get_fees(&dictionary).unwrap();
+        let expected_result = vec![(
+            EthAddress::from_slice(&hex::decode("711c50b31ee0b9e8ed4d434819ac20b4fbbb5532").unwrap()),
+            U256::from_dec_str("120000000000").unwrap(),
+        )];
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_subtract_fees_from_eos_on_eth_eth_tx_infos() {
+        let dictionary = get_dictionary_for_fee_calculations();
+        let infos = get_sample_eos_on_eth_eth_tx_infos();
+        let result = infos.subtract_fees(&dictionary).unwrap();
+        let expected_amount = U256::from_dec_str("99880000000000").unwrap();
+        let expected_result =
+            EosOnEthEthTxInfos::new(vec![get_sample_eos_on_eth_eth_tx_info().update_amount(expected_amount)]);
+        assert_eq!(result, expected_result);
     }
 }

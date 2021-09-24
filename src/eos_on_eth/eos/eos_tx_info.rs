@@ -1,4 +1,4 @@
-use std::str::from_utf8;
+use std::str::{from_utf8, FromStr};
 
 use derive_more::{Constructor, Deref};
 use eos_chain::{
@@ -37,7 +37,10 @@ use crate::{
     },
     constants::SAFE_ETH_ADDRESS,
     dictionaries::eos_eth::EosEthTokenDictionary,
-    eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
+    eos_on_eth::{
+        constants::MINIMUM_WEI_AMOUNT,
+        fees_calculator::{FeeCalculator, FeesCalculator},
+    },
     traits::DatabaseInterface,
     types::Result,
     utils::{convert_bytes_to_u64, strip_hex_prefix},
@@ -47,13 +50,42 @@ const REQUIRED_ACTION_NAME: &str = "pegin";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Constructor)]
 pub struct EosOnEthEosTxInfo {
-    pub amount: U256,
+    pub token_amount: U256,
     pub from: EosAccountName,
     pub recipient: EthAddress,
     pub originating_tx_id: Checksum256,
     pub global_sequence: GlobalSequence,
     pub eth_token_address: EthAddress,
     pub eos_token_address: String,
+}
+
+impl FeeCalculator for EosOnEthEosTxInfo {
+    fn get_amount(&self) -> U256 {
+        info!("✔ Getting token amount in `EosOnEthEosTxInfo` of {}", self.token_amount);
+        self.token_amount
+    }
+
+    fn get_eth_token_address(&self) -> EthAddress {
+        debug!(
+            "Getting EOS token address in `EosOnEthEosTxInfo` of {}",
+            self.eth_token_address
+        );
+        self.eth_token_address
+    }
+
+    fn get_eos_token_address(&self) -> Result<EosAccountName> {
+        debug!(
+            "Getting EOS token address in `EosOnEthEosTxInfo` of {}",
+            self.eos_token_address
+        );
+        Ok(EosAccountName::from_str(&self.eos_token_address)?)
+    }
+
+    fn update_amount(&self, new_amount: U256) -> Self {
+        let mut new_self = self.clone();
+        new_self.token_amount = new_amount;
+        new_self
+    }
 }
 
 impl EosOnEthEosTxInfo {
@@ -227,7 +259,7 @@ impl EosOnEthEosTxInfo {
                 let eos_asset = dictionary_entry.convert_u64_to_eos_asset(Self::get_eos_amount_from_proof(proof)?);
                 let eth_amount = dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset)?;
                 Ok(Self {
-                    amount: eth_amount,
+                    token_amount: eth_amount,
                     originating_tx_id: proof.tx_id,
                     global_sequence: proof.get_global_sequence(),
                     from: Self::get_token_sender_from_proof(proof)?,
@@ -241,6 +273,33 @@ impl EosOnEthEosTxInfo {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
 pub struct EosOnEthEosTxInfos(pub Vec<EosOnEthEosTxInfo>);
+
+impl FeesCalculator for EosOnEthEosTxInfos {
+    fn get_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
+        debug!("Calculating fees in `Erc20OnEosRedeemInfos`...");
+        self.iter()
+            .map(|info| info.calculate_peg_in_fee_via_dictionary(dictionary))
+            .collect()
+    }
+
+    fn subtract_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Self> {
+        self.get_fees(dictionary).and_then(|fee_tuples| {
+            Ok(Self::new(
+                self.iter()
+                    .zip(fee_tuples.iter())
+                    .map(|(info, (_, fee))| {
+                        if fee.is_zero() {
+                            debug!("Not subtracting fee because `fee` is 0!");
+                            Ok(info.clone())
+                        } else {
+                            info.subtract_amount(*fee)
+                        }
+                    })
+                    .collect::<Result<_>>()?,
+            ))
+        })
+    }
+}
 
 impl EosOnEthEosTxInfos {
     pub fn from_eos_action_proofs(
@@ -278,7 +337,7 @@ impl EosOnEthEosTxInfos {
         Ok(EosOnEthEosTxInfos::new(
             self.iter()
                 .filter(|info| {
-                    if info.amount >= min_amount {
+                    if info.token_amount >= min_amount {
                         true
                     } else {
                         info!("✘ Filtering out tx info ∵ value too low: {:?}", info);
@@ -304,10 +363,10 @@ impl EosOnEthEosTxInfos {
                 .map(|(i, tx_info)| {
                     info!(
                         "✔ Signing ETH tx for amount: {}, to address: {}",
-                        tx_info.amount, tx_info.recipient
+                        tx_info.token_amount, tx_info.recipient
                     );
                     EthTransaction::new_unsigned(
-                        encode_erc777_mint_with_no_data_fxn(&tx_info.recipient, &tx_info.amount)?,
+                        encode_erc777_mint_with_no_data_fxn(&tx_info.recipient, &tx_info.token_amount)?,
                         eth_account_nonce + i as u64,
                         ZERO_ETH_VALUE,
                         tx_info.eth_token_address,
@@ -393,11 +452,28 @@ mod tests {
     use super::*;
     use crate::{
         chains::eos::{eos_test_utils::get_sample_eos_submission_material_n, eos_utils::convert_hex_to_checksum256},
-        eos_on_eth::test_utils::{get_eos_submission_material_n, get_sample_eos_eth_token_dictionary},
+        eos_on_eth::test_utils::{
+            get_dictionary_for_fee_calculations,
+            get_eos_submission_material_n,
+            get_sample_eos_eth_token_dictionary,
+        },
     };
 
     fn get_sample_proof() -> EosActionProof {
         get_eos_submission_material_n(1).unwrap().action_proofs[0].clone()
+    }
+
+    fn get_sample_eos_on_eth_eos_tx_info() -> EosOnEthEosTxInfo {
+        EosOnEthEosTxInfo::from_eos_action_proof(
+            &get_sample_proof(),
+            &get_sample_eos_eth_token_dictionary(),
+            &EosAccountName::from_str("t11ppntoneos").unwrap(),
+        )
+        .unwrap()
+    }
+
+    fn get_sample_eos_on_eth_eos_tx_infos() -> EosOnEthEosTxInfos {
+        EosOnEthEosTxInfos::new(vec![get_sample_eos_on_eth_eos_tx_info()])
     }
 
     #[test]
@@ -466,10 +542,7 @@ mod tests {
 
     #[test]
     fn should_get_eos_on_eth_eth_tx_info_from_action_proof() {
-        let proof = get_sample_proof();
-        let smart_contract_name = EosAccountName::from_str("t11ppntoneos").unwrap();
-        let dictionary = get_sample_eos_eth_token_dictionary();
-        let result = EosOnEthEosTxInfo::from_eos_action_proof(&proof, &dictionary, &smart_contract_name).unwrap();
+        let result = get_sample_eos_on_eth_eos_tx_info();
         let expected_amount = U256::from_dec_str("100000000000000").unwrap();
         let expected_from = EosAccountName::from_str("oraclizetest").unwrap();
         let expected_recipient =
@@ -479,7 +552,7 @@ mod tests {
         let expected_global_sequence = 323917921677;
         let expected_eth_token_address =
             EthAddress::from_slice(&hex::decode("711c50b31ee0b9e8ed4d434819ac20b4fbbb5532").unwrap());
-        assert_eq!(result.amount, expected_amount);
+        assert_eq!(result.token_amount, expected_amount);
         assert_eq!(result.from, expected_from);
         assert_eq!(result.recipient, expected_recipient);
         assert_eq!(result.global_sequence, expected_global_sequence);
@@ -491,14 +564,11 @@ mod tests {
     fn should_get_correct_signed_tx() {
         // NOTE Real tx: https://rinkeby.etherscan.io/tx/0x2181a9009da8e2418d67b95501e6c37347f9cce65ea97f9bf3737d5efaf9be89
         let expected_result = "f8aa808504a817c8008302bf2094711c50b31ee0b9e8ed4d434819ac20b4fbbb553280b84440c10f190000000000000000000000005fdaef0a0b11774db68c38ab36957de8646af1b500000000000000000000000000000000000000000000000000005af3107a40002ca0162392250af5a68aec146384043e109b00ff8d13a8565dcf286ea3e68cd2d097a067842749990070b15a7d4bf989dd6ddb264132fe77e83c9285c949e77a60d826";
-        let proof = get_sample_proof();
-        let smart_contract_name = EosAccountName::from_str("t11ppntoneos").unwrap();
-        let dictionary = get_sample_eos_eth_token_dictionary();
         let pk = EthPrivateKey::from_slice(
             &hex::decode("e3925cf65ad0baa57cc67eae8fbea03eeeb8464f7ad17b34b28d24f531de71cb").unwrap(),
         )
         .unwrap();
-        let tx_infos = EosOnEthEosTxInfos::from_eos_action_proofs(&[proof], &dictionary, &smart_contract_name).unwrap();
+        let tx_infos = get_sample_eos_on_eth_eos_tx_infos();
         let chain_id = EthChainId::Rinkeby;
         let gas_price = 20_000_000_000;
         let nonce = 0;
@@ -526,5 +596,38 @@ mod tests {
         let result = EosOnEthEosTxInfo::from_eos_action_proof(&proof, &dictionary, &eos_smart_contract).unwrap();
         let expected_recipient = *SAFE_ETH_ADDRESS;
         assert_eq!(result.recipient, expected_recipient);
+    }
+
+    #[test]
+    fn should_subtract_amount_from_eos_on_eth_eos_tx_info() {
+        let info = get_sample_eos_on_eth_eos_tx_info();
+        let subtrahend = U256::from(1337);
+        let mut expected_result = info.clone();
+        expected_result.token_amount = U256::from_dec_str("99999999998663").unwrap();
+        let result = info.subtract_amount(subtrahend).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_fees_from_eos_on_eth_eos_tx_infos() {
+        let dictionary = get_dictionary_for_fee_calculations();
+        let infos = get_sample_eos_on_eth_eos_tx_infos();
+        let result = infos.get_fees(&dictionary).unwrap();
+        let expected_result = vec![(
+            EthAddress::from_slice(&hex::decode("711c50b31ee0b9e8ed4d434819ac20b4fbbb5532").unwrap()),
+            U256::from_dec_str("240000000000").unwrap(),
+        )];
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_subtract_fees_from_eos_on_eth_eos_tx_infos() {
+        let dictionary = get_dictionary_for_fee_calculations();
+        let infos = get_sample_eos_on_eth_eos_tx_infos();
+        let result = infos.subtract_fees(&dictionary).unwrap();
+        let expected_amount = U256::from_dec_str("99760000000000").unwrap();
+        let expected_result =
+            EosOnEthEosTxInfos::new(vec![get_sample_eos_on_eth_eos_tx_info().update_amount(expected_amount)]);
+        assert_eq!(result, expected_result);
     }
 }

@@ -22,6 +22,7 @@ use crate::{
     eos_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
+            account_for_fees::maybe_account_for_fees,
             eth_tx_info::{
                 maybe_filter_out_eth_tx_info_with_value_too_low_in_state,
                 maybe_parse_eth_tx_info_from_canon_block_and_add_to_state,
@@ -59,6 +60,7 @@ pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(maybe_update_eth_linker_hash_and_return_state)
         .and_then(maybe_parse_eth_tx_info_from_canon_block_and_add_to_state)
         .and_then(maybe_filter_out_eth_tx_info_with_value_too_low_in_state)
+        .and_then(maybe_account_for_fees)
         .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
         .and_then(maybe_increment_eos_account_nonce_and_return_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)

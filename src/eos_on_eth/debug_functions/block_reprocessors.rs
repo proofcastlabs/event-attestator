@@ -4,7 +4,7 @@ use crate::{
     chains::{
         eos::{
             add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
-            eos_constants::REDEEM_ACTION_NAME,
+            eos_constants::PEGIN_ACTION_NAME,
             eos_database_transactions::{
                 end_eos_db_transaction_and_return_state,
                 start_eos_db_transaction_and_return_state,
@@ -19,7 +19,7 @@ use crate::{
                 maybe_filter_duplicate_proofs_from_state,
                 maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
                 maybe_filter_out_invalid_action_receipt_digests,
-                maybe_filter_out_proofs_for_accounts_not_in_token_dictionary,
+                maybe_filter_out_proofs_for_wrong_eos_account_name,
                 maybe_filter_out_proofs_with_invalid_merkle_proofs,
                 maybe_filter_out_proofs_with_wrong_action_mroot,
                 maybe_filter_proofs_for_action_name,
@@ -27,45 +27,47 @@ use crate::{
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
         },
         eth::{
-            eth_database_utils::get_eth_chain_id_from_db,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             validate_block_in_state::validate_block_in_state,
             validate_receipts_in_state::validate_receipts_in_state,
         },
     },
+    check_debug_mode::check_debug_mode,
     dictionaries::eos_eth::{
         get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
         get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
-        EosEthTokenDictionary,
     },
-    erc20_on_eos::{
+    eos_on_eth::{
         check_core_is_initialized::{
             check_core_is_initialized_and_return_eos_state,
             check_core_is_initialized_and_return_eth_state,
         },
         eos::{
             account_for_fees::{
-                account_for_fees_in_redeem_infos_in_state,
+                account_for_fees_in_eos_tx_infos_in_state,
                 update_accrued_fees_in_dictionary_and_return_eos_state,
+            },
+            eos_tx_info::{
+                maybe_filter_out_value_too_low_txs_from_state,
+                maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state,
+                maybe_sign_normal_eth_txs_and_add_to_state,
             },
             get_eos_output::get_eos_output,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db_and_return_eos_state,
-            redeem_info::maybe_parse_redeem_infos_and_put_in_state,
-            sign_normal_eth_txs::maybe_sign_normal_eth_txs_and_add_to_state,
         },
         eth::{
             account_for_fees::{
-                account_for_fees_in_peg_in_infos_in_state,
+                account_for_fees_in_eth_tx_infos_in_state,
                 update_accrued_fees_in_dictionary_and_return_eth_state,
             },
-            get_output_json::get_output_json,
-            peg_in_info::{
-                filter_out_zero_value_peg_ins_from_state,
-                filter_submission_material_for_peg_in_events_in_state,
+            eth_tx_info::{
+                maybe_filter_out_eth_tx_info_with_value_too_low_in_state,
                 maybe_sign_eos_txs_and_add_to_eth_state,
-                Erc20OnEosPegInInfos,
+                EosOnEthEthTxInfos,
             },
+            filter_receipts_in_state::filter_receipts_for_eos_on_eth_eth_tx_info_in_state,
+            get_output_json::get_debug_reprocess_output_json,
         },
     },
     traits::DatabaseInterface,
@@ -79,12 +81,13 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
     accrue_fees: bool,
 ) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
+    check_debug_mode()
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(validate_block_in_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(validate_receipts_in_state)
-        .and_then(filter_submission_material_for_peg_in_events_in_state)
+        .and_then(filter_receipts_for_eos_on_eth_eth_tx_info_in_state)
         .and_then(|state| {
             let submission_material = state.get_eth_submission_material()?.clone();
             match submission_material.receipts.is_empty() {
@@ -95,22 +98,18 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                 false => {
                     info!(
                         "✔ {} receipts in block ∴ parsing info...",
-                        submission_material.get_block_number()?
+                        submission_material.get_num_receipts()
                     );
-                    EosEthTokenDictionary::get_from_db(&state.db)
-                        .and_then(|token_dictionary| {
-                            Erc20OnEosPegInInfos::from_submission_material(
-                                &submission_material,
-                                &token_dictionary,
-                                &get_eth_chain_id_from_db(&state.db)?,
-                            )
-                        })
-                        .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
+                    EosOnEthEthTxInfos::from_eth_submission_material(
+                        state.get_eth_submission_material()?,
+                        state.get_eos_eth_token_dictionary()?,
+                    )
+                    .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
                 },
             }
         })
-        .and_then(filter_out_zero_value_peg_ins_from_state)
-        .and_then(account_for_fees_in_peg_in_infos_in_state)
+        .and_then(maybe_filter_out_eth_tx_info_with_value_too_low_in_state)
+        .and_then(account_for_fees_in_eth_tx_infos_in_state)
         .and_then(|state| {
             if accrue_fees {
                 update_accrued_fees_in_dictionary_and_return_eth_state(state)
@@ -120,7 +119,8 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
             }
         })
         .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
-        .and_then(get_output_json)
+        .and_then(get_debug_reprocess_output_json)
+        .map(prepend_debug_output_marker_to_string)
 }
 
 fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
@@ -129,22 +129,25 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
     accrue_fees: bool,
 ) -> Result<String> {
     info!("✔ Debug reprocessing EOS block...");
-    parse_submission_material_and_add_to_state(block_json, EosState::init(db))
+    check_debug_mode()
+        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
-        .and_then(start_eos_db_transaction_and_return_state)
         .and_then(get_processed_global_sequences_and_add_to_state)
+        .and_then(start_eos_db_transaction_and_return_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eos_state)
         .and_then(maybe_add_new_eos_schedule_to_db_and_return_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)
-        .and_then(maybe_filter_out_proofs_for_accounts_not_in_token_dictionary)
         .and_then(maybe_filter_out_action_proof_receipt_mismatches_and_return_state)
+        .and_then(maybe_filter_out_proofs_for_wrong_eos_account_name)
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
-        .and_then(|state| maybe_filter_proofs_for_action_name(state, REDEEM_ACTION_NAME))
-        .and_then(maybe_parse_redeem_infos_and_put_in_state)
-        .and_then(account_for_fees_in_redeem_infos_in_state)
+        .and_then(|state| maybe_filter_proofs_for_action_name(state, PEGIN_ACTION_NAME))
+        .and_then(maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state)
+        .and_then(maybe_filter_out_value_too_low_txs_from_state)
+        .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
+        .and_then(account_for_fees_in_eos_tx_infos_in_state)
         .and_then(|state| {
             if accrue_fees {
                 update_accrued_fees_in_dictionary_and_return_eos_state(state)
@@ -154,7 +157,6 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
             }
         })
         .and_then(maybe_sign_normal_eth_txs_and_add_to_state)
-        .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
         .and_then(maybe_increment_eth_nonce_in_db_and_return_eos_state)
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(get_eos_output)
@@ -184,7 +186,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
     debug_reprocess_eth_block_maybe_accruing_fees(db, block_json_string, false)
 }
 
-/// # Debug Reprocess ETH Block With Fee Accrual For Stale EOS Transaction
+/// # Debug Reprocess ETH Block For Stale EOS Transaction With Fee Accrual
 ///
 /// This function will take a passed in ETH block submission material and run it through the
 /// simplified submission pipeline, signing any EOS signatures for peg-ins it may find in the block

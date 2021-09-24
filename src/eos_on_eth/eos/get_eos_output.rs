@@ -68,7 +68,7 @@ impl EthTxInfo {
             } else {
                 format!("peos-on-eth-eth-{}", nonce)
             },
-            eth_tx_amount: tx_info.amount.to_string(),
+            eth_tx_amount: tx_info.token_amount.to_string(),
             eth_tx_hash: format!("0x{}", tx.get_tx_hash()),
             originating_address: tx_info.from.to_string(),
             host_token_address: format!("0x{}", hex::encode(&tx_info.eth_token_address)),

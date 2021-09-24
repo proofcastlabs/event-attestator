@@ -1,12 +1,14 @@
 #![cfg(test)]
 use std::{fs::read_to_string, path::Path};
 
+use serde_json::json;
+
 use crate::{
     chains::{
         eos::eos_submission_material::EosSubmissionMaterial,
         eth::eth_submission_material::EthSubmissionMaterial,
     },
-    dictionaries::eos_eth::EosEthTokenDictionary,
+    dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     errors::AppError,
     types::Result,
 };
@@ -59,6 +61,23 @@ pub fn get_eth_submission_material_with_two_peg_ins() -> EthSubmissionMaterial {
     .unwrap()
 }
 
+pub fn get_dictionary_for_fee_calculations() -> EosEthTokenDictionary {
+    let dictionary_json_string = json!({
+        "eth_token_decimals": 18,
+        "eos_token_decimals": 4,
+        "eos_symbol": "EOS",
+        "eth_symbol": "PEOS",
+        "eos_address": "eosio.token",
+        "eth_address": "0x711c50b31ee0b9e8ed4d434819ac20b4fbbb5532",
+        "eth_fee_basis_points": 12,
+        "eos_fee_basis_points": 24,
+    })
+    .to_string();
+    EosEthTokenDictionary::new(vec![
+        EosEthTokenDictionaryEntry::from_str(&dictionary_json_string).unwrap()
+    ])
+}
+
 mod tests {
     use super::*;
 
@@ -77,5 +96,10 @@ mod tests {
     fn should_get_eth_submission_material_n() {
         let result = get_eth_submission_material_n(1);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_get_dictionary_for_fee_calculations() {
+        get_dictionary_for_fee_calculations();
     }
 }

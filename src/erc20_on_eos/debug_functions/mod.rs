@@ -169,10 +169,10 @@ pub fn debug_remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
 /// ### BEWARE:
 /// This function outputs a signed transaction which if NOT broadcast will result in the enclave no
 /// longer working.  Use with extreme caution and only if you know exactly what you are doing!
-pub fn debug_get_erc20_vault_migration_tx<D>(db: D, new_eos_erc20_smart_contract_address_string: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_get_erc20_vault_migration_tx<D: DatabaseInterface>(
+    db: D,
+    new_eos_erc20_smart_contract_address_string: &str,
+) -> Result<String> {
     db.start_transaction()?;
     info!("✔ Debug getting migration transaction...");
     let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
@@ -220,10 +220,7 @@ where
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
 /// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
 /// and only if you know exactly what you are doing and why!
-pub fn debug_get_add_supported_token_tx<D>(db: D, eth_address_str: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
     info!("✔ Debug getting `addSupportedToken` contract tx...");
     db.start_transaction()?;
     let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
@@ -264,10 +261,7 @@ where
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
 /// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
 /// and only if you know exactly what you are doing and why!
-pub fn debug_get_remove_supported_token_tx<D>(db: D, eth_address_str: &str) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
     info!("✔ Debug getting `removeSupportedToken` contract tx...");
     db.start_transaction()?;
     let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
@@ -302,14 +296,14 @@ pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<
     check_core_is_initialized(db).and_then(|_| get_processed_actions_list(db))
 }
 
-/// Debug Set ETH Gas Price
+/// # Debug Set ETH Gas Price
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
 pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
     debug_set_eth_gas_price_in_db(&db, gas_price)
 }
 
-/// Debug Set ETH Fee Basis Points
+/// # Debug Set ETH Fee Basis Points
 ///
 /// This function takes an address and a new fee param. It gets the `EosEthTokenDictionary` from
 /// the database then finds the entry pertaining to the address in question and if successful,
@@ -332,7 +326,7 @@ pub fn debug_set_eth_fee_basis_points<D: DatabaseInterface>(db: D, address: &str
         .map(prepend_debug_output_marker_to_string)
 }
 
-/// Debug Set EOS Fee Basis Points
+/// # Debug Set EOS Fee Basis Points
 ///
 /// This function takes an address and a new fee param. It gets the `EosEthTokenDictionary` from
 /// the database then finds the entry pertaining to the address in question and if successful,
@@ -355,7 +349,7 @@ pub fn debug_set_eos_fee_basis_points<D: DatabaseInterface>(db: D, address: &str
         .map(prepend_debug_output_marker_to_string)
 }
 
-/// Debug Withdraw Fees
+/// # Debug Withdraw Fees
 ///
 /// This function takes an address and uses it to search through the token dictionary to find a
 /// corresponding entry. Once found, that entry's accrued fees are zeroed, a timestamp set in that
