@@ -14,7 +14,7 @@ use crate::{
                 ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
                 ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
             },
-            eth_database_utils::get_eth_canon_block_from_db,
+            eth_database_utils::{get_erc777_contract_address_from_db, get_eth_canon_block_from_db},
             eth_log::EthLog,
             eth_receipt::EthReceipt,
             eth_state::EthState,
@@ -110,19 +110,25 @@ impl BtcOnEthRedeemInfos {
         }
     }
 
-    fn log_is_btc_on_eth_redeem(log: &EthLog) -> Result<bool> {
-        Ok(log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
-            || log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA))
+    fn log_is_btc_on_eth_redeem(log: &EthLog, erc777_smart_contract_address: &EthAddress) -> Result<bool> {
+        Ok(log.is_from_address(erc777_smart_contract_address)
+            && (log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
+                || log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA)))
     }
 
-    fn from_eth_receipt(receipt: &EthReceipt) -> Result<Self> {
+    fn from_eth_receipt(receipt: &EthReceipt, erc777_smart_contract_address: &EthAddress) -> Result<Self> {
         info!("✔ Getting redeem `btc_on_eth` redeem infos from receipt...");
         Ok(Self::new(
             receipt
                 .logs
                 .0
                 .iter()
-                .filter(|log| matches!(BtcOnEthRedeemInfos::log_is_btc_on_eth_redeem(log), Ok(true)))
+                .filter(|log| {
+                    matches!(
+                        BtcOnEthRedeemInfos::log_is_btc_on_eth_redeem(log, erc777_smart_contract_address),
+                        Ok(true)
+                    )
+                })
                 .map(|log| {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
                     Ok(BtcOnEthRedeemInfo {
@@ -138,13 +144,16 @@ impl BtcOnEthRedeemInfos {
         ))
     }
 
-    pub fn from_eth_submission_material(submission_material: &EthSubmissionMaterial) -> Result<Self> {
+    pub fn from_eth_submission_material(
+        submission_material: &EthSubmissionMaterial,
+        erc777_smart_contract_address: &EthAddress,
+    ) -> Result<Self> {
         info!("✔ Getting `btc-on-eth` redeem infos from ETH submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Ok(Self::from_eth_receipt(receipt)?.0))
+                .map(|receipt| Ok(Self::from_eth_receipt(receipt, erc777_smart_contract_address)?.0))
                 .collect::<Result<Vec<Vec<BtcOnEthRedeemInfo>>>>()?
                 .concat(),
         ))
@@ -161,8 +170,11 @@ pub fn maybe_parse_redeem_infos_and_add_to_state<D: DatabaseInterface>(state: Et
             },
             false => {
                 info!("✔ Receipts in canon block ∴ parsing infos...");
-                BtcOnEthRedeemInfos::from_eth_submission_material(&submission_material)
-                    .and_then(|infos| state.add_btc_on_eth_redeem_infos(infos))
+                BtcOnEthRedeemInfos::from_eth_submission_material(
+                    &submission_material,
+                    &get_erc777_contract_address_from_db(&state.db)?,
+                )
+                .and_then(|infos| state.add_btc_on_eth_redeem_infos(infos))
             },
         }
     })
@@ -176,6 +188,7 @@ mod tests {
         chains::eth::{
             eth_submission_material::EthSubmissionMaterial,
             eth_test_utils::{
+                get_eth_block_with_events_from_wrong_address,
                 get_sample_eth_submission_material_n,
                 get_sample_log_with_erc777_redeem,
                 get_sample_receipt_with_erc777_redeem,
@@ -213,28 +226,46 @@ mod tests {
 
     #[test]
     fn should_parse_btc_on_eth_redeem_params_from_receipt() {
+        let erc777_smart_contract_address =
+            EthAddress::from_slice(&hex::decode("f5a8b686325d79b9239f0a29925503ade0d0cb96").unwrap());
         let expected_num_results = 1;
-        let result = BtcOnEthRedeemInfos::from_eth_receipt(&get_sample_receipt_with_redeem()).unwrap();
+        let result =
+            BtcOnEthRedeemInfos::from_eth_receipt(&get_sample_receipt_with_redeem(), &erc777_smart_contract_address)
+                .unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result[0], get_expected_btc_on_eth_redeem_info());
     }
 
     #[test]
     fn redeem_log_should_be_redeem() {
-        let result = BtcOnEthRedeemInfos::log_is_btc_on_eth_redeem(&get_sample_log_with_erc777_redeem()).unwrap();
+        let erc777_smart_contract_address =
+            EthAddress::from_slice(&hex::decode("f5a8b686325d79b9239f0a29925503ade0d0cb96").unwrap());
+        let log = get_sample_log_with_erc777_redeem();
+        let result = BtcOnEthRedeemInfos::log_is_btc_on_eth_redeem(&log, &erc777_smart_contract_address).unwrap();
         assert!(result);
     }
 
     #[test]
     fn non_redeem_log_should_not_be_redeem() {
-        let result =
-            BtcOnEthRedeemInfos::log_is_btc_on_eth_redeem(&get_sample_receipt_with_erc777_redeem().logs.0[1]).unwrap();
+        let erc777_smart_contract_address =
+            EthAddress::from_slice(&hex::decode("5228a22e72ccc52d415ecfd199f99d0665e7733b").unwrap());
+        let result = BtcOnEthRedeemInfos::log_is_btc_on_eth_redeem(
+            &get_sample_receipt_with_erc777_redeem().logs.0[1],
+            &erc777_smart_contract_address,
+        )
+        .unwrap();
         assert!(!result);
     }
 
     #[test]
     fn should_get_btc_on_eth_redeem_infos_from_eth_submission_material() {
-        let result = BtcOnEthRedeemInfos::from_eth_submission_material(&get_sample_block_with_redeem()).unwrap();
+        let erc777_smart_contract_address =
+            EthAddress::from_slice(&hex::decode("f5a8b686325d79b9239f0a29925503ade0d0cb96").unwrap());
+        let result = BtcOnEthRedeemInfos::from_eth_submission_material(
+            &get_sample_block_with_redeem(),
+            &erc777_smart_contract_address,
+        )
+        .unwrap();
         let expected_result = BtcOnEthRedeemInfo {
             amount_in_satoshis: 666,
             from: EthAddress::from_str("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap(),
@@ -249,13 +280,17 @@ mod tests {
 
     #[test]
     fn new_erc777_contract_log_should_be_btc_on_eth_redeem() {
+        let erc777_smart_contract_address =
+            EthAddress::from_slice(&hex::decode("bc9cd93780d171f972f14756f9883a167d49f87a").unwrap());
         let log = get_sample_eth_submission_material_n(10).unwrap().receipts[0].logs[2].clone();
-        let result = BtcOnEthRedeemInfos::log_is_btc_on_eth_redeem(&log).unwrap();
+        let result = BtcOnEthRedeemInfos::log_is_btc_on_eth_redeem(&log, &erc777_smart_contract_address).unwrap();
         assert!(result);
     }
 
     #[test]
     fn should_get_redeem_info_from_new_style_erc777_contract() {
+        let erc777_smart_contract_address =
+            EthAddress::from_slice(&hex::decode("bc9cd93780d171f972f14756f9883a167d49f87a").unwrap());
         let submission_material = get_sample_eth_submission_material_n(10).unwrap();
         let expected_num_results = 1;
         let expected_result = BtcOnEthRedeemInfo {
@@ -266,7 +301,9 @@ mod tests {
                 &hex::decode("01920b62cd2e77204b2fa59932f9d6dd54fd43c99095aee808b700ed2b6ee9cf").unwrap(),
             ),
         };
-        let results = BtcOnEthRedeemInfos::from_eth_submission_material(&submission_material).unwrap();
+        let results =
+            BtcOnEthRedeemInfos::from_eth_submission_material(&submission_material, &erc777_smart_contract_address)
+                .unwrap();
         let result = results[0].clone();
         assert_eq!(results.len(), expected_num_results);
         assert_eq!(result, expected_result)
@@ -324,5 +361,19 @@ mod tests {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         }
+    }
+
+    #[test]
+    fn should_not_parse_events_from_wrong_eth_contract() {
+        let erc777_smart_contract_address =
+            EthAddress::from_slice(&hex::decode("5228a22e72ccc52d415ecfd199f99d0665e7733b").unwrap());
+        let submission_material = get_eth_block_with_events_from_wrong_address();
+        let redeem_infos =
+            BtcOnEthRedeemInfos::from_eth_submission_material(&submission_material, &erc777_smart_contract_address)
+                .unwrap();
+        let result = redeem_infos.len();
+        let expected_result = 1;
+        assert_eq!(result, expected_result);
+        assert_eq!(redeem_infos[0].amount_in_satoshis, 0);
     }
 }
