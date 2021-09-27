@@ -27,6 +27,7 @@ use crate::{
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
         },
         eth::{
+            eth_database_utils::get_eth_chain_id_from_db,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             validate_block_in_state::validate_block_in_state,
@@ -103,6 +104,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                     EosOnEthEthTxInfos::from_eth_submission_material(
                         state.get_eth_submission_material()?,
                         state.get_eos_eth_token_dictionary()?,
+                        &get_eth_chain_id_from_db(&state.db)?,
                     )
                     .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
                 },
