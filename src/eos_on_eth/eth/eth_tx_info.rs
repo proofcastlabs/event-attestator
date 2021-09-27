@@ -41,7 +41,7 @@ use crate::{
     metadata::{
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
-        metadata_traits::{ToMetadata, ToMetadataChainId},
+        metadata_traits::ToMetadata,
         Metadata,
     },
     traits::DatabaseInterface,
@@ -314,11 +314,18 @@ impl EosOnEthEthTxInfo {
         timestamp: u32,
     ) -> Result<EosSignedTransaction> {
         info!("✔ Signing eos tx...");
+        let metadata = if self.user_data.is_empty() {
+            Ok(vec![])
+        } else {
+            info!("✔ Wrapping `user_data` in metadata for `EosOnEthEthTxInfo`...");
+            self.to_metadata_bytes()
+        }?;
         debug!(
-            "smart-contract: {}\namount: {}\nchain ID: {}",
+            "smart-contract: {}\namount: {}\nchain ID: {}\nmetadata: 0x{}",
             &eos_smart_contract,
             &amount,
-            &chain_id.to_hex()
+            &chain_id.to_hex(),
+            hex::encode(&metadata),
         );
         Self::get_eos_ptoken_peg_out_action(
             &eos_smart_contract.to_string(),
@@ -327,7 +334,7 @@ impl EosOnEthEthTxInfo {
             &self.eos_token_address,
             &self.eos_asset_amount,
             &self.eos_address,
-            &[], // NOTE: Empty metadata for now.
+            &metadata,
         )
         .map(|action| EosTransaction::new(timestamp, ref_block_num, ref_block_prefix, vec![action]))
         .and_then(|ref unsigned_tx| {
