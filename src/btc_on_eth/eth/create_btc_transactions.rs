@@ -37,7 +37,14 @@ fn to_btc_txs_whilst_extracting_change_outputs<D: DatabaseInterface>(
     redeem_infos
         .filter_out_any_whose_value_is_too_low()
         .iter()
-        .map(|redeem_info| redeem_info.to_btc_tx(db, fee, btc_address, btc_private_key))
+        .map(|redeem_info| {
+            debug!("Signing BTC tx...");
+            debug!("    To: {}", redeem_info.recipient);
+            debug!("  From: {}", redeem_info.from);
+            debug!("Amount: {} satoshis", redeem_info.amount_in_satoshis);
+            debug!("   Fee: {} sats/byte", fee);
+            redeem_info.to_btc_tx(db, fee, btc_address, btc_private_key)
+        })
         .map(|tx| extract_change_utxo_from_btc_tx_and_save_in_db(db, btc_address, tx?))
         .collect::<Result<Vec<_>>>()
 }
