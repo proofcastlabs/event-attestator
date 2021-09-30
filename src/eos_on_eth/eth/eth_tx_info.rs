@@ -21,12 +21,13 @@ use crate::{
             },
         },
         eth::{
+            eth_chain_id::EthChainId,
             eth_contracts::erc777::{
                 Erc777RedeemEvent,
                 ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
                 ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
             },
-            eth_database_utils::get_eth_canon_block_from_db,
+            eth_database_utils::{get_eth_canon_block_from_db, get_eth_chain_id_from_db},
             eth_log::EthLog,
             eth_state::EthState,
             eth_submission_material::EthSubmissionMaterial,
@@ -37,8 +38,14 @@ use crate::{
         constants::MINIMUM_WEI_AMOUNT,
         fees_calculator::{FeeCalculator, FeesCalculator},
     },
+    metadata::{
+        metadata_origin_address::MetadataOriginAddress,
+        metadata_protocol_id::MetadataProtocolId,
+        metadata_traits::ToMetadata,
+        Metadata,
+    },
     traits::DatabaseInterface,
-    types::{Byte, Result},
+    types::{Byte, Bytes, Result},
 };
 
 const ZERO_ETH_ASSET_STR: &str = "0.0000 EOS";
@@ -77,18 +84,22 @@ impl EosOnEthEthTxInfos {
     pub fn from_eth_submission_material(
         material: &EthSubmissionMaterial,
         token_dictionary: &EosEthTokenDictionary,
+        origin_chain_id: &EthChainId,
     ) -> Result<Self> {
-        Self::from_eth_submission_material_without_filtering(material, token_dictionary).map(|tx_infos| {
-            debug!("Num tx infos before filtering: {}", tx_infos.len());
-            let filtered = tx_infos.filter_out_those_with_zero_eos_asset_amount(token_dictionary);
-            debug!("Num tx infos after filtering: {}", filtered.len());
-            filtered
-        })
+        Self::from_eth_submission_material_without_filtering(material, token_dictionary, origin_chain_id).map(
+            |tx_infos| {
+                debug!("Num tx infos before filtering: {}", tx_infos.len());
+                let filtered = tx_infos.filter_out_those_with_zero_eos_asset_amount(token_dictionary);
+                debug!("Num tx infos after filtering: {}", filtered.len());
+                filtered
+            },
+        )
     }
 
     fn from_eth_submission_material_without_filtering(
         material: &EthSubmissionMaterial,
         token_dictionary: &EosEthTokenDictionary,
+        origin_chain_id: &EthChainId,
     ) -> Result<Self> {
         let eth_contract_addresses = token_dictionary.to_eth_addresses();
         debug!("Addresses from dict: {:?}", eth_contract_addresses);
@@ -107,7 +118,14 @@ impl EosOnEthEthTxInfos {
                             *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
                         ])
                         .iter()
-                        .map(|log| EosOnEthEthTxInfo::from_eth_log(log, &receipt.transaction_hash, token_dictionary))
+                        .map(|log| {
+                            EosOnEthEthTxInfo::from_eth_log(
+                                log,
+                                &receipt.transaction_hash,
+                                token_dictionary,
+                                origin_chain_id,
+                            )
+                        })
                         .collect::<Result<Vec<EosOnEthEthTxInfo>>>()
                 })
                 .collect::<Result<Vec<Vec<EosOnEthEthTxInfo>>>>()?
@@ -184,13 +202,31 @@ impl EosOnEthEthTxInfos {
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor)]
 pub struct EosOnEthEthTxInfo {
+    pub user_data: Bytes,
     pub token_amount: U256,
     pub eos_address: String,
-    pub eos_token_address: String,
-    pub eos_asset_amount: String,
     pub token_sender: EthAddress,
-    pub eth_token_address: EthAddress,
+    pub eos_asset_amount: String,
+    pub eos_token_address: String,
+    pub origin_chain_id: EthChainId,
     pub originating_tx_hash: EthHash,
+    pub eth_token_address: EthAddress,
+}
+
+impl ToMetadata for EosOnEthEthTxInfo {
+    fn to_metadata(&self) -> Result<Metadata> {
+        Ok(Metadata::new(
+            &self.user_data,
+            &MetadataOriginAddress::new_from_eth_address(
+                &self.token_sender,
+                &self.origin_chain_id.to_metadata_chain_id(),
+            )?,
+        ))
+    }
+
+    fn to_metadata_bytes(&self) -> Result<Bytes> {
+        self.to_metadata()?.to_bytes_for_protocol(&MetadataProtocolId::Eos)
+    }
 }
 
 impl FeeCalculator for EosOnEthEthTxInfo {
@@ -223,14 +259,21 @@ impl FeeCalculator for EosOnEthEthTxInfo {
 }
 
 impl EosOnEthEthTxInfo {
-    pub fn from_eth_log(log: &EthLog, tx_hash: &EthHash, token_dictionary: &EosEthTokenDictionary) -> Result<Self> {
+    pub fn from_eth_log(
+        log: &EthLog,
+        tx_hash: &EthHash,
+        token_dictionary: &EosEthTokenDictionary,
+        origin_chain_id: &EthChainId,
+    ) -> Result<Self> {
         info!("✔ Parsing `EosOnEthEthTxInfo` from ETH log...");
         Erc777RedeemEvent::from_eth_log(log).and_then(|params| {
             Ok(Self {
                 token_amount: params.value,
+                user_data: params.user_data,
                 originating_tx_hash: *tx_hash,
                 token_sender: params.redeemer,
                 eth_token_address: log.address,
+                origin_chain_id: origin_chain_id.clone(),
                 eos_token_address: token_dictionary.get_eos_account_name_from_eth_token_address(&log.address)?,
                 eos_asset_amount: token_dictionary.convert_u256_to_eos_asset_string(&log.address, &params.value)?,
                 eos_address: parse_eos_account_name_or_default_to_safe_address(&params.underlying_asset_recipient)?
@@ -271,11 +314,18 @@ impl EosOnEthEthTxInfo {
         timestamp: u32,
     ) -> Result<EosSignedTransaction> {
         info!("✔ Signing eos tx...");
+        let metadata = if self.user_data.is_empty() {
+            Ok(vec![])
+        } else {
+            info!("✔ Wrapping `user_data` in metadata for `EosOnEthEthTxInfo`...");
+            self.to_metadata_bytes()
+        }?;
         debug!(
-            "smart-contract: {}\namount: {}\nchain ID: {}",
+            "smart-contract: {}\namount: {}\nchain ID: {}\nmetadata: 0x{}",
             &eos_smart_contract,
             &amount,
-            &chain_id.to_hex()
+            &chain_id.to_hex(),
+            hex::encode(&metadata),
         );
         Self::get_eos_ptoken_peg_out_action(
             &eos_smart_contract.to_string(),
@@ -284,7 +334,7 @@ impl EosOnEthEthTxInfo {
             &self.eos_token_address,
             &self.eos_asset_amount,
             &self.eos_address,
-            &[], // NOTE: Empty metadata for now.
+            &metadata,
         )
         .map(|action| EosTransaction::new(timestamp, ref_block_num, ref_block_prefix, vec![action]))
         .and_then(|ref unsigned_tx| {
@@ -307,8 +357,12 @@ pub fn maybe_parse_eth_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
                 "✔ {} receipts in canon block ∴ parsing ETH tx info...",
                 material.receipts.len()
             );
-            EosOnEthEthTxInfos::from_eth_submission_material(&material, state.get_eos_eth_token_dictionary()?)
-                .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
+            EosOnEthEthTxInfos::from_eth_submission_material(
+                &material,
+                state.get_eos_eth_token_dictionary()?,
+                &get_eth_chain_id_from_db(&state.db)?,
+            )
+            .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
         },
     })
 }
@@ -369,6 +423,7 @@ mod tests {
         EosOnEthEthTxInfos::from_eth_submission_material(
             &get_eth_submission_material_n(1).unwrap(),
             &get_sample_eos_eth_token_dictionary(),
+            &EthChainId::Rinkeby,
         )
         .unwrap()
     }
@@ -427,9 +482,13 @@ mod tests {
         let submission_material = get_eth_submission_material_n(2).unwrap();
         let expected_result_before = 1;
         let expected_result_after = 0;
-        let result_before =
-            EosOnEthEthTxInfos::from_eth_submission_material_without_filtering(&submission_material, &dictionary)
-                .unwrap();
+        let origin_chain_id = EthChainId::Rinkeby;
+        let result_before = EosOnEthEthTxInfos::from_eth_submission_material_without_filtering(
+            &submission_material,
+            &dictionary,
+            &origin_chain_id,
+        )
+        .unwrap();
         assert_eq!(result_before.len(), expected_result_before);
         assert_eq!(result_before[0].eos_asset_amount, "0.0000 EOS");
         let result_after = result_before.filter_out_those_with_zero_eos_asset_amount(&dictionary);
@@ -444,8 +503,10 @@ mod tests {
                 EosEthTokenDictionaryEntry::from_str(&token_dictionary_entry_str).unwrap()
             ]);
         let submission_material = get_eth_submission_material_with_bad_eos_account_name();
+        let origin_chain_id = EthChainId::Rinkeby;
         let tx_infos =
-            EosOnEthEthTxInfos::from_eth_submission_material(&submission_material, &token_dictionary).unwrap();
+            EosOnEthEthTxInfos::from_eth_submission_material(&submission_material, &token_dictionary, &origin_chain_id)
+                .unwrap();
         let ref_block_num = 1;
         let ref_block_prefix = 2;
         let chain_id = EosChainId::EosMainnet;
@@ -459,7 +520,10 @@ mod tests {
     fn same_param_tx_infos_should_not_create_same_signatures() {
         let submission_material = get_eth_submission_material_with_two_peg_ins();
         let dictionary = get_sample_eos_eth_token_dictionary();
-        let tx_infos = EosOnEthEthTxInfos::from_eth_submission_material(&submission_material, &dictionary).unwrap();
+        let origin_chain_id = EthChainId::Rinkeby;
+        let tx_infos =
+            EosOnEthEthTxInfos::from_eth_submission_material(&submission_material, &dictionary, &origin_chain_id)
+                .unwrap();
         let ref_block_num = 1;
         let ref_block_prefix = 2;
         let chain_id = EosChainId::EosMainnet;
@@ -502,6 +566,15 @@ mod tests {
         let expected_amount = U256::from_dec_str("99880000000000").unwrap();
         let expected_result =
             EosOnEthEthTxInfos::new(vec![get_sample_eos_on_eth_eth_tx_info().update_amount(expected_amount)]);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_metadata_bytes_from_eos_on_eth_eth_tx_info() {
+        let info = get_sample_eos_on_eth_eth_tx_info();
+        let result = hex::encode(info.to_metadata_bytes().unwrap());
+        let expected_result =
+            "01000400f343682a307866656466653236313665623336363163623866656432373832663566306363393164353964636163";
         assert_eq!(result, expected_result);
     }
 }
