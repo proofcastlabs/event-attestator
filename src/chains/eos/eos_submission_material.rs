@@ -43,10 +43,7 @@ impl EosSubmissionMaterial {
     fn parse_eos_action_proof_jsons_to_action_proofs(
         action_proof_jsons: &[EosActionProofJson],
     ) -> Result<EosActionProofs> {
-        action_proof_jsons
-            .iter()
-            .map(|json| EosActionProof::from_json(json))
-            .collect()
+        action_proof_jsons.iter().map(EosActionProof::from_json).collect()
     }
 
     fn parse_interim_block_ids_from_json(interim_block_ids_json: &[String]) -> Result<Checksum256s> {

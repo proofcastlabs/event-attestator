@@ -107,7 +107,7 @@ impl EthLogs {
         Ok(Self(
             json.logs
                 .iter()
-                .map(|log_json| EthLog::from_json(log_json))
+                .map(EthLog::from_json)
                 .collect::<Result<Vec<EthLog>>>()?,
         ))
     }

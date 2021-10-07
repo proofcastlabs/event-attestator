@@ -47,7 +47,7 @@ impl EosKnownSchedulesJsons {
             scheds
                 .0
                 .iter()
-                .map(|sched| EosKnownScheduleJson::from_schedule(sched))
+                .map(EosKnownScheduleJson::from_schedule)
                 .collect::<Vec<EosKnownScheduleJson>>(),
         )
     }
