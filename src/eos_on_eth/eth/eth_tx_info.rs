@@ -71,7 +71,7 @@ impl FeesCalculator for EosOnEthEthTxInfos {
                             debug!("Not subtracting fee because `fee` is 0!");
                             Ok(info.clone())
                         } else {
-                            info.subtract_amount(*fee)
+                            info.subtract_amount(*fee, dictionary)
                         }
                     })
                     .collect::<Result<_>>()?,
@@ -251,10 +251,12 @@ impl FeeCalculator for EosOnEthEthTxInfo {
         Ok(EosAccountName::from_str(&self.eos_token_address)?)
     }
 
-    fn update_amount(&self, new_amount: U256) -> Self {
+    fn update_amount(&self, new_amount: U256, dictionary: &EosEthTokenDictionary) -> Result<Self> {
         let mut new_self = self.clone();
         new_self.token_amount = new_amount;
-        new_self
+        new_self.eos_asset_amount =
+            dictionary.convert_u256_to_eos_asset_string(&self.eth_token_address, &new_amount)?;
+        Ok(new_self)
     }
 }
 
@@ -540,9 +542,15 @@ mod tests {
     fn should_subtract_amount_from_eos_on_eth_eth_tx_info() {
         let info = get_sample_eos_on_eth_eth_tx_info();
         let subtrahend = U256::from(1337);
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let expected_eos_asset_amount = "0.0000 EOS".to_string();
+        let expected_token_amount = U256::from_dec_str("99999999998663").unwrap();
+        assert!(info.token_amount > expected_token_amount);
+        assert_ne!(info.eos_asset_amount, expected_eos_asset_amount);
         let mut expected_result = info.clone();
-        expected_result.token_amount = U256::from_dec_str("99999999998663").unwrap();
-        let result = info.subtract_amount(subtrahend).unwrap();
+        expected_result.token_amount = expected_token_amount;
+        expected_result.eos_asset_amount = expected_eos_asset_amount;
+        let result = info.subtract_amount(subtrahend, &dictionary).unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -564,8 +572,9 @@ mod tests {
         let infos = get_sample_eos_on_eth_eth_tx_infos();
         let result = infos.subtract_fees(&dictionary).unwrap();
         let expected_amount = U256::from_dec_str("99880000000000").unwrap();
-        let expected_result =
-            EosOnEthEthTxInfos::new(vec![get_sample_eos_on_eth_eth_tx_info().update_amount(expected_amount)]);
+        let expected_result = EosOnEthEthTxInfos::new(vec![get_sample_eos_on_eth_eth_tx_info()
+            .update_amount(expected_amount, &dictionary)
+            .unwrap()]);
         assert_eq!(result, expected_result);
     }
 
