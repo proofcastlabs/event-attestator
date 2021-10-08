@@ -3,14 +3,12 @@ use std::fmt;
 use ethereum_types::H256 as KeccakHash;
 use strum_macros::EnumIter;
 
-#[cfg(test)]
-use crate::types::Byte;
 use crate::{
     chains::{btc::btc_chain_id::BtcChainId, eos::eos_chain_id::EosChainId, eth::eth_chain_id::EthChainId},
     constants::THIRTY_TWO_ZERO_BYTES,
     metadata::metadata_protocol_id::MetadataProtocolId,
     traits::ChainId,
-    types::{Bytes, Result},
+    types::{Byte, Bytes, Result},
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter)]
@@ -102,7 +100,6 @@ impl MetadataChainId {
         .concat())
     }
 
-    #[cfg(test)]
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         let maybe_self = Self::get_all()
             .iter()
@@ -119,9 +116,7 @@ impl MetadataChainId {
             .filter(Option::is_some)
             .collect::<Vec<Option<Self>>>();
         match maybe_self.len() {
-            1 => maybe_self[0]
-                .clone()
-                .ok_or_else(|| "Failed to unwrap `maybe_self` from option!".into()),
+            1 => maybe_self[0].ok_or_else(|| "Failed to unwrap `maybe_self` from option!".into()),
             0 => Err(format!("Unrecognized bytes for `MetadataChainId`: 0x{}", hex::encode(bytes)).into()),
             _ => Err("`MetadataChainId` collision! > 1 chain ID has the same 1st 3 bytes when hashed!".into()),
         }
@@ -132,7 +127,6 @@ impl MetadataChainId {
         Self::get_all().iter().for_each(|id| println!("{}", id))
     }
 
-    #[cfg(test)]
     fn get_all() -> Vec<Self> {
         use strum::IntoEnumIterator;
         Self::iter().collect()

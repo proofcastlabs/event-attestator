@@ -281,6 +281,7 @@ pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
         let eth_address_and_nonce_hash = "98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e".to_string();
         let version = Some("0".to_string());
         let user_data = vec![];
+        let chain_id_hex = None;
         let deposit_info_json = DepositAddressInfoJson::new(
             nonce,
             eth_address,
@@ -288,6 +289,7 @@ pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
             eth_address_and_nonce_hash,
             version,
             &user_data,
+            chain_id_hex,
         )?;
         Ok(BtcUtxoAndValue::new(
             tx.output[output_index].value,
@@ -390,6 +392,7 @@ pub fn get_sample_p2sh_utxo_and_value_2() -> Result<BtcUtxoAndValue> {
         let eth_address_and_nonce_hash = "1729dce0b4e54e39610a95376a8bc96335fd93da68ae6aa27a62d4c282fb1ad3".to_string();
         let version = Some("1".to_string());
         let user_data = vec![];
+        let chain_id_hex = None;
         let deposit_info_json = DepositAddressInfoJson::new(
             nonce,
             eth_address,
@@ -397,6 +400,7 @@ pub fn get_sample_p2sh_utxo_and_value_2() -> Result<BtcUtxoAndValue> {
             eth_address_and_nonce_hash,
             version,
             &user_data,
+            chain_id_hex,
         )?;
         Ok(BtcUtxoAndValue::new(
             tx.output[output_index].value,
@@ -417,6 +421,7 @@ pub fn get_sample_p2sh_utxo_and_value_3() -> Result<BtcUtxoAndValue> {
         let eth_address_and_nonce_hash = "d11539e07a521c78c20381c98cc546e3ccdd8a5c97f1cffe83ae5537f61a6e39".to_string();
         let version = Some("1".to_string());
         let user_data = vec![];
+        let chain_id_hex = None;
         let deposit_info_json = DepositAddressInfoJson::new(
             nonce,
             eth_address,
@@ -424,6 +429,7 @@ pub fn get_sample_p2sh_utxo_and_value_3() -> Result<BtcUtxoAndValue> {
             eth_address_and_nonce_hash,
             version,
             &user_data,
+            chain_id_hex,
         )
         .unwrap();
         BtcUtxoAndValue::new(
