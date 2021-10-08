@@ -387,7 +387,7 @@ mod tests {
 
     fn get_sample_testnet_deposit_info_json_string_v2() -> String {
         format!(
-            "{{\"address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"address_and_nonce_hash\":\"0x693777b55c79e66153181b67faa43662be576e5896003444d0479fe9b7a23d38\",\"btc_deposit_address\":\"2NFHg6i6R5N29MB7B1oK7PsLZhqRg456rWD\",\"user_data\":\"0x404092\",\"nonce\":1337,\"public_key\":\"{}\",\"version\":\"2\"}}",
+            "{{\"address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"address_and_nonce_hash\":\"0xecb9b83f750c30c63d28cac04203d30d863a2f5adc09148993d1072ca9bba96b\",\"btc_deposit_address\":\"2Mw2wsAcVuPMWD6vxSuEXc2HdUrpxaakYs6\",\"chain_id\":\"EthereumMainnet\",\"chain_id_hex\":\"0x005fe7f9\",\"nonce\":1633690512,\"public_key\":\"{}\",\"tool_version\":\"1.8.0\",\"user_data\":\"0xd3caffc0ff33\",\"version\":\"2\"}}",
             get_sample_testnet_pub_key_hex(),
         )
     }
@@ -408,9 +408,8 @@ mod tests {
 
     fn get_sample_mainnet_deposit_info_json_string_v2() -> String {
         format!(
-            "{{\"address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"address_and_nonce_hash\":\"0x693777b55c79e66153181b67faa43662be576e5896003444d0479fe9b7a23d38\",\"btc_deposit_address\":\"3DHhv1yvKG7W8xPWbDFCGCtFFGiJnfE8kK\",\"user_data\":\"0x404092\",\"nonce\":1337,\"public_key\":\"{}\",\"tool_version\":\"1.6.0\",\"version\":\"2\"}}",
+            "{{\"address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"address_and_nonce_hash\":\"0xf8270f5b9b8b0b1434d73e8c7541bc73969dec9801ec8b72f9d205c989a458b3\",\"btc_deposit_address\":\"3H8hzBvP4jEwxFToAZhaKikVBr7zADj8oe\",\"chain_id\":\"EthereumMainnet\",\"chain_id_hex\":\"0x005fe7f9\",\"nonce\":1633690453,\"public_key\":\"{}\",\"tool_version\":\"1.8.0\",\"user_data\":\"0xd3caffc0ff33\",\"version\":\"2\"}}",
             get_sample_mainnet_pub_key_hex(),
-
         )
     }
 
