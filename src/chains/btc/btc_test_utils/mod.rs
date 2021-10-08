@@ -289,7 +289,7 @@ pub fn get_sample_p2sh_utxo_and_value() -> Result<BtcUtxoAndValue> {
             eth_address_and_nonce_hash,
             version,
             &user_data,
-            chain_id_hex
+            chain_id_hex,
         )?;
         Ok(BtcUtxoAndValue::new(
             tx.output[output_index].value,

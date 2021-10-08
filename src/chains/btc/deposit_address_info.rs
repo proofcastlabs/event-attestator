@@ -15,10 +15,10 @@ use crate::{
         btc_types::BtcPubKeySlice,
         btc_utils::{convert_hex_to_sha256_hash, get_p2sh_redeem_script_sig},
     },
+    metadata::metadata_chain_id::MetadataChainId,
     traits::DatabaseInterface,
-    utils::strip_hex_prefix,
-    types::{Bytes, Result},
-    utils::decode_hex_with_err_msg,
+    types::{Byte, Bytes, Result},
+    utils::{decode_hex_with_err_msg, strip_hex_prefix},
 };
 
 pub type DepositInfoHashMap = HashMap<BtcAddress, DepositAddressInfo>;
@@ -103,9 +103,6 @@ impl DepositAddressInfoJson {
 }
 
 #[cfg(test)]
-use crate::types::Byte;
-
-#[cfg(test)]
 impl DepositAddressInfoJson {
     pub fn new(
         nonce: u64,
@@ -124,7 +121,7 @@ impl DepositAddressInfoJson {
                 user_data: None,
                 btc_deposit_address,
                 eth_address: Some(address),
-                chain_id_hex: chain_id_hex,
+                chain_id_hex,
                 address_and_nonce_hash: None,
                 eth_address_and_nonce_hash: Some(address_and_nonce_hash),
             }),
@@ -135,7 +132,7 @@ impl DepositAddressInfoJson {
                 eth_address: None,
                 btc_deposit_address,
                 address: Some(address),
-                chain_id_hex: chain_id_hex,
+                chain_id_hex,
                 eth_address_and_nonce_hash: None,
                 address_and_nonce_hash: Some(address_and_nonce_hash),
             }),
@@ -145,7 +142,7 @@ impl DepositAddressInfoJson {
                 eth_address: None,
                 btc_deposit_address,
                 address: Some(address),
-                chain_id_hex: chain_id_hex,
+                chain_id_hex,
                 eth_address_and_nonce_hash: None,
                 address_and_nonce_hash: Some(address_and_nonce_hash),
                 user_data: Some(format!("0x{}", hex::encode(&user_data))),
@@ -230,8 +227,8 @@ impl DepositAddressInfo {
             },
             chain_id: match &deposit_address_info_json.chain_id_hex {
                 Some(hex) => hex::decode(strip_hex_prefix(hex))?,
-                None => vec![]
-            }
+                None => vec![],
+            },
         })
     }
 
@@ -316,14 +313,32 @@ impl DepositAddressInfo {
             chain_id_hex: match self.version {
                 DepositAddressInfoVersion::V0 | DepositAddressInfoVersion::V1 => None,
                 DepositAddressInfoVersion::V2 => Some(hex::encode(&self.chain_id)),
-
-            }
+            },
         }
     }
 
     pub fn validate(&self, btc_pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<()> {
         self.validate_commitment_hash()
             .and_then(|_| self.validate_btc_deposit_address(btc_pub_key, network))
+            .and_then(|_| self.maybe_validate_chain_id())
+    }
+
+    fn maybe_validate_chain_id(&self) -> Result<()> {
+        match self.version {
+            DepositAddressInfoVersion::V0 | DepositAddressInfoVersion::V1 => {
+                info!("✘ No need to check chain ID for version 0 or 1 deposit addresses!");
+                Ok(())
+            },
+            DepositAddressInfoVersion::V2 => {
+                info!("✔ Validating chain ID in deposit address info version 2...");
+                Self::validate_chain_id(&self.chain_id)
+            },
+        }
+    }
+
+    fn validate_chain_id(chain_id_bytes: &[Byte]) -> Result<()> {
+        MetadataChainId::from_bytes(chain_id_bytes)
+            .map(|chain_id| info!("✔ Chain ID successfully parsed: {}", chain_id))
     }
 
     #[cfg(test)]
@@ -795,5 +810,27 @@ mod tests {
                 Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
                 Err(_) => panic!("Wrong error received!"),
             });
+    }
+
+    #[test]
+    fn should_validate_chain_id() {
+        let valid_chain_id_bytes = MetadataChainId::EthereumMainnet.to_bytes().unwrap();
+        let result = DepositAddressInfo::validate_chain_id(&valid_chain_id_bytes);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_fail_to_validate_invalid_chain_id() {
+        let invalid_chain_id_bytes = vec![];
+        assert!(MetadataChainId::from_bytes(&invalid_chain_id_bytes).is_err());
+        let expected_error = format!(
+            "Unrecognized bytes for `MetadataChainId`: 0x{}",
+            hex::encode(&invalid_chain_id_bytes)
+        );
+        match DepositAddressInfo::validate_chain_id(&invalid_chain_id_bytes) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(error) => panic!("Wrong error! Got {}, expected {}", error, expected_error),
+        };
     }
 }
