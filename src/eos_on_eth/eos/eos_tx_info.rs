@@ -81,10 +81,10 @@ impl FeeCalculator for EosOnEthEosTxInfo {
         Ok(EosAccountName::from_str(&self.eos_token_address)?)
     }
 
-    fn update_amount(&self, new_amount: U256) -> Self {
+    fn update_amount(&self, new_amount: U256, _: &EosEthTokenDictionary) -> Result<Self> {
         let mut new_self = self.clone();
         new_self.token_amount = new_amount;
-        new_self
+        Ok(new_self)
     }
 }
 
@@ -292,7 +292,7 @@ impl FeesCalculator for EosOnEthEosTxInfos {
                             debug!("Not subtracting fee because `fee` is 0!");
                             Ok(info.clone())
                         } else {
-                            info.subtract_amount(*fee)
+                            info.subtract_amount(*fee, dictionary)
                         }
                     })
                     .collect::<Result<_>>()?,
@@ -604,7 +604,8 @@ mod tests {
         let subtrahend = U256::from(1337);
         let mut expected_result = info.clone();
         expected_result.token_amount = U256::from_dec_str("99999999998663").unwrap();
-        let result = info.subtract_amount(subtrahend).unwrap();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let result = info.subtract_amount(subtrahend, &dictionary).unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -626,8 +627,9 @@ mod tests {
         let infos = get_sample_eos_on_eth_eos_tx_infos();
         let result = infos.subtract_fees(&dictionary).unwrap();
         let expected_amount = U256::from_dec_str("99760000000000").unwrap();
-        let expected_result =
-            EosOnEthEosTxInfos::new(vec![get_sample_eos_on_eth_eos_tx_info().update_amount(expected_amount)]);
+        let expected_result = EosOnEthEosTxInfos::new(vec![get_sample_eos_on_eth_eos_tx_info()
+            .update_amount(expected_amount, &dictionary)
+            .unwrap()]);
         assert_eq!(result, expected_result);
     }
 }

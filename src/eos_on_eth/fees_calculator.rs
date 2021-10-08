@@ -15,9 +15,11 @@ pub trait FeeCalculator {
 
     fn get_eos_token_address(&self) -> Result<EosAccountName>;
 
-    fn update_amount(&self, new_amount: U256) -> Self;
+    fn update_amount(&self, new_amount: U256, dictionary: &EosEthTokenDictionary) -> Result<Self>
+    where
+        Self: Sized;
 
-    fn subtract_amount(&self, subtrahend: U256) -> Result<Self>
+    fn subtract_amount(&self, subtrahend: U256, dictionary: &EosEthTokenDictionary) -> Result<Self>
     where
         Self: Sized,
     {
@@ -30,7 +32,7 @@ pub trait FeeCalculator {
                 "Subtracting {} from {} to get final amount of {}.",
                 subtrahend, amount, new_amount
             );
-            Ok(self.update_amount(new_amount))
+            self.update_amount(new_amount, dictionary)
         }
     }
 

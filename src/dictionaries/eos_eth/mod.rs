@@ -155,7 +155,7 @@ impl EosEthTokenDictionary {
     pub fn from_json(json: &EosEthTokenDictionaryJson) -> Result<Self> {
         Ok(Self(
             json.iter()
-                .map(|entry_json| EosEthTokenDictionaryEntry::from_json(entry_json))
+                .map(EosEthTokenDictionaryEntry::from_json)
                 .collect::<Result<Vec<EosEthTokenDictionaryEntry>>>()?,
         ))
     }
