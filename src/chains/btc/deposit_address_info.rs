@@ -82,7 +82,7 @@ pub struct DepositAddressInfoJson {
     pub nonce: u64,
     pub address: Option<String>,
     pub version: Option<String>,
-    pub calldata: Option<String>,
+    pub user_data: Option<String>,
     pub eth_address: Option<String>, // NOTE: For legacy reasons.
     pub btc_deposit_address: String,
     pub address_and_nonce_hash: Option<String>,
@@ -111,14 +111,14 @@ impl DepositAddressInfoJson {
         btc_deposit_address: String,
         address_and_nonce_hash: String,
         version: Option<String>,
-        calldata: &[Byte],
+        user_data: &[Byte],
     ) -> Result<Self> {
         match DepositAddressInfoVersion::from_maybe_string(&version)? {
             DepositAddressInfoVersion::V0 => Ok(DepositAddressInfoJson {
                 nonce,
                 version,
                 address: None,
-                calldata: None,
+                user_data: None,
                 btc_deposit_address,
                 eth_address: Some(address),
                 address_and_nonce_hash: None,
@@ -127,7 +127,7 @@ impl DepositAddressInfoJson {
             DepositAddressInfoVersion::V1 => Ok(DepositAddressInfoJson {
                 nonce,
                 version,
-                calldata: None,
+                user_data: None,
                 eth_address: None,
                 btc_deposit_address,
                 address: Some(address),
@@ -141,7 +141,7 @@ impl DepositAddressInfoJson {
                 btc_deposit_address,
                 address: Some(address),
                 eth_address_and_nonce_hash: None,
-                calldata: Some(hex::encode(&calldata)),
+                user_data: Some(hex::encode(&user_data)),
                 address_and_nonce_hash: Some(address_and_nonce_hash),
             }),
         }
@@ -152,7 +152,7 @@ impl DepositAddressInfoJson {
 pub struct DepositAddressInfo {
     pub nonce: u64,
     pub address: String,
-    pub calldata: Bytes,
+    pub user_data: Bytes,
     pub commitment_hash: sha256d::Hash,
     pub btc_deposit_address: BtcAddress,
     pub version: DepositAddressInfoVersion,
@@ -207,11 +207,11 @@ impl DepositAddressInfo {
             btc_deposit_address: BtcAddress::from_str(&deposit_address_info_json.btc_deposit_address)?,
             commitment_hash: Self::extract_address_and_nonce_hash_from_json(deposit_address_info_json)?,
             version: DepositAddressInfoVersion::from_maybe_string(&deposit_address_info_json.version)?,
-            calldata: match &deposit_address_info_json.calldata {
+            user_data: match &deposit_address_info_json.user_data {
                 Some(hex_string) => decode_hex_with_err_msg(
                     hex_string,
                     &format!(
-                        "✘ Could not decode hex in calldata in {}: ",
+                        "✘ Could not decode hex in user_data in {}: ",
                         deposit_address_info_json.to_string()?
                     ),
                 )?,
@@ -244,7 +244,7 @@ impl DepositAddressInfo {
     fn calculate_commitment_hash_v2(&self) -> Result<sha256d::Hash> {
         self.get_address_as_bytes().map(|mut address_bytes| {
             address_bytes.append(&mut self.nonce.to_le_bytes().to_vec());
-            address_bytes.append(&mut self.calldata.clone());
+            address_bytes.append(&mut self.user_data.clone());
             sha256d::Hash::hash(&address_bytes)
         })
     }
@@ -277,9 +277,9 @@ impl DepositAddressInfo {
             nonce: self.nonce,
             version: Some(self.version.to_string()),
             btc_deposit_address: self.btc_deposit_address.to_string(),
-            calldata: match self.version {
+            user_data: match self.version {
                 DepositAddressInfoVersion::V0 | DepositAddressInfoVersion::V1 => None,
-                DepositAddressInfoVersion::V2 => Some(hex::encode(&self.calldata)),
+                DepositAddressInfoVersion::V2 => Some(hex::encode(&self.user_data)),
             },
             address: match self.version {
                 DepositAddressInfoVersion::V0 => None,
@@ -387,7 +387,7 @@ mod tests {
 
     fn get_sample_testnet_deposit_info_json_string_v2() -> String {
         format!(
-            "{{\"address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"address_and_nonce_hash\":\"0x693777b55c79e66153181b67faa43662be576e5896003444d0479fe9b7a23d38\",\"btc_deposit_address\":\"2NFHg6i6R5N29MB7B1oK7PsLZhqRg456rWD\",\"calldata\":\"0x404092\",\"nonce\":1337,\"public_key\":\"{}\",\"version\":\"2\"}}",
+            "{{\"address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"address_and_nonce_hash\":\"0x693777b55c79e66153181b67faa43662be576e5896003444d0479fe9b7a23d38\",\"btc_deposit_address\":\"2NFHg6i6R5N29MB7B1oK7PsLZhqRg456rWD\",\"user_data\":\"0x404092\",\"nonce\":1337,\"public_key\":\"{}\",\"version\":\"2\"}}",
             get_sample_testnet_pub_key_hex(),
         )
     }
@@ -408,7 +408,7 @@ mod tests {
 
     fn get_sample_mainnet_deposit_info_json_string_v2() -> String {
         format!(
-            "{{\"address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"address_and_nonce_hash\":\"0x693777b55c79e66153181b67faa43662be576e5896003444d0479fe9b7a23d38\",\"btc_deposit_address\":\"3DHhv1yvKG7W8xPWbDFCGCtFFGiJnfE8kK\",\"calldata\":\"0x404092\",\"nonce\":1337,\"public_key\":\"{}\",\"tool_version\":\"1.6.0\",\"version\":\"2\"}}",
+            "{{\"address\":\"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac\",\"address_and_nonce_hash\":\"0x693777b55c79e66153181b67faa43662be576e5896003444d0479fe9b7a23d38\",\"btc_deposit_address\":\"3DHhv1yvKG7W8xPWbDFCGCtFFGiJnfE8kK\",\"user_data\":\"0x404092\",\"nonce\":1337,\"public_key\":\"{}\",\"tool_version\":\"1.6.0\",\"version\":\"2\"}}",
             get_sample_mainnet_pub_key_hex(),
 
         )
@@ -536,13 +536,13 @@ mod tests {
             Some("348c7ab8078c400c5b07d1c3dda4fff8218bb6f2dc40f72662edc13ed867fcae".to_string());
         let eth_address = None;
         let address_and_nonce_hash = None;
-        let calldata = None;
+        let user_data = None;
         let version = Some("1".to_string());
         let deposit_json = DepositAddressInfoJson {
             nonce,
             address,
             version,
-            calldata,
+            user_data,
             eth_address,
             btc_deposit_address,
             address_and_nonce_hash,
@@ -563,7 +563,7 @@ mod tests {
         let btc_deposit_address = "2MuuCeJjptiB1ETfytAqMZFqPCKAfXyhxoQ".to_string();
         let eth_address_and_nonce_hash =
             Some("348c7ab8078c400c5b07d1c3dda4fff8218bb6f2dc40f72662edc13ed867fcae".to_string());
-        let calldata = None;
+        let user_data = None;
         let eth_address = None;
         let address_and_nonce_hash = None;
         let version = Some("0".to_string());
@@ -571,7 +571,7 @@ mod tests {
             nonce,
             address,
             version,
-            calldata,
+            user_data,
             eth_address,
             btc_deposit_address,
             address_and_nonce_hash,
@@ -593,7 +593,7 @@ mod tests {
         let address_and_nonce_hash =
             Some("348c7ab8078c400c5b07d1c3dda4fff8218bb6f2dc40f72662edc13ed867fcae".to_string());
         let address = None;
-        let calldata = None;
+        let user_data = None;
         let version = Some("1".to_string());
         let eth_address_and_nonce_hash = None;
         let deposit_json = DepositAddressInfoJson {
@@ -601,7 +601,7 @@ mod tests {
             address,
             version,
             eth_address,
-            calldata,
+            user_data,
             btc_deposit_address,
             address_and_nonce_hash,
             eth_address_and_nonce_hash,
@@ -624,12 +624,12 @@ mod tests {
         let address = None;
         let eth_address_and_nonce_hash = None;
         let version = Some("0".to_string());
-        let calldata = None;
+        let user_data = None;
         let deposit_json = DepositAddressInfoJson {
             nonce,
             address,
             version,
-            calldata,
+            user_data,
             eth_address,
             btc_deposit_address,
             address_and_nonce_hash,
@@ -652,13 +652,13 @@ mod tests {
             Some("348c7ab8078c400c5b07d1c3dda4fff8218bb6f2dc40f72662edc13ed867fcae".to_string());
         let version = None;
         let address = None;
-        let calldata = None;
+        let user_data = None;
         let address_and_nonce_hash = None;
         let deposit_json = DepositAddressInfoJson {
             nonce,
             address,
             version,
-            calldata,
+            user_data,
             eth_address,
             btc_deposit_address,
             address_and_nonce_hash,
