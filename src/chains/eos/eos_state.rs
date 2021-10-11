@@ -3,7 +3,7 @@ pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use crate::{
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
     chains::{
-        btc::utxo_manager::utxo_types::BtcUtxosAndValues,
+        btc::{btc_types::BtcTransactions, utxo_manager::utxo_types::BtcUtxosAndValues},
         eos::{
             eos_action_proofs::EosActionProofs,
             eos_block_header::EosBlockHeaderV2,
@@ -34,8 +34,8 @@ pub struct EosState<D: DatabaseInterface> {
     pub interim_block_ids: Checksum256s,
     pub eth_signed_txs: EthTransactions,
     pub block_header: Option<EosBlockHeaderV2>,
+    pub btc_on_eos_signed_txs: BtcTransactions,
     pub processed_tx_ids: ProcessedGlobalSequences,
-    pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub enabled_protocol_features: EnabledFeatures,
     pub eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos,
     pub btc_on_eos_redeem_infos: BtcOnEosRedeemInfos,
@@ -45,10 +45,7 @@ pub struct EosState<D: DatabaseInterface> {
     pub eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
 }
 
-impl<D> EosState<D>
-where
-    D: DatabaseInterface,
-{
+impl<D: DatabaseInterface> EosState<D> {
     pub fn init(db: D) -> EosState<D> {
         EosState {
             db,
@@ -91,26 +88,17 @@ where
         }
     }
 
-    pub fn add_btc_on_eos_signed_txs(mut self, btc_on_eos_signed_txs: Vec<BtcTransaction>) -> Result<EosState<D>>
-    where
-        D: DatabaseInterface,
-    {
-        self.btc_on_eos_signed_txs = btc_on_eos_signed_txs;
+    pub fn add_btc_on_eos_signed_txs(mut self, btc_on_eos_signed_txs: &[BtcTransaction]) -> Result<EosState<D>> {
+        self.btc_on_eos_signed_txs = btc_on_eos_signed_txs.to_vec();
         Ok(self)
     }
 
-    pub fn add_eth_signed_txs(mut self, txs: EthTransactions) -> Result<EosState<D>>
-    where
-        D: DatabaseInterface,
-    {
+    pub fn add_eth_signed_txs(mut self, txs: EthTransactions) -> Result<EosState<D>> {
         self.eth_signed_txs = txs;
         Ok(self)
     }
 
-    pub fn add_incremerkle(mut self, incremerkle: Incremerkle) -> EosState<D>
-    where
-        D: DatabaseInterface,
-    {
+    pub fn add_incremerkle(mut self, incremerkle: Incremerkle) -> EosState<D> {
         self.incremerkle = incremerkle;
         self
     }
@@ -185,6 +173,12 @@ where
             Some(ref active_schedule) => Ok(active_schedule),
             None => Err(get_not_in_state_err("active_schedule").into()),
         }
+    }
+
+    pub fn replace_btc_on_eos_signed_txs(mut self, replacements: BtcTransactions) -> Self {
+        info!("✔ Replacing signed BTC txs infos in state...");
+        self.btc_on_eos_signed_txs = replacements;
+        self
     }
 
     pub fn replace_btc_on_eos_redeem_infos(mut self, replacements: BtcOnEosRedeemInfos) -> Result<EosState<D>> {

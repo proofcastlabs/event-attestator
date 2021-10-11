@@ -145,16 +145,6 @@ impl<D: DatabaseInterface> EthState<D> {
         }
     }
 
-    pub fn add_btc_utxos_and_values(mut self, btc_utxos_and_values: BtcUtxosAndValues) -> Result<Self> {
-        match self.btc_utxos_and_values {
-            Some(_) => Err(get_no_overwrite_state_err("btc_utxos_and_values").into()),
-            None => {
-                self.btc_utxos_and_values = Some(btc_utxos_and_values);
-                Ok(self)
-            },
-        }
-    }
-
     pub fn update_eth_submission_material(
         mut self,
         new_eth_submission_material: EthSubmissionMaterial,

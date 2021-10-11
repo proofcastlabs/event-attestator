@@ -16,8 +16,8 @@ use crate::{
             btc_submission_material::parse_submission_material_and_put_in_state,
             btc_utils::{get_hex_tx_from_signed_btc_tx, get_pay_to_pub_key_hash_script},
             extract_utxos_from_p2pkh_txs::{
-                extract_utxos_from_txs,
-                maybe_extract_utxos_from_p2pkh_txs_and_put_in_state,
+                extract_utxos_from_p2pkh_txs,
+                maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
             },
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
             filter_p2pkh_deposit_txs::filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state,
@@ -248,7 +248,7 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_ma
         .and_then(get_deposit_info_hash_map_and_put_in_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
         .and_then(filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state)
-        .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_state)
+        .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state)
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
         .and_then(start_btc_db_transaction)
         .and_then(filter_out_utxos_extant_in_db_from_state)
@@ -328,7 +328,7 @@ pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &st
         .and_then(|_| get_btc_on_eos_fee_withdrawal_tx(&db, btc_address))
         .and_then(|btc_tx| {
             let change_utxos = get_pay_to_pub_key_hash_script(&get_btc_address_from_db(&db)?)
-                .map(|target_script| extract_utxos_from_txs(&target_script, &[btc_tx.clone()]))?;
+                .map(|target_script| extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]))?;
             save_utxos_to_db(&db, &change_utxos)?;
             db.end_transaction()?;
             Ok(json!({ "signed_btc_tx": get_hex_tx_from_signed_btc_tx(&btc_tx) }).to_string())

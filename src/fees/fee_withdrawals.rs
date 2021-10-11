@@ -7,7 +7,7 @@ use crate::{
         btc_database_utils::{get_btc_address_from_db, get_btc_fee_from_db, get_btc_private_key_from_db},
         btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
         btc_types::BtcRecipientAndAmount,
-        utxo_manager::{utxo_types::BtcUtxosAndValues, utxo_utils::get_enough_utxos_to_cover_total},
+        utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
     },
     core_type::CoreType,
     fees::fee_database_utils::FeeDatabaseUtils,
@@ -37,21 +37,13 @@ pub fn get_fee_withdrawal_btc_tx_for_core_type<D: DatabaseInterface>(
         }];
         fee_db_utils
             .put_last_fee_withdrawal_timestamp_in_db(db, get_unix_timestamp()?)
-            .and_then(|_| {
-                get_enough_utxos_to_cover_total(
-                    db,
-                    withdrawal_amount,
-                    recipients_and_amounts.len(),
-                    fee,
-                    BtcUtxosAndValues::new(vec![]),
-                )
-            })
+            .and_then(|_| get_enough_utxos_to_cover_total(db, withdrawal_amount, recipients_and_amounts.len(), fee))
             .and_then(|utxos| {
                 create_signed_raw_btc_tx_for_n_input_n_outputs(
                     fee,
                     recipients_and_amounts,
                     &get_btc_address_from_db(db)?,
-                    get_btc_private_key_from_db(db)?,
+                    &get_btc_private_key_from_db(db)?,
                     utxos,
                 )
             })

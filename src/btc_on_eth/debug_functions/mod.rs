@@ -6,7 +6,7 @@ pub(crate) mod block_reprocessors;
 use crate::{
     btc_on_eth::{
         check_core_is_initialized::{check_core_is_initialized, check_core_is_initialized_and_return_btc_state},
-        eth::extract_utxos_from_btc_txs::extract_btc_utxos_from_btc_txs,
+        eth::create_btc_transactions::extract_change_utxo_from_btc_tx_and_save_in_db,
     },
     chains::{
         btc::{
@@ -17,7 +17,7 @@ use crate::{
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
             btc_utils::get_hex_tx_from_signed_btc_tx,
-            extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_state,
+            extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
             filter_p2pkh_deposit_txs::filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
@@ -34,7 +34,6 @@ use crate::{
                     remove_utxo,
                 },
                 utxo_constants::get_utxo_constants_db_keys,
-                utxo_database_utils::save_utxos_to_db,
                 utxo_utils::get_all_utxos_as_json_string,
             },
             validate_btc_block_header::validate_btc_block_header_in_state,
@@ -267,7 +266,7 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_ma
         .and_then(get_deposit_info_hash_map_and_put_in_state)
         .and_then(filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
-        .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_state)
+        .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state)
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(filter_out_utxos_extant_in_db_from_state)
@@ -421,8 +420,7 @@ pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &st
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_btc_on_eth_fee_withdrawal_tx(&db, btc_address))
         .and_then(|btc_tx| {
-            let change_utxos = extract_btc_utxos_from_btc_txs(&get_btc_address_from_db(&db)?, &[btc_tx.clone()])?;
-            save_utxos_to_db(&db, &change_utxos)?;
+            extract_change_utxo_from_btc_tx_and_save_in_db(&db, &get_btc_address_from_db(&db)?, btc_tx.clone())?;
             db.end_transaction()?;
             Ok(json!({ "signed_btc_tx": get_hex_tx_from_signed_btc_tx(&btc_tx) }).to_string())
         })

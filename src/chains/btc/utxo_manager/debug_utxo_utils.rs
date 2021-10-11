@@ -5,7 +5,7 @@ use crate::{
         btc_database_utils::{get_btc_address_from_db, get_btc_fee_from_db, get_btc_private_key_from_db},
         btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
         btc_utils::{get_btc_tx_id_from_str, get_hex_tx_from_signed_btc_tx, get_pay_to_pub_key_hash_script},
-        extract_utxos_from_p2pkh_txs::extract_utxos_from_txs,
+        extract_utxos_from_p2pkh_txs::extract_utxos_from_p2pkh_txs,
         utxo_manager::{
             utxo_database_utils::{
                 delete_first_utxo_key,
@@ -67,10 +67,10 @@ pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize
                 fee,
                 vec![],
                 &btc_address,
-                get_btc_private_key_from_db(&db)?,
+                &get_btc_private_key_from_db(&db)?,
                 utxos,
             )?;
-            let change_utxos = extract_utxos_from_txs(&target_script, &[btc_tx.clone()]);
+            let change_utxos = extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]);
             save_utxos_to_db(&db, &change_utxos)?;
             Ok(btc_tx)
         })
@@ -110,10 +110,10 @@ pub fn get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
                 fee,
                 vec![],
                 &btc_address,
-                get_btc_private_key_from_db(&db)?,
+                &get_btc_private_key_from_db(&db)?,
                 BtcUtxosAndValues::new(vec![utxo]),
             )?;
-            let change_utxos = extract_utxos_from_txs(&target_script, &[btc_tx.clone()]);
+            let change_utxos = extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]);
             save_utxos_to_db(&db, &change_utxos)?;
             db.end_transaction()?;
             Ok(btc_tx)

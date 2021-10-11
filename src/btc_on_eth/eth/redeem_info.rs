@@ -1,13 +1,19 @@
 use std::str::FromStr;
 
-use bitcoin::util::address::Address as BtcAddress;
+use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, util::address::Address as BtcAddress};
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 use crate::{
     btc_on_eth::utils::convert_wei_to_satoshis,
     chains::{
-        btc::btc_types::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
+        btc::{
+            btc_constants::{MAX_NUM_OUTPUTS, MINIMUM_REQUIRED_SATOSHIS},
+            btc_crypto::btc_private_key::BtcPrivateKey,
+            btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
+            btc_types::BtcRecipientAndAmount,
+            utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
+        },
         eth::{
             eth_contracts::erc777::{
                 Erc777RedeemEvent,
@@ -36,6 +42,33 @@ pub struct BtcOnEthRedeemInfo {
 }
 
 impl BtcOnEthRedeemInfo {
+    pub fn to_btc_tx<D: DatabaseInterface>(
+        &self,
+        db: &D,
+        fee: u64,
+        btc_address: &str,
+        btc_private_key: &BtcPrivateKey,
+    ) -> Result<BtcTransaction> {
+        let utxos = get_enough_utxos_to_cover_total(db, self.amount_in_satoshis, MAX_NUM_OUTPUTS, fee)?;
+        info!("✔ Getting correct amount of UTXOs...");
+        info!("✔ Satoshis per byte: {}", fee);
+        info!("✔ Retrieved {} UTXOs!", utxos.len());
+        info!("✔ Creating BTC transaction...");
+        create_signed_raw_btc_tx_for_n_input_n_outputs(
+            fee,
+            vec![self.to_recipient_and_amount()?],
+            btc_address,
+            btc_private_key,
+            utxos,
+        )
+    }
+
+    pub fn to_recipient_and_amount(&self) -> Result<BtcRecipientAndAmount> {
+        let recipient_and_amount = BtcRecipientAndAmount::new(&self.recipient[..], self.amount_in_satoshis);
+        info!("✔ Recipient & amount retrieved from redeem: {:?}", recipient_and_amount);
+        recipient_and_amount
+    }
+
     fn update_amount(&self, new_amount: u64) -> Self {
         let mut new_self = self.clone();
         new_self.amount_in_satoshis = new_amount;
@@ -64,6 +97,26 @@ impl BtcOnEthRedeemInfo {
 pub struct BtcOnEthRedeemInfos(pub Vec<BtcOnEthRedeemInfo>);
 
 impl BtcOnEthRedeemInfos {
+    pub fn filter_out_any_whose_value_is_too_low(&self) -> Self {
+        info!("✘ Filtering out `BtcOnEthRedeemInfo` whose amounts are too low...");
+        Self::new(
+            self.iter()
+                .filter(|redeem_info| {
+                    if redeem_info.amount_in_satoshis >= MINIMUM_REQUIRED_SATOSHIS {
+                        info!(
+                            "✘ Filtering out `BtcOnEthRedeemInfo` ∵ amount too low: {:?}",
+                            redeem_info
+                        );
+                        false
+                    } else {
+                        true
+                    }
+                })
+                .cloned()
+                .collect::<Vec<BtcOnEthRedeemInfo>>(),
+        )
+    }
+
     pub fn calculate_fees(&self, basis_points: u64) -> Result<(Vec<u64>, u64)> {
         sanity_check_basis_points_value(basis_points).map(|_| {
             let fees = self
@@ -75,22 +128,9 @@ impl BtcOnEthRedeemInfos {
         })
     }
 
+    #[cfg(test)]
     pub fn sum(&self) -> u64 {
         self.iter().fold(0, |acc, params| acc + params.amount_in_satoshis)
-    }
-
-    pub fn to_btc_addresses_and_amounts(&self) -> Result<BtcRecipientsAndAmounts> {
-        info!("✔ Getting BTC addresses & amounts from redeem params...");
-        self.iter()
-            .map(|params| {
-                let recipient_and_amount = BtcRecipientAndAmount::new(&params.recipient[..], params.amount_in_satoshis);
-                info!(
-                    "✔ Recipients & amount retrieved from redeem: {:?}",
-                    recipient_and_amount
-                );
-                recipient_and_amount
-            })
-            .collect()
     }
 
     fn get_btc_address_or_revert_to_safe_address(maybe_btc_address: &str) -> String {

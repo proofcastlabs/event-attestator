@@ -30,7 +30,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
     sats_per_byte: u64,
     recipient_addresses_and_amounts: BtcRecipientsAndAmounts,
     remainder_btc_address: &str,
-    btc_private_key: BtcPrivateKey,
+    btc_private_key: &BtcPrivateKey,
     utxos_and_values: BtcUtxosAndValues,
 ) -> Result<BtcTransaction> {
     let total_to_spend: u64 = recipient_addresses_and_amounts
@@ -170,7 +170,7 @@ mod tests {
             sats_per_byte,
             recipient_addresses_and_amounts,
             remainder_btc_address,
-            btc_private_key,
+            &btc_private_key,
             utxos_and_values,
         )
         .unwrap();
@@ -195,7 +195,7 @@ mod tests {
             sats_per_byte,
             recipient_addresses_and_amounts,
             remainder_btc_address,
-            btc_private_key,
+            &btc_private_key,
             utxos_and_values,
         )
         .unwrap();
@@ -225,7 +225,7 @@ mod tests {
             sats_per_byte,
             recipient_addresses_and_amounts,
             remainder_btc_address,
-            btc_private_key,
+            &btc_private_key,
             utxos_and_values,
         )
         .unwrap();

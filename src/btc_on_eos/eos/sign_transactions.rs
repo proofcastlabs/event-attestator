@@ -45,15 +45,14 @@ fn sign_txs_from_redeem_infos<D: DatabaseInterface>(
     info!("✔ Getting correct amount of UTXOs...");
     debug!("✔ Network: {}", btc_network);
     debug!("✔ Satoshis per byte: {}", sats_per_byte);
-    let utxos_and_values =
-        get_enough_utxos_to_cover_total(db, redeem_infos.sum(), redeem_infos.len(), sats_per_byte, vec![].into())?;
+    let utxos_and_values = get_enough_utxos_to_cover_total(db, redeem_infos.sum(), redeem_infos.len(), sats_per_byte)?;
     debug!("✔ Retrieved {} UTXOs!", utxos_and_values.len());
     info!("✔ Signing transaction...");
     create_signed_raw_btc_tx_for_n_input_n_outputs(
         sats_per_byte,
         get_address_and_amounts_from_redeem_infos(redeem_infos)?,
         &get_btc_address_from_db(db)?[..],
-        get_btc_private_key_from_db(db)?,
+        &get_btc_private_key_from_db(db)?,
         utxos_and_values,
     )
 }
@@ -78,7 +77,7 @@ pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>)
                 {
                     debug!("✔ Signed transaction: {:?}", signed_tx);
                 }
-                state.add_btc_on_eos_signed_txs(vec![signed_tx])
+                state.add_btc_on_eos_signed_txs(&[signed_tx])
             })
         },
     }
