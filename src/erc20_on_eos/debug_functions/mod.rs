@@ -37,7 +37,7 @@ use crate::{
                 get_eth_gas_price_from_db,
                 get_eth_private_key_from_db,
                 increment_eth_account_nonce_in_db,
-                put_erc20_on_eos_smart_contract_address_in_db,
+                update_erc20_on_eos_smart_contract_address_in_db,
             },
             eth_debug_functions::debug_set_eth_gas_price_in_db,
             eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
@@ -181,7 +181,7 @@ pub fn debug_get_erc20_vault_migration_tx<D: DatabaseInterface>(
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&db))
         .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
-        .and_then(|_| put_erc20_on_eos_smart_contract_address_in_db(&db, &new_eos_erc20_smart_contract_address))
+        .and_then(|_| update_erc20_on_eos_smart_contract_address_in_db(&db, &new_eos_erc20_smart_contract_address))
         .and_then(|_| encode_erc20_vault_migrate_fxn_data(new_eos_erc20_smart_contract_address))
         .and_then(|tx_data| {
             Ok(EthTransaction::new_unsigned(
