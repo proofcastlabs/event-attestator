@@ -421,15 +421,23 @@ pub fn put_erc20_on_eos_smart_contract_address_in_db<D: DatabaseInterface>(
             hex::encode(address)
         )
         .into()),
-        _ => {
-            info!("✔ Putting 'ERC20-on-EOS` smart-contract address in db...");
-            put_eth_address_in_db(
-                db,
-                &ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-                smart_contract_address,
-            )
-        },
+        _ => update_erc20_on_eos_smart_contract_address_in_db(db, smart_contract_address),
     }
+}
+
+pub fn update_erc20_on_eos_smart_contract_address_in_db<D: DatabaseInterface>(
+    db: &D,
+    smart_contract_address: &EthAddress,
+) -> Result<()> {
+    info!(
+        "✔ Updating `erc20-on-eos` smart-contract address in db to 0x{}...",
+        smart_contract_address.to_string()
+    );
+    put_eth_address_in_db(
+        db,
+        &ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+        smart_contract_address,
+    )
 }
 
 pub fn put_eos_on_eth_smart_contract_address_in_db<D: DatabaseInterface>(
@@ -445,12 +453,29 @@ pub fn put_eos_on_eth_smart_contract_address_in_db<D: DatabaseInterface>(
 }
 
 pub fn put_erc20_on_evm_smart_contract_address_in_db<D: DatabaseInterface>(db: &D, address: &EthAddress) -> Result<()> {
-    if get_erc20_on_evm_smart_contract_address_from_db(db).is_ok() {
-        Err("`ERC20-on-EVM`Vault contract address already set!".into())
-    } else {
-        info!("✔ Putting `ERC20-on-EVM` vault contract address in db...");
-        put_eth_address_in_db(db, &ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(), address)
+    match get_erc20_on_evm_smart_contract_address_from_db(db) {
+        Ok(address) => Err(format!(
+            "`erc20-on-evm` vault address is already set to 0x{}!",
+            hex::encode(&address)
+        )
+        .into()),
+        _ => update_erc20_on_evm_smart_contract_address_in_db(db, address),
     }
+}
+
+pub fn update_erc20_on_evm_smart_contract_address_in_db<D: DatabaseInterface>(
+    db: &D,
+    smart_contract_address: &EthAddress,
+) -> Result<()> {
+    info!(
+        "✔ Updating `erc20-on-evm` smart-contract address in db to 0x{}...",
+        smart_contract_address.to_string()
+    );
+    put_eth_address_in_db(
+        db,
+        &ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+        smart_contract_address,
+    )
 }
 
 pub fn get_public_eth_address_from_db<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
@@ -767,5 +792,73 @@ mod tests {
         put_eth_submission_material_in_db(&db, &submission_material).unwrap();
         let result = get_submission_material_from_db(&db, &db_key).unwrap();
         assert_eq!(result, submission_material);
+    }
+
+    #[test]
+    fn should_put_erc20_on_eos_smart_contract_address_in_db() {
+        let db = get_test_database();
+        let eth_address = get_sample_eth_address();
+        let result = put_erc20_on_eos_smart_contract_address_in_db(&db, &eth_address);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_error_when_putting_erc20_on_eos_smart_contract_address_in_db_if_extant() {
+        let db = get_test_database();
+        let eth_address = get_sample_eth_address();
+        let expected_error = format!(
+            "`erc20-on-eos` vault address is already set to {}!",
+            hex::encode(&eth_address)
+        );
+        put_erc20_on_eos_smart_contract_address_in_db(&db, &eth_address).unwrap();
+        match put_erc20_on_eos_smart_contract_address_in_db(&db, &eth_address) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(error) => panic!("Wrong error received! Got {}, expected {}", error, expected_error),
+        };
+    }
+
+    #[test]
+    fn should_update_erc20_on_eos_smart_contract_address_in_db_even_if_extant() {
+        let db = get_test_database();
+        let eth_address_1 = get_sample_eth_address();
+        let eth_address_2 = EthAddress::from_slice(&hex::decode("789e39e46117DFaF50A1B53A98C7ab64750f9Ba3").unwrap());
+        put_erc20_on_eos_smart_contract_address_in_db(&db, &eth_address_1).unwrap();
+        let result = update_erc20_on_eos_smart_contract_address_in_db(&db, &eth_address_2);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_put_erc20_on_evm_smart_contract_address_in_db() {
+        let db = get_test_database();
+        let eth_address = get_sample_eth_address();
+        let result = put_erc20_on_evm_smart_contract_address_in_db(&db, &eth_address);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_error_when_putting_erc20_on_evm_smart_contract_address_in_db_if_extant() {
+        let db = get_test_database();
+        let eth_address = get_sample_eth_address();
+        let expected_error = format!(
+            "`erc20-on-evm` vault address is already set to 0x{}!",
+            hex::encode(&eth_address)
+        );
+        put_erc20_on_evm_smart_contract_address_in_db(&db, &eth_address).unwrap();
+        match put_erc20_on_evm_smart_contract_address_in_db(&db, &eth_address) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(error) => panic!("Wrong error received! Got {}, expected {}", error, expected_error),
+        };
+    }
+
+    #[test]
+    fn should_update_erc20_on_evm_smart_contract_address_in_db_even_if_extant() {
+        let db = get_test_database();
+        let eth_address_1 = get_sample_eth_address();
+        let eth_address_2 = EthAddress::from_slice(&hex::decode("789e39e46117DFaF50A1B53A98C7ab64750f9Ba3").unwrap());
+        put_erc20_on_evm_smart_contract_address_in_db(&db, &eth_address_1).unwrap();
+        let result = update_erc20_on_evm_smart_contract_address_in_db(&db, &eth_address_2);
+        assert!(result.is_ok());
     }
 }
