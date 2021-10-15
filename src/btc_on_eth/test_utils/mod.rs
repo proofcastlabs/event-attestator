@@ -1,7 +1,13 @@
 #![cfg(test)]
+use std::fs::read_to_string;
+
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
-use crate::btc_on_eth::eth::redeem_info::{BtcOnEthRedeemInfo, BtcOnEthRedeemInfos};
+use crate::{
+    btc_on_eth::eth::redeem_info::{BtcOnEthRedeemInfo, BtcOnEthRedeemInfos},
+    chains::eth::eth_submission_material::EthSubmissionMaterial,
+    types::Result,
+};
 
 pub fn get_sample_btc_on_eth_redeem_info_1() -> BtcOnEthRedeemInfo {
     BtcOnEthRedeemInfo {
@@ -30,4 +36,11 @@ pub fn get_sample_btc_on_eth_redeem_infos() -> BtcOnEthRedeemInfos {
         get_sample_btc_on_eth_redeem_info_1(),
         get_sample_btc_on_eth_redeem_info_2(),
     ])
+}
+
+pub fn get_sample_btc_on_eth_eth_submission_material_n(num: usize) -> Result<EthSubmissionMaterial> {
+    EthSubmissionMaterial::from_str(&read_to_string(format!(
+        "src/btc_on_eth/test_utils/eth-sample-submission-material-{}.json",
+        num
+    ))?)
 }

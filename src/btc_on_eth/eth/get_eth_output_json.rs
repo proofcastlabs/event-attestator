@@ -54,9 +54,10 @@ pub fn get_btc_signed_tx_info_from_btc_txs(
     info!("✔ Getting BTC tx info from {} BTC tx(s)...", btc_txs.len());
     let num_btc_txs = btc_txs.len();
     let num_redeem_infos = redeem_infos.len();
-    if num_btc_txs != num_redeem_infos {
+    if num_btc_txs > num_redeem_infos {
+        // NOTE: There CAN be fewer such as in the case of txs being filtered out for amounts being too low.
         return Err(format!(
-            "BTC tx mismatch. BTC txs: #{}, RedeemInfos: #{}",
+            "There are MORE transactions than redeem infos! Num BTC txs: {}, Num RedeemInfos: {}",
             num_btc_txs, num_redeem_infos
         )
         .into());
@@ -69,10 +70,7 @@ pub fn get_btc_signed_tx_info_from_btc_txs(
         .collect::<Result<Vec<_>>>()
 }
 
-pub fn get_eth_output_json<D>(state: EthState<D>) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
     info!("✔ Getting ETH output json...");
     let output = serde_json::to_string(&EthOutput {
         eth_latest_block_number: get_eth_latest_block_from_db(&state.db)?.get_block_number()?.as_usize(),
