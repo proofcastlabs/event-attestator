@@ -102,7 +102,7 @@ impl BtcOnEthRedeemInfos {
         Self::new(
             self.iter()
                 .filter(|redeem_info| {
-                    if redeem_info.amount_in_satoshis >= MINIMUM_REQUIRED_SATOSHIS {
+                    if redeem_info.amount_in_satoshis < MINIMUM_REQUIRED_SATOSHIS {
                         info!(
                             "✘ Filtering out `BtcOnEthRedeemInfo` ∵ amount too low: {:?}",
                             redeem_info
@@ -224,7 +224,11 @@ pub fn maybe_parse_redeem_infos_and_add_to_state<D: DatabaseInterface>(state: Et
 mod tests {
     use super::*;
     use crate::{
-        btc_on_eth::test_utils::{get_sample_btc_on_eth_redeem_info_1, get_sample_btc_on_eth_redeem_infos},
+        btc_on_eth::test_utils::{
+            get_sample_btc_on_eth_eth_submission_material_n,
+            get_sample_btc_on_eth_redeem_info_1,
+            get_sample_btc_on_eth_redeem_infos,
+        },
         chains::eth::{
             eth_submission_material::EthSubmissionMaterial,
             eth_test_utils::{
@@ -415,5 +419,38 @@ mod tests {
         let expected_result = 1;
         assert_eq!(result, expected_result);
         assert_eq!(redeem_infos[0].amount_in_satoshis, 0);
+    }
+
+    #[test]
+    fn low_amount_filter_should_filter_out_low_amounts() {
+        let eth_address_hex = "5228a22e72ccc52d415ecfd199f99d0665e7733b";
+        let submission_material = get_sample_btc_on_eth_eth_submission_material_n(1).unwrap();
+        let eth_address = EthAddress::from_slice(&hex::decode(eth_address_hex).unwrap());
+        let low_amount = 1337;
+        assert!(low_amount < MINIMUM_REQUIRED_SATOSHIS);
+        let redeem_infos =
+            BtcOnEthRedeemInfos::from_eth_submission_material(&submission_material, &eth_address).unwrap();
+        let mut low_amount_redeem_info = redeem_infos[0].clone();
+        low_amount_redeem_info.amount_in_satoshis = low_amount;
+        let low_amount_redeem_infos = BtcOnEthRedeemInfos::new(vec![low_amount_redeem_info]);
+        let filtered_redeem_infos = low_amount_redeem_infos.filter_out_any_whose_value_is_too_low();
+        assert_ne!(redeem_infos, filtered_redeem_infos);
+        let result = filtered_redeem_infos.len();
+        let expected_result = 0;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn low_amount_filter_should_not_filter_out_adequate_amounts() {
+        let eth_address_hex = "5228a22e72ccc52d415ecfd199f99d0665e7733b";
+        let submission_material = get_sample_btc_on_eth_eth_submission_material_n(1).unwrap();
+        let eth_address = EthAddress::from_slice(&hex::decode(eth_address_hex).unwrap());
+        let redeem_infos =
+            BtcOnEthRedeemInfos::from_eth_submission_material(&submission_material, &eth_address).unwrap();
+        let filtered_redeem_infos = redeem_infos.filter_out_any_whose_value_is_too_low();
+        assert_eq!(redeem_infos, filtered_redeem_infos);
+        let result = filtered_redeem_infos.len();
+        let expected_result = 1;
+        assert_eq!(result, expected_result);
     }
 }
