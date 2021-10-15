@@ -173,18 +173,10 @@ pub fn get_tx_id_from_signed_btc_tx(signed_btc_tx: &BtcTransaction) -> String {
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::{
-        hashes::{sha256d, Hash},
-        util::address::Address as BtcAddress,
-    };
-    use ethereum_types::Address as EthAddress;
+    use bitcoin::hashes::{sha256d, Hash};
 
     use super::*;
     use crate::{
-        btc_on_eth::{
-            btc::minting_params::{BtcOnEthMintingParamStruct, BtcOnEthMintingParams},
-            utils::convert_satoshis_to_wei,
-        },
         chains::btc::{
             btc_test_utils::{
                 create_p2pkh_btc_utxo_and_value_from_tx_output,
@@ -313,44 +305,6 @@ mod tests {
         ]);
         let result = utxos.iter().fold(0, |acc, utxo_and_value| acc + utxo_and_value.value);
         assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_serde_minting_params() {
-        let expected_serialization = vec![
-            91, 123, 34, 97, 109, 111, 117, 110, 116, 34, 58, 34, 48, 120, 99, 50, 56, 102, 50, 49, 57, 99, 52, 48, 48,
-            34, 44, 34, 101, 116, 104, 95, 97, 100, 100, 114, 101, 115, 115, 34, 58, 34, 48, 120, 102, 101, 100, 102,
-            101, 50, 54, 49, 54, 101, 98, 51, 54, 54, 49, 99, 98, 56, 102, 101, 100, 50, 55, 56, 50, 102, 53, 102, 48,
-            99, 99, 57, 49, 100, 53, 57, 100, 99, 97, 99, 34, 44, 34, 111, 114, 105, 103, 105, 110, 97, 116, 105, 110,
-            103, 95, 116, 120, 95, 104, 97, 115, 104, 34, 58, 34, 57, 101, 56, 100, 100, 50, 57, 102, 48, 56, 51, 57,
-            56, 100, 55, 97, 100, 102, 57, 50, 53, 50, 56, 97, 99, 49, 49, 51, 98, 99, 99, 55, 51, 54, 102, 55, 97,
-            100, 99, 100, 55, 99, 57, 57, 101, 101, 101, 48, 52, 54, 56, 97, 57, 57, 50, 99, 56, 49, 102, 51, 101, 97,
-            57, 56, 34, 44, 34, 111, 114, 105, 103, 105, 110, 97, 116, 105, 110, 103, 95, 116, 120, 95, 97, 100, 100,
-            114, 101, 115, 115, 34, 58, 34, 50, 78, 50, 76, 72, 89, 98, 116, 56, 75, 49, 75, 68, 66, 111, 103, 100, 54,
-            88, 85, 71, 57, 86, 66, 118, 53, 89, 77, 54, 120, 101, 102, 100, 77, 50, 34, 125, 93,
-        ];
-        let amount = convert_satoshis_to_wei(1337);
-        let originating_tx_address = BtcAddress::from_str("2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2").unwrap();
-        let eth_address = EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap());
-        let originating_tx_hash =
-            Txid::from_slice(&hex::decode("98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e").unwrap())
-                .unwrap();
-        let minting_param_struct = BtcOnEthMintingParamStruct::new(
-            amount,
-            hex::encode(eth_address),
-            originating_tx_hash,
-            originating_tx_address,
-        )
-        .unwrap();
-        let minting_params = BtcOnEthMintingParams::new(vec![minting_param_struct]);
-        let serialized_minting_params = minting_params.to_bytes().unwrap();
-        assert_eq!(serialized_minting_params, expected_serialization);
-        let deserialized = BtcOnEthMintingParams::from_bytes(&serialized_minting_params).unwrap();
-        assert_eq!(deserialized.len(), minting_params.len());
-        deserialized
-            .iter()
-            .enumerate()
-            .for_each(|(i, minting_param_struct)| assert_eq!(minting_param_struct, &minting_params[i]));
     }
 
     #[test]
