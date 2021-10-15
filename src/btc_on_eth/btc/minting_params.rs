@@ -1,7 +1,7 @@
 use bitcoin::{
     blockdata::transaction::Transaction as BtcTransaction,
     network::constants::Network as BtcNetwork,
-    util::{address::Address as BtcAddress},
+    util::address::Address as BtcAddress,
     Txid,
 };
 use derive_more::{Constructor, Deref, DerefMut};
@@ -202,17 +202,13 @@ impl BtcOnEthMintingParamStruct {
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::util::address::Address as BtcAddress;
+    use bitcoin::{hashes::Hash, util::address::Address as BtcAddress};
     use ethereum_types::H160 as EthAddress;
 
     use super::*;
     use crate::{
         chains::btc::{
-            btc_test_utils::{
-                get_sample_btc_block_n,
-                get_sample_btc_pub_key_slice,
-                get_sample_minting_params,
-            },
+            btc_test_utils::{get_sample_btc_block_n, get_sample_btc_pub_key_slice, get_sample_minting_params},
             btc_utils::convert_bytes_to_btc_pub_key_slice,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
             get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
@@ -370,5 +366,32 @@ mod tests {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         }
+    }
+
+    #[test]
+    fn should_serde_minting_params() {
+        let expected_serialization = "5b7b22616d6f756e74223a2230786332386632313963343030222c226574685f61646472657373223a22307866656466653236313665623336363163623866656432373832663566306363393164353964636163222c226f726967696e6174696e675f74785f68617368223a2239653864643239663038333938643761646639323532386163313133626363373336663761646364376339396565653034363861393932633831663365613938222c226f726967696e6174696e675f74785f61646472657373223a22324e324c48596274384b314b44426f6764365855473956427635594d36786566644d32227d5d";
+        let amount = convert_satoshis_to_wei(1337);
+        let originating_tx_address = BtcAddress::from_str("2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2").unwrap();
+        let eth_address = EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap());
+        let originating_tx_hash =
+            Txid::from_slice(&hex::decode("98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e").unwrap())
+                .unwrap();
+        let minting_param_struct = BtcOnEthMintingParamStruct::new(
+            amount,
+            hex::encode(eth_address),
+            originating_tx_hash,
+            originating_tx_address,
+        )
+        .unwrap();
+        let minting_params = BtcOnEthMintingParams::new(vec![minting_param_struct]);
+        let serialized_minting_params = minting_params.to_bytes().unwrap();
+        assert_eq!(hex::encode(&serialized_minting_params), expected_serialization);
+        let deserialized = BtcOnEthMintingParams::from_bytes(&serialized_minting_params).unwrap();
+        assert_eq!(deserialized.len(), minting_params.len());
+        deserialized
+            .iter()
+            .enumerate()
+            .for_each(|(i, minting_param_struct)| assert_eq!(minting_param_struct, &minting_params[i]));
     }
 }

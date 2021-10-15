@@ -3,9 +3,7 @@ use crate::{
         btc::{
             account_for_fees::maybe_account_for_fees,
             get_btc_output_json::{create_btc_output_json_and_put_in_state, get_btc_output_as_string},
-            minting_params::{
-                parse_minting_params_from_p2sh_deposits_and_add_to_state,
-            },
+            minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             sign_any_sender_transactions::maybe_sign_any_sender_canon_block_txs_and_add_to_state,
             sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,
         },

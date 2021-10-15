@@ -6,9 +6,7 @@ use crate::{
                 subtract_fees_from_minting_params,
             },
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
-            minting_params::{
-                parse_minting_params_from_p2sh_deposits_and_add_to_state,
-            },
+            minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             sign_normal_eth_transactions::get_eth_signed_txs,
         },
         check_core_is_initialized::{
