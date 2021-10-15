@@ -7,7 +7,6 @@ use crate::{
             },
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
             minting_params::{
-                parse_minting_params_from_p2pkh_deposits_and_add_to_state,
                 parse_minting_params_from_p2sh_deposits_and_add_to_state,
             },
             sign_normal_eth_transactions::get_eth_signed_txs,
@@ -86,7 +85,6 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
         .and_then(get_deposit_info_hash_map_and_put_in_state)
         .and_then(filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
-        .and_then(parse_minting_params_from_p2pkh_deposits_and_add_to_state)
         .and_then(parse_minting_params_from_p2sh_deposits_and_add_to_state)
         .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state)
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)

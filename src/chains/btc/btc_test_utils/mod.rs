@@ -4,7 +4,7 @@ use std::{fs::read_to_string, str::FromStr};
 use bitcoin::{
     blockdata::{
         script::Script as BtcScript,
-        transaction::{OutPoint as BtcOutPoint, Transaction as BtcTransaction, TxIn as BtcUtxo, TxOut as BtcTxOut},
+        transaction::{OutPoint as BtcOutPoint, Transaction as BtcTransaction, TxIn as BtcUtxo},
     },
     hashes::{sha256d, Hash},
     Txid,
@@ -41,8 +41,6 @@ use crate::{
 pub const SAMPLE_TRANSACTION_INDEX: usize = 1;
 pub const SAMPLE_OUTPUT_INDEX_OF_UTXO: u32 = 0;
 pub const SAMPLE_TRANSACTION_OUTPUT_INDEX: usize = 0;
-pub const SAMPLE_P2PKH_TRANSACTION_INDEX: usize = 56;
-pub const SAMPLE_P2PKH_TRANSACTION_OUTPUT_INDEX: usize = 1;
 
 pub const SAMPLE_TARGET_BTC_ADDRESS: &str = "moBSQbHn7N9BC9pdtAMnA7GBiALzNMQJyE";
 
@@ -81,9 +79,6 @@ pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_10: &str = "src/chains/btc/btc_test
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_11: &str = "src/chains/btc/btc_test_utils/btc-1670534-block-and-txs.json";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_12: &str = "src/chains/btc/btc_test_utils/btc-1670541-block-and-txs.json";
-
-pub const SAMPLE_TESTNET_P2PKH_BTC_BLOCK_JSON: &str =
-    "src/chains/btc/btc_test_utils/1610826-testnet-block-with-tx-to-test-address.json";
 
 pub const SAMPLE_SERIALIZED_BTC_UTXO: &str = "0e8d588f88d5624148070a8cd79508da8cb76625e4fcdb19a5fc996aa843bf04000000001976a91454102783c8640c5144d039cea53eb7dbb470081488acffffffff";
 
@@ -144,27 +139,23 @@ pub fn get_sample_minting_params() -> BtcOnEthMintingParams {
     let originating_tx_hash_1 = Txid::hash(b"something_1");
     let originating_tx_hash_2 = Txid::hash(b"something_2");
     let originating_tx_hash_3 = Txid::hash(b"something_3");
-    let user_data = None;
     let minting_params_1 = BtcOnEthMintingParamStruct {
         amount: amount_1,
         eth_address: eth_address_1,
         originating_tx_hash: originating_tx_hash_1,
         originating_tx_address: originating_tx_address_1,
-        user_data: user_data.clone(),
     };
     let minting_params_2 = BtcOnEthMintingParamStruct {
         amount: amount_2,
         eth_address: eth_address_2,
         originating_tx_hash: originating_tx_hash_2,
         originating_tx_address: originating_tx_address_2,
-        user_data: user_data.clone(),
     };
     let minting_params_3 = BtcOnEthMintingParamStruct {
         amount: amount_3,
         eth_address: eth_address_3,
         originating_tx_hash: originating_tx_hash_3,
         originating_tx_address: originating_tx_address_3,
-        user_data,
     };
     BtcOnEthMintingParams::new(vec![minting_params_1, minting_params_2, minting_params_3])
 }
@@ -222,20 +213,6 @@ pub fn get_sample_testnet_block_and_txs() -> Result<BtcBlockAndId> {
 
 pub fn get_sample_btc_tx() -> BtcTransaction {
     get_sample_testnet_block_and_txs().unwrap().block.txdata[SAMPLE_TRANSACTION_INDEX].clone()
-}
-
-pub fn get_sample_p2pkh_btc_block_and_txs() -> BtcBlockAndId {
-    BtcSubmissionMaterialJson::from_str(&read_to_string(&SAMPLE_TESTNET_P2PKH_BTC_BLOCK_JSON).unwrap())
-        .and_then(|json| BtcBlockAndId::from_json(&json))
-        .unwrap()
-}
-
-pub fn get_sample_btc_p2pkh_tx() -> BtcTransaction {
-    get_sample_p2pkh_btc_block_and_txs().block.txdata[SAMPLE_P2PKH_TRANSACTION_INDEX].clone()
-}
-
-pub fn get_sample_p2pkh_op_return_output() -> BtcTxOut {
-    get_sample_btc_p2pkh_tx().output[SAMPLE_P2PKH_TRANSACTION_OUTPUT_INDEX].clone()
 }
 
 pub fn get_sample_btc_utxo() -> BtcUtxo {
