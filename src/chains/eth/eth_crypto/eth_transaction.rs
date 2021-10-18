@@ -194,8 +194,8 @@ pub fn get_unsigned_minting_tx(
     to: EthAddress,
     gas_price: u64,
     recipient: &EthAddress,
-    user_data: Option<&[Byte]>,
-    operator_data: Option<&[Byte]>,
+    user_data: Option<Bytes>,
+    operator_data: Option<Bytes>,
 ) -> Result<EthTransaction> {
     Ok(EthTransaction::new_unsigned(
         encode_erc777_mint_fxn_maybe_with_data(recipient, amount, user_data, operator_data)?,
@@ -216,8 +216,8 @@ pub fn get_signed_minting_tx(
     gas_price: u64,
     recipient: &EthAddress,
     eth_private_key: &EthPrivateKey,
-    user_data: Option<&[Byte]>,
-    operator_data: Option<&[Byte]>,
+    user_data: Option<Bytes>,
+    operator_data: Option<Bytes>,
 ) -> Result<EthTransaction> {
     get_unsigned_minting_tx(
         nonce,

@@ -2,7 +2,6 @@ use std::str::FromStr;
 #[cfg(test)]
 use std::{convert::TryInto, str::from_utf8};
 
-#[cfg(test)]
 use bitcoin::util::address::Address as BtcAddress;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
@@ -56,7 +55,6 @@ impl MetadataOriginAddress {
         }
     }
 
-    #[cfg(test)]
     pub fn new_from_btc_address(btc_address: &BtcAddress, metadata_chain_id: &MetadataChainId) -> Result<Self> {
         let protocol_id = metadata_chain_id.to_protocol_id();
         match protocol_id {

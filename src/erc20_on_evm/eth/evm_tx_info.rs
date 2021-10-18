@@ -163,7 +163,7 @@ impl EthOnEvmEvmTxInfo {
         encode_erc777_mint_fxn_maybe_with_data(
             &self.destination_address,
             &self.get_host_token_amount(dictionary)?,
-            if metadata.is_empty() { None } else { Some(&metadata) },
+            if metadata.is_empty() { None } else { Some(metadata) },
             operator_data,
         )
         .map(|data| {

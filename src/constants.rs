@@ -38,7 +38,7 @@ const SAFE_EVM_ADDRESS_HEX: &str = SAFE_ETH_ADDRESS_HEX;
 lazy_static! {
     pub static ref THIRTY_TWO_ZERO_BYTES: Vec<u8> = vec![0; 32];
     pub static ref DB_KEY_PREFIX: &'static str = option_env!("DB_KEY_PREFIX").unwrap_or("");
-    pub static ref SAFE_BTC_ADDRESS: BtcAddress = BtcAddress::from_str(&SAFE_BTC_ADDRESS_STR).unwrap();
+    pub static ref SAFE_BTC_ADDRESS: BtcAddress = BtcAddress::from_str(SAFE_BTC_ADDRESS_STR).unwrap();
     pub static ref SAFE_ETH_ADDRESS: EthAddress = EthAddress::from_slice(&hex::decode(SAFE_ETH_ADDRESS_HEX).unwrap());
     pub static ref SAFE_EVM_ADDRESS: EthAddress = EthAddress::from_slice(&hex::decode(SAFE_EVM_ADDRESS_HEX).unwrap());
 }

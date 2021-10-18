@@ -15,12 +15,19 @@ use crate::{
             btc_constants::MINIMUM_REQUIRED_SATOSHIS,
             btc_database_utils::get_btc_network_from_db,
             btc_state::BtcState,
+            btc_utils::convert_str_to_btc_address_or_safe_address,
             deposit_address_info::DepositInfoHashMap,
         },
         eth::eth_utils::safely_convert_hex_to_eth_address,
     },
     constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
+    metadata::{
+        metadata_chain_id::MetadataChainId,
+        metadata_origin_address::MetadataOriginAddress,
+        metadata_protocol_id::MetadataProtocolId,
+        Metadata,
+    },
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
@@ -202,6 +209,31 @@ impl BtcOnEthMintingParamStruct {
                 subtrahend, self_amount_in_satoshis, amount_minus_fee
             );
             Ok(self.update_amount(convert_satoshis_to_wei(amount_minus_fee)))
+        }
+    }
+
+    pub fn maybe_to_metadata_bytes(self) -> Result<Option<Bytes>> {
+        self.maybe_to_metadata()
+            .and_then(|maybe_metadata| match maybe_metadata {
+                Some(metadata) => Ok(Some(metadata.to_bytes_for_protocol(&MetadataProtocolId::Ethereum)?)),
+                None => Ok(None),
+            })
+    }
+
+    fn maybe_to_metadata(self) -> Result<Option<Metadata>> {
+        info!("✔ Maybe getting metadata from user data...");
+        match self.user_data {
+            None => {
+                info!("✘ No user data to wrap into metadata ∴ skipping this step!");
+                Ok(None)
+            },
+            Some(ref user_data) => Ok(Some(Metadata::new(
+                user_data,
+                &MetadataOriginAddress::new_from_btc_address(
+                    &convert_str_to_btc_address_or_safe_address(&self.originating_tx_address)?,
+                    &MetadataChainId::BitcoinMainnet,
+                )?,
+            ))),
         }
     }
 }
@@ -421,6 +453,15 @@ mod tests {
         )
         .unwrap()]);
         let result = BtcOnEthMintingParams::from_bytes(&bytes).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_minting_params_to_metadata_bytes() {
+        let mut minting_param_stuct = get_sample_minting_params()[0].clone();
+        minting_param_stuct.user_data = Some(hex::decode("d3caffc0ff33").unwrap());
+        let expected_result = Some(hex::decode("0100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008001ec97de0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000006d3caffc0ff330000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002231333643544552616f636d38644c6245747a436146744a4a58396a6646686e43684b000000000000000000000000000000000000000000000000000000000000").unwrap());
+        let result = minting_param_stuct.maybe_to_metadata_bytes().unwrap();
         assert_eq!(result, expected_result);
     }
 }

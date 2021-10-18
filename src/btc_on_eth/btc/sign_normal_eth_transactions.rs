@@ -34,7 +34,7 @@ pub fn get_eth_signed_txs(
                     signing_params.gas_price,
                     &minting_param_struct.eth_address,
                     &signing_params.eth_private_key,
-                    None,
+                    minting_param_struct.clone().maybe_to_metadata_bytes()?,
                     None,
                 )
             })
