@@ -27,7 +27,7 @@ use crate::{
             eth_submission_material::EthSubmissionMaterial,
         },
     },
-    constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_BTC_ADDRESS},
+    constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_BTC_ADDRESS_STR},
     fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
@@ -143,9 +143,9 @@ impl BtcOnEthRedeemInfos {
             Err(_) => {
                 info!(
                     "✔ Failed to parse BTC address! Default to safe BTC address: {}",
-                    SAFE_BTC_ADDRESS
+                    SAFE_BTC_ADDRESS_STR
                 );
-                SAFE_BTC_ADDRESS.to_string()
+                SAFE_BTC_ADDRESS_STR.to_string()
             },
         }
     }
@@ -364,7 +364,7 @@ mod tests {
     fn should_get_safe_btc_address_from_bad_address() {
         let bad_address = "not a BTC address".to_string();
         let result = BtcOnEthRedeemInfos::get_btc_address_or_revert_to_safe_address(&bad_address);
-        assert_eq!(result, SAFE_BTC_ADDRESS.to_string());
+        assert_eq!(result, SAFE_BTC_ADDRESS_STR.to_string());
     }
 
     #[test]

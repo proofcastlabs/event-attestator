@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::btc::{btc_constants::BTC_PUB_KEY_SLICE_LENGTH, deposit_address_info::DepositAddressInfoJson},
-    constants::SAFE_BTC_ADDRESS,
+    constants::SAFE_BTC_ADDRESS_STR,
     types::{Byte, Bytes, Result},
 };
 
@@ -45,8 +45,8 @@ impl BtcRecipientAndAmount {
                 Ok(address) => address,
                 Err(error) => {
                     info!("✔ Error parsing BTC address for recipient: {}", error);
-                    info!("✔ Defaulting to SAFE BTC address: {}", SAFE_BTC_ADDRESS);
-                    BtcAddress::from_str(SAFE_BTC_ADDRESS)?
+                    info!("✔ Defaulting to SAFE BTC address: {}", SAFE_BTC_ADDRESS_STR);
+                    BtcAddress::from_str(SAFE_BTC_ADDRESS_STR)?
                 },
             },
         })

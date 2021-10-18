@@ -23,7 +23,7 @@ use crate::{
             get_utxo_nonce_from_db,
         },
     },
-    constants::SAFE_BTC_ADDRESS,
+    constants::SAFE_BTC_ADDRESS_STR,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -70,7 +70,7 @@ impl BtcEnclaveState {
             btc_tail_block_number: btc_tail_block.height,
             btc_sats_per_byte: get_btc_fee_from_db(db)?,
             btc_canon_block_number: btc_canon_block.height,
-            btc_safe_address: SAFE_BTC_ADDRESS.to_string(),
+            btc_safe_address: SAFE_BTC_ADDRESS_STR.to_string(),
             btc_latest_block_number: btc_latest_block.height,
             btc_difficulty: get_btc_difficulty_from_db(db)?,
             btc_anchor_block_number: btc_anchor_block.height,
