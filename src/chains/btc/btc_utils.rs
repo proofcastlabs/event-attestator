@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use bitcoin::{
     blockdata::{
         opcodes,
@@ -13,6 +15,7 @@ use bitcoin::{
         base58::{encode_slice as base58_encode_slice, from as from_base58},
         key::PrivateKey,
     },
+    Address as BtcAddress,
 };
 
 use crate::{
@@ -20,6 +23,7 @@ use crate::{
         btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, DEFAULT_BTC_SEQUENCE, PTOKEN_P2SH_SCRIPT_BYTES},
         btc_types::BtcPubKeySlice,
     },
+    constants::SAFE_BTC_ADDRESS,
     types::{Byte, Bytes, Result},
     utils::strip_hex_prefix,
 };
@@ -158,6 +162,20 @@ pub fn get_btc_tx_id_from_str(tx_id: &str) -> Result<Txid> {
             // NOTE: https://bitcoin.stackexchange.com/questions/39363/compute-txid-of-bitcoin-transaction
             bytes.reverse();
             Ok(Txid::from_slice(&bytes)?)
+        },
+    }
+}
+
+pub fn convert_str_to_btc_address_or_safe_address(s: &str) -> Result<BtcAddress> {
+    match BtcAddress::from_str(s) {
+        Ok(address) => Ok(address),
+        _ => {
+            info!(
+                "✔ Could not parse BTC from string: '{}'! Diverting to safe BTC address...",
+                s
+            );
+            let safe_address = SAFE_BTC_ADDRESS.clone();
+            Ok(safe_address)
         },
     }
 }
@@ -385,6 +403,22 @@ mod tests {
         bytes.reverse();
         let result = get_btc_tx_id_from_str(tx_id).unwrap();
         let expected_result = Txid::from_slice(&bytes).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_str_to_btc_address_or_safe_address() {
+        let good_btc_address_str = "136CTERaocm8dLbEtzCaFtJJX9jfFhnChK";
+        let result = convert_str_to_btc_address_or_safe_address(good_btc_address_str).unwrap();
+        let expected_result = BtcAddress::from_str(good_btc_address_str).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_revert_to_safe_btc_address_if_it_cannot_convert_str_to_btc_address() {
+        let bad_btc_address_str = "not a BTC address";
+        let result = convert_str_to_btc_address_or_safe_address(bad_btc_address_str).unwrap();
+        let expected_result = SAFE_BTC_ADDRESS.clone();
         assert_eq!(result, expected_result);
     }
 }
