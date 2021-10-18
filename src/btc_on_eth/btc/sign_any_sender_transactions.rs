@@ -96,12 +96,14 @@ mod tests {
         let originating_address = BtcAddress::from_str(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         let recipient_1 = EthAddress::from_slice(&hex::decode("789e39e46117DFaF50A1B53A98C7ab64750f9Ba3").unwrap());
         let recipient_2 = EthAddress::from_slice(&hex::decode("9360a5C047e8Eb44647f17672638c3bB8e2B8a53").unwrap());
+        let user_data = None;
         let minting_params = vec![
             BtcOnEthMintingParamStruct::new(
                 convert_satoshis_to_wei(1337),
                 hex::encode(recipient_1),
                 Txid::from_hash(Hash::hash(&[0xc0])),
                 originating_address.clone(),
+                user_data.clone(),
             )
             .unwrap(),
             BtcOnEthMintingParamStruct::new(
@@ -109,6 +111,7 @@ mod tests {
                 hex::encode(recipient_2),
                 Txid::from_hash(Hash::hash(&[0xc0])),
                 originating_address,
+                user_data,
             )
             .unwrap(),
         ];
