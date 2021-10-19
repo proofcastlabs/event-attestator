@@ -126,6 +126,7 @@ impl BtcOnEosMintingParams {
                         BtcOnEosMintingParamStruct {
                             amount: params.amount.clone(),
                             to: SAFE_EOS_ADDRESS.to_string(),
+                            user_data: params.user_data.clone(),
                             originating_tx_hash: params.originating_tx_hash.clone(),
                             originating_tx_address: params.originating_tx_address.clone(),
                         }
@@ -176,6 +177,11 @@ impl BtcOnEosMintingParams {
                                         p2sh_deposit_containing_tx.txid(),
                                         btc_address,
                                         eos_token_symbol,
+                                        if deposit_info.user_data.is_empty() {
+                                            None
+                                        } else {
+                                            Some(deposit_info.user_data.clone())
+                                        },
                                     ))
                                 },
                             }
@@ -212,6 +218,7 @@ pub struct BtcOnEosMintingParamStruct {
     pub amount: String,
     pub originating_tx_hash: String,
     pub originating_tx_address: String,
+    pub user_data: Option<Bytes>,
 }
 
 impl BtcOnEosMintingParamStruct {
@@ -231,12 +238,9 @@ impl BtcOnEosMintingParamStruct {
                 "✔ Subtracted amount of {} from current minting params amount of {} to get final amount of {}",
                 subtrahend, amount, amount_minus_fee
             );
-            Ok(Self {
-                to: self.to.clone(),
-                originating_tx_hash: self.originating_tx_hash.clone(),
-                originating_tx_address: self.originating_tx_address.clone(),
-                amount: convert_u64_to_8_decimal_eos_asset(amount_minus_fee, symbol),
-            })
+            let mut new_self = self.clone();
+            new_self.amount = convert_u64_to_8_decimal_eos_asset(amount_minus_fee, symbol);
+            Ok(new_self)
         }
     }
 
@@ -246,8 +250,10 @@ impl BtcOnEosMintingParamStruct {
         originating_tx_hash: Txid,
         originating_tx_address: BtcAddress,
         symbol: &str,
+        user_data: Option<Bytes>,
     ) -> BtcOnEosMintingParamStruct {
         BtcOnEosMintingParamStruct {
+            user_data,
             to: match EosAccountName::from_str(&to) {
                 Ok(_) => to,
                 Err(_) => {
@@ -256,8 +262,8 @@ impl BtcOnEosMintingParamStruct {
                     SAFE_EOS_ADDRESS.to_string()
                 },
             },
-            amount: convert_u64_to_8_decimal_eos_asset(amount, symbol),
             originating_tx_hash: originating_tx_hash.to_string(),
+            amount: convert_u64_to_8_decimal_eos_asset(amount, symbol),
             originating_tx_address: originating_tx_address.to_string(),
         }
     }
@@ -339,23 +345,20 @@ mod tests {
         };
     }
 
-    fn get_serialized_minting_params() -> &'static str {
-        "5b7b22746f223a22656f736163636f756e743178222c22616d6f756e74223a22302e30303030353030302050425443222c226f726967696e6174696e675f74785f68617368223a2232313636623734656536373137656337306561336231376434356663393865313237656433616630383462613533386633333136336336636166386461356531222c226f726967696e6174696e675f74785f61646472657373223a22656f736163636f756e743178227d2c7b22746f223a22656f736163636f756e743278222c22616d6f756e74223a22302e30303030353030312050425443222c226f726967696e6174696e675f74785f68617368223a2234383663393537636338633366613765646439383633336437326432383737383630643136636232376436646662353937666630373132626437313161626237222c226f726967696e6174696e675f74785f61646472657373223a22656f736163636f756e743278227d2c7b22746f223a22656f736163636f756e743378222c22616d6f756e74223a22302e30303030343939392050425443222c226f726967696e6174696e675f74785f68617368223a2262353261636463303438323830343338356562643462346236326534326430383462646565666164633761396138396339376135346664343838376636366463222c226f726967696e6174696e675f74785f61646472657373223a22656f736163636f756e743378227d5d"
-    }
-
     #[test]
-    fn should_serialize_btc_on_eos_minting_params() {
-        let minting_params = get_sample_btc_on_eos_minting_params();
-        let expected_result = get_serialized_minting_params();
-        let result = hex::encode(minting_params.to_bytes().unwrap());
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_deserialize_btc_on_eos_minting_params() {
-        let bytes = hex::decode(&get_serialized_minting_params()).unwrap();
+    fn should_deserialize_legacy_serialized_btc_on_eos_minting_params() {
+        let legacy_serialized_minting_params = "5b7b22746f223a22656f736163636f756e743178222c22616d6f756e74223a22302e30303030353030302050425443222c226f726967696e6174696e675f74785f68617368223a2232313636623734656536373137656337306561336231376434356663393865313237656433616630383462613533386633333136336336636166386461356531222c226f726967696e6174696e675f74785f61646472657373223a22656f736163636f756e743178227d2c7b22746f223a22656f736163636f756e743278222c22616d6f756e74223a22302e30303030353030312050425443222c226f726967696e6174696e675f74785f68617368223a2234383663393537636338633366613765646439383633336437326432383737383630643136636232376436646662353937666630373132626437313161626237222c226f726967696e6174696e675f74785f61646472657373223a22656f736163636f756e743278227d2c7b22746f223a22656f736163636f756e743378222c22616d6f756e74223a22302e30303030343939392050425443222c226f726967696e6174696e675f74785f68617368223a2262353261636463303438323830343338356562643462346236326534326430383462646565666164633761396138396339376135346664343838376636366463222c226f726967696e6174696e675f74785f61646472657373223a22656f736163636f756e743378227d5d";
+        let bytes = hex::decode(legacy_serialized_minting_params).unwrap();
         let result = BtcOnEosMintingParams::from_bytes(&bytes).unwrap();
         let expected_result = get_sample_btc_on_eos_minting_params();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_serde_btc_on_eos_minting_params() {
+        let minting_params = get_sample_btc_on_eos_minting_params();
+        let bytes = minting_params.to_bytes().unwrap();
+        let result = BtcOnEosMintingParams::from_bytes(&bytes).unwrap();
+        assert_eq!(result, minting_params);
     }
 }
