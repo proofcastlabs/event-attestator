@@ -6,6 +6,7 @@ use strum_macros::EnumIter;
 
 use crate::{
     crypto_utils::keccak_hash_bytes,
+    metadata::metadata_chain_id::MetadataChainId,
     traits::ChainId,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
@@ -83,6 +84,14 @@ impl BtcChainId {
     fn get_all() -> Vec<Self> {
         use strum::IntoEnumIterator;
         Self::iter().filter(|chain_id| !chain_id.is_unknown()).collect()
+    }
+
+    pub fn to_metadata_chain_id(&self) -> MetadataChainId {
+        match self {
+            Self::Bitcoin => MetadataChainId::BitcoinMainnet,
+            Self::Testnet => MetadataChainId::BitcoinTestnet,
+            Self::Unknown(_) => MetadataChainId::BtcUnknown,
+        }
     }
 }
 
