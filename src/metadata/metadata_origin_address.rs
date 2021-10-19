@@ -73,8 +73,10 @@ impl MetadataOriginAddress {
             MetadataProtocolId::Eos => Ok(EosAddress::from_str(&self.address)?.as_u64().to_le_bytes().to_vec()),
         }
     }
+}
 
-    #[cfg(test)]
+#[cfg(test)]
+impl MetadataOriginAddress {
     fn from_bytes(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
         match metadata_chain_id.to_protocol_id() {
             MetadataProtocolId::Eos => Self::from_bytes_for_eos(bytes, metadata_chain_id),
@@ -83,7 +85,6 @@ impl MetadataOriginAddress {
         }
     }
 
-    #[cfg(test)]
     fn from_bytes_for_eth(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
         info!("✔ Attempting to create `MetadataOriginAddress` from bytes for ETH...");
         if bytes.len() == ETH_ADDRESS_SIZE_IN_BYTES {
@@ -93,7 +94,6 @@ impl MetadataOriginAddress {
         }
     }
 
-    #[cfg(test)]
     fn from_bytes_for_btc(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
         info!("✔ Attempting to create `MetadataOriginAddress` from bytes for EOS...");
         match from_utf8(bytes) {
@@ -109,7 +109,6 @@ impl MetadataOriginAddress {
         }
     }
 
-    #[cfg(test)]
     fn from_bytes_for_eos(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
         info!("✔ Attempting to create `MetadataOriginAddress` from bytes for EOS...");
         let num_bytes = bytes.len();
