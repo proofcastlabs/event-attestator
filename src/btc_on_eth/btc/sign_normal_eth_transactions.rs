@@ -4,14 +4,17 @@ use crate::{
         btc::{
             btc_chain_id::BtcChainId,
             btc_database_utils::{get_btc_canon_block_from_db, get_btc_chain_id_from_db},
+            btc_metadata::ToMetadata,
             btc_state::BtcState,
         },
         eth::{
+            eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
             eth_crypto::eth_transaction::{get_signed_minting_tx, EthTransaction, EthTransactions},
             eth_database_utils::get_signing_params_from_db,
             eth_types::EthSigningParams,
         },
     },
+    metadata::metadata_protocol_id::MetadataProtocolId,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -39,7 +42,11 @@ pub fn get_eth_signed_txs(
                     signing_params.gas_price,
                     &minting_param_struct.eth_address,
                     &signing_params.eth_private_key,
-                    minting_param_struct.clone().maybe_to_metadata_bytes(btc_chain_id)?,
+                    minting_param_struct.clone().maybe_to_metadata_bytes(
+                        btc_chain_id,
+                        MAX_BYTES_FOR_ETH_USER_DATA,
+                        &MetadataProtocolId::Ethereum,
+                    )?,
                     None,
                 )
             })

@@ -11,6 +11,7 @@ pub(crate) mod btc_crypto;
 pub(crate) mod btc_database_utils;
 pub(crate) mod btc_debug_functions;
 pub(crate) mod btc_enclave_state;
+pub(crate) mod btc_metadata;
 pub(crate) mod btc_state;
 pub(crate) mod btc_submission_material;
 pub(crate) mod btc_test_utils;

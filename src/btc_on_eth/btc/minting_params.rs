@@ -12,18 +12,16 @@ use crate::{
     btc_on_eth::utils::{convert_satoshis_to_wei, convert_wei_to_satoshis},
     chains::{
         btc::{
-            btc_chain_id::BtcChainId,
             btc_constants::MINIMUM_REQUIRED_SATOSHIS,
             btc_database_utils::get_btc_network_from_db,
+            btc_metadata::ToMetadata,
             btc_state::BtcState,
-            btc_utils::convert_str_to_btc_address_or_safe_address,
             deposit_address_info::DepositInfoHashMap,
         },
-        eth::{eth_constants::MAX_BYTES_FOR_ETH_USER_DATA, eth_utils::safely_convert_hex_to_eth_address},
+        eth::eth_utils::safely_convert_hex_to_eth_address,
     },
     constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
-    metadata::{metadata_origin_address::MetadataOriginAddress, metadata_protocol_id::MetadataProtocolId, Metadata},
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
@@ -207,45 +205,15 @@ impl BtcOnEthMintingParamStruct {
             Ok(self.update_amount(convert_satoshis_to_wei(amount_minus_fee)))
         }
     }
+}
 
-    pub fn maybe_to_metadata_bytes(self, btc_chain_id: &BtcChainId) -> Result<Option<Bytes>> {
-        self.maybe_to_metadata(btc_chain_id)
-            .and_then(|maybe_metadata| match maybe_metadata {
-                Some(metadata) => Ok(Some(metadata.to_bytes_for_protocol(&MetadataProtocolId::Ethereum)?)),
-                None => Ok(None),
-            })
+impl ToMetadata for BtcOnEthMintingParamStruct {
+    fn get_user_data(&self) -> Option<Bytes> {
+        self.user_data.clone()
     }
 
-    fn maybe_to_metadata(self, btc_chain_id: &BtcChainId) -> Result<Option<Metadata>> {
-        info!("✔ Maybe getting metadata from user data...");
-        match self.user_data {
-            Some(ref user_data) => {
-                if user_data.len() > MAX_BYTES_FOR_ETH_USER_DATA {
-                    info!(
-                        "✘ `user_data` redacted from `Metadata` ∵ it's > {} bytes!",
-                        MAX_BYTES_FOR_ETH_USER_DATA
-                    );
-                    Ok(None)
-                } else {
-                    self.to_metadata(user_data, btc_chain_id)
-                }
-            },
-            None => {
-                info!("✘ No user data to wrap into metadata ∴ skipping this step!");
-                Ok(None)
-            },
-        }
-    }
-
-    fn to_metadata(&self, user_data: &[Byte], btc_chain_id: &BtcChainId) -> Result<Option<Metadata>> {
-        info!("✔ Getting metadata from user data...");
-        Ok(Some(Metadata::new(
-            user_data,
-            &MetadataOriginAddress::new_from_btc_address(
-                &convert_str_to_btc_address_or_safe_address(&self.originating_tx_address)?,
-                &btc_chain_id.to_metadata_chain_id(),
-            )?,
-        )))
+    fn get_originating_tx_address(&self) -> String {
+        self.originating_tx_address.clone()
     }
 }
 
@@ -258,13 +226,18 @@ mod tests {
 
     use super::*;
     use crate::{
-        chains::btc::{
-            btc_test_utils::{get_sample_btc_block_n, get_sample_btc_pub_key_slice, get_sample_minting_params},
-            btc_utils::convert_bytes_to_btc_pub_key_slice,
-            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
-            get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
+        chains::{
+            btc::{
+                btc_chain_id::BtcChainId,
+                btc_test_utils::{get_sample_btc_block_n, get_sample_btc_pub_key_slice, get_sample_minting_params},
+                btc_utils::convert_bytes_to_btc_pub_key_slice,
+                filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
+                get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
+            },
+            eth::eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
         },
         errors::AppError,
+        metadata::metadata_protocol_id::MetadataProtocolId,
     };
 
     #[test]
@@ -473,7 +446,10 @@ mod tests {
         minting_param_stuct.user_data = Some(hex::decode("d3caffc0ff33").unwrap());
         let expected_result = Some(hex::decode("0100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008001ec97de0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000006d3caffc0ff330000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002231333643544552616f636d38644c6245747a436146744a4a58396a6646686e43684b000000000000000000000000000000000000000000000000000000000000").unwrap());
         let btc_chain_id = BtcChainId::Bitcoin;
-        let result = minting_param_stuct.maybe_to_metadata_bytes(&btc_chain_id).unwrap();
+        let destination_protocol_id = MetadataProtocolId::Ethereum;
+        let result = minting_param_stuct
+            .maybe_to_metadata_bytes(&btc_chain_id, MAX_BYTES_FOR_ETH_USER_DATA, &destination_protocol_id)
+            .unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -482,7 +458,10 @@ mod tests {
         let mut minting_param_struct = get_sample_minting_params()[0].clone();
         minting_param_struct.user_data = Some(vec![0u8; MAX_BYTES_FOR_ETH_USER_DATA + 1]);
         let btc_chain_id = BtcChainId::Bitcoin;
-        let result = minting_param_struct.maybe_to_metadata_bytes(&btc_chain_id).unwrap();
+        let destination_protocol_id = MetadataProtocolId::Ethereum;
+        let result = minting_param_struct
+            .maybe_to_metadata_bytes(&btc_chain_id, MAX_BYTES_FOR_ETH_USER_DATA, &destination_protocol_id)
+            .unwrap();
         assert!(result.is_none());
     }
 }
