@@ -8,13 +8,8 @@ use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
         eth_chain_id::EthChainId,
-        eth_constants::{
-            GAS_LIMIT_FOR_MINTING_TX,
-            GAS_LIMIT_FOR_PTOKEN_DEPLOY,
-            VALUE_FOR_MINTING_TX,
-            VALUE_FOR_PTOKEN_DEPLOY,
-        },
-        eth_contracts::erc777::encode_erc777_mint_fxn_maybe_with_data,
+        eth_constants::{GAS_LIMIT_FOR_PTOKEN_DEPLOY, VALUE_FOR_MINTING_TX, VALUE_FOR_PTOKEN_DEPLOY},
+        eth_contracts::erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_NO_DATA_GAS_LIMIT},
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
         eth_types::{EthSignature, EthSignedTransaction},
@@ -203,7 +198,7 @@ pub fn get_unsigned_minting_tx(
         VALUE_FOR_MINTING_TX,
         to,
         chain_id,
-        GAS_LIMIT_FOR_MINTING_TX,
+        ERC777_MINT_WITH_NO_DATA_GAS_LIMIT, // FIXME this should be different depending on if user data or not!
         gas_price,
     ))
 }
