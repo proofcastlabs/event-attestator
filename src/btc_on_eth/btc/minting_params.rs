@@ -18,7 +18,7 @@ use crate::{
             btc_utils::convert_str_to_btc_address_or_safe_address,
             deposit_address_info::DepositInfoHashMap,
         },
-        eth::eth_utils::safely_convert_hex_to_eth_address,
+        eth::{eth_constants::MAX_BYTES_FOR_ETH_USER_DATA, eth_utils::safely_convert_hex_to_eth_address},
     },
     constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
@@ -223,18 +223,33 @@ impl BtcOnEthMintingParamStruct {
     fn maybe_to_metadata(self) -> Result<Option<Metadata>> {
         info!("✔ Maybe getting metadata from user data...");
         match self.user_data {
+            Some(ref user_data) => {
+                if user_data.len() > MAX_BYTES_FOR_ETH_USER_DATA {
+                    info!(
+                        "✘ `user_data` redacted from `Metadata` ∵ it's > {} bytes!",
+                        MAX_BYTES_FOR_ETH_USER_DATA
+                    );
+                    Ok(None)
+                } else {
+                    self.to_metadata(user_data)
+                }
+            },
             None => {
                 info!("✘ No user data to wrap into metadata ∴ skipping this step!");
                 Ok(None)
             },
-            Some(ref user_data) => Ok(Some(Metadata::new(
-                user_data,
-                &MetadataOriginAddress::new_from_btc_address(
-                    &convert_str_to_btc_address_or_safe_address(&self.originating_tx_address)?,
-                    &MetadataChainId::BitcoinMainnet,
-                )?,
-            ))),
         }
+    }
+
+    fn to_metadata(&self, user_data: &[Byte]) -> Result<Option<Metadata>> {
+        info!("✔ Getting metadata from user data...");
+        Ok(Some(Metadata::new(
+            user_data,
+            &MetadataOriginAddress::new_from_btc_address(
+                &convert_str_to_btc_address_or_safe_address(&self.originating_tx_address)?,
+                &MetadataChainId::BitcoinMainnet,
+            )?,
+        )))
     }
 }
 
@@ -463,5 +478,13 @@ mod tests {
         let expected_result = Some(hex::decode("0100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008001ec97de0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000006d3caffc0ff330000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002231333643544552616f636d38644c6245747a436146744a4a58396a6646686e43684b000000000000000000000000000000000000000000000000000000000000").unwrap());
         let result = minting_param_stuct.maybe_to_metadata_bytes().unwrap();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_not_convert_minting_params_to_metadata_bytes_if_user_data_too_large() {
+        let mut minting_param_struct = get_sample_minting_params()[0].clone();
+        minting_param_struct.user_data = Some(vec![0u8; MAX_BYTES_FOR_ETH_USER_DATA + 1]);
+        let result = minting_param_struct.maybe_to_metadata_bytes().unwrap();
+        assert!(result.is_none());
     }
 }
