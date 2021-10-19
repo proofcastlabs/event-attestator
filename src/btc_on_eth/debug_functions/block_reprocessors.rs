@@ -25,7 +25,12 @@ use crate::{
     chains::{
         btc::{
             btc_block::parse_btc_block_and_id_and_put_in_state,
-            btc_database_utils::{end_btc_db_transaction, get_btc_account_nonce_from_db, start_btc_db_transaction},
+            btc_database_utils::{
+                end_btc_db_transaction,
+                get_btc_account_nonce_from_db,
+                get_btc_chain_id_from_db,
+                start_btc_db_transaction,
+            },
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
             extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
@@ -105,6 +110,7 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
             get_eth_signed_txs(
                 &get_signing_params_from_db(&state.db)?,
                 &state.btc_on_eth_minting_params,
+                &get_btc_chain_id_from_db(&state.db)?,
             )
             .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
         })

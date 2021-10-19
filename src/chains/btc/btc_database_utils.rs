@@ -89,10 +89,13 @@ pub fn put_btc_fee_in_db<D: DatabaseInterface>(db: &D, fee: u64) -> Result<()> {
     )
 }
 
-pub fn get_btc_network_from_db<D: DatabaseInterface>(db: &D) -> Result<BtcNetwork> {
+pub fn get_btc_chain_id_from_db<D: DatabaseInterface>(db: &D) -> Result<BtcChainId> {
     db.get(BTC_NETWORK_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|ref bytes| BtcChainId::from_bytes(bytes))
-        .map(|chain_id| chain_id.to_btc_network())
+}
+
+pub fn get_btc_network_from_db<D: DatabaseInterface>(db: &D) -> Result<BtcNetwork> {
+    get_btc_chain_id_from_db(db).map(|chain_id| chain_id.to_btc_network())
 }
 
 pub fn put_btc_network_in_db<D: DatabaseInterface>(db: &D, network: BtcNetwork) -> Result<()> {
