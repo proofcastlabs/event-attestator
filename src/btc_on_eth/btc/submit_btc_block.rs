@@ -3,10 +3,7 @@ use crate::{
         btc::{
             account_for_fees::maybe_account_for_fees,
             get_btc_output_json::{create_btc_output_json_and_put_in_state, get_btc_output_as_string},
-            minting_params::{
-                parse_minting_params_from_p2pkh_deposits_and_add_to_state,
-                parse_minting_params_from_p2sh_deposits_and_add_to_state,
-            },
+            minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             sign_any_sender_transactions::maybe_sign_any_sender_canon_block_txs_and_add_to_state,
             sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,
         },
@@ -70,7 +67,6 @@ pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(validate_deposit_address_list_in_state)
         .and_then(filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
-        .and_then(parse_minting_params_from_p2pkh_deposits_and_add_to_state)
         .and_then(parse_minting_params_from_p2sh_deposits_and_add_to_state)
         .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state)
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)

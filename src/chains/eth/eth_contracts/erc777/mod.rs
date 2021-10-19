@@ -83,15 +83,15 @@ fn encode_erc777_mint_with_data_fxn(
     ])
 }
 
-fn get_eth_calldata_from_maybe_data(maybe_data: Option<&[Byte]>) -> Bytes {
-    maybe_data.unwrap_or(&EMPTY_DATA).to_vec()
+fn get_eth_calldata_from_maybe_data(maybe_data: Option<Bytes>) -> Bytes {
+    maybe_data.unwrap_or(EMPTY_DATA).to_vec()
 }
 
 pub fn encode_erc777_mint_fxn_maybe_with_data(
     recipient: &EthAddress,
     value: &U256,
-    user_data: Option<&[Byte]>,
-    operator_data: Option<&[Byte]>,
+    user_data: Option<Bytes>,
+    operator_data: Option<Bytes>,
 ) -> Result<Bytes> {
     match user_data.is_some() | operator_data.is_some() {
         false => encode_erc777_mint_with_no_data_fxn(recipient, value),

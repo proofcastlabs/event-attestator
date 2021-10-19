@@ -1,13 +1,7 @@
-use std::str::FromStr;
-
 use bitcoin::{
-    blockdata::{
-        script::{Instruction, Script as BtcScript},
-        transaction::{Transaction as BtcTransaction, TxIn as BtcTxIn, TxOut as BtcTxOut},
-    },
-    consensus::encode::serialize as btc_serialize,
+    blockdata::transaction::Transaction as BtcTransaction,
     network::constants::Network as BtcNetwork,
-    util::{address::Address as BtcAddress, key::PublicKey as BtcPublicKey},
+    util::address::Address as BtcAddress,
     Txid,
 };
 use derive_more::{Constructor, Deref, DerefMut};
@@ -18,25 +12,21 @@ use crate::{
     btc_on_eth::utils::{convert_satoshis_to_wei, convert_wei_to_satoshis},
     chains::{
         btc::{
-            btc_constants::{MINIMUM_REQUIRED_SATOSHIS, PLACEHOLDER_BTC_ADDRESS},
-            btc_database_utils::{get_btc_address_from_db, get_btc_network_from_db},
+            btc_chain_id::BtcChainId,
+            btc_constants::MINIMUM_REQUIRED_SATOSHIS,
+            btc_database_utils::get_btc_network_from_db,
             btc_state::BtcState,
-            btc_utils::get_pay_to_pub_key_hash_script,
+            btc_utils::convert_str_to_btc_address_or_safe_address,
             deposit_address_info::DepositInfoHashMap,
         },
-        eth::eth_utils::safely_convert_hex_to_eth_address,
+        eth::{eth_constants::MAX_BYTES_FOR_ETH_USER_DATA, eth_utils::safely_convert_hex_to_eth_address},
     },
-    constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_ETH_ADDRESS},
+    constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
+    metadata::{metadata_origin_address::MetadataOriginAddress, metadata_protocol_id::MetadataProtocolId, Metadata},
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
-
-const NUM_BYTES_IN_SCRIPT: u8 = 22;
-const OP_RETURN_OP_CODE_AS_DECIMAL: u8 = 106;
-const NUM_BYTES_IN_ETH_ADDRESS: u8 = 20;
-const NUM_BYTES_IN_SCRIPT_WITH_LEN_PREFIX: usize = 23;
-const NUM_PREFIX_BYTES_IN_SERIALIZED_P2PKH: usize = 3;
 
 pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D: DatabaseInterface>(
     state: BtcState<D>,
@@ -48,22 +38,6 @@ pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D: DatabaseInter
         get_btc_network_from_db(&state.db)?,
     )
     .and_then(|params| state.add_btc_on_eth_minting_params(params))
-}
-
-pub fn parse_minting_params_from_p2pkh_deposits_and_add_to_state<D: DatabaseInterface>(
-    state: BtcState<D>,
-) -> Result<BtcState<D>> {
-    info!("✔ Parsing minting params from `P2PKH` deposit txs in state...");
-    get_btc_address_from_db(&state.db)
-        .and_then(|btc_address| get_pay_to_pub_key_hash_script(&btc_address))
-        .and_then(|target_deposit_script| {
-            BtcOnEthMintingParams::from_btc_p2pkh_txs(
-                &target_deposit_script,
-                state.get_p2pkh_deposit_txs()?,
-                get_btc_network_from_db(&state.db)?,
-            )
-        })
-        .and_then(|minting_params| state.add_btc_on_eth_minting_params(minting_params))
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
@@ -150,6 +124,11 @@ impl BtcOnEthMintingParams {
                                 deposit_info.address.clone(),
                                 tx.txid(),
                                 address.ok_or(NoneError("Could not unwrap BTC address!"))?,
+                                if deposit_info.user_data.is_empty() {
+                                    None
+                                } else {
+                                    Some(deposit_info.user_data.clone())
+                                },
                             )
                         },
                     }
@@ -173,15 +152,6 @@ impl BtcOnEthMintingParams {
                 .collect::<Vec<BtcOnEthMintingParamStruct>>(),
         ))
     }
-
-    pub fn from_btc_p2pkh_txs(script: &BtcScript, txs: &[BtcTransaction], btc_network: BtcNetwork) -> Result<Self> {
-        debug!("✔ Parsing minting params from target script: {}", script);
-        Ok(Self::new(
-            txs.iter()
-                .map(|tx| BtcOnEthMintingParamStruct::from_p2pkh_tx(script, tx, btc_network))
-                .collect::<Result<Vec<BtcOnEthMintingParamStruct>>>()?,
-        ))
-    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -190,6 +160,7 @@ pub struct BtcOnEthMintingParamStruct {
     pub eth_address: EthAddress,
     pub originating_tx_hash: Txid,
     pub originating_tx_address: String,
+    pub user_data: Option<Bytes>,
 }
 
 impl BtcOnEthMintingParamStruct {
@@ -198,12 +169,14 @@ impl BtcOnEthMintingParamStruct {
         eth_address_hex: String,
         originating_tx_hash: Txid,
         originating_tx_address: BtcAddress,
+        user_data: Option<Bytes>,
     ) -> Result<BtcOnEthMintingParamStruct> {
         Ok(BtcOnEthMintingParamStruct {
             amount,
             originating_tx_hash,
             originating_tx_address: originating_tx_address.to_string(),
             eth_address: safely_convert_hex_to_eth_address(&eth_address_hex)?,
+            user_data,
         })
     }
 
@@ -235,92 +208,44 @@ impl BtcOnEthMintingParamStruct {
         }
     }
 
-    fn serialized_script_pubkey_should_be_desired_op_return(serialized_script: &[Byte]) -> bool {
-        serialized_script.len() == NUM_BYTES_IN_SCRIPT_WITH_LEN_PREFIX
-            && serialized_script[0] == NUM_BYTES_IN_SCRIPT
-            && serialized_script[1] == OP_RETURN_OP_CODE_AS_DECIMAL
-            && serialized_script[2] == NUM_BYTES_IN_ETH_ADDRESS
-    }
-
-    fn output_is_desired_op_return(output: &BtcTxOut) -> bool {
-        Self::serialized_script_pubkey_should_be_desired_op_return(&btc_serialize(&output.script_pubkey))
-    }
-
-    fn extract_spender_address_from_op_return_input(input: &BtcTxIn, btc_network: BtcNetwork) -> Result<BtcAddress> {
-        info!("✔ Extracting spender address from OP_RETURN input...");
-        Ok(input
-            .script_sig
-            .instructions_minimal()
-            .skip(1)
-            .map(|script_instruction| -> Result<BtcAddress> {
-                let instruction = script_instruction?;
-                const BYTE: [u8; 1] = [0u8];
-                let data = match instruction {
-                    Instruction::PushBytes(bytes) => bytes,
-                    _ => &BYTE,
-                };
-                info!("✔ Instruction: {:?}", instruction);
-                info!("✔ data: {:?}", data);
-                Ok(BtcAddress::p2pkh(&BtcPublicKey::from_slice(data)?, btc_network))
+    pub fn maybe_to_metadata_bytes(self, btc_chain_id: &BtcChainId) -> Result<Option<Bytes>> {
+        self.maybe_to_metadata(btc_chain_id)
+            .and_then(|maybe_metadata| match maybe_metadata {
+                Some(metadata) => Ok(Some(metadata.to_bytes_for_protocol(&MetadataProtocolId::Ethereum)?)),
+                None => Ok(None),
             })
-            .collect::<Result<Vec<BtcAddress>>>()?[0]
-            .clone())
     }
 
-    fn sum_deposit_values_from_tx_outputs(transaction: &BtcTransaction, target_deposit_script: &BtcScript) -> u64 {
-        trace!("✔ Getting deposit values from transaction: {:?}", transaction);
-        transaction
-            .output
-            .iter()
-            .filter(|output| &output.script_pubkey == target_deposit_script)
-            .map(|output| output.value)
-            .sum::<u64>()
-    }
-
-    fn get_eth_address_from_op_return_in_tx_else_safe_address(transaction: &BtcTransaction) -> String {
-        let maybe_op_return_txs = transaction
-            .output
-            .iter()
-            .cloned()
-            .filter(Self::output_is_desired_op_return)
-            .collect::<Vec<BtcTxOut>>();
-        match maybe_op_return_txs.len() {
-            0 => {
-                let address = hex::encode(SAFE_ETH_ADDRESS.as_bytes());
-                info!("✔ No address found, default to safe address: 0x{}", address);
-                address
+    fn maybe_to_metadata(self, btc_chain_id: &BtcChainId) -> Result<Option<Metadata>> {
+        info!("✔ Maybe getting metadata from user data...");
+        match self.user_data {
+            Some(ref user_data) => {
+                if user_data.len() > MAX_BYTES_FOR_ETH_USER_DATA {
+                    info!(
+                        "✘ `user_data` redacted from `Metadata` ∵ it's > {} bytes!",
+                        MAX_BYTES_FOR_ETH_USER_DATA
+                    );
+                    Ok(None)
+                } else {
+                    self.to_metadata(user_data, btc_chain_id)
+                }
             },
-            _ => {
-                let address = Self::parse_eth_address_from_op_return_script(&maybe_op_return_txs[0].script_pubkey);
-                info!("✔ Address parsed from `op_return` script: 0x{}", hex::encode(address));
-                hex::encode(address)
+            None => {
+                info!("✘ No user data to wrap into metadata ∴ skipping this step!");
+                Ok(None)
             },
         }
     }
 
-    fn parse_eth_address_from_op_return_script(script: &BtcScript) -> EthAddress {
-        trace!("✔ Parsing ETH address from OP_RETURN script: {}", script);
-        EthAddress::from_slice(&btc_serialize(script)[NUM_PREFIX_BYTES_IN_SERIALIZED_P2PKH..])
-    }
-
-    pub fn from_p2pkh_tx(
-        target_deposit_script: &BtcScript,
-        tx: &BtcTransaction,
-        btc_network: BtcNetwork,
-    ) -> Result<Self> {
-        Self::new(
-            convert_satoshis_to_wei(Self::sum_deposit_values_from_tx_outputs(tx, target_deposit_script)),
-            Self::get_eth_address_from_op_return_in_tx_else_safe_address(tx),
-            tx.txid(),
-            // NOTE: Currently not supporting the getting of the origin from witness data.
-            match tx.input[0].witness.is_empty() {
-                true => Self::extract_spender_address_from_op_return_input(&tx.input[0].clone(), btc_network)?,
-                false => {
-                    info!("✔ Not an op_return script, can't get sender address");
-                    BtcAddress::from_str(PLACEHOLDER_BTC_ADDRESS)?
-                },
-            },
-        )
+    fn to_metadata(&self, user_data: &[Byte], btc_chain_id: &BtcChainId) -> Result<Option<Metadata>> {
+        info!("✔ Getting metadata from user data...");
+        Ok(Some(Metadata::new(
+            user_data,
+            &MetadataOriginAddress::new_from_btc_address(
+                &convert_str_to_btc_address_or_safe_address(&self.originating_tx_address)?,
+                &btc_chain_id.to_metadata_chain_id(),
+            )?,
+        )))
     }
 }
 
@@ -328,35 +253,19 @@ impl BtcOnEthMintingParamStruct {
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::util::address::Address as BtcAddress;
+    use bitcoin::{hashes::Hash, util::address::Address as BtcAddress};
     use ethereum_types::H160 as EthAddress;
 
     use super::*;
     use crate::{
         chains::btc::{
-            btc_test_utils::{
-                get_sample_btc_block_n,
-                get_sample_btc_p2pkh_address,
-                get_sample_btc_p2pkh_tx,
-                get_sample_btc_pub_key_slice,
-                get_sample_btc_tx,
-                get_sample_minting_params,
-                get_sample_p2pkh_btc_block_and_txs,
-                get_sample_p2pkh_op_return_output,
-                get_sample_pay_to_pub_key_hash_script,
-                SAMPLE_P2PKH_TRANSACTION_OUTPUT_INDEX,
-            },
+            btc_test_utils::{get_sample_btc_block_n, get_sample_btc_pub_key_slice, get_sample_minting_params},
             btc_utils::convert_bytes_to_btc_pub_key_slice,
-            filter_p2pkh_deposit_txs::filter_txs_for_p2pkh_deposits,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
             get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
         },
         errors::AppError,
     };
-
-    fn get_expected_eth_address() -> EthAddress {
-        EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap())
-    }
 
     #[test]
     fn should_filter_minting_params() {
@@ -433,11 +342,13 @@ mod tests {
             &hex::decode("03a3bea6d8d15a38d9c96074d994c788bc1286d557ef5bdbb548741ddf265637ce").unwrap(),
         )
         .unwrap();
+        let user_data = None;
         let expected_result_1 = BtcOnEthMintingParamStruct::new(
             expected_amount_1,
             hex::encode(expected_eth_address_1),
             expected_originating_tx_hash_1,
             expected_btc_address_1,
+            user_data.clone(),
         )
         .unwrap();
         let expected_result_2 = BtcOnEthMintingParamStruct::new(
@@ -445,6 +356,7 @@ mod tests {
             hex::encode(expected_eth_address_2),
             expected_originating_tx_hash_2,
             expected_btc_address_2,
+            user_data,
         )
         .unwrap();
         let btc_network = BtcNetwork::Testnet;
@@ -459,154 +371,6 @@ mod tests {
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result_1, expected_result_1);
         assert_eq!(result_2, expected_result_2);
-    }
-
-    #[test]
-    fn serialized_script_pubkey_should_be_desired_op_return() {
-        let p2pkh_output = get_sample_p2pkh_op_return_output();
-        let bytes = btc_serialize(&p2pkh_output.script_pubkey);
-        let result = BtcOnEthMintingParamStruct::serialized_script_pubkey_should_be_desired_op_return(&bytes);
-        assert!(result);
-    }
-
-    #[test]
-    fn correct_output_should_be_desired_op_return_output() {
-        let p2pkh_output = get_sample_p2pkh_op_return_output();
-        let result = BtcOnEthMintingParamStruct::output_is_desired_op_return(&p2pkh_output);
-        assert!(result);
-    }
-
-    #[test]
-    fn incorrect_output_should_not_be_desired_op_return() {
-        const INDEX_OF_NON_P2PKH_OUTPUT: usize = 0;
-        assert_ne!(INDEX_OF_NON_P2PKH_OUTPUT, SAMPLE_P2PKH_TRANSACTION_OUTPUT_INDEX);
-        let tx = get_sample_btc_p2pkh_tx();
-        let wrong_output = tx.output[INDEX_OF_NON_P2PKH_OUTPUT].clone();
-        let result = BtcOnEthMintingParamStruct::output_is_desired_op_return(&wrong_output);
-        assert!(!result);
-    }
-
-    #[test]
-    fn should_parse_eth_address_from_op_return_script() {
-        let expected_result = get_expected_eth_address();
-        let script = get_sample_p2pkh_op_return_output().script_pubkey;
-        let result = BtcOnEthMintingParamStruct::parse_eth_address_from_op_return_script(&script);
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_get_first_deposit_value_from_tx() {
-        let expected_result: u64 = 1337;
-        let tx = get_sample_btc_p2pkh_tx();
-        let target_script = get_sample_pay_to_pub_key_hash_script();
-        let result = BtcOnEthMintingParamStruct::sum_deposit_values_from_tx_outputs(&tx, &target_script);
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_get_eth_address_from_p2pkh_in_tx_else_safe_address() {
-        let expected_result = get_expected_eth_address();
-        let tx = get_sample_btc_p2pkh_tx();
-        let result = BtcOnEthMintingParamStruct::get_eth_address_from_op_return_in_tx_else_safe_address(&tx);
-        assert_eq!(result, hex::encode(expected_result));
-    }
-
-    #[test]
-    fn should_default_to_safe_address_if_no_p2pkh() {
-        let tx = get_sample_btc_tx();
-        let result = BtcOnEthMintingParamStruct::get_eth_address_from_op_return_in_tx_else_safe_address(&tx);
-        assert_eq!(result, hex::encode(SAFE_ETH_ADDRESS.as_bytes()));
-    }
-
-    #[test]
-    fn should_extract_spender_address_from_p2pkh_input() {
-        let network = BtcNetwork::Testnet;
-        let expected_origin_address = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
-        let block = get_sample_p2pkh_btc_block_and_txs().block;
-        let sample_pub_key_hash = get_sample_btc_pub_key_slice();
-        let sample_address = get_sample_btc_p2pkh_address();
-        let include_change_outputs = false;
-        let filtered_txs = filter_txs_for_p2pkh_deposits(
-            &sample_address,
-            &sample_pub_key_hash,
-            &block.txdata,
-            include_change_outputs,
-        )
-        .unwrap();
-        let input = filtered_txs[0].input[0].clone();
-        let result = BtcOnEthMintingParamStruct::extract_spender_address_from_op_return_input(&input, network).unwrap();
-        assert_eq!(result.to_string(), expected_origin_address);
-    }
-
-    #[test]
-    fn should_parse_minting_params_from_p2pkh_tx() {
-        let tx_index = 56;
-        let network = BtcNetwork::Testnet;
-        let expected_address = get_expected_eth_address();
-        let expected_value = convert_satoshis_to_wei(1337);
-        let expected_origin_address = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
-        let expected_tx_hash = "183d4334c0e06d38cebfe2387e192c3a5f24f13c612214945af95f0aec696c6b".to_string();
-        let block = get_sample_p2pkh_btc_block_and_txs().block;
-        let tx = block.txdata[tx_index].clone();
-        let target_deposit_script = get_sample_pay_to_pub_key_hash_script();
-        let result = BtcOnEthMintingParamStruct::from_p2pkh_tx(&target_deposit_script, &tx, network).unwrap();
-        assert_eq!(result.amount, expected_value);
-        assert_eq!(result.eth_address, expected_address);
-        assert_eq!(result.originating_tx_hash.to_string(), expected_tx_hash);
-        let input = tx.input[0].clone();
-        let address =
-            BtcOnEthMintingParamStruct::extract_spender_address_from_op_return_input(&input, network).unwrap();
-        assert_eq!(address.to_string(), expected_origin_address);
-    }
-
-    #[test]
-    fn should_default_to_safe_address_if_no_op_return_present() {
-        let tx_index = 36;
-        let network = BtcNetwork::Testnet;
-        let expected_value = convert_satoshis_to_wei(4610922);
-        let expected_origin_address = "moBSQbHn7N9BC9pdtAMnA7GBiALzNMQJyE";
-        let expected_tx_hash = "9ac032f07cacce63d66fc3937ea04c032eb33852bed705e3e7a309baa8bedf19".to_string();
-        let block = get_sample_btc_block_n(8).unwrap().block;
-        let tx = block.txdata[tx_index].clone();
-        let target_deposit_script = get_sample_pay_to_pub_key_hash_script();
-        let result = BtcOnEthMintingParamStruct::from_p2pkh_tx(&target_deposit_script, &tx, network).unwrap();
-        assert_eq!(result.amount, expected_value);
-        assert_eq!(result.eth_address, *SAFE_ETH_ADDRESS);
-        assert_eq!(result.originating_tx_hash.to_string(), expected_tx_hash);
-        let input = tx.input[0].clone();
-        let address =
-            BtcOnEthMintingParamStruct::extract_spender_address_from_op_return_input(&input, network).unwrap();
-        assert_eq!(address.to_string(), expected_origin_address);
-    }
-
-    #[test]
-    fn should_parse_minting_params_from_txs() {
-        let network = BtcNetwork::Testnet;
-        let expected_address = get_expected_eth_address();
-        let expected_value = convert_satoshis_to_wei(1337);
-        let sample_pub_key_hash = get_sample_btc_pub_key_slice();
-        let sample_address = get_sample_btc_p2pkh_address();
-        let expected_origin_address = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
-        let expected_tx_hash = "183d4334c0e06d38cebfe2387e192c3a5f24f13c612214945af95f0aec696c6b".to_string();
-        let block = get_sample_p2pkh_btc_block_and_txs().block;
-        let include_change_outputs = false;
-        let filtered_txs = filter_txs_for_p2pkh_deposits(
-            &sample_address,
-            &sample_pub_key_hash,
-            &block.txdata,
-            include_change_outputs,
-        )
-        .unwrap();
-        let target_deposit_script = get_sample_pay_to_pub_key_hash_script();
-        let result = BtcOnEthMintingParams::from_btc_p2pkh_txs(&target_deposit_script, &filtered_txs, network).unwrap();
-        assert_eq!(result.len(), 1);
-        assert_eq!(result[0].amount, expected_value);
-        assert_eq!(result[0].eth_address, expected_address);
-        assert_eq!(result[0].originating_tx_hash.to_string(), expected_tx_hash);
-        let input = filtered_txs[0].input[0].clone();
-        let address =
-            BtcOnEthMintingParamStruct::extract_spender_address_from_op_return_input(&input, network).unwrap();
-        assert_eq!(address.to_string(), expected_origin_address);
     }
 
     #[test]
@@ -656,5 +420,69 @@ mod tests {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         }
+    }
+
+    #[test]
+    fn should_serde_minting_params() {
+        let expected_serialization = "5b7b22616d6f756e74223a2230786332386632313963343030222c226574685f61646472657373223a22307866656466653236313665623336363163623866656432373832663566306363393164353964636163222c226f726967696e6174696e675f74785f68617368223a2239653864643239663038333938643761646639323532386163313133626363373336663761646364376339396565653034363861393932633831663365613938222c226f726967696e6174696e675f74785f61646472657373223a22324e324c48596274384b314b44426f6764365855473956427635594d36786566644d32222c22757365725f64617461223a6e756c6c7d5d";
+        let amount = convert_satoshis_to_wei(1337);
+        let originating_tx_address = BtcAddress::from_str("2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2").unwrap();
+        let eth_address = EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap());
+        let user_data = None;
+        let originating_tx_hash =
+            Txid::from_slice(&hex::decode("98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e").unwrap())
+                .unwrap();
+        let minting_param_struct = BtcOnEthMintingParamStruct::new(
+            amount,
+            hex::encode(eth_address),
+            originating_tx_hash,
+            originating_tx_address,
+            user_data,
+        )
+        .unwrap();
+        let minting_params = BtcOnEthMintingParams::new(vec![minting_param_struct]);
+        let serialized_minting_params = minting_params.to_bytes().unwrap();
+        assert_eq!(hex::encode(&serialized_minting_params), expected_serialization);
+        let deserialized = BtcOnEthMintingParams::from_bytes(&serialized_minting_params).unwrap();
+        assert_eq!(deserialized.len(), minting_params.len());
+        deserialized
+            .iter()
+            .enumerate()
+            .for_each(|(i, minting_param_struct)| assert_eq!(minting_param_struct, &minting_params[i]));
+    }
+
+    #[test]
+    fn should_decode_minting_param_struct_from_legacy_bytes() {
+        let bytes = hex::decode("5b7b22616d6f756e74223a2230786332386632313963343030222c226574685f61646472657373223a22307866656466653236313665623336363163623866656432373832663566306363393164353964636163222c226f726967696e6174696e675f74785f68617368223a2239653864643239663038333938643761646639323532386163313133626363373336663761646364376339396565653034363861393932633831663365613938222c226f726967696e6174696e675f74785f61646472657373223a22324e324c48596274384b314b44426f6764365855473956427635594d36786566644d32227d5d").unwrap();
+        let user_data = None;
+        let expected_result = BtcOnEthMintingParams::new(vec![BtcOnEthMintingParamStruct::new(
+            U256::from_dec_str("13370000000000").unwrap(),
+            "0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac".to_string(),
+            Txid::from_str("9e8dd29f08398d7adf92528ac113bcc736f7adcd7c99eee0468a992c81f3ea98").unwrap(),
+            BtcAddress::from_str("2N2LHYbt8K1KDBogd6XUG9VBv5YM6xefdM2").unwrap(),
+            user_data,
+        )
+        .unwrap()]);
+        let result = BtcOnEthMintingParams::from_bytes(&bytes).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_convert_minting_params_to_metadata_bytes() {
+        let mut minting_param_stuct = get_sample_minting_params()[0].clone();
+        minting_param_stuct.user_data = Some(hex::decode("d3caffc0ff33").unwrap());
+        let expected_result = Some(hex::decode("0100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008001ec97de0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000006d3caffc0ff330000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002231333643544552616f636d38644c6245747a436146744a4a58396a6646686e43684b000000000000000000000000000000000000000000000000000000000000").unwrap());
+        let btc_chain_id = BtcChainId::Bitcoin;
+        let result = minting_param_stuct.maybe_to_metadata_bytes(&btc_chain_id).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_not_convert_minting_params_to_metadata_bytes_if_user_data_too_large() {
+        let mut minting_param_struct = get_sample_minting_params()[0].clone();
+        minting_param_struct.user_data = Some(vec![0u8; MAX_BYTES_FOR_ETH_USER_DATA + 1]);
+        let btc_chain_id = BtcChainId::Bitcoin;
+        let result = minting_param_struct.maybe_to_metadata_bytes(&btc_chain_id).unwrap();
+        assert!(result.is_none());
     }
 }

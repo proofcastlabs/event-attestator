@@ -6,10 +6,7 @@ use crate::{
                 subtract_fees_from_minting_params,
             },
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
-            minting_params::{
-                parse_minting_params_from_p2pkh_deposits_and_add_to_state,
-                parse_minting_params_from_p2sh_deposits_and_add_to_state,
-            },
+            minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             sign_normal_eth_transactions::get_eth_signed_txs,
         },
         check_core_is_initialized::{
@@ -28,7 +25,12 @@ use crate::{
     chains::{
         btc::{
             btc_block::parse_btc_block_and_id_and_put_in_state,
-            btc_database_utils::{end_btc_db_transaction, get_btc_account_nonce_from_db, start_btc_db_transaction},
+            btc_database_utils::{
+                end_btc_db_transaction,
+                get_btc_account_nonce_from_db,
+                get_btc_chain_id_from_db,
+                start_btc_db_transaction,
+            },
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
             extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
@@ -86,7 +88,6 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
         .and_then(get_deposit_info_hash_map_and_put_in_state)
         .and_then(filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
-        .and_then(parse_minting_params_from_p2pkh_deposits_and_add_to_state)
         .and_then(parse_minting_params_from_p2sh_deposits_and_add_to_state)
         .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state)
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
@@ -109,6 +110,7 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
             get_eth_signed_txs(
                 &get_signing_params_from_db(&state.db)?,
                 &state.btc_on_eth_minting_params,
+                &get_btc_chain_id_from_db(&state.db)?,
             )
             .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
         })

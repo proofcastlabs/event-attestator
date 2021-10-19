@@ -1,7 +1,11 @@
 use crate::{
     btc_on_eth::btc::minting_params::BtcOnEthMintingParamStruct,
     chains::{
-        btc::{btc_database_utils::get_btc_canon_block_from_db, btc_state::BtcState},
+        btc::{
+            btc_chain_id::BtcChainId,
+            btc_database_utils::{get_btc_canon_block_from_db, get_btc_chain_id_from_db},
+            btc_state::BtcState,
+        },
         eth::{
             eth_crypto::eth_transaction::{get_signed_minting_tx, EthTransaction, EthTransactions},
             eth_database_utils::get_signing_params_from_db,
@@ -15,6 +19,7 @@ use crate::{
 pub fn get_eth_signed_txs(
     signing_params: &EthSigningParams,
     minting_params: &[BtcOnEthMintingParamStruct],
+    btc_chain_id: &BtcChainId,
 ) -> Result<EthTransactions> {
     trace!("✔ Getting ETH signed transactions...");
     Ok(EthTransactions::new(
@@ -34,7 +39,7 @@ pub fn get_eth_signed_txs(
                     signing_params.gas_price,
                     &minting_param_struct.eth_address,
                     &signing_params.eth_private_key,
-                    None,
+                    minting_param_struct.clone().maybe_to_metadata_bytes(btc_chain_id)?,
                     None,
                 )
             })
@@ -53,6 +58,7 @@ pub fn maybe_sign_normal_canon_block_txs_and_add_to_state<D: DatabaseInterface>(
     get_eth_signed_txs(
         &get_signing_params_from_db(&state.db)?,
         &get_btc_canon_block_from_db(&state.db)?.get_eth_minting_params(),
+        &get_btc_chain_id_from_db(&state.db)?,
     )
     .and_then(|signed_txs| {
         #[cfg(feature = "debug")]
@@ -141,12 +147,14 @@ mod tests {
         let originating_address = BtcAddress::from_str(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         let recipient_1 = EthAddress::from_slice(&hex::decode("789e39e46117DFaF50A1B53A98C7ab64750f9Ba3").unwrap());
         let recipient_2 = EthAddress::from_slice(&hex::decode("9360a5C047e8Eb44647f17672638c3bB8e2B8a53").unwrap());
+        let user_data = None;
         let minting_params = vec![
             BtcOnEthMintingParamStruct::new(
                 convert_satoshis_to_wei(1337),
                 hex::encode(recipient_1),
                 Txid::from_hash(Hash::hash(&[0xc0])),
                 originating_address.clone(),
+                user_data.clone(),
             )
             .unwrap(),
             BtcOnEthMintingParamStruct::new(
@@ -154,10 +162,12 @@ mod tests {
                 hex::encode(recipient_2),
                 Txid::from_hash(Hash::hash(&[0xc0])),
                 originating_address,
+                user_data,
             )
             .unwrap(),
         ];
-        let result = get_eth_signed_txs(&signing_params, &minting_params).unwrap();
+        let btc_chain_id = BtcChainId::Bitcoin;
+        let result = get_eth_signed_txs(&signing_params, &minting_params, &btc_chain_id).unwrap();
         assert_eq!(result.len(), minting_params.len());
     }
 }
