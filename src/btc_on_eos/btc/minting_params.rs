@@ -16,6 +16,7 @@ use crate::{
         btc::{
             btc_constants::MINIMUM_REQUIRED_SATOSHIS,
             btc_database_utils::get_btc_network_from_db,
+            btc_metadata::ToMetadata,
             btc_state::BtcState,
             deposit_address_info::DepositInfoHashMap,
         },
@@ -269,10 +270,27 @@ impl BtcOnEosMintingParamStruct {
     }
 }
 
+impl ToMetadata for BtcOnEosMintingParamStruct {
+    fn get_user_data(&self) -> Option<Bytes> {
+        self.user_data.clone()
+    }
+
+    fn get_originating_tx_address(&self) -> String {
+        self.originating_tx_address.clone()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{chains::btc::btc_test_utils::get_sample_btc_on_eos_minting_params, errors::AppError};
+    use crate::{
+        chains::{
+            btc::{btc_chain_id::BtcChainId, btc_test_utils::get_sample_btc_on_eos_minting_params},
+            eos::eos_constants::MAX_BYTES_FOR_EOS_USER_DATA,
+        },
+        errors::AppError,
+        metadata::metadata_protocol_id::MetadataProtocolId,
+    };
 
     #[test]
     fn should_filter_minting_params() {
@@ -360,5 +378,18 @@ mod tests {
         let bytes = minting_params.to_bytes().unwrap();
         let result = BtcOnEosMintingParams::from_bytes(&bytes).unwrap();
         assert_eq!(result, minting_params);
+    }
+
+    #[test]
+    fn should_convert_btc_on_eos_minting_params_to_metadata_bytes() {
+        let mut minting_param_stuct = get_sample_btc_on_eos_minting_params()[0].clone();
+        minting_param_stuct.user_data = Some(hex::decode("d3caffc0ff33").unwrap());
+        let expected_result = Some(hex::decode("0106d3caffc0ff330401ec97de4630783331333333363433353434353532363136663633366433383634346336323435373437613433363134363734346134613538333936613636343636383665343336383462").unwrap());
+        let btc_chain_id = BtcChainId::Bitcoin;
+        let destination_protocol_id = MetadataProtocolId::Eos;
+        let result = minting_param_stuct
+            .maybe_to_metadata_bytes(&btc_chain_id, MAX_BYTES_FOR_EOS_USER_DATA, &destination_protocol_id)
+            .unwrap();
+        assert_eq!(result, expected_result);
     }
 }
