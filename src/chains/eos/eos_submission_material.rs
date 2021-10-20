@@ -98,7 +98,16 @@ impl EosSubmissionMaterial {
     }
 
     pub fn from_str(s: &str) -> Result<Self> {
-        EosSubmissionMaterialJson::from_str(s).and_then(|json| Self::from_json(&json))
+        info!("✔ Parsing EOS submission material...");
+        EosSubmissionMaterialJson::from_str(s)
+            .and_then(|json| Self::from_json(&json))
+            .map(|submission_material| {
+                info!(
+                    "✔ EOS submission material parsed! Block number: {}",
+                    submission_material.block_num
+                );
+                submission_material
+            })
     }
 }
 
