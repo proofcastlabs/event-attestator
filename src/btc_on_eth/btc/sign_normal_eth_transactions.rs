@@ -42,7 +42,7 @@ pub fn get_eth_signed_txs(
                     signing_params.gas_price,
                     &minting_param_struct.eth_address,
                     &signing_params.eth_private_key,
-                    minting_param_struct.clone().maybe_to_metadata_bytes(
+                    minting_param_struct.maybe_to_metadata_bytes(
                         btc_chain_id,
                         MAX_BYTES_FOR_ETH_USER_DATA,
                         &MetadataProtocolId::Ethereum,

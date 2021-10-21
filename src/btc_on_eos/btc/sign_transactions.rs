@@ -47,7 +47,7 @@ pub fn get_signed_eos_ptoken_issue_txs(
                     pk,
                     account,
                     get_eos_tx_expiration_timestamp_with_offset(i as u32)?,
-                    params.clone().maybe_to_metadata_bytes(
+                    params.maybe_to_metadata_bytes(
                         btc_chain_id,
                         MAX_BYTES_FOR_EOS_USER_DATA,
                         &MetadataProtocolId::Eos,

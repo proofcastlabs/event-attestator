@@ -10,7 +10,7 @@ pub trait ToMetadata {
     fn get_originating_tx_address(&self) -> String;
 
     fn maybe_to_metadata_bytes(
-        self,
+        &self,
         btc_chain_id: &BtcChainId,
         max_data_length: usize,
         destination_protocol_id: &MetadataProtocolId,
@@ -25,7 +25,7 @@ pub trait ToMetadata {
             })
     }
 
-    fn maybe_to_metadata(self, btc_chain_id: &BtcChainId, max_data_length: usize) -> Result<Option<Metadata>>
+    fn maybe_to_metadata(&self, btc_chain_id: &BtcChainId, max_data_length: usize) -> Result<Option<Metadata>>
     where
         Self: Sized,
     {
