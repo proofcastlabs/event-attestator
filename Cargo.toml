@@ -2,7 +2,7 @@
 license = "MIT"
 publish = false
 edition = "2018"
-version = "5.8.0"
+version = "5.8.1"
 readme = "README.md"
 name = "ptokens_core"
 keywords = ["provable", "defi", "crypto"]
@@ -23,27 +23,27 @@ overflow-checks = true
 [dependencies]
 hex = "0.4.3"
 log = "0.4.14"
-rlp = "0.5.0"
-rand = "0.8.3"
-strum = "0.20.0"
+rlp = "0.5.1"
+rand = "0.8.4"
+strum = "0.22.0"
 chrono = "0.4.19"
-ethabi = "14.0.0"
+ethabi = "15.0.0"
 byteorder = "1.4.3"
 rustc-hex = "2.1.0"
-simplelog = "0.10.0"
-serde_json = "1.0.64"
+simplelog = "0.10.2"
+serde_json = "1.0.68"
 lazy_static = "1.4.0"
-strum_macros = "0.20.1"
-ethereum-types = "0.11.0"
-serde = { version = "1.0.125", features = ["derive"] }
+strum_macros = "0.22.0"
+ethereum-types = "0.12.1"
+serde = { version = "1.0.130", features = ["derive"] }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
-bitcoin = { version = "0.26.0", features = ["use-serde", "rand"] }
+bitcoin = { version = "0.27.1", features = ["use-serde", "rand"] }
 eos-chain = { git = "https://github.com/bifrost-finance/rust-eos" }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"] }
-quick-error = "2.0.0"
-derive_more = "0.99.13"
+quick-error = "2.0.1"
+derive_more = "0.99.16"
 keccak-hasher = "0.15.3"
 triehash = "0.8.4"
 
 [dev-dependencies]
-simple_logger = "1.11.0"
+simple_logger = "1.13.0"

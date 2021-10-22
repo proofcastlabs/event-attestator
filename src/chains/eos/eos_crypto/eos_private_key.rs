@@ -64,7 +64,7 @@ impl EosPrivateKey {
         let network = match data[0] {
             128 => EosNetwork::Mainnet,
             239 => EosNetwork::Testnet,
-            x => return Err(AppError::Base58Error(base58::Error::InvalidVersion(vec![x]))),
+            x => return Err(AppError::Base58Error(base58::Error::InvalidAddressVersion(x))),
         };
         Ok(EosPrivateKey {
             compressed,
