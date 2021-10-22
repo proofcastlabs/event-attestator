@@ -159,7 +159,13 @@ impl EthSubmissionMaterial {
     }
 
     pub fn from_str(json_str: &str) -> Result<Self> {
-        Self::from_json(&EthSubmissionMaterialJson::from_str(json_str)?)
+        info!("✔ Parsing ETH submission material...");
+        let submission_material = Self::from_json(&EthSubmissionMaterialJson::from_str(json_str)?)?;
+        info!(
+            "✔ ETH submission material parsed! Block number: {}",
+            submission_material.get_block_number()?
+        );
+        Ok(submission_material)
     }
 
     #[cfg(test)]

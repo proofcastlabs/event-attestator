@@ -83,11 +83,17 @@ pub struct BtcSubmissionMaterial {
 
 impl BtcSubmissionMaterial {
     pub fn from_json(json: &BtcSubmissionMaterialJson) -> Result<Self> {
-        Ok(Self {
+        info!("✔ Parsing BTC submission material...");
+        let submission_material = Self {
             ref_block_num: json.ref_block_num,
             ref_block_prefix: json.ref_block_prefix,
             block_and_id: BtcBlockAndId::from_json(json)?,
-        })
+        };
+        info!(
+            "✔ BTC submission material parsed! Block number: {}",
+            submission_material.block_and_id.height
+        );
+        Ok(submission_material)
     }
 
     pub fn from_str(string: &str) -> Result<Self> {
