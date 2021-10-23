@@ -1,6 +1,6 @@
-use std::str::FromStr;
 #[cfg(test)]
-use std::{convert::TryInto, str::from_utf8};
+use std::str::from_utf8;
+use std::str::FromStr;
 
 use bitcoin::util::address::Address as BtcAddress;
 use eos_chain::AccountName as EosAddress;

@@ -1,4 +1,4 @@
-use std::{convert::TryFrom, fmt};
+use std::fmt;
 
 use ethereum_types::H256 as KeccakHash;
 use strum_macros::EnumIter;
