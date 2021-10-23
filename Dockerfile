@@ -1,4 +1,4 @@
-FROM rust:1.46
+FROM rust:1.56
 
 LABEL maintainer="Provable Things Ltd (info@provable.xyz)" \
     description="Serve as a base image layer to work with \

@@ -233,7 +233,7 @@ __`❍ cargo build --release`__
 
  - __`llvm:`__ version 6.0.0 or later.
  - __`clang:`__ version 6.0.0-1ubuntu2 or later.
- - __`rustc & cargo:`__ version 1.46.0 or later.
+ - __`rustc & cargo:`__ version 1.56.0 or later.
 
 &nbsp;
 
