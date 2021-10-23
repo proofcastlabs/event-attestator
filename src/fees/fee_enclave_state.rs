@@ -49,7 +49,7 @@ pub struct FeeStateForTokens(Vec<FeeStateForToken>);
 
 impl FeeStateForTokens {
     fn get_core_type_error_msg(core_type: &CoreType) -> String {
-        format!("✘ `FeeEnclaveState` not implemented for core type: {}", core_type,)
+        format!("✘ `FeeEnclaveState` not implemented for core type: {}", core_type)
     }
 
     fn get_fee_db_utils_for_core_type(core_type: &CoreType) -> Result<FeeDatabaseUtils> {

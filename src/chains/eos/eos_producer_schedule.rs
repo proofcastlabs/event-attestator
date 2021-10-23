@@ -228,7 +228,7 @@ mod tests {
     #[test]
     fn should_convert_v1_schedule_to_v2() {
         let v1_schedule = get_sample_v1_schedule().unwrap();
-        EosProducerScheduleV2::from(v1_schedule);
+        let _ = EosProducerScheduleV2::from(v1_schedule);
     }
 
     #[test]
