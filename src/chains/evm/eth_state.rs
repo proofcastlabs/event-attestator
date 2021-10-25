@@ -5,8 +5,11 @@ use crate::{
     chains::{
         btc::{btc_types::BtcTransactions, utxo_manager::utxo_types::BtcUtxosAndValues},
         eos::eos_crypto::eos_transaction::EosSignedTransactions,
-        eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils::EthDatabaseUtils},
-        evm::eth_submission_material::EthSubmissionMaterial,
+        eth::{
+            eth_crypto::eth_transaction::EthTransactions,
+            eth_database_utils::EthDatabaseUtils,
+            eth_submission_material::EthSubmissionMaterial,
+        },
     },
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary},
     eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfos,

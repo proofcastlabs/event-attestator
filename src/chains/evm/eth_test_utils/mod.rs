@@ -15,10 +15,10 @@ use crate::{
             },
             eth_log::{EthLog, EthLogs},
             eth_receipt::EthReceipt,
+            eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
         },
         evm::{
             eth_database_utils::{get_special_eth_hash_from_db, put_special_eth_block_in_db},
-            eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
             eth_types::TrieHashMap,
         },
     },
