@@ -2,7 +2,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 use crate::{
     chains::{
-        eth::eth_chain_id::EthChainId,
+        eth::{eth_chain_id::EthChainId, eth_crypto::eth_private_key::EthPrivateKey},
         evm::{
             eth_constants::{
                 ANY_SENDER_NONCE_KEY,
@@ -19,7 +19,6 @@ use crate::{
                 ETH_PRIVATE_KEY_DB_KEY,
                 ETH_TAIL_BLOCK_HASH_KEY,
             },
-            eth_crypto::eth_private_key::EthPrivateKey,
             eth_submission_material::EthSubmissionMaterial,
         },
     },

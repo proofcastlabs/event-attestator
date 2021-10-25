@@ -71,7 +71,7 @@ impl EthTransaction {
         Self::new_eth_tx(vec![], data, nonce, value, chain_id, gas_limit, gas_price)
     }
 
-    fn new_eth_tx(
+    pub fn new_eth_tx(
         to: Bytes,
         data: Bytes,
         nonce: u64,

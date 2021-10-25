@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use ethereum_types::{Address, H256};
 
 use crate::{
-    chains::evm::{eth_crypto::eth_private_key::EthPrivateKey, trie_nodes::Node},
+    chains::{eth::eth_crypto::eth_private_key::EthPrivateKey, evm::trie_nodes::Node},
     types::Bytes,
 };
 

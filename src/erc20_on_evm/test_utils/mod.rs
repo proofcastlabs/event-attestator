@@ -4,16 +4,10 @@ use std::{fs::read_to_string, path::Path};
 use ethereum_types::Address as EthAddress;
 
 use crate::{
-    chains::{
-        eth::{
-            eth_crypto::eth_private_key::EthPrivateKey,
-            eth_log::EthLog,
-            eth_submission_material::EthSubmissionMaterial,
-        },
-        evm::{
-            eth_crypto::eth_private_key::EthPrivateKey as EvmPrivateKey,
-            eth_submission_material::EthSubmissionMaterial as EvmSubmissionMaterial,
-        },
+    chains::eth::{
+        eth_crypto::eth_private_key::{EthPrivateKey, EthPrivateKey as EvmPrivateKey},
+        eth_log::EthLog,
+        eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterial as EvmSubmissionMaterial},
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     types::Result,
