@@ -1,7 +1,6 @@
 pub mod eth_message_signer;
 
 pub(crate) mod eth_constants;
-pub(crate) mod eth_crypto_utils;
 pub(crate) mod eth_database_transactions;
 pub(crate) mod eth_database_utils;
 pub(crate) mod eth_enclave_state;

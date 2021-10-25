@@ -2,16 +2,18 @@ use ethereum_types::H256;
 use rlp::{Rlp, RlpStream};
 
 use crate::{
-    chains::evm::{
-        eth_constants::{BRANCH_NODE_STRING, EMPTY_NIBBLES, EXTENSION_NODE_STRING, LEAF_NODE_STRING},
-        eth_crypto_utils::keccak_hash_bytes,
-        eth_types::{ChildNodes, TrieHashMap},
-        get_trie_hash_map::get_thing_from_trie_hash_map,
-        nibble_utils::Nibbles,
-        path_codec::{
-            decode_path_to_nibbles_and_node_type,
-            encode_extension_path_from_nibbles,
-            encode_leaf_path_from_nibbles,
+    crypto_utils::keccak_hash_bytes,
+    chains::{
+        evm::{
+            eth_constants::{BRANCH_NODE_STRING, EMPTY_NIBBLES, EXTENSION_NODE_STRING, LEAF_NODE_STRING},
+            eth_types::{ChildNodes, TrieHashMap},
+            get_trie_hash_map::get_thing_from_trie_hash_map,
+            nibble_utils::Nibbles,
+            path_codec::{
+                decode_path_to_nibbles_and_node_type,
+                encode_extension_path_from_nibbles,
+                encode_leaf_path_from_nibbles,
+            },
         },
     },
     types::{Bytes, Result},
