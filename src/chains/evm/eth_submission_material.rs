@@ -4,10 +4,12 @@ use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::evm::{
-        eth_block::{EthBlock, EthBlockJson},
-        eth_receipt::{EthReceipt, EthReceiptJson, EthReceipts},
-        eth_state::EthState,
+    chains::{
+        eth::eth_block::{EthBlock, EthBlockJson},
+        evm::{
+            eth_receipt::{EthReceipt, EthReceiptJson, EthReceipts},
+            eth_state::EthState,
+        },
     },
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},

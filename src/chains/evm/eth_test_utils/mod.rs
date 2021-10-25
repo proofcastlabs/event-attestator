@@ -6,6 +6,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use crate::{
     chains::{
         eth::{
+            eth_block::{EthBlock, EthBlockJson},
             eth_chain_id::EthChainId,
             eth_crypto::{
                 eth_private_key::EthPrivateKey,
@@ -14,7 +15,6 @@ use crate::{
             },
         },
         evm::{
-            eth_block::{EthBlock, EthBlockJson},
             eth_database_utils::{get_special_eth_hash_from_db, put_special_eth_block_in_db},
             eth_log::{EthLog, EthLogs},
             eth_receipt::EthReceipt,
