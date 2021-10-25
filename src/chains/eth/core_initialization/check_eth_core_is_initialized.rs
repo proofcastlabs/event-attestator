@@ -4,10 +4,17 @@ pub fn is_eth_core_initialized<D: DatabaseInterface>(eth_db_utils: &EthDatabaseU
     eth_db_utils.get_public_eth_address_from_db().is_ok()
 }
 
-pub fn check_eth_core_is_initialized<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<()> {
+pub fn check_eth_core_is_initialized<D: DatabaseInterface>(
+    eth_db_utils: &EthDatabaseUtils<D>,
+    is_for_eth: bool,
+) -> Result<()> {
     info!("✔ Checking ETH core is initialized...");
     match is_eth_core_initialized(eth_db_utils) {
-        false => Err("✘ ETH side of core not initialized!".into()),
+        false => Err(format!(
+            "✘ {} side of core not initialized!",
+            if is_for_eth { "ETH" } else { "EVM" }
+        )
+        .into()),
         true => Ok(()),
     }
 }
@@ -47,7 +54,8 @@ mod tests {
         eth_db_utils
             .put_public_eth_address_in_db(&get_sample_eth_address())
             .unwrap();
-        let result = check_eth_core_is_initialized(&eth_db_utils);
+        let is_for_eth = true;
+        let result = check_eth_core_is_initialized(&eth_db_utils, is_for_eth);
         assert!(result.is_ok());
     }
 
@@ -56,7 +64,8 @@ mod tests {
         let db = get_test_database();
         let eth_db_utils = EthDatabaseUtils::new(&db);
         let expected_err = "✘ ETH side of core not initialized!".to_string();
-        match check_eth_core_is_initialized(&eth_db_utils) {
+        let is_for_eth = true;
+        match check_eth_core_is_initialized(&eth_db_utils, is_for_eth) {
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
             Ok(_) => panic!("Should not have succeeded!"),
             Err(_) => panic!("Wrong error received!"),

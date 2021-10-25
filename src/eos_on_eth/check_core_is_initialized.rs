@@ -12,7 +12,8 @@ use crate::{
 };
 
 pub fn check_core_is_initialized<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>, db: &D) -> Result<()> {
-    check_eth_core_is_initialized(eth_db_utils).and_then(|_| check_eos_core_is_initialized(db))
+    let is_for_eth = true;
+    check_eth_core_is_initialized(eth_db_utils, is_for_eth).and_then(|_| check_eos_core_is_initialized(db))
 }
 
 pub fn check_core_is_initialized_and_return_eos_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {

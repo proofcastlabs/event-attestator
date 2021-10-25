@@ -13,7 +13,8 @@ use crate::{
 
 pub fn check_core_is_initialized<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>, db: &D) -> Result<()> {
     info!("✔ Checking core is initialized...");
-    check_btc_core_is_initialized(db).and_then(|_| check_eth_core_is_initialized(eth_db_utils))
+    let is_for_eth = true;
+    check_btc_core_is_initialized(db).and_then(|_| check_eth_core_is_initialized(eth_db_utils, is_for_eth))
 }
 
 pub fn check_core_is_initialized_and_return_btc_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
