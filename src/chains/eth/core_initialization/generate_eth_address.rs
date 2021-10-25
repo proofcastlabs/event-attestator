@@ -4,7 +4,7 @@ use crate::{
     types::Result,
 };
 
-fn generate_and_store_address<'a, D: DatabaseInterface>(db_utils: &EthDatabaseUtils<D>) -> Result<()> {
+fn generate_and_store_address<D: DatabaseInterface>(db_utils: &EthDatabaseUtils<D>) -> Result<()> {
     db_utils
         .get_eth_private_key_from_db()
         .map(|pk| pk.to_public_key().to_address())
