@@ -33,17 +33,13 @@ impl EthInitializationOutput {
         })
     }
 
-    pub fn new_with_no_contract<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+    pub fn new_with_no_contract<D: DatabaseInterface>(db_utils: &EthDatabaseUtils<D>) -> Result<String> {
         const CONTRACT_TX: Option<&str> = None;
         const CONTRACT_ADDRESS: Option<&EthAddress> = None;
-        Ok(to_string(&Self::init(
-            &state.eth_db_utils,
-            CONTRACT_ADDRESS,
-            CONTRACT_TX,
-        )?)?)
+        Ok(to_string(&Self::init(db_utils, CONTRACT_ADDRESS, CONTRACT_TX)?)?)
     }
 
     pub fn new_for_eos_on_eth<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
-        Self::new_with_no_contract(state)
+        Self::new_with_no_contract(&state.eth_db_utils)
     }
 }

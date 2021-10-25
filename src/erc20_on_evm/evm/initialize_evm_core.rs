@@ -1,6 +1,10 @@
 use crate::{
     chains::{
         eth::{
+            core_initialization::{
+                check_eth_core_is_initialized::is_eth_core_initialized as is_evm_core_initialized,
+                get_eth_core_init_output_json::EthInitializationOutput,
+            },
             eth_chain_id::EthChainId,
             eth_database_transactions::{
                 end_eth_db_transaction_and_return_state,
@@ -10,11 +14,7 @@ use crate::{
             eth_state::EthState,
         },
         evm::{
-            core_initialization::{
-                check_eth_core_is_initialized::is_evm_core_initialized,
-                get_eth_core_init_output_json::EthInitializationOutput,
-                initialize_eth_core::initialize_eth_core_with_no_contract_tx,
-            },
+            core_initialization::initialize_eth_core::initialize_eth_core_with_no_contract_tx,
             eth_constants::ETH_CORE_IS_INITIALIZED_JSON,
         },
     },
@@ -71,6 +71,6 @@ pub fn maybe_initialize_evm_core<D: DatabaseInterface>(
                 )
             })
             .and_then(end_eth_db_transaction_and_return_state)
-            .and_then(EthInitializationOutput::new_for_erc20_on_evm),
+            .and_then(|state| EthInitializationOutput::new_with_no_contract(&state.evm_db_utils)),
     }
 }

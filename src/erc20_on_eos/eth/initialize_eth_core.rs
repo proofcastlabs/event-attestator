@@ -63,6 +63,6 @@ pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
                 )
             })
             .and_then(end_eth_db_transaction_and_return_state)
-            .and_then(EthInitializationOutput::new_with_no_contract),
+            .and_then(|state| EthInitializationOutput::new_with_no_contract(&state.eth_db_utils)),
     }
 }
