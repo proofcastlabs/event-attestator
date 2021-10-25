@@ -1,6 +1,6 @@
 pub mod eth_message_signer;
 
-pub(crate) mod core_initialization;
+//pub(crate) mod core_initialization;
 pub(crate) mod eth_block;
 pub(crate) mod eth_constants;
 pub(crate) mod eth_crypto;
@@ -22,7 +22,7 @@ pub(crate) mod nibble_utils;
 pub(crate) mod path_codec;
 pub(crate) mod trie;
 pub(crate) mod trie_nodes;
-pub(crate) mod validate_block_in_state;
+//pub(crate) mod validate_block_in_state;
 //pub(crate) mod add_block_and_receipts_to_db;
 //pub(crate) mod calculate_linker_hash;
 //pub(crate) mod check_parent_exists;
