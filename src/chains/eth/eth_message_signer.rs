@@ -12,13 +12,7 @@ fn encode_eth_signed_message_as_json(message: &str, signature: &EthSignature) ->
     json!({"message": message, "signature": format!("0x{}", hex::encode(&signature[..]))})
 }
 
-/// # Sign ASCII Message With ETH Key
-///
-/// Signs a given ASCII message with the ETH private key from the encrypted database. The function first
-/// checks if the message to be signed is valid ASCII, and errors if not. It also checks if message is valid HEX,
-/// and errors if it is. This signing function uses a recoverable `secp256k1` signature scheme
-/// with NO prefix prepended to the message.
-pub fn sign_ascii_msg_with_eth_key_with_no_prefix<D: DatabaseInterface>(db: &D, message: &str) -> Result<String> {
+pub fn sign_ascii_msg_with_no_prefix<D: DatabaseInterface>(db: &D, message: &str, is_for_eth: bool) -> Result<String> {
     info!("✔ Checking message is valid ASCII...");
     if !message.is_ascii() {
         return Err("✘ Non-ASCII message passed. Only valid ASCII messages are supported.".into());
@@ -27,13 +21,69 @@ pub fn sign_ascii_msg_with_eth_key_with_no_prefix<D: DatabaseInterface>(db: &D, 
     if is_hex(message) {
         return Err("✘ HEX message passed. Signing HEX messages without prefix is not allowed.".into());
     }
-    EthDatabaseUtils::new(db)
+    let db_utils = if is_for_eth {
+        EthDatabaseUtils::new_for_eth(db)
+    } else {
+        EthDatabaseUtils::new_for_evm(db)
+    };
+    db_utils
         .get_eth_private_key_from_db()
         .and_then(|key| key.sign_message_bytes(message.as_bytes()))
         .map(|signature| encode_eth_signed_message_as_json(message, &signature).to_string())
 }
 
+pub fn sign_ascii_msg_with_prefix<D: DatabaseInterface>(db: &D, message: &str, is_for_eth: bool) -> Result<String> {
+    info!("✔ Checking message is valid ASCII...");
+    if !message.is_ascii() {
+        return Err("✘ Non-ASCII message passed. Only valid ASCII messages are supported.".into());
+    }
+    let db_utils = if is_for_eth {
+        EthDatabaseUtils::new_for_eth(db)
+    } else {
+        EthDatabaseUtils::new_for_evm(db)
+    };
+    db_utils
+        .get_eth_private_key_from_db()
+        .and_then(|key| key.sign_eth_prefixed_msg_bytes(message.as_bytes()))
+        .map(|signature| encode_eth_signed_message_as_json(message, &signature).to_string())
+}
+
+pub fn sign_hex_msg_with_prefix<D: DatabaseInterface>(db: &D, message: &str, is_for_eth: bool) -> Result<String> {
+    let db_utils = if is_for_eth {
+        EthDatabaseUtils::new_for_eth(db)
+    } else {
+        EthDatabaseUtils::new_for_evm(db)
+    };
+    let bytes = decode_hex_with_err_msg(message, "Message to sign is NOT valid hex!")?;
+    db_utils
+        .get_eth_private_key_from_db()
+        .and_then(|key| key.sign_eth_prefixed_msg_bytes(&bytes))
+        .map(|signature| encode_eth_signed_message_as_json(message, &signature).to_string())
+}
+
 /// # Sign ASCII Message With ETH Key
+///
+/// Signs a given ASCII message with the ETH private key from the encrypted database. The function first
+/// checks if the message to be signed is valid ASCII, and errors if not. It also checks if message is valid HEX,
+/// and errors if it is. This signing function uses a recoverable `secp256k1` signature scheme
+/// with NO prefix prepended to the message.
+pub fn sign_ascii_msg_with_eth_key_with_no_prefix<D: DatabaseInterface>(db: &D, message: &str) -> Result<String> {
+    info!("✔ Signing ASCII message with ETH key & no prefix...");
+    sign_ascii_msg_with_no_prefix(db, message, true)
+}
+
+/// # Sign ASCII Message With EVM Key
+///
+/// Signs a given ASCII message with the ETH private key from the encrypted database. The function first
+/// checks if the message to be signed is valid ASCII, and errors if not. It also checks if message is valid HEX,
+/// and errors if it is. This signing function uses a recoverable `secp256k1` signature scheme
+/// with NO prefix prepended to the message.
+pub fn sign_ascii_msg_with_evm_key_with_no_prefix<D: DatabaseInterface>(db: &D, message: &str) -> Result<String> {
+    info!("✔ Signing ASCII message with EVM key & no prefix...");
+    sign_ascii_msg_with_no_prefix(db, message, false)
+}
+
+/// # Sign ASCII Message With ETH Key With Prefix
 ///
 /// Signs a given ASCII message with the ETH private key from the encrypted database. The function first
 /// checks if the message to be signed is valid ASCII, and errors if not. This signing function uses
@@ -45,14 +95,24 @@ pub fn sign_ascii_msg_with_eth_key_with_no_prefix<D: DatabaseInterface>(db: &D, 
 ///
 /// prepended to the message before signing.
 pub fn sign_ascii_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, message: &str) -> Result<String> {
-    info!("✔ Checking message is valid ASCII...");
-    if !message.is_ascii() {
-        return Err("✘ Non-ASCII message passed. Only valid ASCII messages are supported.".into());
-    }
-    EthDatabaseUtils::new(db)
-        .get_eth_private_key_from_db()
-        .and_then(|key| key.sign_eth_prefixed_msg_bytes(message.as_bytes()))
-        .map(|signature| encode_eth_signed_message_as_json(message, &signature).to_string())
+    info!("✔ Signing ASCII message with ETH key & prefix...");
+    sign_ascii_msg_with_prefix(db, message, true)
+}
+
+/// # Sign ASCII Message With EVM Key With Prefix
+///
+/// Signs a given ASCII message with the EVM private key from the encrypted database. The function first
+/// checks if the message to be signed is valid ASCII, and errors if not. This signing function uses
+/// a recoverable `secp256k1` signature scheme with the ethereum-specific prefix:
+///
+/// ```no_compile
+/// "\x19Ethereum Signed Message:\n32"
+/// ```
+///
+/// prepended to the message before signing.
+pub fn sign_ascii_msg_with_evm_key_with_prefix<D: DatabaseInterface>(db: &D, message: &str) -> Result<String> {
+    info!("✔ Signing ASCII message with EVM key & prefix...");
+    sign_ascii_msg_with_prefix(db, message, false)
 }
 
 /// # Sign HEX Message With ETH Key
@@ -67,12 +127,24 @@ pub fn sign_ascii_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, mes
 ///
 /// prepended to the message before signing.
 pub fn sign_hex_msg_with_eth_key_with_prefix<D: DatabaseInterface>(db: &D, message: &str) -> Result<String> {
-    decode_hex_with_err_msg(message, "Message to sign is NOT valid hex!")
-        .and_then(|bytes| {
-            let key = EthDatabaseUtils::new(db).get_eth_private_key_from_db()?;
-            key.sign_eth_prefixed_msg_bytes(&bytes)
-        })
-        .map(|signature| encode_eth_signed_message_as_json(message, &signature).to_string())
+    info!("✔ Signing hex message with ETH key & prefix...");
+    sign_hex_msg_with_prefix(db, message, true)
+}
+
+/// # Sign HEX Message With EVM Key
+///
+/// Signs a given HEX message with the EVM private key from the encrypted database. The function first
+/// checks if the message to be signed is valid HEX, and errors if not. This signing function uses
+/// a recoverable `secp256k1` signature scheme with the ethereum-specific prefix:
+///
+/// ```no_compile
+/// "\x19Ethereum Signed Message:\n32"
+/// ```
+///
+/// prepended to the message before signing.
+pub fn sign_hex_msg_with_evm_key_with_prefix<D: DatabaseInterface>(db: &D, message: &str) -> Result<String> {
+    info!("✔ Signing hex message with EVM key & prefix...");
+    sign_hex_msg_with_prefix(db, message, false)
 }
 
 #[cfg(test)]
@@ -86,27 +158,29 @@ mod tests {
 
     #[test]
     fn ascii_signer_should_return_error_if_message_is_not_valid_ascii() {
+        let is_for_eth = true;
         let db = get_test_database();
         let message = "Grüße, 🦀";
-        assert!(sign_ascii_msg_with_eth_key_with_no_prefix(&db, message).is_err());
-        assert!(sign_ascii_msg_with_eth_key_with_prefix(&db, message).is_err());
+        assert!(sign_ascii_msg_with_no_prefix(&db, message, is_for_eth).is_err());
+        assert!(sign_ascii_msg_with_prefix(&db, message, is_for_eth).is_err());
     }
 
     #[test]
     fn ascii_signer_with_no_prefix_should_return_error_if_message_is_valid_hex() {
+        let is_for_eth = true;
         let db = get_test_database();
         let hex_message = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
         let hex_message_no_prefix = "4d261b7d3101e9ff7e37f63449be8a9a1affef87e4952900dbb84ee3c29f45f3";
         let expected_error =
             "✘ Program Error!\n✘ HEX message passed. Signing HEX messages without prefix is not allowed.".to_string();
         assert_eq!(
-            sign_ascii_msg_with_eth_key_with_no_prefix(&db, hex_message)
+            sign_ascii_msg_with_no_prefix(&db, hex_message, is_for_eth)
                 .unwrap_err()
                 .to_string(),
             expected_error
         );
         assert_eq!(
-            sign_ascii_msg_with_eth_key_with_no_prefix(&db, hex_message_no_prefix)
+            sign_ascii_msg_with_no_prefix(&db, hex_message_no_prefix, is_for_eth)
                 .unwrap_err()
                 .to_string(),
             expected_error
@@ -115,6 +189,7 @@ mod tests {
 
     #[test]
     fn ascii_signer_with_prefix_should_sign_valid_hex() {
+        let is_for_eth = true;
         let db = get_test_database();
         let eth_db_utils = EthDatabaseUtils::new(&db);
         let eth_private_key = get_sample_eth_private_key();
@@ -124,12 +199,13 @@ mod tests {
             "message": "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c",
             "signature": "0xe83b6dcc17d0c7f35b4e807b4e4f8b3fde9602767f2229b72ba17bedaeb2960f52fc878d40aeddbaf9ee4d3ac4a1264218df14da2c5914be01190c91a53a41a51b"
         }).to_string();
-        let result = sign_ascii_msg_with_eth_key_with_prefix(&db, message).unwrap();
+        let result = sign_ascii_msg_with_prefix(&db, message, is_for_eth).unwrap();
         assert_eq!(result, expected_result, "✘ Message signature is invalid!")
     }
 
     #[test]
-    fn should_sign_ascii_msg_with_eth_key_with_no_prefix() {
+    fn should_sign_ascii_msg_with_no_prefix() {
+        let is_for_eth = true;
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
         let eth_db_utils = EthDatabaseUtils::new(&db);
@@ -139,7 +215,7 @@ mod tests {
             "message": "Arbitrary message",
             "signature": "0x15a75ee16c085117190c8efbcd349cd5a1a8014fe454954d0e1a80210e3d5b7c1a455fba5da51471045e53e297f6d0837099aba65d4d5c5b98ae60fa42ca443d00"
         }).to_string();
-        let result = sign_ascii_msg_with_eth_key_with_no_prefix(&db, message).unwrap();
+        let result = sign_ascii_msg_with_no_prefix(&db, message, is_for_eth).unwrap();
         assert_eq!(result, expected_result, "✘ Message signature is invalid!")
     }
 
@@ -154,13 +230,14 @@ mod tests {
     }
 
     #[test]
-    fn should_sign_hex_msg_with_eth_key_with_prefix() {
+    fn should_sign_hex_msg_with_prefix() {
+        let is_for_eth = true;
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
         let eth_db_utils = EthDatabaseUtils::new(&db);
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let hex_to_sign = "0xc0ffee";
-        let result = sign_hex_msg_with_eth_key_with_prefix(&db, &hex_to_sign).unwrap();
+        let result = sign_hex_msg_with_prefix(&db, &hex_to_sign, is_for_eth).unwrap();
         let expected_result = json!({
             "message":"0xc0ffee",
             "signature":"0xb2ba6c72332f321a100d4a686f4ecc7d5fc13707b62b292ef36270981e4276d70dc177553bf719ab4bbec181ab7b5fe530437a149d9a9dec449f2aa42b7c1add1c"}).to_string();
@@ -168,14 +245,15 @@ mod tests {
     }
 
     #[test]
-    fn should_fail_to_sign_invalid_hex_msg_with_eth_key_with_prefix() {
+    fn should_fail_to_sign_invalid_hex_msg_with_prefix() {
+        let is_for_eth = true;
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
         let eth_db_utils = EthDatabaseUtils::new(&db);
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let invalid_hex_to_sign = "0xcoffee";
         let expected_err = "Message to sign is NOT valid hex! Invalid character \'o\' at position 1";
-        match sign_hex_msg_with_eth_key_with_prefix(&db, &invalid_hex_to_sign) {
+        match sign_hex_msg_with_prefix(&db, &invalid_hex_to_sign, is_for_eth) {
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
             Ok(_) => panic!("Should not have succeeded!"),
             Err(_) => panic!("Got wrong error!"),
@@ -183,7 +261,8 @@ mod tests {
     }
 
     #[test]
-    fn should_sign_ascii_msg_with_eth_key_with_prefix() {
+    fn should_sign_ascii_msg_with_prefix() {
+        let is_for_eth = true;
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
         let eth_db_utils = EthDatabaseUtils::new(&db);
@@ -193,7 +272,7 @@ mod tests {
             "message": "Arbitrary message",
             "signature": "0xf40c49d9f01f687d5510b4a55cc99d70b541ff850ac7e4ed949b3b47615990430f2230a58c2b233f6067bad376243efe8081f26981c30b9d61011ba05c8e86e41c"
         }).to_string();
-        let result = sign_ascii_msg_with_eth_key_with_prefix(&db, message).unwrap();
+        let result = sign_ascii_msg_with_prefix(&db, message, is_for_eth).unwrap();
         assert_eq!(result, expected_result, "✘ Message signature is invalid!")
     }
 }
