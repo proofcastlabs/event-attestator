@@ -31,7 +31,6 @@ use crate::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
             },
-            eth_database_utils::get_eth_chain_id_from_db,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             increment_eos_account_nonce::maybe_increment_eos_account_nonce_and_return_state,
@@ -88,7 +87,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
     check_debug_mode()
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db)))
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
@@ -110,7 +109,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                     EosOnEthEthTxInfos::from_eth_submission_material(
                         state.get_eth_submission_material()?,
                         state.get_eos_eth_token_dictionary()?,
-                        &get_eth_chain_id_from_db(&state.db)?,
+                        &state.eth_db_utils.get_eth_chain_id_from_db()?,
                     )
                     .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
                 },
@@ -140,7 +139,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Debug reprocessing EOS block...");
     check_debug_mode()
-        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
+        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_processed_global_sequences_and_add_to_state)

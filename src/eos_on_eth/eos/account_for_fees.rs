@@ -18,10 +18,10 @@ pub fn update_accrued_fees_in_dictionary_and_return_eos_state<D: DatabaseInterfa
         Ok(state)
     } else {
         info!("✔ Accruing fees during EOS block submission...");
-        EosEthTokenDictionary::get_from_db(&state.db)
+        EosEthTokenDictionary::get_from_db(state.db)
             .and_then(|dictionary| {
                 dictionary.increment_accrued_fees_and_save_in_db(
-                    &state.db,
+                    state.db,
                     &state.eos_on_eth_eos_tx_infos.get_fees(&dictionary)?,
                 )
             })
@@ -38,7 +38,7 @@ pub fn account_for_fees_in_eos_tx_infos_in_state<D: DatabaseInterface>(state: Eo
         Ok(state)
     } else {
         info!("✔ Accounting for fees in `EosOnEthEosTxInfos` during EOS block submission...");
-        EosEthTokenDictionary::get_from_db(&state.db).and_then(|ref dictionary| {
+        EosEthTokenDictionary::get_from_db(state.db).and_then(|ref dictionary| {
             let redeem_infos = state.eos_on_eth_eos_tx_infos.clone();
             state.replace_eos_on_eth_eos_tx_infos(redeem_infos.subtract_fees(dictionary)?)
         })

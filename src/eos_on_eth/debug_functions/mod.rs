@@ -166,7 +166,7 @@ pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> R
 /// #### NOTE: Using a fee of 0 will mean no fees are taken.
 pub fn debug_set_eth_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db))
         .map(|_| sanity_check_basis_points_value(new_fee))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
@@ -189,7 +189,7 @@ pub fn debug_set_eth_fee_basis_points<D: DatabaseInterface>(db: D, address: &str
 /// #### NOTE: Using a fee of 0 will mean no fees are taken.
 pub fn debug_set_eos_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db))
         .map(|_| sanity_check_basis_points_value(new_fee))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
@@ -219,7 +219,7 @@ pub fn debug_withdraw_fees<D: DatabaseInterface>(
     let dictionary_entry_eth_address = convert_hex_to_eth_address(token_address)?;
     let eos_smart_contract_address = get_eos_account_name_from_db(&db)?.to_string();
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db))
         .and_then(|_| db.start_transaction())
         .and_then(|_| dictionary.withdraw_fees_and_save_in_db(&db, &dictionary_entry_eth_address))
         .and_then(|(_, fee_amount)| {

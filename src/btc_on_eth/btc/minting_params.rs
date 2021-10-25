@@ -38,22 +38,6 @@ pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D: DatabaseInter
     .and_then(|params| state.add_btc_on_eth_minting_params(params))
 }
 
-pub fn parse_minting_params_from_p2pkh_deposits_and_add_to_state<D: DatabaseInterface>(
-    state: BtcState<D>,
-) -> Result<BtcState<D>> {
-    info!("✔ Parsing minting params from `P2PKH` deposit txs in state...");
-    get_btc_address_from_db(state.db)
-        .and_then(|btc_address| get_pay_to_pub_key_hash_script(&btc_address))
-        .and_then(|target_deposit_script| {
-            BtcOnEthMintingParams::from_btc_p2pkh_txs(
-                &target_deposit_script,
-                state.get_p2pkh_deposit_txs()?,
-                get_btc_network_from_db(state.db)?,
-            )
-        })
-        .and_then(|minting_params| state.add_btc_on_eth_minting_params(minting_params))
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
 pub struct BtcOnEthMintingParams(pub Vec<BtcOnEthMintingParamStruct>);
 

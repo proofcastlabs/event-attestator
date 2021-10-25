@@ -64,6 +64,7 @@ pub fn maybe_sign_normal_canon_block_txs_and_add_to_state<D: DatabaseInterface>(
     get_eth_signed_txs(
         &state.eth_db_utils.get_signing_params_from_db()?,
         &get_btc_canon_block_from_db(state.db)?.get_eth_minting_params(),
+        &get_btc_chain_id_from_db(state.db)?,
     )
     .and_then(|signed_txs| {
         #[cfg(feature = "debug")]

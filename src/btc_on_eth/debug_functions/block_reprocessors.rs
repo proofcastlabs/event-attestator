@@ -103,6 +103,7 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
             get_eth_signed_txs(
                 &state.eth_db_utils.get_signing_params_from_db()?,
                 &state.btc_on_eth_minting_params,
+                &get_btc_chain_id_from_db(state.db)?,
             )
             .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
         })

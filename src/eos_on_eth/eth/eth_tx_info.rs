@@ -361,8 +361,12 @@ pub fn maybe_parse_eth_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
                     "✔ {} receipts in canon block ∴ parsing ETH tx info...",
                     material.receipts.len()
                 );
-                EosOnEthEthTxInfos::from_eth_submission_material(&material, state.get_eos_eth_token_dictionary()?)
-                    .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
+                EosOnEthEthTxInfos::from_eth_submission_material(
+                    &material,
+                    state.get_eos_eth_token_dictionary()?,
+                    &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                )
+                .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
             },
         })
 }

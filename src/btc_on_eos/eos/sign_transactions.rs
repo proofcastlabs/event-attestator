@@ -77,7 +77,7 @@ pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>)
                 {
                     debug!("✔ Signed transaction: {:?}", signed_tx);
                 }
-                state.add_btc_on_eos_signed_txs(&[signed_tx])
+                state.add_btc_on_eos_signed_txs(vec![signed_tx])
             })
         },
     }

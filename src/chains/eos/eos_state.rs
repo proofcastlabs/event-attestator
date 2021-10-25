@@ -38,7 +38,7 @@ pub struct EosState<'a, D: DatabaseInterface> {
     pub eos_db_utils: EosDatabaseUtils<'a, D>,
     pub btc_db_utils: BtcDatabaseUtils<'a, D>,
     pub block_header: Option<EosBlockHeaderV2>,
-    pub btc_on_eos_signed_txs: BtcTransactions,
+    pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub processed_tx_ids: ProcessedGlobalSequences,
     pub enabled_protocol_features: EnabledFeatures,
     pub eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos,
@@ -95,26 +95,17 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
         }
     }
 
-    pub fn add_btc_on_eos_signed_txs(mut self, btc_on_eos_signed_txs: Vec<BtcTransaction>) -> Result<EosState<'a, D>>
-    where
-        D: DatabaseInterface,
-    {
+    pub fn add_btc_on_eos_signed_txs(mut self, btc_on_eos_signed_txs: Vec<BtcTransaction>) -> Result<EosState<'a, D>> {
         self.btc_on_eos_signed_txs = btc_on_eos_signed_txs;
         Ok(self)
     }
 
-    pub fn add_eth_signed_txs(mut self, txs: EthTransactions) -> Result<EosState<'a, D>>
-    where
-        D: DatabaseInterface,
-    {
+    pub fn add_eth_signed_txs(mut self, txs: EthTransactions) -> Result<EosState<'a, D>> {
         self.eth_signed_txs = txs;
         Ok(self)
     }
 
-    pub fn add_incremerkle(mut self, incremerkle: Incremerkle) -> EosState<'a, D>
-    where
-        D: DatabaseInterface,
-    {
+    pub fn add_incremerkle(mut self, incremerkle: Incremerkle) -> EosState<'a, D> {
         self.incremerkle = incremerkle;
         self
     }
@@ -189,6 +180,12 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             Some(ref active_schedule) => Ok(active_schedule),
             None => Err(get_not_in_state_err("active_schedule").into()),
         }
+    }
+
+    pub fn replace_btc_on_eos_signed_txs(mut self, replacements: Vec<BtcTransaction>) -> Self {
+        info!("✔ Replacing signed BTC txs infos in state...");
+        self.btc_on_eos_signed_txs = replacements;
+        self
     }
 
     pub fn replace_btc_on_eos_redeem_infos(mut self, replacements: BtcOnEosRedeemInfos) -> Result<EosState<'a, D>> {

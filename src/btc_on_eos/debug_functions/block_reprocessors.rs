@@ -167,7 +167,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
                 &EosPrivateKey::get_from_db(state.db)?,
                 &get_eos_account_name_string_from_db(state.db)?,
                 &state.btc_on_eos_minting_params,
-                &get_btc_chain_id_from_db(&state.db)?,
+                &get_btc_chain_id_from_db(state.db)?,
             )?;
             info!("✔ EOS signed txs: {:?}", eos_signed_txs);
             state.add_eos_signed_txs(eos_signed_txs)

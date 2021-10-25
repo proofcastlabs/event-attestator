@@ -222,7 +222,7 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
         Ok(self)
     }
 
-    pub fn add_eos_signed_txs(mut self, eos_signed_txs: EosSignedTransactions) -> Result<BtcState<D>> {
+    pub fn add_eos_signed_txs(mut self, eos_signed_txs: EosSignedTransactions) -> Result<BtcState<'a, D>> {
         match self.eos_signed_txs.len() {
             0 => {
                 info!("✔ Adding signed txs to state...");
