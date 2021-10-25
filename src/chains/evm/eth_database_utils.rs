@@ -1,26 +1,24 @@
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 use crate::{
-    chains::{
-        eth::{
-            eth_chain_id::EthChainId,
-            eth_crypto::eth_private_key::EthPrivateKey,
-            evm_constants::{
-                EVM_ACCOUNT_NONCE_KEY,
-                EVM_ADDRESS_KEY,
-                EVM_ANCHOR_BLOCK_HASH_KEY,
-                EVM_ANY_SENDER_NONCE_KEY,
-                EVM_CANON_BLOCK_HASH_KEY,
-                EVM_CANON_TO_TIP_LENGTH_KEY,
-                EVM_CHAIN_ID_KEY,
-                EVM_ERC777_PROXY_CONTACT_ADDRESS_KEY,
-                EVM_GAS_PRICE_KEY,
-                EVM_LATEST_BLOCK_HASH_KEY,
-                EVM_LINKER_HASH_KEY,
-                EVM_PRIVATE_KEY_DB_KEY,
-                EVM_TAIL_BLOCK_HASH_KEY,
-            },
-            eth_submission_material::EthSubmissionMaterial,
+    chains::eth::{
+        eth_chain_id::EthChainId,
+        eth_crypto::eth_private_key::EthPrivateKey,
+        eth_submission_material::EthSubmissionMaterial,
+        evm_constants::{
+            EVM_ACCOUNT_NONCE_KEY,
+            EVM_ADDRESS_KEY,
+            EVM_ANCHOR_BLOCK_HASH_KEY,
+            EVM_ANY_SENDER_NONCE_KEY,
+            EVM_CANON_BLOCK_HASH_KEY,
+            EVM_CANON_TO_TIP_LENGTH_KEY,
+            EVM_CHAIN_ID_KEY,
+            EVM_ERC777_PROXY_CONTACT_ADDRESS_KEY,
+            EVM_GAS_PRICE_KEY,
+            EVM_LATEST_BLOCK_HASH_KEY,
+            EVM_LINKER_HASH_KEY,
+            EVM_PRIVATE_KEY_DB_KEY,
+            EVM_TAIL_BLOCK_HASH_KEY,
         },
     },
     constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},

@@ -17,10 +17,7 @@ use crate::{
             eth_receipt::EthReceipt,
             eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
         },
-        evm::{
-            eth_database_utils::{get_special_eth_hash_from_db, put_special_eth_block_in_db},
-            eth_types::TrieHashMap,
-        },
+        evm::eth_database_utils::{get_special_eth_hash_from_db, put_special_eth_block_in_db},
     },
     errors::AppError,
     traits::DatabaseInterface,
@@ -245,15 +242,6 @@ pub fn get_sample_log_without_desired_address() -> EthLog {
 
 pub fn get_thing_to_put_in_trie_hash_map() -> Bytes {
     b"Provable".to_vec()
-}
-
-pub fn get_trie_hash_map_with_thing_in_it() -> Result<TrieHashMap> {
-    let mut trie_hash_map: TrieHashMap = std::collections::HashMap::new();
-    trie_hash_map.insert(
-        get_expected_key_of_thing_in_trie_hash_map(),
-        get_thing_to_put_in_trie_hash_map(),
-    );
-    Ok(trie_hash_map)
 }
 
 pub fn get_expected_key_of_thing_in_trie_hash_map() -> EthHash {
