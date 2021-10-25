@@ -2,30 +2,22 @@ use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
-    chains::{
-        eth::{
-            eth_chain_id::EthChainId,
-            eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
-            eth_contracts::{
-                erc20_vault::{Erc20VaultPegInEventParams, ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC},
-                erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_DATA_GAS_LIMIT},
-            },
-            eth_crypto::{
-                eth_private_key::EthPrivateKey as EvmPrivateKey,
-                eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
-            },
-            eth_log::{EthLog, EthLogs},
-            eth_receipt::{EthReceipt, EthReceipts},
-            eth_state::EthState,
-            eth_submission_material::EthSubmissionMaterial,
-            eth_utils::safely_convert_hex_to_eth_address,
+    chains::eth::{
+        eth_chain_id::EthChainId,
+        eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
+        eth_contracts::{
+            erc20_vault::{Erc20VaultPegInEventParams, ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC},
+            erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_DATA_GAS_LIMIT},
         },
-        evm::eth_database_utils::{
-            get_eth_account_nonce_from_db as get_evm_account_nonce_from_db,
-            get_eth_chain_id_from_db as get_evm_chain_id_from_db,
-            get_eth_gas_price_from_db as get_evm_gas_price_from_db,
-            get_eth_private_key_from_db as get_evm_private_key_from_db,
+        eth_crypto::{
+            eth_private_key::EthPrivateKey as EvmPrivateKey,
+            eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
         },
+        eth_log::{EthLog, EthLogs},
+        eth_receipt::{EthReceipt, EthReceipts},
+        eth_state::EthState,
+        eth_submission_material::EthSubmissionMaterial,
+        eth_utils::safely_convert_hex_to_eth_address,
     },
     constants::SAFE_EVM_ADDRESS,
     dictionaries::eth_evm::EthEvmTokenDictionary,
@@ -443,11 +435,11 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
         state
             .erc20_on_evm_evm_tx_infos
             .to_evm_signed_txs(
-                get_evm_account_nonce_from_db(state.db)?,
-                &get_evm_chain_id_from_db(state.db)?,
+                state.evm_db_utils.get_eth_account_nonce_from_db()?,
+                &state.evm_db_utils.get_eth_chain_id_from_db()?,
                 ERC777_MINT_WITH_DATA_GAS_LIMIT,
-                get_evm_gas_price_from_db(state.db)?,
-                &get_evm_private_key_from_db(state.db)?,
+                state.evm_db_utils.get_eth_gas_price_from_db()?,
+                &state.evm_db_utils.get_eth_private_key_from_db()?,
                 &EthEvmTokenDictionary::get_from_db(state.db)?,
             )
             .and_then(|signed_txs| {
