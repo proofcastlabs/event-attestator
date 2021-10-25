@@ -1,20 +1,22 @@
 use ethereum_types::H256;
 
 use crate::{
-    chains::evm::{
-        eth_constants::{EMPTY_NIBBLES, HASHED_NULL_NODE},
-        eth_types::{NodeStack, TrieHashMap},
-        eth_utils::{convert_bytes_to_h256, convert_h256_to_bytes},
-        get_trie_hash_map::{get_new_trie_hash_map, put_thing_in_trie_hash_map, remove_thing_from_trie_hash_map},
-        nibble_utils::{
-            convert_nibble_to_usize,
-            get_common_prefix_nibbles,
-            get_nibble_at_index,
-            get_nibbles_from_bytes,
-            split_at_first_nibble,
-            Nibbles,
+    chains::{
+        eth::eth_utils::{convert_bytes_to_h256, convert_h256_to_bytes},
+        evm::{
+            eth_constants::{EMPTY_NIBBLES, HASHED_NULL_NODE},
+            eth_types::{NodeStack, TrieHashMap},
+            get_trie_hash_map::{get_new_trie_hash_map, put_thing_in_trie_hash_map, remove_thing_from_trie_hash_map},
+            nibble_utils::{
+                convert_nibble_to_usize,
+                get_common_prefix_nibbles,
+                get_nibble_at_index,
+                get_nibbles_from_bytes,
+                split_at_first_nibble,
+                Nibbles,
+            },
+            trie_nodes::{get_node_from_trie_hash_map, Node},
         },
-        trie_nodes::{get_node_from_trie_hash_map, Node},
     },
     types::{Bytes, NoneError, Result},
 };
@@ -741,18 +743,20 @@ mod tests {
     use simplelog::{Config, LevelFilter, TermLogger, TerminalMode};
 
     use super::*;
-    use crate::chains::evm::{
-        eth_test_utils::{
-            convert_h256_to_prefixed_hex,
-            convert_hex_string_to_nibbles,
-            get_sample_branch_node,
-            get_sample_eth_submission_material,
-            get_sample_eth_submission_material_n,
-            get_sample_extension_node,
-            get_sample_leaf_node,
+    use crate::chains::{
+        eth::eth_utils::convert_hex_to_h256,
+        evm::{
+            eth_test_utils::{
+                convert_h256_to_prefixed_hex,
+                convert_hex_string_to_nibbles,
+                get_sample_branch_node,
+                get_sample_eth_submission_material,
+                get_sample_eth_submission_material_n,
+                get_sample_extension_node,
+                get_sample_leaf_node,
+            },
+            get_trie_hash_map::get_thing_from_trie_hash_map,
         },
-        eth_utils::convert_hex_to_h256,
-        get_trie_hash_map::get_thing_from_trie_hash_map,
     };
 
     #[test]

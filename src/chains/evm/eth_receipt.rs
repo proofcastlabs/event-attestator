@@ -7,11 +7,13 @@ use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::evm::{
-        eth_log::{EthLog, EthLogJson, EthLogs},
-        eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256, convert_json_value_to_string},
-        nibble_utils::{get_nibbles_from_bytes, Nibbles},
-        trie::{put_in_trie_recursively, Trie},
+    chains::{
+        eth::eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256, convert_json_value_to_string},
+        evm::{
+            eth_log::{EthLog, EthLogJson, EthLogs},
+            nibble_utils::{get_nibbles_from_bytes, Nibbles},
+            trie::{put_in_trie_recursively, Trie},
+        },
     },
     types::{Bytes, Result},
 };

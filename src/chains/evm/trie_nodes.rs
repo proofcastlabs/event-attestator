@@ -2,20 +2,18 @@ use ethereum_types::H256;
 use rlp::{Rlp, RlpStream};
 
 use crate::{
-    crypto_utils::keccak_hash_bytes,
-    chains::{
-        evm::{
-            eth_constants::{BRANCH_NODE_STRING, EMPTY_NIBBLES, EXTENSION_NODE_STRING, LEAF_NODE_STRING},
-            eth_types::{ChildNodes, TrieHashMap},
-            get_trie_hash_map::get_thing_from_trie_hash_map,
-            nibble_utils::Nibbles,
-            path_codec::{
-                decode_path_to_nibbles_and_node_type,
-                encode_extension_path_from_nibbles,
-                encode_leaf_path_from_nibbles,
-            },
+    chains::evm::{
+        eth_constants::{BRANCH_NODE_STRING, EMPTY_NIBBLES, EXTENSION_NODE_STRING, LEAF_NODE_STRING},
+        eth_types::{ChildNodes, TrieHashMap},
+        get_trie_hash_map::get_thing_from_trie_hash_map,
+        nibble_utils::Nibbles,
+        path_codec::{
+            decode_path_to_nibbles_and_node_type,
+            encode_extension_path_from_nibbles,
+            encode_leaf_path_from_nibbles,
         },
     },
+    crypto_utils::keccak_hash_bytes,
     types::{Bytes, Result},
 };
 
@@ -248,11 +246,13 @@ pub fn get_node_from_trie_hash_map(trie_hash_map: &TrieHashMap, key: &H256) -> R
 mod tests {
     use super::*;
     use crate::{
-        chains::evm::{
-            eth_test_utils::{get_sample_branch_node, get_sample_extension_node, get_sample_leaf_node},
-            eth_utils::convert_hex_to_h256,
-            get_trie_hash_map::{get_new_trie_hash_map, put_thing_in_trie_hash_map},
-            nibble_utils::{get_length_in_nibbles, get_nibbles_from_bytes},
+        chains::{
+            eth::eth_utils::convert_hex_to_h256,
+            evm::{
+                eth_test_utils::{get_sample_branch_node, get_sample_extension_node, get_sample_leaf_node},
+                get_trie_hash_map::{get_new_trie_hash_map, put_thing_in_trie_hash_map},
+                nibble_utils::{get_length_in_nibbles, get_nibbles_from_bytes},
+            },
         },
         errors::AppError,
     };

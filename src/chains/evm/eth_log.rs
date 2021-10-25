@@ -6,11 +6,11 @@ use serde_json::{json, Value as JsonValue};
 
 use crate::{
     chains::{
-        eth::eth_traits::EthLogCompatible,
-        evm::{
-            eth_receipt::EthReceiptJson,
+        eth::{
+            eth_traits::EthLogCompatible,
             eth_utils::{convert_hex_strings_to_h256s, convert_hex_to_bytes, convert_hex_to_eth_address},
         },
+        evm::eth_receipt::EthReceiptJson,
     },
     types::{Bytes, Result},
 };

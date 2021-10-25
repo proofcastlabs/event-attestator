@@ -10,7 +10,6 @@ pub(crate) mod eth_state;
 pub(crate) mod eth_submission_material;
 pub(crate) mod eth_test_utils;
 pub(crate) mod eth_types;
-pub(crate) mod eth_utils;
 pub(crate) mod evm_debug_functions;
 pub(crate) mod get_trie_hash_map;
 pub(crate) mod nibble_utils;
