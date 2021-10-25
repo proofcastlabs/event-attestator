@@ -1,4 +1,3 @@
-pub(crate) mod eth_constants;
 pub(crate) mod eth_database_transactions;
 pub(crate) mod eth_database_utils;
 pub(crate) mod eth_log;
