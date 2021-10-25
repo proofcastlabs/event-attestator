@@ -1,7 +1,7 @@
 use ethereum_types::H256 as EthHash;
 pub use serde_json::{json, Value as JsonValue};
 
-use crate::{chains::evm::nibble_utils::Nibbles, types::Byte, utils::get_prefixed_db_key};
+use crate::{types::Byte, utils::get_prefixed_db_key};
 
 pub const ZERO_BYTE: u8 = 0u8;
 pub const ETH_TAIL_LENGTH: u64 = 100;
@@ -13,10 +13,6 @@ pub static BRANCH_NODE_STRING: &str = "branch";
 pub static EXTENSION_NODE_STRING: &str = "extension";
 pub const HASHED_NULL_NODE: EthHash = EthHash(HASHED_NULL_NODE_BYTES);
 pub const ETH_CORE_IS_INITIALIZED_JSON: &str = "{evm_core_initialized:true}";
-pub const EMPTY_NIBBLES: Nibbles = Nibbles {
-    data: vec![],
-    offset: 0,
-};
 pub const ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC_HEX: &str =
     "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
 pub const ETH_MESSAGE_PREFIX: &[u8; 26] = b"\x19Ethereum Signed Message:\n";

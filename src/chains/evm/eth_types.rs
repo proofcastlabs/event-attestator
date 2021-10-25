@@ -2,14 +2,10 @@ use std::collections::HashMap;
 
 use ethereum_types::{Address, H256};
 
-use crate::{
-    chains::{eth::eth_crypto::eth_private_key::EthPrivateKey, evm::trie_nodes::Node},
-    types::Bytes,
-};
+use crate::{chains::eth::eth_crypto::eth_private_key::EthPrivateKey, types::Bytes};
 
 pub type EthHash = H256;
 pub type EthAddress = Address;
-pub type NodeStack = Vec<Node>;
 pub type EthSignature = [u8; 65];
 pub type EthSignedTransaction = String;
 pub type ChildNodes = [Option<Bytes>; 16];

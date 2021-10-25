@@ -9,11 +9,7 @@ use serde_json::{json, Value as JsonValue};
 use crate::{
     chains::{
         eth::eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256, convert_json_value_to_string},
-        evm::{
-            eth_log::{EthLog, EthLogJson, EthLogs},
-            nibble_utils::{get_nibbles_from_bytes, Nibbles},
-            trie::{put_in_trie_recursively, Trie},
-        },
+        evm::eth_log::{EthLog, EthLogJson, EthLogs},
     },
     types::{Bytes, Result},
 };
@@ -110,17 +106,8 @@ impl EthReceipts {
             .filter_for_those_from_address_containing_topic(address, topic)
     }
 
-    pub fn get_rlp_encoded_receipts_and_nibble_tuples(&self) -> Result<Vec<(Nibbles, Bytes)>> {
-        self.0
-            .iter()
-            .map(|receipt| receipt.get_rlp_encoded_receipt_and_encoded_key_tuple())
-            .collect()
-    }
-
     pub fn get_merkle_root(&self) -> Result<EthHash> {
-        self.get_rlp_encoded_receipts_and_nibble_tuples()
-            .and_then(|key_value_tuples| put_in_trie_recursively(Trie::get_new_trie()?, key_value_tuples, 0))
-            .map(|trie| trie.root)
+        Err("No longer implemented!".into())
     }
 }
 
@@ -233,11 +220,6 @@ impl EthReceipt {
         rlp_stream.out().to_vec()
     }
 
-    pub fn get_rlp_encoded_receipt_and_encoded_key_tuple(&self) -> Result<(Nibbles, Bytes)> {
-        self.rlp_encode()
-            .map(|bytes| (get_nibbles_from_bytes(self.rlp_encode_transaction_index()), bytes))
-    }
-
     pub fn get_logs_from_address_with_topic(&self, address: &EthAddress, topic: &EthHash) -> EthLogs {
         EthLogs::new(
             self.logs
@@ -268,161 +250,5 @@ impl Ord for EthReceipt {
 impl PartialOrd for EthReceipt {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::chains::evm::eth_test_utils::{
-        get_expected_receipt,
-        get_sample_contract_address,
-        get_sample_contract_topic,
-        get_sample_eth_submission_material,
-        get_sample_eth_submission_material_json,
-        get_sample_receipt_with_desired_topic,
-        SAMPLE_RECEIPT_INDEX,
-    };
-
-    #[test]
-    fn should_encode_eth_receipt_as_json() {
-        let receipt = get_sample_receipt_with_desired_topic();
-        let result = receipt.to_json().unwrap();
-        let expected_result = json!({
-            "status": true,
-            "gasUsed": 37947,
-            "transactionIndex": 2,
-            "blockNumber": 8503804,
-            "cumulativeGasUsed": 79947,
-            "to": "0x60a640e2d10e020fee94217707bfa9543c8b59e0",
-            "from": "0x250abfa8bc8371709fa4b601d821b1421667a886",
-            "contractAddress": "0x0000000000000000000000000000000000000000",
-            "blockHash": "0xb626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0",
-            "transactionHash":  "0xab8078c9aa8720c5f9206bd2673f25f359d8a01b62212da99ff3b53c1ca3d440",
-            "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000010000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000800000000000000000000010000000000000000008000000000000000000000000000000000000000000000200000003000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000020000000",
-            "logs": vec![
-                json!({
-                    "address": "0x60a640e2d10e020fee94217707bfa9543c8b59e0",
-                    "data": "0x00000000000000000000000000000000000000000000000589ba7ab174d54000",
-                    "topics": vec![
-                        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                        "0x000000000000000000000000250abfa8bc8371709fa4b601d821b1421667a886",
-                        "0x0000000000000000000000005a7dd68907e103c3239411dae0b0eef968468ef2",
-                    ],
-                })
-            ],
-        });
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_encode_eth_submission_material_as_json() {
-        let block_and_receipts = get_sample_eth_submission_material();
-        let result = block_and_receipts.to_json();
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn should_encode_eth_submission_material_as_bytes() {
-        let block_and_receipts = get_sample_eth_submission_material();
-        let result = block_and_receipts.to_bytes();
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn should_parse_eth_receipt_json() {
-        let eth_json = get_sample_eth_submission_material_json().unwrap();
-        let receipt_json = eth_json.receipts[SAMPLE_RECEIPT_INDEX].clone();
-        match EthReceipt::from_json(&receipt_json) {
-            Ok(receipt) => assert_eq!(receipt, get_expected_receipt()),
-            _ => panic!("Should have parsed receipt!"),
-        }
-    }
-
-    #[test]
-    fn should_parse_eth_receipt_jsons() {
-        let eth_json = get_sample_eth_submission_material_json().unwrap();
-        if EthReceipts::from_jsons(&eth_json.receipts).is_err() {
-            panic!("Should have generated receipts correctly!")
-        }
-    }
-
-    #[test]
-    fn should_filter_receipts_for_topics() {
-        let expected_num_receipts_after = 1;
-        let receipts = get_sample_eth_submission_material().receipts;
-        let num_receipts_before = receipts.len();
-        let topic = get_sample_contract_topic();
-        let topics = vec![topic];
-        let address = get_sample_contract_address();
-        let result = receipts.get_receipts_containing_log_from_address_and_with_topics(&address, &topics);
-        let num_receipts_after = result.len();
-        assert_eq!(num_receipts_after, expected_num_receipts_after);
-        assert!(num_receipts_before > num_receipts_after);
-        result
-            .0
-            .iter()
-            .for_each(|receipt| assert!(receipt.logs.contain_topic(&topic)));
-    }
-
-    fn get_encoded_receipt() -> String {
-        "f901a7018301384bb9010000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000010000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000800000000000000000000010000000000000000008000000000000000000000000000000000000000000000200000003000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000020000000f89df89b9460a640e2d10e020fee94217707bfa9543c8b59e0f863a0ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3efa0000000000000000000000000250abfa8bc8371709fa4b601d821b1421667a886a00000000000000000000000005a7dd68907e103c3239411dae0b0eef968468ef2a000000000000000000000000000000000000000000000000589ba7ab174d54000".to_string()
-    }
-
-    #[test]
-    fn should_rlp_encode_receipt() {
-        let result = get_expected_receipt().rlp_encode().unwrap();
-        assert_eq!(hex::encode(result), get_encoded_receipt())
-    }
-
-    #[test]
-    fn should_get_encoded_receipt_and_hash_tuple() {
-        let result = get_expected_receipt()
-            .get_rlp_encoded_receipt_and_encoded_key_tuple()
-            .unwrap();
-        let expected_encoded_nibbles = get_nibbles_from_bytes(vec![0x02]); // NOTE: The tx index of sample receipt
-        assert_eq!(result.0, expected_encoded_nibbles);
-        assert_eq!(hex::encode(result.1), get_encoded_receipt());
-    }
-
-    #[test]
-    fn should_get_encoded_receipts_and_hash_tuples() {
-        let expected_encoded_nibbles = get_nibbles_from_bytes(vec![0x02]);
-        let receipts = EthReceipts::new(vec![get_expected_receipt(), get_expected_receipt()]);
-        let results = receipts.get_rlp_encoded_receipts_and_nibble_tuples().unwrap();
-        results.iter().for_each(|result| {
-            assert_eq!(result.0, expected_encoded_nibbles);
-            assert_eq!(hex::encode(&result.1), get_encoded_receipt());
-        });
-    }
-
-    #[test]
-    fn should_get_receipts_merkle_root_from_receipts() {
-        let block_and_receipts = get_sample_eth_submission_material();
-        let result = block_and_receipts.receipts.get_merkle_root().unwrap();
-        let expected_result = block_and_receipts.get_receipts_root().unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_get_eth_logs_from_receipts() {
-        let receipts = get_sample_eth_submission_material().receipts;
-        let result = receipts.get_logs();
-        assert_eq!(result.len(), 51);
-    }
-
-    #[test]
-    fn should_get_logs_from_address_with_topic() {
-        let topic = get_sample_contract_topic();
-        let address = get_sample_contract_address();
-        let receipts = get_sample_eth_submission_material().receipts;
-        let logs_before = receipts.get_logs();
-        let logs_after = receipts.get_logs_from_address_with_topic(&address, &topic);
-        assert!(logs_before.len() > logs_after.len());
-        assert_eq!(logs_after.len(), 1);
-        logs_after.iter().for_each(|log| {
-            assert!(log.is_from_address(&address));
-            assert!(log.contains_topic(&topic));
-        })
     }
 }
