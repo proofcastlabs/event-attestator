@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     chains::{
         eos::{
-            eos_crypto::eos_transaction::EosSignedTransaction,
+            eos_crypto::eos_transaction::{EosSignedTransaction, EosSignedTransactions},
             eos_database_utils::{get_eos_account_nonce_from_db, get_latest_eos_block_number},
         },
         eth::{eth_database_utils::get_eth_latest_block_from_db, eth_state::EthState},
@@ -69,6 +69,16 @@ pub struct EosOnEthEthOutput {
     pub eos_signed_transactions: Vec<EosOnEthEthOutputDetails>,
 }
 
+fn check_eos_nonce_is_sufficient<D: DatabaseInterface>(db: &D, eos_txs: &EosSignedTransactions) -> Result<u64> {
+    get_eos_account_nonce_from_db(db).and_then(|eos_nonce| {
+        if eos_nonce >= eos_txs.len() as u64 {
+            Ok(eos_nonce)
+        } else {
+            Err("EOS nonce is NOT greater than or equal to the number of EOS txs!".into())
+        }
+    })
+}
+
 pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
     info!("✔ Getting `eos-on-eth` ETH submission output json...");
     Ok(serde_json::to_string(&EosOnEthEthOutput {
@@ -76,7 +86,8 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
         eos_signed_transactions: match state.eos_transactions {
             None => vec![],
             Some(ref eos_txs) => {
-                let start_nonce = get_eos_account_nonce_from_db(&state.db)? - eos_txs.len() as u64;
+                let eos_nonce = check_eos_nonce_is_sufficient(&state.db, eos_txs)?;
+                let start_nonce = eos_nonce - eos_txs.len() as u64;
                 eos_txs
                     .iter()
                     .enumerate()
