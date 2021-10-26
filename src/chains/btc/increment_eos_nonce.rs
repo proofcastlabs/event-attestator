@@ -13,7 +13,7 @@ fn increment_eos_nonce<D: DatabaseInterface>(db: &D, current_nonce: u64, num_sig
 }
 
 pub fn maybe_increment_eos_nonce<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
-    let num_txs = &state.signed_txs.len();
+    let num_txs = &state.eos_signed_txs.len();
     match num_txs {
         0 => {
             info!("✔ No EOS signatures in state ∴ not incrementing nonce");

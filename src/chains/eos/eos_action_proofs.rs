@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use eos_chain::{
     AccountName as EosAccountName,
-    AccountName,
     Action as EosAction,
     ActionName,
     Checksum256,
@@ -149,7 +148,7 @@ impl EosActionJson {
     pub fn to_action(&self) -> Result<EosAction> {
         Ok(EosAction {
             name: ActionName::from_str(&self.name)?,
-            account: AccountName::from_str(&self.account)?,
+            account: EosAccountName::from_str(&self.account)?,
             data: Self::deserialize_action_data(&self.hex_data)?,
             authorization: Self::parse_authorization_jsons(&self.authorization)?,
         })

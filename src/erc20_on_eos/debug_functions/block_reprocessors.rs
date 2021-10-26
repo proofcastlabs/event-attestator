@@ -27,9 +27,14 @@ use crate::{
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
         },
         eth::{
+            eth_database_transactions::{
+                end_eth_db_transaction_and_return_state,
+                start_eth_db_transaction_and_return_state,
+            },
             eth_database_utils::get_eth_chain_id_from_db,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
+            increment_eos_account_nonce::maybe_increment_eos_account_nonce_and_return_state,
             validate_block_in_state::validate_block_in_state,
             validate_receipts_in_state::validate_receipts_in_state,
         },
@@ -81,6 +86,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
     info!("✔ Debug reprocessing ETH block...");
     parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
         .and_then(check_core_is_initialized_and_return_eth_state)
+        .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(validate_receipts_in_state)
@@ -120,6 +126,8 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
             }
         })
         .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
+        .and_then(maybe_increment_eos_account_nonce_and_return_state)
+        .and_then(end_eth_db_transaction_and_return_state)
         .and_then(get_output_json)
 }
 
@@ -167,19 +175,15 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
 /// simplified submission pipeline, signing any EOS signatures for peg-ins it may find in the block
 ///
 /// ### NOTES:
-///  - This function has no database transactional capabilities and thus cannot modifiy the state of
-/// the encrypted database in any way.
-///
 ///  - This version of the ETH block reprocessor __will__ deduct fees from any transaction info(s) it
 ///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
 ///  dictionary. This is to avoid accounting for fees twice.
 ///
 /// ### BEWARE:
-/// Per above, this function does NOT increment the EOS  nonce (since it is not critical for correct
-/// transaction creation) and so outputted reports will NOT contain correct nonces. This is to ensure
-/// future transactions written by the proper submit-ETH-block pipeline will remain contiguous. The
-/// user of this function should understand why this is the case, and thus should be able to modify
-/// the outputted reports to slot into the external database correctly.
+/// This function WILL increment the EOS nonce if transactions are signed. The user of this function
+/// should understand what this means when inserting the report outputted from this debug function.
+/// If this output is to _replace_ an existing report, the nonces in the report and in the core's
+/// database should be modified accordingly.
 pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
     debug_reprocess_eth_block_maybe_accruing_fees(db, block_json_string, false)
 }
@@ -190,9 +194,6 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
 /// simplified submission pipeline, signing any EOS signatures for peg-ins it may find in the block
 ///
 /// ### NOTES:
-///  - This function has no database transactional capabilities and thus cannot modifiy the state of
-/// the encrypted database in any way.
-///
 ///  - This version of the ETH block reprocessor __will__ deduct fees from any transaction info(s) it
 ///  parses from the submitted block, and __will__ accrue those fees on to the total in the
 ///  dictionary. Only use this is you know what you're doing and why, and make sure you're avoiding
@@ -200,11 +201,10 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
 ///  block submission pipeline.
 ///
 /// ### BEWARE:
-/// Per above, this function does NOT increment the EOS  nonce (since it is not critical for correct
-/// transaction creation) and so outputted reports will NOT contain correct nonces. This is to ensure
-/// future transactions written by the proper submit-ETH-block pipeline will remain contiguous. The
-/// user of this function should understand why this is the case, and thus should be able to modify
-/// the outputted reports to slot into the external database correctly.
+/// This function WILL increment the EOS nonce if transactions are signed. The user of this function
+/// should understand what this means when inserting the report outputted from this debug function.
+/// If this output is to _replace_ an existing report, the nonces in the report and in the core's
+/// database should be modified accordingly.
 pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(
     db: D,
     block_json_string: &str,
