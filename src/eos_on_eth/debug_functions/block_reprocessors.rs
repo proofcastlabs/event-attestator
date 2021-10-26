@@ -184,7 +184,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
 ///  dictionary. This is to avoid accounting for fees twice.
 ///
 /// ### BEWARE:
-/// This function CAN increment the EOS nonce if transactions are signed. The user of this function
+/// This function WILL increment the EOS nonce if transactions are signed. The user of this function
 /// should understand what this means when inserting the report outputted from this debug function.
 /// If this output is to _replace_ an existing report, the nonces in the report and in the core's
 /// database should be modified accordingly.
@@ -205,7 +205,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string:
 ///  block submission pipeline.
 ///
 /// ### BEWARE:
-/// This function CAN increment the EOS nonce if transactions are signed. The user of this function
+/// This function WILL increment the EOS nonce if transactions are signed. The user of this function
 /// should understand what this means when inserting the report outputted from this debug function.
 /// If this output is to _replace_ an existing report, the nonces in the report and in the core's
 /// database should be modified accordingly.

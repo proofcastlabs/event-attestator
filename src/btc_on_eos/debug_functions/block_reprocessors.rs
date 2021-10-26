@@ -4,7 +4,7 @@ use crate::{
     btc_on_eos::{
         btc::{
             account_for_fees::maybe_account_for_fees as maybe_account_for_peg_in_fees,
-            get_btc_output_json::{get_btc_output_as_string, get_eos_signed_tx_info_from_txs, BtcOutput},
+            get_btc_output_json::{get_btc_output_as_string, get_eos_signed_tx_info, BtcOutput},
             minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             sign_transactions::get_signed_eos_ptoken_issue_txs,
         },
@@ -170,7 +170,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
                 &state.btc_on_eos_minting_params,
                 &get_btc_chain_id_from_db(&state.db)?,
             )?;
-            info!("✔ EOS Signed Txs: {:?}", eos_signed_txs);
+            info!("✔ EOS signed txs: {:?}", eos_signed_txs);
             state.add_eos_signed_txs(eos_signed_txs)
         })
         .and_then(maybe_increment_eos_nonce)
@@ -180,7 +180,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
                 btc_latest_block_number: get_btc_latest_block_from_db(&state.db)?.height,
                 eos_signed_transactions: match &state.eos_signed_txs.len() {
                     0 => vec![],
-                    _ => get_eos_signed_tx_info_from_txs(
+                    _ => get_eos_signed_tx_info(
                         &state.eos_signed_txs,
                         &state.btc_on_eos_minting_params,
                         get_eos_account_nonce_from_db(&state.db)?,
@@ -209,7 +209,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
 /// organic block submission.
 ///
 /// ### BEWARE:
-/// This function CAN increment the EOS nonce if transactions are signed. The user of this function
+/// This function WILL increment the EOS nonce if transactions are signed. The user of this function
 /// should understand what this means when inserting the report outputted from this debug function.
 /// If this output is to _replace_ an existing report, the nonces in the report and in the core's
 /// database should be modified accordingly.
@@ -235,7 +235,7 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D: DatabaseInterface>(
 /// the blocks organic submission to the core.
 ///
 /// ### BEWARE:
-/// This function CAN increment the EOS nonce if transactions are signed. The user of this function
+/// This function WILL increment the EOS nonce if transactions are signed. The user of this function
 /// should understand what this means when inserting the report outputted from this debug function.
 /// If this output is to _replace_ an existing report, the nonces in the report and in the core's
 /// database should be modified accordingly.

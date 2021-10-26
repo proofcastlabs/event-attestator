@@ -54,7 +54,7 @@ pub fn truncate_str(s: &str, num_chars: usize) -> &str {
 pub fn get_prefixed_db_key(suffix: &str) -> [u8; 32] {
     let mut keccak = Keccak::v256();
     let mut hashed = [0u8; 32];
-    keccak.update(format!("{}{}", DB_KEY_PREFIX.to_string(), suffix).as_bytes());
+    keccak.update(format!("{}{}", *DB_KEY_PREFIX, suffix).as_bytes());
     keccak.finalize(&mut hashed);
     hashed
 }

@@ -56,12 +56,12 @@ pub struct BtcOutput {
     pub eos_signed_transactions: Vec<TxInfo>,
 }
 
-pub fn get_eos_signed_tx_info_from_txs(
+pub fn get_eos_signed_tx_info(
     txs: &[EosSignedTransaction],
     minting_params: &[BtcOnEosMintingParamStruct],
     eos_account_nonce: u64,
 ) -> Result<Vec<TxInfo>> {
-    info!("✔ Getting tx info from txs in state...");
+    info!("✔ Getting EOS signed tx info from EOS txs in state...");
     let start_nonce = eos_account_nonce - txs.len() as u64;
     txs.iter()
         .enumerate()
@@ -75,7 +75,7 @@ pub fn create_btc_output_json_and_put_in_state<D: DatabaseInterface>(state: BtcS
         btc_latest_block_number: get_btc_latest_block_from_db(&state.db)?.height,
         eos_signed_transactions: match &state.eos_signed_txs.len() {
             0 => vec![],
-            _ => get_eos_signed_tx_info_from_txs(
+            _ => get_eos_signed_tx_info(
                 &state.eos_signed_txs,
                 &get_btc_canon_block_from_db(&state.db)?.get_eos_minting_params(),
                 get_eos_account_nonce_from_db(&state.db)?,
