@@ -4,7 +4,7 @@ use crate::{
     btc_on_eos::{
         btc::{
             account_for_fees::maybe_account_for_fees as maybe_account_for_peg_in_fees,
-            get_btc_output_json::{get_btc_output_as_string, get_eos_signed_tx_info_from_eth_txs, BtcOutput},
+            get_btc_output_json::{get_btc_output_as_string, get_eos_signed_tx_info_from_txs, BtcOutput},
             minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             sign_transactions::get_signed_eos_ptoken_issue_txs,
         },
@@ -175,7 +175,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
                 btc_latest_block_number: get_btc_latest_block_from_db(&state.db)?.height,
                 eos_signed_transactions: match &state.signed_txs.len() {
                     0 => vec![],
-                    _ => get_eos_signed_tx_info_from_eth_txs(
+                    _ => get_eos_signed_tx_info_from_txs(
                         &state.signed_txs,
                         &state.btc_on_eos_minting_params,
                         get_eos_account_nonce_from_db(&state.db)?,

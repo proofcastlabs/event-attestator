@@ -56,7 +56,7 @@ pub struct BtcOutput {
     pub eos_signed_transactions: Vec<TxInfo>,
 }
 
-pub fn get_eos_signed_tx_info_from_eth_txs(
+pub fn get_eos_signed_tx_info_from_txs(
     txs: &[EosSignedTransaction],
     minting_params: &[BtcOnEosMintingParamStruct],
     eos_account_nonce: u64,
@@ -78,7 +78,7 @@ where
         btc_latest_block_number: get_btc_latest_block_from_db(&state.db)?.height,
         eos_signed_transactions: match &state.signed_txs.len() {
             0 => vec![],
-            _ => get_eos_signed_tx_info_from_eth_txs(
+            _ => get_eos_signed_tx_info_from_txs(
                 &state.signed_txs,
                 &get_btc_canon_block_from_db(&state.db)?.get_eos_minting_params(),
                 get_eos_account_nonce_from_db(&state.db)?,
