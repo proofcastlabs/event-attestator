@@ -17,7 +17,7 @@ use crate::{
         },
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::EthDatabaseUtils,
-        eth_debug_functions::debug_set_eth_gas_price_in_db,
+        eth_debug_functions::{debug_set_eth_gas_price_in_db, debug_set_evm_gas_price_in_db},
         eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
         evm_constants::{get_evm_constants_db_keys, EVM_PRIVATE_KEY_DB_KEY},
     },
@@ -344,21 +344,15 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
 ///
 /// This function sets the EVM gas price to use when making EVM transactions. It's unit is `Wei`.
 pub fn debug_set_evm_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
-    let evm_db_utils = EthDatabaseUtils::new_for_evm(&db);
-    let eth_db_utils = EthDatabaseUtils::new(&db);
-    check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| evm_db_utils.put_eth_gas_price_in_db(gas_price))
-        .and_then(|_| db.end_transaction())
-        .map(|_| json!({"sucess":true,"new_evm_gas_price":gas_price}).to_string())
-        .map(prepend_debug_output_marker_to_string)
+    // NOTE: This alias exists so as not to break the legacy API where the DB is NOT a reference!
+    debug_set_evm_gas_price_in_db(&db, gas_price)
 }
 
 /// # Debug Set ETH Gas Price
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
 pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
+    // NOTE: This alias exists so as not to break the legacy API where the DB is NOT a reference!
     debug_set_eth_gas_price_in_db(&db, gas_price)
 }
 
