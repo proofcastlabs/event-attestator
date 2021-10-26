@@ -72,10 +72,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         }
     }
 
-    pub fn get_misc_string(&self) -> Result<String> {
-        Ok(self.misc.clone().unwrap_or_default())
-    }
-
     pub fn get_eth_evm_token_dictionary(&self) -> Result<&EthEvmTokenDictionary> {
         match self.eth_evm_token_dictionary {
             Some(ref dictionary) => Ok(dictionary),

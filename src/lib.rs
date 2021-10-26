@@ -1,5 +1,3 @@
-#![allow(dead_code)] // FIXME RM!
-
 //! # The __`pToken`__ Core
 //!
 //! Herein lies the functionality required for the cross-chain conversions
