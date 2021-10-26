@@ -24,9 +24,9 @@ pub struct BtcState<D: DatabaseInterface> {
     pub ref_block_num: Option<u16>,
     pub ref_block_prefix: Option<u32>,
     pub eth_signed_txs: EthTransactions,
-    pub signed_txs: EosSignedTransactions,
     pub output_json_string: Option<String>,
     pub utxos_and_values: BtcUtxosAndValues,
+    pub eos_signed_txs: EosSignedTransactions,
     pub btc_block_and_id: Option<BtcBlockAndId>,
     pub p2sh_deposit_txs: Option<BtcTransactions>,
     pub p2pkh_deposit_txs: Option<BtcTransactions>,
@@ -58,7 +58,7 @@ where
             btc_block_in_db_format: None,
             utxos_and_values: vec![].into(),
             eth_signed_txs: EthTransactions::new(vec![]),
-            signed_txs: EosSignedTransactions::new(vec![]),
+            eos_signed_txs: EosSignedTransactions::new(vec![]),
             btc_on_eos_minting_params: BtcOnEosMintingParams::new(vec![]),
             btc_on_eth_minting_params: BtcOnEthMintingParams::new(vec![]),
         }
@@ -211,14 +211,14 @@ where
         Ok(self)
     }
 
-    pub fn add_signed_txs(mut self, signed_txs: EosSignedTransactions) -> Result<BtcState<D>> {
-        match self.signed_txs.len() {
+    pub fn add_eos_signed_txs(mut self, eos_signed_txs: EosSignedTransactions) -> Result<BtcState<D>> {
+        match self.eos_signed_txs.len() {
             0 => {
                 info!("✔ Adding signed txs to state...");
-                self.signed_txs = signed_txs;
+                self.eos_signed_txs = eos_signed_txs;
                 Ok(self)
             },
-            _ => Err(get_no_overwrite_state_err("signed_txs").into()),
+            _ => Err(get_no_overwrite_state_err("eos_signed_txs").into()),
         }
     }
 

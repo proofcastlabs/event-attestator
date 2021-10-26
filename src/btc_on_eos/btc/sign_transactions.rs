@@ -69,5 +69,5 @@ pub fn maybe_sign_canon_block_txs_and_add_to_state<D: DatabaseInterface>(state: 
         &get_btc_canon_block_from_db(&state.db)?.get_eos_minting_params(),
         &get_btc_chain_id_from_db(&state.db)?,
     )
-    .and_then(|signed_txs| state.add_signed_txs(signed_txs))
+    .and_then(|eos_signed_txs| state.add_eos_signed_txs(eos_signed_txs))
 }

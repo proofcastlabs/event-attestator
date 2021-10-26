@@ -164,19 +164,19 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
                 &state.btc_on_eos_minting_params,
                 &get_btc_chain_id_from_db(&state.db)?,
             )
-            .and_then(|signed_txs| {
-                info!("✔ EOS Signed Txs: {:?}", signed_txs);
-                state.add_signed_txs(signed_txs)
+            .and_then(|eos_signed_txs| {
+                info!("✔ EOS Signed Txs: {:?}", eos_signed_txs);
+                state.add_eos_signed_txs(eos_signed_txs)
             })
         })
         .and_then(|state| {
             info!("✔ Getting BTC output json and putting in state...");
             Ok(serde_json::to_string(&BtcOutput {
                 btc_latest_block_number: get_btc_latest_block_from_db(&state.db)?.height,
-                eos_signed_transactions: match &state.signed_txs.len() {
+                eos_signed_transactions: match &state.eos_signed_txs.len() {
                     0 => vec![],
                     _ => get_eos_signed_tx_info_from_txs(
-                        &state.signed_txs,
+                        &state.eos_signed_txs,
                         &state.btc_on_eos_minting_params,
                         get_eos_account_nonce_from_db(&state.db)?,
                     )?,
