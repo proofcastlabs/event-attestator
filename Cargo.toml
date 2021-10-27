@@ -1,8 +1,9 @@
 [package]
 license = "MIT"
 publish = false
-edition = "2018"
-version = "5.9.0"
+edition = "2021"
+version = "5.9.1"
+rust-version = "1.56"
 readme = "README.md"
 name = "ptokens_core"
 keywords = ["provable", "defi", "crypto"]

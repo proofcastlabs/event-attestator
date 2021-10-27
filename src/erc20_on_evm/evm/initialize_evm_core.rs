@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use crate::{
     chains::{
         eth::eth_chain_id::EthChainId,

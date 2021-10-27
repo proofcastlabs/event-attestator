@@ -73,7 +73,7 @@ pub fn get_utxo_with_tx_id_and_v_out<D: DatabaseInterface>(
     find_utxo_recursively(db, v_out, tx_id, vec![]).and_then(|(maybe_utxo, utxos_to_save_in_db)| {
         save_utxos_to_db(db, &utxos_to_save_in_db)?;
         maybe_utxo
-            .ok_or_else(|| AppError::Custom(format!("Could not find UTXO with v_out: {} & tx_id: {}", v_out, tx_id,)))
+            .ok_or_else(|| AppError::Custom(format!("Could not find UTXO with v_out: {} & tx_id: {}", v_out, tx_id)))
     })
 }
 
