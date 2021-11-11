@@ -24,6 +24,7 @@ use crate::{
                 remove_eos_eth_token_dictionary_entry,
                 update_incremerkle,
             },
+            eos_utils::get_eos_tx_expiration_timestamp_with_offset,
         },
         eth::{
             eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY},
@@ -39,7 +40,7 @@ use crate::{
     fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
-    utils::{get_unix_timestamp_as_u32, prepend_debug_output_marker_to_string},
+    utils::prepend_debug_output_marker_to_string,
 };
 
 /// # Debug Update Incremerkle
@@ -218,6 +219,7 @@ pub fn debug_withdraw_fees<D: DatabaseInterface>(
         .and_then(|_| dictionary.withdraw_fees_and_save_in_db(&db, &dictionary_entry_eth_address))
         .and_then(|(_, fee_amount)| {
             let amount = dictionary.convert_u256_to_eos_asset_string(&dictionary_entry_eth_address, &fee_amount)?;
+            info!("Amount as EOS asset: {}", amount);
             let eos_action = EosAction::from_str(
                 &eos_smart_contract_address,
                 &PEGOUT_ACTION_NAME.to_string(),
@@ -239,9 +241,12 @@ pub fn debug_withdraw_fees<D: DatabaseInterface>(
                 &amount,
                 &get_eos_chain_id_from_db(&db)?,
                 &EosPrivateKey::get_from_db(&db)?,
-                &EosTransaction::new(get_unix_timestamp_as_u32()?, ref_block_num, ref_block_prefix, vec![
-                    eos_action,
-                ]),
+                &EosTransaction::new(
+                    get_eos_tx_expiration_timestamp_with_offset(0u32)?,
+                    ref_block_num,
+                    ref_block_prefix,
+                    vec![eos_action],
+                ),
             )
         })
         .and_then(|eos_signed_tx| {
