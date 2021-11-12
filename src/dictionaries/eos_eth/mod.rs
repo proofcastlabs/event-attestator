@@ -1065,7 +1065,9 @@ mod tests {
         let expected_fee = U256::from(1337);
         let entry_1_before = dictionary.get_entry_via_eth_address(&eth_address).unwrap();
         assert_eq!(entry_1_before.accrued_fees, U256::zero());
-        dictionary.set_accrued_fees_and_save_in_db(&db, &eth_address, expected_fee).unwrap();
+        dictionary
+            .set_accrued_fees_and_save_in_db(&db, &eth_address, expected_fee)
+            .unwrap();
         let dictionary_from_db = EosEthTokenDictionary::get_from_db(&db).unwrap();
         let result = dictionary_from_db.get_entry_via_eth_address(&eth_address).unwrap();
         assert_eq!(result.accrued_fees, expected_fee);
