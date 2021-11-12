@@ -203,6 +203,21 @@ impl EthEvmTokenDictionary {
             .map(|entry| self.replace_entry(&entry, entry.add_to_accrued_fees(addend)))
     }
 
+    fn set_accrued_fee(&self, address: &EthAddress, fee: U256) -> Result<Self> {
+        self.get_entry_via_eth_address(address)
+            .map(|entry| self.replace_entry(&entry, entry.set_accrued_fees(fee)))
+    }
+
+    pub fn set_accrued_fees_and_save_in_db<D: DatabaseInterface>(
+        &self,
+        db: &D,
+        address: &EthAddress,
+        fee: U256,
+    ) -> Result<()> {
+        self.set_accrued_fee(address, fee)
+            .and_then(|new_dictionary| new_dictionary.save_in_db(db))
+    }
+
     pub fn increment_accrued_fees(&self, fee_tuples: Vec<(EthAddress, U256)>) -> Result<Self> {
         info!("✔ Incrementing accrued fees...");
         fee_tuples
@@ -355,6 +370,14 @@ impl EthEvmTokenDictionaryEntry {
             eth_token_decimals: json.eth_token_decimals,
             evm_token_decimals: json.evm_token_decimals,
         })
+    }
+
+    fn set_accrued_fees(&self, fee: U256) -> Self {
+        info!("✔ Setting accrued fees to {}...", fee);
+        let mut new_entry = self.clone();
+        new_entry.accrued_fees = fee;
+        new_entry.accrued_fees_human_readable = fee.as_u128();
+        new_entry
     }
 
     pub fn from_str(json_string: &str) -> Result<Self> {
@@ -1002,5 +1025,31 @@ mod tests {
             let expected_result = expected_results[i];
             assert_eq!(result, expected_result);
         });
+    }
+
+    fn should_set_accrued_fees_and_save_in_db() {
+        let db = get_test_database();
+        let dictionary = get_sample_eth_evm_dictionary();
+        let fee_to_set = U256::from(666);
+        let fee_before = U256::from(1337);
+        let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let fee_tuple = vec![(address, fee_before)];
+        dictionary
+            .increment_accrued_fees_and_save_in_db(&db, fee_tuple)
+            .unwrap();
+        let entry_before = EthEvmTokenDictionary::get_from_db(&db)
+            .unwrap()
+            .get_entry_via_address(&address)
+            .unwrap();
+        assert_eq!(entry_before.accrued_fees, fee_before);
+        EthEvmTokenDictionary::get_from_db(&db)
+            .unwrap()
+            .set_accrued_fees_and_save_in_db(&db, &address, fee_to_set)
+            .unwrap();
+        let result = EthEvmTokenDictionary::get_from_db(&db)
+            .unwrap()
+            .get_entry_via_address(&address)
+            .unwrap();
+        assert_eq!(result.accrued_fees, fee_to_set);
     }
 }

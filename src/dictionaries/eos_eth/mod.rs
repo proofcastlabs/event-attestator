@@ -36,6 +36,11 @@ impl EosEthTokenDictionary {
             .map(|entry| self.replace_entry(&entry, entry.add_to_accrued_fees(addend)))
     }
 
+    fn set_accrued_fee(&self, address: &EthAddress, fee: U256) -> Result<Self> {
+        self.get_entry_via_eth_address(address)
+            .map(|entry| self.replace_entry(&entry, entry.set_accrued_fees(fee)))
+    }
+
     pub fn increment_accrued_fees(&self, fee_tuples: &[(EthAddress, U256)]) -> Result<Self> {
         info!("✔ Incrementing accrued fees...");
         fee_tuples
@@ -59,6 +64,16 @@ impl EosEthTokenDictionary {
         fee_tuples: &[(EthAddress, U256)],
     ) -> Result<()> {
         self.increment_accrued_fees(fee_tuples)
+            .and_then(|new_dictionary| new_dictionary.save_to_db(db))
+    }
+
+    pub fn set_accrued_fees_and_save_in_db<D: DatabaseInterface>(
+        &self,
+        db: &D,
+        address: &EthAddress,
+        fee: U256,
+    ) -> Result<()> {
+        self.set_accrued_fee(address, fee)
             .and_then(|new_dictionary| new_dictionary.save_to_db(db))
     }
 
@@ -88,8 +103,10 @@ impl EosEthTokenDictionary {
     }
 
     fn zero_accrued_fees_in_entry(&self, address: &EthAddress) -> Result<Self> {
-        self.get_entry_via_eth_address(address)
-            .map(|entry| self.replace_entry(&entry, entry.zero_accrued_fees()))
+        self.get_entry_via_eth_address(address).map(|entry| {
+            info!("✔ Zeroing accrued fees in entry...");
+            self.replace_entry(&entry, entry.zero_accrued_fees())
+        })
     }
 
     pub fn withdraw_fees_and_save_in_db<D: DatabaseInterface>(
@@ -371,6 +388,14 @@ impl EosEthTokenDictionaryEntry {
         let mut new_entry = self.clone();
         new_entry.accrued_fees = U256::zero();
         new_entry.accrued_fees_human_readable = 0;
+        new_entry
+    }
+
+    fn set_accrued_fees(&self, fee: U256) -> Self {
+        info!("✔ Setting accrued fees to {}...", fee);
+        let mut new_entry = self.clone();
+        new_entry.accrued_fees = fee;
+        new_entry.accrued_fees_human_readable = fee.as_u128();
         new_entry
     }
 
@@ -1030,5 +1055,21 @@ mod tests {
         assert_ne!(final_entry.last_withdrawal, 0);
         assert_eq!(result.0, eth_address);
         assert_eq!(result.1, expected_fee);
+    }
+
+    #[test]
+    fn should_set_accrued_fees_and_save_in_db() {
+        let db = get_test_database();
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let eth_address = EthAddress::from_slice(&hex::decode("9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap());
+        let expected_fee = U256::from(1337);
+        let entry_1_before = dictionary.get_entry_via_eth_address(&eth_address).unwrap();
+        assert_eq!(entry_1_before.accrued_fees, U256::zero());
+        dictionary
+            .set_accrued_fees_and_save_in_db(&db, &eth_address, expected_fee)
+            .unwrap();
+        let dictionary_from_db = EosEthTokenDictionary::get_from_db(&db).unwrap();
+        let result = dictionary_from_db.get_entry_via_eth_address(&eth_address).unwrap();
+        assert_eq!(result.accrued_fees, expected_fee);
     }
 }

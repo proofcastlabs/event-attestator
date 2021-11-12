@@ -51,6 +51,7 @@ pub use crate::{
             debug_get_processed_actions_list,
             debug_get_remove_supported_token_tx,
             debug_remove_eos_eth_token_dictionary_entry as debug_remove_erc20_dictionary_entry,
+            debug_set_accrued_fees_in_dictionary,
             debug_set_eos_fee_basis_points,
             debug_set_eth_fee_basis_points,
             debug_set_eth_gas_price,

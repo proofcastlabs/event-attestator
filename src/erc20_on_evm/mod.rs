@@ -52,6 +52,7 @@ pub use crate::{
             debug_get_key_from_db,
             debug_get_remove_supported_token_tx,
             debug_remove_dictionary_entry,
+            debug_set_accrued_fees_in_dictionary,
             debug_set_eth_gas_price,
             debug_set_evm_gas_price,
             debug_set_fee_basis_points,

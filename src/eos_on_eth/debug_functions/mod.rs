@@ -3,6 +3,7 @@ pub(crate) mod block_reprocessors;
 use std::str::FromStr;
 
 use eos_chain::{AccountName as EosAccountName, Action as EosAction, PermissionLevel, Transaction as EosTransaction};
+use ethereum_types::U256;
 use serde_json::json;
 
 use crate::{
@@ -24,6 +25,7 @@ use crate::{
                 remove_eos_eth_token_dictionary_entry,
                 update_incremerkle,
             },
+            eos_utils::get_eos_tx_expiration_timestamp_with_offset,
         },
         eth::{
             eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY},
@@ -39,7 +41,7 @@ use crate::{
     fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
-    utils::{get_unix_timestamp_as_u32, prepend_debug_output_marker_to_string},
+    utils::prepend_debug_output_marker_to_string,
 };
 
 /// # Debug Update Incremerkle
@@ -218,6 +220,7 @@ pub fn debug_withdraw_fees<D: DatabaseInterface>(
         .and_then(|_| dictionary.withdraw_fees_and_save_in_db(&db, &dictionary_entry_eth_address))
         .and_then(|(_, fee_amount)| {
             let amount = dictionary.convert_u256_to_eos_asset_string(&dictionary_entry_eth_address, &fee_amount)?;
+            info!("Amount as EOS asset: {}", amount);
             let eos_action = EosAction::from_str(
                 &eos_smart_contract_address,
                 &PEGOUT_ACTION_NAME.to_string(),
@@ -239,9 +242,12 @@ pub fn debug_withdraw_fees<D: DatabaseInterface>(
                 &amount,
                 &get_eos_chain_id_from_db(&db)?,
                 &EosPrivateKey::get_from_db(&db)?,
-                &EosTransaction::new(get_unix_timestamp_as_u32()?, ref_block_num, ref_block_prefix, vec![
-                    eos_action,
-                ]),
+                &EosTransaction::new(
+                    get_eos_tx_expiration_timestamp_with_offset(0u32)?,
+                    ref_block_num,
+                    ref_block_prefix,
+                    vec![eos_action],
+                ),
             )
         })
         .and_then(|eos_signed_tx| {
@@ -253,4 +259,30 @@ pub fn debug_withdraw_fees<D: DatabaseInterface>(
             })
             .to_string())
         })
+}
+
+/// # Debug Set Accrued Fees
+///
+/// This function updates the accrued fees value in the dictionary entry retrieved from the passed
+/// in ETH address.
+pub fn debug_set_accrued_fees_in_dictionary<D: DatabaseInterface>(
+    db: D,
+    token_address: &str,
+    fee_amount: String,
+) -> Result<String> {
+    info!("✔ Debug setting accrued fees in dictionary...");
+    let dictionary = EosEthTokenDictionary::get_from_db(&db)?;
+    let dictionary_entry_eth_address = convert_hex_to_eth_address(token_address)?;
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| {
+            dictionary.set_accrued_fees_and_save_in_db(
+                &db,
+                &dictionary_entry_eth_address,
+                U256::from_dec_str(&fee_amount)?,
+            )
+        })
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({"success":true,"fee":fee_amount}).to_string())
 }
