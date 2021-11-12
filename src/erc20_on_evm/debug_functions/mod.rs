@@ -1,5 +1,6 @@
 pub(crate) mod block_reprocessors;
 
+use ethereum_types::U256;
 use serde_json::json;
 
 use crate::{
@@ -358,4 +359,30 @@ pub fn debug_set_evm_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> R
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
 pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
     debug_set_eth_gas_price_in_db(&db, gas_price)
+}
+
+/// # Debug Set Accrued Fees
+///
+/// This function updates the accrued fees value in the dictionary entry retrieved from the passed
+/// in ETH address.
+pub fn debug_set_accrued_fees_in_dictionary<D: DatabaseInterface>(
+    db: D,
+    token_address: &str,
+    fee_amount: String,
+) -> Result<String> {
+    info!("✔ Debug setting accrued fees in dictionary...");
+    let dictionary = EthEvmTokenDictionary::get_from_db(&db)?;
+    let dictionary_entry_eth_address = convert_hex_to_eth_address(token_address)?;
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| {
+            dictionary.set_accrued_fees_and_save_in_db(
+                &db,
+                &dictionary_entry_eth_address,
+                U256::from_dec_str(&fee_amount)?,
+            )
+        })
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({"success":true,"fee":fee_amount}).to_string())
 }
