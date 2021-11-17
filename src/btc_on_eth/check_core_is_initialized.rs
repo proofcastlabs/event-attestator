@@ -3,7 +3,7 @@ use crate::{
         btc::{btc_state::BtcState, core_initialization::check_btc_core_is_initialized::check_btc_core_is_initialized},
         eth::{
             core_initialization::check_eth_core_is_initialized::check_eth_core_is_initialized,
-            eth_database_utils::EthDatabaseUtils,
+            eth_database_utils::EthDbUtils,
             eth_state::EthState,
         },
     },
@@ -11,7 +11,7 @@ use crate::{
     types::Result,
 };
 
-pub fn check_core_is_initialized<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>, db: &D) -> Result<()> {
+pub fn check_core_is_initialized<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, db: &D) -> Result<()> {
     info!("✔ Checking core is initialized...");
     let is_for_eth = true;
     check_btc_core_is_initialized(db).and_then(|_| check_eth_core_is_initialized(eth_db_utils, is_for_eth))
@@ -31,7 +31,10 @@ mod tests {
     use crate::{
         chains::{
             btc::{btc_database_utils::put_btc_address_in_db, btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS},
-            eth::{eth_database_utils::EthDatabaseUtils, eth_test_utils::get_sample_eth_address},
+            eth::{
+                eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+                eth_test_utils::get_sample_eth_address,
+            },
         },
         test_utils::get_test_database,
     };
@@ -39,7 +42,7 @@ mod tests {
     #[test]
     fn should_err_if_core_not_initialized() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new_for_eth(&db);
         let result = check_core_is_initialized(&eth_db_utils, &db);
         assert!(result.is_err());
     }
@@ -47,7 +50,7 @@ mod tests {
     #[test]
     fn should_be_ok_if_core_initialized() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new_for_eth(&db);
         put_btc_address_in_db(&db, &SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         eth_db_utils
             .put_public_eth_address_in_db(&get_sample_eth_address())

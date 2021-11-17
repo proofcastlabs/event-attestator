@@ -1,11 +1,14 @@
 use crate::{
-    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_state::EthState},
+    chains::eth::{
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_state::EthState,
+    },
     traits::DatabaseInterface,
     types::Result,
 };
 
 fn increment_evm_account_nonce<D: DatabaseInterface>(
-    db_utils: &EthDatabaseUtils<D>,
+    db_utils: &EthDbUtils<D>,
     current_nonce: u64,
     num_signatures: u64,
 ) -> Result<()> {

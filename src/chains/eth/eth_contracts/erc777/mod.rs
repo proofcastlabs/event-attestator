@@ -7,7 +7,7 @@ use crate::{
         eth_constants::{ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
         eth_contracts::encode_fxn_call,
         eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::EthDatabaseUtils,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_traits::EthLogCompatible,
     },
     traits::DatabaseInterface,
@@ -98,7 +98,7 @@ pub fn encode_erc777_mint_fxn_maybe_with_data(
 }
 
 pub fn get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(
-    eth_db_utils: &EthDatabaseUtils<D>,
+    eth_db_utils: &EthDbUtils<D>,
     new_address: EthAddress,
 ) -> Result<String> {
     const ZERO_ETH_VALUE: usize = 0;

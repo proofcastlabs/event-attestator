@@ -27,6 +27,7 @@ use crate::{
                 eth_private_key::EthPrivateKey,
                 eth_transaction::{EthTransaction, EthTransactions},
             },
+            eth_database_utils::EthDbUtilsExt,
         },
     },
     constants::SAFE_ETH_ADDRESS,

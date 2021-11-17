@@ -13,6 +13,7 @@ use crate::{
             eth_private_key::EthPrivateKey as EvmPrivateKey,
             eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
         },
+        eth_database_utils::EthDbUtilsExt,
         eth_log::{EthLog, EthLogs},
         eth_receipt::{EthReceipt, EthReceipts},
         eth_state::EthState,

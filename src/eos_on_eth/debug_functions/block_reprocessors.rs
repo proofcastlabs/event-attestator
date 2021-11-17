@@ -31,6 +31,7 @@ use crate::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
             },
+            eth_database_utils::EthDbUtilsExt,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             increment_eos_account_nonce::maybe_increment_eos_account_nonce_and_return_state,

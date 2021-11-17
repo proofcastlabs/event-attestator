@@ -6,6 +6,7 @@ use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
         eth_crypto::eth_transaction::EthTransaction,
+        eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
         eth_traits::EthTxInfoCompatible,
     },

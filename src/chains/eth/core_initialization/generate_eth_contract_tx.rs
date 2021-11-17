@@ -2,6 +2,7 @@ use crate::{
     chains::eth::{
         eth_chain_id::EthChainId,
         eth_crypto::eth_transaction::get_signed_ptoken_smart_contract_tx,
+        eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
     },
     traits::DatabaseInterface,

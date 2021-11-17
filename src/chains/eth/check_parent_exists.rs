@@ -1,4 +1,8 @@
-use crate::{chains::eth::eth_state::EthState, traits::DatabaseInterface, types::Result};
+use crate::{
+    chains::eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
+    traits::DatabaseInterface,
+    types::Result,
+};
 
 fn check_for_parent_of_block_in_state<D: DatabaseInterface>(
     is_for_eth: bool,

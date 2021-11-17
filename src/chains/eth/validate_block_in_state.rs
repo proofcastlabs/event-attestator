@@ -1,5 +1,5 @@
 use crate::{
-    chains::eth::eth_state::EthState,
+    chains::eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
     constants::{CORE_IS_VALIDATING, DEBUG_MODE, NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR},
     traits::DatabaseInterface,
     types::Result,

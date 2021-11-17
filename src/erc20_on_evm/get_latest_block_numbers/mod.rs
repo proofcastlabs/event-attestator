@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::eth::eth_database_utils::EthDatabaseUtils,
+    chains::eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     erc20_on_evm::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,
@@ -19,8 +19,8 @@ struct BlockNumbers {
 /// blockchains this instance manages.
 pub fn get_latest_block_numbers<D: DatabaseInterface>(db: D) -> Result<String> {
     info!("✔ Getting latest `ERC20-on-EVM` block numbers...");
-    let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
-    let evm_db_utils = EthDatabaseUtils::new_for_evm(&db);
+    let eth_db_utils = EthDbUtils::new_for_eth(&db);
+    let evm_db_utils = EthDbUtils::new_for_evm(&db);
     check_core_is_initialized(&eth_db_utils, &evm_db_utils).and_then(|_| {
         Ok(serde_json::to_string(&BlockNumbers {
             eth_latest_block_number: eth_db_utils.get_latest_eth_block_number()?,

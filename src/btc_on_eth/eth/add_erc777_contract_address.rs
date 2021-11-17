@@ -1,6 +1,9 @@
 use crate::{
     btc_on_eth::check_core_is_initialized::check_core_is_initialized,
-    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_utils::convert_hex_to_eth_address},
+    chains::eth::{
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_utils::convert_hex_to_eth_address,
+    },
     traits::DatabaseInterface,
     types::Result,
 };
@@ -15,7 +18,7 @@ use crate::{
 /// ### BEWARE:
 /// The ERC777 contract can only be set ONCE. Further attempts to do so will not succeed.
 pub fn maybe_add_erc777_contract_address<D: DatabaseInterface>(db: D, hex_address: &str) -> Result<String> {
-    let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+    let eth_db_utils = EthDbUtils::new_for_eth(&db);
     check_core_is_initialized(&eth_db_utils, &db)
         .and_then(|_| db.start_transaction())
         .and_then(|_| convert_hex_to_eth_address(hex_address))

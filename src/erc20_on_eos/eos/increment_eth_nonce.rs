@@ -1,4 +1,8 @@
-use crate::{chains::eos::eos_state::EosState, traits::DatabaseInterface, types::Result};
+use crate::{
+    chains::{eos::eos_state::EosState, eth::eth_database_utils::EthDbUtilsExt},
+    traits::DatabaseInterface,
+    types::Result,
+};
 
 pub fn maybe_increment_eth_nonce_in_db_and_return_eos_state<D: DatabaseInterface>(
     state: EosState<D>,

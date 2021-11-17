@@ -1,7 +1,7 @@
 use crate::{
     chains::eth::{
         core_initialization::check_eth_core_is_initialized::is_eth_core_initialized,
-        eth_database_utils::EthDatabaseUtils,
+        eth_database_utils::EthDbUtils,
         eth_state::EthState,
     },
     traits::DatabaseInterface,
@@ -9,8 +9,8 @@ use crate::{
 };
 
 pub fn check_core_is_initialized<D: DatabaseInterface>(
-    eth_db_utils: &EthDatabaseUtils<D>,
-    evm_db_utils: &EthDatabaseUtils<D>,
+    eth_db_utils: &EthDbUtils<D>,
+    evm_db_utils: &EthDbUtils<D>,
 ) -> Result<()> {
     info!("✔ Checking `erc20-on-evm` core is initialized...");
     match is_eth_core_initialized(evm_db_utils) {

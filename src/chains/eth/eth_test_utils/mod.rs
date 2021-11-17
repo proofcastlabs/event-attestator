@@ -8,7 +8,7 @@ use crate::{
         eth_block::{EthBlock, EthBlockJson},
         eth_chain_id::EthChainId,
         eth_crypto::{eth_private_key::EthPrivateKey, eth_public_key::EthPublicKey, eth_transaction::EthTransaction},
-        eth_database_utils::EthDatabaseUtils,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_log::{EthLog, EthLogs},
         eth_receipt::EthReceipt,
         eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
@@ -86,7 +86,7 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_16: &str =
     "src/chains/eth/eth_test_utils/eth-submission-material-block-13257531.json";
 
 pub fn put_eth_latest_block_in_db<D: DatabaseInterface>(
-    eth_db_utils: &EthDatabaseUtils<D>,
+    eth_db_utils: &EthDbUtils<D>,
     eth_submission_material: &EthSubmissionMaterial,
 ) -> Result<()> {
     info!("✔ Putting ETH latest block in db...");
@@ -94,7 +94,7 @@ pub fn put_eth_latest_block_in_db<D: DatabaseInterface>(
 }
 
 pub fn put_eth_anchor_block_in_db<D: DatabaseInterface>(
-    eth_db_utils: &EthDatabaseUtils<D>,
+    eth_db_utils: &EthDbUtils<D>,
     eth_submission_material: &EthSubmissionMaterial,
 ) -> Result<()> {
     info!("✔ Putting ETH anchor block in db...");
@@ -102,24 +102,24 @@ pub fn put_eth_anchor_block_in_db<D: DatabaseInterface>(
 }
 
 pub fn put_eth_tail_block_in_db<D: DatabaseInterface>(
-    eth_db_utils: &EthDatabaseUtils<D>,
+    eth_db_utils: &EthDbUtils<D>,
     eth_submission_material: &EthSubmissionMaterial,
 ) -> Result<()> {
     info!("✔ Putting ETH tail block in db...");
     eth_db_utils.put_special_eth_block_in_db(eth_submission_material, "tail")
 }
 
-pub fn get_eth_latest_block_hash_from_db<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<EthHash> {
+pub fn get_eth_latest_block_hash_from_db<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>) -> Result<EthHash> {
     info!("✔ Getting ETH latest block hash from db...");
     eth_db_utils.get_special_eth_hash_from_db("latest")
 }
 
-pub fn get_eth_canon_block_hash_from_db<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<EthHash> {
+pub fn get_eth_canon_block_hash_from_db<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>) -> Result<EthHash> {
     info!("✔ Getting ETH canon block hash from db...");
     eth_db_utils.get_special_eth_hash_from_db("canon")
 }
 
-pub fn get_eth_linker_hash_from_db<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<EthHash> {
+pub fn get_eth_linker_hash_from_db<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>) -> Result<EthHash> {
     info!("✔ Getting ETH linker hash from db...");
     eth_db_utils.get_special_eth_hash_from_db("linker")
 }

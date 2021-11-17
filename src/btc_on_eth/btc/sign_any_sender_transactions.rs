@@ -4,6 +4,7 @@ use crate::{
         btc::{btc_database_utils::get_btc_canon_block_from_db, btc_state::BtcState},
         eth::{
             any_sender::relay_transaction::RelayTransaction,
+            eth_database_utils::EthDbUtilsExt,
             eth_types::{AnySenderSigningParams, RelayTransactions},
         },
     },

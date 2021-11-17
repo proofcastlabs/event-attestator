@@ -8,7 +8,7 @@ use crate::{
             eos_crypto::eos_transaction::EosSignedTransaction,
             eos_database_utils::{get_eos_account_nonce_from_db, get_latest_eos_block_number},
         },
-        eth::eth_state::EthState,
+        eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
     },
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfo,
     traits::DatabaseInterface,

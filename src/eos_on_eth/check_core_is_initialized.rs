@@ -3,7 +3,7 @@ use crate::{
         eos::{core_initialization::check_eos_core_is_initialized::check_eos_core_is_initialized, eos_state::EosState},
         eth::{
             core_initialization::check_eth_core_is_initialized::check_eth_core_is_initialized,
-            eth_database_utils::EthDatabaseUtils,
+            eth_database_utils::EthDbUtils,
             eth_state::EthState,
         },
     },
@@ -11,7 +11,7 @@ use crate::{
     types::Result,
 };
 
-pub fn check_core_is_initialized<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>, db: &D) -> Result<()> {
+pub fn check_core_is_initialized<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, db: &D) -> Result<()> {
     let is_for_eth = true;
     check_eth_core_is_initialized(eth_db_utils, is_for_eth).and_then(|_| check_eos_core_is_initialized(db))
 }

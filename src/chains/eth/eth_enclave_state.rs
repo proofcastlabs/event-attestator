@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     chains::eth::{
         eth_constants::ETH_TAIL_LENGTH,
-        eth_database_utils::EthDatabaseUtils,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         get_linker_hash::get_linker_hash_or_genesis_hash as get_eth_linker_hash,
     },
     constants::SAFE_ETH_ADDRESS,
@@ -36,10 +36,7 @@ pub struct EthEnclaveState {
 }
 
 impl EthEnclaveState {
-    fn new<D: DatabaseInterface>(
-        eth_db_utils: &EthDatabaseUtils<D>,
-        smart_contract_address: &EthAddress,
-    ) -> Result<Self> {
+    fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, smart_contract_address: &EthAddress) -> Result<Self> {
         info!("✔ Getting ETH enclave state...");
         let eth_tail_block = eth_db_utils.get_eth_tail_block_from_db()?;
         let eth_canon_block = eth_db_utils.get_eth_canon_block_from_db()?;
@@ -68,25 +65,25 @@ impl EthEnclaveState {
         })
     }
 
-    pub fn new_for_btc_on_eth<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<Self> {
+    pub fn new_for_btc_on_eth<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>) -> Result<Self> {
         Self::new(eth_db_utils, &eth_db_utils.get_erc777_contract_address_from_db()?)
     }
 
-    pub fn new_for_erc20_on_eos<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<Self> {
+    pub fn new_for_erc20_on_eos<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>) -> Result<Self> {
         Self::new(
             eth_db_utils,
             &eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
         )
     }
 
-    pub fn new_for_eos_on_eth<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<Self> {
+    pub fn new_for_eos_on_eth<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>) -> Result<Self> {
         Self::new(
             eth_db_utils,
             &eth_db_utils.get_eos_on_eth_smart_contract_address_from_db()?,
         )
     }
 
-    pub fn new_for_erc20_on_evm<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<Self> {
+    pub fn new_for_erc20_on_evm<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>) -> Result<Self> {
         Self::new(
             eth_db_utils,
             &eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,

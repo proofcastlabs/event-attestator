@@ -1,6 +1,6 @@
 use crate::{
     chains::eth::{
-        eth_database_utils::EthDatabaseUtils,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
     },
@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub fn update_latest_block_hash_if_subsequent<D: DatabaseInterface>(
-    eth_db_utils: &EthDatabaseUtils<D>,
+    eth_db_utils: &EthDbUtils<D>,
     maybe_subsequent_submission_material: &EthSubmissionMaterial,
 ) -> Result<()> {
     info!("✔ Updating latest ETH block hash if subsequent...");
@@ -78,7 +78,7 @@ mod tests {
     #[test]
     fn should_update_latest_block_hash_if_subsequent() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new_for_eth(&db);
         let latest_submission_material = get_sequential_eth_blocks_and_receipts()[0].clone();
         let latest_block_hash_before = latest_submission_material.get_block_hash().unwrap();
         put_eth_latest_block_in_db(&eth_db_utils, &latest_submission_material).unwrap();
@@ -93,7 +93,7 @@ mod tests {
     #[test]
     fn should_not_update_latest_block_hash_if_not_subsequent() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new_for_eth(&db);
         let latest_submission_material = get_sequential_eth_blocks_and_receipts()[0].clone();
         let latest_block_hash_before = latest_submission_material.get_block_hash().unwrap();
         put_eth_latest_block_in_db(&eth_db_utils, &latest_submission_material).unwrap();

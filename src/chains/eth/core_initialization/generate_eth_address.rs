@@ -1,10 +1,13 @@
 use crate::{
-    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_state::EthState},
+    chains::eth::{
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_state::EthState,
+    },
     traits::DatabaseInterface,
     types::Result,
 };
 
-fn generate_and_store_address<D: DatabaseInterface>(db_utils: &EthDatabaseUtils<D>) -> Result<()> {
+fn generate_and_store_address<D: DatabaseInterface>(db_utils: &EthDbUtils<D>) -> Result<()> {
     db_utils
         .get_eth_private_key_from_db()
         .map(|pk| pk.to_public_key().to_address())

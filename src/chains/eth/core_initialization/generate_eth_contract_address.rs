@@ -3,7 +3,10 @@ use rlp::RlpStream;
 use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
-    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_state::EthState},
+    chains::eth::{
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_state::EthState,
+    },
     traits::DatabaseInterface,
     types::Result,
 };
@@ -23,7 +26,7 @@ fn calculate_contract_address(eth_address: EthAddress, nonce: usize) -> EthAddre
     EthAddress::from_slice(&hashed[12..])
 }
 
-fn get_eth_contract_address<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>) -> Result<EthAddress> {
+fn get_eth_contract_address<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>) -> Result<EthAddress> {
     eth_db_utils.get_public_eth_address_from_db().map(|eth_address| {
         info!("✔ Calculating pBTC contract address...");
         calculate_contract_address(eth_address, INITIAL_NONCE)

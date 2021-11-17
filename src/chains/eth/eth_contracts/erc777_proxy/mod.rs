@@ -5,7 +5,7 @@ use crate::{
     chains::eth::{
         eth_contracts::{encode_fxn_call, erc777::ERC777_CHANGE_PNETWORK_GAS_LIMIT},
         eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
-        eth_database_utils::EthDatabaseUtils,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_traits::EthSigningCapabilities,
     },
     traits::DatabaseInterface,
@@ -53,7 +53,7 @@ pub fn encode_erc777_proxy_change_pnetwork_by_proxy_fxn_data(new_pnetwork_addres
 const ZERO_ETH_VALUE: usize = 0;
 
 pub fn get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
-    eth_db_utils: &EthDatabaseUtils<D>,
+    eth_db_utils: &EthDbUtils<D>,
     new_address: EthAddress,
 ) -> Result<String> {
     let nonce_before_incrementing = eth_db_utils.get_eth_account_nonce_from_db()?;
@@ -73,7 +73,7 @@ pub fn get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
 }
 
 pub fn get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D: DatabaseInterface>(
-    eth_db_utils: &EthDatabaseUtils<D>,
+    eth_db_utils: &EthDbUtils<D>,
     new_address: EthAddress,
 ) -> Result<String> {
     let nonce_before_incrementing = eth_db_utils.get_eth_account_nonce_from_db()?;

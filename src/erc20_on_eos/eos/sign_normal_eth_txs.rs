@@ -14,6 +14,7 @@ use crate::{
                 eth_private_key::EthPrivateKey,
                 eth_transaction::{EthTransaction, EthTransactions},
             },
+            eth_database_utils::EthDbUtilsExt,
         },
     },
     erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfos,

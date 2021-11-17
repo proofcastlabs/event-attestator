@@ -26,6 +26,7 @@ use crate::{
                 ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
                 ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
             },
+            eth_database_utils::EthDbUtilsExt,
             eth_log::{EthLog, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
             eth_state::EthState,

@@ -31,7 +31,7 @@ use crate::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
             },
-            eth_database_utils::EthDatabaseUtils,
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             increment_eos_account_nonce::maybe_increment_eos_account_nonce_and_return_state,
@@ -108,7 +108,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                             Erc20OnEosPegInInfos::from_submission_material(
                                 &submission_material,
                                 &token_dictionary,
-                                &EthDatabaseUtils::new_for_eth(&db).get_eth_chain_id_from_db()?,
+                                &EthDbUtils::new_for_eth(&db).get_eth_chain_id_from_db()?,
                             )
                         })
                         .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))

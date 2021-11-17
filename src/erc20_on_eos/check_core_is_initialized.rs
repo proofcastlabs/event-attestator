@@ -3,7 +3,7 @@ use crate::{
         eos::{core_initialization::check_eos_core_is_initialized::is_eos_core_initialized, eos_state::EosState},
         eth::{
             core_initialization::check_eth_core_is_initialized::is_eth_core_initialized,
-            eth_database_utils::EthDatabaseUtils,
+            eth_database_utils::EthDbUtils,
             eth_state::EthState,
         },
     },
@@ -11,7 +11,7 @@ use crate::{
     types::Result,
 };
 
-pub fn check_core_is_initialized<D: DatabaseInterface>(eth_db_utils: &EthDatabaseUtils<D>, db: &D) -> Result<()> {
+pub fn check_core_is_initialized<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, db: &D) -> Result<()> {
     info!("✔ Checking pERC20 core is initialized...");
     match is_eos_core_initialized(db) {
         false => Err("EOS core not initialized!".into()),

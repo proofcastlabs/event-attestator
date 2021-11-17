@@ -3,7 +3,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 
 use crate::{
-    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_state::EthState},
+    chains::eth::{
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_state::EthState,
+    },
     traits::DatabaseInterface,
     types::Result,
 };
@@ -18,7 +21,7 @@ pub struct EthInitializationOutput {
 
 impl EthInitializationOutput {
     fn init<D: DatabaseInterface>(
-        eth_db_utils: &EthDatabaseUtils<D>,
+        eth_db_utils: &EthDbUtils<D>,
         contract_address: Option<&EthAddress>,
         contract_tx: Option<&str>,
     ) -> Result<Self> {
@@ -33,7 +36,7 @@ impl EthInitializationOutput {
         })
     }
 
-    pub fn new_with_no_contract<D: DatabaseInterface>(db_utils: &EthDatabaseUtils<D>) -> Result<String> {
+    pub fn new_with_no_contract<D: DatabaseInterface>(db_utils: &EthDbUtils<D>) -> Result<String> {
         const CONTRACT_TX: Option<&str> = None;
         const CONTRACT_ADDRESS: Option<&EthAddress> = None;
         Ok(to_string(&Self::init(db_utils, CONTRACT_ADDRESS, CONTRACT_TX)?)?)

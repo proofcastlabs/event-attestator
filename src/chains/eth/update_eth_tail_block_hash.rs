@@ -1,7 +1,7 @@
 use crate::{
     chains::eth::{
         eth_constants::ETH_TAIL_LENGTH,
-        eth_database_utils::EthDatabaseUtils,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
     },
@@ -10,7 +10,7 @@ use crate::{
 };
 
 fn does_tail_block_require_updating<D: DatabaseInterface>(
-    eth_db_utils: &EthDatabaseUtils<D>,
+    eth_db_utils: &EthDbUtils<D>,
     calculated_tail_block: &EthSubmissionMaterial,
 ) -> Result<bool> {
     info!("✔ Checking if ETH tail block needs updating...");
@@ -21,7 +21,7 @@ fn does_tail_block_require_updating<D: DatabaseInterface>(
 
 fn maybe_update_eth_tail_block_hash<D: DatabaseInterface>(
     is_for_eth: bool,
-    eth_db_utils: &EthDatabaseUtils<D>,
+    eth_db_utils: &EthDbUtils<D>,
 ) -> Result<()> {
     info!(
         "✔ Maybe updating {} tail block hash...",

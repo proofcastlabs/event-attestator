@@ -1,7 +1,7 @@
 use serde_json::json;
 
 use crate::{
-    chains::eth::eth_database_utils::EthDatabaseUtils,
+    chains::eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     check_debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,
@@ -17,9 +17,9 @@ fn debug_set_account_nonce<D: DatabaseInterface>(db: &D, new_nonce: u64, is_for_
         .and_then(|_| db.start_transaction())
         .and_then(|_| {
             let db_utils = if is_for_eth {
-                EthDatabaseUtils::new_for_eth(db)
+                EthDbUtils::new_for_eth(db)
             } else {
-                EthDatabaseUtils::new_for_evm(db)
+                EthDbUtils::new_for_evm(db)
             };
             db_utils.put_eth_account_nonce_in_db(new_nonce)
         })
@@ -35,9 +35,9 @@ fn debug_set_any_sender_nonce<D: DatabaseInterface>(db: &D, new_nonce: u64, is_f
         .and_then(|_| db.start_transaction())
         .and_then(|_| {
             let db_utils = if is_for_eth {
-                EthDatabaseUtils::new_for_eth(db)
+                EthDbUtils::new_for_eth(db)
             } else {
-                EthDatabaseUtils::new_for_evm(db)
+                EthDbUtils::new_for_evm(db)
             };
             db_utils.put_any_sender_nonce_in_db(new_nonce)
         })
@@ -53,9 +53,9 @@ fn debug_set_gas_price_in_db<D: DatabaseInterface>(db: &D, gas_price: u64, is_fo
         .and_then(|_| db.start_transaction())
         .and_then(|_| {
             let db_utils = if is_for_eth {
-                EthDatabaseUtils::new_for_eth(db)
+                EthDbUtils::new_for_eth(db)
             } else {
-                EthDatabaseUtils::new_for_evm(db)
+                EthDbUtils::new_for_evm(db)
             };
             db_utils.put_eth_gas_price_in_db(gas_price)
         })

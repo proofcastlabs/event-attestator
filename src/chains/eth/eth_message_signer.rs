@@ -1,7 +1,11 @@
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::eth::{eth_database_utils::EthDatabaseUtils, eth_traits::EthSigningCapabilities, eth_types::EthSignature},
+    chains::eth::{
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_traits::EthSigningCapabilities,
+        eth_types::EthSignature,
+    },
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, is_hex},
@@ -22,9 +26,9 @@ pub fn sign_ascii_msg_with_no_prefix<D: DatabaseInterface>(db: &D, message: &str
         return Err("✘ HEX message passed. Signing HEX messages without prefix is not allowed.".into());
     }
     let db_utils = if is_for_eth {
-        EthDatabaseUtils::new_for_eth(db)
+        EthDbUtils::new_for_eth(db)
     } else {
-        EthDatabaseUtils::new_for_evm(db)
+        EthDbUtils::new_for_evm(db)
     };
     db_utils
         .get_eth_private_key_from_db()
@@ -38,9 +42,9 @@ pub fn sign_ascii_msg_with_prefix<D: DatabaseInterface>(db: &D, message: &str, i
         return Err("✘ Non-ASCII message passed. Only valid ASCII messages are supported.".into());
     }
     let db_utils = if is_for_eth {
-        EthDatabaseUtils::new_for_eth(db)
+        EthDbUtils::new_for_eth(db)
     } else {
-        EthDatabaseUtils::new_for_evm(db)
+        EthDbUtils::new_for_evm(db)
     };
     db_utils
         .get_eth_private_key_from_db()
@@ -50,9 +54,9 @@ pub fn sign_ascii_msg_with_prefix<D: DatabaseInterface>(db: &D, message: &str, i
 
 pub fn sign_hex_msg_with_prefix<D: DatabaseInterface>(db: &D, message: &str, is_for_eth: bool) -> Result<String> {
     let db_utils = if is_for_eth {
-        EthDatabaseUtils::new_for_eth(db)
+        EthDbUtils::new_for_eth(db)
     } else {
-        EthDatabaseUtils::new_for_evm(db)
+        EthDbUtils::new_for_evm(db)
     };
     let bytes = decode_hex_with_err_msg(message, "Message to sign is NOT valid hex!")?;
     db_utils
@@ -151,7 +155,7 @@ pub fn sign_hex_msg_with_evm_key_with_prefix<D: DatabaseInterface>(db: &D, messa
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::{eth_database_utils::EthDatabaseUtils, eth_test_utils::get_sample_eth_private_key},
+        chains::eth::{eth_database_utils::EthDbUtils, eth_test_utils::get_sample_eth_private_key},
         errors::AppError,
         test_utils::get_test_database,
     };
@@ -191,7 +195,7 @@ mod tests {
     fn ascii_signer_with_prefix_should_sign_valid_hex() {
         let is_for_eth = true;
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new_for_eth(&db);
         let eth_private_key = get_sample_eth_private_key();
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let message = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
@@ -208,7 +212,7 @@ mod tests {
         let is_for_eth = true;
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
-        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new_for_eth(&db);
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let message = "Arbitrary message";
         let expected_result = json!({
@@ -234,7 +238,7 @@ mod tests {
         let is_for_eth = true;
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
-        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new_for_eth(&db);
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let hex_to_sign = "0xc0ffee";
         let result = sign_hex_msg_with_prefix(&db, &hex_to_sign, is_for_eth).unwrap();
@@ -249,7 +253,7 @@ mod tests {
         let is_for_eth = true;
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
-        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new_for_eth(&db);
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let invalid_hex_to_sign = "0xcoffee";
         let expected_err = "Message to sign is NOT valid hex! Invalid character \'o\' at position 1";
@@ -265,7 +269,7 @@ mod tests {
         let is_for_eth = true;
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
-        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new_for_eth(&db);
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let message = "Arbitrary message";
         let expected_result = json!({

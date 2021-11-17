@@ -51,7 +51,7 @@ use crate::{
                 },
             },
             eth_crypto::eth_transaction::get_signed_minting_tx,
-            eth_database_utils::EthDatabaseUtils,
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_debug_functions::debug_set_eth_gas_price_in_db,
         },
     },
@@ -93,7 +93,7 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 /// Use with extreme caution, and only if you know exactly what you are doing and why.
 pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     info!("✔ Debug clearing all UTXOs...");
-    check_core_is_initialized(&EthDatabaseUtils::new_for_eth(db), db)
+    check_core_is_initialized(&EthDbUtils::new_for_eth(db), db)
         .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
         .and_then(|_| clear_all_utxos(db))
@@ -142,7 +142,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
 /// This function will return a JSON containing all the UTXOs the encrypted database currently has.
 pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new_for_eth(&db), &db))
         .and_then(|_| get_all_utxos_as_json_string(&db))
 }
 
@@ -159,7 +159,7 @@ pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
 pub fn debug_get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(db: D, new_address: &str) -> Result<String> {
-    let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+    let eth_db_utils = EthDbUtils::new_for_eth(&db);
     check_core_is_initialized(&eth_db_utils, &db)
         .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
@@ -176,7 +176,7 @@ pub fn debug_get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(db: D, n
 fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()> {
     info!("✔ Checking if the ERC777 proxy address is set...");
     check_debug_mode()
-        .and_then(|_| EthDatabaseUtils::new_for_eth(db).get_erc777_proxy_contract_address_from_db())
+        .and_then(|_| EthDbUtils::new_for_eth(db).get_erc777_proxy_contract_address_from_db())
         .and_then(|address| match address.is_zero() {
             true => Err("✘ No ERC777 proxy address set in db - not signing tx!".into()),
             false => Ok(()),
@@ -199,7 +199,7 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
     db: D,
     new_address: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+    let eth_db_utils = EthDbUtils::new_for_eth(&db);
     check_core_is_initialized(&eth_db_utils, &db)
         .and_then(|_| check_debug_mode())
         .and_then(|_| check_erc777_proxy_address_is_set(&db))
@@ -233,7 +233,7 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D: DatabaseInte
     db: D,
     new_address: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+    let eth_db_utils = EthDbUtils::new_for_eth(&db);
     check_core_is_initialized(&eth_db_utils, &db)
         .and_then(|_| check_debug_mode())
         .and_then(|_| check_erc777_proxy_address_is_set(&db))
@@ -304,7 +304,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
     gas_price: u64,
     recipient: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+    let eth_db_utils = EthDbUtils::new_for_eth(&db);
     check_core_is_initialized(&eth_db_utils, &db)
         .and_then(|_| check_debug_mode())
         .map(|_| strip_hex_prefix(recipient))
@@ -359,7 +359,7 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
     v_out: u32,
 ) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new_for_eth(&db), &db))
         .and_then(|_| get_child_pays_for_parent_btc_tx(db, fee, tx_id, v_out))
         .map(prepend_debug_output_marker_to_string)
 }
@@ -376,7 +376,7 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
 /// bricked. Use ONLY if you know exactly what you're doing and why!
 pub fn debug_consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new_for_eth(&db), &db))
         .and_then(|_| consolidate_utxos(db, fee, num_utxos))
         .map(prepend_debug_output_marker_to_string)
 }
@@ -389,7 +389,7 @@ pub fn debug_consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos:
 /// Use ONLY if you know exactly what you're doing and why!
 pub fn debug_remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new_for_eth(&db), &db))
         .and_then(|_| remove_utxo(db, tx_id, v_out))
         .map(prepend_debug_output_marker_to_string)
 }

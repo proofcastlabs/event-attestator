@@ -31,7 +31,7 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::EthDatabaseUtils,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         evm_constants::{
@@ -50,9 +50,9 @@ use crate::{
     types::Result,
 };
 
-fn delete_all_eth_blocks<D: DatabaseInterface>(db_utils: &EthDatabaseUtils<D>) -> Result<()> {
+fn delete_all_eth_blocks<D: DatabaseInterface>(db_utils: &EthDbUtils<D>) -> Result<()> {
     fn recursively_delete_all_eth_blocks<D: DatabaseInterface>(
-        db_utils: &EthDatabaseUtils<D>,
+        db_utils: &EthDbUtils<D>,
         maybe_block_hash: Option<EthHash>,
     ) -> Result<()> {
         match maybe_block_hash {

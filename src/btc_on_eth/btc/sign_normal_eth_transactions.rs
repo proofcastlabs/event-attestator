@@ -10,6 +10,7 @@ use crate::{
         eth::{
             eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
             eth_crypto::eth_transaction::{get_signed_minting_tx, EthTransaction, EthTransactions},
+            eth_database_utils::EthDbUtilsExt,
             eth_types::EthSigningParams,
         },
     },
@@ -88,7 +89,7 @@ mod tests {
             btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
             eth::{
                 eth_chain_id::EthChainId,
-                eth_database_utils::EthDatabaseUtils,
+                eth_database_utils::EthDbUtils,
                 eth_test_utils::{get_sample_eth_address, get_sample_eth_private_key},
                 eth_types::EthAddress,
             },
@@ -101,7 +102,7 @@ mod tests {
         let nonce = 6;
         let chain_id = EthChainId::Mainnet;
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new_for_eth(&db);
         let gas_price = 20_000_000_000;
         let contract_address = get_sample_eth_address();
         let eth_private_key = get_sample_eth_private_key();

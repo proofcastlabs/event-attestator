@@ -11,7 +11,7 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::EthDatabaseUtils,
+        eth_database_utils::EthDbUtils,
         eth_state::EthState,
     },
     traits::DatabaseInterface,
@@ -54,7 +54,7 @@ pub fn maybe_initialize_evm_core<D: DatabaseInterface>(
     gas_price: u64,
     confs: u64,
 ) -> Result<String> {
-    match is_evm_core_initialized(&EthDatabaseUtils::new_for_evm(&db)) {
+    match is_evm_core_initialized(&EthDbUtils::new_for_evm(&db)) {
         true => Ok(EVM_CORE_IS_INITIALIZED_JSON.to_string()),
         false => start_eth_db_transaction_and_return_state(EthState::init(&db))
             .and_then(|state| {
