@@ -615,6 +615,35 @@ impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
 }
 
 #[cfg(test)]
+impl<'a, D: DatabaseInterface> EthDatabaseUtils<'a, D> {
+    fn get_all(&self) -> Vec<Bytes> {
+        vec![
+            self.eth_address_key.clone(),
+            self.eth_chain_id_key.clone(),
+            self.eth_gas_price_key.clone(),
+            self.eth_linker_hash_key.clone(),
+            self.any_sender_nonce_key.clone(),
+            self.eth_account_nonce_key.clone(),
+            self.eth_private_key_db_key.clone(),
+            self.eth_tail_block_hash_key.clone(),
+            self.eth_canon_block_hash_key.clone(),
+            self.eth_anchor_block_hash_key.clone(),
+            self.eth_latest_block_hash_key.clone(),
+            self.eth_canon_to_tip_length_key.clone(),
+            self.erc777_proxy_contact_address_key.clone(),
+            self.btc_on_eth_smart_contract_address_key.clone(),
+            self.eos_on_eth_smart_contract_address_key.clone(),
+            self.erc20_on_eos_smart_contract_address_key.clone(),
+            self.erc20_on_evm_smart_contract_address_key.clone(),
+        ]
+    }
+
+    fn get_all_as_hex_strings(&self) -> Vec<String> {
+        self.get_all().iter().map(hex::encode).collect()
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
@@ -936,5 +965,96 @@ mod tests {
             .unwrap();
         let result = db_utils.get_submission_material_from_db(&db_key).unwrap();
         assert_eq!(result, submission_material);
+    }
+
+    #[test]
+    fn should_check_all_eth_db_keys() {
+        let db = get_test_database();
+        let results = EthDatabaseUtils::new_for_eth(&db).get_all_as_hex_strings();
+        let expected_results = vec![
+            "bfd203dc3411da4e18d157e87b94507a428060618fcf3163357a1fabe93fba1a",
+            "47199e3b0ffc301baeedd4eb87ebf5ef3829496c8ab2660a6038a62e36e9222f",
+            "ecf932d3aca97f12884bc42af7607469feba2206e8b1d37ed1328d477c747346",
+            "1c045b32a91a460a8a210de0a9b757da8fc21844f02399b558c3c87917122b58",
+            "09feb18750877b8b216cf9dc0bf587dfc4d043620252e1a7a33353710939c2ae",
+            "713a7d7396c523b7978cd822839e0186395053745941615b0370c0bb72b4dcf4",
+            "eec538cafefe65e094e2e70364da2f2f6e752209e1974e38a9b23ca8ce22b73d",
+            "539205e110a233c64f983acf425f1d2cf6cb6535a0241a3722a512690eeba758",
+            "c737daae274d21e37403be7d3d562c493332c381ee2b0f3fa0b2286af8b8e5c2",
+            "1087f2e9bfa897df4da210822cc94bcf77ee11396cf9d3cd247b06aeeb289737",
+            "8b39bef2b5b1e9564bb4a60c8211c32e2f94dc88cae8cfbaad42b2e7e527ea7a",
+            "192b7e4da694bf96fbc089656a3ba0f63f6263a95af257b693e8dee84334b38c",
+            "a2e7337756b00998e6efd72220477f4de76ceac441298d6770fff827837b27a6",
+            "f2289049ab0275224d98f6f7d6b2e5c0b301167d04b83aa724024fcad81d61fc",
+            "13a27c2fe10330e66ea6c562272bcbef4e7ebd003aed087dba387ac43a7f5fd4",
+            "fb2788804c9b7b8c40b191f4da2e4db2602a2f1deaaefc052bf1d38220db1dcf",
+            "7709f182e4be2554442ffb3637f3417dd75cef4ccb13942d2e35c5d6ace6c503",
+        ];
+        results
+            .iter()
+            .enumerate()
+            .for_each(|(i, key)| assert_eq!(key, expected_results[i]));
+    }
+
+    #[test]
+    fn should_check_all_evm_db_keys() {
+        let db = get_test_database();
+        let results = EthDatabaseUtils::new_for_evm(&db).get_all_as_hex_strings();
+        let expected_results = vec![
+            "a1e0ede222d5df7500e8580bdf0f552b55e4f95a5a1585b059adbd1fab061d73",
+            "b302d7601e077a277f2d1e100c959ba2d63989531b47468bbeef4c9faa57d3c9",
+            "b4dbeaf50ce099e52bd74571377dc97df7f25db7b981babcea4c0292035f58ba",
+            "b4ed69606ec2498bc6f8ea41a8ec6f46181d36617966c5083345115e0b7b964c",
+            "960d6c59b7c81545d0fcedd4a4e84102b306bef422b6f06b38c452df19b0673f",
+            "ca7f0ab19900680d76625f41854791660729bfcaf7fede763d96d4c05916ec4c",
+            "fa8338b621f949093c2880563aa678a8407ce0c78c1d75b9fec11768b042eba7",
+            "0bfa597048f0580d7782b60c89e596410b708ed843c5391f53fbfd6e947bccb4",
+            "bc262de20ac1da20589be1d2464e9658bf9d5ab193ad65ff5be69008bbbc8ee2",
+            "0a28ac19c3f6ed77642240975ff3d553290e62785b9070e81fad38012d346bae",
+            "9a4dd10e7fc05b39c5c66698d808005e9bc678bf3d7816741b25ddddf93092a7",
+            "2ee78935508a7ae8327e1ec867d23813042f70e78ac5dafa05d00ed3a81eb7d7",
+            "0e5e8342356bb9f5b6f6b1a681c544c12838053a450bb97bed1d3a7a8e9a86ec",
+            "1a2270b3479ad2a676751ecbf17c8468ab64854d265d1ba8107e042e70a5c422",
+            "3afdaa0cf2f37afa64f93623c3b25778c9cde2f6a71af4818c78ab54c4731144",
+            "e06e403795bcba77bcaa7ae8e22a7149e69c7fe8eb7db5e81e4c80a268594fdb",
+            "a7e4cd0d8bf1e96eaff6b8f74cb8786c834330f34cf209597ca988f5d724b4a7",
+        ];
+        results
+            .iter()
+            .enumerate()
+            .for_each(|(i, key)| assert_eq!(key, expected_results[i]));
+    }
+
+    #[test]
+    fn eth_db_keys_should_not_match_evm_db_keys() {
+        let db = get_test_database();
+        let eth_keys = EthDatabaseUtils::new_for_eth(&db).get_all_as_hex_strings();
+        let evm_keys = EthDatabaseUtils::new_for_evm(&db).get_all_as_hex_strings();
+        eth_keys
+            .iter()
+            .zip(evm_keys.iter())
+            .for_each(|(eth_key, evm_key)| assert_ne!(eth_key, evm_key));
+    }
+
+    #[test]
+    fn eth_keys_should_all_be_different() {
+        let db = get_test_database();
+        let expected_result = EthDatabaseUtils::new_for_eth(&db).get_all().len();
+        let mut db_keys = EthDatabaseUtils::new_for_eth(&db).get_all();
+        db_keys.sort();
+        db_keys.dedup();
+        let result = db_keys.len();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn evm_keys_should_all_be_different() {
+        let db = get_test_database();
+        let expected_result = EthDatabaseUtils::new_for_evm(&db).get_all().len();
+        let mut db_keys = EthDatabaseUtils::new_for_evm(&db).get_all();
+        db_keys.sort();
+        db_keys.dedup();
+        let result = db_keys.len();
+        assert_eq!(result, expected_result);
     }
 }
