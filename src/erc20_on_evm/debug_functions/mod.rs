@@ -369,7 +369,9 @@ pub fn debug_set_accrued_fees_in_dictionary<D: DatabaseInterface>(
     let dictionary = EthEvmTokenDictionary::get_from_db(&db)?;
     let dictionary_entry_eth_address = convert_hex_to_eth_address(token_address)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| {
+            check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &EthDatabaseUtils::new_for_evm(&db))
+        })
         .and_then(|_| db.start_transaction())
         .and_then(|_| {
             dictionary.set_accrued_fees_and_save_in_db(
