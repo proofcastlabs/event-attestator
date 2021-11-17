@@ -26,7 +26,7 @@ impl EnclaveState {
             info: EnclaveInfo::new(),
             evm: EthEnclaveState::new_for_erc20_on_evm(evm_db_utils)?,
             eth: EthEnclaveState::new_for_erc20_on_evm(eth_db_utils)?,
-            token_dictionary: EthEvmTokenDictionary::get_from_db(eth_db_utils.db)?,
+            token_dictionary: EthEvmTokenDictionary::get_from_db(eth_db_utils.get_db())?,
         })
     }
 
