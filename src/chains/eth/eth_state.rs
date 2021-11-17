@@ -58,7 +58,7 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             eth_submission_material: None,
             eth_evm_token_dictionary: None,
             eos_eth_token_dictionary: None,
-            eth_db_utils: EthDatabaseUtils::new(db),
+            eth_db_utils: EthDatabaseUtils::new_for_eth(db),
             eos_db_utils: EosDatabaseUtils::new(db),
             btc_db_utils: BtcDatabaseUtils::new(db),
             evm_db_utils: EthDatabaseUtils::new_for_evm(db),

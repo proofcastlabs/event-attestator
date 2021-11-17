@@ -106,7 +106,7 @@ mod tests {
     #[test]
     fn should_return_true_if_canon_block_requires_updating() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
         let canon_block = blocks_and_receipts[0].clone();
         let calculated_canon_block = blocks_and_receipts[1].clone();
@@ -121,9 +121,9 @@ mod tests {
         let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
         let canon_block = blocks_and_receipts[0].clone();
         let calculated_canon_block = blocks_and_receipts[0].clone();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         eth_db_utils.put_eth_canon_block_in_db(&canon_block).unwrap();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let result = does_canon_block_require_updating(&eth_db_utils, &calculated_canon_block).unwrap();
         assert!(!result);
     }
@@ -131,7 +131,7 @@ mod tests {
     #[test]
     fn should_return_block_if_nth_ancestor_of_latest_block_exists() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
         let block_1 = blocks_and_receipts[0].clone();
         let block_2 = blocks_and_receipts[1].clone();
@@ -147,7 +147,7 @@ mod tests {
     #[test]
     fn should_return_none_if_nth_ancestor_of_latest_block_does_not_exist() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
         let block_1 = blocks_and_receipts[0].clone();
         put_eth_latest_block_in_db(&eth_db_utils, &block_1).unwrap();
@@ -164,7 +164,7 @@ mod tests {
         let latest_block = blocks_and_receipts[2].clone();
         let expected_canon_block_hash = block_1.get_block_hash().unwrap();
         let canon_block_hash_before = canon_block.get_block_hash().unwrap();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         eth_db_utils.put_eth_canon_block_in_db(&canon_block).unwrap();
         eth_db_utils.put_eth_submission_material_in_db(&block_1).unwrap();
         put_eth_latest_block_in_db(&eth_db_utils, &latest_block).unwrap();
@@ -181,7 +181,7 @@ mod tests {
         let canon_block = blocks_and_receipts[0].clone();
         let latest_block = blocks_and_receipts[1].clone();
         let canon_block_hash_before = canon_block.get_block_hash().unwrap();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         eth_db_utils.put_eth_canon_block_in_db(&canon_block).unwrap();
         put_eth_latest_block_in_db(&eth_db_utils, &latest_block).unwrap();
         maybe_update_canon_block_hash(&eth_db_utils, 1).unwrap();

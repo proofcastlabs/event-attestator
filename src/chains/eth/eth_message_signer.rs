@@ -191,7 +191,7 @@ mod tests {
     fn ascii_signer_with_prefix_should_sign_valid_hex() {
         let is_for_eth = true;
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let eth_private_key = get_sample_eth_private_key();
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let message = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
@@ -208,7 +208,7 @@ mod tests {
         let is_for_eth = true;
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let message = "Arbitrary message";
         let expected_result = json!({
@@ -234,7 +234,7 @@ mod tests {
         let is_for_eth = true;
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let hex_to_sign = "0xc0ffee";
         let result = sign_hex_msg_with_prefix(&db, &hex_to_sign, is_for_eth).unwrap();
@@ -249,7 +249,7 @@ mod tests {
         let is_for_eth = true;
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let invalid_hex_to_sign = "0xcoffee";
         let expected_err = "Message to sign is NOT valid hex! Invalid character \'o\' at position 1";
@@ -265,7 +265,7 @@ mod tests {
         let is_for_eth = true;
         let db = get_test_database();
         let eth_private_key = get_sample_eth_private_key();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let message = "Arbitrary message";
         let expected_result = json!({

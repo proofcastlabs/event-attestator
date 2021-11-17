@@ -31,7 +31,7 @@ mod tests {
     #[test]
     fn should_return_false_if_eth_core_not_initialized() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let result = is_eth_core_initialized(&eth_db_utils);
         assert!(!result);
     }
@@ -39,7 +39,7 @@ mod tests {
     #[test]
     fn should_return_true_if_eth_core_initialized() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         eth_db_utils
             .put_public_eth_address_in_db(&get_sample_eth_address())
             .unwrap();
@@ -50,7 +50,7 @@ mod tests {
     #[test]
     fn should_not_err_if_core_initialized() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         eth_db_utils
             .put_public_eth_address_in_db(&get_sample_eth_address())
             .unwrap();
@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn should_err_if_core_not_initialized() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let expected_err = "✘ ETH side of core not initialized!".to_string();
         let is_for_eth = true;
         match check_eth_core_is_initialized(&eth_db_utils, is_for_eth) {

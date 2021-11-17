@@ -65,7 +65,7 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             incremerkle: Incremerkle::default(),
             eos_db_utils: EosDatabaseUtils::new(db),
             btc_db_utils: BtcDatabaseUtils::new(db),
-            eth_db_utils: EthDatabaseUtils::new(db),
+            eth_db_utils: EthDatabaseUtils::new_for_eth(db),
             eth_signed_txs: EthTransactions::new(vec![]),
             enabled_protocol_features: EnabledFeatures::init(),
             processed_tx_ids: ProcessedGlobalSequences::new(vec![]),

@@ -63,7 +63,7 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
             btc_block_in_db_format: None,
             utxos_and_values: vec![].into(),
             btc_db_utils: BtcDatabaseUtils::new(db),
-            eth_db_utils: EthDatabaseUtils::new(db),
+            eth_db_utils: EthDatabaseUtils::new_for_eth(db),
             eos_db_utils: EosDatabaseUtils::new(db),
             eth_signed_txs: EthTransactions::new(vec![]),
             eos_signed_txs: EosSignedTransactions::new(vec![]),

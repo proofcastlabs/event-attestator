@@ -50,7 +50,7 @@ pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
     confs: u64,
     _bytecode_path: &str, // NOTE: Deprecated as of v4.30.0
 ) -> Result<String> {
-    match is_eth_core_initialized(&EthDatabaseUtils::new(&db)) {
+    match is_eth_core_initialized(&EthDatabaseUtils::new_for_eth(&db)) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
         false => start_eth_db_transaction_and_return_state(EthState::init(&db))
             .and_then(|state| {

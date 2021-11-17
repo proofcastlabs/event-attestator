@@ -75,7 +75,7 @@ mod tests {
     #[test]
     fn should_get_parent_of_canon_if_extant() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
         let canon_block = blocks_and_receipts[5].clone();
         let parent_of_eth_tail_block = blocks_and_receipts[4].clone();
@@ -92,7 +92,7 @@ mod tests {
     #[test]
     fn should_not_get_parent_of_canon_if_extant() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
         let canon_block = blocks_and_receipts[5].clone();
         put_eth_tail_block_in_db(&eth_db_utils, &canon_block).unwrap();
@@ -108,7 +108,7 @@ mod tests {
         let block_hash_to_link_to = blocks_and_receipts[5].get_block_hash().unwrap();
         let anchor_block = blocks_and_receipts[1].clone();
         let linker_hash = blocks_and_receipts[3].get_block_hash().unwrap();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         eth_db_utils.put_eth_linker_hash_in_db(linker_hash).unwrap();
         put_eth_anchor_block_in_db(&eth_db_utils, &anchor_block).unwrap();
         let result = get_new_linker_hash(&eth_db_utils, &block_hash_to_link_to).unwrap();
@@ -125,7 +125,7 @@ mod tests {
         let anchor_block = blocks_and_receipts[1].clone();
         let canon_block = blocks_and_receipts[5].clone();
         let parent_of_eth_tail_block = blocks_and_receipts[4].clone();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         eth_db_utils.put_eth_linker_hash_in_db(linker_hash_before).unwrap();
         put_eth_anchor_block_in_db(&eth_db_utils, &anchor_block).unwrap();
         put_eth_tail_block_in_db(&eth_db_utils, &canon_block).unwrap();
@@ -148,7 +148,7 @@ mod tests {
         let linker_hash_before = blocks_and_receipts[9].get_block_hash().unwrap();
         let anchor_block = blocks_and_receipts[1].clone();
         let canon_block = blocks_and_receipts[5].clone();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         eth_db_utils.put_eth_linker_hash_in_db(linker_hash_before).unwrap();
         put_eth_anchor_block_in_db(&eth_db_utils, &anchor_block).unwrap();
         put_eth_tail_block_in_db(&eth_db_utils, &canon_block).unwrap();

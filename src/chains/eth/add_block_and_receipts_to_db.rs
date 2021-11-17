@@ -58,7 +58,7 @@ mod tests {
     #[test]
     fn should_maybe_add_block_and_receipts_to_db() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let block_and_receipts = get_sample_eth_submission_material_n(1).unwrap();
         let eth_block_hash = block_and_receipts.get_block_hash().unwrap();
         let bool_before = eth_db_utils.eth_block_exists_in_db(&eth_block_hash);
@@ -71,7 +71,7 @@ mod tests {
     #[test]
     fn should_error_if_block_already_in_db() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let block_and_receipts = get_sample_eth_submission_material_n(1).unwrap();
         let eth_block_hash = block_and_receipts.get_block_hash().unwrap();
         let bool_before = eth_db_utils.eth_block_exists_in_db(&eth_block_hash);

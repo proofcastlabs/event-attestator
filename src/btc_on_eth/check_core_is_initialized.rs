@@ -39,7 +39,7 @@ mod tests {
     #[test]
     fn should_err_if_core_not_initialized() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let result = check_core_is_initialized(&eth_db_utils, &db);
         assert!(result.is_err());
     }
@@ -47,7 +47,7 @@ mod tests {
     #[test]
     fn should_be_ok_if_core_initialized() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         put_btc_address_in_db(&db, &SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         eth_db_utils
             .put_public_eth_address_in_db(&get_sample_eth_address())

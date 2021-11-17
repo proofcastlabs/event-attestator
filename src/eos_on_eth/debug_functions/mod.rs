@@ -56,7 +56,7 @@ use crate::{
 /// transaction replays. Use with extreme caution and only if you know exactly what you are doing
 /// and why.
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
-    check_core_is_initialized(&EthDatabaseUtils::new(db), db)
+    check_core_is_initialized(&EthDatabaseUtils::new_for_eth(db), db)
         .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(eos_init_json)?))
 }
 
@@ -64,7 +64,8 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &st
 ///
 /// Adds a new EOS schedule to the core's encrypted database.
 pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &str) -> Result<String> {
-    check_core_is_initialized(&EthDatabaseUtils::new(&db), &db).and_then(|_| add_new_eos_schedule(&db, schedule_json))
+    check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db)
+        .and_then(|_| add_new_eos_schedule(&db, schedule_json))
 }
 
 /// # Debug Set Key in DB to Value
@@ -131,7 +132,7 @@ pub fn debug_add_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
     db: D,
     dictionary_entry_json_string: &str,
 ) -> Result<String> {
-    check_core_is_initialized(&EthDatabaseUtils::new(&db), &db)
+    check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db)
         .and_then(|_| add_eos_eth_token_dictionary_entry(&db, dictionary_entry_json_string))
 }
 
@@ -144,7 +145,7 @@ pub fn debug_remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
     db: D,
     eth_address_str: &str,
 ) -> Result<String> {
-    check_core_is_initialized(&EthDatabaseUtils::new(&db), &db)
+    check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db)
         .and_then(|_| remove_eos_eth_token_dictionary_entry(&db, eth_address_str))
 }
 
@@ -278,7 +279,7 @@ pub fn debug_set_accrued_fees_in_dictionary<D: DatabaseInterface>(
     let dictionary = EosEthTokenDictionary::get_from_db(&db)?;
     let dictionary_entry_eth_address = convert_hex_to_eth_address(token_address)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db))
         .and_then(|_| db.start_transaction())
         .and_then(|_| {
             dictionary.set_accrued_fees_and_save_in_db(

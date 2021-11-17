@@ -26,7 +26,7 @@ mod tests {
     #[test]
     fn get_linker_or_genesis_should_get_linker_hash_from_db_if_extant() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let linker_hash = EthHash::random();
         eth_db_utils.put_eth_linker_hash_in_db(linker_hash).unwrap();
         let result = get_linker_hash_or_genesis_hash(&eth_db_utils).unwrap();
@@ -36,7 +36,7 @@ mod tests {
     #[test]
     fn get_linker_or_genesis_should_get_genesis_hash_if_linker_not_set() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let result = get_linker_hash_or_genesis_hash(&eth_db_utils).unwrap();
         assert_eq!(result, EthHash::from_slice(&PTOKEN_GENESIS_HASH_KEY[..]));
     }

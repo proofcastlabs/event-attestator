@@ -98,7 +98,7 @@ mod tests {
     #[test]
     fn should_return_false_block_is_not_anchor_block() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let blocks = get_sequential_eth_blocks_and_receipts();
         let anchor_block = blocks[0].clone();
         let non_anchor_block = blocks[1].clone();
@@ -112,7 +112,7 @@ mod tests {
     fn should_return_true_if_block_is_anchor_block() {
         let db = get_test_database();
         let blocks = get_sequential_eth_blocks_and_receipts();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let anchor_block = blocks[0].clone();
         put_eth_anchor_block_in_db(&eth_db_utils, &anchor_block).unwrap();
         let result = is_anchor_block(&eth_db_utils, &anchor_block.get_block_hash().unwrap()).unwrap();
@@ -122,7 +122,7 @@ mod tests {
     #[test]
     fn should_remove_parent_block_if_parent_is_not_anchor() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let blocks = get_sequential_eth_blocks_and_receipts();
         let anchor_block = blocks[0].clone();
         let block = blocks[2].clone();
@@ -139,7 +139,7 @@ mod tests {
     #[test]
     fn should_not_remove_parent_block_if_parent_is_anchor() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let blocks = get_sequential_eth_blocks_and_receipts();
         let anchor_block = blocks[0].clone();
         let block = blocks[1].clone();
@@ -154,7 +154,7 @@ mod tests {
     #[test]
     fn should_remove_parent_blocks_recursively_if_not_anchor_blocks() {
         let db = get_test_database();
-        let eth_db_utils = EthDatabaseUtils::new(&db);
+        let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
         let all_blocks = get_sequential_eth_blocks_and_receipts();
         let blocks = &all_blocks[1..all_blocks.len() - 1];
         let tail_block = all_blocks[all_blocks.len() - 1].clone();

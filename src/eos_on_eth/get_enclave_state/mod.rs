@@ -38,6 +38,6 @@ impl EnclaveState {
 /// blockchain controlled by this instance.
 pub fn get_enclave_state<D: DatabaseInterface>(db: D) -> Result<String> {
     info!("✔ Getting core state...");
-    let eth_db_utils = EthDatabaseUtils::new(&db);
+    let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
     check_core_is_initialized(&eth_db_utils, &db).and_then(|_| EnclaveState::new(&eth_db_utils, &db)?.to_string())
 }

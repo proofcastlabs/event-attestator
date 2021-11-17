@@ -58,7 +58,7 @@ use crate::{
 /// transaction replays. Use with extreme caution and only if you know exactly what you are doing
 /// and why.
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
-    check_core_is_initialized(&EthDatabaseUtils::new(db), db)
+    check_core_is_initialized(&EthDatabaseUtils::new_for_eth(db), db)
         .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(eos_init_json)?))
         .map(prepend_debug_output_marker_to_string)
 }
@@ -67,7 +67,8 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &st
 ///
 /// Adds a new EOS schedule to the core's encrypted database.
 pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &str) -> Result<String> {
-    check_core_is_initialized(&EthDatabaseUtils::new(&db), &db).and_then(|_| add_new_eos_schedule(&db, schedule_json))
+    check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db)
+        .and_then(|_| add_new_eos_schedule(&db, schedule_json))
 }
 
 /// # Debug Set Key in DB to Value
@@ -133,7 +134,7 @@ pub fn debug_add_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
     db: D,
     dictionary_entry_json_string: &str,
 ) -> Result<String> {
-    check_core_is_initialized(&EthDatabaseUtils::new(&db), &db)
+    check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db)
         .and_then(|_| add_eos_eth_token_dictionary_entry(&db, dictionary_entry_json_string))
 }
 
@@ -146,7 +147,7 @@ pub fn debug_remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
     db: D,
     eth_address_str: &str,
 ) -> Result<String> {
-    check_core_is_initialized(&EthDatabaseUtils::new(&db), &db)
+    check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db)
         .and_then(|_| remove_eos_eth_token_dictionary_entry(&db, eth_address_str))
 }
 
@@ -170,7 +171,7 @@ pub fn debug_get_erc20_vault_migration_tx<D: DatabaseInterface>(
 ) -> Result<String> {
     db.start_transaction()?;
     info!("✔ Debug getting migration transaction...");
-    let eth_db_utils = EthDatabaseUtils::new(&db);
+    let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let current_eos_erc20_smart_contract_address = eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?;
     let new_eos_erc20_smart_contract_address = get_eth_address_from_str(new_eos_erc20_smart_contract_address_string)?;
@@ -219,7 +220,7 @@ pub fn debug_get_erc20_vault_migration_tx<D: DatabaseInterface>(
 pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
     info!("✔ Debug getting `addSupportedToken` contract tx...");
     db.start_transaction()?;
-    let eth_db_utils = EthDatabaseUtils::new(&db);
+    let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = get_eth_address_from_str(eth_address_str)?;
     check_debug_mode()
@@ -261,7 +262,7 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address
 pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
     info!("✔ Debug getting `removeSupportedToken` contract tx...");
     db.start_transaction()?;
-    let eth_db_utils = EthDatabaseUtils::new(&db);
+    let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = get_eth_address_from_str(eth_address_str)?;
     check_debug_mode()
@@ -291,7 +292,7 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
 ///
 /// This function returns the list of already-processed action global sequences in JSON format.
 pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String> {
-    check_core_is_initialized(&EthDatabaseUtils::new(db), db).and_then(|_| get_processed_actions_list(db))
+    check_core_is_initialized(&EthDatabaseUtils::new_for_eth(db), db).and_then(|_| get_processed_actions_list(db))
 }
 
 /// # Debug Set ETH Gas Price
@@ -312,7 +313,7 @@ pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> R
 /// #### NOTE: Using a fee of 0 will mean no fees are taken.
 pub fn debug_set_eth_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db))
         .map(|_| sanity_check_basis_points_value(new_fee))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
@@ -335,7 +336,7 @@ pub fn debug_set_eth_fee_basis_points<D: DatabaseInterface>(db: D, address: &str
 /// #### NOTE: Using a fee of 0 will mean no fees are taken.
 pub fn debug_set_eos_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&EthDatabaseUtils::new_for_eth(&db), &db))
         .map(|_| sanity_check_basis_points_value(new_fee))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
@@ -362,7 +363,7 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
     token_address: &str,
     recipient_address: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDatabaseUtils::new(&db);
+    let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &db))
         .and_then(|_| db.start_transaction())
