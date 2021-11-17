@@ -26,25 +26,26 @@ hex = "0.4.3"
 log = "0.4.14"
 rlp = "0.5.1"
 rand = "0.8.4"
+paste = "1.0.6"
 strum = "0.22.0"
 chrono = "0.4.19"
+triehash = "0.8.4"
 ethabi = "15.0.0"
 byteorder = "1.4.3"
 rustc-hex = "2.1.0"
 simplelog = "0.10.2"
 serde_json = "1.0.68"
 lazy_static = "1.4.0"
+quick-error = "2.0.1"
 strum_macros = "0.22.0"
+derive_more = "0.99.16"
+keccak-hasher = "0.15.3"
 ethereum-types = "0.12.1"
 serde = { version = "1.0.130", features = ["derive"] }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 bitcoin = { version = "0.27.1", features = ["use-serde", "rand"] }
 eos-chain = { git = "https://github.com/bifrost-finance/rust-eos" }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"] }
-quick-error = "2.0.1"
-derive_more = "0.99.16"
-keccak-hasher = "0.15.3"
-triehash = "0.8.4"
 
 [dev-dependencies]
 simple_logger = "1.13.0"
