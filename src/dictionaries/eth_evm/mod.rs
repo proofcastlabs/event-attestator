@@ -1020,12 +1020,13 @@ mod tests {
         });
     }
 
+    #[test]
     fn should_set_accrued_fees_and_save_in_db() {
         let db = get_test_database();
         let dictionary = get_sample_eth_evm_dictionary();
         let fee_to_set = U256::from(666);
         let fee_before = U256::from(1337);
-        let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
         let fee_tuple = vec![(address, fee_before)];
         dictionary
             .increment_accrued_fees_and_save_in_db(&db, fee_tuple)
