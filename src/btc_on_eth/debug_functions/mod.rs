@@ -158,16 +158,13 @@ pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
-pub fn debug_get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(
-    eth_db_utils: &EthDatabaseUtils<D>,
-    db: D,
-    new_address: &str,
-) -> Result<String> {
-    check_core_is_initialized(eth_db_utils, &db)
+pub fn debug_get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(db: D, new_address: &str) -> Result<String> {
+    let eth_db_utils = EthDatabaseUtils::new_for_eth(&db);
+    check_core_is_initialized(&eth_db_utils, &db)
         .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
         .and_then(|_| {
-            get_signed_erc777_change_pnetwork_tx(eth_db_utils, EthAddress::from_slice(&hex::decode(new_address)?))
+            get_signed_erc777_change_pnetwork_tx(&eth_db_utils, EthAddress::from_slice(&hex::decode(new_address)?))
         })
         .and_then(|signed_tx_hex| {
             db.end_transaction()?;
