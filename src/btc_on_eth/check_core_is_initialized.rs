@@ -13,8 +13,7 @@ use crate::{
 
 pub fn check_core_is_initialized<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, db: &D) -> Result<()> {
     info!("✔ Checking core is initialized...");
-    let is_for_eth = true;
-    check_btc_core_is_initialized(db).and_then(|_| check_eth_core_is_initialized(eth_db_utils, is_for_eth))
+    check_btc_core_is_initialized(db).and_then(|_| check_eth_core_is_initialized(eth_db_utils))
 }
 
 pub fn check_core_is_initialized_and_return_btc_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
@@ -42,7 +41,7 @@ mod tests {
     #[test]
     fn should_err_if_core_not_initialized() {
         let db = get_test_database();
-        let eth_db_utils = EthDbUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new(&db);
         let result = check_core_is_initialized(&eth_db_utils, &db);
         assert!(result.is_err());
     }
@@ -50,7 +49,7 @@ mod tests {
     #[test]
     fn should_be_ok_if_core_initialized() {
         let db = get_test_database();
-        let eth_db_utils = EthDbUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new(&db);
         put_btc_address_in_db(&db, &SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         eth_db_utils
             .put_public_eth_address_in_db(&get_sample_eth_address())

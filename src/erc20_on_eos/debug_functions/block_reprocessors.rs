@@ -108,7 +108,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                             Erc20OnEosPegInInfos::from_submission_material(
                                 &submission_material,
                                 &token_dictionary,
-                                &EthDbUtils::new_for_eth(&db).get_eth_chain_id_from_db()?,
+                                &EthDbUtils::new(&db).get_eth_chain_id_from_db()?,
                             )
                         })
                         .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))

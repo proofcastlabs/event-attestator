@@ -102,7 +102,7 @@ mod tests {
         let nonce = 6;
         let chain_id = EthChainId::Mainnet;
         let db = get_test_database();
-        let eth_db_utils = EthDbUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new(&db);
         let gas_price = 20_000_000_000;
         let contract_address = get_sample_eth_address();
         let eth_private_key = get_sample_eth_private_key();

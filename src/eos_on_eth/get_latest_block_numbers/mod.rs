@@ -22,7 +22,7 @@ struct BlockNumbers {
 /// blockchains this instance manages.
 pub fn get_latest_block_numbers<D: DatabaseInterface>(db: D) -> Result<String> {
     info!("✔ Getting latest block numbers...");
-    let eth_db_utils = EthDbUtils::new_for_eth(&db);
+    let eth_db_utils = EthDbUtils::new(&db);
     check_core_is_initialized(&eth_db_utils, &db).and_then(|_| {
         Ok(serde_json::to_string(&BlockNumbers {
             eth_latest_block_number: eth_db_utils.get_latest_eth_block_number()?,

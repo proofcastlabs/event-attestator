@@ -16,10 +16,11 @@ use crate::{
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
 
+// TODO Rm the repetition in here via a macro to create the structs (proc-macro from a hashmap of
+// keys?
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EthDbUtils<'a, D: DatabaseInterface> {
+pub struct EvmDbUtils<'a, D: DatabaseInterface> {
     db: &'a D,
-    is_for_evm: bool, // NOTE: We shouldn't need this soon
     eth_address_key: Bytes,
     eth_chain_id_key: Bytes,
     eth_gas_price_key: Bytes,
@@ -39,51 +40,8 @@ pub struct EthDbUtils<'a, D: DatabaseInterface> {
     erc20_on_evm_smart_contract_address_key: Bytes,
 }
 
-impl<'a, D: DatabaseInterface> EthDbUtils<'a, D> {
-    pub fn new_for_eth(db: &'a D) -> Self {
-        use crate::chains::eth::eth_constants::{
-            ANY_SENDER_NONCE_KEY,
-            BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
-            EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
-            ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY,
-            ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
-            ERC777_PROXY_CONTACT_ADDRESS_KEY,
-            ETH_ACCOUNT_NONCE_KEY,
-            ETH_ADDRESS_KEY,
-            ETH_ANCHOR_BLOCK_HASH_KEY,
-            ETH_CANON_BLOCK_HASH_KEY,
-            ETH_CANON_TO_TIP_LENGTH_KEY,
-            ETH_CHAIN_ID_KEY,
-            ETH_GAS_PRICE_KEY,
-            ETH_LATEST_BLOCK_HASH_KEY,
-            ETH_LINKER_HASH_KEY,
-            ETH_PRIVATE_KEY_DB_KEY,
-            ETH_TAIL_BLOCK_HASH_KEY,
-        };
-        Self {
-            db,
-            is_for_evm: false,
-            eth_address_key: ETH_ADDRESS_KEY.to_vec(),
-            eth_chain_id_key: ETH_CHAIN_ID_KEY.to_vec(),
-            eth_gas_price_key: ETH_GAS_PRICE_KEY.to_vec(),
-            eth_linker_hash_key: ETH_LINKER_HASH_KEY.to_vec(),
-            any_sender_nonce_key: ANY_SENDER_NONCE_KEY.to_vec(),
-            eth_account_nonce_key: ETH_ACCOUNT_NONCE_KEY.to_vec(),
-            eth_private_key_db_key: ETH_PRIVATE_KEY_DB_KEY.to_vec(),
-            eth_tail_block_hash_key: ETH_TAIL_BLOCK_HASH_KEY.to_vec(),
-            eth_canon_block_hash_key: ETH_CANON_BLOCK_HASH_KEY.to_vec(),
-            eth_anchor_block_hash_key: ETH_ANCHOR_BLOCK_HASH_KEY.to_vec(),
-            eth_latest_block_hash_key: ETH_LATEST_BLOCK_HASH_KEY.to_vec(),
-            eth_canon_to_tip_length_key: ETH_CANON_TO_TIP_LENGTH_KEY.to_vec(),
-            erc777_proxy_contract_address_key: ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(),
-            btc_on_eth_smart_contract_address_key: BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-            eos_on_eth_smart_contract_address_key: EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-            erc20_on_eos_smart_contract_address_key: ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-            erc20_on_evm_smart_contract_address_key: ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-        }
-    }
-
-    pub fn new_for_evm(db: &'a D) -> Self {
+impl<'a, D: DatabaseInterface> EvmDbUtils<'a, D> {
+    pub fn new(db: &'a D) -> Self {
         use crate::chains::eth::evm_constants::{
             EVM_ACCOUNT_NONCE_KEY,
             EVM_ADDRESS_KEY,
@@ -105,7 +63,6 @@ impl<'a, D: DatabaseInterface> EthDbUtils<'a, D> {
         };
         Self {
             db,
-            is_for_evm: true,
             eth_address_key: EVM_ADDRESS_KEY.to_vec(),
             eth_chain_id_key: EVM_CHAIN_ID_KEY.to_vec(),
             eth_gas_price_key: EVM_GAS_PRICE_KEY.to_vec(),
@@ -123,6 +80,150 @@ impl<'a, D: DatabaseInterface> EthDbUtils<'a, D> {
             eos_on_eth_smart_contract_address_key: EVM_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
             erc20_on_eos_smart_contract_address_key: EVM_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
             erc20_on_evm_smart_contract_address_key: EVM_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+        }
+    }
+}
+
+impl<D: DatabaseInterface> EthDbUtilsExt<D> for EvmDbUtils<'_, D> {
+    fn get_db(&self) -> &D {
+        self.db
+    }
+
+    fn get_any_sender_nonce_key(&self) -> Bytes {
+        self.any_sender_nonce_key.to_vec()
+    }
+
+    fn get_eth_address_key(&self) -> Bytes {
+        self.eth_address_key.to_vec()
+    }
+
+    fn get_erc20_on_evm_smart_contract_address_key(&self) -> Bytes {
+        self.erc20_on_evm_smart_contract_address_key.to_vec()
+    }
+
+    fn get_eos_on_eth_smart_contract_address_key(&self) -> Bytes {
+        self.eos_on_eth_smart_contract_address_key.to_vec()
+    }
+
+    fn get_erc20_on_eos_smart_contract_address_key(&self) -> Bytes {
+        self.erc20_on_eos_smart_contract_address_key.to_vec()
+    }
+
+    fn get_btc_on_eth_smart_contract_address_key(&self) -> Bytes {
+        self.btc_on_eth_smart_contract_address_key.to_vec()
+    }
+
+    fn get_erc777_proxy_contract_address_key(&self) -> Bytes {
+        self.erc777_proxy_contract_address_key.to_vec()
+    }
+
+    fn get_eth_private_key_db_key(&self) -> Bytes {
+        self.eth_private_key_db_key.to_vec()
+    }
+
+    fn get_eth_chain_id_key(&self) -> Bytes {
+        self.eth_chain_id_key.to_vec()
+    }
+
+    fn get_eth_account_nonce_key(&self) -> Bytes {
+        self.eth_account_nonce_key.to_vec()
+    }
+
+    fn get_eth_gas_price_key(&self) -> Bytes {
+        self.eth_gas_price_key.to_vec()
+    }
+
+    fn get_is_for_evm(&self) -> bool {
+        true
+    }
+
+    fn get_eth_linker_hash_key(&self) -> Bytes {
+        self.eth_linker_hash_key.to_vec()
+    }
+
+    fn get_eth_tail_block_hash_key(&self) -> Bytes {
+        self.eth_tail_block_hash_key.to_vec()
+    }
+
+    fn get_eth_canon_block_hash_key(&self) -> Bytes {
+        self.eth_canon_block_hash_key.to_vec()
+    }
+
+    fn get_eth_latest_block_hash_key(&self) -> Bytes {
+        self.eth_latest_block_hash_key.to_vec()
+    }
+
+    fn get_eth_anchor_block_hash_key(&self) -> Bytes {
+        self.eth_anchor_block_hash_key.to_vec()
+    }
+
+    fn get_eth_canon_to_tip_length_key(&self) -> Bytes {
+        self.eth_canon_to_tip_length_key.to_vec()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EthDbUtils<'a, D: DatabaseInterface> {
+    db: &'a D,
+    eth_address_key: Bytes,
+    eth_chain_id_key: Bytes,
+    eth_gas_price_key: Bytes,
+    eth_linker_hash_key: Bytes,
+    any_sender_nonce_key: Bytes,
+    eth_account_nonce_key: Bytes,
+    eth_private_key_db_key: Bytes,
+    eth_tail_block_hash_key: Bytes,
+    eth_canon_block_hash_key: Bytes,
+    eth_latest_block_hash_key: Bytes,
+    eth_anchor_block_hash_key: Bytes,
+    eth_canon_to_tip_length_key: Bytes,
+    erc777_proxy_contract_address_key: Bytes,
+    eos_on_eth_smart_contract_address_key: Bytes,
+    btc_on_eth_smart_contract_address_key: Bytes,
+    erc20_on_eos_smart_contract_address_key: Bytes,
+    erc20_on_evm_smart_contract_address_key: Bytes,
+}
+
+impl<'a, D: DatabaseInterface> EthDbUtils<'a, D> {
+    pub fn new(db: &'a D) -> Self {
+        use crate::chains::eth::eth_constants::{
+            ANY_SENDER_NONCE_KEY,
+            BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
+            EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
+            ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY,
+            ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
+            ERC777_PROXY_CONTACT_ADDRESS_KEY,
+            ETH_ACCOUNT_NONCE_KEY,
+            ETH_ADDRESS_KEY,
+            ETH_ANCHOR_BLOCK_HASH_KEY,
+            ETH_CANON_BLOCK_HASH_KEY,
+            ETH_CANON_TO_TIP_LENGTH_KEY,
+            ETH_CHAIN_ID_KEY,
+            ETH_GAS_PRICE_KEY,
+            ETH_LATEST_BLOCK_HASH_KEY,
+            ETH_LINKER_HASH_KEY,
+            ETH_PRIVATE_KEY_DB_KEY,
+            ETH_TAIL_BLOCK_HASH_KEY,
+        };
+        Self {
+            db,
+            eth_address_key: ETH_ADDRESS_KEY.to_vec(),
+            eth_chain_id_key: ETH_CHAIN_ID_KEY.to_vec(),
+            eth_gas_price_key: ETH_GAS_PRICE_KEY.to_vec(),
+            eth_linker_hash_key: ETH_LINKER_HASH_KEY.to_vec(),
+            any_sender_nonce_key: ANY_SENDER_NONCE_KEY.to_vec(),
+            eth_account_nonce_key: ETH_ACCOUNT_NONCE_KEY.to_vec(),
+            eth_private_key_db_key: ETH_PRIVATE_KEY_DB_KEY.to_vec(),
+            eth_tail_block_hash_key: ETH_TAIL_BLOCK_HASH_KEY.to_vec(),
+            eth_canon_block_hash_key: ETH_CANON_BLOCK_HASH_KEY.to_vec(),
+            eth_anchor_block_hash_key: ETH_ANCHOR_BLOCK_HASH_KEY.to_vec(),
+            eth_latest_block_hash_key: ETH_LATEST_BLOCK_HASH_KEY.to_vec(),
+            eth_canon_to_tip_length_key: ETH_CANON_TO_TIP_LENGTH_KEY.to_vec(),
+            erc777_proxy_contract_address_key: ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(),
+            btc_on_eth_smart_contract_address_key: BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+            eos_on_eth_smart_contract_address_key: EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+            erc20_on_eos_smart_contract_address_key: ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+            erc20_on_evm_smart_contract_address_key: ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
         }
     }
 }
@@ -177,8 +278,7 @@ impl<D: DatabaseInterface> EthDbUtilsExt<D> for EthDbUtils<'_, D> {
     }
 
     fn get_is_for_evm(&self) -> bool {
-        // NOTE: We shouldn't need this soon
-        self.is_for_evm
+        false
     }
 
     fn get_eth_linker_hash_key(&self) -> Bytes {
@@ -226,6 +326,10 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
     fn get_btc_on_eth_smart_contract_address_key(&self) -> Bytes;
     fn get_erc20_on_evm_smart_contract_address_key(&self) -> Bytes;
     fn get_erc20_on_eos_smart_contract_address_key(&self) -> Bytes;
+
+    fn get_is_for_eth(&self) -> bool {
+        !self.get_is_for_evm()
+    }
 
     fn delete_block_by_block_hash(&self, block: &EthSubmissionMaterial) -> Result<()> {
         let key = self.normalize_key(block.get_block_hash()?.as_bytes().to_vec());
@@ -759,7 +863,7 @@ mod tests {
     #[test]
     fn non_existing_key_should_not_exist_in_db() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let result = db_utils.key_exists_in_db(&ETH_ACCOUNT_NONCE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
         assert!(!result);
     }
@@ -768,7 +872,7 @@ mod tests {
     fn existing_key_should_exist_in_db() {
         let thing = vec![0xc0];
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let key = *ETH_ACCOUNT_NONCE_KEY;
         db.put(key.to_vec(), thing, MIN_DATA_SENSITIVITY_LEVEL).unwrap();
         let result = db_utils.key_exists_in_db(&ETH_ACCOUNT_NONCE_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL);
@@ -778,7 +882,7 @@ mod tests {
     #[test]
     fn should_put_eth_gas_price_in_db() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let gas_price = 20_000_000;
         db_utils.put_eth_gas_price_in_db(gas_price).unwrap();
         match db_utils.get_eth_gas_price_from_db() {
@@ -790,7 +894,7 @@ mod tests {
     #[test]
     fn should_put_chain_id_in_db() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let chain_id = EthChainId::Rinkeby;
         db_utils.put_eth_chain_id_in_db(&chain_id).unwrap();
         let result = db_utils.get_eth_chain_id_from_db().unwrap();
@@ -800,7 +904,7 @@ mod tests {
     #[test]
     fn should_save_nonce_to_db_and_get_nonce_from_db() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let nonce = 1227;
         db_utils.put_eth_account_nonce_in_db(nonce).unwrap();
         match db_utils.get_eth_account_nonce_from_db() {
@@ -812,7 +916,7 @@ mod tests {
     #[test]
     fn should_get_erc777_contract_address_from_db() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let contract_address = get_sample_eth_address();
         db_utils
             .put_btc_on_eth_smart_contract_address_in_db(&contract_address)
@@ -824,7 +928,7 @@ mod tests {
     #[test]
     fn should_get_eth_pk_from_database() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let eth_private_key = get_sample_eth_private_key();
         db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         match db_utils.get_eth_private_key_from_db() {
@@ -837,7 +941,7 @@ mod tests {
     fn should_increment_eth_account_nonce_in_db() {
         let nonce = 666;
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         db_utils.put_eth_account_nonce_in_db(nonce).unwrap();
         let amount_to_increment_by: u64 = 671;
         db_utils
@@ -852,7 +956,7 @@ mod tests {
     #[test]
     fn should_put_and_get_special_eth_hash_in_db() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let hash_type = "linker";
         let hash = get_sample_eth_submission_material_n(1)
             .unwrap()
@@ -868,7 +972,7 @@ mod tests {
     #[test]
     fn should_put_and_get_eth_hash_in_db() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let hash_key = vec![6u8, 6u8, 6u8];
         let hash = get_sample_eth_submission_material_n(1)
             .unwrap()
@@ -884,7 +988,7 @@ mod tests {
     #[test]
     fn should_put_and_get_special_eth_block_in_db() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let block_type = "anchor";
         let submission_material = get_sample_eth_submission_material_n(1).unwrap();
         let expected_result = submission_material.remove_block();
@@ -900,7 +1004,7 @@ mod tests {
     #[test]
     fn should_get_submission_material_block_from_db() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let submission_material = get_sample_eth_submission_material_n(1).unwrap();
         let expected_result = submission_material.remove_block();
         let block_hash = submission_material.get_block_hash().unwrap();
@@ -916,7 +1020,7 @@ mod tests {
     #[test]
     fn should_put_eth_address_in_db() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let key = ETH_ADDRESS_KEY.to_vec();
         let eth_address = get_sample_contract_address();
         let result = db_utils.put_eth_address_in_db(&key, &eth_address);
@@ -926,7 +1030,7 @@ mod tests {
     #[test]
     fn should_put_and_get_public_eth_address_in_db() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let eth_address = get_sample_contract_address();
         db_utils.put_public_eth_address_in_db(&eth_address).unwrap();
         match db_utils.get_public_eth_address_from_db() {
@@ -938,7 +1042,7 @@ mod tests {
     #[test]
     fn maybe_get_block_should_be_none_if_block_not_extant() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let block_hash = get_sample_eth_submission_material_n(1)
             .unwrap()
             .get_block_hash()
@@ -954,7 +1058,7 @@ mod tests {
     #[test]
     fn should_maybe_get_some_block_if_exists() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let submission_material = get_sample_eth_submission_material_n(1).unwrap();
         let expected_result = submission_material.remove_block();
         let block_hash = submission_material.get_block_hash().unwrap();
@@ -970,7 +1074,7 @@ mod tests {
     #[test]
     fn should_return_none_if_no_parent_block_exists() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let block = get_sample_eth_submission_material_n(1).unwrap();
         let block_hash = block.get_block_hash().unwrap();
         db_utils.put_eth_submission_material_in_db(&block).unwrap();
@@ -981,7 +1085,7 @@ mod tests {
     #[test]
     fn should_maybe_get_parent_block_if_it_exists() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let blocks = get_sequential_eth_blocks_and_receipts();
         let block = blocks[1].clone();
         let parent_block = blocks[0].clone();
@@ -999,7 +1103,7 @@ mod tests {
     fn should_get_no_nth_ancestor_if_not_extant() {
         let ancestor_number = 3;
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let block = get_sample_eth_submission_material_n(1).unwrap();
         let block_hash = block.get_block_hash().unwrap();
         db_utils.put_eth_submission_material_in_db(&block).unwrap();
@@ -1012,7 +1116,7 @@ mod tests {
     #[test]
     fn should_get_nth_ancestor_if_extant() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let blocks = get_sequential_eth_blocks_and_receipts();
         let block_hash = blocks[blocks.len() - 1].get_block_hash().unwrap();
         blocks
@@ -1038,7 +1142,7 @@ mod tests {
     #[test]
     fn saving_submission_material_should_remove_block() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let submission_material = get_sample_eth_submission_material();
         let db_key = submission_material.get_block_hash().unwrap();
         assert!(submission_material.block.is_some());
@@ -1052,7 +1156,7 @@ mod tests {
     #[test]
     fn should_save_submission_material_if_block_already_removed() {
         let db = get_test_database();
-        let db_utils = EthDbUtils::new_for_eth(&db);
+        let db_utils = EthDbUtils::new(&db);
         let submission_material = get_sample_eth_submission_material().remove_block();
         let db_key = submission_material.get_block_hash().unwrap();
         db_utils
@@ -1065,7 +1169,7 @@ mod tests {
     #[test]
     fn should_check_all_eth_db_keys() {
         let db = get_test_database();
-        let results = EthDbUtils::new_for_eth(&db).get_all_as_hex_strings();
+        let results = EthDbUtils::new(&db).get_all_as_hex_strings();
         let expected_results = vec![
             "bfd203dc3411da4e18d157e87b94507a428060618fcf3163357a1fabe93fba1a",
             "47199e3b0ffc301baeedd4eb87ebf5ef3829496c8ab2660a6038a62e36e9222f",
@@ -1094,7 +1198,7 @@ mod tests {
     #[test]
     fn should_check_all_evm_db_keys() {
         let db = get_test_database();
-        let results = EthDbUtils::new_for_evm(&db).get_all_as_hex_strings();
+        let results = EvmDbUtils::new(&db).get_all_as_hex_strings();
         let expected_results = vec![
             "a1e0ede222d5df7500e8580bdf0f552b55e4f95a5a1585b059adbd1fab061d73",
             "b302d7601e077a277f2d1e100c959ba2d63989531b47468bbeef4c9faa57d3c9",
@@ -1123,8 +1227,8 @@ mod tests {
     #[test]
     fn eth_db_keys_should_not_match_evm_db_keys() {
         let db = get_test_database();
-        let eth_keys = EthDbUtils::new_for_eth(&db).get_all_as_hex_strings();
-        let evm_keys = EthDbUtils::new_for_evm(&db).get_all_as_hex_strings();
+        let eth_keys = EthDbUtils::new(&db).get_all_as_hex_strings();
+        let evm_keys = EvmDbUtils::new(&db).get_all_as_hex_strings();
         eth_keys
             .iter()
             .zip(evm_keys.iter())
@@ -1134,8 +1238,8 @@ mod tests {
     #[test]
     fn eth_keys_should_all_be_different() {
         let db = get_test_database();
-        let expected_result = EthDbUtils::new_for_eth(&db).get_all().len();
-        let mut db_keys = EthDbUtils::new_for_eth(&db).get_all();
+        let expected_result = EthDbUtils::new(&db).get_all().len();
+        let mut db_keys = EthDbUtils::new(&db).get_all();
         db_keys.sort();
         db_keys.dedup();
         let result = db_keys.len();
@@ -1145,8 +1249,8 @@ mod tests {
     #[test]
     fn evm_keys_should_all_be_different() {
         let db = get_test_database();
-        let expected_result = EthDbUtils::new_for_evm(&db).get_all().len();
-        let mut db_keys = EthDbUtils::new_for_evm(&db).get_all();
+        let expected_result = EvmDbUtils::new(&db).get_all().len();
+        let mut db_keys = EvmDbUtils::new(&db).get_all();
         db_keys.sort();
         db_keys.dedup();
         let result = db_keys.len();

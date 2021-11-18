@@ -1,17 +1,14 @@
 use crate::{
     chains::eth::{
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_database_utils::{EthDbUtilsExt, EvmDbUtils},
         eth_state::EthState,
     },
     traits::DatabaseInterface,
     types::Result,
 };
 
-fn increment_evm_account_nonce<D: DatabaseInterface>(
-    db_utils: &EthDbUtils<D>,
-    current_nonce: u64,
-    num_signatures: u64,
-) -> Result<()> {
+fn increment_evm_account_nonce<D: DatabaseInterface>(db_utils: &EvmDbUtils<D>, num_signatures: u64) -> Result<()> {
+    let current_nonce = db_utils.get_eth_account_nonce_from_db()?;
     let new_nonce = num_signatures + current_nonce;
     info!(
         "✔ Incrementing EVM account nonce by {} from {} to {}",
@@ -28,11 +25,6 @@ pub fn maybe_increment_evm_account_nonce_and_return_eth_state<D: DatabaseInterfa
         info!("✔ No signatures in state ∴ not incrementing EVM account nonce");
         Ok(state)
     } else {
-        increment_evm_account_nonce(
-            &state.evm_db_utils,
-            state.evm_db_utils.get_eth_account_nonce_from_db()?,
-            num_txs as u64,
-        )
-        .and(Ok(state))
+        increment_evm_account_nonce(&state.evm_db_utils, num_txs as u64).and(Ok(state))
     }
 }

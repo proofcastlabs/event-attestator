@@ -1,7 +1,7 @@
 use serde_json::json;
 
 use crate::{
-    chains::eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+    chains::eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
     check_debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,
@@ -16,12 +16,11 @@ fn debug_set_account_nonce<D: DatabaseInterface>(db: &D, new_nonce: u64, is_for_
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .and_then(|_| {
-            let db_utils = if is_for_eth {
-                EthDbUtils::new_for_eth(db)
+            if is_for_eth {
+                EthDbUtils::new(db).put_eth_account_nonce_in_db(new_nonce)
             } else {
-                EthDbUtils::new_for_evm(db)
-            };
-            db_utils.put_eth_account_nonce_in_db(new_nonce)
+                EvmDbUtils::new(db).put_eth_account_nonce_in_db(new_nonce)
+            }
         })
         .and_then(|_| db.end_transaction())
         .and(Ok(
@@ -34,12 +33,11 @@ fn debug_set_any_sender_nonce<D: DatabaseInterface>(db: &D, new_nonce: u64, is_f
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .and_then(|_| {
-            let db_utils = if is_for_eth {
-                EthDbUtils::new_for_eth(db)
+            if is_for_eth {
+                EthDbUtils::new(db).put_any_sender_nonce_in_db(new_nonce)
             } else {
-                EthDbUtils::new_for_evm(db)
-            };
-            db_utils.put_any_sender_nonce_in_db(new_nonce)
+                EvmDbUtils::new(db).put_any_sender_nonce_in_db(new_nonce)
+            }
         })
         .and_then(|_| db.end_transaction())
         .and(Ok(
@@ -52,12 +50,11 @@ fn debug_set_gas_price_in_db<D: DatabaseInterface>(db: &D, gas_price: u64, is_fo
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .and_then(|_| {
-            let db_utils = if is_for_eth {
-                EthDbUtils::new_for_eth(db)
+            if is_for_eth {
+                EthDbUtils::new(db).put_eth_gas_price_in_db(gas_price)
             } else {
-                EthDbUtils::new_for_evm(db)
-            };
-            db_utils.put_eth_gas_price_in_db(gas_price)
+                EvmDbUtils::new(db).put_eth_gas_price_in_db(gas_price)
+            }
         })
         .and_then(|_| db.end_transaction())
         .and(Ok(

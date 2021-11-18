@@ -55,7 +55,7 @@ pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
     gas_price: u64,
     confs: u64,
 ) -> Result<String> {
-    match is_eth_core_initialized(&EthDbUtils::new_for_eth(&db)) {
+    match is_eth_core_initialized(&EthDbUtils::new(&db)) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
         false => start_eth_db_transaction_and_return_state(EthState::init(&db))
             .and_then(|state| {

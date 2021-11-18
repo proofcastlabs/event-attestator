@@ -31,7 +31,7 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         evm_constants::{
@@ -50,9 +50,9 @@ use crate::{
     types::Result,
 };
 
-fn delete_all_eth_blocks<D: DatabaseInterface>(db_utils: &EthDbUtils<D>) -> Result<()> {
-    fn recursively_delete_all_eth_blocks<D: DatabaseInterface>(
-        db_utils: &EthDbUtils<D>,
+fn delete_all_eth_blocks<D: DatabaseInterface, E: EthDbUtilsExt<D>>(db_utils: &E) -> Result<()> {
+    fn recursively_delete_all_eth_blocks<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
+        db_utils: &E,
         maybe_block_hash: Option<EthHash>,
     ) -> Result<()> {
         match maybe_block_hash {
@@ -109,13 +109,15 @@ fn delete_all_blocks_and_db_keys_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
     is_for_eth: bool,
 ) -> Result<EthState<D>> {
-    delete_all_eth_blocks(if is_for_eth {
-        &state.eth_db_utils
+    if is_for_eth {
+        delete_all_eth_blocks(&state.eth_db_utils)
+            .and_then(|_| delete_all_relevant_db_keys(state.db, is_for_eth)) // TODO make a util for this!
+            .and(Ok(state))
     } else {
-        &state.evm_db_utils
-    })
-    .and_then(|_| delete_all_relevant_db_keys(state.db, is_for_eth))
-    .and(Ok(state))
+        delete_all_eth_blocks(&state.evm_db_utils)
+            .and_then(|_| delete_all_relevant_db_keys(state.db, is_for_eth)) // TODO Ibid.
+            .and(Ok(state))
+    }
 }
 
 fn debug_reset_chain<D: DatabaseInterface>(

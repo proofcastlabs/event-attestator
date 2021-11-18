@@ -21,7 +21,7 @@ use crate::{
 /// ### BEWARE:
 /// The vault contract can only be set ONCE. Further attempts to do so will not succeed.
 pub fn maybe_add_vault_contract_address_to_db<D: DatabaseInterface>(db: &D, address: &str) -> Result<String> {
-    let eth_db_utils = EthDbUtils::new_for_eth(db);
+    let eth_db_utils = EthDbUtils::new(db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .and_then(|_| check_core_is_initialized(&eth_db_utils, db))

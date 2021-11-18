@@ -1,16 +1,15 @@
 use crate::{
-    chains::eth::{
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_state::EthState,
-    },
+    chains::eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
     traits::DatabaseInterface,
     types::Result,
 };
 
-fn remove_receipts_from_canon_block_and_save_in_db<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>) -> Result<()> {
-    eth_db_utils
+fn remove_receipts_from_canon_block_and_save_in_db<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
+    db_utils: &E,
+) -> Result<()> {
+    db_utils
         .get_eth_canon_block_from_db()
-        .and_then(|block| eth_db_utils.put_eth_canon_block_in_db(&block.remove_receipts()))
+        .and_then(|block| db_utils.put_eth_canon_block_in_db(&block.remove_receipts()))
 }
 
 pub fn maybe_remove_receipts_from_eth_canon_block_and_return_state<D: DatabaseInterface>(
@@ -30,13 +29,16 @@ pub fn maybe_remove_receipts_from_evm_canon_block_and_return_state<D: DatabaseIn
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{chains::eth::eth_test_utils::get_sample_eth_submission_material, test_utils::get_test_database};
+    use crate::{
+        chains::eth::{eth_database_utils::EthDbUtils, eth_test_utils::get_sample_eth_submission_material},
+        test_utils::get_test_database,
+    };
 
     #[test]
     fn should_remove_receipts_from_canon_block() {
         let db = get_test_database();
         let canon_block = get_sample_eth_submission_material();
-        let eth_db_utils = EthDbUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new(&db);
         eth_db_utils.put_eth_canon_block_in_db(&canon_block).unwrap();
         let num_receipts_before = eth_db_utils.get_eth_canon_block_from_db().unwrap().receipts.len();
         remove_receipts_from_canon_block_and_save_in_db(&eth_db_utils).unwrap();
@@ -49,7 +51,7 @@ mod tests {
     fn should_not_err_if_canon_has_no_receipts() {
         let db = get_test_database();
         let canon_block = get_sample_eth_submission_material().remove_receipts();
-        let eth_db_utils = EthDbUtils::new_for_eth(&db);
+        let eth_db_utils = EthDbUtils::new(&db);
         eth_db_utils.put_eth_canon_block_in_db(&canon_block).unwrap();
         let num_receipts_before = eth_db_utils.get_eth_canon_block_from_db().unwrap().receipts.len();
         remove_receipts_from_canon_block_and_save_in_db(&eth_db_utils).unwrap();
