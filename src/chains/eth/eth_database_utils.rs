@@ -755,8 +755,13 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
 
     fn get_erc20_on_evm_smart_contract_address_from_db(&self) -> Result<EthAddress> {
         info!("✔ Getting `ERC20_ON_EVM` smart-contract address from db...");
-        self.get_eth_address_from_db(&self.get_erc20_on_evm_smart_contract_address_key())
-            .map_err(|_| "No `erc20-on-evm` vault contract address in DB! Did you forget to set it?".into())
+        if self.get_is_for_evm() {
+            info!("✔ DB utils are for EVM, meaning there's no vault on this side of the bridge!");
+            Ok(EthAddress::zero())
+        } else {
+            self.get_eth_address_from_db(&self.get_erc20_on_evm_smart_contract_address_key())
+                .map_err(|_| "No `erc20-on-evm` vault contract address in DB! Did you forget to set it?".into())
+        }
     }
 
     fn put_erc20_on_evm_smart_contract_address_in_db(&self, address: &EthAddress) -> Result<()> {
