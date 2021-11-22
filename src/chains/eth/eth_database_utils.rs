@@ -482,8 +482,8 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
     fn get_eth_hash_from_db(&self, key: &[Byte]) -> Result<EthHash> {
         debug!("✔ Getting ETH hash from db under key: {}", hex::encode(key));
         self.get_db()
-            .get(self.normalize_key(key.to_vec()), MIN_DATA_SENSITIVITY_LEVEL)
-            .map(|bytes| EthHash::from_slice(&bytes))
+            .get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+            .map(|bytes| EthHash::from_slice(&self.normalize_key(bytes)))
     }
 
     fn get_special_eth_block_from_db(&self, block_type: &str) -> Result<EthSubmissionMaterial> {
@@ -493,8 +493,8 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
 
     fn put_eth_hash_in_db(&self, key: &[Byte], eth_hash: &EthHash) -> Result<()> {
         self.get_db().put(
-            self.normalize_key(key.to_vec()),
-            convert_h256_to_bytes(*eth_hash),
+            key.to_vec(),
+            self.normalize_key(convert_h256_to_bytes(*eth_hash)),
             MIN_DATA_SENSITIVITY_LEVEL,
         )
     }
@@ -504,7 +504,10 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
             "✔ Checking for existence of ETH block: {}",
             hex::encode(block_hash.as_bytes().to_vec())
         );
-        self.key_exists_in_db(&block_hash.as_bytes().to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+        self.key_exists_in_db(
+            &self.normalize_key(block_hash.as_bytes().to_vec()),
+            MIN_DATA_SENSITIVITY_LEVEL,
+        )
     }
 
     fn get_hash_from_db_via_hash_key(&self, hash_key: EthHash) -> Result<Option<EthHash>> {
