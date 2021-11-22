@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     chains::eth::{
         eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
-        eth_enclave_state::EthEnclaveState,
+        eth_enclave_state::{EthEnclaveState, EvmEnclaveState},
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     enclave_info::EnclaveInfo,
@@ -16,7 +16,7 @@ use crate::{
 struct EnclaveState {
     info: EnclaveInfo,
     eth: EthEnclaveState,
-    evm: EthEnclaveState,
+    evm: EvmEnclaveState,
     token_dictionary: EthEvmTokenDictionary,
 }
 
@@ -24,8 +24,14 @@ impl EnclaveState {
     pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, evm_db_utils: &EvmDbUtils<D>) -> Result<Self> {
         Ok(Self {
             info: EnclaveInfo::new(),
-            evm: EthEnclaveState::new_for_erc20_on_evm(evm_db_utils)?,
-            eth: EthEnclaveState::new_for_erc20_on_evm(eth_db_utils)?,
+            evm: EvmEnclaveState::new(
+                evm_db_utils,
+                &evm_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+            )?,
+            eth: EthEnclaveState::new(
+                eth_db_utils,
+                &eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+            )?,
             token_dictionary: EthEvmTokenDictionary::get_from_db(eth_db_utils.get_db())?,
         })
     }

@@ -3,7 +3,10 @@ use serde::{Deserialize, Serialize};
 use crate::{
     chains::{
         eos::eos_enclave_state::EosEnclaveState,
-        eth::{eth_database_utils::EthDbUtils, eth_enclave_state::EthEnclaveState},
+        eth::{
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+            eth_enclave_state::EthEnclaveState,
+        },
     },
     enclave_info::EnclaveInfo,
     erc20_on_eos::check_core_is_initialized::check_core_is_initialized,
@@ -22,7 +25,10 @@ impl EnclaveState {
     pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, db: &D) -> Result<Self> {
         Ok(Self {
             info: EnclaveInfo::new(),
-            eth: EthEnclaveState::new_for_erc20_on_eos(eth_db_utils)?,
+            eth: EthEnclaveState::new(
+                eth_db_utils,
+                &eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
+            )?,
             eos: EosEnclaveState::new_without_account_name(db)?,
         })
     }
