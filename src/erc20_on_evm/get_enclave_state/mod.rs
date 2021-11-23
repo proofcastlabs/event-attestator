@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::{eth::eth_enclave_state::EthEnclaveState, evm::eth_enclave_state::EthEnclaveState as EvmEnclaveState},
+    chains::eth::{
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
+        eth_enclave_state::{EthEnclaveState, EvmEnclaveState},
+    },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     enclave_info::EnclaveInfo,
     erc20_on_evm::check_core_is_initialized::check_core_is_initialized,
@@ -18,12 +21,18 @@ struct EnclaveState {
 }
 
 impl EnclaveState {
-    pub fn new<D: DatabaseInterface>(db: &D) -> Result<Self> {
+    pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, evm_db_utils: &EvmDbUtils<D>) -> Result<Self> {
         Ok(Self {
             info: EnclaveInfo::new(),
-            evm: EvmEnclaveState::new_for_erc20_on_evm(db)?,
-            eth: EthEnclaveState::new_for_erc20_on_evm(db)?,
-            token_dictionary: EthEvmTokenDictionary::get_from_db(db)?,
+            evm: EvmEnclaveState::new(
+                evm_db_utils,
+                &evm_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+            )?,
+            eth: EthEnclaveState::new(
+                eth_db_utils,
+                &eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+            )?,
+            token_dictionary: EthEvmTokenDictionary::get_from_db(eth_db_utils.get_db())?,
         })
     }
 
@@ -38,5 +47,8 @@ impl EnclaveState {
 /// blockchain controlled by this instance.
 pub fn get_enclave_state<D: DatabaseInterface>(db: D) -> Result<String> {
     info!("✔ Getting enclave state...");
-    check_core_is_initialized(&db).and_then(|_| EnclaveState::new(&db)?.to_string())
+    let eth_db_utils = EthDbUtils::new(&db);
+    let evm_db_utils = EvmDbUtils::new(&db);
+    check_core_is_initialized(&eth_db_utils, &evm_db_utils)
+        .and_then(|_| EnclaveState::new(&eth_db_utils, &evm_db_utils)?.to_string())
 }

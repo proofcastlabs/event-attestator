@@ -25,7 +25,7 @@ fn json_stringify(output: BtcInitializationOutput) -> Result<String> {
 
 pub fn get_btc_init_output_json<D: DatabaseInterface>(state: BtcState<D>) -> Result<String> {
     json_stringify(BtcInitializationOutput::new(
-        get_btc_address_from_db(&state.db)?,
-        get_latest_btc_block_number(&state.db)?,
+        get_btc_address_from_db(state.db)?,
+        get_latest_btc_block_number(state.db)?,
     ))
 }

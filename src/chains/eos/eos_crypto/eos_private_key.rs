@@ -16,7 +16,7 @@ use crate::{
         eos_crypto::{eos_public_key::EosPublicKey, eos_signature::EosSignature},
         eos_types::EosNetwork,
     },
-    constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+    constants::MAX_DATA_SENSITIVITY_LEVEL,
     crypto_utils::generate_random_private_key,
     errors::AppError,
     traits::DatabaseInterface,
@@ -98,7 +98,7 @@ impl EosPrivateKey {
         db.put(
             EOS_PRIVATE_KEY_DB_KEY.to_vec(),
             self.private_key[..].to_vec(),
-            PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+            MAX_DATA_SENSITIVITY_LEVEL,
         )
     }
 
@@ -107,7 +107,7 @@ impl EosPrivateKey {
         D: DatabaseInterface,
     {
         trace!("✔ Getting EOS private key from db...");
-        db.get(EOS_PRIVATE_KEY_DB_KEY.to_vec(), PRIVATE_KEY_DATA_SENSITIVITY_LEVEL)
+        db.get(EOS_PRIVATE_KEY_DB_KEY.to_vec(), MAX_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| Self::from_slice(&bytes[..]))
     }
 }

@@ -9,6 +9,7 @@ pub(crate) mod btc_block;
 pub(crate) mod btc_chain_id;
 pub(crate) mod btc_crypto;
 pub(crate) mod btc_database_utils;
+pub(crate) mod btc_database_utils_redux;
 pub(crate) mod btc_debug_functions;
 pub(crate) mod btc_enclave_state;
 pub(crate) mod btc_metadata;

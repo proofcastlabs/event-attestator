@@ -3,7 +3,7 @@ use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::{eth::eth_state::EthState, evm::eth_state::EthState as EvmState},
+    chains::eth::eth_state::EthState,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     dictionaries::dictionary_constants::ETH_EVM_DICTIONARY_KEY,
     fees::fee_utils::get_last_withdrawal_date_as_human_readable_string,
@@ -502,18 +502,11 @@ impl EthEvmTokenDictionaryEntryJson {
     }
 }
 
-pub fn get_eth_evm_token_dictionary_from_db_and_add_to_evm_state<D: DatabaseInterface>(
-    state: EvmState<D>,
-) -> Result<EvmState<D>> {
-    info!("✔ Getting `EthEvmTokenDictionary` and adding to EVM state...");
-    EthEvmTokenDictionary::get_from_db(&state.db).and_then(|dictionary| state.add_eth_evm_token_dictionary(dictionary))
-}
-
 pub fn get_eth_evm_token_dictionary_from_db_and_add_to_eth_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Getting `EthEvmTokenDictionary` and adding to ETH state...");
-    EthEvmTokenDictionary::get_from_db(&state.db).and_then(|dictionary| state.add_eth_evm_token_dictionary(dictionary))
+    EthEvmTokenDictionary::get_from_db(state.db).and_then(|dictionary| state.add_eth_evm_token_dictionary(dictionary))
 }
 
 #[cfg(test)]
@@ -1027,12 +1020,13 @@ mod tests {
         });
     }
 
+    #[test]
     fn should_set_accrued_fees_and_save_in_db() {
         let db = get_test_database();
         let dictionary = get_sample_eth_evm_dictionary();
         let fee_to_set = U256::from(666);
         let fee_before = U256::from(1337);
-        let address = EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let address = EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
         let fee_tuple = vec![(address, fee_before)];
         dictionary
             .increment_accrued_fees_and_save_in_db(&db, fee_tuple)

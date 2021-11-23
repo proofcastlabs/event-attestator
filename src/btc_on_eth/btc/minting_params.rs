@@ -33,7 +33,7 @@ pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D: DatabaseInter
     BtcOnEthMintingParams::from_btc_txs(
         state.get_p2sh_deposit_txs()?,
         state.get_deposit_info_hash_map()?,
-        get_btc_network_from_db(&state.db)?,
+        get_btc_network_from_db(state.db)?,
     )
     .and_then(|params| state.add_btc_on_eth_minting_params(params))
 }

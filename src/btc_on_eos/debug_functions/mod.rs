@@ -49,7 +49,7 @@ use crate::{
         },
     },
     check_debug_mode::check_debug_mode,
-    constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
+    constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
     fees::{
         fee_database_utils::FeeDatabaseUtils,
@@ -119,7 +119,7 @@ pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &s
 pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let sensitivity = match key_bytes == EOS_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
-        true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+        true => MAX_DATA_SENSITIVITY_LEVEL,
         false => None,
     };
     set_key_in_db_to_value(db, key, value, sensitivity).map(prepend_debug_output_marker_to_string)
@@ -131,7 +131,7 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
 pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let sensitivity = match key_bytes == EOS_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
-        true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+        true => MAX_DATA_SENSITIVITY_LEVEL,
         false => None,
     };
     get_key_from_db(db, key, sensitivity).map(prepend_debug_output_marker_to_string)
@@ -239,7 +239,7 @@ pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<
 /// The core won't accept UTXOs it already has in its encrypted database.
 pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| parse_submission_material_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
+        .and_then(|_| parse_submission_material_and_put_in_state(btc_submission_material_json, BtcState::init(&db)))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_difficulty_of_btc_block_in_state)

@@ -14,8 +14,8 @@ use crate::{
     types::{Byte, Result},
 };
 
-pub fn enable_protocol_feature<D: DatabaseInterface>(
-    db: &D,
+pub fn enable_protocol_feature<'a, D: DatabaseInterface>(
+    db: &'a D,
     feature_hash: &[Byte],
     enabled_features: &EnabledFeatures,
 ) -> Result<()> {
@@ -31,15 +31,18 @@ pub fn enable_protocol_feature<D: DatabaseInterface>(
     })
 }
 
-fn enable_feature_and_return_state<D: DatabaseInterface>(state: EosState<D>, hash: &[Byte]) -> Result<EosState<D>> {
-    enable_protocol_feature(&state.db, hash, &state.enabled_protocol_features).and(Ok(state))
+fn enable_feature_and_return_state<'a, D: DatabaseInterface>(
+    state: EosState<'a, D>,
+    hash: &[Byte],
+) -> Result<EosState<'a, D>> {
+    enable_protocol_feature(state.db, hash, &state.enabled_protocol_features).and(Ok(state))
 }
 
 pub fn enable_eos_protocol_feature<D: DatabaseInterface>(db: D, feature_hash: &str) -> Result<String> {
     info!("✔ Maybe enabling EOS protocol feature w/ hash: {}", feature_hash);
     let hash = hex::decode(feature_hash)?;
     check_eos_core_is_initialized(&db)
-        .and_then(|_| start_eos_db_transaction_and_return_state(EosState::init(db)))
+        .and_then(|_| start_eos_db_transaction_and_return_state(EosState::init(&db)))
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(|state| enable_feature_and_return_state(state, &hash))
         .and_then(end_eos_db_transaction_and_return_state)

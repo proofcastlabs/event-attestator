@@ -52,13 +52,7 @@ use crate::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
             },
-            eth_database_utils::{
-                get_any_sender_nonce_from_db,
-                get_erc777_contract_address_from_db,
-                get_eth_account_nonce_from_db,
-                get_latest_eth_block_number,
-                get_signing_params_from_db,
-            },
+            eth_database_utils::EthDbUtilsExt,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             validate_block_in_state::validate_block_in_state,
@@ -77,7 +71,7 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
     accrue_fees: bool,
 ) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
+        .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(&db)))
         .and_then(set_any_sender_flag_in_state)
         .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
@@ -101,16 +95,16 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
                 info!("✘ Not accruing fees during BTC block reprocessing...");
                 let minting_params_minus_fees = subtract_fees_from_minting_params(
                     &state.btc_on_eth_minting_params,
-                    FeeDatabaseUtils::new_for_btc_on_eth().get_peg_in_basis_points_from_db(&state.db)?,
+                    FeeDatabaseUtils::new_for_btc_on_eth().get_peg_in_basis_points_from_db(state.db)?,
                 )?;
                 state.replace_btc_on_eth_minting_params(minting_params_minus_fees)
             }
         })
         .and_then(|state| {
             get_eth_signed_txs(
-                &get_signing_params_from_db(&state.db)?,
+                &state.eth_db_utils.get_signing_params_from_db()?,
                 &state.btc_on_eth_minting_params,
-                &get_btc_chain_id_from_db(&state.db)?,
+                &get_btc_chain_id_from_db(state.db)?,
             )
             .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
         })
@@ -121,9 +115,9 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
                 _ => get_eth_signed_tx_info_from_eth_txs(
                     &state.eth_signed_txs,
                     &state.btc_on_eth_minting_params,
-                    get_eth_account_nonce_from_db(&state.db)?,
+                    state.eth_db_utils.get_eth_account_nonce_from_db()?,
                     state.use_any_sender_tx_type(),
-                    get_any_sender_nonce_from_db(&state.db)?,
+                    state.eth_db_utils.get_any_sender_nonce_from_db()?,
                 ),
             }?)?;
             info!("✔ BTC signatures: {}", signatures);
@@ -143,7 +137,7 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
     accrue_fees: bool,
 ) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(db)))
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
@@ -154,7 +148,7 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
                 .and_then(|material| {
                     BtcOnEthRedeemInfos::from_eth_submission_material(
                         material,
-                        &get_erc777_contract_address_from_db(&state.db)?,
+                        &state.eth_db_utils.get_erc777_contract_address_from_db()?,
                     )
                 })
                 .and_then(|params| state.add_btc_on_eth_redeem_infos(params))
@@ -166,7 +160,7 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
                 info!("✘ Not accruing fees during ETH block reprocessing...");
                 let redeem_infos_minus_fees = subtract_fees_from_redeem_infos(
                     &state.btc_on_eth_redeem_infos,
-                    FeeDatabaseUtils::new_for_btc_on_eth().get_peg_out_basis_points_from_db(&state.db)?,
+                    FeeDatabaseUtils::new_for_btc_on_eth().get_peg_out_basis_points_from_db(state.db)?,
                 )?;
                 state.replace_btc_on_eth_redeem_infos(redeem_infos_minus_fees)
             }
@@ -177,10 +171,10 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
         .and_then(|state| {
             info!("✔ Getting ETH output json...");
             let output = serde_json::to_string(&EthOutput {
-                eth_latest_block_number: get_latest_eth_block_number(&state.db)?,
+                eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
                 btc_signed_transactions: match state.btc_transactions {
                     Some(txs) => get_btc_signed_tx_info_from_btc_txs(
-                        get_btc_account_nonce_from_db(&state.db)?,
+                        get_btc_account_nonce_from_db(state.db)?,
                         txs,
                         &state.btc_on_eth_redeem_infos,
                     )?,

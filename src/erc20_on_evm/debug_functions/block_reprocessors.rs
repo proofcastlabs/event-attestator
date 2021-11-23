@@ -1,52 +1,21 @@
 use crate::{
-    chains::{
-        eth::{
-            eth_database_transactions::{
-                end_eth_db_transaction_and_return_state,
-                start_eth_db_transaction_and_return_state,
-            },
-            eth_database_utils::{
-                get_any_sender_nonce_from_db as get_eth_any_sender_nonce_from_db,
-                get_erc20_on_evm_smart_contract_address_from_db,
-                get_eth_account_nonce_from_db,
-                get_eth_chain_id_from_db,
-                get_latest_eth_block_number,
-            },
-            eth_state::EthState,
-            eth_submission_material::parse_eth_submission_material_and_put_in_state,
-            increment_evm_account_nonce::maybe_increment_evm_account_nonce_and_return_eth_state,
-            validate_block_in_state::validate_block_in_state,
-            validate_receipts_in_state::validate_receipts_in_state,
+    chains::eth::{
+        eth_database_transactions::{
+            end_eth_db_transaction_and_return_state,
+            start_eth_db_transaction_and_return_state,
         },
-        evm::{
-            eth_database_transactions::{
-                end_eth_db_transaction_and_return_state as end_evm_db_tx_and_return_state,
-                start_eth_db_transaction_and_return_state as start_evm_db_tx_and_return_state,
-            },
-            eth_database_utils::{
-                get_any_sender_nonce_from_db as get_evm_any_sender_nonce_from_db,
-                get_eth_account_nonce_from_db as get_evm_account_nonce_from_db,
-                get_eth_chain_id_from_db as get_evm_chain_id_from_db,
-                get_latest_eth_block_number as get_latest_evm_block_number,
-            },
-            eth_state::EthState as EvmState,
-            eth_submission_material::parse_eth_submission_material_and_put_in_state as parse_evm_submission_material_and_put_in_state,
-            increment_eth_account_nonce_and_return_evm_state::maybe_increment_eth_account_nonce_and_return_evm_state,
-            validate_block_in_state::validate_block_in_state as validate_evm_block_in_state,
-            validate_receipts_in_state::validate_receipts_in_state as validate_evm_receipts_in_state,
-        },
+        eth_database_utils::EthDbUtilsExt,
+        eth_state::EthState,
+        eth_submission_material::parse_eth_submission_material_and_put_in_state,
+        increment_eth_account_nonce::maybe_increment_eth_account_nonce_and_return_state,
+        increment_evm_account_nonce::maybe_increment_evm_account_nonce_and_return_eth_state,
+        validate_block_in_state::validate_block_in_state,
+        validate_receipts_in_state::validate_receipts_in_state,
     },
     check_debug_mode::check_debug_mode,
-    dictionaries::eth_evm::{
-        get_eth_evm_token_dictionary_from_db_and_add_to_eth_state,
-        get_eth_evm_token_dictionary_from_db_and_add_to_evm_state,
-        EthEvmTokenDictionary,
-    },
+    dictionaries::eth_evm::{get_eth_evm_token_dictionary_from_db_and_add_to_eth_state, EthEvmTokenDictionary},
     erc20_on_evm::{
-        check_core_is_initialized::{
-            check_core_is_initialized_and_return_eth_state,
-            check_core_is_initialized_and_return_evm_state,
-        },
+        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
             account_for_fees::{
                 account_for_fees_in_evm_tx_infos_in_state,
@@ -83,17 +52,17 @@ use crate::{
 
 fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
     db: D,
-    evm_block_json: &str,
+    block_json: &str,
     accrue_fees: bool,
 ) -> Result<String> {
     info!("✔ Debug reprocessing EVM block...");
     check_debug_mode()
-        .and_then(|_| parse_evm_submission_material_and_put_in_state(evm_block_json, EvmState::init(db)))
-        .and_then(check_core_is_initialized_and_return_evm_state)
-        .and_then(start_evm_db_tx_and_return_state)
-        .and_then(validate_evm_block_in_state)
-        .and_then(validate_evm_receipts_in_state)
-        .and_then(get_eth_evm_token_dictionary_from_db_and_add_to_evm_state)
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(&db)))
+        .and_then(check_core_is_initialized_and_return_eth_state)
+        .and_then(start_eth_db_transaction_and_return_state)
+        .and_then(validate_block_in_state)
+        .and_then(validate_receipts_in_state)
+        .and_then(get_eth_evm_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(filter_submission_material_for_redeem_events_in_state)
         .and_then(|state| {
             state
@@ -101,8 +70,8 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
                 .and_then(|material| {
                     EthOnEvmEthTxInfos::from_submission_material(
                         material,
-                        &EthEvmTokenDictionary::get_from_db(&state.db)?,
-                        &get_evm_chain_id_from_db(&state.db)?,
+                        &EthEvmTokenDictionary::get_from_db(state.db)?,
+                        &state.evm_db_utils.get_eth_chain_id_from_db()?,
                     )
                 })
                 .and_then(|params| state.add_erc20_on_evm_eth_tx_infos(params))
@@ -119,12 +88,12 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
         })
         .and_then(maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address)
         .and_then(maybe_sign_eth_txs_and_add_to_evm_state)
-        .and_then(maybe_increment_eth_account_nonce_and_return_evm_state)
-        .and_then(end_evm_db_tx_and_return_state)
+        .and_then(maybe_increment_eth_account_nonce_and_return_state)
+        .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting EVM output json...");
             let output = serde_json::to_string(&EvmOutput {
-                evm_latest_block_number: get_latest_evm_block_number(&state.db)?,
+                evm_latest_block_number: state.evm_db_utils.get_latest_eth_block_number()?,
                 eth_signed_transactions: if state.erc20_on_evm_eth_signed_txs.is_empty() {
                     vec![]
                 } else {
@@ -132,10 +101,10 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
                     get_eth_signed_tx_info_from_evm_txs(
                         &state.erc20_on_evm_eth_signed_txs,
                         &state.erc20_on_evm_eth_tx_infos,
-                        get_eth_account_nonce_from_db(&state.db)?,
+                        state.eth_db_utils.get_eth_account_nonce_from_db()?,
                         use_any_sender_tx,
-                        get_eth_any_sender_nonce_from_db(&state.db)?,
-                        get_latest_eth_block_number(&state.db)?,
+                        state.eth_db_utils.get_any_sender_nonce_from_db()?,
+                        state.eth_db_utils.get_latest_eth_block_number()?,
                     )?
                 },
             })?;
@@ -152,7 +121,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
     check_debug_mode()
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(db)))
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
@@ -165,9 +134,9 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                 .and_then(|material| {
                     EthOnEvmEvmTxInfos::from_submission_material(
                         material,
-                        &get_erc20_on_evm_smart_contract_address_from_db(&state.db)?,
-                        &EthEvmTokenDictionary::get_from_db(&state.db)?,
-                        &get_eth_chain_id_from_db(&state.db)?,
+                        &state.eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+                        &EthEvmTokenDictionary::get_from_db(state.db)?,
+                        &state.eth_db_utils.get_eth_chain_id_from_db()?,
                     )
                 })
                 .and_then(|params| state.add_erc20_on_evm_evm_tx_infos(params))
@@ -189,7 +158,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
         .and_then(|state| {
             info!("✔ Getting ETH output json...");
             let output = serde_json::to_string(&EthOutput {
-                eth_latest_block_number: get_latest_eth_block_number(&state.db)?,
+                eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
                 evm_signed_transactions: if state.erc20_on_evm_evm_signed_txs.is_empty() {
                     vec![]
                 } else {
@@ -197,11 +166,11 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                     get_evm_signed_tx_info_from_evm_txs(
                         &state.erc20_on_evm_evm_signed_txs,
                         &state.erc20_on_evm_evm_tx_infos,
-                        get_evm_account_nonce_from_db(&state.db)?,
+                        state.evm_db_utils.get_eth_account_nonce_from_db()?,
                         use_any_sender_tx,
-                        get_evm_any_sender_nonce_from_db(&state.db)?,
-                        get_latest_evm_block_number(&state.db)?,
-                        &EthEvmTokenDictionary::get_from_db(&state.db)?,
+                        state.evm_db_utils.get_any_sender_nonce_from_db()?,
+                        state.evm_db_utils.get_latest_eth_block_number()?,
+                        &EthEvmTokenDictionary::get_from_db(state.db)?,
                     )?
                 },
             })?;

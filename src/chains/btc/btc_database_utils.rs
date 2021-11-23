@@ -24,7 +24,7 @@ use crate::{
         btc_types::BtcPubKeySlice,
         btc_utils::{convert_btc_address_to_bytes, convert_bytes_to_btc_address, convert_bytes_to_btc_pub_key_slice},
     },
-    constants::MIN_DATA_SENSITIVITY_LEVEL,
+    constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
     database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
     traits::DatabaseInterface,
@@ -201,7 +201,7 @@ pub fn put_btc_private_key_in_db<D: DatabaseInterface>(db: &D, pk: &BtcPrivateKe
 }
 
 pub fn get_btc_private_key_from_db<D: DatabaseInterface>(db: &D) -> Result<BtcPrivateKey> {
-    db.get(BTC_PRIVATE_KEY_DB_KEY.to_vec(), Some(255))
+    db.get(BTC_PRIVATE_KEY_DB_KEY.to_vec(), MAX_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| BtcPrivateKey::from_slice(&bytes[..], get_btc_network_from_db(db)?))
 }
 

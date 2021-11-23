@@ -566,14 +566,14 @@ pub fn get_eos_eth_token_dictionary_from_db_and_add_to_eos_state<D: DatabaseInte
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Getting `EosERc20Dictionary` and adding to EOS state...");
-    EosEthTokenDictionary::get_from_db(&state.db).and_then(|dictionary| state.add_eos_eth_token_dictionary(dictionary))
+    EosEthTokenDictionary::get_from_db(state.db).and_then(|dictionary| state.add_eos_eth_token_dictionary(dictionary))
 }
 
 pub fn get_eos_eth_token_dictionary_from_db_and_add_to_eth_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Getting `EosERc20Dictionary` and adding to ETH state...");
-    EosEthTokenDictionary::get_from_db(&state.db).and_then(|dictionary| state.add_eos_eth_token_dictionary(dictionary))
+    EosEthTokenDictionary::get_from_db(state.db).and_then(|dictionary| state.add_eos_eth_token_dictionary(dictionary))
 }
 
 #[cfg(test)]

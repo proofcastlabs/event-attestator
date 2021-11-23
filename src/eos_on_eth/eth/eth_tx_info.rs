@@ -27,7 +27,7 @@ use crate::{
                 ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
                 ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
             },
-            eth_database_utils::{get_eth_canon_block_from_db, get_eth_chain_id_from_db},
+            eth_database_utils::EthDbUtilsExt,
             eth_log::EthLog,
             eth_state::EthState,
             eth_submission_material::EthSubmissionMaterial,
@@ -349,24 +349,27 @@ pub fn maybe_parse_eth_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Maybe parsing `eos-on-eth` tx infos...");
-    get_eth_canon_block_from_db(&state.db).and_then(|material| match material.receipts.is_empty() {
-        true => {
-            info!("✔ No receipts in canon block ∴ no info to parse!");
-            Ok(state)
-        },
-        false => {
-            info!(
-                "✔ {} receipts in canon block ∴ parsing ETH tx info...",
-                material.receipts.len()
-            );
-            EosOnEthEthTxInfos::from_eth_submission_material(
-                &material,
-                state.get_eos_eth_token_dictionary()?,
-                &get_eth_chain_id_from_db(&state.db)?,
-            )
-            .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
-        },
-    })
+    state
+        .eth_db_utils
+        .get_eth_canon_block_from_db()
+        .and_then(|material| match material.receipts.is_empty() {
+            true => {
+                info!("✔ No receipts in canon block ∴ no info to parse!");
+                Ok(state)
+            },
+            false => {
+                info!(
+                    "✔ {} receipts in canon block ∴ parsing ETH tx info...",
+                    material.receipts.len()
+                );
+                EosOnEthEthTxInfos::from_eth_submission_material(
+                    &material,
+                    state.get_eos_eth_token_dictionary()?,
+                    &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                )
+                .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
+            },
+        })
 }
 
 pub fn maybe_filter_out_eth_tx_info_with_value_too_low_in_state<D: DatabaseInterface>(
@@ -391,9 +394,9 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
         .to_eos_signed_txs(
             submission_material.get_eos_ref_block_num()?,
             submission_material.get_eos_ref_block_prefix()?,
-            &get_eos_chain_id_from_db(&state.db)?,
-            &EosPrivateKey::get_from_db(&state.db)?,
-            &get_eos_account_name_from_db(&state.db)?,
+            &get_eos_chain_id_from_db(state.db)?,
+            &EosPrivateKey::get_from_db(state.db)?,
+            &get_eos_account_name_from_db(state.db)?,
         )
         .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
 }

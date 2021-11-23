@@ -27,12 +27,7 @@ use crate::{
                 eth_private_key::EthPrivateKey,
                 eth_transaction::{EthTransaction, EthTransactions},
             },
-            eth_database_utils::{
-                get_eth_account_nonce_from_db,
-                get_eth_chain_id_from_db,
-                get_eth_gas_price_from_db,
-                get_eth_private_key_from_db,
-            },
+            eth_database_utils::EthDbUtilsExt,
         },
     },
     constants::SAFE_ETH_ADDRESS,
@@ -388,7 +383,7 @@ pub fn maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state<D: DatabaseInterface
     EosOnEthEosTxInfos::from_eos_action_proofs(
         &state.action_proofs,
         state.get_eos_eth_token_dictionary()?,
-        &get_eos_account_name_from_db(&state.db)?,
+        &get_eos_account_name_from_db(state.db)?,
     )
     .and_then(|tx_infos| {
         info!("✔ Parsed {} sets of redeem info!", tx_infos.len());
@@ -430,10 +425,10 @@ pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: E
         state
             .eos_on_eth_eos_tx_infos
             .to_eth_signed_txs(
-                get_eth_account_nonce_from_db(&state.db)?,
-                &get_eth_chain_id_from_db(&state.db)?,
-                get_eth_gas_price_from_db(&state.db)?,
-                &get_eth_private_key_from_db(&state.db)?,
+                state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                state.eth_db_utils.get_eth_gas_price_from_db()?,
+                &state.eth_db_utils.get_eth_private_key_from_db()?,
             )
             .and_then(|signed_txs| {
                 #[cfg(feature = "debug")]

@@ -92,7 +92,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
         if accrue_fees { "WITH" } else { "WITHOUT" }
     );
     check_debug_mode()
-        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
+        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_processed_global_sequences_and_add_to_state)
@@ -112,8 +112,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
                 maybe_account_for_peg_out_fees(state)
             } else {
                 info!("✔ Accounting for fees in signing params but NOT accruing them!");
-                let basis_points =
-                    FeeDatabaseUtils::new_for_btc_on_eos().get_peg_out_basis_points_from_db(&state.db)?;
+                let basis_points = FeeDatabaseUtils::new_for_btc_on_eos().get_peg_out_basis_points_from_db(state.db)?;
                 let updated_redeem_infos = state.btc_on_eos_redeem_infos.subtract_fees(basis_points)?;
                 state.replace_btc_on_eos_redeem_infos(updated_redeem_infos)
             }
@@ -138,7 +137,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
         if accrue_fees { "WITH" } else { "WITHOUT" }
     );
     check_debug_mode()
-        .and_then(|_| parse_submission_material_and_put_in_state(block_json_string, BtcState::init(db)))
+        .and_then(|_| parse_submission_material_and_put_in_state(block_json_string, BtcState::init(&db)))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
@@ -154,7 +153,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
                 maybe_account_for_peg_in_fees(state)
             } else {
                 info!("✔ Accounting for fees in signing params but NOT accruing them!");
-                let basis_points = FeeDatabaseUtils::new_for_btc_on_eos().get_peg_in_basis_points_from_db(&state.db)?;
+                let basis_points = FeeDatabaseUtils::new_for_btc_on_eos().get_peg_in_basis_points_from_db(state.db)?;
                 let updated_minting_params = state.btc_on_eos_minting_params.subtract_fees(basis_points)?;
                 state.replace_btc_on_eos_minting_params(updated_minting_params)
             }
@@ -164,11 +163,11 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
             let eos_signed_txs = get_signed_eos_ptoken_issue_txs(
                 state.get_eos_ref_block_num()?,
                 state.get_eos_ref_block_prefix()?,
-                &get_eos_chain_id_from_db(&state.db)?,
-                &EosPrivateKey::get_from_db(&state.db)?,
-                &get_eos_account_name_string_from_db(&state.db)?,
+                &get_eos_chain_id_from_db(state.db)?,
+                &EosPrivateKey::get_from_db(state.db)?,
+                &get_eos_account_name_string_from_db(state.db)?,
                 &state.btc_on_eos_minting_params,
-                &get_btc_chain_id_from_db(&state.db)?,
+                &get_btc_chain_id_from_db(state.db)?,
             )?;
             info!("✔ EOS signed txs: {:?}", eos_signed_txs);
             state.add_eos_signed_txs(eos_signed_txs)
@@ -177,13 +176,13 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
         .and_then(|state| {
             info!("✔ Getting BTC output json and putting in state...");
             let output = serde_json::to_string(&BtcOutput {
-                btc_latest_block_number: get_btc_latest_block_from_db(&state.db)?.height,
+                btc_latest_block_number: get_btc_latest_block_from_db(state.db)?.height,
                 eos_signed_transactions: match &state.eos_signed_txs.len() {
                     0 => vec![],
                     _ => get_eos_signed_tx_info(
                         &state.eos_signed_txs,
                         &state.btc_on_eos_minting_params,
-                        get_eos_account_nonce_from_db(&state.db)?,
+                        get_eos_account_nonce_from_db(state.db)?,
                     )?,
                 },
             })?;

@@ -20,7 +20,7 @@ where
             info!("✔ No signatures in state ∴ not incrementing eos account nonce");
             Ok(state)
         },
-        _ => increment_eos_account_nonce(&state.db, get_eos_account_nonce_from_db(&state.db)?, *num_txs as u64)
+        _ => increment_eos_account_nonce(state.db, get_eos_account_nonce_from_db(state.db)?, *num_txs as u64)
             .and(Ok(state)),
     }
 }

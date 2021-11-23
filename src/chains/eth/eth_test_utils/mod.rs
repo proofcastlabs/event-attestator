@@ -8,14 +8,12 @@ use crate::{
         eth_block::{EthBlock, EthBlockJson},
         eth_chain_id::EthChainId,
         eth_crypto::{eth_private_key::EthPrivateKey, eth_public_key::EthPublicKey, eth_transaction::EthTransaction},
-        eth_database_utils::{get_special_eth_hash_from_db, put_special_eth_block_in_db},
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_log::{EthLog, EthLogs},
         eth_receipt::EthReceipt,
-        eth_state::EthState,
         eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
     },
     errors::AppError,
-    test_utils::{get_test_database, TestDB},
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
@@ -34,9 +32,6 @@ pub const SAMPLE_RECEIPT_JSON_PATH: &str = "src/chains/eth/eth_test_utils/sample
 pub const SAMPLE_PTOKEN_CONTRACT_ADDRESS: &str = "60a640e2d10e020fee94217707bfa9543c8b59e0";
 
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON: &str = "src/chains/eth/eth_test_utils/sample-eth-block-and-receipts-json";
-
-pub const SAMPLE_INVALID_BLOCK_AND_RECEIPT_JSON: &str =
-    "src/chains/eth/eth_test_utils/sample-invalid-eth-block-and-receipts-json";
 
 // NOTE: Hash of an ERC20 transfer fxn signature: keccak256("Transfer(address,address,uint256)")
 pub const TEMPORARY_CONTRACT_TOPIC: &str = "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
@@ -90,52 +85,43 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_15: &str =
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_16: &str =
     "src/chains/eth/eth_test_utils/eth-submission-material-block-13257531.json";
 
-pub fn put_eth_latest_block_in_db<D>(db: &D, eth_submission_material: &EthSubmissionMaterial) -> Result<()>
-where
-    D: DatabaseInterface,
-{
+pub fn put_eth_latest_block_in_db<D: DatabaseInterface>(
+    eth_db_utils: &EthDbUtils<D>,
+    eth_submission_material: &EthSubmissionMaterial,
+) -> Result<()> {
     info!("✔ Putting ETH latest block in db...");
-    put_special_eth_block_in_db(db, eth_submission_material, "latest")
+    eth_db_utils.put_special_eth_block_in_db(eth_submission_material, "latest")
 }
 
-pub fn put_eth_anchor_block_in_db<D>(db: &D, eth_submission_material: &EthSubmissionMaterial) -> Result<()>
-where
-    D: DatabaseInterface,
-{
+pub fn put_eth_anchor_block_in_db<D: DatabaseInterface>(
+    eth_db_utils: &EthDbUtils<D>,
+    eth_submission_material: &EthSubmissionMaterial,
+) -> Result<()> {
     info!("✔ Putting ETH anchor block in db...");
-    put_special_eth_block_in_db(db, eth_submission_material, "anchor")
+    eth_db_utils.put_special_eth_block_in_db(eth_submission_material, "anchor")
 }
 
-pub fn put_eth_tail_block_in_db<D>(db: &D, eth_submission_material: &EthSubmissionMaterial) -> Result<()>
-where
-    D: DatabaseInterface,
-{
+pub fn put_eth_tail_block_in_db<D: DatabaseInterface>(
+    eth_db_utils: &EthDbUtils<D>,
+    eth_submission_material: &EthSubmissionMaterial,
+) -> Result<()> {
     info!("✔ Putting ETH tail block in db...");
-    put_special_eth_block_in_db(db, eth_submission_material, "tail")
+    eth_db_utils.put_special_eth_block_in_db(eth_submission_material, "tail")
 }
 
-pub fn get_eth_latest_block_hash_from_db<D>(db: &D) -> Result<EthHash>
-where
-    D: DatabaseInterface,
-{
+pub fn get_eth_latest_block_hash_from_db<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>) -> Result<EthHash> {
     info!("✔ Getting ETH latest block hash from db...");
-    get_special_eth_hash_from_db(db, "latest")
+    eth_db_utils.get_special_eth_hash_from_db("latest")
 }
 
-pub fn get_eth_canon_block_hash_from_db<D>(db: &D) -> Result<EthHash>
-where
-    D: DatabaseInterface,
-{
+pub fn get_eth_canon_block_hash_from_db<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>) -> Result<EthHash> {
     info!("✔ Getting ETH canon block hash from db...");
-    get_special_eth_hash_from_db(db, "canon")
+    eth_db_utils.get_special_eth_hash_from_db("canon")
 }
 
-pub fn get_eth_linker_hash_from_db<D>(db: &D) -> Result<EthHash>
-where
-    D: DatabaseInterface,
-{
+pub fn get_eth_linker_hash_from_db<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>) -> Result<EthHash> {
     info!("✔ Getting ETH linker hash from db...");
-    get_special_eth_hash_from_db(db, "linker")
+    eth_db_utils.get_special_eth_hash_from_db("linker")
 }
 
 pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
@@ -297,19 +283,6 @@ pub fn get_sample_log_without_desired_address() -> EthLog {
     get_sample_log_without_desired_topic()
 }
 
-pub fn get_valid_state_with_invalid_block_and_receipts() -> Result<EthState<TestDB>> {
-    match Path::new(&SAMPLE_BLOCK_AND_RECEIPT_JSON).exists() {
-        false => Err("✘ Cannot find sample-eth-block-and-receipts-json file!".into()),
-        true => {
-            let s = read_to_string(SAMPLE_INVALID_BLOCK_AND_RECEIPT_JSON).unwrap();
-            let invalid_struct = EthSubmissionMaterial::from_str(&s).unwrap();
-            let state = get_valid_eth_state().unwrap();
-            let final_state = state.add_eth_submission_material(invalid_struct).unwrap();
-            Ok(final_state)
-        },
-    }
-}
-
 pub fn get_sample_invalid_block() -> EthBlock {
     let mut invalid_block = get_sample_eth_submission_material().get_block().unwrap();
     invalid_block.timestamp = U256::from(1234);
@@ -326,10 +299,6 @@ pub fn get_sample_eth_submission_material() -> EthSubmissionMaterial {
     EthSubmissionMaterial::from_str(&s).unwrap()
 }
 
-pub fn get_valid_state_with_block_and_receipts() -> Result<EthState<TestDB>> {
-    get_valid_eth_state().and_then(|state| state.add_eth_submission_material(get_sample_eth_submission_material()))
-}
-
 pub fn get_expected_block() -> EthBlock {
     let s = read_to_string(SAMPLE_BLOCK_JSON_PATH).unwrap();
     let eth_block_json: EthBlockJson = serde_json::from_str(&s).unwrap();
@@ -342,10 +311,6 @@ pub fn get_expected_receipt() -> EthReceipt {
 
 pub fn get_expected_log() -> EthLog {
     get_expected_receipt().logs.0[0].clone()
-}
-
-pub fn get_valid_eth_state() -> Result<EthState<TestDB>> {
-    Ok(EthState::init(get_test_database()))
 }
 
 pub fn get_sample_unsigned_eth_transaction() -> EthTransaction {
@@ -418,40 +383,11 @@ mod tests {
     }
 
     #[test]
-    fn should_get_valid_eth_state() {
-        if let Err(e) = get_valid_eth_state() {
-            panic!("Error getting state: {}", e);
-        }
-    }
-
-    #[test]
-    fn should_get_valid_state_with_blocks_and_receipts() {
-        let result = get_valid_state_with_block_and_receipts().unwrap();
-        if let Err(e) = result.get_eth_submission_material() {
-            panic!("Error getting eth block and receipt from state: {}", e)
-        }
-    }
-
-    #[test]
     fn should_get_sample_invalid_block() {
         let invalid_block = get_sample_invalid_block();
         let chain_id = EthChainId::Mainnet;
         let is_valid = invalid_block.is_valid(&chain_id).unwrap();
         assert!(!is_valid)
-    }
-
-    #[test]
-    fn should_get_valid_state_with_invalid_block_and_receipts() {
-        let state = get_valid_state_with_invalid_block_and_receipts().unwrap();
-        let chain_id = EthChainId::Mainnet;
-        let is_valid = state
-            .get_eth_submission_material()
-            .unwrap()
-            .get_block()
-            .unwrap()
-            .is_valid(&chain_id)
-            .unwrap();
-        assert!(!is_valid);
     }
 
     #[test]

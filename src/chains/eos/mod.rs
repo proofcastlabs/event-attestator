@@ -13,6 +13,7 @@ pub(crate) mod eos_chain_id;
 pub(crate) mod eos_crypto;
 pub(crate) mod eos_database_transactions;
 pub(crate) mod eos_database_utils;
+pub(crate) mod eos_database_utils_redux;
 pub(crate) mod eos_debug_functions;
 pub(crate) mod eos_enclave_state;
 pub(crate) mod eos_extension;

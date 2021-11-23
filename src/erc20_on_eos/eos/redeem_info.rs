@@ -237,7 +237,7 @@ pub fn maybe_parse_redeem_infos_and_put_in_state<D: DatabaseInterface>(state: Eo
     Erc20OnEosRedeemInfos::from_action_proofs(
         &state.action_proofs,
         state.get_eos_eth_token_dictionary()?,
-        &get_eos_chain_id_from_db(&state.db)?,
+        &get_eos_chain_id_from_db(state.db)?,
     )
     .and_then(|redeem_infos| {
         info!("✔ Parsed {} redeem infos!", redeem_infos.len());

@@ -88,7 +88,7 @@ where
     extract_p2sh_utxos_from_txs(
         state.get_p2sh_deposit_txs()?,
         state.get_deposit_info_hash_map()?,
-        get_btc_network_from_db(&state.db)?,
+        get_btc_network_from_db(state.db)?,
     )
     .and_then(|utxos| {
         debug!("✔ Extracted `p2sh` UTXOs: {:?}", utxos);

@@ -104,10 +104,10 @@ impl EosInitJson {
     }
 }
 
-pub fn maybe_enable_protocol_features_and_return_state<D: DatabaseInterface>(
+pub fn maybe_enable_protocol_features_and_return_state<'a, D: DatabaseInterface>(
     maybe_protocol_features_to_enable: &Option<Vec<String>>,
-    state: EosState<D>,
-) -> Result<EosState<D>> {
+    state: EosState<'a, D>,
+) -> Result<EosState<'a, D>> {
     match maybe_protocol_features_to_enable {
         None => {
             info!("✘ No protocol features to enable: Skipping!");
@@ -120,26 +120,26 @@ pub fn maybe_enable_protocol_features_and_return_state<D: DatabaseInterface>(
                 .map(|hex| Ok(hex::decode(hex)?))
                 .collect::<Result<Vec<Bytes>>>()?;
             EnabledFeatures::init()
-                .enable_multi(&state.db, &mut feature_hashes)
+                .enable_multi(state.db, &mut feature_hashes)
                 .and_then(|features| state.add_enabled_protocol_features(features))
         },
     }
 }
 
-pub fn test_block_validation_and_return_state<D: DatabaseInterface>(
+pub fn test_block_validation_and_return_state<'a, D: DatabaseInterface>(
     block_json: &EosBlockHeaderJson,
-    state: EosState<D>,
-) -> Result<EosState<D>> {
+    state: EosState<'a, D>,
+) -> Result<EosState<'a, D>> {
     if CORE_IS_VALIDATING {
         info!("✔ Checking block validation passes...");
         check_block_signature_is_valid(
             state
                 .enabled_protocol_features
                 .is_enabled(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec()),
-            &get_incremerkle_from_db(&state.db)?.get_root().to_bytes().to_vec(),
+            &get_incremerkle_from_db(state.db)?.get_root().to_bytes().to_vec(),
             &block_json.producer_signature,
             &EosSubmissionMaterial::parse_eos_block_header_from_json(block_json)?,
-            &get_eos_schedule_from_db(&state.db, block_json.schedule_version)?,
+            &get_eos_schedule_from_db(state.db, block_json.schedule_version)?,
         )
         .and(Ok(state))
     } else {
@@ -162,14 +162,11 @@ pub fn generate_and_put_incremerkle_in_db<D: DatabaseInterface>(db: &D, blockroo
     )
 }
 
-pub fn generate_and_put_incremerkle_in_db_and_return_state<D>(
+pub fn generate_and_put_incremerkle_in_db_and_return_state<'a, D: DatabaseInterface>(
     blockroot_merkle: &[String],
-    state: EosState<D>,
-) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
-    generate_and_put_incremerkle_in_db(&state.db, blockroot_merkle).and(Ok(state))
+    state: EosState<'a, D>,
+) -> Result<EosState<'a, D>> {
+    generate_and_put_incremerkle_in_db(state.db, blockroot_merkle).and(Ok(state))
 }
 
 pub fn put_eos_latest_block_info_in_db<D: DatabaseInterface>(db: &D, block_json: &EosBlockHeaderJson) -> Result<()> {
@@ -181,34 +178,34 @@ pub fn put_eos_latest_block_info_in_db<D: DatabaseInterface>(db: &D, block_json:
         .and_then(|_| put_eos_last_seen_block_id_in_db(db, &convert_hex_to_checksum256(block_json.block_id.clone())?))
 }
 
-pub fn put_eos_latest_block_info_in_db_and_return_state<D: DatabaseInterface>(
+pub fn put_eos_latest_block_info_in_db_and_return_state<'a, D: DatabaseInterface>(
     block_json: &EosBlockHeaderJson,
-    state: EosState<D>,
-) -> Result<EosState<D>> {
-    put_eos_latest_block_info_in_db(&state.db, block_json).and(Ok(state))
+    state: EosState<'a, D>,
+) -> Result<EosState<'a, D>> {
+    put_eos_latest_block_info_in_db(state.db, block_json).and(Ok(state))
 }
 
-pub fn put_eos_known_schedule_in_db_and_return_state<D: DatabaseInterface>(
+pub fn put_eos_known_schedule_in_db_and_return_state<'a, D: DatabaseInterface>(
     schedule: &EosProducerScheduleV2,
-    state: EosState<D>,
-) -> Result<EosState<D>> {
+    state: EosState<'a, D>,
+) -> Result<EosState<'a, D>> {
     info!("✔ Putting EOS known schedule into db...");
-    put_eos_known_schedules_in_db(&state.db, &EosKnownSchedules::new(schedule.version)).and(Ok(state))
+    put_eos_known_schedules_in_db(state.db, &EosKnownSchedules::new(schedule.version)).and(Ok(state))
 }
 
-pub fn put_eos_schedule_in_db_and_return_state<D: DatabaseInterface>(
+pub fn put_eos_schedule_in_db_and_return_state<'a, D: DatabaseInterface>(
     schedule: &EosProducerScheduleV2,
-    state: EosState<D>,
-) -> Result<EosState<D>> {
+    state: EosState<'a, D>,
+) -> Result<EosState<'a, D>> {
     info!("✔ Putting EOS schedule into db...");
-    put_eos_schedule_in_db(&state.db, schedule).and(Ok(state))
+    put_eos_schedule_in_db(state.db, schedule).and(Ok(state))
 }
 
 pub fn generate_and_save_eos_keys_and_return_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Generating EOS keys & putting into db...");
     let private_key = EosPrivateKey::generate_random()?;
-    put_eos_public_key_in_db(&state.db, &private_key.to_public_key())
-        .and_then(|_| private_key.write_to_db(&state.db))
+    put_eos_public_key_in_db(state.db, &private_key.to_public_key())
+        .and_then(|_| private_key.write_to_db(state.db))
         .and(Ok(state))
 }
 
@@ -216,48 +213,46 @@ pub fn get_eos_init_output<D: DatabaseInterface>(_state: EosState<D>) -> Result<
     Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string())
 }
 
-pub fn put_eos_account_name_in_db_and_return_state<D: DatabaseInterface>(
+pub fn put_eos_account_name_in_db_and_return_state<'a, D: DatabaseInterface>(
     account_name: &str,
-    state: EosState<D>,
-) -> Result<EosState<D>> {
+    state: EosState<'a, D>,
+) -> Result<EosState<'a, D>> {
     info!("✔ Putting EOS account name '{}' into db...", account_name);
-    put_eos_account_name_in_db(&state.db, account_name).and(Ok(state))
+    put_eos_account_name_in_db(state.db, account_name).and(Ok(state))
 }
 
 pub fn put_eos_account_nonce_in_db_and_return_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Putting EOS account nonce in db...");
-    put_eos_account_nonce_in_db(&state.db, 0).and(Ok(state))
+    put_eos_account_nonce_in_db(state.db, 0).and(Ok(state))
 }
 
-pub fn put_eos_token_symbol_in_db_and_return_state<D: DatabaseInterface>(
+pub fn put_eos_token_symbol_in_db_and_return_state<'a, D: DatabaseInterface>(
     token_symbol: &str,
-    state: EosState<D>,
-) -> Result<EosState<D>> {
+    state: EosState<'a, D>,
+) -> Result<EosState<'a, D>> {
     info!("✔ Putting EOS token symbol '{}' into db...", token_symbol);
-    put_eos_token_symbol_in_db(&state.db, token_symbol).and(Ok(state))
+    put_eos_token_symbol_in_db(state.db, token_symbol).and(Ok(state))
 }
 
 pub fn put_empty_processed_tx_ids_in_db_and_return_state<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Initializing EOS processed tx ids & putting into db...");
-    ProcessedGlobalSequences::new(vec![])
-        .put_in_db(&state.db)
-        .and(Ok(state))
+    ProcessedGlobalSequences::new(vec![]).put_in_db(state.db).and(Ok(state))
 }
 
-pub fn put_eos_chain_id_in_db_and_return_state<D: DatabaseInterface>(
+pub fn put_eos_chain_id_in_db_and_return_state<'a, D: DatabaseInterface>(
     chain_id: &str,
-    state: EosState<D>,
-) -> Result<EosState<D>> {
+    state: EosState<'a, D>,
+) -> Result<EosState<'a, D>> {
     info!("✔ Putting EOS chain ID '{}' into db...", chain_id);
-    put_eos_chain_id_in_db(&state.db, &EosChainId::from_str(chain_id)?).and(Ok(state))
+    put_eos_chain_id_in_db(state.db, &EosChainId::from_str(chain_id)?).and(Ok(state))
 }
 
-pub fn maybe_put_eos_eth_token_dictionary_in_db_and_return_state<D: DatabaseInterface>(
+pub fn maybe_put_eos_eth_token_dictionary_in_db_and_return_state<'a, D: DatabaseInterface>(
     init_json: &EosInitJson,
-    state: EosState<D>,
-) -> Result<EosState<D>> {
+    state: EosState<'a, D>,
+) -> Result<EosState<'a, D>> {
     let json = if init_json.erc20_on_eos_token_dictionary.is_some() {
         init_json
             .erc20_on_eos_token_dictionary
@@ -274,7 +269,7 @@ pub fn maybe_put_eos_eth_token_dictionary_in_db_and_return_state<D: DatabaseInte
     };
     info!("✔ `EosEthTokenDictionary` found in `init-json` ∴ putting it in db...");
     EosEthTokenDictionary::from_json(json)
-        .and_then(|dict| dict.save_to_db(&state.db))
+        .and_then(|dict| dict.save_to_db(state.db))
         .and(Ok(state))
 }
 

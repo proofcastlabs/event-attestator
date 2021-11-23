@@ -11,7 +11,7 @@ use crate::{
         eth::{
             any_sender::relay_transaction::RelayTransaction,
             eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::{get_any_sender_nonce_from_db, get_eth_account_nonce_from_db},
+            eth_database_utils::EthDbUtilsExt,
             eth_traits::EthTxInfoCompatible,
         },
     },
@@ -90,21 +90,18 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
         .collect::<Result<Vec<EthTxInfo>>>()
 }
 
-pub fn create_btc_output_json_and_put_in_state<D>(state: BtcState<D>) -> Result<BtcState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn create_btc_output_json_and_put_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Getting BTC output json and putting in state...");
     Ok(serde_json::to_string(&BtcOutput {
-        btc_latest_block_number: get_btc_latest_block_from_db(&state.db)?.height,
+        btc_latest_block_number: get_btc_latest_block_from_db(state.db)?.height,
         eth_signed_transactions: match &state.eth_signed_txs.len() {
             0 => vec![],
             _ => get_eth_signed_tx_info_from_eth_txs(
                 &state.eth_signed_txs,
-                &get_btc_canon_block_from_db(&state.db)?.get_eth_minting_params(),
-                get_eth_account_nonce_from_db(&state.db)?,
+                &get_btc_canon_block_from_db(state.db)?.get_eth_minting_params(),
+                state.eth_db_utils.get_eth_account_nonce_from_db()?,
                 state.use_any_sender_tx_type(),
-                get_any_sender_nonce_from_db(&state.db)?,
+                state.eth_db_utils.get_any_sender_nonce_from_db()?,
             )?,
         },
     })?)

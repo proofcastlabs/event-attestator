@@ -44,9 +44,9 @@ pub fn validate_difficulty_of_btc_block_in_state<D: DatabaseInterface>(state: Bt
     if CORE_IS_VALIDATING {
         info!("✔ Validating BTC block difficulty...");
         check_difficulty_is_above_threshold(
-            get_btc_difficulty_from_db(&state.db)?,
+            get_btc_difficulty_from_db(state.db)?,
             &state.get_btc_block_and_id()?.block.header,
-            get_btc_network_from_db(&state.db)?,
+            get_btc_network_from_db(state.db)?,
         )
         .and(Ok(state))
     } else {

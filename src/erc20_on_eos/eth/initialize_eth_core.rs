@@ -11,6 +11,7 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
+        eth_database_utils::EthDbUtils,
         eth_state::EthState,
     },
     traits::DatabaseInterface,
@@ -49,9 +50,9 @@ pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
     confs: u64,
     _bytecode_path: &str, // NOTE: Deprecated as of v4.30.0
 ) -> Result<String> {
-    match is_eth_core_initialized(&db) {
+    match is_eth_core_initialized(&EthDbUtils::new(&db)) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
-        false => start_eth_db_transaction_and_return_state(EthState::init(db))
+        false => start_eth_db_transaction_and_return_state(EthState::init(&db))
             .and_then(|state| {
                 initialize_eth_core_with_no_contract_tx(
                     block_json,
@@ -62,6 +63,6 @@ pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
                 )
             })
             .and_then(end_eth_db_transaction_and_return_state)
-            .and_then(EthInitializationOutput::new_with_no_contract),
+            .and_then(|state| EthInitializationOutput::new_with_no_contract(&state.eth_db_utils)),
     }
 }

@@ -28,10 +28,10 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Maybe updating BTC canon block hash...");
-    let canon_to_tip_length = get_btc_canon_to_tip_length_from_db(&state.db)?;
-    get_btc_latest_block_from_db(&state.db)
+    let canon_to_tip_length = get_btc_canon_to_tip_length_from_db(state.db)?;
+    get_btc_latest_block_from_db(state.db)
         .map(|latest_btc_block| {
-            maybe_get_nth_ancestor_btc_block_and_id(&state.db, &latest_btc_block.id, canon_to_tip_length)
+            maybe_get_nth_ancestor_btc_block_and_id(state.db, &latest_btc_block.id, canon_to_tip_length)
         })
         .and_then(|maybe_ancester_block_and_id| match maybe_ancester_block_and_id {
             None => {
@@ -43,14 +43,14 @@ where
             },
             Some(ancestor_block) => {
                 info!("✔ {}th ancestor block found...", canon_to_tip_length,);
-                match does_canon_block_require_updating(&state.db, &ancestor_block)? {
+                match does_canon_block_require_updating(state.db, &ancestor_block)? {
                     false => {
                         info!("✔ BTC canon block does not require updating");
                         Ok(state)
                     },
                     true => {
                         info!("✔ Updating BTC canon block...");
-                        put_btc_canon_block_hash_in_db(&state.db, &ancestor_block.id).map(|_| state)
+                        put_btc_canon_block_hash_in_db(state.db, &ancestor_block.id).map(|_| state)
                     },
                 }
             },

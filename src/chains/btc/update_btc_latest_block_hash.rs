@@ -15,7 +15,7 @@ pub fn maybe_update_btc_latest_block_hash<D>(state: BtcState<D>) -> Result<BtcSt
 where
     D: DatabaseInterface,
 {
-    get_btc_latest_block_from_db(&state.db).and_then(|latest_block_and_id| {
+    get_btc_latest_block_from_db(state.db).and_then(|latest_block_and_id| {
         match is_block_subsequent(latest_block_and_id.height, state.get_btc_block_and_id()?.height) {
             false => {
                 info!("✔ BTC block NOT subsequent {}", "∴ NOT updating latest block hash",);
@@ -23,7 +23,7 @@ where
             },
             true => {
                 info!("✔ BTC block IS subsequent {}", "∴ updating latest block hash...",);
-                put_btc_latest_block_hash_in_db(&state.db, &state.get_btc_block_and_id()?.id).map(|_| state)
+                put_btc_latest_block_hash_in_db(state.db, &state.get_btc_block_and_id()?.id).map(|_| state)
             },
         }
     })

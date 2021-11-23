@@ -264,10 +264,10 @@ impl EthSubmissionMaterialJson {
     }
 }
 
-pub fn parse_eth_submission_material_and_put_in_state<D: DatabaseInterface>(
+pub fn parse_eth_submission_material_and_put_in_state<'a, D: DatabaseInterface>(
     block_json: &str,
-    state: EthState<D>,
-) -> Result<EthState<D>> {
+    state: EthState<'a, D>,
+) -> Result<EthState<'a, D>> {
     info!("✔ Parsing ETH block & receipts...");
     EthSubmissionMaterial::from_str(block_json).and_then(|result| state.add_eth_submission_material(result))
 }
@@ -425,10 +425,6 @@ mod tests {
     #[test]
     fn ropsten_block_with_one_eip2718_tx_should_be_valid() {
         let submission_material = get_sample_eip2718_ropsten_submission_material();
-        println!(
-            "receipts_root: {}",
-            hex::encode(submission_material.block.clone().unwrap().receipts_root.as_bytes())
-        );
         let result = submission_material.receipts_are_valid().unwrap();
         assert!(result);
     }

@@ -45,8 +45,8 @@ where
 
 pub fn maybe_remove_old_btc_tail_block<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Maybe removing old BTC tail block...");
-    get_btc_tail_block_from_db(&state.db)
-        .and_then(|tail_block| remove_parents_if_not_anchor(&state.db, &tail_block))
+    get_btc_tail_block_from_db(state.db)
+        .and_then(|tail_block| remove_parents_if_not_anchor(state.db, &tail_block))
         .and(Ok(state))
 }
 

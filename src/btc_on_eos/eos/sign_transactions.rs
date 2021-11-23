@@ -67,9 +67,9 @@ pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>)
         _ => {
             info!("✔ Redeem params in state ∴ signing txs...");
             sign_txs_from_redeem_infos(
-                &state.db,
-                get_btc_fee_from_db(&state.db)?,
-                get_btc_network_from_db(&state.db)?,
+                state.db,
+                get_btc_fee_from_db(state.db)?,
+                get_btc_network_from_db(state.db)?,
                 &state.btc_on_eos_redeem_infos,
             )
             .and_then(|signed_tx| {
@@ -77,7 +77,7 @@ pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>)
                 {
                     debug!("✔ Signed transaction: {:?}", signed_tx);
                 }
-                state.add_btc_on_eos_signed_txs(&[signed_tx])
+                state.add_btc_on_eos_signed_txs(vec![signed_tx])
             })
         },
     }

@@ -3,28 +3,42 @@ use ethereum_types::H256 as EthHash;
 use crate::{
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
     chains::{
-        btc::{btc_types::BtcTransactions, utxo_manager::utxo_types::BtcUtxosAndValues},
-        eos::eos_crypto::eos_transaction::EosSignedTransactions,
-        eth::{eth_crypto::eth_transaction::EthTransactions, eth_submission_material::EthSubmissionMaterial},
+        btc::{
+            btc_database_utils_redux::BtcDatabaseUtils,
+            btc_types::BtcTransactions,
+            utxo_manager::utxo_types::BtcUtxosAndValues,
+        },
+        eos::{eos_crypto::eos_transaction::EosSignedTransactions, eos_database_utils_redux::EosDatabaseUtils},
+        eth::{
+            eth_crypto::eth_transaction::EthTransactions,
+            eth_database_utils::{EthDbUtils, EvmDbUtils},
+            eth_submission_material::EthSubmissionMaterial,
+        },
     },
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary},
     eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfos,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
-    erc20_on_evm::eth::evm_tx_info::EthOnEvmEvmTxInfos,
+    erc20_on_evm::{eth::evm_tx_info::EthOnEvmEvmTxInfos, evm::eth_tx_info::EthOnEvmEthTxInfos},
     traits::DatabaseInterface,
     types::Result,
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
 };
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct EthState<D: DatabaseInterface> {
-    pub db: D,
+pub struct EthState<'a, D: DatabaseInterface> {
+    pub db: &'a D,
     pub misc: Option<String>,
+    pub eth_db_utils: EthDbUtils<'a, D>,
+    pub evm_db_utils: EvmDbUtils<'a, D>,
+    pub eos_db_utils: EosDatabaseUtils<'a, D>,
+    pub btc_db_utils: BtcDatabaseUtils<'a, D>,
     pub btc_transactions: Option<BtcTransactions>,
-    pub erc20_on_evm_evm_signed_txs: EthTransactions,
     pub eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos,
-    pub erc20_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos,
+    pub erc20_on_evm_evm_signed_txs: EthTransactions,
+    pub erc20_on_evm_eth_signed_txs: EthTransactions,
     pub btc_on_eth_redeem_infos: BtcOnEthRedeemInfos,
+    pub erc20_on_evm_eth_tx_infos: EthOnEvmEthTxInfos,
+    pub erc20_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos,
     pub erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos,
     pub eos_transactions: Option<EosSignedTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
@@ -33,8 +47,8 @@ pub struct EthState<D: DatabaseInterface> {
     pub eth_evm_token_dictionary: Option<EthEvmTokenDictionary>,
 }
 
-impl<D: DatabaseInterface> EthState<D> {
-    pub fn init(db: D) -> EthState<D> {
+impl<'a, D: DatabaseInterface> EthState<'a, D> {
+    pub fn init(db: &'a D) -> EthState<'a, D> {
         EthState {
             db,
             misc: None,
@@ -44,12 +58,45 @@ impl<D: DatabaseInterface> EthState<D> {
             eth_submission_material: None,
             eth_evm_token_dictionary: None,
             eos_eth_token_dictionary: None,
-            erc20_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
-            erc20_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos::new(vec![]),
+            eth_db_utils: EthDbUtils::new(db),
+            evm_db_utils: EvmDbUtils::new(db),
+            eos_db_utils: EosDatabaseUtils::new(db),
+            btc_db_utils: BtcDatabaseUtils::new(db),
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
+            erc20_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
+            erc20_on_evm_eth_signed_txs: EthTransactions::new(vec![]),
             btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(vec![]),
+            erc20_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos::new(vec![]),
+            erc20_on_evm_eth_tx_infos: EthOnEvmEthTxInfos::new(vec![]),
             erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos::new(vec![]),
         }
+    }
+
+    pub fn get_eth_evm_token_dictionary(&self) -> Result<&EthEvmTokenDictionary> {
+        match self.eth_evm_token_dictionary {
+            Some(ref dictionary) => Ok(dictionary),
+            None => Err(get_not_in_state_err("eth_evm_token_dictionary").into()),
+        }
+    }
+
+    pub fn add_erc20_on_evm_eth_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {
+        if self.erc20_on_evm_eth_signed_txs.is_empty() {
+            self.erc20_on_evm_eth_signed_txs = txs;
+            Ok(self)
+        } else {
+            Err(get_no_overwrite_state_err("erc20_on_evm_eth_signed_txs").into())
+        }
+    }
+
+    pub fn add_erc20_on_evm_eth_tx_infos(self, mut infos: EthOnEvmEthTxInfos) -> Result<Self> {
+        let mut new_infos = self.erc20_on_evm_eth_tx_infos.0.clone();
+        new_infos.append(&mut infos.0);
+        self.replace_erc20_on_evm_eth_tx_infos(EthOnEvmEthTxInfos::new(new_infos))
+    }
+
+    pub fn replace_erc20_on_evm_eth_tx_infos(mut self, replacements: EthOnEvmEthTxInfos) -> Result<Self> {
+        self.erc20_on_evm_eth_tx_infos = replacements;
+        Ok(self)
     }
 
     pub fn add_eth_submission_material(mut self, eth_submission_material: EthSubmissionMaterial) -> Result<Self> {
@@ -208,10 +255,8 @@ mod tests {
             get_expected_receipt,
             get_sample_eth_submission_material,
             get_sample_eth_submission_material_n,
-            get_valid_state_with_block_and_receipts,
             SAMPLE_RECEIPT_INDEX,
         },
-        erc20_on_eos::test_utils::get_sample_erc20_on_eos_peg_in_infos,
         errors::AppError,
         test_utils::get_test_database,
     };
@@ -219,7 +264,8 @@ mod tests {
     #[test]
     fn should_fail_to_get_eth_submission_material_in_state() {
         let expected_error = get_not_in_state_err("eth_submission_material");
-        let initial_state = EthState::init(get_test_database());
+        let db = get_test_database();
+        let initial_state = EthState::init(&db);
         match initial_state.get_eth_submission_material() {
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Eth block should not be in state yet!"),
@@ -231,7 +277,8 @@ mod tests {
     fn should_add_eth_submission_material_state() {
         let expected_error = get_not_in_state_err("eth_submission_material");
         let eth_submission_material = get_sample_eth_submission_material();
-        let initial_state = EthState::init(get_test_database());
+        let db = get_test_database();
+        let initial_state = EthState::init(&db);
         match initial_state.get_eth_submission_material() {
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
             Ok(_) => panic!("Eth block should not be in state yet!"),
@@ -253,7 +300,8 @@ mod tests {
     fn should_err_when_overwriting_eth_submission_material_in_state() {
         let expected_error = get_no_overwrite_state_err("eth_submission_material");
         let eth_submission_material = get_sample_eth_submission_material();
-        let initial_state = EthState::init(get_test_database());
+        let db = get_test_database();
+        let initial_state = EthState::init(&db);
         let updated_state = initial_state
             .add_eth_submission_material(eth_submission_material.clone())
             .unwrap();
@@ -268,7 +316,8 @@ mod tests {
     fn should_update_eth_submission_material() {
         let eth_submission_material_1 = get_sample_eth_submission_material_n(0).unwrap();
         let eth_submission_material_2 = get_sample_eth_submission_material_n(1).unwrap();
-        let initial_state = EthState::init(get_test_database());
+        let db = get_test_database();
+        let initial_state = EthState::init(&db);
         let updated_state = initial_state
             .add_eth_submission_material(eth_submission_material_1)
             .unwrap();
@@ -286,25 +335,5 @@ mod tests {
             .get_block_number()
             .unwrap();
         assert_ne!(final_state_block_number, initial_state_block_num);
-    }
-
-    #[test]
-    fn should_get_eth_parent_hash() {
-        let expected_result = get_sample_eth_submission_material().get_parent_hash().unwrap();
-        let state = get_valid_state_with_block_and_receipts().unwrap();
-        let result = state.get_parent_hash().unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_add_erc20_on_eos_peg_in_info() {
-        let info = get_sample_erc20_on_eos_peg_in_infos().unwrap();
-        let state = get_valid_state_with_block_and_receipts().unwrap();
-        let new_state = state.add_erc20_on_eos_peg_in_infos(info.clone()).unwrap();
-        let mut len = new_state.erc20_on_eos_peg_in_infos.len();
-        assert_eq!(len, 1);
-        let final_state = new_state.add_erc20_on_eos_peg_in_infos(info).unwrap();
-        len = final_state.erc20_on_eos_peg_in_infos.len();
-        assert_eq!(len, 2);
     }
 }

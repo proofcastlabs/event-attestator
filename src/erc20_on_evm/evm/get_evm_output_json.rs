@@ -3,21 +3,12 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::{
-        eth::{
-            any_sender::relay_transaction::RelayTransaction,
-            eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::{
-                get_any_sender_nonce_from_db as get_eth_any_sender_nonce_from_db,
-                get_eth_account_nonce_from_db,
-                get_latest_eth_block_number,
-            },
-            eth_traits::EthTxInfoCompatible,
-        },
-        evm::{
-            eth_database_utils::get_latest_eth_block_number as get_latest_evm_block_number,
-            eth_state::EthState as EvmState,
-        },
+    chains::eth::{
+        any_sender::relay_transaction::RelayTransaction,
+        eth_crypto::eth_transaction::EthTransaction,
+        eth_database_utils::EthDbUtilsExt,
+        eth_state::EthState,
+        eth_traits::EthTxInfoCompatible,
     },
     erc20_on_evm::evm::eth_tx_info::{EthOnEvmEthTxInfo, EthOnEvmEthTxInfos},
     traits::DatabaseInterface,
@@ -113,20 +104,20 @@ pub fn get_eth_signed_tx_info_from_evm_txs(
         .collect::<Result<Vec<EthTxInfo>>>()
 }
 
-pub fn get_evm_output_json<D: DatabaseInterface>(state: EvmState<D>) -> Result<String> {
+pub fn get_evm_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
     info!("✔ Getting EVM output json...");
     let output = serde_json::to_string(&EvmOutput {
-        evm_latest_block_number: get_latest_evm_block_number(&state.db)?,
+        evm_latest_block_number: state.evm_db_utils.get_latest_eth_block_number()?,
         eth_signed_transactions: if state.erc20_on_evm_eth_signed_txs.is_empty() {
             vec![]
         } else {
             get_eth_signed_tx_info_from_evm_txs(
                 &state.erc20_on_evm_eth_signed_txs,
                 &state.erc20_on_evm_eth_tx_infos,
-                get_eth_account_nonce_from_db(&state.db)?,
+                state.eth_db_utils.get_eth_account_nonce_from_db()?,
                 false, // TODO Get this from state submission material when/if we support AnySender
-                get_eth_any_sender_nonce_from_db(&state.db)?,
-                get_latest_eth_block_number(&state.db)?,
+                state.eth_db_utils.get_any_sender_nonce_from_db()?,
+                state.eth_db_utils.get_latest_eth_block_number()?,
             )?
         },
     })?;

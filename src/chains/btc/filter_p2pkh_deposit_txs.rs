@@ -65,8 +65,8 @@ fn filter_for_p2pkh_deposit_txs_and_add_to_state<D: DatabaseInterface>(
         if include_change_outputs { "IN" } else { "EX" },
     );
     filter_txs_for_p2pkh_deposits(
-        &get_btc_address_from_db(&state.db)?,
-        &get_btc_public_key_slice_from_db(&state.db)?,
+        &get_btc_address_from_db(state.db)?,
+        &get_btc_public_key_slice_from_db(state.db)?,
         &state.get_btc_block_and_id()?.block.txdata,
         include_change_outputs,
     )

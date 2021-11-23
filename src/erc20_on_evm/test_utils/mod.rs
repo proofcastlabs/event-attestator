@@ -4,16 +4,10 @@ use std::{fs::read_to_string, path::Path};
 use ethereum_types::Address as EthAddress;
 
 use crate::{
-    chains::{
-        eth::{
-            eth_crypto::eth_private_key::EthPrivateKey,
-            eth_log::EthLog,
-            eth_submission_material::EthSubmissionMaterial,
-        },
-        evm::{
-            eth_crypto::eth_private_key::EthPrivateKey as EvmPrivateKey,
-            eth_submission_material::EthSubmissionMaterial as EvmSubmissionMaterial,
-        },
+    chains::eth::{
+        eth_crypto::eth_private_key::EthPrivateKey,
+        eth_log::EthLog,
+        eth_submission_material::EthSubmissionMaterial,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     types::Result,
@@ -35,8 +29,8 @@ fn get_sample_submission_material_string_n(chain_type: &str, n: usize) -> Result
     }
 }
 
-pub fn get_evm_submission_material_n(n: usize) -> EvmSubmissionMaterial {
-    EvmSubmissionMaterial::from_str(&get_sample_submission_material_string_n("evm", n).unwrap()).unwrap()
+pub fn get_evm_submission_material_n(n: usize) -> EthSubmissionMaterial {
+    EthSubmissionMaterial::from_str(&get_sample_submission_material_string_n("evm", n).unwrap()).unwrap()
 }
 
 pub fn get_eth_submission_material_n(n: usize) -> EthSubmissionMaterial {
@@ -58,8 +52,8 @@ pub fn get_sample_eth_private_key() -> EthPrivateKey {
         .unwrap()
 }
 
-pub fn get_sample_evm_private_key() -> EvmPrivateKey {
-    EvmPrivateKey::from_slice(&hex::decode("57a5a09577a0604b84870577598d4a24fe9e5b879650a0248ac96be7d9d3f3aa").unwrap())
+pub fn get_sample_evm_private_key() -> EthPrivateKey {
+    EthPrivateKey::from_slice(&hex::decode("57a5a09577a0604b84870577598d4a24fe9e5b879650a0248ac96be7d9d3f3aa").unwrap())
         .unwrap()
 }
 

@@ -16,7 +16,7 @@ where
         },
         _ => {
             info!("✔ Extracting BTC UTXOs...");
-            extract_btc_utxo_from_btc_tx(&state.db, &state.btc_on_eos_signed_txs)
+            extract_btc_utxo_from_btc_tx(state.db, &state.btc_on_eos_signed_txs)
                 .and_then(|utxos| state.add_btc_utxos_and_values(utxos))
         },
     }

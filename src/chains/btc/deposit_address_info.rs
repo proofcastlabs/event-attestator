@@ -383,8 +383,8 @@ pub fn validate_deposit_address_list_in_state<D: DatabaseInterface>(state: BtcSt
         .get_deposit_info_list()
         .and_then(|deposit_info_list| {
             deposit_info_list.validate(
-                &get_btc_public_key_slice_from_db(&state.db)?,
-                &get_btc_network_from_db(&state.db)?,
+                &get_btc_public_key_slice_from_db(state.db)?,
+                &get_btc_network_from_db(state.db)?,
             )
         })
         .and(Ok(state))

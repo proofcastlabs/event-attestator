@@ -114,9 +114,9 @@ where
     info!("✔ Filtering out `p2sh` deposits & adding to state...");
     filter_p2sh_deposit_txs(
         state.get_deposit_info_hash_map()?,
-        &get_btc_public_key_slice_from_db(&state.db)?,
+        &get_btc_public_key_slice_from_db(state.db)?,
         &state.get_btc_block_and_id()?.block.txdata,
-        get_btc_network_from_db(&state.db)?,
+        get_btc_network_from_db(state.db)?,
     )
     .and_then(|txs| {
         info!("✔ Found {} txs containing `p2sh` deposits", txs.len());

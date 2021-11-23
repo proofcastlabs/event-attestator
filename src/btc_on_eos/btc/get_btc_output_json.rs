@@ -72,13 +72,13 @@ pub fn get_eos_signed_tx_info(
 pub fn create_btc_output_json_and_put_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Getting BTC output json and putting in state...");
     Ok(serde_json::to_string(&BtcOutput {
-        btc_latest_block_number: get_btc_latest_block_from_db(&state.db)?.height,
+        btc_latest_block_number: get_btc_latest_block_from_db(state.db)?.height,
         eos_signed_transactions: match &state.eos_signed_txs.len() {
             0 => vec![],
             _ => get_eos_signed_tx_info(
                 &state.eos_signed_txs,
-                &get_btc_canon_block_from_db(&state.db)?.get_eos_minting_params(),
-                get_eos_account_nonce_from_db(&state.db)?,
+                &get_btc_canon_block_from_db(state.db)?.get_eos_minting_params(),
+                get_eos_account_nonce_from_db(state.db)?,
             )?,
         },
     })?)

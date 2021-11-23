@@ -4,11 +4,8 @@ use crate::{
     types::Result,
 };
 
-pub fn get_enabled_protocol_features_and_add_to_state<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn get_enabled_protocol_features_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Getting enabled EOS protocol features and adding to state...");
-    get_eos_enabled_protocol_features_from_db(&state.db)
+    get_eos_enabled_protocol_features_from_db(state.db)
         .and_then(|schedule| state.add_enabled_protocol_features(schedule))
 }

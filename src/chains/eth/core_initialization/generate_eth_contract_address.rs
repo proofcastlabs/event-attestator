@@ -4,7 +4,7 @@ use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
     chains::eth::{
-        eth_database_utils::{get_public_eth_address_from_db, put_eos_on_eth_smart_contract_address_in_db},
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_state::EthState,
     },
     traits::DatabaseInterface,
@@ -26,8 +26,8 @@ fn calculate_contract_address(eth_address: EthAddress, nonce: usize) -> EthAddre
     EthAddress::from_slice(&hashed[12..])
 }
 
-fn get_eth_contract_address<D: DatabaseInterface>(db: &D) -> Result<EthAddress> {
-    get_public_eth_address_from_db(db).map(|eth_address| {
+fn get_eth_contract_address<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>) -> Result<EthAddress> {
+    eth_db_utils.get_public_eth_address_from_db().map(|eth_address| {
         info!("✔ Calculating pBTC contract address...");
         calculate_contract_address(eth_address, INITIAL_NONCE)
     })
@@ -35,10 +35,12 @@ fn get_eth_contract_address<D: DatabaseInterface>(db: &D) -> Result<EthAddress> 
 
 pub fn generate_and_store_eos_on_eth_contract_address<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Calculating `EOS_ON_ETH` contract address...");
-    get_eth_contract_address(&state.db)
+    get_eth_contract_address(&state.eth_db_utils)
         .and_then(|ref smart_contract_address| {
             info!("✔ Storing `pERC20-on-EOS` contract address in db...");
-            put_eos_on_eth_smart_contract_address_in_db(&state.db, smart_contract_address)
+            state
+                .eth_db_utils
+                .put_eos_on_eth_smart_contract_address_in_db(smart_contract_address)
         })
         .and(Ok(state))
 }

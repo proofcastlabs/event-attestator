@@ -4,41 +4,25 @@ use ethereum_types::U256;
 use serde_json::json;
 
 use crate::{
-    chains::{
-        eth::{
-            eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY as ETH_KEY},
-            eth_contracts::erc20_vault::{
-                encode_erc20_vault_add_supported_token_fx_data,
-                encode_erc20_vault_migrate_fxn_data,
-                encode_erc20_vault_peg_out_fxn_data_without_user_data,
-                encode_erc20_vault_remove_supported_token_fx_data,
-                ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
-                ERC20_VAULT_MIGRATE_GAS_LIMIT,
-                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
-            },
-            eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::{
-                get_erc20_on_evm_smart_contract_address_from_db,
-                get_eth_account_nonce_from_db,
-                get_eth_chain_id_from_db,
-                get_eth_gas_price_from_db,
-                get_eth_private_key_from_db,
-                increment_eth_account_nonce_in_db,
-                update_erc20_on_evm_smart_contract_address_in_db,
-            },
-            eth_debug_functions::debug_set_eth_gas_price_in_db,
-            eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
+    chains::eth::{
+        eth_constants::{get_eth_constants_db_keys, ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY, ETH_PRIVATE_KEY_DB_KEY},
+        eth_contracts::erc20_vault::{
+            encode_erc20_vault_add_supported_token_fx_data,
+            encode_erc20_vault_migrate_fxn_data,
+            encode_erc20_vault_peg_out_fxn_data_without_user_data,
+            encode_erc20_vault_remove_supported_token_fx_data,
+            ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+            ERC20_VAULT_MIGRATE_GAS_LIMIT,
+            ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
         },
-        evm::{
-            eth_constants::{
-                get_eth_constants_db_keys as get_evm_constants_db_keys,
-                ETH_PRIVATE_KEY_DB_KEY as EVM_KEY,
-            },
-            eth_database_utils::put_eth_gas_price_in_db as put_evm_gas_price_in_db,
-        },
+        eth_crypto::eth_transaction::EthTransaction,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
+        eth_debug_functions::{debug_set_eth_gas_price_in_db, debug_set_evm_gas_price_in_db},
+        eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
+        evm_constants::{get_evm_constants_db_keys, EVM_PRIVATE_KEY_DB_KEY},
     },
     check_debug_mode::check_debug_mode,
-    constants::{DB_KEY_PREFIX, PRIVATE_KEY_DATA_SENSITIVITY_LEVEL},
+    constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
     dictionaries::{
         dictionary_constants::ETH_EVM_DICTIONARY_KEY,
@@ -76,10 +60,11 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
-            let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == EVM_KEY.to_vec() {
-                true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-                false => None,
-            };
+            let sensitivity =
+                match key_bytes == ETH_PRIVATE_KEY_DB_KEY.to_vec() || key_bytes == EVM_PRIVATE_KEY_DB_KEY.to_vec() {
+                    true => MAX_DATA_SENSITIVITY_LEVEL,
+                    false => None,
+                };
             set_key_in_db_to_value(db, key, value, sensitivity)
         })
         .map(prepend_debug_output_marker_to_string)
@@ -92,10 +77,11 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
-            let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == EVM_KEY.to_vec() {
-                true => PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
-                false => None,
-            };
+            let sensitivity =
+                match key_bytes == ETH_PRIVATE_KEY_DB_KEY.to_vec() || key_bytes == EVM_PRIVATE_KEY_DB_KEY.to_vec() {
+                    true => MAX_DATA_SENSITIVITY_LEVEL,
+                    false => None,
+                };
             get_key_from_db(db, key, sensitivity)
         })
         .map(prepend_debug_output_marker_to_string)
@@ -116,7 +102,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
 /// }
 pub fn debug_add_dictionary_entry<D: DatabaseInterface>(db: D, json_str: &str) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &EvmDbUtils::new(&db)))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
         .and_then(|dictionary| dictionary.add_and_update_in_db(EthEvmTokenDictionaryEntry::from_str(json_str)?, &db))
@@ -131,7 +117,7 @@ pub fn debug_add_dictionary_entry<D: DatabaseInterface>(db: D, json_str: &str) -
 /// not extant, nothing is changed.
 pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &EvmDbUtils::new(&db)))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
         .and_then(|dictionary| {
@@ -157,24 +143,26 @@ pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: D, eth_address_st
 pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
     info!("✔ Debug getting `addSupportedToken` contract tx...");
     db.start_transaction()?;
-    let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
+    let eth_db_utils = EthDbUtils::new(&db);
+    let evm_db_utils = EvmDbUtils::new(&db);
+    let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = convert_hex_to_eth_address(eth_address_str)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
-        .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
+        .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_add_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
             Ok(EthTransaction::new_unsigned(
                 tx_data,
                 current_eth_account_nonce,
                 0,
-                get_erc20_on_evm_smart_contract_address_from_db(&db)?,
-                &get_eth_chain_id_from_db(&db)?,
+                eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+                &eth_db_utils.get_eth_chain_id_from_db()?,
                 ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
-                get_eth_gas_price_from_db(&db)?,
+                eth_db_utils.get_eth_gas_price_from_db()?,
             ))
         })
-        .and_then(|unsigned_tx| unsigned_tx.sign(&get_eth_private_key_from_db(&db)?))
+        .and_then(|unsigned_tx| unsigned_tx.sign(&eth_db_utils.get_eth_private_key_from_db()?))
         .map(|signed_tx| signed_tx.serialize_hex())
         .and_then(|hex_tx| {
             db.end_transaction()?;
@@ -198,24 +186,26 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address
 pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
     info!("✔ Debug getting `removeSupportedToken` contract tx...");
     db.start_transaction()?;
-    let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
+    let eth_db_utils = EthDbUtils::new(&db);
+    let evm_db_utils = EvmDbUtils::new(&db);
+    let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = convert_hex_to_eth_address(eth_address_str)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
-        .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
+        .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_remove_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
             Ok(EthTransaction::new_unsigned(
                 tx_data,
                 current_eth_account_nonce,
                 0,
-                get_erc20_on_evm_smart_contract_address_from_db(&db)?,
-                &get_eth_chain_id_from_db(&db)?,
+                eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+                &eth_db_utils.get_eth_chain_id_from_db()?,
                 ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
-                get_eth_gas_price_from_db(&db)?,
+                eth_db_utils.get_eth_gas_price_from_db()?,
             ))
         })
-        .and_then(|unsigned_tx| unsigned_tx.sign(&get_eth_private_key_from_db(&db)?))
+        .and_then(|unsigned_tx| unsigned_tx.sign(&eth_db_utils.get_eth_private_key_from_db()?))
         .map(|signed_tx| signed_tx.serialize_hex())
         .and_then(|hex_tx| {
             db.end_transaction()?;
@@ -240,13 +230,20 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
 pub fn debug_get_erc20_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, new_address: &str) -> Result<String> {
     db.start_transaction()?;
     info!("✔ Debug getting `ERC20-on-EVM` migration transaction...");
-    let current_eth_account_nonce = get_eth_account_nonce_from_db(&db)?;
-    let current_smart_contract_address = get_erc20_on_evm_smart_contract_address_from_db(&db)?;
+    let eth_db_utils = EthDbUtils::new(&db);
+    let evm_db_utils = EvmDbUtils::new(&db);
+    let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
+    let current_smart_contract_address = eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?;
     let new_smart_contract_address = get_eth_address_from_str(new_address)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
-        .and_then(|_| increment_eth_account_nonce_in_db(&db, 1))
-        .and_then(|_| update_erc20_on_evm_smart_contract_address_in_db(&db, &new_smart_contract_address))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
+        .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
+        .and_then(|_| {
+            eth_db_utils.put_eth_address_in_db(
+                &ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+                &new_smart_contract_address,
+            )
+        })
         .and_then(|_| encode_erc20_vault_migrate_fxn_data(new_smart_contract_address))
         .and_then(|tx_data| {
             Ok(EthTransaction::new_unsigned(
@@ -254,12 +251,12 @@ pub fn debug_get_erc20_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, ne
                 current_eth_account_nonce,
                 0,
                 current_smart_contract_address,
-                &get_eth_chain_id_from_db(&db)?,
+                &eth_db_utils.get_eth_chain_id_from_db()?,
                 ERC20_VAULT_MIGRATE_GAS_LIMIT,
-                get_eth_gas_price_from_db(&db)?,
+                eth_db_utils.get_eth_gas_price_from_db()?,
             ))
         })
-        .and_then(|unsigned_tx| unsigned_tx.sign(&get_eth_private_key_from_db(&db)?))
+        .and_then(|unsigned_tx| unsigned_tx.sign(&eth_db_utils.get_eth_private_key_from_db()?))
         .map(|signed_tx| signed_tx.serialize_hex())
         .and_then(|hex_tx| {
             db.end_transaction()?;
@@ -283,7 +280,7 @@ pub fn debug_get_erc20_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, ne
 /// #### NOTE: Using a fee of 0 will mean no fees are taken.
 pub fn debug_set_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &EvmDbUtils::new(&db)))
         .map(|_| sanity_check_basis_points_value(new_fee))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
@@ -310,8 +307,10 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
     token_address: &str,
     recipient_address: &str,
 ) -> Result<String> {
+    let eth_db_utils = EthDbUtils::new(&db);
+    let evm_db_utils = EvmDbUtils::new(&db);
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
         .and_then(|_| db.start_transaction())
         .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
         .and_then(|dictionary| {
@@ -324,18 +323,18 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
                     token_address,
                     fee_amount,
                 )?,
-                get_eth_account_nonce_from_db(&db)?,
+                eth_db_utils.get_eth_account_nonce_from_db()?,
                 0,
-                get_erc20_on_evm_smart_contract_address_from_db(&db)?,
-                &get_eth_chain_id_from_db(&db)?,
+                eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+                &eth_db_utils.get_eth_chain_id_from_db()?,
                 ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
-                get_eth_gas_price_from_db(&db)?,
+                eth_db_utils.get_eth_gas_price_from_db()?,
             ))
         })
-        .and_then(|unsigned_tx| unsigned_tx.sign(&get_eth_private_key_from_db(&db)?))
+        .and_then(|unsigned_tx| unsigned_tx.sign(&eth_db_utils.get_eth_private_key_from_db()?))
         .map(|signed_tx| signed_tx.serialize_hex())
         .and_then(|hex_tx| {
-            increment_eth_account_nonce_in_db(&db, 1)?;
+            eth_db_utils.increment_eth_account_nonce_in_db(1)?;
             db.end_transaction()?;
             Ok(json!({"success": true, "eth_signed_tx": hex_tx}).to_string())
         })
@@ -345,19 +344,15 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
 ///
 /// This function sets the EVM gas price to use when making EVM transactions. It's unit is `Wei`.
 pub fn debug_set_evm_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| put_evm_gas_price_in_db(&db, gas_price))
-        .and_then(|_| db.end_transaction())
-        .map(|_| json!({"sucess":true,"new_evm_gas_price":gas_price}).to_string())
-        .map(prepend_debug_output_marker_to_string)
+    // NOTE: This alias exists so as not to break the legacy API where the DB is NOT a reference!
+    debug_set_evm_gas_price_in_db(&db, gas_price)
 }
 
 /// # Debug Set ETH Gas Price
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
 pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
+    // NOTE: This alias exists so as not to break the legacy API where the DB is NOT a reference!
     debug_set_eth_gas_price_in_db(&db, gas_price)
 }
 
@@ -374,7 +369,7 @@ pub fn debug_set_accrued_fees_in_dictionary<D: DatabaseInterface>(
     let dictionary = EthEvmTokenDictionary::get_from_db(&db)?;
     let dictionary_entry_eth_address = convert_hex_to_eth_address(token_address)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &EvmDbUtils::new(&db)))
         .and_then(|_| db.start_transaction())
         .and_then(|_| {
             dictionary.set_accrued_fees_and_save_in_db(

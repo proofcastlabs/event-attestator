@@ -22,19 +22,21 @@ pub(crate) mod get_latest_block_numbers;
 pub(crate) mod test_utils;
 
 pub use crate::{
-    chains::{
-        eth::{
-            core_initialization::reset_eth_chain::debug_reset_eth_chain,
-            eth_debug_functions::{debug_set_eth_account_nonce, debug_set_eth_any_sender_nonce},
-            eth_message_signer::{sign_ascii_msg_with_eth_key_with_no_prefix, sign_hex_msg_with_eth_key_with_prefix},
+    chains::eth::{
+        core_initialization::reset_eth_chain::{debug_reset_eth_chain, debug_reset_evm_chain},
+        eth_debug_functions::{
+            debug_set_eth_account_nonce,
+            debug_set_eth_any_sender_nonce,
+            debug_set_evm_account_nonce,
+            debug_set_evm_any_sender_nonce,
         },
-        evm::{
-            core_initialization::reset_eth_chain::debug_reset_eth_chain as debug_reset_evm_chain,
-            eth_message_signer::{
-                sign_ascii_msg_with_eth_key_with_no_prefix as sign_ascii_msg_with_evm_key_with_no_prefix,
-                sign_hex_msg_with_eth_key_with_prefix as sign_hex_msg_with_evm_key_with_prefix,
-            },
-            evm_debug_functions::{debug_set_evm_account_nonce, debug_set_evm_any_sender_nonce},
+        eth_message_signer::{
+            sign_ascii_msg_with_eth_key_with_no_prefix,
+            sign_ascii_msg_with_eth_key_with_prefix,
+            sign_ascii_msg_with_evm_key_with_no_prefix,
+            sign_ascii_msg_with_evm_key_with_prefix,
+            sign_hex_msg_with_eth_key_with_prefix,
+            sign_hex_msg_with_evm_key_with_prefix,
         },
     },
     erc20_on_evm::{

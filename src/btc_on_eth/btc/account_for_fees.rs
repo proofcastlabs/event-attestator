@@ -59,9 +59,9 @@ pub fn maybe_account_for_fees<D: DatabaseInterface>(state: BtcState<D>) -> Resul
         Ok(state)
     } else {
         account_for_fees_in_minting_params(
-            &state.db,
+            state.db,
             &state.btc_on_eth_minting_params,
-            FeeDatabaseUtils::new_for_btc_on_eth().get_peg_in_basis_points_from_db(&state.db)?,
+            FeeDatabaseUtils::new_for_btc_on_eth().get_peg_in_basis_points_from_db(state.db)?,
         )
         .and_then(|updated_minting_params| state.replace_btc_on_eth_minting_params(updated_minting_params))
     }

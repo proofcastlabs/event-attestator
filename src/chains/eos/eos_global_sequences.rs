@@ -104,8 +104,7 @@ pub fn maybe_add_global_sequences_to_processed_list_and_return_state<D: Database
                 "✔ Adding '{:?}' to `ProcessedGlobalSequences` in db...",
                 global_sequences
             );
-            ProcessedGlobalSequences::add_global_sequences_to_list_in_db(&state.db, &mut global_sequences)
-                .and(Ok(state))
+            ProcessedGlobalSequences::add_global_sequences_to_list_in_db(state.db, &mut global_sequences).and(Ok(state))
         },
     }
 }
@@ -113,7 +112,7 @@ pub fn maybe_add_global_sequences_to_processed_list_and_return_state<D: Database
 pub fn get_processed_global_sequences_and_add_to_state<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
-    ProcessedGlobalSequences::get_from_db(&state.db)
+    ProcessedGlobalSequences::get_from_db(state.db)
         .and_then(|processed_list| state.add_processed_tx_ids(processed_list))
 }
 

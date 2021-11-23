@@ -4,10 +4,7 @@ use crate::{
     types::Result,
 };
 
-pub fn save_incremerkle_from_state_to_db<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn save_incremerkle_from_state_to_db<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Saving incremerkle from state to db...");
-    put_incremerkle_in_db(&state.db, &state.incremerkle).and(Ok(state))
+    put_incremerkle_in_db(state.db, &state.incremerkle).and(Ok(state))
 }

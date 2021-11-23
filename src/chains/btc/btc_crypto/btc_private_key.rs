@@ -14,7 +14,7 @@ use bitcoin::{
 
 use crate::{
     chains::btc::{btc_types::BtcPubKeySlice, btc_utils::get_btc_one_key},
-    constants::PRIVATE_KEY_DATA_SENSITIVITY_LEVEL,
+    constants::MAX_DATA_SENSITIVITY_LEVEL,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
@@ -75,7 +75,7 @@ impl BtcPrivateKey {
     }
 
     pub fn write_to_db<D: DatabaseInterface>(&self, db: &D, key: &[Byte]) -> Result<()> {
-        db.put(key.to_vec(), self.0[..].to_vec(), PRIVATE_KEY_DATA_SENSITIVITY_LEVEL)
+        db.put(key.to_vec(), self.0[..].to_vec(), MAX_DATA_SENSITIVITY_LEVEL)
     }
 }
 

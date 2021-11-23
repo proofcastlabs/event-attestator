@@ -4,7 +4,7 @@ use crate::{
     btc_on_eth::check_core_is_initialized::check_core_is_initialized,
     chains::{
         btc::btc_database_utils::get_latest_btc_block_number,
-        eth::eth_database_utils::get_latest_eth_block_number,
+        eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     },
     traits::DatabaseInterface,
     types::Result,
@@ -22,10 +22,11 @@ struct BlockNumbers {
 /// blockchains this instance manages.
 pub fn get_latest_block_numbers<D: DatabaseInterface>(db: D) -> Result<String> {
     info!("✔ Getting latest block numbers...");
-    check_core_is_initialized(&db).and_then(|_| {
+    let eth_db_utils = EthDbUtils::new(&db);
+    check_core_is_initialized(&eth_db_utils, &db).and_then(|_| {
         Ok(serde_json::to_string(&BlockNumbers {
             btc_latest_block_number: get_latest_btc_block_number(&db)?,
-            eth_latest_block_number: get_latest_eth_block_number(&db)?,
+            eth_latest_block_number: eth_db_utils.get_latest_eth_block_number()?,
         })?)
     })
 }
