@@ -4,24 +4,44 @@ use crate::utils::get_prefixed_db_key;
 
 pub fn get_evm_constants_db_keys() -> JsonValue {
     json!({
-        "EVM_ADDRESS_KEY": hex::encode(EVM_ADDRESS_KEY.to_vec()),
-        "EVM_CHAIN_ID_KEY": hex::encode(EVM_CHAIN_ID_KEY.to_vec()),
-        "EVM_GAS_PRICE_KEY": hex::encode(EVM_GAS_PRICE_KEY.to_vec()),
-        "EVM_LINKER_HASH_KEY": hex::encode(EVM_LINKER_HASH_KEY.to_vec()),
-        "EVM_ACCOUNT_NONCE_KEY": hex::encode(EVM_ACCOUNT_NONCE_KEY.to_vec()),
-        "EVM_PRIVATE_KEY_DB_KEY": hex::encode(EVM_PRIVATE_KEY_DB_KEY.to_vec()),
-        "EVM_TAIL_BLOCK_HASH_KEY": hex::encode(EVM_TAIL_BLOCK_HASH_KEY.to_vec()),
-        "EVM_CANON_BLOCK_HASH_KEY": hex::encode(EVM_CANON_BLOCK_HASH_KEY.to_vec()),
-        "EVM_ANY_SENDER_NONCE_KEY": hex::encode(EVM_ANY_SENDER_NONCE_KEY.to_vec()),
-        "EVM_ANCHOR_BLOCK_HASH_KEY": hex::encode(EVM_ANCHOR_BLOCK_HASH_KEY.to_vec()),
-        "EVM_LATEST_BLOCK_HASH_KEY": hex::encode(EVM_LATEST_BLOCK_HASH_KEY.to_vec()),
-        "EVM_PTOKEN_GENESIS_HASH_KEY": hex::encode(EVM_PTOKEN_GENESIS_HASH_KEY.to_vec()),
-        "EVM_CANON_TO_TIP_LENGTH_KEY": hex::encode(EVM_CANON_TO_TIP_LENGTH_KEY.to_vec()),
-        "EVM_ERC777_PROXY_CONTACT_ADDRESS_KEY": hex::encode(EVM_ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec()),
-        "EVM_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY": hex::encode(EVM_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
-        "EVM_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY": hex::encode(EVM_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
-        "EVM_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY": hex::encode(EVM_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
-        "EVM_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY": hex::encode(EVM_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "EVM_ADDRESS_KEY":
+            hex::encode(EVM_ADDRESS_KEY.to_vec()),
+        "EVM_CHAIN_ID_KEY":
+            hex::encode(EVM_CHAIN_ID_KEY.to_vec()),
+        "EVM_GAS_PRICE_KEY":
+            hex::encode(EVM_GAS_PRICE_KEY.to_vec()),
+        "EVM_LINKER_HASH_KEY":
+            hex::encode(EVM_LINKER_HASH_KEY.to_vec()),
+        "EVM_ACCOUNT_NONCE_KEY":
+            hex::encode(EVM_ACCOUNT_NONCE_KEY.to_vec()),
+        "EVM_PRIVATE_KEY_DB_KEY":
+            hex::encode(EVM_PRIVATE_KEY_DB_KEY.to_vec()),
+        "EVM_TAIL_BLOCK_HASH_KEY":
+            hex::encode(EVM_TAIL_BLOCK_HASH_KEY.to_vec()),
+        "EVM_CANON_BLOCK_HASH_KEY":
+            hex::encode(EVM_CANON_BLOCK_HASH_KEY.to_vec()),
+        "EVM_ANY_SENDER_NONCE_KEY":
+            hex::encode(EVM_ANY_SENDER_NONCE_KEY.to_vec()),
+        "EVM_ANCHOR_BLOCK_HASH_KEY":
+            hex::encode(EVM_ANCHOR_BLOCK_HASH_KEY.to_vec()),
+        "EVM_LATEST_BLOCK_HASH_KEY":
+            hex::encode(EVM_LATEST_BLOCK_HASH_KEY.to_vec()),
+        "EVM_PTOKEN_GENESIS_HASH_KEY":
+            hex::encode(EVM_PTOKEN_GENESIS_HASH_KEY.to_vec()),
+        "EVM_CANON_TO_TIP_LENGTH_KEY":
+            hex::encode(EVM_CANON_TO_TIP_LENGTH_KEY.to_vec()),
+        "EVM_ERC777_PROXY_CONTACT_ADDRESS_KEY":
+            hex::encode(EVM_ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec()),
+        "EVM_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(EVM_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "EVM_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(EVM_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "EVM_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(EVM_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "EVM_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(EVM_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "EVM_ERC20_ON_EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(EVM_ERC20_ON_EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
     })
 }
 
@@ -48,6 +68,8 @@ lazy_static! {
         get_prefixed_db_key("evm-eos-on-eth-smart-contract-address-key");
     pub static ref EVM_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
         get_prefixed_db_key("evm-erc20-on-evm-smart-contract-address-key");
+    pub static ref EVM_ERC20_ON_EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
+        get_prefixed_db_key("evm-erc20-on-evm-router-smart-contract-address-key");
 }
 
 #[cfg(test)]
@@ -92,7 +114,9 @@ mod tests {
             "EVM_PTOKEN_GENESIS_HASH_KEY":
                 "2571ca7ce4ca58cbd74f2ec4d971bc90925a9c2305481798bab1a8a7e7ad67bc",
             "EVM_TAIL_BLOCK_HASH_KEY":
-                "0bfa597048f0580d7782b60c89e596410b708ed843c5391f53fbfd6e947bccb4"
+                "0bfa597048f0580d7782b60c89e596410b708ed843c5391f53fbfd6e947bccb4",
+            "EVM_ERC20_ON_EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY":
+                "a302e0107ddf40eea3e0598779fab70581181064d07c64af35d29202705905f2",
         });
         let result = get_evm_constants_db_keys();
         assert_eq!(result, expected_result);

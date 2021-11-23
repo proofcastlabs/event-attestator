@@ -17,24 +17,44 @@ pub const PREFIXED_MESSAGE_HASH_LEN: &[u8; 2] = b"32";
 
 pub fn get_eth_constants_db_keys() -> JsonValue {
     json!({
-        "ETH_ADDRESS_KEY": hex::encode(ETH_ADDRESS_KEY.to_vec()),
-        "ETH_CHAIN_ID_KEY": hex::encode(ETH_CHAIN_ID_KEY.to_vec()),
-        "ETH_GAS_PRICE_KEY": hex::encode(ETH_GAS_PRICE_KEY.to_vec()),
-        "ETH_LINKER_HASH_KEY": hex::encode(ETH_LINKER_HASH_KEY.to_vec()),
-        "ANY_SENDER_NONCE_KEY": hex::encode(ANY_SENDER_NONCE_KEY.to_vec()),
-        "ETH_ACCOUNT_NONCE_KEY": hex::encode(ETH_ACCOUNT_NONCE_KEY.to_vec()),
-        "ETH_PRIVATE_KEY_DB_KEY": hex::encode(ETH_PRIVATE_KEY_DB_KEY.to_vec()),
-        "ETH_TAIL_BLOCK_HASH_KEY": hex::encode(ETH_TAIL_BLOCK_HASH_KEY.to_vec()),
-        "PTOKEN_GENESIS_HASH_KEY": hex::encode(PTOKEN_GENESIS_HASH_KEY.to_vec()),
-        "ETH_CANON_BLOCK_HASH_KEY": hex::encode(ETH_CANON_BLOCK_HASH_KEY.to_vec()),
-        "ETH_ANCHOR_BLOCK_HASH_KEY": hex::encode(ETH_ANCHOR_BLOCK_HASH_KEY.to_vec()),
-        "ETH_LATEST_BLOCK_HASH_KEY": hex::encode(ETH_LATEST_BLOCK_HASH_KEY.to_vec()),
-        "ETH_CANON_TO_TIP_LENGTH_KEY": hex::encode(ETH_CANON_TO_TIP_LENGTH_KEY.to_vec()),
-        "ERC777_PROXY_CONTACT_ADDRESS_KEY": hex::encode(ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec()),
-        "BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY": hex::encode(BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
-        "EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY": hex::encode(EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
-        "ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY": hex::encode(ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
-        "ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY": hex::encode(ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "ETH_ADDRESS_KEY":
+            hex::encode(ETH_ADDRESS_KEY.to_vec()),
+        "ETH_CHAIN_ID_KEY":
+            hex::encode(ETH_CHAIN_ID_KEY.to_vec()),
+        "ETH_GAS_PRICE_KEY":
+            hex::encode(ETH_GAS_PRICE_KEY.to_vec()),
+        "ETH_LINKER_HASH_KEY":
+            hex::encode(ETH_LINKER_HASH_KEY.to_vec()),
+        "ANY_SENDER_NONCE_KEY":
+            hex::encode(ANY_SENDER_NONCE_KEY.to_vec()),
+        "ETH_ACCOUNT_NONCE_KEY":
+            hex::encode(ETH_ACCOUNT_NONCE_KEY.to_vec()),
+        "ETH_PRIVATE_KEY_DB_KEY":
+            hex::encode(ETH_PRIVATE_KEY_DB_KEY.to_vec()),
+        "ETH_TAIL_BLOCK_HASH_KEY":
+            hex::encode(ETH_TAIL_BLOCK_HASH_KEY.to_vec()),
+        "PTOKEN_GENESIS_HASH_KEY":
+            hex::encode(PTOKEN_GENESIS_HASH_KEY.to_vec()),
+        "ETH_CANON_BLOCK_HASH_KEY":
+            hex::encode(ETH_CANON_BLOCK_HASH_KEY.to_vec()),
+        "ETH_ANCHOR_BLOCK_HASH_KEY":
+            hex::encode(ETH_ANCHOR_BLOCK_HASH_KEY.to_vec()),
+        "ETH_LATEST_BLOCK_HASH_KEY":
+            hex::encode(ETH_LATEST_BLOCK_HASH_KEY.to_vec()),
+        "ETH_CANON_TO_TIP_LENGTH_KEY":
+            hex::encode(ETH_CANON_TO_TIP_LENGTH_KEY.to_vec()),
+        "ERC777_PROXY_CONTACT_ADDRESS_KEY":
+            hex::encode(ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec()),
+        "BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "ERC20_ON_EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(ERC20_ON_EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
     })
 }
 
@@ -61,6 +81,8 @@ lazy_static! {
         get_prefixed_db_key("eos-on-eth-smart-contract-address-key");
     pub static ref ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
         get_prefixed_db_key("erc20-on-evm-eth-smart-contract-address-key");
+    pub static ref ERC20_ON_EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
+        get_prefixed_db_key("erc20-on-evm-router-smart-contract-address-key");
 }
 
 #[cfg(test)]
@@ -106,6 +128,8 @@ mod tests {
                 "539205e110a233c64f983acf425f1d2cf6cb6535a0241a3722a512690eeba758",
             "PTOKEN_GENESIS_HASH_KEY":
                 "7eb2e65416dd107602495454d1ed094ae475cff2f3bfb2e2ae68a1c52bc0d66f",
+            "ERC20_ON_EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY":
+                "92b2b823eece734f069d53f55763365ee076b85b5e7d6fa90205b5c657003dfc",
         });
         let result = get_eth_constants_db_keys();
         assert_eq!(result, expected_result)
