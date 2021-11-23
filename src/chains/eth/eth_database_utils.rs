@@ -1,51 +1,14 @@
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
+use paste::paste;
 
 use crate::{
     chains::eth::{
         eth_chain_id::EthChainId,
-        eth_constants::{
-            ETH_ACCOUNT_NONCE_KEY,
-            ETH_ADDRESS_KEY,
-            ETH_ANCHOR_BLOCK_HASH_KEY,
-            ETH_ANY_SENDER_NONCE_KEY,
-            ETH_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
-            ETH_CANON_BLOCK_HASH_KEY,
-            ETH_CANON_TO_TIP_LENGTH_KEY,
-            ETH_CHAIN_ID_KEY,
-            ETH_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
-            ETH_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY,
-            ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
-            ETH_ERC777_PROXY_CONTACT_ADDRESS_KEY,
-            ETH_GAS_PRICE_KEY,
-            ETH_LATEST_BLOCK_HASH_KEY,
-            ETH_LINKER_HASH_KEY,
-            ETH_PRIVATE_KEY_DB_KEY,
-            ETH_PTOKEN_GENESIS_HASH_KEY,
-            ETH_TAIL_BLOCK_HASH_KEY,
-        },
+        eth_constants::ETH_PTOKEN_GENESIS_HASH_KEY,
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_submission_material::EthSubmissionMaterial,
         eth_types::{AnySenderSigningParams, EthSigningParams},
         eth_utils::convert_h256_to_bytes,
-        evm_constants::{
-            EVM_ACCOUNT_NONCE_KEY,
-            EVM_ADDRESS_KEY,
-            EVM_ANCHOR_BLOCK_HASH_KEY,
-            EVM_ANY_SENDER_NONCE_KEY,
-            EVM_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
-            EVM_CANON_BLOCK_HASH_KEY,
-            EVM_CANON_TO_TIP_LENGTH_KEY,
-            EVM_CHAIN_ID_KEY,
-            EVM_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
-            EVM_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY,
-            EVM_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
-            EVM_ERC777_PROXY_CONTACT_ADDRESS_KEY,
-            EVM_GAS_PRICE_KEY,
-            EVM_LATEST_BLOCK_HASH_KEY,
-            EVM_LINKER_HASH_KEY,
-            EVM_PRIVATE_KEY_DB_KEY,
-            EVM_TAIL_BLOCK_HASH_KEY,
-        },
     },
     constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
     database_utils::{get_u64_from_db, put_u64_in_db},
@@ -56,7 +19,7 @@ use crate::{
 };
 
 macro_rules! make_eth_db_utils_struct {
-    ($name:ident, $is_for_eth:expr) => {
+    ($name:ident, $prefix:ident, $is_for_eth:expr) => {
         #[derive(Debug, Clone, PartialEq, Eq)]
         pub struct $name<'a, D: DatabaseInterface> {
             db: &'a D,
@@ -79,49 +42,64 @@ macro_rules! make_eth_db_utils_struct {
             erc20_on_evm_smart_contract_address_key: Bytes,
         }
 
-        impl<'a, D: DatabaseInterface> $name<'a, D> {
-            pub fn new(db: &'a D) -> Self {
-                if $is_for_eth {
+        paste! {
+            impl<'a, D: DatabaseInterface> $name<'a, D> {
+                pub fn new(db: &'a D) -> Self {
+                    use crate::chains::eth::[<$prefix:lower _constants>]::{
+                        [<$prefix _ADDRESS_KEY>],
+                        [<$prefix _CHAIN_ID_KEY>],
+                        [<$prefix _GAS_PRICE_KEY>],
+                        [<$prefix _LINKER_HASH_KEY>],
+                        [<$prefix _ACCOUNT_NONCE_KEY>],
+                        [<$prefix _PRIVATE_KEY_DB_KEY>],
+                        [<$prefix _TAIL_BLOCK_HASH_KEY>],
+                        [<$prefix _ANY_SENDER_NONCE_KEY>],
+                        [<$prefix _CANON_BLOCK_HASH_KEY>],
+                        [<$prefix _ANCHOR_BLOCK_HASH_KEY>],
+                        [<$prefix _LATEST_BLOCK_HASH_KEY>],
+                        [<$prefix _CANON_TO_TIP_LENGTH_KEY>],
+                        [<$prefix _ERC777_PROXY_CONTACT_ADDRESS_KEY>],
+                        [<$prefix _BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY>],
+                        [<$prefix _EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY>],
+                        [<$prefix _ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY>],
+                        [<$prefix _ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY>],
+                    };
                     Self {
                         db,
-                        eth_address_key: ETH_ADDRESS_KEY.to_vec(),
-                        eth_chain_id_key: ETH_CHAIN_ID_KEY.to_vec(),
-                        eth_gas_price_key: ETH_GAS_PRICE_KEY.to_vec(),
-                        eth_linker_hash_key: ETH_LINKER_HASH_KEY.to_vec(),
-                        eth_account_nonce_key: ETH_ACCOUNT_NONCE_KEY.to_vec(),
-                        any_sender_nonce_key: ETH_ANY_SENDER_NONCE_KEY.to_vec(),
-                        eth_private_key_db_key: ETH_PRIVATE_KEY_DB_KEY.to_vec(),
-                        eth_tail_block_hash_key: ETH_TAIL_BLOCK_HASH_KEY.to_vec(),
-                        eth_canon_block_hash_key: ETH_CANON_BLOCK_HASH_KEY.to_vec(),
-                        eth_anchor_block_hash_key: ETH_ANCHOR_BLOCK_HASH_KEY.to_vec(),
-                        eth_latest_block_hash_key: ETH_LATEST_BLOCK_HASH_KEY.to_vec(),
-                        eth_canon_to_tip_length_key: ETH_CANON_TO_TIP_LENGTH_KEY.to_vec(),
-                        erc777_proxy_contract_address_key: ETH_ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(),
-                        btc_on_eth_smart_contract_address_key: ETH_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-                        eos_on_eth_smart_contract_address_key: ETH_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-                        erc20_on_eos_smart_contract_address_key: ETH_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-                        erc20_on_evm_smart_contract_address_key: ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-                    }
-                } else {
-                    Self {
-                        db,
-                        eth_address_key: EVM_ADDRESS_KEY.to_vec(),
-                        eth_chain_id_key: EVM_CHAIN_ID_KEY.to_vec(),
-                        eth_gas_price_key: EVM_GAS_PRICE_KEY.to_vec(),
-                        eth_linker_hash_key: EVM_LINKER_HASH_KEY.to_vec(),
-                        eth_account_nonce_key: EVM_ACCOUNT_NONCE_KEY.to_vec(),
-                        any_sender_nonce_key: EVM_ANY_SENDER_NONCE_KEY.to_vec(),
-                        eth_private_key_db_key: EVM_PRIVATE_KEY_DB_KEY.to_vec(),
-                        eth_tail_block_hash_key: EVM_TAIL_BLOCK_HASH_KEY.to_vec(),
-                        eth_canon_block_hash_key: EVM_CANON_BLOCK_HASH_KEY.to_vec(),
-                        eth_latest_block_hash_key: EVM_LATEST_BLOCK_HASH_KEY.to_vec(),
-                        eth_anchor_block_hash_key: EVM_ANCHOR_BLOCK_HASH_KEY.to_vec(),
-                        eth_canon_to_tip_length_key: EVM_CANON_TO_TIP_LENGTH_KEY.to_vec(),
-                        erc777_proxy_contract_address_key: EVM_ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(),
-                        btc_on_eth_smart_contract_address_key: EVM_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-                        eos_on_eth_smart_contract_address_key: EVM_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-                        erc20_on_eos_smart_contract_address_key: EVM_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-                        erc20_on_evm_smart_contract_address_key: EVM_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+                        eth_address_key:
+                            [<$prefix _ADDRESS_KEY>].to_vec(),
+                        eth_chain_id_key:
+                            [<$prefix _CHAIN_ID_KEY>].to_vec(),
+                        eth_gas_price_key:
+                            [<$prefix _GAS_PRICE_KEY>].to_vec(),
+                        eth_linker_hash_key:
+                            [<$prefix _LINKER_HASH_KEY>].to_vec(),
+                        eth_account_nonce_key:
+                            [<$prefix _ACCOUNT_NONCE_KEY>].to_vec(),
+                        any_sender_nonce_key:
+                            [<$prefix _ANY_SENDER_NONCE_KEY>].to_vec(),
+                        eth_private_key_db_key:
+                            [<$prefix _PRIVATE_KEY_DB_KEY>].to_vec(),
+                        eth_tail_block_hash_key:
+                            [<$prefix _TAIL_BLOCK_HASH_KEY>].to_vec(),
+                        eth_canon_block_hash_key:
+                            [<$prefix _CANON_BLOCK_HASH_KEY>].to_vec(),
+                        eth_anchor_block_hash_key:
+                            [<$prefix _ANCHOR_BLOCK_HASH_KEY>].to_vec(),
+                        eth_latest_block_hash_key:
+                            [<$prefix _LATEST_BLOCK_HASH_KEY>].to_vec(),
+                        eth_canon_to_tip_length_key:
+                            [<$prefix _CANON_TO_TIP_LENGTH_KEY>].to_vec(),
+                        erc777_proxy_contract_address_key:
+                            [<$prefix _ERC777_PROXY_CONTACT_ADDRESS_KEY>].to_vec(),
+                        btc_on_eth_smart_contract_address_key:
+                            [<$prefix _BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY>].to_vec(),
+                        eos_on_eth_smart_contract_address_key:
+                            [<$prefix _EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY>].to_vec(),
+                        erc20_on_eos_smart_contract_address_key:
+                            [<$prefix _ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY>].to_vec(),
+                        erc20_on_evm_smart_contract_address_key:
+                            [<$prefix _ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY>].to_vec(),
                     }
                 }
             }
@@ -207,8 +185,8 @@ macro_rules! make_eth_db_utils_struct {
     };
 }
 
-make_eth_db_utils_struct!(EthDbUtils, true);
-make_eth_db_utils_struct!(EvmDbUtils, false);
+make_eth_db_utils_struct!(EthDbUtils, ETH, true);
+make_eth_db_utils_struct!(EvmDbUtils, EVM, false);
 
 pub trait EthDbUtilsExt<D: DatabaseInterface> {
     fn get_db(&self) -> &D;
