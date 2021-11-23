@@ -24,8 +24,8 @@ use crate::{
             ETH_CANON_TO_TIP_LENGTH_KEY,
             ETH_LATEST_BLOCK_HASH_KEY,
             ETH_LINKER_HASH_KEY,
+            ETH_PTOKEN_GENESIS_HASH_KEY,
             ETH_TAIL_BLOCK_HASH_KEY,
-            PTOKEN_GENESIS_HASH_KEY,
         },
         eth_database_transactions::{
             end_eth_db_transaction_and_return_state,
@@ -83,7 +83,7 @@ fn delete_all_relevant_db_keys<D: DatabaseInterface>(db: &D, is_for_eth: bool) -
             *ETH_LINKER_HASH_KEY,
             *ETH_CANON_BLOCK_HASH_KEY,
             *ETH_TAIL_BLOCK_HASH_KEY,
-            *PTOKEN_GENESIS_HASH_KEY,
+            *ETH_PTOKEN_GENESIS_HASH_KEY,
             *ETH_ANCHOR_BLOCK_HASH_KEY,
             *ETH_LATEST_BLOCK_HASH_KEY,
             *ETH_CANON_TO_TIP_LENGTH_KEY,

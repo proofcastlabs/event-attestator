@@ -4,24 +4,24 @@ use crate::{
     chains::eth::{
         eth_chain_id::EthChainId,
         eth_constants::{
-            ANY_SENDER_NONCE_KEY,
-            BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
-            EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
-            ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY,
-            ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
-            ERC777_PROXY_CONTACT_ADDRESS_KEY,
             ETH_ACCOUNT_NONCE_KEY,
             ETH_ADDRESS_KEY,
             ETH_ANCHOR_BLOCK_HASH_KEY,
+            ETH_ANY_SENDER_NONCE_KEY,
+            ETH_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
             ETH_CANON_BLOCK_HASH_KEY,
             ETH_CANON_TO_TIP_LENGTH_KEY,
             ETH_CHAIN_ID_KEY,
+            ETH_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY,
+            ETH_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY,
+            ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
+            ETH_ERC777_PROXY_CONTACT_ADDRESS_KEY,
             ETH_GAS_PRICE_KEY,
             ETH_LATEST_BLOCK_HASH_KEY,
             ETH_LINKER_HASH_KEY,
             ETH_PRIVATE_KEY_DB_KEY,
+            ETH_PTOKEN_GENESIS_HASH_KEY,
             ETH_TAIL_BLOCK_HASH_KEY,
-            PTOKEN_GENESIS_HASH_KEY,
         },
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_submission_material::EthSubmissionMaterial,
@@ -88,19 +88,19 @@ macro_rules! make_eth_db_utils_struct {
                         eth_chain_id_key: ETH_CHAIN_ID_KEY.to_vec(),
                         eth_gas_price_key: ETH_GAS_PRICE_KEY.to_vec(),
                         eth_linker_hash_key: ETH_LINKER_HASH_KEY.to_vec(),
-                        any_sender_nonce_key: ANY_SENDER_NONCE_KEY.to_vec(),
                         eth_account_nonce_key: ETH_ACCOUNT_NONCE_KEY.to_vec(),
+                        any_sender_nonce_key: ETH_ANY_SENDER_NONCE_KEY.to_vec(),
                         eth_private_key_db_key: ETH_PRIVATE_KEY_DB_KEY.to_vec(),
                         eth_tail_block_hash_key: ETH_TAIL_BLOCK_HASH_KEY.to_vec(),
                         eth_canon_block_hash_key: ETH_CANON_BLOCK_HASH_KEY.to_vec(),
                         eth_anchor_block_hash_key: ETH_ANCHOR_BLOCK_HASH_KEY.to_vec(),
                         eth_latest_block_hash_key: ETH_LATEST_BLOCK_HASH_KEY.to_vec(),
                         eth_canon_to_tip_length_key: ETH_CANON_TO_TIP_LENGTH_KEY.to_vec(),
-                        erc777_proxy_contract_address_key: ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(),
-                        btc_on_eth_smart_contract_address_key: BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-                        eos_on_eth_smart_contract_address_key: EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-                        erc20_on_eos_smart_contract_address_key: ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
-                        erc20_on_evm_smart_contract_address_key: ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+                        erc777_proxy_contract_address_key: ETH_ERC777_PROXY_CONTACT_ADDRESS_KEY.to_vec(),
+                        btc_on_eth_smart_contract_address_key: ETH_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+                        eos_on_eth_smart_contract_address_key: ETH_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+                        erc20_on_eos_smart_contract_address_key: ETH_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+                        erc20_on_evm_smart_contract_address_key: ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
                     }
                 } else {
                     Self {
@@ -324,7 +324,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
             Ok(hash) => Ok(hash),
             Err(_) => {
                 info!("✔ No linker-hash set yet, using pToken genesis hash...");
-                Ok(EthHash::from_slice(&PTOKEN_GENESIS_HASH_KEY[..]))
+                Ok(EthHash::from_slice(&ETH_PTOKEN_GENESIS_HASH_KEY[..]))
             },
         }
     }
@@ -1202,7 +1202,7 @@ mod tests {
         let db = get_test_database();
         let eth_db_utils = EthDbUtils::new(&db);
         let result = eth_db_utils.get_linker_hash_or_genesis_hash().unwrap();
-        let expected_result = EthHash::from_slice(&PTOKEN_GENESIS_HASH_KEY[..]);
+        let expected_result = EthHash::from_slice(&ETH_PTOKEN_GENESIS_HASH_KEY[..]);
         assert_eq!(result, expected_result);
     }
 }
