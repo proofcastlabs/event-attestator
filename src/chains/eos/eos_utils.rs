@@ -55,7 +55,7 @@ pub fn get_eos_tx_expiration_timestamp_with_offset(offset: u32) -> Result<u32> {
     // NOTE: An EOS tx over the same params w/ the same timestamp results in the same
     // signature. This CAN happen organically such as a user pegging in the exact
     // same amount twice in a single block.
-    get_unix_timestamp_as_u32().map(|timestamp| timestamp + EOS_MAX_EXPIRATION_SECS - offset)
+    get_unix_timestamp_as_u32().map(|timestamp| timestamp + EOS_MAX_EXPIRATION_SECS + offset)
 }
 
 #[cfg(test)]
