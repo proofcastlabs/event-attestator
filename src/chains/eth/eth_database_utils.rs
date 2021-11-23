@@ -26,7 +26,7 @@ use crate::{
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_submission_material::EthSubmissionMaterial,
         eth_types::{AnySenderSigningParams, EthSigningParams},
-        eth_utils::{convert_bytes_to_h256, convert_h256_to_bytes},
+        eth_utils::convert_h256_to_bytes,
         evm_constants::{
             EVM_ACCOUNT_NONCE_KEY,
             EVM_ADDRESS_KEY,
@@ -424,16 +424,6 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
         )
     }
 
-    fn get_hash_from_db_via_hash_key(&self, hash_key: EthHash) -> Result<Option<EthHash>> {
-        match self.get_db().get(
-            self.normalize_key(convert_h256_to_bytes(hash_key)),
-            MIN_DATA_SENSITIVITY_LEVEL,
-        ) {
-            Ok(bytes) => Ok(Some(convert_bytes_to_h256(&bytes)?)),
-            Err(_) => Ok(None),
-        }
-    }
-
     fn put_eth_submission_material_in_db(&self, eth_submission_material: &EthSubmissionMaterial) -> Result<()> {
         let key = self.normalize_key(convert_h256_to_bytes(eth_submission_material.get_block_hash()?));
         debug!("✔ Adding block to database under key: {:?}", hex::encode(&key));
@@ -733,6 +723,18 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
         debug!("✔ Incrementing AnySender nonce in db...");
         self.get_any_sender_nonce_from_db()
             .and_then(|nonce| self.put_any_sender_nonce_in_db(nonce + amount_to_increment_by))
+    }
+
+    #[cfg(test)]
+    fn get_hash_from_db_via_hash_key(&self, hash_key: EthHash) -> Result<Option<EthHash>> {
+        use crate::chains::eth::eth_test_utils::convert_bytes_to_h256;
+        match self.get_db().get(
+            self.normalize_key(convert_h256_to_bytes(hash_key)),
+            MIN_DATA_SENSITIVITY_LEVEL,
+        ) {
+            Ok(bytes) => Ok(Some(convert_bytes_to_h256(&bytes)?)),
+            Err(_) => Ok(None),
+        }
     }
 
     #[cfg(test)]

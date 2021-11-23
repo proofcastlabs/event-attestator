@@ -15,7 +15,7 @@ use crate::{
     },
     errors::AppError,
     traits::DatabaseInterface,
-    types::{Bytes, Result},
+    types::{Byte, Bytes, Result},
 };
 
 pub const HASH_HEX_CHARS: usize = 64;
@@ -84,6 +84,13 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_15: &str =
 
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_16: &str =
     "src/chains/eth/eth_test_utils/eth-submission-material-block-13257531.json";
+
+pub fn convert_bytes_to_h256(bytes: &[Byte]) -> Result<EthHash> {
+    match bytes.len() {
+        32 => Ok(EthHash::from_slice(bytes)),
+        _ => Err("✘ Not enough bytes to convert to h256!".into()),
+    }
+}
 
 pub fn put_eth_latest_block_in_db<D: DatabaseInterface>(
     eth_db_utils: &EthDbUtils<D>,
@@ -324,9 +331,57 @@ pub fn get_sample_unsigned_eth_transaction() -> EthTransaction {
     EthTransaction::new_unsigned(data, nonce, value, to, &chain_id, gas_limit, gas_price)
 }
 
+pub fn get_sample_submission_material_with_erc20_peg_in_event() -> Result<EthSubmissionMaterial> {
+    get_sample_eth_submission_material_n(7)
+}
+
+pub fn get_sample_receipt_with_erc20_peg_in_event() -> Result<EthReceipt> {
+    get_sample_receipt_n(7, 17)
+}
+
+pub fn get_sample_log_with_erc20_peg_in_event() -> Result<EthLog> {
+    get_sample_log_n(7, 17, 1)
+}
+
+pub fn get_sample_log_with_erc20_peg_in_event_2() -> Result<EthLog> {
+    get_sample_log_n(9, 16, 1)
+}
+
+fn get_tx_hash_of_erc777_redeem() -> &'static str {
+    "442612aba789ce873bb3804ff62ced770dcecb07d19ddcf9b651c357eebaed40"
+}
+
+fn get_sample_block_with_erc777_redeem() -> EthSubmissionMaterial {
+    get_sample_eth_submission_material_n(4).unwrap()
+}
+
+pub fn get_sample_receipt_with_erc777_redeem() -> EthReceipt {
+    let hash = EthHash::from_str(get_tx_hash_of_erc777_redeem()).unwrap();
+    get_sample_block_with_erc777_redeem()
+        .receipts
+        .0
+        .iter()
+        .filter(|receipt| receipt.transaction_hash == hash)
+        .collect::<Vec<&EthReceipt>>()[0]
+        .clone()
+}
+
+pub fn get_sample_log_with_erc777_redeem() -> EthLog {
+    get_sample_receipt_with_erc777_redeem().logs.0[2].clone()
+}
+
 mod tests {
     use super::*;
     use crate::chains::eth::eth_utils::convert_hex_to_h256;
+
+    #[test]
+    fn should_convert_bytes_to_h256() {
+        let hex = "ebfa2e7610ea186fa3fa97bbaa5db80cce033dfff7e546c6ee05493dbcbfda7a";
+        let expected_result = convert_hex_to_h256(hex).unwrap();
+        let bytes = hex::decode(hex).unwrap();
+        let result = convert_bytes_to_h256(&bytes).unwrap();
+        assert_eq!(result, expected_result);
+    }
 
     #[test]
     fn should_get_expected_log_correctly() {
@@ -458,43 +513,4 @@ mod tests {
             )
         });
     }
-}
-
-pub fn get_sample_submission_material_with_erc20_peg_in_event() -> Result<EthSubmissionMaterial> {
-    get_sample_eth_submission_material_n(7)
-}
-
-pub fn get_sample_receipt_with_erc20_peg_in_event() -> Result<EthReceipt> {
-    get_sample_receipt_n(7, 17)
-}
-
-pub fn get_sample_log_with_erc20_peg_in_event() -> Result<EthLog> {
-    get_sample_log_n(7, 17, 1)
-}
-
-pub fn get_sample_log_with_erc20_peg_in_event_2() -> Result<EthLog> {
-    get_sample_log_n(9, 16, 1)
-}
-
-fn get_tx_hash_of_erc777_redeem() -> &'static str {
-    "442612aba789ce873bb3804ff62ced770dcecb07d19ddcf9b651c357eebaed40"
-}
-
-fn get_sample_block_with_erc777_redeem() -> EthSubmissionMaterial {
-    get_sample_eth_submission_material_n(4).unwrap()
-}
-
-pub fn get_sample_receipt_with_erc777_redeem() -> EthReceipt {
-    let hash = EthHash::from_str(get_tx_hash_of_erc777_redeem()).unwrap();
-    get_sample_block_with_erc777_redeem()
-        .receipts
-        .0
-        .iter()
-        .filter(|receipt| receipt.transaction_hash == hash)
-        .collect::<Vec<&EthReceipt>>()[0]
-        .clone()
-}
-
-pub fn get_sample_log_with_erc777_redeem() -> EthLog {
-    get_sample_receipt_with_erc777_redeem().logs.0[2].clone()
 }
