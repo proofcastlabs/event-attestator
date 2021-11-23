@@ -26,7 +26,6 @@ pub(crate) mod eth_traits;
 pub(crate) mod eth_types;
 pub(crate) mod eth_utils;
 pub(crate) mod evm_constants;
-pub(crate) mod get_linker_hash;
 pub(crate) mod increment_eos_account_nonce;
 pub(crate) mod increment_eth_account_nonce;
 pub(crate) mod increment_evm_account_nonce;

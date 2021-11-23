@@ -3,6 +3,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash};
 use crate::{
     chains::eth::{
         eth_chain_id::EthChainId,
+        eth_constants::PTOKEN_GENESIS_HASH_KEY,
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_submission_material::EthSubmissionMaterial,
         eth_types::{AnySenderSigningParams, EthSigningParams},
@@ -413,6 +414,16 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
         debug!("✔ Putting ETH special block in db of type: {}", block_type);
         self.put_eth_submission_material_in_db(eth_submission_material)
             .and_then(|_| self.put_special_eth_hash_in_db(block_type, &eth_submission_material.get_block_hash()?))
+    }
+
+    fn get_linker_hash_or_genesis_hash(&self) -> Result<EthHash> {
+        match self.get_special_eth_hash_from_db("linker") {
+            Ok(hash) => Ok(hash),
+            Err(_) => {
+                info!("✔ No linker-hash set yet, using pToken genesis hash...");
+                Ok(EthHash::from_slice(&PTOKEN_GENESIS_HASH_KEY[..]))
+            },
+        }
     }
 
     fn put_special_eth_hash_in_db(&self, hash_type: &str, hash: &EthHash) -> Result<()> {
@@ -1262,6 +1273,25 @@ mod tests {
         db_keys.sort();
         db_keys.dedup();
         let result = db_keys.len();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn get_linker_or_genesis_should_get_linker_hash_from_db_if_extant() {
+        let db = get_test_database();
+        let eth_db_utils = EthDbUtils::new(&db);
+        let linker_hash = EthHash::random();
+        eth_db_utils.put_eth_linker_hash_in_db(linker_hash).unwrap();
+        let result = eth_db_utils.get_linker_hash_or_genesis_hash().unwrap();
+        assert_eq!(result, linker_hash);
+    }
+
+    #[test]
+    fn get_linker_or_genesis_should_get_genesis_hash_if_linker_not_set() {
+        let db = get_test_database();
+        let eth_db_utils = EthDbUtils::new(&db);
+        let result = eth_db_utils.get_linker_hash_or_genesis_hash().unwrap();
+        let expected_result = EthHash::from_slice(&PTOKEN_GENESIS_HASH_KEY[..]);
         assert_eq!(result, expected_result);
     }
 }

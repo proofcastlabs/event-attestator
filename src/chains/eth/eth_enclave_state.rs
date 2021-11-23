@@ -3,11 +3,7 @@ use paste::paste;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::eth::{
-        eth_constants::ETH_TAIL_LENGTH,
-        eth_database_utils::EthDbUtilsExt,
-        get_linker_hash::get_linker_hash_or_genesis_hash as get_eth_linker_hash,
-    },
+    chains::eth::{eth_constants::ETH_TAIL_LENGTH, eth_database_utils::EthDbUtilsExt},
     constants::{SAFE_ETH_ADDRESS, SAFE_EVM_ADDRESS},
     traits::DatabaseInterface,
     types::Result,
@@ -59,7 +55,7 @@ macro_rules! make_enclave_state_struct {
                         smart_contract_address: hex::encode(contract_address.as_bytes()),
                         [<$prefix _tail_block_number>]: [<$prefix _tail_block>].get_block_number()?.as_usize(),
                         [<$prefix _canon_block_number>]: [<$prefix _canon_block>].get_block_number()?.as_usize(),
-                        [<$prefix _linker_hash>]: hex::encode(get_eth_linker_hash(db_utils)?.as_bytes()), // FIXME get_eth_linker_hash needs to be a db util!
+                        [<$prefix _linker_hash>]: hex::encode(db_utils.get_linker_hash_or_genesis_hash()?.as_bytes()),
                         [<$prefix _canon_to_tip_length>]: db_utils.get_eth_canon_to_tip_length_from_db()?,
                         [<$prefix _anchor_block_number>]: [<$prefix _anchor_block>].get_block_number()?.as_usize(),
                         [<$prefix _latest_block_number>]: [<$prefix _latest_block>].get_block_number()?.as_usize(),
