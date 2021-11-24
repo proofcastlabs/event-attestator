@@ -11,6 +11,8 @@ use crate::{
     types::{Byte, Bytes, Result},
 };
 
+pub const METADATA_CHAIN_ID_NUMBER_OF_BYTES: usize = 4;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter)]
 pub enum MetadataChainId {
     EthereumMainnet,  // 0x005fe7f9
