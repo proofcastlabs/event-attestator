@@ -9,7 +9,7 @@ use crate::{
         eth_chain_id::EthChainId,
         eth_crypto::{eth_private_key::EthPrivateKey, eth_public_key::EthPublicKey, eth_transaction::EthTransaction},
         eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_log::{EthLog, EthLogCompatible, EthLogs},
+        eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::EthReceipt,
         eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
     },

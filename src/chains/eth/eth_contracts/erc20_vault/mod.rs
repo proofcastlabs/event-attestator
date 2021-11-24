@@ -3,7 +3,7 @@ use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as Et
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
-    chains::eth::{eth_contracts::encode_fxn_call, eth_log::EthLogCompatible},
+    chains::eth::{eth_contracts::encode_fxn_call, eth_log::EthLogExt},
     types::{Bytes, Result},
 };
 
@@ -94,7 +94,7 @@ impl Erc20VaultPegInEventParams {
         format!("Error getting `{}` for `Erc20VaultPegInEventParams`!", field)
     }
 
-    fn from_eth_log_without_user_data<L: EthLogCompatible>(log: &L) -> Result<Self> {
+    fn from_eth_log_without_user_data<L: EthLogExt>(log: &L) -> Result<Self> {
         let tokens = eth_abi_decode(
             &[
                 EthAbiParamType::Address,
@@ -125,7 +125,7 @@ impl Erc20VaultPegInEventParams {
         })
     }
 
-    fn from_eth_log_with_user_data<L: EthLogCompatible>(log: &L) -> Result<Self> {
+    fn from_eth_log_with_user_data<L: EthLogExt>(log: &L) -> Result<Self> {
         let tokens = eth_abi_decode(
             &[
                 EthAbiParamType::Address,
@@ -160,7 +160,7 @@ impl Erc20VaultPegInEventParams {
         })
     }
 
-    pub fn from_eth_log<L: EthLogCompatible>(log: &L) -> Result<Self> {
+    pub fn from_eth_log<L: EthLogExt>(log: &L) -> Result<Self> {
         Self::from_eth_log_with_user_data(log).or_else(|_| Self::from_eth_log_without_user_data(log))
     }
 }

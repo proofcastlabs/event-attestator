@@ -26,7 +26,7 @@ pub struct EthLog {
     pub data: Bytes,
 }
 
-impl EthLogCompatible for EthLog {
+impl EthLogExt for EthLog {
     fn get_topics(&self) -> Vec<EthHash> {
         self.topics.clone()
     }
@@ -125,7 +125,7 @@ impl EthLogs {
     }
 }
 
-pub trait EthLogCompatible {
+pub trait EthLogExt {
     fn get_data(&self) -> Bytes;
     fn get_topics(&self) -> Vec<EthHash>;
 
