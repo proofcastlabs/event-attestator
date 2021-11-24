@@ -103,24 +103,33 @@ impl MetadataChainId {
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
-        let maybe_self = Self::get_all()
-            .iter()
-            .map(|id| match id.to_bytes() {
-                Err(_) => None,
-                Ok(id_bytes) => {
-                    if id_bytes == bytes {
-                        Some(*id)
-                    } else {
-                        None
-                    }
-                },
-            })
-            .filter(Option::is_some)
-            .collect::<Vec<Option<Self>>>();
-        match maybe_self.len() {
-            1 => maybe_self[0].ok_or_else(|| "Failed to unwrap `maybe_self` from option!".into()),
-            0 => Err(format!("Unrecognized bytes for `MetadataChainId`: 0x{}", hex::encode(bytes)).into()),
-            _ => Err("`MetadataChainId` collision! > 1 chain ID has the same 1st 3 bytes when hashed!".into()),
+        let number_of_bytes = bytes.len();
+        if number_of_bytes != METADATA_CHAIN_ID_NUMBER_OF_BYTES {
+            Err(format!(
+                "Expected {} bytes for metadata chain ID, got {} instead!",
+                METADATA_CHAIN_ID_NUMBER_OF_BYTES, number_of_bytes
+            )
+            .into())
+        } else {
+            let maybe_self = Self::get_all()
+                .iter()
+                .map(|id| match id.to_bytes() {
+                    Err(_) => None,
+                    Ok(id_bytes) => {
+                        if id_bytes == bytes {
+                            Some(*id)
+                        } else {
+                            None
+                        }
+                    },
+                })
+                .filter(Option::is_some)
+                .collect::<Vec<Option<Self>>>();
+            match maybe_self.len() {
+                1 => maybe_self[0].ok_or_else(|| "Failed to unwrap `maybe_self` from option!".into()),
+                0 => Err(format!("Unrecognized bytes for `MetadataChainId`: 0x{}", hex::encode(bytes)).into()),
+                _ => Err("`MetadataChainId` collision! > 1 chain ID has the same 1st 3 bytes when hashed!".into()),
+            }
         }
     }
 
@@ -163,6 +172,7 @@ impl fmt::Display for MetadataChainId {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::errors::AppError;
 
     #[test]
     fn should_print_all_ids() {
@@ -206,5 +216,21 @@ mod tests {
             .collect::<Result<Vec<MetadataChainId>>>()
             .unwrap();
         assert_eq!(result, MetadataChainId::get_all());
+    }
+
+    #[test]
+    fn should_error_when_getting_metadata_chain_id_due_to_wrong_number_of_bytes() {
+        let bytes = vec![];
+        let number_of_bytes = bytes.len();
+        assert_ne!(number_of_bytes, METADATA_CHAIN_ID_NUMBER_OF_BYTES);
+        let expected_error = format!(
+            "Expected {} bytes for metadata chain ID, got {} instead!",
+            METADATA_CHAIN_ID_NUMBER_OF_BYTES, number_of_bytes
+        );
+        match MetadataChainId::from_bytes(&bytes) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        };
     }
 }
