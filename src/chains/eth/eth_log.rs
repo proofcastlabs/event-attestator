@@ -7,7 +7,6 @@ use serde_json::{json, Value as JsonValue};
 use crate::{
     chains::eth::{
         eth_receipt::EthReceiptJson,
-        eth_traits::EthLogCompatible,
         eth_utils::{convert_hex_strings_to_h256s, convert_hex_to_bytes, convert_hex_to_eth_address},
     },
     types::{Bytes, Result},
@@ -20,7 +19,7 @@ pub struct EthLogJson {
     pub topics: Vec<String>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Constructor)]
 pub struct EthLog {
     pub address: EthAddress,
     pub topics: Vec<EthHash>,
@@ -67,10 +66,6 @@ impl EthLog {
                 bloom
             },
         )
-    }
-
-    pub fn contains_topic(&self, topic: &EthHash) -> bool {
-        self.topics.iter().any(|log_topic| log_topic == topic)
     }
 
     pub fn is_from_address(&self, address: &EthAddress) -> bool {
@@ -127,6 +122,23 @@ impl EthLogs {
                 .filter(|log| log.is_from_address_and_contains_topic(address, topic))
                 .collect(),
         )
+    }
+}
+
+pub trait EthLogCompatible {
+    fn get_data(&self) -> Bytes;
+    fn get_topics(&self) -> Vec<EthHash>;
+
+    fn contains_topic(&self, topic: &EthHash) -> bool {
+        self.get_topics().iter().any(|log_topic| log_topic == topic)
+    }
+
+    fn check_has_x_topics(&self, x: usize) -> Result<()> {
+        if self.get_topics().len() >= x {
+            Ok(())
+        } else {
+            Err(format!("Log does not have {} topics!", x).into())
+        }
     }
 }
 

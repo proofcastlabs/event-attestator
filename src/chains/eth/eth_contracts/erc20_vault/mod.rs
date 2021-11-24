@@ -3,7 +3,7 @@ use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as Et
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
-    chains::eth::{eth_contracts::encode_fxn_call, eth_traits::EthLogCompatible},
+    chains::eth::{eth_contracts::encode_fxn_call, eth_log::EthLogCompatible},
     types::{Bytes, Result},
 };
 
