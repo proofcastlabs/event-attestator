@@ -28,15 +28,6 @@ pub const ERC777_MINT_WITH_DATA_ABI: &str = "[{\"constant\":false,\"inputs\":[{\
 pub const ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX: &str =
     "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65";
 
-lazy_static! {
-    pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA: EthHash = {
-        EthHash::from_slice(
-            &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX)
-                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA`"),
-        )
-    };
-}
-
 pub const ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX: &str =
     "4599e9bf0d45c505e011d0e11f473510f083a4fdc45e3f795d58bb5379dbad68";
 
@@ -45,6 +36,18 @@ lazy_static! {
         EthHash::from_slice(
             &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX)
                 .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA`"),
+        )
+    };
+    pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA: EthHash = {
+        EthHash::from_slice(
+            &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX)
+                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA`"),
+        )
+    };
+    pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITH_ORIGIN_CHAIN_ID: EthHash = {
+        EthHash::from_slice(
+            &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITH_ORIGIN_CHAIN_ID_HEX)
+                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITH_ORIGIN_CHAIN_ID`"),
         )
     };
 }
@@ -260,7 +263,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_redeem_event_params_from_log() {
+    fn should_get_redeem_event_params_from_log_without_user_data() {
         let log = get_sample_log_with_erc777_redeem();
         let expected_result = Erc777RedeemEvent::new(
             EthAddress::from_slice(&hex::decode("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap()),
@@ -277,5 +280,29 @@ mod tests {
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         let result = Erc777RedeemEvent::from_log_without_user_data(&log);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn should_decode_redeem_event_log_containing_user_data() {
+        let log_data = hex::decode("000000000000000000000000000000000000000000000000000000000000029a000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000a616e2061646472657373000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006decaffc0ffee0000000000000000000000000000000000000000000000000000").unwrap();
+        let log_address = EthAddress::from_slice(&hex::decode("Cf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9").unwrap());
+        let log_topics = vec![
+            EthHash::from_slice(
+                &hex::decode("4599e9bf0d45c505e011d0e11f473510f083a4fdc45e3f795d58bb5379dbad68").unwrap(),
+            ),
+            EthHash::from_slice(
+                &hex::decode("000000000000000000000000976ea74026e726554db657fa54763abd0c3a0aa9").unwrap(),
+            ),
+        ];
+        let log = EthLog::new(log_address, log_topics, log_data);
+        let expected_result = Erc777RedeemEvent::new(
+            EthAddress::from_slice(&hex::decode("976ea74026e726554db657fa54763abd0c3a0aa9").unwrap()),
+            U256::from(666),
+            "an address".to_string(),
+            hex::decode("decaffc0ffee").unwrap(),
+            None,
+        );
+        let result = Erc777RedeemEvent::from_log_with_user_data(&log).unwrap();
+        assert_eq!(result, expected_result);
     }
 }
