@@ -69,6 +69,7 @@ use crate::{
             },
             eth_tx_info::{
                 maybe_filter_out_eth_tx_info_with_value_too_low_in_state,
+                maybe_filter_out_zero_eos_asset_amounts_in_state,
                 maybe_sign_eos_txs_and_add_to_eth_state,
                 EosOnEthEthTxInfos,
             },
@@ -118,6 +119,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
         })
         .and_then(maybe_filter_out_eth_tx_info_with_value_too_low_in_state)
         .and_then(account_for_fees_in_eth_tx_infos_in_state)
+        .and_then(maybe_filter_out_zero_eos_asset_amounts_in_state)
         .and_then(|state| {
             if accrue_fees {
                 update_accrued_fees_in_dictionary_and_return_eth_state(state)

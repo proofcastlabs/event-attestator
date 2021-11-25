@@ -112,11 +112,12 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                             )
                         })
                         .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
+                        .and_then(filter_out_zero_value_peg_ins_from_state)
                 },
             }
         })
-        .and_then(filter_out_zero_value_peg_ins_from_state)
         .and_then(account_for_fees_in_peg_in_infos_in_state)
+        .and_then(filter_out_zero_value_peg_ins_from_state)
         .and_then(|state| {
             if accrue_fees {
                 update_accrued_fees_in_dictionary_and_return_eth_state(state)
