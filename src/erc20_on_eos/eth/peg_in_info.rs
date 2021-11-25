@@ -359,6 +359,7 @@ pub fn maybe_parse_peg_in_info_from_canon_block_and_add_to_state<D: DatabaseInte
                         )
                     })
                     .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
+                    .and_then(filter_out_zero_value_peg_ins_from_state)
             },
         })
 }
