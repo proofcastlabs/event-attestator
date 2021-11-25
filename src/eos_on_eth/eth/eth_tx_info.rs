@@ -401,6 +401,17 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
         .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
 }
 
+pub fn maybe_filter_out_zero_eos_asset_amounts_in_state<D: DatabaseInterface>(
+    state: EthState<D>,
+) -> Result<EthState<D>> {
+    info!("✔ Maybe filtering out zero eos asset amounts in state...");
+    let dictionary = EosEthTokenDictionary::get_from_db(state.db)?;
+    let filtered = state
+        .eos_on_eth_eth_tx_infos
+        .filter_out_those_with_zero_eos_asset_amount(&dictionary);
+    state.replace_eos_on_eth_eth_tx_infos(filtered)
+}
+
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
