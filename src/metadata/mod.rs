@@ -30,7 +30,7 @@ use crate::{
 pub struct Metadata {
     pub version: MetadataVersion,
     pub user_data: Bytes,
-    pub metadata_chain_id: MetadataChainId,
+    pub origin_chain_id: MetadataChainId,
     pub origin_address: MetadataOriginAddress,
 }
 
@@ -44,7 +44,7 @@ impl Metadata {
             version: MetadataVersion::V1,
             user_data: user_data.to_vec(),
             origin_address: origin_address.clone(),
-            metadata_chain_id: origin_address.metadata_chain_id,
+            origin_chain_id: origin_address.metadata_chain_id,
         }
     }
 
@@ -52,7 +52,7 @@ impl Metadata {
         Ok(eth_abi_encode(&[
             EthAbiToken::FixedBytes(self.version.to_bytes()),
             EthAbiToken::Bytes(self.user_data.clone()),
-            EthAbiToken::FixedBytes(self.metadata_chain_id.to_bytes()?),
+            EthAbiToken::FixedBytes(self.origin_chain_id.to_bytes()?),
             match self.origin_address.metadata_chain_id.to_protocol_id() {
                 MetadataProtocolId::Ethereum => {
                     EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?))
@@ -68,7 +68,7 @@ impl Metadata {
         EosMetadata::new(
             self.version.to_byte(),
             self.user_data.clone(),
-            self.metadata_chain_id.to_bytes()?,
+            self.origin_chain_id.to_bytes()?,
             format!("0x{}", hex::encode(self.origin_address.to_bytes()?)),
         )
         .to_bytes()
@@ -104,9 +104,9 @@ impl Metadata {
             ],
             bytes,
         )?;
-        let metadata_chain_id = match tokens[2] {
+        let origin_chain_id = match tokens[2] {
             EthAbiToken::FixedBytes(ref bytes) => MetadataChainId::from_bytes(bytes),
-            _ => Err(Self::get_err_msg("metadata_chain_id", &protocol).into()),
+            _ => Err(Self::get_err_msg("origin_chain_id", &protocol).into()),
         }?;
         let eth_address = match tokens[3] {
             EthAbiToken::Address(address) => Ok(address),
@@ -120,11 +120,11 @@ impl Metadata {
             EthAbiToken::Bytes(ref bytes) => Ok(bytes.clone()),
             _ => Err(Self::get_err_msg("user_data", &protocol)),
         }?;
-        let origin_address = MetadataOriginAddress::new_from_eth_address(&eth_address, &metadata_chain_id)?;
+        let origin_address = MetadataOriginAddress::new_from_eth_address(&eth_address, &origin_chain_id)?;
         Ok(Self {
             version,
             user_data,
-            metadata_chain_id,
+            origin_chain_id,
             origin_address,
         })
     }
