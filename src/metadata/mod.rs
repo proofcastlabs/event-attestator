@@ -16,7 +16,7 @@ use crate::{
         metadata_protocol_id::MetadataProtocolId,
         metadata_version::MetadataVersion,
     },
-    types::{Byte, Bytes, Result},
+    types::{Byte, Bytes, NoneError, Result},
 };
 
 /// Metadata V1 Specification per @bertani:
@@ -36,6 +36,15 @@ pub struct Metadata {
 }
 
 impl Metadata {
+    pub fn get_destination_chain_id(&self) -> Result<MetadataChainId> {
+        match self.version {
+            MetadataVersion::V1 => Err("Cannot get destination chain ID from v1 metadata!".into()),
+            MetadataVersion::V2 => self
+                .destination_chain_id
+                .ok_or(NoneError("Error getting destinaction chain ID!")),
+        }
+    }
+
     pub fn new(user_data: &[Byte], origin_address: &MetadataOriginAddress) -> Self {
         Self::new_v1(user_data, origin_address)
     }
@@ -53,18 +62,18 @@ impl Metadata {
     fn new_v2(
         user_data: &[Byte],
         origin_address: &MetadataOriginAddress,
-        destination_chain_id: MetadataChainId,
+        destination_chain_id: &MetadataChainId,
     ) -> Self {
         Self {
             version: MetadataVersion::V2,
             user_data: user_data.to_vec(),
             origin_address: origin_address.clone(),
             origin_chain_id: origin_address.metadata_chain_id,
-            destination_chain_id: Some(destination_chain_id),
+            destination_chain_id: Some(destination_chain_id.clone()),
         }
     }
 
-    fn to_bytes_for_eth(&self) -> Result<Bytes> {
+    fn to_bytes_for_eth_v1(&self) -> Result<Bytes> {
         Ok(eth_abi_encode(&[
             EthAbiToken::FixedBytes(self.version.to_bytes()),
             EthAbiToken::Bytes(self.user_data.clone()),
@@ -78,6 +87,30 @@ impl Metadata {
                 },
             },
         ]))
+    }
+
+    fn to_bytes_for_eth_v2(&self) -> Result<Bytes> {
+        Ok(eth_abi_encode(&[
+            EthAbiToken::FixedBytes(self.version.to_bytes()),
+            EthAbiToken::Bytes(self.user_data.clone()),
+            EthAbiToken::FixedBytes(self.origin_chain_id.to_bytes()?),
+            match self.origin_address.metadata_chain_id.to_protocol_id() {
+                MetadataProtocolId::Ethereum => {
+                    EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?))
+                },
+                MetadataProtocolId::Eos | MetadataProtocolId::Bitcoin => {
+                    EthAbiToken::Bytes(self.origin_address.to_bytes()?)
+                },
+            },
+            EthAbiToken::FixedBytes(self.get_destination_chain_id()?.to_bytes()?),
+        ]))
+    }
+
+    fn to_bytes_for_eth(&self) -> Result<Bytes> {
+        match self.version {
+            MetadataVersion::V1 => self.to_bytes_for_eth_v1(),
+            MetadataVersion::V2 => self.to_bytes_for_eth_v2(),
+        }
     }
 
     fn to_bytes_for_eos(&self) -> Result<Bytes> {
@@ -160,10 +193,10 @@ impl Metadata {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::metadata::test_utils::get_sample_eth_metadata;
+    use crate::metadata::test_utils::{get_sample_eth_metadata, get_sample_eth_metadata_v2};
 
     #[test]
-    fn should_make_eth_metadata_bytes_roundtrip() {
+    fn should_make_eth_v1_metadata_bytes_roundtrip() {
         let metadata = get_sample_eth_metadata();
         let bytes = metadata.to_bytes_for_eth().unwrap();
         let expected_bytes = hex::decode("01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080005fe7f9000000000000000000000000000000000000000000000000000000000000000000000000000000005a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c0000000000000000000000000000000000000000000000000000000000000003c0ffee0000000000000000000000000000000000000000000000000000000000").unwrap();
@@ -180,5 +213,13 @@ mod tests {
         let hex_encoded_bytes = hex::encode(&bytes);
         let expected_hex_encode_bytes = "0103c0ffee04005fe7f92a307835613062353464356463313765306161646333383364326462343362306130643365303239633463";
         assert_eq!(hex_encoded_bytes, expected_hex_encode_bytes);
+    }
+
+    #[test]
+    fn should_encode_v2_metadata_for_eth() {
+        let metadata = get_sample_eth_metadata_v2();
+        let result = hex::encode(metadata.to_bytes_for_eth().unwrap());
+        let expected_result = "020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a0005fe7f9000000000000000000000000000000000000000000000000000000000000000000000000000000005a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c00e4b170000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003c0ffee0000000000000000000000000000000000000000000000000000000000";
+        assert_eq!(result, expected_result);
     }
 }
