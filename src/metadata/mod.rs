@@ -81,8 +81,10 @@ impl Metadata {
             MetadataProtocolId::Bitcoin => Err("Encoding metadata for Bitcoin is not implemented!".into()),
         }
     }
+}
 
-    #[cfg(test)]
+#[cfg(test)]
+impl Metadata {
     fn get_err_msg(field: &str, protocol: &MetadataProtocolId) -> String {
         format!(
             "Error getting `{}` from bytes for {} metadata!",
@@ -91,7 +93,6 @@ impl Metadata {
         )
     }
 
-    #[cfg(test)]
     fn from_bytes_from_eth(bytes: &[Byte]) -> Result<Self> {
         use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType};
         let protocol = MetadataProtocolId::Ethereum;
@@ -129,7 +130,6 @@ impl Metadata {
         })
     }
 
-    #[cfg(test)]
     fn from_bytes(bytes: &[Byte], protocol: &MetadataProtocolId) -> Result<Self> {
         match protocol {
             MetadataProtocolId::Ethereum => Self::from_bytes_from_eth(bytes),
