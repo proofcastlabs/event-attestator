@@ -32,6 +32,7 @@ pub struct Metadata {
     pub user_data: Bytes,
     pub origin_chain_id: MetadataChainId,
     pub origin_address: MetadataOriginAddress,
+    pub destination_chain_id: Option<MetadataChainId>,
 }
 
 impl Metadata {
@@ -45,6 +46,21 @@ impl Metadata {
             user_data: user_data.to_vec(),
             origin_address: origin_address.clone(),
             origin_chain_id: origin_address.metadata_chain_id,
+            destination_chain_id: None,
+        }
+    }
+
+    fn new_v2(
+        user_data: &[Byte],
+        origin_address: &MetadataOriginAddress,
+        destination_chain_id: MetadataChainId,
+    ) -> Self {
+        Self {
+            version: MetadataVersion::V2,
+            user_data: user_data.to_vec(),
+            origin_address: origin_address.clone(),
+            origin_chain_id: origin_address.metadata_chain_id,
+            destination_chain_id: Some(destination_chain_id),
         }
     }
 
@@ -127,6 +143,7 @@ impl Metadata {
             user_data,
             origin_chain_id,
             origin_address,
+            destination_chain_id: None,
         })
     }
 
