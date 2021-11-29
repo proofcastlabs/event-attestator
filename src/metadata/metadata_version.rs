@@ -9,12 +9,14 @@ use crate::types::{Byte, Bytes};
 #[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
 pub enum MetadataVersion {
     V1,
+    V2,
 }
 
 impl MetadataVersion {
     pub fn to_byte(&self) -> Byte {
         match self {
             Self::V1 => 0x01,
+            Self::V2 => 0x02,
         }
     }
 
@@ -26,6 +28,7 @@ impl MetadataVersion {
     pub fn from_byte(byte: &Byte) -> Result<Self> {
         match byte {
             1u8 => Ok(Self::V1),
+            2u8 => Ok(Self::V2),
             _ => Err(format!("✘ Unrecognized version byte for `MetadataVersion`: {:?}", byte).into()),
         }
     }
