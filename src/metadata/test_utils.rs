@@ -43,7 +43,11 @@ pub fn get_sample_eth_metadata() -> Metadata {
 }
 
 pub fn get_sample_eth_metadata_v2() -> Metadata {
-    Metadata::new_v2(&get_sample_user_data(), &get_sample_eth_origin_address(), &MetadataChainId::BscMainnet)
+    Metadata::new_v2(
+        &get_sample_user_data(),
+        &get_sample_eth_origin_address(),
+        &MetadataChainId::BscMainnet,
+    )
 }
 
 pub fn get_sample_eos_metadata() -> Metadata {

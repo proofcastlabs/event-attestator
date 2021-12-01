@@ -4,6 +4,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
     chains::eth::{eth_contracts::encode_fxn_call, eth_log::EthLogExt},
+    metadata::metadata_chain_id::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES},
     types::{Bytes, Result},
 };
 
@@ -23,6 +24,9 @@ pub const ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC_HEX: &str =
 pub const ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC_HEX: &str =
     "d45bf0460398ad3b27d2bd85144872898591943b81eca880e34fca0a229aa0dc";
 
+pub const ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2_HEX: &str =
+    "c03be660a5421fb17c93895da9db564bd4485d475f0d8b3175f7d55ed421bebb";
+
 lazy_static! {
     pub static ref ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC: EthHash = {
         EthHash::from_slice(
@@ -34,6 +38,12 @@ lazy_static! {
         EthHash::from_slice(
             &hex::decode(ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC_HEX)
                 .expect("✘ Invalid hex in `ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC`!"),
+        )
+    };
+    pub static ref ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2: EthHash = {
+        EthHash::from_slice(
+            &hex::decode(ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2_HEX)
+                .expect("✘ Invalid hex in `ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2_HEX`!"),
         )
     };
 }
@@ -87,6 +97,8 @@ pub struct Erc20VaultPegInEventParams {
     pub token_sender: EthAddress,
     pub token_address: EthAddress,
     pub destination_address: String,
+    pub origin_chain_id: Option<MetadataChainId>,
+    pub destination_chain_id: Option<MetadataChainId>,
 }
 
 impl Erc20VaultPegInEventParams {
@@ -94,7 +106,8 @@ impl Erc20VaultPegInEventParams {
         format!("Error getting `{}` for `Erc20VaultPegInEventParams`!", field)
     }
 
-    fn from_eth_log_without_user_data<L: EthLogExt>(log: &L) -> Result<Self> {
+    fn from_v1_log_without_user_data<L: EthLogExt>(log: &L) -> Result<Self> {
+        info!("Decoding peg-in event params from v1 log without user data...");
         let tokens = eth_abi_decode(
             &[
                 EthAbiParamType::Address,
@@ -106,6 +119,8 @@ impl Erc20VaultPegInEventParams {
         )?;
         Ok(Self {
             user_data: vec![],
+            origin_chain_id: None,
+            destination_chain_id: None,
             token_address: match tokens[0] {
                 EthAbiToken::Address(value) => Ok(value),
                 _ => Err(Self::get_err_msg("token_address")),
@@ -125,7 +140,8 @@ impl Erc20VaultPegInEventParams {
         })
     }
 
-    fn from_eth_log_with_user_data<L: EthLogExt>(log: &L) -> Result<Self> {
+    fn from_v1_log_with_user_data<L: EthLogExt>(log: &L) -> Result<Self> {
+        info!("Decoding peg-in event params from v1 log with user data...");
         let tokens = eth_abi_decode(
             &[
                 EthAbiParamType::Address,
@@ -133,6 +149,46 @@ impl Erc20VaultPegInEventParams {
                 EthAbiParamType::Uint(256),
                 EthAbiParamType::String,
                 EthAbiParamType::Bytes,
+            ],
+            &log.get_data(),
+        )?;
+        Ok(Self {
+            origin_chain_id: None,
+            destination_chain_id: None,
+            token_address: match tokens[0] {
+                EthAbiToken::Address(value) => Ok(value),
+                _ => Err(Self::get_err_msg("token_address")),
+            }?,
+            token_sender: match tokens[1] {
+                EthAbiToken::Address(value) => Ok(value),
+                _ => Err(Self::get_err_msg("token_sender")),
+            }?,
+            token_amount: match tokens[2] {
+                EthAbiToken::Uint(value) => Ok(value),
+                _ => Err(Self::get_err_msg("token_amount")),
+            }?,
+            destination_address: match tokens[3] {
+                EthAbiToken::String(ref value) => Ok(value.clone()),
+                _ => Err(Self::get_err_msg("destination_address")),
+            }?,
+            user_data: match tokens[4] {
+                EthAbiToken::Bytes(ref value) => Ok(value.clone()),
+                _ => Err(Self::get_err_msg("user_data")),
+            }?,
+        })
+    }
+
+    fn from_v2_log<L: EthLogExt>(log: &L) -> Result<Self> {
+        info!("Decoding peg-in event params from v2 log...");
+        let tokens = eth_abi_decode(
+            &[
+                EthAbiParamType::Address,
+                EthAbiParamType::Address,
+                EthAbiParamType::Uint(256),
+                EthAbiParamType::String,
+                EthAbiParamType::Bytes,
+                EthAbiParamType::FixedBytes(METADATA_CHAIN_ID_NUMBER_OF_BYTES),
+                EthAbiParamType::FixedBytes(METADATA_CHAIN_ID_NUMBER_OF_BYTES),
             ],
             &log.get_data(),
         )?;
@@ -157,11 +213,24 @@ impl Erc20VaultPegInEventParams {
                 EthAbiToken::Bytes(ref value) => Ok(value.clone()),
                 _ => Err(Self::get_err_msg("user_data")),
             }?,
+            origin_chain_id: match tokens[5] {
+                EthAbiToken::FixedBytes(ref bytes) => Ok(Some(MetadataChainId::from_bytes(bytes)?)),
+                _ => Err(Self::get_err_msg("origin_chain_id")),
+            }?,
+            destination_chain_id: match tokens[6] {
+                EthAbiToken::FixedBytes(ref bytes) => Ok(Some(MetadataChainId::from_bytes(bytes)?)),
+                _ => Err(Self::get_err_msg("destination_chain_id")),
+            }?,
         })
     }
 
     pub fn from_eth_log<L: EthLogExt>(log: &L) -> Result<Self> {
-        Self::from_eth_log_with_user_data(log).or_else(|_| Self::from_eth_log_without_user_data(log))
+        match hex::encode(&log.get_event_signature()?).as_str() {
+            ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC_HEX => Self::from_v1_log_without_user_data(log),
+            ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC_HEX => Self::from_v1_log_with_user_data(log),
+            ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2_HEX => Self::from_v2_log(log),
+            _ => Err("Cannot parse peg-in event - event signature not recognized!".into()),
+        }
     }
 }
 
@@ -169,7 +238,10 @@ impl Erc20VaultPegInEventParams {
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::eth_test_utils::{get_sample_eth_address, get_sample_log_with_erc20_peg_in_event},
+        chains::eth::{
+            eth_log::EthLog,
+            eth_test_utils::{get_sample_eth_address, get_sample_log_with_erc20_peg_in_event},
+        },
         erc20_on_evm::test_utils::get_sample_erc20_vault_log_with_user_data,
     };
 
@@ -231,6 +303,8 @@ mod tests {
         let result = Erc20VaultPegInEventParams::from_eth_log(&log).unwrap();
         let expected_result = Erc20VaultPegInEventParams {
             user_data: vec![],
+            origin_chain_id: None,
+            destination_chain_id: None,
             token_amount: U256::from_dec_str("1337").unwrap(),
             token_sender: EthAddress::from_slice(&hex::decode(&"fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
             token_address: EthAddress::from_slice(&hex::decode(&"9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap()),
@@ -247,11 +321,30 @@ mod tests {
         let result = Erc20VaultPegInEventParams::from_eth_log(&log).unwrap();
         let expected_result = Erc20VaultPegInEventParams {
             user_data: vec![],
+            origin_chain_id: None,
+            destination_chain_id: None,
             token_amount: U256::from_dec_str("1000000000000000000").unwrap(),
             token_sender: EthAddress::from_slice(&hex::decode(&"8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
             token_address: EthAddress::from_slice(&hex::decode(&"89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap()),
             // NOTE: This address was from when @bertani accidentally included the `"` chars in the string!
             destination_address: "\"0x8127192c2e4703dfb47f087883cc3120fe061cb8\"".to_string(),
+        };
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_params_from_v2_log() {
+        let s = "{\"address\":\"0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9\",\"topics\":[\"0xc03be660a5421fb17c93895da9db564bd4485d475f0d8b3175f7d55ed421bebb\"],\"data\":\"0x0000000000000000000000005fc8d32690cc91d4c39d9d3abcbd16989f87570700000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8000000000000000000000000000000000000000000000000000000000000053900000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200069c3220000000000000000000000000000000000000000000000000000000000f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c616e656f736164647265737300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\"}";
+        let log = EthLog::from_str(s).unwrap();
+        let result = Erc20VaultPegInEventParams::from_eth_log(&log).unwrap();
+        let expected_result = Erc20VaultPegInEventParams {
+            user_data: vec![],
+            token_amount: U256::from(1337),
+            destination_address: "aneosaddress".to_string(),
+            origin_chain_id: Some(MetadataChainId::EthereumRopsten),
+            destination_chain_id: Some(MetadataChainId::EthereumRinkeby),
+            token_sender: EthAddress::from_slice(&hex::decode("70997970c51812dc3a010c7d01b50e0d17dc79c8").unwrap()),
+            token_address: EthAddress::from_slice(&hex::decode("5fc8d32690cc91d4c39d9d3abcbd16989f875707").unwrap()),
         };
         assert_eq!(result, expected_result);
     }
