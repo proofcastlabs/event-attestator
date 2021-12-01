@@ -1,13 +1,12 @@
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
-use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{
     chains::eth::{
         eth_constants::{ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
-        eth_contracts::encode_fxn_call,
+        eth_contracts::{encode_fxn_call, SupportedTopics},
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_log::EthLogExt,
@@ -65,40 +64,13 @@ enum ERC777SupportedTopics {
     V1WithoutUserData,
 }
 
-impl ERC777SupportedTopics {
+impl SupportedTopics for ERC777SupportedTopics {
     fn to_bytes(&self) -> Bytes {
         match &self {
             Self::V2 => ERC777_REDEEM_EVENT_TOPIC_V2.as_bytes().to_vec(),
             Self::V1WithUserData => ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA.as_bytes().to_vec(),
             Self::V1WithoutUserData => ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA.as_bytes().to_vec(),
         }
-    }
-
-    fn from_bytes(bytes: Bytes) -> Result<Self> {
-        let result = Self::get_all()
-            .iter()
-            .zip(Self::get_all_as_bytes().iter())
-            .filter(|(_, supported_topic_bytes)| bytes == supported_topic_bytes.to_vec())
-            .map(|(supported_topic, _)| supported_topic)
-            .cloned()
-            .collect::<Vec<Self>>();
-        if result.is_empty() {
-            Err("Cannot get `ERC777SupportedTopics` from bytes - unrecognized topic!".into())
-        } else {
-            Ok(result[0].clone())
-        }
-    }
-
-    fn get_all() -> Vec<Self> {
-        Self::iter().collect()
-    }
-
-    fn get_all_as_bytes() -> Vec<Bytes> {
-        Self::get_all().iter().map(Self::to_bytes).collect()
-    }
-
-    fn from_topic(topic: &EthHash) -> Result<Self> {
-        Self::from_bytes(topic.as_bytes().to_vec())
     }
 }
 
@@ -187,7 +159,7 @@ impl Erc777RedeemEvent {
     }
 
     fn from_v1_log_without_user_data<L: EthLogExt>(log: &L) -> Result<Self> {
-        info!("✔ Attemping to get `Erc777RedeemEvent` from v1 log WITHOUT user data...");
+        info!("✔ Decoding `Erc777RedeemEvent` from v1 log WITHOUT user data...");
         let tokens = eth_abi_decode(&[EthAbiParamType::Uint(256), EthAbiParamType::String], &log.get_data())?;
         log.check_has_x_topics(2).and_then(|_| {
             Ok(Self {
@@ -209,9 +181,8 @@ impl Erc777RedeemEvent {
         })
     }
 
-    // TODO test!
     fn from_v1_log_with_user_data<L: EthLogExt>(log: &L) -> Result<Self> {
-        info!("✔ Attemping to get `Erc777RedeemEvent` from v1 log WITH user data...");
+        info!("✔ Decoding `Erc777RedeemEvent` from v1 log WITH user data...");
         let tokens = eth_abi_decode(
             &[
                 EthAbiParamType::Uint(256),
@@ -244,7 +215,7 @@ impl Erc777RedeemEvent {
     }
 
     fn from_v2_log<L: EthLogExt>(log: &L) -> Result<Self> {
-        info!("✔ Attemping to get `Erc777RedeemEvent` from v2 log...");
+        info!("✔ Decoding `Erc777RedeemEvent` from v2 log...");
         let tokens = eth_abi_decode(
             &[
                 EthAbiParamType::Uint(256),
@@ -285,6 +256,7 @@ impl Erc777RedeemEvent {
     }
 
     pub fn from_eth_log<L: EthLogExt>(log: &L) -> Result<Self> {
+        info!("✔ Getting `Erc777RedeemEvent` from ETH log...");
         log.get_event_signature()
             .and_then(|event_signature| ERC777SupportedTopics::from_topic(&event_signature))
             .and_then(|supported_topic| match supported_topic {
@@ -353,7 +325,7 @@ mod tests {
 
     #[test]
     fn should_fail_to_get_params_from_non_erc777_redeem_event() {
-        let expected_error = "Cannot get `ERC777SupportedTopics` from bytes - unrecognized topic!";
+        let expected_error = "Cannot get supported topic from bytes - unrecognized topic!";
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
         match Erc777RedeemEvent::from_eth_log(&log) {
             Ok(_) => panic!("Should not have succeeded"),

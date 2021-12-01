@@ -142,7 +142,7 @@ pub trait EthLogExt {
     fn get_topics(&self) -> Vec<EthHash>;
 
     fn get_event_signature(&self) -> Result<EthHash> {
-        self.check_has_x_topics(1).map(|_| self.get_topics()[0].clone())
+        self.check_has_x_topics(1).map(|_| self.get_topics()[0])
     }
 
     fn contains_topic(&self, topic: &EthHash) -> bool {

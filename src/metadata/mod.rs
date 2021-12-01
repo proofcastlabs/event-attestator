@@ -69,7 +69,7 @@ impl Metadata {
             user_data: user_data.to_vec(),
             origin_address: origin_address.clone(),
             origin_chain_id: origin_address.metadata_chain_id,
-            destination_chain_id: Some(destination_chain_id.clone()),
+            destination_chain_id: Some(*destination_chain_id),
         }
     }
 

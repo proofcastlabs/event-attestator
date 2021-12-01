@@ -1,11 +1,13 @@
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
-use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{
-    chains::eth::{eth_contracts::encode_fxn_call, eth_log::EthLogExt},
+    chains::eth::{
+        eth_contracts::{encode_fxn_call, SupportedTopics},
+        eth_log::EthLogExt,
+    },
     metadata::metadata_chain_id::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES},
     types::{Bytes, Result},
 };
@@ -57,40 +59,13 @@ enum ERC20VaultSupportedTopics {
     V1WithoutUserData,
 }
 
-impl ERC20VaultSupportedTopics {
+impl SupportedTopics for ERC20VaultSupportedTopics {
     fn to_bytes(&self) -> Bytes {
         match &self {
             Self::V2 => ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2.as_bytes().to_vec(),
             Self::V1WithUserData => ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC.as_bytes().to_vec(),
             Self::V1WithoutUserData => ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC.as_bytes().to_vec(),
         }
-    }
-
-    fn from_bytes(bytes: Bytes) -> Result<Self> {
-        let result = Self::get_all()
-            .iter()
-            .zip(Self::get_all_as_bytes().iter())
-            .filter(|(_, supported_topic_bytes)| bytes == supported_topic_bytes.to_vec())
-            .map(|(supported_topic, _)| supported_topic)
-            .cloned()
-            .collect::<Vec<Self>>();
-        if result.is_empty() {
-            Err("Cannot get `ERC20VaultSupportedTopics` from bytes - unrecognized topic!".into())
-        } else {
-            Ok(result[0].clone())
-        }
-    }
-
-    fn get_all() -> Vec<Self> {
-        Self::iter().collect()
-    }
-
-    fn get_all_as_bytes() -> Vec<Bytes> {
-        Self::get_all().iter().map(Self::to_bytes).collect()
-    }
-
-    fn from_topic(topic: &EthHash) -> Result<Self> {
-        Self::from_bytes(topic.as_bytes().to_vec())
     }
 }
 
@@ -271,6 +246,7 @@ impl Erc20VaultPegInEventParams {
     }
 
     pub fn from_eth_log<L: EthLogExt>(log: &L) -> Result<Self> {
+        info!("✔ Getting `Erc20VaultPegInEventParams` from ETH log...");
         log.get_event_signature()
             .and_then(|event_signature| ERC20VaultSupportedTopics::from_topic(&event_signature))
             .and_then(|supported_topic| match supported_topic {
