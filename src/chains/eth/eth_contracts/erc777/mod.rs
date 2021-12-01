@@ -285,12 +285,13 @@ impl Erc777RedeemEvent {
     }
 
     pub fn from_eth_log<L: EthLogExt>(log: &L) -> Result<Self> {
-        ERC777SupportedTopics::from_topic(&log.get_event_signature()?).and_then(|supported_topic| match supported_topic
-        {
-            ERC777SupportedTopics::V2 => Self::from_v2_log(log),
-            ERC777SupportedTopics::V1WithUserData => Self::from_v1_log_with_user_data(log),
-            ERC777SupportedTopics::V1WithoutUserData => Self::from_v1_log_without_user_data(log),
-        })
+        log.get_event_signature()
+            .and_then(|event_signature| ERC777SupportedTopics::from_topic(&event_signature))
+            .and_then(|supported_topic| match supported_topic {
+                ERC777SupportedTopics::V2 => Self::from_v2_log(log),
+                ERC777SupportedTopics::V1WithUserData => Self::from_v1_log_with_user_data(log),
+                ERC777SupportedTopics::V1WithoutUserData => Self::from_v1_log_without_user_data(log),
+            })
     }
 }
 
