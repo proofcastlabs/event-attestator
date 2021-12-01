@@ -19,6 +19,13 @@ pub struct EthLogJson {
     pub topics: Vec<String>,
 }
 
+#[cfg(test)]
+impl EthLogJson {
+    pub fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str::<EthLogJson>(s)?)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Constructor)]
 pub struct EthLog {
     pub address: EthAddress,
@@ -37,6 +44,11 @@ impl EthLogExt for EthLog {
 }
 
 impl EthLog {
+    #[cfg(test)]
+    pub fn from_str(s: &str) -> Result<Self> {
+        EthLogJson::from_str(s).and_then(|ref json| Self::from_json(json))
+    }
+
     pub fn from_json(log_json: &EthLogJson) -> Result<Self> {
         Ok(EthLog {
             data: convert_hex_to_bytes(&log_json.data)?,
@@ -128,6 +140,10 @@ impl EthLogs {
 pub trait EthLogExt {
     fn get_data(&self) -> Bytes;
     fn get_topics(&self) -> Vec<EthHash>;
+
+    fn get_event_signature(&self) -> Result<EthHash> {
+        self.check_has_x_topics(1).map(|_| self.get_topics()[0].clone())
+    }
 
     fn contains_topic(&self, topic: &EthHash) -> bool {
         self.get_topics().iter().any(|log_topic| log_topic == topic)
@@ -286,5 +302,12 @@ mod tests {
         let num_logs_after = result.len();
         assert_eq!(num_logs_after, 1);
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_eth_log_from_str() {
+        let s = "{\"address\":\"0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9\",\"topics\":[\"0xc03be660a5421fb17c93895da9db564bd4485d475f0d8b3175f7d55ed421bebb\"],\"data\":\"0x0000000000000000000000005fc8d32690cc91d4c39d9d3abcbd16989f87570700000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8000000000000000000000000000000000000000000000000000000000000053900000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200069c3220000000000000000000000000000000000000000000000000000000000f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c616e656f736164647265737300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\"}";
+        let result = EthLog::from_str(s);
+        assert!(result.is_ok());
     }
 }
