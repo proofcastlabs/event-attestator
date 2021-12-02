@@ -117,9 +117,9 @@ impl EthOnEvmEvmTxInfo {
     }
 
     pub fn divert_to_safe_address_if_destination_is_token_contract_address(&self) -> Self {
-        info!("✔ Checking if the destination address is the same as the EVM token contract address...");
+        info!("✔ Checking if the destination address is the same as the INT token contract address...");
         if self.destination_address == self.evm_token_address {
-            info!("✔ Recipient address is same as EVM token address! Diverting to safe address...");
+            info!("✔ Recipient address is same as INT token address! Diverting to safe address...");
             self.update_destination_address(*SAFE_EVM_ADDRESS)
         } else {
             self.clone()
@@ -137,7 +137,7 @@ impl EthOnEvmEvmTxInfo {
     ) -> Result<EvmTransaction> {
         let operator_data = None;
         let metadata_bytes = self.to_metadata_bytes()?;
-        info!("✔ Signing EVM transaction for tx info: {:?}", self);
+        info!("✔ Signing INT transaction for tx info: {:?}", self);
         debug!("✔ Signing with nonce:     {}", nonce);
         debug!("✔ Signing with chain id:  {}", chain_id);
         debug!("✔ Signing with gas limit: {}", gas_limit);
@@ -222,7 +222,7 @@ impl EthOnEvmEvmTxInfos {
                     true => true,
                     false => {
                         info!(
-                            "✘ Filtering out peg in info due to zero EVM asset amount: {:?}",
+                            "✘ Filtering out peg in info due to zero INT asset amount: {:?}",
                             tx_info
                         );
                         false
@@ -262,7 +262,7 @@ impl EthOnEvmEvmTxInfos {
         origin_chain_id: &EthChainId,
         router_address: &EthAddress,
     ) -> Result<Self> {
-        info!("✔ Getting `ERC20-on-EVM` peg in infos from receipt...");
+        info!("✔ Getting `erc20-on-int` peg in infos from receipt...");
         Ok(Self::new(
             Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, vault_address)
                 .iter()
@@ -290,7 +290,7 @@ impl EthOnEvmEvmTxInfos {
         submission_material: &EthSubmissionMaterial,
         vault_address: &EthAddress,
     ) -> Result<EthSubmissionMaterial> {
-        info!("✔ Filtering submission material receipts for those pertaining to `ERC20-on-EVM` peg-ins...");
+        info!("✔ Filtering submission material receipts for those pertaining to `erc20-on-int` peg-ins...");
         info!(
             "✔ Num receipts before filtering: {}",
             submission_material.receipts.len()
@@ -346,7 +346,7 @@ impl EthOnEvmEvmTxInfos {
         evm_private_key: &EvmPrivateKey,
         dictionary: &EthEvmTokenDictionary,
     ) -> Result<EvmTransactions> {
-        info!("✔ Signing `ERC20-on-EVM` EVM transactions...");
+        info!("✔ Signing `erc20-on-int` INT transactions...");
         Ok(EvmTransactions::new(
             self.iter()
                 .enumerate()
@@ -369,7 +369,7 @@ impl EthOnEvmEvmTxInfos {
 pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    info!("✔ Maybe parsing `ERC20-on-EVM` peg-in infos...");
+    info!("✔ Maybe parsing `erc20-on-int` peg-in infos...");
     state
         .eth_db_utils
         .get_eth_canon_block_from_db()
@@ -429,7 +429,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
 
 pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     if state.erc20_on_int_int_tx_infos.is_empty() {
-        info!("✔ No tx infos in state ∴ no EVM transactions to sign!");
+        info!("✔ No tx infos in state ∴ no INT transactions to sign!");
         Ok(state)
     } else {
         state
@@ -458,7 +458,7 @@ pub fn maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address<D: D
     if state.erc20_on_int_int_tx_infos.is_empty() {
         Ok(state)
     } else {
-        info!("✔ Maybe diverting EVM txs to safe address if destination address is the token contract address...");
+        info!("✔ Maybe diverting INT txs to safe address if destination address is the token contract address...");
         let new_infos = state
             .erc20_on_int_int_tx_infos
             .divert_to_safe_address_if_destination_is_token_contract_address();
@@ -466,6 +466,7 @@ pub fn maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address<D: D
     }
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -625,3 +626,4 @@ mod tests {
         assert_eq!(result.destination_address, *SAFE_EVM_ADDRESS);
     }
 }
+*/
