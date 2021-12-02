@@ -26,6 +26,7 @@ use crate::{
     metadata::{
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
+        metadata_chain_id::MetadataChainId,
         metadata_traits::ToMetadata,
         Metadata,
     },
@@ -42,7 +43,7 @@ pub struct EthOnEvmEvmTxInfo {
     pub eth_token_address: EthAddress,
     pub destination_address: EthAddress,
     pub user_data: Bytes,
-    pub origin_chain_id: EthChainId,
+    pub origin_chain_id: MetadataChainId,
     pub router_address: EthAddress,
 }
 
@@ -60,10 +61,7 @@ impl ToMetadata for EthOnEvmEvmTxInfo {
         };
         Ok(Metadata::new(
             &user_data,
-            &MetadataOriginAddress::new_from_eth_address(
-                &self.token_sender,
-                &self.origin_chain_id.to_metadata_chain_id(),
-            )?,
+            &MetadataOriginAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id)?,
         ))
     }
 
@@ -259,7 +257,6 @@ impl EthOnEvmEvmTxInfos {
         receipt: &EthReceipt,
         vault_address: &EthAddress,
         dictionary: &EthEvmTokenDictionary,
-        origin_chain_id: &EthChainId,
         router_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `erc20-on-int` peg in infos from receipt...");
@@ -271,11 +268,11 @@ impl EthOnEvmEvmTxInfos {
                     let tx_info = EthOnEvmEvmTxInfo {
                         router_address: *router_address,
                         token_sender: event_params.token_sender,
-                        origin_chain_id: origin_chain_id.clone(),
                         user_data: event_params.user_data.clone(),
                         eth_token_address: event_params.token_address,
                         originating_tx_hash: receipt.transaction_hash,
                         native_token_amount: event_params.token_amount,
+                        origin_chain_id: event_params.get_origin_chain_id()?,
                         destination_address: safely_convert_hex_to_eth_address(&event_params.destination_address)?,
                         evm_token_address: dictionary.get_evm_address_from_eth_address(&event_params.token_address)?,
                     };
@@ -318,7 +315,6 @@ impl EthOnEvmEvmTxInfos {
         submission_material: &EthSubmissionMaterial,
         vault_address: &EthAddress,
         dictionary: &EthEvmTokenDictionary,
-        origin_chain_id: &EthChainId,
         router_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `EthOnEvmEvmTxInfos` from submission material...");
@@ -327,7 +323,7 @@ impl EthOnEvmEvmTxInfos {
                 .get_receipts()
                 .iter()
                 .map(|receipt| {
-                    Self::from_eth_receipt(receipt, vault_address, dictionary, origin_chain_id, router_address)
+                    Self::from_eth_receipt(receipt, vault_address, dictionary, router_address)
                 })
                 .collect::<Result<Vec<EthOnEvmEvmTxInfos>>>()?
                 .iter()
@@ -387,7 +383,6 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                     &submission_material,
                     &state.eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
                     &EthEvmTokenDictionary::get_from_db(state.db)?,
-                    &state.eth_db_utils.get_eth_chain_id_from_db()?,
                     &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
                 )
                 .and_then(|tx_infos| state.add_erc20_on_int_int_tx_infos(tx_infos))
@@ -492,7 +487,6 @@ mod tests {
             &material,
             &vault_address,
             &dictionary,
-            &origin_chain_id,
             &router_address,
         )
         .unwrap()
@@ -524,7 +518,6 @@ mod tests {
             &material,
             &vault_address,
             &dictionary,
-            &origin_chain_id,
             &router_address,
         )
         .unwrap();
