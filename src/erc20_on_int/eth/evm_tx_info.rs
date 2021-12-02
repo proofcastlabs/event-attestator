@@ -22,7 +22,7 @@ use crate::{
     },
     constants::SAFE_EVM_ADDRESS,
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    erc20_on_evm::fees_calculator::{FeeCalculator, FeesCalculator},
+    erc20_on_int::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
@@ -398,14 +398,14 @@ pub fn filter_out_zero_value_evm_tx_infos_from_state<D: DatabaseInterface>(state
     info!("✔ Maybe filtering out zero value `EthOnEvmEvmTxInfos`...");
     debug!(
         "✔ Num `EthOnEvmEvmTxInfos` before: {}",
-        state.erc20_on_evm_evm_signed_txs.len()
+        state.erc20_on_int_int_signed_txs.len()
     );
     state
-        .erc20_on_evm_evm_tx_infos
+        .erc20_on_int_int_tx_infos
         .filter_out_zero_values(&EthEvmTokenDictionary::get_from_db(state.db)?)
         .and_then(|filtered_tx_infos| {
             debug!("✔ Num `EthOnEvmEvmTxInfos` after: {}", filtered_tx_infos.len());
-            state.replace_erc20_on_evm_evm_tx_infos(filtered_tx_infos)
+            state.replace_erc20_on_int_int_tx_infos(filtered_tx_infos)
         })
 }
 
@@ -429,12 +429,12 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
 }
 
 pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    if state.erc20_on_evm_evm_tx_infos.is_empty() {
+    if state.erc20_on_int_int_tx_infos.is_empty() {
         info!("✔ No tx infos in state ∴ no EVM transactions to sign!");
         Ok(state)
     } else {
         state
-            .erc20_on_evm_evm_tx_infos
+            .erc20_on_int_int_tx_infos
             .to_evm_signed_txs(
                 state.evm_db_utils.get_eth_account_nonce_from_db()?,
                 &state.evm_db_utils.get_eth_chain_id_from_db()?,
@@ -448,7 +448,7 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
                 {
                     debug!("✔ Signed transactions: {:?}", signed_txs);
                 }
-                state.add_erc20_on_evm_evm_signed_txs(signed_txs)
+                state.add_erc20_on_int_int_signed_txs(signed_txs)
             })
     }
 }
@@ -456,14 +456,14 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
 pub fn maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    if state.erc20_on_evm_evm_tx_infos.is_empty() {
+    if state.erc20_on_int_int_tx_infos.is_empty() {
         Ok(state)
     } else {
         info!("✔ Maybe diverting EVM txs to safe address if destination address is the token contract address...");
         let new_infos = state
-            .erc20_on_evm_evm_tx_infos
+            .erc20_on_int_int_tx_infos
             .divert_to_safe_address_if_destination_is_token_contract_address();
-        state.replace_erc20_on_evm_evm_tx_infos(new_infos)
+        state.replace_erc20_on_int_int_tx_infos(new_infos)
     }
 }
 
@@ -473,7 +473,7 @@ mod tests {
     use crate::{
         chains::eth::eth_traits::EthTxInfoCompatible,
         dictionaries::eth_evm::test_utils::get_sample_eth_evm_dictionary,
-        erc20_on_evm::test_utils::{
+        erc20_on_int::test_utils::{
             get_eth_submission_material_n,
             get_sample_eth_evm_token_dictionary,
             get_sample_evm_private_key,

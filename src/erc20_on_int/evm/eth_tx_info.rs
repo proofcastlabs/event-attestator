@@ -27,7 +27,7 @@ use crate::{
     },
     constants::SAFE_ETH_ADDRESS,
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    erc20_on_evm::fees_calculator::{FeeCalculator, FeesCalculator},
+    erc20_on_int::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
@@ -243,6 +243,7 @@ impl EthOnEvmEthTxInfos {
         ))
     }
 
+    // FIXME Make sure this works for the v2 redeem event!
     fn is_log_erc20_on_evm_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
         debug!(
             "✔ Checking log contains topic: {}",
@@ -421,14 +422,14 @@ pub fn filter_out_zero_value_eth_tx_infos_from_state<D: DatabaseInterface>(state
     info!("✔ Maybe filtering out zero value `EthOnEvmEthTxInfos`...");
     debug!(
         "✔ Num `EthOnEvmEthTxInfos` before: {}",
-        state.erc20_on_evm_eth_signed_txs.len()
+        state.erc20_on_int_eth_signed_txs.len()
     );
     state
-        .erc20_on_evm_eth_tx_infos
+        .erc20_on_int_eth_tx_infos
         .filter_out_zero_values()
         .and_then(|filtered_tx_infos| {
             debug!("✔ Num `EthOnEvmEthTxInfos` after: {}", filtered_tx_infos.len());
-            state.replace_erc20_on_evm_eth_tx_infos(filtered_tx_infos)
+            state.replace_erc20_on_int_eth_tx_infos(filtered_tx_infos)
         })
 }
 
@@ -452,12 +453,12 @@ pub fn filter_submission_material_for_redeem_events_in_state<D: DatabaseInterfac
 }
 
 pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    if state.erc20_on_evm_eth_tx_infos.is_empty() {
+    if state.erc20_on_int_eth_tx_infos.is_empty() {
         info!("✔ No tx infos in state ∴ no ETH transactions to sign!");
         Ok(state)
     } else {
         state
-            .erc20_on_evm_eth_tx_infos
+            .erc20_on_int_eth_tx_infos
             .to_eth_signed_txs(
                 state.eth_db_utils.get_eth_account_nonce_from_db()?,
                 &state.eth_db_utils.get_eth_chain_id_from_db()?,
@@ -470,7 +471,7 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EthS
                 {
                     debug!("✔ Signed transactions: {:?}", signed_txs);
                 }
-                state.add_erc20_on_evm_eth_signed_txs(signed_txs)
+                state.add_erc20_on_int_eth_signed_txs(signed_txs)
             })
     }
 }
@@ -478,24 +479,23 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EthS
 pub fn maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    if state.erc20_on_evm_eth_tx_infos.is_empty() {
+    if state.erc20_on_int_eth_tx_infos.is_empty() {
         Ok(state)
     } else {
         info!("✔ Maybe diverting ETH txs to safe address if destination address is the token contract address...");
         let new_infos = state
-            .erc20_on_evm_eth_tx_infos
+            .erc20_on_int_eth_tx_infos
             .divert_to_safe_address_if_destination_is_token_contract_address();
-        state.replace_erc20_on_evm_eth_tx_infos(new_infos)
+        state.replace_erc20_on_int_eth_tx_infos(new_infos)
     }
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
         chains::eth::eth_traits::EthTxInfoCompatible,
-        erc20_on_evm::test_utils::{
+        erc20_on_int::test_utils::{
             get_evm_submission_material_n,
             get_sample_eth_evm_token_dictionary,
             get_sample_eth_private_key,
@@ -625,4 +625,3 @@ mod tests {
         assert_eq!(result.destination_address, *SAFE_ETH_ADDRESS);
     }
 }
-*/

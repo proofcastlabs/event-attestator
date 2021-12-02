@@ -19,7 +19,7 @@ use crate::{
         validate_receipts_in_state::validate_receipts_in_state,
     },
     dictionaries::eth_evm::get_eth_evm_token_dictionary_from_db_and_add_to_eth_state,
-    erc20_on_evm::{
+    erc20_on_int::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         evm::{
             account_for_fees::maybe_account_for_fees,

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
-    erc20_on_evm::check_core_is_initialized::check_core_is_initialized,
+    erc20_on_int::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,
 };

@@ -32,7 +32,7 @@ use crate::{
         dictionary_constants::ETH_EVM_DICTIONARY_KEY,
         eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
     },
-    erc20_on_evm::check_core_is_initialized::check_core_is_initialized,
+    erc20_on_int::check_core_is_initialized::check_core_is_initialized,
     fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,

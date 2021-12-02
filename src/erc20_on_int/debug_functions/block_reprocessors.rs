@@ -14,7 +14,7 @@ use crate::{
     },
     check_debug_mode::check_debug_mode,
     dictionaries::eth_evm::{get_eth_evm_token_dictionary_from_db_and_add_to_eth_state, EthEvmTokenDictionary},
-    erc20_on_evm::{
+    erc20_on_int::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
             account_for_fees::{
@@ -74,7 +74,7 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
                         &state.evm_db_utils.get_eth_chain_id_from_db()?,
                     )
                 })
-                .and_then(|params| state.add_erc20_on_evm_eth_tx_infos(params))
+                .and_then(|params| state.add_erc20_on_int_eth_tx_infos(params))
         })
         .and_then(filter_out_zero_value_eth_tx_infos_from_state)
         .and_then(account_for_fees_in_eth_tx_infos_in_state)
@@ -94,13 +94,13 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
             info!("✔ Getting EVM output json...");
             let output = serde_json::to_string(&EvmOutput {
                 evm_latest_block_number: state.evm_db_utils.get_latest_eth_block_number()?,
-                eth_signed_transactions: if state.erc20_on_evm_eth_signed_txs.is_empty() {
+                eth_signed_transactions: if state.erc20_on_int_eth_signed_txs.is_empty() {
                     vec![]
                 } else {
                     let use_any_sender_tx = false;
                     get_eth_signed_tx_info_from_evm_txs(
-                        &state.erc20_on_evm_eth_signed_txs,
-                        &state.erc20_on_evm_eth_tx_infos,
+                        &state.erc20_on_int_eth_signed_txs,
+                        &state.erc20_on_int_eth_tx_infos,
                         state.eth_db_utils.get_eth_account_nonce_from_db()?,
                         use_any_sender_tx,
                         state.eth_db_utils.get_any_sender_nonce_from_db()?,
@@ -139,7 +139,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                         &state.eth_db_utils.get_eth_chain_id_from_db()?,
                     )
                 })
-                .and_then(|params| state.add_erc20_on_evm_evm_tx_infos(params))
+                .and_then(|params| state.add_erc20_on_int_int_tx_infos(params))
         })
         .and_then(filter_out_zero_value_evm_tx_infos_from_state)
         .and_then(account_for_fees_in_evm_tx_infos_in_state)
@@ -159,13 +159,13 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
             info!("✔ Getting ETH output json...");
             let output = serde_json::to_string(&EthOutput {
                 eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
-                evm_signed_transactions: if state.erc20_on_evm_evm_signed_txs.is_empty() {
+                evm_signed_transactions: if state.erc20_on_int_int_signed_txs.is_empty() {
                     vec![]
                 } else {
                     let use_any_sender_tx = false;
                     get_evm_signed_tx_info_from_evm_txs(
-                        &state.erc20_on_evm_evm_signed_txs,
-                        &state.erc20_on_evm_evm_tx_infos,
+                        &state.erc20_on_int_int_signed_txs,
+                        &state.erc20_on_int_int_tx_infos,
                         state.evm_db_utils.get_eth_account_nonce_from_db()?,
                         use_any_sender_tx,
                         state.evm_db_utils.get_any_sender_nonce_from_db()?,

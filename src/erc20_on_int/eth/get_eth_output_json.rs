@@ -11,7 +11,10 @@ use crate::{
         eth_traits::EthTxInfoCompatible,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    erc20_on_evm::eth::evm_tx_info::{EthOnEvmEvmTxInfo, EthOnEvmEvmTxInfos},
+    erc20_on_int::eth::evm_tx_info::{
+        EthOnEvmEvmTxInfo as EthOnIntEvmTxInfo,
+        EthOnEvmEvmTxInfos as EthOnIntEvmTxInfos,
+    },
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };
@@ -46,7 +49,7 @@ pub struct EvmTxInfo {
 impl EvmTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
         tx: &T,
-        evm_tx_info: &EthOnEvmEvmTxInfo,
+        evm_tx_info: &EthOnIntEvmTxInfo,
         maybe_nonce: Option<u64>,
         evm_latest_block_number: usize,
         dictionary: &EthEvmTokenDictionary,
@@ -82,7 +85,7 @@ impl EvmTxInfo {
 
 pub fn get_evm_signed_tx_info_from_evm_txs(
     txs: &[EthTransaction],
-    evm_tx_info: &EthOnEvmEvmTxInfos,
+    evm_tx_info: &EthOnIntEvmTxInfos,
     eth_account_nonce: u64,
     use_any_sender_tx_type: bool,
     any_sender_nonce: u64,
@@ -114,12 +117,12 @@ pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
     info!("✔ Getting ETH output json...");
     let output = serde_json::to_string(&EthOutput {
         eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
-        evm_signed_transactions: if state.erc20_on_evm_evm_signed_txs.is_empty() {
+        evm_signed_transactions: if state.erc20_on_int_int_signed_txs.is_empty() {
             vec![]
         } else {
             get_evm_signed_tx_info_from_evm_txs(
-                &state.erc20_on_evm_evm_signed_txs,
-                &state.erc20_on_evm_evm_tx_infos,
+                &state.erc20_on_int_int_signed_txs,
+                &state.erc20_on_int_int_tx_infos,
                 state.evm_db_utils.get_eth_account_nonce_from_db()?,
                 false, // TODO Get this from state submission material when/if we support AnySender
                 state.evm_db_utils.get_any_sender_nonce_from_db()?,

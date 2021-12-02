@@ -40,6 +40,8 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos,
     pub erc20_on_evm_evm_signed_txs: EthTransactions,
     pub erc20_on_evm_eth_signed_txs: EthTransactions,
+    pub erc20_on_int_int_signed_txs: EthTransactions,
+    pub erc20_on_int_eth_signed_txs: EthTransactions,
     pub btc_on_eth_redeem_infos: BtcOnEthRedeemInfos,
     pub erc20_on_evm_eth_tx_infos: EthOnEvmEthTxInfos,
     pub erc20_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos,
@@ -71,6 +73,8 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
             erc20_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
             erc20_on_evm_eth_signed_txs: EthTransactions::new(vec![]),
+            erc20_on_int_int_signed_txs: EthTransactions::new(vec![]),
+            erc20_on_int_eth_signed_txs: EthTransactions::new(vec![]),
             btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(vec![]),
             erc20_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos::new(vec![]),
             erc20_on_evm_eth_tx_infos: EthOnEvmEthTxInfos::new(vec![]),
@@ -93,6 +97,24 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             Ok(self)
         } else {
             Err(get_no_overwrite_state_err("erc20_on_evm_eth_signed_txs").into())
+        }
+    }
+
+    pub fn add_erc20_on_int_eth_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {
+        if self.erc20_on_int_eth_signed_txs.is_empty() {
+            self.erc20_on_int_eth_signed_txs = txs;
+            Ok(self)
+        } else {
+            Err(get_no_overwrite_state_err("erc20_on_int_eth_signed_txs").into())
+        }
+    }
+
+    pub fn add_erc20_on_int_int_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {
+        if self.erc20_on_int_int_signed_txs.is_empty() {
+            self.erc20_on_int_int_signed_txs = txs;
+            Ok(self)
+        } else {
+            Err(get_no_overwrite_state_err("erc20_on_int_int_signed_txs").into())
         }
     }
 

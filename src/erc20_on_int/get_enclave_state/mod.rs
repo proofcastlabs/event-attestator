@@ -7,7 +7,7 @@ use crate::{
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     enclave_info::EnclaveInfo,
-    erc20_on_evm::check_core_is_initialized::check_core_is_initialized,
+    erc20_on_int::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,
 };

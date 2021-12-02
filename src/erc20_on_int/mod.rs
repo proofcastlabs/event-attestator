@@ -39,7 +39,7 @@ pub use crate::{
             sign_hex_msg_with_evm_key_with_prefix,
         },
     },
-    erc20_on_evm::{
+    erc20_on_int::{
         debug_functions::{
             block_reprocessors::{
                 debug_reprocess_eth_block,
