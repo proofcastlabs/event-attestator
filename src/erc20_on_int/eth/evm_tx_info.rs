@@ -60,9 +60,10 @@ impl ToMetadata for EthOnEvmEvmTxInfo {
         } else {
             self.user_data.clone()
         };
-        Ok(Metadata::new(
+        Ok(Metadata::new_v2(
             &user_data,
             &MetadataOriginAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id)?,
+            &self.destination_chain_id,
         ))
     }
 

@@ -59,7 +59,7 @@ impl Metadata {
         }
     }
 
-    fn new_v2(
+    pub fn new_v2(
         user_data: &[Byte],
         origin_address: &MetadataOriginAddress,
         destination_chain_id: &MetadataChainId,
