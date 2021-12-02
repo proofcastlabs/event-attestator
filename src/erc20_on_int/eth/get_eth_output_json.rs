@@ -22,25 +22,25 @@ use crate::{
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EthOutput {
     pub eth_latest_block_number: usize,
-    pub evm_signed_transactions: Vec<EvmTxInfo>,
+    pub int_signed_transactions: Vec<EvmTxInfo>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EvmTxInfo {
     pub _id: String,
     pub broadcast: bool,
-    pub evm_tx_hash: String,
-    pub evm_tx_amount: String,
-    pub evm_tx_recipient: String,
+    pub int_tx_hash: String,
+    pub int_tx_amount: String,
+    pub int_tx_recipient: String,
     pub witnessed_timestamp: u64,
     pub host_token_address: String,
     pub originating_tx_hash: String,
     pub originating_address: String,
     pub native_token_address: String,
-    pub evm_signed_tx: Option<String>,
+    pub int_signed_tx: Option<String>,
     pub any_sender_nonce: Option<u64>,
-    pub evm_account_nonce: Option<u64>,
-    pub evm_latest_block_number: usize,
+    pub int_account_nonce: Option<u64>,
+    pub int_latest_block_number: usize,
     pub broadcast_tx_hash: Option<String>,
     pub broadcast_timestamp: Option<String>,
     pub any_sender_tx: Option<RelayTransaction>,
@@ -51,32 +51,32 @@ impl EvmTxInfo {
         tx: &T,
         evm_tx_info: &EthOnIntEvmTxInfo,
         maybe_nonce: Option<u64>,
-        evm_latest_block_number: usize,
+        int_latest_block_number: usize,
         dictionary: &EthEvmTokenDictionary,
     ) -> Result<EvmTxInfo> {
         let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
         Ok(EvmTxInfo {
-            evm_latest_block_number,
+            int_latest_block_number,
             broadcast: false,
             broadcast_tx_hash: None,
             broadcast_timestamp: None,
-            evm_signed_tx: tx.eth_tx_hex(),
+            int_signed_tx: tx.eth_tx_hex(),
             any_sender_tx: tx.any_sender_tx(),
             _id: if tx.is_any_sender() {
                 format!("perc20-on-evm-evm-any-sender-{}", nonce)
             } else {
                 format!("perc20-on-evm-evm-{}", nonce)
             },
-            evm_tx_hash: format!("0x{}", tx.get_tx_hash()),
+            int_tx_hash: format!("0x{}", tx.get_tx_hash()),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
-            evm_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
+            int_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             host_token_address: format!("0x{}", hex::encode(&evm_tx_info.evm_token_address)),
             native_token_address: format!("0x{}", hex::encode(&evm_tx_info.eth_token_address)),
             originating_address: format!("0x{}", hex::encode(evm_tx_info.token_sender.as_bytes())),
-            evm_tx_recipient: format!("0x{}", hex::encode(evm_tx_info.destination_address.as_bytes())),
+            int_tx_recipient: format!("0x{}", hex::encode(evm_tx_info.destination_address.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(evm_tx_info.originating_tx_hash.as_bytes())),
-            evm_tx_amount: dictionary
+            int_tx_amount: dictionary
                 .convert_eth_amount_to_evm_amount(&evm_tx_info.eth_token_address, evm_tx_info.native_token_amount)?
                 .to_string(),
         })
@@ -117,7 +117,7 @@ pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
     info!("✔ Getting ETH output json...");
     let output = serde_json::to_string(&EthOutput {
         eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
-        evm_signed_transactions: if state.erc20_on_int_int_signed_txs.is_empty() {
+        int_signed_transactions: if state.erc20_on_int_int_signed_txs.is_empty() {
             vec![]
         } else {
             get_evm_signed_tx_info_from_evm_txs(

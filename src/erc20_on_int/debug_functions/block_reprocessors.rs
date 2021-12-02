@@ -156,10 +156,10 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
         .and_then(maybe_increment_evm_account_nonce_and_return_eth_state)
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {
-            info!("✔ Getting ETH output json...");
+            info!("✔ Getting INT output json...");
             let output = serde_json::to_string(&EthOutput {
                 eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
-                evm_signed_transactions: if state.erc20_on_int_int_signed_txs.is_empty() {
+                int_signed_transactions: if state.erc20_on_int_int_signed_txs.is_empty() {
                     vec![]
                 } else {
                     let use_any_sender_tx = false;
