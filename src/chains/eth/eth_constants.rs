@@ -53,8 +53,8 @@ pub fn get_eth_constants_db_keys() -> JsonValue {
             hex::encode(ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
         "ETH_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY":
             hex::encode(ETH_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
-        "ETH_ERC20_ON_EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY":
-            hex::encode(ETH_ERC20_ON_EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
     })
 }
 
@@ -81,8 +81,8 @@ lazy_static! {
         get_prefixed_db_key("eos-on-eth-smart-contract-address-key");
     pub static ref ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
         get_prefixed_db_key("erc20-on-evm-eth-smart-contract-address-key");
-    pub static ref ETH_ERC20_ON_EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
-        get_prefixed_db_key("erc20-on-evm-router-smart-contract-address-key");
+    pub static ref ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
+        get_prefixed_db_key("eth-router-smart-contract-address-key");
 }
 
 #[cfg(test)]
@@ -128,10 +128,22 @@ mod tests {
                 "539205e110a233c64f983acf425f1d2cf6cb6535a0241a3722a512690eeba758",
             "ETH_PTOKEN_GENESIS_HASH_KEY":
                 "7eb2e65416dd107602495454d1ed094ae475cff2f3bfb2e2ae68a1c52bc0d66f",
-            "ETH_ERC20_ON_EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY":
-                "92b2b823eece734f069d53f55763365ee076b85b5e7d6fa90205b5c657003dfc",
+            "ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY":
+                "7e4ba9ad69fafede39d72a5e5d05953c4261d16ede043978031bc425d2e3b1d2",
         });
         let result = get_eth_constants_db_keys();
         assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn eth_router_smart_contract_addres_key_should_match_evm_router_smart_contract_address_key() {
+        use crate::chains::eth::{
+            eth_constants::ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY,
+            evm_constants::EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY,
+        };
+        assert_eq!(
+            *ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY,
+            *EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY
+        );
     }
 }
