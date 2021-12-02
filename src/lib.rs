@@ -25,6 +25,7 @@ pub(crate) mod dictionaries;
 pub mod eos_on_eth;
 pub mod erc20_on_eos;
 pub mod erc20_on_evm;
+pub mod erc20_on_int;
 pub mod errors;
 pub(crate) mod fees;
 pub(crate) mod metadata;

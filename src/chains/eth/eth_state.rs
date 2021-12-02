@@ -19,6 +19,10 @@ use crate::{
     eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfos,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
     erc20_on_evm::{eth::evm_tx_info::EthOnEvmEvmTxInfos, evm::eth_tx_info::EthOnEvmEthTxInfos},
+    erc20_on_int::{
+        eth::evm_tx_info::EthOnEvmEvmTxInfos as EthOnIntIntTxInfos,
+        evm::eth_tx_info::EthOnEvmEthTxInfos as EthOnIntEthTxInfos,
+    },
     traits::DatabaseInterface,
     types::Result,
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
@@ -39,6 +43,8 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub btc_on_eth_redeem_infos: BtcOnEthRedeemInfos,
     pub erc20_on_evm_eth_tx_infos: EthOnEvmEthTxInfos,
     pub erc20_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos,
+    pub erc20_on_int_eth_tx_infos: EthOnIntEthTxInfos,
+    pub erc20_on_int_int_tx_infos: EthOnIntIntTxInfos,
     pub erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos,
     pub eos_transactions: Option<EosSignedTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
@@ -68,6 +74,8 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(vec![]),
             erc20_on_evm_evm_tx_infos: EthOnEvmEvmTxInfos::new(vec![]),
             erc20_on_evm_eth_tx_infos: EthOnEvmEthTxInfos::new(vec![]),
+            erc20_on_int_eth_tx_infos: EthOnIntEthTxInfos::new(vec![]),
+            erc20_on_int_int_tx_infos: EthOnIntIntTxInfos::new(vec![]),
             erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos::new(vec![]),
         }
     }
@@ -131,6 +139,28 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         let mut new_infos = self.erc20_on_evm_evm_tx_infos.0.clone();
         new_infos.append(&mut infos.0);
         self.replace_erc20_on_evm_evm_tx_infos(EthOnEvmEvmTxInfos::new(new_infos))
+    }
+
+    pub fn add_erc20_on_int_int_tx_infos(self, mut infos: EthOnIntIntTxInfos) -> Result<Self> {
+        let mut new_infos = self.erc20_on_int_int_tx_infos.0.clone();
+        new_infos.append(&mut infos.0);
+        self.replace_erc20_on_int_int_tx_infos(EthOnIntIntTxInfos::new(new_infos))
+    }
+
+    pub fn add_erc20_on_int_eth_tx_infos(self, mut infos: EthOnIntEthTxInfos) -> Result<Self> {
+        let mut new_infos = self.erc20_on_int_eth_tx_infos.0.clone();
+        new_infos.append(&mut infos.0);
+        self.replace_erc20_on_int_eth_tx_infos(EthOnIntEthTxInfos::new(new_infos))
+    }
+
+    pub fn replace_erc20_on_int_int_tx_infos(mut self, replacements: EthOnIntIntTxInfos) -> Result<Self> {
+        self.erc20_on_int_int_tx_infos = replacements;
+        Ok(self)
+    }
+
+    pub fn replace_erc20_on_int_eth_tx_infos(mut self, replacements: EthOnIntEthTxInfos) -> Result<Self> {
+        self.erc20_on_int_eth_tx_infos = replacements;
+        Ok(self)
     }
 
     pub fn replace_btc_on_eth_redeem_infos(mut self, replacements: BtcOnEthRedeemInfos) -> Result<Self> {

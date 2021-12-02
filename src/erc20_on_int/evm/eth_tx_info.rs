@@ -19,7 +19,7 @@ use crate::{
             eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
         },
         eth_database_utils::EthDbUtilsExt,
-        eth_log::{EthLog, EthLogs},
+        eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::{EthReceipt, EthReceipts},
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
@@ -412,7 +412,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                             &state.evm_db_utils.get_eth_chain_id_from_db()?,
                         )
                     })
-                    .and_then(|tx_infos| state.add_erc20_on_evm_eth_tx_infos(tx_infos))
+                    .and_then(|tx_infos| state.add_erc20_on_int_eth_tx_infos(tx_infos))
             },
         })
 }

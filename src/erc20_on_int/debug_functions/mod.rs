@@ -5,7 +5,11 @@ use serde_json::json;
 
 use crate::{
     chains::eth::{
-        eth_constants::{get_eth_constants_db_keys, ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY, ETH_PRIVATE_KEY_DB_KEY},
+        eth_constants::{
+            get_eth_constants_db_keys,
+            ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
+            ETH_PRIVATE_KEY_DB_KEY,
+        },
         eth_contracts::erc20_vault::{
             encode_erc20_vault_add_supported_token_fx_data,
             encode_erc20_vault_migrate_fxn_data,
@@ -240,7 +244,7 @@ pub fn debug_get_erc20_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, ne
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| {
             eth_db_utils.put_eth_address_in_db(
-                &ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+                &ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
                 &new_smart_contract_address,
             )
         })
