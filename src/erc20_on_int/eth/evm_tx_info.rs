@@ -6,7 +6,7 @@ use crate::{
         eth_chain_id::EthChainId,
         eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
         eth_contracts::{
-            erc20_vault::{Erc20VaultPegInEventParams, ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC},
+            erc20_vault::{Erc20VaultPegInEventParams, ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2},
             erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_DATA_GAS_LIMIT},
         },
         eth_crypto::{
@@ -235,7 +235,7 @@ impl EthOnEvmEvmTxInfos {
     }
 
     fn is_log_erc20_on_evm_peg_in(log: &EthLog, vault_address: &EthAddress) -> Result<bool> {
-        let log_contains_topic = log.contains_topic(&ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC);
+        let log_contains_topic = log.contains_topic(&ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2);
         let log_is_from_vault_address = log.address == *vault_address;
         Ok(log_contains_topic && log_is_from_vault_address)
     }
@@ -413,13 +413,11 @@ pub fn filter_out_zero_value_evm_tx_infos_from_state<D: DatabaseInterface>(state
 pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    info!("✔ Filtering receipts for those containing `ERC20-on-EVM` peg in events...");
+    info!("✔ Filtering receipts for those containing `erc20-on-int` peg in events...");
     let vault_address = state.eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?;
     state
         .get_eth_submission_material()?
-        .get_receipts_containing_log_from_address_and_with_topics(&vault_address, &[
-            *ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
-        ])
+        .get_receipts_containing_log_from_address_and_with_topics(&vault_address, &[*ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2])
         .and_then(|filtered_submission_material| {
             EthOnEvmEvmTxInfos::filter_eth_submission_material_for_supported_peg_ins(
                 &filtered_submission_material,
