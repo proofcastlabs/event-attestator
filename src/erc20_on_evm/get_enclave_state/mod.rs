@@ -22,15 +22,18 @@ struct EnclaveState {
 
 impl EnclaveState {
     pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, evm_db_utils: &EvmDbUtils<D>) -> Result<Self> {
+        let eth_router_address = None;
         Ok(Self {
             info: EnclaveInfo::new(),
             evm: EvmEnclaveState::new(
                 evm_db_utils,
                 &evm_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+                eth_router_address,
             )?,
             eth: EthEnclaveState::new(
                 eth_db_utils,
                 &eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+                eth_router_address,
             )?,
             token_dictionary: EthEvmTokenDictionary::get_from_db(eth_db_utils.get_db())?,
         })
