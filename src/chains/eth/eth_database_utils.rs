@@ -36,6 +36,7 @@ macro_rules! make_eth_db_utils_struct {
             eth_anchor_block_hash_key: Bytes,
             eth_canon_to_tip_length_key: Bytes,
             erc777_proxy_contract_address_key: Bytes,
+            eth_router_smart_contract_address_key: Bytes,
             eos_on_eth_smart_contract_address_key: Bytes,
             btc_on_eth_smart_contract_address_key: Bytes,
             erc20_on_eos_smart_contract_address_key: Bytes,
@@ -59,6 +60,7 @@ macro_rules! make_eth_db_utils_struct {
                         [<$prefix _LATEST_BLOCK_HASH_KEY>],
                         [<$prefix _CANON_TO_TIP_LENGTH_KEY>],
                         [<$prefix _ERC777_PROXY_CONTACT_ADDRESS_KEY>],
+                        [<$prefix _ROUTER_SMART_CONTRACT_ADDRESS_KEY>],
                         [<$prefix _BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY>],
                         [<$prefix _EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY>],
                         [<$prefix _ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY>],
@@ -92,6 +94,8 @@ macro_rules! make_eth_db_utils_struct {
                             [<$prefix _CANON_TO_TIP_LENGTH_KEY>].to_vec(),
                         erc777_proxy_contract_address_key:
                             [<$prefix _ERC777_PROXY_CONTACT_ADDRESS_KEY>].to_vec(),
+                        eth_router_smart_contract_address_key:
+                            [<$prefix _ROUTER_SMART_CONTRACT_ADDRESS_KEY>].to_vec(),
                         btc_on_eth_smart_contract_address_key:
                             [<$prefix _BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY>].to_vec(),
                         eos_on_eth_smart_contract_address_key:
@@ -112,6 +116,10 @@ macro_rules! make_eth_db_utils_struct {
 
             fn get_any_sender_nonce_key(&self) -> Bytes {
                 self.any_sender_nonce_key.to_vec()
+            }
+
+            fn get_router_smart_contract_address_key(&self) -> Bytes {
+                self.eth_router_smart_contract_address_key.to_vec()
             }
 
             fn get_eth_address_key(&self) -> Bytes {
@@ -203,6 +211,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
     fn get_eth_latest_block_hash_key(&self) -> Bytes;
     fn get_eth_anchor_block_hash_key(&self) -> Bytes;
     fn get_eth_canon_to_tip_length_key(&self) -> Bytes;
+    fn get_router_smart_contract_address_key(&self) -> Bytes;
     fn get_erc777_proxy_contract_address_key(&self) -> Bytes;
     fn get_eos_on_eth_smart_contract_address_key(&self) -> Bytes;
     fn get_btc_on_eth_smart_contract_address_key(&self) -> Bytes;
@@ -605,6 +614,22 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
         info!("✔ Getting `pERC20-on-EOS` smart-contract address from db...");
         self.get_eth_address_from_db(&self.get_erc20_on_eos_smart_contract_address_key())
             .map_err(|_| "No `erc20-on-eos` vault contract address in DB! Did you forget to set it?".into())
+    }
+
+    fn put_eth_router_smart_contract_address_in_db(&self, address: &EthAddress) -> Result<()> {
+        match self.get_eth_router_smart_contract_address_from_db() {
+            Ok(address) => Err(format!("Router address already set to 0x{}!", hex::encode(address)).into()),
+            _ => {
+                info!("✔ Putting ETH router smart-contract address in db...");
+                self.put_eth_address_in_db(&self.get_router_smart_contract_address_key(), address)
+            },
+        }
+    }
+
+    fn get_eth_router_smart_contract_address_from_db(&self) -> Result<EthAddress> {
+        info!("✔ Getting eth router smart-contract address from db...");
+        self.get_eth_address_from_db(&self.get_router_smart_contract_address_key())
+            .map_err(|_| "No router contract address in DB! Did you forget to set it?".into())
     }
 
     fn put_erc20_on_eos_smart_contract_address_in_db(&self, smart_contract_address: &EthAddress) -> Result<()> {
@@ -1182,5 +1207,17 @@ mod tests {
         let result = eth_db_utils.get_linker_hash_or_genesis_hash().unwrap();
         let expected_result = EthHash::from_slice(&ETH_PTOKEN_GENESIS_HASH_KEY[..]);
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_put_and_get_eth_router_smart_contract_address_from_db() {
+        let db = get_test_database();
+        let eth_db_utils = EthDbUtils::new(&db);
+        let eth_address = EthAddress::from_slice(&hex::decode("71A440EE9Fa7F99FB9a697e96eC7839B8A1643B8").unwrap());
+        eth_db_utils
+            .put_eth_router_smart_contract_address_in_db(&eth_address)
+            .unwrap();
+        let result = eth_db_utils.get_eth_router_smart_contract_address_from_db().unwrap();
+        assert_eq!(result, eth_address);
     }
 }
