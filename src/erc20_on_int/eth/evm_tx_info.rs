@@ -135,24 +135,18 @@ impl EthOnEvmEvmTxInfo {
         evm_private_key: &EvmPrivateKey,
         dictionary: &EthEvmTokenDictionary,
     ) -> Result<EvmTransaction> {
-        info!("✔ Signing EVM transaction for tx info: {:?}", self);
         let operator_data = None;
-        let metadata = if self.user_data.is_empty() {
-            vec![]
-        } else {
-            self.to_metadata_bytes()?
-        };
+        let metadata_bytes = self.to_metadata_bytes()?;
+        info!("✔ Signing EVM transaction for tx info: {:?}", self);
         debug!("✔ Signing with nonce:     {}", nonce);
         debug!("✔ Signing with chain id:  {}", chain_id);
         debug!("✔ Signing with gas limit: {}", gas_limit);
         debug!("✔ Signing with gas price: {}", gas_price);
-        if !metadata.is_empty() {
-            debug!("✔ Signing with metadata : 0x{}", hex::encode(&metadata))
-        };
+        debug!("✔ Signing with metadata : 0x{}", hex::encode(&metadata_bytes));
         encode_erc777_mint_fxn_maybe_with_data(
             &self.destination_address,
             &self.get_host_token_amount(dictionary)?,
-            if metadata.is_empty() { None } else { Some(metadata) },
+            Some(metadata_bytes),
             operator_data,
         )
         .map(|data| {
