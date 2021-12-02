@@ -123,6 +123,20 @@ pub struct Erc20VaultPegInEventParams {
 }
 
 impl Erc20VaultPegInEventParams {
+    pub fn get_origin_chain_id(&self) -> Result<MetadataChainId> {
+        match self.origin_chain_id {
+            Some(id) => Ok(id),
+            None => Err("No `origin_chain_id` in `Erc20VaultPegInEventParams`!".into()),
+        }
+    }
+
+    pub fn get_destination_chain_id(&self) -> Result<MetadataChainId> {
+        match self.destination_chain_id {
+            Some(id) => Ok(id),
+            None => Err("No `destination_chain_id` in `Erc20VaultPegInEventParams`!".into()),
+        }
+    }
+
     fn get_err_msg(field: &str) -> String {
         format!("Error getting `{}` for `Erc20VaultPegInEventParams`!", field)
     }
@@ -266,6 +280,7 @@ mod tests {
             eth_test_utils::{get_sample_eth_address, get_sample_log_with_erc20_peg_in_event},
         },
         erc20_on_evm::test_utils::get_sample_erc20_vault_log_with_user_data,
+        errors::AppError,
     };
 
     #[test]
@@ -359,10 +374,18 @@ mod tests {
         assert_eq!(result_1, result_2);
     }
 
+    fn get_sample_v2_event_log() -> EthLog {
+        let s = "{\"address\":\"0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9\",\"topics\":[\"0xc03be660a5421fb17c93895da9db564bd4485d475f0d8b3175f7d55ed421bebb\"],\"data\":\"0x0000000000000000000000005fc8d32690cc91d4c39d9d3abcbd16989f87570700000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8000000000000000000000000000000000000000000000000000000000000053900000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200069c3220000000000000000000000000000000000000000000000000000000000f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c616e656f736164647265737300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\"}";
+        EthLog::from_str(s).unwrap()
+    }
+
+    fn get_sample_v2_event_params() -> Erc20VaultPegInEventParams {
+        Erc20VaultPegInEventParams::from_eth_log(&get_sample_v2_event_log()).unwrap()
+    }
+
     #[test]
     fn should_get_params_from_v2_log() {
-        let s = "{\"address\":\"0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9\",\"topics\":[\"0xc03be660a5421fb17c93895da9db564bd4485d475f0d8b3175f7d55ed421bebb\"],\"data\":\"0x0000000000000000000000005fc8d32690cc91d4c39d9d3abcbd16989f87570700000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8000000000000000000000000000000000000000000000000000000000000053900000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200069c3220000000000000000000000000000000000000000000000000000000000f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c616e656f736164647265737300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\"}";
-        let log = EthLog::from_str(s).unwrap();
+        let log = get_sample_v2_event_log();
         let expected_result = Erc20VaultPegInEventParams {
             user_data: vec![],
             token_amount: U256::from(1337),
@@ -376,5 +399,45 @@ mod tests {
         let result_2 = Erc20VaultPegInEventParams::from_eth_log(&log).unwrap();
         assert_eq!(result_1, expected_result);
         assert_eq!(result_1, result_2);
+    }
+
+    #[test]
+    fn should_get_origin_chain_id_from_parsed_params() {
+        let params = get_sample_v2_event_params();
+        let result = params.get_origin_chain_id().unwrap();
+        let expected_result = MetadataChainId::EthereumRopsten;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_error_getting_non_existent_chain_id_from_params() {
+        let mut params = get_sample_v2_event_params();
+        params.origin_chain_id = None;
+        let expected_error = "No `origin_chain_id` in `Erc20VaultPegInEventParams`!";
+        match params.get_origin_chain_id() {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
+    }
+
+    #[test]
+    fn should_get_destination_chain_id_from_parsed_params() {
+        let params = get_sample_v2_event_params();
+        let result = params.get_destination_chain_id().unwrap();
+        let expected_result = MetadataChainId::EthereumRinkeby;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_error_getting_non_existent_destination_id_from_params() {
+        let mut params = get_sample_v2_event_params();
+        params.destination_chain_id = None;
+        let expected_error = "No `destination_chain_id` in `Erc20VaultPegInEventParams`!";
+        match params.get_destination_chain_id() {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
     }
 }
