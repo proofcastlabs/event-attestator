@@ -52,7 +52,6 @@ pub use crate::{
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
             debug_get_all_db_keys,
-            debug_get_erc20_on_evm_vault_migration_tx,
             debug_get_key_from_db,
             debug_get_remove_supported_token_tx,
             debug_remove_dictionary_entry,
