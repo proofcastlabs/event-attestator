@@ -137,6 +137,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                         &state.eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
                         &EthEvmTokenDictionary::get_from_db(state.db)?,
                         &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                        &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
                     )
                 })
                 .and_then(|params| state.add_erc20_on_int_int_tx_infos(params))

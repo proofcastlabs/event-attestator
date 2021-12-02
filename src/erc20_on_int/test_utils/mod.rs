@@ -13,6 +13,10 @@ use crate::{
     types::Result,
 };
 
+pub fn get_sample_router_address() -> EthAddress {
+    EthAddress::from_slice(&hex::decode("1a3496c18d558bd9c6c8f609e1b129f67ab08163").unwrap())
+}
+
 fn get_sample_submission_material_string_n(chain_type: &str, n: usize) -> Result<String> {
     let path = format!(
         "src/erc20_on_evm/test_utils/{}-submission-material-{}.json",

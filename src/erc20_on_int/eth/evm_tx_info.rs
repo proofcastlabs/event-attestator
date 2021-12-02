@@ -43,6 +43,7 @@ pub struct EthOnEvmEvmTxInfo {
     pub destination_address: EthAddress,
     pub user_data: Bytes,
     pub origin_chain_id: EthChainId,
+    pub router_address: EthAddress,
 }
 
 impl ToMetadata for EthOnEvmEvmTxInfo {
@@ -265,6 +266,7 @@ impl EthOnEvmEvmTxInfos {
         vault_address: &EthAddress,
         dictionary: &EthEvmTokenDictionary,
         origin_chain_id: &EthChainId,
+        router_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `ERC20-on-EVM` peg in infos from receipt...");
         Ok(Self::new(
@@ -273,6 +275,7 @@ impl EthOnEvmEvmTxInfos {
                 .map(|log| {
                     let event_params = Erc20VaultPegInEventParams::from_eth_log(log)?;
                     let tx_info = EthOnEvmEvmTxInfo {
+                        router_address: *router_address,
                         token_sender: event_params.token_sender,
                         origin_chain_id: origin_chain_id.clone(),
                         user_data: event_params.user_data.clone(),
@@ -322,13 +325,16 @@ impl EthOnEvmEvmTxInfos {
         vault_address: &EthAddress,
         dictionary: &EthEvmTokenDictionary,
         origin_chain_id: &EthChainId,
+        router_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `EthOnEvmEvmTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(receipt, vault_address, dictionary, origin_chain_id))
+                .map(|receipt| {
+                    Self::from_eth_receipt(receipt, vault_address, dictionary, origin_chain_id, router_address)
+                })
                 .collect::<Result<Vec<EthOnEvmEvmTxInfos>>>()?
                 .iter()
                 .map(|infos| infos.iter().cloned().collect())
@@ -388,6 +394,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                     &state.eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
                     &EthEvmTokenDictionary::get_from_db(state.db)?,
                     &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                    &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
                 )
                 .and_then(|tx_infos| state.add_erc20_on_int_int_tx_infos(tx_infos))
             },
@@ -477,6 +484,7 @@ mod tests {
             get_eth_submission_material_n,
             get_sample_eth_evm_token_dictionary,
             get_sample_evm_private_key,
+            get_sample_router_address,
             get_sample_vault_address,
         },
     };
@@ -485,8 +493,16 @@ mod tests {
         let material = get_eth_submission_material_n(1);
         let vault_address = get_sample_vault_address();
         let dictionary = get_sample_eth_evm_token_dictionary();
+        let router_address = get_sample_router_address();
         let origin_chain_id = EthChainId::Mainnet;
-        EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, &origin_chain_id).unwrap()
+        EthOnEvmEvmTxInfos::from_submission_material(
+            &material,
+            &vault_address,
+            &dictionary,
+            &origin_chain_id,
+            &router_address,
+        )
+        .unwrap()
     }
 
     fn get_sample_tx_info() -> EthOnEvmEvmTxInfo {
@@ -509,13 +525,20 @@ mod tests {
         let material = get_eth_submission_material_n(1);
         let vault_address = get_sample_vault_address();
         let dictionary = get_sample_eth_evm_token_dictionary();
+        let router_address = get_sample_router_address();
         let origin_chain_id = EthChainId::Mainnet;
-        let result =
-            EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, &origin_chain_id)
-                .unwrap();
+        let result = EthOnEvmEvmTxInfos::from_submission_material(
+            &material,
+            &vault_address,
+            &dictionary,
+            &origin_chain_id,
+            &router_address,
+        )
+        .unwrap();
         let expected_num_results = 1;
         assert_eq!(result.len(), expected_num_results);
         let expected_result = EthOnEvmEvmTxInfos::new(vec![EthOnEvmEvmTxInfo {
+            router_address,
             user_data: vec![],
             native_token_amount: U256::from_dec_str("1000000000000000000").unwrap(),
             token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
@@ -587,7 +610,9 @@ mod tests {
     fn should_divert_to_safe_address_if_destination_is_token_address() {
         let destination_address =
             EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let router_address = get_sample_router_address();
         let info = EthOnEvmEvmTxInfo {
+            router_address,
             user_data: vec![],
             destination_address,
             native_token_amount: U256::from_dec_str("1000000000000000000").unwrap(),
