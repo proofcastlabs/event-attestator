@@ -24,9 +24,9 @@ use crate::{
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_int::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
+        metadata_chain_id::MetadataChainId,
         metadata_origin_address::MetadataOriginAddress,
         metadata_protocol_id::MetadataProtocolId,
-        metadata_chain_id::MetadataChainId,
         metadata_traits::ToMetadata,
         Metadata,
     },
@@ -45,6 +45,7 @@ pub struct EthOnEvmEvmTxInfo {
     pub user_data: Bytes,
     pub origin_chain_id: MetadataChainId,
     pub router_address: EthAddress,
+    pub destination_chain_id: MetadataChainId,
 }
 
 impl ToMetadata for EthOnEvmEvmTxInfo {
@@ -273,6 +274,7 @@ impl EthOnEvmEvmTxInfos {
                         originating_tx_hash: receipt.transaction_hash,
                         native_token_amount: event_params.token_amount,
                         origin_chain_id: event_params.get_origin_chain_id()?,
+                        destination_chain_id: event_params.get_destination_chain_id()?,
                         destination_address: safely_convert_hex_to_eth_address(&event_params.destination_address)?,
                         evm_token_address: dictionary.get_evm_address_from_eth_address(&event_params.token_address)?,
                     };
@@ -322,9 +324,7 @@ impl EthOnEvmEvmTxInfos {
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| {
-                    Self::from_eth_receipt(receipt, vault_address, dictionary, router_address)
-                })
+                .map(|receipt| Self::from_eth_receipt(receipt, vault_address, dictionary, router_address))
                 .collect::<Result<Vec<EthOnEvmEvmTxInfos>>>()?
                 .iter()
                 .map(|infos| infos.iter().cloned().collect())
