@@ -12,6 +12,7 @@
 //! ptokens_core = { version = <version-here>, features = ["debug"] }
 //! ```
 
+pub(crate) mod add_contract_addresses;
 pub(crate) mod check_core_is_initialized;
 pub(crate) mod debug_functions;
 pub(crate) mod eth;
@@ -40,6 +41,7 @@ pub use crate::{
         },
     },
     erc20_on_int::{
+        add_contract_addresses::{maybe_add_router_contract_address, maybe_add_vault_contract_address},
         debug_functions::{
             block_reprocessors::{
                 debug_reprocess_eth_block,
@@ -61,11 +63,7 @@ pub use crate::{
             debug_set_key_in_db_to_value,
             debug_withdraw_fees_and_save_in_db,
         },
-        eth::{
-            add_vault_contract_address::maybe_add_vault_contract_address,
-            initialize_eth_core::maybe_initialize_eth_core,
-            submit_eth_block::submit_eth_block_to_core,
-        },
+        eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
         evm::{initialize_evm_core::maybe_initialize_evm_core, submit_evm_block::submit_evm_block_to_core},
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,

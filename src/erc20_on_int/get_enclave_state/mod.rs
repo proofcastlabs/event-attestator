@@ -27,12 +27,12 @@ impl EnclaveState {
             evm: EvmEnclaveState::new(
                 evm_db_utils,
                 &evm_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
-                Some(evm_db_utils.get_eth_router_smart_contract_address_from_db()?)
+                Some(evm_db_utils.get_eth_router_smart_contract_address_from_db()?),
             )?,
             eth: EthEnclaveState::new(
                 eth_db_utils,
                 &eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
-                Some(eth_db_utils.get_eth_router_smart_contract_address_from_db()?)
+                Some(eth_db_utils.get_eth_router_smart_contract_address_from_db()?),
             )?,
             token_dictionary: EthEvmTokenDictionary::get_from_db(eth_db_utils.get_db())?,
         })
