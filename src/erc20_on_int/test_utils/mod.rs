@@ -19,7 +19,7 @@ pub fn get_sample_router_address() -> EthAddress {
 
 fn get_sample_submission_material_string_n(chain_type: &str, n: usize) -> Result<String> {
     let path = format!(
-        "src/erc20_on_evm/test_utils/{}-submission-material-{}.json",
+        "src/erc20_on_int/test_utils/{}-submission-material-{}.json",
         chain_type, n
     );
     match Path::new(&path).exists() {
