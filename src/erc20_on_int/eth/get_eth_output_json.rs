@@ -92,12 +92,21 @@ pub fn get_evm_signed_tx_info_from_evm_txs(
     eth_latest_block_number: usize,
     dictionary: &EthEvmTokenDictionary,
 ) -> Result<Vec<EvmTxInfo>> {
+    let number_of_txs = txs.len();
     let start_nonce = if use_any_sender_tx_type {
         info!("✔ Getting AnySender tx info from ETH txs...");
-        any_sender_nonce - txs.len() as u64
+        if any_sender_nonce == 0 {
+            0
+        } else {
+            any_sender_nonce - number_of_txs as u64
+        }
     } else {
         info!("✔ Getting EVM tx info from ETH txs...");
-        eth_account_nonce - txs.len() as u64
+        if eth_account_nonce == 0 {
+            0
+        } else {
+            eth_account_nonce - number_of_txs as u64
+        }
     };
     txs.iter()
         .enumerate()
