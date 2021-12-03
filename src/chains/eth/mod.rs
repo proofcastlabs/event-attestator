@@ -29,6 +29,7 @@ pub(crate) mod evm_constants;
 pub(crate) mod increment_eos_account_nonce;
 pub(crate) mod increment_eth_account_nonce;
 pub(crate) mod increment_evm_account_nonce;
+pub(crate) mod increment_int_account_nonce;
 pub(crate) mod remove_old_eth_tail_block;
 pub(crate) mod remove_receipts_from_canon_block;
 pub(crate) mod update_eth_canon_block_hash;
