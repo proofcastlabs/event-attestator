@@ -33,6 +33,9 @@ pub struct Metadata {
     pub origin_chain_id: MetadataChainId,
     pub origin_address: MetadataOriginAddress,
     pub destination_chain_id: Option<MetadataChainId>,
+    pub destination_address: Option<MetadataOriginAddress>,
+    pub protocol_options: Option<Bytes>,
+    pub protocol_receipt: Option<Bytes>,
 }
 
 impl Metadata {
@@ -56,6 +59,9 @@ impl Metadata {
             origin_address: origin_address.clone(),
             origin_chain_id: origin_address.metadata_chain_id,
             destination_chain_id: None,
+            destination_address: None,
+            protocol_options: None,
+            protocol_receipt: None,
         }
     }
 
@@ -63,13 +69,19 @@ impl Metadata {
         user_data: &[Byte],
         origin_address: &MetadataOriginAddress,
         destination_chain_id: &MetadataChainId,
+        destination_address: &MetadataOriginAddress,
+        protocol_options: Option<Bytes>,
+        protocol_receipt: Option<Bytes>,
     ) -> Self {
         Self {
+            protocol_options,
+            protocol_receipt,
             version: MetadataVersion::V2,
             user_data: user_data.to_vec(),
             origin_address: origin_address.clone(),
             origin_chain_id: origin_address.metadata_chain_id,
             destination_chain_id: Some(*destination_chain_id),
+            destination_address: Some(destination_address.clone()),
         }
     }
 
@@ -103,6 +115,18 @@ impl Metadata {
                 },
             },
             EthAbiToken::FixedBytes(self.get_destination_chain_id()?.to_bytes()?),
+            EthAbiToken::Address(EthAddress::from_slice(&match &self.destination_address {
+                Some(address) => address.to_bytes(),
+                None => Err("No `destination_address` in metadata!".into()),
+            }?)),
+            EthAbiToken::Bytes(match &self.protocol_options {
+                Some(bytes) => bytes.to_vec(),
+                None => vec![],
+            }),
+            EthAbiToken::Bytes(match &self.protocol_receipt {
+                Some(bytes) => bytes.to_vec(),
+                None => vec![],
+            }),
         ]))
     }
 
@@ -133,78 +157,9 @@ impl Metadata {
 }
 
 #[cfg(test)]
-impl Metadata {
-    fn get_err_msg(field: &str, protocol: &MetadataProtocolId) -> String {
-        format!(
-            "Error getting `{}` from bytes for {} metadata!",
-            field,
-            protocol.to_symbol()
-        )
-    }
-
-    fn from_bytes_from_eth(bytes: &[Byte]) -> Result<Self> {
-        use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType};
-        let protocol = MetadataProtocolId::Ethereum;
-        let tokens = eth_abi_decode(
-            &[
-                EthAbiParamType::FixedBytes(1),
-                EthAbiParamType::Bytes,
-                EthAbiParamType::FixedBytes(4),
-                EthAbiParamType::Address,
-            ],
-            bytes,
-        )?;
-        let origin_chain_id = match tokens[2] {
-            EthAbiToken::FixedBytes(ref bytes) => MetadataChainId::from_bytes(bytes),
-            _ => Err(Self::get_err_msg("origin_chain_id", &protocol).into()),
-        }?;
-        let eth_address = match tokens[3] {
-            EthAbiToken::Address(address) => Ok(address),
-            _ => Err(Self::get_err_msg("eth_address", &protocol)),
-        }?;
-        let version = match tokens[0] {
-            EthAbiToken::FixedBytes(ref bytes) => MetadataVersion::from_bytes(bytes),
-            _ => Err(Self::get_err_msg("version", &protocol).into()),
-        }?;
-        let user_data = match tokens[1] {
-            EthAbiToken::Bytes(ref bytes) => Ok(bytes.clone()),
-            _ => Err(Self::get_err_msg("user_data", &protocol)),
-        }?;
-        let origin_address = MetadataOriginAddress::new_from_eth_address(&eth_address, &origin_chain_id)?;
-        Ok(Self {
-            version,
-            user_data,
-            origin_chain_id,
-            origin_address,
-            destination_chain_id: None,
-        })
-    }
-
-    fn from_bytes(bytes: &[Byte], protocol: &MetadataProtocolId) -> Result<Self> {
-        match protocol {
-            MetadataProtocolId::Ethereum => Self::from_bytes_from_eth(bytes),
-            MetadataProtocolId::Bitcoin | MetadataProtocolId::Eos => {
-                Err("Decoding metadata for Bitcoin || EOS is not implemented!".into())
-            },
-        }
-    }
-}
-
-#[cfg(test)]
 mod tests {
     use super::*;
     use crate::metadata::test_utils::{get_sample_eth_metadata, get_sample_eth_metadata_v2};
-
-    #[test]
-    fn should_make_eth_v1_metadata_bytes_roundtrip() {
-        let metadata = get_sample_eth_metadata();
-        let bytes = metadata.to_bytes_for_eth().unwrap();
-        let expected_bytes = hex::decode("01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080005fe7f9000000000000000000000000000000000000000000000000000000000000000000000000000000005a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c0000000000000000000000000000000000000000000000000000000000000003c0ffee0000000000000000000000000000000000000000000000000000000000").unwrap();
-        assert_eq!(bytes, expected_bytes);
-        let protocol_id = MetadataProtocolId::Ethereum;
-        let result = Metadata::from_bytes(&bytes, &protocol_id).unwrap();
-        assert_eq!(result, metadata);
-    }
 
     #[test]
     fn should_encode_eth_metadata_for_eos() {
@@ -219,7 +174,7 @@ mod tests {
     fn should_encode_v2_metadata_for_eth() {
         let metadata = get_sample_eth_metadata_v2();
         let result = hex::encode(metadata.to_bytes_for_eth().unwrap());
-        let expected_result = "020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a0005fe7f9000000000000000000000000000000000000000000000000000000000000000000000000000000005a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c00e4b170000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003c0ffee0000000000000000000000000000000000000000000000000000000000";
+        let expected_result = "0200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac0069c32200000000000000000000000000000000000000000000000000000000000000000000000000000000edb86cd455ef3ca43f0e227e00469c3bdfa40628000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000001600000000000000000000000000000000000000000000000000000000000000003d3caff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
         assert_eq!(result, expected_result);
     }
 }
