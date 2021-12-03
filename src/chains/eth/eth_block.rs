@@ -106,14 +106,25 @@ impl EthBlock {
             receipts_root: convert_hex_to_h256(&json.receipts_root)?,
             transactions_root: convert_hex_to_h256(&json.transactions_root)?,
             total_difficulty: convert_dec_str_to_u256(&json.total_difficulty)?,
+            base_fee_per_gas: Self::parse_base_fee_per_gas(&json.base_fee_per_gas)?,
             logs_bloom: Bloom::from_slice(&convert_hex_to_bytes(&json.logs_bloom)?[..]),
             uncles: convert_hex_strings_to_h256s(json.uncles.iter().map(AsRef::as_ref).collect())?,
             transactions: convert_hex_strings_to_h256s(json.transactions.iter().map(AsRef::as_ref).collect())?,
-            base_fee_per_gas: match json.base_fee_per_gas {
-                Some(ref hex) => Some(U256::from_big_endian(&hex::decode(strip_hex_prefix(hex))?)),
-                None => None,
-            },
         })
+    }
+
+    fn parse_base_fee_per_gas(base_fee_per_gas: &Option<JsonValue>) -> Result<Option<U256>> {
+        match base_fee_per_gas {
+            None => Ok(None),
+            Some(ref json_value) => match json_value {
+                JsonValue::String(ref hex) => Ok(Some(U256::from_big_endian(&hex::decode(strip_hex_prefix(hex))?))),
+                JsonValue::Number(ref number) => match number.as_u64() {
+                    Some(u_64) => Ok(Some(U256::from(u_64))),
+                    None => Ok(None),
+                },
+                _ => Err("Could not parse `base_fee_per_gas` from block!".into()),
+            },
+        }
     }
 
     pub fn rlp_encode(&self, chain_id: &EthChainId) -> Result<Bytes> {
@@ -178,7 +189,7 @@ pub struct EthBlockJson {
     pub transactions: Vec<String>,
     pub transactions_root: String,
     pub uncles: Vec<String>,
-    pub base_fee_per_gas: Option<String>,
+    pub base_fee_per_gas: Option<JsonValue>,
 }
 
 #[cfg(test)]
