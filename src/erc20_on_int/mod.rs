@@ -12,7 +12,6 @@
 //! ptokens_core = { version = <version-here>, features = ["debug"] }
 //! ```
 
-pub(crate) mod add_contract_addresses;
 pub(crate) mod check_core_is_initialized;
 pub(crate) mod debug_functions;
 pub(crate) mod eth;
@@ -41,7 +40,6 @@ pub use crate::{
         },
     },
     erc20_on_int::{
-        add_contract_addresses::{maybe_add_router_contract_address, maybe_add_vault_contract_address},
         debug_functions::{
             block_reprocessors::{
                 debug_reprocess_eth_block,
