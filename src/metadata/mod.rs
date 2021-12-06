@@ -1,5 +1,5 @@
-pub(crate) mod metadata_chain_id;
 pub(crate) mod metadata_address;
+pub(crate) mod metadata_chain_id;
 pub(crate) mod metadata_protocol_id;
 pub(crate) mod metadata_traits;
 pub(crate) mod metadata_version;
@@ -11,8 +11,8 @@ use ethereum_types::Address as EthAddress;
 use crate::{
     chains::eos::eos_metadata::EosMetadata,
     metadata::{
-        metadata_chain_id::MetadataChainId,
         metadata_address::MetadataAddress,
+        metadata_chain_id::MetadataChainId,
         metadata_protocol_id::MetadataProtocolId,
         metadata_version::MetadataVersion,
     },

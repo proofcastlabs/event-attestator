@@ -100,11 +100,7 @@ impl MetadataAddress {
             Err(err) => Err(format!("Error converting bytes to utf8 in `MetadataAddress`: {}", err).into()),
             Ok(btc_address_str) => match BtcAddress::from_str(btc_address_str) {
                 Ok(ref btc_address) => Self::new_from_btc_address(btc_address, metadata_chain_id),
-                Err(err) => Err(format!(
-                    "Error converting bytes to BTC address in `MetadataAddress`: {}",
-                    err
-                )
-                .into()),
+                Err(err) => Err(format!("Error converting bytes to BTC address in `MetadataAddress`: {}", err).into()),
             },
         }
     }

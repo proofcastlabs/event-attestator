@@ -7,8 +7,8 @@ use ethereum_types::Address as EthAddress;
 
 use crate::{
     metadata::{
-        metadata_chain_id::MetadataChainId,
         metadata_address::MetadataAddress,
+        metadata_chain_id::MetadataChainId,
         metadata_version::MetadataVersion,
         Metadata,
     },

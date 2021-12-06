@@ -64,10 +64,7 @@ impl ToMetadata for EthOnEvmEthTxInfo {
         };
         Ok(Metadata::new(
             &user_data,
-            &MetadataAddress::new_from_eth_address(
-                &self.token_sender,
-                &self.origin_chain_id.to_metadata_chain_id(),
-            )?,
+            &MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id.to_metadata_chain_id())?,
         ))
     }
 

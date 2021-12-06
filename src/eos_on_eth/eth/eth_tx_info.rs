@@ -217,10 +217,7 @@ impl ToMetadata for EosOnEthEthTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         Ok(Metadata::new(
             &self.user_data,
-            &MetadataAddress::new_from_eth_address(
-                &self.token_sender,
-                &self.origin_chain_id.to_metadata_chain_id(),
-            )?,
+            &MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id.to_metadata_chain_id())?,
         ))
     }
 

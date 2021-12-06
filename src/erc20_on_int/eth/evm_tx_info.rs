@@ -24,8 +24,8 @@ use crate::{
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_int::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
-        metadata_chain_id::MetadataChainId,
         metadata_address::MetadataAddress,
+        metadata_chain_id::MetadataChainId,
         metadata_protocol_id::MetadataProtocolId,
         metadata_traits::ToMetadata,
         Metadata,
