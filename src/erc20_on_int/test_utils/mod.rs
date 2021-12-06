@@ -6,16 +6,11 @@ use ethereum_types::Address as EthAddress;
 use crate::{
     chains::eth::{
         eth_crypto::eth_private_key::EthPrivateKey,
-        eth_log::EthLog,
         eth_submission_material::EthSubmissionMaterial,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     types::Result,
 };
-
-pub fn get_sample_router_address() -> EthAddress {
-    EthAddress::from_slice(&hex::decode("1a3496c18d558bd9c6c8f609e1b129f67ab08163").unwrap())
-}
 
 fn get_sample_submission_material_string_n(chain_type: &str, n: usize) -> Result<String> {
     let path = format!(
@@ -59,10 +54,6 @@ pub fn get_sample_eth_private_key() -> EthPrivateKey {
 pub fn get_sample_evm_private_key() -> EthPrivateKey {
     EthPrivateKey::from_slice(&hex::decode("57a5a09577a0604b84870577598d4a24fe9e5b879650a0248ac96be7d9d3f3aa").unwrap())
         .unwrap()
-}
-
-pub fn get_sample_erc20_vault_log_with_user_data() -> EthLog {
-    get_eth_submission_material_n(1).receipts[91].logs[3].clone()
 }
 
 mod tests {
