@@ -41,6 +41,7 @@ macro_rules! make_eth_db_utils_struct {
             eth_router_smart_contract_address_key: Bytes,
             eos_on_eth_smart_contract_address_key: Bytes,
             btc_on_eth_smart_contract_address_key: Bytes,
+            int_on_evm_smart_contract_address_key: Bytes,
             erc20_on_eos_smart_contract_address_key: Bytes,
             erc20_on_evm_smart_contract_address_key: Bytes,
         }
@@ -65,6 +66,7 @@ macro_rules! make_eth_db_utils_struct {
                         [<$prefix _ROUTER_SMART_CONTRACT_ADDRESS_KEY>],
                         [<$prefix _BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY>],
                         [<$prefix _EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY>],
+                        [<$prefix _INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY>],
                         [<$prefix _ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY>],
                         [<$prefix _ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY>],
                     };
@@ -102,6 +104,8 @@ macro_rules! make_eth_db_utils_struct {
                             [<$prefix _BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY>].to_vec(),
                         eos_on_eth_smart_contract_address_key:
                             [<$prefix _EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY>].to_vec(),
+                        int_on_evm_smart_contract_address_key:
+                            [<$prefix _INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY>].to_vec(),
                         erc20_on_eos_smart_contract_address_key:
                             [<$prefix _ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY>].to_vec(),
                         erc20_on_evm_smart_contract_address_key:
@@ -191,6 +195,10 @@ macro_rules! make_eth_db_utils_struct {
             fn get_eth_canon_to_tip_length_key(&self) -> Bytes {
                 self.eth_canon_to_tip_length_key.to_vec()
             }
+
+            fn get_int_on_evm_smart_contract_address_key(&self) -> Bytes {
+                self.int_on_evm_smart_contract_address_key.to_vec()
+            }
         }
     };
 }
@@ -215,6 +223,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
     fn get_eth_canon_to_tip_length_key(&self) -> Bytes;
     fn get_router_smart_contract_address_key(&self) -> Bytes;
     fn get_erc777_proxy_contract_address_key(&self) -> Bytes;
+    fn get_int_on_evm_smart_contract_address_key(&self) -> Bytes;
     fn get_eos_on_eth_smart_contract_address_key(&self) -> Bytes;
     fn get_btc_on_eth_smart_contract_address_key(&self) -> Bytes;
     fn get_erc20_on_evm_smart_contract_address_key(&self) -> Bytes;
@@ -682,6 +691,26 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
         } else {
             info!("✔ Putting `ERC20-on-EVM` vault contract address in db...");
             self.put_eth_address_in_db(&self.get_erc20_on_evm_smart_contract_address_key(), address)
+        }
+    }
+
+    fn get_int_on_evm_smart_contract_address_from_db(&self) -> Result<EthAddress> {
+        info!("✔ Getting `int-on-evm` smart-contract address from db...");
+        if self.get_is_for_evm() {
+            info!("✔ DB utils are for EVM, meaning there's no vault on this side of the bridge!");
+            Ok(EthAddress::zero())
+        } else {
+            self.get_eth_address_from_db(&self.get_int_on_evm_smart_contract_address_key())
+                .map_err(|_| "No `int-on-evm` vault contract address in DB! Did you forget to set it?".into())
+        }
+    }
+
+    fn put_int_on_evm_smart_contract_address_in_db(&self, address: &EthAddress) -> Result<()> {
+        if self.get_int_on_evm_smart_contract_address_from_db().is_ok() {
+            Err("`int-on-evm` vault contract address already set!".into())
+        } else {
+            info!("✔ Putting `int-on-ewvm` vault contract address in db...");
+            self.put_eth_address_in_db(&self.get_int_on_evm_smart_contract_address_key(), address)
         }
     }
 
