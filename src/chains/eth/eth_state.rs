@@ -23,6 +23,7 @@ use crate::{
         eth::int_tx_info::EthOnEvmEvmTxInfos as EthOnIntIntTxInfos,
         int::eth_tx_info::EthOnEvmEthTxInfos as EthOnIntEthTxInfos,
     },
+    int_on_evm::{evm::int_tx_info::IntOnEvmIntTxInfos, int::evm_tx_info::IntOnEvmEvmTxInfos},
     traits::DatabaseInterface,
     types::Result,
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
@@ -39,6 +40,10 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub eos_db_utils: EosDatabaseUtils<'a, D>,
     pub btc_db_utils: BtcDatabaseUtils<'a, D>,
     pub btc_transactions: Option<BtcTransactions>,
+    pub int_on_evm_int_signed_txs: EthTransactions,
+    pub int_on_evm_evm_signed_txs: EthTransactions,
+    pub int_on_evm_evm_tx_infos: IntOnEvmEvmTxInfos,
+    pub int_on_evm_int_tx_infos: IntOnEvmIntTxInfos,
     pub eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos,
     pub erc20_on_evm_evm_signed_txs: EthTransactions,
     pub erc20_on_evm_eth_signed_txs: EthTransactions,
@@ -72,6 +77,10 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             evm_db_utils: EvmDbUtils::new(db),
             eos_db_utils: EosDatabaseUtils::new(db),
             btc_db_utils: BtcDatabaseUtils::new(db),
+            int_on_evm_int_signed_txs: EthTransactions::new(vec![]),
+            int_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
+            int_on_evm_evm_tx_infos: IntOnEvmEvmTxInfos::new(vec![]),
+            int_on_evm_int_tx_infos: IntOnEvmIntTxInfos::new(vec![]),
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
             erc20_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
             erc20_on_evm_eth_signed_txs: EthTransactions::new(vec![]),
@@ -120,15 +129,40 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         }
     }
 
+    pub fn add_int_on_evm_int_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {
+        if self.int_on_evm_int_signed_txs.is_empty() {
+            self.int_on_evm_int_signed_txs = txs;
+            Ok(self)
+        } else {
+            Err(get_no_overwrite_state_err("int_on_evm_int_signed_txs").into())
+        }
+    }
+
+    pub fn add_int_on_evm_evm_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {
+        if self.int_on_evm_evm_signed_txs.is_empty() {
+            self.int_on_evm_evm_signed_txs = txs;
+            Ok(self)
+        } else {
+            Err(get_no_overwrite_state_err("int_on_evm_evm_signed_txs").into())
+        }
+    }
+
+    pub fn add_int_on_evm_evm_tx_infos(self, mut infos: IntOnEvmEvmTxInfos) -> Result<Self> {
+        let mut new_infos = self.int_on_evm_evm_tx_infos.0.clone();
+        new_infos.append(&mut infos.0);
+        self.replace_int_on_evm_evm_tx_infos(IntOnEvmEvmTxInfos::new(new_infos))
+    }
+
+    pub fn add_int_on_evm_int_tx_infos(self, mut infos: IntOnEvmIntTxInfos) -> Result<Self> {
+        let mut new_infos = self.int_on_evm_int_tx_infos.0.clone();
+        new_infos.append(&mut infos.0);
+        self.replace_int_on_evm_int_tx_infos(IntOnEvmIntTxInfos::new(new_infos))
+    }
+
     pub fn add_erc20_on_evm_eth_tx_infos(self, mut infos: EthOnEvmEthTxInfos) -> Result<Self> {
         let mut new_infos = self.erc20_on_evm_eth_tx_infos.0.clone();
         new_infos.append(&mut infos.0);
         self.replace_erc20_on_evm_eth_tx_infos(EthOnEvmEthTxInfos::new(new_infos))
-    }
-
-    pub fn replace_erc20_on_evm_eth_tx_infos(mut self, replacements: EthOnEvmEthTxInfos) -> Result<Self> {
-        self.erc20_on_evm_eth_tx_infos = replacements;
-        Ok(self)
     }
 
     pub fn add_eth_submission_material(mut self, eth_submission_material: EthSubmissionMaterial) -> Result<Self> {
@@ -202,8 +236,23 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         Ok(self)
     }
 
+    pub fn replace_erc20_on_evm_eth_tx_infos(mut self, replacements: EthOnEvmEthTxInfos) -> Result<Self> {
+        self.erc20_on_evm_eth_tx_infos = replacements;
+        Ok(self)
+    }
+
     pub fn replace_erc20_on_evm_evm_tx_infos(mut self, replacements: EthOnEvmEvmTxInfos) -> Result<Self> {
         self.erc20_on_evm_evm_tx_infos = replacements;
+        Ok(self)
+    }
+
+    pub fn replace_int_on_evm_evm_tx_infos(mut self, replacements: IntOnEvmEvmTxInfos) -> Result<Self> {
+        self.int_on_evm_evm_tx_infos = replacements;
+        Ok(self)
+    }
+
+    pub fn replace_int_on_evm_int_tx_infos(mut self, replacements: IntOnEvmIntTxInfos) -> Result<Self> {
+        self.int_on_evm_int_tx_infos = replacements;
         Ok(self)
     }
 
