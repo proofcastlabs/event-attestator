@@ -1,5 +1,5 @@
 pub(crate) mod metadata_chain_id;
-pub(crate) mod metadata_origin_address;
+pub(crate) mod metadata_address;
 pub(crate) mod metadata_protocol_id;
 pub(crate) mod metadata_traits;
 pub(crate) mod metadata_version;
@@ -12,7 +12,7 @@ use crate::{
     chains::eos::eos_metadata::EosMetadata,
     metadata::{
         metadata_chain_id::MetadataChainId,
-        metadata_origin_address::MetadataOriginAddress,
+        metadata_address::MetadataAddress,
         metadata_protocol_id::MetadataProtocolId,
         metadata_version::MetadataVersion,
     },
@@ -31,9 +31,9 @@ pub struct Metadata {
     pub version: MetadataVersion,
     pub user_data: Bytes,
     pub origin_chain_id: MetadataChainId,
-    pub origin_address: MetadataOriginAddress,
+    pub origin_address: MetadataAddress,
     pub destination_chain_id: Option<MetadataChainId>,
-    pub destination_address: Option<MetadataOriginAddress>,
+    pub destination_address: Option<MetadataAddress>,
     pub protocol_options: Option<Bytes>,
     pub protocol_receipt: Option<Bytes>,
 }
@@ -48,11 +48,11 @@ impl Metadata {
         }
     }
 
-    pub fn new(user_data: &[Byte], origin_address: &MetadataOriginAddress) -> Self {
+    pub fn new(user_data: &[Byte], origin_address: &MetadataAddress) -> Self {
         Self::new_v1(user_data, origin_address)
     }
 
-    fn new_v1(user_data: &[Byte], origin_address: &MetadataOriginAddress) -> Self {
+    fn new_v1(user_data: &[Byte], origin_address: &MetadataAddress) -> Self {
         Self {
             version: MetadataVersion::V1,
             user_data: user_data.to_vec(),
@@ -67,9 +67,9 @@ impl Metadata {
 
     pub fn new_v2(
         user_data: &[Byte],
-        origin_address: &MetadataOriginAddress,
+        origin_address: &MetadataAddress,
         destination_chain_id: &MetadataChainId,
-        destination_address: &MetadataOriginAddress,
+        destination_address: &MetadataAddress,
         protocol_options: Option<Bytes>,
         protocol_receipt: Option<Bytes>,
     ) -> Self {
@@ -158,7 +158,6 @@ impl Metadata {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::metadata::test_utils::{get_sample_eth_metadata, get_sample_eth_metadata_v2};
 
     #[test]

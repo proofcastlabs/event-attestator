@@ -18,6 +18,8 @@ use crate::{
     types::Result,
 };
 
+// FIXME this should also REQUIRE the vault and router address args!!!
+
 /// # Maybe Initialize ETH Core
 ///
 /// This function first checks to see if the ETH core has already been initialized, and initializes

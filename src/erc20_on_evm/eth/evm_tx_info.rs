@@ -24,7 +24,7 @@ use crate::{
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_evm::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
-        metadata_origin_address::MetadataOriginAddress,
+        metadata_address::MetadataAddress,
         metadata_protocol_id::MetadataProtocolId,
         metadata_traits::ToMetadata,
         Metadata,
@@ -59,7 +59,7 @@ impl ToMetadata for EthOnEvmEvmTxInfo {
         };
         Ok(Metadata::new(
             &user_data,
-            &MetadataOriginAddress::new_from_eth_address(
+            &MetadataAddress::new_from_eth_address(
                 &self.token_sender,
                 &self.origin_chain_id.to_metadata_chain_id(),
             )?,
