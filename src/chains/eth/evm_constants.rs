@@ -1,6 +1,9 @@
 use serde_json::{json, Value as JsonValue};
 
-use crate::{chains::eth::eth_constants::ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY, utils::get_prefixed_db_key};
+use crate::{
+    chains::eth::eth_constants::{ETH_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY, ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY},
+    utils::get_prefixed_db_key,
+};
 
 pub fn get_evm_constants_db_keys() -> JsonValue {
     json!({
@@ -42,6 +45,8 @@ pub fn get_evm_constants_db_keys() -> JsonValue {
             hex::encode(EVM_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
         "EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY":
             hex::encode(EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "EVM_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(EVM_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
     })
 }
 
@@ -69,6 +74,7 @@ lazy_static! {
     pub static ref EVM_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
         get_prefixed_db_key("evm-erc20-on-evm-smart-contract-address-key");
     pub static ref EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = *ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY;
+    pub static ref EVM_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] = *ETH_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY;
 }
 
 #[cfg(test)]
@@ -104,6 +110,8 @@ mod tests {
                 "0e5e8342356bb9f5b6f6b1a681c544c12838053a450bb97bed1d3a7a8e9a86ec",
             "EVM_GAS_PRICE_KEY":
                 "b4dbeaf50ce099e52bd74571377dc97df7f25db7b981babcea4c0292035f58ba",
+            "EVM_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY":
+                "a1552e7ee400c2adf873879fc3efefea72db11307ad3c873506e1f3be8fd31db",
             "EVM_LATEST_BLOCK_HASH_KEY":
                 "9a4dd10e7fc05b39c5c66698d808005e9bc678bf3d7816741b25ddddf93092a7",
             "EVM_LINKER_HASH_KEY":

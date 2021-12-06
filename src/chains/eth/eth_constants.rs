@@ -55,6 +55,8 @@ pub fn get_eth_constants_db_keys() -> JsonValue {
             hex::encode(ETH_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
         "ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY":
             hex::encode(ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
+        "ETH_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY":
+            hex::encode(ETH_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec()),
     })
 }
 
@@ -83,6 +85,8 @@ lazy_static! {
         get_prefixed_db_key("erc20-on-evm-eth-smart-contract-address-key");
     pub static ref ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
         get_prefixed_db_key("eth-router-smart-contract-address-key");
+    pub static ref ETH_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY: [u8; 32] =
+        get_prefixed_db_key("eth-int-on-evm-smart-contract-address-key");
 }
 
 #[cfg(test)]
@@ -120,6 +124,8 @@ mod tests {
                 "ecf932d3aca97f12884bc42af7607469feba2206e8b1d37ed1328d477c747346",
             "ETH_LATEST_BLOCK_HASH_KEY":
                 "8b39bef2b5b1e9564bb4a60c8211c32e2f94dc88cae8cfbaad42b2e7e527ea7a",
+            "ETH_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY":
+                "a1552e7ee400c2adf873879fc3efefea72db11307ad3c873506e1f3be8fd31db",
             "ETH_LINKER_HASH_KEY":
                 "1c045b32a91a460a8a210de0a9b757da8fc21844f02399b558c3c87917122b58",
             "ETH_PRIVATE_KEY_DB_KEY":
