@@ -276,7 +276,7 @@ impl IntOnEvmEvmTxInfos {
         dictionary: &EthEvmTokenDictionary,
         router_address: &EthAddress,
     ) -> Result<Self> {
-        info!("✔ Getting `erc20-on-int` peg in infos from receipt...");
+        info!("✔ Getting `int-on-evm` peg in infos from receipt...");
         Ok(Self::new(
             Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, vault_address)
                 .iter()
@@ -425,7 +425,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Filtering receipts for those containing `erc20-on-int` peg in events...");
-    let vault_address = state.eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?;
+    let vault_address = state.eth_db_utils.get_int_on_evm_smart_contract_address_from_db()?;
     state
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(&vault_address, &[*ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2])
@@ -439,7 +439,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
 }
 
 pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    if state.erc20_on_int_int_tx_infos.is_empty() {
+    if state.int_on_evm_evm_tx_infos.is_empty() {
         info!("✔ No tx infos in state ∴ no INT transactions to sign!");
         Ok(state)
     } else {
