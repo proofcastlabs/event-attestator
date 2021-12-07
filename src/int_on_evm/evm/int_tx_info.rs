@@ -8,11 +8,9 @@ use crate::{
         eth_contracts::{
             erc20_vault::{
                 encode_erc20_vault_peg_out_fxn_data_with_user_data,
-                encode_erc20_vault_peg_out_fxn_data_without_user_data,
-                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
                 ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
             },
-            erc777::{Erc777RedeemEvent, ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA},
+            erc777::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
         },
         eth_crypto::{
             eth_private_key::EthPrivateKey,
@@ -142,15 +140,9 @@ impl IntOnEvmIntTxInfo {
         evm_private_key: &EthPrivateKey,
         vault_address: &EthAddress,
     ) -> Result<EvmTransaction> {
-        let gas_limit = if self.user_data.is_empty() {
-            ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT
-        } else {
-            ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT
-        };
         info!("✔ Signing ETH transaction for tx info: {:?}", self);
         debug!("✔ Signing with nonce:     {}", nonce);
         debug!("✔ Signing with chain id:  {}", chain_id);
-        debug!("✔ Signing with gas limit: {}", gas_limit);
         debug!("✔ Signing with gas price: {}", gas_price);
         debug!(
             "✔ Signing tx to token recipient: {}",
@@ -165,27 +157,18 @@ impl IntOnEvmIntTxInfo {
             self.native_token_amount.to_string()
         );
         debug!("✔ Signing tx for vault address: {}", vault_address.to_string());
-        let encoded_tx_data = if self.user_data.is_empty() {
-            encode_erc20_vault_peg_out_fxn_data_without_user_data(
-                self.destination_address,
-                self.eth_token_address,
-                self.native_token_amount,
-            )?
-        } else {
+        EvmTransaction::new_unsigned(
             encode_erc20_vault_peg_out_fxn_data_with_user_data(
                 self.destination_address,
                 self.eth_token_address,
                 self.native_token_amount,
                 self.to_metadata_bytes()?,
-            )?
-        };
-        EvmTransaction::new_unsigned(
-            encoded_tx_data,
+            )?,
             nonce,
             ZERO_ETH_VALUE,
             *vault_address,
             chain_id,
-            gas_limit,
+            ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
             gas_price,
         )
         .sign(evm_private_key)
@@ -247,34 +230,31 @@ impl IntOnEvmIntTxInfos {
     }
 
     // FIXME Make sure this works for the v2 redeem event!
-    fn is_log_erc20_on_evm_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
+    fn is_log_int_on_evm_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
         debug!(
             "✔ Checking log contains topic: {}",
-            hex::encode(ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA.as_bytes())
+            hex::encode(ERC777_REDEEM_EVENT_TOPIC_V2.as_bytes())
         );
         let token_is_supported = dictionary.is_evm_token_supported(&log.address);
-        let log_contains_topic = log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA);
+        let log_contains_topic = log.contains_topic(&ERC777_REDEEM_EVENT_TOPIC_V2);
         debug!("✔ Log is supported: {}", token_is_supported);
         debug!("✔ Log has correct topic: {}", log_contains_topic);
         Ok(token_is_supported && log_contains_topic)
     }
 
-    pub fn is_log_supported_erc20_on_evm_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
-        match Self::is_log_erc20_on_evm_redeem(log, dictionary)? {
+    fn is_log_relevant(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
+        match Self::is_log_int_on_evm_redeem(log, dictionary)? {
             false => Ok(false),
             true => Ok(dictionary.is_evm_token_supported(&log.address)),
         }
     }
 
-    fn get_supported_erc20_on_evm_logs_from_receipt(
-        receipt: &EthReceipt,
-        dictionary: &EthEvmTokenDictionary,
-    ) -> EthLogs {
+    fn get_relevant_logs_from_receipt(receipt: &EthReceipt, dictionary: &EthEvmTokenDictionary) -> EthLogs {
         EthLogs::new(
             receipt
                 .logs
                 .iter()
-                .filter(|log| matches!(Self::is_log_supported_erc20_on_evm_redeem(log, dictionary), Ok(true)))
+                .filter(|log| matches!(Self::is_log_relevant(log, dictionary), Ok(true)))
                 .cloned()
                 .collect(),
         )
@@ -284,17 +264,17 @@ impl IntOnEvmIntTxInfos {
         receipt: &EthReceipt,
         dictionary: &EthEvmTokenDictionary,
     ) -> bool {
-        Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, dictionary).len() > 0
+        Self::get_relevant_logs_from_receipt(receipt, dictionary).len() > 0
     }
 
     fn from_eth_receipt(
         receipt: &EthReceipt,
         dictionary: &EthEvmTokenDictionary,
-        origin_chain_id: &EthChainId,
+        origin_chain_id: &EthChainId, // FIXME do we use this one or get it from the receipt?
     ) -> Result<Self> {
         info!("✔ Getting `IntOnEvmIntTxInfos` from receipt...");
         Ok(Self::new(
-            Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, dictionary)
+            Self::get_relevant_logs_from_receipt(receipt, dictionary)
                 .iter()
                 .map(|log| {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
@@ -426,14 +406,14 @@ pub fn filter_out_zero_value_eth_tx_infos_from_state<D: DatabaseInterface>(state
     info!("✔ Maybe filtering out zero value `IntOnEvmIntTxInfos`...");
     debug!(
         "✔ Num `IntOnEvmIntTxInfos` before: {}",
-        state.erc20_on_int_eth_signed_txs.len()
+        state.int_on_evm_int_tx_infos.len()
     );
     state
-        .erc20_on_int_eth_tx_infos
+        .int_on_evm_int_tx_infos
         .filter_out_zero_values()
         .and_then(|filtered_tx_infos| {
             debug!("✔ Num `IntOnEvmIntTxInfos` after: {}", filtered_tx_infos.len());
-            state.replace_erc20_on_int_eth_tx_infos(filtered_tx_infos)
+            state.replace_int_on_evm_int_tx_infos(filtered_tx_infos)
         })
 }
 
@@ -445,7 +425,7 @@ pub fn filter_submission_material_for_redeem_events_in_state<D: DatabaseInterfac
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_addresses_and_with_topics(
             &state.get_eth_evm_token_dictionary()?.to_evm_addresses(),
-            &[*ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA],
+            &[*ERC777_REDEEM_EVENT_TOPIC_V2],
         )
         .and_then(|filtered_submission_material| {
             IntOnEvmIntTxInfos::filter_eth_submission_material_for_supported_redeems(
@@ -457,12 +437,12 @@ pub fn filter_submission_material_for_redeem_events_in_state<D: DatabaseInterfac
 }
 
 pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    if state.erc20_on_int_eth_tx_infos.is_empty() {
+    if state.int_on_evm_int_tx_infos.is_empty() {
         info!("✔ No tx infos in state ∴ no ETH transactions to sign!");
         Ok(state)
     } else {
         state
-            .erc20_on_int_eth_tx_infos
+            .int_on_evm_int_tx_infos
             .to_eth_signed_txs(
                 state.eth_db_utils.get_eth_account_nonce_from_db()?,
                 &state.eth_db_utils.get_eth_chain_id_from_db()?,
@@ -475,7 +455,7 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EthS
                 {
                     debug!("✔ Signed transactions: {:?}", signed_txs);
                 }
-                state.add_erc20_on_int_eth_signed_txs(signed_txs)
+                state.add_int_on_evm_int_signed_txs(signed_txs)
             })
     }
 }
@@ -483,14 +463,14 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EthS
 pub fn maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    if state.erc20_on_int_eth_tx_infos.is_empty() {
+    if state.int_on_evm_int_tx_infos.is_empty() {
         Ok(state)
     } else {
         info!("✔ Maybe diverting ETH txs to safe address if destination address is the token contract address...");
         let new_infos = state
-            .erc20_on_int_eth_tx_infos
+            .int_on_evm_int_tx_infos
             .divert_to_safe_address_if_destination_is_token_contract_address();
-        state.replace_erc20_on_int_eth_tx_infos(new_infos)
+        state.replace_int_on_evm_int_tx_infos(new_infos)
     }
 }
 
