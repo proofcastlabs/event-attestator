@@ -155,15 +155,14 @@ pub struct Erc777RedeemEvent {
 
 impl Erc777RedeemEvent {
     pub fn get_origin_chain_id(&self) -> Result<MetadataChainId> {
-        self
-            .origin_chain_id
+        self.origin_chain_id
             .ok_or(NoneError("Could not get `origin_chain_id` from `Erc777RedeemEvent`!"))
     }
 
     pub fn get_destination_chain_id(&self) -> Result<MetadataChainId> {
-        self
-            .destination_chain_id
-            .ok_or(NoneError("Could not get `destination_chain_id` from `Erc777RedeemEvent`!"))
+        self.destination_chain_id.ok_or(NoneError(
+            "Could not get `destination_chain_id` from `Erc777RedeemEvent`!",
+        ))
     }
 
     fn get_err_msg(field: &str) -> String {

@@ -466,14 +466,14 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
 pub fn maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    if state.erc20_on_int_int_tx_infos.is_empty() {
+    if state.int_on_evm_evm_tx_infos.is_empty() {
         Ok(state)
     } else {
-        info!("✔ Maybe diverting INT txs to safe address if destination address is the token contract address...");
+        info!("✔ Maybe diverting EVM txs to safe address if destination address is the token contract address...");
         let new_infos = state
-            .erc20_on_int_int_tx_infos
+            .int_on_evm_evm_tx_infos
             .divert_to_safe_address_if_destination_is_token_contract_address();
-        state.replace_erc20_on_int_int_tx_infos(new_infos)
+        state.replace_int_on_evm_evm_tx_infos(new_infos)
     }
 }
 
