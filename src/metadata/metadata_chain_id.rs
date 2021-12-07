@@ -32,6 +32,7 @@ pub enum MetadataChainId {
     EthUnknown,       // 0x00000000
     BtcUnknown,       // 0x01000000
     EosUnknown,       // 0x02000000
+    InterimChain,     // 0xffffffff
 }
 
 impl MetadataChainId {
@@ -48,6 +49,7 @@ impl MetadataChainId {
             Self::BscMainnet
             | Self::EthUnknown
             | Self::XDaiMainnet
+            | Self::InterimChain
             | Self::EthereumMainnet
             | Self::EthereumRinkeby
             | Self::EthereumRopsten
@@ -72,6 +74,7 @@ impl MetadataChainId {
             Self::TelosMainnet => Box::new(EosChainId::TelosMainnet),
             Self::UltraMainnet => Box::new(EosChainId::UltraMainnet),
             Self::UltraTestnet => Box::new(EosChainId::UltraTestnet),
+            Self::InterimChain => Box::new(EthChainId::InterimChain),
             Self::PolygonMainnet => Box::new(EthChainId::PolygonMainnet),
             Self::EosJungleTestnet => Box::new(EosChainId::EosJungleTestnet),
         }
@@ -95,11 +98,14 @@ impl MetadataChainId {
     }
 
     pub fn to_bytes(self) -> Result<Bytes> {
-        Ok(vec![
-            vec![self.to_protocol_id().to_byte()],
-            self.to_first_three_bytes_of_keccak_hash()?,
-        ]
-        .concat())
+        match self {
+            Self::InterimChain => Ok(vec![0xff, 0xff, 0xff, 0xff]),
+            _ => Ok(vec![
+                vec![self.to_protocol_id().to_byte()],
+                self.to_first_three_bytes_of_keccak_hash()?,
+            ]
+            .concat()),
+        }
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
@@ -157,6 +163,7 @@ impl fmt::Display for MetadataChainId {
             Self::TelosMainnet => write!(f, "Telos Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::UltraTestnet => write!(f, "Ultra Testnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::UltraMainnet => write!(f, "Ultra Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::InterimChain => write!(f, "Interim Chain: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
             Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
@@ -205,7 +212,7 @@ mod tests {
     fn should_get_metadata_chain_id_from_bytes_correctly() {
         let chain_ids_bytes = vec![
             "005fe7f9", "0069c322", "00f34368", "01ec97de", "018afeb2", "02e7261c", "028c7109", "00e4b170", "0282317f",
-            "00f1918e", "0075dd4c", "025d3c68", "02174f20", "02b5a4d6", "00000000", "01000000", "02000000",
+            "00f1918e", "0075dd4c", "025d3c68", "02174f20", "02b5a4d6", "00000000", "01000000", "02000000", "ffffffff",
         ]
         .iter()
         .map(|ref hex| hex::decode(hex).unwrap())
