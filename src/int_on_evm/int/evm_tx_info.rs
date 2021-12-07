@@ -155,7 +155,7 @@ impl IntOnEvmEvmTxInfo {
             debug!("✔ No user data ∴ not wrapping in metadata!");
         };
         encode_erc777_mint_fxn_maybe_with_data(
-            &self.router_address,
+            &self.destination_address,
             &self.get_host_token_amount(dictionary)?,
             if metadata_bytes.is_empty() {
                 None
