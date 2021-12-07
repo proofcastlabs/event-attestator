@@ -60,9 +60,9 @@ impl EvmSignedTxInfo {
             evm_signed_tx: tx.eth_tx_hex(),
             any_sender_tx: tx.any_sender_tx(),
             _id: if tx.is_any_sender() {
-                format!("perc20-on-evm-evm-any-sender-{}", nonce)
+                format!("int-on-evm-evm-any-sender-{}", nonce)
             } else {
-                format!("perc20-on-evm-evm-{}", nonce)
+                format!("int-on-evm-evm-{}", nonce)
             },
             evm_tx_hash: format!("0x{}", tx.get_tx_hash()),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
@@ -124,6 +124,7 @@ pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
     let output = serde_json::to_string(&IntOutput {
         int_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
         evm_signed_transactions: if state.int_on_evm_evm_signed_txs.is_empty() {
+            info!("✔ No `int-on-evm-evm` signed transactions ∴ no txs to output!");
             vec![]
         } else {
             get_evm_signed_tx_info_from_int_txs(
