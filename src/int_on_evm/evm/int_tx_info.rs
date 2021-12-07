@@ -446,6 +446,7 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EthS
         info!("✔ No tx infos in state ∴ no ETH transactions to sign!");
         Ok(state)
     } else {
+        info!("✔ Signing transactions for `IntOnEvmIntTxInfos`...");
         state
             .int_on_evm_int_tx_infos
             .to_eth_signed_txs(
@@ -453,7 +454,7 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EthS
                 &state.eth_db_utils.get_eth_chain_id_from_db()?,
                 state.eth_db_utils.get_eth_gas_price_from_db()?,
                 &state.eth_db_utils.get_eth_private_key_from_db()?,
-                &state.eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+                &state.eth_db_utils.get_int_on_evm_smart_contract_address_from_db()?,
             )
             .and_then(|signed_txs| {
                 #[cfg(feature = "debug")]
@@ -469,6 +470,7 @@ pub fn maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address<D: D
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     if state.int_on_evm_int_tx_infos.is_empty() {
+        info!("✔ No transactions in state so skipping diversion check!");
         Ok(state)
     } else {
         info!("✔ Maybe diverting ETH txs to safe address if destination address is the token contract address...");
