@@ -63,7 +63,7 @@ fn add_router_contract_address_and_return_state<'a, D: DatabaseInterface>(
     add_contract_address_and_return_state(state, address_hex, ContractsToAdd::Router)
 }
 
-/// # Maybe Initialize ETH Core
+/// # Maybe Initialize INT Core
 ///
 /// This function first checks to see if the ETH core has already been initialized, and initializes
 /// it if not. The initialization procedure takes as its input a valid ETH block JSON of the
@@ -88,7 +88,7 @@ fn add_router_contract_address_and_return_state<'a, D: DatabaseInterface>(
 /// length param. This latter defines how many `confirmations` of a transactions are required before
 /// a signature is signed. Finally, this function requires the addresses of the vault & router
 /// smart contracts.
-pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
+pub fn maybe_initialize_int_core<D: DatabaseInterface>(
     db: D,
     block_json: &str,
     chain_id: u8,

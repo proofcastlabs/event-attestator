@@ -63,6 +63,6 @@ pub use crate::{
         evm::{initialize_evm_core::maybe_initialize_evm_core, submit_evm_block::submit_evm_block_to_core},
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
-        int::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
+        int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},
     },
 };
