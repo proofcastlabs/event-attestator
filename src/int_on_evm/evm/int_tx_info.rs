@@ -30,6 +30,7 @@ use crate::{
     int_on_evm::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
         metadata_address::MetadataAddress,
+        metadata_chain_id::MetadataChainId,
         metadata_protocol_id::MetadataProtocolId,
         metadata_traits::ToMetadata,
         Metadata,
@@ -40,14 +41,15 @@ use crate::{
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor)]
 pub struct IntOnEvmIntTxInfo {
-    pub native_token_amount: U256,
+    pub user_data: Bytes,
     pub token_sender: EthAddress,
+    pub native_token_amount: U256,
     pub originating_tx_hash: EthHash,
     pub evm_token_address: EthAddress,
     pub eth_token_address: EthAddress,
     pub destination_address: EthAddress,
-    pub user_data: Bytes,
-    pub origin_chain_id: EthChainId,
+    pub origin_chain_id: MetadataChainId,
+    pub destination_chain_id: MetadataChainId,
 }
 
 impl ToMetadata for IntOnEvmIntTxInfo {
@@ -295,9 +297,10 @@ impl IntOnEvmIntTxInfos {
                     let tx_info = IntOnEvmIntTxInfo {
                         evm_token_address: log.address,
                         token_sender: event_params.redeemer,
-                        origin_chain_id: origin_chain_id.clone(),
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
+                        origin_chain_id: event_params.get_origin_chain_id()?,
+                        destination_chain_id: event_params.get_destination_chain_id()?,
                         eth_token_address: dictionary.get_eth_address_from_evm_address(&log.address)?,
                         destination_address: safely_convert_hex_to_eth_address(
                             &event_params.underlying_asset_recipient,
@@ -530,8 +533,10 @@ mod tests {
         let result = IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap();
         let expected_num_results = 1;
         assert_eq!(result.len(), expected_num_results);
+        let destination_chain_id = MetadataChainId::EthereumRopsten;
         let expected_result = IntOnEvmIntTxInfos::new(vec![IntOnEvmIntTxInfo {
-            origin_chain_id,
+            origin_chain_id: MetadataChainId::BscMainnet,
+            destination_chain_id,
             user_data: vec![],
             native_token_amount: U256::from_dec_str("100000000000000000").unwrap(),
             token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
@@ -601,10 +606,12 @@ mod tests {
     fn should_divert_to_safe_address_if_destination_is_token_address() {
         let destination_address =
             EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
+        let destination_chain_id = MetadataChainId::EthereumRopsten;
         let info = IntOnEvmIntTxInfo {
             user_data: vec![],
             destination_address,
-            origin_chain_id: EthChainId::BscMainnet,
+            destination_chain_id,
+            origin_chain_id: MetadataChainId::BscMainnet,
             native_token_amount: U256::from_dec_str("100000000000000000").unwrap(),
             token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
             evm_token_address: EthAddress::from_slice(
