@@ -72,6 +72,7 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
                         material,
                         &EthEvmTokenDictionary::get_from_db(state.db)?,
                         &state.evm_db_utils.get_eth_chain_id_from_db()?,
+                        &state.evm_db_utils.get_eth_router_smart_contract_address_from_db()?,
                     )
                 })
                 .and_then(|params| state.add_int_on_evm_int_tx_infos(params))

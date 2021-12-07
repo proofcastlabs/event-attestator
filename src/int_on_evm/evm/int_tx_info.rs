@@ -42,6 +42,7 @@ pub struct IntOnEvmIntTxInfo {
     pub user_data: Bytes,
     pub token_sender: EthAddress,
     pub native_token_amount: U256,
+    pub router_address: EthAddress,
     pub originating_tx_hash: EthHash,
     pub evm_token_address: EthAddress,
     pub eth_token_address: EthAddress,
@@ -159,7 +160,7 @@ impl IntOnEvmIntTxInfo {
         debug!("✔ Signing tx for vault address: {}", vault_address.to_string());
         EvmTransaction::new_unsigned(
             encode_erc20_vault_peg_out_fxn_data_with_user_data(
-                self.destination_address,
+                self.router_address,
                 self.eth_token_address,
                 self.native_token_amount,
                 self.to_metadata_bytes()?,
@@ -270,7 +271,8 @@ impl IntOnEvmIntTxInfos {
     fn from_eth_receipt(
         receipt: &EthReceipt,
         dictionary: &EthEvmTokenDictionary,
-        origin_chain_id: &EthChainId, // FIXME do we use this one or get it from the receipt?
+        origin_chain_id: &EthChainId,
+        router_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `IntOnEvmIntTxInfos` from receipt...");
         Ok(Self::new(
@@ -281,6 +283,7 @@ impl IntOnEvmIntTxInfos {
                     let tx_info = IntOnEvmIntTxInfo {
                         evm_token_address: log.address,
                         token_sender: event_params.redeemer,
+                        router_address: router_address.clone(),
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
                         origin_chain_id: event_params.get_origin_chain_id()?,
@@ -331,13 +334,14 @@ impl IntOnEvmIntTxInfos {
         submission_material: &EthSubmissionMaterial,
         dictionary: &EthEvmTokenDictionary,
         origin_chain_id: &EthChainId,
+        router_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `IntOnEvmIntTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, origin_chain_id))
+                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, origin_chain_id, router_address))
                 .collect::<Result<Vec<IntOnEvmIntTxInfos>>>()?
                 .into_iter()
                 .flatten()
@@ -395,6 +399,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                             &submission_material,
                             &account_names,
                             &state.evm_db_utils.get_eth_chain_id_from_db()?,
+                            &state.evm_db_utils.get_eth_router_smart_contract_address_from_db()?,
                         )
                     })
                     .and_then(|tx_infos| state.add_int_on_evm_int_tx_infos(tx_infos))
@@ -484,6 +489,7 @@ mod tests {
             get_sample_eth_evm_token_dictionary,
             get_sample_eth_private_key,
             get_sample_vault_address,
+            get_sample_router_address,
         },
     };
 
@@ -491,7 +497,8 @@ mod tests {
         let dictionary = get_sample_eth_evm_token_dictionary();
         let material = get_evm_submission_material_n(1);
         let origin_chain_id = EthChainId::BscMainnet;
-        IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap()
+        let router_address = get_sample_router_address();
+        IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &router_address).unwrap()
     }
 
     fn get_sample_tx_info() -> IntOnEvmIntTxInfo {
@@ -514,11 +521,13 @@ mod tests {
         let dictionary = get_sample_eth_evm_token_dictionary();
         let origin_chain_id = EthChainId::BscMainnet;
         let material = get_evm_submission_material_n(1);
-        let result = IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap();
+        let router_address = get_sample_router_address();
+        let result = IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &router_address).unwrap();
         let expected_num_results = 1;
         assert_eq!(result.len(), expected_num_results);
         let destination_chain_id = MetadataChainId::EthereumRopsten;
         let expected_result = IntOnEvmIntTxInfos::new(vec![IntOnEvmIntTxInfo {
+            router_address: router_address.clone(),
             origin_chain_id: MetadataChainId::BscMainnet,
             destination_chain_id,
             user_data: vec![],
@@ -591,7 +600,9 @@ mod tests {
         let destination_address =
             EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
         let destination_chain_id = MetadataChainId::EthereumRopsten;
+        let router_address = get_sample_router_address();
         let info = IntOnEvmIntTxInfo {
+            router_address,
             user_data: vec![],
             destination_address,
             destination_chain_id,
