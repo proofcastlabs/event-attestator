@@ -19,6 +19,7 @@ pub enum EthChainId {
     Ropsten,
     BscMainnet,
     XDaiMainnet,
+    InterimChain,
     PolygonMainnet,
     Unknown(u8),
 }
@@ -38,6 +39,7 @@ impl ToMetadataChainId for EthChainId {
             Self::Mainnet => MetadataChainId::EthereumMainnet,
             Self::Rinkeby => MetadataChainId::EthereumRinkeby,
             Self::Ropsten => MetadataChainId::EthereumRopsten,
+            Self::InterimChain => MetadataChainId::InterimChain,
             Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
         }
     }
@@ -55,6 +57,7 @@ impl EthChainId {
             "rinkeby" | "4" => Ok(Self::Rinkeby),
             "bsc" | "56" => Ok(Self::BscMainnet),
             "xdai" | "100" => Ok(Self::XDaiMainnet),
+            "interim" | "255" => Ok(Self::InterimChain),
             "polygon" | "137" => Ok(Self::PolygonMainnet),
             _ => match s.parse::<u8>() {
                 Ok(byte) => Ok(Self::Unknown(byte)),
@@ -74,6 +77,7 @@ impl EthChainId {
             Self::Ropsten => 3,
             Self::BscMainnet => 56,
             Self::XDaiMainnet => 100,
+            Self::InterimChain => 255,
             Self::PolygonMainnet => 137,
             Self::Unknown(byte) => *byte,
         }
@@ -88,6 +92,7 @@ impl EthChainId {
             4 => Ok(Self::Rinkeby),
             56 => Ok(Self::BscMainnet),
             100 => Ok(Self::XDaiMainnet),
+            255 => Ok(Self::InterimChain),
             137 => Ok(Self::PolygonMainnet),
             _ => {
                 info!("✔ Using unknown ETH chain ID: 0x{}", hex::encode(bytes));
@@ -98,13 +103,14 @@ impl EthChainId {
 
     pub fn to_metadata_chain_id(&self) -> MetadataChainId {
         match self {
+            Self::BscMainnet => MetadataChainId::BscMainnet,
+            Self::Unknown(_) => MetadataChainId::EthUnknown,
+            Self::XDaiMainnet => MetadataChainId::XDaiMainnet,
             Self::Mainnet => MetadataChainId::EthereumMainnet,
             Self::Rinkeby => MetadataChainId::EthereumRinkeby,
             Self::Ropsten => MetadataChainId::EthereumRopsten,
-            Self::BscMainnet => MetadataChainId::BscMainnet,
-            Self::XDaiMainnet => MetadataChainId::XDaiMainnet,
+            Self::InterimChain => MetadataChainId::InterimChain,
             Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
-            Self::Unknown(_) => MetadataChainId::EthUnknown,
         }
     }
 
@@ -115,6 +121,7 @@ impl EthChainId {
             Self::Rinkeby => 4,
             Self::BscMainnet => 56,
             Self::XDaiMainnet => 100,
+            Self::InterimChain => 255,
             Self::PolygonMainnet => 137,
             Self::Unknown(byte) => *byte,
         }
@@ -144,6 +151,7 @@ impl fmt::Display for EthChainId {
             Self::BscMainnet => write!(f, "BSC Mainnet: {}", self.to_u8()),
             Self::XDaiMainnet => write!(f, "xDai Mainnet: {}", self.to_u8()),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", self.to_u8()),
+            Self::InterimChain => write!(f, "Interim Chain: {}", self.to_u8()),
             Self::Unknown(_) => write!(f, "Unkown ETH chain ID: {}", self.to_u8()),
         }
     }
