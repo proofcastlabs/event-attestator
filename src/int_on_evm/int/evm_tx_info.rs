@@ -139,17 +139,29 @@ impl IntOnEvmEvmTxInfo {
         dictionary: &EthEvmTokenDictionary,
     ) -> Result<EvmTransaction> {
         let operator_data = None;
-        let metadata_bytes = self.to_metadata_bytes()?;
+        let metadata_bytes = if self.user_data.is_empty() {
+            vec![]
+        } else {
+            self.to_metadata_bytes()?
+        };
         info!("✔ Signing INT transaction for tx info: {:?}", self);
         debug!("✔ Signing with nonce:     {}", nonce);
         debug!("✔ Signing with chain id:  {}", chain_id);
         debug!("✔ Signing with gas limit: {}", gas_limit);
         debug!("✔ Signing with gas price: {}", gas_price);
-        debug!("✔ Signing with metadata : 0x{}", hex::encode(&metadata_bytes));
+        if !metadata_bytes.is_empty() {
+            debug!("✔ Signing with metadata : 0x{}", hex::encode(&metadata_bytes))
+        } else {
+            debug!("✔ No user data ∴ not wrapping in metadata!");
+        };
         encode_erc777_mint_fxn_maybe_with_data(
             &self.router_address,
             &self.get_host_token_amount(dictionary)?,
-            Some(metadata_bytes),
+            if metadata_bytes.is_empty() {
+                None
+            } else {
+                Some(metadata_bytes)
+            },
             operator_data,
         )
         .map(|data| {
@@ -486,13 +498,7 @@ mod tests {
         let dictionary = get_sample_eth_evm_token_dictionary();
         let router_address = get_sample_router_address();
         let origin_chain_id = EthChainId::Mainnet;
-        IntOnEvmEvmTxInfos::from_submission_material(
-            &material,
-            &vault_address,
-            &dictionary,
-            &router_address,
-        )
-        .unwrap()
+        IntOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, &router_address).unwrap()
     }
 
     fn get_sample_tx_info() -> IntOnEvmEvmTxInfo {
@@ -518,13 +524,9 @@ mod tests {
         let router_address = get_sample_router_address();
         let origin_chain_id = MetadataChainId::EthereumMainnet;
         let destination_chain_id = MetadataChainId::BscMainnet;
-        let result = IntOnEvmEvmTxInfos::from_submission_material(
-            &material,
-            &vault_address,
-            &dictionary,
-            &router_address,
-        )
-        .unwrap();
+        let result =
+            IntOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, &router_address)
+                .unwrap();
         let expected_num_results = 1;
         assert_eq!(result.len(), expected_num_results);
         let expected_result = IntOnEvmEvmTxInfos::new(vec![IntOnEvmEvmTxInfo {
