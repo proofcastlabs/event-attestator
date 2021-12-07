@@ -13,7 +13,7 @@ use crate::{
     },
     metadata::metadata_chain_id::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES},
     traits::DatabaseInterface,
-    types::{Byte, Bytes, Result},
+    types::{Byte, Bytes, NoneError, Result},
 };
 
 const EMPTY_DATA: Bytes = vec![];
@@ -154,6 +154,18 @@ pub struct Erc777RedeemEvent {
 }
 
 impl Erc777RedeemEvent {
+    pub fn get_origin_chain_id(&self) -> Result<MetadataChainId> {
+        self
+            .origin_chain_id
+            .ok_or(NoneError("Could not get `origin_chain_id` from `Erc777RedeemEvent`!"))
+    }
+
+    pub fn get_destination_chain_id(&self) -> Result<MetadataChainId> {
+        self
+            .destination_chain_id
+            .ok_or(NoneError("Could not get `destination_chain_id` from `Erc777RedeemEvent`!"))
+    }
+
     fn get_err_msg(field: &str) -> String {
         format!("Error getting `{}` from `EthOnEvmErc777RedeemEvent`!", field)
     }
@@ -352,10 +364,18 @@ mod tests {
         assert_eq!(result_1, result_2);
     }
 
+    fn get_sample_v2_log() -> EthLog {
+        let s = "{\"address\":\"0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9\",\"topics\":[\"0xdd56da0e6e7b301867b3632876d707f60c7cbf4b06f9ae191c67ea016cc5bf31\",\"0x000000000000000000000000976ea74026e726554db657fa54763abd0c3a0aa9\"],\"data\":\"0x000000000000000000000000000000000000000000000000000000000000029a00000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e00069c3220000000000000000000000000000000000000000000000000000000000f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a616e2061646472657373000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\"}";
+        EthLog::from_str(s).unwrap()
+    }
+
+    fn get_sample_v2_redeem_event() -> Erc777RedeemEvent {
+        Erc777RedeemEvent::from_eth_log(&get_sample_v2_log()).unwrap()
+    }
+
     #[test]
     fn should_decode_v2_redeem_event_log() {
-        let s = "{\"address\":\"0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9\",\"topics\":[\"0xdd56da0e6e7b301867b3632876d707f60c7cbf4b06f9ae191c67ea016cc5bf31\",\"0x000000000000000000000000976ea74026e726554db657fa54763abd0c3a0aa9\"],\"data\":\"0x000000000000000000000000000000000000000000000000000000000000029a00000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e00069c3220000000000000000000000000000000000000000000000000000000000f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a616e2061646472657373000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\"}";
-        let log = EthLog::from_str(s).unwrap();
+        let log = get_sample_v2_log();
         let expected_result = Erc777RedeemEvent {
             user_data: vec![],
             value: U256::from(666),
@@ -368,5 +388,45 @@ mod tests {
         let result_2 = Erc777RedeemEvent::from_eth_log(&log).unwrap();
         assert_eq!(result_1, expected_result);
         assert_eq!(result_1, result_2);
+    }
+
+    #[test]
+    fn should_get_origin_chain_id_from_redeem_event() {
+        let event = get_sample_v2_redeem_event();
+        let result = event.get_origin_chain_id().unwrap();
+        let expected_result = MetadataChainId::EthereumRopsten;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_destination_chain_id_from_redeem_event() {
+        let event = get_sample_v2_redeem_event();
+        let result = event.get_destination_chain_id().unwrap();
+        let expected_result = MetadataChainId::EthereumRinkeby;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_fail_to_get_origin_chain_id_from_redeem_event() {
+        let mut event = get_sample_v2_redeem_event();
+        event.origin_chain_id = None;
+        let expected_error = "Could not get `origin_chain_id` from `Erc777RedeemEvent`!";
+        match event.get_origin_chain_id() {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::NoneError(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error recevied!"),
+        }
+    }
+
+    #[test]
+    fn should_fail_to_get_destination_chain_id_from_redeem_event() {
+        let mut event = get_sample_v2_redeem_event();
+        event.destination_chain_id = None;
+        let expected_error = "Could not get `destination_chain_id` from `Erc777RedeemEvent`!";
+        match event.get_destination_chain_id() {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::NoneError(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error recevied!"),
+        }
     }
 }
