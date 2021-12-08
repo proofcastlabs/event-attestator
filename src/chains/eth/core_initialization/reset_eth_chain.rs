@@ -120,18 +120,13 @@ fn delete_all_blocks_and_db_keys_and_return_state<D: DatabaseInterface>(
     }
 }
 
-fn debug_reset_chain<D: DatabaseInterface>(
-    db: D,
-    submission_material_json: &str,
+pub fn reset_eth_chain<D: DatabaseInterface>(
+    state: EthState<D>,
     canon_to_tip_length: u64,
     is_for_eth: bool,
-) -> Result<String> {
-    info!("Debug resetting ETH chain...");
-    check_debug_mode()
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(submission_material_json, EthState::init(&db)))
-        .and_then(validate_block_in_state)
-        .and_then(start_eth_db_transaction_and_return_state)
-        .and_then(|state| delete_all_blocks_and_db_keys_and_return_state(state, is_for_eth))
+) -> Result<EthState<D>> {
+    info!("Resetting ETH chain...");
+    delete_all_blocks_and_db_keys_and_return_state(state, is_for_eth)
         .and_then(remove_receipts_from_block_in_state)
         .and_then(|state| {
             if is_for_eth {
@@ -175,6 +170,20 @@ fn debug_reset_chain<D: DatabaseInterface>(
                 put_evm_tail_block_hash_in_db_and_return_state(state)
             }
         })
+}
+
+fn debug_reset_chain<D: DatabaseInterface>(
+    db: D,
+    submission_material_json: &str,
+    canon_to_tip_length: u64,
+    is_for_eth: bool,
+) -> Result<String> {
+    info!("Debug resetting ETH chain...");
+    check_debug_mode()
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(submission_material_json, EthState::init(&db)))
+        .and_then(validate_block_in_state)
+        .and_then(start_eth_db_transaction_and_return_state)
+        .and_then(|state| reset_eth_chain(state, canon_to_tip_length, is_for_eth))
         .and_then(end_eth_db_transaction_and_return_state)
         .map(|_| {
             let json = if is_for_eth {
