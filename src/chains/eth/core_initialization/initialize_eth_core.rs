@@ -1,3 +1,5 @@
+use ethereum_types::Address as EthAddress;
+
 use crate::{
     chains::eth::{
         core_initialization::{
@@ -32,6 +34,7 @@ use crate::{
             generate_eth_private_key::{generate_and_store_eth_private_key, generate_and_store_evm_private_key},
         },
         eth_chain_id::EthChainId,
+        eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::validate_block_in_state,
@@ -40,7 +43,7 @@ use crate::{
     types::Result,
 };
 
-fn initialize_eth_core_maybe_with_contract_tx<'a, D: DatabaseInterface>(
+fn initialize_eth_core_maybe_with_contract_tx_and_return_state<'a, D: DatabaseInterface>(
     block_json: &str,
     chain_id: &EthChainId,
     gas_price: u64,
@@ -48,6 +51,8 @@ fn initialize_eth_core_maybe_with_contract_tx<'a, D: DatabaseInterface>(
     maybe_bytecode_path: Option<&str>,
     state: EthState<'a, D>,
     is_for_eth: bool,
+    vault_contract: Option<&EthAddress>,
+    router_contract: Option<&EthAddress>,
 ) -> Result<EthState<'a, D>> {
     parse_eth_submission_material_and_put_in_state(block_json, state)
         .and_then(|state| {
@@ -145,6 +150,24 @@ fn initialize_eth_core_maybe_with_contract_tx<'a, D: DatabaseInterface>(
                 generate_and_store_evm_address(state)
             }
         })
+        .and_then(|state| match router_contract {
+            Some(address) => {
+                state
+                    .eth_db_utils
+                    .put_eth_router_smart_contract_address_in_db(address)?;
+                Ok(state)
+            },
+            None => Ok(state),
+        })
+        .and_then(|state| match vault_contract {
+            Some(address) => {
+                state
+                    .eth_db_utils
+                    .put_erc20_on_evm_smart_contract_address_in_db(address)?; // FIXME which contract??
+                Ok(state)
+            },
+            None => Ok(state),
+        })
         .and_then(|state| match maybe_bytecode_path {
             Some(path) => {
                 if is_for_eth {
@@ -165,7 +188,17 @@ pub fn initialize_eth_core_with_no_contract_tx<'a, D: DatabaseInterface>(
     state: EthState<'a, D>,
 ) -> Result<EthState<'a, D>> {
     info!("✔ Initializing ETH core with NO contract tx...");
-    initialize_eth_core_maybe_with_contract_tx(block_json, chain_id, gas_price, canon_to_tip_length, None, state, true)
+    initialize_eth_core_maybe_with_contract_tx_and_return_state(
+        block_json,
+        chain_id,
+        gas_price,
+        canon_to_tip_length,
+        None,
+        state,
+        true,
+        None,
+        None,
+    )
 }
 
 pub fn initialize_evm_core_with_no_contract_tx<'a, D: DatabaseInterface>(
@@ -176,5 +209,99 @@ pub fn initialize_evm_core_with_no_contract_tx<'a, D: DatabaseInterface>(
     state: EthState<'a, D>,
 ) -> Result<EthState<'a, D>> {
     info!("✔ Initializing EVM core with NO contract tx...");
-    initialize_eth_core_maybe_with_contract_tx(block_json, chain_id, gas_price, canon_to_tip_length, None, state, false)
+    initialize_eth_core_maybe_with_contract_tx_and_return_state(
+        block_json,
+        chain_id,
+        gas_price,
+        canon_to_tip_length,
+        None,
+        state,
+        false,
+        None,
+        None,
+    )
+}
+
+pub fn initialize_eth_core_with_vault_and_router_contracts_and_return_state<'a, D: DatabaseInterface>(
+    block_json: &str,
+    chain_id: &EthChainId,
+    gas_price: u64,
+    canon_to_tip_length: u64,
+    state: EthState<'a, D>,
+    vault_contract: &EthAddress,
+    router_contract: &EthAddress,
+) -> Result<EthState<'a, D>> {
+    info!("✔ Initializing core with vault & router contract...");
+    initialize_eth_core_maybe_with_contract_tx_and_return_state(
+        block_json,
+        chain_id,
+        gas_price,
+        canon_to_tip_length,
+        None,
+        state,
+        true,
+        Some(vault_contract),
+        Some(router_contract),
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        chains::eth::{
+            eth_database_utils::EthDbUtilsExt,
+            eth_test_utils::get_sample_eth_init_block_string,
+            eth_utils::convert_hex_to_eth_address,
+        },
+        test_utils::get_test_database,
+    };
+
+    #[test]
+    fn should_initialize_eth_core_with_vault_and_router_contracts() {
+        let db = get_test_database();
+        let state = EthState::init(&db);
+        let block_json = get_sample_eth_init_block_string();
+        let chain_id = EthChainId::Rinkeby;
+        let gas_price = 20000000000;
+        let confs = 0;
+        let vault_address = convert_hex_to_eth_address("0x866e3fc7043efb8ff3a994f7d59f53fe045d4d7a").unwrap();
+        let router_address = convert_hex_to_eth_address("0x0e1c8524b1d1891b201ffc7bb58a82c96f8fc4f6").unwrap();
+        let result = initialize_eth_core_with_vault_and_router_contracts_and_return_state(
+            &block_json,
+            &chain_id,
+            gas_price,
+            confs,
+            state,
+            &vault_address,
+            &router_address,
+        );
+        // NOTE: We can't assert the actual output since the private key generation is
+        // non-deterministic.
+        assert!(result.is_ok());
+        let updated_state = result.unwrap();
+        // NOTE: But we CAN assert various fields are set correctly...
+        assert_eq!(
+            updated_state
+                .eth_db_utils
+                .get_eth_router_smart_contract_address_from_db()
+                .unwrap(),
+            router_address
+        );
+        assert_eq!(
+            updated_state
+                .eth_db_utils
+                .get_eth_router_smart_contract_address_from_db()
+                .unwrap(),
+            router_address
+        );
+        assert_eq!(
+            updated_state
+                .eth_db_utils
+                .get_erc20_on_evm_smart_contract_address_from_db()
+                .unwrap(),
+            vault_address
+        );
+        // TODO assert more things!
+    }
 }

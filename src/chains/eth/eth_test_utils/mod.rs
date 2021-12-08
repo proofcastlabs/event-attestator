@@ -85,6 +85,8 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_15: &str =
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_16: &str =
     "src/chains/eth/eth_test_utils/eth-submission-material-block-13257531.json";
 
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_17: &str = "src/chains/eth/eth_test_utils/eth-core-init-block.json";
+
 pub fn convert_bytes_to_h256(bytes: &[Byte]) -> Result<EthHash> {
     match bytes.len() {
         32 => Ok(EthHash::from_slice(bytes)),
@@ -150,12 +152,17 @@ pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
         14 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_14),
         15 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_15),
         16 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_16),
+        17 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_17),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num))),
     }?;
     match Path::new(&path).exists() {
         true => Ok(read_to_string(path)?),
         false => Err("✘ Cannot find sample-eth-block-and-receipts-json file!".into()),
     }
+}
+
+pub fn get_sample_eth_init_block_string() -> String {
+    get_sample_eth_submission_material_string(17).unwrap()
 }
 
 pub fn get_eth_block_with_events_from_wrong_address() -> EthSubmissionMaterial {
