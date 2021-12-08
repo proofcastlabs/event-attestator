@@ -1,11 +1,9 @@
-use std::fmt;
-
 use crate::{
     chains::eth::{
         core_initialization::{
             check_eth_core_is_initialized::is_eth_core_initialized,
             get_eth_core_init_output_json::EthInitializationOutput,
-            initialize_eth_core::initialize_eth_core_with_no_contract_tx,
+            initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
         },
         eth_chain_id::EthChainId,
         eth_constants::ETH_CORE_IS_INITIALIZED_JSON,
@@ -13,57 +11,13 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_database_utils::EthDbUtils,
         eth_state::EthState,
         eth_utils::convert_hex_to_eth_address,
     },
     traits::DatabaseInterface,
     types::Result,
 };
-
-enum ContractsToAdd {
-    Router,
-    Vault,
-}
-
-impl fmt::Display for ContractsToAdd {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::Vault => write!(f, "vault"),
-            Self::Router => write!(f, "router"),
-        }
-    }
-}
-
-fn add_contract_address_and_return_state<'a, D: DatabaseInterface>(
-    state: EthState<'a, D>,
-    address_hex: &str,
-    contract_to_add: ContractsToAdd,
-) -> Result<EthState<'a, D>> {
-    info!("✔ Adding {} contract address to db...", contract_to_add);
-    convert_hex_to_eth_address(address_hex)
-        .and_then(|ref address| match contract_to_add {
-            ContractsToAdd::Router => state.eth_db_utils.put_eth_router_smart_contract_address_in_db(address),
-            ContractsToAdd::Vault => state
-                .eth_db_utils
-                .put_erc20_on_evm_smart_contract_address_in_db(address),
-        })
-        .and(Ok(state))
-}
-
-fn add_vault_contract_address_and_return_state<'a, D: DatabaseInterface>(
-    state: EthState<'a, D>,
-    address_hex: &str,
-) -> Result<EthState<'a, D>> {
-    add_contract_address_and_return_state(state, address_hex, ContractsToAdd::Vault)
-}
-
-fn add_router_contract_address_and_return_state<'a, D: DatabaseInterface>(
-    state: EthState<'a, D>,
-    address_hex: &str,
-) -> Result<EthState<'a, D>> {
-    add_contract_address_and_return_state(state, address_hex, ContractsToAdd::Router)
-}
 
 /// # Maybe Initialize ETH Core
 ///
@@ -103,16 +57,16 @@ pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
         false => start_eth_db_transaction_and_return_state(EthState::init(&db))
             .and_then(|state| {
-                initialize_eth_core_with_no_contract_tx(
+                initialize_eth_core_with_vault_and_router_contracts_and_return_state(
                     block_json,
                     &EthChainId::try_from(chain_id)?,
                     gas_price,
                     confs,
                     state,
+                    &convert_hex_to_eth_address(vault_address)?,
+                    &convert_hex_to_eth_address(router_address)?,
                 )
             })
-            .and_then(|state| add_vault_contract_address_and_return_state(state, vault_address))
-            .and_then(|state| add_router_contract_address_and_return_state(state, router_address))
             .and_then(end_eth_db_transaction_and_return_state)
             .and_then(|state| EthInitializationOutput::new_with_no_contract(&state.eth_db_utils)),
     }
