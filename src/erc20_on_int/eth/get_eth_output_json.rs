@@ -25,6 +25,28 @@ pub struct EthOutput {
     pub int_signed_transactions: Vec<EvmTxInfo>,
 }
 
+#[cfg(test)]
+impl EthOutput {
+    pub fn from_str(s: &str) -> Result<Self> {
+        use serde_json::Value as JsonValue;
+        #[derive(Deserialize)]
+        struct TempStruct {
+            eth_latest_block_number: usize,
+            int_signed_transactions: Vec<JsonValue>,
+        }
+        let temp_struct = serde_json::from_str::<TempStruct>(s)?;
+        let tx_infos = temp_struct
+            .int_signed_transactions
+            .iter()
+            .map(|json_value| EvmTxInfo::from_str(&json_value.to_string()))
+            .collect::<Result<Vec<EvmTxInfo>>>()?;
+        Ok(Self {
+            int_signed_transactions: tx_infos,
+            eth_latest_block_number: temp_struct.eth_latest_block_number,
+        })
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EvmTxInfo {
     pub _id: String,
@@ -44,6 +66,13 @@ pub struct EvmTxInfo {
     pub broadcast_tx_hash: Option<String>,
     pub broadcast_timestamp: Option<String>,
     pub any_sender_tx: Option<RelayTransaction>,
+}
+
+#[cfg(test)]
+impl EvmTxInfo {
+    pub fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
+    }
 }
 
 impl EvmTxInfo {
