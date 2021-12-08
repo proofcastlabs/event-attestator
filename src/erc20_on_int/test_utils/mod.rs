@@ -53,6 +53,14 @@ pub fn get_sample_evm_private_key() -> EthPrivateKey {
         .unwrap()
 }
 
+pub fn get_sample_eth_init_block_json_string() -> String {
+    read_to_string("src/erc20_on_int/test_utils/eth-core-init-block.json").unwrap()
+}
+
+pub fn get_sample_int_init_block_json_string() -> String {
+    read_to_string("src/erc20_on_int/test_utils/int-core-init-block.json").unwrap()
+}
+
 mod tests {
     use super::*;
 
