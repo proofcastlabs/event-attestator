@@ -12,7 +12,7 @@ use crate::{
                 ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
                 ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
             },
-            erc777::{Erc777RedeemEvent, ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA},
+            erc777::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
         },
         eth_crypto::{
             eth_private_key::EthPrivateKey,
@@ -240,45 +240,38 @@ impl EthOnEvmEthTxInfos {
         ))
     }
 
-    // FIXME Make sure this works for the v2 redeem event!
-    fn is_log_erc20_on_evm_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
+    fn is_log_an_erc20_on_int_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
         debug!(
             "✔ Checking log contains topic: {}",
-            hex::encode(ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA.as_bytes())
+            hex::encode(ERC777_REDEEM_EVENT_TOPIC_V2.as_bytes())
         );
         let token_is_supported = dictionary.is_evm_token_supported(&log.address);
-        let log_contains_topic = log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA);
+        let log_contains_topic = log.contains_topic(&ERC777_REDEEM_EVENT_TOPIC_V2);
         debug!("✔ Log is supported: {}", token_is_supported);
         debug!("✔ Log has correct topic: {}", log_contains_topic);
         Ok(token_is_supported && log_contains_topic)
     }
 
-    pub fn is_log_supported_erc20_on_evm_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
-        match Self::is_log_erc20_on_evm_redeem(log, dictionary)? {
+    pub fn is_log_a_supported_redeem_event(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
+        match Self::is_log_an_erc20_on_int_redeem(log, dictionary)? {
             false => Ok(false),
             true => Ok(dictionary.is_evm_token_supported(&log.address)),
         }
     }
 
-    fn get_supported_erc20_on_evm_logs_from_receipt(
-        receipt: &EthReceipt,
-        dictionary: &EthEvmTokenDictionary,
-    ) -> EthLogs {
+    fn get_logs_with_redeem_event_from_receipt(receipt: &EthReceipt, dictionary: &EthEvmTokenDictionary) -> EthLogs {
         EthLogs::new(
             receipt
                 .logs
                 .iter()
-                .filter(|log| matches!(Self::is_log_supported_erc20_on_evm_redeem(log, dictionary), Ok(true)))
+                .filter(|log| matches!(Self::is_log_a_supported_redeem_event(log, dictionary), Ok(true)))
                 .cloned()
                 .collect(),
         )
     }
 
-    fn receipt_contains_supported_erc20_on_evm_redeem(
-        receipt: &EthReceipt,
-        dictionary: &EthEvmTokenDictionary,
-    ) -> bool {
-        Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, dictionary).len() > 0
+    fn receipt_contains_redeem_event(receipt: &EthReceipt, dictionary: &EthEvmTokenDictionary) -> bool {
+        Self::get_logs_with_redeem_event_from_receipt(receipt, dictionary).len() > 0
     }
 
     fn from_eth_receipt(
@@ -288,7 +281,7 @@ impl EthOnEvmEthTxInfos {
     ) -> Result<Self> {
         info!("✔ Getting `EthOnEvmEthTxInfos` from receipt...");
         Ok(Self::new(
-            Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, dictionary)
+            Self::get_logs_with_redeem_event_from_receipt(receipt, dictionary)
                 .iter()
                 .map(|log| {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
@@ -312,7 +305,7 @@ impl EthOnEvmEthTxInfos {
         ))
     }
 
-    fn filter_eth_submission_material_for_supported_redeems(
+    fn filter_submission_material_for_supported_redeems(
         submission_material: &EthSubmissionMaterial,
         dictionary: &EthEvmTokenDictionary,
     ) -> Result<EthSubmissionMaterial> {
@@ -325,9 +318,7 @@ impl EthOnEvmEthTxInfos {
             submission_material
                 .receipts
                 .iter()
-                .filter(|receipt| {
-                    EthOnEvmEthTxInfos::receipt_contains_supported_erc20_on_evm_redeem(receipt, dictionary)
-                })
+                .filter(|receipt| EthOnEvmEthTxInfos::receipt_contains_redeem_event(receipt, dictionary))
                 .cloned()
                 .collect(),
         );
@@ -438,10 +429,10 @@ pub fn filter_submission_material_for_redeem_events_in_state<D: DatabaseInterfac
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_addresses_and_with_topics(
             &state.get_eth_evm_token_dictionary()?.to_evm_addresses(),
-            &[*ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA],
+            &[*ERC777_REDEEM_EVENT_TOPIC_V2],
         )
         .and_then(|filtered_submission_material| {
-            EthOnEvmEthTxInfos::filter_eth_submission_material_for_supported_redeems(
+            EthOnEvmEthTxInfos::filter_submission_material_for_supported_redeems(
                 &filtered_submission_material,
                 state.get_eth_evm_token_dictionary()?,
             )
@@ -516,7 +507,7 @@ mod tests {
         let dictionary = get_sample_eth_evm_token_dictionary();
         let material = get_evm_submission_material_n(1);
         let result =
-            EthOnEvmEthTxInfos::filter_eth_submission_material_for_supported_redeems(&material, &dictionary).unwrap();
+            EthOnEvmEthTxInfos::filter_submission_material_for_supported_redeems(&material, &dictionary).unwrap();
         let expected_num_receipts = 1;
         assert_eq!(result.receipts.len(), expected_num_receipts);
     }

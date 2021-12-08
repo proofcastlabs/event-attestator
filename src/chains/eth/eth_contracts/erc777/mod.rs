@@ -49,7 +49,7 @@ lazy_static! {
                 .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX`"),
         )
     };
-    static ref ERC777_REDEEM_EVENT_TOPIC_V2: EthHash = {
+    pub static ref ERC777_REDEEM_EVENT_TOPIC_V2: EthHash = {
         EthHash::from_slice(
             &hex::decode(ERC777_REDEEM_EVENT_TOPIC_V2_HEX)
                 .expect("✘ Invalid hex in `ERC777_REDEEM_EVENT_TOPIC_V2_HEX`"),
