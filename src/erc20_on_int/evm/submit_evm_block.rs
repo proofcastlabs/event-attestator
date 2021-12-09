@@ -37,15 +37,15 @@ use crate::{
     types::Result,
 };
 
-/// # Submit EVM Block to Core
+/// # Submit INT Block to Core
 ///
-/// The main submission pipeline. Submitting an ETH block to the enclave will - if that block is
+/// The main submission pipeline. Submitting an INT block to the enclave will - if that block is
 /// valid & subsequent to the enclave's current latest block - advanced the piece of the ETH
 /// blockchain held by the enclave in it's encrypted database. Should the submitted block
 /// contain a redeem event emitted by the smart-contract the enclave is watching, an EOS
 /// transaction will be signed & returned to the caller.
-pub fn submit_evm_block_to_core<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
-    info!("✔ Submitting EVM block to core...");
+pub fn submit_int_block_to_core<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
+    info!("✔ Submitting INT block to core...");
     parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(&db))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
