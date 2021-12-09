@@ -5,10 +5,22 @@ use ethereum_types::Address as EthAddress;
 use serde_json::json;
 
 use crate::{
-    chains::eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_submission_material::EthSubmissionMaterial},
+    chains::eth::{
+        eth_crypto::eth_private_key::EthPrivateKey,
+        eth_submission_material::EthSubmissionMaterial,
+        eth_utils::convert_hex_to_eth_address,
+    },
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
     types::Result,
 };
+
+pub fn get_sample_token_dictionary() -> EthEvmTokenDictionary {
+    EthEvmTokenDictionary::new(vec![get_sample_token_dictionary_entry()])
+}
+
+pub fn get_sample_router_address() -> EthAddress {
+    convert_hex_to_eth_address("0x0e1c8524b1d1891b201ffc7bb58a82c96f8fc4f6").unwrap()
+}
 
 pub fn get_sample_token_dictionary_entry() -> EthEvmTokenDictionaryEntry {
     EthEvmTokenDictionaryEntry::from_str(
@@ -77,6 +89,14 @@ pub fn get_sample_eth_init_block_json_string() -> String {
 
 pub fn get_sample_int_init_block_json_string() -> String {
     read_to_string("src/erc20_on_int/test_utils/int-core-init-block.json").unwrap()
+}
+
+pub fn get_sample_peg_out_json_string() -> String {
+    read_to_string("src/erc20_on_int/test_utils/int-peg-out-block-1.json").unwrap()
+}
+
+pub fn get_sample_peg_out_submission_material() -> EthSubmissionMaterial {
+    EthSubmissionMaterial::from_str(&get_sample_peg_out_json_string()).unwrap()
 }
 
 mod tests {
