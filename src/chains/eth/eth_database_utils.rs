@@ -700,7 +700,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
             info!("✔ DB utils are for EVM, meaning there's no vault on this side of the bridge!");
             Ok(EthAddress::zero())
         } else {
-            self.get_eth_address_from_db(&self.get_int_on_evm_smart_contract_address_key())
+            self.get_erc20_on_evm_smart_contract_address_from_db()
                 .map_err(|_| "No `int-on-evm` vault contract address in DB! Did you forget to set it?".into())
         }
     }
@@ -710,7 +710,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
             Err("`int-on-evm` vault contract address already set!".into())
         } else {
             info!("✔ Putting `int-on-ewvm` vault contract address in db...");
-            self.put_eth_address_in_db(&self.get_int_on_evm_smart_contract_address_key(), address)
+            self.put_eth_address_in_db(&self.get_erc20_on_evm_smart_contract_address_key(), address)
         }
     }
 
