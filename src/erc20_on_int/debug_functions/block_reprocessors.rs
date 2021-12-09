@@ -50,7 +50,7 @@ use crate::{
     utils::prepend_debug_output_marker_to_string,
 };
 
-fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
+fn debug_reprocess_int_block_maybe_accruing_fees<D: DatabaseInterface>(
     db: D,
     block_json: &str,
     accrue_fees: bool,
@@ -180,48 +180,48 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
         .map(prepend_debug_output_marker_to_string)
 }
 
-/// # Debug Reprocess EVM Block
+/// # Debug Reprocess INT Block
 ///
-/// This function will take a passed in EVM block submission material and run it through the
+/// This function will take a passed in INT block submission material and run it through the
 /// submission pipeline, signing any signatures for pegouts it may find in the block
 ///
 /// ### NOTES:
 ///
-///  - This function will increment the core's EVM nonce, meaning the outputted reports will have a
+///  - This function will increment the core's INT nonce, meaning the outputted reports will have a
 /// gap in their report IDs!
 ///
-///  - This version of the EVM block reprocessor __will__ deduct fees from any transaction info(s) it
+///  - This version of the INT block reprocessor __will__ deduct fees from any transaction info(s) it
 ///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
 ///  dictionary. This is to avoid accounting for fees twice.
 ///
 /// ### BEWARE:
-/// If you don't broadcast the transaction outputted from this function, ALL future EVM transactions will
+/// If you don't broadcast the transaction outputted from this function, ALL future INT transactions will
 /// fail due to the core having an incorret nonce!
-pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, evm_block_json: &str) -> Result<String> {
-    debug_reprocess_evm_block_maybe_accruing_fees(db, evm_block_json, false)
+pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: D, evm_block_json: &str) -> Result<String> {
+    debug_reprocess_int_block_maybe_accruing_fees(db, evm_block_json, false)
 }
 
-/// # Debug Reprocess EVM Block With Fee Accrual
+/// # Debug Reprocess INT Block With Fee Accrual
 ///
-/// This function will take a passed in EVM block submission material and run it through the
+/// This function will take a passed in INT block submission material and run it through the
 /// submission pipeline, signing any signatures for pegouts it may find in the block
 ///
 /// ### NOTES:
 ///
-///  - This function will increment the core's EVM nonce, meaning the outputted reports will have a
+///  - This function will increment the core's INT nonce, meaning the outputted reports will have a
 /// gap in their report IDs!
 ///
-///  - This version of the EVM block reprocessor __will__ deduct fees from any transaction info(s) it
+///  - This version of the INT block reprocessor __will__ deduct fees from any transaction info(s) it
 ///  parses from the submitted block, and __will__ accrue those fees on to the total in the
 ///  dictionary. Only use this is you know what you're doing and why, and make sure you're avoiding
-///  accruing the fees twice if the block has already been processed through the non-debug EVM
+///  accruing the fees twice if the block has already been processed through the non-debug INT
 ///  block submission pipeline.
 ///
 /// ### BEWARE:
-/// If you don't broadcast the transaction outputted from this function, ALL future EVM transactions will
+/// If you don't broadcast the transaction outputted from this function, ALL future INT transactions will
 /// fail due to the core having an incorret nonce!
-pub fn debug_reprocess_evm_block_with_fee_accrual<D: DatabaseInterface>(db: D, evm_block_json: &str) -> Result<String> {
-    debug_reprocess_evm_block_maybe_accruing_fees(db, evm_block_json, true)
+pub fn debug_reprocess_int_block_with_fee_accrual<D: DatabaseInterface>(db: D, evm_block_json: &str) -> Result<String> {
+    debug_reprocess_int_block_maybe_accruing_fees(db, evm_block_json, true)
 }
 
 /// # Debug Reprocess ETH Block

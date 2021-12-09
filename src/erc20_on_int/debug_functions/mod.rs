@@ -285,7 +285,7 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
 /// # Debug Set EVM Gas Price
 ///
 /// This function sets the EVM gas price to use when making EVM transactions. It's unit is `Wei`.
-pub fn debug_set_evm_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
+pub fn debug_set_int_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
     // NOTE: This alias exists so as not to break the legacy API where the DB is NOT a reference!
     debug_set_evm_gas_price_in_db(&db, gas_price)
 }
