@@ -60,7 +60,7 @@ pub fn decode_prefixed_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
 }
 
 pub fn strip_new_line_chars(string: String) -> String {
-    string.replace("\n", "")
+    string.replace('\n', "")
 }
 
 pub fn convert_dec_str_to_u256(dec_str: &str) -> Result<U256> {

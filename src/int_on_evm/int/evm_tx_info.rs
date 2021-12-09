@@ -13,12 +13,12 @@ use crate::{
             eth_private_key::EthPrivateKey as EvmPrivateKey,
             eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
         },
-        eth_database_utils::EthDbUtilsExt,
         eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::{EthReceipt, EthReceipts},
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
         eth_utils::safely_convert_hex_to_eth_address,
+        eth_database_utils::EthDbUtilsExt,
     },
     constants::SAFE_EVM_ADDRESS,
     dictionaries::eth_evm::EthEvmTokenDictionary,
@@ -482,9 +482,7 @@ mod tests {
     use super::*;
     use crate::{
         chains::eth::{eth_utils::convert_hex_to_eth_address, eth_traits::EthTxInfoCompatible},
-        dictionaries::eth_evm::test_utils::get_sample_eth_evm_dictionary,
         int_on_evm::test_utils::{
-            get_eth_submission_material_n,
             get_sample_evm_private_key,
             get_sample_peg_in_submission_material,
             get_sample_router_address,
@@ -498,7 +496,6 @@ mod tests {
         let vault_address = get_sample_vault_address();
         let dictionary = get_sample_token_dictionary();
         let router_address = get_sample_router_address();
-        let origin_chain_id = EthChainId::Mainnet;
         IntOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, &router_address).unwrap()
     }
 
@@ -523,8 +520,6 @@ mod tests {
         let vault_address = get_sample_vault_address();
         let dictionary = get_sample_token_dictionary();
         let router_address = get_sample_router_address();
-        let origin_chain_id = MetadataChainId::EthereumMainnet;
-        let destination_chain_id = MetadataChainId::BscMainnet;
         let results =
             IntOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, &router_address)
                 .unwrap();

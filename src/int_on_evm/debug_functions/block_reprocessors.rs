@@ -71,7 +71,6 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
                     IntOnEvmIntTxInfos::from_submission_material(
                         material,
                         &EthEvmTokenDictionary::get_from_db(state.db)?,
-                        &state.evm_db_utils.get_eth_chain_id_from_db()?,
                         &state.evm_db_utils.get_eth_router_smart_contract_address_from_db()?,
                     )
                 })

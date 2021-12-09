@@ -1,5 +1,3 @@
-use std::fmt;
-
 use crate::{
     chains::eth::{
         core_initialization::{
@@ -13,7 +11,7 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_database_utils::EthDbUtils,
         eth_state::EthState,
         eth_utils::convert_hex_to_eth_address,
     },

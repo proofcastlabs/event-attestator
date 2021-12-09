@@ -271,7 +271,6 @@ impl IntOnEvmIntTxInfos {
     fn from_eth_receipt(
         receipt: &EthReceipt,
         dictionary: &EthEvmTokenDictionary,
-        origin_chain_id: &EthChainId,
         router_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `IntOnEvmIntTxInfos` from receipt...");
@@ -282,8 +281,8 @@ impl IntOnEvmIntTxInfos {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
                     let tx_info = IntOnEvmIntTxInfo {
                         evm_token_address: log.address,
+                        router_address: *router_address,
                         token_sender: event_params.redeemer,
-                        router_address: router_address.clone(),
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
                         origin_chain_id: event_params.get_origin_chain_id()?,
@@ -333,7 +332,6 @@ impl IntOnEvmIntTxInfos {
     pub fn from_submission_material(
         submission_material: &EthSubmissionMaterial,
         dictionary: &EthEvmTokenDictionary,
-        origin_chain_id: &EthChainId,
         router_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `IntOnEvmIntTxInfos` from submission material...");
@@ -341,7 +339,7 @@ impl IntOnEvmIntTxInfos {
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, origin_chain_id, router_address))
+                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, router_address))
                 .collect::<Result<Vec<IntOnEvmIntTxInfos>>>()?
                 .into_iter()
                 .flatten()
@@ -398,7 +396,6 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                         IntOnEvmIntTxInfos::from_submission_material(
                             &submission_material,
                             &account_names,
-                            &state.evm_db_utils.get_eth_chain_id_from_db()?,
                             &state.evm_db_utils.get_eth_router_smart_contract_address_from_db()?,
                         )
                     })
@@ -501,9 +498,8 @@ mod tests {
     fn get_sample_tx_infos() -> IntOnEvmIntTxInfos {
         let dictionary = get_sample_token_dictionary();
         let material = get_sample_peg_out_submission_material();
-        let origin_chain_id = EthChainId::BscMainnet;
         let router_address = get_sample_router_address();
-        IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &router_address).unwrap()
+        IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &router_address).unwrap()
     }
 
     fn get_sample_tx_info() -> IntOnEvmIntTxInfo {
@@ -523,15 +519,13 @@ mod tests {
     #[test]
     fn should_get_erc20_on_evm_eth_tx_info_from_submission_material() {
         let dictionary = get_sample_token_dictionary();
-        let origin_chain_id = EthChainId::BscMainnet;
         let material = get_sample_peg_out_submission_material();
         let router_address = get_sample_router_address();
         let results =
-            IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &router_address)
+            IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &router_address)
                 .unwrap();
         let expected_num_results = 1;
         assert_eq!(results.len(), expected_num_results);
-        let destination_chain_id = MetadataChainId::EthereumRopsten;
         let result = results[0].clone();
         assert_eq!(result.router_address, router_address);
         assert_eq!(result.user_data, hex::decode("decaff").unwrap());
