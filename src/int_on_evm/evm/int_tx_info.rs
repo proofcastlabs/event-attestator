@@ -485,19 +485,22 @@ pub fn maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address<D: D
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::eth_traits::EthTxInfoCompatible,
+        chains::eth::{
+            eth_traits::EthTxInfoCompatible,
+            eth_utils::convert_hex_to_eth_address,
+        },
         int_on_evm::test_utils::{
-            get_evm_submission_material_n,
-            get_sample_eth_evm_token_dictionary,
+            get_sample_token_dictionary,
             get_sample_eth_private_key,
             get_sample_router_address,
+            get_sample_peg_out_submission_material,
             get_sample_vault_address,
         },
     };
 
     fn get_sample_tx_infos() -> IntOnEvmIntTxInfos {
-        let dictionary = get_sample_eth_evm_token_dictionary();
-        let material = get_evm_submission_material_n(1);
+        let dictionary = get_sample_token_dictionary();
+        let material = get_sample_peg_out_submission_material();
         let origin_chain_id = EthChainId::BscMainnet;
         let router_address = get_sample_router_address();
         IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &router_address).unwrap()
@@ -509,48 +512,54 @@ mod tests {
 
     #[test]
     fn should_filter_submission_info_for_supported_redeems() {
-        let dictionary = get_sample_eth_evm_token_dictionary();
-        let material = get_evm_submission_material_n(1);
+        let dictionary = get_sample_token_dictionary();
+        let material = get_sample_peg_out_submission_material();
         let result =
             IntOnEvmIntTxInfos::filter_eth_submission_material_for_supported_redeems(&material, &dictionary).unwrap();
         let expected_num_receipts = 1;
         assert_eq!(result.receipts.len(), expected_num_receipts);
     }
 
-    // TODO Get a sample with actual user data & test that too.
     #[test]
     fn should_get_erc20_on_evm_eth_tx_info_from_submission_material() {
-        let dictionary = get_sample_eth_evm_token_dictionary();
+        let dictionary = get_sample_token_dictionary();
         let origin_chain_id = EthChainId::BscMainnet;
-        let material = get_evm_submission_material_n(1);
+        let material = get_sample_peg_out_submission_material();
         let router_address = get_sample_router_address();
-        let result =
+        let results =
             IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &router_address)
                 .unwrap();
         let expected_num_results = 1;
-        assert_eq!(result.len(), expected_num_results);
+        assert_eq!(results.len(), expected_num_results);
         let destination_chain_id = MetadataChainId::EthereumRopsten;
-        let expected_result = IntOnEvmIntTxInfos::new(vec![IntOnEvmIntTxInfo {
-            router_address: router_address.clone(),
-            origin_chain_id: MetadataChainId::BscMainnet,
-            destination_chain_id,
-            user_data: vec![],
-            native_token_amount: U256::from_dec_str("100000000000000000").unwrap(),
-            token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
-            evm_token_address: EthAddress::from_slice(
-                &hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap(),
+        let result = results[0].clone();
+        assert_eq!(result.router_address, router_address);
+        assert_eq!(result.user_data, hex::decode("decaff").unwrap());
+        assert_eq!(result.origin_chain_id, MetadataChainId::EthereumRopsten);
+        assert_eq!(result.destination_chain_id, MetadataChainId::EthereumRinkeby);
+        assert_eq!(result.native_token_amount, U256::from_dec_str("666").unwrap());
+        assert_eq!(
+            result.token_sender,
+            convert_hex_to_eth_address("0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
+        );
+        assert_eq!(
+            result.evm_token_address,
+            convert_hex_to_eth_address("0xdd9f905a34a6c507c7d68384985905cf5eb032e9").unwrap(),
+        );
+        assert_eq!(
+            result.eth_token_address,
+            convert_hex_to_eth_address("0xa83446f219baec0b6fd6b3031c5a49a54543045b").unwrap(),
+        );
+        assert_eq!(
+            result.destination_address,
+            convert_hex_to_eth_address("0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
+        );
+        assert_eq!(
+            result.originating_tx_hash,
+            EthHash::from_slice(
+                &hex::decode("61ac238ba14d7f8bc1fff8546f61127d9b44be6955819adb0f9861da6723bef1").unwrap(),
             ),
-            eth_token_address: EthAddress::from_slice(
-                &hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap(),
-            ),
-            destination_address: EthAddress::from_slice(
-                &hex::decode("71a440ee9fa7f99fb9a697e96ec7839b8a1643b8").unwrap(),
-            ),
-            originating_tx_hash: EthHash::from_slice(
-                &hex::decode("52c620012a6e278d56f582eb1dcb9241c9b2d14d7edc5dab15473b579ce2d2ea").unwrap(),
-            ),
-        }]);
-        assert_eq!(result, expected_result);
+        );
     }
 
     #[test]
@@ -567,9 +576,7 @@ mod tests {
         let expected_num_results = 1;
         assert_eq!(signed_txs.len(), expected_num_results);
         let tx_hex = signed_txs[0].eth_tx_hex().unwrap();
-        let expected_tx_hex =
-"f8c9808504a817c8008303d09094d608367b33c52293201af7fb578916a7c0784bd780b86483c09d4200000000000000000000000071a440ee9fa7f99fb9a697e96ec7839b8a1643b800000000000000000000000089ab32156e46f46d02ade3fecbe5fc4243b9aaed000000000000000000000000000000000000000000000000016345785d8a00002ba0cf271fe2d7dcf4d882fe86ceed811de38dad1e63b37305978892251c1b2ce1ed9ff88c86769d246e1f98bc901d45bf0e02ec5a404f56f7747c4f9a9d02938773"
-;
+        let expected_tx_hex = "f9028b808504a817c8008306ddd094010e1e6f6c360da7e3d62479b6b9d717b3e114ca80b90224229654690000000000000000000000000e1c8524b1d1891b201ffc7bb58a82c96f8fc4f6000000000000000000000000a83446f219baec0b6fd6b3031c5a49a54543045b000000000000000000000000000000000000000000000000000000000000029a00000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000180020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000069c32200000000000000000000000000000000000000000000000000000000000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac00f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000001600000000000000000000000000000000000000000000000000000000000000003decaff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002ca076f2b4895359adff4cd879a104c886a1e4a08d057ec7303fc80d74acd9600870a04b7192be0b3e6a41ec08616b9bbaaf10967695b73e7749c13bc43523296457c3";
         assert_eq!(tx_hex, expected_tx_hex);
     }
 
@@ -578,16 +585,16 @@ mod tests {
         let fee_basis_points = 25;
         let info = get_sample_tx_info();
         let result = info.calculate_fee(fee_basis_points);
-        let expected_result = U256::from_dec_str("250000000000000").unwrap();
+        let expected_result = U256::from_dec_str("1").unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_subtract_amount_from_eth_on_evm_eth_tx_info() {
         let info = get_sample_tx_info();
-        let subtrahend = U256::from(1337);
+        let subtrahend = U256::from(337);
         let result = info.subtract_amount(subtrahend).unwrap();
-        let expected_native_token_amount = U256::from_dec_str("99999999999998663").unwrap();
+        let expected_native_token_amount = U256::from(329);
         assert_eq!(result.native_token_amount, expected_native_token_amount)
     }
 
@@ -602,7 +609,7 @@ mod tests {
     #[test]
     fn should_divert_to_safe_address_if_destination_is_token_address() {
         let destination_address =
-            EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
+            convert_hex_to_eth_address("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap();
         let destination_chain_id = MetadataChainId::EthereumRopsten;
         let router_address = get_sample_router_address();
         let info = IntOnEvmIntTxInfo {
@@ -612,7 +619,7 @@ mod tests {
             destination_chain_id,
             origin_chain_id: MetadataChainId::BscMainnet,
             native_token_amount: U256::from_dec_str("100000000000000000").unwrap(),
-            token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
+            token_sender: convert_hex_to_eth_address("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap(),
             evm_token_address: EthAddress::from_slice(
                 &hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap(),
             ),
