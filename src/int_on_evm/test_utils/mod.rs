@@ -2,15 +2,49 @@
 use std::{fs::read_to_string, path::Path};
 
 use ethereum_types::Address as EthAddress;
+use serde_json::json;
 
 use crate::{
-    chains::eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_submission_material::EthSubmissionMaterial},
-    dictionaries::eth_evm::EthEvmTokenDictionary,
+    chains::eth::{
+        eth_crypto::eth_private_key::EthPrivateKey,
+        eth_submission_material::EthSubmissionMaterial,
+        eth_utils::convert_hex_to_eth_address,
+    },
+    dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
     types::Result,
 };
 
+pub fn get_sample_token_dictionary() -> EthEvmTokenDictionary {
+    EthEvmTokenDictionary::new(vec![get_sample_token_dictionary_entry()])
+}
+
 pub fn get_sample_router_address() -> EthAddress {
-    EthAddress::from_slice(&hex::decode("dAC17F958D2ee523a2206206994597C13D831ec7").unwrap())
+    convert_hex_to_eth_address("0x0e1c8524b1d1891b201ffc7bb58a82c96f8fc4f6").unwrap()
+}
+
+pub fn get_sample_token_dictionary_entry() -> EthEvmTokenDictionaryEntry {
+    EthEvmTokenDictionaryEntry::from_str(
+        &json!({
+            "eth_symbol": "tiPNT",
+            "evm_symbol": "pPNT",
+            "evm_address": "0xdd9f905a34a6c507c7d68384985905cf5eb032e9",
+            "eth_address": "0xa83446f219baec0b6fd6b3031c5a49a54543045b",
+            "eth_fee_basis_points": 10,
+            "evm_fee_basis_points": 25,
+            "eth_token_decimals": 18,
+            "evm_token_decimals": 18
+        })
+        .to_string(),
+    )
+    .unwrap()
+}
+
+pub fn get_sample_evm_init_block_json_string() -> String {
+    read_to_string("src/int_on_evm/test_utils/evm-init-block.json").unwrap()
+}
+
+pub fn get_sample_int_init_block_json_string() -> String {
+    read_to_string("src/int_on_evm/test_utils/int-init-block.json").unwrap()
 }
 
 fn get_sample_submission_material_string_n(chain_type: &str, n: usize) -> Result<String> {
