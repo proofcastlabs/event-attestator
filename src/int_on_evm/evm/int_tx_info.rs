@@ -490,8 +490,8 @@ mod tests {
             get_evm_submission_material_n,
             get_sample_eth_evm_token_dictionary,
             get_sample_eth_private_key,
-            get_sample_vault_address,
             get_sample_router_address,
+            get_sample_vault_address,
         },
     };
 
@@ -524,7 +524,9 @@ mod tests {
         let origin_chain_id = EthChainId::BscMainnet;
         let material = get_evm_submission_material_n(1);
         let router_address = get_sample_router_address();
-        let result = IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &router_address).unwrap();
+        let result =
+            IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &router_address)
+                .unwrap();
         let expected_num_results = 1;
         assert_eq!(result.len(), expected_num_results);
         let destination_chain_id = MetadataChainId::EthereumRopsten;

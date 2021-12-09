@@ -19,11 +19,33 @@ use crate::{
 #[derive(Debug, Serialize, Deserialize)]
 pub struct IntOutput {
     pub int_latest_block_number: usize,
-    pub evm_signed_transactions: Vec<EvmSignedTxInfo>,
+    pub evm_signed_transactions: Vec<EvmTxInfo>,
+}
+
+#[cfg(test)]
+impl IntOutput {
+    pub fn from_str(s: &str) -> Result<Self> {
+        use serde_json::Value as JsonValue;
+        #[derive(Deserialize)]
+        struct TempStruct {
+            int_latest_block_number: usize,
+            evm_signed_transactions: Vec<JsonValue>,
+        }
+        let temp_struct = serde_json::from_str::<TempStruct>(s)?;
+        let tx_infos = temp_struct
+            .evm_signed_transactions
+            .iter()
+            .map(|json_value| EvmTxInfo::from_str(&json_value.to_string()))
+            .collect::<Result<Vec<EvmTxInfo>>>()?;
+        Ok(Self {
+            evm_signed_transactions: tx_infos,
+            int_latest_block_number: temp_struct.int_latest_block_number,
+        })
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct EvmSignedTxInfo {
+pub struct EvmTxInfo {
     pub _id: String,
     pub broadcast: bool,
     pub evm_tx_hash: String,
@@ -43,16 +65,23 @@ pub struct EvmSignedTxInfo {
     pub any_sender_tx: Option<RelayTransaction>,
 }
 
-impl EvmSignedTxInfo {
+#[cfg(test)]
+impl EvmTxInfo {
+    pub fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
+    }
+}
+
+impl EvmTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
         tx: &T,
         evm_tx_info: &IntOnEvmEvmTxInfo,
         maybe_nonce: Option<u64>,
         evm_latest_block_number: usize,
         dictionary: &EthEvmTokenDictionary,
-    ) -> Result<EvmSignedTxInfo> {
+    ) -> Result<EvmTxInfo> {
         let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
-        Ok(EvmSignedTxInfo {
+        Ok(EvmTxInfo {
             evm_latest_block_number,
             broadcast: false,
             broadcast_tx_hash: None,
@@ -88,7 +117,7 @@ pub fn get_evm_signed_tx_info_from_int_txs(
     any_sender_nonce: u64,
     eth_latest_block_number: usize,
     dictionary: &EthEvmTokenDictionary,
-) -> Result<Vec<EvmSignedTxInfo>> {
+) -> Result<Vec<EvmTxInfo>> {
     let number_of_txs = txs.len();
     let start_nonce = if use_any_sender_tx_type {
         info!("✔ Getting AnySender tx info from ETH txs...");
@@ -108,7 +137,7 @@ pub fn get_evm_signed_tx_info_from_int_txs(
     txs.iter()
         .enumerate()
         .map(|(i, tx)| {
-            EvmSignedTxInfo::new(
+            EvmTxInfo::new(
                 tx,
                 &evm_tx_info[i],
                 Some(start_nonce + i as u64),
@@ -116,7 +145,7 @@ pub fn get_evm_signed_tx_info_from_int_txs(
                 dictionary,
             )
         })
-        .collect::<Result<Vec<EvmSignedTxInfo>>>()
+        .collect::<Result<Vec<EvmTxInfo>>>()
 }
 
 pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
