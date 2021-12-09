@@ -22,6 +22,14 @@ pub fn get_sample_router_address() -> EthAddress {
     convert_hex_to_eth_address("0x0e1c8524b1d1891b201ffc7bb58a82c96f8fc4f6").unwrap()
 }
 
+pub fn get_sample_peg_out_submission_material() -> EthSubmissionMaterial {
+    EthSubmissionMaterial::from_str(&read_to_string("src/int_on_evm/test_utils/peg-out-block-1.json").unwrap()).unwrap()
+}
+
+pub fn get_sample_peg_in_submission_material() -> EthSubmissionMaterial {
+    EthSubmissionMaterial::from_str(&read_to_string("src/int_on_evm/test_utils/peg-in-block-1.json").unwrap()).unwrap()
+}
+
 pub fn get_sample_token_dictionary_entry() -> EthEvmTokenDictionaryEntry {
     EthEvmTokenDictionaryEntry::from_str(
         &json!({
@@ -78,7 +86,7 @@ pub fn get_sample_eth_evm_token_dictionary() -> EthEvmTokenDictionary {
 }
 
 pub fn get_sample_vault_address() -> EthAddress {
-    EthAddress::from_slice(&hex::decode("d608367b33c52293201af7fb578916a7c0784bd7").unwrap())
+    convert_hex_to_eth_address("0x010e1e6f6c360da7e3d62479b6b9d717b3e114ca").unwrap()
 }
 
 pub fn get_sample_eth_private_key() -> EthPrivateKey {
