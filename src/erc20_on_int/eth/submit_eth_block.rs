@@ -95,7 +95,11 @@ mod tests {
         dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
         erc20_on_int::{
             eth::get_eth_output_json::EthOutput,
-            test_utils::{get_sample_eth_init_block_json_string, get_sample_int_init_block_json_string},
+            test_utils::{
+                get_sample_eth_init_block_json_string,
+                get_sample_int_init_block_json_string,
+                get_sample_token_dictionary_entry,
+            },
         },
         test_utils::get_test_database,
     };
@@ -130,44 +134,38 @@ mod tests {
         )
         .unwrap();
         // NOTE: Overwrite the INT address & private key since it's generated randomly above...
-        let evm_address = convert_hex_to_eth_address("8549cf9b30276305de31fa7533938e7ce366d12a").unwrap();
-        let evm_private_key = EthPrivateKey::from_slice(
+        let address = convert_hex_to_eth_address("8549cf9b30276305de31fa7533938e7ce366d12a").unwrap();
+        let private_key = EthPrivateKey::from_slice(
             &hex::decode("d22ecd05f55019604c5484bdb55d6c78c631cd7a05cc31781900ce356186617e").unwrap(),
         )
         .unwrap();
-        let evm_db_utils = EvmDbUtils::new(&db);
+        let db_utils = EvmDbUtils::new(&db);
         // NOTE: Overwrite the nonce since the test sample used the 3rd nonce...
         let evm_nonce = 2;
-        evm_db_utils.put_eth_account_nonce_in_db(evm_nonce).unwrap();
-        evm_db_utils
-            .put_eth_address_in_db(&evm_db_utils.get_eth_address_key(), &evm_address)
+        db_utils.put_eth_account_nonce_in_db(evm_nonce).unwrap();
+        db_utils
+            .put_eth_address_in_db(&db_utils.get_eth_address_key(), &address)
             .unwrap();
-        evm_db_utils.put_eth_private_key_in_db(&evm_private_key).unwrap();
-        assert_eq!(evm_db_utils.get_public_eth_address_from_db().unwrap(), evm_address,);
-        assert_eq!(evm_db_utils.get_eth_private_key_from_db().unwrap(), evm_private_key,);
-        assert_eq!(evm_db_utils.get_eth_account_nonce_from_db().unwrap(), evm_nonce);
+        db_utils.put_eth_private_key_in_db(&private_key).unwrap();
+        assert_eq!(db_utils.get_public_eth_address_from_db().unwrap(), address,);
+        assert_eq!(db_utils.get_eth_private_key_from_db().unwrap(), private_key,);
+        assert_eq!(db_utils.get_eth_account_nonce_from_db().unwrap(), evm_nonce);
         let is_for_eth = true;
-        EthEvmTokenDictionary::new(vec![]).add_and_update_in_db(EthEvmTokenDictionaryEntry::from_str(&
-                json!({
-                    "eth_symbol":"PNT",
-                    "evm_symbol":"tiPNT",
-                    "evm_address":"0xa83446f219baec0b6fd6b3031c5a49a54543045b",
-                    "eth_address":"0xc63ab9437f5589e2c67e04c00a98506b43127645",
-                    "eth_fee_basis_points":10,
-                    "evm_fee_basis_points":25,
-                    "eth_token_decimals":18,
-                    "evm_token_decimals":18
-                }).to_string()
-        ).unwrap(), &db).unwrap();
+        // NOTE Save the token dictionary into the db...
+        EthEvmTokenDictionary::new(vec![])
+            .add_and_update_in_db(get_sample_token_dictionary_entry(), &db)
+            .unwrap();
         // NOTE: Bring the chain up to the block prior to the block containing a peg-in...
         reset_eth_chain(
             parse_eth_submission_material_and_put_in_state(
                 &read_to_string("src/erc20_on_int/test_utils/eth-before-peg-in-1-block.json").unwrap(),
-                EthState::init(&db)
-            ).unwrap(),
+                EthState::init(&db),
+            )
+            .unwrap(),
             confirmations,
             is_for_eth,
-        ).unwrap();
+        )
+        .unwrap();
         let submission_string = read_to_string("src/erc20_on_int/test_utils/eth-peg-in-block-1.json").unwrap();
         // NOTE: Finally, submit the block containting the peg in....
         let output = submit_eth_block_to_core(db, &submission_string).unwrap();

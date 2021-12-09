@@ -2,12 +2,30 @@
 use std::{fs::read_to_string, path::Path};
 
 use ethereum_types::Address as EthAddress;
+use serde_json::json;
 
 use crate::{
     chains::eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_submission_material::EthSubmissionMaterial},
-    dictionaries::eth_evm::EthEvmTokenDictionary,
+    dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
     types::Result,
 };
+
+pub fn get_sample_token_dictionary_entry() -> EthEvmTokenDictionaryEntry {
+    EthEvmTokenDictionaryEntry::from_str(
+        &json!({
+            "eth_symbol":"PNT",
+            "evm_symbol":"tiPNT",
+            "evm_address":"0xa83446f219baec0b6fd6b3031c5a49a54543045b",
+            "eth_address":"0xc63ab9437f5589e2c67e04c00a98506b43127645",
+            "eth_fee_basis_points":10,
+            "evm_fee_basis_points":25,
+            "eth_token_decimals":18,
+            "evm_token_decimals":18
+        })
+        .to_string(),
+    )
+    .unwrap()
+}
 
 fn get_sample_submission_material_string_n(chain_type: &str, n: usize) -> Result<String> {
     let path = format!(
