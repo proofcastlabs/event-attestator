@@ -42,7 +42,7 @@ use crate::{
                 maybe_sign_eth_txs_and_add_to_evm_state,
                 EthOnEvmEthTxInfos,
             },
-            get_evm_output_json::{get_eth_signed_tx_info_from_evm_txs, EvmOutput},
+            get_evm_output_json::{get_eth_signed_tx_info_from_evm_txs, IntOutput},
         },
     },
     traits::DatabaseInterface,
@@ -92,8 +92,8 @@ fn debug_reprocess_evm_block_maybe_accruing_fees<D: DatabaseInterface>(
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting EVM output json...");
-            let output = serde_json::to_string(&EvmOutput {
-                evm_latest_block_number: state.evm_db_utils.get_latest_eth_block_number()?,
+            let output = serde_json::to_string(&IntOutput {
+                int_latest_block_number: state.evm_db_utils.get_latest_eth_block_number()?,
                 eth_signed_transactions: if state.erc20_on_int_eth_signed_txs.is_empty() {
                     vec![]
                 } else {

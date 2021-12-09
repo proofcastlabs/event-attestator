@@ -19,9 +19,31 @@ use crate::{
 };
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct EvmOutput {
-    pub evm_latest_block_number: usize,
+pub struct IntOutput {
+    pub int_latest_block_number: usize,
     pub eth_signed_transactions: Vec<EthTxInfo>,
+}
+
+#[cfg(test)]
+impl IntOutput {
+    pub fn from_str(s: &str) -> Result<Self> {
+        use serde_json::Value as JsonValue;
+        #[derive(Deserialize)]
+        struct TempStruct {
+            int_latest_block_number: usize,
+            eth_signed_transactions: Vec<JsonValue>,
+        }
+        let temp_struct = serde_json::from_str::<TempStruct>(s)?;
+        let tx_infos = temp_struct
+            .eth_signed_transactions
+            .iter()
+            .map(|json_value| EthTxInfo::from_str(&json_value.to_string()))
+            .collect::<Result<Vec<EthTxInfo>>>()?;
+        Ok(Self {
+            eth_signed_transactions: tx_infos,
+            int_latest_block_number: temp_struct.int_latest_block_number,
+        })
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -39,7 +61,7 @@ pub struct EthTxInfo {
     pub eth_signed_tx: Option<String>,
     pub any_sender_nonce: Option<u64>,
     pub eth_account_nonce: Option<u64>,
-    pub evm_latest_block_number: usize,
+    pub eth_latest_block_number: usize,
     pub broadcast_tx_hash: Option<String>,
     pub broadcast_timestamp: Option<String>,
     pub any_sender_tx: Option<RelayTransaction>,
@@ -50,11 +72,11 @@ impl EthTxInfo {
         tx: &T,
         evm_tx_info: &EthOnIntEthTxInfo,
         maybe_nonce: Option<u64>,
-        evm_latest_block_number: usize,
+        eth_latest_block_number: usize,
     ) -> Result<EthTxInfo> {
         let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
         Ok(EthTxInfo {
-            evm_latest_block_number,
+            eth_latest_block_number,
             broadcast: false,
             broadcast_tx_hash: None,
             broadcast_timestamp: None,
@@ -76,6 +98,13 @@ impl EthTxInfo {
             eth_tx_recipient: format!("0x{}", hex::encode(evm_tx_info.destination_address.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(evm_tx_info.originating_tx_hash.as_bytes())),
         })
+    }
+}
+
+#[cfg(test)]
+impl EthTxInfo {
+    pub fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
     }
 }
 
@@ -118,8 +147,8 @@ pub fn get_eth_signed_tx_info_from_evm_txs(
 
 pub fn get_evm_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
     info!("✔ Getting EVM output json...");
-    let output = serde_json::to_string(&EvmOutput {
-        evm_latest_block_number: state.evm_db_utils.get_latest_eth_block_number()?,
+    let output = serde_json::to_string(&IntOutput {
+        int_latest_block_number: state.evm_db_utils.get_latest_eth_block_number()?,
         eth_signed_transactions: if state.erc20_on_int_eth_signed_txs.is_empty() {
             vec![]
         } else {
