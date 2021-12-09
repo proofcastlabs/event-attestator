@@ -23,14 +23,14 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
             account_for_fees::maybe_account_for_fees,
-            evm_tx_info::{
+            get_eth_output_json::get_eth_output_json,
+            int_tx_info::{
                 filter_out_zero_value_evm_tx_infos_from_state,
                 filter_submission_material_for_peg_in_events_in_state,
                 maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address,
                 maybe_parse_tx_info_from_canon_block_and_add_to_state,
                 maybe_sign_evm_txs_and_add_to_eth_state,
             },
-            get_eth_output_json::get_eth_output_json,
         },
     },
     traits::DatabaseInterface,
@@ -92,7 +92,7 @@ mod tests {
             eth_database_utils::{EthDbUtilsExt, EvmDbUtils},
             eth_utils::convert_hex_to_eth_address,
         },
-        dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
+        dictionaries::eth_evm::EthEvmTokenDictionary,
         erc20_on_int::{
             eth::get_eth_output_json::EthOutput,
             test_utils::{

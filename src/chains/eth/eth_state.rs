@@ -20,13 +20,15 @@ use crate::{
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
     erc20_on_evm::{eth::evm_tx_info::EthOnEvmEvmTxInfos, evm::eth_tx_info::EthOnEvmEthTxInfos},
     erc20_on_int::{
-        eth::evm_tx_info::EthOnEvmEvmTxInfos as EthOnIntIntTxInfos,
-        evm::eth_tx_info::EthOnEvmEthTxInfos as EthOnIntEthTxInfos,
+        eth::int_tx_info::EthOnEvmEvmTxInfos as EthOnIntIntTxInfos,
+        int::eth_tx_info::EthOnEvmEthTxInfos as EthOnIntEthTxInfos,
     },
     traits::DatabaseInterface,
     types::Result,
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
 };
+
+// FIXME We can move the core specific setters & getters of this into their own mods!
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct EthState<'a, D: DatabaseInterface> {

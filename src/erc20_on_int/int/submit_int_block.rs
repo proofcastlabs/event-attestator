@@ -21,7 +21,7 @@ use crate::{
     dictionaries::eth_evm::get_eth_evm_token_dictionary_from_db_and_add_to_eth_state,
     erc20_on_int::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
-        evm::{
+        int::{
             account_for_fees::maybe_account_for_fees,
             eth_tx_info::{
                 filter_out_zero_value_eth_tx_infos_from_state,
@@ -30,7 +30,7 @@ use crate::{
                 maybe_parse_tx_info_from_canon_block_and_add_to_state,
                 maybe_sign_eth_txs_and_add_to_evm_state,
             },
-            get_evm_output_json::get_evm_output_json,
+            get_int_output_json::get_evm_output_json,
         },
     },
     traits::DatabaseInterface,
@@ -94,7 +94,7 @@ mod tests {
         },
         dictionaries::eth_evm::EthEvmTokenDictionary,
         erc20_on_int::{
-            evm::get_evm_output_json::IntOutput,
+            int::get_int_output_json::IntOutput,
             test_utils::{
                 get_sample_eth_init_block_json_string,
                 get_sample_int_init_block_json_string,

@@ -11,7 +11,7 @@ use crate::{
         eth_traits::EthTxInfoCompatible,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    erc20_on_int::eth::evm_tx_info::{
+    erc20_on_int::eth::int_tx_info::{
         EthOnEvmEvmTxInfo as EthOnIntEvmTxInfo,
         EthOnEvmEvmTxInfos as EthOnIntEvmTxInfos,
     },

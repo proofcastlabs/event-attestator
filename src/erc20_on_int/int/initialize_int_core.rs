@@ -18,7 +18,7 @@ use crate::{
     types::Result,
 };
 
-/// # Maybe Initialize EVM Core
+/// # Maybe Initialize INT Core
 ///
 /// This function first checks to see if the EVM core has already been initialized, and initializes
 /// it if not. The initialization procedure takes as its input a valid EVM-compliant block JSON of the
@@ -47,7 +47,7 @@ use crate::{
 /// The `ERC20-on-EVM` core does NOT require any bytecode passing in since the initialization does NOT
 /// return a signed, smart-contract-deploying transaction. This is because the `ERC20-on-EVM` bridge
 /// works with an ETH<->EVM token dictionary which defines the contract addresses to be bridged.
-pub fn maybe_initialize_evm_core<D: DatabaseInterface>(
+pub fn maybe_initialize_int_core<D: DatabaseInterface>(
     db: D,
     block_json: &str,
     chain_id: u8,

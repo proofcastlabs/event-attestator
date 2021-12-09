@@ -21,16 +21,16 @@ use crate::{
                 account_for_fees_in_evm_tx_infos_in_state,
                 update_accrued_fees_in_dictionary_and_return_state as update_accrued_fees_in_dictionary_and_return_eth_state,
             },
-            evm_tx_info::{
+            get_eth_output_json::{get_evm_signed_tx_info_from_evm_txs, EthOutput},
+            int_tx_info::{
                 filter_out_zero_value_evm_tx_infos_from_state,
                 filter_submission_material_for_peg_in_events_in_state,
                 maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address,
                 maybe_sign_evm_txs_and_add_to_eth_state,
                 EthOnEvmEvmTxInfos,
             },
-            get_eth_output_json::{get_evm_signed_tx_info_from_evm_txs, EthOutput},
         },
-        evm::{
+        int::{
             account_for_fees::{
                 account_for_fees_in_eth_tx_infos_in_state,
                 update_accrued_fees_in_dictionary_and_return_state as update_accrued_fees_in_dictionary_and_return_evm_state,
@@ -42,7 +42,7 @@ use crate::{
                 maybe_sign_eth_txs_and_add_to_evm_state,
                 EthOnEvmEthTxInfos,
             },
-            get_evm_output_json::{get_eth_signed_tx_info_from_evm_txs, IntOutput},
+            get_int_output_json::{get_eth_signed_tx_info_from_evm_txs, IntOutput},
         },
     },
     traits::DatabaseInterface,
