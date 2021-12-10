@@ -482,15 +482,12 @@ pub fn maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address<D: D
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::{
-            eth_traits::EthTxInfoCompatible,
-            eth_utils::convert_hex_to_eth_address,
-        },
+        chains::eth::{eth_traits::EthTxInfoCompatible, eth_utils::convert_hex_to_eth_address},
         int_on_evm::test_utils::{
-            get_sample_token_dictionary,
             get_sample_eth_private_key,
-            get_sample_router_address,
             get_sample_peg_out_submission_material,
+            get_sample_router_address,
+            get_sample_token_dictionary,
             get_sample_vault_address,
         },
     };
@@ -521,9 +518,7 @@ mod tests {
         let dictionary = get_sample_token_dictionary();
         let material = get_sample_peg_out_submission_material();
         let router_address = get_sample_router_address();
-        let results =
-            IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &router_address)
-                .unwrap();
+        let results = IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &router_address).unwrap();
         let expected_num_results = 1;
         assert_eq!(results.len(), expected_num_results);
         let result = results[0].clone();
@@ -602,8 +597,7 @@ mod tests {
 
     #[test]
     fn should_divert_to_safe_address_if_destination_is_token_address() {
-        let destination_address =
-            convert_hex_to_eth_address("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap();
+        let destination_address = convert_hex_to_eth_address("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap();
         let destination_chain_id = MetadataChainId::EthereumRopsten;
         let router_address = get_sample_router_address();
         let info = IntOnEvmIntTxInfo {

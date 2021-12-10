@@ -13,12 +13,12 @@ use crate::{
             eth_private_key::EthPrivateKey as EvmPrivateKey,
             eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
         },
+        eth_database_utils::EthDbUtilsExt,
         eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::{EthReceipt, EthReceipts},
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
         eth_utils::safely_convert_hex_to_eth_address,
-        eth_database_utils::EthDbUtilsExt,
     },
     constants::SAFE_EVM_ADDRESS,
     dictionaries::eth_evm::EthEvmTokenDictionary,
@@ -481,7 +481,7 @@ pub fn maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address<D: D
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::{eth_utils::convert_hex_to_eth_address, eth_traits::EthTxInfoCompatible},
+        chains::eth::{eth_traits::EthTxInfoCompatible, eth_utils::convert_hex_to_eth_address},
         int_on_evm::test_utils::{
             get_sample_evm_private_key,
             get_sample_peg_in_submission_material,

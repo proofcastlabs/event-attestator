@@ -80,11 +80,9 @@ mod tests {
     use super::*;
     use crate::{
         chains::eth::{
-            core_initialization::{
-                initialize_eth_core::{
-                    initialize_eth_core_with_vault_and_router_contracts_and_return_state,
-                    initialize_evm_core_with_no_contract_tx,
-                },
+            core_initialization::initialize_eth_core::{
+                initialize_eth_core_with_vault_and_router_contracts_and_return_state,
+                initialize_evm_core_with_no_contract_tx,
             },
             eth_chain_id::EthChainId,
             eth_crypto::eth_private_key::EthPrivateKey,

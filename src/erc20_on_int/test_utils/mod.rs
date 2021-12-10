@@ -14,6 +14,15 @@ use crate::{
     types::Result,
 };
 
+pub fn get_sample_peg_in_1_submission_material() -> EthSubmissionMaterial {
+    EthSubmissionMaterial::from_str(&read_to_string("src/erc20_on_int/test_utils/eth-peg-in-block-1.json").unwrap())
+        .unwrap()
+}
+
+pub fn get_sample_peg_in_1_submission_string() -> String {
+    read_to_string("src/erc20_on_int/test_utils/eth-peg-in-block-1.json").unwrap()
+}
+
 pub fn get_sample_token_dictionary() -> EthEvmTokenDictionary {
     EthEvmTokenDictionary::new(vec![get_sample_token_dictionary_entry()])
 }
@@ -70,7 +79,7 @@ pub fn get_sample_eth_evm_token_dictionary() -> EthEvmTokenDictionary {
 }
 
 pub fn get_sample_vault_address() -> EthAddress {
-    EthAddress::from_slice(&hex::decode("d608367b33c52293201af7fb578916a7c0784bd7").unwrap())
+    convert_hex_to_eth_address("0x866e3fc7043efb8ff3a994f7d59f53fe045d4d7a").unwrap()
 }
 
 pub fn get_sample_eth_private_key() -> EthPrivateKey {

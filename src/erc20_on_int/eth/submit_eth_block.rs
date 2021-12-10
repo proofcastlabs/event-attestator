@@ -98,6 +98,7 @@ mod tests {
             test_utils::{
                 get_sample_eth_init_block_json_string,
                 get_sample_int_init_block_json_string,
+                get_sample_peg_in_1_submission_string,
                 get_sample_token_dictionary_entry,
             },
         },
@@ -166,7 +167,7 @@ mod tests {
             is_for_eth,
         )
         .unwrap();
-        let submission_string = read_to_string("src/erc20_on_int/test_utils/eth-peg-in-block-1.json").unwrap();
+        let submission_string = get_sample_peg_in_1_submission_string();
         // NOTE: Finally, submit the block containting the peg in....
         let output = submit_eth_block_to_core(db, &submission_string).unwrap();
         let expected_result_json = json!({

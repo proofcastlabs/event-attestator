@@ -465,35 +465,26 @@ pub fn maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address<D: D
     }
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::eth_traits::EthTxInfoCompatible,
-        dictionaries::eth_evm::test_utils::get_sample_eth_evm_dictionary,
+        chains::eth::{eth_traits::EthTxInfoCompatible, eth_utils::convert_hex_to_eth_address},
         erc20_on_int::test_utils::{
-            get_eth_submission_material_n,
-            get_sample_eth_evm_token_dictionary,
             get_sample_evm_private_key,
+            get_sample_peg_in_1_submission_material,
             get_sample_router_address,
+            get_sample_token_dictionary,
             get_sample_vault_address,
         },
     };
 
     fn get_sample_tx_infos() -> EthOnEvmEvmTxInfos {
-        let material = get_eth_submission_material_n(1);
+        let material = get_sample_peg_in_1_submission_material();
         let vault_address = get_sample_vault_address();
-        let dictionary = get_sample_eth_evm_token_dictionary();
+        let dictionary = get_sample_token_dictionary();
         let router_address = get_sample_router_address();
-        let origin_chain_id = EthChainId::Mainnet;
-        EthOnEvmEvmTxInfos::from_submission_material(
-            &material,
-            &vault_address,
-            &dictionary,
-            &router_address,
-        )
-        .unwrap()
+        EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, &router_address).unwrap()
     }
 
     fn get_sample_tx_info() -> EthOnEvmEvmTxInfo {
@@ -502,7 +493,7 @@ mod tests {
 
     #[test]
     fn should_filter_submission_info_for_supported_redeems() {
-        let material = get_eth_submission_material_n(1);
+        let material = get_sample_peg_in_1_submission_material();
         let vault_address = get_sample_vault_address();
         let result =
             EthOnEvmEvmTxInfos::filter_eth_submission_material_for_supported_peg_ins(&material, &vault_address)
@@ -513,46 +504,48 @@ mod tests {
 
     #[test]
     fn should_get_erc20_on_evm_evm_tx_info_from_submission_material() {
-        let material = get_eth_submission_material_n(1);
+        let material = get_sample_peg_in_1_submission_material();
         let vault_address = get_sample_vault_address();
-        let dictionary = get_sample_eth_evm_token_dictionary();
+        let dictionary = get_sample_token_dictionary();
         let router_address = get_sample_router_address();
-        let origin_chain_id = EthChainId::Mainnet;
-        let result = EthOnEvmEvmTxInfos::from_submission_material(
-            &material,
-            &vault_address,
-            &dictionary,
-            &router_address,
-        )
-        .unwrap();
+        let results =
+            EthOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, &router_address)
+                .unwrap();
         let expected_num_results = 1;
-        assert_eq!(result.len(), expected_num_results);
-        let expected_result = EthOnEvmEvmTxInfos::new(vec![EthOnEvmEvmTxInfo {
-            router_address,
-            user_data: vec![],
-            native_token_amount: U256::from_dec_str("1000000000000000000").unwrap(),
-            token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
-            evm_token_address: EthAddress::from_slice(
-                &hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap(),
+        assert_eq!(results.len(), expected_num_results);
+        let result = results[0].clone();
+        assert_eq!(result.router_address, router_address);
+        assert_eq!(result.user_data, hex::decode("c0ffee").unwrap());
+        assert_eq!(result.origin_chain_id, MetadataChainId::EthereumRinkeby);
+        assert_eq!(result.destination_chain_id, MetadataChainId::EthereumRopsten);
+        assert_eq!(result.native_token_amount, U256::from_dec_str("1337").unwrap());
+        assert_eq!(
+            result.token_sender,
+            convert_hex_to_eth_address("0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
+        );
+        assert_eq!(
+            result.evm_token_address,
+            convert_hex_to_eth_address("0xa83446f219baec0b6fd6b3031c5a49a54543045b").unwrap(),
+        );
+        assert_eq!(
+            result.eth_token_address,
+            convert_hex_to_eth_address("0xc63ab9437f5589e2c67e04c00a98506b43127645").unwrap(),
+        );
+        assert_eq!(
+            result.destination_address,
+            convert_hex_to_eth_address("0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
+        );
+        assert_eq!(
+            result.originating_tx_hash,
+            EthHash::from_slice(
+                &hex::decode("f691d432fe940b2ecef70b6c9069ae124af9d160d761252d7ca570f5cd443dd4").unwrap(),
             ),
-            eth_token_address: EthAddress::from_slice(
-                &hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap(),
-            ),
-            // NOTE It's the `SAFE_EVM_ADDRESS_HEX` ∵ @bertani accidentally included the `"`s in the pegin!
-            destination_address: EthAddress::from_slice(
-                &hex::decode("71a440ee9fa7f99fb9a697e96ec7839b8a1643b8").unwrap(),
-            ),
-            originating_tx_hash: EthHash::from_slice(
-                &hex::decode("578670d0e08ca172eb8e862352e731814564fd6a12c3143e88bfb28292cd1535").unwrap(),
-            ),
-            origin_chain_id,
-        }]);
-        assert_eq!(result, expected_result);
+        );
     }
 
     #[test]
     fn should_get_signaures_from_evm_tx_info() {
-        let dictionary = get_sample_eth_evm_dictionary();
+        let dictionary = get_sample_token_dictionary();
         let pk = get_sample_evm_private_key();
         let infos = get_sample_tx_infos();
         let nonce = 0_u64;
@@ -565,8 +558,7 @@ mod tests {
         let expected_num_results = 1;
         assert_eq!(signed_txs.len(), expected_num_results);
         let tx_hex = signed_txs[0].eth_tx_hex().unwrap();
-        let expected_tx_hex = "f901cb808504a817c800830493e094daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af9280b90164dcdc7dd00000000000000000000000001a3496c18d558bd9c6c8f609e1b129f67ab081630000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000000a001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080005fe7f9000000000000000000000000000000000000000000000000000000000000000000000000000000008127192c2e4703dfb47f087883cc3120fe061cb8000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002ba0fe68d226a6cfb842c64716190bec65f6a84598df7f7e96d3247da55a901f78eba02369d6d02220847934b2542336399c925752f9a288babedadb45d5154143c5ca"
-;
+        let expected_tx_hex = "f902ab808504a817c800830493e094a83446f219baec0b6fd6b3031c5a49a54543045b80b90244dcdc7dd00000000000000000000000000e1c8524b1d1891b201ffc7bb58a82c96f8fc4f600000000000000000000000000000000000000000000000000000000000005390000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000022000000000000000000000000000000000000000000000000000000000000001800200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac0069c32200000000000000000000000000000000000000000000000000000000000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000001600000000000000000000000000000000000000000000000000000000000000003c0ffee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002ba0d34861a7beb7dfec45003ff4477954e9a6a66e68ceca964a01a223512b7773e2a030cacf4f50400efbec17bc080115e1aee3d8df0afe1b8baff25a48860564f90f";
         assert_eq!(tx_hex, expected_tx_hex);
     }
 
@@ -575,16 +567,16 @@ mod tests {
         let info = get_sample_tx_info();
         let fee_basis_points = 25;
         let result = info.calculate_fee(fee_basis_points);
-        let expected_result = U256::from_dec_str("2500000000000000").unwrap();
+        let expected_result = U256::from_dec_str("3").unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_subtract_amount_from_eth_on_evm_evm_tx_info() {
         let info = get_sample_tx_info();
-        let subtrahend = U256::from(1337);
+        let subtrahend = U256::from(337);
         let result = info.subtract_amount(subtrahend).unwrap();
-        let expected_native_token_amount = U256::from_dec_str("999999999999998663").unwrap();
+        let expected_native_token_amount = U256::from_dec_str("1000").unwrap();
         assert_eq!(result.native_token_amount, expected_native_token_amount)
     }
 
@@ -598,29 +590,24 @@ mod tests {
 
     #[test]
     fn should_divert_to_safe_address_if_destination_is_token_address() {
-        let destination_address =
-            EthAddress::from_slice(&hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap());
+        let destination_address = convert_hex_to_eth_address("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap();
         let router_address = get_sample_router_address();
         let info = EthOnEvmEvmTxInfo {
             router_address,
             user_data: vec![],
             destination_address,
+            origin_chain_id: MetadataChainId::EthereumRinkeby,
+            destination_chain_id: MetadataChainId::EthereumRopsten,
             native_token_amount: U256::from_dec_str("1000000000000000000").unwrap(),
-            token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
-            evm_token_address: EthAddress::from_slice(
-                &hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap(),
-            ),
-            eth_token_address: EthAddress::from_slice(
-                &hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap(),
-            ),
+            token_sender: convert_hex_to_eth_address("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap(),
+            evm_token_address: convert_hex_to_eth_address("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap(),
+            eth_token_address: convert_hex_to_eth_address("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap(),
             originating_tx_hash: EthHash::from_slice(
                 &hex::decode("578670d0e08ca172eb8e862352e731814564fd6a12c3143e88bfb28292cd1535").unwrap(),
             ),
-            origin_chain_id: EthChainId::Mainnet,
         };
         assert_eq!(info.destination_address, destination_address);
         let result = info.divert_to_safe_address_if_destination_is_token_contract_address();
         assert_eq!(result.destination_address, *SAFE_EVM_ADDRESS);
     }
 }
-*/
