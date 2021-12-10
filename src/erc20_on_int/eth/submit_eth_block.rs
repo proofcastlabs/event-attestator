@@ -174,7 +174,7 @@ mod tests {
             "eth_latest_block_number": 9750222,
             "int_signed_transactions": [
                 {
-                    "_id": "perc20-on-evm-evm-2",
+                    "_id": "perc20-on-int-evm-2",
                     "broadcast": false,
                     "int_tx_hash": "0x41bda64700fcd700e2c5ec7015da9b224f6c55e4859cb18ea164f2f826bede31",
                     "int_tx_amount": "1337",

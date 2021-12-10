@@ -83,9 +83,9 @@ impl EthTxInfo {
             eth_signed_tx: tx.eth_tx_hex(),
             any_sender_tx: tx.any_sender_tx(),
             _id: if tx.is_any_sender() {
-                format!("perc20-on-evm-eth-any-sender-{}", nonce)
+                format!("perc20-on-int-eth-any-sender-{}", nonce)
             } else {
-                format!("perc20-on-evm-eth-{}", nonce)
+                format!("perc20-on-int-eth-{}", nonce)
             },
             eth_tx_hash: format!("0x{}", tx.get_tx_hash()),
             eth_tx_amount: evm_tx_info.native_token_amount.to_string(),

@@ -170,7 +170,7 @@ mod tests {
         let expected_result_json = json!({
             "int_latest_block_number": 11572430,
             "eth_signed_transactions": [{
-                "_id": "perc20-on-evm-eth-0",
+                "_id": "perc20-on-int-eth-0",
                 "broadcast": false,
                 "eth_tx_hash": "0x3ae8ec06413d2e66d78c6ad6cc05df5b79e08c26aa0f5de14970ad4356547234",
                 "eth_tx_amount": "665",

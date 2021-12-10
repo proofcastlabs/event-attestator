@@ -158,7 +158,7 @@ mod tests {
         let expected_result_json = json!({
             "int_latest_block_number": 11544952,
             "evm_signed_transactions": [{
-                "_id": "int-on-evm-evm-0",
+                "_id": "pint-on-evm-evm-0",
                 "broadcast": false,
                 "evm_tx_hash": "0x57684b97e3ee2d6eafd50d07a1634afb2e3f7126ef0b9d906ea259cad52de1bf",
                 "evm_tx_amount": "1337",
