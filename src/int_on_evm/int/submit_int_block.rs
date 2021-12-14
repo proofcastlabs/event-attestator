@@ -8,7 +8,7 @@ use crate::{
         },
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
-        increment_int_account_nonce::maybe_increment_int_account_nonce_and_return_eth_state,
+        increment_evm_account_nonce::maybe_increment_evm_account_nonce_and_return_eth_state,
         remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
         remove_receipts_from_canon_block::maybe_remove_receipts_from_eth_canon_block_and_return_state,
         update_eth_canon_block_hash::maybe_update_eth_canon_block_hash_and_return_state,
@@ -64,7 +64,7 @@ pub fn submit_int_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(maybe_account_for_fees)
         .and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address)
         .and_then(maybe_sign_evm_txs_and_add_to_eth_state)
-        .and_then(maybe_increment_int_account_nonce_and_return_eth_state)
+        .and_then(maybe_increment_evm_account_nonce_and_return_eth_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)
         .and_then(maybe_remove_receipts_from_eth_canon_block_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)
@@ -158,7 +158,7 @@ mod tests {
         let expected_result_json = json!({
             "int_latest_block_number": 11544952,
             "evm_signed_transactions": [{
-                "_id": "pint-on-evm-evm-0",
+                "_id": format!("pint-on-evm-evm-{}", evm_nonce),
                 "broadcast": false,
                 "evm_tx_hash": "0x57684b97e3ee2d6eafd50d07a1634afb2e3f7126ef0b9d906ea259cad52de1bf",
                 "evm_tx_amount": "1337",
@@ -170,7 +170,7 @@ mod tests {
                 "native_token_address": "0xa83446f219baec0b6fd6b3031c5a49a54543045b",
                 "evm_signed_tx": "f902ab018504a817c8008306ddd094dd9f905a34a6c507c7d68384985905cf5eb032e980b90244dcdc7dd0000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac000000000000000000000000000000000000000000000000000000000000053900000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000018002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100ffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000e1c8524b1d1891b201ffc7bb58a82c96f8fc4f60069c32200000000000000000000000000000000000000000000000000000000000000000000000000000000fedfe2616eb3661cb8fed2782f5f0cc91d59dcac000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000001600000000000000000000000000000000000000000000000000000000000000003c0ffee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002aa05ace98580e6a4a000fe8b81a0b39011cfe378f74f4cd8ea1d3cd669be8e13417a00c2da36ba23990a8b40ea1820e56bcd3f69ac89e43bd7608df229ea8df03c030",
                 "any_sender_nonce": null,
-                "evm_account_nonce": 0,
+                "evm_account_nonce": evm_nonce,
                 "evm_latest_block_number": 11571205,
                 "broadcast_tx_hash": null,
                 "broadcast_timestamp": null,
