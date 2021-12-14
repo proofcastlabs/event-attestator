@@ -15,7 +15,7 @@ use crate::{
 #[derive(Serialize, Deserialize)]
 struct EnclaveState {
     info: EnclaveInfo,
-    eth: EthEnclaveState,
+    int: EthEnclaveState,
     evm: EvmEnclaveState,
     token_dictionary: EthEvmTokenDictionary,
 }
@@ -29,7 +29,7 @@ impl EnclaveState {
                 &evm_db_utils.get_int_on_evm_smart_contract_address_from_db()?,
                 Some(evm_db_utils.get_eth_router_smart_contract_address_from_db()?),
             )?,
-            eth: EthEnclaveState::new(
+            int: EthEnclaveState::new(
                 eth_db_utils,
                 &eth_db_utils.get_int_on_evm_smart_contract_address_from_db()?,
                 Some(eth_db_utils.get_eth_router_smart_contract_address_from_db()?),

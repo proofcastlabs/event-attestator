@@ -16,7 +16,7 @@ use crate::{
 struct EnclaveState {
     info: EnclaveInfo,
     eth: EthEnclaveState,
-    evm: EvmEnclaveState,
+    int: EvmEnclaveState,
     token_dictionary: EthEvmTokenDictionary,
 }
 
@@ -24,7 +24,7 @@ impl EnclaveState {
     pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, evm_db_utils: &EvmDbUtils<D>) -> Result<Self> {
         Ok(Self {
             info: EnclaveInfo::new(),
-            evm: EvmEnclaveState::new(
+            int: EvmEnclaveState::new(
                 evm_db_utils,
                 &evm_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
                 Some(evm_db_utils.get_eth_router_smart_contract_address_from_db()?),
