@@ -695,6 +695,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
     }
 
     fn get_int_on_evm_smart_contract_address_from_db(&self) -> Result<EthAddress> {
+        // NOTE: This is an alias for the `erc20-on-evm` contract address
         info!("✔ Getting `int-on-evm` smart-contract address from db...");
         if self.get_is_for_evm() {
             info!("✔ DB utils are for EVM, meaning there's no vault on this side of the bridge!");
@@ -706,6 +707,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
     }
 
     fn put_int_on_evm_smart_contract_address_in_db(&self, address: &EthAddress) -> Result<()> {
+        // NOTE: This is an alias for the `erc20-on-evm` contract address
         if self.get_int_on_evm_smart_contract_address_from_db().is_ok() {
             Err("`int-on-evm` vault contract address already set!".into())
         } else {

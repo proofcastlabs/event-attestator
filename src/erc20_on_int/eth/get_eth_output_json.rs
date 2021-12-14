@@ -92,9 +92,9 @@ impl EvmTxInfo {
             int_signed_tx: tx.eth_tx_hex(),
             any_sender_tx: tx.any_sender_tx(),
             _id: if tx.is_any_sender() {
-                format!("perc20-on-int-evm-any-sender-{}", nonce)
+                format!("perc20-on-int-int-any-sender-{}", nonce)
             } else {
-                format!("perc20-on-int-evm-{}", nonce)
+                format!("perc20-on-int-int-{}", nonce)
             },
             int_tx_hash: format!("0x{}", tx.get_tx_hash()),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
