@@ -23,7 +23,16 @@ fn increment_eth_account_nonce<D: DatabaseInterface>(
 pub fn maybe_increment_eth_account_nonce_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    let num_txs = state.erc20_on_evm_eth_signed_txs.len();
+    let num_txs;
+    if !state.erc20_on_evm_eth_signed_txs.is_empty() {
+        info!("✔`'erc20-on-evm' ETH txs found!");
+        num_txs = state.erc20_on_evm_eth_signed_txs.len();
+    } else if !state.erc20_on_int_eth_signed_txs.is_empty() {
+        info!("✔`'erc20-on-int' ETH txs found!");
+        num_txs = state.erc20_on_int_eth_signed_txs.len();
+    } else {
+        num_txs = 0;
+    }
     if num_txs == 0 {
         info!("✔ No signatures in state ∴ not incrementing ETH account nonce");
         Ok(state)
