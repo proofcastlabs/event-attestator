@@ -22,7 +22,15 @@ fn increment_int_account_nonce<D: DatabaseInterface>(db_utils: &EvmDbUtils<D>, n
 pub fn maybe_increment_int_account_nonce_and_return_eth_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    let num_txs = state.erc20_on_int_int_signed_txs.len();
+    let num_txs = if !state.erc20_on_int_int_signed_txs.is_empty() {
+        info!("✔`'erc20-on-int' INT txs found!");
+        state.erc20_on_int_int_signed_txs.len()
+    } else if !state.int_on_evm_int_signed_txs.is_empty() {
+        info!("✔`'int-on-evm' INT txs found!");
+        state.int_on_evm_int_signed_txs.len()
+    } else {
+        0
+    };
     if num_txs == 0 {
         info!("✔ No signatures in state ∴ not incrementing INT account nonce");
         Ok(state)
