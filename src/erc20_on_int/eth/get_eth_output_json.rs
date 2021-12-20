@@ -121,20 +121,20 @@ pub fn get_evm_signed_tx_info_from_evm_txs(
     eth_latest_block_number: usize,
     dictionary: &EthEvmTokenDictionary,
 ) -> Result<Vec<EvmTxInfo>> {
-    let number_of_txs = txs.len();
+    let number_of_txs = txs.len() as u64;
     let start_nonce = if use_any_sender_tx_type {
         info!("✔ Getting AnySender tx info from ETH txs...");
-        if any_sender_nonce == 0 {
-            0
+        if number_of_txs > any_sender_nonce {
+            return Err("AnySender account nonce has not been incremented correctly!".into());
         } else {
-            any_sender_nonce - number_of_txs as u64
+            any_sender_nonce - number_of_txs
         }
     } else {
         info!("✔ Getting EVM tx info from ETH txs...");
-        if eth_account_nonce == 0 {
-            0
+        if number_of_txs > eth_account_nonce {
+            return Err("INT account nonce has not been incremented correctly!".into());
         } else {
-            eth_account_nonce - number_of_txs as u64
+            eth_account_nonce - number_of_txs
         }
     };
     txs.iter()
