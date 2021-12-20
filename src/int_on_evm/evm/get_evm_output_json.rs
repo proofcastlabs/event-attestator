@@ -58,7 +58,7 @@ pub struct IntTxInfo {
     pub int_signed_tx: Option<String>,
     pub any_sender_nonce: Option<u64>,
     pub int_account_nonce: Option<u64>,
-    pub evm_latest_block_number: usize,
+    pub int_latest_block_number: usize,
     pub broadcast_tx_hash: Option<String>,
     pub broadcast_timestamp: Option<String>,
     pub any_sender_tx: Option<RelayTransaction>,
@@ -76,12 +76,12 @@ impl IntTxInfo {
         tx: &T,
         evm_tx_info: &IntOnEvmIntTxInfo,
         maybe_nonce: Option<u64>,
-        evm_latest_block_number: usize,
+        int_latest_block_number: usize,
     ) -> Result<IntTxInfo> {
         let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
         Ok(IntTxInfo {
-            evm_latest_block_number,
             broadcast: false,
+            int_latest_block_number,
             broadcast_tx_hash: None,
             broadcast_timestamp: None,
             int_signed_tx: tx.eth_tx_hex(),
