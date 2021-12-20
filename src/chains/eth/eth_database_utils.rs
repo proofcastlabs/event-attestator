@@ -414,7 +414,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
     fn eth_block_exists_in_db(&self, block_hash: &EthHash) -> bool {
         info!(
             "✔ Checking for existence of ETH block: {}",
-            hex::encode(block_hash.as_bytes().to_vec())
+            hex::encode(block_hash.as_bytes())
         );
         self.key_exists_in_db(
             &self.normalize_key(block_hash.as_bytes().to_vec()),

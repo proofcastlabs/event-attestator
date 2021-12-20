@@ -1,3 +1,4 @@
+// FIXME Move BTC db utils over to this mod, rm the old one and rename this one.
 #![allow(dead_code)] // FIXME rm!
 
 use bitcoin::{hashes::Hash, network::constants::Network as BtcNetwork, BlockHash};
@@ -151,7 +152,7 @@ impl<'a, D: DatabaseInterface> BtcDatabaseUtils<'a, D> {
     }
 
     fn get_btc_block_from_db(&self, id: &BlockHash) -> Result<BtcBlockInDbFormat> {
-        debug!("✔ Getting BTC block from db via id: {}", hex::encode(id.to_vec()));
+        debug!("✔ Getting BTC block from db via id: {}", hex::encode(id));
         self.db
             .get(id.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| BtcBlockInDbFormat::from_bytes(&bytes))
@@ -227,11 +228,8 @@ impl<'a, D: DatabaseInterface> BtcDatabaseUtils<'a, D> {
     }
 
     fn btc_block_exists_in_db(&self, btc_block_id: &BlockHash) -> bool {
-        info!(
-            "✔ Checking for existence of BTC block: {}",
-            hex::encode(btc_block_id.to_vec())
-        );
-        self.key_exists_in_db(&btc_block_id.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+        info!("✔ Checking for existence of BTC block: {}", hex::encode(btc_block_id));
+        self.key_exists_in_db(btc_block_id, MIN_DATA_SENSITIVITY_LEVEL)
     }
 
     // FIXME This could be a more generic fxn no? (Across all chains?)
@@ -326,7 +324,7 @@ impl<'a, D: DatabaseInterface> BtcDatabaseUtils<'a, D> {
     }
 
     fn maybe_get_btc_block_from_db(&self, id: &BlockHash) -> Option<BtcBlockInDbFormat> {
-        debug!("✔ Maybe getting BTC block of id: {}", hex::encode(id.to_vec()));
+        debug!("✔ Maybe getting BTC block of id: {}", hex::encode(id));
         match self.get_btc_block_from_db(id) {
             Ok(block_and_id) => {
                 debug!("✔ BTC block found!");
@@ -340,11 +338,7 @@ impl<'a, D: DatabaseInterface> BtcDatabaseUtils<'a, D> {
     }
 
     fn maybe_get_nth_ancestor_btc_block_and_id(&self, id: &BlockHash, n: u64) -> Option<BtcBlockInDbFormat> {
-        debug!(
-            "✔ Maybe getting ancestor #{} of BTC block id: {}",
-            n,
-            hex::encode(id.to_vec())
-        );
+        debug!("✔ Maybe getting ancestor #{} of BTC block id: {}", n, hex::encode(id));
         match self.maybe_get_btc_block_from_db(id) {
             None => {
                 debug!("✘ No ancestor #{} BTC block found!", n);

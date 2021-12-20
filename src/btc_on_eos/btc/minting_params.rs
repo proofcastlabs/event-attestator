@@ -206,8 +206,7 @@ impl BtcOnEosMintingParams {
             p2sh_deposit_containing_txs
                 .iter()
                 .flat_map(|tx| Self::from_btc_tx(tx, deposit_info_hash_map, btc_network, eos_token_symbol))
-                .map(|minting_params| minting_params.0)
-                .flatten()
+                .flat_map(|minting_params| minting_params.0)
                 .collect::<Vec<BtcOnEosMintingParamStruct>>(),
         ))
     }

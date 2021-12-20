@@ -135,8 +135,8 @@ pub fn test_block_validation_and_return_state<'a, D: DatabaseInterface>(
         check_block_signature_is_valid(
             state
                 .enabled_protocol_features
-                .is_enabled(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec()),
-            &get_incremerkle_from_db(state.db)?.get_root().to_bytes().to_vec(),
+                .is_enabled(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.as_ref()),
+            get_incremerkle_from_db(state.db)?.get_root().to_bytes().as_ref(),
             &block_json.producer_signature,
             &EosSubmissionMaterial::parse_eos_block_header_from_json(block_json)?,
             &get_eos_schedule_from_db(state.db, block_json.schedule_version)?,

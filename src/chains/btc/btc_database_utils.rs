@@ -170,11 +170,8 @@ pub fn put_special_btc_hash_in_db<D: DatabaseInterface>(db: &D, hash_type: &str,
 }
 
 pub fn btc_block_exists_in_db<D: DatabaseInterface>(db: &D, btc_block_id: &BlockHash) -> bool {
-    info!(
-        "✔ Checking for existence of BTC block: {}",
-        hex::encode(btc_block_id.to_vec())
-    );
-    key_exists_in_db(db, &btc_block_id.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+    info!("✔ Checking for existence of BTC block: {}", hex::encode(btc_block_id));
+    key_exists_in_db(db, btc_block_id, MIN_DATA_SENSITIVITY_LEVEL)
 }
 
 pub fn key_exists_in_db<D: DatabaseInterface>(db: &D, key: &[Byte], sensitivity: DataSensitivity) -> bool {
@@ -284,11 +281,7 @@ pub fn maybe_get_nth_ancestor_btc_block_and_id<D: DatabaseInterface>(
     id: &BlockHash,
     n: u64,
 ) -> Option<BtcBlockInDbFormat> {
-    debug!(
-        "✔ Maybe getting ancestor #{} of BTC block id: {}",
-        n,
-        hex::encode(id.to_vec())
-    );
+    debug!("✔ Maybe getting ancestor #{} of BTC block id: {}", n, hex::encode(id));
     match maybe_get_btc_block_from_db(db, id) {
         None => {
             debug!("✘ No ancestor #{} BTC block found!", n);
@@ -324,7 +317,7 @@ pub fn put_btc_block_in_db<D: DatabaseInterface>(db: &D, block: &BtcBlockInDbFor
 }
 
 pub fn maybe_get_btc_block_from_db<D: DatabaseInterface>(db: &D, id: &BlockHash) -> Option<BtcBlockInDbFormat> {
-    trace!("✔ Maybe getting BTC block of id: {}", hex::encode(id.to_vec()));
+    trace!("✔ Maybe getting BTC block of id: {}", hex::encode(id));
     match get_btc_block_from_db(db, id) {
         Ok(block_and_id) => {
             trace!("✔ BTC block found!");
@@ -338,7 +331,7 @@ pub fn maybe_get_btc_block_from_db<D: DatabaseInterface>(db: &D, id: &BlockHash)
 }
 
 pub fn get_btc_block_from_db<D: DatabaseInterface>(db: &D, id: &BlockHash) -> Result<BtcBlockInDbFormat> {
-    trace!("✔ Getting BTC block from db via id: {}", hex::encode(id.to_vec()));
+    trace!("✔ Getting BTC block from db via id: {}", hex::encode(id));
     db.get(id.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| BtcBlockInDbFormat::from_bytes(&bytes))
 }

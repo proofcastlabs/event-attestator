@@ -227,10 +227,10 @@ pub fn debug_withdraw_fees<D: DatabaseInterface>(
             info!("Amount as EOS asset: {}", amount);
             let eos_action = EosAction::from_str(
                 &eos_smart_contract_address,
-                &PEGOUT_ACTION_NAME.to_string(),
+                &PEGOUT_ACTION_NAME.into(),
                 vec![PermissionLevel::from_str(
                     &eos_smart_contract_address,
-                    &EOS_ACCOUNT_PERMISSION_LEVEL.to_string(),
+                    &EOS_ACCOUNT_PERMISSION_LEVEL.into(),
                 )?],
                 PTokenPegOutAction::from_str(
                     &dictionary

@@ -15,7 +15,7 @@ use crate::{
 };
 
 fn sig_script_contains_pub_key(script_sig: &BtcScript, btc_pub_key_slice: &BtcPubKeySlice) -> bool {
-    hex::encode(btc_serialize(script_sig)).contains(&hex::encode(btc_pub_key_slice.to_vec()))
+    hex::encode(btc_serialize(script_sig)).contains(&hex::encode(btc_pub_key_slice))
 }
 
 fn tx_has_input_locked_to_pub_key(tx: &BtcTransaction, btc_pub_key_slice: &BtcPubKeySlice) -> bool {

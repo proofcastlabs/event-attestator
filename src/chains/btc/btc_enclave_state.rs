@@ -61,7 +61,7 @@ impl BtcEnclaveState {
         let btc_canon_block = get_btc_canon_block_from_db(db)?;
         let btc_anchor_block = get_btc_anchor_block_from_db(db)?;
         let btc_latest_block = get_btc_latest_block_from_db(db)?;
-        let btc_public_key_hex = hex::encode(&get_btc_public_key_slice_from_db(db)?.to_vec());
+        let btc_public_key_hex = hex::encode(get_btc_public_key_slice_from_db(db)?);
         Ok(Self {
             btc_tail_length: BTC_TAIL_LENGTH,
             btc_public_key: btc_public_key_hex,
