@@ -8,7 +8,7 @@ use crate::{
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         increment_eth_account_nonce::maybe_increment_eth_account_nonce_and_return_state,
-        increment_evm_account_nonce::maybe_increment_evm_account_nonce_and_return_eth_state,
+        increment_int_account_nonce::maybe_increment_int_account_nonce_and_return_eth_state,
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
@@ -153,7 +153,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
         })
         .and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address)
         .and_then(maybe_sign_evm_txs_and_add_to_eth_state)
-        .and_then(maybe_increment_evm_account_nonce_and_return_eth_state)
+        .and_then(maybe_increment_int_account_nonce_and_return_eth_state)
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting INT output json...");
