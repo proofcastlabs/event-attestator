@@ -21,14 +21,12 @@ use crate::{
                 account_for_fees_in_eth_tx_infos_in_state,
                 update_accrued_fees_in_dictionary_and_return_state as update_accrued_fees_in_dictionary_and_return_evm_state,
             },
+            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address,
+            filter_submission_material::filter_submission_material_for_redeem_events_in_state,
+            filter_zero_value_tx_infos::filter_out_zero_value_eth_tx_infos_from_state,
             get_evm_output_json::{get_int_signed_tx_info_from_evm_txs, EvmOutput},
-            int_tx_info::{
-                filter_out_zero_value_eth_tx_infos_from_state,
-                filter_submission_material_for_redeem_events_in_state,
-                maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address,
-                maybe_sign_eth_txs_and_add_to_evm_state,
-                IntOnEvmIntTxInfos,
-            },
+            int_tx_info::IntOnEvmIntTxInfos,
+            sign_txs::maybe_sign_eth_txs_and_add_to_evm_state,
         },
         int::{
             account_for_fees::{
