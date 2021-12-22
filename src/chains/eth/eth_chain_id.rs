@@ -22,6 +22,7 @@ pub enum EthChainId {
     XDaiMainnet,
     InterimChain,
     PolygonMainnet,
+    ArbitrumMainnet,
     Unknown(u64),
 }
 
@@ -42,6 +43,7 @@ impl ToMetadataChainId for EthChainId {
             Self::Ropsten => MetadataChainId::EthereumRopsten,
             Self::InterimChain => MetadataChainId::InterimChain,
             Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
+            Self::ArbitrumMainnet => MetadataChainId::ArbitrumMainnet,
         }
     }
 }
@@ -60,6 +62,7 @@ impl EthChainId {
             "xdai" | "100" => Ok(Self::XDaiMainnet),
             "interim" | "947" => Ok(Self::InterimChain),
             "polygon" | "137" => Ok(Self::PolygonMainnet),
+            "arbitrum" | "42161" => Ok(Self::ArbitrumMainnet),
             _ => match s.parse::<u64>() {
                 Ok(u_64) => Ok(Self::Unknown(u_64)),
                 Err(_) => Err(format!("✘ Unrecognized ETH network: '{}'!", s).into()),
@@ -90,6 +93,7 @@ impl EthChainId {
             100 => Ok(Self::XDaiMainnet),
             947 => Ok(Self::InterimChain),
             137 => Ok(Self::PolygonMainnet),
+            42161 => Ok(Self::ArbitrumMainnet),
             _ => {
                 info!("✔ Using unknown ETH chain ID: {}", needle);
                 Ok(Self::Unknown(needle))
@@ -118,6 +122,7 @@ impl EthChainId {
             Self::Ropsten => MetadataChainId::EthereumRopsten,
             Self::InterimChain => MetadataChainId::InterimChain,
             Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
+            Self::ArbitrumMainnet => MetadataChainId::ArbitrumMainnet,
         }
     }
 
@@ -130,6 +135,7 @@ impl EthChainId {
             Self::XDaiMainnet => 100,
             Self::InterimChain => 947,
             Self::PolygonMainnet => 137,
+            Self::ArbitrumMainnet => 42161,
             Self::Unknown(u_64) => *u_64,
         }
     }
@@ -160,15 +166,17 @@ impl EthChainId {
 
 impl fmt::Display for EthChainId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let u_64 = self.to_u64();
         match self {
-            Self::Mainnet => write!(f, "ETH Mainnet: {}", self.to_u64()),
-            Self::BscMainnet => write!(f, "BSC Mainnet: {}", self.to_u64()),
-            Self::Rinkeby => write!(f, "Rinekby Testnet: {}", self.to_u64()),
-            Self::Ropsten => write!(f, "Ropsten Testnet: {}", self.to_u64()),
-            Self::XDaiMainnet => write!(f, "xDai Mainnet: {}", self.to_u64()),
-            Self::InterimChain => write!(f, "Interim Chain: {}", self.to_u64()),
-            Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", self.to_u64()),
-            Self::Unknown(_) => write!(f, "Unkown ETH chain ID: {}", self.to_u64()),
+            Self::Mainnet => write!(f, "ETH Mainnet: {}", u_64),
+            Self::BscMainnet => write!(f, "BSC Mainnet: {}", u_64),
+            Self::Rinkeby => write!(f, "Rinekby Testnet: {}", u_64),
+            Self::Ropsten => write!(f, "Ropsten Testnet: {}", u_64),
+            Self::XDaiMainnet => write!(f, "xDai Mainnet: {}", u_64),
+            Self::InterimChain => write!(f, "Interim Chain: {}", u_64),
+            Self::Unknown(_) => write!(f, "Unkown ETH chain ID: {}", u_64),
+            Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", u_64),
+            Self::ArbitrumMainnet => write!(f, "Abritrum Mainnet: {}", u_64),
         }
     }
 }

@@ -33,6 +33,7 @@ pub enum MetadataChainId {
     BtcUnknown,       // 0x01000000
     EosUnknown,       // 0x02000000
     InterimChain,     // 0xffffffff
+    ArbitrumMainnet,  // 0x00ce98c4
 }
 
 impl MetadataChainId {
@@ -53,6 +54,7 @@ impl MetadataChainId {
             | Self::EthereumMainnet
             | Self::EthereumRinkeby
             | Self::EthereumRopsten
+            | Self::ArbitrumMainnet
             | Self::PolygonMainnet => MetadataProtocolId::Ethereum,
         }
     }
@@ -76,6 +78,7 @@ impl MetadataChainId {
             Self::UltraTestnet => Box::new(EosChainId::UltraTestnet),
             Self::InterimChain => Box::new(EthChainId::InterimChain),
             Self::PolygonMainnet => Box::new(EthChainId::PolygonMainnet),
+            Self::ArbitrumMainnet => Box::new(EthChainId::ArbitrumMainnet),
             Self::EosJungleTestnet => Box::new(EosChainId::EosJungleTestnet),
         }
     }
@@ -152,26 +155,27 @@ impl MetadataChainId {
 
 impl fmt::Display for MetadataChainId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let err_msg = "Could not unwrap hex!".to_string();
+        let hex = self.to_hex().unwrap_or_else(|_| "Could not unwrap hex!".to_string());
         match self {
-            Self::EthUnknown => write!(f, "EthUnknown: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::EosUnknown => write!(f, "EosUnknown: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::BtcUnknown => write!(f, "BtcUnknown: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::EosMainnet => write!(f, "Eos Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::FioMainnet => write!(f, "FIO Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::XDaiMainnet => write!(f, "xDai Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::TelosMainnet => write!(f, "Telos Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::UltraTestnet => write!(f, "Ultra Testnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::UltraMainnet => write!(f, "Ultra Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::InterimChain => write!(f, "Interim Chain: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::PolygonMainnet => write!(f, "Polygon Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::EthereumMainnet => write!(f, "Ethereum Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::EthereumRinkeby => write!(f, "Ethereum Rinkeby: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::EthereumRopsten => write!(f, "Ethereum Ropsten: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
-            Self::BscMainnet => write!(f, "Binance Chain (BSC) Mainnet: 0x{}", self.to_hex().unwrap_or(err_msg)),
+            Self::EthUnknown => write!(f, "EthUnknown: 0x{}", hex),
+            Self::EosUnknown => write!(f, "EosUnknown: 0x{}", hex),
+            Self::BtcUnknown => write!(f, "BtcUnknown: 0x{}", hex),
+            Self::EosMainnet => write!(f, "Eos Mainnet: 0x{}", hex),
+            Self::FioMainnet => write!(f, "FIO Mainnet: 0x{}", hex),
+            Self::XDaiMainnet => write!(f, "xDai Mainnet: 0x{}", hex),
+            Self::TelosMainnet => write!(f, "Telos Mainnet: 0x{}", hex),
+            Self::UltraTestnet => write!(f, "Ultra Testnet: 0x{}", hex),
+            Self::UltraMainnet => write!(f, "Ultra Mainnet: 0x{}", hex),
+            Self::InterimChain => write!(f, "Interim Chain: 0x{}", hex),
+            Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: 0x{}", hex),
+            Self::PolygonMainnet => write!(f, "Polygon Mainnet: 0x{}", hex),
+            Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: 0x{}", hex),
+            Self::ArbitrumMainnet => write!(f, "Arbitrum Mainnet: 0x{}", hex),
+            Self::EthereumMainnet => write!(f, "Ethereum Mainnet: 0x{}", hex),
+            Self::EthereumRinkeby => write!(f, "Ethereum Rinkeby: 0x{}", hex),
+            Self::EthereumRopsten => write!(f, "Ethereum Ropsten: 0x{}", hex),
+            Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", hex),
+            Self::BscMainnet => write!(f, "Binance Chain (BSC) Mainnet: 0x{}", hex),
         }
     }
 }
@@ -213,6 +217,7 @@ mod tests {
         let chain_ids_bytes = vec![
             "005fe7f9", "0069c322", "00f34368", "01ec97de", "018afeb2", "02e7261c", "028c7109", "00e4b170", "0282317f",
             "00f1918e", "0075dd4c", "025d3c68", "02174f20", "02b5a4d6", "00000000", "01000000", "02000000", "ffffffff",
+            "00ce98c4",
         ]
         .iter()
         .map(|ref hex| hex::decode(hex).unwrap())
