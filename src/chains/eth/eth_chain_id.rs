@@ -126,8 +126,10 @@ impl EthChainId {
             Self::Unknown(byte) => *byte,
         }
     }
+}
 
-    #[cfg(test)]
+#[cfg(test)]
+impl EthChainId {
     fn is_unknown(&self) -> bool {
         match self {
             Self::Unknown(_) => true,
@@ -135,10 +137,17 @@ impl EthChainId {
         }
     }
 
-    #[cfg(test)]
     fn get_all() -> Vec<Self> {
         use strum::IntoEnumIterator;
         Self::iter().filter(|chain_id| !chain_id.is_unknown()).collect()
+    }
+
+    fn to_hex(&self) -> Result<String> {
+        self.to_bytes().map(|ref bytes| hex::encode(bytes))
+    }
+
+    fn to_keccak_hash_hex(&self) -> Result<String> {
+        self.keccak_hash().map(|ref bytes| hex::encode(bytes))
     }
 }
 
@@ -195,5 +204,63 @@ mod tests {
             .collect::<Result<Vec<EthChainId>>>()
             .unwrap();
         assert_eq!(result, ids);
+    }
+
+    fn get_legacy_chain_ids() -> Vec<EthChainId> {
+        vec![
+            EthChainId::Mainnet,
+            EthChainId::Rinkeby,
+            EthChainId::Ropsten,
+            EthChainId::BscMainnet,
+            EthChainId::XDaiMainnet,
+            EthChainId::InterimChain,
+            EthChainId::PolygonMainnet,
+        ]
+    }
+
+    fn get_legacy_chain_ids_hex<'a>() -> Vec<&'a str> {
+        vec!["01", "04", "03", "38", "64", "ff", "89"]
+    }
+
+    fn get_legacy_chain_ids_keccak_hashes<'a>() -> Vec<&'a str> {
+        vec![
+            "5fe7f977e71dba2ea1a68e21057beebb9be2ac30c6410aa38d4f3fbe41dcffd2",
+            "f343681465b9efe82c933c3e8748c70cb8aa06539c361de20f72eac04e766393",
+            "69c322e3248a5dfc29d73c5b0553b0185a35cd5bb6386747517ef7e53b15e287",
+            "e4b1702d9298fee62dfeccc57d322a463ad55ca201256d01f62b45b2e1c21c10",
+            "f1918e8562236eb17adc8502332f4c9c82bc14e19bfc0aa10ab674ff75b3d2f3",
+            "8b1a944cf13a9a1c08facb2c9e98623ef3254d2ddb48113885c3e8e97fec8db9",
+            "75dd4ce35898634c43d8e291c5edc041d288f0c0a531e92d5528804add589d1f",
+        ]
+    }
+
+    #[test]
+    fn should_get_all_chain_id_legacy_bytes() {
+        let legacy_chain_ids = get_legacy_chain_ids();
+        let chain_ids_hex = legacy_chain_ids
+            .iter()
+            .map(|id| id.to_hex())
+            .collect::<Result<Vec<String>>>()
+            .unwrap();
+        let expected_chain_ids_hex = get_legacy_chain_ids_hex();
+        chain_ids_hex
+            .iter()
+            .enumerate()
+            .for_each(|(i, chain_id_hex)| assert_eq!(chain_id_hex, expected_chain_ids_hex[i]));
+    }
+
+    #[test]
+    fn shuld_get_all_chain_id_legacy_keccak_hashes() {
+        let legacy_chain_ids = get_legacy_chain_ids();
+        let chain_ids_keccak_hashes = legacy_chain_ids
+            .iter()
+            .map(|id| id.to_keccak_hash_hex())
+            .collect::<Result<Vec<String>>>()
+            .unwrap();
+        let expected_chain_ids_keccak_hashes = get_legacy_chain_ids_keccak_hashes();
+        chain_ids_keccak_hashes
+            .iter()
+            .enumerate()
+            .for_each(|(i, chain_id_hex)| assert_eq!(chain_id_hex, expected_chain_ids_keccak_hashes[i]));
     }
 }
