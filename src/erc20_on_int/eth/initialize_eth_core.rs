@@ -47,7 +47,7 @@ use crate::{
 pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
     db: D,
     block_json: &str,
-    chain_id: u8,
+    chain_id: u64,
     gas_price: u64,
     confs: u64,
     vault_address: &str,
