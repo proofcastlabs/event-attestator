@@ -20,7 +20,7 @@ pub enum EthChainId {
     Ropsten,
     BscMainnet,
     XDaiMainnet,
-    InterimChain, // FIXME This should now be 947! And it's NOT a legacy one!
+    InterimChain,
     PolygonMainnet,
     Unknown(u64),
 }
@@ -58,7 +58,7 @@ impl EthChainId {
             "rinkeby" | "4" => Ok(Self::Rinkeby),
             "bsc" | "56" => Ok(Self::BscMainnet),
             "xdai" | "100" => Ok(Self::XDaiMainnet),
-            "interim" | "255" => Ok(Self::InterimChain),
+            "interim" | "947" => Ok(Self::InterimChain),
             "polygon" | "137" => Ok(Self::PolygonMainnet),
             _ => match s.parse::<u64>() {
                 Ok(u_64) => Ok(Self::Unknown(u_64)),
@@ -75,7 +75,6 @@ impl EthChainId {
             Self::Ropsten => Ok(vec![0x03]),
             Self::BscMainnet => Ok(vec![0x38]),
             Self::XDaiMainnet => Ok(vec![0x64]),
-            Self::InterimChain => Ok(vec![0xff]), // TODO rm me from here!
             Self::PolygonMainnet => Ok(vec![0x89]),
             _ => Ok(self.to_u64().to_le_bytes().to_vec()),
         }
@@ -89,7 +88,7 @@ impl EthChainId {
             4 => Ok(Self::Rinkeby),
             56 => Ok(Self::BscMainnet),
             100 => Ok(Self::XDaiMainnet),
-            255 => Ok(Self::InterimChain),
+            947 => Ok(Self::InterimChain),
             137 => Ok(Self::PolygonMainnet),
             _ => {
                 info!("✔ Using unknown ETH chain ID: {}", needle);
@@ -129,7 +128,7 @@ impl EthChainId {
             Self::Rinkeby => 4,
             Self::BscMainnet => 56,
             Self::XDaiMainnet => 100,
-            Self::InterimChain => 255,
+            Self::InterimChain => 947,
             Self::PolygonMainnet => 137,
             Self::Unknown(u_64) => *u_64,
         }
@@ -195,7 +194,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn should_make_u8_roundtrip_for_all_eth_chain_ids() {
+    fn should_make_u64_roundtrip_for_all_eth_chain_ids() {
         let ids = EthChainId::get_all();
         let bytes = ids.iter().map(|id| id.to_u64()).collect::<Vec<u64>>();
         let result = bytes
@@ -222,20 +221,19 @@ mod tests {
         assert_eq!(result, ids);
     }
 
-    fn get_legacy_chain_ids() -> Vec<EthChainId> {
+    fn get_all_legacy() -> Vec<EthChainId> {
         vec![
             EthChainId::Mainnet,
             EthChainId::Rinkeby,
             EthChainId::Ropsten,
             EthChainId::BscMainnet,
             EthChainId::XDaiMainnet,
-            EthChainId::InterimChain,
             EthChainId::PolygonMainnet,
         ]
     }
 
     fn get_legacy_chain_ids_hex<'a>() -> Vec<&'a str> {
-        vec!["01", "04", "03", "38", "64", "ff", "89"]
+        vec!["01", "04", "03", "38", "64", "89"]
     }
 
     fn get_legacy_chain_ids_keccak_hashes<'a>() -> Vec<&'a str> {
@@ -245,14 +243,13 @@ mod tests {
             "69c322e3248a5dfc29d73c5b0553b0185a35cd5bb6386747517ef7e53b15e287",
             "e4b1702d9298fee62dfeccc57d322a463ad55ca201256d01f62b45b2e1c21c10",
             "f1918e8562236eb17adc8502332f4c9c82bc14e19bfc0aa10ab674ff75b3d2f3",
-            "8b1a944cf13a9a1c08facb2c9e98623ef3254d2ddb48113885c3e8e97fec8db9",
             "75dd4ce35898634c43d8e291c5edc041d288f0c0a531e92d5528804add589d1f",
         ]
     }
 
     #[test]
     fn should_get_all_chain_id_legacy_bytes() {
-        let legacy_chain_ids = get_legacy_chain_ids();
+        let legacy_chain_ids = get_all_legacy();
         let chain_ids_hex = legacy_chain_ids
             .iter()
             .map(|id| id.to_hex())
@@ -267,7 +264,7 @@ mod tests {
 
     #[test]
     fn shuld_get_all_chain_id_legacy_keccak_hashes() {
-        let legacy_chain_ids = get_legacy_chain_ids();
+        let legacy_chain_ids = get_all_legacy();
         let chain_ids_keccak_hashes = legacy_chain_ids
             .iter()
             .map(|id| id.to_keccak_hash_hex())
