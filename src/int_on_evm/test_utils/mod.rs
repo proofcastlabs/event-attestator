@@ -11,8 +11,21 @@ use crate::{
         eth_utils::convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
+    int_on_evm::int::evm_tx_info::{IntOnEvmEvmTxInfo, IntOnEvmEvmTxInfos},
     types::Result,
 };
+
+pub fn get_sample_evm_tx_infos() -> IntOnEvmEvmTxInfos {
+    let material = get_sample_peg_in_submission_material();
+    let vault_address = get_sample_vault_address();
+    let dictionary = get_sample_token_dictionary();
+    let router_address = get_sample_router_address();
+    IntOnEvmEvmTxInfos::from_submission_material(&material, &vault_address, &dictionary, &router_address).unwrap()
+}
+
+pub fn get_sample_evm_tx_info() -> IntOnEvmEvmTxInfo {
+    get_sample_evm_tx_infos()[0].clone()
+}
 
 pub fn get_sample_token_dictionary() -> EthEvmTokenDictionary {
     EthEvmTokenDictionary::new(vec![get_sample_token_dictionary_entry()])
