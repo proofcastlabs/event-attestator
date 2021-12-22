@@ -19,7 +19,7 @@ use crate::{
         eth_types::{EthSignature, EthSignedTransaction},
         eth_utils::strip_new_line_chars,
     },
-    types::{Byte, Bytes, Result},
+    types::{Bytes, Result},
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, Deref, Constructor)]
@@ -34,9 +34,9 @@ pub struct EthTransaction {
     pub nonce: U256,
     pub value: U256,
     pub data: Bytes,
-    pub chain_id: Byte,
     pub gas_limit: U256,
     pub gas_price: U256,
+    pub chain_id: EthChainId,
 }
 
 impl EthTransaction {
@@ -85,10 +85,10 @@ impl EthTransaction {
             data,
             r: U256::zero(),
             s: U256::zero(),
-            v: chain_id.to_byte().into(), // Per EIP155
             nonce: nonce.into(),
             value: value.into(),
-            chain_id: chain_id.to_byte(),
+            v: chain_id.to_u64(), // Per EIP155
+            chain_id: chain_id.clone(),
             gas_limit: gas_limit.into(),
             gas_price: gas_price.into(),
         }
@@ -97,12 +97,12 @@ impl EthTransaction {
     fn add_signature_to_transaction(mut self, sig: EthSignature) -> Self {
         self.r = sig[0..32].into();
         self.s = sig[32..64].into();
-        self.v = Self::calculate_v_from_chain_id(sig[64], self.chain_id);
+        self.v = Self::calculate_v_from_chain_id(sig[64], &self.chain_id);
         self
     }
 
-    fn calculate_v_from_chain_id(sig_v: u8, chain_id: u8) -> u64 {
-        chain_id as u64 * 2 + sig_v as u64 + 35 // Per EIP155
+    fn calculate_v_from_chain_id(sig_v: u8, chain_id: &EthChainId) -> u64 {
+        chain_id.to_u64() * 2 + sig_v as u64 + 35 // Per EIP155
     }
 
     pub fn sign<T: EthSigningCapabilities>(self, pk: &T) -> Result<Self> {

@@ -15,7 +15,7 @@ macro_rules! make_enclave_state_struct {
             #[derive(Debug, Serialize, Deserialize)]
             pub struct $name {
                 [<$prefix _gas_price>]: u64,
-                [<$prefix _chain_id>]: u8,
+                [<$prefix _chain_id>]: u64,
                 [<$prefix _address>]: String,
                 [<$prefix _tail_length>]: u64,
                 any_sender_nonce: u64,
@@ -57,7 +57,7 @@ macro_rules! make_enclave_state_struct {
                         smart_contract_address:
                             hex::encode(contract_address.as_bytes()),
                         [<$prefix _chain_id>]:
-                            db_utils.get_eth_chain_id_from_db()?.to_u8(),
+                            db_utils.get_eth_chain_id_from_db()?.to_u64(),
                         [<$prefix _account_nonce>]:
                             db_utils.get_eth_account_nonce_from_db()?,
                         [<$prefix _canon_to_tip_length>]:

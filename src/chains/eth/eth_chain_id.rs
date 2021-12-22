@@ -1,6 +1,7 @@
 use std::fmt;
 
 use ethereum_types::H256 as KeccakHash;
+use serde::{Deserialize, Serialize};
 use strum_macros::EnumIter;
 
 use crate::{
@@ -9,19 +10,19 @@ use crate::{
     metadata::{metadata_chain_id::MetadataChainId, metadata_traits::ToMetadataChainId},
     traits::ChainId,
     types::{Byte, Bytes, Result},
-    utils::convert_bytes_to_u8,
+    utils::{convert_bytes_to_u64, convert_bytes_to_u8},
 };
 
-#[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
+#[derive(Clone, Debug, PartialEq, Eq, EnumIter, Serialize, Deserialize)]
 pub enum EthChainId {
     Mainnet,
     Rinkeby,
     Ropsten,
     BscMainnet,
     XDaiMainnet,
-    InterimChain,
+    InterimChain, // FIXME This should now be 947! And it's NOT a legacy one!
     PolygonMainnet,
-    Unknown(u8),
+    Unknown(u64),
 }
 
 impl ChainId for EthChainId {
@@ -59,34 +60,30 @@ impl EthChainId {
             "xdai" | "100" => Ok(Self::XDaiMainnet),
             "interim" | "255" => Ok(Self::InterimChain),
             "polygon" | "137" => Ok(Self::PolygonMainnet),
-            _ => match s.parse::<u8>() {
-                Ok(byte) => Ok(Self::Unknown(byte)),
+            _ => match s.parse::<u64>() {
+                Ok(u_64) => Ok(Self::Unknown(u_64)),
                 Err(_) => Err(format!("✘ Unrecognized ETH network: '{}'!", s).into()),
             },
         }
     }
 
     pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(self.to_u8().to_le_bytes().to_vec())
-    }
-
-    pub fn to_byte(&self) -> Byte {
         match self {
-            Self::Mainnet => 1,
-            Self::Rinkeby => 4,
-            Self::Ropsten => 3,
-            Self::BscMainnet => 56,
-            Self::XDaiMainnet => 100,
-            Self::InterimChain => 255,
-            Self::PolygonMainnet => 137,
-            Self::Unknown(byte) => *byte,
+            // NOTE: The following explicit ones are for legacy reasons.
+            Self::Mainnet => Ok(vec![0x01]),
+            Self::Rinkeby => Ok(vec![0x04]),
+            Self::Ropsten => Ok(vec![0x03]),
+            Self::BscMainnet => Ok(vec![0x38]),
+            Self::XDaiMainnet => Ok(vec![0x64]),
+            Self::InterimChain => Ok(vec![0xff]), // TODO rm me from here!
+            Self::PolygonMainnet => Ok(vec![0x89]),
+            _ => Ok(self.to_u64().to_le_bytes().to_vec()),
         }
     }
 
-    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
-        info!("✔ Getting `EthChainId` from bytes: {}", hex::encode(bytes));
-        let byte = convert_bytes_to_u8(bytes)?;
-        match byte {
+    fn from_unsigned_int<T: Into<u64>>(i: T) -> Result<Self> {
+        let needle: u64 = i.into();
+        match needle {
             1 => Ok(Self::Mainnet),
             3 => Ok(Self::Ropsten),
             4 => Ok(Self::Rinkeby),
@@ -95,9 +92,20 @@ impl EthChainId {
             255 => Ok(Self::InterimChain),
             137 => Ok(Self::PolygonMainnet),
             _ => {
-                info!("✔ Using unknown ETH chain ID: 0x{}", hex::encode(bytes));
-                Ok(Self::Unknown(byte))
+                info!("✔ Using unknown ETH chain ID: {}", needle);
+                Ok(Self::Unknown(needle))
             },
+        }
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        let hex = hex::encode(bytes);
+        if bytes.len() == 1 {
+            info!("✔ Getting `EthChainId` from legacy byte: 0x{}", hex);
+            convert_bytes_to_u8(bytes).and_then(Self::from_unsigned_int)
+        } else {
+            info!("✔ Getting `EthChainId` from bytes: 0x{}", hex);
+            convert_bytes_to_u64(bytes).and_then(Self::from_unsigned_int)
         }
     }
 
@@ -114,7 +122,7 @@ impl EthChainId {
         }
     }
 
-    pub fn to_u8(&self) -> u8 {
+    pub fn to_u64(&self) -> u64 {
         match self {
             Self::Mainnet => 1,
             Self::Ropsten => 3,
@@ -123,25 +131,13 @@ impl EthChainId {
             Self::XDaiMainnet => 100,
             Self::InterimChain => 255,
             Self::PolygonMainnet => 137,
-            Self::Unknown(byte) => *byte,
+            Self::Unknown(u_64) => *u_64,
         }
     }
 }
 
 #[cfg(test)]
 impl EthChainId {
-    fn is_unknown(&self) -> bool {
-        match self {
-            Self::Unknown(_) => true,
-            _ => false,
-        }
-    }
-
-    fn get_all() -> Vec<Self> {
-        use strum::IntoEnumIterator;
-        Self::iter().filter(|chain_id| !chain_id.is_unknown()).collect()
-    }
-
     fn to_hex(&self) -> Result<String> {
         self.to_bytes().map(|ref bytes| hex::encode(bytes))
     }
@@ -149,28 +145,48 @@ impl EthChainId {
     fn to_keccak_hash_hex(&self) -> Result<String> {
         self.keccak_hash().map(|ref bytes| hex::encode(bytes))
     }
+
+    fn get_all() -> Vec<Self> {
+        use strum::IntoEnumIterator;
+        Self::iter().filter(|chain_id| !chain_id.is_unknown()).collect()
+    }
+
+    fn is_unknown(&self) -> bool {
+        match self {
+            Self::Unknown(_) => true,
+            _ => false,
+        }
+    }
 }
 
 impl fmt::Display for EthChainId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Mainnet => write!(f, "ETH Mainnet: {}", self.to_u8()),
-            Self::Rinkeby => write!(f, "Rinekby Testnet: {}", self.to_u8()),
-            Self::Ropsten => write!(f, "Ropsten Testnet: {}", self.to_u8()),
-            Self::BscMainnet => write!(f, "BSC Mainnet: {}", self.to_u8()),
-            Self::XDaiMainnet => write!(f, "xDai Mainnet: {}", self.to_u8()),
-            Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", self.to_u8()),
-            Self::InterimChain => write!(f, "Interim Chain: {}", self.to_u8()),
-            Self::Unknown(_) => write!(f, "Unkown ETH chain ID: {}", self.to_u8()),
+            Self::Mainnet => write!(f, "ETH Mainnet: {}", self.to_u64()),
+            Self::BscMainnet => write!(f, "BSC Mainnet: {}", self.to_u64()),
+            Self::Rinkeby => write!(f, "Rinekby Testnet: {}", self.to_u64()),
+            Self::Ropsten => write!(f, "Ropsten Testnet: {}", self.to_u64()),
+            Self::XDaiMainnet => write!(f, "xDai Mainnet: {}", self.to_u64()),
+            Self::InterimChain => write!(f, "Interim Chain: {}", self.to_u64()),
+            Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", self.to_u64()),
+            Self::Unknown(_) => write!(f, "Unkown ETH chain ID: {}", self.to_u64()),
         }
+    }
+}
+
+impl TryFrom<u64> for EthChainId {
+    type Error = AppError;
+
+    fn try_from(u_64: u64) -> Result<Self> {
+        Self::from_bytes(&u_64.to_le_bytes())
     }
 }
 
 impl TryFrom<u8> for EthChainId {
     type Error = AppError;
 
-    fn try_from(byte: u8) -> Result<Self> {
-        Self::from_bytes(&[byte])
+    fn try_from(u_8: u8) -> Result<Self> {
+        Self::try_from(u_8 as u64)
     }
 }
 
@@ -181,7 +197,7 @@ mod tests {
     #[test]
     fn should_make_u8_roundtrip_for_all_eth_chain_ids() {
         let ids = EthChainId::get_all();
-        let bytes = ids.iter().map(|id| id.to_u8()).collect::<Vec<u8>>();
+        let bytes = ids.iter().map(|id| id.to_u64()).collect::<Vec<u64>>();
         let result = bytes
             .iter()
             .map(|byte| EthChainId::try_from(*byte))
