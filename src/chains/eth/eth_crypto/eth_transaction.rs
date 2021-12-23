@@ -9,11 +9,7 @@ use crate::{
         any_sender::relay_transaction::RelayTransaction,
         eth_chain_id::EthChainId,
         eth_constants::{GAS_LIMIT_FOR_PTOKEN_DEPLOY, VALUE_FOR_MINTING_TX, VALUE_FOR_PTOKEN_DEPLOY},
-        eth_contracts::erc777::{
-            encode_erc777_mint_fxn_maybe_with_data,
-            ERC777_MINT_WITH_DATA_GAS_LIMIT,
-            ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
-        },
+        eth_contracts::erc777::encode_erc777_mint_fxn_maybe_with_data,
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
         eth_types::{EthSignature, EthSignedTransaction},
@@ -197,9 +193,9 @@ pub fn get_unsigned_minting_tx(
     operator_data: Option<Bytes>,
 ) -> Result<EthTransaction> {
     let gas_limit = if user_data.is_some() {
-        ERC777_MINT_WITH_DATA_GAS_LIMIT
+        chain_id.get_erc777_mint_with_data_gas_limit()
     } else {
-        ERC777_MINT_WITH_NO_DATA_GAS_LIMIT
+        chain_id.get_erc777_mint_with_no_data_gas_limit()
     };
     Ok(EthTransaction::new_unsigned(
         encode_erc777_mint_fxn_maybe_with_data(recipient, amount, user_data, operator_data)?,

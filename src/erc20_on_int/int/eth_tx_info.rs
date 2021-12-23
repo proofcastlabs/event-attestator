@@ -9,8 +9,6 @@ use crate::{
             erc20_vault::{
                 encode_erc20_vault_peg_out_fxn_data_with_user_data,
                 encode_erc20_vault_peg_out_fxn_data_without_user_data,
-                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
-                ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
             },
             erc777::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
         },
@@ -128,7 +126,6 @@ impl EthOnEvmEthTxInfo {
     }
 
     pub fn to_eth_signed_tx(
-        // TODO Get a sample with user data so we can use that test against!
         &self,
         nonce: u64,
         chain_id: &EthChainId,
@@ -137,9 +134,9 @@ impl EthOnEvmEthTxInfo {
         vault_address: &EthAddress,
     ) -> Result<EvmTransaction> {
         let gas_limit = if self.user_data.is_empty() {
-            ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT
+            chain_id.get_erc20_vault_pegout_without_user_data_gas_limit()
         } else {
-            ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT
+            chain_id.get_erc20_vault_pegout_with_user_data_gas_limit()
         };
         info!("✔ Signing ETH transaction for tx info: {:?}", self);
         debug!("✔ Signing with nonce:     {}", nonce);

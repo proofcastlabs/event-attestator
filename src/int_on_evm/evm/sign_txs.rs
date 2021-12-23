@@ -4,10 +4,7 @@ use crate::{
     chains::eth::{
         eth_chain_id::EthChainId,
         eth_constants::ZERO_ETH_VALUE,
-        eth_contracts::erc20_vault::{
-            encode_erc20_vault_peg_out_fxn_data_with_user_data,
-            ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
-        },
+        eth_contracts::erc20_vault::encode_erc20_vault_peg_out_fxn_data_with_user_data,
         eth_crypto::{
             eth_private_key::EthPrivateKey,
             eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
@@ -58,7 +55,7 @@ impl IntOnEvmIntTxInfo {
             ZERO_ETH_VALUE,
             *vault_address,
             chain_id,
-            ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
+            chain_id.get_erc20_vault_pegout_with_user_data_gas_limit(),
             gas_price,
         )
         .sign(evm_private_key)

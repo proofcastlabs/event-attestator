@@ -5,6 +5,8 @@ use strum_macros::EnumIter;
 
 use crate::{
     chains::eth::{
+        eth_chain_id::EthChainId,
+        eth_constants::ARBITRUM_GAS_MULTIPLIER,
         eth_contracts::{encode_fxn_call, SupportedTopics},
         eth_log::EthLogExt,
     },
@@ -12,10 +14,40 @@ use crate::{
     types::{Bytes, Result},
 };
 
-pub const ERC20_VAULT_MIGRATE_GAS_LIMIT: usize = 2_000_000;
-pub const ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT: usize = 450_000;
-pub const ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT: usize = 100_000;
-pub const ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT: usize = 250_000;
+const ERC20_VAULT_MIGRATE_GAS_LIMIT: usize = 2_000_000;
+const ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT: usize = 450_000;
+const ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT: usize = 100_000;
+const ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT: usize = 250_000;
+
+impl EthChainId {
+    pub fn get_erc20_vault_migrate_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC20_VAULT_MIGRATE_GAS_LIMIT,
+            _ => ERC20_VAULT_MIGRATE_GAS_LIMIT,
+        }
+    }
+
+    pub fn get_erc20_vault_pegout_without_user_data_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
+            _ => ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
+        }
+    }
+
+    pub fn get_erc20_vault_pegout_with_user_data_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
+            _ => ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
+        }
+    }
+
+    pub fn get_erc20_vault_change_supported_token_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+            _ => ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+        }
+    }
+}
 
 const ERC20_VAULT_ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"addresspayable\",\"name\":\"_to\",\"type\":\"address\"}],\"name\":\"migrate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"addSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"removeSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_userData\",\"type\":\"bytes\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0x22965469\"}]";
 
@@ -439,5 +471,14 @@ mod tests {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         }
+    }
+
+    #[test]
+    fn arbitrum_gas_limits_should_be_multiplies_of_normal_gas_limits() {
+        let eth_chain_id = EthChainId::Mainnet;
+        let arbitrum_chain_id = EthChainId::ArbitrumMainnet;
+        let eth_gas_limit = eth_chain_id.get_erc20_vault_pegout_with_user_data_gas_limit();
+        let arbitrum_gas_limit = arbitrum_chain_id.get_erc20_vault_pegout_with_user_data_gas_limit();
+        assert_eq!(arbitrum_gas_limit, eth_gas_limit * ARBITRUM_GAS_MULTIPLIER);
     }
 }

@@ -5,7 +5,8 @@ use strum_macros::EnumIter;
 
 use crate::{
     chains::eth::{
-        eth_constants::{ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
+        eth_chain_id::EthChainId,
+        eth_constants::{ARBITRUM_GAS_MULTIPLIER, ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
         eth_contracts::{encode_fxn_call, SupportedTopics},
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::{EthDbUtils, EthDbUtilsExt},
@@ -18,9 +19,32 @@ use crate::{
 
 const EMPTY_DATA: Bytes = vec![];
 
-pub const ERC777_CHANGE_PNETWORK_GAS_LIMIT: usize = 30_000;
-pub const ERC777_MINT_WITH_DATA_GAS_LIMIT: usize = 450_000;
-pub const ERC777_MINT_WITH_NO_DATA_GAS_LIMIT: usize = 180_000;
+const ERC777_CHANGE_PNETWORK_GAS_LIMIT: usize = 30_000;
+const ERC777_MINT_WITH_DATA_GAS_LIMIT: usize = 450_000;
+const ERC777_MINT_WITH_NO_DATA_GAS_LIMIT: usize = 180_000;
+
+impl EthChainId {
+    pub fn get_erc777_change_pnetwork_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC777_CHANGE_PNETWORK_GAS_LIMIT,
+            _ => ERC777_CHANGE_PNETWORK_GAS_LIMIT,
+        }
+    }
+
+    pub fn get_erc777_mint_with_data_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC777_MINT_WITH_DATA_GAS_LIMIT,
+            _ => ERC777_MINT_WITH_DATA_GAS_LIMIT,
+        }
+    }
+
+    pub fn get_erc777_mint_with_no_data_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
+            _ => ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
+        }
+    }
+}
 
 const ERC777_CHANGE_PNETWORK_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"newPNetwork\",\"type\":\"address\"}],\"name\":\"changePNetwork\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0xfd4add66\"}]";
 
@@ -427,5 +451,14 @@ mod tests {
             Err(AppError::NoneError(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error recevied!"),
         }
+    }
+
+    #[test]
+    fn arbitrum_gas_limits_should_be_multiplies_of_normal_gas_limits() {
+        let eth_chain_id = EthChainId::Mainnet;
+        let arbitrum_chain_id = EthChainId::ArbitrumMainnet;
+        let eth_gas_limit = eth_chain_id.get_erc777_mint_with_data_gas_limit();
+        let arbitrum_gas_limit = arbitrum_chain_id.get_erc777_mint_with_data_gas_limit();
+        assert_eq!(arbitrum_gas_limit, eth_gas_limit * ARBITRUM_GAS_MULTIPLIER);
     }
 }

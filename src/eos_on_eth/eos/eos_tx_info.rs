@@ -22,7 +22,7 @@ use crate::{
         eth::{
             eth_chain_id::EthChainId,
             eth_constants::ZERO_ETH_VALUE,
-            eth_contracts::erc777::{encode_erc777_mint_with_no_data_fxn, ERC777_MINT_WITH_NO_DATA_GAS_LIMIT},
+            eth_contracts::erc777::encode_erc777_mint_with_no_data_fxn,
             eth_crypto::{
                 eth_private_key::EthPrivateKey,
                 eth_transaction::{EthTransaction, EthTransactions},
@@ -366,7 +366,7 @@ impl EosOnEthEosTxInfos {
                         ZERO_ETH_VALUE,
                         tx_info.eth_token_address,
                         chain_id,
-                        ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
+                        chain_id.get_erc777_mint_with_no_data_gas_limit(),
                         gas_price,
                     )
                     .sign(eth_private_key)

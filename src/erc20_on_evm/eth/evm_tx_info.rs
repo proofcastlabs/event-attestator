@@ -7,7 +7,7 @@ use crate::{
         eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
         eth_contracts::{
             erc20_vault::{Erc20VaultPegInEventParams, ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC},
-            erc777::{encode_erc777_mint_fxn_maybe_with_data, ERC777_MINT_WITH_DATA_GAS_LIMIT},
+            erc777::encode_erc777_mint_fxn_maybe_with_data,
         },
         eth_crypto::{
             eth_private_key::EthPrivateKey as EvmPrivateKey,
@@ -430,12 +430,13 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
         info!("✔ No tx infos in state ∴ no EVM transactions to sign!");
         Ok(state)
     } else {
+        let chain_id = state.evm_db_utils.get_eth_chain_id_from_db()?;
         state
             .erc20_on_evm_evm_tx_infos
             .to_evm_signed_txs(
                 state.evm_db_utils.get_eth_account_nonce_from_db()?,
-                &state.evm_db_utils.get_eth_chain_id_from_db()?,
-                ERC777_MINT_WITH_DATA_GAS_LIMIT,
+                &chain_id,
+                chain_id.get_erc777_mint_with_data_gas_limit(),
                 state.evm_db_utils.get_eth_gas_price_from_db()?,
                 &state.evm_db_utils.get_eth_private_key_from_db()?,
                 &EthEvmTokenDictionary::get_from_db(state.db)?,
