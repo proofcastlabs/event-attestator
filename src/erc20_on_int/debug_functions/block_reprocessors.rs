@@ -50,8 +50,9 @@ fn debug_reprocess_int_block_maybe_accruing_fees<D: DatabaseInterface>(
     db: D,
     block_json: &str,
     accrue_fees: bool,
+    maybe_nonce: Option<u64>,
 ) -> Result<String> {
-    info!("✔ Debug reprocessing EVM block...");
+    debug!("Using passed in nonce: {}", maybe_nonce.is_some());
     check_debug_mode()
         .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
@@ -78,16 +79,23 @@ fn debug_reprocess_int_block_maybe_accruing_fees<D: DatabaseInterface>(
             if accrue_fees {
                 update_accrued_fees_in_dictionary_and_return_evm_state(state)
             } else {
-                info!("✘ Not accruing fees during EVM block reprocessing...");
+                info!("✘ Not accruing fees during INT block reprocessing...");
                 Ok(state)
             }
         })
         .and_then(maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address)
         .and_then(maybe_sign_eth_txs_and_add_to_evm_state)
-        .and_then(maybe_increment_eth_account_nonce_and_return_state)
+        .and_then(|state| {
+            if maybe_nonce.is_some() {
+                info!("✔ Not incrementing nonce since one was passed in!");
+                Ok(state)
+            } else {
+                maybe_increment_eth_account_nonce_and_return_state(state)
+            }
+        })
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {
-            info!("✔ Getting EVM output json...");
+            info!("✔ Getting INT output json...");
             let output = serde_json::to_string(&IntOutput {
                 int_latest_block_number: state.evm_db_utils.get_latest_eth_block_number()?,
                 eth_signed_transactions: if state.erc20_on_int_eth_signed_txs.is_empty() {
@@ -97,14 +105,23 @@ fn debug_reprocess_int_block_maybe_accruing_fees<D: DatabaseInterface>(
                     get_eth_signed_tx_info_from_evm_txs(
                         &state.erc20_on_int_eth_signed_txs,
                         &state.erc20_on_int_eth_tx_infos,
-                        state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                        match maybe_nonce {
+                            None => {
+                                info!("✔ Signing tx with nonce from database!");
+                                state.eth_db_utils.get_eth_account_nonce_from_db()?
+                            },
+                            Some(nonce) => {
+                                info!("✔ Signing tx with passed in nonce of {}!", nonce);
+                                nonce
+                            },
+                        },
                         use_any_sender_tx,
                         state.eth_db_utils.get_any_sender_nonce_from_db()?,
                         state.eth_db_utils.get_latest_eth_block_number()?,
                     )?
                 },
             })?;
-            info!("✔ Reprocess EVM block output: {}", output);
+            info!("✔ Reprocess INT block output: {}", output);
             Ok(output)
         })
         .map(prepend_debug_output_marker_to_string)
@@ -112,12 +129,13 @@ fn debug_reprocess_int_block_maybe_accruing_fees<D: DatabaseInterface>(
 
 fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
     db: D,
-    eth_block_json: &str,
+    block_json: &str,
     accrue_fees: bool,
+    maybe_nonce: Option<u64>,
 ) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
     check_debug_mode()
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(&db)))
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
@@ -149,7 +167,14 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
         })
         .and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address)
         .and_then(maybe_sign_int_txs_and_add_to_eth_state)
-        .and_then(maybe_increment_int_account_nonce_and_return_eth_state)
+        .and_then(|state| {
+            if maybe_nonce.is_some() {
+                info!("✔ Not incrementing nonce since one was passed in!");
+                Ok(state)
+            } else {
+                maybe_increment_int_account_nonce_and_return_eth_state(state)
+            }
+        })
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting INT output json...");
@@ -162,7 +187,16 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
                     get_evm_signed_tx_info_from_evm_txs(
                         &state.erc20_on_int_int_signed_txs,
                         &state.erc20_on_int_int_tx_infos,
-                        state.evm_db_utils.get_eth_account_nonce_from_db()?,
+                        match maybe_nonce {
+                            Some(nonce) => {
+                                info!("✔ Signing tx with passed in nonce of {}!", nonce);
+                                nonce
+                            },
+                            None => {
+                                info!("✔ Signing tx with nonce from database!");
+                                state.evm_db_utils.get_eth_account_nonce_from_db()?
+                            },
+                        },
                         use_any_sender_tx,
                         state.evm_db_utils.get_any_sender_nonce_from_db()?,
                         state.evm_db_utils.get_latest_eth_block_number()?,
@@ -193,8 +227,33 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future INT transactions will
 /// fail due to the core having an incorret nonce!
-pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: D, evm_block_json: &str) -> Result<String> {
-    debug_reprocess_int_block_maybe_accruing_fees(db, evm_block_json, false)
+pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
+    debug_reprocess_int_block_maybe_accruing_fees(db, block_json, false, None)
+}
+
+/// # Debug Reprocess INT Block With Nonce
+///
+/// This function will take a passed in INT block submission material and run it through the
+/// submission pipeline, signing any signatures for pegouts it may find in the block, using the
+/// passed in nonce for those signatures. Thus it may be used to replace a transaction.
+///
+/// ### NOTES:
+///
+///  - This function will NOT increment the core's INT nonce!
+///
+///  - This version of the INT block reprocessor __will__ deduct fees from any transaction info(s) it
+///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
+///  dictionary. This is to avoid accounting for fees twice.
+///
+/// ### BEWARE:
+/// If you don't broadcast the transaction outputted from this function, ALL future INT transactions will
+/// fail due to the core having an incorret nonce!
+pub fn debug_reprocess_int_block_with_nonce<D: DatabaseInterface>(
+    db: D,
+    block_json: &str,
+    nonce: u64,
+) -> Result<String> {
+    debug_reprocess_int_block_maybe_accruing_fees(db, block_json, false, Some(nonce))
 }
 
 /// # Debug Reprocess INT Block With Fee Accrual
@@ -216,8 +275,8 @@ pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: D, evm_block_json: &s
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future INT transactions will
 /// fail due to the core having an incorret nonce!
-pub fn debug_reprocess_int_block_with_fee_accrual<D: DatabaseInterface>(db: D, evm_block_json: &str) -> Result<String> {
-    debug_reprocess_int_block_maybe_accruing_fees(db, evm_block_json, true)
+pub fn debug_reprocess_int_block_with_fee_accrual<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
+    debug_reprocess_int_block_maybe_accruing_fees(db, block_json, true, None)
 }
 
 /// # Debug Reprocess ETH Block
@@ -236,8 +295,32 @@ pub fn debug_reprocess_int_block_with_fee_accrual<D: DatabaseInterface>(db: D, e
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future ETH transactions will
 /// fail due to the core having an incorret nonce!
-pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &str) -> Result<String> {
-    debug_reprocess_eth_block_maybe_accruing_fees(db, eth_block_json, false)
+pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
+    debug_reprocess_eth_block_maybe_accruing_fees(db, block_json, false, None)
+}
+
+/// # Debug Reprocess ETH Block With Nonce
+///
+/// This function will take a passed in ETH block submission material and run it through the
+/// submission pipeline, signing any signatures for pegouts it may find in the block, using the
+/// passed in nonce for those signatures. Thus it may be used to replace a transaction.
+///
+/// ### NOTES:
+///  - This function will NOT increment the core's ETH nonce!
+///
+///  - This version of the ETH block reprocessor __will__ deduct fees from any transaction info(s) it
+///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
+///  dictionary. This is to avoid accounting for fees twice.
+///
+/// ### BEWARE:
+/// If you don't broadcast the transaction outputted from this function, ALL future ETH transactions will
+/// fail due to the core having an incorret nonce!
+pub fn debug_reprocess_eth_block_with_nonce<D: DatabaseInterface>(
+    db: D,
+    block_json: &str,
+    nonce: u64,
+) -> Result<String> {
+    debug_reprocess_eth_block_maybe_accruing_fees(db, block_json, false, Some(nonce))
 }
 
 /// # Debug Reprocess ETH Block With Fee Accrual
@@ -259,6 +342,6 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future ETH transactions will
 /// fail due to the core having an incorret nonce!
-pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(db: D, evm_block_json: &str) -> Result<String> {
-    debug_reprocess_eth_block_maybe_accruing_fees(db, evm_block_json, true)
+pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
+    debug_reprocess_eth_block_maybe_accruing_fees(db, block_json, true, None)
 }
