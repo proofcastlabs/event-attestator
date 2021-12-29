@@ -10,10 +10,7 @@ use crate::{
         eth_state::EthState,
         eth_traits::EthTxInfoCompatible,
     },
-    erc20_on_int::int::eth_tx_info::{
-        EthOnEvmEthTxInfo as EthOnIntEthTxInfo,
-        EthOnEvmEthTxInfos as EthOnIntEthTxInfos,
-    },
+    erc20_on_int::int::eth_tx_info::{EthOnIntEthTxInfo, EthOnIntEthTxInfos},
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };

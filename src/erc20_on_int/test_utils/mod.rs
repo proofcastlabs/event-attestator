@@ -6,14 +6,29 @@ use serde_json::json;
 
 use crate::{
     chains::eth::{
+        eth_chain_id::EthChainId,
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_submission_material::EthSubmissionMaterial,
         eth_utils::convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
-    erc20_on_int::eth::int_tx_info::{EthOnIntIntTxInfo, EthOnIntIntTxInfos},
+    erc20_on_int::{
+        eth::int_tx_info::{EthOnIntIntTxInfo, EthOnIntIntTxInfos},
+        int::eth_tx_info::{EthOnIntEthTxInfo, EthOnIntEthTxInfos},
+    },
     types::Result,
 };
+
+pub fn get_sample_eth_tx_infos() -> EthOnIntEthTxInfos {
+    let dictionary = get_sample_token_dictionary();
+    let material = get_sample_peg_out_submission_material();
+    let origin_chain_id = EthChainId::Ropsten;
+    EthOnIntEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap()
+}
+
+pub fn get_sample_eth_tx_info() -> EthOnIntEthTxInfo {
+    get_sample_eth_tx_infos()[0].clone()
+}
 
 pub fn get_sample_int_tx_infos() -> EthOnIntIntTxInfos {
     let material = get_sample_peg_in_1_submission_material();

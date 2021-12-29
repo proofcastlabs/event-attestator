@@ -19,7 +19,7 @@ use crate::{
     eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfos,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
     erc20_on_evm::{eth::evm_tx_info::EthOnEvmEvmTxInfos, evm::eth_tx_info::EthOnEvmEthTxInfos},
-    erc20_on_int::{eth::int_tx_info::EthOnIntIntTxInfos, int::eth_tx_info::EthOnEvmEthTxInfos as EthOnIntEthTxInfos},
+    erc20_on_int::{eth::int_tx_info::EthOnIntIntTxInfos, int::eth_tx_info::EthOnIntEthTxInfos},
     int_on_evm::{evm::int_tx_info::IntOnEvmIntTxInfos, int::evm_tx_info::IntOnEvmEvmTxInfos},
     traits::DatabaseInterface,
     types::Result,
