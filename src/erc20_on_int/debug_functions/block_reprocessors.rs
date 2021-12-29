@@ -21,14 +21,12 @@ use crate::{
                 account_for_fees_in_evm_tx_infos_in_state,
                 update_accrued_fees_in_dictionary_and_return_state as update_accrued_fees_in_dictionary_and_return_eth_state,
             },
+            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address,
+            filter_submission_material::filter_submission_material_for_peg_in_events_in_state,
+            filter_zero_value_tx_infos::filter_out_zero_value_evm_tx_infos_from_state,
             get_eth_output_json::{get_evm_signed_tx_info_from_evm_txs, EthOutput},
-            int_tx_info::{
-                filter_out_zero_value_evm_tx_infos_from_state,
-                filter_submission_material_for_peg_in_events_in_state,
-                maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address,
-                maybe_sign_evm_txs_and_add_to_eth_state,
-                EthOnEvmEvmTxInfos,
-            },
+            int_tx_info::EthOnIntIntTxInfos,
+            sign_txs::maybe_sign_int_txs_and_add_to_eth_state,
         },
         int::{
             account_for_fees::{
@@ -132,7 +130,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
             state
                 .get_eth_submission_material()
                 .and_then(|material| {
-                    EthOnEvmEvmTxInfos::from_submission_material(
+                    EthOnIntIntTxInfos::from_submission_material(
                         material,
                         &state.eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
                         &EthEvmTokenDictionary::get_from_db(state.db)?,
@@ -152,7 +150,7 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
             }
         })
         .and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address)
-        .and_then(maybe_sign_evm_txs_and_add_to_eth_state)
+        .and_then(maybe_sign_int_txs_and_add_to_eth_state)
         .and_then(maybe_increment_int_account_nonce_and_return_eth_state)
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {

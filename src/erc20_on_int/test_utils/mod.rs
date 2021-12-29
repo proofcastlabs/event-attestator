@@ -11,8 +11,21 @@ use crate::{
         eth_utils::convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
+    erc20_on_int::eth::int_tx_info::{EthOnIntIntTxInfo, EthOnIntIntTxInfos},
     types::Result,
 };
+
+pub fn get_sample_int_tx_infos() -> EthOnIntIntTxInfos {
+    let material = get_sample_peg_in_1_submission_material();
+    let vault_address = get_sample_vault_address();
+    let dictionary = get_sample_token_dictionary();
+    let router_address = get_sample_router_address();
+    EthOnIntIntTxInfos::from_submission_material(&material, &vault_address, &dictionary, &router_address).unwrap()
+}
+
+pub fn get_sample_int_tx_info() -> EthOnIntIntTxInfo {
+    get_sample_int_tx_infos()[0].clone()
+}
 
 pub fn get_sample_peg_in_1_submission_material() -> EthSubmissionMaterial {
     EthSubmissionMaterial::from_str(&read_to_string("src/erc20_on_int/test_utils/eth-peg-in-block-1.json").unwrap())
