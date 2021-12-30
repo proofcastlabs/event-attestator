@@ -291,10 +291,10 @@ pub fn debug_set_evm_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> R
     debug_set_evm_gas_price_in_db(&db, gas_price)
 }
 
-/// # Debug Set ETH Gas Price
+/// # Debug Set INT Gas Price
 ///
-/// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
-pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
+/// This function sets the INT gas price to use when making ETH transactions. It's unit is `Wei`.
+pub fn debug_set_int_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
     // NOTE: This alias exists so as not to break the legacy API where the DB is NOT a reference!
     debug_set_eth_gas_price_in_db(&db, gas_price)
 }
