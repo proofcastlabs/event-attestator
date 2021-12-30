@@ -42,10 +42,12 @@ pub use crate::{
     int_on_evm::{
         debug_functions::{
             block_reprocessors::{
-                debug_reprocess_eth_block,
-                debug_reprocess_eth_block_with_fee_accrual,
                 debug_reprocess_evm_block,
                 debug_reprocess_evm_block_with_fee_accrual,
+                debug_reprocess_evm_block_with_nonce,
+                debug_reprocess_int_block,
+                debug_reprocess_int_block_with_fee_accrual,
+                debug_reprocess_int_block_with_nonce,
             },
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
