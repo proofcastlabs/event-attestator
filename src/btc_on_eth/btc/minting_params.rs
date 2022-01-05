@@ -145,8 +145,7 @@ impl BtcOnEthMintingParams {
         Ok(Self::new(
             txs.iter()
                 .flat_map(|tx| Self::from_btc_tx(tx, deposit_info, network))
-                .map(|minting_params| minting_params.0)
-                .flatten()
+                .flat_map(|minting_params| minting_params.0)
                 .collect::<Vec<BtcOnEthMintingParamStruct>>(),
         ))
     }

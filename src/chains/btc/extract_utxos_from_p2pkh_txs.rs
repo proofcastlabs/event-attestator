@@ -34,8 +34,7 @@ pub fn extract_utxos_from_p2pkh_txs(target_script: &BtcScript, txs: &[BtcTransac
     info!("✔ Extracting UTXOs from {} `p2pkh` txs...", txs.len());
     BtcUtxosAndValues::new(
         txs.iter()
-            .map(|tx| extract_utxos_from_p2pkh_tx(target_script, tx))
-            .flatten()
+            .flat_map(|tx| extract_utxos_from_p2pkh_tx(target_script, tx))
             .collect::<Vec<BtcUtxoAndValue>>(),
     )
 }

@@ -171,8 +171,8 @@ where
         check_block_signature_is_valid(
             state
                 .enabled_protocol_features
-                .is_enabled(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_vec()),
-            &state.incremerkle.get_root().to_bytes().to_vec(),
+                .is_enabled(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.as_ref()),
+            &state.incremerkle.get_root().to_bytes(),
             &state.producer_signature,
             state.get_eos_block_header()?,
             state.get_active_schedule()?,

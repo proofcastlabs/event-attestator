@@ -3,7 +3,7 @@ use ethereum_types::{Address as EthAddress, U256};
 
 use crate::{
     chains::eth::{
-        eth_contracts::{encode_fxn_call, erc777::ERC777_CHANGE_PNETWORK_GAS_LIMIT},
+        eth_contracts::encode_fxn_call,
         eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
         eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_traits::EthSigningCapabilities,
@@ -56,6 +56,7 @@ pub fn get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
     eth_db_utils: &EthDbUtils<D>,
     new_address: EthAddress,
 ) -> Result<String> {
+    let chain_id = eth_db_utils.get_eth_chain_id_from_db()?;
     let nonce_before_incrementing = eth_db_utils.get_eth_account_nonce_from_db()?;
     eth_db_utils
         .increment_eth_account_nonce_in_db(1)
@@ -64,8 +65,8 @@ pub fn get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
             nonce_before_incrementing,
             ZERO_ETH_VALUE,
             eth_db_utils.get_erc777_proxy_contract_address_from_db()?,
-            &eth_db_utils.get_eth_chain_id_from_db()?,
-            ERC777_CHANGE_PNETWORK_GAS_LIMIT,
+            &chain_id,
+            chain_id.get_erc777_change_pnetwork_gas_limit(),
             eth_db_utils.get_eth_gas_price_from_db()?,
         )
         .sign(&eth_db_utils.get_eth_private_key_from_db()?)?

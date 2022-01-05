@@ -6,10 +6,7 @@ use crate::{
         eth::{
             eth_chain_id::EthChainId,
             eth_constants::ZERO_ETH_VALUE,
-            eth_contracts::erc20_vault::{
-                encode_erc20_vault_peg_out_fxn_data_without_user_data,
-                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
-            },
+            eth_contracts::erc20_vault::encode_erc20_vault_peg_out_fxn_data_without_user_data,
             eth_crypto::{
                 eth_private_key::EthPrivateKey,
                 eth_transaction::{EthTransaction, EthTransactions},
@@ -50,7 +47,7 @@ pub fn get_eth_signed_txs(
                     ZERO_ETH_VALUE,
                     *erc20_on_eos_smart_contract_address,
                     chain_id,
-                    ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
+                    chain_id.get_erc20_vault_pegout_without_user_data_gas_limit(),
                     gas_price,
                 )
                 .sign(eth_private_key)

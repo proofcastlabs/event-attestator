@@ -5,15 +5,16 @@ use serde_json::json;
 
 use crate::{
     chains::eth::{
-        eth_constants::{get_eth_constants_db_keys, ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY, ETH_PRIVATE_KEY_DB_KEY},
+        eth_constants::{
+            get_eth_constants_db_keys,
+            ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
+            ETH_PRIVATE_KEY_DB_KEY,
+        },
         eth_contracts::erc20_vault::{
             encode_erc20_vault_add_supported_token_fx_data,
             encode_erc20_vault_migrate_fxn_data,
             encode_erc20_vault_peg_out_fxn_data_without_user_data,
             encode_erc20_vault_remove_supported_token_fx_data,
-            ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
-            ERC20_VAULT_MIGRATE_GAS_LIMIT,
-            ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
         },
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
@@ -152,13 +153,14 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_add_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
+            let chain_id = eth_db_utils.get_eth_chain_id_from_db()?;
             Ok(EthTransaction::new_unsigned(
                 tx_data,
                 current_eth_account_nonce,
                 0,
                 eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
-                &eth_db_utils.get_eth_chain_id_from_db()?,
-                ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+                &chain_id,
+                chain_id.get_erc20_vault_change_supported_token_gas_limit(),
                 eth_db_utils.get_eth_gas_price_from_db()?,
             ))
         })
@@ -195,13 +197,14 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_remove_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
+            let chain_id = eth_db_utils.get_eth_chain_id_from_db()?;
             Ok(EthTransaction::new_unsigned(
                 tx_data,
                 current_eth_account_nonce,
                 0,
                 eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
-                &eth_db_utils.get_eth_chain_id_from_db()?,
-                ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+                &chain_id,
+                chain_id.get_erc20_vault_change_supported_token_gas_limit(),
                 eth_db_utils.get_eth_gas_price_from_db()?,
             ))
         })
@@ -240,19 +243,20 @@ pub fn debug_get_erc20_on_evm_vault_migration_tx<D: DatabaseInterface>(db: D, ne
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| {
             eth_db_utils.put_eth_address_in_db(
-                &ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
+                &ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY.to_vec(),
                 &new_smart_contract_address,
             )
         })
         .and_then(|_| encode_erc20_vault_migrate_fxn_data(new_smart_contract_address))
         .and_then(|tx_data| {
+            let chain_id = eth_db_utils.get_eth_chain_id_from_db()?;
             Ok(EthTransaction::new_unsigned(
                 tx_data,
                 current_eth_account_nonce,
                 0,
                 current_smart_contract_address,
-                &eth_db_utils.get_eth_chain_id_from_db()?,
-                ERC20_VAULT_MIGRATE_GAS_LIMIT,
+                &chain_id,
+                chain_id.get_erc20_vault_migrate_gas_limit(),
                 eth_db_utils.get_eth_gas_price_from_db()?,
             ))
         })
@@ -317,6 +321,7 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
             dictionary.withdraw_fees_and_save_in_db(&db, &convert_hex_to_eth_address(token_address)?)
         })
         .and_then(|(token_address, fee_amount)| {
+            let chain_id = eth_db_utils.get_eth_chain_id_from_db()?;
             Ok(EthTransaction::new_unsigned(
                 encode_erc20_vault_peg_out_fxn_data_without_user_data(
                     convert_hex_to_eth_address(recipient_address)?,
@@ -326,8 +331,8 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
                 eth_db_utils.get_eth_account_nonce_from_db()?,
                 0,
                 eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
-                &eth_db_utils.get_eth_chain_id_from_db()?,
-                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
+                &chain_id,
+                chain_id.get_erc20_vault_pegout_without_user_data_gas_limit(),
                 eth_db_utils.get_eth_gas_price_from_db()?,
             ))
         })

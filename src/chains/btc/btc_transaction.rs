@@ -54,13 +54,12 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
     };
     let mut outputs = recipient_addresses_and_amounts
         .iter()
-        .map(|recipient_and_amount| {
+        .flat_map(|recipient_and_amount| {
             create_new_tx_output(
                 recipient_and_amount.amount,
                 recipient_and_amount.recipient.script_pubkey(),
             )
         })
-        .flatten()
         .collect::<Vec<BtcTxOut>>();
     let change = utxo_total - total_to_spend - fee;
     if change > 0 {

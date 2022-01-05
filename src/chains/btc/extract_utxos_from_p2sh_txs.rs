@@ -65,7 +65,7 @@ pub fn extract_p2sh_utxos_from_txs(
     Ok(BtcUtxosAndValues::new(
         transactions
             .iter()
-            .map(|full_tx| {
+            .flat_map(|full_tx| {
                 full_tx
                     .output
                     .iter()
@@ -75,7 +75,6 @@ pub fn extract_p2sh_utxos_from_txs(
                     })
                     .collect::<Vec<BtcUtxoAndValue>>()
             })
-            .flatten()
             .collect::<Vec<BtcUtxoAndValue>>(),
     ))
 }

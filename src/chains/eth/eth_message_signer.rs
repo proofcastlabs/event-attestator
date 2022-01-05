@@ -50,11 +50,11 @@ fn sign_hex_message_with_eth_prefix<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
 pub fn sign_ascii_msg_with_no_prefix<D: DatabaseInterface>(db: &D, message: &str, is_for_eth: bool) -> Result<String> {
     info!("✔ Checking message is valid ASCII...");
     if !message.is_ascii() {
-        return Err("✘ Non-ASCII message passed. Only valid ASCII messages are supported.".into());
+        return Err("Non-ASCII message passed. Only valid ASCII messages are supported.".into());
     }
     info!("✔ Checking message is not valid HEX...");
     if is_hex(message) {
-        return Err("✘ HEX message passed. Signing HEX messages without prefix is not allowed.".into());
+        return Err("HEX message passed. Signing HEX messages without prefix is not allowed.".into());
     }
     if is_for_eth {
         sign_message_with_no_eth_prefix(&EthDbUtils::new(db), message)
@@ -66,7 +66,7 @@ pub fn sign_ascii_msg_with_no_prefix<D: DatabaseInterface>(db: &D, message: &str
 pub fn sign_ascii_msg_with_prefix<D: DatabaseInterface>(db: &D, message: &str, is_for_eth: bool) -> Result<String> {
     info!("✔ Checking message is valid ASCII...");
     if !message.is_ascii() {
-        return Err("✘ Non-ASCII message passed. Only valid ASCII messages are supported.".into());
+        return Err("Non-ASCII message passed. Only valid ASCII messages are supported.".into());
     }
     if is_for_eth {
         sign_message_with_eth_prefix(&EthDbUtils::new(db), message)
@@ -194,7 +194,7 @@ mod tests {
         let hex_message = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
         let hex_message_no_prefix = "4d261b7d3101e9ff7e37f63449be8a9a1affef87e4952900dbb84ee3c29f45f3";
         let expected_error =
-            "✘ Program Error!\n✘ HEX message passed. Signing HEX messages without prefix is not allowed.".to_string();
+            "✘ Program error: HEX message passed. Signing HEX messages without prefix is not allowed.".to_string();
         assert_eq!(
             sign_ascii_msg_with_no_prefix(&db, hex_message, is_for_eth)
                 .unwrap_err()

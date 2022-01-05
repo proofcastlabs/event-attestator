@@ -28,6 +28,7 @@ impl EnclaveState {
             eth: EthEnclaveState::new(
                 eth_db_utils,
                 &eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
+                None,
             )?,
             eos: EosEnclaveState::new_without_account_name(db)?,
         })

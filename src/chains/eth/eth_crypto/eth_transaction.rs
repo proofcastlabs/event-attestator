@@ -9,17 +9,13 @@ use crate::{
         any_sender::relay_transaction::RelayTransaction,
         eth_chain_id::EthChainId,
         eth_constants::{GAS_LIMIT_FOR_PTOKEN_DEPLOY, VALUE_FOR_MINTING_TX, VALUE_FOR_PTOKEN_DEPLOY},
-        eth_contracts::erc777::{
-            encode_erc777_mint_fxn_maybe_with_data,
-            ERC777_MINT_WITH_DATA_GAS_LIMIT,
-            ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
-        },
+        eth_contracts::erc777::encode_erc777_mint_fxn_maybe_with_data,
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
         eth_types::{EthSignature, EthSignedTransaction},
         eth_utils::strip_new_line_chars,
     },
-    types::{Byte, Bytes, Result},
+    types::{Bytes, Result},
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, Deref, Constructor)]
@@ -34,9 +30,9 @@ pub struct EthTransaction {
     pub nonce: U256,
     pub value: U256,
     pub data: Bytes,
-    pub chain_id: Byte,
     pub gas_limit: U256,
     pub gas_price: U256,
+    pub chain_id: EthChainId,
 }
 
 impl EthTransaction {
@@ -85,10 +81,10 @@ impl EthTransaction {
             data,
             r: U256::zero(),
             s: U256::zero(),
-            v: chain_id.to_byte().into(), // Per EIP155
             nonce: nonce.into(),
             value: value.into(),
-            chain_id: chain_id.to_byte(),
+            v: chain_id.to_u64(), // Per EIP155
+            chain_id: chain_id.clone(),
             gas_limit: gas_limit.into(),
             gas_price: gas_price.into(),
         }
@@ -97,12 +93,12 @@ impl EthTransaction {
     fn add_signature_to_transaction(mut self, sig: EthSignature) -> Self {
         self.r = sig[0..32].into();
         self.s = sig[32..64].into();
-        self.v = Self::calculate_v_from_chain_id(sig[64], self.chain_id);
+        self.v = Self::calculate_v_from_chain_id(sig[64], &self.chain_id);
         self
     }
 
-    fn calculate_v_from_chain_id(sig_v: u8, chain_id: u8) -> u64 {
-        chain_id as u64 * 2 + sig_v as u64 + 35 // Per EIP155
+    fn calculate_v_from_chain_id(sig_v: u8, chain_id: &EthChainId) -> u64 {
+        chain_id.to_u64() * 2 + sig_v as u64 + 35 // Per EIP155
     }
 
     pub fn sign<T: EthSigningCapabilities>(self, pk: &T) -> Result<Self> {
@@ -197,9 +193,9 @@ pub fn get_unsigned_minting_tx(
     operator_data: Option<Bytes>,
 ) -> Result<EthTransaction> {
     let gas_limit = if user_data.is_some() {
-        ERC777_MINT_WITH_DATA_GAS_LIMIT
+        chain_id.get_erc777_mint_with_data_gas_limit()
     } else {
-        ERC777_MINT_WITH_NO_DATA_GAS_LIMIT
+        chain_id.get_erc777_mint_with_no_data_gas_limit()
     };
     Ok(EthTransaction::new_unsigned(
         encode_erc777_mint_fxn_maybe_with_data(recipient, amount, user_data, operator_data)?,

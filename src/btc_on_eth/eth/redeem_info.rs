@@ -21,7 +21,7 @@ use crate::{
                 ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
             },
             eth_database_utils::EthDbUtilsExt,
-            eth_log::EthLog,
+            eth_log::{EthLog, EthLogExt},
             eth_receipt::EthReceipt,
             eth_state::EthState,
             eth_submission_material::EthSubmissionMaterial,

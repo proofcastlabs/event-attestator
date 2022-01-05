@@ -1,6 +1,6 @@
 use crate::{
     chains::btc::{btc_chain_id::BtcChainId, btc_utils::convert_str_to_btc_address_or_safe_address},
-    metadata::{metadata_origin_address::MetadataOriginAddress, metadata_protocol_id::MetadataProtocolId, Metadata},
+    metadata::{metadata_address::MetadataAddress, metadata_protocol_id::MetadataProtocolId, Metadata},
     types::{Byte, Bytes, Result},
 };
 
@@ -53,7 +53,7 @@ pub trait ToMetadata {
         info!("✔ Getting metadata from user data...");
         Ok(Some(Metadata::new(
             user_data,
-            &MetadataOriginAddress::new_from_btc_address(
+            &MetadataAddress::new_from_btc_address(
                 &convert_str_to_btc_address_or_safe_address(&self.get_originating_tx_address())?,
                 &btc_chain_id.to_metadata_chain_id(),
             )?,

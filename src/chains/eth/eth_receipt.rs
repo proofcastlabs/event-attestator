@@ -10,7 +10,7 @@ use triehash::trie_root;
 
 use crate::{
     chains::eth::{
-        eth_log::{EthLog, EthLogJson, EthLogs},
+        eth_log::{EthLog, EthLogExt, EthLogJson, EthLogs},
         eth_receipt_type::EthReceiptType,
         eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256, convert_json_value_to_string},
     },

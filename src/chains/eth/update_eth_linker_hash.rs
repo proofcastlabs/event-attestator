@@ -5,7 +5,6 @@ use crate::{
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
         eth_types::EthHash,
-        get_linker_hash::get_linker_hash_or_genesis_hash,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -20,7 +19,7 @@ fn get_new_linker_hash<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
         Ok(calculate_linker_hash(
             *block_hash_to_link_to,
             anchor_block.get_block_hash()?,
-            get_linker_hash_or_genesis_hash(db_utils)?,
+            db_utils.get_linker_hash_or_genesis_hash()?,
         ))
     })
 }

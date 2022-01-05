@@ -34,14 +34,14 @@ pub fn get_all_utxos_as_json_string<D: DatabaseInterface>(db: &D) -> Result<Stri
     Ok(json!(get_all_utxo_db_keys(db)
         .iter()
         .map(|db_key| {
-            get_utxo_from_db(db, &db_key.to_vec())
+            get_utxo_from_db(db, db_key)
                 .and_then(|utxo_and_value| utxo_and_value.to_json())
                 .and_then(|utxo_and_value_json| {
                     Ok(json!({
+                        "db_key": hex::encode(db_key),
                         "value": utxo_and_value_json.value,
                         "tx_id": utxo_and_value_json.tx_id,
                         "v_out": utxo_and_value_json.v_out,
-                        "db_key": hex::encode(db_key.to_vec()),
                         "maybe_pointer": utxo_and_value_json.maybe_pointer,
                         "serialized_utxo": utxo_and_value_json.serialized_utxo,
                         "maybe_extra_data": utxo_and_value_json.maybe_extra_data,
@@ -57,7 +57,7 @@ pub fn get_all_utxos_as_json_string<D: DatabaseInterface>(db: &D) -> Result<Stri
 fn get_all_utxos_from_db<D: DatabaseInterface>(db: &D) -> Result<Vec<BtcUtxoAndValue>> {
     get_all_utxo_db_keys(db)
         .iter()
-        .map(|db_key| get_utxo_from_db(db, &db_key.to_vec()))
+        .map(|db_key| get_utxo_from_db(db, db_key))
         .collect()
 }
 

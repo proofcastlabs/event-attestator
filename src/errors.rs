@@ -5,94 +5,94 @@ quick_error! {
         Custom(err: String) {
             from()
             from(err: &str) -> (err.into())
-            display("✘ Program Error!\n{}", err)
+            display("✘ Program error: {}", err)
         }
         IoError(err: std::io::Error) {
             from()
-            display("✘ I/O Error!\n✘ {}", err)
+            display("✘ I/O error: {}", err)
         }
         HexError(err: hex::FromHexError) {
             from()
-            display("✘ Hex Error!\n✘ {}", err)
+            display("✘ Hex error: {}", err)
         }
         CryptoError(err: secp256k1::Error) {
             from()
-            display("✘ Crypto Error!\n✘ {}", err)
+            display("✘ Crypto error: {}", err)
         }
         BitcoinCryptoError(err: bitcoin::secp256k1::Error) {
             from()
-            display("✘ Bitcoin Crypto Error!\n✘ {}", err)
+            display("✘ Bitcoin crypto error: {}", err)
         }
         Base58Error(err: bitcoin::util::base58::Error) {
             from()
-            display("✘ Base58 Error!\n✘ {}", err)
+            display("✘ Base58 error: {}", err)
         }
         SerdeJsonError(err: serde_json::Error) {
             from()
-            display("✘ Serde-Json Error!\n✘ {}", err)
+            display("✘ Serde-Json error: {}", err)
         }
         FromUtf8Error(err: std::str::Utf8Error) {
             from()
-            display("✘ From utf8 error!\n✘ {}", err)
+            display("✘ From utf8 error: {}", err)
         }
         SetLoggerError(err: log::SetLoggerError) {
             from(log::SetLoggerError)
-            display("✘ Error setting up logger!\n✘ {}", err)
+            display("✘ Error setting up logger: {}", err)
         }
         ParseIntError(err: std::num::ParseIntError) {
             from()
-            display("✘ Parse Int Error!\n✘ {}", err)
+            display("✘ Parse Int error: {}", err)
         }
         ChronoError(err: chrono::ParseError) {
             from()
-            display("✘ Chrono Error!\n✘ {}", err)
+            display("✘ Chrono error: {}", err)
         }
         EosPrimitivesError(err: eos_chain::Error) {
             from()
-            display("✘ EOS Chain Error!\n✘ {:?}", err)
+            display("✘ EOS chain error: {:?}", err)
         }
         BitcoinHexError(err: bitcoin::hashes::hex::Error) {
             from()
-            display("✘ Bitcoin Hex Error!\n✘ {}", err)
+            display("✘ Bitcoin hex error: {}", err)
         }
         SystemTimeError(err: std::time::SystemTimeError) {
             from()
-            display("✘ System Time Error!\n✘ {}", err)
+            display("✘ System time error: {}", err)
         }
         FromSliceError(err: std::array::TryFromSliceError) {
             from(std::array::TryFromSliceError)
-            display("✘ From slice Error!\n✘ {}", err)
+            display("✘ From slice error: {}", err)
         }
         BitcoinHashError(err: bitcoin::hashes::Error) {
             from()
-            display("✘ Bitcoin Hash Error!\n✘ {}", err)
+            display("✘ Bitcoin hash error: {}", err)
         }
         BitcoinError(err: bitcoin::consensus::encode::Error) {
             from()
-            display("✘ Bitcoin Error!\n✘ {}", err)
+            display("✘ Bitcoin error: {}", err)
         }
         BitcoinAddressError(err: bitcoin::util::address::Error) {
             from()
-            display("✘ Bitcoin Address Error!\n✘ {}", err)
+            display("✘ Bitcoin address error: {}", err)
         }
         BitcoinScriptError(err: bitcoin::blockdata::script::Error) {
             from()
-            display("✘ Bitcoin Script Error!\n✘ {}", err)
+            display("✘ Bitcoin script error: {}", err)
         }
         BitcoinKeyError(err: bitcoin::util::key::Error) {
             from()
-            display("✘ Bitcoin Key Error!\n✘ {}", err)
+            display("✘ Bitcoin key error: {}", err)
         }        EosPrimitivesNamesError(err: eos_chain::ParseNameError) {
             from()
-            display("✘ EOS Chain Names Error!\n✘ {}", err)
+            display("✘ EOS chain names error: {}", err)
         }
         EthAbiError(err: ethabi::Error) {
             from()
-            display("✘ ETH ABI Error!\n✘ {}", err)
+            display("✘ ETH ABI error: {}", err)
         }
         RlpDecoderError(err: rlp::DecoderError) {
             from()
-            display("✘ RLP Decoder Error!\n✘ {}", err)
+            display("✘ RLP decoder error: {}", err)
         }
         FromDecStrErr(err: ethereum_types::FromDecStrErr) {
             from()
@@ -115,7 +115,7 @@ quick_error! {
             display("✘ `TryFromSlice` error: {:?}", err)
         }
         NoneError(err: &'static str) {
-            display("✘ None Error!\n✘ {}", err)
+            display("✘ None error {}", err)
         }
     }
 }

@@ -2,7 +2,7 @@ use crate::types::{NoneError, Result};
 
 pub fn convert_eos_asset_to_u64(eos_asset: &str) -> Result<u64> {
     Ok(eos_asset
-        .replace(".", "")
+        .replace('.', "")
         .split_whitespace()
         .next()
         .ok_or(NoneError("Error converting EOS asset to unsigned 64 bit integer!"))?

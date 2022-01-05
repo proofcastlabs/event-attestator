@@ -27,7 +27,7 @@ use crate::{
                 ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
             },
             eth_database_utils::EthDbUtilsExt,
-            eth_log::{EthLog, EthLogs},
+            eth_log::{EthLog, EthLogExt, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
             eth_state::EthState,
             eth_submission_material::EthSubmissionMaterial,
@@ -36,7 +36,7 @@ use crate::{
     dictionaries::eos_eth::EosEthTokenDictionary,
     erc20_on_eos::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
-        metadata_origin_address::MetadataOriginAddress,
+        metadata_address::MetadataAddress,
         metadata_protocol_id::MetadataProtocolId,
         metadata_traits::{ToMetadata, ToMetadataChainId},
         Metadata,
@@ -62,10 +62,7 @@ impl ToMetadata for Erc20OnEosPegInInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         Ok(Metadata::new(
             &self.user_data,
-            &MetadataOriginAddress::new_from_eth_address(
-                &self.token_sender,
-                &self.origin_chain_id.to_metadata_chain_id(),
-            )?,
+            &MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id.to_metadata_chain_id())?,
         ))
     }
 

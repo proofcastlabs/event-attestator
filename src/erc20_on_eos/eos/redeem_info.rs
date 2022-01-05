@@ -19,7 +19,7 @@ use crate::{
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     erc20_on_eos::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
-        metadata_origin_address::MetadataOriginAddress,
+        metadata_address::MetadataAddress,
         metadata_protocol_id::MetadataProtocolId,
         metadata_traits::{ToMetadata, ToMetadataChainId},
         Metadata,
@@ -156,7 +156,7 @@ impl ToMetadata for Erc20OnEosRedeemInfo {
         };
         Ok(Metadata::new(
             &user_data,
-            &MetadataOriginAddress::new_from_eos_address(&self.from, &self.origin_chain_id.to_metadata_chain_id())?,
+            &MetadataAddress::new_from_eos_address(&self.from, &self.origin_chain_id.to_metadata_chain_id())?,
         ))
     }
 

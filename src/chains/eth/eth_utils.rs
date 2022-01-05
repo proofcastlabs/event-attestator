@@ -4,7 +4,7 @@ use serde_json::Value as JsonValue;
 use crate::{
     chains::eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES,
     constants::{ETH_HASH_LENGTH, SAFE_ETH_ADDRESS},
-    types::{Byte, Bytes, NoneError, Result},
+    types::{Bytes, NoneError, Result},
     utils::{decode_hex_with_no_padding_with_err_msg, strip_hex_prefix},
 };
 
@@ -20,13 +20,6 @@ pub fn get_eth_address_from_str(eth_address_str: &str) -> Result<EthAddress> {
 
 pub fn convert_h256_to_bytes(hash: H256) -> Bytes {
     hash.as_bytes().to_vec()
-}
-
-pub fn convert_bytes_to_h256(bytes: &[Byte]) -> Result<H256> {
-    match bytes.len() {
-        32 => Ok(H256::from_slice(bytes)),
-        _ => Err("✘ Not enough bytes to convert to h256!".into()),
-    }
 }
 
 pub fn convert_hex_to_h256(hex: &str) -> Result<H256> {
@@ -67,7 +60,7 @@ pub fn decode_prefixed_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
 }
 
 pub fn strip_new_line_chars(string: String) -> String {
-    string.replace("\n", "")
+    string.replace('\n', "")
 }
 
 pub fn convert_dec_str_to_u256(dec_str: &str) -> Result<U256> {
@@ -114,15 +107,6 @@ mod tests {
         ];
         let result = convert_h256_to_bytes(hash);
         assert_eq!(expected_result, result);
-    }
-
-    #[test]
-    fn should_convert_bytes_to_h256() {
-        let hex = "ebfa2e7610ea186fa3fa97bbaa5db80cce033dfff7e546c6ee05493dbcbfda7a";
-        let expected_result = convert_hex_to_h256(hex).unwrap();
-        let bytes = hex::decode(hex).unwrap();
-        let result = convert_bytes_to_h256(&bytes).unwrap();
-        assert_eq!(result, expected_result);
     }
 
     #[test]

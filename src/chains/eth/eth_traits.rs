@@ -21,16 +21,3 @@ pub trait EthSigningCapabilities {
     fn sign_message_bytes(&self, message: &[Byte]) -> Result<EthSignature>;
     fn sign_eth_prefixed_msg_bytes(&self, message: &[Byte]) -> Result<EthSignature>;
 }
-
-pub trait EthLogCompatible {
-    fn get_data(&self) -> Bytes;
-    fn get_topics(&self) -> Vec<EthHash>;
-
-    fn check_has_x_topics(&self, x: usize) -> Result<()> {
-        if self.get_topics().len() >= x {
-            Ok(())
-        } else {
-            Err(format!("Log does not have {} topics!", x).into())
-        }
-    }
-}

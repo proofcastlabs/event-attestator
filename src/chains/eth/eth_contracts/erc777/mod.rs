@@ -1,52 +1,101 @@
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use strum_macros::EnumIter;
 
 use crate::{
     chains::eth::{
-        eth_constants::{ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
-        eth_contracts::encode_fxn_call,
+        eth_chain_id::EthChainId,
+        eth_constants::{ARBITRUM_GAS_MULTIPLIER, ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
+        eth_contracts::{encode_fxn_call, SupportedTopics},
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_traits::EthLogCompatible,
+        eth_log::EthLogExt,
     },
+    metadata::metadata_chain_id::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES},
     traits::DatabaseInterface,
-    types::{Byte, Bytes, Result},
+    types::{Byte, Bytes, NoneError, Result},
 };
 
-pub const EMPTY_DATA: Bytes = vec![];
-pub const ERC777_CHANGE_PNETWORK_GAS_LIMIT: usize = 30_000;
-pub const ERC777_MINT_WITH_DATA_GAS_LIMIT: usize = 450_000;
-pub const ERC777_MINT_WITH_NO_DATA_GAS_LIMIT: usize = 180_000;
+const EMPTY_DATA: Bytes = vec![];
 
-pub const ERC777_CHANGE_PNETWORK_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"newPNetwork\",\"type\":\"address\"}],\"name\":\"changePNetwork\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0xfd4add66\"}]";
+const ERC777_CHANGE_PNETWORK_GAS_LIMIT: usize = 30_000;
+const ERC777_MINT_WITH_DATA_GAS_LIMIT: usize = 450_000;
+const ERC777_MINT_WITH_NO_DATA_GAS_LIMIT: usize = 180_000;
 
-pub const ERC777_MINT_WITH_NO_DATA_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"recipient\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
+impl EthChainId {
+    pub fn get_erc777_change_pnetwork_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC777_CHANGE_PNETWORK_GAS_LIMIT,
+            _ => ERC777_CHANGE_PNETWORK_GAS_LIMIT,
+        }
+    }
 
-pub const ERC777_MINT_WITH_DATA_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"recipient\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"userData\",\"type\":\"bytes\"},{\"name\":\"operatorData\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
+    pub fn get_erc777_mint_with_data_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC777_MINT_WITH_DATA_GAS_LIMIT,
+            _ => ERC777_MINT_WITH_DATA_GAS_LIMIT,
+        }
+    }
+
+    pub fn get_erc777_mint_with_no_data_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
+            _ => ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
+        }
+    }
+}
+
+const ERC777_CHANGE_PNETWORK_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"newPNetwork\",\"type\":\"address\"}],\"name\":\"changePNetwork\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0xfd4add66\"}]";
+
+const ERC777_MINT_WITH_NO_DATA_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"recipient\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
+
+const ERC777_MINT_WITH_DATA_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"recipient\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"userData\",\"type\":\"bytes\"},{\"name\":\"operatorData\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
 
 pub const ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX: &str =
     "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65";
 
-lazy_static! {
-    pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA: EthHash = {
-        EthHash::from_slice(
-            &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX)
-                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA`"),
-        )
-    };
-}
-
-pub const ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX: &str =
+const ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX: &str =
     "4599e9bf0d45c505e011d0e11f473510f083a4fdc45e3f795d58bb5379dbad68";
+
+const ERC777_REDEEM_EVENT_TOPIC_V2_HEX: &str = "dd56da0e6e7b301867b3632876d707f60c7cbf4b06f9ae191c67ea016cc5bf31";
 
 lazy_static! {
     pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA: EthHash = {
         EthHash::from_slice(
             &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX)
-                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA`"),
+                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX`"),
         )
     };
+    pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA: EthHash = {
+        EthHash::from_slice(
+            &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX)
+                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX`"),
+        )
+    };
+    pub static ref ERC777_REDEEM_EVENT_TOPIC_V2: EthHash = {
+        EthHash::from_slice(
+            &hex::decode(ERC777_REDEEM_EVENT_TOPIC_V2_HEX)
+                .expect("✘ Invalid hex in `ERC777_REDEEM_EVENT_TOPIC_V2_HEX`"),
+        )
+    };
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
+enum ERC777SupportedTopics {
+    V2,
+    V1WithUserData,
+    V1WithoutUserData,
+}
+
+impl SupportedTopics for ERC777SupportedTopics {
+    fn to_bytes(&self) -> Bytes {
+        match &self {
+            Self::V2 => ERC777_REDEEM_EVENT_TOPIC_V2.as_bytes().to_vec(),
+            Self::V1WithUserData => ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA.as_bytes().to_vec(),
+            Self::V1WithoutUserData => ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA.as_bytes().to_vec(),
+        }
+    }
 }
 
 pub fn encode_erc777_change_pnetwork_fxn_data(new_ptoken_address: EthAddress) -> Result<Bytes> {
@@ -124,29 +173,34 @@ pub struct Erc777RedeemEvent {
     pub value: U256,
     pub underlying_asset_recipient: String,
     pub user_data: Bytes,
+    pub origin_chain_id: Option<MetadataChainId>,
+    pub destination_chain_id: Option<MetadataChainId>,
 }
 
 impl Erc777RedeemEvent {
-    fn check_log_is_erc777_redeem_event<L: EthLogCompatible>(log: &L) -> Result<()> {
-        if log.get_topics().get(0) == Some(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
-            || log.get_topics().get(0) == Some(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA)
-        {
-            Ok(())
-        } else {
-            Err("Log is NOT from an ERC777 redeem event!".into())
-        }
+    pub fn get_origin_chain_id(&self) -> Result<MetadataChainId> {
+        self.origin_chain_id
+            .ok_or(NoneError("Could not get `origin_chain_id` from `Erc777RedeemEvent`!"))
+    }
+
+    pub fn get_destination_chain_id(&self) -> Result<MetadataChainId> {
+        self.destination_chain_id.ok_or(NoneError(
+            "Could not get `destination_chain_id` from `Erc777RedeemEvent`!",
+        ))
     }
 
     fn get_err_msg(field: &str) -> String {
         format!("Error getting `{}` from `EthOnEvmErc777RedeemEvent`!", field)
     }
 
-    fn from_log_without_user_data<L: EthLogCompatible>(log: &L) -> Result<Self> {
-        info!("✔ Attemping to get `Erc777RedeemEvent` from log WITHOUT user data...");
+    fn from_v1_log_without_user_data<L: EthLogExt>(log: &L) -> Result<Self> {
+        info!("✔ Decoding `Erc777RedeemEvent` from v1 log WITHOUT user data...");
         let tokens = eth_abi_decode(&[EthAbiParamType::Uint(256), EthAbiParamType::String], &log.get_data())?;
         log.check_has_x_topics(2).and_then(|_| {
             Ok(Self {
                 user_data: vec![],
+                origin_chain_id: None,
+                destination_chain_id: None,
                 redeemer: EthAddress::from_slice(
                     &log.get_topics()[1][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..],
                 ),
@@ -162,13 +216,48 @@ impl Erc777RedeemEvent {
         })
     }
 
-    fn from_log_with_user_data<L: EthLogCompatible>(log: &L) -> Result<Self> {
-        info!("✔ Attemping to get `Erc777RedeemEvent` from log WITH user data...");
+    fn from_v1_log_with_user_data<L: EthLogExt>(log: &L) -> Result<Self> {
+        info!("✔ Decoding `Erc777RedeemEvent` from v1 log WITH user data...");
         let tokens = eth_abi_decode(
             &[
                 EthAbiParamType::Uint(256),
                 EthAbiParamType::String,
                 EthAbiParamType::Bytes,
+            ],
+            &log.get_data(),
+        )?;
+        log.check_has_x_topics(2).and_then(|_| {
+            Ok(Self {
+                origin_chain_id: None,
+                destination_chain_id: None,
+                redeemer: EthAddress::from_slice(
+                    &log.get_topics()[1][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..],
+                ),
+                value: match tokens[0] {
+                    EthAbiToken::Uint(value) => Ok(value),
+                    _ => Err(Self::get_err_msg("value")),
+                }?,
+                underlying_asset_recipient: match tokens[1] {
+                    EthAbiToken::String(ref value) => Ok(value.clone()),
+                    _ => Err(Self::get_err_msg("underlying_asset_recipient")),
+                }?,
+                user_data: match tokens[2] {
+                    EthAbiToken::Bytes(ref bytes) => Ok(bytes.to_vec()),
+                    _ => Err(Self::get_err_msg("user_data")),
+                }?,
+            })
+        })
+    }
+
+    fn from_v2_log<L: EthLogExt>(log: &L) -> Result<Self> {
+        info!("✔ Decoding `Erc777RedeemEvent` from v2 log...");
+        let tokens = eth_abi_decode(
+            &[
+                EthAbiParamType::Uint(256),
+                EthAbiParamType::String,
+                EthAbiParamType::Bytes,
+                EthAbiParamType::FixedBytes(METADATA_CHAIN_ID_NUMBER_OF_BYTES),
+                EthAbiParamType::FixedBytes(METADATA_CHAIN_ID_NUMBER_OF_BYTES),
             ],
             &log.get_data(),
         )?;
@@ -189,32 +278,39 @@ impl Erc777RedeemEvent {
                     EthAbiToken::Bytes(ref bytes) => Ok(bytes.to_vec()),
                     _ => Err(Self::get_err_msg("user_data")),
                 }?,
+                origin_chain_id: match tokens[3] {
+                    EthAbiToken::FixedBytes(ref bytes) => Ok(Some(MetadataChainId::from_bytes(bytes)?)),
+                    _ => Err(Self::get_err_msg("origin_chain_id")),
+                }?,
+                destination_chain_id: match tokens[4] {
+                    EthAbiToken::FixedBytes(ref bytes) => Ok(Some(MetadataChainId::from_bytes(bytes)?)),
+                    _ => Err(Self::get_err_msg("origin_chain_id")),
+                }?,
             })
         })
     }
 
-    fn log_contains_user_data<L: EthLogCompatible>(log: &L) -> Result<bool> {
-        log.check_has_x_topics(1)
-            .map(|_| log.get_topics()[0] == *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
-    }
-
-    pub fn from_eth_log<L: EthLogCompatible>(log: &L) -> Result<Self> {
-        Self::check_log_is_erc777_redeem_event(log).and_then(|_| {
-            if Self::log_contains_user_data(log)? {
-                Self::from_log_with_user_data(log)
-            } else {
-                Self::from_log_without_user_data(log)
-            }
-        })
+    pub fn from_eth_log<L: EthLogExt>(log: &L) -> Result<Self> {
+        info!("✔ Getting `Erc777RedeemEvent` from ETH log...");
+        log.get_event_signature()
+            .and_then(|event_signature| ERC777SupportedTopics::from_topic(&event_signature))
+            .and_then(|supported_topic| match supported_topic {
+                ERC777SupportedTopics::V2 => Self::from_v2_log(log),
+                ERC777SupportedTopics::V1WithUserData => Self::from_v1_log_with_user_data(log),
+                ERC777SupportedTopics::V1WithoutUserData => Self::from_v1_log_without_user_data(log),
+            })
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eth::eth_test_utils::{
-        get_sample_log_with_erc20_peg_in_event,
-        get_sample_log_with_erc777_redeem,
+    use crate::{
+        chains::eth::{
+            eth_log::EthLog,
+            eth_test_utils::{get_sample_log_with_erc20_peg_in_event, get_sample_log_with_erc777_redeem},
+        },
+        errors::AppError,
     };
 
     #[test]
@@ -246,36 +342,123 @@ mod tests {
     }
 
     #[test]
-    fn should_check_log_is_erc777_redeem_event() {
-        let log = get_sample_log_with_erc777_redeem();
-        let result = Erc777RedeemEvent::check_log_is_erc777_redeem_event(&log);
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn non_erc777_log_should_not_pass_erc777_check() {
-        let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = Erc777RedeemEvent::check_log_is_erc777_redeem_event(&log);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn should_get_redeem_event_params_from_log() {
+    fn should_get_redeem_event_params_from_log_without_user_data() {
         let log = get_sample_log_with_erc777_redeem();
         let expected_result = Erc777RedeemEvent::new(
             EthAddress::from_slice(&hex::decode("edb86cd455ef3ca43f0e227e00469c3bdfa40628").unwrap()),
             U256::from_dec_str("6660000000000").unwrap(),
             "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
             vec![],
+            None,
+            None,
         );
-        let result = Erc777RedeemEvent::from_log_without_user_data(&log).unwrap();
-        assert_eq!(result, expected_result);
+        let result_1 = Erc777RedeemEvent::from_v1_log_without_user_data(&log).unwrap();
+        let result_2 = Erc777RedeemEvent::from_eth_log(&log).unwrap();
+        assert_eq!(result_1, expected_result);
+        assert_eq!(result_1, result_2);
     }
 
     #[test]
     fn should_fail_to_get_params_from_non_erc777_redeem_event() {
+        let expected_error = "Cannot get supported topic from bytes - unrecognized topic!";
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = Erc777RedeemEvent::from_log_without_user_data(&log);
-        assert!(result.is_err());
+        match Erc777RedeemEvent::from_eth_log(&log) {
+            Ok(_) => panic!("Should not have succeeded"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
+    }
+
+    #[test]
+    fn should_decode_v1_redeem_event_log_with_user_data() {
+        let s = "{\"data\":\"000000000000000000000000000000000000000000000000000000000000029a000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000a616e2061646472657373000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006decaffc0ffee0000000000000000000000000000000000000000000000000000\",\"address\": \"Cf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9\",\"topics\":[\"4599e9bf0d45c505e011d0e11f473510f083a4fdc45e3f795d58bb5379dbad68\",\"000000000000000000000000976ea74026e726554db657fa54763abd0c3a0aa9\"]}";
+        let log = EthLog::from_str(s).unwrap();
+        let expected_result = Erc777RedeemEvent::new(
+            EthAddress::from_slice(&hex::decode("976ea74026e726554db657fa54763abd0c3a0aa9").unwrap()),
+            U256::from(666),
+            "an address".to_string(),
+            hex::decode("decaffc0ffee").unwrap(),
+            None,
+            None,
+        );
+        let result_1 = Erc777RedeemEvent::from_v1_log_with_user_data(&log).unwrap();
+        let result_2 = Erc777RedeemEvent::from_eth_log(&log).unwrap();
+        assert_eq!(result_1, expected_result);
+        assert_eq!(result_1, result_2);
+    }
+
+    fn get_sample_v2_log() -> EthLog {
+        let s = "{\"address\":\"0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9\",\"topics\":[\"0xdd56da0e6e7b301867b3632876d707f60c7cbf4b06f9ae191c67ea016cc5bf31\",\"0x000000000000000000000000976ea74026e726554db657fa54763abd0c3a0aa9\"],\"data\":\"0x000000000000000000000000000000000000000000000000000000000000029a00000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e00069c3220000000000000000000000000000000000000000000000000000000000f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a616e2061646472657373000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\"}";
+        EthLog::from_str(s).unwrap()
+    }
+
+    fn get_sample_v2_redeem_event() -> Erc777RedeemEvent {
+        Erc777RedeemEvent::from_eth_log(&get_sample_v2_log()).unwrap()
+    }
+
+    #[test]
+    fn should_decode_v2_redeem_event_log() {
+        let log = get_sample_v2_log();
+        let expected_result = Erc777RedeemEvent {
+            user_data: vec![],
+            value: U256::from(666),
+            underlying_asset_recipient: "an address".to_string(),
+            origin_chain_id: Some(MetadataChainId::EthereumRopsten),
+            destination_chain_id: Some(MetadataChainId::EthereumRinkeby),
+            redeemer: EthAddress::from_slice(&hex::decode("976ea74026e726554db657fa54763abd0c3a0aa9").unwrap()),
+        };
+        let result_1 = Erc777RedeemEvent::from_v2_log(&log).unwrap();
+        let result_2 = Erc777RedeemEvent::from_eth_log(&log).unwrap();
+        assert_eq!(result_1, expected_result);
+        assert_eq!(result_1, result_2);
+    }
+
+    #[test]
+    fn should_get_origin_chain_id_from_redeem_event() {
+        let event = get_sample_v2_redeem_event();
+        let result = event.get_origin_chain_id().unwrap();
+        let expected_result = MetadataChainId::EthereumRopsten;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_destination_chain_id_from_redeem_event() {
+        let event = get_sample_v2_redeem_event();
+        let result = event.get_destination_chain_id().unwrap();
+        let expected_result = MetadataChainId::EthereumRinkeby;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_fail_to_get_origin_chain_id_from_redeem_event() {
+        let mut event = get_sample_v2_redeem_event();
+        event.origin_chain_id = None;
+        let expected_error = "Could not get `origin_chain_id` from `Erc777RedeemEvent`!";
+        match event.get_origin_chain_id() {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::NoneError(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error recevied!"),
+        }
+    }
+
+    #[test]
+    fn should_fail_to_get_destination_chain_id_from_redeem_event() {
+        let mut event = get_sample_v2_redeem_event();
+        event.destination_chain_id = None;
+        let expected_error = "Could not get `destination_chain_id` from `Erc777RedeemEvent`!";
+        match event.get_destination_chain_id() {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::NoneError(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error recevied!"),
+        }
+    }
+
+    #[test]
+    fn arbitrum_gas_limits_should_be_multiplies_of_normal_gas_limits() {
+        let eth_chain_id = EthChainId::Mainnet;
+        let arbitrum_chain_id = EthChainId::ArbitrumMainnet;
+        let eth_gas_limit = eth_chain_id.get_erc777_mint_with_data_gas_limit();
+        let arbitrum_gas_limit = arbitrum_chain_id.get_erc777_mint_with_data_gas_limit();
+        assert_eq!(arbitrum_gas_limit, eth_gas_limit * ARBITRUM_GAS_MULTIPLIER);
     }
 }

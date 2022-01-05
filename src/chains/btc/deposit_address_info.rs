@@ -821,7 +821,7 @@ mod tests {
 
     #[test]
     fn should_fail_to_validate_invalid_chain_id() {
-        let invalid_chain_id_bytes = vec![];
+        let invalid_chain_id_bytes = hex::decode("d3adb33f").unwrap();
         assert!(MetadataChainId::from_bytes(&invalid_chain_id_bytes).is_err());
         let expected_error = format!(
             "Unrecognized bytes for `MetadataChainId`: 0x{}",

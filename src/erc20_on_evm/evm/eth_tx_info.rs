@@ -9,8 +9,6 @@ use crate::{
             erc20_vault::{
                 encode_erc20_vault_peg_out_fxn_data_with_user_data,
                 encode_erc20_vault_peg_out_fxn_data_without_user_data,
-                ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
-                ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
             },
             erc777::{Erc777RedeemEvent, ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA},
         },
@@ -19,7 +17,7 @@ use crate::{
             eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
         },
         eth_database_utils::EthDbUtilsExt,
-        eth_log::{EthLog, EthLogs},
+        eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::{EthReceipt, EthReceipts},
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
@@ -29,7 +27,7 @@ use crate::{
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_evm::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
-        metadata_origin_address::MetadataOriginAddress,
+        metadata_address::MetadataAddress,
         metadata_protocol_id::MetadataProtocolId,
         metadata_traits::ToMetadata,
         Metadata,
@@ -64,10 +62,7 @@ impl ToMetadata for EthOnEvmEthTxInfo {
         };
         Ok(Metadata::new(
             &user_data,
-            &MetadataOriginAddress::new_from_eth_address(
-                &self.token_sender,
-                &self.origin_chain_id.to_metadata_chain_id(),
-            )?,
+            &MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id.to_metadata_chain_id())?,
         ))
     }
 
@@ -140,9 +135,9 @@ impl EthOnEvmEthTxInfo {
         vault_address: &EthAddress,
     ) -> Result<EvmTransaction> {
         let gas_limit = if self.user_data.is_empty() {
-            ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT
+            chain_id.get_erc20_vault_pegout_without_user_data_gas_limit()
         } else {
-            ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT
+            chain_id.get_erc20_vault_pegout_with_user_data_gas_limit()
         };
         info!("✔ Signing ETH transaction for tx info: {:?}", self);
         debug!("✔ Signing with nonce:     {}", nonce);

@@ -3,6 +3,8 @@ use ethereum_types::{Address as EthAddress, Signature as EthSignature, U256};
 use rlp::RlpStream;
 use serde::{Deserialize, Serialize};
 
+#[cfg(test)]
+use crate::{chains::eth::eth_utils::convert_hex_to_eth_address, utils::strip_hex_prefix};
 use crate::{
     chains::eth::{
         any_sender::{
@@ -14,7 +16,7 @@ use crate::{
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
     },
-    types::{Byte, Bytes, Result},
+    types::{Bytes, Result},
 };
 
 pub const ANY_SENDER_GAS_LIMIT: u32 = 300_000;
@@ -31,7 +33,7 @@ pub const ANY_SENDER_MAX_COMPENSATION_WEI: u64 = 49_999_999_999_999_999;
 pub struct RelayTransaction {
     /// The standard eth chain id.
     /// Currently supports Ropsten = 3 and Mainnet = 1.
-    chain_id: Byte,
+    chain_id: EthChainId,
 
     /// The ethereum address of the user
     /// authorising this relay transaction.
@@ -79,6 +81,21 @@ pub struct RelayTransaction {
 }
 
 impl RelayTransaction {
+    #[cfg(test)]
+    pub fn from_str(s: &str) -> Result<Self> {
+        RelayTransactionJson::from_str(s).and_then(Self::from_json)
+    }
+
+    #[cfg(test)]
+    pub fn from_json(json: RelayTransactionJson) -> Result<Self> {
+        json.to_relay_transaction()
+    }
+
+    #[cfg(test)]
+    pub fn to_string(&self) -> Result<String> {
+        RelayTransactionJson::from_relay_transaction(self).and_then(|json| json.to_string())
+    }
+
     /// Creates a new signed relay transaction.
     #[cfg(test)]
     pub fn new(
@@ -92,7 +109,6 @@ impl RelayTransaction {
         to: EthAddress,
     ) -> Result<RelayTransaction> {
         let relay_contract_address = RelayContract::from_eth_chain_id(chain_id)?.address()?;
-
         let relay_transaction = RelayTransaction::new_unsigned(
             chain_id,
             from,
@@ -144,14 +160,14 @@ impl RelayTransaction {
         info!("✔ AnySender transaction constraints are satisfied. Returning unsigned transaction...");
 
         Ok(RelayTransaction {
-            chain_id: chain_id.to_byte(),
+            to,
             from,
             data,
             deadline,
             gas_limit,
             compensation,
             relay_contract_address,
-            to,
+            chain_id: chain_id.clone(),
             signature: EthSignature::default(),
         })
     }
@@ -167,7 +183,7 @@ impl RelayTransaction {
             Token::Uint(self.deadline.into()),
             Token::Uint(self.compensation.into()),
             Token::Uint(self.gas_limit.into()),
-            Token::Uint(self.chain_id.into()),
+            Token::Uint(U256::from(self.chain_id.to_u64())),
             Token::Address(self.relay_contract_address),
         ]);
 
@@ -228,10 +244,63 @@ impl EthTxInfoCompatible for RelayTransaction {
         rlp_stream.append(&self.deadline);
         rlp_stream.append(&self.compensation);
         rlp_stream.append(&self.gas_limit);
-        rlp_stream.append(&self.chain_id);
+        rlp_stream.append(&self.chain_id.to_bytes().unwrap()); // FIXME
         rlp_stream.append(&self.relay_contract_address);
         rlp_stream.append(&self.signature);
         rlp_stream.out().to_vec()
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelayTransactionJson {
+    chain_id: u64,
+    from: String,
+    signature: String,
+    data: String,
+    deadline: u64,
+    gas_limit: u32,
+    compensation: String,
+    relay_contract_address: String,
+    to: String,
+}
+
+#[cfg(test)]
+impl RelayTransactionJson {
+    pub fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
+    }
+
+    pub fn to_relay_transaction(&self) -> Result<RelayTransaction> {
+        Ok(RelayTransaction {
+            deadline: self.deadline,
+            gas_limit: self.gas_limit,
+            to: convert_hex_to_eth_address(&self.to)?,
+            from: convert_hex_to_eth_address(&self.from)?,
+            chain_id: EthChainId::try_from(self.chain_id)?,
+            compensation: self.compensation.parse::<u64>()?,
+            data: hex::decode(&strip_hex_prefix(&self.data))?,
+            relay_contract_address: convert_hex_to_eth_address(&self.relay_contract_address)?,
+            signature: EthSignature::from_slice(&hex::decode(&strip_hex_prefix(&self.signature))?),
+        })
+    }
+
+    pub fn from_relay_transaction(relay_transaction: &RelayTransaction) -> Result<Self> {
+        Ok(Self {
+            deadline: relay_transaction.deadline,
+            gas_limit: relay_transaction.gas_limit,
+            chain_id: relay_transaction.chain_id.to_u64(),
+            to: format!("0x{}", hex::encode(&relay_transaction.to)),
+            data: format!("0x{}", hex::encode(&relay_transaction.data)),
+            from: format!("0x{}", hex::encode(&relay_transaction.from)),
+            compensation: format!("{}", relay_transaction.compensation),
+            signature: format!("0x{}", hex::encode(&relay_transaction.signature)),
+            relay_contract_address: format!("0x{}", hex::encode(&relay_transaction.relay_contract_address)),
+        })
+    }
+
+    pub fn to_string(&self) -> Result<String> {
+        Ok(serde_json::to_string(self)?)
     }
 }
 
@@ -279,7 +348,7 @@ mod tests {
         let expected_relay_transaction = RelayTransaction {
             signature: expected_signature,
             data: expected_data.clone(),
-            chain_id: 3,
+            chain_id: chain_id.clone(),
             deadline: 0,
             from,
             gas_limit,
@@ -317,7 +386,7 @@ mod tests {
         let expected_relay_transaction = RelayTransaction {
             signature: expected_signature,
             data: expected_data,
-            chain_id: 3,
+            chain_id,
             deadline: 0,
             from,
             gas_limit,
@@ -353,7 +422,7 @@ mod tests {
         )
         .expect("Error creating AnySender relay transaction from eth transaction!");
         let expected_relay_transaction = RelayTransaction {
-            chain_id: chain_id.to_byte(),
+            chain_id,
             from: EthAddress::from_slice(
                 &hex::decode("736661736533BcfC9cc35649e6324aceFb7D32c1").unwrap()),
             signature: EthSignature::from_slice(
@@ -388,7 +457,7 @@ mod tests {
             }
         "#;
 
-        let relay_transaction: RelayTransaction = serde_json::from_str(json_str).unwrap();
+        let relay_transaction = RelayTransaction::from_str(json_str).unwrap();
 
         let chain_id = EthChainId::Ropsten;
         let eth_private_key = EthPrivateKey::from_slice(&[
@@ -419,7 +488,7 @@ mod tests {
 
         // serialize
         let expected_relay_transaction = "{\"chainId\":3,\"from\":\"0x736661736533bcfc9cc35649e6324acefb7d32c1\",\"signature\":\"0x5aa14a852439d9f5aa7b22c63a228d79c6822cf644badc9a63117dd7880d9a4c639eccd4aeeee91eaea63e36640d151be71346d785d2bd274fb82351c6bb2c101b\",\"data\":\"0xf15da729000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000047465737400000000000000000000000000000000000000000000000000000000\",\"deadline\":0,\"gasLimit\":100000,\"compensation\":\"500000000\",\"relayContractAddress\":\"0x9b4fa5a1d9f6812e2b56b36fbde62736fa82c2a7\",\"to\":\"0xfde83bd51bddaa39f15c1bf50e222a7ae5831d83\"}".to_string();
-        let relay_transaction = serde_json::to_string(&relay_transaction).unwrap();
+        let relay_transaction = relay_transaction.to_string().unwrap();
 
         assert_eq!(relay_transaction, expected_relay_transaction);
     }
