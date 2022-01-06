@@ -324,7 +324,9 @@ pub fn debug_reprocess_eos_block_with_fee_accrual<D: DatabaseInterface>(db: D, b
 ///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
 ///  dictionary. This is to avoid accounting for fees twice.
 ///
-///  - It is assumed that the user of this function understands the nonce ramifications.
+/// ### BEWARE:
+///
+/// It is assumed that you know what you're doing nonce-wise with this function!
 pub fn debug_reprocess_eos_block_with_nonce<D: DatabaseInterface>(
     db: D,
     block_json: &str,

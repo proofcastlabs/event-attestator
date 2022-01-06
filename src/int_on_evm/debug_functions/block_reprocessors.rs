@@ -272,8 +272,8 @@ fn reprocess_int_block<D: DatabaseInterface>(
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future EVM transactions will
 /// fail due to the core having an incorret nonce!
-pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, evm_block_json: &str) -> Result<String> {
-    reprocess_evm_block(db, evm_block_json, false, None)
+pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
+    reprocess_evm_block(db, block_json, false, None)
 }
 
 /// # Debug Reprocess EVM Block With Nonce
@@ -283,15 +283,15 @@ pub fn debug_reprocess_evm_block<D: DatabaseInterface>(db: D, evm_block_json: &s
 /// passed in nonce for those signatures. Thus it may be used to replace a transaction.
 ///
 /// ### NOTES:
-///  - This function will NOT increment the core's EVM nonce.
+///  - This function will NOT increment the core's EVM nonce if one is passed in.
 ///
 ///  - This version of the EVM block reprocessor __will__ deduct fees from any transaction info(s) it
 ///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
 ///  dictionary. This is to avoid accounting for fees twice.
 ///
 /// ### BEWARE:
-/// If you don't broadcast the transaction outputted from this function, ALL future EVM transactions will
-/// fail due to the core having an incorret nonce!
+///
+/// It is assumed that you know what you're doing nonce-wise with this function!
 pub fn debug_reprocess_evm_block_with_nonce<D: DatabaseInterface>(
     db: D,
     block_json: &str,
@@ -319,8 +319,8 @@ pub fn debug_reprocess_evm_block_with_nonce<D: DatabaseInterface>(
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future EVM transactions will
 /// fail due to the core having an incorret nonce!
-pub fn debug_reprocess_evm_block_with_fee_accrual<D: DatabaseInterface>(db: D, evm_block_json: &str) -> Result<String> {
-    reprocess_evm_block(db, evm_block_json, true, None)
+pub fn debug_reprocess_evm_block_with_fee_accrual<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
+    reprocess_evm_block(db, block_json, true, None)
 }
 
 /// # Debug Reprocess INT Block
@@ -350,15 +350,15 @@ pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: D, block_json: &str) 
 /// passed in nonce for those signatures. Thus it may be used to replace a transaction.
 ///
 /// ### NOTES:
-///  - This function will NOT increment the core's INT nonce.
+///  - This function will NOT increment the core's INT nonce if one is passed in.
 ///
 ///  - This version of the INT block reprocessor __will__ deduct fees from any transaction info(s) it
 ///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
 ///  dictionary. This is to avoid accounting for fees twice.
 ///
 /// ### BEWARE:
-/// If you don't broadcast the transaction outputted from this function, ALL future INT transactions will
-/// fail due to the core having an incorret nonce!
+///
+/// It is assumed that you know what you're doing nonce-wise with this function!
 pub fn debug_reprocess_int_block_with_nonce<D: DatabaseInterface>(
     db: D,
     block_json: &str,
@@ -386,6 +386,6 @@ pub fn debug_reprocess_int_block_with_nonce<D: DatabaseInterface>(
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future INT transactions will
 /// fail due to the core having an incorret nonce!
-pub fn debug_reprocess_int_block_with_fee_accrual<D: DatabaseInterface>(db: D, evm_block_json: &str) -> Result<String> {
-    reprocess_int_block(db, evm_block_json, true, None)
+pub fn debug_reprocess_int_block_with_fee_accrual<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
+    reprocess_int_block(db, block_json, true, None)
 }

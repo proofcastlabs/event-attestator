@@ -353,11 +353,15 @@ pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(db: D, b
 ///
 /// ### NOTES:
 ///
-///  - This version of the ETH block reprocessor __will__ deduct fees from any transaction info(s) it
-///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
-///  dictionary. This is to avoid accounting for fees twice.
+/// - This function will NOT increment the EVM nonce is one is passed in.
 ///
-///  - It is assumed the user of this function is aware of the nonce ramifications of using this function.
+/// - This version of the ETH block reprocessor __will__ deduct fees from any transaction info(s) it
+/// parses from the submitted block, but it will __not__ accrue those fees on to the total in the
+/// dictionary. This is to avoid accounting for fees twice.
+///
+/// ### BEWARE:
+///
+/// It is assumed that you know what you're doing nonce-wise with this function!
 pub fn debug_reprocess_eth_block_with_nonce<D: DatabaseInterface>(
     db: D,
     block_json_str: &str,
@@ -373,11 +377,16 @@ pub fn debug_reprocess_eth_block_with_nonce<D: DatabaseInterface>(
 /// passed in nonce. Thus it may be used to replace transactions.
 ///
 /// ### NOTES:
-///  - This version of the EVM block reprocessor __will__ deduct fees from any transaction info(s) it
-///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
-///  dictionary. This is to avoid accounting for fees twice.
 ///
-///  - It is assumed the user of this function is aware of the nonce ramifications of using this function.
+/// - This function will NOT increment the ETH nonce is one is passed in.
+///
+/// - This version of the EVM block reprocessor __will__ deduct fees from any transaction info(s) it
+/// parses from the submitted block, but it will __not__ accrue those fees on to the total in the
+/// dictionary. This is to avoid accounting for fees twice.
+///
+/// ### BEWARE:
+///
+/// It is assumed that you know what you're doing nonce-wise with this function!
 pub fn debug_reprocess_evm_block_with_nonce<D: DatabaseInterface>(
     db: D,
     block_json_str: &str,
