@@ -19,6 +19,7 @@ pub use crate::{
             block_reprocessors::{
                 debug_reprocess_btc_block,
                 debug_reprocess_btc_block_with_fee_accrual,
+                debug_reprocess_btc_block_with_nonce,
                 debug_reprocess_eth_block,
                 debug_reprocess_eth_block_with_fee_accrual,
             },
