@@ -169,7 +169,10 @@ fn reprocess_eos_block<D: DatabaseInterface>(
                     &state.erc20_on_eos_redeem_infos,
                     &state.eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
                     match maybe_nonce {
-                        Some(nonce) => nonce,
+                        Some(nonce) => {
+                            info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
+                            nonce
+                        },
                         None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                     },
                     &state.eth_db_utils.get_eth_chain_id_from_db()?,

@@ -109,7 +109,10 @@ fn reprocess_btc_block<D: DatabaseInterface>(
                     chain_id: state.eth_db_utils.get_eth_chain_id_from_db()?,
                     eth_private_key: state.eth_db_utils.get_eth_private_key_from_db()?,
                     eth_account_nonce: match maybe_nonce {
-                        Some(nonce) => nonce,
+                        Some(nonce) => {
+                            info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
+                            nonce
+                        },
                         None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                     },
                     smart_contract_address: state.eth_db_utils.get_erc777_contract_address_from_db()?,

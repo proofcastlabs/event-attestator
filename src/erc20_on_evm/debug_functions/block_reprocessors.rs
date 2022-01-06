@@ -95,7 +95,10 @@ fn reprocess_evm_block<D: DatabaseInterface>(
                     .erc20_on_evm_eth_tx_infos
                     .to_eth_signed_txs(
                         match maybe_nonce {
-                            Some(nonce) => nonce,
+                            Some(nonce) => {
+                                info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
+                                nonce
+                            },
                             None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                         },
                         &state.eth_db_utils.get_eth_chain_id_from_db()?,
@@ -197,7 +200,10 @@ fn reprocess_eth_block<D: DatabaseInterface>(
                     .erc20_on_evm_evm_tx_infos
                     .to_evm_signed_txs(
                         match maybe_nonce {
-                            Some(nonce) => nonce,
+                            Some(nonce) => {
+                                info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
+                                nonce
+                            },
                             None => state.evm_db_utils.get_eth_account_nonce_from_db()?,
                         },
                         &chain_id,

@@ -95,7 +95,7 @@ fn reprocess_evm_block<D: DatabaseInterface>(
                             Some(nonce) => {
                                 info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
                                 nonce
-                            }
+                            },
                             None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                         },
                         &state.eth_db_utils.get_eth_chain_id_from_db()?,
@@ -134,7 +134,7 @@ fn reprocess_evm_block<D: DatabaseInterface>(
                         &state.int_on_evm_int_tx_infos,
                         match maybe_nonce {
                             Some(nonce) => nonce,
-                            None => state.eth_db_utils.get_eth_account_nonce_from_db()?
+                            None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                         },
                         use_any_sender_tx,
                         state.eth_db_utils.get_any_sender_nonce_from_db()?,
@@ -200,7 +200,7 @@ fn reprocess_int_block<D: DatabaseInterface>(
                             Some(nonce) => {
                                 info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
                                 nonce
-                            }
+                            },
                             None => state.evm_db_utils.get_eth_account_nonce_from_db()?,
                         },
                         &chain_id,

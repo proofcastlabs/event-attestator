@@ -174,7 +174,10 @@ fn reprocess_eos_block<D: DatabaseInterface>(
                     .eos_on_eth_eos_tx_infos
                     .to_eth_signed_txs(
                         match maybe_nonce {
-                            Some(nonce) => nonce,
+                            Some(nonce) => {
+                                info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
+                                nonce
+                            },
                             None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                         },
                         &state.eth_db_utils.get_eth_chain_id_from_db()?,
