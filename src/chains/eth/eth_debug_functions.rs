@@ -64,6 +64,20 @@ fn debug_set_gas_price_in_db<D: DatabaseInterface>(db: &D, gas_price: u64, is_fo
         .map(prepend_debug_output_marker_to_string)
 }
 
+pub fn check_custom_nonce<D: DatabaseInterface, E: EthDbUtilsExt<D>>(db_utils: &E, custom_nonce: u64) -> Result<u64> {
+    db_utils.get_eth_account_nonce_from_db().and_then(|account_nonce| {
+        if custom_nonce >= account_nonce {
+            Err(format!(
+                "Cannot use custom nonce of {} ∵ it's > account nonce of {}!",
+                custom_nonce, account_nonce,
+            )
+            .into())
+        } else {
+            Ok(custom_nonce)
+        }
+    })
+}
+
 /// Debug Set ETH Gas Price
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
@@ -115,48 +129,91 @@ pub fn debug_set_evm_any_sender_nonce<D: DatabaseInterface>(db: &D, new_nonce: u
 #[cfg(all(test, feature = "debug"))]
 mod tests {
     use super::*;
-    use crate::{
-        chains::eth::eth_database_utils::{
-            get_any_sender_nonce_from_db,
-            get_eth_account_nonce_from_db,
-            get_eth_gas_price_from_db,
-        },
-        test_utils::get_test_database,
-    };
+    use crate::{errors::AppError, test_utils::get_test_database};
 
     #[test]
     fn should_set_eth_account_nonce() {
         let db = get_test_database();
+        let db_utils = EthDbUtils::new(&db);
         let nonce = 6;
         let is_for_eth = true;
-        put_eth_account_nonce_in_db(&db, nonce).unwrap();
-        assert_eq!(get_eth_account_nonce_from_db(&db).unwrap(), nonce);
+        db_utils.put_eth_account_nonce_in_db(nonce).unwrap();
+        assert_eq!(db_utils.get_eth_account_nonce_from_db().unwrap(), nonce);
         let new_nonce = 4;
         debug_set_account_nonce(&db, new_nonce, is_for_eth).unwrap();
-        assert_eq!(get_eth_account_nonce_from_db(&db).unwrap(), new_nonce);
+        assert_eq!(db_utils.get_eth_account_nonce_from_db().unwrap(), new_nonce);
     }
 
     #[test]
     fn should_set_eth_any_sender_nonce() {
         let db = get_test_database();
+        let db_utils = EthDbUtils::new(&db);
         let nonce = 6;
-        put_any_sender_nonce_in_db(&db, nonce).unwrap();
-        assert_eq!(get_any_sender_nonce_from_db(&db).unwrap(), nonce);
+        db_utils.put_any_sender_nonce_in_db(nonce).unwrap();
+        assert_eq!(db_utils.get_any_sender_nonce_from_db().unwrap(), nonce);
         let new_nonce = 4;
         let is_for_eth = true;
         debug_set_any_sender_nonce(&db, new_nonce, is_for_eth).unwrap();
-        assert_eq!(get_any_sender_nonce_from_db(&db).unwrap(), new_nonce);
+        assert_eq!(db_utils.get_any_sender_nonce_from_db().unwrap(), new_nonce);
     }
 
     #[test]
     fn should_set_eth_gas_price_in_db() {
         let db = get_test_database();
+        let db_utils = EthDbUtils::new(&db);
         let gas_price = 6;
-        put_eth_gas_price_in_db(&db, gas_price).unwrap();
-        assert_eq!(get_eth_gas_price_from_db(&db).unwrap(), gas_price);
+        db_utils.put_eth_gas_price_in_db(gas_price).unwrap();
+        assert_eq!(db_utils.get_eth_gas_price_from_db().unwrap(), gas_price);
         let new_gas_price = 4;
         let is_for_eth = true;
         debug_set_gas_price_in_db(&db, new_gas_price, is_for_eth).unwrap();
-        assert_eq!(get_eth_gas_price_from_db(&db).unwrap(), new_gas_price);
+        assert_eq!(db_utils.get_eth_gas_price_from_db().unwrap(), new_gas_price);
+    }
+
+    #[test]
+    fn should_check_custom_nonce() {
+        let db = get_test_database();
+        let db_utils = EthDbUtils::new(&db);
+        let account_nonce = 10;
+        let custom_nonce = account_nonce - 1;
+        db_utils.put_eth_account_nonce_in_db(account_nonce).unwrap();
+        let result = check_custom_nonce(&db_utils, custom_nonce).unwrap();
+        assert_eq!(result, custom_nonce)
+    }
+
+    #[test]
+    fn should_not_pass_custom_nonce_check_if_greater_than_account_nonce() {
+        let db = get_test_database();
+        let db_utils = EthDbUtils::new(&db);
+        let account_nonce = 10;
+        let custom_nonce = account_nonce + 1;
+        let expected_error = format!(
+            "Cannot use custom nonce of {} ∵ it's > account nonce of {}!",
+            custom_nonce, account_nonce
+        );
+        db_utils.put_eth_account_nonce_in_db(account_nonce).unwrap();
+        match check_custom_nonce(&db_utils, custom_nonce) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
+    }
+
+    #[test]
+    fn should_not_pass_custom_nonce_check_if_equal_to_account_nonce() {
+        let db = get_test_database();
+        let db_utils = EthDbUtils::new(&db);
+        let account_nonce = 10;
+        let custom_nonce = account_nonce;
+        let expected_error = format!(
+            "Cannot use custom nonce of {} ∵ it's > account nonce of {}!",
+            custom_nonce, account_nonce
+        );
+        db_utils.put_eth_account_nonce_in_db(account_nonce).unwrap();
+        match check_custom_nonce(&db_utils, custom_nonce) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
     }
 }
