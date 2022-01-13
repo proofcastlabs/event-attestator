@@ -55,6 +55,7 @@ use crate::{
             eth_database_utils::EthDbUtilsExt,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
+            eth_types::EthSigningParams,
             validate_block_in_state::validate_block_in_state,
         },
     },
@@ -65,10 +66,11 @@ use crate::{
     utils::prepend_debug_output_marker_to_string,
 };
 
-fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
+fn reprocess_btc_block<D: DatabaseInterface>(
     db: D,
     btc_submission_material_json: &str,
     accrue_fees: bool,
+    maybe_nonce: Option<u64>,
 ) -> Result<String> {
     check_debug_mode()
         .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(&db)))
@@ -102,20 +104,42 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
         })
         .and_then(|state| {
             get_eth_signed_txs(
-                &state.eth_db_utils.get_signing_params_from_db()?,
+                &EthSigningParams {
+                    gas_price: state.eth_db_utils.get_eth_gas_price_from_db()?,
+                    chain_id: state.eth_db_utils.get_eth_chain_id_from_db()?,
+                    eth_private_key: state.eth_db_utils.get_eth_private_key_from_db()?,
+                    eth_account_nonce: match maybe_nonce {
+                        Some(nonce) => {
+                            info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
+                            nonce
+                        },
+                        None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                    },
+                    smart_contract_address: state.eth_db_utils.get_erc777_contract_address_from_db()?,
+                },
                 &state.btc_on_eth_minting_params,
                 &get_btc_chain_id_from_db(state.db)?,
             )
             .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
         })
-        .and_then(maybe_increment_eth_nonce_in_db)
+        .and_then(|state| {
+            if maybe_nonce.is_some() {
+                info!("✔ Not incrementing nonce since one was passed in!");
+                Ok(state)
+            } else {
+                maybe_increment_eth_nonce_in_db(state)
+            }
+        })
         .and_then(|state| {
             let signatures = serde_json::to_string(&match &state.eth_signed_txs.len() {
                 0 => Ok(vec![]),
                 _ => get_eth_signed_tx_info_from_eth_txs(
                     &state.eth_signed_txs,
                     &state.btc_on_eth_minting_params,
-                    state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                    match maybe_nonce {
+                        Some(nonce) => nonce,
+                        None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                    },
                     state.use_any_sender_tx_type(),
                     state.eth_db_utils.get_any_sender_nonce_from_db()?,
                 ),
@@ -131,11 +155,7 @@ fn debug_reprocess_btc_block_maybe_accruing_fees<D: DatabaseInterface>(
         .map(prepend_debug_output_marker_to_string)
 }
 
-fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
-    db: D,
-    eth_block_json: &str,
-    accrue_fees: bool,
-) -> Result<String> {
+fn reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &str, accrue_fees: bool) -> Result<String> {
     check_debug_mode()
         .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
@@ -204,7 +224,32 @@ fn debug_reprocess_eth_block_maybe_with_fee_accrual<D: DatabaseInterface>(
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to an incorrect nonce!
 pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
-    debug_reprocess_btc_block_maybe_accruing_fees(db, btc_submission_material_json, false)
+    reprocess_btc_block(db, btc_submission_material_json, false, None)
+}
+
+/// # Debug Reprocess BTC Block With Nonce
+///
+/// This function will take a passed in BTC block submission material and run it through the
+/// submission pipeline, signing any signatures for pegins it may find in the block, using the
+/// passed in nonce. Thus it may be used to replace transactions.
+///
+/// ### NOTE:
+///
+///  - This does not yet work with AnySender type transactions.
+///
+///  - This version of the BTC block reprocessor __will__ deduct fees from any transaction info(s) it
+///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
+///  dictionary. This is to avoid accounting for fees twice.
+///
+/// ### BEWARE:
+///
+/// It is assumed that you know what you're doing nonce-wise with this function!
+pub fn debug_reprocess_btc_block_with_nonce<D: DatabaseInterface>(
+    db: D,
+    btc_submission_material_json: &str,
+    nonce: u64,
+) -> Result<String> {
+    reprocess_btc_block(db, btc_submission_material_json, false, Some(nonce))
 }
 
 /// # Debug Reprocess BTC Block With Fee Accrual
@@ -228,7 +273,7 @@ pub fn debug_reprocess_btc_block_with_fee_accrual<D: DatabaseInterface>(
     db: D,
     btc_submission_material_json: &str,
 ) -> Result<String> {
-    debug_reprocess_btc_block_maybe_accruing_fees(db, btc_submission_material_json, true)
+    reprocess_btc_block(db, btc_submission_material_json, true, None)
 }
 
 /// # Debug Reprocess ETH Block
@@ -249,7 +294,7 @@ pub fn debug_reprocess_btc_block_with_fee_accrual<D: DatabaseInterface>(
 /// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
 /// fail due to the core having an incorret set of UTXOs!
 pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &str) -> Result<String> {
-    debug_reprocess_eth_block_maybe_with_fee_accrual(db, eth_block_json, false)
+    reprocess_eth_block(db, eth_block_json, false)
 }
 
 /// # Debug Reprocess ETH Block With Fee Accrual
@@ -271,5 +316,5 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &s
 /// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
 /// fail due to the core having an incorret set of UTXOs!
 pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(db: D, eth_block_json: &str) -> Result<String> {
-    debug_reprocess_eth_block_maybe_with_fee_accrual(db, eth_block_json, true)
+    reprocess_eth_block(db, eth_block_json, true)
 }

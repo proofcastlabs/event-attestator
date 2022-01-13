@@ -30,10 +30,6 @@ impl EthReceiptType {
     pub fn to_bytes(&self) -> Bytes {
         vec![self.to_byte()]
     }
-
-    pub fn is_legacy(&self) -> bool {
-        matches!(self, Self::Legacy)
-    }
 }
 
 impl fmt::Display for EthReceiptType {
@@ -64,19 +60,5 @@ mod tests {
             .map(|ref byte| EthReceiptType::from_byte(byte))
             .collect::<Vec<EthReceiptType>>();
         assert_eq!(results, expected_results);
-    }
-
-    #[test]
-    fn legacy_receipt_type_should_be_legacy() {
-        let legacy_receipt_type = EthReceiptType::Legacy;
-        let result = legacy_receipt_type.is_legacy();
-        assert!(result)
-    }
-
-    #[test]
-    fn none_legacy_receipt_type_should_not_be_legacy() {
-        let legacy_receipt_type = EthReceiptType::EIP2718;
-        let result = legacy_receipt_type.is_legacy();
-        assert!(!result)
     }
 }

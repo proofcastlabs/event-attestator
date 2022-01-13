@@ -9,6 +9,7 @@ use crate::{
                 end_eos_db_transaction_and_return_state,
                 start_eos_db_transaction_and_return_state,
             },
+            eos_database_utils::get_latest_eos_block_number,
             eos_global_sequences::{
                 get_processed_global_sequences_and_add_to_state,
                 maybe_add_global_sequences_to_processed_list_and_return_state,
@@ -57,9 +58,8 @@ use crate::{
             eos_tx_info::{
                 maybe_filter_out_value_too_low_txs_from_state,
                 maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state,
-                maybe_sign_normal_eth_txs_and_add_to_state,
             },
-            get_eos_output::get_eos_output,
+            get_eos_output::{get_eth_signed_tx_info_from_eth_txs, EosOutput},
             increment_eth_nonce::maybe_increment_eth_nonce_in_db_and_return_eos_state,
         },
         eth::{
@@ -82,11 +82,7 @@ use crate::{
     utils::prepend_debug_output_marker_to_string,
 };
 
-fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
-    db: D,
-    block_json_string: &str,
-    accrue_fees: bool,
-) -> Result<String> {
+fn reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string: &str, accrue_fees: bool) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
     check_debug_mode()
         .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(&db)))
@@ -135,10 +131,11 @@ fn debug_reprocess_eth_block_maybe_accruing_fees<D: DatabaseInterface>(
         .map(prepend_debug_output_marker_to_string)
 }
 
-fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
+fn reprocess_eos_block<D: DatabaseInterface>(
     db: D,
     block_json: &str,
     accrue_fees: bool,
+    maybe_nonce: Option<u64>,
 ) -> Result<String> {
     info!("✔ Debug reprocessing EOS block...");
     check_debug_mode()
@@ -168,10 +165,65 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
                 Ok(state)
             }
         })
-        .and_then(maybe_sign_normal_eth_txs_and_add_to_state)
-        .and_then(maybe_increment_eth_nonce_in_db_and_return_eos_state)
+        .and_then(|state| {
+            if state.eos_on_eth_eos_tx_infos.len() == 0 {
+                info!("✔ No EOS tx info in state ∴ no ETH transactions to sign!");
+                Ok(state)
+            } else {
+                state
+                    .eos_on_eth_eos_tx_infos
+                    .to_eth_signed_txs(
+                        match maybe_nonce {
+                            Some(nonce) => {
+                                info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
+                                nonce
+                            },
+                            None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                        },
+                        &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                        state.eth_db_utils.get_eth_gas_price_from_db()?,
+                        &state.eth_db_utils.get_eth_private_key_from_db()?,
+                    )
+                    .and_then(|signed_txs| {
+                        #[cfg(feature = "debug")]
+                        {
+                            debug!("✔ Signed transactions: {:?}", signed_txs);
+                        }
+                        state.add_eth_signed_txs(signed_txs)
+                    })
+            }
+        })
+        .and_then(|state| {
+            if maybe_nonce.is_some() {
+                info!("✔ Not incrementing nonce since one was passed in!");
+                Ok(state)
+            } else {
+                maybe_increment_eth_nonce_in_db_and_return_eos_state(state)
+            }
+        })
         .and_then(end_eos_db_transaction_and_return_state)
-        .and_then(get_eos_output)
+        .and_then(|state| {
+            info!("✔ Getting EOS output json...");
+            let output = serde_json::to_string(&EosOutput {
+                eos_latest_block_number: get_latest_eos_block_number(state.db)?,
+                eth_signed_transactions: match state.eth_signed_txs.len() {
+                    0 => vec![],
+                    _ => get_eth_signed_tx_info_from_eth_txs(
+                        &state.eth_signed_txs,
+                        &state.eos_on_eth_eos_tx_infos,
+                        match maybe_nonce {
+                            Some(nonce) => nonce,
+                            None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                        },
+                        false,
+                        state.eth_db_utils.get_any_sender_nonce_from_db()?,
+                        state.eth_db_utils.get_latest_eth_block_number()?,
+                    )?,
+                },
+            })?;
+            info!("✔ EOS output: {}", output);
+            Ok(output)
+        })
         .map(prepend_debug_output_marker_to_string)
 }
 
@@ -191,7 +243,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
 /// If this output is to _replace_ an existing report, the nonces in the report and in the core's
 /// database should be modified accordingly.
 pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
-    debug_reprocess_eth_block_maybe_accruing_fees(db, block_json_string, false)
+    reprocess_eth_block(db, block_json_string, false)
 }
 
 /// # Debug Reprocess ETH Block For Stale EOS Transaction With Fee Accrual
@@ -215,7 +267,7 @@ pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(
     db: D,
     block_json_string: &str,
 ) -> Result<String> {
-    debug_reprocess_eth_block_maybe_accruing_fees(db, block_json_string, true)
+    reprocess_eth_block(db, block_json_string, true)
 }
 
 /// # Debug Reprocess EOS Block
@@ -236,7 +288,7 @@ pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(
 /// any outputted transactions will result in all future transactions failing. Use only with
 /// extreme caution and when you know exactly what you are doing and why.
 pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
-    debug_reprocess_eos_block_maybe_accruing_fees(db, block_json, false)
+    reprocess_eos_block(db, block_json, false, None)
 }
 
 /// # Debug Reprocess EOS Block With Fee Accrual
@@ -259,5 +311,30 @@ pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) 
 /// any outputted transactions will result in all future transactions failing. Use only with
 /// extreme caution and when you know exactly what you are doing and why.
 pub fn debug_reprocess_eos_block_with_fee_accrual<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
-    debug_reprocess_eos_block_maybe_accruing_fees(db, block_json, true)
+    reprocess_eos_block(db, block_json, true, None)
+}
+
+/// # Debug Reprocess EOS Block With Nonce
+///
+/// This function will take passed in EOS submission material and run it through the simplified
+/// submission pipeline, signing and ETH transactions based on valid proofs therein using the
+/// passed in nonce. Thus it can be used to replace transactions.
+///
+/// ### NOTES:
+///
+///  - This function does NOT validate the block to which the proofs (may) pertain.
+///
+///  - This version of the EOS block reprocessor __will__ deduct fees from any transaction info(s) it
+///  parses from the submitted block, but it will __not__ accrue those fees on to the total in the
+///  dictionary. This is to avoid accounting for fees twice.
+///
+/// ### Beware
+///
+/// It is assumed that you know what you're doing nonce-wise with this function!
+pub fn debug_reprocess_eos_block_with_nonce<D: DatabaseInterface>(
+    db: D,
+    block_json: &str,
+    nonce: u64,
+) -> Result<String> {
+    reprocess_eos_block(db, block_json, false, Some(nonce))
 }
