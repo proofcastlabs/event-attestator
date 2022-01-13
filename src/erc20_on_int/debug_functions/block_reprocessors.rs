@@ -4,7 +4,8 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::EthDbUtilsExt,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
+        eth_debug_functions::check_custom_nonce,
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         increment_eth_account_nonce::maybe_increment_eth_account_nonce_and_return_state,
@@ -297,7 +298,8 @@ pub fn debug_reprocess_int_block_with_nonce<D: DatabaseInterface>(
     block_json: &str,
     nonce: u64,
 ) -> Result<String> {
-    reprocess_int_block(db, block_json, false, Some(nonce))
+    check_custom_nonce(&EthDbUtils::new(&db), nonce)
+        .and_then(|_| reprocess_int_block(db, block_json, false, Some(nonce)))
 }
 
 /// # Debug Reprocess INT Block With Fee Accrual
@@ -365,7 +367,8 @@ pub fn debug_reprocess_eth_block_with_nonce<D: DatabaseInterface>(
     block_json: &str,
     nonce: u64,
 ) -> Result<String> {
-    reprocess_eth_block(db, block_json, false, Some(nonce))
+    check_custom_nonce(&EvmDbUtils::new(&db), nonce)
+        .and_then(|_| reprocess_eth_block(db, block_json, false, Some(nonce)))
 }
 
 /// # Debug Reprocess ETH Block With Fee Accrual

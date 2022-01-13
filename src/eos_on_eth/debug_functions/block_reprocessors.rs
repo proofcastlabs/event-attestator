@@ -32,7 +32,8 @@ use crate::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
             },
-            eth_database_utils::EthDbUtilsExt,
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+            eth_debug_functions::check_custom_nonce,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             increment_eos_account_nonce::maybe_increment_eos_account_nonce_and_return_state,
@@ -336,5 +337,6 @@ pub fn debug_reprocess_eos_block_with_nonce<D: DatabaseInterface>(
     block_json: &str,
     nonce: u64,
 ) -> Result<String> {
-    reprocess_eos_block(db, block_json, false, Some(nonce))
+    check_custom_nonce(&EthDbUtils::new(&db), nonce)
+        .and_then(|_| reprocess_eos_block(db, block_json, false, Some(nonce)))
 }
