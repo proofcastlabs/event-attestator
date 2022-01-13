@@ -52,7 +52,8 @@ use crate::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
             },
-            eth_database_utils::EthDbUtilsExt,
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+            eth_debug_functions::check_custom_nonce,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             eth_types::EthSigningParams,
@@ -249,7 +250,8 @@ pub fn debug_reprocess_btc_block_with_nonce<D: DatabaseInterface>(
     btc_submission_material_json: &str,
     nonce: u64,
 ) -> Result<String> {
-    reprocess_btc_block(db, btc_submission_material_json, false, Some(nonce))
+    check_custom_nonce(&EthDbUtils::new(&db), nonce)
+        .and_then(|_| reprocess_btc_block(db, btc_submission_material_json, false, Some(nonce)))
 }
 
 /// # Debug Reprocess BTC Block With Fee Accrual
