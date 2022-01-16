@@ -39,6 +39,7 @@ macro_rules! write_algo_db_keys {
 }
 
 write_algo_db_keys!(
+    "algo_fee_key",
     "algo_redeem_address_key",
     "algo_tail_block_hash_key",
     "algo_canon_block_hash_key",
@@ -56,6 +57,7 @@ mod tests {
     #[test]
     fn algo_db_keys_should_remain_consistent() {
         let expected_result = AlgoDbKeysJson {
+            ALGO_FEE_KEY: "d284e359e0a2076c909ee55d8deaf1e05b5488a997f18bf86e0928c4fbc5c638".to_string(),
             ALGO_REDEEM_ADDRESS_KEY: "6e4a528af852818a2f5c1660679873fbe3a49ab57ecf14bf0f542220e95cc6d4".to_string(),
             ALGO_TAIL_BLOCK_HASH_KEY: "2a307fe54ac8b580e12772152a6be38285afb11a932ab817c423a580c474fb3f".to_string(),
             ALGO_CANON_BLOCK_HASH_KEY: "1a4b2db39e866baa1e76f114c6620a94e7cd078bf1c81f5cd286e4213ea60892".to_string(),

@@ -6,10 +6,10 @@
    [x] address
    [x] tail block hash
    [x] save canon to tip length
-   [ ] fee
-   [ ] block
+   [x] fee
    [ ] private key
    [ ] account nonce
+   [ ] block
 */
 use std::{fmt, str::FromStr};
 
@@ -101,6 +101,7 @@ macro_rules! create_algo_db_utils {
 }
 
 create_algo_db_utils!(
+    "algo_fee_key",
     "algo_redeem_address_key",
     "algo_tail_block_hash_key",
     "algo_canon_block_hash_key",
@@ -121,6 +122,14 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
             }
         };
         self.put_algorand_hash_in_db(&hash_type.get_key(&self), hash)
+    }
+
+    fn get_algo_fee_from_db(&self) -> Result<u64> {
+        get_u64_from_db(self.get_db(), &self.algo_fee_key)
+    }
+
+    fn put_algo_fee_in_db(&self, fee: u64) -> Result<()> {
+        put_u64_in_db(self.get_db(), &self.algo_fee_key, fee)
     }
 
     fn put_canon_to_tip_length_in_db(&self, length: u64) -> Result<()> {
@@ -298,5 +307,15 @@ mod tests {
         db_utils.put_canon_to_tip_length_in_db(42).unwrap();
         let result = db_utils.get_canon_to_tip_length_from_db().unwrap();
         assert_eq!(result, length);
+    }
+
+    #[test]
+    fn should_put_and_get_algo_fee_in_db() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let fee = 1000;
+        db_utils.put_algo_fee_in_db(fee).unwrap();
+        let result = db_utils.get_algo_fee_from_db().unwrap();
+        assert_eq!(result, fee);
     }
 }
