@@ -19,7 +19,7 @@ fn get_x_random_bytes(num_bytes: usize) -> Vec<u8> {
     bytes
 }
 
-fn get_32_random_bytes_arr() -> [u8; 32] {
+pub fn get_32_random_bytes_arr() -> [u8; 32] {
     let mut arr = [0; 32];
     arr.copy_from_slice(&get_x_random_bytes(32));
     arr
