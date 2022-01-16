@@ -41,6 +41,7 @@ strum_macros = "0.22.0"
 derive_more = "0.99.16"
 keccak-hasher = "0.15.3"
 ethereum-types = "0.12.1"
+rust-algorand = { path = "../rust-algorand" } # FIXME Use crate when published!
 serde = { version = "1.0.130", features = ["derive"] }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 bitcoin = { version = "0.27.1", features = ["use-serde", "rand"] }
