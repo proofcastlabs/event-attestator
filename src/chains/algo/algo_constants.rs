@@ -41,6 +41,7 @@ macro_rules! write_algo_db_keys {
 write_algo_db_keys!(
     "algo_fee_key",
     "algo_private_key_key",
+    "algo_account_nonce_key",
     "algo_redeem_address_key",
     "algo_tail_block_hash_key",
     "algo_canon_block_hash_key",
@@ -69,8 +70,8 @@ mod tests {
                 .to_string(),
             ALGO_CANON_TO_TIP_LENGTH_KEY: "295dafb37cf7d99e712b44c066951b962bef0243abb56b5aba1172ea70bfb5f5"
                 .to_string(),
-            ALGO_PRIVATE_KEY_KEY: "90c457a020ebe52f3de54b258d3494466d30ee5b95bb1245da06546738ef80ff"
-                .to_string(),
+            ALGO_PRIVATE_KEY_KEY: "90c457a020ebe52f3de54b258d3494466d30ee5b95bb1245da06546738ef80ff".to_string(),
+            ALGO_ACCOUNT_NONCE_KEY: "805e14a1f236eac2b388f2cb625af8bacd8633cb489e84df62b99fbc80b28a0d".to_string(),
         };
         let result = AlgoDbKeysJson::new();
         assert_eq!(result, expected_result)

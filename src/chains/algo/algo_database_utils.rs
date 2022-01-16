@@ -7,8 +7,8 @@
    [x] tail block hash
    [x] save canon to tip length
    [x] fee
-   [ ] private key
-   [ ] account nonce
+   [x] private key
+   [x] account nonce
    [ ] block
 */
 use std::{fmt, str::FromStr};
@@ -103,6 +103,7 @@ macro_rules! create_algo_db_utils {
 create_algo_db_utils!(
     "algo_fee_key",
     "algo_private_key_key",
+    "algo_account_nonce_key",
     "algo_redeem_address_key",
     "algo_tail_block_hash_key",
     "algo_canon_block_hash_key",
@@ -125,19 +126,29 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         self.put_algorand_hash_in_db(&hash_type.get_key(&self), hash)
     }
 
+    fn put_algo_account_nonce_in_db(&self, nonce: u64) -> Result<()> {
+        put_u64_in_db(self.get_db(), &self.algo_account_nonce_key, nonce)
+    }
+
+    fn get_algo_account_nonce_from_db(&self) -> Result<u64> {
+        get_u64_from_db(self.get_db(), &self.algo_account_nonce_key)
+    }
+
     fn get_algo_private_key_from_db(&self) -> Result<AlgorandKeys> {
-        self
-            .get_db()
+        self.get_db()
             .get(self.algo_private_key_key.clone(), MAX_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| Ok(AlgorandKeys::from_bytes(&bytes)?))
-
     }
 
     fn put_algo_private_key_in_db(&self, key: &AlgorandKeys) -> Result<()> {
         if self.get_algo_private_key_from_db().is_ok() {
             Err(Self::get_no_overwrite_error("private key").into())
         } else {
-            self.get_db().put(self.algo_private_key_key.clone(), key.to_bytes(), MAX_DATA_SENSITIVITY_LEVEL)
+            self.get_db().put(
+                self.algo_private_key_key.clone(),
+                key.to_bytes(),
+                MAX_DATA_SENSITIVITY_LEVEL,
+            )
         }
     }
 
@@ -364,5 +375,15 @@ mod tests {
         }
         let result = db_utils.get_algo_private_key_from_db().unwrap();
         assert_eq!(result, keys);
+    }
+
+    #[test]
+    fn should_put_and_get_algo_account_nonce_from_db() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let nonce = 666;
+        db_utils.put_algo_account_nonce_in_db(nonce).unwrap();
+        let result = db_utils.get_algo_account_nonce_from_db().unwrap();
+        assert_eq!(result, nonce);
     }
 }
