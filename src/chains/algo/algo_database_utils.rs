@@ -5,10 +5,10 @@
    [x] save canon block hash
    [x] address
    [x] tail block hash
-   [ ] block
-   [ ] save canon to tip length
-   [ ] private key
+   [x] save canon to tip length
    [ ] fee
+   [ ] block
+   [ ] private key
    [ ] account nonce
 */
 use std::{fmt, str::FromStr};
@@ -17,15 +17,6 @@ use paste::paste;
 use rust_algorand::{AlgorandAddress, AlgorandHash};
 
 use crate::{
-    chains::algo::algo_constants::{
-        ALGO_ANCHOR_BLOCK_HASH_KEY,
-        ALGO_CANON_BLOCK_HASH_KEY,
-        ALGO_GENESIS_BLOCK_HASH_KEY,
-        ALGO_LATEST_BLOCK_HASH_KEY,
-        ALGO_LATEST_BLOCK_NUMBER_KEY,
-        ALGO_REDEEM_ADDRESS_KEY,
-        ALGO_TAIL_BLOCK_HASH_KEY,
-    },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
@@ -33,18 +24,6 @@ use crate::{
     types::{Byte, Bytes, Result},
     utils::capitalize_first_letter,
 };
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AlgoDbUtils<'a, D: DatabaseInterface> {
-    db: &'a D,
-    algo_redeem_address_key: Bytes,
-    algo_tail_block_hash_key: Bytes,
-    algo_canon_block_hash_key: Bytes,
-    algo_latest_block_hash_key: Bytes,
-    algo_anchor_block_hash_key: Bytes,
-    algo_genesis_block_hash_key: Bytes,
-    algo_latest_block_number_key: Bytes,
-}
 
 macro_rules! create_special_hash_setters_and_getters {
     ($($hash_type:expr),*) => {
@@ -96,22 +75,45 @@ macro_rules! create_special_hash_setters_and_getters {
     }
 }
 
+macro_rules! create_algo_db_utils {
+    ($($name:expr),*) => {
+        paste! {
+            use crate::chains::algo::algo_constants::{
+                $([< $name:upper >],)*
+            };
+
+            #[derive(Debug, Clone, PartialEq, Eq)]
+            pub struct AlgoDbUtils<'a, D: DatabaseInterface> {
+                db: &'a D,
+                $([< $name >]: Bytes,)*
+            }
+
+            impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
+                pub fn new(db: &'a D) -> Self {
+                    Self {
+                        db,
+                        $([< $name >]: [< $name:upper >].to_vec(),)*
+                    }
+                }
+            }
+        }
+    }
+}
+
+create_algo_db_utils!(
+    "algo_redeem_address_key",
+    "algo_tail_block_hash_key",
+    "algo_canon_block_hash_key",
+    "algo_latest_block_hash_key",
+    "algo_anchor_block_hash_key",
+    "algo_genesis_block_hash_key",
+    "algo_latest_block_number_key",
+    "algo_canon_to_tip_length_key"
+);
+
 create_special_hash_setters_and_getters!("tail", "canon", "anchor", "latest", "genesis");
 
 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
-    pub fn new(db: &'a D) -> Self {
-        Self {
-            db,
-            algo_redeem_address_key: ALGO_REDEEM_ADDRESS_KEY.to_vec(),
-            algo_tail_block_hash_key: ALGO_TAIL_BLOCK_HASH_KEY.to_vec(),
-            algo_canon_block_hash_key: ALGO_CANON_BLOCK_HASH_KEY.to_vec(),
-            algo_latest_block_hash_key: ALGO_LATEST_BLOCK_HASH_KEY.to_vec(),
-            algo_anchor_block_hash_key: ALGO_ANCHOR_BLOCK_HASH_KEY.to_vec(),
-            algo_genesis_block_hash_key: ALGO_GENESIS_BLOCK_HASH_KEY.to_vec(),
-            algo_latest_block_number_key: ALGO_LATEST_BLOCK_NUMBER_KEY.to_vec(),
-        }
-    }
-
     fn put_special_hash_in_db(&self, hash_type: &SpecialHashTypes, hash: &AlgorandHash) -> Result<()> {
         if hash_type == &SpecialHashTypes::Genesis {
             if self.get_genesis_block_hash_from_db().is_ok() {
