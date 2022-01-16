@@ -45,7 +45,8 @@ write_algo_db_keys!(
     "algo_anchor_block_hash_key",
     "algo_latest_block_hash_key",
     "algo_genesis_block_hash_key",
-    "algo_latest_block_number_key"
+    "algo_latest_block_number_key",
+    "algo_canon_to_tip_length_key"
 );
 
 #[cfg(test)]
@@ -62,6 +63,8 @@ mod tests {
             ALGO_LATEST_BLOCK_HASH_KEY: "d5743e9bee45679ce65bf04dc3fbce27ef1f148a13a37e4234288f92d3e2e124".to_string(),
             ALGO_GENESIS_BLOCK_HASH_KEY: "e10b845e685c345196e1b4f41a91fa74fc8ae7f000184f222f4b5df649b50585".to_string(),
             ALGO_LATEST_BLOCK_NUMBER_KEY: "c3c70374f7eeb4892998285bf504943fcac222a6df561247c8a53b108ef9556d"
+                .to_string(),
+            ALGO_CANON_TO_TIP_LENGTH_KEY: "295dafb37cf7d99e712b44c066951b962bef0243abb56b5aba1172ea70bfb5f5"
                 .to_string(),
         };
         let result = AlgoDbKeysJson::new();

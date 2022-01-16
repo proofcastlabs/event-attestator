@@ -121,6 +121,14 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         self.put_algorand_hash_in_db(&hash_type.get_key(&self), hash)
     }
 
+    fn put_canon_to_tip_length_in_db(&self, length: u64) -> Result<()> {
+        put_u64_in_db(self.get_db(), &self.algo_canon_to_tip_length_key, length)
+    }
+
+    fn get_canon_to_tip_length_from_db(&self) -> Result<u64> {
+        get_u64_from_db(self.get_db(), &self.algo_canon_to_tip_length_key)
+    }
+
     fn get_special_hash_from_db(&self, hash_type: &SpecialHashTypes) -> Result<AlgorandHash> {
         self.get_algorand_hash_from_db(&hash_type.get_key(&self))
     }
@@ -278,5 +286,15 @@ mod tests {
         };
         let result = db_utils.get_genesis_block_hash_from_db().unwrap();
         assert_eq!(result, genesis_hash);
+    }
+
+    #[test]
+    fn should_put_and_get_algo_canon_to_tip_length_in_db() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let length = 42;
+        db_utils.put_canon_to_tip_length_in_db(42).unwrap();
+        let result = db_utils.get_canon_to_tip_length_from_db().unwrap();
+        assert_eq!(result, length);
     }
 }
