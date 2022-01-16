@@ -1,3 +1,16 @@
+/* Setters and getters TODO
+   [x] chain id
+   [x] save anchor block hash
+   [x] save latest block hash
+   [x] save canon block hash
+   [x] address
+   [x] tail block hash
+   [ ] block
+   [ ] save canon to tip length
+   [ ] private key
+   [ ] fee
+   [ ] account nonce
+*/
 use std::{fmt, str::FromStr};
 
 use paste::paste;
@@ -7,7 +20,7 @@ use crate::{
     chains::algo::algo_constants::{
         ALGO_ANCHOR_BLOCK_HASH_KEY,
         ALGO_CANON_BLOCK_HASH_KEY,
-        ALGO_GENESIS_HASH_KEY,
+        ALGO_GENESIS_BLOCK_HASH_KEY,
         ALGO_LATEST_BLOCK_HASH_KEY,
         ALGO_LATEST_BLOCK_NUMBER_KEY,
         ALGO_REDEEM_ADDRESS_KEY,
@@ -18,73 +31,57 @@ use crate::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
+    utils::capitalize_first_letter,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AlgoDbUtils<'a, D: DatabaseInterface> {
     db: &'a D,
-    algo_genesis_hash_key: Bytes,
     algo_redeem_address_key: Bytes,
     algo_tail_block_hash_key: Bytes,
     algo_canon_block_hash_key: Bytes,
     algo_latest_block_hash_key: Bytes,
     algo_anchor_block_hash_key: Bytes,
+    algo_genesis_block_hash_key: Bytes,
     algo_latest_block_number_key: Bytes,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-enum SpecialHashTypes {
-    Tail,
-    Canon,
-    Anchor,
-    Latest,
-    Genesis,
-}
-
-impl SpecialHashTypes {
-    fn get_key<D: DatabaseInterface>(&self, db_utils: &AlgoDbUtils<D>) -> Bytes {
-        match self {
-            Self::Genesis => db_utils.algo_genesis_hash_key.clone(),
-            Self::Tail => db_utils.algo_tail_block_hash_key.clone(),
-            Self::Canon => db_utils.algo_canon_block_hash_key.clone(),
-            Self::Latest => db_utils.algo_latest_block_hash_key.clone(),
-            Self::Anchor => db_utils.algo_anchor_block_hash_key.clone(),
-        }
-    }
-}
-
-impl fmt::Display for SpecialHashTypes {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::Tail => write!(f, "tail"),
-            Self::Canon => write!(f, "canon"),
-            Self::Anchor => write!(f, "anchor"),
-            Self::Latest => write!(f, "latest"),
-            Self::Genesis => write!(f, "genesis"),
-        }
-    }
-}
-
-impl FromStr for SpecialHashTypes {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        match s.to_lowercase().as_ref() {
-            "tail" => Ok(Self::Tail),
-            "canon" => Ok(Self::Canon),
-            "anchor" => Ok(Self::Anchor),
-            "latest" => Ok(Self::Latest),
-            "genesis" => Ok(Self::Genesis),
-            _ => Err(format!("Unrecognized special hash type: '{}'", s).into()),
-        }
-    }
 }
 
 macro_rules! create_special_hash_setters_and_getters {
     ($($hash_type:expr),*) => {
-        // TODO impl the enum in here too!
-        $(
-            paste! {
+        paste! {
+            #[derive(Debug, Clone, PartialEq, Eq)]
+            enum SpecialHashTypes {
+                $([< $hash_type:camel >],)*
+            }
+
+            impl SpecialHashTypes {
+                fn get_key<D: DatabaseInterface>(&self, db_utils: &AlgoDbUtils<D>) -> Bytes {
+                    match self {
+                        $(Self::[< $hash_type:camel >] => db_utils.[<algo_ $hash_type _block_hash_key>].clone(),)*
+                    }
+                }
+            }
+
+            impl fmt::Display for SpecialHashTypes {
+                fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                    match self {
+                        $(Self::[< $hash_type:camel >]=> write!(f, $hash_type),)*
+                    }
+                }
+            }
+
+            impl FromStr for SpecialHashTypes {
+                type Err = AppError;
+
+                fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+                    match s.to_lowercase().as_ref() {
+                        $($hash_type => Ok(Self::[< $hash_type:camel >]),)*
+                        _ => Err(format!("Unrecognized special hash type: '{}'", s).into()),
+                    }
+                }
+            }
+
+            $(
                 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
                     pub fn [<get_ $hash_type _block_hash_from_db>](&self) -> Result<AlgorandHash> {
                         self.get_special_hash_from_db(&SpecialHashTypes::from_str(&$hash_type)?)
@@ -94,8 +91,8 @@ macro_rules! create_special_hash_setters_and_getters {
                         self.put_special_hash_in_db(&SpecialHashTypes::from_str(&$hash_type)?, hash)
                     }
                 }
-            }
-        )*
+            )*
+        }
     }
 }
 
@@ -105,12 +102,12 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     pub fn new(db: &'a D) -> Self {
         Self {
             db,
-            algo_genesis_hash_key: ALGO_GENESIS_HASH_KEY.to_vec(),
             algo_redeem_address_key: ALGO_REDEEM_ADDRESS_KEY.to_vec(),
             algo_tail_block_hash_key: ALGO_TAIL_BLOCK_HASH_KEY.to_vec(),
             algo_canon_block_hash_key: ALGO_CANON_BLOCK_HASH_KEY.to_vec(),
             algo_latest_block_hash_key: ALGO_LATEST_BLOCK_HASH_KEY.to_vec(),
             algo_anchor_block_hash_key: ALGO_ANCHOR_BLOCK_HASH_KEY.to_vec(),
+            algo_genesis_block_hash_key: ALGO_GENESIS_BLOCK_HASH_KEY.to_vec(),
             algo_latest_block_number_key: ALGO_LATEST_BLOCK_NUMBER_KEY.to_vec(),
         }
     }
