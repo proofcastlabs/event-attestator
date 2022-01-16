@@ -110,6 +110,10 @@ quick_error! {
             from()
             display("✘ `TryFrom` error: {:?}", err)
         }
+        AlgorandError(err: rust_algorand::AlgorandError) {
+            from()
+            display("✘ Algorand error: {:?}", err)
+        }
         TryFromSliceError(err: std::array::TryFromSliceError) {
             from()
             display("✘ `TryFromSlice` error: {:?}", err)
