@@ -14,10 +14,10 @@
 use std::{fmt, str::FromStr};
 
 use paste::paste;
-use rust_algorand::{AlgorandAddress, AlgorandHash};
+use rust_algorand::{AlgorandAddress, AlgorandHash, AlgorandKeys};
 
 use crate::{
-    constants::MIN_DATA_SENSITIVITY_LEVEL,
+    constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
     database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
     traits::DatabaseInterface,
@@ -102,6 +102,7 @@ macro_rules! create_algo_db_utils {
 
 create_algo_db_utils!(
     "algo_fee_key",
+    "algo_private_key_key",
     "algo_redeem_address_key",
     "algo_tail_block_hash_key",
     "algo_canon_block_hash_key",
@@ -118,10 +119,26 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     fn put_special_hash_in_db(&self, hash_type: &SpecialHashTypes, hash: &AlgorandHash) -> Result<()> {
         if hash_type == &SpecialHashTypes::Genesis {
             if self.get_genesis_block_hash_from_db().is_ok() {
-                return Err(Self::get_already_exists_error("genesis hash").into());
+                return Err(Self::get_no_overwrite_error("genesis hash").into());
             }
         };
         self.put_algorand_hash_in_db(&hash_type.get_key(&self), hash)
+    }
+
+    fn get_algo_private_key_from_db(&self) -> Result<AlgorandKeys> {
+        self
+            .get_db()
+            .get(self.algo_private_key_key.clone(), MAX_DATA_SENSITIVITY_LEVEL)
+            .and_then(|bytes| Ok(AlgorandKeys::from_bytes(&bytes)?))
+
+    }
+
+    fn put_algo_private_key_in_db(&self, key: &AlgorandKeys) -> Result<()> {
+        if self.get_algo_private_key_from_db().is_ok() {
+            Err(Self::get_no_overwrite_error("private key").into())
+        } else {
+            self.get_db().put(self.algo_private_key_key.clone(), key.to_bytes(), MAX_DATA_SENSITIVITY_LEVEL)
+        }
     }
 
     fn get_algo_fee_from_db(&self) -> Result<u64> {
@@ -144,8 +161,8 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         self.get_algorand_hash_from_db(&hash_type.get_key(&self))
     }
 
-    fn get_already_exists_error(s: &str) -> String {
-        format!("Cannot put ALGO {} in db - one already exists!", s)
+    fn get_no_overwrite_error(s: &str) -> String {
+        format!("Cannot overwrite ALGO {} in db - one already exists!", s)
     }
 
     fn get_db(&self) -> &D {
@@ -173,7 +190,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
 
     pub fn put_redeem_address_in_db(&self, address: &AlgorandAddress) -> Result<()> {
         if self.get_redeem_address_from_db().is_ok() {
-            Err(Self::get_already_exists_error("redeem address").into())
+            Err(Self::get_no_overwrite_error("redeem address").into())
         } else {
             self.get_db().put(
                 self.algo_redeem_address_key.clone(),
@@ -289,7 +306,7 @@ mod tests {
         let hash_from_db = db_utils.get_genesis_block_hash_from_db().unwrap();
         assert_eq!(hash_from_db, genesis_hash);
         let new_hash = get_random_algorand_hash();
-        let expected_error = "Cannot put ALGO genesis hash in db - one already exists!";
+        let expected_error = "Cannot overwrite ALGO genesis hash in db - one already exists!";
         match db_utils.put_genesis_block_hash_in_db(&new_hash) {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
@@ -317,5 +334,35 @@ mod tests {
         db_utils.put_algo_fee_in_db(fee).unwrap();
         let result = db_utils.get_algo_fee_from_db().unwrap();
         assert_eq!(result, fee);
+    }
+
+    #[test]
+    fn should_put_and_get_algorand_private_key_in_db() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let keys = AlgorandKeys::create_random();
+        db_utils.put_algo_private_key_in_db(&keys).unwrap();
+        let result = db_utils.get_algo_private_key_from_db().unwrap();
+        assert_eq!(result, keys);
+    }
+
+    #[test]
+    fn should_not_allow_overwrite_of_private_key() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let keys = AlgorandKeys::create_random();
+        db_utils.put_algo_private_key_in_db(&keys).unwrap();
+        let keys_from_db = db_utils.get_algo_private_key_from_db().unwrap();
+        assert_eq!(keys_from_db, keys);
+        let new_keys = AlgorandKeys::create_random();
+        assert_ne!(keys, new_keys);
+        let expected_error = "Cannot overwrite ALGO private key in db - one already exists!";
+        match db_utils.put_algo_private_key_in_db(&new_keys) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
+        let result = db_utils.get_algo_private_key_from_db().unwrap();
+        assert_eq!(result, keys);
     }
 }

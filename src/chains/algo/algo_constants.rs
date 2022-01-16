@@ -40,6 +40,7 @@ macro_rules! write_algo_db_keys {
 
 write_algo_db_keys!(
     "algo_fee_key",
+    "algo_private_key_key",
     "algo_redeem_address_key",
     "algo_tail_block_hash_key",
     "algo_canon_block_hash_key",
@@ -67,6 +68,8 @@ mod tests {
             ALGO_LATEST_BLOCK_NUMBER_KEY: "c3c70374f7eeb4892998285bf504943fcac222a6df561247c8a53b108ef9556d"
                 .to_string(),
             ALGO_CANON_TO_TIP_LENGTH_KEY: "295dafb37cf7d99e712b44c066951b962bef0243abb56b5aba1172ea70bfb5f5"
+                .to_string(),
+            ALGO_PRIVATE_KEY_KEY: "90c457a020ebe52f3de54b258d3494466d30ee5b95bb1245da06546738ef80ff"
                 .to_string(),
         };
         let result = AlgoDbKeysJson::new();
