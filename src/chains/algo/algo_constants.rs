@@ -1,63 +1,70 @@
+use std::fmt;
+
+use paste::paste;
+use serde::{Deserialize, Serialize};
 pub use serde_json::{json, Value as JsonValue};
 
-use crate::utils::get_prefixed_db_key;
+use crate::{types::Result, utils::get_prefixed_db_key};
 
 pub const ALGO_CORE_IS_INITIALIZED_JSON: &str = "{algo_core_initialized:true}";
 
-// TODO use a macro to generate all of these quickly.
+macro_rules! write_algo_db_keys {
+    ($($name:expr),*) => {
+        paste! {
+            lazy_static! {
+                $(pub static ref [< $name:snake:upper >]: [u8; 32] = get_prefixed_db_key($name);)*
+            }
 
-pub fn get_algo_constants_db_keys() -> JsonValue {
-    json!({
-        "ALGO_REDEEM_ADDRESS_KEY":
-            hex::encode(ALGO_REDEEM_ADDRESS_KEY.to_vec()),
-        "ALGO_GENESIS_BLOCK_HASH_KEY":
-            hex::encode(ALGO_GENESIS_BLOCK_HASH_KEY.to_vec()),
-        "ALGO_LATEST_BLOCK_NUMBER_KEY":
-            hex::encode(ALGO_LATEST_BLOCK_NUMBER_KEY.to_vec()),
-        "ALGO_TAIL_BLOCK_HASH_KEY":
-            hex::encode(ALGO_TAIL_BLOCK_HASH_KEY.to_vec()),
-        "ALGO_ANCHOR_BLOCK_HASH_KEY":
-            hex::encode(ALGO_ANCHOR_BLOCK_HASH_KEY.to_vec()),
-        "ALGO_CANON_BLOCK_HASH_KEY":
-            hex::encode(ALGO_CANON_BLOCK_HASH_KEY.to_vec()),
-        "ALGO_LATEST_BLOCK_HASH_KEY":
-            hex::encode(ALGO_LATEST_BLOCK_HASH_KEY.to_vec()),
-    })
+            // NOTE: This struct actually ends up as SCREAMING_SNAKE_CASE due to
+            // the paste! macro's :snake:upper stuff, but the compiler can't figure that out.
+            #[allow(non_snake_case)]
+            #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+            pub struct AlgoDbKeysJson {
+                $([< $name:snake:upper >]: String,)*
+            }
+
+            impl AlgoDbKeysJson {
+                fn new() -> Self {
+                    Self {
+                        $([< $name:snake:upper >]: hex::encode(&*[< $name:snake:upper >]),)*
+                    }
+                }
+
+                pub fn to_string(&self) -> Result<String> {
+                    Ok(serde_json::to_string(self)?)
+                }
+            }
+        }
+    }
 }
 
-lazy_static! {
-    pub static ref ALGO_REDEEM_ADDRESS_KEY: [u8; 32] = get_prefixed_db_key("algo-redeem-address-key");
-    pub static ref ALGO_TAIL_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("algo-tail-block-hash-key");
-    pub static ref ALGO_CANON_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("algo-canon-block-hash-key");
-    pub static ref ALGO_ANCHOR_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("algo-anchor-block-hash-key");
-    pub static ref ALGO_LATEST_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("algo-latest-block-hash-key");
-    pub static ref ALGO_GENESIS_BLOCK_HASH_KEY: [u8; 32] = get_prefixed_db_key("algo-genesis-block-hash-key");
-    pub static ref ALGO_LATEST_BLOCK_NUMBER_KEY: [u8; 32] = get_prefixed_db_key("algo-latest-block-number-key");
-}
+write_algo_db_keys!(
+    "algo_redeem_address_key",
+    "algo_tail_block_hash_key",
+    "algo_canon_block_hash_key",
+    "algo_anchor_block_hash_key",
+    "algo_latest_block_hash_key",
+    "algo_genesis_block_hash_key",
+    "algo_latest_block_number_key"
+);
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn should_get_all_algo_db_keys() {
-        let expected_result = json!({
-            "ALGO_ANCHOR_BLOCK_HASH_KEY":
-                "309d45a2c467a0206c79cfea653244f1a430bd2b35ef4d4c93b9810fa6edccdf",
-            "ALGO_CANON_BLOCK_HASH_KEY":
-                "0dc734a3a3f99f38a38d3d01e324f8395681e30c653891b5744542eb10b38256",
-            "ALGO_GENESIS_BLOCK_HASH_KEY":
-                "bbd97d1a3028c1b5110ad13d50c544908b9c5ce3203bce409510d0aaaf85981a",
-            "ALGO_LATEST_BLOCK_HASH_KEY":
-                "b4304dae5b447bd29e015334d65946e519e34fe604acb07a7cf2703f5f5f50ca",
-            "ALGO_LATEST_BLOCK_NUMBER_KEY":
-                "b2eb58d1d1b1b7300a8d61e2cd11d0ce82583e8a2191b32b9d87adbf01d430eb",
-            "ALGO_REDEEM_ADDRESS_KEY":
-                "d3e2a66c27b833ffbf3049d9bc64c15a32a368d5998b57e127edfdf213969668",
-            "ALGO_TAIL_BLOCK_HASH_KEY":
-                "c00de4ca233a9fc03ddbfe85125af5064fb071cf75800d06dd4e07e2fac13747",
-        });
-        let result = get_algo_constants_db_keys();
+    fn algo_db_keys_should_remain_consistent() {
+        let expected_result = AlgoDbKeysJson {
+            ALGO_REDEEM_ADDRESS_KEY: "6e4a528af852818a2f5c1660679873fbe3a49ab57ecf14bf0f542220e95cc6d4".to_string(),
+            ALGO_TAIL_BLOCK_HASH_KEY: "2a307fe54ac8b580e12772152a6be38285afb11a932ab817c423a580c474fb3f".to_string(),
+            ALGO_CANON_BLOCK_HASH_KEY: "1a4b2db39e866baa1e76f114c6620a94e7cd078bf1c81f5cd286e4213ea60892".to_string(),
+            ALGO_ANCHOR_BLOCK_HASH_KEY: "0708c1e329a262c9ce0e39d91a05be6dbb270861869b2c48d8aa4d8e7aa58c75".to_string(),
+            ALGO_LATEST_BLOCK_HASH_KEY: "d5743e9bee45679ce65bf04dc3fbce27ef1f148a13a37e4234288f92d3e2e124".to_string(),
+            ALGO_GENESIS_BLOCK_HASH_KEY: "e10b845e685c345196e1b4f41a91fa74fc8ae7f000184f222f4b5df649b50585".to_string(),
+            ALGO_LATEST_BLOCK_NUMBER_KEY: "c3c70374f7eeb4892998285bf504943fcac222a6df561247c8a53b108ef9556d"
+                .to_string(),
+        };
+        let result = AlgoDbKeysJson::new();
         assert_eq!(result, expected_result)
     }
 }
