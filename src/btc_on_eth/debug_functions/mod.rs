@@ -42,7 +42,7 @@ use crate::{
         },
         eth::{
             eth_chain_id::EthChainId,
-            eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY as ETH_KEY},
+            eth_constants::{EthDatabaseKeysJson, ETH_PRIVATE_KEY_DB_KEY as ETH_KEY},
             eth_contracts::{
                 erc777::get_signed_erc777_change_pnetwork_tx,
                 erc777_proxy::{
@@ -76,7 +76,7 @@ pub fn debug_get_all_db_keys() -> Result<String> {
     check_debug_mode().map(|_| {
         json!({
             "btc": get_btc_constants_db_keys(),
-            "eth": get_eth_constants_db_keys(),
+            "eth": EthDatabaseKeysJson::new(),
             "fees": BTC_ON_ETH_FEE_DB_KEYS.to_json(),
             "db-key-prefix": DB_KEY_PREFIX.to_string(),
             "utxo-manager": get_utxo_constants_db_keys(),

@@ -5,11 +5,7 @@ use serde_json::json;
 
 use crate::{
     chains::eth::{
-        eth_constants::{
-            get_eth_constants_db_keys,
-            ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
-            ETH_PRIVATE_KEY_DB_KEY,
-        },
+        eth_constants::{EthDatabaseKeysJson, ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY, ETH_PRIVATE_KEY_DB_KEY},
         eth_contracts::erc20_vault::{
             encode_erc20_vault_add_supported_token_fx_data,
             encode_erc20_vault_migrate_fxn_data,
@@ -42,8 +38,8 @@ use crate::{
 pub fn debug_get_all_db_keys() -> Result<String> {
     check_debug_mode().map(|_| {
         json!({
+            "eth": EthDatabaseKeysJson::new(),
             "evm": get_evm_constants_db_keys(),
-            "eth": get_eth_constants_db_keys(),
             "db-key-prefix": DB_KEY_PREFIX.to_string(),
             "dictionary": hex::encode(ETH_EVM_DICTIONARY_KEY.to_vec()),
         })

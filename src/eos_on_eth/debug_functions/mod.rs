@@ -28,7 +28,7 @@ use crate::{
             eos_utils::get_eos_tx_expiration_timestamp_with_offset,
         },
         eth::{
-            eth_constants::{get_eth_constants_db_keys, ETH_PRIVATE_KEY_DB_KEY},
+            eth_constants::{EthDatabaseKeysJson, ETH_PRIVATE_KEY_DB_KEY},
             eth_database_utils::EthDbUtils,
             eth_debug_functions::debug_set_eth_gas_price_in_db,
             eth_utils::convert_hex_to_eth_address,
@@ -104,7 +104,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
 /// This function will return a JSON formatted list of all the database keys used in the encrypted database.
 pub fn debug_get_all_db_keys() -> Result<String> {
     check_debug_mode().and(Ok(json!({
-        "eth": get_eth_constants_db_keys(),
+        "eth": EthDatabaseKeysJson::new(),
         "eos": get_eos_constants_db_keys(),
         "db-key-prefix": DB_KEY_PREFIX.to_string(),
         "dictionary:": hex::encode(EOS_ETH_DICTIONARY_KEY.to_vec()),
