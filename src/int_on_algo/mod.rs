@@ -13,10 +13,16 @@
 //! ```
 
 pub(crate) mod algo;
-
-pub use crate::int_on_algo::algo::submit_algo_block::submit_algo_block_to_core;
-/*
 pub(crate) mod check_core_is_initialized;
+pub(crate) mod get_latest_block_numbers;
+pub(crate) mod int;
+
+pub use crate::int_on_algo::{
+    algo::{initialize_algo_core::maybe_initialize_algo_core, submit_algo_block::submit_algo_block_to_core},
+    get_latest_block_numbers::get_latest_block_numbers,
+    int::initialize_int_core::maybe_initialize_int_core,
+};
+/*
 pub(crate) mod debug_functions;
 pub(crate) mod evm;
 pub(crate) mod fees_calculator;

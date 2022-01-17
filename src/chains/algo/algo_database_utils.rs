@@ -25,6 +25,21 @@ use crate::{
     utils::capitalize_first_letter,
 };
 
+create_db_utils_with_getters!(
+    "Algo";
+    "_fee_key" => "algo_fee_key",
+    "_private_key_key" => "algo_private_key_key",
+    "_account_nonce_key" => "algo_account_nonce_key",
+    "_redeem_address_key" => "algo_redeem_address_key",
+    "_tail_block_hash_key" => "algo_tail_block_hash_key",
+    "_canon_block_hash_key" => "algo_canon_block_hash_key",
+    "_anchor_block_hash_key" => "algo_anchor_block_hash_key",
+    "_latest_block_hash_key" => "algo_latest_block_hash_key",
+    "_genesis_block_hash_key" => "algo_genesis_block_hash_key",
+    "_latest_block_number_key" => "algo_latest_block_number_key",
+    "_canon_to_tip_length_key" => "algo_canon_to_tip_length_key"
+);
+
 macro_rules! create_special_hash_setters_and_getters {
     ($($hash_type:expr),*) => {
         paste! {
@@ -74,45 +89,6 @@ macro_rules! create_special_hash_setters_and_getters {
         }
     }
 }
-
-macro_rules! create_algo_db_utils {
-    ($($name:expr),*) => {
-        paste! {
-            use crate::chains::algo::algo_constants::{
-                $([< $name:upper >],)*
-            };
-
-            #[derive(Debug, Clone, PartialEq, Eq)]
-            pub struct AlgoDbUtils<'a, D: DatabaseInterface> {
-                db: &'a D,
-                $([< $name >]: Bytes,)*
-            }
-
-            impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
-                pub fn new(db: &'a D) -> Self {
-                    Self {
-                        db,
-                        $([< $name >]: [< $name:upper >].to_vec(),)*
-                    }
-                }
-            }
-        }
-    }
-}
-
-create_algo_db_utils!(
-    "algo_fee_key",
-    "algo_private_key_key",
-    "algo_account_nonce_key",
-    "algo_redeem_address_key",
-    "algo_tail_block_hash_key",
-    "algo_canon_block_hash_key",
-    "algo_latest_block_hash_key",
-    "algo_anchor_block_hash_key",
-    "algo_genesis_block_hash_key",
-    "algo_latest_block_number_key",
-    "algo_canon_to_tip_length_key"
-);
 
 create_special_hash_setters_and_getters!("tail", "canon", "anchor", "latest", "genesis");
 
@@ -174,10 +150,6 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
 
     fn get_no_overwrite_error(s: &str) -> String {
         format!("Cannot overwrite ALGO {} in db - one already exists!", s)
-    }
-
-    fn get_db(&self) -> &D {
-        self.db
     }
 
     fn put_algorand_hash_in_db(&self, key: &[Byte], hash: &AlgorandHash) -> Result<()> {
@@ -385,5 +357,36 @@ mod tests {
         db_utils.put_algo_account_nonce_in_db(nonce).unwrap();
         let result = db_utils.get_algo_account_nonce_from_db().unwrap();
         assert_eq!(result, nonce);
+    }
+
+    #[test]
+    fn algo_db_keys_should_remain_consistent() {
+        #[rustfmt::skip]
+        let expected_result = AlgoDatabaseKeysJson {
+            ALGO_FEE_KEY:
+                "d284e359e0a2076c909ee55d8deaf1e05b5488a997f18bf86e0928c4fbc5c638".to_string(),
+            ALGO_REDEEM_ADDRESS_KEY:
+                "6e4a528af852818a2f5c1660679873fbe3a49ab57ecf14bf0f542220e95cc6d4".to_string(),
+            ALGO_TAIL_BLOCK_HASH_KEY:
+                "2a307fe54ac8b580e12772152a6be38285afb11a932ab817c423a580c474fb3f".to_string(),
+            ALGO_CANON_BLOCK_HASH_KEY:
+                "1a4b2db39e866baa1e76f114c6620a94e7cd078bf1c81f5cd286e4213ea60892".to_string(),
+            ALGO_ANCHOR_BLOCK_HASH_KEY:
+                "0708c1e329a262c9ce0e39d91a05be6dbb270861869b2c48d8aa4d8e7aa58c75".to_string(),
+            ALGO_LATEST_BLOCK_HASH_KEY:
+                "d5743e9bee45679ce65bf04dc3fbce27ef1f148a13a37e4234288f92d3e2e124".to_string(),
+            ALGO_GENESIS_BLOCK_HASH_KEY:
+                "e10b845e685c345196e1b4f41a91fa74fc8ae7f000184f222f4b5df649b50585".to_string(),
+            ALGO_LATEST_BLOCK_NUMBER_KEY:
+                "c3c70374f7eeb4892998285bf504943fcac222a6df561247c8a53b108ef9556d".to_string(),
+            ALGO_CANON_TO_TIP_LENGTH_KEY:
+                "295dafb37cf7d99e712b44c066951b962bef0243abb56b5aba1172ea70bfb5f5".to_string(),
+            ALGO_PRIVATE_KEY_KEY:
+                "90c457a020ebe52f3de54b258d3494466d30ee5b95bb1245da06546738ef80ff".to_string(),
+            ALGO_ACCOUNT_NONCE_KEY:
+                "805e14a1f236eac2b388f2cb625af8bacd8633cb489e84df62b99fbc80b28a0d".to_string(),
+        };
+        let result = AlgoDatabaseKeysJson::new();
+        assert_eq!(result, expected_result)
     }
 }
