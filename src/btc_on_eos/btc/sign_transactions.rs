@@ -1,12 +1,7 @@
 use crate::{
     btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
     chains::{
-        btc::{
-            btc_chain_id::BtcChainId,
-            btc_database_utils::{get_btc_canon_block_from_db, get_btc_chain_id_from_db},
-            btc_metadata::ToMetadata,
-            btc_state::BtcState,
-        },
+        btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata, btc_state::BtcState},
         eos::{
             eos_chain_id::EosChainId,
             eos_constants::MAX_BYTES_FOR_EOS_USER_DATA,
@@ -66,8 +61,11 @@ pub fn maybe_sign_canon_block_txs_and_add_to_state<D: DatabaseInterface>(state: 
         &get_eos_chain_id_from_db(state.db)?,
         &EosPrivateKey::get_from_db(state.db)?,
         &get_eos_account_name_string_from_db(state.db)?,
-        &get_btc_canon_block_from_db(state.db)?.get_eos_minting_params(),
-        &get_btc_chain_id_from_db(state.db)?,
+        &state
+            .btc_db_utils
+            .get_btc_canon_block_from_db()?
+            .get_eos_minting_params(),
+        &state.btc_db_utils.get_btc_chain_id_from_db()?,
     )
     .and_then(|eos_signed_txs| state.add_eos_signed_txs(eos_signed_txs))
 }

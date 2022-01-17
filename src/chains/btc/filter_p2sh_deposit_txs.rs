@@ -6,7 +6,6 @@ use bitcoin::{
 
 use crate::{
     chains::btc::{
-        btc_database_utils::{get_btc_network_from_db, get_btc_public_key_slice_from_db},
         btc_state::BtcState,
         btc_types::{BtcPubKeySlice, BtcTransaction, BtcTransactions},
         btc_utils::get_p2sh_redeem_script_sig,
@@ -114,9 +113,9 @@ where
     info!("✔ Filtering out `p2sh` deposits & adding to state...");
     filter_p2sh_deposit_txs(
         state.get_deposit_info_hash_map()?,
-        &get_btc_public_key_slice_from_db(state.db)?,
+        &state.btc_db_utils.get_btc_public_key_slice_from_db()?,
         &state.get_btc_block_and_id()?.block.txdata,
-        get_btc_network_from_db(state.db)?,
+        state.btc_db_utils.get_btc_network_from_db()?,
     )
     .and_then(|txs| {
         info!("✔ Found {} txs containing `p2sh` deposits", txs.len());

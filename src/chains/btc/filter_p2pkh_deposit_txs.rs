@@ -5,7 +5,6 @@ use bitcoin::{
 
 use crate::{
     chains::btc::{
-        btc_database_utils::{get_btc_address_from_db, get_btc_public_key_slice_from_db},
         btc_state::BtcState,
         btc_types::{BtcPubKeySlice, BtcTransactions},
         btc_utils::get_pay_to_pub_key_hash_script,
@@ -65,8 +64,8 @@ fn filter_for_p2pkh_deposit_txs_and_add_to_state<D: DatabaseInterface>(
         if include_change_outputs { "IN" } else { "EX" },
     );
     filter_txs_for_p2pkh_deposits(
-        &get_btc_address_from_db(state.db)?,
-        &get_btc_public_key_slice_from_db(state.db)?,
+        &state.btc_db_utils.get_btc_address_from_db()?,
+        &state.btc_db_utils.get_btc_public_key_slice_from_db()?,
         &state.get_btc_block_and_id()?.block.txdata,
         include_change_outputs,
     )

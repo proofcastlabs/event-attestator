@@ -27,12 +27,7 @@ use crate::{
     },
     chains::{
         btc::{
-            btc_database_utils::{
-                end_btc_db_transaction,
-                get_btc_chain_id_from_db,
-                get_btc_latest_block_from_db,
-                start_btc_db_transaction,
-            },
+            btc_database_utils::{end_btc_db_transaction, start_btc_db_transaction},
             btc_state::BtcState,
             btc_submission_material::parse_submission_material_and_put_in_state,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
@@ -167,7 +162,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
                 &EosPrivateKey::get_from_db(state.db)?,
                 &get_eos_account_name_string_from_db(state.db)?,
                 &state.btc_on_eos_minting_params,
-                &get_btc_chain_id_from_db(state.db)?,
+                &state.btc_db_utils.get_btc_chain_id_from_db()?,
             )?;
             info!("✔ EOS signed txs: {:?}", eos_signed_txs);
             state.add_eos_signed_txs(eos_signed_txs)
@@ -176,7 +171,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
         .and_then(|state| {
             info!("✔ Getting BTC output json and putting in state...");
             let output = serde_json::to_string(&BtcOutput {
-                btc_latest_block_number: get_btc_latest_block_from_db(state.db)?.height,
+                btc_latest_block_number: state.btc_db_utils.get_btc_latest_block_from_db()?.height,
                 eos_signed_transactions: match &state.eos_signed_txs.len() {
                     0 => vec![],
                     _ => get_eos_signed_tx_info(

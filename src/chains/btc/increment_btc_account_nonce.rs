@@ -1,14 +1,11 @@
 use crate::{
-    chains::{
-        btc::btc_database_utils::{get_btc_account_nonce_from_db, put_btc_account_nonce_in_db},
-        eos::eos_state::EosState,
-    },
+    chains::{btc::btc_database_utils::BtcDbUtils, eos::eos_state::EosState},
     traits::DatabaseInterface,
     types::Result,
 };
 
 pub fn increment_btc_account_nonce<D: DatabaseInterface>(
-    db: &D,
+    db_utils: &BtcDbUtils<D>,
     current_nonce: u64,
     num_signatures: u64,
 ) -> Result<()> {
@@ -17,7 +14,7 @@ pub fn increment_btc_account_nonce<D: DatabaseInterface>(
         "✔ Incrementing btc account nonce by {} nonce from {} to {}",
         num_signatures, current_nonce, new_nonce
     );
-    put_btc_account_nonce_in_db(db, new_nonce)
+    db_utils.put_btc_account_nonce_in_db(new_nonce)
 }
 
 pub fn maybe_increment_btc_signature_nonce_and_return_eos_state<D: DatabaseInterface>(
@@ -29,7 +26,11 @@ pub fn maybe_increment_btc_signature_nonce_and_return_eos_state<D: DatabaseInter
             info!("✔ No signatures in state ∴ not incrementing nonce");
             Ok(state)
         },
-        _ => increment_btc_account_nonce(state.db, get_btc_account_nonce_from_db(state.db)?, num_txs as u64)
-            .and(Ok(state)),
+        _ => increment_btc_account_nonce(
+            &state.btc_db_utils,
+            state.btc_db_utils.get_btc_account_nonce_from_db()?,
+            num_txs as u64,
+        )
+        .and(Ok(state)),
     }
 }

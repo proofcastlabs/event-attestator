@@ -10,7 +10,7 @@ use crate::{
     chains::{
         btc::{
             btc_constants::{BtcDatabaseKeysJson, BTC_PRIVATE_KEY_DB_KEY as BTC_KEY},
-            btc_database_utils::{end_btc_db_transaction, get_btc_address_from_db, start_btc_db_transaction},
+            btc_database_utils::{end_btc_db_transaction, start_btc_db_transaction, BtcDbUtils},
             btc_debug_functions::debug_put_btc_fee_in_db,
             btc_state::BtcState,
             btc_submission_material::parse_submission_material_and_put_in_state,
@@ -87,7 +87,8 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 /// transaction replays. Use with extreme caution and only if you know exactly what you are doing
 /// and why.
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
-    check_core_is_initialized(db).and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(eos_init_json)?))
+    check_core_is_initialized(&BtcDbUtils::new(db), db)
+        .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(eos_init_json)?))
 }
 
 /// # Debug Clear All UTXOS
@@ -107,7 +108,7 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
 ///
 /// Adds a new EOS schedule to the core's encrypted database.
 pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &str) -> Result<String> {
-    check_core_is_initialized(&db).and_then(|_| add_new_eos_schedule(&db, schedule_json))
+    check_core_is_initialized(&BtcDbUtils::new(&db), &db).and_then(|_| add_new_eos_schedule(&db, schedule_json))
 }
 
 /// # Debug Set Key in DB to Value
@@ -142,7 +143,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
 /// This function will return a JSON containing all the UTXOs the encrypted database currently has.
 pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(&db), &db))
         .and_then(|_| get_all_utxos_as_json_string(&db))
 }
 
@@ -163,7 +164,7 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
     v_out: u32,
 ) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(&db), &db))
         .and_then(|_| get_child_pays_for_parent_btc_tx(db, fee, tx_id, v_out))
         .map(prepend_debug_output_marker_to_string)
 }
@@ -180,7 +181,7 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
 /// bricked. Use ONLY if you know exactly what you're doing and why!
 pub fn debug_consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(&db), &db))
         .and_then(|_| consolidate_utxos(db, fee, num_utxos))
         .map(prepend_debug_output_marker_to_string)
 }
@@ -193,7 +194,7 @@ pub fn debug_consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos:
 /// Use ONLY if you know exactly what you're doing and why!
 pub fn debug_remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&db))
+        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(&db), &db))
         .and_then(|_| remove_utxo(db, tx_id, v_out))
         .map(prepend_debug_output_marker_to_string)
 }
@@ -225,7 +226,7 @@ pub fn debug_add_multiple_utxos<D: DatabaseInterface>(db: D, json_str: &str) -> 
 ///
 /// This function returns the list of already-processed action global sequences in JSON format.
 pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String> {
-    check_core_is_initialized(db).and_then(|_| get_processed_actions_list(db))
+    check_core_is_initialized(&BtcDbUtils::new(db), db).and_then(|_| get_processed_actions_list(db))
 }
 
 /// # Debug Maybe Add UTXO To DB
@@ -323,11 +324,12 @@ pub fn debug_put_btc_on_eos_peg_out_basis_points_in_db<D: DatabaseInterface>(
 /// signed transaction is returned to the caller.
 pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &str) -> Result<String> {
     info!("✔ Debug getting `BtcOnEos` withdrawal tx...");
+    let btc_db_utils = BtcDbUtils::new(&db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_btc_on_eos_fee_withdrawal_tx(&db, btc_address))
         .and_then(|btc_tx| {
-            let change_utxos = get_pay_to_pub_key_hash_script(&get_btc_address_from_db(&db)?)
+            let change_utxos = get_pay_to_pub_key_hash_script(&btc_db_utils.get_btc_address_from_db()?)
                 .map(|target_script| extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]))?;
             save_utxos_to_db(&db, &change_utxos)?;
             db.end_transaction()?;

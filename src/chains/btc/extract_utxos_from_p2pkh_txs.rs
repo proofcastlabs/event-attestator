@@ -2,7 +2,6 @@ use bitcoin::blockdata::script::Script as BtcScript;
 
 use crate::{
     chains::btc::{
-        btc_database_utils::get_btc_address_from_db,
         btc_state::BtcState,
         btc_types::BtcTransaction,
         btc_utils::{create_unsigned_utxo_from_tx, get_pay_to_pub_key_hash_script},
@@ -43,7 +42,9 @@ pub fn maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state<D: DatabaseInterf
     state: BtcState<D>,
 ) -> Result<BtcState<D>> {
     info!("✔ Maybe extracting UTXOs from `p2pkh` txs...");
-    get_btc_address_from_db(state.db)
+    state
+        .btc_db_utils
+        .get_btc_address_from_db()
         .and_then(|btc_address| get_pay_to_pub_key_hash_script(&btc_address))
         .and_then(|target_script| {
             Ok(extract_utxos_from_p2pkh_txs(

@@ -4,7 +4,7 @@ use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, util::addre
 
 use crate::{
     chains::btc::{
-        btc_database_utils::{get_btc_address_from_db, get_btc_fee_from_db, get_btc_private_key_from_db},
+        btc_database_utils::BtcDbUtils,
         btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
         btc_types::BtcRecipientAndAmount,
         utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
@@ -21,6 +21,7 @@ pub fn get_fee_withdrawal_btc_tx_for_core_type<D: DatabaseInterface>(
     db: &D,
     btc_address: &str,
 ) -> Result<BtcTransaction> {
+    let btc_db_utils = BtcDbUtils::new(db);
     let fee_db_utils = FeeDatabaseUtils::new_for_core_type(core_type)?;
     let withdrawal_amount = fee_db_utils.get_accrued_fees_from_db(db)?;
     if withdrawal_amount == 0 {
@@ -30,7 +31,7 @@ pub fn get_fee_withdrawal_btc_tx_for_core_type<D: DatabaseInterface>(
         )
         .into())
     } else {
-        let fee = get_btc_fee_from_db(db)?;
+        let fee = btc_db_utils.get_btc_fee_from_db()?;
         let recipients_and_amounts = vec![BtcRecipientAndAmount {
             recipient: BtcAddress::from_str(btc_address)?,
             amount: withdrawal_amount,
@@ -42,8 +43,8 @@ pub fn get_fee_withdrawal_btc_tx_for_core_type<D: DatabaseInterface>(
                 create_signed_raw_btc_tx_for_n_input_n_outputs(
                     fee,
                     recipients_and_amounts,
-                    &get_btc_address_from_db(db)?,
-                    &get_btc_private_key_from_db(db)?,
+                    &btc_db_utils.get_btc_address_from_db()?,
+                    &btc_db_utils.get_btc_private_key_from_db()?,
                     utxos,
                 )
             })
@@ -69,12 +70,6 @@ mod tests {
     use super::*;
     use crate::{
         chains::btc::{
-            btc_database_utils::{
-                put_btc_address_in_db,
-                put_btc_fee_in_db,
-                put_btc_network_in_db,
-                put_btc_private_key_in_db,
-            },
             btc_test_utils::{get_sample_btc_private_key, get_sample_utxo_and_values},
             utxo_manager::utxo_database_utils::save_utxos_to_db,
         },
@@ -87,6 +82,7 @@ mod tests {
         let btc_fee = 20;
         let accrued_fees = 1;
         let db = get_test_database();
+        let db_utils = BtcDbUtils::new(&db);
         let utxos = get_sample_utxo_and_values();
         let change_address = "mwbtrpDGLWiMiq1TB7DhnrEN14B5Hydp28";
         let pk = get_sample_btc_private_key();
@@ -94,10 +90,10 @@ mod tests {
         FeeDatabaseUtils::new_for_btc_on_eth()
             .increment_accrued_fees(&db, accrued_fees)
             .unwrap();
-        put_btc_fee_in_db(&db, btc_fee).unwrap();
-        put_btc_address_in_db(&db, change_address).unwrap();
-        put_btc_network_in_db(&db, BtcNetwork::Testnet).unwrap();
-        put_btc_private_key_in_db(&db, &pk).unwrap();
+        db_utils.put_btc_fee_in_db(btc_fee).unwrap();
+        db_utils.put_btc_address_in_db(change_address).unwrap();
+        db_utils.put_btc_network_in_db(BtcNetwork::Testnet).unwrap();
+        db_utils.put_btc_private_key_in_db(&pk).unwrap();
         let accrued_fees_before = FeeDatabaseUtils::new_for_btc_on_eth()
             .get_accrued_fees_from_db(&db)
             .unwrap();

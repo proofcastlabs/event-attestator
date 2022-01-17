@@ -15,7 +15,6 @@ use crate::{
     chains::{
         btc::{
             btc_constants::MINIMUM_REQUIRED_SATOSHIS,
-            btc_database_utils::get_btc_network_from_db,
             btc_metadata::ToMetadata,
             btc_state::BtcState,
             deposit_address_info::DepositInfoHashMap,
@@ -39,7 +38,7 @@ pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D: DatabaseInter
     BtcOnEosMintingParams::from_btc_txs(
         state.get_p2sh_deposit_txs()?,
         state.get_deposit_info_hash_map()?,
-        get_btc_network_from_db(state.db)?,
+        state.btc_db_utils.get_btc_network_from_db()?,
         &get_eos_token_symbol_from_db(state.db)?,
     )
     .and_then(|minting_params| minting_params.filter_params())

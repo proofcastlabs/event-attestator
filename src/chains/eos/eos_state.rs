@@ -3,7 +3,7 @@ pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use crate::{
     btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
     chains::{
-        btc::{btc_database_utils_redux::BtcDatabaseUtils, utxo_manager::utxo_types::BtcUtxosAndValues},
+        btc::{btc_database_utils::BtcDbUtils, utxo_manager::utxo_types::BtcUtxosAndValues},
         eos::{
             eos_action_proofs::EosActionProofs,
             eos_block_header::EosBlockHeaderV2,
@@ -35,8 +35,8 @@ pub struct EosState<'a, D: DatabaseInterface> {
     pub interim_block_ids: Checksum256s,
     pub eth_signed_txs: EthTransactions,
     pub eth_db_utils: EthDbUtils<'a, D>,
+    pub btc_db_utils: BtcDbUtils<'a, D>,
     pub eos_db_utils: EosDatabaseUtils<'a, D>,
-    pub btc_db_utils: BtcDatabaseUtils<'a, D>,
     pub block_header: Option<EosBlockHeaderV2>,
     pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub processed_tx_ids: ProcessedGlobalSequences,
@@ -61,11 +61,11 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             btc_utxos_and_values: None,
             btc_on_eos_signed_txs: vec![],
             eos_eth_token_dictionary: None,
+            btc_db_utils: BtcDbUtils::new(db),
+            eth_db_utils: EthDbUtils::new(db),
             producer_signature: String::new(),
             incremerkle: Incremerkle::default(),
             eos_db_utils: EosDatabaseUtils::new(db),
-            btc_db_utils: BtcDatabaseUtils::new(db),
-            eth_db_utils: EthDbUtils::new(db),
             eth_signed_txs: EthTransactions::new(vec![]),
             enabled_protocol_features: EnabledFeatures::init(),
             processed_tx_ids: ProcessedGlobalSequences::new(vec![]),
