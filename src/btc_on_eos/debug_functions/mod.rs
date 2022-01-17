@@ -44,7 +44,7 @@ use crate::{
         },
         eos::{
             core_initialization::eos_init_utils::EosInitJson,
-            eos_constants::{get_eos_constants_db_keys, EOS_PRIVATE_KEY_DB_KEY as EOS_KEY},
+            eos_constants::{EosDatabaseKeysJson, EOS_PRIVATE_KEY_DB_KEY as EOS_KEY},
             eos_debug_functions::{add_new_eos_schedule, get_processed_actions_list, update_incremerkle},
         },
     },
@@ -68,7 +68,7 @@ pub fn debug_get_all_db_keys() -> Result<String> {
     check_debug_mode().map(|_| {
         json!({
             "btc": get_btc_constants_db_keys(),
-            "eos": get_eos_constants_db_keys(),
+            "eos": EosDatabaseKeysJson::new(),
             "db-key-prefix": DB_KEY_PREFIX.to_string(),
             "utxo-manager": get_utxo_constants_db_keys(),
         })

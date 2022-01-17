@@ -10,7 +10,7 @@ use crate::{
     chains::{
         eos::{
             core_initialization::eos_init_utils::EosInitJson,
-            eos_constants::{get_eos_constants_db_keys, EOS_PRIVATE_KEY_DB_KEY},
+            eos_constants::{EosDatabaseKeysJson, EOS_PRIVATE_KEY_DB_KEY},
             eos_debug_functions::{
                 add_eos_eth_token_dictionary_entry,
                 add_new_eos_schedule,
@@ -104,7 +104,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
 pub fn debug_get_all_db_keys() -> Result<String> {
     check_debug_mode().and(Ok(json!({
         "eth": EthDatabaseKeysJson::new(),
-        "eos": get_eos_constants_db_keys(),
+        "eos": EosDatabaseKeysJson::new(),
         "db-key-prefix": DB_KEY_PREFIX.to_string(),
         "dictionary": hex::encode(EOS_ETH_DICTIONARY_KEY.to_vec()),
     })
