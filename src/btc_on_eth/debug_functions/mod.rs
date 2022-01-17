@@ -11,7 +11,7 @@ use crate::{
     chains::{
         btc::{
             btc_block::parse_btc_block_and_id_and_put_in_state,
-            btc_constants::{get_btc_constants_db_keys, BTC_PRIVATE_KEY_DB_KEY as BTC_KEY},
+            btc_constants::{BtcDatabaseKeysJson, BTC_PRIVATE_KEY_DB_KEY as BTC_KEY},
             btc_database_utils::{end_btc_db_transaction, get_btc_address_from_db, start_btc_db_transaction},
             btc_debug_functions::debug_put_btc_fee_in_db,
             btc_state::BtcState,
@@ -75,7 +75,7 @@ use crate::{
 pub fn debug_get_all_db_keys() -> Result<String> {
     check_debug_mode().map(|_| {
         json!({
-            "btc": get_btc_constants_db_keys(),
+            "btc": BtcDatabaseKeysJson::new(),
             "eth": EthDatabaseKeysJson::new(),
             "fees": BTC_ON_ETH_FEE_DB_KEYS.to_json(),
             "db-key-prefix": DB_KEY_PREFIX.to_string(),

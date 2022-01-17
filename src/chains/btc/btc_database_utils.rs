@@ -10,7 +10,7 @@ use crate::{
             BTC_ANCHOR_BLOCK_HASH_KEY,
             BTC_CANON_BLOCK_HASH_KEY,
             BTC_CANON_TO_TIP_LENGTH_KEY,
-            BTC_DIFFICULTY_THRESHOLD,
+            BTC_DIFFICULTY,
             BTC_FEE_KEY,
             BTC_LATEST_BLOCK_HASH_KEY,
             BTC_LINKER_HASH_KEY,
@@ -110,7 +110,7 @@ pub fn put_btc_network_in_db<D: DatabaseInterface>(db: &D, network: BtcNetwork) 
 pub fn put_btc_difficulty_in_db<D: DatabaseInterface>(db: &D, difficulty: u64) -> Result<()> {
     trace!("✔ Putting BTC difficulty threshold of {} in db...", difficulty);
     db.put(
-        BTC_DIFFICULTY_THRESHOLD.to_vec(),
+        BTC_DIFFICULTY.to_vec(),
         convert_u64_to_bytes(difficulty),
         MIN_DATA_SENSITIVITY_LEVEL,
     )
@@ -118,7 +118,7 @@ pub fn put_btc_difficulty_in_db<D: DatabaseInterface>(db: &D, difficulty: u64) -
 
 pub fn get_btc_difficulty_from_db<D: DatabaseInterface>(db: &D) -> Result<u64> {
     trace!("✔ Getting BTC difficulty threshold from db...");
-    db.get(BTC_DIFFICULTY_THRESHOLD.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+    db.get(BTC_DIFFICULTY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
         .and_then(|bytes| convert_bytes_to_u64(&bytes))
 }
 
