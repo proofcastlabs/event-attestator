@@ -17,6 +17,8 @@ pub use traits::DatabaseInterface;
 pub use types::{Bytes, Result};
 pub use utils::get_core_version;
 
+#[macro_use]
+pub(crate) mod macros;
 pub mod btc_on_eos;
 pub mod btc_on_eth;
 pub mod chains;
@@ -52,3 +54,5 @@ extern crate log;
 extern crate lazy_static;
 #[macro_use]
 extern crate quick_error;
+#[macro_use]
+extern crate paste;

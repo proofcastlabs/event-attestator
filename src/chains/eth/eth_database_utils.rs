@@ -1,5 +1,4 @@
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
-use paste::paste;
 
 use crate::{
     chains::eth::{
@@ -17,8 +16,6 @@ use crate::{
     types::{Byte, Bytes, DataSensitivity, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
-
-// FIXME: Rm the `from_db` suffix since it's kind of implied.
 
 macro_rules! make_eth_db_utils_struct {
     ($name:ident, $prefix:ident, $is_for_eth:expr) => {

@@ -1,5 +1,4 @@
 use ethereum_types::Address as EthAddress;
-use paste::paste;
 use serde::{Deserialize, Serialize};
 
 use crate::{

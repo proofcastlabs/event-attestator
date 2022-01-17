@@ -1,9 +1,3 @@
-use paste::paste;
-use serde::{Deserialize, Serialize};
-pub use serde_json::{json, Value as JsonValue};
-
-use crate::utils::get_prefixed_db_key;
-
 pub const ZERO_ETH_VALUE: usize = 0;
 pub const ETH_TAIL_LENGTH: u64 = 100;
 pub const VALUE_FOR_MINTING_TX: usize = 0;
@@ -18,31 +12,8 @@ pub const ETH_CORE_IS_INITIALIZED_JSON: &str = "{eth_core_initialized:true}";
 pub const EVM_CORE_IS_INITIALIZED_JSON: &str = "{evm_core_initialized:true}";
 pub const PREFIXED_MESSAGE_HASH_LEN: &[u8; 2] = b"32";
 
-macro_rules! create_eth_db_keys {
-    ($($key:expr => $value:expr),*) => {
-        paste! {
-            lazy_static! {
-                $(pub static ref [< $key:upper >]: [u8; 32] = get_prefixed_db_key($value);)*
-            }
-
-            #[allow(non_snake_case)]
-            #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-            pub struct EthDatabaseKeysJson {
-                $([< $key:upper >]: String,)*
-            }
-
-            impl EthDatabaseKeysJson {
-                pub fn new() -> Self {
-                    Self {
-                        $([< $key:upper >]: hex::encode(&*[< $key:upper >]),)*
-                    }
-                }
-            }
-        }
-    }
-}
-
-create_eth_db_keys!(
+create_db_keys_and_json!(
+    "Eth";
     "ETH_CHAIN_ID_KEY" => "eth-chain-id",
     "ETH_GAS_PRICE_KEY" => "eth-gas-price",
     "ETH_ADDRESS_KEY" => "eth-address-key",

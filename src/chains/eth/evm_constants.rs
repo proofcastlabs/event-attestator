@@ -1,33 +1,5 @@
-use serde::{Serialize, Deserialize};
-use paste::paste;
-
-use crate::utils::get_prefixed_db_key;
-
-macro_rules! create_evm_db_keys {
-    ($($key:expr => $value:expr),*) => {
-        paste! {
-            lazy_static! {
-                $(pub static ref [< $key:upper >]: [u8; 32] = get_prefixed_db_key($value);)*
-            }
-
-            #[allow(non_snake_case)]
-            #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-            pub struct EvmDatabaseKeysJson {
-                $([< $key:upper >]: String,)*
-            }
-
-            impl EvmDatabaseKeysJson {
-                pub fn new() -> Self {
-                    Self {
-                        $([< $key:upper >]: hex::encode(&*[< $key:upper >]),)*
-                    }
-                }
-            }
-        }
-    }
-}
-
-create_evm_db_keys!(
+create_db_keys_and_json!(
+    "Evm";
     "EVM_CHAIN_ID_KEY" => "evm-chain-id",
     "EVM_GAS_PRICE_KEY" => "evm-gas-price",
     "EVM_ADDRESS_KEY" => "evm-address-key",
@@ -56,6 +28,7 @@ mod tests {
 
     #[test]
     fn evm_db_keys_should_stay_consistent() {
+        #[rustfmt::skip]
         let expected_result = EvmDatabaseKeysJson {
             EVM_ACCOUNT_NONCE_KEY:
                "ca7f0ab19900680d76625f41854791660729bfcaf7fede763d96d4c05916ec4c".to_string(),
