@@ -16,7 +16,7 @@ use crate::{
         eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
         eth_debug_functions::{debug_set_eth_gas_price_in_db, debug_set_evm_gas_price_in_db},
         eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
-        evm_constants::{get_evm_constants_db_keys, EVM_PRIVATE_KEY_DB_KEY},
+        evm_constants::{EvmDatabaseKeysJson, EVM_PRIVATE_KEY_DB_KEY},
     },
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
@@ -39,7 +39,7 @@ pub fn debug_get_all_db_keys() -> Result<String> {
     check_debug_mode().map(|_| {
         json!({
             "eth": EthDatabaseKeysJson::new(),
-            "evm": get_evm_constants_db_keys(),
+            "evm": EvmDatabaseKeysJson::new(),
             "db-key-prefix": DB_KEY_PREFIX.to_string(),
             "dictionary": hex::encode(ETH_EVM_DICTIONARY_KEY.to_vec()),
         })
