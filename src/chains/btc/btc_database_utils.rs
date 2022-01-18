@@ -19,20 +19,20 @@ use crate::{
 
 create_db_keys_and_json!(
     "Btc";
-    "BTC_FEE_KEY" => "btc-fee-key",
-    "BTC_ADDRESS_KEY" => "btc-address",
-    "BTC_DIFFICULTY" => "btc-difficulty",
-    "BTC_NETWORK_KEY" => "btc-network-key",
-    "BTC_LINKER_HASH_KEY" => "btc-linker-hash",
-    "BTC_PRIVATE_KEY_DB_KEY" => "btc-private-key",
-    "BTC_CANON_BLOCK_HASH_KEY" => "btc-canon-block",
-    "BTC_LATEST_BLOCK_HASH_KEY" => "btc-latest-block",
-    "BTC_ANCHOR_BLOCK_HASH_KEY" => "btc-anchor-block",
-    "BTC_PTOKEN_GENESIS_HASH_KEY" => "provable-ptoken",
-    "BTC_ACCOUNT_NONCE_KEY" => "btc-account-nonce-key",
-    "BTC_PUBLIC_KEY_DB_KEY" => "btc-public-key-db-key",
-    "BTC_TAIL_BLOCK_HASH_KEY" => "btc-tail-block-hash-key",
-    "BTC_CANON_TO_TIP_LENGTH_KEY" => "btc-canon-to-tip-length"
+    "_FEE_KEY" => "btc-fee-key",
+    "_ADDRESS_KEY" => "btc-address",
+    "_DIFFICULTY" => "btc-difficulty",
+    "_NETWORK_KEY" => "btc-network-key",
+    "_LINKER_HASH_KEY" => "btc-linker-hash",
+    "_PRIVATE_KEY_DB_KEY" => "btc-private-key",
+    "_CANON_BLOCK_HASH_KEY" => "btc-canon-block",
+    "_LATEST_BLOCK_HASH_KEY" => "btc-latest-block",
+    "_ANCHOR_BLOCK_HASH_KEY" => "btc-anchor-block",
+    "_PTOKEN_GENESIS_HASH_KEY" => "provable-ptoken",
+    "_ACCOUNT_NONCE_KEY" => "btc-account-nonce-key",
+    "_PUBLIC_KEY_DB_KEY" => "btc-public-key-db-key",
+    "_TAIL_BLOCK_HASH_KEY" => "btc-tail-block-hash-key",
+    "_CANON_TO_TIP_LENGTH_KEY" => "btc-canon-to-tip-length"
 );
 
 #[derive(Debug, Clone, PartialEq, Eq)]

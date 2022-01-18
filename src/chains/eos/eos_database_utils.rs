@@ -20,18 +20,18 @@ use crate::{
 
 create_db_keys_and_json!(
     "Eos";
-    "EOS_PROCESSED_TX_IDS_KEY" => "eos-tx-ids",
-    "EOS_INCREMERKLE_KEY" => "eos-incremerkle",
-    "EOS_CHAIN_ID_DB_KEY" => "eos-chain-id-key",
-    "EOS_TOKEN_SYMBOL_KEY" => "eos-token-ticker",
-    "EOS_ACCOUNT_NAME_KEY" => "eos-account-name",
-    "EOS_ACCOUNT_NONCE_KEY" => "eos-account-nonce",
-    "EOS_SCHEDULE_LIST_KEY" => "eos-schedule-list",
-    "EOS_PUBLIC_KEY_DB_KEY" => "eos-public-key-db-key",
-    "EOS_PRIVATE_KEY_DB_KEY" => "eos-private-key-db-key",
-    "EOS_PROTOCOL_FEATURES_KEY" => "eos-protocol-features",
-    "EOS_LAST_SEEN_BLOCK_ID_KEY" => "eos-last-seen-block-id",
-    "EOS_LAST_SEEN_BLOCK_NUM_KEY" => "eos-last-seen-block-num"
+    "_PROCESSED_TX_IDS_KEY" => "eos-tx-ids",
+    "_INCREMERKLE_KEY" => "eos-incremerkle",
+    "_CHAIN_ID_DB_KEY" => "eos-chain-id-key",
+    "_TOKEN_SYMBOL_KEY" => "eos-token-ticker",
+    "_ACCOUNT_NAME_KEY" => "eos-account-name",
+    "_ACCOUNT_NONCE_KEY" => "eos-account-nonce",
+    "_SCHEDULE_LIST_KEY" => "eos-schedule-list",
+    "_PUBLIC_KEY_DB_KEY" => "eos-public-key-db-key",
+    "_PRIVATE_KEY_DB_KEY" => "eos-private-key-db-key",
+    "_PROTOCOL_FEATURES_KEY" => "eos-protocol-features",
+    "_LAST_SEEN_BLOCK_ID_KEY" => "eos-last-seen-block-id",
+    "_LAST_SEEN_BLOCK_NUM_KEY" => "eos-last-seen-block-num"
 );
 
 #[derive(Debug, Clone, PartialEq, Eq)]
