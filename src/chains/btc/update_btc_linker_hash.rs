@@ -5,7 +5,7 @@ use bitcoin::{
 
 use crate::{
     chains::btc::{
-        btc_database_utils::{BtcDbUtils, PTOKEN_GENESIS_HASH_KEY},
+        btc_database_utils::{BtcDbUtils, BTC_PTOKEN_GENESIS_HASH_KEY},
         btc_state::BtcState,
     },
     traits::DatabaseInterface,
@@ -48,7 +48,7 @@ pub fn get_linker_hash_or_genesis_hash<D: DatabaseInterface>(db_utils: &BtcDbUti
         },
         _ => {
             trace!("✔ No BTC linker has in db, using genesis hash...");
-            Ok(BlockHash::from_slice(&PTOKEN_GENESIS_HASH_KEY.to_vec())?)
+            Ok(BlockHash::from_slice(&BTC_PTOKEN_GENESIS_HASH_KEY.to_vec())?)
         },
     }
 }
@@ -98,7 +98,7 @@ mod tests {
 
     #[test]
     fn should_calculate_linker_hash_correctly() {
-        let genesis_hash = BlockHash::from_slice(&PTOKEN_GENESIS_HASH_KEY.to_vec()).unwrap();
+        let genesis_hash = BlockHash::from_slice(&BTC_PTOKEN_GENESIS_HASH_KEY.to_vec()).unwrap();
         let hash_to_link_to = BlockHash::from_slice(
             &hex::decode("0000000000000000000014e600bf5c544e6cc08b7f8514e5e3e4abd41891c8ba").unwrap(),
         )

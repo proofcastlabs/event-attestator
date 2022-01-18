@@ -25,10 +25,10 @@ create_db_keys_and_json!(
     "BTC_NETWORK_KEY" => "btc-network-key",
     "BTC_LINKER_HASH_KEY" => "btc-linker-hash",
     "BTC_PRIVATE_KEY_DB_KEY" => "btc-private-key",
-    "PTOKEN_GENESIS_HASH_KEY" => "provable-ptoken",
     "BTC_CANON_BLOCK_HASH_KEY" => "btc-canon-block",
     "BTC_LATEST_BLOCK_HASH_KEY" => "btc-latest-block",
     "BTC_ANCHOR_BLOCK_HASH_KEY" => "btc-anchor-block",
+    "BTC_PTOKEN_GENESIS_HASH_KEY" => "provable-ptoken",
     "BTC_ACCOUNT_NONCE_KEY" => "btc-account-nonce-key",
     "BTC_PUBLIC_KEY_DB_KEY" => "btc-public-key-db-key",
     "BTC_TAIL_BLOCK_HASH_KEY" => "btc-tail-block-hash-key",
@@ -709,7 +709,7 @@ mod tests {
                 "ee7ec6657db53cd1d8055d61bf00ff615063701493ede450dc5c31132ae6cfd1".to_string(),
             BTC_TAIL_BLOCK_HASH_KEY:
                 "26ab99d609131225d7ecf087632b5b6771468931273d0f6c16b09c9bbe316f71".to_string(),
-            PTOKEN_GENESIS_HASH_KEY:
+            BTC_PTOKEN_GENESIS_HASH_KEY:
                 "7eb2e65416dd107602495454d1ed094ae475cff2f3bfb2e2ae68a1c52bc0d66f".to_string(),
         };
         let result = BtcDatabaseKeysJson::new();

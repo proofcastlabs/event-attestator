@@ -20,7 +20,7 @@ use crate::{
 
 create_db_keys_and_json!(
     "Eos";
-    "PROCESSED_TX_IDS_KEY" => "eos-tx-ids",
+    "EOS_PROCESSED_TX_IDS_KEY" => "eos-tx-ids",
     "EOS_INCREMERKLE_KEY" => "eos-incremerkle",
     "EOS_CHAIN_ID_DB_KEY" => "eos-chain-id-key",
     "EOS_TOKEN_SYMBOL_KEY" => "eos-token-ticker",
@@ -278,7 +278,7 @@ mod tests {
                 "d24e8320db81859d6e8ee6fa3ed7312155e489a2e8269c4ae8a2fa32a1ac5095".to_string(),
             EOS_TOKEN_SYMBOL_KEY:
                 "71c8980fe3f6e8b3cdcbd4dce5f1a13af16e1980e3a7d4a570007c24d3691271".to_string(),
-            PROCESSED_TX_IDS_KEY:
+            EOS_PROCESSED_TX_IDS_KEY:
                 "61b33e8588f6b6caa691d584efe8d3afadea0d16125650f85386b13e1f66e2e1".to_string(),
         };
         let result = EosDatabaseKeysJson::new();
