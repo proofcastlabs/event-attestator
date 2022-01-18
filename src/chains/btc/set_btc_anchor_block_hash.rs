@@ -1,5 +1,8 @@
 use crate::{
-    chains::btc::{btc_constants::BTC_ANCHOR_BLOCK_HASH_KEY, btc_database_utils::BtcDbUtils, btc_state::BtcState},
+    chains::btc::{
+        btc_database_utils::{BtcDbUtils, BTC_ANCHOR_BLOCK_HASH_KEY},
+        btc_state::BtcState,
+    },
     traits::DatabaseInterface,
     types::Result,
 };

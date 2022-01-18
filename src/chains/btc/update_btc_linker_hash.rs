@@ -4,7 +4,10 @@ use bitcoin::{
 };
 
 use crate::{
-    chains::btc::{btc_constants::PTOKEN_GENESIS_HASH_KEY, btc_database_utils::BtcDbUtils, btc_state::BtcState},
+    chains::btc::{
+        btc_database_utils::{BtcDbUtils, PTOKEN_GENESIS_HASH_KEY},
+        btc_state::BtcState,
+    },
     traits::DatabaseInterface,
     types::Result,
 };

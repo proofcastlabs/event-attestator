@@ -9,8 +9,13 @@ use crate::{
     },
     chains::{
         btc::{
-            btc_constants::{BtcDatabaseKeysJson, BTC_PRIVATE_KEY_DB_KEY as BTC_KEY},
-            btc_database_utils::{end_btc_db_transaction, start_btc_db_transaction, BtcDbUtils},
+            btc_database_utils::{
+                end_btc_db_transaction,
+                start_btc_db_transaction,
+                BtcDatabaseKeysJson,
+                BtcDbUtils,
+                BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
+            },
             btc_debug_functions::debug_put_btc_fee_in_db,
             btc_state::BtcState,
             btc_submission_material::parse_submission_material_and_put_in_state,

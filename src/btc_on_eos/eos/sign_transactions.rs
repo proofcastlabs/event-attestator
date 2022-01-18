@@ -96,8 +96,7 @@ mod tests {
     use crate::{
         chains::{
             btc::{
-                btc_constants::BTC_PRIVATE_KEY_DB_KEY,
-                btc_database_utils::BtcDbUtils,
+                btc_database_utils::{BtcDbUtils, BTC_PRIVATE_KEY_DB_KEY},
                 btc_test_utils::{get_sample_p2sh_utxo_and_value_2, get_sample_p2sh_utxo_and_value_3},
                 btc_utils::get_hex_tx_from_signed_btc_tx,
                 utxo_manager::{utxo_database_utils::save_utxos_to_db, utxo_types::BtcUtxosAndValues},
