@@ -11,15 +11,7 @@ use crate::{
             encode_erc20_vault_remove_supported_token_fx_data,
         },
         eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::{
-            EthDatabaseKeysJson,
-            EthDbUtils,
-            EthDbUtilsExt,
-            EvmDatabaseKeysJson,
-            EvmDbUtils,
-            ETH_PRIVATE_KEY_DB_KEY,
-            EVM_PRIVATE_KEY_DB_KEY,
-        },
+        eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt, EvmDatabaseKeysJson, EvmDbUtils},
         eth_debug_functions::{debug_set_eth_gas_price_in_db, debug_set_evm_gas_price_in_db},
         eth_utils::convert_hex_to_eth_address,
     },
@@ -62,11 +54,13 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
-            let sensitivity =
-                match key_bytes == ETH_PRIVATE_KEY_DB_KEY.to_vec() || key_bytes == EVM_PRIVATE_KEY_DB_KEY.to_vec() {
-                    true => MAX_DATA_SENSITIVITY_LEVEL,
-                    false => None,
-                };
+            let sensitivity = if key_bytes == EthDbUtils::new(&db).get_eth_private_key_db_key()
+                || key_bytes == EvmDbUtils::new(&db).get_evm_private_key_db_key()
+            {
+                MAX_DATA_SENSITIVITY_LEVEL
+            } else {
+                None
+            };
             set_key_in_db_to_value(db, key, value, sensitivity)
         })
         .map(prepend_debug_output_marker_to_string)
@@ -79,11 +73,13 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
-            let sensitivity =
-                match key_bytes == ETH_PRIVATE_KEY_DB_KEY.to_vec() || key_bytes == EVM_PRIVATE_KEY_DB_KEY.to_vec() {
-                    true => MAX_DATA_SENSITIVITY_LEVEL,
-                    false => None,
-                };
+            let sensitivity = if key_bytes == EthDbUtils::new(&db).get_eth_private_key_db_key()
+                || key_bytes == EvmDbUtils::new(&db).get_evm_private_key_db_key()
+            {
+                MAX_DATA_SENSITIVITY_LEVEL
+            } else {
+                None
+            };
             get_key_from_db(db, key, sensitivity)
         })
         .map(prepend_debug_output_marker_to_string)

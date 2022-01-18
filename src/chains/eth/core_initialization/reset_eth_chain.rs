@@ -22,23 +22,7 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::{
-            EthDbUtilsExt,
-            ETH_ANCHOR_BLOCK_HASH_KEY,
-            ETH_CANON_BLOCK_HASH_KEY,
-            ETH_CANON_TO_TIP_LENGTH_KEY,
-            ETH_LATEST_BLOCK_HASH_KEY,
-            ETH_LINKER_HASH_KEY,
-            ETH_PTOKEN_GENESIS_HASH_KEY,
-            ETH_TAIL_BLOCK_HASH_KEY,
-            EVM_ANCHOR_BLOCK_HASH_KEY,
-            EVM_CANON_BLOCK_HASH_KEY,
-            EVM_CANON_TO_TIP_LENGTH_KEY,
-            EVM_LATEST_BLOCK_HASH_KEY,
-            EVM_LINKER_HASH_KEY,
-            EVM_PTOKEN_GENESIS_HASH_KEY,
-            EVM_TAIL_BLOCK_HASH_KEY,
-        },
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::validate_block_in_state,
@@ -76,25 +60,27 @@ fn delete_all_eth_blocks<D: DatabaseInterface, E: EthDbUtilsExt<D>>(db_utils: &E
 }
 
 fn delete_all_relevant_db_keys<D: DatabaseInterface>(db: &D, is_for_eth: bool) -> Result<()> {
+    let evm_db_utils = EvmDbUtils::new(db);
+    let eth_db_utils = EthDbUtils::new(db);
     if is_for_eth {
         vec![
-            *ETH_LINKER_HASH_KEY,
-            *ETH_CANON_BLOCK_HASH_KEY,
-            *ETH_TAIL_BLOCK_HASH_KEY,
-            *ETH_PTOKEN_GENESIS_HASH_KEY,
-            *ETH_ANCHOR_BLOCK_HASH_KEY,
-            *ETH_LATEST_BLOCK_HASH_KEY,
-            *ETH_CANON_TO_TIP_LENGTH_KEY,
+            eth_db_utils.get_eth_linker_hash_key(),
+            eth_db_utils.get_eth_canon_block_hash_key(),
+            eth_db_utils.get_eth_tail_block_hash_key(),
+            eth_db_utils.get_eth_ptoken_genesis_hash_key(),
+            eth_db_utils.get_eth_anchor_block_hash_key(),
+            eth_db_utils.get_eth_latest_block_hash_key(),
+            eth_db_utils.get_eth_canon_to_tip_length_key(),
         ]
     } else {
         vec![
-            *EVM_LINKER_HASH_KEY,
-            *EVM_TAIL_BLOCK_HASH_KEY,
-            *EVM_PTOKEN_GENESIS_HASH_KEY,
-            *EVM_ANCHOR_BLOCK_HASH_KEY,
-            *EVM_LATEST_BLOCK_HASH_KEY,
-            *EVM_CANON_BLOCK_HASH_KEY,
-            *EVM_CANON_TO_TIP_LENGTH_KEY,
+            evm_db_utils.get_evm_linker_hash_key(),
+            evm_db_utils.get_evm_tail_block_hash_key(),
+            evm_db_utils.get_evm_ptoken_genesis_hash_key(),
+            evm_db_utils.get_evm_anchor_block_hash_key(),
+            evm_db_utils.get_evm_latest_block_hash_key(),
+            evm_db_utils.get_evm_canon_block_hash_key(),
+            evm_db_utils.get_evm_canon_to_tip_length_key(),
         ]
     }
     .iter()

@@ -13,7 +13,7 @@ use secp256k1::{
 use crate::{
     chains::eos::{
         eos_crypto::{eos_public_key::EosPublicKey, eos_signature::EosSignature},
-        eos_database_utils::EOS_PRIVATE_KEY_DB_KEY,
+        eos_database_utils::EosDbUtils,
         eos_types::EosNetwork,
     },
     constants::MAX_DATA_SENSITIVITY_LEVEL,
@@ -90,25 +90,22 @@ impl EosPrivateKey {
         self.sign_hash(&msg_hash)
     }
 
-    pub fn write_to_db<D>(&self, db: &D) -> Result<()>
-    where
-        D: DatabaseInterface,
-    {
-        trace!("✔ Putting EOS private key in db...");
+    pub fn write_to_db<D: DatabaseInterface>(&self, db: &D) -> Result<()> {
+        debug!("✔ Putting EOS private key in db...");
         db.put(
-            EOS_PRIVATE_KEY_DB_KEY.to_vec(),
+            EosDbUtils::new(db).get_eos_private_key_db_key(),
             self.private_key[..].to_vec(),
             MAX_DATA_SENSITIVITY_LEVEL,
         )
     }
 
-    pub fn get_from_db<D>(db: &D) -> Result<Self>
-    where
-        D: DatabaseInterface,
-    {
-        trace!("✔ Getting EOS private key from db...");
-        db.get(EOS_PRIVATE_KEY_DB_KEY.to_vec(), MAX_DATA_SENSITIVITY_LEVEL)
-            .and_then(|bytes| Self::from_slice(&bytes[..]))
+    pub fn get_from_db<D: DatabaseInterface>(db: &D) -> Result<Self> {
+        debug!("✔ Getting EOS private key from db...");
+        db.get(
+            EosDbUtils::new(db).get_eos_private_key_db_key(),
+            MAX_DATA_SENSITIVITY_LEVEL,
+        )
+        .and_then(|bytes| Self::from_slice(&bytes[..]))
     }
 }
 

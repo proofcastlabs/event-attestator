@@ -1,10 +1,10 @@
 #[macro_export]
-macro_rules! create_db_utils {
+macro_rules! create_db_utils_with_getters {
     ($prefix:expr; $($key:expr => $value:expr),*) => {
         paste! {
             lazy_static! {
                 $(
-                    pub static ref [< $prefix:upper $key:upper >]: [u8; 32] =
+                    static ref [< $prefix:upper $key:upper >]: [u8; 32] =
                         crate::utils::get_prefixed_db_key($value);
                 )*
             }
@@ -41,8 +41,14 @@ macro_rules! create_db_utils {
                     self.db
                 }
 
+                $(
+                    pub fn [< get_ $prefix:lower $key:lower >](&self) -> Bytes {
+                        self.[< $prefix:lower $key:lower >].clone()
+                    }
+                )*
+
                 #[cfg(test)]
-                pub fn get_all_db_keys_as_hex() -> Vec<String> {
+                fn get_all_db_keys_as_hex() -> Vec<String> {
                     vec![$(hex::encode(&*[< $prefix:upper $key:upper >]),)*]
                 }
             }

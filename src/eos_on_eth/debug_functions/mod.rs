@@ -13,7 +13,7 @@ use crate::{
             eos_actions::PTokenPegOutAction,
             eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, PEGOUT_ACTION_NAME},
             eos_crypto::{eos_private_key::EosPrivateKey, eos_transaction::EosSignedTransaction},
-            eos_database_utils::{EosDatabaseKeysJson, EosDbUtils, EOS_PRIVATE_KEY_DB_KEY},
+            eos_database_utils::{EosDatabaseKeysJson, EosDbUtils},
             eos_debug_functions::{
                 add_eos_eth_token_dictionary_entry,
                 add_new_eos_schedule,
@@ -23,7 +23,7 @@ use crate::{
             eos_utils::get_eos_tx_expiration_timestamp_with_offset,
         },
         eth::{
-            eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, ETH_PRIVATE_KEY_DB_KEY},
+            eth_database_utils::{EthDatabaseKeysJson, EthDbUtils},
             eth_debug_functions::debug_set_eth_gas_price_in_db,
             eth_utils::convert_hex_to_eth_address,
         },
@@ -70,8 +70,11 @@ pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &s
 /// Only use this if you know exactly what you are doing and why.
 pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
-    let is_private_key =
-        { key_bytes == EOS_PRIVATE_KEY_DB_KEY.to_vec() || key_bytes == ETH_PRIVATE_KEY_DB_KEY.to_vec() };
+    let eos_db_utils = EosDbUtils::new(&db);
+    let eth_db_utils = EthDbUtils::new(&db);
+    let is_private_key = {
+        key_bytes == eos_db_utils.get_eos_private_key_db_key() || key_bytes == eth_db_utils.get_eth_private_key_db_key()
+    };
     let sensitivity = if is_private_key {
         MAX_DATA_SENSITIVITY_LEVEL
     } else {
@@ -85,8 +88,11 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
 /// This function will return the value stored under a given key in the encrypted database.
 pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
-    let is_private_key =
-        { key_bytes == EOS_PRIVATE_KEY_DB_KEY.to_vec() || key_bytes == ETH_PRIVATE_KEY_DB_KEY.to_vec() };
+    let eos_db_utils = EosDbUtils::new(&db);
+    let eth_db_utils = EthDbUtils::new(&db);
+    let is_private_key = {
+        key_bytes == eos_db_utils.get_eos_private_key_db_key() || key_bytes == eth_db_utils.get_eth_private_key_db_key()
+    };
     let sensitivity = match is_private_key {
         true => MAX_DATA_SENSITIVITY_LEVEL,
         false => None,

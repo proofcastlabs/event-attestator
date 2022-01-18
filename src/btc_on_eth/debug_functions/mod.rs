@@ -11,13 +11,7 @@ use crate::{
     chains::{
         btc::{
             btc_block::parse_btc_block_and_id_and_put_in_state,
-            btc_database_utils::{
-                end_btc_db_transaction,
-                start_btc_db_transaction,
-                BtcDatabaseKeysJson,
-                BtcDbUtils,
-                BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
-            },
+            btc_database_utils::{end_btc_db_transaction, start_btc_db_transaction, BtcDatabaseKeysJson, BtcDbUtils},
             btc_debug_functions::debug_put_btc_fee_in_db,
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
@@ -55,7 +49,7 @@ use crate::{
                 },
             },
             eth_crypto::eth_transaction::get_signed_minting_tx,
-            eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt, ETH_PRIVATE_KEY_DB_KEY as ETH_KEY},
+            eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt},
             eth_debug_functions::debug_set_eth_gas_price_in_db,
         },
     },
@@ -116,9 +110,12 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
-            let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
-                true => MAX_DATA_SENSITIVITY_LEVEL,
-                false => None,
+            let sensitivity = if key_bytes == EthDbUtils::new(&db).get_eth_private_key_db_key()
+                || key_bytes == BtcDbUtils::new(&db).get_btc_private_key_db_key()
+            {
+                MAX_DATA_SENSITIVITY_LEVEL
+            } else {
+                None
             };
             set_key_in_db_to_value(db, key, value, sensitivity)
         })
@@ -132,9 +129,12 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
-            let sensitivity = match key_bytes == ETH_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
-                true => MAX_DATA_SENSITIVITY_LEVEL,
-                false => None,
+            let sensitivity = if key_bytes == EthDbUtils::new(&db).get_eth_private_key_db_key()
+                || key_bytes == BtcDbUtils::new(&db).get_btc_private_key_db_key()
+            {
+                MAX_DATA_SENSITIVITY_LEVEL
+            } else {
+                None
             };
             get_key_from_db(db, key, sensitivity)
         })

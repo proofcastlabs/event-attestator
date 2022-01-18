@@ -96,7 +96,7 @@ mod tests {
     use crate::{
         chains::{
             btc::{
-                btc_database_utils::{BtcDbUtils, BTC_PRIVATE_KEY_DB_KEY},
+                btc_database_utils::BtcDbUtils,
                 btc_test_utils::{get_sample_p2sh_utxo_and_value_2, get_sample_p2sh_utxo_and_value_3},
                 btc_utils::get_hex_tx_from_signed_btc_tx,
                 utxo_manager::{utxo_database_utils::save_utxos_to_db, utxo_types::BtcUtxosAndValues},
@@ -123,7 +123,7 @@ mod tests {
             btc_network,
         )
         .unwrap();
-        pk.write_to_db(&db, &BTC_PRIVATE_KEY_DB_KEY.to_vec()).unwrap();
+        pk.write_to_db(&db, &db_utils.get_btc_private_key_db_key()).unwrap();
         db_utils.put_btc_network_in_db(btc_network).unwrap();
         db_utils.put_btc_address_in_db(&btc_address).unwrap();
         let result =
@@ -151,7 +151,7 @@ mod tests {
             btc_network,
         )
         .unwrap();
-        pk.write_to_db(&db, &BTC_PRIVATE_KEY_DB_KEY.to_vec()).unwrap();
+        pk.write_to_db(&db, &db_utils.get_btc_private_key_db_key()).unwrap();
         db_utils.put_btc_network_in_db(btc_network).unwrap();
         db_utils.put_btc_address_in_db(&btc_address).unwrap();
         let result =

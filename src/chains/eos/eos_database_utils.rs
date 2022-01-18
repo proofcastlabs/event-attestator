@@ -18,7 +18,7 @@ use crate::{
     types::{Bytes, Result},
 };
 
-create_db_utils!(
+create_db_utils_with_getters!(
     "Eos";
     "_PROCESSED_TX_IDS_KEY" => "eos-tx-ids",
     "_INCREMERKLE_KEY" => "eos-incremerkle",
@@ -38,7 +38,7 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
     pub fn put_eos_public_key_in_db(&self, public_key: &EosPublicKey) -> Result<()> {
         debug!("✔ Putting EOS public key in db...");
         self.db.put(
-            self.eos_public_key_db_key.to_vec(),
+            self.get_eos_public_key_db_key(),
             public_key.to_bytes(),
             MIN_DATA_SENSITIVITY_LEVEL,
         )
@@ -46,15 +46,15 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
 
     pub fn get_eos_public_key_from_db(&self) -> Result<EosPublicKey> {
         debug!("✔ Getting EOS public key from db...");
-        self.db
-            .get(self.eos_public_key_db_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+        self.get_db()
+            .get(self.get_eos_public_key_db_key(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| EosPublicKey::from_bytes(&bytes))
     }
 
     pub fn put_eos_enabled_protocol_features_in_db(&self, protocol_features: &EnabledFeatures) -> Result<()> {
         debug!("✔ Putting EOS enabled protocol features in db...");
-        self.db.put(
-            self.eos_protocol_features_key.to_vec(),
+        self.get_db().put(
+            self.get_eos_protocol_features_key(),
             serde_json::to_vec(&protocol_features)?,
             MIN_DATA_SENSITIVITY_LEVEL,
         )
@@ -63,8 +63,8 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
     pub fn get_eos_enabled_protocol_features_from_db(&self) -> Result<EnabledFeatures> {
         debug!("✔ Getting EOS enabled protocol features from db...");
         match self
-            .db
-            .get(self.eos_protocol_features_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+            .get_db()
+            .get(self.get_eos_protocol_features_key(), MIN_DATA_SENSITIVITY_LEVEL)
         {
             Ok(bytes) => Ok(serde_json::from_slice(&bytes)?),
             Err(_) => {
@@ -76,29 +76,29 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
 
     pub fn put_eos_last_seen_block_num_in_db(&self, num: u64) -> Result<()> {
         debug!("✔ Putting EOS last seen block num in db...");
-        put_u64_in_db(self.db, &self.eos_last_seen_block_num_key.to_vec(), num)
+        put_u64_in_db(self.get_db(), &self.get_eos_last_seen_block_num_key(), num)
     }
 
     pub fn get_latest_eos_block_number(&self) -> Result<u64> {
         debug!("✔ Getting EOS latest block number from db...");
-        get_u64_from_db(self.db, &EOS_LAST_SEEN_BLOCK_NUM_KEY.to_vec())
+        get_u64_from_db(self.get_db(), &EOS_LAST_SEEN_BLOCK_NUM_KEY.to_vec())
     }
 
     pub fn put_eos_last_seen_block_id_in_db(&self, latest_block_id: &Checksum256) -> Result<()> {
         let block_id_string = latest_block_id.to_string();
         debug!("✔ Putting EOS latest block ID {} in db...", block_id_string);
-        put_string_in_db(self.db, &self.eos_last_seen_block_id_key.to_vec(), &block_id_string)
+        put_string_in_db(self.get_db(), &self.get_eos_last_seen_block_id_key(), &block_id_string)
     }
 
     pub fn get_eos_last_seen_block_id_from_db(&self) -> Result<Checksum256> {
         debug!("✔ Getting EOS last seen block ID from db...");
-        get_string_from_db(self.db, &self.eos_last_seen_block_id_key.to_vec()).and_then(convert_hex_to_checksum256)
+        get_string_from_db(self.get_db(), &self.get_eos_last_seen_block_id_key()).and_then(convert_hex_to_checksum256)
     }
 
     pub fn put_incremerkle_in_db(&self, incremerkle: &Incremerkle) -> Result<()> {
         debug!("✔ Putting EOS incremerkle in db...");
-        self.db.put(
-            self.eos_incremerkle_key.to_vec(),
+        self.get_db().put(
+            self.get_eos_incremerkle_key(),
             serde_json::to_vec(&incremerkle.to_json())?,
             MIN_DATA_SENSITIVITY_LEVEL,
         )
@@ -106,23 +106,23 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
 
     pub fn get_incremerkle_from_db(&self) -> Result<Incremerkle> {
         debug!("✔ Getting EOS incremerkle from db...");
-        self.db
-            .get(self.eos_incremerkle_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+        self.get_db()
+            .get(self.get_eos_incremerkle_key(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
             .and_then(|json: IncremerkleJson| json.to_incremerkle())
     }
 
     pub fn get_eos_known_schedules_from_db(&self) -> Result<EosKnownSchedules> {
         debug!("✔ Getting EOS known schedules from db...");
-        self.db
-            .get(self.eos_schedule_list_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+        self.get_db()
+            .get(self.get_eos_schedule_list_key(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
     }
 
     pub fn put_eos_known_schedules_in_db(&self, eos_known_schedules: &EosKnownSchedules) -> Result<()> {
         debug!("✔ Putting EOS known schedules in db: {}", &eos_known_schedules);
-        self.db.put(
-            self.eos_schedule_list_key.to_vec(),
+        self.get_db().put(
+            self.get_eos_schedule_list_key(),
             serde_json::to_vec(eos_known_schedules)?,
             MIN_DATA_SENSITIVITY_LEVEL,
         )
@@ -130,14 +130,14 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
 
     pub fn put_eos_schedule_in_db(&self, schedule: &EosProducerScheduleV2) -> Result<()> {
         let db_key = get_eos_schedule_db_key(schedule.version);
-        match self.db.get(db_key.clone(), MIN_DATA_SENSITIVITY_LEVEL) {
+        match self.get_db().get(db_key.clone(), MIN_DATA_SENSITIVITY_LEVEL) {
             Ok(_) => {
                 debug!("✘ EOS schedule {} already in db!", &schedule.version);
                 Ok(())
             },
             Err(_) => {
                 debug!("✔ Putting EOS schedule in db: {:?}", schedule);
-                put_string_in_db(self.db, &db_key, &serde_json::to_string(schedule)?)
+                put_string_in_db(self.get_db(), &db_key, &serde_json::to_string(schedule)?)
                     .and_then(|_| self.get_eos_known_schedules_from_db())
                     .map(|scheds| scheds.add(schedule.version))
                     .and_then(|scheds| self.put_eos_known_schedules_in_db(&scheds))
@@ -147,7 +147,7 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
 
     pub fn get_eos_schedule_from_db(&self, version: u32) -> Result<EosProducerScheduleV2> {
         debug!("✔ Getting EOS schedule from db...");
-        match get_string_from_db(self.db, &get_eos_schedule_db_key(version)) {
+        match get_string_from_db(self.get_db(), &get_eos_schedule_db_key(version)) {
             Ok(json) => EosProducerScheduleV2::from_json(&json),
             Err(_) => Err(format!("✘ Core does not have EOS schedule version: {}", version).into()),
         }
@@ -155,32 +155,32 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
 
     pub fn get_eos_account_nonce_from_db(&self) -> Result<u64> {
         debug!("✔ Getting EOS account nonce from db...");
-        get_u64_from_db(self.db, &self.eos_account_nonce_key.to_vec())
+        get_u64_from_db(self.get_db(), &self.get_eos_account_nonce_key())
     }
 
     pub fn put_eos_account_nonce_in_db(&self, new_nonce: u64) -> Result<()> {
         debug!("✔ Putting EOS account nonce in db...");
-        put_u64_in_db(self.db, &self.eos_account_nonce_key.to_vec(), new_nonce)
+        put_u64_in_db(self.get_db(), &self.get_eos_account_nonce_key(), new_nonce)
     }
 
     pub fn put_eos_token_symbol_in_db(&self, name: &str) -> Result<()> {
         debug!("✔ Putting EOS token symbol in db...");
-        put_string_in_db(self.db, &self.eos_token_symbol_key.to_vec(), name)
+        put_string_in_db(self.get_db(), &self.get_eos_token_symbol_key(), name)
     }
 
     pub fn get_eos_token_symbol_from_db(&self) -> Result<String> {
         debug!("✔ Getting EOS token symbol from db...");
-        get_string_from_db(self.db, &self.eos_token_symbol_key.to_vec())
+        get_string_from_db(self.get_db(), &self.get_eos_token_symbol_key())
     }
 
     pub fn put_eos_account_name_in_db(&self, name: &str) -> Result<()> {
         debug!("✔ Putting EOS account name in db...");
-        put_string_in_db(self.db, &self.eos_account_name_key.to_vec(), name)
+        put_string_in_db(self.get_db(), &self.get_eos_account_name_key(), name)
     }
 
     pub fn get_eos_account_name_string_from_db(&self) -> Result<String> {
         debug!("✔ Getting EOS account name string from db...");
-        get_string_from_db(self.db, &self.eos_account_name_key.to_vec())
+        get_string_from_db(self.get_db(), &self.get_eos_account_name_key())
     }
 
     pub fn get_eos_account_name_from_db(&self) -> Result<EosAccountName> {
@@ -193,12 +193,12 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
 
     pub fn put_eos_chain_id_in_db(&self, chain_id: &EosChainId) -> Result<()> {
         debug!("✔ Putting EOS chain ID in db...");
-        put_string_in_db(self.db, &self.eos_chain_id_db_key.to_vec(), &chain_id.to_hex())
+        put_string_in_db(self.get_db(), &self.get_eos_chain_id_db_key(), &chain_id.to_hex())
     }
 
     pub fn get_eos_chain_id_from_db(&self) -> Result<EosChainId> {
         info!("✔ Getting EOS chain ID from db...");
-        EosChainId::from_str(&get_string_from_db(self.db, &self.eos_chain_id_db_key.to_vec())?)
+        EosChainId::from_str(&get_string_from_db(self.get_db(), &self.get_eos_chain_id_db_key())?)
     }
 }
 

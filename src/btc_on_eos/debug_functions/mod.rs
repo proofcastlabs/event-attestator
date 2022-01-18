@@ -9,13 +9,7 @@ use crate::{
     },
     chains::{
         btc::{
-            btc_database_utils::{
-                end_btc_db_transaction,
-                start_btc_db_transaction,
-                BtcDatabaseKeysJson,
-                BtcDbUtils,
-                BTC_PRIVATE_KEY_DB_KEY as BTC_KEY,
-            },
+            btc_database_utils::{end_btc_db_transaction, start_btc_db_transaction, BtcDatabaseKeysJson, BtcDbUtils},
             btc_debug_functions::debug_put_btc_fee_in_db,
             btc_state::BtcState,
             btc_submission_material::parse_submission_material_and_put_in_state,
@@ -49,7 +43,7 @@ use crate::{
         },
         eos::{
             core_initialization::eos_init_utils::EosInitJson,
-            eos_database_utils::{EosDatabaseKeysJson, EosDbUtils, EOS_PRIVATE_KEY_DB_KEY as EOS_KEY},
+            eos_database_utils::{EosDatabaseKeysJson, EosDbUtils},
             eos_debug_functions::{add_new_eos_schedule, get_processed_actions_list, update_incremerkle},
         },
     },
@@ -125,9 +119,12 @@ pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &s
 /// Only use this if you know exactly what you are doing and why.
 pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
-    let sensitivity = match key_bytes == EOS_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
-        true => MAX_DATA_SENSITIVITY_LEVEL,
-        false => None,
+    let sensitivity = if key_bytes == EosDbUtils::new(&db).get_eos_private_key_db_key()
+        || key_bytes == BtcDbUtils::new(&db).get_btc_private_key_db_key()
+    {
+        MAX_DATA_SENSITIVITY_LEVEL
+    } else {
+        None
     };
     set_key_in_db_to_value(db, key, value, sensitivity).map(prepend_debug_output_marker_to_string)
 }
@@ -137,9 +134,12 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
 /// This function will return the value stored under a given key in the encrypted database.
 pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
-    let sensitivity = match key_bytes == EOS_KEY.to_vec() || key_bytes == BTC_KEY.to_vec() {
-        true => MAX_DATA_SENSITIVITY_LEVEL,
-        false => None,
+    let sensitivity = if key_bytes == EosDbUtils::new(&db).get_eos_private_key_db_key()
+        || key_bytes == BtcDbUtils::new(&db).get_btc_private_key_db_key()
+    {
+        MAX_DATA_SENSITIVITY_LEVEL
+    } else {
+        None
     };
     get_key_from_db(db, key, sensitivity).map(prepend_debug_output_marker_to_string)
 }

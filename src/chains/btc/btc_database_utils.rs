@@ -17,7 +17,7 @@ use crate::{
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
 
-create_db_utils!(
+create_db_utils_with_getters!(
     "Btc";
     "_FEE_KEY" => "btc-fee-key",
     "_ADDRESS_KEY" => "btc-address",
@@ -38,13 +38,13 @@ create_db_utils!(
 impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
     pub fn get_btc_chain_id_from_db(&self) -> Result<BtcChainId> {
         self.db
-            .get(self.btc_network_key.clone(), MIN_DATA_SENSITIVITY_LEVEL)
+            .get(self.get_btc_network_key(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|ref bytes| BtcChainId::from_bytes(bytes))
     }
 
     pub fn put_btc_pub_key_slice_in_db(&self, pub_key_slice: &BtcPubKeySlice) -> Result<()> {
         self.db.put(
-            self.btc_public_key_db_key.clone(),
+            self.get_btc_public_key_db_key(),
             pub_key_slice.to_vec(),
             MIN_DATA_SENSITIVITY_LEVEL,
         )
@@ -52,7 +52,7 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
 
     pub fn get_btc_public_key_slice_from_db(&self) -> Result<BtcPubKeySlice> {
         self.db
-            .get(self.btc_public_key_db_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+            .get(self.get_btc_public_key_db_key(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| convert_bytes_to_btc_pub_key_slice(&bytes))
     }
 
@@ -64,18 +64,18 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
 
     pub fn put_btc_account_nonce_in_db(&self, nonce: u64) -> Result<()> {
         debug!("✔ Putting BTC account nonce of {} in db...", nonce);
-        put_u64_in_db(self.db, &self.btc_account_nonce_key.to_vec(), nonce)
+        put_u64_in_db(self.get_db(), &self.get_btc_account_nonce_key(), nonce)
     }
 
     pub fn get_btc_account_nonce_from_db(&self) -> Result<u64> {
         debug!("✔ Getting BTC account nonce from db...");
-        get_u64_from_db(self.db, &self.btc_account_nonce_key.to_vec())
+        get_u64_from_db(self.get_db(), &self.get_btc_account_nonce_key())
     }
 
     pub fn get_btc_fee_from_db(&self) -> Result<u64> {
         debug!("✔ Getting BTC fee from db...");
         self.db
-            .get(self.btc_fee_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+            .get(self.get_btc_fee_key(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| convert_bytes_to_u64(&bytes))
     }
 
@@ -83,7 +83,7 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
         // FIXME should not be allowed to change once set!
         debug!("✔ Adding BTC fee of '{}' satoshis-per-byte to db...", fee);
         self.db.put(
-            self.btc_fee_key.to_vec(),
+            self.get_btc_fee_key(),
             convert_u64_to_bytes(fee),
             MIN_DATA_SENSITIVITY_LEVEL,
         )
@@ -91,7 +91,7 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
 
     pub fn get_btc_network_from_db(&self) -> Result<BtcNetwork> {
         self.db
-            .get(self.btc_network_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+            .get(self.get_btc_network_key(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|ref bytes| BtcChainId::from_bytes(bytes))
             .map(|chain_id| chain_id.to_btc_network())
     }
@@ -99,8 +99,8 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
     pub fn put_btc_network_in_db(&self, network: BtcNetwork) -> Result<()> {
         // FIXME should not be allowed to change once set!
         info!("✔ Adding BTC '{}' network to database...", network);
-        self.db.put(
-            self.btc_network_key.to_vec(),
+        self.get_db().put(
+            self.get_btc_network_key(),
             BtcChainId::from_btc_network(&network)?.to_bytes(),
             MIN_DATA_SENSITIVITY_LEVEL,
         )
@@ -108,8 +108,8 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
 
     pub fn put_btc_difficulty_in_db(&self, difficulty: u64) -> Result<()> {
         debug!("✔ Putting BTC difficulty threshold of {} in db...", difficulty);
-        self.db.put(
-            self.btc_difficulty.to_vec(),
+        self.get_db().put(
+            self.get_btc_difficulty(),
             convert_u64_to_bytes(difficulty),
             MIN_DATA_SENSITIVITY_LEVEL,
         )
@@ -117,14 +117,14 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
 
     pub fn get_btc_difficulty_from_db(&self) -> Result<u64> {
         debug!("✔ Getting BTC difficulty threshold from db...");
-        self.db
-            .get(self.btc_difficulty.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+        self.get_db()
+            .get(self.get_btc_difficulty(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| convert_bytes_to_u64(&bytes))
     }
 
     pub fn get_btc_block_from_db(&self, id: &BlockHash) -> Result<BtcBlockInDbFormat> {
         debug!("✔ Getting BTC block from db via id: {}", hex::encode(id));
-        self.db
+        self.get_db()
             .get(id.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| BtcBlockInDbFormat::from_bytes(&bytes))
     }
@@ -143,10 +143,10 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
     fn get_special_hash_from_db(&self, hash_type: &str) -> Result<BlockHash> {
         // FIXME/TODO make the block type an enum!
         let key = match hash_type {
-            "tail" => Ok(self.btc_tail_block_hash_key.to_vec()),
-            "canon" => Ok(self.btc_canon_block_hash_key.to_vec()),
-            "anchor" => Ok(self.btc_anchor_block_hash_key.to_vec()),
-            "latest" => Ok(self.btc_latest_block_hash_key.to_vec()),
+            "tail" => Ok(self.get_btc_tail_block_hash_key()),
+            "canon" => Ok(self.get_btc_canon_block_hash_key()),
+            "anchor" => Ok(self.get_btc_anchor_block_hash_key()),
+            "latest" => Ok(self.get_btc_latest_block_hash_key()),
             _ => Err(AppError::Custom(format!(
                 "✘ Cannot get special BTC hash of type: {}!",
                 hash_type
@@ -171,7 +171,7 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
         debug!("✔ Putting BTC block in db: {:?}", block);
         block
             .to_bytes()
-            .and_then(|bytes| self.db.put(block.get_db_key(), bytes, MIN_DATA_SENSITIVITY_LEVEL))
+            .and_then(|bytes| self.get_db().put(block.get_db_key(), bytes, MIN_DATA_SENSITIVITY_LEVEL))
     }
 
     pub fn put_special_btc_block_in_db(&self, block_and_id: &BtcBlockInDbFormat, block_type: &str) -> Result<()> {
@@ -186,10 +186,10 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
 
     fn put_special_btc_hash_in_db(&self, hash_type: &str, hash: &BlockHash) -> Result<()> {
         let key = match hash_type {
-            "tail" => Ok(self.btc_tail_block_hash_key.to_vec()),
-            "canon" => Ok(self.btc_canon_block_hash_key.to_vec()),
-            "anchor" => Ok(self.btc_anchor_block_hash_key.to_vec()),
-            "latest" => Ok(self.btc_latest_block_hash_key.to_vec()),
+            "tail" => Ok(self.get_btc_tail_block_hash_key()),
+            "canon" => Ok(self.get_btc_canon_block_hash_key()),
+            "anchor" => Ok(self.get_btc_anchor_block_hash_key()),
+            "latest" => Ok(self.get_btc_latest_block_hash_key()),
             _ => Err(AppError::Custom(format!(
                 "✘ Cannot store special BTC hash of type: {}!",
                 hash_type
@@ -206,11 +206,11 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
     // FIXME This could be a more generic fxn no? (Across all chains?)
     pub fn key_exists_in_db(&self, key: &[Byte], sensitivity: DataSensitivity) -> bool {
         debug!("✔ Checking for existence of key: {}", hex::encode(key));
-        self.db.get(key.to_vec(), sensitivity).is_ok()
+        self.get_db().get(key.to_vec(), sensitivity).is_ok()
     }
 
     pub fn put_btc_canon_to_tip_length_in_db(&self, btc_canon_to_tip_length: u64) -> Result<()> {
-        self.db.put(
+        self.get_db().put(
             self.btc_canon_to_tip_length_key.to_vec(),
             convert_u64_to_bytes(btc_canon_to_tip_length),
             MIN_DATA_SENSITIVITY_LEVEL,
@@ -218,20 +218,20 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
     }
 
     pub fn get_btc_canon_to_tip_length_from_db(&self) -> Result<u64> {
-        self.db
-            .get(self.btc_canon_to_tip_length_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+        self.get_db()
+            .get(self.get_btc_canon_to_tip_length_key(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| convert_bytes_to_u64(&bytes))
     }
 
     pub fn put_btc_private_key_in_db(&self, pk: &BtcPrivateKey) -> Result<()> {
         // FIXME Should not be allowed to change once set.
         debug!("✔ Saving BTC private key into db...");
-        pk.write_to_db(self.db, &self.btc_private_key_db_key.to_vec())
+        pk.write_to_db(self.get_db(), &self.get_btc_private_key_db_key())
     }
 
     pub fn get_btc_private_key_from_db(&self) -> Result<BtcPrivateKey> {
-        self.db
-            .get(self.btc_private_key_db_key.to_vec(), MAX_DATA_SENSITIVITY_LEVEL)
+        self.get_db()
+            .get(self.get_btc_private_key_db_key().to_vec(), MAX_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| BtcPrivateKey::from_slice(&bytes[..], self.get_btc_network_from_db()?))
     }
 
@@ -257,37 +257,37 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
 
     pub fn get_btc_anchor_block_hash_from_db(&self) -> Result<BlockHash> {
         debug!("✔ Getting BTC anchor block hash from db...");
-        self.get_btc_hash_from_db(&self.btc_anchor_block_hash_key.to_vec())
+        self.get_btc_hash_from_db(&self.get_btc_anchor_block_hash_key())
     }
 
     pub fn put_btc_anchor_block_hash_in_db(&self, hash: &BlockHash) -> Result<()> {
         debug!("✔ Putting BTC anchor block hash in db...");
-        self.put_btc_hash_in_db(&self.btc_anchor_block_hash_key.to_vec(), hash)
+        self.put_btc_hash_in_db(&self.get_btc_anchor_block_hash_key(), hash)
     }
 
     pub fn put_btc_latest_block_hash_in_db(&self, hash: &BlockHash) -> Result<()> {
         debug!("✔ Putting BTC latest block hash in db...");
-        self.put_btc_hash_in_db(&self.btc_latest_block_hash_key.to_vec(), hash)
+        self.put_btc_hash_in_db(&self.get_btc_latest_block_hash_key(), hash)
     }
 
     pub fn put_btc_tail_block_hash_in_db(&self, hash: &BlockHash) -> Result<()> {
         debug!("✔ Putting BTC tail block hash in db...");
-        self.put_btc_hash_in_db(&self.btc_tail_block_hash_key.to_vec(), hash)
+        self.put_btc_hash_in_db(&self.get_btc_tail_block_hash_key(), hash)
     }
 
     pub fn put_btc_canon_block_hash_in_db(&self, hash: &BlockHash) -> Result<()> {
         debug!("✔ Putting BTC canon block hash in db...");
-        self.put_btc_hash_in_db(&self.btc_canon_block_hash_key.to_vec(), hash)
+        self.put_btc_hash_in_db(&self.get_btc_canon_block_hash_key(), hash)
     }
 
     pub fn get_btc_linker_hash_from_db(&self) -> Result<BlockHash> {
         debug!("✔ Getting BTC linker hash from db...");
-        self.get_btc_hash_from_db(&self.btc_linker_hash_key.to_vec())
+        self.get_btc_hash_from_db(&self.get_btc_linker_hash_key())
     }
 
     pub fn put_btc_linker_hash_in_db(&self, hash: &BlockHash) -> Result<()> {
         debug!("✔ Putting BTC linker hash in db...");
-        self.put_btc_hash_in_db(&self.btc_linker_hash_key.to_vec(), hash)
+        self.put_btc_hash_in_db(&self.get_btc_linker_hash_key(), hash)
     }
 
     pub fn maybe_get_parent_btc_block_and_id(&self, id: &BlockHash) -> Option<BtcBlockInDbFormat> {
@@ -326,8 +326,8 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
     pub fn put_btc_address_in_db(&self, btc_address: &str) -> Result<()> {
         // FIXME should not be allowed to change once set!
         debug!("✔ Putting BTC address {} in db...", btc_address);
-        self.db.put(
-            self.btc_address_key.to_vec(),
+        self.get_db().put(
+            self.get_btc_address_key().to_vec(),
             convert_btc_address_to_bytes(btc_address)?,
             MIN_DATA_SENSITIVITY_LEVEL,
         )
@@ -336,20 +336,20 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
     pub fn get_btc_address_from_db(&self) -> Result<String> {
         debug!("✔  Getting BTC address from db...");
         self.db
-            .get(self.btc_address_key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+            .get(self.get_btc_address_key(), MIN_DATA_SENSITIVITY_LEVEL)
             .map(convert_bytes_to_btc_address)
     }
 }
 
 pub fn start_btc_db_transaction<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
-    state.db.start_transaction().map(|_| {
+    state.btc_db_utils.get_db().start_transaction().map(|_| {
         info!("✔ Database transaction begun forj BTC block submission!");
         state
     })
 }
 
 pub fn end_btc_db_transaction<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
-    state.db.end_transaction().map(|_| {
+    state.btc_db_utils.get_db().end_transaction().map(|_| {
         info!("✔ Database transaction ended for BTC block submission!");
         state
     })

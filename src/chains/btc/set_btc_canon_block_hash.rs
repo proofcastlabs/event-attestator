@@ -1,14 +1,10 @@
-use crate::{
-    chains::btc::{btc_database_utils::BTC_CANON_BLOCK_HASH_KEY, btc_state::BtcState},
-    traits::DatabaseInterface,
-    types::Result,
-};
+use crate::{chains::btc::btc_state::BtcState, traits::DatabaseInterface, types::Result};
 
 pub fn maybe_set_btc_canon_block_hash<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Checking BTC canon block hash is set in database...");
     match state
         .btc_db_utils
-        .key_exists_in_db(&BTC_CANON_BLOCK_HASH_KEY.to_vec(), None)
+        .key_exists_in_db(&state.btc_db_utils.get_btc_canon_block_hash_key(), None)
     {
         true => {
             info!("✔ BTC canon block hash set in database!");

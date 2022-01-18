@@ -16,7 +16,7 @@ use crate::{
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
 
-create_db_utils!(
+create_db_utils_with_getters!(
     "Eth";
     "_CHAIN_ID_KEY" => "eth-chain-id",
     "_GAS_PRICE_KEY" => "eth-gas-price",
@@ -40,9 +40,7 @@ create_db_utils!(
     "_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "erc20-on-evm-eth-smart-contract-address-key"
 );
 
-// FIXME The list on the left hand side is now the same! Time for another macro?
-
-create_db_utils!(
+create_db_utils_with_getters!(
     "Evm";
     "_CHAIN_ID_KEY" => "evm-chain-id",
     "_GAS_PRICE_KEY" => "evm-gas-price",
@@ -66,7 +64,6 @@ create_db_utils!(
     "_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "evm-erc20-on-evm-smart-contract-address-key"
 );
 
-// FIXME Can I make this entirely separate so the DB utils getters are all there already?
 macro_rules! impl_eth_db_utils_ext {
     ($prefix:ident, $is_for_eth:expr) => {
         paste! {
@@ -80,79 +77,79 @@ macro_rules! impl_eth_db_utils_ext {
                 }
 
                 fn get_any_sender_nonce_key(&self) -> Bytes {
-                    self.[< $prefix:lower _any_sender_nonce_key>].to_vec()
+                    self.[< get_ $prefix:lower _any_sender_nonce_key>]()
                 }
 
                 fn get_router_smart_contract_address_key(&self) -> Bytes {
-                    self.[< $prefix:lower _router_smart_contract_address_key>].to_vec()
+                    self.[< get_ $prefix:lower _router_smart_contract_address_key>]()
                 }
 
                 fn get_erc20_on_evm_smart_contract_address_key(&self) -> Bytes {
-                    self.[< $prefix:lower _erc20_on_evm_smart_contract_address_key>].to_vec()
+                    self.[< get_ $prefix:lower _erc20_on_evm_smart_contract_address_key>]()
                 }
 
                 fn get_eos_on_eth_smart_contract_address_key(&self) -> Bytes {
-                    self.[< $prefix:lower _eos_on_eth_smart_contract_address_key>].to_vec()
+                    self.[< get_ $prefix:lower _eos_on_eth_smart_contract_address_key>]()
                 }
 
                 fn get_erc20_on_eos_smart_contract_address_key(&self) -> Bytes {
-                    self.[< $prefix:lower _erc20_on_eos_smart_contract_address_key>].to_vec()
+                    self.[< get_ $prefix:lower _erc20_on_eos_smart_contract_address_key>]()
                 }
 
                 fn get_btc_on_eth_smart_contract_address_key(&self) -> Bytes {
-                    self.[< $prefix:lower _btc_on_eth_smart_contract_address_key>].to_vec()
+                    self.[< get_ $prefix:lower _btc_on_eth_smart_contract_address_key>]()
                 }
 
                 fn get_erc777_proxy_contract_address_key(&self) -> Bytes {
-                    self.[< $prefix:lower _erc777_proxy_contract_address_key>].to_vec()
+                    self.[< get_ $prefix:lower _erc777_proxy_contract_address_key>]()
                 }
 
                 fn get_eth_address_key(&self) -> Bytes {
-                    self.[< $prefix:lower _address_key>].to_vec()
+                    self.[< get_ $prefix:lower _address_key>]()
                 }
 
                 fn get_eth_private_key_db_key(&self) -> Bytes {
-                    self.[< $prefix:lower _private_key_db_key>].to_vec()
+                    self.[< get_ $prefix:lower _private_key_db_key>]()
                 }
 
                 fn get_eth_chain_id_key(&self) -> Bytes {
-                    self.[< $prefix:lower _chain_id_key>].to_vec()
+                    self.[< get_ $prefix:lower _chain_id_key>]()
                 }
 
                 fn get_eth_account_nonce_key(&self) -> Bytes {
-                    self.[< $prefix:lower _account_nonce_key>].to_vec()
+                    self.[< get_ $prefix:lower _account_nonce_key>]()
                 }
 
                 fn get_eth_gas_price_key(&self) -> Bytes {
-                    self.[< $prefix:lower _gas_price_key>].to_vec()
+                    self.[< get_ $prefix:lower _gas_price_key>]()
                 }
 
                 fn get_eth_linker_hash_key(&self) -> Bytes {
-                    self.[< $prefix:lower _linker_hash_key>].to_vec()
+                    self.[< get_ $prefix:lower _linker_hash_key>]()
                 }
 
                 fn get_eth_tail_block_hash_key(&self) -> Bytes {
-                    self.[< $prefix:lower _tail_block_hash_key>].to_vec()
+                    self.[< get_ $prefix:lower _tail_block_hash_key>]()
                 }
 
                 fn get_eth_canon_block_hash_key(&self) -> Bytes {
-                    self.[< $prefix:lower _canon_block_hash_key>].to_vec()
+                    self.[< get_ $prefix:lower _canon_block_hash_key>]()
                 }
 
                 fn get_eth_latest_block_hash_key(&self) -> Bytes {
-                    self.[< $prefix:lower _latest_block_hash_key>].to_vec()
+                    self.[< get_ $prefix:lower _latest_block_hash_key>]()
                 }
 
                 fn get_eth_anchor_block_hash_key(&self) -> Bytes {
-                    self.[< $prefix:lower _anchor_block_hash_key>].to_vec()
+                    self.[< get_ $prefix:lower _anchor_block_hash_key>]()
                 }
 
                 fn get_eth_canon_to_tip_length_key(&self) -> Bytes {
-                    self.[< $prefix:lower _canon_to_tip_length_key>].to_vec()
+                    self.[< get_ $prefix:lower _canon_to_tip_length_key>]()
                 }
 
                 fn get_int_on_evm_smart_contract_address_key(&self) -> Bytes {
-                    self.[< $prefix:lower _int_on_evm_smart_contract_address_key>].to_vec()
+                    self.[< get_ $prefix:lower _int_on_evm_smart_contract_address_key>]()
                 }
             }
         }
