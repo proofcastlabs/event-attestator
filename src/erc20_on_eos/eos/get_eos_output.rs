@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{
-        eos::{eos_database_utils::get_latest_eos_block_number, eos_state::EosState},
+        eos::eos_state::EosState,
         eth::{
             any_sender::relay_transaction::RelayTransaction,
             eth_crypto::eth_transaction::EthTransaction,
@@ -111,7 +111,7 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
 pub fn get_eos_output<D: DatabaseInterface>(state: EosState<D>) -> Result<String> {
     info!("✔ Getting EOS output json...");
     let output = serde_json::to_string(&EosOutput {
-        eos_latest_block_number: get_latest_eos_block_number(state.db)?,
+        eos_latest_block_number: state.eos_db_utils.get_latest_eos_block_number()?,
         eth_signed_transactions: match &state.eth_signed_txs.len() {
             0 => vec![],
             _ => get_eth_signed_tx_info_from_eth_txs(

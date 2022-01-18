@@ -1,11 +1,5 @@
 use crate::{
-    chains::{
-        eos::{
-            eos_database_utils::get_eos_account_nonce_from_db,
-            increment_eos_account_nonce::increment_eos_account_nonce,
-        },
-        eth::eth_state::EthState,
-    },
+    chains::{eos::increment_eos_account_nonce::increment_eos_account_nonce, eth::eth_state::EthState},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -20,7 +14,11 @@ where
             info!("✔ No signatures in state ∴ not incrementing eos account nonce");
             Ok(state)
         },
-        _ => increment_eos_account_nonce(state.db, get_eos_account_nonce_from_db(state.db)?, *num_txs as u64)
-            .and(Ok(state)),
+        _ => increment_eos_account_nonce(
+            &state.eos_db_utils,
+            state.eos_db_utils.get_eos_account_nonce_from_db()?,
+            *num_txs as u64,
+        )
+        .and(Ok(state)),
     }
 }

@@ -1,10 +1,9 @@
-use crate::{
-    chains::eos::{eos_database_utils::put_eos_last_seen_block_num_in_db, eos_state::EosState},
-    traits::DatabaseInterface,
-    types::Result,
-};
+use crate::{chains::eos::eos_state::EosState, traits::DatabaseInterface, types::Result};
 
 pub fn save_latest_block_num_to_db<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Saving latest EOS block num in db...");
-    put_eos_last_seen_block_num_in_db(state.db, state.get_eos_block_num()?).and(Ok(state))
+    state
+        .eos_db_utils
+        .put_eos_last_seen_block_num_in_db(state.get_eos_block_num()?)
+        .and(Ok(state))
 }

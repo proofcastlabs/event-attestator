@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::eos::eos_database_utils::put_eos_enabled_protocol_features_in_db,
+    chains::eos::eos_database_utils::EosDbUtils,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
@@ -99,12 +99,13 @@ impl EnabledFeatures {
         !self.is_enabled(feature_hash)
     }
 
-    pub fn enable_multi<D>(self, db: &D, feature_hashes: &mut Vec<Bytes>) -> Result<Self>
-    where
-        D: DatabaseInterface,
-    {
+    pub fn enable_multi<D: DatabaseInterface>(
+        self,
+        db_utils: &EosDbUtils<D>,
+        feature_hashes: &mut Vec<Bytes>,
+    ) -> Result<Self> {
         self.add_multi(feature_hashes).and_then(|updated_self| {
-            put_eos_enabled_protocol_features_in_db(db, &updated_self)?;
+            db_utils.put_eos_enabled_protocol_features_in_db(&updated_self)?;
             Ok(updated_self)
         })
     }

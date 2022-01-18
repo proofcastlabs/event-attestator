@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{
-        eos::eos_enclave_state::EosEnclaveState,
+        eos::{eos_database_utils::EosDbUtils, eos_enclave_state::EosEnclaveState},
         eth::{
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_enclave_state::EthEnclaveState,
@@ -22,10 +22,10 @@ struct EnclaveState {
 }
 
 impl EnclaveState {
-    pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, db: &D) -> Result<Self> {
+    pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, eos_db_utils: &EosDbUtils<D>) -> Result<Self> {
         Ok(Self {
             info: EnclaveInfo::new(),
-            eos: EosEnclaveState::new(db)?,
+            eos: EosEnclaveState::new(eos_db_utils)?,
             eth: EthEnclaveState::new(
                 eth_db_utils,
                 &eth_db_utils.get_eos_on_eth_smart_contract_address_from_db()?,
@@ -46,5 +46,7 @@ impl EnclaveState {
 pub fn get_enclave_state<D: DatabaseInterface>(db: D) -> Result<String> {
     info!("✔ Getting core state...");
     let eth_db_utils = EthDbUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &db).and_then(|_| EnclaveState::new(&eth_db_utils, &db)?.to_string())
+    let eos_db_utils = EosDbUtils::new(&db);
+    check_core_is_initialized(&eth_db_utils, &eos_db_utils)
+        .and_then(|_| EnclaveState::new(&eth_db_utils, &eos_db_utils)?.to_string())
 }

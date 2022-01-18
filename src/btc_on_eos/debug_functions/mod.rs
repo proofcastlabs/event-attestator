@@ -45,6 +45,7 @@ use crate::{
         eos::{
             core_initialization::eos_init_utils::EosInitJson,
             eos_constants::{EosDatabaseKeysJson, EOS_PRIVATE_KEY_DB_KEY as EOS_KEY},
+            eos_database_utils::EosDbUtils,
             eos_debug_functions::{add_new_eos_schedule, get_processed_actions_list, update_incremerkle},
         },
     },
@@ -87,7 +88,7 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 /// transaction replays. Use with extreme caution and only if you know exactly what you are doing
 /// and why.
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
-    check_core_is_initialized(&BtcDbUtils::new(db), db)
+    check_core_is_initialized(&BtcDbUtils::new(db), &EosDbUtils::new(db))
         .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(eos_init_json)?))
 }
 
@@ -108,7 +109,8 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
 ///
 /// Adds a new EOS schedule to the core's encrypted database.
 pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &str) -> Result<String> {
-    check_core_is_initialized(&BtcDbUtils::new(&db), &db).and_then(|_| add_new_eos_schedule(&db, schedule_json))
+    check_core_is_initialized(&BtcDbUtils::new(&db), &EosDbUtils::new(&db))
+        .and_then(|_| add_new_eos_schedule(&db, schedule_json))
 }
 
 /// # Debug Set Key in DB to Value
@@ -143,7 +145,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
 /// This function will return a JSON containing all the UTXOs the encrypted database currently has.
 pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(&db), &EosDbUtils::new(&db)))
         .and_then(|_| get_all_utxos_as_json_string(&db))
 }
 
@@ -164,7 +166,7 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
     v_out: u32,
 ) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(&db), &EosDbUtils::new(&db)))
         .and_then(|_| get_child_pays_for_parent_btc_tx(db, fee, tx_id, v_out))
         .map(prepend_debug_output_marker_to_string)
 }
@@ -181,7 +183,7 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
 /// bricked. Use ONLY if you know exactly what you're doing and why!
 pub fn debug_consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(&db), &EosDbUtils::new(&db)))
         .and_then(|_| consolidate_utxos(db, fee, num_utxos))
         .map(prepend_debug_output_marker_to_string)
 }
@@ -194,7 +196,7 @@ pub fn debug_consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos:
 /// Use ONLY if you know exactly what you're doing and why!
 pub fn debug_remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(&db), &db))
+        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(&db), &EosDbUtils::new(&db)))
         .and_then(|_| remove_utxo(db, tx_id, v_out))
         .map(prepend_debug_output_marker_to_string)
 }
@@ -226,7 +228,7 @@ pub fn debug_add_multiple_utxos<D: DatabaseInterface>(db: D, json_str: &str) -> 
 ///
 /// This function returns the list of already-processed action global sequences in JSON format.
 pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String> {
-    check_core_is_initialized(&BtcDbUtils::new(db), db).and_then(|_| get_processed_actions_list(db))
+    check_core_is_initialized(&BtcDbUtils::new(db), &EosDbUtils::new(db)).and_then(|_| get_processed_actions_list(db))
 }
 
 /// # Debug Maybe Add UTXO To DB

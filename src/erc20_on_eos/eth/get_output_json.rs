@@ -4,10 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{
-        eos::{
-            eos_crypto::eos_transaction::EosSignedTransaction,
-            eos_database_utils::{get_eos_account_nonce_from_db, get_latest_eos_block_number},
-        },
+        eos::eos_crypto::eos_transaction::EosSignedTransaction,
         eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
     },
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfo,
@@ -80,7 +77,7 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
         eos_signed_transactions: match state.eos_transactions {
             None => vec![],
             Some(ref eos_txs) => {
-                let start_nonce = get_eos_account_nonce_from_db(state.db)? - eos_txs.len() as u64;
+                let start_nonce = state.eos_db_utils.get_eos_account_nonce_from_db()? - eos_txs.len() as u64;
                 eos_txs
                     .iter()
                     .enumerate()
@@ -89,7 +86,7 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
                             eos_tx,
                             &state.erc20_on_eos_peg_in_infos[i],
                             start_nonce + i as u64,
-                            get_latest_eos_block_number(state.db)?,
+                            state.eos_db_utils.get_latest_eos_block_number()?,
                         )
                     })
                     .collect::<Result<Vec<EosTxInfo>>>()?

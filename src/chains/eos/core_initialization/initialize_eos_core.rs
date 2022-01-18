@@ -25,6 +25,7 @@ use crate::{
             end_eos_db_transaction_and_return_state,
             start_eos_db_transaction_and_return_state,
         },
+        eos_database_utils::EosDbUtils,
         eos_state::EosState,
     },
     traits::DatabaseInterface,
@@ -92,7 +93,7 @@ pub fn maybe_initialize_eos_core_with_eos_account_and_symbol<D: DatabaseInterfac
     eos_init_json: &str,
 ) -> Result<String> {
     info!("✔ Maybe initializing EOS core...");
-    match is_eos_core_initialized(&db) {
+    match is_eos_core_initialized(&EosDbUtils::new(&db)) {
         true => Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string()),
         false => initialize_eos_core(db, chain_id, Some(account_name), Some(token_symbol), eos_init_json),
     }
@@ -123,7 +124,7 @@ pub fn maybe_initialize_eos_core_without_eos_account_or_symbol<D: DatabaseInterf
     eos_init_json: &str,
 ) -> Result<String> {
     info!("✔ Maybe initializing EOS core...");
-    match is_eos_core_initialized(&db) {
+    match is_eos_core_initialized(&EosDbUtils::new(&db)) {
         true => Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string()),
         false => initialize_eos_core(db, chain_id, None, None, eos_init_json),
     }
@@ -156,7 +157,7 @@ pub fn maybe_initialize_eos_core_with_eos_account_without_symbol<D: DatabaseInte
     eos_init_json: &str,
 ) -> Result<String> {
     info!("✔ Maybe initializing EOS core...");
-    match is_eos_core_initialized(&db) {
+    match is_eos_core_initialized(&EosDbUtils::new(&db)) {
         true => Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string()),
         false => initialize_eos_core(db, chain_id, Some(eos_account_name), None, eos_init_json),
     }

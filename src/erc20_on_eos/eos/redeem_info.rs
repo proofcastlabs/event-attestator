@@ -9,7 +9,6 @@ use crate::{
         eos::{
             eos_action_proofs::EosActionProof,
             eos_chain_id::EosChainId,
-            eos_database_utils::get_eos_chain_id_from_db,
             eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
             eos_state::EosState,
         },
@@ -237,7 +236,7 @@ pub fn maybe_parse_redeem_infos_and_put_in_state<D: DatabaseInterface>(state: Eo
     Erc20OnEosRedeemInfos::from_action_proofs(
         &state.action_proofs,
         state.get_eos_eth_token_dictionary()?,
-        &get_eos_chain_id_from_db(state.db)?,
+        &state.eos_db_utils.get_eos_chain_id_from_db()?,
     )
     .and_then(|redeem_infos| {
         info!("✔ Parsed {} redeem infos!", redeem_infos.len());

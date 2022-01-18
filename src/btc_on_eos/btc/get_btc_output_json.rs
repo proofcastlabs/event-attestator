@@ -6,11 +6,7 @@ use crate::{
     btc_on_eos::btc::minting_params::BtcOnEosMintingParamStruct,
     chains::{
         btc::btc_state::BtcState,
-        eos::{
-            eos_crypto::eos_transaction::EosSignedTransaction,
-            eos_database_utils::get_eos_account_nonce_from_db,
-            eos_unit_conversions::convert_eos_asset_to_u64,
-        },
+        eos::{eos_crypto::eos_transaction::EosSignedTransaction, eos_unit_conversions::convert_eos_asset_to_u64},
     },
     traits::DatabaseInterface,
     types::Result,
@@ -78,7 +74,7 @@ pub fn create_btc_output_json_and_put_in_state<D: DatabaseInterface>(state: BtcS
                     .btc_db_utils
                     .get_btc_canon_block_from_db()?
                     .get_eos_minting_params(),
-                get_eos_account_nonce_from_db(state.db)?,
+                state.eos_db_utils.get_eos_account_nonce_from_db()?,
             )?,
         },
     })?)

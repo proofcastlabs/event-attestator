@@ -15,7 +15,6 @@ use crate::{
     chains::{
         eos::{
             eos_action_proofs::EosActionProof,
-            eos_database_utils::get_eos_account_name_from_db,
             eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
             eos_state::EosState,
         },
@@ -383,7 +382,7 @@ pub fn maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state<D: DatabaseInterface
     EosOnEthEosTxInfos::from_eos_action_proofs(
         &state.action_proofs,
         state.get_eos_eth_token_dictionary()?,
-        &get_eos_account_name_from_db(state.db)?,
+        &state.eos_db_utils.get_eos_account_name_from_db()?,
     )
     .and_then(|tx_infos| {
         info!("✔ Parsed {} sets of redeem info!", tx_infos.len());

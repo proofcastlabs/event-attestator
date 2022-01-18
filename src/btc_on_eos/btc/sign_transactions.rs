@@ -9,7 +9,6 @@ use crate::{
                 eos_private_key::EosPrivateKey,
                 eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
             },
-            eos_database_utils::{get_eos_account_name_string_from_db, get_eos_chain_id_from_db},
             eos_utils::get_eos_tx_expiration_timestamp_with_offset,
         },
     },
@@ -58,9 +57,9 @@ pub fn maybe_sign_canon_block_txs_and_add_to_state<D: DatabaseInterface>(state: 
     get_signed_eos_ptoken_issue_txs(
         state.get_eos_ref_block_num()?,
         state.get_eos_ref_block_prefix()?,
-        &get_eos_chain_id_from_db(state.db)?,
+        &state.eos_db_utils.get_eos_chain_id_from_db()?,
         &EosPrivateKey::get_from_db(state.db)?,
-        &get_eos_account_name_string_from_db(state.db)?,
+        &state.eos_db_utils.get_eos_account_name_string_from_db()?,
         &state
             .btc_db_utils
             .get_btc_canon_block_from_db()?

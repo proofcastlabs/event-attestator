@@ -8,7 +8,7 @@ use crate::{
                 put_eos_latest_block_info_in_db,
                 EosInitJson,
             },
-            eos_database_utils::{put_eos_account_nonce_in_db, put_eos_schedule_in_db},
+            eos_database_utils::EosDbUtils,
             eos_global_sequences::{GlobalSequences, ProcessedGlobalSequences},
             eos_producer_schedule::EosProducerScheduleV2,
         },
@@ -23,10 +23,11 @@ use crate::{
 
 pub fn update_incremerkle<D: DatabaseInterface>(db: &D, init_json: &EosInitJson) -> Result<String> {
     info!("✔ Debug updating blockroot merkle...");
+    let eos_db_utils = EosDbUtils::new(db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| put_eos_latest_block_info_in_db(db, &init_json.block))
-        .and_then(|_| generate_and_put_incremerkle_in_db(db, &init_json.blockroot_merkle))
+        .and_then(|_| put_eos_latest_block_info_in_db(&eos_db_utils, &init_json.block))
+        .and_then(|_| generate_and_put_incremerkle_in_db(&eos_db_utils, &init_json.blockroot_merkle))
         .and_then(|_| db.end_transaction())
         .and(Ok("{debug_update_blockroot_merkle_success:true}".to_string()))
         .map(prepend_debug_output_marker_to_string)
@@ -37,7 +38,7 @@ pub fn add_new_eos_schedule<D: DatabaseInterface>(db: &D, schedule_json: &str) -
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .and_then(|_| EosProducerScheduleV2::from_json(schedule_json))
-        .and_then(|schedule| put_eos_schedule_in_db(db, &schedule))
+        .and_then(|schedule| EosDbUtils::new(db).put_eos_schedule_in_db(&schedule))
         .and_then(|_| db.end_transaction())
         .and(Ok("{debug_adding_eos_schedule_success:true}".to_string()))
         .map(prepend_debug_output_marker_to_string)
@@ -127,7 +128,7 @@ pub fn debug_set_eos_account_nonce<D: DatabaseInterface>(db: &D, new_nonce: u64)
     info!("✔ Debug setting EOS account nonce...");
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| put_eos_account_nonce_in_db(db, new_nonce))
+        .and_then(|_| EosDbUtils::new(db).put_eos_account_nonce_in_db(new_nonce))
         .and_then(|_| db.end_transaction())
         .and(Ok(json!({"set_eos_account_nonce":true}).to_string()))
         .map(prepend_debug_output_marker_to_string)

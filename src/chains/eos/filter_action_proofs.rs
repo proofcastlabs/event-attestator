@@ -5,7 +5,6 @@ use eos_chain::{AccountName as EosAccountName, ActionName as EosActionName, Chec
 use crate::{
     chains::eos::{
         eos_action_proofs::{EosActionProof, EosActionProofs},
-        eos_database_utils::get_eos_account_name_from_db,
         eos_merkle_utils::verify_merkle_proof,
         eos_state::EosState,
         eos_utils::{convert_bytes_to_checksum256, get_digest_from_eos_action},
@@ -162,7 +161,7 @@ pub fn maybe_filter_out_proofs_for_wrong_eos_account_name<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Filtering out proofs for accounts we don't care about...");
-    filter_proofs_for_account(&state.action_proofs, get_eos_account_name_from_db(state.db)?)
+    filter_proofs_for_account(&state.action_proofs, state.eos_db_utils.get_eos_account_name_from_db()?)
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
