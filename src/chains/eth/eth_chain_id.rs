@@ -23,6 +23,7 @@ pub enum EthChainId {
     InterimChain,
     PolygonMainnet,
     ArbitrumMainnet,
+    LuxochainMainnet,
     Unknown(u64),
 }
 
@@ -44,6 +45,7 @@ impl ToMetadataChainId for EthChainId {
             Self::InterimChain => MetadataChainId::InterimChain,
             Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
             Self::ArbitrumMainnet => MetadataChainId::ArbitrumMainnet,
+            Self::LuxochainMainnet => MetadataChainId::LuxochainMainnet,
         }
     }
 }
@@ -63,6 +65,7 @@ impl EthChainId {
             "interim" | "947" => Ok(Self::InterimChain),
             "polygon" | "137" => Ok(Self::PolygonMainnet),
             "arbitrum" | "42161" => Ok(Self::ArbitrumMainnet),
+            "luxo" | "luxochain" | "110" => Ok(Self::LuxochainMainnet),
             _ => match s.parse::<u64>() {
                 Ok(u_64) => Ok(Self::Unknown(u_64)),
                 Err(_) => Err(format!("✘ Unrecognized ETH network: '{}'!", s).into()),
@@ -93,6 +96,7 @@ impl EthChainId {
             100 => Ok(Self::XDaiMainnet),
             947 => Ok(Self::InterimChain),
             137 => Ok(Self::PolygonMainnet),
+            110 => Ok(Self::LuxochainMainnet),
             42161 => Ok(Self::ArbitrumMainnet),
             _ => {
                 info!("✔ Using unknown ETH chain ID: {}", needle);
@@ -123,6 +127,7 @@ impl EthChainId {
             Self::InterimChain => MetadataChainId::InterimChain,
             Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
             Self::ArbitrumMainnet => MetadataChainId::ArbitrumMainnet,
+            Self::LuxochainMainnet => MetadataChainId::LuxochainMainnet,
         }
     }
 
@@ -135,6 +140,7 @@ impl EthChainId {
             Self::XDaiMainnet => 100,
             Self::InterimChain => 947,
             Self::PolygonMainnet => 137,
+            Self::LuxochainMainnet => 110,
             Self::ArbitrumMainnet => 42161,
             Self::Unknown(u_64) => *u_64,
         }
@@ -177,6 +183,7 @@ impl fmt::Display for EthChainId {
             Self::Unknown(_) => write!(f, "Unkown ETH chain ID: {}", u_64),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", u_64),
             Self::ArbitrumMainnet => write!(f, "Abritrum Mainnet: {}", u_64),
+            Self::LuxochainMainnet => write!(f, "Luxochain Mainnet: {}", u_64),
         }
     }
 }
