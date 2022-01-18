@@ -3,7 +3,6 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash};
 use crate::{
     chains::eth::{
         eth_chain_id::EthChainId,
-        eth_constants::ETH_PTOKEN_GENESIS_HASH_KEY,
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_submission_material::EthSubmissionMaterial,
         eth_types::{AnySenderSigningParams, EthSigningParams},
@@ -16,6 +15,54 @@ use crate::{
     types::{Byte, Bytes, DataSensitivity, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
+
+create_db_keys_and_json!(
+    "Eth";
+    "ETH_CHAIN_ID_KEY" => "eth-chain-id",
+    "ETH_GAS_PRICE_KEY" => "eth-gas-price",
+    "ETH_ADDRESS_KEY" => "eth-address-key",
+    "ETH_LINKER_HASH_KEY" => "linker-hash-key",
+    "ETH_ACCOUNT_NONCE_KEY" => "eth-account-nonce",
+    "ETH_ANY_SENDER_NONCE_KEY" => "any-sender-nonce",
+    "ETH_PRIVATE_KEY_DB_KEY" => "eth-private-key-key",
+    "ETH_PTOKEN_GENESIS_HASH_KEY" => "provable-ptoken",
+    "ETH_CANON_BLOCK_HASH_KEY" => "canon-block-hash-key",
+    "ETH_ANCHOR_BLOCK_HASH_KEY" => "anchor-block-hash-key",
+    "ETH_LATEST_BLOCK_HASH_KEY" => "latest-block-hash-key",
+    "ETH_TAIL_BLOCK_HASH_KEY" => "eth-tail-block-hash-key",
+    "ETH_CANON_TO_TIP_LENGTH_KEY" => "canon-to-tip-length-key",
+    "ETH_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY" => "eth-smart-contract",
+    "ETH_ERC777_PROXY_CONTACT_ADDRESS_KEY" => "erc-777-proxy-contract-address-key",
+    "ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY" => "eth-router-smart-contract-address-key",
+    "ETH_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY" => "eos-on-eth-smart-contract-address-key",
+    "ETH_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY" => "erc20-on-eos-smart-contract-address-key",
+    "ETH_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "eth-int-on-evm-smart-contract-address-key",
+    "ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "erc20-on-evm-eth-smart-contract-address-key"
+);
+
+create_db_keys_and_json!(
+    "Evm";
+    "EVM_CHAIN_ID_KEY" => "evm-chain-id",
+    "EVM_GAS_PRICE_KEY" => "evm-gas-price",
+    "EVM_ADDRESS_KEY" => "evm-address-key",
+    "EVM_LINKER_HASH_KEY" => "evm-linker-hash-key",
+    "EVM_ACCOUNT_NONCE_KEY" => "evm-account-nonce",
+    "EVM_PRIVATE_KEY_DB_KEY" => "evm-private-key-key",
+    "EVM_ANY_SENDER_NONCE_KEY" => "evm-any-sender-nonce",
+    "EVM_TAIL_BLOCK_HASH_KEY" => "evm-tail-block-hash-key",
+    "EVM_PTOKEN_GENESIS_HASH_KEY" => "evm-provable-ptoken",
+    "EVM_CANON_BLOCK_HASH_KEY" => "evm-canon-block-hash-key",
+    "EVM_ANCHOR_BLOCK_HASH_KEY" => "evm-anchor-block-hash-key",
+    "EVM_LATEST_BLOCK_HASH_KEY" => "evm-latest-block-hash-key",
+    "EVM_CANON_TO_TIP_LENGTH_KEY" => "evm-canon-to-tip-length-key",
+    "EVM_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY" => "evm-smart-contract",
+    "EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY" => "eth-router-smart-contract-address-key",
+    "EVM_ERC777_PROXY_CONTACT_ADDRESS_KEY" => "evm-erc-777-proxy-contract-address-key",
+    "EVM_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY" => "evm-eos-on-eth-smart-contract-address-key",
+    "EVM_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "eth-int-on-evm-smart-contract-address-key",
+    "EVM_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY" => "evm-erc20-on-eos-smart-contract-address-key",
+    "EVM_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "evm-erc20-on-evm-smart-contract-address-key"
+);
 
 macro_rules! make_eth_db_utils_struct {
     ($name:ident, $prefix:ident, $is_for_eth:expr) => {
@@ -46,27 +93,6 @@ macro_rules! make_eth_db_utils_struct {
         paste! {
             impl<'a, D: DatabaseInterface> $name<'a, D> {
                 pub fn new(db: &'a D) -> Self {
-                    use crate::chains::eth::[<$prefix:lower _constants>]::{
-                        [<$prefix _ADDRESS_KEY>],
-                        [<$prefix _CHAIN_ID_KEY>],
-                        [<$prefix _GAS_PRICE_KEY>],
-                        [<$prefix _LINKER_HASH_KEY>],
-                        [<$prefix _ACCOUNT_NONCE_KEY>],
-                        [<$prefix _PRIVATE_KEY_DB_KEY>],
-                        [<$prefix _TAIL_BLOCK_HASH_KEY>],
-                        [<$prefix _ANY_SENDER_NONCE_KEY>],
-                        [<$prefix _CANON_BLOCK_HASH_KEY>],
-                        [<$prefix _ANCHOR_BLOCK_HASH_KEY>],
-                        [<$prefix _LATEST_BLOCK_HASH_KEY>],
-                        [<$prefix _CANON_TO_TIP_LENGTH_KEY>],
-                        [<$prefix _ERC777_PROXY_CONTACT_ADDRESS_KEY>],
-                        [<$prefix _ROUTER_SMART_CONTRACT_ADDRESS_KEY>],
-                        [<$prefix _BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY>],
-                        [<$prefix _EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY>],
-                        [<$prefix _INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY>],
-                        [<$prefix _ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY>],
-                        [<$prefix _ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY>],
-                    };
                     Self {
                         db,
                         eth_address_key:
@@ -809,16 +835,13 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::{
-            eth_constants::{ETH_ACCOUNT_NONCE_KEY, ETH_ADDRESS_KEY},
-            eth_test_utils::{
-                get_sample_contract_address,
-                get_sample_eth_address,
-                get_sample_eth_private_key,
-                get_sample_eth_submission_material,
-                get_sample_eth_submission_material_n,
-                get_sequential_eth_blocks_and_receipts,
-            },
+        chains::eth::eth_test_utils::{
+            get_sample_contract_address,
+            get_sample_eth_address,
+            get_sample_eth_private_key,
+            get_sample_eth_submission_material,
+            get_sample_eth_submission_material_n,
+            get_sequential_eth_blocks_and_receipts,
         },
         test_utils::get_test_database,
     };
@@ -1249,5 +1272,111 @@ mod tests {
             .unwrap();
         let result = eth_db_utils.get_eth_router_smart_contract_address_from_db().unwrap();
         assert_eq!(result, eth_address);
+    }
+
+    #[test]
+    fn eth_database_keys_should_stay_consistent() {
+        #[rustfmt::skip]
+        let expected_result = EthDatabaseKeysJson {
+            ETH_ANY_SENDER_NONCE_KEY:
+                "09feb18750877b8b216cf9dc0bf587dfc4d043620252e1a7a33353710939c2ae".to_string(),
+            ETH_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY:
+                "f2289049ab0275224d98f6f7d6b2e5c0b301167d04b83aa724024fcad81d61fc".to_string(),
+            ETH_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY:
+                "13a27c2fe10330e66ea6c562272bcbef4e7ebd003aed087dba387ac43a7f5fd4".to_string(),
+            ETH_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY:
+                "fb2788804c9b7b8c40b191f4da2e4db2602a2f1deaaefc052bf1d38220db1dcf".to_string(),
+            ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY:
+                "7709f182e4be2554442ffb3637f3417dd75cef4ccb13942d2e35c5d6ace6c503".to_string(),
+            ETH_ERC777_PROXY_CONTACT_ADDRESS_KEY:
+                "a2e7337756b00998e6efd72220477f4de76ceac441298d6770fff827837b27a6".to_string(),
+            ETH_ACCOUNT_NONCE_KEY:
+                "713a7d7396c523b7978cd822839e0186395053745941615b0370c0bb72b4dcf4".to_string(),
+            ETH_ADDRESS_KEY:
+                "bfd203dc3411da4e18d157e87b94507a428060618fcf3163357a1fabe93fba1a".to_string(),
+            ETH_ANCHOR_BLOCK_HASH_KEY:
+                "1087f2e9bfa897df4da210822cc94bcf77ee11396cf9d3cd247b06aeeb289737".to_string(),
+            ETH_CANON_BLOCK_HASH_KEY:
+                "c737daae274d21e37403be7d3d562c493332c381ee2b0f3fa0b2286af8b8e5c2".to_string(),
+            ETH_CANON_TO_TIP_LENGTH_KEY:
+                "192b7e4da694bf96fbc089656a3ba0f63f6263a95af257b693e8dee84334b38c".to_string(),
+            ETH_CHAIN_ID_KEY:
+                "47199e3b0ffc301baeedd4eb87ebf5ef3829496c8ab2660a6038a62e36e9222f".to_string(),
+            ETH_GAS_PRICE_KEY:
+                "ecf932d3aca97f12884bc42af7607469feba2206e8b1d37ed1328d477c747346".to_string(),
+            ETH_LATEST_BLOCK_HASH_KEY:
+                "8b39bef2b5b1e9564bb4a60c8211c32e2f94dc88cae8cfbaad42b2e7e527ea7a".to_string(),
+            ETH_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY:
+                "a1552e7ee400c2adf873879fc3efefea72db11307ad3c873506e1f3be8fd31db".to_string(),
+            ETH_LINKER_HASH_KEY:
+                "1c045b32a91a460a8a210de0a9b757da8fc21844f02399b558c3c87917122b58".to_string(),
+            ETH_PRIVATE_KEY_DB_KEY:
+                "eec538cafefe65e094e2e70364da2f2f6e752209e1974e38a9b23ca8ce22b73d".to_string(),
+            ETH_TAIL_BLOCK_HASH_KEY:
+                "539205e110a233c64f983acf425f1d2cf6cb6535a0241a3722a512690eeba758".to_string(),
+            ETH_PTOKEN_GENESIS_HASH_KEY:
+                "7eb2e65416dd107602495454d1ed094ae475cff2f3bfb2e2ae68a1c52bc0d66f".to_string(),
+            ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY:
+                "7e4ba9ad69fafede39d72a5e5d05953c4261d16ede043978031bc425d2e3b1d2".to_string(),
+        };
+        let result = EthDatabaseKeysJson::new();
+        assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn evm_db_keys_should_stay_consistent() {
+        #[rustfmt::skip]
+        let expected_result = EvmDatabaseKeysJson {
+            EVM_ACCOUNT_NONCE_KEY:
+               "ca7f0ab19900680d76625f41854791660729bfcaf7fede763d96d4c05916ec4c".to_string(),
+            EVM_ADDRESS_KEY:
+               "a1e0ede222d5df7500e8580bdf0f552b55e4f95a5a1585b059adbd1fab061d73".to_string(),
+            EVM_ANCHOR_BLOCK_HASH_KEY:
+               "0a28ac19c3f6ed77642240975ff3d553290e62785b9070e81fad38012d346bae".to_string(),
+            EVM_ANY_SENDER_NONCE_KEY:
+               "960d6c59b7c81545d0fcedd4a4e84102b306bef422b6f06b38c452df19b0673f".to_string(),
+            EVM_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY:
+               "1a2270b3479ad2a676751ecbf17c8468ab64854d265d1ba8107e042e70a5c422".to_string(),
+            EVM_CANON_BLOCK_HASH_KEY:
+               "bc262de20ac1da20589be1d2464e9658bf9d5ab193ad65ff5be69008bbbc8ee2".to_string(),
+            EVM_CANON_TO_TIP_LENGTH_KEY:
+               "2ee78935508a7ae8327e1ec867d23813042f70e78ac5dafa05d00ed3a81eb7d7".to_string(),
+            EVM_CHAIN_ID_KEY:
+               "b302d7601e077a277f2d1e100c959ba2d63989531b47468bbeef4c9faa57d3c9".to_string(),
+            EVM_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY:
+               "3afdaa0cf2f37afa64f93623c3b25778c9cde2f6a71af4818c78ab54c4731144".to_string(),
+            EVM_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY:
+               "e06e403795bcba77bcaa7ae8e22a7149e69c7fe8eb7db5e81e4c80a268594fdb".to_string(),
+            EVM_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY:
+               "a7e4cd0d8bf1e96eaff6b8f74cb8786c834330f34cf209597ca988f5d724b4a7".to_string(),
+            EVM_ERC777_PROXY_CONTACT_ADDRESS_KEY:
+               "0e5e8342356bb9f5b6f6b1a681c544c12838053a450bb97bed1d3a7a8e9a86ec".to_string(),
+            EVM_GAS_PRICE_KEY:
+               "b4dbeaf50ce099e52bd74571377dc97df7f25db7b981babcea4c0292035f58ba".to_string(),
+            EVM_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY:
+               "a1552e7ee400c2adf873879fc3efefea72db11307ad3c873506e1f3be8fd31db".to_string(),
+            EVM_LATEST_BLOCK_HASH_KEY:
+               "9a4dd10e7fc05b39c5c66698d808005e9bc678bf3d7816741b25ddddf93092a7".to_string(),
+            EVM_LINKER_HASH_KEY:
+               "b4ed69606ec2498bc6f8ea41a8ec6f46181d36617966c5083345115e0b7b964c".to_string(),
+            EVM_PRIVATE_KEY_DB_KEY:
+               "fa8338b621f949093c2880563aa678a8407ce0c78c1d75b9fec11768b042eba7".to_string(),
+            EVM_PTOKEN_GENESIS_HASH_KEY:
+               "2571ca7ce4ca58cbd74f2ec4d971bc90925a9c2305481798bab1a8a7e7ad67bc".to_string(),
+            EVM_TAIL_BLOCK_HASH_KEY:
+               "0bfa597048f0580d7782b60c89e596410b708ed843c5391f53fbfd6e947bccb4".to_string(),
+            EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY:
+                "7e4ba9ad69fafede39d72a5e5d05953c4261d16ede043978031bc425d2e3b1d2".to_string(),
+        };
+        let result = EvmDatabaseKeysJson::new();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn eth_router_smart_contract_addres_key_should_match_evm_router_smart_contract_address_key() {
+        assert_eq!(
+            *ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY,
+            *EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY
+        );
     }
 }

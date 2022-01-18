@@ -18,7 +18,12 @@ use crate::{
             set_evm_canon_block_hash_and_return_state,
             set_evm_latest_block_hash_and_return_state,
         },
-        eth_constants::{
+        eth_database_transactions::{
+            end_eth_db_transaction_and_return_state,
+            start_eth_db_transaction_and_return_state,
+        },
+        eth_database_utils::{
+            EthDbUtilsExt,
             ETH_ANCHOR_BLOCK_HASH_KEY,
             ETH_CANON_BLOCK_HASH_KEY,
             ETH_CANON_TO_TIP_LENGTH_KEY,
@@ -26,15 +31,6 @@ use crate::{
             ETH_LINKER_HASH_KEY,
             ETH_PTOKEN_GENESIS_HASH_KEY,
             ETH_TAIL_BLOCK_HASH_KEY,
-        },
-        eth_database_transactions::{
-            end_eth_db_transaction_and_return_state,
-            start_eth_db_transaction_and_return_state,
-        },
-        eth_database_utils::EthDbUtilsExt,
-        eth_state::EthState,
-        eth_submission_material::parse_eth_submission_material_and_put_in_state,
-        evm_constants::{
             EVM_ANCHOR_BLOCK_HASH_KEY,
             EVM_CANON_BLOCK_HASH_KEY,
             EVM_CANON_TO_TIP_LENGTH_KEY,
@@ -43,6 +39,8 @@ use crate::{
             EVM_PTOKEN_GENESIS_HASH_KEY,
             EVM_TAIL_BLOCK_HASH_KEY,
         },
+        eth_state::EthState,
+        eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::validate_block_in_state,
     },
     check_debug_mode::check_debug_mode,

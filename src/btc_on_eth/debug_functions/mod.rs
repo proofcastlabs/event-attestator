@@ -47,7 +47,6 @@ use crate::{
         },
         eth::{
             eth_chain_id::EthChainId,
-            eth_constants::{EthDatabaseKeysJson, ETH_PRIVATE_KEY_DB_KEY as ETH_KEY},
             eth_contracts::{
                 erc777::get_signed_erc777_change_pnetwork_tx,
                 erc777_proxy::{
@@ -56,7 +55,7 @@ use crate::{
                 },
             },
             eth_crypto::eth_transaction::get_signed_minting_tx,
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+            eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt, ETH_PRIVATE_KEY_DB_KEY as ETH_KEY},
             eth_debug_functions::debug_set_eth_gas_price_in_db,
         },
     },

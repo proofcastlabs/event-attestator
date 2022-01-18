@@ -20,7 +20,6 @@ use crate::{
             },
         },
         eth::{
-            eth_constants::{EthDatabaseKeysJson, ETH_PRIVATE_KEY_DB_KEY},
             eth_contracts::erc20_vault::{
                 encode_erc20_vault_add_supported_token_fx_data,
                 encode_erc20_vault_migrate_fxn_data,
@@ -28,7 +27,7 @@ use crate::{
                 encode_erc20_vault_remove_supported_token_fx_data,
             },
             eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+            eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt, ETH_PRIVATE_KEY_DB_KEY},
             eth_debug_functions::debug_set_eth_gas_price_in_db,
             eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
         },

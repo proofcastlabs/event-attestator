@@ -5,7 +5,6 @@ use serde_json::json;
 
 use crate::{
     chains::eth::{
-        eth_constants::{EthDatabaseKeysJson, ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY, ETH_PRIVATE_KEY_DB_KEY},
         eth_contracts::erc20_vault::{
             encode_erc20_vault_add_supported_token_fx_data,
             encode_erc20_vault_migrate_fxn_data,
@@ -13,10 +12,18 @@ use crate::{
             encode_erc20_vault_remove_supported_token_fx_data,
         },
         eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
+        eth_database_utils::{
+            EthDatabaseKeysJson,
+            EthDbUtils,
+            EthDbUtilsExt,
+            EvmDatabaseKeysJson,
+            EvmDbUtils,
+            ETH_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY,
+            ETH_PRIVATE_KEY_DB_KEY,
+            EVM_PRIVATE_KEY_DB_KEY,
+        },
         eth_debug_functions::{debug_set_eth_gas_price_in_db, debug_set_evm_gas_price_in_db},
         eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
-        evm_constants::{EvmDatabaseKeysJson, EVM_PRIVATE_KEY_DB_KEY},
     },
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},

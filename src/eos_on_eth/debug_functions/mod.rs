@@ -23,8 +23,7 @@ use crate::{
             eos_utils::get_eos_tx_expiration_timestamp_with_offset,
         },
         eth::{
-            eth_constants::{EthDatabaseKeysJson, ETH_PRIVATE_KEY_DB_KEY},
-            eth_database_utils::EthDbUtils,
+            eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, ETH_PRIVATE_KEY_DB_KEY},
             eth_debug_functions::debug_set_eth_gas_price_in_db,
             eth_utils::convert_hex_to_eth_address,
         },
