@@ -34,12 +34,7 @@ create_db_utils!(
     "_LAST_SEEN_BLOCK_NUM_KEY" => "eos-last-seen-block-num"
 );
 
-
 impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
-    pub fn get_db(&self) -> &D {
-        self.db
-    }
-
     pub fn put_eos_public_key_in_db(&self, public_key: &EosPublicKey) -> Result<()> {
         debug!("✔ Putting EOS public key in db...");
         self.db.put(

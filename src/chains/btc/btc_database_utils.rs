@@ -35,11 +35,7 @@ create_db_utils!(
     "_CANON_TO_TIP_LENGTH_KEY" => "btc-canon-to-tip-length"
 );
 
-impl<'a, D: DatabaseInterface>BtcDbUtils<'a, D> {
-    pub fn get_db(&self) -> &D {
-        self.db
-    }
-
+impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
     pub fn get_btc_chain_id_from_db(&self) -> Result<BtcChainId> {
         self.db
             .get(self.btc_network_key.clone(), MIN_DATA_SENSITIVITY_LEVEL)

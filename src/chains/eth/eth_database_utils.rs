@@ -40,6 +40,8 @@ create_db_utils!(
     "_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "erc20-on-evm-eth-smart-contract-address-key"
 );
 
+// FIXME The list on the left hand side is now the same! Time for another macro?
+
 create_db_utils!(
     "Evm";
     "_CHAIN_ID_KEY" => "evm-chain-id",
@@ -64,12 +66,13 @@ create_db_utils!(
     "_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "evm-erc20-on-evm-smart-contract-address-key"
 );
 
+// FIXME Can I make this entirely separate so the DB utils getters are all there already?
 macro_rules! impl_eth_db_utils_ext {
     ($prefix:ident, $is_for_eth:expr) => {
         paste! {
             impl<D: DatabaseInterface> EthDbUtilsExt<D> for [< $prefix:camel DbUtils>]<'_, D> {
                 fn get_db(&self) -> &D {
-                    self.db
+                    self.get_db()
                 }
 
                 fn get_is_for_evm(&self) -> bool {
