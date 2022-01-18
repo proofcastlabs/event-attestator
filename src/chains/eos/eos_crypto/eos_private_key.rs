@@ -12,8 +12,8 @@ use secp256k1::{
 
 use crate::{
     chains::eos::{
-        eos_constants::EOS_PRIVATE_KEY_DB_KEY,
         eos_crypto::{eos_public_key::EosPublicKey, eos_signature::EosSignature},
+        eos_database_utils::EOS_PRIVATE_KEY_DB_KEY,
         eos_types::EosNetwork,
     },
     constants::MAX_DATA_SENSITIVITY_LEVEL,

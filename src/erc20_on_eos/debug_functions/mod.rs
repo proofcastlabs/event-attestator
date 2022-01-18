@@ -10,8 +10,7 @@ use crate::{
     chains::{
         eos::{
             core_initialization::eos_init_utils::EosInitJson,
-            eos_constants::{EosDatabaseKeysJson, EOS_PRIVATE_KEY_DB_KEY},
-            eos_database_utils::EosDbUtils,
+            eos_database_utils::{EosDatabaseKeysJson, EosDbUtils, EOS_PRIVATE_KEY_DB_KEY},
             eos_debug_functions::{
                 add_eos_eth_token_dictionary_entry,
                 add_new_eos_schedule,

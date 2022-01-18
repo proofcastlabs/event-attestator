@@ -11,14 +11,9 @@ use crate::{
         eos::{
             core_initialization::eos_init_utils::EosInitJson,
             eos_actions::PTokenPegOutAction,
-            eos_constants::{
-                EosDatabaseKeysJson,
-                EOS_ACCOUNT_PERMISSION_LEVEL,
-                EOS_PRIVATE_KEY_DB_KEY,
-                PEGOUT_ACTION_NAME,
-            },
+            eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, PEGOUT_ACTION_NAME},
             eos_crypto::{eos_private_key::EosPrivateKey, eos_transaction::EosSignedTransaction},
-            eos_database_utils::EosDbUtils,
+            eos_database_utils::{EosDatabaseKeysJson, EosDbUtils, EOS_PRIVATE_KEY_DB_KEY},
             eos_debug_functions::{
                 add_eos_eth_token_dictionary_entry,
                 add_new_eos_schedule,

@@ -49,8 +49,7 @@ use crate::{
         },
         eos::{
             core_initialization::eos_init_utils::EosInitJson,
-            eos_constants::{EosDatabaseKeysJson, EOS_PRIVATE_KEY_DB_KEY as EOS_KEY},
-            eos_database_utils::EosDbUtils,
+            eos_database_utils::{EosDatabaseKeysJson, EosDbUtils, EOS_PRIVATE_KEY_DB_KEY as EOS_KEY},
             eos_debug_functions::{add_new_eos_schedule, get_processed_actions_list, update_incremerkle},
         },
     },
