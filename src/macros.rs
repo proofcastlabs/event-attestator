@@ -1,5 +1,5 @@
 #[macro_export]
-macro_rules! create_db_keys_and_json {
+macro_rules! create_db_utils {
     ($prefix:expr; $($key:expr => $value:expr),*) => {
         paste! {
             lazy_static! {
@@ -22,6 +22,22 @@ macro_rules! create_db_keys_and_json {
                     }
                 }
             }
+
+            #[derive(Debug, Clone, PartialEq, Eq)]
+            pub struct [< $prefix:camel DbUtils>]<'a, D: DatabaseInterface> {
+                db: &'a D,
+                $([< $prefix:lower $key:lower>]: Bytes,)*
+            }
+
+            impl<'a, D: DatabaseInterface>[< $prefix:camel DbUtils>]<'a, D> {
+                pub fn new(db: &'a D) -> Self {
+                    Self {
+                        db,
+                        $([< $prefix:lower $key:lower >]: [< $prefix:upper $key:upper >].to_vec(),)*
+                    }
+                }
+            }
         }
     }
 }
+

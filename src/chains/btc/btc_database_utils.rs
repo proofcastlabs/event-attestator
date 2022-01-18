@@ -17,7 +17,7 @@ use crate::{
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
 
-create_db_keys_and_json!(
+create_db_utils!(
     "Btc";
     "_FEE_KEY" => "btc-fee-key",
     "_ADDRESS_KEY" => "btc-address",
@@ -35,44 +35,7 @@ create_db_keys_and_json!(
     "_CANON_TO_TIP_LENGTH_KEY" => "btc-canon-to-tip-length"
 );
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BtcDbUtils<'a, D: DatabaseInterface> {
-    db: &'a D,
-    btc_fee_key: Bytes,
-    btc_network_key: Bytes,
-    btc_address_key: Bytes,
-    btc_linker_hash_key: Bytes,
-    btc_public_key_db_key: Bytes,
-    btc_account_nonce_key: Bytes,
-    btc_private_key_db_key: Bytes,
-    btc_tail_block_hash_key: Bytes,
-    btc_difficulty_threshold: Bytes,
-    btc_canon_block_hash_key: Bytes,
-    btc_anchor_block_hash_key: Bytes,
-    btc_latest_block_hash_key: Bytes,
-    btc_canon_to_tip_length_key: Bytes,
-}
-
-impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
-    pub fn new(db: &'a D) -> Self {
-        Self {
-            db,
-            btc_fee_key: BTC_FEE_KEY.to_vec(),
-            btc_network_key: BTC_NETWORK_KEY.to_vec(),
-            btc_address_key: BTC_ADDRESS_KEY.to_vec(),
-            btc_difficulty_threshold: BTC_DIFFICULTY.to_vec(),
-            btc_linker_hash_key: BTC_LINKER_HASH_KEY.to_vec(),
-            btc_public_key_db_key: BTC_PUBLIC_KEY_DB_KEY.to_vec(),
-            btc_account_nonce_key: BTC_ACCOUNT_NONCE_KEY.to_vec(),
-            btc_private_key_db_key: BTC_PRIVATE_KEY_DB_KEY.to_vec(),
-            btc_tail_block_hash_key: BTC_TAIL_BLOCK_HASH_KEY.to_vec(),
-            btc_canon_block_hash_key: BTC_CANON_BLOCK_HASH_KEY.to_vec(),
-            btc_anchor_block_hash_key: BTC_ANCHOR_BLOCK_HASH_KEY.to_vec(),
-            btc_latest_block_hash_key: BTC_LATEST_BLOCK_HASH_KEY.to_vec(),
-            btc_canon_to_tip_length_key: BTC_CANON_TO_TIP_LENGTH_KEY.to_vec(),
-        }
-    }
-
+impl<'a, D: DatabaseInterface>BtcDbUtils<'a, D> {
     pub fn get_db(&self) -> &D {
         self.db
     }
@@ -150,7 +113,7 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
     pub fn put_btc_difficulty_in_db(&self, difficulty: u64) -> Result<()> {
         debug!("✔ Putting BTC difficulty threshold of {} in db...", difficulty);
         self.db.put(
-            self.btc_difficulty_threshold.to_vec(),
+            self.btc_difficulty.to_vec(),
             convert_u64_to_bytes(difficulty),
             MIN_DATA_SENSITIVITY_LEVEL,
         )
@@ -159,7 +122,7 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
     pub fn get_btc_difficulty_from_db(&self) -> Result<u64> {
         debug!("✔ Getting BTC difficulty threshold from db...");
         self.db
-            .get(self.btc_difficulty_threshold.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+            .get(self.btc_difficulty.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| convert_bytes_to_u64(&bytes))
     }
 

@@ -18,7 +18,7 @@ use crate::{
     types::{Bytes, Result},
 };
 
-create_db_keys_and_json!(
+create_db_utils!(
     "Eos";
     "_PROCESSED_TX_IDS_KEY" => "eos-tx-ids",
     "_INCREMERKLE_KEY" => "eos-incremerkle",
@@ -34,38 +34,8 @@ create_db_keys_and_json!(
     "_LAST_SEEN_BLOCK_NUM_KEY" => "eos-last-seen-block-num"
 );
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EosDbUtils<'a, D: DatabaseInterface> {
-    db: &'a D,
-    eos_chain_id_db_key: Bytes,
-    eos_incremerkle_key: Bytes,
-    eos_token_symbol_key: Bytes,
-    eos_account_name_key: Bytes,
-    eos_public_key_db_key: Bytes,
-    eos_schedule_list_key: Bytes,
-    eos_account_nonce_key: Bytes,
-    eos_protocol_features_key: Bytes,
-    eos_last_seen_block_id_key: Bytes,
-    eos_last_seen_block_num_key: Bytes,
-}
 
 impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
-    pub fn new(db: &'a D) -> Self {
-        Self {
-            db,
-            eos_chain_id_db_key: EOS_CHAIN_ID_DB_KEY.to_vec(),
-            eos_incremerkle_key: EOS_INCREMERKLE_KEY.to_vec(),
-            eos_token_symbol_key: EOS_TOKEN_SYMBOL_KEY.to_vec(),
-            eos_account_name_key: EOS_ACCOUNT_NAME_KEY.to_vec(),
-            eos_public_key_db_key: EOS_PUBLIC_KEY_DB_KEY.to_vec(),
-            eos_schedule_list_key: EOS_SCHEDULE_LIST_KEY.to_vec(),
-            eos_account_nonce_key: EOS_ACCOUNT_NONCE_KEY.to_vec(),
-            eos_protocol_features_key: EOS_PROTOCOL_FEATURES_KEY.to_vec(),
-            eos_last_seen_block_id_key: EOS_LAST_SEEN_BLOCK_ID_KEY.to_vec(),
-            eos_last_seen_block_num_key: EOS_LAST_SEEN_BLOCK_NUM_KEY.to_vec(),
-        }
-    }
-
     pub fn get_db(&self) -> &D {
         self.db
     }
