@@ -4,17 +4,7 @@ use bitcoin::{
 };
 
 use crate::{
-    chains::btc::{
-        btc_constants::PTOKEN_GENESIS_HASH_KEY,
-        btc_database_utils::{
-            get_btc_anchor_block_from_db,
-            get_btc_linker_hash_from_db,
-            get_btc_tail_block_from_db,
-            maybe_get_parent_btc_block_and_id,
-            put_btc_linker_hash_in_db,
-        },
-        btc_state::BtcState,
-    },
+    chains::btc::{btc_database_utils::BtcDbUtils, btc_state::BtcState},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -47,63 +37,65 @@ fn calculate_linker_hash(
     Ok(BlockHash::from_slice(&sha256d::Hash::hash(&data_to_be_hashed))?)
 }
 
-pub fn get_linker_hash_or_genesis_hash<D>(db: &D) -> Result<BlockHash>
-where
-    D: DatabaseInterface,
-{
-    match get_btc_linker_hash_from_db(db) {
+pub fn get_linker_hash_or_genesis_hash<D: DatabaseInterface>(db_utils: &BtcDbUtils<D>) -> Result<BlockHash> {
+    match db_utils.get_btc_linker_hash_from_db() {
         Ok(hash) => {
             trace!("✔ BTC linker hash exists in DB!");
             Ok(hash)
         },
         _ => {
             trace!("✔ No BTC linker has in db, using genesis hash...");
-            Ok(BlockHash::from_slice(&PTOKEN_GENESIS_HASH_KEY.to_vec())?)
+            Ok(BlockHash::from_slice(&db_utils.get_btc_ptoken_genesis_hash_key())?)
         },
     }
 }
 
-fn get_new_linker_hash<D>(db: &D, block_hash_to_link_to: &BlockHash) -> Result<BlockHash>
-where
-    D: DatabaseInterface,
-{
+fn get_new_linker_hash<D: DatabaseInterface>(
+    db_utils: &BtcDbUtils<D>,
+    block_hash_to_link_to: &BlockHash,
+) -> Result<BlockHash> {
     info!("✔ Calculating new linker hash...");
-    get_btc_anchor_block_from_db(db).and_then(|anchor_block| {
+    db_utils.get_btc_anchor_block_from_db().and_then(|anchor_block| {
         calculate_linker_hash(
             block_hash_to_link_to,
             &anchor_block.id,
-            &get_linker_hash_or_genesis_hash(db)?,
+            &get_linker_hash_or_genesis_hash(db_utils)?,
         )
     })
 }
 
-pub fn maybe_update_btc_linker_hash<D>(state: BtcState<D>) -> Result<BtcState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_update_btc_linker_hash<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Maybe updating BTC linker hash...");
-    get_btc_tail_block_from_db(state.db).and_then(|btc_tail_block| {
-        match maybe_get_parent_btc_block_and_id(state.db, &btc_tail_block.id) {
-            Some(parent_btc_block) => {
-                info!("✔ BTC tail block has parent in db ∴ updating BTC linker hash!");
-                put_btc_linker_hash_in_db(state.db, &get_new_linker_hash(state.db, &parent_btc_block.id)?)
-                    .and(Ok(state))
+    state
+        .btc_db_utils
+        .get_btc_tail_block_from_db()
+        .and_then(
+            |btc_tail_block| match state.btc_db_utils.maybe_get_parent_btc_block_and_id(&btc_tail_block.id) {
+                Some(parent_btc_block) => {
+                    info!("✔ BTC tail block has parent in db ∴ updating BTC linker hash!");
+                    state
+                        .btc_db_utils
+                        .put_btc_linker_hash_in_db(&get_new_linker_hash(&state.btc_db_utils, &parent_btc_block.id)?)
+                        .and(Ok(state))
+                },
+                None => {
+                    info!("✔ BTC tail block has no parent in db ∴ NOT updating BTC linker hash!");
+                    Ok(state)
+                },
             },
-            None => {
-                info!("✔ BTC tail block has no parent in db ∴ NOT updating BTC linker hash!");
-                Ok(state)
-            },
-        }
-    })
+        )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils::get_test_database;
 
     #[test]
     fn should_calculate_linker_hash_correctly() {
-        let genesis_hash = BlockHash::from_slice(&PTOKEN_GENESIS_HASH_KEY.to_vec()).unwrap();
+        let db = get_test_database();
+        let db_utils = BtcDbUtils::new(&db);
+        let genesis_hash = BlockHash::from_slice(&db_utils.get_btc_ptoken_genesis_hash_key()).unwrap();
         let hash_to_link_to = BlockHash::from_slice(
             &hex::decode("0000000000000000000014e600bf5c544e6cc08b7f8514e5e3e4abd41891c8ba").unwrap(),
         )

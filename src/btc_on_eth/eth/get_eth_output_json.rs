@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     btc_on_eth::eth::redeem_info::{BtcOnEthRedeemInfo, BtcOnEthRedeemInfos},
     chains::{
-        btc::{btc_database_utils::get_btc_account_nonce_from_db, btc_utils::get_hex_tx_from_signed_btc_tx},
+        btc::btc_utils::get_hex_tx_from_signed_btc_tx,
         eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
     },
     traits::DatabaseInterface,
@@ -80,7 +80,7 @@ pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
             .as_usize(),
         btc_signed_transactions: match state.btc_transactions {
             Some(txs) => get_btc_signed_tx_info_from_btc_txs(
-                get_btc_account_nonce_from_db(state.db)?,
+                state.btc_db_utils.get_btc_account_nonce_from_db()?,
                 txs,
                 &state.btc_on_eth_redeem_infos,
             )?,

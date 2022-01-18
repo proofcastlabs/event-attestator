@@ -9,7 +9,6 @@ use crate::{
                 end_eos_db_transaction_and_return_state,
                 start_eos_db_transaction_and_return_state,
             },
-            eos_database_utils::get_latest_eos_block_number,
             eos_global_sequences::{
                 get_processed_global_sequences_and_add_to_state,
                 maybe_add_global_sequences_to_processed_list_and_return_state,
@@ -206,7 +205,7 @@ fn reprocess_eos_block<D: DatabaseInterface>(
         .and_then(|state| {
             info!("✔ Getting EOS output json...");
             let output = serde_json::to_string(&EosOutput {
-                eos_latest_block_number: get_latest_eos_block_number(state.db)?,
+                eos_latest_block_number: state.eos_db_utils.get_latest_eos_block_number()?,
                 eth_signed_transactions: match state.eth_signed_txs.len() {
                     0 => vec![],
                     _ => get_eth_signed_tx_info_from_eth_txs(

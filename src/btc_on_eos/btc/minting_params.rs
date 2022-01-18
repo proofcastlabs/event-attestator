@@ -15,16 +15,11 @@ use crate::{
     chains::{
         btc::{
             btc_constants::MINIMUM_REQUIRED_SATOSHIS,
-            btc_database_utils::get_btc_network_from_db,
             btc_metadata::ToMetadata,
             btc_state::BtcState,
             deposit_address_info::DepositInfoHashMap,
         },
-        eos::{
-            eos_database_utils::get_eos_token_symbol_from_db,
-            eos_unit_conversions::convert_eos_asset_to_u64,
-            eos_utils::get_symbol_from_eos_asset,
-        },
+        eos::{eos_unit_conversions::convert_eos_asset_to_u64, eos_utils::get_symbol_from_eos_asset},
     },
     constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_EOS_ADDRESS},
     fees::fee_utils::sanity_check_basis_points_value,
@@ -39,8 +34,8 @@ pub fn parse_minting_params_from_p2sh_deposits_and_add_to_state<D: DatabaseInter
     BtcOnEosMintingParams::from_btc_txs(
         state.get_p2sh_deposit_txs()?,
         state.get_deposit_info_hash_map()?,
-        get_btc_network_from_db(state.db)?,
-        &get_eos_token_symbol_from_db(state.db)?,
+        state.btc_db_utils.get_btc_network_from_db()?,
+        &state.eos_db_utils.get_eos_token_symbol_from_db()?,
     )
     .and_then(|minting_params| minting_params.filter_params())
     .and_then(|filtered_params| state.add_btc_on_eos_minting_params(filtered_params))

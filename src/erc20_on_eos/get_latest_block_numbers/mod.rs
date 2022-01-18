@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{
-        eos::eos_database_utils::get_latest_eos_block_number,
+        eos::eos_database_utils::EosDbUtils,
         eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     },
     erc20_on_eos::check_core_is_initialized::check_core_is_initialized,
@@ -23,10 +23,11 @@ struct BlockNumbers {
 pub fn get_latest_block_numbers<D: DatabaseInterface>(db: D) -> Result<String> {
     info!("✔ Getting latest block numbers...");
     let eth_db_utils = EthDbUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &db).and_then(|_| {
+    let eos_db_utils = EosDbUtils::new(&db);
+    check_core_is_initialized(&eth_db_utils, &eos_db_utils).and_then(|_| {
         Ok(serde_json::to_string(&BlockNumbers {
             eth_latest_block_number: eth_db_utils.get_latest_eth_block_number()?,
-            eos_latest_block_number: get_latest_eos_block_number(&db)?,
+            eos_latest_block_number: eos_db_utils.get_latest_eos_block_number()?,
         })?)
     })
 }

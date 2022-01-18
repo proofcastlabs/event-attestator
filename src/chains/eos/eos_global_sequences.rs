@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::eos::{eos_constants::PROCESSED_TX_IDS_KEY, eos_state::EosState},
+    chains::eos::{eos_database_utils::EosDbUtils, eos_state::EosState},
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
@@ -43,14 +43,17 @@ impl ProcessedGlobalSequences {
 
     pub fn get_from_db<D: DatabaseInterface>(db: &D) -> Result<Self> {
         info!("✔ Getting EOS processed actions from db...");
-        db.get(PROCESSED_TX_IDS_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
-            .and_then(|ref bytes| Self::from_bytes(bytes))
+        db.get(
+            EosDbUtils::new(db).get_eos_processed_tx_ids_key(),
+            MIN_DATA_SENSITIVITY_LEVEL,
+        )
+        .and_then(|ref bytes| Self::from_bytes(bytes))
     }
 
     pub fn put_in_db<D: DatabaseInterface>(&self, db: &D) -> Result<()> {
         info!("✔ Putting EOS processed tx IDs in db...");
         db.put(
-            PROCESSED_TX_IDS_KEY.to_vec(),
+            EosDbUtils::new(db).get_eos_processed_tx_ids_key(),
             self.to_bytes()?,
             MIN_DATA_SENSITIVITY_LEVEL,
         )

@@ -6,7 +6,6 @@ use bitcoin::{
 
 use crate::{
     chains::btc::{
-        btc_database_utils::get_btc_network_from_db,
         btc_state::BtcState,
         btc_utils::create_unsigned_utxo_from_tx,
         deposit_address_info::DepositInfoHashMap,
@@ -79,15 +78,14 @@ pub fn extract_p2sh_utxos_from_txs(
     ))
 }
 
-pub fn maybe_extract_utxos_from_p2sh_txs_and_put_in_state<D>(state: BtcState<D>) -> Result<BtcState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_extract_utxos_from_p2sh_txs_and_put_in_state<D: DatabaseInterface>(
+    state: BtcState<D>,
+) -> Result<BtcState<D>> {
     info!("✔ Maybe extracting UTXOs from `p2sh` txs...");
     extract_p2sh_utxos_from_txs(
         state.get_p2sh_deposit_txs()?,
         state.get_deposit_info_hash_map()?,
-        get_btc_network_from_db(state.db)?,
+        state.btc_db_utils.get_btc_network_from_db()?,
     )
     .and_then(|utxos| {
         debug!("✔ Extracted `p2sh` UTXOs: {:?}", utxos);

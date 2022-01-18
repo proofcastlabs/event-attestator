@@ -62,7 +62,6 @@ mod tests {
     use super::*;
     use crate::{
         chains::eth::{
-            eth_constants::ETH_LATEST_BLOCK_HASH_KEY,
             eth_database_utils::EthDbUtils,
             eth_test_utils::{
                 get_eth_latest_block_hash_from_db,
@@ -99,7 +98,7 @@ mod tests {
         let non_subsequent_submission_material = get_sequential_eth_blocks_and_receipts()[0].clone();
         update_latest_block_hash_if_subsequent(&eth_db_utils, &non_subsequent_submission_material).unwrap();
         let latest_block_hash_after = eth_db_utils
-            .get_hash_from_db_via_hash_key(EthHash::from_slice(&ETH_LATEST_BLOCK_HASH_KEY[..]))
+            .get_hash_from_db_via_hash_key(EthHash::from_slice(&eth_db_utils.get_eth_latest_block_hash_key()[..]))
             .unwrap()
             .unwrap();
         assert_eq!(latest_block_hash_before, latest_block_hash_after);

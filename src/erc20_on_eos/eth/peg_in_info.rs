@@ -12,7 +12,6 @@ use crate::{
                 eos_private_key::EosPrivateKey,
                 eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
             },
-            eos_database_utils::get_eos_chain_id_from_db,
             eos_utils::{
                 get_eos_tx_expiration_timestamp_with_offset,
                 parse_eos_account_name_or_default_to_safe_address,
@@ -403,7 +402,7 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
         .to_eos_signed_txs(
             submission_material.get_eos_ref_block_num()?,
             submission_material.get_eos_ref_block_prefix()?,
-            &get_eos_chain_id_from_db(state.db)?,
+            &state.eos_db_utils.get_eos_chain_id_from_db()?,
             &EosPrivateKey::get_from_db(state.db)?,
         )
         .and_then(|signed_txs| state.add_eos_transactions(signed_txs))

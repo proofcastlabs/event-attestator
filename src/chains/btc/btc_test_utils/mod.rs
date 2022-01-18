@@ -24,7 +24,7 @@ use crate::{
             btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
             btc_constants::MINIMUM_REQUIRED_SATOSHIS,
             btc_crypto::btc_private_key::BtcPrivateKey,
-            btc_database_utils::put_special_btc_block_in_db,
+            btc_database_utils::BtcDbUtils,
             btc_submission_material::BtcSubmissionMaterialJson,
             btc_types::BtcPubKeySlice,
             btc_utils::{create_unsigned_utxo_from_tx, get_p2sh_redeem_script_sig, get_pay_to_pub_key_hash_script},
@@ -110,12 +110,9 @@ pub fn create_p2pkh_btc_utxo_and_value_from_tx_output(tx: &BtcTransaction, outpu
     )
 }
 
-pub fn put_btc_anchor_block_in_db<D>(db: &D, block: &BtcBlockInDbFormat) -> Result<()>
-where
-    D: DatabaseInterface,
-{
+pub fn put_btc_anchor_block_in_db<D: DatabaseInterface>(db: &D, block: &BtcBlockInDbFormat) -> Result<()> {
     trace!("✔ Putting BTC anchor block in db...");
-    put_special_btc_block_in_db(db, block, "anchor")
+    BtcDbUtils::new(db).put_special_btc_block_in_db(block, "anchor")
 }
 
 pub fn put_btc_tail_block_in_db<D>(db: &D, block: &BtcBlockInDbFormat) -> Result<()>
@@ -123,7 +120,7 @@ where
     D: DatabaseInterface,
 {
     trace!("✔ Putting BTC tail block in db...");
-    put_special_btc_block_in_db(db, block, "tail")
+    BtcDbUtils::new(db).put_special_btc_block_in_db(block, "tail")
 }
 
 pub fn get_sample_minting_params() -> BtcOnEthMintingParams {

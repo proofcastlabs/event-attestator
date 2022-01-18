@@ -5,7 +5,6 @@ use crate::{
     chains::{
         btc::{
             btc_crypto::btc_private_key::BtcPrivateKey,
-            btc_database_utils::{get_btc_address_from_db, get_btc_fee_from_db, get_btc_private_key_from_db},
             btc_utils::get_pay_to_pub_key_hash_script,
             extract_utxos_from_p2pkh_txs::extract_utxos_from_p2pkh_tx,
             utxo_manager::utxo_database_utils::save_utxos_to_db,
@@ -62,9 +61,9 @@ pub fn maybe_create_btc_txs_and_add_to_state<D: DatabaseInterface>(state: EthSta
         );
         to_btc_txs_whilst_extracting_change_outputs(
             state.db,
-            get_btc_fee_from_db(state.db)?,
-            &get_btc_address_from_db(state.db)?,
-            &get_btc_private_key_from_db(state.db)?,
+            state.btc_db_utils.get_btc_fee_from_db()?,
+            &state.btc_db_utils.get_btc_address_from_db()?,
+            &state.btc_db_utils.get_btc_private_key_from_db()?,
             &state.btc_on_eth_redeem_infos,
         )
         .and_then(|signed_txs| {

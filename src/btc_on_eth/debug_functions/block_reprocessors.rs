@@ -25,12 +25,7 @@ use crate::{
     chains::{
         btc::{
             btc_block::parse_btc_block_and_id_and_put_in_state,
-            btc_database_utils::{
-                end_btc_db_transaction,
-                get_btc_account_nonce_from_db,
-                get_btc_chain_id_from_db,
-                start_btc_db_transaction,
-            },
+            btc_database_utils::{end_btc_db_transaction, start_btc_db_transaction},
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
             extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
@@ -119,7 +114,7 @@ fn reprocess_btc_block<D: DatabaseInterface>(
                     smart_contract_address: state.eth_db_utils.get_erc777_contract_address_from_db()?,
                 },
                 &state.btc_on_eth_minting_params,
-                &get_btc_chain_id_from_db(state.db)?,
+                &state.btc_db_utils.get_btc_chain_id_from_db()?,
             )
             .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
         })
@@ -195,7 +190,7 @@ fn reprocess_eth_block<D: DatabaseInterface>(db: D, eth_block_json: &str, accrue
                 eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
                 btc_signed_transactions: match state.btc_transactions {
                     Some(txs) => get_btc_signed_tx_info_from_btc_txs(
-                        get_btc_account_nonce_from_db(state.db)?,
+                        state.btc_db_utils.get_btc_account_nonce_from_db()?,
                         txs,
                         &state.btc_on_eth_redeem_infos,
                     )?,

@@ -6,7 +6,7 @@ use crate::{
     chains::{
         eos::{
             eos_crypto::eos_transaction::{EosSignedTransaction, EosSignedTransactions},
-            eos_database_utils::{get_eos_account_nonce_from_db, get_latest_eos_block_number},
+            eos_database_utils::EosDbUtils,
         },
         eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
     },
@@ -69,8 +69,11 @@ pub struct EosOnEthEthOutput {
     pub eos_signed_transactions: Vec<EosOnEthEthOutputDetails>,
 }
 
-fn check_eos_nonce_is_sufficient<D: DatabaseInterface>(db: &D, eos_txs: &EosSignedTransactions) -> Result<u64> {
-    get_eos_account_nonce_from_db(db).and_then(|eos_nonce| {
+fn check_eos_nonce_is_sufficient<D: DatabaseInterface>(
+    db_utils: &EosDbUtils<D>,
+    eos_txs: &EosSignedTransactions,
+) -> Result<u64> {
+    db_utils.get_eos_account_nonce_from_db().and_then(|eos_nonce| {
         if eos_nonce >= eos_txs.len() as u64 {
             Ok(eos_nonce)
         } else {
@@ -90,7 +93,7 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
         eos_signed_transactions: match state.eos_transactions {
             None => vec![],
             Some(ref eos_txs) => {
-                let eos_nonce = check_eos_nonce_is_sufficient(state.db, eos_txs)?;
+                let eos_nonce = check_eos_nonce_is_sufficient(&state.eos_db_utils, eos_txs)?;
                 let start_nonce = eos_nonce - eos_txs.len() as u64;
                 eos_txs
                     .iter()
@@ -100,7 +103,7 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
                             eos_tx,
                             &state.eos_on_eth_eth_tx_infos[i],
                             start_nonce + i as u64,
-                            get_latest_eos_block_number(state.db)?,
+                            state.eos_db_utils.get_latest_eos_block_number()?,
                         )
                     })
                     .collect::<Result<Vec<EosOnEthEthOutputDetails>>>()?

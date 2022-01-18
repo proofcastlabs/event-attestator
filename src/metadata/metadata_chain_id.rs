@@ -34,6 +34,7 @@ pub enum MetadataChainId {
     EosUnknown,       // 0x02000000
     InterimChain,     // 0xffffffff
     ArbitrumMainnet,  // 0x00ce98c4
+    LuxochainMainnet, // 0x00d5beb0
 }
 
 impl MetadataChainId {
@@ -55,6 +56,7 @@ impl MetadataChainId {
             | Self::EthereumRinkeby
             | Self::EthereumRopsten
             | Self::ArbitrumMainnet
+            | Self::LuxochainMainnet
             | Self::PolygonMainnet => MetadataProtocolId::Ethereum,
         }
     }
@@ -79,6 +81,7 @@ impl MetadataChainId {
             Self::InterimChain => Box::new(EthChainId::InterimChain),
             Self::PolygonMainnet => Box::new(EthChainId::PolygonMainnet),
             Self::ArbitrumMainnet => Box::new(EthChainId::ArbitrumMainnet),
+            Self::LuxochainMainnet => Box::new(EthChainId::LuxochainMainnet),
             Self::EosJungleTestnet => Box::new(EosChainId::EosJungleTestnet),
         }
     }
@@ -174,6 +177,7 @@ impl fmt::Display for MetadataChainId {
             Self::EthereumMainnet => write!(f, "Ethereum Mainnet: 0x{}", hex),
             Self::EthereumRinkeby => write!(f, "Ethereum Rinkeby: 0x{}", hex),
             Self::EthereumRopsten => write!(f, "Ethereum Ropsten: 0x{}", hex),
+            Self::LuxochainMainnet => write!(f, "Luxochain Mainnet: 0x{}", hex),
             Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", hex),
             Self::BscMainnet => write!(f, "Binance Chain (BSC) Mainnet: 0x{}", hex),
         }
@@ -214,10 +218,13 @@ mod tests {
 
     #[test]
     fn should_get_metadata_chain_id_from_bytes_correctly() {
+        #[rustfmt::skip]
         let chain_ids_bytes = vec![
-            "005fe7f9", "0069c322", "00f34368", "01ec97de", "018afeb2", "02e7261c", "028c7109", "00e4b170", "0282317f",
-            "00f1918e", "0075dd4c", "025d3c68", "02174f20", "02b5a4d6", "00000000", "01000000", "02000000", "ffffffff",
-            "00ce98c4",
+            "005fe7f9", "0069c322", "00f34368", "01ec97de",
+            "018afeb2", "02e7261c", "028c7109", "00e4b170",
+            "0282317f", "00f1918e", "0075dd4c", "025d3c68",
+            "02174f20", "02b5a4d6", "00000000", "01000000",
+            "02000000", "ffffffff", "00ce98c4", "00d5beb0",
         ]
         .iter()
         .map(|ref hex| hex::decode(hex).unwrap())

@@ -10,7 +10,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::btc::{
-        btc_database_utils::{get_btc_network_from_db, get_btc_public_key_slice_from_db},
         btc_state::BtcState,
         btc_types::BtcPubKeySlice,
         btc_utils::{convert_hex_to_sha256_hash, get_p2sh_redeem_script_sig},
@@ -383,8 +382,8 @@ pub fn validate_deposit_address_list_in_state<D: DatabaseInterface>(state: BtcSt
         .get_deposit_info_list()
         .and_then(|deposit_info_list| {
             deposit_info_list.validate(
-                &get_btc_public_key_slice_from_db(state.db)?,
-                &get_btc_network_from_db(state.db)?,
+                &state.btc_db_utils.get_btc_public_key_slice_from_db()?,
+                &state.btc_db_utils.get_btc_network_from_db()?,
             )
         })
         .and(Ok(state))

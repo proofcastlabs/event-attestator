@@ -2,7 +2,7 @@ use serde_json::json;
 
 use crate::{
     chains::btc::{
-        btc_database_utils::{get_btc_address_from_db, get_btc_fee_from_db, get_btc_private_key_from_db},
+        btc_database_utils::BtcDbUtils,
         btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
         btc_utils::{get_btc_tx_id_from_str, get_hex_tx_from_signed_btc_tx, get_pay_to_pub_key_hash_script},
         extract_utxos_from_p2pkh_txs::extract_utxos_from_p2pkh_txs,
@@ -54,6 +54,7 @@ pub fn remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -> Resu
 }
 
 pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize) -> Result<String> {
+    let btc_db_utils = BtcDbUtils::new(&db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_x_utxos(&db, num_utxos))
@@ -61,13 +62,13 @@ pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize
             if num_utxos < 1 {
                 return Err("Cannot consolidate 0 UTXOs!".into());
             };
-            let btc_address = get_btc_address_from_db(&db)?;
+            let btc_address = btc_db_utils.get_btc_address_from_db()?;
             let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
             let btc_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
                 fee,
                 vec![],
                 &btc_address,
-                &get_btc_private_key_from_db(&db)?,
+                &btc_db_utils.get_btc_private_key_from_db()?,
                 utxos,
             )?;
             let change_utxos = extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]);
@@ -94,14 +95,15 @@ pub fn get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
     tx_id: &str,
     v_out: u32,
 ) -> Result<String> {
+    let btc_db_utils = BtcDbUtils::new(&db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_btc_tx_id_from_str(tx_id))
         .and_then(|id| get_utxo_with_tx_id_and_v_out(&db, v_out, &id))
         .and_then(|utxo| {
             const MAX_FEE_MULTIPLE: u64 = 10;
-            let fee_from_db = get_btc_fee_from_db(&db)?;
-            let btc_address = get_btc_address_from_db(&db)?;
+            let fee_from_db = btc_db_utils.get_btc_fee_from_db()?;
+            let btc_address = btc_db_utils.get_btc_address_from_db()?;
             let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
             if fee > fee_from_db * MAX_FEE_MULTIPLE {
                 return Err("Passed in fee is > 10x the fee saved in the db!".into());
@@ -110,7 +112,7 @@ pub fn get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
                 fee,
                 vec![],
                 &btc_address,
-                &get_btc_private_key_from_db(&db)?,
+                &btc_db_utils.get_btc_private_key_from_db()?,
                 BtcUtxosAndValues::new(vec![utxo]),
             )?;
             let change_utxos = extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]);

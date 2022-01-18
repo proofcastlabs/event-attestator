@@ -1,10 +1,7 @@
 use bitcoin::{blockdata::block::BlockHeader as BtcBlockHeader, network::constants::Network as BtcNetwork};
 
 use crate::{
-    chains::btc::{
-        btc_database_utils::{get_btc_difficulty_from_db, get_btc_network_from_db},
-        btc_state::BtcState,
-    },
+    chains::btc::btc_state::BtcState,
     constants::{CORE_IS_VALIDATING, DEBUG_MODE, NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR},
     traits::DatabaseInterface,
     types::Result,
@@ -44,9 +41,9 @@ pub fn validate_difficulty_of_btc_block_in_state<D: DatabaseInterface>(state: Bt
     if CORE_IS_VALIDATING {
         info!("✔ Validating BTC block difficulty...");
         check_difficulty_is_above_threshold(
-            get_btc_difficulty_from_db(state.db)?,
+            state.btc_db_utils.get_btc_difficulty_from_db()?,
             &state.get_btc_block_and_id()?.block.header,
-            get_btc_network_from_db(state.db)?,
+            state.btc_db_utils.get_btc_network_from_db()?,
         )
         .and(Ok(state))
     } else {

@@ -1,12 +1,7 @@
 use crate::{
     btc_on_eth::btc::minting_params::BtcOnEthMintingParamStruct,
     chains::{
-        btc::{
-            btc_chain_id::BtcChainId,
-            btc_database_utils::{get_btc_canon_block_from_db, get_btc_chain_id_from_db},
-            btc_metadata::ToMetadata,
-            btc_state::BtcState,
-        },
+        btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata, btc_state::BtcState},
         eth::{
             eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
             eth_crypto::eth_transaction::{get_signed_minting_tx, EthTransaction, EthTransactions},
@@ -64,8 +59,11 @@ pub fn maybe_sign_normal_canon_block_txs_and_add_to_state<D: DatabaseInterface>(
     info!("✔ Maybe signing normal ETH txs...");
     get_eth_signed_txs(
         &state.eth_db_utils.get_signing_params_from_db()?,
-        &get_btc_canon_block_from_db(state.db)?.get_eth_minting_params(),
-        &get_btc_chain_id_from_db(state.db)?,
+        &state
+            .btc_db_utils
+            .get_btc_canon_block_from_db()?
+            .get_eth_minting_params(),
+        &state.btc_db_utils.get_btc_chain_id_from_db()?,
     )
     .and_then(|signed_txs| {
         #[cfg(feature = "debug")]

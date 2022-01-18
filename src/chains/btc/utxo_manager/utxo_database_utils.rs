@@ -15,6 +15,8 @@ use crate::{
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
 
+// FIXME Make a struct of this ala BtdDbutils
+
 pub fn get_x_utxos<D: DatabaseInterface>(db: &D, num_utxos_to_get: usize) -> Result<BtcUtxosAndValues> {
     let total_num_utxos = get_total_number_of_utxos_from_db(db);
     if total_num_utxos < num_utxos_to_get {
@@ -311,7 +313,7 @@ mod tests {
     use super::*;
     use crate::{
         chains::btc::{
-            btc_database_utils::key_exists_in_db,
+            btc_database_utils::BtcDbUtils,
             btc_test_utils::{get_sample_p2pkh_utxo_and_value, get_sample_utxo_and_values},
         },
         errors::AppError,
@@ -460,28 +462,31 @@ mod tests {
     fn should_delete_balance_key() {
         let db = get_test_database();
         let balance = 1;
+        let db_utils = BtcDbUtils::new(&db);
         put_total_utxo_balance_in_db(&db, balance).unwrap();
         delete_utxo_balance_key(&db).unwrap();
-        assert!(!key_exists_in_db(&db, &UTXO_BALANCE.to_vec(), None));
+        assert!(!db_utils.key_exists_in_db(&UTXO_BALANCE.to_vec(), None));
     }
 
     #[test]
     fn should_delete_first_key() {
         let db = get_test_database();
+        let db_utils = BtcDbUtils::new(&db);
         let hash = sha256d::Hash::hash(&[1u8]);
         set_first_utxo_pointer(&db, &hash).unwrap();
         delete_first_utxo_key(&db).unwrap();
-        let result = key_exists_in_db(&db, &UTXO_FIRST.to_vec(), None);
+        let result = db_utils.key_exists_in_db(&UTXO_FIRST.to_vec(), None);
         assert!(!result);
     }
 
     #[test]
     fn should_delete_last_key() {
         let db = get_test_database();
+        let db_utils = BtcDbUtils::new(&db);
         let hash = sha256d::Hash::hash(&[1u8]);
         set_last_utxo_pointer(&db, &hash).unwrap();
         delete_last_utxo_key(&db).unwrap();
-        let result = key_exists_in_db(&db, &UTXO_LAST.to_vec(), None);
+        let result = db_utils.key_exists_in_db(&UTXO_LAST.to_vec(), None);
         assert!(!result);
     }
 
@@ -565,29 +570,31 @@ mod tests {
     #[test]
     fn should_delete_first_utxo_in_db() {
         let db = get_test_database();
+        let db_utils = BtcDbUtils::new(&db);
         let utxos = get_sample_utxo_and_values();
         let first_utxo_db_key = get_utxo_and_value_db_key(1);
         save_utxos_to_db(&db, &utxos).unwrap();
-        assert!(key_exists_in_db(&db, &first_utxo_db_key, None));
+        assert!(db_utils.key_exists_in_db(&first_utxo_db_key, None));
         delete_first_utxo(&db).unwrap();
-        assert!(!key_exists_in_db(&db, &first_utxo_db_key, None));
+        assert!(!db_utils.key_exists_in_db(&first_utxo_db_key, None));
     }
 
     #[test]
     fn removed_utxos_should_no_longer_be_in_db() {
         let db = get_test_database();
+        let db_utils = BtcDbUtils::new(&db);
         let utxos = get_sample_utxo_and_values();
         save_utxos_to_db(&db, &utxos).unwrap();
         utxos
             .0
             .iter()
             .enumerate()
-            .for_each(|(i, _)| assert!(key_exists_in_db(&db, &get_utxo_and_value_db_key((i + 1) as u64), None)));
+            .for_each(|(i, _)| assert!(db_utils.key_exists_in_db(&get_utxo_and_value_db_key((i + 1) as u64), None)));
         assert_eq!(get_utxo_nonce_from_db(&db).unwrap(), utxos.len() as u64);
         assert_eq!(get_first_utxo_pointer(&db).unwrap(), get_utxo_and_value_db_key(1));
         get_first_utxo_and_value(&db).unwrap();
         assert_eq!(get_first_utxo_pointer(&db).unwrap(), get_utxo_and_value_db_key(2));
-        assert!(!key_exists_in_db(&db, &get_utxo_and_value_db_key(1), None));
+        assert!(!db_utils.key_exists_in_db(&get_utxo_and_value_db_key(1), None));
     }
 
     #[test]
