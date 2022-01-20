@@ -1,20 +1,9 @@
-/* Setters and getters TODO
-   [x] chain id
-   [x] save anchor block hash
-   [x] save latest block hash
-   [x] save canon block hash
-   [x] address
-   [x] tail block hash
-   [x] save canon to tip length
-   [x] fee
-   [x] private key
-   [x] account nonce
-   [ ] block
-*/
+#![allow(unused)] // FIXME Rm!
+
 use std::{fmt, str::FromStr};
 
 use paste::paste;
-use rust_algorand::{AlgorandAddress, AlgorandHash, AlgorandKeys};
+use rust_algorand::{AlgorandAddress, AlgorandBlock, AlgorandHash, AlgorandKeys};
 
 use crate::{
     constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
@@ -93,13 +82,24 @@ macro_rules! create_special_hash_setters_and_getters {
 create_special_hash_setters_and_getters!("tail", "canon", "anchor", "latest", "genesis");
 
 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
+    fn put_algo_block_in_db(&self, block: &AlgorandBlock) -> Result<()> {
+        self.get_db()
+            .put(block.hash()?.to_bytes(), block.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
+    }
+
+    fn get_algo_block_from_db(&self, hash: &AlgorandHash) -> Result<AlgorandBlock> {
+        self.get_db()
+            .get(hash.to_bytes(), MIN_DATA_SENSITIVITY_LEVEL)
+            .and_then(|bytes| Ok(AlgorandBlock::from_bytes(&bytes)?))
+    }
+
     fn put_special_hash_in_db(&self, hash_type: &SpecialHashTypes, hash: &AlgorandHash) -> Result<()> {
         if hash_type == &SpecialHashTypes::Genesis {
             if self.get_genesis_block_hash_from_db().is_ok() {
                 return Err(Self::get_no_overwrite_error("genesis hash").into());
             }
         };
-        self.put_algorand_hash_in_db(&hash_type.get_key(&self), hash)
+        self.put_algorand_hash_in_db(&hash_type.get_key(self), hash)
     }
 
     fn put_algo_account_nonce_in_db(&self, nonce: u64) -> Result<()> {
@@ -145,7 +145,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     }
 
     fn get_special_hash_from_db(&self, hash_type: &SpecialHashTypes) -> Result<AlgorandHash> {
-        self.get_algorand_hash_from_db(&hash_type.get_key(&self))
+        self.get_algorand_hash_from_db(&hash_type.get_key(self))
     }
 
     fn get_no_overwrite_error(s: &str) -> String {
@@ -388,5 +388,15 @@ mod tests {
         };
         let result = AlgoDatabaseKeysJson::new();
         assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn should_put_and_get_algo_block_in_db() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let block = AlgorandBlock::default();
+        db_utils.put_algo_block_in_db(&block).unwrap();
+        let result = db_utils.get_algo_block_from_db(&block.hash().unwrap()).unwrap();
+        assert_eq!(result, block);
     }
 }
