@@ -12,6 +12,8 @@ use crate::{
     types::Result,
 };
 
+const TX_INFO_TYPE: &str = "IntOnEvmEvmTxInfos";
+
 impl IntOnEvmEvmTxInfo {
     fn update_amount(&self, new_amount: U256) -> Self {
         let mut new_self = self.clone();
@@ -23,28 +25,28 @@ impl IntOnEvmEvmTxInfo {
 impl FeeCalculator for IntOnEvmEvmTxInfo {
     fn get_amount(&self) -> U256 {
         debug!(
-            "Getting token amount in `IntOnEvmEvmTxInfo` of {}",
-            self.native_token_amount
+            "Getting token amount in `{}` of {}",
+            TX_INFO_TYPE, self.native_token_amount
         );
         self.native_token_amount
     }
 
     fn get_token_address(&self) -> EthAddress {
         debug!(
-            "Getting token address in `IntOnEvmEvmTxInfo` of {}",
-            self.eth_token_address
+            "Getting token address in `{}` of {}",
+            TX_INFO_TYPE, self.eth_token_address
         );
         self.eth_token_address
     }
 
     fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
         if subtrahend >= self.native_token_amount {
-            Err("Cannot subtract amount from `IntOnEvmEvmTxInfo`: subtrahend too large!".into())
+            Err(format!("Cannot subtract amount from `{}`: subtrahend too large!", TX_INFO_TYPE).into())
         } else {
             let new_amount = self.native_token_amount - subtrahend;
             debug!(
-                "Subtracting {} from {} to get final amount of {} in `EthOnEvmEthTxInfo`!",
-                subtrahend, self.native_token_amount, new_amount
+                "Subtracting {} from {} to get final amount of {} in `{}`!",
+                subtrahend, self.native_token_amount, new_amount, TX_INFO_TYPE,
             );
             Ok(self.update_amount(new_amount))
         }
@@ -53,7 +55,7 @@ impl FeeCalculator for IntOnEvmEvmTxInfo {
 
 impl FeesCalculator for IntOnEvmEvmTxInfos {
     fn get_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
-        debug!("Calculating fees in `IntOnEvmEvmTxInfo`...");
+        debug!("Calculating fees in `{}`...", TX_INFO_TYPE);
         self.iter()
             .map(|info| info.calculate_fee_via_dictionary(dictionary))
             .collect()
@@ -81,43 +83,52 @@ impl FeesCalculator for IntOnEvmEvmTxInfos {
 pub fn update_accrued_fees_in_dictionary_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
+    let tx_infos = state.int_on_evm_evm_tx_infos.clone();
     if DISABLE_FEES {
-        info!("✔ Fees are disabled ∴ not accounting for any in `IntOnEvmEvmTxInfos`!");
+        info!("✔ Fees are disabled ∴ not accounting for any in `{}`!", TX_INFO_TYPE);
         Ok(state)
-    } else if state.erc20_on_int_int_tx_infos.is_empty() {
-        info!("✔ No `IntOnEvmEvmTxInfos` in state during ETH block submission ∴ not taking any fees!");
+    } else if tx_infos.is_empty() {
+        info!(
+            "✔ No `{}` in state during INT block submission ∴ not taking any fees!",
+            TX_INFO_TYPE
+        );
         Ok(state)
     } else {
-        info!("✔ Accruing fees during ETH block submission...");
+        info!("✔ Accruing fees during INT block submission...");
         EthEvmTokenDictionary::get_from_db(state.db)
             .and_then(|dictionary| {
-                dictionary.increment_accrued_fees_and_save_in_db(
-                    state.db,
-                    state.int_on_evm_evm_tx_infos.get_fees(&dictionary)?,
-                )
+                dictionary.increment_accrued_fees_and_save_in_db(state.db, tx_infos.get_fees(&dictionary)?)
             })
             .and(Ok(state))
     }
 }
 
 pub fn account_for_fees_in_evm_tx_infos_in_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
+    let tx_infos = state.int_on_evm_evm_tx_infos.clone();
     if DISABLE_FEES {
-        info!("✔ Fees are disabled ∴ not accounting for any in `IntOnEvmEvmTxInfos`!");
+        info!("✔ Fees are disabled ∴ not accounting for any in `{}`!", TX_INFO_TYPE);
         Ok(state)
-    } else if state.erc20_on_evm_evm_tx_infos.is_empty() {
-        info!("✔ No `IntOnEvmEvmTxInfos` in state during ETH block submission ∴ not taking any fees!");
+    } else if tx_infos.is_empty() {
+        info!(
+            "✔ No `{}` in state during INT block submission ∴ not taking any fees!",
+            TX_INFO_TYPE
+        );
         Ok(state)
     } else {
-        info!("✔ Accounting for fees in `IntOnEvmEvmTxInfos` during ETH block submission...");
-        EthEvmTokenDictionary::get_from_db(state.db).and_then(|ref dictionary| {
-            let tx_infos = state.int_on_evm_int_tx_infos.clone();
-            state.replace_int_on_evm_int_tx_infos(tx_infos.subtract_fees(dictionary)?)
-        })
+        info!(
+            "✔ Accounting for fees in `{}` during INT block submission...",
+            TX_INFO_TYPE
+        );
+        EthEvmTokenDictionary::get_from_db(state.db)
+            .and_then(|ref dictionary| state.replace_int_on_evm_evm_tx_infos(tx_infos.subtract_fees(dictionary)?))
     }
 }
 
 pub fn maybe_account_for_fees<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    info!("✔ Accounting for fees in `IntOnEvmEvmTxInfos` during ETH block submission...");
+    info!(
+        "✔ Accounting for fees in `{}` during INT block submission...",
+        TX_INFO_TYPE
+    );
     update_accrued_fees_in_dictionary_and_return_state(state).and_then(account_for_fees_in_evm_tx_infos_in_state)
 }
 
