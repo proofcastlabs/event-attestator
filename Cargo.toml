@@ -48,4 +48,4 @@ eos-chain = { git = "https://github.com/bifrost-finance/rust-eos" }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"] }
 
 [dev-dependencies]
-simple_logger = "1.13.0"
+simple_logger = "2.0.0"
