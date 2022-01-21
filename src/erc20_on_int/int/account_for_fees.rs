@@ -12,31 +12,33 @@ use crate::{
     types::Result,
 };
 
+const TX_INFO_TYPE: &str = "Erc20OnIntEthTxInfos";
+
 impl FeeCalculator for EthOnIntEthTxInfo {
     fn get_token_address(&self) -> EthAddress {
         debug!(
-            "Getting token address in `EthOnIntEthTxInfo` of {}",
-            self.evm_token_address
+            "Getting token address in `{}` of {}",
+            TX_INFO_TYPE, self.evm_token_address,
         );
         self.evm_token_address
     }
 
     fn get_amount(&self) -> U256 {
         debug!(
-            "Getting token amount in `EthOnIntEthTxInfo` of {}",
-            self.native_token_amount
+            "Getting token amount in `{}` of {}",
+            TX_INFO_TYPE, self.native_token_amount,
         );
         self.native_token_amount
     }
 
     fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
         if subtrahend >= self.native_token_amount {
-            Err("Cannot subtract amount from `EthOnIntEthTxInfo`: subtrahend too large!".into())
+            Err(format!("Cannot subtract amount from `{}`: subtrahend too large!", TX_INFO_TYPE).into())
         } else {
             let new_amount = self.native_token_amount - subtrahend;
             debug!(
-                "Subtracting {} from {} to get final amount of {} in `EthOnIntEthTxInfo`!",
-                subtrahend, self.native_token_amount, new_amount
+                "Subtracting {} from {} to get final amount of {} in `{}`!",
+                subtrahend, self.native_token_amount, new_amount, TX_INFO_TYPE,
             );
             Ok(self.update_amount(new_amount))
         }
@@ -45,7 +47,7 @@ impl FeeCalculator for EthOnIntEthTxInfo {
 
 impl FeesCalculator for EthOnIntEthTxInfos {
     fn get_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
-        debug!("Calculating fees in `EthOnIntEthTxInfo`...");
+        debug!("Calculating fees in `{}`...", TX_INFO_TYPE);
         self.iter()
             .map(|info| info.calculate_fee_via_dictionary(dictionary))
             .collect()
@@ -81,43 +83,46 @@ impl EthOnIntEthTxInfo {
 pub fn update_accrued_fees_in_dictionary_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
+    let tx_infos = state.erc20_on_int_eth_tx_infos.clone();
     if DISABLE_FEES {
-        info!("✔ Fees are disabled ∴ not accounting for any in `EthOnIntEthTxInfos`!");
+        info!("✔ Fees are disabled ∴ not accounting for any in `{}`!", TX_INFO_TYPE);
         Ok(state)
-    } else if state.erc20_on_evm_eth_tx_infos.is_empty() {
-        info!("✔ Not `EthOnIntEthTxInfos` in state ∴ not taking any fees!");
+    } else if tx_infos.is_empty() {
+        info!("✔ No `{}` in state ∴ not taking any fees!", TX_INFO_TYPE);
         Ok(state)
     } else {
-        info!("✔ Accruing fees during EVM block submission...");
+        info!("✔ Accruing fees during INT block submission...");
         EthEvmTokenDictionary::get_from_db(state.db)
             .and_then(|ref dictionary| {
-                dictionary.increment_accrued_fees_and_save_in_db(
-                    state.db,
-                    state.erc20_on_int_eth_tx_infos.get_fees(dictionary)?,
-                )
+                dictionary.increment_accrued_fees_and_save_in_db(state.db, tx_infos.get_fees(dictionary)?)
             })
             .and(Ok(state))
     }
 }
 
 pub fn account_for_fees_in_eth_tx_infos_in_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
+    let tx_infos = state.erc20_on_int_eth_tx_infos.clone();
     if DISABLE_FEES {
         info!("✔ Fees are disabled ∴ not accounting for any in `EthOnEvmIntTxInfos`!");
         Ok(state)
-    } else if state.erc20_on_evm_eth_tx_infos.is_empty() {
-        info!("✔ Not `EthOnEvmIntTxInfos` in state ∴ not taking any fees!");
+    } else if tx_infos.is_empty() {
+        info!("✔ No `{}` in state ∴ not taking any fees!", TX_INFO_TYPE);
         Ok(state)
     } else {
-        info!("✔ Accounting for fees in `EthOnIntEthTxInfos` during EVM block submission...");
-        EthEvmTokenDictionary::get_from_db(state.db).and_then(|ref dictionary| {
-            let tx_infos = state.erc20_on_int_eth_tx_infos.clone();
-            state.replace_erc20_on_int_eth_tx_infos(tx_infos.subtract_fees(dictionary)?)
-        })
+        info!(
+            "✔ Accounting for fees in `{}` during INT block submission...",
+            TX_INFO_TYPE
+        );
+        EthEvmTokenDictionary::get_from_db(state.db)
+            .and_then(|ref dictionary| state.replace_erc20_on_int_eth_tx_infos(tx_infos.subtract_fees(dictionary)?))
     }
 }
 
 pub fn maybe_account_for_fees<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    info!("✔ Accounting for fees in `EthOnEvmIntTxInfos` during EVM block submission...");
+    info!(
+        "✔ Accounting for fees in `{}` during INT block submission...",
+        TX_INFO_TYPE
+    );
     update_accrued_fees_in_dictionary_and_return_state(state).and_then(account_for_fees_in_eth_tx_infos_in_state)
 }
 
