@@ -82,6 +82,17 @@ macro_rules! create_special_hash_setters_and_getters {
 create_special_hash_setters_and_getters!("tail", "canon", "anchor", "latest", "genesis");
 
 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
+    fn get_algo_address_from_db(&self, key: &[Byte]) -> Result<AlgorandAddress> {
+        self.get_db()
+            .get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
+            .and_then(|bytes| Ok(AlgorandAddress::from_bytes(&bytes)?))
+    }
+
+    fn put_algo_address_in_db(&self, key: &[Byte], address: &AlgorandAddress) -> Result<()> {
+        self.get_db()
+            .put(key.to_vec(), address.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
+    }
+
     fn put_algo_block_in_db(&self, block: &AlgorandBlock) -> Result<()> {
         self.get_db()
             .put(block.hash()?.to_bytes(), block.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
@@ -175,18 +186,23 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         if self.get_redeem_address_from_db().is_ok() {
             Err(Self::get_no_overwrite_error("redeem address").into())
         } else {
-            self.get_db().put(
-                self.algo_redeem_address_key.clone(),
-                address.to_bytes()?,
-                MIN_DATA_SENSITIVITY_LEVEL,
-            )
+            self.put_algo_address_in_db(&self.algo_redeem_address_key, address)
         }
     }
 
     pub fn get_redeem_address_from_db(&self) -> Result<AlgorandAddress> {
-        self.get_db()
-            .get(self.algo_redeem_address_key.clone(), MIN_DATA_SENSITIVITY_LEVEL)
-            .and_then(|bytes| Ok(AlgorandAddress::from_bytes(&bytes)?))
+        self.get_algo_address_from_db(&self.algo_redeem_address_key)
+    }
+
+    pub fn get_public_algo_address_from_db(&self) -> Result<AlgorandAddress> {
+        // TODO
+        unimplemented!()
+        //Ok(AlgorandAddress::default())
+    }
+
+    pub fn get_latest_algo_block_number(&self) -> Result<u64> {
+        // TODO
+        unimplemented!()
     }
 }
 
