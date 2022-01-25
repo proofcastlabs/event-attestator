@@ -25,7 +25,6 @@ create_db_utils_with_getters!(
     "_anchor_block_hash_key" => "algo_anchor_block_hash_key",
     "_latest_block_hash_key" => "algo_latest_block_hash_key",
     "_genesis_block_hash_key" => "algo_genesis_block_hash_key",
-    "_latest_block_number_key" => "algo_latest_block_number_key",
     "_canon_to_tip_length_key" => "algo_canon_to_tip_length_key"
 );
 
@@ -248,14 +247,6 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
             .and_then(|bytes| Ok(AlgorandHash::from_bytes(&bytes)?))
     }
 
-    pub fn get_latest_block_number(&self) -> Result<u64> {
-        get_u64_from_db(self.get_db(), &self.algo_latest_block_number_key)
-    }
-
-    pub fn put_latest_block_number_in_db(&self, block_number: u64) -> Result<()> {
-        put_u64_in_db(self.get_db(), &self.algo_latest_block_number_key, block_number)
-    }
-
     pub fn put_redeem_address_in_db(&self, address: &AlgorandAddress) -> Result<()> {
         if self.get_redeem_address_from_db().is_ok() {
             Err(Self::get_no_overwrite_error("redeem address").into())
@@ -268,15 +259,14 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         self.get_algo_address_from_db(&self.algo_redeem_address_key)
     }
 
+    pub fn get_latest_block_number(&self) -> Result<u64> {
+        self.get_latest_block().map(|block| block.round())
+    }
+
     pub fn get_public_algo_address_from_db(&self) -> Result<AlgorandAddress> {
         // TODO
         unimplemented!()
         //Ok(AlgorandAddress::default())
-    }
-
-    pub fn get_latest_algo_block_number(&self) -> Result<u64> {
-        // TODO
-        unimplemented!()
     }
 }
 
@@ -301,16 +291,6 @@ mod tests {
         db_utils.put_redeem_address_in_db(&address).unwrap();
         let result = db_utils.get_redeem_address_from_db().unwrap();
         assert_eq!(result, address);
-    }
-
-    #[test]
-    fn should_put_and_get_algorand_latet_block_number() {
-        let db = get_test_database();
-        let db_utils = AlgoDbUtils::new(&db);
-        let number = 1337;
-        db_utils.put_latest_block_number_in_db(number).unwrap();
-        let result = db_utils.get_latest_block_number().unwrap();
-        assert_eq!(result, number);
     }
 
     #[test]
@@ -471,8 +451,6 @@ mod tests {
                 "d5743e9bee45679ce65bf04dc3fbce27ef1f148a13a37e4234288f92d3e2e124".to_string(),
             ALGO_GENESIS_BLOCK_HASH_KEY:
                 "e10b845e685c345196e1b4f41a91fa74fc8ae7f000184f222f4b5df649b50585".to_string(),
-            ALGO_LATEST_BLOCK_NUMBER_KEY:
-                "c3c70374f7eeb4892998285bf504943fcac222a6df561247c8a53b108ef9556d".to_string(),
             ALGO_CANON_TO_TIP_LENGTH_KEY:
                 "295dafb37cf7d99e712b44c066951b962bef0243abb56b5aba1172ea70bfb5f5".to_string(),
             ALGO_PRIVATE_KEY_KEY:
@@ -547,5 +525,16 @@ mod tests {
             .maybe_get_nth_ancestor_block(&hash, (blocks.len() + 1) as u64)
             .unwrap();
         assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn should_get_latest_block_number() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let block = get_sample_block_n(0);
+        let expected_result = block.round();
+        db_utils.put_latest_block_in_db(&block).unwrap();
+        let result = db_utils.get_latest_block_number().unwrap();
+        assert_eq!(result, expected_result);
     }
 }

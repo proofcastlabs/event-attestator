@@ -13,7 +13,7 @@ pub struct AlgoInitializationOutput {
 impl AlgoInitializationOutput {
     pub fn new<D: DatabaseInterface>(algo_db_utils: &AlgoDbUtils<D>) -> Result<Self> {
         Ok(Self {
-            algo_latest_block_num: algo_db_utils.get_latest_algo_block_number()?,
+            algo_latest_block_num: algo_db_utils.get_latest_block_number()?,
             algo_address: algo_db_utils.get_public_algo_address_from_db()?.to_string(),
         })
     }
