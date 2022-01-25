@@ -130,7 +130,27 @@ macro_rules! create_special_hash_setters_and_getters {
 create_special_hash_setters_and_getters!("tail", "canon", "anchor", "latest", "genesis");
 
 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
+    fn maybe_get_block(&self, hash: &AlgorandHash) -> Option<AlgorandBlock> {
+        debug!("✔ Maybe getting ALGO block via hash: {}", hash);
+        match self.get_block(hash) {
+            Ok(block) => Some(block),
+            Err(_) => None,
+        }
+    }
+
+    fn maybe_get_nth_ancestor_block(&self, hash: &AlgorandHash, n: u64) -> Result<Option<AlgorandBlock>> {
+        info!("✔ Getting {}th ancestor ALGO block from db...", n);
+        match self.maybe_get_block(hash) {
+            None => Ok(None),
+            Some(block) => match n {
+                0 => Ok(Some(block)),
+                _ => self.maybe_get_nth_ancestor_block(&block.get_previous_block_hash()?, n - 1),
+            },
+        }
+    }
+
     fn get_block(&self, hash: &AlgorandHash) -> Result<AlgorandBlock> {
+        debug!("✔ Getting ALGO block via hash: {}", hash);
         self.get_db()
             .get(hash.to_bytes(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| Ok(AlgorandBlock::from_bytes(&bytes)?))
@@ -152,7 +172,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
             .put(block.hash()?.to_bytes(), block.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
     }
 
-    fn get_algo_block_from_db(&self, hash: &AlgorandHash) -> Result<AlgorandBlock> {
+    fn get_block_from_db(&self, hash: &AlgorandHash) -> Result<AlgorandBlock> {
         self.get_db()
             .get(hash.to_bytes(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| Ok(AlgorandBlock::from_bytes(&bytes)?))
@@ -263,7 +283,11 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{crypto_utils::get_32_random_bytes_arr, test_utils::get_test_database};
+    use crate::{
+        chains::algo::test_utils::{get_all_sample_blocks, get_sample_block_n},
+        crypto_utils::get_32_random_bytes_arr,
+        test_utils::get_test_database,
+    };
 
     fn get_random_algorand_hash() -> AlgorandHash {
         AlgorandHash::from_bytes(&get_32_random_bytes_arr()).unwrap()
@@ -461,12 +485,67 @@ mod tests {
     }
 
     #[test]
-    fn should_put_and_get_algo_block_in_db() {
+    fn should_put_and_get_block_in_db() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
         let block = AlgorandBlock::default();
         db_utils.put_block_in_db(&block).unwrap();
-        let result = db_utils.get_algo_block_from_db(&block.hash().unwrap()).unwrap();
+        let result = db_utils.get_block_from_db(&block.hash().unwrap()).unwrap();
         assert_eq!(result, block);
+    }
+
+    #[test]
+    fn maybe_get_block_should_get_extant_block() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let block = get_sample_block_n(0);
+        let hash = block.hash().unwrap();
+        db_utils.put_block_in_db(&block).unwrap();
+        let result = db_utils.maybe_get_block(&hash);
+        let expected_result = Some(block);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn maybe_get_block_should_return_none_if_no_block_extant() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let block = get_sample_block_n(0);
+        let hash = block.hash().unwrap();
+        let result = db_utils.maybe_get_block(&hash);
+        let expected_result = None;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_nth_ancestor_block() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let blocks = get_all_sample_blocks();
+        blocks
+            .iter()
+            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
+        let block_sample_number = 4;
+        let hash = get_sample_block_n(block_sample_number).hash().unwrap();
+        let n: u64 = 3;
+        let expected_result = Some(get_sample_block_n(block_sample_number - n as usize));
+        let result = db_utils.maybe_get_nth_ancestor_block(&hash, n).unwrap();
+        assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn should_return_none_if_no_nth_ancestor() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let blocks = get_all_sample_blocks();
+        blocks
+            .iter()
+            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
+        let hash = get_sample_block_n(4).hash().unwrap();
+        let expected_result = None;
+        let result = db_utils
+            .maybe_get_nth_ancestor_block(&hash, (blocks.len() + 1) as u64)
+            .unwrap();
+        assert_eq!(result, expected_result)
     }
 }
