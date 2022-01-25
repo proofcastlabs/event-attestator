@@ -66,15 +66,63 @@ macro_rules! create_special_hash_setters_and_getters {
 
             $(
                 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
-                    pub fn [<get_ $hash_type _block_hash_from_db>](&self) -> Result<AlgorandHash> {
+                    pub fn [<get_ $hash_type _block_hash>](&self) -> Result<AlgorandHash> {
+                        info!("✔ Getting {} block hash from db...", $hash_type);
                         self.get_special_hash_from_db(&SpecialHashTypes::from_str(&$hash_type)?)
                     }
 
                     pub fn [< put_ $hash_type _block_hash_in_db>](&self, hash: &AlgorandHash) -> Result<()> {
+                        info!("✔ Putting {} block hash in db...", $hash_type);
                         self.put_special_hash_in_db(&SpecialHashTypes::from_str(&$hash_type)?, hash)
+                    }
+
+                    pub fn[<get_ $hash_type _block>](&self) -> Result<AlgorandBlock> {
+                        info!("✔ Getting {} block from db...", $hash_type);
+                        self.[< get_ $hash_type _block_hash>]()
+                            .and_then(|hash| self.get_block(&hash))
+                    }
+
+                    pub fn[<put_ $hash_type _block_in_db>](&self, block: &AlgorandBlock) -> Result<()> {
+                        info!("✔ Putting {} block in db!", $hash_type);
+                        let block_hash = block.hash()?;
+                        self.put_block_in_db(block)
+                            .and_then(|_| self.[< put_ $hash_type _block_hash_in_db>](&block_hash))
                     }
                 }
             )*
+
+            #[cfg(test)]
+            mod macro_tests {
+                use super::*;
+                use crate::{
+                    test_utils::get_test_database,
+                    chains::algo::test_utils::get_sample_block_n,
+                };
+
+                $(
+                    #[test]
+                    fn [< should_put_and_get_ $hash_type _block_in_db >]() {
+                        let db = get_test_database();
+                        let db_utils = AlgoDbUtils::new(&db);
+                        let block = get_sample_block_n(0);
+                        db_utils.[<put_ $hash_type _block_in_db>](&block).unwrap();
+                        let result = db_utils.[<get_ $hash_type _block>]().unwrap();
+                        assert_eq!(result, block);
+                    }
+
+                    #[test]
+                    fn [<$hash_type _hash_should_be_set_correctly_when_adding_ $hash_type _block>]() {
+                        let db = get_test_database();
+                        let db_utils = AlgoDbUtils::new(&db);
+                        let block = get_sample_block_n(0);
+                        let hash = block.hash().unwrap();
+                        db_utils.[<put_ $hash_type _block_in_db>](&block).unwrap();
+                        let result = db_utils.[<get_ $hash_type _block_hash>]().unwrap();
+                        assert_eq!(result, hash);
+
+                    }
+                )*
+            }
         }
     }
 }
@@ -82,6 +130,12 @@ macro_rules! create_special_hash_setters_and_getters {
 create_special_hash_setters_and_getters!("tail", "canon", "anchor", "latest", "genesis");
 
 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
+    fn get_block(&self, hash: &AlgorandHash) -> Result<AlgorandBlock> {
+        self.get_db()
+            .get(hash.to_bytes(), MIN_DATA_SENSITIVITY_LEVEL)
+            .and_then(|bytes| Ok(AlgorandBlock::from_bytes(&bytes)?))
+    }
+
     fn get_algo_address_from_db(&self, key: &[Byte]) -> Result<AlgorandAddress> {
         self.get_db()
             .get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
@@ -93,7 +147,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
             .put(key.to_vec(), address.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
     }
 
-    fn put_algo_block_in_db(&self, block: &AlgorandBlock) -> Result<()> {
+    fn put_block_in_db(&self, block: &AlgorandBlock) -> Result<()> {
         self.get_db()
             .put(block.hash()?.to_bytes(), block.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
     }
@@ -106,7 +160,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
 
     fn put_special_hash_in_db(&self, hash_type: &SpecialHashTypes, hash: &AlgorandHash) -> Result<()> {
         if hash_type == &SpecialHashTypes::Genesis {
-            if self.get_genesis_block_hash_from_db().is_ok() {
+            if self.get_genesis_block_hash().is_ok() {
                 return Err(Self::get_no_overwrite_error("genesis hash").into());
             }
         };
@@ -252,7 +306,7 @@ mod tests {
         let db_utils = AlgoDbUtils::new(&db);
         let hash = get_random_algorand_hash();
         db_utils.put_tail_block_hash_in_db(&hash).unwrap();
-        let result = db_utils.get_tail_block_hash_from_db().unwrap();
+        let result = db_utils.get_tail_block_hash().unwrap();
         assert_eq!(result, hash);
     }
 
@@ -262,7 +316,7 @@ mod tests {
         let db_utils = AlgoDbUtils::new(&db);
         let hash = get_random_algorand_hash();
         db_utils.put_canon_block_hash_in_db(&hash).unwrap();
-        let result = db_utils.get_canon_block_hash_from_db().unwrap();
+        let result = db_utils.get_canon_block_hash().unwrap();
         assert_eq!(result, hash);
     }
 
@@ -272,7 +326,7 @@ mod tests {
         let db_utils = AlgoDbUtils::new(&db);
         let hash = get_random_algorand_hash();
         db_utils.put_anchor_block_hash_in_db(&hash).unwrap();
-        let result = db_utils.get_anchor_block_hash_from_db().unwrap();
+        let result = db_utils.get_anchor_block_hash().unwrap();
         assert_eq!(result, hash);
     }
 
@@ -282,7 +336,7 @@ mod tests {
         let db_utils = AlgoDbUtils::new(&db);
         let hash = get_random_algorand_hash();
         db_utils.put_latest_block_hash_in_db(&hash).unwrap();
-        let result = db_utils.get_latest_block_hash_from_db().unwrap();
+        let result = db_utils.get_latest_block_hash().unwrap();
         assert_eq!(result, hash);
     }
 
@@ -292,7 +346,7 @@ mod tests {
         let db_utils = AlgoDbUtils::new(&db);
         let hash = get_random_algorand_hash();
         db_utils.put_genesis_block_hash_in_db(&hash).unwrap();
-        let result = db_utils.get_genesis_block_hash_from_db().unwrap();
+        let result = db_utils.get_genesis_block_hash().unwrap();
         assert_eq!(result, hash);
     }
 
@@ -302,7 +356,7 @@ mod tests {
         let db_utils = AlgoDbUtils::new(&db);
         let genesis_hash = get_random_algorand_hash();
         db_utils.put_genesis_block_hash_in_db(&genesis_hash).unwrap();
-        let hash_from_db = db_utils.get_genesis_block_hash_from_db().unwrap();
+        let hash_from_db = db_utils.get_genesis_block_hash().unwrap();
         assert_eq!(hash_from_db, genesis_hash);
         let new_hash = get_random_algorand_hash();
         let expected_error = "Cannot overwrite ALGO genesis hash in db - one already exists!";
@@ -311,7 +365,7 @@ mod tests {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         };
-        let result = db_utils.get_genesis_block_hash_from_db().unwrap();
+        let result = db_utils.get_genesis_block_hash().unwrap();
         assert_eq!(result, genesis_hash);
     }
 
@@ -411,7 +465,7 @@ mod tests {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
         let block = AlgorandBlock::default();
-        db_utils.put_algo_block_in_db(&block).unwrap();
+        db_utils.put_block_in_db(&block).unwrap();
         let result = db_utils.get_algo_block_from_db(&block.hash().unwrap()).unwrap();
         assert_eq!(result, block);
     }

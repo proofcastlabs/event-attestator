@@ -32,8 +32,8 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         format!("Cannot get {} from `AlgoState` - none exists!", item)
     }
 
-    pub fn add_algo_block(mut self, block: &AlgorandBlock) -> Result<Self> {
-        if self.get_algo_block().is_ok() {
+    pub fn add_submitted_algo_block(mut self, block: &AlgorandBlock) -> Result<Self> {
+        if self.get_submitted_algo_block().is_ok() {
             Err(Self::get_no_overwrite_err("algo block").into())
         } else {
             self.algo_block = Some(block.clone());
@@ -41,7 +41,7 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         }
     }
 
-    pub fn get_algo_block(&self) -> Result<AlgorandBlock> {
+    pub fn get_submitted_algo_block(&self) -> Result<AlgorandBlock> {
         match self.algo_block {
             Some(ref block) => Ok(block.clone()),
             None => Err(Self::get_not_in_state_err("algo block").into()),
@@ -59,7 +59,7 @@ mod tests {
         let db = get_test_database();
         let state = AlgoState::init(&db);
         let block = AlgorandBlock::default();
-        let result = state.add_algo_block(&block);
+        let result = state.add_submitted_algo_block(&block);
         assert!(result.is_ok());
     }
 
@@ -68,8 +68,8 @@ mod tests {
         let db = get_test_database();
         let state = AlgoState::init(&db);
         let block = AlgorandBlock::default();
-        let updated_state = state.add_algo_block(&block.clone()).unwrap();
-        let result = updated_state.get_algo_block().unwrap();
+        let updated_state = state.add_submitted_algo_block(&block.clone()).unwrap();
+        let result = updated_state.get_submitted_algo_block().unwrap();
         assert_eq!(result, block);
     }
 
@@ -78,9 +78,9 @@ mod tests {
         let db = get_test_database();
         let state = AlgoState::init(&db);
         let block = AlgorandBlock::default();
-        let updated_state = state.add_algo_block(&block).unwrap();
+        let updated_state = state.add_submitted_algo_block(&block).unwrap();
         let expected_error = "Cannot add algo block to `AlgoState` - one already exists!";
-        match updated_state.add_algo_block(&block) {
+        match updated_state.add_submitted_algo_block(&block) {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
@@ -92,7 +92,7 @@ mod tests {
         let db = get_test_database();
         let state = AlgoState::init(&db);
         let expected_error = "Cannot get algo block from `AlgoState` - none exists!";
-        match state.get_algo_block() {
+        match state.get_submitted_algo_block() {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
