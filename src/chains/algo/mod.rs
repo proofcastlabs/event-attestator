@@ -6,3 +6,4 @@ pub(crate) mod algo_submission_material;
 pub(crate) mod check_submitted_block_is_subsequent;
 pub(crate) mod core_initialization;
 pub(crate) mod test_utils;
+pub(crate) mod update_algo_canon_block_details;
