@@ -33,14 +33,14 @@ pub fn maybe_initialize_algo_core<D: DatabaseInterface>(
     block_json: &str,
     genesis_hash: &str,
     fee: u64,
-    confs: u64,
+    canon_to_tip_length: u64,
     // FIXME Asset ID? etc
 ) -> Result<String> {
     if check_algo_core_is_initialized(&AlgoDbUtils::new(&db)).is_ok() {
         Ok(ALGO_CORE_IS_INITIALIZED_JSON.to_string())
     } else {
         start_algo_db_transaction_and_return_state(AlgoState::init(&db))
-            .and_then(|state| initialize_algo_core(state))// FIXME, block_json, genesis_hash, fee, confs))
+            .and_then(|state| initialize_algo_core(state, block_json, fee, canon_to_tip_length))
             .and_then(end_algo_db_transaction_and_return_state)
             .and_then(|state| AlgoInitializationOutput::new(&state.algo_db_utils))
             .and_then(|output| output.to_string())
