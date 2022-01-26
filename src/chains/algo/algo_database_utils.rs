@@ -1,5 +1,3 @@
-#![allow(unused)] // FIXME Rm!
-
 use std::{fmt, str::FromStr};
 
 use paste::paste;
@@ -23,6 +21,7 @@ create_db_utils_with_getters!(
     "_redeem_address_key" => "algo_redeem_address_key",
     "_tail_block_hash_key" => "algo_tail_block_hash_key",
     "_canon_block_hash_key" => "algo_canon_block_hash_key",
+    "_linker_block_hash_key" => "algo_linker_block_hash_key",
     "_anchor_block_hash_key" => "algo_anchor_block_hash_key",
     "_latest_block_hash_key" => "algo_latest_block_hash_key",
     "_genesis_block_hash_key" => "algo_genesis_block_hash_key",
@@ -65,6 +64,7 @@ macro_rules! create_special_hash_setters_and_getters {
             }
 
             $(
+                #[allow(unused)] // NOTE: Not ALL are required, but it's faster to write them this way!
                 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
                     pub fn [<get_ $hash_type _block_hash>](&self) -> Result<AlgorandHash> {
                         info!("✔ Getting {} block hash from db...", $hash_type);
@@ -143,7 +143,7 @@ macro_rules! create_special_hash_setters_and_getters {
     }
 }
 
-create_special_hash_setters_and_getters!("tail", "canon", "anchor", "latest", "genesis");
+create_special_hash_setters_and_getters!("tail", "canon", "anchor", "latest", "genesis", "linker");
 
 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     pub fn delete_block_by_block_hash(&self, hash: &AlgorandHash) -> Result<()> {
@@ -491,6 +491,8 @@ mod tests {
                 "90c457a020ebe52f3de54b258d3494466d30ee5b95bb1245da06546738ef80ff".to_string(),
             ALGO_ACCOUNT_NONCE_KEY:
                 "805e14a1f236eac2b388f2cb625af8bacd8633cb489e84df62b99fbc80b28a0d".to_string(),
+            ALGO_LINKER_BLOCK_HASH_KEY:
+                "6a5d622179feb8e0b51f30517735aeb6cb1ded767e1868b527475bc7649a2d02".to_string(),
         };
         let result = AlgoDatabaseKeysJson::new();
         assert_eq!(result, expected_result)
