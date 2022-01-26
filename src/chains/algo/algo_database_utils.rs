@@ -195,13 +195,15 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
             .and_then(|bytes| Ok(AlgorandBlock::from_bytes(&bytes)?))
     }
 
-    fn get_algo_address_from_db(&self, key: &[Byte]) -> Result<AlgorandAddress> {
+    pub fn get_algo_address(&self, key: &[Byte]) -> Result<AlgorandAddress> {
+        info!("✔ Getting ALGO address from db...");
         self.get_db()
             .get(key.to_vec(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| Ok(AlgorandAddress::from_bytes(&bytes)?))
     }
 
     fn put_algo_address_in_db(&self, key: &[Byte], address: &AlgorandAddress) -> Result<()> {
+        info!("✔ Putting ALGO address of {address} in db!");
         self.get_db()
             .put(key.to_vec(), address.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
     }
@@ -226,22 +228,24 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         self.put_algorand_hash_in_db(&hash_type.get_key(self), hash)
     }
 
-    fn put_algo_account_nonce_in_db(&self, nonce: u64) -> Result<()> {
+    pub fn put_algo_account_nonce_in_db(&self, nonce: u64) -> Result<()> {
+        info!("✔ Putting ALGO account nonce of {nonce} in db!");
         put_u64_in_db(self.get_db(), &self.algo_account_nonce_key, nonce)
     }
 
-    fn get_algo_account_nonce_from_db(&self) -> Result<u64> {
+    pub fn get_algo_account_nonce(&self) -> Result<u64> {
+        info!("✔ Getting ALGO account nonce from db...");
         get_u64_from_db(self.get_db(), &self.algo_account_nonce_key)
     }
 
-    fn get_algo_private_key_from_db(&self) -> Result<AlgorandKeys> {
+    pub fn get_algo_private_key(&self) -> Result<AlgorandKeys> {
         self.get_db()
             .get(self.algo_private_key_key.clone(), MAX_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| Ok(AlgorandKeys::from_bytes(&bytes)?))
     }
 
-    fn put_algo_private_key_in_db(&self, key: &AlgorandKeys) -> Result<()> {
-        if self.get_algo_private_key_from_db().is_ok() {
+    pub fn put_algo_private_key_in_db(&self, key: &AlgorandKeys) -> Result<()> {
+        if self.get_algo_private_key().is_ok() {
             Err(Self::get_no_overwrite_error("private key").into())
         } else {
             self.get_db().put(
@@ -252,13 +256,13 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         }
     }
 
-    fn get_algo_fee_from_db(&self) -> Result<u64> {
+    pub fn get_algo_fee(&self) -> Result<u64> {
         info!("✔ Getting ALGO fee from db...");
         get_u64_from_db(self.get_db(), &self.algo_fee_key)
     }
 
-    fn put_algo_fee_in_db(&self, fee: u64) -> Result<()> {
-        info!("✔ Putting ALGO fee of {} in db...", fee);
+    pub fn put_algo_fee_in_db(&self, fee: u64) -> Result<()> {
+        info!("✔ Putting ALGO fee of {fee} in db!");
         put_u64_in_db(self.get_db(), &self.algo_fee_key, fee)
     }
 
@@ -292,15 +296,15 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     }
 
     pub fn put_redeem_address_in_db(&self, address: &AlgorandAddress) -> Result<()> {
-        if self.get_redeem_address_from_db().is_ok() {
+        if self.get_redeem_address().is_ok() {
             Err(Self::get_no_overwrite_error("redeem address").into())
         } else {
             self.put_algo_address_in_db(&self.algo_redeem_address_key, address)
         }
     }
 
-    pub fn get_redeem_address_from_db(&self) -> Result<AlgorandAddress> {
-        self.get_algo_address_from_db(&self.algo_redeem_address_key)
+    pub fn get_redeem_address(&self) -> Result<AlgorandAddress> {
+        self.get_algo_address(&self.algo_redeem_address_key)
     }
 
     pub fn get_public_algo_address_from_db(&self) -> Result<AlgorandAddress> {
@@ -329,7 +333,7 @@ mod tests {
         let db_utils = AlgoDbUtils::new(&db);
         let address = AlgorandAddress::create_random().unwrap();
         db_utils.put_redeem_address_in_db(&address).unwrap();
-        let result = db_utils.get_redeem_address_from_db().unwrap();
+        let result = db_utils.get_redeem_address().unwrap();
         assert_eq!(result, address);
     }
 
@@ -429,7 +433,7 @@ mod tests {
         let db_utils = AlgoDbUtils::new(&db);
         let fee = 1000;
         db_utils.put_algo_fee_in_db(fee).unwrap();
-        let result = db_utils.get_algo_fee_from_db().unwrap();
+        let result = db_utils.get_algo_fee().unwrap();
         assert_eq!(result, fee);
     }
 
@@ -439,7 +443,7 @@ mod tests {
         let db_utils = AlgoDbUtils::new(&db);
         let keys = AlgorandKeys::create_random();
         db_utils.put_algo_private_key_in_db(&keys).unwrap();
-        let result = db_utils.get_algo_private_key_from_db().unwrap();
+        let result = db_utils.get_algo_private_key().unwrap();
         assert_eq!(result, keys);
     }
 
@@ -449,7 +453,7 @@ mod tests {
         let db_utils = AlgoDbUtils::new(&db);
         let keys = AlgorandKeys::create_random();
         db_utils.put_algo_private_key_in_db(&keys).unwrap();
-        let keys_from_db = db_utils.get_algo_private_key_from_db().unwrap();
+        let keys_from_db = db_utils.get_algo_private_key().unwrap();
         assert_eq!(keys_from_db, keys);
         let new_keys = AlgorandKeys::create_random();
         assert_ne!(keys, new_keys);
@@ -459,7 +463,7 @@ mod tests {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         }
-        let result = db_utils.get_algo_private_key_from_db().unwrap();
+        let result = db_utils.get_algo_private_key().unwrap();
         assert_eq!(result, keys);
     }
 
@@ -469,7 +473,7 @@ mod tests {
         let db_utils = AlgoDbUtils::new(&db);
         let nonce = 666;
         db_utils.put_algo_account_nonce_in_db(nonce).unwrap();
-        let result = db_utils.get_algo_account_nonce_from_db().unwrap();
+        let result = db_utils.get_algo_account_nonce().unwrap();
         assert_eq!(result, nonce);
     }
 

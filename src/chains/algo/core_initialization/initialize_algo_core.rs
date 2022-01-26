@@ -1,24 +1,78 @@
-use crate::{chains::algo::algo_state::AlgoState, traits::DatabaseInterface, types::Result};
+use std::str::FromStr;
 
-pub fn initialize_algo_core<D: DatabaseInterface>(state: AlgoState<D>) -> Result<AlgoState<D>> {
-    /* TODO
-     *
-    So think. do we pass in the asset ID etc? Generate it outside then pass executive control to the core?
+use rust_algorand::{AlgorandBlock, AlgorandKeys};
 
-        parse material
-        chain id
-        rm ALL receipts from block
-        put block in db
-        save canon to tip length
-        save anchor block hash
-        save latest block hash
-        save canon block hash
-        generate & save private key
-        generate & save address
-        tail block hash
-        gas price/fee
-        account nonce
+use crate::{
+    chains::algo::{
+        add_latest_algo_block::add_latest_algo_block_and_return_state,
+        algo_state::AlgoState,
+        remove_irrelevant_txs_from_block_in_state::remove_irrelevant_txs_from_block_in_state,
+    },
+    traits::DatabaseInterface,
+    types::Result,
+};
 
-    */
-    Ok(state)
+pub fn initialize_algo_core<'a, D: DatabaseInterface>(
+    state: AlgoState<'a, D>,
+    block_json_str: &str,
+    fee: u64,
+    canon_to_tip_length: u64,
+) -> Result<AlgoState<'a, D>> {
+    let block = AlgorandBlock::from_str(block_json_str)?;
+    let hash = block.hash()?;
+    state
+        .add_submitted_algo_block(&block)
+        .and_then(remove_irrelevant_txs_from_block_in_state)
+        .and_then(add_latest_algo_block_and_return_state)
+        .and_then(|state| {
+            // TODO Add the genesis ID hash thingy?
+            let keys = AlgorandKeys::create_random();
+            let address = keys.to_address()?;
+            state.algo_db_utils.put_algo_fee_in_db(fee)?;
+            state.algo_db_utils.put_algo_account_nonce_in_db(0)?;
+            state.algo_db_utils.put_tail_block_hash_in_db(&hash)?;
+            state.algo_db_utils.put_tail_block_hash_in_db(&hash)?;
+            state.algo_db_utils.put_canon_block_hash_in_db(&hash)?;
+            state.algo_db_utils.put_algo_private_key_in_db(&keys)?;
+            state.algo_db_utils.put_redeem_address_in_db(&address)?;
+            state.algo_db_utils.put_anchor_block_hash_in_db(&hash)?;
+            state.algo_db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length)?;
+            Ok(state)
+        })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        chains::algo::{algo_database_utils::AlgoDbUtils, test_utils::get_sample_block_n},
+        test_utils::get_test_database,
+    };
+
+    #[test]
+    fn should_init_algo_core() {
+        let fee = 1337;
+        let canon_to_tip_length = 3;
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let state = AlgoState::init(&db);
+        let block = get_sample_block_n(0);
+        let hash = block.hash().unwrap();
+        let block_json_string = block.to_string();
+        initialize_algo_core(state, &block_json_string, fee, canon_to_tip_length).unwrap();
+        assert!(db_utils.get_algo_private_key().is_ok());
+        assert_eq!(db_utils.get_algo_fee().unwrap(), fee);
+        assert_eq!(db_utils.get_algo_account_nonce().unwrap(), 0);
+        assert_eq!(db_utils.get_tail_block_hash().unwrap(), hash);
+        assert_eq!(db_utils.get_canon_block_hash().unwrap(), hash);
+        assert_eq!(db_utils.get_anchor_block_hash().unwrap(), hash);
+        assert_eq!(db_utils.get_latest_block_hash().unwrap(), hash);
+        assert_eq!(db_utils.get_latest_block().unwrap().transactions, None);
+        assert_eq!(db_utils.get_canon_to_tip_length().unwrap(), canon_to_tip_length);
+        assert_eq!(db_utils.get_latest_block().unwrap().block_header, block.block_header);
+        assert_eq!(
+            db_utils.get_redeem_address().unwrap(),
+            db_utils.get_algo_private_key().unwrap().to_address().unwrap()
+        );
+    }
 }

@@ -37,7 +37,7 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         Ok(self)
     }
 
-    pub fn add_submitted_algo_block(mut self, block: &AlgorandBlock) -> Result<Self> {
+    pub fn add_submitted_algo_block(self, block: &AlgorandBlock) -> Result<Self> {
         if self.get_submitted_algo_block().is_ok() {
             Err(Self::get_no_overwrite_err("algo block").into())
         } else {
