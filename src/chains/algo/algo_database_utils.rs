@@ -146,6 +146,11 @@ macro_rules! create_special_hash_setters_and_getters {
 create_special_hash_setters_and_getters!("tail", "canon", "anchor", "latest", "genesis");
 
 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
+    pub fn delete_block_by_block_hash(&self, hash: &AlgorandHash) -> Result<()> {
+        debug!("Deleting block by blockhash: {}", hash);
+        self.get_db().delete(hash.to_bytes())
+    }
+
     fn maybe_get_block(&self, hash: &AlgorandHash) -> Option<AlgorandBlock> {
         debug!("✔ Maybe getting ALGO block via hash: {}", hash);
         match self.get_block(hash) {
@@ -588,5 +593,18 @@ mod tests {
         let result = db_utils.maybe_get_candidate_block(canon_to_tip_length).unwrap();
         let expected_result = None;
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_delete_block_by_block_hash() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let block = get_sample_block_n(0);
+        let hash = block.hash().unwrap();
+        db_utils.put_block_in_db(&block).unwrap();
+        assert!(db_utils.get_block(&hash).is_ok());
+        db_utils.delete_block_by_block_hash(&hash);
+        let result = db_utils.get_block(&hash);
+        assert!(result.is_err());
     }
 }
