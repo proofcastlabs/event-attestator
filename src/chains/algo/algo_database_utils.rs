@@ -154,7 +154,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     }
 
     fn maybe_get_nth_ancestor_block(&self, hash: &AlgorandHash, n: u64) -> Result<Option<AlgorandBlock>> {
-        info!("✔ Getting {}th ancestor ALGO block from db...", n);
+        info!("✔ Getting ancestor #{} ALGO block from db...", n);
         match self.maybe_get_block(hash) {
             None => Ok(None),
             Some(block) => match n {
@@ -162,6 +162,10 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
                 _ => self.maybe_get_nth_ancestor_block(&block.get_previous_block_hash()?, n - 1),
             },
         }
+    }
+
+    pub fn maybe_get_new_canon_block_candidate(&self) -> Result<Option<AlgorandBlock>> {
+        self.maybe_get_nth_ancestor_block(&self.get_latest_block_hash()?, self.get_canon_to_tip_length()?)
     }
 
     fn get_block(&self, hash: &AlgorandHash) -> Result<AlgorandBlock> {
@@ -182,7 +186,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
             .put(key.to_vec(), address.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
     }
 
-    fn put_block_in_db(&self, block: &AlgorandBlock) -> Result<()> {
+    pub fn put_block_in_db(&self, block: &AlgorandBlock) -> Result<()> {
         self.get_db()
             .put(block.hash()?.to_bytes(), block.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
     }
@@ -229,18 +233,22 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     }
 
     fn get_algo_fee_from_db(&self) -> Result<u64> {
+        info!("✔ Getting ALGO fee from db...");
         get_u64_from_db(self.get_db(), &self.algo_fee_key)
     }
 
     fn put_algo_fee_in_db(&self, fee: u64) -> Result<()> {
+        info!("✔ Putting ALGO fee of {} in db...", fee);
         put_u64_in_db(self.get_db(), &self.algo_fee_key, fee)
     }
 
-    fn put_canon_to_tip_length_in_db(&self, length: u64) -> Result<()> {
+    pub fn put_canon_to_tip_length_in_db(&self, length: u64) -> Result<()> {
+        info!("✔ Putting ALGO canon to tip length of {} in db...", length);
         put_u64_in_db(self.get_db(), &self.algo_canon_to_tip_length_key, length)
     }
 
-    fn get_canon_to_tip_length_from_db(&self) -> Result<u64> {
+    pub fn get_canon_to_tip_length(&self) -> Result<u64> {
+        info!("✔ Getting ALGO canon to tip length from db...");
         get_u64_from_db(self.get_db(), &self.algo_canon_to_tip_length_key)
     }
 
@@ -275,10 +283,6 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         self.get_algo_address_from_db(&self.algo_redeem_address_key)
     }
 
-    pub fn get_latest_block_number(&self) -> Result<u64> {
-        self.get_latest_block().map(|block| block.round())
-    }
-
     pub fn get_public_algo_address_from_db(&self) -> Result<AlgorandAddress> {
         // TODO
         unimplemented!()
@@ -290,7 +294,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
 mod tests {
     use super::*;
     use crate::{
-        chains::algo::test_utils::{get_all_sample_blocks, get_sample_block_n},
+        chains::algo::test_utils::{get_all_sample_blocks, get_sample_block_n, get_sample_contiguous_blocks},
         crypto_utils::get_32_random_bytes_arr,
         test_utils::get_test_database,
     };
@@ -395,7 +399,7 @@ mod tests {
         let db_utils = AlgoDbUtils::new(&db);
         let length = 42;
         db_utils.put_canon_to_tip_length_in_db(42).unwrap();
-        let result = db_utils.get_canon_to_tip_length_from_db().unwrap();
+        let result = db_utils.get_canon_to_tip_length().unwrap();
         assert_eq!(result, length);
     }
 
@@ -544,13 +548,32 @@ mod tests {
     }
 
     #[test]
-    fn should_get_latest_block_number() {
+    fn should_get_new_canon_block_candidate_if_extant() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let block = get_sample_block_n(0);
-        let expected_result = block.round();
-        db_utils.put_latest_block_in_db(&block).unwrap();
-        let result = db_utils.get_latest_block_number().unwrap();
+        let blocks = get_sample_contiguous_blocks();
+        let canon_to_tip_length = (blocks.len() - 1) as u64;
+        let latest_block = blocks[blocks.len() - 1].clone();
+        db_utils.put_latest_block_in_db(&latest_block).unwrap();
+        db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length).unwrap();
+        blocks.iter().for_each(|block| db_utils.put_block_in_db(&block).unwrap());
+        let result = db_utils.maybe_get_new_canon_block_candidate().unwrap();
+        let expected_result = Some(blocks[blocks.len() - 1 - canon_to_tip_length as usize].clone());
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_nont_get_new_canon_block_candidate_if_none_extant() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let blocks = get_sample_contiguous_blocks();
+        let canon_to_tip_length = (blocks.len() + 1) as u64;
+        let latest_block = blocks[blocks.len() - 1].clone();
+        db_utils.put_latest_block_in_db(&latest_block).unwrap();
+        db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length).unwrap();
+        blocks.iter().for_each(|block| db_utils.put_block_in_db(&block).unwrap());
+        let result = db_utils.maybe_get_new_canon_block_candidate().unwrap();
+        let expected_result = None;
         assert_eq!(result, expected_result);
     }
 }
