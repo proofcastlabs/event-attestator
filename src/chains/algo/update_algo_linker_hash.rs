@@ -33,7 +33,9 @@ fn maybe_get_parent_of_tail_block<D: DatabaseInterface>(db_utils: &AlgoDbUtils<D
     }
 }
 
-fn maybe_update_algo_linker_hash_and_return_state<D: DatabaseInterface>(state: AlgoState<D>) -> Result<AlgoState<D>> {
+pub fn maybe_update_algo_linker_hash_and_return_state<D: DatabaseInterface>(
+    state: AlgoState<D>,
+) -> Result<AlgoState<D>> {
     info!("✔ Maybe updating the ALGO linker hash...");
     match maybe_get_parent_of_tail_block(&state.algo_db_utils)? {
         Some(parent_of_eth_tail_block) => {
