@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use rust_algorand::{AlgorandBlock, AlgorandKeys};
+use rust_algorand::{AlgorandBlock, AlgorandHash, AlgorandKeys};
 
 use crate::{
     chains::algo::{
@@ -17,6 +17,7 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
     block_json_str: &str,
     fee: u64,
     canon_to_tip_length: u64,
+    genesis_id: &str,
 ) -> Result<AlgoState<'a, D>> {
     let block = AlgorandBlock::from_str(block_json_str)?;
     let hash = block.hash()?;
@@ -37,6 +38,9 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
             state.algo_db_utils.put_redeem_address_in_db(&address)?;
             state.algo_db_utils.put_anchor_block_hash_in_db(&hash)?;
             state.algo_db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length)?;
+            state
+                .algo_db_utils
+                .put_genesis_hash_in_db(&AlgorandHash::from_genesis_id(genesis_id)?);
             Ok(state)
         })
 }
@@ -58,12 +62,17 @@ mod tests {
         let state = AlgoState::init(&db);
         let block = get_sample_block_n(0);
         let hash = block.hash().unwrap();
+        let genesis_id = "mainnet-v1.0";
         let block_json_string = block.to_string();
-        initialize_algo_core(state, &block_json_string, fee, canon_to_tip_length).unwrap();
+        initialize_algo_core(state, &block_json_string, fee, canon_to_tip_length, genesis_id).unwrap();
         assert!(db_utils.get_algo_private_key().is_ok());
         assert_eq!(db_utils.get_algo_fee().unwrap(), fee);
         assert_eq!(db_utils.get_algo_account_nonce().unwrap(), 0);
         assert_eq!(db_utils.get_tail_block_hash().unwrap(), hash);
+        assert_eq!(
+            db_utils.get_genesis_hash().unwrap(),
+            AlgorandHash::from_genesis_id(genesis_id).unwrap()
+        );
         assert_eq!(db_utils.get_canon_block_hash().unwrap(), hash);
         assert_eq!(db_utils.get_anchor_block_hash().unwrap(), hash);
         assert_eq!(db_utils.get_latest_block_hash().unwrap(), hash);

@@ -74,6 +74,7 @@ mod tests {
         let canon_to_tip_length = 3;
         let algo_genesis_hash = "some genesis hash";
         let algo_fee = 1000;
+        let genesis_id = "mainnet-v1.0";
         let algo_block_json_strings = get_sample_contiguous_blocks()
             .iter()
             .map(|block| block.to_string())
@@ -83,6 +84,7 @@ mod tests {
             &algo_block_json_strings[0],
             algo_fee,
             canon_to_tip_length,
+            genesis_id,
         )
         .unwrap();
         let eth_block_json_string = get_sample_eth_submission_material_string(0).unwrap();
