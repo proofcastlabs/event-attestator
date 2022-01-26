@@ -27,11 +27,75 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: D, block_json_string:
     parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(&db))
         .and_then(check_core_is_initialized_and_return_algo_state)
         .and_then(start_algo_db_transaction_and_return_state)
+        //.and_then(validate_block_in_state)
+        //.and_then(get_eth_evm_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(check_parent_of_algo_block_in_state_exists)
+        //.and_then(validate_receipts_in_state)
+        //.and_then(filter_submission_material_for_peg_in_events_in_state)
         .and_then(add_latest_algo_block_and_return_state)
         .and_then(maybe_update_algo_canon_block_hash_and_return_state)
         .and_then(maybe_update_algo_tail_block_hash_and_return_state)
         .and_then(maybe_update_algo_linker_hash_and_return_state)
+        //.and_then(maybe_parse_tx_info_from_canon_block_and_add_to_state)
+        //.and_then(filter_out_zero_value_evm_tx_infos_from_state)
+        //.and_then(maybe_account_for_fees)
+        //.and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address)
+        //.and_then(maybe_sign_evm_txs_and_add_to_eth_state)
+        //.and_then(maybe_increment_evm_account_nonce_and_return_eth_state)
         .and_then(maybe_remove_old_algo_tail_block_and_return_state)
+        //.and_then(maybe_remove_receipts_from_eth_canon_block_and_return_state)
+        //.and_then(end_eth_db_transaction_and_return_state)
+        //.and_then(get_int_output_json)
         .map(|_| "done!".to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        chains::{
+            algo::{
+                core_initialization::initialize_algo_core::initialize_algo_core,
+                test_utils::get_sample_contiguous_blocks,
+            },
+            eth::{
+                core_initialization::initialize_eth_core::initialize_eth_core_with_no_contract_tx,
+                eth_chain_id::EthChainId,
+                eth_state::EthState,
+                eth_test_utils::get_sample_eth_submission_material_string,
+            },
+        },
+        test_utils::get_test_database,
+    };
+
+    #[test]
+    fn should_submit_algo_block_successfully() {
+        let db = get_test_database();
+        let canon_to_tip_length = 3;
+        let algo_genesis_hash = "some genesis hash";
+        let algo_fee = 1000;
+        let algo_block_json_strings = get_sample_contiguous_blocks()
+            .iter()
+            .map(|block| block.to_string())
+            .collect::<Vec<String>>();
+        initialize_algo_core(
+            AlgoState::init(&db),
+            &algo_block_json_strings[0],
+            algo_fee,
+            canon_to_tip_length,
+        )
+        .unwrap();
+        let eth_block_json_string = get_sample_eth_submission_material_string(0).unwrap();
+        let eth_chain_id = EthChainId::Ropsten;
+        let eth_gas_price = 20_000_000_000;
+        initialize_eth_core_with_no_contract_tx(
+            &eth_block_json_string,
+            &eth_chain_id,
+            eth_gas_price,
+            canon_to_tip_length,
+            EthState::init(&db),
+        )
+        .unwrap();
+        submit_algo_block_to_core(db, &algo_block_json_strings[1]).unwrap();
+    }
 }
