@@ -87,6 +87,11 @@ macro_rules! create_special_hash_setters_and_getters {
                         self.put_block_in_db(block)
                             .and_then(|_| self.[< put_ $hash_type _block_hash_in_db>](&block_hash))
                     }
+
+                    pub fn [< get_ $hash_type _block_number >](&self) -> Result<u64> {
+                        self.[<get_ $hash_type _block>]().map(|block| block.round())
+                    }
+
                 }
             )*
 
@@ -119,6 +124,17 @@ macro_rules! create_special_hash_setters_and_getters {
                         let result = db_utils.[<get_ $hash_type _block_hash>]().unwrap();
                         assert_eq!(result, hash);
 
+                    }
+
+                    #[test]
+                    fn [<should_get_ $hash_type _block_number>]() {
+                        let db = get_test_database();
+                        let db_utils = AlgoDbUtils::new(&db);
+                        let block = get_sample_block_n(0);
+                        let expected_result = block.round();
+                        db_utils.[<put_ $hash_type _block_in_db>](&block).unwrap();
+                        let result = db_utils.[<get_ $hash_type _block_number>]().unwrap();
+                        assert_eq!(result, expected_result);
                     }
                 )*
             }
