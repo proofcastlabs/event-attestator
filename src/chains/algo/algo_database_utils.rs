@@ -147,6 +147,20 @@ macro_rules! create_special_hash_setters_and_getters {
 create_special_hash_setters_and_getters!("tail", "canon", "anchor", "latest", "genesis", "linker");
 
 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
+    pub fn get_genesis_hash(&self) -> Result<AlgorandHash> {
+        self.get_db()
+            .get(self.algo_genesis_block_hash_key.clone(), MIN_DATA_SENSITIVITY_LEVEL)
+            .and_then(|bytes| Ok(AlgorandHash::from_bytes(&bytes)?))
+    }
+
+    pub fn put_genesis_hash_in_db(&self, genesis_hash: &AlgorandHash) -> Result<()> {
+        self.get_db().put(
+            self.algo_genesis_block_hash_key.clone(),
+            genesis_hash.to_bytes(),
+            MAX_DATA_SENSITIVITY_LEVEL,
+        )
+    }
+
     pub fn get_linker_hash_or_else_genesis_hash(&self) -> Result<AlgorandHash> {
         self.get_linker_block_hash()
             .or_else(|_| Ok(ALGO_PTOKEN_GENESIS_HASH.clone()))
@@ -624,7 +638,7 @@ mod tests {
     fn should_get_linker_hash_if_extant() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let hash = AlgorandHash::from_bytes(&vec![1u8; 32]).unwrap();
+        let hash = get_random_algorand_hash();
         assert_ne!(hash, *ALGO_PTOKEN_GENESIS_HASH);
         db_utils.put_linker_block_hash_in_db(&hash).unwrap();
         let result = db_utils.get_linker_hash_or_else_genesis_hash().unwrap();
@@ -638,5 +652,15 @@ mod tests {
         assert!(db_utils.get_linker_block_hash().is_err());
         let result = db_utils.get_linker_hash_or_else_genesis_hash().unwrap();
         assert_eq!(result, *ALGO_PTOKEN_GENESIS_HASH);
+    }
+
+    #[test]
+    fn should_put_and_get_genesis_hash_in_db() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let hash = AlgorandHash::default();
+        db_utils.put_genesis_hash_in_db(&hash).unwrap();
+        let result = db_utils.get_genesis_hash().unwrap();
+        assert_eq!(result, hash);
     }
 }
