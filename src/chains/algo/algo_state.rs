@@ -32,12 +32,16 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         format!("Cannot get {} from `AlgoState` - none exists!", item)
     }
 
+    pub fn update_submitted_block(mut self, block: &AlgorandBlock) -> Result<Self> {
+        self.algo_block = Some(block.clone());
+        Ok(self)
+    }
+
     pub fn add_submitted_algo_block(mut self, block: &AlgorandBlock) -> Result<Self> {
         if self.get_submitted_algo_block().is_ok() {
             Err(Self::get_no_overwrite_err("algo block").into())
         } else {
-            self.algo_block = Some(block.clone());
-            Ok(self)
+            self.update_submitted_block(block)
         }
     }
 
@@ -52,7 +56,7 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{errors::AppError, test_utils::get_test_database};
+    use crate::{chains::algo::test_utils::get_sample_block_n, errors::AppError, test_utils::get_test_database};
 
     #[test]
     fn should_put_algo_block_in_state() {
@@ -97,5 +101,18 @@ mod tests {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         }
+    }
+
+    #[test]
+    fn update_submitted_block_should_allow_block_to_be_overwritten() {
+        let db = get_test_database();
+        let block_1 = get_sample_block_n(0);
+        let block_2 = get_sample_block_n(1);
+        let state_1 = AlgoState::init(&db);
+        let state_2 = state_1.add_submitted_algo_block(&block_1).unwrap();
+        assert_eq!(state_2.get_submitted_algo_block().unwrap(), block_1);
+        let state_3 = state_2.update_submitted_block(&block_2).unwrap();
+        let result = state_3.get_submitted_algo_block().unwrap();
+        assert_eq!(result, block_2);
     }
 }
