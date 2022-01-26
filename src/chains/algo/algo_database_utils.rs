@@ -182,7 +182,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         self.maybe_get_candidate_block(self.get_canon_to_tip_length()? + ALGO_TAIL_LENGTH)
     }
 
-    fn get_block(&self, hash: &AlgorandHash) -> Result<AlgorandBlock> {
+    pub fn get_block(&self, hash: &AlgorandHash) -> Result<AlgorandBlock> {
         debug!("✔ Getting ALGO block via hash: {}", hash);
         self.get_db()
             .get(hash.to_bytes(), MIN_DATA_SENSITIVITY_LEVEL)
