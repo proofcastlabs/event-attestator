@@ -28,12 +28,23 @@ macro_rules! write_paths_and_getter_fxn {
 }
 
 write_paths_and_getter_fxn!(
-    0 => "src/chains/algo/test_utils/block-17962555.json",
-    1 => "src/chains/algo/test_utils/block-17962556.json",
-    2 => "src/chains/algo/test_utils/block-17962557.json",
-    3 => "src/chains/algo/test_utils/block-17962558.json",
-    4 => "src/chains/algo/test_utils/block-17962559.json"
+    0  => "src/chains/algo/test_utils/block-17962555.json",
+    1  => "src/chains/algo/test_utils/block-17962556.json",
+    2  => "src/chains/algo/test_utils/block-17962557.json",
+    3  => "src/chains/algo/test_utils/block-17962558.json",
+    4  => "src/chains/algo/test_utils/block-17962559.json",
+    5  => "src/chains/algo/test_utils/block-17962560.json",
+    6  => "src/chains/algo/test_utils/block-17962561.json",
+    7  => "src/chains/algo/test_utils/block-17962562.json",
+    8  => "src/chains/algo/test_utils/block-17962563.json",
+    9  => "src/chains/algo/test_utils/block-17962564.json",
+    10 => "src/chains/algo/test_utils/block-17962565.json"
 );
+
+pub fn get_sample_contiguous_blocks() -> Vec<AlgorandBlock> {
+    let result = vec![0u8; 11];
+    result.iter().enumerate().map(|(n, _)| get_sample_block_n(n)).collect()
+}
 
 fn get_sample_block_json_str_n(n: usize) -> String {
     read_to_string(get_path_n(n).unwrap()).unwrap()
