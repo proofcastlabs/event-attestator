@@ -1,38 +1,20 @@
 use rust_algorand::{AlgorandBlock, AlgorandHash};
 
 use crate::{
-    chains::algo::{algo_database_utils::AlgoDbUtils, algo_state::AlgoState},
+    chains::algo::{
+        algo_database_utils::AlgoDbUtils,
+        algo_state::AlgoState,
+        get_candidate_block_hash::maybe_get_new_candidate_block_hash,
+    },
     traits::DatabaseInterface,
     types::Result,
 };
-
-pub fn maybe_get_new_canon_block_hash(
-    current_canon_block: &AlgorandBlock,
-    maybe_new_canon_block: Option<AlgorandBlock>,
-) -> Result<Option<AlgorandHash>> {
-    match maybe_new_canon_block {
-        None => {
-            info!("✔ No canon block candidate in db yet ∴ not updating canon block hash!");
-            Ok(None)
-        },
-        Some(new_canon_block) => {
-            info!("✔ Candidate ALGO canon block found!");
-            if current_canon_block.round() < new_canon_block.round() {
-                info!("✔ Current canon block IS older than new candidate, ∴ updating it...");
-                Ok(Some(new_canon_block.hash()?))
-            } else {
-                info!("✘ Current canon block is NOT older than new candidate ∴ NOT updating it!");
-                Ok(None)
-            }
-        },
-    }
-}
 
 pub fn maybe_update_algo_canon_block_hash_and_return_state<D: DatabaseInterface>(
     state: AlgoState<D>,
 ) -> Result<AlgoState<D>> {
     info!("✔ Maybe updating ALGO canon block hash...");
-    maybe_get_new_canon_block_hash(
+    maybe_get_new_candidate_block_hash(
         &state.algo_db_utils.get_canon_block()?,
         state.algo_db_utils.maybe_get_new_canon_block_candidate()?,
     )
