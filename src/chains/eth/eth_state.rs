@@ -4,6 +4,7 @@ use crate::{
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
     btc_on_int::int::btc_tx_info::BtcOnIntBtcTxInfos,
     chains::{
+        algo::algo_database_utils::AlgoDbUtils,
         btc::{
             btc_database_utils::BtcDbUtils,
             btc_types::BtcTransactions,
@@ -39,6 +40,7 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub evm_db_utils: EvmDbUtils<'a, D>,
     pub btc_db_utils: BtcDbUtils<'a, D>,
     pub eos_db_utils: EosDbUtils<'a, D>,
+    pub algo_db_utils: AlgoDbUtils<'a, D>,
     pub btc_transactions: Option<BtcTransactions>,
     pub int_on_evm_int_signed_txs: EthTransactions,
     pub int_on_evm_evm_signed_txs: EthTransactions,
@@ -79,6 +81,7 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             evm_db_utils: EvmDbUtils::new(db),
             eos_db_utils: EosDbUtils::new(db),
             btc_db_utils: BtcDbUtils::new(db),
+            algo_db_utils: AlgoDbUtils::new(db),
             int_on_evm_int_signed_txs: EthTransactions::new(vec![]),
             int_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
             btc_on_int_btc_tx_infos: BtcOnIntBtcTxInfos::new(vec![]),
