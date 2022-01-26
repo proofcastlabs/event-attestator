@@ -6,6 +6,7 @@ use paste::paste;
 use rust_algorand::{AlgorandAddress, AlgorandBlock, AlgorandHash, AlgorandKeys};
 
 use crate::{
+    chains::algo::algo_constants::ALGO_TAIL_LENGTH,
     constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
     database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
@@ -164,8 +165,16 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         }
     }
 
+    fn maybe_get_candidate_block(&self, ancestor_num: u64) -> Result<Option<AlgorandBlock>> {
+        self.maybe_get_nth_ancestor_block(&self.get_latest_block_hash()?, ancestor_num)
+    }
+
     pub fn maybe_get_new_canon_block_candidate(&self) -> Result<Option<AlgorandBlock>> {
-        self.maybe_get_nth_ancestor_block(&self.get_latest_block_hash()?, self.get_canon_to_tip_length()?)
+        self.maybe_get_candidate_block(self.get_canon_to_tip_length()?)
+    }
+
+    pub fn maybe_get_new_tail_block_candidate(&self) -> Result<Option<AlgorandBlock>> {
+        self.maybe_get_candidate_block(self.get_canon_to_tip_length()? + ALGO_TAIL_LENGTH)
     }
 
     fn get_block(&self, hash: &AlgorandHash) -> Result<AlgorandBlock> {
@@ -548,7 +557,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_new_canon_block_candidate_if_extant() {
+    fn should_get_new_candidate_block_if_extant() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
         let blocks = get_sample_contiguous_blocks();
@@ -556,14 +565,16 @@ mod tests {
         let latest_block = blocks[blocks.len() - 1].clone();
         db_utils.put_latest_block_in_db(&latest_block).unwrap();
         db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length).unwrap();
-        blocks.iter().for_each(|block| db_utils.put_block_in_db(&block).unwrap());
-        let result = db_utils.maybe_get_new_canon_block_candidate().unwrap();
+        blocks
+            .iter()
+            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
+        let result = db_utils.maybe_get_candidate_block(canon_to_tip_length).unwrap();
         let expected_result = Some(blocks[blocks.len() - 1 - canon_to_tip_length as usize].clone());
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_nont_get_new_canon_block_candidate_if_none_extant() {
+    fn should_not_get_new_candidate_block_if_not_extant() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
         let blocks = get_sample_contiguous_blocks();
@@ -571,8 +582,10 @@ mod tests {
         let latest_block = blocks[blocks.len() - 1].clone();
         db_utils.put_latest_block_in_db(&latest_block).unwrap();
         db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length).unwrap();
-        blocks.iter().for_each(|block| db_utils.put_block_in_db(&block).unwrap());
-        let result = db_utils.maybe_get_new_canon_block_candidate().unwrap();
+        blocks
+            .iter()
+            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
+        let result = db_utils.maybe_get_candidate_block(canon_to_tip_length).unwrap();
         let expected_result = None;
         assert_eq!(result, expected_result);
     }
