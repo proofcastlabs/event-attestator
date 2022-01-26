@@ -1,10 +1,12 @@
+#![allow(unused)] // NOTE: Not ALL fxns in here are required, but the macro is a better way to write them!
+
 use std::{fmt, str::FromStr};
 
 use paste::paste;
 use rust_algorand::{AlgorandAddress, AlgorandBlock, AlgorandHash, AlgorandKeys};
 
 use crate::{
-    chains::algo::algo_constants::ALGO_TAIL_LENGTH,
+    chains::algo::algo_constants::{ALGO_PTOKEN_GENESIS_HASH, ALGO_TAIL_LENGTH},
     constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
     database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
@@ -64,7 +66,6 @@ macro_rules! create_special_hash_setters_and_getters {
             }
 
             $(
-                #[allow(unused)] // NOTE: Not ALL are required, but it's faster to write them this way!
                 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
                     pub fn [<get_ $hash_type _block_hash>](&self) -> Result<AlgorandHash> {
                         info!("✔ Getting {} block hash from db...", $hash_type);
@@ -146,6 +147,11 @@ macro_rules! create_special_hash_setters_and_getters {
 create_special_hash_setters_and_getters!("tail", "canon", "anchor", "latest", "genesis", "linker");
 
 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
+    pub fn get_linker_hash_or_else_genesis_hash(&self) -> Result<AlgorandHash> {
+        self.get_linker_block_hash()
+            .or_else(|_| Ok(ALGO_PTOKEN_GENESIS_HASH.clone()))
+    }
+
     pub fn delete_block_by_block_hash(&self, hash: &AlgorandHash) -> Result<()> {
         debug!("Deleting block by blockhash: {}", hash);
         self.get_db().delete(hash.to_bytes())
@@ -608,5 +614,25 @@ mod tests {
         db_utils.delete_block_by_block_hash(&hash);
         let result = db_utils.get_block(&hash);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn should_get_linker_hash_if_extant() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let hash = AlgorandHash::from_bytes(&vec![1u8; 32]).unwrap();
+        assert_ne!(hash, *ALGO_PTOKEN_GENESIS_HASH);
+        db_utils.put_linker_block_hash_in_db(&hash).unwrap();
+        let result = db_utils.get_linker_hash_or_else_genesis_hash().unwrap();
+        assert_eq!(result, hash);
+    }
+
+    #[test]
+    fn get_linker_hash_should_fall_back_to_genesis_hash_if_not_extant() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        assert!(db_utils.get_linker_block_hash().is_err());
+        let result = db_utils.get_linker_hash_or_else_genesis_hash().unwrap();
+        assert_eq!(result, *ALGO_PTOKEN_GENESIS_HASH);
     }
 }
