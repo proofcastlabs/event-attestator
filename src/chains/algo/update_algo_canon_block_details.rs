@@ -1,168 +1,163 @@
+use rust_algorand::{AlgorandBlock, AlgorandHash};
+
 use crate::{
     chains::algo::{algo_database_utils::AlgoDbUtils, algo_state::AlgoState},
     traits::DatabaseInterface,
     types::Result,
 };
 
-/*
-fn does_canon_block_require_updating<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
-    db_utils: &E,
-    calculated_canon_block_and_receipts: &EthSubmissionMaterial,
-) -> Result<bool> {
-    db_utils.get_eth_canon_block_from_db().and_then(|canon_block| {
-        Ok(canon_block.get_block_number()? < calculated_canon_block_and_receipts.get_block_number()?)
-    })
-}
-
-fn maybe_get_nth_ancestor_of_latest_block<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
-    db_utils: &E,
-    n: u64,
-) -> Result<Option<EthSubmissionMaterial>> {
-    info!(
-        "✔ Maybe getting ancestor #{} of latest {} block...",
-        n,
-        if db_utils.get_is_for_eth() { "ETH" } else { "EVM" }
-    );
-    match db_utils.get_eth_latest_block_from_db() {
-        Ok(submission_material) => {
-            db_utils.maybe_get_nth_ancestor_eth_submission_material(&submission_material.get_block_hash()?, n)
-        },
-        Err(_) => Ok(None),
-    }
-}
-
-pub fn maybe_update_algo_canon_block_hash<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
-    db_utils: &E,
-    canon_to_tip_length: u64,
-) -> Result<()> {
-    match maybe_get_nth_ancestor_of_latest_block(db_utils, canon_to_tip_length)? {
+pub fn maybe_get_new_canon_block_hash(
+    current_canon_block: &AlgorandBlock,
+    maybe_new_canon_block: Option<AlgorandBlock>,
+) -> Result<Option<AlgorandHash>> {
+    match maybe_new_canon_block {
         None => {
-            info!("✔ No {}th ancestor block in db yet!", canon_to_tip_length);
-            Ok(())
+            info!("✔ No canon block candidate in db yet ∴ not updating canon block hash!");
+            Ok(None)
         },
-        Some(ancestor_block) => {
-            info!("✔ {}th ancestor block found...", canon_to_tip_length);
-            match does_canon_block_require_updating(db_utils, &ancestor_block)? {
-                true => {
-                    info!("✔ Updating canon block...");
-                    db_utils.put_eth_canon_block_hash_in_db(&ancestor_block.get_block_hash()?)
-                },
-                false => {
-                    info!("✔ Canon block does not require updating");
-                    Ok(())
-                },
+        Some(new_canon_block) => {
+            info!("✔ Candidate ALGO canon block found!");
+            if current_canon_block.round() < new_canon_block.round() {
+                info!("✔ Current canon block IS older than new candidate, ∴ updating it...");
+                Ok(Some(new_canon_block.hash()?))
+            } else {
+                info!("✘ Current canon block is NOT older than new candidate ∴ NOT updating it!");
+                Ok(None)
             }
         },
     }
 }
 
-pub fn maybe_update_algo_canon_block_hash_and_return_state<D: DatabaseInterface>>(
+pub fn maybe_update_algo_canon_block_hash_and_return_state<D: DatabaseInterface>(
     state: AlgoState<D>,
-) -> Result<AlgoState> {
-    Ok(state)
+) -> Result<AlgoState<D>> {
+    info!("✔ Maybe updating ALGO canon block hash...");
+    maybe_get_new_canon_block_hash(
+        &state.algo_db_utils.get_canon_block()?,
+        state.algo_db_utils.maybe_get_new_canon_block_candidate()?,
+    )
+    .and_then(|maybe_new_canon_block_hash| match maybe_new_canon_block_hash {
+        None => Ok(state),
+        Some(hash) => {
+            info!("✔ Updating ALGO canon block hash...");
+            state.algo_db_utils.put_canon_block_hash_in_db(&hash)?;
+            Ok(state)
+        },
+    })
 }
-*/
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        chains::eth::{
-            eth_database_utils::EthDbUtils,
-            eth_test_utils::{
-                get_eth_canon_block_hash_from_db,
-                get_sequential_eth_blocks_and_receipts,
-                put_eth_latest_block_in_db,
-            },
-        },
-        test_utils::get_test_database,
-    };
+    use crate::{chains::algo::test_utils::get_sample_contiguous_blocks, test_utils::get_test_database};
 
     #[test]
-    fn should_return_true_if_canon_block_requires_updating() {
+    fn should_not_update_canon_block_hash_if_no_candidate_found() {
         let db = get_test_database();
-        let eth_db_utils = EthDbUtils::new(&db);
-        let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
-        let canon_block = blocks_and_receipts[0].clone();
-        let calculated_canon_block = blocks_and_receipts[1].clone();
-        eth_db_utils.put_eth_canon_block_in_db(&canon_block).unwrap();
-        let result = does_canon_block_require_updating(&eth_db_utils, &calculated_canon_block).unwrap();
-        assert!(result);
-    }
-
-    #[test]
-    fn should_return_false_if_canon_block_does_not_require_updating() {
-        let db = get_test_database();
-        let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
-        let canon_block = blocks_and_receipts[0].clone();
-        let calculated_canon_block = blocks_and_receipts[0].clone();
-        let eth_db_utils = EthDbUtils::new(&db);
-        eth_db_utils.put_eth_canon_block_in_db(&canon_block).unwrap();
-        let eth_db_utils = EthDbUtils::new(&db);
-        let result = does_canon_block_require_updating(&eth_db_utils, &calculated_canon_block).unwrap();
-        assert!(!result);
-    }
-
-    #[test]
-    fn should_return_block_if_nth_ancestor_of_latest_block_exists() {
-        let db = get_test_database();
-        let eth_db_utils = EthDbUtils::new(&db);
-        let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
-        let block_1 = blocks_and_receipts[0].clone();
-        let block_2 = blocks_and_receipts[1].clone();
-        let expected_result = block_1.remove_block();
-        eth_db_utils.put_eth_submission_material_in_db(&block_1).unwrap();
-        put_eth_latest_block_in_db(&eth_db_utils, &block_2).unwrap();
-        let result = maybe_get_nth_ancestor_of_latest_block(&eth_db_utils, 1)
-            .unwrap()
+        let db_utils = AlgoDbUtils::new(&db);
+        let contiguous_blocks = get_sample_contiguous_blocks();
+        let num_blocks = contiguous_blocks.len();
+        let canon_to_tip_length = num_blocks + 1;
+        let current_canon_block_hash = contiguous_blocks[num_blocks - 1].hash().unwrap();
+        let latest_block_hash = current_canon_block_hash.clone();
+        let expected_result = current_canon_block_hash.clone();
+        contiguous_blocks
+            .iter()
+            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
+        db_utils.put_canon_block_hash_in_db(&current_canon_block_hash).unwrap();
+        db_utils.put_latest_block_hash_in_db(&latest_block_hash).unwrap();
+        db_utils
+            .put_canon_to_tip_length_in_db(canon_to_tip_length as u64)
             .unwrap();
+        assert_eq!(latest_block_hash, db_utils.get_latest_block_hash().unwrap());
+        assert_eq!(current_canon_block_hash, db_utils.get_canon_block_hash().unwrap());
+        assert_eq!(canon_to_tip_length as u64, db_utils.get_canon_to_tip_length().unwrap());
+        maybe_update_algo_canon_block_hash_and_return_state(AlgoState::init(&db)).unwrap();
+        let result = db_utils.get_canon_block_hash().unwrap();
         assert_eq!(result, expected_result)
     }
 
     #[test]
-    fn should_return_none_if_nth_ancestor_of_latest_block_does_not_exist() {
+    fn should_update_canon_block_hash_if_candidate_block_is_newer_than_current_canon_block() {
         let db = get_test_database();
-        let eth_db_utils = EthDbUtils::new(&db);
-        let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
-        let block_1 = blocks_and_receipts[0].clone();
-        put_eth_latest_block_in_db(&eth_db_utils, &block_1).unwrap();
-        let result = maybe_get_nth_ancestor_of_latest_block(&eth_db_utils, 1).unwrap();
-        assert_eq!(result, None);
+        let db_utils = AlgoDbUtils::new(&db);
+        let contiguous_blocks = get_sample_contiguous_blocks();
+        let num_blocks = contiguous_blocks.len();
+        let canon_to_tip_length = 5;
+        let current_canon_block = contiguous_blocks[num_blocks - (canon_to_tip_length + 3)].clone();
+        let latest_block_hash = contiguous_blocks[num_blocks - 1].hash().unwrap();
+        let current_canon_block_hash = current_canon_block.hash().unwrap();
+        let expected_result = contiguous_blocks[num_blocks - (canon_to_tip_length + 1)]
+            .hash()
+            .unwrap();
+        contiguous_blocks
+            .iter()
+            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
+        let latest_block_hash = contiguous_blocks[num_blocks - 1].hash().unwrap();
+        db_utils.put_canon_block_hash_in_db(&current_canon_block_hash).unwrap();
+        db_utils.put_latest_block_hash_in_db(&latest_block_hash).unwrap();
+        db_utils
+            .put_canon_to_tip_length_in_db(canon_to_tip_length as u64)
+            .unwrap();
+        assert_eq!(latest_block_hash, db_utils.get_latest_block_hash().unwrap());
+        assert_eq!(current_canon_block_hash, db_utils.get_canon_block_hash().unwrap());
+        assert_eq!(canon_to_tip_length as u64, db_utils.get_canon_to_tip_length().unwrap());
+        maybe_update_algo_canon_block_hash_and_return_state(AlgoState::init(&db)).unwrap();
+        let result = db_utils.get_canon_block_hash().unwrap();
+        assert_eq!(result, expected_result)
     }
 
     #[test]
-    fn should_maybe_update_canon_block_hash() {
+    fn should_not_update_canon_block_hash_if_candidate_block_older_than_current_canon_block() {
         let db = get_test_database();
-        let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
-        let canon_block = blocks_and_receipts[0].clone();
-        let block_1 = blocks_and_receipts[1].clone();
-        let latest_block = blocks_and_receipts[2].clone();
-        let expected_canon_block_hash = block_1.get_block_hash().unwrap();
-        let canon_block_hash_before = canon_block.get_block_hash().unwrap();
-        let eth_db_utils = EthDbUtils::new(&db);
-        eth_db_utils.put_eth_canon_block_in_db(&canon_block).unwrap();
-        eth_db_utils.put_eth_submission_material_in_db(&block_1).unwrap();
-        put_eth_latest_block_in_db(&eth_db_utils, &latest_block).unwrap();
-        maybe_update_canon_block_hash(&eth_db_utils, 1).unwrap();
-        let canon_block_hash_after = get_eth_canon_block_hash_from_db(&eth_db_utils).unwrap();
-        assert!(canon_block_hash_before != canon_block_hash_after);
-        assert_eq!(canon_block_hash_after, expected_canon_block_hash);
+        let db_utils = AlgoDbUtils::new(&db);
+        let contiguous_blocks = get_sample_contiguous_blocks();
+        let num_blocks = contiguous_blocks.len();
+        let canon_to_tip_length = 5;
+        let current_canon_block = contiguous_blocks[num_blocks - canon_to_tip_length].clone();
+        let latest_block_hash = contiguous_blocks[num_blocks - 1].hash().unwrap();
+        let current_canon_block_hash = current_canon_block.hash().unwrap();
+        let expected_result = current_canon_block_hash.clone();
+        contiguous_blocks
+            .iter()
+            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
+        let latest_block_hash = contiguous_blocks[num_blocks - 1].hash().unwrap();
+        db_utils.put_canon_block_hash_in_db(&current_canon_block_hash).unwrap();
+        db_utils.put_latest_block_hash_in_db(&latest_block_hash).unwrap();
+        db_utils
+            .put_canon_to_tip_length_in_db(canon_to_tip_length as u64)
+            .unwrap();
+        assert_eq!(latest_block_hash, db_utils.get_latest_block_hash().unwrap());
+        assert_eq!(current_canon_block_hash, db_utils.get_canon_block_hash().unwrap());
+        assert_eq!(canon_to_tip_length as u64, db_utils.get_canon_to_tip_length().unwrap());
+        maybe_update_algo_canon_block_hash_and_return_state(AlgoState::init(&db)).unwrap();
+        let result = db_utils.get_canon_block_hash().unwrap();
+        assert_eq!(result, expected_result)
     }
 
     #[test]
-    fn should_not_maybe_update_canon_block_hash() {
+    fn should_move_canon_block_correctly() {
         let db = get_test_database();
-        let blocks_and_receipts = get_sequential_eth_blocks_and_receipts();
-        let canon_block = blocks_and_receipts[0].clone();
-        let latest_block = blocks_and_receipts[1].clone();
-        let canon_block_hash_before = canon_block.get_block_hash().unwrap();
-        let eth_db_utils = EthDbUtils::new(&db);
-        eth_db_utils.put_eth_canon_block_in_db(&canon_block).unwrap();
-        put_eth_latest_block_in_db(&eth_db_utils, &latest_block).unwrap();
-        maybe_update_canon_block_hash(&eth_db_utils, 1).unwrap();
-        let canon_block_hash_after = get_eth_canon_block_hash_from_db(&eth_db_utils).unwrap();
-        assert_eq!(canon_block_hash_before, canon_block_hash_after);
+        let db_utils = AlgoDbUtils::new(&db);
+        let contiguous_blocks = get_sample_contiguous_blocks();
+        let num_blocks = contiguous_blocks.len();
+        let canon_to_tip_length = 3;
+        let starting_canon_block_hash = contiguous_blocks[0].hash().unwrap();
+        db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length).unwrap();
+        db_utils.put_canon_block_hash_in_db(&starting_canon_block_hash).unwrap();
+        contiguous_blocks.iter().enumerate().for_each(|(i, block)| {
+            db_utils.put_block_in_db(&block).unwrap();
+            db_utils.put_latest_block_hash_in_db(&block.hash().unwrap()).unwrap();
+            maybe_update_algo_canon_block_hash_and_return_state(AlgoState::init(&db)).unwrap();
+            let result = db_utils.get_canon_block_hash().unwrap();
+            if i <= canon_to_tip_length as usize {
+                assert_eq!(result, starting_canon_block_hash);
+            } else {
+                assert_eq!(
+                    result,
+                    contiguous_blocks[i - canon_to_tip_length as usize].hash().unwrap()
+                );
+            }
+        })
     }
 }
-*/
