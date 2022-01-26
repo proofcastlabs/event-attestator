@@ -320,12 +320,6 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     pub fn get_redeem_address(&self) -> Result<AlgorandAddress> {
         self.get_algo_address(&self.algo_redeem_address_key)
     }
-
-    pub fn get_public_algo_address_from_db(&self) -> Result<AlgorandAddress> {
-        // TODO
-        unimplemented!()
-        //Ok(AlgorandAddress::default())
-    }
 }
 
 #[cfg(test)]
