@@ -2,6 +2,7 @@ pub(crate) mod add_latest_algo_block;
 pub(crate) mod algo_constants;
 pub(crate) mod algo_database_transactions;
 pub(crate) mod algo_database_utils;
+pub(crate) mod algo_enclave_state;
 pub(crate) mod algo_state;
 pub(crate) mod algo_submission_material;
 pub(crate) mod check_parent_exists;

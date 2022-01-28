@@ -1,7 +1,10 @@
 use crate::{
     chains::algo::{
         add_latest_algo_block::add_latest_algo_block_and_return_state,
-        algo_database_transactions::start_algo_db_transaction_and_return_state,
+        algo_database_transactions::{
+            end_algo_db_transaction_and_return_state,
+            start_algo_db_transaction_and_return_state,
+        },
         algo_state::AlgoState,
         algo_submission_material::parse_algo_submission_material_and_put_in_state,
         check_parent_exists::check_parent_of_algo_block_in_state_exists,
@@ -10,7 +13,10 @@ use crate::{
         update_algo_linker_hash::maybe_update_algo_linker_hash_and_return_state,
         update_algo_tail_block_hash::maybe_update_algo_tail_block_hash_and_return_state,
     },
-    int_on_algo::check_core_is_initialized::check_core_is_initialized_and_return_algo_state,
+    int_on_algo::{
+        algo::get_algo_output::get_algo_output,
+        check_core_is_initialized::check_core_is_initialized_and_return_algo_state,
+    },
     traits::DatabaseInterface,
     types::Result,
 };
@@ -44,9 +50,8 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: D, block_json_string:
         //.and_then(maybe_increment_evm_account_nonce_and_return_eth_state)
         .and_then(maybe_remove_old_algo_tail_block_and_return_state)
         //.and_then(maybe_remove_receipts_from_eth_canon_block_and_return_state)
-        //.and_then(end_eth_db_transaction_and_return_state)
-        //.and_then(get_int_output_json)
-        .map(|_| "done!".to_string())
+        .and_then(end_algo_db_transaction_and_return_state)
+        .and_then(get_algo_output)
 }
 
 #[cfg(test)]

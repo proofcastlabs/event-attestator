@@ -1,0 +1,154 @@
+use paste::paste;
+use rust_algorand::AlgorandAddress;
+use serde::{Deserialize, Serialize};
+
+use crate::{
+    chains::{
+        algo::{
+            algo_constants::{ALGO_PTOKEN_GENESIS_HASH, ALGO_SAFE_ADDRESS, ALGO_TAIL_LENGTH},
+            algo_database_utils::AlgoDbUtils,
+        },
+        eth::{eth_constants::ETH_TAIL_LENGTH, eth_database_utils::EthDbUtilsExt},
+    },
+    constants::{SAFE_ETH_ADDRESS, SAFE_EVM_ADDRESS},
+    traits::DatabaseInterface,
+    types::Result,
+};
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct AlgoEnclaveState {
+    algo_fee: u64,
+    algo_tail_length: u64,
+    algo_account_nonce: u64,
+    algo_linker_hash: String,
+    algo_safe_address: String,
+    algo_genesis_hash: String,
+    algo_tail_block_number: u64,
+    algo_redeem_address: String,
+    algo_tail_block_hash: String,
+    algo_canon_block_number: u64,
+    algo_anchor_block_number: u64,
+    algo_latest_block_number: u64,
+    algo_canon_to_tip_length: u64,
+    algo_canon_block_hash: String,
+    algo_anchor_block_hash: String,
+    algo_latest_block_hash: String,
+}
+
+impl AlgoEnclaveState {
+    pub fn new<D: DatabaseInterface>(db_utils: &AlgoDbUtils<D>) -> Result<Self> {
+        let tail_block = db_utils.get_tail_block()?;
+        let tail_block_number = tail_block.round();
+        let tail_block_hash = tail_block.hash()?.to_string();
+        let canon_block = db_utils.get_canon_block()?;
+        let canon_block_number = canon_block.round();
+        let canon_block_hash = canon_block.hash()?.to_string();
+        let latest_block = db_utils.get_latest_block()?;
+        let latest_block_number = latest_block.round();
+        let latest_block_hash = latest_block.hash()?.to_string();
+        let anchor_block = db_utils.get_anchor_block()?;
+        let anchor_block_number = anchor_block.round();
+        let anchor_block_hash = anchor_block.hash()?.to_string();
+        Ok(Self {
+            algo_fee: db_utils.get_algo_fee()?,
+            algo_tail_length: ALGO_TAIL_LENGTH,
+            algo_tail_block_hash: tail_block_hash,
+            algo_canon_block_hash: canon_block_hash,
+            algo_anchor_block_hash: anchor_block_hash,
+            algo_tail_block_number: tail_block_number,
+            algo_latest_block_hash: latest_block_hash,
+            algo_canon_block_number: canon_block_number,
+            algo_anchor_block_number: anchor_block_number,
+            algo_latest_block_number: latest_block_number,
+            algo_safe_address: ALGO_SAFE_ADDRESS.to_string(),
+            algo_account_nonce: db_utils.get_algo_account_nonce()?,
+            algo_genesis_hash: db_utils.get_genesis_hash()?.to_string(),
+            algo_canon_to_tip_length: db_utils.get_canon_to_tip_length()?,
+            algo_redeem_address: db_utils.get_redeem_address()?.to_string(),
+            algo_linker_hash: db_utils.get_linker_hash_or_else_genesis_hash()?.to_string(),
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use rust_algorand::AlgorandHash;
+
+    use super::*;
+    use crate::{
+        chains::algo::{
+            algo_state::AlgoState,
+            core_initialization::initialize_algo_core::initialize_algo_core,
+            test_utils::get_sample_block_n,
+        },
+        test_utils::get_test_database,
+    };
+
+    #[test]
+    fn should_get_enclave_state_after_core_is_initialized() {
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let fee = 1337;
+        let canon_to_tip_length = 3;
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        let state = AlgoState::init(&db);
+        let block = get_sample_block_n(0);
+        let block_num = block.round();
+        let hash = block.hash().unwrap();
+        let genesis_id = "mainnet-v1.0";
+        let block_json_string = block.to_string();
+        initialize_algo_core(state, &block_json_string, fee, canon_to_tip_length, genesis_id).unwrap();
+        let result = AlgoEnclaveState::new(&db_utils).unwrap();
+        let expected_result = AlgoEnclaveState {
+            algo_fee: fee,
+            algo_account_nonce: 0,
+            algo_tail_block_number: block_num,
+            algo_tail_length: ALGO_TAIL_LENGTH,
+            algo_canon_block_number: block_num,
+            algo_anchor_block_number: block_num,
+            algo_latest_block_number: block_num,
+            algo_tail_block_hash: hash.to_string(),
+            algo_canon_block_hash: hash.to_string(),
+            algo_anchor_block_hash: hash.to_string(),
+            algo_latest_block_hash: hash.to_string(),
+            algo_canon_to_tip_length: canon_to_tip_length,
+            algo_safe_address: ALGO_SAFE_ADDRESS.to_string(),
+            algo_linker_hash: AlgorandHash::default().to_string(),
+            algo_genesis_hash: AlgorandHash::from_genesis_id(&genesis_id).unwrap().to_string(),
+            // NOTE/FIXME: The redeem address is generated randomly on initialization!
+            algo_redeem_address: db_utils
+                .get_algo_private_key()
+                .unwrap()
+                .to_address()
+                .unwrap()
+                .to_string(),
+        };
+        assert_eq!(result.algo_fee, expected_result.algo_fee);
+        assert_eq!(result.algo_tail_length, expected_result.algo_tail_length);
+        assert_eq!(result.algo_linker_hash, expected_result.algo_linker_hash);
+        assert_eq!(result.algo_genesis_hash, expected_result.algo_genesis_hash);
+        assert_eq!(result.algo_safe_address, expected_result.algo_safe_address);
+        assert_eq!(result.algo_account_nonce, expected_result.algo_account_nonce);
+        assert_eq!(result.algo_redeem_address, expected_result.algo_redeem_address);
+        assert_eq!(result.algo_tail_block_hash, expected_result.algo_tail_block_hash);
+        assert_eq!(result.algo_canon_block_hash, expected_result.algo_canon_block_hash);
+        assert_eq!(result.algo_anchor_block_hash, expected_result.algo_anchor_block_hash);
+        assert_eq!(result.algo_latest_block_hash, expected_result.algo_latest_block_hash);
+        assert_eq!(result.algo_tail_block_number, expected_result.algo_tail_block_number);
+        assert_eq!(result.algo_canon_block_number, expected_result.algo_canon_block_number);
+        assert_eq!(
+            result.algo_anchor_block_number,
+            expected_result.algo_anchor_block_number
+        );
+        assert_eq!(
+            result.algo_latest_block_number,
+            expected_result.algo_latest_block_number
+        );
+        assert_eq!(
+            result.algo_canon_to_tip_length,
+            expected_result.algo_canon_to_tip_length
+        );
+        assert_eq!(result, expected_result);
+    }
+}

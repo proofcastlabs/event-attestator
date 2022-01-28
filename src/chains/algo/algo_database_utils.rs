@@ -148,12 +148,14 @@ create_special_hash_setters_and_getters!("tail", "canon", "anchor", "latest", "g
 
 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     pub fn get_genesis_hash(&self) -> Result<AlgorandHash> {
+        info!("✔ Getting genesis hash from db...");
         self.get_db()
             .get(self.algo_genesis_block_hash_key.clone(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| Ok(AlgorandHash::from_bytes(&bytes)?))
     }
 
     pub fn put_genesis_hash_in_db(&self, genesis_hash: &AlgorandHash) -> Result<()> {
+        info!("✔ Putting genesis hash in db...");
         self.get_db().put(
             self.algo_genesis_block_hash_key.clone(),
             genesis_hash.to_bytes(),
@@ -162,12 +164,13 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     }
 
     pub fn get_linker_hash_or_else_genesis_hash(&self) -> Result<AlgorandHash> {
+        info!("✔ Getting linker hash or else genesis hash from db...");
         self.get_linker_block_hash()
             .or_else(|_| Ok(ALGO_PTOKEN_GENESIS_HASH.clone()))
     }
 
     pub fn delete_block_by_block_hash(&self, hash: &AlgorandHash) -> Result<()> {
-        debug!("Deleting block by blockhash: {}", hash);
+        info!("Deleting block by blockhash: {}", hash);
         self.get_db().delete(hash.to_bytes())
     }
 
@@ -180,7 +183,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     }
 
     fn maybe_get_nth_ancestor_block(&self, hash: &AlgorandHash, n: u64) -> Result<Option<AlgorandBlock>> {
-        info!("✔ Getting ancestor #{} ALGO block from db...", n);
+        debug!("✔ Getting ancestor #{} ALGO block from db...", n);
         match self.maybe_get_block(hash) {
             None => Ok(None),
             Some(block) => match n {
@@ -195,10 +198,12 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     }
 
     pub fn maybe_get_new_canon_block_candidate(&self) -> Result<Option<AlgorandBlock>> {
+        info!("✔ Maybe getting candidate canon block from db...");
         self.maybe_get_candidate_block(self.get_canon_to_tip_length()?)
     }
 
     pub fn maybe_get_new_tail_block_candidate(&self) -> Result<Option<AlgorandBlock>> {
+        info!("✔ Maybe getting candidate tail block from db...");
         self.maybe_get_candidate_block(self.get_canon_to_tip_length()? + ALGO_TAIL_LENGTH)
     }
 
@@ -223,11 +228,13 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     }
 
     pub fn put_block_in_db(&self, block: &AlgorandBlock) -> Result<()> {
+        info!("✔ Putting ALGO block in db...");
         self.get_db()
             .put(block.hash()?.to_bytes(), block.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
     }
 
     fn get_block_from_db(&self, hash: &AlgorandHash) -> Result<AlgorandBlock> {
+        debug!("✔ Getting ALGO block from db under hash {hash}");
         self.get_db()
             .get(hash.to_bytes(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| Ok(AlgorandBlock::from_bytes(&bytes)?))
@@ -253,6 +260,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     }
 
     pub fn get_algo_private_key(&self) -> Result<AlgorandKeys> {
+        info!("✔ Getting ALGO private key from db...");
         self.get_db()
             .get(self.algo_private_key_key.clone(), MAX_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| Ok(AlgorandKeys::from_bytes(&bytes)?))
@@ -262,6 +270,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         if self.get_algo_private_key().is_ok() {
             Err(Self::get_no_overwrite_error("private key").into())
         } else {
+            info!("✔ Putting ALGO private key in db...");
             self.get_db().put(
                 self.algo_private_key_key.clone(),
                 key.to_bytes(),
@@ -313,11 +322,13 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         if self.get_redeem_address().is_ok() {
             Err(Self::get_no_overwrite_error("redeem address").into())
         } else {
+            info!("✔ Putting ALGO redeem address in db...");
             self.put_algo_address_in_db(&self.algo_redeem_address_key, address)
         }
     }
 
     pub fn get_redeem_address(&self) -> Result<AlgorandAddress> {
+        info!("✔ Getting ALGO redeem address from db...");
         self.get_algo_address(&self.algo_redeem_address_key)
     }
 }

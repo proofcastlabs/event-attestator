@@ -19,6 +19,7 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
     canon_to_tip_length: u64,
     genesis_id: &str,
 ) -> Result<AlgoState<'a, D>> {
+    info!("✔ Initializing ALGO core...");
     let block = AlgorandBlock::from_str(block_json_str)?;
     let hash = block.hash()?;
     state
@@ -26,7 +27,6 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
         .and_then(remove_irrelevant_txs_from_block_in_state)
         .and_then(add_latest_algo_block_and_return_state)
         .and_then(|state| {
-            // TODO Add the genesis ID hash thingy?
             let keys = AlgorandKeys::create_random();
             let address = keys.to_address()?;
             state.algo_db_utils.put_algo_fee_in_db(fee)?;
