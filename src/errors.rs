@@ -5,7 +5,7 @@ quick_error! {
         Custom(err: String) {
             from()
             from(err: &str) -> (err.into())
-            display("✘ Program error: {}", err)
+            display("✘ {}", err)
         }
         IoError(err: std::io::Error) {
             from()
