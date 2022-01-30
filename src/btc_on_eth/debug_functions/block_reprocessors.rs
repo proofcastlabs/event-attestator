@@ -129,20 +129,24 @@ fn reprocess_btc_block<D: DatabaseInterface>(
             }
         })
         .and_then(|state| {
-            let signatures = serde_json::to_string(&match &state.eth_signed_txs.len() {
-                0 => Ok(vec![]),
-                _ => get_eth_signed_tx_info_from_eth_txs(
-                    &state.eth_signed_txs,
-                    &state.btc_on_eth_eth_tx_infos,
+            let txs = state.eth_signed_txs.clone();
+            let num_txs = txs.len();
+            let signatures = serde_json::to_string(&if num_txs == 0 {
+                Ok(vec![])
+            } else {
+                get_eth_signed_tx_info_from_eth_txs(
+                    &txs,
+                    &state.btc_on_eth_minting_params,
                     match maybe_nonce {
-                        Some(nonce) => nonce,
+                        // NOTE: We increment the passed in nonce ∵ of the way the report nonce is calculated.
+                        Some(nonce) => nonce + num_txs as u64,
                         None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                     },
                     state.use_any_sender_tx_type(),
                     state.eth_db_utils.get_any_sender_nonce_from_db()?,
-                ),
+                )
             }?)?;
-            info!("✔ BTC signatures: {}", signatures);
+            info!("✔ ETH Signatures: {}", signatures);
             state.add_output_json_string(signatures)
         })
         .and_then(end_btc_db_transaction)
