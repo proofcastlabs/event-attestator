@@ -89,6 +89,7 @@ mod tests {
             eth_crypto::eth_private_key::EthPrivateKey,
             eth_database_utils::{EthDbUtilsExt, EvmDbUtils},
             eth_utils::convert_hex_to_eth_address,
+            vault_using_cores::VaultUsingCores,
         },
         dictionaries::eth_evm::EthEvmTokenDictionary,
         erc20_on_int::{
@@ -121,6 +122,7 @@ mod tests {
             EthState::init(&db),
             &vault_address,
             &router_address,
+            &VaultUsingCores::Erc20OnInt,
         )
         .unwrap();
         // NOTE: Initialize the INT side of the core...

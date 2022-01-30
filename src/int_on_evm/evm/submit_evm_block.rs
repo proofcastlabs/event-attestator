@@ -93,6 +93,7 @@ mod tests {
             eth_crypto::eth_private_key::EthPrivateKey,
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_utils::convert_hex_to_eth_address,
+            vault_using_cores::VaultUsingCores,
         },
         dictionaries::eth_evm::EthEvmTokenDictionary,
         int_on_evm::{
@@ -123,6 +124,7 @@ mod tests {
             EthState::init(&db),
             &vault_address,
             &router_address,
+            &VaultUsingCores::IntOnEvm,
         )
         .unwrap();
         // NOTE: Initialize the EVM side of the core...
