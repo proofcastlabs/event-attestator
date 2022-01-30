@@ -6,6 +6,7 @@ use crate::{chains::eth::eth_database_utils::EthDbUtilsExt, traits::DatabaseInte
 #[derive(Clone, Debug, Eq, PartialEq, EnumIter)]
 pub enum VaultUsingCores {
     IntOnEvm,
+    IntOnAlgo,
     Erc20OnEos,
     Erc20OnEvm,
     Erc20OnInt,
@@ -13,9 +14,9 @@ pub enum VaultUsingCores {
 }
 
 impl VaultUsingCores {
-    #[allow(dead_code)] // NOTE: To be removed in up & coming Algo core!
     pub fn get_vault_contract<D: DatabaseInterface, E: EthDbUtilsExt<D>>(&self, db_utils: &E) -> Result<EthAddress> {
         match self {
+            Self::IntOnAlgo => db_utils.get_int_on_algo_smart_contract_address(),
             Self::IntOnEvm => db_utils.get_int_on_evm_smart_contract_address_from_db(),
             Self::IntOnEos => db_utils.get_int_on_eos_smart_contract_address_from_db(),
             Self::Erc20OnEos => db_utils.get_erc20_on_eos_smart_contract_address_from_db(),
@@ -32,6 +33,7 @@ impl VaultUsingCores {
         match self {
             Self::IntOnEos => db_utils.put_int_on_eos_smart_contract_address_in_db(address),
             Self::IntOnEvm => db_utils.put_int_on_evm_smart_contract_address_in_db(address),
+            Self::IntOnAlgo => db_utils.put_int_on_algo_smart_contract_address_in_db(address),
             Self::Erc20OnEos => db_utils.put_erc20_on_eos_smart_contract_address_in_db(address),
             Self::Erc20OnEvm => db_utils.put_erc20_on_evm_smart_contract_address_in_db(address),
             Self::Erc20OnInt => db_utils.put_erc20_on_int_smart_contract_address_in_db(address),
