@@ -136,7 +136,7 @@ fn reprocess_btc_block<D: DatabaseInterface>(
             } else {
                 get_eth_signed_tx_info_from_eth_txs(
                     &txs,
-                    &state.btc_on_eth_minting_params,
+                    &state.btc_on_eth_eth_tx_infos,
                     match maybe_nonce {
                         // NOTE: We increment the passed in nonce ∵ of the way the report nonce is calculated.
                         Some(nonce) => nonce + num_txs as u64,
