@@ -20,6 +20,24 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
+// So the setup will be thus:
+// Anyone can create an asset, with this enclave address as the:
+// Manager account - the only account how can change/reconfigure the asset
+// Reserve address - where the created tokens go to (instead of the creator account). Transfers out of here are "mints", and transfers back to here are redeems.
+// Freeze address - either this enclave or empty string. This account can then freeze people.
+// Clawback address - either this enclave or empty string.
+//
+// Setting the reserve address to this enclave can ONLY be done if this enclave has signed a tx
+// saying it's happy to accept the asset. Nice.
+//
+// So then the dictionary will be a list of INT vault tokens mapped to asset IDs. Now the enclave
+// can search for transactions where it is the recipient of some asset, which will count as a
+// redeem and proceed from there.
+//
+// The other side of the enclave can then use this address to sign txs to send the asset from this
+// reserver account, which counts as a mint.
+//
+// Nice!
 
 /// Submit Algo Block To Core
 ///
@@ -33,7 +51,7 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: D, block_json_string:
     parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(&db))
         .and_then(check_core_is_initialized_and_return_algo_state)
         .and_then(start_algo_db_transaction_and_return_state)
-        //.and_then(validate_block_in_state)
+        //.and_then(validate_block_in_state) // FIXME Maybe validate receipts
         //.and_then(get_eth_evm_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(check_parent_of_algo_block_in_state_exists)
         //.and_then(validate_receipts_in_state)

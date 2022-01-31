@@ -1069,6 +1069,7 @@ dependencies = [
  "ed25519-dalek",
  "hex",
  "lazy_static",
+ "paste",
  "quick-error",
  "rand 0.7.3",
  "rmp-serde",

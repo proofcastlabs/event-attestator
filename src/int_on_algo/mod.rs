@@ -22,7 +22,7 @@ pub use crate::int_on_algo::{
     algo::{initialize_algo_core::maybe_initialize_algo_core, submit_algo_block::submit_algo_block_to_core},
     get_enclave_state::get_enclave_state,
     get_latest_block_numbers::get_latest_block_numbers,
-    int::initialize_int_core::maybe_initialize_int_core,
+    int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},
 };
 /*
 pub(crate) mod debug_functions;
