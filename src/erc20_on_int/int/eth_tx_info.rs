@@ -3,7 +3,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{chains::eth::eth_chain_id::EthChainId, types::Bytes};
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Constructor)]
 pub struct EthOnIntEthTxInfo {
     pub native_token_amount: U256,
     pub token_sender: EthAddress,
