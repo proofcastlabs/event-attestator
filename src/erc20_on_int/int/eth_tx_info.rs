@@ -13,6 +13,7 @@ pub struct EthOnIntEthTxInfo {
     pub destination_address: EthAddress,
     pub user_data: Bytes,
     pub origin_chain_id: EthChainId,
+    pub eth_vault_address: EthAddress,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]

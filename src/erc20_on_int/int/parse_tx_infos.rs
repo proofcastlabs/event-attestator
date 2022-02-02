@@ -1,3 +1,5 @@
+use ethereum_types::Address as EthAddress;
+
 use crate::{
     chains::eth::{
         eth_chain_id::EthChainId,
@@ -53,6 +55,7 @@ impl EthOnIntEthTxInfos {
         receipt: &EthReceipt,
         dictionary: &EthEvmTokenDictionary,
         origin_chain_id: &EthChainId,
+        vault_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `EthOnIntEthTxInfos` from receipt...");
         Ok(Self::new(
@@ -62,6 +65,7 @@ impl EthOnIntEthTxInfos {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
                     let tx_info = EthOnIntEthTxInfo {
                         evm_token_address: log.address,
+                        eth_vault_address: *vault_address,
                         token_sender: event_params.redeemer,
                         origin_chain_id: origin_chain_id.clone(),
                         user_data: event_params.user_data.clone(),
@@ -84,13 +88,14 @@ impl EthOnIntEthTxInfos {
         submission_material: &EthSubmissionMaterial,
         dictionary: &EthEvmTokenDictionary,
         origin_chain_id: &EthChainId,
+        vault_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `EthOnIntEthTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, origin_chain_id))
+                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, origin_chain_id, vault_address))
                 .collect::<Result<Vec<EthOnIntEthTxInfos>>>()?
                 .into_iter()
                 .flatten()
@@ -122,6 +127,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                             &submission_material,
                             &account_names,
                             &state.evm_db_utils.get_eth_chain_id_from_db()?,
+                            &state.evm_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
                         )
                     })
                     .and_then(|tx_infos| state.add_erc20_on_int_eth_tx_infos(tx_infos))
@@ -148,7 +154,10 @@ mod tests {
         let dictionary = get_sample_token_dictionary();
         let origin_chain_id = EthChainId::Ropsten;
         let material = get_sample_peg_out_submission_material();
-        let results = EthOnIntEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap();
+        let vault_address = EthAddress::default();
+        let results =
+            EthOnIntEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &vault_address)
+                .unwrap();
         let expected_num_results = 1;
         assert_eq!(results.len(), expected_num_results);
         let result = results[0].clone();

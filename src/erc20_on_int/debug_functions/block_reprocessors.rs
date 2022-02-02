@@ -33,7 +33,7 @@ use crate::{
                 account_for_fees_in_eth_tx_infos_in_state,
                 update_accrued_fees_in_dictionary_and_return_state as update_accrued_fees_in_dictionary_and_return_evm_state,
             },
-            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address,
+            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
             eth_tx_info::EthOnIntEthTxInfos,
             filter_submission_material::filter_submission_material_for_redeem_events_in_state,
             filter_zero_value_tx_infos::filter_out_zero_value_eth_tx_infos_from_state,
@@ -68,6 +68,7 @@ fn reprocess_int_block<D: DatabaseInterface>(
                         material,
                         &EthEvmTokenDictionary::get_from_db(state.db)?,
                         &state.evm_db_utils.get_eth_chain_id_from_db()?,
+                        &state.evm_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
                     )
                 })
                 .and_then(|params| state.add_erc20_on_int_eth_tx_infos(params))
@@ -82,7 +83,7 @@ fn reprocess_int_block<D: DatabaseInterface>(
                 Ok(state)
             }
         })
-        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address)
+        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
         .and_then(|state| {
             if state.erc20_on_int_eth_tx_infos.is_empty() {
                 info!("✔ No tx infos in state ∴ no ETH transactions to sign!");
