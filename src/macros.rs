@@ -74,6 +74,8 @@ macro_rules! create_db_utils_with_getters {
 macro_rules! create_diversion_fxns {
     ($struct_name:expr => $state_name:expr => $tx_infos_name:expr => $($contract_name:expr),*) => {
         paste! {
+            use crate::constants::SAFE_ETH_ADDRESS;
+
             impl [< $struct_name s>] {
                 $(
                     pub fn [<divert_to_safe_address_if_destination_is_ $contract_name _contract_address>](&self) -> Self {
@@ -82,7 +84,7 @@ macro_rules! create_diversion_fxns {
                                 .map(|info| {
                                     info.[<divert_to_safe_address_if_destination_is_ $contract_name _contract_address>]()
                                 })
-                                .collect::<Vec<[<$struct_name>]>>(),
+                                .collect::<Vec<[< $struct_name >]>>(),
                         )
                     }
                 )*
@@ -122,10 +124,31 @@ macro_rules! create_diversion_fxns {
                         let new_infos = state
                             .[< $tx_infos_name >]
                             .[<divert_to_safe_address_if_destination_is_ $contract_name _contract_address>]();
-                        state.[<replace_ $tx_infos_name>](new_infos)
+                        state.[<replace_ $tx_infos_name >](new_infos)
                     }
                 }
             )*
+
+            #[cfg(test)]
+            mod tests {
+                use super::*;
+                use crate::chains::eth::eth_utils::convert_hex_to_eth_address;
+
+                $(
+                    #[test]
+                    fn [<should_divert_to_safe_address_if_destination_is_ $contract_name _address_for $struct_name:snake >]() {
+                        let mut info = [< $struct_name >]::default();
+                        let eth_address = "0x89ab32156e46f46d02ade3fecbe5fc4243b9aaed";
+                        let destination_address = convert_hex_to_eth_address(eth_address).unwrap();
+                        info.destination_address = destination_address.clone();
+                        info.[< eth_ $contract_name _address >] = destination_address.clone();
+                        assert_eq!(info.destination_address, destination_address);
+                        let result = info
+                            .[<divert_to_safe_address_if_destination_is_ $contract_name _contract_address>]();
+                        assert_eq!(result.destination_address, *SAFE_ETH_ADDRESS);
+                    }
+                )*
+            }
         }
     }
 }
