@@ -7,4 +7,6 @@ use crate::{
     types::Result,
 };
 
-create_diversion_fxns!("EthOnIntEthTxInfo" => "Eth" => "erc20_on_int_eth_tx_infos" => "vault", "token");
+create_eth_safe_address_diversion_fxns!(
+    "EthOnIntEthTxInfo" => "Eth" => "erc20_on_int_eth_tx_infos" => "vault", "token"
+);

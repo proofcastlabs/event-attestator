@@ -71,7 +71,7 @@ macro_rules! create_db_utils_with_getters {
     }
 }
 
-macro_rules! create_diversion_fxns {
+macro_rules! create_eth_safe_address_diversion_fxns {
     ($struct_name:expr => $state_name:expr => $tx_infos_name:expr => $($contract_name:expr),*) => {
         paste! {
             use crate::constants::SAFE_ETH_ADDRESS;
