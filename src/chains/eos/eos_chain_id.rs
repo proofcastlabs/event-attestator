@@ -26,6 +26,12 @@ pub enum EosChainId {
     Unknown(Bytes),
 }
 
+impl Default for EosChainId {
+    fn default() -> Self {
+        Self::EosMainnet
+    }
+}
+
 impl ChainId for EosChainId {
     fn keccak_hash(&self) -> Result<KeccakHash> {
         Ok(keccak_hash_bytes(&self.to_bytes()))

@@ -31,6 +31,20 @@ use crate::{
 #[derive(Clone, Debug, PartialEq, Eq, Deref, Constructor)]
 pub struct Erc20OnEosRedeemInfos(pub Vec<Erc20OnEosRedeemInfo>);
 
+#[derive(Clone, Debug, Default, PartialEq, Eq, Constructor)]
+pub struct Erc20OnEosRedeemInfo {
+    pub amount: U256,
+    pub from: EosAccountName,
+    pub destination_address: EthAddress,
+    pub eth_token_address: EthAddress,
+    pub originating_tx_id: Checksum256,
+    pub global_sequence: GlobalSequence,
+    pub eos_token_address: String,
+    pub eos_tx_amount: String,
+    pub user_data: Bytes,
+    pub origin_chain_id: EosChainId,
+}
+
 impl FeesCalculator for Erc20OnEosRedeemInfos {
     fn get_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
         debug!("Calculating fees in `Erc20OnEosRedeemInfos`...");
@@ -88,20 +102,6 @@ impl Erc20OnEosRedeemInfos {
                 .collect::<Vec<Erc20OnEosRedeemInfo>>(),
         ))
     }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Constructor)]
-pub struct Erc20OnEosRedeemInfo {
-    pub amount: U256,
-    pub from: EosAccountName,
-    pub recipient: EthAddress,
-    pub eth_token_address: EthAddress,
-    pub originating_tx_id: Checksum256,
-    pub global_sequence: GlobalSequence,
-    pub eos_token_address: String,
-    pub eos_tx_amount: String,
-    pub user_data: Bytes,
-    pub origin_chain_id: EosChainId,
 }
 
 impl FeeCalculator for Erc20OnEosRedeemInfo {
@@ -223,7 +223,7 @@ impl Erc20OnEosRedeemInfo {
                     from: proof.get_action_sender()?,
                     eos_token_address: entry.eos_address,
                     global_sequence: proof.action_receipt.global_sequence,
-                    recipient: Self::get_redeem_address_from_proof_or_default_to_safe_address(proof)?,
+                    destination_address: Self::get_redeem_address_from_proof_or_default_to_safe_address(proof)?,
                     user_data: vec![], // NOTE: proof.get_user_data() currently unimplemented!,
                     origin_chain_id: origin_chain_id.clone(),
                 })

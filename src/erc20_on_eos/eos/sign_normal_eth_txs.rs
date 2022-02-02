@@ -35,11 +35,11 @@ pub fn get_eth_signed_txs(
             .map(|(i, redeem_info)| {
                 info!(
                     "✔ Signing ETH tx for amount: {}, to address: {}",
-                    redeem_info.amount, redeem_info.recipient
+                    redeem_info.amount, redeem_info.destination_address
                 );
                 EthTransaction::new_unsigned(
                     encode_erc20_vault_peg_out_fxn_data_without_user_data(
-                        redeem_info.recipient,
+                        redeem_info.destination_address,
                         redeem_info.eth_token_address,
                         redeem_info.amount,
                     )?,
