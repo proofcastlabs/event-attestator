@@ -136,7 +136,8 @@ mod tests {
         let dictionary = get_sample_token_dictionary();
         let material = get_sample_peg_out_submission_material();
         let router_address = get_sample_router_address();
-        IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &router_address).unwrap()
+        let vault_address = EthAddress::default();
+        IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &router_address, &vault_address).unwrap()
     }
 
     fn get_sample_tx_info() -> IntOnEvmIntTxInfo {

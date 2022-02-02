@@ -20,6 +20,7 @@ impl IntOnEvmIntTxInfos {
         receipt: &EthReceipt,
         dictionary: &EthEvmTokenDictionary,
         router_address: &EthAddress,
+        eth_vault_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `IntOnEvmIntTxInfos` from receipt...");
         Ok(Self::new(
@@ -31,6 +32,7 @@ impl IntOnEvmIntTxInfos {
                         evm_token_address: log.address,
                         router_address: *router_address,
                         token_sender: event_params.redeemer,
+                        eth_vault_address: *eth_vault_address,
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
                         origin_chain_id: event_params.get_origin_chain_id()?,
@@ -53,13 +55,14 @@ impl IntOnEvmIntTxInfos {
         submission_material: &EthSubmissionMaterial,
         dictionary: &EthEvmTokenDictionary,
         router_address: &EthAddress,
+        eth_vault_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `IntOnEvmIntTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, router_address))
+                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, router_address, eth_vault_address))
                 .collect::<Result<Vec<IntOnEvmIntTxInfos>>>()?
                 .into_iter()
                 .flatten()
@@ -91,6 +94,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                             &submission_material,
                             &account_names,
                             &state.evm_db_utils.get_eth_router_smart_contract_address_from_db()?,
+                            &state.evm_db_utils.get_int_on_evm_smart_contract_address_from_db()?,
                         )
                     })
                     .and_then(|tx_infos| state.add_int_on_evm_int_tx_infos(tx_infos))
@@ -118,7 +122,10 @@ mod tests {
         let dictionary = get_sample_token_dictionary();
         let material = get_sample_peg_out_submission_material();
         let router_address = get_sample_router_address();
-        let results = IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &router_address).unwrap();
+        let vault_address = EthAddress::default();
+        let results =
+            IntOnEvmIntTxInfos::from_submission_material(&material, &dictionary, &router_address, &vault_address)
+                .unwrap();
         let expected_num_results = 1;
         assert_eq!(results.len(), expected_num_results);
         let result = results[0].clone();

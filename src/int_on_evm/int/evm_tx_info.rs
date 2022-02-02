@@ -3,7 +3,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{metadata::metadata_chain_id::MetadataChainId, types::Bytes};
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Constructor)]
 pub struct IntOnEvmEvmTxInfo {
     pub user_data: Bytes,
     pub token_sender: EthAddress,
