@@ -12,10 +12,7 @@ use crate::{
             eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
             eos_state::EosState,
         },
-        eth::{
-            eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
-            eth_database_utils::EthDbUtilsExt,
-        },
+        eth::{eth_constants::MAX_BYTES_FOR_ETH_USER_DATA, eth_database_utils::EthDbUtilsExt},
     },
     constants::SAFE_ETH_ADDRESS,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
@@ -94,7 +91,14 @@ impl Erc20OnEosRedeemInfos {
         Ok(Erc20OnEosRedeemInfos::new(
             action_proofs
                 .iter()
-                .map(|action_proof| Erc20OnEosRedeemInfo::from_action_proof(action_proof, dictionary, origin_chain_id, eth_vault_address))
+                .map(|action_proof| {
+                    Erc20OnEosRedeemInfo::from_action_proof(
+                        action_proof,
+                        dictionary,
+                        origin_chain_id,
+                        eth_vault_address,
+                    )
+                })
                 .collect::<Result<Vec<Erc20OnEosRedeemInfo>>>()?,
         ))
     }
@@ -358,7 +362,8 @@ mod tests {
         )]);
         let proof = get_sample_action_proof_for_erc20_redeem();
         let vault_address = EthAddress::default();
-        let result = Erc20OnEosRedeemInfo::from_action_proof(&proof, &dictionary, &origin_chain_id, &vault_address).unwrap();
+        let result =
+            Erc20OnEosRedeemInfo::from_action_proof(&proof, &dictionary, &origin_chain_id, &vault_address).unwrap();
         assert_eq!(result, expected_result);
     }
 

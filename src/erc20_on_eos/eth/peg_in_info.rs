@@ -44,12 +44,12 @@ use crate::{
     types::{Bytes, Result},
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Constructor)]
 pub struct Erc20OnEosPegInInfo {
     pub token_amount: U256,
     pub token_sender: EthAddress,
     pub eth_token_address: EthAddress,
-    pub eos_address: String,
+    pub destination_address: String,
     pub originating_tx_hash: EthHash,
     pub eos_token_address: String,
     pub eos_asset_amount: String,
@@ -151,7 +151,7 @@ impl Erc20OnEosPegInInfo {
         get_signed_eos_ptoken_issue_tx(
             ref_block_num,
             ref_block_prefix,
-            &self.eos_address,
+            &self.destination_address,
             &self.eos_asset_amount,
             chain_id,
             private_key,
@@ -263,8 +263,10 @@ impl Erc20OnEosPegInInfos {
                     let peg_in_info = Erc20OnEosPegInInfo {
                         token_sender: params.token_sender,
                         originating_tx_hash: receipt.transaction_hash,
-                        eos_address: parse_eos_account_name_or_default_to_safe_address(&params.destination_address)?
-                            .to_string(),
+                        destination_address: parse_eos_account_name_or_default_to_safe_address(
+                            &params.destination_address,
+                        )?
+                        .to_string(),
                         eos_token_address: token_dictionary
                             .get_eos_account_name_from_eth_token_address(&params.token_address)?,
                         eos_asset_amount: token_dictionary
