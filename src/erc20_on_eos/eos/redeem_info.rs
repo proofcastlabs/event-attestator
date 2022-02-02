@@ -12,7 +12,10 @@ use crate::{
             eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
             eos_state::EosState,
         },
-        eth::eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
+        eth::{
+            eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
+            eth_database_utils::EthDbUtilsExt,
+        },
     },
     constants::SAFE_ETH_ADDRESS,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
@@ -43,6 +46,7 @@ pub struct Erc20OnEosRedeemInfo {
     pub eos_tx_amount: String,
     pub user_data: Bytes,
     pub origin_chain_id: EosChainId,
+    pub eth_vault_address: EthAddress,
 }
 
 impl FeesCalculator for Erc20OnEosRedeemInfos {
@@ -85,11 +89,12 @@ impl Erc20OnEosRedeemInfos {
         action_proofs: &[EosActionProof],
         dictionary: &EosEthTokenDictionary,
         origin_chain_id: &EosChainId,
+        eth_vault_address: &EthAddress,
     ) -> Result<Erc20OnEosRedeemInfos> {
         Ok(Erc20OnEosRedeemInfos::new(
             action_proofs
                 .iter()
-                .map(|action_proof| Erc20OnEosRedeemInfo::from_action_proof(action_proof, dictionary, origin_chain_id))
+                .map(|action_proof| Erc20OnEosRedeemInfo::from_action_proof(action_proof, dictionary, origin_chain_id, eth_vault_address))
                 .collect::<Result<Vec<Erc20OnEosRedeemInfo>>>()?,
         ))
     }
@@ -208,6 +213,7 @@ impl Erc20OnEosRedeemInfo {
         proof: &EosActionProof,
         dictionary: &EosEthTokenDictionary,
         origin_chain_id: &EosChainId,
+        eth_vault_address: &EthAddress,
     ) -> Result<Self> {
         dictionary
             .get_entry_via_eos_address(&proof.get_action_eos_account())
@@ -226,6 +232,7 @@ impl Erc20OnEosRedeemInfo {
                     destination_address: Self::get_redeem_address_from_proof_or_default_to_safe_address(proof)?,
                     user_data: vec![], // NOTE: proof.get_user_data() currently unimplemented!,
                     origin_chain_id: origin_chain_id.clone(),
+                    eth_vault_address: *eth_vault_address,
                 })
             })
     }
@@ -237,6 +244,7 @@ pub fn maybe_parse_redeem_infos_and_put_in_state<D: DatabaseInterface>(state: Eo
         &state.action_proofs,
         state.get_eos_eth_token_dictionary()?,
         &state.eos_db_utils.get_eos_chain_id_from_db()?,
+        &state.eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
     )
     .and_then(|redeem_infos| {
         info!("✔ Parsed {} redeem infos!", redeem_infos.len());
@@ -284,6 +292,7 @@ mod tests {
             "0.000001337 PETH".to_string(),
             user_data,
             origin_chain_id.clone(),
+            EthAddress::default(),
         )
     }
 
@@ -348,7 +357,8 @@ mod tests {
             "".to_string(),
         )]);
         let proof = get_sample_action_proof_for_erc20_redeem();
-        let result = Erc20OnEosRedeemInfo::from_action_proof(&proof, &dictionary, &origin_chain_id).unwrap();
+        let vault_address = EthAddress::default();
+        let result = Erc20OnEosRedeemInfo::from_action_proof(&proof, &dictionary, &origin_chain_id, &vault_address).unwrap();
         assert_eq!(result, expected_result);
     }
 
