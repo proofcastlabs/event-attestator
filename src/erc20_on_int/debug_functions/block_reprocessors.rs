@@ -22,7 +22,7 @@ use crate::{
                 account_for_fees_in_evm_tx_infos_in_state,
                 update_accrued_fees_in_dictionary_and_return_state as update_accrued_fees_in_dictionary_and_return_eth_state,
             },
-            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address,
+            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address as maybe_divert_int_txs_to_safe_address_if_destination_is_token_address,
             filter_submission_material::filter_submission_material_for_peg_in_events_in_state,
             filter_zero_value_tx_infos::filter_out_zero_value_evm_tx_infos_from_state,
             get_eth_output_json::{get_evm_signed_tx_info_from_evm_txs, EthOutput},
@@ -33,7 +33,7 @@ use crate::{
                 account_for_fees_in_eth_tx_infos_in_state,
                 update_accrued_fees_in_dictionary_and_return_state as update_accrued_fees_in_dictionary_and_return_evm_state,
             },
-            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
+            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address as maybe_divert_eth_txs_to_safe_address_if_destination_is_token_address,
             eth_tx_info::EthOnIntEthTxInfos,
             filter_submission_material::filter_submission_material_for_redeem_events_in_state,
             filter_zero_value_tx_infos::filter_out_zero_value_eth_tx_infos_from_state,
@@ -83,7 +83,7 @@ fn reprocess_int_block<D: DatabaseInterface>(
                 Ok(state)
             }
         })
-        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
+        .and_then(maybe_divert_eth_txs_to_safe_address_if_destination_is_token_address)
         .and_then(|state| {
             if state.erc20_on_int_eth_tx_infos.is_empty() {
                 info!("✔ No tx infos in state ∴ no ETH transactions to sign!");
@@ -187,7 +187,7 @@ fn reprocess_eth_block<D: DatabaseInterface>(
                 Ok(state)
             }
         })
-        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address)
+        .and_then(maybe_divert_int_txs_to_safe_address_if_destination_is_token_address)
         .and_then(|state| {
             if state.erc20_on_int_int_tx_infos.is_empty() {
                 info!("✔ No tx infos in state ∴ no INT transactions to sign!");
