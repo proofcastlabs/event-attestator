@@ -23,6 +23,7 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
             account_for_fees::maybe_account_for_fees,
+            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
             eth_tx_info::{
                 maybe_filter_out_eth_tx_info_with_value_too_low_in_state,
                 maybe_filter_out_zero_eos_asset_amounts_in_state,
@@ -63,6 +64,7 @@ pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(maybe_filter_out_eth_tx_info_with_value_too_low_in_state)
         .and_then(maybe_account_for_fees)
         .and_then(maybe_filter_out_zero_eos_asset_amounts_in_state)
+        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
         .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
         .and_then(maybe_increment_eos_account_nonce_and_return_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)
