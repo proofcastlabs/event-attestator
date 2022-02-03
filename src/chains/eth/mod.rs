@@ -37,3 +37,5 @@ pub(crate) mod update_eth_tail_block_hash;
 pub(crate) mod update_latest_block_hash;
 pub(crate) mod validate_block_in_state;
 pub(crate) mod validate_receipts_in_state;
+#[macro_use]
+pub(crate) mod eth_macros;
