@@ -55,6 +55,7 @@ use crate::{
                 account_for_fees_in_eos_tx_infos_in_state,
                 update_accrued_fees_in_dictionary_and_return_eos_state,
             },
+            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
             eos_tx_info::{
                 maybe_filter_out_value_too_low_txs_from_state,
                 maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state,
@@ -157,6 +158,7 @@ fn reprocess_eos_block<D: DatabaseInterface>(
         .and_then(maybe_filter_out_value_too_low_txs_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
         .and_then(account_for_fees_in_eos_tx_infos_in_state)
+        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
         .and_then(|state| {
             if accrue_fees {
                 update_accrued_fees_in_dictionary_and_return_eos_state(state)

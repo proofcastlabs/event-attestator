@@ -49,6 +49,19 @@ use crate::{
 
 const ZERO_ETH_ASSET_STR: &str = "0.0000 EOS";
 
+#[derive(Debug, Default, Clone, PartialEq, Eq, Constructor)]
+pub struct EosOnEthEthTxInfo {
+    pub user_data: Bytes,
+    pub token_amount: U256,
+    pub eos_address: String,
+    pub token_sender: EthAddress,
+    pub eos_asset_amount: String,
+    pub eos_token_address: String,
+    pub origin_chain_id: EthChainId,
+    pub originating_tx_hash: EthHash,
+    pub eth_token_address: EthAddress,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
 pub struct EosOnEthEthTxInfos(pub Vec<EosOnEthEthTxInfo>);
 
@@ -197,19 +210,6 @@ impl EosOnEthEthTxInfos {
                 .collect::<Vec<EosOnEthEthTxInfo>>(),
         )
     }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Constructor)]
-pub struct EosOnEthEthTxInfo {
-    pub user_data: Bytes,
-    pub token_amount: U256,
-    pub eos_address: String,
-    pub token_sender: EthAddress,
-    pub eos_asset_amount: String,
-    pub eos_token_address: String,
-    pub origin_chain_id: EthChainId,
-    pub originating_tx_hash: EthHash,
-    pub eth_token_address: EthAddress,
 }
 
 impl ToMetadata for EosOnEthEthTxInfo {
