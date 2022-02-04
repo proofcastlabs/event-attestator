@@ -12,11 +12,11 @@ use bitcoin::{
 
 use crate::{
     btc_on_eos::{
-        btc::minting_params::{BtcOnEosMintingParamStruct, BtcOnEosMintingParams},
+        btc::eos_tx_info::{BtcOnEosEosTxInfo, BtcOnEosEosTxInfos},
         utils::convert_u64_to_8_decimal_eos_asset,
     },
     btc_on_eth::{
-        btc::minting_params::{BtcOnEthMintingParamStruct, BtcOnEthMintingParams},
+        btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
         utils::convert_satoshis_to_wei,
     },
     chains::{
@@ -84,7 +84,7 @@ pub const SAMPLE_SERIALIZED_BTC_UTXO: &str = "0e8d588f88d5624148070a8cd79508da8c
 
 pub fn get_btc_block_in_db_format(
     btc_block_and_id: BtcBlockAndId,
-    eth_minting_params: BtcOnEthMintingParams,
+    eth_minting_params: BtcOnEthEthTxInfos,
     extra_data: Bytes,
 ) -> Result<BtcBlockInDbFormat> {
     Ok(BtcBlockInDbFormat::new(
@@ -123,7 +123,7 @@ where
     BtcDbUtils::new(db).put_special_btc_block_in_db(block, "tail")
 }
 
-pub fn get_sample_minting_params() -> BtcOnEthMintingParams {
+pub fn get_sample_eth_tx_infos() -> BtcOnEthEthTxInfos {
     let originating_tx_address_1 = "335cC6c8e77ECD56402Fa7d4007622A6841a8B6A".to_string();
     let originating_tx_address_2 = "c2f16d5040deDa48Fe9292c183c5D76321e83467".to_string();
     let originating_tx_address_3 = "6635F83421Bf059cd8111f180f0727128685BaE4".to_string();
@@ -136,29 +136,33 @@ pub fn get_sample_minting_params() -> BtcOnEthMintingParams {
     let originating_tx_hash_1 = Txid::hash(b"something_1");
     let originating_tx_hash_2 = Txid::hash(b"something_2");
     let originating_tx_hash_3 = Txid::hash(b"something_3");
+    let eth_token_address = EthAddress::default();
     let user_data = None;
-    let minting_params_1 = BtcOnEthMintingParamStruct {
+    let minting_params_1 = BtcOnEthEthTxInfo {
         amount: amount_1,
-        eth_address: eth_address_1,
+        destination_address: eth_address_1,
         originating_tx_hash: originating_tx_hash_1,
         originating_tx_address: originating_tx_address_1,
         user_data: user_data.clone(),
+        eth_token_address: eth_token_address.clone(),
     };
-    let minting_params_2 = BtcOnEthMintingParamStruct {
+    let minting_params_2 = BtcOnEthEthTxInfo {
         amount: amount_2,
-        eth_address: eth_address_2,
+        destination_address: eth_address_2,
         originating_tx_hash: originating_tx_hash_2,
         originating_tx_address: originating_tx_address_2,
         user_data: user_data.clone(),
+        eth_token_address: eth_token_address.clone(),
     };
-    let minting_params_3 = BtcOnEthMintingParamStruct {
+    let minting_params_3 = BtcOnEthEthTxInfo {
         amount: amount_3,
-        eth_address: eth_address_3,
+        destination_address: eth_address_3,
         originating_tx_hash: originating_tx_hash_3,
         originating_tx_address: originating_tx_address_3,
         user_data,
+        eth_token_address: eth_token_address.clone(),
     };
-    BtcOnEthMintingParams::new(vec![minting_params_1, minting_params_2, minting_params_3])
+    BtcOnEthEthTxInfos::new(vec![minting_params_1, minting_params_2, minting_params_3])
 }
 
 pub fn get_sample_sequential_btc_blocks_in_db_format() -> Vec<BtcBlockInDbFormat> {
@@ -188,7 +192,7 @@ pub fn get_sample_p2sh_redeem_script_sig() -> BtcScript {
 }
 
 pub fn convert_sample_block_to_db_format(btc_block_and_id: BtcBlockAndId) -> Result<BtcBlockInDbFormat> {
-    get_btc_block_in_db_format(btc_block_and_id, BtcOnEthMintingParams::new(vec![]), vec![])
+    get_btc_block_in_db_format(btc_block_and_id, BtcOnEthEthTxInfos::new(vec![]), vec![])
 }
 
 pub fn get_sample_btc_submission_material_json_string() -> String {
@@ -329,7 +333,7 @@ pub fn get_sample_btc_p2pkh_address() -> String {
     get_sample_btc_private_key().to_p2pkh_btc_address()
 }
 
-pub fn get_sample_btc_on_eos_minting_params() -> BtcOnEosMintingParams {
+pub fn get_sample_btc_on_eos_eos_tx_infos() -> BtcOnEosEosTxInfos {
     let symbol = "PBTC".to_string();
     let originating_tx_address_1 = "eosaccount1x".to_string();
     let originating_tx_address_2 = "eosaccount2x".to_string();
@@ -344,28 +348,32 @@ pub fn get_sample_btc_on_eos_minting_params() -> BtcOnEosMintingParams {
     let originating_tx_hash_2 = sha256d::Hash::hash(b"something_2").to_string();
     let originating_tx_hash_3 = sha256d::Hash::hash(b"something_3").to_string();
     let user_data = None;
-    let minting_params_1 = BtcOnEosMintingParamStruct {
+    let eos_token_address = "anaddress".to_string();
+    let minting_params_1 = BtcOnEosEosTxInfo {
         amount: amount_1,
-        to: eos_address_1,
+        destination_address: eos_address_1,
         originating_tx_hash: originating_tx_hash_1,
         originating_tx_address: originating_tx_address_1,
         user_data: user_data.clone(),
+        eos_token_address: eos_token_address.clone(),
     };
-    let minting_params_2 = BtcOnEosMintingParamStruct {
+    let minting_params_2 = BtcOnEosEosTxInfo {
         amount: amount_2,
-        to: eos_address_2,
+        destination_address: eos_address_2,
         originating_tx_hash: originating_tx_hash_2,
         originating_tx_address: originating_tx_address_2,
         user_data: user_data.clone(),
+        eos_token_address: eos_token_address.clone(),
     };
-    let minting_params_3 = BtcOnEosMintingParamStruct {
+    let minting_params_3 = BtcOnEosEosTxInfo {
         amount: amount_3,
-        to: eos_address_3,
+        destination_address: eos_address_3,
         originating_tx_hash: originating_tx_hash_3,
         originating_tx_address: originating_tx_address_3,
         user_data,
+        eos_token_address: eos_token_address.clone(),
     };
-    BtcOnEosMintingParams::new(vec![minting_params_1, minting_params_2, minting_params_3])
+    BtcOnEosEosTxInfos::new(vec![minting_params_1, minting_params_2, minting_params_3])
 }
 
 pub fn get_sample_p2sh_utxo_and_value_2() -> Result<BtcUtxoAndValue> {

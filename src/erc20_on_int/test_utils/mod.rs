@@ -23,7 +23,8 @@ pub fn get_sample_eth_tx_infos() -> EthOnIntEthTxInfos {
     let dictionary = get_sample_token_dictionary();
     let material = get_sample_peg_out_submission_material();
     let origin_chain_id = EthChainId::Ropsten;
-    EthOnIntEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap()
+    let vault_address = EthAddress::default();
+    EthOnIntEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &vault_address).unwrap()
 }
 
 pub fn get_sample_eth_tx_info() -> EthOnIntEthTxInfo {

@@ -18,7 +18,7 @@ pub fn filter_receipts_for_btc_on_eth_redeem_events_in_state<D: DatabaseInterfac
     state
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(
-            &state.eth_db_utils.get_erc777_contract_address_from_db()?,
+            &state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
             &[
                 *ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
                 *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,

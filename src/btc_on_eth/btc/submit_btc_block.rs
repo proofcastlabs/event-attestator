@@ -2,8 +2,10 @@ use crate::{
     btc_on_eth::{
         btc::{
             account_for_fees::maybe_account_for_fees,
+            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
+            filter_eth_tx_infos::maybe_filter_out_value_too_low_btc_on_eth_eth_tx_infos_in_state,
             get_btc_output_json::{create_btc_output_json_and_put_in_state, get_btc_output_as_string},
-            minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
+            parse_tx_infos::parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state,
             sign_any_sender_transactions::maybe_sign_any_sender_canon_block_txs_and_add_to_state,
             sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,
         },
@@ -19,7 +21,6 @@ use crate::{
         deposit_address_info::validate_deposit_address_list_in_state,
         extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
         extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
-        filter_minting_params::maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state,
         filter_p2pkh_deposit_txs::filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state,
         filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
         filter_utxos::filter_out_value_too_low_utxos_from_state,
@@ -27,8 +28,8 @@ use crate::{
         get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
         increment_any_sender_nonce::maybe_increment_any_sender_nonce_in_db,
         increment_eth_nonce::maybe_increment_eth_nonce_in_db,
-        remove_minting_params_from_canon_block::remove_minting_params_from_canon_block_and_return_state,
         remove_old_btc_tail_block::maybe_remove_old_btc_tail_block,
+        remove_tx_infos_from_canon_block::remove_tx_infos_from_canon_block_and_return_state,
         save_utxos_to_db::maybe_save_utxos_to_db,
         set_flags::set_any_sender_flag_in_state,
         update_btc_canon_block_hash::maybe_update_btc_canon_block_hash,
@@ -67,13 +68,14 @@ pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(validate_deposit_address_list_in_state)
         .and_then(filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
-        .and_then(parse_minting_params_from_p2sh_deposits_and_add_to_state)
+        .and_then(parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state)
         .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state)
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
-        .and_then(maybe_filter_out_value_too_low_btc_on_eth_minting_params_in_state)
+        .and_then(maybe_filter_out_value_too_low_btc_on_eth_eth_tx_infos_in_state)
         .and_then(maybe_account_for_fees)
+        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
         .and_then(create_btc_block_in_db_format_and_put_in_state)
         .and_then(maybe_add_btc_block_to_db)
         .and_then(maybe_update_btc_latest_block_hash)
@@ -86,7 +88,7 @@ pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_increment_any_sender_nonce_in_db)
         .and_then(maybe_remove_old_btc_tail_block)
         .and_then(create_btc_output_json_and_put_in_state)
-        .and_then(remove_minting_params_from_canon_block_and_return_state)
+        .and_then(remove_tx_infos_from_canon_block_and_return_state)
         .and_then(end_btc_db_transaction)
         .and_then(get_btc_output_as_string)
 }

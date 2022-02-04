@@ -37,6 +37,12 @@ pub enum MetadataChainId {
     LuxochainMainnet, // 0x00d5beb0
 }
 
+impl Default for MetadataChainId {
+    fn default() -> Self {
+        Self::EthereumMainnet
+    }
+}
+
 impl MetadataChainId {
     pub fn to_protocol_id(self) -> MetadataProtocolId {
         match self {

@@ -324,7 +324,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
                 &amount.into(),
                 nonce,
                 &EthChainId::from_str(eth_network)?,
-                eth_db_utils.get_erc777_contract_address_from_db()?,
+                eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
                 gas_price,
                 &recipient_eth_address,
                 &eth_db_utils.get_eth_private_key_from_db()?,

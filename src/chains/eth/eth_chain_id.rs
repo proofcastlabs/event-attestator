@@ -27,6 +27,12 @@ pub enum EthChainId {
     Unknown(u64),
 }
 
+impl Default for EthChainId {
+    fn default() -> Self {
+        Self::Mainnet
+    }
+}
+
 impl ChainId for EthChainId {
     fn keccak_hash(&self) -> Result<KeccakHash> {
         Ok(keccak_hash_bytes(&self.to_bytes()?))

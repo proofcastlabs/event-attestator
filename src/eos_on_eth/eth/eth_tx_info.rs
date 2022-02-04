@@ -49,6 +49,19 @@ use crate::{
 
 const ZERO_ETH_ASSET_STR: &str = "0.0000 EOS";
 
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct EosOnEthEthTxInfo {
+    pub user_data: Bytes,
+    pub token_amount: U256,
+    pub token_sender: EthAddress,
+    pub eos_asset_amount: String,
+    pub eos_token_address: String,
+    pub origin_chain_id: EthChainId,
+    pub destination_address: String,
+    pub originating_tx_hash: EthHash,
+    pub eth_token_address: EthAddress,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
 pub struct EosOnEthEthTxInfos(pub Vec<EosOnEthEthTxInfo>);
 
@@ -199,19 +212,6 @@ impl EosOnEthEthTxInfos {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor)]
-pub struct EosOnEthEthTxInfo {
-    pub user_data: Bytes,
-    pub token_amount: U256,
-    pub eos_address: String,
-    pub token_sender: EthAddress,
-    pub eos_asset_amount: String,
-    pub eos_token_address: String,
-    pub origin_chain_id: EthChainId,
-    pub originating_tx_hash: EthHash,
-    pub eth_token_address: EthAddress,
-}
-
 impl ToMetadata for EosOnEthEthTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         Ok(Metadata::new(
@@ -274,8 +274,10 @@ impl EosOnEthEthTxInfo {
                 origin_chain_id: origin_chain_id.clone(),
                 eos_token_address: token_dictionary.get_eos_account_name_from_eth_token_address(&log.address)?,
                 eos_asset_amount: token_dictionary.convert_u256_to_eos_asset_string(&log.address, &params.value)?,
-                eos_address: parse_eos_account_name_or_default_to_safe_address(&params.underlying_asset_recipient)?
-                    .to_string(),
+                destination_address: parse_eos_account_name_or_default_to_safe_address(
+                    &params.underlying_asset_recipient,
+                )?
+                .to_string(),
             })
         })
     }
@@ -331,7 +333,7 @@ impl EosOnEthEthTxInfo {
             EOS_ACCOUNT_PERMISSION_LEVEL,
             &self.eos_token_address,
             &self.eos_asset_amount,
-            &self.eos_address,
+            &self.destination_address,
             &metadata,
         )
         .map(|action| EosTransaction::new(timestamp, ref_block_num, ref_block_prefix, vec![action]))
@@ -460,7 +462,7 @@ mod tests {
             &hex::decode("9b9b2b88bdd495c132704154003d2deb65bd34ce6f8836ed6efdf0ba9def2b3e").unwrap(),
         );
         assert_eq!(result.token_amount, expected_token_amount);
-        assert_eq!(result.eos_address, expected_eos_address);
+        assert_eq!(result.destination_address, expected_eos_address);
         assert_eq!(result.eos_token_address, expected_eos_token_address);
         assert_eq!(result.eos_asset_amount, expected_eos_asset_amount);
         assert_eq!(result.token_sender, expected_token_sender);

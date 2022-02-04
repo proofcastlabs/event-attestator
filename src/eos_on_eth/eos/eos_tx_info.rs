@@ -42,11 +42,11 @@ use crate::{
 
 const REQUIRED_ACTION_NAME: &str = "pegin";
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Constructor)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize, Constructor)]
 pub struct EosOnEthEosTxInfo {
     pub token_amount: U256,
     pub from: EosAccountName,
-    pub recipient: EthAddress,
+    pub destination_address: EthAddress,
     pub originating_tx_id: Checksum256,
     pub global_sequence: GlobalSequence,
     pub eth_token_address: EthAddress,
@@ -257,7 +257,7 @@ impl EosOnEthEosTxInfo {
                     originating_tx_id: proof.tx_id,
                     global_sequence: proof.get_global_sequence(),
                     from: Self::get_token_sender_from_proof(proof)?,
-                    recipient: Self::get_eth_address_from_proof_or_revert_to_safe_eth_address(proof)?,
+                    destination_address: Self::get_eth_address_from_proof_or_revert_to_safe_eth_address(proof)?,
                     eth_token_address: token_dictionary.get_eth_address_via_eos_address(&token_address)?,
                     eos_token_address: dictionary_entry.eos_address,
                 })
@@ -357,10 +357,10 @@ impl EosOnEthEosTxInfos {
                 .map(|(i, tx_info)| {
                     info!(
                         "✔ Signing ETH tx for amount: {}, to address: {}",
-                        tx_info.token_amount, tx_info.recipient
+                        tx_info.token_amount, tx_info.destination_address
                     );
                     EthTransaction::new_unsigned(
-                        encode_erc777_mint_with_no_data_fxn(&tx_info.recipient, &tx_info.token_amount)?,
+                        encode_erc777_mint_with_no_data_fxn(&tx_info.destination_address, &tx_info.token_amount)?,
                         eth_account_nonce + i as u64,
                         ZERO_ETH_VALUE,
                         tx_info.eth_token_address,
@@ -548,7 +548,7 @@ mod tests {
             EthAddress::from_slice(&hex::decode("711c50b31ee0b9e8ed4d434819ac20b4fbbb5532").unwrap());
         assert_eq!(result.token_amount, expected_amount);
         assert_eq!(result.from, expected_from);
-        assert_eq!(result.recipient, expected_recipient);
+        assert_eq!(result.destination_address, expected_recipient);
         assert_eq!(result.global_sequence, expected_global_sequence);
         assert_eq!(result.originating_tx_id, expected_originating_tx_id);
         assert_eq!(result.eth_token_address, expected_eth_token_address);
@@ -589,7 +589,7 @@ mod tests {
         let eos_smart_contract = EosAccountName::from_str("xeth.ptokens").unwrap();
         let result = EosOnEthEosTxInfo::from_eos_action_proof(&proof, &dictionary, &eos_smart_contract).unwrap();
         let expected_recipient = *SAFE_ETH_ADDRESS;
-        assert_eq!(result.recipient, expected_recipient);
+        assert_eq!(result.destination_address, expected_recipient);
     }
 
     #[test]

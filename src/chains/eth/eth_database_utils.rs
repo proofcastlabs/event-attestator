@@ -199,7 +199,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
             chain_id: self.get_eth_chain_id_from_db()?,
             eth_private_key: self.get_eth_private_key_from_db()?,
             eth_account_nonce: self.get_eth_account_nonce_from_db()?,
-            smart_contract_address: self.get_erc777_contract_address_from_db()?,
+            smart_contract_address: self.get_btc_on_eth_smart_contract_address_from_db()?,
         })
     }
 
@@ -558,14 +558,14 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
         self.put_eth_address_in_db(&self.get_erc777_proxy_contract_address_key(), proxy_contract_address)
     }
 
-    fn get_erc777_contract_address_from_db(&self) -> Result<EthAddress> {
+    fn get_btc_on_eth_smart_contract_address_from_db(&self) -> Result<EthAddress> {
         info!("✔ Getting ETH ERC777 smart-contract address from db...");
         self.get_eth_address_from_db(&self.get_btc_on_eth_smart_contract_address_key())
             .map_err(|_| "No ERC777 contract address in DB! Did you forget to set it?".into())
     }
 
     fn put_btc_on_eth_smart_contract_address_in_db(&self, address: &EthAddress) -> Result<()> {
-        match self.get_erc777_contract_address_from_db() {
+        match self.get_btc_on_eth_smart_contract_address_from_db() {
             Ok(address) => Err(format!("ERC777 address already set to 0x{}!", hex::encode(address)).into()),
             _ => {
                 info!("✔ Putting ETH smart-contract address in db...");
@@ -830,14 +830,14 @@ mod tests {
     }
 
     #[test]
-    fn should_get_erc777_contract_address_from_db() {
+    fn should_get_btc_on_eth_smart_contract_address_from_db() {
         let db = get_test_database();
         let db_utils = EthDbUtils::new(&db);
         let contract_address = get_sample_eth_address();
         db_utils
             .put_btc_on_eth_smart_contract_address_in_db(&contract_address)
             .unwrap();
-        let result = db_utils.get_erc777_contract_address_from_db().unwrap();
+        let result = db_utils.get_btc_on_eth_smart_contract_address_from_db().unwrap();
         assert_eq!(result, contract_address);
     }
 

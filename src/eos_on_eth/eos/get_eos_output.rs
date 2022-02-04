@@ -72,7 +72,7 @@ impl EthTxInfo {
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             eth_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            eth_tx_recipient: format!("0x{}", hex::encode(tx_info.recipient.as_bytes())),
+            eth_tx_recipient: format!("0x{}", hex::encode(tx_info.destination_address.as_bytes())),
             native_token_address: tx_info.eos_token_address.to_string(),
         })
     }

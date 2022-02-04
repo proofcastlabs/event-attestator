@@ -1,5 +1,5 @@
 use crate::{
-    btc_on_eth::btc::minting_params::BtcOnEthMintingParamStruct,
+    btc_on_eth::btc::eth_tx_info::BtcOnEthEthTxInfo,
     chains::{
         btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata, btc_state::BtcState},
         eth::{
@@ -16,28 +16,28 @@ use crate::{
 
 pub fn get_eth_signed_txs(
     signing_params: &EthSigningParams,
-    minting_params: &[BtcOnEthMintingParamStruct],
+    eth_tx_infos: &[BtcOnEthEthTxInfo],
     btc_chain_id: &BtcChainId,
 ) -> Result<EthTransactions> {
     trace!("✔ Getting ETH signed transactions...");
     Ok(EthTransactions::new(
-        minting_params
+        eth_tx_infos
             .iter()
             .enumerate()
-            .map(|(i, minting_param_struct)| {
+            .map(|(i, eth_tx_info)| {
                 info!(
                     "✔ Signing ETH tx for amount: {}, to address: {}",
-                    minting_param_struct.amount, minting_param_struct.eth_address,
+                    eth_tx_info.amount, eth_tx_info.destination_address,
                 );
                 get_signed_minting_tx(
-                    &minting_param_struct.amount,
+                    &eth_tx_info.amount,
                     signing_params.eth_account_nonce + i as u64,
                     &signing_params.chain_id,
                     signing_params.smart_contract_address,
                     signing_params.gas_price,
-                    &minting_param_struct.eth_address,
+                    &eth_tx_info.destination_address,
                     &signing_params.eth_private_key,
-                    minting_param_struct.maybe_to_metadata_bytes(
+                    eth_tx_info.maybe_to_metadata_bytes(
                         btc_chain_id,
                         MAX_BYTES_FOR_ETH_USER_DATA,
                         &MetadataProtocolId::Ethereum,
@@ -59,10 +59,10 @@ pub fn maybe_sign_normal_canon_block_txs_and_add_to_state<D: DatabaseInterface>(
     info!("✔ Maybe signing normal ETH txs...");
     get_eth_signed_txs(
         &state.eth_db_utils.get_signing_params_from_db()?,
-        &state
+        &state // FIXME Need to put these into state if this is going to work where we replace bad ones!
             .btc_db_utils
             .get_btc_canon_block_from_db()?
-            .get_eth_minting_params(),
+            .get_eth_tx_infos(),
         &state.btc_db_utils.get_btc_chain_id_from_db()?,
     )
     .and_then(|signed_txs| {
@@ -134,26 +134,29 @@ mod tests {
         let recipient_1 = EthAddress::from_slice(&hex::decode("789e39e46117DFaF50A1B53A98C7ab64750f9Ba3").unwrap());
         let recipient_2 = EthAddress::from_slice(&hex::decode("9360a5C047e8Eb44647f17672638c3bB8e2B8a53").unwrap());
         let user_data = None;
-        let minting_params = vec![
-            BtcOnEthMintingParamStruct::new(
+        let eth_token_address = EthAddress::default();
+        let eth_tx_infos = vec![
+            BtcOnEthEthTxInfo::new(
                 convert_satoshis_to_wei(1337),
                 hex::encode(recipient_1),
                 Txid::from_hash(Hash::hash(&[0xc0])),
                 originating_address.clone(),
                 user_data.clone(),
+                &eth_token_address.clone(),
             )
             .unwrap(),
-            BtcOnEthMintingParamStruct::new(
+            BtcOnEthEthTxInfo::new(
                 convert_satoshis_to_wei(666),
                 hex::encode(recipient_2),
                 Txid::from_hash(Hash::hash(&[0xc0])),
                 originating_address,
                 user_data,
+                &eth_token_address.clone(),
             )
             .unwrap(),
         ];
         let btc_chain_id = BtcChainId::Bitcoin;
-        let result = get_eth_signed_txs(&signing_params, &minting_params, &btc_chain_id).unwrap();
-        assert_eq!(result.len(), minting_params.len());
+        let result = get_eth_signed_txs(&signing_params, &eth_tx_infos, &btc_chain_id).unwrap();
+        assert_eq!(result.len(), eth_tx_infos.len());
     }
 }

@@ -23,7 +23,6 @@ use crate::{
         eth_submission_material::EthSubmissionMaterial,
         eth_utils::safely_convert_hex_to_eth_address,
     },
-    constants::SAFE_ETH_ADDRESS,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_evm::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
@@ -36,7 +35,7 @@ use crate::{
     types::{Bytes, Result},
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Constructor)]
 pub struct EthOnEvmEthTxInfo {
     pub native_token_amount: U256,
     pub token_sender: EthAddress,
@@ -46,6 +45,7 @@ pub struct EthOnEvmEthTxInfo {
     pub destination_address: EthAddress,
     pub user_data: Bytes,
     pub origin_chain_id: EthChainId,
+    pub eth_vault_address: EthAddress,
 }
 
 impl ToMetadata for EthOnEvmEthTxInfo {
@@ -107,22 +107,6 @@ impl EthOnEvmEthTxInfo {
         let mut new_self = self.clone();
         new_self.native_token_amount = new_amount;
         new_self
-    }
-
-    fn update_destination_address(&self, new_address: EthAddress) -> Self {
-        let mut new_self = self.clone();
-        new_self.destination_address = new_address;
-        new_self
-    }
-
-    pub fn divert_to_safe_address_if_destination_is_token_contract_address(&self) -> Self {
-        info!("✔ Checking if the destination address is the same as the ETH token contract address...");
-        if self.destination_address == self.eth_token_address {
-            info!("✔ Recipient address is same as ETH token address! Diverting to safe address...");
-            self.update_destination_address(*SAFE_ETH_ADDRESS)
-        } else {
-            self.clone()
-        }
     }
 
     pub fn to_eth_signed_tx(
@@ -215,14 +199,6 @@ impl FeesCalculator for EthOnEvmEthTxInfos {
 }
 
 impl EthOnEvmEthTxInfos {
-    pub fn divert_to_safe_address_if_destination_is_token_contract_address(&self) -> Self {
-        Self::new(
-            self.iter()
-                .map(|info| info.divert_to_safe_address_if_destination_is_token_contract_address())
-                .collect::<Vec<EthOnEvmEthTxInfo>>(),
-        )
-    }
-
     pub fn filter_out_zero_values(&self) -> Result<Self> {
         Ok(Self::new(
             self.iter()
@@ -282,6 +258,7 @@ impl EthOnEvmEthTxInfos {
         receipt: &EthReceipt,
         dictionary: &EthEvmTokenDictionary,
         origin_chain_id: &EthChainId,
+        eth_vault_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `EthOnEvmEthTxInfos` from receipt...");
         Ok(Self::new(
@@ -292,6 +269,7 @@ impl EthOnEvmEthTxInfos {
                     let tx_info = EthOnEvmEthTxInfo {
                         evm_token_address: log.address,
                         token_sender: event_params.redeemer,
+                        eth_vault_address: *eth_vault_address,
                         origin_chain_id: origin_chain_id.clone(),
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
@@ -341,13 +319,14 @@ impl EthOnEvmEthTxInfos {
         submission_material: &EthSubmissionMaterial,
         dictionary: &EthEvmTokenDictionary,
         origin_chain_id: &EthChainId,
+        eth_vault_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `EthOnEvmEthTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, origin_chain_id))
+                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, origin_chain_id, eth_vault_address))
                 .collect::<Result<Vec<EthOnEvmEthTxInfos>>>()?
                 .into_iter()
                 .flatten()
@@ -405,6 +384,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                             &submission_material,
                             &account_names,
                             &state.evm_db_utils.get_eth_chain_id_from_db()?,
+                            &state.evm_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
                         )
                     })
                     .and_then(|tx_infos| state.add_erc20_on_evm_eth_tx_infos(tx_infos))
@@ -470,6 +450,7 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EthS
     }
 }
 
+/*
 pub fn maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
@@ -483,6 +464,7 @@ pub fn maybe_divert_txs_to_safe_address_if_destination_is_eth_token_address<D: D
         state.replace_erc20_on_evm_eth_tx_infos(new_infos)
     }
 }
+*/
 
 /*
 #[cfg(test)]
@@ -593,31 +575,6 @@ mod tests {
         let subtrahend = U256::from(info.native_token_amount + 1);
         let result = info.subtract_amount(subtrahend);
         assert!(result.is_err());
-    }
-
-    #[test]
-    fn should_divert_to_safe_address_if_destination_is_token_address() {
-        let destination_address =
-            EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap());
-        let info = EthOnEvmEthTxInfo {
-            user_data: vec![],
-            destination_address,
-            origin_chain_id: EthChainId::BscMainnet,
-            native_token_amount: U256::from_dec_str("100000000000000000").unwrap(),
-            token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
-            evm_token_address: EthAddress::from_slice(
-                &hex::decode("daacb0ab6fb34d24e8a67bfa14bf4d95d4c7af92").unwrap(),
-            ),
-            eth_token_address: EthAddress::from_slice(
-                &hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap(),
-            ),
-            originating_tx_hash: EthHash::from_slice(
-                &hex::decode("52c620012a6e278d56f582eb1dcb9241c9b2d14d7edc5dab15473b579ce2d2ea").unwrap(),
-            ),
-        };
-        assert_eq!(info.destination_address, destination_address);
-        let result = info.divert_to_safe_address_if_destination_is_token_contract_address();
-        assert_eq!(result.destination_address, *SAFE_ETH_ADDRESS);
     }
 }
 */

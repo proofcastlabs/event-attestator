@@ -3,7 +3,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    btc_on_eos::btc::minting_params::BtcOnEosMintingParamStruct,
+    btc_on_eos::btc::eos_tx_info::BtcOnEosEosTxInfo,
     chains::{
         btc::btc_state::BtcState,
         eos::{eos_crypto::eos_transaction::EosSignedTransaction, eos_unit_conversions::convert_eos_asset_to_u64},
@@ -25,19 +25,15 @@ pub struct TxInfo {
 }
 
 impl TxInfo {
-    pub fn new(
-        tx: &EosSignedTransaction,
-        minting_param_struct: &BtcOnEosMintingParamStruct,
-        eos_account_nonce: u64,
-    ) -> Result<TxInfo> {
+    pub fn new(tx: &EosSignedTransaction, eos_tx_infos: &BtcOnEosEosTxInfo, eos_account_nonce: u64) -> Result<TxInfo> {
         Ok(TxInfo {
             eos_tx: tx.transaction.clone(),
             eos_tx_signature: tx.signature.clone(),
             eos_tx_recipient: tx.recipient.clone(),
             eos_account_nonce,
             eos_tx_amount: convert_eos_asset_to_u64(&tx.amount)?,
-            originating_tx_hash: minting_param_struct.originating_tx_hash.clone(),
-            originating_address: minting_param_struct.originating_tx_address.clone(),
+            originating_tx_hash: eos_tx_infos.originating_tx_hash.clone(),
+            originating_address: eos_tx_infos.originating_tx_address.clone(),
             signature_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
         })
     }
@@ -51,14 +47,14 @@ pub struct BtcOutput {
 
 pub fn get_eos_signed_tx_info(
     txs: &[EosSignedTransaction],
-    minting_params: &[BtcOnEosMintingParamStruct],
+    eos_tx_infos: &[BtcOnEosEosTxInfo],
     eos_account_nonce: u64,
 ) -> Result<Vec<TxInfo>> {
     info!("✔ Getting EOS signed tx info from EOS txs in state...");
     let start_nonce = eos_account_nonce - txs.len() as u64;
     txs.iter()
         .enumerate()
-        .map(|(i, tx)| TxInfo::new(tx, &minting_params[i], start_nonce + i as u64))
+        .map(|(i, tx)| TxInfo::new(tx, &eos_tx_infos[i], start_nonce + i as u64))
         .collect::<Result<Vec<TxInfo>>>()
 }
 
@@ -73,7 +69,7 @@ pub fn create_btc_output_json_and_put_in_state<D: DatabaseInterface>(state: BtcS
                 &state
                     .btc_db_utils
                     .get_btc_canon_block_from_db()?
-                    .get_eos_minting_params(),
+                    .get_btc_on_eos_eos_tx_infos(),
                 state.eos_db_utils.get_eos_account_nonce_from_db()?,
             )?,
         },

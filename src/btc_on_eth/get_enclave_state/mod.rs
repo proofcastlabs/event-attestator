@@ -28,7 +28,11 @@ impl EnclaveState {
         Ok(Self {
             info: EnclaveInfo::new(),
             btc: BtcEnclaveState::new(btc_db_utils.get_db(), btc_db_utils)?,
-            eth: EthEnclaveState::new(eth_db_utils, &eth_db_utils.get_erc777_contract_address_from_db()?, None)?,
+            eth: EthEnclaveState::new(
+                eth_db_utils,
+                &eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
+                None,
+            )?,
             fees: FeesEnclaveState::new_for_btc_on_eth(btc_db_utils.get_db())?,
         })
     }
