@@ -5,6 +5,4 @@ use crate::{
     types::Result,
 };
 
-create_eos_safe_address_diversion_fxns!(
-    "Erc20OnEosPegInInfo" => "Eth" => "erc20_on_eos_peg_in_infos" => "token"
-);
+create_eos_safe_address_diversion_fxns!("Erc20OnEosPegInInfo" => "Eth" => "token");

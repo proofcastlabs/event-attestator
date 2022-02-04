@@ -6,6 +6,4 @@ use crate::{
     types::Result,
 };
 
-create_eos_safe_address_diversion_fxns!(
-    "BtcOnEosEosTxInfo" => "Btc" => "btc_on_eos_eos_tx_infos" => "token"
-);
+create_eos_safe_address_diversion_fxns!("BtcOnEosEosTxInfo" => "Btc" => "token");
