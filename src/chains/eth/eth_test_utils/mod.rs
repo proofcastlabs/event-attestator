@@ -12,6 +12,7 @@ use crate::{
         eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::EthReceipt,
         eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
+        eth_utils::convert_hex_to_eth_address,
     },
     errors::AppError,
     traits::DatabaseInterface,

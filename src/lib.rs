@@ -19,9 +19,10 @@ pub use utils::get_core_version;
 
 #[macro_use]
 pub(crate) mod macros;
+#[macro_use]
+pub(crate) mod bridge_macros;
 pub mod btc_on_eos;
 pub mod btc_on_eth;
-#[macro_use]
 pub mod chains;
 pub(crate) mod core_type;
 pub(crate) mod dictionaries;

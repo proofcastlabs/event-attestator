@@ -31,6 +31,10 @@ use crate::{
     types::{Byte, Bytes, Result},
 };
 
+pub fn get_sample_eos_address() -> String {
+    "sserddasoena".to_string()
+}
+
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_1: &str = "src/chains/eos/eos_test_utils/eos-block-81784220.json";
 
 pub const SAMPLE_EOS_BLOCK_AND_ACTION_JSON_PATH_2: &str = "src/chains/eos/eos_test_utils/eos-block-80440580.json";

@@ -1,9 +1,7 @@
 #[macro_export]
-macro_rules! create_eos_safe_address_diversion_fxns {
-    ($struct_name:expr => $state_name:expr => $($contract_name:expr),*) => {
+macro_rules! create_safe_address_diversion_fxns {
+    ($struct_name:expr => $state:ty => $symbol:expr => $safe_address:expr => $address_type:ty => $($contract_name:expr),*) => {
         paste! {
-            use crate::constants::SAFE_EOS_ADDRESS;
-
             impl [< $struct_name s>] {
                 $(
                     pub fn [<divert_to_safe_address_if_destination_is_ $contract_name _contract_address>](&self) -> Self {
@@ -19,15 +17,15 @@ macro_rules! create_eos_safe_address_diversion_fxns {
             }
 
             impl [< $struct_name >] {
-                fn update_destination_address(&self, new_address: &str) -> Self {
+                fn update_destination_address(&self, new_address: $address_type) -> Self {
                     let mut new_self = self.clone();
-                    new_self.destination_address = new_address.to_string();
+                    new_self.destination_address = new_address;
                     new_self
                 }
 
-                fn divert_to_safe_address_if_destination_matches_address(&self, address: &str) -> Self {
+                fn divert_to_safe_address_if_destination_matches_address(&self, address: $address_type) -> Self {
                     if self.destination_address == address {
-                        self.update_destination_address(SAFE_EOS_ADDRESS)
+                        self.update_destination_address($safe_address)
                     } else {
                         self.clone()
                     }
@@ -36,15 +34,15 @@ macro_rules! create_eos_safe_address_diversion_fxns {
                 $(
                     pub fn [<divert_to_safe_address_if_destination_is_ $contract_name _contract_address>](&self) -> Self {
                         info!("✔ Checking if the destination address matches the {} contract address...", $contract_name);
-                        self.divert_to_safe_address_if_destination_matches_address(&self.[<eos_ $contract_name _address>])
+                        self.divert_to_safe_address_if_destination_matches_address(self.[< $symbol:lower _ $contract_name _address>].clone())
                     }
                 )*
             }
 
             $(
                 pub fn [<maybe_divert_txs_to_safe_address_if_destination_is_ $contract_name _address>]<D: DatabaseInterface>(
-                    state: [< $state_name State>]<D>,
-                ) -> Result<[< $state_name State>]<D>> {
+                   state: $state<D>,
+                ) -> Result<$state<D>> {
                     if state.[< $struct_name:snake s >].is_empty() {
                         Ok(state)
                     } else {
@@ -57,24 +55,14 @@ macro_rules! create_eos_safe_address_diversion_fxns {
                 }
             )*
 
-            #[cfg(test)]
-            mod tests {
-                use super::*;
-
-                $(
-                    #[test]
-                    fn [<should_divert_to_safe_address_if_destination_is_ $contract_name _address_for $struct_name:snake >]() {
-                        let mut info = [< $struct_name >]::default();
-                        let destination_address = "someaddress".to_string();
-                        info.destination_address = destination_address.clone();
-                        info.[< eos_ $contract_name _address >] = destination_address.clone();
-                        assert_eq!(info.destination_address, destination_address);
-                        let result = info
-                            .[<divert_to_safe_address_if_destination_is_ $contract_name _contract_address>]();
-                        assert_eq!(result.destination_address, *SAFE_EOS_ADDRESS);
-                    }
-                )*
-            }
+            $(
+                #[test]
+                fn [<should_divert_ $struct_name:snake _to_safe_address_if_destination_is_ $contract_name _address>]() {
+                    let info = [< $struct_name >]::default();
+                    let result = info.[<divert_to_safe_address_if_destination_is_ $contract_name _contract_address>]();
+                    assert_eq!(result.destination_address, $safe_address);
+                }
+            )*
         }
     }
 }
