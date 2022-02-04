@@ -158,7 +158,7 @@ pub fn get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(
             encode_erc777_change_pnetwork_fxn_data(new_address)?,
             nonce_before_incrementing,
             ZERO_ETH_VALUE,
-            eth_db_utils.get_erc777_contract_address_from_db()?,
+            eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
             &eth_db_utils.get_eth_chain_id_from_db()?,
             ERC777_CHANGE_PNETWORK_GAS_LIMIT,
             eth_db_utils.get_eth_gas_price_from_db()?,

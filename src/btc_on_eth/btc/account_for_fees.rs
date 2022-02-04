@@ -1,51 +1,51 @@
 use crate::{
-    btc_on_eth::btc::minting_params::{BtcOnEthMintingParamStruct, BtcOnEthMintingParams},
+    btc_on_eth::btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
     chains::btc::btc_state::BtcState,
     fees::{fee_constants::DISABLE_FEES, fee_database_utils::FeeDatabaseUtils},
     traits::DatabaseInterface,
     types::Result,
 };
 
-pub fn subtract_fees_from_minting_params(
-    minting_params: &BtcOnEthMintingParams,
+pub fn subtract_fees_from_eth_tx_infos(
+    eth_tx_infos: &BtcOnEthEthTxInfos,
     fee_basis_points: u64,
-) -> Result<BtcOnEthMintingParams> {
-    minting_params.calculate_fees(fee_basis_points).and_then(|(fees, _)| {
+) -> Result<BtcOnEthEthTxInfos> {
+    eth_tx_infos.calculate_fees(fee_basis_points).and_then(|(fees, _)| {
         info!("BTC `MintingParam` fees: {:?}", fees);
-        Ok(BtcOnEthMintingParams::new(
+        Ok(BtcOnEthEthTxInfos::new(
             fees.iter()
-                .zip(minting_params.iter())
-                .map(|(fee, minting_params)| minting_params.subtract_satoshi_amount(*fee))
-                .collect::<Result<Vec<BtcOnEthMintingParamStruct>>>()?,
+                .zip(eth_tx_infos.iter())
+                .map(|(fee, eth_tx_info)| eth_tx_info.subtract_satoshi_amount(*fee))
+                .collect::<Result<Vec<BtcOnEthEthTxInfo>>>()?,
         ))
     })
 }
 
-fn accrue_fees_from_minting_params<D: DatabaseInterface>(
+fn accrue_fees_from_eth_tx_infos<D: DatabaseInterface>(
     db: &D,
-    minting_params: &BtcOnEthMintingParams,
+    eth_tx_infos: &BtcOnEthEthTxInfos,
     fee_basis_points: u64,
 ) -> Result<()> {
-    minting_params
+    eth_tx_infos
         .calculate_fees(fee_basis_points)
         .and_then(|(_, total_fee)| {
-            info!("BTC `MintingParams` total fee: {}", total_fee);
+            info!("BTC `EthTxInfos` total fee: {}", total_fee);
             FeeDatabaseUtils::new_for_btc_on_eth().increment_accrued_fees(db, total_fee)
         })
 }
 
-fn account_for_fees_in_minting_params<D: DatabaseInterface>(
+fn account_for_fees_in_eth_tx_infos<D: DatabaseInterface>(
     db: &D,
-    minting_params: &BtcOnEthMintingParams,
+    eth_tx_infos: &BtcOnEthEthTxInfos,
     fee_basis_points: u64,
-) -> Result<BtcOnEthMintingParams> {
+) -> Result<BtcOnEthEthTxInfos> {
     if fee_basis_points == 0 {
         info!("✔ `BTC-on-ETH` peg-in fees are set to zero ∴ not taking any fees!");
-        Ok(minting_params.clone())
+        Ok(eth_tx_infos.clone())
     } else {
         info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);
-        accrue_fees_from_minting_params(db, minting_params, fee_basis_points)
-            .and_then(|_| subtract_fees_from_minting_params(minting_params, fee_basis_points))
+        accrue_fees_from_eth_tx_infos(db, eth_tx_infos, fee_basis_points)
+            .and_then(|_| subtract_fees_from_eth_tx_infos(eth_tx_infos, fee_basis_points))
     }
 }
 
@@ -54,16 +54,16 @@ pub fn maybe_account_for_fees<D: DatabaseInterface>(state: BtcState<D>) -> Resul
     if DISABLE_FEES {
         info!("✔ Taking fees is disabled ∴ not taking any fees!");
         Ok(state)
-    } else if state.btc_on_eth_minting_params.is_empty() {
-        info!("✔ Not minting-params in state ∴ not taking any fees!");
+    } else if state.btc_on_eth_eth_tx_infos.is_empty() {
+        info!("✔ Not `BtcOnEthEthTxInfos` in state ∴ not taking any fees!");
         Ok(state)
     } else {
-        account_for_fees_in_minting_params(
+        account_for_fees_in_eth_tx_infos(
             state.db,
-            &state.btc_on_eth_minting_params,
+            &state.btc_on_eth_eth_tx_infos,
             FeeDatabaseUtils::new_for_btc_on_eth().get_peg_in_basis_points_from_db(state.db)?,
         )
-        .and_then(|updated_minting_params| state.replace_btc_on_eth_minting_params(updated_minting_params))
+        .and_then(|updated_eth_tx_infos| state.replace_btc_on_eth_eth_tx_infos(updated_eth_tx_infos))
     }
 }
 
@@ -72,25 +72,25 @@ mod tests {
     use super::*;
     use crate::{
         btc_on_eth::utils::convert_satoshis_to_wei,
-        chains::btc::btc_test_utils::get_sample_minting_params,
+        chains::btc::btc_test_utils::get_sample_eth_tx_infos,
         fees::fee_database_utils::FeeDatabaseUtils,
         test_utils::get_test_database,
     };
 
     #[test]
-    fn should_account_for_fees_in_btc_on_eth_minting_params() {
+    fn should_account_for_fees_in_btc_on_eth_eth_tx_infos() {
         let fee_basis_points = 25;
         let db = get_test_database();
         let accrued_fees_before = FeeDatabaseUtils::new_for_btc_on_eth()
             .get_accrued_fees_from_db(&db)
             .unwrap();
         assert_eq!(accrued_fees_before, 0);
-        let minting_params = get_sample_minting_params();
-        let (_, total_fee) = minting_params.calculate_fees(fee_basis_points).unwrap();
+        let eth_tx_infos = get_sample_eth_tx_infos();
+        let (_, total_fee) = eth_tx_infos.calculate_fees(fee_basis_points).unwrap();
         let expected_total_fee = 36;
         assert_eq!(total_fee, expected_total_fee);
-        let total_value_before = minting_params.sum();
-        let resulting_params = account_for_fees_in_minting_params(&db, &minting_params, fee_basis_points).unwrap();
+        let total_value_before = eth_tx_infos.sum();
+        let resulting_params = account_for_fees_in_eth_tx_infos(&db, &eth_tx_infos, fee_basis_points).unwrap();
         let total_value_after = resulting_params.sum();
         let accrued_fees_after = FeeDatabaseUtils::new_for_btc_on_eth()
             .get_accrued_fees_from_db(&db)
@@ -117,12 +117,12 @@ mod tests {
             .get_accrued_fees_from_db(&db)
             .unwrap();
         assert_eq!(accrued_fees_before, 0);
-        let minting_params = get_sample_minting_params();
-        let (_, total_fee) = minting_params.calculate_fees(fee_basis_points).unwrap();
+        let eth_tx_infos = get_sample_eth_tx_infos();
+        let (_, total_fee) = eth_tx_infos.calculate_fees(fee_basis_points).unwrap();
         let expected_total_fee = 0;
         assert_eq!(total_fee, expected_total_fee);
-        let total_value_before = minting_params.sum();
-        let resulting_params = account_for_fees_in_minting_params(&db, &minting_params, fee_basis_points).unwrap();
+        let total_value_before = eth_tx_infos.sum();
+        let resulting_params = account_for_fees_in_eth_tx_infos(&db, &eth_tx_infos, fee_basis_points).unwrap();
         let total_value_after = resulting_params.sum();
         assert_eq!(total_value_before, total_value_after);
         let accrued_fees_after = FeeDatabaseUtils::new_for_btc_on_eth()
@@ -132,7 +132,7 @@ mod tests {
     }
 
     #[test]
-    fn should_account_for_fees_correctly_if_minting_params_are_emtpy() {
+    fn should_account_for_fees_correctly_if_eth_tx_infos_are_emtpy() {
         let fee_basis_points = 25;
         assert!(fee_basis_points > 0);
         let db = get_test_database();
@@ -140,12 +140,12 @@ mod tests {
             .get_accrued_fees_from_db(&db)
             .unwrap();
         assert_eq!(accrued_fees_before, 0);
-        let minting_params = BtcOnEthMintingParams::new(vec![]);
-        let (_, total_fee) = minting_params.calculate_fees(fee_basis_points).unwrap();
+        let eth_tx_infos = BtcOnEthEthTxInfos::new(vec![]);
+        let (_, total_fee) = eth_tx_infos.calculate_fees(fee_basis_points).unwrap();
         let expected_total_fee = 0;
         assert_eq!(total_fee, expected_total_fee);
-        let total_value_before = minting_params.sum();
-        let resulting_params = account_for_fees_in_minting_params(&db, &minting_params, fee_basis_points).unwrap();
+        let total_value_before = eth_tx_infos.sum();
+        let resulting_params = account_for_fees_in_eth_tx_infos(&db, &eth_tx_infos, fee_basis_points).unwrap();
         let total_value_after = resulting_params.sum();
         assert_eq!(total_value_before, total_value_after);
         let accrued_fees_after = FeeDatabaseUtils::new_for_btc_on_eth()
