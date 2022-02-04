@@ -14,7 +14,7 @@ use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
+    btc_on_eos::btc::eos_tx_info::BtcOnEosEosTxInfos,
     btc_on_eth::btc::eth_tx_info::BtcOnEthEthTxInfos,
     chains::btc::{
         btc_state::BtcState,
@@ -77,16 +77,16 @@ pub struct BtcBlockInDbFormat {
     pub height: u64,
     pub id: BlockHash,
     pub extra_data: Bytes,
-    pub eos_minting_params: Option<BtcOnEosMintingParams>,
+    pub eos_minting_params: Option<BtcOnEosEosTxInfos>,
     pub eth_minting_params: Option<BtcOnEthEthTxInfos>,
     pub prev_blockhash: BlockHash,
 }
 
 impl BtcBlockInDbFormat {
-    pub fn get_eos_minting_params(&self) -> BtcOnEosMintingParams {
+    pub fn get_btc_on_eos_eos_tx_infos(&self) -> BtcOnEosEosTxInfos {
         self.eos_minting_params
             .clone()
-            .unwrap_or_else(|| BtcOnEosMintingParams::new(vec![]))
+            .unwrap_or_else(|| BtcOnEosEosTxInfos::new(vec![]))
     }
 
     pub fn get_eth_tx_infos(&self) -> BtcOnEthEthTxInfos {
@@ -97,7 +97,7 @@ impl BtcBlockInDbFormat {
 
     pub fn get_eos_minting_param_bytes(&self) -> Result<Option<Bytes>> {
         if self.eos_minting_params.is_some() {
-            Ok(Some(self.get_eos_minting_params().to_bytes()?))
+            Ok(Some(self.get_btc_on_eos_eos_tx_infos().to_bytes()?))
         } else {
             Ok(None)
         }
@@ -107,7 +107,7 @@ impl BtcBlockInDbFormat {
         self.get_eth_tx_infos().to_bytes()
     }
 
-    pub fn remove_minting_params(&self) -> Result<Self> {
+    pub fn remove_tx_infos(&self) -> Result<Self> {
         Ok(Self::new(
             self.height,
             self.id,
@@ -157,7 +157,7 @@ impl BtcBlockInDbFormat {
                 convert_bytes_to_u64(&serialized_block_in_db_format.height)?,
                 BlockHash::from_slice(&serialized_block_in_db_format.id)?,
                 serialized_block_in_db_format.extra_data.clone(),
-                serialized_block_in_db_format.get_btc_on_eos_minting_params()?,
+                serialized_block_in_db_format.get_btc_on_eos_eos_tx_infos()?,
                 serialized_block_in_db_format.get_btc_on_eth_eth_tx_infos()?,
                 serialized_block_in_db_format.get_prev_blockhash()?,
             ))
@@ -209,12 +209,12 @@ impl SerializedBlockInDbFormat {
         }
     }
 
-    pub fn get_btc_on_eos_minting_params(&self) -> Result<Option<BtcOnEosMintingParams>> {
+    pub fn get_btc_on_eos_eos_tx_infos(&self) -> Result<Option<BtcOnEosEosTxInfos>> {
         let bytes = self.eos_minting_params.clone().unwrap_or_default();
         if bytes.is_empty() {
             Ok(None)
         } else {
-            Ok(Some(BtcOnEosMintingParams::from_bytes(&bytes)?))
+            Ok(Some(BtcOnEosEosTxInfos::from_bytes(&bytes)?))
         }
     }
 

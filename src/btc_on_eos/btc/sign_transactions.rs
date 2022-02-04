@@ -1,5 +1,5 @@
 use crate::{
-    btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
+    btc_on_eos::btc::eos_tx_info::BtcOnEosEosTxInfos,
     chains::{
         btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata, btc_state::BtcState},
         eos::{
@@ -23,19 +23,19 @@ pub fn get_signed_eos_ptoken_issue_txs(
     chain_id: &EosChainId,
     pk: &EosPrivateKey,
     account: &str,
-    minting_params: &BtcOnEosMintingParams,
+    eos_tx_infos: &BtcOnEosEosTxInfos,
     btc_chain_id: &BtcChainId,
 ) -> Result<EosSignedTransactions> {
-    info!("✔ Signing {} txs...", minting_params.len());
+    info!("✔ Signing {} txs...", eos_tx_infos.len());
     Ok(EosSignedTransactions::new(
-        minting_params
+        eos_tx_infos
             .iter()
             .enumerate()
             .map(|(i, params)| {
                 get_signed_eos_ptoken_issue_tx(
                     ref_block_num,
                     ref_block_prefix,
-                    &params.to,
+                    &params.destination_address,
                     &params.amount,
                     chain_id,
                     pk,
@@ -53,7 +53,7 @@ pub fn get_signed_eos_ptoken_issue_txs(
 }
 
 pub fn maybe_sign_canon_block_txs_and_add_to_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
-    info!("✔ Maybe signing minting txs...");
+    info!("✔ Maybe signing EOS txs...");
     get_signed_eos_ptoken_issue_txs(
         state.get_eos_ref_block_num()?,
         state.get_eos_ref_block_prefix()?,
@@ -63,7 +63,7 @@ pub fn maybe_sign_canon_block_txs_and_add_to_state<D: DatabaseInterface>(state: 
         &state
             .btc_db_utils
             .get_btc_canon_block_from_db()?
-            .get_eos_minting_params(),
+            .get_btc_on_eos_eos_tx_infos(),
         &state.btc_db_utils.get_btc_chain_id_from_db()?,
     )
     .and_then(|eos_signed_txs| state.add_eos_signed_txs(eos_signed_txs))

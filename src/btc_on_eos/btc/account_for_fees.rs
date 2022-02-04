@@ -1,36 +1,36 @@
 use crate::{
-    btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
+    btc_on_eos::btc::eos_tx_info::BtcOnEosEosTxInfos,
     chains::btc::btc_state::BtcState,
     fees::{fee_constants::DISABLE_FEES, fee_database_utils::FeeDatabaseUtils},
     traits::DatabaseInterface,
     types::Result,
 };
 
-fn accrue_fees_from_minting_params<D: DatabaseInterface>(
+fn accrue_fees_from_eos_tx_infos<D: DatabaseInterface>(
     db: &D,
-    minting_params: &BtcOnEosMintingParams,
+    eos_tx_infos: &BtcOnEosEosTxInfos,
     fee_basis_points: u64,
 ) -> Result<()> {
-    minting_params
+    eos_tx_infos
         .calculate_fees(fee_basis_points)
         .and_then(|(_, total_fee)| {
-            info!("`BtcOnEosMintingParams` total fee: {}", total_fee);
+            info!("`BtcOnEosEosTxInfos` total fee: {}", total_fee);
             FeeDatabaseUtils::new_for_btc_on_eos().increment_accrued_fees(db, total_fee)
         })
 }
 
-fn account_for_fees_in_minting_params<D: DatabaseInterface>(
+fn account_for_fees_in_eos_tx_infos<D: DatabaseInterface>(
     db: &D,
-    minting_params: &BtcOnEosMintingParams,
+    eos_tx_infos: &BtcOnEosEosTxInfos,
     fee_basis_points: u64,
-) -> Result<BtcOnEosMintingParams> {
+) -> Result<BtcOnEosEosTxInfos> {
     if fee_basis_points == 0 {
         info!("✔ `BTC-on-EOS` peg-in fees are set to zero ∴ not taking any fees!");
-        Ok(minting_params.clone())
+        Ok(eos_tx_infos.clone())
     } else {
         info!("✔ Accounting for fees @ {} basis points...", fee_basis_points);
-        accrue_fees_from_minting_params(db, minting_params, fee_basis_points)
-            .and_then(|_| minting_params.subtract_fees(fee_basis_points))
+        accrue_fees_from_eos_tx_infos(db, eos_tx_infos, fee_basis_points)
+            .and_then(|_| eos_tx_infos.subtract_fees(fee_basis_points))
     }
 }
 
@@ -39,16 +39,16 @@ pub fn maybe_account_for_fees<D: DatabaseInterface>(state: BtcState<D>) -> Resul
     if DISABLE_FEES {
         info!("✔ Taking fees is disabled ∴ not taking any fees!");
         Ok(state)
-    } else if state.btc_on_eos_minting_params.is_empty() {
-        info!("✔ No `BtcOnEosMintingParams` in state ∴ not taking any fees!");
+    } else if state.btc_on_eos_eos_tx_infos.is_empty() {
+        info!("✔ No `BtcOnEosEosTxInfos` in state ∴ not taking any fees!");
         Ok(state)
     } else {
-        account_for_fees_in_minting_params(
+        account_for_fees_in_eos_tx_infos(
             state.db,
-            &state.btc_on_eos_minting_params,
+            &state.btc_on_eos_eos_tx_infos,
             FeeDatabaseUtils::new_for_btc_on_eos().get_peg_in_basis_points_from_db(state.db)?,
         )
-        .and_then(|updated_minting_params| state.replace_btc_on_eos_minting_params(updated_minting_params))
+        .and_then(|update_tx_infos| state.replace_btc_on_eos_eos_tx_infos(update_tx_infos))
     }
 }
 
@@ -57,25 +57,25 @@ mod tests {
     use super::*;
     use crate::{
         chains::{
-            btc::btc_test_utils::get_sample_btc_on_eos_minting_params,
+            btc::btc_test_utils::get_sample_btc_on_eos_eos_tx_infos,
             eos::eos_unit_conversions::convert_eos_asset_to_u64,
         },
         test_utils::get_test_database,
     };
 
     #[test]
-    fn should_account_for_fees_in_btc_on_eos_minting_params() {
+    fn should_account_for_fees_in_btc_on_eos_eos_tx_infos() {
         let fee_basis_points = 25;
         let db = get_test_database();
         let fee_db_utils = FeeDatabaseUtils::new_for_btc_on_eos();
         let accrued_fees_before = fee_db_utils.get_accrued_fees_from_db(&db).unwrap();
         assert_eq!(accrued_fees_before, 0);
-        let minting_params = get_sample_btc_on_eos_minting_params();
-        let (_, total_fee) = minting_params.calculate_fees(fee_basis_points).unwrap();
+        let eos_tx_infos = get_sample_btc_on_eos_eos_tx_infos();
+        let (_, total_fee) = eos_tx_infos.calculate_fees(fee_basis_points).unwrap();
         let expected_total_fee = 36;
         assert_eq!(total_fee, expected_total_fee);
-        let total_value_before = minting_params.sum();
-        let resulting_params = account_for_fees_in_minting_params(&db, &minting_params, fee_basis_points).unwrap();
+        let total_value_before = eos_tx_infos.sum();
+        let resulting_params = account_for_fees_in_eos_tx_infos(&db, &eos_tx_infos, fee_basis_points).unwrap();
         let total_value_after = resulting_params.sum();
         let accrued_fees_after = fee_db_utils.get_accrued_fees_from_db(&db).unwrap();
         let expected_amount_after_1 = 4988;
@@ -93,19 +93,19 @@ mod tests {
     }
 
     #[test]
-    fn should_not_account_for_fees_in_btc_on_eos_minting_params_if_basis_points_are_zero() {
+    fn should_not_account_for_fees_in_btc_on_eos_eos_tx_infos_if_basis_points_are_zero() {
         let fee_basis_points = 0;
         assert_eq!(fee_basis_points, 0);
         let db = get_test_database();
         let fee_db_utils = FeeDatabaseUtils::new_for_btc_on_eos();
         let accrued_fees_before = fee_db_utils.get_accrued_fees_from_db(&db).unwrap();
         assert_eq!(accrued_fees_before, 0);
-        let minting_params = get_sample_btc_on_eos_minting_params();
-        let (_, total_fee) = minting_params.calculate_fees(fee_basis_points).unwrap();
+        let eos_tx_infos = get_sample_btc_on_eos_eos_tx_infos();
+        let (_, total_fee) = eos_tx_infos.calculate_fees(fee_basis_points).unwrap();
         let expected_total_fee = 0;
         assert_eq!(total_fee, expected_total_fee);
-        let total_value_before = minting_params.sum();
-        let resulting_params = account_for_fees_in_minting_params(&db, &minting_params, fee_basis_points).unwrap();
+        let total_value_before = eos_tx_infos.sum();
+        let resulting_params = account_for_fees_in_eos_tx_infos(&db, &eos_tx_infos, fee_basis_points).unwrap();
         let total_value_after = resulting_params.sum();
         assert_eq!(total_value_before, total_value_after);
         let accrued_fees_after = fee_db_utils.get_accrued_fees_from_db(&db).unwrap();
@@ -113,19 +113,19 @@ mod tests {
     }
 
     #[test]
-    fn should_account_for_fees_correctly_in_btc_on_eos_minting_params_if_minting_params_are_emtpy() {
+    fn should_account_for_fees_correctly_in_btc_on_eos_eos_tx_infos_if_tx_infos_are_emtpy() {
         let fee_basis_points = 25;
         assert!(fee_basis_points > 0);
         let db = get_test_database();
         let fee_db_utils = FeeDatabaseUtils::new_for_btc_on_eos();
         let accrued_fees_before = fee_db_utils.get_accrued_fees_from_db(&db).unwrap();
         assert_eq!(accrued_fees_before, 0);
-        let minting_params = BtcOnEosMintingParams::new(vec![]);
-        let (_, total_fee) = minting_params.calculate_fees(fee_basis_points).unwrap();
+        let eos_tx_infos = BtcOnEosEosTxInfos::new(vec![]);
+        let (_, total_fee) = eos_tx_infos.calculate_fees(fee_basis_points).unwrap();
         let expected_total_fee = 0;
         assert_eq!(total_fee, expected_total_fee);
-        let total_value_before = minting_params.sum();
-        let resulting_params = account_for_fees_in_minting_params(&db, &minting_params, fee_basis_points).unwrap();
+        let total_value_before = eos_tx_infos.sum();
+        let resulting_params = account_for_fees_in_eos_tx_infos(&db, &eos_tx_infos, fee_basis_points).unwrap();
         let total_value_after = resulting_params.sum();
         assert_eq!(total_value_before, total_value_after);
         let accrued_fees_after = fee_db_utils.get_accrued_fees_from_db(&db).unwrap();

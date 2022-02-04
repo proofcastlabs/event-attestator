@@ -4,8 +4,9 @@ use crate::{
     btc_on_eos::{
         btc::{
             account_for_fees::maybe_account_for_fees as maybe_account_for_peg_in_fees,
+            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
+            eos_tx_info::parse_eos_tx_infos_from_p2sh_deposits_and_add_to_state,
             get_btc_output_json::{get_btc_output_as_string, get_eos_signed_tx_info, BtcOutput},
-            minting_params::parse_minting_params_from_p2sh_deposits_and_add_to_state,
             sign_transactions::get_signed_eos_ptoken_issue_txs,
         },
         check_core_is_initialized::{
@@ -136,7 +137,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
         .and_then(validate_btc_merkle_root)
         .and_then(get_deposit_info_hash_map_and_put_in_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
-        .and_then(parse_minting_params_from_p2sh_deposits_and_add_to_state)
+        .and_then(parse_eos_tx_infos_from_p2sh_deposits_and_add_to_state)
         .and_then(create_btc_block_in_db_format_and_put_in_state)
         .and_then(|state| {
             if accrue_fees {
@@ -144,19 +145,20 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
             } else {
                 info!("✔ Accounting for fees in signing params but NOT accruing them!");
                 let basis_points = FeeDatabaseUtils::new_for_btc_on_eos().get_peg_in_basis_points_from_db(state.db)?;
-                let updated_minting_params = state.btc_on_eos_minting_params.subtract_fees(basis_points)?;
-                state.replace_btc_on_eos_minting_params(updated_minting_params)
+                let updated_tx_infos = state.btc_on_eos_eos_tx_infos.subtract_fees(basis_points)?;
+                state.replace_btc_on_eos_eos_tx_infos(updated_tx_infos)
             }
         })
+        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
         .and_then(|state| {
-            info!("✔ Maybe signing reprocessed minting txs...");
+            info!("✔ Maybe signing reprocessed `BtcOnEosEosTxInfos`...");
             let eos_signed_txs = get_signed_eos_ptoken_issue_txs(
                 state.get_eos_ref_block_num()?,
                 state.get_eos_ref_block_prefix()?,
                 &state.eos_db_utils.get_eos_chain_id_from_db()?,
                 &EosPrivateKey::get_from_db(state.db)?,
                 &state.eos_db_utils.get_eos_account_name_string_from_db()?,
-                &state.btc_on_eos_minting_params,
+                &state.btc_on_eos_eos_tx_infos,
                 &state.btc_db_utils.get_btc_chain_id_from_db()?,
             )?;
             info!("✔ EOS signed txs: {:?}", eos_signed_txs);
@@ -171,7 +173,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
                     0 => vec![],
                     _ => get_eos_signed_tx_info(
                         &state.eos_signed_txs,
-                        &state.btc_on_eos_minting_params,
+                        &state.btc_on_eos_eos_tx_infos,
                         state.eos_db_utils.get_eos_account_nonce_from_db()?,
                     )?,
                 },

@@ -1,5 +1,5 @@
 use crate::{
-    btc_on_eos::btc::minting_params::BtcOnEosMintingParams,
+    btc_on_eos::btc::eos_tx_info::BtcOnEosEosTxInfos,
     btc_on_eth::btc::eth_tx_info::BtcOnEthEthTxInfos,
     chains::{
         btc::{
@@ -39,7 +39,7 @@ pub struct BtcState<'a, D: DatabaseInterface> {
     pub p2sh_deposit_txs: Option<BtcTransactions>,
     pub p2pkh_deposit_txs: Option<BtcTransactions>,
     pub btc_on_eth_eth_tx_infos: BtcOnEthEthTxInfos,
-    pub btc_on_eos_minting_params: BtcOnEosMintingParams,
+    pub btc_on_eos_eos_tx_infos: BtcOnEosEosTxInfos,
     pub any_sender_signed_txs: Option<RelayTransactions>,
     pub deposit_info_hash_map: Option<DepositInfoHashMap>,
     pub btc_block_in_db_format: Option<BtcBlockInDbFormat>,
@@ -68,7 +68,7 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
             eth_signed_txs: EthTransactions::new(vec![]),
             eos_signed_txs: EosSignedTransactions::new(vec![]),
             btc_on_eth_eth_tx_infos: BtcOnEthEthTxInfos::new(vec![]),
-            btc_on_eos_minting_params: BtcOnEosMintingParams::new(vec![]),
+            btc_on_eos_eos_tx_infos: BtcOnEosEosTxInfos::new(vec![]),
         }
     }
 
@@ -186,14 +186,14 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
         }
     }
 
-    pub fn add_btc_on_eos_minting_params(mut self, mut params: BtcOnEosMintingParams) -> Result<BtcState<'a, D>> {
-        info!("✔ Adding `btc-on-eos` minting params to state...");
-        self.btc_on_eos_minting_params.append(&mut params);
+    pub fn add_btc_on_eos_eos_tx_infos(mut self, mut params: BtcOnEosEosTxInfos) -> Result<BtcState<'a, D>> {
+        info!("✔ Adding `BtcOnEosEosTxInfos` to state...");
+        self.btc_on_eos_eos_tx_infos.append(&mut params);
         Ok(self)
     }
 
     pub fn add_btc_on_eth_eth_tx_infos(mut self, mut params: BtcOnEthEthTxInfos) -> Result<BtcState<'a, D>> {
-        info!("✔ Adding `btc-on-eth` minting params to state...");
+        info!("✔ Adding `BtcOnEthEthTxInfos` to state...");
         self.btc_on_eth_eth_tx_infos.append(&mut params);
         Ok(self)
     }
@@ -208,17 +208,17 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
         mut self,
         replacement_params: BtcOnEthEthTxInfos,
     ) -> Result<BtcState<'a, D>> {
-        info!("✔ Replacing `BtcOnEth` minting params in state...");
+        info!("✔ Replacing `BtcOnEthEthTxInfos` in state...");
         self.btc_on_eth_eth_tx_infos = replacement_params;
         Ok(self)
     }
 
-    pub fn replace_btc_on_eos_minting_params(
+    pub fn replace_btc_on_eos_eos_tx_infos(
         mut self,
-        replacement_params: BtcOnEosMintingParams,
+        replacement_params: BtcOnEosEosTxInfos,
     ) -> Result<BtcState<'a, D>> {
-        info!("✔ Replacing `BtcOnEos` minting params in state...");
-        self.btc_on_eos_minting_params = replacement_params;
+        info!("✔ Replacing `BtcOnEosEosTxInfos` in state...");
+        self.btc_on_eos_eos_tx_infos = replacement_params;
         Ok(self)
     }
 
