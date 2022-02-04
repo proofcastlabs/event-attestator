@@ -11,7 +11,7 @@ use crate::{
         eth_traits::EthTxInfoCompatible,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    erc20_on_evm::eth::evm_tx_info::{EthOnEvmEvmTxInfo, EthOnEvmEvmTxInfos},
+    erc20_on_evm::eth::evm_tx_info::{Erc20OnEvmEvmTxInfo, Erc20OnEvmEvmTxInfos},
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };
@@ -46,7 +46,7 @@ pub struct EvmTxInfo {
 impl EvmTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
         tx: &T,
-        evm_tx_info: &EthOnEvmEvmTxInfo,
+        evm_tx_info: &Erc20OnEvmEvmTxInfo,
         maybe_nonce: Option<u64>,
         evm_latest_block_number: usize,
         dictionary: &EthEvmTokenDictionary,
@@ -82,7 +82,7 @@ impl EvmTxInfo {
 
 pub fn get_evm_signed_tx_info_from_evm_txs(
     txs: &[EthTransaction],
-    evm_tx_info: &EthOnEvmEvmTxInfos,
+    evm_tx_info: &Erc20OnEvmEvmTxInfos,
     eth_account_nonce: u64,
     use_any_sender_tx_type: bool,
     any_sender_nonce: u64,

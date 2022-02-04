@@ -7,6 +7,4 @@ use crate::{
     types::Result,
 };
 
-create_eth_safe_address_diversion_fxns!(
-    "Erc20OnEosRedeemInfo" => "Eos" => "erc20_on_eos_redeem_infos" => "token", "vault"
-);
+create_eth_safe_address_diversion_fxns!("Erc20OnEosRedeemInfo" => "Eos" => "token", "vault");

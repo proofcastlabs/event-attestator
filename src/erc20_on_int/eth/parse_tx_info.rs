@@ -11,12 +11,12 @@ use crate::{
         eth_utils::safely_convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    erc20_on_int::eth::int_tx_info::{EthOnIntIntTxInfo, EthOnIntIntTxInfos},
+    erc20_on_int::eth::int_tx_info::{Erc20OnIntIntTxInfo, Erc20OnIntIntTxInfos},
     traits::DatabaseInterface,
     types::Result,
 };
 
-impl EthOnIntIntTxInfos {
+impl Erc20OnIntIntTxInfos {
     fn is_log_erc20_on_evm_peg_in(log: &EthLog, vault_address: &EthAddress) -> Result<bool> {
         let log_contains_topic = log.contains_topic(&ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2);
         let log_is_from_vault_address = log.address == *vault_address;
@@ -46,7 +46,7 @@ impl EthOnIntIntTxInfos {
                 .iter()
                 .map(|log| {
                     let event_params = Erc20VaultPegInEventParams::from_eth_log(log)?;
-                    let tx_info = EthOnIntIntTxInfo {
+                    let tx_info = Erc20OnIntIntTxInfo {
                         router_address: *router_address,
                         token_sender: event_params.token_sender,
                         user_data: event_params.user_data.clone(),
@@ -61,7 +61,7 @@ impl EthOnIntIntTxInfos {
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)
                 })
-                .collect::<Result<Vec<EthOnIntIntTxInfo>>>()?,
+                .collect::<Result<Vec<Erc20OnIntIntTxInfo>>>()?,
         ))
     }
 
@@ -71,16 +71,16 @@ impl EthOnIntIntTxInfos {
         dictionary: &EthEvmTokenDictionary,
         router_address: &EthAddress,
     ) -> Result<Self> {
-        info!("✔ Getting `EthOnIntIntTxInfos` from submission material...");
+        info!("✔ Getting `Erc20OnIntIntTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
                 .map(|receipt| Self::from_eth_receipt(receipt, vault_address, dictionary, router_address))
-                .collect::<Result<Vec<EthOnIntIntTxInfos>>>()?
+                .collect::<Result<Vec<Erc20OnIntIntTxInfos>>>()?
                 .iter()
                 .map(|infos| infos.iter().cloned().collect())
-                .collect::<Vec<Vec<EthOnIntIntTxInfo>>>()
+                .collect::<Vec<Vec<Erc20OnIntIntTxInfo>>>()
                 .concat(),
         ))
     }
@@ -103,7 +103,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                     "✔ {} receipts in canon block ∴ parsing info...",
                     submission_material.receipts.len()
                 );
-                EthOnIntIntTxInfos::from_submission_material(
+                Erc20OnIntIntTxInfos::from_submission_material(
                     &submission_material,
                     &state.eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
                     &EthEvmTokenDictionary::get_from_db(state.db)?,
@@ -137,7 +137,7 @@ mod tests {
         let dictionary = get_sample_token_dictionary();
         let router_address = get_sample_router_address();
         let results =
-            EthOnIntIntTxInfos::from_submission_material(&material, &vault_address, &dictionary, &router_address)
+            Erc20OnIntIntTxInfos::from_submission_material(&material, &vault_address, &dictionary, &router_address)
                 .unwrap();
         let expected_num_results = 1;
         assert_eq!(results.len(), expected_num_results);

@@ -4,7 +4,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use crate::{metadata::metadata_chain_id::MetadataChainId, types::Bytes};
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Constructor)]
-pub struct EthOnIntIntTxInfo {
+pub struct Erc20OnIntIntTxInfo {
     pub native_token_amount: U256,
     pub token_sender: EthAddress,
     pub originating_tx_hash: EthHash,
@@ -18,4 +18,4 @@ pub struct EthOnIntIntTxInfo {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
-pub struct EthOnIntIntTxInfos(pub Vec<EthOnIntIntTxInfo>);
+pub struct Erc20OnIntIntTxInfos(pub Vec<Erc20OnIntIntTxInfo>);

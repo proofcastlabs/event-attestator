@@ -7,6 +7,4 @@ use crate::{
     types::Result,
 };
 
-create_eth_safe_address_diversion_fxns!(
-    "IntOnEvmEvmTxInfo" => "Eth" => "int_on_evm_evm_tx_infos" => "token"
-);
+create_eth_safe_address_diversion_fxns!("IntOnEvmEvmTxInfo" => "Eth" => "token");

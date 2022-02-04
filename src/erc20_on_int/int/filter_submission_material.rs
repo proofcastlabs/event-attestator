@@ -6,12 +6,12 @@ use crate::{
         eth_submission_material::EthSubmissionMaterial,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    erc20_on_int::int::eth_tx_info::EthOnIntEthTxInfos,
+    erc20_on_int::int::eth_tx_info::Erc20OnIntEthTxInfos,
     traits::DatabaseInterface,
     types::Result,
 };
 
-impl EthOnIntEthTxInfos {
+impl Erc20OnIntEthTxInfos {
     fn receipt_contains_redeem_event(receipt: &EthReceipt, dictionary: &EthEvmTokenDictionary) -> bool {
         Self::get_logs_with_redeem_event_from_receipt(receipt, dictionary).len() > 0
     }
@@ -29,7 +29,7 @@ impl EthOnIntEthTxInfos {
             submission_material
                 .receipts
                 .iter()
-                .filter(|receipt| EthOnIntEthTxInfos::receipt_contains_redeem_event(receipt, dictionary))
+                .filter(|receipt| Erc20OnIntEthTxInfos::receipt_contains_redeem_event(receipt, dictionary))
                 .cloned()
                 .collect(),
         );
@@ -54,7 +54,7 @@ pub fn filter_submission_material_for_redeem_events_in_state<D: DatabaseInterfac
             &[*ERC777_REDEEM_EVENT_TOPIC_V2],
         )
         .and_then(|filtered_submission_material| {
-            EthOnIntEthTxInfos::filter_submission_material_for_supported_redeems(
+            Erc20OnIntEthTxInfos::filter_submission_material_for_supported_redeems(
                 &filtered_submission_material,
                 state.get_eth_evm_token_dictionary()?,
             )
@@ -72,7 +72,7 @@ mod tests {
         let dictionary = get_sample_token_dictionary();
         let material = get_sample_peg_out_submission_material();
         let result =
-            EthOnIntEthTxInfos::filter_submission_material_for_supported_redeems(&material, &dictionary).unwrap();
+            Erc20OnIntEthTxInfos::filter_submission_material_for_supported_redeems(&material, &dictionary).unwrap();
         let expected_num_receipts = 1;
         assert_eq!(result.receipts.len(), expected_num_receipts);
     }

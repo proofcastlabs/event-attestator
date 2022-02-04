@@ -5,7 +5,7 @@ use crate::{
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_int::{
         fees_calculator::{FeeCalculator, FeesCalculator},
-        int::eth_tx_info::{EthOnIntEthTxInfo, EthOnIntEthTxInfos},
+        int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos},
     },
     fees::fee_constants::DISABLE_FEES,
     traits::DatabaseInterface,
@@ -14,7 +14,7 @@ use crate::{
 
 const TX_INFO_TYPE: &str = "Erc20OnIntEthTxInfos";
 
-impl FeeCalculator for EthOnIntEthTxInfo {
+impl FeeCalculator for Erc20OnIntEthTxInfo {
     fn get_token_address(&self) -> EthAddress {
         debug!(
             "Getting token address in `{}` of {}",
@@ -45,7 +45,7 @@ impl FeeCalculator for EthOnIntEthTxInfo {
     }
 }
 
-impl FeesCalculator for EthOnIntEthTxInfos {
+impl FeesCalculator for Erc20OnIntEthTxInfos {
     fn get_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
         debug!("Calculating fees in `{}`...", TX_INFO_TYPE);
         self.iter()
@@ -66,13 +66,13 @@ impl FeesCalculator for EthOnIntEthTxInfos {
                             info.subtract_amount(*fee)
                         }
                     })
-                    .collect::<Result<Vec<EthOnIntEthTxInfo>>>()?,
+                    .collect::<Result<Vec<Erc20OnIntEthTxInfo>>>()?,
             ))
         })
     }
 }
 
-impl EthOnIntEthTxInfo {
+impl Erc20OnIntEthTxInfo {
     fn update_amount(&self, new_amount: U256) -> Self {
         let mut new_self = self.clone();
         new_self.native_token_amount = new_amount;

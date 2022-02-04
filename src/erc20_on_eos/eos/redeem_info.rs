@@ -121,7 +121,7 @@ impl FeeCalculator for Erc20OnEosRedeemInfo {
 
     fn get_eth_token_address(&self) -> EthAddress {
         debug!(
-            "Getting EOS token address in `EthOnEvmEvmTxInfo` of {}",
+            "Getting EOS token address in `Erc20OnEvmEvmTxInfo` of {}",
             self.eth_token_address
         );
         self.eth_token_address
@@ -129,7 +129,7 @@ impl FeeCalculator for Erc20OnEosRedeemInfo {
 
     fn get_eos_token_address(&self) -> Result<EosAccountName> {
         debug!(
-            "Getting EOS token address in `EthOnEvmEvmTxInfo` of {}",
+            "Getting EOS token address in `Erc20OnEvmEvmTxInfo` of {}",
             self.eos_token_address
         );
         Ok(EosAccountName::from_str(&self.eos_token_address)?)

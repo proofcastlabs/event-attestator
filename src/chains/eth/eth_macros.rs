@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! create_eth_safe_address_diversion_fxns {
-    ($struct_name:expr => $state_name:expr => $tx_infos_name:expr => $($contract_name:expr),*) => {
+    ($struct_name:expr => $state_name:expr => $($contract_name:expr),*) => {
         paste! {
             use crate::constants::SAFE_ETH_ADDRESS;
 
@@ -45,14 +45,14 @@ macro_rules! create_eth_safe_address_diversion_fxns {
                 pub fn [<maybe_divert_txs_to_safe_address_if_destination_is_ $contract_name _address>]<D: DatabaseInterface>(
                     state: [< $state_name State>]<D>,
                 ) -> Result<[< $state_name State>]<D>> {
-                    if state.[< $tx_infos_name >].is_empty() {
+                    if state.[< $struct_name:snake s >].is_empty() {
                         Ok(state)
                     } else {
                         info!("✔ Maybe diverting txs to safe address if destination matches {} address...", $contract_name);
                         let new_infos = state
-                            .[< $tx_infos_name >]
+                            .[< $struct_name:snake s >]
                             .[<divert_to_safe_address_if_destination_is_ $contract_name _contract_address>]();
-                        state.[<replace_ $tx_infos_name >](new_infos)
+                        state.[<replace_ $struct_name:snake s >](new_infos)
                     }
                 }
             )*

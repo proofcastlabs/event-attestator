@@ -8,12 +8,12 @@ use crate::{
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
     },
-    erc20_on_int::eth::int_tx_info::EthOnIntIntTxInfos,
+    erc20_on_int::eth::int_tx_info::Erc20OnIntIntTxInfos,
     traits::DatabaseInterface,
     types::Result,
 };
 
-impl EthOnIntIntTxInfos {
+impl Erc20OnIntIntTxInfos {
     fn receipt_contains_supported_erc20_on_evm_peg_in(receipt: &EthReceipt, vault_address: &EthAddress) -> bool {
         Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, vault_address).len() > 0
     }
@@ -32,7 +32,7 @@ impl EthOnIntIntTxInfos {
                 .receipts
                 .iter()
                 .filter(|receipt| {
-                    EthOnIntIntTxInfos::receipt_contains_supported_erc20_on_evm_peg_in(receipt, vault_address)
+                    Erc20OnIntIntTxInfos::receipt_contains_supported_erc20_on_evm_peg_in(receipt, vault_address)
                 })
                 .cloned()
                 .collect(),
@@ -56,7 +56,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(&vault_address, &[*ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2])
         .and_then(|filtered_submission_material| {
-            EthOnIntIntTxInfos::filter_eth_submission_material_for_supported_peg_ins(
+            Erc20OnIntIntTxInfos::filter_eth_submission_material_for_supported_peg_ins(
                 &filtered_submission_material,
                 &vault_address,
             )
@@ -74,7 +74,7 @@ mod tests {
         let material = get_sample_peg_in_1_submission_material();
         let vault_address = get_sample_vault_address();
         let result =
-            EthOnIntIntTxInfos::filter_eth_submission_material_for_supported_peg_ins(&material, &vault_address)
+            Erc20OnIntIntTxInfos::filter_eth_submission_material_for_supported_peg_ins(&material, &vault_address)
                 .unwrap();
         let expected_num_receipts = 1;
         assert_eq!(result.receipts.len(), expected_num_receipts);

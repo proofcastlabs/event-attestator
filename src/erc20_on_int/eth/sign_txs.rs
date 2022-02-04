@@ -11,13 +11,13 @@ use crate::{
         eth_state::EthState,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    erc20_on_int::eth::int_tx_info::{EthOnIntIntTxInfo, EthOnIntIntTxInfos},
+    erc20_on_int::eth::int_tx_info::{Erc20OnIntIntTxInfo, Erc20OnIntIntTxInfos},
     metadata::metadata_traits::ToMetadata,
     traits::DatabaseInterface,
     types::Result,
 };
 
-impl EthOnIntIntTxInfo {
+impl Erc20OnIntIntTxInfo {
     pub fn to_int_signed_tx(
         &self,
         nonce: u64,
@@ -56,7 +56,7 @@ impl EthOnIntIntTxInfo {
     }
 }
 
-impl EthOnIntIntTxInfos {
+impl Erc20OnIntIntTxInfos {
     pub fn to_int_signed_txs(
         &self,
         start_nonce: u64,
@@ -71,7 +71,7 @@ impl EthOnIntIntTxInfos {
             self.iter()
                 .enumerate()
                 .map(|(i, tx_info)| {
-                    EthOnIntIntTxInfo::to_int_signed_tx(
+                    Erc20OnIntIntTxInfo::to_int_signed_tx(
                         tx_info,
                         start_nonce + i as u64,
                         chain_id,

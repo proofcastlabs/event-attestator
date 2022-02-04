@@ -12,8 +12,8 @@ use crate::{
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_int::eth::int_tx_info::{
-        EthOnIntIntTxInfo as EthOnIntEvmTxInfo,
-        EthOnIntIntTxInfos as EthOnIntEvmTxInfos,
+        Erc20OnIntIntTxInfo as EthOnIntEvmTxInfo,
+        Erc20OnIntIntTxInfos as EthOnIntEvmTxInfos,
     },
     traits::DatabaseInterface,
     types::{NoneError, Result},

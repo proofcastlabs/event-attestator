@@ -8,6 +8,4 @@ use crate::{
     types::Result,
 };
 
-create_eth_safe_address_diversion_fxns!(
-    "BtcOnEthEthTxInfo" => "Btc" => "btc_on_eth_eth_tx_infos" => "token"
-);
+create_eth_safe_address_diversion_fxns!("BtcOnEthEthTxInfo" => "Btc" => "token");
