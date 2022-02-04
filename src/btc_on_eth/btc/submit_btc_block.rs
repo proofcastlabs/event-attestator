@@ -3,9 +3,9 @@ use crate::{
         btc::{
             account_for_fees::maybe_account_for_fees,
             divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
-            eth_tx_info::parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state,
             filter_eth_tx_infos::maybe_filter_out_value_too_low_btc_on_eth_eth_tx_infos_in_state,
             get_btc_output_json::{create_btc_output_json_and_put_in_state, get_btc_output_as_string},
+            parse_tx_infos::parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state,
             sign_any_sender_transactions::maybe_sign_any_sender_canon_block_txs_and_add_to_state,
             sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,
         },

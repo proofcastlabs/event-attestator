@@ -1,10 +1,71 @@
+use ethereum_types::U256;
+
 use crate::{
-    btc_on_eth::btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
+    btc_on_eth::{
+        btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
+        utils::{convert_satoshis_to_wei, convert_wei_to_satoshis},
+    },
     chains::btc::btc_state::BtcState,
-    fees::{fee_constants::DISABLE_FEES, fee_database_utils::FeeDatabaseUtils},
+    constants::FEE_BASIS_POINTS_DIVISOR,
+    fees::{
+        fee_constants::DISABLE_FEES,
+        fee_database_utils::FeeDatabaseUtils,
+        fee_utils::sanity_check_basis_points_value,
+    },
     traits::DatabaseInterface,
     types::Result,
 };
+
+impl BtcOnEthEthTxInfos {
+    #[cfg(test)]
+    fn sum(&self) -> U256 {
+        self.iter().fold(U256::zero(), |a, params| a + params.amount)
+    }
+
+    fn calculate_fees(&self, basis_points: u64) -> Result<(Vec<u64>, u64)> {
+        sanity_check_basis_points_value(basis_points).map(|_| {
+            info!("✔ Calculating fees in `BtcOnEthEthTxInfos`...");
+            let fees = self
+                .iter()
+                .map(|eth_tx_infos| eth_tx_infos.calculate_fee(basis_points))
+                .collect::<Vec<u64>>();
+            let total_fee = fees.iter().sum();
+            info!("✔      Fees: {:?}", fees);
+            info!("✔ Total fee: {:?}", fees);
+            (fees, total_fee)
+        })
+    }
+}
+
+impl BtcOnEthEthTxInfo {
+    fn to_satoshi_amount(&self) -> u64 {
+        convert_wei_to_satoshis(self.amount)
+    }
+
+    fn calculate_fee(&self, basis_points: u64) -> u64 {
+        (self.to_satoshi_amount() * basis_points) / FEE_BASIS_POINTS_DIVISOR
+    }
+
+    fn update_amount(&self, new_amount: U256) -> Self {
+        let mut new_self = self.clone();
+        new_self.amount = new_amount;
+        new_self
+    }
+
+    fn subtract_satoshi_amount(&self, subtrahend: u64) -> Result<Self> {
+        let self_amount_in_satoshis = self.to_satoshi_amount();
+        if subtrahend > self_amount_in_satoshis {
+            Err("Cannot subtract amount from `BtcOnEthEthTxInfo`: subtrahend too large!".into())
+        } else {
+            let amount_minus_fee = self_amount_in_satoshis - subtrahend;
+            debug!(
+                "Subtracted amount of {} from current eth tx infos amount of {} to get final amount of {}",
+                subtrahend, self_amount_in_satoshis, amount_minus_fee
+            );
+            Ok(self.update_amount(convert_satoshis_to_wei(amount_minus_fee)))
+        }
+    }
+}
 
 pub fn subtract_fees_from_eth_tx_infos(
     eth_tx_infos: &BtcOnEthEthTxInfos,
@@ -73,6 +134,7 @@ mod tests {
     use crate::{
         btc_on_eth::utils::convert_satoshis_to_wei,
         chains::btc::btc_test_utils::get_sample_eth_tx_infos,
+        errors::AppError,
         fees::fee_database_utils::FeeDatabaseUtils,
         test_utils::get_test_database,
     };
@@ -152,5 +214,54 @@ mod tests {
             .get_accrued_fees_from_db(&db)
             .unwrap();
         assert_eq!(accrued_fees_after, 0);
+    }
+
+    #[test]
+    fn should_calculate_fee() {
+        let params = get_sample_eth_tx_infos()[0].clone();
+        let basis_points = 25;
+        let expected_result = 12;
+        let result = params.calculate_fee(basis_points);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_calculate_fees() {
+        let basis_points = 25;
+        let params = get_sample_eth_tx_infos();
+        let (fees, total_fee) = params.calculate_fees(basis_points).unwrap();
+        let expected_total_fee = 36;
+        let expected_fees = vec![12, 12, 12];
+        assert_eq!(total_fee, expected_total_fee);
+        assert_eq!(fees, expected_fees);
+    }
+
+    #[test]
+    fn should_get_amount_in_satoshi() {
+        let params = get_sample_eth_tx_infos()[0].clone();
+        let result = params.to_satoshi_amount();
+        let expected_result = 5000;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_subtract_satoshi_amount() {
+        let params = get_sample_eth_tx_infos()[0].clone();
+        let subtracted_params = params.subtract_satoshi_amount(1).unwrap();
+        let expected_result = 4999;
+        let result = subtracted_params.to_satoshi_amount();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_error_subtracting_amount_if_subtrahend_is_too_large() {
+        let params = get_sample_eth_tx_infos()[0].clone();
+        let subtrahend = (params.amount + 1).as_u64();
+        let expected_error = "Cannot subtract amount from `BtcOnEthEthTxInfo`: subtrahend too large!";
+        match params.subtract_satoshi_amount(subtrahend) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
     }
 }
