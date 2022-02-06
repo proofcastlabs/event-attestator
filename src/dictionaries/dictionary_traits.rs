@@ -5,10 +5,7 @@ use crate::types::Result;
 pub trait DictionaryDecimalConverter {
     fn get_host_decimals(&self) -> Result<u16>;
     fn get_native_decimals(&self) -> Result<u16>;
-
-    fn requires_decimal_conversion(&self) -> Result<bool> {
-        Ok(self.get_host_decimals()? != self.get_native_decimals()?)
-    }
+    fn requires_decimal_conversion(&self) -> Result<bool>;
 
     fn convert_native_amount_to_host_amount(&self, amount: U256) -> Result<U256> {
         self.convert_amount(amount, true)

@@ -34,6 +34,10 @@ pub struct EvmAlgoTokenDictionaryEntryJson {
 }
 
 impl DictionaryDecimalConverter for EvmAlgoTokenDictionaryEntry {
+    fn requires_decimal_conversion(&self) -> Result<bool> {
+        Ok(self.get_host_decimals()? != self.get_native_decimals()?)
+    }
+
     fn get_host_decimals(&self) -> Result<u16> {
         Ok(self.algo_token_decimals)
     }
