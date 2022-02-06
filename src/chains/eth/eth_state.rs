@@ -17,7 +17,7 @@ use crate::{
             eth_submission_material::EthSubmissionMaterial,
         },
     },
-    dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary},
+    dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary, evm_algo::EvmAlgoTokenDictionary},
     eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfos,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
     erc20_on_evm::{eth::evm_tx_info::Erc20OnEvmEvmTxInfos, evm::eth_tx_info::Erc20OnEvmEthTxInfos},
@@ -64,6 +64,7 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub eth_submission_material: Option<EthSubmissionMaterial>,
     pub eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
     pub eth_evm_token_dictionary: Option<EthEvmTokenDictionary>,
+    pub evm_algo_token_dictionary: Option<EvmAlgoTokenDictionary>,
 }
 
 impl<'a, D: DatabaseInterface> EthState<'a, D> {
@@ -77,6 +78,7 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             eth_submission_material: None,
             eth_evm_token_dictionary: None,
             eos_eth_token_dictionary: None,
+            evm_algo_token_dictionary: None,
             eth_db_utils: EthDbUtils::new(db),
             evm_db_utils: EvmDbUtils::new(db),
             eos_db_utils: EosDbUtils::new(db),
@@ -106,6 +108,13 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         match self.eth_evm_token_dictionary {
             Some(ref dictionary) => Ok(dictionary),
             None => Err(get_not_in_state_err("eth_evm_token_dictionary").into()),
+        }
+    }
+
+    pub fn get_evm_algo_token_dictionary(&self) -> Result<&EvmAlgoTokenDictionary> {
+        match self.evm_algo_token_dictionary {
+            Some(ref dictionary) => Ok(dictionary),
+            None => Err(get_not_in_state_err("evm_algo_token_dictionary").into()),
         }
     }
 
@@ -372,6 +381,16 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             Some(_) => Err(get_no_overwrite_state_err("eth_evm_token_dictionary").into()),
             None => {
                 self.eth_evm_token_dictionary = Some(dictionary);
+                Ok(self)
+            },
+        }
+    }
+
+    pub fn add_evm_algo_dictionary(mut self, dictionary: EvmAlgoTokenDictionary) -> Result<Self> {
+        match self.evm_algo_token_dictionary {
+            Some(_) => Err(get_no_overwrite_state_err("evm_algo_token_dictionary").into()),
+            None => {
+                self.evm_algo_token_dictionary = Some(dictionary);
                 Ok(self)
             },
         }

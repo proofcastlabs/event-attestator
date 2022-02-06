@@ -2,6 +2,7 @@ use rust_algorand::AlgorandBlock;
 
 use crate::{
     chains::{algo::algo_database_utils::AlgoDbUtils, eth::eth_database_utils::EthDbUtils},
+    dictionaries::evm_algo::EvmAlgoTokenDictionary,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -12,6 +13,7 @@ pub struct AlgoState<'a, D: DatabaseInterface> {
     algo_block: Option<AlgorandBlock>,
     pub eth_db_utils: EthDbUtils<'a, D>,
     pub algo_db_utils: AlgoDbUtils<'a, D>,
+    pub evm_algo_token_dictionary: Option<EvmAlgoTokenDictionary>,
 }
 
 impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
@@ -19,6 +21,7 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         Self {
             db,
             algo_block: None,
+            evm_algo_token_dictionary: None,
             eth_db_utils: EthDbUtils::new(db),
             algo_db_utils: AlgoDbUtils::new(db),
         }
@@ -49,6 +52,22 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         match self.algo_block {
             Some(ref block) => Ok(block.clone()),
             None => Err(Self::get_not_in_state_err("algo block").into()),
+        }
+    }
+
+    pub fn add_evm_algo_dictionary(mut self, dictionary: EvmAlgoTokenDictionary) -> Result<Self> {
+        if self.get_evm_algo_token_dictionary().is_ok() {
+            Err(Self::get_no_overwrite_err("evm_algo_token_dictionary").into())
+        } else {
+            self.evm_algo_token_dictionary = Some(dictionary);
+            Ok(self)
+        }
+    }
+
+    pub fn get_evm_algo_token_dictionary(&self) -> Result<EvmAlgoTokenDictionary> {
+        match &self.evm_algo_token_dictionary {
+            Some(dict) => Ok(dict.clone()),
+            None => Err("No `EvmAlgoTokenDictionary` in state!".into()),
         }
     }
 }
