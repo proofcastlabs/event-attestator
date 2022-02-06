@@ -9,7 +9,7 @@ use serde_json::json;
 use crate::{
     chains::{algo::algo_state::AlgoState, eth::eth_state::EthState},
     constants::MIN_DATA_SENSITIVITY_LEVEL,
-    dictionaries::dictionary_constants::EVM_ALGO_DICTIONARY_KEY,
+    dictionaries::{dictionary_constants::EVM_ALGO_DICTIONARY_KEY, dictionary_traits::DictionaryDecimalConverter},
     errors::AppError,
     fees::fee_utils::get_last_withdrawal_date_as_human_readable_string,
     traits::DatabaseInterface,
@@ -31,6 +31,16 @@ pub struct EvmAlgoTokenDictionaryEntryJson {
     pub algo_address: String,
     pub evm_token_decimals: u16,
     pub algo_token_decimals: u16,
+}
+
+impl DictionaryDecimalConverter for EvmAlgoTokenDictionaryEntry {
+    fn get_host_decimals(&self) -> Result<u16> {
+        Ok(self.algo_token_decimals)
+    }
+
+    fn get_native_decimals(&self) -> Result<u16> {
+        Ok(self.evm_token_decimals)
+    }
 }
 
 impl EvmAlgoTokenDictionaryEntry {
@@ -58,40 +68,12 @@ impl EvmAlgoTokenDictionaryEntry {
 
     pub fn convert_evm_amount_to_algo_amount(&self, amount: U256) -> Result<U256> {
         info!("✔ Converting from EVM amount to ALGO amount...");
-        self.convert_amount(amount, true)
+        self.convert_native_amount_to_host_amount(amount)
     }
 
     pub fn convert_algo_amount_to_evm_amount(&self, amount: U256) -> Result<U256> {
         info!("✔ Converting from ALGO amount to EVM amount...");
-        self.convert_amount(amount, false)
-    }
-
-    fn convert_amount(&self, amount: U256, convert_evm_to_algo: bool) -> Result<U256> {
-        // TODO This should be a trait on the dictionary type with this as a default impl.
-        if self.requires_decimal_conversion() {
-            let algo_token_decimals = self.algo_token_decimals;
-            let evm_token_decimals = self.evm_token_decimals;
-            let to = if convert_evm_to_algo {
-                evm_token_decimals
-            } else {
-                algo_token_decimals
-            };
-            let from = if convert_evm_to_algo {
-                algo_token_decimals
-            } else {
-                evm_token_decimals
-            };
-            let multiplicand = U256::from(10).pow(U256::from(to));
-            let divisor = U256::from(10).pow(U256::from(from));
-            info!("✔ Converting {} from {} decimals to {}...", amount, from, to);
-            Ok((amount * multiplicand) / divisor)
-        } else {
-            info!(
-                "✔ Amounts for this dictionary entry do NOT require decimal conversion! {:?}",
-                self,
-            );
-            Ok(amount)
-        }
+        self.convert_host_amount_to_native_amount(amount)
     }
 }
 
