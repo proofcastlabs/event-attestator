@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, U256};
-use rust_algorand::AlgorandAddress;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -19,18 +18,18 @@ use crate::{
 
 #[derive(Default, Debug, Clone, Eq, PartialEq, Constructor, Deserialize, Serialize)]
 pub struct EvmAlgoTokenDictionaryEntry {
-    pub evm_token_decimals: u16,
-    pub algo_token_decimals: u16,
+    pub evm_decimals: u16,
+    pub algo_decimals: u16,
+    pub algo_asset_id: u64,
     pub evm_address: EthAddress,
-    pub algo_address: AlgorandAddress,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Constructor, Deserialize, Serialize)]
 pub struct EvmAlgoTokenDictionaryEntryJson {
+    pub evm_decimals: u16,
+    pub algo_decimals: u16,
+    pub algo_asset_id: u64,
     pub evm_address: String,
-    pub algo_address: String,
-    pub evm_token_decimals: u16,
-    pub algo_token_decimals: u16,
 }
 
 impl DictionaryDecimalConverter for EvmAlgoTokenDictionaryEntry {
@@ -39,33 +38,33 @@ impl DictionaryDecimalConverter for EvmAlgoTokenDictionaryEntry {
     }
 
     fn get_host_decimals(&self) -> Result<u16> {
-        Ok(self.algo_token_decimals)
+        Ok(self.algo_decimals)
     }
 
     fn get_native_decimals(&self) -> Result<u16> {
-        Ok(self.evm_token_decimals)
+        Ok(self.evm_decimals)
     }
 }
 
 impl EvmAlgoTokenDictionaryEntry {
     fn requires_decimal_conversion(&self) -> bool {
-        self.algo_token_decimals != self.evm_token_decimals
+        self.algo_decimals != self.evm_decimals
     }
 
-    fn to_json(&self) -> Result<EvmAlgoTokenDictionaryEntryJson> {
+    pub fn to_json(&self) -> Result<EvmAlgoTokenDictionaryEntryJson> {
         Ok(EvmAlgoTokenDictionaryEntryJson {
-            algo_address: self.algo_address.to_string(),
-            evm_token_decimals: self.evm_token_decimals,
-            algo_token_decimals: self.algo_token_decimals,
+            evm_decimals: self.evm_decimals,
+            algo_decimals: self.algo_decimals,
+            algo_asset_id: self.algo_asset_id,
             evm_address: hex::encode(&self.evm_address.as_bytes()),
         })
     }
 
     pub fn from_json(json: &EvmAlgoTokenDictionaryEntryJson) -> Result<Self> {
         Ok(Self {
-            algo_token_decimals: json.algo_token_decimals,
-            evm_token_decimals: json.evm_token_decimals,
-            algo_address: AlgorandAddress::from_str(&json.algo_address)?,
+            algo_decimals: json.algo_decimals,
+            evm_decimals: json.evm_decimals,
+            algo_asset_id: json.algo_asset_id,
             evm_address: EthAddress::from_slice(&hex::decode(strip_hex_prefix(&json.evm_address))?),
         })
     }
