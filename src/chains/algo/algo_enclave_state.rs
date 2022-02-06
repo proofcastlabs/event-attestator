@@ -50,7 +50,6 @@ impl AlgoEnclaveState {
         let anchor_block_number = anchor_block.round();
         let anchor_block_hash = anchor_block.hash()?.to_string();
         Ok(Self {
-            algo_fee: db_utils.get_algo_fee()?,
             algo_tail_length: ALGO_TAIL_LENGTH,
             algo_tail_block_hash: tail_block_hash,
             algo_canon_block_hash: canon_block_hash,
@@ -60,6 +59,7 @@ impl AlgoEnclaveState {
             algo_canon_block_number: canon_block_number,
             algo_anchor_block_number: anchor_block_number,
             algo_latest_block_number: latest_block_number,
+            algo_fee: db_utils.get_algo_fee()?.to_algos(),
             algo_safe_address: ALGO_SAFE_ADDRESS.to_string(),
             algo_account_nonce: db_utils.get_algo_account_nonce()?,
             algo_genesis_hash: db_utils.get_genesis_hash()?.to_string(),
@@ -72,7 +72,7 @@ impl AlgoEnclaveState {
 
 #[cfg(test)]
 mod tests {
-    use rust_algorand::AlgorandHash;
+    use rust_algorand::{AlgorandHash, MicroAlgos};
 
     use super::*;
     use crate::{
@@ -101,7 +101,6 @@ mod tests {
         initialize_algo_core(state, &block_json_string, fee, canon_to_tip_length, genesis_id).unwrap();
         let result = AlgoEnclaveState::new(&db_utils).unwrap();
         let expected_result = AlgoEnclaveState {
-            algo_fee: fee,
             algo_account_nonce: 0,
             algo_tail_block_number: block_num,
             algo_tail_length: ALGO_TAIL_LENGTH,
@@ -112,11 +111,12 @@ mod tests {
             algo_canon_block_hash: hash.to_string(),
             algo_anchor_block_hash: hash.to_string(),
             algo_latest_block_hash: hash.to_string(),
+            algo_fee: MicroAlgos::new(fee).to_algos(),
             algo_canon_to_tip_length: canon_to_tip_length,
             algo_safe_address: ALGO_SAFE_ADDRESS.to_string(),
             algo_linker_hash: AlgorandHash::default().to_string(),
             algo_genesis_hash: AlgorandHash::from_genesis_id(&genesis_id).unwrap().to_string(),
-            // NOTE/FIXME: The redeem address is generated randomly on initialization!
+            // NOTE: The redeem address is generated randomly on initialization!
             algo_redeem_address: db_utils
                 .get_algo_private_key()
                 .unwrap()
