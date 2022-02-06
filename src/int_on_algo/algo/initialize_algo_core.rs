@@ -34,7 +34,6 @@ pub fn maybe_initialize_algo_core<D: DatabaseInterface>(
     genesis_id: &str,
     fee: u64,
     canon_to_tip_length: u64,
-    // FIXME Asset ID? etc
 ) -> Result<String> {
     if check_algo_core_is_initialized(&AlgoDbUtils::new(db)).is_ok() {
         Ok(ALGO_CORE_IS_INITIALIZED_JSON.to_string())
@@ -49,7 +48,7 @@ pub fn maybe_initialize_algo_core<D: DatabaseInterface>(
 
 #[cfg(test)]
 mod tests {
-    use rust_algorand::AlgorandHash;
+    use rust_algorand::{AlgorandHash, MicroAlgos};
 
     use super::*;
     use crate::{
@@ -60,6 +59,7 @@ mod tests {
     #[test]
     fn should_maybe_init_algo_core() {
         let fee = 1337;
+        let fee_in_micro_algos = MicroAlgos::new(fee);
         let canon_to_tip_length = 3;
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
@@ -71,7 +71,7 @@ mod tests {
         let expected_result = AlgoInitializationOutput::new(&db_utils).unwrap().to_string().unwrap();
         assert_eq!(result, expected_result);
         assert!(db_utils.get_algo_private_key().is_ok());
-        assert_eq!(db_utils.get_algo_fee().unwrap(), fee);
+        assert_eq!(db_utils.get_algo_fee().unwrap(), fee_in_micro_algos);
         assert_eq!(db_utils.get_algo_account_nonce().unwrap(), 0);
         assert_eq!(db_utils.get_tail_block_hash().unwrap(), hash);
         assert_eq!(

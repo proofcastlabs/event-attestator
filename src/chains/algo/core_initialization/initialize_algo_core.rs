@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use rust_algorand::{AlgorandBlock, AlgorandHash, AlgorandKeys};
+use rust_algorand::{AlgorandBlock, AlgorandHash, AlgorandKeys, MicroAlgos};
 
 use crate::{
     chains::algo::{
@@ -29,7 +29,6 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
         .and_then(|state| {
             let keys = AlgorandKeys::create_random();
             let address = keys.to_address()?;
-            state.algo_db_utils.put_algo_fee_in_db(fee)?;
             state.algo_db_utils.put_algo_account_nonce_in_db(0)?;
             state.algo_db_utils.put_tail_block_hash_in_db(&hash)?;
             state.algo_db_utils.put_tail_block_hash_in_db(&hash)?;
@@ -37,6 +36,7 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
             state.algo_db_utils.put_algo_private_key_in_db(&keys)?;
             state.algo_db_utils.put_redeem_address_in_db(&address)?;
             state.algo_db_utils.put_anchor_block_hash_in_db(&hash)?;
+            state.algo_db_utils.put_algo_fee_in_db(MicroAlgos::new(fee))?;
             state.algo_db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length)?;
             state
                 .algo_db_utils
@@ -56,6 +56,7 @@ mod tests {
     #[test]
     fn should_init_algo_core() {
         let fee = 1337;
+        let fee_in_micro_algos = MicroAlgos::new(fee);
         let canon_to_tip_length = 3;
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
@@ -66,7 +67,7 @@ mod tests {
         let block_json_string = block.to_string();
         initialize_algo_core(state, &block_json_string, fee, canon_to_tip_length, genesis_id).unwrap();
         assert!(db_utils.get_algo_private_key().is_ok());
-        assert_eq!(db_utils.get_algo_fee().unwrap(), fee);
+        assert_eq!(db_utils.get_algo_fee().unwrap(), fee_in_micro_algos);
         assert_eq!(db_utils.get_algo_account_nonce().unwrap(), 0);
         assert_eq!(db_utils.get_tail_block_hash().unwrap(), hash);
         assert_eq!(
