@@ -3,7 +3,7 @@
 use std::{fmt, str::FromStr};
 
 use paste::paste;
-use rust_algorand::{AlgorandAddress, AlgorandBlock, AlgorandHash, AlgorandKeys};
+use rust_algorand::{AlgorandAddress, AlgorandBlock, AlgorandHash, AlgorandKeys, MicroAlgos};
 
 use crate::{
     chains::algo::algo_constants::{ALGO_PTOKEN_GENESIS_HASH, ALGO_TAIL_LENGTH},
@@ -279,14 +279,17 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         }
     }
 
-    pub fn get_algo_fee(&self) -> Result<u64> {
+    pub fn get_algo_fee(&self) -> Result<MicroAlgos> {
         info!("✔ Getting ALGO fee from db...");
-        get_u64_from_db(self.get_db(), &self.algo_fee_key)
+        Ok(MicroAlgos::from_algos(get_u64_from_db(
+            self.get_db(),
+            &self.algo_fee_key,
+        )?)?)
     }
 
-    pub fn put_algo_fee_in_db(&self, fee: u64) -> Result<()> {
+    pub fn put_algo_fee_in_db(&self, fee: MicroAlgos) -> Result<()> {
         info!("✔ Putting ALGO fee of {fee} in db!");
-        put_u64_in_db(self.get_db(), &self.algo_fee_key, fee)
+        put_u64_in_db(self.get_db(), &self.algo_fee_key, fee.to_algos())
     }
 
     pub fn put_canon_to_tip_length_in_db(&self, length: u64) -> Result<()> {
@@ -450,7 +453,7 @@ mod tests {
     fn should_put_and_get_algo_fee_in_db() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let fee = 1000;
+        let fee = MicroAlgos::new(1000);
         db_utils.put_algo_fee_in_db(fee).unwrap();
         let result = db_utils.get_algo_fee().unwrap();
         assert_eq!(result, fee);
