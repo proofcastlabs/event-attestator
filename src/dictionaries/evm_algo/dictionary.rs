@@ -1,5 +1,7 @@
 #![allow(dead_code)] // FIXME rm!
 
+use std::str::FromStr;
+
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
@@ -10,6 +12,7 @@ use crate::{
         dictionary_constants::EVM_ALGO_DICTIONARY_KEY,
         evm_algo::dictionary_entry::{EvmAlgoTokenDictionaryEntry, EvmAlgoTokenDictionaryEntryJson},
     },
+    errors::AppError,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
@@ -172,8 +175,28 @@ impl EvmAlgoTokenDictionary {
     }
 }
 
+impl FromStr for EvmAlgoTokenDictionary {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Self::from_json(&serde_json::from_str::<EvmAlgoTokenDictionaryJson>(s)?)
+    }
+}
+
+impl FromStr for EvmAlgoTokenDictionaryJson {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Ok(Self::new(serde_json::from_str::<Vec<EvmAlgoTokenDictionaryEntryJson>>(
+            s,
+        )?))
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
     use crate::{chains::eth::eth_utils::convert_hex_to_eth_address, test_utils::get_test_database};
 
@@ -304,5 +327,28 @@ mod tests {
         let result = dict.to_algo_asset_ids();
         let expected_result = vec![42, 666];
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_evm_algo_dictionary_from_str() {
+        let s = json!([
+            {
+                "evm_decimals": 1,
+                "algo_decimals": 1,
+                "evm_address": "0x1a86F100DFc0d572E3D3fe4742075c768C442319",
+                "algo_asset_id": 666
+
+            },
+            {
+                "evm_decimals": 2,
+                "algo_decimals": 2,
+                "evm_address": "0x0D0707963952f2fBA59dD06f2b425ace40b492Fe",
+                "algo_asset_id": 1337
+
+            }
+        ])
+        .to_string();
+        let result = EvmAlgoTokenDictionary::from_str(&s);
+        assert!(result.is_ok());
     }
 }
