@@ -782,6 +782,7 @@ dependencies = [
 name = "ptokens_core"
 version = "5.26.0"
 dependencies = [
+ "base64",
  "bitcoin",
  "bs58",
  "byteorder",
