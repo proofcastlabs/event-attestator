@@ -86,6 +86,14 @@ impl FromStr for EvmAlgoTokenDictionaryEntryJson {
     }
 }
 
+impl FromStr for EvmAlgoTokenDictionaryEntry {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Self::from_json(&serde_json::from_str::<EvmAlgoTokenDictionaryEntryJson>(s)?)
+    }
+}
+
 impl std::fmt::Display for EvmAlgoTokenDictionaryEntryJson {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", json!(self))
@@ -102,5 +110,12 @@ mod tests {
         let json = entry.to_json().unwrap();
         let result = EvmAlgoTokenDictionaryEntry::from_json(&json).unwrap();
         assert_eq!(entry, result);
+    }
+
+    #[test]
+    fn should_get_evm_algo_dictionary_entry_from_str() {
+        let s = "{\"evm_decimals\": 18,\"algo_decimals\": 18,\"algo_asset_id\": 666,\"evm_address\": \"0xCE141c45619e9AdBDBdDA5af19B3052Ff79d5663\"}";
+        let result = EvmAlgoTokenDictionaryEntry::from_str(s);
+        assert!(result.is_ok());
     }
 }
