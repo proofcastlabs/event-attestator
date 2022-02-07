@@ -1,16 +1,10 @@
-use paste::paste;
-use rust_algorand::AlgorandAddress;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::{
-        algo::{
-            algo_constants::{ALGO_PTOKEN_GENESIS_HASH, ALGO_SAFE_ADDRESS, ALGO_TAIL_LENGTH},
-            algo_database_utils::AlgoDbUtils,
-        },
-        eth::{eth_constants::ETH_TAIL_LENGTH, eth_database_utils::EthDbUtilsExt},
+    chains::algo::{
+        algo_constants::{ALGO_SAFE_ADDRESS, ALGO_TAIL_LENGTH},
+        algo_database_utils::AlgoDbUtils,
     },
-    constants::{SAFE_ETH_ADDRESS, SAFE_EVM_ADDRESS},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -87,7 +81,6 @@ mod tests {
     #[test]
     fn should_get_enclave_state_after_core_is_initialized() {
         let db = get_test_database();
-        let db_utils = AlgoDbUtils::new(&db);
         let fee = 1337;
         let canon_to_tip_length = 3;
         let db = get_test_database();

@@ -1,19 +1,17 @@
+#![allow(dead_code)] // FIXME rm!
+
 use std::str::FromStr;
 
-use derive_more::{Constructor, Deref, DerefMut};
+use derive_more::Constructor;
 use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    chains::{algo::algo_state::AlgoState, eth::eth_state::EthState},
-    constants::MIN_DATA_SENSITIVITY_LEVEL,
-    dictionaries::{dictionary_constants::EVM_ALGO_DICTIONARY_KEY, dictionary_traits::DictionaryDecimalConverter},
+    dictionaries::dictionary_traits::DictionaryDecimalConverter,
     errors::AppError,
-    fees::fee_utils::get_last_withdrawal_date_as_human_readable_string,
-    traits::DatabaseInterface,
-    types::{Byte, Bytes, Result},
-    utils::{get_unix_timestamp, strip_hex_prefix},
+    types::Result,
+    utils::strip_hex_prefix,
 };
 
 #[derive(Default, Debug, Clone, Eq, PartialEq, Constructor, Deserialize, Serialize)]
@@ -90,7 +88,7 @@ impl FromStr for EvmAlgoTokenDictionaryEntryJson {
 
 impl std::fmt::Display for EvmAlgoTokenDictionaryEntryJson {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", json!(self).to_string())
+        write!(f, "{}", json!(self))
     }
 }
 

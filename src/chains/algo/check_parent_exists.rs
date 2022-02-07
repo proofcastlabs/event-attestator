@@ -28,7 +28,6 @@ mod tests {
         blocks
             .iter()
             .for_each(|block| state.algo_db_utils.put_block_in_db(&block).unwrap());
-        let block = blocks[1].clone();
         let expected_error = "✘ ALGO block Rejected - no parent exists in database!";
         blocks.iter().enumerate().for_each(|(i, block)| {
             let state = AlgoState::init(&db).add_submitted_algo_block(&block).unwrap();

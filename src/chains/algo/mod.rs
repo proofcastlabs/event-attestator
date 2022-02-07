@@ -1,3 +1,5 @@
+#![allow(dead_code)] // FIXME rm!
+
 pub(crate) mod add_latest_algo_block;
 pub(crate) mod algo_constants;
 pub(crate) mod algo_database_transactions;

@@ -1,11 +1,5 @@
-use rust_algorand::{AlgorandBlock, AlgorandHash};
-
 use crate::{
-    chains::algo::{
-        algo_database_utils::AlgoDbUtils,
-        algo_state::AlgoState,
-        get_candidate_block_hash::maybe_get_new_candidate_block_hash,
-    },
+    chains::algo::{algo_state::AlgoState, get_candidate_block_hash::maybe_get_new_candidate_block_hash},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -34,7 +28,10 @@ pub fn maybe_update_algo_canon_block_hash_and_return_state<D: DatabaseInterface>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{chains::algo::test_utils::get_sample_contiguous_blocks, test_utils::get_test_database};
+    use crate::{
+        chains::algo::{algo_database_utils::AlgoDbUtils, test_utils::get_sample_contiguous_blocks},
+        test_utils::get_test_database,
+    };
 
     #[test]
     fn should_not_update_canon_block_hash_if_no_candidate_found() {
@@ -70,7 +67,6 @@ mod tests {
         let num_blocks = contiguous_blocks.len();
         let canon_to_tip_length = 5;
         let current_canon_block = contiguous_blocks[num_blocks - (canon_to_tip_length + 3)].clone();
-        let latest_block_hash = contiguous_blocks[num_blocks - 1].hash().unwrap();
         let current_canon_block_hash = current_canon_block.hash().unwrap();
         let expected_result = contiguous_blocks[num_blocks - (canon_to_tip_length + 1)]
             .hash()
@@ -100,7 +96,6 @@ mod tests {
         let num_blocks = contiguous_blocks.len();
         let canon_to_tip_length = 5;
         let current_canon_block = contiguous_blocks[num_blocks - canon_to_tip_length].clone();
-        let latest_block_hash = contiguous_blocks[num_blocks - 1].hash().unwrap();
         let current_canon_block_hash = current_canon_block.hash().unwrap();
         let expected_result = current_canon_block_hash.clone();
         contiguous_blocks
@@ -125,7 +120,6 @@ mod tests {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
         let contiguous_blocks = get_sample_contiguous_blocks();
-        let num_blocks = contiguous_blocks.len();
         let canon_to_tip_length = 3;
         let starting_canon_block_hash = contiguous_blocks[0].hash().unwrap();
         db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length).unwrap();

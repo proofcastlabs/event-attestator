@@ -1,3 +1,5 @@
+#![allow(unused_imports)] // FIXM rm!
+
 use crate::{
     chains::eth::{
         add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,

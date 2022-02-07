@@ -1,10 +1,10 @@
+#![allow(dead_code)] // FIXME rm!
+
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, U256};
-use rust_algorand::AlgorandAddress;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::{algo::algo_state::AlgoState, eth::eth_state::EthState},
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     dictionaries::{
         dictionary_constants::EVM_ALGO_DICTIONARY_KEY,
@@ -49,7 +49,7 @@ impl EvmAlgoTokenDictionary {
     }
 
     pub fn get_entry_via_algo_asset_id(&self, asset_id: u64) -> Result<EvmAlgoTokenDictionaryEntry> {
-        match self.iter().find(|entry| &entry.algo_asset_id == &asset_id) {
+        match self.iter().find(|entry| entry.algo_asset_id == asset_id) {
             Some(entry) => Ok(entry.clone()),
             None => Err(format!(
                 "No `EvmAlgoTokenDictionaryEntry` exists with ALGO asset ID: {}",
@@ -174,8 +174,6 @@ impl EvmAlgoTokenDictionary {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
     use super::*;
     use crate::{chains::eth::eth_utils::convert_hex_to_eth_address, test_utils::get_test_database};
 
@@ -268,7 +266,7 @@ mod tests {
     fn should_save_and_get_from_db() {
         let db = get_test_database();
         let dict = get_sample_dictionary();
-        dict.save_in_db(&db);
+        dict.save_in_db(&db).unwrap();
         let result = EvmAlgoTokenDictionary::get_from_db(&db).unwrap();
         assert_eq!(result, dict);
     }

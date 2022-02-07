@@ -1,4 +1,3 @@
-use ethereum_types::H256 as EthHash;
 use rust_algorand::AlgorandHash;
 use serde_json::json;
 

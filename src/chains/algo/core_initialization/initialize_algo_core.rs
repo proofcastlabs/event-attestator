@@ -19,10 +19,10 @@ pub fn initialize_algo_chain_db_keys<D: DatabaseInterface>(
     canon_to_tip_length: u64,
 ) -> Result<()> {
     info!("✔ Initializing ALGO chain DB keys...");
-    algo_db_utils.put_tail_block_hash_in_db(&block_hash)?;
-    algo_db_utils.put_canon_block_hash_in_db(&block_hash)?;
-    algo_db_utils.put_latest_block_hash_in_db(&block_hash)?;
-    algo_db_utils.put_anchor_block_hash_in_db(&block_hash)?;
+    algo_db_utils.put_tail_block_hash_in_db(block_hash)?;
+    algo_db_utils.put_canon_block_hash_in_db(block_hash)?;
+    algo_db_utils.put_latest_block_hash_in_db(block_hash)?;
+    algo_db_utils.put_anchor_block_hash_in_db(block_hash)?;
     algo_db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length)?;
     Ok(())
 }
@@ -51,7 +51,7 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
             initialize_algo_chain_db_keys(&state.algo_db_utils, &hash, canon_to_tip_length)?;
             state
                 .algo_db_utils
-                .put_genesis_hash_in_db(&AlgorandHash::from_genesis_id(genesis_id)?);
+                .put_genesis_hash_in_db(&AlgorandHash::from_genesis_id(genesis_id)?)?;
             Ok(state)
         })
 }

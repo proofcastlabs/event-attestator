@@ -59,7 +59,11 @@ pub fn maybe_update_algo_linker_hash_and_return_state<D: DatabaseInterface>(
 mod tests {
     use super::*;
     use crate::{
-        chains::algo::{algo_constants::ALGO_PTOKEN_GENESIS_HASH, test_utils::get_sample_contiguous_blocks},
+        chains::algo::{
+            algo_constants::ALGO_PTOKEN_GENESIS_HASH,
+            algo_database_utils::AlgoDbUtils,
+            test_utils::get_sample_contiguous_blocks,
+        },
         test_utils::get_test_database,
     };
 
@@ -132,7 +136,7 @@ mod tests {
             "vGp+itrYjz+Q74DosZIAJl5c8zKbiMpiy0orlu8kyjM=".to_string(),
         ];
         blocks.iter().enumerate().for_each(|(i, block)| {
-            db_utils.put_tail_block_hash_in_db(&blocks[i].hash().unwrap()).unwrap();
+            db_utils.put_tail_block_hash_in_db(&block.hash().unwrap()).unwrap();
             maybe_update_algo_linker_hash_and_return_state(AlgoState::init(&db)).unwrap();
             let result = db_utils.get_linker_hash_or_else_genesis_hash().unwrap().to_string();
             assert_eq!(result, expected_results[i]);

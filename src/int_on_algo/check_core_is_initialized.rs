@@ -7,7 +7,7 @@ use crate::{
         },
         eth::{
             core_initialization::check_eth_core_is_initialized::check_eth_core_is_initialized,
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+            eth_database_utils::EthDbUtils,
             eth_state::EthState,
         },
     },

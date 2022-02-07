@@ -1,5 +1,3 @@
-use rust_algorand::AlgorandBlock;
-
 use crate::{chains::algo::algo_state::AlgoState, traits::DatabaseInterface, types::Result};
 
 pub fn add_latest_algo_block_and_return_state<D: DatabaseInterface>(state: AlgoState<D>) -> Result<AlgoState<D>> {

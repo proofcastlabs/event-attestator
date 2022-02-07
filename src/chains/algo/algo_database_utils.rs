@@ -241,10 +241,8 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     }
 
     fn put_special_hash_in_db(&self, hash_type: &SpecialHashTypes, hash: &AlgorandHash) -> Result<()> {
-        if hash_type == &SpecialHashTypes::Genesis {
-            if self.get_genesis_block_hash().is_ok() {
-                return Err(Self::get_no_overwrite_error("genesis hash").into());
-            }
+        if hash_type == &SpecialHashTypes::Genesis && self.get_genesis_block_hash().is_ok() {
+            return Err(Self::get_no_overwrite_error("genesis hash").into());
         };
         self.put_algorand_hash_in_db(&hash_type.get_key(self), hash)
     }

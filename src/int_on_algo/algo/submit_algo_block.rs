@@ -1,3 +1,5 @@
+#![allow(unused_imports)] // FIXM rm!
+
 use crate::{
     chains::algo::{
         add_latest_algo_block::add_latest_algo_block_and_return_state,
@@ -96,7 +98,6 @@ mod tests {
     fn should_submit_algo_block_successfully() {
         let db = get_test_database();
         let canon_to_tip_length = 3;
-        let algo_genesis_hash = "some genesis hash";
         let algo_fee = 1000;
         let genesis_id = "mainnet-v1.0";
         let algo_block_json_strings = get_sample_contiguous_blocks()

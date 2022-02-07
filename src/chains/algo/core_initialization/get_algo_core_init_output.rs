@@ -1,6 +1,4 @@
-use rust_algorand::AlgorandAddress;
 use serde::{Deserialize, Serialize};
-use serde_json::to_string;
 
 use crate::{chains::algo::algo_database_utils::AlgoDbUtils, traits::DatabaseInterface, types::Result};
 
@@ -25,6 +23,8 @@ impl AlgoInitializationOutput {
 
 #[cfg(test)]
 mod tests {
+    use rust_algorand::AlgorandAddress;
+
     use super::*;
     use crate::{chains::algo::test_utils::get_sample_block_n, test_utils::get_test_database};
 

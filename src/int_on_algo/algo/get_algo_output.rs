@@ -1,3 +1,5 @@
+#![allow(unused_imports)] // FIXME
+
 use std::{
     fmt::{Display, Formatter},
     time::{SystemTime, UNIX_EPOCH},

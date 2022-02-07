@@ -1,11 +1,5 @@
-use rust_algorand::{AlgorandBlock, AlgorandHash};
-
 use crate::{
-    chains::algo::{
-        algo_database_utils::AlgoDbUtils,
-        algo_state::AlgoState,
-        get_candidate_block_hash::maybe_get_new_candidate_block_hash,
-    },
+    chains::algo::{algo_state::AlgoState, get_candidate_block_hash::maybe_get_new_candidate_block_hash},
     traits::DatabaseInterface,
     types::Result,
 };

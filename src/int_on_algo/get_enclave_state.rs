@@ -4,11 +4,11 @@ use crate::{
     chains::{
         algo::{algo_database_utils::AlgoDbUtils, algo_enclave_state::AlgoEnclaveState},
         eth::{
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
-            eth_enclave_state::{EthEnclaveState, EvmEnclaveState},
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+            eth_enclave_state::EthEnclaveState,
         },
     },
-    dictionaries::eth_evm::EthEvmTokenDictionary,
+    dictionaries::evm_algo::EvmAlgoTokenDictionary,
     enclave_info::EnclaveInfo,
     int_on_algo::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
@@ -20,7 +20,7 @@ struct EnclaveState {
     info: EnclaveInfo,
     int: EthEnclaveState,
     algo: AlgoEnclaveState,
-    // TODO/FIXME Add token dictionary.
+    dictionary: EvmAlgoTokenDictionary,
 }
 
 impl EnclaveState {
@@ -28,6 +28,7 @@ impl EnclaveState {
         Ok(Self {
             info: EnclaveInfo::new(),
             algo: AlgoEnclaveState::new(algo_db_utils)?,
+            dictionary: EvmAlgoTokenDictionary::get_from_db(algo_db_utils.get_db())?,
             int: EthEnclaveState::new(
                 eth_db_utils,
                 &eth_db_utils.get_int_on_algo_smart_contract_address()?,

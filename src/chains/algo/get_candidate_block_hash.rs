@@ -1,6 +1,6 @@
 use rust_algorand::{AlgorandBlock, AlgorandHash};
 
-use crate::{traits::DatabaseInterface, types::Result};
+use crate::types::Result;
 
 pub fn maybe_get_new_candidate_block_hash(
     current_block: &AlgorandBlock,

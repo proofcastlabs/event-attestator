@@ -97,7 +97,6 @@ mod tests {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
         let block = get_sample_block_n(0);
-        let hash = block.hash().unwrap();
         let genesis_id = "mainnet-v1.0";
         let block_json_string = block.to_string();
         let result_1 =
