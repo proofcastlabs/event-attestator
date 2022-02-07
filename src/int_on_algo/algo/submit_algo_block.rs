@@ -13,6 +13,7 @@ use crate::{
         update_algo_linker_hash::maybe_update_algo_linker_hash_and_return_state,
         update_algo_tail_block_hash::maybe_update_algo_tail_block_hash_and_return_state,
     },
+    dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_algo_state,
     int_on_algo::{
         algo::get_algo_output::get_algo_output,
         check_core_is_initialized::check_core_is_initialized_and_return_algo_state,
@@ -52,7 +53,7 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: D, block_json_string:
         .and_then(check_core_is_initialized_and_return_algo_state)
         .and_then(start_algo_db_transaction_and_return_state)
         //.and_then(validate_block_in_state) // FIXME Maybe validate receipts
-        //.and_then(get_eth_evm_token_dictionary_from_db_and_add_to_eth_state)
+        .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
         .and_then(check_parent_of_algo_block_in_state_exists)
         //.and_then(validate_receipts_in_state)
         //.and_then(filter_submission_material_for_peg_in_events_in_state)
