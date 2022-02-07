@@ -19,12 +19,18 @@ pub(crate) mod get_latest_block_numbers;
 pub(crate) mod int;
 pub(crate) mod opt_in_to_asset;
 
-pub use crate::int_on_algo::{
-    algo::{initialize_algo_core::maybe_initialize_algo_core, submit_algo_block::submit_algo_block_to_core},
-    get_enclave_state::get_enclave_state,
-    get_latest_block_numbers::get_latest_block_numbers,
-    int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},
-    opt_in_to_asset::opt_in_to_asset,
+pub use crate::{
+    chains::{
+        algo::core_initialization::reset_algo_chain::debug_reset_algo_chain,
+        eth::core_initialization::reset_eth_chain::debug_reset_eth_chain as debug_reset_int_chain,
+    },
+    int_on_algo::{
+        algo::{initialize_algo_core::maybe_initialize_algo_core, submit_algo_block::submit_algo_block_to_core},
+        get_enclave_state::get_enclave_state,
+        get_latest_block_numbers::get_latest_block_numbers,
+        int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},
+        opt_in_to_asset::opt_in_to_asset,
+    },
 };
 /*
 pub(crate) mod debug_functions;
