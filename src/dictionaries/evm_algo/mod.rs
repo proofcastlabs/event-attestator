@@ -1,6 +1,9 @@
 pub(crate) mod dictionary;
 pub(crate) mod dictionary_entry;
-pub use crate::dictionaries::evm_algo::dictionary::EvmAlgoTokenDictionary;
+pub use crate::dictionaries::evm_algo::{
+    dictionary::EvmAlgoTokenDictionary,
+    dictionary_entry::EvmAlgoTokenDictionaryEntry,
+};
 use crate::{
     chains::{algo::algo_state::AlgoState, eth::eth_state::EthState},
     traits::DatabaseInterface,
