@@ -91,6 +91,7 @@ mod tests {
                 eth_test_utils::get_sample_eth_submission_material_string,
             },
         },
+        dictionaries::evm_algo::EvmAlgoTokenDictionary,
         test_utils::get_test_database,
     };
 
@@ -100,12 +101,14 @@ mod tests {
         let canon_to_tip_length = 3;
         let algo_fee = 1000;
         let genesis_id = "mainnet-v1.0";
+        let dict = EvmAlgoTokenDictionary::default();
         let algo_block_json_strings = get_sample_contiguous_blocks()
             .iter()
             .map(|block| block.to_string())
             .collect::<Vec<String>>();
+        let state = AlgoState::init_with_empty_dictionary(&db);
         initialize_algo_core(
-            AlgoState::init(&db),
+            state,
             &algo_block_json_strings[0],
             algo_fee,
             canon_to_tip_length,

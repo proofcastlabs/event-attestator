@@ -27,6 +27,16 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         }
     }
 
+    pub fn init_with_empty_dictionary(db: &'a D) -> Self {
+        Self {
+            db,
+            algo_block: None,
+            eth_db_utils: EthDbUtils::new(db),
+            algo_db_utils: AlgoDbUtils::new(db),
+            evm_algo_token_dictionary: Some(EvmAlgoTokenDictionary::default()),
+        }
+    }
+
     fn get_no_overwrite_err(item: &str) -> String {
         format!("Cannot add {} to `AlgoState` - one already exists!", item)
     }

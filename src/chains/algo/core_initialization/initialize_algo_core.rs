@@ -71,7 +71,7 @@ mod tests {
         let canon_to_tip_length = 3;
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let state = AlgoState::init(&db);
+        let state = AlgoState::init_with_empty_dictionary(&db);
         let block = get_sample_block_n(0);
         let hash = block.hash().unwrap();
         let genesis_id = "mainnet-v1.0";

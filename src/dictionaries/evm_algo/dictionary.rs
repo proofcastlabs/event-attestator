@@ -17,7 +17,7 @@ use crate::{
     types::{Byte, Bytes, Result},
 };
 
-#[derive(Debug, Clone, Eq, PartialEq, Constructor, Deref, DerefMut, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, Default, PartialEq, Constructor, Deref, DerefMut, Serialize, Deserialize)]
 pub struct EvmAlgoTokenDictionary(pub Vec<EvmAlgoTokenDictionaryEntry>);
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]

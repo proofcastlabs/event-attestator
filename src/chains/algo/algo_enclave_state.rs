@@ -80,12 +80,11 @@ mod tests {
 
     #[test]
     fn should_get_enclave_state_after_core_is_initialized() {
-        let db = get_test_database();
         let fee = 1337;
         let canon_to_tip_length = 3;
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let state = AlgoState::init(&db);
+        let state = AlgoState::init_with_empty_dictionary(&db);
         let block = get_sample_block_n(0);
         let block_num = block.round();
         let hash = block.hash().unwrap();
