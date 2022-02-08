@@ -40,14 +40,14 @@ fn delete_all_eth_blocks<D: DatabaseInterface, E: EthDbUtilsExt<D>>(db_utils: &E
         match maybe_block_hash {
             None => {
                 info!("✔ Deleting all ETH blocks from db, starting with the latest block...");
-                recursively_delete_all_eth_blocks(
-                    db_utils,
-                    Some(db_utils.get_eth_latest_block_from_db()?.get_parent_hash()?),
-                )
+                recursively_delete_all_eth_blocks(db_utils, Some(db_utils.get_special_eth_hash_from_db("latest")?))
             },
             Some(ref hash) => match db_utils.get_submission_material_from_db(hash) {
                 Ok(submission_material) => {
-                    recursively_delete_all_eth_blocks(db_utils, Some(submission_material.get_parent_hash()?))
+                    info!("✔ Deleting block {}...", submission_material.get_block_number()?);
+                    db_utils.delete_block_by_block_hash(&submission_material).and_then(|_| {
+                        recursively_delete_all_eth_blocks(db_utils, Some(submission_material.get_parent_hash()?))
+                    })
                 },
                 Err(_) => {
                     info!("✔ All ETH blocks deleted!");
@@ -215,4 +215,74 @@ pub fn debug_reset_evm_chain<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("Debug resetting EVM Chain...");
     debug_reset_chain(db, submission_material_json, canon_to_tip_length, false)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{chains::eth::eth_test_utils::get_sequential_eth_blocks_and_receipts, test_utils::get_test_database};
+
+    #[test]
+    fn should_recursively_delete_all_eth_blocks() {
+        let db = get_test_database();
+        let db_utils = EthDbUtils::new(&db);
+        let blocks = get_sequential_eth_blocks_and_receipts();
+        let block_hashes = blocks
+            .clone()
+            .iter()
+            .map(|block| block.hash.unwrap())
+            .collect::<Vec<EthHash>>();
+        let latest_hash = block_hashes[block_hashes.len() - 1];
+        blocks
+            .iter()
+            .for_each(|material| db_utils.put_eth_submission_material_in_db(material).unwrap());
+        db_utils.put_eth_latest_block_hash_in_db(&latest_hash).unwrap();
+        block_hashes
+            .iter()
+            .for_each(|hash| assert!(db_utils.get_submission_material_from_db(&hash).is_ok()));
+        delete_all_eth_blocks(&db_utils).unwrap();
+        block_hashes.iter().enumerate().for_each(|(i, hash)| {
+            let result = db_utils.get_submission_material_from_db(&hash);
+            if result.is_ok() {
+                println!(
+                    "Sample ETH block #{} still exists in DB under hash: 0x{}",
+                    i,
+                    hex::encode(hash.as_bytes())
+                );
+                result.unwrap();
+            }
+        });
+    }
+
+    #[test]
+    fn should_recursively_delete_all_evm_blocks() {
+        let db = get_test_database();
+        let db_utils = EvmDbUtils::new(&db);
+        let blocks = get_sequential_eth_blocks_and_receipts();
+        let block_hashes = blocks
+            .clone()
+            .iter()
+            .map(|block| block.hash.unwrap())
+            .collect::<Vec<EthHash>>();
+        let latest_hash = block_hashes[block_hashes.len() - 1];
+        blocks
+            .iter()
+            .for_each(|material| db_utils.put_eth_submission_material_in_db(material).unwrap());
+        db_utils.put_eth_latest_block_hash_in_db(&latest_hash).unwrap();
+        block_hashes
+            .iter()
+            .for_each(|hash| assert!(db_utils.get_submission_material_from_db(&hash).is_ok()));
+        delete_all_eth_blocks(&db_utils).unwrap();
+        block_hashes.iter().enumerate().for_each(|(i, hash)| {
+            let result = db_utils.get_submission_material_from_db(&hash);
+            if result.is_ok() {
+                println!(
+                    "Sample EVM block #{} still exists in DB under hash: 0x{}",
+                    i,
+                    hex::encode(hash.as_bytes())
+                );
+                result.unwrap();
+            }
+        });
+    }
 }
