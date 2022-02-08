@@ -5,6 +5,17 @@ use std::str::FromStr;
 use bitcoin::util::address::Address as BtcAddress;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
+use rust_algorand::AlgorandAddress;
+
+#[cfg(test)]
+use crate::{
+    chains::{
+        algo::algo_constants::ALGO_ADDRESS_LENGTH_IN_BYTES,
+        eos::eos_constants::EOS_ADDRESS_LENGTH_IN_BYTES,
+        eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES,
+    },
+    types::Byte,
+};
 
 #[cfg(test)]
 use crate::{
@@ -70,6 +81,18 @@ impl MetadataAddress {
         }
     }
 
+    // FIXME Test!
+    pub fn new_from_algo_address(algo_address: &AlgorandAddress, metadata_chain_id: &MetadataChainId) -> Result<Self> {
+        let protocol_id = metadata_chain_id.to_protocol_id();
+        match protocol_id {
+            MetadataProtocolId::Algorand => Ok(Self {
+                metadata_chain_id: *metadata_chain_id,
+                address: algo_address.to_string(),
+            }),
+            _ => Err(Self::get_err_msg(protocol_id).into()),
+        }
+    }
+
     pub fn new_from_eos_address(eos_address: &EosAddress, metadata_chain_id: &MetadataChainId) -> Result<Self> {
         let protocol_id = metadata_chain_id.to_protocol_id();
         match protocol_id {
@@ -96,6 +119,7 @@ impl MetadataAddress {
         match self.metadata_chain_id.to_protocol_id() {
             MetadataProtocolId::Bitcoin => Ok(self.address.as_bytes().to_vec()),
             MetadataProtocolId::Ethereum => Ok(hex::decode(strip_hex_prefix(&self.address))?),
+            MetadataProtocolId::Algorand => Ok(AlgorandAddress::from_str(&self.address)?.to_bytes()?),
             MetadataProtocolId::Eos => Ok(EosAddress::from_str(&self.address)?.as_u64().to_le_bytes().to_vec()),
         }
     }
@@ -117,6 +141,7 @@ impl MetadataAddress {
             MetadataProtocolId::Eos => Self::from_bytes_for_eos(bytes, metadata_chain_id),
             MetadataProtocolId::Bitcoin => Self::from_bytes_for_btc(bytes, metadata_chain_id),
             MetadataProtocolId::Ethereum => Self::from_bytes_for_eth(bytes, metadata_chain_id),
+            MetadataProtocolId::Algorand => Self::from_bytes_for_algo(bytes, metadata_chain_id),
         }
     }
 
@@ -126,6 +151,16 @@ impl MetadataAddress {
             Self::new_from_eth_address(&EthAddress::from_slice(bytes), metadata_chain_id)
         } else {
             Err("Incorrect number of bytes to convert to ETH address in `MetadataAddress`!".into())
+        }
+    }
+
+    // FIXME Test!
+    fn from_bytes_for_algo(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
+        info!("✔ Attempting to create `MetadataAddress` from bytes for ALGO...");
+        if bytes.len() == ALGO_ADDRESS_LENGTH_IN_BYTES {
+            Self::new_from_algo_address(&AlgorandAddress::from_bytes(bytes)?, metadata_chain_id)
+        } else {
+            Err("Incorrect number of bytes to convert to ALGO address in `MetadataAddress`!".into())
         }
     }
 

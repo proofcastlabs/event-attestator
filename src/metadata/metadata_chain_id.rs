@@ -4,7 +4,12 @@ use ethereum_types::H256 as KeccakHash;
 use strum_macros::EnumIter;
 
 use crate::{
-    chains::{btc::btc_chain_id::BtcChainId, eos::eos_chain_id::EosChainId, eth::eth_chain_id::EthChainId},
+    chains::{
+        algo::algo_chain_id::AlgoChainId,
+        btc::btc_chain_id::BtcChainId,
+        eos::eos_chain_id::EosChainId,
+        eth::eth_chain_id::EthChainId,
+    },
     constants::THIRTY_TWO_ZERO_BYTES,
     metadata::metadata_protocol_id::MetadataProtocolId,
     traits::ChainId,
@@ -36,11 +41,12 @@ pub enum MetadataChainId {
     ArbitrumMainnet,  // 0x00ce98c4
     LuxochainMainnet, // 0x00d5beb0
     FantomMainnet,    // 0x0022af98
+    AlgorandMainnet,  // 0x03c38e67
 }
 
 impl Default for MetadataChainId {
     fn default() -> Self {
-        Self::EthereumMainnet
+        Self::InterimChain
     }
 }
 
@@ -54,6 +60,7 @@ impl MetadataChainId {
             | Self::TelosMainnet
             | Self::EosJungleTestnet
             | Self::EosUnknown => MetadataProtocolId::Eos,
+            Self::AlgorandMainnet => MetadataProtocolId::Algorand,
             Self::BitcoinMainnet | Self::BitcoinTestnet | Self::BtcUnknown => MetadataProtocolId::Bitcoin,
             Self::BscMainnet
             | Self::EthUnknown
@@ -83,6 +90,7 @@ impl MetadataChainId {
             Self::EthereumRinkeby => Box::new(EthChainId::Rinkeby),
             Self::EthereumRopsten => Box::new(EthChainId::Ropsten),
             Self::XDaiMainnet => Box::new(EthChainId::XDaiMainnet),
+            Self::AlgorandMainnet => Box::new(AlgoChainId::Mainnet),
             Self::TelosMainnet => Box::new(EosChainId::TelosMainnet),
             Self::UltraMainnet => Box::new(EosChainId::UltraMainnet),
             Self::UltraTestnet => Box::new(EosChainId::UltraTestnet),
@@ -180,6 +188,7 @@ impl fmt::Display for MetadataChainId {
             Self::UltraMainnet => write!(f, "Ultra Mainnet: 0x{}", hex),
             Self::InterimChain => write!(f, "Interim Chain: 0x{}", hex),
             Self::FantomMainnet => write!(f, "Fantom Mainnet: 0x{}", hex),
+            Self::AlgorandMainnet => write!(f, "AlgorandMainnet: 0x{}", hex),
             Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: 0x{}", hex),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: 0x{}", hex),
             Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: 0x{}", hex),
@@ -235,7 +244,7 @@ mod tests {
             "0282317f", "00f1918e", "0075dd4c", "025d3c68",
             "02174f20", "02b5a4d6", "00000000", "01000000",
             "02000000", "ffffffff", "00ce98c4", "00d5beb0",
-            "0022af98",
+            "0022af98", "03c38e67",
         ]
         .iter()
         .map(|ref hex| hex::decode(hex).unwrap())
