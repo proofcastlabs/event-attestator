@@ -2,6 +2,7 @@ use rust_algorand::AlgorandBlock;
 
 use crate::{
     chains::{algo::algo_database_utils::AlgoDbUtils, eth::eth_database_utils::EthDbUtils},
+    int_on_algo::algo::int_tx_info::IntOnAlgoIntTxInfos,
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
     traits::DatabaseInterface,
     types::Result,
@@ -13,6 +14,7 @@ pub struct AlgoState<'a, D: DatabaseInterface> {
     algo_block: Option<AlgorandBlock>,
     pub eth_db_utils: EthDbUtils<'a, D>,
     pub algo_db_utils: AlgoDbUtils<'a, D>,
+    int_on_algo_int_tx_infos: IntOnAlgoIntTxInfos,
     pub evm_algo_token_dictionary: Option<EvmAlgoTokenDictionary>,
 }
 
@@ -24,6 +26,7 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
             evm_algo_token_dictionary: None,
             eth_db_utils: EthDbUtils::new(db),
             algo_db_utils: AlgoDbUtils::new(db),
+            int_on_algo_int_tx_infos: IntOnAlgoIntTxInfos::default(),
         }
     }
 
@@ -33,6 +36,7 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
             algo_block: None,
             eth_db_utils: EthDbUtils::new(db),
             algo_db_utils: AlgoDbUtils::new(db),
+            int_on_algo_int_tx_infos: IntOnAlgoIntTxInfos::default(),
             evm_algo_token_dictionary: Some(EvmAlgoTokenDictionary::default()),
         }
     }
@@ -43,6 +47,15 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
 
     fn get_not_in_state_err(item: &str) -> String {
         format!("Cannot get {} from `AlgoState` - none exists!", item)
+    }
+
+    fn add_int_on_algo_int_tx_infos(mut self, infos: IntOnAlgoIntTxInfos) -> Result<Self> {
+        self.int_on_algo_int_tx_infos = infos;
+        Ok(self)
+    }
+
+    fn get_int_on_algo_int_tx_infos(&self) -> IntOnAlgoIntTxInfos {
+        self.int_on_algo_int_tx_infos.clone()
     }
 
     pub fn update_submitted_block(mut self, block: &AlgorandBlock) -> Result<Self> {
