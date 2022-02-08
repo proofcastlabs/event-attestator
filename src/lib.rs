@@ -1,3 +1,5 @@
+#![recursion_limit = "256"] // NOTE: Because of the error macro.
+
 //! # The __`pToken`__ Core
 //!
 //! Herein lies the functionality required for the cross-chain conversions

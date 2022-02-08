@@ -11,6 +11,14 @@ quick_error! {
             from()
             display("✘ I/O error: {}", err)
         }
+        RmpDecodeError(err: rmp_serde::decode::Error) {
+            from()
+            display("✘ MsgPack decoding error: {}", err)
+        }
+        RmpEncodeError(err: rmp_serde::encode::Error) {
+            from()
+            display("✘ MsgPack encoding error: {}", err)
+        }
         HexError(err: hex::FromHexError) {
             from()
             display("✘ Hex error: {}", err)

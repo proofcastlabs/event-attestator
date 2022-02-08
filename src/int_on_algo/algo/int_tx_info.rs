@@ -11,10 +11,10 @@ pub struct IntOnAlgoIntTxInfo {
     pub token_sender: EthAddress,
     pub native_token_amount: U256,
     pub router_address: EthAddress,
+    pub destination_address: String,
     pub originating_tx_hash: EthHash,
     pub evm_token_address: EthAddress,
     pub origin_chain_id: MetadataChainId,
-    pub destination_address: AlgorandAddress,
     pub destination_chain_id: MetadataChainId,
 }
 
