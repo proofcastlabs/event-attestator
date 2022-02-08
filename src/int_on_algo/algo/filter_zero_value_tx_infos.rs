@@ -30,7 +30,7 @@ pub fn filter_out_zero_value_tx_infos_from_state<D: DatabaseInterface>(state: Al
     debug!("✔ Num `IntOnAlgoIntTxInfos` before: {}", tx_infos.len());
     tx_infos.filter_out_zero_values().and_then(|filtered_tx_infos| {
         debug!("✔ Num `IntOnAlgoIntTxInfos` after: {}", filtered_tx_infos.len());
-        state.add_int_on_algo_int_tx_infos(filtered_tx_infos)
+        state.replace_int_on_algo_int_tx_infos(filtered_tx_infos)
     })
 }
 

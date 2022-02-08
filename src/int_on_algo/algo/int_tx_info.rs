@@ -12,8 +12,9 @@ pub struct IntOnAlgoIntTxInfo {
     pub router_address: EthAddress,
     pub destination_address: String,
     pub originating_tx_hash: String,
+    pub int_vault_address: EthAddress,
     pub token_sender: AlgorandAddress,
-    pub evm_token_address: EthAddress,
+    pub int_token_address: EthAddress,
     pub origin_chain_id: MetadataChainId,
     pub destination_chain_id: MetadataChainId,
 }

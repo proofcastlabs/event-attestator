@@ -1,7 +1,10 @@
 use rust_algorand::AlgorandBlock;
 
 use crate::{
-    chains::{algo::algo_database_utils::AlgoDbUtils, eth::eth_database_utils::EthDbUtils},
+    chains::{
+        algo::algo_database_utils::AlgoDbUtils,
+        eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils::EthDbUtils},
+    },
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
     int_on_algo::algo::int_tx_info::IntOnAlgoIntTxInfos,
     traits::DatabaseInterface,
@@ -11,34 +14,33 @@ use crate::{
 #[derive(Clone, PartialEq, Eq)]
 pub struct AlgoState<'a, D: DatabaseInterface> {
     db: &'a D,
-    algo_block: Option<AlgorandBlock>,
     pub eth_db_utils: EthDbUtils<'a, D>,
+    pub eth_signed_txs: EthTransactions,
+    pub algo_block: Option<AlgorandBlock>,
     pub algo_db_utils: AlgoDbUtils<'a, D>,
-    int_on_algo_int_tx_infos: IntOnAlgoIntTxInfos,
+    pub int_on_algo_int_tx_infos: IntOnAlgoIntTxInfos,
     pub evm_algo_token_dictionary: Option<EvmAlgoTokenDictionary>,
 }
 
 impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
-    pub fn init(db: &'a D) -> Self {
+    fn init_inner(db: &'a D, evm_algo_token_dictionary: Option<EvmAlgoTokenDictionary>) -> Self {
         Self {
             db,
             algo_block: None,
-            evm_algo_token_dictionary: None,
+            evm_algo_token_dictionary,
             eth_db_utils: EthDbUtils::new(db),
             algo_db_utils: AlgoDbUtils::new(db),
+            eth_signed_txs: EthTransactions::new(vec![]), // TODO impl default
             int_on_algo_int_tx_infos: IntOnAlgoIntTxInfos::default(),
         }
     }
 
+    pub fn init(db: &'a D) -> Self {
+        Self::init_inner(db, None)
+    }
+
     pub fn init_with_empty_dictionary(db: &'a D) -> Self {
-        Self {
-            db,
-            algo_block: None,
-            eth_db_utils: EthDbUtils::new(db),
-            algo_db_utils: AlgoDbUtils::new(db),
-            int_on_algo_int_tx_infos: IntOnAlgoIntTxInfos::default(),
-            evm_algo_token_dictionary: Some(EvmAlgoTokenDictionary::default()),
-        }
+        Self::init_inner(db, Some(EvmAlgoTokenDictionary::default()))
     }
 
     fn get_no_overwrite_err(item: &str) -> String {
@@ -49,8 +51,18 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         format!("Cannot get {} from `AlgoState` - none exists!", item)
     }
 
+    pub fn replace_int_on_algo_int_tx_infos(self, infos: IntOnAlgoIntTxInfos) -> Result<Self> {
+        // NOTE: Alias so diversion fxn macro can work.
+        self.add_int_on_algo_int_tx_infos(infos)
+    }
+
     pub fn add_int_on_algo_int_tx_infos(mut self, infos: IntOnAlgoIntTxInfos) -> Result<Self> {
         self.int_on_algo_int_tx_infos = infos;
+        Ok(self)
+    }
+
+    pub fn add_eth_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {
+        self.eth_signed_txs = txs;
         Ok(self)
     }
 
