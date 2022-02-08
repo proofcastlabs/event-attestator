@@ -15,7 +15,7 @@ const ALGO_NOTE_MAX_NUM_BYTES: usize = 1000;
 const ALGO_NOTE_VERSION_ENCODING_LENGTH: usize = 1;
 const ALGO_NOTE_EVM_ADDRESS_ENCODING_LENGTH: usize = 20;
 const ALGO_NOTE_METADATA_CHAIN_ID_ENCODING_LENGTH: usize = 4;
-const EVM_ALGO_NOTE_ENCODING_LENGTH: usize = ALGO_NOTE_VERSION_ENCODING_LENGTH
+const MINIMUM_EVM_ALGO_NOTE_ENCODING_LENGTH: usize = ALGO_NOTE_VERSION_ENCODING_LENGTH
     + ALGO_NOTE_METADATA_CHAIN_ID_ENCODING_LENGTH
     + ALGO_NOTE_EVM_ADDRESS_ENCODING_LENGTH;
 
@@ -96,25 +96,41 @@ impl AlgoNote {
     fn to_evm_address(&self) -> Result<EthAddress> {
         let start_index = ALGO_NOTE_VERSION_ENCODING_LENGTH + ALGO_NOTE_METADATA_CHAIN_ID_ENCODING_LENGTH;
         let end_index = start_index + ALGO_NOTE_EVM_ADDRESS_ENCODING_LENGTH;
-        if self.len() != end_index {
+        if self.len() < end_index {
             Err("Not enough bytes to get `EVM ADDRESS` from AlgoNote".into())
         } else {
             Ok(EthAddress::from_slice(&self[start_index..end_index]))
         }
     }
 
-    // FIXME a type for this?
-    pub fn decode_for_evm_chain(&self) -> Result<(AlgoNoteEncodingVersion, MetadataChainId, EthAddress)> {
+    fn to_user_data(&self) -> Bytes {
         let length = self.len();
-        if length != EVM_ALGO_NOTE_ENCODING_LENGTH {
+        if length <= MINIMUM_EVM_ALGO_NOTE_ENCODING_LENGTH {
+            info!("✘ No user data included in note");
+            vec![]
+        } else {
+            self[MINIMUM_EVM_ALGO_NOTE_ENCODING_LENGTH..].to_vec()
+        }
+    }
+
+    // FIXME a type for this?
+    pub fn decode_for_evm_chain(&self) -> Result<(AlgoNoteEncodingVersion, MetadataChainId, EthAddress, Bytes)> {
+        let length = self.len();
+        if length < MINIMUM_EVM_ALGO_NOTE_ENCODING_LENGTH {
             info!("✘ Cannot decode AlgoNote into EVM address, defaulting to safe address and interim chain!");
             Ok((
                 AlgoNoteEncodingVersion::V0,
                 MetadataChainId::InterimChain,
                 *SAFE_ETH_ADDRESS,
+                vec![],
             ))
         } else {
-            Ok((self.to_version()?, self.to_metadata_chain_id()?, self.to_evm_address()?))
+            Ok((
+                self.to_version()?,
+                self.to_metadata_chain_id()?,
+                self.to_evm_address()?,
+                self.to_user_data(),
+            ))
         }
     }
 
@@ -122,12 +138,14 @@ impl AlgoNote {
         version: &AlgoNoteEncodingVersion,
         metadata_chain_id: &MetadataChainId,
         address: &EthAddress,
+        user_data: &[Byte],
     ) -> Result<Self> {
         Self::new(
             vec![
                 vec![version.as_byte()],
                 metadata_chain_id.to_bytes()?,
                 address.as_bytes().to_vec(),
+                user_data.to_vec(),
             ]
             .concat(),
         )
@@ -176,8 +194,9 @@ mod tests {
         let version = AlgoNoteEncodingVersion::default();
         let address = EthAddress::default();
         let metadata_chain_id = MetadataChainId::default();
-        let expected_encoding = "00005fe7f90000000000000000000000000000000000000000";
-        let encoding = AlgoNote::encode_for_evm_chains(&version, &metadata_chain_id, &address)
+        let user_data = vec![0xc0, 0xff, 0xee];
+        let expected_encoding = "00005fe7f90000000000000000000000000000000000000000c0ffee";
+        let encoding = AlgoNote::encode_for_evm_chains(&version, &metadata_chain_id, &address, &user_data)
             .unwrap()
             .to_bytes();
         assert_eq!(hex::encode(&encoding), expected_encoding);
@@ -185,15 +204,17 @@ mod tests {
         assert_eq!(result.0, version);
         assert_eq!(result.1, metadata_chain_id);
         assert_eq!(result.2, address);
+        assert_eq!(result.3, user_data);
     }
 
     #[test]
     fn decoding_wrong_length_data_to_evm_should_default_to_safe_address_on_interim_chain() {
         let data = vec![];
-        assert_ne!(data.len(), EVM_ALGO_NOTE_ENCODING_LENGTH);
-        let result = AlgoNote(data).decode_for_evm_chain().unwrap();
+        assert_ne!(data.len(), MINIMUM_EVM_ALGO_NOTE_ENCODING_LENGTH);
+        let result = AlgoNote(data.clone()).decode_for_evm_chain().unwrap();
         assert_eq!(result.0, AlgoNoteEncodingVersion::V0);
         assert_eq!(result.1, MetadataChainId::InterimChain);
         assert_eq!(result.2, *SAFE_ETH_ADDRESS);
+        assert_eq!(result.3, data);
     }
 }

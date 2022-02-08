@@ -2,8 +2,8 @@ use rust_algorand::AlgorandBlock;
 
 use crate::{
     chains::{algo::algo_database_utils::AlgoDbUtils, eth::eth_database_utils::EthDbUtils},
-    int_on_algo::algo::int_tx_info::IntOnAlgoIntTxInfos,
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
+    int_on_algo::algo::int_tx_info::IntOnAlgoIntTxInfos,
     traits::DatabaseInterface,
     types::Result,
 };
