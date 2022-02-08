@@ -2,7 +2,7 @@
 
 use crate::{
     chains::algo::{
-        add_latest_algo_block::add_latest_algo_block_and_return_state,
+        add_latest_algo_block::add_latest_algo_block_to_db_and_return_state,
         algo_database_transactions::{
             end_algo_db_transaction_and_return_state,
             start_algo_db_transaction_and_return_state,
@@ -10,6 +10,7 @@ use crate::{
         algo_state::AlgoState,
         algo_submission_material::parse_algo_submission_material_and_put_in_state,
         check_parent_exists::check_parent_of_algo_block_in_state_exists,
+        remove_irrelevant_txs_from_block_in_state::remove_irrelevant_txs_from_block_in_state,
         remove_old_algo_tail_block::maybe_remove_old_algo_tail_block_and_return_state,
         update_algo_canon_block_hash::maybe_update_algo_canon_block_hash_and_return_state,
         update_algo_linker_hash::maybe_update_algo_linker_hash_and_return_state,
@@ -57,9 +58,9 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: D, block_json_string:
         //.and_then(validate_block_in_state) // FIXME Maybe validate receipts
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
         .and_then(check_parent_of_algo_block_in_state_exists)
-        //.and_then(validate_receipts_in_state)
-        //.and_then(filter_submission_material_for_peg_in_events_in_state)
-        .and_then(add_latest_algo_block_and_return_state)
+        //.and_then(validate_receipts_in_state) // FIXME Only do this is there's one we care about
+        .and_then(remove_irrelevant_txs_from_block_in_state)
+        .and_then(add_latest_algo_block_to_db_and_return_state)
         .and_then(maybe_update_algo_canon_block_hash_and_return_state)
         .and_then(maybe_update_algo_tail_block_hash_and_return_state)
         .and_then(maybe_update_algo_linker_hash_and_return_state)
