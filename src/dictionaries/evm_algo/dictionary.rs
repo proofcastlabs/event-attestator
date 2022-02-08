@@ -39,8 +39,8 @@ impl EvmAlgoTokenDictionary {
             .and_then(|entry| entry.convert_evm_amount_to_algo_amount(amount))
     }
 
-    pub fn convert_evm_amount_to_eth_amount(&self, address: &EthAddress, amount: U256) -> Result<U256> {
-        self.get_entry_via_evm_address(address)
+    pub fn convert_algo_amount_to_evm_amount(&self, asset_id: u64, amount: u64) -> Result<U256> {
+        self.get_entry_via_asset_id(asset_id)
             .and_then(|entry| entry.convert_algo_amount_to_evm_amount(amount))
     }
 
@@ -51,7 +51,7 @@ impl EvmAlgoTokenDictionary {
         }
     }
 
-    pub fn get_entry_via_algo_asset_id(&self, asset_id: u64) -> Result<EvmAlgoTokenDictionaryEntry> {
+    pub fn get_entry_via_asset_id(&self, asset_id: u64) -> Result<EvmAlgoTokenDictionaryEntry> {
         match self.iter().find(|entry| entry.algo_asset_id == asset_id) {
             Some(entry) => Ok(entry.clone()),
             None => Err(format!(
@@ -163,11 +163,20 @@ impl EvmAlgoTokenDictionary {
     }
 
     pub fn is_algo_asset_supported(&self, asset_id: u64) -> bool {
-        self.get_entry_via_algo_asset_id(asset_id).is_ok()
+        self.get_entry_via_asset_id(asset_id).is_ok()
     }
 
     pub fn to_evm_addresses(&self) -> Vec<EthAddress> {
         self.iter().map(|entry| entry.evm_address).collect()
+    }
+
+    pub fn get_algo_asset_id_from_evm_address(&self, evm_address: &EthAddress) -> Result<u64> {
+        self.get_entry_via_evm_address(evm_address)
+            .map(|entry| entry.algo_asset_id)
+    }
+
+    pub fn get_evm_address_from_asset_id(&self, asset_id: u64) -> Result<EthAddress> {
+        self.get_entry_via_asset_id(asset_id).map(|entry| entry.evm_address)
     }
 
     pub fn to_algo_asset_ids(&self) -> Vec<u64> {
@@ -235,7 +244,7 @@ mod tests {
     fn should_get_entry_via_algo_address() {
         let dict = get_sample_dictionary();
         let algo_asset_id = 42;
-        let result = dict.get_entry_via_algo_asset_id(algo_asset_id).unwrap();
+        let result = dict.get_entry_via_asset_id(algo_asset_id).unwrap();
         let expected_result = get_sample_entry_1();
         assert_eq!(result, expected_result);
     }
@@ -329,9 +338,8 @@ mod tests {
         assert_eq!(result, expected_result);
     }
 
-    #[test]
-    fn should_get_evm_algo_dictionary_from_str() {
-        let s = json!([
+    fn get_sample_dictionary_string() -> String {
+        json!([
             {
                 "evm_decimals": 1,
                 "algo_decimals": 1,
@@ -347,8 +355,31 @@ mod tests {
 
             }
         ])
-        .to_string();
+        .to_string()
+    }
+
+    #[test]
+    fn should_get_evm_algo_dictionary_from_str() {
+        let s = get_sample_dictionary_string();
         let result = EvmAlgoTokenDictionary::from_str(&s);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_get_asset_id_from_evm_address() {
+        let dict = get_sample_dictionary();
+        let evm_address = convert_hex_to_eth_address("0x5832e106799962e23d1d5b512cdb01ee76ef6f4d").unwrap();
+        let result = dict.get_algo_asset_id_from_evm_address(&evm_address).unwrap();
+        let expected_result = 666;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_evm_address_from_asset_id() {
+        let dict = get_sample_dictionary();
+        let asset_id = 666;
+        let result = dict.get_evm_address_from_asset_id(asset_id).unwrap();
+        let expected_result = convert_hex_to_eth_address("0x5832e106799962e23d1d5b512cdb01ee76ef6f4d").unwrap();
+        assert_eq!(result, expected_result);
     }
 }

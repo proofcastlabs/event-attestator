@@ -72,9 +72,9 @@ impl EvmAlgoTokenDictionaryEntry {
         self.convert_native_amount_to_host_amount(amount)
     }
 
-    pub fn convert_algo_amount_to_evm_amount(&self, amount: U256) -> Result<U256> {
+    pub fn convert_algo_amount_to_evm_amount(&self, amount: u64) -> Result<U256> {
         info!("✔ Converting from ALGO amount to EVM amount...");
-        self.convert_host_amount_to_native_amount(amount)
+        self.convert_host_amount_to_native_amount(U256::from(amount))
     }
 }
 
