@@ -105,6 +105,10 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
             None => Err("No `EvmAlgoTokenDictionary` in state!".into()),
         }
     }
+
+    pub fn get_num_signed_txs(&self) -> usize {
+        self.eth_signed_txs.len()
+    }
 }
 
 #[cfg(test)]

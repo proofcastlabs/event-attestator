@@ -10,6 +10,7 @@ use crate::{
         algo_state::AlgoState,
         algo_submission_material::parse_algo_submission_material_and_put_in_state,
         check_parent_exists::check_parent_of_algo_block_in_state_exists,
+        increment_eth_account_nonce::maybe_increment_eth_account_nonce_and_return_algo_state,
         remove_irrelevant_txs_from_block_in_state::remove_irrelevant_txs_from_block_in_state,
         remove_old_algo_tail_block::maybe_remove_old_algo_tail_block_and_return_state,
         remove_receipts_from_canon_block::maybe_remove_receipts_from_algo_canon_block_and_return_state,
@@ -55,11 +56,11 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: D, block_json_string:
         .and_then(filter_out_zero_value_tx_infos_from_state)
         //.and_then(maybe_divert_txs_to_safe_address_if_destinajtion_is_evm_token_address) // TODO this!
         .and_then(maybe_sign_int_txs_and_add_to_algo_state)
-        //.and_then(maybe_increment_evm_account_nonce_and_return_eth_state)
+        .and_then(maybe_increment_eth_account_nonce_and_return_algo_state)
         .and_then(maybe_remove_old_algo_tail_block_and_return_state)
         .and_then(maybe_remove_receipts_from_algo_canon_block_and_return_state)
         .and_then(end_algo_db_transaction_and_return_state)
-        .and_then(get_algo_output)
+        .and_then(get_algo_output) // FIXME Implement this fully!
 }
 
 #[cfg(test)]
