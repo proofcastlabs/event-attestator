@@ -49,12 +49,12 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         format!("Cannot get {} from `AlgoState` - none exists!", item)
     }
 
-    fn add_int_on_algo_int_tx_infos(mut self, infos: IntOnAlgoIntTxInfos) -> Result<Self> {
+    pub fn add_int_on_algo_int_tx_infos(mut self, infos: IntOnAlgoIntTxInfos) -> Result<Self> {
         self.int_on_algo_int_tx_infos = infos;
         Ok(self)
     }
 
-    fn get_int_on_algo_int_tx_infos(&self) -> IntOnAlgoIntTxInfos {
+    pub fn get_int_on_algo_int_tx_infos(&self) -> IntOnAlgoIntTxInfos {
         self.int_on_algo_int_tx_infos.clone()
     }
 

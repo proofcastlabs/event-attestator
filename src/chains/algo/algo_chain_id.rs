@@ -3,6 +3,7 @@ use rust_algorand::AlgorandGenesisId;
 
 use crate::{
     crypto_utils::keccak_hash_bytes,
+    metadata::metadata_chain_id::MetadataChainId,
     traits::ChainId,
     types::{Bytes, Result},
 };
@@ -31,9 +32,16 @@ impl AlgoChainId {
         }
     }
 
-    fn from_genesis_id(gensis_id: &AlgorandGenesisId) -> Result<Self> {
-        // FIXME. Can also use the AlgorandGenesisId::from_str method to re-implement that here if
-        // we want?
-        unimplemented!()
+    pub fn from_genesis_id(gensis_id: &AlgorandGenesisId) -> Result<Self> {
+        match gensis_id {
+            AlgorandGenesisId::Mainnet => Ok(Self::Mainnet),
+            _ => Err(format!("Unsupported `AlgorandGenesisId` {}!", gensis_id).into()),
+        }
+    }
+
+    pub fn to_metadata_chain_id(&self) -> MetadataChainId {
+        match self {
+            Self::Mainnet => MetadataChainId::AlgorandMainnet,
+        }
     }
 }

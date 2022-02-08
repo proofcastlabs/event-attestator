@@ -18,30 +18,15 @@ use crate::{
     },
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_algo_state,
     int_on_algo::{
-        algo::get_algo_output::get_algo_output,
+        algo::{
+            get_algo_output::get_algo_output,
+            parse_tx_info::maybe_parse_tx_info_from_canon_block_and_add_to_state,
+        },
         check_core_is_initialized::check_core_is_initialized_and_return_algo_state,
     },
     traits::DatabaseInterface,
     types::Result,
 };
-// So the setup will be thus:
-// Anyone can create an asset, with this enclave address as the:
-// Manager account - the only account how can change/reconfigure the asset
-// Reserve address - where the created tokens go to (instead of the creator account). Transfers out of here are "mints", and transfers back to here are redeems.
-// Freeze address - either this enclave or empty string. This account can then freeze people.
-// Clawback address - either this enclave or empty string.
-//
-// Setting the reserve address to this enclave can ONLY be done if this enclave has signed a tx
-// saying it's happy to accept the asset. Nice.
-//
-// So then the dictionary will be a list of INT vault tokens mapped to asset IDs. Now the enclave
-// can search for transactions where it is the recipient of some asset, which will count as a
-// redeem and proceed from there.
-//
-// The other side of the enclave can then use this address to sign txs to send the asset from this
-// reserver account, which counts as a mint.
-//
-// Nice!
 
 /// Submit Algo Block To Core
 ///
@@ -64,7 +49,7 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: D, block_json_string:
         .and_then(maybe_update_algo_canon_block_hash_and_return_state)
         .and_then(maybe_update_algo_tail_block_hash_and_return_state)
         .and_then(maybe_update_algo_linker_hash_and_return_state)
-        //.and_then(maybe_parse_tx_info_from_canon_block_and_add_to_state)
+        .and_then(maybe_parse_tx_info_from_canon_block_and_add_to_state)
         //.and_then(filter_out_zero_value_evm_tx_infos_from_state)
         //.and_then(maybe_account_for_fees)
         //.and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address)
