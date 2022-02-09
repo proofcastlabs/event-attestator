@@ -23,17 +23,20 @@ pub struct EthSubmissionMaterial {
     pub block_number: Option<U256>,
     pub parent_hash: Option<EthHash>,
     pub receipts_root: Option<EthHash>,
+    pub algo_last_valid_round: Option<u64>,
 }
 
 impl EthSubmissionMaterial {
-    pub fn new(
+    fn init(
         block: EthBlock,
         receipts: EthReceipts,
         eos_ref_block_num: Option<u16>,
         eos_ref_block_prefix: Option<u32>,
+        algo_last_valid_round: Option<u64>,
     ) -> Self {
         Self {
             receipts,
+            algo_last_valid_round,
             eos_ref_block_num,
             eos_ref_block_prefix,
             hash: Some(block.hash),
@@ -42,6 +45,26 @@ impl EthSubmissionMaterial {
             receipts_root: Some(block.receipts_root),
             block: Some(block),
         }
+    }
+
+    pub fn new(
+        block: EthBlock,
+        receipts: EthReceipts,
+        eos_ref_block_num: Option<u16>,
+        eos_ref_block_prefix: Option<u32>,
+    ) -> Self {
+        Self::init(block, receipts, eos_ref_block_num, eos_ref_block_prefix, None)
+    }
+
+    pub fn get_algo_last_valid_round(&self) -> Result<u64> {
+        match self.algo_last_valid_round {
+            Some(round) => Ok(round),
+            None => Err("No `algo_last_valid_round` in `EthSubmissionMaterial`!".into()),
+        }
+    }
+
+    pub fn new_for_algo(block: EthBlock, receipts: EthReceipts, algo_last_valid_round: u64) -> Self {
+        Self::init(block, receipts, None, None, Some(algo_last_valid_round))
     }
 
     pub fn get_block(&self) -> Result<EthBlock> {
@@ -133,6 +156,7 @@ impl EthSubmissionMaterial {
                 eos_ref_block_num: json.eos_ref_block_num,
                 eos_ref_block_prefix: json.eos_ref_block_prefix,
                 block: Some(block),
+                algo_last_valid_round: json.algo_last_valid_round,
             }),
             None => {
                 if json.hash.is_none() {
@@ -151,6 +175,7 @@ impl EthSubmissionMaterial {
                     parent_hash: json.parent_hash,
                     block_number: json.block_number,
                     receipts_root: json.receipts_root,
+                    algo_last_valid_round: json.algo_last_valid_round,
                     eos_ref_block_num: json.eos_ref_block_num,
                     eos_ref_block_prefix: json.eos_ref_block_prefix,
                 })
@@ -217,29 +242,15 @@ impl EthSubmissionMaterial {
     }
 
     pub fn remove_receipts(&self) -> Self {
-        EthSubmissionMaterial {
-            hash: self.hash,
-            receipts: vec![].into(),
-            block: self.block.clone(),
-            parent_hash: self.parent_hash,
-            block_number: self.block_number,
-            receipts_root: self.receipts_root,
-            eos_ref_block_num: self.eos_ref_block_num,
-            eos_ref_block_prefix: self.eos_ref_block_prefix,
-        }
+        let mut mutable_self = self.clone();
+        mutable_self.receipts = vec![].into();
+        mutable_self
     }
 
     pub fn remove_block(&self) -> Self {
-        EthSubmissionMaterial {
-            block: None,
-            hash: self.hash,
-            parent_hash: self.parent_hash,
-            receipts: self.receipts.clone(),
-            block_number: self.block_number,
-            receipts_root: self.receipts_root,
-            eos_ref_block_num: self.eos_ref_block_num,
-            eos_ref_block_prefix: self.eos_ref_block_prefix,
-        }
+        let mut mutable_self = self.clone();
+        mutable_self.block = None;
+        mutable_self
     }
 }
 
@@ -253,6 +264,7 @@ pub struct EthSubmissionMaterialJson {
     pub block_number: Option<U256>,
     pub parent_hash: Option<EthHash>,
     pub receipts_root: Option<EthHash>,
+    pub algo_last_valid_round: Option<u64>,
 }
 
 impl EthSubmissionMaterialJson {
