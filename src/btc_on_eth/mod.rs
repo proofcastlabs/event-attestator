@@ -39,6 +39,7 @@ pub use crate::{
             debug_put_btc_on_eth_peg_in_basis_points_in_db,
             debug_put_btc_on_eth_peg_out_basis_points_in_db,
             debug_remove_utxo,
+            debug_set_accrued_fees,
             debug_set_btc_fee,
             debug_set_eth_gas_price,
             debug_set_key_in_db_to_value,

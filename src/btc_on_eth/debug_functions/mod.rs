@@ -508,3 +508,19 @@ pub fn debug_put_btc_on_eth_peg_out_basis_points_in_db<D: DatabaseInterface>(
     info!("✔ Debug setting `BTC-on-ETH` peg-out basis-points to {}", basis_points);
     debug_put_btc_on_eth_basis_points_in_db(db, basis_points, false)
 }
+
+/// # Debug Set Accrued Fees
+///
+/// Allows manual setting of the accured fees stored in the database for this core.
+pub fn debug_set_accrued_fees<D: DatabaseInterface>(db: &D, amount: u64) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| {
+            let fee_db_utils = FeeDatabaseUtils::new_for_btc_on_eth();
+            fee_db_utils.reset_accrued_fees(db)?;
+            fee_db_utils.increment_accrued_fees(db, amount)?;
+            Ok(())
+        })
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({"success":true,"accrued_fee":amount}).to_string())
+}
