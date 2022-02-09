@@ -2,7 +2,7 @@ use ethereum_types::U256;
 
 use crate::{
     chains::algo::algo_state::AlgoState,
-    int_on_algo::algo::int_tx_info::{IntOnAlgoIntTxInfo, IntOnAlgoIntTxInfos},
+    int_on_algo::algo::int_tx_info::IntOnAlgoIntTxInfos,
     traits::DatabaseInterface,
     types::Result,
 };

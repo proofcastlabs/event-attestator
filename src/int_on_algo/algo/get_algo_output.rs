@@ -17,7 +17,7 @@ use crate::{
     },
     int_on_algo::algo::int_tx_info::{IntOnAlgoIntTxInfo, IntOnAlgoIntTxInfos},
     traits::DatabaseInterface,
-    types::{NoneError, Result},
+    types::Result,
 };
 
 #[derive(Debug, Clone, Eq, Default, PartialEq, Serialize, Deserialize, Constructor)]

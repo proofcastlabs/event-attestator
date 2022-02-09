@@ -1,3 +1,4 @@
+#![allow(dead_code)] // FIXM remove
 use ethereum_types::Address as EthAddress;
 use strum_macros::EnumIter;
 

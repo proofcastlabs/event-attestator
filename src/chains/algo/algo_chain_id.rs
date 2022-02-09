@@ -26,7 +26,7 @@ impl Default for AlgoChainId {
 }
 
 impl AlgoChainId {
-    fn to_bytes(&self) -> Result<Bytes> {
+    fn to_bytes(self) -> Result<Bytes> {
         match self {
             Self::Mainnet => Ok(AlgorandGenesisId::Mainnet.hash()?.to_bytes()),
         }
@@ -39,7 +39,7 @@ impl AlgoChainId {
         }
     }
 
-    pub fn to_metadata_chain_id(&self) -> MetadataChainId {
+    pub fn to_metadata_chain_id(self) -> MetadataChainId {
         match self {
             Self::Mainnet => MetadataChainId::AlgorandMainnet,
         }

@@ -1,4 +1,4 @@
-use rust_algorand::{AlgorandBlock, AlgorandTransaction, AlgorandTransactions};
+use rust_algorand::AlgorandBlock;
 
 use crate::{chains::algo::algo_state::AlgoState, traits::DatabaseInterface, types::Result};
 

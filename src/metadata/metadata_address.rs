@@ -82,6 +82,7 @@ impl MetadataAddress {
     }
 
     // FIXME Test!
+    #[allow(dead_code)] // FIXME rm!
     pub fn new_from_algo_address(algo_address: &AlgorandAddress, metadata_chain_id: &MetadataChainId) -> Result<Self> {
         let protocol_id = metadata_chain_id.to_protocol_id();
         match protocol_id {

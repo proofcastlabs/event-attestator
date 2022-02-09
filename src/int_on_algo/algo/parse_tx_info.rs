@@ -8,7 +8,6 @@ use crate::{
     },
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
     int_on_algo::algo::int_tx_info::{IntOnAlgoIntTxInfo, IntOnAlgoIntTxInfos},
-    metadata::metadata_chain_id::MetadataChainId,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -44,13 +43,13 @@ impl IntOnAlgoIntTxInfos {
         }?;
         let tx_info = IntOnAlgoIntTxInfo {
             algo_asset_id: asset_id,
+            router_address: *router_address,
             originating_tx_hash: tx.to_id()?,
+            int_vault_address: *vault_address,
             token_sender: token_sender.clone(),
             user_data: metadata.user_data.clone(),
-            router_address: router_address.clone(),
-            int_vault_address: vault_address.clone(),
-            destination_address: metadata.destination_address.clone(),
-            destination_chain_id: metadata.destination_chain_id.clone(),
+            destination_address: metadata.destination_address,
+            destination_chain_id: metadata.destination_chain_id,
             int_token_address: dictionary.get_evm_address_from_asset_id(asset_id)?,
             native_token_amount: dictionary.convert_algo_amount_to_evm_amount(asset_id, host_asset_amount)?,
             origin_chain_id: AlgoChainId::from_genesis_id(&AlgorandGenesisId::from_hash(genesis_hash)?)?

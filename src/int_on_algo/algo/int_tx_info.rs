@@ -1,5 +1,5 @@
 use derive_more::{Constructor, Deref, IntoIterator};
-use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use ethereum_types::{Address as EthAddress, U256};
 use rust_algorand::AlgorandAddress;
 
 use crate::{metadata::metadata_chain_id::MetadataChainId, types::Bytes};

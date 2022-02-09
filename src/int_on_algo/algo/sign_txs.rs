@@ -1,5 +1,3 @@
-use ethereum_types::Address as EthAddress;
-
 use crate::{
     chains::{
         algo::algo_state::AlgoState,
@@ -15,7 +13,6 @@ use crate::{
         },
     },
     int_on_algo::algo::int_tx_info::{IntOnAlgoIntTxInfo, IntOnAlgoIntTxInfos},
-    metadata::metadata_traits::ToMetadata,
     traits::DatabaseInterface,
     types::Result,
 };

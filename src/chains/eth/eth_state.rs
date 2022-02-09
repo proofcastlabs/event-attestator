@@ -111,6 +111,7 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         }
     }
 
+    #[allow(dead_code)] // FIXME rm
     pub fn get_evm_algo_token_dictionary(&self) -> Result<&EvmAlgoTokenDictionary> {
         match self.evm_algo_token_dictionary {
             Some(ref dictionary) => Ok(dictionary),
