@@ -23,7 +23,10 @@ use crate::{
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_eth_state,
     int_on_algo::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
-        int::get_int_output_json::get_int_output_json,
+        int::{
+            get_int_output_json::get_int_output_json,
+            parse_tx_infos::maybe_parse_tx_info_from_canon_block_and_add_to_state,
+        },
     },
     traits::DatabaseInterface,
     types::Result,
@@ -51,7 +54,7 @@ pub fn submit_int_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(maybe_update_eth_canon_block_hash_and_return_state)
         .and_then(maybe_update_eth_tail_block_hash_and_return_state)
         .and_then(maybe_update_eth_linker_hash_and_return_state)
-        //.and_then(maybe_parse_tx_info_from_canon_block_and_add_to_state)
+        .and_then(maybe_parse_tx_info_from_canon_block_and_add_to_state)
         //.and_then(filter_out_zero_value_evm_tx_infos_from_state)
         //.and_then(maybe_account_for_fees)
         //.and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address)
