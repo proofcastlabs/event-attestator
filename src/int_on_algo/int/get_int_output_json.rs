@@ -1,26 +1,108 @@
-#![allow(unused_imports)] // FIXME rm!
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use derive_more::Constructor;
+use rust_algorand::AlgorandSignedTransaction;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::eth::{
-        any_sender::relay_transaction::RelayTransaction,
-        eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::EthDbUtilsExt,
-        eth_state::EthState,
-        eth_traits::EthTxInfoCompatible,
-    },
-    dictionaries::eth_evm::EthEvmTokenDictionary,
-    int_on_evm::int::evm_tx_info::{IntOnEvmEvmTxInfo, IntOnEvmEvmTxInfos},
+    chains::eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
+    int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
     traits::DatabaseInterface,
-    types::{NoneError, Result},
+    types::Result,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Constructor)]
 pub struct IntOutput {
     pub int_latest_block_number: usize,
-    pub algo_signed_transactions: Vec<String>, // FIXME Vec<EvmTxInfo>,
+    pub algo_signed_transactions: Vec<IntTxInfo>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct IntTxInfo {
+    pub _id: String,
+    pub broadcast: bool,
+    pub host_asset_id: u64,
+    pub algo_tx_hash: String,
+    pub algo_signed_tx: String,
+    pub algo_tx_amount: String,
+    pub algo_account_nonce: u64,
+    pub witnessed_timestamp: u64,
+    pub algo_tx_recipient: String,
+    pub originating_tx_hash: String,
+    pub originating_address: String,
+    pub native_token_address: String,
+    pub algo_latest_block_number: u64,
+    pub broadcast_tx_hash: Option<String>,
+    pub broadcast_timestamp: Option<String>,
+}
+
+impl IntTxInfo {
+    pub fn new(
+        tx: &AlgorandSignedTransaction,
+        tx_info: &IntOnAlgoAlgoTxInfo,
+        nonce: u64,
+        algo_latest_block_number: u64,
+    ) -> Result<IntTxInfo> {
+        Ok(IntTxInfo {
+            broadcast: false,
+            broadcast_tx_hash: None,
+            algo_latest_block_number,
+            broadcast_timestamp: None,
+            algo_account_nonce: nonce,
+            algo_signed_tx: tx.to_hex()?,
+            algo_tx_hash: tx.to_tx_id()?,
+            host_asset_id: tx_info.algo_asset_id,
+            _id: format!("pint-on-algo-algo-{}", nonce),
+            algo_tx_amount: tx_info.host_token_amount.to_string(),
+            algo_tx_recipient: tx_info.destination_address.to_string(),
+            witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
+            native_token_address: format!("0x{}", hex::encode(&tx_info.int_token_address)),
+            originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
+            originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
+        })
+    }
+}
+
+pub fn get_int_signed_tx_info_from_int_txs(
+    txs: &[AlgorandSignedTransaction],
+    tx_infos: &IntOnAlgoAlgoTxInfos,
+    algo_account_nonce: u64,
+    algo_latest_block_num: u64,
+) -> Result<Vec<IntTxInfo>> {
+    let number_of_txs = txs.len() as u64;
+    let start_nonce = algo_account_nonce - number_of_txs;
+    info!("✔ Getting INT tx info from ALGO txs...");
+    if number_of_txs > algo_account_nonce {
+        return Err("ALGO account nonce has not been incremented correctly!".into());
+    };
+    if number_of_txs != tx_infos.len() as u64 {
+        return Err("Number of txs does not match number of tx infos!".into());
+    };
+    txs.iter()
+        .zip(tx_infos.iter())
+        .enumerate()
+        .map(|(i, (tx, info))| IntTxInfo::new(tx, info, start_nonce + i as u64, algo_latest_block_num))
+        .collect::<Result<Vec<_>>>()
+}
+
+pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+    info!("✔ Getting INT output json...");
+    let txs = state.algo_signed_txs.clone();
+    let int_latest_block_num = state.eth_db_utils.get_latest_eth_block_number()?;
+    let output = if !txs.is_empty() {
+        IntOutput::new(
+            int_latest_block_num,
+            get_int_signed_tx_info_from_int_txs(
+                &txs,
+                &state.int_on_algo_algo_tx_infos.clone(),
+                state.algo_db_utils.get_algo_account_nonce()?,
+                state.algo_db_utils.get_latest_block_number()?,
+            )?,
+        )
+    } else {
+        IntOutput::new(int_latest_block_num, vec![])
+    };
+    Ok(serde_json::to_string(&output)?)
 }
 
 /*
@@ -37,145 +119,23 @@ impl IntOutput {
         let tx_infos = temp_struct
             .evm_signed_transactions
             .iter()
-            .map(|json_value| EvmTxInfo::from_str(&json_value.to_string()))
-            .collect::<Result<Vec<EvmTxInfo>>>()?;
+            .map(|json_value| IntTxInfo::from_str(&json_value.to_string()))
+            .collect::<Result<Vec<IntTxInfo>>>()?;
         Ok(Self {
             evm_signed_transactions: tx_infos,
             int_latest_block_number: temp_struct.int_latest_block_number,
         })
     }
 }
+*/
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct EvmTxInfo {
-    pub _id: String,
-    pub broadcast: bool,
-    pub evm_tx_hash: String,
-    pub evm_tx_amount: String,
-    pub evm_tx_recipient: String,
-    pub witnessed_timestamp: u64,
-    pub host_token_address: String,
-    pub originating_tx_hash: String,
-    pub originating_address: String,
-    pub native_token_address: String,
-    pub evm_signed_tx: Option<String>,
-    pub any_sender_nonce: Option<u64>,
-    pub evm_account_nonce: Option<u64>,
-    pub evm_latest_block_number: usize,
-    pub broadcast_tx_hash: Option<String>,
-    pub broadcast_timestamp: Option<String>,
-    pub any_sender_tx: Option<RelayTransaction>,
-}
-
+/*
 #[cfg(test)]
-impl EvmTxInfo {
+impl IntTxInfo {
     pub fn from_str(s: &str) -> Result<Self> {
         Ok(serde_json::from_str(s)?)
     }
 }
-
-impl EvmTxInfo {
-    pub fn new<T: EthTxInfoCompatible>(
-        tx: &T,
-        evm_tx_info: &IntOnEvmEvmTxInfo,
-        maybe_nonce: Option<u64>,
-        evm_latest_block_number: usize,
-        dictionary: &EthEvmTokenDictionary,
-    ) -> Result<EvmTxInfo> {
-        let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
-        Ok(EvmTxInfo {
-            evm_latest_block_number,
-            broadcast: false,
-            broadcast_tx_hash: None,
-            broadcast_timestamp: None,
-            evm_signed_tx: tx.eth_tx_hex(),
-            any_sender_tx: tx.any_sender_tx(),
-            _id: if tx.is_any_sender() {
-                format!("pint-on-evm-evm-any-sender-{}", nonce)
-            } else {
-                format!("pint-on-evm-evm-{}", nonce)
-            },
-            evm_tx_hash: format!("0x{}", tx.get_tx_hash()),
-            any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
-            evm_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
-            witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            host_token_address: format!("0x{}", hex::encode(&evm_tx_info.evm_token_address)),
-            native_token_address: format!("0x{}", hex::encode(&evm_tx_info.eth_token_address)),
-            originating_address: format!("0x{}", hex::encode(evm_tx_info.token_sender.as_bytes())),
-            evm_tx_recipient: format!("0x{}", hex::encode(evm_tx_info.destination_address.as_bytes())),
-            originating_tx_hash: format!("0x{}", hex::encode(evm_tx_info.originating_tx_hash.as_bytes())),
-            evm_tx_amount: dictionary
-                .convert_eth_amount_to_evm_amount(&evm_tx_info.eth_token_address, evm_tx_info.native_token_amount)?
-                .to_string(),
-        })
-    }
-}
-
-pub fn get_evm_signed_tx_info_from_int_txs(
-    txs: &[EthTransaction],
-    evm_tx_info: &IntOnEvmEvmTxInfos,
-    eth_account_nonce: u64,
-    use_any_sender_tx_type: bool,
-    any_sender_nonce: u64,
-    eth_latest_block_number: usize,
-    dictionary: &EthEvmTokenDictionary,
-) -> Result<Vec<EvmTxInfo>> {
-    let number_of_txs = txs.len() as u64;
-    let start_nonce = if use_any_sender_tx_type {
-        info!("✔ Getting AnySender tx info from ETH txs...");
-        if number_of_txs > any_sender_nonce {
-            return Err("AnySender account nonce has not been incremented correctly!".into());
-        } else {
-            any_sender_nonce - number_of_txs
-        }
-    } else {
-        info!("✔ Getting EVM tx info from ETH txs...");
-        if number_of_txs > eth_account_nonce {
-            return Err("Eth account nonce has not been incremented correctly!".into());
-        } else {
-            eth_account_nonce - number_of_txs
-        }
-    };
-    txs.iter()
-        .enumerate()
-        .map(|(i, tx)| {
-            EvmTxInfo::new(
-                tx,
-                &evm_tx_info[i],
-                Some(start_nonce + i as u64),
-                eth_latest_block_number,
-                dictionary,
-            )
-        })
-        .collect::<Result<Vec<EvmTxInfo>>>()
-}
 */
 
-pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
-    info!("✔ Getting INT output json...");
-    /*
-    let output = serde_json::to_string(&IntOutput {
-        int_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
-        evm_signed_transactions: if state.int_on_evm_evm_signed_txs.is_empty() {
-            info!("✔ No `int-on-evm-evm` signed transactions ∴ no txs to output!");
-            vec![]
-        } else {
-            get_evm_signed_tx_info_from_int_txs(
-                &state.int_on_evm_evm_signed_txs,
-                &state.int_on_evm_evm_tx_infos,
-                state.evm_db_utils.get_eth_account_nonce_from_db()?,
-                false, // TODO Get this from state submission material when/if we support AnySender
-                state.evm_db_utils.get_any_sender_nonce_from_db()?,
-                state.evm_db_utils.get_latest_eth_block_number()?,
-                &EthEvmTokenDictionary::get_from_db(state.db)?,
-            )?
-        },
-    })?;
-    info!("✔ ETH output: {}", output);
-    Ok(output)
-    */
-    Ok(serde_json::to_string(&IntOutput {
-        int_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
-        algo_signed_transactions: vec![], // FIXME
-    })?)
-}
+// TODO Test
