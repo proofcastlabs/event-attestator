@@ -11,7 +11,6 @@ use crate::{
         eth_receipt::EthReceipt,
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
-        eth_utils::safely_convert_hex_to_eth_address,
     },
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
@@ -60,6 +59,10 @@ impl IntOnAlgoAlgoTxInfos {
                         destination_chain_id: event_params.get_destination_chain_id()?,
                         destination_address: AlgorandAddress::from_str(&event_params.destination_address)?,
                         algo_asset_id: dictionary.get_algo_asset_id_from_evm_address(&event_params.token_address)?,
+                        host_token_amount: dictionary.convert_evm_amount_to_algo_amount(
+                            &event_params.token_address,
+                            event_params.token_amount,
+                        )?,
                     };
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)

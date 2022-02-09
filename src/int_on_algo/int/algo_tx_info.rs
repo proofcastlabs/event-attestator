@@ -8,6 +8,7 @@ use crate::{metadata::metadata_chain_id::MetadataChainId, types::Bytes};
 pub struct IntOnAlgoAlgoTxInfo {
     pub user_data: Bytes,
     pub algo_asset_id: u64,
+    pub host_token_amount: U256,
     pub token_sender: EthAddress,
     pub native_token_amount: U256,
     pub router_address: EthAddress,

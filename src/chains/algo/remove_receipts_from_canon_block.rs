@@ -22,14 +22,9 @@ pub fn maybe_remove_receipts_from_algo_canon_block_and_return_state<D: DatabaseI
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
-    use serde_json::json;
-
     use super::*;
     use crate::{
         chains::algo::{algo_database_utils::AlgoDbUtils, test_utils::get_sample_block_n},
-        dictionaries::evm_algo::EvmAlgoTokenDictionary,
         test_utils::get_test_database,
     };
 
