@@ -28,6 +28,7 @@ use crate::{
             filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
             get_int_output_json::get_int_output_json,
             parse_tx_infos::maybe_parse_tx_info_from_canon_block_and_add_to_state,
+            sign_txs::maybe_sign_algo_txs_and_add_to_state,
         },
     },
     traits::DatabaseInterface,
@@ -36,10 +37,10 @@ use crate::{
 
 /// # Submit INT Block to Core
 ///
-/// The main submission pipeline. Submitting an ETH block to the enclave will - if that block is
-/// valid & subsequent to the enclave's current latest block - advanced the piece of the ETH
+/// The main submission pipeline. Submitting an INT block to the enclave will - if that block is
+/// valid & subsequent to the enclave's current latest block - advanced the piece of the INT
 /// blockchain held by the enclave in it's encrypted database. Should the submitted block
-/// contain a redeem event emitted by the smart-contract the enclave is watching, an EOS
+/// contain a redeem event emitted by the smart-contract the enclave is watching, an ALGO
 /// transaction will be signed & returned to the caller.
 pub fn submit_int_block_to_core<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting INT block to core...");
@@ -58,8 +59,8 @@ pub fn submit_int_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(maybe_update_eth_linker_hash_and_return_state)
         .and_then(maybe_parse_tx_info_from_canon_block_and_add_to_state)
         .and_then(filter_out_zero_value_tx_infos_from_state)
-        //.and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address)
-        //.and_then(maybe_sign_evm_txs_and_add_to_eth_state)
+        //.and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address) // FIXME
+        .and_then(maybe_sign_algo_txs_and_add_to_state)
         .and_then(maybe_increment_evm_account_nonce_and_return_eth_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)
         .and_then(maybe_remove_receipts_from_eth_canon_block_and_return_state)

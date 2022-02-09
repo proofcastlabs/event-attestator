@@ -1,4 +1,5 @@
 use ethereum_types::H256 as EthHash;
+use rust_algorand::AlgorandSignedTransaction;
 
 use crate::{
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
@@ -63,6 +64,7 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos,
     pub eos_transactions: Option<EosSignedTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
+    pub algo_signed_txs: Vec<AlgorandSignedTransaction>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
     pub eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
     pub eth_evm_token_dictionary: Option<EthEvmTokenDictionary>,
@@ -76,6 +78,7 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             misc: None,
             btc_transactions: None,
             eos_transactions: None,
+            algo_signed_txs: vec![],
             btc_utxos_and_values: None,
             eth_submission_material: None,
             eth_evm_token_dictionary: None,
@@ -407,6 +410,15 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
                 self.evm_algo_token_dictionary = Some(dictionary);
                 Ok(self)
             },
+        }
+    }
+
+    pub fn add_algo_signed_txs(mut self, txs: &[AlgorandSignedTransaction]) -> Result<Self> {
+        if !self.algo_signed_txs.is_empty() {
+            Err(get_no_overwrite_state_err("algo signed txs").into())
+        } else {
+            self.algo_signed_txs = txs.to_vec();
+            Ok(self)
         }
     }
 }
