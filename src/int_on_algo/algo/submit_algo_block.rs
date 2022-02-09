@@ -60,7 +60,7 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: D, block_json_string:
         .and_then(maybe_remove_old_algo_tail_block_and_return_state)
         .and_then(maybe_remove_receipts_from_algo_canon_block_and_return_state)
         .and_then(end_algo_db_transaction_and_return_state)
-        .and_then(get_algo_output) // FIXME Implement this fully!
+        .and_then(get_algo_output)
 }
 
 #[cfg(test)]
