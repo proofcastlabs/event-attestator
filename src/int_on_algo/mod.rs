@@ -22,7 +22,10 @@ pub(crate) mod opt_in_to_asset;
 
 pub use crate::{
     chains::{
-        algo::core_initialization::reset_algo_chain::debug_reset_algo_chain,
+        algo::{
+            algo_note_metadata::encode_algo_note_metadata,
+            core_initialization::reset_algo_chain::debug_reset_algo_chain,
+        },
         eth::core_initialization::reset_eth_chain::debug_reset_eth_chain as debug_reset_int_chain,
     },
     int_on_algo::{

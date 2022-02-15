@@ -6,6 +6,7 @@ use serde_with::skip_serializing_none;
 use crate::{
     metadata::metadata_chain_id::MetadataChainId,
     types::{Byte, Bytes, Result},
+    utils::strip_hex_prefix,
 };
 
 const ALGO_NOTE_MAX_NUM_BYTES: usize = 1000;
@@ -112,9 +113,39 @@ impl std::fmt::Display for AlgoNoteMetadataVersion {
     }
 }
 
+/// Algo Note Metadata Encoder
+///
+/// Encodes the Algorand note metadata required to make a pToken redeem asset transfer
+/// transaction.
+pub fn encode_algo_note_metadata(
+    destination_chain_id: &str,
+    destination_address: &str,
+    user_data: &str,
+) -> Result<String> {
+    Ok(format!(
+        "0x{}",
+        hex::encode(
+            AlgoNoteMetadata::new(
+                AlgoNoteMetadataVersion::V0,
+                MetadataChainId::from_bytes(&hex::decode(strip_hex_prefix(destination_chain_id))?)?,
+                destination_address.to_string(),
+                hex::decode(strip_hex_prefix(user_data))?
+            )
+            .to_bytes()?
+        )
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn should_encode_algo_note_metadata() {
+        let expected_result = "0x940094ccffccffccffccffab736f6d656164647265737393ccc0ccffccee";
+        let result = encode_algo_note_metadata("0xffffffff", "someaddress", "0xc0ffee").unwrap();
+        assert_eq!(result, expected_result);
+    }
 
     #[test]
     fn should_serde_algo_metadata_to_bytes() {
