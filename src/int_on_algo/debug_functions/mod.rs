@@ -13,6 +13,7 @@ use crate::{
     traits::DatabaseInterface,
     types::Result,
 };
+
 /// # Debug Add Dictionary Entry
 ///
 /// This function will add an entry to the `EvmAlgoTokenDictionary` held in the encrypted database. The
@@ -51,4 +52,16 @@ pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: &D, eth_address_s
         })
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"remove_dictionary_entry_success:":"true"}).to_string())
+}
+
+/// Debug Set Algo Account Nonce
+///
+/// Sets the Algo account nonce in the database to the passed in value.
+pub fn debug_set_algo_account_nonce<D: DatabaseInterface>(db: &D, nonce: u64) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &AlgoDbUtils::new(db)))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| AlgoDbUtils::new(db).put_algo_account_nonce_in_db(nonce))
+        .and_then(|_| db.end_transaction())
+        .map(|_| json!({ "algo_account_nonce": nonce }).to_string())
 }
