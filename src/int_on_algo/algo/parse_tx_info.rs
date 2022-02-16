@@ -33,9 +33,9 @@ impl IntOnAlgoIntTxInfos {
             Some(id) => Result::Ok(id),
             None => Result::Err(Self::get_missing_field_err("asset id").into()),
         }?;
-        let token_sender = match &tx.asset_sender {
+        let token_sender = match &tx.sender {
             Some(sender) => Result::Ok(sender),
-            None => Result::Err(Self::get_missing_field_err("asset sender").into()),
+            None => Result::Err(Self::get_missing_field_err("sender").into()),
         }?;
         let host_asset_amount = match tx.asset_amount {
             Some(amount) => Result::Ok(amount),
@@ -44,12 +44,12 @@ impl IntOnAlgoIntTxInfos {
         let tx_info = IntOnAlgoIntTxInfo {
             algo_asset_id: asset_id,
             router_address: *router_address,
-            originating_tx_hash: tx.to_id()?,
             int_vault_address: *vault_address,
             token_sender: token_sender.clone(),
             user_data: metadata.user_data.clone(),
             destination_address: metadata.destination_address,
             destination_chain_id: metadata.destination_chain_id,
+            originating_tx_hash: tx.id.clone().unwrap_or_default(),
             int_token_address: dictionary.get_evm_address_from_asset_id(asset_id)?,
             native_token_amount: dictionary.convert_algo_amount_to_evm_amount(asset_id, host_asset_amount)?,
             origin_chain_id: AlgoChainId::from_genesis_id(&AlgorandGenesisId::from_hash(genesis_hash)?)?
