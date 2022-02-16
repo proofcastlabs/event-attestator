@@ -36,12 +36,9 @@ impl IntOnAlgoAlgoTxInfos {
                 .collect(),
         );
         info!("✔ Num receipts after filtering: {}", filtered_receipts.len());
-        Ok(EthSubmissionMaterial::new(
-            submission_material.get_block()?,
-            filtered_receipts,
-            None,
-            None,
-        ))
+        let mut mutable_submission_material = submission_material.clone();
+        mutable_submission_material.receipts = filtered_receipts;
+        Ok(mutable_submission_material)
     }
 }
 

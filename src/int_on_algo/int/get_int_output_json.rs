@@ -94,7 +94,7 @@ pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
             int_latest_block_num,
             get_int_signed_tx_info_from_int_txs(
                 &txs,
-                &state.int_on_algo_algo_tx_infos.clone(),
+                &state.int_on_algo_algo_tx_infos,
                 state.algo_db_utils.get_algo_account_nonce()?,
                 state.algo_db_utils.get_latest_block_number()?,
             )?,
