@@ -1,0 +1,67 @@
+use crate::{
+    btc_on_int::btc::int_tx_info::BtcOnIntIntTxInfo,
+    chains::{
+        btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata, btc_state::BtcState},
+        eth::{
+            eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
+            eth_crypto::eth_transaction::{get_signed_minting_tx, EthTransaction, EthTransactions},
+            eth_database_utils::EthDbUtilsExt,
+            eth_types::EthSigningParams,
+        },
+    },
+    metadata::metadata_protocol_id::MetadataProtocolId,
+    traits::DatabaseInterface,
+    types::Result,
+};
+
+pub fn get_int_signed_txs(
+    signing_params: &EthSigningParams,
+    tx_infos: &[BtcOnIntIntTxInfo],
+    btc_chain_id: &BtcChainId,
+) -> Result<EthTransactions> {
+    trace!("✔ Getting INT signed transactions...");
+    Ok(EthTransactions::new(
+        tx_infos
+            .iter()
+            .enumerate()
+            .map(|(i, eth_tx_info)| {
+                info!(
+                    "✔ Signing INT tx for amount: {}, to address: {}",
+                    eth_tx_info.amount, eth_tx_info.destination_address,
+                );
+                get_signed_minting_tx(
+                    &eth_tx_info.amount,
+                    signing_params.eth_account_nonce + i as u64,
+                    &signing_params.chain_id,
+                    signing_params.smart_contract_address,
+                    signing_params.gas_price,
+                    &eth_tx_info.destination_address,
+                    &signing_params.eth_private_key,
+                    eth_tx_info.maybe_to_metadata_bytes(
+                        btc_chain_id,
+                        MAX_BYTES_FOR_ETH_USER_DATA,
+                        &MetadataProtocolId::Ethereum,
+                    )?,
+                    None,
+                )
+            })
+            .collect::<Result<Vec<EthTransaction>>>()?,
+    ))
+}
+
+pub fn maybe_sign_canon_block_txs<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
+    info!("✔ Maybe signing INT txs...");
+    get_int_signed_txs(
+        &state.eth_db_utils.get_signing_params_from_db()?,
+        // FIXME FIXME FIXME Fix the entire BTC submission algorithm!
+        &state.btc_on_int_int_tx_infos, // FIXME Now we are ALWAYS signing the submitted block's txs!
+        &state.btc_db_utils.get_btc_chain_id_from_db()?,
+    )
+    .and_then(|signed_txs| {
+        #[cfg(feature = "debug")]
+        {
+            debug!("✔ Signed transactions: {:?}", signed_txs);
+        }
+        state.add_eth_signed_txs(signed_txs)
+    })
+}

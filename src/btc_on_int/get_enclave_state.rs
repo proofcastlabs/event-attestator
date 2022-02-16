@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    btc_on_eth::check_core_is_initialized::check_core_is_initialized,
+    btc_on_int::check_core_is_initialized::check_core_is_initialized,
     chains::{
         btc::{btc_database_utils::BtcDbUtils, btc_enclave_state::BtcEnclaveState},
         eth::{
@@ -10,7 +10,6 @@ use crate::{
         },
     },
     enclave_info::EnclaveInfo,
-    fees::fee_enclave_state::FeesEnclaveState,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -20,7 +19,6 @@ struct EnclaveState {
     info: EnclaveInfo,
     btc: BtcEnclaveState,
     eth: EthEnclaveState,
-    fees: FeesEnclaveState,
 }
 
 impl EnclaveState {
@@ -33,7 +31,6 @@ impl EnclaveState {
                 &eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
                 None,
             )?,
-            fees: FeesEnclaveState::new_for_btc_on_eth(btc_db_utils.get_db())?,
         })
     }
 

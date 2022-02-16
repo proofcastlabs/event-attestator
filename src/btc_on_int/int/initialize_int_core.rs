@@ -18,13 +18,12 @@ use crate::{
     types::Result,
 };
 
-pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
+pub fn maybe_initialize_int_enclave<D: DatabaseInterface>(
     db: D,
     block_json: &str,
     chain_id: u8,
     gas_price: u64,
     confs: u64,
-    _bytecode_path: &str,
 ) -> Result<String> {
     match is_eth_core_initialized(&EthDbUtils::new(&db)) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),

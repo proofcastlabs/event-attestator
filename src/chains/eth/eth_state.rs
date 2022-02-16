@@ -2,6 +2,7 @@ use ethereum_types::H256 as EthHash;
 
 use crate::{
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
+    btc_on_int::int::btc_tx_info::BtcOnIntBtcTxInfos,
     chains::{
         btc::{
             btc_database_utils::BtcDbUtils,
@@ -27,6 +28,7 @@ use crate::{
 };
 
 // FIXME We can move the core specific setters & getters of this into their own mods!
+// FIXME Use a macro to generate a lot of this!
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct EthState<'a, D: DatabaseInterface> {
@@ -42,6 +44,7 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub int_on_evm_evm_tx_infos: IntOnEvmEvmTxInfos,
     pub int_on_evm_int_tx_infos: IntOnEvmIntTxInfos,
     pub eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos,
+    pub btc_on_int_btc_tx_infos: BtcOnIntBtcTxInfos,
     pub erc20_on_evm_evm_signed_txs: EthTransactions,
     pub erc20_on_evm_eth_signed_txs: EthTransactions,
     pub erc20_on_int_int_signed_txs: EthTransactions,
@@ -76,6 +79,7 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             btc_db_utils: BtcDbUtils::new(db),
             int_on_evm_int_signed_txs: EthTransactions::new(vec![]),
             int_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
+            btc_on_int_btc_tx_infos: BtcOnIntBtcTxInfos::new(vec![]),
             int_on_evm_evm_tx_infos: IntOnEvmEvmTxInfos::new(vec![]),
             int_on_evm_int_tx_infos: IntOnEvmIntTxInfos::new(vec![]),
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
@@ -178,6 +182,12 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         self.replace_btc_on_eth_redeem_infos(BtcOnEthRedeemInfos::new(new_infos))
     }
 
+    pub fn add_btc_on_int_btc_tx_infos(self, mut infos: BtcOnIntBtcTxInfos) -> Result<Self> {
+        let mut new_infos = self.btc_on_int_btc_tx_infos.clone().0;
+        new_infos.append(&mut infos.0);
+        self.replace_btc_on_int_btc_tx_infos(BtcOnIntBtcTxInfos::new(new_infos))
+    }
+
     pub fn add_erc20_on_eos_peg_in_infos(self, mut infos: Erc20OnEosPegInInfos) -> Result<Self> {
         let mut new_infos = self.erc20_on_eos_peg_in_infos.clone().0;
         new_infos.append(&mut infos.0);
@@ -215,6 +225,11 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
 
     pub fn replace_erc20_on_int_eth_tx_infos(mut self, replacements: Erc20OnIntEthTxInfos) -> Result<Self> {
         self.erc20_on_int_eth_tx_infos = replacements;
+        Ok(self)
+    }
+
+    pub fn replace_btc_on_int_btc_tx_infos(mut self, replacements: BtcOnIntBtcTxInfos) -> Result<Self> {
+        self.btc_on_int_btc_tx_infos = replacements;
         Ok(self)
     }
 

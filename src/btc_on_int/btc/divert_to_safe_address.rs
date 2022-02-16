@@ -1,7 +1,7 @@
 use ethereum_types::Address as EthAddress;
 
 use crate::{
-    btc_on_eth::btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
+    btc_on_int::btc::int_tx_info::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
     chains::btc::btc_state::BtcState,
     constants::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
@@ -9,5 +9,5 @@ use crate::{
 };
 
 create_safe_address_diversion_fxns!(
-    "BtcOnEthEthTxInfo" => BtcState => "eth" => *SAFE_ETH_ADDRESS => EthAddress => "token"
+    "BtcOnIntIntTxInfo" => BtcState => "int" => *SAFE_ETH_ADDRESS => EthAddress => "token"
 );

@@ -11,7 +11,7 @@ use crate::{
     types::Result,
 };
 
-pub fn filter_receipts_for_btc_on_eth_redeem_events_in_state<D: DatabaseInterface>(
+pub fn filter_receipts_for_btc_on_int_redeem_events_in_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Filtering receipts for those containing `btc-on-eth` redeem events...");
@@ -22,6 +22,7 @@ pub fn filter_receipts_for_btc_on_eth_redeem_events_in_state<D: DatabaseInterfac
             &[
                 *ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
                 *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
+                // FIXME add the v2 version topics here!
             ],
         )
         .and_then(|filtered_block_and_receipts| state.update_eth_submission_material(filtered_block_and_receipts))

@@ -9,19 +9,19 @@ use crate::{
 };
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
-pub struct BtcOnEthEthTxInfos(pub Vec<BtcOnEthEthTxInfo>);
+pub struct BtcOnIntIntTxInfos(pub Vec<BtcOnIntIntTxInfo>);
 
 #[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct BtcOnEthEthTxInfo {
+pub struct BtcOnIntIntTxInfo {
     pub amount: U256,
     pub user_data: Option<Bytes>,
     pub originating_tx_hash: Txid,
-    pub eth_token_address: EthAddress,
+    pub int_token_address: EthAddress,
     pub originating_tx_address: String,
     pub destination_address: EthAddress,
 }
 
-impl BtcOnEthEthTxInfos {
+impl BtcOnIntIntTxInfos {
     pub fn to_bytes(&self) -> Result<Bytes> {
         Ok(serde_json::to_vec(&self.0)?)
     }
@@ -31,27 +31,27 @@ impl BtcOnEthEthTxInfos {
     }
 }
 
-impl BtcOnEthEthTxInfo {
+impl BtcOnIntIntTxInfo {
     pub fn new(
         amount: U256,
-        eth_address_hex: String,
+        int_address_hex: String,
         originating_tx_hash: Txid,
         originating_tx_address: BtcAddress,
         user_data: Option<Bytes>,
-        eth_token_address: &EthAddress,
-    ) -> Result<BtcOnEthEthTxInfo> {
-        Ok(BtcOnEthEthTxInfo {
+        int_token_address: &EthAddress,
+    ) -> Result<BtcOnIntIntTxInfo> {
+        Ok(BtcOnIntIntTxInfo {
             amount,
             originating_tx_hash,
             originating_tx_address: originating_tx_address.to_string(),
-            destination_address: safely_convert_hex_to_eth_address(&eth_address_hex)?,
+            destination_address: safely_convert_hex_to_eth_address(&int_address_hex)?,
             user_data,
-            eth_token_address: *eth_token_address,
+            int_token_address: *int_token_address,
         })
     }
 }
 
-impl ToMetadata for BtcOnEthEthTxInfo {
+impl ToMetadata for BtcOnIntIntTxInfo {
     fn get_user_data(&self) -> Option<Bytes> {
         self.user_data.clone()
     }
@@ -70,9 +70,12 @@ mod tests {
 
     use super::*;
     use crate::{
-        btc_on_eth::utils::convert_satoshis_to_wei,
         chains::{
-            btc::{btc_chain_id::BtcChainId, btc_test_utils::get_sample_eth_tx_infos},
+            btc::{
+                btc_chain_id::BtcChainId,
+                btc_test_utils::get_sample_eth_tx_infos,
+                btc_utils::convert_satoshis_to_wei,
+            },
             eth::eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
         },
         metadata::metadata_protocol_id::MetadataProtocolId,
@@ -86,23 +89,23 @@ mod tests {
         let destination_address =
             EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap());
         let user_data = None;
-        let eth_token_address = EthAddress::default();
+        let int_token_address = EthAddress::default();
         let originating_tx_hash =
             Txid::from_slice(&hex::decode("98eaf3812c998a46e0ee997ccdadf736c7bc13c18a5292df7a8d39089fd28d9e").unwrap())
                 .unwrap();
-        let eth_tx_info = BtcOnEthEthTxInfo::new(
+        let eth_tx_info = BtcOnIntIntTxInfo::new(
             amount,
             hex::encode(destination_address),
             originating_tx_hash,
             originating_tx_address,
             user_data,
-            &eth_token_address,
+            &int_token_address,
         )
         .unwrap();
-        let eth_tx_infos = BtcOnEthEthTxInfos::new(vec![eth_tx_info]);
+        let eth_tx_infos = BtcOnIntIntTxInfos::new(vec![eth_tx_info]);
         let serialized_eth_tx_infos = eth_tx_infos.to_bytes().unwrap();
         assert_eq!(hex::encode(&serialized_eth_tx_infos), expected_serialization);
-        let deserialized = BtcOnEthEthTxInfos::from_bytes(&serialized_eth_tx_infos).unwrap();
+        let deserialized = BtcOnIntIntTxInfos::from_bytes(&serialized_eth_tx_infos).unwrap();
         assert_eq!(deserialized.len(), eth_tx_infos.len());
         deserialized
             .iter()

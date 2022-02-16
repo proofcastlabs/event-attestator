@@ -4,10 +4,9 @@ use crate::{
     types::Result,
 };
 
-pub fn maybe_save_btc_utxos_to_db_and_return_state<D>(state: EthState<D>) -> Result<EthState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_save_btc_utxos_to_db_and_return_state<D: DatabaseInterface>(
+    state: EthState<D>
+) -> Result<EthState<D>> {
     info!("✔ Maybe saving BTC UTXOs...");
     match &state.btc_utxos_and_values {
         Some(utxos) => save_utxos_to_db(state.db, utxos).and(Ok(state)),

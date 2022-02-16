@@ -6,26 +6,23 @@ use bitcoin::{
 use ethereum_types::Address as EthAddress;
 
 use crate::{
-    btc_on_eth::{
-        btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
-        utils::convert_satoshis_to_wei,
-    },
+    btc_on_int::btc::int_tx_info::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
     chains::{
-        btc::{btc_state::BtcState, deposit_address_info::DepositInfoHashMap},
+        btc::{btc_state::BtcState, btc_utils::convert_satoshis_to_wei, deposit_address_info::DepositInfoHashMap},
         eth::eth_database_utils::EthDbUtilsExt,
     },
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };
 
-impl BtcOnEthEthTxInfos {
+impl BtcOnIntIntTxInfos {
     fn from_btc_tx(
         tx: &BtcTransaction,
         deposit_info: &DepositInfoHashMap,
         network: BtcNetwork,
-        eth_token_address: &EthAddress,
+        int_token_address: &EthAddress,
     ) -> Result<Self> {
-        info!("✔ Parsing eth tx infos from single `P2SH` transaction...");
+        info!("✔ Parsing INT tx infos from single `P2SH` transaction...");
         Ok(Self::new(
             tx.output
                 .iter()
@@ -52,7 +49,7 @@ impl BtcOnEthEthTxInfos {
                         },
                         Some(deposit_info) => {
                             info!("✔ Deposit info from list: {:?}", deposit_info);
-                            BtcOnEthEthTxInfo::new(
+                            BtcOnIntIntTxInfo::new(
                                 convert_satoshis_to_wei(tx_out.value),
                                 deposit_info.address.clone(),
                                 tx.txid(),
@@ -62,13 +59,13 @@ impl BtcOnEthEthTxInfos {
                                 } else {
                                     Some(deposit_info.user_data.clone())
                                 },
-                                eth_token_address,
+                                int_token_address,
                             )
                         },
                     }
                 })
-                .filter(|maybe_eth_tx_infos| maybe_eth_tx_infos.is_ok())
-                .collect::<Result<Vec<BtcOnEthEthTxInfo>>>()?,
+                .filter(|maybe_int_tx_infos| maybe_int_tx_infos.is_ok())
+                .collect::<Result<Vec<BtcOnIntIntTxInfo>>>()?,
         ))
     }
 
@@ -76,29 +73,29 @@ impl BtcOnEthEthTxInfos {
         txs: &[BtcTransaction],
         deposit_info: &DepositInfoHashMap,
         network: BtcNetwork,
-        eth_token_address: &EthAddress,
+        int_token_address: &EthAddress,
     ) -> Result<Self> {
-        info!("✔ Parsing eth tx infos from `P2SH` transactions...");
+        info!("✔ Parsing INT tx infos from `P2SH` transactions...");
         Ok(Self::new(
             txs.iter()
-                .flat_map(|tx| Self::from_btc_tx(tx, deposit_info, network, eth_token_address))
-                .flat_map(|eth_tx_infos| eth_tx_infos.0)
-                .collect::<Vec<BtcOnEthEthTxInfo>>(),
+                .flat_map(|tx| Self::from_btc_tx(tx, deposit_info, network, int_token_address))
+                .flat_map(|int_tx_infos| int_tx_infos.0)
+                .collect::<Vec<BtcOnIntIntTxInfo>>(),
         ))
     }
 }
 
-pub fn parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state<D: DatabaseInterface>(
+pub fn parse_int_tx_infos_from_p2sh_deposits_and_add_to_state<D: DatabaseInterface>(
     state: BtcState<D>,
 ) -> Result<BtcState<D>> {
-    info!("✔ Parsing eth tx infos from `P2SH` deposit txs in state...");
-    BtcOnEthEthTxInfos::from_btc_txs(
+    info!("✔ Parsing INT tx infos from `P2SH` deposit txs in state...");
+    BtcOnIntIntTxInfos::from_btc_txs(
         state.get_p2sh_deposit_txs()?,
         state.get_deposit_info_hash_map()?,
         state.btc_db_utils.get_btc_network_from_db()?,
-        &state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
+        &state.eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
     )
-    .and_then(|params| state.add_btc_on_eth_eth_tx_infos(params))
+    .and_then(|params| state.add_btc_on_int_int_tx_infos(params))
 }
 
 #[cfg(test)]
@@ -130,8 +127,8 @@ mod tests {
         let txs = block_and_id.block.txdata;
         let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
         let tx = filter_p2sh_deposit_txs(&hash_map, &pub_key, &txs, btc_network).unwrap()[0].clone();
-        let eth_token_address = EthAddress::default();
-        let result = BtcOnEthEthTxInfos::from_btc_tx(&tx, &hash_map, btc_network, &eth_token_address).unwrap();
+        let int_token_address = EthAddress::default();
+        let result = BtcOnIntIntTxInfos::from_btc_tx(&tx, &hash_map, btc_network, &int_token_address).unwrap();
         assert_eq!(result[0].amount, expected_amount);
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result[0].originating_tx_hash.to_string(), expected_tx_hash);
@@ -154,8 +151,8 @@ mod tests {
         let deposit_address_list = block_and_id.deposit_address_list.clone();
         let txs = block_and_id.block.txdata;
         let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
-        let eth_token_address = EthAddress::default();
-        let result = BtcOnEthEthTxInfos::from_btc_txs(&txs, &hash_map, btc_network, &eth_token_address).unwrap();
+        let int_token_address = EthAddress::default();
+        let result = BtcOnIntIntTxInfos::from_btc_txs(&txs, &hash_map, btc_network, &int_token_address).unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result[0].amount, expected_amount);
         assert_eq!(result[0].originating_tx_hash.to_string(), expected_tx_hash);
@@ -186,23 +183,23 @@ mod tests {
         )
         .unwrap();
         let user_data = None;
-        let eth_token_address = EthAddress::default();
-        let expected_result_1 = BtcOnEthEthTxInfo::new(
+        let int_token_address = EthAddress::default();
+        let expected_result_1 = BtcOnIntIntTxInfo::new(
             expected_amount_1,
             hex::encode(expected_eth_address_1),
             expected_originating_tx_hash_1,
             expected_btc_address_1,
             user_data.clone(),
-            &eth_token_address,
+            &int_token_address,
         )
         .unwrap();
-        let expected_result_2 = BtcOnEthEthTxInfo::new(
+        let expected_result_2 = BtcOnIntIntTxInfo::new(
             expected_amount_2,
             hex::encode(expected_eth_address_2),
             expected_originating_tx_hash_2,
             expected_btc_address_2,
             user_data,
-            &eth_token_address,
+            &int_token_address,
         )
         .unwrap();
         let btc_network = BtcNetwork::Testnet;
@@ -212,7 +209,7 @@ mod tests {
         let hash_map = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
         let filtered_txs = filter_p2sh_deposit_txs(&hash_map, &pub_key_slice, &txs, btc_network).unwrap();
         let result =
-            BtcOnEthEthTxInfos::from_btc_txs(&filtered_txs, &hash_map, btc_network, &eth_token_address).unwrap();
+            BtcOnIntIntTxInfos::from_btc_txs(&filtered_txs, &hash_map, btc_network, &int_token_address).unwrap();
         let result_1 = result[0].clone();
         let result_2 = result[1].clone();
         assert_eq!(result.len(), expected_num_results);

@@ -1,21 +1,18 @@
 use crate::{
-    btc_on_eth::{
-        btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
-        utils::convert_satoshis_to_wei,
-    },
-    chains::btc::{btc_constants::MINIMUM_REQUIRED_SATOSHIS, btc_state::BtcState},
+    btc_on_int::btc::int_tx_info::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
+    chains::btc::{btc_constants::MINIMUM_REQUIRED_SATOSHIS, btc_state::BtcState, btc_utils::convert_satoshis_to_wei},
     traits::DatabaseInterface,
     types::Result,
 };
 
-impl BtcOnEthEthTxInfos {
+impl BtcOnIntIntTxInfos {
     pub fn filter_out_value_too_low(&self) -> Result<Self> {
         info!(
-            "✔ Filtering out any eth tx infos below a minimum of {} Satoshis...",
+            "✔ Filtering out any `BtcOnIntIntTxInfos` below a minimum of {} Satoshis...",
             MINIMUM_REQUIRED_SATOSHIS
         );
         let threshold = convert_satoshis_to_wei(MINIMUM_REQUIRED_SATOSHIS);
-        Ok(BtcOnEthEthTxInfos::new(
+        Ok(BtcOnIntIntTxInfos::new(
             self.iter()
                 .filter(|params| match params.amount >= threshold {
                     true => true,
@@ -25,18 +22,18 @@ impl BtcOnEthEthTxInfos {
                     },
                 })
                 .cloned()
-                .collect::<Vec<BtcOnEthEthTxInfo>>(),
+                .collect::<Vec<BtcOnIntIntTxInfo>>(),
         ))
     }
 }
 
-pub fn maybe_filter_out_value_too_low_btc_on_eth_eth_tx_infos_in_state<D: DatabaseInterface>(
+pub fn maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state<D: DatabaseInterface>(
     state: BtcState<D>,
 ) -> Result<BtcState<D>> {
     state
-        .btc_on_eth_eth_tx_infos
+        .btc_on_int_int_tx_infos
         .filter_out_value_too_low()
-        .and_then(|params| state.replace_btc_on_eth_eth_tx_infos(params))
+        .and_then(|filtered| state.replace_btc_on_int_int_tx_infos(filtered))
 }
 
 #[cfg(test)]

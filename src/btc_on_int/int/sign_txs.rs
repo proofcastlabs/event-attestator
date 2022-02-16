@@ -1,7 +1,7 @@
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 
 use crate::{
-    btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
+    btc_on_int::int::btc_tx_info::BtcOnIntBtcTxInfos,
     chains::{
         btc::{
             btc_crypto::btc_private_key::BtcPrivateKey,
@@ -31,7 +31,7 @@ fn to_btc_txs_whilst_extracting_change_outputs<D: DatabaseInterface>(
     fee: u64,
     btc_address: &str,
     btc_private_key: &BtcPrivateKey,
-    redeem_infos: &BtcOnEthRedeemInfos,
+    redeem_infos: &BtcOnIntBtcTxInfos,
 ) -> Result<Vec<BtcTransaction>> {
     redeem_infos
         .filter_out_any_whose_value_is_too_low()
@@ -48,23 +48,24 @@ fn to_btc_txs_whilst_extracting_change_outputs<D: DatabaseInterface>(
         .collect::<Result<Vec<_>>>()
 }
 
-pub fn maybe_create_btc_txs_and_add_to_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    info!("✔ Maybe creating BTC transaction(s) from redeem params...");
-    let num_redeem_infos = state.btc_on_eth_redeem_infos.len();
-    if num_redeem_infos == 0 {
-        info!("✔ No `BtcOnEthRedeemInfos` in state ∴ not creating BTC txs!");
+pub fn maybe_sign_btc_txs_and_add_to_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
+    info!("✔ Maybe signing BTC transaction(s) from `BtcOnIntBtcTxInfos`...");
+    let btc_tx_infos = state.btc_on_int_btc_tx_infos.clone();
+    let num_tx_infos = btc_tx_infos.len();
+    if num_tx_infos == 0 {
+        info!("✔ No `BtcOnIntBtcTxInfos` in state ∴ not creating BTC txs!");
         Ok(state)
     } else {
         info!(
-            "✔ {} `BtcOnEthRedeemInfos` in state ∴ creating BTC txs & extracting change outputs...",
-            num_redeem_infos
+            "✔ {} `BtcOnIntBtcTxInfos` in state ∴ creating BTC txs & extracting change outputs...",
+            num_tx_infos
         );
         to_btc_txs_whilst_extracting_change_outputs(
             state.db,
             state.btc_db_utils.get_btc_fee_from_db()?,
             &state.btc_db_utils.get_btc_address_from_db()?,
             &state.btc_db_utils.get_btc_private_key_from_db()?,
-            &state.btc_on_eth_redeem_infos,
+            &btc_tx_infos,
         )
         .and_then(|signed_txs| {
             #[cfg(feature = "debug")]
