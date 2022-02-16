@@ -19,6 +19,7 @@ pub(crate) mod get_enclave_state;
 pub(crate) mod get_latest_block_numbers;
 pub(crate) mod int;
 pub(crate) mod opt_in_to_asset;
+pub(crate) mod test_utils;
 
 pub use crate::{
     chains::{
