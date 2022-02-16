@@ -12,7 +12,7 @@ use crate::{
         algo_state::AlgoState,
         algo_submission_material::parse_algo_submission_material_and_put_in_state,
         core_initialization::initialize_algo_core::initialize_algo_chain_db_keys,
-        remove_irrelevant_txs_from_block_in_state::remove_irrelevant_txs_from_block_in_state,
+        remove_all_txs_from_block_in_state::remove_all_txs_from_block_in_state,
     },
     check_debug_mode::check_debug_mode,
     traits::DatabaseInterface,
@@ -70,7 +70,7 @@ pub fn reset_algo_chain_and_return_state<D: DatabaseInterface>(
 ) -> Result<AlgoState<D>> {
     info!("Resetting ALGO chain...");
     delete_all_algo_blocks_and_return_state(state)
-        .and_then(remove_irrelevant_txs_from_block_in_state)
+        .and_then(remove_all_txs_from_block_in_state)
         .and_then(add_latest_algo_block_to_db_and_return_state)
         .and_then(|state| {
             initialize_algo_chain_db_keys(
