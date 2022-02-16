@@ -171,9 +171,9 @@ impl EthSubmissionMaterial {
                     parent_hash: json.parent_hash,
                     block_number: json.block_number,
                     receipts_root: json.receipts_root,
-                    algo_first_valid_round: json.algo_first_valid_round,
                     eos_ref_block_num: json.eos_ref_block_num,
                     eos_ref_block_prefix: json.eos_ref_block_prefix,
+                    algo_first_valid_round: json.algo_first_valid_round,
                 })
             },
         }
@@ -200,15 +200,13 @@ impl EthSubmissionMaterial {
         topics: &[EthHash],
     ) -> Result<Self> {
         info!("✔ Number of receipts before filtering: {}", self.receipts.len());
-        let filtered = Self::new(
-            self.get_block()?,
-            self.receipts
-                .get_receipts_containing_log_from_address_and_with_topics(address, topics),
-            self.eos_ref_block_num,
-            self.eos_ref_block_prefix,
-        );
-        info!("✔ Number of receipts after filtering: {}", filtered.receipts.len());
-        Ok(filtered)
+        let receipts_after = self
+            .receipts
+            .get_receipts_containing_log_from_address_and_with_topics(address, topics);
+        let mut mutable_self = self.clone();
+        mutable_self.receipts = receipts_after;
+        info!("✔ Number of receipts after filtering: {}", mutable_self.receipts.len());
+        Ok(mutable_self)
     }
 
     pub fn get_receipts_containing_log_from_addresses_and_with_topics(
@@ -217,15 +215,13 @@ impl EthSubmissionMaterial {
         topics: &[EthHash],
     ) -> Result<Self> {
         info!("✔ Number of receipts before filtering: {}", self.receipts.len());
-        let filtered = Self::new(
-            self.get_block()?,
-            self.receipts
-                .get_receipts_containing_log_from_addresses_and_with_topics(addresses, topics),
-            self.eos_ref_block_num,
-            self.eos_ref_block_prefix,
-        );
-        info!("✔ Number of receipts after filtering:  {}", filtered.receipts.len());
-        Ok(filtered)
+        let receipts_after = self
+            .receipts
+            .get_receipts_containing_log_from_addresses_and_with_topics(addresses, topics);
+        info!("✔ Number of receipts after filtering:  {}", receipts_after.len());
+        let mut mutable_self = self.clone();
+        mutable_self.receipts = receipts_after;
+        Ok(mutable_self)
     }
 
     pub fn receipts_are_valid(&self) -> Result<bool> {

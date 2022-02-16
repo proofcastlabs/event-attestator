@@ -246,7 +246,7 @@ impl Erc20VaultPegInEventParams {
     }
 
     fn from_v2_log<L: EthLogExt>(log: &L) -> Result<Self> {
-        info!("Decoding peg-in event params from v2 log...");
+        info!("✔ Decoding peg-in event params from v2 log...");
         let tokens = eth_abi_decode(
             &[
                 EthAbiParamType::Address,
