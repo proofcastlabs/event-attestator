@@ -7,6 +7,7 @@ use bitcoin::{
 };
 use derive_more::{Constructor, Deref};
 use serde::{Deserialize, Serialize};
+use serde_json;
 
 use crate::{
     chains::btc::{
@@ -14,6 +15,7 @@ use crate::{
         btc_types::BtcPubKeySlice,
         btc_utils::{convert_hex_to_sha256_hash, get_p2sh_redeem_script_sig},
     },
+    errors::AppError,
     metadata::metadata_chain_id::MetadataChainId,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
@@ -47,6 +49,7 @@ pub enum DepositAddressInfoVersion {
     V0,
     V1,
     V2,
+    V3,
 }
 
 impl DepositAddressInfoVersion {
@@ -62,6 +65,7 @@ impl DepositAddressInfoVersion {
             Some('0') => Ok(DepositAddressInfoVersion::V0),
             Some('1') => Ok(DepositAddressInfoVersion::V1),
             Some('2') => Ok(DepositAddressInfoVersion::V2),
+            Some('3') => Ok(DepositAddressInfoVersion::V3),
             _ => Err(format!("✘ Deposit address list version unrecognized: {}", version_string).into()),
         }
     }
@@ -73,6 +77,7 @@ impl fmt::Display for DepositAddressInfoVersion {
             DepositAddressInfoVersion::V0 => write!(f, "0"),
             DepositAddressInfoVersion::V1 => write!(f, "1"),
             DepositAddressInfoVersion::V2 => write!(f, "2"),
+            DepositAddressInfoVersion::V3 => write!(f, "3"),
         }
     }
 }
@@ -113,7 +118,7 @@ impl DepositAddressInfoJson {
         chain_id_hex: Option<String>,
     ) -> Result<Self> {
         match DepositAddressInfoVersion::from_maybe_string(&version)? {
-            DepositAddressInfoVersion::V0 => Ok(DepositAddressInfoJson {
+            DepositAddressInfoVersion::V0 => Ok(Self {
                 nonce,
                 version,
                 address: None,
@@ -124,7 +129,7 @@ impl DepositAddressInfoJson {
                 address_and_nonce_hash: None,
                 eth_address_and_nonce_hash: Some(address_and_nonce_hash),
             }),
-            DepositAddressInfoVersion::V1 => Ok(DepositAddressInfoJson {
+            DepositAddressInfoVersion::V1 => Ok(Self {
                 nonce,
                 version,
                 user_data: None,
@@ -135,7 +140,7 @@ impl DepositAddressInfoJson {
                 eth_address_and_nonce_hash: None,
                 address_and_nonce_hash: Some(address_and_nonce_hash),
             }),
-            DepositAddressInfoVersion::V2 => Ok(DepositAddressInfoJson {
+            DepositAddressInfoVersion::V2 | DepositAddressInfoVersion::V3 => Ok(Self {
                 nonce,
                 version,
                 eth_address: None,
@@ -150,7 +155,7 @@ impl DepositAddressInfoJson {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DepositAddressInfo {
     pub nonce: u64,
     pub address: String,
@@ -178,11 +183,9 @@ impl DepositAddressInfo {
                 Some(hash_string) => Ok(hash_string.clone()),
                 None => Err(Self::get_missing_field_err_msg("eth_address_and_nonce_hash").into()),
             },
-            DepositAddressInfoVersion::V1 | DepositAddressInfoVersion::V2 => {
-                match &deposit_address_info_json.address_and_nonce_hash {
-                    Some(hash_string) => Ok(hash_string.clone()),
-                    None => Err(Self::get_missing_field_err_msg("address_and_nonce_hash").into()),
-                }
+            _ => match &deposit_address_info_json.address_and_nonce_hash {
+                Some(hash_string) => Ok(hash_string.clone()),
+                None => Err(Self::get_missing_field_err_msg("address_and_nonce_hash").into()),
             },
         }
     }
@@ -200,8 +203,8 @@ impl DepositAddressInfo {
                 Some(hash_string) => Ok(hash_string.clone()),
                 None => Err(Self::get_missing_field_err_msg("eth_address").into()),
             },
-            DepositAddressInfoVersion::V1 | DepositAddressInfoVersion::V2 => match &deposit_address_info_json.address {
-                Some(hash_string) => Ok(hash_string.clone()),
+            _ => match &deposit_address_info_json.address {
+                Some(s) => Ok(s.clone()),
                 None => Err(Self::get_missing_field_err_msg("address").into()),
             },
         }
@@ -233,7 +236,7 @@ impl DepositAddressInfo {
 
     fn get_address_as_bytes(&self) -> Result<Bytes> {
         match self.version {
-            DepositAddressInfoVersion::V1 => Ok(self.address.as_bytes().to_vec()),
+            DepositAddressInfoVersion::V1 | DepositAddressInfoVersion::V3 => Ok(self.address.as_bytes().to_vec()),
             DepositAddressInfoVersion::V0 | DepositAddressInfoVersion::V2 => decode_hex_with_err_msg(
                 &self.address,
                 &format!("✘ Could not decode address hex in {}: ", self.to_json().to_string()?),
@@ -261,11 +264,16 @@ impl DepositAddressInfo {
         })
     }
 
+    fn calculate_commitment_hash_v3(&self) -> Result<sha256d::Hash> {
+        self.calculate_commitment_hash_v2()
+    }
+
     fn calculate_commitment_hash(&self) -> Result<sha256d::Hash> {
         match self.version {
             DepositAddressInfoVersion::V0 => self.calculate_commitment_hash_v0(),
             DepositAddressInfoVersion::V1 => self.calculate_commitment_hash_v1(),
             DepositAddressInfoVersion::V2 => self.calculate_commitment_hash_v2(),
+            DepositAddressInfoVersion::V3 => self.calculate_commitment_hash_v3(),
         }
     }
 
@@ -291,27 +299,27 @@ impl DepositAddressInfo {
             btc_deposit_address: self.btc_deposit_address.to_string(),
             user_data: match self.version {
                 DepositAddressInfoVersion::V0 | DepositAddressInfoVersion::V1 => None,
-                DepositAddressInfoVersion::V2 => Some(hex::encode(&self.user_data)),
+                _ => Some(hex::encode(&self.user_data)),
             },
             address: match self.version {
                 DepositAddressInfoVersion::V0 => None,
-                DepositAddressInfoVersion::V1 | DepositAddressInfoVersion::V2 => Some(self.address.clone()),
+                _ => Some(self.address.clone()),
             },
             eth_address: match self.version {
                 DepositAddressInfoVersion::V0 => Some(self.address.clone()),
-                DepositAddressInfoVersion::V1 | DepositAddressInfoVersion::V2 => None,
+                _ => None,
             },
             eth_address_and_nonce_hash: match self.version {
                 DepositAddressInfoVersion::V0 => Some(hash_string.clone()),
-                DepositAddressInfoVersion::V1 | DepositAddressInfoVersion::V2 => None,
+                _ => None,
             },
             address_and_nonce_hash: match self.version {
                 DepositAddressInfoVersion::V0 => None,
-                DepositAddressInfoVersion::V1 | DepositAddressInfoVersion::V2 => Some(hash_string),
+                _ => Some(hash_string),
             },
             chain_id_hex: match self.version {
                 DepositAddressInfoVersion::V0 | DepositAddressInfoVersion::V1 => None,
-                DepositAddressInfoVersion::V2 => Some(hex::encode(&self.chain_id)),
+                _ => Some(hex::encode(&self.chain_id)),
             },
         }
     }
@@ -328,7 +336,7 @@ impl DepositAddressInfo {
                 info!("✘ No need to check chain ID for version 0 or 1 deposit addresses!");
                 Ok(())
             },
-            DepositAddressInfoVersion::V2 => {
+            DepositAddressInfoVersion::V2 | DepositAddressInfoVersion::V3 => {
                 info!("✔ Validating chain ID in deposit address info version 2...");
                 Self::validate_chain_id(&self.chain_id)
             },
@@ -350,6 +358,7 @@ impl DepositAddressInfo {
             DepositAddressInfoVersion::V0 => self.calculate_btc_deposit_address_v0(pub_key, network),
             DepositAddressInfoVersion::V1 => self.calculate_btc_deposit_address_v1(pub_key, network),
             DepositAddressInfoVersion::V2 => self.calculate_btc_deposit_address_v2(pub_key, network),
+            DepositAddressInfoVersion::V3 => self.calculate_btc_deposit_address_v3(pub_key, network),
         }
     }
 
@@ -363,6 +372,10 @@ impl DepositAddressInfo {
     }
 
     fn calculate_btc_deposit_address_v2(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> BtcAddress {
+        self.calculate_btc_deposit_address_v0(pub_key, network)
+    }
+
+    fn calculate_btc_deposit_address_v3(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> BtcAddress {
         self.calculate_btc_deposit_address_v0(pub_key, network)
     }
 
@@ -831,5 +844,12 @@ mod tests {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(error) => panic!("Wrong error! Got {}, expected {}", error, expected_error),
         };
+    }
+
+    #[test]
+    fn should_validate_v3_deposit_address_info() {
+        let info = DepositAddressInfo::from_str("{\"address\":\"someaddress\",\"address_and_nonce_hash\":\"0xe1da00e59d2d3d5fc5b3b76d0d087bb74d2ffe32dbb90bbb06c5146b40933cd0\",\"btc_deposit_address\":\"2N4sEHFhdDmAg9hn6ztVptcDpE5qWJB9fWv\",\"chain_id\":\"EthereumRopsten\",\"chain_id_hex\":\"0x0069c322\",\"nonce\":1645106870,\"public_key\":\"02cfae40b56f0706b059c48c4d2f22411f3c6f9f2e674bd5d764e93ab89d6f2efc\",\"tool_version\":\"1.9.0\",\"user_data\":\"0xc0ffee\",\"version\":\"3\"}").unwrap();
+        let result = info.validate_commitment_hash();
+        assert!(result.is_ok());
     }
 }
