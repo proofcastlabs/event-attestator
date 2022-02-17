@@ -1,3 +1,5 @@
+use ethereum_types::Address as EthAddress;
+
 use crate::{
     chains::eth::{
         core_initialization::{
@@ -11,7 +13,7 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::EthDbUtils,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_state::EthState,
     },
     traits::DatabaseInterface,
@@ -19,15 +21,18 @@ use crate::{
 };
 
 pub fn maybe_initialize_int_enclave<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json: &str,
     chain_id: u8,
     gas_price: u64,
     confs: u64,
+    erc777_contract_address: &EthAddress,
+    router_contract_address: &EthAddress,
 ) -> Result<String> {
-    match is_eth_core_initialized(&EthDbUtils::new(&db)) {
+    let eth_db_utils = EthDbUtils::new(db);
+    match is_eth_core_initialized(&eth_db_utils) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
-        false => start_eth_db_transaction_and_return_state(EthState::init(&db))
+        false => start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| {
                 initialize_eth_core_with_no_contract_tx(
                     block_json,
@@ -37,7 +42,14 @@ pub fn maybe_initialize_int_enclave<D: DatabaseInterface>(
                     state,
                 )
             })
+            .and_then(|state| {
+                eth_db_utils.put_eth_router_smart_contract_address_in_db(router_contract_address)?;
+                eth_db_utils.put_btc_on_eth_smart_contract_address_in_db(erc777_contract_address)?;
+                Ok(state)
+            })
             .and_then(end_eth_db_transaction_and_return_state)
             .and_then(|state| EthInitializationOutput::new_with_no_contract(&state.eth_db_utils)),
     }
 }
+
+// TODO Test!
