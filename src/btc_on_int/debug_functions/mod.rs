@@ -4,9 +4,9 @@ use serde_json::json;
 pub(crate) mod block_reprocessors;
 
 use crate::{
-    btc_on_eth::{
+    btc_on_int::{
         check_core_is_initialized::{check_core_is_initialized, check_core_is_initialized_and_return_btc_state},
-        eth::create_btc_transactions::extract_change_utxo_from_btc_tx_and_save_in_db,
+        int::sign_txs::extract_change_utxo_from_btc_tx_and_save_in_db,
     },
     chains::{
         btc::{

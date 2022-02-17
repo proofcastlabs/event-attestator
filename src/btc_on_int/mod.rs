@@ -15,6 +15,32 @@
 pub use crate::{
     btc_on_int::{
         btc::submit_btc_block::submit_btc_block_to_core,
+        debug_functions::{
+            block_reprocessors::{
+                debug_reprocess_btc_block,
+                debug_reprocess_btc_block_with_nonce,
+                debug_reprocess_int_block,
+            },
+            debug_add_multiple_utxos,
+            debug_clear_all_utxos,
+            debug_consolidate_utxos,
+            debug_get_all_db_keys,
+            debug_get_all_utxos,
+            debug_get_child_pays_for_parent_btc_tx,
+            debug_get_fee_withdrawal_tx,
+            debug_get_key_from_db,
+            debug_get_signed_erc777_change_pnetwork_tx,
+            debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
+            debug_get_signed_erc777_proxy_change_pnetwork_tx,
+            debug_maybe_add_utxo_to_db,
+            debug_mint_pbtc,
+            debug_put_btc_on_eth_peg_in_basis_points_in_db,
+            debug_put_btc_on_eth_peg_out_basis_points_in_db,
+            debug_remove_utxo,
+            debug_set_btc_fee,
+            debug_set_eth_gas_price,
+            debug_set_key_in_db_to_value,
+        },
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
         int::{initialize_int_core::maybe_initialize_int_enclave, submit_int_block::submit_int_block_to_core},
@@ -36,8 +62,8 @@ pub use crate::{
     },
 };
 
-//pub mod debug_functions; // FIXME
 pub mod btc;
+pub mod debug_functions;
 pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
 pub mod int;

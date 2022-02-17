@@ -2,21 +2,20 @@ use crate::{
     btc_on_int::{
         btc::{
             divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
-            filter_eth_tx_infos::maybe_filter_out_value_too_low_btc_on_eth_eth_tx_infos_in_state,
+            filter_int_tx_infos::maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state,
             get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
-            parse_tx_infos::parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state,
-            sign_normal_eth_transactions::get_eth_signed_txs,
+            parse_tx_infos::parse_int_tx_infos_from_p2sh_deposits_and_add_to_state,
+            sign_txs::get_int_signed_txs,
         },
         check_core_is_initialized::{
             check_core_is_initialized_and_return_btc_state,
             check_core_is_initialized_and_return_eth_state,
         },
-        eth::{
-            create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
-            filter_receipts_in_state::filter_receipts_for_btc_on_eth_redeem_events_in_state,
-            get_eth_output_json::{get_btc_signed_tx_info_from_btc_txs, EthOutput},
-            increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
-            redeem_info::BtcOnIntBtcTxInfos,
+        int::{
+            btc_tx_info::BtcOnIntBtcTxInfos,
+            filter_receipts_in_state::filter_receipts_for_btc_on_int_redeem_events_in_state,
+            get_int_output_json::{get_btc_signed_tx_info_from_btc_txs, IntOutput},
+            sign_txs::maybe_sign_btc_txs_and_add_to_state,
         },
     },
     chains::{
@@ -31,6 +30,7 @@ use crate::{
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             filter_utxos::filter_out_value_too_low_utxos_from_state,
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
+            increment_btc_account_nonce::maybe_increment_btc_account_nonce_and_return_eth_state,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db,
             save_utxos_to_db::maybe_save_utxos_to_db,
             validate_btc_block_header::validate_btc_block_header_in_state,
@@ -56,11 +56,7 @@ use crate::{
     utils::prepend_debug_output_marker_to_string,
 };
 
-fn reprocess_btc_block<D: DatabaseInterface>(
-    db: D,
-    block_json: &str,
-    maybe_nonce: Option<u64>,
-) -> Result<String> {
+fn reprocess_btc_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonce: Option<u64>) -> Result<String> {
     check_debug_mode()
         .and_then(|_| parse_btc_submission_json_and_put_in_state(block_json, BtcState::init(&db)))
         .and_then(parse_btc_block_and_id_and_put_in_state)
@@ -72,15 +68,15 @@ fn reprocess_btc_block<D: DatabaseInterface>(
         .and_then(get_deposit_info_hash_map_and_put_in_state)
         .and_then(filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
-        .and_then(parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state)
+        .and_then(parse_int_tx_infos_from_p2sh_deposits_and_add_to_state)
         .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state)
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
-        .and_then(maybe_filter_out_value_too_low_btc_on_eth_eth_tx_infos_in_state)
+        .and_then(maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state)
         .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
         .and_then(|state| {
-            get_eth_signed_txs(
+            get_int_signed_txs(
                 &EthSigningParams {
                     gas_price: state.eth_db_utils.get_eth_gas_price_from_db()?,
                     chain_id: state.eth_db_utils.get_eth_chain_id_from_db()?,
@@ -94,7 +90,7 @@ fn reprocess_btc_block<D: DatabaseInterface>(
                     },
                     smart_contract_address: state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
                 },
-                &state.btc_on_eth_eth_tx_infos,
+                &state.btc_on_int_int_tx_infos,
                 &state.btc_db_utils.get_btc_chain_id_from_db()?,
             )
             .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
@@ -112,12 +108,12 @@ fn reprocess_btc_block<D: DatabaseInterface>(
                 0 => Ok(vec![]),
                 _ => get_eth_signed_tx_info_from_eth_txs(
                     &state.eth_signed_txs,
-                    &state.btc_on_eth_eth_tx_infos,
+                    &state.btc_on_int_int_tx_infos,
                     match maybe_nonce {
                         Some(nonce) => nonce,
                         None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                     },
-                j),
+                ),
             }?)?;
             info!("✔ BTC signatures: {}", signatures);
             state.add_output_json_string(signatures)
@@ -136,7 +132,7 @@ fn reprocess_int_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
-        .and_then(filter_receipts_for_btc_on_eth_redeem_events_in_state)
+        .and_then(filter_receipts_for_btc_on_int_redeem_events_in_state)
         .and_then(|state| {
             state
                 .get_eth_submission_material()
@@ -146,20 +142,20 @@ fn reprocess_int_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<
                         &state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
                     )
                 })
-                .and_then(|params| state.add_btc_on_eth_redeem_infos(params))
+                .and_then(|params| state.add_btc_on_int_btc_tx_infos(params))
         })
-        .and_then(maybe_create_btc_txs_and_add_to_state)
-        .and_then(maybe_increment_btc_nonce_in_db_and_return_state)
+        .and_then(maybe_sign_btc_txs_and_add_to_state)
+        .and_then(maybe_increment_btc_account_nonce_and_return_eth_state)
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting INT output json...");
-            let output = serde_json::to_string(&EthOutput {
-                eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
+            let output = serde_json::to_string(&IntOutput {
+                int_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
                 btc_signed_transactions: match state.btc_transactions {
                     Some(txs) => get_btc_signed_tx_info_from_btc_txs(
                         state.btc_db_utils.get_btc_account_nonce_from_db()?,
                         txs,
-                        &state.btc_on_eth_redeem_infos,
+                        &state.btc_on_int_btc_tx_infos,
                     )?,
                     None => vec![],
                 },
@@ -204,8 +200,7 @@ pub fn debug_reprocess_btc_block_with_nonce<D: DatabaseInterface>(
     block_json: &str,
     nonce: u64,
 ) -> Result<String> {
-    check_custom_nonce(&EthDbUtils::new(&db), nonce)
-        .and_then(|_| reprocess_btc_block(db, block_json, Some(nonce)))
+    check_custom_nonce(&EthDbUtils::new(&db), nonce).and_then(|_| reprocess_btc_block(db, block_json, Some(nonce)))
 }
 
 /// # Debug Reprocess INT Block

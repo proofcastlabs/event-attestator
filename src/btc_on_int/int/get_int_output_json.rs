@@ -15,7 +15,7 @@ use crate::{
 
 // FIXME Standardize this with existing output formats!
 #[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize)]
-pub struct IntOutput {
+pub struct IntTxInfo {
     pub btc_tx_hex: String,
     pub btc_tx_hash: String,
     pub btc_tx_amount: u64,
@@ -26,9 +26,9 @@ pub struct IntOutput {
     pub originating_address: String,
 }
 
-impl IntOutput {
-    pub fn new(btc_tx: &BtcTransaction, tx_info: &BtcOnIntBtcTxInfo, btc_account_nonce: u64) -> Result<IntOutput> {
-        Ok(IntOutput {
+impl IntTxInfo {
+    pub fn new(btc_tx: &BtcTransaction, tx_info: &BtcOnIntBtcTxInfo, btc_account_nonce: u64) -> Result<IntTxInfo> {
+        Ok(IntTxInfo {
             btc_account_nonce,
             btc_tx_hash: btc_tx.txid().to_string(),
             btc_tx_amount: tx_info.amount_in_satoshis,
@@ -42,16 +42,16 @@ impl IntOutput {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize)]
-pub struct EthOutput {
+pub struct IntOutput {
     pub int_latest_block_number: usize,
-    pub btc_signed_transactions: Vec<IntOutput>,
+    pub btc_signed_transactions: Vec<IntTxInfo>,
 }
 
 pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_account_nonce: u64,
     btc_txs: Vec<BtcTransaction>,
     redeem_infos: &BtcOnIntBtcTxInfos,
-) -> Result<Vec<IntOutput>> {
+) -> Result<Vec<IntTxInfo>> {
     info!("✔ Getting BTC tx info from {} BTC tx(s)...", btc_txs.len());
     let num_btc_txs = btc_txs.len();
     let num_redeem_infos = redeem_infos.len();
@@ -67,13 +67,13 @@ pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_txs
         .iter()
         .enumerate()
-        .map(|(i, btc_tx)| IntOutput::new(btc_tx, &redeem_infos.0[i], start_nonce + i as u64))
+        .map(|(i, btc_tx)| IntTxInfo::new(btc_tx, &redeem_infos.0[i], start_nonce + i as u64))
         .collect::<Result<Vec<_>>>()
 }
 
 pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
     info!("✔ Getting INT output json...");
-    let output = serde_json::to_string(&EthOutput {
+    let output = serde_json::to_string(&IntOutput {
         int_latest_block_number: state
             .eth_db_utils
             .get_eth_latest_block_from_db()?
