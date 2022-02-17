@@ -1,15 +1,19 @@
 use std::{fmt, str::FromStr};
 
 use bitcoin::{
-    hashes::{sha256, Hash as HashTrait},
+    hashes::{sha256, sha256d, Hash as HashTrait},
     util::base58,
 };
+#[cfg(test)]
+use bs58;
 use secp256k1::{
     key::{PublicKey, SecretKey, ONE_KEY},
     Message,
     Secp256k1,
 };
 
+#[cfg(test)]
+use crate::types::Bytes;
 use crate::{
     chains::eos::{
         eos_crypto::{eos_public_key::EosPublicKey, eos_signature::EosSignature},
@@ -28,6 +32,25 @@ pub struct EosPrivateKey {
     pub compressed: bool,
     private_key: SecretKey,
     pub network: EosNetwork,
+}
+
+#[cfg(test)]
+impl EosPrivateKey {
+    fn to_bytes(&self) -> Bytes {
+        self.private_key[..].to_vec()
+    }
+
+    fn get_checksummed_bytes(&self) -> Bytes {
+        let prefixed_bytes = vec![vec![0x80], self.to_bytes()].concat();
+        let hash = sha256d::Hash::hash(&prefixed_bytes).to_vec();
+        [prefixed_bytes, hash[..4].to_vec()].concat()
+    }
+
+    fn to_wif(&self) -> String {
+        // NOTE: EOS always uses compressed keys! See encoding here:
+        // https://developers.eos.io/manuals/eos/v2.0/keosd/wallet-specification
+        bs58::encode(self.get_checksummed_bytes()).into_string()
+    }
 }
 
 impl EosPrivateKey {
