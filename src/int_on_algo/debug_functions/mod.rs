@@ -4,11 +4,19 @@ use serde_json::json;
 
 use crate::{
     chains::{
-        algo::algo_database_utils::AlgoDbUtils,
-        eth::{eth_database_utils::EthDbUtils, eth_utils::convert_hex_to_eth_address},
+        algo::algo_database_utils::{AlgoDatabaseKeysJson, AlgoDbUtils},
+        eth::{
+            eth_database_utils::{EthDatabaseKeysJson, EthDbUtils},
+            eth_utils::convert_hex_to_eth_address,
+        },
     },
     check_debug_mode::check_debug_mode,
-    dictionaries::evm_algo::{EvmAlgoTokenDictionary, EvmAlgoTokenDictionaryEntry},
+    constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
+    debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
+    dictionaries::{
+        dictionary_constants::EVM_ALGO_DICTIONARY_KEY,
+        evm_algo::{EvmAlgoTokenDictionary, EvmAlgoTokenDictionaryEntry},
+    },
     int_on_algo::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,
@@ -64,4 +72,56 @@ pub fn debug_set_algo_account_nonce<D: DatabaseInterface>(db: &D, nonce: u64) ->
         .and_then(|_| AlgoDbUtils::new(db).put_algo_account_nonce_in_db(nonce))
         .and_then(|_| db.end_transaction())
         .map(|_| json!({ "algo_account_nonce": nonce }).to_string())
+}
+
+/// # Debug Get All DB Keys
+///
+/// This function will return a JSON formatted list of all the database keys used in the encrypted database.
+pub fn debug_get_all_db_keys() -> Result<String> {
+    check_debug_mode().map(|_| {
+        json!({
+            "int": EthDatabaseKeysJson::new(),
+            "algo": AlgoDatabaseKeysJson::new(),
+            "db-key-prefix": DB_KEY_PREFIX.to_string(),
+            "dictionary": hex::encode(EVM_ALGO_DICTIONARY_KEY.to_vec()),
+        })
+        .to_string()
+    })
+}
+
+/// # Debug Set Key in DB to Value
+///
+/// This function set to the given value a given key in the encryped database.
+///
+/// ### BEWARE:
+/// Only use this if you know exactly what you are doing and why.
+pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
+    check_debug_mode().and_then(|_| {
+        let key_bytes = hex::decode(&key)?;
+        let sensitivity = if key_bytes == EthDbUtils::new(&db).get_eth_private_key_db_key()
+            || key_bytes == AlgoDbUtils::new(&db).get_algo_private_key_key()
+        {
+            MAX_DATA_SENSITIVITY_LEVEL
+        } else {
+            None
+        };
+        set_key_in_db_to_value(db, key, value, sensitivity)
+    })
+}
+
+/// # Debug Get Key From Db
+///
+/// This function will return the value stored under a given key in the encrypted database.
+pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
+    check_debug_mode().and_then(|_| {
+        let key_bytes = hex::decode(&key)?;
+        let sensitivity = if key_bytes == EthDbUtils::new(&db).get_eth_private_key_db_key()
+            || key_bytes == AlgoDbUtils::new(&db).get_algo_private_key_key()
+        {
+            MAX_DATA_SENSITIVITY_LEVEL
+        } else {
+            None
+        };
+        get_key_from_db(db, key, sensitivity)
+    })
 }
