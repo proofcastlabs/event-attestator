@@ -81,8 +81,6 @@ impl MetadataAddress {
         }
     }
 
-    // FIXME Test!
-    #[allow(dead_code)] // FIXME rm!
     pub fn new_from_algo_address(algo_address: &AlgorandAddress, metadata_chain_id: &MetadataChainId) -> Result<Self> {
         let protocol_id = metadata_chain_id.to_protocol_id();
         match protocol_id {
@@ -197,16 +195,15 @@ impl MetadataAddress {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        chains::eth::eth_utils::convert_hex_to_eth_address,
-        metadata::test_utils::{
-            get_sample_btc_address,
-            get_sample_btc_origin_address,
-            get_sample_eos_address,
-            get_sample_eos_origin_address,
-            get_sample_eth_address,
-            get_sample_eth_origin_address,
-        },
+    use crate::metadata::test_utils::{
+        get_sample_algo_address,
+        get_sample_algo_origin_address,
+        get_sample_btc_address,
+        get_sample_btc_origin_address,
+        get_sample_eos_address,
+        get_sample_eos_origin_address,
+        get_sample_eth_address,
+        get_sample_eth_origin_address,
     };
 
     #[test]
@@ -264,5 +261,14 @@ mod tests {
         let metadata_chain_id = MetadataChainId::EthereumMainnet;
         let metadata_address = MetadataAddress::new_from_eth_address(&eth_address, &metadata_chain_id).unwrap();
         assert_eq!(metadata_address.to_string(), address_string);
+    }
+
+    #[test]
+    fn should_do_algo_address_bytes_roundtrip() {
+        let metadata_address = get_sample_algo_origin_address();
+        let metadata_chain_id = metadata_address.metadata_chain_id.clone();
+        let bytes = metadata_address.to_bytes().unwrap();
+        let result = MetadataAddress::from_bytes(&bytes, &metadata_chain_id).unwrap();
+        assert_eq!(result, metadata_address);
     }
 }

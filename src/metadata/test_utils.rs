@@ -4,6 +4,7 @@ use std::str::FromStr;
 use bitcoin::util::address::Address as BtcAddress;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
+use rust_algorand::AlgorandAddress;
 
 use crate::{
     metadata::{
@@ -27,6 +28,10 @@ pub fn get_sample_eth_address() -> EthAddress {
     EthAddress::from_slice(&hex::decode("5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c").unwrap())
 }
 
+pub fn get_sample_algo_address() -> AlgorandAddress {
+    AlgorandAddress::from_str("HIBVFSZFK4FEANCOZFIVZNBHLJK3ERRHKDRZVGX4RZU7WQIMSSKL4PQZMA").unwrap()
+}
+
 fn get_sample_user_data() -> Bytes {
     vec![0xc0, 0xff, 0xee]
 }
@@ -41,6 +46,10 @@ pub fn get_sample_eos_origin_address() -> MetadataAddress {
 
 pub fn get_sample_btc_origin_address() -> MetadataAddress {
     MetadataAddress::new_from_btc_address(&get_sample_btc_address(), &MetadataChainId::BitcoinMainnet).unwrap()
+}
+
+pub fn get_sample_algo_origin_address() -> MetadataAddress {
+    MetadataAddress::new_from_algo_address(&get_sample_algo_address(), &MetadataChainId::AlgorandMainnet).unwrap()
 }
 
 pub fn get_sample_eth_metadata() -> Metadata {
