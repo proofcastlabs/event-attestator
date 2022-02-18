@@ -3,7 +3,7 @@ use ethereum_types::Address as EthAddress;
 use crate::{
     chains::eth::{
         core_initialization::{
-            check_eth_core_is_initialized::is_eth_core_initialized,
+            check_eth_core_is_initialized::is_eth_core_initialized as is_int_core_initialized,
             get_eth_core_init_output_json::EthInitializationOutput,
             initialize_eth_core::initialize_eth_core_with_no_contract_tx,
         },
@@ -20,35 +20,56 @@ use crate::{
     types::Result,
 };
 
-pub fn maybe_initialize_int_enclave<D: DatabaseInterface>(
+pub fn init_int_core<D: DatabaseInterface>(
+    state: EthState<D>,
+    block_json: &str,
+    chain_id: u8,
+    gas_price: u64,
+    canon_to_tip_length: u64,
+    erc777_contract_address: &EthAddress,
+    router_contract_address: &EthAddress,
+) -> Result<String> {
+    start_eth_db_transaction_and_return_state(state)
+        .and_then(|state| {
+            initialize_eth_core_with_no_contract_tx(
+                block_json,
+                &EthChainId::try_from(chain_id)?,
+                gas_price,
+                canon_to_tip_length,
+                state,
+            )
+        })
+        .and_then(|state| {
+            state.eth_db_utils.put_eth_router_smart_contract_address_in_db(router_contract_address)?;
+            state.eth_db_utils.put_btc_on_eth_smart_contract_address_in_db(erc777_contract_address)?;
+            Ok(state)
+        })
+        .and_then(end_eth_db_transaction_and_return_state)
+        .and_then(|state| EthInitializationOutput::new_with_no_contract(&state.eth_db_utils))
+}
+
+pub fn maybe_initialize_int_core<D: DatabaseInterface>(
     db: &D,
     block_json: &str,
     chain_id: u8,
     gas_price: u64,
-    confs: u64,
+    canon_to_tip_length: u64,
     erc777_contract_address: &EthAddress,
     router_contract_address: &EthAddress,
 ) -> Result<String> {
-    let eth_db_utils = EthDbUtils::new(db);
-    match is_eth_core_initialized(&eth_db_utils) {
-        true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
-        false => start_eth_db_transaction_and_return_state(EthState::init(db))
-            .and_then(|state| {
-                initialize_eth_core_with_no_contract_tx(
-                    block_json,
-                    &EthChainId::try_from(chain_id)?,
-                    gas_price,
-                    confs,
-                    state,
-                )
-            })
-            .and_then(|state| {
-                eth_db_utils.put_eth_router_smart_contract_address_in_db(router_contract_address)?;
-                eth_db_utils.put_btc_on_eth_smart_contract_address_in_db(erc777_contract_address)?;
-                Ok(state)
-            })
-            .and_then(end_eth_db_transaction_and_return_state)
-            .and_then(|state| EthInitializationOutput::new_with_no_contract(&state.eth_db_utils)),
+    let state = EthState::init(db);
+    if is_int_core_initialized(&state.eth_db_utils) {
+        Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string())
+    } else {
+        init_int_core(
+            state,
+            block_json,
+            chain_id,
+            gas_price,
+            canon_to_tip_length,
+            erc777_contract_address,
+            router_contract_address
+        )
     }
 }
 

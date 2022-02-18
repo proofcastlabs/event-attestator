@@ -225,7 +225,7 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
 
     pub fn put_btc_private_key_in_db(&self, pk: &BtcPrivateKey) -> Result<()> {
         // FIXME Should not be allowed to change once set.
-        debug!("✔ Saving BTC private key into db...");
+        info!("✔ Saving BTC private key into db...");
         pk.write_to_db(self.get_db(), &self.get_btc_private_key_db_key())
     }
 
@@ -325,7 +325,7 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
 
     pub fn put_btc_address_in_db(&self, btc_address: &str) -> Result<()> {
         // FIXME should not be allowed to change once set!
-        debug!("✔ Putting BTC address {} in db...", btc_address);
+        info!("✔ Putting BTC address {} in db...", btc_address);
         self.get_db().put(
             self.get_btc_address_key().to_vec(),
             convert_btc_address_to_bytes(btc_address)?,

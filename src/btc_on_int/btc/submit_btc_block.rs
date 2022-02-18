@@ -19,7 +19,6 @@ use crate::{
         deposit_address_info::validate_deposit_address_list_in_state,
         extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
         extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
-        filter_p2pkh_deposit_txs::filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state,
         filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
         filter_utxos::filter_out_value_too_low_utxos_from_state,
         get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
@@ -48,9 +47,9 @@ use crate::{
 /// blockchain held by the enclave in it's encrypted database. Should the submitted block
 /// contain a deposit to an address derived from the enclave's BTC public key, an INT
 /// transaction will be signed & returned to the caller.
-pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
+pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting BTC block to enclave...");
-    parse_btc_submission_json_and_put_in_state(block_json_string, BtcState::init(&db))
+    parse_btc_submission_json_and_put_in_state(block_json_string, BtcState::init(db))
         .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
@@ -61,7 +60,6 @@ pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(validate_btc_merkle_root)
         .and_then(get_deposit_info_hash_map_and_put_in_state)
         .and_then(validate_deposit_address_list_in_state)
-        .and_then(filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
         .and_then(parse_int_tx_infos_from_p2sh_deposits_and_add_to_state)
         .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state)
@@ -83,4 +81,88 @@ pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(remove_tx_infos_from_canon_block_and_return_state)
         .and_then(end_btc_db_transaction)
         .and_then(get_btc_output_as_string)
+}
+
+#[cfg(test)]
+mod tests {
+    use bitcoin::network::constants::Network as BtcNetwork;
+
+    use super::*;
+    use crate::{
+        btc_on_int::{
+            test_utils::{
+                get_sample_btc_submission_material_json_str_n,
+                get_sample_eth_submission_material_json_str_n
+            },
+            int::initialize_int_core::init_int_core
+        },
+        chains::{
+            btc::{
+                btc_crypto::btc_private_key::BtcPrivateKey,
+                btc_database_utils::BtcDbUtils,
+                core_initialization::initialize_btc_core::init_btc_core,
+            },
+            eth::{
+                eth_utils::convert_hex_to_eth_address,
+                eth_state::EthState,
+            },
+        },
+        test_utils::get_test_database,
+    };
+
+    #[test]
+    fn should_submit_btc_blocks_to_core() {
+        use simple_logger;
+        simple_logger::init().unwrap();
+
+        // Init the BTC core...
+        let btc_pk = "93GJ65qHNjGFHzQVTzEEAdBS7vMxe3XASfWE8RUASSfd3EtfmzP";
+        let db = get_test_database();
+        let btc_db_utils = BtcDbUtils::new(&db);
+        let btc_state = BtcState::init(&db);
+        let btc_fee = 100;
+        let btc_difficulty = 1;
+        let btc_network = "Testnet";
+        let btc_canon_to_tip_length = 2;
+        let btc_block_0 = get_sample_btc_submission_material_json_str_n(0);
+        init_btc_core(
+            btc_state,
+            &btc_block_0,
+            btc_fee,
+            btc_difficulty,
+            btc_network,
+            btc_canon_to_tip_length
+        ).unwrap();
+
+        // NOTE: Overwrite the private key and public address
+        let pk = BtcPrivateKey::from_wif(btc_pk).unwrap();
+        println!("poop: {}", hex::encode(&pk.to_public_key_slice()));
+        // 03fd539c728597e774040bda920ea7112257422442dcd7d9fc12e04e578e0af91a
+        let address = pk.to_p2pkh_btc_address();
+        btc_db_utils.put_btc_private_key_in_db(&pk).unwrap();
+        btc_db_utils.put_btc_address_in_db(&address).unwrap();
+        btc_db_utils.put_btc_pub_key_slice_in_db(&pk.to_public_key_slice()).unwrap();
+
+        // Init the ETH core...
+        let eth_block_0 = get_sample_eth_submission_material_json_str_n(0);
+        let eth_state = EthState::init(&db);
+        let eth_chain_id = 3;
+        let eth_gas_price = 20_000_000_000;
+        let eth_canon_to_tip_length = 4;
+        let eth_address = convert_hex_to_eth_address("0x88d19e08Cd43bba5761c10c588b2A3D85C75041f").unwrap();
+        init_int_core(
+            eth_state,
+            &eth_block_0,
+            eth_chain_id,
+            eth_gas_price,
+            eth_canon_to_tip_length,
+            &eth_address,
+            &eth_address,
+        ).unwrap();
+
+        // NOTE: Submit first block.
+        let btc_block_1 = get_sample_btc_submission_material_json_str_n(1);
+        let result = submit_btc_block_to_core(&db, &btc_block_1).unwrap();
+        println!("here: {}", result);
+    }
 }
