@@ -1,52 +1,88 @@
 use crate::{
-    btc_on_int::btc::int_tx_info::BtcOnIntIntTxInfo,
+    btc_on_int::btc::int_tx_info::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
     chains::{
-        btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata, btc_state::BtcState},
+        btc::{btc_chain_id::BtcChainId, btc_state::BtcState},
         eth::{
-            eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
-            eth_crypto::eth_transaction::{get_signed_minting_tx, EthTransaction, EthTransactions},
+            eth_chain_id::EthChainId,
+            eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
+            eth_contracts::erc777::encode_erc777_mint_fxn_maybe_with_data,
+            eth_crypto::{
+                eth_private_key::EthPrivateKey,
+                eth_transaction::{EthTransaction, EthTransactions},
+            },
             eth_database_utils::EthDbUtilsExt,
             eth_types::EthSigningParams,
         },
     },
-    metadata::metadata_protocol_id::MetadataProtocolId,
+    metadata::metadata_traits::ToMetadata,
     traits::DatabaseInterface,
     types::Result,
 };
 
-pub fn get_int_signed_txs(
-    signing_params: &EthSigningParams,
-    tx_infos: &[BtcOnIntIntTxInfo],
-    btc_chain_id: &BtcChainId,
-) -> Result<EthTransactions> {
-    trace!("✔ Getting INT signed transactions...");
-    Ok(EthTransactions::new(
-        tx_infos
-            .iter()
-            .enumerate()
-            .map(|(i, tx_info)| {
-                info!(
-                    "✔ Signing INT tx for host amount: {}, to destination address: {}",
-                    tx_info.host_token_amount, tx_info.destination_address,
-                );
-                get_signed_minting_tx(
-                    &tx_info.host_token_amount,
-                    signing_params.eth_account_nonce + i as u64,
-                    &signing_params.chain_id,
-                    signing_params.smart_contract_address,
-                    signing_params.gas_price,
-                    &tx_info.router_address,
-                    &signing_params.eth_private_key,
-                    tx_info.maybe_to_metadata_bytes(
-                        btc_chain_id,
-                        MAX_BYTES_FOR_ETH_USER_DATA,
-                        &MetadataProtocolId::Ethereum,
-                    )?,
-                    None,
-                )
-            })
-            .collect::<Result<Vec<EthTransaction>>>()?,
-    ))
+impl BtcOnIntIntTxInfo {
+    pub fn to_int_signed_tx(
+        &self,
+        nonce: u64,
+        chain_id: &EthChainId,
+        gas_limit: usize,
+        gas_price: u64,
+        pk: &EthPrivateKey,
+    ) -> Result<EthTransaction> {
+        let operator_data = None;
+        let metadata_bytes = self.to_metadata_bytes()?;
+        info!("✔ Signing INT transaction for tx info: {:?}", self);
+        debug!("✔ Signing with nonce:     {}", nonce);
+        debug!("✔ Signing with chain id:  {}", chain_id);
+        debug!("✔ Signing with gas limit: {}", gas_limit);
+        debug!("✔ Signing with gas price: {}", gas_price);
+        debug!("✔ Signing with metadata : 0x{}", hex::encode(&metadata_bytes));
+        encode_erc777_mint_fxn_maybe_with_data(
+            &self.router_address,
+            &self.host_token_amount,
+            Some(metadata_bytes),
+            operator_data,
+        )
+        .map(|data| {
+            EthTransaction::new_unsigned(
+                data,
+                nonce,
+                ZERO_ETH_VALUE,
+                self.int_token_address,
+                chain_id,
+                gas_limit,
+                gas_price,
+            )
+        })
+        .and_then(|unsigned_tx| unsigned_tx.sign(pk))
+    }
+}
+
+impl BtcOnIntIntTxInfos {
+    pub fn to_int_signed_txs(
+        &self,
+        signing_params: &EthSigningParams,
+        btc_chain_id: &BtcChainId,
+    ) -> Result<EthTransactions> {
+        trace!("✔ Getting INT signed transactions...");
+        Ok(EthTransactions::new(
+            self.iter()
+                .enumerate()
+                .map(|(i, tx_info)| {
+                    info!(
+                        "✔ Signing INT tx for host amount: {}, to destination address: {}",
+                        tx_info.host_token_amount, tx_info.destination_address,
+                    );
+                    tx_info.to_int_signed_tx(
+                        signing_params.eth_account_nonce + i as u64,
+                        &signing_params.chain_id,
+                        signing_params.chain_id.get_erc777_mint_with_data_gas_limit(),
+                        signing_params.gas_price,
+                        &signing_params.eth_private_key,
+                    )
+                })
+                .collect::<Result<Vec<EthTransaction>>>()?,
+        ))
+    }
 }
 
 pub fn maybe_sign_canon_block_txs<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
@@ -59,17 +95,17 @@ pub fn maybe_sign_canon_block_txs<D: DatabaseInterface>(state: BtcState<D>) -> R
         Ok(state)
     } else {
         info!("✔ Signing INT txs from BTC canon block...");
-        get_int_signed_txs(
-            &state.eth_db_utils.get_signing_params_from_db()?,
-            &tx_infos,
-            &state.btc_db_utils.get_btc_chain_id_from_db()?,
-        )
-        .and_then(|signed_txs| {
-            #[cfg(feature = "debug")]
-            {
-                debug!("✔ Signed transactions: {:?}", signed_txs);
-            }
-            state.add_eth_signed_txs(signed_txs)
-        })
+        tx_infos
+            .to_int_signed_txs(
+                &state.eth_db_utils.get_signing_params_from_db()?,
+                &state.btc_db_utils.get_btc_chain_id_from_db()?,
+            )
+            .and_then(|signed_txs| {
+                #[cfg(feature = "debug")]
+                {
+                    debug!("✔ Signed transactions: {:?}", signed_txs);
+                }
+                state.add_eth_signed_txs(signed_txs)
+            })
     }
 }
