@@ -1,7 +1,6 @@
 use crate::{
     btc_on_int::{
         btc::{
-            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
             filter_int_tx_infos::maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state,
             get_btc_output::get_eth_signed_tx_info_from_eth_txs,
             parse_tx_infos::parse_int_tx_infos_from_p2sh_deposits_and_add_to_state,
@@ -74,7 +73,7 @@ fn reprocess_btc_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonc
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
         .and_then(maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state)
-        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
+        //.and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
         .and_then(|state| {
             get_int_signed_txs(
                 &EthSigningParams {

@@ -24,20 +24,20 @@ pub fn get_int_signed_txs(
         tx_infos
             .iter()
             .enumerate()
-            .map(|(i, eth_tx_info)| {
+            .map(|(i, tx_info)| {
                 info!(
-                    "✔ Signing INT tx for amount: {}, to address: {}",
-                    eth_tx_info.amount, eth_tx_info.destination_address,
+                    "✔ Signing INT tx for host amount: {}, to destination address: {}",
+                    tx_info.host_token_amount, tx_info.destination_address,
                 );
                 get_signed_minting_tx(
-                    &eth_tx_info.amount,
+                    &tx_info.host_token_amount,
                     signing_params.eth_account_nonce + i as u64,
                     &signing_params.chain_id,
                     signing_params.smart_contract_address,
                     signing_params.gas_price,
-                    &eth_tx_info.destination_address,
+                    &tx_info.router_address,
                     &signing_params.eth_private_key,
-                    eth_tx_info.maybe_to_metadata_bytes(
+                    tx_info.maybe_to_metadata_bytes(
                         btc_chain_id,
                         MAX_BYTES_FOR_ETH_USER_DATA,
                         &MetadataProtocolId::Ethereum,

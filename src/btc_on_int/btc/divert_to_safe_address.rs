@@ -1,3 +1,4 @@
+/* TODO FIXME Think how to impl this in an even more generic way!
 use ethereum_types::Address as EthAddress;
 
 use crate::{
@@ -9,5 +10,6 @@ use crate::{
 };
 
 create_safe_address_diversion_fxns!(
-    "BtcOnIntIntTxInfo" => BtcState => "int" => *SAFE_ETH_ADDRESS => EthAddress => "token"
+    "BtcOnIntIntTxInfo" => BtcState => "int" => SAFE_ETH_ADDRESS.to_string() => String => "token"
 );
+*/

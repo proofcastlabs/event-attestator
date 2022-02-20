@@ -27,6 +27,28 @@ pub struct BtcOutput {
     pub int_signed_transactions: Vec<IntTxInfo>,
 }
 
+// FIXME This needs standardizing with more recent cores!
+#[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize)]
+pub struct IntTxInfo {
+    pub int_tx_hex: Option<String>,
+    pub int_tx_hash: String,
+    pub int_tx_amount: String,
+    pub int_account_nonce: Option<u64>,
+    pub int_tx_recipient: String,
+    pub signature_timestamp: u64,
+    pub originating_tx_hash: String,
+    pub originating_address: String,
+}
+
+#[cfg(test)]
+impl FromStr for IntTxInfo {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
+    }
+}
+
 #[cfg(test)]
 impl FromStr for BtcOutput {
     type Err = AppError;
@@ -50,28 +72,6 @@ impl FromStr for BtcOutput {
     }
 }
 
-// FIXME This needs standardizing with more recent cores!
-#[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize)]
-pub struct IntTxInfo {
-    pub int_tx_hex: Option<String>,
-    pub int_tx_hash: String,
-    pub int_tx_amount: String,
-    pub int_account_nonce: Option<u64>,
-    pub int_tx_recipient: String,
-    pub signature_timestamp: u64,
-    pub originating_tx_hash: String,
-    pub originating_address: String,
-}
-
-#[cfg(test)]
-impl FromStr for IntTxInfo {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
-    }
-}
-
 impl IntTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
         tx: &T,
@@ -90,7 +90,7 @@ impl IntTxInfo {
             int_tx_hex: tx.eth_tx_hex(),
             originating_address: address_string,
             signature_timestamp: get_unix_timestamp()?,
-            int_tx_amount: int_tx_info.amount.to_string(),
+            int_tx_amount: int_tx_info.host_token_amount.to_string(),
             int_tx_hash: format!("0x{}", tx.get_tx_hash()),
             originating_tx_hash: int_tx_info.originating_tx_hash.to_string(),
             int_tx_recipient: format!("0x{}", hex::encode(int_tx_info.destination_address.as_bytes())),
