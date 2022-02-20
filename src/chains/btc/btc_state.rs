@@ -302,11 +302,11 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
         }
     }
 
-    pub fn get_output_json_string(&self) -> Result<&str> {
+    pub fn get_output_json_string(&self) -> Result<String> {
         match &self.output_json_string {
             Some(output_json_string) => {
                 info!("✔ Getting BTC output json string from state...");
-                Ok(output_json_string)
+                Ok(output_json_string.to_string())
             },
             None => Err(get_not_in_state_err("output_json_string").into()),
         }

@@ -90,10 +90,6 @@ pub fn filter_p2sh_deposit_txs(
     transactions: &[BtcTransaction],
     btc_network: BtcNetwork,
 ) -> Result<BtcTransactions> {
-
-    warn!("btc network: {}", btc_network); //FIXME rm
-    warn!("enclave pub key slice: {}", hex::encode(enclave_public_key_slice)); //FIXME rm
-
     Ok(transactions
         .iter()
         .filter(|txdata| {

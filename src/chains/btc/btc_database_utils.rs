@@ -210,6 +210,10 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
     }
 
     pub fn put_btc_canon_to_tip_length_in_db(&self, btc_canon_to_tip_length: u64) -> Result<()> {
+        info!(
+            "✔ Putting BTC canon to tip length of {} in db!",
+            btc_canon_to_tip_length
+        );
         self.get_db().put(
             self.btc_canon_to_tip_length_key.to_vec(),
             convert_u64_to_bytes(btc_canon_to_tip_length),

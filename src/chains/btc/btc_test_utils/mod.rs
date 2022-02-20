@@ -97,6 +97,7 @@ pub fn get_btc_block_in_db_format(
         } else {
             Some(eth_minting_params)
         },
+        None,
         btc_block_and_id.block.header.prev_blockhash,
     ))
 }
