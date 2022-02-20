@@ -1,5 +1,11 @@
+#[cfg(test)]
+use std::str::FromStr;
+
+use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
 
+#[cfg(test)]
+use crate::errors::AppError;
 use crate::{
     btc_on_int::btc::int_tx_info::BtcOnIntIntTxInfo,
     chains::{
@@ -15,6 +21,35 @@ use crate::{
     utils::get_unix_timestamp,
 };
 
+#[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize, Constructor)]
+pub struct BtcOutput {
+    pub btc_latest_block_number: u64,
+    pub int_signed_transactions: Vec<IntTxInfo>,
+}
+
+#[cfg(test)]
+impl FromStr for BtcOutput {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        #[derive(Serialize, Deserialize)]
+        struct Interim {
+            btc_latest_block_number: u64,
+            int_signed_transactions: Vec<String>,
+        }
+        let interim = serde_json::from_str::<Interim>(s)?;
+        let tx_infos = interim
+            .int_signed_transactions
+            .iter()
+            .map(|inner_s| IntTxInfo::from_str(&inner_s))
+            .collect::<Result<Vec<IntTxInfo>>>()?;
+        Ok(Self {
+            btc_latest_block_number: interim.btc_latest_block_number,
+            int_signed_transactions: tx_infos,
+        })
+    }
+}
+
 // FIXME This needs standardizing with more recent cores!
 #[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize)]
 pub struct IntTxInfo {
@@ -26,6 +61,15 @@ pub struct IntTxInfo {
     pub signature_timestamp: u64,
     pub originating_tx_hash: String,
     pub originating_address: String,
+}
+
+#[cfg(test)]
+impl FromStr for IntTxInfo {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
+    }
 }
 
 impl IntTxInfo {
@@ -54,18 +98,18 @@ impl IntTxInfo {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize)]
-pub struct BtcOutput {
-    pub btc_latest_block_number: u64,
-    pub int_signed_transactions: Vec<IntTxInfo>,
-}
-
 pub fn get_eth_signed_tx_info_from_eth_txs(
     int_txs: &[EthTransaction],
     int_tx_infos: &[BtcOnIntIntTxInfo],
     int_account_nonce: u64,
 ) -> Result<Vec<IntTxInfo>> {
     info!("✔ Getting INT tx info from INT txs...");
+    let number_of_txs = int_txs.len() as u64;
+    let start_nonce = if number_of_txs > int_account_nonce {
+        return Err("INT account nonce has not been incremented correctly!".into());
+    } else {
+        int_account_nonce - number_of_txs
+    };
     let start_nonce = int_account_nonce - int_txs.len() as u64;
     int_txs
         .iter()
@@ -74,28 +118,27 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
         .collect::<Result<Vec<IntTxInfo>>>()
 }
 
-pub fn create_btc_output_json_and_put_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
+pub fn get_btc_output_and_put_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Getting BTC output json and putting in state...");
     let signed_txs = state.eth_signed_txs.clone();
-    Ok(serde_json::to_string(&BtcOutput {
+    let output = BtcOutput {
         btc_latest_block_number: state.btc_db_utils.get_btc_latest_block_from_db()?.height,
         int_signed_transactions: if signed_txs.len() == 0 {
             vec![]
         } else {
             get_eth_signed_tx_info_from_eth_txs(
                 &state.eth_signed_txs,
-                &state.btc_on_int_int_tx_infos, // FIXME These need to be from the CANON block!!
+                &state
+                    .btc_db_utils
+                    .get_btc_canon_block_from_db()?
+                    .get_btc_on_int_int_tx_infos(),
                 state.eth_db_utils.get_eth_account_nonce_from_db()?,
             )?
         },
-    })?)
-    .and_then(|output| state.add_output_json_string(output))
+    };
+    state.add_output_json_string(serde_json::to_string(&output)?)
 }
 
-// FIXME THese last two fxns should be combined into one.
 pub fn get_btc_output_as_string<D: DatabaseInterface>(state: BtcState<D>) -> Result<String> {
-    info!("✔ Getting BTC output as string...");
-    let output = state.get_output_json_string()?.to_string();
-    info!("✔ BTC Output: {}", output);
-    Ok(output)
+    state.get_output_json_string()
 }

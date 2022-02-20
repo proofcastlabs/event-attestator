@@ -3,7 +3,7 @@ use crate::{
         btc::{
             divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
             filter_int_tx_infos::maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state,
-            get_btc_output_json::{create_btc_output_json_and_put_in_state, get_btc_output_as_string},
+            get_btc_output::{get_btc_output_and_put_in_state, get_btc_output_as_string},
             parse_tx_infos::parse_int_tx_infos_from_p2sh_deposits_and_add_to_state,
             sign_txs::maybe_sign_canon_block_txs,
         },
@@ -77,7 +77,7 @@ pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
         .and_then(maybe_sign_canon_block_txs)
         .and_then(maybe_increment_eth_nonce_in_db)
         .and_then(maybe_remove_old_btc_tail_block)
-        .and_then(create_btc_output_json_and_put_in_state)
+        .and_then(get_btc_output_and_put_in_state)
         .and_then(remove_tx_infos_from_canon_block_and_return_state)
         .and_then(end_btc_db_transaction)
         .and_then(get_btc_output_as_string)
