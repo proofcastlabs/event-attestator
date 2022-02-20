@@ -17,7 +17,7 @@ use crate::{
         },
     },
     traits::DatabaseInterface,
-    types::Result,
+    types::{NoneError, Result},
     utils::get_unix_timestamp,
 };
 
@@ -27,17 +27,23 @@ pub struct BtcOutput {
     pub int_signed_transactions: Vec<IntTxInfo>,
 }
 
-// FIXME This needs standardizing with more recent cores!
 #[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize)]
 pub struct IntTxInfo {
-    pub int_tx_hex: Option<String>,
+    pub _id: String,
+    pub broadcast: bool,
     pub int_tx_hash: String,
+    pub int_signed_tx: String,
     pub int_tx_amount: String,
-    pub int_account_nonce: Option<u64>,
+    pub int_account_nonce: u64,
     pub int_tx_recipient: String,
-    pub signature_timestamp: u64,
+    pub witnessed_timestamp: u64,
+    pub host_token_address: String,
     pub originating_tx_hash: String,
     pub originating_address: String,
+    pub destination_address: String,
+    pub int_latest_block_number: usize,
+    pub broadcast_tx_hash: Option<String>,
+    pub broadcast_timestamp: Option<String>,
 }
 
 #[cfg(test)]
@@ -76,24 +82,25 @@ impl IntTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
         tx: &T,
         int_tx_info: &BtcOnIntIntTxInfo,
-        nonce: Option<u64>,
+        nonce: u64,
+        int_latest_block_number: usize,
     ) -> Result<IntTxInfo> {
-        let default_address = PLACEHOLDER_BTC_ADDRESS.to_string();
-        let retrieved_address = int_tx_info.originating_tx_address.to_string();
-        let address_string = match default_address == retrieved_address {
-            false => retrieved_address,
-            true => "✘ Could not retrieve sender address".to_string(),
-        };
-
         Ok(IntTxInfo {
+            broadcast: false,
+            int_latest_block_number,
+            broadcast_tx_hash: None,
             int_account_nonce: nonce,
-            int_tx_hex: tx.eth_tx_hex(),
-            originating_address: address_string,
-            signature_timestamp: get_unix_timestamp()?,
-            int_tx_amount: int_tx_info.host_token_amount.to_string(),
+            broadcast_timestamp: None,
+            _id: format!("pbtc-on-int-int-{}", nonce),
+            witnessed_timestamp: get_unix_timestamp()?,
             int_tx_hash: format!("0x{}", tx.get_tx_hash()),
+            int_tx_amount: int_tx_info.host_token_amount.to_string(),
+            int_tx_recipient: int_tx_info.router_address.to_string(),
+            destination_address: int_tx_info.destination_address.clone(),
+            host_token_address: int_tx_info.int_token_address.to_string(),
+            originating_address: int_tx_info.originating_tx_address.clone(),
             originating_tx_hash: int_tx_info.originating_tx_hash.to_string(),
-            int_tx_recipient: format!("0x{}", hex::encode(int_tx_info.destination_address.as_bytes())),
+            int_signed_tx: tx.eth_tx_hex().ok_or(NoneError("No tx in tx info!"))?,
         })
     }
 }
@@ -102,6 +109,7 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
     int_txs: &[EthTransaction],
     int_tx_infos: &[BtcOnIntIntTxInfo],
     int_account_nonce: u64,
+    int_latest_block_number: usize,
 ) -> Result<Vec<IntTxInfo>> {
     info!("✔ Getting INT tx info from INT txs...");
     let number_of_txs = int_txs.len() as u64;
@@ -114,7 +122,7 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
     int_txs
         .iter()
         .enumerate()
-        .map(|(i, tx)| IntTxInfo::new(tx, &int_tx_infos[i], Some(start_nonce + i as u64)))
+        .map(|(i, tx)| IntTxInfo::new(tx, &int_tx_infos[i], start_nonce + i as u64, int_latest_block_number))
         .collect::<Result<Vec<IntTxInfo>>>()
 }
 
@@ -133,6 +141,7 @@ pub fn get_btc_output_and_put_in_state<D: DatabaseInterface>(state: BtcState<D>)
                     .get_btc_canon_block_from_db()?
                     .get_btc_on_int_int_tx_infos(),
                 state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                state.eth_db_utils.get_latest_eth_block_number()?,
             )?
         },
     };

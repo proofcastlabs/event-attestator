@@ -112,6 +112,7 @@ fn reprocess_btc_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonc
                         Some(nonce) => nonce,
                         None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                     },
+                    state.eth_db_utils.get_latest_eth_block_number()?,
                 ),
             }?)?;
             info!("✔ BTC signatures: {}", signatures);
