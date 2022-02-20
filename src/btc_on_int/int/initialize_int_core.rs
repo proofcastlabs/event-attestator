@@ -40,8 +40,12 @@ pub fn init_int_core<D: DatabaseInterface>(
             )
         })
         .and_then(|state| {
-            state.eth_db_utils.put_eth_router_smart_contract_address_in_db(router_contract_address)?;
-            state.eth_db_utils.put_btc_on_eth_smart_contract_address_in_db(erc777_contract_address)?;
+            state
+                .eth_db_utils
+                .put_eth_router_smart_contract_address_in_db(router_contract_address)?;
+            state
+                .eth_db_utils
+                .put_btc_on_eth_smart_contract_address_in_db(erc777_contract_address)?;
             Ok(state)
         })
         .and_then(end_eth_db_transaction_and_return_state)
@@ -68,7 +72,7 @@ pub fn maybe_initialize_int_core<D: DatabaseInterface>(
             gas_price,
             canon_to_tip_length,
             erc777_contract_address,
-            router_contract_address
+            router_contract_address,
         )
     }
 }
