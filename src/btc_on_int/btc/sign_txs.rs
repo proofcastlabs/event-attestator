@@ -50,18 +50,26 @@ pub fn get_int_signed_txs(
 }
 
 pub fn maybe_sign_canon_block_txs<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
-    info!("✔ Maybe signing INT txs...");
-    get_int_signed_txs(
-        &state.eth_db_utils.get_signing_params_from_db()?,
-        // FIXME FIXME FIXME Fix the entire BTC submission algorithm!
-        &state.btc_on_int_int_tx_infos, // FIXME Now we are ALWAYS signing the submitted block's txs!
-        &state.btc_db_utils.get_btc_chain_id_from_db()?,
-    )
-    .and_then(|signed_txs| {
-        #[cfg(feature = "debug")]
-        {
-            debug!("✔ Signed transactions: {:?}", signed_txs);
-        }
-        state.add_eth_signed_txs(signed_txs)
-    })
+    let tx_infos = state
+        .btc_db_utils
+        .get_btc_canon_block_from_db()?
+        .get_btc_on_int_int_tx_infos();
+    if tx_infos.is_empty() {
+        info!("✔ No transactions to sign in canon block ∴ not signing anything!");
+        Ok(state)
+    } else {
+        info!("✔ Signing INT txs from BTC canon block...");
+        get_int_signed_txs(
+            &state.eth_db_utils.get_signing_params_from_db()?,
+            &tx_infos,
+            &state.btc_db_utils.get_btc_chain_id_from_db()?,
+        )
+        .and_then(|signed_txs| {
+            #[cfg(feature = "debug")]
+            {
+                debug!("✔ Signed transactions: {:?}", signed_txs);
+            }
+            state.add_eth_signed_txs(signed_txs)
+        })
+    }
 }

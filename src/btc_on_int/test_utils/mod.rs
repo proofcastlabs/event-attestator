@@ -21,8 +21,10 @@ macro_rules! write_btc_paths_and_getter_fxn {
 }
 
 write_btc_paths_and_getter_fxn!(
-    0 => "src/btc_on_int/test_utils/btc-testnet-block-2161718.json",
-    1 => "src/btc_on_int/test_utils/btc-testnet-block-2161719.json"
+    0 => "src/btc_on_int/test_utils/btc-testnet-block-2162937.json",
+    1 => "src/btc_on_int/test_utils/btc-testnet-block-2162938.json",
+    2 => "src/btc_on_int/test_utils/btc-testnet-block-2162939.json",
+    3 => "src/btc_on_int/test_utils/btc-testnet-block-2162940.json"
 );
 
 macro_rules! write_eth_paths_and_getter_fxn {
