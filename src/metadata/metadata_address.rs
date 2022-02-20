@@ -3,6 +3,7 @@ use std::str::from_utf8;
 use std::str::FromStr;
 
 use bitcoin::util::address::Address as BtcAddress;
+use derive_more::Constructor;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
 
@@ -23,7 +24,7 @@ use crate::{
     Result,
 };
 
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Constructor)]
 pub struct MetadataAddress {
     pub address: String,
     pub metadata_chain_id: MetadataChainId,
