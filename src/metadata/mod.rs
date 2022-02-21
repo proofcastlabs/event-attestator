@@ -86,4 +86,24 @@ impl Metadata {
             destination_address: Some(destination_address.clone()),
         }
     }
+
+    #[allow(dead_code)] // NOTE: To allow CI to pass. This will be used in upcoming PR!
+    pub fn new_v3(
+        user_data: &[Byte],
+        origin_address: &MetadataAddress,
+        destination_address: &MetadataAddress,
+        protocol_options: Option<Bytes>,
+        protocol_receipt: Option<Bytes>,
+    ) -> Self {
+        Self {
+            protocol_options,
+            protocol_receipt,
+            version: MetadataVersion::V3,
+            user_data: user_data.to_vec(),
+            origin_address: origin_address.clone(),
+            origin_chain_id: origin_address.metadata_chain_id,
+            destination_address: Some(destination_address.clone()),
+            destination_chain_id: Some(destination_address.metadata_chain_id),
+        }
+    }
 }
