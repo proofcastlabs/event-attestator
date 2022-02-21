@@ -75,6 +75,15 @@ impl MetadataAddress {
     }
 }
 
+impl std::fmt::Display for MetadataAddress {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.metadata_chain_id.to_protocol_id() {
+            MetadataProtocolId::Ethereum => write!(f, "0x{}", self.address),
+            _ => write!(f, "{}", self.address),
+        }
+    }
+}
+
 #[cfg(test)]
 impl MetadataAddress {
     fn from_bytes(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
