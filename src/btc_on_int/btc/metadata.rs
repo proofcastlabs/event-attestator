@@ -24,13 +24,14 @@ impl ToMetadata for BtcOnIntIntTxInfo {
         };
         let origin_chain_id = MetadataChainId::from_bytes(&self.origin_chain_id)?;
         let destination_chain_id = MetadataChainId::from_bytes(&self.destination_chain_id)?;
-        Ok(Metadata::new_v3( // FIXME todo!
+        let metadata = Metadata::new_v3(
             &user_data,
             &MetadataAddress::new(self.originating_tx_address.clone(), origin_chain_id),
             &MetadataAddress::new(self.destination_address.clone(), destination_chain_id),
             None,
             None,
-        ))
+        );
+        Ok(metadata)
     }
 
     fn to_metadata_bytes(&self) -> Result<Bytes> {
