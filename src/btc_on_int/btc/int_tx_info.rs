@@ -35,20 +35,3 @@ impl BtcOnIntIntTxInfos {
         Ok(serde_json::from_slice(bytes)?)
     }
 }
-
-impl ToMetadata for BtcOnIntIntTxInfo {
-    // TODO V2 metadata!!
-    fn get_user_data(&self) -> Option<Bytes> {
-        if self.user_data.is_empty() {
-            None
-        } else {
-            Some(self.user_data.clone())
-        }
-    }
-
-    fn get_originating_tx_address(&self) -> String {
-        self.originating_tx_address.clone()
-    }
-}
-
-// TODO test!
