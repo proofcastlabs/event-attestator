@@ -10,6 +10,7 @@ use crate::types::{Byte, Bytes};
 pub enum MetadataVersion {
     V1,
     V2,
+    V3,
 }
 
 impl MetadataVersion {
@@ -17,6 +18,7 @@ impl MetadataVersion {
         match self {
             Self::V1 => 0x01,
             Self::V2 => 0x02,
+            Self::V3 => 0x03,
         }
     }
 
@@ -29,6 +31,7 @@ impl MetadataVersion {
         match byte {
             1u8 => Ok(Self::V1),
             2u8 => Ok(Self::V2),
+            3u8 => Ok(Self::V3),
             _ => Err(format!("✘ Unrecognized version byte for `MetadataVersion`: {:?}", byte).into()),
         }
     }
