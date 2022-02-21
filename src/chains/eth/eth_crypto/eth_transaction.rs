@@ -4,6 +4,8 @@ use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, U256};
 use rlp::RlpStream;
 
+#[cfg(test)]
+use crate::types::Byte;
 use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
@@ -33,6 +35,31 @@ pub struct EthTransaction {
     pub gas_limit: U256,
     pub gas_price: U256,
     pub chain_id: EthChainId,
+}
+
+#[cfg(test)]
+impl EthTransaction {
+    pub fn from_bytes(tx_bytes: &[Byte]) -> Result<EthTransaction> {
+        use rlp;
+        let decoded_tx: Vec<Bytes> = rlp::decode_list(&tx_bytes);
+        if decoded_tx.len() != 9 {
+            // FIXME Magic number!
+            return Err("Error decoded ETH tx!".into());
+        } else {
+            Ok(EthTransaction {
+                nonce: U256::from_big_endian(&decoded_tx[0]),
+                gas_price: U256::from_big_endian(&decoded_tx[1]),
+                gas_limit: U256::from_big_endian(&decoded_tx[2]),
+                to: decoded_tx[3].clone(),
+                value: U256::from_big_endian(&decoded_tx[4]),
+                data: decoded_tx[5].clone(),
+                v: 0u64, // NOTE: Not calculated!
+                r: U256::from_big_endian(&decoded_tx[7]),
+                s: U256::from_big_endian(&decoded_tx[8]),
+                chain_id: EthChainId::default(), // NOTE: This isn't calculated!
+            })
+        }
+    }
 }
 
 impl EthTransaction {
