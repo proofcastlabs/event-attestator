@@ -7,12 +7,8 @@ use derive_more::Constructor;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
 
-#[cfg(test)]
 use crate::{
-    chains::{eos::eos_constants::EOS_ADDRESS_LENGTH_IN_BYTES, eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES},
-    types::Byte,
-};
-use crate::{
+    chains::eth::eth_utils::convert_hex_to_eth_address,
     metadata::{metadata_chain_id::MetadataChainId, metadata_protocol_id::MetadataProtocolId},
     safe_addresses::{
         safely_convert_str_to_btc_address,
@@ -23,8 +19,13 @@ use crate::{
     utils::strip_hex_prefix,
     Result,
 };
+#[cfg(test)]
+use crate::{
+    chains::{eos::eos_constants::EOS_ADDRESS_LENGTH_IN_BYTES, eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES},
+    types::Byte,
+};
 
-#[derive(Clone, Default, Debug, PartialEq, Eq, Constructor)]
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct MetadataAddress {
     pub address: String,
     pub metadata_chain_id: MetadataChainId,
