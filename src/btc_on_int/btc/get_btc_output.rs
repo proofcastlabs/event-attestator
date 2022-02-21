@@ -96,12 +96,12 @@ impl IntTxInfo {
             witnessed_timestamp: get_unix_timestamp()?,
             int_tx_hash: format!("0x{}", tx.get_tx_hash()),
             int_tx_amount: int_tx_info.host_token_amount.to_string(),
-            int_tx_recipient: int_tx_info.router_address.to_string(),
             destination_address: int_tx_info.destination_address.clone(),
-            host_token_address: int_tx_info.int_token_address.to_string(),
             originating_address: int_tx_info.originating_tx_address.clone(),
             originating_tx_hash: int_tx_info.originating_tx_hash.to_string(),
             int_signed_tx: tx.eth_tx_hex().ok_or(NoneError("No tx in tx info!"))?,
+            host_token_address: format!("0x{}", hex::encode(&int_tx_info.int_token_address)),
+            int_tx_recipient: format!("0x{}", hex::encode(int_tx_info.router_address.as_bytes())),
         })
     }
 }

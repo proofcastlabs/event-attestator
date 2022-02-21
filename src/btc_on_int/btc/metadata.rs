@@ -26,8 +26,8 @@ impl ToMetadata for BtcOnIntIntTxInfo {
         let destination_chain_id = MetadataChainId::from_bytes(&self.destination_chain_id)?;
         let metadata = Metadata::new_v3(
             &user_data,
-            &MetadataAddress::new(self.originating_tx_address.clone(), origin_chain_id),
-            &MetadataAddress::new(self.destination_address.clone(), destination_chain_id),
+            &MetadataAddress::new(self.originating_tx_address.clone(), origin_chain_id)?,
+            &MetadataAddress::new(self.destination_address.clone(), destination_chain_id)?,
             None,
             None,
         );
