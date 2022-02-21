@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 
 #[cfg(test)]
 use crate::errors::AppError;
@@ -63,13 +64,13 @@ impl FromStr for BtcOutput {
         #[derive(Serialize, Deserialize)]
         struct Interim {
             btc_latest_block_number: u64,
-            int_signed_transactions: Vec<String>,
+            int_signed_transactions: Vec<JsonValue>,
         }
         let interim = serde_json::from_str::<Interim>(s)?;
         let tx_infos = interim
             .int_signed_transactions
             .iter()
-            .map(|inner_s| IntTxInfo::from_str(&inner_s))
+            .map(|json| IntTxInfo::from_str(&json.to_string()))
             .collect::<Result<Vec<IntTxInfo>>>()?;
         Ok(Self {
             btc_latest_block_number: interim.btc_latest_block_number,
