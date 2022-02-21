@@ -18,7 +18,7 @@ use crate::{
     Result,
 };
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct MetadataAddress {
     pub address: String,
     pub metadata_chain_id: MetadataChainId,
@@ -135,13 +135,16 @@ impl MetadataAddress {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::metadata::test_utils::{
-        get_sample_btc_address,
-        get_sample_btc_origin_address,
-        get_sample_eos_address,
-        get_sample_eos_origin_address,
-        get_sample_eth_address,
-        get_sample_eth_origin_address,
+    use crate::{
+        chains::eth::eth_utils::convert_hex_to_eth_address,
+        metadata::test_utils::{
+            get_sample_btc_address,
+            get_sample_btc_origin_address,
+            get_sample_eos_address,
+            get_sample_eos_origin_address,
+            get_sample_eth_address,
+            get_sample_eth_origin_address,
+        },
     };
 
     #[test]
@@ -190,5 +193,14 @@ mod tests {
         let bytes = metadata_address.to_bytes().unwrap();
         let result = MetadataAddress::from_bytes(&bytes, &metadata_chain_id).unwrap();
         assert_eq!(result, metadata_address);
+    }
+
+    #[test]
+    fn eth_metadata_address_should_add_hex_prefix() {
+        let address_string = "0xea674fdde714fd979de3edf0f56aa9716b898ec8";
+        let eth_address = convert_hex_to_eth_address(address_string).unwrap();
+        let metadata_chain_id = MetadataChainId::EthereumMainnet;
+        let metadata_address = MetadataAddress::new_from_eth_address(&eth_address, &metadata_chain_id).unwrap();
+        assert_eq!(metadata_address.to_string(), address_string);
     }
 }
