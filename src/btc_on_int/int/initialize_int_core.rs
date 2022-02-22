@@ -13,7 +13,7 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
     },
     traits::DatabaseInterface,

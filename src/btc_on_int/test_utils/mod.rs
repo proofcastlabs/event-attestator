@@ -1,6 +1,7 @@
+#![cfg(test)]
 use std::fs::read_to_string;
 
-use crate::{chains::btc::btc_submission_material::BtcSubmissionMaterial, errors::AppError, types::Result};
+use crate::{errors::AppError, types::Result};
 
 macro_rules! write_btc_paths_and_getter_fxn {
     ( $( $num:expr => $path:expr ),* ) => {

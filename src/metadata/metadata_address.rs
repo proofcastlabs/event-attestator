@@ -3,7 +3,6 @@ use std::str::from_utf8;
 use std::str::FromStr;
 
 use bitcoin::util::address::Address as BtcAddress;
-use derive_more::Constructor;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
 

@@ -15,7 +15,6 @@ use crate::{
         btc_types::BtcPubKeySlice,
         btc_utils::{convert_hex_to_sha256_hash, get_p2sh_redeem_script_sig},
     },
-    errors::AppError,
     metadata::metadata_chain_id::MetadataChainId,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},

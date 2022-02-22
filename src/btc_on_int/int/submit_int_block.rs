@@ -67,9 +67,6 @@ pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, submission_materia
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::network::constants::Network as BtcNetwork;
-    use ethereum_types::{Address as EthAddress, U256};
-    use rlp;
     use serde_json::json;
 
     use super::*;
@@ -87,29 +84,23 @@ mod tests {
                 btc_crypto::btc_private_key::BtcPrivateKey,
                 btc_database_utils::BtcDbUtils,
                 btc_state::BtcState,
-                btc_submission_material::BtcSubmissionMaterial,
                 btc_utils::convert_hex_tx_to_btc_transaction,
                 core_initialization::initialize_btc_core::init_btc_core,
-                utxo_manager::utxo_database_utils::{get_first_utxo_and_value, get_utxo_nonce_from_db},
+                utxo_manager::utxo_database_utils::get_utxo_nonce_from_db,
             },
             eth::{
-                eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
+                eth_crypto::eth_private_key::EthPrivateKey,
                 eth_database_utils::{EthDbUtils, EthDbUtilsExt},
                 eth_state::EthState,
                 eth_submission_material::EthSubmissionMaterial,
                 eth_utils::convert_hex_to_eth_address,
             },
         },
-        metadata::{metadata_address::MetadataAddress, metadata_chain_id::MetadataChainId, Metadata},
         test_utils::get_test_database,
-        types::Bytes,
     };
 
     #[test]
     fn should_submit_int_blocks_to_core() {
-        //use simple_logger;
-        //simple_logger::init().unwrap();
-
         // Init the BTC core...
         let btc_pk = "93GJ65qHNjGFHzQVTzEEAdBS7vMxe3XASfWE8RUASSfd3EtfmzP";
         let db = get_test_database();
@@ -254,7 +245,7 @@ mod tests {
         );
 
         // NOTE: Check the tx is decodable...
-        let decoded_tx = convert_hex_tx_to_btc_transaction(tx_info.btc_signed_tx).unwrap();
+        convert_hex_tx_to_btc_transaction(tx_info.btc_signed_tx).unwrap();
         // NOTE: See broadcast tx hash here:
         // https://blockstream.info/testnet/tx/9b49d9c27d979fa4b0f22bfa8bd298f1ecf57e2358952d3bfedee2d6e56649e6
     }

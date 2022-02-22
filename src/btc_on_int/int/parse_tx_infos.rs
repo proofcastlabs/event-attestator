@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, util::address::Address as BtcAddress};
-use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::Address as EthAddress;
 
 use crate::{

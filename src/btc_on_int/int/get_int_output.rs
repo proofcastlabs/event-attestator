@@ -1,21 +1,22 @@
-use std::{
-    str::FromStr,
-    time::{SystemTime, UNIX_EPOCH},
-};
+#[cfg(test)]
+use std::str::FromStr;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use derive_more::Constructor;
 use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
+#[cfg(test)]
 use serde_json::Value as JsonValue;
 
+#[cfg(test)]
+use crate::errors::AppError;
 use crate::{
     btc_on_int::int::btc_tx_info::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos},
     chains::{
         btc::btc_utils::get_hex_tx_from_signed_btc_tx,
         eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
     },
-    errors::AppError,
     traits::DatabaseInterface,
     types::Result,
 };

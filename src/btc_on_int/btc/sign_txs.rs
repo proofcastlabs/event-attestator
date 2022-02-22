@@ -1,10 +1,10 @@
 use crate::{
     btc_on_int::btc::int_tx_info::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
     chains::{
-        btc::{btc_chain_id::BtcChainId, btc_state::BtcState},
+        btc::btc_state::BtcState,
         eth::{
             eth_chain_id::EthChainId,
-            eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
+            eth_constants::ZERO_ETH_VALUE,
             eth_contracts::erc777::encode_erc777_mint_fxn_maybe_with_data,
             eth_crypto::{
                 eth_private_key::EthPrivateKey,
@@ -58,11 +58,7 @@ impl BtcOnIntIntTxInfo {
 }
 
 impl BtcOnIntIntTxInfos {
-    pub fn to_int_signed_txs(
-        &self,
-        signing_params: &EthSigningParams,
-        btc_chain_id: &BtcChainId,
-    ) -> Result<EthTransactions> {
+    pub fn to_int_signed_txs(&self, signing_params: &EthSigningParams) -> Result<EthTransactions> {
         trace!("✔ Getting INT signed transactions...");
         Ok(EthTransactions::new(
             self.iter()
@@ -96,10 +92,7 @@ pub fn maybe_sign_canon_block_txs<D: DatabaseInterface>(state: BtcState<D>) -> R
     } else {
         info!("✔ Signing INT txs from BTC canon block...");
         tx_infos
-            .to_int_signed_txs(
-                &state.eth_db_utils.get_signing_params_from_db()?,
-                &state.btc_db_utils.get_btc_chain_id_from_db()?,
-            )
+            .to_int_signed_txs(&state.eth_db_utils.get_signing_params_from_db()?)
             .and_then(|signed_txs| {
                 #[cfg(feature = "debug")]
                 {

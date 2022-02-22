@@ -1,13 +1,9 @@
-use bitcoin::{util::address::Address as BtcAddress, Txid};
+use bitcoin::Txid;
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    chains::{btc::btc_metadata::ToMetadata, eth::eth_utils::safely_convert_hex_to_eth_address},
-    metadata::metadata_chain_id::MetadataChainId,
-    types::{Byte, Bytes, Result},
-};
+use crate::types::{Byte, Bytes, Result};
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
 pub struct BtcOnIntIntTxInfos(pub Vec<BtcOnIntIntTxInfo>);

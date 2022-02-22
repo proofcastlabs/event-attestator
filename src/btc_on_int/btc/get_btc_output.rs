@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
+#[cfg(test)]
 use serde_json::Value as JsonValue;
 
 #[cfg(test)]
@@ -10,7 +11,7 @@ use crate::errors::AppError;
 use crate::{
     btc_on_int::btc::int_tx_info::BtcOnIntIntTxInfo,
     chains::{
-        btc::{btc_constants::PLACEHOLDER_BTC_ADDRESS, btc_state::BtcState},
+        btc::btc_state::BtcState,
         eth::{
             eth_crypto::eth_transaction::EthTransaction,
             eth_database_utils::EthDbUtilsExt,
@@ -119,7 +120,6 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
     } else {
         int_account_nonce - number_of_txs
     };
-    let start_nonce = int_account_nonce - int_txs.len() as u64;
     int_txs
         .iter()
         .enumerate()

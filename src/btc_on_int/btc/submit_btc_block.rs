@@ -84,9 +84,7 @@ pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::network::constants::Network as BtcNetwork;
     use ethereum_types::{Address as EthAddress, U256};
-    use rlp;
     use serde_json::json;
 
     use super::*;
@@ -116,7 +114,6 @@ mod tests {
         },
         metadata::{metadata_address::MetadataAddress, metadata_chain_id::MetadataChainId, Metadata},
         test_utils::get_test_database,
-        types::Bytes,
     };
 
     #[test]

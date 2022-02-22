@@ -90,7 +90,6 @@ fn reprocess_btc_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonc
                         },
                         smart_contract_address: state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
                     },
-                &state.btc_db_utils.get_btc_chain_id_from_db()?,
             )
             .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
         })

@@ -40,7 +40,6 @@ pub struct EthTransaction {
 #[cfg(test)]
 impl EthTransaction {
     pub fn from_bytes(tx_bytes: &[Byte]) -> Result<EthTransaction> {
-        use rlp;
         let decoded_tx: Vec<Bytes> = rlp::decode_list(&tx_bytes);
         if decoded_tx.len() != 9 {
             // FIXME Magic number!

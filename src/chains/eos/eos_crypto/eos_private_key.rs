@@ -1,7 +1,9 @@
 use std::{fmt, str::FromStr};
 
+#[cfg(test)]
+use bitcoin::hashes::sha256d;
 use bitcoin::{
-    hashes::{sha256, sha256d, Hash as HashTrait},
+    hashes::{sha256, Hash as HashTrait},
     util::base58,
 };
 #[cfg(test)]
@@ -34,6 +36,7 @@ pub struct EosPrivateKey {
     pub network: EosNetwork,
 }
 
+#[allow(dead_code)]
 #[cfg(test)]
 impl EosPrivateKey {
     fn to_bytes(&self) -> Bytes {
