@@ -12,7 +12,7 @@ use crate::{
         int::{
             btc_tx_info::BtcOnIntBtcTxInfos,
             filter_receipts_in_state::filter_receipts_for_btc_on_int_redeem_events_in_state,
-            get_int_output_json::{get_btc_signed_tx_info_from_btc_txs, IntOutput},
+            get_int_output::{get_btc_signed_tx_info_from_btc_txs, IntOutput},
             sign_txs::maybe_sign_btc_txs_and_add_to_state,
         },
     },
@@ -156,6 +156,8 @@ fn reprocess_int_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<
                         state.btc_db_utils.get_btc_account_nonce_from_db()?,
                         txs,
                         &state.btc_on_int_btc_tx_infos,
+                        state.btc_db_utils.get_latest_btc_block_number()?,
+                        &state.eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
                     )?,
                     None => vec![],
                 },
