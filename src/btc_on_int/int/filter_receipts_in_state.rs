@@ -1,9 +1,6 @@
 use crate::{
     chains::eth::{
-        eth_contracts::erc777::{
-            ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
-            ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
-        },
+        eth_contracts::erc777::ERC777_REDEEM_EVENT_TOPIC_V2,
         eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
     },
@@ -18,12 +15,8 @@ pub fn filter_receipts_for_btc_on_int_redeem_events_in_state<D: DatabaseInterfac
     state
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_address_and_with_topics(
-            &state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
-            &[
-                *ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
-                *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
-                // FIXME add the v2 version topics here!
-            ],
+            &state.eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
+            &[*ERC777_REDEEM_EVENT_TOPIC_V2],
         )
         .and_then(|filtered_block_and_receipts| state.update_eth_submission_material(filtered_block_and_receipts))
 }

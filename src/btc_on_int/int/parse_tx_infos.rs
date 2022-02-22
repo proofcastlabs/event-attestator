@@ -16,11 +16,7 @@ use crate::{
             utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
         },
         eth::{
-            eth_contracts::erc777::{
-                Erc777RedeemEvent,
-                ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
-                ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
-            },
+            eth_contracts::erc777::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
             eth_database_utils::EthDbUtilsExt,
             eth_log::{EthLog, EthLogExt},
             eth_receipt::EthReceipt,
@@ -81,13 +77,11 @@ impl BtcOnIntBtcTxInfos {
     }
 
     fn log_is_btc_on_int_redeem(log: &EthLog, erc777_smart_contract_address: &EthAddress) -> Result<bool> {
-        Ok(log.is_from_address(erc777_smart_contract_address)
-            && (log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
-                || log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA)))
+        Ok(log.is_from_address(erc777_smart_contract_address) && log.contains_topic(&ERC777_REDEEM_EVENT_TOPIC_V2))
     }
 
     fn from_eth_receipt(receipt: &EthReceipt, erc777_smart_contract_address: &EthAddress) -> Result<Self> {
-        info!("✔ Getting redeem `btc_on_int` `BtcOnIntBtcTxInfos` from receipt...");
+        info!("✔ Getting redeem `BtcOnIntBtcTxInfos` from receipt...");
         Ok(Self::new(
             receipt
                 .logs
@@ -118,7 +112,7 @@ impl BtcOnIntBtcTxInfos {
         submission_material: &EthSubmissionMaterial,
         erc777_smart_contract_address: &EthAddress,
     ) -> Result<Self> {
-        info!("✔ Getting `btc-on-eth` `BtcOnIntBtcTxInfos` from ETH submission material...");
+        info!("✔ Getting `BtcOnIntBtcTxInfos` from ETH submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
