@@ -15,6 +15,7 @@ use crate::{
         },
         eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
+        eth_utils::convert_hex_to_eth_address,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -58,8 +59,8 @@ pub fn maybe_initialize_int_core<D: DatabaseInterface>(
     chain_id: u8,
     gas_price: u64,
     canon_to_tip_length: u64,
-    erc777_contract_address: &EthAddress,
-    router_contract_address: &EthAddress,
+    erc777_contract_address: &str,
+    router_contract_address: &str,
 ) -> Result<String> {
     let state = EthState::init(db);
     if is_int_core_initialized(&state.eth_db_utils) {
@@ -71,8 +72,8 @@ pub fn maybe_initialize_int_core<D: DatabaseInterface>(
             chain_id,
             gas_price,
             canon_to_tip_length,
-            erc777_contract_address,
-            router_contract_address,
+            &convert_hex_to_eth_address(erc777_contract_address)?,
+            &convert_hex_to_eth_address(router_contract_address)?,
         )
     }
 }
