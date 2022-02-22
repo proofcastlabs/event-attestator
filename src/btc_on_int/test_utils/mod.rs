@@ -38,7 +38,7 @@ macro_rules! write_eth_paths_and_getter_fxn {
                 }
             }
 
-            pub fn get_sample_eth_submission_material_json_str_n(n: usize) -> String {
+            pub fn get_sample_int_submission_material_json_str_n(n: usize) -> String {
                 read_to_string(&get_eth_block_path_n(n).unwrap()).unwrap()
             }
         }
@@ -46,7 +46,10 @@ macro_rules! write_eth_paths_and_getter_fxn {
 }
 
 write_eth_paths_and_getter_fxn!(
-    0 => "src/btc_on_int/test_utils/eth-ropsten-block-11980265.json"
+    0 => "src/btc_on_int/test_utils/eth-ropsten-block-12000341.json",
+    1 => "src/btc_on_int/test_utils/eth-ropsten-block-12000342.json",
+    2 => "src/btc_on_int/test_utils/eth-ropsten-block-12000343.json",
+    3 => "src/btc_on_int/test_utils/eth-ropsten-block-12000344.json"
 );
 
 #[cfg(test)]
@@ -59,7 +62,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_eth_block_str() {
-        get_sample_eth_submission_material_json_str_n(0);
+    fn should_get_int_block_str() {
+        get_sample_int_submission_material_json_str_n(0);
     }
 }
