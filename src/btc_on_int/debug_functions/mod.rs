@@ -4,7 +4,10 @@ use serde_json::json;
 pub(crate) mod block_reprocessors;
 
 use crate::{
-    btc_on_int::check_core_is_initialized::{check_core_is_initialized, check_core_is_initialized_and_return_btc_state},
+    btc_on_int::check_core_is_initialized::{
+        check_core_is_initialized,
+        check_core_is_initialized_and_return_btc_state,
+    },
     chains::{
         btc::{
             btc_block::parse_btc_block_and_id_and_put_in_state,
