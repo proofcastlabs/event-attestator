@@ -178,15 +178,17 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
         }
     }
 
-    pub fn add_deposit_info_hash_map(mut self, deposit_info_hash_map: DepositInfoHashMap) -> Result<BtcState<'a, D>> {
+    pub fn add_deposit_info_hash_map(self, deposit_info_hash_map: DepositInfoHashMap) -> Result<BtcState<'a, D>> {
         match self.deposit_info_hash_map {
             Some(_) => Err(get_no_overwrite_state_err("deposit_info_hash_map").into()),
-            None => {
-                info!("✔ Adding deposit info hash map to BTC state...");
-                self.deposit_info_hash_map = Some(deposit_info_hash_map);
-                Ok(self)
-            },
+            None => self.update_deposit_info_hash_map(deposit_info_hash_map),
         }
+    }
+
+    pub fn update_deposit_info_hash_map(mut self, map: DepositInfoHashMap) -> Result<BtcState<'a, D>> {
+        info!("✔ Updating deposit info hash map in BTC state...");
+        self.deposit_info_hash_map = Some(map);
+        Ok(self)
     }
 
     pub fn add_btc_on_eos_eos_tx_infos(mut self, mut params: BtcOnEosEosTxInfos) -> Result<BtcState<'a, D>> {

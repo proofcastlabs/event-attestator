@@ -22,6 +22,7 @@ pub(crate) mod core_initialization;
 pub(crate) mod extract_utxos_from_p2pkh_txs;
 pub(crate) mod extract_utxos_from_p2sh_txs;
 pub(crate) mod filter_btc_txs;
+pub(crate) mod filter_deposit_address_info_hash_map;
 pub(crate) mod filter_p2pkh_deposit_txs;
 pub(crate) mod filter_p2sh_deposit_txs;
 pub(crate) mod get_btc_block_in_db_format;

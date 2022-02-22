@@ -2,6 +2,7 @@ use crate::{
     btc_on_int::{
         btc::{
             divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
+            filter_deposit_info_hash_map::filter_out_wrong_version_deposit_address_infos,
             filter_int_tx_infos::maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state,
             get_btc_output::get_eth_signed_tx_info_from_eth_txs,
             parse_tx_infos::parse_int_tx_infos_from_p2sh_deposits_and_add_to_state,
@@ -65,6 +66,7 @@ fn reprocess_btc_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonc
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)
         .and_then(get_deposit_info_hash_map_and_put_in_state)
+        .and_then(filter_out_wrong_version_deposit_address_infos)
         .and_then(filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
         .and_then(parse_int_tx_infos_from_p2sh_deposits_and_add_to_state)
