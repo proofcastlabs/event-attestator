@@ -13,7 +13,7 @@ pub struct BtcOnIntIntTxInfo {
     pub host_token_amount: U256,
     pub user_data: Bytes,
     pub originating_tx_hash: Txid,
-    pub int_token_address: EthAddress,
+    pub int_token_address: String, // FIXME what if this becomes a string?
     pub originating_tx_address: String,
     pub destination_address: String,
     pub origin_chain_id: Bytes,

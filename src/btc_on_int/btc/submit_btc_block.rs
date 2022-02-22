@@ -1,6 +1,7 @@
 use crate::{
     btc_on_int::{
         btc::{
+            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
             filter_int_tx_infos::maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state,
             get_btc_output::{get_btc_output_and_put_in_state, get_btc_output_as_string},
             parse_tx_infos::parse_int_tx_infos_from_p2sh_deposits_and_add_to_state,
@@ -64,7 +65,7 @@ pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
         .and_then(maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state)
-        //.and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
+        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
         .and_then(create_btc_block_in_db_format_and_put_in_state)
         .and_then(maybe_add_btc_block_to_db)
         .and_then(maybe_update_btc_latest_block_hash)

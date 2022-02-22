@@ -1,15 +1,11 @@
-/* TODO FIXME Think how to impl this in an even more generic way!
-use ethereum_types::Address as EthAddress;
-
 use crate::{
     btc_on_int::btc::int_tx_info::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
     chains::btc::btc_state::BtcState,
-    constants::SAFE_ETH_ADDRESS,
+    constants::SAFE_ETH_ADDRESS_HEX,
     traits::DatabaseInterface,
     types::Result,
 };
 
 create_safe_address_diversion_fxns!(
-    "BtcOnIntIntTxInfo" => BtcState => "int" => SAFE_ETH_ADDRESS.to_string() => String => "token"
+    "BtcOnIntIntTxInfo" => BtcState => "int" => SAFE_ETH_ADDRESS_HEX.to_string() => String => "token"
 );
-*/

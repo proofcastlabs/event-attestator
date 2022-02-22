@@ -1,6 +1,7 @@
 use crate::{
     btc_on_int::{
         btc::{
+            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
             filter_int_tx_infos::maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state,
             get_btc_output::get_eth_signed_tx_info_from_eth_txs,
             parse_tx_infos::parse_int_tx_infos_from_p2sh_deposits_and_add_to_state,
@@ -72,26 +73,24 @@ fn reprocess_btc_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonc
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
         .and_then(maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state)
-        //.and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
+        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
         .and_then(|state| {
             state
                 .btc_on_int_int_tx_infos
-                .to_int_signed_txs(
-                    &EthSigningParams {
-                        gas_price: state.eth_db_utils.get_eth_gas_price_from_db()?,
-                        chain_id: state.eth_db_utils.get_eth_chain_id_from_db()?,
-                        eth_private_key: state.eth_db_utils.get_eth_private_key_from_db()?,
-                        eth_account_nonce: match maybe_nonce {
-                            Some(nonce) => {
-                                info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
-                                nonce
-                            },
-                            None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                .to_int_signed_txs(&EthSigningParams {
+                    gas_price: state.eth_db_utils.get_eth_gas_price_from_db()?,
+                    chain_id: state.eth_db_utils.get_eth_chain_id_from_db()?,
+                    eth_private_key: state.eth_db_utils.get_eth_private_key_from_db()?,
+                    eth_account_nonce: match maybe_nonce {
+                        Some(nonce) => {
+                            info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
+                            nonce
                         },
-                        smart_contract_address: state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
+                        None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                     },
-            )
-            .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
+                    smart_contract_address: state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
+                })
+                .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
         })
         .and_then(|state| {
             if maybe_nonce.is_some() {

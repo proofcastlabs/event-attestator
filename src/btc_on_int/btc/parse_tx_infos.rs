@@ -59,11 +59,11 @@ impl BtcOnIntIntTxInfos {
                                 originating_tx_hash: tx.txid(),
                                 router_address: *router_address,
                                 native_token_amount: tx_out.value,
-                                int_token_address: *int_token_address,
                                 user_data: deposit_info.user_data.clone(),
                                 destination_address: deposit_info.address.clone(),
                                 destination_chain_id: deposit_info.chain_id.clone(),
                                 host_token_amount: convert_satoshis_to_wei(tx_out.value),
+                                int_token_address: format!("0x{}", hex::encode(int_token_address)),
                                 origin_chain_id: BtcChainId::from_btc_network(&network)?
                                     .to_metadata_chain_id()
                                     .to_bytes()?,
