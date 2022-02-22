@@ -30,6 +30,10 @@ use crate::{
     utils::strip_hex_prefix,
 };
 
+pub fn convert_hex_tx_to_btc_transaction(hex: String) -> Result<BtcTransaction> {
+    Ok(btc_deserialize::<BtcTransaction>(&hex::decode(hex)?)?)
+}
+
 pub fn convert_bytes_to_btc_pub_key_slice(bytes: &[Byte]) -> Result<BtcPubKeySlice> {
     match bytes.len() {
         0..=32 => Err("✘ Too few bytes to convert to BTC pub key slice!".into()),
