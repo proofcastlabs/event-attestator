@@ -28,8 +28,8 @@ impl EnclaveState {
             btc: BtcEnclaveState::new(btc_db_utils.get_db(), btc_db_utils)?,
             eth: EthEnclaveState::new(
                 eth_db_utils,
-                &eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
-                None,
+                &eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
+                Some(eth_db_utils.get_eth_router_smart_contract_address_from_db()?),
             )?,
         })
     }
