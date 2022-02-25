@@ -2,11 +2,12 @@ use ethereum_types::Address as EthAddress;
 
 use crate::{
     chains::eth::eth_state::EthState,
-    erc20_on_evm::evm::eth_tx_info::{EthOnEvmEthTxInfo, EthOnEvmEthTxInfos},
+    constants::SAFE_ETH_ADDRESS,
+    erc20_on_evm::evm::eth_tx_info::{Erc20OnEvmEthTxInfo, Erc20OnEvmEthTxInfos},
     traits::DatabaseInterface,
     types::Result,
 };
 
-create_eth_safe_address_diversion_fxns!(
-    "EthOnEvmEthTxInfo" => "Eth" => "erc20_on_evm_eth_tx_infos" => "token", "vault"
+create_safe_address_diversion_fxns!(
+    "Erc20OnEvmEthTxInfo" => EthState => "eth" => *SAFE_ETH_ADDRESS => EthAddress => "token", "vault"
 );

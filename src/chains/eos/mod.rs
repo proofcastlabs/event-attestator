@@ -1,7 +1,5 @@
 pub mod eos_constants;
 
-#[macro_use]
-pub(crate) mod eos_macros;
 pub(crate) mod add_schedule;
 pub(crate) mod append_interim_block_ids;
 pub(crate) mod core_initialization;

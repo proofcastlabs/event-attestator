@@ -12,12 +12,12 @@ use crate::{
         eth_utils::safely_convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    erc20_on_int::int::eth_tx_info::{EthOnIntEthTxInfo, EthOnIntEthTxInfos},
+    erc20_on_int::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos},
     traits::DatabaseInterface,
     types::Result,
 };
 
-impl EthOnIntEthTxInfos {
+impl Erc20OnIntEthTxInfos {
     fn is_log_an_erc20_on_int_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
         debug!(
             "✔ Checking log contains topic: {}",
@@ -57,13 +57,13 @@ impl EthOnIntEthTxInfos {
         origin_chain_id: &EthChainId,
         vault_address: &EthAddress,
     ) -> Result<Self> {
-        info!("✔ Getting `EthOnIntEthTxInfos` from receipt...");
+        info!("✔ Getting `Erc20OnIntEthTxInfos` from receipt...");
         Ok(Self::new(
             Self::get_logs_with_redeem_event_from_receipt(receipt, dictionary)
                 .iter()
                 .map(|log| {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
-                    let tx_info = EthOnIntEthTxInfo {
+                    let tx_info = Erc20OnIntEthTxInfo {
                         evm_token_address: log.address,
                         eth_vault_address: *vault_address,
                         token_sender: event_params.redeemer,
@@ -80,7 +80,7 @@ impl EthOnIntEthTxInfos {
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)
                 })
-                .collect::<Result<Vec<EthOnIntEthTxInfo>>>()?,
+                .collect::<Result<Vec<Erc20OnIntEthTxInfo>>>()?,
         ))
     }
 
@@ -90,13 +90,13 @@ impl EthOnIntEthTxInfos {
         origin_chain_id: &EthChainId,
         vault_address: &EthAddress,
     ) -> Result<Self> {
-        info!("✔ Getting `EthOnIntEthTxInfos` from submission material...");
+        info!("✔ Getting `Erc20OnIntEthTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
                 .map(|receipt| Self::from_eth_receipt(receipt, dictionary, origin_chain_id, vault_address))
-                .collect::<Result<Vec<EthOnIntEthTxInfos>>>()?
+                .collect::<Result<Vec<Erc20OnIntEthTxInfos>>>()?
                 .into_iter()
                 .flatten()
                 .collect(),
@@ -107,7 +107,7 @@ impl EthOnIntEthTxInfos {
 pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    info!("✔ Maybe parsing `EthOnIntEthTxInfos`...");
+    info!("✔ Maybe parsing `Erc20OnIntEthTxInfos`...");
     state
         .evm_db_utils
         .get_eth_canon_block_from_db()
@@ -123,7 +123,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                 );
                 EthEvmTokenDictionary::get_from_db(state.db)
                     .and_then(|account_names| {
-                        EthOnIntEthTxInfos::from_submission_material(
+                        Erc20OnIntEthTxInfos::from_submission_material(
                             &submission_material,
                             &account_names,
                             &state.evm_db_utils.get_eth_chain_id_from_db()?,
@@ -156,7 +156,7 @@ mod tests {
         let material = get_sample_peg_out_submission_material();
         let vault_address = EthAddress::default();
         let results =
-            EthOnIntEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &vault_address)
+            Erc20OnIntEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &vault_address)
                 .unwrap();
         let expected_num_results = 1;
         assert_eq!(results.len(), expected_num_results);

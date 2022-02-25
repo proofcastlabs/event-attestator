@@ -647,6 +647,16 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
         }
     }
 
+    fn get_erc20_on_int_smart_contract_address_from_db(&self) -> Result<EthAddress> {
+        info!("✔ Putting `erc20-on-int` vault contract in db using `erc20-on-evm` key...");
+        self.get_erc20_on_evm_smart_contract_address_from_db()
+    }
+
+    fn put_erc20_on_int_smart_contract_address_in_db(&self, address: &EthAddress) -> Result<()> {
+        info!("✔ Getting `erc20-on-int` vault contract from db using `erc20-on-evm` key...");
+        self.put_erc20_on_evm_smart_contract_address_in_db(address)
+    }
+
     fn get_int_on_evm_smart_contract_address_from_db(&self) -> Result<EthAddress> {
         // NOTE: This is an alias for the `erc20-on-evm` contract address
         info!("✔ Getting `int-on-evm` smart-contract address from db...");

@@ -13,33 +13,33 @@ use crate::{
     },
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
     erc20_on_int::{
-        eth::int_tx_info::{EthOnIntIntTxInfo, EthOnIntIntTxInfos},
-        int::eth_tx_info::{EthOnIntEthTxInfo, EthOnIntEthTxInfos},
+        eth::int_tx_info::{Erc20OnIntIntTxInfo, Erc20OnIntIntTxInfos},
+        int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos},
     },
     types::Result,
 };
 
-pub fn get_sample_eth_tx_infos() -> EthOnIntEthTxInfos {
+pub fn get_sample_eth_tx_infos() -> Erc20OnIntEthTxInfos {
     let dictionary = get_sample_token_dictionary();
     let material = get_sample_peg_out_submission_material();
     let origin_chain_id = EthChainId::Ropsten;
     let vault_address = EthAddress::default();
-    EthOnIntEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &vault_address).unwrap()
+    Erc20OnIntEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &vault_address).unwrap()
 }
 
-pub fn get_sample_eth_tx_info() -> EthOnIntEthTxInfo {
+pub fn get_sample_eth_tx_info() -> Erc20OnIntEthTxInfo {
     get_sample_eth_tx_infos()[0].clone()
 }
 
-pub fn get_sample_int_tx_infos() -> EthOnIntIntTxInfos {
+pub fn get_sample_int_tx_infos() -> Erc20OnIntIntTxInfos {
     let material = get_sample_peg_in_1_submission_material();
     let vault_address = get_sample_vault_address();
     let dictionary = get_sample_token_dictionary();
     let router_address = get_sample_router_address();
-    EthOnIntIntTxInfos::from_submission_material(&material, &vault_address, &dictionary, &router_address).unwrap()
+    Erc20OnIntIntTxInfos::from_submission_material(&material, &vault_address, &dictionary, &router_address).unwrap()
 }
 
-pub fn get_sample_int_tx_info() -> EthOnIntIntTxInfo {
+pub fn get_sample_int_tx_info() -> Erc20OnIntIntTxInfo {
     get_sample_int_tx_infos()[0].clone()
 }
 

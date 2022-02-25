@@ -10,7 +10,7 @@ use crate::{
         eth_state::EthState,
         eth_traits::EthTxInfoCompatible,
     },
-    erc20_on_int::int::eth_tx_info::{EthOnIntEthTxInfo, EthOnIntEthTxInfos},
+    erc20_on_int::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos},
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };
@@ -67,7 +67,7 @@ pub struct EthTxInfo {
 impl EthTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
         tx: &T,
-        evm_tx_info: &EthOnIntEthTxInfo,
+        evm_tx_info: &Erc20OnIntEthTxInfo,
         maybe_nonce: Option<u64>,
         eth_latest_block_number: usize,
     ) -> Result<EthTxInfo> {
@@ -107,7 +107,7 @@ impl EthTxInfo {
 
 pub fn get_eth_signed_tx_info_from_evm_txs(
     txs: &[EthTransaction],
-    evm_tx_info: &EthOnIntEthTxInfos,
+    evm_tx_info: &Erc20OnIntEthTxInfos,
     eth_account_nonce: u64,
     use_any_sender_tx_type: bool,
     any_sender_nonce: u64,

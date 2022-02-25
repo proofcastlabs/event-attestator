@@ -1,6 +1,6 @@
 use crate::{
     chains::eth::eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
-    erc20_on_int::eth::int_tx_info::EthOnIntIntTxInfo,
+    erc20_on_int::eth::int_tx_info::Erc20OnIntIntTxInfo,
     metadata::{
         metadata_address::MetadataAddress,
         metadata_protocol_id::MetadataProtocolId,
@@ -10,7 +10,7 @@ use crate::{
     types::{Bytes, Result},
 };
 
-impl ToMetadata for EthOnIntIntTxInfo {
+impl ToMetadata for Erc20OnIntIntTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         let user_data = if self.user_data.len() > MAX_BYTES_FOR_ETH_USER_DATA {
             info!(

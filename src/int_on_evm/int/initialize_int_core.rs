@@ -14,6 +14,7 @@ use crate::{
         eth_database_utils::EthDbUtils,
         eth_state::EthState,
         eth_utils::convert_hex_to_eth_address,
+        vault_using_cores::VaultUsingCores,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -65,6 +66,7 @@ pub fn maybe_initialize_int_core<D: DatabaseInterface>(
                     state,
                     &convert_hex_to_eth_address(vault_address)?,
                     &convert_hex_to_eth_address(router_address)?,
+                    &VaultUsingCores::IntOnEvm,
                 )
             })
             .and_then(end_eth_db_transaction_and_return_state)

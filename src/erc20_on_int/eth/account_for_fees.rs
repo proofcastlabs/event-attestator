@@ -4,7 +4,7 @@ use crate::{
     chains::eth::eth_state::EthState,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_int::{
-        eth::int_tx_info::{EthOnIntIntTxInfo, EthOnIntIntTxInfos},
+        eth::int_tx_info::{Erc20OnIntIntTxInfo, Erc20OnIntIntTxInfos},
         fees_calculator::{FeeCalculator, FeesCalculator},
     },
     fees::fee_constants::DISABLE_FEES,
@@ -14,7 +14,7 @@ use crate::{
 
 const TX_INFO_TYPE: &str = "Erc20OnIntIntTxInfos";
 
-impl FeeCalculator for EthOnIntIntTxInfo {
+impl FeeCalculator for Erc20OnIntIntTxInfo {
     fn get_amount(&self) -> U256 {
         debug!(
             "Getting token amount in `{}` of {}",
@@ -37,7 +37,7 @@ impl FeeCalculator for EthOnIntIntTxInfo {
         } else {
             let new_amount = self.native_token_amount - subtrahend;
             debug!(
-                "Subtracting {} from {} to get final amount of {} in `EthOnEvmEthTxInfo`!",
+                "Subtracting {} from {} to get final amount of {} in `Erc20OnEvmEthTxInfo`!",
                 subtrahend, self.native_token_amount, new_amount
             );
             Ok(self.update_amount(new_amount))
@@ -45,7 +45,7 @@ impl FeeCalculator for EthOnIntIntTxInfo {
     }
 }
 
-impl FeesCalculator for EthOnIntIntTxInfos {
+impl FeesCalculator for Erc20OnIntIntTxInfos {
     fn get_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
         debug!("Calculating fees in `{}`...", TX_INFO_TYPE);
         self.iter()
@@ -66,13 +66,13 @@ impl FeesCalculator for EthOnIntIntTxInfos {
                             info.subtract_amount(*fee)
                         }
                     })
-                    .collect::<Result<Vec<EthOnIntIntTxInfo>>>()?,
+                    .collect::<Result<Vec<Erc20OnIntIntTxInfo>>>()?,
             ))
         })
     }
 }
 
-impl EthOnIntIntTxInfo {
+impl Erc20OnIntIntTxInfo {
     fn update_amount(&self, new_amount: U256) -> Self {
         let mut new_self = self.clone();
         new_self.native_token_amount = new_amount;

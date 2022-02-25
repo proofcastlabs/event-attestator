@@ -15,13 +15,13 @@ use crate::{
         eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
     },
-    erc20_on_int::int::eth_tx_info::{EthOnIntEthTxInfo, EthOnIntEthTxInfos},
+    erc20_on_int::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos},
     metadata::metadata_traits::ToMetadata,
     traits::DatabaseInterface,
     types::Result,
 };
 
-impl EthOnIntEthTxInfo {
+impl Erc20OnIntEthTxInfo {
     pub fn to_eth_signed_tx(
         &self,
         nonce: u64,
@@ -80,7 +80,7 @@ impl EthOnIntEthTxInfo {
     }
 }
 
-impl EthOnIntEthTxInfos {
+impl Erc20OnIntEthTxInfos {
     pub fn to_eth_signed_txs(
         &self,
         start_nonce: u64,
@@ -94,7 +94,7 @@ impl EthOnIntEthTxInfos {
             self.iter()
                 .enumerate()
                 .map(|(i, tx_info)| {
-                    EthOnIntEthTxInfo::to_eth_signed_tx(
+                    Erc20OnIntEthTxInfo::to_eth_signed_tx(
                         tx_info,
                         start_nonce + i as u64,
                         chain_id,

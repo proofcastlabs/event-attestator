@@ -7,7 +7,7 @@ use crate::{
     types::{Bytes, DataSensitivity, Result},
 };
 
-pub static DB_LOCK_ERRROR: &str = "✘ Cannot get lock on DB!";
+pub static DB_LOCK_ERRROR: &str = "Cannot get lock on DB!";
 
 pub struct TestDB(pub Mutex<HashMap<Bytes, Bytes>>);
 
@@ -39,7 +39,7 @@ impl DatabaseInterface for TestDB {
     fn get(&self, key: Bytes, _sensitivity: DataSensitivity) -> Result<Bytes> {
         match self.0.lock().expect(DB_LOCK_ERRROR).get(&key) {
             Some(value) => Ok(value.to_vec()),
-            None => Err("✘ Cannot find item in database!".into()),
+            None => Err("Cannot find item in database!".into()),
         }
     }
 }

@@ -36,7 +36,7 @@ use crate::{
 };
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Constructor)]
-pub struct EthOnEvmEthTxInfo {
+pub struct Erc20OnEvmEthTxInfo {
     pub native_token_amount: U256,
     pub token_sender: EthAddress,
     pub originating_tx_hash: EthHash,
@@ -48,7 +48,7 @@ pub struct EthOnEvmEthTxInfo {
     pub eth_vault_address: EthAddress,
 }
 
-impl ToMetadata for EthOnEvmEthTxInfo {
+impl ToMetadata for Erc20OnEvmEthTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         let user_data = if self.user_data.len() > MAX_BYTES_FOR_ETH_USER_DATA {
             // TODO Test for this case!
@@ -71,10 +71,10 @@ impl ToMetadata for EthOnEvmEthTxInfo {
     }
 }
 
-impl FeeCalculator for EthOnEvmEthTxInfo {
+impl FeeCalculator for Erc20OnEvmEthTxInfo {
     fn get_token_address(&self) -> EthAddress {
         debug!(
-            "Getting token address in `EthOnEvmEthTxInfo` of {}",
+            "Getting token address in `Erc20OnEvmEthTxInfo` of {}",
             self.evm_token_address
         );
         self.evm_token_address
@@ -82,7 +82,7 @@ impl FeeCalculator for EthOnEvmEthTxInfo {
 
     fn get_amount(&self) -> U256 {
         debug!(
-            "Getting token amount in `EthOnEvmEthTxInfo` of {}",
+            "Getting token amount in `Erc20OnEvmEthTxInfo` of {}",
             self.native_token_amount
         );
         self.native_token_amount
@@ -90,11 +90,11 @@ impl FeeCalculator for EthOnEvmEthTxInfo {
 
     fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
         if subtrahend >= self.native_token_amount {
-            Err("Cannot subtract amount from `EthOnEvmEthTxInfo`: subtrahend too large!".into())
+            Err("Cannot subtract amount from `Erc20OnEvmEthTxInfo`: subtrahend too large!".into())
         } else {
             let new_amount = self.native_token_amount - subtrahend;
             debug!(
-                "Subtracting {} from {} to get final amount of {} in `EthOnEvmEthTxInfo`!",
+                "Subtracting {} from {} to get final amount of {} in `Erc20OnEvmEthTxInfo`!",
                 subtrahend, self.native_token_amount, new_amount
             );
             Ok(self.update_amount(new_amount))
@@ -102,7 +102,7 @@ impl FeeCalculator for EthOnEvmEthTxInfo {
     }
 }
 
-impl EthOnEvmEthTxInfo {
+impl Erc20OnEvmEthTxInfo {
     fn update_amount(&self, new_amount: U256) -> Self {
         let mut new_self = self.clone();
         new_self.native_token_amount = new_amount;
@@ -169,11 +169,11 @@ impl EthOnEvmEthTxInfo {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]
-pub struct EthOnEvmEthTxInfos(pub Vec<EthOnEvmEthTxInfo>);
+pub struct Erc20OnEvmEthTxInfos(pub Vec<Erc20OnEvmEthTxInfo>);
 
-impl FeesCalculator for EthOnEvmEthTxInfos {
+impl FeesCalculator for Erc20OnEvmEthTxInfos {
     fn get_fees(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
-        debug!("Calculating fees in `EthOnEvmEthTxInfo`...");
+        debug!("Calculating fees in `Erc20OnEvmEthTxInfo`...");
         self.iter()
             .map(|info| info.calculate_fee_via_dictionary(dictionary))
             .collect()
@@ -192,13 +192,13 @@ impl FeesCalculator for EthOnEvmEthTxInfos {
                             info.subtract_amount(*fee)
                         }
                     })
-                    .collect::<Result<Vec<EthOnEvmEthTxInfo>>>()?,
+                    .collect::<Result<Vec<Erc20OnEvmEthTxInfo>>>()?,
             ))
         })
     }
 }
 
-impl EthOnEvmEthTxInfos {
+impl Erc20OnEvmEthTxInfos {
     pub fn filter_out_zero_values(&self) -> Result<Self> {
         Ok(Self::new(
             self.iter()
@@ -210,7 +210,7 @@ impl EthOnEvmEthTxInfos {
                     },
                 })
                 .cloned()
-                .collect::<Vec<EthOnEvmEthTxInfo>>(),
+                .collect::<Vec<Erc20OnEvmEthTxInfo>>(),
         ))
     }
 
@@ -260,13 +260,13 @@ impl EthOnEvmEthTxInfos {
         origin_chain_id: &EthChainId,
         eth_vault_address: &EthAddress,
     ) -> Result<Self> {
-        info!("✔ Getting `EthOnEvmEthTxInfos` from receipt...");
+        info!("✔ Getting `Erc20OnEvmEthTxInfos` from receipt...");
         Ok(Self::new(
             Self::get_supported_erc20_on_evm_logs_from_receipt(receipt, dictionary)
                 .iter()
                 .map(|log| {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
-                    let tx_info = EthOnEvmEthTxInfo {
+                    let tx_info = Erc20OnEvmEthTxInfo {
                         evm_token_address: log.address,
                         token_sender: event_params.redeemer,
                         eth_vault_address: *eth_vault_address,
@@ -283,7 +283,7 @@ impl EthOnEvmEthTxInfos {
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)
                 })
-                .collect::<Result<Vec<EthOnEvmEthTxInfo>>>()?,
+                .collect::<Result<Vec<Erc20OnEvmEthTxInfo>>>()?,
         ))
     }
 
@@ -301,7 +301,7 @@ impl EthOnEvmEthTxInfos {
                 .receipts
                 .iter()
                 .filter(|receipt| {
-                    EthOnEvmEthTxInfos::receipt_contains_supported_erc20_on_evm_redeem(receipt, dictionary)
+                    Erc20OnEvmEthTxInfos::receipt_contains_supported_erc20_on_evm_redeem(receipt, dictionary)
                 })
                 .cloned()
                 .collect(),
@@ -321,13 +321,13 @@ impl EthOnEvmEthTxInfos {
         origin_chain_id: &EthChainId,
         eth_vault_address: &EthAddress,
     ) -> Result<Self> {
-        info!("✔ Getting `EthOnEvmEthTxInfos` from submission material...");
+        info!("✔ Getting `Erc20OnEvmEthTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
                 .map(|receipt| Self::from_eth_receipt(receipt, dictionary, origin_chain_id, eth_vault_address))
-                .collect::<Result<Vec<EthOnEvmEthTxInfos>>>()?
+                .collect::<Result<Vec<Erc20OnEvmEthTxInfos>>>()?
                 .into_iter()
                 .flatten()
                 .collect(),
@@ -347,7 +347,7 @@ impl EthOnEvmEthTxInfos {
             self.iter()
                 .enumerate()
                 .map(|(i, tx_info)| {
-                    EthOnEvmEthTxInfo::to_eth_signed_tx(
+                    Erc20OnEvmEthTxInfo::to_eth_signed_tx(
                         tx_info,
                         start_nonce + i as u64,
                         chain_id,
@@ -364,7 +364,7 @@ impl EthOnEvmEthTxInfos {
 pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    info!("✔ Maybe parsing `EthOnEvmEthTxInfos`...");
+    info!("✔ Maybe parsing `Erc20OnEvmEthTxInfos`...");
     state
         .evm_db_utils
         .get_eth_canon_block_from_db()
@@ -380,7 +380,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                 );
                 EthEvmTokenDictionary::get_from_db(state.db)
                     .and_then(|account_names| {
-                        EthOnEvmEthTxInfos::from_submission_material(
+                        Erc20OnEvmEthTxInfos::from_submission_material(
                             &submission_material,
                             &account_names,
                             &state.evm_db_utils.get_eth_chain_id_from_db()?,
@@ -393,16 +393,16 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
 }
 
 pub fn filter_out_zero_value_eth_tx_infos_from_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    info!("✔ Maybe filtering out zero value `EthOnEvmEthTxInfos`...");
+    info!("✔ Maybe filtering out zero value `Erc20OnEvmEthTxInfos`...");
     debug!(
-        "✔ Num `EthOnEvmEthTxInfos` before: {}",
+        "✔ Num `Erc20OnEvmEthTxInfos` before: {}",
         state.erc20_on_evm_eth_signed_txs.len()
     );
     state
         .erc20_on_evm_eth_tx_infos
         .filter_out_zero_values()
         .and_then(|filtered_tx_infos| {
-            debug!("✔ Num `EthOnEvmEthTxInfos` after: {}", filtered_tx_infos.len());
+            debug!("✔ Num `Erc20OnEvmEthTxInfos` after: {}", filtered_tx_infos.len());
             state.replace_erc20_on_evm_eth_tx_infos(filtered_tx_infos)
         })
 }
@@ -418,7 +418,7 @@ pub fn filter_submission_material_for_redeem_events_in_state<D: DatabaseInterfac
             &[*ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA],
         )
         .and_then(|filtered_submission_material| {
-            EthOnEvmEthTxInfos::filter_eth_submission_material_for_supported_redeems(
+            Erc20OnEvmEthTxInfos::filter_eth_submission_material_for_supported_redeems(
                 &filtered_submission_material,
                 state.get_eth_evm_token_dictionary()?,
             )
@@ -480,14 +480,14 @@ mod tests {
         },
     };
 
-    fn get_sample_tx_infos() -> EthOnEvmEthTxInfos {
+    fn get_sample_tx_infos() -> Erc20OnEvmEthTxInfos {
         let dictionary = get_sample_eth_evm_token_dictionary();
         let material = get_evm_submission_material_n(1);
         let origin_chain_id = EthChainId::BscMainnet;
-        EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap()
+        Erc20OnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap()
     }
 
-    fn get_sample_tx_info() -> EthOnEvmEthTxInfo {
+    fn get_sample_tx_info() -> Erc20OnEvmEthTxInfo {
         get_sample_tx_infos()[0].clone()
     }
 
@@ -496,7 +496,7 @@ mod tests {
         let dictionary = get_sample_eth_evm_token_dictionary();
         let material = get_evm_submission_material_n(1);
         let result =
-            EthOnEvmEthTxInfos::filter_eth_submission_material_for_supported_redeems(&material, &dictionary).unwrap();
+            Erc20OnEvmEthTxInfos::filter_eth_submission_material_for_supported_redeems(&material, &dictionary).unwrap();
         let expected_num_receipts = 1;
         assert_eq!(result.receipts.len(), expected_num_receipts);
     }
@@ -507,10 +507,10 @@ mod tests {
         let dictionary = get_sample_eth_evm_token_dictionary();
         let origin_chain_id = EthChainId::BscMainnet;
         let material = get_evm_submission_material_n(1);
-        let result = EthOnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap();
+        let result = Erc20OnEvmEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id).unwrap();
         let expected_num_results = 1;
         assert_eq!(result.len(), expected_num_results);
-        let expected_result = EthOnEvmEthTxInfos::new(vec![EthOnEvmEthTxInfo {
+        let expected_result = Erc20OnEvmEthTxInfos::new(vec![Erc20OnEvmEthTxInfo {
             origin_chain_id,
             user_data: vec![],
             native_token_amount: U256::from_dec_str("100000000000000000").unwrap(),
