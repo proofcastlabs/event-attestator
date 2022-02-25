@@ -66,6 +66,12 @@ pub fn get_sample_eth_metadata_v2() -> Metadata {
     }
 }
 
+pub fn get_sample_eth_metadata_v3() -> Metadata {
+    let mut mutable_metadata = get_sample_eth_metadata_v2();
+    mutable_metadata.version = MetadataVersion::V3;
+    mutable_metadata
+}
+
 pub fn get_sample_eos_metadata() -> Metadata {
     Metadata::new(&get_sample_user_data(), &get_sample_eos_origin_address())
 }
