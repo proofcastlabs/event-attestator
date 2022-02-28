@@ -17,9 +17,7 @@ impl Metadata {
                 MetadataProtocolId::Ethereum => {
                     EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?))
                 },
-                _ => {
-                    EthAbiToken::Bytes(self.origin_address.to_bytes()?)
-                },
+                _ => EthAbiToken::Bytes(self.origin_address.to_bytes()?),
             },
         ]))
     }
@@ -33,9 +31,7 @@ impl Metadata {
                 MetadataProtocolId::Ethereum => {
                     EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?))
                 },
-                _ => {
-                    EthAbiToken::Bytes(self.origin_address.to_bytes()?)
-                },
+                _ => EthAbiToken::Bytes(self.origin_address.to_bytes()?),
             },
             EthAbiToken::FixedBytes(self.get_destination_chain_id()?.to_bytes()?),
             EthAbiToken::Address(EthAddress::from_slice(&match &self.destination_address {

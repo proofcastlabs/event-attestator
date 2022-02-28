@@ -27,7 +27,10 @@ pub use crate::{
             algo_note_metadata::encode_algo_note_metadata,
             core_initialization::reset_algo_chain::debug_reset_algo_chain,
         },
-        eth::core_initialization::reset_eth_chain::debug_reset_eth_chain as debug_reset_int_chain,
+        eth::{
+            core_initialization::reset_eth_chain::debug_reset_eth_chain as debug_reset_int_chain,
+            eth_debug_functions::debug_set_eth_gas_price_in_db as debug_set_int_gas_price,
+        },
     },
     int_on_algo::{
         algo::{initialize_algo_core::maybe_initialize_algo_core, submit_algo_block::submit_algo_block_to_core},
@@ -91,7 +94,6 @@ pub use crate::{
             debug_set_accrued_fees_in_dictionary,
             debug_set_evm_gas_price,
             debug_set_fee_basis_points,
-            debug_set_int_gas_price,
             debug_set_key_in_db_to_value,
             debug_withdraw_fees_and_save_in_db,
         },
