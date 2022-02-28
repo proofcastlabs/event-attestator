@@ -1,7 +1,7 @@
 use ethereum_types::{Address as EthAddress, U256};
 
 use crate::{
-    chains::eth::eth_state::EthState,
+    chains::eth::{eth_state::EthState, eth_utils::convert_hex_to_eth_address},
     dictionaries::eth_evm::EthEvmTokenDictionary,
     fees::fee_constants::DISABLE_FEES,
     int_on_evm::{
@@ -18,7 +18,9 @@ impl FeeCalculator for IntOnEvmIntTxInfo {
             "Getting token address in `IntOnEvmIntTxInfo` of {}",
             self.evm_token_address
         );
-        self.evm_token_address
+        // FIXME In practice this should never panic. However fees are soon to be moved to the
+        // router itself, so this code will vanish.
+        convert_hex_to_eth_address(&self.evm_token_address).expect("Should be a valid ETH address!")
     }
 
     fn get_amount(&self) -> U256 {

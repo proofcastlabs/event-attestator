@@ -7,7 +7,6 @@ use crate::{
         eth_receipt::EthReceipt,
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
-        eth_utils::safely_convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     int_on_evm::evm::int_tx_info::{IntOnEvmIntTxInfo, IntOnEvmIntTxInfos},
@@ -29,18 +28,19 @@ impl IntOnEvmIntTxInfos {
                 .map(|log| {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
                     let tx_info = IntOnEvmIntTxInfo {
-                        evm_token_address: log.address,
                         router_address: *router_address,
                         token_sender: event_params.redeemer,
-                        eth_vault_address: *eth_vault_address,
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
                         origin_chain_id: event_params.get_origin_chain_id()?,
+                        evm_token_address: format!("0x{}", hex::encode(log.address)),
                         destination_chain_id: event_params.get_destination_chain_id()?,
-                        eth_token_address: dictionary.get_eth_address_from_evm_address(&log.address)?,
-                        destination_address: safely_convert_hex_to_eth_address(
-                            &event_params.underlying_asset_recipient,
-                        )?,
+                        eth_vault_address: format!("0x{}", hex::encode(eth_vault_address)),
+                        destination_address: event_params.underlying_asset_recipient.clone(),
+                        eth_token_address: format!(
+                            "0x{}",
+                            hex::encode(dictionary.get_eth_address_from_evm_address(&log.address)?)
+                        ),
                         native_token_amount: dictionary
                             .convert_evm_amount_to_eth_amount(&log.address, event_params.value)?,
                     };
@@ -138,18 +138,9 @@ mod tests {
             result.token_sender,
             convert_hex_to_eth_address("0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
         );
-        assert_eq!(
-            result.evm_token_address,
-            convert_hex_to_eth_address("0xdd9f905a34a6c507c7d68384985905cf5eb032e9").unwrap(),
-        );
-        assert_eq!(
-            result.eth_token_address,
-            convert_hex_to_eth_address("0xa83446f219baec0b6fd6b3031c5a49a54543045b").unwrap(),
-        );
-        assert_eq!(
-            result.destination_address,
-            convert_hex_to_eth_address("0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
-        );
+        assert_eq!(result.evm_token_address, "0xdd9f905a34a6c507c7d68384985905cf5eb032e9");
+        assert_eq!(result.eth_token_address, "0xa83446f219baec0b6fd6b3031c5a49a54543045b");
+        assert_eq!(result.destination_address, "0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC");
         assert_eq!(
             result.originating_tx_hash,
             EthHash::from_slice(
