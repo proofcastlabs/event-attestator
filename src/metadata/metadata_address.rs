@@ -195,15 +195,18 @@ impl MetadataAddress {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::metadata::test_utils::{
-        get_sample_algo_address,
-        get_sample_algo_origin_address,
-        get_sample_btc_address,
-        get_sample_btc_origin_address,
-        get_sample_eos_address,
-        get_sample_eos_origin_address,
-        get_sample_eth_address,
-        get_sample_eth_origin_address,
+    use crate::{
+        metadata::test_utils::{
+            get_sample_algo_address,
+            get_sample_algo_origin_address,
+            get_sample_btc_address,
+            get_sample_btc_origin_address,
+            get_sample_eos_address,
+            get_sample_eos_origin_address,
+            get_sample_eth_address,
+            get_sample_eth_origin_address,
+        },
+        chains::eth::eth_utils::convert_hex_to_eth_address,
     };
 
     #[test]

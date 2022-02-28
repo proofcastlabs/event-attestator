@@ -17,7 +17,7 @@ impl Metadata {
                 MetadataProtocolId::Ethereum => {
                     EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?))
                 },
-                MetadataProtocolId::Eos | MetadataProtocolId::Bitcoin => {
+                _ => {
                     EthAbiToken::Bytes(self.origin_address.to_bytes()?)
                 },
             },
@@ -33,7 +33,7 @@ impl Metadata {
                 MetadataProtocolId::Ethereum => {
                     EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?))
                 },
-                MetadataProtocolId::Eos | MetadataProtocolId::Bitcoin => {
+                _ => {
                     EthAbiToken::Bytes(self.origin_address.to_bytes()?)
                 },
             },
@@ -62,7 +62,9 @@ impl Metadata {
             EthAbiToken::Bytes(self.user_data.clone()),
             EthAbiToken::FixedBytes(self.origin_chain_id.to_bytes()?),
             match self.origin_address.metadata_chain_id.to_protocol_id() {
-                MetadataProtocolId::Ethereum => EthAbiToken::String(self.origin_address.to_string()),
+                MetadataProtocolId::Ethereum | MetadataProtocolId::Algorand => {
+                    EthAbiToken::String(self.origin_address.to_string())
+                },
                 MetadataProtocolId::Eos | MetadataProtocolId::Bitcoin => {
                     EthAbiToken::Bytes(self.origin_address.to_bytes()?)
                 },
@@ -101,10 +103,16 @@ impl Metadata {
         .to_bytes()
     }
 
+    fn to_bytes_for_algorand(&self) -> Result<Bytes> {
+        info!("✔ Converting metadata to bytes for Algorand...");
+        unimplemented!();
+    }
+
     pub fn to_bytes_for_protocol(&self, destination_protocol: &MetadataProtocolId) -> Result<Bytes> {
         match destination_protocol {
             MetadataProtocolId::Eos => self.to_bytes_for_eos(),
             MetadataProtocolId::Ethereum => self.to_bytes_for_eth(),
+            MetadataProtocolId::Algorand => self.to_bytes_for_algorand(),
             MetadataProtocolId::Bitcoin => Err("Encoding metadata for Bitcoin is not implemented!".into()),
         }
     }
