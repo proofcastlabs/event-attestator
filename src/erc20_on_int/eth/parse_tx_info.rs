@@ -8,7 +8,6 @@ use crate::{
         eth_receipt::EthReceipt,
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
-        eth_utils::safely_convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_int::eth::int_tx_info::{Erc20OnIntIntTxInfo, Erc20OnIntIntTxInfos},
@@ -54,9 +53,12 @@ impl Erc20OnIntIntTxInfos {
                         originating_tx_hash: receipt.transaction_hash,
                         native_token_amount: event_params.token_amount,
                         origin_chain_id: event_params.get_origin_chain_id()?,
+                        destination_address: event_params.destination_address.clone(),
                         destination_chain_id: event_params.get_destination_chain_id()?,
-                        destination_address: safely_convert_hex_to_eth_address(&event_params.destination_address)?,
-                        evm_token_address: dictionary.get_evm_address_from_eth_address(&event_params.token_address)?,
+                        evm_token_address: format!(
+                            "0x{}",
+                            hex::encode(dictionary.get_evm_address_from_eth_address(&event_params.token_address)?)
+                        ),
                     };
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)
@@ -151,18 +153,12 @@ mod tests {
             result.token_sender,
             convert_hex_to_eth_address("0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
         );
-        assert_eq!(
-            result.evm_token_address,
-            convert_hex_to_eth_address("0xa83446f219baec0b6fd6b3031c5a49a54543045b").unwrap(),
-        );
+        assert_eq!(result.evm_token_address, "0xa83446f219baec0b6fd6b3031c5a49a54543045b");
         assert_eq!(
             result.eth_token_address,
             convert_hex_to_eth_address("0xc63ab9437f5589e2c67e04c00a98506b43127645").unwrap(),
         );
-        assert_eq!(
-            result.destination_address,
-            convert_hex_to_eth_address("0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
-        );
+        assert_eq!(result.destination_address, "0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac");
         assert_eq!(
             result.originating_tx_hash,
             EthHash::from_slice(
