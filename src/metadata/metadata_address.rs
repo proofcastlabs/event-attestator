@@ -6,16 +6,17 @@ use bitcoin::util::address::Address as BtcAddress;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
 
-#[cfg(test)]
 use crate::{
-    chains::{eos::eos_constants::EOS_ADDRESS_LENGTH_IN_BYTES, eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES},
-    types::Byte,
-};
-use crate::{
+    chains::eth::eth_utils::convert_hex_to_eth_address,
     metadata::{metadata_chain_id::MetadataChainId, metadata_protocol_id::MetadataProtocolId},
     types::Bytes,
     utils::strip_hex_prefix,
     Result,
+};
+#[cfg(test)]
+use crate::{
+    chains::{eos::eos_constants::EOS_ADDRESS_LENGTH_IN_BYTES, eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES},
+    types::Byte,
 };
 
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
@@ -25,6 +26,21 @@ pub struct MetadataAddress {
 }
 
 impl MetadataAddress {
+    pub fn new(address: String, metadata_chain_id: MetadataChainId) -> Result<Self> {
+        let address = match metadata_chain_id.to_protocol_id() {
+            MetadataProtocolId::Ethereum => {
+                info!("✔ Getting `MetadataAddress` for an ETH address...");
+                // NOTE: To ensure we have a valid ETH address!
+                hex::encode(convert_hex_to_eth_address(&address)?)
+            },
+            _ => address, // TODO Normalize the other address types!! And divert to SAFE address if bad!
+        };
+        Ok(Self {
+            address,
+            metadata_chain_id,
+        })
+    }
+
     fn get_err_msg(protocol: MetadataProtocolId) -> String {
         let symbol = protocol.to_symbol();
         format!(
@@ -78,7 +94,7 @@ impl MetadataAddress {
 impl std::fmt::Display for MetadataAddress {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.metadata_chain_id.to_protocol_id() {
-            MetadataProtocolId::Ethereum => write!(f, "0x{}", self.address),
+            MetadataProtocolId::Ethereum => write!(f, "0x{}", strip_hex_prefix(&self.address)),
             _ => write!(f, "{}", self.address),
         }
     }
