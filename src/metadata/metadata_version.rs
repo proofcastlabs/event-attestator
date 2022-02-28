@@ -13,6 +13,12 @@ pub enum MetadataVersion {
     V3,
 }
 
+impl Default for MetadataVersion {
+    fn default() -> Self {
+        Self::V3
+    }
+}
+
 impl MetadataVersion {
     pub fn to_byte(&self) -> Byte {
         match self {

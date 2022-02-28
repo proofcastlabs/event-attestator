@@ -3,6 +3,8 @@ use std::str::FromStr;
 use bitcoin::Address as BtcAddress;
 use ethereum_types::Address as EthAddress;
 
+use crate::chains::eth::eth_utils::convert_hex_to_eth_address;
+
 pub const CORE_VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
 
 #[cfg(feature = "debug")]
@@ -32,13 +34,13 @@ pub const MIN_DATA_SENSITIVITY_LEVEL: Option<u8> = None;
 pub const DEBUG_OUTPUT_MARKER: &str = "DEBUG_OUTPUT_MARKER";
 pub const MAX_DATA_SENSITIVITY_LEVEL: Option<u8> = Some(255);
 pub const SAFE_BTC_ADDRESS_STR: &str = "136CTERaocm8dLbEtzCaFtJJX9jfFhnChK";
-const SAFE_ETH_ADDRESS_HEX: &str = "71A440EE9Fa7F99FB9a697e96eC7839B8A1643B8";
-const SAFE_EVM_ADDRESS_HEX: &str = SAFE_ETH_ADDRESS_HEX;
+pub const SAFE_ETH_ADDRESS_HEX: &str = "0x71A440EE9Fa7F99FB9a697e96eC7839B8A1643B8";
+pub const SAFE_EVM_ADDRESS_HEX: &str = SAFE_ETH_ADDRESS_HEX;
 
 lazy_static! {
     pub static ref THIRTY_TWO_ZERO_BYTES: Vec<u8> = vec![0; 32];
     pub static ref DB_KEY_PREFIX: &'static str = option_env!("DB_KEY_PREFIX").unwrap_or("");
     pub static ref SAFE_BTC_ADDRESS: BtcAddress = BtcAddress::from_str(SAFE_BTC_ADDRESS_STR).unwrap();
-    pub static ref SAFE_ETH_ADDRESS: EthAddress = EthAddress::from_slice(&hex::decode(SAFE_ETH_ADDRESS_HEX).unwrap());
-    pub static ref SAFE_EVM_ADDRESS: EthAddress = EthAddress::from_slice(&hex::decode(SAFE_EVM_ADDRESS_HEX).unwrap());
+    pub static ref SAFE_ETH_ADDRESS: EthAddress = convert_hex_to_eth_address(SAFE_ETH_ADDRESS_HEX).unwrap();
+    pub static ref SAFE_EVM_ADDRESS: EthAddress = convert_hex_to_eth_address(SAFE_EVM_ADDRESS_HEX).unwrap();
 }
