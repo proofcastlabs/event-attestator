@@ -13,6 +13,7 @@ use crate::{
         },
     },
     int_on_algo::algo::int_tx_info::{IntOnAlgoIntTxInfo, IntOnAlgoIntTxInfos},
+    metadata::metadata_traits::ToMetadata,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -47,7 +48,7 @@ impl IntOnAlgoIntTxInfo {
                 self.router_address,
                 self.int_token_address,
                 self.native_token_amount,
-                vec![], //self.to_metadata_bytes()?, // FIXME impl!
+                self.to_metadata_bytes()?,
             )?,
             nonce,
             ZERO_ETH_VALUE,
