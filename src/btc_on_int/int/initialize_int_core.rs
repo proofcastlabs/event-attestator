@@ -24,7 +24,7 @@ use crate::{
 pub fn init_int_core<D: DatabaseInterface>(
     state: EthState<D>,
     block_json: &str,
-    chain_id: u8,
+    chain_id: u64,
     gas_price: u64,
     canon_to_tip_length: u64,
     erc777_contract_address: &EthAddress,
@@ -56,7 +56,7 @@ pub fn init_int_core<D: DatabaseInterface>(
 pub fn maybe_initialize_int_core<D: DatabaseInterface>(
     db: &D,
     block_json: &str,
-    chain_id: u8,
+    chain_id: u64,
     gas_price: u64,
     canon_to_tip_length: u64,
     erc777_contract_address: &str,
