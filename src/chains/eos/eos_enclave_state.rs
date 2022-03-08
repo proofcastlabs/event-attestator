@@ -7,8 +7,9 @@ use crate::{
         eos_types::EosKnownSchedulesJsons,
         protocol_features::EnabledFeatures,
     },
-    constants::{FIELD_NOT_SET_MSG, SAFE_EOS_ADDRESS_STR},
+    constants::FIELD_NOT_SET_MSG,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
+    safe_addresses::SAFE_EOS_ADDRESS_STR,
     traits::DatabaseInterface,
     types::Result,
 };

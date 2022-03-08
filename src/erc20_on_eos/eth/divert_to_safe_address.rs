@@ -1,7 +1,7 @@
 use crate::{
     chains::eth::eth_state::EthState,
-    constants::SAFE_EOS_ADDRESS_STR,
     erc20_on_eos::eth::peg_in_info::{Erc20OnEosPegInInfo, Erc20OnEosPegInInfos},
+    safe_addresses::SAFE_EOS_ADDRESS_STR,
     traits::DatabaseInterface,
     types::Result,
 };

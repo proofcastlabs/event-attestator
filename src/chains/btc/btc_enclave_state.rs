@@ -11,7 +11,7 @@ use crate::{
             get_utxo_nonce_from_db,
         },
     },
-    constants::SAFE_BTC_ADDRESS_STR,
+    safe_addresses::SAFE_BTC_ADDRESS_STR,
     traits::DatabaseInterface,
     types::Result,
 };

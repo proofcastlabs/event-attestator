@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::btc::{btc_constants::BTC_PUB_KEY_SLICE_LENGTH, deposit_address_info::DepositAddressInfoJson},
-    constants::SAFE_BTC_ADDRESS_STR,
+    safe_addresses::SAFE_BTC_ADDRESS_STR,
     types::{Byte, Bytes, Result},
 };
 

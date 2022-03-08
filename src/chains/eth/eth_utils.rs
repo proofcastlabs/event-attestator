@@ -3,7 +3,7 @@ use serde_json::Value as JsonValue;
 
 use crate::{
     chains::eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES,
-    constants::{ETH_HASH_LENGTH, SAFE_ETH_ADDRESS},
+    constants::ETH_HASH_LENGTH,
     types::{Bytes, NoneError, Result},
     utils::{decode_hex_with_no_padding_with_err_msg, strip_hex_prefix},
 };

@@ -21,8 +21,9 @@ use crate::{
         },
         eos::{eos_unit_conversions::convert_eos_asset_to_u64, eos_utils::get_symbol_from_eos_asset},
     },
-    constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_EOS_ADDRESS_STR},
+    constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
+    safe_addresses::SAFE_EOS_ADDRESS_STR,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
