@@ -1,7 +1,7 @@
 use crate::{
     btc_on_int::btc::int_tx_info::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
     chains::btc::btc_state::BtcState,
-    constants::SAFE_ETH_ADDRESS_HEX,
+    safe_addresses::SAFE_ETH_ADDRESS_HEX,
     traits::DatabaseInterface,
     types::Result,
 };

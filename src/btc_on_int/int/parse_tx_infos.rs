@@ -1,6 +1,4 @@
-use std::str::FromStr;
-
-use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, util::address::Address as BtcAddress};
+use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use ethereum_types::Address as EthAddress;
 
 use crate::{
@@ -23,7 +21,7 @@ use crate::{
             eth_submission_material::EthSubmissionMaterial,
         },
     },
-    constants::SAFE_BTC_ADDRESS_STR,
+    safe_addresses::safely_convert_str_to_btc_address,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -58,23 +56,6 @@ impl BtcOnIntBtcTxInfo {
 }
 
 impl BtcOnIntBtcTxInfos {
-    fn get_btc_address_or_revert_to_safe_address(maybe_btc_address: &str) -> String {
-        info!("✔ Maybe BTC address: {}", maybe_btc_address);
-        match BtcAddress::from_str(maybe_btc_address) {
-            Ok(address) => {
-                info!("✔ Good BTC address parsed: {}", address);
-                address.to_string()
-            },
-            Err(_) => {
-                info!(
-                    "✔ Failed to parse BTC address! Default to safe BTC address: {}",
-                    SAFE_BTC_ADDRESS_STR
-                );
-                SAFE_BTC_ADDRESS_STR.to_string()
-            },
-        }
-    }
-
     fn log_is_btc_on_int_redeem(log: &EthLog, erc777_smart_contract_address: &EthAddress) -> Result<bool> {
         Ok(log.is_from_address(erc777_smart_contract_address) && log.contains_topic(&ERC777_REDEEM_EVENT_TOPIC_V2))
     }
@@ -98,9 +79,8 @@ impl BtcOnIntBtcTxInfos {
                         from: event_params.redeemer,
                         originating_tx_hash: receipt.transaction_hash,
                         amount_in_satoshis: convert_wei_to_satoshis(event_params.value),
-                        recipient: Self::get_btc_address_or_revert_to_safe_address(
-                            &event_params.underlying_asset_recipient,
-                        ),
+                        recipient: safely_convert_str_to_btc_address(&event_params.underlying_asset_recipient)
+                            .to_string(),
                     })
                 })
                 .collect::<Result<Vec<BtcOnIntBtcTxInfo>>>()?,

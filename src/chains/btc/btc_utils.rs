@@ -24,8 +24,8 @@ use crate::{
         btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, DEFAULT_BTC_SEQUENCE, PTOKEN_P2SH_SCRIPT_BYTES},
         btc_types::BtcPubKeySlice,
     },
-    safe_addresses::SAFE_BTC_ADDRESS,
     constants::{BTC_NUM_DECIMALS, PTOKEN_ERC777_NUM_DECIMALS},
+    safe_addresses::SAFE_BTC_ADDRESS,
     types::{Byte, Bytes, Result},
     utils::strip_hex_prefix,
 };
