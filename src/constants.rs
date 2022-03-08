@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use bitcoin::Address as BtcAddress;
+use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
 
 use crate::chains::eth::eth_utils::convert_hex_to_eth_address;
@@ -40,6 +41,7 @@ pub const SAFE_EVM_ADDRESS_HEX: &str = SAFE_ETH_ADDRESS_HEX;
 lazy_static! {
     pub static ref THIRTY_TWO_ZERO_BYTES: Vec<u8> = vec![0; 32];
     pub static ref DB_KEY_PREFIX: &'static str = option_env!("DB_KEY_PREFIX").unwrap_or("");
+    pub static ref SAFE_EOS_ADDRESS_TYPE: EosAddress = EosAddress::from_str(SAFE_EOS_ADDRESS).unwrap();
     pub static ref SAFE_BTC_ADDRESS: BtcAddress = BtcAddress::from_str(SAFE_BTC_ADDRESS_STR).unwrap();
     pub static ref SAFE_ETH_ADDRESS: EthAddress = convert_hex_to_eth_address(SAFE_ETH_ADDRESS_HEX).unwrap();
     pub static ref SAFE_EVM_ADDRESS: EthAddress = convert_hex_to_eth_address(SAFE_EVM_ADDRESS_HEX).unwrap();
