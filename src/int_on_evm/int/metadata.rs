@@ -25,7 +25,6 @@ impl ToMetadata for IntOnEvmEvmTxInfo {
         Ok(Metadata::new_v2(
             &user_data,
             &MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id)?,
-            &self.destination_chain_id,
             &MetadataAddress::new_from_eth_address(&self.destination_address, &self.destination_chain_id)?,
             None,
             None,

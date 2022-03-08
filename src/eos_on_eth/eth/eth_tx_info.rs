@@ -14,10 +14,7 @@ use crate::{
                 eos_private_key::EosPrivateKey,
                 eos_transaction::{EosSignedTransaction, EosSignedTransactions},
             },
-            eos_utils::{
-                get_eos_tx_expiration_timestamp_with_offset,
-                parse_eos_account_name_or_default_to_safe_address,
-            },
+            eos_utils::get_eos_tx_expiration_timestamp_with_offset,
         },
         eth::{
             eth_chain_id::EthChainId,
@@ -43,6 +40,7 @@ use crate::{
         metadata_traits::ToMetadata,
         Metadata,
     },
+    safe_addresses::safely_convert_str_to_eos_address,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
@@ -274,10 +272,7 @@ impl EosOnEthEthTxInfo {
                 origin_chain_id: origin_chain_id.clone(),
                 eos_token_address: token_dictionary.get_eos_account_name_from_eth_token_address(&log.address)?,
                 eos_asset_amount: token_dictionary.convert_u256_to_eos_asset_string(&log.address, &params.value)?,
-                destination_address: parse_eos_account_name_or_default_to_safe_address(
-                    &params.underlying_asset_recipient,
-                )?
-                .to_string(),
+                destination_address: safely_convert_str_to_eos_address(&params.underlying_asset_recipient).to_string(),
             })
         })
     }

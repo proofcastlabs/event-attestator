@@ -21,7 +21,6 @@ use crate::{
         eth_receipt::{EthReceipt, EthReceipts},
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
-        eth_utils::safely_convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_evm::fees_calculator::{FeeCalculator, FeesCalculator},
@@ -31,6 +30,7 @@ use crate::{
         metadata_traits::ToMetadata,
         Metadata,
     },
+    safe_addresses::safely_convert_str_to_eth_address,
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
@@ -274,9 +274,9 @@ impl Erc20OnEvmEthTxInfos {
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
                         eth_token_address: dictionary.get_eth_address_from_evm_address(&log.address)?,
-                        destination_address: safely_convert_hex_to_eth_address(
+                        destination_address: safely_convert_str_to_eth_address(
                             &event_params.underlying_asset_recipient,
-                        )?,
+                        ),
                         native_token_amount: dictionary
                             .convert_evm_amount_to_eth_amount(&log.address, event_params.value)?,
                     };

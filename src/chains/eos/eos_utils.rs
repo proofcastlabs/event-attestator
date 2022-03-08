@@ -1,11 +1,8 @@
-use std::str::FromStr;
-
 use bitcoin::hashes::{sha256, Hash};
-use eos_chain::{AccountName as EosAccountName, Action as EosAction, Checksum256, SerializeData};
+use eos_chain::{Action as EosAction, Checksum256, SerializeData};
 
 use crate::{
     chains::eos::eos_constants::{EOS_MAX_EXPIRATION_SECS, EOS_SCHEDULE_DB_PREFIX},
-    constants::SAFE_EOS_ADDRESS,
     types::{Byte, Bytes, Result},
     utils::get_unix_timestamp_as_u32,
 };
@@ -41,16 +38,6 @@ pub fn get_digest_from_eos_action(action: &EosAction) -> Result<Bytes> {
     Ok(sha256::Hash::hash(&action.to_serialize_data()?).to_vec())
 }
 
-pub fn parse_eos_account_name_or_default_to_safe_address(s: &str) -> Result<EosAccountName> {
-    EosAccountName::from_str(s).or_else(|_| {
-        warn!(
-            "✘ Unable to parse EOS account from `{}`! Defaulting to safe address: `{}`!",
-            s, SAFE_EOS_ADDRESS
-        );
-        Ok(EosAccountName::from_str(SAFE_EOS_ADDRESS)?)
-    })
-}
-
 pub fn get_eos_tx_expiration_timestamp_with_offset(offset: u32) -> Result<u32> {
     // NOTE: An EOS tx over the same params w/ the same timestamp results in the same
     // signature. This CAN happen organically such as a user pegging in the exact
@@ -68,22 +55,6 @@ mod tests {
         let asset = format!("{} SAM", amount);
         let result = remove_symbol_from_eos_asset(&asset);
         assert_eq!(result, amount);
-    }
-
-    #[test]
-    fn should_parse_eos_account_name_correctly() {
-        let s = "bighead.gm";
-        let result = parse_eos_account_name_or_default_to_safe_address(&s).unwrap();
-        let expected_result = EosAccountName::from_str(&s).unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_default_to_eos_safe_address_when_parsing_bad_eos_account_name() {
-        let s = "Bighead.gm";
-        let result = parse_eos_account_name_or_default_to_safe_address(&s).unwrap();
-        let expected_result = EosAccountName::from_str(&SAFE_EOS_ADDRESS).unwrap();
-        assert_eq!(result, expected_result);
     }
 
     #[test]

@@ -56,6 +56,7 @@ impl Metadata {
     // NOTE: Unlike v2 encoding, v3 encodes the addresses as `string` types in the EVM. This allows
     // us to be generic w/r/t host and native chain's address types that surround the interim chain.
     fn to_bytes_for_eth_v3(&self) -> Result<Bytes> {
+        info!("✔ Encoding v3 metadata for ETH...");
         Ok(eth_abi_encode(&[
             EthAbiToken::FixedBytes(self.version.to_bytes()),
             EthAbiToken::Bytes(self.user_data.clone()),
@@ -106,6 +107,73 @@ impl Metadata {
             MetadataProtocolId::Ethereum => self.to_bytes_for_eth(),
             MetadataProtocolId::Bitcoin => Err("Encoding metadata for Bitcoin is not implemented!".into()),
         }
+    }
+}
+
+#[cfg(test)]
+use crate::{
+    metadata::{metadata_address::MetadataAddress, metadata_chain_id::MetadataChainId},
+    types::Byte,
+};
+
+#[cfg(test)]
+impl Metadata {
+    pub fn decode_from_eth_v3(bytes: &[Byte]) -> Result<Self> {
+        use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType};
+        info!("Decoding v3 ETH metadata...");
+        let tokens = eth_abi_decode(
+            &[
+                EthAbiParamType::FixedBytes(1),
+                EthAbiParamType::Bytes,
+                EthAbiParamType::FixedBytes(4),
+                EthAbiParamType::String,
+                EthAbiParamType::FixedBytes(4),
+                EthAbiParamType::String,
+                EthAbiParamType::Bytes,
+                EthAbiParamType::Bytes,
+            ],
+            bytes,
+        )?;
+        fn get_err_msg(thing: &str) -> String {
+            format!("Error getting {thing} version from encoded ETH v3 params!")
+        }
+        let user_data = match &tokens[1] {
+            EthAbiToken::Bytes(bytes) => Result::Ok(bytes.clone()),
+            _ => Err(get_err_msg("user data").into()),
+        }?;
+        let origin_chain_id = match &tokens[2] {
+            EthAbiToken::FixedBytes(bytes) => Result::Ok(MetadataChainId::from_bytes(&bytes)?),
+            _ => Err(get_err_msg("origin chain id").into()),
+        }?;
+        let origin_address = match &tokens[3] {
+            EthAbiToken::String(s) => Result::Ok(s),
+            _ => Err(get_err_msg("origin address").into()),
+        }?;
+        let destination_chain_id = match &tokens[4] {
+            EthAbiToken::FixedBytes(bytes) => Result::Ok(MetadataChainId::from_bytes(&bytes)?),
+            _ => Err(get_err_msg("destination chain id").into()),
+        }?;
+        let destination_address = match &tokens[5] {
+            EthAbiToken::String(s) => Result::Ok(s),
+            _ => Err(get_err_msg("destination address").into()),
+        }?;
+        let protocol_options = match &tokens[6] {
+            EthAbiToken::Bytes(bytes) => Result::Ok(bytes.to_vec()),
+            _ => Err(get_err_msg("protocol options").into()),
+        }?;
+        let protocol_receipt = match &tokens[7] {
+            EthAbiToken::Bytes(bytes) => Result::Ok(bytes.to_vec()),
+            _ => Err(get_err_msg("protocol receipt").into()),
+        }?;
+        let destination_metadata_address = MetadataAddress::new(destination_address.to_string(), destination_chain_id)?;
+        let origin_metadata_address = MetadataAddress::new(origin_address.to_string(), origin_chain_id)?;
+        Ok(Self::new_v3(
+            &user_data,
+            &origin_metadata_address,
+            &destination_metadata_address,
+            Some(protocol_options),
+            Some(protocol_receipt),
+        ))
     }
 }
 

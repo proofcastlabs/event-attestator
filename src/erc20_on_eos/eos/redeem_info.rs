@@ -14,7 +14,6 @@ use crate::{
         },
         eth::{eth_constants::MAX_BYTES_FOR_ETH_USER_DATA, eth_database_utils::EthDbUtilsExt},
     },
-    constants::SAFE_ETH_ADDRESS,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     erc20_on_eos::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
@@ -23,6 +22,7 @@ use crate::{
         metadata_traits::{ToMetadata, ToMetadataChainId},
         Metadata,
     },
+    safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
     types::{Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},

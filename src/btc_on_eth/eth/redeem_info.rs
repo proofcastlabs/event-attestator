@@ -27,8 +27,9 @@ use crate::{
             eth_submission_material::EthSubmissionMaterial,
         },
     },
-    constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_BTC_ADDRESS_STR},
+    constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
+    safe_addresses::SAFE_BTC_ADDRESS_STR,
     traits::DatabaseInterface,
     types::Result,
 };

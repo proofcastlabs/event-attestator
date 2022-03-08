@@ -9,10 +9,10 @@ use crate::{
         eth_receipt::EthReceipt,
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
-        eth_utils::safely_convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_int::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos},
+    safe_addresses::safely_convert_str_to_eth_address,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -71,9 +71,9 @@ impl Erc20OnIntEthTxInfos {
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
                         eth_token_address: dictionary.get_eth_address_from_evm_address(&log.address)?,
-                        destination_address: safely_convert_hex_to_eth_address(
+                        destination_address: safely_convert_str_to_eth_address(
                             &event_params.underlying_asset_recipient,
-                        )?,
+                        ),
                         native_token_amount: dictionary
                             .convert_evm_amount_to_eth_amount(&log.address, event_params.value)?,
                     };

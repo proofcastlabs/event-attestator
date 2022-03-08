@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eth::{eth_constants::ETH_TAIL_LENGTH, eth_database_utils::EthDbUtilsExt},
-    constants::{SAFE_ETH_ADDRESS, SAFE_EVM_ADDRESS},
+    safe_addresses::{SAFE_ETH_ADDRESS, SAFE_EVM_ADDRESS},
     traits::DatabaseInterface,
     types::Result,
 };

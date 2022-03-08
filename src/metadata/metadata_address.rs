@@ -13,6 +13,11 @@ use crate::{
 };
 use crate::{
     metadata::{metadata_chain_id::MetadataChainId, metadata_protocol_id::MetadataProtocolId},
+    safe_addresses::{
+        safely_convert_str_to_btc_address,
+        safely_convert_str_to_eos_address,
+        safely_convert_str_to_eth_address,
+    },
     types::Bytes,
     utils::strip_hex_prefix,
     Result,
@@ -25,6 +30,27 @@ pub struct MetadataAddress {
 }
 
 impl MetadataAddress {
+    pub fn new(address: String, metadata_chain_id: MetadataChainId) -> Result<Self> {
+        let address = match metadata_chain_id.to_protocol_id() {
+            MetadataProtocolId::Ethereum => {
+                info!("✔ Getting `MetadataAddress` for an ETH address...");
+                hex::encode(safely_convert_str_to_eth_address(&address))
+            },
+            MetadataProtocolId::Bitcoin => {
+                info!("✔ Getting `MetadataAddress` for a BTC address...");
+                safely_convert_str_to_btc_address(&address).to_string()
+            },
+            MetadataProtocolId::Eos => {
+                info!("✔ Getting `MetadataAddress` for an EOS address...");
+                safely_convert_str_to_eos_address(&address).to_string()
+            },
+        };
+        Ok(Self {
+            address,
+            metadata_chain_id,
+        })
+    }
+
     fn get_err_msg(protocol: MetadataProtocolId) -> String {
         let symbol = protocol.to_symbol();
         format!(
@@ -78,7 +104,7 @@ impl MetadataAddress {
 impl std::fmt::Display for MetadataAddress {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.metadata_chain_id.to_protocol_id() {
-            MetadataProtocolId::Ethereum => write!(f, "0x{}", self.address),
+            MetadataProtocolId::Ethereum => write!(f, "0x{}", strip_hex_prefix(&self.address)),
             _ => write!(f, "{}", self.address),
         }
     }

@@ -29,12 +29,12 @@ use crate::{
             eth_database_utils::EthDbUtilsExt,
         },
     },
-    constants::SAFE_ETH_ADDRESS,
     dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::{
         constants::MINIMUM_WEI_AMOUNT,
         fees_calculator::{FeeCalculator, FeesCalculator},
     },
+    safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
     types::Result,
     utils::{convert_bytes_to_u64, strip_hex_prefix},
