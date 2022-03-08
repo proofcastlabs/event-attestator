@@ -1,11 +1,12 @@
 use std::str::FromStr;
 
 use bitcoin::Address as BtcAddress;
+use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
 
 use crate::{
     chains::eth::eth_utils::convert_hex_to_eth_address,
-    constants::{SAFE_BTC_ADDRESS, SAFE_ETH_ADDRESS},
+    constants::{SAFE_BTC_ADDRESS, SAFE_EOS_ADDRESS_TYPE, SAFE_ETH_ADDRESS},
 };
 
 pub fn safely_convert_str_to_eth_address(s: &str) -> EthAddress {
@@ -26,6 +27,17 @@ pub fn safely_convert_str_to_btc_address(s: &str) -> BtcAddress {
         Err(_) => {
             info!("✘ '{s}' is not a valid BTC address - defaulting to safe BTC address!");
             SAFE_BTC_ADDRESS.clone()
+        },
+    }
+}
+
+pub fn safely_convert_str_to_eos_address(s: &str) -> EosAddress {
+    info!("✔ Safely converting str to EOS address...");
+    match EosAddress::from_str(s) {
+        Ok(address) => address,
+        Err(_) => {
+            info!("✘ '{s}' is not a valid EOS address - defaulting to safe EOS address!");
+            SAFE_EOS_ADDRESS_TYPE.clone()
         },
     }
 }
@@ -63,6 +75,22 @@ mod tests {
         let s = "not an good adddress";
         let expected_result = SAFE_BTC_ADDRESS.clone();
         let result = safely_convert_str_to_btc_address(s);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_safely_convert_str_to_eos_address() {
+        let s = "safu.ptokens";
+        let expected_result = EosAddress::from_str(s).unwrap();
+        let result = safely_convert_str_to_eos_address(s);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_default_to_safe_address_if_eos_address_malformed() {
+        let s = "not an good adddress";
+        let expected_result = SAFE_EOS_ADDRESS_TYPE.clone();
+        let result = safely_convert_str_to_eos_address(s);
         assert_eq!(result, expected_result);
     }
 }

@@ -13,7 +13,11 @@ use crate::{
 };
 use crate::{
     metadata::{metadata_chain_id::MetadataChainId, metadata_protocol_id::MetadataProtocolId},
-    safe_addresses::{safely_convert_str_to_btc_address, safely_convert_str_to_eth_address},
+    safe_addresses::{
+        safely_convert_str_to_btc_address,
+        safely_convert_str_to_eos_address,
+        safely_convert_str_to_eth_address,
+    },
     types::Bytes,
     utils::strip_hex_prefix,
     Result,
@@ -36,7 +40,10 @@ impl MetadataAddress {
                 info!("✔ Getting `MetadataAddress` for a BTC address...");
                 safely_convert_str_to_btc_address(&address).to_string()
             },
-            _ => address, // TODO Normalize the other address types!! And divert to SAFE address if bad!
+            MetadataProtocolId::Eos => {
+                info!("✔ Getting `MetadataAddress` for an EOS address...");
+                safely_convert_str_to_eos_address(&address).to_string()
+            },
         };
         Ok(Self {
             address,
