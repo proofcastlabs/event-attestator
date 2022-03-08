@@ -6,17 +6,17 @@ use bitcoin::util::address::Address as BtcAddress;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
 
-use crate::{
-    chains::eth::eth_utils::convert_hex_to_eth_address,
-    metadata::{metadata_chain_id::MetadataChainId, metadata_protocol_id::MetadataProtocolId},
-    types::Bytes,
-    utils::strip_hex_prefix,
-    Result,
-};
 #[cfg(test)]
 use crate::{
     chains::{eos::eos_constants::EOS_ADDRESS_LENGTH_IN_BYTES, eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES},
     types::Byte,
+};
+use crate::{
+    metadata::{metadata_chain_id::MetadataChainId, metadata_protocol_id::MetadataProtocolId},
+    safe_addresses::safely_convert_str_to_eth_address,
+    types::Bytes,
+    utils::strip_hex_prefix,
+    Result,
 };
 
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
@@ -30,8 +30,7 @@ impl MetadataAddress {
         let address = match metadata_chain_id.to_protocol_id() {
             MetadataProtocolId::Ethereum => {
                 info!("✔ Getting `MetadataAddress` for an ETH address...");
-                // NOTE: To ensure we have a valid ETH address!
-                hex::encode(convert_hex_to_eth_address(&address)?)
+                hex::encode(safely_convert_str_to_eth_address(&address)?)
             },
             _ => address, // TODO Normalize the other address types!! And divert to SAFE address if bad!
         };
