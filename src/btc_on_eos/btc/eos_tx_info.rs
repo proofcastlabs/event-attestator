@@ -21,7 +21,7 @@ use crate::{
         },
         eos::{eos_unit_conversions::convert_eos_asset_to_u64, eos_utils::get_symbol_from_eos_asset},
     },
-    constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_EOS_ADDRESS},
+    constants::{FEE_BASIS_POINTS_DIVISOR, SAFE_EOS_ADDRESS_STR},
     fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
@@ -134,7 +134,7 @@ impl BtcOnEosEosTxInfos {
                             info
                         );
                         let mut mutable_info = info.clone();
-                        mutable_info.destination_address = SAFE_EOS_ADDRESS.to_string();
+                        mutable_info.destination_address = SAFE_EOS_ADDRESS_STR.to_string();
                         mutable_info
                     },
                 })
@@ -271,9 +271,9 @@ impl BtcOnEosEosTxInfo {
                     );
                     info!(
                         "✔ Defaulting destination_address safe EOS address: '{}'",
-                        SAFE_EOS_ADDRESS
+                        SAFE_EOS_ADDRESS_STR
                     );
-                    SAFE_EOS_ADDRESS.to_string()
+                    SAFE_EOS_ADDRESS_STR.to_string()
                 },
             },
             originating_tx_hash: originating_tx_hash.to_string(),

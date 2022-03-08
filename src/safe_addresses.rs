@@ -6,7 +6,7 @@ use ethereum_types::Address as EthAddress;
 
 use crate::{
     chains::eth::eth_utils::convert_hex_to_eth_address,
-    constants::{SAFE_BTC_ADDRESS, SAFE_EOS_ADDRESS_TYPE, SAFE_ETH_ADDRESS},
+    constants::{SAFE_BTC_ADDRESS, SAFE_EOS_ADDRESS, SAFE_ETH_ADDRESS},
 };
 
 pub fn safely_convert_str_to_eth_address(s: &str) -> EthAddress {
@@ -37,7 +37,7 @@ pub fn safely_convert_str_to_eos_address(s: &str) -> EosAddress {
         Ok(address) => address,
         Err(_) => {
             info!("✘ '{s}' is not a valid EOS address - defaulting to safe EOS address!");
-            SAFE_EOS_ADDRESS_TYPE.clone()
+            SAFE_EOS_ADDRESS.clone()
         },
     }
 }
@@ -89,7 +89,7 @@ mod tests {
     #[test]
     fn should_default_to_safe_address_if_eos_address_malformed() {
         let s = "not an good adddress";
-        let expected_result = SAFE_EOS_ADDRESS_TYPE.clone();
+        let expected_result = SAFE_EOS_ADDRESS.clone();
         let result = safely_convert_str_to_eos_address(s);
         assert_eq!(result, expected_result);
     }

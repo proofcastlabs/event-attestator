@@ -5,7 +5,7 @@ use eos_chain::{AccountName as EosAccountName, Action as EosAction, Checksum256,
 
 use crate::{
     chains::eos::eos_constants::{EOS_MAX_EXPIRATION_SECS, EOS_SCHEDULE_DB_PREFIX},
-    constants::SAFE_EOS_ADDRESS,
+    constants::SAFE_EOS_ADDRESS_STR,
     types::{Byte, Bytes, Result},
     utils::get_unix_timestamp_as_u32,
 };
@@ -41,13 +41,14 @@ pub fn get_digest_from_eos_action(action: &EosAction) -> Result<Bytes> {
     Ok(sha256::Hash::hash(&action.to_serialize_data()?).to_vec())
 }
 
+// FIXME We can use our new converter here!
 pub fn parse_eos_account_name_or_default_to_safe_address(s: &str) -> Result<EosAccountName> {
     EosAccountName::from_str(s).or_else(|_| {
         warn!(
             "✘ Unable to parse EOS account from `{}`! Defaulting to safe address: `{}`!",
-            s, SAFE_EOS_ADDRESS
+            s, SAFE_EOS_ADDRESS_STR
         );
-        Ok(EosAccountName::from_str(SAFE_EOS_ADDRESS)?)
+        Ok(EosAccountName::from_str(SAFE_EOS_ADDRESS_STR)?)
     })
 }
 
@@ -82,7 +83,7 @@ mod tests {
     fn should_default_to_eos_safe_address_when_parsing_bad_eos_account_name() {
         let s = "Bighead.gm";
         let result = parse_eos_account_name_or_default_to_safe_address(&s).unwrap();
-        let expected_result = EosAccountName::from_str(&SAFE_EOS_ADDRESS).unwrap();
+        let expected_result = EosAccountName::from_str(&SAFE_EOS_ADDRESS_STR).unwrap();
         assert_eq!(result, expected_result);
     }
 

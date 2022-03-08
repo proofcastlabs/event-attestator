@@ -7,7 +7,7 @@ use crate::{
         eos_types::EosKnownSchedulesJsons,
         protocol_features::EnabledFeatures,
     },
-    constants::{FIELD_NOT_SET_MSG, SAFE_EOS_ADDRESS},
+    constants::{FIELD_NOT_SET_MSG, SAFE_EOS_ADDRESS_STR},
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
     traits::DatabaseInterface,
     types::Result,
@@ -43,7 +43,7 @@ impl EosEnclaveState {
     ) -> Result<Self> {
         info!("✔ Getting EOS enclave state...");
         Ok(EosEnclaveState {
-            eos_safe_address: SAFE_EOS_ADDRESS.to_string(),
+            eos_safe_address: SAFE_EOS_ADDRESS_STR.to_string(),
             eos_chain_id: eos_db_utils.get_eos_chain_id_from_db()?.to_hex(),
             eos_signature_nonce: eos_db_utils.get_eos_account_nonce_from_db()?,
             eos_last_seen_block_num: eos_db_utils.get_latest_eos_block_number()?,
