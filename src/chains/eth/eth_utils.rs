@@ -77,20 +77,6 @@ pub fn convert_json_value_to_string(value: &JsonValue) -> Result<String> {
         .to_string())
 }
 
-pub fn safely_convert_hex_to_eth_address(hex: &str) -> Result<EthAddress> {
-    match convert_hex_to_eth_address(hex) {
-        Ok(address) => Ok(address),
-        Err(_) => {
-            info!("✔ Could not parse hex: '{}'!", hex);
-            info!(
-                "✔ Defaulting to safe eth address: 0x{}",
-                hex::encode(SAFE_ETH_ADDRESS.as_bytes())
-            );
-            Ok(*SAFE_ETH_ADDRESS)
-        },
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -186,22 +172,6 @@ mod tests {
         let expected_result = "c0ffee".to_string();
         let result = strip_hex_prefix(dummy_hex);
         assert_eq!(result, expected_result)
-    }
-
-    #[test]
-    fn should_safely_convert_hex_to_eth_address_correctly() {
-        let address_hex = "0xb2930b35844a230f00e51431acae96fe543a0347";
-        let result = safely_convert_hex_to_eth_address(address_hex).unwrap();
-        let expected_result = decode_prefixed_hex(address_hex).unwrap();
-        let expected_result_bytes = &expected_result[..];
-        assert_eq!(result.as_bytes(), expected_result_bytes);
-    }
-
-    #[test]
-    fn should_revert_to_safe_eth_address_when_safely_convert_bad_hex_to_eth_address() {
-        let bad_hex = "https://somewhere.com/address/0xb2930b35844a230f00e51431acae96fe543a0347";
-        let result = safely_convert_hex_to_eth_address(bad_hex).unwrap();
-        assert_eq!(result, *SAFE_ETH_ADDRESS);
     }
 
     #[test]

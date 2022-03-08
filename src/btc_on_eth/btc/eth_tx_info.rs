@@ -4,7 +4,8 @@ use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::{btc::btc_metadata::ToMetadata, eth::eth_utils::safely_convert_hex_to_eth_address},
+    chains::btc::btc_metadata::ToMetadata,
+    safe_addresses::safely_convert_str_to_eth_address,
     types::{Byte, Bytes, Result},
 };
 
@@ -44,7 +45,7 @@ impl BtcOnEthEthTxInfo {
             amount,
             originating_tx_hash,
             originating_tx_address: originating_tx_address.to_string(),
-            destination_address: safely_convert_hex_to_eth_address(&eth_address_hex)?,
+            destination_address: safely_convert_str_to_eth_address(&eth_address_hex),
             user_data,
             eth_token_address: *eth_token_address,
         })

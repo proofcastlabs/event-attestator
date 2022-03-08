@@ -12,10 +12,7 @@ use crate::{
                 eos_private_key::EosPrivateKey,
                 eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
             },
-            eos_utils::{
-                get_eos_tx_expiration_timestamp_with_offset,
-                remove_symbol_from_eos_asset,
-            },
+            eos_utils::{get_eos_tx_expiration_timestamp_with_offset, remove_symbol_from_eos_asset},
         },
         eth::{
             eth_chain_id::EthChainId,
@@ -33,13 +30,13 @@ use crate::{
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     erc20_on_eos::fees_calculator::{FeeCalculator, FeesCalculator},
-    safe_addresses::safely_convert_str_to_eos_address,
     metadata::{
         metadata_address::MetadataAddress,
         metadata_protocol_id::MetadataProtocolId,
         metadata_traits::{ToMetadata, ToMetadataChainId},
         Metadata,
     },
+    safe_addresses::safely_convert_str_to_eos_address,
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
@@ -263,8 +260,7 @@ impl Erc20OnEosPegInInfos {
                     let peg_in_info = Erc20OnEosPegInInfo {
                         token_sender: params.token_sender,
                         originating_tx_hash: receipt.transaction_hash,
-                        destination_address:
-                            safely_convert_str_to_eos_address(&params.destination_address).to_string(),
+                        destination_address: safely_convert_str_to_eos_address(&params.destination_address).to_string(),
                         eos_token_address: token_dictionary
                             .get_eos_account_name_from_eth_token_address(&params.token_address)?,
                         eos_asset_amount: token_dictionary

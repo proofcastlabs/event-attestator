@@ -8,10 +8,10 @@ use crate::{
         eth_receipt::EthReceipt,
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
-        eth_utils::safely_convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     int_on_evm::int::evm_tx_info::{IntOnEvmEvmTxInfo, IntOnEvmEvmTxInfos},
+    safe_addresses::safely_convert_str_to_eth_address,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -55,7 +55,7 @@ impl IntOnEvmEvmTxInfos {
                         native_token_amount: event_params.token_amount,
                         origin_chain_id: event_params.get_origin_chain_id()?,
                         destination_chain_id: event_params.get_destination_chain_id()?,
-                        destination_address: safely_convert_hex_to_eth_address(&event_params.destination_address)?,
+                        destination_address: safely_convert_str_to_eth_address(&event_params.destination_address),
                         evm_token_address: dictionary.get_evm_address_from_eth_address(&event_params.token_address)?,
                     };
                     info!("✔ Parsed tx info: {:?}", tx_info);
