@@ -109,7 +109,7 @@ where
     D: DatabaseInterface,
 {
     info!("✔ Getting BTC output as string...");
-    let output = state.get_output_json_string()?.to_string();
+    let output = state.get_output_json_string()?;
     info!("✔ BTC Output: {}", output);
     Ok(output)
 }

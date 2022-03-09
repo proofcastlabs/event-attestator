@@ -1,6 +1,7 @@
 use crate::{
     btc_on_eos::btc::eos_tx_info::BtcOnEosEosTxInfos,
     btc_on_eth::btc::eth_tx_info::BtcOnEthEthTxInfos,
+    btc_on_int::btc::int_tx_info::BtcOnIntIntTxInfos,
     chains::{
         btc::{
             btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
@@ -40,6 +41,7 @@ pub struct BtcState<'a, D: DatabaseInterface> {
     pub p2pkh_deposit_txs: Option<BtcTransactions>,
     pub btc_on_eth_eth_tx_infos: BtcOnEthEthTxInfos,
     pub btc_on_eos_eos_tx_infos: BtcOnEosEosTxInfos,
+    pub btc_on_int_int_tx_infos: BtcOnIntIntTxInfos,
     pub any_sender_signed_txs: Option<RelayTransactions>,
     pub deposit_info_hash_map: Option<DepositInfoHashMap>,
     pub btc_block_in_db_format: Option<BtcBlockInDbFormat>,
@@ -69,6 +71,7 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
             eos_signed_txs: EosSignedTransactions::new(vec![]),
             btc_on_eth_eth_tx_infos: BtcOnEthEthTxInfos::new(vec![]),
             btc_on_eos_eos_tx_infos: BtcOnEosEosTxInfos::new(vec![]),
+            btc_on_int_int_tx_infos: BtcOnIntIntTxInfos::new(vec![]),
         }
     }
 
@@ -175,20 +178,28 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
         }
     }
 
-    pub fn add_deposit_info_hash_map(mut self, deposit_info_hash_map: DepositInfoHashMap) -> Result<BtcState<'a, D>> {
+    pub fn add_deposit_info_hash_map(self, deposit_info_hash_map: DepositInfoHashMap) -> Result<BtcState<'a, D>> {
         match self.deposit_info_hash_map {
             Some(_) => Err(get_no_overwrite_state_err("deposit_info_hash_map").into()),
-            None => {
-                info!("✔ Adding deposit info hash map to BTC state...");
-                self.deposit_info_hash_map = Some(deposit_info_hash_map);
-                Ok(self)
-            },
+            None => self.update_deposit_info_hash_map(deposit_info_hash_map),
         }
+    }
+
+    pub fn update_deposit_info_hash_map(mut self, map: DepositInfoHashMap) -> Result<BtcState<'a, D>> {
+        info!("✔ Updating deposit info hash map in BTC state...");
+        self.deposit_info_hash_map = Some(map);
+        Ok(self)
     }
 
     pub fn add_btc_on_eos_eos_tx_infos(mut self, mut params: BtcOnEosEosTxInfos) -> Result<BtcState<'a, D>> {
         info!("✔ Adding `BtcOnEosEosTxInfos` to state...");
         self.btc_on_eos_eos_tx_infos.append(&mut params);
+        Ok(self)
+    }
+
+    pub fn add_btc_on_int_int_tx_infos(mut self, mut params: BtcOnIntIntTxInfos) -> Result<BtcState<'a, D>> {
+        info!("✔ Adding `BtcOnIntIntTxInfos` to state...");
+        self.btc_on_int_int_tx_infos.append(&mut params);
         Ok(self)
     }
 
@@ -219,6 +230,15 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
     ) -> Result<BtcState<'a, D>> {
         info!("✔ Replacing `BtcOnEosEosTxInfos` in state...");
         self.btc_on_eos_eos_tx_infos = replacement_params;
+        Ok(self)
+    }
+
+    pub fn replace_btc_on_int_int_tx_infos(
+        mut self,
+        replacement_params: BtcOnIntIntTxInfos,
+    ) -> Result<BtcState<'a, D>> {
+        info!("✔ Replacing `BtcOnIntIntTxInfos` in state...");
+        self.btc_on_int_int_tx_infos = replacement_params;
         Ok(self)
     }
 
@@ -284,11 +304,11 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
         }
     }
 
-    pub fn get_output_json_string(&self) -> Result<&str> {
+    pub fn get_output_json_string(&self) -> Result<String> {
         match &self.output_json_string {
             Some(output_json_string) => {
                 info!("✔ Getting BTC output json string from state...");
-                Ok(output_json_string)
+                Ok(output_json_string.to_string())
             },
             None => Err(get_not_in_state_err("output_json_string").into()),
         }

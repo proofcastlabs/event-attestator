@@ -106,10 +106,7 @@ pub fn filter_p2sh_deposit_txs(
         .collect::<BtcTransactions>())
 }
 
-pub fn filter_p2sh_deposit_txs_and_add_to_state<D>(state: BtcState<D>) -> Result<BtcState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn filter_p2sh_deposit_txs_and_add_to_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Filtering out `p2sh` deposits & adding to state...");
     filter_p2sh_deposit_txs(
         state.get_deposit_info_hash_map()?,

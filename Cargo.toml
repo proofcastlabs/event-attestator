@@ -2,7 +2,7 @@
 license = "MIT"
 publish = false
 edition = "2021"
-version = "5.19.0"
+version = "5.20.0"
 rust-version = "1.56"
 readme = "README.md"
 name = "ptokens_core"
@@ -46,6 +46,8 @@ tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 bitcoin = { version = "0.27.1", features = ["use-serde", "rand"] }
 eos-chain = { git = "https://github.com/bifrost-finance/rust-eos" }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"] }
+
+bs58 = "0.4.0"
 
 [dev-dependencies]
 simple_logger = "2.0.0"

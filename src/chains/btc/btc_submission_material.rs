@@ -13,6 +13,7 @@ use crate::{
     chains::btc::{
         btc_block::{BtcBlockAndId, BtcBlockJson},
         btc_state::BtcState,
+        btc_utils::convert_hex_tx_to_btc_transaction,
         deposit_address_info::DepositAddressInfoJsonList,
     },
     traits::DatabaseInterface,
@@ -49,12 +50,8 @@ impl BtcSubmissionMaterialJson {
     fn convert_hex_txs_to_btc_transactions(hex_txs: Vec<String>) -> Result<Vec<BtcTransaction>> {
         hex_txs
             .into_iter()
-            .map(Self::convert_hex_tx_to_btc_transaction)
+            .map(convert_hex_tx_to_btc_transaction)
             .collect::<Result<Vec<BtcTransaction>>>()
-    }
-
-    fn convert_hex_tx_to_btc_transaction(hex: String) -> Result<BtcTransaction> {
-        Ok(btc_deserialize::<BtcTransaction>(&hex::decode(hex)?)?)
     }
 
     pub fn to_btc_block(&self) -> Result<BtcBlock> {

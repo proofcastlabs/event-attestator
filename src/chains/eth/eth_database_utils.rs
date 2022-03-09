@@ -564,7 +564,24 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
             .map_err(|_| "No ERC777 contract address in DB! Did you forget to set it?".into())
     }
 
+    fn get_btc_on_int_smart_contract_address_from_db(&self) -> Result<EthAddress> {
+        // NOTE: This is just an alias!
+        info!("✔ Getting `BtcOnInt` ETH ERC777 smart-contract address from db...");
+        self.get_btc_on_eth_smart_contract_address_from_db()
+    }
+
     fn put_btc_on_eth_smart_contract_address_in_db(&self, address: &EthAddress) -> Result<()> {
+        // NOTE: This is just an alias!
+        match self.get_btc_on_int_smart_contract_address_from_db() {
+            Ok(address) => Err(format!("ERC777 address already set to 0x{}!", hex::encode(address)).into()),
+            _ => {
+                info!("✔ Putting ETH ERC777 smart-contract address in db...");
+                self.put_eth_address_in_db(&self.get_btc_on_eth_smart_contract_address_key(), address)
+            },
+        }
+    }
+
+    fn put_btc_on_int_smart_contract_address_in_db(&self, address: &EthAddress) -> Result<()> {
         match self.get_btc_on_eth_smart_contract_address_from_db() {
             Ok(address) => Err(format!("ERC777 address already set to 0x{}!", hex::encode(address)).into()),
             _ => {

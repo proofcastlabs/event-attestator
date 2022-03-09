@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     btc_on_eos::btc::eos_tx_info::BtcOnEosEosTxInfos,
     btc_on_eth::btc::eth_tx_info::BtcOnEthEthTxInfos,
+    btc_on_int::btc::int_tx_info::BtcOnIntIntTxInfos,
     chains::btc::{
         btc_state::BtcState,
         btc_submission_material::BtcSubmissionMaterialJson,
@@ -79,6 +80,7 @@ pub struct BtcBlockInDbFormat {
     pub extra_data: Bytes,
     pub eos_minting_params: Option<BtcOnEosEosTxInfos>,
     pub eth_minting_params: Option<BtcOnEthEthTxInfos>,
+    pub btc_on_int_int_tx_infos: Option<BtcOnIntIntTxInfos>,
     pub prev_blockhash: BlockHash,
 }
 
@@ -87,6 +89,10 @@ impl BtcBlockInDbFormat {
         self.eos_minting_params
             .clone()
             .unwrap_or_else(|| BtcOnEosEosTxInfos::new(vec![]))
+    }
+
+    pub fn get_btc_on_int_int_tx_infos(&self) -> BtcOnIntIntTxInfos {
+        self.btc_on_int_int_tx_infos.clone().unwrap_or_default()
     }
 
     pub fn get_eth_tx_infos(&self) -> BtcOnEthEthTxInfos {
@@ -103,19 +109,24 @@ impl BtcBlockInDbFormat {
         }
     }
 
+    pub fn get_btc_on_int_int_tx_infos_bytes(&self) -> Result<Option<Bytes>> {
+        if self.btc_on_int_int_tx_infos.is_some() {
+            Ok(Some(self.get_btc_on_int_int_tx_infos().to_bytes()?))
+        } else {
+            Ok(None)
+        }
+    }
+
     pub fn get_eth_minting_param_bytes(&self) -> Result<Bytes> {
         self.get_eth_tx_infos().to_bytes()
     }
 
     pub fn remove_tx_infos(&self) -> Result<Self> {
-        Ok(Self::new(
-            self.height,
-            self.id,
-            self.extra_data.clone(),
-            None,
-            None,
-            self.prev_blockhash,
-        ))
+        let mut mutable_self = self.clone();
+        mutable_self.eos_minting_params = None;
+        mutable_self.eth_minting_params = None;
+        mutable_self.btc_on_int_int_tx_infos = None;
+        Ok(mutable_self)
     }
 
     fn get_prev_block_hash_bytes(&self) -> Bytes {
@@ -130,6 +141,7 @@ impl BtcBlockInDbFormat {
             self.extra_data.clone(),
             self.get_eth_minting_param_bytes()?,
             self.get_eos_minting_param_bytes()?,
+            self.get_btc_on_int_int_tx_infos_bytes()?,
             Some(self.get_prev_block_hash_bytes()),
         ))?)
     }
@@ -159,6 +171,7 @@ impl BtcBlockInDbFormat {
                 serialized_block_in_db_format.extra_data.clone(),
                 serialized_block_in_db_format.get_btc_on_eos_eos_tx_infos()?,
                 serialized_block_in_db_format.get_btc_on_eth_eth_tx_infos()?,
+                serialized_block_in_db_format.get_btc_on_int_int_tx_infos()?,
                 serialized_block_in_db_format.get_prev_blockhash()?,
             ))
         })
@@ -173,6 +186,7 @@ pub struct SerializedBlockInDbFormat {
     pub block: Option<Bytes>,
     pub eth_minting_params: Bytes,
     pub eos_minting_params: Option<Bytes>,
+    pub btc_on_int_int_tx_infos: Option<Bytes>,
     pub prev_blockhash: Option<Bytes>,
 }
 
@@ -183,6 +197,7 @@ impl SerializedBlockInDbFormat {
         extra_data: Bytes,
         eth_minting_params: Bytes,
         eos_minting_params: Option<Bytes>,
+        btc_on_int_int_tx_infos: Option<Bytes>,
         prev_blockhash: Option<Bytes>,
     ) -> Self {
         Self {
@@ -191,6 +206,7 @@ impl SerializedBlockInDbFormat {
             extra_data,
             eth_minting_params,
             eos_minting_params,
+            btc_on_int_int_tx_infos,
             block: None,
             prev_blockhash,
         }
@@ -206,6 +222,7 @@ impl SerializedBlockInDbFormat {
             prev_blockhash: legacy_struct.prev_blockhash.clone(),
             eth_minting_params: legacy_struct.eth_minting_params.clone(),
             eos_minting_params: legacy_struct.eos_minting_params.clone(),
+            btc_on_int_int_tx_infos: None,
         }
     }
 
@@ -220,6 +237,18 @@ impl SerializedBlockInDbFormat {
 
     pub fn get_btc_on_eth_eth_tx_infos(&self) -> Result<Option<BtcOnEthEthTxInfos>> {
         let params = BtcOnEthEthTxInfos::from_bytes(&self.eth_minting_params)?;
+        if params.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(params))
+        }
+    }
+
+    pub fn get_btc_on_int_int_tx_infos(&self) -> Result<Option<BtcOnIntIntTxInfos>> {
+        let params = match self.btc_on_int_int_tx_infos {
+            Some(ref bytes) => BtcOnIntIntTxInfos::from_bytes(bytes)?,
+            None => BtcOnIntIntTxInfos::new(vec![]),
+        };
         if params.is_empty() {
             Ok(None)
         } else {
