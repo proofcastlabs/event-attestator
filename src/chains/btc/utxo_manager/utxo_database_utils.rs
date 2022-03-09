@@ -49,6 +49,35 @@ fn remove_utxo_pointer(utxo: &BtcUtxoAndValue) -> BtcUtxoAndValue {
     utxo_with_no_pointer
 }
 
+fn utxo_exists<D: DatabaseInterface>(db: &D, v_out: u32, tx_id: &Txid) -> bool {
+    fn utxo_exists_recursive<D: DatabaseInterface>(
+        db: &D,
+        tx_id: &Txid,
+        v_out: u32,
+        maybe_pointer: Option<Bytes>,
+    ) -> Result<BtcUtxoAndValue> {
+        let maybe_utxo = match maybe_pointer {
+            None => get_utxo_from_db(db, &get_first_utxo_pointer(db)?),
+            Some(ref pointer) => get_utxo_from_db(db, pointer),
+        };
+        match maybe_utxo {
+            Err(_) => Err("Could not get UTXO!".into()),
+            Ok(utxo) => {
+                if &utxo.get_tx_id()? == tx_id && utxo.get_v_out()? == v_out {
+                    Ok(utxo)
+                } else {
+                    match utxo.maybe_pointer {
+                        Some(next_pointer) => utxo_exists_recursive(db, tx_id, v_out, Some(next_pointer.to_vec())),
+                        None => Err("No more UTXOs to search!".into()),
+                    }
+                }
+            },
+        }
+    }
+
+    utxo_exists_recursive(db, tx_id, v_out, None).is_ok()
+}
+
 pub fn get_utxo_with_tx_id_and_v_out<D: DatabaseInterface>(
     db: &D,
     v_out: u32,
@@ -717,5 +746,33 @@ mod tests {
             Err(AppError::Custom(err_msg)) => assert_eq!(err_msg, expected_err_msg),
             Err(_) => panic!("Wrong error received!"),
         };
+    }
+
+    #[test]
+    fn utxo_exists_should_return_true_if_extant() {
+        let db = get_test_database();
+        let utxos = get_sample_utxo_and_values();
+        save_utxos_to_db(&db, &utxos).unwrap();
+        utxos.iter().for_each(|utxo| {
+            let result = utxo_exists(&db, utxo.get_v_out().unwrap(), &utxo.get_tx_id().unwrap());
+            assert!(result);
+        })
+    }
+
+    #[test]
+    fn utxo_exists_should_return_false_if_not_extant() {
+        let db = get_test_database();
+        let utxos = get_sample_utxo_and_values();
+        let utxos_with_one_removed = BtcUtxosAndValues(utxos.clone()[..utxos.len() - 1].to_vec());
+        assert_eq!(utxos.len(), utxos_with_one_removed.len() + 1);
+        save_utxos_to_db(&db, &utxos_with_one_removed).unwrap();
+        utxos.iter().enumerate().for_each(|(i, utxo)| {
+            let result = utxo_exists(&db, utxo.get_v_out().unwrap(), &utxo.get_tx_id().unwrap());
+            if i == utxos.len() - 1 {
+                assert!(!result);
+            } else {
+                assert!(result);
+            }
+        })
     }
 }
