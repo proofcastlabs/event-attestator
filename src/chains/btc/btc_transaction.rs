@@ -33,25 +33,14 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
     utxos_and_values: BtcUtxosAndValues,
 ) -> Result<BtcTransaction> {
     let inputs = utxos_and_values.to_utxos()?;
-    let mut outputs = recipient_addresses_and_amounts // TODO impl this too?
-        .iter()
-        .flat_map(|recipient_and_amount| {
-            create_new_tx_output(
-                recipient_and_amount.amount,
-                recipient_and_amount.recipient.script_pubkey(),
-            )
-        })
-        .collect::<Vec<BtcTxOut>>();
-    let total_to_spend: u64 = recipient_addresses_and_amounts
-        .iter()
-        .map(|recipient_and_amount| recipient_and_amount.amount)
-        .sum();
+    let mut outputs = recipient_addresses_and_amounts.to_tx_outputs();
+    let total_to_spend: u64 = recipient_addresses_and_amounts.sum();
     let fee = calculate_btc_tx_fee(
         utxos_and_values.len(),
         recipient_addresses_and_amounts.len(),
         sats_per_byte,
     );
-    let utxo_total = utxos_and_values
+    let utxo_total = utxos_and_values // IMPL this!
         .iter()
         .fold(0, |acc, utxo_and_value| acc + utxo_and_value.value);
     info!("✔ UTXO(s) total:  {}", utxo_total);

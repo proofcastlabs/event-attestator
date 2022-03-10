@@ -37,6 +37,12 @@ impl BtcRecipientsAndAmounts {
             })
             .collect()
     }
+
+    pub fn sum(&self) -> u64 {
+        self.iter()
+            .map(|recipient_and_amount| recipient_and_amount.amount)
+            .sum()
+    }
 }
 
 impl Default for BtcRecipientAndAmount {
