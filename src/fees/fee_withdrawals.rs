@@ -5,8 +5,8 @@ use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, util::addre
 use crate::{
     chains::btc::{
         btc_database_utils::BtcDbUtils,
+        btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
         btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-        btc_types::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
         utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
     },
     core_type::CoreType,

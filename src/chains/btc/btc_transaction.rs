@@ -7,7 +7,7 @@ use crate::{
     chains::btc::{
         btc_constants::{BTC_TX_LOCK_TIME, BTC_TX_VERSION},
         btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_types::BtcRecipientsAndAmounts,
+        btc_recipients_and_amounts::BtcRecipientsAndAmounts,
         btc_utils::{
             calculate_btc_tx_fee,
             create_new_pay_to_pub_key_hash_output,
@@ -142,13 +142,13 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
 mod tests {
     use super::*;
     use crate::chains::btc::{
+        btc_recipients_and_amounts::BtcRecipientAndAmount,
         btc_test_utils::{
             get_sample_btc_private_key,
             get_sample_p2pkh_utxo_and_value,
             get_sample_p2pkh_utxo_and_value_n,
             SAMPLE_TARGET_BTC_ADDRESS,
         },
-        btc_types::BtcRecipientAndAmount,
         btc_utils::{get_hex_tx_from_signed_btc_tx, get_tx_id_from_signed_btc_tx},
     };
 
