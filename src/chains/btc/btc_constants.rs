@@ -2,6 +2,8 @@
 pub const PTOKEN_P2SH_SCRIPT_BYTES: usize = 0;
 #[cfg(not(test))]
 pub const PTOKEN_P2SH_SCRIPT_BYTES: usize = 101;
+pub const BTC_TX_VERSION: i32 = 1;
+pub const BTC_TX_LOCK_TIME: u32 = 0;
 pub const BTC_TAIL_LENGTH: u64 = 10;
 pub const MAX_NUM_OUTPUTS: usize = 2;
 pub const BTC_PUB_KEY_SLICE_LENGTH: usize = 33;

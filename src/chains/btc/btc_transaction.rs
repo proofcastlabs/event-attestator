@@ -5,6 +5,7 @@ use bitcoin::{
 
 use crate::{
     chains::btc::{
+        btc_constants::{BTC_TX_LOCK_TIME, BTC_TX_VERSION},
         btc_crypto::btc_private_key::BtcPrivateKey,
         btc_types::BtcRecipientsAndAmounts,
         btc_utils::{
@@ -22,8 +23,6 @@ use crate::{
 };
 
 // NOTE: Current tx constants. Could make generic in future if needed.
-pub const VERSION: i32 = 1;
-pub const LOCK_TIME: u32 = 0;
 pub const SIGN_ALL_HASH_TYPE: u8 = 1;
 
 pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
@@ -67,8 +66,8 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
     };
     let tx = BtcTransaction {
         output: outputs,
-        version: VERSION,
-        lock_time: LOCK_TIME,
+        version: BTC_TX_VERSION,
+        lock_time: BTC_TX_LOCK_TIME,
         input: utxos_and_values
             .0
             .iter()
