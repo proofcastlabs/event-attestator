@@ -21,7 +21,7 @@ use ethereum_types::U256;
 
 use crate::{
     chains::btc::{
-        btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, DEFAULT_BTC_SEQUENCE, PTOKEN_P2SH_SCRIPT_BYTES},
+        btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, DEFAULT_BTC_SEQUENCE},
         btc_types::BtcPubKeySlice,
     },
     constants::{BTC_NUM_DECIMALS, PTOKEN_ERC777_NUM_DECIMALS},
@@ -118,16 +118,6 @@ pub fn create_new_tx_output(value: u64, script: BtcScript) -> Result<BtcTxOut> {
 
 pub fn create_new_pay_to_pub_key_hash_output(value: u64, recipient: &str) -> Result<BtcTxOut> {
     create_new_tx_output(value, get_pay_to_pub_key_hash_script(recipient)?)
-}
-
-pub fn calculate_btc_tx_fee(num_inputs: usize, num_outputs: usize, sats_per_byte: u64) -> u64 {
-    calculate_btc_tx_size(num_inputs, num_outputs) * sats_per_byte
-}
-
-// FIXME Rm this and use the lib!
-// NOTE: Assumes compressed keys and no multi-sigs!
-fn calculate_btc_tx_size(num_inputs: usize, num_outputs: usize) -> u64 {
-    ((num_inputs * (148 + PTOKEN_P2SH_SCRIPT_BYTES)) + (num_outputs * 34) + 10 + num_inputs) as u64
 }
 
 pub fn serialize_btc_utxo(btc_utxo: &BtcUtxo) -> Bytes {
@@ -267,13 +257,6 @@ mod tests {
         let result = create_new_tx_output(value, script.clone()).unwrap();
         assert_eq!(result.value, value);
         assert_eq!(result.script_pubkey, script);
-    }
-
-    #[test]
-    fn should_calculate_btc_tx_size() {
-        let expected_result = 193;
-        let result = calculate_btc_tx_size(1, 1);
-        assert_eq!(result, expected_result);
     }
 
     #[test]

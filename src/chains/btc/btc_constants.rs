@@ -1,7 +1,3 @@
-#[cfg(test)] // NOTE Because of real BTC tx test-vectors
-pub const PTOKEN_P2SH_SCRIPT_BYTES: usize = 0;
-#[cfg(not(test))]
-pub const PTOKEN_P2SH_SCRIPT_BYTES: usize = 101;
 pub const BTC_TX_VERSION: i32 = 1;
 pub const BTC_TX_LOCK_TIME: u32 = 0;
 pub const BTC_TAIL_LENGTH: u64 = 10;
