@@ -18,18 +18,20 @@ use crate::{
 
 fn get_address_and_amounts_from_redeem_infos(redeem_infos: &BtcOnEosRedeemInfos) -> Result<BtcRecipientsAndAmounts> {
     info!("✔ Getting addresses & amounts from redeem params...");
-    redeem_infos
-        .0
-        .iter()
-        .map(|params| {
-            let recipient_and_amount = BtcRecipientAndAmount::new(&params.recipient[..], params.amount);
-            info!(
-                "✔ Recipients & amount retrieved from redeem: {:?}",
+    Ok(BtcRecipientsAndAmounts::new(
+        redeem_infos
+            .0
+            .iter()
+            .map(|params| {
+                let recipient_and_amount = BtcRecipientAndAmount::new(&params.recipient[..], params.amount);
+                info!(
+                    "✔ Recipients & amount retrieved from redeem: {:?}",
+                    recipient_and_amount
+                );
                 recipient_and_amount
-            );
-            recipient_and_amount
-        })
-        .collect()
+            })
+            .collect::<Result<Vec<BtcRecipientAndAmount>>>()?,
+    ))
 }
 
 fn sign_txs_from_redeem_infos<D: DatabaseInterface>(

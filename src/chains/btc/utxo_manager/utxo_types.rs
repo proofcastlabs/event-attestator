@@ -38,6 +38,10 @@ impl BtcUtxosAndValues {
         Ok(Self::new(structs))
     }
 
+    pub fn to_utxos(&self) -> Result<Vec<BtcUtxo>> {
+        self.iter().map(|utxo_and_value| utxo_and_value.get_utxo()).collect()
+    }
+
     #[cfg(test)]
     pub fn sum(&self) -> u64 {
         self.iter().map(|utxo| utxo.value).sum()
@@ -179,5 +183,12 @@ mod tests {
         let json_string = utxos.to_string().unwrap();
         let result = BtcUtxosAndValues::from_str(&json_string).unwrap();
         assert_eq!(result, utxos);
+    }
+
+    #[test]
+    fn should_get_utxos_from_utxo_and_values() {
+        let utxos_and_values = get_sample_utxo_and_values();
+        let result = utxos_and_values.to_utxos();
+        assert!(result.is_ok());
     }
 }

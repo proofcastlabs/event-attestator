@@ -32,6 +32,16 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
     btc_private_key: &BtcPrivateKey,
     utxos_and_values: BtcUtxosAndValues,
 ) -> Result<BtcTransaction> {
+    let inputs = utxos_and_values.to_utxos()?;
+    let mut outputs = recipient_addresses_and_amounts // TODO impl this too?
+        .iter()
+        .flat_map(|recipient_and_amount| {
+            create_new_tx_output(
+                recipient_and_amount.amount,
+                recipient_and_amount.recipient.script_pubkey(),
+            )
+        })
+        .collect::<Vec<BtcTxOut>>();
     let total_to_spend: u64 = recipient_addresses_and_amounts
         .iter()
         .map(|recipient_and_amount| recipient_and_amount.amount)
@@ -51,29 +61,18 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
     if total_to_spend + fee > utxo_total {
         return Err("✘ Not enough UTXO value to make transaction!".into());
     };
-    let mut outputs = recipient_addresses_and_amounts
-        .iter()
-        .flat_map(|recipient_and_amount| {
-            create_new_tx_output(
-                recipient_and_amount.amount,
-                recipient_and_amount.recipient.script_pubkey(),
-            )
-        })
-        .collect::<Vec<BtcTxOut>>();
     let change = utxo_total - total_to_spend - fee;
     if change > 0 {
         outputs.push(create_new_pay_to_pub_key_hash_output(change, remainder_btc_address)?)
     };
+
     let tx = BtcTransaction {
+        input: inputs,
         output: outputs,
         version: BTC_TX_VERSION,
         lock_time: BTC_TX_LOCK_TIME,
-        input: utxos_and_values
-            .0
-            .iter()
-            .map(|utxo_and_value| utxo_and_value.get_utxo())
-            .collect::<Result<Vec<BtcUtxo>>>()?,
     };
+
     let signatures = utxos_and_values
         .0
         .iter()
@@ -159,8 +158,11 @@ mod tests {
         let expected_tx_id = "ce1d7929ed6039485c3ef4040732fb7908174759831a0bbf5acb8d255036a12c";
         let expected_serialized_tx = "01000000010e8d588f88d5624148070a8cd79508da8cb76625e4fcdb19a5fc996aa843bf04000000006b483045022100967d2fb7f4595102dc85a8f90996b8b46fd51d808ab47311b49e6f1ecdfa333502201ba9bebcacef5a66cb1e207148e368bfc4b7c6a65e241a01564a3062304d8b49012103d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7ffffffff0133023300000000001976a9149ae6e42c56f1ea319cfc704ad50db0683015029b88ac00000000";
         let sats_per_byte = 23;
-        let recipient_addresses_and_amounts =
-            vec![BtcRecipientAndAmount::new("mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM", 3342899).unwrap()];
+        let recipient_addresses_and_amounts = BtcRecipientsAndAmounts::new(vec![BtcRecipientAndAmount::new(
+            "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM",
+            3342899,
+        )
+        .unwrap()]);
         let btc_private_key = get_sample_btc_private_key();
         let remainder_btc_address = SAMPLE_TARGET_BTC_ADDRESS;
         let utxos_and_values = BtcUtxosAndValues::new(vec![get_sample_p2pkh_utxo_and_value()]);
@@ -185,8 +187,11 @@ mod tests {
         let expected_serialized_tx = "0100000001b5f75f17e28fa0edaa8148bc6e255797975e1529d9ad97d790914f7c6be26bb5020000006b483045022100d7f563a7523408d4dd04fc272e98ab8aea900cf0dc872f98eac30873e720bb09022063812e1e45b9bc87f5eca162822082712cd5b3e3aa8ee7fcbe1e729f5a9b9775012103d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7ffffffff0239050000000000001976a9149ae6e42c56f1ea319cfc704ad50db0683015029b88ac0fa60e00000000001976a91454102783c8640c5144d039cea53eb7dbb470081488ac00000000";
         let utxos_and_values = BtcUtxosAndValues::new(vec![get_sample_p2pkh_utxo_and_value_n(2).unwrap()]);
         let sats_per_byte = 23;
-        let recipient_addresses_and_amounts =
-            vec![BtcRecipientAndAmount::new("mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM", 1337).unwrap()];
+        let recipient_addresses_and_amounts = BtcRecipientsAndAmounts::new(vec![BtcRecipientAndAmount::new(
+            "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM",
+            1337,
+        )
+        .unwrap()]);
         let remainder_btc_address = SAMPLE_TARGET_BTC_ADDRESS;
         let btc_private_key = get_sample_btc_private_key();
         let final_signed_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
@@ -215,10 +220,10 @@ mod tests {
         let sats_per_byte = 23;
         let btc_private_key = get_sample_btc_private_key();
         let remainder_btc_address = SAMPLE_TARGET_BTC_ADDRESS;
-        let recipient_addresses_and_amounts = vec![
+        let recipient_addresses_and_amounts = BtcRecipientsAndAmounts::new(vec![
             BtcRecipientAndAmount::new("mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM", 666).unwrap(),
             BtcRecipientAndAmount::new("mu1FFNnoiMytR5tKGXp6M1XhUZFQd3Mc8n", 1337).unwrap(),
-        ];
+        ]);
         let final_signed_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
             sats_per_byte,
             recipient_addresses_and_amounts,

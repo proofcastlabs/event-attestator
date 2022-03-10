@@ -1,5 +1,5 @@
 use bitcoin::{
-    blockdata::transaction::TxIn as BtcUtxo,
+    blockdata::transaction::{Transaction, TxIn as BtcUtxo},
     consensus::encode::deserialize as btc_deserialize,
     hashes::{sha256d, Hash},
 };
@@ -108,6 +108,9 @@ fn get_enough_utxos_to_cover_total_recursively<D: DatabaseInterface>(
     info!("✔ Getting UTXO from db...");
     get_first_utxo_and_value(db).and_then(|utxo_and_value| {
         debug!("✔ Retrieved UTXO of value: {}", utxo_and_value.value);
+        //
+        // FIXME make up the tx from here? And us its method to get the size?
+        //
         let fee = calculate_btc_tx_fee(inputs.len() + 1, num_outputs, sats_per_byte);
         let total_cost = fee + required_btc_amount;
         let updated_inputs = {

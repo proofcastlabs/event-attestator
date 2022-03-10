@@ -124,8 +124,9 @@ pub fn calculate_btc_tx_fee(num_inputs: usize, num_outputs: usize, sats_per_byte
     calculate_btc_tx_size(num_inputs, num_outputs) * sats_per_byte
 }
 
+// FIXME Rm this and use the lib!
 // NOTE: Assumes compressed keys and no multi-sigs!
-pub fn calculate_btc_tx_size(num_inputs: usize, num_outputs: usize) -> u64 {
+fn calculate_btc_tx_size(num_inputs: usize, num_outputs: usize) -> u64 {
     ((num_inputs * (148 + PTOKEN_P2SH_SCRIPT_BYTES)) + (num_outputs * 34) + 10 + num_inputs) as u64
 }
 

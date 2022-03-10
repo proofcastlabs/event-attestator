@@ -11,7 +11,7 @@ use crate::{
             btc_constants::{MAX_NUM_OUTPUTS, MINIMUM_REQUIRED_SATOSHIS},
             btc_crypto::btc_private_key::BtcPrivateKey,
             btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-            btc_types::BtcRecipientAndAmount,
+            btc_types::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
             utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
         },
         eth::{
@@ -57,7 +57,7 @@ impl BtcOnEthRedeemInfo {
         info!("✔ Creating BTC transaction...");
         create_signed_raw_btc_tx_for_n_input_n_outputs(
             fee,
-            vec![self.to_recipient_and_amount()?],
+            BtcRecipientsAndAmounts::new(vec![self.to_recipient_and_amount()?]),
             btc_address,
             btc_private_key,
             utxos,
