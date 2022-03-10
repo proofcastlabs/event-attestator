@@ -40,9 +40,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
         recipient_addresses_and_amounts.len(),
         sats_per_byte,
     );
-    let utxo_total = utxos_and_values // IMPL this!
-        .iter()
-        .fold(0, |acc, utxo_and_value| acc + utxo_and_value.value);
+    let utxo_total = utxos_and_values.sum();
     info!("✔ UTXO(s) total:  {}", utxo_total);
     info!("✔ Outgoing total: {}", total_to_spend);
     info!("✔ Change amount:  {}", utxo_total - (total_to_spend + fee));

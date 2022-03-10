@@ -42,7 +42,6 @@ impl BtcUtxosAndValues {
         self.iter().map(|utxo_and_value| utxo_and_value.get_utxo()).collect()
     }
 
-    #[cfg(test)]
     pub fn sum(&self) -> u64 {
         self.iter().map(|utxo| utxo.value).sum()
     }
