@@ -215,9 +215,9 @@ mod tests {
                     "host_token_address": "0x0f513aa8d67820787a8fdf285bfcf967bf8e4b8b",
                     "originating_address":"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac",
                     "destination_address":"tb1q3m09363jpkrwnc9yepp8eunhunlp59y83k7m7w",
-                    "btc_tx_hash":"9b49d9c27d979fa4b0f22bfa8bd298f1ecf57e2358952d3bfedee2d6e56649e6",
+                    "btc_tx_hash":"4e46ab88bb9a3b9d849d3d93ac84d85223c4f61f02068cd3e88d6e9f0bcb97e1",
                     "originating_tx_hash":"0xdc676d1858ebf2a45f8b65ba4a925dfa8012bfeecba21df4b6935e58f4c8fcfa",
-                    "btc_signed_tx":"01000000014e635c5f95ba996dc34791193deaceb51218bbea643561f9f2c7b556fe8f77d3010000008f483045022100ab791d9cc2141921e15e9c7139a6a664ba01643e2dfb5f5b96770a443e61688902200739175b62881cee84318edab92b6ea58b5c6d99fa4dedefdaa55b5f8ed878ff0145202b69d3bc995c316a478b8b70b82b820505dcd31b80b624a947cceb37882f00c9752103fd539c728597e774040bda920ea7112257422442dcd7d9fc12e04e578e0af91aacffffffff0239050000000000001600148ede58ea320d86e9e0a4c8427cf277e4fe1a14872a030000000000001976a914ec8f6a91d8ca2e2875575a17f83f3c2e9238f47188ac00000000",
+                    "btc_signed_tx":"01000000014e635c5f95ba996dc34791193deaceb51218bbea643561f9f2c7b556fe8f77d3010000008f483045022100a7f529b473c52e4a16091580d948d6f4c7d71192b33436701481a68c3a1b31af02202d3726c4403f7883816673188fb6eb73d9ca868faa6b806c63f9450310251ef00145202b69d3bc995c316a478b8b70b82b820505dcd31b80b624a947cceb37882f00c9752103fd539c728597e774040bda920ea7112257422442dcd7d9fc12e04e578e0af91aacffffffff0239050000000000001600148ede58ea320d86e9e0a4c8427cf277e4fe1a148754060000000000001976a914ec8f6a91d8ca2e2875575a17f83f3c2e9238f47188ac00000000",
                 }]
             }).to_string()
         ).unwrap();
@@ -245,8 +245,6 @@ mod tests {
         );
 
         // NOTE: Check the tx is decodable...
-        convert_hex_tx_to_btc_transaction(tx_info.btc_signed_tx).unwrap();
-        // NOTE: See broadcast tx hash here:
-        // https://blockstream.info/testnet/tx/9b49d9c27d979fa4b0f22bfa8bd298f1ecf57e2358952d3bfedee2d6e56649e6
+        assert!(convert_hex_tx_to_btc_transaction(tx_info.btc_signed_tx).is_ok());
     }
 }

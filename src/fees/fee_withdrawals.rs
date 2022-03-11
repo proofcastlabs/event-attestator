@@ -5,8 +5,8 @@ use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, util::addre
 use crate::{
     chains::btc::{
         btc_database_utils::BtcDbUtils,
+        btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
         btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-        btc_types::BtcRecipientAndAmount,
         utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
     },
     core_type::CoreType,
@@ -32,10 +32,10 @@ pub fn get_fee_withdrawal_btc_tx_for_core_type<D: DatabaseInterface>(
         .into())
     } else {
         let fee = btc_db_utils.get_btc_fee_from_db()?;
-        let recipients_and_amounts = vec![BtcRecipientAndAmount {
+        let recipients_and_amounts = BtcRecipientsAndAmounts::new(vec![BtcRecipientAndAmount {
             recipient: BtcAddress::from_str(btc_address)?,
             amount: withdrawal_amount,
-        }];
+        }]);
         fee_db_utils
             .put_last_fee_withdrawal_timestamp_in_db(db, get_unix_timestamp()?)
             .and_then(|_| get_enough_utxos_to_cover_total(db, withdrawal_amount, recipients_and_amounts.len(), fee))

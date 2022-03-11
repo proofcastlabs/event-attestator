@@ -1,9 +1,7 @@
-use std::str::FromStr;
-
 pub use bitcoin::{
     blockdata::{
         block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
-        transaction::Transaction as BtcTransaction,
+        transaction::{Transaction as BtcTransaction, TxOut as BtcTxOut},
     },
     consensus::encode::deserialize as btc_deserialize,
     hashes::sha256d,
@@ -13,8 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::btc::{btc_constants::BTC_PUB_KEY_SLICE_LENGTH, deposit_address_info::DepositAddressInfoJson},
-    safe_addresses::SAFE_BTC_ADDRESS_STR,
-    types::{Byte, Bytes, Result},
+    types::{Byte, Bytes},
 };
 
 pub type BtcTransactions = Vec<BtcTransaction>;
@@ -27,28 +24,4 @@ pub struct BtcUtxoAndValue {
     pub maybe_extra_data: Option<Bytes>,
     pub maybe_pointer: Option<sha256d::Hash>,
     pub maybe_deposit_info_json: Option<DepositAddressInfoJson>,
-}
-
-pub type BtcRecipientsAndAmounts = Vec<BtcRecipientAndAmount>; // TODO Make this a proper type.
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct BtcRecipientAndAmount {
-    pub amount: u64,
-    pub recipient: BtcAddress,
-}
-
-impl BtcRecipientAndAmount {
-    pub fn new(recipient: &str, amount: u64) -> Result<Self> {
-        Ok(BtcRecipientAndAmount {
-            amount,
-            recipient: match BtcAddress::from_str(recipient) {
-                Ok(address) => address,
-                Err(error) => {
-                    info!("✔ Error parsing BTC address for recipient: {}", error);
-                    info!("✔ Defaulting to SAFE BTC address: {}", SAFE_BTC_ADDRESS_STR);
-                    BtcAddress::from_str(SAFE_BTC_ADDRESS_STR)?
-                },
-            },
-        })
-    }
 }

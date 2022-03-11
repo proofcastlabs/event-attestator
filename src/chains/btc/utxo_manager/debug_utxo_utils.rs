@@ -3,6 +3,7 @@ use serde_json::json;
 use crate::{
     chains::btc::{
         btc_database_utils::BtcDbUtils,
+        btc_recipients_and_amounts::BtcRecipientsAndAmounts,
         btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
         btc_utils::{get_btc_tx_id_from_str, get_hex_tx_from_signed_btc_tx, get_pay_to_pub_key_hash_script},
         extract_utxos_from_p2pkh_txs::extract_utxos_from_p2pkh_txs,
@@ -66,7 +67,7 @@ pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize
             let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
             let btc_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
                 fee,
-                vec![],
+                BtcRecipientsAndAmounts::default(),
                 &btc_address,
                 &btc_db_utils.get_btc_private_key_from_db()?,
                 utxos,
@@ -110,7 +111,7 @@ pub fn get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
             };
             let btc_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
                 fee,
-                vec![],
+                BtcRecipientsAndAmounts::default(),
                 &btc_address,
                 &btc_db_utils.get_btc_private_key_from_db()?,
                 BtcUtxosAndValues::new(vec![utxo]),

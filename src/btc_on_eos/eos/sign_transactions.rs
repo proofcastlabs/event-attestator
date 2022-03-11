@@ -6,8 +6,8 @@ use crate::{
         btc::{
             btc_crypto::btc_private_key::BtcPrivateKey,
             btc_database_utils::BtcDbUtils,
+            btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
             btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-            btc_types::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
             utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
         },
         eos::eos_state::EosState,
@@ -18,18 +18,20 @@ use crate::{
 
 fn get_address_and_amounts_from_redeem_infos(redeem_infos: &BtcOnEosRedeemInfos) -> Result<BtcRecipientsAndAmounts> {
     info!("✔ Getting addresses & amounts from redeem params...");
-    redeem_infos
-        .0
-        .iter()
-        .map(|params| {
-            let recipient_and_amount = BtcRecipientAndAmount::new(&params.recipient[..], params.amount);
-            info!(
-                "✔ Recipients & amount retrieved from redeem: {:?}",
+    Ok(BtcRecipientsAndAmounts::new(
+        redeem_infos
+            .0
+            .iter()
+            .map(|params| {
+                let recipient_and_amount = BtcRecipientAndAmount::new(&params.recipient[..], params.amount);
+                info!(
+                    "✔ Recipients & amount retrieved from redeem: {:?}",
+                    recipient_and_amount
+                );
                 recipient_and_amount
-            );
-            recipient_and_amount
-        })
-        .collect()
+            })
+            .collect::<Result<Vec<BtcRecipientAndAmount>>>()?,
+    ))
 }
 
 fn sign_txs_from_redeem_infos<D: DatabaseInterface>(
@@ -130,7 +132,7 @@ mod tests {
             sign_txs_from_redeem_infos(&db_utils, sats_per_byte, btc_network, &redeem_infos, &btc_address, &pk)
                 .unwrap();
         let result_hex = get_hex_tx_from_signed_btc_tx(&result);
-        let expected_hex_result = "0100000001f8c70a7ecd6759cae01e96fca12993e5460d80a720d3fcffe2c95816ee29ef40000000008f483045022100a0872343ef2b50d1258443233b8f1e66ba7cfcf79689be7be78da4f8fb217ebc0220626084ef0b7d41f2d06903cd815295a60c225ef8a04ee9a73edced72684af14f0145201729dce0b4e54e39610a95376a8bc96335fd93da68ae6aa27a62d4c282fb1ad3752102babc00d91bacf32c9ed07774e2be9aa3bc63296a858296c2fde390c339551f8dacffffffff0222160000000000001976a9149ae6e42c56f1ea319cfc704ad50db0683015029b88ac2f3a0000000000001976a914b19d7011a6107944209d5ebf9ef31a0fdf3115f188ac00000000";
+        let expected_hex_result = "0100000001f8c70a7ecd6759cae01e96fca12993e5460d80a720d3fcffe2c95816ee29ef40000000008e473044022035b05463474179b1b7f4c3120aa38ba24a75504a80ca012875061a353c14b33a02200ba2428c42746ee6b4c632fb716ba1d9c1046e815164dafea6a0eb8a9ecf4b9c0145201729dce0b4e54e39610a95376a8bc96335fd93da68ae6aa27a62d4c282fb1ad3752102babc00d91bacf32c9ed07774e2be9aa3bc63296a858296c2fde390c339551f8dacffffffff0222160000000000001976a9149ae6e42c56f1ea319cfc704ad50db0683015029b88acc43e0000000000001976a914b19d7011a6107944209d5ebf9ef31a0fdf3115f188ac00000000";
         assert_eq!(result_hex, expected_hex_result);
     }
 
@@ -158,7 +160,7 @@ mod tests {
             sign_txs_from_redeem_infos(&db_utils, sats_per_byte, btc_network, &redeem_infos, &btc_address, &pk)
                 .unwrap();
         let result_hex = get_hex_tx_from_signed_btc_tx(&result);
-        let expected_hex_result = "0100000001d8baf6344ab19575fe40ad81e5ca1fa57345025e40de3975f7d58c7266e7b7a6000000008f48304502210088a40269c4fe59aa8b2d6d0c5eb24f4e5d54879042806ea9140d00f7b4f372f4022077fa2da7c5fd70537d2a2006535f2151e3c9dbe1274664f2c59ba22cacca3c7a014520d11539e07a521c78c20381c98cc546e3ccdd8a5c97f1cffe83ae5537f61a6e39752102f55e923c43236f553424b863b1d589b9b67add4d8c49aeca7e667c4772e7b942acffffffff02b3150000000000001976a9149ae6e42c56f1ea319cfc704ad50db0683015029b88ac469c0000000000001976a914b19d7011a6107944209d5ebf9ef31a0fdf3115f188ac00000000";
+        let expected_hex_result = "0100000001d8baf6344ab19575fe40ad81e5ca1fa57345025e40de3975f7d58c7266e7b7a6000000008f483045022100f3ac5fb8676093a68135a9be21bcbeb118b65952b2c45b4552dd48617a46cb6902204d140fe6b8ddb6527840101d258d357d4f4363a2061dcf98e7ae35c1a655e16f014520d11539e07a521c78c20381c98cc546e3ccdd8a5c97f1cffe83ae5537f61a6e39752102f55e923c43236f553424b863b1d589b9b67add4d8c49aeca7e667c4772e7b942acffffffff02b3150000000000001976a9149ae6e42c56f1ea319cfc704ad50db0683015029b88acdba00000000000001976a914b19d7011a6107944209d5ebf9ef31a0fdf3115f188ac00000000";
         assert_eq!(result_hex, expected_hex_result);
     }
 }

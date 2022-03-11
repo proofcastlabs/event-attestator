@@ -1,5 +1,5 @@
 use bitcoin::{
-    blockdata::transaction::TxIn as BtcUtxo,
+    blockdata::transaction::{Transaction as BtcTransaction, TxIn as BtcUtxo},
     consensus::encode::deserialize as btc_deserialize,
     hashes::{sha256d, Hash},
 };
@@ -7,13 +7,15 @@ use serde_json::{json, Value as JsonValue};
 
 use crate::{
     chains::btc::{
-        btc_utils::calculate_btc_tx_fee,
+        btc_constants::{BTC_TX_LOCK_TIME, BTC_TX_VERSION},
+        btc_utils::create_new_pay_to_pub_key_hash_output,
         utxo_manager::{
             utxo_database_utils::{get_all_utxo_db_keys, get_first_utxo_and_value, get_utxo_from_db},
             utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
         },
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
+    safe_addresses::SAFE_BTC_ADDRESS_STR,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
@@ -91,58 +93,62 @@ pub fn utxos_exist_in_db<D: DatabaseInterface>(db: &D, utxos_to_check: &BtcUtxos
 
 pub fn get_enough_utxos_to_cover_total<D: DatabaseInterface>(
     db: &D,
-    required_btc_amount: u64,
+    satoshis: u64,
     num_outputs: usize,
     sats_per_byte: u64,
 ) -> Result<BtcUtxosAndValues> {
-    get_enough_utxos_to_cover_total_recursively(db, required_btc_amount, num_outputs, sats_per_byte, vec![].into())
+    get_enough_utxos_to_cover_total_recursively(db, satoshis, num_outputs, sats_per_byte, vec![].into())
 }
 
 fn get_enough_utxos_to_cover_total_recursively<D: DatabaseInterface>(
     db: &D,
-    required_btc_amount: u64,
+    satoshis: u64,
     num_outputs: usize,
     sats_per_byte: u64,
-    inputs: BtcUtxosAndValues,
+    mut inputs: BtcUtxosAndValues,
 ) -> Result<BtcUtxosAndValues> {
     info!("✔ Getting UTXO from db...");
-    get_first_utxo_and_value(db).and_then(|utxo_and_value| {
-        debug!("✔ Retrieved UTXO of value: {}", utxo_and_value.value);
-        let fee = calculate_btc_tx_fee(inputs.len() + 1, num_outputs, sats_per_byte);
-        let total_cost = fee + required_btc_amount;
-        let updated_inputs = {
-            let mut v = inputs.clone();
-            v.push(utxo_and_value); // FIXME - can we make more efficient?
-            v
-        };
-        let total_utxo_value = updated_inputs
-            .iter()
-            .fold(0, |acc, utxo_and_value| acc + utxo_and_value.value);
-        debug!(
-            "✔ Calculated fee for {} input(s) & {} output(s): {} Sats",
-            updated_inputs.len(),
-            num_outputs,
-            fee
-        );
-        debug!("✔ Fee + required BTC value of tx: {} Satoshis", total_cost);
-        debug!("✔ Current total UTXO value: {} Satoshis", total_utxo_value);
-        match total_cost > total_utxo_value {
-            true => {
-                trace!("✔ UTXOs do not cover fee + amount, need another!");
-                get_enough_utxos_to_cover_total_recursively(
-                    db,
-                    required_btc_amount,
-                    num_outputs,
-                    sats_per_byte,
-                    updated_inputs,
-                )
-            },
-            false => {
-                trace!("✔ UTXO(s) covers fee and required btc amount!");
-                Ok(updated_inputs)
-            },
-        }
-    })
+    let utxo = get_first_utxo_and_value(db)?;
+    debug!("✔ Retrieved UTXO of value: {}", utxo.value);
+
+    // NOTE: Add the UTXO to the inputs array...
+    inputs.push(utxo);
+
+    // NOTE: Create the correct number of outputs for the transaction...
+    let mut dummy_outputs = vec![];
+    for _ in 1..=num_outputs {
+        let output = create_new_pay_to_pub_key_hash_output(0, SAFE_BTC_ADDRESS_STR)?;
+        dummy_outputs.push(output)
+    }
+
+    // NOTE: Create a dummy tx so we can correctly calculate the size & thus the fee...
+    let dummy_tx = BtcTransaction {
+        output: dummy_outputs,
+        version: BTC_TX_VERSION,
+        input: inputs.to_utxos()?,
+        lock_time: BTC_TX_LOCK_TIME,
+    };
+    let fee = dummy_tx.get_size() as u64 * sats_per_byte;
+
+    // NOTE: Calculate total + fee to check if we have enough UTXOs to cover it...
+    let total_cost = fee + satoshis;
+    let total_utxo_value = inputs.sum();
+    debug!(
+        "✔ Calculated fee for {} input(s) & {} output(s): {} satoshis",
+        inputs.len(),
+        num_outputs,
+        fee
+    );
+    debug!("✔ Fee + required BTC value of tx: {} Satoshis", total_cost);
+    debug!("✔ Current total UTXO value: {} Satoshis", total_utxo_value);
+
+    if total_cost > total_utxo_value {
+        debug!("✔ UTXOs do not cover fee + amount, we need another!");
+        get_enough_utxos_to_cover_total_recursively(db, satoshis, num_outputs, sats_per_byte, inputs)
+    } else {
+        debug!("✔ UTXO(s) covers fee and required btc amount!");
+        Ok(inputs)
+    }
 }
 
 #[cfg(test)]
