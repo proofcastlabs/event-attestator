@@ -16,7 +16,6 @@ use crate::{
     },
     types::Byte,
 };
-
 use crate::{
     metadata::{metadata_chain_id::MetadataChainId, metadata_protocol_id::MetadataProtocolId},
     safe_addresses::{
