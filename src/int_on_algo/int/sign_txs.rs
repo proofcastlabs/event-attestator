@@ -64,7 +64,8 @@ impl IntOnAlgoAlgoTxInfos {
     ) -> Result<Vec<AlgorandSignedTransaction>> {
         info!("✔ Signing `erc20-on-int` INT transactions...");
         self.iter()
-            .map(|info| info.to_algo_signed_tx(fee, first_valid, genesis_hash, sender, private_key))
+            .enumerate()
+            .map(|(i, info)| info.to_algo_signed_tx(fee, first_valid + i as u64, genesis_hash, sender, private_key))
             .collect::<Result<Vec<_>>>()
     }
 }

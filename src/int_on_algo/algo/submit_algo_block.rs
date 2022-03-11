@@ -113,6 +113,7 @@ mod tests {
             EthState::init(&db),
         )
         .unwrap();
+        // FIXME Should do full integration tests here!
         submit_algo_block_to_core(db, &algo_block_json_strings[1]).unwrap();
     }
 }
