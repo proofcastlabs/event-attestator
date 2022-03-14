@@ -99,6 +99,14 @@ impl EnabledFeatures {
         !self.is_enabled(feature_hash)
     }
 
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(&self)?)
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        Ok(serde_json::from_slice(&bytes)?)
+    }
+
     pub fn enable_multi<D: DatabaseInterface>(
         self,
         db_utils: &EosDbUtils<D>,
@@ -169,13 +177,27 @@ lazy_static! {
     pub static ref AVAILABLE_FEATURES: AvailableFeatures = {
         AvailableFeatures::new(vec![ProtocolFeature::new(
             "WTMSIG_BLOCK_SIGNATURE",
-            hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH),
+            WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
         )])
     };
 }
 
-// NOTE: 299dcb6af692324b899b39f16d5a530a33062804e41f09dc97e9f156b4476707
-pub static WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH: [u8; 32] = [
-    41, 157, 203, 106, 246, 146, 50, 75, 137, 155, 57, 241, 109, 90, 83, 10, 51, 6, 40, 4, 228, 31, 9, 220, 151, 233,
-    241, 86, 180, 71, 103, 7,
-];
+pub static WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH: &str =
+    "299dcb6af692324b899b39f16d5a530a33062804e41f09dc97e9f156b4476707";
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::errors::AppError;
+
+    #[test]
+    fn should_serde_enabled_features_to_and_from_bytes() {
+        let features = EnabledFeatures::default();
+        let updated_features = features
+            .add(&hex::decode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH).unwrap())
+            .unwrap();
+        let bytes = updated_features.to_bytes().unwrap();
+        let result = EnabledFeatures::from_bytes(&bytes).unwrap();
+        assert_eq!(result, updated_features);
+    }
+}

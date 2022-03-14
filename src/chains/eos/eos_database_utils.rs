@@ -55,7 +55,7 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
         debug!("✔ Putting EOS enabled protocol features in db...");
         self.get_db().put(
             self.get_eos_protocol_features_key(),
-            serde_json::to_vec(&protocol_features)?,
+            protocol_features.to_bytes()?,
             MIN_DATA_SENSITIVITY_LEVEL,
         )
     }
@@ -66,7 +66,7 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
             .get_db()
             .get(self.get_eos_protocol_features_key(), MIN_DATA_SENSITIVITY_LEVEL)
         {
-            Ok(bytes) => Ok(serde_json::from_slice(&bytes)?),
+            Ok(bytes) => EnabledFeatures::from_bytes(&bytes),
             Err(_) => {
                 info!("✔ No features found in db! Initting empty features...");
                 Ok(EnabledFeatures::init())
