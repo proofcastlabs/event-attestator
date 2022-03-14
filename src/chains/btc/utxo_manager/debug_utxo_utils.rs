@@ -55,14 +55,14 @@ pub fn remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -> Resu
 }
 
 pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize) -> Result<String> {
+    if num_utxos < 1 {
+        return Err("Cannot consolidate 0 UTXOs!".into());
+    };
     let btc_db_utils = BtcDbUtils::new(&db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_x_utxos(&db, num_utxos))
         .and_then(|utxos| {
-            if num_utxos < 1 {
-                return Err("Cannot consolidate 0 UTXOs!".into());
-            };
             let btc_address = btc_db_utils.get_btc_address_from_db()?;
             let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
             let btc_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
