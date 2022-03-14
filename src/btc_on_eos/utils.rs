@@ -1,21 +1,23 @@
-use crate::constants::BTC_NUM_DECIMALS;
+fn get_x_num_zeroes_string(num_zeroes: usize) -> String {
+    let zeroes = vec![0u8; num_zeroes];
+    zeroes.iter().fold(String::new(), |acc, e| format!("{acc}{e}"))
+}
 
-pub fn convert_u64_to_8_decimal_eos_asset(value: u64, token_symbol: &str) -> String {
+pub fn convert_u64_to_x_decimal_eos_asset(value: u64, num_decimals: usize, token_symbol: &str) -> String {
     let mut amount_string = value.to_string();
-    let asset = match amount_string.len() {
-        0 => "0.00000000".to_string(),
-        1 => format!("0.0000000{}", amount_string),
-        2 => format!("0.000000{}", amount_string),
-        3 => format!("0.00000{}", amount_string),
-        4 => format!("0.0000{}", amount_string),
-        5 => format!("0.000{}", amount_string),
-        6 => format!("0.00{}", amount_string),
-        7 => format!("0.0{}", amount_string),
-        8 => format!("0.{}", amount_string),
-        _ => {
-            amount_string.insert(amount_string.len() - BTC_NUM_DECIMALS, '.');
-            amount_string
-        },
+    let amount_string_length = amount_string.len();
+    let asset = if amount_string_length == 0 {
+        format!("0.{}", get_x_num_zeroes_string(num_decimals))
+    } else if amount_string_length < num_decimals {
+        format!(
+            "0.{}{amount_string}",
+            get_x_num_zeroes_string(num_decimals - amount_string_length)
+        )
+    } else if amount_string_length == num_decimals {
+        format!("0.{amount_string}")
+    } else {
+        amount_string.insert(amount_string.len() - num_decimals, '.');
+        amount_string
     };
     format!("{} {}", asset, token_symbol)
 }
@@ -23,6 +25,7 @@ pub fn convert_u64_to_8_decimal_eos_asset(value: u64, token_symbol: &str) -> Str
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::chains::btc::btc_constants::BTC_NUM_DECIMALS;
 
     #[test]
     fn should_convert_u64_to_8_decimal_eos_asset() {
@@ -70,8 +73,34 @@ mod tests {
             0 as u64,
         ]
         .iter()
-        .map(|u_64| convert_u64_to_8_decimal_eos_asset(*u_64, symbol))
+        .map(|u_64| convert_u64_to_x_decimal_eos_asset(*u_64, BTC_NUM_DECIMALS, symbol))
         .zip(expected_results.iter())
         .for_each(|(result, expected_result)| assert_eq!(&result, expected_result));
+    }
+
+    #[test]
+    fn should_get_x_num_zeroes_string() {
+        let vec = vec![0u8; 10];
+        let results = vec
+            .iter()
+            .enumerate()
+            .map(|(i, _)| get_x_num_zeroes_string(i))
+            .collect::<Vec<String>>();
+        let expected_results = vec![
+            "",
+            "0",
+            "00",
+            "000",
+            "0000",
+            "00000",
+            "000000",
+            "0000000",
+            "00000000",
+            "000000000",
+        ];
+        results
+            .iter()
+            .enumerate()
+            .for_each(|(i, result)| assert_eq!(result, expected_results[i]));
     }
 }

@@ -11,10 +11,10 @@ use eos_chain::AccountName as EosAccountName;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    btc_on_eos::utils::convert_u64_to_8_decimal_eos_asset,
+    btc_on_eos::utils::convert_u64_to_x_decimal_eos_asset,
     chains::{
         btc::{
-            btc_constants::MINIMUM_REQUIRED_SATOSHIS,
+            btc_constants::{BTC_NUM_DECIMALS, MINIMUM_REQUIRED_SATOSHIS},
             btc_metadata::ToMetadata,
             btc_state::BtcState,
             deposit_address_info::DepositInfoHashMap,
@@ -247,7 +247,7 @@ impl BtcOnEosEosTxInfo {
                 subtrahend, amount, amount_minus_fee
             );
             let mut new_self = self.clone();
-            new_self.amount = convert_u64_to_8_decimal_eos_asset(amount_minus_fee, symbol);
+            new_self.amount = convert_u64_to_x_decimal_eos_asset(amount_minus_fee, BTC_NUM_DECIMALS, symbol);
             Ok(new_self)
         }
     }
@@ -278,7 +278,7 @@ impl BtcOnEosEosTxInfo {
                 },
             },
             originating_tx_hash: originating_tx_hash.to_string(),
-            amount: convert_u64_to_8_decimal_eos_asset(amount, symbol),
+            amount: convert_u64_to_x_decimal_eos_asset(amount, BTC_NUM_DECIMALS, symbol),
             originating_tx_address: originating_tx_address.to_string(),
             eos_token_address: eos_token_address.to_string(),
         }

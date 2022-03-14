@@ -5,7 +5,7 @@ use serde_json::Value as JsonValue;
 use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
-    constants::{CORE_VERSION, DB_KEY_PREFIX, DEBUG_OUTPUT_MARKER, U64_NUM_BYTES},
+    constants::{CORE_VERSION, DB_KEY_PREFIX, DEBUG_OUTPUT_MARKER},
     types::{Byte, Bytes, Result},
 };
 

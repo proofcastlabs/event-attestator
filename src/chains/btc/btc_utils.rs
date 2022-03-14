@@ -21,10 +21,10 @@ use ethereum_types::U256;
 
 use crate::{
     chains::btc::{
-        btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, BTC_TX_LOCK_TIME, BTC_TX_VERSION, DEFAULT_BTC_SEQUENCE},
+        btc_constants::{BTC_NUM_DECIMALS, BTC_PUB_KEY_SLICE_LENGTH, DEFAULT_BTC_SEQUENCE},
         btc_types::BtcPubKeySlice,
     },
-    constants::{BTC_NUM_DECIMALS, PTOKEN_ERC777_NUM_DECIMALS},
+    constants::PTOKEN_ERC777_NUM_DECIMALS,
     safe_addresses::SAFE_BTC_ADDRESS,
     types::{Byte, Bytes, Result},
     utils::strip_hex_prefix,

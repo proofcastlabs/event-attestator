@@ -5,6 +5,7 @@ pub const BTC_TX_VERSION: i32 = 1;
 pub const BTC_TX_LOCK_TIME: u32 = 0;
 pub const BTC_TAIL_LENGTH: u64 = 10;
 pub const MAX_NUM_OUTPUTS: usize = 2;
+pub const BTC_NUM_DECIMALS: usize = 8;
 pub const BTC_PUB_KEY_SLICE_LENGTH: usize = 33;
 pub const MINIMUM_REQUIRED_SATOSHIS: u64 = 5000;
 pub const DEFAULT_BTC_SEQUENCE: u32 = 4_294_967_295; // NOTE: 0xFFFFFFFF
