@@ -49,6 +49,35 @@ fn remove_utxo_pointer(utxo: &BtcUtxoAndValue) -> BtcUtxoAndValue {
     utxo_with_no_pointer
 }
 
+fn utxo_exists<D: DatabaseInterface>(db: &D, v_out: u32, tx_id: &Txid) -> bool {
+    fn utxo_exists_recursive<D: DatabaseInterface>(
+        db: &D,
+        tx_id: &Txid,
+        v_out: u32,
+        maybe_pointer: Option<Bytes>,
+    ) -> Result<BtcUtxoAndValue> {
+        let maybe_utxo = match maybe_pointer {
+            None => get_utxo_from_db(db, &get_first_utxo_pointer(db)?),
+            Some(ref pointer) => get_utxo_from_db(db, pointer),
+        };
+        match maybe_utxo {
+            Err(_) => Err("Could not get UTXO!".into()),
+            Ok(utxo) => {
+                if &utxo.get_tx_id()? == tx_id && utxo.get_v_out()? == v_out {
+                    Ok(utxo)
+                } else {
+                    match utxo.maybe_pointer {
+                        Some(next_pointer) => utxo_exists_recursive(db, tx_id, v_out, Some(next_pointer.to_vec())),
+                        None => Err("No more UTXOs to search!".into()),
+                    }
+                }
+            },
+        }
+    }
+
+    utxo_exists_recursive(db, tx_id, v_out, None).is_ok()
+}
+
 pub fn get_utxo_with_tx_id_and_v_out<D: DatabaseInterface>(
     db: &D,
     v_out: u32,
@@ -133,27 +162,32 @@ pub fn get_first_utxo_and_value<D: DatabaseInterface>(db: &D) -> Result<BtcUtxoA
 }
 
 pub fn save_new_utxo_and_value<D: DatabaseInterface>(db: &D, utxo_and_value: &BtcUtxoAndValue) -> Result<()> {
-    let value = utxo_and_value.value;
-    let hash_vec = get_utxo_and_value_db_key(get_utxo_nonce_from_db(db)? + 1);
-    let hash = sha256d::Hash::from_slice(&hash_vec)?;
-    debug!("✔ Saving new UTXO in db under hash: {}", hex::encode(hash));
-    match get_total_utxo_balance_from_db(db)? {
-        0 => {
-            debug!("✔ No UTXO balance ∴ setting `UTXO_FIRST` & `UTXO_LAST`...");
-            set_first_utxo_pointer(db, &hash)
-                .and_then(|_| increment_utxo_nonce_in_db(db))
-                .and_then(|_| set_last_utxo_pointer(db, &hash))
-                .and_then(|_| put_total_utxo_balance_in_db(db, value))
-                .and_then(|_| put_utxo_in_db(db, &hash_vec, utxo_and_value))
-        },
-        _ => {
-            debug!("✔ > 0 UTXO balance ∴ setting only `UTXO_LAST`...");
-            update_pointer_in_last_utxo_in_db(db, hash)
-                .and_then(|_| increment_utxo_nonce_in_db(db))
-                .and_then(|_| set_last_utxo_pointer(db, &hash))
-                .and_then(|_| put_utxo_in_db(db, &hash_vec, utxo_and_value))
-                .and_then(|_| increment_total_utxo_balance_in_db(db, value))
-        },
+    if utxo_exists(db, utxo_and_value.get_v_out()?, &utxo_and_value.get_tx_id()?) {
+        info!("✘ Not saving UTXO ∵ it's already in the database!");
+        Ok(())
+    } else {
+        let value = utxo_and_value.value;
+        let hash_vec = get_utxo_and_value_db_key(get_utxo_nonce_from_db(db)? + 1);
+        let hash = sha256d::Hash::from_slice(&hash_vec)?;
+        debug!("✔ Saving new UTXO in db under hash: {}", hex::encode(hash));
+        match get_total_utxo_balance_from_db(db)? {
+            0 => {
+                debug!("✔ No UTXO balance ∴ setting `UTXO_FIRST` & `UTXO_LAST`...");
+                set_first_utxo_pointer(db, &hash)
+                    .and_then(|_| increment_utxo_nonce_in_db(db))
+                    .and_then(|_| set_last_utxo_pointer(db, &hash))
+                    .and_then(|_| put_total_utxo_balance_in_db(db, value))
+                    .and_then(|_| put_utxo_in_db(db, &hash_vec, utxo_and_value))
+            },
+            _ => {
+                debug!("✔ > 0 UTXO balance ∴ setting only `UTXO_LAST`...");
+                update_pointer_in_last_utxo_in_db(db, hash)
+                    .and_then(|_| increment_utxo_nonce_in_db(db))
+                    .and_then(|_| set_last_utxo_pointer(db, &hash))
+                    .and_then(|_| put_utxo_in_db(db, &hash_vec, utxo_and_value))
+                    .and_then(|_| increment_total_utxo_balance_in_db(db, value))
+            },
+        }
     }
 }
 
@@ -493,9 +527,10 @@ mod tests {
     #[test]
     fn should_save_gt_one_utxo() {
         let db = get_test_database();
-        let utxo1 = get_sample_p2pkh_utxo_and_value();
+        let utxos = get_sample_utxo_and_values();
+        let utxo1 = utxos[0].clone();
         let hash1 = get_utxo_and_value_db_key(1);
-        let mut utxo2 = utxo1.clone();
+        let mut utxo2 = utxos[1].clone();
         let hash2 = get_utxo_and_value_db_key(2);
         let hash = sha256d::Hash::hash(b"a hash");
         utxo2.maybe_pointer = Some(hash);
@@ -522,9 +557,10 @@ mod tests {
     #[test]
     fn should_remove_1_utxo_correctly_when_gt_1_exist() {
         let db = get_test_database();
-        let utxo1 = get_sample_p2pkh_utxo_and_value();
+        let utxos = get_sample_utxo_and_values();
+        let utxo1 = utxos[0].clone();
         let hash1 = get_utxo_and_value_db_key(1);
-        let mut utxo2 = utxo1.clone();
+        let mut utxo2 = utxos[1].clone();
         let hash2 = get_utxo_and_value_db_key(2);
         let hash = sha256d::Hash::hash(b"a hash");
         utxo2.maybe_pointer = Some(hash);
@@ -717,5 +753,51 @@ mod tests {
             Err(AppError::Custom(err_msg)) => assert_eq!(err_msg, expected_err_msg),
             Err(_) => panic!("Wrong error received!"),
         };
+    }
+
+    #[test]
+    fn utxo_exists_should_return_true_if_extant() {
+        let db = get_test_database();
+        let utxos = get_sample_utxo_and_values();
+        save_utxos_to_db(&db, &utxos).unwrap();
+        utxos.iter().for_each(|utxo| {
+            let result = utxo_exists(&db, utxo.get_v_out().unwrap(), &utxo.get_tx_id().unwrap());
+            assert!(result);
+        })
+    }
+
+    #[test]
+    fn utxo_exists_should_return_false_if_not_extant() {
+        let db = get_test_database();
+        let utxos = get_sample_utxo_and_values();
+        let utxos_with_one_removed = BtcUtxosAndValues(utxos.clone()[..utxos.len() - 1].to_vec());
+        assert_eq!(utxos.len(), utxos_with_one_removed.len() + 1);
+        save_utxos_to_db(&db, &utxos_with_one_removed).unwrap();
+        utxos.iter().enumerate().for_each(|(i, utxo)| {
+            let result = utxo_exists(&db, utxo.get_v_out().unwrap(), &utxo.get_tx_id().unwrap());
+            if i == utxos.len() - 1 {
+                assert!(!result);
+            } else {
+                assert!(result);
+            }
+        })
+    }
+
+    #[test]
+    fn should_not_save_same_utxo_twice() {
+        let db = get_test_database();
+        let utxos = get_sample_utxo_and_values();
+        let utxos_with_duplicates = BtcUtxosAndValues([utxos.clone().0, utxos.clone().0].concat());
+        assert_eq!(utxos_with_duplicates.len(), utxos.len() * 2);
+        let utxo_nonce_before = get_utxo_nonce_from_db(&db).unwrap() as usize;
+        assert_eq!(utxo_nonce_before, 0);
+        let utxo_total_before = get_total_utxo_balance_from_db(&db).unwrap();
+        assert_eq!(utxo_total_before, 0);
+        let expected_utxo_nonce = utxos.len();
+        save_utxos_to_db(&db, &utxos_with_duplicates).unwrap();
+        let utxo_nonce_after = get_utxo_nonce_from_db(&db).unwrap() as usize;
+        assert_eq!(utxo_nonce_after, expected_utxo_nonce);
+        let utxo_total_after = get_total_utxo_balance_from_db(&db).unwrap();
+        assert_eq!(utxo_total_after, utxos.sum());
     }
 }
