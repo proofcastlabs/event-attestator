@@ -47,7 +47,7 @@ impl BtcBlockAndId {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Default, Deserialize)]
 pub struct BtcBlockJson {
     pub bits: u32,
     pub id: String,

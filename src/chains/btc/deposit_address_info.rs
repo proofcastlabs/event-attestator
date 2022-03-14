@@ -23,7 +23,7 @@ use crate::{
 
 pub type DepositInfoHashMap = HashMap<BtcAddress, DepositAddressInfo>;
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Deref, Constructor)]
+#[derive(Clone, Debug, PartialEq, Default, Eq, Deserialize, Deref, Constructor)]
 pub struct DepositAddressInfoJsonList(pub Vec<DepositAddressInfoJson>);
 
 #[derive(Clone, Debug, PartialEq, Eq, Deref, Constructor)]
@@ -81,7 +81,7 @@ impl fmt::Display for DepositAddressInfoVersion {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DepositAddressInfoJson {
     pub nonce: u64,
     pub address: Option<String>,

@@ -76,9 +76,14 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
     }
 
     pub fn add_btc_submission_json(mut self, submission_json: BtcSubmissionMaterialJson) -> Result<BtcState<'a, D>> {
-        info!("✔ Adding BTC submission json to BTC state...");
-        self.submission_json = Some(submission_json);
-        Ok(self)
+        match self.submission_json {
+            Some(_) => Err(get_no_overwrite_state_err("submission_json").into()),
+            None => {
+                info!("✔ Adding BTC submission json to BTC state...");
+                self.submission_json = Some(submission_json);
+                Ok(self)
+            },
+        }
     }
 
     pub fn add_p2pkh_deposit_txs(mut self, p2pkh_deposit_txs: BtcTransactions) -> Result<BtcState<'a, D>> {
@@ -371,5 +376,19 @@ mod tests {
             Ok(_) => panic!("Block should not be in state yet!"),
             _ => panic!("Wrong error received!"),
         };
+    }
+
+    #[test]
+    fn should_not_allow_btc_submission_json_overwrite_in_state() {
+        let db = get_test_database();
+        let state = BtcState::init(&db);
+        let json = BtcSubmissionMaterialJson::default();
+        let state_with_material = state.add_btc_submission_json(json.clone()).unwrap();
+        let expected_error = get_no_overwrite_state_err("submission_json");
+        match state_with_material.add_btc_submission_json(json) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error recevied"),
+        }
     }
 }
