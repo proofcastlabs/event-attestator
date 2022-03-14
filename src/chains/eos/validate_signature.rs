@@ -104,13 +104,18 @@ fn get_signing_key_from_active_schedule(
         .map(|producer| producer.producer_name)
         .zip(v2_schedule.producers.iter())
         .filter(|(name_from_schedule, _)| *name_from_schedule == block_producer)
-        // NOTE/FIXME We're only getting the first key so far.
-        .map(|(_, producer)| &producer.authority.1.keys[0].key)
-        .cloned()
-        .collect::<Vec<EosProducerKey>>();
+        .map(|(_, producer)| {
+            let keys = &producer.authority.1.keys;
+            match keys.len() {
+                1 => Ok(keys[0].key.clone()),
+                _ => Err("Unexpected number of authority keys in producer schedule!".into()),
+            }
+        })
+        .collect::<Result<Vec<EosProducerKey>>>()?;
     match &filtered_keys.len() {
-        0 => Err("✘ Could not extract a signing key from active schedule!".into()),
-        _ => Ok(filtered_keys[0].clone()), // NOTE: Can this ever be > 1?
+        0 => Err("Could not extract a signing key from active schedule!".into()),
+        1 => Ok(filtered_keys[0].clone()),
+        _ => Err("Unexpected number of signing keys extracted from active schedule!".into()),
     }
 }
 
