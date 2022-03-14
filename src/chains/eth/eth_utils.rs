@@ -5,16 +5,14 @@ use crate::{
     chains::eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES,
     constants::ETH_HASH_LENGTH,
     types::{Bytes, NoneError, Result},
-    utils::{decode_hex_with_no_padding_with_err_msg, strip_hex_prefix},
+    utils::{decode_hex_with_err_msg, strip_hex_prefix},
 };
 
 pub fn get_eth_address_from_str(eth_address_str: &str) -> Result<EthAddress> {
     info!("✔ Getting ETH address from str...");
-    decode_hex_with_no_padding_with_err_msg(eth_address_str, "ETH address is not valid hex!").and_then(|bytes| {
-        match bytes.len() {
-            20 => Ok(EthAddress::from_slice(&bytes)),
-            _ => Err("Incorrect number of bytes for ETH address!".into()),
-        }
+    decode_hex_with_err_msg(eth_address_str, "ETH address is not valid hex!").and_then(|bytes| match bytes.len() {
+        20 => Ok(EthAddress::from_slice(&bytes)),
+        _ => Err("Incorrect number of bytes for ETH address!".into()),
     })
 }
 

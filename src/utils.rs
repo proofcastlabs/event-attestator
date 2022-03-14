@@ -116,13 +116,6 @@ pub fn decode_hex_with_err_msg(hex: &str, err_msg: &str) -> Result<Bytes> {
     }
 }
 
-pub fn decode_hex_with_no_padding_with_err_msg(hex: &str, err_msg: &str) -> Result<Bytes> {
-    match hex::decode(strip_hex_prefix(hex)) {
-        Ok(bytes) => Ok(bytes),
-        Err(err) => Err(format!("{} {}", err_msg, err).into()),
-    }
-}
-
 pub fn convert_u64_to_bytes(u_64: u64) -> Bytes {
     u_64.to_le_bytes().to_vec()
 }
