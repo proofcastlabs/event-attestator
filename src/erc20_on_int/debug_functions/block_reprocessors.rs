@@ -124,17 +124,20 @@ fn reprocess_int_block<D: DatabaseInterface>(
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting INT output json...");
+            let txs = state.erc20_on_int_eth_signed_txs.clone();
+            let num_txs = txs.len();
             let output = serde_json::to_string(&IntOutput {
                 int_latest_block_number: state.evm_db_utils.get_latest_eth_block_number()?,
-                eth_signed_transactions: if state.erc20_on_int_eth_signed_txs.is_empty() {
+                eth_signed_transactions: if num_txs == 0 {
                     vec![]
                 } else {
                     let use_any_sender_tx = false;
                     get_eth_signed_tx_info_from_evm_txs(
-                        &state.erc20_on_int_eth_signed_txs,
+                        &txs,
                         &state.erc20_on_int_eth_tx_infos,
                         match maybe_nonce {
-                            Some(nonce) => nonce,
+                            // NOTE: We inrement the passed in nonce ∵ of the way the report nonce is calculated.
+                            Some(nonce) => nonce + num_txs as u64,
                             None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                         },
                         use_any_sender_tx,
@@ -230,17 +233,20 @@ fn reprocess_eth_block<D: DatabaseInterface>(
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting INT output json...");
+            let txs = state.erc20_on_int_int_signed_txs.clone();
+            let num_txs = txs.len();
             let output = serde_json::to_string(&EthOutput {
                 eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
-                int_signed_transactions: if state.erc20_on_int_int_signed_txs.is_empty() {
+                int_signed_transactions: if num_txs == 0 {
                     vec![]
                 } else {
                     let use_any_sender_tx = false;
                     get_evm_signed_tx_info_from_evm_txs(
-                        &state.erc20_on_int_int_signed_txs,
+                        &txs,
                         &state.erc20_on_int_int_tx_infos,
                         match maybe_nonce {
-                            Some(nonce) => nonce,
+                            // NOTE: We inrement the passed in nonce ∵ of the way the report nonce is calculated.
+                            Some(nonce) => nonce + num_txs as u64,
                             None => state.evm_db_utils.get_eth_account_nonce_from_db()?,
                         },
                         use_any_sender_tx,

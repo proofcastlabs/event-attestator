@@ -200,21 +200,25 @@ fn reprocess_eos_block<D: DatabaseInterface>(
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting EOS output json...");
+            let txs = state.eth_signed_txs.clone();
+            let num_txs = txs.len();
             let output = serde_json::to_string(&EosOutput {
                 eos_latest_block_number: state.eos_db_utils.get_latest_eos_block_number()?,
-                eth_signed_transactions: match &state.eth_signed_txs.len() {
-                    0 => vec![],
-                    _ => get_eth_signed_tx_info_from_eth_txs(
-                        &state.eth_signed_txs,
+                eth_signed_transactions: if num_txs == 0 {
+                    vec![]
+                } else {
+                    get_eth_signed_tx_info_from_eth_txs(
+                        &txs,
                         &state.erc20_on_eos_redeem_infos,
                         match maybe_nonce {
-                            Some(nonce) => nonce,
+                            // NOTE: We inrement the passed in nonce ∵ of the way the report nonce is calculated.
+                            Some(nonce) => nonce + num_txs as u64,
                             None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                         },
                         false,
                         state.eth_db_utils.get_any_sender_nonce_from_db()?,
                         state.eth_db_utils.get_latest_eth_block_number()?,
-                    )?,
+                    )?
                 },
             })?;
             info!("✔ EOS output: {}", output);
