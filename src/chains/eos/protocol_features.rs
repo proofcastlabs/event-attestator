@@ -6,7 +6,7 @@ use crate::{
     types::{Byte, Bytes, NoneError, Result},
 };
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct ProtocolFeature {
     feature_name: String,
     feature_hash: String,
@@ -17,22 +17,15 @@ impl ProtocolFeature {
         Ok(serde_json::to_string(&self)?)
     }
 
-    pub fn new(name: &str, feature_hash: String) -> Self {
+    pub fn new(name: &str, feature_hash: &str) -> Self {
         ProtocolFeature {
             feature_name: name.to_string(),
-            feature_hash,
-        }
-    }
-
-    pub fn default() -> Self {
-        ProtocolFeature {
-            feature_hash: "1337".to_string(),
-            feature_name: "Default".to_string(),
+            feature_hash: feature_hash.to_string(),
         }
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Eq, Serialize, Deserialize)]
 pub struct EnabledFeatures(Vec<ProtocolFeature>);
 
 impl EnabledFeatures {
@@ -42,6 +35,7 @@ impl EnabledFeatures {
 
     pub fn remove(mut self, feature_hash: &[Byte]) -> Result<Self> {
         if self.does_not_contain(feature_hash) {
+            debug!("Feature hash not in enabled features ∴ doing nothing!");
             return Ok(self);
         };
         AVAILABLE_FEATURES
@@ -68,13 +62,23 @@ impl EnabledFeatures {
             })
     }
 
-    pub fn add_multi(mut self, feature_hashes: &mut Vec<Bytes>) -> Result<Self> {
+    fn add_multi(mut self, feature_hashes: &mut Vec<Bytes>) -> Result<Self> {
         info!("✔ Adding multiple features...");
+        // NOTE: Sort the passed in feature hashes so we can remove duplications...
         feature_hashes.sort();
         feature_hashes.dedup();
+
+        // NOTE: Ensure each of the feature hashes actually exist...
+        feature_hashes
+            .iter()
+            .try_for_each(|feature_hash| AVAILABLE_FEATURES.check_contains(feature_hash))?;
+
+        // NOTE: Get the features from the hashes...
         let features = feature_hashes
             .iter()
             .filter_map(|hash| AVAILABLE_FEATURES.maybe_get_feature_from_hash(hash));
+
+        // NOTE: And finally, add them to self...
         for feature in features {
             info!("✔ Adding feature: {}", feature.to_json()?);
             self.0.push(feature);
@@ -82,12 +86,12 @@ impl EnabledFeatures {
         Ok(self)
     }
 
-    pub fn contains(&self, feature_hash: &[Byte]) -> bool {
+    fn contains(&self, feature_hash: &[Byte]) -> bool {
         let hash = hex::encode(feature_hash);
         self.0.iter().any(|e| e.feature_hash == hash)
     }
 
-    pub fn does_not_contain(&self, feature_hash: &[Byte]) -> bool {
+    fn does_not_contain(&self, feature_hash: &[Byte]) -> bool {
         !self.contains(feature_hash)
     }
 
@@ -104,7 +108,7 @@ impl EnabledFeatures {
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
-        Ok(serde_json::from_slice(&bytes)?)
+        Ok(serde_json::from_slice(bytes)?)
     }
 
     pub fn enable_multi<D: DatabaseInterface>(
@@ -142,7 +146,7 @@ impl AvailableFeatures {
                 info!("✔ Feature hash exists in available features!");
                 Ok(())
             },
-            false => Err(format!("✘ Unrecognised feature hash: {}", hex::encode(feature_hash),).into()),
+            false => Err(format!("Unrecognised feature hash: {}", hex::encode(feature_hash),).into()),
         }
     }
 
@@ -157,17 +161,17 @@ impl AvailableFeatures {
             })
     }
 
-    pub fn maybe_get_feature_from_hash(&self, feature_hash: &[Byte]) -> Option<ProtocolFeature> {
+    fn maybe_get_feature_from_hash(&self, feature_hash: &[Byte]) -> Option<ProtocolFeature> {
         match self.contains(feature_hash) {
             true => Some(self.get_known_feature_from_hash(feature_hash)),
             false => {
-                info!("✘ Unrecognised feature hash: {}", hex::encode(feature_hash));
+                info!("Unrecognised feature hash: {}", hex::encode(feature_hash));
                 None
             },
         }
     }
 
-    pub fn get_feature_from_hash(&self, feature_hash: &[Byte]) -> Result<ProtocolFeature> {
+    fn get_feature_from_hash(&self, feature_hash: &[Byte]) -> Result<ProtocolFeature> {
         self.check_contains(feature_hash)
             .map(|_| self.get_known_feature_from_hash(feature_hash))
     }
@@ -189,6 +193,60 @@ pub static WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH: &str =
 mod tests {
     use super::*;
     use crate::errors::AppError;
+
+    #[test]
+    fn should_not_add_non_available_feature() {
+        let feature_hash = [0u8; 32];
+        assert!(!AVAILABLE_FEATURES.contains(&feature_hash));
+        let enabled_features = EnabledFeatures::default();
+        let expected_error = format!("Unrecognised feature hash: {}", hex::encode(feature_hash));
+        match enabled_features.add(&feature_hash) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
+    }
+
+    #[test]
+    fn should_add_available_feature() {
+        let existing_feature_hash = hex::decode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH).unwrap();
+        assert!(AVAILABLE_FEATURES.contains(&existing_feature_hash));
+        let enabled_features = EnabledFeatures::default();
+        let result = enabled_features.add(&existing_feature_hash);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_multi_add_available_features() {
+        let existing_feature_hash = hex::decode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH).unwrap();
+        let existing_feature_hashes = vec![existing_feature_hash.clone(), existing_feature_hash];
+        existing_feature_hashes
+            .iter()
+            .for_each(|hash| assert!(AVAILABLE_FEATURES.contains(hash)));
+        let enabled_features = EnabledFeatures::default();
+        let result =
+            enabled_features.add_multi(&mut existing_feature_hashes.iter().map(|hash| hash.to_vec()).collect());
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_fail_when_multi_addiing_non_available_features() {
+        let unavailable_feature_hash = vec![0u8; 32];
+        let existing_feature_hash = hex::decode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH).unwrap();
+        let feature_hashes = vec![existing_feature_hash, unavailable_feature_hash.clone()];
+        assert!(feature_hashes
+            .iter()
+            .map(|hash| AVAILABLE_FEATURES.contains(hash))
+            .collect::<Vec<bool>>()
+            .contains(&false));
+        let enabled_features = EnabledFeatures::default();
+        let expected_error = format!("Unrecognised feature hash: {}", hex::encode(unavailable_feature_hash));
+        match enabled_features.add_multi(&mut feature_hashes.iter().map(|hash| hash.to_vec()).collect()) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
+    }
 
     #[test]
     fn should_serde_enabled_features_to_and_from_bytes() {

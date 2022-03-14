@@ -63,7 +63,7 @@ impl EosInitJson {
         use eos_chain::Checksum256;
         let msig_enabled = match &self.maybe_protocol_features_to_enable {
             None => false,
-            Some(features) => features.contains(&hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)),
+            Some(features) => features.contains(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_string()),
         };
         let block_header = EosSubmissionMaterial::parse_eos_block_header_from_json(&self.block).unwrap();
         let blockroot_merkle = self
