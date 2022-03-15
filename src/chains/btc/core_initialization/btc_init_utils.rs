@@ -1,6 +1,10 @@
 use bitcoin::network::constants::Network as BtcNetwork;
 
-use crate::{chains::btc::btc_state::BtcState, traits::DatabaseInterface, types::Result};
+use crate::{
+    chains::btc::{btc_state::BtcState, utxo_manager::utxo_database_utils::set_utxo_balance_to_zero},
+    traits::DatabaseInterface,
+    types::Result,
+};
 
 pub fn put_btc_tail_block_hash_in_db_and_return_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     trace!("✔ Putting BTC tail block hash in db...");
@@ -57,4 +61,9 @@ pub fn put_btc_network_in_db_and_return_state<'a, D: DatabaseInterface>(
 
 pub fn put_btc_fee_in_db_and_return_state<D: DatabaseInterface>(fee: u64, state: BtcState<D>) -> Result<BtcState<D>> {
     state.btc_db_utils.put_btc_fee_in_db(fee).and(Ok(state))
+}
+
+pub fn initialize_utxo_balance_and_return_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
+    info!("✔ Initializing UTXO balance...");
+    set_utxo_balance_to_zero(state.db).and(Ok(state))
 }

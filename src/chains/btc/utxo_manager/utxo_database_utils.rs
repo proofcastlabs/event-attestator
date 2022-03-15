@@ -145,7 +145,7 @@ pub fn get_first_utxo_and_value<D: DatabaseInterface>(db: &D) -> Result<BtcUtxoA
         .and_then(|utxo| match utxo.maybe_pointer {
             None => {
                 debug!("✔ No next pointer ∴ must be last UTXO in db!");
-                delete_utxo_balance_key(db)
+                set_utxo_balance_to_zero(db)
                     .and_then(|_| delete_first_utxo(db))
                     .and_then(|_| delete_last_utxo_key(db))
                     .and_then(|_| delete_first_utxo_key(db))
@@ -212,9 +212,9 @@ pub fn delete_first_utxo<D: DatabaseInterface>(db: &D) -> Result<()> {
     })
 }
 
-pub fn delete_utxo_balance_key<D: DatabaseInterface>(db: &D) -> Result<()> {
-    debug!("✔ Deleting `UTXO_BALANCE` key from db...");
-    db.delete(UTXO_BALANCE.to_vec())
+pub fn set_utxo_balance_to_zero<D: DatabaseInterface>(db: &D) -> Result<()> {
+    debug!("✔ Setting UTXO balance to zero...");
+    put_total_utxo_balance_in_db(db, 0)
 }
 
 pub fn increment_total_utxo_balance_in_db<D: DatabaseInterface>(db: &D, amount_to_increment_by: u64) -> Result<()> {
@@ -242,7 +242,7 @@ pub fn put_total_utxo_balance_in_db<D: DatabaseInterface>(db: &D, balance: u64) 
 pub fn get_total_utxo_balance_from_db<D: DatabaseInterface>(db: &D) -> Result<u64> {
     debug!("✔ Getting total UTXO balance from db...");
     match db.get(UTXO_BALANCE.to_vec(), None) {
-        Err(_) => Ok(0),
+        Err(_) => Ok(0), // FIXME this is an issue. We should set this value on a BTC core initialization in this case!
         Ok(bytes) => convert_bytes_to_u64(&bytes),
     }
 }
@@ -442,13 +442,6 @@ mod tests {
     }
 
     #[test]
-    fn should_be_zero_utxo_balance_when_non_in_db() {
-        let db = get_test_database();
-        let result = get_total_utxo_balance_from_db(&db).unwrap();
-        assert_eq!(result, 0);
-    }
-
-    #[test]
     fn should_set_and_get_total_utxo_balance_from_db() {
         let num = 1337;
         let db = get_test_database();
@@ -497,13 +490,16 @@ mod tests {
     }
 
     #[test]
-    fn should_delete_balance_key() {
+    fn should_zero_utxo_balance() {
         let db = get_test_database();
         let balance = 1;
         let db_utils = BtcDbUtils::new(&db);
         put_total_utxo_balance_in_db(&db, balance).unwrap();
-        delete_utxo_balance_key(&db).unwrap();
-        assert!(!db_utils.key_exists_in_db(&UTXO_BALANCE.to_vec(), None));
+        let balance_before = get_total_utxo_balance_from_db(&db).unwrap();
+        assert_eq!(balance_before, balance);
+        set_utxo_balance_to_zero(&db).unwrap();
+        let balance_after = get_total_utxo_balance_from_db(&db).unwrap();
+        assert_eq!(balance_after, 0);
     }
 
     #[test]
