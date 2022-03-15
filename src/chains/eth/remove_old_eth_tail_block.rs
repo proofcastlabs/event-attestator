@@ -48,6 +48,10 @@ fn maybe_remove_old_tail_block_and_return_state<D: DatabaseInterface>(
     is_for_eth: bool,
     state: EthState<D>,
 ) -> Result<EthState<D>> {
+    // NOTE: This function is to be called AFTER the tail block has been updated in a submission
+    // pipeline. This way, the old tail block will be an ancestor of the current one (except in
+    // the case of a fork), and hence why only the ancestor(s) is/are removed by this function,
+    // and not the tail block itself.
     info!(
         "✔ Maybe removing old {} tail block...",
         if is_for_eth { "ETH" } else { "EVM" }
