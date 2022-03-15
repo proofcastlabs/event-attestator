@@ -162,11 +162,15 @@ pub fn get_first_utxo_and_value<D: DatabaseInterface>(db: &D) -> Result<BtcUtxoA
 }
 
 pub fn save_new_utxo_and_value<D: DatabaseInterface>(db: &D, utxo_and_value: &BtcUtxoAndValue) -> Result<()> {
-    if utxo_exists(db, utxo_and_value.get_v_out()?, &utxo_and_value.get_tx_id()?) {
+    // NOTE: We clear any extant pointers since we definitely don't want any when inserting a new UTXO...
+    // NOTE: This case could crop up when adding UTXOs via a JSON dumped from the DB for example.
+    let mut utxo = utxo_and_value.clone();
+    utxo.maybe_pointer = None;
+    if utxo_exists(db, utxo.get_v_out()?, &utxo.get_tx_id()?) {
         info!("✘ Not saving UTXO ∵ it's already in the database!");
         Ok(())
     } else {
-        let value = utxo_and_value.value;
+        let value = utxo.value;
         let hash_vec = get_utxo_and_value_db_key(get_utxo_nonce_from_db(db)? + 1);
         let hash = sha256d::Hash::from_slice(&hash_vec)?;
         debug!("✔ Saving new UTXO in db under hash: {}", hex::encode(hash));
@@ -177,14 +181,14 @@ pub fn save_new_utxo_and_value<D: DatabaseInterface>(db: &D, utxo_and_value: &Bt
                     .and_then(|_| increment_utxo_nonce_in_db(db))
                     .and_then(|_| set_last_utxo_pointer(db, &hash))
                     .and_then(|_| put_total_utxo_balance_in_db(db, value))
-                    .and_then(|_| put_utxo_in_db(db, &hash_vec, utxo_and_value))
+                    .and_then(|_| put_utxo_in_db(db, &hash_vec, &utxo))
             },
             _ => {
                 debug!("✔ > 0 UTXO balance ∴ setting only `UTXO_LAST`...");
                 update_pointer_in_last_utxo_in_db(db, hash)
                     .and_then(|_| increment_utxo_nonce_in_db(db))
                     .and_then(|_| set_last_utxo_pointer(db, &hash))
-                    .and_then(|_| put_utxo_in_db(db, &hash_vec, utxo_and_value))
+                    .and_then(|_| put_utxo_in_db(db, &hash_vec, &utxo))
                     .and_then(|_| increment_total_utxo_balance_in_db(db, value))
             },
         }
