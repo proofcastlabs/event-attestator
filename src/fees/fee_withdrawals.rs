@@ -78,7 +78,7 @@ mod tests {
     use crate::{
         chains::btc::{
             btc_test_utils::{get_sample_btc_private_key, get_sample_utxo_and_values},
-            utxo_manager::utxo_database_utils::save_utxos_to_db,
+            utxo_manager::utxo_database_utils::{save_utxos_to_db, set_utxo_balance_to_zero},
         },
         errors::AppError,
         test_utils::get_test_database,
@@ -89,6 +89,7 @@ mod tests {
         let btc_fee = 20;
         let accrued_fees = 1;
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let db_utils = BtcDbUtils::new(&db);
         let utxos = get_sample_utxo_and_values();
         let change_address = "mwbtrpDGLWiMiq1TB7DhnrEN14B5Hydp28";

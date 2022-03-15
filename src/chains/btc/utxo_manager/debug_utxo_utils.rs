@@ -15,9 +15,9 @@ use crate::{
                 get_total_number_of_utxos_from_db,
                 get_utxo_with_tx_id_and_v_out,
                 get_x_utxos,
-                put_total_utxo_balance_in_db,
                 save_new_utxo_and_value,
                 save_utxos_to_db,
+                set_utxo_balance_to_zero,
             },
             utxo_types::BtcUtxosAndValues,
         },
@@ -39,7 +39,7 @@ pub fn clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
         })
         .and_then(|_| delete_last_utxo_key(db))
         .and_then(|_| delete_first_utxo_key(db))
-        .and_then(|_| put_total_utxo_balance_in_db(db, 0))
+        .and_then(|_| set_utxo_balance_to_zero(db))
         .and_then(|_| db.end_transaction())
         .map(|_| SUCCESS_JSON.to_string())
 }
@@ -160,6 +160,7 @@ mod tests {
     #[test]
     fn should_clear_all_utxos() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         let expected_balance = utxos.sum();
         save_utxos_to_db(&db, &utxos).unwrap();
@@ -173,6 +174,7 @@ mod tests {
     #[test]
     fn should_insert_multiple_utxos() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         let expected_balance = utxos.sum();
         save_utxos_to_db(&db, &utxos).unwrap();
