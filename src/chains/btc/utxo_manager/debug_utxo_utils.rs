@@ -20,7 +20,6 @@ use crate::{
                 save_utxos_to_db,
             },
             utxo_types::BtcUtxosAndValues,
-            utxo_utils::utxo_exists_in_db,
         },
     },
     check_debug_mode::check_debug_mode,
@@ -138,18 +137,6 @@ pub fn add_multiple_utxos<D: DatabaseInterface>(db: &D, json_str: &str) -> Resul
         .and_then(|utxos| {
             utxos
                 .iter()
-                .map(|utxo| utxo_exists_in_db(db, utxo))
-                .collect::<Result<Vec<bool>>>()?
-                .iter()
-                .zip(utxos.iter())
-                .filter_map(|(exists, utxo)| {
-                    if *exists {
-                        warn!("Not adding UTXO because it already exists!");
-                        None
-                    } else {
-                        Some(utxo)
-                    }
-                })
                 .map(|utxo| save_new_utxo_and_value(db, utxo))
                 .collect::<Result<Vec<()>>>()
         })
