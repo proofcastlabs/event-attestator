@@ -9,6 +9,7 @@ use crate::{
 
 pub static DB_LOCK_ERRROR: &str = "Cannot get lock on DB!";
 
+#[derive(Debug)]
 pub struct TestDB(pub Mutex<HashMap<Bytes, Bytes>>);
 
 impl TestDB {
