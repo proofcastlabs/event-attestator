@@ -107,12 +107,9 @@ Binance Chain Mainnet: 0x00e4b170
 
 - When initializing the core, the merkle-roots for transactions in blocks are __NOT__ verified - only the block headers are checked. For smaller initialiazation material, feel free to provide empty arrays for the transactions. Ensure not relevant transactions took place in the blocks used to initialize the core.
 
-- The light __BTC__ client implemented herein currently accepts only _two_ deposit types:
+- The light __BTC__ client implemented herein currently accepts only `p2sh` deposits made to addresses generated via the __`deposit-address-generator`__ run with the private-key emitted by the core upon BTC initialization.
 
-1) `p2sh` deposits made to addresses generated via the __`deposit-address-generator`__ run with the private-key emitted by the core upon BTC initialization.
-2) `P2PKH` deposits that include in the transaction a UTXO to the `p2pkh` of the aforementioned private-key.
-
-:warning: Neither `p2pk` nor `segwit` transactions are currently supported. Deposits made via such transactions will result in lost funds! :warning:
+:warning: Neither `p2pk`, `p2pkh` nor `segwit` deposit transactions are currently supported. Deposits made via such transactions will result in lost funds! :warning:
 
 - The library follows semantic versioning specification ([SemVer](https://semver.org)).
 
