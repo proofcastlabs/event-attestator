@@ -14,7 +14,7 @@ use crate::{
     types::Result,
 };
 
-pub fn filter_proofs_with_wrong_action_mroot(
+pub fn filter_for_proofs_with_action_mroot(
     action_mroot: &Checksum256,
     action_proofs: &[EosActionProof],
 ) -> Result<EosActionProofs> {
@@ -215,7 +215,7 @@ pub fn maybe_filter_out_proofs_with_wrong_action_mroot<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Filtering out proofs with wrong `action_mroot`...");
-    filter_proofs_with_wrong_action_mroot(&state.get_eos_block_header()?.action_mroot, &state.action_proofs)
+    filter_for_proofs_with_action_mroot(&state.get_eos_block_header()?.action_mroot, &state.action_proofs)
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
@@ -390,17 +390,17 @@ mod tests {
         ];
         let action_mroot =
             convert_hex_to_checksum256("6ba2320b7d71d69770735f92b22f0d986d7e5d72f8842fa93b5604c63dd515c7").unwrap();
-        let result = filter_proofs_with_wrong_action_mroot(&action_mroot, &action_proofs).unwrap();
+        let result = filter_for_proofs_with_action_mroot(&action_mroot, &action_proofs).unwrap();
 
         assert_eq!(result, action_proofs);
     }
 
     #[test]
-    fn should_filter_proofs_with_wrong_action_mroot() {
+    fn should_filter_for_proofs_with_action_mroot() {
         let action_proofs = vec![get_sample_action_proof_n(4), get_sample_action_proof_n(1)];
         let action_mroot =
             convert_hex_to_checksum256("10c0518e15ae178bdd622e3f31249f0f12071c68045dd565a267a522df8ba96c").unwrap();
-        let result = filter_proofs_with_wrong_action_mroot(&action_mroot, &action_proofs).unwrap();
+        let result = filter_for_proofs_with_action_mroot(&action_mroot, &action_proofs).unwrap();
 
         assert_eq!(result, [get_sample_action_proof_n(4)]);
     }
