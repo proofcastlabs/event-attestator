@@ -23,8 +23,6 @@ pub const HEX_PREFIX_LENGTH: usize = 2;
 pub const SAMPLE_RECEIPT_INDEX: usize = 2;
 pub const SEQUENTIAL_BLOCKS_FIRST_NUMBER: usize = 8065750;
 
-pub const ETH_SMART_CONTRACT_BYTECODE_PATH: &str = "./src/chains/eth/eth_test_utils/ptoken-erc777-bytecode";
-
 pub const SAMPLE_BLOCK_JSON_PATH: &str = "src/chains/eth/eth_test_utils/sample-block-json";
 
 pub const SAMPLE_RECEIPT_JSON_PATH: &str = "src/chains/eth/eth_test_utils/sample-receipt-json";

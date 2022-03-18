@@ -63,10 +63,6 @@ pub fn decode_prefixed_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
     decode_hex(&strip_hex_prefix(hex_to_decode))
 }
 
-pub fn strip_new_line_chars(string: String) -> String {
-    string.replace('\n', "")
-}
-
 pub fn convert_dec_str_to_u256(dec_str: &str) -> Result<U256> {
     match U256::from_dec_str(dec_str) {
         Ok(u256) => Ok(u256),
@@ -247,19 +243,6 @@ mod tests {
             Err(AppError::Custom(e)) => assert!(e.contains(expected_error)),
             _ => panic!("Should not have converted non decimal string!"),
         }
-    }
-
-    #[test]
-    fn should_strip_newline_chars() {
-        let new_line_char = "\n";
-        let string = "a string".to_string();
-        let test_vector = format!("{}{}", string, new_line_char);
-        let length_before = test_vector.len();
-        assert!(test_vector.contains(new_line_char));
-        let result = strip_new_line_chars(string);
-        let length_after = result.len();
-        assert!(length_after < length_before);
-        assert_eq!(length_after, length_before - new_line_char.len());
     }
 
     #[test]

@@ -27,10 +27,6 @@ use crate::{
                 set_evm_latest_block_hash_and_return_state,
             },
             generate_eth_address::{generate_and_store_eth_address, generate_and_store_evm_address},
-            generate_eth_contract_tx::{
-                generate_eth_contract_tx_and_put_in_state,
-                generate_evm_contract_tx_and_put_in_state,
-            },
             generate_eth_private_key::{generate_and_store_eth_private_key, generate_and_store_evm_private_key},
         },
         eth_chain_id::EthChainId,
@@ -49,7 +45,6 @@ fn initialize_eth_core_maybe_with_contract_tx_and_return_state<'a, D: DatabaseIn
     chain_id: &EthChainId,
     gas_price: u64,
     canon_to_tip_length: u64,
-    maybe_bytecode_path: Option<&str>,
     state: EthState<'a, D>,
     is_for_eth: bool,
     vault_contract: Option<&EthAddress>,
@@ -122,21 +117,12 @@ fn initialize_eth_core_maybe_with_contract_tx_and_return_state<'a, D: DatabaseIn
                 put_evm_gas_price_in_db_and_return_state(gas_price, state)
             }
         })
-        .and_then(|state| match maybe_bytecode_path {
-            Some(_) => {
-                if is_for_eth {
-                    put_eth_account_nonce_in_db_and_return_state(state, 1)
-                } else {
-                    put_evm_account_nonce_in_db_and_return_state(state, 1)
-                }
-            },
-            None => {
-                if is_for_eth {
-                    put_eth_account_nonce_in_db_and_return_state(state, 0)
-                } else {
-                    put_evm_account_nonce_in_db_and_return_state(state, 0)
-                }
-            },
+        .and_then(|state| {
+            if is_for_eth {
+                put_eth_account_nonce_in_db_and_return_state(state, 0)
+            } else {
+                put_evm_account_nonce_in_db_and_return_state(state, 0)
+            }
         })
         .and_then(|state| {
             if is_for_eth {
@@ -171,16 +157,6 @@ fn initialize_eth_core_maybe_with_contract_tx_and_return_state<'a, D: DatabaseIn
                 },
             },
         })
-        .and_then(|state| match maybe_bytecode_path {
-            Some(path) => {
-                if is_for_eth {
-                    generate_eth_contract_tx_and_put_in_state(chain_id, gas_price, path, state)
-                } else {
-                    generate_evm_contract_tx_and_put_in_state(chain_id, gas_price, path, state)
-                }
-            },
-            None => Ok(state),
-        })
 }
 
 pub fn initialize_eth_core_with_no_contract_tx<'a, D: DatabaseInterface>(
@@ -196,7 +172,6 @@ pub fn initialize_eth_core_with_no_contract_tx<'a, D: DatabaseInterface>(
         chain_id,
         gas_price,
         canon_to_tip_length,
-        None,
         state,
         true,
         None,
@@ -218,7 +193,6 @@ pub fn initialize_evm_core_with_no_contract_tx<'a, D: DatabaseInterface>(
         chain_id,
         gas_price,
         canon_to_tip_length,
-        None,
         state,
         false,
         None,
@@ -243,7 +217,6 @@ pub fn initialize_eth_core_with_vault_and_router_contracts_and_return_state<'a, 
         chain_id,
         gas_price,
         canon_to_tip_length,
-        None,
         state,
         true,
         Some(vault_contract),
