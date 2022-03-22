@@ -23,8 +23,15 @@ use crate::{
     int_on_eos::eos::int_tx_info::IntOnEosIntTxInfos,
     traits::DatabaseInterface,
     types::Result,
-    utils::{get_no_overwrite_state_err, get_not_in_state_err},
+    utils::get_not_in_state_err,
 };
+
+make_state_setters_and_getters!(
+    EosState;
+    "active_schedule" => EosProducerScheduleV2,
+    "btc_utxos_and_values" => BtcUtxosAndValues,
+    "eos_eth_token_dictionary" => EosEthTokenDictionary
+);
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct EosState<'a, D: DatabaseInterface> {
@@ -43,12 +50,12 @@ pub struct EosState<'a, D: DatabaseInterface> {
     pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub processed_tx_ids: ProcessedGlobalSequences,
     pub enabled_protocol_features: EnabledFeatures,
+    active_schedule: Option<EosProducerScheduleV2>,
+    btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos,
     pub btc_on_eos_redeem_infos: BtcOnEosRedeemInfos,
-    pub active_schedule: Option<EosProducerScheduleV2>,
-    pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub erc20_on_eos_redeem_infos: Erc20OnEosRedeemInfos,
-    pub eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
+    eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
 }
 
 impl<'a, D: DatabaseInterface> EosState<'a, D> {
@@ -75,26 +82,6 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             int_on_eos_int_tx_infos: IntOnEosIntTxInfos::new(vec![]),
             btc_on_eos_redeem_infos: BtcOnEosRedeemInfos::new(vec![]),
             erc20_on_eos_redeem_infos: Erc20OnEosRedeemInfos::new(vec![]),
-        }
-    }
-
-    pub fn add_btc_utxos_and_values(mut self, btc_utxos_and_values: BtcUtxosAndValues) -> Result<EosState<'a, D>> {
-        match self.btc_utxos_and_values {
-            Some(_) => Err(get_no_overwrite_state_err("btc_utxos_and_values").into()),
-            None => {
-                self.btc_utxos_and_values = Some(btc_utxos_and_values);
-                Ok(self)
-            },
-        }
-    }
-
-    pub fn add_active_schedule(mut self, active_schedule: EosProducerScheduleV2) -> Result<EosState<'a, D>> {
-        match self.active_schedule {
-            Some(_) => Err(get_no_overwrite_state_err("active_schedule").into()),
-            None => {
-                self.active_schedule = Some(active_schedule);
-                Ok(self)
-            },
         }
     }
 
@@ -159,34 +146,10 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
         }
     }
 
-    pub fn add_eos_eth_token_dictionary(mut self, dictionary: EosEthTokenDictionary) -> Result<EosState<'a, D>> {
-        match self.eos_eth_token_dictionary {
-            Some(_) => Err(get_no_overwrite_state_err("eos_eth_token_dictionary").into()),
-            None => {
-                self.eos_eth_token_dictionary = Some(dictionary);
-                Ok(self)
-            },
-        }
-    }
-
-    pub fn get_eos_eth_token_dictionary(&self) -> Result<&EosEthTokenDictionary> {
-        match self.eos_eth_token_dictionary {
-            Some(ref dictionary) => Ok(dictionary),
-            None => Err(get_not_in_state_err("eos_eth_token_dictionary").into()),
-        }
-    }
-
     pub fn get_eos_block_num(&self) -> Result<u64> {
         match self.block_num {
             Some(num) => Ok(num),
             None => Err(get_not_in_state_err("block_num").into()),
-        }
-    }
-
-    pub fn get_active_schedule(&self) -> Result<&EosProducerScheduleV2> {
-        match self.active_schedule {
-            Some(ref active_schedule) => Ok(active_schedule),
-            None => Err(get_not_in_state_err("active_schedule").into()),
         }
     }
 

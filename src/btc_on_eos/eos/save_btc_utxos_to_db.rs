@@ -4,16 +4,13 @@ use crate::{
     types::Result,
 };
 
-pub fn maybe_save_btc_utxos_to_db<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn maybe_save_btc_utxos_to_db<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Maybe saving BTC UTXOs...");
-    match &state.btc_utxos_and_values {
-        None => {
+    match state.get_btc_utxos_and_values() {
+        Err(_) => {
             info!("✔ No BTC UTXOs in state to save!");
             Ok(state)
         },
-        Some(utxos) => save_utxos_to_db(state.db, utxos).map(|_| state),
+        Ok(utxos) => save_utxos_to_db(state.db, utxos).map(|_| state),
     }
 }
