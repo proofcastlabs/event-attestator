@@ -193,7 +193,8 @@ fn put_account_nonce_in_db_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!(
-        "✔ Putting {} account nonce of 1 in db...",
+        "✔ Putting {} account nonce of {} in db...",
+        nonce,
         if is_for_eth { "ETH" } else { "EVM" }
     );
     if is_for_eth {
