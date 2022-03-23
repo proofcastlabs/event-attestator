@@ -1,3 +1,4 @@
+use derive_more::{Constructor, Deref};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -23,9 +24,13 @@ impl ProtocolFeature {
             feature_hash: feature_hash.to_string(),
         }
     }
+
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(hex::decode(&self.feature_hash)?)
+    }
 }
 
-#[derive(Clone, Debug, PartialEq, Default, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Eq, Deref, Serialize, Deserialize, Constructor)]
 pub struct EnabledFeatures(Vec<ProtocolFeature>);
 
 impl EnabledFeatures {
@@ -107,8 +112,14 @@ impl EnabledFeatures {
         Ok(serde_json::to_vec(&self)?)
     }
 
+    fn check_all_features_are_available(&self) -> Result<Self> {
+        self.iter()
+            .try_for_each(|feature| AVAILABLE_FEATURES.check_contains(&feature.to_bytes()?))
+            .and(Ok(self.clone()))
+    }
+
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
-        Ok(serde_json::from_slice(bytes)?)
+        serde_json::from_slice::<Self>(bytes)?.check_all_features_are_available()
     }
 
     pub fn enable_multi<D: DatabaseInterface>(
@@ -257,5 +268,34 @@ mod tests {
         let bytes = updated_features.to_bytes().unwrap();
         let result = EnabledFeatures::from_bytes(&bytes).unwrap();
         assert_eq!(result, updated_features);
+    }
+
+    #[test]
+    fn should_check_all_features_are_available() {
+        let features = vec![ProtocolFeature::new(
+            "WTMSIG_BLOCK_SIGATURE",
+            WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
+        )];
+        let enabled_features = EnabledFeatures::new(features);
+        let result = enabled_features.check_all_features_are_available();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn check_available_features_should_error_if_feature_is_unavailable() {
+        let non_available_feature_hash = vec![0u8; 64]
+            .iter()
+            .fold(String::new(), |e, acc| format!("{}{}", e, acc));
+        let features = vec![ProtocolFeature::new(
+            "NON_AVAILABLE_FEATURE",
+            &non_available_feature_hash,
+        )];
+        let enabled_features = EnabledFeatures::new(features);
+        let expected_error = format!("Unrecognised feature hash: {}", non_available_feature_hash);
+        match enabled_features.check_all_features_are_available() {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
     }
 }
