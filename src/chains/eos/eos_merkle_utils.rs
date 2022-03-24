@@ -153,18 +153,6 @@ impl Incremerkle {
         (Self::make_canonical_left(l), Self::make_canonical_right(r))
     }
 
-    fn next_power_of_2(mut value: u64) -> u64 {
-        value -= 1;
-        value |= value >> 1;
-        value |= value >> 2;
-        value |= value >> 4;
-        value |= value >> 8;
-        value |= value >> 16;
-        value |= value >> 32;
-        value += 1;
-        value
-    }
-
     fn clz_power_2(value: u64) -> usize {
         let mut lz: usize = 64;
 
@@ -193,12 +181,13 @@ impl Incremerkle {
         lz
     }
 
-    fn calculate_max_depth(node_count: u64) -> usize {
+    fn calculate_max_depth(node_count: u64) -> Result<usize> {
         if node_count == 0 {
-            return 0;
+            return Ok(0);
         }
-        let implied_count = Self::next_power_of_2(node_count);
-        Self::clz_power_2(implied_count) + 1
+        let implied_count =
+            u64::checked_next_power_of_two(node_count).ok_or(NoneError("Next power of two has overflowed!"))?;
+        Ok(Self::clz_power_2(implied_count) + 1)
     }
 
     pub fn new(node_count: u64, active_nodes: Vec<Checksum256>) -> Self {
@@ -210,7 +199,7 @@ impl Incremerkle {
 
     pub fn append(&mut self, digest: Checksum256) -> Result<Checksum256> {
         let mut partial = false;
-        let max_depth = Self::calculate_max_depth(self.node_count + 1);
+        let max_depth = Self::calculate_max_depth(self.node_count + 1)?;
         let mut current_depth = max_depth - 1;
         let mut index = self.node_count;
         let mut top = digest;
