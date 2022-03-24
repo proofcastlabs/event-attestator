@@ -90,6 +90,8 @@ impl EosProducerScheduleV2 {
 }
 
 impl From<EosProducerScheduleV1> for EosProducerScheduleV2 {
+    // NOTE: When converting a v1 schedule to a v2 one, key weights are irrelevant since they're not extant in
+    // v1 schedules, and as such are defaulted to 0.
     fn from(v1_schedule: EosProducerScheduleV1) -> Self {
         Self {
             version: v1_schedule.version,
