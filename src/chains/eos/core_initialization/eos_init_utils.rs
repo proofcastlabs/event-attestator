@@ -266,6 +266,10 @@ pub fn maybe_put_eos_eth_token_dictionary_in_db_and_return_state<'a, D: Database
     init_json: &EosInitJson,
     state: EosState<'a, D>,
 ) -> Result<EosState<'a, D>> {
+    info!("✔ Maybe putting `EOS_ETH` token dictionary in db...");
+    if init_json.erc20_on_eos_token_dictionary.is_some() && init_json.eos_eth_token_dictionary.is_some() {
+        return Err("Found both `erc20-on-eos` & `eos_eth` dictionaries in json - please provide only one!".into());
+    };
     let json = if init_json.erc20_on_eos_token_dictionary.is_some() {
         init_json
             .erc20_on_eos_token_dictionary
