@@ -228,8 +228,10 @@ pub fn put_eos_account_name_in_db_and_return_state<'a, D: DatabaseInterface>(
         .and(Ok(state))
 }
 
-pub fn put_eos_account_nonce_in_db_and_return_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    info!("✔ Putting EOS account nonce in db...");
+pub fn initialize_eos_account_nonce_in_db_and_return_state<D: DatabaseInterface>(
+    state: EosState<D>,
+) -> Result<EosState<D>> {
+    info!("✔ Initializing EOS account nonce to 0 in db...");
     state.eos_db_utils.put_eos_account_nonce_in_db(0).and(Ok(state))
 }
 
