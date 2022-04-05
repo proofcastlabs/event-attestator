@@ -35,6 +35,7 @@ pub enum MetadataChainId {
     InterimChain,     // 0xffffffff
     ArbitrumMainnet,  // 0x00ce98c4
     LuxochainMainnet, // 0x00d5beb0
+    FantomMainnet,    // 0x0022af98
 }
 
 impl Default for MetadataChainId {
@@ -58,6 +59,7 @@ impl MetadataChainId {
             | Self::EthUnknown
             | Self::XDaiMainnet
             | Self::InterimChain
+            | Self::FantomMainnet
             | Self::EthereumMainnet
             | Self::EthereumRinkeby
             | Self::EthereumRopsten
@@ -85,6 +87,7 @@ impl MetadataChainId {
             Self::UltraMainnet => Box::new(EosChainId::UltraMainnet),
             Self::UltraTestnet => Box::new(EosChainId::UltraTestnet),
             Self::InterimChain => Box::new(EthChainId::InterimChain),
+            Self::FantomMainnet => Box::new(EthChainId::FantomMainnet),
             Self::PolygonMainnet => Box::new(EthChainId::PolygonMainnet),
             Self::ArbitrumMainnet => Box::new(EthChainId::ArbitrumMainnet),
             Self::LuxochainMainnet => Box::new(EthChainId::LuxochainMainnet),
@@ -176,6 +179,7 @@ impl fmt::Display for MetadataChainId {
             Self::UltraTestnet => write!(f, "Ultra Testnet: 0x{}", hex),
             Self::UltraMainnet => write!(f, "Ultra Mainnet: 0x{}", hex),
             Self::InterimChain => write!(f, "Interim Chain: 0x{}", hex),
+            Self::FantomMainnet => write!(f, "Fantom Mainnet: 0x{}", hex),
             Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: 0x{}", hex),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: 0x{}", hex),
             Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: 0x{}", hex),
@@ -231,6 +235,7 @@ mod tests {
             "0282317f", "00f1918e", "0075dd4c", "025d3c68",
             "02174f20", "02b5a4d6", "00000000", "01000000",
             "02000000", "ffffffff", "00ce98c4", "00d5beb0",
+            "0022af98",
         ]
         .iter()
         .map(|ref hex| hex::decode(hex).unwrap())
@@ -240,7 +245,8 @@ mod tests {
             .map(|ref bytes| MetadataChainId::from_bytes(bytes))
             .collect::<Result<Vec<MetadataChainId>>>()
             .unwrap();
-        assert_eq!(result, MetadataChainId::get_all());
+        let expected_result = MetadataChainId::get_all();
+        assert_eq!(result, expected_result);
     }
 
     #[test]
