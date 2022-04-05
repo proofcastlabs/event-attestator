@@ -127,21 +127,6 @@ impl EthChainId {
         }
     }
 
-    pub fn to_metadata_chain_id(&self) -> MetadataChainId {
-        match self {
-            Self::BscMainnet => MetadataChainId::BscMainnet,
-            Self::Unknown(_) => MetadataChainId::EthUnknown,
-            Self::XDaiMainnet => MetadataChainId::XDaiMainnet,
-            Self::Mainnet => MetadataChainId::EthereumMainnet,
-            Self::Rinkeby => MetadataChainId::EthereumRinkeby,
-            Self::Ropsten => MetadataChainId::EthereumRopsten,
-            Self::InterimChain => MetadataChainId::InterimChain,
-            Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
-            Self::ArbitrumMainnet => MetadataChainId::ArbitrumMainnet,
-            Self::LuxochainMainnet => MetadataChainId::LuxochainMainnet,
-        }
-    }
-
     pub fn to_u64(&self) -> u64 {
         match self {
             Self::Mainnet => 1,
