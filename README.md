@@ -4,10 +4,6 @@ The Provable __pTokens__ core which manages the cross-chain conversions between 
 
 &nbsp;
 
-***
-
-&nbsp;
-
 ## :earth_africa: Core Overview
 
 The __pToken__ core is a library implementing light-clients for various block-chains. The initial release involves __ETH__ as the host chain on which the __pTokens__ are manifest, and uses __BTC__ as the native chain and underlying asset.
@@ -36,194 +32,7 @@ Note the library can be built in __`debug`__ mode via setting the feature flag w
 
 &nbsp;
 
-***
-
-&nbsp;
-
-
-## :point_right: API:
-
-### submit_eth_block_to_enclave
-
-```
-
-pub fn submit_eth_block_to_enclave<D>(
-    db: D,
-    block_json_string: String
-) -> Result<String>
-
-```
-
-❍ Submit an ETH block (& its receipts) to the enclave.  NOTE: The enclave must first have been initialized!
-
-➔ `blockJson` Format:
-
-A valid JSON string of an object containing the fields:
-
-`Block`    ➔ The block header itself.
-
-`Receipts` ➔ An array containing the block's receipts.
-
-***
-
-### submit_btc_block_to_enclave
-
-```
-
-pub fn submit_btc_block_to_enclave<D>(
-    db: D,
-    block_json_string: String
-) -> Result<String>
-
-```
-
-__Action:__
-
-Submit a BTC block to the core.  The submission material must also include an array of deposit information for `p2sh` addresses.  NOTE: The core must first have been initialized!
-
-➔ `block_json_string` Format:
-
-A valid `JSON` string of an object containing the fields:
-
-`block`        ➔ The BTC block in `JSON` format.
-
-`transactions` ➔ The transactions in HEX format.
-
-`deposit_address_list` ➔ An array of objects:
-
-```
-
-  {
-    `nonce`: An integer nonce.
-    `eth_address`: The destination ETH address in hex.
-    `btc_deposit_address`: The `p2sh` BTC deposit address.
-    `eth_address_and_nonce_hash`: The `sha256d` of `eth_address + nonce`
-  }
-
-```
-
-***
-
-### maybe_initialize_eth_enclave
-
-```
-
-pub fn maybe_initialize_eth_enclave<D>(
-    db: D,
-    block_json_string: String,
-    chain_id: u8,
-    gas_price: u64,
-    canon_to_tip_length: u64,
-) -> Result<String>
-
-```
-
-__Action:__
-
-Initializes the core with the first trusted ETH block. Ensure the block has NO transactions relevant to the pToken in it, because they'll be ignored by the core. Transactions are not verified so you may omit them and include an empty array in their place if needs be. The core will initialize its ETH-related database from this trusted block, create the ETH private-key and seal it into the database. This command will return a signed transaction to broadcast, which transaction will deploy the pToken contract to the ETH network. The core's ETH address will first need to be funded with ETH before broadcasting the deployment transaction.
-
-➔ blocksJson Format:
-
-A valid `JSON` string of an object containing the fields:
-
-`block_json_string` ➔ A valid `JSON` string of and ETH block & receipts. See `submit_eth_block_to_enclave` for `JSON` format.
-
-***
-
-### maybe_initialize_btc_enclave
-
-```
-
-pub fn maybe_initialize_btc_enclave<D>(
-    db: D,
-    block_json_string: String,
-    fee: u64,
-    difficulty: u64,
-    network: String,
-    canon_to_tip_length: u64,
-) -> Result<String>
-
-```
-
-__Action:__
-
-Initializes the core with the first trusted BTC block. Ensure the block has NO transactions relevant to the pToken in it, because they'll be ignored by the core. Transactions are not verified so you may omit them and include an empty array in their place. The core will initialize its BTC related database from this trusted block, create the BTC private-key and seal it into the database.
-
-➔ blocksJson Format:
-
-A valid `JSON` string of an object containing the fields:
-
-`block_json_string` ➔ A valid `JSON` string of the BTC block & transactions. See `submit_btc_block_to_enclave` for `JSON` format.
-
-***
-
-### get_enclave_state
-
-```
-
-pub fn get_enclave_state<D>(db: D) -> Result<String> where D: DatabaseInterface
-
-```
-
-Returns the current state of the core as pulled from the database, omitting sensitive fields such as private-keys etc.
-
-***
-
-
-### debug_get_all_utxos
-
-```
-
-pub fn debug_get_all_utxos<D>(db: D) -> Result<String>
-
-```
-
-Returns `JSON` formatted report of all the `UTXO`s currently held in the database. This function can only be called if the core is build in `debug` mode.
-
-***
-
-### debug_get_key_from_db
-
-```
-
-pub fn debug_get_key_from_db<D>(db: D, key: String) -> Result<String>
-
-```
-
-Get a given <key> from the database. This function can only be called if the core is built in `debug` mode.
-
-***
-
-### debug_get_key_from_db
-
-```
-
-pub fn get_latest_block_numbers<D>(db: D) -> Result<String>
-
-```
-
-Returns the current latest ETH & BTC block numbers seen by the core.
-
-***
-
-### debug_set_key_in_db_to_value
-
-```
-
-pub fn debug_set_key_in_db_to_value<D>(db: D, key: String, value: String) -> Result<String>
-
-```
-
-Set a given <key> in the database to a given <value>. This function can only be called if the core is build in `debug` mode. Note there there are __NO__ checks on the what is passed in to the database. Use at own risk!
-
-&nbsp;
-
-***
-
-&nbsp;
-
-### :wrench: Build
-
+## :wrench: Build
 
 You need to ensure you have both __`clang`__ & __`llvm`__ (or later versions) installed on your system. Then enter the __`./app`__ directory and run:
 
@@ -237,11 +46,7 @@ __`❍ cargo build --release`__
 
 &nbsp;
 
-***
-
-&nbsp;
-
-### :floppy_disk: Database Interface
+## :floppy_disk: Database Interface
 
 The `core` implements a generic database whose interface follows:
 
@@ -262,19 +67,45 @@ Further, the `sensitivity` parameter provides a way for the `core` to signal to 
 
 &nbsp;
 
-***
+## :label: Metadata Chain IDs
+
+The `v2` of this core use metadata chain IDs to route peg-ins and peg-outs to their correct destinations. The byte encodings of those metadata chain IDs are as follows:
+
+```
+
+EthUnknown: 0x00000000
+BtcUnknown: 0x01000000
+EosUnknown: 0x02000000
+Eos Mainnet: 0x02e7261c
+FIO Mainnet: 0x02174f20
+xDai Mainnet: 0x00f1918e
+Ultra Mainnet: 0x025d3c68
+Ultra Testnet: 0x02b5a4d6
+Telos Mainnet: 0x028c7109
+Interim Chain: 0xffffffff
+Fantom Mainnet: 0x0022af98
+Bitcoin Mainnet: 0x01ec97de
+Polygon Mainnet: 0x0075dd4c
+Bitcoin Testnet: 0x018afeb2
+Ethereum Mainnet: 0x005fe7f9
+Ethereum Ropsten: 0x0069c322
+Ethereum Rinkeby: 0x00f34368
+Arbitrum Mainnet: 0x00ce98c4
+Luxochain Mainnet: 0x00d5beb0
+EOS Jungle Testnet: 0x0282317f
+Binance Chain Mainnet: 0x00e4b170
+
+```
 
 &nbsp;
 
-### :black_nib: Notes
-
-- The eth ptoken smart-contract bytecode needs to be in the root of the directory of the binary when you run the ETH initialization step, as a file called: __`ptoken-erc777-bytecode`__.
+## :black_nib: Notes
 
 - The maximum __`confs`__ possible during initialization is 255.
 
-- There are hardcoded "safe" __ETH__ & __BTC__ addresses which are used as destinations for transactions whose actual destinations are absent or malformed when being parsed from their originating transactions.
+- There are hardcoded "safe" addresses for each chain which are used as destinations for transactions whose actual destinations are absent or malformed when being parsed from their originating transactions.
 
-- When initializing the core, the merkle-roots inside the __ETH__ and __BTC__ blocks are __NOT__ verified - only the block headers are checked. For smaller initialiazation material, feel free to provide empty arrays for the transactions. Ensure not relevant transactions took place in the blocks used to initialize the core.
+- When initializing the core, the merkle-roots for transactions in blocks are __NOT__ verified - only the block headers are checked. For smaller initialiazation material, feel free to provide empty arrays for the transactions. Ensure not relevant transactions took place in the blocks used to initialize the core.
 
 - The light __BTC__ client implemented herein currently accepts only _two_ deposit types:
 
@@ -287,11 +118,7 @@ Further, the `sensitivity` parameter provides a way for the `core` to signal to 
 
 &nbsp;
 
-***
-
-&nbsp;
-
-### :mag: Features
+## :mag: Features
 
 When importing this core library into your app, enable features in your __`Cargo.toml`__ like so:
 
@@ -306,11 +133,7 @@ Currently supported features include:
 
 &nbsp;
 
-***
-
-&nbsp;
-
-### :guardsman: Tests
+## :guardsman: Tests
 
 To run the tests simply run:
 
@@ -318,12 +141,6 @@ __`❍ cargo test --features='<chosen-feature>'`__
 
 &nbsp;
 
-***
+## :black_nib: To Do:
 
-&nbsp;
-
-### :black_nib: To Do:
-
-- [ ] Use enum for trie node types.
 - [ ] Needs method to adjust difficulty in future.
-- [ ] Pass in path of bytecode as arg to the initter.
