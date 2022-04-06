@@ -158,6 +158,7 @@ fn reprocess_int_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<
                         &state.btc_on_int_btc_tx_infos,
                         state.btc_db_utils.get_latest_btc_block_number()?,
                         &state.eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
+                        &state.btc_db_utils.get_btc_chain_id_from_db()?,
                     )?,
                     None => vec![],
                 },

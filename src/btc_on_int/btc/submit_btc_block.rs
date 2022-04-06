@@ -228,7 +228,8 @@ mod tests {
                         "destination_address": destination_address,
                         "int_latest_block_number": 12000341,
                         "broadcast_tx_hash": null,
-                        "broadcast_timestamp": null
+                        "broadcast_timestamp": null,
+                        "destination_chain_id": "0x0069c322",
                     }
                 ]
             }).to_string()
@@ -249,6 +250,7 @@ mod tests {
         assert_eq!(tx_info.host_token_address, expected_tx_info.host_token_address);
         assert_eq!(tx_info.originating_tx_hash, expected_tx_info.originating_tx_hash);
         assert_eq!(tx_info.destination_address, expected_tx_info.destination_address);
+        assert_eq!(tx_info.destination_chain_id, expected_tx_info.destination_chain_id);
         assert_eq!(
             tx_info.int_latest_block_number,
             expected_tx_info.int_latest_block_number

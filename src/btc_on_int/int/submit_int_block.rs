@@ -218,6 +218,7 @@ mod tests {
                     "btc_tx_hash":"4e46ab88bb9a3b9d849d3d93ac84d85223c4f61f02068cd3e88d6e9f0bcb97e1",
                     "originating_tx_hash":"0xdc676d1858ebf2a45f8b65ba4a925dfa8012bfeecba21df4b6935e58f4c8fcfa",
                     "btc_signed_tx":"01000000014e635c5f95ba996dc34791193deaceb51218bbea643561f9f2c7b556fe8f77d3010000008f483045022100a7f529b473c52e4a16091580d948d6f4c7d71192b33436701481a68c3a1b31af02202d3726c4403f7883816673188fb6eb73d9ca868faa6b806c63f9450310251ef00145202b69d3bc995c316a478b8b70b82b820505dcd31b80b624a947cceb37882f00c9752103fd539c728597e774040bda920ea7112257422442dcd7d9fc12e04e578e0af91aacffffffff0239050000000000001600148ede58ea320d86e9e0a4c8427cf277e4fe1a148754060000000000001976a914ec8f6a91d8ca2e2875575a17f83f3c2e9238f47188ac00000000",
+                    "destination_chain_id": "0x018afeb2",
                 }]
             }).to_string()
         ).unwrap();
@@ -239,6 +240,7 @@ mod tests {
         assert_eq!(tx_info.destination_address, expected_tx_info.destination_address);
         assert_eq!(tx_info.originating_tx_hash, expected_tx_info.originating_tx_hash);
         assert_eq!(tx_info.broadcast_timestamp, expected_tx_info.broadcast_timestamp);
+        assert_eq!(tx_info.destination_chain_id, expected_tx_info.destination_chain_id);
         assert_eq!(
             tx_info.btc_latest_block_number,
             expected_tx_info.btc_latest_block_number
