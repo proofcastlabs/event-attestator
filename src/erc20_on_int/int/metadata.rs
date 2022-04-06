@@ -4,7 +4,7 @@ use crate::{
     metadata::{
         metadata_address::MetadataAddress,
         metadata_protocol_id::MetadataProtocolId,
-        metadata_traits::ToMetadata,
+        metadata_traits::{ToMetadata, ToMetadataChainId},
         Metadata,
     },
     types::{Bytes, Result},

@@ -21,6 +21,7 @@ pub enum EthChainId {
     BscMainnet,
     XDaiMainnet,
     InterimChain,
+    FantomMainnet,
     PolygonMainnet,
     ArbitrumMainnet,
     LuxochainMainnet,
@@ -49,6 +50,7 @@ impl ToMetadataChainId for EthChainId {
             Self::Rinkeby => MetadataChainId::EthereumRinkeby,
             Self::Ropsten => MetadataChainId::EthereumRopsten,
             Self::InterimChain => MetadataChainId::InterimChain,
+            Self::FantomMainnet => MetadataChainId::FantomMainnet,
             Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
             Self::ArbitrumMainnet => MetadataChainId::ArbitrumMainnet,
             Self::LuxochainMainnet => MetadataChainId::LuxochainMainnet,
@@ -68,6 +70,7 @@ impl EthChainId {
             "rinkeby" | "4" => Ok(Self::Rinkeby),
             "bsc" | "56" => Ok(Self::BscMainnet),
             "xdai" | "100" => Ok(Self::XDaiMainnet),
+            "fantom" | "250" => Ok(Self::FantomMainnet),
             "interim" | "947" => Ok(Self::InterimChain),
             "polygon" | "137" => Ok(Self::PolygonMainnet),
             "arbitrum" | "42161" => Ok(Self::ArbitrumMainnet),
@@ -81,13 +84,14 @@ impl EthChainId {
 
     pub fn to_bytes(&self) -> Result<Bytes> {
         match self {
-            // NOTE: The following explicit ones are for legacy reasons.
+            // NOTE: The following explicit ones are for legacy reasons...
             Self::Mainnet => Ok(vec![0x01]),
             Self::Rinkeby => Ok(vec![0x04]),
             Self::Ropsten => Ok(vec![0x03]),
             Self::BscMainnet => Ok(vec![0x38]),
             Self::XDaiMainnet => Ok(vec![0x64]),
             Self::PolygonMainnet => Ok(vec![0x89]),
+            // NOTE: ...and the rest are encoded thusly.
             _ => Ok(self.to_u64().to_le_bytes().to_vec()),
         }
     }
@@ -101,6 +105,7 @@ impl EthChainId {
             56 => Ok(Self::BscMainnet),
             100 => Ok(Self::XDaiMainnet),
             947 => Ok(Self::InterimChain),
+            250 => Ok(Self::FantomMainnet),
             137 => Ok(Self::PolygonMainnet),
             110 => Ok(Self::LuxochainMainnet),
             42161 => Ok(Self::ArbitrumMainnet),
@@ -122,21 +127,6 @@ impl EthChainId {
         }
     }
 
-    pub fn to_metadata_chain_id(&self) -> MetadataChainId {
-        match self {
-            Self::BscMainnet => MetadataChainId::BscMainnet,
-            Self::Unknown(_) => MetadataChainId::EthUnknown,
-            Self::XDaiMainnet => MetadataChainId::XDaiMainnet,
-            Self::Mainnet => MetadataChainId::EthereumMainnet,
-            Self::Rinkeby => MetadataChainId::EthereumRinkeby,
-            Self::Ropsten => MetadataChainId::EthereumRopsten,
-            Self::InterimChain => MetadataChainId::InterimChain,
-            Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
-            Self::ArbitrumMainnet => MetadataChainId::ArbitrumMainnet,
-            Self::LuxochainMainnet => MetadataChainId::LuxochainMainnet,
-        }
-    }
-
     pub fn to_u64(&self) -> u64 {
         match self {
             Self::Mainnet => 1,
@@ -145,10 +135,11 @@ impl EthChainId {
             Self::BscMainnet => 56,
             Self::XDaiMainnet => 100,
             Self::InterimChain => 947,
+            Self::FantomMainnet => 250,
             Self::PolygonMainnet => 137,
+            Self::Unknown(u_64) => *u_64,
             Self::LuxochainMainnet => 110,
             Self::ArbitrumMainnet => 42161,
-            Self::Unknown(u_64) => *u_64,
         }
     }
 }
@@ -186,6 +177,7 @@ impl fmt::Display for EthChainId {
             Self::Ropsten => write!(f, "Ropsten Testnet: {}", u_64),
             Self::XDaiMainnet => write!(f, "xDai Mainnet: {}", u_64),
             Self::InterimChain => write!(f, "Interim Chain: {}", u_64),
+            Self::FantomMainnet => write!(f, "Fantom Mainnet: {}", u_64),
             Self::Unknown(_) => write!(f, "Unkown ETH chain ID: {}", u_64),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", u_64),
             Self::ArbitrumMainnet => write!(f, "Abritrum Mainnet: {}", u_64),
