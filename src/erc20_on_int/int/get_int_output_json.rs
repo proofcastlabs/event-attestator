@@ -5,12 +5,14 @@ use serde::{Deserialize, Serialize};
 use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
+        eth_chain_id::EthChainId,
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
         eth_traits::EthTxInfoCompatible,
     },
     erc20_on_int::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos},
+    metadata::metadata_traits::ToMetadataChainId,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };
@@ -55,6 +57,7 @@ pub struct EthTxInfo {
     pub originating_tx_hash: String,
     pub originating_address: String,
     pub native_token_address: String,
+    pub destination_chain_id: String,
     pub eth_signed_tx: Option<String>,
     pub any_sender_nonce: Option<u64>,
     pub eth_account_nonce: Option<u64>,
@@ -67,9 +70,10 @@ pub struct EthTxInfo {
 impl EthTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
         tx: &T,
-        evm_tx_info: &Erc20OnIntEthTxInfo,
+        tx_info: &Erc20OnIntEthTxInfo,
         maybe_nonce: Option<u64>,
         eth_latest_block_number: usize,
+        eth_chain_id: &EthChainId,
     ) -> Result<EthTxInfo> {
         let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
         Ok(EthTxInfo {
@@ -85,15 +89,16 @@ impl EthTxInfo {
                 format!("perc20-on-int-eth-{}", nonce)
             },
             eth_tx_hash: format!("0x{}", tx.get_tx_hash()),
-            eth_tx_amount: evm_tx_info.native_token_amount.to_string(),
+            eth_tx_amount: tx_info.native_token_amount.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             eth_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            host_token_address: format!("0x{}", hex::encode(&evm_tx_info.evm_token_address)),
-            native_token_address: format!("0x{}", hex::encode(&evm_tx_info.eth_token_address)),
-            originating_address: format!("0x{}", hex::encode(evm_tx_info.token_sender.as_bytes())),
-            eth_tx_recipient: format!("0x{}", hex::encode(evm_tx_info.destination_address.as_bytes())),
-            originating_tx_hash: format!("0x{}", hex::encode(evm_tx_info.originating_tx_hash.as_bytes())),
+            host_token_address: format!("0x{}", hex::encode(&tx_info.evm_token_address)),
+            native_token_address: format!("0x{}", hex::encode(&tx_info.eth_token_address)),
+            originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
+            eth_tx_recipient: format!("0x{}", hex::encode(tx_info.destination_address.as_bytes())),
+            originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
+            destination_chain_id: format!("0x{}", hex::encode(&eth_chain_id.to_metadata_chain_id().to_bytes()?)),
         })
     }
 }
@@ -112,6 +117,7 @@ pub fn get_eth_signed_tx_info_from_evm_txs(
     use_any_sender_tx_type: bool,
     any_sender_nonce: u64,
     eth_latest_block_number: usize,
+    eth_chain_id: &EthChainId,
 ) -> Result<Vec<EthTxInfo>> {
     let number_of_txs = txs.len() as u64;
     let start_nonce = if use_any_sender_tx_type {
@@ -137,6 +143,7 @@ pub fn get_eth_signed_tx_info_from_evm_txs(
                 &evm_tx_info[i],
                 Some(start_nonce + i as u64),
                 eth_latest_block_number,
+                eth_chain_id,
             )
         })
         .collect::<Result<Vec<EthTxInfo>>>()
@@ -156,6 +163,7 @@ pub fn get_evm_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
                 false, // TODO Get this from state submission material when/if we support AnySender
                 state.eth_db_utils.get_any_sender_nonce_from_db()?,
                 state.eth_db_utils.get_latest_eth_block_number()?,
+                &state.eth_db_utils.get_eth_chain_id_from_db()?,
             )?
         },
     })?;
