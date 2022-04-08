@@ -143,6 +143,7 @@ fn reprocess_int_block<D: DatabaseInterface>(
                         use_any_sender_tx,
                         state.eth_db_utils.get_any_sender_nonce_from_db()?,
                         state.eth_db_utils.get_latest_eth_block_number()?,
+                        &state.eth_db_utils.get_eth_chain_id_from_db()?,
                     )?
                 },
             })?;

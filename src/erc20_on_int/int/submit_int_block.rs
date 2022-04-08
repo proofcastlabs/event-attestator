@@ -190,7 +190,8 @@ mod tests {
                 "eth_latest_block_number": 9749607,
                 "broadcast_tx_hash": null,
                 "broadcast_timestamp": null,
-                "any_sender_tx": null
+                "any_sender_tx": null,
+                "destination_chain_id": "0x00f34368",
             }]
         });
         let expected_result = IntOutput::from_str(&expected_result_json.to_string()).unwrap();
@@ -256,6 +257,10 @@ mod tests {
         assert_eq!(
             result.eth_signed_transactions[0].any_sender_tx,
             expected_result.eth_signed_transactions[0].any_sender_tx
+        );
+        assert_eq!(
+            result.eth_signed_transactions[0].destination_chain_id,
+            expected_result.eth_signed_transactions[0].destination_chain_id,
         );
     }
 }

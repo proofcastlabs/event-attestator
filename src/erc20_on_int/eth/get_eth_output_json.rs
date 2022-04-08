@@ -59,6 +59,7 @@ pub struct EvmTxInfo {
     pub originating_tx_hash: String,
     pub originating_address: String,
     pub native_token_address: String,
+    pub destination_chain_id: String,
     pub int_signed_tx: Option<String>,
     pub any_sender_nonce: Option<u64>,
     pub int_account_nonce: Option<u64>,
@@ -78,7 +79,7 @@ impl EvmTxInfo {
 impl EvmTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
         tx: &T,
-        evm_tx_info: &EthOnIntEvmTxInfo,
+        tx_info: &EthOnIntEvmTxInfo,
         maybe_nonce: Option<u64>,
         int_latest_block_number: usize,
         dictionary: &EthEvmTokenDictionary,
@@ -97,16 +98,17 @@ impl EvmTxInfo {
                 format!("perc20-on-int-int-{}", nonce)
             },
             int_tx_hash: format!("0x{}", tx.get_tx_hash()),
-            host_token_address: evm_tx_info.evm_token_address.clone(),
-            int_tx_recipient: evm_tx_info.destination_address.clone(),
+            host_token_address: tx_info.evm_token_address.clone(),
+            int_tx_recipient: tx_info.destination_address.clone(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             int_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            native_token_address: format!("0x{}", hex::encode(&evm_tx_info.eth_token_address)),
-            originating_address: format!("0x{}", hex::encode(evm_tx_info.token_sender.as_bytes())),
-            originating_tx_hash: format!("0x{}", hex::encode(evm_tx_info.originating_tx_hash.as_bytes())),
+            native_token_address: format!("0x{}", hex::encode(&tx_info.eth_token_address)),
+            originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
+            originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
+            destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
             int_tx_amount: dictionary
-                .convert_eth_amount_to_evm_amount(&evm_tx_info.eth_token_address, evm_tx_info.native_token_amount)?
+                .convert_eth_amount_to_evm_amount(&tx_info.eth_token_address, tx_info.native_token_amount)?
                 .to_string(),
         })
     }

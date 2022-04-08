@@ -14,7 +14,7 @@ use crate::errors::AppError;
 use crate::{
     btc_on_int::int::btc_tx_info::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos},
     chains::{
-        btc::btc_utils::get_hex_tx_from_signed_btc_tx,
+        btc::{btc_chain_id::BtcChainId, btc_utils::get_hex_tx_from_signed_btc_tx},
         eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
     },
     traits::DatabaseInterface,
@@ -41,6 +41,7 @@ pub struct BtcTxInfo {
     pub originating_tx_hash: String,
     pub destination_address: String,
     pub btc_latest_block_number: u64,
+    pub destination_chain_id: String,
     pub broadcast_tx_hash: Option<String>,
     pub broadcast_timestamp: Option<usize>,
 }
@@ -84,6 +85,7 @@ impl BtcTxInfo {
         btc_account_nonce: u64,
         btc_latest_block_number: u64,
         host_token_address: &EthAddress,
+        btc_chain_id: &BtcChainId,
     ) -> Result<BtcTxInfo> {
         Ok(BtcTxInfo {
             broadcast: false,
@@ -100,6 +102,7 @@ impl BtcTxInfo {
             originating_address: format!("0x{}", hex::encode(tx_info.from.as_bytes())),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
+            destination_chain_id: format!("0x{}", hex::encode(btc_chain_id.to_metadata_chain_id().to_bytes()?)),
         })
     }
 }
@@ -110,6 +113,7 @@ pub fn get_btc_signed_tx_info_from_btc_txs(
     redeem_infos: &BtcOnIntBtcTxInfos,
     btc_latest_block_number: u64,
     host_token_address: &EthAddress,
+    btc_chain_id: &BtcChainId,
 ) -> Result<Vec<BtcTxInfo>> {
     info!("✔ Getting BTC tx info from {} BTC tx(s)...", btc_txs.len());
     let num_btc_txs = btc_txs.len();
@@ -133,6 +137,7 @@ pub fn get_btc_signed_tx_info_from_btc_txs(
                 start_nonce + i as u64,
                 btc_latest_block_number,
                 host_token_address,
+                btc_chain_id,
             )
         })
         .collect::<Result<Vec<_>>>()
@@ -153,6 +158,7 @@ pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
                 &state.btc_on_int_btc_tx_infos,
                 state.btc_db_utils.get_latest_btc_block_number()?,
                 &state.eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
+                &state.btc_db_utils.get_btc_chain_id_from_db()?,
             )?,
             None => vec![],
         },

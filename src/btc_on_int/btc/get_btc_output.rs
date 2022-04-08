@@ -43,6 +43,7 @@ pub struct IntTxInfo {
     pub originating_tx_hash: String,
     pub originating_address: String,
     pub destination_address: String,
+    pub destination_chain_id: String,
     pub int_latest_block_number: usize,
     pub broadcast_tx_hash: Option<String>,
     pub broadcast_timestamp: Option<String>,
@@ -103,6 +104,7 @@ impl IntTxInfo {
             originating_tx_hash: int_tx_info.originating_tx_hash.to_string(),
             int_signed_tx: tx.eth_tx_hex().ok_or(NoneError("No tx in tx info!"))?,
             int_tx_recipient: format!("0x{}", hex::encode(int_tx_info.router_address.as_bytes())),
+            destination_chain_id: format!("0x{}", hex::encode(&int_tx_info.destination_chain_id)),
         })
     }
 }
