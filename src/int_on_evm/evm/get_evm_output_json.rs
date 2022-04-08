@@ -55,6 +55,7 @@ pub struct IntTxInfo {
     pub originating_tx_hash: String,
     pub originating_address: String,
     pub native_token_address: String,
+    pub destination_chain_id: String,
     pub int_signed_tx: Option<String>,
     pub any_sender_nonce: Option<u64>,
     pub int_account_nonce: Option<u64>,
@@ -74,7 +75,7 @@ impl IntTxInfo {
 impl IntTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
         tx: &T,
-        evm_tx_info: &IntOnEvmIntTxInfo,
+        tx_info: &IntOnEvmIntTxInfo,
         maybe_nonce: Option<u64>,
         int_latest_block_number: usize,
     ) -> Result<IntTxInfo> {
@@ -92,22 +93,23 @@ impl IntTxInfo {
                 format!("pint-on-evm-int-{}", nonce)
             },
             int_tx_hash: format!("0x{}", tx.get_tx_hash()),
-            host_token_address: evm_tx_info.evm_token_address.clone(),
-            int_tx_amount: evm_tx_info.native_token_amount.to_string(),
-            native_token_address: evm_tx_info.eth_token_address.clone(),
+            host_token_address: tx_info.evm_token_address.clone(),
+            int_tx_amount: tx_info.native_token_amount.to_string(),
+            native_token_address: tx_info.eth_token_address.clone(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             int_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            originating_address: format!("0x{}", hex::encode(evm_tx_info.token_sender.as_bytes())),
-            int_tx_recipient: format!("0x{}", hex::encode(evm_tx_info.destination_address.as_bytes())),
-            originating_tx_hash: format!("0x{}", hex::encode(evm_tx_info.originating_tx_hash.as_bytes())),
+            originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
+            int_tx_recipient: format!("0x{}", hex::encode(tx_info.destination_address.as_bytes())),
+            originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
+            destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
         })
     }
 }
 
 pub fn get_int_signed_tx_info_from_evm_txs(
     txs: &[EthTransaction],
-    evm_tx_info: &IntOnEvmIntTxInfos,
+    tx_info: &IntOnEvmIntTxInfos,
     int_account_nonce: u64,
     use_any_sender_tx_type: bool,
     any_sender_nonce: u64,
@@ -131,14 +133,7 @@ pub fn get_int_signed_tx_info_from_evm_txs(
     };
     txs.iter()
         .enumerate()
-        .map(|(i, tx)| {
-            IntTxInfo::new(
-                tx,
-                &evm_tx_info[i],
-                Some(start_nonce + i as u64),
-                eth_latest_block_number,
-            )
-        })
+        .map(|(i, tx)| IntTxInfo::new(tx, &tx_info[i], Some(start_nonce + i as u64), eth_latest_block_number))
         .collect::<Result<Vec<IntTxInfo>>>()
 }
 

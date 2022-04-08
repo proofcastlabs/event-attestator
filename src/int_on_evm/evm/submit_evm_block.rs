@@ -193,7 +193,8 @@ mod tests {
                 "int_latest_block_number": 11544951,
                 "broadcast_tx_hash": null,
                 "broadcast_timestamp": null,
-                "any_sender_tx": null
+                "any_sender_tx": null,
+                "destination_chain_id": "0x00f34368",
             }]
         });
         let expected_result = EvmOutput::from_str(&expected_result_json.to_string()).unwrap();
@@ -259,6 +260,10 @@ mod tests {
         assert_eq!(
             result.int_signed_transactions[0].any_sender_tx,
             expected_result.int_signed_transactions[0].any_sender_tx
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].destination_chain_id,
+            expected_result.int_signed_transactions[0].destination_chain_id,
         );
     }
 }
