@@ -47,6 +47,7 @@ pub struct IntTxOutput {
     pub host_token_address: String,
     pub originating_tx_hash: String,
     pub originating_address: String,
+    pub destination_chain_id: String,
     pub native_token_address: String,
     pub int_signed_tx: Option<String>,
     pub int_latest_block_number: usize,
@@ -106,6 +107,7 @@ impl IntTxOutput {
             originating_tx_hash: tx_info.originating_tx_hash.to_string(),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             native_token_address: format!("0x{}", hex::encode(&tx_info.int_token_address)),
+            destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
         })
     }
 }

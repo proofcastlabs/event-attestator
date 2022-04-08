@@ -31,6 +31,7 @@ pub struct IntTxInfo {
     pub originating_tx_hash: String,
     pub originating_address: String,
     pub native_token_address: String,
+    pub destination_chain_id: String,
     pub algo_latest_block_number: u64,
     pub broadcast_tx_hash: Option<String>,
     pub broadcast_timestamp: Option<String>,
@@ -59,6 +60,7 @@ impl IntTxInfo {
             native_token_address: format!("0x{}", hex::encode(&tx_info.int_token_address)),
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
+            destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
         })
     }
 }
