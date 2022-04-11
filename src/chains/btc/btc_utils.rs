@@ -470,4 +470,11 @@ mod tests {
         let expected_result = SAFE_BTC_ADDRESS.clone();
         assert_eq!(result, expected_result);
     }
+
+    #[test]
+    fn should_calculate_dust_amount() {
+        let expected_result = 990;
+        let result = calculate_dust_amount().unwrap();
+        assert_eq!(result, expected_result);
+    }
 }
