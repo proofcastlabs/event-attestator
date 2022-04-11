@@ -30,6 +30,9 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
     utxos_and_values: BtcUtxosAndValues,
 ) -> Result<BtcTransaction> {
     let inputs = utxos_and_values.to_utxos()?;
+    if inputs.is_empty() {
+        return Err("Cannot create BTC transaction with zero inputs!".into());
+    };
     let mut zero_change_outputs = recipient_addresses_and_amounts.to_tx_outputs();
     let total_to_spend: u64 = recipient_addresses_and_amounts.sum();
     // NOTE: There will likely be a change output, which we need here in order to get correct tx size.
