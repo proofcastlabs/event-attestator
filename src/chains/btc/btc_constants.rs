@@ -1,3 +1,4 @@
+pub const DUST_RELAY_FEE: u64 = 3; // NOTE: Unit: satoshis-per-byte
 pub const BTC_TX_VERSION: i32 = 1;
 pub const BTC_TX_LOCK_TIME: u32 = 0;
 pub const BTC_TAIL_LENGTH: u64 = 10;
