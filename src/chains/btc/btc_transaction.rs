@@ -5,7 +5,7 @@ use bitcoin::{
 
 use crate::{
     chains::btc::{
-        btc_constants::{BTC_TX_LOCK_TIME, BTC_TX_VERSION},
+        btc_constants::{BTC_TX_LOCK_TIME, BTC_TX_VERSION, DUST_AMOUNT},
         btc_crypto::btc_private_key::BtcPrivateKey,
         btc_recipients_and_amounts::BtcRecipientsAndAmounts,
         btc_utils::{
@@ -54,10 +54,22 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
         return Err("✘ Not enough UTXO value to make transaction!".into());
     };
     info!("✔ Change amount:  {}", utxo_total - (total_to_spend + fee));
-    let change = utxo_total - total_to_spend - fee;
+    let change_amount = utxo_total - total_to_spend - fee;
     let mut outputs = recipient_addresses_and_amounts.to_tx_outputs();
-    if change > 0 {
-        outputs.push(create_new_pay_to_pub_key_hash_output(change, remainder_btc_address)?)
+    if change_amount > 0 {
+        if change_amount <= *DUST_AMOUNT {
+            // NOTE: Dust is taken into account when getting UTXOs. This is just here as another
+            // line of defense against accidentally making dust outputs.
+            return Err(format!(
+                "Cannot create BTC transaction, change output is {} satoshis, which is dust!",
+                change_amount
+            )
+            .into());
+        };
+        outputs.push(create_new_pay_to_pub_key_hash_output(
+            change_amount,
+            remainder_btc_address,
+        )?)
     };
     let tx = BtcTransaction {
         input: inputs,
