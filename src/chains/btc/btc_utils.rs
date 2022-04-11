@@ -21,14 +21,44 @@ use ethereum_types::U256;
 
 use crate::{
     chains::btc::{
-        btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, DEFAULT_BTC_SEQUENCE},
+        btc_constants::{
+            BTC_PUB_KEY_SLICE_LENGTH,
+            BTC_TX_LOCK_TIME,
+            BTC_TX_VERSION,
+            DEFAULT_BTC_SEQUENCE,
+            DUST_RELAY_FEE,
+        },
         btc_types::BtcPubKeySlice,
     },
     constants::{BTC_NUM_DECIMALS, PTOKEN_ERC777_NUM_DECIMALS},
-    safe_addresses::SAFE_BTC_ADDRESS,
+    safe_addresses::{SAFE_BTC_ADDRESS, SAFE_BTC_ADDRESS_STR},
     types::{Byte, Bytes, Result},
     utils::strip_hex_prefix,
 };
+
+pub fn calculate_dust_amount() -> Result<u64> {
+    // NOTE: See https://bitcoin.stackexchange.com/questions/10986/what-is-meant-by-bitcoin-dust
+    // NOTE: First we create a dummy tx that would spend one of our change outputs...
+    let dummy_tx = BtcTransaction {
+        version: BTC_TX_VERSION,
+        lock_time: BTC_TX_LOCK_TIME,
+        output: vec![create_new_pay_to_pub_key_hash_output(0, SAFE_BTC_ADDRESS_STR)?],
+        input: vec![BtcUtxo {
+            witness: Vec::default(),
+            sequence: u32::default(),
+            previous_output: BtcOutPoint::default(),
+            script_sig: get_pay_to_pub_key_hash_script(SAFE_BTC_ADDRESS_STR)?,
+        }],
+    };
+    // NOTE: Then we calculate its size...
+    let dummy_tx_size_in_bytes = dummy_tx.get_size() as u64;
+    // NOTE: Which we use we calculate the fee to spend this output...
+    let cost_to_spend_utxo = DUST_RELAY_FEE * dummy_tx_size_in_bytes;
+    // NOTE: And so dust is any amount whose fee to spend it is > 1/3 of the value of the UTXO itself.
+    let dust_amount = cost_to_spend_utxo * 3;
+    debug!("Calculated dust amount: {}", dust_amount);
+    Ok(dust_amount)
+}
 
 pub fn convert_hex_tx_to_btc_transaction(hex: String) -> Result<BtcTransaction> {
     Ok(btc_deserialize::<BtcTransaction>(&hex::decode(hex)?)?)
