@@ -13,5 +13,8 @@ pub const BTC_CORE_IS_INITIALIZED_JSON: &str = "{btc_enclave_initialized:true}";
 pub const PLACEHOLDER_BTC_ADDRESS: &str = "msTgHeQgPZ11LRcUdtfzagEfiZyKF57DhR";
 
 lazy_static! {
+    // NOTE: The calculation relies on the above `DUST_RELAY_FEE` constant, which may be different
+    // for different BTC forks. As such, change _that_ constant, not this one, in order to have the
+    // correct dust amount calculated.
     pub static ref DUST_AMOUNT: u64 = calculate_dust_amount().expect("Getting dust amount should not fail!");
 }
