@@ -45,10 +45,12 @@ fn sign_txs_from_redeem_infos<D: DatabaseInterface>(
     info!("✔ Getting correct amount of UTXOs...");
     debug!("✔ Network: {}", btc_network);
     debug!("✔ Satoshis per byte: {}", sats_per_byte);
+    // FIXME This does not have the one tx per report implemented that the other cores do. As
+    // such, this isn't using the MAX_NUM_OUTPUTS constants, which it should be doing.
     let utxos_and_values = get_enough_utxos_to_cover_total(
         btc_db_utils.get_db(),
         redeem_infos.sum(),
-        redeem_infos.len(),
+        redeem_infos.len() + 1, // NOTE: + 1 to account for the change output that's very likely to be required.
         sats_per_byte,
     )?;
     debug!("✔ Retrieved {} UTXOs!", utxos_and_values.len());
