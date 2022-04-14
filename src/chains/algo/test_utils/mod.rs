@@ -46,7 +46,7 @@ pub fn get_sample_contiguous_blocks() -> Vec<AlgorandBlock> {
     result.iter().enumerate().map(|(n, _)| get_sample_block_n(n)).collect()
 }
 
-fn get_sample_block_json_str_n(n: usize) -> String {
+pub fn get_sample_block_json_str_n(n: usize) -> String {
     read_to_string(get_path_n(n).unwrap()).unwrap()
 }
 
