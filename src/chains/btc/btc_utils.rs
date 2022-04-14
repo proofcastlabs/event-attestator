@@ -21,7 +21,7 @@ use ethereum_types::U256;
 
 use crate::{
     chains::btc::{
-        btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, DEFAULT_BTC_SEQUENCE},
+        btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, BTC_TX_LOCK_TIME, BTC_TX_VERSION, DEFAULT_BTC_SEQUENCE},
         btc_types::BtcPubKeySlice,
     },
     constants::{BTC_NUM_DECIMALS, PTOKEN_ERC777_NUM_DECIMALS},
@@ -29,6 +29,39 @@ use crate::{
     types::{Byte, Bytes, Result},
     utils::strip_hex_prefix,
 };
+
+pub fn calculate_dust_amount(dust_relay_fee: u64) -> u64 {
+    // NOTE: See https://bitcoin.stackexchange.com/questions/10986/what-is-meant-by-bitcoin-dust
+    const PUB_KEY_HASH_SIZE_IN_BYTES: usize = 20;
+    // NOTE: This is destinated for a dummy tx, so we don't care what the address is!
+    let dummy_pub_key_hash_bytes = [0u8; PUB_KEY_HASH_SIZE_IN_BYTES];
+    let script_sig = get_pay_to_pub_key_hash_script_from_slice(&dummy_pub_key_hash_bytes);
+    let output = BtcTxOut {
+        value: 0,
+        script_pubkey: script_sig.clone(),
+    };
+    // NOTE: Now we create the dummy tx that would spend a change output of the type that the core
+    // would write...
+    let dummy_tx = BtcTransaction {
+        version: BTC_TX_VERSION,
+        lock_time: BTC_TX_LOCK_TIME,
+        output: vec![output],
+        input: vec![BtcUtxo {
+            script_sig,
+            witness: Vec::default(),
+            sequence: u32::default(),
+            previous_output: BtcOutPoint::default(),
+        }],
+    };
+    // NOTE: Then we calculate the size of that transaction...
+    let dummy_tx_size_in_bytes = dummy_tx.get_size() as u64;
+    // NOTE: Which we use we calculate the minimum allowable fee to spend this output...
+    let cost_to_spend_utxo = dust_relay_fee * dummy_tx_size_in_bytes;
+    // NOTE: And so dust is any amount whose fee to spend it is > 1/3 of the value of the UTXO itself.
+    let dust_amount = cost_to_spend_utxo * 3;
+    debug!("Calculated dust amount: {}", dust_amount);
+    dust_amount
+}
 
 pub fn convert_hex_tx_to_btc_transaction(hex: String) -> Result<BtcTransaction> {
     Ok(btc_deserialize::<BtcTransaction>(&hex::decode(hex)?)?)
@@ -109,15 +142,15 @@ pub fn get_script_sig<'a>(signature_slice: &'a [u8], utxo_spender_pub_key_slice:
         .into_script()
 }
 
-pub fn create_new_tx_output(value: u64, script: BtcScript) -> Result<BtcTxOut> {
-    Ok(BtcTxOut {
+pub fn create_new_tx_output(value: u64, script: BtcScript) -> BtcTxOut {
+    BtcTxOut {
         value,
         script_pubkey: script,
-    })
+    }
 }
 
 pub fn create_new_pay_to_pub_key_hash_output(value: u64, recipient: &str) -> Result<BtcTxOut> {
-    create_new_tx_output(value, get_pay_to_pub_key_hash_script(recipient)?)
+    get_pay_to_pub_key_hash_script(recipient).map(|script| create_new_tx_output(value, script))
 }
 
 pub fn serialize_btc_utxo(btc_utxo: &BtcUtxo) -> Bytes {
@@ -141,14 +174,19 @@ pub fn convert_btc_address_to_pub_key_hash_bytes(btc_address: &str) -> Result<By
 }
 
 pub fn get_pay_to_pub_key_hash_script(btc_address: &str) -> Result<BtcScript> {
+    convert_btc_address_to_pub_key_hash_bytes(btc_address)
+        .map(|ref bytes| get_pay_to_pub_key_hash_script_from_slice(bytes))
+}
+
+pub fn get_pay_to_pub_key_hash_script_from_slice(slice: &[u8]) -> BtcScript {
     let script = BtcScriptBuilder::new();
-    Ok(script
+    script
         .push_opcode(opcodes::all::OP_DUP)
         .push_opcode(opcodes::all::OP_HASH160)
-        .push_slice(&convert_btc_address_to_pub_key_hash_bytes(btc_address)?[..])
+        .push_slice(slice)
         .push_opcode(opcodes::all::OP_EQUALVERIFY)
         .push_opcode(opcodes::all::OP_CHECKSIG)
-        .into_script())
+        .into_script()
 }
 
 pub fn get_btc_tx_id_from_str(tx_id: &str) -> Result<Txid> {
@@ -254,7 +292,7 @@ mod tests {
     fn should_create_new_tx_output() {
         let value = 1;
         let script = get_pay_to_pub_key_hash_script(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
-        let result = create_new_tx_output(value, script.clone()).unwrap();
+        let result = create_new_tx_output(value, script.clone());
         assert_eq!(result.value, value);
         assert_eq!(result.script_pubkey, script);
     }
@@ -438,6 +476,14 @@ mod tests {
         let bad_btc_address_str = "not a BTC address";
         let result = convert_str_to_btc_address_or_safe_address(bad_btc_address_str).unwrap();
         let expected_result = SAFE_BTC_ADDRESS.clone();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_calculate_dust_amount() {
+        let expected_result = 990;
+        let dust_relay_fee = 3;
+        let result = calculate_dust_amount(dust_relay_fee);
         assert_eq!(result, expected_result);
     }
 }

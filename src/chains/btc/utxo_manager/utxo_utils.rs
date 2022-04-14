@@ -7,7 +7,7 @@ use serde_json::{json, Value as JsonValue};
 
 use crate::{
     chains::btc::{
-        btc_constants::{BTC_TX_LOCK_TIME, BTC_TX_VERSION},
+        btc_constants::{BTC_TX_LOCK_TIME, BTC_TX_VERSION, DUST_AMOUNT},
         btc_utils::create_new_pay_to_pub_key_hash_output,
         utxo_manager::{
             utxo_database_utils::{get_all_utxo_db_keys, get_first_utxo_and_value, get_utxo_from_db},
@@ -93,20 +93,21 @@ pub fn utxos_exist_in_db<D: DatabaseInterface>(db: &D, utxos_to_check: &BtcUtxos
 
 pub fn get_enough_utxos_to_cover_total<D: DatabaseInterface>(
     db: &D,
-    satoshis: u64,
+    sats_required: u64,
     num_outputs: usize,
     sats_per_byte: u64,
 ) -> Result<BtcUtxosAndValues> {
-    get_enough_utxos_to_cover_total_recursively(db, satoshis, num_outputs, sats_per_byte, vec![].into())
+    get_enough_utxos_to_cover_total_recursively(db, sats_required, num_outputs, sats_per_byte, vec![].into())
 }
 
 fn get_enough_utxos_to_cover_total_recursively<D: DatabaseInterface>(
     db: &D,
-    satoshis: u64,
+    sats_required: u64,
     num_outputs: usize,
     sats_per_byte: u64,
     mut inputs: BtcUtxosAndValues,
 ) -> Result<BtcUtxosAndValues> {
+    // NOTE: This function assumes the CALLER is accounting for a change output!
     info!("✔ Getting UTXO from db...");
     let utxo = get_first_utxo_and_value(db)?;
     debug!("✔ Retrieved UTXO of value: {}", utxo.value);
@@ -131,7 +132,7 @@ fn get_enough_utxos_to_cover_total_recursively<D: DatabaseInterface>(
     let fee = dummy_tx.get_size() as u64 * sats_per_byte;
 
     // NOTE: Calculate total + fee to check if we have enough UTXOs to cover it...
-    let total_cost = fee + satoshis;
+    let total_cost = fee + sats_required;
     let total_utxo_value = inputs.sum();
     debug!(
         "✔ Calculated fee for {} input(s) & {} output(s): {} satoshis",
@@ -141,13 +142,22 @@ fn get_enough_utxos_to_cover_total_recursively<D: DatabaseInterface>(
     );
     debug!("✔ Fee + required BTC value of tx: {} Satoshis", total_cost);
     debug!("✔ Current total UTXO value: {} Satoshis", total_utxo_value);
-
-    if total_cost > total_utxo_value {
-        debug!("✔ UTXOs do not cover fee + amount, we need another!");
-        get_enough_utxos_to_cover_total_recursively(db, satoshis, num_outputs, sats_per_byte, inputs)
+    if total_cost <= total_utxo_value {
+        // NOTE: Now we can safely subtract and find the change amount without underflowing...
+        let change_amount = total_utxo_value - total_cost;
+        debug!("✔ Dust amount: {} Satoshis", *DUST_AMOUNT);
+        debug!("✔ Change amount: {} Satoshis", change_amount);
+        // NOTE: And finally check if the change output will be dust or not!
+        if change_amount <= *DUST_AMOUNT {
+            debug!("Change UTXO will be dust, we need another!");
+            get_enough_utxos_to_cover_total_recursively(db, sats_required, num_outputs, sats_per_byte, inputs)
+        } else {
+            debug!("✔ UTXO(s) covers fee + required satoshi amount, and the change amount is not dust!");
+            Ok(inputs)
+        }
     } else {
-        debug!("✔ UTXO(s) covers fee and required btc amount!");
-        Ok(inputs)
+        debug!("UTXOs do not cover fee + amount, we need another!");
+        get_enough_utxos_to_cover_total_recursively(db, sats_required, num_outputs, sats_per_byte, inputs)
     }
 }
 

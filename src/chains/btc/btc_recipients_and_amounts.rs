@@ -29,7 +29,7 @@ pub struct BtcRecipientAndAmount {
 impl BtcRecipientsAndAmounts {
     pub fn to_tx_outputs(&self) -> Vec<BtcTxOut> {
         self.iter()
-            .flat_map(|recipient_and_amount| {
+            .map(|recipient_and_amount| {
                 create_new_tx_output(
                     recipient_and_amount.amount,
                     recipient_and_amount.recipient.script_pubkey(),
