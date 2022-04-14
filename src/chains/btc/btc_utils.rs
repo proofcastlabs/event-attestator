@@ -139,15 +139,15 @@ pub fn get_script_sig<'a>(signature_slice: &'a [u8], utxo_spender_pub_key_slice:
         .into_script()
 }
 
-pub fn create_new_tx_output(value: u64, script: BtcScript) -> Result<BtcTxOut> {
-    Ok(BtcTxOut {
+pub fn create_new_tx_output(value: u64, script: BtcScript) -> BtcTxOut {
+    BtcTxOut {
         value,
         script_pubkey: script,
-    })
+    }
 }
 
 pub fn create_new_pay_to_pub_key_hash_output(value: u64, recipient: &str) -> Result<BtcTxOut> {
-    create_new_tx_output(value, get_pay_to_pub_key_hash_script(recipient)?)
+    get_pay_to_pub_key_hash_script(recipient).map(|script| create_new_tx_output(value, script))
 }
 
 pub fn serialize_btc_utxo(btc_utxo: &BtcUtxo) -> Bytes {
@@ -284,7 +284,7 @@ mod tests {
     fn should_create_new_tx_output() {
         let value = 1;
         let script = get_pay_to_pub_key_hash_script(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
-        let result = create_new_tx_output(value, script.clone()).unwrap();
+        let result = create_new_tx_output(value, script.clone());
         assert_eq!(result.value, value);
         assert_eq!(result.script_pubkey, script);
     }
