@@ -5,7 +5,7 @@ macro_rules! create_db_utils_with_getters {
             lazy_static! {
                 $(
                     static ref [< $prefix:upper $key:upper >]: [u8; 32] =
-                        crate::utils::get_prefixed_db_key($value);
+                        $crate::utils::get_prefixed_db_key($value);
                 )*
             }
 
@@ -59,7 +59,7 @@ macro_rules! create_db_utils_with_getters {
 
                 #[test]
                 fn [<$prefix:lower _should_not_have_any_db_key_collisions>]() {
-                    use crate::test_utils::TestDB;
+                    use $crate::test_utils::TestDB;
                     let keys = [< $prefix:camel DbUtils>]::<'_, TestDB>::get_all_db_keys_as_hex();
                     let mut deduped_keys = keys.clone();
                     deduped_keys.sort();
