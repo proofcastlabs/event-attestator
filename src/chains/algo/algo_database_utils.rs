@@ -3,10 +3,13 @@
 use std::{fmt, str::FromStr};
 
 use paste::paste;
-use rust_algorand::{AlgorandAddress, AlgorandBlock, AlgorandHash, AlgorandKeys, MicroAlgos};
+use rust_algorand::{AlgorandAddress, AlgorandHash, AlgorandKeys, MicroAlgos};
 
 use crate::{
-    chains::algo::algo_constants::{ALGO_PTOKEN_GENESIS_HASH, ALGO_TAIL_LENGTH},
+    chains::algo::{
+        algo_constants::{ALGO_PTOKEN_GENESIS_HASH, ALGO_TAIL_LENGTH},
+        algo_submission_material::AlgoSubmissionMaterial,
+    },
     constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
     database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
@@ -77,21 +80,26 @@ macro_rules! create_special_hash_setters_and_getters {
                         self.put_special_hash_in_db(&SpecialHashTypes::from_str(&$hash_type)?, hash)
                     }
 
-                    pub fn[<get_ $hash_type _block>](&self) -> Result<AlgorandBlock> {
-                        info!("✔ Getting {} block from db...", $hash_type);
+                    pub fn[<get_ $hash_type _submission_material>](&self) -> Result<AlgoSubmissionMaterial> {
+                        info!("✔ Getting {} submission material from db...", $hash_type);
                         self.[< get_ $hash_type _block_hash>]()
-                            .and_then(|hash| self.get_block(&hash))
+                            .and_then(|hash| self.get_submission_material(&hash))
                     }
 
-                    pub fn[<put_ $hash_type _block_in_db>](&self, block: &AlgorandBlock) -> Result<()> {
-                        info!("✔ Putting {} block in db!", $hash_type);
-                        let block_hash = block.hash()?;
-                        self.put_block_in_db(block)
+                    pub fn[<put_ $hash_type _submission_material_in_db>](
+                        &self,
+                        submission_material: &AlgoSubmissionMaterial
+                    ) -> Result<()> {
+                        info!("✔ Putting {} submission material in db!", $hash_type);
+                        let block_hash = submission_material.block.hash()?;
+                        self.put_algo_submission_material_in_db(submission_material)
                             .and_then(|_| self.[< put_ $hash_type _block_hash_in_db>](&block_hash))
                     }
 
                     pub fn [< get_ $hash_type _block_number >](&self) -> Result<u64> {
-                        self.[<get_ $hash_type _block>]().map(|block| block.round())
+                        self
+                            .[<get_ $hash_type _submission_material>]()
+                            .map(|submission_material| submission_material.block.round())
                     }
 
                 }
@@ -102,27 +110,27 @@ macro_rules! create_special_hash_setters_and_getters {
                 use super::*;
                 use crate::{
                     test_utils::get_test_database,
-                    chains::algo::test_utils::get_sample_block_n,
+                    chains::algo::test_utils::get_sample_submission_material_n,
                 };
 
                 $(
                     #[test]
-                    fn [< should_put_and_get_ $hash_type _block_in_db >]() {
+                    fn [< should_put_and_get_ $hash_type _submission_material_in_db >]() {
                         let db = get_test_database();
                         let db_utils = AlgoDbUtils::new(&db);
-                        let block = get_sample_block_n(0);
-                        db_utils.[<put_ $hash_type _block_in_db>](&block).unwrap();
-                        let result = db_utils.[<get_ $hash_type _block>]().unwrap();
-                        assert_eq!(result, block);
+                        let submission_material = get_sample_submission_material_n(0);
+                        db_utils.[<put_ $hash_type _submission_material_in_db>](&submission_material).unwrap();
+                        let result = db_utils.[<get_ $hash_type _submission_material>]().unwrap();
+                        assert_eq!(result, submission_material);
                     }
 
                     #[test]
                     fn [<$hash_type _hash_should_be_set_correctly_when_adding_ $hash_type _block>]() {
                         let db = get_test_database();
                         let db_utils = AlgoDbUtils::new(&db);
-                        let block = get_sample_block_n(0);
-                        let hash = block.hash().unwrap();
-                        db_utils.[<put_ $hash_type _block_in_db>](&block).unwrap();
+                        let submission_material = get_sample_submission_material_n(0);
+                        let hash = submission_material.block.hash().unwrap();
+                        db_utils.[<put_ $hash_type _submission_material_in_db>](&submission_material).unwrap();
                         let result = db_utils.[<get_ $hash_type _block_hash>]().unwrap();
                         assert_eq!(result, hash);
 
@@ -132,9 +140,9 @@ macro_rules! create_special_hash_setters_and_getters {
                     fn [<should_get_ $hash_type _block_number>]() {
                         let db = get_test_database();
                         let db_utils = AlgoDbUtils::new(&db);
-                        let block = get_sample_block_n(0);
-                        let expected_result = block.round();
-                        db_utils.[<put_ $hash_type _block_in_db>](&block).unwrap();
+                        let submission_material = get_sample_submission_material_n(0);
+                        let expected_result = submission_material.block.round();
+                        db_utils.[<put_ $hash_type _submission_material_in_db>](&submission_material).unwrap();
                         let result = db_utils.[<get_ $hash_type _block_number>]().unwrap();
                         assert_eq!(result, expected_result);
                     }
@@ -169,49 +177,53 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
             .or_else(|_| Ok(ALGO_PTOKEN_GENESIS_HASH.clone()))
     }
 
-    pub fn delete_block_by_block_hash(&self, hash: &AlgorandHash) -> Result<()> {
+    pub fn delete_submission_material_by_hash(&self, hash: &AlgorandHash) -> Result<()> {
         info!("Deleting block by blockhash: {}", hash);
         self.get_db().delete(hash.to_bytes())
     }
 
-    fn maybe_get_block(&self, hash: &AlgorandHash) -> Option<AlgorandBlock> {
-        debug!("✔ Maybe getting ALGO block via hash: {}", hash);
-        match self.get_block(hash) {
-            Ok(block) => Some(block),
+    fn maybe_get_algo_submission_material(&self, hash: &AlgorandHash) -> Option<AlgoSubmissionMaterial> {
+        debug!("✔ Maybe getting ALGO submission material via hash: {}", hash);
+        match self.get_submission_material(hash) {
+            Ok(material) => Some(material),
             Err(_) => None,
         }
     }
 
-    fn maybe_get_nth_ancestor_block(&self, hash: &AlgorandHash, n: u64) -> Result<Option<AlgorandBlock>> {
-        debug!("✔ Getting ancestor #{} ALGO block from db...", n);
-        match self.maybe_get_block(hash) {
+    fn maybe_get_nth_ancestor_submission_material(
+        &self,
+        hash: &AlgorandHash,
+        n: u64,
+    ) -> Result<Option<AlgoSubmissionMaterial>> {
+        debug!("✔ Getting ancestor #{} ALGO submission material from db...", n);
+        match self.maybe_get_algo_submission_material(hash) {
             None => Ok(None),
-            Some(block) => match n {
-                0 => Ok(Some(block)),
-                _ => self.maybe_get_nth_ancestor_block(&block.get_previous_block_hash()?, n - 1),
+            Some(material) => match n {
+                0 => Ok(Some(material)),
+                _ => self.maybe_get_nth_ancestor_submission_material(&material.block.get_previous_block_hash()?, n - 1),
             },
         }
     }
 
-    fn maybe_get_candidate_block(&self, ancestor_num: u64) -> Result<Option<AlgorandBlock>> {
-        self.maybe_get_nth_ancestor_block(&self.get_latest_block_hash()?, ancestor_num)
+    fn maybe_get_candidate_submission_material(&self, ancestor_num: u64) -> Result<Option<AlgoSubmissionMaterial>> {
+        self.maybe_get_nth_ancestor_submission_material(&self.get_latest_block_hash()?, ancestor_num)
     }
 
-    pub fn maybe_get_new_canon_block_candidate(&self) -> Result<Option<AlgorandBlock>> {
+    pub fn maybe_get_new_canon_submission_material_candidate(&self) -> Result<Option<AlgoSubmissionMaterial>> {
         info!("✔ Maybe getting candidate canon block from db...");
-        self.maybe_get_candidate_block(self.get_canon_to_tip_length()?)
+        self.maybe_get_candidate_submission_material(self.get_canon_to_tip_length()?)
     }
 
-    pub fn maybe_get_new_tail_block_candidate(&self) -> Result<Option<AlgorandBlock>> {
+    pub fn maybe_get_new_tail_block_candidate(&self) -> Result<Option<AlgoSubmissionMaterial>> {
         info!("✔ Maybe getting candidate tail block from db...");
-        self.maybe_get_candidate_block(self.get_canon_to_tip_length()? + ALGO_TAIL_LENGTH)
+        self.maybe_get_candidate_submission_material(self.get_canon_to_tip_length()? + ALGO_TAIL_LENGTH)
     }
 
-    pub fn get_block(&self, hash: &AlgorandHash) -> Result<AlgorandBlock> {
-        debug!("✔ Getting ALGO block via hash: {}", hash);
+    pub fn get_submission_material(&self, hash: &AlgorandHash) -> Result<AlgoSubmissionMaterial> {
+        debug!("✔ Getting ALGO submission material via hash: {}", hash);
         self.get_db()
             .get(hash.to_bytes(), MIN_DATA_SENSITIVITY_LEVEL)
-            .and_then(|bytes| Ok(AlgorandBlock::from_bytes(&bytes)?))
+            .and_then(|bytes| Ok(AlgoSubmissionMaterial::from_bytes(&bytes)?))
     }
 
     pub fn get_algo_address(&self, key: &[Byte]) -> Result<AlgorandAddress> {
@@ -227,17 +239,20 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
             .put(key.to_vec(), address.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
     }
 
-    pub fn put_block_in_db(&self, block: &AlgorandBlock) -> Result<()> {
+    pub fn put_algo_submission_material_in_db(&self, submission_material: &AlgoSubmissionMaterial) -> Result<()> {
         info!("✔ Putting ALGO block in db...");
-        self.get_db()
-            .put(block.hash()?.to_bytes(), block.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
+        self.get_db().put(
+            submission_material.block.hash()?.to_bytes(),
+            submission_material.to_bytes()?,
+            MIN_DATA_SENSITIVITY_LEVEL,
+        )
     }
 
-    fn get_block_from_db(&self, hash: &AlgorandHash) -> Result<AlgorandBlock> {
-        debug!("✔ Getting ALGO block from db under hash {hash}");
+    fn get_submission_material_from_db(&self, hash: &AlgorandHash) -> Result<AlgoSubmissionMaterial> {
+        debug!("✔ Getting ALGO submission material from db under hash {hash}");
         self.get_db()
             .get(hash.to_bytes(), MIN_DATA_SENSITIVITY_LEVEL)
-            .and_then(|bytes| Ok(AlgorandBlock::from_bytes(&bytes)?))
+            .and_then(|bytes| Ok(AlgoSubmissionMaterial::from_bytes(&bytes)?))
     }
 
     fn put_special_hash_in_db(&self, hash_type: &SpecialHashTypes, hash: &AlgorandHash) -> Result<()> {
@@ -338,7 +353,11 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
 mod tests {
     use super::*;
     use crate::{
-        chains::algo::test_utils::{get_all_sample_blocks, get_sample_block_n, get_sample_contiguous_blocks},
+        chains::algo::test_utils::{
+            get_all_sample_submission_material,
+            get_sample_contiguous_submission_material,
+            get_sample_submission_material_n,
+        },
         crypto_utils::get_32_random_bytes_arr,
         test_utils::get_test_database,
     };
@@ -419,7 +438,7 @@ mod tests {
     }
 
     #[test]
-    fn should_not_be_able_to_set_genesis_block_hash_if_alreadyt_extant() {
+    fn should_not_be_able_to_set_genesis_block_hash_if_already_extant() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
         let genesis_hash = get_random_algorand_hash();
@@ -529,51 +548,57 @@ mod tests {
     }
 
     #[test]
-    fn should_put_and_get_block_in_db() {
+    fn should_put_and_get_submission_material_in_db() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let block = AlgorandBlock::default();
-        db_utils.put_block_in_db(&block).unwrap();
-        let result = db_utils.get_block_from_db(&block.hash().unwrap()).unwrap();
-        assert_eq!(result, block);
+        let submission_material = AlgoSubmissionMaterial::default();
+        db_utils
+            .put_algo_submission_material_in_db(&submission_material)
+            .unwrap();
+        let result = db_utils
+            .get_submission_material_from_db(&submission_material.block.hash().unwrap())
+            .unwrap();
+        assert_eq!(result, submission_material);
     }
 
     #[test]
-    fn maybe_get_block_should_get_extant_block() {
+    fn maybe_get_algo_submission_material_should_get_extant_submission_material() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let block = get_sample_block_n(0);
-        let hash = block.hash().unwrap();
-        db_utils.put_block_in_db(&block).unwrap();
-        let result = db_utils.maybe_get_block(&hash);
-        let expected_result = Some(block);
+        let submission_material = get_sample_submission_material_n(0);
+        let hash = submission_material.block.hash().unwrap();
+        db_utils
+            .put_algo_submission_material_in_db(&submission_material)
+            .unwrap();
+        let result = db_utils.maybe_get_algo_submission_material(&hash);
+        let expected_result = Some(submission_material);
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn maybe_get_block_should_return_none_if_no_block_extant() {
+    fn maybe_get_algo_submission_material_should_return_none_if_no_submission_material_extant() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let block = get_sample_block_n(0);
-        let hash = block.hash().unwrap();
-        let result = db_utils.maybe_get_block(&hash);
+        let submission_material = get_sample_submission_material_n(0);
+        let hash = submission_material.block.hash().unwrap();
+        let result = db_utils.maybe_get_algo_submission_material(&hash);
         let expected_result = None;
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_get_nth_ancestor_block() {
+    fn should_get_nth_ancestor_submission_material() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let blocks = get_all_sample_blocks();
-        blocks
+        let submission_materials = get_all_sample_submission_material();
+        submission_materials
             .iter()
-            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
-        let block_sample_number = 4;
-        let hash = get_sample_block_n(block_sample_number).hash().unwrap();
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+        let sample_number = 4;
+        let hash = get_sample_submission_material_n(sample_number).block.hash().unwrap();
         let n: u64 = 3;
-        let expected_result = Some(get_sample_block_n(block_sample_number - n as usize));
-        let result = db_utils.maybe_get_nth_ancestor_block(&hash, n).unwrap();
+        let expected_result = Some(get_sample_submission_material_n(sample_number - n as usize));
+        let result = db_utils.maybe_get_nth_ancestor_submission_material(&hash, n).unwrap();
         assert_eq!(result, expected_result)
     }
 
@@ -581,32 +606,37 @@ mod tests {
     fn should_return_none_if_no_nth_ancestor() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let blocks = get_all_sample_blocks();
-        blocks
+        let submission_materials = get_all_sample_submission_material();
+        submission_materials
             .iter()
-            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
-        let hash = get_sample_block_n(4).hash().unwrap();
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+        let hash = get_sample_submission_material_n(4).block.hash().unwrap();
         let expected_result = None;
         let result = db_utils
-            .maybe_get_nth_ancestor_block(&hash, (blocks.len() + 1) as u64)
+            .maybe_get_nth_ancestor_submission_material(&hash, (submission_materials.len() + 1) as u64)
             .unwrap();
         assert_eq!(result, expected_result)
     }
 
     #[test]
-    fn should_get_new_candidate_block_if_extant() {
+    fn should_get_new_candidate_submission_material_if_extant() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let blocks = get_sample_contiguous_blocks();
-        let canon_to_tip_length = (blocks.len() - 1) as u64;
-        let latest_block = blocks[blocks.len() - 1].clone();
-        db_utils.put_latest_block_in_db(&latest_block).unwrap();
+        let submission_materials = get_sample_contiguous_submission_material();
+        let canon_to_tip_length = (submission_materials.len() - 1) as u64;
+        let latest_submission_material = submission_materials[submission_materials.len() - 1].clone();
+        db_utils
+            .put_latest_submission_material_in_db(&latest_submission_material)
+            .unwrap();
         db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length).unwrap();
-        blocks
+        submission_materials
             .iter()
-            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
-        let result = db_utils.maybe_get_candidate_block(canon_to_tip_length).unwrap();
-        let expected_result = Some(blocks[blocks.len() - 1 - canon_to_tip_length as usize].clone());
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+        let result = db_utils
+            .maybe_get_candidate_submission_material(canon_to_tip_length)
+            .unwrap();
+        let expected_result =
+            Some(submission_materials[submission_materials.len() - 1 - canon_to_tip_length as usize].clone());
         assert_eq!(result, expected_result);
     }
 
@@ -614,29 +644,35 @@ mod tests {
     fn should_not_get_new_candidate_block_if_not_extant() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let blocks = get_sample_contiguous_blocks();
-        let canon_to_tip_length = (blocks.len() + 1) as u64;
-        let latest_block = blocks[blocks.len() - 1].clone();
-        db_utils.put_latest_block_in_db(&latest_block).unwrap();
+        let submission_materials = get_sample_contiguous_submission_material();
+        let canon_to_tip_length = (submission_materials.len() + 1) as u64;
+        let submission_material = submission_materials[submission_materials.len() - 1].clone();
+        db_utils
+            .put_latest_submission_material_in_db(&submission_material)
+            .unwrap();
         db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length).unwrap();
-        blocks
+        submission_materials
             .iter()
-            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
-        let result = db_utils.maybe_get_candidate_block(canon_to_tip_length).unwrap();
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+        let result = db_utils
+            .maybe_get_candidate_submission_material(canon_to_tip_length)
+            .unwrap();
         let expected_result = None;
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_delete_block_by_block_hash() {
+    fn should_delete_submission_material_by_hash() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let block = get_sample_block_n(0);
-        let hash = block.hash().unwrap();
-        db_utils.put_block_in_db(&block).unwrap();
-        assert!(db_utils.get_block(&hash).is_ok());
-        db_utils.delete_block_by_block_hash(&hash);
-        let result = db_utils.get_block(&hash);
+        let submission_material = get_sample_submission_material_n(0);
+        let hash = submission_material.block.hash().unwrap();
+        db_utils
+            .put_algo_submission_material_in_db(&submission_material)
+            .unwrap();
+        assert!(db_utils.get_submission_material(&hash).is_ok());
+        db_utils.delete_submission_material_by_hash(&hash);
+        let result = db_utils.get_submission_material(&hash);
         assert!(result.is_err());
     }
 

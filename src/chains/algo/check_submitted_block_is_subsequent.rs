@@ -33,8 +33,8 @@ fn check_submitted_block_hash_is_subsequent(
 pub fn check_submitted_block_is_subsequent_and_return_state<D: DatabaseInterface>(
     state: AlgoState<D>,
 ) -> Result<AlgoState<D>> {
-    let submitted_block = state.get_submitted_algo_block()?;
-    let latest_block_from_db = state.algo_db_utils.get_latest_block()?;
+    let submitted_block = state.get_algo_submission_material()?.block;
+    let latest_block_from_db = state.algo_db_utils.get_latest_submission_material()?.block;
     check_submitted_block_round_is_subsequent(&submitted_block, &latest_block_from_db)
         .and_then(|_| check_submitted_block_hash_is_subsequent(&submitted_block, &latest_block_from_db))
         .and(Ok(state))
@@ -44,7 +44,7 @@ pub fn check_submitted_block_is_subsequent_and_return_state<D: DatabaseInterface
 mod tests {
     use super::*;
     use crate::{
-        chains::algo::{algo_database_utils::AlgoDbUtils, test_utils::get_sample_block_n},
+        chains::algo::{algo_database_utils::AlgoDbUtils, test_utils::get_sample_submission_material_n},
         errors::AppError,
         test_utils::get_test_database,
     };
@@ -54,10 +54,12 @@ mod tests {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
         let state_0 = AlgoState::init(&db);
-        let block_1 = get_sample_block_n(0);
-        let block_2 = get_sample_block_n(1);
-        let state_1 = state_0.add_submitted_algo_block(&block_2).unwrap();
-        db_utils.put_latest_block_in_db(&block_1).unwrap();
+        let submission_material_1 = get_sample_submission_material_n(0);
+        let submission_material_2 = get_sample_submission_material_n(1);
+        let state_1 = state_0.add_algo_submission_material(&submission_material_2).unwrap();
+        db_utils
+            .put_latest_submission_material_in_db(&submission_material_1)
+            .unwrap();
         let result = check_submitted_block_is_subsequent_and_return_state(state_1);
         assert!(result.is_ok());
     }
@@ -67,10 +69,12 @@ mod tests {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
         let state_0 = AlgoState::init(&db);
-        let block_1 = get_sample_block_n(0);
-        let block_2 = get_sample_block_n(1);
-        let state_1 = state_0.add_submitted_algo_block(&block_1).unwrap();
-        db_utils.put_latest_block_in_db(&block_2).unwrap();
+        let submission_material_1 = get_sample_submission_material_n(0);
+        let submission_material_2 = get_sample_submission_material_n(1);
+        let state_1 = state_0.add_algo_submission_material(&submission_material_1).unwrap();
+        db_utils
+            .put_latest_submission_material_in_db(&submission_material_2)
+            .unwrap();
         match check_submitted_block_is_subsequent_and_return_state(state_1) {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(error)) => assert_eq!(error, NO_PARENT_ERROR),

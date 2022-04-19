@@ -9,7 +9,7 @@ pub fn maybe_update_algo_tail_block_hash_and_return_state<D: DatabaseInterface>(
 ) -> Result<AlgoState<D>> {
     info!("✔ Maybe updating ALGO tail block hash...");
     maybe_get_new_candidate_block_hash(
-        &state.algo_db_utils.get_tail_block()?,
+        &state.algo_db_utils.get_tail_submission_material()?,
         state.algo_db_utils.maybe_get_new_tail_block_candidate()?,
     )
     .and_then(|maybe_new_tail_block_hash| match maybe_new_tail_block_hash {

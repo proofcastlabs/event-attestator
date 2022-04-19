@@ -31,16 +31,16 @@ pub struct AlgoEnclaveState {
 
 impl AlgoEnclaveState {
     pub fn new<D: DatabaseInterface>(db_utils: &AlgoDbUtils<D>) -> Result<Self> {
-        let tail_block = db_utils.get_tail_block()?;
+        let tail_block = db_utils.get_tail_submission_material()?.block;
         let tail_block_number = tail_block.round();
         let tail_block_hash = tail_block.hash()?.to_string();
-        let canon_block = db_utils.get_canon_block()?;
+        let canon_block = db_utils.get_canon_submission_material()?.block;
         let canon_block_number = canon_block.round();
         let canon_block_hash = canon_block.hash()?.to_string();
-        let latest_block = db_utils.get_latest_block()?;
+        let latest_block = db_utils.get_latest_submission_material()?.block;
         let latest_block_number = latest_block.round();
         let latest_block_hash = latest_block.hash()?.to_string();
-        let anchor_block = db_utils.get_anchor_block()?;
+        let anchor_block = db_utils.get_anchor_submission_material()?.block;
         let anchor_block_number = anchor_block.round();
         let anchor_block_hash = anchor_block.hash()?.to_string();
         Ok(Self {
@@ -73,7 +73,7 @@ mod tests {
         chains::algo::{
             algo_state::AlgoState,
             core_initialization::initialize_algo_core::initialize_algo_core,
-            test_utils::get_sample_block_n,
+            test_utils::get_sample_submission_material_n,
         },
         test_utils::get_test_database,
     };
@@ -85,7 +85,7 @@ mod tests {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
         let state = AlgoState::init_with_empty_dictionary(&db);
-        let block = get_sample_block_n(0);
+        let block = get_sample_submission_material_n(0).block;
         let block_num = block.round();
         let hash = block.hash().unwrap();
         let genesis_id = "mainnet-v1.0";

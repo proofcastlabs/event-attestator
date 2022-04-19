@@ -1,23 +1,23 @@
-use rust_algorand::{AlgorandBlock, AlgorandHash};
+use rust_algorand::AlgorandHash;
 
-use crate::types::Result;
+use crate::{chains::algo::algo_submission_material::AlgoSubmissionMaterial, types::Result};
 
 pub fn maybe_get_new_candidate_block_hash(
-    current_block: &AlgorandBlock,
-    maybe_candidate_block: Option<AlgorandBlock>,
+    current_submission_material: &AlgoSubmissionMaterial,
+    maybe_candidate_submission_material: Option<AlgoSubmissionMaterial>,
 ) -> Result<Option<AlgorandHash>> {
-    match maybe_candidate_block {
+    match maybe_candidate_submission_material {
         None => {
-            info!("✔ No candidate block in db yet ∴ not updating block hash!");
+            info!("✔ No candidate submission material in db yet ∴ not updating block hash!");
             Ok(None)
         },
-        Some(candidate_block) => {
-            info!("✔ Candidate block found!");
-            if current_block.round() < candidate_block.round() {
-                info!("✔ Current block IS older than new candidate block, ∴ updating it...");
-                Ok(Some(candidate_block.hash()?))
+        Some(candidate_material) => {
+            info!("✔ Candidate submission material found!");
+            if current_submission_material.block.round() < candidate_material.block.round() {
+                info!("✔ Current submission material IS older than new candidate material, ∴ updating it...");
+                Ok(Some(candidate_material.block.hash()?))
             } else {
-                info!("✘ Current block is NOT older than new candidate block ∴ NOT updating it!");
+                info!("✘ Current submission material is NOT older than new candidate material ∴ NOT updating it!");
                 Ok(None)
             }
         },
@@ -27,25 +27,27 @@ pub fn maybe_get_new_candidate_block_hash(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::algo::test_utils::get_sample_contiguous_blocks;
+    use crate::chains::algo::test_utils::get_sample_contiguous_submission_material;
 
     #[test]
     fn should_get_candidate_block_hash_if_newer() {
-        let blocks = get_sample_contiguous_blocks();
-        let current_block = blocks[0].clone();
-        let candidate_block = blocks[1].clone();
-        let expected_result = Some(candidate_block.hash().unwrap());
-        let result = maybe_get_new_candidate_block_hash(&current_block, Some(candidate_block)).unwrap();
+        let submission_materials = get_sample_contiguous_submission_material();
+        let current_submission_material = submission_materials[0].clone();
+        let candidate_material = submission_materials[1].clone();
+        let expected_result = Some(candidate_material.block.hash().unwrap());
+        let result =
+            maybe_get_new_candidate_block_hash(&current_submission_material, Some(candidate_material)).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_not_get_candidate_block_hash_if_not_newer() {
-        let blocks = get_sample_contiguous_blocks();
-        let current_block = blocks[1].clone();
-        let candidate_block = blocks[0].clone();
+        let submission_materials = get_sample_contiguous_submission_material();
+        let current_submission_material = submission_materials[1].clone();
+        let candidate_material = submission_materials[0].clone();
         let expected_result = None;
-        let result = maybe_get_new_candidate_block_hash(&current_block, Some(candidate_block)).unwrap();
+        let result =
+            maybe_get_new_candidate_block_hash(&current_submission_material, Some(candidate_material)).unwrap();
         assert_eq!(result, expected_result);
     }
 }

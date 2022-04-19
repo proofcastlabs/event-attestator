@@ -1,8 +1,8 @@
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 
 use rust_algorand::{AlgorandBlock, AlgorandBlockJson, AlgorandTransactionProof, AlgorandTransactionProofJson};
 use serde::{Deserialize, Serialize};
-use serde_json;
+use serde_json::json;
 
 use crate::{
     chains::algo::algo_state::AlgoState,
@@ -13,8 +13,8 @@ use crate::{
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AlgoSubmissionMaterial {
-    block: AlgorandBlock,
-    proofs: Vec<AlgorandTransactionProof>,
+    pub block: AlgorandBlock,
+    pub proofs: Vec<AlgorandTransactionProof>,
 }
 
 impl AlgoSubmissionMaterial {
@@ -47,6 +47,12 @@ impl AlgoSubmissionMaterial {
                 .collect::<Vec<AlgorandTransactionProofJson>>(),
         })
     }
+
+    pub fn remove_txs(&self) -> Self {
+        let mut mutable_self = self.clone();
+        mutable_self.block.transactions = None;
+        mutable_self
+    }
 }
 
 impl FromStr for AlgoSubmissionMaterial {
@@ -54,6 +60,15 @@ impl FromStr for AlgoSubmissionMaterial {
 
     fn from_str(s: &str) -> Result<Self> {
         AlgoSubmissionMaterialJson::from_str(s).and_then(|ref json| Self::from_json(json))
+    }
+}
+
+impl Display for AlgoSubmissionMaterial {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.to_json() {
+            Ok(json_struct) => write!(f, "{}", json!(json_struct)),
+            Err(error) => write!(f, "Could not convert AlgorandBlock to json!: {}", error),
+        }
     }
 }
 
@@ -76,24 +91,24 @@ pub fn parse_algo_submission_material_and_put_in_state<'a, D: DatabaseInterface>
     submission_material: &str,
     state: AlgoState<'a, D>,
 ) -> Result<AlgoState<'a, D>> {
-    state.add_submitted_algo_block(&AlgorandBlock::from_str(submission_material)?)
+    state.add_algo_submission_material(&AlgoSubmissionMaterial::from_str(submission_material)?)
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::chains::algo::test_utils::get_sample_block_json_str_n;
+    use crate::chains::algo::test_utils::get_sample_submission_material_str_n;
 
     #[test]
     fn should_parse_submission_material_from_str() {
-        let submission_material_str = get_sample_block_json_str_n(0);
+        let submission_material_str = get_sample_submission_material_str_n(0);
         let result = AlgoSubmissionMaterial::from_str(&submission_material_str);
         assert!(result.is_ok());
     }
 
     #[test]
     fn should_serde_submission_material_to_and_from_json() {
-        let submission_material_str = get_sample_block_json_str_n(0);
+        let submission_material_str = get_sample_submission_material_str_n(0);
         let submission_material = AlgoSubmissionMaterial::from_str(&submission_material_str).unwrap();
         let json = submission_material.to_json().unwrap();
         let result = AlgoSubmissionMaterial::from_json(&json).unwrap();
@@ -102,7 +117,7 @@ mod test {
 
     #[test]
     fn should_serde_algo_submission_material_to_and_from_bytes() {
-        let submission_material_str = get_sample_block_json_str_n(0);
+        let submission_material_str = get_sample_submission_material_str_n(0);
         let submission_material = AlgoSubmissionMaterial::from_str(&submission_material_str).unwrap();
         let bytes = submission_material.to_bytes().unwrap();
         let result = AlgoSubmissionMaterial::from_bytes(&bytes).unwrap();

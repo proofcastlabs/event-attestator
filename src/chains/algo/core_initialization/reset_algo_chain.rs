@@ -12,14 +12,14 @@ use crate::{
         algo_state::AlgoState,
         algo_submission_material::parse_algo_submission_material_and_put_in_state,
         core_initialization::initialize_algo_core::initialize_algo_chain_db_keys,
-        remove_all_txs_from_block_in_state::remove_all_txs_from_block_in_state,
+        remove_all_txs_from_submission_material_in_state::remove_all_txs_from_submission_material_in_state,
     },
     check_debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,
 };
 
-fn delete_all_algo_blocks<D: DatabaseInterface>(algo_db_utils: &AlgoDbUtils<D>) -> Result<()> {
+fn delete_all_algo_submision_material<D: DatabaseInterface>(algo_db_utils: &AlgoDbUtils<D>) -> Result<()> {
     fn recursively_delete_all_algo_blocks<D: DatabaseInterface>(
         algo_db_utils: &AlgoDbUtils<D>,
         maybe_block_hash: Option<AlgorandHash>,
@@ -29,10 +29,15 @@ fn delete_all_algo_blocks<D: DatabaseInterface>(algo_db_utils: &AlgoDbUtils<D>) 
                 info!("✔ Deleting all ALGO blocks from db, starting with the latest block...");
                 recursively_delete_all_algo_blocks(algo_db_utils, Some(algo_db_utils.get_latest_block_hash()?))
             },
-            Some(ref hash) => match algo_db_utils.get_block(hash) {
-                Ok(block) => algo_db_utils.delete_block_by_block_hash(&block.hash()?).and_then(|_| {
-                    recursively_delete_all_algo_blocks(algo_db_utils, Some(block.get_previous_block_hash()?))
-                }),
+            Some(ref hash) => match algo_db_utils.get_submission_material(hash) {
+                Ok(material) => algo_db_utils
+                    .delete_submission_material_by_hash(&material.block.hash()?)
+                    .and_then(|_| {
+                        recursively_delete_all_algo_blocks(
+                            algo_db_utils,
+                            Some(material.block.get_previous_block_hash()?),
+                        )
+                    }),
                 Err(_) => {
                     info!("✔ All ALGO blocks deleted!");
                     Ok(())
@@ -58,8 +63,10 @@ fn delete_all_relevant_db_keys<D: DatabaseInterface>(algo_db_utils: &AlgoDbUtils
     .and(Ok(()))
 }
 
-fn delete_all_algo_blocks_and_return_state<D: DatabaseInterface>(state: AlgoState<D>) -> Result<AlgoState<D>> {
-    delete_all_algo_blocks(&state.algo_db_utils)
+fn delete_all_algo_submission_material_and_return_state<D: DatabaseInterface>(
+    state: AlgoState<D>,
+) -> Result<AlgoState<D>> {
+    delete_all_algo_submision_material(&state.algo_db_utils)
         .and_then(|_| delete_all_relevant_db_keys(&state.algo_db_utils))
         .and(Ok(state))
 }
@@ -69,13 +76,13 @@ pub fn reset_algo_chain_and_return_state<D: DatabaseInterface>(
     canon_to_tip_length: u64,
 ) -> Result<AlgoState<D>> {
     info!("Resetting ALGO chain...");
-    delete_all_algo_blocks_and_return_state(state)
-        .and_then(remove_all_txs_from_block_in_state)
+    delete_all_algo_submission_material_and_return_state(state)
+        .and_then(remove_all_txs_from_submission_material_in_state)
         .and_then(add_latest_algo_block_to_db_and_return_state)
         .and_then(|state| {
             initialize_algo_chain_db_keys(
                 &state.algo_db_utils,
-                &state.get_submitted_algo_block()?.hash()?,
+                &state.get_algo_submission_material()?.block.hash()?,
                 canon_to_tip_length,
             )?;
             Ok(state)
@@ -109,29 +116,34 @@ pub fn debug_reset_algo_chain<D: DatabaseInterface>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{chains::algo::test_utils::get_sample_contiguous_blocks, test_utils::get_test_database};
+    use crate::{chains::algo::test_utils::get_sample_contiguous_submission_material, test_utils::get_test_database};
 
     #[test]
-    fn should_delete_all_algo_blocks() {
+    fn should_delete_all_algo_submission_material() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let blocks = get_sample_contiguous_blocks();
-        let block_hashes = blocks
+        let submission_materials = get_sample_contiguous_submission_material();
+        let block_hashes = submission_materials
             .clone()
             .iter()
-            .map(|block| block.hash().unwrap())
+            .map(|material| material.block.hash().unwrap())
             .collect::<Vec<AlgorandHash>>();
         let latest_hash = block_hashes[block_hashes.len() - 1].clone();
-        blocks.iter().for_each(|block| db_utils.put_block_in_db(block).unwrap());
+        submission_materials
+            .iter()
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
         db_utils.put_latest_block_hash_in_db(&latest_hash).unwrap();
         block_hashes
             .iter()
-            .for_each(|hash| assert!(db_utils.get_block(&hash).is_ok()));
-        delete_all_algo_blocks(&db_utils).unwrap();
+            .for_each(|hash| assert!(db_utils.get_submission_material(&hash).is_ok()));
+        delete_all_algo_submision_material(&db_utils).unwrap();
         block_hashes.iter().enumerate().for_each(|(i, hash)| {
-            let result = db_utils.get_block(&hash);
+            let result = db_utils.get_submission_material(&hash);
             if result.is_ok() {
-                let err_msg = format!("Sample ALGO block #{} still exists in DB under hash: 0x{}", i, hash,);
+                let err_msg = format!(
+                    "Sample ALGO submission_material #{} still exists in DB under hash: 0x{}",
+                    i, hash,
+                );
                 assert!(false, "{}", err_msg);
             }
         });

@@ -52,7 +52,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        chains::algo::{algo_database_utils::AlgoDbUtils, test_utils::get_sample_block_n},
+        chains::algo::{algo_database_utils::AlgoDbUtils, test_utils::get_sample_submission_material_n},
         test_utils::get_test_database,
     };
 
@@ -63,7 +63,7 @@ mod tests {
         let canon_to_tip_length = 3;
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let block = get_sample_block_n(0);
+        let block = get_sample_submission_material_n(0);
         let hash = block.hash().unwrap();
         let genesis_id = "mainnet-v1.0";
         let block_json_string = block.to_string();
@@ -96,7 +96,7 @@ mod tests {
         let canon_to_tip_length = 3;
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let block = get_sample_block_n(0);
+        let block = get_sample_submission_material_n(0);
         let genesis_id = "mainnet-v1.0";
         let block_json_string = block.to_string();
         let result_1 =

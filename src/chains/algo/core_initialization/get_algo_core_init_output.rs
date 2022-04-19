@@ -26,20 +26,22 @@ mod tests {
     use rust_algorand::AlgorandAddress;
 
     use super::*;
-    use crate::{chains::algo::test_utils::get_sample_block_n, test_utils::get_test_database};
+    use crate::{chains::algo::test_utils::get_sample_submission_material_n, test_utils::get_test_database};
 
     #[test]
     fn should_get_init_output() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let block = get_sample_block_n(0);
+        let submission_material = get_sample_submission_material_n(0);
         let address = AlgorandAddress::default();
-        db_utils.put_latest_block_in_db(&block).unwrap();
+        db_utils
+            .put_latest_submission_material_in_db(&submission_material)
+            .unwrap();
         db_utils.put_redeem_address_in_db(&address).unwrap();
         let result = AlgoInitializationOutput::new(&db_utils).unwrap();
         let expected_result = AlgoInitializationOutput {
             algo_address: address.to_string(),
-            algo_latest_block_num: block.round(),
+            algo_latest_block_num: submission_material.block.round(),
         };
         assert_eq!(result, expected_result);
     }

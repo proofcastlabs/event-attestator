@@ -7,7 +7,8 @@ use crate::{
         add_latest_algo_block::add_latest_algo_block_to_db_and_return_state,
         algo_database_utils::AlgoDbUtils,
         algo_state::AlgoState,
-        remove_irrelevant_txs_from_block_in_state::remove_irrelevant_txs_from_block_in_state,
+        algo_submission_material::AlgoSubmissionMaterial,
+        remove_irrelevant_txs_from_submission_material_in_state::remove_irrelevant_txs_from_submission_material_in_state,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -29,17 +30,17 @@ pub fn initialize_algo_chain_db_keys<D: DatabaseInterface>(
 
 pub fn initialize_algo_core<'a, D: DatabaseInterface>(
     state: AlgoState<'a, D>,
-    block_json_str: &str,
+    submission_material_str: &str,
     fee: u64,
     canon_to_tip_length: u64,
     genesis_id: &str,
 ) -> Result<AlgoState<'a, D>> {
     info!("✔ Initializing ALGO core...");
-    let block = AlgorandBlock::from_str(block_json_str)?;
-    let hash = block.hash()?;
+    let submission_material = AlgoSubmissionMaterial::from_str(submission_material_str)?;
+    let hash = submission_material.block.hash()?;
     state
-        .add_submitted_algo_block(&block)
-        .and_then(remove_irrelevant_txs_from_block_in_state)
+        .add_algo_submission_material(&submission_material)
+        .and_then(remove_irrelevant_txs_from_submission_material_in_state)
         .and_then(add_latest_algo_block_to_db_and_return_state)
         .and_then(|state| {
             let keys = AlgorandKeys::create_random();
@@ -60,7 +61,7 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
 mod tests {
     use super::*;
     use crate::{
-        chains::algo::{algo_database_utils::AlgoDbUtils, test_utils::get_sample_block_n},
+        chains::algo::{algo_database_utils::AlgoDbUtils, test_utils::get_sample_submission_material_n},
         test_utils::get_test_database,
     };
 
@@ -72,10 +73,10 @@ mod tests {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
         let state = AlgoState::init_with_empty_dictionary(&db);
-        let block = get_sample_block_n(0);
-        let hash = block.hash().unwrap();
+        let submission_material = get_sample_submission_material_n(0);
+        let hash = submission_material.block.hash().unwrap();
         let genesis_id = "mainnet-v1.0";
-        let block_json_string = block.to_string();
+        let block_json_string = submission_material.to_string();
         initialize_algo_core(state, &block_json_string, fee, canon_to_tip_length, genesis_id).unwrap();
         assert!(db_utils.get_algo_private_key().is_ok());
         assert_eq!(db_utils.get_algo_fee().unwrap(), fee_in_micro_algos);
@@ -88,9 +89,15 @@ mod tests {
         assert_eq!(db_utils.get_canon_block_hash().unwrap(), hash);
         assert_eq!(db_utils.get_anchor_block_hash().unwrap(), hash);
         assert_eq!(db_utils.get_latest_block_hash().unwrap(), hash);
-        assert_eq!(db_utils.get_latest_block().unwrap().transactions, None);
+        assert_eq!(
+            db_utils.get_latest_submission_material().unwrap().block.transactions,
+            None
+        );
         assert_eq!(db_utils.get_canon_to_tip_length().unwrap(), canon_to_tip_length);
-        assert_eq!(db_utils.get_latest_block().unwrap().block_header, block.block_header);
+        assert_eq!(
+            db_utils.get_latest_submission_material().unwrap().block.block_header,
+            submission_material.block.block_header
+        );
         assert_eq!(
             db_utils.get_redeem_address().unwrap(),
             db_utils.get_algo_private_key().unwrap().to_address().unwrap()

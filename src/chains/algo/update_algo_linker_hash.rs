@@ -2,7 +2,11 @@ use rust_algorand::{AlgorandBlock, AlgorandHash};
 use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
-    chains::algo::{algo_database_utils::AlgoDbUtils, algo_state::AlgoState},
+    chains::algo::{
+        algo_database_utils::AlgoDbUtils,
+        algo_state::AlgoState,
+        algo_submission_material::AlgoSubmissionMaterial,
+    },
     traits::DatabaseInterface,
     types::Result,
 };
@@ -26,9 +30,15 @@ fn calculate_linker_hash(
     Ok(AlgorandHash::from_bytes(&hashed)?)
 }
 
-fn maybe_get_parent_of_tail_block<D: DatabaseInterface>(db_utils: &AlgoDbUtils<D>) -> Result<Option<AlgorandBlock>> {
-    match db_utils.get_block(&db_utils.get_tail_block()?.get_previous_block_hash()?) {
-        Ok(block) => Ok(Some(block)),
+fn maybe_get_parent_of_tail_submission_material<D: DatabaseInterface>(
+    db_utils: &AlgoDbUtils<D>,
+) -> Result<Option<AlgoSubmissionMaterial>> {
+    let current_tails_previous_block_hash = db_utils
+        .get_tail_submission_material()?
+        .block
+        .get_previous_block_hash()?;
+    match db_utils.get_submission_material(&current_tails_previous_block_hash) {
+        Ok(submission_material) => Ok(Some(submission_material)),
         Err(_) => Ok(None),
     }
 }
@@ -37,11 +47,11 @@ pub fn maybe_update_algo_linker_hash_and_return_state<D: DatabaseInterface>(
     state: AlgoState<D>,
 ) -> Result<AlgoState<D>> {
     info!("✔ Maybe updating the ALGO linker hash...");
-    match maybe_get_parent_of_tail_block(&state.algo_db_utils)? {
-        Some(parent_of_eth_tail_block) => {
+    match maybe_get_parent_of_tail_submission_material(&state.algo_db_utils)? {
+        Some(parent_of_tail_submission_material) => {
             info!("✔ Updating ALGO linker hash...");
             let new_linker_hash = calculate_linker_hash(
-                &parent_of_eth_tail_block.hash()?,
+                &parent_of_tail_submission_material.block.hash()?,
                 &state.algo_db_utils.get_anchor_block_hash()?,
                 &state.algo_db_utils.get_linker_hash_or_else_genesis_hash()?,
             )?;
@@ -62,7 +72,7 @@ mod tests {
         chains::algo::{
             algo_constants::ALGO_PTOKEN_GENESIS_HASH,
             algo_database_utils::AlgoDbUtils,
-            test_utils::get_sample_contiguous_blocks,
+            test_utils::get_sample_contiguous_submission_material,
         },
         test_utils::get_test_database,
     };
@@ -71,14 +81,16 @@ mod tests {
     fn should_get_parent_of_tail_block_if_extant() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let blocks = get_sample_contiguous_blocks();
-        blocks
+        let submission_materials = get_sample_contiguous_submission_material();
+        submission_materials
             .iter()
-            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
-        let tail_block = blocks[blocks.len() - 1].clone();
-        db_utils.put_tail_block_hash_in_db(&tail_block.hash().unwrap()).unwrap();
-        let result = maybe_get_parent_of_tail_block(&db_utils).unwrap();
-        let expected_result = Some(blocks[blocks.len() - 2].clone());
+            .for_each(|block| db_utils.put_algo_submission_material_in_db(&block).unwrap());
+        let tail_submission_material = submission_materials[submission_materials.len() - 1].clone();
+        db_utils
+            .put_tail_block_hash_in_db(&tail_submission_material.block.hash().unwrap())
+            .unwrap();
+        let result = maybe_get_parent_of_tail_submission_material(&db_utils).unwrap();
+        let expected_result = Some(submission_materials[submission_materials.len() - 2].clone());
         assert_eq!(result, expected_result);
     }
 
@@ -86,13 +98,15 @@ mod tests {
     fn should_not_get_parent_of_tail_block_if_not_extant() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let blocks = get_sample_contiguous_blocks();
-        blocks
+        let submission_materials = get_sample_contiguous_submission_material();
+        submission_materials
             .iter()
-            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
-        let tail_block = blocks[0].clone();
-        db_utils.put_tail_block_hash_in_db(&tail_block.hash().unwrap()).unwrap();
-        let result = maybe_get_parent_of_tail_block(&db_utils).unwrap();
+            .for_each(|block| db_utils.put_algo_submission_material_in_db(&block).unwrap());
+        let tail_submission_material = submission_materials[0].clone();
+        db_utils
+            .put_tail_block_hash_in_db(&tail_submission_material.block.hash().unwrap())
+            .unwrap();
+        let result = maybe_get_parent_of_tail_submission_material(&db_utils).unwrap();
         let expected_result = None;
         assert_eq!(result, expected_result);
     }
@@ -114,13 +128,13 @@ mod tests {
     fn should_maybe_update_algo_linker_hash_and_return_state() {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let blocks = get_sample_contiguous_blocks();
-        blocks
+        let submission_materials = get_sample_contiguous_submission_material();
+        submission_materials
             .iter()
-            .for_each(|block| db_utils.put_block_in_db(&block).unwrap());
-        let anchor_block = blocks[0].clone();
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+        let anchor_submission_material = submission_materials[0].clone();
         db_utils
-            .put_anchor_block_hash_in_db(&anchor_block.hash().unwrap())
+            .put_anchor_block_hash_in_db(&anchor_submission_material.block.hash().unwrap())
             .unwrap();
         let expected_results = vec![
             ALGO_PTOKEN_GENESIS_HASH.to_string(),
@@ -135,8 +149,10 @@ mod tests {
             "1dSAgIi/zqp13NoXjdMO+Jj+5qWk6M9yAVtiUiXtjYk=".to_string(),
             "vGp+itrYjz+Q74DosZIAJl5c8zKbiMpiy0orlu8kyjM=".to_string(),
         ];
-        blocks.iter().enumerate().for_each(|(i, block)| {
-            db_utils.put_tail_block_hash_in_db(&block.hash().unwrap()).unwrap();
+        submission_materials.iter().enumerate().for_each(|(i, material)| {
+            db_utils
+                .put_tail_block_hash_in_db(&material.block.hash().unwrap())
+                .unwrap();
             maybe_update_algo_linker_hash_and_return_state(AlgoState::init(&db)).unwrap();
             let result = db_utils.get_linker_hash_or_else_genesis_hash().unwrap().to_string();
             assert_eq!(result, expected_results[i]);

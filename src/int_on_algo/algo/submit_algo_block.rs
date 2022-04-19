@@ -70,7 +70,7 @@ mod tests {
         chains::{
             algo::{
                 core_initialization::initialize_algo_core::initialize_algo_core,
-                test_utils::get_sample_contiguous_blocks,
+                test_utils::get_sample_contiguous_submission_material,
             },
             eth::{
                 core_initialization::initialize_eth_core::initialize_eth_core_with_no_contract_tx,
@@ -89,7 +89,7 @@ mod tests {
         let canon_to_tip_length = 3;
         let algo_fee = 1000;
         let genesis_id = "mainnet-v1.0";
-        let algo_block_json_strings = get_sample_contiguous_blocks()
+        let algo_block_json_strings = get_sample_contiguous_submission_material()
             .iter()
             .map(|block| block.to_string())
             .collect::<Vec<String>>();
