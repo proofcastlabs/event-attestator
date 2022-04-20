@@ -1,3 +1,4 @@
+pub(crate) mod add_relevant_txs_to_submission_material;
 pub(crate) mod filter_zero_value_tx_infos;
 pub(crate) mod get_algo_output;
 pub(crate) mod get_relevant_txs;
