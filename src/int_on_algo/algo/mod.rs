@@ -7,3 +7,4 @@ pub(crate) mod metadata;
 pub(crate) mod parse_tx_info;
 pub(crate) mod sign_txs;
 pub(crate) mod submit_algo_block;
+pub(crate) mod validate_relevant_txs;
