@@ -85,12 +85,19 @@ mod tests {
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
         let state = AlgoState::init_with_empty_dictionary(&db);
-        let block = get_sample_submission_material_n(0).block;
-        let block_num = block.round();
-        let hash = block.hash().unwrap();
+        let submission_material = get_sample_submission_material_n(0);
+        let block_num = submission_material.block.round();
+        let hash = submission_material.block.hash().unwrap();
         let genesis_id = "mainnet-v1.0";
-        let block_json_string = block.to_string();
-        initialize_algo_core(state, &block_json_string, fee, canon_to_tip_length, genesis_id).unwrap();
+        let submission_material_json_str = submission_material.to_string();
+        initialize_algo_core(
+            state,
+            &submission_material_json_str,
+            fee,
+            canon_to_tip_length,
+            genesis_id,
+        )
+        .unwrap();
         let result = AlgoEnclaveState::new(&db_utils).unwrap();
         let expected_result = AlgoEnclaveState {
             algo_account_nonce: 0,

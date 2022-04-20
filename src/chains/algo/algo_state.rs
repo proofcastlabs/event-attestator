@@ -138,12 +138,12 @@ mod tests {
     }
 
     #[test]
-    fn should_not_overwrite_algo_block_in_state() {
+    fn should_not_overwrite_algo_submission_material_in_state() {
         let db = get_test_database();
         let state = AlgoState::init(&db);
         let block = AlgoSubmissionMaterial::default();
         let updated_state = state.add_algo_submission_material(&block).unwrap();
-        let expected_error = "Cannot add algo block to `AlgoState` - one already exists!";
+        let expected_error = "Cannot add algo submission material to `AlgoState` - one already exists!";
         match updated_state.add_algo_submission_material(&block) {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
@@ -152,10 +152,10 @@ mod tests {
     }
 
     #[test]
-    fn should_fail_to_get_block_if_not_in_state() {
+    fn should_fail_to_get_submission_material_if_not_in_state() {
         let db = get_test_database();
         let state = AlgoState::init(&db);
-        let expected_error = "Cannot get algo block from `AlgoState` - none exists!";
+        let expected_error = "Cannot get algo submission material from `AlgoState` - none exists!";
         match state.get_algo_submission_material() {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),

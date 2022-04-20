@@ -31,7 +31,7 @@ mod tests {
                 .put_algo_submission_material_in_db(&material)
                 .unwrap()
         });
-        let expected_error = "✘ ALGO block Rejected - no parent exists in database!";
+        let expected_error = "✘ ALGO submission material rejected - no parent exists in database!";
         submission_materials.iter().enumerate().for_each(|(i, material)| {
             let state = AlgoState::init(&db).add_algo_submission_material(&material).unwrap();
             if i == 0 {
