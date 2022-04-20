@@ -6,7 +6,7 @@ pub fn remove_all_txs_from_submission_material_in_state<D: DatabaseInterface>(
     info!("✔ Removing all txs from submission material in state...");
     let mut submission_material = state.get_algo_submission_material()?;
     submission_material.block.transactions = None;
-    state.update_submission_material(&submission_material)
+    state.update_algo_submission_material(&submission_material)
 }
 
 #[cfg(test)]

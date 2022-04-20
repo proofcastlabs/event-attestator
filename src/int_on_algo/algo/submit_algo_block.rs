@@ -2,7 +2,7 @@
 
 use crate::{
     chains::algo::{
-        add_latest_algo_block::add_latest_algo_block_to_db_and_return_state,
+        add_latest_algo_submission_material::add_latest_algo_submission_material_to_db_and_return_state,
         algo_database_transactions::{
             end_algo_db_transaction_and_return_state,
             start_algo_db_transaction_and_return_state,
@@ -11,7 +11,7 @@ use crate::{
         algo_submission_material::parse_algo_submission_material_and_put_in_state,
         check_parent_exists::check_parent_of_algo_block_in_state_exists,
         increment_eth_account_nonce::maybe_increment_eth_account_nonce_and_return_algo_state,
-        remove_irrelevant_txs_from_submission_material_in_state::remove_irrelevant_txs_from_submission_material_in_state,
+        remove_all_txs_from_submission_material_in_state::remove_all_txs_from_submission_material_in_state,
         remove_old_algo_tail_submission_material::maybe_remove_old_algo_tail_submission_material_and_return_state,
         remove_txs_from_canon_submission_material::maybe_remove_txs_from_algo_canon_submission_material_and_return_state,
         update_algo_canon_block_hash::maybe_update_algo_canon_block_hash_and_return_state,
@@ -21,10 +21,13 @@ use crate::{
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_algo_state,
     int_on_algo::{
         algo::{
+            add_relevant_txs_to_submission_material::add_relevant_validated_txs_to_submission_material_in_state,
             filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
             get_algo_output::get_algo_output,
+            get_relevant_txs::get_relevant_asset_txs_from_submission_material_and_add_to_state,
             parse_tx_info::maybe_parse_tx_info_from_canon_block_and_add_to_state,
             sign_txs::maybe_sign_int_txs_and_add_to_algo_state,
+            validate_relevant_txs::filter_out_invalid_txs_and_update_in_state,
         },
         check_core_is_initialized::check_core_is_initialized_and_return_algo_state,
     },
@@ -46,15 +49,17 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: D, block_json_string:
         .and_then(start_algo_db_transaction_and_return_state)
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
         .and_then(check_parent_of_algo_block_in_state_exists)
-        //.and_then(validate_transactions_in_state) // FIXME Only do this is there's one we care about?
-        .and_then(remove_irrelevant_txs_from_submission_material_in_state)
-        .and_then(add_latest_algo_block_to_db_and_return_state)
+        .and_then(get_relevant_asset_txs_from_submission_material_and_add_to_state)
+        .and_then(filter_out_invalid_txs_and_update_in_state)
+        .and_then(remove_all_txs_from_submission_material_in_state)
+        .and_then(add_relevant_validated_txs_to_submission_material_in_state)
+        .and_then(add_latest_algo_submission_material_to_db_and_return_state)
         .and_then(maybe_update_algo_canon_block_hash_and_return_state)
         .and_then(maybe_update_algo_tail_block_hash_and_return_state)
         .and_then(maybe_update_algo_linker_hash_and_return_state)
         .and_then(maybe_parse_tx_info_from_canon_block_and_add_to_state)
         .and_then(filter_out_zero_value_tx_infos_from_state)
-        //.and_then(maybe_divert_txs_to_safe_address_if_destinajtion_is_evm_token_address) // TODO this!
+        //.and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address) // TODO this!
         .and_then(maybe_sign_int_txs_and_add_to_algo_state)
         .and_then(maybe_increment_eth_account_nonce_and_return_algo_state)
         .and_then(maybe_remove_old_algo_tail_submission_material_and_return_state)

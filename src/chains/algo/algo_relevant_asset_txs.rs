@@ -1,5 +1,11 @@
 use derive_more::{Constructor, Deref};
-use rust_algorand::{AlgorandAddress, AlgorandTransaction, AlgorandTransactionProof, AlgorandTransactions};
+use rust_algorand::{
+    AlgorandAddress,
+    AlgorandBlock,
+    AlgorandTransaction,
+    AlgorandTransactionProof,
+    AlgorandTransactions,
+};
 
 use crate::{chains::algo::algo_submission_material::AlgoSubmissionMaterial, types::Result};
 
@@ -31,6 +37,24 @@ impl AlgoRelevantAssetTxs {
                 .collect::<Result<Vec<Vec<AlgoRelevantAssetTx>>>>()?
                 .concat(),
         ))
+    }
+
+    pub fn filter_out_invalid_txs(&self, submission_material: &AlgoSubmissionMaterial) -> Self {
+        info!("✔ Filtering out invalid transaction proofs...");
+        Self::new(
+            self.iter()
+                .filter(|relevant_tx| relevant_tx.tx_proof.validate(&submission_material.block).is_ok())
+                .cloned()
+                .collect::<Vec<AlgoRelevantAssetTx>>(),
+        )
+    }
+
+    pub fn to_transactions(&self) -> AlgorandTransactions {
+        AlgorandTransactions::new(
+            self.iter()
+                .map(|relevant_tx| relevant_tx.tx.clone())
+                .collect::<Vec<AlgorandTransaction>>(),
+        )
     }
 }
 

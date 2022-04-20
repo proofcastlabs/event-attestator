@@ -29,7 +29,7 @@ pub fn remove_irrelevant_txs_from_submission_material_in_state<D: DatabaseInterf
         } else {
             Some(relevant_txs)
         };
-        state.update_submission_material(&submission_material)
+        state.update_algo_submission_material(&submission_material)
     })
 }
 

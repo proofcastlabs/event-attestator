@@ -1,4 +1,4 @@
-pub(crate) mod add_latest_algo_block;
+pub(crate) mod add_latest_algo_submission_material;
 pub(crate) mod algo_chain_id;
 pub(crate) mod algo_constants;
 pub(crate) mod algo_database_transactions;

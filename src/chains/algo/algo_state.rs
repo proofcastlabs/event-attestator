@@ -74,7 +74,7 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         self.int_on_algo_int_tx_infos.clone()
     }
 
-    pub fn update_submission_material(mut self, material: &AlgoSubmissionMaterial) -> Result<Self> {
+    pub fn update_algo_submission_material(mut self, material: &AlgoSubmissionMaterial) -> Result<Self> {
         self.algo_submission_material = Some(material.clone());
         Ok(self)
     }
@@ -83,7 +83,7 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         if self.get_algo_submission_material().is_ok() {
             Err(Self::get_no_overwrite_err("algo submission material").into())
         } else {
-            self.update_submission_material(material)
+            self.update_algo_submission_material(material)
         }
     }
 
@@ -197,7 +197,7 @@ mod tests {
         let state_1 = AlgoState::init(&db);
         let state_2 = state_1.add_algo_submission_material(&block_1).unwrap();
         assert_eq!(state_2.get_algo_submission_material().unwrap(), block_1);
-        let state_3 = state_2.update_submission_material(&block_2).unwrap();
+        let state_3 = state_2.update_algo_submission_material(&block_2).unwrap();
         let result = state_3.get_algo_submission_material().unwrap();
         assert_eq!(result, block_2);
     }

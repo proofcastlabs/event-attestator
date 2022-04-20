@@ -4,7 +4,7 @@ use rust_algorand::{AlgorandBlock, AlgorandHash, AlgorandKeys, MicroAlgos};
 
 use crate::{
     chains::algo::{
-        add_latest_algo_block::add_latest_algo_block_to_db_and_return_state,
+        add_latest_algo_submission_material::add_latest_algo_submission_material_to_db_and_return_state,
         algo_database_utils::AlgoDbUtils,
         algo_state::AlgoState,
         algo_submission_material::AlgoSubmissionMaterial,
@@ -41,7 +41,7 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
     state
         .add_algo_submission_material(&submission_material)
         .and_then(remove_irrelevant_txs_from_submission_material_in_state)
-        .and_then(add_latest_algo_block_to_db_and_return_state)
+        .and_then(add_latest_algo_submission_material_to_db_and_return_state)
         .and_then(|state| {
             let keys = AlgorandKeys::create_random();
             let address = keys.to_address()?;
