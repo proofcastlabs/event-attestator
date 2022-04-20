@@ -14,14 +14,13 @@
 
 pub(crate) mod algo;
 pub(crate) mod check_core_is_initialized;
-//pub(crate) mod debug_functions;
-//pub(crate) mod get_enclave_state;
-//pub(crate) mod get_latest_block_numbers;
+pub(crate) mod debug_functions;
+pub(crate) mod get_enclave_state;
+pub(crate) mod get_latest_block_numbers;
 pub(crate) mod int;
-//pub(crate) mod opt_in_to_asset;
-//pub(crate) mod test_utils;
+pub(crate) mod opt_in_to_asset;
+pub(crate) mod test_utils;
 
-/* // FIXME re-instate!
 pub use crate::{
     chains::{
         algo::{
@@ -49,4 +48,3 @@ pub use crate::{
         opt_in_to_asset::opt_in_to_asset,
     },
 };
-*/

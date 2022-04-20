@@ -81,14 +81,17 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
     info!("✔ Maybe parsing `IntOnAlgoIntTxInfos`...");
     state
         .algo_db_utils
-        .get_canon_block()
-        .and_then(|block| match block.transactions {
+        .get_canon_submission_material()
+        .and_then(|material| match material.block.transactions {
             None => {
-                info!("✔ No transactions in canon block ∴ no tx info to parse!");
+                info!("✔ No transactions in canon submission material ∴ no tx info to parse!");
                 Ok(state)
             },
             Some(txs) => {
-                info!("✔ {} transactions in canon block ∴ parsing info...", txs.len());
+                info!(
+                    "✔ {} transactions in canon submission material ∴ parsing info...",
+                    txs.len()
+                );
                 state
                     .get_evm_algo_token_dictionary()
                     .and_then(|dictionary| {

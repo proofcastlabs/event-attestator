@@ -63,10 +63,10 @@ mod tests {
         let canon_to_tip_length = 3;
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let block = get_sample_submission_material_n(0);
-        let hash = block.hash().unwrap();
+        let submission_material = get_sample_submission_material_n(0);
+        let hash = submission_material.block.hash().unwrap();
         let genesis_id = "mainnet-v1.0";
-        let block_json_string = block.to_string();
+        let block_json_string = submission_material.to_string();
         let result = maybe_initialize_algo_core(&db, &block_json_string, genesis_id, fee, canon_to_tip_length).unwrap();
         let expected_result = AlgoInitializationOutput::new(&db_utils).unwrap().to_string().unwrap();
         assert_eq!(result, expected_result);
@@ -81,9 +81,15 @@ mod tests {
         assert_eq!(db_utils.get_canon_block_hash().unwrap(), hash);
         assert_eq!(db_utils.get_anchor_block_hash().unwrap(), hash);
         assert_eq!(db_utils.get_latest_block_hash().unwrap(), hash);
-        assert_eq!(db_utils.get_latest_block().unwrap().transactions, None);
         assert_eq!(db_utils.get_canon_to_tip_length().unwrap(), canon_to_tip_length);
-        assert_eq!(db_utils.get_latest_block().unwrap().block_header, block.block_header);
+        assert_eq!(
+            db_utils.get_latest_submission_material().unwrap().block.transactions,
+            None
+        );
+        assert_eq!(
+            submission_material.block.block_header,
+            db_utils.get_latest_submission_material().unwrap().block.block_header,
+        );
         assert_eq!(
             db_utils.get_redeem_address().unwrap(),
             db_utils.get_algo_private_key().unwrap().to_address().unwrap()
