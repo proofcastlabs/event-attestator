@@ -1,6 +1,10 @@
 use crate::{
     chains::{
-        algo::{algo_database_utils::AlgoDbUtils, algo_submission_material::AlgoSubmissionMaterial},
+        algo::{
+            algo_database_utils::AlgoDbUtils,
+            algo_relevant_asset_txs::AlgoRelevantAssetTxs,
+            algo_submission_material::AlgoSubmissionMaterial,
+        },
         eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils::EthDbUtils},
     },
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
@@ -16,6 +20,7 @@ pub struct AlgoState<'a, D: DatabaseInterface> {
     pub eth_signed_txs: EthTransactions,
     pub algo_db_utils: AlgoDbUtils<'a, D>,
     pub int_on_algo_int_tx_infos: IntOnAlgoIntTxInfos,
+    pub algo_relevant_asset_txs: Option<AlgoRelevantAssetTxs>,
     pub algo_submission_material: Option<AlgoSubmissionMaterial>,
     pub evm_algo_token_dictionary: Option<EvmAlgoTokenDictionary>,
 }
@@ -25,6 +30,7 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         Self {
             db,
             evm_algo_token_dictionary,
+            algo_relevant_asset_txs: None,
             algo_submission_material: None,
             eth_db_utils: EthDbUtils::new(db),
             algo_db_utils: AlgoDbUtils::new(db),
@@ -106,6 +112,26 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
 
     pub fn get_num_signed_txs(&self) -> usize {
         self.eth_signed_txs.len()
+    }
+
+    pub fn get_relevant_asset_txs(&self) -> Result<AlgoRelevantAssetTxs> {
+        match &self.algo_relevant_asset_txs {
+            Some(txs) => Ok(txs.clone()),
+            None => Err(Self::get_not_in_state_err("algo relevant asset txs").into()),
+        }
+    }
+
+    pub fn update_relevant_asset_txs(mut self, txs: &AlgoRelevantAssetTxs) -> Result<Self> {
+        self.algo_relevant_asset_txs = Some(txs.clone());
+        Ok(self)
+    }
+
+    pub fn add_relevant_asset_txs(mut self, txs: &AlgoRelevantAssetTxs) -> Result<Self> {
+        if self.get_relevant_asset_txs().is_ok() {
+            Err(Self::get_no_overwrite_err("algo relevant asset txs").into())
+        } else {
+            self.update_relevant_asset_txs(txs)
+        }
     }
 }
 
