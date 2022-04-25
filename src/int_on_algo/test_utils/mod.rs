@@ -1,7 +1,13 @@
 #![cfg(test)]
 use std::fs::read_to_string;
 
-use crate::{chains::eth::eth_submission_material::EthSubmissionMaterial, errors::AppError, types::Result};
+use ethereum_types::Address as EthAddress;
+
+use crate::{
+    chains::eth::{eth_submission_material::EthSubmissionMaterial, eth_utils::convert_hex_to_eth_address},
+    errors::AppError,
+    types::Result,
+};
 
 macro_rules! write_paths_and_getter_fxn {
     ( $( $num:expr => $path:expr ),* ) => {
@@ -23,8 +29,36 @@ macro_rules! write_paths_and_getter_fxn {
 }
 
 write_paths_and_getter_fxn!(
-    0 => "src/int_on_algo/test_utils/int-block-1387181.json"
+    0 => "src/int_on_algo/test_utils/int-block-12208045.json",
+    1 => "src/int_on_algo/test_utils/int-block-12208046.json",
+    2 => "src/int_on_algo/test_utils/int-block-12208047.json",
+    3 => "src/int_on_algo/test_utils/int-block-12208048.json",
+    4 => "src/int_on_algo/test_utils/int-block-12208049.json"
 );
+
+pub fn get_sample_vault_address() -> EthAddress {
+    convert_hex_to_eth_address("0xE0806Ce04978224E27C6bB10E27fD30A7785ae9D").unwrap()
+}
+
+pub fn get_sample_router_address() -> EthAddress {
+    convert_hex_to_eth_address("0xec1700a39972482d5db20e73bb3ffe6829b0c102").unwrap()
+}
+
+pub fn get_sample_contiguous_int_submission_json_strings() -> Vec<String> {
+    vec![
+        read_to_string(get_path_n(0).unwrap()).unwrap(),
+        read_to_string(get_path_n(1).unwrap()).unwrap(),
+        read_to_string(get_path_n(2).unwrap()).unwrap(),
+        read_to_string(get_path_n(3).unwrap()).unwrap(),
+        read_to_string(get_path_n(4).unwrap()).unwrap(),
+    ]
+}
+pub fn get_sample_contiguous_int_blocks() -> Vec<EthSubmissionMaterial> {
+    get_sample_contiguous_int_submission_json_strings()
+        .iter()
+        .map(|s| EthSubmissionMaterial::from_str(s).unwrap())
+        .collect()
+}
 
 mod tests {
     use super::*;
