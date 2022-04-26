@@ -136,6 +136,13 @@ impl FeeCalculator for Erc20OnEosPegInInfo {
 }
 
 impl Erc20OnEosPegInInfo {
+    pub fn is_zero_eos_amount(&self, dictionary: &EosEthTokenDictionary) -> Result<bool> {
+        let entry = dictionary.get_entry_via_eos_address(&EosAccountName::from_str(&self.eos_token_address)?)?;
+        let eos_amount = remove_symbol_from_eos_asset(&entry.convert_u256_to_eos_asset_string(&self.token_amount)?)
+            .parse::<f64>()?;
+        Ok(eos_amount == 0.0)
+    }
+
     pub fn to_eos_signed_tx(
         &self,
         ref_block_num: u16,
@@ -201,19 +208,24 @@ impl Erc20OnEosPegInInfos {
         ))
     }
 
-    pub fn filter_out_zero_eos_values(&self) -> Result<Self> {
+    pub fn filter_out_zero_eos_values(&self, dictionary: &EosEthTokenDictionary) -> Result<Self> {
         Ok(Self::new(
             self.iter()
-                .filter(|peg_in_info| {
-                    match remove_symbol_from_eos_asset(&peg_in_info.eos_asset_amount).parse::<f64>() != Ok(0.0) {
-                        true => true,
-                        false => {
-                            info!(
-                                "✘ Filtering out peg in info due to zero EOS asset amount: {:?}",
-                                peg_in_info
-                            );
-                            false
-                        },
+                .map(|peg_in_info| {
+                    let is_zero_eos_amount = peg_in_info.is_zero_eos_amount(dictionary)?;
+                    Ok((peg_in_info.clone(), is_zero_eos_amount))
+                })
+                .collect::<Result<Vec<(Erc20OnEosPegInInfo, bool)>>>()?
+                .iter()
+                .filter_map(|(peg_in_info, is_zero_amount)| {
+                    if *is_zero_amount {
+                        info!(
+                            "✘ Filtering out peg in info due to zero EOS asset amount: {:?}",
+                            peg_in_info
+                        );
+                        None
+                    } else {
+                        Some(peg_in_info)
                     }
                 })
                 .cloned()
@@ -367,7 +379,7 @@ pub fn filter_out_zero_value_peg_ins_from_state<D: DatabaseInterface>(state: Eth
     debug!("✔ Num peg-in infos before: {}", state.erc20_on_eos_peg_in_infos.len());
     state
         .erc20_on_eos_peg_in_infos
-        .filter_out_zero_eos_values()
+        .filter_out_zero_eos_values(&EosEthTokenDictionary::get_from_db(state.db)?)
         .and_then(|filtered_peg_ins| {
             debug!("✔ Num peg-in infos after: {}", filtered_peg_ins.len());
             state.replace_erc20_on_eos_peg_in_infos(filtered_peg_ins)
@@ -413,6 +425,8 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
 
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
     use crate::{
         chains::{
@@ -444,7 +458,7 @@ mod tests {
                 &hex::decode("7b7f73183fe4d1d6e23c494ba0b579718c7dd6e1c62426fd5411a6a21b3203aa").unwrap(),
             ),
             "aneosaccount".to_string(),
-            "0.000000000 SAM".to_string(),
+            "0.00000000 SAM".to_string(),
             user_data,
             EthChainId::Mainnet,
         )
@@ -456,7 +470,19 @@ mod tests {
         let expected_num_peg_ins_after = 0;
         let peg_ins = Erc20OnEosPegInInfos::new(vec![get_sample_zero_eos_asset_peg_in_info()]);
         assert_eq!(peg_ins.len(), expected_num_peg_ins_before);
-        let result = peg_ins.filter_out_zero_eos_values().unwrap();
+        let dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::from_str(
+            &json!({
+                "eth_token_decimals": 18,
+                "eos_token_decimals": 8,
+                "eth_symbol": "TOK",
+                "eos_symbol": "TOK",
+                "eth_address": "0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac",
+                "eos_address": "aneosaccount",
+            })
+            .to_string(),
+        )
+        .unwrap()]);
+        let result = peg_ins.filter_out_zero_eos_values(&dictionary).unwrap();
         assert_eq!(result.len(), expected_num_peg_ins_after);
     }
 
