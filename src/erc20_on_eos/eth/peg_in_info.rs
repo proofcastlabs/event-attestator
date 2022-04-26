@@ -136,6 +136,13 @@ impl FeeCalculator for Erc20OnEosPegInInfo {
 }
 
 impl Erc20OnEosPegInInfo {
+    pub fn is_zero_eos_amount(&self, dictionary: &EosEthTokenDictionary) -> Result<bool> {
+        let entry = dictionary.get_entry_via_eos_address(&EosAccountName::from_str(&self.eos_token_address)?)?;
+        let eos_amount = remove_symbol_from_eos_asset(&entry.convert_u256_to_eos_asset_string(&self.token_amount)?)
+            .parse::<f64>()?;
+        Ok(eos_amount == 0.0)
+    }
+
     pub fn to_eos_signed_tx(
         &self,
         ref_block_num: u16,
@@ -143,13 +150,17 @@ impl Erc20OnEosPegInInfo {
         chain_id: &EosChainId,
         private_key: &EosPrivateKey,
         timestamp: u32,
+        dictionary: &EosEthTokenDictionary,
     ) -> Result<EosSignedTransaction> {
         info!("✔ Signing EOS tx from `Erc20OnEosPegInInfo`: {:?}", self);
+        let dictionary_entry =
+            dictionary.get_entry_via_eos_address(&EosAccountName::from_str(&self.eos_token_address)?)?;
+        let eos_amount = dictionary_entry.convert_u256_to_eos_asset_string(&self.token_amount)?;
         get_signed_eos_ptoken_issue_tx(
             ref_block_num,
             ref_block_prefix,
             &self.destination_address,
-            &self.eos_asset_amount,
+            &eos_amount,
             chain_id,
             private_key,
             &self.eos_token_address,
@@ -177,6 +188,7 @@ impl Erc20OnEosPegInInfos {
         ref_block_prefix: u32,
         chain_id: &EosChainId,
         private_key: &EosPrivateKey,
+        dictionary: &EosEthTokenDictionary,
     ) -> Result<EosSignedTransactions> {
         info!("✔ Signing {} EOS txs from `erc20-on-eos` peg in infos...", self.len());
         Ok(EosSignedTransactions::new(
@@ -189,25 +201,31 @@ impl Erc20OnEosPegInInfos {
                         chain_id,
                         private_key,
                         get_eos_tx_expiration_timestamp_with_offset(i as u32)?,
+                        dictionary,
                     )
                 })
                 .collect::<Result<Vec<EosSignedTransaction>>>()?,
         ))
     }
 
-    pub fn filter_out_zero_eos_values(&self) -> Result<Self> {
+    pub fn filter_out_zero_eos_values(&self, dictionary: &EosEthTokenDictionary) -> Result<Self> {
         Ok(Self::new(
             self.iter()
-                .filter(|peg_in_info| {
-                    match remove_symbol_from_eos_asset(&peg_in_info.eos_asset_amount).parse::<f64>() != Ok(0.0) {
-                        true => true,
-                        false => {
-                            info!(
-                                "✘ Filtering out peg in info due to zero EOS asset amount: {:?}",
-                                peg_in_info
-                            );
-                            false
-                        },
+                .map(|peg_in_info| {
+                    let is_zero_eos_amount = peg_in_info.is_zero_eos_amount(dictionary)?;
+                    Ok((peg_in_info.clone(), is_zero_eos_amount))
+                })
+                .collect::<Result<Vec<(Erc20OnEosPegInInfo, bool)>>>()?
+                .iter()
+                .filter_map(|(peg_in_info, is_zero_amount)| {
+                    if *is_zero_amount {
+                        info!(
+                            "✘ Filtering out peg in info due to zero EOS asset amount: {:?}",
+                            peg_in_info
+                        );
+                        None
+                    } else {
+                        Some(peg_in_info)
                     }
                 })
                 .cloned()
@@ -361,7 +379,7 @@ pub fn filter_out_zero_value_peg_ins_from_state<D: DatabaseInterface>(state: Eth
     debug!("✔ Num peg-in infos before: {}", state.erc20_on_eos_peg_in_infos.len());
     state
         .erc20_on_eos_peg_in_infos
-        .filter_out_zero_eos_values()
+        .filter_out_zero_eos_values(&EosEthTokenDictionary::get_from_db(state.db)?)
         .and_then(|filtered_peg_ins| {
             debug!("✔ Num peg-in infos after: {}", filtered_peg_ins.len());
             state.replace_erc20_on_eos_peg_in_infos(filtered_peg_ins)
@@ -400,12 +418,15 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
             submission_material.get_eos_ref_block_prefix()?,
             &state.eos_db_utils.get_eos_chain_id_from_db()?,
             &EosPrivateKey::get_from_db(state.db)?,
+            &EosEthTokenDictionary::get_from_db(state.db)?,
         )
         .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
 }
 
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
     use crate::{
         chains::{
@@ -419,6 +440,7 @@ mod tests {
         },
         dictionaries::eos_eth::{test_utils::get_sample_eos_eth_token_dictionary, EosEthTokenDictionaryEntry},
         erc20_on_eos::test_utils::{
+            get_sample_eos_eth_dictionary,
             get_sample_erc20_on_eos_peg_in_info,
             get_sample_erc20_on_eos_peg_in_infos,
             get_sample_erc20_on_eos_peg_in_infos_2,
@@ -436,7 +458,7 @@ mod tests {
                 &hex::decode("7b7f73183fe4d1d6e23c494ba0b579718c7dd6e1c62426fd5411a6a21b3203aa").unwrap(),
             ),
             "aneosaccount".to_string(),
-            "0.000000000 SAM".to_string(),
+            "0.00000000 SAM".to_string(),
             user_data,
             EthChainId::Mainnet,
         )
@@ -448,7 +470,19 @@ mod tests {
         let expected_num_peg_ins_after = 0;
         let peg_ins = Erc20OnEosPegInInfos::new(vec![get_sample_zero_eos_asset_peg_in_info()]);
         assert_eq!(peg_ins.len(), expected_num_peg_ins_before);
-        let result = peg_ins.filter_out_zero_eos_values().unwrap();
+        let dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::from_str(
+            &json!({
+                "eth_token_decimals": 18,
+                "eos_token_decimals": 8,
+                "eth_symbol": "TOK",
+                "eos_symbol": "TOK",
+                "eth_address": "0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac",
+                "eos_address": "aneosaccount",
+            })
+            .to_string(),
+        )
+        .unwrap()]);
+        let result = peg_ins.filter_out_zero_eos_values(&dictionary).unwrap();
         assert_eq!(result.len(), expected_num_peg_ins_after);
     }
 
@@ -699,7 +733,7 @@ mod tests {
                 &hex::decode("241f386690b715422102edf42f5c9edcddea16b64f17d02bad572f5f341725c0").unwrap(),
             ),
             "sampletoken".to_string(),
-            "0.000000000 SAM".to_string(),
+            "0.00000000 SAM".to_string(),
             user_data,
             EthChainId::Mainnet,
         );
@@ -708,10 +742,11 @@ mod tests {
         let ref_block_num = 1;
         let ref_block_prefix = 2;
         let chain_id = EosChainId::EosMainnet;
+        let dictionary = get_sample_eos_eth_dictionary();
         let result = infos
-            .to_eos_signed_txs(ref_block_num, ref_block_prefix, &chain_id, &pk)
+            .to_eos_signed_txs(ref_block_num, ref_block_prefix, &chain_id, &pk, &dictionary)
             .unwrap();
-        let expected_result = "010002000000000000000100a68234ab58a5c10000000000a531760100a68234ab58a5c100000000a8ed32321980b1ba29194cd53400000000000000000953414d000000000000";
+        let expected_result = "010002000000000000000100a68234ab58a5c10000000000a531760100a68234ab58a5c100000000a8ed32321980b1ba29194cd53400000000000000000853414d000000000000";
         let result_without_timestamp = &result[0].transaction[8..];
         assert_eq!(result_without_timestamp, expected_result);
     }

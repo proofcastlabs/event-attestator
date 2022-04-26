@@ -114,6 +114,10 @@ quick_error! {
             from()
             display("✘ `TryFromSlice` error: {:?}", err)
         }
+        ParseFloatError(err: std::num::ParseFloatError) {
+            from()
+            display("✘ `ParseFloatError` error: {:?}", err)
+        }
         NoneError(err: &'static str) {
             display("✘ None error {}", err)
         }

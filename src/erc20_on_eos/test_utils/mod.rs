@@ -1,9 +1,11 @@
 #![cfg(test)]
 
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use serde_json::json;
 
 use crate::{
     chains::eth::eth_chain_id::EthChainId,
+    dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     erc20_on_eos::eth::peg_in_info::{Erc20OnEosPegInInfo, Erc20OnEosPegInInfos},
     types::Result,
 };
@@ -63,4 +65,19 @@ pub fn get_sample_erc20_on_eos_peg_in_infos_2() -> Erc20OnEosPegInInfos {
         get_sample_erc20_on_eos_peg_in_info_2().unwrap(),
         get_sample_erc20_on_eos_peg_in_info_3().unwrap(),
     ])
+}
+
+pub fn get_sample_eos_eth_dictionary() -> EosEthTokenDictionary {
+    EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::from_str(
+        &json!({
+            "eth_token_decimals": 18,
+            "eos_token_decimals": 8,
+            "eth_symbol": "SAM",
+            "eos_symbol": "SAM",
+            "eth_address": "0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac",
+            "eos_address": "sampletoken",
+        })
+        .to_string(),
+    )
+    .unwrap()])
 }
