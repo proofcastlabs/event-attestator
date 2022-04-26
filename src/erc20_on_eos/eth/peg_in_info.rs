@@ -143,13 +143,17 @@ impl Erc20OnEosPegInInfo {
         chain_id: &EosChainId,
         private_key: &EosPrivateKey,
         timestamp: u32,
+        dictionary: &EosEthTokenDictionary,
     ) -> Result<EosSignedTransaction> {
         info!("✔ Signing EOS tx from `Erc20OnEosPegInInfo`: {:?}", self);
+        let dictionary_entry =
+            dictionary.get_entry_via_eos_address(&EosAccountName::from_str(&self.eos_token_address)?)?;
+        let eos_amount = dictionary_entry.convert_u256_to_eos_asset_string(&self.token_amount)?;
         get_signed_eos_ptoken_issue_tx(
             ref_block_num,
             ref_block_prefix,
             &self.destination_address,
-            &self.eos_asset_amount,
+            &eos_amount,
             chain_id,
             private_key,
             &self.eos_token_address,
@@ -177,6 +181,7 @@ impl Erc20OnEosPegInInfos {
         ref_block_prefix: u32,
         chain_id: &EosChainId,
         private_key: &EosPrivateKey,
+        dictionary: &EosEthTokenDictionary,
     ) -> Result<EosSignedTransactions> {
         info!("✔ Signing {} EOS txs from `erc20-on-eos` peg in infos...", self.len());
         Ok(EosSignedTransactions::new(
@@ -189,6 +194,7 @@ impl Erc20OnEosPegInInfos {
                         chain_id,
                         private_key,
                         get_eos_tx_expiration_timestamp_with_offset(i as u32)?,
+                        dictionary,
                     )
                 })
                 .collect::<Result<Vec<EosSignedTransaction>>>()?,
@@ -400,6 +406,7 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
             submission_material.get_eos_ref_block_prefix()?,
             &state.eos_db_utils.get_eos_chain_id_from_db()?,
             &EosPrivateKey::get_from_db(state.db)?,
+            &EosEthTokenDictionary::get_from_db(state.db)?,
         )
         .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
 }
@@ -419,6 +426,7 @@ mod tests {
         },
         dictionaries::eos_eth::{test_utils::get_sample_eos_eth_token_dictionary, EosEthTokenDictionaryEntry},
         erc20_on_eos::test_utils::{
+            get_sample_eos_eth_dictionary,
             get_sample_erc20_on_eos_peg_in_info,
             get_sample_erc20_on_eos_peg_in_infos,
             get_sample_erc20_on_eos_peg_in_infos_2,
@@ -699,7 +707,7 @@ mod tests {
                 &hex::decode("241f386690b715422102edf42f5c9edcddea16b64f17d02bad572f5f341725c0").unwrap(),
             ),
             "sampletoken".to_string(),
-            "0.000000000 SAM".to_string(),
+            "0.00000000 SAM".to_string(),
             user_data,
             EthChainId::Mainnet,
         );
@@ -708,10 +716,11 @@ mod tests {
         let ref_block_num = 1;
         let ref_block_prefix = 2;
         let chain_id = EosChainId::EosMainnet;
+        let dictionary = get_sample_eos_eth_dictionary();
         let result = infos
-            .to_eos_signed_txs(ref_block_num, ref_block_prefix, &chain_id, &pk)
+            .to_eos_signed_txs(ref_block_num, ref_block_prefix, &chain_id, &pk, &dictionary)
             .unwrap();
-        let expected_result = "010002000000000000000100a68234ab58a5c10000000000a531760100a68234ab58a5c100000000a8ed32321980b1ba29194cd53400000000000000000953414d000000000000";
+        let expected_result = "010002000000000000000100a68234ab58a5c10000000000a531760100a68234ab58a5c100000000a8ed32321980b1ba29194cd53400000000000000000853414d000000000000";
         let result_without_timestamp = &result[0].transaction[8..];
         assert_eq!(result_without_timestamp, expected_result);
     }
