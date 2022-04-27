@@ -10,6 +10,7 @@ use rust_algorand::{
 use crate::{
     chains::eth::eth_state::EthState,
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
+    metadata::metadata_traits::ToMetadata,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -24,19 +25,18 @@ impl IntOnAlgoAlgoTxInfo {
         private_key: &AlgorandKeys,
     ) -> Result<AlgorandSignedTransaction> {
         info!("✔ Signing ALGO transaction for tx info: {:?}", self);
-        /* // FIXME Re-implement metadata!
         let metadata_bytes = if self.user_data.is_empty() {
             vec![]
         } else {
             self.to_metadata_bytes()?
         };
-        if !metadata_bytes.is_empty() {
-            debug!("✔ Signing with metadata : 0x{}", hex::encode(&metadata_bytes))
-        } else {
+        let metadata = if metadata_bytes.is_empty() {
             debug!("✔ No user data ∴ not wrapping in metadata!");
+            None
+        } else {
+            debug!("✔ Signing with metadata : 0x{}", hex::encode(&metadata_bytes));
+            Some(metadata_bytes)
         };
-        */
-        let metadata = None; // FIXME impl this!
         let last_valid = None;
         Ok(AlgorandTransaction::asset_transfer(
             self.algo_asset_id,

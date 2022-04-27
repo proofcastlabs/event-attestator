@@ -52,8 +52,8 @@ macro_rules! write_algo_paths_and_getter_fxn {
 }
 
 write_int_paths_and_getter_fxn!(
-    0 => "src/int_on_algo/test_utils/int-block-12219667.json",
-    1 => "src/int_on_algo/test_utils/int-block-12219668.json"
+    0 => "src/int_on_algo/test_utils/int-block-12221813.json",
+    1 => "src/int_on_algo/test_utils/int-block-12221814.json"
 );
 
 write_algo_paths_and_getter_fxn!(

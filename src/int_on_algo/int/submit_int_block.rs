@@ -188,18 +188,18 @@ mod tests {
         // NOTE: Finally, submit the block containing the peg in!
         let output = submit_int_block_to_core(db, &int_peg_in_block).unwrap();
         let expected_result_json = json!({
-            "int_latest_block_number": 12219668,
+            "int_latest_block_number": 12221814,
             "algo_signed_transactions":[{
                 "_id":"pint-on-algo-algo-0",
                 "broadcast":false,
-                "algo_tx_hash":"DXQTMADS6ZK5SZJLQYSNCPM5FWFBAYHN72NDRDXMMFH6VIL2GMKQ",
-                "algo_signed_tx":"82a3736967c44004d95792fcb38ac5f6039a192755df43e42cf811bc0f4e1f1aa22007ace28c1b4c0206714a83c5fada0262e18a47cd7ce13cdf97b86a9a69f8ac207442dbbb06a374786e89a461616d74cd0539a461726376c42032a7dbdfcde7695d91ac438152fc908617ffbf9db94f843c250268e6fe21a0a0a3666565cd03e8a26676ce013af92da26768c420c061c4d8fc1dbdded2d7604be4568e3f6d041987ac37bde4b620b5ab39248adfa26c76ce013afd15a3736e64c4206f0bca87e6c66cbd4633642ac0a99d32a6a1cdc7a87af39a18287d795e3b6470a474797065a56178666572a478616964ce2a98f058",
+                "algo_tx_hash":"NASCZBEEQMNXASAT34TWB43GNK7IOU6FTGVSL4J7OLVMLBUPS4FQ",
+                "algo_signed_tx":"82a3736967c440ec7730025a41cee21579ec442796c0d7ece05ddcd61f7b236ef49074c4f7bb81d67c7d69bcae6ed95eb5993eee86e5e447697188f58e104eaaad412c2d737c0ba374786e8aa461616d74cd0539a461726376c42032a7dbdfcde7695d91ac438152fc908617ffbf9db94f843c250268e6fe21a0a0a3666565cd03e8a26676ce013b42d6a26768c420c061c4d8fc1dbdded2d7604be4568e3f6d041987ac37bde4b620b5ab39248adfa26c76ce013b46bea46e6f7465c481988102c093ccdecccaccff8111c092d928373161343430656539666137663939666239613639376539366563373833396238613136343362388111c08114c092d93a474b54355858364e3435555633454e4d494f41564637455151594c37375034355846485949504246414a554f4e375242554351505835373254498114c0c0c0a3736e64c4206f0bca87e6c66cbd4633642ac0a99d32a6a1cdc7a87af39a18287d795e3b6470a474797065a56178666572a478616964ce2a98f058",
                 "algo_tx_amount":"1337",
-                "algo_account_nonce":0,
+                "algo_account_nonce":0, // FIXME
                 "witnessed_timestamp":1650896969,
                 "algo_tx_recipient":"GKT5XX6N45UV3ENMIOAVF7EQQYL77P45XFHYIPBFAJUON7RBUCQPX572TI",
                 "host_token_address":"714666072",
-                "originating_tx_hash":"0x0c3b3acc2b7119171ca1bb25384e2efd74dcc1701f4decb70e59b2da2c9927c3",
+                "originating_tx_hash":"0xb81f5564195f022f9812d5dfe80052afdfaf8cc86243a98b0dbdd887ef97bda7",
                 "originating_address":"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac",
                 "native_token_address":"0x4262d1f878d191fbc66dca73bad57309916b1412",
                 "destination_chain_id":"0x03c38e67",
