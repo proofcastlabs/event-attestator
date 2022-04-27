@@ -7,6 +7,7 @@ use crate::{
     metadata::metadata_chain_id::MetadataChainId,
     types::{Byte, Bytes, Result},
     utils::strip_hex_prefix,
+    safe_addresses::SAFE_ETH_ADDRESS_HEX
 };
 
 const ALGO_NOTE_MAX_NUM_BYTES: usize = 1000;
@@ -17,7 +18,7 @@ const MINIMUM_EVM_ALGO_NOTE_ENCODING_LENGTH: usize = ALGO_NOTE_VERSION_ENCODING_
     + ALGO_NOTE_METADATA_CHAIN_ID_ENCODING_LENGTH
     + ALGO_NOTE_EVM_ADDRESS_ENCODING_LENGTH;
 
-#[derive(Clone, Debug, Default, Eq, PartialEq, Constructor)]
+#[derive(Clone, Debug, Eq, PartialEq, Constructor)]
 pub struct AlgoNoteMetadata {
     pub version: AlgoNoteMetadataVersion,
     pub destination_chain_id: MetadataChainId,
@@ -25,9 +26,28 @@ pub struct AlgoNoteMetadata {
     pub user_data: Bytes,
 }
 
+impl Default for AlgoNoteMetadata {
+    fn default() -> Self {
+        // NOTE: We default to the safe ETH address and the interim chain ID. This default is then
+        // used when a user omits to provide their own encoded note in the Algo tx.
+        Self {
+            user_data: vec![],
+            version: AlgoNoteMetadataVersion::default(),
+            destination_chain_id: MetadataChainId::InterimChain,
+            destination_address: SAFE_ETH_ADDRESS_HEX.to_string(),
+        }
+    }
+}
+
 impl AlgoNoteMetadata {
-    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+    fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         Self::from_msg_pack(&AlgoMetadataMsgPack::from_bytes(bytes)?)
+    }
+
+    pub fn from_bytes_or_default(bytes: &[Byte]) -> Self {
+        // NOTE: So here we default to the interim chain & safe ETH address should reading the
+        // metadata from bytes fail. See note above.
+        Self::from_bytes(bytes).unwrap_or_default()
     }
 
     pub fn to_bytes(&self) -> Result<Bytes> {
@@ -162,5 +182,12 @@ mod tests {
         assert_eq!(hex::encode(&bytes), expected_bytes);
         let result = AlgoNoteMetadata::from_bytes(&bytes).unwrap();
         assert_eq!(result, metadata);
+    }
+
+    #[test]
+    fn should_revert_to_default_if_cannot_decode_bytes() {
+        let bytes = vec![];
+        let result = AlgoNoteMetadata::from_bytes_or_default(&bytes);
+        assert_eq!(result, AlgoNoteMetadata::default());
     }
 }

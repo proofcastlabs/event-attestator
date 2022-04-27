@@ -26,7 +26,7 @@ impl IntOnAlgoIntTxInfos {
     ) -> Result<IntOnAlgoIntTxInfo> {
         info!("✔ Getting `IntOnAlgoIntTxInfos` from ALGO tx...");
         let metadata = match tx.note {
-            Some(ref bytes) => AlgoNoteMetadata::from_bytes(bytes)?,
+            Some(ref bytes) => AlgoNoteMetadata::from_bytes_or_default(bytes),
             None => AlgoNoteMetadata::default(),
         };
         let asset_id = match tx.transfer_asset_id {
