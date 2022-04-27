@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use rust_algorand::{AlgorandBlock, AlgorandHash, AlgorandKeys, MicroAlgos};
+use rust_algorand::{AlgorandHash, AlgorandKeys, MicroAlgos};
 
 use crate::{
     chains::algo::{

@@ -223,7 +223,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         debug!("✔ Getting ALGO submission material via hash: {}", hash);
         self.get_db()
             .get(hash.to_bytes(), MIN_DATA_SENSITIVITY_LEVEL)
-            .and_then(|bytes| Ok(AlgoSubmissionMaterial::from_bytes(&bytes)?))
+            .and_then(|bytes| AlgoSubmissionMaterial::from_bytes(&bytes))
     }
 
     pub fn get_algo_address(&self, key: &[Byte]) -> Result<AlgorandAddress> {
@@ -252,7 +252,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
         debug!("✔ Getting ALGO submission material from db under hash {hash}");
         self.get_db()
             .get(hash.to_bytes(), MIN_DATA_SENSITIVITY_LEVEL)
-            .and_then(|bytes| Ok(AlgoSubmissionMaterial::from_bytes(&bytes)?))
+            .and_then(|bytes| AlgoSubmissionMaterial::from_bytes(&bytes))
     }
 
     fn put_special_hash_in_db(&self, hash_type: &SpecialHashTypes, hash: &AlgorandHash) -> Result<()> {

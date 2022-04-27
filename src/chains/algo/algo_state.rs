@@ -126,7 +126,7 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         Ok(self)
     }
 
-    pub fn add_relevant_asset_txs(mut self, txs: &AlgoRelevantAssetTxs) -> Result<Self> {
+    pub fn add_relevant_asset_txs(self, txs: &AlgoRelevantAssetTxs) -> Result<Self> {
         if self.get_relevant_asset_txs().is_ok() {
             Err(Self::get_no_overwrite_err("algo relevant asset txs").into())
         } else {

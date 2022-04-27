@@ -1,8 +1,4 @@
-use crate::{
-    chains::algo::{algo_state::AlgoState, algo_submission_material::AlgoSubmissionMaterial},
-    traits::DatabaseInterface,
-    types::Result,
-};
+use crate::{chains::algo::algo_state::AlgoState, traits::DatabaseInterface, types::Result};
 
 pub fn maybe_remove_txs_from_algo_canon_submission_material_and_return_state<D: DatabaseInterface>(
     state: AlgoState<D>,

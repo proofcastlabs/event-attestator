@@ -1,4 +1,4 @@
-use rust_algorand::{AlgorandBlock, AlgorandHash};
+use rust_algorand::AlgorandHash;
 use tiny_keccak::{Hasher, Keccak};
 
 use crate::{

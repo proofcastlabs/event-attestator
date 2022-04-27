@@ -3,7 +3,6 @@ use crate::{
     int_on_algo::algo::int_tx_info::IntOnAlgoIntTxInfo,
     metadata::{
         metadata_address::MetadataAddress,
-        metadata_chain_id::MetadataChainId,
         metadata_protocol_id::MetadataProtocolId,
         metadata_traits::ToMetadata,
         Metadata,

@@ -5,18 +5,10 @@ use serde_with::skip_serializing_none;
 
 use crate::{
     metadata::metadata_chain_id::MetadataChainId,
+    safe_addresses::SAFE_ETH_ADDRESS_HEX,
     types::{Byte, Bytes, Result},
     utils::strip_hex_prefix,
-    safe_addresses::SAFE_ETH_ADDRESS_HEX
 };
-
-const ALGO_NOTE_MAX_NUM_BYTES: usize = 1000;
-const ALGO_NOTE_VERSION_ENCODING_LENGTH: usize = 1;
-const ALGO_NOTE_EVM_ADDRESS_ENCODING_LENGTH: usize = 20;
-const ALGO_NOTE_METADATA_CHAIN_ID_ENCODING_LENGTH: usize = 4;
-const MINIMUM_EVM_ALGO_NOTE_ENCODING_LENGTH: usize = ALGO_NOTE_VERSION_ENCODING_LENGTH
-    + ALGO_NOTE_METADATA_CHAIN_ID_ENCODING_LENGTH
-    + ALGO_NOTE_EVM_ADDRESS_ENCODING_LENGTH;
 
 #[derive(Clone, Debug, Eq, PartialEq, Constructor)]
 pub struct AlgoNoteMetadata {
