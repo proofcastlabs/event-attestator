@@ -169,7 +169,8 @@ impl Metadata {
             EthAbiToken::Bytes(bytes) => Result::Ok(bytes.to_vec()),
             _ => Err(get_err_msg("protocol receipt").into()),
         }?;
-        let destination_metadata_address = MetadataAddress::new(&destination_address.to_string(), &destination_chain_id)?;
+        let destination_metadata_address =
+            MetadataAddress::new(&destination_address.to_string(), &destination_chain_id)?;
         let origin_metadata_address = MetadataAddress::new(&origin_address.to_string(), &origin_chain_id)?;
         Ok(Self::new_v3(
             &user_data,

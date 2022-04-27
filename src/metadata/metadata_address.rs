@@ -41,7 +41,7 @@ impl MetadataAddress {
         let address = match metadata_chain_id.to_protocol_id() {
             MetadataProtocolId::Ethereum => {
                 info!("✔ Getting `MetadataAddress` for an ETH address...");
-                hex::encode(safely_convert_str_to_eth_address(address))
+                format!("0x{}", hex::encode(safely_convert_str_to_eth_address(address)))
             },
             MetadataProtocolId::Bitcoin => {
                 info!("✔ Getting `MetadataAddress` for a BTC address...");
@@ -58,7 +58,7 @@ impl MetadataAddress {
         };
         Ok(Self {
             address,
-            metadata_chain_id: metadata_chain_id.clone(),
+            metadata_chain_id: *metadata_chain_id,
         })
     }
 
@@ -76,17 +76,6 @@ impl MetadataAddress {
             MetadataProtocolId::Ethereum => Ok(Self {
                 metadata_chain_id: *metadata_chain_id,
                 address: hex::encode(eth_address),
-            }),
-            _ => Err(Self::get_err_msg(protocol_id).into()),
-        }
-    }
-
-    pub fn new_from_algo_address(algo_address: &AlgorandAddress, metadata_chain_id: &MetadataChainId) -> Result<Self> {
-        let protocol_id = metadata_chain_id.to_protocol_id();
-        match protocol_id {
-            MetadataProtocolId::Algorand => Ok(Self {
-                metadata_chain_id: *metadata_chain_id,
-                address: algo_address.to_string(),
             }),
             _ => Err(Self::get_err_msg(protocol_id).into()),
         }
