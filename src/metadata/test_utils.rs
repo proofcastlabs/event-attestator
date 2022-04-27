@@ -49,7 +49,11 @@ pub fn get_sample_btc_origin_address() -> MetadataAddress {
 }
 
 pub fn get_sample_algo_origin_address() -> MetadataAddress {
-    MetadataAddress::new_from_algo_address(&get_sample_algo_address(), &MetadataChainId::AlgorandMainnet).unwrap()
+    MetadataAddress::new(
+        &get_sample_algo_address().to_string(),
+        &MetadataChainId::AlgorandMainnet,
+    )
+    .unwrap()
 }
 
 pub fn get_sample_eth_metadata() -> Metadata {

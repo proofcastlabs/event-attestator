@@ -20,6 +20,7 @@ use crate::{
 use crate::{
     metadata::{metadata_chain_id::MetadataChainId, metadata_protocol_id::MetadataProtocolId},
     safe_addresses::{
+        safely_convert_str_to_algo_address,
         safely_convert_str_to_btc_address,
         safely_convert_str_to_eos_address,
         safely_convert_str_to_eth_address,
@@ -50,7 +51,10 @@ impl MetadataAddress {
                 info!("✔ Getting `MetadataAddress` for an EOS address...");
                 safely_convert_str_to_eos_address(&address).to_string()
             },
-            _ => address, // TODO Normalize/test the other address types!! And divert to SAFE address if bad!
+            MetadataProtocolId::Algorand => {
+                info!("✔ Getting `MetadataAddress` for an ALGO address...");
+                safely_convert_str_to_algo_address(&address).to_string()
+            },
         };
         Ok(Self {
             address,
@@ -153,7 +157,7 @@ impl MetadataAddress {
     fn from_bytes_for_algo(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
         info!("✔ Attempting to create `MetadataAddress` from bytes for ALGO...");
         if bytes.len() == ALGO_ADDRESS_LENGTH_IN_BYTES {
-            Self::new_from_algo_address(&AlgorandAddress::from_bytes(bytes)?, metadata_chain_id)
+            Self::new(&AlgorandAddress::from_bytes(bytes)?.to_string(), &metadata_chain_id)
         } else {
             Err("Incorrect number of bytes to convert to ALGO address in `MetadataAddress`!".into())
         }

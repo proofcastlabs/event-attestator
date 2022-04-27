@@ -1,6 +1,5 @@
 use ethabi::{encode as eth_abi_encode, Token as EthAbiToken};
 use ethereum_types::Address as EthAddress;
-use rmp_serde;
 
 use crate::{
     chains::eos::eos_metadata::EosMetadata,
