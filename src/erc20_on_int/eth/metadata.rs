@@ -24,7 +24,7 @@ impl ToMetadata for Erc20OnIntIntTxInfo {
         Ok(Metadata::new_v3(
             &user_data,
             &MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id)?,
-            &MetadataAddress::new(self.destination_address.clone(), self.destination_chain_id)?,
+            &MetadataAddress::new(&self.destination_address, &self.destination_chain_id)?,
             None,
             None,
         ))

@@ -37,28 +37,28 @@ pub struct MetadataAddress {
 }
 
 impl MetadataAddress {
-    pub fn new(address: String, metadata_chain_id: MetadataChainId) -> Result<Self> {
+    pub fn new(address: &str, metadata_chain_id: &MetadataChainId) -> Result<Self> {
         let address = match metadata_chain_id.to_protocol_id() {
             MetadataProtocolId::Ethereum => {
                 info!("✔ Getting `MetadataAddress` for an ETH address...");
-                hex::encode(safely_convert_str_to_eth_address(&address))
+                hex::encode(safely_convert_str_to_eth_address(address))
             },
             MetadataProtocolId::Bitcoin => {
                 info!("✔ Getting `MetadataAddress` for a BTC address...");
-                safely_convert_str_to_btc_address(&address).to_string()
+                safely_convert_str_to_btc_address(address).to_string()
             },
             MetadataProtocolId::Eos => {
                 info!("✔ Getting `MetadataAddress` for an EOS address...");
-                safely_convert_str_to_eos_address(&address).to_string()
+                safely_convert_str_to_eos_address(address).to_string()
             },
             MetadataProtocolId::Algorand => {
                 info!("✔ Getting `MetadataAddress` for an ALGO address...");
-                safely_convert_str_to_algo_address(&address).to_string()
+                safely_convert_str_to_algo_address(address).to_string()
             },
         };
         Ok(Self {
             address,
-            metadata_chain_id,
+            metadata_chain_id: metadata_chain_id.clone(),
         })
     }
 
