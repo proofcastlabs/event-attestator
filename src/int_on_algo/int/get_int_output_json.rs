@@ -1,3 +1,5 @@
+#[cfg(test)]
+use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use derive_more::Constructor;
@@ -107,37 +109,35 @@ pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
     Ok(serde_json::to_string(&output)?)
 }
 
-/*
 #[cfg(test)]
-impl IntOutput {
-    pub fn from_str(s: &str) -> Result<Self> {
+impl FromStr for IntOutput {
+    type Err = crate::errors::AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
         use serde_json::Value as JsonValue;
         #[derive(Deserialize)]
         struct TempStruct {
             int_latest_block_number: usize,
-            evm_signed_transactions: Vec<JsonValue>,
+            algo_signed_transactions: Vec<JsonValue>,
         }
         let temp_struct = serde_json::from_str::<TempStruct>(s)?;
         let tx_infos = temp_struct
-            .evm_signed_transactions
+            .algo_signed_transactions
             .iter()
             .map(|json_value| IntTxInfo::from_str(&json_value.to_string()))
             .collect::<Result<Vec<IntTxInfo>>>()?;
         Ok(Self {
-            evm_signed_transactions: tx_infos,
+            algo_signed_transactions: tx_infos,
             int_latest_block_number: temp_struct.int_latest_block_number,
         })
     }
 }
-*/
 
-/*
 #[cfg(test)]
-impl IntTxInfo {
-    pub fn from_str(s: &str) -> Result<Self> {
+impl FromStr for IntTxInfo {
+    type Err = crate::errors::AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
         Ok(serde_json::from_str(s)?)
     }
 }
-*/
-
-// TODO Test
