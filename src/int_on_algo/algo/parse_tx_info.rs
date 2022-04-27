@@ -43,9 +43,9 @@ impl IntOnAlgoIntTxInfos {
         }?;
         let tx_info = IntOnAlgoIntTxInfo {
             algo_asset_id: asset_id,
+            token_sender: *token_sender,
             router_address: *router_address,
             int_vault_address: *vault_address,
-            token_sender: token_sender.clone(),
             user_data: metadata.user_data.clone(),
             destination_address: metadata.destination_address,
             destination_chain_id: metadata.destination_chain_id,

@@ -16,16 +16,11 @@ fn get_asset_op_in_tx_hex(
     genesis_hash: &AlgorandHash,
     private_key: &AlgorandKeys,
 ) -> Result<String> {
-    Ok(AlgorandTransaction::asset_opt_in(
-        asset_id,
-        *fee,
-        first_valid_round,
-        sender.clone(),
-        genesis_hash.clone(),
-        None,
-    )?
-    .sign(private_key)?
-    .to_hex()?)
+    Ok(
+        AlgorandTransaction::asset_opt_in(asset_id, *fee, first_valid_round, *sender, genesis_hash.clone(), None)?
+            .sign(private_key)?
+            .to_hex()?,
+    )
 }
 
 /// # Opt In To Asset

@@ -106,7 +106,7 @@ impl AlgoRelevantAssetTx {
             .filter_map(|(i, tx)| {
                 let maybe_proof = Self::maybe_get_proof_from_submission_material_by_index(submission_material, i);
                 let is_desired_asset = tx.transfer_asset_id == Some(asset_id);
-                let is_to_redeem_address = tx.asset_receiver == Some(receiver.clone());
+                let is_to_redeem_address = tx.asset_receiver == Some(*receiver);
                 let amount_is_gt_zero = match tx.asset_amount {
                     Some(amount) => amount > 0,
                     None => false,

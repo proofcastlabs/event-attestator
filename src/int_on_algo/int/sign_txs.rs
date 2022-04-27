@@ -44,10 +44,10 @@ impl IntOnAlgoAlgoTxInfo {
             self.host_token_amount.as_u64(),
             metadata,
             first_valid,
-            sender.clone(),
+            *sender,
             genesis_hash.clone(),
             last_valid,
-            self.destination_address.clone(),
+            self.destination_address,
         )
         .and_then(|tx| tx.sign(private_key))?)
     }
