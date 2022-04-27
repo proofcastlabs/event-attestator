@@ -6,6 +6,8 @@ pub(crate) mod metadata_traits;
 pub(crate) mod metadata_version;
 pub(crate) mod test_utils;
 
+use serde::{Deserialize, Serialize};
+
 use crate::{
     metadata::{
         metadata_address::MetadataAddress,
@@ -28,7 +30,7 @@ use crate::{
 ///
 /// The v3 specification affects how the ETH encoding of the metadata works. It changes the address
 /// types from native EVM addresses, to strings, in order to be more flexible.
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Metadata {
     pub version: MetadataVersion,
     pub user_data: Bytes,

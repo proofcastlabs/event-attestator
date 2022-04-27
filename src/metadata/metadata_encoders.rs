@@ -1,5 +1,6 @@
 use ethabi::{encode as eth_abi_encode, Token as EthAbiToken};
 use ethereum_types::Address as EthAddress;
+use rmp_serde;
 
 use crate::{
     chains::eos::eos_metadata::EosMetadata,
@@ -101,7 +102,7 @@ impl Metadata {
 
     fn to_bytes_for_algorand(&self) -> Result<Bytes> {
         info!("✔ Converting metadata to bytes for Algorand...");
-        unimplemented!();
+        Ok(rmp_serde::to_vec(self)?)
     }
 
     pub fn to_bytes_for_protocol(&self, destination_protocol: &MetadataProtocolId) -> Result<Bytes> {

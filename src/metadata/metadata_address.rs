@@ -6,6 +6,7 @@ use bitcoin::util::address::Address as BtcAddress;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
 use rust_algorand::AlgorandAddress;
+use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
 use crate::{
@@ -28,7 +29,7 @@ use crate::{
     Result,
 };
 
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MetadataAddress {
     pub address: String,
     pub metadata_chain_id: MetadataChainId,

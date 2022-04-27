@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 #[cfg(test)]
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
@@ -6,7 +7,7 @@ use strum_macros::EnumIter;
 use crate::types::Result;
 use crate::types::{Byte, Bytes};
 
-#[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, EnumIter)]
 pub enum MetadataVersion {
     V1,
     V2,

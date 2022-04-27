@@ -1,6 +1,7 @@
 use std::fmt;
 
 use ethereum_types::H256 as KeccakHash;
+use serde::{Deserialize, Serialize};
 use strum_macros::EnumIter;
 
 use crate::{
@@ -18,7 +19,7 @@ use crate::{
 
 pub const METADATA_CHAIN_ID_NUMBER_OF_BYTES: usize = 4;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, EnumIter)]
 pub enum MetadataChainId {
     EthereumMainnet,  // 0x005fe7f9
     EthereumRopsten,  // 0x0069c322
