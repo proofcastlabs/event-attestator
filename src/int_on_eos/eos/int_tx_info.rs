@@ -39,6 +39,8 @@ pub struct IntOnEosIntTxInfo {
     pub eos_token_address: String,
     pub int_token_address: String,
     pub int_vault_address: String,
+    pub vault_address: EthAddress,
+    pub router_address: EthAddress,
     pub destination_address: String,
     pub origin_address: EosAccountName,
     pub originating_tx_id: Checksum256,
@@ -46,6 +48,8 @@ pub struct IntOnEosIntTxInfo {
     pub origin_chain_id: MetadataChainId,
     pub destination_chain_id: MetadataChainId,
 }
+
+//NOTE: smart contract address: &state.eth_db_utils.get_int_on_eos_smart_contract_address_from_db()?,
 
 /*
  *
