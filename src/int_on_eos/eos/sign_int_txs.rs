@@ -54,7 +54,7 @@ impl IntOnEosIntTxInfo {
             self.router_address,
             convert_hex_to_eth_address(&self.int_token_address)?,
             self.amount,
-            vec![], // self.to_metadata_bytes()?, // FIXME TODO
+            self.to_metadata_bytes()?,
         )
         .and_then(|fxn_data| {
             EthTransaction::new_unsigned(
