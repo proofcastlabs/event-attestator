@@ -1,4 +1,5 @@
 use crate::{
+    chains::eos::eos_constants::MAX_BYTES_FOR_EOS_USER_DATA,
     int_on_eos::int::eos_tx_info::IntOnEosEosTxInfo,
     metadata::{
         metadata_address::MetadataAddress,
@@ -11,10 +12,21 @@ use crate::{
 
 impl ToMetadata for IntOnEosEosTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
-        Ok(Metadata::new(
-            // FIXME Do we need v3??
-            &self.user_data,
-            &MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id)?,
+        let user_data = if self.user_data.len() > MAX_BYTES_FOR_EOS_USER_DATA {
+            info!(
+                "✘ `user_data` redacted from `Metadata` ∵ it's > {} bytes",
+                MAX_BYTES_FOR_EOS_USER_DATA
+            );
+            vec![]
+        } else {
+            self.user_data.clone()
+        };
+        Ok(Metadata::new_v3(
+            &user_data,
+            &MetadataAddress::new(self.token_sender.to_string(), self.origin_chain_id)?,
+            &MetadataAddress::new(self.destination_address.clone(), self.destination_chain_id)?,
+            None,
+            None,
         ))
     }
 
