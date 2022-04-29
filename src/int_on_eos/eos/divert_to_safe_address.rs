@@ -1,5 +1,3 @@
-use ethereum_types::Address as EthAddress;
-
 use crate::{
     chains::eos::eos_state::EosState,
     int_on_eos::eos::int_tx_info::{IntOnEosIntTxInfo, IntOnEosIntTxInfos},

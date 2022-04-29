@@ -1,9 +1,5 @@
 pub(crate) mod block_reprocessors;
 
-use std::str::FromStr;
-
-use eos_chain::AccountName as EosAccountName;
-use ethereum_types::U256;
 use serde_json::json;
 
 use crate::{
@@ -23,19 +19,18 @@ use crate::{
             eth_contracts::erc20_vault::{
                 encode_erc20_vault_add_supported_token_fx_data,
                 encode_erc20_vault_migrate_fxn_data,
-                encode_erc20_vault_peg_out_fxn_data_without_user_data,
                 encode_erc20_vault_remove_supported_token_fx_data,
             },
             eth_crypto::eth_transaction::EthTransaction,
             eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt},
             eth_debug_functions::debug_set_eth_gas_price_in_db,
-            eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
+            eth_utils::get_eth_address_from_str,
         },
     },
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
     debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
-    dictionaries::{dictionary_constants::EOS_ETH_DICTIONARY_KEY, eos_eth::EosEthTokenDictionary},
+    dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
     int_on_eos::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,

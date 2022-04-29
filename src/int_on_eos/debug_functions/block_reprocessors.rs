@@ -180,7 +180,6 @@ fn reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonc
                             Some(nonce) => nonce + num_txs as u64,
                             None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                         },
-                        state.eth_db_utils.get_any_sender_nonce_from_db()?,
                         state.eth_db_utils.get_latest_eth_block_number()?,
                     )?
                 },
