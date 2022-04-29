@@ -29,7 +29,7 @@ use crate::{
         },
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
-    int_on_eos::int::eos_tx_info::{IntOnEosEosTxInfos, IntOnEosEosTxInfo},
+    int_on_eos::int::eos_tx_info::{IntOnEosEosTxInfo, IntOnEosEosTxInfos},
     metadata::{
         metadata_address::MetadataAddress,
         metadata_chain_id::MetadataChainId,
@@ -78,9 +78,7 @@ impl IntOnEosEosTxInfos {
     }
 }
 
-pub fn filter_out_zero_value_eos_tx_infos_from_state<D: DatabaseInterface>(
-    state: EthState<D>
-) -> Result<EthState<D>> {
+pub fn filter_out_zero_value_eos_tx_infos_from_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Maybe filtering `INT-on-EOS` EOS tx infos...");
     debug!("✔ Num infos before: {}", state.int_on_eos_eos_tx_infos.len());
     state

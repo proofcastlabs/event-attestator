@@ -29,7 +29,6 @@ use crate::{
         },
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
-    int_on_eos::fees_calculator::{FeeCalculator, FeesCalculator},
     metadata::{
         metadata_address::MetadataAddress,
         metadata_chain_id::MetadataChainId,
