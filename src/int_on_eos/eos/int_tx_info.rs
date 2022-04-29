@@ -39,7 +39,6 @@ pub struct IntOnEosIntTxInfo {
     pub eos_token_address: String,
     pub int_token_address: String,
     pub int_vault_address: String,
-    pub vault_address: EthAddress,
     pub router_address: EthAddress,
     pub destination_address: String,
     pub origin_address: EosAccountName,

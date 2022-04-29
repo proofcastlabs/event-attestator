@@ -61,7 +61,7 @@ impl IntOnEosIntTxInfo {
                 fxn_data,
                 nonce,
                 ZERO_ETH_VALUE,
-                self.vault_address,
+                convert_hex_to_eth_address(&self.int_vault_address)?,
                 chain_id,
                 chain_id.get_erc20_vault_pegout_with_user_data_gas_limit(),
                 gas_price,
