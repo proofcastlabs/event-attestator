@@ -8,3 +8,4 @@ pub(crate) mod get_output_json;
 pub(crate) mod initialize_int_core;
 pub(crate) mod metadata;
 pub(crate) mod parse_tx_info;
+pub(crate) mod sign_txs;
