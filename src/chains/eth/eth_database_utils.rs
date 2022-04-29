@@ -547,9 +547,8 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
 
     fn get_int_on_eos_smart_contract_address_from_db(&self) -> Result<EthAddress> {
         info!("✔ Getting 'INT-on-EOS' smart-contract address from db...");
-        Ok(self
-            .get_eth_address_from_db(&self.get_int_on_eos_smart_contract_address_key())
-            .unwrap_or_else(|_| EthAddress::zero()))
+        self.get_eth_address_from_db(&self.get_int_on_eos_smart_contract_address_key())
+            .map_err(|_| "No `INT-on-EOS` smart-contract address in DB! Did you forget to set it?".into())
     }
 
     fn put_int_on_eos_smart_contract_address_in_db(&self, address: &EthAddress) -> Result<()> {
