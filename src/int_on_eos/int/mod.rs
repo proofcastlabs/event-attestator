@@ -1,4 +1,4 @@
-//pub mod submit_eth_block;
+pub mod submit_eth_block;
 
 pub(crate) mod divert_to_safe_address;
 pub(crate) mod eos_tx_info;

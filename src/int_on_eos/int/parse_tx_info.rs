@@ -58,7 +58,7 @@ impl IntOnEosEosTxInfos {
         Ok(log_is_erc20_vault_peg_in && token_is_supported)
     }
 
-    fn get_relevant_logs_from_receipt(receipt: &EthReceipt, dictionary: &EosEthTokenDictionary) -> EthLogs {
+    pub fn get_relevant_logs_from_receipt(receipt: &EthReceipt, dictionary: &EosEthTokenDictionary) -> EthLogs {
         EthLogs::new(
             receipt
                 .logs
@@ -135,7 +135,7 @@ impl IntOnEosEosTxInfos {
     }
 }
 
-pub fn maybe_parse_eos_tx__info_from_canon_block_and_add_to_state<D: DatabaseInterface>(
+pub fn maybe_parse_eos_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Maybe parsing `INT-on-EOS` EOS tx infos from canon block...");
@@ -321,39 +321,9 @@ impl IntOnEosEosTxInfos {
 
 
 
-    fn receipt_contains_supported_erc20_peg_in(receipt: &EthReceipt, dictionary: &EosEthTokenDictionary) -> bool {
-        Self::get_supported_erc20_peg_in_logs_from_receipt(receipt, dictionary).len() > 0
-    }
 
 
 
-    fn filter_eth_sub_mat_for_supported_peg_ins(
-        submission_material: &EthSubmissionMaterial,
-        dictionary: &EosEthTokenDictionary,
-    ) -> Result<EthSubmissionMaterial> {
-        info!("✔ Filtering submission material receipts for those pertaining to `erc20-on-eos` peg-ins...");
-        info!(
-            "✔ Num receipts before filtering: {}",
-            submission_material.receipts.len()
-        );
-        let filtered_receipts = EthReceipts::new(
-            submission_material
-                .receipts
-                .iter()
-                .filter(|receipt| {
-                    IntOnEosEosTxInfos::receipt_contains_supported_erc20_peg_in(receipt, dictionary)
-                })
-                .cloned()
-                .collect(),
-        );
-        info!("✔ Num receipts after filtering: {}", filtered_receipts.len());
-        Ok(EthSubmissionMaterial::new(
-            submission_material.get_block()?,
-            filtered_receipts,
-            submission_material.eos_ref_block_num,
-            submission_material.eos_ref_block_prefix,
-        ))
-    }
 
 }
 
