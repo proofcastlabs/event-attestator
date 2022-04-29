@@ -23,11 +23,11 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         int::{
             divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
-            get_output_json::get_output_json,
             filter_out_zero_tx_infos::filter_out_zero_value_eos_tx_infos_from_state,
             filter_submission_material::filter_submission_material_for_relevant_receipts_in_state,
-            sign_txs::maybe_sign_eos_txs_and_add_to_eth_state,
+            get_output_json::get_output_json,
             parse_tx_info::maybe_parse_eos_tx_info_from_canon_block_and_add_to_state,
+            sign_txs::maybe_sign_eos_txs_and_add_to_eth_state,
         },
     },
     traits::DatabaseInterface,

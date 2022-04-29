@@ -72,7 +72,7 @@ impl TxInfo {
 
 pub fn get_tx_infos_from_signed_txs(
     txs: &[EthTransaction],
-    redeem_info: &IntOnEosIntTxInfos,
+    tx_infos: &IntOnEosIntTxInfos,
     int_account_nonce: u64,
     any_sender_nonce: u64,
     int_latest_block_number: usize,
@@ -86,7 +86,7 @@ pub fn get_tx_infos_from_signed_txs(
     };
     txs.iter()
         .enumerate()
-        .map(|(i, tx)| TxInfo::new(tx, &redeem_info[i], start_nonce, int_latest_block_number))
+        .map(|(i, tx)| TxInfo::new(tx, &tx_infos[i], start_nonce, int_latest_block_number))
         .collect::<Result<Vec<TxInfo>>>()
 }
 
