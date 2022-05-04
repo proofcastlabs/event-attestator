@@ -541,16 +541,16 @@ impl EosEthTokenDictionaryEntry {
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct EosEthTokenDictionaryEntryJson {
-    eth_token_decimals: usize,
-    eos_token_decimals: usize,
-    eth_symbol: String,
-    eos_symbol: String,
-    eth_address: String,
-    eos_address: String,
-    eth_fee_basis_points: Option<u64>,
-    eos_fee_basis_points: Option<u64>,
-    accrued_fees: Option<u128>,
-    last_withdrawal: Option<u64>,
+    pub eth_token_decimals: usize,
+    pub eos_token_decimals: usize,
+    pub eth_symbol: String,
+    pub eos_symbol: String,
+    pub eth_address: String,
+    pub eos_address: String,
+    pub eth_fee_basis_points: Option<u64>,
+    pub eos_fee_basis_points: Option<u64>,
+    pub accrued_fees: Option<u128>,
+    pub last_withdrawal: Option<u64>,
 }
 
 impl EosEthTokenDictionaryEntryJson {
