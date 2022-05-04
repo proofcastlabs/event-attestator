@@ -40,8 +40,8 @@ pub use crate::{
                 debug_reprocess_eos_block_with_nonce,
                 debug_reprocess_int_block,
             },
-            debug_add_token_dictionary_entry,
             debug_add_new_eos_schedule,
+            debug_add_token_dictionary_entry,
             debug_get_add_supported_token_tx,
             debug_get_all_db_keys,
             debug_get_key_from_db,
@@ -66,4 +66,4 @@ pub mod get_latest_block_numbers;
 pub mod int;
 
 pub(crate) mod check_core_is_initialized;
-//pub(crate) mod test_utils;
+pub(crate) mod test_utils;
