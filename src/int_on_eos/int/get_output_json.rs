@@ -12,7 +12,7 @@ use crate::{
     types::Result,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EosTxInfo {
     pub _id: String,
     pub broadcast: bool,
@@ -27,6 +27,7 @@ pub struct EosTxInfo {
     pub originating_tx_hash: String,
     pub originating_address: String,
     pub eos_latest_block_number: u64,
+    pub destination_chain_id: String,
     pub native_token_address: String,
     pub broadcast_tx_hash: Option<String>,
     pub broadcast_timestamp: Option<String>,
@@ -52,6 +53,7 @@ impl EosTxInfo {
             int_tx_amount: tx_info.token_amount.to_string(),
             _id: format!("perc20-on-eos-eos-{}", eos_account_nonce),
             host_token_address: tx_info.eos_token_address.to_string(),
+            destination_chain_id: tx_info.destination_chain_id.to_string(),
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender)),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             originating_tx_hash: format!("0x{}", hex::encode(&tx_info.originating_tx_hash)),
@@ -99,4 +101,31 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
             },
         },
     })?)
+}
+
+#[cfg(test)]
+use std::str::FromStr;
+
+#[cfg(test)]
+use serde_json;
+
+#[cfg(test)]
+use crate::errors::AppError;
+
+#[cfg(test)]
+impl FromStr for IntOnEosEosOutput {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
+    }
+}
+
+#[cfg(test)]
+impl FromStr for EosTxInfo {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
+    }
 }

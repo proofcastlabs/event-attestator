@@ -140,10 +140,7 @@ pub fn debug_add_token_dictionary_entry<D: DatabaseInterface>(
 /// This function will remove an entry pertaining to the passed in ETH address from the
 /// `EosEthTokenDictionary` held in the encrypted database, should that entry exist. If it is
 /// not extant, nothing is changed.
-pub fn debug_remove_token_dictionary_entry<D: DatabaseInterface>(
-    db: D,
-    eth_address_str: &str,
-) -> Result<String> {
+pub fn debug_remove_token_dictionary_entry<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
     check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db))
         .and_then(|_| remove_eos_eth_token_dictionary_entry(&db, eth_address_str))
 }
