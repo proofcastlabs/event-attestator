@@ -28,7 +28,7 @@ impl EnclaveState {
             int: EthEnclaveState::new(
                 eth_db_utils,
                 &eth_db_utils.get_int_on_eos_smart_contract_address_from_db()?,
-                None,
+                Some(eth_db_utils.get_eth_router_smart_contract_address_from_db()?),
             )?,
             eos: EosEnclaveState::new_without_account_name(eos_db_utils)?,
         })
