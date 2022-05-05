@@ -5,8 +5,12 @@ use ethereum_types::Address as EthAddress;
 
 use crate::{
     chains::{
-        eos::eos_submission_material::EosSubmissionMaterial,
-        eth::{eth_submission_material::EthSubmissionMaterial, eth_utils::convert_hex_to_eth_address},
+        eos::{eos_crypto::eos_private_key::EosPrivateKey, eos_submission_material::EosSubmissionMaterial},
+        eth::{
+            eth_crypto::eth_private_key::EthPrivateKey,
+            eth_submission_material::EthSubmissionMaterial,
+            eth_utils::convert_hex_to_eth_address,
+        },
     },
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry, EosEthTokenDictionaryEntryJson},
     errors::AppError,
@@ -57,7 +61,8 @@ write_int_paths_and_getter_fxn!(
 );
 
 write_eos_paths_and_getter_fxn!(
-    0 => "src/int_on_eos/test_utils/eos-block-213310382.json"
+    0 => "src/int_on_eos/test_utils/eos-init-block-213498746.json",
+    1 => "src/int_on_eos/test_utils/eos-block-213499122.json"
 );
 
 pub fn get_sample_eos_init_block() -> String {
@@ -95,4 +100,21 @@ pub fn get_sample_dictionary() -> EosEthTokenDictionary {
         },
     )
     .unwrap()])
+}
+
+pub fn get_sample_eos_private_key() -> EosPrivateKey {
+    EosPrivateKey::from_wallet_import_format("5KXpfu8A5E8zZcuKuigZFbVUQUPdwDedbKCEnjFdfpMdXgW318K").unwrap()
+}
+
+pub fn get_sample_int_private_key() -> EthPrivateKey {
+    EthPrivateKey::from_slice(&hex::decode("e87a3a4b16ffc44c78d53f633157f0c08dc085a33483c2cbae78aa5892247e4c").unwrap())
+        .unwrap()
+}
+
+pub fn get_sample_int_address() -> EthAddress {
+    convert_hex_to_eth_address("0x49B9d619E3402de8867A8113C7bc204653F5DB4c").unwrap()
+}
+
+pub fn get_sample_eos_submission_material_string() -> String {
+    read_to_string(get_eos_path_n(1).unwrap()).unwrap()
 }

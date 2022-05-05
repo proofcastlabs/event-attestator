@@ -96,6 +96,9 @@ mod tests {
                 get_contiguous_int_block_json_strs,
                 get_sample_dictionary,
                 get_sample_eos_init_block,
+                get_sample_eos_private_key,
+                get_sample_int_address,
+                get_sample_int_private_key,
                 get_sample_router_address,
                 get_sample_vault_address,
             },
@@ -124,8 +127,7 @@ mod tests {
         .unwrap();
 
         // NOTE: Overwrite the EOS private key since it's generated randomly above...
-        let eos_pk =
-            EosPrivateKey::from_wallet_import_format("5KXpfu8A5E8zZcuKuigZFbVUQUPdwDedbKCEnjFdfpMdXgW318K").unwrap();
+        let eos_pk = get_sample_eos_private_key();
         eos_pk.write_to_db(&db).unwrap();
         assert_eq!(EosPrivateKey::get_from_db(&db).unwrap(), eos_pk);
 
@@ -147,11 +149,8 @@ mod tests {
         .unwrap();
 
         // NOTE: Overwrite the INT address & private key since it's generated randomly above...
-        let int_address = convert_hex_to_eth_address("0x49B9d619E3402de8867A8113C7bc204653F5DB4c").unwrap();
-        let int_private_key = EthPrivateKey::from_slice(
-            &hex::decode("e87a3a4b16ffc44c78d53f633157f0c08dc085a33483c2cbae78aa5892247e4c").unwrap(),
-        )
-        .unwrap();
+        let int_address = get_sample_int_address();
+        let int_private_key = get_sample_int_private_key();
         let int_db_utils = EthDbUtils::new(&db);
         int_db_utils
             .put_eth_address_in_db(&int_db_utils.get_eth_address_key(), &int_address)
@@ -179,11 +178,11 @@ mod tests {
                 "eos_tx_recipient":"ptestpout111",
                 "eos_tx_signature":"SIG_K1_KaXyH1xZpAyonUJYrPyqxLMFUhbnLrq7HUH4XmrNN7TH3Gd18WqPt3wgBjMd2hUSmvZsLCuhyqCDEuD1uTjpP5XY5VXuz6",
                 "witnessed_timestamp":1651664234,
-                "eos_serialized_tx":"3e73726205253662b554000000000190b1ca98aa49f3740080c92671a531760190b1ca98aa49f37400000000a8ed32324f1042c89ad68c55ae9002cc000000000008494f450000000000350303decaff040069c3222a30783731613434306565396661376639396662396136393765393665633738333962386131363433623800",
+                "eos_serialized_tx":"0000736205253662b554000000000190b1ca98aa49f3740080c92671a531760190b1ca98aa49f37400000000a8ed32324f1042c89ad68c55ae9002cc000000000008494f450000000000350303decaff040069c3222a30783731613434306565396661376639396662396136393765393665633738333962386131363433623800",
                 "host_token_address":"intoneostest",
                 "originating_tx_hash":"0x0695f2980bc04b8da96406c79468f3e51dbb2a18c4bc0638cff055fa63f309f2",
                 "originating_address":"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac",
-                "eos_latest_block_number":213310382,
+                "eos_latest_block_number":213498746,
                 "destination_chain_id":"Eos Mainnet: 0x02e7261c",
                 "native_token_address":"0x4262d1f878d191fbc66dca73bad57309916b1412",
                 "broadcast_tx_hash":null,
