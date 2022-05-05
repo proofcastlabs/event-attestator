@@ -5,12 +5,8 @@ use ethereum_types::Address as EthAddress;
 
 use crate::{
     chains::{
-        eos::{eos_crypto::eos_private_key::EosPrivateKey, eos_submission_material::EosSubmissionMaterial},
-        eth::{
-            eth_crypto::eth_private_key::EthPrivateKey,
-            eth_submission_material::EthSubmissionMaterial,
-            eth_utils::convert_hex_to_eth_address,
-        },
+        eos::eos_crypto::eos_private_key::EosPrivateKey,
+        eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_utils::convert_hex_to_eth_address},
     },
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry, EosEthTokenDictionaryEntryJson},
     errors::AppError,
@@ -28,10 +24,6 @@ macro_rules! write_int_paths_and_getter_fxn {
                     _ => Err(AppError::Custom(format!("Cannot find sample INT block num: {}", n).into())),
                 }
             }
-
-            pub fn get_sample_int_submission_material_n(n: usize) -> EthSubmissionMaterial {
-                EthSubmissionMaterial::from_str(&read_to_string(get_int_path_n(n).unwrap()).unwrap()).unwrap()
-            }
         }
     }
 }
@@ -46,10 +38,6 @@ macro_rules! write_eos_paths_and_getter_fxn {
                     $($num => Ok([<SAMPLE_EOS_BLOCK_ $num>].to_string()),)*
                     _ => Err(AppError::Custom(format!("Cannot find sample EOS block num: {}", n).into())),
                 }
-            }
-
-            pub fn get_sample_eos_submission_material_n(n: usize) -> EosSubmissionMaterial {
-                EosSubmissionMaterial::from_str(&read_to_string(get_eos_path_n(n).unwrap()).unwrap()).unwrap()
             }
         }
     }
@@ -115,6 +103,7 @@ pub fn get_sample_int_address() -> EthAddress {
     convert_hex_to_eth_address("0x49B9d619E3402de8867A8113C7bc204653F5DB4c").unwrap()
 }
 
+#[cfg(feature = "non-validating")]
 pub fn get_sample_eos_submission_material_string() -> String {
     read_to_string(get_eos_path_n(1).unwrap()).unwrap()
 }
