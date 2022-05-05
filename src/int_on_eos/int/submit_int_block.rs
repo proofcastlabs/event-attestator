@@ -83,10 +83,8 @@ mod tests {
             eth::{
                 core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
                 eth_chain_id::EthChainId,
-                eth_crypto::eth_private_key::EthPrivateKey,
                 eth_database_utils::{EthDbUtils, EthDbUtilsExt},
                 eth_state::EthState as IntState,
-                eth_utils::convert_hex_to_eth_address,
                 vault_using_cores::VaultUsingCores,
             },
         },
