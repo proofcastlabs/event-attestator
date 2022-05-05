@@ -16,13 +16,13 @@ use crate::{
     types::Result,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EosOutput {
     pub eos_latest_block_number: u64,
     pub int_signed_transactions: Vec<TxInfo>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TxInfo {
     pub _id: String,
     pub broadcast: bool,
