@@ -108,3 +108,30 @@ pub fn get_eos_output<D: DatabaseInterface>(state: EosState<D>) -> Result<String
     info!("✔ EOS output: {}", output);
     Ok(output)
 }
+
+#[cfg(test)]
+use std::str::FromStr;
+
+#[cfg(test)]
+use serde_json;
+
+#[cfg(test)]
+use crate::errors::AppError;
+
+#[cfg(test)]
+impl FromStr for EosOutput {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
+    }
+}
+
+#[cfg(test)]
+impl FromStr for TxInfo {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
+    }
+}
