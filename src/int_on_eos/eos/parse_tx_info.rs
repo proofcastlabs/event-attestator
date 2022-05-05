@@ -39,16 +39,25 @@ impl IntOnEosIntTxInfos {
 }
 
 impl IntOnEosIntTxInfo {
-    fn get_destination_address_from_proof(_proof: &EosActionProof) -> Result<String> {
-        unimplemented!("Not implemented parsing of destination address from EOS proof yet!")
+    // NOTE: We should be decoding this from the actual hex blob in the proof, but since we don't
+    // yet have an EOS codec, we can't deserialize it. Instead we rely on the json.
+    fn get_destination_address_from_proof(proof: &EosActionProof) -> String {
+        proof.action_json.data.memo.clone().unwrap_or_default()
     }
 
-    fn get_destination_chain_id_from_proof(_proof: &EosActionProof) -> Result<MetadataChainId> {
-        unimplemented!("Not implemented parsing of destination chain ID from EOS proof yet!")
+    // NOTE: Ibid.
+    fn get_destination_chain_id_from_proof(proof: &EosActionProof) -> Result<MetadataChainId> {
+        Ok(MetadataChainId::from_bytes(&hex::decode(
+            proof.action_json.data.chain_id.clone().unwrap_or_default(),
+        )?)
+        .unwrap_or_default())
     }
 
-    fn get_user_data_from_proof(_proof: &EosActionProof) -> Result<Bytes> {
-        unimplemented!("Not implemented parsing of user data from EOS proof yet!")
+    // NOTE: Ibid.
+    fn get_user_data_from_proof(proof: &EosActionProof) -> Result<Bytes> {
+        Ok(hex::decode(
+            proof.action_json.data.user_data.clone().unwrap_or_default(),
+        )?)
     }
 
     fn get_redeem_amount_from_proof(
@@ -88,7 +97,7 @@ impl IntOnEosIntTxInfo {
                     global_sequence: proof.action_receipt.global_sequence,
                     origin_chain_id: origin_chain_id.to_metadata_chain_id(),
                     int_vault_address: format!("0x{}", hex::encode(int_vault_address)),
-                    destination_address: Self::get_destination_address_from_proof(proof)?,
+                    destination_address: Self::get_destination_address_from_proof(proof),
                     destination_chain_id: Self::get_destination_chain_id_from_proof(proof)?,
                     int_token_address: format!("0x{}", hex::encode(&dictionary_entry.eth_address)),
                 })
