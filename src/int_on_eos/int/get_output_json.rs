@@ -51,7 +51,7 @@ impl EosTxInfo {
             eos_tx_recipient: eos_tx.recipient.clone(),
             eos_serialized_tx: eos_tx.transaction.clone(),
             int_tx_amount: tx_info.token_amount.to_string(),
-            _id: format!("perc20-on-eos-eos-{}", eos_account_nonce),
+            _id: format!("pint-on-eos-eos-{}", eos_account_nonce),
             host_token_address: tx_info.eos_token_address.to_string(),
             destination_chain_id: tx_info.destination_chain_id.to_string(),
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender)),
