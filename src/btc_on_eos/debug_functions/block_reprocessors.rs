@@ -42,7 +42,6 @@ use crate::{
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
         },
         eos::{
-            eos_constants::REDEEM_ACTION_NAME,
             eos_crypto::eos_private_key::EosPrivateKey,
             eos_database_transactions::{
                 end_eos_db_transaction_and_return_state,
@@ -61,7 +60,7 @@ use crate::{
                 maybe_filter_out_proofs_for_wrong_eos_account_name,
                 maybe_filter_out_proofs_with_invalid_merkle_proofs,
                 maybe_filter_out_proofs_with_wrong_action_mroot,
-                maybe_filter_proofs_for_action_name,
+                maybe_filter_proofs_for_v1_redeem_actions,
             },
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
         },
@@ -94,7 +93,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
-        .and_then(|state| maybe_filter_proofs_for_action_name(state, REDEEM_ACTION_NAME))
+        .and_then(maybe_filter_proofs_for_v1_redeem_actions)
         .and_then(maybe_parse_redeem_infos_and_put_in_state)
         .and_then(maybe_filter_value_too_low_redeem_infos_in_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)

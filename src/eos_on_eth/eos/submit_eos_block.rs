@@ -2,7 +2,6 @@ use crate::{
     chains::eos::{
         add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
         append_interim_block_ids::append_interim_block_ids_to_incremerkle_in_state,
-        eos_constants::PEGIN_ACTION_NAME,
         eos_database_transactions::{
             end_eos_db_transaction_and_return_state,
             start_eos_db_transaction_and_return_state,
@@ -20,7 +19,7 @@ use crate::{
             maybe_filter_out_proofs_for_wrong_eos_account_name,
             maybe_filter_out_proofs_with_invalid_merkle_proofs,
             maybe_filter_out_proofs_with_wrong_action_mroot,
-            maybe_filter_proofs_for_action_name,
+            maybe_filter_proofs_for_v1_peg_in_actions,
         },
         get_active_schedule::get_active_schedule_from_db_and_add_to_state,
         get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
@@ -78,7 +77,7 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: D, block_json: &str) -
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
         .and_then(maybe_filter_out_proofs_for_wrong_eos_account_name)
-        .and_then(|state| maybe_filter_proofs_for_action_name(state, PEGIN_ACTION_NAME))
+        .and_then(maybe_filter_proofs_for_v1_peg_in_actions)
         .and_then(maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state)
         .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
         .and_then(maybe_filter_out_value_too_low_txs_from_state)

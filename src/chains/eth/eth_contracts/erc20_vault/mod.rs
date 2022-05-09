@@ -143,7 +143,7 @@ pub fn encode_erc20_vault_remove_supported_token_fx_data(token_to_remove: EthAdd
     )])
 }
 
-#[derive(Debug, PartialEq, Constructor)]
+#[derive(Clone, Debug, PartialEq, Constructor)]
 pub struct Erc20VaultPegInEventParams {
     pub user_data: Bytes,
     pub token_amount: U256,

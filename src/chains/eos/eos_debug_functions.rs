@@ -137,16 +137,17 @@ pub fn debug_set_eos_account_nonce<D: DatabaseInterface>(db: &D, new_nonce: u64)
 #[cfg(all(test, feature = "debug"))]
 mod tests {
     use super::*;
-    use crate::{chains::eos::eos_database_utils::get_eos_account_nonce_from_db, test_utils::get_test_database};
+    use crate::{chains::eos::eos_database_utils::EosDbUtils, test_utils::get_test_database};
 
     #[test]
     fn should_set_eos_account_nonce() {
         let db = get_test_database();
+        let db_utils = EosDbUtils::new(&db);
         let nonce = 6;
-        put_eos_account_nonce_in_db(&db, nonce).unwrap();
-        assert_eq!(get_eos_account_nonce_from_db(&db).unwrap(), nonce);
+        db_utils.put_eos_account_nonce_in_db(nonce).unwrap();
+        assert_eq!(db_utils.get_eos_account_nonce_from_db().unwrap(), nonce);
         let new_nonce = 4;
         debug_set_eos_account_nonce(&db, new_nonce).unwrap();
-        assert_eq!(get_eos_account_nonce_from_db(&db).unwrap(), new_nonce);
+        assert_eq!(db_utils.get_eos_account_nonce_from_db().unwrap(), new_nonce);
     }
 }

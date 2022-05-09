@@ -20,6 +20,7 @@ use crate::{
     dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::eos::eos_tx_info::EosOnEthEosTxInfos,
     erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfos,
+    int_on_eos::eos::int_tx_info::IntOnEosIntTxInfos,
     traits::DatabaseInterface,
     types::Result,
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
@@ -38,6 +39,7 @@ pub struct EosState<'a, D: DatabaseInterface> {
     pub btc_db_utils: BtcDbUtils<'a, D>,
     pub eos_db_utils: EosDbUtils<'a, D>,
     pub block_header: Option<EosBlockHeaderV2>,
+    pub int_on_eos_int_tx_infos: IntOnEosIntTxInfos,
     pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub processed_tx_ids: ProcessedGlobalSequences,
     pub enabled_protocol_features: EnabledFeatures,
@@ -70,6 +72,7 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             enabled_protocol_features: EnabledFeatures::init(),
             processed_tx_ids: ProcessedGlobalSequences::new(vec![]),
             eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos::new(vec![]),
+            int_on_eos_int_tx_infos: IntOnEosIntTxInfos::new(vec![]),
             btc_on_eos_redeem_infos: BtcOnEosRedeemInfos::new(vec![]),
             erc20_on_eos_redeem_infos: Erc20OnEosRedeemInfos::new(vec![]),
         }
@@ -126,6 +129,11 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
 
     pub fn add_eos_on_eth_eos_tx_info(mut self, infos: EosOnEthEosTxInfos) -> Result<EosState<'a, D>> {
         self.eos_on_eth_eos_tx_infos = infos;
+        Ok(self)
+    }
+
+    pub fn add_int_on_eos_int_tx_infos(mut self, infos: IntOnEosIntTxInfos) -> Result<EosState<'a, D>> {
+        self.int_on_eos_int_tx_infos = infos;
         Ok(self)
     }
 
@@ -186,6 +194,12 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
         info!("✔ Replacing signed BTC txs infos in state...");
         self.btc_on_eos_signed_txs = replacements;
         self
+    }
+
+    pub fn replace_int_on_eos_int_tx_infos(mut self, infos: IntOnEosIntTxInfos) -> Result<EosState<'a, D>> {
+        info!("✔ Replacing `IntOnEosIntTxInfos` in state...");
+        self.int_on_eos_int_tx_infos = infos;
+        Ok(self)
     }
 
     pub fn replace_btc_on_eos_redeem_infos(mut self, replacements: BtcOnEosRedeemInfos) -> Result<EosState<'a, D>> {

@@ -32,6 +32,7 @@ pub struct EosActionProof {
     pub tx_id: Checksum256,
     pub action_proof: MerkleProof,
     pub action_receipt: EosActionReceipt,
+    pub action_json: EosActionJson,
 }
 
 impl PartialEq for EosActionProof {
@@ -66,6 +67,7 @@ impl EosActionProof {
     pub fn from_json(json: &EosActionProofJson) -> Result<Self> {
         Ok(EosActionProof {
             action: json.action_json.to_action()?,
+            action_json: json.action_json.clone(),
             action_proof: json.action_proof.clone(),
             tx_id: convert_hex_to_checksum256(&json.tx_id)?,
             action_receipt: EosActionReceipt::from_json(&json.action_receipt_json)?,
@@ -82,11 +84,6 @@ impl EosActionProof {
         } else {
             Ok(())
         }
-    }
-
-    #[allow(dead_code)]
-    pub fn get_user_data(&self) -> Bytes {
-        unimplemented!("Cannot yet `get_user_data` for `EosActionProof!`");
     }
 }
 
@@ -124,6 +121,18 @@ pub struct EosActionJson {
     pub account: String,
     pub hex_data: Option<String>,
     pub authorization: AuthorizationJsons,
+    pub data: PTokensRedeem2ActionDataJson,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PTokensRedeem2ActionDataJson {
+    // NOTE: By making these all options, we're backwards compatible with v1 redeem action data,
+    // though in v1 redeems these fields are never used.
+    pub memo: Option<String>,
+    pub sender: Option<String>,
+    pub chain_id: Option<String>,
+    pub quantity: Option<String>,
+    pub user_data: Option<String>,
 }
 
 impl EosActionJson {

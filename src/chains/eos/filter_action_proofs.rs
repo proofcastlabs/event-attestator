@@ -5,6 +5,7 @@ use eos_chain::{AccountName as EosAccountName, ActionName as EosActionName, Chec
 use crate::{
     chains::eos::{
         eos_action_proofs::{EosActionProof, EosActionProofs},
+        eos_constants::{PEGIN_ACTION_NAME, REDEEM_ACTION_NAME, V2_REDEEM_ACTION_NAME},
         eos_merkle_utils::verify_merkle_proof,
         eos_state::EosState,
         eos_utils::{convert_bytes_to_checksum256, get_digest_from_eos_action},
@@ -165,12 +166,24 @@ pub fn maybe_filter_out_proofs_for_wrong_eos_account_name<D: DatabaseInterface>(
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
-pub fn maybe_filter_proofs_for_action_name<'a, D: DatabaseInterface>(
-    state: EosState<'a, D>,
-    action_name: &str,
-) -> Result<EosState<'a, D>> {
-    info!("✔ Filtering for proofs with action name: {}", action_name);
-    filter_for_proofs_with_action_name(&state.action_proofs, action_name)
+pub fn maybe_filter_proofs_for_v1_redeem_actions<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
+    info!("✔ Filtering for proofs with action name: '{}'...", REDEEM_ACTION_NAME);
+    filter_for_proofs_with_action_name(&state.action_proofs, REDEEM_ACTION_NAME)
+        .and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_proofs_for_v2_redeem_actions<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
+    info!(
+        "✔ Filtering for proofs with action name: '{}'...",
+        V2_REDEEM_ACTION_NAME
+    );
+    filter_for_proofs_with_action_name(&state.action_proofs, V2_REDEEM_ACTION_NAME)
+        .and_then(|proofs| state.replace_action_proofs(proofs))
+}
+
+pub fn maybe_filter_proofs_for_v1_peg_in_actions<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
+    info!("✔ Filtering for proofs with action name: '{}'...", PEGIN_ACTION_NAME);
+    filter_for_proofs_with_action_name(&state.action_proofs, PEGIN_ACTION_NAME)
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 

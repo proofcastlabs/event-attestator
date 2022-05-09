@@ -52,22 +52,20 @@ pub fn debug_put_btc_fee_in_db<D: DatabaseInterface>(db: &D, fee: u64) -> Result
 mod tests {
     use super::*;
     use crate::{
-        chains::btc::{
-            btc_database_utils::{get_btc_account_nonce_from_db, get_btc_fee_from_db},
-            utxo_manager::utxo_database_utils::get_utxo_nonce_from_db,
-        },
+        chains::btc::utxo_manager::utxo_database_utils::get_utxo_nonce_from_db,
         test_utils::get_test_database,
     };
 
     #[test]
     fn should_set_btc_account_nonce() {
         let db = get_test_database();
+        let db_utils = BtcDbUtils::new(&db);
         let nonce = 6;
-        put_btc_account_nonce_in_db(&db, nonce).unwrap();
-        assert_eq!(get_btc_account_nonce_from_db(&db).unwrap(), nonce);
+        db_utils.put_btc_account_nonce_in_db(nonce).unwrap();
+        assert_eq!(db_utils.get_btc_account_nonce_from_db().unwrap(), nonce);
         let new_nonce = 4;
         debug_set_btc_account_nonce(&db, new_nonce).unwrap();
-        assert_eq!(get_btc_account_nonce_from_db(&db).unwrap(), new_nonce);
+        assert_eq!(db_utils.get_btc_account_nonce_from_db().unwrap(), new_nonce);
     }
 
     #[test]
@@ -87,9 +85,9 @@ mod tests {
         let db_utils = BtcDbUtils::new(&db);
         let fee = 6;
         db_utils.put_btc_fee_in_db(fee).unwrap();
-        assert_eq!(get_btc_fee_from_db(&db).unwrap(), fee);
+        assert_eq!(db_utils.get_btc_fee_from_db().unwrap(), fee);
         let new_fee = 4;
         debug_put_btc_fee_in_db(&db, new_fee).unwrap();
-        assert_eq!(get_btc_fee_from_db(&db).unwrap(), new_fee);
+        assert_eq!(db_utils.get_btc_fee_from_db().unwrap(), new_fee);
     }
 }

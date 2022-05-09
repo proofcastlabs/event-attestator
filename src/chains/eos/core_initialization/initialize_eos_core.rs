@@ -32,8 +32,10 @@ use crate::{
     types::Result,
 };
 
-pub fn initialize_eos_core<D: DatabaseInterface>(
-    db: D,
+//  NOTE: This exists so we can take a refence to the DB  without breaking the existing API. This
+//  allows us to initialize EOS cores in unit tests etc.
+pub fn initialize_eos_core_inner<D: DatabaseInterface>(
+    db: &D,
     chain_id: &str,
     maybe_account_name: Option<&str>,
     maybe_token_symbol: Option<&str>,
@@ -41,7 +43,7 @@ pub fn initialize_eos_core<D: DatabaseInterface>(
 ) -> Result<String> {
     let init_json = EosInitJson::from_json_string(eos_init_json)?;
     info!("✔ Initializing core for EOS...");
-    start_eos_db_transaction_and_return_state(EosState::init(&db))
+    start_eos_db_transaction_and_return_state(EosState::init(db))
         .and_then(put_empty_processed_tx_ids_in_db_and_return_state)
         .and_then(|state| put_eos_chain_id_in_db_and_return_state(chain_id, state))
         .and_then(|state| match maybe_account_name {
@@ -65,6 +67,16 @@ pub fn initialize_eos_core<D: DatabaseInterface>(
         .and_then(put_eos_account_nonce_in_db_and_return_state)
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(get_eos_init_output)
+}
+
+pub fn initialize_eos_core<D: DatabaseInterface>(
+    db: D,
+    chain_id: &str,
+    maybe_account_name: Option<&str>,
+    maybe_token_symbol: Option<&str>,
+    eos_init_json: &str,
+) -> Result<String> {
+    initialize_eos_core_inner(&db, chain_id, maybe_account_name, maybe_token_symbol, eos_init_json)
 }
 
 /// # Maybe Initialize EOS Core With EOS Account & Symbol
@@ -129,6 +141,7 @@ pub fn maybe_initialize_eos_core_without_eos_account_or_symbol<D: DatabaseInterf
         false => initialize_eos_core(db, chain_id, None, None, eos_init_json),
     }
 }
+
 /// # Maybe Initialize EOS Core With EOS Account Without Symbol
 ///
 /// This function first checks to see if the EOS side of a core has been initialized, and will
