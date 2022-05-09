@@ -2,7 +2,6 @@ use crate::{
     chains::eos::{
         add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
         append_interim_block_ids::append_interim_block_ids_to_incremerkle_in_state,
-        eos_constants::V2_REDEEM_ACTION_NAME,
         eos_database_transactions::{
             end_eos_db_transaction_and_return_state,
             start_eos_db_transaction_and_return_state,
@@ -20,7 +19,7 @@ use crate::{
             maybe_filter_out_proofs_for_accounts_not_in_token_dictionary,
             maybe_filter_out_proofs_with_invalid_merkle_proofs,
             maybe_filter_out_proofs_with_wrong_action_mroot,
-            maybe_filter_proofs_for_action_name,
+            maybe_filter_proofs_for_v2_redeem_actions,
         },
         get_active_schedule::get_active_schedule_from_db_and_add_to_state,
         get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
@@ -77,7 +76,7 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
-        .and_then(|state| maybe_filter_proofs_for_action_name(state, V2_REDEEM_ACTION_NAME))
+        .and_then(maybe_filter_proofs_for_v2_redeem_actions)
         .and_then(maybe_parse_int_tx_infos_and_put_in_state)
         .and_then(maybe_filter_out_already_processed_tx_infos_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
