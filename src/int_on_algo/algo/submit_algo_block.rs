@@ -41,9 +41,9 @@ use crate::{
 /// blockchain held by the enclave in it's encrypted database. Should the submitted block
 /// contain pertinent transactions to the redeem addres  the enclave is watching, an INT
 /// transaction will be signed & returned to the caller.
-pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
+pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting ALGO block to core...");
-    parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(&db))
+    parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db))
         .and_then(check_core_is_initialized_and_return_algo_state)
         .and_then(start_algo_db_transaction_and_return_state)
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
@@ -183,7 +183,7 @@ mod tests {
             .unwrap();
 
         // NOTE: Submit the block containing the peg in, though there will be no output due to 1 confirmations.
-        let output = submit_algo_block_to_core(db, &algo_peg_in_block).unwrap();
+        let output = submit_algo_block_to_core(&db, &algo_peg_in_block).unwrap();
         let expected_result_json = json!({
             "algo_latest_block_number":20642397,
             "int_signed_transactions":[{
