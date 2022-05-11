@@ -12,13 +12,13 @@ use crate::{
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AlgoEnclaveState {
     algo_fee: u64,
+    algo_address: String,
     algo_tail_length: u64,
     algo_account_nonce: u64,
     algo_linker_hash: String,
     algo_safe_address: String,
     algo_genesis_hash: String,
     algo_tail_block_number: u64,
-    algo_redeem_address: String,
     algo_tail_block_hash: String,
     algo_canon_block_number: u64,
     algo_anchor_block_number: u64,
@@ -56,9 +56,9 @@ impl AlgoEnclaveState {
             algo_fee: db_utils.get_algo_fee()?.to_algos(),
             algo_safe_address: ALGO_SAFE_ADDRESS.to_string(),
             algo_account_nonce: db_utils.get_algo_account_nonce()?,
+            algo_address: db_utils.get_redeem_address()?.to_string(),
             algo_genesis_hash: db_utils.get_genesis_hash()?.to_string(),
             algo_canon_to_tip_length: db_utils.get_canon_to_tip_length()?,
-            algo_redeem_address: db_utils.get_redeem_address()?.to_string(),
             algo_linker_hash: db_utils.get_linker_hash_or_else_genesis_hash()?.to_string(),
         })
     }
@@ -116,7 +116,7 @@ mod tests {
             algo_linker_hash: AlgorandHash::default().to_string(),
             algo_genesis_hash: AlgorandHash::from_genesis_id(&genesis_id).unwrap().to_string(),
             // NOTE: The redeem address is generated randomly on initialization!
-            algo_redeem_address: db_utils
+            algo_address: db_utils
                 .get_algo_private_key()
                 .unwrap()
                 .to_address()
@@ -129,7 +129,7 @@ mod tests {
         assert_eq!(result.algo_genesis_hash, expected_result.algo_genesis_hash);
         assert_eq!(result.algo_safe_address, expected_result.algo_safe_address);
         assert_eq!(result.algo_account_nonce, expected_result.algo_account_nonce);
-        assert_eq!(result.algo_redeem_address, expected_result.algo_redeem_address);
+        assert_eq!(result.algo_address, expected_result.algo_address);
         assert_eq!(result.algo_tail_block_hash, expected_result.algo_tail_block_hash);
         assert_eq!(result.algo_canon_block_hash, expected_result.algo_canon_block_hash);
         assert_eq!(result.algo_anchor_block_hash, expected_result.algo_anchor_block_hash);
