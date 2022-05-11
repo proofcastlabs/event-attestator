@@ -42,6 +42,7 @@ pub use crate::{
             debug_remove_dictionary_entry,
             debug_set_algo_account_nonce,
             debug_set_key_in_db_to_value,
+            int_block_reprocessor::debug_reprocess_int_block,
         },
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
