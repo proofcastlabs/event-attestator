@@ -17,10 +17,9 @@ use crate::{
         algo::{
             add_relevant_txs_to_submission_material::add_relevant_validated_txs_to_submission_material_in_state,
             filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
-            get_algo_output::get_algo_output,
+            get_algo_output::{get_int_signed_tx_info_from_algo_txs, AlgoOutput},
             get_relevant_txs::get_relevant_asset_txs_from_submission_material_and_add_to_state,
             int_tx_info::IntOnAlgoIntTxInfos,
-            sign_txs::maybe_sign_int_txs_and_add_to_algo_state,
             validate_relevant_txs::filter_out_invalid_txs_and_update_in_state,
         },
         check_core_is_initialized::check_core_is_initialized_and_return_algo_state,
@@ -32,7 +31,7 @@ use crate::{
 fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
     db: &D,
     block_json_string: &str,
-    maybe_nonce: Option<u64>, // TODO use this!
+    maybe_nonce: Option<u64>,
 ) -> Result<String> {
     info!("✔ Debug reprocessing ALGO block...");
     parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db))
@@ -69,16 +68,88 @@ fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
         })
         .and_then(filter_out_zero_value_tx_infos_from_state)
         //.and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address) // TODO this!
-        .and_then(maybe_sign_int_txs_and_add_to_algo_state)
-        .and_then(maybe_increment_eth_account_nonce_and_return_algo_state)
+        .and_then(|state| {
+            let tx_infos = state.get_int_on_algo_int_tx_infos();
+            if tx_infos.is_empty() {
+                info!("✔ No tx infos in state ∴ no INT transactions to sign!");
+                Ok(state)
+            } else {
+                info!("✔ Signing transactions for `IntOnAlgoIntTxInfos`...");
+                let signed_txs = tx_infos.to_eth_signed_txs(
+                    match maybe_nonce {
+                        Some(nonce) => nonce,
+                        None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                    },
+                    &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                    state.eth_db_utils.get_eth_gas_price_from_db()?,
+                    &state.eth_db_utils.get_eth_private_key_from_db()?,
+                )?;
+                #[cfg(feature = "debug")]
+                {
+                    debug!("✔ Signed transactions: {:?}", signed_txs);
+                }
+                state.add_eth_signed_txs(signed_txs)
+            }
+        })
+        .and_then(|state| {
+            if maybe_nonce.is_some() {
+                info!("✘ Not incrementing nonce because one was passed in!");
+                Ok(state)
+            } else {
+                maybe_increment_eth_account_nonce_and_return_algo_state(state)
+            }
+        })
         .and_then(end_algo_db_transaction_and_return_state)
-        .and_then(get_algo_output)
+        .and_then(|state| {
+            info!("✔ Getting ALGO output...");
+            let signed_txs = state.eth_signed_txs.clone();
+            let tx_infos = state.get_int_on_algo_int_tx_infos();
+            let output = AlgoOutput {
+                algo_latest_block_number: state.algo_db_utils.get_latest_block_number()?,
+                int_signed_transactions: if signed_txs.is_empty() {
+                    vec![]
+                } else {
+                    get_int_signed_tx_info_from_algo_txs(
+                        &signed_txs,
+                        &tx_infos,
+                        match maybe_nonce {
+                            Some(nonce) => nonce,
+                            None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                        },
+                        state.eth_db_utils.get_latest_eth_block_number()?,
+                    )?
+                },
+            };
+            Ok(output.to_string())
+        })
 }
 
+/// # Debug Reprocess ALGO Block
+///
+/// This function will take ALGO submission material and run it through the
+/// submission pipeline, signing any signatures for peg-outs it may find in the block.
+///
+/// ### NOTES:
+///
+///  - This function will increment the core's INT nonce by the number of transactions signed.
 pub fn debug_reprocess_algo_block<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     debug_reprocess_algo_block_maybe_with_nonce(db, block_json_string, None)
 }
 
+/// # Debug Reprocess ALGO Block With Nonce
+///
+/// This function will take ALGO submission material and run it through the
+/// submission pipeline, signing any signatures for peg-outs it may find in the block.
+/// This version of the ALGO reprocessor also takes a nonce, which will be used when
+/// signing any peg-out transactions. This feature may be used to replace transactions.
+///
+/// ### NOTES:
+///
+///  - This function will NOT increment the core's INT nonce, since it uses the one passed in.
+///
+/// ### BEWARE:
+///
+/// It is assumed that you know what you're doing nonce-wise with this function!
 pub fn debug_reprocess_algo_block_with_nonce<D: DatabaseInterface>(
     db: &D,
     block_json_string: &str,
