@@ -187,7 +187,6 @@ mod tests {
     use crate::{
         chains::eth::eth_utils::convert_hex_to_eth_address,
         metadata::test_utils::{
-            get_sample_algo_address,
             get_sample_algo_origin_address,
             get_sample_btc_address,
             get_sample_btc_origin_address,

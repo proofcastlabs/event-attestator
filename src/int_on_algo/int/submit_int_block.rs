@@ -68,7 +68,7 @@ pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
 
 #[cfg(test)]
 mod tests {
-    use std::{fs::read_to_string, str::FromStr};
+    use std::str::FromStr;
 
     use rust_algorand::{AlgorandAddress, AlgorandGenesisId, AlgorandKeys};
     use serde_json::json;
@@ -76,12 +76,9 @@ mod tests {
     use super::*;
     use crate::{
         chains::{
-            algo::{algo_chain_id::AlgoChainId, algo_database_utils::AlgoDbUtils},
+            algo::algo_database_utils::AlgoDbUtils,
             eth::{
-                core_initialization::initialize_eth_core::{
-                    initialize_eth_core_with_vault_and_router_contracts_and_return_state,
-                    initialize_evm_core_with_no_contract_tx,
-                },
+                core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
                 eth_chain_id::EthChainId,
                 eth_crypto::eth_private_key::EthPrivateKey,
                 eth_database_utils::{EthDbUtilsExt, EvmDbUtils},

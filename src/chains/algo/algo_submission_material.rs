@@ -121,6 +121,6 @@ mod test {
         let submission_material = AlgoSubmissionMaterial::from_str(&submission_material_str).unwrap();
         let bytes = submission_material.to_bytes().unwrap();
         let result = AlgoSubmissionMaterial::from_bytes(&bytes).unwrap();
-        //assert_eq!(result, submission_material);
+        assert_eq!(result, submission_material);
     }
 }

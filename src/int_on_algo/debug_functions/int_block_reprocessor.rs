@@ -26,6 +26,15 @@ use crate::{
     types::Result,
 };
 
+/// # Debug Reprocess INT Block
+///
+/// This function will take a passed in INT block submission material and run it through the
+/// submission pipeline, signing any signatures for peg-ins it may find in the block
+///
+/// ### NOTES:
+///
+///  - This function will increment the core's ALGO nonce by the number of txs signed.
+/// gap in their report IDs!
 pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Debug reprocessing INT block...");
     parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))

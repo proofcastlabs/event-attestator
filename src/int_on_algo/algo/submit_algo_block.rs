@@ -70,20 +70,17 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: &D, block_json_string
 
 #[cfg(test)]
 mod tests {
-    use std::{fs::read_to_string, str::FromStr};
+    use std::str::FromStr;
 
-    use rust_algorand::{AlgorandAddress, AlgorandGenesisId, AlgorandKeys};
+    use rust_algorand::{AlgorandAddress, AlgorandGenesisId};
     use serde_json::json;
 
     use super::*;
     use crate::{
         chains::{
-            algo::{algo_chain_id::AlgoChainId, algo_database_utils::AlgoDbUtils},
+            algo::algo_database_utils::AlgoDbUtils,
             eth::{
-                core_initialization::initialize_eth_core::{
-                    initialize_eth_core_with_vault_and_router_contracts_and_return_state,
-                    initialize_evm_core_with_no_contract_tx,
-                },
+                core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
                 eth_chain_id::EthChainId,
                 eth_crypto::eth_private_key::EthPrivateKey,
                 eth_database_utils::{EthDbUtils, EthDbUtilsExt},
@@ -92,7 +89,7 @@ mod tests {
                 vault_using_cores::VaultUsingCores,
             },
         },
-        constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
+        constants::MIN_DATA_SENSITIVITY_LEVEL,
         dictionaries::evm_algo::EvmAlgoTokenDictionary,
         int_on_algo::{
             algo::get_algo_output::AlgoOutput,
@@ -165,10 +162,6 @@ mod tests {
         let algo_db_utils = AlgoDbUtils::new(&db);
         let algo_address =
             AlgorandAddress::from_str("N4F4VB7GYZWL2RRTMQVMBKM5GKTKDTOHVB5PHGQYFB6XSXR3MRYIVOPTWE").unwrap();
-        let algo_private_key = AlgorandKeys::from_bytes(
-            &hex::decode("4c9a9699eedc1b7f62b679e375c32ed83159d22428892b7f4285dad2f550f558").unwrap(),
-        )
-        .unwrap();
         db.put(
             get_prefixed_db_key("algo_redeem_address_key").to_vec(),
             algo_address.to_bytes().unwrap(),

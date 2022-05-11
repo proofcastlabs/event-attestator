@@ -4,10 +4,7 @@ use std::{fs::read_to_string, str::FromStr};
 use ethereum_types::Address as EthAddress;
 
 use crate::{
-    chains::{
-        algo::algo_submission_material::AlgoSubmissionMaterial,
-        eth::{eth_submission_material::EthSubmissionMaterial, eth_utils::convert_hex_to_eth_address},
-    },
+    chains::eth::{eth_submission_material::EthSubmissionMaterial, eth_utils::convert_hex_to_eth_address},
     dictionaries::evm_algo::EvmAlgoTokenDictionaryEntry,
     errors::AppError,
     types::Result,
@@ -42,10 +39,6 @@ macro_rules! write_algo_paths_and_getter_fxn {
                     $($num => Ok([<SAMPLE_ALGO_BLOCK_ $num>].to_string()),)*
                     _ => Err(AppError::Custom(format!("Cannot find sample ALGO block num: {}", n).into())),
                 }
-            }
-
-            pub fn get_sample_algo_submission_material_n(n: usize) -> AlgoSubmissionMaterial {
-                AlgoSubmissionMaterial::from_str(&read_to_string(get_algo_path_n(n).unwrap()).unwrap()).unwrap()
             }
         }
     }
