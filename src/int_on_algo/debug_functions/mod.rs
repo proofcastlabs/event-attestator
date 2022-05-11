@@ -1,3 +1,5 @@
+pub(crate) mod block_reprocessors;
+
 use std::str::FromStr;
 
 use serde_json::json;
