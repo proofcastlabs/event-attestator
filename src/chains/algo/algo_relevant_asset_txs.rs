@@ -72,14 +72,14 @@ impl AlgoRelevantAssetTx {
         submission_material: &AlgoSubmissionMaterial,
         index: usize,
     ) -> Option<AlgorandTransactionProof> {
-        info!("✔ Maybe getting proof for tx at index {index}...");
+        debug!("✔ Maybe getting proof for tx at index {index}...");
         let filtered_proofs = submission_material
             .proofs
             .iter()
             .filter(|proof| proof.index == index as u64)
             .collect::<Vec<&AlgorandTransactionProof>>();
         if filtered_proofs.is_empty() {
-            info!("✘ No proof for for tx!");
+            debug!("✘ No proof for for tx!");
             None
         } else {
             // NOTE: We're ignoring any duplicates, since that suggests malformed submission material.
