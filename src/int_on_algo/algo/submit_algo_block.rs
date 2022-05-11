@@ -59,7 +59,6 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: &D, block_json_string
         .and_then(maybe_update_algo_linker_hash_and_return_state)
         .and_then(maybe_parse_tx_info_from_canon_block_and_add_to_state)
         .and_then(filter_out_zero_value_tx_infos_from_state)
-        //.and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address) // TODO this!
         .and_then(maybe_sign_int_txs_and_add_to_algo_state)
         .and_then(maybe_increment_eth_account_nonce_and_return_algo_state)
         .and_then(maybe_remove_old_algo_tail_submission_material_and_return_state)

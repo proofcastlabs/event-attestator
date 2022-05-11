@@ -67,7 +67,6 @@ pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: &D, block_json_string
             }
         })
         .and_then(filter_out_zero_value_tx_infos_from_state)
-        //.and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address) // FIXME
         .and_then(maybe_sign_algo_txs_and_add_to_state)
         .and_then(maybe_increment_algo_account_nonce_and_return_eth_state)
         .and_then(end_eth_db_transaction_and_return_state)
