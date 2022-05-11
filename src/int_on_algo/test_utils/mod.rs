@@ -85,7 +85,7 @@ pub fn get_sample_contiguous_algo_submission_json_strings() -> Vec<String> {
 
 pub fn get_sample_evm_algo_dictionary_entry() -> EvmAlgoTokenDictionaryEntry {
     EvmAlgoTokenDictionaryEntry::from_str(
-        "{\"evm_decimals\": 18,\"algo_decimals\": 10,\"algo_asset_id\": 714666072,\"evm_address\": \"0x4262d1f878d191fbc66dca73bad57309916b1412\"}",
+        "{\"algo_symbol\":\"ALGO\",\"evm_symbol\":\"EVM\",\"evm_decimals\": 18,\"algo_decimals\": 10,\"algo_asset_id\": 714666072,\"evm_address\": \"0x4262d1f878d191fbc66dca73bad57309916b1412\"}",
     ).unwrap()
 }
 

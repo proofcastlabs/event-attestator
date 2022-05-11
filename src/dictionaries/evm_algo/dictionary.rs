@@ -215,6 +215,8 @@ mod tests {
             evm_address: convert_hex_to_eth_address("0x0c6f292ddd1997e7712fC03b32F7e97503f689e9").unwrap(),
             algo_decimals: 8,
             evm_decimals: 18,
+            algo_symbol: "ALGO".to_string(),
+            evm_symbol: "EVM".to_string(),
         }
     }
 
@@ -224,6 +226,8 @@ mod tests {
             evm_address: convert_hex_to_eth_address("0x5832e106799962e23d1d5b512cdb01ee76ef6f4d").unwrap(),
             algo_decimals: 10,
             evm_decimals: 10,
+            algo_symbol: "ALGO".to_string(),
+            evm_symbol: "EVM".to_string(),
         }
     }
 

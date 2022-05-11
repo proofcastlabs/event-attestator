@@ -19,6 +19,8 @@ pub struct EvmAlgoTokenDictionaryEntry {
     pub evm_decimals: u16,
     pub algo_decimals: u16,
     pub algo_asset_id: u64,
+    pub evm_symbol: String,
+    pub algo_symbol: String,
     pub evm_address: EthAddress,
 }
 
@@ -27,6 +29,8 @@ pub struct EvmAlgoTokenDictionaryEntryJson {
     pub evm_decimals: u16,
     pub algo_decimals: u16,
     pub algo_asset_id: u64,
+    pub evm_symbol: String,
+    pub algo_symbol: String,
     pub evm_address: String,
 }
 
@@ -54,15 +58,19 @@ impl EvmAlgoTokenDictionaryEntry {
             evm_decimals: self.evm_decimals,
             algo_decimals: self.algo_decimals,
             algo_asset_id: self.algo_asset_id,
+            evm_symbol: self.evm_symbol.clone(),
+            algo_symbol: self.algo_symbol.clone(),
             evm_address: hex::encode(&self.evm_address.as_bytes()),
         })
     }
 
     pub fn from_json(json: &EvmAlgoTokenDictionaryEntryJson) -> Result<Self> {
         Ok(Self {
-            algo_decimals: json.algo_decimals,
             evm_decimals: json.evm_decimals,
+            algo_decimals: json.algo_decimals,
             algo_asset_id: json.algo_asset_id,
+            evm_symbol: json.evm_symbol.clone(),
+            algo_symbol: json.algo_symbol.clone(),
             evm_address: EthAddress::from_slice(&hex::decode(strip_hex_prefix(&json.evm_address))?),
         })
     }
@@ -114,7 +122,7 @@ mod tests {
 
     #[test]
     fn should_get_evm_algo_dictionary_entry_from_str() {
-        let s = "{\"evm_decimals\": 18,\"algo_decimals\": 18,\"algo_asset_id\": 666,\"evm_address\": \"0xCE141c45619e9AdBDBdDA5af19B3052Ff79d5663\"}";
+        let s = "{\"algo_symbol\":\"SYM\",\"evm_symbol\":\"SYM\",\"evm_decimals\": 18,\"algo_decimals\": 18,\"algo_asset_id\": 666,\"evm_address\": \"0xCE141c45619e9AdBDBdDA5af19B3052Ff79d5663\"}";
         let result = EvmAlgoTokenDictionaryEntry::from_str(s);
         assert!(result.is_ok());
     }
