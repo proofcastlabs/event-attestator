@@ -1,4 +1,4 @@
-pub(crate) mod block_reprocessors;
+pub(crate) mod algo_block_reprocessor;
 pub(crate) mod int_block_reprocessor;
 
 use std::str::FromStr;

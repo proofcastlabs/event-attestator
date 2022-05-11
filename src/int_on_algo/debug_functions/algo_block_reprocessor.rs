@@ -20,7 +20,6 @@ use crate::{
             get_algo_output::get_algo_output,
             get_relevant_txs::get_relevant_asset_txs_from_submission_material_and_add_to_state,
             int_tx_info::IntOnAlgoIntTxInfos,
-            parse_tx_info::maybe_parse_tx_info_from_canon_block_and_add_to_state,
             sign_txs::maybe_sign_int_txs_and_add_to_algo_state,
             validate_relevant_txs::filter_out_invalid_txs_and_update_in_state,
         },
@@ -30,7 +29,11 @@ use crate::{
     types::Result,
 };
 
-pub fn debug_reprocess_algo_block<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
+fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
+    db: &D,
+    block_json_string: &str,
+    maybe_nonce: Option<u64>, // TODO use this!
+) -> Result<String> {
     info!("✔ Debug reprocessing ALGO block...");
     parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db))
         .and_then(check_core_is_initialized_and_return_algo_state)
@@ -70,4 +73,16 @@ pub fn debug_reprocess_algo_block<D: DatabaseInterface>(db: &D, block_json_strin
         .and_then(maybe_increment_eth_account_nonce_and_return_algo_state)
         .and_then(end_algo_db_transaction_and_return_state)
         .and_then(get_algo_output)
+}
+
+pub fn debug_reprocess_algo_block<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
+    debug_reprocess_algo_block_maybe_with_nonce(db, block_json_string, None)
+}
+
+pub fn debug_reprocess_algo_block_with_nonce<D: DatabaseInterface>(
+    db: &D,
+    block_json_string: &str,
+    nonce: u64,
+) -> Result<String> {
+    debug_reprocess_algo_block_maybe_with_nonce(db, block_json_string, Some(nonce))
 }

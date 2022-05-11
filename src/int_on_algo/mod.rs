@@ -35,7 +35,7 @@ pub use crate::{
     int_on_algo::{
         algo::{initialize_algo_core::maybe_initialize_algo_core, submit_algo_block::submit_algo_block_to_core},
         debug_functions::{
-            block_reprocessors::debug_reprocess_algo_block,
+            algo_block_reprocessor::{debug_reprocess_algo_block, debug_reprocess_algo_block_with_nonce},
             debug_add_dictionary_entry,
             debug_get_all_db_keys,
             debug_get_key_from_db,
