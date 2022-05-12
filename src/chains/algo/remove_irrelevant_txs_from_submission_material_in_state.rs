@@ -54,6 +54,8 @@ mod tests {
                 "algo_decimals": 18,
                 "algo_asset_id": 666,
                 "evm_address": "0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8",
+                "evm_symbol": "EVM",
+                "algo_symbol": "ALGO",
             }])
             .to_string(),
         )
@@ -86,6 +88,8 @@ mod tests {
                 "algo_decimals": 18,
                 "algo_asset_id": 27165954,
                 "evm_address": "0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8",
+                "evm_symbol": "EVM",
+                "algo_symbol": "ALGO",
             }])
             .to_string(),
         )

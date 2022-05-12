@@ -348,14 +348,18 @@ mod tests {
                 "evm_decimals": 1,
                 "algo_decimals": 1,
                 "evm_address": "0x1a86F100DFc0d572E3D3fe4742075c768C442319",
-                "algo_asset_id": 666
+                "algo_asset_id": 666,
+                "evm_symbol": "EVM",
+                "algo_symbol": "ALGO",
 
             },
             {
                 "evm_decimals": 2,
                 "algo_decimals": 2,
                 "evm_address": "0x0D0707963952f2fBA59dD06f2b425ace40b492Fe",
-                "algo_asset_id": 1337
+                "algo_asset_id": 1337,
+                "evm_symbol": "EVM",
+                "algo_symbol": "ALGO",
 
             }
         ])
