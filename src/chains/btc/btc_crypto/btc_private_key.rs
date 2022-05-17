@@ -74,6 +74,11 @@ impl BtcPrivateKey {
         }))
     }
 
+    #[cfg(test)]
+    pub fn to_wif(self) -> String {
+        self.0.to_wif()
+    }
+
     pub fn write_to_db<D: DatabaseInterface>(&self, db: &D, key: &[Byte]) -> Result<()> {
         db.put(key.to_vec(), self.0[..].to_vec(), MAX_DATA_SENSITIVITY_LEVEL)
     }
@@ -127,12 +132,14 @@ mod tests {
     }
 
     #[test]
-    fn should_get_private_key_from_wif() {
+    fn should_get_private_key_to_and_from_wif() {
         let wif = "5JYkZjmN7PVMjJUfJWfRFwtuXTGB439XV6faajeHPAM9Z2PT2R3";
         let sk = BtcPrivateKey::from_wif(wif).unwrap();
         assert!(!sk.0.compressed);
         assert_eq!(&sk.0.to_wif(), wif);
         assert_eq!(sk.0.network, Network::Bitcoin);
+        let result = sk.to_wif();
+        assert_eq!(result, wif);
     }
 
     #[test]
