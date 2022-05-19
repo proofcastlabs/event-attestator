@@ -112,11 +112,11 @@ mod tests {
         let algo_submission_material = get_sample_contiguous_algo_submission_json_strings();
         let int_init_block = int_submission_material[0].clone();
         let algo_init_block = algo_submission_material[0].clone();
-        let algo_peg_in_block = algo_submission_material[1].clone();
+        let algo_peg_in_block = algo_submission_material[2].clone();
         let router_address = get_sample_router_address();
         let vault_address = get_sample_vault_address();
         let int_confirmations = 0;
-        let algo_confirmations = 0;
+        let algo_confirmations = 1;
         let gas_price = 20_000_000_000;
         let algo_fee = 1000;
 
@@ -174,10 +174,12 @@ mod tests {
             .add_and_update_in_db(get_sample_evm_algo_dictionary_entry(), &db)
             .unwrap();
 
+        submit_algo_block_to_core(&db, &algo_submission_material[1]).unwrap();
+
         // NOTE: Submit the block containing the peg in, though there will be no output due to 1 confirmations.
         let output = submit_algo_block_to_core(&db, &algo_peg_in_block).unwrap();
         let expected_result_json = json!({
-            "algo_latest_block_number":20642397,
+            "algo_latest_block_number":20642398,
             "int_signed_transactions":[{
                 "_id":"pint-on-algo-int-0",
                 "broadcast":false,
