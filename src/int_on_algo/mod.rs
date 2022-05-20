@@ -37,6 +37,7 @@ pub use crate::{
         debug_functions::{
             algo_block_reprocessor::{debug_reprocess_algo_block, debug_reprocess_algo_block_with_nonce},
             debug_add_dictionary_entry,
+            debug_get_add_supported_token_tx,
             debug_get_all_db_keys,
             debug_get_key_from_db,
             debug_remove_dictionary_entry,
