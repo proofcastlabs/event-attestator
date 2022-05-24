@@ -66,12 +66,12 @@ pub fn get_sample_eth_metadata_v2() -> Metadata {
         user_data: hex::decode("d3caff").unwrap(),
         origin_chain_id: MetadataChainId::EthereumRinkeby,
         origin_address: MetadataAddress {
-            address: "fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC".to_string(),
+            address: "0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac".to_string(),
             metadata_chain_id: MetadataChainId::EthereumRinkeby,
         },
         destination_chain_id: Some(MetadataChainId::EthereumRopsten),
         destination_address: Some(MetadataAddress {
-            address: "edB86cd455ef3ca43f0e227e00469C3bDFA40628".to_string(),
+            address: "0xedb86cd455ef3ca43f0e227e00469c3bdfa40628".to_string(),
             metadata_chain_id: MetadataChainId::EthereumRopsten,
         }),
         protocol_options: None,
