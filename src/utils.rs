@@ -147,12 +147,28 @@ pub fn is_hex(string: &str) -> bool {
     hex::decode(strip_hex_prefix(string)).is_ok()
 }
 
+pub fn capitalize_first_letter(s: &str) -> String {
+    let mut c = s.chars();
+    match c.next() {
+        None => String::new(),
+        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::json;
 
     use super::*;
     use crate::errors::AppError;
+
+    #[test]
+    fn should_capitalize_first_letter() {
+        let s = "should end up capitalized";
+        let expected_result = "Should end up capitalized".to_string();
+        let result = capitalize_first_letter(s);
+        assert_eq!(result, expected_result);
+    }
 
     #[test]
     fn should_maybe_initialize_simple_logger() {

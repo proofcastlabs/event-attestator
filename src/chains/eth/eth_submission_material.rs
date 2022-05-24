@@ -23,17 +23,20 @@ pub struct EthSubmissionMaterial {
     pub block_number: Option<U256>,
     pub parent_hash: Option<EthHash>,
     pub receipts_root: Option<EthHash>,
+    pub algo_first_valid_round: Option<u64>,
 }
 
 impl EthSubmissionMaterial {
-    pub fn new(
+    fn init(
         block: EthBlock,
         receipts: EthReceipts,
         eos_ref_block_num: Option<u16>,
         eos_ref_block_prefix: Option<u32>,
+        algo_first_valid_round: Option<u64>,
     ) -> Self {
         Self {
             receipts,
+            algo_first_valid_round,
             eos_ref_block_num,
             eos_ref_block_prefix,
             hash: Some(block.hash),
@@ -41,6 +44,22 @@ impl EthSubmissionMaterial {
             parent_hash: Some(block.parent_hash),
             receipts_root: Some(block.receipts_root),
             block: Some(block),
+        }
+    }
+
+    pub fn new(
+        block: EthBlock,
+        receipts: EthReceipts,
+        eos_ref_block_num: Option<u16>,
+        eos_ref_block_prefix: Option<u32>,
+    ) -> Self {
+        Self::init(block, receipts, eos_ref_block_num, eos_ref_block_prefix, None)
+    }
+
+    pub fn get_algo_first_valid_round(&self) -> Result<u64> {
+        match self.algo_first_valid_round {
+            Some(round) => Ok(round),
+            None => Err("No `algo_first_valid_round` in `EthSubmissionMaterial`!".into()),
         }
     }
 
@@ -133,6 +152,7 @@ impl EthSubmissionMaterial {
                 eos_ref_block_num: json.eos_ref_block_num,
                 eos_ref_block_prefix: json.eos_ref_block_prefix,
                 block: Some(block),
+                algo_first_valid_round: json.algo_first_valid_round,
             }),
             None => {
                 if json.hash.is_none() {
@@ -153,6 +173,7 @@ impl EthSubmissionMaterial {
                     receipts_root: json.receipts_root,
                     eos_ref_block_num: json.eos_ref_block_num,
                     eos_ref_block_prefix: json.eos_ref_block_prefix,
+                    algo_first_valid_round: json.algo_first_valid_round,
                 })
             },
         }
@@ -179,15 +200,13 @@ impl EthSubmissionMaterial {
         topics: &[EthHash],
     ) -> Result<Self> {
         info!("✔ Number of receipts before filtering: {}", self.receipts.len());
-        let filtered = Self::new(
-            self.get_block()?,
-            self.receipts
-                .get_receipts_containing_log_from_address_and_with_topics(address, topics),
-            self.eos_ref_block_num,
-            self.eos_ref_block_prefix,
-        );
-        info!("✔ Number of receipts after filtering: {}", filtered.receipts.len());
-        Ok(filtered)
+        let receipts_after = self
+            .receipts
+            .get_receipts_containing_log_from_address_and_with_topics(address, topics);
+        let mut mutable_self = self.clone();
+        mutable_self.receipts = receipts_after;
+        info!("✔ Number of receipts after filtering: {}", mutable_self.receipts.len());
+        Ok(mutable_self)
     }
 
     pub fn get_receipts_containing_log_from_addresses_and_with_topics(
@@ -196,15 +215,13 @@ impl EthSubmissionMaterial {
         topics: &[EthHash],
     ) -> Result<Self> {
         info!("✔ Number of receipts before filtering: {}", self.receipts.len());
-        let filtered = Self::new(
-            self.get_block()?,
-            self.receipts
-                .get_receipts_containing_log_from_addresses_and_with_topics(addresses, topics),
-            self.eos_ref_block_num,
-            self.eos_ref_block_prefix,
-        );
-        info!("✔ Number of receipts after filtering:  {}", filtered.receipts.len());
-        Ok(filtered)
+        let receipts_after = self
+            .receipts
+            .get_receipts_containing_log_from_addresses_and_with_topics(addresses, topics);
+        info!("✔ Number of receipts after filtering:  {}", receipts_after.len());
+        let mut mutable_self = self.clone();
+        mutable_self.receipts = receipts_after;
+        Ok(mutable_self)
     }
 
     pub fn receipts_are_valid(&self) -> Result<bool> {
@@ -217,29 +234,15 @@ impl EthSubmissionMaterial {
     }
 
     pub fn remove_receipts(&self) -> Self {
-        EthSubmissionMaterial {
-            hash: self.hash,
-            receipts: vec![].into(),
-            block: self.block.clone(),
-            parent_hash: self.parent_hash,
-            block_number: self.block_number,
-            receipts_root: self.receipts_root,
-            eos_ref_block_num: self.eos_ref_block_num,
-            eos_ref_block_prefix: self.eos_ref_block_prefix,
-        }
+        let mut mutable_self = self.clone();
+        mutable_self.receipts = vec![].into();
+        mutable_self
     }
 
     pub fn remove_block(&self) -> Self {
-        EthSubmissionMaterial {
-            block: None,
-            hash: self.hash,
-            parent_hash: self.parent_hash,
-            receipts: self.receipts.clone(),
-            block_number: self.block_number,
-            receipts_root: self.receipts_root,
-            eos_ref_block_num: self.eos_ref_block_num,
-            eos_ref_block_prefix: self.eos_ref_block_prefix,
-        }
+        let mut mutable_self = self.clone();
+        mutable_self.block = None;
+        mutable_self
     }
 }
 
@@ -253,6 +256,7 @@ pub struct EthSubmissionMaterialJson {
     pub block_number: Option<U256>,
     pub parent_hash: Option<EthHash>,
     pub receipts_root: Option<EthHash>,
+    pub algo_first_valid_round: Option<u64>,
 }
 
 impl EthSubmissionMaterialJson {

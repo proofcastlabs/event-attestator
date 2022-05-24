@@ -16,7 +16,7 @@ impl EthPublicKey {
 
     pub fn to_address(self) -> EthAddress {
         let mut eth_address = EthAddress::zero();
-        eth_address.assign_from_slice(&keccak_hash_bytes(&self.to_bytes()[1..65].to_vec())[12..]);
+        eth_address.assign_from_slice(&keccak_hash_bytes(&self.to_bytes()[1..65])[12..]);
         eth_address
     }
 }

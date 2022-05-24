@@ -1,3 +1,6 @@
+use std::fmt;
+
+use serde::{Deserialize, Serialize};
 #[cfg(test)]
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
@@ -6,7 +9,7 @@ use strum_macros::EnumIter;
 use crate::types::Result;
 use crate::types::{Byte, Bytes};
 
-#[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, EnumIter)]
 pub enum MetadataVersion {
     V1,
     V2,
@@ -16,6 +19,17 @@ pub enum MetadataVersion {
 impl Default for MetadataVersion {
     fn default() -> Self {
         Self::V3
+    }
+}
+
+impl fmt::Display for MetadataVersion {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let s = match self {
+            Self::V1 => "V1",
+            Self::V2 => "V2",
+            Self::V3 => "V3",
+        };
+        write!(f, "{}", s)
     }
 }
 

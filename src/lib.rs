@@ -1,3 +1,5 @@
+#![recursion_limit = "256"] // NOTE: Because of the error macro.
+
 //! # The __`pToken`__ Core
 //!
 //! Herein lies the functionality required for the cross-chain conversions
@@ -31,6 +33,7 @@ pub mod erc20_on_evm;
 pub mod erc20_on_int;
 pub mod errors;
 pub(crate) mod fees;
+pub mod int_on_algo;
 pub mod int_on_eos;
 pub mod int_on_evm;
 pub(crate) mod metadata;

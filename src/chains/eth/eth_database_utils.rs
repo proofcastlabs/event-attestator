@@ -38,7 +38,8 @@ create_db_utils_with_getters!(
     "_INT_ON_EOS_SMART_CONTRACT_ADDRESS_KEY" => "int-on-eos-smart-contract-address-key",
     "_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY" => "erc20-on-eos-smart-contract-address-key",
     "_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "eth-int-on-evm-smart-contract-address-key",
-    "_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "erc20-on-evm-eth-smart-contract-address-key"
+    "_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "erc20-on-evm-eth-smart-contract-address-key",
+    "_INT_ON_ALGO_SMART_CONTRACT_ADDRESS_KEY" => "int-on-algo-smart-contract-address-key"
 );
 
 create_db_utils_with_getters!(
@@ -63,7 +64,8 @@ create_db_utils_with_getters!(
     "_EOS_ON_ETH_SMART_CONTRACT_ADDRESS_KEY" => "evm-eos-on-eth-smart-contract-address-key",
     "_INT_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "eth-int-on-evm-smart-contract-address-key",
     "_ERC20_ON_EOS_SMART_CONTRACT_ADDRESS_KEY" => "evm-erc20-on-eos-smart-contract-address-key",
-    "_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "evm-erc20-on-evm-smart-contract-address-key"
+    "_ERC20_ON_EVM_SMART_CONTRACT_ADDRESS_KEY" => "evm-erc20-on-evm-smart-contract-address-key",
+    "_INT_ON_ALGO_SMART_CONTRACT_ADDRESS_KEY" => "evm-int-on-algo-smart-contract-address-key"
 );
 
 macro_rules! impl_eth_db_utils_ext {
@@ -157,6 +159,10 @@ macro_rules! impl_eth_db_utils_ext {
                 fn get_int_on_evm_smart_contract_address_key(&self) -> Bytes {
                     self.[< get_ $prefix:lower _int_on_evm_smart_contract_address_key>]()
                 }
+
+                fn get_int_on_algo_smart_contract_address_key(&self) -> Bytes {
+                    self.[< get_ $prefix:lower _int_on_algo_smart_contract_address_key>]()
+                }
             }
         }
     };
@@ -186,6 +192,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
     fn get_eos_on_eth_smart_contract_address_key(&self) -> Bytes;
     fn get_btc_on_eth_smart_contract_address_key(&self) -> Bytes;
     fn get_int_on_eos_smart_contract_address_key(&self) -> Bytes;
+    fn get_int_on_algo_smart_contract_address_key(&self) -> Bytes;
     fn get_erc20_on_evm_smart_contract_address_key(&self) -> Bytes;
     fn get_erc20_on_eos_smart_contract_address_key(&self) -> Bytes;
 
@@ -764,6 +771,15 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
             .and_then(|nonce| self.put_any_sender_nonce_in_db(nonce + amount_to_increment_by))
     }
 
+    fn get_int_on_algo_smart_contract_address(&self) -> Result<EthAddress> {
+        info!("✔ Getting `int-on-algo` smart contract address from db...");
+        self.get_eth_address_from_db(&self.get_int_on_algo_smart_contract_address_key())
+    }
+
+    fn put_int_on_algo_smart_contract_address_in_db(&self, address: &EthAddress) -> Result<()> {
+        self.put_eth_address_in_db(&self.get_int_on_algo_smart_contract_address_key(), address)
+    }
+
     #[cfg(test)]
     fn get_hash_from_db_via_hash_key(&self, hash_key: EthHash) -> Result<Option<EthHash>> {
         use crate::chains::eth::eth_test_utils::convert_bytes_to_h256;
@@ -800,6 +816,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
             self.get_erc777_proxy_contract_address_key(),
             self.get_btc_on_eth_smart_contract_address_key(),
             self.get_eos_on_eth_smart_contract_address_key(),
+            self.get_int_on_algo_smart_contract_address_key(),
             self.get_erc20_on_eos_smart_contract_address_key(),
             self.get_erc20_on_evm_smart_contract_address_key(),
         ]
@@ -1197,7 +1214,7 @@ mod tests {
     }
 
     #[test]
-    fn eth_database_keys_should_stay_consistent() {
+    fn eth_db_keys_should_stay_consistent() {
         #[rustfmt::skip]
         let expected_result = EthDatabaseKeysJson {
             ETH_ANY_SENDER_NONCE_KEY:
@@ -1242,6 +1259,8 @@ mod tests {
                 "7e4ba9ad69fafede39d72a5e5d05953c4261d16ede043978031bc425d2e3b1d2".to_string(),
             ETH_INT_ON_EOS_SMART_CONTRACT_ADDRESS_KEY:
                 "a4f5ee205467c1b48132db5fa365b15f18c4ef0eec315ed23c3a0947acd4f93a".to_string(),
+            ETH_INT_ON_ALGO_SMART_CONTRACT_ADDRESS_KEY:
+                "3eb7085064ca52e24da4e7cc9627806897eac04dbf6534f79d8b2be9ed69eba7".to_string(),
         };
         let result = EthDatabaseKeysJson::new();
         assert_eq!(result, expected_result)
@@ -1293,6 +1312,8 @@ mod tests {
                 "7e4ba9ad69fafede39d72a5e5d05953c4261d16ede043978031bc425d2e3b1d2".to_string(),
             EVM_INT_ON_EOS_SMART_CONTRACT_ADDRESS_KEY:
                 "a4f5ee205467c1b48132db5fa365b15f18c4ef0eec315ed23c3a0947acd4f93a".to_string(),
+            EVM_INT_ON_ALGO_SMART_CONTRACT_ADDRESS_KEY:
+                "edeeba4d99df6ec7bce9d35ca7e1f4affc13f5bdd637e59b979a7c980a5fa0af".to_string(),
         };
         let result = EvmDatabaseKeysJson::new();
         assert_eq!(result, expected_result);
@@ -1304,5 +1325,20 @@ mod tests {
             *ETH_ROUTER_SMART_CONTRACT_ADDRESS_KEY,
             *EVM_ROUTER_SMART_CONTRACT_ADDRESS_KEY
         );
+    }
+
+    #[test]
+    fn db_keys_should_have_no_collisions() {
+        let db = get_test_database();
+        let mut keys = vec![
+            EthDbUtils::new(&db).get_all_as_hex_strings(),
+            EvmDbUtils::new(&db).get_all_as_hex_strings(),
+        ]
+        .concat();
+        let num_keys_before = keys.len();
+        keys.sort();
+        keys.dedup();
+        let num_keys_after = keys.len();
+        assert_eq!(num_keys_before, num_keys_after);
     }
 }

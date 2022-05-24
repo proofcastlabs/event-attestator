@@ -4,7 +4,7 @@ use crate::{chains::eth::eth_chain_id::EthChainId, types::Result};
 
 /// An AnySender relay contract address.
 /// Should be kept up-to-date with [this](https://github.com/PISAresearch/docs.AnySender#addresses) table.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum RelayContract {
     Mainnet,
     Ropsten,

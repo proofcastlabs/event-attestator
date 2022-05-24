@@ -270,12 +270,8 @@ mod tests {
         let metadata = Metadata::decode_from_eth_v3(&tx_data[(4 + (32 * 5))..]).unwrap();
         let expected_metadata = Metadata::new_v3(
             &vec![0xc0, 0xff, 0xee],
-            &MetadataAddress::new(originating_address, MetadataChainId::BitcoinTestnet).unwrap(),
-            &MetadataAddress::new_from_eth_address(
-                &convert_hex_to_eth_address(&destination_address).unwrap(),
-                &MetadataChainId::EthereumRopsten,
-            )
-            .unwrap(),
+            &MetadataAddress::new(&originating_address, &MetadataChainId::BitcoinTestnet).unwrap(),
+            &MetadataAddress::new(&destination_address, &MetadataChainId::EthereumRopsten).unwrap(),
             Some(vec![]), // NOTE: Protocol options
             Some(vec![]), // NOTE: Protocol receipt
         );

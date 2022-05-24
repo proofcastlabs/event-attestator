@@ -13,6 +13,7 @@ pub enum MetadataProtocolId {
     Bitcoin,
     Ethereum,
     Eos,
+    Algorand,
 }
 
 impl MetadataProtocolId {
@@ -21,6 +22,7 @@ impl MetadataProtocolId {
             MetadataProtocolId::Ethereum => 0x00,
             MetadataProtocolId::Bitcoin => 0x01,
             MetadataProtocolId::Eos => 0x02,
+            MetadataProtocolId::Algorand => 0x03,
         }
     }
 
@@ -30,12 +32,14 @@ impl MetadataProtocolId {
             0u8 => Ok(MetadataProtocolId::Ethereum),
             1u8 => Ok(MetadataProtocolId::Bitcoin),
             2u8 => Ok(MetadataProtocolId::Eos),
+            3u8 => Ok(MetadataProtocolId::Algorand),
             _ => Err(format!("✘ Unrecognized version byte for `MetadataProtocolId`: {:?}", byte).into()),
         }
     }
 
     pub fn to_symbol(&self) -> String {
         let s = match self {
+            MetadataProtocolId::Algorand => "ALGO",
             MetadataProtocolId::Ethereum => "ETH",
             MetadataProtocolId::Bitcoin => "BTC",
             MetadataProtocolId::Eos => "EOS",
@@ -55,6 +59,7 @@ impl fmt::Display for MetadataProtocolId {
             MetadataProtocolId::Ethereum => write!(f, "Ethereum"),
             MetadataProtocolId::Bitcoin => write!(f, "Bitcoin"),
             MetadataProtocolId::Eos => write!(f, "Eos"),
+            MetadataProtocolId::Algorand => write!(f, "Algorand"),
         }
     }
 }

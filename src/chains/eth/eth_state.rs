@@ -1,9 +1,11 @@
 use ethereum_types::H256 as EthHash;
+use rust_algorand::AlgorandSignedTransaction;
 
 use crate::{
     btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
     btc_on_int::int::btc_tx_info::BtcOnIntBtcTxInfos,
     chains::{
+        algo::algo_database_utils::AlgoDbUtils,
         btc::{
             btc_database_utils::BtcDbUtils,
             btc_types::BtcTransactions,
@@ -16,11 +18,12 @@ use crate::{
             eth_submission_material::EthSubmissionMaterial,
         },
     },
-    dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary},
+    dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary, evm_algo::EvmAlgoTokenDictionary},
     eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfos,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
     erc20_on_evm::{eth::evm_tx_info::Erc20OnEvmEvmTxInfos, evm::eth_tx_info::Erc20OnEvmEthTxInfos},
     erc20_on_int::{eth::int_tx_info::Erc20OnIntIntTxInfos, int::eth_tx_info::Erc20OnIntEthTxInfos},
+    int_on_algo::int::algo_tx_info::IntOnAlgoAlgoTxInfos,
     int_on_eos::int::eos_tx_info::IntOnEosEosTxInfos,
     int_on_evm::{evm::int_tx_info::IntOnEvmIntTxInfos, int::evm_tx_info::IntOnEvmEvmTxInfos},
     traits::DatabaseInterface,
@@ -39,6 +42,7 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub evm_db_utils: EvmDbUtils<'a, D>,
     pub btc_db_utils: BtcDbUtils<'a, D>,
     pub eos_db_utils: EosDbUtils<'a, D>,
+    pub algo_db_utils: AlgoDbUtils<'a, D>,
     pub btc_transactions: Option<BtcTransactions>,
     pub int_on_evm_int_signed_txs: EthTransactions,
     pub int_on_evm_evm_signed_txs: EthTransactions,
@@ -52,6 +56,7 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub erc20_on_int_int_signed_txs: EthTransactions,
     pub erc20_on_int_eth_signed_txs: EthTransactions,
     pub btc_on_eth_redeem_infos: BtcOnEthRedeemInfos,
+    pub int_on_algo_algo_tx_infos: IntOnAlgoAlgoTxInfos,
     pub erc20_on_evm_eth_tx_infos: Erc20OnEvmEthTxInfos,
     pub erc20_on_evm_evm_tx_infos: Erc20OnEvmEvmTxInfos,
     pub erc20_on_int_eth_tx_infos: Erc20OnIntEthTxInfos,
@@ -59,9 +64,11 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos,
     pub eos_transactions: Option<EosSignedTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
+    pub algo_signed_txs: Vec<AlgorandSignedTransaction>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
     pub eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
     pub eth_evm_token_dictionary: Option<EthEvmTokenDictionary>,
+    pub evm_algo_token_dictionary: Option<EvmAlgoTokenDictionary>,
 }
 
 impl<'a, D: DatabaseInterface> EthState<'a, D> {
@@ -71,14 +78,17 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             misc: None,
             btc_transactions: None,
             eos_transactions: None,
+            algo_signed_txs: vec![],
             btc_utxos_and_values: None,
             eth_submission_material: None,
             eth_evm_token_dictionary: None,
             eos_eth_token_dictionary: None,
+            evm_algo_token_dictionary: None,
             eth_db_utils: EthDbUtils::new(db),
             evm_db_utils: EvmDbUtils::new(db),
             eos_db_utils: EosDbUtils::new(db),
             btc_db_utils: BtcDbUtils::new(db),
+            algo_db_utils: AlgoDbUtils::new(db),
             int_on_evm_int_signed_txs: EthTransactions::new(vec![]),
             int_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
             btc_on_int_btc_tx_infos: BtcOnIntBtcTxInfos::new(vec![]),
@@ -91,6 +101,7 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             erc20_on_int_int_signed_txs: EthTransactions::new(vec![]),
             erc20_on_int_eth_signed_txs: EthTransactions::new(vec![]),
             btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(vec![]),
+            int_on_algo_algo_tx_infos: IntOnAlgoAlgoTxInfos::default(),
             erc20_on_evm_evm_tx_infos: Erc20OnEvmEvmTxInfos::new(vec![]),
             erc20_on_evm_eth_tx_infos: Erc20OnEvmEthTxInfos::new(vec![]),
             erc20_on_int_eth_tx_infos: Erc20OnIntEthTxInfos::new(vec![]),
@@ -103,6 +114,13 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         match self.eth_evm_token_dictionary {
             Some(ref dictionary) => Ok(dictionary),
             None => Err(get_not_in_state_err("eth_evm_token_dictionary").into()),
+        }
+    }
+
+    pub fn get_evm_algo_token_dictionary(&self) -> Result<&EvmAlgoTokenDictionary> {
+        match self.evm_algo_token_dictionary {
+            Some(ref dictionary) => Ok(dictionary),
+            None => Err(get_not_in_state_err("evm_algo_token_dictionary").into()),
         }
     }
 
@@ -161,6 +179,12 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         let mut new_infos = self.int_on_evm_int_tx_infos.0.clone();
         new_infos.append(&mut infos.0);
         self.replace_int_on_evm_int_tx_infos(IntOnEvmIntTxInfos::new(new_infos))
+    }
+
+    pub fn add_int_on_algo_algo_tx_infos(self, mut infos: IntOnAlgoAlgoTxInfos) -> Result<Self> {
+        let mut new_infos = self.int_on_algo_algo_tx_infos.0.clone();
+        new_infos.append(&mut infos.0);
+        self.replace_int_on_algo_algo_tx_infos(IntOnAlgoAlgoTxInfos::new(new_infos))
     }
 
     pub fn add_erc20_on_evm_eth_tx_infos(self, mut infos: Erc20OnEvmEthTxInfos) -> Result<Self> {
@@ -282,6 +306,11 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         Ok(self)
     }
 
+    pub fn replace_int_on_algo_algo_tx_infos(mut self, replacements: IntOnAlgoAlgoTxInfos) -> Result<Self> {
+        self.int_on_algo_algo_tx_infos = replacements;
+        Ok(self)
+    }
+
     pub fn add_misc_string_to_state(mut self, misc_string: String) -> Result<Self> {
         match self.misc {
             Some(_) => Err(get_no_overwrite_state_err("misc_string").into()),
@@ -371,6 +400,25 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
                 self.eth_evm_token_dictionary = Some(dictionary);
                 Ok(self)
             },
+        }
+    }
+
+    pub fn add_evm_algo_dictionary(mut self, dictionary: EvmAlgoTokenDictionary) -> Result<Self> {
+        match self.evm_algo_token_dictionary {
+            Some(_) => Err(get_no_overwrite_state_err("evm_algo_token_dictionary").into()),
+            None => {
+                self.evm_algo_token_dictionary = Some(dictionary);
+                Ok(self)
+            },
+        }
+    }
+
+    pub fn add_algo_signed_txs(mut self, txs: &[AlgorandSignedTransaction]) -> Result<Self> {
+        if !self.algo_signed_txs.is_empty() {
+            Err(get_no_overwrite_state_err("algo signed txs").into())
+        } else {
+            self.algo_signed_txs = txs.to_vec();
+            Ok(self)
         }
     }
 }

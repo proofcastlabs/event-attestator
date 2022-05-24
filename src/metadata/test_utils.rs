@@ -4,6 +4,7 @@ use std::str::FromStr;
 use bitcoin::util::address::Address as BtcAddress;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
+use rust_algorand::AlgorandAddress;
 
 use crate::{
     metadata::{
@@ -27,6 +28,10 @@ pub fn get_sample_eth_address() -> EthAddress {
     EthAddress::from_slice(&hex::decode("5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c").unwrap())
 }
 
+pub fn get_sample_algo_address() -> AlgorandAddress {
+    AlgorandAddress::from_str("HIBVFSZFK4FEANCOZFIVZNBHLJK3ERRHKDRZVGX4RZU7WQIMSSKL4PQZMA").unwrap()
+}
+
 fn get_sample_user_data() -> Bytes {
     vec![0xc0, 0xff, 0xee]
 }
@@ -43,6 +48,14 @@ pub fn get_sample_btc_origin_address() -> MetadataAddress {
     MetadataAddress::new_from_btc_address(&get_sample_btc_address(), &MetadataChainId::BitcoinMainnet).unwrap()
 }
 
+pub fn get_sample_algo_origin_address() -> MetadataAddress {
+    MetadataAddress::new(
+        &get_sample_algo_address().to_string(),
+        &MetadataChainId::AlgorandMainnet,
+    )
+    .unwrap()
+}
+
 pub fn get_sample_eth_metadata() -> Metadata {
     Metadata::new(&get_sample_user_data(), &get_sample_eth_origin_address())
 }
@@ -53,12 +66,12 @@ pub fn get_sample_eth_metadata_v2() -> Metadata {
         user_data: hex::decode("d3caff").unwrap(),
         origin_chain_id: MetadataChainId::EthereumRinkeby,
         origin_address: MetadataAddress {
-            address: "fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC".to_string(),
+            address: "0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac".to_string(),
             metadata_chain_id: MetadataChainId::EthereumRinkeby,
         },
         destination_chain_id: Some(MetadataChainId::EthereumRopsten),
         destination_address: Some(MetadataAddress {
-            address: "edB86cd455ef3ca43f0e227e00469C3bDFA40628".to_string(),
+            address: "0xedb86cd455ef3ca43f0e227e00469c3bdfa40628".to_string(),
             metadata_chain_id: MetadataChainId::EthereumRopsten,
         }),
         protocol_options: None,

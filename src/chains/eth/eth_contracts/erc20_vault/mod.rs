@@ -143,7 +143,7 @@ pub fn encode_erc20_vault_remove_supported_token_fx_data(token_to_remove: EthAdd
     )])
 }
 
-#[derive(Clone, Debug, PartialEq, Constructor)]
+#[derive(Clone, Debug, Eq, PartialEq, Constructor)]
 pub struct Erc20VaultPegInEventParams {
     pub user_data: Bytes,
     pub token_amount: U256,
@@ -246,7 +246,7 @@ impl Erc20VaultPegInEventParams {
     }
 
     fn from_v2_log<L: EthLogExt>(log: &L) -> Result<Self> {
-        info!("Decoding peg-in event params from v2 log...");
+        info!("✔ Decoding peg-in event params from v2 log...");
         let tokens = eth_abi_decode(
             &[
                 EthAbiParamType::Address,

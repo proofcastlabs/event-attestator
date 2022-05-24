@@ -193,8 +193,7 @@ mod tests {
         let db = get_test_database();
         let hex_message = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
         let hex_message_no_prefix = "4d261b7d3101e9ff7e37f63449be8a9a1affef87e4952900dbb84ee3c29f45f3";
-        let expected_error =
-            "✘ Program error: HEX message passed. Signing HEX messages without prefix is not allowed.".to_string();
+        let expected_error = "✘ HEX message passed. Signing HEX messages without prefix is not allowed.".to_string();
         assert_eq!(
             sign_ascii_msg_with_no_prefix(&db, hex_message, is_for_eth)
                 .unwrap_err()

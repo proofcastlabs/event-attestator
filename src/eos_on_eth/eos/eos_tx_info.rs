@@ -168,7 +168,7 @@ impl EosOnEthEosTxInfo {
                 end_index,
                 "Not enough data to parse `EosOnEthEosTxInfo` amount from proof!",
             )
-            .and_then(|_| convert_bytes_to_u64(&proof.action.data[start_index..=end_index].to_vec()))
+            .and_then(|_| convert_bytes_to_u64(&proof.action.data[start_index..=end_index]))
     }
 
     fn get_eth_address_from_proof(proof: &EosActionProof) -> Result<EthAddress> {

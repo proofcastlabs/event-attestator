@@ -5,11 +5,19 @@ quick_error! {
         Custom(err: String) {
             from()
             from(err: &str) -> (err.into())
-            display("✘ Program error: {}", err)
+            display("✘ {}", err)
         }
         IoError(err: std::io::Error) {
             from()
             display("✘ I/O error: {}", err)
+        }
+        RmpDecodeError(err: rmp_serde::decode::Error) {
+            from()
+            display("✘ MsgPack decoding error: {}", err)
+        }
+        RmpEncodeError(err: rmp_serde::encode::Error) {
+            from()
+            display("✘ MsgPack encoding error: {}", err)
         }
         HexError(err: hex::FromHexError) {
             from()
@@ -110,6 +118,10 @@ quick_error! {
             from()
             display("✘ `TryFrom` error: {:?}", err)
         }
+        AlgorandError(err: rust_algorand::AlgorandError) {
+            from()
+            display("✘ Algorand error: {:?}", err)
+        }
         TryFromSliceError(err: std::array::TryFromSliceError) {
             from()
             display("✘ `TryFromSlice` error: {:?}", err)
@@ -117,6 +129,10 @@ quick_error! {
         ParseFloatError(err: std::num::ParseFloatError) {
             from()
             display("✘ `ParseFloatError` error: {:?}", err)
+        }
+        Base64DecodeError(err: base64::DecodeError) {
+            from()
+            display("✘ Base64 decoder error: {}", err)
         }
         NoneError(err: &'static str) {
             display("✘ None error {}", err)

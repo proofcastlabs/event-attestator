@@ -23,8 +23,8 @@ impl ToMetadata for IntOnEosEosTxInfo {
         };
         Ok(Metadata::new_v3(
             &user_data,
-            &MetadataAddress::new(self.token_sender.to_string(), self.origin_chain_id)?,
-            &MetadataAddress::new(self.destination_address.clone(), self.destination_chain_id)?,
+            &MetadataAddress::new(&self.token_sender.to_string(), &self.origin_chain_id)?,
+            &MetadataAddress::new(&self.destination_address.clone(), &self.destination_chain_id)?,
             None,
             None,
         ))

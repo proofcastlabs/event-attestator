@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     chains::eth::eth_state::EthState,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
-    dictionaries::dictionary_constants::ETH_EVM_DICTIONARY_KEY,
+    dictionaries::{dictionary_constants::ETH_EVM_DICTIONARY_KEY, dictionary_traits::DictionaryDecimalConverter},
     fees::fee_utils::get_last_withdrawal_date_as_human_readable_string,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
@@ -16,6 +16,22 @@ pub(crate) mod test_utils;
 
 #[derive(Debug, Clone, Eq, PartialEq, Constructor, Deref, DerefMut, Serialize, Deserialize)]
 pub struct EthEvmTokenDictionary(pub Vec<EthEvmTokenDictionaryEntry>);
+
+impl DictionaryDecimalConverter for EthEvmTokenDictionaryEntry {
+    fn requires_decimal_conversion(&self) -> Result<bool> {
+        Ok(self.eth_token_decimals.is_some()
+            && self.evm_token_decimals.is_some()
+            && self.eth_token_decimals != self.evm_token_decimals)
+    }
+
+    fn get_host_decimals(&self) -> Result<u16> {
+        self.get_evm_token_decimals()
+    }
+
+    fn get_native_decimals(&self) -> Result<u16> {
+        self.get_eth_token_decimals()
+    }
+}
 
 impl EthEvmTokenDictionary {
     pub fn convert_eth_amount_to_evm_amount(&self, address: &EthAddress, amount: U256) -> Result<U256> {
@@ -332,12 +348,6 @@ pub struct EthEvmTokenDictionaryEntry {
 }
 
 impl EthEvmTokenDictionaryEntry {
-    fn require_decimal_conversion(&self) -> bool {
-        self.eth_token_decimals.is_some()
-            && self.evm_token_decimals.is_some()
-            && self.eth_token_decimals != self.evm_token_decimals
-    }
-
     fn to_json(&self) -> EthEvmTokenDictionaryEntryJson {
         EthEvmTokenDictionaryEntryJson {
             evm_symbol: self.evm_symbol.to_string(),
@@ -446,39 +456,12 @@ impl EthEvmTokenDictionaryEntry {
 
     pub fn convert_eth_amount_to_evm_amount(&self, amount: U256) -> Result<U256> {
         info!("✔ Converting from ETH amount to EVM amount...");
-        self.convert_amount(amount, true)
+        self.convert_native_amount_to_host_amount(amount)
     }
 
     pub fn convert_evm_amount_to_eth_amount(&self, amount: U256) -> Result<U256> {
         info!("✔ Converting from EVM amount to ETH amount...");
-        self.convert_amount(amount, false)
-    }
-
-    fn convert_amount(&self, amount: U256, eth_to_evm: bool) -> Result<U256> {
-        if self.require_decimal_conversion() {
-            let eth_token_decimals = self.get_eth_token_decimals()?;
-            let evm_token_decimals = self.get_evm_token_decimals()?;
-            let to = if eth_to_evm {
-                evm_token_decimals
-            } else {
-                eth_token_decimals
-            };
-            let from = if eth_to_evm {
-                eth_token_decimals
-            } else {
-                evm_token_decimals
-            };
-            let multiplicand = U256::from(10).pow(U256::from(to));
-            let divisor = U256::from(10).pow(U256::from(from));
-            info!("✔ Converting {} from {} decimals to {}...", amount, from, to);
-            Ok((amount * multiplicand) / divisor)
-        } else {
-            info!(
-                "✔ Amounts for this dictionary entry do NOT require decimal conversion! {:?}",
-                self,
-            );
-            Ok(amount)
-        }
+        self.convert_host_amount_to_native_amount(amount)
     }
 }
 
@@ -876,7 +859,7 @@ mod tests {
         let entry = get_dictionary_entry_with_different_decimals();
         assert_ne!(entry.eth_token_decimals, entry.evm_token_decimals);
         let expected_result = true;
-        let result = entry.require_decimal_conversion();
+        let result = entry.requires_decimal_conversion().unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -885,7 +868,7 @@ mod tests {
         let entry = get_dictionary_entry_with_same_decimals();
         assert_eq!(entry.eth_token_decimals, entry.evm_token_decimals);
         let expected_result = false;
-        let result = entry.require_decimal_conversion();
+        let result = entry.requires_decimal_conversion().unwrap();
         assert_eq!(result, expected_result);
     }
 

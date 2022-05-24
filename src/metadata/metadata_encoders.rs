@@ -17,9 +17,7 @@ impl Metadata {
                 MetadataProtocolId::Ethereum => {
                     EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?))
                 },
-                MetadataProtocolId::Eos | MetadataProtocolId::Bitcoin => {
-                    EthAbiToken::Bytes(self.origin_address.to_bytes()?)
-                },
+                _ => EthAbiToken::Bytes(self.origin_address.to_bytes()?),
             },
         ]))
     }
@@ -33,9 +31,7 @@ impl Metadata {
                 MetadataProtocolId::Ethereum => {
                     EthAbiToken::Address(EthAddress::from_slice(&self.origin_address.to_bytes()?))
                 },
-                MetadataProtocolId::Eos | MetadataProtocolId::Bitcoin => {
-                    EthAbiToken::Bytes(self.origin_address.to_bytes()?)
-                },
+                _ => EthAbiToken::Bytes(self.origin_address.to_bytes()?),
             },
             EthAbiToken::FixedBytes(self.get_destination_chain_id()?.to_bytes()?),
             EthAbiToken::Address(EthAddress::from_slice(&match &self.destination_address {
@@ -62,7 +58,9 @@ impl Metadata {
             EthAbiToken::Bytes(self.user_data.clone()),
             EthAbiToken::FixedBytes(self.origin_chain_id.to_bytes()?),
             match self.origin_address.metadata_chain_id.to_protocol_id() {
-                MetadataProtocolId::Ethereum => EthAbiToken::String(self.origin_address.to_string()),
+                MetadataProtocolId::Ethereum | MetadataProtocolId::Algorand => {
+                    EthAbiToken::String(self.origin_address.to_string())
+                },
                 MetadataProtocolId::Eos | MetadataProtocolId::Bitcoin => {
                     EthAbiToken::Bytes(self.origin_address.to_bytes()?)
                 },
@@ -101,10 +99,16 @@ impl Metadata {
         .to_bytes()
     }
 
+    fn to_bytes_for_algorand(&self) -> Result<Bytes> {
+        info!("✔ Converting metadata to bytes for Algorand...");
+        Ok(rmp_serde::to_vec(&self.to_json()?)?)
+    }
+
     pub fn to_bytes_for_protocol(&self, destination_protocol: &MetadataProtocolId) -> Result<Bytes> {
         match destination_protocol {
             MetadataProtocolId::Eos => self.to_bytes_for_eos(),
             MetadataProtocolId::Ethereum => self.to_bytes_for_eth(),
+            MetadataProtocolId::Algorand => self.to_bytes_for_algorand(),
             MetadataProtocolId::Bitcoin => Err("Encoding metadata for Bitcoin is not implemented!".into()),
         }
     }
@@ -165,8 +169,9 @@ impl Metadata {
             EthAbiToken::Bytes(bytes) => Result::Ok(bytes.to_vec()),
             _ => Err(get_err_msg("protocol receipt").into()),
         }?;
-        let destination_metadata_address = MetadataAddress::new(destination_address.to_string(), destination_chain_id)?;
-        let origin_metadata_address = MetadataAddress::new(origin_address.to_string(), origin_chain_id)?;
+        let destination_metadata_address =
+            MetadataAddress::new(&destination_address.to_string(), &destination_chain_id)?;
+        let origin_metadata_address = MetadataAddress::new(&origin_address.to_string(), &origin_chain_id)?;
         Ok(Self::new_v3(
             &user_data,
             &origin_metadata_address,
@@ -206,7 +211,7 @@ mod tests {
     fn should_encode_v3_metadata_for_eth() {
         let metadata = get_sample_eth_metadata_v3();
         let result = hex::encode(metadata.to_bytes_for_eth().unwrap());
-        let expected_result = "0300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000f343680000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001400069c3220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000000000003d3caff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a30786645444665323631364542333636314342384645643237383246354630634339314435394443614300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a3078656442383663643435356566336361343366306532323765303034363943336244464134303632380000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+        let expected_result = "0300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000f343680000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001400069c3220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000000000003d3caff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a30786665646665323631366562333636316362386665643237383266356630636339316435396463616300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a3078656462383663643435356566336361343366306532323765303034363963336264666134303632380000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
         assert_eq!(result, expected_result);
     }
 }

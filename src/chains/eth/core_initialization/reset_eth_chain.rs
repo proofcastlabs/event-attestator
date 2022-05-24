@@ -244,12 +244,12 @@ mod tests {
         block_hashes.iter().enumerate().for_each(|(i, hash)| {
             let result = db_utils.get_submission_material_from_db(&hash);
             if result.is_ok() {
-                println!(
+                let err_msg = format!(
                     "Sample ETH block #{} still exists in DB under hash: 0x{}",
                     i,
                     hex::encode(hash.as_bytes())
                 );
-                result.unwrap();
+                assert!(false, "{}", err_msg);
             }
         });
     }
@@ -276,12 +276,12 @@ mod tests {
         block_hashes.iter().enumerate().for_each(|(i, hash)| {
             let result = db_utils.get_submission_material_from_db(&hash);
             if result.is_ok() {
-                println!(
+                let err_msg = format!(
                     "Sample EVM block #{} still exists in DB under hash: 0x{}",
                     i,
                     hex::encode(hash.as_bytes())
                 );
-                result.unwrap();
+                assert!(false, "{}", err_msg);
             }
         });
     }
