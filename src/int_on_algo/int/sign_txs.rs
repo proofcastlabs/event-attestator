@@ -93,5 +93,3 @@ pub fn maybe_sign_algo_txs_and_add_to_state<D: DatabaseInterface>(state: EthStat
             })
     }
 }
-
-// TODO Test
