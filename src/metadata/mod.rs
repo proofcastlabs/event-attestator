@@ -1,6 +1,7 @@
 pub(crate) mod metadata_address;
 pub(crate) mod metadata_chain_id;
 pub(crate) mod metadata_encoders;
+pub(crate) mod metadata_json;
 pub(crate) mod metadata_protocol_id;
 pub(crate) mod metadata_traits;
 pub(crate) mod metadata_version;
