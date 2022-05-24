@@ -101,7 +101,7 @@ impl Metadata {
 
     fn to_bytes_for_algorand(&self) -> Result<Bytes> {
         info!("✔ Converting metadata to bytes for Algorand...");
-        Ok(rmp_serde::to_vec(self)?)
+        Ok(rmp_serde::to_vec(&self.to_json()?)?)
     }
 
     pub fn to_bytes_for_protocol(&self, destination_protocol: &MetadataProtocolId) -> Result<Bytes> {
