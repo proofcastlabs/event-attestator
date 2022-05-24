@@ -1,13 +1,15 @@
 use serde::{Deserialize, Serialize};
+#[cfg(test)]
+use serde_json;
 
+#[cfg(test)]
 use crate::{
-    metadata::{
-        metadata_address::MetadataAddress,
-        metadata_chain_id::MetadataChainId,
-        metadata_version::MetadataVersion,
-        Metadata,
-    },
-    types::{Bytes, Result},
+    metadata::{metadata_address::MetadataAddress, metadata_chain_id::MetadataChainId},
+    types::{Byte, Bytes},
+};
+use crate::{
+    metadata::{metadata_version::MetadataVersion, Metadata},
+    types::Result,
 };
 
 impl Metadata {
@@ -29,18 +31,14 @@ impl Metadata {
                 Some(id) => Ok(hex::encode(id.to_bytes()?)),
                 None => Err("Non`destination_chain_id` in metadata!"),
             }?,
-            protocol_options: match &self.protocol_options {
-                None => None,
-                Some(options) => Some(hex::encode(options)),
-            },
-            protocol_receipt: match &self.protocol_receipt {
-                None => None,
-                Some(receipt) => Some(hex::encode(receipt)),
-            },
+            protocol_receipt: self.protocol_receipt.as_ref().map(hex::encode),
+            protocol_options: self.protocol_options.as_ref().map(hex::encode),
         })
     }
+}
 
-    #[cfg(test)]
+#[cfg(test)]
+impl Metadata {
     pub fn from_json(json: &MetadataJson) -> Result<Self> {
         let origin_chain_id = MetadataChainId::from_bytes(&hex::decode(&json.origin_chain_id)?)?;
         let destination_chain_id = MetadataChainId::from_bytes(&hex::decode(&json.destination_chain_id)?)?;
@@ -64,6 +62,14 @@ impl Metadata {
             },
         })
     }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        Self::from_json(&MetadataJson::from_bytes(bytes)?)
+    }
+
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        self.to_json()?.to_bytes()
+    }
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -78,13 +84,14 @@ pub struct MetadataJson {
     pub protocol_receipt: Option<String>,
 }
 
+#[cfg(test)]
 impl MetadataJson {
-    pub fn to_bytes() -> Bytes {
-        unimplemented!()
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(self)?)
     }
 
-    pub fn from_bytes() -> Self {
-        unimplemented!()
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        Ok(serde_json::from_slice(bytes)?)
     }
 }
 
@@ -98,6 +105,14 @@ mod tests {
         let metadata = get_sample_eth_metadata_v3();
         let json = metadata.to_json().unwrap();
         let result = Metadata::from_json(&json).unwrap();
+        assert_eq!(result, metadata);
+    }
+
+    #[test]
+    fn should_serde_metadata_to_and_from_bytes() {
+        let metadata = get_sample_eth_metadata_v3();
+        let bytes = metadata.to_bytes().unwrap();
+        let result = Metadata::from_bytes(&bytes).unwrap();
         assert_eq!(result, metadata);
     }
 

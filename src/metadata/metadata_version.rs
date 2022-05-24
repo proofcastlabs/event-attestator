@@ -5,7 +5,9 @@ use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use crate::types::{Byte, Bytes, Result};
+#[cfg(test)]
+use crate::types::Result;
+use crate::types::{Byte, Bytes};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, EnumIter)]
 pub enum MetadataVersion {
@@ -44,6 +46,7 @@ impl MetadataVersion {
         vec![self.to_byte()]
     }
 
+    #[cfg(test)]
     pub fn from_byte(byte: &Byte) -> Result<Self> {
         match byte {
             1u8 => Ok(Self::V1),
@@ -53,6 +56,7 @@ impl MetadataVersion {
         }
     }
 
+    #[cfg(test)]
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         if bytes.is_empty() {
             Err("Not enough bytes to get `MetadataVersion` from bytes!".into())
