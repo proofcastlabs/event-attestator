@@ -1,11 +1,11 @@
+use std::fmt;
+
 use serde::{Deserialize, Serialize};
 #[cfg(test)]
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-#[cfg(test)]
-use crate::types::Result;
-use crate::types::{Byte, Bytes};
+use crate::types::{Byte, Bytes, Result};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, EnumIter)]
 pub enum MetadataVersion {
@@ -17,6 +17,17 @@ pub enum MetadataVersion {
 impl Default for MetadataVersion {
     fn default() -> Self {
         Self::V3
+    }
+}
+
+impl fmt::Display for MetadataVersion {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let s = match self {
+            Self::V1 => "V1",
+            Self::V2 => "V2",
+            Self::V3 => "V3",
+        };
+        write!(f, "{}", s)
     }
 }
 
@@ -33,7 +44,6 @@ impl MetadataVersion {
         vec![self.to_byte()]
     }
 
-    #[cfg(test)]
     pub fn from_byte(byte: &Byte) -> Result<Self> {
         match byte {
             1u8 => Ok(Self::V1),
@@ -43,7 +53,6 @@ impl MetadataVersion {
         }
     }
 
-    #[cfg(test)]
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         if bytes.is_empty() {
             Err("Not enough bytes to get `MetadataVersion` from bytes!".into())
