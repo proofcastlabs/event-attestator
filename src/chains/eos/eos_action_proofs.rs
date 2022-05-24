@@ -59,7 +59,7 @@ impl EosActionProof {
     }
 
     pub fn get_action_sender(&self) -> Result<EosAccountName> {
-        let account_name = EosAccountName::new(convert_bytes_to_u64(&self.action.data[..8].to_vec())?);
+        let account_name = EosAccountName::new(convert_bytes_to_u64(&self.action.data[..8])?);
         debug!("✔ Account name parsed from redeem action: {}", account_name);
         Ok(account_name)
     }

@@ -9,11 +9,7 @@ use crate::{
     chains::{
         algo::algo_database_utils::{AlgoDatabaseKeysJson, AlgoDbUtils},
         eth::{
-            eth_contracts::erc20_vault::{
-                encode_erc20_vault_add_supported_token_fx_data,
-                encode_erc20_vault_peg_out_fxn_data_without_user_data,
-                encode_erc20_vault_remove_supported_token_fx_data,
-            },
+            eth_contracts::erc20_vault::encode_erc20_vault_add_supported_token_fx_data,
             eth_crypto::eth_transaction::EthTransaction,
             eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt},
             eth_utils::convert_hex_to_eth_address,

@@ -119,14 +119,14 @@ impl BtcOnEosRedeemInfo {
     pub fn get_eos_amount_from_proof(proof: &EosActionProof) -> Result<u64> {
         proof
             .check_proof_action_data_length(15, "Not enough data to parse `BtcOnEosRedeemInfo` amount from proof!")
-            .and_then(|_| convert_bytes_to_u64(&proof.action.data[8..=15].to_vec()))
+            .and_then(|_| convert_bytes_to_u64(&proof.action.data[8..=15]))
     }
 
     pub fn get_action_sender_from_proof(proof: &EosActionProof) -> Result<EosAccountName> {
         proof
             .check_proof_action_data_length(7, "Not enough data to parse `BtcOnEosRedeemInfo` sender from proof!")
             .and_then(|_| {
-                let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[..=7].to_vec())?);
+                let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[..=7])?);
                 debug!("✔ Account name parsed from redeem action: {}", result);
                 Ok(result)
             })

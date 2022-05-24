@@ -129,6 +129,7 @@ quick_error! {
         ParseFloatError(err: std::num::ParseFloatError) {
             from()
             display("✘ `ParseFloatError` error: {:?}", err)
+        }
         Base64DecodeError(err: base64::DecodeError) {
             from()
             display("✘ Base64 decoder error: {}", err)

@@ -3,7 +3,7 @@ use eos_chain::{NumBytes, Read, SerializeData, Write};
 
 use crate::types::{Byte, Bytes};
 
-#[derive(Clone, Debug, Read, Write, NumBytes, PartialEq, Default, Constructor)]
+#[derive(Clone, Debug, Read, Write, NumBytes, Eq, PartialEq, Default, Constructor)]
 #[eosio_core_root_path = "eos_chain"]
 pub struct EosMetadata {
     pub version: Byte,
