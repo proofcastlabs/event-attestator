@@ -55,7 +55,7 @@ use crate::{
     },
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
-    debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
+    debug_mode::debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, prepend_debug_output_marker_to_string, strip_hex_prefix},

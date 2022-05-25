@@ -1,9 +1,11 @@
 use crate::{check_debug_mode::check_debug_mode, traits::DatabaseInterface, types::Result};
 
-pub fn set_key_in_db_to_value<D>(db: D, key: &str, value: &str, data_sensitivity: Option<u8>) -> Result<String>
-where
-    D: DatabaseInterface,
-{
+pub fn set_key_in_db_to_value<D: DatabaseInterface>(
+    db: D,
+    key: &str,
+    value: &str,
+    data_sensitivity: Option<u8>,
+) -> Result<String> {
     info!("✔ Setting key: {} in DB to value: {}", key, value);
     check_debug_mode()
         .and_then(|_| db.start_transaction())

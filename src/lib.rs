@@ -29,6 +29,7 @@ pub mod btc_on_eth;
 pub mod btc_on_int;
 pub mod chains;
 pub(crate) mod core_type;
+mod debug_mode;
 pub(crate) mod dictionaries;
 pub mod eos_on_eth;
 pub mod eos_on_int;
@@ -49,7 +50,6 @@ mod check_debug_mode;
 mod constants;
 mod crypto_utils;
 mod database_utils;
-mod debug_database_utils;
 mod enclave_info;
 mod utils;
 

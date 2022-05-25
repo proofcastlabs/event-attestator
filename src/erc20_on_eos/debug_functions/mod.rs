@@ -34,7 +34,7 @@ use crate::{
     },
     check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
-    debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
+    debug_mode::debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
     dictionaries::{dictionary_constants::EOS_ETH_DICTIONARY_KEY, eos_eth::EosEthTokenDictionary},
     erc20_on_eos::check_core_is_initialized::check_core_is_initialized,
     fees::fee_utils::sanity_check_basis_points_value,
