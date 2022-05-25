@@ -53,9 +53,8 @@ use crate::{
             eth_debug_functions::debug_set_eth_gas_price_in_db,
         },
     },
-    check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
-    debug_mode::debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
+    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value},
     fees::{
         fee_constants::BTC_ON_ETH_FEE_DB_KEYS,
         fee_database_utils::FeeDatabaseUtils,

@@ -39,7 +39,7 @@ use crate::{
             validate_receipts_in_state::validate_receipts_in_state,
         },
     },
-    check_debug_mode::check_debug_mode,
+    debug_mode::check_debug_mode,
     dictionaries::eos_eth::{
         get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
         get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,

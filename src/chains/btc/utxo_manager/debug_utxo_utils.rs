@@ -22,8 +22,8 @@ use crate::{
             utxo_types::BtcUtxosAndValues,
         },
     },
-    check_debug_mode::check_debug_mode,
     constants::SUCCESS_JSON,
+    debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,
 };

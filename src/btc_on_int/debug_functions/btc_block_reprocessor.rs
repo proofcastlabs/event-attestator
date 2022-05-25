@@ -35,7 +35,7 @@ use crate::{
             eth_types::EthSigningParams,
         },
     },
-    check_debug_mode::check_debug_mode,
+    debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,

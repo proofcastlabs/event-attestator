@@ -11,6 +11,7 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
+    debug_mode::check_debug_mode,
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_eth_state,
     int_on_algo::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
@@ -38,7 +39,8 @@ use crate::{
 /// gap in their report IDs!
 pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Debug reprocessing INT block...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
+    check_debug_mode()
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)

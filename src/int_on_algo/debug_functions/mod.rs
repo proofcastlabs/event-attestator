@@ -16,9 +16,8 @@ use crate::{
             eth_utils::convert_hex_to_eth_address,
         },
     },
-    check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
-    debug_mode::debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
+    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value},
     dictionaries::{
         dictionary_constants::EVM_ALGO_DICTIONARY_KEY,
         evm_algo::{EvmAlgoTokenDictionary, EvmAlgoTokenDictionaryEntry},

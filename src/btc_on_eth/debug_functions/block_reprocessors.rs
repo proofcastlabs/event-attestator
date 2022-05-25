@@ -54,7 +54,7 @@ use crate::{
             validate_block_in_state::validate_block_in_state,
         },
     },
-    check_debug_mode::check_debug_mode,
+    debug_mode::check_debug_mode,
     fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
     types::Result,

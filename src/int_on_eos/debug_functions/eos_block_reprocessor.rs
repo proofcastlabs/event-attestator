@@ -52,7 +52,8 @@ use crate::{
 
 fn reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonce: Option<u64>) -> Result<String> {
     info!("✔ Debug reprocessing EOS block...");
-    parse_submission_material_and_add_to_state(block_json, EosState::init(&db))
+    check_debug_mode()
+        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(start_eos_db_transaction_and_return_state)

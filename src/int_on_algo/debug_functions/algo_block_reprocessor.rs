@@ -13,6 +13,7 @@ use crate::{
         },
         eth::eth_database_utils::EthDbUtilsExt,
     },
+    debug_mode::check_debug_mode,
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_algo_state,
     int_on_algo::{
         algo::{
@@ -41,7 +42,8 @@ fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
     maybe_nonce: Option<u64>,
 ) -> Result<String> {
     info!("✔ Debug reprocessing ALGO block...");
-    parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db))
+    check_debug_mode()
+        .and_then(|_| parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db)))
         .and_then(check_core_is_initialized_and_return_algo_state)
         .and_then(start_algo_db_transaction_and_return_state)
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)

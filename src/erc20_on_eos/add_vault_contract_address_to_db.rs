@@ -8,7 +8,7 @@ use crate::{
             eth_utils::get_eth_address_from_str,
         },
     },
-    check_debug_mode::check_debug_mode,
+    debug_mode::check_debug_mode,
     erc20_on_eos::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,

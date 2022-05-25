@@ -27,7 +27,7 @@ use crate::{
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::validate_block_in_state,
     },
-    check_debug_mode::check_debug_mode,
+    debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,
 };

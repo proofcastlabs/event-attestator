@@ -65,7 +65,7 @@ use crate::{
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
         },
     },
-    check_debug_mode::check_debug_mode,
+    debug_mode::check_debug_mode,
     fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
     types::Result,

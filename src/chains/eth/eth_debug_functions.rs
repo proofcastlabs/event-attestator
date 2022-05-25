@@ -2,7 +2,7 @@ use serde_json::json;
 
 use crate::{
     chains::eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
-    check_debug_mode::check_debug_mode,
+    debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,

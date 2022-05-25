@@ -13,7 +13,7 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
-    check_debug_mode::check_debug_mode,
+    debug_mode::check_debug_mode,
     dictionaries::eth_evm::{get_eth_evm_token_dictionary_from_db_and_add_to_eth_state, EthEvmTokenDictionary},
     erc20_on_evm::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,

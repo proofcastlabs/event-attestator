@@ -2,7 +2,7 @@ use serde_json::json;
 
 use crate::{
     chains::btc::{btc_database_utils::BtcDbUtils, utxo_manager::utxo_database_utils::put_utxo_nonce_in_db},
-    check_debug_mode::check_debug_mode,
+    debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,

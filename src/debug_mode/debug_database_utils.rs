@@ -1,4 +1,4 @@
-use crate::{check_debug_mode::check_debug_mode, traits::DatabaseInterface, types::Result};
+use crate::{debug_mode::check_debug_mode, traits::DatabaseInterface, types::Result};
 
 pub fn set_key_in_db_to_value<D: DatabaseInterface>(
     db: D,

@@ -46,7 +46,6 @@ pub(crate) mod safe_addresses;
 pub mod traits;
 pub mod types;
 
-mod check_debug_mode;
 mod constants;
 mod crypto_utils;
 mod database_utils;

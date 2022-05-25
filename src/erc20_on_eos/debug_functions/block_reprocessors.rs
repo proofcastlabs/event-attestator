@@ -39,6 +39,7 @@ use crate::{
             validate_receipts_in_state::validate_receipts_in_state,
         },
     },
+    debug_mode::check_debug_mode,
     dictionaries::eos_eth::{
         get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
         get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
@@ -80,7 +81,8 @@ use crate::{
 
 fn reprocess_eth_block<D: DatabaseInterface>(db: D, block_json_string: &str, accrue_fees: bool) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(&db))
+    check_debug_mode()
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
@@ -135,7 +137,8 @@ fn reprocess_eos_block<D: DatabaseInterface>(
     maybe_nonce: Option<u64>,
 ) -> Result<String> {
     info!("✔ Debug reprocessing EOS block...");
-    parse_submission_material_and_add_to_state(block_json, EosState::init(&db))
+    check_debug_mode()
+        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(start_eos_db_transaction_and_return_state)

@@ -14,7 +14,7 @@ use crate::{
         core_initialization::initialize_algo_core::initialize_algo_chain_db_keys,
         remove_all_txs_from_submission_material_in_state::remove_all_txs_from_submission_material_in_state,
     },
-    check_debug_mode::check_debug_mode,
+    debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,
 };
