@@ -1,5 +1,6 @@
 mod check_debug_mode;
 mod debug_database_utils;
+mod debug_signatories;
 
 pub(crate) use crate::debug_mode::{
     check_debug_mode::check_debug_mode,
