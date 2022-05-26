@@ -137,6 +137,9 @@ quick_error! {
         RustCHexError(err: rustc_hex::FromHexError) {
             from()
             display("✘ Rustc hex error: {}", err)
+        RecoveryError(err: web3::signing::RecoveryError) {
+            from()
+            display("✘ Web3 signature recovery error: {}", err)
         }
         NoneError(err: &'static str) {
             display("✘ None error {}", err)

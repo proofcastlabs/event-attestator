@@ -4,12 +4,15 @@ use std::fmt::Display;
 use derive_more::{Constructor, Deref};
 use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
+use web3::signing::recover;
 
 use crate::{
     chains::eth::eth_utils::convert_hex_to_eth_address,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
+    crypto_utils::keccak_hash_bytes,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
+    utils::strip_hex_prefix,
 };
 
 lazy_static! {
@@ -75,7 +78,7 @@ impl DebugSignatories {
 
     pub fn add_and_update_in_db<D: DatabaseInterface>(db: &D, signatory: &DebugSignatory) -> Result<()> {
         Self::get_from_db(db)
-            .map(|signatories| signatories.add(&signatory))
+            .map(|signatories| signatories.add(signatory))
             .and_then(|signatories| signatories.put_in_db(db))
     }
 
@@ -105,14 +108,18 @@ impl Display for DebugSignatory {
 }
 
 impl DebugSignatory {
-    pub fn from_json(json: &DebugSignatoryJson) -> Result<Self> {
+    pub fn new(eth_address: &EthAddress) -> Self {
+        Self { nonce: 0, eth_address: *eth_address }
+    }
+
+    fn from_json(json: &DebugSignatoryJson) -> Result<Self> {
         Ok(Self {
             nonce: json.nonce,
             eth_address: convert_hex_to_eth_address(&json.eth_address)?,
         })
     }
 
-    pub fn to_json(self) -> DebugSignatoryJson {
+    fn to_json(self) -> DebugSignatoryJson {
         DebugSignatoryJson {
             nonce: self.nonce,
             eth_address: format!("0x{}", hex::encode(self.eth_address)),
@@ -125,6 +132,40 @@ impl DebugSignatory {
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         DebugSignatoryJson::from_bytes(bytes).and_then(|json| Self::from_json(&json))
+    }
+
+    fn get_eth_prefixed_message_bytes(message: &str) -> Bytes {
+        keccak_hash_bytes(format!("\x19Ethereum Signed Message:\n{}{}", message.len(), message).as_bytes())[..].to_vec()
+    }
+
+    fn get_signature_message_bytes(&self) -> Bytes {
+        Self::get_eth_prefixed_message_bytes(&format!("{}", self.nonce))
+    }
+
+    fn recover_eth_addresses_from_signature(&self, signature_bytes: &[Byte]) -> Result<Vec<EthAddress>> {
+        // NOTE: We just calculate the address using BOTH recovery IDs, and thus we are chain
+        // agnostic w/r/t to the `v` param of an EVM compliant signature.
+        let signature_message_bytes = self.get_signature_message_bytes();
+        Ok(vec![
+            recover(&signature_message_bytes, &signature_bytes[..64], 0)?,
+            recover(&signature_message_bytes, &signature_bytes[..64], 1)?,
+        ])
+    }
+
+    fn get_signature_bytes(signature: &str) -> Result<Bytes> {
+        const SIGNATURE_LENGTH: usize = 65;
+        let bytes = hex::decode(strip_hex_prefix(signature))?;
+        if bytes.len() != SIGNATURE_LENGTH {
+            Err(format!("Signature must be {} bytes long!", SIGNATURE_LENGTH).into())
+        } else {
+            Ok(bytes)
+        }
+    }
+
+    fn signature_is_valid(&self, signature: &str) -> Result<bool> {
+        Self::get_signature_bytes(signature)
+            .and_then(|signature_bytes| self.recover_eth_addresses_from_signature(&signature_bytes))
+            .map(|eth_addresses| eth_addresses.contains(&self.eth_address))
     }
 }
 
@@ -224,5 +265,25 @@ mod tests {
         DebugSignatories::remove_and_update_in_db(&db, &signatory_to_remove).unwrap();
         let result = DebugSignatories::get_from_db(&db).unwrap();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn valid_signature_should_pass_validation() {
+        let address = convert_hex_to_eth_address("0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap();
+        let signatory = DebugSignatory::new(&address);
+        // NOTE: As gotten from etherscan signing fxnality, signing over the message "0".
+        let signature = "0xbc2554423224c202eebc312c8ae0c42c503ca9c0a70f3dee8b24ce79c3c3ee682d2d93c0e61e84b3a8ca93dfe8c4f89d62f0fc275c72976e420de21097ef3ebb1c";
+        let result = signatory.signature_is_valid(signature).unwrap();
+        assert!(result);
+    }
+
+    #[test]
+    fn invalid_signature_should_not_pass_validation() {
+        let address = convert_hex_to_eth_address("0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap();
+        let signatory = DebugSignatory::new(&address);
+        // NOTE: As gotten from etherscan signing fxnality, signing over the message "1".
+        let signature = "0x1b18a47e64f19543b9e5b8d06f3de5e63ef0a4d99542e4cdbdb3431f38bfcf1f6ae023d4b779ada0b27f902c757ea86d75c7f59c653e69f3bf059c89670c48861b";
+        let result = signatory.signature_is_valid(signature).unwrap();
+        assert!(!result);
     }
 }
