@@ -76,6 +76,21 @@ impl DebugSignatories {
         )
     }
 
+    fn get(&self, eth_address: &EthAddress) -> Result<DebugSignatory> {
+        let signatories = self
+            .iter()
+            .filter(|signatory| signatory.eth_address == *eth_address)
+            .cloned()
+            .collect::<Vec<DebugSignatory>>();
+        if signatories.is_empty() {
+            Err(format!("Could not find debug signatory with address: '{}'!", eth_address).into())
+        } else if signatories.len() > 1 {
+            Err(format!("> 1 entry found with address: '{}'!", eth_address).into())
+        } else {
+            Ok(signatories[0].clone())
+        }
+    }
+
     pub fn add_and_update_in_db<D: DatabaseInterface>(db: &D, signatory: &DebugSignatory) -> Result<()> {
         Self::get_from_db(db)
             .map(|signatories| signatories.add(signatory))
@@ -109,7 +124,10 @@ impl Display for DebugSignatory {
 
 impl DebugSignatory {
     pub fn new(eth_address: &EthAddress) -> Self {
-        Self { nonce: 0, eth_address: *eth_address }
+        Self {
+            nonce: 0,
+            eth_address: *eth_address,
+        }
     }
 
     fn from_json(json: &DebugSignatoryJson) -> Result<Self> {
@@ -196,7 +214,7 @@ mod tests {
     use rand::prelude::*;
 
     use super::*;
-    use crate::test_utils::get_test_database;
+    use crate::{errors::AppError, test_utils::get_test_database};
 
     fn get_random_debug_signatory() -> DebugSignatory {
         DebugSignatory {
@@ -285,5 +303,40 @@ mod tests {
         let signature = "0x1b18a47e64f19543b9e5b8d06f3de5e63ef0a4d99542e4cdbdb3431f38bfcf1f6ae023d4b779ada0b27f902c757ea86d75c7f59c653e69f3bf059c89670c48861b";
         let result = signatory.signature_is_valid(signature).unwrap();
         assert!(!result);
+    }
+
+    #[test]
+    fn should_get_debug_signatory_from_signatories() {
+        let signatories = get_n_random_debug_signatories(5);
+        let expected_result = signatories[3].clone();
+        let eth_address = expected_result.eth_address.clone();
+        let result = signatories.get(&eth_address).unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_fail_to_get_non_extant_debug_signatory_from_signatories() {
+        let signatories = get_n_random_debug_signatories(5);
+        let eth_address = EthAddress::random();
+        let expected_error = format!("Could not find debug signatory with address: '{}'!", eth_address);
+        match signatories.get(&eth_address) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
+    }
+
+    #[test]
+    fn should_error_if_entry_in_signatories_twice() {
+        let signatory = get_random_debug_signatory();
+        // NOTE: This is the only way we can create one with a duplicate in it.
+        let signatories = DebugSignatories(vec![signatory.clone(), signatory]);
+        let eth_address = signatory.eth_address.clone();
+        let expected_error = format!("> 1 entry found with address: '{}'!", eth_address);
+        match signatories.get(&eth_address) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
     }
 }
