@@ -87,12 +87,12 @@ impl DebugSignatories {
         } else if signatories.len() > 1 {
             Err(format!("> 1 entry found with address: '{}'!", eth_address).into())
         } else {
-            Ok(signatories[0].clone())
+            Ok(signatories[0])
         }
     }
 
     fn replace(&self, signatory: &DebugSignatory) -> Result<Self> {
-        let eth_address = signatory.eth_address.clone();
+        let eth_address = signatory.eth_address;
         if self.get(&eth_address).is_ok() {
             Ok(self.remove(&eth_address).add(signatory))
         } else {
@@ -119,6 +119,19 @@ impl DebugSignatories {
         Self::get_from_db(db)
             .map(|signatories| signatories.remove(eth_address))
             .and_then(|signatories| signatories.put_in_db(db))
+    }
+
+    pub fn maybe_validate_signature_and_increment_nonce_in_db<D: DatabaseInterface>(
+        db: &D,
+        eth_address_str: &str,
+        signature_str: &str,
+    ) -> Result<()> {
+        let signatories = Self::get_from_db(db)?;
+        let eth_address = convert_hex_to_eth_address(eth_address_str)?;
+        signatories
+            .get(&eth_address)
+            .and_then(|signatory| signatory.validate_signature(signature_str))
+            .and_then(|_| Self::increment_nonce_in_signatory_in_db(db, &eth_address))
     }
 }
 
@@ -149,7 +162,7 @@ impl DebugSignatory {
     }
 
     pub fn increment_nonce(&self) -> Self {
-        let mut mutable_self = self.clone();
+        let mut mutable_self = *self;
         mutable_self.nonce = self.nonce + 1;
         mutable_self
     }
@@ -204,10 +217,21 @@ impl DebugSignatory {
         }
     }
 
-    fn signature_is_valid(&self, signature: &str) -> Result<bool> {
+    pub fn validate_signature(&self, signature: &str) -> Result<()> {
         Self::get_signature_bytes(signature)
             .and_then(|signature_bytes| self.recover_eth_addresses_from_signature(&signature_bytes))
             .map(|eth_addresses| eth_addresses.contains(&self.eth_address))
+            .and_then(|is_valid| {
+                if is_valid {
+                    Ok(())
+                } else {
+                    Err(format!(
+                        "Signature is not valid for eth address '{}' over nonce {}!",
+                        self.eth_address, self.nonce
+                    )
+                    .into())
+                }
+            })
     }
 }
 
@@ -315,18 +339,26 @@ mod tests {
         let signatory = DebugSignatory::new(&address);
         // NOTE: As gotten from etherscan signing fxnality, signing over the message "0".
         let signature = "0xbc2554423224c202eebc312c8ae0c42c503ca9c0a70f3dee8b24ce79c3c3ee682d2d93c0e61e84b3a8ca93dfe8c4f89d62f0fc275c72976e420de21097ef3ebb1c";
-        let result = signatory.signature_is_valid(signature).unwrap();
-        assert!(result);
+        let result = signatory.validate_signature(signature);
+        assert!(result.is_ok());
     }
 
     #[test]
     fn invalid_signature_should_not_pass_validation() {
         let address = convert_hex_to_eth_address("0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap();
         let signatory = DebugSignatory::new(&address);
+        let nonce = signatory.nonce;
         // NOTE: As gotten from etherscan signing fxnality, signing over the message "1".
         let signature = "0x1b18a47e64f19543b9e5b8d06f3de5e63ef0a4d99542e4cdbdb3431f38bfcf1f6ae023d4b779ada0b27f902c757ea86d75c7f59c653e69f3bf059c89670c48861b";
-        let result = signatory.signature_is_valid(signature).unwrap();
-        assert!(!result);
+        let expected_error = format!(
+            "Signature is not valid for eth address '{}' over nonce {}!",
+            address, nonce,
+        );
+        match signatory.validate_signature(signature) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
     }
 
     #[test]
@@ -410,7 +442,7 @@ mod tests {
         let eth_address = signatory.eth_address;
         let nonce_before = signatory.nonce;
         signatories.put_in_db(&db).unwrap();
-        DebugSignatories::increment_nonce_in_signatory_in_db(&db, &eth_address);
+        DebugSignatories::increment_nonce_in_signatory_in_db(&db, &eth_address).unwrap();
         let updated_signatories = DebugSignatories::get_from_db(&db).unwrap();
         let expected_result = nonce_before + 1;
         let result = updated_signatories.get(&eth_address).unwrap().nonce;
