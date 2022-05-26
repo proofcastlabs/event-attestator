@@ -100,6 +100,15 @@ impl DebugSignatories {
         }
     }
 
+    fn increment_nonce_in_signatory_in_db<D: DatabaseInterface>(db: &D, eth_address: &EthAddress) -> Result<()> {
+        let signatories = Self::get_from_db(db)?;
+        signatories
+            .get(eth_address)
+            .map(|signatory| signatory.increment_nonce())
+            .and_then(|signatory| signatories.replace(&signatory))
+            .and_then(|signatories| signatories.put_in_db(db))
+    }
+
     pub fn add_and_update_in_db<D: DatabaseInterface>(db: &D, signatory: &DebugSignatory) -> Result<()> {
         Self::get_from_db(db)
             .map(|signatories| signatories.add(signatory))
@@ -137,6 +146,12 @@ impl DebugSignatory {
             nonce: 0,
             eth_address: *eth_address,
         }
+    }
+
+    pub fn increment_nonce(&self) -> Self {
+        let mut mutable_self = self.clone();
+        mutable_self.nonce = self.nonce + 1;
+        mutable_self
     }
 
     fn from_json(json: &DebugSignatoryJson) -> Result<Self> {
@@ -375,5 +390,30 @@ mod tests {
         let updated_signatories = signatories.replace(&signatory).unwrap();
         let result = updated_signatories.get(&eth_address).unwrap();
         assert_eq!(result, signatory);
+    }
+
+    #[test]
+    fn should_increment_nonce() {
+        let signatory = get_random_debug_signatory();
+        let nonce_before = signatory.nonce;
+        let result = signatory.increment_nonce().nonce;
+        let expected_result = nonce_before + 1;
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_increment_nonce_in_entry_in_db() {
+        let signatories = get_n_random_debug_signatories(5);
+        let db = get_test_database();
+        let index = 2;
+        let signatory = signatories[index].clone();
+        let eth_address = signatory.eth_address;
+        let nonce_before = signatory.nonce;
+        signatories.put_in_db(&db).unwrap();
+        DebugSignatories::increment_nonce_in_signatory_in_db(&db, &eth_address);
+        let updated_signatories = DebugSignatories::get_from_db(&db).unwrap();
+        let expected_result = nonce_before + 1;
+        let result = updated_signatories.get(&eth_address).unwrap().nonce;
+        assert_eq!(result, expected_result);
     }
 }
