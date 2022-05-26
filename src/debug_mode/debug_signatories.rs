@@ -121,17 +121,50 @@ impl DebugSignatories {
             .and_then(|signatories| signatories.put_in_db(db))
     }
 
-    pub fn maybe_validate_signature_and_increment_nonce_in_db<D: DatabaseInterface>(
+    fn maybe_validate_signature_for_eth_address_and_increment_nonce_in_db<D: DatabaseInterface>(
         db: &D,
-        eth_address_str: &str,
+        eth_address: &EthAddress,
         signature_str: &str,
     ) -> Result<()> {
         let signatories = Self::get_from_db(db)?;
-        let eth_address = convert_hex_to_eth_address(eth_address_str)?;
         signatories
-            .get(&eth_address)
+            .get(eth_address)
             .and_then(|signatory| signatory.validate_signature(signature_str))
-            .and_then(|_| Self::increment_nonce_in_signatory_in_db(db, &eth_address))
+            .and_then(|_| Self::increment_nonce_in_signatory_in_db(db, eth_address))
+    }
+
+    pub fn maybe_validate_signature_and_increment_nonce_in_db<D: DatabaseInterface>(
+        db: &D,
+        signature_str: &str,
+    ) -> Result<()> {
+        Self::get_from_db(db)
+            .map(|signatories| {
+                signatories
+                    .iter()
+                    .map(|signatory| signatory.eth_address)
+                    .collect::<Vec<_>>()
+            })
+            .and_then(|eth_addresses| {
+                if eth_addresses
+                    .iter()
+                    .filter_map(|eth_address| {
+                        match Self::maybe_validate_signature_for_eth_address_and_increment_nonce_in_db(
+                            db,
+                            eth_address,
+                            signature_str,
+                        ) {
+                            Ok(_) => Some(true),
+                            Err(_) => None,
+                        }
+                    })
+                    .next()
+                    .is_none()
+                {
+                    Err("Signature not valid for any debug signatories!".into())
+                } else {
+                    Ok(())
+                }
+            })
     }
 }
 
@@ -447,5 +480,76 @@ mod tests {
         let expected_result = nonce_before + 1;
         let result = updated_signatories.get(&eth_address).unwrap().nonce;
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_maybe_validate_signature_and_increment_nonce_in_db() {
+        let db = get_test_database();
+        let eth_address = convert_hex_to_eth_address("0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap();
+        let signatory_1 = DebugSignatory::new(&eth_address);
+        let signatory_2 = get_random_debug_signatory();
+        let signatory_3 = get_random_debug_signatory();
+
+        // NOTE: Assert the signatory we care about's nonce is 0.
+        assert_eq!(signatory_1.nonce, 0);
+        let signatories = DebugSignatories(vec![signatory_2.clone(), signatory_1.clone(), signatory_3.clone()]);
+        signatories.put_in_db(&db).unwrap();
+        // NOTE: As gotten from etherscan signing fxnality, signing over the message "0".
+        let signature = "0xbc2554423224c202eebc312c8ae0c42c503ca9c0a70f3dee8b24ce79c3c3ee682d2d93c0e61e84b3a8ca93dfe8c4f89d62f0fc275c72976e420de21097ef3ebb1c";
+        // NOTE: Signature should be valid, and the nonce for this signatory should be incremented.
+        DebugSignatories::maybe_validate_signature_and_increment_nonce_in_db(&db, &signature).unwrap();
+
+        // NOTE: So lets assert that this signatory's nonce did indeed get updated.
+        let updated_signatories = DebugSignatories::get_from_db(&db).unwrap();
+        assert_eq!(updated_signatories.get(&eth_address).unwrap().nonce, 1);
+
+        // NOTE: And finally, assert that the other two signatory's nonces did NOT get
+        // incremented.
+        assert_eq!(
+            updated_signatories.get(&signatory_2.eth_address).unwrap().nonce,
+            signatory_2.nonce
+        );
+        assert_eq!(
+            updated_signatories.get(&signatory_3.eth_address).unwrap().nonce,
+            signatory_3.nonce
+        );
+    }
+
+    #[test]
+    fn should_fail_to_maybe_validate_invalid_signature_and_thus_not_increment_nonce_in_db() {
+        let db = get_test_database();
+        let signatory_1 = get_random_debug_signatory();
+        let signatory_2 = get_random_debug_signatory();
+        let signatory_3 = get_random_debug_signatory();
+        let signatories = DebugSignatories(vec![signatory_1.clone(), signatory_2.clone(), signatory_3.clone()]);
+        signatories.put_in_db(&db).unwrap();
+
+        // NOTE: This signature is by a signatory that is NOT one of the above 3.
+        let signature = "0xbc2554423224c202eebc312c8ae0c42c503ca9c0a70f3dee8b24ce79c3c3ee682d2d93c0e61e84b3a8ca93dfe8c4f89d62f0fc275c72976e420de21097ef3ebb1c";
+
+        // NOTE: And so it should error...
+        let expected_error = "Signature not valid for any debug signatories!";
+        match DebugSignatories::maybe_validate_signature_and_increment_nonce_in_db(&db, &signature) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
+
+        // NOTE: So let's assert that this signatory's nonce did indeed get updated.
+        let updated_signatories = DebugSignatories::get_from_db(&db).unwrap();
+
+        // NOTE: Assert that none of the signatory's had their nonces incremented...
+        assert_eq!(
+            updated_signatories.get(&signatory_1.eth_address).unwrap().nonce,
+            signatory_1.nonce
+        );
+        assert_eq!(
+            updated_signatories.get(&signatory_2.eth_address).unwrap().nonce,
+            signatory_2.nonce
+        );
+        assert_eq!(
+            updated_signatories.get(&signatory_3.eth_address).unwrap().nonce,
+            signatory_3.nonce
+        );
     }
 }
