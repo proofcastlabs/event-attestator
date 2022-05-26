@@ -91,6 +91,15 @@ impl DebugSignatories {
         }
     }
 
+    fn replace(&self, signatory: &DebugSignatory) -> Result<Self> {
+        let eth_address = signatory.eth_address.clone();
+        if self.get(&eth_address).is_ok() {
+            Ok(self.remove(&eth_address).add(signatory))
+        } else {
+            Err(format!("Cannot replace entry, none exists with eth address: '{}'!", eth_address).into())
+        }
+    }
+
     pub fn add_and_update_in_db<D: DatabaseInterface>(db: &D, signatory: &DebugSignatory) -> Result<()> {
         Self::get_from_db(db)
             .map(|signatories| signatories.add(signatory))
@@ -338,5 +347,33 @@ mod tests {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         }
+    }
+
+    #[test]
+    fn should_fail_to_replace_non_existent_entry() {
+        let signatories = get_n_random_debug_signatories(5);
+        let signatory = get_random_debug_signatory();
+        let expected_error = format!(
+            "Cannot replace entry, none exists with eth address: '{}'!",
+            signatory.eth_address
+        );
+        match signatories.replace(&signatory) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
+    }
+
+    #[test]
+    fn should_replace_entry() {
+        let signatories = get_n_random_debug_signatories(5);
+        let index = 2;
+        let mut signatory = signatories[index].clone();
+        let eth_address = signatory.eth_address;
+        signatory.nonce = signatory.nonce + 1;
+        assert_ne!(signatory, signatories[index]);
+        let updated_signatories = signatories.replace(&signatory).unwrap();
+        let result = updated_signatories.get(&eth_address).unwrap();
+        assert_eq!(result, signatory);
     }
 }
