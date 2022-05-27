@@ -104,8 +104,8 @@ impl MetadataChainId {
         }
     }
 
-    fn to_hex(self) -> Result<String> {
-        Ok(hex::encode(self.to_bytes()?))
+    pub fn to_hex(self) -> Result<String> {
+        Ok(format!("0x{}", hex::encode(self.to_bytes()?)))
     }
 
     fn to_keccak_hash(self) -> Result<KeccakHash> {
@@ -178,28 +178,28 @@ impl fmt::Display for MetadataChainId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let hex = self.to_hex().unwrap_or_else(|_| "Could not unwrap hex!".to_string());
         match self {
-            Self::EthUnknown => write!(f, "EthUnknown: 0x{}", hex),
-            Self::EosUnknown => write!(f, "EosUnknown: 0x{}", hex),
-            Self::BtcUnknown => write!(f, "BtcUnknown: 0x{}", hex),
-            Self::EosMainnet => write!(f, "Eos Mainnet: 0x{}", hex),
-            Self::FioMainnet => write!(f, "FIO Mainnet: 0x{}", hex),
-            Self::XDaiMainnet => write!(f, "xDai Mainnet: 0x{}", hex),
-            Self::TelosMainnet => write!(f, "Telos Mainnet: 0x{}", hex),
-            Self::UltraTestnet => write!(f, "Ultra Testnet: 0x{}", hex),
-            Self::UltraMainnet => write!(f, "Ultra Mainnet: 0x{}", hex),
-            Self::InterimChain => write!(f, "Interim Chain: 0x{}", hex),
-            Self::FantomMainnet => write!(f, "Fantom Mainnet: 0x{}", hex),
-            Self::AlgorandMainnet => write!(f, "AlgorandMainnet: 0x{}", hex),
-            Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: 0x{}", hex),
-            Self::PolygonMainnet => write!(f, "Polygon Mainnet: 0x{}", hex),
-            Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: 0x{}", hex),
-            Self::ArbitrumMainnet => write!(f, "Arbitrum Mainnet: 0x{}", hex),
-            Self::EthereumMainnet => write!(f, "Ethereum Mainnet: 0x{}", hex),
-            Self::EthereumRinkeby => write!(f, "Ethereum Rinkeby: 0x{}", hex),
-            Self::EthereumRopsten => write!(f, "Ethereum Ropsten: 0x{}", hex),
-            Self::LuxochainMainnet => write!(f, "Luxochain Mainnet: 0x{}", hex),
-            Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", hex),
-            Self::BscMainnet => write!(f, "Binance Chain (BSC) Mainnet: 0x{}", hex),
+            Self::EthUnknown => write!(f, "EthUnknown: {}", hex),
+            Self::EosUnknown => write!(f, "EosUnknown: {}", hex),
+            Self::BtcUnknown => write!(f, "BtcUnknown: {}", hex),
+            Self::EosMainnet => write!(f, "Eos Mainnet: {}", hex),
+            Self::FioMainnet => write!(f, "FIO Mainnet: {}", hex),
+            Self::XDaiMainnet => write!(f, "xDai Mainnet: {}", hex),
+            Self::TelosMainnet => write!(f, "Telos Mainnet: {}", hex),
+            Self::UltraTestnet => write!(f, "Ultra Testnet: {}", hex),
+            Self::UltraMainnet => write!(f, "Ultra Mainnet: {}", hex),
+            Self::InterimChain => write!(f, "Interim Chain: {}", hex),
+            Self::FantomMainnet => write!(f, "Fantom Mainnet: {}", hex),
+            Self::AlgorandMainnet => write!(f, "AlgorandMainnet: {}", hex),
+            Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: {}", hex),
+            Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", hex),
+            Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: {}", hex),
+            Self::ArbitrumMainnet => write!(f, "Arbitrum Mainnet: {}", hex),
+            Self::EthereumMainnet => write!(f, "Ethereum Mainnet: {}", hex),
+            Self::EthereumRinkeby => write!(f, "Ethereum Rinkeby: {}", hex),
+            Self::EthereumRopsten => write!(f, "Ethereum Ropsten: {}", hex),
+            Self::LuxochainMainnet => write!(f, "Luxochain Mainnet: {}", hex),
+            Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: {}", hex),
+            Self::BscMainnet => write!(f, "Binance Chain (BSC) Mainnet: {}", hex),
         }
     }
 }

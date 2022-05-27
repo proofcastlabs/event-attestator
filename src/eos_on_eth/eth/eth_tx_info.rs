@@ -316,7 +316,7 @@ impl EosOnEthEthTxInfo {
             self.to_metadata_bytes()
         }?;
         debug!(
-            "smart-contract: {}\namount: {}\nchain ID: {}\nmetadata: 0x{}",
+            "smart-contract: {}\namount: {}\nchain ID: {}\nmetadata: {}",
             &eos_smart_contract,
             &amount,
             &chain_id.to_hex(),
