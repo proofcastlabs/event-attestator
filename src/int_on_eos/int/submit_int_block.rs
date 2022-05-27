@@ -181,7 +181,7 @@ mod tests {
                 "originating_tx_hash":"0x0695f2980bc04b8da96406c79468f3e51dbb2a18c4bc0638cff055fa63f309f2",
                 "originating_address":"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac",
                 "eos_latest_block_number":213498746,
-                "destination_chain_id":"Eos Mainnet: 0x02e7261c",
+                "destination_chain_id":"0x02e7261c",
                 "native_token_address":"0x4262d1f878d191fbc66dca73bad57309916b1412",
                 "broadcast_tx_hash":null,
                 "broadcast_timestamp":null
