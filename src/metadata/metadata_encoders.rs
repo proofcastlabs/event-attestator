@@ -1,5 +1,7 @@
+use derive_more::Constructor;
 use ethabi::{encode as eth_abi_encode, Token as EthAbiToken};
 use ethereum_types::Address as EthAddress;
+use serde::Serialize;
 
 use crate::{
     chains::eos::eos_metadata::EosMetadata,
@@ -101,7 +103,53 @@ impl Metadata {
 
     fn to_bytes_for_algorand(&self) -> Result<Bytes> {
         info!("✔ Converting metadata to bytes for Algorand...");
-        Ok(rmp_serde::to_vec(&self.to_json()?)?)
+
+        #[derive(Serialize, Constructor)]
+        pub struct AlgorandMetadataBytes {
+            // NOTE: This allows message pack serialization of bytes to be much more compact.
+            #[serde(with = "serde_bytes")]
+            version: Bytes,
+
+            #[serde(with = "serde_bytes")]
+            user_data: Bytes,
+
+            #[serde(with = "serde_bytes")]
+            origin_chain_id: Bytes,
+
+            #[serde(with = "serde_bytes")]
+            origin_address: Bytes,
+
+            #[serde(with = "serde_bytes")]
+            destination_chain_id: Bytes,
+
+            #[serde(with = "serde_bytes")]
+            destination_address: Bytes,
+
+            #[serde(with = "serde_bytes")]
+            protocol_options: Bytes,
+
+            #[serde(with = "serde_bytes")]
+            protocol_receipt: Bytes,
+        }
+
+        Ok(rmp_serde::to_vec(&AlgorandMetadataBytes::new(
+            self.version.to_bytes(),
+            self.user_data.to_vec(),
+            self.origin_chain_id.to_bytes()?,
+            self.origin_address.clone().address.as_bytes().to_vec(),
+            match &self.destination_chain_id {
+                Some(metadata_chain_id) => metadata_chain_id.to_bytes()?,
+                None => vec![],
+            },
+            self.destination_address
+                .clone()
+                .unwrap_or_default()
+                .address
+                .as_bytes()
+                .to_vec(),
+            self.protocol_options.clone().unwrap_or_default(),
+            self.protocol_receipt.clone().unwrap_or_default(),
+        ))?)
     }
 
     pub fn to_bytes_for_protocol(&self, destination_protocol: &MetadataProtocolId) -> Result<Bytes> {
