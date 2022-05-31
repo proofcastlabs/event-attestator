@@ -3,7 +3,7 @@ use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use derive_more::Constructor;
-use rust_algorand::AlgorandSignedTransaction;
+use rust_algorand::AlgorandTxGroup;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -41,7 +41,7 @@ pub struct IntTxInfo {
 
 impl IntTxInfo {
     pub fn new(
-        signed_tx: &AlgorandSignedTransaction,
+        signed_tx: (AlgorandTxGroup, String),
         tx_info: &IntOnAlgoAlgoTxInfo,
         nonce: u64,
         algo_latest_block_number: u64,
@@ -52,9 +52,9 @@ impl IntTxInfo {
             algo_latest_block_number,
             broadcast_timestamp: None,
             algo_account_nonce: nonce,
-            algo_signed_tx: signed_tx.to_hex()?,
+            algo_signed_tx: signed_tx.1,
+            algo_tx_hash: signed_tx.0.to_id()?,
             _id: format!("pint-on-algo-algo-{}", nonce),
-            algo_tx_hash: signed_tx.transaction.to_id()?,
             algo_tx_amount: tx_info.host_token_amount.to_string(),
             host_token_address: format!("{}", tx_info.algo_asset_id),
             algo_tx_recipient: tx_info.destination_address.to_string(),
@@ -68,7 +68,7 @@ impl IntTxInfo {
 }
 
 pub fn get_int_signed_tx_info_from_int_txs(
-    txs: &[AlgorandSignedTransaction],
+    txs: Vec<(AlgorandTxGroup, String)>,
     tx_infos: &IntOnAlgoAlgoTxInfos,
     algo_account_nonce: u64,
     algo_latest_block_num: u64,
@@ -85,19 +85,19 @@ pub fn get_int_signed_tx_info_from_int_txs(
     txs.iter()
         .zip(tx_infos.iter())
         .enumerate()
-        .map(|(i, (tx, info))| IntTxInfo::new(tx, info, start_nonce + i as u64, algo_latest_block_num))
+        .map(|(i, (tx, info))| IntTxInfo::new(tx.clone(), info, start_nonce + i as u64, algo_latest_block_num))
         .collect::<Result<Vec<_>>>()
 }
 
 pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
     info!("✔ Getting INT output json...");
-    let txs = state.algo_signed_txs.clone();
+    let txs = state.algo_signed_group_txs.clone();
     let int_latest_block_num = state.eth_db_utils.get_latest_eth_block_number()?;
     let output = if !txs.is_empty() {
         IntOutput::new(
             int_latest_block_num,
             get_int_signed_tx_info_from_int_txs(
-                &txs,
+                txs,
                 &state.int_on_algo_algo_tx_infos,
                 state.algo_db_utils.get_algo_account_nonce()?,
                 state.algo_db_utils.get_latest_block_number()?,
