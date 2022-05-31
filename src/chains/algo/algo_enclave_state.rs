@@ -89,7 +89,7 @@ mod tests {
         let state = AlgoState::init_with_empty_dictionary(&db);
         let submission_material = get_sample_submission_material_n(0);
         let block_num = submission_material.block.round();
-        let app_id = 666i64;
+        let app_id = 666;
         let hash = submission_material.block.hash().unwrap();
         let genesis_id = "mainnet-v1.0";
         let submission_material_json_str = submission_material.to_string();

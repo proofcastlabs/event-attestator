@@ -34,7 +34,7 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
     fee: u64,
     canon_to_tip_length: u64,
     genesis_id: &str,
-    app_id: i64,
+    app_id: u64,
 ) -> Result<AlgoState<'a, D>> {
     info!("✔ Initializing ALGO core...");
     let submission_material = AlgoSubmissionMaterial::from_str(submission_material_str)?;
@@ -74,7 +74,7 @@ mod tests {
         let canon_to_tip_length = 3;
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
-        let app_id = 666i64;
+        let app_id = 666;
         let state = AlgoState::init_with_empty_dictionary(&db);
         let submission_material = get_sample_submission_material_n(0);
         let hash = submission_material.block.hash().unwrap();
