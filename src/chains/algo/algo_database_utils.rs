@@ -3,7 +3,7 @@
 use std::{fmt, str::FromStr};
 
 use paste::paste;
-use rust_algorand::{AlgorandAddress, AlgorandHash, AlgorandKeys, MicroAlgos};
+use rust_algorand::{AlgorandAddress, AlgorandAppId, AlgorandHash, AlgorandKeys, MicroAlgos};
 
 use crate::{
     chains::algo::{
@@ -30,7 +30,8 @@ create_db_utils_with_getters!(
     "_anchor_block_hash_key" => "algo_anchor_block_hash_key",
     "_latest_block_hash_key" => "algo_latest_block_hash_key",
     "_genesis_block_hash_key" => "algo_genesis_block_hash_key",
-    "_canon_to_tip_length_key" => "algo_canon_to_tip_length_key"
+    "_canon_to_tip_length_key" => "algo_canon_to_tip_length_key",
+    "_issuance_manager_app_id_key" => "algo_issuance_manager_app_id_key"
 );
 
 macro_rules! create_special_hash_setters_and_getters {
@@ -155,6 +156,23 @@ macro_rules! create_special_hash_setters_and_getters {
 create_special_hash_setters_and_getters!("tail", "canon", "anchor", "latest", "genesis", "linker");
 
 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
+    pub fn put_algo_app_id_in_db(&self, app_id: &AlgorandAppId) -> Result<()> {
+        self.get_db().put(
+            self.algo_issuance_manager_app_id_key.clone(),
+            app_id.to_bytes(),
+            MIN_DATA_SENSITIVITY_LEVEL,
+        )
+    }
+
+    pub fn get_algo_app_id(&self) -> Result<AlgorandAppId> {
+        self.get_db()
+            .get(
+                self.algo_issuance_manager_app_id_key.clone(),
+                MIN_DATA_SENSITIVITY_LEVEL,
+            )
+            .and_then(|bytes| Ok(AlgorandAppId::from_bytes(&bytes)?))
+    }
+
     pub fn get_genesis_hash(&self) -> Result<AlgorandHash> {
         info!("✔ Getting genesis hash from db...");
         self.get_db()
@@ -542,6 +560,8 @@ mod tests {
                 "805e14a1f236eac2b388f2cb625af8bacd8633cb489e84df62b99fbc80b28a0d".to_string(),
             ALGO_LINKER_BLOCK_HASH_KEY:
                 "6a5d622179feb8e0b51f30517735aeb6cb1ded767e1868b527475bc7649a2d02".to_string(),
+            ALGO_ISSUANCE_MANAGER_APP_ID_KEY:
+                "a921bc2a9ca1fed67d74b19b97bce679457191f5f6684facc422d838dc3d275b".to_string(),
         };
         let result = AlgoDatabaseKeysJson::new();
         assert_eq!(result, expected_result)
@@ -704,5 +724,15 @@ mod tests {
         db_utils.put_genesis_hash_in_db(&hash).unwrap();
         let result = db_utils.get_genesis_hash().unwrap();
         assert_eq!(result, hash);
+    }
+
+    #[test]
+    fn should_get_and_put_algo_app_id_in_db() {
+        let app_id = AlgorandAppId::new(1337);
+        let db = get_test_database();
+        let db_utils = AlgoDbUtils::new(&db);
+        db_utils.put_algo_app_id_in_db(&app_id).unwrap();
+        let result = db_utils.get_algo_app_id().unwrap();
+        assert_eq!(result, app_id);
     }
 }
