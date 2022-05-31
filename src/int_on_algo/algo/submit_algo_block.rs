@@ -119,6 +119,7 @@ mod tests {
         let algo_confirmations = 1;
         let gas_price = 20_000_000_000;
         let algo_fee = 1000;
+        let app_id = 1337;
 
         // NOTE: Initialize the INT side of the core...
         initialize_eth_core_with_vault_and_router_contracts_and_return_state(
@@ -140,6 +141,7 @@ mod tests {
             &AlgorandGenesisId::Mainnet.to_string(),
             algo_fee,
             algo_confirmations,
+            app_id,
         )
         .unwrap();
 

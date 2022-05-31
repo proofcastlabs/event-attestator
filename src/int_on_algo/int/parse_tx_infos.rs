@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use ethereum_types::Address as EthAddress;
-use rust_algorand::AlgorandAddress;
+use rust_algorand::{AlgorandAddress, AlgorandAppId};
 
 use crate::{
     chains::eth::{
@@ -41,6 +41,7 @@ impl IntOnAlgoAlgoTxInfos {
         vault_address: &EthAddress,
         dictionary: &EvmAlgoTokenDictionary,
         router_address: &EthAddress,
+        app_id: &AlgorandAppId,
     ) -> Result<Self> {
         info!("✔ Getting `IntOnAlgoAlgoTxInfo` from receipt...");
         Ok(Self::new(
@@ -50,6 +51,7 @@ impl IntOnAlgoAlgoTxInfos {
                     let event_params = Erc20VaultPegInEventParams::from_eth_log(log)?;
                     let tx_info = IntOnAlgoAlgoTxInfo {
                         router_address: *router_address,
+                        issuance_manager_app_id: app_id.clone(),
                         token_sender: event_params.token_sender,
                         user_data: event_params.user_data.clone(),
                         int_token_address: event_params.token_address,
@@ -76,13 +78,14 @@ impl IntOnAlgoAlgoTxInfos {
         vault_address: &EthAddress,
         dictionary: &EvmAlgoTokenDictionary,
         router_address: &EthAddress,
+        app_id: &AlgorandAppId,
     ) -> Result<Self> {
         info!("✔ Getting `IntOnAlgoAlgoTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(receipt, vault_address, dictionary, router_address))
+                .map(|receipt| Self::from_eth_receipt(receipt, vault_address, dictionary, router_address, app_id))
                 .collect::<Result<Vec<IntOnAlgoAlgoTxInfos>>>()?
                 .iter()
                 .map(|infos| infos.iter().cloned().collect())
@@ -114,10 +117,9 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                     &state.eth_db_utils.get_int_on_algo_smart_contract_address()?,
                     state.get_evm_algo_token_dictionary()?,
                     &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
+                    &state.algo_db_utils.get_algo_app_id()?,
                 )
                 .and_then(|tx_infos| state.add_int_on_algo_algo_tx_infos(tx_infos))
             },
         })
 }
-
-// TODO test!

@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use rust_algorand::{AlgorandHash, AlgorandKeys, MicroAlgos};
+use rust_algorand::{AlgorandAppId, AlgorandHash, AlgorandKeys, MicroAlgos};
 
 use crate::{
     chains::algo::{
@@ -34,6 +34,7 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
     fee: u64,
     canon_to_tip_length: u64,
     genesis_id: &str,
+    app_id: i64,
 ) -> Result<AlgoState<'a, D>> {
     info!("✔ Initializing ALGO core...");
     let submission_material = AlgoSubmissionMaterial::from_str(submission_material_str)?;
@@ -49,6 +50,7 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
             state.algo_db_utils.put_algo_private_key_in_db(&keys)?;
             state.algo_db_utils.put_redeem_address_in_db(&address)?;
             state.algo_db_utils.put_algo_fee_in_db(MicroAlgos::new(fee))?;
+            state.algo_db_utils.put_algo_app_id_in_db(&AlgorandAppId::new(app_id))?;
             initialize_algo_chain_db_keys(&state.algo_db_utils, &hash, canon_to_tip_length)?;
             state
                 .algo_db_utils
@@ -72,16 +74,18 @@ mod tests {
         let canon_to_tip_length = 3;
         let db = get_test_database();
         let db_utils = AlgoDbUtils::new(&db);
+        let app_id = 666i64;
         let state = AlgoState::init_with_empty_dictionary(&db);
         let submission_material = get_sample_submission_material_n(0);
         let hash = submission_material.block.hash().unwrap();
         let genesis_id = "mainnet-v1.0";
         let block_json_string = submission_material.to_string();
-        initialize_algo_core(state, &block_json_string, fee, canon_to_tip_length, genesis_id).unwrap();
+        initialize_algo_core(state, &block_json_string, fee, canon_to_tip_length, genesis_id, app_id).unwrap();
         assert!(db_utils.get_algo_private_key().is_ok());
         assert_eq!(db_utils.get_algo_fee().unwrap(), fee_in_micro_algos);
         assert_eq!(db_utils.get_algo_account_nonce().unwrap(), 0);
         assert_eq!(db_utils.get_tail_block_hash().unwrap(), hash);
+        assert_eq!(db_utils.get_algo_app_id().unwrap(), AlgorandAppId::new(app_id));
         assert_eq!(
             db_utils.get_genesis_hash().unwrap(),
             AlgorandHash::from_genesis_id(genesis_id).unwrap()

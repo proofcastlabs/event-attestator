@@ -1,6 +1,6 @@
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
-use rust_algorand::AlgorandAddress;
+use rust_algorand::{AlgorandAddress, AlgorandAppId};
 
 use crate::{metadata::metadata_chain_id::MetadataChainId, types::Bytes};
 
@@ -17,6 +17,7 @@ pub struct IntOnAlgoAlgoTxInfo {
     pub origin_chain_id: MetadataChainId,
     pub destination_address: AlgorandAddress,
     pub destination_chain_id: MetadataChainId,
+    pub issuance_manager_app_id: AlgorandAppId,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Constructor, Deref)]
