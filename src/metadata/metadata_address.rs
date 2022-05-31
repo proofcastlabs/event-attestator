@@ -107,7 +107,7 @@ impl MetadataAddress {
         match self.metadata_chain_id.to_protocol_id() {
             MetadataProtocolId::Bitcoin => Ok(self.address.as_bytes().to_vec()),
             MetadataProtocolId::Ethereum => Ok(hex::decode(strip_hex_prefix(&self.address))?),
-            MetadataProtocolId::Algorand => Ok(AlgorandAddress::from_str(&self.address)?.to_bytes()?),
+            MetadataProtocolId::Algorand => Ok(AlgorandAddress::from_str(&self.address)?.to_bytes()),
             MetadataProtocolId::Eos => Ok(EosAddress::from_str(&self.address)?.as_u64().to_le_bytes().to_vec()),
         }
     }

@@ -163,7 +163,7 @@ mod tests {
             AlgorandAddress::from_str("N4F4VB7GYZWL2RRTMQVMBKM5GKTKDTOHVB5PHGQYFB6XSXR3MRYIVOPTWE").unwrap();
         db.put(
             get_prefixed_db_key("algo_redeem_address_key").to_vec(),
-            algo_address.to_bytes().unwrap(),
+            algo_address.to_bytes(),
             MIN_DATA_SENSITIVITY_LEVEL,
         )
         .unwrap();

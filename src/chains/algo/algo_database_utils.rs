@@ -236,7 +236,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     fn put_algo_address_in_db(&self, key: &[Byte], address: &AlgorandAddress) -> Result<()> {
         info!("✔ Putting ALGO address of {address} in db!");
         self.get_db()
-            .put(key.to_vec(), address.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
+            .put(key.to_vec(), address.to_bytes(), MIN_DATA_SENSITIVITY_LEVEL)
     }
 
     pub fn put_algo_submission_material_in_db(&self, submission_material: &AlgoSubmissionMaterial) -> Result<()> {

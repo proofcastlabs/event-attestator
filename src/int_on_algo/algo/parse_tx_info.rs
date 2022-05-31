@@ -45,11 +45,11 @@ impl IntOnAlgoIntTxInfos {
             algo_asset_id: asset_id,
             token_sender: *token_sender,
             router_address: *router_address,
+            originating_tx_hash: tx.to_id()?,
             int_vault_address: *vault_address,
             user_data: metadata.user_data.clone(),
             destination_address: metadata.destination_address,
             destination_chain_id: metadata.destination_chain_id,
-            originating_tx_hash: tx.id.clone().unwrap_or_default(),
             int_token_address: dictionary.get_evm_address_from_asset_id(asset_id)?,
             native_token_amount: dictionary.convert_algo_amount_to_evm_amount(asset_id, host_asset_amount)?,
             origin_chain_id: AlgoChainId::from_genesis_id(&AlgorandGenesisId::from_hash(genesis_hash)?)?

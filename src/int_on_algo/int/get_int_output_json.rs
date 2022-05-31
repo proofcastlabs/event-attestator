@@ -41,7 +41,7 @@ pub struct IntTxInfo {
 
 impl IntTxInfo {
     pub fn new(
-        tx: &AlgorandSignedTransaction,
+        signed_tx: &AlgorandSignedTransaction,
         tx_info: &IntOnAlgoAlgoTxInfo,
         nonce: u64,
         algo_latest_block_number: u64,
@@ -52,9 +52,9 @@ impl IntTxInfo {
             algo_latest_block_number,
             broadcast_timestamp: None,
             algo_account_nonce: nonce,
-            algo_signed_tx: tx.to_hex()?,
-            algo_tx_hash: tx.to_tx_id()?,
+            algo_signed_tx: signed_tx.to_hex()?,
             _id: format!("pint-on-algo-algo-{}", nonce),
+            algo_tx_hash: signed_tx.transaction.to_id()?,
             algo_tx_amount: tx_info.host_token_amount.to_string(),
             host_token_address: format!("{}", tx_info.algo_asset_id),
             algo_tx_recipient: tx_info.destination_address.to_string(),
