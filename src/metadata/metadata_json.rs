@@ -1,3 +1,4 @@
+#![cfg(test)]
 use serde::{Deserialize, Serialize};
 #[cfg(test)]
 use serde_json;
@@ -35,10 +36,7 @@ impl Metadata {
             protocol_options: self.protocol_options.as_ref().map(hex::encode),
         })
     }
-}
 
-#[cfg(test)]
-impl Metadata {
     pub fn from_json(json: &MetadataJson) -> Result<Self> {
         let origin_chain_id = MetadataChainId::from_bytes(&hex::decode(&json.origin_chain_id)?)?;
         let destination_chain_id = MetadataChainId::from_bytes(&hex::decode(&json.destination_chain_id)?)?;
