@@ -92,7 +92,7 @@ mod tests {
             maybe_initialize_algo_core,
             test_utils::{
                 get_sample_contiguous_algo_submission_json_strings,
-                get_sample_contiguous_int_submission_json_strings,
+                get_sample_contiguous_int_submission_json_strings_for_algo_address_peg_in,
                 get_sample_evm_algo_dictionary_entry,
                 get_sample_router_address,
                 get_sample_vault_address,
@@ -103,11 +103,9 @@ mod tests {
     };
 
     #[test]
-    fn should_submit_int_block_successfully() {
-        // NOTE: This test covers the case where a user pegs-in to a destination address,
-        // NOT an algorand application!
+    fn should_submit_int_block_with_address_type_peg_in_successfully() {
         let db = get_test_database();
-        let int_submission_material = get_sample_contiguous_int_submission_json_strings();
+        let int_submission_material = get_sample_contiguous_int_submission_json_strings_for_algo_address_peg_in();
         let int_init_block = int_submission_material[0].clone();
         let int_peg_in_block = int_submission_material[1].clone();
         let algo_submission_material = get_sample_contiguous_algo_submission_json_strings();
