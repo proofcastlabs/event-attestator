@@ -2,7 +2,7 @@
 license = "MIT"
 publish = false
 edition = "2021"
-version = "5.27.2"
+version = "5.28.0"
 rust-version = "1.56"
 readme = "README.md"
 name = "ptokens_core"
@@ -50,8 +50,7 @@ serde = { version = "1.0.130", features = ["derive"] }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 bitcoin = { version = "0.27.1", features = ["use-serde", "rand"] }
 eos-chain = { git = "https://github.com/bifrost-finance/rust-eos" }
-#rust-algorand = { git = "https://github.com/provable-things/rust-algorand" }
-rust-algorand = { path = "../rust-algorand" }
+rust-algorand = { git = "https://github.com/provable-things/rust-algorand" }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"] }
 
 [dev-dependencies]
