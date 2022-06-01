@@ -3,11 +3,13 @@ use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use derive_more::Constructor;
-use rust_algorand::AlgorandTxGroup;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
+    chains::{
+        algo::algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
+        eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
+    },
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
     traits::DatabaseInterface,
     types::Result,
@@ -41,7 +43,7 @@ pub struct IntTxInfo {
 
 impl IntTxInfo {
     pub fn new(
-        signed_tx: (AlgorandTxGroup, String),
+        group_tx: AlgoSignedGroupTx,
         tx_info: &IntOnAlgoAlgoTxInfo,
         nonce: u64,
         algo_latest_block_number: u64,
@@ -52,8 +54,8 @@ impl IntTxInfo {
             algo_latest_block_number,
             broadcast_timestamp: None,
             algo_account_nonce: nonce,
-            algo_signed_tx: signed_tx.1,
-            algo_tx_hash: signed_tx.0.to_id()?,
+            algo_signed_tx: group_tx.signed_tx,
+            algo_tx_hash: group_tx.group_tx.to_id()?,
             _id: format!("pint-on-algo-algo-{}", nonce),
             originating_address: tx_info.token_sender.clone(),
             algo_tx_amount: tx_info.host_token_amount.to_string(),
@@ -72,7 +74,7 @@ impl IntTxInfo {
 }
 
 pub fn get_int_signed_tx_info_from_int_txs(
-    txs: Vec<(AlgorandTxGroup, String)>,
+    txs: AlgoSignedGroupTxs,
     tx_infos: &IntOnAlgoAlgoTxInfos,
     algo_account_nonce: u64,
     algo_latest_block_num: u64,

@@ -9,7 +9,10 @@ use rust_algorand::{
 };
 
 use crate::{
-    chains::eth::eth_state::EthState,
+    chains::{
+        algo::algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
+        eth::eth_state::EthState,
+    },
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
     metadata::metadata_traits::ToMetadata,
     traits::DatabaseInterface,
@@ -60,7 +63,7 @@ impl IntOnAlgoAlgoTxInfo {
         genesis_hash: &AlgorandHash,
         sender: &AlgorandAddress,
         private_key: &AlgorandKeys,
-    ) -> Result<(AlgorandTxGroup, String)> {
+    ) -> Result<AlgoSignedGroupTx> {
         info!(
             "✔ Signing ALGO group transaction for a user peg-in with tx info: {:?}",
             self
@@ -96,9 +99,11 @@ impl IntOnAlgoAlgoTxInfo {
         )?;
 
         let group_tx = AlgorandTxGroup::new(&vec![asset_transfer_tx, app_call_tx])?;
-        let signed_tx = group_tx.sign_transactions(&[private_key])?;
 
-        Ok((group_tx, signed_tx)) // FIXME TODO make a type for this!We ought to make a type for this.
+        Ok(AlgoSignedGroupTx::new(
+            group_tx.sign_transactions(&[private_key])?,
+            group_tx,
+        ))
     }
 
     fn to_application_peg_in_signed_group_tx(
@@ -108,7 +113,7 @@ impl IntOnAlgoAlgoTxInfo {
         genesis_hash: &AlgorandHash,
         sender: &AlgorandAddress,
         private_key: &AlgorandKeys,
-    ) -> Result<(AlgorandTxGroup, String)> {
+    ) -> Result<AlgoSignedGroupTx> {
         info!(
             "✔ Signing ALGO group transaction for an application peg-in with tx info: {:?}",
             self
@@ -146,9 +151,11 @@ impl IntOnAlgoAlgoTxInfo {
         )?;
 
         let group_tx = AlgorandTxGroup::new(&vec![asset_transfer_tx, app_call_tx])?;
-        let signed_tx = group_tx.sign_transactions(&[private_key])?;
 
-        Ok((group_tx, signed_tx)) // FIXME TODO Make a type for this.
+        Ok(AlgoSignedGroupTx::new(
+            group_tx.sign_transactions(&[private_key])?,
+            group_tx,
+        ))
     }
 
     pub fn to_algo_signed_group_tx(
@@ -158,7 +165,7 @@ impl IntOnAlgoAlgoTxInfo {
         genesis_hash: &AlgorandHash,
         sender: &AlgorandAddress,
         private_key: &AlgorandKeys,
-    ) -> Result<(AlgorandTxGroup, String)> {
+    ) -> Result<AlgoSignedGroupTx> {
         if self.destination_is_app() {
             self.to_application_peg_in_signed_group_tx(fee, first_valid, genesis_hash, sender, private_key)
         } else {
@@ -175,14 +182,16 @@ impl IntOnAlgoAlgoTxInfos {
         genesis_hash: &AlgorandHash,
         sender: &AlgorandAddress,
         private_key: &AlgorandKeys,
-    ) -> Result<Vec<(AlgorandTxGroup, String)>> {
+    ) -> Result<AlgoSignedGroupTxs> {
         info!("✔ Signing `erc20-on-int` INT transactions...");
-        self.iter()
-            .enumerate()
-            .map(|(i, info)| {
-                info.to_algo_signed_group_tx(fee, first_valid + i as u64, genesis_hash, sender, private_key)
-            })
-            .collect::<Result<Vec<_>>>()
+        Ok(AlgoSignedGroupTxs::new(
+            self.iter()
+                .enumerate()
+                .map(|(i, info)| {
+                    info.to_algo_signed_group_tx(fee, first_valid + i as u64, genesis_hash, sender, private_key)
+                })
+                .collect::<Result<Vec<_>>>()?,
+        ))
     }
 }
 
@@ -205,7 +214,7 @@ pub fn maybe_sign_algo_txs_and_add_to_state<D: DatabaseInterface>(state: EthStat
                 {
                     debug!("✔ Signed transactions: {:?}", signed_txs);
                 }
-                state.add_algo_signed_group_txs(signed_txs)
+                state.add_algo_signed_group_txs(&signed_txs)
             })
     }
 }
