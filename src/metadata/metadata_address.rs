@@ -56,10 +56,12 @@ impl MetadataAddress {
                 safely_convert_str_to_algo_address(address).to_string()
             },
         };
-        Ok(Self {
+        let metadata_address = Self {
             address,
             metadata_chain_id: *metadata_chain_id,
-        })
+        };
+        info!("✔ Successfully parsed `metadata_address`: {:?}", metadata_address);
+        Ok(metadata_address)
     }
 
     fn get_err_msg(protocol: MetadataProtocolId) -> String {
