@@ -55,14 +55,18 @@ impl IntTxInfo {
             algo_signed_tx: signed_tx.1,
             algo_tx_hash: signed_tx.0.to_id()?,
             _id: format!("pint-on-algo-algo-{}", nonce),
+            originating_address: tx_info.token_sender.clone(),
             algo_tx_amount: tx_info.host_token_amount.to_string(),
             host_token_address: format!("{}", tx_info.algo_asset_id),
-            algo_tx_recipient: tx_info.destination_address.to_string(),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             native_token_address: format!("0x{}", hex::encode(&tx_info.int_token_address)),
-            originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
             destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
+            algo_tx_recipient: if tx_info.destination_is_app() {
+                tx_info.get_destination_app_id()?.to_string()
+            } else {
+                tx_info.get_destination_address()?.to_string()
+            },
         })
     }
 }

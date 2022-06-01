@@ -17,7 +17,7 @@ fn get_asset_op_in_tx_hex(
     private_key: &AlgorandKeys,
 ) -> Result<String> {
     Ok(
-        AlgorandTransaction::asset_opt_in(asset_id, *fee, first_valid_round, *sender, genesis_hash.clone(), None)?
+        AlgorandTransaction::asset_opt_in(asset_id, *fee, first_valid_round, *sender, *genesis_hash, None)?
             .sign(private_key)?
             .to_hex()?,
     )

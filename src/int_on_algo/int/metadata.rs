@@ -25,10 +25,18 @@ impl ToMetadata for IntOnAlgoAlgoTxInfo {
             );
             self.user_data.clone()
         };
+        let destination_metadata_address = if self.destination_is_app() {
+            MetadataAddress::new(&self.get_destination_app_id()?.to_string(), &self.destination_chain_id)?
+        } else {
+            MetadataAddress::new(&self.get_destination_address()?.to_string(), &self.destination_chain_id)?
+        };
+
+        warn!("destination metadata address: {:?}", destination_metadata_address); // FIXME rm!
+
         let metadata = Metadata::new_v3(
             &user_data,
-            &MetadataAddress::new(&self.token_sender.to_string(), &self.origin_chain_id)?,
-            &MetadataAddress::new(&self.destination_address.to_string(), &self.destination_chain_id)?,
+            &MetadataAddress::new(&self.token_sender, &self.origin_chain_id)?,
+            &destination_metadata_address,
             None,
             None,
         );

@@ -95,7 +95,7 @@ mod tests {
             maybe_initialize_algo_core,
             test_utils::{
                 get_sample_contiguous_algo_submission_json_strings,
-                get_sample_contiguous_int_submission_json_strings,
+                get_sample_contiguous_int_submission_json_strings_for_algo_address_peg_in,
                 get_sample_evm_algo_dictionary_entry,
                 get_sample_router_address,
                 get_sample_vault_address,
@@ -108,7 +108,7 @@ mod tests {
     #[test]
     fn should_submit_algo_block_successfully() {
         let db = get_test_database();
-        let int_submission_material = get_sample_contiguous_int_submission_json_strings();
+        let int_submission_material = get_sample_contiguous_int_submission_json_strings_for_algo_address_peg_in();
         let algo_submission_material = get_sample_contiguous_algo_submission_json_strings();
         let int_init_block = int_submission_material[0].clone();
         let algo_init_block = algo_submission_material[0].clone();

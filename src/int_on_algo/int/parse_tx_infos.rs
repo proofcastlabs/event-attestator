@@ -11,9 +11,11 @@ use crate::{
         eth_receipt::EthReceipt,
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
+        eth_utils::convert_eth_address_to_string,
     },
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
+    safe_addresses::SAFE_ALGO_ADDRESS,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -49,24 +51,38 @@ impl IntOnAlgoAlgoTxInfos {
                 .iter()
                 .map(|log| {
                     let event_params = Erc20VaultPegInEventParams::from_eth_log(log)?;
+
+                    let (destination_address, destination_app_id) =
+                        match AlgorandAddress::from_str(&event_params.destination_address) {
+                            Ok(address) => (Some(address), None),
+                            Err(_) => match AlgorandAppId::from_str(&event_params.destination_address) {
+                                Ok(app_id) => (None, Some(app_id)),
+                                Err(_) => {
+                                    warn!("✘ Neither address nor app ID was parsed! Defaulting to safe address!");
+                                    (Some(*SAFE_ALGO_ADDRESS), None)
+                                },
+                            },
+                        };
+
                     let tx_info = IntOnAlgoAlgoTxInfo {
-                        destination_is_app: false, // FIXME - calculate this when adding case 2 tx type!
+                        destination_app_id,
+                        destination_address,
                         router_address: *router_address,
                         issuance_manager_app_id: app_id.clone(),
-                        token_sender: event_params.token_sender,
                         user_data: event_params.user_data.clone(),
                         int_token_address: event_params.token_address,
                         originating_tx_hash: receipt.transaction_hash,
                         native_token_amount: event_params.token_amount,
                         origin_chain_id: event_params.get_origin_chain_id()?,
                         destination_chain_id: event_params.get_destination_chain_id()?,
-                        destination_address: AlgorandAddress::from_str(&event_params.destination_address)?,
+                        token_sender: convert_eth_address_to_string(&event_params.token_sender),
                         algo_asset_id: dictionary.get_algo_asset_id_from_evm_address(&event_params.token_address)?,
                         host_token_amount: dictionary.convert_evm_amount_to_algo_amount(
                             &event_params.token_address,
                             event_params.token_amount,
                         )?,
                     };
+
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)
                 })
