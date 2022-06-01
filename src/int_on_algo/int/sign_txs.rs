@@ -32,7 +32,7 @@ impl IntOnAlgoAlgoTxInfo {
         }
     }
 
-    pub fn to_algo_signed_group_tx(
+    fn to_user_peg_in_signed_group_tx(
         &self,
         fee: &MicroAlgos,
         first_valid: u64,
@@ -40,9 +40,13 @@ impl IntOnAlgoAlgoTxInfo {
         sender: &AlgorandAddress,
         private_key: &AlgorandKeys,
     ) -> Result<(AlgorandTxGroup, String)> {
-        info!("✔ Signing ALGO group transaction for tx info: {:?}", self);
+        info!(
+            "✔ Signing ALGO group transaction for a user peg-in with tx info: {:?}",
+            self
+        );
         let last_valid = None;
 
+        // NOTE: First we transfer the asset in question to the issuance manager app...
         let asset_transfer_tx = AlgorandTransaction::asset_transfer(
             self.algo_asset_id,
             *fee,
@@ -63,6 +67,10 @@ impl IntOnAlgoAlgoTxInfo {
             AlgorandApplicationArg::from(self.destination_address),
         ]);
 
+        // NOTE: Next we call the issuance manager app, with the ASA in question as one of
+        // the foreign assets, and the final destination (as set by the user) as a foreign
+        // account. In this case, the app is simply a forwarder, and so completes the asset
+        // transfer to the final user address.
         let app_call_tx = AlgorandTransaction::application_call_noop(
             self.issuance_manager_app_id.0,
             *fee,
@@ -79,12 +87,27 @@ impl IntOnAlgoAlgoTxInfo {
         let group_tx = AlgorandTxGroup::new(&vec![asset_transfer_tx, app_call_tx])?;
         let signed_tx = group_tx.sign_transactions(&[&private_key])?;
 
-        Ok((group_tx, signed_tx))
+        Ok((group_tx, signed_tx)) // FIXME We ought to make a type for this.
+    }
+
+    pub fn to_algo_signed_group_tx(
+        &self,
+        fee: &MicroAlgos,
+        first_valid: u64,
+        genesis_hash: &AlgorandHash,
+        sender: &AlgorandAddress,
+        private_key: &AlgorandKeys,
+    ) -> Result<(AlgorandTxGroup, String)> {
+        if self.destination_is_app {
+            Err("Application call tx type is not yet supported!".into())
+        } else {
+            self.to_user_peg_in_signed_group_tx(fee, first_valid, genesis_hash, sender, private_key)
+        }
     }
 }
 
 impl IntOnAlgoAlgoTxInfos {
-    pub fn to_algo_signed_group_txs(
+    pub fn to_algo_signed_group_tx(
         &self,
         fee: &MicroAlgos,
         first_valid: u64,
@@ -109,7 +132,7 @@ pub fn maybe_sign_algo_txs_and_add_to_state<D: DatabaseInterface>(state: EthStat
         Ok(state)
     } else {
         tx_infos
-            .to_algo_signed_group_txs(
+            .to_algo_signed_group_tx(
                 &state.algo_db_utils.get_algo_fee()?,
                 state.get_eth_submission_material()?.get_algo_first_valid_round()?,
                 &state.algo_db_utils.get_genesis_hash()?,

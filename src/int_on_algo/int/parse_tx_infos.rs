@@ -50,6 +50,7 @@ impl IntOnAlgoAlgoTxInfos {
                 .map(|log| {
                     let event_params = Erc20VaultPegInEventParams::from_eth_log(log)?;
                     let tx_info = IntOnAlgoAlgoTxInfo {
+                        destination_is_app: false, // FIXME - calculate this when adding case 2 tx type!
                         router_address: *router_address,
                         issuance_manager_app_id: app_id.clone(),
                         token_sender: event_params.token_sender,
