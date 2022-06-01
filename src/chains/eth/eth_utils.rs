@@ -47,6 +47,12 @@ pub fn convert_hex_to_eth_address(hex: &str) -> Result<EthAddress> {
     }
 }
 
+pub fn convert_eth_address_to_string(eth_address: &EthAddress) -> String {
+    // NOTE: Because of the way the `ethereum_types` crate converts an eth address
+    // to `0xaaaa...bbbb` style string.
+    format!("0x{}", hex::encode(eth_address))
+}
+
 pub fn convert_hex_to_bytes(hex: &str) -> Result<Bytes> {
     Ok(hex::decode(strip_hex_prefix(hex))?)
 }
@@ -256,5 +262,13 @@ mod tests {
         let length_after = result.len();
         assert!(length_after < length_before);
         assert_eq!(length_after, length_before - new_line_char.len());
+    }
+
+    #[test]
+    fn should_convert_eth_address_to_string() {
+        let eth_address_string = "0xea674fdde714fd979de3edf0f56aa9716b898ec8".to_string();
+        let eth_address = convert_hex_to_eth_address(&eth_address_string).unwrap();
+        let result = convert_eth_address_to_string(&eth_address);
+        assert_eq!(result, eth_address_string);
     }
 }
