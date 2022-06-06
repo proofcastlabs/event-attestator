@@ -9,6 +9,7 @@ pub(crate) mod algo_relevant_asset_txs;
 pub(crate) mod algo_signed_group_txs;
 pub(crate) mod algo_state;
 pub(crate) mod algo_submission_material;
+pub(crate) mod algo_user_data;
 pub(crate) mod check_parent_exists;
 pub(crate) mod check_submitted_block_is_subsequent;
 pub(crate) mod core_initialization;
