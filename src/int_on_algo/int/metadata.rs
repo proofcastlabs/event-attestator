@@ -1,5 +1,5 @@
 use crate::{
-    chains::algo::algo_constants::MAX_BYTES_FOR_ALGO_USER_DATA,
+    chains::algo::{algo_constants::MAX_BYTES_FOR_ALGO_USER_DATA, algo_user_data::AlgoUserData},
     int_on_algo::int::algo_tx_info::IntOnAlgoAlgoTxInfo,
     metadata::{
         metadata_address::MetadataAddress,
@@ -12,7 +12,27 @@ use crate::{
 
 impl ToMetadata for IntOnAlgoAlgoTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
-        let user_data = if self.user_data.len() > MAX_BYTES_FOR_ALGO_USER_DATA {
+        info!("Getting metadata from `IntOnAlgoAlgoTxInfo`...");
+
+        // NOTE: First we check if there is any user data...
+        if self.user_data.is_empty() {
+            return Err("Cannot wrap no `user_data` into metadata!".into());
+        };
+
+        // NOTE: Next we check if the user data provided can be decoded to `AlgoUserData`...
+        let unchecked_user_data = match AlgoUserData::from_bytes(&self.user_data) {
+            Err(_) => {
+                info!("✔ Could not parse `AlgoUserData` from `user_data`, must not be msgpack encoded!");
+                self.user_data.clone()
+            },
+            Ok(algo_user_data) => {
+                info!("✔ Parsed `AlgoUserData` from `user_data`! Deriving `user_data` from that instead!");
+                algo_user_data.to_user_data()
+            },
+        };
+
+        // NOTE: Now we check that the length of the data is within our bounds...
+        let user_data = if unchecked_user_data.len() > MAX_BYTES_FOR_ALGO_USER_DATA {
             info!(
                 "✘ `user_data` redacted from `Metadata` ∵ it's > {} bytes",
                 MAX_BYTES_FOR_ALGO_USER_DATA
@@ -21,17 +41,16 @@ impl ToMetadata for IntOnAlgoAlgoTxInfo {
         } else {
             info!(
                 "✔ User data to be wrapped in metadata: 0x{}",
-                hex::encode(&self.user_data)
+                hex::encode(&unchecked_user_data)
             );
-            self.user_data.clone()
+            unchecked_user_data
         };
+
         let destination_metadata_address = if self.destination_is_app() {
             MetadataAddress::new(&self.get_destination_app_id()?.to_string(), &self.destination_chain_id)?
         } else {
             MetadataAddress::new(&self.get_destination_address()?.to_string(), &self.destination_chain_id)?
         };
-
-        warn!("destination metadata address: {:?}", destination_metadata_address); // FIXME rm!
 
         let metadata = Metadata::new_v3(
             &user_data,
