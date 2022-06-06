@@ -10,7 +10,10 @@ use rust_algorand::{
 
 use crate::{
     chains::{
-        algo::algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
+        algo::{
+            algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
+            algo_user_data::AlgoUserData,
+        },
         eth::eth_state::EthState,
     },
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
@@ -124,9 +127,19 @@ impl IntOnAlgoAlgoTxInfo {
         let asset_transfer_tx = self.get_asset_transfer_tx(fee, first_valid, genesis_hash, sender, last_valid)?;
 
         let destination_app_id = self.get_destination_app_id()?;
-        let foreign_apps = Some(vec![destination_app_id.to_u64()]);
+        let foreign_apps = Some(vec![destination_app_id.to_u64()]); // FIXME Do we need issuance manager here?
         let destination_address = destination_app_id.to_address()?;
-        let accounts = Some(vec![destination_address]);
+
+        // NOTE: The user may have encoded some foreign accounts into the `user_data` field...
+        let user_supplied_foreign_accounts = match AlgoUserData::from_bytes(&self.user_data) {
+            Err(_) => vec![],
+            Ok(algo_user_data) => algo_user_data.to_addresses(),
+        };
+        let foreign_accounts = Some(
+            [vec![destination_address], user_supplied_foreign_accounts]
+                .concat()
+                .to_vec(),
+        );
         let foreign_assets = Some(vec![self.algo_asset_id]);
         let application_args = Some(vec![
             AlgorandApplicationArg::from("issue"),
@@ -145,7 +158,7 @@ impl IntOnAlgoAlgoTxInfo {
             *genesis_hash,
             last_valid,
             application_args,
-            accounts,
+            foreign_accounts,
             foreign_apps,
             foreign_assets,
         )?;
