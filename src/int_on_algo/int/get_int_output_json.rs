@@ -3,11 +3,13 @@ use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use derive_more::Constructor;
-use rust_algorand::AlgorandSignedTransaction;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
+    chains::{
+        algo::algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
+        eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
+    },
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
     traits::DatabaseInterface,
     types::Result,
@@ -41,7 +43,7 @@ pub struct IntTxInfo {
 
 impl IntTxInfo {
     pub fn new(
-        tx: &AlgorandSignedTransaction,
+        group_tx: AlgoSignedGroupTx,
         tx_info: &IntOnAlgoAlgoTxInfo,
         nonce: u64,
         algo_latest_block_number: u64,
@@ -52,23 +54,27 @@ impl IntTxInfo {
             algo_latest_block_number,
             broadcast_timestamp: None,
             algo_account_nonce: nonce,
-            algo_signed_tx: tx.to_hex()?,
-            algo_tx_hash: tx.to_tx_id()?,
+            algo_signed_tx: group_tx.signed_tx,
+            algo_tx_hash: group_tx.group_tx.to_id()?,
             _id: format!("pint-on-algo-algo-{}", nonce),
+            originating_address: tx_info.token_sender.clone(),
             algo_tx_amount: tx_info.host_token_amount.to_string(),
             host_token_address: format!("{}", tx_info.algo_asset_id),
-            algo_tx_recipient: tx_info.destination_address.to_string(),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             native_token_address: format!("0x{}", hex::encode(&tx_info.int_token_address)),
-            originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
             destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
+            algo_tx_recipient: if tx_info.destination_is_app() {
+                tx_info.get_destination_app_id()?.to_string()
+            } else {
+                tx_info.get_destination_address()?.to_string()
+            },
         })
     }
 }
 
 pub fn get_int_signed_tx_info_from_int_txs(
-    txs: &[AlgorandSignedTransaction],
+    txs: AlgoSignedGroupTxs,
     tx_infos: &IntOnAlgoAlgoTxInfos,
     algo_account_nonce: u64,
     algo_latest_block_num: u64,
@@ -85,19 +91,19 @@ pub fn get_int_signed_tx_info_from_int_txs(
     txs.iter()
         .zip(tx_infos.iter())
         .enumerate()
-        .map(|(i, (tx, info))| IntTxInfo::new(tx, info, start_nonce + i as u64, algo_latest_block_num))
+        .map(|(i, (tx, info))| IntTxInfo::new(tx.clone(), info, start_nonce + i as u64, algo_latest_block_num))
         .collect::<Result<Vec<_>>>()
 }
 
 pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
     info!("✔ Getting INT output json...");
-    let txs = state.algo_signed_txs.clone();
+    let txs = state.algo_signed_group_txs.clone();
     let int_latest_block_num = state.eth_db_utils.get_latest_eth_block_number()?;
     let output = if !txs.is_empty() {
         IntOutput::new(
             int_latest_block_num,
             get_int_signed_tx_info_from_int_txs(
-                &txs,
+                txs,
                 &state.int_on_algo_algo_tx_infos,
                 state.algo_db_utils.get_algo_account_nonce()?,
                 state.algo_db_utils.get_latest_block_number()?,

@@ -1,72 +1,197 @@
 use rust_algorand::{
     AlgorandAddress,
+    AlgorandApplicationArg,
     AlgorandHash,
     AlgorandKeys,
-    AlgorandSignedTransaction,
     AlgorandTransaction,
+    AlgorandTxGroup,
     MicroAlgos,
 };
 
 use crate::{
-    chains::eth::eth_state::EthState,
+    chains::{
+        algo::algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
+        eth::eth_state::EthState,
+    },
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
     metadata::metadata_traits::ToMetadata,
     traits::DatabaseInterface,
-    types::Result,
+    types::{Bytes, Result},
 };
 
 impl IntOnAlgoAlgoTxInfo {
-    pub fn to_algo_signed_tx(
-        &self,
-        fee: &MicroAlgos,
-        first_valid: u64,
-        genesis_hash: &AlgorandHash,
-        sender: &AlgorandAddress,
-        private_key: &AlgorandKeys,
-    ) -> Result<AlgorandSignedTransaction> {
-        info!("✔ Signing ALGO transaction for tx info: {:?}", self);
+    fn maybe_to_metadata_bytes(&self) -> Result<Option<Bytes>> {
         let metadata_bytes = if self.user_data.is_empty() {
             vec![]
         } else {
             self.to_metadata_bytes()?
         };
-        let metadata = if metadata_bytes.is_empty() {
+        if metadata_bytes.is_empty() {
             debug!("✔ No user data ∴ not wrapping in metadata!");
-            None
+            Ok(None)
         } else {
             debug!("✔ Signing with metadata : 0x{}", hex::encode(&metadata_bytes));
-            Some(metadata_bytes)
-        };
-        let last_valid = None;
+            Ok(Some(metadata_bytes))
+        }
+    }
+
+    fn get_asset_transfer_tx(
+        &self,
+        fee: &MicroAlgos,
+        first_valid: u64,
+        genesis_hash: &AlgorandHash,
+        sender: &AlgorandAddress,
+        last_valid: Option<u64>,
+    ) -> Result<AlgorandTransaction> {
         Ok(AlgorandTransaction::asset_transfer(
             self.algo_asset_id,
             *fee,
             self.host_token_amount.as_u64(),
-            metadata,
+            self.maybe_to_metadata_bytes()?,
             first_valid,
             *sender,
-            genesis_hash.clone(),
+            *genesis_hash,
             last_valid,
-            self.destination_address,
-        )
-        .and_then(|tx| tx.sign(private_key))?)
+            self.issuance_manager_app_id.to_address()?,
+        )?)
     }
-}
 
-impl IntOnAlgoAlgoTxInfos {
-    pub fn to_algo_signed_txs(
+    fn to_user_peg_in_signed_group_tx(
         &self,
         fee: &MicroAlgos,
         first_valid: u64,
         genesis_hash: &AlgorandHash,
         sender: &AlgorandAddress,
         private_key: &AlgorandKeys,
-    ) -> Result<Vec<AlgorandSignedTransaction>> {
+    ) -> Result<AlgoSignedGroupTx> {
+        info!(
+            "✔ Signing ALGO group transaction for a user peg-in with tx info: {:?}",
+            self
+        );
+        let last_valid = None;
+
+        // NOTE: First we transfer the asset in question to the issuance manager app...
+        let asset_transfer_tx = self.get_asset_transfer_tx(fee, first_valid, genesis_hash, sender, last_valid)?;
+
+        // NOTE: Next we call the issuance manager app, with the ASA in question as one of
+        // the foreign assets, and the final destination (as set by the user) as an account.
+        // In this case, the app is simply a forwarder, and so completes the asset transfer
+        // to the final user address.
+        let foreign_apps = None;
+        let destination_address = self.get_destination_address()?;
+        let accounts = Some(vec![destination_address]);
+        let foreign_assets = Some(vec![self.algo_asset_id]);
+        let application_args = Some(vec![
+            AlgorandApplicationArg::from("issue"),
+            AlgorandApplicationArg::from(destination_address),
+        ]);
+        let app_call_tx = AlgorandTransaction::application_call_noop(
+            self.issuance_manager_app_id.to_u64(),
+            *fee,
+            first_valid,
+            *sender,
+            *genesis_hash,
+            last_valid,
+            application_args,
+            accounts,
+            foreign_apps,
+            foreign_assets,
+        )?;
+
+        let group_tx = AlgorandTxGroup::new(&vec![asset_transfer_tx, app_call_tx])?;
+
+        Ok(AlgoSignedGroupTx::new(
+            group_tx.sign_transactions(&[private_key])?,
+            group_tx,
+        ))
+    }
+
+    fn to_application_peg_in_signed_group_tx(
+        &self,
+        fee: &MicroAlgos,
+        first_valid: u64,
+        genesis_hash: &AlgorandHash,
+        sender: &AlgorandAddress,
+        private_key: &AlgorandKeys,
+    ) -> Result<AlgoSignedGroupTx> {
+        info!(
+            "✔ Signing ALGO group transaction for an application peg-in with tx info: {:?}",
+            self
+        );
+        let last_valid = None;
+
+        // NOTE: First we transfer the asset in question to the issuance manager app...
+        let asset_transfer_tx = self.get_asset_transfer_tx(fee, first_valid, genesis_hash, sender, last_valid)?;
+
+        let destination_app_id = self.get_destination_app_id()?;
+        let foreign_apps = Some(vec![destination_app_id.to_u64()]);
+        let destination_address = destination_app_id.to_address()?;
+        let accounts = Some(vec![destination_address]);
+        let foreign_assets = Some(vec![self.algo_asset_id]);
+        let application_args = Some(vec![
+            AlgorandApplicationArg::from("issue"),
+            AlgorandApplicationArg::from(destination_app_id.to_u64()),
+        ]);
+
+        // NOTE: Next we call the issuance manager app, with the ASA in question as one of
+        // the foreign assets, and the final destination (as set by the user) as a foreign
+        // account. In this case, the application will forward the ASA to the destination,
+        // and call a hook in that application with the provided metadata (if extant).
+        let app_call_tx = AlgorandTransaction::application_call_noop(
+            self.issuance_manager_app_id.to_u64(),
+            *fee,
+            first_valid,
+            *sender,
+            *genesis_hash,
+            last_valid,
+            application_args,
+            accounts,
+            foreign_apps,
+            foreign_assets,
+        )?;
+
+        let group_tx = AlgorandTxGroup::new(&vec![asset_transfer_tx, app_call_tx])?;
+
+        Ok(AlgoSignedGroupTx::new(
+            group_tx.sign_transactions(&[private_key])?,
+            group_tx,
+        ))
+    }
+
+    pub fn to_algo_signed_group_tx(
+        &self,
+        fee: &MicroAlgos,
+        first_valid: u64,
+        genesis_hash: &AlgorandHash,
+        sender: &AlgorandAddress,
+        private_key: &AlgorandKeys,
+    ) -> Result<AlgoSignedGroupTx> {
+        if self.destination_is_app() {
+            self.to_application_peg_in_signed_group_tx(fee, first_valid, genesis_hash, sender, private_key)
+        } else {
+            self.to_user_peg_in_signed_group_tx(fee, first_valid, genesis_hash, sender, private_key)
+        }
+    }
+}
+
+impl IntOnAlgoAlgoTxInfos {
+    pub fn to_algo_signed_group_tx(
+        &self,
+        fee: &MicroAlgos,
+        first_valid: u64,
+        genesis_hash: &AlgorandHash,
+        sender: &AlgorandAddress,
+        private_key: &AlgorandKeys,
+    ) -> Result<AlgoSignedGroupTxs> {
         info!("✔ Signing `erc20-on-int` INT transactions...");
-        self.iter()
-            .enumerate()
-            .map(|(i, info)| info.to_algo_signed_tx(fee, first_valid + i as u64, genesis_hash, sender, private_key))
-            .collect::<Result<Vec<_>>>()
+        Ok(AlgoSignedGroupTxs::new(
+            self.iter()
+                .enumerate()
+                .map(|(i, info)| {
+                    info.to_algo_signed_group_tx(fee, first_valid + i as u64, genesis_hash, sender, private_key)
+                })
+                .collect::<Result<Vec<_>>>()?,
+        ))
     }
 }
 
@@ -77,7 +202,7 @@ pub fn maybe_sign_algo_txs_and_add_to_state<D: DatabaseInterface>(state: EthStat
         Ok(state)
     } else {
         tx_infos
-            .to_algo_signed_txs(
+            .to_algo_signed_group_tx(
                 &state.algo_db_utils.get_algo_fee()?,
                 state.get_eth_submission_material()?.get_algo_first_valid_round()?,
                 &state.algo_db_utils.get_genesis_hash()?,
@@ -89,7 +214,7 @@ pub fn maybe_sign_algo_txs_and_add_to_state<D: DatabaseInterface>(state: EthStat
                 {
                     debug!("✔ Signed transactions: {:?}", signed_txs);
                 }
-                state.add_algo_signed_txs(&signed_txs)
+                state.add_algo_signed_group_txs(&signed_txs)
             })
     }
 }

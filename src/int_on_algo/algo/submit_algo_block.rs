@@ -95,7 +95,7 @@ mod tests {
             maybe_initialize_algo_core,
             test_utils::{
                 get_sample_contiguous_algo_submission_json_strings,
-                get_sample_contiguous_int_submission_json_strings,
+                get_sample_contiguous_int_submission_json_strings_for_algo_address_peg_in,
                 get_sample_evm_algo_dictionary_entry,
                 get_sample_router_address,
                 get_sample_vault_address,
@@ -108,7 +108,7 @@ mod tests {
     #[test]
     fn should_submit_algo_block_successfully() {
         let db = get_test_database();
-        let int_submission_material = get_sample_contiguous_int_submission_json_strings();
+        let int_submission_material = get_sample_contiguous_int_submission_json_strings_for_algo_address_peg_in();
         let algo_submission_material = get_sample_contiguous_algo_submission_json_strings();
         let int_init_block = int_submission_material[0].clone();
         let algo_init_block = algo_submission_material[0].clone();
@@ -119,6 +119,7 @@ mod tests {
         let algo_confirmations = 1;
         let gas_price = 20_000_000_000;
         let algo_fee = 1000;
+        let app_id = 1337;
 
         // NOTE: Initialize the INT side of the core...
         initialize_eth_core_with_vault_and_router_contracts_and_return_state(
@@ -140,6 +141,7 @@ mod tests {
             &AlgorandGenesisId::Mainnet.to_string(),
             algo_fee,
             algo_confirmations,
+            app_id,
         )
         .unwrap();
 
@@ -163,7 +165,7 @@ mod tests {
             AlgorandAddress::from_str("N4F4VB7GYZWL2RRTMQVMBKM5GKTKDTOHVB5PHGQYFB6XSXR3MRYIVOPTWE").unwrap();
         db.put(
             get_prefixed_db_key("algo_redeem_address_key").to_vec(),
-            algo_address.to_bytes().unwrap(),
+            algo_address.to_bytes(),
             MIN_DATA_SENSITIVITY_LEVEL,
         )
         .unwrap();

@@ -61,6 +61,7 @@ pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: &D, block_json_string
                         &state.eth_db_utils.get_int_on_algo_smart_contract_address()?,
                         state.get_evm_algo_token_dictionary()?,
                         &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
+                        &state.algo_db_utils.get_algo_app_id()?,
                     )?;
                     state.add_int_on_algo_algo_tx_infos(tx_infos)
                 },

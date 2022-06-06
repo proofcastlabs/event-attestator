@@ -14,7 +14,7 @@ fn increment_algo_account_nonce<D: DatabaseInterface>(db_utils: &AlgoDbUtils<D>,
 pub fn maybe_increment_algo_account_nonce_and_return_eth_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    let num_txs = state.algo_signed_txs.len();
+    let num_txs = state.algo_signed_group_txs.len();
     if num_txs == 0 {
         info!("✔ No signatures in state ∴ not incrementing ALGO account nonce");
         Ok(state)

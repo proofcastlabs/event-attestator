@@ -5,7 +5,7 @@ use std::str::FromStr;
 use bitcoin::util::address::Address as BtcAddress;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
-use rust_algorand::AlgorandAddress;
+use rust_algorand::{AlgorandAddress, AlgorandAppId};
 use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
@@ -53,13 +53,21 @@ impl MetadataAddress {
             },
             MetadataProtocolId::Algorand => {
                 info!("✔ Getting `MetadataAddress` for an ALGO address...");
-                safely_convert_str_to_algo_address(address).to_string()
+                match AlgorandAppId::from_str(address) {
+                    Ok(app_id) => {
+                        info!("Algorand metadata address is actually an application ID: '{}'!", app_id);
+                        app_id.to_string()
+                    },
+                    Err(_) => safely_convert_str_to_algo_address(address).to_string(),
+                }
             },
         };
-        Ok(Self {
+        let metadata_address = Self {
             address,
             metadata_chain_id: *metadata_chain_id,
-        })
+        };
+        info!("✔ Successfully parsed `metadata_address`: {:?}", metadata_address);
+        Ok(metadata_address)
     }
 
     fn get_err_msg(protocol: MetadataProtocolId) -> String {
@@ -107,7 +115,7 @@ impl MetadataAddress {
         match self.metadata_chain_id.to_protocol_id() {
             MetadataProtocolId::Bitcoin => Ok(self.address.as_bytes().to_vec()),
             MetadataProtocolId::Ethereum => Ok(hex::decode(strip_hex_prefix(&self.address))?),
-            MetadataProtocolId::Algorand => Ok(AlgorandAddress::from_str(&self.address)?.to_bytes()?),
+            MetadataProtocolId::Algorand => Ok(AlgorandAddress::from_str(&self.address)?.to_bytes()),
             MetadataProtocolId::Eos => Ok(EosAddress::from_str(&self.address)?.as_u64().to_le_bytes().to_vec()),
         }
     }

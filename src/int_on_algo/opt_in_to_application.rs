@@ -8,8 +8,8 @@ use crate::{
     types::Result,
 };
 
-fn get_asset_op_in_tx_hex(
-    asset_id: u64,
+fn get_application_opt_in_tx_hex(
+    app_id: u64,
     fee: &MicroAlgos,
     first_valid_round: u64,
     sender: &AlgorandAddress,
@@ -17,26 +17,26 @@ fn get_asset_op_in_tx_hex(
     private_key: &AlgorandKeys,
 ) -> Result<String> {
     Ok(
-        AlgorandTransaction::asset_opt_in(asset_id, *fee, first_valid_round, *sender, *genesis_hash, None)?
+        AlgorandTransaction::application_opt_in(app_id, fee, first_valid_round, sender, genesis_hash, None)?
             .sign(private_key)?
             .to_hex()?,
     )
 }
 
-/// # Opt In To Asset
+/// # Opt In To Application
 ///
-/// This function creates an asset-opt-in transaction for the core's Algorand account. Once
-/// broadcast, this transaction allows the core's account to receive assets of the passed in asset
-/// ID. The function requires a first-valid-round parameter to be passed in which defines whence
+/// This function creates an application-opt-in transaction for the core's Algorand account. Once
+/// broadcast, this transaction allows the core's account to interact with that application.
+/// The function requires a first-valid-round parameter to be passed in which defines whence
 /// the transaction is broadcastable.
-pub fn opt_in_to_asset<D: DatabaseInterface>(db: &D, asset_id: u64, first_valid_round: u64) -> Result<String> {
+pub fn opt_in_to_application<D: DatabaseInterface>(db: &D, app_id: u64, first_valid_round: u64) -> Result<String> {
     info!("✔ Opting in to ALGO asset...");
     let int_db_utils = EthDbUtils::new(db);
     let algo_db_utils = AlgoDbUtils::new(db);
     check_core_is_initialized(&int_db_utils, &algo_db_utils)
         .and_then(|_| {
-            get_asset_op_in_tx_hex(
-                asset_id,
+            get_application_opt_in_tx_hex(
+                app_id,
                 &algo_db_utils.get_algo_fee()?,
                 first_valid_round,
                 &algo_db_utils.get_redeem_address()?,

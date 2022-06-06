@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use ethereum_types::Address as EthAddress;
-use rust_algorand::AlgorandAddress;
+use rust_algorand::{AlgorandAddress, AlgorandAppId};
 
 use crate::{
     chains::eth::{
@@ -11,9 +11,11 @@ use crate::{
         eth_receipt::EthReceipt,
         eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
+        eth_utils::convert_eth_address_to_string,
     },
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
+    safe_addresses::SAFE_ALGO_ADDRESS,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -41,6 +43,7 @@ impl IntOnAlgoAlgoTxInfos {
         vault_address: &EthAddress,
         dictionary: &EvmAlgoTokenDictionary,
         router_address: &EthAddress,
+        app_id: &AlgorandAppId,
     ) -> Result<Self> {
         info!("✔ Getting `IntOnAlgoAlgoTxInfo` from receipt...");
         Ok(Self::new(
@@ -48,22 +51,38 @@ impl IntOnAlgoAlgoTxInfos {
                 .iter()
                 .map(|log| {
                     let event_params = Erc20VaultPegInEventParams::from_eth_log(log)?;
+
+                    let (destination_address, destination_app_id) =
+                        match AlgorandAddress::from_str(&event_params.destination_address) {
+                            Ok(address) => (Some(address), None),
+                            Err(_) => match AlgorandAppId::from_str(&event_params.destination_address) {
+                                Ok(app_id) => (None, Some(app_id)),
+                                Err(_) => {
+                                    warn!("✘ Neither address nor app ID was parsed! Defaulting to safe address!");
+                                    (Some(*SAFE_ALGO_ADDRESS), None)
+                                },
+                            },
+                        };
+
                     let tx_info = IntOnAlgoAlgoTxInfo {
+                        destination_app_id,
+                        destination_address,
                         router_address: *router_address,
-                        token_sender: event_params.token_sender,
+                        issuance_manager_app_id: app_id.clone(),
                         user_data: event_params.user_data.clone(),
                         int_token_address: event_params.token_address,
                         originating_tx_hash: receipt.transaction_hash,
                         native_token_amount: event_params.token_amount,
                         origin_chain_id: event_params.get_origin_chain_id()?,
                         destination_chain_id: event_params.get_destination_chain_id()?,
-                        destination_address: AlgorandAddress::from_str(&event_params.destination_address)?,
+                        token_sender: convert_eth_address_to_string(&event_params.token_sender),
                         algo_asset_id: dictionary.get_algo_asset_id_from_evm_address(&event_params.token_address)?,
                         host_token_amount: dictionary.convert_evm_amount_to_algo_amount(
                             &event_params.token_address,
                             event_params.token_amount,
                         )?,
                     };
+
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)
                 })
@@ -76,13 +95,14 @@ impl IntOnAlgoAlgoTxInfos {
         vault_address: &EthAddress,
         dictionary: &EvmAlgoTokenDictionary,
         router_address: &EthAddress,
+        app_id: &AlgorandAppId,
     ) -> Result<Self> {
         info!("✔ Getting `IntOnAlgoAlgoTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(receipt, vault_address, dictionary, router_address))
+                .map(|receipt| Self::from_eth_receipt(receipt, vault_address, dictionary, router_address, app_id))
                 .collect::<Result<Vec<IntOnAlgoAlgoTxInfos>>>()?
                 .iter()
                 .map(|infos| infos.iter().cloned().collect())
@@ -114,10 +134,9 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                     &state.eth_db_utils.get_int_on_algo_smart_contract_address()?,
                     state.get_evm_algo_token_dictionary()?,
                     &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
+                    &state.algo_db_utils.get_algo_app_id()?,
                 )
                 .and_then(|tx_infos| state.add_int_on_algo_algo_tx_infos(tx_infos))
             },
         })
 }
-
-// TODO test!

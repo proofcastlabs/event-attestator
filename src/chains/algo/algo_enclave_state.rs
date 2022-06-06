@@ -12,6 +12,7 @@ use crate::{
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AlgoEnclaveState {
     algo_fee: u64,
+    algo_app_id: String,
     algo_address: String,
     algo_tail_length: u64,
     algo_account_nonce: u64,
@@ -55,6 +56,7 @@ impl AlgoEnclaveState {
             algo_latest_block_number: latest_block_number,
             algo_fee: db_utils.get_algo_fee()?.to_algos(),
             algo_safe_address: ALGO_SAFE_ADDRESS.to_string(),
+            algo_app_id: db_utils.get_algo_app_id()?.to_string(),
             algo_account_nonce: db_utils.get_algo_account_nonce()?,
             algo_address: db_utils.get_redeem_address()?.to_string(),
             algo_genesis_hash: db_utils.get_genesis_hash()?.to_string(),
@@ -87,6 +89,7 @@ mod tests {
         let state = AlgoState::init_with_empty_dictionary(&db);
         let submission_material = get_sample_submission_material_n(0);
         let block_num = submission_material.block.round();
+        let app_id = 666;
         let hash = submission_material.block.hash().unwrap();
         let genesis_id = "mainnet-v1.0";
         let submission_material_json_str = submission_material.to_string();
@@ -96,12 +99,14 @@ mod tests {
             fee,
             canon_to_tip_length,
             genesis_id,
+            app_id,
         )
         .unwrap();
         let result = AlgoEnclaveState::new(&db_utils).unwrap();
         let expected_result = AlgoEnclaveState {
             algo_account_nonce: 0,
             algo_tail_block_number: block_num,
+            algo_app_id: format!("{}", app_id),
             algo_tail_length: ALGO_TAIL_LENGTH,
             algo_canon_block_number: block_num,
             algo_anchor_block_number: block_num,

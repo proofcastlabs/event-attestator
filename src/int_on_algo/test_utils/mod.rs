@@ -46,7 +46,9 @@ macro_rules! write_algo_paths_and_getter_fxn {
 
 write_int_paths_and_getter_fxn!(
     0 => "src/int_on_algo/test_utils/int-block-12221813.json",
-    1 => "src/int_on_algo/test_utils/int-block-12221814.json"
+    1 => "src/int_on_algo/test_utils/int-block-12221814.json",
+    2 => "src/int_on_algo/test_utils/int-block-12322610.json",
+    3 => "src/int_on_algo/test_utils/int-block-12322611.json"
 );
 
 write_algo_paths_and_getter_fxn!(
@@ -63,10 +65,17 @@ pub fn get_sample_router_address() -> EthAddress {
     convert_hex_to_eth_address("0xec1700a39972482d5db20e73bb3ffe6829b0c102").unwrap()
 }
 
-pub fn get_sample_contiguous_int_submission_json_strings() -> Vec<String> {
+pub fn get_sample_contiguous_int_submission_json_strings_for_algo_address_peg_in() -> Vec<String> {
     vec![
         read_to_string(get_int_path_n(0).unwrap()).unwrap(),
         read_to_string(get_int_path_n(1).unwrap()).unwrap(),
+    ]
+}
+
+pub fn get_sample_contiguous_int_submission_json_strings_for_app_id_peg_in() -> Vec<String> {
+    vec![
+        read_to_string(get_int_path_n(2).unwrap()).unwrap(),
+        read_to_string(get_int_path_n(3).unwrap()).unwrap(),
     ]
 }
 
