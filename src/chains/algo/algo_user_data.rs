@@ -17,11 +17,6 @@ pub struct AlgoUserData {
 }
 
 impl AlgoUserData {
-    #[cfg(test)]
-    pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(rmp_serde::to_vec(self)?)
-    }
-
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         info!("✔ Parsing `AlgoUserData` from bytes...");
         Ok(rmp_serde::from_slice::<Self>(bytes)?)
@@ -41,6 +36,14 @@ impl AlgoUserData {
 
     pub fn to_app_ids(&self) -> Vec<u64> {
         self.app_ids.clone()
+    }
+}
+
+#[cfg(test)]
+impl AlgoUserData {
+    #[allow(dead_code)]
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(rmp_serde::to_vec(self)?)
     }
 }
 

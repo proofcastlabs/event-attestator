@@ -48,7 +48,9 @@ write_int_paths_and_getter_fxn!(
     0 => "src/int_on_algo/test_utils/int-block-12221813.json",
     1 => "src/int_on_algo/test_utils/int-block-12221814.json",
     2 => "src/int_on_algo/test_utils/int-block-12322610.json",
-    3 => "src/int_on_algo/test_utils/int-block-12322611.json"
+    3 => "src/int_on_algo/test_utils/int-block-12322611.json",
+    4 => "src/int_on_algo/test_utils/int-block-12342413.json",
+    5 => "src/int_on_algo/test_utils/int-block-12342414.json"
 );
 
 write_algo_paths_and_getter_fxn!(
@@ -76,6 +78,13 @@ pub fn get_sample_contiguous_int_submission_json_strings_for_app_id_peg_in() -> 
     vec![
         read_to_string(get_int_path_n(2).unwrap()).unwrap(),
         read_to_string(get_int_path_n(3).unwrap()).unwrap(),
+    ]
+}
+
+pub fn get_sample_contiguous_int_submission_json_strings_for_msg_pack_encoded_user_data() -> Vec<String> {
+    vec![
+        read_to_string(get_int_path_n(4).unwrap()).unwrap(),
+        read_to_string(get_int_path_n(5).unwrap()).unwrap(),
     ]
 }
 
