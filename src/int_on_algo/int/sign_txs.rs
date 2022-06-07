@@ -11,6 +11,7 @@ use rust_algorand::{
 use crate::{
     chains::{
         algo::{
+            algo_constants::ALGO_MAX_FOREIGN_ITEMS,
             algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
             algo_user_data::AlgoUserData,
         },
@@ -126,25 +127,30 @@ impl IntOnAlgoAlgoTxInfo {
         // NOTE: First we transfer the asset in question to the issuance manager app...
         let asset_transfer_tx = self.get_asset_transfer_tx(fee, first_valid, genesis_hash, sender, last_valid)?;
 
+        // NOTE: Now we assemble the ingredients for the application call tx...
         let destination_app_id = self.get_destination_app_id()?;
-        let foreign_apps = Some(vec![destination_app_id.to_u64()]); // FIXME Do we need issuance manager here?
         let destination_address = destination_app_id.to_address()?;
 
-        // NOTE: The user may have encoded some foreign accounts into the `user_data` field...
-        let user_supplied_foreign_accounts = match AlgoUserData::from_bytes(&self.user_data) {
-            Err(_) => vec![],
-            Ok(algo_user_data) => algo_user_data.to_addresses(),
-        };
-        let foreign_accounts = Some(
-            [vec![destination_address], user_supplied_foreign_accounts]
-                .concat()
-                .to_vec(),
-        );
-        let foreign_assets = Some(vec![self.algo_asset_id]);
+        // NOTE: The user may have encoded some foreign accounts/apps into the `user_data` field...
+        let decoded_user_data = AlgoUserData::from_bytes(&self.user_data).unwrap_or_default();
+        let mut foreign_assets = [vec![self.algo_asset_id], decoded_user_data.to_asset_ids()]
+            .concat()
+            .to_vec();
+        let mut foreign_accounts = [vec![destination_address], decoded_user_data.to_addresses()]
+            .concat()
+            .to_vec();
+        let mut foreign_apps = [vec![destination_app_id.to_u64()], decoded_user_data.to_app_ids()]
+            .concat()
+            .to_vec();
         let application_args = Some(vec![
             AlgorandApplicationArg::from("issue"),
             AlgorandApplicationArg::from(destination_app_id.to_u64()),
         ]);
+
+        // NOTE: Now we truncate to ensure we're not provisioning too many foreign items...
+        foreign_apps.truncate(ALGO_MAX_FOREIGN_ITEMS);
+        foreign_assets.truncate(ALGO_MAX_FOREIGN_ITEMS);
+        foreign_accounts.truncate(ALGO_MAX_FOREIGN_ITEMS);
 
         // NOTE: Next we call the issuance manager app, with the ASA in question as one of
         // the foreign assets, and the final destination (as set by the user) as a foreign
@@ -158,9 +164,21 @@ impl IntOnAlgoAlgoTxInfo {
             *genesis_hash,
             last_valid,
             application_args,
-            foreign_accounts,
-            foreign_apps,
-            foreign_assets,
+            if foreign_accounts.is_empty() {
+                None
+            } else {
+                Some(foreign_accounts)
+            },
+            if foreign_apps.is_empty() {
+                None
+            } else {
+                Some(foreign_apps)
+            },
+            if foreign_assets.is_empty() {
+                None
+            } else {
+                Some(foreign_assets)
+            },
         )?;
 
         let group_tx = AlgorandTxGroup::new(&vec![asset_transfer_tx, app_call_tx])?;
