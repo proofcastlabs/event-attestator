@@ -1,5 +1,11 @@
 use derive_more::{Constructor, Deref};
-use rust_algorand::{AlgorandAddress, AlgorandTransaction, AlgorandTransactionProof, AlgorandTransactions};
+use rust_algorand::{
+    AlgorandAddress,
+    AlgorandTransaction,
+    AlgorandTransactionProof,
+    AlgorandTransactionType,
+    AlgorandTransactions,
+};
 
 use crate::{chains::algo::algo_submission_material::AlgoSubmissionMaterial, types::Result};
 
@@ -19,11 +25,7 @@ impl AlgoRelevantAssetTxs {
                     Ok(receivers
                         .iter()
                         .map(|receiver| {
-                            AlgoRelevantAssetTx::from_submission_material_for_asset_and_receiver(
-                                submission_material,
-                                *asset_id,
-                                receiver,
-                            )
+                            AlgoRelevantAssetTx::from_submission_material(submission_material, *asset_id, receiver)
                         })
                         .collect::<Result<Vec<Vec<AlgoRelevantAssetTx>>>>()?
                         .concat())
@@ -89,39 +91,50 @@ impl AlgoRelevantAssetTx {
         }
     }
 
-    fn from_submission_material_for_asset_and_receiver(
+    fn from_submission_material_for_asset_transfer_txs(
         submission_material: &AlgoSubmissionMaterial,
         asset_id: u64,
-        receiver: &AlgorandAddress, // NOTE: Get from here: db_utils.get_redeem_address()?.to_string(),
+        receiver: &AlgorandAddress,
     ) -> Result<Vec<Self>> {
-        info!(
-            "✔ Getting `AlgoRelevantAssetTx` from submission material for asset ID '{}' and receiver '{}'",
-            asset_id, receiver
-        );
+        info!("✔ Getting `AlgoRelevantAssetTx` from submission material for asset transfer txs!");
         Ok(submission_material
             .block
             .get_transactions()?
             .iter()
             .enumerate()
             .filter_map(|(i, tx)| {
+                let is_asset_transfer_txn = tx.txn_type == Some(AlgorandTransactionType::AssetTransfer);
                 let maybe_proof = Self::maybe_get_proof_from_submission_material_by_index(submission_material, i);
                 let is_desired_asset = tx.transfer_asset_id == Some(asset_id);
                 let is_to_redeem_address = tx.asset_receiver == Some(*receiver);
-                let amount_is_gt_zero = match tx.asset_amount {
+                let amount_is_greater_than_zero = match tx.asset_amount {
                     Some(amount) => amount > 0,
                     None => false,
                 };
-                let has_proof = maybe_proof.is_some(); // NOTE: This allows the `expect` below!
-                if is_desired_asset && is_to_redeem_address && amount_is_gt_zero && has_proof {
-                    Some(AlgoRelevantAssetTx::new(
-                        i as u64,
-                        tx.clone(),
-                        maybe_proof.expect("We know this proof exists at this point!"),
-                    ))
+                let has_proof = maybe_proof.is_some(); // NOTE: This allows the expect below!
+                if is_asset_transfer_txn
+                    && has_proof
+                    && is_desired_asset
+                    && is_to_redeem_address
+                    && amount_is_greater_than_zero
+                {
+                    Some(Self::new(i as u64, tx.clone(), maybe_proof.expect("This to exist!")))
                 } else {
                     None
                 }
             })
             .collect::<Vec<Self>>())
+    }
+
+    fn from_submission_material(
+        submission_material: &AlgoSubmissionMaterial,
+        asset_id: u64,
+        receiver: &AlgorandAddress,
+    ) -> Result<Vec<Self>> {
+        Ok([
+            Self::from_submission_material_for_asset_transfer_txs(submission_material, asset_id, receiver)?,
+            vec![], // TODO Get relevant txs from inner txs of appl ones!
+        ]
+        .concat())
     }
 }
