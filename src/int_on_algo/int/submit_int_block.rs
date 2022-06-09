@@ -92,7 +92,7 @@ mod tests {
             int::get_int_output_json::IntOutput,
             maybe_initialize_algo_core,
             test_utils::{
-                get_sample_contiguous_algo_submission_json_strings,
+                get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out,
                 get_sample_contiguous_int_submission_json_strings_for_algo_address_peg_in,
                 get_sample_contiguous_int_submission_json_strings_for_app_id_peg_in,
                 get_sample_contiguous_int_submission_json_strings_for_msg_pack_encoded_user_data,
@@ -112,7 +112,7 @@ mod tests {
         let int_submission_material = get_sample_contiguous_int_submission_json_strings_for_algo_address_peg_in();
         let int_init_block = int_submission_material[0].clone();
         let int_peg_in_block = int_submission_material[1].clone();
-        let algo_submission_material = get_sample_contiguous_algo_submission_json_strings();
+        let algo_submission_material = get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out();
         let router_address = get_sample_router_address();
         let vault_address = get_sample_vault_address();
         let int_confirmations = 0;
@@ -284,7 +284,7 @@ mod tests {
         let int_submission_material = get_sample_contiguous_int_submission_json_strings_for_app_id_peg_in();
         let int_init_block = int_submission_material[0].clone();
         let int_peg_in_block = int_submission_material[1].clone();
-        let algo_submission_material = get_sample_contiguous_algo_submission_json_strings();
+        let algo_submission_material = get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out();
         let router_address = get_sample_router_address();
         let vault_address = get_sample_vault_address();
         let int_confirmations = 0;
@@ -457,7 +457,7 @@ mod tests {
             get_sample_contiguous_int_submission_json_strings_for_msg_pack_encoded_user_data();
         let int_init_block = int_submission_material[0].clone();
         let int_peg_in_block = int_submission_material[1].clone();
-        let algo_submission_material = get_sample_contiguous_algo_submission_json_strings();
+        let algo_submission_material = get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out();
         let router_address = get_sample_router_address();
         let vault_address = get_sample_vault_address();
         let int_confirmations = 0;

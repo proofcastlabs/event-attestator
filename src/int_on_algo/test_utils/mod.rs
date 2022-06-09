@@ -56,7 +56,9 @@ write_int_paths_and_getter_fxn!(
 write_algo_paths_and_getter_fxn!(
     0 => "src/int_on_algo/test_utils/algo-block-20642396.json",
     1 => "src/int_on_algo/test_utils/algo-block-20642397.json",
-    2 => "src/int_on_algo/test_utils/algo-block-20642398.json"
+    2 => "src/int_on_algo/test_utils/algo-block-20642398.json",
+    3 => "src/int_on_algo/test_utils/algo-block-21515430.json",
+    4 => "src/int_on_algo/test_utils/algo-block-21515431.json"
 );
 
 pub fn get_sample_vault_address() -> EthAddress {
@@ -88,11 +90,18 @@ pub fn get_sample_contiguous_int_submission_json_strings_for_msg_pack_encoded_us
     ]
 }
 
-pub fn get_sample_contiguous_algo_submission_json_strings() -> Vec<String> {
+pub fn get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out() -> Vec<String> {
     vec![
         read_to_string(get_algo_path_n(0).unwrap()).unwrap(),
         read_to_string(get_algo_path_n(1).unwrap()).unwrap(),
         read_to_string(get_algo_path_n(2).unwrap()).unwrap(),
+    ]
+}
+
+pub fn get_sample_contiguous_algo_submission_json_strings_for_application_call_peg_out() -> Vec<String> {
+    vec![
+        read_to_string(get_algo_path_n(3).unwrap()).unwrap(),
+        read_to_string(get_algo_path_n(4).unwrap()).unwrap(),
     ]
 }
 
