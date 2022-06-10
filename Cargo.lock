@@ -876,7 +876,7 @@ dependencies = [
 
 [[package]]
 name = "ptokens_core"
-version = "5.28.0"
+version = "5.29.0"
 dependencies = [
  "base64",
  "bitcoin",
@@ -1171,8 +1171,8 @@ dependencies = [
 
 [[package]]
 name = "rust-algorand"
-version = "1.3.0"
-source = "git+https://github.com/provable-things/rust-algorand#a94ff5027f74445267518910061d20082998aed5"
+version = "1.4.0"
+source = "git+https://github.com/provable-things/rust-algorand#23b6d17c1161bddc8d563fcdd9ecd8f7b4ee2419"
 dependencies = [
  "base32",
  "base64",
