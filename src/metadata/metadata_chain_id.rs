@@ -43,6 +43,7 @@ pub enum MetadataChainId {
     LuxochainMainnet, // 0x00d5beb0
     FantomMainnet,    // 0x0022af98
     AlgorandMainnet,  // 0x03c38e67
+    PhoenixMainnet,   // 0x02a75f2c
 }
 
 impl Default for MetadataChainId {
@@ -59,6 +60,7 @@ impl MetadataChainId {
             | Self::UltraMainnet
             | Self::UltraTestnet
             | Self::TelosMainnet
+            | Self::PhoenixMainnet
             | Self::EosJungleTestnet
             | Self::EosUnknown => MetadataProtocolId::Eos,
             Self::AlgorandMainnet => MetadataProtocolId::Algorand,
@@ -98,6 +100,7 @@ impl MetadataChainId {
             Self::InterimChain => Box::new(EthChainId::InterimChain),
             Self::FantomMainnet => Box::new(EthChainId::FantomMainnet),
             Self::PolygonMainnet => Box::new(EthChainId::PolygonMainnet),
+            Self::PhoenixMainnet => Box::new(EosChainId::PhoenixMainnet),
             Self::ArbitrumMainnet => Box::new(EthChainId::ArbitrumMainnet),
             Self::LuxochainMainnet => Box::new(EthChainId::LuxochainMainnet),
             Self::EosJungleTestnet => Box::new(EosChainId::EosJungleTestnet),
@@ -189,10 +192,11 @@ impl fmt::Display for MetadataChainId {
             Self::UltraMainnet => write!(f, "Ultra Mainnet: {}", hex),
             Self::InterimChain => write!(f, "Interim Chain: {}", hex),
             Self::FantomMainnet => write!(f, "Fantom Mainnet: {}", hex),
-            Self::AlgorandMainnet => write!(f, "AlgorandMainnet: {}", hex),
+            Self::PhoenixMainnet => write!(f, "Phoenix Mainnet: {}", hex),
             Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: {}", hex),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", hex),
             Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: {}", hex),
+            Self::AlgorandMainnet => write!(f, "AlgorandMainnet: {}", hex),
             Self::ArbitrumMainnet => write!(f, "Arbitrum Mainnet: {}", hex),
             Self::EthereumMainnet => write!(f, "Ethereum Mainnet: {}", hex),
             Self::EthereumRinkeby => write!(f, "Ethereum Rinkeby: {}", hex),
@@ -245,7 +249,7 @@ mod tests {
             "0282317f", "00f1918e", "0075dd4c", "025d3c68",
             "02174f20", "02b5a4d6", "00000000", "01000000",
             "02000000", "ffffffff", "00ce98c4", "00d5beb0",
-            "0022af98", "03c38e67",
+            "0022af98", "03c38e67", "02a75f2c",
         ]
         .iter()
         .map(|ref hex| hex::decode(hex).unwrap())
