@@ -124,7 +124,6 @@ mod tests {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         }
-        println!("{:?}", metadata)
     }
 
     #[test]
@@ -137,6 +136,5 @@ mod tests {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         }
-        println!("{:?}", metadata)
     }
 }

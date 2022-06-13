@@ -48,13 +48,19 @@ write_int_paths_and_getter_fxn!(
     0 => "src/int_on_algo/test_utils/int-block-12221813.json",
     1 => "src/int_on_algo/test_utils/int-block-12221814.json",
     2 => "src/int_on_algo/test_utils/int-block-12322610.json",
-    3 => "src/int_on_algo/test_utils/int-block-12322611.json"
+    3 => "src/int_on_algo/test_utils/int-block-12322611.json",
+    4 => "src/int_on_algo/test_utils/int-block-12342413.json",
+    5 => "src/int_on_algo/test_utils/int-block-12342414.json"
 );
 
 write_algo_paths_and_getter_fxn!(
     0 => "src/int_on_algo/test_utils/algo-block-20642396.json",
     1 => "src/int_on_algo/test_utils/algo-block-20642397.json",
-    2 => "src/int_on_algo/test_utils/algo-block-20642398.json"
+    2 => "src/int_on_algo/test_utils/algo-block-20642398.json",
+    3 => "src/int_on_algo/test_utils/algo-block-21515430.json",
+    4 => "src/int_on_algo/test_utils/algo-block-21515431.json",
+    5 => "src/int_on_algo/test_utils/algo-block-21530957.json",
+    6 => "src/int_on_algo/test_utils/algo-block-21530958.json"
 );
 
 pub fn get_sample_vault_address() -> EthAddress {
@@ -79,11 +85,32 @@ pub fn get_sample_contiguous_int_submission_json_strings_for_app_id_peg_in() -> 
     ]
 }
 
-pub fn get_sample_contiguous_algo_submission_json_strings() -> Vec<String> {
+pub fn get_sample_contiguous_int_submission_json_strings_for_msg_pack_encoded_user_data() -> Vec<String> {
+    vec![
+        read_to_string(get_int_path_n(4).unwrap()).unwrap(),
+        read_to_string(get_int_path_n(5).unwrap()).unwrap(),
+    ]
+}
+
+pub fn get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out() -> Vec<String> {
     vec![
         read_to_string(get_algo_path_n(0).unwrap()).unwrap(),
         read_to_string(get_algo_path_n(1).unwrap()).unwrap(),
         read_to_string(get_algo_path_n(2).unwrap()).unwrap(),
+    ]
+}
+
+pub fn get_sample_contiguous_algo_submission_json_strings_for_application_call_peg_out() -> Vec<String> {
+    vec![
+        read_to_string(get_algo_path_n(3).unwrap()).unwrap(),
+        read_to_string(get_algo_path_n(4).unwrap()).unwrap(),
+    ]
+}
+
+pub fn get_sample_contiguous_algo_submission_json_strings_for_application_call_multi_peg_out() -> Vec<String> {
+    vec![
+        read_to_string(get_algo_path_n(5).unwrap()).unwrap(),
+        read_to_string(get_algo_path_n(6).unwrap()).unwrap(),
     ]
 }
 

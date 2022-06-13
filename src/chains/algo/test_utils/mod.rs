@@ -37,7 +37,8 @@ write_paths_and_getter_fxn!(
     7  => "src/chains/algo/test_utils/algo_submission_material-17962562.json",
     8  => "src/chains/algo/test_utils/algo_submission_material-17962563.json",
     9  => "src/chains/algo/test_utils/algo_submission_material-17962564.json",
-    10 => "src/chains/algo/test_utils/algo_submission_material-17962565.json"
+    10 => "src/chains/algo/test_utils/algo_submission_material-17962565.json",
+    11 => "src/chains/algo/test_utils/algo_submission_material-21511367.json"
 );
 
 pub fn get_sample_contiguous_submission_material() -> Vec<AlgoSubmissionMaterial> {
