@@ -274,29 +274,62 @@ impl EosEthTokenDictionary {
         }
     }
 
+    pub fn get_entries_via_eos_symbol(&self, eos_symbol: &str) -> Vec<EosEthTokenDictionaryEntry> {
+        info!("✔ Getting dictionary entry via EOS symbol: {}", eos_symbol);
+        self.iter()
+            .filter(|entry| entry.eos_symbol == eos_symbol)
+            .cloned()
+            .collect()
+    }
+
     pub fn get_entry_via_eos_address_symbol_and_decimals(
         &self,
-        token_address: &EosAccountName,
-        token_symbol: &str,
+        eos_address: &EosAccountName,
+        eos_symbol: &str,
         num_decimals: usize,
     ) -> Result<EosEthTokenDictionaryEntry> {
         info!("✔ Getting dictionary entry via EOS token address, symbol & decimals...");
-        self.get_entry_via_eos_address(token_address)
-            .and_then(|entry| match entry.eos_symbol == token_symbol {
-                false => Err(format!(
-                    "No `EosEthTokenDictionaryEntry` exists with EOS token symbol: {}",
-                    token_symbol
-                )
-                .into()),
-                true => match entry.eos_token_decimals == num_decimals {
-                    false => Err(format!(
+        self.get_entry_via_eos_address(eos_address).and_then(|entry| {
+            if entry.eos_symbol == eos_symbol {
+                if entry.eos_token_decimals == num_decimals {
+                    Ok(entry)
+                } else {
+                    Err(format!(
                         "No `EosEthTokenDictionaryEntry` exists with num decimals: {}",
                         num_decimals
                     )
-                    .into()),
-                    true => Ok(entry),
-                },
-            })
+                    .into())
+                }
+            } else {
+                Err(format!("No `EosEthTokenDictionaryEntry` exists with EOS symbol: {}", eos_symbol).into())
+            }
+        })
+    }
+
+    pub fn get_entry_via_eos_address_and_symbol(
+        &self,
+        eos_symbol: &str,
+        eos_address: &str,
+    ) -> Result<EosEthTokenDictionaryEntry> {
+        info!("✔ Getting dictionary entry via EOS token address, symbol & decimals...");
+        let entries = self
+            .get_entries_via_eos_symbol(eos_symbol)
+            .iter()
+            .filter(|entry| entry.eos_address == eos_address)
+            .cloned()
+            .collect::<Vec<EosEthTokenDictionaryEntry>>();
+        if entries.is_empty() {
+            Err(format!("No entry with EOS symbol {} & address {}!", eos_symbol, eos_address).into())
+        } else if entries.len() > 1 {
+            debug!("> than 1 entry found: {:?}", entries);
+            Err(format!(
+                "Found > 1 entries with EOS symbol {} & address {}!",
+                eos_symbol, eos_address
+            )
+            .into())
+        } else {
+            Ok(entries[0].clone())
+        }
     }
 
     pub fn get_eos_account_name_from_eth_token_address(&self, address: &EthAddress) -> Result<String> {
@@ -587,6 +620,7 @@ mod tests {
             get_sample_eos_eth_token_dictionary_entry_3,
             get_sample_eos_eth_token_dictionary_json,
         },
+        errors::AppError,
         test_utils::get_test_database,
     };
 
@@ -1071,5 +1105,49 @@ mod tests {
         let dictionary_from_db = EosEthTokenDictionary::get_from_db(&db).unwrap();
         let result = dictionary_from_db.get_entry_via_eth_address(&eth_address).unwrap();
         assert_eq!(result.accrued_fees, expected_fee);
+    }
+
+    #[test]
+    fn should_get_entry_via_eos_address_and_symbol() {
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let symbol = "SAM2";
+        let address = "sampletokens";
+        let result = dictionary
+            .get_entry_via_eos_address_and_symbol(&symbol, &address)
+            .unwrap();
+        let expected_result = get_sample_eos_eth_token_dictionary_entry_2();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_error_when_getting_entry_via_eos_address_and_symbol_if_not_extant() {
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let symbol = "SAM2";
+        let address = "wrongnameaaa";
+        let expected_error = format!("No entry with EOS symbol {} & address {}!", symbol, address);
+        match dictionary.get_entry_via_eos_address_and_symbol(&symbol, &address) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
+    }
+
+    #[test]
+    fn should_error_when_getting_entry_via_eos_address_and_symbol_if_more_than_one_entry() {
+        let dictionary = get_sample_eos_eth_token_dictionary();
+        let dictionary = EosEthTokenDictionary::new(vec![
+            get_sample_eos_eth_token_dictionary_entry_1(),
+            get_sample_eos_eth_token_dictionary_entry_2(),
+            get_sample_eos_eth_token_dictionary_entry_3(),
+            get_sample_eos_eth_token_dictionary_entry_2(),
+        ]);
+        let symbol = "SAM2";
+        let address = "sampletokens";
+        let expected_error = format!("Found > 1 entries with EOS symbol {} & address {}!", symbol, address);
+        match dictionary.get_entry_via_eos_address_and_symbol(&symbol, &address) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
     }
 }

@@ -1,7 +1,3 @@
-use std::str::FromStr;
-
-use eos_chain::AccountName as EosAccountName;
-
 use crate::{
     chains::{
         eos::{
@@ -10,7 +6,7 @@ use crate::{
                 eos_private_key::EosPrivateKey,
                 eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
             },
-            eos_utils::get_eos_tx_expiration_timestamp_with_offset,
+            eos_utils::{get_eos_tx_expiration_timestamp_with_offset, get_symbol_from_eos_asset},
         },
         eth::eth_state::EthState,
     },
@@ -60,8 +56,10 @@ impl IntOnEosEosTxInfo {
         dictionary: &EosEthTokenDictionary,
     ) -> Result<EosSignedTransaction> {
         info!("✔ Signing EOS tx from `IntOnEosEosTxInfo`: {:?}", self);
-        let dictionary_entry =
-            dictionary.get_entry_via_eos_address(&EosAccountName::from_str(&self.eos_token_address)?)?;
+        let dictionary_entry = dictionary.get_entry_via_eos_address_and_symbol(
+            get_symbol_from_eos_asset(&self.eos_asset_amount),
+            &self.eos_token_address,
+        )?;
         let eos_amount = dictionary_entry.convert_u256_to_eos_asset_string(&self.token_amount)?;
         get_signed_eos_ptoken_issue_tx(
             ref_block_num,

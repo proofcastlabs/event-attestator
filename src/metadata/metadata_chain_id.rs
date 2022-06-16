@@ -43,7 +43,7 @@ pub enum MetadataChainId {
     LuxochainMainnet, // 0x00d5beb0
     FantomMainnet,    // 0x0022af98
     AlgorandMainnet,  // 0x03c38e67
-    PhoenixMainnet,   // 0x02a75f2c
+    PhoenixTestnet,   // 0x02a75f2c
 }
 
 impl Default for MetadataChainId {
@@ -60,7 +60,7 @@ impl MetadataChainId {
             | Self::UltraMainnet
             | Self::UltraTestnet
             | Self::TelosMainnet
-            | Self::PhoenixMainnet
+            | Self::PhoenixTestnet
             | Self::EosJungleTestnet
             | Self::EosUnknown => MetadataProtocolId::Eos,
             Self::AlgorandMainnet => MetadataProtocolId::Algorand,
@@ -100,7 +100,7 @@ impl MetadataChainId {
             Self::InterimChain => Box::new(EthChainId::InterimChain),
             Self::FantomMainnet => Box::new(EthChainId::FantomMainnet),
             Self::PolygonMainnet => Box::new(EthChainId::PolygonMainnet),
-            Self::PhoenixMainnet => Box::new(EosChainId::PhoenixMainnet),
+            Self::PhoenixTestnet => Box::new(EosChainId::PhoenixTestnet),
             Self::ArbitrumMainnet => Box::new(EthChainId::ArbitrumMainnet),
             Self::LuxochainMainnet => Box::new(EthChainId::LuxochainMainnet),
             Self::EosJungleTestnet => Box::new(EosChainId::EosJungleTestnet),
@@ -192,7 +192,7 @@ impl fmt::Display for MetadataChainId {
             Self::UltraMainnet => write!(f, "Ultra Mainnet: {}", hex),
             Self::InterimChain => write!(f, "Interim Chain: {}", hex),
             Self::FantomMainnet => write!(f, "Fantom Mainnet: {}", hex),
-            Self::PhoenixMainnet => write!(f, "Phoenix Mainnet: {}", hex),
+            Self::PhoenixTestnet => write!(f, "Phoenix Testnet: {}", hex),
             Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: {}", hex),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", hex),
             Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: {}", hex),
