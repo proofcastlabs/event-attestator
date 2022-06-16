@@ -1135,7 +1135,6 @@ mod tests {
     #[test]
     fn should_error_when_getting_entry_via_eos_address_and_symbol_if_more_than_one_entry() {
         let dictionary = get_sample_eos_eth_token_dictionary();
-        let entry = dictionary[1].clone();
         let dictionary = EosEthTokenDictionary::new(vec![
             get_sample_eos_eth_token_dictionary_entry_1(),
             get_sample_eos_eth_token_dictionary_entry_2(),

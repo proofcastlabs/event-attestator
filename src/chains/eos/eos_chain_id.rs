@@ -23,7 +23,7 @@ pub enum EosChainId {
     UltraMainnet,
     UltraTestnet,
     FioMainnet,
-    PhoenixMainnet,
+    PhoenixTestnet,
     Unknown(Bytes),
 }
 
@@ -48,7 +48,7 @@ impl ToMetadataChainId for EosChainId {
             Self::TelosMainnet => MetadataChainId::TelosMainnet,
             Self::UltraMainnet => MetadataChainId::UltraMainnet,
             Self::UltraTestnet => MetadataChainId::UltraTestnet,
-            Self::PhoenixMainnet => MetadataChainId::PhoenixMainnet,
+            Self::PhoenixTestnet => MetadataChainId::PhoenixTestnet,
             Self::EosJungleTestnet => MetadataChainId::EosJungleTestnet,
         }
     }
@@ -58,9 +58,9 @@ lazy_static! {
     pub static ref EOS_MAINNET_BYTES: Bytes =
         hex::decode("aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906")
             .expect("✘ Invalid hex in `EOS_MAINNET_BYTES`");
-    pub static ref PHOENIX_MAINNET_BYTES: Bytes =
+    pub static ref PHOENIX_TESTNET_BYTES: Bytes =
         hex::decode("793cf401f9405530986c5fa206598ee3f4d38df7f12dcd1fccb986a5e3bdb05a")
-            .expect("✘ Invalid hex in `PHOENIX_MAINNET_BYTES`");
+            .expect("✘ Invalid hex in `PHOENIX_TESTNET_BYTES`");
     pub static ref TELOS_MAINNET_BYTES: Bytes =
         hex::decode("4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11")
             .expect("✘ Invalid hex in `TELOS_MAINNET_BYTES`");
@@ -96,7 +96,7 @@ impl EosChainId {
             Self::UltraMainnet => hex::encode(&*ULTRA_MAINNET_BYTES),
             Self::UltraTestnet => hex::encode(&*ULTRA_TESTNET_BYTES),
             Self::FioMainnet => hex::encode(&*FIO_MAINNET_BYTES),
-            Self::PhoenixMainnet => hex::encode(&*PHOENIX_MAINNET_BYTES),
+            Self::PhoenixTestnet => hex::encode(&*PHOENIX_TESTNET_BYTES),
             Self::Unknown(ref bytes) => hex::encode(bytes),
         }
     }
@@ -143,7 +143,7 @@ impl EosChainId {
             Self::EosJungleTestnet => EOS_JUNGLE_TESTNET_BYTES.to_vec(),
             Self::UltraMainnet => ULTRA_MAINNET_BYTES.to_vec(),
             Self::UltraTestnet => ULTRA_TESTNET_BYTES.to_vec(),
-            Self::PhoenixMainnet => PHOENIX_MAINNET_BYTES.to_vec(),
+            Self::PhoenixTestnet => PHOENIX_TESTNET_BYTES.to_vec(),
             Self::FioMainnet => FIO_MAINNET_BYTES.to_vec(),
             Self::Unknown(ref bytes) => bytes.to_vec(),
         }
@@ -158,13 +158,13 @@ impl fmt::Display for EosChainId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::EosMainnet => write!(f, "EOS Mainnet: 0x{}", self.to_hex()),
+            Self::FioMainnet => write!(f, "FIO Mainnet: 0x{}", self.to_hex()),
             Self::TelosMainnet => write!(f, "Telos Mainnet: 0x{}", self.to_hex()),
-            Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", self.to_hex()),
             Self::UltraMainnet => write!(f, "Ultra Mainnet: 0x{}", self.to_hex()),
             Self::UltraTestnet => write!(f, "Ultra Testnet: 0x{}", self.to_hex()),
-            Self::PhoenixMainnet => write!(f, "Phoenix Mainnet: 0x{}", self.to_hex()),
-            Self::FioMainnet => write!(f, "FIO Mainnet: 0x{}", self.to_hex()),
+            Self::PhoenixTestnet => write!(f, "Phoenix Testnet: 0x{}", self.to_hex()),
             Self::Unknown(_) => write!(f, "Unknown EOS chain ID: 0x{}", self.to_hex()),
+            Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", self.to_hex()),
         }
     }
 }
