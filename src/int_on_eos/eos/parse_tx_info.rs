@@ -80,7 +80,10 @@ impl IntOnEosIntTxInfo {
         router_address: &EthAddress,
     ) -> Result<Self> {
         dictionary
-            .get_entry_via_eos_address(&proof.get_action_eos_account())
+            .get_entry_via_eos_address_and_symbol(
+                &proof.get_eos_asset_symbol()?,
+                &proof.get_action_eos_account().to_string(),
+            )
             .and_then(|dictionary_entry| {
                 let amount = Self::get_redeem_amount_from_proof(proof, &dictionary_entry)?;
                 let eos_tx_amount = dictionary_entry.convert_u256_to_eos_asset_string(&amount)?;
