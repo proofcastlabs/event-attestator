@@ -150,7 +150,7 @@ pub fn maybe_filter_out_proofs_for_accounts_not_in_token_dictionary<D: DatabaseI
     debug!("✔ Number of proofs before: {}", state.action_proofs.len());
     filter_proofs_for_accounts(
         &state.action_proofs,
-        &state.get_eos_eth_token_dictionary()?.to_eos_accounts()?,
+        &state.get_eos_eth_token_dictionary()?.to_unique_eos_accounts()?,
     )
     .and_then(|proofs| {
         debug!("✔ Number of proofs after: {}", proofs.len());

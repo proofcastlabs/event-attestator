@@ -355,6 +355,13 @@ impl EosEthTokenDictionary {
             .collect()
     }
 
+    pub fn to_unique_eos_accounts(&self) -> Result<Vec<EosAccountName>> {
+        let mut accounts = self.to_eos_accounts()?;
+        accounts.sort();
+        accounts.dedup();
+        Ok(accounts)
+    }
+
     pub fn convert_u256_to_eos_asset_string(&self, address: &EthAddress, eth_amount: &U256) -> Result<String> {
         self.get_entry_via_eth_address(address)
             .and_then(|entry| entry.convert_u256_to_eos_asset_string(eth_amount))
@@ -762,7 +769,7 @@ mod tests {
     fn should_get_eos_account_name_from_eth_token_address_in_eos_eth_token_dictionary() {
         let eth_address = EthAddress::from_slice(&hex::decode("9f57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
         let dictionary_entries = get_sample_eos_eth_token_dictionary();
-        let expected_result = "SampleToken_1".to_string();
+        let expected_result = "sampletoken1".to_string();
         let result = dictionary_entries
             .get_eos_account_name_from_eth_token_address(&eth_address)
             .unwrap();
@@ -1148,5 +1155,23 @@ mod tests {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         }
+    }
+
+    #[test]
+    fn should_convert_dictionary_to_unique_eos_accounts() {
+        let dictionary = EosEthTokenDictionary::new(vec![
+            get_sample_eos_eth_token_dictionary_entry_1(),
+            get_sample_eos_eth_token_dictionary_entry_2(),
+            get_sample_eos_eth_token_dictionary_entry_3(),
+            get_sample_eos_eth_token_dictionary_entry_2(),
+        ]);
+        let expected_result = vec![
+            EosAccountName::from_str("sampletoken1").unwrap(),
+            EosAccountName::from_str("sampletokens").unwrap(),
+            EosAccountName::from_str("testpethxxxx").unwrap(),
+        ];
+        let result = dictionary.to_unique_eos_accounts().unwrap();
+        assert_eq!(result, expected_result);
+        assert_eq!(result.len(), expected_result.len());
     }
 }
