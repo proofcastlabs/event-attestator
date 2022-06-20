@@ -12,6 +12,7 @@ pub enum VaultUsingCores {
     Erc20OnEvm,
     Erc20OnInt,
     IntOnEos,
+    EosOnInt,
 }
 
 impl VaultUsingCores {
@@ -20,6 +21,7 @@ impl VaultUsingCores {
             Self::IntOnAlgo => db_utils.get_int_on_algo_smart_contract_address(),
             Self::IntOnEvm => db_utils.get_int_on_evm_smart_contract_address_from_db(),
             Self::IntOnEos => db_utils.get_int_on_eos_smart_contract_address_from_db(),
+            Self::EosOnInt => db_utils.get_eos_on_int_smart_contract_address_from_db(),
             Self::Erc20OnEos => db_utils.get_erc20_on_eos_smart_contract_address_from_db(),
             Self::Erc20OnEvm => db_utils.get_erc20_on_evm_smart_contract_address_from_db(),
             Self::Erc20OnInt => db_utils.get_erc20_on_int_smart_contract_address_from_db(),
@@ -34,6 +36,7 @@ impl VaultUsingCores {
         match self {
             Self::IntOnEos => db_utils.put_int_on_eos_smart_contract_address_in_db(address),
             Self::IntOnEvm => db_utils.put_int_on_evm_smart_contract_address_in_db(address),
+            Self::EosOnInt => db_utils.put_eos_on_int_smart_contract_address_in_db(address),
             Self::IntOnAlgo => db_utils.put_int_on_algo_smart_contract_address_in_db(address),
             Self::Erc20OnEos => db_utils.put_erc20_on_eos_smart_contract_address_in_db(address),
             Self::Erc20OnEvm => db_utils.put_erc20_on_evm_smart_contract_address_in_db(address),

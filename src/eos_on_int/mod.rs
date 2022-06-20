@@ -1,7 +1,7 @@
-//! # The `pEOS-on-ETH` pToken Core
+//! # The `pEOS-on-INT` pToken Core
 //!
 //! Here lies the functionality required for the cross-chain conversions between
-//! native EOS tokens and ETH ERC777 pToken equivalents. This core consists of two
+//! native EOS tokens and INT ERC777 pToken equivalents. This core consists of two
 //! light clients that manage the state of the two chains, along with the creation
 //! and signing of transactions related to each chain.
 //!
@@ -16,7 +16,7 @@
 
 //pub mod debug_functions;
 pub mod eos;
-pub mod eth;
+pub mod int;
 //pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
 
