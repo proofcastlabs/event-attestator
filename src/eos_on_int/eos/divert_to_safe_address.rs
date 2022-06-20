@@ -1,0 +1,13 @@
+use ethereum_types::Address as EthAddress;
+
+use crate::{
+    chains::eos::eos_state::EosState,
+    eos_on_int::eos::int_tx_info::{EosOnIntIntTxInfo, EosOnIntIntTxInfos},
+    safe_addresses::SAFE_ETH_ADDRESS,
+    traits::DatabaseInterface,
+    types::Result,
+};
+
+create_safe_address_diversion_fxns!(
+    "EosOnIntIntTxInfo" => EosState => "eth" => *SAFE_ETH_ADDRESS => EthAddress => "token"
+);

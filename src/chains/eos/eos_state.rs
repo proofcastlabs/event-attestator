@@ -19,6 +19,7 @@ use crate::{
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::eos::eos_tx_info::EosOnEthEosTxInfos,
+    eos_on_int::eos::int_tx_info::EosOnIntIntTxInfos,
     erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfos,
     int_on_eos::eos::int_tx_info::IntOnEosIntTxInfos,
     traits::DatabaseInterface,
@@ -46,14 +47,15 @@ pub struct EosState<'a, D: DatabaseInterface> {
     pub btc_db_utils: BtcDbUtils<'a, D>,
     pub eos_db_utils: EosDbUtils<'a, D>,
     pub block_header: Option<EosBlockHeaderV2>,
-    pub int_on_eos_int_tx_infos: IntOnEosIntTxInfos,
     pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub processed_tx_ids: ProcessedGlobalSequences,
     pub enabled_protocol_features: EnabledFeatures,
-    active_schedule: Option<EosProducerScheduleV2>,
-    btc_utxos_and_values: Option<BtcUtxosAndValues>,
+    pub int_on_eos_int_tx_infos: IntOnEosIntTxInfos,
+    pub eos_on_int_int_tx_infos: EosOnIntIntTxInfos,
     pub eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos,
     pub btc_on_eos_redeem_infos: BtcOnEosRedeemInfos,
+    pub active_schedule: Option<EosProducerScheduleV2>,
+    pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub erc20_on_eos_redeem_infos: Erc20OnEosRedeemInfos,
     eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
 }
@@ -80,6 +82,7 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             processed_tx_ids: ProcessedGlobalSequences::new(vec![]),
             eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos::new(vec![]),
             int_on_eos_int_tx_infos: IntOnEosIntTxInfos::new(vec![]),
+            eos_on_int_int_tx_infos: EosOnIntIntTxInfos::new(vec![]),
             btc_on_eos_redeem_infos: BtcOnEosRedeemInfos::new(vec![]),
             erc20_on_eos_redeem_infos: Erc20OnEosRedeemInfos::new(vec![]),
         }
@@ -116,6 +119,11 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
 
     pub fn add_eos_on_eth_eos_tx_info(mut self, infos: EosOnEthEosTxInfos) -> Result<EosState<'a, D>> {
         self.eos_on_eth_eos_tx_infos = infos;
+        Ok(self)
+    }
+
+    pub fn add_eos_on_int_int_tx_info(mut self, infos: EosOnIntIntTxInfos) -> Result<EosState<'a, D>> {
+        self.eos_on_int_int_tx_infos = infos;
         Ok(self)
     }
 
@@ -180,6 +188,12 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
     pub fn replace_eos_on_eth_eos_tx_infos(mut self, replacements: EosOnEthEosTxInfos) -> Result<EosState<'a, D>> {
         info!("✔ Replacing `EosOnEthEosTxInfos` in state...");
         self.eos_on_eth_eos_tx_infos = replacements;
+        Ok(self)
+    }
+
+    pub fn replace_eos_on_int_int_tx_infos(mut self, replacements: EosOnIntIntTxInfos) -> Result<EosState<'a, D>> {
+        info!("✔ Replacing `EosOnIntIntTxInfos` in state...");
+        self.eos_on_int_int_tx_infos = replacements;
         Ok(self)
     }
 
