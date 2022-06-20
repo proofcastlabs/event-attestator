@@ -10,7 +10,7 @@ pub fn get_sample_eos_eth_token_dictionary_entry_1() -> EosEthTokenDictionaryEnt
         9,
         "SAM1".to_string(),
         "SAM1".to_string(),
-        "SampleToken_1".to_string(),
+        "sampletoken1".to_string(),
         EthAddress::from_slice(&hex::decode(&token_address_hex).unwrap()),
         0,
         0,

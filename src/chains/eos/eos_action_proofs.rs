@@ -15,7 +15,7 @@ use crate::{
         eos_action_receipt::EosActionReceipt,
         eos_global_sequences::GlobalSequence,
         eos_types::{MerkleProof, PermissionLevels},
-        eos_utils::convert_hex_to_checksum256,
+        eos_utils::{convert_hex_to_checksum256, get_symbol_from_eos_asset},
     },
     types::{Bytes, Result},
     utils::convert_bytes_to_u64,
@@ -84,6 +84,19 @@ impl EosActionProof {
         } else {
             Ok(())
         }
+    }
+
+    pub fn get_eos_asset(&self) -> Result<String> {
+        self.action_json
+            .data
+            .quantity
+            .clone()
+            .ok_or_else(|| "No quantity field in EOS action proof!".into())
+    }
+
+    pub fn get_eos_asset_symbol(&self) -> Result<String> {
+        self.get_eos_asset()
+            .map(|asset| get_symbol_from_eos_asset(&asset).to_string())
     }
 }
 
@@ -189,6 +202,22 @@ mod tests {
         let proof = get_sample_action_proof();
         let expected_result = EosAccountName::from_str("provtestable").unwrap();
         let result = proof.get_action_sender().unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_asset() {
+        let proof = get_sample_action_proof();
+        let expected_result = "0.00005111 PFFF".to_string();
+        let result = proof.get_eos_asset().unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_asset_symbol() {
+        let proof = get_sample_action_proof();
+        let expected_result = "PFFF".to_string();
+        let result = proof.get_eos_asset_symbol().unwrap();
         assert_eq!(result, expected_result);
     }
 
