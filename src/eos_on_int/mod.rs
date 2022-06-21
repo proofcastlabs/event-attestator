@@ -16,9 +16,9 @@
 
 //pub mod debug_functions;
 pub mod eos;
-pub mod int;
-//pub mod get_enclave_state;
+pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
+pub mod int;
 
 pub(crate) mod check_core_is_initialized;
 pub(crate) mod constants;
