@@ -1,5 +1,3 @@
-use std::str::from_utf8;
-
 use eos_chain::{
     symbol::symbol_to_string as eos_symbol_to_string,
     AccountName as EosAccountName,
@@ -9,13 +7,16 @@ use eos_chain::{
 use ethereum_types::Address as EthAddress;
 
 use crate::{
-    chains::eos::{eos_action_proofs::EosActionProof, eos_state::EosState},
+    chains::{
+        eos::{eos_action_proofs::EosActionProof, eos_chain_id::EosChainId, eos_state::EosState},
+        eth::eth_database_utils::EthDbUtilsExt,
+    },
     dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_int::eos::int_tx_info::{EosOnIntIntTxInfo, EosOnIntIntTxInfos},
-    safe_addresses::SAFE_ETH_ADDRESS,
+    metadata::{MetadataChainId, ToMetadataChainId},
     traits::DatabaseInterface,
-    types::Result,
-    utils::{convert_bytes_to_u64, strip_hex_prefix},
+    types::{Bytes, Result},
+    utils::convert_bytes_to_u64,
 };
 
 const REQUIRED_ACTION_NAME: &str = "pegin";
@@ -109,34 +110,16 @@ impl EosOnIntIntTxInfo {
             .and_then(|_| convert_bytes_to_u64(&proof.action.data[start_index..=end_index]))
     }
 
-    fn get_eth_address_from_proof(proof: &EosActionProof) -> Result<EthAddress> {
-        let start_index = 33;
-        let end_index = 74;
-        proof
-            .check_proof_action_data_length(
-                end_index,
-                "Not enough data to parse `EosOnIntIntTxInfo` ETH address from proof!",
-            )
-            .and_then(|_| {
-                let result = EthAddress::from_slice(&hex::decode(strip_hex_prefix(from_utf8(
-                    &proof.action.data[start_index..=end_index],
-                )?))?);
-                debug!("✔ ETH address parsed from action proof: {}", result);
-                Ok(result)
-            })
+    fn get_destination_address_from_proof(_proof: &EosActionProof) -> Result<String> {
+        unimplemented!("Need to get destination address from proof!")
     }
 
-    fn get_eth_address_from_proof_or_revert_to_safe_eth_address(proof: &EosActionProof) -> Result<EthAddress> {
-        match Self::get_eth_address_from_proof(proof) {
-            Ok(eth_address) => Ok(eth_address),
-            Err(_) => {
-                info!(
-                    "✘ Error getting ETH addess from proof! Default to `SAFE_ETH_ADDRESS`: {}",
-                    SAFE_ETH_ADDRESS.to_string()
-                );
-                Ok(*SAFE_ETH_ADDRESS)
-            },
-        }
+    fn get_destination_chain_id_from_proof(_proof: &EosActionProof) -> Result<MetadataChainId> {
+        unimplemented!("Need to get destination chain ID from proof!")
+    }
+
+    fn get_user_data_from_proof(_proof: &EosActionProof) -> Result<Bytes> {
+        unimplemented!("Need to get user data from proof!")
     }
 
     fn get_asset_num_decimals_from_proof(proof: &EosActionProof) -> Result<usize> {
@@ -177,6 +160,9 @@ impl EosOnIntIntTxInfo {
         proof: &EosActionProof,
         token_dictionary: &EosEthTokenDictionary,
         eos_smart_contract: &EosAccountName,
+        router_address: &EthAddress,
+        vault_address: &EthAddress,
+        eos_chain_id: &EosChainId,
     ) -> Result<Self> {
         Self::check_proof_is_from_contract(proof, eos_smart_contract)
             .and_then(|_| Self::check_proof_is_for_action(proof, REQUIRED_ACTION_NAME))
@@ -188,16 +174,25 @@ impl EosOnIntIntTxInfo {
                     &Self::get_token_symbol_from_proof(proof)?,
                     Self::get_asset_num_decimals_from_proof(proof)?,
                 )?;
-                let eos_asset = dictionary_entry.convert_u64_to_eos_asset(Self::get_eos_amount_from_proof(proof)?);
-                let eth_amount = dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset)?;
+                let eos_amount = dictionary_entry.convert_u64_to_eos_asset(Self::get_eos_amount_from_proof(proof)?);
+                let eth_amount = dictionary_entry.convert_eos_asset_to_eth_amount(&eos_amount)?;
                 Ok(Self {
-                    token_amount: eth_amount,
+                    amount: eth_amount,
                     originating_tx_id: proof.tx_id,
                     global_sequence: proof.get_global_sequence(),
-                    from: Self::get_token_sender_from_proof(proof)?,
-                    destination_address: Self::get_eth_address_from_proof_or_revert_to_safe_eth_address(proof)?,
-                    eth_token_address: token_dictionary.get_eth_address_via_eos_address(&token_address)?,
+                    origin_address: Self::get_token_sender_from_proof(proof)?,
+                    destination_address: Self::get_destination_address_from_proof(proof)?,
+                    int_token_address: format!(
+                        "0x{}",
+                        hex::encode(&token_dictionary.get_eth_address_via_eos_address(&token_address)?)
+                    ),
                     eos_token_address: dictionary_entry.eos_address,
+                    eos_tx_amount: eos_amount,
+                    vault_address: format!("0x{}", hex::encode(vault_address)),
+                    router_address: format!("0x{}", hex::encode(router_address)),
+                    user_data: Self::get_user_data_from_proof(proof)?,
+                    origin_chain_id: eos_chain_id.to_metadata_chain_id(),
+                    destination_chain_id: Self::get_destination_chain_id_from_proof(proof)?,
                 })
             })
     }
@@ -208,11 +203,23 @@ impl EosOnIntIntTxInfos {
         action_proofs: &[EosActionProof],
         token_dictionary: &EosEthTokenDictionary,
         eos_smart_contract: &EosAccountName,
+        vault_address: &EthAddress,
+        router_address: &EthAddress,
+        eos_chain_id: &EosChainId,
     ) -> Result<Self> {
         Ok(EosOnIntIntTxInfos::new(
             action_proofs
                 .iter()
-                .map(|proof| EosOnIntIntTxInfo::from_eos_action_proof(proof, token_dictionary, eos_smart_contract))
+                .map(|proof| {
+                    EosOnIntIntTxInfo::from_eos_action_proof(
+                        proof,
+                        token_dictionary,
+                        eos_smart_contract,
+                        vault_address,
+                        router_address,
+                        eos_chain_id,
+                    )
+                })
                 .collect::<Result<Vec<EosOnIntIntTxInfo>>>()?,
         ))
     }
@@ -226,6 +233,9 @@ pub fn maybe_parse_eos_on_int_int_tx_infos_and_put_in_state<D: DatabaseInterface
         &state.action_proofs,
         state.get_eos_eth_token_dictionary()?,
         &state.eos_db_utils.get_eos_account_name_from_db()?,
+        &state.eth_db_utils.get_eos_on_int_smart_contract_address_from_db()?,
+        &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
+        &state.eos_db_utils.get_eos_chain_id_from_db()?,
     )
     .and_then(|tx_infos| {
         info!("✔ Parsed {} sets of redeem info!", tx_infos.len());

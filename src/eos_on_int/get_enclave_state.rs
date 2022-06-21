@@ -29,7 +29,7 @@ impl EnclaveState {
             eth: EthEnclaveState::new(
                 eth_db_utils,
                 &eth_db_utils.get_eos_on_int_smart_contract_address_from_db()?,
-                None,
+                Some(eth_db_utils.get_eth_router_smart_contract_address_from_db()?),
             )?,
         })
     }

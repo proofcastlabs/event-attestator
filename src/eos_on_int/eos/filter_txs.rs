@@ -25,7 +25,7 @@ impl EosOnIntIntTxInfos {
         Ok(EosOnIntIntTxInfos::new(
             self.iter()
                 .filter(|info| {
-                    if info.token_amount >= min_amount {
+                    if info.amount >= min_amount {
                         true
                     } else {
                         info!("✘ Filtering out tx info ∵ value too low: {:?}", info);

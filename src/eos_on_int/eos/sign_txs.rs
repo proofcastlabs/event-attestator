@@ -10,6 +10,7 @@ use crate::{
                 eth_transaction::{EthTransaction, EthTransactions},
             },
             eth_database_utils::EthDbUtilsExt,
+            eth_utils::convert_hex_to_eth_address,
         },
     },
     eos_on_int::eos::int_tx_info::EosOnIntIntTxInfos,
@@ -32,10 +33,13 @@ impl EosOnIntIntTxInfos {
                 .map(|(i, tx_info)| {
                     info!("✔ Signing INT tx for info: {:?}", tx_info);
                     EthTransaction::new_unsigned(
-                        encode_erc777_mint_with_no_data_fxn(&tx_info.destination_address, &tx_info.token_amount)?,
+                        encode_erc777_mint_with_no_data_fxn(
+                            &convert_hex_to_eth_address(&tx_info.destination_address)?,
+                            &tx_info.amount,
+                        )?,
                         eth_account_nonce + i as u64,
                         ZERO_ETH_VALUE,
-                        tx_info.eth_token_address,
+                        convert_hex_to_eth_address(&tx_info.int_token_address)?,
                         chain_id,
                         chain_id.get_erc777_mint_with_no_data_gas_limit(),
                         gas_price,
