@@ -118,7 +118,7 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
     info!("✔ Maybe signing `EosOnIntEosTxInfos`...");
     let submission_material = state.get_eth_submission_material()?;
     state
-        .eos_on_eth_eth_tx_infos
+        .eos_on_int_eos_tx_infos
         .to_eos_signed_txs(
             submission_material.get_eos_ref_block_num()?,
             submission_material.get_eos_ref_block_prefix()?,
