@@ -1172,7 +1172,6 @@ dependencies = [
 [[package]]
 name = "rust-algorand"
 version = "1.4.0"
-source = "git+https://github.com/provable-things/rust-algorand#23b6d17c1161bddc8d563fcdd9ecd8f7b4ee2419"
 dependencies = [
  "base32",
  "base64",
