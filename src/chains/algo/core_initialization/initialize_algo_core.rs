@@ -37,6 +37,9 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
     app_id: u64,
 ) -> Result<AlgoState<'a, D>> {
     info!("✔ Initializing ALGO core...");
+    if canon_to_tip_length == 0 {
+        return Err("Number of confirmations for an Algo core must be >= 1!".into());
+    };
     let submission_material = AlgoSubmissionMaterial::from_str(submission_material_str)?;
     let hash = submission_material.block.hash()?;
     state

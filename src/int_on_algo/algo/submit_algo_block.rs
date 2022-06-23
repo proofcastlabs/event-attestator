@@ -330,7 +330,7 @@ mod tests {
         let router_address = get_sample_router_address();
         let vault_address = get_sample_vault_address();
         let int_confirmations = 0;
-        let algo_confirmations = 0;
+        let algo_confirmations = 1;
         let gas_price = 20_000_000_000;
         let algo_fee = 1000;
         let app_id = 1337;
@@ -431,7 +431,7 @@ mod tests {
         let router_address = get_sample_router_address();
         let vault_address = get_sample_vault_address();
         let int_confirmations = 0;
-        let algo_confirmations = 0;
+        let algo_confirmations = 1;
         let gas_price = 20_000_000_000;
         let algo_fee = 1000;
         let app_id = 1337;
