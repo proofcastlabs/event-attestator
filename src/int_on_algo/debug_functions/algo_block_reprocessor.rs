@@ -8,6 +8,7 @@ use crate::{
             algo_state::AlgoState,
             algo_submission_material::parse_algo_submission_material_and_put_in_state,
             increment_eth_account_nonce::maybe_increment_eth_account_nonce_and_return_algo_state,
+            maybe_update_latest_block_with_expired_participants::maybe_update_latest_block_with_expired_participants_and_return_state,
             remove_all_txs_from_submission_material_in_state::remove_all_txs_from_submission_material_in_state,
         },
         eth::eth_database_utils::EthDbUtilsExt,
@@ -38,6 +39,7 @@ fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
         .and_then(check_core_is_initialized_and_return_algo_state)
         .and_then(start_algo_db_transaction_and_return_state)
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
+        .and_then(maybe_update_latest_block_with_expired_participants_and_return_state)
         .and_then(get_relevant_asset_txs_from_submission_material_and_add_to_state)
         .and_then(filter_out_invalid_txs_and_update_in_state)
         .and_then(remove_all_txs_from_submission_material_in_state)
@@ -67,7 +69,6 @@ fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
             }
         })
         .and_then(filter_out_zero_value_tx_infos_from_state)
-        //.and_then(maybe_divert_txs_to_safe_address_if_destination_is_evm_token_address) // TODO this!
         .and_then(|state| {
             let tx_infos = state.get_int_on_algo_int_tx_infos();
             if tx_infos.is_empty() {

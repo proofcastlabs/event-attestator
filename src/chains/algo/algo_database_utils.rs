@@ -73,11 +73,13 @@ macro_rules! create_special_hash_setters_and_getters {
                 impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
                     pub fn [<get_ $hash_type _block_hash>](&self) -> Result<AlgorandHash> {
                         info!("✔ Getting {} block hash from db...", $hash_type);
-                        self.get_special_hash_from_db(&SpecialHashTypes::from_str(&$hash_type)?)
+                        let hash = self.get_special_hash_from_db(&SpecialHashTypes::from_str(&$hash_type)?)?;
+                        debug!("Hash retrieved: {}", hash.to_base_32());
+                        Ok(hash)
                     }
 
                     pub fn [< put_ $hash_type _block_hash_in_db>](&self, hash: &AlgorandHash) -> Result<()> {
-                        info!("✔ Putting {} block hash in db...", $hash_type);
+                        info!("✔ Putting {} block hash of {} in db...", $hash_type, hash.to_base_32());
                         self.put_special_hash_in_db(&SpecialHashTypes::from_str(&$hash_type)?, hash)
                     }
 
@@ -91,8 +93,8 @@ macro_rules! create_special_hash_setters_and_getters {
                         &self,
                         submission_material: &AlgoSubmissionMaterial
                     ) -> Result<()> {
-                        info!("✔ Putting {} submission material in db!", $hash_type);
                         let block_hash = submission_material.block.hash()?;
+                        info!("✔ Putting {} submission material in db under hash: {}!", $hash_type, block_hash.to_base_32());
                         self.put_algo_submission_material_in_db(submission_material)
                             .and_then(|_| self.[< put_ $hash_type _block_hash_in_db>](&block_hash))
                     }
@@ -195,7 +197,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     }
 
     pub fn delete_submission_material_by_hash(&self, hash: &AlgorandHash) -> Result<()> {
-        info!("Deleting block by blockhash: {}", hash);
+        info!("✔ Deleting block by blockhash: {}", hash.to_base_32());
         self.get_db().delete(hash.to_bytes())
     }
 
@@ -237,7 +239,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
     }
 
     pub fn get_submission_material(&self, hash: &AlgorandHash) -> Result<AlgoSubmissionMaterial> {
-        debug!("✔ Getting ALGO submission material via hash: {}", hash);
+        debug!("✔ Getting ALGO submission material via hash: {}", hash.to_base_32());
         self.get_db()
             .get(hash.to_bytes(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| AlgoSubmissionMaterial::from_bytes(&bytes))

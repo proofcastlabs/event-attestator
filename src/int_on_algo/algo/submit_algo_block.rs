@@ -10,6 +10,7 @@ use crate::{
         check_parent_exists::check_parent_of_algo_block_in_state_exists,
         check_submitted_block_is_subsequent::check_submitted_block_is_subsequent_and_return_state,
         increment_eth_account_nonce::maybe_increment_eth_account_nonce_and_return_algo_state,
+        maybe_update_latest_block_with_expired_participants::maybe_update_latest_block_with_expired_participants_and_return_state,
         remove_all_txs_from_submission_material_in_state::remove_all_txs_from_submission_material_in_state,
         remove_old_algo_tail_submission_material::maybe_remove_old_algo_tail_submission_material_and_return_state,
         remove_txs_from_canon_submission_material::maybe_remove_txs_from_algo_canon_submission_material_and_return_state,
@@ -47,6 +48,7 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: &D, block_json_string
         .and_then(check_core_is_initialized_and_return_algo_state)
         .and_then(start_algo_db_transaction_and_return_state)
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
+        .and_then(maybe_update_latest_block_with_expired_participants_and_return_state)
         .and_then(check_parent_of_algo_block_in_state_exists)
         .and_then(check_submitted_block_is_subsequent_and_return_state)
         .and_then(get_relevant_asset_txs_from_submission_material_and_add_to_state)
@@ -328,7 +330,7 @@ mod tests {
         let router_address = get_sample_router_address();
         let vault_address = get_sample_vault_address();
         let int_confirmations = 0;
-        let algo_confirmations = 0;
+        let algo_confirmations = 1;
         let gas_price = 20_000_000_000;
         let algo_fee = 1000;
         let app_id = 1337;
@@ -429,7 +431,7 @@ mod tests {
         let router_address = get_sample_router_address();
         let vault_address = get_sample_vault_address();
         let int_confirmations = 0;
-        let algo_confirmations = 0;
+        let algo_confirmations = 1;
         let gas_price = 20_000_000_000;
         let algo_fee = 1000;
         let app_id = 1337;
