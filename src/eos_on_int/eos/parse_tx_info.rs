@@ -110,16 +110,28 @@ impl EosOnIntIntTxInfo {
             .and_then(|_| convert_bytes_to_u64(&proof.action.data[start_index..=end_index]))
     }
 
-    fn get_destination_address_from_proof(_proof: &EosActionProof) -> Result<String> {
-        unimplemented!("Need to get destination address from proof!")
+    fn get_destination_address_from_proof(proof: &EosActionProof) -> String {
+        // FIXME We need to parse this from the hex data for validation reasons!
+        proof.action_json.data.destination_address.clone().unwrap_or_default()
     }
 
-    fn get_destination_chain_id_from_proof(_proof: &EosActionProof) -> Result<MetadataChainId> {
-        unimplemented!("Need to get destination chain ID from proof!")
+    fn get_destination_chain_id_from_proof(proof: &EosActionProof) -> Result<MetadataChainId> {
+        // FIXME We need to parse this from the hex data for validation reasons!
+        MetadataChainId::from_bytes(&hex::decode(
+            &proof
+                .action_json
+                .data
+                .destination_chain_id
+                .clone()
+                .unwrap_or_else(|| MetadataChainId::default().to_string()),
+        )?)
     }
 
-    fn get_user_data_from_proof(_proof: &EosActionProof) -> Result<Bytes> {
-        unimplemented!("Need to get user data from proof!")
+    fn get_user_data_from_proof(proof: &EosActionProof) -> Result<Bytes> {
+        // FIXME We need to parse this from the hex data for validation reasons!
+        Ok(hex::decode(
+            proof.action_json.data.destination_chain_id.clone().unwrap_or_default(),
+        )?)
     }
 
     fn get_asset_num_decimals_from_proof(proof: &EosActionProof) -> Result<usize> {
@@ -176,12 +188,12 @@ impl EosOnIntIntTxInfo {
                 )?;
                 let eos_amount = dictionary_entry.convert_u64_to_eos_asset(Self::get_eos_amount_from_proof(proof)?);
                 let eth_amount = dictionary_entry.convert_eos_asset_to_eth_amount(&eos_amount)?;
-                Ok(Self {
+                let tx_info = Self {
                     amount: eth_amount,
                     originating_tx_id: proof.tx_id,
                     global_sequence: proof.get_global_sequence(),
                     origin_address: Self::get_token_sender_from_proof(proof)?,
-                    destination_address: Self::get_destination_address_from_proof(proof)?,
+                    destination_address: Self::get_destination_address_from_proof(proof),
                     int_token_address: format!(
                         "0x{}",
                         hex::encode(&token_dictionary.get_eth_address_via_eos_address(&token_address)?)
@@ -193,7 +205,9 @@ impl EosOnIntIntTxInfo {
                     user_data: Self::get_user_data_from_proof(proof)?,
                     origin_chain_id: eos_chain_id.to_metadata_chain_id(),
                     destination_chain_id: Self::get_destination_chain_id_from_proof(proof)?,
-                })
+                };
+                debug!("Tx info parsed: {:?}", tx_info);
+                Ok(tx_info)
             })
     }
 }
@@ -228,7 +242,7 @@ impl EosOnIntIntTxInfos {
 pub fn maybe_parse_eos_on_int_int_tx_infos_and_put_in_state<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
-    info!("✔ Parsing redeem params from actions data...");
+    info!("✔ Parsing tx infos from actions...");
     EosOnIntIntTxInfos::from_eos_action_proofs(
         &state.action_proofs,
         state.get_eos_eth_token_dictionary()?,
