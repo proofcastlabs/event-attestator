@@ -6,21 +6,6 @@ use crate::{metadata::MetadataChainId, types::Bytes};
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
 pub struct EosOnIntEosTxInfos(pub Vec<EosOnIntEosTxInfo>);
 
-/*
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct EosOnIntEosTxInfo {
-    pub user_data: Bytes,
-    pub token_amount: U256,
-    pub token_sender: EthAddress,
-    pub eos_asset_amount: String,
-    pub eos_token_address: String,
-    pub origin_chain_id: EthChainId, // FIXME
-    pub destination_address: String,
-    pub originating_tx_hash: EthHash,
-    pub int_token_address: EthAddress,
-}
-*/
-
 #[derive(Debug, Clone, PartialEq, Eq, Default, Constructor)]
 pub struct EosOnIntEosTxInfo {
     pub user_data: Bytes,

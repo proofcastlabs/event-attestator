@@ -4,15 +4,16 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{
-        eos::eos_crypto::eos_transaction::EosSignedTransaction,
+        eos::{eos_chain_id::EosChainId, eos_crypto::eos_transaction::EosSignedTransaction},
         eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
     },
     eos_on_int::int::eos_tx_info::EosOnIntEosTxInfo,
+    metadata::ToMetadataChainId,
     traits::DatabaseInterface,
     types::Result,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TxInfo {
     pub _id: String,
     pub broadcast: bool,
@@ -28,6 +29,7 @@ pub struct TxInfo {
     pub originating_address: String,
     pub eos_latest_block_number: u64,
     pub native_token_address: String,
+    pub destination_chain_id: String,
     pub broadcast_tx_hash: Option<String>,
     pub broadcast_timestamp: Option<String>,
 }
@@ -38,6 +40,7 @@ impl TxInfo {
         tx_info: &EosOnIntEosTxInfo,
         eos_account_nonce: u64,
         eos_latest_block_number: u64,
+        eos_chain_id: &EosChainId,
     ) -> Result<TxInfo> {
         Ok(TxInfo {
             broadcast: false,
@@ -50,25 +53,26 @@ impl TxInfo {
             eos_serialized_tx: eos_tx.transaction.clone(),
             int_tx_amount: tx_info.token_amount.to_string(),
             eos_tx_amount: tx_info.eos_asset_amount.clone(),
-            _id: format!("peos-on-eth-eos-{}", eos_account_nonce),
+            _id: format!("peos-on-int-eos-{}", eos_account_nonce),
+            native_token_address: tx_info.eos_token_address.to_string(),
+            destination_chain_id: eos_chain_id.to_metadata_chain_id().to_hex()?,
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender)),
             host_token_address: format!("0x{}", hex::encode(&tx_info.int_token_address)),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             originating_tx_hash: format!("0x{}", hex::encode(&tx_info.originating_tx_hash)),
-            native_token_address: tx_info.eos_token_address.to_string(),
         })
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Output {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct IntOutput {
     pub int_latest_block_number: u64,
     pub eos_signed_transactions: Vec<TxInfo>,
 }
 
-pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+pub fn get_int_output<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
     info!("✔ Getting `eos-on-int` INT submission output json...");
-    Ok(serde_json::to_string(&Output {
+    Ok(serde_json::to_string(&IntOutput {
         int_latest_block_number: state
             .eth_db_utils
             .get_eth_latest_block_from_db()?
@@ -93,6 +97,7 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
                             &state.eos_on_int_eos_tx_infos[i],
                             start_nonce + i as u64,
                             state.eos_db_utils.get_latest_eos_block_number()?,
+                            &state.eos_db_utils.get_eos_chain_id_from_db()?,
                         )
                     })
                     .collect::<Result<Vec<TxInfo>>>()?
@@ -111,7 +116,7 @@ use serde_json;
 use crate::errors::AppError;
 
 #[cfg(test)]
-impl FromStr for Output {
+impl FromStr for IntOutput {
     type Err = AppError;
 
     fn from_str(s: &str) -> Result<Self> {

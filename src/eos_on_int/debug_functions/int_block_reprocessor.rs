@@ -25,7 +25,7 @@ use crate::{
                 maybe_filter_out_int_tx_info_with_value_too_low_in_state,
                 maybe_filter_out_zero_eos_asset_amounts_in_state,
             },
-            get_output_json::get_output_json,
+            get_int_output::get_int_output,
             sign_txs::maybe_sign_eos_txs_and_add_to_eth_state,
         },
     },
@@ -70,7 +70,7 @@ fn reprocess_int_block<D: DatabaseInterface>(db: D, block_json_string: &str) -> 
         .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
         .and_then(maybe_increment_eos_account_nonce_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)
-        .and_then(get_output_json)
+        .and_then(get_int_output)
         .map(prepend_debug_output_marker_to_string)
 }
 
