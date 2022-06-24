@@ -56,9 +56,9 @@ use crate::{
 /// incremerkle accordingly. Any proofs submitted with the block and transaction IDs will then be
 /// parsed and if found to pertain to peg outs made in the block in question, an ETH transaction
 /// will be signed and returned to the caller.
-pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
+pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) -> Result<String> {
     info!("✔ Submitting EOS block to core...");
-    parse_submission_material_and_add_to_state(block_json, EosState::init(&db))
+    parse_submission_material_and_add_to_state(block_json, EosState::init(db))
         .and_then(start_eos_db_transaction_and_return_state)
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
@@ -89,4 +89,149 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: D, block_json: &str) -
         .and_then(save_incremerkle_from_state_to_db)
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(get_eos_output)
+}
+
+#[cfg(all(test, feature = "non-validating"))] // NOTE: The test uses TELOS blocks, whose headers fail validation.
+mod tests {
+    use std::str::FromStr;
+
+    use serde_json::json;
+
+    use super::*;
+    use crate::{
+        chains::{
+            eos::{
+                core_initialization::initialize_eos_core::initialize_eos_core_inner,
+                eos_crypto::eos_private_key::EosPrivateKey,
+            },
+            eth::{
+                core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
+                eth_chain_id::EthChainId,
+                eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+                eth_state::EthState as IntState,
+                vault_using_cores::VaultUsingCores,
+            },
+        },
+        eos_on_int::{
+            eos::get_eos_output::EosOutput,
+            test_utils::{
+                get_contiguous_int_block_json_strs,
+                get_sample_dictionary,
+                get_sample_eos_init_block,
+                get_sample_eos_private_key,
+                get_sample_eos_submission_material_string,
+                get_sample_int_address,
+                get_sample_int_private_key,
+                get_sample_router_address,
+                get_sample_vault_address,
+            },
+        },
+        test_utils::get_test_database,
+    };
+
+    #[test]
+    fn should_submit_eos_block() {
+        let db = get_test_database();
+        let vault_address = get_sample_vault_address();
+        let router_address = get_sample_router_address();
+
+        // NOTE: Initialize the EOS core...
+        let eos_chain_id = "4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11";
+        let maybe_eos_account_name = Some("intoneostest");
+        let maybe_eos_token_symbol = None;
+        let eos_init_block = get_sample_eos_init_block();
+        initialize_eos_core_inner(
+            &db,
+            eos_chain_id,
+            maybe_eos_account_name,
+            maybe_eos_token_symbol,
+            &eos_init_block,
+        )
+        .unwrap();
+
+        // NOTE: Overwrite the EOS private key since it's generated randomly above...
+        let eos_pk = get_sample_eos_private_key();
+        eos_pk.write_to_db(&db).unwrap();
+        assert_eq!(EosPrivateKey::get_from_db(&db).unwrap(), eos_pk);
+
+        // NOTE: Initialize the INT side of the core...
+        let int_confirmations = 0;
+        let int_gas_price = 20_000_000_000;
+        let contiguous_int_block_json_strs = get_contiguous_int_block_json_strs();
+        let int_init_block = contiguous_int_block_json_strs[0].clone();
+        initialize_eth_core_with_vault_and_router_contracts_and_return_state(
+            &int_init_block,
+            &EthChainId::Ropsten,
+            int_gas_price,
+            int_confirmations,
+            IntState::init(&db),
+            &vault_address,
+            &router_address,
+            &VaultUsingCores::EosOnInt,
+        )
+        .unwrap();
+
+        // NOTE: Overwrite the INT address & private key since it's generated randomly above...
+        let int_address = get_sample_int_address();
+        let int_private_key = get_sample_int_private_key();
+        let int_db_utils = EthDbUtils::new(&db);
+        int_db_utils
+            .put_eth_address_in_db(&int_db_utils.get_eth_address_key(), &int_address)
+            .unwrap();
+        int_db_utils.put_eth_private_key_in_db(&int_private_key).unwrap();
+        assert_eq!(int_db_utils.get_public_eth_address_from_db().unwrap(), int_address);
+        assert_eq!(int_db_utils.get_eth_private_key_from_db().unwrap(), int_private_key);
+
+        // NOTE: Add the token dictionary to the db...
+        let dictionary = get_sample_dictionary();
+        dictionary.save_to_db(&db).unwrap();
+
+        // NOTE: Submit the block with the peg in in it...
+        let output =
+            EosOutput::from_str(&submit_eos_block_to_core(&db, &get_sample_eos_submission_material_string()).unwrap())
+                .unwrap();
+        let expected_output = EosOutput::from_str(&json!({
+            "eos_latest_block_number":222279899,
+            "int_signed_transactions":[{
+                "_id":"peos-on-int-int-0",
+                "broadcast":false,
+                "int_tx_hash":"0xa76d86187ad13ef8b3281990c9e859275518ae1f3947db241ab017ae740858b2",
+                "int_tx_amount":"100000000000000000",
+                "int_account_nonce":0,
+                "int_tx_recipient":"0x988e8C89cca8f54f144D270BCFB02C4584F005E6",
+                "witnessed_timestamp":1656079533,
+                "host_token_address":"0xa83446f219baec0b6fd6b3031c5a49a54543045b",
+                "originating_tx_hash": "65c51028ac71cf1fd52e75e6839cac53186698dea7b57c07f9dac574ee1fff76",
+                "originating_address":"ptestpout111",
+                "native_token_address":"ptestpout123",
+                "destination_chain_id":"0x005fe7f9",
+                "int_signed_tx":"f9034b808504a817c8008306ddd094a83446f219baec0b6fd6b3031c5a49a54543045b80b902e4dcdc7dd0000000000000000000000000e0806ce04978224e27c6bb10e27fd30a7785ae9d000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000002c0000000000000000000000000000000000000000000000000000000000000022003000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100028c7109000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000140005fe7f900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000001e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000004005fe7f90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000081042c89ad68c55ae000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a3078393838653863383963636138663534663134346432373062636662303263343538346630303565360000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000029a0787e37c545e75f970479a6aebf9d0449e4f2412843b2523f72433db51a542f62a004b83d339dbd7b566f59f1624f38d29ab2a23e4722876d0e76d090da15f5f6e5",
+                "int_latest_block_number":11618226,
+                "broadcast_tx_hash":null,
+                "broadcast_timestamp":null
+        }]}).to_string()).unwrap();
+
+        // NOTE: And finally, we assert the output...
+        let expected_num_txs = 1;
+        assert_eq!(output.int_signed_transactions.len(), expected_num_txs);
+        let result = output.int_signed_transactions[0].clone();
+        let expected_result = expected_output.int_signed_transactions[0].clone();
+        assert_eq!(result._id, expected_result._id);
+        assert_eq!(result.broadcast, expected_result.broadcast);
+        assert_eq!(result.int_tx_hash, expected_result.int_tx_hash);
+        assert_eq!(result.int_tx_amount, expected_result.int_tx_amount);
+        assert_eq!(result.int_tx_amount, expected_result.int_tx_amount);
+        assert_eq!(result.int_account_nonce, expected_result.int_account_nonce);
+        assert_eq!(result.int_tx_recipient, expected_result.int_tx_recipient);
+        assert_eq!(result.host_token_address, expected_result.host_token_address);
+        assert_eq!(result.originating_tx_hash, expected_result.originating_tx_hash);
+        assert_eq!(result.originating_address, expected_result.originating_address);
+        assert_eq!(result.native_token_address, expected_result.native_token_address);
+        assert_eq!(result.int_signed_tx, expected_result.int_signed_tx);
+        assert_eq!(result.int_latest_block_number, expected_result.int_latest_block_number);
+        assert_eq!(result.broadcast_tx_hash, expected_result.broadcast_tx_hash);
+        assert_eq!(result.broadcast_timestamp, expected_result.broadcast_timestamp);
+        assert_eq!(result.destination_chain_id, expected_result.destination_chain_id);
+        // NOTE: We don't assert the timestamp since it's not deterministic.
+    }
 }

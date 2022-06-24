@@ -13,21 +13,22 @@ use crate::{
     },
     eos_on_int::eos::int_tx_info::{EosOnIntIntTxInfo, EosOnIntIntTxInfos},
     traits::DatabaseInterface,
-    types::Result,
+    types::{NoneError, Result},
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct EosOutput {
     pub eos_latest_block_number: u64,
     pub int_signed_transactions: Vec<TxInfo>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct TxInfo {
     pub _id: String,
     pub broadcast: bool,
     pub int_tx_hash: String,
     pub int_tx_amount: String,
+    pub int_signed_tx: String,
     pub int_account_nonce: u64,
     pub int_tx_recipient: String,
     pub witnessed_timestamp: u64,
@@ -35,7 +36,7 @@ pub struct TxInfo {
     pub originating_tx_hash: String,
     pub originating_address: String,
     pub native_token_address: String,
-    pub int_signed_tx: Option<String>,
+    pub destination_chain_id: String,
     pub int_latest_block_number: usize,
     pub broadcast_tx_hash: Option<String>,
     pub broadcast_timestamp: Option<String>,
@@ -54,16 +55,19 @@ impl TxInfo {
             broadcast_tx_hash: None,
             int_account_nonce: nonce,
             broadcast_timestamp: None,
-            int_signed_tx: tx.eth_tx_hex(),
             _id: format!("peos-on-int-int-{}", nonce),
-            int_tx_hash: format!("0x{}", tx.get_tx_hash()),
             int_tx_amount: tx_info.amount.to_string(),
+            int_tx_hash: format!("0x{}", tx.get_tx_hash()),
+            host_token_address: tx_info.int_token_address.clone(),
+            int_tx_recipient: tx_info.destination_address.clone(),
             originating_address: tx_info.origin_address.to_string(),
             originating_tx_hash: tx_info.originating_tx_id.to_string(),
             native_token_address: tx_info.eos_token_address.to_string(),
-            host_token_address: format!("0x{}", hex::encode(&tx_info.int_token_address)),
+            destination_chain_id: tx_info.destination_chain_id.to_hex()?,
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            int_tx_recipient: format!("0x{}", hex::encode(tx_info.destination_address.as_bytes())),
+            int_signed_tx: tx
+                .eth_tx_hex()
+                .ok_or(NoneError("Error unwrapping INT tx for output!"))?,
         })
     }
 }
