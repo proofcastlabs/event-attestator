@@ -72,29 +72,30 @@ Further, the `sensitivity` parameter provides a way for the `core` to signal to 
 The `v2` of this core use metadata chain IDs to route peg-ins and peg-outs to their correct destinations. The byte encodings of those metadata chain IDs are as follows:
 
 ```
-
-EthUnknown: 0x00000000
-BtcUnknown: 0x01000000
-EosUnknown: 0x02000000
-Eos Mainnet: 0x02e7261c
-FIO Mainnet: 0x02174f20
-xDai Mainnet: 0x00f1918e
-Ultra Mainnet: 0x025d3c68
-Ultra Testnet: 0x02b5a4d6
-Telos Mainnet: 0x028c7109
-Interim Chain: 0xffffffff
-Fantom Mainnet: 0x0022af98
-Bitcoin Mainnet: 0x01ec97de
-Polygon Mainnet: 0x0075dd4c
-Bitcoin Testnet: 0x018afeb2
-Ethereum Mainnet: 0x005fe7f9
-Ethereum Ropsten: 0x0069c322
-Ethereum Rinkeby: 0x00f34368
-Arbitrum Mainnet: 0x00ce98c4
-Luxochain Mainnet: 0x00d5beb0
-EOS Jungle Testnet: 0x0282317f
-Binance Chain Mainnet: 0x00e4b170
-
+EthereumMainnet,  // 0x005fe7f9
+EthereumRopsten,  // 0x0069c322
+EthereumRinkeby,  // 0x00f34368
+BitcoinMainnet,   // 0x01ec97de
+BitcoinTestnet,   // 0x018afeb2
+EosMainnet,       // 0x02e7261c
+TelosMainnet,     // 0x028c7109
+BscMainnet,       // 0x00e4b170
+EosJungleTestnet, // 0x0282317f
+XDaiMainnet,      // 0x00f1918e
+PolygonMainnet,   // 0x0075dd4c
+UltraMainnet,     // 0x025d3c68
+FioMainnet,       // 0x02174f20
+UltraTestnet,     // 0x02b5a4d6
+EthUnknown,       // 0x00000000
+BtcUnknown,       // 0x01000000
+EosUnknown,       // 0x02000000
+InterimChain,     // 0xffffffff
+ArbitrumMainnet,  // 0x00ce98c4
+LuxochainMainnet, // 0x00d5beb0
+FantomMainnet,    // 0x0022af98
+AlgorandMainnet,  // 0x03c38e67
+PhoenixTestnet,   // 0x02a75f2c
+PhoenixMainnet,   // 0x026776fa
 ```
 
 &nbsp;
