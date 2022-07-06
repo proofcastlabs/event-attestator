@@ -23,7 +23,6 @@ impl EosOnIntEosTxInfo {
         tx_hash: &EthHash,
         token_dictionary: &EosEthTokenDictionary,
         origin_chain_id: &EthChainId,
-        vault_address: &EthAddress,
         router_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Parsing `EosOnIntEosTxInfo` from ETH log...");
@@ -36,7 +35,6 @@ impl EosOnIntEosTxInfo {
                 user_data: params.user_data.clone(),
                 origin_chain_id: origin_chain_id.to_metadata_chain_id(),
                 destination_chain_id: params.get_destination_chain_id()?,
-                vault_address: format!("0x{}", hex::encode(vault_address)),
                 router_address: format!("0x{}", hex::encode(router_address)),
                 eos_token_address: token_dictionary.get_eos_account_name_from_eth_token_address(&log.address)?,
                 eos_asset_amount: token_dictionary.convert_u256_to_eos_asset_string(&log.address, &params.value)?,
@@ -51,14 +49,12 @@ impl EosOnIntEosTxInfos {
         material: &EthSubmissionMaterial,
         token_dictionary: &EosEthTokenDictionary,
         origin_chain_id: &EthChainId,
-        vault_address: &EthAddress,
         router_address: &EthAddress,
     ) -> Result<Self> {
         Self::from_int_submission_material_without_filtering(
             material,
             token_dictionary,
             origin_chain_id,
-            vault_address,
             router_address,
         )
         .map(|tx_infos| {
@@ -73,7 +69,6 @@ impl EosOnIntEosTxInfos {
         material: &EthSubmissionMaterial,
         token_dictionary: &EosEthTokenDictionary,
         origin_chain_id: &EthChainId,
-        vault_address: &EthAddress,
         router_address: &EthAddress,
     ) -> Result<Self> {
         let eth_contract_addresses = token_dictionary.to_eth_addresses();
@@ -95,7 +90,6 @@ impl EosOnIntEosTxInfos {
                                 &receipt.transaction_hash,
                                 token_dictionary,
                                 origin_chain_id,
-                                vault_address,
                                 router_address,
                             )
                         })
@@ -128,7 +122,6 @@ pub fn maybe_parse_eth_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
                     &material,
                     state.get_eos_eth_token_dictionary()?,
                     &state.eth_db_utils.get_eth_chain_id_from_db()?,
-                    &state.eth_db_utils.get_eos_on_int_smart_contract_address_from_db()?,
                     &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
                 )
                 .and_then(|tx_infos| state.add_eos_on_int_eos_tx_infos(tx_infos))

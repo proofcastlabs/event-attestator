@@ -13,7 +13,6 @@ pub struct EosOnIntIntTxInfo {
     pub amount: U256,
     pub user_data: Bytes,
     pub eos_tx_amount: String,
-    pub vault_address: String,
     pub router_address: String,
     pub eos_token_address: String,
     pub int_token_address: String,

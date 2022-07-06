@@ -1,3 +1,4 @@
+use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -28,7 +29,7 @@ impl EnclaveState {
             eos: EosEnclaveState::new(eos_db_utils)?,
             eth: EthEnclaveState::new(
                 eth_db_utils,
-                &eth_db_utils.get_eos_on_int_smart_contract_address_from_db()?,
+                &EthAddress::zero(),
                 Some(eth_db_utils.get_eth_router_smart_contract_address_from_db()?),
             )?,
         })

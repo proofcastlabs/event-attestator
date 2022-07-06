@@ -64,10 +64,6 @@ pub fn get_contiguous_int_block_json_strs() -> Vec<String> {
     ]
 }
 
-pub fn get_sample_vault_address() -> EthAddress {
-    convert_hex_to_eth_address("0xE0806Ce04978224E27C6bB10E27fD30A7785ae9D").unwrap()
-}
-
 pub fn get_sample_router_address() -> EthAddress {
     convert_hex_to_eth_address("0xec1700a39972482d5db20e73bb3ffe6829b0c102").unwrap()
 }

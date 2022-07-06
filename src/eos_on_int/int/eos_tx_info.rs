@@ -10,7 +10,6 @@ pub struct EosOnIntEosTxInfos(pub Vec<EosOnIntEosTxInfo>);
 pub struct EosOnIntEosTxInfo {
     pub user_data: Bytes,
     pub token_amount: U256,
-    pub vault_address: String,
     pub router_address: String,
     pub eos_asset_amount: String,
     pub token_sender: EthAddress,

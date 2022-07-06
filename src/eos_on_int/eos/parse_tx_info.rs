@@ -173,7 +173,6 @@ impl EosOnIntIntTxInfo {
         token_dictionary: &EosEthTokenDictionary,
         eos_smart_contract: &EosAccountName,
         router_address: &EthAddress,
-        vault_address: &EthAddress,
         eos_chain_id: &EosChainId,
     ) -> Result<Self> {
         Self::check_proof_is_from_contract(proof, eos_smart_contract)
@@ -200,7 +199,6 @@ impl EosOnIntIntTxInfo {
                     ),
                     eos_token_address: dictionary_entry.eos_address,
                     eos_tx_amount: eos_amount,
-                    vault_address: format!("0x{}", hex::encode(vault_address)),
                     router_address: format!("0x{}", hex::encode(router_address)),
                     user_data: Self::get_user_data_from_proof(proof)?,
                     origin_chain_id: eos_chain_id.to_metadata_chain_id(),
@@ -217,7 +215,6 @@ impl EosOnIntIntTxInfos {
         action_proofs: &[EosActionProof],
         token_dictionary: &EosEthTokenDictionary,
         eos_smart_contract: &EosAccountName,
-        vault_address: &EthAddress,
         router_address: &EthAddress,
         eos_chain_id: &EosChainId,
     ) -> Result<Self> {
@@ -229,7 +226,6 @@ impl EosOnIntIntTxInfos {
                         proof,
                         token_dictionary,
                         eos_smart_contract,
-                        vault_address,
                         router_address,
                         eos_chain_id,
                     )
@@ -247,7 +243,6 @@ pub fn maybe_parse_eos_on_int_int_tx_infos_and_put_in_state<D: DatabaseInterface
         &state.action_proofs,
         state.get_eos_eth_token_dictionary()?,
         &state.eos_db_utils.get_eos_account_name_from_db()?,
-        &state.eth_db_utils.get_eos_on_int_smart_contract_address_from_db()?,
         &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
         &state.eos_db_utils.get_eos_chain_id_from_db()?,
     )

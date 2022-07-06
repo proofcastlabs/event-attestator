@@ -3,7 +3,7 @@ use crate::{
         core_initialization::{
             check_eth_core_is_initialized::is_eth_core_initialized,
             get_eth_core_init_output_json::EthInitializationOutput,
-            initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
+            initialize_eth_core::initialize_eth_core_with_router_contract_and_return_state,
         },
         eth_chain_id::EthChainId,
         eth_constants::ETH_CORE_IS_INITIALIZED_JSON,
@@ -14,7 +14,6 @@ use crate::{
         eth_database_utils::EthDbUtils,
         eth_state::EthState,
         eth_utils::convert_hex_to_eth_address,
-        vault_using_cores::VaultUsingCores,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -43,33 +42,30 @@ use crate::{
 ///
 /// The function also takes an ETH `gas_price` param, expressed in `Wei`, along with a `canon_to_tip`
 /// length param. This latter defines how many `confirmations` of a transactions are required before
-/// a signature is signed. Finally, this function requires the addresses of the vault & router
-/// smart contracts.
+/// a signature is signed. Finally, this function requires the address the router smart contract.
 pub fn maybe_initialize_int_core<D: DatabaseInterface>(
     db: D,
     block_json: &str,
     chain_id: u64,
     gas_price: u64,
     confs: u64,
-    vault_address: &str,
     router_address: &str,
 ) -> Result<String> {
-    match is_eth_core_initialized(&EthDbUtils::new(&db)) {
-        true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
-        false => start_eth_db_transaction_and_return_state(EthState::init(&db))
+    if is_eth_core_initialized(&EthDbUtils::new(&db)) {
+        Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string())
+    } else {
+        start_eth_db_transaction_and_return_state(EthState::init(&db))
             .and_then(|state| {
-                initialize_eth_core_with_vault_and_router_contracts_and_return_state(
+                initialize_eth_core_with_router_contract_and_return_state(
                     block_json,
                     &EthChainId::try_from(chain_id)?,
                     gas_price,
                     confs,
                     state,
-                    &convert_hex_to_eth_address(vault_address)?,
                     &convert_hex_to_eth_address(router_address)?,
-                    &VaultUsingCores::EosOnInt,
                 )
             })
             .and_then(end_eth_db_transaction_and_return_state)
-            .and_then(|state| EthInitializationOutput::new_with_no_contract(&state.eth_db_utils)),
+            .and_then(|state| EthInitializationOutput::new_with_no_contract(&state.eth_db_utils))
     }
 }

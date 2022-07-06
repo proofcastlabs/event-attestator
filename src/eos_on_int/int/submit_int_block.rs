@@ -86,11 +86,10 @@ mod tests {
                 eos_crypto::eos_private_key::EosPrivateKey,
             },
             eth::{
-                core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
+                core_initialization::initialize_eth_core::initialize_eth_core_with_router_contract_and_return_state,
                 eth_chain_id::EthChainId,
                 eth_database_utils::{EthDbUtils, EthDbUtilsExt},
                 eth_state::EthState as IntState,
-                vault_using_cores::VaultUsingCores,
             },
         },
         eos_on_int::{
@@ -103,7 +102,6 @@ mod tests {
                 get_sample_int_address,
                 get_sample_int_private_key,
                 get_sample_router_address,
-                get_sample_vault_address,
             },
         },
         test_utils::get_test_database,
@@ -112,7 +110,6 @@ mod tests {
     #[test]
     fn should_submit_int_block() {
         let db = get_test_database();
-        let vault_address = get_sample_vault_address();
         let router_address = get_sample_router_address();
 
         // NOTE: Initialize the EOS core...
@@ -139,15 +136,13 @@ mod tests {
         let int_gas_price = 20_000_000_000;
         let contiguous_int_block_json_strs = get_contiguous_int_block_json_strs();
         let int_init_block = contiguous_int_block_json_strs[0].clone();
-        initialize_eth_core_with_vault_and_router_contracts_and_return_state(
+        initialize_eth_core_with_router_contract_and_return_state(
             &int_init_block,
             &EthChainId::Ropsten,
             int_gas_price,
             int_confirmations,
             IntState::init(&db),
-            &vault_address,
             &router_address,
-            &VaultUsingCores::EosOnInt,
         )
         .unwrap();
 
