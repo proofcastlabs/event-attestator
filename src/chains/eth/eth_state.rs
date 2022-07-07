@@ -310,16 +310,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         Ok(self)
     }
 
-    pub fn add_misc_string_to_state(mut self, misc_string: String) -> Result<Self> {
-        match self.misc {
-            Some(_) => Err(get_no_overwrite_state_err("misc_string").into()),
-            None => {
-                self.misc = Some(misc_string);
-                Ok(self)
-            },
-        }
-    }
-
     pub fn add_btc_transactions(mut self, btc_transactions: BtcTransactions) -> Result<Self> {
         match self.btc_transactions {
             Some(_) => Err(get_no_overwrite_state_err("btc_transaction").into()),

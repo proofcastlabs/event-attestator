@@ -1185,6 +1185,7 @@ mod tests {
         assert_eq!(result.len(), expected_result.len());
     }
 
+    #[test]
     fn should_fail_to_convert_eos_amount_if_wrong_number_of_decimals() {
         let entry = get_sample_eos_eth_token_dictionary_entry_1();
         let wrong_decimals_eos_asset = "0.0000000010000000000 SAM1".to_string();
