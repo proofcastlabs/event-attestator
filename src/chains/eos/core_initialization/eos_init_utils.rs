@@ -63,7 +63,7 @@ impl EosInitJson {
         use eos_chain::Checksum256;
         let msig_enabled = match &self.maybe_protocol_features_to_enable {
             None => false,
-            Some(features) => features.contains(&hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)),
+            Some(features) => features.contains(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_string()),
         };
         let block_header = EosSubmissionMaterial::parse_eos_block_header_from_json(&self.block).unwrap();
         let blockroot_merkle = self
@@ -228,8 +228,10 @@ pub fn put_eos_account_name_in_db_and_return_state<'a, D: DatabaseInterface>(
         .and(Ok(state))
 }
 
-pub fn put_eos_account_nonce_in_db_and_return_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    info!("✔ Putting EOS account nonce in db...");
+pub fn initialize_eos_account_nonce_in_db_and_return_state<D: DatabaseInterface>(
+    state: EosState<D>,
+) -> Result<EosState<D>> {
+    info!("✔ Initializing EOS account nonce to 0 in db...");
     state.eos_db_utils.put_eos_account_nonce_in_db(0).and(Ok(state))
 }
 
@@ -266,6 +268,10 @@ pub fn maybe_put_eos_eth_token_dictionary_in_db_and_return_state<'a, D: Database
     init_json: &EosInitJson,
     state: EosState<'a, D>,
 ) -> Result<EosState<'a, D>> {
+    info!("✔ Maybe putting `EOS_ETH` token dictionary in db...");
+    if init_json.erc20_on_eos_token_dictionary.is_some() && init_json.eos_eth_token_dictionary.is_some() {
+        return Err("Found both `erc20-on-eos` & `eos_eth` dictionaries in json - please provide only one!".into());
+    };
     let json = if init_json.erc20_on_eos_token_dictionary.is_some() {
         init_json
             .erc20_on_eos_token_dictionary

@@ -104,13 +104,18 @@ fn get_signing_key_from_active_schedule(
         .map(|producer| producer.producer_name)
         .zip(v2_schedule.producers.iter())
         .filter(|(name_from_schedule, _)| *name_from_schedule == block_producer)
-        // NOTE/FIXME We're only getting the first key so far.
-        .map(|(_, producer)| &producer.authority.1.keys[0].key)
-        .cloned()
-        .collect::<Vec<EosProducerKey>>();
+        .map(|(_, producer)| {
+            let keys = &producer.authority.1.keys;
+            match keys.len() {
+                1 => Ok(keys[0].key.clone()),
+                _ => Err("Unexpected number of authority keys in producer schedule!".into()),
+            }
+        })
+        .collect::<Result<Vec<EosProducerKey>>>()?;
     match &filtered_keys.len() {
-        0 => Err("✘ Could not extract a signing key from active schedule!".into()),
-        _ => Ok(filtered_keys[0].clone()), // NOTE: Can this ever be > 1?
+        0 => Err("Could not extract a signing key from active schedule!".into()),
+        1 => Ok(filtered_keys[0].clone()),
+        _ => Err("Unexpected number of signing keys extracted from active schedule!".into()),
     }
 }
 
@@ -152,10 +157,7 @@ pub fn check_block_signature_is_valid(
     }
 }
 
-pub fn validate_block_header_signature<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn validate_block_header_signature<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     if !CORE_IS_VALIDATING {
         info!("✔ Skipping EOS block header signature validation");
         match DEBUG_MODE {
@@ -171,7 +173,7 @@ where
         check_block_signature_is_valid(
             state
                 .enabled_protocol_features
-                .is_enabled(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.as_ref()),
+                .is_enabled(&hex::decode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)?),
             &state.incremerkle.get_root().to_bytes(),
             &state.producer_signature,
             state.get_eos_block_header()?,
@@ -207,15 +209,14 @@ mod tests {
         let block_header = blocks_json.get_block_n(block_num).unwrap();
         let active_schedule = blocks_json.init_block.active_schedule.clone();
         let block_mroot = blocks_json.get_block_mroot_for_block_n(block_num).unwrap();
-        if let Err(e) = check_block_signature_is_valid(
+        let result = check_block_signature_is_valid(
             msig_enabled,
             &block_mroot,
             &producer_signature,
             &block_header,
             &active_schedule,
-        ) {
-            panic!("Subsequent block num {} not valid: {}", block_num, e);
-        }
+        );
+        assert!(result.is_ok());
     }
 
     #[test]

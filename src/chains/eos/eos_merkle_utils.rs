@@ -153,52 +153,60 @@ impl Incremerkle {
         (Self::make_canonical_left(l), Self::make_canonical_right(r))
     }
 
-    fn next_power_of_2(mut value: u64) -> u64 {
-        value -= 1;
-        value |= value >> 1;
-        value |= value >> 2;
-        value |= value >> 4;
-        value |= value >> 8;
-        value |= value >> 16;
-        value |= value >> 32;
-        value += 1;
-        value
-    }
-
-    fn clz_power_2(value: u64) -> usize {
-        let mut lz: usize = 64;
-
+    // NOTE: Given a power-of-2 (assumed to be correct) return the number of leading zeros.
+    //
+    // This is a classic count-leading-zeros in parallel without the necessary
+    // math to make it safe for anything that is not already a power-of-2
+    //
+    // Note that `count_leading_zeroes_of_a_power_of_2(0)` returns 64 because the values are
+    // 64 bit integers, and so in the case of 0, there are indeed 64 leading zeroes, despite `0`
+    // not actually being a power of 2.
+    //
+    // @param value - a power-of-2 (unchecked)
+    // @return the number of leading zeros
+    fn count_leading_zeroes_of_a_power_of_2(value: u64) -> Result<usize> {
+        /*
+        if value > 9223372036854775808 {
+            Err(format!("Cannot count leading zeres of {} without overflowing!", value).into())
+        };
+        */
+        let mut leading_zeroes: usize = 64;
         if value != 0 {
-            lz -= 1;
+            leading_zeroes -= 1;
         }
         if (value & 0x0000_0000_FFFF_FFFF_u64) != 0 {
-            lz -= 32;
+            leading_zeroes -= 32;
         }
         if (value & 0x0000_FFFF_0000_FFFF_u64) != 0 {
-            lz -= 16;
+            leading_zeroes -= 16;
         }
         if (value & 0x00FF_00FF_00FF_00FF_u64) != 0 {
-            lz -= 8;
+            leading_zeroes -= 8;
         }
         if (value & 0x0F0F_0F0F_0F0F_0F0F_u64) != 0 {
-            lz -= 4;
+            leading_zeroes -= 4;
         }
         if (value & 0x3333_3333_3333_3333_u64) != 0 {
-            lz -= 2;
+            leading_zeroes -= 2;
         }
         if (value & 0x5555_5555_5555_5555_u64) != 0 {
-            lz -= 1;
+            leading_zeroes -= 1;
         }
-
-        lz
+        Ok(leading_zeroes)
     }
 
-    fn calculate_max_depth(node_count: u64) -> usize {
+    // NOTE: Given a number of nodes return the depth required to store them
+    // in a fully balanced binary tree.
+    //
+    // @param node_count - the number of nodes in the implied tree
+    // @return the max depth of the minimal tree that stores them
+    fn calculate_max_depth(node_count: u64) -> Result<usize> {
         if node_count == 0 {
-            return 0;
+            return Ok(0);
         }
-        let implied_count = Self::next_power_of_2(node_count);
-        Self::clz_power_2(implied_count) + 1
+        let implied_count =
+            u64::checked_next_power_of_two(node_count).ok_or(NoneError("Next power of two has overflowed!"))?;
+        Ok(Self::count_leading_zeroes_of_a_power_of_2(implied_count)? + 1)
     }
 
     pub fn new(node_count: u64, active_nodes: Vec<Checksum256>) -> Self {
@@ -210,7 +218,7 @@ impl Incremerkle {
 
     pub fn append(&mut self, digest: Checksum256) -> Result<Checksum256> {
         let mut partial = false;
-        let max_depth = Self::calculate_max_depth(self.node_count + 1);
+        let max_depth = Self::calculate_max_depth(self.node_count + 1)?;
         let mut current_depth = max_depth - 1;
         let mut index = self.node_count;
         let mut top = digest;
@@ -630,5 +638,22 @@ mod tests {
         assert_eq!(result.active_nodes.len(), incremerkle.active_nodes.len());
         let result_root = hex::encode(&incremerkle.get_root().to_bytes());
         assert_eq!(result_root, expected_incremerkle_root);
+    }
+
+    #[test]
+    fn should_count_leading_zeroes_of_powers_of_2() {
+        let num_digits_in_u64: u32 = 64;
+        let mut results: Vec<u32> = vec![];
+        let mut expected_results: Vec<u32> = vec![];
+        for i in 0..num_digits_in_u64 {
+            let two_to_the_power_of_i = 2_u64.pow(i);
+            let result = Incremerkle::count_leading_zeroes_of_a_power_of_2(two_to_the_power_of_i).unwrap();
+            results.push(result.try_into().unwrap());
+            expected_results.push(i)
+        }
+        results
+            .iter()
+            .zip(expected_results.iter())
+            .for_each(|(result, expected_result)| assert_eq!(result, expected_result))
     }
 }

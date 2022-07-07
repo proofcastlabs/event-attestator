@@ -70,7 +70,7 @@ mod tests {
     use crate::{
         chains::btc::{
             btc_test_utils::get_sample_utxo_and_values,
-            utxo_manager::utxo_database_utils::save_utxos_to_db,
+            utxo_manager::utxo_database_utils::{save_utxos_to_db, set_utxo_balance_to_zero},
         },
         test_utils::{get_random_num_between, get_test_database},
     };
@@ -91,6 +91,7 @@ mod tests {
     fn should_filter_out_extant_utxos() {
         let expected_num_utxos_after_filtering = 1;
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let all_utxos = get_sample_utxo_and_values();
         let num_utxos = all_utxos.len();
         let random_index = get_random_num_between(0, num_utxos);

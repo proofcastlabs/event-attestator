@@ -190,6 +190,13 @@ impl FeeDatabaseUtils {
     pub fn increment_accrued_fees<D: DatabaseInterface>(&self, db: &D, increment_amount: u64) -> Result<()> {
         debug!("✔ Incrementing accrued fees in db...");
         self.get_accrued_fees_from_db(db).and_then(|accrued_fees| {
+            if u64::MAX - accrued_fees < increment_amount {
+                return Err(format!(
+                    "Cannot increment accrued fees of {} by {} without overflowing!",
+                    accrued_fees, increment_amount
+                )
+                .into());
+            }
             let total_after_incrementing = accrued_fees + increment_amount;
             debug!("✔ Accrued fees before incrementing: {}", accrued_fees);
             debug!("✔           Incrementing by amount: {}", increment_amount);
@@ -238,7 +245,7 @@ impl FeeDatabaseUtils {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::get_test_database;
+    use crate::{errors::AppError, test_utils::get_test_database};
 
     #[test]
     fn should_put_and_get_btc_on_eth_peg_in_basis_points_in_db() {
@@ -374,5 +381,24 @@ mod tests {
         put_u64_in_db(&db, &key, expected_result).unwrap();
         let result = FeeDatabaseUtils::get_u64_from_db_or_else_return_zero(&db, &key, "", "").unwrap();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_err_on_overflow_when_incrementing_accrued_fees_in_db() {
+        let db = get_test_database();
+        let increment_amount = 1337;
+        let start_value = u64::MAX - increment_amount + 1;
+        FeeDatabaseUtils::new_for_btc_on_eth()
+            .put_accrued_fees_in_db(&db, start_value)
+            .unwrap();
+        let expected_error = format!(
+            "Cannot increment accrued fees of {} by {} without overflowing!",
+            start_value, increment_amount,
+        );
+        match FeeDatabaseUtils::new_for_btc_on_eth().increment_accrued_fees(&db, increment_amount) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
     }
 }

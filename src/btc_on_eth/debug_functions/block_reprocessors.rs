@@ -30,9 +30,7 @@ use crate::{
             btc_database_utils::{end_btc_db_transaction, start_btc_db_transaction},
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
-            extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
-            filter_p2pkh_deposit_txs::filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             filter_utxos::filter_out_value_too_low_utxos_from_state,
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
@@ -79,10 +77,8 @@ fn reprocess_btc_block<D: DatabaseInterface>(
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)
         .and_then(get_deposit_info_hash_map_and_put_in_state)
-        .and_then(filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state)
         .and_then(filter_p2sh_deposit_txs_and_add_to_state)
         .and_then(parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state)
-        .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state)
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)

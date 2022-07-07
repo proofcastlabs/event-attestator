@@ -520,7 +520,17 @@ impl EosEthTokenDictionaryEntry {
     }
 
     pub fn convert_eos_asset_to_eth_amount(&self, eos_asset: &str) -> Result<U256> {
+        info!("✔ Convert EOS asset to ETH amount...");
         let (decimal_str, fraction_str) = Self::get_decimal_and_fractional_parts_of_eos_asset(eos_asset);
+        let num_decimals = fraction_str.len();
+        let expected_num_decimals = self.eos_token_decimals;
+        if num_decimals != expected_num_decimals {
+            return Err(format!(
+                "Expected {} decimals in EOS asset, found {}! ",
+                expected_num_decimals, num_decimals
+            )
+            .into());
+        }
         let augmented_fraction_str = match self.eth_token_decimals.cmp(&self.eos_token_decimals) {
             Ordering::Greater => right_pad_with_zeroes(fraction_str, self.eth_token_decimals),
             Ordering::Equal => fraction_str.to_string(),
@@ -1173,5 +1183,25 @@ mod tests {
         let result = dictionary.to_unique_eos_accounts().unwrap();
         assert_eq!(result, expected_result);
         assert_eq!(result.len(), expected_result.len());
+    }
+
+    #[test]
+    fn should_fail_to_convert_eos_amount_if_wrong_number_of_decimals() {
+        let entry = get_sample_eos_eth_token_dictionary_entry_1();
+        let wrong_decimals_eos_asset = "0.0000000010000000000 SAM1".to_string();
+        let (_, fraction_str) =
+            EosEthTokenDictionaryEntry::get_decimal_and_fractional_parts_of_eos_asset(&wrong_decimals_eos_asset);
+        let num_decimals = fraction_str.len();
+        let expected_num_decimals = entry.eos_token_decimals;
+        assert_ne!(num_decimals, entry.eos_token_decimals);
+        let expected_error = format!(
+            "Expected {} decimals in EOS asset, found {}! ",
+            expected_num_decimals, num_decimals
+        );
+        match entry.convert_eos_asset_to_eth_amount(&wrong_decimals_eos_asset) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received"),
+        }
     }
 }

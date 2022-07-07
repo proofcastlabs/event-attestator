@@ -13,7 +13,7 @@ use bitcoin::{
 use crate::{
     btc_on_eos::{
         btc::eos_tx_info::{BtcOnEosEosTxInfo, BtcOnEosEosTxInfos},
-        utils::convert_u64_to_8_decimal_eos_asset,
+        utils::convert_u64_to_x_decimal_eos_asset,
     },
     btc_on_eth::{
         btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
@@ -22,7 +22,7 @@ use crate::{
     chains::{
         btc::{
             btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
-            btc_constants::MINIMUM_REQUIRED_SATOSHIS,
+            btc_constants::{BTC_NUM_DECIMALS, MINIMUM_REQUIRED_SATOSHIS},
             btc_crypto::btc_private_key::BtcPrivateKey,
             btc_database_utils::BtcDbUtils,
             btc_submission_material::BtcSubmissionMaterialJson,
@@ -342,9 +342,9 @@ pub fn get_sample_btc_on_eos_eos_tx_infos() -> BtcOnEosEosTxInfos {
     let eos_address_1 = originating_tx_address_1.clone();
     let eos_address_2 = originating_tx_address_2.clone();
     let eos_address_3 = originating_tx_address_3.clone();
-    let amount_1 = convert_u64_to_8_decimal_eos_asset(MINIMUM_REQUIRED_SATOSHIS, &symbol);
-    let amount_2 = convert_u64_to_8_decimal_eos_asset(MINIMUM_REQUIRED_SATOSHIS + 1, &symbol);
-    let amount_3 = convert_u64_to_8_decimal_eos_asset(MINIMUM_REQUIRED_SATOSHIS - 1, &symbol);
+    let amount_1 = convert_u64_to_x_decimal_eos_asset(MINIMUM_REQUIRED_SATOSHIS, BTC_NUM_DECIMALS, &symbol);
+    let amount_2 = convert_u64_to_x_decimal_eos_asset(MINIMUM_REQUIRED_SATOSHIS + 1, BTC_NUM_DECIMALS, &symbol);
+    let amount_3 = convert_u64_to_x_decimal_eos_asset(MINIMUM_REQUIRED_SATOSHIS - 1, BTC_NUM_DECIMALS, &symbol);
     let originating_tx_hash_1 = sha256d::Hash::hash(b"something_1").to_string();
     let originating_tx_hash_2 = sha256d::Hash::hash(b"something_2").to_string();
     let originating_tx_hash_3 = sha256d::Hash::hash(b"something_3").to_string();

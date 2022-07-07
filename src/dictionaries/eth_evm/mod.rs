@@ -14,7 +14,7 @@ use crate::{
 
 pub(crate) mod test_utils;
 
-#[derive(Debug, Clone, Eq, PartialEq, Constructor, Deref, DerefMut, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Constructor, Deref, DerefMut, Serialize, Deserialize)]
 pub struct EthEvmTokenDictionary(pub Vec<EthEvmTokenDictionaryEntry>);
 
 impl DictionaryDecimalConverter for EthEvmTokenDictionaryEntry {
@@ -331,7 +331,7 @@ impl EthEvmTokenDictionaryJson {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Constructor, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Constructor, Deserialize, Serialize)]
 pub struct EthEvmTokenDictionaryEntry {
     pub eth_symbol: String,
     pub evm_symbol: String,

@@ -70,13 +70,6 @@ fn get_btc_utxos_from_utxo_and_values(utxo_and_values: Vec<BtcUtxoAndValue>) -> 
         .collect::<Result<Vec<BtcUtxo>>>()
 }
 
-pub fn utxo_exists_in_db<D: DatabaseInterface>(db: &D, utxo_to_check: &BtcUtxoAndValue) -> Result<bool> {
-    debug!("✔ Checking if UTXO exists in db...");
-    get_all_utxos_from_db(db)
-        .and_then(get_btc_utxos_from_utxo_and_values)
-        .and_then(|btc_utxos_from_db| Ok(btc_utxos_from_db.contains(&btc_deserialize(&utxo_to_check.serialized_utxo)?)))
-}
-
 pub fn utxos_exist_in_db<D: DatabaseInterface>(db: &D, utxos_to_check: &BtcUtxosAndValues) -> Result<Vec<bool>> {
     debug!("✔ Checking if UTXOs exist in db...");
     get_all_utxos_from_db(db)
@@ -171,7 +164,7 @@ mod tests {
                 get_sample_p2sh_utxo_and_value,
                 get_sample_utxo_and_values,
             },
-            utxo_manager::utxo_database_utils::{save_new_utxo_and_value, save_utxos_to_db},
+            utxo_manager::utxo_database_utils::{save_new_utxo_and_value, save_utxos_to_db, set_utxo_balance_to_zero},
         },
         test_utils::get_test_database,
     };
@@ -211,27 +204,10 @@ mod tests {
     }
 
     #[test]
-    fn should_return_false_if_utxo_exists_in_db() {
-        let expected_result = false;
-        let db = get_test_database();
-        let utxo_and_value = get_sample_p2sh_utxo_and_value().unwrap();
-        let result = utxo_exists_in_db(&db, &utxo_and_value).unwrap();
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_return_true_if_utxo_exists_in_db() {
-        let db = get_test_database();
-        let utxo_and_value = get_sample_p2sh_utxo_and_value().unwrap();
-        save_new_utxo_and_value(&db, &utxo_and_value).unwrap();
-        let result = utxo_exists_in_db(&db, &utxo_and_value).unwrap();
-        assert!(result);
-    }
-
-    #[test]
     fn should_return_correct_bool_array_when_checking_it_multiple_utxos_exist_in_db() {
         let expected_result = vec![false, true];
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxo_and_value_1 = get_sample_p2sh_utxo_and_value().unwrap();
         let utxo_and_value_2 = get_sample_p2pkh_utxo_and_value();
         save_new_utxo_and_value(&db, &utxo_and_value_2).unwrap();
@@ -242,6 +218,7 @@ mod tests {
     #[test]
     fn should_get_all_utxos_as_json_string() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         save_utxos_to_db(&db, &utxos).unwrap();
         let result = get_all_utxos_as_json_string(&db);

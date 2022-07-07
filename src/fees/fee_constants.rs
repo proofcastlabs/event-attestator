@@ -2,11 +2,7 @@ pub use serde_json::{json, Value as JsonValue};
 
 use crate::{core_type::CoreType, types::Bytes, utils::get_prefixed_db_key};
 
-#[cfg(not(feature = "disable-fees"))]
-pub const DISABLE_FEES: bool = false;
-
-#[cfg(feature = "disable-fees")]
-pub const DISABLE_FEES: bool = true;
+pub const DISABLE_FEES: bool = cfg!(feature = "disable-fees");
 
 pub const MAX_FEE_BASIS_POINTS: u64 = 100;
 

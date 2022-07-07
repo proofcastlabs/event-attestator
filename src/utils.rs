@@ -5,7 +5,7 @@ use serde_json::Value as JsonValue;
 use tiny_keccak::{Hasher, Keccak};
 
 use crate::{
-    constants::{CORE_VERSION, DB_KEY_PREFIX, DEBUG_OUTPUT_MARKER, U64_NUM_BYTES},
+    constants::{CORE_VERSION, DB_KEY_PREFIX, DEBUG_OUTPUT_MARKER},
     types::{Byte, Bytes, Result},
 };
 
@@ -57,29 +57,11 @@ pub fn get_prefixed_db_key(suffix: &str) -> [u8; 32] {
 }
 
 pub fn convert_bytes_to_u64(bytes: &[Byte]) -> Result<u64> {
-    match bytes.len() {
-        0..=7 => Err("✘ Not enough bytes to convert to u64!".into()),
-        U64_NUM_BYTES => {
-            let mut arr = [0u8; U64_NUM_BYTES];
-            let bytes = &bytes[..U64_NUM_BYTES];
-            arr.copy_from_slice(bytes);
-            Ok(u64::from_le_bytes(arr))
-        },
-        _ => Err("✘ Too many bytes to convert to u64 without overflowing!".into()),
-    }
+    Ok(u64::from_le_bytes(bytes.try_into()?))
 }
 
 pub fn convert_bytes_to_u8(bytes: &[Byte]) -> Result<u8> {
-    match bytes.len() {
-        0 => Err("✘ Not enough bytes to convert to u8!".into()),
-        1 => {
-            let mut arr = [0u8; 1];
-            let bytes = &bytes[..1];
-            arr.copy_from_slice(bytes);
-            Ok(u8::from_le_bytes(arr))
-        },
-        _ => Err("✘ Too many bytes to convert to u8 without overflowing!".into()),
-    }
+    Ok(u8::from_le_bytes(bytes.try_into()?))
 }
 
 pub fn right_pad_with_zeroes(s: &str, width: usize) -> String {
@@ -110,13 +92,6 @@ pub fn strip_hex_prefix(hex: &str) -> String {
 }
 
 pub fn decode_hex_with_err_msg(hex: &str, err_msg: &str) -> Result<Bytes> {
-    match hex::decode(strip_hex_prefix(hex)) {
-        Ok(bytes) => Ok(bytes),
-        Err(err) => Err(format!("{} {}", err_msg, err).into()),
-    }
-}
-
-pub fn decode_hex_with_no_padding_with_err_msg(hex: &str, err_msg: &str) -> Result<Bytes> {
     match hex::decode(strip_hex_prefix(hex)) {
         Ok(bytes) => Ok(bytes),
         Err(err) => Err(format!("{} {}", err_msg, err).into()),

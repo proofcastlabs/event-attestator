@@ -45,7 +45,8 @@ pub fn filter_txs_for_p2pkh_deposits(
             if include_change_outputs {
                 true
             } else {
-                !tx_has_input_locked_to_pub_key(tx, btc_pub_key_slice) // NOTE: True here == an enclave change output.
+                // NOTE: True here == an enclave change output.
+                !tx_has_input_locked_to_pub_key(tx, btc_pub_key_slice)
             }
         })
         .filter(|tx| tx_has_output_with_target_script(tx, &target_script))
@@ -79,12 +80,6 @@ pub fn filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state<D:
     state: BtcState<D>,
 ) -> Result<BtcState<D>> {
     filter_for_p2pkh_deposit_txs_and_add_to_state(state, true)
-}
-
-pub fn filter_for_p2pkh_deposit_txs_excluding_change_outputs_and_add_to_state<D: DatabaseInterface>(
-    state: BtcState<D>,
-) -> Result<BtcState<D>> {
-    filter_for_p2pkh_deposit_txs_and_add_to_state(state, false)
 }
 
 #[cfg(test)]

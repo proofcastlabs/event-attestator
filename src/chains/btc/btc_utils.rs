@@ -21,10 +21,16 @@ use ethereum_types::U256;
 
 use crate::{
     chains::btc::{
-        btc_constants::{BTC_PUB_KEY_SLICE_LENGTH, BTC_TX_LOCK_TIME, BTC_TX_VERSION, DEFAULT_BTC_SEQUENCE},
+        btc_constants::{
+            BTC_NUM_DECIMALS,
+            BTC_PUB_KEY_SLICE_LENGTH,
+            BTC_TX_LOCK_TIME,
+            BTC_TX_VERSION,
+            DEFAULT_BTC_SEQUENCE,
+        },
         btc_types::BtcPubKeySlice,
     },
-    constants::{BTC_NUM_DECIMALS, PTOKEN_ERC777_NUM_DECIMALS},
+    constants::PTOKEN_ERC777_NUM_DECIMALS,
     safe_addresses::SAFE_BTC_ADDRESS,
     types::{Byte, Bytes, Result},
     utils::strip_hex_prefix,
@@ -92,18 +98,12 @@ pub fn get_btc_one_key() -> PrivateKey {
     }
 }
 
-pub fn get_p2sh_redeem_script_sig(
-    utxo_spender_pub_key_slice: &[u8],
-    eth_address_and_nonce_hash: &sha256d::Hash,
-) -> BtcScript {
+pub fn get_p2sh_redeem_script_sig(utxo_spender_pub_key_slice: &[u8], commitment_hash: &sha256d::Hash) -> BtcScript {
     info!("✔ Generating `p2sh`'s redeem `script_sig`");
-    debug!(
-        "✔ Using `eth_address_and_nonce_hash`: {}",
-        hex::encode(eth_address_and_nonce_hash)
-    );
+    debug!("✔ Using `commitment_hash`: {}", hex::encode(commitment_hash));
     debug!("✔ Using `pub key slice`: {}", hex::encode(utxo_spender_pub_key_slice));
     BtcScriptBuilder::new()
-        .push_slice(&eth_address_and_nonce_hash[..])
+        .push_slice(&commitment_hash[..])
         .push_opcode(opcodes::all::OP_DROP)
         .push_slice(utxo_spender_pub_key_slice)
         .push_opcode(opcodes::all::OP_CHECKSIG)

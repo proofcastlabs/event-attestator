@@ -7,6 +7,7 @@ use crate::{
         btc_submission_material::parse_submission_material_and_put_in_state,
         core_initialization::{
             btc_init_utils::{
+                initialize_utxo_balance_and_return_state,
                 put_btc_account_nonce_in_db_and_return_state,
                 put_btc_fee_in_db_and_return_state,
                 put_btc_network_in_db_and_return_state,
@@ -57,6 +58,7 @@ pub fn init_btc_core<D: DatabaseInterface>(
         .and_then(create_btc_block_in_db_format_and_put_in_state)
         .and_then(maybe_add_btc_block_to_db)
         .and_then(put_btc_account_nonce_in_db_and_return_state)
+        .and_then(initialize_utxo_balance_and_return_state)
         .and_then(|state| generate_and_store_btc_keys_and_return_state(network, state))
         .and_then(end_btc_db_transaction)
         .and_then(get_btc_init_output_json)

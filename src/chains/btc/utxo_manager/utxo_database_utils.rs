@@ -9,6 +9,7 @@ use crate::{
         utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
         utxo_utils::{deserialize_utxo_and_value, get_utxo_and_value_db_key, serialize_btc_utxo_and_value},
     },
+    database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
@@ -145,7 +146,7 @@ pub fn get_first_utxo_and_value<D: DatabaseInterface>(db: &D) -> Result<BtcUtxoA
         .and_then(|utxo| match utxo.maybe_pointer {
             None => {
                 debug!("✔ No next pointer ∴ must be last UTXO in db!");
-                delete_utxo_balance_key(db)
+                set_utxo_balance_to_zero(db)
                     .and_then(|_| delete_first_utxo(db))
                     .and_then(|_| delete_last_utxo_key(db))
                     .and_then(|_| delete_first_utxo_key(db))
@@ -162,31 +163,32 @@ pub fn get_first_utxo_and_value<D: DatabaseInterface>(db: &D) -> Result<BtcUtxoA
 }
 
 pub fn save_new_utxo_and_value<D: DatabaseInterface>(db: &D, utxo_and_value: &BtcUtxoAndValue) -> Result<()> {
-    if utxo_exists(db, utxo_and_value.get_v_out()?, &utxo_and_value.get_tx_id()?) {
+    // NOTE: We clear any extant pointers since we definitely don't want any when inserting a new UTXO!
+    // NOTE: This case could crop up when adding UTXOs via a JSON dumped from the DB for example.
+    let mut utxo = utxo_and_value.clone();
+    utxo.maybe_pointer = None;
+    if utxo_exists(db, utxo.get_v_out()?, &utxo.get_tx_id()?) {
         info!("✘ Not saving UTXO ∵ it's already in the database!");
         Ok(())
     } else {
-        let value = utxo_and_value.value;
+        let value = utxo.value;
         let hash_vec = get_utxo_and_value_db_key(get_utxo_nonce_from_db(db)? + 1);
         let hash = sha256d::Hash::from_slice(&hash_vec)?;
         debug!("✔ Saving new UTXO in db under hash: {}", hex::encode(hash));
-        match get_total_utxo_balance_from_db(db)? {
-            0 => {
-                debug!("✔ No UTXO balance ∴ setting `UTXO_FIRST` & `UTXO_LAST`...");
-                set_first_utxo_pointer(db, &hash)
-                    .and_then(|_| increment_utxo_nonce_in_db(db))
-                    .and_then(|_| set_last_utxo_pointer(db, &hash))
-                    .and_then(|_| put_total_utxo_balance_in_db(db, value))
-                    .and_then(|_| put_utxo_in_db(db, &hash_vec, utxo_and_value))
-            },
-            _ => {
-                debug!("✔ > 0 UTXO balance ∴ setting only `UTXO_LAST`...");
-                update_pointer_in_last_utxo_in_db(db, hash)
-                    .and_then(|_| increment_utxo_nonce_in_db(db))
-                    .and_then(|_| set_last_utxo_pointer(db, &hash))
-                    .and_then(|_| put_utxo_in_db(db, &hash_vec, utxo_and_value))
-                    .and_then(|_| increment_total_utxo_balance_in_db(db, value))
-            },
+        if get_total_utxo_balance_from_db(db)? == 0 {
+            debug!("✔ UTXO balance == 0, ∴ setting `UTXO_FIRST` & `UTXO_LAST` db keys!");
+            set_first_utxo_pointer(db, &hash)
+                .and_then(|_| increment_utxo_nonce_in_db(db))
+                .and_then(|_| set_last_utxo_pointer(db, &hash))
+                .and_then(|_| put_total_utxo_balance_in_db(db, value))
+                .and_then(|_| put_utxo_in_db(db, &hash_vec, &utxo))
+        } else {
+            debug!("✔ UTXO balance is > 0 ∴ only setting `UTXO_LAST` db key!");
+            update_pointer_in_last_utxo_in_db(db, hash)
+                .and_then(|_| increment_utxo_nonce_in_db(db))
+                .and_then(|_| set_last_utxo_pointer(db, &hash))
+                .and_then(|_| put_utxo_in_db(db, &hash_vec, &utxo))
+                .and_then(|_| increment_total_utxo_balance_in_db(db, value))
         }
     }
 }
@@ -208,9 +210,9 @@ pub fn delete_first_utxo<D: DatabaseInterface>(db: &D) -> Result<()> {
     })
 }
 
-pub fn delete_utxo_balance_key<D: DatabaseInterface>(db: &D) -> Result<()> {
-    debug!("✔ Deleting `UTXO_BALANCE` key from db...");
-    db.delete(UTXO_BALANCE.to_vec())
+pub fn set_utxo_balance_to_zero<D: DatabaseInterface>(db: &D) -> Result<()> {
+    debug!("✔ Setting UTXO balance to zero...");
+    put_total_utxo_balance_in_db(db, 0)
 }
 
 pub fn increment_total_utxo_balance_in_db<D: DatabaseInterface>(db: &D, amount_to_increment_by: u64) -> Result<()> {
@@ -232,15 +234,12 @@ pub fn decrement_total_utxo_balance_in_db<D: DatabaseInterface>(db: &D, amount_t
 
 pub fn put_total_utxo_balance_in_db<D: DatabaseInterface>(db: &D, balance: u64) -> Result<()> {
     debug!("✔ Setting total UTXO balance to: {}", balance);
-    db.put(UTXO_BALANCE.to_vec(), convert_u64_to_bytes(balance), None)
+    put_u64_in_db(db, &UTXO_BALANCE.to_vec(), balance)
 }
 
 pub fn get_total_utxo_balance_from_db<D: DatabaseInterface>(db: &D) -> Result<u64> {
     debug!("✔ Getting total UTXO balance from db...");
-    match db.get(UTXO_BALANCE.to_vec(), None) {
-        Err(_) => Ok(0),
-        Ok(bytes) => convert_bytes_to_u64(&bytes),
-    }
+    get_u64_from_db(db, &UTXO_BALANCE.to_vec()).map_err(|_| "Error getting UTXO balance from db!".into())
 }
 
 pub fn update_pointer_in_last_utxo_in_db<D: DatabaseInterface>(db: &D, new_pointer: sha256d::Hash) -> Result<()> {
@@ -438,13 +437,6 @@ mod tests {
     }
 
     #[test]
-    fn should_be_zero_utxo_balance_when_non_in_db() {
-        let db = get_test_database();
-        let result = get_total_utxo_balance_from_db(&db).unwrap();
-        assert_eq!(result, 0);
-    }
-
-    #[test]
     fn should_set_and_get_total_utxo_balance_from_db() {
         let num = 1337;
         let db = get_test_database();
@@ -493,13 +485,15 @@ mod tests {
     }
 
     #[test]
-    fn should_delete_balance_key() {
+    fn should_zero_utxo_balance() {
         let db = get_test_database();
         let balance = 1;
-        let db_utils = BtcDbUtils::new(&db);
         put_total_utxo_balance_in_db(&db, balance).unwrap();
-        delete_utxo_balance_key(&db).unwrap();
-        assert!(!db_utils.key_exists_in_db(&UTXO_BALANCE.to_vec(), None));
+        let balance_before = get_total_utxo_balance_from_db(&db).unwrap();
+        assert_eq!(balance_before, balance);
+        set_utxo_balance_to_zero(&db).unwrap();
+        let balance_after = get_total_utxo_balance_from_db(&db).unwrap();
+        assert_eq!(balance_after, 0);
     }
 
     #[test]
@@ -527,6 +521,7 @@ mod tests {
     #[test]
     fn should_save_gt_one_utxo() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         let utxo1 = utxos[0].clone();
         let hash1 = get_utxo_and_value_db_key(1);
@@ -557,6 +552,7 @@ mod tests {
     #[test]
     fn should_remove_1_utxo_correctly_when_gt_1_exist() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         let utxo1 = utxos[0].clone();
         let hash1 = get_utxo_and_value_db_key(1);
@@ -586,6 +582,7 @@ mod tests {
     #[test]
     fn should_remove_last_utxo_correctly() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxo1 = get_sample_p2pkh_utxo_and_value();
         save_new_utxo_and_value(&db, &utxo1).unwrap();
         let first_pointer_before = get_first_utxo_pointer(&db).unwrap();
@@ -606,6 +603,7 @@ mod tests {
     #[test]
     fn should_delete_first_utxo_in_db() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let db_utils = BtcDbUtils::new(&db);
         let utxos = get_sample_utxo_and_values();
         let first_utxo_db_key = get_utxo_and_value_db_key(1);
@@ -618,6 +616,7 @@ mod tests {
     #[test]
     fn removed_utxos_should_no_longer_be_in_db() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let db_utils = BtcDbUtils::new(&db);
         let utxos = get_sample_utxo_and_values();
         save_utxos_to_db(&db, &utxos).unwrap();
@@ -636,6 +635,7 @@ mod tests {
     #[test]
     fn should_get_all_utxos_from_db_without_removing_them() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         save_utxos_to_db(&db, &utxos).unwrap();
         let utxos_from_db = get_all_utxos_without_removing_from_db(&db).unwrap();
@@ -646,6 +646,7 @@ mod tests {
     fn should_get_utxo_with_tx_id_and_v_out_correctly(utxos: BtcUtxosAndValues, utxo_to_find_index: usize) {
         assert!(utxo_to_find_index <= utxos.len());
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxo_to_find = utxos[utxo_to_find_index].clone();
         let v_out = utxo_to_find.get_v_out().unwrap();
         let tx_id = utxo_to_find.get_tx_id().unwrap();
@@ -678,6 +679,7 @@ mod tests {
     #[test]
     fn should_fail_to_find_non_existent_utxo_correctly() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxo_to_find_index = 3;
         let utxos = get_sample_utxo_and_values();
         let utxo_to_find = utxos[utxo_to_find_index].clone();
@@ -707,6 +709,7 @@ mod tests {
     #[test]
     fn should_get_total_number_of_utxos_from_db() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         save_utxos_to_db(&db, &utxos).unwrap();
         let expected_result = utxos.len();
@@ -718,6 +721,7 @@ mod tests {
     fn should_get_x_utxos() {
         let num_utxos_to_get = 4;
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         save_utxos_to_db(&db, &utxos).unwrap();
         let result = get_x_utxos(&db, num_utxos_to_get).unwrap();
@@ -729,6 +733,7 @@ mod tests {
     #[test]
     fn should_fail_to_get_x_utxos_correctly() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         let num_utxos_to_get = utxos.len() + 1;
         save_utxos_to_db(&db, &utxos).unwrap();
@@ -758,6 +763,7 @@ mod tests {
     #[test]
     fn utxo_exists_should_return_true_if_extant() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         save_utxos_to_db(&db, &utxos).unwrap();
         utxos.iter().for_each(|utxo| {
@@ -769,6 +775,7 @@ mod tests {
     #[test]
     fn utxo_exists_should_return_false_if_not_extant() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         let utxos_with_one_removed = BtcUtxosAndValues(utxos.clone()[..utxos.len() - 1].to_vec());
         assert_eq!(utxos.len(), utxos_with_one_removed.len() + 1);
@@ -786,6 +793,7 @@ mod tests {
     #[test]
     fn should_not_save_same_utxo_twice() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         let utxos_with_duplicates = BtcUtxosAndValues([utxos.clone().0, utxos.clone().0].concat());
         assert_eq!(utxos_with_duplicates.len(), utxos.len() * 2);

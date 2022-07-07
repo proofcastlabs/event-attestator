@@ -42,6 +42,10 @@ fn remove_parents_if_not_anchor<D: DatabaseInterface>(
 }
 
 pub fn maybe_remove_old_btc_tail_block<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
+    // NOTE: This function is to be called AFTER the tail block has been updated in a submission
+    // pipeline. This way, the old tail block will be an ancestor of the current one (except in
+    // the case of a fork), and hence why only the ancestor(s) is/are removed by this function,
+    // and not the tail block itself.
     info!("✔ Maybe removing old BTC tail block...");
     state
         .btc_db_utils

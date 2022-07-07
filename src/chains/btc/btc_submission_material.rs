@@ -36,7 +36,7 @@ pub fn parse_submission_material_and_put_in_state<'a, D: DatabaseInterface>(
     BtcSubmissionMaterial::from_str(json_str).and_then(|result| state.add_btc_submission_material(result))
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Default, Deserialize)]
 pub struct BtcSubmissionMaterialJson {
     pub block: BtcBlockJson,
     pub any_sender: Option<bool>,

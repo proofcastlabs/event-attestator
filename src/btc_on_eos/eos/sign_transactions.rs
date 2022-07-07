@@ -103,7 +103,10 @@ mod tests {
                 btc_database_utils::BtcDbUtils,
                 btc_test_utils::{get_sample_p2sh_utxo_and_value_2, get_sample_p2sh_utxo_and_value_3},
                 btc_utils::get_hex_tx_from_signed_btc_tx,
-                utxo_manager::{utxo_database_utils::save_utxos_to_db, utxo_types::BtcUtxosAndValues},
+                utxo_manager::{
+                    utxo_database_utils::{save_utxos_to_db, set_utxo_balance_to_zero},
+                    utxo_types::BtcUtxosAndValues,
+                },
             },
             eos::{eos_action_proofs::EosActionProof, eos_test_utils::get_sample_eos_submission_material_json_n},
         },
@@ -113,6 +116,7 @@ mod tests {
     #[test]
     fn should_get_correct_signed_btc_tx_3() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let db_utils = BtcDbUtils::new(&db);
         let sats_per_byte = 23;
         let btc_network = BtcNetwork::Testnet;
@@ -141,6 +145,7 @@ mod tests {
     #[test]
     fn should_get_correct_signed_btc_tx_4() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let db_utils = BtcDbUtils::new(&db);
         let sats_per_byte = 23;
         let btc_network = BtcNetwork::Testnet;

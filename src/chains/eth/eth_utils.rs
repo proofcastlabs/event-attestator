@@ -5,16 +5,14 @@ use crate::{
     chains::eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES,
     constants::ETH_HASH_LENGTH,
     types::{Bytes, NoneError, Result},
-    utils::{decode_hex_with_no_padding_with_err_msg, strip_hex_prefix},
+    utils::{decode_hex_with_err_msg, strip_hex_prefix},
 };
 
 pub fn get_eth_address_from_str(eth_address_str: &str) -> Result<EthAddress> {
     info!("✔ Getting ETH address from str...");
-    decode_hex_with_no_padding_with_err_msg(eth_address_str, "ETH address is not valid hex!").and_then(|bytes| {
-        match bytes.len() {
-            20 => Ok(EthAddress::from_slice(&bytes)),
-            _ => Err("Incorrect number of bytes for ETH address!".into()),
-        }
+    decode_hex_with_err_msg(eth_address_str, "ETH address is not valid hex!").and_then(|bytes| match bytes.len() {
+        20 => Ok(EthAddress::from_slice(&bytes)),
+        _ => Err("Incorrect number of bytes for ETH address!".into()),
     })
 }
 
@@ -63,10 +61,6 @@ pub fn decode_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
 
 pub fn decode_prefixed_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
     decode_hex(&strip_hex_prefix(hex_to_decode))
-}
-
-pub fn strip_new_line_chars(string: String) -> String {
-    string.replace('\n', "")
 }
 
 pub fn convert_dec_str_to_u256(dec_str: &str) -> Result<U256> {
@@ -249,19 +243,6 @@ mod tests {
             Err(AppError::Custom(e)) => assert!(e.contains(expected_error)),
             _ => panic!("Should not have converted non decimal string!"),
         }
-    }
-
-    #[test]
-    fn should_strip_newline_chars() {
-        let new_line_char = "\n";
-        let string = "a string".to_string();
-        let test_vector = format!("{}{}", string, new_line_char);
-        let length_before = test_vector.len();
-        assert!(test_vector.contains(new_line_char));
-        let result = strip_new_line_chars(string);
-        let length_after = result.len();
-        assert!(length_after < length_before);
-        assert_eq!(length_after, length_before - new_line_char.len());
     }
 
     #[test]

@@ -6,11 +6,11 @@ use crate::{
                 generate_and_put_incremerkle_in_db_and_return_state,
                 generate_and_save_eos_keys_and_return_state,
                 get_eos_init_output,
+                initialize_eos_account_nonce_in_db_and_return_state,
                 maybe_enable_protocol_features_and_return_state,
                 maybe_put_eos_eth_token_dictionary_in_db_and_return_state,
                 put_empty_processed_tx_ids_in_db_and_return_state,
                 put_eos_account_name_in_db_and_return_state,
-                put_eos_account_nonce_in_db_and_return_state,
                 put_eos_chain_id_in_db_and_return_state,
                 put_eos_known_schedule_in_db_and_return_state,
                 put_eos_latest_block_info_in_db_and_return_state,
@@ -64,7 +64,7 @@ pub fn initialize_eos_core_inner<D: DatabaseInterface>(
         .and_then(|state| maybe_put_eos_eth_token_dictionary_in_db_and_return_state(&init_json, state))
         .and_then(|state| test_block_validation_and_return_state(&init_json.block, state))
         .and_then(generate_and_save_eos_keys_and_return_state)
-        .and_then(put_eos_account_nonce_in_db_and_return_state)
+        .and_then(initialize_eos_account_nonce_in_db_and_return_state)
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(get_eos_init_output)
 }

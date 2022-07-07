@@ -96,7 +96,7 @@ impl EosInitAndSubsequentBlocksJson {
     pub fn is_msig_enabled(&self) -> bool {
         match self.init_block.maybe_protocol_features_to_enable {
             None => false,
-            Some(ref features) => features.contains(&hex::encode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)),
+            Some(ref features) => features.contains(&WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.to_string()),
         }
     }
 

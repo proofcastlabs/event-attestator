@@ -15,12 +15,11 @@ use crate::{
                 get_total_number_of_utxos_from_db,
                 get_utxo_with_tx_id_and_v_out,
                 get_x_utxos,
-                put_total_utxo_balance_in_db,
                 save_new_utxo_and_value,
                 save_utxos_to_db,
+                set_utxo_balance_to_zero,
             },
             utxo_types::BtcUtxosAndValues,
-            utxo_utils::utxo_exists_in_db,
         },
     },
     check_debug_mode::check_debug_mode,
@@ -40,7 +39,7 @@ pub fn clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
         })
         .and_then(|_| delete_last_utxo_key(db))
         .and_then(|_| delete_first_utxo_key(db))
-        .and_then(|_| put_total_utxo_balance_in_db(db, 0))
+        .and_then(|_| set_utxo_balance_to_zero(db))
         .and_then(|_| db.end_transaction())
         .map(|_| SUCCESS_JSON.to_string())
 }
@@ -55,14 +54,14 @@ pub fn remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -> Resu
 }
 
 pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize) -> Result<String> {
+    if num_utxos < 1 {
+        return Err("Cannot consolidate 0 UTXOs!".into());
+    };
     let btc_db_utils = BtcDbUtils::new(&db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_x_utxos(&db, num_utxos))
         .and_then(|utxos| {
-            if num_utxos < 1 {
-                return Err("Cannot consolidate 0 UTXOs!".into());
-            };
             let btc_address = btc_db_utils.get_btc_address_from_db()?;
             let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
             let btc_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
@@ -138,18 +137,6 @@ pub fn add_multiple_utxos<D: DatabaseInterface>(db: &D, json_str: &str) -> Resul
         .and_then(|utxos| {
             utxos
                 .iter()
-                .map(|utxo| utxo_exists_in_db(db, utxo))
-                .collect::<Result<Vec<bool>>>()?
-                .iter()
-                .zip(utxos.iter())
-                .filter_map(|(exists, utxo)| {
-                    if *exists {
-                        warn!("Not adding UTXO because it already exists!");
-                        None
-                    } else {
-                        Some(utxo)
-                    }
-                })
                 .map(|utxo| save_new_utxo_and_value(db, utxo))
                 .collect::<Result<Vec<()>>>()
         })
@@ -173,6 +160,7 @@ mod tests {
     #[test]
     fn should_clear_all_utxos() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         let expected_balance = utxos.sum();
         save_utxos_to_db(&db, &utxos).unwrap();
@@ -186,6 +174,7 @@ mod tests {
     #[test]
     fn should_insert_multiple_utxos() {
         let db = get_test_database();
+        set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
         let expected_balance = utxos.sum();
         save_utxos_to_db(&db, &utxos).unwrap();

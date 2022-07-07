@@ -33,7 +33,7 @@ use crate::{
 // FIXME We can move the core specific setters & getters of this into their own mods!
 // FIXME Use a macro to generate a lot of this!
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EthState<'a, D: DatabaseInterface> {
     pub db: &'a D,
     pub misc: Option<String>,
@@ -310,16 +310,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         Ok(self)
     }
 
-    pub fn add_misc_string_to_state(mut self, misc_string: String) -> Result<Self> {
-        match self.misc {
-            Some(_) => Err(get_no_overwrite_state_err("misc_string").into()),
-            None => {
-                self.misc = Some(misc_string);
-                Ok(self)
-            },
-        }
-    }
-
     pub fn add_btc_transactions(mut self, btc_transactions: BtcTransactions) -> Result<Self> {
         match self.btc_transactions {
             Some(_) => Err(get_no_overwrite_state_err("btc_transaction").into()),
@@ -393,7 +383,7 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
     }
 
     pub fn add_eth_evm_token_dictionary(mut self, dictionary: EthEvmTokenDictionary) -> Result<Self> {
-        match self.eos_eth_token_dictionary {
+        match self.eth_evm_token_dictionary {
             Some(_) => Err(get_no_overwrite_state_err("eth_evm_token_dictionary").into()),
             None => {
                 self.eth_evm_token_dictionary = Some(dictionary);
@@ -511,5 +501,19 @@ mod tests {
             .get_block_number()
             .unwrap();
         assert_ne!(final_state_block_number, initial_state_block_num);
+    }
+
+    #[test]
+    fn should_not_allow_overwrite_of_eth_evm_token_dictionary() {
+        let db = get_test_database();
+        let state = EthState::init(&db);
+        let dictionary = EthEvmTokenDictionary::default();
+        let updated_state = state.add_eth_evm_token_dictionary(dictionary.clone()).unwrap();
+        let expected_error = get_no_overwrite_state_err("eth_evm_token_dictionary");
+        match updated_state.add_eth_evm_token_dictionary(dictionary) {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(_) => panic!("Wrong error received!"),
+        }
     }
 }
