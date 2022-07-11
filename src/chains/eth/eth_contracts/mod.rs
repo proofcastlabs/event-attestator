@@ -1,3 +1,4 @@
+pub(crate) mod erc20_token;
 pub(crate) mod erc20_vault;
 pub(crate) mod erc777_proxy;
 pub(crate) mod erc777_token;
