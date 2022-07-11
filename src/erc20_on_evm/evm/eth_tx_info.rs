@@ -10,7 +10,7 @@ use crate::{
                 encode_erc20_vault_peg_out_fxn_data_with_user_data,
                 encode_erc20_vault_peg_out_fxn_data_without_user_data,
             },
-            erc777::{Erc777RedeemEvent, ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA},
+            erc777_token::{Erc777RedeemEvent, ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA},
         },
         eth_crypto::{
             eth_private_key::EthPrivateKey,

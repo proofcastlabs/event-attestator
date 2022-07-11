@@ -7,7 +7,7 @@ use crate::{
         eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
         eth_contracts::{
             erc20_vault::{Erc20VaultPegInEventParams, ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC},
-            erc777::encode_erc777_mint_fxn_maybe_with_data,
+            erc777_token::encode_erc777_mint_fxn_maybe_with_data,
         },
         eth_crypto::{
             eth_private_key::EthPrivateKey as EvmPrivateKey,

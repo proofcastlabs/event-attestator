@@ -2,7 +2,7 @@ use ethereum_types::Address as EthAddress;
 
 use crate::{
     chains::eth::{
-        eth_contracts::erc777::Erc777RedeemEvent,
+        eth_contracts::erc777_token::Erc777RedeemEvent,
         eth_database_utils::EthDbUtilsExt,
         eth_receipt::EthReceipt,
         eth_state::EthState,

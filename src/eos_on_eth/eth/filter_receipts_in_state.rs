@@ -1,6 +1,6 @@
 use crate::{
     chains::eth::{
-        eth_contracts::erc777::{
+        eth_contracts::erc777_token::{
             ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
             ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
         },

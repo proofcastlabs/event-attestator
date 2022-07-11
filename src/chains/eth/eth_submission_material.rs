@@ -280,7 +280,7 @@ pub fn parse_eth_submission_material_and_put_in_state<'a, D: DatabaseInterface>(
 mod tests {
     use super::*;
     use crate::chains::eth::{
-        eth_contracts::erc777::ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX,
+        eth_contracts::erc777_token::ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX,
         eth_test_utils::{
             get_expected_block,
             get_expected_receipt,
