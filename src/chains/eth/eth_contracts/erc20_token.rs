@@ -47,13 +47,11 @@ impl Erc20TokenTransferEvents {
             .collect()
     }
 
-    fn from_eth_receipts(receipts: &[EthReceipt]) -> Result<Self> {
-        Ok(Self::new(
-            receipts.iter().flat_map(Self::from_eth_receipt).collect::<Vec<_>>(),
-        ))
+    fn from_eth_receipts(receipts: &[EthReceipt]) -> Self {
+        Self::new(receipts.iter().flat_map(Self::from_eth_receipt).collect::<Vec<_>>())
     }
 
-    pub fn from_eth_submission_material(submission_material: &EthSubmissionMaterial) -> Result<Self> {
+    fn from_eth_submission_material(submission_material: &EthSubmissionMaterial) -> Self {
         Self::from_eth_receipts(&submission_material.receipts)
     }
 
@@ -64,7 +62,7 @@ impl Erc20TokenTransferEvents {
         };
     }
 
-    pub fn filter_if_no_transfer_event<T>(&self, ts: &[T]) -> Vec<T>
+    fn filter_if_no_transfer_event<T>(&self, ts: &[T]) -> Vec<T>
     where
         T: ToErc20TokenTransferEvent + std::fmt::Display + std::clone::Clone,
     {
@@ -93,6 +91,16 @@ impl Erc20TokenTransferEvents {
             .collect::<Vec<T>>();
         info!("✔ Number of things after filtering: {}", filtered.len());
         filtered
+    }
+
+    pub fn filter_if_no_transfer_event_in_submission_material<T>(
+        submission_material: &EthSubmissionMaterial,
+        ts: &[T],
+    ) -> Vec<T>
+    where
+        T: ToErc20TokenTransferEvent + std::fmt::Display + std::clone::Clone,
+    {
+        Self::from_eth_submission_material(submission_material).filter_if_no_transfer_event(ts)
     }
 }
 
@@ -192,7 +200,7 @@ mod tests {
     #[test]
     fn should_get_erc20_token_params_from_submission_material() {
         let submission_material = get_sample_submission_material_with_erc20_peg_in_event().unwrap();
-        let result = Erc20TokenTransferEvents::from_eth_submission_material(&submission_material).unwrap();
+        let result = Erc20TokenTransferEvents::from_eth_submission_material(&submission_material);
         let expected_num_results = 16;
         assert_eq!(result.len(), expected_num_results);
     }

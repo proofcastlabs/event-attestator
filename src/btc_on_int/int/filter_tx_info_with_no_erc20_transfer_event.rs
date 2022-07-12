@@ -15,15 +15,17 @@ impl ToErc20TokenTransferEvent for BtcOnIntBtcTxInfo {
     }
 }
 
-pub fn maybe_filter_those_with_no_corresponding_erc20_transfer_event<D: DatabaseInterface>(
-    state: EthState<D>,
-) -> Result<EthState<D>> {
-    info!("✔ Maybe filtering out `BtcOnIntBtcTxInfos` which don't have corresponding ERC20 transfer events ...");
+pub fn filter_tx_info_with_no_erc20_transfer_event<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
+    info!("✔ Filtering out `BtcOnIntBtcTxInfos` which don't have corresponding ERC20 transfer events ...");
     state
         .eth_db_utils
         .get_eth_canon_block_from_db()
-        .and_then(|canon_block| Erc20TokenTransferEvents::from_eth_submission_material(&canon_block))
-        .map(|erc20_transfers| erc20_transfers.filter_if_no_transfer_event(&state.btc_on_int_btc_tx_infos))
+        .map(|canon_block_submission_material| {
+            Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
+                &canon_block_submission_material,
+                &state.btc_on_int_btc_tx_infos,
+            )
+        })
         .map(BtcOnIntBtcTxInfos::new)
         .and_then(|filtered_tx_infos| state.replace_btc_on_int_btc_tx_infos(filtered_tx_infos))
 }
