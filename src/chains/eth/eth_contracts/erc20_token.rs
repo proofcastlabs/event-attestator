@@ -5,7 +5,12 @@ use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as Et
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
-    chains::eth::{eth_log::EthLogExt, eth_receipt::EthReceipt, eth_submission_material::EthSubmissionMaterial},
+    chains::eth::{
+        eth_log::EthLogExt,
+        eth_receipt::EthReceipt,
+        eth_submission_material::EthSubmissionMaterial,
+        eth_utils::convert_eth_address_to_string,
+    },
     types::Result,
 };
 
@@ -66,7 +71,7 @@ impl Erc20TokenTransferEvents {
     where
         T: ToErc20TokenTransferEvent + std::fmt::Display + std::clone::Clone,
     {
-        info!("✔ Number of things before filtering: {}", self.len());
+        info!("✔ Number of things before filtering: {}", ts.len());
         let mut mutable_self = self.clone();
         let filtered = ts
             .iter()
@@ -84,6 +89,7 @@ impl Erc20TokenTransferEvents {
                         "Filtering this out because it has no corresponding ERC20 transfer event: {}",
                         t,
                     );
+                    debug!("Transfer event that was NOT found in block: {}", event);
                     false
                 }
             })
@@ -116,13 +122,18 @@ impl fmt::Display for Erc20TokenTransferEvent {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "Erc20TokenTransferEvent: {{
-                to: {},
-                from: {},
-                value: {},
-                token_address: {},
-            }}",
-            self.to, self.from, self.value, self.token_address,
+            "
+Erc20TokenTransferEvent: {{
+    to: {},
+    from: {},
+    value: {},
+    token_address: {},
+}}
+",
+            convert_eth_address_to_string(&self.to),
+            convert_eth_address_to_string(&self.from),
+            self.value,
+            convert_eth_address_to_string(&self.token_address),
         )
     }
 }
