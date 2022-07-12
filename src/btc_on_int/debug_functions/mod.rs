@@ -1,7 +1,8 @@
 use ethereum_types::Address as EthAddress;
 use serde_json::json;
 
-pub(crate) mod block_reprocessors;
+pub(crate) mod btc_block_reprocessor;
+pub(crate) mod int_block_reprocessor;
 
 use crate::{
     btc_on_int::check_core_is_initialized::{

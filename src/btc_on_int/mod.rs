@@ -16,11 +16,7 @@ pub use crate::{
     btc_on_int::{
         btc::submit_btc_block::submit_btc_block_to_core,
         debug_functions::{
-            block_reprocessors::{
-                debug_reprocess_btc_block,
-                debug_reprocess_btc_block_with_nonce,
-                debug_reprocess_int_block,
-            },
+            btc_block_reprocessor::{debug_reprocess_btc_block, debug_reprocess_btc_block_with_nonce},
             debug_add_multiple_utxos,
             debug_clear_all_utxos,
             debug_consolidate_utxos,
@@ -37,6 +33,7 @@ pub use crate::{
             debug_set_btc_fee,
             debug_set_int_gas_price,
             debug_set_key_in_db_to_value,
+            int_block_reprocessor::debug_reprocess_int_block,
         },
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
