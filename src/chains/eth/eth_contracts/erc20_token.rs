@@ -21,6 +21,10 @@ lazy_static! {
     };
 }
 
+pub trait ToErc20TokenTransferEvent {
+    fn to_erc20_token_transfer_event(&self) -> Erc20TokenTransferEvent;
+}
+
 #[derive(Clone, Default, Debug, PartialEq, Eq, Deref, Constructor)]
 pub struct Erc20TokenTransferEvents(Vec<Erc20TokenTransferEvent>);
 
