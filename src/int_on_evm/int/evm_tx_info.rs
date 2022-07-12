@@ -15,6 +15,7 @@ pub struct IntOnEvmEvmTxInfo {
     pub user_data: Bytes,
     pub token_sender: EthAddress,
     pub native_token_amount: U256,
+    pub vault_address: EthAddress,
     pub router_address: EthAddress,
     pub originating_tx_hash: EthHash,
     pub evm_token_address: EthAddress,
@@ -35,6 +36,7 @@ impl fmt::Display for IntOnEvmEvmTxInfo {
 IntOnEvmEvmTxInfo: {{
     token_sender: {},
     native_token_amount: {},
+    vault_address: {},
     router_address: {},
     originating_tx_hash: {},
     evm_token_address: {},
@@ -47,6 +49,7 @@ IntOnEvmEvmTxInfo: {{
             ",
             convert_eth_address_to_string(&self.token_sender),
             self.native_token_amount,
+            convert_eth_address_to_string(&self.vault_address),
             convert_eth_address_to_string(&self.router_address),
             convert_eth_hash_to_string(&self.originating_tx_hash),
             convert_eth_address_to_string(&self.evm_token_address),

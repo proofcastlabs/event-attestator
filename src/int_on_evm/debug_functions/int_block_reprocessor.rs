@@ -63,6 +63,20 @@ fn reprocess_int_block<D: DatabaseInterface>(
                 .and_then(|params| state.add_int_on_evm_evm_tx_infos(params))
         })
         .and_then(filter_out_zero_value_evm_tx_infos_from_state)
+        .and_then(|state| {
+            // NOTE: A reprocess is like a submission with 0 confs, ∴ we need to check the
+            // _current_ submission material, not the canon block material!
+            state
+                .get_eth_submission_material()
+                .map(|submission_material| {
+                    Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
+                        submission_material,
+                        &state.int_on_evm_evm_tx_infos,
+                    )
+                })
+                .map(IntOnEvmEvmTxInfos::new)
+                .and_then(|filtered_tx_infos| state.replace_int_on_evm_evm_tx_infos(filtered_tx_infos))
+        })
         .and_then(account_for_fees_in_evm_tx_infos_in_state)
         .and_then(|state| {
             if accrue_fees {

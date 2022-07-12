@@ -18,11 +18,11 @@ pub struct IntOnEvmIntTxInfo {
     pub router_address: EthAddress,
     pub destination_address: String,
     pub originating_tx_hash: EthHash,
-    pub evm_token_address: String,
+    pub evm_token_address: EthAddress,
     pub eth_token_address: String,
     pub origin_chain_id: MetadataChainId,
     pub destination_chain_id: MetadataChainId,
-    pub eth_vault_address: String,
+    pub vault_address: EthAddress,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]
@@ -43,7 +43,7 @@ IntOnEvmIntTxInfo: {{
     eth_token_address: {},
     origin_chain_id: {},
     destination_chain_id: {},
-    eth_vault_address: {},
+    vault_address: {},
     user_data: {},
 }}
             ",
@@ -52,11 +52,11 @@ IntOnEvmIntTxInfo: {{
             convert_eth_address_to_string(&self.router_address),
             self.destination_address,
             convert_eth_hash_to_string(&self.originating_tx_hash),
-            self.evm_token_address,
+            convert_eth_address_to_string(&self.evm_token_address),
             self.eth_token_address,
             self.origin_chain_id,
             self.destination_chain_id,
-            self.eth_vault_address,
+            convert_eth_address_to_string(&self.vault_address),
             convert_bytes_to_string(&self.user_data),
         )
     }
