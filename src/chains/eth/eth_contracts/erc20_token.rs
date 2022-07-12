@@ -51,37 +51,16 @@ impl Erc20TokenTransferEvents {
         Self::from_eth_receipts(&submission_material.receipts)
     }
 
-    pub fn erc20_transfer_exists(
-        &self,
-        token_address: &EthAddress,
-        from: &EthAddress,
-        to: &EthAddress,
-        value: &U256,
-    ) -> bool {
-        info!("✔ Checking erc20 token transfer exists...");
-        self.iter()
-            .filter(|event| {
-                let is_correct_to_address = event.to == *to;
-                let is_correct_value = event.value == *value;
-                let is_correct_from_address = event.from == *from;
-                let is_correct_token_address = event.token_address == *token_address;
-                debug!("Correct value:         {}", is_correct_value);
-                debug!("Correct to address:    {}", is_correct_to_address);
-                debug!("Correct token address: {}", is_correct_token_address);
-                debug!("Correct from address:  {}", is_correct_from_address);
-                is_correct_token_address && is_correct_to_address && is_correct_from_address && is_correct_value
-            })
-            .count()
-            >= 1
+    pub fn erc20_transfer_exists(&self, erc20_token_transfer_event: &Erc20TokenTransferEvent) -> bool {
+        self.contains(erc20_token_transfer_event)
     }
 }
 
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Constructor)]
 pub struct Erc20TokenTransferEvent {
     pub value: U256,
     pub to: EthAddress,
     pub from: EthAddress,
-    pub topics: Vec<EthHash>,
     pub token_address: EthAddress, // NOTE: Whence the event was emitted.
 }
 
@@ -100,7 +79,6 @@ impl Erc20TokenTransferEvent {
             .and_then(|_| {
                 let tokens = eth_abi_decode(&[EthAbiParamType::Uint(256)], &log.get_data())?;
                 Ok(Self {
-                    topics: log.get_topics(),
                     token_address: log.get_address(),
                     // NOTE: The 20 byte ETH addresses are stored in 32 byte words, right aligned.
                     from: EthAddress::from_slice(&log.get_topics()[1][12..]),
@@ -137,11 +115,13 @@ mod tests {
             &get_sample_submission_material_with_erc20_peg_in_event().unwrap(),
         )
         .unwrap();
-        let from = convert_hex_to_eth_address("0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap();
-        let to = convert_hex_to_eth_address("0xd0a3d2d3d19a6ac58e60254fd606ec766638c3ba").unwrap();
-        let token_address = convert_hex_to_eth_address("0x9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap();
-        let value = U256::from(1337);
-        let result = events.erc20_transfer_exists(&token_address, &from, &to, &value);
+        let event = Erc20TokenTransferEvent::new(
+            U256::from(1337),
+            convert_hex_to_eth_address("0xd0a3d2d3d19a6ac58e60254fd606ec766638c3ba").unwrap(),
+            convert_hex_to_eth_address("0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
+            convert_hex_to_eth_address("0x9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap(),
+        );
+        let result = events.erc20_transfer_exists(&event);
         assert!(result);
     }
 }
