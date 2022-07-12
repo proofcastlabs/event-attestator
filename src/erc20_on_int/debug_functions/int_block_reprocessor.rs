@@ -1,5 +1,6 @@
 use crate::{
     chains::eth::{
+        eth_contracts::erc20_token::Erc20TokenTransferEvents,
         eth_database_transactions::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
@@ -63,6 +64,20 @@ fn reprocess_int_block<D: DatabaseInterface>(
                 .and_then(|params| state.add_erc20_on_int_eth_tx_infos(params))
         })
         .and_then(filter_out_zero_value_eth_tx_infos_from_state)
+        .and_then(|state| {
+            // NOTE: A reprocess is like a submission with 0 confs, ∴ we need to check the
+            // _current_ submission material, not the canon block material!
+            state
+                .get_eth_submission_material()
+                .map(|submission_material| {
+                    Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
+                        submission_material,
+                        &state.erc20_on_int_eth_tx_infos,
+                    )
+                })
+                .map(Erc20OnIntEthTxInfos::new)
+                .and_then(|filtered_tx_infos| state.replace_erc20_on_int_eth_tx_infos(filtered_tx_infos))
+        })
         .and_then(account_for_fees_in_eth_tx_infos_in_state)
         .and_then(|state| {
             if accrue_fees {

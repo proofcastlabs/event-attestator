@@ -1,6 +1,7 @@
 pub(crate) mod account_for_fees;
 pub(crate) mod divert_to_safe_address;
 pub(crate) mod filter_submission_material;
+pub(crate) mod filter_tx_info_with_no_erc20_transfer_event;
 pub(crate) mod filter_zero_value_tx_infos;
 pub(crate) mod get_eth_output_json;
 pub(crate) mod initialize_eth_core;
