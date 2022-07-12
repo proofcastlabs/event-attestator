@@ -115,6 +115,42 @@ impl Erc20TokenTransferEvent {
 }
 
 #[cfg(test)]
+use crate::chains::eth::eth_test_utils::{get_random_eth_address, get_random_u256};
+
+#[cfg(test)]
+impl Erc20TokenTransferEvent {
+    fn random() -> Self {
+        Self::new(
+            get_random_u256(),
+            get_random_eth_address(),
+            get_random_eth_address(),
+            get_random_eth_address(),
+        )
+    }
+}
+
+#[cfg(test)]
+impl Erc20TokenTransferEvents {
+    fn get_n_random_events(n: usize) -> Self {
+        Self::new(
+            vec![0; n]
+                .iter()
+                .map(|_| Erc20TokenTransferEvent::random())
+                .collect::<Vec<_>>(),
+        )
+    }
+}
+
+// NOTE: So that we can use a list of `Erc20TokenTransferEvent`s when tesing the filterer
+// in `Erc20TokenTransferEvents`.
+#[cfg(test)]
+impl ToErc20TokenTransferEvent for Erc20TokenTransferEvent {
+    fn to_erc20_token_transfer_event(&self) -> Erc20TokenTransferEvent {
+        self.clone()
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::chains::eth::{
