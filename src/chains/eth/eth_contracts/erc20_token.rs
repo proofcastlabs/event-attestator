@@ -57,6 +57,13 @@ impl Erc20TokenTransferEvents {
         Self::from_eth_receipts(&submission_material.receipts)
     }
 
+    fn remove(&mut self, event_to_remove: &Erc20TokenTransferEvent) {
+        if let Some(index) = self.iter().position(|event| event == event_to_remove) {
+            // NOTE: We don't care about ordering here!
+            self.swap_remove(index);
+        };
+    }
+
     pub fn erc20_transfer_exists(&self, erc20_token_transfer_event: &Erc20TokenTransferEvent) -> bool {
         self.contains(erc20_token_transfer_event)
     }
@@ -180,5 +187,21 @@ mod tests {
         );
         let result = events.erc20_transfer_exists(&event);
         assert!(result);
+    }
+
+    #[test]
+    fn should_remove_erc20_token_transfer_event_from_events() {
+        let num_events = 10;
+        let mut events = Erc20TokenTransferEvents::get_n_random_events(num_events);
+        let event = events[5].clone();
+        let event_exist_before = events.erc20_transfer_exists(&event);
+        let num_results_before = events.len();
+        assert_eq!(num_results_before, num_events);
+        assert!(event_exist_before);
+        events.remove(&event);
+        let num_results_after = events.len();
+        assert_eq!(num_results_after, num_events - 1);
+        let event_exists_after = events.erc20_transfer_exists(&event);
+        assert!(!event_exists_after);
     }
 }
