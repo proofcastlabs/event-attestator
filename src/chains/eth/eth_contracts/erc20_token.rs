@@ -1,6 +1,6 @@
-use derive_more::{Constructor, Deref};
 use std::fmt;
 
+use derive_more::{Constructor, Deref, DerefMut};
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
@@ -25,7 +25,7 @@ pub trait ToErc20TokenTransferEvent {
     fn to_erc20_token_transfer_event(&self) -> Erc20TokenTransferEvent;
 }
 
-#[derive(Clone, Default, Debug, PartialEq, Eq, Deref, Constructor)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Deref, DerefMut, Constructor)]
 pub struct Erc20TokenTransferEvents(Vec<Erc20TokenTransferEvent>);
 
 impl Erc20TokenTransferEvents {
@@ -64,8 +64,35 @@ impl Erc20TokenTransferEvents {
         };
     }
 
-    pub fn erc20_transfer_exists(&self, erc20_token_transfer_event: &Erc20TokenTransferEvent) -> bool {
-        self.contains(erc20_token_transfer_event)
+    pub fn filter_if_no_transfer_event<T>(&self, ts: &[T]) -> Vec<T>
+    where
+        T: ToErc20TokenTransferEvent + std::fmt::Display + std::clone::Clone,
+    {
+        info!("✔ Number of things before filtering: {}", self.len());
+        let mut mutable_self = self.clone();
+        let filtered = ts
+            .iter()
+            .filter(|t| {
+                let event = t.to_erc20_token_transfer_event();
+                if mutable_self.contains(&event) {
+                    // NOTE: If the event does exist in `mutable_self`, we MUST remove it before we
+                    // check the next event's existence!  This way, multiple of the exact same
+                    // peg-ins/outs in a single submission will correctly require the same number of
+                    // corresponding token transfers events to exist.
+                    mutable_self.remove(&event);
+                    true
+                } else {
+                    info!(
+                        "Filtering this out because it has no corresponding ERC20 transfer event: {}",
+                        t,
+                    );
+                    false
+                }
+            })
+            .cloned()
+            .collect::<Vec<T>>();
+        info!("✔ Number of things after filtering: {}", filtered.len());
+        filtered
     }
 }
 
@@ -160,10 +187,7 @@ impl ToErc20TokenTransferEvent for Erc20TokenTransferEvent {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eth::{
-        eth_test_utils::get_sample_submission_material_with_erc20_peg_in_event,
-        eth_utils::convert_hex_to_eth_address,
-    };
+    use crate::chains::eth::eth_test_utils::get_sample_submission_material_with_erc20_peg_in_event;
 
     #[test]
     fn should_get_erc20_token_params_from_submission_material() {
@@ -174,34 +198,120 @@ mod tests {
     }
 
     #[test]
-    fn erc20_transfer_should_exist() {
-        let events = Erc20TokenTransferEvents::from_eth_submission_material(
-            &get_sample_submission_material_with_erc20_peg_in_event().unwrap(),
-        )
-        .unwrap();
-        let event = Erc20TokenTransferEvent::new(
-            U256::from(1337),
-            convert_hex_to_eth_address("0xd0a3d2d3d19a6ac58e60254fd606ec766638c3ba").unwrap(),
-            convert_hex_to_eth_address("0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
-            convert_hex_to_eth_address("0x9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap(),
-        );
-        let result = events.erc20_transfer_exists(&event);
-        assert!(result);
-    }
-
-    #[test]
     fn should_remove_erc20_token_transfer_event_from_events() {
         let num_events = 10;
         let mut events = Erc20TokenTransferEvents::get_n_random_events(num_events);
         let event = events[5].clone();
-        let event_exist_before = events.erc20_transfer_exists(&event);
+        let event_exist_before = events.contains(&event);
         let num_results_before = events.len();
         assert_eq!(num_results_before, num_events);
         assert!(event_exist_before);
         events.remove(&event);
         let num_results_after = events.len();
         assert_eq!(num_results_after, num_events - 1);
-        let event_exists_after = events.erc20_transfer_exists(&event);
+        let event_exists_after = events.contains(&event);
         assert!(!event_exists_after);
+    }
+
+    #[test]
+    fn should_not_filter_things_if_all_have_corresponding_erc20_token_transfer_events() {
+        let events = Erc20TokenTransferEvents::get_n_random_events(10);
+        let things_to_filter = Erc20TokenTransferEvents::new(vec![
+            events[0].clone(),
+            events[1].clone(),
+            events[3].clone(),
+            events[4].clone(),
+            events[5].clone(),
+        ]);
+        let result = events.filter_if_no_transfer_event(&things_to_filter);
+        assert_eq!(result.len(), things_to_filter.len());
+        things_to_filter.iter().for_each(|thing| {
+            assert!(result.contains(thing));
+        });
+    }
+
+    #[test]
+    fn should_filter_things_if_they_do_not_have_corresponding_erc20_token_transfer_events() {
+        let events = Erc20TokenTransferEvents::get_n_random_events(10);
+        // NOTE: This test also shows that the ordering of the things does not matter!
+        let things_that_will_not_be_filtered_out = vec![
+            events[7].clone(),
+            events[5].clone(),
+            events[3].clone(),
+            events[0].clone(),
+        ];
+        let things_that_will_be_filtered_out = vec![
+            Erc20TokenTransferEvent::random(),
+            Erc20TokenTransferEvent::random(),
+            Erc20TokenTransferEvent::random(),
+            Erc20TokenTransferEvent::random(),
+        ];
+        // NOTE: We're just zipping them together into a single vec because the filterer
+        // does not & should not care about ordering.
+        let things_to_filter = things_that_will_not_be_filtered_out
+            .iter()
+            .zip(things_that_will_be_filtered_out.iter())
+            .fold(Vec::new(), |mut acc, (a, b)| {
+                acc.push(a.clone());
+                acc.push(b.clone());
+                acc
+            });
+        let result = events.filter_if_no_transfer_event(&things_to_filter);
+        assert_eq!(result.len(), things_that_will_not_be_filtered_out.len());
+        result.iter().for_each(|thing| {
+            assert!(things_that_will_not_be_filtered_out.contains(thing));
+            assert!(!things_that_will_be_filtered_out.contains(thing));
+        })
+    }
+
+    #[test]
+    fn filter_should_require_transfer_event_for_every_thing_even_when_thing_is_duplicated() {
+        let mut events = Erc20TokenTransferEvents::get_n_random_events(10);
+        let repeated_thing = events[5].clone();
+        events.push(repeated_thing.clone()); // NOTE: Thus there may be two repeated things in the final result...
+        let things_that_will_not_be_filtered_out = vec![
+            events[7].clone(),
+            repeated_thing.clone(),
+            events[3].clone(),
+            repeated_thing.clone(),
+            events[0].clone(),
+        ];
+        let things_that_will_be_filtered_out = vec![
+            Erc20TokenTransferEvent::random(),
+            repeated_thing.clone(), // NOTE: But this one...
+            Erc20TokenTransferEvent::random(),
+            Erc20TokenTransferEvent::random(),
+            repeated_thing.clone(), // NOTE: And this one should both get filtered out.
+        ];
+        // NOTE: We're just zipping them together into a single vec because the filterer
+        // does not & should not care about ordering.
+        let things_to_filter = things_that_will_not_be_filtered_out
+            .iter()
+            .zip(things_that_will_be_filtered_out.iter())
+            .fold(Vec::new(), |mut acc, (a, b)| {
+                acc.push(a.clone());
+                acc.push(b.clone());
+                acc
+            });
+        let results = events.filter_if_no_transfer_event(&things_to_filter);
+        assert_eq!(results.len(), things_that_will_not_be_filtered_out.len());
+        results.iter().for_each(|thing| {
+            assert!(things_that_will_not_be_filtered_out.contains(thing));
+        });
+        // NOTE: Now we need to assert that ONLY two of the repeated things made it through the filter...
+        assert_eq!(
+            results
+                .iter()
+                .filter(|thing| *thing == &repeated_thing)
+                .collect::<Vec<_>>()
+                .len(),
+            2
+        );
+        // NOTE: We can assert the things to be filtered out were indeed filtered out, but first we
+        // need to remove the repeated element since it'll give false asserion failures.
+        things_that_will_be_filtered_out
+            .iter()
+            .filter(|thing| *thing != &repeated_thing)
+            .for_each(|thing| assert!(!results.contains(thing)));
     }
 }
