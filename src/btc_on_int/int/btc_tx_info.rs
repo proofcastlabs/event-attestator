@@ -3,6 +3,8 @@ use std::fmt;
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
+use crate::chains::eth::eth_utils::{convert_eth_address_to_string, convert_eth_hash_to_string};
+
 #[derive(Debug, Clone, Default, PartialEq, Eq, Constructor, Deref, IntoIterator)]
 pub struct BtcOnIntBtcTxInfos(pub Vec<BtcOnIntBtcTxInfo>);
 
@@ -21,22 +23,24 @@ impl fmt::Display for BtcOnIntBtcTxInfo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "BtcOnIntBtcTxInfo: {{
-                to: {},
-                from: {},
-                recipient: {},
-                amount_in_wei: {},
-                amount_in_satoshis: {},
-                token_address: {},
-                originating_tx_has: {}
-            }}",
-            self.to,
-            self.from,
+            "
+BtcOnIntBtcTxInfo: {{
+    to: {},
+    from: {},
+    recipient: {},
+    amount_in_wei: {},
+    amount_in_satoshis: {},
+    token_address: {},
+    originating_tx_has: {}
+}}
+",
+            convert_eth_address_to_string(&self.to),
+            convert_eth_address_to_string(&self.from),
             self.recipient,
             self.amount_in_wei,
             self.amount_in_satoshis,
-            self.token_address,
-            self.originating_tx_hash,
+            convert_eth_address_to_string(&self.token_address),
+            convert_eth_hash_to_string(&self.originating_tx_hash),
         )
     }
 }
