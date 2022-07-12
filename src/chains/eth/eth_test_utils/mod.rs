@@ -375,6 +375,14 @@ pub fn get_sample_log_with_erc777_redeem() -> EthLog {
     get_sample_receipt_with_erc777_redeem().logs.0[2].clone()
 }
 
+pub fn get_random_eth_address() -> EthAddress {
+    EthPrivateKey::generate_random().unwrap().to_public_key().to_address()
+}
+
+pub fn get_random_u256() -> U256 {
+    U256::from(EthHash::random().as_bytes())
+}
+
 mod tests {
     use super::*;
     use crate::chains::eth::eth_utils::convert_hex_to_h256;
