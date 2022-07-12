@@ -207,7 +207,7 @@ mod tests {
         let btc_block_3 = get_sample_btc_submission_material_json_str_n(3);
         let result_3 = submit_btc_block_to_core(&db, &btc_block_3).unwrap();
         let originating_address = "2MvSnvTZFkNhrMH98zuKN4VyBsxz6dgRyJG".to_string();
-        let btc_tx_recipient = "0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC".to_string();
+        let int_tx_recipient = "0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC".to_string();
         let result = BtcOutput::from_str(&result_3).unwrap();
         let expected_result = BtcOutput::from_str(
             &json!({
@@ -220,12 +220,11 @@ mod tests {
                         "int_signed_tx": "f9036b808504a817c8008306ddd0940f513aa8d67820787a8fdf285bfcf967bf8e4b8b80b90304dcdc7dd000000000000000000000000088d19e08cd43bba5761c10c588b2a3d85c75041f00000000000000000000000000000000000000000000000000002ddb52308800000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000002e0000000000000000000000000000000000000000000000000000000000000024003000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100018afeb20000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001400069c3220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000000000003c0ffee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000023324d76536e76545a466b4e68724d4839387a754b4e3456794273787a36646752794a470000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a307866656466653236313665623336363163623866656432373832663566306363393164353964636163000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002aa0c9c90dd26eae43447b5ed57f46fab5122aa9a43d93489170dc5c023bd909c4c0a009379b580705dd06eed0b73f9d58063d3a3d6d2438a0b87cd51292c7ea827344",
                         "int_tx_amount":"50420000000000",
                         "int_account_nonce": 0,
-                        "int_tx_recipient": router_address_hex,
                         "witnessed_timestamp": 1645454565,
                         "host_token_address": ptoken_address_hex,
                         "originating_tx_hash": "d3778ffe56b5c7f2f9613564eabb1812b5ceea3d199147c36d99ba955f5c634e",
                         "originating_address": originating_address,
-                        "btc_tx_recipient": btc_tx_recipient,
+                        "int_tx_recipient": int_tx_recipient,
                         "int_latest_block_number": 12000341,
                         "broadcast_tx_hash": null,
                         "broadcast_timestamp": null,
@@ -244,7 +243,7 @@ mod tests {
         assert_eq!(tx_info.int_tx_hash, expected_tx_info.int_tx_hash);
         assert_eq!(tx_info.int_signed_tx, expected_tx_info.int_signed_tx);
         assert_eq!(tx_info.int_tx_amount, expected_tx_info.int_tx_amount);
-        assert_eq!(tx_info.btc_tx_recipient, expected_tx_info.btc_tx_recipient);
+        assert_eq!(tx_info.int_tx_recipient, expected_tx_info.int_tx_recipient);
         assert_eq!(tx_info.int_tx_recipient, expected_tx_info.int_tx_recipient);
         assert_eq!(tx_info.int_account_nonce, expected_tx_info.int_account_nonce);
         assert_eq!(tx_info.broadcast_tx_hash, expected_tx_info.broadcast_tx_hash);
@@ -271,7 +270,7 @@ mod tests {
         let expected_metadata = Metadata::new_v3(
             &vec![0xc0, 0xff, 0xee],
             &MetadataAddress::new(&originating_address, &MetadataChainId::BitcoinTestnet).unwrap(),
-            &MetadataAddress::new(&btc_tx_recipient, &MetadataChainId::EthereumRopsten).unwrap(),
+            &MetadataAddress::new(&int_tx_recipient, &MetadataChainId::EthereumRopsten).unwrap(),
             Some(vec![]), // NOTE: Protocol options
             Some(vec![]), // NOTE: Protocol receipt
         );

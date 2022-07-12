@@ -37,9 +37,8 @@ pub struct IntTxInfo {
     pub int_signed_tx: String,
     pub int_tx_amount: String,
     pub int_account_nonce: u64,
-    pub int_tx_recipient: String,
     pub witnessed_timestamp: u64,
-    pub btc_tx_recipient: String,
+    pub int_tx_recipient: String,
     pub host_token_address: String,
     pub originating_tx_hash: String,
     pub originating_address: String,
@@ -99,11 +98,10 @@ impl IntTxInfo {
             int_tx_hash: format!("0x{}", tx.get_tx_hash()),
             int_tx_amount: int_tx_info.host_token_amount.to_string(),
             host_token_address: int_tx_info.int_token_address.clone(),
-            btc_tx_recipient: int_tx_info.destination_address.clone(),
+            int_tx_recipient: int_tx_info.destination_address.clone(),
             originating_address: int_tx_info.originating_tx_address.clone(),
             originating_tx_hash: int_tx_info.originating_tx_hash.to_string(),
             int_signed_tx: tx.eth_tx_hex().ok_or(NoneError("No tx in tx info!"))?,
-            int_tx_recipient: format!("0x{}", hex::encode(int_tx_info.router_address.as_bytes())),
             destination_chain_id: format!("0x{}", hex::encode(&int_tx_info.destination_chain_id)),
         })
     }
