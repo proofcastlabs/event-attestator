@@ -17,10 +17,10 @@ pub struct IntOnEosEosTxInfos(pub Vec<IntOnEosEosTxInfo>);
 pub struct IntOnEosEosTxInfo {
     pub user_data: Bytes,
     pub token_amount: U256,
-    pub vault_address: String,
     pub router_address: String,
     pub eos_asset_amount: String,
     pub token_sender: EthAddress,
+    pub vault_address: EthAddress,
     pub eos_token_address: String,
     pub destination_address: String,
     pub originating_tx_hash: EthHash,
@@ -50,7 +50,7 @@ IntOnEosEosTxInfo: {{
 }}
             ",
             self.token_amount,
-            self.vault_address,
+            convert_eth_address_to_string(&self.vault_address),
             self.router_address,
             self.eos_asset_amount,
             convert_eth_address_to_string(&self.token_sender),

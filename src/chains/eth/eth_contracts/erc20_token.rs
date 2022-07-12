@@ -77,19 +77,20 @@ impl Erc20TokenTransferEvents {
             .iter()
             .filter(|t| {
                 let event = t.to_erc20_token_transfer_event();
+                info!("Looking for transfer event: {}", event);
                 if mutable_self.contains(&event) {
                     // NOTE: If the event does exist in `mutable_self`, we MUST remove it before we
                     // check the next event's existence!  This way, multiple of the exact same
                     // peg-ins/outs in a single submission will correctly require the same number of
                     // corresponding token transfers events to exist.
                     mutable_self.remove(&event);
+                    info!("✔ Event found in submission material!");
                     true
                 } else {
-                    info!(
-                        "Filtering this out because it has no corresponding ERC20 transfer event: {}",
+                    warn!(
+                        "✘ Filtering this out because it has no corresponding ERC20 transfer event: {}",
                         t,
                     );
-                    debug!("Transfer event that was NOT found in block: {}", event);
                     false
                 }
             })
