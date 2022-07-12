@@ -13,10 +13,7 @@ use crate::{
             utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
         },
         eth::{
-            eth_contracts::{
-                erc20_token::Erc20TokenTransferEvents,
-                erc777_token::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
-            },
+            eth_contracts::erc777_token::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
             eth_database_utils::EthDbUtilsExt,
             eth_log::{EthLog, EthLogExt},
             eth_receipt::EthReceipt,
@@ -107,39 +104,6 @@ impl BtcOnIntBtcTxInfos {
                 .concat(),
         ))
     }
-
-    pub fn filter_out_those_with_no_corresponding_erc20_transfer_event(
-        &self,
-        submission_material: &EthSubmissionMaterial,
-    ) -> Result<Self> {
-        info!("✔ Filtering out `BtcOnIntBtcTxInfos` which don't have corresponding ERC20 transfer events ...");
-        info!("✔ Number of `BtcOnIntBtcTxInfos` before: {}", self.len());
-        Erc20TokenTransferEvents::from_eth_submission_material(submission_material).map(|erc20_transfer_events| {
-            let filtered = self
-                .iter()
-                .filter(|tx_info| {
-                    let transfer_exists = erc20_transfer_events.erc20_transfer_exists(
-                        &tx_info.token_address,
-                        &tx_info.from,
-                        &tx_info.to,
-                        &tx_info.amount_in_wei,
-                    );
-                    if transfer_exists {
-                        true
-                    } else {
-                        warn!(
-                            "✘ Tx info filtered out ∵ no ERC20 transfer event found for it! {:?}",
-                            tx_info
-                        );
-                        false
-                    }
-                })
-                .cloned()
-                .collect::<Vec<BtcOnIntBtcTxInfo>>();
-            info!("✔ Number of `BtcOnIntBtcTxInfos` after: {}", filtered.len());
-            Self::new(filtered)
-        })
-    }
 }
 
 pub fn maybe_parse_btc_on_int_tx_infos_and_add_to_state<D: DatabaseInterface>(
@@ -159,9 +123,6 @@ pub fn maybe_parse_btc_on_int_tx_infos_and_add_to_state<D: DatabaseInterface>(
                     &submission_material,
                     &state.eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
                 )
-                .and_then(|infos| {
-                    infos.filter_out_those_with_no_corresponding_erc20_transfer_event(&submission_material)
-                })
                 .and_then(|infos| state.add_btc_on_int_btc_tx_infos(infos))
             }
         })

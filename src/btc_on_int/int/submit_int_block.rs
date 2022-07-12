@@ -3,6 +3,7 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         int::{
             filter_receipts_in_state::filter_receipts_for_btc_on_int_redeem_events_in_state,
+            filter_tx_info_with_no_erc20_transfer_event::maybe_filter_those_with_no_corresponding_erc20_transfer_event,
             get_int_output::get_int_output_json,
             parse_tx_infos::maybe_parse_btc_on_int_tx_infos_and_add_to_state,
             sign_txs::maybe_sign_btc_txs_and_add_to_state,
@@ -55,6 +56,7 @@ pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, submission_materia
         .and_then(maybe_update_eth_tail_block_hash_and_return_state)
         .and_then(maybe_update_eth_linker_hash_and_return_state)
         .and_then(maybe_parse_btc_on_int_tx_infos_and_add_to_state)
+        .and_then(maybe_filter_those_with_no_corresponding_erc20_transfer_event)
         .and_then(maybe_sign_btc_txs_and_add_to_state)
         .and_then(maybe_increment_btc_account_nonce_and_return_eth_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)

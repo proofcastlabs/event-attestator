@@ -14,6 +14,7 @@ use crate::{
         int::{
             btc_tx_info::BtcOnIntBtcTxInfos,
             filter_receipts_in_state::filter_receipts_for_btc_on_int_redeem_events_in_state,
+            filter_tx_info_with_no_erc20_transfer_event::maybe_filter_those_with_no_corresponding_erc20_transfer_event,
             get_int_output::{get_btc_signed_tx_info_from_btc_txs, IntOutput},
             sign_txs::maybe_sign_btc_txs_and_add_to_state,
         },
@@ -140,6 +141,7 @@ fn reprocess_int_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<
                 })
                 .and_then(|params| state.add_btc_on_int_btc_tx_infos(params))
         })
+        .and_then(maybe_filter_those_with_no_corresponding_erc20_transfer_event)
         .and_then(maybe_sign_btc_txs_and_add_to_state)
         .and_then(maybe_increment_btc_account_nonce_and_return_eth_state)
         .and_then(end_eth_db_transaction_and_return_state)

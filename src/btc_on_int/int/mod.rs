@@ -1,5 +1,6 @@
 pub(crate) mod btc_tx_info;
 pub(crate) mod filter_receipts_in_state;
+pub(crate) mod filter_tx_info_with_no_erc20_transfer_event;
 pub(crate) mod filter_value_too_low_tx_infos;
 pub(crate) mod get_int_output;
 pub(crate) mod initialize_int_core;
