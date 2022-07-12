@@ -1,5 +1,8 @@
 use crate::{
-    chains::algo::{algo_constants::MAX_BYTES_FOR_ALGO_USER_DATA, algo_user_data::AlgoUserData},
+    chains::{
+        algo::{algo_constants::MAX_BYTES_FOR_ALGO_USER_DATA, algo_user_data::AlgoUserData},
+        eth::eth_utils::convert_eth_address_to_string,
+    },
     int_on_algo::int::algo_tx_info::IntOnAlgoAlgoTxInfo,
     metadata::{
         metadata_address::MetadataAddress,
@@ -54,7 +57,10 @@ impl ToMetadata for IntOnAlgoAlgoTxInfo {
 
         let metadata = Metadata::new_v3(
             &user_data,
-            &MetadataAddress::new(&self.token_sender, &self.origin_chain_id)?,
+            &MetadataAddress::new(
+                &convert_eth_address_to_string(&self.token_sender),
+                &self.origin_chain_id,
+            )?,
             &destination_metadata_address,
             None,
             None,

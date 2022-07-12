@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     chains::{
         algo::algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
-        eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
+        eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState, eth_utils::convert_eth_address_to_string},
     },
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
     traits::DatabaseInterface,
@@ -57,11 +57,11 @@ impl IntTxInfo {
             algo_signed_tx: group_tx.signed_tx,
             algo_tx_hash: group_tx.group_tx.to_id()?,
             _id: format!("pint-on-algo-algo-{}", nonce),
-            originating_address: tx_info.token_sender.clone(),
             algo_tx_amount: tx_info.host_token_amount.to_string(),
             host_token_address: format!("{}", tx_info.algo_asset_id),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             native_token_address: format!("0x{}", hex::encode(&tx_info.int_token_address)),
+            originating_address: convert_eth_address_to_string(&tx_info.token_sender.clone()),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
             destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
             algo_tx_recipient: if tx_info.destination_is_app() {

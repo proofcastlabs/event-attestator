@@ -1,5 +1,6 @@
 use crate::{
     chains::eth::{
+        eth_contracts::erc20_token::Erc20TokenTransferEvents,
         eth_database_transactions::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
@@ -46,28 +47,39 @@ pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: &D, block_json_string
         .and_then(filter_submission_material_for_peg_in_events_in_state)
         .and_then(|state| {
             let submission_material = state.get_eth_submission_material()?;
-            match submission_material.receipts.is_empty() {
-                true => {
-                    info!("✔ No receipts in canon block ∴ no info to parse!");
-                    Ok(state)
-                },
-                false => {
-                    info!(
-                        "✔ {} receipts in canon block ∴ parsing info...",
-                        submission_material.receipts.len()
-                    );
-                    let tx_infos = IntOnAlgoAlgoTxInfos::from_submission_material(
-                        submission_material,
-                        &state.eth_db_utils.get_int_on_algo_smart_contract_address()?,
-                        state.get_evm_algo_token_dictionary()?,
-                        &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
-                        &state.algo_db_utils.get_algo_app_id()?,
-                    )?;
-                    state.add_int_on_algo_algo_tx_infos(tx_infos)
-                },
+            if submission_material.receipts.is_empty() {
+                info!("✔ No receipts in canon block ∴ no info to parse!");
+                Ok(state)
+            } else {
+                info!(
+                    "✔ {} receipts in canon block ∴ parsing info...",
+                    submission_material.receipts.len()
+                );
+                let tx_infos = IntOnAlgoAlgoTxInfos::from_submission_material(
+                    submission_material,
+                    &state.eth_db_utils.get_int_on_algo_smart_contract_address()?,
+                    state.get_evm_algo_token_dictionary()?,
+                    &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
+                    &state.algo_db_utils.get_algo_app_id()?,
+                )?;
+                state.add_int_on_algo_algo_tx_infos(tx_infos)
             }
         })
         .and_then(filter_out_zero_value_tx_infos_from_state)
+        .and_then(|state| {
+            // NOTE: A reprocess is like a submission with 0 confs, ∴ we need to check the
+            // _current_ submission material, not the canon block material!
+            state
+                .get_eth_submission_material()
+                .map(|submission_material| {
+                    Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
+                        submission_material,
+                        &state.int_on_algo_algo_tx_infos,
+                    )
+                })
+                .map(IntOnAlgoAlgoTxInfos::new)
+                .and_then(|filtered_tx_infos| state.replace_int_on_algo_algo_tx_infos(filtered_tx_infos))
+        })
         .and_then(maybe_sign_algo_txs_and_add_to_state)
         .and_then(maybe_increment_algo_account_nonce_and_return_eth_state)
         .and_then(end_eth_db_transaction_and_return_state)
