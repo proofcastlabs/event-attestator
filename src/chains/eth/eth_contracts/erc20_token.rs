@@ -1,4 +1,6 @@
 use derive_more::{Constructor, Deref};
+use std::fmt;
+
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
@@ -62,6 +64,21 @@ pub struct Erc20TokenTransferEvent {
     pub to: EthAddress,
     pub from: EthAddress,
     pub token_address: EthAddress, // NOTE: Whence the event was emitted.
+}
+
+impl fmt::Display for Erc20TokenTransferEvent {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Erc20TokenTransferEvent: {{
+                to: {},
+                from: {},
+                value: {},
+                token_address: {},
+            }}",
+            self.to, self.from, self.value, self.token_address,
+        )
+    }
 }
 
 impl Erc20TokenTransferEvent {
