@@ -15,7 +15,7 @@ use crate::{
             utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
         },
         eth::{
-            eth_contracts::erc777::{
+            eth_contracts::erc777_token::{
                 Erc777RedeemEvent,
                 ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
                 ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,

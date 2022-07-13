@@ -3,7 +3,7 @@ use ethereum_types::Address as EthAddress;
 use crate::{
     chains::eth::{
         eth_chain_id::EthChainId,
-        eth_contracts::erc777::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
+        eth_contracts::erc777_token::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
         eth_database_utils::EthDbUtilsExt,
         eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::EthReceipt,
@@ -56,6 +56,7 @@ impl Erc20OnIntEthTxInfos {
         dictionary: &EthEvmTokenDictionary,
         origin_chain_id: &EthChainId,
         vault_address: &EthAddress,
+        router_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `Erc20OnIntEthTxInfos` from receipt...");
         Ok(Self::new(
@@ -64,8 +65,12 @@ impl Erc20OnIntEthTxInfos {
                 .map(|log| {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
                     let tx_info = Erc20OnIntEthTxInfo {
+                        router_address: *router_address,
                         evm_token_address: log.address,
                         eth_vault_address: *vault_address,
+                        // NOTE: This field is required in order to find the corresponding ERC20
+                        // transfer event. Because this is a peg out, the tokens are burnt.
+                        token_recipient: EthAddress::zero(),
                         token_sender: event_params.redeemer,
                         origin_chain_id: origin_chain_id.clone(),
                         user_data: event_params.user_data.clone(),
@@ -89,13 +94,16 @@ impl Erc20OnIntEthTxInfos {
         dictionary: &EthEvmTokenDictionary,
         origin_chain_id: &EthChainId,
         vault_address: &EthAddress,
+        router_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `Erc20OnIntEthTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, origin_chain_id, vault_address))
+                .map(|receipt| {
+                    Self::from_eth_receipt(receipt, dictionary, origin_chain_id, vault_address, router_address)
+                })
                 .collect::<Result<Vec<Erc20OnIntEthTxInfos>>>()?
                 .into_iter()
                 .flatten()
@@ -111,12 +119,11 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
     state
         .evm_db_utils
         .get_eth_canon_block_from_db()
-        .and_then(|submission_material| match submission_material.receipts.is_empty() {
-            true => {
+        .and_then(|submission_material| {
+            if submission_material.receipts.is_empty() {
                 info!("✔ No receipts in canon block ∴ no info to parse!");
                 Ok(state)
-            },
-            false => {
+            } else {
                 info!(
                     "✔ {} receipts in canon block ∴ parsing info...",
                     submission_material.receipts.len()
@@ -128,10 +135,11 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                             &account_names,
                             &state.evm_db_utils.get_eth_chain_id_from_db()?,
                             &state.evm_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
+                            &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
                         )
                     })
                     .and_then(|tx_infos| state.add_erc20_on_int_eth_tx_infos(tx_infos))
-            },
+            }
         })
 }
 
@@ -141,7 +149,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        chains::eth::eth_utils::convert_hex_to_eth_address,
+        chains::eth::{eth_test_utils::get_random_eth_address, eth_utils::convert_hex_to_eth_address},
         erc20_on_int::test_utils::{
             get_sample_peg_out_submission_material,
             get_sample_router_address,
@@ -154,10 +162,16 @@ mod tests {
         let dictionary = get_sample_token_dictionary();
         let origin_chain_id = EthChainId::Ropsten;
         let material = get_sample_peg_out_submission_material();
-        let vault_address = EthAddress::default();
-        let results =
-            Erc20OnIntEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &vault_address)
-                .unwrap();
+        let vault_address = get_random_eth_address();
+        let router_address = get_random_eth_address();
+        let results = Erc20OnIntEthTxInfos::from_submission_material(
+            &material,
+            &dictionary,
+            &origin_chain_id,
+            &vault_address,
+            &router_address,
+        )
+        .unwrap();
         let expected_num_results = 1;
         assert_eq!(results.len(), expected_num_results);
         let result = results[0].clone();

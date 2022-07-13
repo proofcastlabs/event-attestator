@@ -26,7 +26,7 @@ impl EthLogJson {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Constructor)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Deserialize, Constructor)]
 pub struct EthLog {
     pub address: EthAddress,
     pub topics: Vec<EthHash>,
@@ -34,6 +34,10 @@ pub struct EthLog {
 }
 
 impl EthLogExt for EthLog {
+    fn get_address(&self) -> EthAddress {
+        self.address
+    }
+
     fn get_topics(&self) -> Vec<EthHash> {
         self.topics.clone()
     }
@@ -139,6 +143,7 @@ impl EthLogs {
 
 pub trait EthLogExt {
     fn get_data(&self) -> Bytes;
+    fn get_address(&self) -> EthAddress;
     fn get_topics(&self) -> Vec<EthHash>;
 
     fn get_event_signature(&self) -> Result<EthHash> {

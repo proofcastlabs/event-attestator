@@ -18,7 +18,7 @@ use crate::{
         },
         eth::{
             eth_chain_id::EthChainId,
-            eth_contracts::erc777::{
+            eth_contracts::erc777_token::{
                 Erc777RedeemEvent,
                 ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
                 ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,

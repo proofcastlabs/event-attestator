@@ -47,6 +47,7 @@ impl IntOnEvmEvmTxInfos {
                 .map(|log| {
                     let event_params = Erc20VaultPegInEventParams::from_eth_log(log)?;
                     let tx_info = IntOnEvmEvmTxInfo {
+                        vault_address: *vault_address,
                         router_address: *router_address,
                         token_sender: event_params.token_sender,
                         user_data: event_params.user_data.clone(),

@@ -21,7 +21,7 @@ use crate::{
         eth::{
             eth_chain_id::EthChainId,
             eth_constants::ZERO_ETH_VALUE,
-            eth_contracts::erc777::encode_erc777_mint_with_no_data_fxn,
+            eth_contracts::erc777_token::encode_erc777_mint_with_no_data_fxn,
             eth_crypto::{
                 eth_private_key::EthPrivateKey,
                 eth_transaction::{EthTransaction, EthTransactions},

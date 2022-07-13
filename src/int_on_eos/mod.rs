@@ -35,11 +35,6 @@ pub use crate::{
     },
     int_on_eos::{
         debug_functions::{
-            block_reprocessors::{
-                debug_reprocess_eos_block,
-                debug_reprocess_eos_block_with_nonce,
-                debug_reprocess_int_block,
-            },
             debug_add_new_eos_schedule,
             debug_add_token_dictionary_entry,
             debug_get_add_supported_token_tx,
@@ -51,6 +46,8 @@ pub use crate::{
             debug_set_int_gas_price,
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
+            eos_block_reprocessor::{debug_reprocess_eos_block, debug_reprocess_eos_block_with_nonce},
+            int_block_reprocessor::debug_reprocess_int_block,
         },
         eos::submit_eos_block::submit_eos_block_to_core,
         get_enclave_state::get_enclave_state,

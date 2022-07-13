@@ -4,6 +4,7 @@ pub(crate) mod divert_to_safe_address;
 pub(crate) mod eos_tx_info;
 pub(crate) mod filter_out_zero_tx_infos;
 pub(crate) mod filter_submission_material;
+pub(crate) mod filter_tx_info_with_no_erc20_transfer_event;
 pub(crate) mod get_output_json;
 pub(crate) mod initialize_int_core;
 pub(crate) mod metadata;

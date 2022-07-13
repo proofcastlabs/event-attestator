@@ -9,6 +9,7 @@ use crate::{
         eth_chain_id::EthChainId,
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_submission_material::EthSubmissionMaterial,
+        eth_test_utils::get_random_eth_address,
         eth_utils::convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
@@ -23,8 +24,16 @@ pub fn get_sample_eth_tx_infos() -> Erc20OnIntEthTxInfos {
     let dictionary = get_sample_token_dictionary();
     let material = get_sample_peg_out_submission_material();
     let origin_chain_id = EthChainId::Ropsten;
-    let vault_address = EthAddress::default();
-    Erc20OnIntEthTxInfos::from_submission_material(&material, &dictionary, &origin_chain_id, &vault_address).unwrap()
+    let vault_address = get_random_eth_address();
+    let router_address = get_random_eth_address();
+    Erc20OnIntEthTxInfos::from_submission_material(
+        &material,
+        &dictionary,
+        &origin_chain_id,
+        &vault_address,
+        &router_address,
+    )
+    .unwrap()
 }
 
 pub fn get_sample_eth_tx_info() -> Erc20OnIntEthTxInfo {

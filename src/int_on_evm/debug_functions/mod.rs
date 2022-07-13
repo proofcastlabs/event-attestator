@@ -1,4 +1,5 @@
-pub(crate) mod block_reprocessors;
+pub(crate) mod evm_block_reprocessor;
+pub(crate) mod int_block_reprocessor;
 
 use ethereum_types::U256;
 use serde_json::json;

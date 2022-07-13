@@ -1,4 +1,5 @@
-pub(crate) mod block_reprocessors;
+pub(crate) mod eos_block_reprocessor;
+pub(crate) mod int_block_reprocessor;
 
 use serde_json::json;
 

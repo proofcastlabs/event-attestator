@@ -1,6 +1,6 @@
 use crate::{
     chains::eth::{
-        eth_contracts::erc777::ERC777_REDEEM_EVENT_TOPIC_V2,
+        eth_contracts::erc777_token::ERC777_REDEEM_EVENT_TOPIC_V2,
         eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::{EthReceipt, EthReceipts},
         eth_state::EthState,

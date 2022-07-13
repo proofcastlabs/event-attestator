@@ -23,11 +23,8 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         evm::{
             account_for_fees::maybe_account_for_fees,
-            divert_to_safe_address::{
-                maybe_divert_txs_to_safe_address_if_destination_is_token_address,
-                maybe_divert_txs_to_safe_address_if_destination_is_vault_address,
-            },
             filter_submission_material::filter_submission_material_for_redeem_events_in_state,
+            filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
             filter_zero_value_tx_infos::filter_out_zero_value_eth_tx_infos_from_state,
             get_evm_output_json::get_evm_output_json,
             parse_tx_infos::maybe_parse_tx_info_from_canon_block_and_add_to_state,
@@ -62,9 +59,8 @@ pub fn submit_evm_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(maybe_update_evm_linker_hash_and_return_state)
         .and_then(maybe_parse_tx_info_from_canon_block_and_add_to_state)
         .and_then(filter_out_zero_value_eth_tx_infos_from_state)
+        .and_then(filter_tx_info_with_no_erc20_transfer_event)
         .and_then(maybe_account_for_fees)
-        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
-        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_vault_address)
         .and_then(maybe_sign_eth_txs_and_add_to_evm_state)
         .and_then(maybe_increment_int_account_nonce_and_return_eth_state)
         .and_then(maybe_remove_old_evm_tail_block_and_return_state)

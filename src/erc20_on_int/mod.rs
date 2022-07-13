@@ -41,14 +41,6 @@ pub use crate::{
     },
     erc20_on_int::{
         debug_functions::{
-            block_reprocessors::{
-                debug_reprocess_eth_block,
-                debug_reprocess_eth_block_with_fee_accrual,
-                debug_reprocess_eth_block_with_nonce,
-                debug_reprocess_int_block,
-                debug_reprocess_int_block_with_fee_accrual,
-                debug_reprocess_int_block_with_nonce,
-            },
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
             debug_get_all_db_keys,
@@ -61,6 +53,16 @@ pub use crate::{
             debug_set_int_gas_price,
             debug_set_key_in_db_to_value,
             debug_withdraw_fees_and_save_in_db,
+            eth_block_reprocessor::{
+                debug_reprocess_eth_block,
+                debug_reprocess_eth_block_with_fee_accrual,
+                debug_reprocess_eth_block_with_nonce,
+            },
+            int_block_reprocessor::{
+                debug_reprocess_int_block,
+                debug_reprocess_int_block_with_fee_accrual,
+                debug_reprocess_int_block_with_nonce,
+            },
         },
         eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
         get_enclave_state::get_enclave_state,

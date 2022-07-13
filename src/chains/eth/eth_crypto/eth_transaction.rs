@@ -9,7 +9,7 @@ use crate::{
         any_sender::relay_transaction::RelayTransaction,
         eth_chain_id::EthChainId,
         eth_constants::VALUE_FOR_MINTING_TX,
-        eth_contracts::erc777::encode_erc777_mint_fxn_maybe_with_data,
+        eth_contracts::erc777_token::encode_erc777_mint_fxn_maybe_with_data,
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
         eth_types::EthSignature,

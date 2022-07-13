@@ -13,7 +13,7 @@ use crate::{
             utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
         },
         eth::{
-            eth_contracts::erc777::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
+            eth_contracts::erc777_token::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
             eth_database_utils::EthDbUtilsExt,
             eth_log::{EthLog, EthLogExt},
             eth_receipt::EthReceipt,
@@ -76,7 +76,10 @@ impl BtcOnIntBtcTxInfos {
                 .map(|log| {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
                     Ok(BtcOnIntBtcTxInfo {
+                        to: EthAddress::zero(), // NOTE: Because this is a redeem, the token is burnt.
                         from: event_params.redeemer,
+                        amount_in_wei: event_params.value,
+                        token_address: *erc777_smart_contract_address,
                         originating_tx_hash: receipt.transaction_hash,
                         amount_in_satoshis: convert_wei_to_satoshis(event_params.value),
                         recipient: safely_convert_str_to_btc_address(&event_params.underlying_asset_recipient)
@@ -110,20 +113,17 @@ pub fn maybe_parse_btc_on_int_tx_infos_and_add_to_state<D: DatabaseInterface>(
     state
         .eth_db_utils
         .get_eth_canon_block_from_db()
-        .and_then(|submission_material| match submission_material.receipts.is_empty() {
-            true => {
+        .and_then(|submission_material| {
+            if submission_material.receipts.is_empty() {
                 info!("✔ No receipts in canon block ∴ no infos to parse!");
                 Ok(state)
-            },
-            false => {
+            } else {
                 info!("✔ Receipts in canon block ∴ parsing infos...");
                 BtcOnIntBtcTxInfos::from_eth_submission_material(
                     &submission_material,
                     &state.eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
                 )
                 .and_then(|infos| state.add_btc_on_int_btc_tx_infos(infos))
-            },
+            }
         })
 }
-
-// TODO test!

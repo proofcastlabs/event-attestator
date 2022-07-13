@@ -1,7 +1,8 @@
 use ethereum_types::Address as EthAddress;
 use serde_json::json;
 
-pub(crate) mod block_reprocessors;
+pub(crate) mod btc_block_reprocessor;
+pub(crate) mod int_block_reprocessor;
 
 use crate::{
     btc_on_int::check_core_is_initialized::{
@@ -41,11 +42,11 @@ use crate::{
         eth::{
             eth_chain_id::EthChainId,
             eth_contracts::{
-                erc777::get_signed_erc777_change_pnetwork_tx,
                 erc777_proxy::{
                     get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
                     get_signed_erc777_proxy_change_pnetwork_tx,
                 },
+                erc777_token::get_signed_erc777_change_pnetwork_tx,
             },
             eth_crypto::eth_transaction::get_signed_minting_tx,
             eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt},

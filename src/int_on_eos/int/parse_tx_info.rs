@@ -58,9 +58,9 @@ impl IntOnEosEosTxInfos {
                 .map(|log| {
                     let params = Erc20VaultPegInEventParams::from_eth_log(log)?;
                     let tx_info = IntOnEosEosTxInfo {
+                        vault_address: *vault_address,
                         token_sender: params.token_sender,
                         originating_tx_hash: receipt.transaction_hash,
-                        vault_address: format!("0x{}", hex::encode(vault_address)),
                         router_address: format!("0x{}", hex::encode(router_address)),
                         destination_address: safely_convert_str_to_eos_address(&params.destination_address).to_string(),
                         eos_token_address: dictionary
@@ -132,8 +132,8 @@ pub fn maybe_parse_eos_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
                             &submission_material,
                             &dictionary,
                             &state.eth_db_utils.get_eth_chain_id_from_db()?,
-                            &state.eth_db_utils.get_int_on_eos_smart_contract_address_from_db()?,
                             &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
+                            &state.eth_db_utils.get_int_on_eos_smart_contract_address_from_db()?,
                         )
                     })
                     .and_then(|infos| state.add_int_on_eos_eos_tx_infos(infos))

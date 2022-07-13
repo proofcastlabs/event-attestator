@@ -51,6 +51,12 @@ pub fn convert_eth_address_to_string(eth_address: &EthAddress) -> String {
     format!("0x{}", hex::encode(eth_address))
 }
 
+pub fn convert_eth_hash_to_string(hash: &H256) -> String {
+    // NOTE: Because of the way the `ethereum_types` crate converts an eth hash
+    // to `0xaaaa...bbbb` style string.
+    format!("0x{}", hex::encode(hash))
+}
+
 pub fn convert_hex_to_bytes(hex: &str) -> Result<Bytes> {
     Ok(hex::decode(strip_hex_prefix(hex))?)
 }

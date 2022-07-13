@@ -2,7 +2,7 @@ use ethereum_types::Address as EthAddress;
 
 use crate::{
     chains::eth::{
-        eth_contracts::erc777::Erc777RedeemEvent,
+        eth_contracts::erc777_token::Erc777RedeemEvent,
         eth_database_utils::EthDbUtilsExt,
         eth_receipt::EthReceipt,
         eth_state::EthState,
@@ -19,7 +19,7 @@ impl IntOnEvmIntTxInfos {
         receipt: &EthReceipt,
         dictionary: &EthEvmTokenDictionary,
         router_address: &EthAddress,
-        eth_vault_address: &EthAddress,
+        vault_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `IntOnEvmIntTxInfos` from receipt...");
         Ok(Self::new(
@@ -28,14 +28,14 @@ impl IntOnEvmIntTxInfos {
                 .map(|log| {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
                     let tx_info = IntOnEvmIntTxInfo {
+                        vault_address: *vault_address,
+                        evm_token_address: log.address,
                         router_address: *router_address,
                         token_sender: event_params.redeemer,
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
                         origin_chain_id: event_params.get_origin_chain_id()?,
-                        evm_token_address: format!("0x{}", hex::encode(log.address)),
                         destination_chain_id: event_params.get_destination_chain_id()?,
-                        eth_vault_address: format!("0x{}", hex::encode(eth_vault_address)),
                         destination_address: event_params.underlying_asset_recipient.clone(),
                         eth_token_address: format!(
                             "0x{}",
@@ -55,14 +55,14 @@ impl IntOnEvmIntTxInfos {
         submission_material: &EthSubmissionMaterial,
         dictionary: &EthEvmTokenDictionary,
         router_address: &EthAddress,
-        eth_vault_address: &EthAddress,
+        vault_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `IntOnEvmIntTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
-                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, router_address, eth_vault_address))
+                .map(|receipt| Self::from_eth_receipt(receipt, dictionary, router_address, vault_address))
                 .collect::<Result<Vec<IntOnEvmIntTxInfos>>>()?
                 .into_iter()
                 .flatten()
@@ -138,7 +138,10 @@ mod tests {
             result.token_sender,
             convert_hex_to_eth_address("0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap(),
         );
-        assert_eq!(result.evm_token_address, "0xdd9f905a34a6c507c7d68384985905cf5eb032e9");
+        assert_eq!(
+            result.evm_token_address,
+            convert_hex_to_eth_address("0xdd9f905a34a6c507c7d68384985905cf5eb032e9").unwrap()
+        );
         assert_eq!(result.eth_token_address, "0xa83446f219baec0b6fd6b3031c5a49a54543045b");
         assert_eq!(result.destination_address, "0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC");
         assert_eq!(

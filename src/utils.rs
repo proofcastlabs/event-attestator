@@ -130,6 +130,10 @@ pub fn capitalize_first_letter(s: &str) -> String {
     }
 }
 
+pub fn convert_bytes_to_string(bytes: &[Byte]) -> String {
+    format!("0x{}", hex::encode(&bytes))
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::json;

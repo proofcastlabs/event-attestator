@@ -42,11 +42,11 @@ use crate::{
         eth::{
             eth_chain_id::EthChainId,
             eth_contracts::{
-                erc777::get_signed_erc777_change_pnetwork_tx,
                 erc777_proxy::{
                     get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
                     get_signed_erc777_proxy_change_pnetwork_tx,
                 },
+                erc777_token::get_signed_erc777_change_pnetwork_tx,
             },
             eth_crypto::eth_transaction::get_signed_minting_tx,
             eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt},
