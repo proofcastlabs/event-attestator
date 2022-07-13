@@ -15,7 +15,6 @@
 #![allow(clippy::too_many_arguments)]
 
 pub use errors::AppError;
-pub use traits::DatabaseInterface;
 pub use types::{Bytes, Result};
 pub use utils::get_core_version;
 
