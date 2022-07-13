@@ -20,6 +20,7 @@ pub use utils::get_core_version;
 
 #[macro_use]
 pub(crate) mod macros;
+pub(crate) mod address;
 pub mod btc_on_eos;
 pub mod btc_on_eth;
 pub mod btc_on_int;
