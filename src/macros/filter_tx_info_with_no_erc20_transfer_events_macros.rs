@@ -9,3 +9,38 @@ macro_rules! impl_to_erc20_token_event {
         }
     };
 }
+
+macro_rules! make_erc20_token_event_filterer {
+    ($state:ty, $db_utils:ident, $tx_infos_field:ident) => {
+        use paste;
+
+        paste! {
+            use $crate::{
+                chains::eth::{
+                    eth_state::EthState,
+                    eth_contracts::erc20_token::Erc20TokenTransferEvents,
+                    eth_database_utils::EthDbUtilsExt,
+                },
+                traits::DatabaseInterface,
+                types::Result,
+            };
+
+            pub fn filter_tx_info_with_no_erc20_transfer_event<D: DatabaseInterface>(
+                state: $state
+            ) -> Result<$state> {
+                info!("✔ Filtering out tx infos which don't have corresponding ERC20 transfer events ...");
+                state
+                    .$db_utils
+                    .get_eth_canon_block_from_db()
+                    .map(|submission_material| {
+                        Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
+                            &submission_material,
+                            &state.[< $tx_infos_field:snake >],
+                        )
+                    })
+                    .map([< $tx_infos_field:camel >]::new)
+                    .and_then(|filtered| state.[< replace_ $tx_infos_field:snake >](filtered))
+            }
+        }
+    };
+}
