@@ -1,7 +1,7 @@
 use crate::{
     btc_on_int::int::btc_tx_info::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos},
     chains::eth::{
-        eth_contracts::erc20_token::{Erc20TokenTransferEvent, Erc20TokenTransferEvents, ToErc20TokenTransferEvent},
+        eth_contracts::erc20_token::Erc20TokenTransferEvents,
         eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
     },
@@ -9,11 +9,7 @@ use crate::{
     types::Result,
 };
 
-impl ToErc20TokenTransferEvent for BtcOnIntBtcTxInfo {
-    fn to_erc20_token_transfer_event(&self) -> Erc20TokenTransferEvent {
-        Erc20TokenTransferEvent::new(self.amount_in_wei, self.to, self.from, self.token_address)
-    }
-}
+impl_to_erc20_token_event!(BtcOnIntBtcTxInfo, amount_in_wei, to, from, token_address);
 
 pub fn filter_tx_info_with_no_erc20_transfer_event<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Filtering out `BtcOnIntBtcTxInfos` which don't have corresponding ERC20 transfer events ...");

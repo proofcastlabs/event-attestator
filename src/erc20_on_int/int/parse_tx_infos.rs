@@ -68,6 +68,9 @@ impl Erc20OnIntEthTxInfos {
                         router_address: *router_address,
                         evm_token_address: log.address,
                         eth_vault_address: *vault_address,
+                        // NOTE: This field is required in order to find the corresponding ERC20
+                        // transfer event. Because this is a peg out, the tokens are burnt.
+                        token_recipient: EthAddress::zero(),
                         token_sender: event_params.redeemer,
                         origin_chain_id: origin_chain_id.clone(),
                         user_data: event_params.user_data.clone(),

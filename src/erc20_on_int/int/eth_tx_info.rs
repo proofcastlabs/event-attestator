@@ -16,6 +16,7 @@ use crate::{
 pub struct Erc20OnIntEthTxInfo {
     pub native_token_amount: U256,
     pub token_sender: EthAddress,
+    pub token_recipient: EthAddress,
     pub originating_tx_hash: EthHash,
     pub evm_token_address: EthAddress,
     pub eth_token_address: EthAddress,
