@@ -4,6 +4,7 @@ use crate::{
         int::{
             btc_tx_info::BtcOnIntBtcTxInfos,
             filter_receipts_in_state::filter_receipts_for_btc_on_int_redeem_events_in_state,
+            filter_tx_info_with_no_erc20_transfer_event::debug_filter_tx_info_with_no_erc20_transfer_event,
             get_int_output::{get_btc_signed_tx_info_from_btc_txs, IntOutput},
             sign_txs::maybe_sign_btc_txs_and_add_to_state,
         },
@@ -11,7 +12,6 @@ use crate::{
     chains::{
         btc::increment_btc_account_nonce::maybe_increment_btc_account_nonce_and_return_eth_state,
         eth::{
-            eth_contracts::erc20_token::Erc20TokenTransferEvents,
             eth_database_transactions::{
                 end_eth_db_transaction_and_return_state,
                 start_eth_db_transaction_and_return_state,
@@ -46,20 +46,7 @@ fn reprocess_int_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<
                 })
                 .and_then(|params| state.add_btc_on_int_btc_tx_infos(params))
         })
-        .and_then(|state| {
-            // NOTE: A reprocess is like a submission with 0 confs, ∴ we need to check the
-            // _current_ submission material, not the canon block material!
-            state
-                .get_eth_submission_material()
-                .map(|submission_material| {
-                    Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
-                        submission_material,
-                        &state.btc_on_int_btc_tx_infos,
-                    )
-                })
-                .map(BtcOnIntBtcTxInfos::new)
-                .and_then(|filtered_tx_infos| state.replace_btc_on_int_btc_tx_infos(filtered_tx_infos))
-        })
+        .and_then(debug_filter_tx_info_with_no_erc20_transfer_event)
         .and_then(maybe_sign_btc_txs_and_add_to_state)
         .and_then(maybe_increment_btc_account_nonce_and_return_eth_state)
         .and_then(end_eth_db_transaction_and_return_state)

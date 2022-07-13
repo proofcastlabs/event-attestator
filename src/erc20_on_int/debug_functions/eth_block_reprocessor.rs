@@ -1,6 +1,5 @@
 use crate::{
     chains::eth::{
-        eth_contracts::erc20_token::Erc20TokenTransferEvents,
         eth_database_transactions::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
@@ -24,6 +23,7 @@ use crate::{
             },
             divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address as maybe_divert_int_txs_to_safe_address_if_destination_is_token_address,
             filter_submission_material::filter_submission_material_for_peg_in_events_in_state,
+            filter_tx_info_with_no_erc20_transfer_event::debug_filter_tx_info_with_no_erc20_transfer_event,
             filter_zero_value_tx_infos::filter_out_zero_value_evm_tx_infos_from_state,
             get_eth_output_json::{get_evm_signed_tx_info_from_evm_txs, EthOutput},
             int_tx_info::Erc20OnIntIntTxInfos,
@@ -63,20 +63,7 @@ fn reprocess_eth_block<D: DatabaseInterface>(
                 .and_then(|params| state.add_erc20_on_int_int_tx_infos(params))
         })
         .and_then(filter_out_zero_value_evm_tx_infos_from_state)
-        .and_then(|state| {
-            // NOTE: A reprocess is like a submission with 0 confs, ∴ we need to check the
-            // _current_ submission material, not the canon block material!
-            state
-                .get_eth_submission_material()
-                .map(|submission_material| {
-                    Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
-                        submission_material,
-                        &state.erc20_on_int_int_tx_infos,
-                    )
-                })
-                .map(Erc20OnIntIntTxInfos::new)
-                .and_then(|filtered_tx_infos| state.replace_erc20_on_int_int_tx_infos(filtered_tx_infos))
-        })
+        .and_then(debug_filter_tx_info_with_no_erc20_transfer_event)
         .and_then(account_for_fees_in_evm_tx_infos_in_state)
         .and_then(|state| {
             if accrue_fees {

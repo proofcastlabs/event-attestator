@@ -41,6 +41,25 @@ macro_rules! make_erc20_token_event_filterer {
                     .map([< $tx_infos_field:camel >]::new)
                     .and_then(|filtered| state.[< replace_ $tx_infos_field:snake >](filtered))
             }
+
+            pub fn debug_filter_tx_info_with_no_erc20_transfer_event<D: DatabaseInterface>(
+                state: $state
+            ) -> Result<$state> {
+                info!("✔ Debug filtering out tx infos which don't have corresponding ERC20 transfer events ...");
+                // NOTE: These filterers are to be used in debug block reprocessors  A reprocess
+                // is like a submission with 0 confs, ∴ we need to check the _current_ submission material,
+                // not the canon block material!
+                state
+                    .get_eth_submission_material()
+                    .map(|submission_material| {
+                        Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
+                            submission_material,
+                            &state.[< $tx_infos_field:snake >],
+                        )
+                    })
+                    .map([< $tx_infos_field:camel >]::new)
+                    .and_then(|filtered| state.[< replace_ $tx_infos_field:snake >](filtered))
+            }
         }
     };
 }
