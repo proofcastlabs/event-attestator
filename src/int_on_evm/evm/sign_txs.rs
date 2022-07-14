@@ -11,7 +11,7 @@ use crate::{
         },
         eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
-        eth_utils::convert_hex_to_eth_address,
+        eth_utils::convert_eth_address_to_string,
     },
     int_on_evm::evm::int_tx_info::{IntOnEvmIntTxInfo, IntOnEvmIntTxInfos},
     metadata::metadata_traits::ToMetadata,
@@ -38,7 +38,7 @@ impl IntOnEvmIntTxInfo {
         );
         debug!(
             "✔ Signing tx for token address : {}",
-            self.eth_token_address.to_string()
+            convert_eth_address_to_string(&self.eth_token_address),
         );
         debug!(
             "✔ Signing tx for token amount: {}",
@@ -48,7 +48,7 @@ impl IntOnEvmIntTxInfo {
         EvmTransaction::new_unsigned(
             encode_erc20_vault_peg_out_fxn_data_with_user_data(
                 self.router_address,
-                convert_hex_to_eth_address(&self.eth_token_address)?,
+                self.eth_token_address,
                 self.native_token_amount,
                 self.to_metadata_bytes()?,
             )?,
