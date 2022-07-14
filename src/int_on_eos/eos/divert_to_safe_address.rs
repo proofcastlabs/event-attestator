@@ -1,11 +1,10 @@
 use crate::{
     chains::eos::eos_state::EosState,
     int_on_eos::eos::int_tx_info::{IntOnEosIntTxInfo, IntOnEosIntTxInfos},
-    safe_addresses::SAFE_ETH_ADDRESS_STR,
-    traits::DatabaseInterface,
-    types::Result,
+    traits::TxInfo,
 };
 
-create_safe_address_diversion_fxns!(
-    "IntOnEosIntTxInfo" => EosState => "int" => SAFE_ETH_ADDRESS_STR.to_string() => String => "token", "vault"
-);
+impl_safe_address_diversion_fxn_v2!("zero", EosState<D>, int_on_eos_int_tx_info);
+impl_safe_address_diversion_fxn_v2!("vault", EosState<D>, int_on_eos_int_tx_info);
+impl_safe_address_diversion_fxn_v2!("token", EosState<D>, int_on_eos_int_tx_info);
+impl_safe_address_diversion_fxn_v2!("router", EosState<D>, int_on_eos_int_tx_info);

@@ -35,8 +35,10 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
         eos::{
             divert_to_safe_address::{
-                maybe_divert_txs_to_safe_address_if_destination_is_token_address,
-                maybe_divert_txs_to_safe_address_if_destination_is_vault_address,
+                divert_tx_infos_to_safe_address_if_destination_is_router_address,
+                divert_tx_infos_to_safe_address_if_destination_is_token_address,
+                divert_tx_infos_to_safe_address_if_destination_is_vault_address,
+                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
             },
             filter_tx_infos::maybe_filter_out_already_processed_tx_infos_from_state,
             get_eos_output::get_eos_output,
@@ -80,8 +82,10 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
         .and_then(maybe_parse_int_tx_infos_and_put_in_state)
         .and_then(maybe_filter_out_already_processed_tx_infos_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
-        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
-        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_vault_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_zero_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_vault_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_token_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_router_address)
         .and_then(maybe_sign_int_txs_and_add_to_state)
         .and_then(maybe_increment_int_nonce_in_db_and_return_eos_state)
         .and_then(save_latest_block_id_to_db)
