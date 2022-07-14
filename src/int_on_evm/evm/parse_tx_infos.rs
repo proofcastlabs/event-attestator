@@ -32,6 +32,7 @@ impl IntOnEvmIntTxInfos {
                         evm_token_address: log.address,
                         router_address: *router_address,
                         token_sender: event_params.redeemer,
+                        host_token_amount: event_params.value,
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
                         origin_chain_id: event_params.get_origin_chain_id()?,
