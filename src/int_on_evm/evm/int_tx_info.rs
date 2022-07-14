@@ -13,16 +13,17 @@ use crate::{
 #[derive(Debug, Default, Clone, PartialEq, Eq, Constructor)]
 pub struct IntOnEvmIntTxInfo {
     pub user_data: Bytes,
+    pub host_token_amount: U256,
     pub token_sender: EthAddress,
+    pub eth_token_address: String,
     pub native_token_amount: U256,
+    pub vault_address: EthAddress,
     pub router_address: EthAddress,
     pub destination_address: String,
     pub originating_tx_hash: EthHash,
     pub evm_token_address: EthAddress,
-    pub eth_token_address: String,
     pub origin_chain_id: MetadataChainId,
     pub destination_chain_id: MetadataChainId,
-    pub vault_address: EthAddress,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]
@@ -38,6 +39,7 @@ IntOnEvmIntTxInfo: {{
     native_token_amount: {},
     router_address: {},
     destination_address: {},
+    host_token_amount: {},
     originating_tx_hash: {},
     evm_token_address: {},
     eth_token_address: {},
@@ -51,6 +53,7 @@ IntOnEvmIntTxInfo: {{
             self.native_token_amount,
             convert_eth_address_to_string(&self.router_address),
             self.destination_address,
+            self.host_token_amount,
             convert_eth_hash_to_string(&self.originating_tx_hash),
             convert_eth_address_to_string(&self.evm_token_address),
             self.eth_token_address,
