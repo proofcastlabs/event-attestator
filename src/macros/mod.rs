@@ -1,5 +1,5 @@
 #[macro_use]
-pub(crate) mod safe_address_diversion;
+pub(crate) mod safe_address_diversion_macros;
 #[macro_use]
 pub(crate) mod database_macros;
 #[macro_use]
