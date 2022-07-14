@@ -8,16 +8,16 @@ use rust_algorand::AlgorandAddress;
 use crate::chains::eth::eth_utils::convert_hex_to_eth_address;
 
 pub const SAFE_EOS_ADDRESS_STR: &str = "safu.ptokens";
-pub const SAFE_EVM_ADDRESS_HEX: &str = SAFE_ETH_ADDRESS_HEX;
+pub const SAFE_EVM_ADDRESS_STR: &str = SAFE_ETH_ADDRESS_STR;
 pub const SAFE_BTC_ADDRESS_STR: &str = "136CTERaocm8dLbEtzCaFtJJX9jfFhnChK";
-pub const SAFE_ETH_ADDRESS_HEX: &str = "0x71A440EE9Fa7F99FB9a697e96eC7839B8A1643B8";
+pub const SAFE_ETH_ADDRESS_STR: &str = "0x71A440EE9Fa7F99FB9a697e96eC7839B8A1643B8";
 pub const SAFE_ALGO_ADDRESS_STR: &str = "2U3SCPKBJXMBXG2RJFXJ6DS5ZKJBW4DUH55OE6VPRJVWZWGZVOABRZCCTI";
 
 lazy_static! {
     pub static ref SAFE_EOS_ADDRESS: EosAddress = EosAddress::from_str(SAFE_EOS_ADDRESS_STR).unwrap();
     pub static ref SAFE_BTC_ADDRESS: BtcAddress = BtcAddress::from_str(SAFE_BTC_ADDRESS_STR).unwrap();
-    pub static ref SAFE_ETH_ADDRESS: EthAddress = convert_hex_to_eth_address(SAFE_ETH_ADDRESS_HEX).unwrap();
-    pub static ref SAFE_EVM_ADDRESS: EthAddress = convert_hex_to_eth_address(SAFE_EVM_ADDRESS_HEX).unwrap();
+    pub static ref SAFE_ETH_ADDRESS: EthAddress = convert_hex_to_eth_address(SAFE_ETH_ADDRESS_STR).unwrap();
+    pub static ref SAFE_EVM_ADDRESS: EthAddress = convert_hex_to_eth_address(SAFE_EVM_ADDRESS_STR).unwrap();
     pub static ref SAFE_ALGO_ADDRESS: AlgorandAddress = AlgorandAddress::from_str(SAFE_ALGO_ADDRESS_STR).unwrap();
 }
 

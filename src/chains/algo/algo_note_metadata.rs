@@ -5,7 +5,7 @@ use serde_with::skip_serializing_none;
 
 use crate::{
     metadata::metadata_chain_id::MetadataChainId,
-    safe_addresses::SAFE_ETH_ADDRESS_HEX,
+    safe_addresses::SAFE_ETH_ADDRESS_STR,
     types::{Byte, Bytes, Result},
     utils::strip_hex_prefix,
 };
@@ -26,7 +26,7 @@ impl Default for AlgoNoteMetadata {
             user_data: vec![],
             version: AlgoNoteMetadataVersion::default(),
             destination_chain_id: MetadataChainId::InterimChain,
-            destination_address: SAFE_ETH_ADDRESS_HEX.to_string(),
+            destination_address: SAFE_ETH_ADDRESS_STR.to_string(),
         }
     }
 }

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     address::Address,
-    safe_addresses::SAFE_ETH_ADDRESS_HEX,
+    safe_addresses::SAFE_ETH_ADDRESS_STR,
     types::{Byte, Bytes, Result},
 };
 
@@ -44,5 +44,5 @@ impl_tx_info_trait!(
     int_token_address,
     destination_address,
     Address::Eth,
-    SAFE_ETH_ADDRESS_HEX
+    SAFE_ETH_ADDRESS_STR
 );
