@@ -1,7 +1,11 @@
 use crate::{
     btc_on_int::{
         btc::{
-            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
+            divert_to_safe_address::{
+                divert_tx_infos_to_safe_address_if_destination_is_router_address,
+                divert_tx_infos_to_safe_address_if_destination_is_token_address,
+                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
+            },
             filter_deposit_info_hash_map::filter_out_wrong_version_deposit_address_infos,
             filter_int_tx_infos::maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state,
             get_btc_output::get_eth_signed_tx_info_from_eth_txs,
@@ -54,7 +58,9 @@ fn reprocess_btc_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonc
         .and_then(filter_out_value_too_low_utxos_from_state)
         .and_then(maybe_save_utxos_to_db)
         .and_then(maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state)
-        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_router_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_token_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_zero_address)
         .and_then(|state| {
             state
                 .btc_on_int_int_tx_infos

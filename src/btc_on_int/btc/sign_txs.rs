@@ -12,7 +12,6 @@ use crate::{
             },
             eth_database_utils::EthDbUtilsExt,
             eth_types::EthSigningParams,
-            eth_utils::convert_hex_to_eth_address,
         },
     },
     metadata::metadata_traits::ToMetadata,
@@ -37,14 +36,23 @@ impl BtcOnIntIntTxInfo {
         debug!("✔ Signing with gas limit: {}", gas_limit);
         debug!("✔ Signing with gas price: {}", gas_price);
         debug!("✔ Signing with metadata : 0x{}", hex::encode(&metadata_bytes));
-        let to = convert_hex_to_eth_address(&self.int_token_address)?;
         encode_erc777_mint_fxn_maybe_with_data(
             &self.router_address,
             &self.host_token_amount,
             Some(metadata_bytes),
             operator_data,
         )
-        .map(|data| EthTransaction::new_unsigned(data, nonce, ZERO_ETH_VALUE, to, chain_id, gas_limit, gas_price))
+        .map(|data| {
+            EthTransaction::new_unsigned(
+                data,
+                nonce,
+                ZERO_ETH_VALUE,
+                self.int_token_address,
+                chain_id,
+                gas_limit,
+                gas_price,
+            )
+        })
         .and_then(|unsigned_tx| unsigned_tx.sign(pk))
     }
 }
