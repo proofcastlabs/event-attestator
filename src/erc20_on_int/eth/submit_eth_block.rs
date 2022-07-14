@@ -23,7 +23,12 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         eth::{
             account_for_fees::maybe_account_for_fees,
-            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
+            divert_to_safe_address::{
+                divert_tx_infos_to_safe_address_if_destination_is_router_address,
+                divert_tx_infos_to_safe_address_if_destination_is_token_address,
+                divert_tx_infos_to_safe_address_if_destination_is_vault_address,
+                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
+            },
             filter_submission_material::filter_submission_material_for_peg_in_events_in_state,
             filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
             filter_zero_value_tx_infos::filter_out_zero_value_evm_tx_infos_from_state,
@@ -62,7 +67,10 @@ pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: D, block_json_string: 
         .and_then(filter_tx_info_with_no_erc20_transfer_event)
         .and_then(filter_out_zero_value_evm_tx_infos_from_state)
         .and_then(maybe_account_for_fees)
-        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_zero_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_vault_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_token_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_router_address)
         .and_then(maybe_sign_int_txs_and_add_to_eth_state)
         .and_then(maybe_increment_int_account_nonce_and_return_eth_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)

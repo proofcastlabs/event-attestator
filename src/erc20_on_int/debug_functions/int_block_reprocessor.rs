@@ -21,7 +21,12 @@ use crate::{
                 account_for_fees_in_eth_tx_infos_in_state,
                 update_accrued_fees_in_dictionary_and_return_state as update_accrued_fees_in_dictionary_and_return_evm_state,
             },
-            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address as maybe_divert_eth_txs_to_safe_address_if_destination_is_token_address,
+            divert_to_safe_address::{
+                divert_tx_infos_to_safe_address_if_destination_is_router_address,
+                divert_tx_infos_to_safe_address_if_destination_is_token_address,
+                divert_tx_infos_to_safe_address_if_destination_is_vault_address,
+                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
+            },
             eth_tx_info::Erc20OnIntEthTxInfos,
             filter_submission_material::filter_submission_material_for_redeem_events_in_state,
             filter_tx_info_with_no_erc20_transfer_event::debug_filter_tx_info_with_no_erc20_transfer_event,
@@ -74,7 +79,10 @@ fn reprocess_int_block<D: DatabaseInterface>(
                 Ok(state)
             }
         })
-        .and_then(maybe_divert_eth_txs_to_safe_address_if_destination_is_token_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_zero_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_vault_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_token_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_router_address)
         .and_then(|state| {
             if state.erc20_on_int_eth_tx_infos.is_empty() {
                 info!("✔ No tx infos in state ∴ no ETH transactions to sign!");

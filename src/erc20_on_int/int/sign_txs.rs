@@ -17,6 +17,7 @@ use crate::{
     },
     erc20_on_int::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos},
     metadata::metadata_traits::ToMetadata,
+    safe_addresses::safely_convert_str_to_eth_address,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -30,20 +31,20 @@ impl Erc20OnIntEthTxInfo {
         evm_private_key: &EthPrivateKey,
         vault_address: &EthAddress,
     ) -> Result<EvmTransaction> {
+        let destination_eth_address = safely_convert_str_to_eth_address(&self.destination_address);
+
         let gas_limit = if self.user_data.is_empty() {
             chain_id.get_erc20_vault_pegout_without_user_data_gas_limit()
         } else {
             chain_id.get_erc20_vault_pegout_with_user_data_gas_limit()
         };
+
         info!("✔ Signing ETH transaction for tx info: {:?}", self);
         debug!("✔ Signing with nonce:     {}", nonce);
         debug!("✔ Signing with chain id:  {}", chain_id);
         debug!("✔ Signing with gas limit: {}", gas_limit);
         debug!("✔ Signing with gas price: {}", gas_price);
-        debug!(
-            "✔ Signing tx to token recipient: {}",
-            self.destination_address.to_string()
-        );
+        debug!("✔ Signing tx to token recipient: {}", destination_eth_address);
         debug!(
             "✔ Signing tx for token address : {}",
             self.eth_token_address.to_string()
@@ -55,13 +56,13 @@ impl Erc20OnIntEthTxInfo {
         debug!("✔ Signing tx for vault address: {}", vault_address.to_string());
         let encoded_tx_data = if self.user_data.is_empty() {
             encode_erc20_vault_peg_out_fxn_data_without_user_data(
-                self.destination_address,
+                destination_eth_address,
                 self.eth_token_address,
                 self.native_token_amount,
             )?
         } else {
             encode_erc20_vault_peg_out_fxn_data_with_user_data(
-                self.destination_address,
+                destination_eth_address,
                 self.eth_token_address,
                 self.native_token_amount,
                 self.to_metadata_bytes()?,

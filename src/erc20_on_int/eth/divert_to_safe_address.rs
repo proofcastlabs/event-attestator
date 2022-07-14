@@ -1,11 +1,10 @@
 use crate::{
     chains::eth::eth_state::EthState,
     erc20_on_int::eth::int_tx_info::{Erc20OnIntIntTxInfo, Erc20OnIntIntTxInfos},
-    safe_addresses::SAFE_ETH_ADDRESS_STR,
-    traits::DatabaseInterface,
-    types::Result,
+    traits::TxInfo,
 };
 
-create_safe_address_diversion_fxns!(
-    "Erc20OnIntIntTxInfo" => EthState => "evm" => SAFE_ETH_ADDRESS_STR.to_string() => String => "token"
-);
+impl_safe_address_diversion_fxn_v2!("zero", EthState<D>, erc20_on_int_int_tx_info);
+impl_safe_address_diversion_fxn_v2!("vault", EthState<D>, erc20_on_int_int_tx_info);
+impl_safe_address_diversion_fxn_v2!("token", EthState<D>, erc20_on_int_int_tx_info);
+impl_safe_address_diversion_fxn_v2!("router", EthState<D>, erc20_on_int_int_tx_info);
