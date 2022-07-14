@@ -1,16 +1,3 @@
-/*
-#[macro_export]
-macro_rules! impl_safe_address_diversion_fxns_v2 {
-    // TODO So this will impl the macro for a given thing that's gettable via the tx info trait
-    // we should be generic of state so we'll need a marker trait for state
-    // so we take state and return state.
-    // we get the infos from state.
-    // we update them if so
-    // we replace them in state.
-    //
-}
-*/
-
 #[macro_export]
 macro_rules! create_safe_address_diversion_fxns {
     ($struct_name:expr => $state:ty => $symbol:expr => $safe_address:expr => $address_type:ty => $($contract_name:expr),*) => {
