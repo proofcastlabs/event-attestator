@@ -2,7 +2,7 @@ use crate::erc20_on_int::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTx
 
 impl_to_erc20_token_event!(
     Erc20OnIntEthTxInfo,
-    native_token_amount,
+    host_token_amount,
     token_recipient,
     token_sender,
     evm_token_address

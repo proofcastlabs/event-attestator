@@ -72,6 +72,7 @@ impl Erc20OnIntEthTxInfos {
                         // transfer event. Because this is a peg out, the tokens are burnt.
                         token_recipient: EthAddress::zero(),
                         token_sender: event_params.redeemer,
+                        host_token_amount: event_params.value,
                         origin_chain_id: origin_chain_id.clone(),
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,

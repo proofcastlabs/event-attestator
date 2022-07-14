@@ -14,17 +14,18 @@ use crate::{
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Constructor)]
 pub struct Erc20OnIntEthTxInfo {
-    pub native_token_amount: U256,
+    pub user_data: Bytes,
+    pub host_token_amount: U256,
     pub token_sender: EthAddress,
+    pub native_token_amount: U256,
+    pub router_address: EthAddress,
+    pub origin_chain_id: EthChainId,
     pub token_recipient: EthAddress,
     pub originating_tx_hash: EthHash,
     pub evm_token_address: EthAddress,
+    pub eth_vault_address: EthAddress,
     pub eth_token_address: EthAddress,
     pub destination_address: EthAddress,
-    pub user_data: Bytes,
-    pub origin_chain_id: EthChainId,
-    pub eth_vault_address: EthAddress,
-    pub router_address: EthAddress,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]
