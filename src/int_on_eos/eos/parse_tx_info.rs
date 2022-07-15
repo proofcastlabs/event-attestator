@@ -93,15 +93,15 @@ impl IntOnEosIntTxInfo {
                     eos_tx_amount,
                     originating_tx_id: proof.tx_id,
                     router_address: *router_address,
+                    int_vault_address: *int_vault_address,
                     origin_address: proof.get_action_sender()?,
                     eos_token_address: dictionary_entry.eos_address,
+                    int_token_address: dictionary_entry.eth_address,
                     user_data: Self::get_user_data_from_proof(proof)?,
                     global_sequence: proof.action_receipt.global_sequence,
                     origin_chain_id: origin_chain_id.to_metadata_chain_id(),
-                    int_vault_address: format!("0x{}", hex::encode(int_vault_address)),
                     destination_address: Self::get_destination_address_from_proof(proof),
                     destination_chain_id: Self::get_destination_chain_id_from_proof(proof)?,
-                    int_token_address: format!("0x{}", hex::encode(&dictionary_entry.eth_address)),
                 })
             })
     }

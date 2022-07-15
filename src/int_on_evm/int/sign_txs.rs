@@ -15,6 +15,7 @@ use crate::{
     dictionaries::eth_evm::EthEvmTokenDictionary,
     int_on_evm::int::evm_tx_info::{IntOnEvmEvmTxInfo, IntOnEvmEvmTxInfos},
     metadata::metadata_traits::ToMetadata,
+    safe_addresses::safely_convert_str_to_eth_address,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -34,6 +35,7 @@ impl IntOnEvmEvmTxInfo {
         dictionary: &EthEvmTokenDictionary,
     ) -> Result<EvmTransaction> {
         let operator_data = None;
+        let destination_eth_address = safely_convert_str_to_eth_address(&self.destination_address);
         let metadata_bytes = if self.user_data.is_empty() {
             vec![]
         } else {
@@ -50,7 +52,7 @@ impl IntOnEvmEvmTxInfo {
             debug!("✔ No user data ∴ not wrapping in metadata!");
         };
         encode_erc777_mint_fxn_maybe_with_data(
-            &self.destination_address,
+            &destination_eth_address,
             &self.get_host_token_amount(dictionary)?,
             if metadata_bytes.is_empty() {
                 None

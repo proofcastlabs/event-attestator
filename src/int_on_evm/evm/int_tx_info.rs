@@ -4,8 +4,10 @@ use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
-    chains::eth::eth_utils::{convert_eth_address_to_string, convert_eth_hash_to_string},
+    address::Address,
+    chains::eth::eth_utils::convert_eth_hash_to_string,
     metadata::metadata_chain_id::MetadataChainId,
+    safe_addresses::SAFE_ETH_ADDRESS_STR,
     types::Bytes,
     utils::convert_bytes_to_string,
 };
@@ -15,13 +17,13 @@ pub struct IntOnEvmIntTxInfo {
     pub user_data: Bytes,
     pub host_token_amount: U256,
     pub token_sender: EthAddress,
-    pub eth_token_address: String,
     pub native_token_amount: U256,
     pub vault_address: EthAddress,
     pub router_address: EthAddress,
     pub destination_address: String,
     pub originating_tx_hash: EthHash,
     pub evm_token_address: EthAddress,
+    pub eth_token_address: EthAddress,
     pub origin_chain_id: MetadataChainId,
     pub destination_chain_id: MetadataChainId,
 }
@@ -56,7 +58,7 @@ IntOnEvmIntTxInfo: {{
             self.host_token_amount,
             convert_eth_hash_to_string(&self.originating_tx_hash),
             convert_eth_address_to_string(&self.evm_token_address),
-            self.eth_token_address,
+            convert_eth_address_to_string(&self.eth_token_address),
             self.origin_chain_id,
             self.destination_chain_id,
             convert_eth_address_to_string(&self.vault_address),
@@ -64,3 +66,13 @@ IntOnEvmIntTxInfo: {{
         )
     }
 }
+
+impl_tx_info_trait!(
+    IntOnEvmIntTxInfo,
+    vault_address,
+    router_address,
+    eth_token_address,
+    destination_address,
+    Address::Eth,
+    SAFE_ETH_ADDRESS_STR
+);

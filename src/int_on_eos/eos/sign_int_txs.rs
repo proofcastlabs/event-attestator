@@ -10,7 +10,6 @@ use crate::{
                 eth_transaction::{EthTransaction, EthTransactions},
             },
             eth_database_utils::EthDbUtilsExt,
-            eth_utils::convert_hex_to_eth_address,
         },
     },
     int_on_eos::eos::int_tx_info::{IntOnEosIntTxInfo, IntOnEosIntTxInfos},
@@ -50,7 +49,7 @@ impl IntOnEosIntTxInfo {
         );
         encode_erc20_vault_peg_out_fxn_data_with_user_data(
             self.router_address,
-            convert_hex_to_eth_address(&self.int_token_address)?,
+            self.int_token_address,
             self.amount,
             self.to_metadata_bytes()?,
         )
@@ -59,7 +58,7 @@ impl IntOnEosIntTxInfo {
                 fxn_data,
                 nonce,
                 ZERO_ETH_VALUE,
-                convert_hex_to_eth_address(&self.int_vault_address)?,
+                self.int_vault_address,
                 chain_id,
                 chain_id.get_erc20_vault_pegout_with_user_data_gas_limit(),
                 gas_price,

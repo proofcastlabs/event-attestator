@@ -38,10 +38,7 @@ impl IntOnEvmIntTxInfos {
                         origin_chain_id: event_params.get_origin_chain_id()?,
                         destination_chain_id: event_params.get_destination_chain_id()?,
                         destination_address: event_params.underlying_asset_recipient.clone(),
-                        eth_token_address: format!(
-                            "0x{}",
-                            hex::encode(dictionary.get_eth_address_from_evm_address(&log.address)?)
-                        ),
+                        eth_token_address: dictionary.get_eth_address_from_evm_address(&log.address)?,
                         native_token_amount: dictionary
                             .convert_evm_amount_to_eth_amount(&log.address, event_params.value)?,
                     };
@@ -143,7 +140,10 @@ mod tests {
             result.evm_token_address,
             convert_hex_to_eth_address("0xdd9f905a34a6c507c7d68384985905cf5eb032e9").unwrap()
         );
-        assert_eq!(result.eth_token_address, "0xa83446f219baec0b6fd6b3031c5a49a54543045b");
+        assert_eq!(
+            result.eth_token_address,
+            convert_hex_to_eth_address("0xa83446f219baec0b6fd6b3031c5a49a54543045b").unwrap()
+        );
         assert_eq!(result.destination_address, "0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC");
         assert_eq!(
             result.originating_tx_hash,

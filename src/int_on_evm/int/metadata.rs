@@ -7,6 +7,7 @@ use crate::{
         metadata_traits::ToMetadata,
         Metadata,
     },
+    safe_addresses::safely_convert_str_to_eth_address,
     types::{Bytes, Result},
 };
 
@@ -25,7 +26,10 @@ impl ToMetadata for IntOnEvmEvmTxInfo {
         Ok(Metadata::new_v2(
             &user_data,
             &MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id)?,
-            &MetadataAddress::new_from_eth_address(&self.destination_address, &self.destination_chain_id)?,
+            &MetadataAddress::new_from_eth_address(
+                &safely_convert_str_to_eth_address(&self.destination_address),
+                &self.destination_chain_id,
+            )?,
             None,
             None,
         ))

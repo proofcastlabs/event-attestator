@@ -9,6 +9,7 @@ use crate::{
         eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
         eth_traits::EthTxInfoCompatible,
+        eth_utils::convert_eth_address_to_string,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_int::eth::int_tx_info::{
@@ -98,10 +99,10 @@ impl EvmTxInfo {
                 format!("perc20-on-int-int-{}", nonce)
             },
             int_tx_hash: format!("0x{}", tx.get_tx_hash()),
-            host_token_address: tx_info.evm_token_address.clone(),
             int_tx_recipient: tx_info.destination_address.clone(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             int_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
+            host_token_address: convert_eth_address_to_string(&tx_info.evm_token_address),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             native_token_address: format!("0x{}", hex::encode(&tx_info.eth_token_address)),
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),

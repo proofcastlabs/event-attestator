@@ -485,7 +485,7 @@ mod tests {
             eth_token_address: EthAddress::from_slice(
                 &hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap(),
             ),
-            // NOTE It's the `SAFE_EVM_ADDRESS_HEX` ∵ @bertani accidentally included the `"`s in the pegin!
+            // NOTE It's the `SAFE_EVM_ADDRESS_STR` ∵ @bertani accidentally included the `"`s in the pegin!
             destination_address: EthAddress::from_slice(
                 &hex::decode("71a440ee9fa7f99fb9a697e96ec7839b8a1643b8").unwrap(),
             ),

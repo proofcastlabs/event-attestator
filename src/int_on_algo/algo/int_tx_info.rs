@@ -2,7 +2,12 @@ use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, U256};
 use rust_algorand::AlgorandAddress;
 
-use crate::{metadata::metadata_chain_id::MetadataChainId, types::Bytes};
+use crate::{
+    address::Address,
+    metadata::metadata_chain_id::MetadataChainId,
+    safe_addresses::SAFE_ETH_ADDRESS_STR,
+    types::Bytes,
+};
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Constructor)]
 pub struct IntOnAlgoIntTxInfo {
@@ -21,3 +26,13 @@ pub struct IntOnAlgoIntTxInfo {
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Constructor, Deref, IntoIterator)]
 pub struct IntOnAlgoIntTxInfos(pub Vec<IntOnAlgoIntTxInfo>);
+
+impl_tx_info_trait!(
+    IntOnAlgoIntTxInfo,
+    int_vault_address,
+    router_address,
+    int_token_address,
+    destination_address,
+    Address::Eth,
+    SAFE_ETH_ADDRESS_STR
+);

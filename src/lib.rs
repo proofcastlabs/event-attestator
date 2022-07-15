@@ -14,13 +14,16 @@
 #![allow(clippy::match_bool)]
 #![allow(clippy::too_many_arguments)]
 
-pub use errors::AppError;
-pub use traits::DatabaseInterface;
-pub use types::{Bytes, Result};
-pub use utils::get_core_version;
+pub use crate::{
+    errors::AppError,
+    traits::DatabaseInterface,
+    types::{Bytes, Result},
+    utils::get_core_version,
+};
 
 #[macro_use]
 pub(crate) mod macros;
+pub(crate) mod address;
 pub mod btc_on_eos;
 pub mod btc_on_eth;
 pub mod btc_on_int;

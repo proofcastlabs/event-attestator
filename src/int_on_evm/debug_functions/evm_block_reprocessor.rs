@@ -21,6 +21,12 @@ use crate::{
                 account_for_fees_in_eth_tx_infos_in_state,
                 update_accrued_fees_in_dictionary_and_return_state as update_accrued_fees_in_dictionary_and_return_evm_state,
             },
+            divert_to_safe_address::{
+                divert_tx_infos_to_safe_address_if_destination_is_router_address,
+                divert_tx_infos_to_safe_address_if_destination_is_token_address,
+                divert_tx_infos_to_safe_address_if_destination_is_vault_address,
+                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
+            },
             filter_submission_material::filter_submission_material_for_redeem_events_in_state,
             filter_tx_info_with_no_erc20_transfer_event::debug_filter_tx_info_with_no_erc20_transfer_event,
             filter_zero_value_tx_infos::filter_out_zero_value_eth_tx_infos_from_state,
@@ -64,6 +70,10 @@ fn reprocess_evm_block<D: DatabaseInterface>(
         .and_then(filter_out_zero_value_eth_tx_infos_from_state)
         .and_then(account_for_fees_in_eth_tx_infos_in_state)
         .and_then(debug_filter_tx_info_with_no_erc20_transfer_event)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_zero_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_vault_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_token_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_router_address)
         .and_then(|state| {
             if accrue_fees {
                 update_accrued_fees_in_dictionary_and_return_evm_state(state)

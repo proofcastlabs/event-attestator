@@ -134,6 +134,10 @@ quick_error! {
             from()
             display("✘ Base64 decoder error: {}", err)
         }
+        RustCHexError(err: rustc_hex::FromHexError) {
+            from()
+            display("✘ Rustc hex error: {}", err)
+        }
         NoneError(err: &'static str) {
             display("✘ None error {}", err)
         }

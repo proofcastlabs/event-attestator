@@ -9,7 +9,6 @@ use crate::{
         },
         eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
-        eth_utils::convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_int::eth::int_tx_info::{Erc20OnIntIntTxInfo, Erc20OnIntIntTxInfos},
@@ -36,14 +35,23 @@ impl Erc20OnIntIntTxInfo {
         debug!("✔ Signing with gas limit: {}", gas_limit);
         debug!("✔ Signing with gas price: {}", gas_price);
         debug!("✔ Signing with metadata : 0x{}", hex::encode(&metadata_bytes));
-        let to = convert_hex_to_eth_address(&self.evm_token_address)?;
         encode_erc777_mint_fxn_maybe_with_data(
             &self.router_address,
             &self.get_host_token_amount(dictionary)?,
             Some(metadata_bytes),
             operator_data,
         )
-        .map(|data| EvmTransaction::new_unsigned(data, nonce, ZERO_ETH_VALUE, to, chain_id, gas_limit, gas_price))
+        .map(|data| {
+            EvmTransaction::new_unsigned(
+                data,
+                nonce,
+                ZERO_ETH_VALUE,
+                self.evm_token_address,
+                chain_id,
+                gas_limit,
+                gas_price,
+            )
+        })
         .and_then(|unsigned_tx| unsigned_tx.sign(evm_private_key))
     }
 }
