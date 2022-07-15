@@ -1,5 +1,5 @@
 use crate::{
-    chains::eth::{eth_contracts::erc777::ERC777_REDEEM_EVENT_TOPIC_V2, eth_state::EthState},
+    chains::eth::{eth_contracts::erc777_token::ERC777_REDEEM_EVENT_TOPIC_V2, eth_state::EthState},
     traits::DatabaseInterface,
     types::Result,
 };

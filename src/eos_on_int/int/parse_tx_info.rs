@@ -3,7 +3,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash};
 use crate::{
     chains::eth::{
         eth_chain_id::EthChainId,
-        eth_contracts::erc777::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
+        eth_contracts::erc777_token::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
         eth_database_utils::EthDbUtilsExt,
         eth_log::EthLog,
         eth_state::EthState,

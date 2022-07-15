@@ -239,7 +239,6 @@ pub fn initialize_eth_core_with_router_contract_and_return_state<'a, D: Database
         chain_id,
         gas_price,
         canon_to_tip_length,
-        None,
         state,
         true,
         None,
