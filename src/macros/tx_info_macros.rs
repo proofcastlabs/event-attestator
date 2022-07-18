@@ -9,19 +9,17 @@ macro_rules! impl_tx_info_trait {
         $destination_address_type:expr,
         $safe_address:expr
     ) => {
-        use $crate::chains::eth::eth_utils::convert_eth_address_to_string;
-
         impl $crate::traits::TxInfo for $struct {
             fn get_vault_address(&self) -> Address {
-                Address::Eth(convert_eth_address_to_string(&self.$vault_address_field))
+                Address::Eth(Self::convert_eth_address_to_string(&self.$vault_address_field))
             }
 
             fn get_router_address(&self) -> Address {
-                Address::Eth(convert_eth_address_to_string(&self.$router_address_field))
+                Address::Eth(Self::convert_eth_address_to_string(&self.$router_address_field))
             }
 
             fn get_token_address(&self) -> Address {
-                Address::Eth(convert_eth_address_to_string(&self.$token_address_field))
+                Address::Eth(Self::convert_eth_address_to_string(&self.$token_address_field))
             }
 
             fn get_destination_address(&self) -> Address {
