@@ -1,4 +1,4 @@
-#![cfg(test)]
+#![cfg(all(test, feature = "non-validating"))] // NOTE: The test uses TELOS blocks, whose headers fail validation.
 use std::fs::read_to_string;
 
 use ethereum_types::Address as EthAddress;
