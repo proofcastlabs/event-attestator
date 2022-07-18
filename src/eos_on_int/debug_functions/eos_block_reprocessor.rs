@@ -35,7 +35,11 @@ use crate::{
     eos_on_int::{
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
         eos::{
-            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
+            divert_to_safe_address::{
+                divert_tx_infos_to_safe_address_if_destination_is_router_address,
+                divert_tx_infos_to_safe_address_if_destination_is_token_address,
+                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
+            },
             filter_txs::maybe_filter_out_value_too_low_txs_from_state,
             get_eos_output::{get_int_signed_tx_info_from_txs, EosOutput},
             increment_int_nonce::maybe_increment_int_nonce_in_db_and_return_eos_state,
@@ -67,7 +71,9 @@ fn reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonc
         .and_then(maybe_parse_eos_on_int_int_tx_infos_and_put_in_state)
         .and_then(maybe_filter_out_value_too_low_txs_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
-        .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_router_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_token_address)
+        .and_then(divert_tx_infos_to_safe_address_if_destination_is_zero_address)
         .and_then(|state| {
             let tx_infos = state.eos_on_int_int_tx_infos.clone();
             if tx_infos.is_empty() {

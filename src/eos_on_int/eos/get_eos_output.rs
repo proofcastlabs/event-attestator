@@ -9,6 +9,7 @@ use crate::{
             eth_crypto::eth_transaction::EthTransaction,
             eth_database_utils::EthDbUtilsExt,
             eth_traits::EthTxInfoCompatible,
+            eth_utils::convert_eth_address_to_string,
         },
     },
     eos_on_int::eos::int_tx_info::{EosOnIntIntTxInfo, EosOnIntIntTxInfos},
@@ -58,13 +59,13 @@ impl TxInfo {
             _id: format!("peos-on-int-int-{}", nonce),
             int_tx_amount: tx_info.amount.to_string(),
             int_tx_hash: format!("0x{}", tx.get_tx_hash()),
-            host_token_address: tx_info.int_token_address.clone(),
             int_tx_recipient: tx_info.destination_address.clone(),
             originating_address: tx_info.origin_address.to_string(),
             originating_tx_hash: tx_info.originating_tx_id.to_string(),
             native_token_address: tx_info.eos_token_address.to_string(),
             destination_chain_id: tx_info.destination_chain_id.to_hex()?,
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
+            host_token_address: convert_eth_address_to_string(&tx_info.int_token_address),
             int_signed_tx: tx
                 .eth_tx_hex()
                 .ok_or(NoneError("Error unwrapping INT tx for output!"))?,

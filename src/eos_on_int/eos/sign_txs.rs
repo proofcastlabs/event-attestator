@@ -10,7 +10,6 @@ use crate::{
                 eth_transaction::{EthTransaction, EthTransactions},
             },
             eth_database_utils::EthDbUtilsExt,
-            eth_utils::convert_hex_to_eth_address,
         },
     },
     eos_on_int::eos::int_tx_info::EosOnIntIntTxInfos,
@@ -34,21 +33,20 @@ impl EosOnIntIntTxInfos {
                 .map(|(i, tx_info)| {
                     info!("✔ Signing INT tx for info: {:?}", tx_info);
                     let operator_data = None;
-                    // NOTE: We're going to the interim chain so we always encode to metadata!
-                    let user_data = Some(tx_info.to_metadata_bytes()?);
                     EthTransaction::new_unsigned(
                         encode_erc777_mint_fxn_maybe_with_data(
                             // NOTE: This is destined for the interim chain, so we send the tokens
                             // to the router address. The true destination address is encoded in
                             // the metadata above.
-                            &convert_hex_to_eth_address(&tx_info.router_address)?,
+                            &tx_info.router_address,
                             &tx_info.amount,
-                            user_data,
+                            // NOTE: We're going to the interim chain so we always encode to metadata!
+                            Some(tx_info.to_metadata_bytes()?),
                             operator_data,
                         )?,
                         eth_account_nonce + i as u64,
                         ZERO_ETH_VALUE,
-                        convert_hex_to_eth_address(&tx_info.int_token_address)?,
+                        tx_info.int_token_address,
                         chain_id,
                         chain_id.get_erc777_mint_with_data_gas_limit(),
                         gas_price,

@@ -189,20 +189,18 @@ impl EosOnIntIntTxInfo {
                 let eth_amount = dictionary_entry.convert_eos_asset_to_eth_amount(&eos_amount)?;
                 let tx_info = Self {
                     amount: eth_amount,
-                    originating_tx_id: proof.tx_id,
-                    global_sequence: proof.get_global_sequence(),
-                    origin_address: Self::get_token_sender_from_proof(proof)?,
-                    destination_address: Self::get_destination_address_from_proof(proof),
-                    int_token_address: format!(
-                        "0x{}",
-                        hex::encode(&token_dictionary.get_eth_address_via_eos_address(&token_address)?)
-                    ),
-                    eos_token_address: dictionary_entry.eos_address,
                     eos_tx_amount: eos_amount,
-                    router_address: format!("0x{}", hex::encode(router_address)),
+                    originating_tx_id: proof.tx_id,
+                    router_address: *router_address,
+                    vault_address: EthAddress::zero(), // NOTE: There is no EVM vault on this bridge.
+                    global_sequence: proof.get_global_sequence(),
+                    eos_token_address: dictionary_entry.eos_address,
                     user_data: Self::get_user_data_from_proof(proof)?,
                     origin_chain_id: eos_chain_id.to_metadata_chain_id(),
+                    origin_address: Self::get_token_sender_from_proof(proof)?,
+                    destination_address: Self::get_destination_address_from_proof(proof),
                     destination_chain_id: Self::get_destination_chain_id_from_proof(proof)?,
+                    int_token_address: token_dictionary.get_eth_address_via_eos_address(&token_address)?,
                 };
                 debug!("Tx info parsed: {:?}", tx_info);
                 Ok(tx_info)
