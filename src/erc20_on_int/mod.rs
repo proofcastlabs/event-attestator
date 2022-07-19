@@ -43,6 +43,7 @@ pub use crate::{
         debug_functions::{
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
+            debug_get_add_weth_unwrapper_address_tx,
             debug_get_all_db_keys,
             debug_get_key_from_db,
             debug_get_remove_supported_token_tx,
