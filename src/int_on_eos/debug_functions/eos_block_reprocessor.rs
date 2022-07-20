@@ -30,6 +30,7 @@ use crate::{
             eth_debug_functions::check_custom_nonce,
         },
     },
+    debug_mode::check_debug_mode,
     dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
     int_on_eos::{
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,

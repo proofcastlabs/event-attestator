@@ -22,7 +22,7 @@ use crate::{
             validate_block_in_state::validate_block_in_state,
         },
     },
-    check_debug_mode::check_debug_mode,
+    debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
