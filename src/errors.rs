@@ -142,6 +142,10 @@ quick_error! {
             from()
             display("✘ Web3 signature recovery error: {}", err)
         }
+        EIP712Error(err: eip_712::Error) {
+            from()
+            display("✘ EIP712 error: {}", err)
+        }
         NoneError(err: &'static str) {
             display("✘ None error {}", err)
         }
