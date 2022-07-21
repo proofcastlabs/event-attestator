@@ -62,6 +62,13 @@ impl EthSigningCapabilities for EthPrivateKey {
         Ok(data_arr)
     }
 
+    fn sign_hash_and_set_eth_recovery_param(&self, hash: H256) -> Result<EthSignature> {
+        self.sign_hash(hash).map(|mut signature| {
+            set_eth_signature_recovery_param(&mut signature);
+            signature
+        })
+    }
+
     fn sign_message_bytes(&self, message: &[Byte]) -> Result<EthSignature> {
         self.sign_hash(keccak_hash_bytes(message))
     }

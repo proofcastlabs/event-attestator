@@ -20,4 +20,5 @@ pub trait EthSigningCapabilities {
     fn sign_hash(&self, hash: EthHash) -> Result<EthSignature>;
     fn sign_message_bytes(&self, message: &[Byte]) -> Result<EthSignature>;
     fn sign_eth_prefixed_msg_bytes(&self, message: &[Byte]) -> Result<EthSignature>;
+    fn sign_hash_and_set_eth_recovery_param(&self, hash: EthHash) -> Result<EthSignature>;
 }
