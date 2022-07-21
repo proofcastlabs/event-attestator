@@ -11,7 +11,6 @@ pub(crate) mod eth_chain_id;
 pub(crate) mod eth_constants;
 pub(crate) mod eth_contracts;
 pub(crate) mod eth_crypto;
-pub(crate) mod eth_crypto_utils;
 pub(crate) mod eth_database_transactions;
 pub(crate) mod eth_database_utils;
 pub(crate) mod eth_debug_functions;

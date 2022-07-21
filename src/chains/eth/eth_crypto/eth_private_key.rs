@@ -11,7 +11,6 @@ use crate::{
     chains::eth::{
         eth_constants::{ETH_MESSAGE_PREFIX, PREFIXED_MESSAGE_HASH_LEN},
         eth_crypto::{eth_public_key::EthPublicKey, eth_signature::EthSignature},
-        eth_crypto_utils::set_eth_signature_recovery_param,
         eth_traits::EthSigningCapabilities,
     },
     constants::MAX_DATA_SENSITIVITY_LEVEL,
@@ -62,10 +61,7 @@ impl EthSigningCapabilities for EthPrivateKey {
     }
 
     fn sign_hash_and_set_eth_recovery_param(&self, hash: H256) -> Result<EthSignature> {
-        self.sign_hash(hash).map(|mut signature| {
-            set_eth_signature_recovery_param(&mut signature);
-            signature
-        })
+        self.sign_hash(hash).map(EthSignature::set_recovery_param)
     }
 
     fn sign_message_bytes(&self, message: &[Byte]) -> Result<EthSignature> {
@@ -80,9 +76,8 @@ impl EthSigningCapabilities for EthPrivateKey {
             message_hash.as_bytes(),
         ]
         .concat();
-        let mut signature = self.sign_message_bytes(&message_bytes)?;
-        set_eth_signature_recovery_param(&mut signature);
-        Ok(signature)
+        self.sign_message_bytes(&message_bytes)
+            .map(EthSignature::set_recovery_param)
     }
 }
 
