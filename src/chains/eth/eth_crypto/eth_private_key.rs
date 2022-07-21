@@ -58,7 +58,7 @@ impl EthSigningCapabilities for EthPrivateKey {
         let mut data_arr = [0; 65];
         data_arr[0..64].copy_from_slice(&data[0..64]);
         data_arr[64] = rec_id.to_i32() as u8;
-        Ok(data_arr)
+        Ok(EthSignature::new(data_arr))
     }
 
     fn sign_hash_and_set_eth_recovery_param(&self, hash: H256) -> Result<EthSignature> {

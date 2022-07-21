@@ -188,7 +188,7 @@ impl RelayTransaction {
         ]);
 
         let signed_message = eth_private_key.sign_eth_prefixed_msg_bytes(&transaction_bytes)?;
-        self.signature = EthSignature::from_slice(&signed_message);
+        self.signature = EthSignature::from_slice(&signed_message.to_vec());
 
         Ok(self)
     }

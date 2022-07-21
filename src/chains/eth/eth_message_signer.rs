@@ -246,7 +246,7 @@ mod tests {
             "message": "Arbitrary message",
             "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
         });
-        let result = encode_eth_signed_message_as_json("Arbitrary message", &[0u8; 65]);
+        let result = encode_eth_signed_message_as_json("Arbitrary message", &EthSignature::new([0u8; 65]));
         assert_eq!(result, expected_result, "✘ Message signature json is invalid!")
     }
 
