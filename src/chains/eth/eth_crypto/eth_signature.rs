@@ -9,4 +9,11 @@ impl EthSignature {
         mutable_self[64] = if mutable_self[64] == 1 { 0x1c } else { 0x1b };
         mutable_self
     }
+
+    pub fn get_ecdsa_recovery_param(&self) -> u8 {
+        match self[64] {
+            0x1c => 1,
+            _ => 0,
+        }
+    }
 }
