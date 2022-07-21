@@ -2,9 +2,9 @@ use serde_json::{json, Value as JsonValue};
 
 use crate::{
     chains::eth::{
+        eth_crypto::eth_signature::EthSignature,
         eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
         eth_traits::EthSigningCapabilities,
-        eth_types::EthSignature,
     },
     traits::DatabaseInterface,
     types::Result,

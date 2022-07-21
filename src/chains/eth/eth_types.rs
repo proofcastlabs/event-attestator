@@ -8,7 +8,6 @@ use crate::chains::eth::{
 
 pub type EthHash = H256;
 pub type EthAddress = Address;
-pub type EthSignature = [u8; 65];
 pub type RelayTransactions = Vec<RelayTransaction>;
 
 #[derive(Debug)]

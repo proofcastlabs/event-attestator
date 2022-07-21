@@ -10,10 +10,9 @@ use secp256k1::{
 use crate::{
     chains::eth::{
         eth_constants::{ETH_MESSAGE_PREFIX, PREFIXED_MESSAGE_HASH_LEN},
-        eth_crypto::eth_public_key::EthPublicKey,
+        eth_crypto::{eth_public_key::EthPublicKey, eth_signature::EthSignature},
         eth_crypto_utils::set_eth_signature_recovery_param,
         eth_traits::EthSigningCapabilities,
-        eth_types::EthSignature,
     },
     constants::MAX_DATA_SENSITIVITY_LEVEL,
     crypto_utils::{generate_random_private_key, keccak_hash_bytes},
