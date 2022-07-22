@@ -6,7 +6,7 @@ use crate::{errors::AppError, types::Result, utils::strip_hex_prefix};
 
 const ETH_SIGNATURE_NUM_BYTES: usize = 65;
 
-#[derive(Clone, Debug, Deref, DerefMut, Constructor)]
+#[derive(Clone, Debug, Eq, PartialEq, Deref, DerefMut, Constructor)]
 pub struct EthSignature(pub [u8; 65]);
 
 impl EthSignature {
