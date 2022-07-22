@@ -54,6 +54,12 @@ impl FromStr for EthSignature {
     }
 }
 
+impl std::fmt::Display for EthSignature {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", hex::encode(&self.0))
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
