@@ -67,6 +67,8 @@ impl DebugSignatory {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use serde_json;
     use web3::signing::recover as recover_signer_address;
 
@@ -121,7 +123,7 @@ mod tests {
         let debug_command_hash = get_sample_debug_command_hash();
         let pk = get_sample_private_key();
         let result = debug_signatory.sign_with_eth_prefix(&pk, &debug_command_hash).unwrap();
-        let expected_result = EthSignature::from_hex("0xda1a3b8f1bb8c0964b15785b5408ca3dfe35ed512d860d03bc543656e0c8f2a72c550b23a15b4c6624b3625217380ce1849e85710278ddd4aaee5d8b4f26d1521c").unwrap();
+        let expected_result = EthSignature::from_str("0xda1a3b8f1bb8c0964b15785b5408ca3dfe35ed512d860d03bc543656e0c8f2a72c550b23a15b4c6624b3625217380ce1849e85710278ddd4aaee5d8b4f26d1521c").unwrap();
         assert_eq!(result, expected_result);
     }
 
