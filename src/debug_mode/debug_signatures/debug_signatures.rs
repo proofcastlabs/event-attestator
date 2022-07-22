@@ -52,17 +52,12 @@ impl DebugSignatory {
         signature.recover_signer_address(&self.hash_with_eth_prefix(debug_command_hash)?)
     }
 
-    pub fn validate(
-        &self,
-        signature: &EthSignature,
-        debug_command_hash: &H256,
-        eth_address: &EthAddress,
-    ) -> Result<()> {
+    pub fn validate(&self, signature: &EthSignature, debug_command_hash: &H256) -> Result<()> {
         let recovered_addresses = vec![
             self.recover_signer_address(signature, debug_command_hash)?,
             self.recover_signer_address_using_eth_prefix(signature, debug_command_hash)?,
         ];
-        if recovered_addresses.contains(eth_address) {
+        if recovered_addresses.contains(&self.eth_address) {
             Ok(())
         } else {
             Err("Could not validate debug signature!".into())
@@ -79,6 +74,7 @@ mod tests {
     use crate::{
         chains::eth::eth_utils::convert_hex_to_eth_address,
         debug_mode::debug_signatures::test_utils::{
+            get_random_debug_signatory,
             get_sample_debug_command_hash,
             get_sample_debug_signatory,
             get_sample_private_key,
@@ -115,8 +111,7 @@ mod tests {
         let signatory = get_sample_debug_signatory();
         let debug_command_hash = get_sample_debug_command_hash();
         let signature = signatory.sign(&pk, &debug_command_hash).unwrap();
-        let eth_address = pk.to_public_key().to_address();
-        let result = signatory.validate(&signature, &debug_command_hash, &eth_address);
+        let result = signatory.validate(&signature, &debug_command_hash);
         assert!(result.is_ok());
     }
 
@@ -149,21 +144,20 @@ mod tests {
         let debug_command_hash = get_sample_debug_command_hash();
         let pk = get_sample_private_key();
         let eth_prefixed_signature = debug_signatory.sign_with_eth_prefix(&pk, &debug_command_hash).unwrap();
-        let eth_address = pk.to_public_key().to_address();
-        let result = debug_signatory.validate(&eth_prefixed_signature, &debug_command_hash, &eth_address);
+        let result = debug_signatory.validate(&eth_prefixed_signature, &debug_command_hash);
         assert!(result.is_ok());
     }
 
     #[test]
     fn should_fail_to_validate_signature_using_wrong_eth_address() {
-        let wrong_eth_address = convert_hex_to_eth_address("0xea674fdde714fd979de3edf0f56aa9716b898ec8").unwrap();
         let pk = get_sample_private_key();
-        assert_ne!(pk.to_public_key().to_address(), wrong_eth_address);
         let debug_signatory = get_sample_debug_signatory();
         let debug_command_hash = get_sample_debug_command_hash();
         let signature = debug_signatory.sign(&pk, &debug_command_hash).unwrap();
+        let wrong_debug_signatory = get_random_debug_signatory();
+        assert_ne!(wrong_debug_signatory.eth_address, pk.to_public_key().to_address());
         let expected_error = "Could not validate debug signature!".to_string();
-        match debug_signatory.validate(&signature, &debug_command_hash, &wrong_eth_address) {
+        match wrong_debug_signatory.validate(&signature, &debug_command_hash) {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
