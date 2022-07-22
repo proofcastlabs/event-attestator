@@ -2,8 +2,9 @@
 use std::fmt::Display;
 
 use derive_more::{Constructor, Deref};
-use ethereum_types::Address as EthAddress;
+use ethereum_types::{Address as EthAddress, H256};
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use web3::signing::recover;
 
 use crate::{
@@ -15,187 +16,30 @@ use crate::{
     utils::strip_hex_prefix,
 };
 
-lazy_static! {
-    static ref DEBUG_SIGNATORIES_DB_KEY: [u8; 32] = crate::utils::get_prefixed_db_key("debug_signatories_db_key");
-}
-
-#[derive(Debug, Default, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
-pub struct DebugSignatories(Vec<DebugSignatory>);
-
-impl DebugSignatories {
-    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
-        serde_json::from_slice::<Vec<Bytes>>(bytes)?
-            .iter()
-            .map(|bytes| DebugSignatory::from_bytes(bytes))
-            .collect::<Result<Vec<DebugSignatory>>>()
-            .map(Self)
-    }
-
-    pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(
-            &self
-                .iter()
-                .map(|debug_signatory| debug_signatory.to_bytes())
-                .collect::<Result<Vec<Bytes>>>()?,
-        )?)
-    }
-
-    pub fn to_jsons(&self) -> Vec<DebugSignatoryJson> {
-        self.iter().map(|signatory| signatory.to_json()).collect()
-    }
-
-    pub fn get_from_db<D: DatabaseInterface>(db: &D) -> Result<Self> {
-        match db.get(DEBUG_SIGNATORIES_DB_KEY.to_vec(), MIN_DATA_SENSITIVITY_LEVEL) {
-            Ok(bytes) => Self::from_bytes(&bytes),
-            Err(_) => Ok(Self::new(vec![])),
-        }
-    }
-
-    pub fn put_in_db<D: DatabaseInterface>(&self, db: &D) -> Result<()> {
-        db.put(
-            DEBUG_SIGNATORIES_DB_KEY.to_vec(),
-            self.to_bytes()?,
-            MIN_DATA_SENSITIVITY_LEVEL,
-        )
-    }
-
-    fn add(&self, signatory: &DebugSignatory) -> Self {
-        let mut mutable_self = self.0.clone();
-        if !mutable_self.contains(signatory) {
-            mutable_self.push(*signatory);
-        }
-        Self(mutable_self)
-    }
-
-    fn remove(&self, eth_address: &EthAddress) -> Self {
-        Self(
-            self.iter()
-                .filter(|signatory| signatory.eth_address != *eth_address)
-                .cloned()
-                .collect(),
-        )
-    }
-
-    fn get(&self, eth_address: &EthAddress) -> Result<DebugSignatory> {
-        let signatories = self
-            .iter()
-            .filter(|signatory| signatory.eth_address == *eth_address)
-            .cloned()
-            .collect::<Vec<DebugSignatory>>();
-        if signatories.is_empty() {
-            Err(format!("Could not find debug signatory with address: '{}'!", eth_address).into())
-        } else if signatories.len() > 1 {
-            Err(format!("> 1 entry found with address: '{}'!", eth_address).into())
-        } else {
-            Ok(signatories[0])
-        }
-    }
-
-    fn replace(&self, signatory: &DebugSignatory) -> Result<Self> {
-        let eth_address = signatory.eth_address;
-        if self.get(&eth_address).is_ok() {
-            Ok(self.remove(&eth_address).add(signatory))
-        } else {
-            Err(format!("Cannot replace entry, none exists with eth address: '{}'!", eth_address).into())
-        }
-    }
-
-    fn increment_nonce_in_signatory_in_db<D: DatabaseInterface>(db: &D, eth_address: &EthAddress) -> Result<()> {
-        let signatories = Self::get_from_db(db)?;
-        signatories
-            .get(eth_address)
-            .map(|signatory| signatory.increment_nonce())
-            .and_then(|signatory| signatories.replace(&signatory))
-            .and_then(|signatories| signatories.put_in_db(db))
-    }
-
-    pub fn add_and_update_in_db<D: DatabaseInterface>(db: &D, signatory: &DebugSignatory) -> Result<()> {
-        Self::get_from_db(db)
-            .map(|signatories| signatories.add(signatory))
-            .and_then(|signatories| signatories.put_in_db(db))
-    }
-
-    pub fn remove_and_update_in_db<D: DatabaseInterface>(db: &D, eth_address: &EthAddress) -> Result<()> {
-        Self::get_from_db(db)
-            .map(|signatories| signatories.remove(eth_address))
-            .and_then(|signatories| signatories.put_in_db(db))
-    }
-
-    fn maybe_validate_signature_for_eth_address_and_increment_nonce_in_db<D: DatabaseInterface>(
-        db: &D,
-        eth_address: &EthAddress,
-        signature_str: &str,
-    ) -> Result<()> {
-        let signatories = Self::get_from_db(db)?;
-        signatories
-            .get(eth_address)
-            .and_then(|signatory| signatory.validate_signature(signature_str))
-            .and_then(|_| Self::increment_nonce_in_signatory_in_db(db, eth_address))
-    }
-
-    pub fn maybe_validate_signature_and_increment_nonce_in_db<D: DatabaseInterface>(
-        db: &D,
-        signature_str: &str,
-    ) -> Result<()> {
-        Self::get_from_db(db)
-            .map(|signatories| {
-                signatories
-                    .iter()
-                    .map(|signatory| signatory.eth_address)
-                    .collect::<Vec<_>>()
-            })
-            .and_then(|eth_addresses| {
-                if eth_addresses
-                    .iter()
-                    .filter_map(|eth_address| {
-                        match Self::maybe_validate_signature_for_eth_address_and_increment_nonce_in_db(
-                            db,
-                            eth_address,
-                            signature_str,
-                        ) {
-                            Ok(_) => Some(true),
-                            Err(_) => None,
-                        }
-                    })
-                    .next()
-                    .is_none()
-                {
-                    Err("Signature not valid for any debug signatories!".into())
-                } else {
-                    Ok(())
-                }
-            })
-    }
-}
-
-impl Display for DebugSignatories {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", serde_json::to_string(&self.to_jsons()).unwrap())
-    }
-}
-
-#[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct DebugSignatory {
-    pub eth_address: EthAddress,
     pub nonce: u64,
+    pub name: String,
+    pub eth_address: EthAddress,
 }
 
 impl Display for DebugSignatory {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_json())
+        write!(f, "{}", self.clone().to_json())
     }
 }
 
 impl DebugSignatory {
-    pub fn new(eth_address: &EthAddress) -> Self {
+    pub fn new(name: &str, address: &EthAddress) -> Self {
         Self {
             nonce: 0,
-            eth_address: *eth_address,
+            name: name.to_string(),
+            eth_address: *address,
         }
     }
 
     pub fn increment_nonce(&self) -> Self {
-        let mut mutable_self = *self;
+        let mut mutable_self = self.clone();
         mutable_self.nonce = self.nonce + 1;
         mutable_self
     }
@@ -203,13 +47,15 @@ impl DebugSignatory {
     fn from_json(json: &DebugSignatoryJson) -> Result<Self> {
         Ok(Self {
             nonce: json.nonce,
+            name: json.name.clone(),
             eth_address: convert_hex_to_eth_address(&json.eth_address)?,
         })
     }
 
-    fn to_json(self) -> DebugSignatoryJson {
+    pub fn to_json(self) -> DebugSignatoryJson {
         DebugSignatoryJson {
             nonce: self.nonce,
+            name: self.name.clone(),
             eth_address: format!("0x{}", hex::encode(self.eth_address)),
         }
     }
@@ -222,22 +68,59 @@ impl DebugSignatory {
         DebugSignatoryJson::from_bytes(bytes).and_then(|json| Self::from_json(&json))
     }
 
+    // FIXME We could feasibly try and recover the address as if it was signed with an ETH prefix
+    // too?
     fn get_eth_prefixed_message_bytes(message: &str) -> Bytes {
-        keccak_hash_bytes(format!("\x19Ethereum Signed Message:\n{}{}", message.len(), message).as_bytes())[..].to_vec()
+        let eth_prefixed_message_bytes =
+            keccak_hash_bytes(format!("\x19Ethereum Signed Message:\n{}{}", message.len(), message).as_bytes())[..]
+                .to_vec();
+        debug!(
+            "ETH prefixed message bytes: {}",
+            hex::encode(&eth_prefixed_message_bytes)
+        );
+        eth_prefixed_message_bytes
     }
 
-    fn get_signature_message_bytes(&self) -> Bytes {
-        Self::get_eth_prefixed_message_bytes(&format!("{}", self.nonce))
+    pub fn get_nonce_as_bytes(&self) -> Bytes {
+        let nonce_as_bytes = self.nonce.to_be_bytes().to_vec();
+        debug!(
+            "Nonce: {}, nonce as BE bytes: {}",
+            self.nonce,
+            hex::encode(&nonce_as_bytes)
+        );
+        nonce_as_bytes
     }
 
-    fn recover_eth_addresses_from_signature(&self, signature_bytes: &[Byte]) -> Result<Vec<EthAddress>> {
+    fn get_bytes_to_hash(&self, bytes: &[Byte]) -> Bytes {
+        let bytes_to_hash = vec![self.get_nonce_as_bytes(), bytes.to_vec()].concat();
+        debug!("Bytes to hash: {}", hex::encode(&bytes_to_hash));
+        bytes_to_hash
+    }
+
+    fn get_message_to_sign_as_hex(&self, bytes: &[Byte]) -> String {
+        let message_to_sign_as_hex = hex::encode(self.get_bytes_to_hash(bytes));
+        debug!("Message to sign: {}", message_to_sign_as_hex);
+        message_to_sign_as_hex
+    }
+
+    fn get_signature_message_bytes(&self, bytes: &[Byte]) -> Bytes {
+        Self::get_eth_prefixed_message_bytes(&self.get_message_to_sign_as_hex(bytes))
+    }
+
+    fn recover_eth_addresses_from_signature(
+        &self,
+        bytes: &[Byte],
+        signature_bytes: &[Byte],
+    ) -> Result<Vec<EthAddress>> {
         // NOTE: We just calculate the address using BOTH recovery IDs, and thus we are chain
         // agnostic w/r/t to the `v` param of an EVM compliant signature.
-        let signature_message_bytes = self.get_signature_message_bytes();
-        Ok(vec![
+        let signature_message_bytes = self.get_signature_message_bytes(bytes);
+        let recovered_eth_addresses = vec![
             recover(&signature_message_bytes, &signature_bytes[..64], 0)?,
             recover(&signature_message_bytes, &signature_bytes[..64], 1)?,
-        ])
+        ];
+        debug!("Recovered ETH addresses: {:?}", recovered_eth_addresses);
+        Ok(recovered_eth_addresses)
     }
 
     fn get_signature_bytes(signature: &str) -> Result<Bytes> {
@@ -250,9 +133,9 @@ impl DebugSignatory {
         }
     }
 
-    pub fn validate_signature(&self, signature: &str) -> Result<()> {
+    pub fn validate_signature(&self, bytes: &[Byte], signature: &str) -> Result<()> {
         Self::get_signature_bytes(signature)
-            .and_then(|signature_bytes| self.recover_eth_addresses_from_signature(&signature_bytes))
+            .and_then(|signature_bytes| self.recover_eth_addresses_from_signature(bytes, &signature_bytes))
             .map(|eth_addresses| eth_addresses.contains(&self.eth_address))
             .and_then(|is_valid| {
                 if is_valid {
@@ -270,8 +153,9 @@ impl DebugSignatory {
 
 #[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct DebugSignatoryJson {
-    pub eth_address: String,
     pub nonce: u64,
+    pub name: String,
+    pub eth_address: String,
 }
 
 impl DebugSignatoryJson {
@@ -290,6 +174,7 @@ impl Display for DebugSignatoryJson {
     }
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use rand::prelude::*;
@@ -368,11 +253,16 @@ mod tests {
 
     #[test]
     fn valid_signature_should_pass_validation() {
+        use simple_logger;
+        simple_logger::init().unwrap();
+
         let address = convert_hex_to_eth_address("0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap();
         let signatory = DebugSignatory::new(&address);
-        // NOTE: As gotten from etherscan signing fxnality, signing over the message "0".
-        let signature = "0xbc2554423224c202eebc312c8ae0c42c503ca9c0a70f3dee8b24ce79c3c3ee682d2d93c0e61e84b3a8ca93dfe8c4f89d62f0fc275c72976e420de21097ef3ebb1c";
-        let result = signatory.validate_signature(signature);
+        let bytes: Bytes = vec![0xc0, 0xff, 0xee];
+        // NOTE: As gotten from etherscan signing fxnality, signing over the message
+        // "b894b0bd19b5dece4bcad4b2201aee87d14f496657f859f380542535b237cfdd".
+        let signature = "0x4d79044db655355772829c178cd472a2b2e9543042ab967ffd6a6e3d87d4f27a3b7a60c80a3d39ea24e9992cadaed5d9c4d61291cb566e81f1c55a531f525fd71b";
+        let result = signatory.validate_signature(&bytes, signature);
         assert!(result.is_ok());
     }
 
@@ -387,7 +277,8 @@ mod tests {
             "Signature is not valid for eth address '{}' over nonce {}!",
             address, nonce,
         );
-        match signatory.validate_signature(signature) {
+        let bytes: Bytes = vec![];
+        match signatory.validate_signature(&bytes, signature) {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
@@ -486,6 +377,7 @@ mod tests {
     fn should_maybe_validate_signature_and_increment_nonce_in_db() {
         let db = get_test_database();
         let eth_address = convert_hex_to_eth_address("0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap();
+        let bytes: Bytes = vec![];
         let signatory_1 = DebugSignatory::new(&eth_address);
         let signatory_2 = get_random_debug_signatory();
         let signatory_3 = get_random_debug_signatory();
@@ -497,7 +389,7 @@ mod tests {
         // NOTE: As gotten from etherscan signing fxnality, signing over the message "0".
         let signature = "0xbc2554423224c202eebc312c8ae0c42c503ca9c0a70f3dee8b24ce79c3c3ee682d2d93c0e61e84b3a8ca93dfe8c4f89d62f0fc275c72976e420de21097ef3ebb1c";
         // NOTE: Signature should be valid, and the nonce for this signatory should be incremented.
-        DebugSignatories::maybe_validate_signature_and_increment_nonce_in_db(&db, &signature).unwrap();
+        DebugSignatories::maybe_validate_signature_and_increment_nonce_in_db(&db, &bytes, &signature).unwrap();
 
         // NOTE: So lets assert that this signatory's nonce did indeed get updated.
         let updated_signatories = DebugSignatories::get_from_db(&db).unwrap();
@@ -522,6 +414,7 @@ mod tests {
         let signatory_2 = get_random_debug_signatory();
         let signatory_3 = get_random_debug_signatory();
         let signatories = DebugSignatories(vec![signatory_1.clone(), signatory_2.clone(), signatory_3.clone()]);
+        let bytes: Bytes = vec![];
         signatories.put_in_db(&db).unwrap();
 
         // NOTE: This signature is by a signatory that is NOT one of the above 3.
@@ -529,7 +422,7 @@ mod tests {
 
         // NOTE: And so it should error...
         let expected_error = "Signature not valid for any debug signatories!";
-        match DebugSignatories::maybe_validate_signature_and_increment_nonce_in_db(&db, &signature) {
+        match DebugSignatories::maybe_validate_signature_and_increment_nonce_in_db(&db, &bytes, &signature) {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
@@ -553,3 +446,4 @@ mod tests {
         );
     }
 }
+*/
