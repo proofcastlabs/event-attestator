@@ -17,8 +17,25 @@ impl DebugSignatory {
             .and_then(|hash| pk.sign_hash_and_set_eth_recovery_param(hash))
     }
 
-    pub fn recover_signer_address(&self, sig: &EthSignature, debug_command_hash: &H256) -> Result<EthAddress> {
-        sig.recover_signer_address(&self.hash(debug_command_hash)?)
+    pub fn recover_signer_address(&self, signature: &EthSignature, debug_command_hash: &H256) -> Result<EthAddress> {
+        signature.recover_signer_address(&self.hash(debug_command_hash)?)
+    }
+
+    pub fn validate(
+        &self,
+        signature: &EthSignature,
+        debug_command_hash: &H256,
+        eth_address: &EthAddress,
+    ) -> Result<()> {
+        let recovered_addresses = vec![
+            self.recover_signer_address(signature, debug_command_hash)?,
+            // TODO recover it WITH the prefix too!
+        ];
+        if recovered_addresses.contains(eth_address) {
+            Ok(())
+        } else {
+            Err("Could not validate debug signature!".into())
+        }
     }
 }
 
@@ -58,5 +75,16 @@ mod tests {
             .unwrap();
         let expected_result = convert_hex_to_eth_address("0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_validate_debug_signature() {
+        let pk = get_sample_private_key();
+        let signatory = get_sample_debug_signatory();
+        let debug_command_hash = get_sample_debug_command_hash();
+        let signature = signatory.sign(&pk, &debug_command_hash).unwrap();
+        let eth_address = convert_hex_to_eth_address("0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap();
+        let result = signatory.validate(&signature, &debug_command_hash, &eth_address);
+        assert!(result.is_ok());
     }
 }
