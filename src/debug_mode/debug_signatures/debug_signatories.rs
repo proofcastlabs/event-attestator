@@ -172,12 +172,12 @@ impl DebugSignatories {
         db: &D,
         eth_address: &EthAddress,
         debug_command_hash: &H256,
-        signature_str: &str,
+        signature_str: &EthSignature,
     ) -> Result<()> {
         let debug_signatories = Self::get_from_db(db)?;
         debug_signatories
             .get(eth_address)
-            .and_then(|signatory| signatory.validate(&EthSignature::from_str(signature_str)?, &debug_command_hash))
+            .and_then(|signatory| signatory.validate(signature_str, &debug_command_hash))
             .and_then(|_| Self::increment_nonce_in_signatory_in_db(db, eth_address))
     }
 
@@ -188,7 +188,7 @@ impl DebugSignatories {
     pub fn maybe_validate_signature_and_increment_nonce_in_db<D: DatabaseInterface>(
         db: &D,
         debug_command_hash: &H256,
-        signature_str: &str,
+        signature_str: &EthSignature,
     ) -> Result<()> {
         Self::get_from_db(db)
             .map(|debug_signatories| debug_signatories.to_eth_addresses())
@@ -420,7 +420,7 @@ mod tests {
         assert_eq!(pk.to_public_key().to_address(), eth_address);
 
         // NOTE Now we sign the random `debug_command_hash`
-        let signature = debug_signatory_1.sign(&pk, &debug_command_hash).unwrap().to_string();
+        let signature = debug_signatory_1.sign(&pk, &debug_command_hash).unwrap();
 
         // NOTE: Signature should be valid, and the nonce for this signatory should be incremented.
         DebugSignatories::maybe_validate_signature_and_increment_nonce_in_db(&db, &debug_command_hash, &signature)
@@ -450,7 +450,7 @@ mod tests {
         let debug_command_hash = get_sample_debug_command_hash();
 
         // NOTE: The signature is totally random...
-        let random_signature = EthSignature::random().unwrap().to_string();
+        let random_signature = EthSignature::random().unwrap();
         // NOTE: And so it should error...
         let expected_error = "Signature not valid for any debug signatories!";
         match DebugSignatories::maybe_validate_signature_and_increment_nonce_in_db(
