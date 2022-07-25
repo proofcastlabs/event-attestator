@@ -2,9 +2,14 @@ use std::str::FromStr;
 
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, H256};
+use rand::Rng;
 use web3::signing::recover;
 
-use crate::{errors::AppError, types::Result, utils::strip_hex_prefix};
+use crate::{
+    errors::AppError,
+    types::{Bytes, Result},
+    utils::strip_hex_prefix,
+};
 
 const ETH_SIGNATURE_NUM_BYTES: usize = 65;
 
@@ -33,6 +38,14 @@ impl EthSignature {
             &self[..64],
             self.get_ecdsa_recovery_param().into(),
         )?)
+    }
+
+    #[cfg(test)]
+    pub fn random() -> Result<Self> {
+        let random_bytes = (0..ETH_SIGNATURE_NUM_BYTES)
+            .map(|_| rand::random::<u8>())
+            .collect::<Bytes>();
+        Self::from_str(&hex::encode(&random_bytes))
     }
 }
 
