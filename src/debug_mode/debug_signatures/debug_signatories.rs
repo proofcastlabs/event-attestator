@@ -99,11 +99,19 @@ impl DebugSignatories {
     }
 
     fn add(&self, debug_signatory: &DebugSignatory) -> Self {
+        info!("✔ Maybe adding debug signatory to list...");
         let mut mutable_self = self.0.clone();
-        if !mutable_self.contains(debug_signatory) {
-            mutable_self.push(debug_signatory.clone());
+        let eth_address = debug_signatory.eth_address;
+        match self.get(&eth_address) {
+            Ok(signatory) => {
+                warn!("✘ Debug signatory with ETH address '{}' already in list!", eth_address);
+                Self(mutable_self)
+            },
+            Err(_) => {
+                mutable_self.push(debug_signatory.clone());
+                Self(mutable_self)
+            },
         }
-        Self(mutable_self)
     }
 
     fn remove(&self, eth_address: &EthAddress) -> Self {
@@ -264,6 +272,15 @@ mod tests {
         assert!(!debug_signatories.contains(&debug_signatory));
         let result = debug_signatories.add(&debug_signatory);
         assert!(result.contains(&debug_signatory));
+    }
+
+    #[test]
+    fn should_not_add_debug_signatory_if_extant() {
+        let debug_signatory = DebugSignatory::random();
+        let debug_signatories = DebugSignatories::new(vec![debug_signatory.clone()]);
+        assert_eq!(debug_signatories.len(), 1);
+        let result = debug_signatories.add(&debug_signatory);
+        assert_eq!(result.len(), 1);
     }
 
     #[test]
