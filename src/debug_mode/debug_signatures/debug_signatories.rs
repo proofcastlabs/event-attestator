@@ -181,18 +181,17 @@ impl DebugSignatories {
             .and_then(|_| Self::increment_nonce_in_signatory_in_db(db, eth_address))
     }
 
+    fn to_eth_addresses(&self) -> Vec<EthAddress> {
+        self.iter().map(|signatory| signatory.eth_address).collect::<Vec<_>>()
+    }
+
     pub fn maybe_validate_signature_and_increment_nonce_in_db<D: DatabaseInterface>(
         db: &D,
         debug_command_hash: &H256,
         signature_str: &str,
     ) -> Result<()> {
         Self::get_from_db(db)
-            .map(|debug_signatories| {
-                debug_signatories
-                    .iter()
-                    .map(|signatory| signatory.eth_address)
-                    .collect::<Vec<_>>()
-            })
+            .map(|debug_signatories| debug_signatories.to_eth_addresses())
             .and_then(|eth_addresses| {
                 if eth_addresses
                     .iter()
