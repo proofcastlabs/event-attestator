@@ -8,11 +8,11 @@ use crate::{
         eth_utils::convert_eth_address_to_string,
     },
     debug_mode::debug_signatures::debug_signatory::DebugSignatory,
-    types::{Byte, Result},
+    types::{Byte, Bytes, Result},
 };
 
 impl DebugSignatory {
-    pub fn to_eip_712_typed_data(&self, debug_command_hash: &H256) -> Result<EIP712> {
+    fn to_eip_712_typed_data(&self, debug_command_hash: &H256) -> Result<EIP712> {
         let s = format!(
             r#"{{
             "primaryType": "DebugSignatory",
@@ -45,7 +45,7 @@ impl DebugSignatory {
         }}"#,
             // NOTE: This is a required field, but we neither have no need one.
             convert_eth_address_to_string(&EthAddress::zero()),
-            format_args!("0x{}", hex::encode(self.get_nonce_as_bytes())),
+            format_args!("0x{:x}", self.nonce),
             self.name,
             convert_eth_address_to_string(&self.eth_address),
             format_args!("0x{}", hex::encode(debug_command_hash)),
