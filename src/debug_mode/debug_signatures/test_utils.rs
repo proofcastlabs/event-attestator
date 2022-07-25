@@ -1,9 +1,5 @@
 #![cfg(test)]
 use ethereum_types::{Address as EthAddress, H256};
-use rand::{
-    distributions::{Alphanumeric, DistString},
-    Rng,
-};
 
 use crate::{
     chains::eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_utils::convert_hex_to_eth_address},
@@ -36,19 +32,11 @@ pub fn get_sample_debug_signatories() -> DebugSignatories {
     ])
 }
 
-pub fn get_random_debug_signatory() -> DebugSignatory {
-    DebugSignatory {
-        nonce: rand::thread_rng().gen(),
-        eth_address: EthAddress::random(),
-        name: Alphanumeric.sample_string(&mut rand::thread_rng(), 8),
-    }
-}
-
 pub fn get_n_random_debug_signatories(n: usize) -> DebugSignatories {
     DebugSignatories::new(
         vec![0; n]
             .iter()
-            .map(|_| get_random_debug_signatory())
+            .map(|_| DebugSignatory::random())
             .collect::<Vec<DebugSignatory>>(),
     )
 }

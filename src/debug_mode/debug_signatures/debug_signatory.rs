@@ -2,6 +2,11 @@
 use std::fmt::Display;
 
 use ethereum_types::{Address as EthAddress, H256};
+#[cfg(test)]
+use rand::{
+    distributions::{Alphanumeric, DistString},
+    Rng,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 
@@ -52,6 +57,15 @@ impl DebugSignatory {
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         Ok(serde_json::from_slice::<Self>(&bytes)?)
+    }
+
+    #[cfg(test)]
+    pub fn random() -> Self {
+        Self {
+            nonce: rand::thread_rng().gen(),
+            eth_address: EthAddress::random(),
+            name: Alphanumeric.sample_string(&mut rand::thread_rng(), 8),
+        }
     }
 }
 

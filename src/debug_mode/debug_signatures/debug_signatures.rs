@@ -76,7 +76,6 @@ mod tests {
     use crate::{
         chains::eth::eth_utils::convert_hex_to_eth_address,
         debug_mode::debug_signatures::test_utils::{
-            get_random_debug_signatory,
             get_sample_debug_command_hash,
             get_sample_debug_signatory,
             get_sample_private_key,
@@ -156,7 +155,7 @@ mod tests {
         let debug_signatory = get_sample_debug_signatory();
         let debug_command_hash = get_sample_debug_command_hash();
         let signature = debug_signatory.sign(&pk, &debug_command_hash).unwrap();
-        let wrong_debug_signatory = get_random_debug_signatory();
+        let wrong_debug_signatory = DebugSignatory::random();
         assert_ne!(wrong_debug_signatory.eth_address, pk.to_public_key().to_address());
         let expected_error = "Could not validate debug signature!".to_string();
         match wrong_debug_signatory.validate(&signature, &debug_command_hash) {

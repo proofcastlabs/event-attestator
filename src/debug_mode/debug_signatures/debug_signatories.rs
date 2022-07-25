@@ -216,7 +216,6 @@ mod tests {
     use crate::{
         debug_mode::debug_signatures::test_utils::{
             get_n_random_debug_signatories,
-            get_random_debug_signatory,
             get_sample_debug_command_hash,
             get_sample_debug_signatories,
             get_sample_private_key,
@@ -300,7 +299,7 @@ mod tests {
     #[test]
     fn should_fail_to_replace_non_existent_entry() {
         let debug_signatories = get_sample_debug_signatories();
-        let debug_signatory = get_random_debug_signatory();
+        let debug_signatory = DebugSignatory::random();
         let expected_error = format!(
             "Cannot replace entry, none exists with eth address: '{}'!",
             debug_signatory.eth_address
@@ -328,7 +327,7 @@ mod tests {
     #[test]
     fn should_add_and_update_in_db() {
         let db = get_test_database();
-        let debug_signatory = get_random_debug_signatory();
+        let debug_signatory = DebugSignatory::random();
         let expected_result = DebugSignatories(vec![debug_signatory.clone()]);
         DebugSignatories::add_and_update_in_db(&db, &debug_signatory).unwrap();
         let result = DebugSignatories::get_from_db(&db).unwrap();
@@ -371,7 +370,7 @@ mod tests {
 
     #[test]
     fn should_error_if_entry_in_signatories_twice() {
-        let debug_signatory = get_random_debug_signatory();
+        let debug_signatory = DebugSignatory::random();
         // NOTE: This is the only way we can create one with a duplicate in it.
         let debug_signatories = DebugSignatories(vec![debug_signatory.clone(), debug_signatory.clone()]);
         let eth_address = debug_signatory.eth_address.clone();
@@ -389,8 +388,8 @@ mod tests {
         let eth_address = convert_hex_to_eth_address("0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap();
         let debug_command_hash = H256::random();
         let debug_signatory_1 = DebugSignatory::new("Some name", &eth_address);
-        let debug_signatory_2 = get_random_debug_signatory();
-        let debug_signatory_3 = get_random_debug_signatory();
+        let debug_signatory_2 = DebugSignatory::random();
+        let debug_signatory_3 = DebugSignatory::random();
 
         // NOTE: Assert the signatory we care about's nonce is 0.
         assert_eq!(debug_signatory_1.nonce, 0);
