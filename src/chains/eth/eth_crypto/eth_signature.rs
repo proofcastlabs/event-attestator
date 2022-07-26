@@ -51,6 +51,14 @@ impl FromStr for EthSignature {
     }
 }
 
+impl TryFrom<&str> for EthSignature {
+    type Error = AppError;
+
+    fn try_from(s: &str) -> Result<Self> {
+        EthSignature::from_str(s)
+    }
+}
+
 impl std::fmt::Display for EthSignature {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", hex::encode(&self.0))
@@ -88,5 +96,11 @@ mod test {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         }
+    }
+
+    #[test]
+    fn try_into_should_work_for_eth_signature() {
+        let result: Result<EthSignature> = "0xda1a3b8f1bb8c0964b15785b5408ca3dfe35ed512d860d03bc543656e0c8f2a72c550b23a15b4c6624b3625217380ce1849e85710278ddd4aaee5d8b4f26d1521c".try_into();
+        assert!(result.is_ok());
     }
 }
