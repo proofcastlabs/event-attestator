@@ -3,7 +3,7 @@ use ethereum_types::{Address as EthAddress, H256};
 
 use crate::{
     chains::eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_utils::convert_hex_to_eth_address},
-    debug_mode::debug_signatures::{debug_signatories::DebugSignatories, debug_signatory::DebugSignatory},
+    debug_mode::debug_signers::{debug_signatories::DebugSignatories, debug_signatory::DebugSignatory},
 };
 
 pub fn get_sample_debug_signatory() -> DebugSignatory {

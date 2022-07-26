@@ -12,7 +12,7 @@ use crate::{
         eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256},
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
-    debug_mode::{check_debug_mode, debug_signatures::debug_signatory::DebugSignatory},
+    debug_mode::{check_debug_mode, debug_signers::debug_signatory::DebugSignatory},
     safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
@@ -252,7 +252,7 @@ impl DebugSignatories {
 mod tests {
     use super::*;
     use crate::{
-        debug_mode::debug_signatures::test_utils::{
+        debug_mode::debug_signers::test_utils::{
             get_n_random_debug_signatories,
             get_sample_debug_command_hash,
             get_sample_debug_signatories,

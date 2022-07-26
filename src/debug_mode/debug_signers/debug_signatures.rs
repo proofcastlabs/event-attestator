@@ -3,7 +3,7 @@ use ethereum_types::{Address as EthAddress, H256};
 use crate::{
     chains::eth::eth_crypto::eth_signature::EthSignature,
     crypto_utils::keccak_hash_bytes,
-    debug_mode::debug_signatures::debug_signatory::DebugSignatory,
+    debug_mode::debug_signers::debug_signatory::DebugSignatory,
     types::{Bytes, Result},
 };
 
@@ -73,7 +73,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        debug_mode::debug_signatures::test_utils::{
+        debug_mode::debug_signers::test_utils::{
             get_sample_debug_command_hash,
             get_sample_debug_signatory,
             get_sample_private_key,
