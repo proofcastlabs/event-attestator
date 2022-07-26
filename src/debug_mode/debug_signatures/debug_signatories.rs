@@ -147,38 +147,31 @@ impl DebugSignatories {
         }
     }
 
-    pub fn add_and_update_in_db<D: DatabaseInterface>(db: &D, debug_signatory: &DebugSignatory) -> Result<()> {
-        Self::get_from_db(db)
-            .map(|debug_signatories| debug_signatories.add(debug_signatory))
-            .and_then(|debug_signatories| debug_signatories.put_in_db(db))
+    pub fn add_and_update_in_db<D: DatabaseInterface>(&self, db: &D, debug_signatory: &DebugSignatory) -> Result<()> {
+        self.add(debug_signatory).put_in_db(db)
     }
 
-    pub fn remove_and_update_in_db<D: DatabaseInterface>(db: &D, eth_address: &EthAddress) -> Result<()> {
-        Self::get_from_db(db)
-            .map(|debug_signatories| debug_signatories.remove(eth_address))
-            .and_then(|debug_signatories| debug_signatories.put_in_db(db))
+    pub fn remove_and_update_in_db<D: DatabaseInterface>(&self, db: &D, eth_address: &EthAddress) -> Result<()> {
+        self.remove(eth_address).put_in_db(db)
     }
 
-    fn increment_nonce_in_signatory_in_db<D: DatabaseInterface>(db: &D, eth_address: &EthAddress) -> Result<()> {
-        let debug_signatories = Self::get_from_db(db)?;
-        debug_signatories
-            .get(eth_address)
+    fn increment_nonce_in_signatory_in_db<D: DatabaseInterface>(&self, db: &D, eth_address: &EthAddress) -> Result<()> {
+        self.get(eth_address)
             .map(|signatory| signatory.increment_nonce())
-            .and_then(|signatory| debug_signatories.replace(&signatory))
+            .and_then(|signatory| self.replace(&signatory))
             .and_then(|debug_signatories| debug_signatories.put_in_db(db))
     }
 
     fn maybe_validate_signature_for_eth_address_and_increment_nonce_in_db<D: DatabaseInterface>(
+        &self,
         db: &D,
         eth_address: &EthAddress,
         debug_command_hash: &H256,
         signature_str: &EthSignature,
     ) -> Result<()> {
-        let debug_signatories = Self::get_from_db(db)?;
-        debug_signatories
-            .get(eth_address)
+        self.get(eth_address)
             .and_then(|signatory| signatory.validate(signature_str, &debug_command_hash))
-            .and_then(|_| Self::increment_nonce_in_signatory_in_db(db, eth_address))
+            .and_then(|_| self.increment_nonce_in_signatory_in_db(db, eth_address))
     }
 
     fn to_eth_addresses(&self) -> Vec<EthAddress> {
@@ -186,34 +179,38 @@ impl DebugSignatories {
     }
 
     pub fn maybe_validate_signature_and_increment_nonce_in_db<D: DatabaseInterface>(
+        &self,
         db: &D,
         debug_command_hash: &H256,
         signature_str: &EthSignature,
     ) -> Result<()> {
-        Self::get_from_db(db)
-            .map(|debug_signatories| debug_signatories.to_eth_addresses())
-            .and_then(|eth_addresses| {
-                if eth_addresses
-                    .iter()
-                    .filter_map(|eth_address| {
-                        match Self::maybe_validate_signature_for_eth_address_and_increment_nonce_in_db(
-                            db,
-                            eth_address,
-                            debug_command_hash,
-                            signature_str,
-                        ) {
-                            Ok(_) => Some(true),
-                            Err(_) => None,
-                        }
-                    })
-                    .next()
-                    .is_none()
-                {
-                    Err("Signature not valid for any debug signatories!".into())
-                } else {
-                    Ok(())
+        if self
+            .to_eth_addresses()
+            .iter()
+            .filter_map(|eth_address| {
+                match self.maybe_validate_signature_for_eth_address_and_increment_nonce_in_db(
+                    db,
+                    eth_address,
+                    debug_command_hash,
+                    signature_str,
+                ) {
+                    Ok(_) => {
+                        info!("✔ Signature valid for address: {}", eth_address);
+                        Some(true)
+                    },
+                    Err(_) => {
+                        warn!("✘ Signature NOT valid for address: {}", eth_address);
+                        None
+                    },
                 }
             })
+            .next()
+            .is_none()
+        {
+            Err("Signature not valid for any debug signatories!".into())
+        } else {
+            Ok(())
+        }
     }
 }
 
@@ -344,8 +341,10 @@ mod tests {
     fn should_add_and_update_in_db() {
         let db = get_test_database();
         let debug_signatory = DebugSignatory::random();
-        let expected_result = DebugSignatories(vec![debug_signatory.clone()]);
-        DebugSignatories::add_and_update_in_db(&db, &debug_signatory).unwrap();
+        let expected_result = DebugSignatories::new(vec![debug_signatory.clone()]);
+        DebugSignatories::new(vec![])
+            .add_and_update_in_db(&db, &debug_signatory)
+            .unwrap();
         let result = DebugSignatories::get_from_db(&db).unwrap();
         assert_eq!(result, expected_result);
     }
@@ -354,7 +353,6 @@ mod tests {
     fn should_remove_and_update_in_db() {
         let db = get_test_database();
         let debug_signatories = get_n_random_debug_signatories(5);
-        debug_signatories.put_in_db(&db).unwrap();
         let signatory_to_remove = debug_signatories[2].eth_address.clone();
         let expected_result = DebugSignatories(
             debug_signatories
@@ -363,7 +361,9 @@ mod tests {
                 .cloned()
                 .collect(),
         );
-        DebugSignatories::remove_and_update_in_db(&db, &signatory_to_remove).unwrap();
+        debug_signatories
+            .remove_and_update_in_db(&db, &signatory_to_remove)
+            .unwrap();
         let result = DebugSignatories::get_from_db(&db).unwrap();
         assert_eq!(result, expected_result);
     }
@@ -376,8 +376,9 @@ mod tests {
         let debug_signatory = debug_signatories[index].clone();
         let eth_address = debug_signatory.eth_address;
         let nonce_before = debug_signatory.nonce;
-        debug_signatories.put_in_db(&db).unwrap();
-        DebugSignatories::increment_nonce_in_signatory_in_db(&db, &eth_address).unwrap();
+        debug_signatories
+            .increment_nonce_in_signatory_in_db(&db, &eth_address)
+            .unwrap();
         let updated_signatories = DebugSignatories::get_from_db(&db).unwrap();
         let expected_result = nonce_before + 1;
         let result = updated_signatories.get(&eth_address).unwrap().nonce;
@@ -414,7 +415,6 @@ mod tests {
             debug_signatory_1.clone(),
             debug_signatory_3.clone(),
         ]);
-        debug_signatories.put_in_db(&db).unwrap();
         let pk = get_sample_private_key();
         // NOTE: Assert the private key is for the address we expect.
         assert_eq!(pk.to_public_key().to_address(), eth_address);
@@ -423,7 +423,8 @@ mod tests {
         let signature = debug_signatory_1.sign(&pk, &debug_command_hash).unwrap();
 
         // NOTE: Signature should be valid, and the nonce for this signatory should be incremented.
-        DebugSignatories::maybe_validate_signature_and_increment_nonce_in_db(&db, &debug_command_hash, &signature)
+        debug_signatories
+            .maybe_validate_signature_and_increment_nonce_in_db(&db, &debug_command_hash, &signature)
             .unwrap();
 
         // NOTE: So lets assert that this signatory's nonce did indeed get updated in the db.
@@ -446,14 +447,15 @@ mod tests {
     fn should_fail_to_maybe_validate_invalid_signature_and_thus_not_increment_nonce_in_db() {
         let db = get_test_database();
         let debug_signatories_before = get_sample_debug_signatories();
-        debug_signatories_before.put_in_db(&db).unwrap();
         let debug_command_hash = get_sample_debug_command_hash();
+        debug_signatories_before.put_in_db(&db).unwrap();
 
         // NOTE: The signature is totally random...
         let random_signature = EthSignature::random().unwrap();
+
         // NOTE: And so it should error...
         let expected_error = "Signature not valid for any debug signatories!";
-        match DebugSignatories::maybe_validate_signature_and_increment_nonce_in_db(
+        match debug_signatories_before.maybe_validate_signature_and_increment_nonce_in_db(
             &db,
             &debug_command_hash,
             &random_signature,
