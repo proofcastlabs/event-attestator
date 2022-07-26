@@ -92,6 +92,18 @@ pub fn debug_remove_debug_signer<D: DatabaseInterface>(
         .map(|_| json!({"debug_remove_signatory_success":true, "eth_address": eth_address_str}).to_string())
 }
 
+/// Get Debug Signature Info
+///
+/// Gets the information required to sign a valid debug function signaure, require in order to run
+/// a debug function. The `debug_command_hash_str` is a hash of the `CLI_ARGS` struct populated
+/// with the arguments required to run the desired debug function.
+pub fn get_debug_signature_info<D: DatabaseInterface>(db: &D, debug_command_hash_str: &str) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| DebugSignatories::get_from_db(db))
+        .and_then(|debug_signatories| debug_signatories.to_json(&convert_hex_to_h256(debug_command_hash_str)?))
+        .map(|json| json.to_string())
+}
+
 lazy_static! {
     static ref DEBUG_SIGNATORIES_DB_KEY: [u8; 32] = crate::utils::get_prefixed_db_key("debug_signatories_db_key");
 }

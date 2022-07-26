@@ -36,6 +36,7 @@ impl DebugSignatory {
             "name": self.name,
             "nonce": self.nonce,
             "eth_address": convert_eth_address_to_string(&self.eth_address),
+            "debug_command_hash": format!("0x{:x}", debug_comannd_hash),
             "hash_to_sign": self.hash_to_hex(debug_comannd_hash)?,
 
         }))
