@@ -48,15 +48,15 @@ use crate::{
 /// return a signed, smart-contract-deploying transaction. This is because the `ERC20-on-EVM` bridge
 /// works with an ETH<->EVM token dictionary which defines the contract addresses to be bridged.
 pub fn maybe_initialize_int_core<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json: &str,
     chain_id: u64,
     gas_price: u64,
     confs: u64,
 ) -> Result<String> {
-    match is_evm_core_initialized(&EvmDbUtils::new(&db)) {
+    match is_evm_core_initialized(&EvmDbUtils::new(db)) {
         true => Ok(EVM_CORE_IS_INITIALIZED_JSON.to_string()),
-        false => start_eth_db_transaction_and_return_state(EthState::init(&db))
+        false => start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| {
                 initialize_evm_core_with_no_contract_tx(
                     block_json,

@@ -46,7 +46,7 @@ use crate::{
 /// a signature is signed. Finally, this function requires the addresses of the vault & router
 /// smart contracts.
 pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json: &str,
     chain_id: u64,
     gas_price: u64,
@@ -54,9 +54,9 @@ pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
     vault_address: &str,
     router_address: &str,
 ) -> Result<String> {
-    match is_eth_core_initialized(&EthDbUtils::new(&db)) {
+    match is_eth_core_initialized(&EthDbUtils::new(db)) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
-        false => start_eth_db_transaction_and_return_state(EthState::init(&db))
+        false => start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| {
                 initialize_eth_core_with_vault_and_router_contracts_and_return_state(
                     block_json,
