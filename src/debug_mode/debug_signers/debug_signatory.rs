@@ -31,12 +31,12 @@ impl DebugSignatory {
         mutable_self
     }
 
-    pub fn to_json(self, debug_comannd_hash: &H256) -> Result<JsonValue> {
+    pub fn to_json(&self, debug_comannd_hash: &H256) -> Result<JsonValue> {
         Ok(json!({
+            "name": self.name,
             "nonce": self.nonce,
-            "name": self.name.clone(),
             "eth_address": convert_eth_address_to_string(&self.eth_address),
-            "hash_to_sign": self.hash_to_hex(&debug_comannd_hash)?,
+            "hash_to_sign": self.hash_to_hex(debug_comannd_hash)?,
 
         }))
     }
@@ -46,7 +46,7 @@ impl DebugSignatory {
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
-        Ok(serde_json::from_slice::<Self>(&bytes)?)
+        Ok(serde_json::from_slice::<Self>(bytes)?)
     }
 }
 

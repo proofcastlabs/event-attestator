@@ -15,7 +15,7 @@ impl EthSignature {
     pub fn set_recovery_param(self) -> Self {
         // NOTE: Eth recovery params are different from ecdsa ones. See here for more info:
         // https://bitcoin.stackexchange.com/questions/38351/ecdsa-v-r-s-what-is-v
-        let mut mutable_self = self.clone();
+        let mut mutable_self = self;
         mutable_self[64] = if mutable_self[64] == 1 { 0x1c } else { 0x1b };
         mutable_self
     }
@@ -42,14 +42,11 @@ impl FromStr for EthSignature {
     fn from_str(s: &str) -> Result<Self> {
         let bytes = hex::decode(strip_hex_prefix(s))?;
         Ok(Self::new(bytes.clone().try_into().map_err(|_| {
-            AppError::Custom(
-                format!(
-                    "Wrong number of bytes for `EthSignature`. Got {}, expected {}!",
-                    bytes.len(),
-                    ETH_SIGNATURE_NUM_BYTES
-                )
-                .into(),
-            )
+            AppError::Custom(format!(
+                "Wrong number of bytes for `EthSignature`. Got {}, expected {}!",
+                bytes.len(),
+                ETH_SIGNATURE_NUM_BYTES
+            ))
         })?))
     }
 }

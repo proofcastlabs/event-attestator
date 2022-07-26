@@ -128,7 +128,7 @@ impl DebugSignatories {
         Ok(json!([self
             .iter()
             .cloned()
-            .map(|debug_signatory| debug_signatory.to_json(&debug_command_hash))
+            .map(|debug_signatory| debug_signatory.to_json(debug_command_hash))
             .collect::<Result<Vec<_>>>()?]))
     }
 
@@ -204,7 +204,7 @@ impl DebugSignatories {
         signature_str: &EthSignature,
     ) -> Result<()> {
         self.get(eth_address)
-            .and_then(|signatory| signatory.validate(signature_str, &debug_command_hash))
+            .and_then(|signatory| signatory.validate(signature_str, debug_command_hash))
             .and_then(|_| self.increment_nonce_in_signatory_in_db(db, eth_address))
     }
 
