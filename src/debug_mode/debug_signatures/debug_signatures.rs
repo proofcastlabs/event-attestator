@@ -1,15 +1,10 @@
-use eip_712::{hash_structured_data, EIP712};
 use ethereum_types::{Address as EthAddress, H256};
 
 use crate::{
-    chains::eth::{
-        eth_crypto::{eth_private_key::EthPrivateKey, eth_signature::EthSignature},
-        eth_traits::EthSigningCapabilities,
-        eth_utils::convert_eth_address_to_string,
-    },
+    chains::eth::eth_crypto::eth_signature::EthSignature,
     crypto_utils::keccak_hash_bytes,
     debug_mode::debug_signatures::debug_signatory::DebugSignatory,
-    types::{Byte, Bytes, Result},
+    types::{Bytes, Result},
 };
 
 impl DebugSignatory {
@@ -28,16 +23,6 @@ impl DebugSignatory {
         self.hash_to_hex(debug_command_hash)
             .map(|message| Self::get_eth_prefixed_message_bytes(&message))
             .map(|bytes| H256::from_slice(&bytes))
-    }
-
-    pub fn sign_with_eth_prefix(&self, pk: &EthPrivateKey, debug_command_hash: &H256) -> Result<EthSignature> {
-        self.hash_with_eth_prefix(debug_command_hash)
-            .and_then(|hash| pk.sign_hash_and_set_eth_recovery_param(hash))
-    }
-
-    pub fn sign(&self, pk: &EthPrivateKey, debug_command_hash: &H256) -> Result<EthSignature> {
-        self.hash(debug_command_hash)
-            .and_then(|hash| pk.sign_hash_and_set_eth_recovery_param(hash))
     }
 
     pub fn recover_signer_address(&self, signature: &EthSignature, debug_command_hash: &H256) -> Result<EthAddress> {
@@ -66,15 +51,28 @@ impl DebugSignatory {
 }
 
 #[cfg(test)]
+use crate::chains::eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_traits::EthSigningCapabilities};
+
+#[cfg(test)]
+impl DebugSignatory {
+    pub fn sign_with_eth_prefix(&self, pk: &EthPrivateKey, debug_command_hash: &H256) -> Result<EthSignature> {
+        self.hash_with_eth_prefix(debug_command_hash)
+            .and_then(|hash| pk.sign_hash_and_set_eth_recovery_param(hash))
+    }
+
+    #[cfg(test)]
+    pub fn sign(&self, pk: &EthPrivateKey, debug_command_hash: &H256) -> Result<EthSignature> {
+        self.hash(debug_command_hash)
+            .and_then(|hash| pk.sign_hash_and_set_eth_recovery_param(hash))
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use std::str::FromStr;
 
-    use serde_json;
-    use web3::signing::recover as recover_signer_address;
-
     use super::*;
     use crate::{
-        chains::eth::eth_utils::convert_hex_to_eth_address,
         debug_mode::debug_signatures::test_utils::{
             get_sample_debug_command_hash,
             get_sample_debug_signatory,

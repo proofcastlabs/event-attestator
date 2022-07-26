@@ -2,13 +2,9 @@ use eip_712::{hash_structured_data, EIP712};
 use ethereum_types::{Address as EthAddress, H256};
 
 use crate::{
-    chains::eth::{
-        eth_crypto::{eth_private_key::EthPrivateKey, eth_signature::EthSignature},
-        eth_traits::EthSigningCapabilities,
-        eth_utils::convert_eth_address_to_string,
-    },
+    chains::eth::eth_utils::convert_eth_address_to_string,
     debug_mode::debug_signatures::debug_signatory::DebugSignatory,
-    types::{Byte, Bytes, Result},
+    types::Result,
 };
 
 impl DebugSignatory {
@@ -68,14 +64,7 @@ impl DebugSignatory {
 
 #[cfg(test)]
 mod tests {
-    use serde_json;
-    use web3::signing::recover as recover_signer_address;
-
-    use super::*;
-    use crate::{
-        chains::eth::eth_utils::convert_hex_to_eth_address,
-        debug_mode::debug_signatures::test_utils::{get_sample_debug_command_hash, get_sample_debug_signatory},
-    };
+    use crate::debug_mode::debug_signatures::test_utils::{get_sample_debug_command_hash, get_sample_debug_signatory};
 
     #[test]
     fn should_get_debug_signatory_hash() {

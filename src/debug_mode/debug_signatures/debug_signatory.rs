@@ -1,22 +1,12 @@
 #![allow(dead_code)] // FIXME rm!
-use std::fmt::Display;
 
 use ethereum_types::{Address as EthAddress, H256};
-#[cfg(test)]
-use rand::{
-    distributions::{Alphanumeric, DistString},
-    Rng,
-};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::eth::eth_utils::{convert_eth_address_to_string, convert_hex_to_eth_address},
-    constants::MIN_DATA_SENSITIVITY_LEVEL,
-    crypto_utils::keccak_hash_bytes,
-    traits::DatabaseInterface,
+    chains::eth::eth_utils::convert_eth_address_to_string,
     types::{Byte, Bytes, Result},
-    utils::strip_hex_prefix,
 };
 
 #[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -58,8 +48,16 @@ impl DebugSignatory {
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         Ok(serde_json::from_slice::<Self>(&bytes)?)
     }
+}
 
-    #[cfg(test)]
+#[cfg(test)]
+use rand::{
+    distributions::{Alphanumeric, DistString},
+    Rng,
+};
+
+#[cfg(test)]
+impl DebugSignatory {
     pub fn random() -> Self {
         Self {
             nonce: rand::thread_rng().gen(),
