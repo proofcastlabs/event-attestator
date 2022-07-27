@@ -53,7 +53,7 @@ pub fn debug_add_debug_signer<D: DatabaseInterface>(
 
             if debug_signatories.is_empty() {
                 info!("✔ Validating the debug signer addition using the safe address...");
-                DebugSignatory::new("safe_address", &SAFE_ETH_ADDRESS)
+                SAFE_DEBUG_SIGNATORY
                     .validate(&signature, &debug_command_hash)
                     .and_then(|_| debug_signatories.add_and_update_in_db(db, &debug_signatory_to_add))
             } else {
@@ -97,15 +97,26 @@ pub fn debug_remove_debug_signer<D: DatabaseInterface>(
 /// Gets the information required to sign a valid debug function signaure, require in order to run
 /// a debug function. The `debug_command_hash_str` is a hash of the `CLI_ARGS` struct populated
 /// with the arguments required to run the desired debug function.
-pub fn get_debug_signature_info<D: DatabaseInterface>(db: &D, debug_command_hash_str: &str) -> Result<String> {
+pub fn get_debug_signature_info<D: DatabaseInterface>(db: &D, debug_command_hash_str: &str) -> Result<JsonValue> {
     check_debug_mode()
+        .and_then(|_| db.start_transaction())
         .and_then(|_| DebugSignatories::get_from_db(db))
-        .and_then(|debug_signatories| debug_signatories.to_json(&convert_hex_to_h256(debug_command_hash_str)?))
-        .map(|json| json.to_string())
+        .and_then(|debug_signatories| {
+            db.end_transaction()?;
+            let debug_command_hash = convert_hex_to_h256(debug_command_hash_str)?;
+            if debug_signatories.is_empty() {
+                // NOTE: If there are no signers yet, we show the safe address signing info, since
+                // with that, new debug signers can be added.
+                DebugSignatories::new(vec![SAFE_DEBUG_SIGNATORY.clone()]).to_json(&debug_command_hash)
+            } else {
+                debug_signatories.to_json(&debug_command_hash)
+            }
+        })
 }
 
 lazy_static! {
     static ref DEBUG_SIGNATORIES_DB_KEY: [u8; 32] = crate::utils::get_prefixed_db_key("debug_signatories_db_key");
+    static ref SAFE_DEBUG_SIGNATORY: DebugSignatory = DebugSignatory::new("safe_address", &SAFE_ETH_ADDRESS);
 }
 
 #[derive(Debug, Default, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
