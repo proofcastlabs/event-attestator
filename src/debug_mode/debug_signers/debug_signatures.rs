@@ -5,6 +5,7 @@ use crate::{
     crypto_utils::keccak_hash_bytes,
     debug_mode::debug_signers::debug_signatory::DebugSignatory,
     types::{Bytes, Result},
+    utils::strip_hex_prefix,
 };
 
 impl DebugSignatory {
@@ -19,28 +20,54 @@ impl DebugSignatory {
         eth_prefixed_message_bytes
     }
 
-    fn hash_with_eth_prefix(&self, debug_command_hash: &H256) -> Result<H256> {
+    fn hash_with_eth_prefix(&self, debug_command_hash: &H256, use_hex_prefix: bool) -> Result<H256> {
         self.hash_to_hex(debug_command_hash)
+            .map(|message| {
+                let stripped_message = strip_hex_prefix(&message);
+                if use_hex_prefix {
+                    format!("0x{}", stripped_message)
+                } else {
+                    stripped_message
+                }
+            })
             .map(|message| Self::get_eth_prefixed_message_bytes(&message))
             .map(|bytes| H256::from_slice(&bytes))
     }
 
     pub fn recover_signer_address(&self, signature: &EthSignature, debug_command_hash: &H256) -> Result<EthAddress> {
-        signature.recover_signer_address(&self.hash(debug_command_hash)?)
+        info!("✔ Recovering signature with NO ETH prefix...");
+        let address = signature.recover_signer_address(&self.hash(debug_command_hash)?)?;
+        debug!("Recovered address: {}", address);
+        Ok(address)
     }
 
-    pub fn recover_signer_address_using_eth_prefix(
+    pub fn recover_signer_address_using_eth_prefix_and_hex_prefix(
         &self,
         signature: &EthSignature,
         debug_command_hash: &H256,
     ) -> Result<EthAddress> {
-        signature.recover_signer_address(&self.hash_with_eth_prefix(debug_command_hash)?)
+        info!("✔ Recovering signature with ETH prefix AND hex prefix...");
+        let address = signature.recover_signer_address(&self.hash_with_eth_prefix(debug_command_hash, true)?)?;
+        debug!("Recovered address: {}", address);
+        Ok(address)
+    }
+
+    pub fn recover_signer_address_using_eth_prefix_and_no_hex_prefix(
+        &self,
+        signature: &EthSignature,
+        debug_command_hash: &H256,
+    ) -> Result<EthAddress> {
+        info!("✔ Recovering signature with ETH prefix and NO hex prefix...");
+        let address = signature.recover_signer_address(&self.hash_with_eth_prefix(debug_command_hash, false)?)?;
+        debug!("Recovered address: {}", address);
+        Ok(address)
     }
 
     pub fn validate(&self, signature: &EthSignature, debug_command_hash: &H256) -> Result<()> {
         let recovered_addresses = vec![
             self.recover_signer_address(signature, debug_command_hash)?,
-            self.recover_signer_address_using_eth_prefix(signature, debug_command_hash)?,
+            self.recover_signer_address_using_eth_prefix_and_hex_prefix(signature, debug_command_hash)?,
+            self.recover_signer_address_using_eth_prefix_and_no_hex_prefix(signature, debug_command_hash)?,
         ];
         if recovered_addresses.contains(&self.eth_address) {
             Ok(())
@@ -56,7 +83,7 @@ use crate::chains::eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_traits:
 #[cfg(test)]
 impl DebugSignatory {
     pub fn sign_with_eth_prefix(&self, pk: &EthPrivateKey, debug_command_hash: &H256) -> Result<EthSignature> {
-        self.hash_with_eth_prefix(debug_command_hash)
+        self.hash_with_eth_prefix(debug_command_hash, false)
             .and_then(|hash| pk.sign_hash_and_set_eth_recovery_param(hash))
     }
 
@@ -131,7 +158,7 @@ mod tests {
         let debug_command_hash = get_sample_debug_command_hash();
         let signature = signatory.sign_with_eth_prefix(&pk, &debug_command_hash).unwrap();
         let result = signatory
-            .recover_signer_address_using_eth_prefix(&signature, &debug_command_hash)
+            .recover_signer_address_using_eth_prefix_and_no_hex_prefix(&signature, &debug_command_hash)
             .unwrap();
         let expected_result = pk.to_public_key().to_address();
         assert_eq!(result, expected_result);
