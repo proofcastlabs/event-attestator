@@ -12,6 +12,7 @@ use crate::{
         eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256},
     },
     constants::MIN_DATA_SENSITIVITY_LEVEL,
+    core_type::CoreType,
     debug_mode::{check_debug_mode, debug_signers::debug_signatory::DebugSignatory},
     safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
@@ -30,6 +31,7 @@ pub fn debug_add_debug_signer<D: DatabaseInterface>(
     signature_str: &str,
     signatory_name: &str,
     eth_address_str: &str,
+    core_type: &CoreType,
     debug_command_hash_str: &str,
 ) -> Result<String> {
     info!("✔ Adding debug signer to list...");
@@ -54,11 +56,11 @@ pub fn debug_add_debug_signer<D: DatabaseInterface>(
             if debug_signatories.is_empty() {
                 info!("✔ Validating the debug signer addition using the safe address...");
                 SAFE_DEBUG_SIGNATORY
-                    .validate(&signature, &debug_command_hash)
+                    .validate(&signature, core_type, &debug_command_hash)
                     .and_then(|_| debug_signatories.add_and_update_in_db(db, &debug_signatory_to_add))
             } else {
                 debug_signatories
-                    .maybe_validate_signature_and_increment_nonce_in_db(db, &debug_command_hash, &signature)
+                    .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
                     .and_then(|_| debug_signatories.add_and_update_in_db(db, &debug_signatory_to_add))
             }
         })
@@ -75,6 +77,7 @@ pub fn debug_remove_debug_signer<D: DatabaseInterface>(
     db: &D,
     signature_str: &str,
     eth_address_str: &str,
+    core_type: &CoreType,
     debug_command_hash_str: &str,
 ) -> Result<String> {
     check_debug_mode()
@@ -85,7 +88,7 @@ pub fn debug_remove_debug_signer<D: DatabaseInterface>(
             let eth_address = convert_hex_to_eth_address(eth_address_str)?;
             let debug_command_hash = convert_hex_to_h256(debug_command_hash_str)?;
             debug_signatories
-                .maybe_validate_signature_and_increment_nonce_in_db(db, &debug_command_hash, &signature)
+                .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
                 .and_then(|_| debug_signatories.remove_and_update_in_db(db, &eth_address))
         })
         .and_then(|_| db.end_transaction())
@@ -97,7 +100,11 @@ pub fn debug_remove_debug_signer<D: DatabaseInterface>(
 /// Gets the information required to sign a valid debug function signaure, require in order to run
 /// a debug function. The `debug_command_hash_str` is a hash of the `CLI_ARGS` struct populated
 /// with the arguments required to run the desired debug function.
-pub fn get_debug_signature_info<D: DatabaseInterface>(db: &D, debug_command_hash_str: &str) -> Result<JsonValue> {
+pub fn get_debug_signature_info<D: DatabaseInterface>(
+    db: &D,
+    core_type: &CoreType,
+    debug_command_hash_str: &str,
+) -> Result<JsonValue> {
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .and_then(|_| DebugSignatories::get_from_db(db))
@@ -107,9 +114,9 @@ pub fn get_debug_signature_info<D: DatabaseInterface>(db: &D, debug_command_hash
             if debug_signatories.is_empty() {
                 // NOTE: If there are no signers yet, we show the safe address signing info, since
                 // with that, new debug signers can be added.
-                DebugSignatories::new(vec![SAFE_DEBUG_SIGNATORY.clone()]).to_json(&debug_command_hash)
+                DebugSignatories::new(vec![SAFE_DEBUG_SIGNATORY.clone()]).to_json(&core_type, &debug_command_hash)
             } else {
-                debug_signatories.to_json(&debug_command_hash)
+                debug_signatories.to_json(&core_type, &debug_command_hash)
             }
         })
 }
@@ -156,11 +163,11 @@ impl DebugSignatories {
         )
     }
 
-    pub fn to_json(&self, debug_command_hash: &H256) -> Result<JsonValue> {
+    pub fn to_json(&self, core_type: &CoreType, debug_command_hash: &H256) -> Result<JsonValue> {
         Ok(json!([self
             .iter()
             .cloned()
-            .map(|debug_signatory| debug_signatory.to_json(debug_command_hash))
+            .map(|debug_signatory| debug_signatory.to_json(core_type, debug_command_hash))
             .collect::<Result<Vec<_>>>()?]))
     }
 
@@ -232,11 +239,12 @@ impl DebugSignatories {
         &self,
         db: &D,
         eth_address: &EthAddress,
+        core_type: &CoreType,
         debug_command_hash: &H256,
         signature_str: &EthSignature,
     ) -> Result<()> {
         self.get(eth_address)
-            .and_then(|signatory| signatory.validate(signature_str, debug_command_hash))
+            .and_then(|signatory| signatory.validate(signature_str, core_type, debug_command_hash))
             .and_then(|_| self.increment_nonce_in_signatory_in_db(db, eth_address))
     }
 
@@ -247,6 +255,7 @@ impl DebugSignatories {
     pub fn maybe_validate_signature_and_increment_nonce_in_db<D: DatabaseInterface>(
         &self,
         db: &D,
+        core_type: &CoreType,
         debug_command_hash: &H256,
         signature_str: &EthSignature,
     ) -> Result<()> {
@@ -257,6 +266,7 @@ impl DebugSignatories {
                 match self.maybe_validate_signature_for_eth_address_and_increment_nonce_in_db(
                     db,
                     eth_address,
+                    core_type,
                     debug_command_hash,
                     signature_str,
                 ) {
@@ -321,9 +331,10 @@ mod tests {
 
     #[test]
     fn should_convert_debug_signatories_to_json() {
+        let core_type = CoreType::BtcOnInt;
         let debug_signatories = get_sample_debug_signatories();
         let debug_command_hash = get_sample_debug_command_hash();
-        let result = debug_signatories.to_json(&debug_command_hash);
+        let result = debug_signatories.to_json(&core_type, &debug_command_hash);
         assert!(result.is_ok());
     }
 
@@ -468,6 +479,7 @@ mod tests {
     #[test]
     fn should_maybe_validate_debug_signature_and_increment_nonce_in_db() {
         let db = get_test_database();
+        let core_type = CoreType::BtcOnInt;
         let eth_address = convert_hex_to_eth_address("0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap();
         let debug_command_hash = H256::random();
         let debug_signatory_1 = DebugSignatory::new("Some name", &eth_address);
@@ -486,11 +498,11 @@ mod tests {
         assert_eq!(pk.to_public_key().to_address(), eth_address);
 
         // NOTE Now we sign the random `debug_command_hash`
-        let signature = debug_signatory_1.sign(&pk, &debug_command_hash).unwrap();
+        let signature = debug_signatory_1.sign(&pk, &core_type, &debug_command_hash).unwrap();
 
         // NOTE: Signature should be valid, and the nonce for this signatory should be incremented.
         debug_signatories
-            .maybe_validate_signature_and_increment_nonce_in_db(&db, &debug_command_hash, &signature)
+            .maybe_validate_signature_and_increment_nonce_in_db(&db, &core_type, &debug_command_hash, &signature)
             .unwrap();
 
         // NOTE: So lets assert that this signatory's nonce did indeed get updated in the db.
@@ -521,8 +533,10 @@ mod tests {
 
         // NOTE: And so it should error...
         let expected_error = "Signature not valid for any debug signatories!";
+        let core_type = CoreType::BtcOnInt;
         match debug_signatories_before.maybe_validate_signature_and_increment_nonce_in_db(
             &db,
+            &core_type,
             &debug_command_hash,
             &random_signature,
         ) {

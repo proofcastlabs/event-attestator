@@ -6,6 +6,7 @@ use serde_json::{json, Value as JsonValue};
 
 use crate::{
     chains::eth::eth_utils::{convert_eth_address_to_string, convert_h256_to_string},
+    core_type::CoreType,
     types::{Byte, Bytes, Result},
 };
 
@@ -31,11 +32,12 @@ impl DebugSignatory {
         mutable_self
     }
 
-    pub fn to_json(&self, debug_command_hash: &H256) -> Result<JsonValue> {
+    pub fn to_json(&self, core_type: &CoreType, debug_command_hash: &H256) -> Result<JsonValue> {
         Ok(json!({
             "name": self.name,
             "nonce": self.nonce,
-            "hashToSign": self.hash_to_hex(debug_command_hash)?,
+            "coreType": core_type.to_string(),
+            "hashToSign": self.hash_to_hex(&core_type, debug_command_hash)?,
             "debugCommandHash": convert_h256_to_string(debug_command_hash),
             "ethAddress": convert_eth_address_to_string(&self.eth_address),
 
@@ -83,9 +85,10 @@ mod tests {
 
     #[test]
     fn should_convert_debug_signatory_to_json() {
+        let core_type = CoreType::BtcOnInt;
         let debug_signatory = get_sample_debug_signatory();
         let debug_command_hash = get_sample_debug_command_hash();
-        let result = debug_signatory.to_json(&debug_command_hash);
+        let result = debug_signatory.to_json(&core_type, &debug_command_hash);
         assert!(result.is_ok());
     }
 
