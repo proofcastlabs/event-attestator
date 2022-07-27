@@ -15,6 +15,7 @@
 #![allow(clippy::too_many_arguments)]
 
 pub use crate::{
+    core_type::CoreType,
     debug_mode::{debug_add_debug_signer, debug_remove_debug_signer, get_debug_signature_info},
     errors::AppError,
     traits::DatabaseInterface,
