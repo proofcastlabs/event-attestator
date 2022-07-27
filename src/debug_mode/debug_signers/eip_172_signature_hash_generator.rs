@@ -2,7 +2,7 @@ use eip_712::{hash_structured_data, EIP712};
 use ethereum_types::{Address as EthAddress, H256};
 
 use crate::{
-    chains::eth::eth_utils::convert_eth_address_to_string,
+    chains::eth::eth_utils::{convert_eth_address_to_string, convert_h256_to_string},
     debug_mode::debug_signers::debug_signatory::DebugSignatory,
     types::Result,
 };
@@ -58,7 +58,7 @@ impl DebugSignatory {
     // NOTE: The `debug_command_hash` is the hash of the `cli_args` struct parsed by docopt in the
     // app which consumes this core library.
     pub fn hash_to_hex(&self, debug_command_hash: &H256) -> Result<String> {
-        self.hash(debug_command_hash).map(hex::encode)
+        Ok(convert_h256_to_string(&self.hash(debug_command_hash)?))
     }
 }
 
@@ -71,7 +71,7 @@ mod tests {
         let debug_command_hash = get_sample_debug_command_hash();
         let signatory = get_sample_debug_signatory();
         let result = signatory.hash_to_hex(&debug_command_hash).unwrap();
-        let expected_result = "5bfbc8061ca361003107560a5bbc4351886829eac84826b935d6342ee6db6967";
+        let expected_result = "0x5bfbc8061ca361003107560a5bbc4351886829eac84826b935d6342ee6db6967";
         assert_eq!(result, expected_result);
     }
 }
