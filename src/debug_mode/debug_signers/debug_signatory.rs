@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::eth::eth_utils::convert_eth_address_to_string,
+    chains::eth::eth_utils::{convert_eth_address_to_string, convert_h256_to_string},
     types::{Byte, Bytes, Result},
 };
 
@@ -31,13 +31,13 @@ impl DebugSignatory {
         mutable_self
     }
 
-    pub fn to_json(&self, debug_comannd_hash: &H256) -> Result<JsonValue> {
+    pub fn to_json(&self, debug_command_hash: &H256) -> Result<JsonValue> {
         Ok(json!({
             "name": self.name,
             "nonce": self.nonce,
-            "eth_address": convert_eth_address_to_string(&self.eth_address),
-            "debug_command_hash": format!("0x{:x}", debug_comannd_hash),
-            "hash_to_sign": self.hash_to_hex(debug_comannd_hash)?,
+            "hashToSign": self.hash_to_hex(debug_command_hash)?,
+            "debugCommandHash": convert_h256_to_string(debug_command_hash),
+            "ethAddress": convert_eth_address_to_string(&self.eth_address),
 
         }))
     }
