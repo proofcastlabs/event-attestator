@@ -34,14 +34,19 @@ pub fn validate_debug_command_signature<D: DatabaseInterface>(
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<()> {
-    DebugSignatories::get_from_db(db).and_then(|debug_signatories| {
-        debug_signatories.maybe_validate_signature_and_increment_nonce_in_db(
-            db,
-            core_type,
-            &convert_hex_to_h256(debug_command_hash)?,
-            &EthSignature::from_str(signature)?,
-        )
-    })
+    if cfg!(test) || !core_type.is_interim() {
+        warn!("✘ Skipping debug command validation!");
+        Ok(())
+    } else {
+        DebugSignatories::get_from_db(db).and_then(|debug_signatories| {
+            debug_signatories.maybe_validate_signature_and_increment_nonce_in_db(
+                db,
+                core_type,
+                &convert_hex_to_h256(debug_command_hash)?,
+                &EthSignature::from_str(signature)?,
+            )
+        })
+    }
 }
 
 /// Debug Add Debug Signer
