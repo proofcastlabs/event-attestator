@@ -28,7 +28,13 @@ use crate::{
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
     core_type::CoreType,
-    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value, DEBUG_SIGNATORIES_DB_KEY},
+    debug_mode::{
+        check_debug_mode,
+        get_key_from_db,
+        set_key_in_db_to_value,
+        validate_debug_command_signature,
+        DEBUG_SIGNATORIES_DB_KEY,
+    },
     dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
     int_on_eos::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
@@ -168,14 +174,14 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 ///     "eos_token_decimals": <num-decimals>,
 /// }
 pub fn debug_add_token_dictionary_entry<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     dictionary_entry_json_string: &str,
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db)).and_then(|_| {
+    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)).and_then(|_| {
         add_eos_eth_token_dictionary_entry(
-            &db,
+            db,
             dictionary_entry_json_string,
             &CoreType::IntOnEos,
             signature,
@@ -190,13 +196,13 @@ pub fn debug_add_token_dictionary_entry<D: DatabaseInterface>(
 /// `EosEthTokenDictionary` held in the encrypted database, should that entry exist. If it is
 /// not extant, nothing is changed.
 pub fn debug_remove_token_dictionary_entry<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     eth_address_str: &str,
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db)).and_then(|_| {
-        remove_eos_eth_token_dictionary_entry(&db, eth_address_str, &CoreType::IntOnEos, signature, debug_command_hash)
+    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)).and_then(|_| {
+        remove_eos_eth_token_dictionary_entry(db, eth_address_str, &CoreType::IntOnEos, signature, debug_command_hash)
     })
 }
 
@@ -213,14 +219,20 @@ pub fn debug_remove_token_dictionary_entry<D: DatabaseInterface>(
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
 /// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
 /// and only if you know exactly what you are doing and why!
-pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
+pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(
+    db: &D,
+    eth_address_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug getting `addSupportedToken` contract tx...");
     db.start_transaction()?;
-    let eth_db_utils = EthDbUtils::new(&db);
+    let eth_db_utils = EthDbUtils::new(db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = get_eth_address_from_str(eth_address_str)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(&db)))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::IntOnEos, signature, debug_command_hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_add_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
@@ -256,14 +268,20 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
 /// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
 /// and only if you know exactly what you are doing and why!
-pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
+pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(
+    db: &D,
+    eth_address_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug getting `removeSupportedToken` contract tx...");
     db.start_transaction()?;
-    let eth_db_utils = EthDbUtils::new(&db);
+    let eth_db_utils = EthDbUtils::new(db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = get_eth_address_from_str(eth_address_str)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(&db)))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::IntOnEos, signature, debug_command_hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_remove_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
