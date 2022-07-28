@@ -24,7 +24,7 @@ struct EnclaveState {
 impl EnclaveState {
     pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, btc_db_utils: &BtcDbUtils<D>) -> Result<Self> {
         Ok(Self {
-            info: EnclaveInfo::new(eth_db_utils.get_db()),
+            info: EnclaveInfo::new(eth_db_utils.get_db())?,
             btc: BtcEnclaveState::new(btc_db_utils.get_db(), btc_db_utils)?,
             eth: EthEnclaveState::new(
                 eth_db_utils,

@@ -37,7 +37,7 @@ impl DebugSignatory {
             "name": self.name,
             "nonce": self.nonce,
             "coreType": core_type.to_string(),
-            "hashToSign": self.hash_to_hex(&core_type, debug_command_hash)?,
+            "hashToSign": self.hash_to_hex(core_type, debug_command_hash)?,
             "debugCommandHash": convert_h256_to_string(debug_command_hash),
             "ethAddress": convert_eth_address_to_string(&self.eth_address),
 

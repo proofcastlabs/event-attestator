@@ -24,7 +24,7 @@ impl EnclaveState {
     pub fn new<D: DatabaseInterface>(btc_db_utils: &BtcDbUtils<D>, eos_db_utils: &EosDbUtils<D>) -> Result<Self> {
         let db = btc_db_utils.get_db();
         Ok(Self {
-            info: EnclaveInfo::new(db),
+            info: EnclaveInfo::new(db)?,
             eos: EosEnclaveState::new(eos_db_utils)?,
             btc: BtcEnclaveState::new(db, btc_db_utils)?,
             fees: FeesEnclaveState::new_for_btc_on_eos(db)?,

@@ -114,9 +114,9 @@ pub fn get_debug_signature_info<D: DatabaseInterface>(
             if debug_signatories.is_empty() {
                 // NOTE: If there are no signers yet, we show the safe address signing info, since
                 // with that, new debug signers can be added.
-                DebugSignatories::new(vec![SAFE_DEBUG_SIGNATORY.clone()]).to_json(&core_type, &debug_command_hash)
+                DebugSignatories::new(vec![SAFE_DEBUG_SIGNATORY.clone()]).to_json(core_type, &debug_command_hash)
             } else {
-                debug_signatories.to_json(&core_type, &debug_command_hash)
+                debug_signatories.to_json(core_type, &debug_command_hash)
             }
         })
 }
