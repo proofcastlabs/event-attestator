@@ -18,7 +18,13 @@ use crate::{
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
     core_type::CoreType,
-    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value, DEBUG_SIGNATORIES_DB_KEY},
+    debug_mode::{
+        check_debug_mode,
+        get_key_from_db,
+        set_key_in_db_to_value,
+        validate_debug_command_signature,
+        DEBUG_SIGNATORIES_DB_KEY,
+    },
     dictionaries::{
         dictionary_constants::EVM_ALGO_DICTIONARY_KEY,
         evm_algo::{EvmAlgoTokenDictionary, EvmAlgoTokenDictionaryEntry},
@@ -42,10 +48,16 @@ use crate::{
 ///     "eth_address": <address>,
 ///     "evm_address": <address>,
 /// }
-pub fn debug_add_dictionary_entry<D: DatabaseInterface>(db: &D, json_str: &str) -> Result<String> {
+pub fn debug_add_dictionary_entry<D: DatabaseInterface>(
+    db: &D,
+    json_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &AlgoDbUtils::new(db)))
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::IntOnAlgo, signature, debug_command_hash))
         .and_then(|_| EvmAlgoTokenDictionary::get_from_db(db))
         .and_then(|dictionary| dictionary.add_and_update_in_db(EvmAlgoTokenDictionaryEntry::from_str(json_str)?, db))
         .and_then(|_| db.end_transaction())
@@ -57,10 +69,16 @@ pub fn debug_add_dictionary_entry<D: DatabaseInterface>(db: &D, json_str: &str) 
 /// This function will remove an entry pertaining to the passed in EVM address from the
 /// `EvmAlgoTokenDictionaryEntry` held in the encrypted database, should that entry exist. If it is
 /// not extant, nothing is changed.
-pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: &D, eth_address_str: &str) -> Result<String> {
+pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(
+    db: &D,
+    eth_address_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &AlgoDbUtils::new(db)))
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::IntOnAlgo, signature, debug_command_hash))
         .and_then(|_| EvmAlgoTokenDictionary::get_from_db(db))
         .and_then(|dictionary| {
             dictionary.remove_entry_via_evm_address_and_update_in_db(&convert_hex_to_eth_address(eth_address_str)?, db)
@@ -72,10 +90,16 @@ pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: &D, eth_address_s
 /// Debug Set Algo Account Nonce
 ///
 /// Sets the Algo account nonce in the database to the passed in value.
-pub fn debug_set_algo_account_nonce<D: DatabaseInterface>(db: &D, nonce: u64) -> Result<String> {
+pub fn debug_set_algo_account_nonce<D: DatabaseInterface>(
+    db: &D,
+    nonce: u64,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &AlgoDbUtils::new(db)))
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::IntOnAlgo, signature, debug_command_hash))
         .and_then(|_| AlgoDbUtils::new(db).put_algo_account_nonce_in_db(nonce))
         .and_then(|_| db.end_transaction())
         .map(|_| json!({ "algo_account_nonce": nonce }).to_string())
@@ -173,7 +197,12 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
 /// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
 /// and only if you know exactly what you are doing and why!
-pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: &D, eth_address_str: &str) -> Result<String> {
+pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(
+    db: &D,
+    eth_address_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug getting `addSupportedToken` contract tx...");
     db.start_transaction()?;
     let eth_db_utils = EthDbUtils::new(db);
@@ -181,6 +210,7 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: &D, eth_addres
     let eth_address = convert_hex_to_eth_address(eth_address_str)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &AlgoDbUtils::new(db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::IntOnAlgo, signature, debug_command_hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_add_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
@@ -217,16 +247,20 @@ pub fn debug_get_algo_pay_tx<D: DatabaseInterface>(
     receiver: &str,
     note: &str,
     amount: u64,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Getting ALGO pay tx...");
     let algo_db_utils = AlgoDbUtils::new(db);
     // TODO If the note is valid hex, use it raw, else if is valid utf8, convert it to bytes.
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &algo_db_utils))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::IntOnAlgo, signature, debug_command_hash))
         .and_then(|_| {
             let pk = algo_db_utils.get_algo_private_key()?;
             let note_bytes = hex::decode(strip_hex_prefix(note))?;
-            Ok(AlgorandTransaction::new_payment_tx(
+            let tx = AlgorandTransaction::new_payment_tx(
                 amount,
                 MicroAlgos::new(fee),
                 if note_bytes.is_empty() { None } else { Some(note_bytes) },
@@ -237,6 +271,8 @@ pub fn debug_get_algo_pay_tx<D: DatabaseInterface>(
                 None,
             )?
             .sign(&pk)?
-            .to_hex()?)
+            .to_hex()?;
+            db.end_transaction()?;
+            Ok(tx)
         })
 }
