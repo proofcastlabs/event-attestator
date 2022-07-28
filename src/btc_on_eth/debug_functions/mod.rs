@@ -455,7 +455,7 @@ pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> R
 ///
 /// This function sets the BTC fee to the given value. The unit is satoshis per byte.
 pub fn debug_set_btc_fee<D: DatabaseInterface>(db: D, fee: u64) -> Result<String> {
-    debug_put_btc_fee_in_db(&db, fee)
+    debug_put_btc_fee_in_db(&db, fee, &CoreType::BtcOnEth, "", "")
 }
 
 fn debug_put_btc_on_eth_basis_points_in_db<D: DatabaseInterface>(

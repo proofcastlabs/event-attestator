@@ -497,6 +497,11 @@ pub fn debug_set_int_gas_price<D: DatabaseInterface>(
 /// # Debug Set BTC fee
 ///
 /// This function sets the BTC fee to the given value. The unit is satoshis per byte.
-pub fn debug_set_btc_fee<D: DatabaseInterface>(db: D, fee: u64) -> Result<String> {
-    debug_put_btc_fee_in_db(&db, fee)
+pub fn debug_set_btc_fee<D: DatabaseInterface>(
+    db: D,
+    fee: u64,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    debug_put_btc_fee_in_db(&db, fee, &CoreType::BtcOnInt, signature, debug_command_hash)
 }

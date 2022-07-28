@@ -48,6 +48,7 @@ use crate::{
         },
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
+    core_type::CoreType,
     debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value},
     fees::{
         fee_database_utils::FeeDatabaseUtils,
@@ -268,7 +269,7 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_ma
 ///
 /// This function sets the BTC fee to the given value. The unit is satoshis per byte.
 pub fn debug_set_btc_fee<D: DatabaseInterface>(db: D, fee: u64) -> Result<String> {
-    debug_put_btc_fee_in_db(&db, fee)
+    debug_put_btc_fee_in_db(&db, fee, &CoreType::BtcOnEos, "", "")
 }
 
 fn debug_put_btc_on_eos_basis_points_in_db<D: DatabaseInterface>(
