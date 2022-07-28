@@ -21,6 +21,28 @@ impl CoreType {
     pub fn as_db_key_prefix(&self) -> String {
         self.to_string().to_lowercase().replace('_', "-")
     }
+
+    pub fn is_interim(&self) -> bool {
+        // NOTE: IE The core bridges either to or from out interim chain.
+        match self {
+            Self::BtcOnEth => false,
+            Self::BtcOnEos => false,
+            Self::EosOnEth => false,
+            Self::BtcOnInt => true,
+            Self::IntOnEos => true,
+            Self::IntOnEvm => true,
+            Self::IntOnAlgo => true,
+            Self::Erc20OnInt => true,
+            Self::Erc20OnEos => false,
+            Self::Erc20OnEvm => false,
+        }
+    }
+}
+
+impl Default for CoreType {
+    fn default() -> Self {
+        Self::BtcOnInt
+    }
 }
 
 impl fmt::Display for CoreType {
