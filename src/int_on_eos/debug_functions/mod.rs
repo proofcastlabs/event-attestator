@@ -84,10 +84,16 @@ pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(
 ///
 /// ### BEWARE:
 /// Only use this if you know exactly what you are doing and why.
-pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
+pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(
+    db: &D,
+    key: &str,
+    value: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
-    let eos_db_utils = EosDbUtils::new(&db);
-    let eth_db_utils = EthDbUtils::new(&db);
+    let eos_db_utils = EosDbUtils::new(db);
+    let eth_db_utils = EthDbUtils::new(db);
     let is_private_key = {
         key_bytes == eos_db_utils.get_eos_private_key_db_key() || key_bytes == eth_db_utils.get_eth_private_key_db_key()
     };
@@ -96,16 +102,30 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
     } else {
         None
     };
-    set_key_in_db_to_value(db, key, value, sensitivity).map(prepend_debug_output_marker_to_string)
+    set_key_in_db_to_value(
+        db,
+        key,
+        value,
+        sensitivity,
+        &CoreType::IntOnEos,
+        signature,
+        debug_command_hash,
+    )
+    .map(prepend_debug_output_marker_to_string)
 }
 
 /// # Debug Get Key From Db
 ///
 /// This function will return the value stored under a given key in the encrypted database.
-pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
+pub fn debug_get_key_from_db<D: DatabaseInterface>(
+    db: &D,
+    key: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
-    let eos_db_utils = EosDbUtils::new(&db);
-    let eth_db_utils = EthDbUtils::new(&db);
+    let eos_db_utils = EosDbUtils::new(db);
+    let eth_db_utils = EthDbUtils::new(db);
     let is_private_key = {
         key_bytes == eos_db_utils.get_eos_private_key_db_key() || key_bytes == eth_db_utils.get_eth_private_key_db_key()
     };
@@ -114,7 +134,8 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
     } else {
         None
     };
-    get_key_from_db(db, key, sensitivity).map(prepend_debug_output_marker_to_string)
+    get_key_from_db(db, key, sensitivity, &CoreType::IntOnEos, signature, debug_command_hash)
+        .map(prepend_debug_output_marker_to_string)
 }
 
 /// # Debug Get All Db Keys

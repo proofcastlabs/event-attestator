@@ -106,18 +106,18 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
 ///
 /// ### BEWARE:
 /// Only use this if you know exactly what you are doing and why.
-pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
+pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: &D, key: &str, value: &str) -> Result<String> {
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
-            let sensitivity = if key_bytes == EthDbUtils::new(&db).get_eth_private_key_db_key()
-                || key_bytes == BtcDbUtils::new(&db).get_btc_private_key_db_key()
+            let sensitivity = if key_bytes == EthDbUtils::new(db).get_eth_private_key_db_key()
+                || key_bytes == BtcDbUtils::new(db).get_btc_private_key_db_key()
             {
                 MAX_DATA_SENSITIVITY_LEVEL
             } else {
                 None
             };
-            set_key_in_db_to_value(db, key, value, sensitivity)
+            set_key_in_db_to_value(db, key, value, sensitivity, &CoreType::BtcOnEth, "", "")
         })
         .map(prepend_debug_output_marker_to_string)
 }
@@ -125,18 +125,18 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
 /// # Debug Get Key From Db
 ///
 /// This function will return the value stored under a given key in the encrypted database.
-pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
+pub fn debug_get_key_from_db<D: DatabaseInterface>(db: &D, key: &str) -> Result<String> {
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
-            let sensitivity = if key_bytes == EthDbUtils::new(&db).get_eth_private_key_db_key()
-                || key_bytes == BtcDbUtils::new(&db).get_btc_private_key_db_key()
+            let sensitivity = if key_bytes == EthDbUtils::new(db).get_eth_private_key_db_key()
+                || key_bytes == BtcDbUtils::new(db).get_btc_private_key_db_key()
             {
                 MAX_DATA_SENSITIVITY_LEVEL
             } else {
                 None
             };
-            get_key_from_db(db, key, sensitivity)
+            get_key_from_db(db, key, sensitivity, &CoreType::BtcOnEth, "", "")
         })
         .map(prepend_debug_output_marker_to_string)
 }

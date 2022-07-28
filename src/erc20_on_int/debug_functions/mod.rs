@@ -17,6 +17,7 @@ use crate::{
         eth_utils::convert_hex_to_eth_address,
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
+    core_type::CoreType,
     debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value, DEBUG_SIGNATORIES_DB_KEY},
     dictionaries::{
         dictionary_constants::ETH_EVM_DICTIONARY_KEY,
@@ -51,18 +52,32 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 ///
 /// ### BEWARE:
 /// Only use this if you know exactly what you are doing and why.
-pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
+pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(
+    db: &D,
+    key: &str,
+    value: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
-            let sensitivity = if key_bytes == EthDbUtils::new(&db).get_eth_private_key_db_key()
-                || key_bytes == EvmDbUtils::new(&db).get_evm_private_key_db_key()
+            let sensitivity = if key_bytes == EthDbUtils::new(db).get_eth_private_key_db_key()
+                || key_bytes == EvmDbUtils::new(db).get_evm_private_key_db_key()
             {
                 MAX_DATA_SENSITIVITY_LEVEL
             } else {
                 None
             };
-            set_key_in_db_to_value(db, key, value, sensitivity)
+            set_key_in_db_to_value(
+                db,
+                key,
+                value,
+                sensitivity,
+                &CoreType::Erc20OnInt,
+                signature,
+                debug_command_hash,
+            )
         })
         .map(prepend_debug_output_marker_to_string)
 }
@@ -70,18 +85,30 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
 /// # Debug Get Key From Db
 ///
 /// This function will return the value stored under a given key in the encrypted database.
-pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
+pub fn debug_get_key_from_db<D: DatabaseInterface>(
+    db: &D,
+    key: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
-            let sensitivity = if key_bytes == EthDbUtils::new(&db).get_eth_private_key_db_key()
-                || key_bytes == EvmDbUtils::new(&db).get_evm_private_key_db_key()
+            let sensitivity = if key_bytes == EthDbUtils::new(db).get_eth_private_key_db_key()
+                || key_bytes == EvmDbUtils::new(db).get_evm_private_key_db_key()
             {
                 MAX_DATA_SENSITIVITY_LEVEL
             } else {
                 None
             };
-            get_key_from_db(db, key, sensitivity)
+            get_key_from_db(
+                db,
+                key,
+                sensitivity,
+                &CoreType::Erc20OnInt,
+                signature,
+                debug_command_hash,
+            )
         })
         .map(prepend_debug_output_marker_to_string)
 }
