@@ -24,6 +24,26 @@ lazy_static! {
     static ref SAFE_DEBUG_SIGNATORY: DebugSignatory = DebugSignatory::new("safe_address", &SAFE_ETH_ADDRESS);
 }
 
+/// Validate Debug Command Signature
+///
+/// This function will take in the passed debug command hash, signature and database and check that
+/// the signature is valid for one of the debug signatory's over that command hash.
+pub fn validate_debug_command_signature<D: DatabaseInterface>(
+    db: &D,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<()> {
+    DebugSignatories::get_from_db(db).and_then(|debug_signatories| {
+        debug_signatories.maybe_validate_signature_and_increment_nonce_in_db(
+            db,
+            core_type,
+            &convert_hex_to_h256(debug_command_hash)?,
+            &EthSignature::from_str(signature)?,
+        )
+    })
+}
+
 /// Debug Add Debug Signer
 ///
 /// Adds a debug signatory to the list. Since this is a debug function, it requires a valid

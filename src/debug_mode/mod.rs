@@ -6,6 +6,7 @@ pub use debug_signers::debug_signatories::{
     debug_add_debug_signer,
     debug_remove_debug_signer,
     get_debug_signature_info,
+    validate_debug_command_signature,
     DebugSignatories,
     DEBUG_SIGNATORIES_DB_KEY,
 };
