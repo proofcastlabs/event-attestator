@@ -12,27 +12,31 @@ use crate::{
     chains::{
         btc::increment_btc_account_nonce::maybe_increment_btc_account_nonce_and_return_eth_state,
         eth::{
-            eth_database_transactions::{
-                end_eth_db_transaction_and_return_state,
-                start_eth_db_transaction_and_return_state,
-            },
+            eth_database_transactions::end_eth_db_transaction_and_return_state,
             eth_database_utils::EthDbUtilsExt,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             validate_block_in_state::validate_block_in_state,
         },
     },
-    debug_mode::check_debug_mode,
+    core_type::CoreType,
+    debug_mode::{check_debug_mode, validate_debug_command_signature},
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
 
-fn reprocess_int_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
+fn reprocess_int_block<D: DatabaseInterface>(
+    db: D,
+    block_json: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(&db, &CoreType::BtcOnInt, signature, debug_command_hash))
         .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(&db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
-        .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
         .and_then(filter_receipts_for_btc_on_int_redeem_events_in_state)
         .and_then(|state| {
@@ -85,6 +89,11 @@ fn reprocess_int_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
 /// fail due to the core having an incorret set of UTXOs!
-pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
-    reprocess_int_block(db, block_json)
+pub fn debug_reprocess_int_block<D: DatabaseInterface>(
+    db: D,
+    block_json: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    reprocess_int_block(db, block_json, signature, debug_command_hash)
 }

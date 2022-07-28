@@ -16,7 +16,7 @@ use crate::{
     chains::{
         btc::{
             btc_block::parse_btc_block_and_id_and_put_in_state,
-            btc_database_utils::{end_btc_db_transaction, start_btc_db_transaction},
+            btc_database_utils::end_btc_db_transaction,
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
             extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
@@ -35,18 +35,26 @@ use crate::{
             eth_types::EthSigningParams,
         },
     },
-    debug_mode::check_debug_mode,
+    core_type::CoreType,
+    debug_mode::{check_debug_mode, validate_debug_command_signature},
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
 
-fn reprocess_btc_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonce: Option<u64>) -> Result<String> {
+fn reprocess_btc_block<D: DatabaseInterface>(
+    db: D,
+    block_json: &str,
+    signature: &str,
+    debug_command_hash: &str,
+    maybe_nonce: Option<u64>,
+) -> Result<String> {
     check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(&db, &CoreType::BtcOnInt, signature, debug_command_hash))
         .and_then(|_| parse_btc_submission_json_and_put_in_state(block_json, BtcState::init(&db)))
         .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
-        .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)
@@ -123,8 +131,13 @@ fn reprocess_btc_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonc
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, future INT transactions will
 /// fail due to an incorrect nonce!
-pub fn debug_reprocess_btc_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
-    reprocess_btc_block(db, block_json, None)
+pub fn debug_reprocess_btc_block<D: DatabaseInterface>(
+    db: D,
+    block_json: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    reprocess_btc_block(db, block_json, signature, debug_command_hash, None)
 }
 
 /// # Debug Reprocess BTC Block With Nonce
@@ -144,6 +157,9 @@ pub fn debug_reprocess_btc_block_with_nonce<D: DatabaseInterface>(
     db: D,
     block_json: &str,
     nonce: u64,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
-    check_custom_nonce(&EthDbUtils::new(&db), nonce).and_then(|_| reprocess_btc_block(db, block_json, Some(nonce)))
+    check_custom_nonce(&EthDbUtils::new(&db), nonce)
+        .and_then(|_| reprocess_btc_block(db, block_json, signature, debug_command_hash, Some(nonce)))
 }
