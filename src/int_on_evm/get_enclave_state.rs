@@ -7,7 +7,7 @@ use crate::{
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     enclave_info::EnclaveInfo,
-    erc20_on_evm::check_core_is_initialized::check_core_is_initialized,
+    int_on_evm::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -15,25 +15,24 @@ use crate::{
 #[derive(Serialize, Deserialize)]
 struct EnclaveState {
     info: EnclaveInfo,
-    eth: EthEnclaveState,
+    int: EthEnclaveState,
     evm: EvmEnclaveState,
     token_dictionary: EthEvmTokenDictionary,
 }
 
 impl EnclaveState {
     pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, evm_db_utils: &EvmDbUtils<D>) -> Result<Self> {
-        let eth_router_address = None;
         Ok(Self {
-            info: EnclaveInfo::new(),
+            info: EnclaveInfo::new(eth_db_utils.get_db()),
             evm: EvmEnclaveState::new(
                 evm_db_utils,
-                &evm_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
-                eth_router_address,
+                &evm_db_utils.get_int_on_evm_smart_contract_address_from_db()?,
+                Some(evm_db_utils.get_eth_router_smart_contract_address_from_db()?),
             )?,
-            eth: EthEnclaveState::new(
+            int: EthEnclaveState::new(
                 eth_db_utils,
-                &eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
-                eth_router_address,
+                &eth_db_utils.get_int_on_evm_smart_contract_address_from_db()?,
+                Some(eth_db_utils.get_eth_router_smart_contract_address_from_db()?),
             )?,
             token_dictionary: EthEvmTokenDictionary::get_from_db(eth_db_utils.get_db())?,
         })

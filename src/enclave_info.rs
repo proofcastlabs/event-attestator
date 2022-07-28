@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     constants::{CORE_IS_VALIDATING, DB_KEY_PREFIX, DEBUG_MODE},
     fees::fee_constants::MAX_FEE_BASIS_POINTS,
+    traits::DatabaseInterface,
     utils::get_core_version,
 };
 
@@ -16,7 +17,7 @@ pub struct EnclaveInfo {
 }
 
 impl EnclaveInfo {
-    pub fn new() -> Self {
+    pub fn new<D: DatabaseInterface>(db: &D) -> Self {
         Self {
             debug_mode: DEBUG_MODE,
             core_version: get_core_version(),

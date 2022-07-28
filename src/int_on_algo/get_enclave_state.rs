@@ -26,7 +26,7 @@ struct EnclaveState {
 impl EnclaveState {
     pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, algo_db_utils: &AlgoDbUtils<D>) -> Result<Self> {
         Ok(Self {
-            info: EnclaveInfo::new(),
+            info: EnclaveInfo::new(eth_db_utils.get_db()),
             algo: AlgoEnclaveState::new(algo_db_utils)?,
             dictionary: EvmAlgoTokenDictionary::get_from_db(algo_db_utils.get_db())?,
             int: EthEnclaveState::new(

@@ -9,7 +9,7 @@ use crate::{
         },
     },
     enclave_info::EnclaveInfo,
-    eos_on_eth::check_core_is_initialized::check_core_is_initialized,
+    int_on_eos::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -17,20 +17,20 @@ use crate::{
 #[derive(Serialize, Deserialize)]
 struct EnclaveState {
     info: EnclaveInfo,
+    int: EthEnclaveState,
     eos: EosEnclaveState,
-    eth: EthEnclaveState,
 }
 
 impl EnclaveState {
     pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, eos_db_utils: &EosDbUtils<D>) -> Result<Self> {
         Ok(Self {
-            info: EnclaveInfo::new(),
-            eos: EosEnclaveState::new(eos_db_utils)?,
-            eth: EthEnclaveState::new(
+            info: EnclaveInfo::new(eth_db_utils.get_db()),
+            int: EthEnclaveState::new(
                 eth_db_utils,
-                &eth_db_utils.get_eos_on_eth_smart_contract_address_from_db()?,
-                None,
+                &eth_db_utils.get_int_on_eos_smart_contract_address_from_db()?,
+                Some(eth_db_utils.get_eth_router_smart_contract_address_from_db()?),
             )?,
+            eos: EosEnclaveState::new_without_account_name(eos_db_utils)?,
         })
     }
 
@@ -44,7 +44,7 @@ impl EnclaveState {
 /// This function returns a JSON containing the enclave state, including state relevant to each
 /// blockchain controlled by this instance.
 pub fn get_enclave_state<D: DatabaseInterface>(db: D) -> Result<String> {
-    info!("✔ Getting core state...");
+    info!("✔ Getting enclave state...");
     let eth_db_utils = EthDbUtils::new(&db);
     let eos_db_utils = EosDbUtils::new(&db);
     check_core_is_initialized(&eth_db_utils, &eos_db_utils)
