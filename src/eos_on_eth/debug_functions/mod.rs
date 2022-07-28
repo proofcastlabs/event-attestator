@@ -50,8 +50,15 @@ use crate::{
 /// transaction replays. Use with extreme caution and only if you know exactly what you are doing
 /// and why.
 pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db))
-        .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(eos_init_json)?))
+    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)).and_then(|_| {
+        update_incremerkle(
+            db,
+            &EosInitJson::from_json_string(eos_init_json)?,
+            &CoreType::EosOnEth,
+            "",
+            "",
+        )
+    })
 }
 
 /// # Debug Add New Eos Schedule
@@ -59,7 +66,7 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &st
 /// Adds a new EOS schedule to the core's encrypted database.
 pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &str) -> Result<String> {
     check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db))
-        .and_then(|_| add_new_eos_schedule(&db, schedule_json))
+        .and_then(|_| add_new_eos_schedule(&db, schedule_json, &CoreType::EosOnEth, "", ""))
 }
 
 /// # Debug Set Key in DB to Value
@@ -132,8 +139,9 @@ pub fn debug_add_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
     db: D,
     dictionary_entry_json_string: &str,
 ) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db))
-        .and_then(|_| add_eos_eth_token_dictionary_entry(&db, dictionary_entry_json_string))
+    check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db)).and_then(|_| {
+        add_eos_eth_token_dictionary_entry(&db, dictionary_entry_json_string, &CoreType::EosOnEth, "", "")
+    })
 }
 
 /// # Debug Remove ERC20 Dictionary Entry
@@ -146,7 +154,7 @@ pub fn debug_remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
     eth_address_str: &str,
 ) -> Result<String> {
     check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db))
-        .and_then(|_| remove_eos_eth_token_dictionary_entry(&db, eth_address_str))
+        .and_then(|_| remove_eos_eth_token_dictionary_entry(&db, eth_address_str, &CoreType::EosOnEth, "", ""))
 }
 
 /// # Debug Set ETH Gas Price

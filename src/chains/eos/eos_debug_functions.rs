@@ -14,18 +14,26 @@ use crate::{
         },
         eth::eth_utils::get_eth_address_from_str,
     },
-    debug_mode::check_debug_mode,
+    core_type::CoreType,
+    debug_mode::{check_debug_mode, validate_debug_command_signature},
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
 
-pub fn update_incremerkle<D: DatabaseInterface>(db: &D, init_json: &EosInitJson) -> Result<String> {
+pub fn update_incremerkle<D: DatabaseInterface>(
+    db: &D,
+    init_json: &EosInitJson,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug updating blockroot merkle...");
     let eos_db_utils = EosDbUtils::new(db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
         .and_then(|_| put_eos_latest_block_info_in_db(&eos_db_utils, &init_json.block))
         .and_then(|_| generate_and_put_incremerkle_in_db(&eos_db_utils, &init_json.blockroot_merkle))
         .and_then(|_| db.end_transaction())
@@ -33,10 +41,17 @@ pub fn update_incremerkle<D: DatabaseInterface>(db: &D, init_json: &EosInitJson)
         .map(prepend_debug_output_marker_to_string)
 }
 
-pub fn add_new_eos_schedule<D: DatabaseInterface>(db: &D, schedule_json: &str) -> Result<String> {
+pub fn add_new_eos_schedule<D: DatabaseInterface>(
+    db: &D,
+    schedule_json: &str,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug adding new EOS schedule...");
     check_debug_mode()
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
         .and_then(|_| EosProducerScheduleV2::from_json(schedule_json))
         .and_then(|schedule| EosDbUtils::new(db).put_eos_schedule_in_db(&schedule))
         .and_then(|_| db.end_transaction())
@@ -47,11 +62,15 @@ pub fn add_new_eos_schedule<D: DatabaseInterface>(db: &D, schedule_json: &str) -
 pub fn add_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
     db: &D,
     dictionary_entry_json_string: &str,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug adding entry to `EosEthTokenDictionary`...");
     let dictionary = EosEthTokenDictionary::get_from_db(db)?;
     check_debug_mode()
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
         .and_then(|_| EosEthTokenDictionaryEntry::from_str(dictionary_entry_json_string))
         .and_then(|entry| dictionary.add_and_update_in_db(entry, db))
         .and_then(|_| db.end_transaction())
@@ -59,11 +78,18 @@ pub fn add_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
         .map(prepend_debug_output_marker_to_string)
 }
 
-pub fn remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(db: &D, eth_address_str: &str) -> Result<String> {
+pub fn remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
+    db: &D,
+    eth_address_str: &str,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug removing entry from `EosEthTokenDictionary`...");
     let dictionary = EosEthTokenDictionary::get_from_db(db)?;
     check_debug_mode()
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
         .and_then(|_| get_eth_address_from_str(eth_address_str))
         .and_then(|eth_address| dictionary.remove_entry_via_eth_address_and_update_in_db(&eth_address, db))
         .and_then(|_| db.end_transaction())
@@ -71,10 +97,16 @@ pub fn remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(db: &D, eth_a
         .map(prepend_debug_output_marker_to_string)
 }
 
-pub fn get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String> {
+pub fn get_processed_actions_list<D: DatabaseInterface>(
+    db: &D,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug getting processed actions list...");
     check_debug_mode()
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
         .and_then(|_| ProcessedGlobalSequences::get_from_db(db))
         .and_then(|processed_global_sequences| {
             db.end_transaction()?;
@@ -86,10 +118,14 @@ pub fn get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String
 pub fn debug_add_global_sequences_to_processed_list<D: DatabaseInterface>(
     db: &D,
     global_sequences_json: &str,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug adding global sequences to processed list...");
     check_debug_mode()
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
         .and_then(|_| {
             ProcessedGlobalSequences::add_global_sequences_to_list_in_db(
                 db,
@@ -104,10 +140,14 @@ pub fn debug_add_global_sequences_to_processed_list<D: DatabaseInterface>(
 pub fn debug_remove_global_sequences_from_processed_list<D: DatabaseInterface>(
     db: &D,
     global_sequences_json: &str,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug adding global sequences to processed list...");
     check_debug_mode()
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
         .and_then(|_| {
             ProcessedGlobalSequences::remove_global_sequences_from_list_in_db(
                 db,
@@ -124,10 +164,17 @@ pub fn debug_remove_global_sequences_from_processed_list<D: DatabaseInterface>(
 /// # Debug Set EOS Account Nonce
 ///
 /// This function set to the given value EOS account nonce in the encryped database.
-pub fn debug_set_eos_account_nonce<D: DatabaseInterface>(db: &D, new_nonce: u64) -> Result<String> {
+pub fn debug_set_eos_account_nonce<D: DatabaseInterface>(
+    db: &D,
+    new_nonce: u64,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug setting EOS account nonce...");
     check_debug_mode()
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
         .and_then(|_| EosDbUtils::new(db).put_eos_account_nonce_in_db(new_nonce))
         .and_then(|_| db.end_transaction())
         .and(Ok(json!({"set_eos_account_nonce":true}).to_string()))
@@ -147,7 +194,8 @@ mod tests {
         db_utils.put_eos_account_nonce_in_db(nonce).unwrap();
         assert_eq!(db_utils.get_eos_account_nonce_from_db().unwrap(), nonce);
         let new_nonce = 4;
-        debug_set_eos_account_nonce(&db, new_nonce).unwrap();
+        // NOTE: The debug command validation is skipped during tests...
+        debug_set_eos_account_nonce(&db, new_nonce, &CoreType::BtcOnEos, "", "").unwrap();
         assert_eq!(db_utils.get_eos_account_nonce_from_db().unwrap(), new_nonce);
     }
 }
