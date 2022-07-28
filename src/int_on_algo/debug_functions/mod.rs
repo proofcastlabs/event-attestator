@@ -17,7 +17,7 @@ use crate::{
         },
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
-    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value},
+    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value, DEBUG_SIGNATORIES_DB_KEY},
     dictionaries::{
         dictionary_constants::EVM_ALGO_DICTIONARY_KEY,
         evm_algo::{EvmAlgoTokenDictionary, EvmAlgoTokenDictionaryEntry},
@@ -88,8 +88,9 @@ pub fn debug_get_all_db_keys() -> Result<String> {
         json!({
             "int": EthDatabaseKeysJson::new(),
             "algo": AlgoDatabaseKeysJson::new(),
-            "db-key-prefix": DB_KEY_PREFIX.to_string(),
+            "db_key_prefix": DB_KEY_PREFIX.to_string(),
             "dictionary": hex::encode(EVM_ALGO_DICTIONARY_KEY.to_vec()),
+            "debug_signatories": format!("0x{}", hex::encode(&*DEBUG_SIGNATORIES_DB_KEY)),
         })
         .to_string()
     })

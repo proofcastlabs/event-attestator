@@ -7,6 +7,7 @@ pub use debug_signers::debug_signatories::{
     debug_remove_debug_signer,
     get_debug_signature_info,
     DebugSignatories,
+    DEBUG_SIGNATORIES_DB_KEY,
 };
 
 pub(crate) use crate::debug_mode::{

@@ -28,7 +28,7 @@ use crate::{
         },
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
-    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value},
+    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value, DEBUG_SIGNATORIES_DB_KEY},
     dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
     int_on_eos::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
@@ -106,8 +106,9 @@ pub fn debug_get_all_db_keys() -> Result<String> {
     check_debug_mode().and(Ok(json!({
         "eth": EthDatabaseKeysJson::new(),
         "eos": EosDatabaseKeysJson::new(),
-        "db-key-prefix": DB_KEY_PREFIX.to_string(),
+        "db_key_prefix": DB_KEY_PREFIX.to_string(),
         "dictionary": hex::encode(EOS_ETH_DICTIONARY_KEY.to_vec()),
+        "debug_signatories": format!("0x{}", hex::encode(&*DEBUG_SIGNATORIES_DB_KEY)),
     })
     .to_string()))
 }

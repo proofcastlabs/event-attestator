@@ -19,6 +19,11 @@ use crate::{
     types::{Byte, Bytes, Result},
 };
 
+lazy_static! {
+    pub static ref DEBUG_SIGNATORIES_DB_KEY: [u8; 32] = crate::utils::get_prefixed_db_key("debug_signatories_db_key");
+    static ref SAFE_DEBUG_SIGNATORY: DebugSignatory = DebugSignatory::new("safe_address", &SAFE_ETH_ADDRESS);
+}
+
 /// Debug Add Debug Signer
 ///
 /// Adds a debug signatory to the list. Since this is a debug function, it requires a valid
@@ -119,11 +124,6 @@ pub fn get_debug_signature_info<D: DatabaseInterface>(
                 debug_signatories.to_json(core_type, &debug_command_hash)
             }
         })
-}
-
-lazy_static! {
-    static ref DEBUG_SIGNATORIES_DB_KEY: [u8; 32] = crate::utils::get_prefixed_db_key("debug_signatories_db_key");
-    static ref SAFE_DEBUG_SIGNATORY: DebugSignatory = DebugSignatory::new("safe_address", &SAFE_ETH_ADDRESS);
 }
 
 #[derive(Debug, Default, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
