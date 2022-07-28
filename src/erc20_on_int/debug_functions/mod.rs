@@ -18,7 +18,13 @@ use crate::{
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
     core_type::CoreType,
-    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value, DEBUG_SIGNATORIES_DB_KEY},
+    debug_mode::{
+        check_debug_mode,
+        get_key_from_db,
+        set_key_in_db_to_value,
+        validate_debug_command_signature,
+        DEBUG_SIGNATORIES_DB_KEY,
+    },
     dictionaries::{
         dictionary_constants::ETH_EVM_DICTIONARY_KEY,
         eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
@@ -126,12 +132,18 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(
 ///     "eth_address": <address>,
 ///     "evm_address": <address>,
 /// }
-pub fn debug_add_dictionary_entry<D: DatabaseInterface>(db: D, json_str: &str) -> Result<String> {
+pub fn debug_add_dictionary_entry<D: DatabaseInterface>(
+    db: &D,
+    json_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &EvmDbUtils::new(&db)))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &EvmDbUtils::new(db)))
         .and_then(|_| db.start_transaction())
-        .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
-        .and_then(|dictionary| dictionary.add_and_update_in_db(EthEvmTokenDictionaryEntry::from_str(json_str)?, &db))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnInt, signature, debug_command_hash))
+        .and_then(|_| EthEvmTokenDictionary::get_from_db(db))
+        .and_then(|dictionary| dictionary.add_and_update_in_db(EthEvmTokenDictionaryEntry::from_str(json_str)?, db))
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"add_dictionary_entry_success:":"true"}).to_string())
 }
@@ -141,13 +153,19 @@ pub fn debug_add_dictionary_entry<D: DatabaseInterface>(db: D, json_str: &str) -
 /// This function will remove an entry pertaining to the passed in ETH address from the
 /// `EthEvmTokenDictionaryEntry` held in the encrypted database, should that entry exist. If it is
 /// not extant, nothing is changed.
-pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
+pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(
+    db: &D,
+    eth_address_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &EvmDbUtils::new(&db)))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &EvmDbUtils::new(db)))
         .and_then(|_| db.start_transaction())
-        .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnInt, signature, debug_command_hash))
+        .and_then(|_| EthEvmTokenDictionary::get_from_db(db))
         .and_then(|dictionary| {
-            dictionary.remove_entry_via_eth_address_and_update_in_db(&convert_hex_to_eth_address(eth_address_str)?, &db)
+            dictionary.remove_entry_via_eth_address_and_update_in_db(&convert_hex_to_eth_address(eth_address_str)?, db)
         })
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"remove_dictionary_entry_success:":"true"}).to_string())
@@ -166,14 +184,20 @@ pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(db: D, eth_address_st
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
 /// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
 /// and only if you know exactly what you are doing and why!
-pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
+pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(
+    db: &D,
+    eth_address_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug getting `addSupportedToken` contract tx...");
     db.start_transaction()?;
-    let eth_db_utils = EthDbUtils::new(&db);
+    let eth_db_utils = EthDbUtils::new(db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = convert_hex_to_eth_address(eth_address_str)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EvmDbUtils::new(&db)))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EvmDbUtils::new(db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnInt, signature, debug_command_hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_add_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
@@ -209,15 +233,21 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
 /// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
 /// and only if you know exactly what you are doing and why!
-pub fn debug_get_add_weth_unwrapper_address_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
+pub fn debug_get_add_weth_unwrapper_address_tx<D: DatabaseInterface>(
+    db: &D,
+    eth_address_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug getting `addWEthUnwrapperAddress` contract tx...");
     db.start_transaction()?;
-    let eth_db_utils = EthDbUtils::new(&db);
-    let evm_db_utils = EvmDbUtils::new(&db);
+    let eth_db_utils = EthDbUtils::new(db);
+    let evm_db_utils = EvmDbUtils::new(db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = convert_hex_to_eth_address(eth_address_str)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnInt, signature, debug_command_hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_set_weth_unwrapper_address_fxn_data(eth_address))
         .and_then(|tx_data| {
@@ -253,15 +283,21 @@ pub fn debug_get_add_weth_unwrapper_address_tx<D: DatabaseInterface>(db: D, eth_
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
 /// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
 /// and only if you know exactly what you are doing and why!
-pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
+pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(
+    db: &D,
+    eth_address_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug getting `removeSupportedToken` contract tx...");
     db.start_transaction()?;
-    let eth_db_utils = EthDbUtils::new(&db);
-    let evm_db_utils = EvmDbUtils::new(&db);
+    let eth_db_utils = EthDbUtils::new(db);
+    let evm_db_utils = EvmDbUtils::new(db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = convert_hex_to_eth_address(eth_address_str)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnInt, signature, debug_command_hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_remove_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
@@ -293,14 +329,21 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
 /// as such.
 ///
 /// #### NOTE: Using a fee of 0 will mean no fees are taken.
-pub fn debug_set_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
+pub fn debug_set_fee_basis_points<D: DatabaseInterface>(
+    db: &D,
+    address: &str,
+    new_fee: u64,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &EvmDbUtils::new(&db)))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &EvmDbUtils::new(db)))
         .map(|_| sanity_check_basis_points_value(new_fee))
         .and_then(|_| db.start_transaction())
-        .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnInt, signature, debug_command_hash))
+        .and_then(|_| EthEvmTokenDictionary::get_from_db(db))
         .and_then(|dictionary| {
-            dictionary.change_fee_basis_points_and_update_in_db(&db, &convert_hex_to_eth_address(address)?, new_fee)
+            dictionary.change_fee_basis_points_and_update_in_db(db, &convert_hex_to_eth_address(address)?, new_fee)
         })
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"success":true, "address": address, "new_fee": new_fee}).to_string())
@@ -318,19 +361,20 @@ pub fn debug_set_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, ne
 /// #### NOTE: This function will increment the ETH nonce and so the output transation MUST be
 /// broadcast otherwise future transactions are liable to fail.
 pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     token_address: &str,
     recipient_address: &str,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDbUtils::new(&db);
-    let evm_db_utils = EvmDbUtils::new(&db);
+    let eth_db_utils = EthDbUtils::new(db);
+    let evm_db_utils = EvmDbUtils::new(db);
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
         .and_then(|_| db.start_transaction())
-        .and_then(|_| EthEvmTokenDictionary::get_from_db(&db))
-        .and_then(|dictionary| {
-            dictionary.withdraw_fees_and_save_in_db(&db, &convert_hex_to_eth_address(token_address)?)
-        })
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnInt, signature, debug_command_hash))
+        .and_then(|_| EthEvmTokenDictionary::get_from_db(db))
+        .and_then(|dictionary| dictionary.withdraw_fees_and_save_in_db(db, &convert_hex_to_eth_address(token_address)?))
         .and_then(|(token_address, fee_amount)| {
             let chain_id = eth_db_utils.get_eth_chain_id_from_db()?;
             Ok(EthTransaction::new_unsigned(
@@ -361,19 +405,22 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
 /// This function updates the accrued fees value in the dictionary entry retrieved from the passed
 /// in ETH address.
 pub fn debug_set_accrued_fees_in_dictionary<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     token_address: &str,
     fee_amount: String,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug setting accrued fees in dictionary...");
-    let dictionary = EthEvmTokenDictionary::get_from_db(&db)?;
+    let dictionary = EthEvmTokenDictionary::get_from_db(db)?;
     let dictionary_entry_eth_address = convert_hex_to_eth_address(token_address)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &EvmDbUtils::new(&db)))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &EvmDbUtils::new(db)))
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnInt, signature, debug_command_hash))
         .and_then(|_| {
             dictionary.set_accrued_fees_and_save_in_db(
-                &db,
+                db,
                 &dictionary_entry_eth_address,
                 U256::from_dec_str(&fee_amount)?,
             )
