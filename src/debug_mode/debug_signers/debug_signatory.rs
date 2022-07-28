@@ -51,6 +51,14 @@ impl DebugSignatory {
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         Ok(serde_json::from_slice::<Self>(bytes)?)
     }
+
+    pub fn to_enclave_state_json(&self) -> JsonValue {
+        json!({
+            "name": self.name,
+            "nonce": self.nonce,
+            "ethAddress": convert_eth_address_to_string(&self.eth_address),
+        })
+    }
 }
 
 #[cfg(test)]

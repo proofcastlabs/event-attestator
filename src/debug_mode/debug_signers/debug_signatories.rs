@@ -288,6 +288,13 @@ impl DebugSignatories {
             Ok(())
         }
     }
+
+    pub fn to_enclave_state_json(&self) -> JsonValue {
+        json!(self
+            .iter()
+            .map(|debug_signatory| debug_signatory.to_enclave_state_json())
+            .collect::<Vec<_>>())
+    }
 }
 
 #[cfg(test)]
