@@ -485,8 +485,13 @@ pub fn debug_add_multiple_utxos<D: DatabaseInterface>(
 /// # Debug Set ETH Gas Price
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
-pub fn debug_set_int_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
-    debug_set_eth_gas_price_in_db(&db, gas_price)
+pub fn debug_set_int_gas_price<D: DatabaseInterface>(
+    db: D,
+    gas_price: u64,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    debug_set_eth_gas_price_in_db(&db, gas_price, &CoreType::BtcOnInt, signature, debug_command_hash)
 }
 
 /// # Debug Set BTC fee

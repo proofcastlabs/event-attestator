@@ -23,7 +23,6 @@ use crate::{
             },
             eth_crypto::eth_transaction::EthTransaction,
             eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt},
-            eth_debug_functions::debug_set_eth_gas_price_in_db,
             eth_utils::get_eth_address_from_str,
         },
     },
@@ -237,11 +236,4 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
 /// This function returns the list of already-processed action global sequences in JSON format.
 pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String> {
     check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)).and_then(|_| get_processed_actions_list(db))
-}
-
-/// # Debug Set ETH Gas Price
-///
-/// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
-pub fn debug_set_int_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
-    debug_set_eth_gas_price_in_db(&db, gas_price)
 }

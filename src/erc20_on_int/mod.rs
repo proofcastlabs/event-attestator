@@ -27,8 +27,10 @@ pub use crate::{
         eth_debug_functions::{
             debug_set_eth_account_nonce,
             debug_set_eth_any_sender_nonce,
+            debug_set_eth_gas_price_in_db as debug_set_eth_gas_price,
             debug_set_evm_account_nonce as debug_set_int_account_nonce,
             debug_set_evm_any_sender_nonce as debug_set_int_any_sender_nonce,
+            debug_set_evm_gas_price_in_db as debug_set_int_gas_price,
         },
         eth_message_signer::{
             sign_ascii_msg_with_eth_key_with_no_prefix,
@@ -49,9 +51,7 @@ pub use crate::{
             debug_get_remove_supported_token_tx,
             debug_remove_dictionary_entry,
             debug_set_accrued_fees_in_dictionary,
-            debug_set_eth_gas_price,
             debug_set_fee_basis_points,
-            debug_set_int_gas_price,
             debug_set_key_in_db_to_value,
             debug_withdraw_fees_and_save_in_db,
             eth_block_reprocessor::{

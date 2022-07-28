@@ -17,6 +17,7 @@ use crate::{
         eth_utils::convert_hex_to_eth_address,
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
+    core_type::CoreType,
     debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value, DEBUG_SIGNATORIES_DB_KEY},
     dictionaries::{
         dictionary_constants::ETH_EVM_DICTIONARY_KEY,
@@ -289,17 +290,27 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
 /// # Debug Set EVM Gas Price
 ///
 /// This function sets the EVM gas price to use when making EVM transactions. It's unit is `Wei`.
-pub fn debug_set_evm_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
+pub fn debug_set_evm_gas_price<D: DatabaseInterface>(
+    db: D,
+    gas_price: u64,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     // NOTE: This alias exists so as not to break the legacy API where the DB is NOT a reference!
-    debug_set_evm_gas_price_in_db(&db, gas_price)
+    debug_set_evm_gas_price_in_db(&db, gas_price, &CoreType::IntOnEvm, signature, debug_command_hash)
 }
 
 /// # Debug Set INT Gas Price
 ///
 /// This function sets the INT gas price to use when making ETH transactions. It's unit is `Wei`.
-pub fn debug_set_int_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
+pub fn debug_set_int_gas_price<D: DatabaseInterface>(
+    db: D,
+    gas_price: u64,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     // NOTE: This alias exists so as not to break the legacy API where the DB is NOT a reference!
-    debug_set_eth_gas_price_in_db(&db, gas_price)
+    debug_set_eth_gas_price_in_db(&db, gas_price, &CoreType::IntOnEvm, signature, debug_command_hash)
 }
 
 /// # Debug Set Accrued Fees

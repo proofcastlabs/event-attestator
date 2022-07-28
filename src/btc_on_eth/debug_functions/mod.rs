@@ -54,6 +54,7 @@ use crate::{
         },
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
+    core_type::CoreType,
     debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value},
     fees::{
         fee_constants::BTC_ON_ETH_FEE_DB_KEYS,
@@ -447,7 +448,7 @@ pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &st
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
 pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
-    debug_set_eth_gas_price_in_db(&db, gas_price)
+    debug_set_eth_gas_price_in_db(&db, gas_price, &CoreType::BtcOnEth, "", "")
 }
 
 /// # Debug Set BTC fee

@@ -29,6 +29,7 @@ use crate::{
         },
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
+    core_type::CoreType,
     debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value},
     dictionaries::{dictionary_constants::EOS_ETH_DICTIONARY_KEY, eos_eth::EosEthTokenDictionary},
     eos_on_eth::check_core_is_initialized::check_core_is_initialized,
@@ -152,7 +153,7 @@ pub fn debug_remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
 pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
-    debug_set_eth_gas_price_in_db(&db, gas_price)
+    debug_set_eth_gas_price_in_db(&db, gas_price, &CoreType::EosOnEth, "", "")
 }
 
 /// # Debug Set ETH Fee Basis Points

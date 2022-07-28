@@ -14,7 +14,6 @@ use crate::{
         },
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt, EvmDatabaseKeysJson, EvmDbUtils},
-        eth_debug_functions::{debug_set_eth_gas_price_in_db, debug_set_evm_gas_price_in_db},
         eth_utils::convert_hex_to_eth_address,
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
@@ -328,22 +327,6 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
             db.end_transaction()?;
             Ok(json!({"success": true, "eth_signed_tx": hex_tx}).to_string())
         })
-}
-
-/// # Debug Set EVM Gas Price
-///
-/// This function sets the EVM gas price to use when making EVM transactions. It's unit is `Wei`.
-pub fn debug_set_int_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
-    // NOTE: This alias exists so as not to break the legacy API where the DB is NOT a reference!
-    debug_set_evm_gas_price_in_db(&db, gas_price)
-}
-
-/// # Debug Set ETH Gas Price
-///
-/// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
-pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
-    // NOTE: This alias exists so as not to break the legacy API where the DB is NOT a reference!
-    debug_set_eth_gas_price_in_db(&db, gas_price)
 }
 
 /// # Debug Set Accrued Fees
