@@ -18,16 +18,14 @@ use crate::{
             set_evm_canon_block_hash_and_return_state,
             set_evm_latest_block_hash_and_return_state,
         },
-        eth_database_transactions::{
-            end_eth_db_transaction_and_return_state,
-            start_eth_db_transaction_and_return_state,
-        },
+        eth_database_transactions::end_eth_db_transaction_and_return_state,
         eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::validate_block_in_state,
     },
-    debug_mode::check_debug_mode,
+    core_type::CoreType,
+    debug_mode::{check_debug_mode, validate_debug_command_signature},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -157,16 +155,20 @@ pub fn reset_eth_chain<D: DatabaseInterface>(
 }
 
 fn debug_reset_chain<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     submission_material_json: &str,
     canon_to_tip_length: u64,
     is_for_eth: bool,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("Debug resetting ETH chain...");
     check_debug_mode()
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(submission_material_json, EthState::init(&db)))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(submission_material_json, EthState::init(db)))
         .and_then(validate_block_in_state)
-        .and_then(start_eth_db_transaction_and_return_state)
         .and_then(|state| reset_eth_chain(state, canon_to_tip_length, is_for_eth))
         .and_then(end_eth_db_transaction_and_return_state)
         .map(|_| {
@@ -190,12 +192,23 @@ fn debug_reset_chain<D: DatabaseInterface>(
 /// ### Beware: The block used to reset the chain must be trusted. Use this function only if you
 /// know exactly what you are doing and why.
 pub fn debug_reset_eth_chain<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     submission_material_json: &str,
     canon_to_tip_length: u64,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("Debug resetting ETH chain...");
-    debug_reset_chain(db, submission_material_json, canon_to_tip_length, true)
+    debug_reset_chain(
+        db,
+        submission_material_json,
+        canon_to_tip_length,
+        true,
+        core_type,
+        signature,
+        debug_command_hash,
+    )
 }
 
 /// Debug Reset EVM Chain
@@ -209,12 +222,23 @@ pub fn debug_reset_eth_chain<D: DatabaseInterface>(
 /// ### Beware: The block used to reset the chain must be trusted. Use this function only if you
 /// know exactly what you are doing and why.
 pub fn debug_reset_evm_chain<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     submission_material_json: &str,
     canon_to_tip_length: u64,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("Debug resetting EVM Chain...");
-    debug_reset_chain(db, submission_material_json, canon_to_tip_length, false)
+    debug_reset_chain(
+        db,
+        submission_material_json,
+        canon_to_tip_length,
+        false,
+        core_type,
+        signature,
+        debug_command_hash,
+    )
 }
 
 #[cfg(test)]
