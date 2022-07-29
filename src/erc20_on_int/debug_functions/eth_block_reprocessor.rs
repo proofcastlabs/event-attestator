@@ -12,7 +12,8 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
-    debug_mode::check_debug_mode,
+    core_type::CoreType,
+    debug_mode::{check_debug_mode, validate_debug_command_signature},
     dictionaries::eth_evm::{get_eth_evm_token_dictionary_from_db_and_add_to_eth_state, EthEvmTokenDictionary},
     erc20_on_int::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
@@ -40,14 +41,18 @@ use crate::{
 };
 
 fn reprocess_eth_block<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json: &str,
     accrue_fees: bool,
     maybe_nonce: Option<u64>,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
     check_debug_mode()
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(&db)))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnInt, signature, debug_command_hash))
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
@@ -169,8 +174,13 @@ fn reprocess_eth_block<D: DatabaseInterface>(
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future ETH transactions will
 /// fail due to the core having an incorret nonce!
-pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
-    reprocess_eth_block(db, block_json, false, None)
+pub fn debug_reprocess_eth_block<D: DatabaseInterface>(
+    db: &D,
+    block_json: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    reprocess_eth_block(db, block_json, false, None, signature, debug_command_hash)
 }
 
 /// # Debug Reprocess ETH Block With Nonce
@@ -191,12 +201,14 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json: &str) 
 ///
 /// It is assumed that you know what you're doing nonce-wise with this function!
 pub fn debug_reprocess_eth_block_with_nonce<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json: &str,
     nonce: u64,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
-    check_custom_nonce(&EvmDbUtils::new(&db), nonce)
-        .and_then(|_| reprocess_eth_block(db, block_json, false, Some(nonce)))
+    check_custom_nonce(&EvmDbUtils::new(db), nonce)
+        .and_then(|_| reprocess_eth_block(db, block_json, false, Some(nonce), signature, debug_command_hash))
 }
 
 /// # Debug Reprocess ETH Block With Fee Accrual
@@ -218,6 +230,11 @@ pub fn debug_reprocess_eth_block_with_nonce<D: DatabaseInterface>(
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future ETH transactions will
 /// fail due to the core having an incorret nonce!
-pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
-    reprocess_eth_block(db, block_json, true, None)
+pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(
+    db: &D,
+    block_json: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    reprocess_eth_block(db, block_json, true, None, signature, debug_command_hash)
 }
