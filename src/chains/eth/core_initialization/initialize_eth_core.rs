@@ -225,6 +225,28 @@ pub fn initialize_eth_core_with_vault_and_router_contracts_and_return_state<'a, 
     )
 }
 
+pub fn initialize_eth_core_with_router_contract_and_return_state<'a, D: DatabaseInterface>(
+    block_json: &str,
+    chain_id: &EthChainId,
+    gas_price: u64,
+    canon_to_tip_length: u64,
+    state: EthState<'a, D>,
+    router_contract: &EthAddress,
+) -> Result<EthState<'a, D>> {
+    info!("✔ Initializing core with vault & router contract...");
+    initialize_eth_core_maybe_with_contract_tx_and_return_state(
+        block_json,
+        chain_id,
+        gas_price,
+        canon_to_tip_length,
+        state,
+        true,
+        None,
+        Some(router_contract),
+        None,
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -35,6 +35,9 @@ jobs:
       - name: Run tests
         run: cargo test
 
+      - name: Run non validating tests
+        run: cargo test --features non-validating
+
   check_vanilla_apps:
     runs-on: ubuntu-20.04
     env:

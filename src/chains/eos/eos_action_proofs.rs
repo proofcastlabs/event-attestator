@@ -146,6 +146,9 @@ pub struct PTokensRedeem2ActionDataJson {
     pub chain_id: Option<String>,
     pub quantity: Option<String>,
     pub user_data: Option<String>,
+    pub token_contract: Option<String>,
+    pub destination_address: Option<String>,
+    pub destination_chain_id: Option<String>,
 }
 
 impl EosActionJson {

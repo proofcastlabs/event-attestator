@@ -9,14 +9,14 @@ pub(crate) mod test_utils;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    metadata::{
-        metadata_address::MetadataAddress,
-        metadata_chain_id::MetadataChainId,
-        metadata_version::MetadataVersion,
-    },
-    types::{Byte, Bytes, NoneError, Result},
+pub use crate::metadata::{
+    metadata_address::MetadataAddress,
+    metadata_chain_id::MetadataChainId,
+    metadata_protocol_id::MetadataProtocolId,
+    metadata_traits::{ToMetadata, ToMetadataChainId},
+    metadata_version::MetadataVersion,
 };
+use crate::types::{Byte, Bytes, NoneError, Result};
 
 /// Metadata V1 Specification per @bertani:
 /// [

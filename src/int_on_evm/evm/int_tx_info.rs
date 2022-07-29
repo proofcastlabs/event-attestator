@@ -5,7 +5,7 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
 use crate::{
     address::Address,
-    chains::eth::eth_utils::convert_eth_hash_to_string,
+    chains::eth::eth_utils::{convert_eth_address_to_string, convert_eth_hash_to_string},
     metadata::metadata_chain_id::MetadataChainId,
     safe_addresses::SAFE_ETH_ADDRESS_STR,
     types::Bytes,

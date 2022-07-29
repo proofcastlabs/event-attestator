@@ -31,6 +31,7 @@ pub mod chains;
 pub(crate) mod core_type;
 pub(crate) mod dictionaries;
 pub mod eos_on_eth;
+pub mod eos_on_int;
 pub mod erc20_on_eos;
 pub mod erc20_on_evm;
 pub mod erc20_on_int;
