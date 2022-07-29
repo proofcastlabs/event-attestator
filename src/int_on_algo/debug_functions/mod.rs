@@ -1,5 +1,7 @@
 pub(crate) mod algo_block_reprocessor;
 pub(crate) mod int_block_reprocessor;
+pub(crate) mod opt_in_to_application;
+pub(crate) mod opt_in_to_asset;
 
 use std::str::FromStr;
 

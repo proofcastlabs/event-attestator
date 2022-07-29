@@ -18,8 +18,6 @@ pub(crate) mod debug_functions;
 pub(crate) mod get_enclave_state;
 pub(crate) mod get_latest_block_numbers;
 pub(crate) mod int;
-pub(crate) mod opt_in_to_application;
-pub(crate) mod opt_in_to_asset;
 pub(crate) mod test_utils;
 
 pub use crate::{
@@ -49,11 +47,11 @@ pub use crate::{
             debug_set_algo_account_nonce,
             debug_set_key_in_db_to_value,
             int_block_reprocessor::debug_reprocess_int_block,
+            opt_in_to_application::debug_opt_in_to_application,
+            opt_in_to_asset::debug_opt_in_to_asset,
         },
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
         int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},
-        opt_in_to_application::opt_in_to_application,
-        opt_in_to_asset::opt_in_to_asset,
     },
 };
