@@ -48,9 +48,9 @@ use crate::{
 /// blockchain held by the enclave in it's encrypted database. Should the submitted block
 /// contain a redeem event emitted by the smart-contract the enclave is watching, an EOS
 /// transaction will be signed & returned to the caller.
-pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
+pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting ETH block to core...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(&db))
+    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
@@ -179,7 +179,7 @@ mod tests {
         .unwrap();
         let submission_string = get_sample_peg_in_1_submission_string();
         // NOTE: Finally, submit the block containting the peg in....
-        let output = submit_eth_block_to_core(db, &submission_string).unwrap();
+        let output = submit_eth_block_to_core(&db, &submission_string).unwrap();
         let expected_result_json = json!({
             "eth_latest_block_number": 9750222,
             "int_signed_transactions": [
