@@ -25,7 +25,7 @@ struct EnclaveState {
 impl EnclaveState {
     pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, eos_db_utils: &EosDbUtils<D>) -> Result<Self> {
         Ok(Self {
-            info: EnclaveInfo::new(),
+            info: EnclaveInfo::new(eth_db_utils.get_db())?,
             eos: EosEnclaveState::new(eos_db_utils)?,
             eth: EthEnclaveState::new(
                 eth_db_utils,

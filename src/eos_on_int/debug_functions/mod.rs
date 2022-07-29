@@ -20,9 +20,9 @@ use crate::{
             eth_debug_functions::debug_set_eth_gas_price_in_db as debug_set_int_gas_price_in_db,
         },
     },
-    check_debug_mode::check_debug_mode,
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
-    debug_database_utils::{get_key_from_db, set_key_in_db_to_value},
+    core_type::CoreType,
+    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value},
     dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
     eos_on_int::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
@@ -40,17 +40,34 @@ use crate::{
 /// Changing the incremerkle changes the last block the enclave has seen and so can easily lead to
 /// transaction replays. Use with extreme caution and only if you know exactly what you are doing
 /// and why.
-pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db))
-        .and_then(|_| update_incremerkle(db, &EosInitJson::from_json_string(eos_init_json)?))
+pub fn debug_update_incremerkle<D: DatabaseInterface>(
+    db: &D,
+    eos_init_json: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)).and_then(|_| {
+        update_incremerkle(
+            db,
+            &EosInitJson::from_json_string(eos_init_json)?,
+            &CoreType::EosOnInt,
+            signature,
+            debug_command_hash,
+        )
+    })
 }
 
 /// # Debug Add New Eos Schedule
 ///
 /// Adds a new EOS schedule to the core's encrypted database.
-pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &str) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db))
-        .and_then(|_| add_new_eos_schedule(&db, schedule_json))
+pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(
+    db: &D,
+    schedule_json: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db))
+        .and_then(|_| add_new_eos_schedule(db, schedule_json, &CoreType::EosOnInt, signature, debug_command_hash))
 }
 
 /// # Debug Set Key in DB to Value
@@ -59,10 +76,16 @@ pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &s
 ///
 /// ### BEWARE:
 /// Only use this if you know exactly what you are doing and why.
-pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, value: &str) -> Result<String> {
+pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(
+    db: &D,
+    key: &str,
+    value: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
-    let eos_db_utils = EosDbUtils::new(&db);
-    let eth_db_utils = EthDbUtils::new(&db);
+    let eos_db_utils = EosDbUtils::new(db);
+    let eth_db_utils = EthDbUtils::new(db);
     let is_private_key = {
         key_bytes == eos_db_utils.get_eos_private_key_db_key() || key_bytes == eth_db_utils.get_eth_private_key_db_key()
     };
@@ -71,16 +94,30 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: D, key: &str, valu
     } else {
         None
     };
-    set_key_in_db_to_value(db, key, value, sensitivity).map(prepend_debug_output_marker_to_string)
+    set_key_in_db_to_value(
+        db,
+        key,
+        value,
+        sensitivity,
+        &CoreType::EosOnInt,
+        signature,
+        debug_command_hash,
+    )
+    .map(prepend_debug_output_marker_to_string)
 }
 
 /// # Debug Get Key From Db
 ///
 /// This function will return the value stored under a given key in the encrypted database.
-pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<String> {
+pub fn debug_get_key_from_db<D: DatabaseInterface>(
+    db: &D,
+    key: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
-    let eos_db_utils = EosDbUtils::new(&db);
-    let eth_db_utils = EthDbUtils::new(&db);
+    let eos_db_utils = EosDbUtils::new(db);
+    let eth_db_utils = EthDbUtils::new(db);
     let is_private_key = {
         key_bytes == eos_db_utils.get_eos_private_key_db_key() || key_bytes == eth_db_utils.get_eth_private_key_db_key()
     };
@@ -88,7 +125,8 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: D, key: &str) -> Result<S
         true => MAX_DATA_SENSITIVITY_LEVEL,
         false => None,
     };
-    get_key_from_db(db, key, sensitivity).map(prepend_debug_output_marker_to_string)
+    get_key_from_db(db, key, sensitivity, &CoreType::EosOnInt, signature, debug_command_hash)
+        .map(prepend_debug_output_marker_to_string)
 }
 
 /// # Debug Get All Db Keys
@@ -120,11 +158,20 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 ///     "eos_token_decimals": <num-decimals>,
 /// }
 pub fn debug_add_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     dictionary_entry_json_string: &str,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db))
-        .and_then(|_| add_eos_eth_token_dictionary_entry(&db, dictionary_entry_json_string))
+    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)).and_then(|_| {
+        add_eos_eth_token_dictionary_entry(
+            db,
+            dictionary_entry_json_string,
+            &CoreType::EosOnInt,
+            signature,
+            debug_command_hash,
+        )
+    })
 }
 
 /// # Debug Remove Dictionary Entry
@@ -133,16 +180,24 @@ pub fn debug_add_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
 /// `EosEthTokenDictionary` held in the encrypted database, should that entry exist. If it is
 /// not extant, nothing is changed.
 pub fn debug_remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     eth_address_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db))
-        .and_then(|_| remove_eos_eth_token_dictionary_entry(&db, eth_address_str))
+    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)).and_then(|_| {
+        remove_eos_eth_token_dictionary_entry(db, eth_address_str, &CoreType::EosOnInt, signature, debug_command_hash)
+    })
 }
 
 /// # Debug Set INT Gas Price
 ///
 /// This function sets the INT gas price to use when making INT transactions. It's unit is `Wei`.
-pub fn debug_set_int_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
-    debug_set_int_gas_price_in_db(&db, gas_price)
+pub fn debug_set_int_gas_price<D: DatabaseInterface>(
+    db: &D,
+    gas_price: u64,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    debug_set_int_gas_price_in_db(db, gas_price, &CoreType::EosOnInt, signature, debug_command_hash)
 }
