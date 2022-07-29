@@ -67,13 +67,19 @@ fn debug_set_gas_price_in_db<D: DatabaseInterface>(
     db: &D,
     gas_price: u64,
     is_for_eth: bool,
-    core_type: &CoreType,
-    signature: &str,
-    debug_command_hash: &str,
+    _core_type: &CoreType,
+    _signature: &str,
+    _debug_command_hash: &str,
 ) -> Result<String> {
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+        .and_then(|_| {
+            warn!("DEBUG FUNCTTION SIGNATURE VALIDATION DISABLED FOR GAS PRICE SETTER!");
+            // FIXME To be reinstated once scripts running these debug functions are updated to
+            // provided signatures.
+            //validate_debug_command_signature(db, core_type, signature, debug_command_hash) {
+            Ok(())
+        })
         .and_then(|_| {
             if is_for_eth {
                 EthDbUtils::new(db).put_eth_gas_price_in_db(gas_price)
