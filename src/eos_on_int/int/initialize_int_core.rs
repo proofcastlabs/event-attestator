@@ -44,17 +44,17 @@ use crate::{
 /// length param. This latter defines how many `confirmations` of a transactions are required before
 /// a signature is signed. Finally, this function requires the address the router smart contract.
 pub fn maybe_initialize_int_core<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json: &str,
     chain_id: u64,
     gas_price: u64,
     confs: u64,
     router_address: &str,
 ) -> Result<String> {
-    if is_eth_core_initialized(&EthDbUtils::new(&db)) {
+    if is_eth_core_initialized(&EthDbUtils::new(db)) {
         Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string())
     } else {
-        start_eth_db_transaction_and_return_state(EthState::init(&db))
+        start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| {
                 initialize_eth_core_with_router_contract_and_return_state(
                     block_json,
