@@ -32,8 +32,6 @@ use crate::{
     types::Result,
 };
 
-//  NOTE: This exists so we can take a refence to the DB  without breaking the existing API. This
-//  allows us to initialize EOS cores in unit tests etc.
 pub fn initialize_eos_core_inner<D: DatabaseInterface>(
     db: &D,
     chain_id: &str,
@@ -70,13 +68,13 @@ pub fn initialize_eos_core_inner<D: DatabaseInterface>(
 }
 
 pub fn initialize_eos_core<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     chain_id: &str,
     maybe_account_name: Option<&str>,
     maybe_token_symbol: Option<&str>,
     eos_init_json: &str,
 ) -> Result<String> {
-    initialize_eos_core_inner(&db, chain_id, maybe_account_name, maybe_token_symbol, eos_init_json)
+    initialize_eos_core_inner(db, chain_id, maybe_account_name, maybe_token_symbol, eos_init_json)
 }
 
 /// # Maybe Initialize EOS Core With EOS Account & Symbol
@@ -98,16 +96,17 @@ pub fn initialize_eos_core<D: DatabaseInterface>(
 /// }
 /// ```
 pub fn maybe_initialize_eos_core_with_eos_account_and_symbol<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     chain_id: &str,
     account_name: &str,
     token_symbol: &str,
     eos_init_json: &str,
 ) -> Result<String> {
     info!("✔ Maybe initializing EOS core...");
-    match is_eos_core_initialized(&EosDbUtils::new(&db)) {
-        true => Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string()),
-        false => initialize_eos_core(db, chain_id, Some(account_name), Some(token_symbol), eos_init_json),
+    if is_eos_core_initialized(&EosDbUtils::new(db)) {
+        Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string())
+    } else {
+        initialize_eos_core(db, chain_id, Some(account_name), Some(token_symbol), eos_init_json)
     }
 }
 
@@ -131,14 +130,15 @@ pub fn maybe_initialize_eos_core_with_eos_account_and_symbol<D: DatabaseInterfac
 /// }
 /// ```
 pub fn maybe_initialize_eos_core_without_eos_account_or_symbol<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     chain_id: &str,
     eos_init_json: &str,
 ) -> Result<String> {
     info!("✔ Maybe initializing EOS core...");
-    match is_eos_core_initialized(&EosDbUtils::new(&db)) {
-        true => Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string()),
-        false => initialize_eos_core(db, chain_id, None, None, eos_init_json),
+    if is_eos_core_initialized(&EosDbUtils::new(db)) {
+        Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string())
+    } else {
+        initialize_eos_core(db, chain_id, None, None, eos_init_json)
     }
 }
 
@@ -164,14 +164,15 @@ pub fn maybe_initialize_eos_core_without_eos_account_or_symbol<D: DatabaseInterf
 /// }
 /// ```
 pub fn maybe_initialize_eos_core_with_eos_account_without_symbol<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     chain_id: &str,
     eos_account_name: &str,
     eos_init_json: &str,
 ) -> Result<String> {
     info!("✔ Maybe initializing EOS core...");
-    match is_eos_core_initialized(&EosDbUtils::new(&db)) {
-        true => Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string()),
-        false => initialize_eos_core(db, chain_id, Some(eos_account_name), None, eos_init_json),
+    if is_eos_core_initialized(&EosDbUtils::new(db)) {
+        Ok(EOS_CORE_IS_INITIALIZED_JSON.to_string())
+    } else {
+        initialize_eos_core(db, chain_id, Some(eos_account_name), None, eos_init_json)
     }
 }

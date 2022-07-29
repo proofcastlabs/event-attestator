@@ -160,7 +160,7 @@ pub fn debug_reprocess_eos_block<D: DatabaseInterface>(
     db: &D,
     block_json: &str,
     signature: &str,
-    debug_command_hash: &&str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     reprocess_eos_block(db, block_json, None, signature, debug_command_hash)
 }
