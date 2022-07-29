@@ -350,7 +350,7 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
 pub fn debug_set_accrued_fees_in_dictionary<D: DatabaseInterface>(
     db: &D,
     token_address: &str,
-    fee_amount: String,
+    fee_amount: &str,
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<String> {
@@ -365,7 +365,7 @@ pub fn debug_set_accrued_fees_in_dictionary<D: DatabaseInterface>(
             dictionary.set_accrued_fees_and_save_in_db(
                 db,
                 &dictionary_entry_eth_address,
-                U256::from_dec_str(&fee_amount)?,
+                U256::from_dec_str(fee_amount)?,
             )
         })
         .and_then(|_| db.end_transaction())
