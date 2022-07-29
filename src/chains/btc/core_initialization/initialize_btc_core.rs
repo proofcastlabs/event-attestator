@@ -65,7 +65,7 @@ pub fn init_btc_core<D: DatabaseInterface>(
 }
 
 pub fn maybe_initialize_btc_core<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json_string: &str,
     fee: u64,
     difficulty: u64,
@@ -73,7 +73,7 @@ pub fn maybe_initialize_btc_core<D: DatabaseInterface>(
     canon_to_tip_length: u64,
 ) -> Result<String> {
     info!("✔ Maybe initializing BTC core...");
-    let state = BtcState::init(&db);
+    let state = BtcState::init(db);
     if is_btc_core_initialized(&state.btc_db_utils) {
         Ok(BTC_CORE_IS_INITIALIZED_JSON.to_string())
     } else {

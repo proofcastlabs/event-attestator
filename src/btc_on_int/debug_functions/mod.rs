@@ -162,13 +162,13 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(
 /// # Debug Get All UTXOs
 ///
 /// This function will return a JSON containing all the UTXOs the encrypted database currently has.
-pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D, signature: &str, debug_command_hash: &str) -> Result<String> {
+pub fn debug_get_all_utxos<D: DatabaseInterface>(db: &D, signature: &str, debug_command_hash: &str) -> Result<String> {
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(&db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &BtcDbUtils::new(&db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &BtcDbUtils::new(db)))
         .and_then(|_| {
-            let result = get_all_utxos_as_json_string(&db)?;
+            let result = get_all_utxos_as_json_string(db)?;
             db.end_transaction()?;
             Ok(result)
         })
@@ -187,16 +187,16 @@ pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D, signature: &str, debug_c
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
 pub fn debug_get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     new_address: &str,
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDbUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(&db))
+    let eth_db_utils = EthDbUtils::new(db);
+    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db))
         .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(&db, &CoreType::BtcOnInt, signature, debug_command_hash))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
         .and_then(|_| {
             get_signed_erc777_change_pnetwork_tx(&eth_db_utils, EthAddress::from_slice(&hex::decode(new_address)?))
         })
@@ -233,17 +233,17 @@ fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()>
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
 pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     new_address: &str,
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDbUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(&db))
+    let eth_db_utils = EthDbUtils::new(db);
+    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db))
         .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(&db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| check_erc777_proxy_address_is_set(&db))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
+        .and_then(|_| check_erc777_proxy_address_is_set(db))
         .and_then(|_| {
             get_signed_erc777_proxy_change_pnetwork_tx(
                 &eth_db_utils,
@@ -270,17 +270,17 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
 pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     new_address: &str,
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDbUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(&db))
+    let eth_db_utils = EthDbUtils::new(db);
+    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db))
         .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(&db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| check_erc777_proxy_address_is_set(&db))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
+        .and_then(|_| check_erc777_proxy_address_is_set(db))
         .and_then(|_| {
             get_signed_erc777_proxy_change_pnetwork_by_proxy_tx(
                 &eth_db_utils,
@@ -304,15 +304,15 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D: DatabaseInte
 /// ### NOTE:
 /// The core won't accept UTXOs it already has in its encrypted database.
 pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     btc_submission_material_json: &str,
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<String> {
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(&db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(&db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
+        .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
         .and_then(set_any_sender_flag_in_state)
         .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
@@ -346,7 +346,7 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(
 /// There is great potential for bricking a running instance when using this, so only use it
 /// if you know exactly what you're doing and why!
 pub fn debug_mint_pbtc<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     amount: u128,
     nonce: u64,
     eth_network: &str,
@@ -355,11 +355,11 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDbUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(&db))
+    let eth_db_utils = EthDbUtils::new(db);
+    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db))
         .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(&db, &CoreType::BtcOnInt, signature, debug_command_hash))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
         .map(|_| strip_hex_prefix(recipient))
         .and_then(|hex_no_prefix| {
             decode_hex_with_err_msg(
@@ -407,7 +407,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
 /// broadcast, the change output saved in the DB will NOT be spendable, leaving the enclave
 /// bricked. Use ONLY if you know exactly what you're doing and why!
 pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     fee: u64,
     tx_id: &str,
     v_out: u32,
@@ -416,8 +416,8 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
 ) -> Result<String> {
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(&db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &BtcDbUtils::new(&db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &BtcDbUtils::new(db)))
         .and_then(|_| {
             db.end_transaction()?;
             get_child_pays_for_parent_btc_tx(db, fee, tx_id, v_out).map(prepend_debug_output_marker_to_string)
@@ -435,7 +435,7 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
 /// broadcast, the consolidated  output saved in the DB will NOT be spendable, leaving the enclave
 /// bricked. Use ONLY if you know exactly what you're doing and why!
 pub fn debug_consolidate_utxos<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     fee: u64,
     num_utxos: usize,
     signature: &str,
@@ -443,8 +443,8 @@ pub fn debug_consolidate_utxos<D: DatabaseInterface>(
 ) -> Result<String> {
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(&db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &BtcDbUtils::new(&db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &BtcDbUtils::new(db)))
         .and_then(|_| {
             db.end_transaction()?;
             consolidate_utxos(db, fee, num_utxos).map(prepend_debug_output_marker_to_string)
@@ -458,7 +458,7 @@ pub fn debug_consolidate_utxos<D: DatabaseInterface>(
 /// ### BEWARE:
 /// Use ONLY if you know exactly what you're doing and why!
 pub fn debug_remove_utxo<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     tx_id: &str,
     v_out: u32,
     signature: &str,
@@ -466,8 +466,8 @@ pub fn debug_remove_utxo<D: DatabaseInterface>(
 ) -> Result<String> {
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(&db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &BtcDbUtils::new(&db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &BtcDbUtils::new(db)))
         .and_then(|_| {
             db.end_transaction()?;
             remove_utxo(db, tx_id, v_out).map(prepend_debug_output_marker_to_string)
@@ -488,15 +488,15 @@ pub fn debug_remove_utxo<D: DatabaseInterface>(
 /// ### BEWARE:
 /// Use ONLY if you know exactly what you're doing and why!
 pub fn debug_add_multiple_utxos<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     json_str: &str,
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<String> {
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(&db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| add_multiple_utxos(&db, json_str))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
+        .and_then(|_| add_multiple_utxos(db, json_str))
         .and_then(|output| {
             db.end_transaction()?;
             Ok(prepend_debug_output_marker_to_string(output))
@@ -507,22 +507,22 @@ pub fn debug_add_multiple_utxos<D: DatabaseInterface>(
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
 pub fn debug_set_int_gas_price<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     gas_price: u64,
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<String> {
-    debug_set_eth_gas_price_in_db(&db, gas_price, &CoreType::BtcOnInt, signature, debug_command_hash)
+    debug_set_eth_gas_price_in_db(db, gas_price, &CoreType::BtcOnInt, signature, debug_command_hash)
 }
 
 /// # Debug Set BTC fee
 ///
 /// This function sets the BTC fee to the given value. The unit is satoshis per byte.
 pub fn debug_set_btc_fee<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     fee: u64,
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<String> {
-    debug_put_btc_fee_in_db(&db, fee, &CoreType::BtcOnInt, signature, debug_command_hash)
+    debug_put_btc_fee_in_db(db, fee, &CoreType::BtcOnInt, signature, debug_command_hash)
 }

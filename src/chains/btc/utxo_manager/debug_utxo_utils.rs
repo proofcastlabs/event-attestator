@@ -44,23 +44,23 @@ pub fn clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
         .map(|_| SUCCESS_JSON.to_string())
 }
 
-pub fn remove_utxo<D: DatabaseInterface>(db: D, tx_id: &str, v_out: u32) -> Result<String> {
+pub fn remove_utxo<D: DatabaseInterface>(db: &D, tx_id: &str, v_out: u32) -> Result<String> {
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_btc_tx_id_from_str(tx_id))
-        .and_then(|id| get_utxo_with_tx_id_and_v_out(&db, v_out, &id))
+        .and_then(|id| get_utxo_with_tx_id_and_v_out(db, v_out, &id))
         .and_then(|_| db.end_transaction())
         .map(|_| json!({ "v_out_of_removed_utxo": v_out, "tx_id_of_removed_utxo": tx_id }).to_string())
 }
 
-pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize) -> Result<String> {
+pub fn consolidate_utxos<D: DatabaseInterface>(db: &D, fee: u64, num_utxos: usize) -> Result<String> {
     if num_utxos < 1 {
         return Err("Cannot consolidate 0 UTXOs!".into());
     };
-    let btc_db_utils = BtcDbUtils::new(&db);
+    let btc_db_utils = BtcDbUtils::new(db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| get_x_utxos(&db, num_utxos))
+        .and_then(|_| get_x_utxos(db, num_utxos))
         .and_then(|utxos| {
             let btc_address = btc_db_utils.get_btc_address_from_db()?;
             let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
@@ -72,7 +72,7 @@ pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize
                 utxos,
             )?;
             let change_utxos = extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]);
-            save_utxos_to_db(&db, &change_utxos)?;
+            save_utxos_to_db(db, &change_utxos)?;
             Ok(btc_tx)
         })
         .and_then(|btc_tx| {
@@ -81,7 +81,7 @@ pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize
                 "num_utxos_spent": num_utxos,
                 "btc_tx_hash": btc_tx.txid().to_string(),
                 "btc_tx_hex": get_hex_tx_from_signed_btc_tx(&btc_tx),
-                "num_utxos_remaining": get_total_number_of_utxos_from_db(&db),
+                "num_utxos_remaining": get_total_number_of_utxos_from_db(db),
             })
             .to_string();
             db.end_transaction()?;
@@ -90,16 +90,16 @@ pub fn consolidate_utxos<D: DatabaseInterface>(db: D, fee: u64, num_utxos: usize
 }
 
 pub fn get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     fee: u64,
     tx_id: &str,
     v_out: u32,
 ) -> Result<String> {
-    let btc_db_utils = BtcDbUtils::new(&db);
+    let btc_db_utils = BtcDbUtils::new(db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
         .and_then(|_| get_btc_tx_id_from_str(tx_id))
-        .and_then(|id| get_utxo_with_tx_id_and_v_out(&db, v_out, &id))
+        .and_then(|id| get_utxo_with_tx_id_and_v_out(db, v_out, &id))
         .and_then(|utxo| {
             const MAX_FEE_MULTIPLE: u64 = 10;
             let fee_from_db = btc_db_utils.get_btc_fee_from_db()?;
@@ -116,7 +116,7 @@ pub fn get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
                 BtcUtxosAndValues::new(vec![utxo]),
             )?;
             let change_utxos = extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]);
-            save_utxos_to_db(&db, &change_utxos)?;
+            save_utxos_to_db(db, &change_utxos)?;
             db.end_transaction()?;
             Ok(btc_tx)
         })
