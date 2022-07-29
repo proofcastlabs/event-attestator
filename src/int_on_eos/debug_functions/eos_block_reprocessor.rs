@@ -4,10 +4,7 @@ use crate::{
     chains::{
         eos::{
             add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
-            eos_database_transactions::{
-                end_eos_db_transaction_and_return_state,
-                start_eos_db_transaction_and_return_state,
-            },
+            eos_database_transactions::end_eos_db_transaction_and_return_state,
             eos_global_sequences::{
                 get_processed_global_sequences_and_add_to_state,
                 maybe_add_global_sequences_to_processed_list_and_return_state,
@@ -30,7 +27,8 @@ use crate::{
             eth_debug_functions::check_custom_nonce,
         },
     },
-    debug_mode::check_debug_mode,
+    core_type::CoreType,
+    debug_mode::{check_debug_mode, validate_debug_command_signature},
     dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
     int_on_eos::{
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
@@ -51,13 +49,20 @@ use crate::{
     utils::prepend_debug_output_marker_to_string,
 };
 
-fn reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonce: Option<u64>) -> Result<String> {
+fn reprocess_eos_block<D: DatabaseInterface>(
+    db: &D,
+    block_json: &str,
+    maybe_nonce: Option<u64>,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug reprocessing EOS block...");
     check_debug_mode()
-        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(&db)))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::IntOnEos, signature, debug_command_hash))
+        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
-        .and_then(start_eos_db_transaction_and_return_state)
         .and_then(get_processed_global_sequences_and_add_to_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eos_state)
         .and_then(maybe_add_new_eos_schedule_to_db_and_return_state)
@@ -151,8 +156,13 @@ fn reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str, maybe_nonc
 /// This function will incrememnt the ETH nonce in the encrypted database, and so not broadcasting
 /// any outputted transactions will result in all future transactions failing. Use only with
 /// extreme caution and when you know exactly what you are doing and why.
-pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
-    reprocess_eos_block(db, block_json, None)
+pub fn debug_reprocess_eos_block<D: DatabaseInterface>(
+    db: &D,
+    block_json: &str,
+    signature: &str,
+    debug_command_hash: &&str,
+) -> Result<String> {
+    reprocess_eos_block(db, block_json, None, signature, debug_command_hash)
 }
 
 /// # Debug Reprocess EOS Block With Nonce
@@ -169,9 +179,12 @@ pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) 
 ///
 /// It is assumed that you know what you're doing nonce-wise with this function!
 pub fn debug_reprocess_eos_block_with_nonce<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json: &str,
     nonce: u64,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
-    check_custom_nonce(&EthDbUtils::new(&db), nonce).and_then(|_| reprocess_eos_block(db, block_json, Some(nonce)))
+    check_custom_nonce(&EthDbUtils::new(db), nonce)
+        .and_then(|_| reprocess_eos_block(db, block_json, Some(nonce), signature, debug_command_hash))
 }

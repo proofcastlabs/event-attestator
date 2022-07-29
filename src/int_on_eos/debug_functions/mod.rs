@@ -75,13 +75,13 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(
 ///
 /// Adds a new EOS schedule to the core's encrypted database.
 pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     schedule_json: &str,
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db))
-        .and_then(|_| add_new_eos_schedule(&db, schedule_json, &CoreType::IntOnEos, signature, debug_command_hash))
+    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db))
+        .and_then(|_| add_new_eos_schedule(db, schedule_json, &CoreType::IntOnEos, signature, debug_command_hash))
 }
 
 /// # Debug Set Key in DB to Value
