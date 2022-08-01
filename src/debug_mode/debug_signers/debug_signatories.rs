@@ -189,11 +189,11 @@ impl DebugSignatories {
     }
 
     pub fn to_json(&self, core_type: &CoreType, debug_command_hash: &H256) -> Result<JsonValue> {
-        Ok(json!([self
+        Ok(json!(self
             .iter()
             .cloned()
             .map(|debug_signatory| debug_signatory.to_json(core_type, debug_command_hash))
-            .collect::<Result<Vec<_>>>()?]))
+            .collect::<Result<Vec<_>>>()?))
     }
 
     fn add(&self, debug_signatory: &DebugSignatory) -> Self {
