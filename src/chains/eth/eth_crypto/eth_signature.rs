@@ -28,11 +28,9 @@ impl EthSignature {
     }
 
     pub fn recover_signer_address(&self, hash: &H256) -> Result<EthAddress> {
-        Ok(recover(
-            hash.as_bytes(),
-            &self[..64],
-            self.get_ecdsa_recovery_param().into(),
-        )?)
+        Ok(EthAddress::from_slice(
+            recover(hash.as_bytes(), &self[..64], self.get_ecdsa_recovery_param().into())?.as_bytes(),
+        ))
     }
 }
 

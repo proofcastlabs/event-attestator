@@ -27,7 +27,6 @@ log = "0.4.14"
 rlp = "0.5.1"
 rand = "0.8.4"
 bs58 = "0.4.0"
-web3 = "0.18.0"
 paste = "1.0.6"
 strum = "0.22.0"
 chrono = "0.4.19"
@@ -53,6 +52,7 @@ bitcoin = { version = "0.27.1", features = ["use-serde", "rand"] }
 eip-712 = { git = "https://github.com/paritytech/EIP-712", rev = "551dfd9" }
 rust-algorand = { git = "https://github.com/provable-things/rust-algorand" }
 eos-chain = { git = "https://github.com/bifrost-finance/rust-eos", rev = "8e57843" }
+web3 = { version = "0.17.0", default-features = false, features = ["http-rustls-tls","signing"] }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"], rev = "9c756f7" }
 
 [dev-dependencies]
