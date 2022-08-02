@@ -91,7 +91,8 @@ pub fn debug_add_debug_signer<D: DatabaseInterface>(
             } else {
                 debug_signatories
                     .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
-                    .and_then(|_| debug_signatories.add_and_update_in_db(db, &debug_signatory_to_add))
+                    .and_then(|_| DebugSignatories::get_from_db(db))
+                    .and_then(|debug_signatories| debug_signatories.add_and_update_in_db(db, &debug_signatory_to_add))
             }
         })
         .and_then(|_| db.end_transaction())
@@ -119,7 +120,8 @@ pub fn debug_remove_debug_signer<D: DatabaseInterface>(
             let debug_command_hash = convert_hex_to_h256(debug_command_hash_str)?;
             debug_signatories
                 .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
-                .and_then(|_| debug_signatories.remove_and_update_in_db(db, &eth_address))
+                .and_then(|_| DebugSignatories::get_from_db(db))
+                .and_then(|debug_signatories| debug_signatories.remove_and_update_in_db(db, &eth_address))
         })
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"debug_remove_signatory_success":true, "eth_address": eth_address_str}).to_string())
