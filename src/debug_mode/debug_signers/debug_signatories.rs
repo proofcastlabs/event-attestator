@@ -4,7 +4,7 @@ use std::str::FromStr;
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value as JsonValue};
+use serde_json::{json, Map as JsonMap, Value as JsonValue};
 
 use crate::{
     chains::eth::{
@@ -144,9 +144,10 @@ pub fn get_debug_signature_info<D: DatabaseInterface>(
             if debug_signatories.is_empty() {
                 // NOTE: If there are no signers yet, we show the safe address signing info, since
                 // with that, new debug signers can be added.
-                DebugSignatories::new(vec![SAFE_DEBUG_SIGNATORY.clone()]).to_json(core_type, &debug_command_hash)
+                DebugSignatories::new(vec![SAFE_DEBUG_SIGNATORY.clone()])
+                    .to_signature_info_json(core_type, &debug_command_hash)
             } else {
-                debug_signatories.to_json(core_type, &debug_command_hash)
+                debug_signatories.to_signature_info_json(core_type, &debug_command_hash)
             }
         })
 }
@@ -188,12 +189,35 @@ impl DebugSignatories {
         )
     }
 
-    pub fn to_json(&self, core_type: &CoreType, debug_command_hash: &H256) -> Result<JsonValue> {
-        Ok(json!(self
-            .iter()
-            .cloned()
-            .map(|debug_signatory| debug_signatory.to_json(core_type, debug_command_hash))
-            .collect::<Result<Vec<_>>>()?))
+    pub fn to_signature_info_json(&self, core_type: &CoreType, debug_command_hash: &H256) -> Result<JsonValue> {
+        // NOTE: The `to_json` fxn for an individual signer uses these single-letter keys, so we
+        // add a glossary to aid in understanding.
+        let error_key = "error".to_string();
+        let error_value = JsonValue::String("A signature is required to run this function!".to_string());
+        let glossary_key = "glossary".to_string();
+        let glossary_value = json!({
+            "a": "the ETH `address` derived from the signer's private key",
+            "n": "a `nonce` that's used to stop replays for a given address' signature",
+            "h": "the final `hash` to sign if using a simple ETH signer like etherscan or MEW or mycrypto",
+            "d": "the `debug` command hash, commiting to the debug command's arguments, used for EIP712 signing",
+        });
+        let core_type_key = "coreType".to_string();
+        let core_type_value = JsonValue::String(core_type.to_string());
+
+        let mut json_map = JsonMap::new();
+        json_map.insert(error_key, error_value);
+        json_map.insert(glossary_key, glossary_value);
+        json_map.insert(core_type_key, core_type_value);
+
+        self.iter()
+            .try_fold(json_map, |mut map, debug_signatory| {
+                map.insert(
+                    debug_signatory.name.clone(),
+                    debug_signatory.to_json(core_type, debug_command_hash)?,
+                );
+                Ok(map)
+            })
+            .map(JsonValue::Object)
     }
 
     fn add(&self, debug_signatory: &DebugSignatory) -> Self {
@@ -254,6 +278,7 @@ impl DebugSignatories {
     }
 
     fn increment_nonce_in_signatory_in_db<D: DatabaseInterface>(&self, db: &D, eth_address: &EthAddress) -> Result<()> {
+        info!("✔ Incrementing nonce in debug signatory with address: {}", eth_address);
         self.get(eth_address)
             .map(|signatory| signatory.increment_nonce())
             .and_then(|signatory| self.replace(&signatory))
@@ -366,7 +391,7 @@ mod tests {
         let core_type = CoreType::BtcOnInt;
         let debug_signatories = get_sample_debug_signatories();
         let debug_command_hash = get_sample_debug_command_hash();
-        let result = debug_signatories.to_json(&core_type, &debug_command_hash);
+        let result = debug_signatories.to_signature_info_json(&core_type, &debug_command_hash);
         assert!(result.is_ok());
     }
 

@@ -27,19 +27,32 @@ impl DebugSignatory {
     }
 
     pub fn increment_nonce(&self) -> Self {
+        info!(
+            "✔ Incrementing nonce for '{}' from {} to {}!",
+            self.name,
+            self.nonce,
+            self.nonce + 1
+        );
         let mut mutable_self = self.clone();
         mutable_self.nonce = self.nonce + 1;
         mutable_self
     }
 
     pub fn to_json(&self, core_type: &CoreType, debug_command_hash: &H256) -> Result<JsonValue> {
+        /*
+         * NOTE: We use this so that parsing this output via `jq` or similar is as simple and quick
+         * as possible for when this functionality is being used on mobile devices or similar.
+         * NOTE: Glossary:
+         *  n = nonce
+         *  a = ethAddress
+         *  h = hashToSign
+         *  d = debugCommandHash
+         */
         Ok(json!({
-            "name": self.name,
-            "nonce": self.nonce,
-            "coreType": core_type.to_string(),
-            "hashToSign": self.hash_to_hex(core_type, debug_command_hash)?,
-            "debugCommandHash": convert_h256_to_string(debug_command_hash),
-            "ethAddress": convert_eth_address_to_string(&self.eth_address),
+            "n": self.nonce,
+            "h": self.hash_to_hex(core_type, debug_command_hash)?,
+            "d": convert_h256_to_string(debug_command_hash),
+            "a": convert_eth_address_to_string(&self.eth_address),
 
         }))
     }
