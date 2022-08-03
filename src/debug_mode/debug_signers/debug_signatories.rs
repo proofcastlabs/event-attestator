@@ -14,6 +14,7 @@ use crate::{
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     core_type::CoreType,
     debug_mode::{check_debug_mode, debug_signers::debug_signatory::DebugSignatory},
+    errors::AppError,
     safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
@@ -21,7 +22,8 @@ use crate::{
 
 lazy_static! {
     pub static ref DEBUG_SIGNATORIES_DB_KEY: [u8; 32] = crate::utils::get_prefixed_db_key("debug_signatories_db_key");
-    static ref SAFE_DEBUG_SIGNATORY: DebugSignatory = DebugSignatory::new("safe_address", &SAFE_ETH_ADDRESS);
+    static ref SAFE_DEBUG_SIGNATORIES: DebugSignatories =
+        DebugSignatories::new(vec![DebugSignatory::new("safe_address", &SAFE_ETH_ADDRESS)]);
 }
 
 /// Validate Debug Command Signature
@@ -85,8 +87,8 @@ pub fn debug_add_debug_signer<D: DatabaseInterface>(
 
             if debug_signatories.is_empty() {
                 info!("✔ Validating the debug signer addition using the safe address...");
-                SAFE_DEBUG_SIGNATORY
-                    .validate(&signature, core_type, &debug_command_hash)
+                SAFE_DEBUG_SIGNATORIES
+                    .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
                     .and_then(|_| debug_signatories.add_and_update_in_db(db, &debug_signatory_to_add))
             } else {
                 debug_signatories
@@ -146,8 +148,7 @@ pub fn get_debug_signature_info<D: DatabaseInterface>(
             if debug_signatories.is_empty() {
                 // NOTE: If there are no signers yet, we show the safe address signing info, since
                 // with that, new debug signers can be added.
-                DebugSignatories::new(vec![SAFE_DEBUG_SIGNATORY.clone()])
-                    .to_signature_info_json(core_type, &debug_command_hash)
+                SAFE_DEBUG_SIGNATORIES.to_signature_info_json(core_type, &debug_command_hash)
             } else {
                 debug_signatories.to_signature_info_json(core_type, &debug_command_hash)
             }
@@ -335,7 +336,9 @@ impl DebugSignatories {
             .next()
             .is_none()
         {
-            Err("Signature not valid for any debug signatories!".into())
+            Err(AppError::Json(
+                self.to_signature_info_json(core_type, debug_command_hash)?,
+            ))
         } else {
             Ok(())
         }
@@ -583,6 +586,7 @@ mod tests {
     #[test]
     fn should_fail_to_maybe_validate_invalid_signature_and_thus_not_increment_nonce_in_db() {
         let db = get_test_database();
+        let core_type = CoreType::BtcOnInt;
         let debug_signatories_before = get_sample_debug_signatories();
         let debug_command_hash = get_sample_debug_command_hash();
         debug_signatories_before.put_in_db(&db).unwrap();
@@ -591,8 +595,9 @@ mod tests {
         let random_signature = EthSignature::random().unwrap();
 
         // NOTE: And so it should error...
-        let expected_error = "Signature not valid for any debug signatories!";
-        let core_type = CoreType::BtcOnInt;
+        let expected_error = debug_signatories_before
+            .to_signature_info_json(&core_type, &debug_command_hash)
+            .unwrap();
         match debug_signatories_before.maybe_validate_signature_and_increment_nonce_in_db(
             &db,
             &core_type,
@@ -600,7 +605,7 @@ mod tests {
             &random_signature,
         ) {
             Ok(_) => panic!("Should not have succeeded!"),
-            Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
+            Err(AppError::Json(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         }
 
