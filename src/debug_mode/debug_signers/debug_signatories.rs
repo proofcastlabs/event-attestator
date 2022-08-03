@@ -148,9 +148,9 @@ pub fn get_debug_signature_info<D: DatabaseInterface>(
             if debug_signatories.is_empty() {
                 // NOTE: If there are no signers yet, we show the safe address signing info, since
                 // with that, new debug signers can be added.
-                SAFE_DEBUG_SIGNATORIES.to_signature_info_json(core_type, &debug_command_hash)
+                SAFE_DEBUG_SIGNATORIES.to_signature_info_json(core_type, &debug_command_hash, None)
             } else {
-                debug_signatories.to_signature_info_json(core_type, &debug_command_hash)
+                debug_signatories.to_signature_info_json(core_type, &debug_command_hash, None)
             }
         })
 }
@@ -192,11 +192,14 @@ impl DebugSignatories {
         )
     }
 
-    pub fn to_signature_info_json(&self, core_type: &CoreType, debug_command_hash: &H256) -> Result<JsonValue> {
+    pub fn to_signature_info_json(
+        &self,
+        core_type: &CoreType,
+        debug_command_hash: &H256,
+        maybe_signature: Option<&EthSignature>,
+    ) -> Result<JsonValue> {
         // NOTE: The `to_json` fxn for an individual signer uses these single-letter keys, so we
         // add a glossary to aid in understanding.
-        let error_key = "error".to_string();
-        let error_value = JsonValue::String("A signature is required to run this function!".to_string());
         let glossary_key = "glossary".to_string();
         let glossary_value = json!({
             "a": "the ETH `address` derived from the signer's private key",
@@ -204,6 +207,14 @@ impl DebugSignatories {
             "h": "the final `hash` to sign if using a simple ETH signer like etherscan or MEW or mycrypto",
             "d": "the `debug` command hash, commiting to the debug command's arguments, used for EIP712 signing",
         });
+
+        let error_key = "error".to_string();
+        let error_value = if maybe_signature != None && maybe_signature != Some(&EthSignature::empty()) {
+            JsonValue::String("Could not validate signature!".to_string())
+        } else {
+            JsonValue::String("A signature is required to run this function!".to_string())
+        };
+
         let core_type_key = "coreType".to_string();
         let core_type_value = JsonValue::String(core_type.to_string());
 
@@ -310,7 +321,7 @@ impl DebugSignatories {
         db: &D,
         core_type: &CoreType,
         debug_command_hash: &H256,
-        signature_str: &EthSignature,
+        signature: &EthSignature,
     ) -> Result<()> {
         if self
             .to_eth_addresses()
@@ -321,7 +332,7 @@ impl DebugSignatories {
                     eth_address,
                     core_type,
                     debug_command_hash,
-                    signature_str,
+                    signature,
                 ) {
                     Ok(_) => {
                         info!("✔ Signature valid for address: {}", eth_address);
@@ -336,9 +347,11 @@ impl DebugSignatories {
             .next()
             .is_none()
         {
-            Err(AppError::Json(
-                self.to_signature_info_json(core_type, debug_command_hash)?,
-            ))
+            Err(AppError::Json(self.to_signature_info_json(
+                core_type,
+                debug_command_hash,
+                Some(signature),
+            )?))
         } else {
             Ok(())
         }
@@ -396,7 +409,8 @@ mod tests {
         let core_type = CoreType::BtcOnInt;
         let debug_signatories = get_sample_debug_signatories();
         let debug_command_hash = get_sample_debug_command_hash();
-        let result = debug_signatories.to_signature_info_json(&core_type, &debug_command_hash);
+        let signature = None;
+        let result = debug_signatories.to_signature_info_json(&core_type, &debug_command_hash, signature);
         assert!(result.is_ok());
     }
 
@@ -596,7 +610,7 @@ mod tests {
 
         // NOTE: And so it should error...
         let expected_error = debug_signatories_before
-            .to_signature_info_json(&core_type, &debug_command_hash)
+            .to_signature_info_json(&core_type, &debug_command_hash, Some(&random_signature))
             .unwrap();
         match debug_signatories_before.maybe_validate_signature_and_increment_nonce_in_db(
             &db,
