@@ -32,20 +32,29 @@ impl EthSignature {
             recover(hash.as_bytes(), &self[..64], self.get_ecdsa_recovery_param().into())?.as_bytes(),
         ))
     }
+
+    pub fn empty() -> Self {
+        Self([0u8; ETH_SIGNATURE_NUM_BYTES])
+    }
 }
 
 impl FromStr for EthSignature {
     type Err = AppError;
 
     fn from_str(s: &str) -> Result<Self> {
-        let bytes = hex::decode(strip_hex_prefix(s))?;
-        Ok(Self::new(bytes.clone().try_into().map_err(|_| {
-            AppError::Custom(format!(
-                "Wrong number of bytes for `EthSignature`. Got {}, expected {}!",
-                bytes.len(),
-                ETH_SIGNATURE_NUM_BYTES
-            ))
-        })?))
+        if s.is_empty() {
+            info!("✔ Empty string passed in ∴ getting an empty signature...");
+            Ok(Self::empty())
+        } else {
+            let bytes = hex::decode(strip_hex_prefix(s))?;
+            Ok(Self::new(bytes.clone().try_into().map_err(|_| {
+                AppError::Custom(format!(
+                    "Wrong number of bytes for `EthSignature`. Got {}, expected {}!",
+                    bytes.len(),
+                    ETH_SIGNATURE_NUM_BYTES
+                ))
+            })?))
+        }
     }
 }
 
