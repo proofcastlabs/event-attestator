@@ -2,6 +2,10 @@
 quick_error! {
     #[derive(Debug)]
     pub enum AppError {
+        Json(err: serde_json::Value) {
+            from()
+            display("{}", err)
+        }
         Custom(err: String) {
             from()
             from(err: &str) -> (err.into())
