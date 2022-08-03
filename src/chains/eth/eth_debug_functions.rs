@@ -73,12 +73,11 @@ fn debug_set_gas_price_in_db<D: DatabaseInterface>(
 ) -> Result<String> {
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| {
+        .map(|_| {
             warn!("DEBUG FUNCTTION SIGNATURE VALIDATION DISABLED FOR GAS PRICE SETTER!");
             // FIXME To be reinstated once scripts running these debug functions are updated to
             // provided signatures.
             //validate_debug_command_signature(db, core_type, signature, debug_command_hash) {
-            Ok(())
         })
         .and_then(|_| {
             if is_for_eth {
