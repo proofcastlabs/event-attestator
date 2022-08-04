@@ -43,16 +43,15 @@ use crate::{
 /// length param. This latter defines how many `confirmations` of a transactions are required before
 /// a signature is signed.
 pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json: &str,
     chain_id: u8,
     gas_price: u64,
     confs: u64,
-    _bytecode_path: &str, // NOTE: Deprecated as of v4.30.0
 ) -> Result<String> {
-    match is_eth_core_initialized(&EthDbUtils::new(&db)) {
+    match is_eth_core_initialized(&EthDbUtils::new(db)) {
         true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
-        false => start_eth_db_transaction_and_return_state(EthState::init(&db))
+        false => start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| {
                 initialize_eth_core_with_no_contract_tx(
                     block_json,

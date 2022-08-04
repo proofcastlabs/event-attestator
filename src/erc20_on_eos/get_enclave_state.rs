@@ -43,10 +43,10 @@ impl EnclaveState {
 ///
 /// This function returns a JSON containing the enclave state, including state relevant to each
 /// blockchain controlled by this instance.
-pub fn get_enclave_state<D: DatabaseInterface>(db: D) -> Result<String> {
+pub fn get_enclave_state<D: DatabaseInterface>(db: &D) -> Result<String> {
     info!("✔ Getting enclave state...");
-    let eth_db_utils = EthDbUtils::new(&db);
-    let eos_db_utils = EosDbUtils::new(&db);
+    let eth_db_utils = EthDbUtils::new(db);
+    let eos_db_utils = EosDbUtils::new(db);
     check_core_is_initialized(&eth_db_utils, &eos_db_utils)
         .and_then(|_| EnclaveState::new(&eth_db_utils, &eos_db_utils)?.to_string())
 }

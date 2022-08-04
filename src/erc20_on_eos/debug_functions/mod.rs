@@ -1,4 +1,5 @@
-pub(crate) mod block_reprocessors;
+pub(crate) mod eos_block_reprocessor;
+pub(crate) mod eth_block_reprocessor;
 
 use std::str::FromStr;
 
@@ -34,7 +35,7 @@ use crate::{
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
     core_type::CoreType,
-    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value},
+    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value, validate_debug_command_signature},
     dictionaries::{dictionary_constants::EOS_ETH_DICTIONARY_KEY, eos_eth::EosEthTokenDictionary},
     erc20_on_eos::check_core_is_initialized::check_core_is_initialized,
     fees::fee_utils::sanity_check_basis_points_value,
@@ -53,15 +54,20 @@ use crate::{
 /// Changing the incremerkle changes the last block the enclave has seen and so can easily lead to
 /// transaction replays. Use with extreme caution and only if you know exactly what you are doing
 /// and why.
-pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &str) -> Result<String> {
+pub fn debug_update_incremerkle<D: DatabaseInterface>(
+    db: &D,
+    eos_init_json: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db))
         .and_then(|_| {
             update_incremerkle(
                 db,
                 &EosInitJson::from_json_string(eos_init_json)?,
                 &CoreType::Erc20OnEos,
-                "",
-                "",
+                signature,
+                debug_command_hash,
             )
         })
         .map(prepend_debug_output_marker_to_string)
@@ -70,9 +76,14 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(db: &D, eos_init_json: &st
 /// # Debug Add New Eos Schedule
 ///
 /// Adds a new EOS schedule to the core's encrypted database.
-pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &str) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db))
-        .and_then(|_| add_new_eos_schedule(&db, schedule_json, &CoreType::Erc20OnEos, "", ""))
+pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(
+    db: &D,
+    schedule_json: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db))
+        .and_then(|_| add_new_eos_schedule(db, schedule_json, &CoreType::Erc20OnEos, signature, debug_command_hash))
 }
 
 /// # Debug Set Key in DB to Value
@@ -81,7 +92,13 @@ pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &s
 ///
 /// ### BEWARE:
 /// Only use this if you know exactly what you are doing and why.
-pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: &D, key: &str, value: &str) -> Result<String> {
+pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(
+    db: &D,
+    key: &str,
+    value: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let eos_db_utils = EosDbUtils::new(db);
     let eth_db_utils = EthDbUtils::new(db);
@@ -93,14 +110,27 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: &D, key: &str, val
     } else {
         None
     };
-    set_key_in_db_to_value(db, key, value, sensitivity, &CoreType::Erc20OnEos, "", "")
-        .map(prepend_debug_output_marker_to_string)
+    set_key_in_db_to_value(
+        db,
+        key,
+        value,
+        sensitivity,
+        &CoreType::Erc20OnEos,
+        signature,
+        debug_command_hash,
+    )
+    .map(prepend_debug_output_marker_to_string)
 }
 
 /// # Debug Get Key From Db
 ///
 /// This function will return the value stored under a given key in the encrypted database.
-pub fn debug_get_key_from_db<D: DatabaseInterface>(db: &D, key: &str) -> Result<String> {
+pub fn debug_get_key_from_db<D: DatabaseInterface>(
+    db: &D,
+    key: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let eos_db_utils = EosDbUtils::new(db);
     let eth_db_utils = EthDbUtils::new(db);
@@ -112,7 +142,15 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: &D, key: &str) -> Result<
     } else {
         None
     };
-    get_key_from_db(db, key, sensitivity, &CoreType::Erc20OnEos, "", "").map(prepend_debug_output_marker_to_string)
+    get_key_from_db(
+        db,
+        key,
+        sensitivity,
+        &CoreType::Erc20OnEos,
+        signature,
+        debug_command_hash,
+    )
+    .map(prepend_debug_output_marker_to_string)
 }
 
 /// # Debug Get All Db Keys
@@ -144,11 +182,19 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 ///     "eos_token_decimals": <num-decimals>,
 /// }
 pub fn debug_add_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     dictionary_entry_json_string: &str,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db)).and_then(|_| {
-        add_eos_eth_token_dictionary_entry(&db, dictionary_entry_json_string, &CoreType::Erc20OnEos, "", "")
+    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)).and_then(|_| {
+        add_eos_eth_token_dictionary_entry(
+            db,
+            dictionary_entry_json_string,
+            &CoreType::Erc20OnEos,
+            signature,
+            debug_command_hash,
+        )
     })
 }
 
@@ -158,11 +204,20 @@ pub fn debug_add_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
 /// `EosEthTokenDictionary` held in the encrypted database, should that entry exist. If it is
 /// not extant, nothing is changed.
 pub fn debug_remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     eth_address_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db))
-        .and_then(|_| remove_eos_eth_token_dictionary_entry(&db, eth_address_str, &CoreType::Erc20OnEos, "", ""))
+    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)).and_then(|_| {
+        remove_eos_eth_token_dictionary_entry(
+            db,
+            eth_address_str,
+            &CoreType::Erc20OnEos,
+            signature,
+            debug_command_hash,
+        )
+    })
 }
 
 /// # Debug Get ERC20_VAULT Migration Transaction
@@ -180,17 +235,20 @@ pub fn debug_remove_eos_eth_token_dictionary_entry<D: DatabaseInterface>(
 /// This function outputs a signed transaction which if NOT broadcast will result in the enclave no
 /// longer working.  Use with extreme caution and only if you know exactly what you are doing!
 pub fn debug_get_erc20_vault_migration_tx<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     new_eos_erc20_smart_contract_address_string: &str,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     db.start_transaction()?;
     info!("✔ Debug getting migration transaction...");
-    let eth_db_utils = EthDbUtils::new(&db);
+    let eth_db_utils = EthDbUtils::new(db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let current_eos_erc20_smart_contract_address = eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?;
     let new_eos_erc20_smart_contract_address = get_eth_address_from_str(new_eos_erc20_smart_contract_address_string)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(&db)))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnEos, signature, debug_command_hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| eth_db_utils.put_erc20_on_eos_smart_contract_address_in_db(&new_eos_erc20_smart_contract_address))
         .and_then(|_| encode_erc20_vault_migrate_fxn_data(new_eos_erc20_smart_contract_address))
@@ -232,14 +290,20 @@ pub fn debug_get_erc20_vault_migration_tx<D: DatabaseInterface>(
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
 /// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
 /// and only if you know exactly what you are doing and why!
-pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
+pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(
+    db: &D,
+    eth_address_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug getting `addSupportedToken` contract tx...");
     db.start_transaction()?;
-    let eth_db_utils = EthDbUtils::new(&db);
+    let eth_db_utils = EthDbUtils::new(db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = get_eth_address_from_str(eth_address_str)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(&db)))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnEos, signature, debug_command_hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_add_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
@@ -275,14 +339,20 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(db: D, eth_address
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
 /// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
 /// and only if you know exactly what you are doing and why!
-pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_address_str: &str) -> Result<String> {
+pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(
+    db: &D,
+    eth_address_str: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug getting `removeSupportedToken` contract tx...");
     db.start_transaction()?;
-    let eth_db_utils = EthDbUtils::new(&db);
+    let eth_db_utils = EthDbUtils::new(db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = get_eth_address_from_str(eth_address_str)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(&db)))
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnEos, signature, debug_command_hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_remove_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
@@ -308,16 +378,25 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(db: D, eth_addr
 /// # Debug Get Processed Actions List
 ///
 /// This function returns the list of already-processed action global sequences in JSON format.
-pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String> {
+pub fn debug_get_processed_actions_list<D: DatabaseInterface>(
+    db: &D,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db))
-        .and_then(|_| get_processed_actions_list(db, &CoreType::Erc20OnEos, "", ""))
+        .and_then(|_| get_processed_actions_list(db, &CoreType::Erc20OnEos, signature, debug_command_hash))
 }
 
 /// # Debug Set ETH Gas Price
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
-pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
-    debug_set_eth_gas_price_in_db(&db, gas_price, &CoreType::Erc20OnEos, "", "")
+pub fn debug_set_eth_gas_price<D: DatabaseInterface>(
+    db: &D,
+    gas_price: u64,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    debug_set_eth_gas_price_in_db(db, gas_price, &CoreType::Erc20OnEos, signature, debug_command_hash)
 }
 
 /// # Debug Set ETH Fee Basis Points
@@ -329,14 +408,21 @@ pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> R
 /// as such.
 ///
 /// #### NOTE: Using a fee of 0 will mean no fees are taken.
-pub fn debug_set_eth_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db)))
+pub fn debug_set_eth_fee_basis_points<D: DatabaseInterface>(
+    db: &D,
+    address: &str,
+    new_fee: u64,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)))
         .map(|_| sanity_check_basis_points_value(new_fee))
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnEos, signature, debug_command_hash))
+        .and_then(|_| EosEthTokenDictionary::get_from_db(db))
         .and_then(|dictionary| {
-            dictionary.change_eth_fee_basis_points_and_update_in_db(&db, &convert_hex_to_eth_address(address)?, new_fee)
+            dictionary.change_eth_fee_basis_points_and_update_in_db(db, &convert_hex_to_eth_address(address)?, new_fee)
         })
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"success":true, "address": address, "new_fee": new_fee}).to_string())
@@ -352,14 +438,21 @@ pub fn debug_set_eth_fee_basis_points<D: DatabaseInterface>(db: D, address: &str
 /// as such.
 ///
 /// #### NOTE: Using a fee of 0 will mean no fees are taken.
-pub fn debug_set_eos_fee_basis_points<D: DatabaseInterface>(db: D, address: &str, new_fee: u64) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db)))
+pub fn debug_set_eos_fee_basis_points<D: DatabaseInterface>(
+    db: &D,
+    address: &str,
+    new_fee: u64,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnEos, signature, debug_command_hash))
         .map(|_| sanity_check_basis_points_value(new_fee))
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
+        .and_then(|_| EosEthTokenDictionary::get_from_db(db))
         .and_then(|dictionary| {
-            dictionary.change_eos_fee_basis_points_and_update_in_db(&db, &EosAccountName::from_str(address)?, new_fee)
+            dictionary.change_eos_fee_basis_points_and_update_in_db(db, &EosAccountName::from_str(address)?, new_fee)
         })
         .and_then(|_| db.end_transaction())
         .map(|_| json!({"success":true, "address": address, "new_fee": new_fee}).to_string())
@@ -377,18 +470,19 @@ pub fn debug_set_eos_fee_basis_points<D: DatabaseInterface>(db: D, address: &str
 /// #### NOTE: This function will increment the ETH nonce and so the output transation MUST be
 /// broadcast otherwise future transactions are liable to fail.
 pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     token_address: &str,
     recipient_address: &str,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDbUtils::new(&db);
-    check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(&db)))
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| EosEthTokenDictionary::get_from_db(&db))
-        .and_then(|dictionary| {
-            dictionary.withdraw_fees_and_save_in_db(&db, &convert_hex_to_eth_address(token_address)?)
-        })
+    let eth_db_utils = EthDbUtils::new(db);
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnEos, signature, debug_command_hash))
+        .and_then(|_| EosEthTokenDictionary::get_from_db(db))
+        .and_then(|dictionary| dictionary.withdraw_fees_and_save_in_db(db, &convert_hex_to_eth_address(token_address)?))
         .and_then(|(token_address, fee_amount)| {
             let chain_id = eth_db_utils.get_eth_chain_id_from_db()?;
             Ok(EthTransaction::new_unsigned(
@@ -419,21 +513,24 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
 /// This function updates the accrued fees value in the dictionary entry retrieved from the passed
 /// in ETH address.
 pub fn debug_set_accrued_fees_in_dictionary<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     token_address: &str,
-    fee_amount: String,
+    fee_amount: &str,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug setting accrued fees in dictionary...");
-    let dictionary = EosEthTokenDictionary::get_from_db(&db)?;
+    db.start_transaction()?;
+    let dictionary = EosEthTokenDictionary::get_from_db(db)?;
     let dictionary_entry_eth_address = convert_hex_to_eth_address(token_address)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &EosDbUtils::new(&db)))
-        .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnEos, signature, debug_command_hash))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)))
         .and_then(|_| {
             dictionary.set_accrued_fees_and_save_in_db(
-                &db,
+                db,
                 &dictionary_entry_eth_address,
-                U256::from_dec_str(&fee_amount)?,
+                U256::from_dec_str(fee_amount)?,
             )
         })
         .and_then(|_| db.end_transaction())

@@ -36,13 +36,6 @@ pub use crate::{
     erc20_on_eos::{
         add_vault_contract_address_to_db::maybe_add_vault_contract_address_to_db,
         debug_functions::{
-            block_reprocessors::{
-                debug_reprocess_eos_block,
-                debug_reprocess_eos_block_with_fee_accrual,
-                debug_reprocess_eos_block_with_nonce,
-                debug_reprocess_eth_block,
-                debug_reprocess_eth_block_with_fee_accrual,
-            },
             debug_add_eos_eth_token_dictionary_entry as debug_add_erc20_dictionary_entry,
             debug_add_new_eos_schedule,
             debug_get_add_supported_token_tx,
@@ -59,6 +52,12 @@ pub use crate::{
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
             debug_withdraw_fees_and_save_in_db,
+            eos_block_reprocessor::{
+                debug_reprocess_eos_block,
+                debug_reprocess_eos_block_with_fee_accrual,
+                debug_reprocess_eos_block_with_nonce,
+            },
+            eth_block_reprocessor::{debug_reprocess_eth_block, debug_reprocess_eth_block_with_fee_accrual},
         },
         eos::submit_eos_block::submit_eos_block_to_core,
         eth::{
