@@ -1,7 +1,7 @@
 use crate::{constants::DEBUG_MODE, types::Result};
 
 pub fn check_debug_mode() -> Result<()> {
-    if DEBUG_MODE {
+    if DEBUG_MODE || cfg!(test) {
         info!("✔ Application is in debug mode! Continuing...");
         Ok(())
     } else {
