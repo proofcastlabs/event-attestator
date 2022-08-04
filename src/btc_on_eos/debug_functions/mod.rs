@@ -10,7 +10,7 @@ use crate::{
     },
     chains::{
         btc::{
-            btc_database_utils::{end_btc_db_transaction, start_btc_db_transaction, BtcDatabaseKeysJson, BtcDbUtils},
+            btc_database_utils::{end_btc_db_transaction, BtcDatabaseKeysJson, BtcDbUtils},
             btc_debug_functions::debug_put_btc_fee_in_db,
             btc_state::BtcState,
             btc_submission_material::parse_submission_material_and_put_in_state,
@@ -43,7 +43,7 @@ use crate::{
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
     core_type::CoreType,
-    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value},
+    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value, validate_debug_command_signature},
     fees::{
         fee_database_utils::FeeDatabaseUtils,
         fee_utils::sanity_check_basis_points_value,
@@ -99,9 +99,14 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(
 /// # Debug Add New Eos Schedule
 ///
 /// Adds a new EOS schedule to the core's encrypted database.
-pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &str) -> Result<String> {
-    check_core_is_initialized(&BtcDbUtils::new(&db), &EosDbUtils::new(&db))
-        .and_then(|_| add_new_eos_schedule(&db, schedule_json, &CoreType::BtcOnEos, "", ""))
+pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(
+    db: &D,
+    schedule_json: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    check_core_is_initialized(&BtcDbUtils::new(db), &EosDbUtils::new(db))
+        .and_then(|_| add_new_eos_schedule(db, schedule_json, &CoreType::BtcOnEos, signature, debug_command_hash))
 }
 
 /// # Debug Set Key in DB to Value
@@ -110,7 +115,13 @@ pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(db: D, schedule_json: &s
 ///
 /// ### BEWARE:
 /// Only use this if you know exactly what you are doing and why.
-pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: &D, key: &str, value: &str) -> Result<String> {
+pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(
+    db: &D,
+    key: &str,
+    value: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let sensitivity = if key_bytes == EosDbUtils::new(db).get_eos_private_key_db_key()
         || key_bytes == BtcDbUtils::new(db).get_btc_private_key_db_key()
@@ -119,14 +130,27 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: &D, key: &str, val
     } else {
         None
     };
-    set_key_in_db_to_value(db, key, value, sensitivity, &CoreType::BtcOnEos, "", "")
-        .map(prepend_debug_output_marker_to_string)
+    set_key_in_db_to_value(
+        db,
+        key,
+        value,
+        sensitivity,
+        &CoreType::BtcOnEos,
+        signature,
+        debug_command_hash,
+    )
+    .map(prepend_debug_output_marker_to_string)
 }
 
 /// # Debug Get Key From Db
 ///
 /// This function will return the value stored under a given key in the encrypted database.
-pub fn debug_get_key_from_db<D: DatabaseInterface>(db: &D, key: &str) -> Result<String> {
+pub fn debug_get_key_from_db<D: DatabaseInterface>(
+    db: &D,
+    key: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     let key_bytes = hex::decode(&key)?;
     let sensitivity = if key_bytes == EosDbUtils::new(db).get_eos_private_key_db_key()
         || key_bytes == BtcDbUtils::new(db).get_btc_private_key_db_key()
@@ -135,24 +159,29 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: &D, key: &str) -> Result<
     } else {
         None
     };
-    get_key_from_db(db, key, sensitivity, &CoreType::BtcOnEos, "", "").map(prepend_debug_output_marker_to_string)
+    get_key_from_db(db, key, sensitivity, &CoreType::BtcOnEos, signature, debug_command_hash)
+        .map(prepend_debug_output_marker_to_string)
 }
 
 /// # Debug Get All UTXOs
 ///
 /// This function will return a JSON containing all the UTXOs the encrypted database currently has.
-pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
+pub fn debug_get_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(&db), &EosDbUtils::new(&db)))
-        .and_then(|_| get_all_utxos_as_json_string(&db))
+        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(db), &EosDbUtils::new(db)))
+        .and_then(|_| get_all_utxos_as_json_string(db))
 }
 
 /// # Debug Get Processed Actions List
 ///
 /// This function returns the list of already-processed action global sequences in JSON format.
-pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<String> {
+pub fn debug_get_processed_actions_list<D: DatabaseInterface>(
+    db: &D,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_core_is_initialized(&BtcDbUtils::new(db), &EosDbUtils::new(db))
-        .and_then(|_| get_processed_actions_list(db, &CoreType::BtcOnEos, "", ""))
+        .and_then(|_| get_processed_actions_list(db, &CoreType::BtcOnEos, signature, debug_command_hash))
 }
 
 /// # Debug Maybe Add UTXO To DB
@@ -164,9 +193,16 @@ pub fn debug_get_processed_actions_list<D: DatabaseInterface>(db: &D) -> Result<
 ///
 /// ### NOTE:
 /// The core won't accept UTXOs it already has in its encrypted database.
-pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
+pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(
+    db: &D,
+    btc_submission_material_json: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| parse_submission_material_and_put_in_state(btc_submission_material_json, BtcState::init(&db)))
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnEos, signature, debug_command_hash))
+        .and_then(|_| parse_submission_material_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_difficulty_of_btc_block_in_state)
@@ -177,7 +213,6 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_ma
         .and_then(filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state)
         .and_then(maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state)
         .and_then(maybe_extract_utxos_from_p2sh_txs_and_put_in_state)
-        .and_then(start_btc_db_transaction)
         .and_then(filter_out_utxos_extant_in_db_from_state)
         .and_then(maybe_save_utxos_to_db)
         .and_then(end_btc_db_transaction)
@@ -188,14 +223,21 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_ma
 /// # Debug Set BTC fee
 ///
 /// This function sets the BTC fee to the given value. The unit is satoshis per byte.
-pub fn debug_set_btc_fee<D: DatabaseInterface>(db: D, fee: u64) -> Result<String> {
-    debug_put_btc_fee_in_db(&db, fee, &CoreType::BtcOnEos, "", "")
+pub fn debug_set_btc_fee<D: DatabaseInterface>(
+    db: &D,
+    fee: u64,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    debug_put_btc_fee_in_db(db, fee, &CoreType::BtcOnEos, signature, debug_command_hash)
 }
 
 fn debug_put_btc_on_eos_basis_points_in_db<D: DatabaseInterface>(
     db: &D,
     basis_points: u64,
     peg_in: bool,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     let suffix = if peg_in { "in" } else { "out" };
     info!(
@@ -205,6 +247,7 @@ fn debug_put_btc_on_eos_basis_points_in_db<D: DatabaseInterface>(
     check_debug_mode()
         .and_then(|_| sanity_check_basis_points_value(basis_points))
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnEos, signature, debug_command_hash))
         .and_then(|_| {
             if peg_in {
                 FeeDatabaseUtils::new_for_btc_on_eos().put_peg_in_basis_points_in_db(db, basis_points)
@@ -226,9 +269,11 @@ fn debug_put_btc_on_eos_basis_points_in_db<D: DatabaseInterface>(
 pub fn debug_put_btc_on_eos_peg_in_basis_points_in_db<D: DatabaseInterface>(
     db: &D,
     basis_points: u64,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug setting `BtcOnEos` peg-in basis-points to {}", basis_points);
-    debug_put_btc_on_eos_basis_points_in_db(db, basis_points, true)
+    debug_put_btc_on_eos_basis_points_in_db(db, basis_points, true, signature, debug_command_hash)
 }
 
 /// # Debug Put BTC-on-EOS Peg-Out Basis-Points In DB
@@ -238,9 +283,11 @@ pub fn debug_put_btc_on_eos_peg_in_basis_points_in_db<D: DatabaseInterface>(
 pub fn debug_put_btc_on_eos_peg_out_basis_points_in_db<D: DatabaseInterface>(
     db: &D,
     basis_points: u64,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug setting `BtcOnEos` peg-out basis-points to {}", basis_points);
-    debug_put_btc_on_eos_basis_points_in_db(db, basis_points, false)
+    debug_put_btc_on_eos_basis_points_in_db(db, basis_points, false, signature, debug_command_hash)
 }
 
 /// # Debug Get Fee Withdrawal Tx
@@ -248,16 +295,22 @@ pub fn debug_put_btc_on_eos_peg_out_basis_points_in_db<D: DatabaseInterface>(
 /// This function crates a BTC transaction to the passed in address for the amount of accrued fees
 /// accounted for in the encrypted database. The function then reset this value back to zero. The
 /// signed transaction is returned to the caller.
-pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &str) -> Result<String> {
+pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(
+    db: &D,
+    btc_address: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug getting `BtcOnEos` withdrawal tx...");
-    let btc_db_utils = BtcDbUtils::new(&db);
+    let btc_db_utils = BtcDbUtils::new(db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| get_btc_on_eos_fee_withdrawal_tx(&db, btc_address))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnEos, signature, debug_command_hash))
+        .and_then(|_| get_btc_on_eos_fee_withdrawal_tx(db, btc_address))
         .and_then(|btc_tx| {
             let change_utxos = get_pay_to_pub_key_hash_script(&btc_db_utils.get_btc_address_from_db()?)
                 .map(|target_script| extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]))?;
-            save_utxos_to_db(&db, &change_utxos)?;
+            save_utxos_to_db(db, &change_utxos)?;
             db.end_transaction()?;
             Ok(json!({ "signed_btc_tx": get_hex_tx_from_signed_btc_tx(&btc_tx) }).to_string())
         })

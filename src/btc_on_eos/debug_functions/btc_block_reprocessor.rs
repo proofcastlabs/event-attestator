@@ -35,7 +35,7 @@ use crate::{
 };
 
 fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json_string: &str,
     accrue_fees: bool,
 ) -> Result<String> {
@@ -44,7 +44,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
         if accrue_fees { "WITH" } else { "WITHOUT" }
     );
     check_debug_mode()
-        .and_then(|_| parse_submission_material_and_put_in_state(block_json_string, BtcState::init(&db)))
+        .and_then(|_| parse_submission_material_and_put_in_state(block_json_string, BtcState::init(db)))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
@@ -121,7 +121,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
 /// If this output is to _replace_ an existing report, the nonces in the report and in the core's
 /// database should be modified accordingly.
 pub fn debug_reprocess_btc_block_for_stale_eos_tx<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json_string: &str,
 ) -> Result<String> {
     debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees(db, block_json_string, false)
@@ -147,7 +147,7 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D: DatabaseInterface>(
 /// If this output is to _replace_ an existing report, the nonces in the report and in the core's
 /// database should be modified accordingly.
 pub fn debug_reprocess_btc_block_for_stale_eos_tx_with_fee_accrual<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json_string: &str,
 ) -> Result<String> {
     debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees(db, block_json_string, true)

@@ -45,9 +45,9 @@ use crate::{
 /// blockchain held by the core in it's encrypted database. Should the submitted block
 /// contain a deposit to an address derived from the core's BTC public key, an EOS
 /// transaction will be signed & returned to the caller.
-pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
+pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting BTC block to core...");
-    parse_submission_material_and_put_in_state(block_json_string, BtcState::init(&db))
+    parse_submission_material_and_put_in_state(block_json_string, BtcState::init(db))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(check_for_parent_of_btc_block_in_state)

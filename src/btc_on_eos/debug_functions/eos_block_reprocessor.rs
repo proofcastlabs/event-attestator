@@ -49,7 +49,7 @@ use crate::{
 };
 
 fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json: &str,
     accrue_fees: bool,
 ) -> Result<String> {
@@ -58,7 +58,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
         if accrue_fees { "WITH" } else { "WITHOUT" }
     );
     check_debug_mode()
-        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(&db)))
+        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_processed_global_sequences_and_add_to_state)
@@ -108,7 +108,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
 /// fail due to the core having an incorret set of UTXOs!
-pub fn debug_reprocess_eos_block_with_fee_accrual<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
+pub fn debug_reprocess_eos_block_with_fee_accrual<D: DatabaseInterface>(db: &D, block_json: &str) -> Result<String> {
     debug_reprocess_eos_block_maybe_accruing_fees(db, block_json, true)
 }
 
@@ -127,6 +127,6 @@ pub fn debug_reprocess_eos_block_with_fee_accrual<D: DatabaseInterface>(db: D, b
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
 /// fail due to the core having an incorret set of UTXOs!
-pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
+pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: &D, block_json: &str) -> Result<String> {
     debug_reprocess_eos_block_maybe_accruing_fees(db, block_json, false)
 }
