@@ -1,7 +1,8 @@
 use ethereum_types::Address as EthAddress;
 use serde_json::json;
 
-pub(crate) mod block_reprocessors;
+pub(crate) mod btc_block_reprocessor;
+pub(crate) mod eth_block_reprocessor;
 
 use crate::{
     btc_on_eth::{
@@ -11,8 +12,7 @@ use crate::{
     chains::{
         btc::{
             btc_block::parse_btc_block_and_id_and_put_in_state,
-            btc_database_utils::{end_btc_db_transaction, start_btc_db_transaction, BtcDatabaseKeysJson, BtcDbUtils},
-            btc_debug_functions::debug_put_btc_fee_in_db,
+            btc_database_utils::{end_btc_db_transaction, BtcDatabaseKeysJson, BtcDbUtils},
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
             btc_utils::get_hex_tx_from_signed_btc_tx,
@@ -40,12 +40,11 @@ use crate::{
             },
             eth_crypto::eth_transaction::get_signed_minting_tx,
             eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt},
-            eth_debug_functions::debug_set_eth_gas_price_in_db,
         },
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
     core_type::CoreType,
-    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value},
+    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value, validate_debug_command_signature},
     fees::{
         fee_constants::BTC_ON_ETH_FEE_DB_KEYS,
         fee_database_utils::FeeDatabaseUtils,
@@ -79,7 +78,13 @@ pub fn debug_get_all_db_keys() -> Result<String> {
 ///
 /// ### BEWARE:
 /// Only use this if you know exactly what you are doing and why.
-pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: &D, key: &str, value: &str) -> Result<String> {
+pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(
+    db: &D,
+    key: &str,
+    value: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
@@ -90,7 +95,15 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: &D, key: &str, val
             } else {
                 None
             };
-            set_key_in_db_to_value(db, key, value, sensitivity, &CoreType::BtcOnEth, "", "")
+            set_key_in_db_to_value(
+                db,
+                key,
+                value,
+                sensitivity,
+                &CoreType::BtcOnEth,
+                signature,
+                debug_command_hash,
+            )
         })
         .map(prepend_debug_output_marker_to_string)
 }
@@ -98,7 +111,12 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(db: &D, key: &str, val
 /// # Debug Get Key From Db
 ///
 /// This function will return the value stored under a given key in the encrypted database.
-pub fn debug_get_key_from_db<D: DatabaseInterface>(db: &D, key: &str) -> Result<String> {
+pub fn debug_get_key_from_db<D: DatabaseInterface>(
+    db: &D,
+    key: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_debug_mode()
         .and_then(|_| {
             let key_bytes = hex::decode(&key)?;
@@ -109,7 +127,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: &D, key: &str) -> Result<
             } else {
                 None
             };
-            get_key_from_db(db, key, sensitivity, &CoreType::BtcOnEth, "", "")
+            get_key_from_db(db, key, sensitivity, &CoreType::BtcOnEth, signature, debug_command_hash)
         })
         .map(prepend_debug_output_marker_to_string)
 }
@@ -117,10 +135,10 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(db: &D, key: &str) -> Result<
 /// # Debug Get All UTXOs
 ///
 /// This function will return a JSON containing all the UTXOs the encrypted database currently has.
-pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
+pub fn debug_get_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(&db), &BtcDbUtils::new(&db)))
-        .and_then(|_| get_all_utxos_as_json_string(&db))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &BtcDbUtils::new(db)))
+        .and_then(|_| get_all_utxos_as_json_string(db))
 }
 
 /// # Debug Get Signed ERC777 change pNetwork Tx
@@ -135,11 +153,18 @@ pub fn debug_get_all_utxos<D: DatabaseInterface>(db: D) -> Result<String> {
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
-pub fn debug_get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(db: D, new_address: &str) -> Result<String> {
-    let eth_db_utils = EthDbUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(&db))
+pub fn debug_get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(
+    db: &D,
+    new_address: &str,
+
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    let eth_db_utils = EthDbUtils::new(db);
+    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db))
         .and_then(|_| check_debug_mode())
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnEth, signature, debug_command_hash))
         .and_then(|_| {
             get_signed_erc777_change_pnetwork_tx(&eth_db_utils, EthAddress::from_slice(&hex::decode(new_address)?))
         })
@@ -173,14 +198,17 @@ fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()>
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
 pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     new_address: &str,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDbUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(&db))
+    let eth_db_utils = EthDbUtils::new(db);
+    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db))
         .and_then(|_| check_debug_mode())
-        .and_then(|_| check_erc777_proxy_address_is_set(&db))
+        .and_then(|_| check_erc777_proxy_address_is_set(db))
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnEth, signature, debug_command_hash))
         .and_then(|_| {
             get_signed_erc777_proxy_change_pnetwork_tx(
                 &eth_db_utils,
@@ -207,14 +235,17 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
 /// If you don't broadcast the transaction outputted from this function, future ETH transactions will
 /// fail due to the nonce being too high!
 pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     new_address: &str,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDbUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(&db))
+    let eth_db_utils = EthDbUtils::new(db);
+    db.start_transaction()
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db)))
         .and_then(|_| check_debug_mode())
-        .and_then(|_| check_erc777_proxy_address_is_set(&db))
-        .and_then(|_| db.start_transaction())
+        .and_then(|_| check_erc777_proxy_address_is_set(db))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnEth, signature, debug_command_hash))
         .and_then(|_| {
             get_signed_erc777_proxy_change_pnetwork_by_proxy_tx(
                 &eth_db_utils,
@@ -237,13 +268,19 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D: DatabaseInte
 ///
 /// ### NOTE:
 /// The core won't accept UTXOs it already has in its encrypted database.
-pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_material_json: &str) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(&db)))
+pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(
+    db: &D,
+    btc_submission_material_json: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnEth, signature, debug_command_hash))
+        .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
         .and_then(set_any_sender_flag_in_state)
         .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(check_core_is_initialized_and_return_btc_state)
-        .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)
@@ -274,16 +311,20 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(db: D, btc_submission_ma
 /// There is great potential for bricking a running instance when using this, so only use it
 /// if you know exactly what you're doing and why!
 pub fn debug_mint_pbtc<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     amount: u128,
     nonce: u64,
     eth_network: &str,
     gas_price: u64,
     recipient: &str,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
-    let eth_db_utils = EthDbUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(&db))
+    let eth_db_utils = EthDbUtils::new(db);
+    db.start_transaction()
         .and_then(|_| check_debug_mode())
+        .and_then(|_| check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db)))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnEth, signature, debug_command_hash))
         .map(|_| strip_hex_prefix(recipient))
         .and_then(|hex_no_prefix| {
             decode_hex_with_err_msg(
@@ -305,8 +346,9 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
                 None,
             )
         })
-        .map(|signed_tx| {
-            json!({
+        .and_then(|signed_tx| {
+            db.end_transaction()?;
+            Ok(json!({
                 "nonce": nonce,
                 "amount": amount,
                 "gas_price": gas_price,
@@ -314,7 +356,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
                 "eth_network": eth_network,
                 "signed_tx": signed_tx.serialize_hex(),
             })
-            .to_string()
+            .to_string())
         })
         .map(prepend_debug_output_marker_to_string)
 }
@@ -324,15 +366,21 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
 /// This function crates a BTC transaction to the passed in address for the amount of accrued fees
 /// accounted for in the encrypted database. The function then reset this value back to zero. The
 /// signed transaction is returned to the caller.
-pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &str) -> Result<String> {
+pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(
+    db: &D,
+    btc_address: &str,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     info!("✔ Debug getting `btc-on-eth` withdrawal tx...");
-    let btc_db_utils = BtcDbUtils::new(&db);
+    let btc_db_utils = BtcDbUtils::new(db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| get_btc_on_eth_fee_withdrawal_tx(&db, btc_address))
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnEth, signature, debug_command_hash))
+        .and_then(|_| get_btc_on_eth_fee_withdrawal_tx(db, btc_address))
         .and_then(|btc_tx| {
             extract_change_utxo_from_btc_tx_and_save_in_db(
-                &db,
+                db,
                 &btc_db_utils.get_btc_address_from_db()?,
                 btc_tx.clone(),
             )?;
@@ -342,33 +390,22 @@ pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: D, btc_address: &st
         .map(prepend_debug_output_marker_to_string)
 }
 
-/// # Debug Set ETH Gas Price
-///
-/// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
-pub fn debug_set_eth_gas_price<D: DatabaseInterface>(db: D, gas_price: u64) -> Result<String> {
-    debug_set_eth_gas_price_in_db(&db, gas_price, &CoreType::BtcOnEth, "", "")
-}
-
-/// # Debug Set BTC fee
-///
-/// This function sets the BTC fee to the given value. The unit is satoshis per byte.
-pub fn debug_set_btc_fee<D: DatabaseInterface>(db: D, fee: u64) -> Result<String> {
-    debug_put_btc_fee_in_db(&db, fee, &CoreType::BtcOnEth, "", "")
-}
-
 fn debug_put_btc_on_eth_basis_points_in_db<D: DatabaseInterface>(
     db: &D,
     basis_points: u64,
     peg_in: bool,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     let suffix = if peg_in { "in" } else { "out" };
     info!(
         "✔ Debug setting `BtcOnEth` peg-{} basis-points to {}",
         suffix, basis_points
     );
-    check_debug_mode()
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnEth, signature, debug_command_hash))
         .and_then(|_| sanity_check_basis_points_value(basis_points))
-        .and_then(|_| db.start_transaction())
         .and_then(|_| {
             if peg_in {
                 FeeDatabaseUtils::new_for_btc_on_eth().put_peg_in_basis_points_in_db(db, basis_points)
@@ -390,9 +427,11 @@ fn debug_put_btc_on_eth_basis_points_in_db<D: DatabaseInterface>(
 pub fn debug_put_btc_on_eth_peg_in_basis_points_in_db<D: DatabaseInterface>(
     db: &D,
     basis_points: u64,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug setting `BTC-on-ETH` peg-in basis-points to {}", basis_points);
-    debug_put_btc_on_eth_basis_points_in_db(db, basis_points, true)
+    debug_put_btc_on_eth_basis_points_in_db(db, basis_points, true, signature, debug_command_hash)
 }
 
 /// # Debug Put BTC-on-ETH Peg-Out Basis-Points In DB
@@ -402,17 +441,25 @@ pub fn debug_put_btc_on_eth_peg_in_basis_points_in_db<D: DatabaseInterface>(
 pub fn debug_put_btc_on_eth_peg_out_basis_points_in_db<D: DatabaseInterface>(
     db: &D,
     basis_points: u64,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug setting `BTC-on-ETH` peg-out basis-points to {}", basis_points);
-    debug_put_btc_on_eth_basis_points_in_db(db, basis_points, false)
+    debug_put_btc_on_eth_basis_points_in_db(db, basis_points, false, signature, debug_command_hash)
 }
 
 /// # Debug Set Accrued Fees
 ///
 /// Allows manual setting of the accured fees stored in the database for this core.
-pub fn debug_set_accrued_fees<D: DatabaseInterface>(db: &D, amount: u64) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
+pub fn debug_set_accrued_fees<D: DatabaseInterface>(
+    db: &D,
+    amount: u64,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnEth, signature, debug_command_hash))
         .and_then(|_| {
             let fee_db_utils = FeeDatabaseUtils::new_for_btc_on_eth();
             fee_db_utils.reset_accrued_fees(db)?;

@@ -20,10 +20,10 @@ struct BlockNumbers {
 ///
 /// This function returns a JSON containing the last processed block number of each of the
 /// blockchains this instance manages.
-pub fn get_latest_block_numbers<D: DatabaseInterface>(db: D) -> Result<String> {
+pub fn get_latest_block_numbers<D: DatabaseInterface>(db: &D) -> Result<String> {
     info!("✔ Getting latest block numbers...");
-    let eth_db_utils = EthDbUtils::new(&db);
-    let btc_db_utils = BtcDbUtils::new(&db);
+    let eth_db_utils = EthDbUtils::new(db);
+    let btc_db_utils = BtcDbUtils::new(db);
     check_core_is_initialized(&eth_db_utils, &btc_db_utils).and_then(|_| {
         Ok(serde_json::to_string(&BlockNumbers {
             btc_latest_block_number: btc_db_utils.get_latest_btc_block_number()?,

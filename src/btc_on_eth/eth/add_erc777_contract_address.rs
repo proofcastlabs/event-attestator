@@ -20,9 +20,9 @@ use crate::{
 ///
 /// ### BEWARE:
 /// The ERC777 contract can only be set ONCE. Further attempts to do so will not succeed.
-pub fn maybe_add_erc777_contract_address<D: DatabaseInterface>(db: D, hex_address: &str) -> Result<String> {
-    let eth_db_utils = EthDbUtils::new(&db);
-    let btc_db_utils = BtcDbUtils::new(&db);
+pub fn maybe_add_erc777_contract_address<D: DatabaseInterface>(db: &D, hex_address: &str) -> Result<String> {
+    let eth_db_utils = EthDbUtils::new(db);
+    let btc_db_utils = BtcDbUtils::new(db);
     check_core_is_initialized(&eth_db_utils, &btc_db_utils)
         .and_then(|_| db.start_transaction())
         .and_then(|_| convert_hex_to_eth_address(hex_address))

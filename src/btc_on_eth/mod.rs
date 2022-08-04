@@ -16,12 +16,10 @@ pub use crate::{
     btc_on_eth::{
         btc::submit_btc_block::submit_btc_block_to_enclave,
         debug_functions::{
-            block_reprocessors::{
+            btc_block_reprocessor::{
                 debug_reprocess_btc_block,
                 debug_reprocess_btc_block_with_fee_accrual,
                 debug_reprocess_btc_block_with_nonce,
-                debug_reprocess_eth_block,
-                debug_reprocess_eth_block_with_fee_accrual,
             },
             debug_get_all_db_keys,
             debug_get_all_utxos,
@@ -35,9 +33,8 @@ pub use crate::{
             debug_put_btc_on_eth_peg_in_basis_points_in_db,
             debug_put_btc_on_eth_peg_out_basis_points_in_db,
             debug_set_accrued_fees,
-            debug_set_btc_fee,
-            debug_set_eth_gas_price,
             debug_set_key_in_db_to_value,
+            eth_block_reprocessor::{debug_reprocess_eth_block, debug_reprocess_eth_block_with_fee_accrual},
         },
         eth::{
             add_erc777_contract_address::maybe_add_erc777_contract_address,
@@ -49,7 +46,11 @@ pub use crate::{
     },
     chains::{
         btc::{
-            btc_debug_functions::{debug_set_btc_account_nonce, debug_set_btc_utxo_nonce},
+            btc_debug_functions::{
+                debug_put_btc_fee_in_db as debug_set_btc_fee,
+                debug_set_btc_account_nonce,
+                debug_set_btc_utxo_nonce,
+            },
             core_initialization::initialize_btc_core::maybe_initialize_btc_core as maybe_initialize_btc_enclave,
             utxo_manager::debug_utxo_utils::{
                 debug_add_multiple_utxos,
@@ -61,7 +62,11 @@ pub use crate::{
         },
         eth::{
             core_initialization::reset_eth_chain::debug_reset_eth_chain,
-            eth_debug_functions::{debug_set_eth_account_nonce, debug_set_eth_any_sender_nonce},
+            eth_debug_functions::{
+                debug_set_eth_account_nonce,
+                debug_set_eth_any_sender_nonce,
+                debug_set_eth_gas_price_in_db as debug_set_eth_gas_price,
+            },
             eth_message_signer::{
                 sign_ascii_msg_with_eth_key_with_no_prefix,
                 sign_ascii_msg_with_eth_key_with_prefix,
