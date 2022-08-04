@@ -37,7 +37,11 @@ pub use crate::{
         },
         eth::{
             core_initialization::reset_eth_chain::debug_reset_eth_chain,
-            eth_debug_functions::{debug_set_eth_account_nonce, debug_set_eth_any_sender_nonce},
+            eth_debug_functions::{
+                debug_set_eth_account_nonce,
+                debug_set_eth_any_sender_nonce,
+                debug_set_eth_gas_price_in_db as debug_set_eth_gas_price,
+            },
             eth_message_signer::{
                 sign_ascii_msg_with_eth_key_with_no_prefix,
                 sign_ascii_msg_with_eth_key_with_prefix,
@@ -47,13 +51,6 @@ pub use crate::{
     },
     eos_on_eth::{
         debug_functions::{
-            block_reprocessors::{
-                debug_reprocess_eos_block,
-                debug_reprocess_eos_block_with_fee_accrual,
-                debug_reprocess_eos_block_with_nonce,
-                debug_reprocess_eth_block,
-                debug_reprocess_eth_block_with_fee_accrual,
-            },
             debug_add_eos_eth_token_dictionary_entry,
             debug_add_new_eos_schedule,
             debug_get_all_db_keys,
@@ -62,10 +59,15 @@ pub use crate::{
             debug_set_accrued_fees_in_dictionary,
             debug_set_eos_fee_basis_points,
             debug_set_eth_fee_basis_points,
-            debug_set_eth_gas_price,
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
             debug_withdraw_fees,
+            eos_block_reprocessor::{
+                debug_reprocess_eos_block,
+                debug_reprocess_eos_block_with_fee_accrual,
+                debug_reprocess_eos_block_with_nonce,
+            },
+            eth_block_reprocessor::{debug_reprocess_eth_block, debug_reprocess_eth_block_with_fee_accrual},
         },
         eos::submit_eos_block::submit_eos_block_to_core,
         eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
