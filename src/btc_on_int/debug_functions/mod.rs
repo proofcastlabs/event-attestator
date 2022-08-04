@@ -24,17 +24,7 @@ use crate::{
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
             save_utxos_to_db::maybe_save_utxos_to_db,
             set_flags::set_any_sender_flag_in_state,
-            utxo_manager::{
-                debug_utxo_utils::{
-                    add_multiple_utxos,
-                    clear_all_utxos,
-                    consolidate_utxos,
-                    get_child_pays_for_parent_btc_tx,
-                    remove_utxo,
-                },
-                utxo_constants::get_utxo_constants_db_keys,
-                utxo_utils::get_all_utxos_as_json_string,
-            },
+            utxo_manager::{utxo_constants::get_utxo_constants_db_keys, utxo_utils::get_all_utxos_as_json_string},
             validate_btc_block_header::validate_btc_block_header_in_state,
             validate_btc_merkle_root::validate_btc_merkle_root,
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
@@ -81,28 +71,6 @@ pub fn debug_get_all_db_keys() -> Result<String> {
         })
         .to_string()
     })
-}
-
-/// # Debug Clear All UTXOS
-///
-/// This function will remove ALL UTXOS from the core's encrypted database
-///
-/// ### BEWARE:
-/// Use with extreme caution, and only if you know exactly what you are doing and why.
-pub fn debug_clear_all_utxos<D: DatabaseInterface>(
-    db: &D,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    info!("✔ Debug clearing all UTXOs...");
-    check_core_is_initialized(&EthDbUtils::new(db), &BtcDbUtils::new(db))
-        .and_then(|_| check_debug_mode())
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| clear_all_utxos(db))
-        .and_then(|_| db.end_transaction())
-        .map(|_| SUCCESS_JSON.to_string())
-        .map(prepend_debug_output_marker_to_string)
 }
 
 /// # Debug Set Key in DB to Value
@@ -394,113 +362,6 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
             .to_string())
         })
         .map(prepend_debug_output_marker_to_string)
-}
-
-/// # Debug Get Child-Pays-For-Parent BTC Transaction
-///
-/// This function attempts to find the UTXO via the passed in transaction hash and vOut values, and
-/// upon success creates a transaction spending that UTXO, sending it entirely to itself minus the
-/// passed in fee.
-///
-/// ### BEWARE:
-/// This function spends UTXOs and outputs the signed transactions. If the output trnsaction is NOT
-/// broadcast, the change output saved in the DB will NOT be spendable, leaving the enclave
-/// bricked. Use ONLY if you know exactly what you're doing and why!
-pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
-    db: &D,
-    fee: u64,
-    tx_id: &str,
-    v_out: u32,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &BtcDbUtils::new(db)))
-        .and_then(|_| {
-            db.end_transaction()?;
-            get_child_pays_for_parent_btc_tx(db, fee, tx_id, v_out).map(prepend_debug_output_marker_to_string)
-        })
-}
-
-/// # Debug Consolidate Utxos
-///
-/// This function removes X number of UTXOs from the database then crafts them into a single
-/// transcation to itself before returning the serialized output ready for broadcasting, thus
-/// consolidating those X UTXOs into a single one.
-///
-/// ### BEWARE:
-/// This function spends UTXOs and outputs a signed transaction. If the outputted transaction is NOT
-/// broadcast, the consolidated  output saved in the DB will NOT be spendable, leaving the enclave
-/// bricked. Use ONLY if you know exactly what you're doing and why!
-pub fn debug_consolidate_utxos<D: DatabaseInterface>(
-    db: &D,
-    fee: u64,
-    num_utxos: usize,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &BtcDbUtils::new(db)))
-        .and_then(|_| {
-            db.end_transaction()?;
-            consolidate_utxos(db, fee, num_utxos).map(prepend_debug_output_marker_to_string)
-        })
-}
-
-/// # Debug Remove UTXO
-///
-/// Pluck a UTXO from the UTXO set and discard it, locating it via its transaction ID and v-out values.
-///
-/// ### BEWARE:
-/// Use ONLY if you know exactly what you're doing and why!
-pub fn debug_remove_utxo<D: DatabaseInterface>(
-    db: &D,
-    tx_id: &str,
-    v_out: u32,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &BtcDbUtils::new(db)))
-        .and_then(|_| {
-            db.end_transaction()?;
-            remove_utxo(db, tx_id, v_out).map(prepend_debug_output_marker_to_string)
-        })
-}
-
-/// # Debug Add Multiple Utxos
-///
-/// Add multiple UTXOs to the databsae. This function first checks if that UTXO already exists in
-/// the encrypted database, skipping it if so.
-///
-/// ### NOTE:
-///
-/// This function takes as it's argument and valid JSON string in the format that the
-/// `debug_get_all_utxos` returns. In this way, it's useful for migrating a UTXO set from one core
-/// to another.
-///
-/// ### BEWARE:
-/// Use ONLY if you know exactly what you're doing and why!
-pub fn debug_add_multiple_utxos<D: DatabaseInterface>(
-    db: &D,
-    json_str: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| add_multiple_utxos(db, json_str))
-        .and_then(|output| {
-            db.end_transaction()?;
-            Ok(prepend_debug_output_marker_to_string(output))
-        })
 }
 
 /// # Debug Set ETH Gas Price

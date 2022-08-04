@@ -23,14 +23,28 @@ use crate::{
         },
     },
     constants::SUCCESS_JSON,
-    debug_mode::check_debug_mode,
+    core_type::CoreType,
+    debug_mode::{check_debug_mode, validate_debug_command_signature},
     traits::DatabaseInterface,
     types::Result,
 };
 
-pub fn clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
-    db.start_transaction()?;
-    Ok(get_all_utxo_db_keys(db).to_vec())
+/// # Debug Clear All UTXOS
+///
+/// This function will remove ALL UTXOS from the core's encrypted database
+///
+/// ### BEWARE:
+/// Use with extreme caution, and only if you know exactly what you are doing and why.
+pub fn debug_clear_all_utxos<D: DatabaseInterface>(
+    db: &D,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+        .map(|_| get_all_utxo_db_keys(db).to_vec())
         .and_then(|db_keys| {
             db_keys
                 .iter()
@@ -44,22 +58,54 @@ pub fn clear_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
         .map(|_| SUCCESS_JSON.to_string())
 }
 
-pub fn remove_utxo<D: DatabaseInterface>(db: &D, tx_id: &str, v_out: u32) -> Result<String> {
+/// # Debug Remove UTXO
+///
+/// Pluck a UTXO from the UTXO set and discard it, locating it via its transaction ID and v-out values.
+///
+/// ### BEWARE:
+/// Use ONLY if you know exactly what you're doing and why!
+pub fn debug_remove_utxo<D: DatabaseInterface>(
+    db: &D,
+    tx_id: &str,
+    v_out: u32,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     check_debug_mode()
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
         .and_then(|_| get_btc_tx_id_from_str(tx_id))
         .and_then(|id| get_utxo_with_tx_id_and_v_out(db, v_out, &id))
         .and_then(|_| db.end_transaction())
         .map(|_| json!({ "v_out_of_removed_utxo": v_out, "tx_id_of_removed_utxo": tx_id }).to_string())
 }
 
-pub fn consolidate_utxos<D: DatabaseInterface>(db: &D, fee: u64, num_utxos: usize) -> Result<String> {
+/// # Debug Consolidate Utxos
+///
+/// This function removes X number of UTXOs from the database then crafts them into a single
+/// transcation to itself before returning the serialized output ready for broadcasting, thus
+/// consolidating those X UTXOs into a single one.
+///
+/// ### BEWARE:
+/// This function spends UTXOs and outputs a signed transaction. If the outputted transaction is NOT
+/// broadcast, the consolidated  output saved in the DB will NOT be spendable, leaving the enclave
+/// bricked. Use ONLY if you know exactly what you're doing and why!
+pub fn debug_consolidate_utxos<D: DatabaseInterface>(
+    db: &D,
+    fee: u64,
+    num_utxos: usize,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
     if num_utxos < 1 {
         return Err("Cannot consolidate 0 UTXOs!".into());
     };
     let btc_db_utils = BtcDbUtils::new(db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
         .and_then(|_| get_x_utxos(db, num_utxos))
         .and_then(|utxos| {
             let btc_address = btc_db_utils.get_btc_address_from_db()?;
@@ -89,15 +135,29 @@ pub fn consolidate_utxos<D: DatabaseInterface>(db: &D, fee: u64, num_utxos: usiz
         })
 }
 
-pub fn get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
+/// # Debug Get Child-Pays-For-Parent BTC Transaction
+///
+/// This function attempts to find the UTXO via the passed in transaction hash and vOut values, and
+/// upon success creates a transaction spending that UTXO, sending it entirely to itself minus the
+/// passed in fee.
+///
+/// ### BEWARE:
+/// This function spends UTXOs and outputs the signed transactions. If the output trnsaction is NOT
+/// broadcast, the change output saved in the DB will NOT be spendable, leaving the enclave
+/// bricked. Use ONLY if you know exactly what you're doing and why!
+pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
     db: &D,
     fee: u64,
     tx_id: &str,
     v_out: u32,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     let btc_db_utils = BtcDbUtils::new(db);
     check_debug_mode()
         .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
         .and_then(|_| get_btc_tx_id_from_str(tx_id))
         .and_then(|id| get_utxo_with_tx_id_and_v_out(db, v_out, &id))
         .and_then(|utxo| {
@@ -132,15 +192,40 @@ pub fn get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
         })
 }
 
-pub fn add_multiple_utxos<D: DatabaseInterface>(db: &D, json_str: &str) -> Result<String> {
-    BtcUtxosAndValues::from_str(json_str)
+/// # Debug Add Multiple Utxos
+///
+/// Add multiple UTXOs to the databsae. This function first checks if that UTXO already exists in
+/// the encrypted database, skipping it if so.
+///
+/// ### NOTE:
+///
+/// This function takes as it's argument and valid JSON string in the format that the
+/// `debug_get_all_utxos` returns. In this way, it's useful for migrating a UTXO set from one core
+/// to another.
+///
+/// ### BEWARE:
+/// Use ONLY if you know exactly what you're doing and why!
+pub fn debug_add_multiple_utxos<D: DatabaseInterface>(
+    db: &D,
+    json_str: &str,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
+) -> Result<String> {
+    check_debug_mode()
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+        .and_then(|_| BtcUtxosAndValues::from_str(json_str))
         .and_then(|utxos| {
             utxos
                 .iter()
                 .map(|utxo| save_new_utxo_and_value(db, utxo))
                 .collect::<Result<Vec<()>>>()
         })
-        .map(|_| SUCCESS_JSON.to_string())
+        .and_then(|_| {
+            db.end_transaction()?;
+            Ok(SUCCESS_JSON.to_string())
+        })
 }
 
 #[cfg(test)]
@@ -154,7 +239,7 @@ mod tests {
                 utxo_utils::get_all_utxos_as_json_string,
             },
         },
-        test_utils::get_test_database,
+        test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_HASH, DUMMY_SIGNATURE},
     };
 
     #[test]
@@ -166,7 +251,7 @@ mod tests {
         save_utxos_to_db(&db, &utxos).unwrap();
         let mut balance = get_total_utxo_balance_from_db(&db).unwrap();
         assert_eq!(expected_balance, balance);
-        clear_all_utxos(&db).unwrap();
+        debug_clear_all_utxos(&db, &CoreType::default(), DUMMY_SIGNATURE, DUMMY_DEBUG_COMMAND_HASH).unwrap();
         balance = get_total_utxo_balance_from_db(&db).unwrap();
         assert_eq!(0, balance);
     }
@@ -181,10 +266,11 @@ mod tests {
         let mut balance = get_total_utxo_balance_from_db(&db).unwrap();
         assert_eq!(expected_balance, balance);
         let json = get_all_utxos_as_json_string(&db).unwrap();
-        clear_all_utxos(&db).unwrap();
+        let core_type = CoreType::default();
+        debug_clear_all_utxos(&db, &core_type, DUMMY_SIGNATURE, DUMMY_DEBUG_COMMAND_HASH).unwrap();
         balance = get_total_utxo_balance_from_db(&db).unwrap();
         assert_eq!(0, balance);
-        add_multiple_utxos(&db, &json).unwrap();
+        debug_add_multiple_utxos(&db, &json, &core_type, DUMMY_SIGNATURE, DUMMY_DEBUG_COMMAND_HASH).unwrap();
         balance = get_total_utxo_balance_from_db(&db).unwrap();
         assert_eq!(expected_balance, balance);
     }
