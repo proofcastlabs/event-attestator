@@ -36,7 +36,7 @@ pub fn validate_debug_command_signature<D: DatabaseInterface>(
     signature: &str,
     debug_command_hash: &str,
 ) -> Result<()> {
-    if cfg!(test) || !core_type.is_interim() {
+    if cfg!(test) {
         warn!("✘ Skipping debug command validation!");
         Ok(())
     } else {
