@@ -16,11 +16,9 @@ pub use crate::{
     btc_on_eos::{
         btc::submit_btc_block::submit_btc_block_to_core,
         debug_functions::{
-            block_reprocessors::{
+            btc_block_reprocessor::{
                 debug_reprocess_btc_block_for_stale_eos_tx,
                 debug_reprocess_btc_block_for_stale_eos_tx_with_fee_accrual,
-                debug_reprocess_eos_block,
-                debug_reprocess_eos_block_with_fee_accrual,
             },
             debug_add_multiple_utxos,
             debug_add_new_eos_schedule,
@@ -39,6 +37,7 @@ pub use crate::{
             debug_set_btc_fee,
             debug_set_key_in_db_to_value,
             debug_update_incremerkle,
+            eos_block_reprocessor::{debug_reprocess_eos_block, debug_reprocess_eos_block_with_fee_accrual},
         },
         eos::submit_eos_block::submit_eos_block_to_core,
         get_enclave_state::get_enclave_state,
