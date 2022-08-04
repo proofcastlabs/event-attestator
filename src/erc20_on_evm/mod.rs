@@ -43,14 +43,6 @@ pub use crate::{
     },
     erc20_on_evm::{
         debug_functions::{
-            block_reprocessors::{
-                debug_reprocess_eth_block,
-                debug_reprocess_eth_block_with_fee_accrual,
-                debug_reprocess_eth_block_with_nonce,
-                debug_reprocess_evm_block,
-                debug_reprocess_evm_block_with_fee_accrual,
-                debug_reprocess_evm_block_with_nonce,
-            },
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
             debug_get_all_db_keys,
@@ -62,6 +54,16 @@ pub use crate::{
             debug_set_fee_basis_points,
             debug_set_key_in_db_to_value,
             debug_withdraw_fees_and_save_in_db,
+            eth_block_reprocessor::{
+                debug_reprocess_eth_block,
+                debug_reprocess_eth_block_with_fee_accrual,
+                debug_reprocess_eth_block_with_nonce,
+            },
+            evm_block_reprocessor::{
+                debug_reprocess_evm_block,
+                debug_reprocess_evm_block_with_fee_accrual,
+                debug_reprocess_evm_block_with_nonce,
+            },
         },
         eth::{
             add_vault_contract_address::maybe_add_vault_contract_address,
