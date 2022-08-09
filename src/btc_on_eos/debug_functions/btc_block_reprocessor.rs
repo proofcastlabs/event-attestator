@@ -1,3 +1,4 @@
+use function_name::named;
 pub use serde_json::json;
 
 use crate::{
@@ -13,7 +14,7 @@ use crate::{
     },
     chains::{
         btc::{
-            btc_database_utils::{end_btc_db_transaction, start_btc_db_transaction},
+            btc_database_utils::end_btc_db_transaction,
             btc_state::BtcState,
             btc_submission_material::parse_submission_material_and_put_in_state,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
@@ -27,26 +28,31 @@ use crate::{
         },
         eos::eos_crypto::eos_private_key::EosPrivateKey,
     },
-    debug_mode::check_debug_mode,
+    core_type::CoreType,
+    debug_mode::{check_debug_mode, validate_debug_command_signature},
     fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
 
+#[named]
 fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInterface>(
     db: &D,
-    block_json_string: &str,
+    block_json_str: &str,
     accrue_fees: bool,
+    signature: &str,
 ) -> Result<String> {
     info!(
         "✔ Reprocessing BTC block to core {} fees accruing",
         if accrue_fees { "WITH" } else { "WITHOUT" }
     );
-    check_debug_mode()
-        .and_then(|_| parse_submission_material_and_put_in_state(block_json_string, BtcState::init(db)))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), block_json_str, &accrue_fees)())
+        .and_then(|hash| validate_debug_command_signature(db, &CoreType::BtcOnEos, signature, &hash))
+        .and_then(|_| parse_submission_material_and_put_in_state(block_json_str, BtcState::init(db)))
         .and_then(check_core_is_initialized_and_return_btc_state)
-        .and_then(start_btc_db_transaction)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_difficulty_of_btc_block_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)
@@ -122,9 +128,10 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
 /// database should be modified accordingly.
 pub fn debug_reprocess_btc_block_for_stale_eos_tx<D: DatabaseInterface>(
     db: &D,
-    block_json_string: &str,
+    block_json_str: &str,
+    signature: &str,
 ) -> Result<String> {
-    debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees(db, block_json_string, false)
+    debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees(db, block_json_str, false, signature)
 }
 
 /// # Debug Reprocess BTC Block For Stale Transaction
@@ -148,7 +155,8 @@ pub fn debug_reprocess_btc_block_for_stale_eos_tx<D: DatabaseInterface>(
 /// database should be modified accordingly.
 pub fn debug_reprocess_btc_block_for_stale_eos_tx_with_fee_accrual<D: DatabaseInterface>(
     db: &D,
-    block_json_string: &str,
+    block_json_str: &str,
+    signature: &str,
 ) -> Result<String> {
-    debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees(db, block_json_string, true)
+    debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees(db, block_json_str, true, signature)
 }
