@@ -19,9 +19,14 @@ pub use crate::{
             enable_protocol_feature::debug_enable_eos_protocol_feature,
             eos_debug_functions::{
                 debug_add_global_sequences_to_processed_list,
+                debug_add_new_eos_schedule,
+                debug_add_token_dictionary_entry,
                 debug_remove_global_sequences_from_processed_list,
+                debug_remove_token_dictionary_entry,
                 debug_set_eos_account_nonce,
+                debug_update_incremerkle,
             },
+            get_processed_actions_list::get_processed_actions_list,
         },
         eth::{
             core_initialization::reset_eth_chain::debug_reset_eth_chain as debug_reset_int_chain,
@@ -38,16 +43,11 @@ pub use crate::{
     },
     int_on_eos::{
         debug_functions::{
-            debug_add_new_eos_schedule,
-            debug_add_token_dictionary_entry,
             debug_get_add_supported_token_tx,
             debug_get_all_db_keys,
             debug_get_key_from_db,
-            debug_get_processed_actions_list,
             debug_get_remove_supported_token_tx,
-            debug_remove_token_dictionary_entry,
             debug_set_key_in_db_to_value,
-            debug_update_incremerkle,
             eos_block_reprocessor::{debug_reprocess_eos_block, debug_reprocess_eos_block_with_nonce},
             int_block_reprocessor::debug_reprocess_int_block,
         },

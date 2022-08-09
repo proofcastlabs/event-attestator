@@ -5,17 +5,7 @@ use serde_json::json;
 
 use crate::{
     chains::{
-        eos::{
-            core_initialization::eos_init_utils::EosInitJson,
-            eos_database_utils::{EosDatabaseKeysJson, EosDbUtils},
-            eos_debug_functions::{
-                add_eos_eth_token_dictionary_entry,
-                add_new_eos_schedule,
-                get_processed_actions_list,
-                remove_eos_eth_token_dictionary_entry,
-                update_incremerkle,
-            },
-        },
+        eos::eos_database_utils::{EosDatabaseKeysJson, EosDbUtils},
         eth::{
             eth_contracts::erc20_vault::{
                 encode_erc20_vault_add_supported_token_fx_data,
@@ -41,48 +31,6 @@ use crate::{
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-
-/// # Debug Update Incremerkle
-///
-/// This function will take an EOS initialization JSON as its input and use it to create an
-/// incremerkle valid for the block number in the JSON. It will then REPLACE the incremerkle in the
-/// encrypted database with this one.
-///
-/// ### BEWARE:
-/// Changing the incremerkle changes the last block the enclave has seen and so can easily lead to
-/// transaction replays. Use with extreme caution and only if you know exactly what you are doing
-/// and why.
-pub fn debug_update_incremerkle<D: DatabaseInterface>(
-    db: &D,
-    eos_init_json: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db))
-        .and_then(|_| {
-            update_incremerkle(
-                db,
-                &EosInitJson::from_json_string(eos_init_json)?,
-                &CoreType::IntOnEos,
-                signature,
-                debug_command_hash,
-            )
-        })
-        .map(prepend_debug_output_marker_to_string)
-}
-
-/// # Debug Add New Eos Schedule
-///
-/// Adds a new EOS schedule to the core's encrypted database.
-pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(
-    db: &D,
-    schedule_json: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db))
-        .and_then(|_| add_new_eos_schedule(db, schedule_json, &CoreType::IntOnEos, signature, debug_command_hash))
-}
 
 /// # Debug Set Key in DB to Value
 ///
@@ -156,54 +104,6 @@ pub fn debug_get_all_db_keys() -> Result<String> {
         "debug_signatories": format!("0x{}", hex::encode(&*DEBUG_SIGNATORIES_DB_KEY)),
     })
     .to_string()))
-}
-
-/// # Debug Add ERC20 Dictionary Entry
-///
-/// This function will add an entry to the `EosEthTokenDictionary` held in the encrypted database. The
-/// dictionary defines the relationship between ERC20 etheruem addresses and their pToken EOS
-/// address counterparts.
-///
-/// The required format of an entry is:
-/// {
-///     "eos_symbol": <symbol>,
-///     "eth_symbol": <symbol>,
-///     "eos_address": <address>,
-///     "eth_address": <address>,
-///     "eth_token_decimals": <num-decimals>,
-///     "eos_token_decimals": <num-decimals>,
-/// }
-pub fn debug_add_token_dictionary_entry<D: DatabaseInterface>(
-    db: &D,
-    dictionary_entry_json_string: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)).and_then(|_| {
-        add_eos_eth_token_dictionary_entry(
-            db,
-            dictionary_entry_json_string,
-            &CoreType::IntOnEos,
-            signature,
-            debug_command_hash,
-        )
-    })
-}
-
-/// # Debug Remove ERC20 Dictionary Entry
-///
-/// This function will remove an entry pertaining to the passed in ETH address from the
-/// `EosEthTokenDictionary` held in the encrypted database, should that entry exist. If it is
-/// not extant, nothing is changed.
-pub fn debug_remove_token_dictionary_entry<D: DatabaseInterface>(
-    db: &D,
-    eth_address_str: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)).and_then(|_| {
-        remove_eos_eth_token_dictionary_entry(db, eth_address_str, &CoreType::IntOnEos, signature, debug_command_hash)
-    })
 }
 
 /// # Debug Get Add Supported Token Transaction
@@ -302,16 +202,4 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(
             db.end_transaction()?;
             Ok(json!({ "success": true, "eth_signed_tx": hex_tx }).to_string())
         })
-}
-
-/// # Debug Get Processed Actions List
-///
-/// This function returns the list of already-processed action global sequences in JSON format.
-pub fn debug_get_processed_actions_list<D: DatabaseInterface>(
-    db: &D,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db))
-        .and_then(|_| get_processed_actions_list(db, &CoreType::IntOnEos, signature, debug_command_hash))
 }

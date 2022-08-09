@@ -31,8 +31,12 @@ pub use crate::{
             enable_protocol_feature::debug_enable_eos_protocol_feature,
             eos_debug_functions::{
                 debug_add_global_sequences_to_processed_list,
+                debug_add_new_eos_schedule,
+                debug_add_token_dictionary_entry,
                 debug_remove_global_sequences_from_processed_list,
+                debug_remove_token_dictionary_entry,
                 debug_set_eos_account_nonce,
+                debug_update_incremerkle,
             },
         },
         eth::{
@@ -51,16 +55,12 @@ pub use crate::{
     },
     eos_on_eth::{
         debug_functions::{
-            debug_add_eos_eth_token_dictionary_entry,
-            debug_add_new_eos_schedule,
             debug_get_all_db_keys,
             debug_get_key_from_db,
-            debug_remove_eos_eth_token_dictionary_entry,
             debug_set_accrued_fees_in_dictionary,
             debug_set_eos_fee_basis_points,
             debug_set_eth_fee_basis_points,
             debug_set_key_in_db_to_value,
-            debug_update_incremerkle,
             debug_withdraw_fees,
             eos_block_reprocessor::{
                 debug_reprocess_eos_block,

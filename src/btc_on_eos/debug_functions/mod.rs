@@ -35,11 +35,7 @@ use crate::{
             validate_btc_merkle_root::validate_btc_merkle_root,
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
         },
-        eos::{
-            core_initialization::eos_init_utils::EosInitJson,
-            eos_database_utils::{EosDatabaseKeysJson, EosDbUtils},
-            eos_debug_functions::{add_new_eos_schedule, get_processed_actions_list, update_incremerkle},
-        },
+        eos::eos_database_utils::{EosDatabaseKeysJson, EosDbUtils},
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
     core_type::CoreType,
@@ -67,46 +63,6 @@ pub fn debug_get_all_db_keys() -> Result<String> {
         })
         .to_string()
     })
-}
-
-/// # Debug Update Incremerkle
-///
-/// This function will take an EOS initialization JSON as its input and use it to create an
-/// incremerkle valid for the block number in the JSON. It will then REPLACE the incremerkle in the
-/// encrypted database with this one.
-///
-/// ### BEWARE:
-/// Changing the incremerkle changes the last block the enclave has seen and so can easily lead to
-/// transaction replays. Use with extreme caution and only if you know exactly what you are doing
-/// and why.
-pub fn debug_update_incremerkle<D: DatabaseInterface>(
-    db: &D,
-    eos_init_json: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_core_is_initialized(&BtcDbUtils::new(db), &EosDbUtils::new(db)).and_then(|_| {
-        update_incremerkle(
-            db,
-            &EosInitJson::from_json_string(eos_init_json)?,
-            &CoreType::BtcOnEos,
-            signature,
-            debug_command_hash,
-        )
-    })
-}
-
-/// # Debug Add New Eos Schedule
-///
-/// Adds a new EOS schedule to the core's encrypted database.
-pub fn debug_add_new_eos_schedule<D: DatabaseInterface>(
-    db: &D,
-    schedule_json: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_core_is_initialized(&BtcDbUtils::new(db), &EosDbUtils::new(db))
-        .and_then(|_| add_new_eos_schedule(db, schedule_json, &CoreType::BtcOnEos, signature, debug_command_hash))
 }
 
 /// # Debug Set Key in DB to Value
@@ -170,18 +126,6 @@ pub fn debug_get_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(db), &EosDbUtils::new(db)))
         .and_then(|_| get_all_utxos_as_json_string(db))
-}
-
-/// # Debug Get Processed Actions List
-///
-/// This function returns the list of already-processed action global sequences in JSON format.
-pub fn debug_get_processed_actions_list<D: DatabaseInterface>(
-    db: &D,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_core_is_initialized(&BtcDbUtils::new(db), &EosDbUtils::new(db))
-        .and_then(|_| get_processed_actions_list(db, &CoreType::BtcOnEos, signature, debug_command_hash))
 }
 
 /// # Debug Maybe Add UTXO To DB

@@ -1,9 +1,10 @@
 #![allow(dead_code)]
 use std::fmt;
 
+use serde::Serialize;
 use strum_macros::EnumIter;
 
-#[derive(Clone, Copy, EnumIter)]
+#[derive(Clone, Copy, EnumIter, Serialize)]
 pub enum CoreType {
     BtcOnEth,
     BtcOnInt,

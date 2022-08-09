@@ -33,6 +33,7 @@ pub(crate) mod filter_action_proofs;
 pub(crate) mod get_active_schedule;
 pub(crate) mod get_enabled_protocol_features;
 pub(crate) mod get_eos_incremerkle;
+pub(crate) mod get_processed_actions_list;
 pub(crate) mod increment_eos_account_nonce;
 pub(crate) mod protocol_features;
 pub(crate) mod save_incremerkle;
