@@ -7,6 +7,9 @@ use crate::{
     types::{Bytes, DataSensitivity, Result},
 };
 
+#[cfg(feature = "debug")]
+pub static DUMMY_DEBUG_COMMAND_SIGNATURE: &str = ""; // NOTE: Debug signatures are not verified during tests.
+
 pub static DB_LOCK_ERRROR: &str = "Cannot get lock on DB!";
 
 #[derive(Debug)]
