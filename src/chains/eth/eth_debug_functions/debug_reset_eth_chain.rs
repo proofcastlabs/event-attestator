@@ -1,4 +1,5 @@
 use ethereum_types::H256 as EthHash;
+use function_name::named;
 use serde_json::json;
 
 use crate::{
@@ -154,6 +155,7 @@ pub fn reset_eth_chain<D: DatabaseInterface>(
         })
 }
 
+#[named]
 fn debug_reset_chain<D: DatabaseInterface>(
     db: &D,
     submission_material_json: &str,
@@ -161,12 +163,20 @@ fn debug_reset_chain<D: DatabaseInterface>(
     is_for_eth: bool,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("Debug resetting ETH chain...");
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| {
+            get_debug_command_hash!(
+                function_name!(),
+                &submission_material_json,
+                &canon_to_tip_length,
+                &is_for_eth,
+                core_type
+            )()
+        })
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| parse_eth_submission_material_and_put_in_state(submission_material_json, EthState::init(db)))
         .and_then(validate_block_in_state)
         .and_then(|state| reset_eth_chain(state, canon_to_tip_length, is_for_eth))
@@ -197,7 +207,6 @@ pub fn debug_reset_eth_chain<D: DatabaseInterface>(
     canon_to_tip_length: u64,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("Debug resetting ETH chain...");
     debug_reset_chain(
@@ -207,7 +216,6 @@ pub fn debug_reset_eth_chain<D: DatabaseInterface>(
         true,
         core_type,
         signature,
-        debug_command_hash,
     )
 }
 
@@ -227,7 +235,6 @@ pub fn debug_reset_evm_chain<D: DatabaseInterface>(
     canon_to_tip_length: u64,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("Debug resetting EVM Chain...");
     debug_reset_chain(
@@ -237,7 +244,6 @@ pub fn debug_reset_evm_chain<D: DatabaseInterface>(
         false,
         core_type,
         signature,
-        debug_command_hash,
     )
 }
 

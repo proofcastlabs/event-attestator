@@ -23,8 +23,9 @@ pub(crate) mod test_utils;
 
 pub use crate::{
     chains::eth::{
-        core_initialization::reset_eth_chain::{debug_reset_eth_chain, debug_reset_evm_chain},
         eth_debug_functions::{
+            debug_reset_eth_chain,
+            debug_reset_evm_chain,
             debug_set_eth_account_nonce,
             debug_set_eth_any_sender_nonce,
             debug_set_eth_gas_price,

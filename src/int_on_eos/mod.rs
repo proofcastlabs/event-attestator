@@ -29,8 +29,8 @@ pub use crate::{
             get_processed_actions_list::get_processed_actions_list,
         },
         eth::{
-            core_initialization::reset_eth_chain::debug_reset_eth_chain as debug_reset_int_chain,
             eth_debug_functions::{
+                debug_reset_eth_chain as debug_reset_int_chain,
                 debug_set_eth_account_nonce as debug_set_int_account_nonce,
                 debug_set_eth_gas_price as debug_set_int_gas_price,
             },

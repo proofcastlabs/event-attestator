@@ -23,12 +23,10 @@ pub(crate) mod test_utils;
 pub use crate::{
     chains::{
         algo::{algo_debug_functions::debug_reset_algo_chain, algo_note_metadata::encode_algo_note_metadata},
-        eth::{
-            core_initialization::reset_eth_chain::debug_reset_eth_chain as debug_reset_int_chain,
-            eth_debug_functions::{
-                debug_set_eth_account_nonce as debug_set_int_account_nonce,
-                debug_set_eth_gas_price as debug_set_int_gas_price,
-            },
+        eth::eth_debug_functions::{
+            debug_reset_eth_chain as debug_reset_int_chain,
+            debug_set_eth_account_nonce as debug_set_int_account_nonce,
+            debug_set_eth_gas_price as debug_set_int_gas_price,
         },
     },
     debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
