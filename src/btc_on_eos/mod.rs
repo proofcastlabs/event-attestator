@@ -27,7 +27,6 @@ pub use crate::{
             debug_maybe_add_utxo_to_db,
             debug_put_btc_on_eos_peg_in_basis_points_in_db,
             debug_put_btc_on_eos_peg_out_basis_points_in_db,
-            debug_set_btc_fee,
             debug_set_key_in_db_to_value,
             eos_block_reprocessor::{debug_reprocess_eos_block, debug_reprocess_eos_block_with_fee_accrual},
         },
@@ -37,7 +36,7 @@ pub use crate::{
     },
     chains::{
         btc::{
-            btc_debug_functions::{debug_set_btc_account_nonce, debug_set_btc_utxo_nonce},
+            btc_debug_functions::{debug_set_btc_account_nonce, debug_set_btc_fee, debug_set_btc_utxo_nonce},
             core_initialization::initialize_btc_core::maybe_initialize_btc_core,
             utxo_manager::debug_utxo_utils::{
                 debug_add_multiple_utxos,

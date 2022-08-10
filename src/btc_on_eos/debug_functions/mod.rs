@@ -11,7 +11,6 @@ use crate::{
     chains::{
         btc::{
             btc_database_utils::{end_btc_db_transaction, BtcDatabaseKeysJson, BtcDbUtils},
-            btc_debug_functions::debug_put_btc_fee_in_db,
             btc_state::BtcState,
             btc_submission_material::parse_submission_material_and_put_in_state,
             btc_utils::{get_hex_tx_from_signed_btc_tx, get_pay_to_pub_key_hash_script},
@@ -162,18 +161,6 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(
         .and_then(end_btc_db_transaction)
         .map(|_| SUCCESS_JSON.to_string())
         .map(prepend_debug_output_marker_to_string)
-}
-
-/// # Debug Set BTC fee
-///
-/// This function sets the BTC fee to the given value. The unit is satoshis per byte.
-pub fn debug_set_btc_fee<D: DatabaseInterface>(
-    db: &D,
-    fee: u64,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    debug_put_btc_fee_in_db(db, fee, &CoreType::BtcOnEos, signature, debug_command_hash)
 }
 
 fn debug_put_btc_on_eos_basis_points_in_db<D: DatabaseInterface>(

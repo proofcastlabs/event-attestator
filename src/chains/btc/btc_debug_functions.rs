@@ -1,3 +1,4 @@
+use function_name::named;
 use serde_json::json;
 
 use crate::{
@@ -12,17 +13,18 @@ use crate::{
 /// # Debug Set BTC Account Nonce
 ///
 /// This function set to the given value BTC account nonce in the encryped database.
+#[named]
 pub fn debug_set_btc_account_nonce<D: DatabaseInterface>(
     db: &D,
     new_nonce: u64,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug setting BTC account nonce...");
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), &new_nonce, core_type)())
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| BtcDbUtils::new(db).put_btc_account_nonce_in_db(new_nonce))
         .and_then(|_| db.end_transaction())
         .and(Ok(json!({"set_btc_account_nonce":true}).to_string()))
@@ -32,17 +34,18 @@ pub fn debug_set_btc_account_nonce<D: DatabaseInterface>(
 /// # Debug Set BTC UTXO Nonce
 ///
 /// This function set to the given value BTC UTXO nonce in the encryped database.
+#[named]
 pub fn debug_set_btc_utxo_nonce<D: DatabaseInterface>(
     db: &D,
     new_nonce: u64,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug setting BTC UTXO nonce...");
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), &new_nonce, core_type)())
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| put_utxo_nonce_in_db(db, new_nonce))
         .and_then(|_| db.end_transaction())
         .and(Ok(json!({"set_btc_utxo_nonce":true}).to_string()))
@@ -53,17 +56,18 @@ pub fn debug_set_btc_utxo_nonce<D: DatabaseInterface>(
 ///
 /// This function sets the BTC fee in the encrypted database to the given value. The unit is
 /// satoshis-per-byte.
-pub fn debug_put_btc_fee_in_db<D: DatabaseInterface>(
+#[named]
+pub fn debug_set_btc_fee<D: DatabaseInterface>(
     db: &D,
     fee: u64,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug putting BTC fee in db...");
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), &fee, core_type)())
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| BtcDbUtils::new(db).put_btc_fee_in_db(fee))
         .and_then(|_| db.end_transaction())
         .and(Ok(json!({"sucess":true,"new_btc_fee":fee}).to_string()))

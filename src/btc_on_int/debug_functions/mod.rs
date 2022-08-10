@@ -13,7 +13,6 @@ use crate::{
         btc::{
             btc_block::parse_btc_block_and_id_and_put_in_state,
             btc_database_utils::{end_btc_db_transaction, BtcDatabaseKeysJson, BtcDbUtils},
-            btc_debug_functions::debug_put_btc_fee_in_db,
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
             extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
@@ -367,6 +366,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
 /// # Debug Set ETH Gas Price
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
+// FIXME rm wrappers like this and use the debug util directly!
 pub fn debug_set_int_gas_price<D: DatabaseInterface>(
     db: &D,
     gas_price: u64,
@@ -374,16 +374,4 @@ pub fn debug_set_int_gas_price<D: DatabaseInterface>(
     debug_command_hash: &str,
 ) -> Result<String> {
     debug_set_eth_gas_price_in_db(db, gas_price, &CoreType::BtcOnInt, signature, debug_command_hash)
-}
-
-/// # Debug Set BTC fee
-///
-/// This function sets the BTC fee to the given value. The unit is satoshis per byte.
-pub fn debug_set_btc_fee<D: DatabaseInterface>(
-    db: &D,
-    fee: u64,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    debug_put_btc_fee_in_db(db, fee, &CoreType::BtcOnInt, signature, debug_command_hash)
 }
