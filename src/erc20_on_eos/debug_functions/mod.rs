@@ -19,7 +19,6 @@ use crate::{
             },
             eth_crypto::eth_transaction::EthTransaction,
             eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt},
-            eth_debug_functions::debug_set_eth_gas_price_in_db,
             eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
         },
     },
@@ -267,18 +266,6 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(
             db.end_transaction()?;
             Ok(json!({ "success": true, "eth_signed_tx": hex_tx }).to_string())
         })
-}
-
-/// # Debug Set ETH Gas Price
-///
-/// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
-pub fn debug_set_eth_gas_price<D: DatabaseInterface>(
-    db: &D,
-    gas_price: u64,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    debug_set_eth_gas_price_in_db(db, gas_price, &CoreType::Erc20OnEos, signature, debug_command_hash)
 }
 
 /// # Debug Set ETH Fee Basis Points

@@ -39,7 +39,6 @@ use crate::{
             },
             eth_crypto::eth_transaction::get_signed_minting_tx,
             eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt},
-            eth_debug_functions::debug_set_eth_gas_price_in_db,
         },
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
@@ -361,17 +360,4 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
             .to_string())
         })
         .map(prepend_debug_output_marker_to_string)
-}
-
-/// # Debug Set ETH Gas Price
-///
-/// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
-// FIXME rm wrappers like this and use the debug util directly!
-pub fn debug_set_int_gas_price<D: DatabaseInterface>(
-    db: &D,
-    gas_price: u64,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    debug_set_eth_gas_price_in_db(db, gas_price, &CoreType::BtcOnInt, signature, debug_command_hash)
 }

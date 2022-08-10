@@ -61,7 +61,7 @@ pub use crate::{
             eth_debug_functions::{
                 debug_set_eth_account_nonce,
                 debug_set_eth_any_sender_nonce,
-                debug_set_eth_gas_price_in_db as debug_set_eth_gas_price,
+                debug_set_eth_gas_price,
             },
             eth_message_signer::{
                 sign_ascii_msg_with_eth_key_with_no_prefix,

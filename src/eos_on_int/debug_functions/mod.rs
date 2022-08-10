@@ -6,10 +6,7 @@ use serde_json::json;
 use crate::{
     chains::{
         eos::eos_database_utils::{EosDatabaseKeysJson, EosDbUtils},
-        eth::{
-            eth_database_utils::{EthDatabaseKeysJson, EthDbUtils},
-            eth_debug_functions::debug_set_eth_gas_price_in_db as debug_set_int_gas_price_in_db,
-        },
+        eth::eth_database_utils::{EthDatabaseKeysJson, EthDbUtils},
     },
     constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
     core_type::CoreType,
@@ -90,16 +87,4 @@ pub fn debug_get_all_db_keys() -> Result<String> {
         "dictionary:": hex::encode(EOS_ETH_DICTIONARY_KEY.to_vec()),
     })
     .to_string()))
-}
-
-/// # Debug Set INT Gas Price
-///
-/// This function sets the INT gas price to use when making INT transactions. It's unit is `Wei`.
-pub fn debug_set_int_gas_price<D: DatabaseInterface>(
-    db: &D,
-    gas_price: u64,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    debug_set_int_gas_price_in_db(db, gas_price, &CoreType::EosOnInt, signature, debug_command_hash)
 }

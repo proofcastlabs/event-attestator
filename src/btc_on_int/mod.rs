@@ -25,7 +25,6 @@ pub use crate::{
             debug_get_signed_erc777_proxy_change_pnetwork_tx,
             debug_maybe_add_utxo_to_db,
             debug_mint_pbtc,
-            debug_set_int_gas_price,
             debug_set_key_in_db_to_value,
             int_block_reprocessor::debug_reprocess_int_block,
         },
@@ -47,7 +46,10 @@ pub use crate::{
         },
         eth::{
             core_initialization::reset_eth_chain::debug_reset_eth_chain as debug_reset_int_chain,
-            eth_debug_functions::debug_set_eth_account_nonce as debug_set_int_account_nonce,
+            eth_debug_functions::{
+                debug_set_eth_account_nonce as debug_set_int_account_nonce,
+                debug_set_eth_gas_price as debug_set_int_gas_price,
+            },
             eth_message_signer::{
                 sign_ascii_msg_with_eth_key_with_no_prefix as sign_ascii_msg_with_int_key_with_no_prefix,
                 sign_ascii_msg_with_eth_key_with_prefix as sign_ascii_msg_with_int_key_with_prefix,

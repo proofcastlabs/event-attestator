@@ -1,3 +1,4 @@
+use function_name::named;
 use serde_json::json;
 
 use crate::{
@@ -9,21 +10,22 @@ use crate::{
     utils::prepend_debug_output_marker_to_string,
 };
 
+#[named]
 fn debug_set_account_nonce<D: DatabaseInterface>(
     db: &D,
     new_nonce: u64,
     is_for_eth: bool,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!(
         "✔ Debug setting {} account nonce...",
         if is_for_eth { "ETH" } else { "EVM" }
     );
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), &new_nonce, &is_for_eth, core_type)())
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| {
             if is_for_eth {
                 EthDbUtils::new(db).put_eth_account_nonce_in_db(new_nonce)
@@ -38,17 +40,18 @@ fn debug_set_account_nonce<D: DatabaseInterface>(
         .map(prepend_debug_output_marker_to_string)
 }
 
+#[named]
 fn debug_set_any_sender_nonce<D: DatabaseInterface>(
     db: &D,
     new_nonce: u64,
     is_for_eth: bool,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), &new_nonce, &is_for_eth, core_type)())
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| {
             if is_for_eth {
                 EthDbUtils::new(db).put_any_sender_nonce_in_db(new_nonce)
@@ -63,21 +66,22 @@ fn debug_set_any_sender_nonce<D: DatabaseInterface>(
         .map(prepend_debug_output_marker_to_string)
 }
 
+#[named]
 fn debug_set_gas_price_in_db<D: DatabaseInterface>(
     db: &D,
     gas_price: u64,
     is_for_eth: bool,
-    _core_type: &CoreType,
+    core_type: &CoreType,
     _signature: &str,
-    _debug_command_hash: &str,
 ) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .map(|_| {
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), &gas_price, &is_for_eth, core_type)())
+        .map(|_hash| {
             warn!("DEBUG FUNCTTION SIGNATURE VALIDATION DISABLED FOR GAS PRICE SETTER!");
             // FIXME To be reinstated once scripts running these debug functions are updated to
             // provided signatures.
-            //validate_debug_command_signature(db, core_type, signature, debug_command_hash) {
+            //validate_debug_command_signature(db, core_type, signature, &hash))
         })
         .and_then(|_| {
             if is_for_eth {
@@ -111,29 +115,27 @@ pub fn check_custom_nonce<D: DatabaseInterface, E: EthDbUtilsExt<D>>(db_utils: &
 /// Debug Set ETH Gas Price
 ///
 /// This function sets the ETH gas price to use when making ETH transactions. It's unit is `Wei`.
-pub fn debug_set_eth_gas_price_in_db<D: DatabaseInterface>(
+pub fn debug_set_eth_gas_price<D: DatabaseInterface>(
     db: &D,
     gas_price: u64,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Setting ETH gas price in db...");
-    debug_set_gas_price_in_db(db, gas_price, true, core_type, signature, debug_command_hash)
+    debug_set_gas_price_in_db(db, gas_price, true, core_type, signature)
 }
 
 /// Debug Set EVM Gas Price
 ///
 /// This function sets the EVM gas price to use when making EVM transactions. It's unit is `Wei`.
-pub fn debug_set_evm_gas_price_in_db<D: DatabaseInterface>(
+pub fn debug_set_evm_gas_price<D: DatabaseInterface>(
     db: &D,
     gas_price: u64,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Setting EVM gas price in db...");
-    debug_set_gas_price_in_db(db, gas_price, false, core_type, signature, debug_command_hash)
+    debug_set_gas_price_in_db(db, gas_price, false, core_type, signature)
 }
 
 /// # Debug Set ETH Account Nonce
@@ -144,10 +146,9 @@ pub fn debug_set_eth_account_nonce<D: DatabaseInterface>(
     new_nonce: u64,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug setting ETH account nonce...");
-    debug_set_account_nonce(db, new_nonce, true, core_type, signature, debug_command_hash)
+    debug_set_account_nonce(db, new_nonce, true, core_type, signature)
 }
 
 /// # Debug Set EVM Account Nonce
@@ -158,10 +159,9 @@ pub fn debug_set_evm_account_nonce<D: DatabaseInterface>(
     new_nonce: u64,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug setting EVM account nonce...");
-    debug_set_account_nonce(db, new_nonce, false, core_type, signature, debug_command_hash)
+    debug_set_account_nonce(db, new_nonce, false, core_type, signature)
 }
 
 /// # Debug Set ETH AnySender Nonce
@@ -172,10 +172,9 @@ pub fn debug_set_eth_any_sender_nonce<D: DatabaseInterface>(
     new_nonce: u64,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug setting ETH AnySender nonce...");
-    debug_set_any_sender_nonce(db, new_nonce, true, core_type, signature, debug_command_hash)
+    debug_set_any_sender_nonce(db, new_nonce, true, core_type, signature)
 }
 
 /// # Debug Set EVM AnySender Nonce
@@ -186,10 +185,9 @@ pub fn debug_set_evm_any_sender_nonce<D: DatabaseInterface>(
     new_nonce: u64,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug setting EVM AnySender nonce...");
-    debug_set_any_sender_nonce(db, new_nonce, false, core_type, signature, debug_command_hash)
+    debug_set_any_sender_nonce(db, new_nonce, false, core_type, signature)
 }
 
 #[cfg(all(test, feature = "debug"))]

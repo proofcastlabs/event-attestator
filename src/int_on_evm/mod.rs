@@ -27,10 +27,10 @@ pub use crate::{
         eth_debug_functions::{
             debug_set_eth_account_nonce as debug_set_int_account_nonce,
             debug_set_eth_any_sender_nonce as debug_set_int_any_sender_nonce,
-            debug_set_eth_gas_price_in_db as debug_set_int_gas_price,
+            debug_set_eth_gas_price as debug_set_int_gas_price,
             debug_set_evm_account_nonce,
             debug_set_evm_any_sender_nonce,
-            debug_set_evm_gas_price_in_db as debug_set_evm_gas_price,
+            debug_set_evm_gas_price,
         },
         eth_message_signer::{
             sign_ascii_msg_with_eth_key_with_no_prefix as sign_ascii_msg_with_int_key_with_no_prefix,
