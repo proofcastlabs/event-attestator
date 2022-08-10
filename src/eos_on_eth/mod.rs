@@ -53,7 +53,12 @@ pub use crate::{
             },
         },
     },
-    debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
+    debug_mode::{
+        debug_add_debug_signer,
+        debug_get_key_from_db,
+        debug_remove_debug_signer,
+        debug_set_key_in_db_to_value,
+    },
     eos_on_eth::{
         debug_functions::{
             debug_get_all_db_keys,

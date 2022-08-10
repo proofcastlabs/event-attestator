@@ -58,7 +58,12 @@ pub use crate::{
             get_processed_actions_list::get_processed_actions_list,
         },
     },
-    debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
+    debug_mode::{
+        debug_add_debug_signer,
+        debug_get_key_from_db,
+        debug_remove_debug_signer,
+        debug_set_key_in_db_to_value,
+    },
 };
 
 pub mod btc;

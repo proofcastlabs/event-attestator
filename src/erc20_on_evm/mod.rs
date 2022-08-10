@@ -41,7 +41,12 @@ pub use crate::{
             sign_hex_msg_with_evm_key_with_prefix,
         },
     },
-    debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
+    debug_mode::{
+        debug_add_debug_signer,
+        debug_get_key_from_db,
+        debug_remove_debug_signer,
+        debug_set_key_in_db_to_value,
+    },
     erc20_on_evm::{
         debug_functions::{
             debug_add_dictionary_entry,
