@@ -1,19 +1,13 @@
-#![allow(dead_code)] // FIXME rm!
-use std::str::FromStr;
-
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map as JsonMap, Value as JsonValue};
 
 use crate::{
-    chains::eth::{
-        eth_crypto::eth_signature::EthSignature,
-        eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256},
-    },
+    chains::eth::eth_crypto::eth_signature::EthSignature,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     core_type::CoreType,
-    debug_mode::{check_debug_mode, debug_signers::debug_signatory::DebugSignatory},
+    debug_mode::debug_signers::debug_signatory::DebugSignatory,
     errors::AppError,
     safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
@@ -22,137 +16,8 @@ use crate::{
 
 lazy_static! {
     pub static ref DEBUG_SIGNATORIES_DB_KEY: [u8; 32] = crate::utils::get_prefixed_db_key("debug_signatories_db_key");
-    static ref SAFE_DEBUG_SIGNATORIES: DebugSignatories =
+    pub static ref SAFE_DEBUG_SIGNATORIES: DebugSignatories =
         DebugSignatories::new(vec![DebugSignatory::new("safe_address", &SAFE_ETH_ADDRESS)]);
-}
-
-/// Validate Debug Command Signature
-///
-/// This function will take in the passed debug command hash, signature and database and check that
-/// the signature is valid for one of the debug signatory's over that command hash.
-pub fn validate_debug_command_signature<D: DatabaseInterface>(
-    db: &D,
-    core_type: &CoreType,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<()> {
-    if cfg!(test) {
-        warn!("✘ Skipping debug command validation!");
-        Ok(())
-    } else {
-        DebugSignatories::get_from_db(db).and_then(|debug_signatories| {
-            debug_signatories.maybe_validate_signature_and_increment_nonce_in_db(
-                db,
-                core_type,
-                &convert_hex_to_h256(debug_command_hash)?,
-                &EthSignature::from_str(signature)?,
-            )
-        })
-    }
-}
-
-/// Debug Add Debug Signer
-///
-/// Adds a debug signatory to the list. Since this is a debug function, it requires a valid
-/// signature from an address in the list of debug signatories. But because this list begins life
-/// empty, we have a chicken and egg scenario. And so to solve this, if the addition is the _first_
-/// one, we instead require a signature from the `SAFE_ETH_ADDRESS` in order to validate the
-/// command.
-pub fn debug_add_debug_signer<D: DatabaseInterface>(
-    db: &D,
-    signature_str: &str,
-    signatory_name: &str,
-    eth_address_str: &str,
-    core_type: &CoreType,
-    debug_command_hash_str: &str,
-) -> Result<String> {
-    info!("✔ Adding debug signer to list...");
-
-    let eth_address = convert_hex_to_eth_address(eth_address_str)?;
-    if eth_address == *SAFE_ETH_ADDRESS {
-        return Err(
-            json!({"error": "Cannot add the ETH safe address as a debug signatory!"})
-                .to_string()
-                .into(),
-        );
-    };
-
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| DebugSignatories::get_from_db(db))
-        .and_then(|debug_signatories| {
-            let signature = EthSignature::from_str(signature_str)?;
-            let debug_command_hash = convert_hex_to_h256(debug_command_hash_str)?;
-            let debug_signatory_to_add = DebugSignatory::new(signatory_name, &eth_address);
-
-            if debug_signatories.is_empty() {
-                info!("✔ Validating the debug signer addition using the safe address...");
-                SAFE_DEBUG_SIGNATORIES
-                    .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
-                    .and_then(|_| debug_signatories.add_and_update_in_db(db, &debug_signatory_to_add))
-            } else {
-                debug_signatories
-                    .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
-                    .and_then(|_| DebugSignatories::get_from_db(db))
-                    .and_then(|debug_signatories| debug_signatories.add_and_update_in_db(db, &debug_signatory_to_add))
-            }
-        })
-        .and_then(|_| db.end_transaction())
-        .map(|_| json!({"debug_add_signatory_success":true, "eth_address": eth_address_str}).to_string())
-}
-
-/// Debug Remove Debug Signer
-///
-/// Removes a debug signatory from the list. Requires a valid signature from an existing debug
-/// signatory in order to do so. If the supplied eth address is not in the list of debug
-/// debug_signatories, nothing is removed.
-pub fn debug_remove_debug_signer<D: DatabaseInterface>(
-    db: &D,
-    signature_str: &str,
-    eth_address_str: &str,
-    core_type: &CoreType,
-    debug_command_hash_str: &str,
-) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| DebugSignatories::get_from_db(db))
-        .and_then(|debug_signatories| {
-            let signature = EthSignature::from_str(signature_str)?;
-            let eth_address = convert_hex_to_eth_address(eth_address_str)?;
-            let debug_command_hash = convert_hex_to_h256(debug_command_hash_str)?;
-            debug_signatories
-                .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
-                .and_then(|_| DebugSignatories::get_from_db(db))
-                .and_then(|debug_signatories| debug_signatories.remove_and_update_in_db(db, &eth_address))
-        })
-        .and_then(|_| db.end_transaction())
-        .map(|_| json!({"debug_remove_signatory_success":true, "eth_address": eth_address_str}).to_string())
-}
-
-/// Get Debug Signature Info
-///
-/// Gets the information required to sign a valid debug function signaure, require in order to run
-/// a debug function. The `debug_command_hash_str` is a hash of the `CLI_ARGS` struct populated
-/// with the arguments required to run the desired debug function.
-pub fn get_debug_signature_info<D: DatabaseInterface>(
-    db: &D,
-    core_type: &CoreType,
-    debug_command_hash_str: &str,
-) -> Result<JsonValue> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| DebugSignatories::get_from_db(db))
-        .and_then(|debug_signatories| {
-            db.end_transaction()?;
-            let debug_command_hash = convert_hex_to_h256(debug_command_hash_str)?;
-            if debug_signatories.is_empty() {
-                // NOTE: If there are no signers yet, we show the safe address signing info, since
-                // with that, new debug signers can be added.
-                SAFE_DEBUG_SIGNATORIES.to_signature_info_json(core_type, &debug_command_hash, None)
-            } else {
-                debug_signatories.to_signature_info_json(core_type, &debug_command_hash, None)
-            }
-        })
 }
 
 #[derive(Debug, Default, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
@@ -369,6 +234,7 @@ impl DebugSignatories {
 mod tests {
     use super::*;
     use crate::{
+        chains::eth::eth_utils::convert_hex_to_eth_address,
         debug_mode::debug_signers::test_utils::{
             get_n_random_debug_signatories,
             get_sample_debug_command_hash,
