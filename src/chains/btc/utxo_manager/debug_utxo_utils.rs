@@ -1,3 +1,4 @@
+use function_name::named;
 use serde_json::json;
 
 use crate::{
@@ -35,15 +36,12 @@ use crate::{
 ///
 /// ### BEWARE:
 /// Use with extreme caution, and only if you know exactly what you are doing and why.
-pub fn debug_clear_all_utxos<D: DatabaseInterface>(
-    db: &D,
-    core_type: &CoreType,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+#[named]
+pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D, core_type: &CoreType, signature: &str) -> Result<String> {
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), core_type)())
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .map(|_| get_all_utxo_db_keys(db).to_vec())
         .and_then(|db_keys| {
             db_keys
@@ -64,17 +62,18 @@ pub fn debug_clear_all_utxos<D: DatabaseInterface>(
 ///
 /// ### BEWARE:
 /// Use ONLY if you know exactly what you're doing and why!
+#[named]
 pub fn debug_remove_utxo<D: DatabaseInterface>(
     db: &D,
     tx_id: &str,
     v_out: u32,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), tx_id, &v_out, core_type)())
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| get_btc_tx_id_from_str(tx_id))
         .and_then(|id| get_utxo_with_tx_id_and_v_out(db, v_out, &id))
         .and_then(|_| db.end_transaction())
@@ -91,21 +90,22 @@ pub fn debug_remove_utxo<D: DatabaseInterface>(
 /// This function spends UTXOs and outputs a signed transaction. If the outputted transaction is NOT
 /// broadcast, the consolidated  output saved in the DB will NOT be spendable, leaving the enclave
 /// bricked. Use ONLY if you know exactly what you're doing and why!
+#[named]
 pub fn debug_consolidate_utxos<D: DatabaseInterface>(
     db: &D,
     fee: u64,
     num_utxos: usize,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     if num_utxos < 1 {
         return Err("Cannot consolidate 0 UTXOs!".into());
     };
     let btc_db_utils = BtcDbUtils::new(db);
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), &fee, &num_utxos, core_type)())
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| get_x_utxos(db, num_utxos))
         .and_then(|utxos| {
             let btc_address = btc_db_utils.get_btc_address_from_db()?;
@@ -145,6 +145,7 @@ pub fn debug_consolidate_utxos<D: DatabaseInterface>(
 /// This function spends UTXOs and outputs the signed transactions. If the output trnsaction is NOT
 /// broadcast, the change output saved in the DB will NOT be spendable, leaving the enclave
 /// bricked. Use ONLY if you know exactly what you're doing and why!
+#[named]
 pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
     db: &D,
     fee: u64,
@@ -152,12 +153,12 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
     v_out: u32,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     let btc_db_utils = BtcDbUtils::new(db);
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), &fee, tx_id, &v_out, core_type)())
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| get_btc_tx_id_from_str(tx_id))
         .and_then(|id| get_utxo_with_tx_id_and_v_out(db, v_out, &id))
         .and_then(|utxo| {
@@ -205,16 +206,17 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
 ///
 /// ### BEWARE:
 /// Use ONLY if you know exactly what you're doing and why!
+#[named]
 pub fn debug_add_multiple_utxos<D: DatabaseInterface>(
     db: &D,
     json_str: &str,
     core_type: &CoreType,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), json_str, core_type)())
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| BtcUtxosAndValues::from_str(json_str))
         .and_then(|utxos| {
             utxos
@@ -228,7 +230,7 @@ pub fn debug_add_multiple_utxos<D: DatabaseInterface>(
         })
 }
 
-#[cfg(test)]
+#[cfg(all(features = "debug", test))]
 mod tests {
     use super::*;
     use crate::{
