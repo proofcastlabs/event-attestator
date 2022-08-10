@@ -22,10 +22,7 @@ pub(crate) mod test_utils;
 
 pub use crate::{
     chains::{
-        algo::{
-            algo_note_metadata::encode_algo_note_metadata,
-            core_initialization::reset_algo_chain::debug_reset_algo_chain,
-        },
+        algo::{algo_debug_functions::debug_reset_algo_chain, algo_note_metadata::encode_algo_note_metadata},
         eth::{
             core_initialization::reset_eth_chain::debug_reset_eth_chain as debug_reset_int_chain,
             eth_debug_functions::{

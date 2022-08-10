@@ -3,6 +3,7 @@ pub(crate) mod algo_chain_id;
 pub(crate) mod algo_constants;
 pub(crate) mod algo_database_transactions;
 pub(crate) mod algo_database_utils;
+pub(crate) mod algo_debug_functions;
 pub(crate) mod algo_enclave_state;
 pub(crate) mod algo_note_metadata;
 pub(crate) mod algo_relevant_asset_txs;
