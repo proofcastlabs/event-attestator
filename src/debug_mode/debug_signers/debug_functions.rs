@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use function_name::named;
 use serde_json::json;
 
 use crate::{
@@ -27,13 +28,13 @@ use crate::{
 /// empty, we have a chicken and egg scenario. And so to solve this, if the addition is the _first_
 /// one, we instead require a signature from the `SAFE_ETH_ADDRESS` in order to validate the
 /// command.
+#[named]
 pub fn debug_add_debug_signer<D: DatabaseInterface>(
     db: &D,
-    signature_str: &str,
     signatory_name: &str,
     eth_address_str: &str,
     core_type: &CoreType,
-    debug_command_hash_str: &str,
+    signature_str: &str,
 ) -> Result<String> {
     info!("✔ Adding debug signer to list...");
 
@@ -46,12 +47,17 @@ pub fn debug_add_debug_signer<D: DatabaseInterface>(
         );
     };
 
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
         .and_then(|_| DebugSignatories::get_from_db(db))
         .and_then(|debug_signatories| {
+            let debug_command_hash = convert_hex_to_h256(&get_debug_command_hash!(
+                function_name!(),
+                signatory_name,
+                eth_address_str,
+                core_type
+            )()?)?;
             let signature = EthSignature::from_str(signature_str)?;
-            let debug_command_hash = convert_hex_to_h256(debug_command_hash_str)?;
             let debug_signatory_to_add = DebugSignatory::new(signatory_name, &eth_address);
 
             if debug_signatories.is_empty() {
@@ -75,20 +81,21 @@ pub fn debug_add_debug_signer<D: DatabaseInterface>(
 /// Removes a debug signatory from the list. Requires a valid signature from an existing debug
 /// signatory in order to do so. If the supplied eth address is not in the list of debug
 /// debug_signatories, nothing is removed.
+#[named]
 pub fn debug_remove_debug_signer<D: DatabaseInterface>(
     db: &D,
-    signature_str: &str,
     eth_address_str: &str,
     core_type: &CoreType,
-    debug_command_hash_str: &str,
+    signature_str: &str,
 ) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
         .and_then(|_| DebugSignatories::get_from_db(db))
         .and_then(|debug_signatories| {
             let signature = EthSignature::from_str(signature_str)?;
             let eth_address = convert_hex_to_eth_address(eth_address_str)?;
-            let debug_command_hash = convert_hex_to_h256(debug_command_hash_str)?;
+            let debug_command_hash =
+                convert_hex_to_h256(&get_debug_command_hash!(function_name!(), eth_address_str, core_type)()?)?;
             debug_signatories
                 .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
                 .and_then(|_| DebugSignatories::get_from_db(db))
