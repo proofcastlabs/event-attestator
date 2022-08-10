@@ -24,7 +24,6 @@ pub use crate::{
             debug_get_all_db_keys,
             debug_get_all_utxos,
             debug_get_fee_withdrawal_tx,
-            debug_get_key_from_db,
             debug_get_signed_erc777_change_pnetwork_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_tx,
@@ -33,7 +32,6 @@ pub use crate::{
             debug_put_btc_on_eth_peg_in_basis_points_in_db,
             debug_put_btc_on_eth_peg_out_basis_points_in_db,
             debug_set_accrued_fees,
-            debug_set_key_in_db_to_value,
             eth_block_reprocessor::{debug_reprocess_eth_block, debug_reprocess_eth_block_with_fee_accrual},
         },
         eth::{
@@ -70,6 +68,7 @@ pub use crate::{
             },
         },
     },
+    debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
 };
 
 pub mod btc;

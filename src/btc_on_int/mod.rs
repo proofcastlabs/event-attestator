@@ -19,13 +19,11 @@ pub use crate::{
             btc_block_reprocessor::{debug_reprocess_btc_block, debug_reprocess_btc_block_with_nonce},
             debug_get_all_db_keys,
             debug_get_all_utxos,
-            debug_get_key_from_db,
             debug_get_signed_erc777_change_pnetwork_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_tx,
             debug_maybe_add_utxo_to_db,
             debug_mint_pbtc,
-            debug_set_key_in_db_to_value,
             int_block_reprocessor::debug_reprocess_int_block,
         },
         get_enclave_state::get_enclave_state,
@@ -57,6 +55,7 @@ pub use crate::{
             },
         },
     },
+    debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
 };
 
 pub mod btc;

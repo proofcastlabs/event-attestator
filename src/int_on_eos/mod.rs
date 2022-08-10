@@ -41,13 +41,12 @@ pub use crate::{
             },
         },
     },
+    debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
     int_on_eos::{
         debug_functions::{
             debug_get_add_supported_token_tx,
             debug_get_all_db_keys,
-            debug_get_key_from_db,
             debug_get_remove_supported_token_tx,
-            debug_set_key_in_db_to_value,
             eos_block_reprocessor::{debug_reprocess_eos_block, debug_reprocess_eos_block_with_nonce},
             int_block_reprocessor::debug_reprocess_int_block,
         },

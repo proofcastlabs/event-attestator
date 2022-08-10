@@ -41,15 +41,9 @@ use crate::{
             eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt},
         },
     },
-    constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL, SUCCESS_JSON},
+    constants::{DB_KEY_PREFIX, SUCCESS_JSON},
     core_type::CoreType,
-    debug_mode::{
-        check_debug_mode,
-        get_key_from_db,
-        set_key_in_db_to_value,
-        validate_debug_command_signature,
-        DEBUG_SIGNATORIES_DB_KEY,
-    },
+    debug_mode::{check_debug_mode, validate_debug_command_signature, DEBUG_SIGNATORIES_DB_KEY},
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, prepend_debug_output_marker_to_string, strip_hex_prefix},
@@ -69,60 +63,6 @@ pub fn debug_get_all_db_keys() -> Result<String> {
         })
         .to_string()
     })
-}
-
-/// # Debug Set Key in DB to Value
-///
-/// This function set to the given value a given key in the encryped database.
-///
-/// ### BEWARE:
-/// Only use this if you know exactly what you are doing and why.
-pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(
-    db: &D,
-    key: &str,
-    value: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    let key_bytes = hex::decode(&key)?;
-    let sensitivity = if key_bytes == EthDbUtils::new(db).get_eth_private_key_db_key()
-        || key_bytes == BtcDbUtils::new(db).get_btc_private_key_db_key()
-    {
-        MAX_DATA_SENSITIVITY_LEVEL
-    } else {
-        None
-    };
-    set_key_in_db_to_value(
-        db,
-        key,
-        value,
-        sensitivity,
-        &CoreType::BtcOnInt,
-        signature,
-        debug_command_hash,
-    )
-    .map(prepend_debug_output_marker_to_string)
-}
-
-/// # Debug Get Key From Db
-///
-/// This function will return the value stored under a given key in the encrypted database.
-pub fn debug_get_key_from_db<D: DatabaseInterface>(
-    db: &D,
-    key: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    let key_bytes = hex::decode(&key)?;
-    let sensitivity = if key_bytes == EthDbUtils::new(db).get_eth_private_key_db_key()
-        || key_bytes == BtcDbUtils::new(db).get_btc_private_key_db_key()
-    {
-        MAX_DATA_SENSITIVITY_LEVEL
-    } else {
-        None
-    };
-    get_key_from_db(db, key, sensitivity, &CoreType::BtcOnInt, signature, debug_command_hash)
-        .map(prepend_debug_output_marker_to_string)
 }
 
 /// # Debug Get All UTXOs

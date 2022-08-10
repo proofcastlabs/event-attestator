@@ -41,18 +41,17 @@ pub use crate::{
             sign_hex_msg_with_evm_key_with_prefix,
         },
     },
+    debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
     erc20_on_evm::{
         debug_functions::{
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
             debug_get_all_db_keys,
             debug_get_erc20_on_evm_vault_migration_tx,
-            debug_get_key_from_db,
             debug_get_remove_supported_token_tx,
             debug_remove_dictionary_entry,
             debug_set_accrued_fees_in_dictionary,
             debug_set_fee_basis_points,
-            debug_set_key_in_db_to_value,
             debug_withdraw_fees_and_save_in_db,
             eth_block_reprocessor::{
                 debug_reprocess_eth_block,

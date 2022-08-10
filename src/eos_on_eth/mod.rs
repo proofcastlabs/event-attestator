@@ -53,14 +53,13 @@ pub use crate::{
             },
         },
     },
+    debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
     eos_on_eth::{
         debug_functions::{
             debug_get_all_db_keys,
-            debug_get_key_from_db,
             debug_set_accrued_fees_in_dictionary,
             debug_set_eos_fee_basis_points,
             debug_set_eth_fee_basis_points,
-            debug_set_key_in_db_to_value,
             debug_withdraw_fees,
             eos_block_reprocessor::{
                 debug_reprocess_eos_block,

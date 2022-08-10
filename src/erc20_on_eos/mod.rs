@@ -42,18 +42,17 @@ pub use crate::{
             },
         },
     },
+    debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
     erc20_on_eos::{
         add_vault_contract_address_to_db::maybe_add_vault_contract_address_to_db,
         debug_functions::{
             debug_get_add_supported_token_tx,
             debug_get_all_db_keys,
             debug_get_erc20_vault_migration_tx as debug_get_perc20_migration_tx,
-            debug_get_key_from_db,
             debug_get_remove_supported_token_tx,
             debug_set_accrued_fees_in_dictionary,
             debug_set_eos_fee_basis_points,
             debug_set_eth_fee_basis_points,
-            debug_set_key_in_db_to_value,
             debug_withdraw_fees_and_save_in_db,
             eos_block_reprocessor::{
                 debug_reprocess_eos_block,

@@ -34,6 +34,7 @@ pub use crate::{
             },
         },
     },
+    debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
     int_on_algo::{
         algo::{initialize_algo_core::maybe_initialize_algo_core, submit_algo_block::submit_algo_block_to_core},
         debug_functions::{
@@ -42,10 +43,8 @@ pub use crate::{
             debug_get_add_supported_token_tx,
             debug_get_algo_pay_tx,
             debug_get_all_db_keys,
-            debug_get_key_from_db,
             debug_remove_dictionary_entry,
             debug_set_algo_account_nonce,
-            debug_set_key_in_db_to_value,
             int_block_reprocessor::debug_reprocess_int_block,
             opt_in_to_application::debug_opt_in_to_application,
             opt_in_to_asset::debug_opt_in_to_asset,

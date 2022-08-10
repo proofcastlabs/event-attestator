@@ -8,8 +8,6 @@ use crate::{
 };
 
 pub static DB_LOCK_ERRROR: &str = "Cannot get lock on DB!";
-pub static DUMMY_SIGNATURE: &str = ""; // NOTE: Used with test-core debug signature validation.
-pub static DUMMY_DEBUG_COMMAND_HASH: &str = DUMMY_SIGNATURE; // NOTE Ibid.
 
 #[derive(Debug)]
 pub struct TestDB(pub Mutex<HashMap<Bytes, Bytes>>);

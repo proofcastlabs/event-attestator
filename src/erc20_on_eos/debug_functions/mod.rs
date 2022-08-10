@@ -22,9 +22,9 @@ use crate::{
             eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
         },
     },
-    constants::{DB_KEY_PREFIX, MAX_DATA_SENSITIVITY_LEVEL},
+    constants::DB_KEY_PREFIX,
     core_type::CoreType,
-    debug_mode::{check_debug_mode, get_key_from_db, set_key_in_db_to_value, validate_debug_command_signature},
+    debug_mode::{check_debug_mode, validate_debug_command_signature},
     dictionaries::{dictionary_constants::EOS_ETH_DICTIONARY_KEY, eos_eth::EosEthTokenDictionary},
     erc20_on_eos::check_core_is_initialized::check_core_is_initialized,
     fees::fee_utils::sanity_check_basis_points_value,
@@ -32,73 +32,6 @@ use crate::{
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-
-/// # Debug Set Key in DB to Value
-///
-/// This function set to the given value a given key in the encryped database.
-///
-/// ### BEWARE:
-/// Only use this if you know exactly what you are doing and why.
-pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(
-    db: &D,
-    key: &str,
-    value: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    let key_bytes = hex::decode(&key)?;
-    let eos_db_utils = EosDbUtils::new(db);
-    let eth_db_utils = EthDbUtils::new(db);
-    let is_private_key = {
-        key_bytes == eos_db_utils.get_eos_private_key_db_key() || key_bytes == eth_db_utils.get_eth_private_key_db_key()
-    };
-    let sensitivity = if is_private_key {
-        MAX_DATA_SENSITIVITY_LEVEL
-    } else {
-        None
-    };
-    set_key_in_db_to_value(
-        db,
-        key,
-        value,
-        sensitivity,
-        &CoreType::Erc20OnEos,
-        signature,
-        debug_command_hash,
-    )
-    .map(prepend_debug_output_marker_to_string)
-}
-
-/// # Debug Get Key From Db
-///
-/// This function will return the value stored under a given key in the encrypted database.
-pub fn debug_get_key_from_db<D: DatabaseInterface>(
-    db: &D,
-    key: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    let key_bytes = hex::decode(&key)?;
-    let eos_db_utils = EosDbUtils::new(db);
-    let eth_db_utils = EthDbUtils::new(db);
-    let is_private_key = {
-        key_bytes == eos_db_utils.get_eos_private_key_db_key() || key_bytes == eth_db_utils.get_eth_private_key_db_key()
-    };
-    let sensitivity = if is_private_key {
-        MAX_DATA_SENSITIVITY_LEVEL
-    } else {
-        None
-    };
-    get_key_from_db(
-        db,
-        key,
-        sensitivity,
-        &CoreType::Erc20OnEos,
-        signature,
-        debug_command_hash,
-    )
-    .map(prepend_debug_output_marker_to_string)
-}
 
 /// # Debug Get All Db Keys
 ///
