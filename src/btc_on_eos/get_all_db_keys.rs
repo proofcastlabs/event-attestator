@@ -6,6 +6,7 @@ use crate::{
         eos::eos_database_utils::EosDatabaseKeysJson,
     },
     constants::DB_KEY_PREFIX,
+    debug_mode::DEBUG_SIGNATORIES_DB_KEY,
     types::Result,
 };
 
@@ -18,6 +19,7 @@ pub fn get_all_db_keys() -> Result<String> {
         "eos": EosDatabaseKeysJson::new(),
         "db-key-prefix": DB_KEY_PREFIX.to_string(),
         "utxo-manager": get_utxo_constants_db_keys(),
+        "debug_signatories": format!("0x{}", hex::encode(&*DEBUG_SIGNATORIES_DB_KEY)),
     })
     .to_string())
 }

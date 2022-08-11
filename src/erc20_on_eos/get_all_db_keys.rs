@@ -3,6 +3,7 @@ use serde_json::json;
 use crate::{
     chains::{eos::eos_database_utils::EosDatabaseKeysJson, eth::eth_database_utils::EthDatabaseKeysJson},
     constants::DB_KEY_PREFIX,
+    debug_mode::DEBUG_SIGNATORIES_DB_KEY,
     dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
     types::Result,
 };
@@ -16,6 +17,7 @@ pub fn get_all_db_keys() -> Result<String> {
         "eos": EosDatabaseKeysJson::new(),
         "db-key-prefix": DB_KEY_PREFIX.to_string(),
         "dictionary": hex::encode(EOS_ETH_DICTIONARY_KEY.to_vec()),
+        "debug_signatories": format!("0x{}", hex::encode(&*DEBUG_SIGNATORIES_DB_KEY)),
     })
     .to_string())
 }

@@ -3,6 +3,7 @@ use serde_json::json;
 use crate::{
     chains::eth::eth_database_utils::{EthDatabaseKeysJson, EvmDatabaseKeysJson},
     constants::DB_KEY_PREFIX,
+    debug_mode::DEBUG_SIGNATORIES_DB_KEY,
     dictionaries::dictionary_constants::ETH_EVM_DICTIONARY_KEY,
     types::Result,
 };
@@ -16,6 +17,7 @@ pub fn get_all_db_keys() -> Result<String> {
         "evm": EvmDatabaseKeysJson::new(),
         "db-key-prefix": DB_KEY_PREFIX.to_string(),
         "dictionary": hex::encode(ETH_EVM_DICTIONARY_KEY.to_vec()),
+        "debug_signatories": format!("0x{}", hex::encode(&*DEBUG_SIGNATORIES_DB_KEY)),
     })
     .to_string())
 }
