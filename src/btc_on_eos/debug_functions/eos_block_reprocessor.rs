@@ -4,17 +4,16 @@ pub use serde_json::json;
 use crate::{
     btc_on_eos::{
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
+        constants::CORE_TYPE,
         eos::{
-            account_for_fees::maybe_account_for_fees as maybe_account_for_peg_out_fees,
-            extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
-            filter_btc_txs_in_state::maybe_filter_btc_txs_in_state,
-            get_eos_output::get_eos_output,
-            redeem_info::{
-                maybe_filter_value_too_low_redeem_infos_in_state,
-                maybe_parse_redeem_infos_and_put_in_state,
-            },
-            save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
-            sign_transactions::maybe_sign_txs_and_add_to_state,
+            get_eos_output,
+            maybe_account_for_peg_out_fees,
+            maybe_extract_btc_utxo_from_btc_tx_in_state,
+            maybe_filter_btc_txs_in_state,
+            maybe_filter_value_too_low_redeem_infos_in_state,
+            maybe_parse_redeem_infos_and_put_in_state,
+            maybe_save_btc_utxos_to_db,
+            maybe_sign_txs_and_add_to_state,
         },
     },
     chains::{
@@ -39,7 +38,6 @@ use crate::{
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
         },
     },
-    core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
     fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
@@ -61,7 +59,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
     db.start_transaction()
         .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &accrue_fees)())
-        .and_then(|hash| validate_debug_command_signature(db, &CoreType::BtcOnEos, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)

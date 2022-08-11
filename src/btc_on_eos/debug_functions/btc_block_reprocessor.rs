@@ -4,13 +4,16 @@ pub use serde_json::json;
 use crate::{
     btc_on_eos::{
         btc::{
-            account_for_fees::maybe_account_for_fees as maybe_account_for_peg_in_fees,
-            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
-            eos_tx_info::parse_eos_tx_infos_from_p2sh_deposits_and_add_to_state,
-            get_btc_output_json::{get_btc_output_as_string, get_eos_signed_tx_info, BtcOutput},
-            sign_transactions::get_signed_eos_ptoken_issue_txs,
+            get_btc_output_as_string,
+            get_eos_signed_tx_info,
+            get_signed_eos_ptoken_issue_txs,
+            maybe_account_for_peg_in_fees,
+            maybe_divert_txs_to_safe_address_if_destination_is_token_address,
+            parse_eos_tx_infos_from_p2sh_deposits_and_add_to_state,
+            BtcOutput,
         },
         check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
+        constants::CORE_TYPE,
     },
     chains::{
         btc::{
@@ -28,7 +31,6 @@ use crate::{
         },
         eos::eos_crypto::eos_private_key::EosPrivateKey,
     },
-    core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
     fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
@@ -50,7 +52,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
     db.start_transaction()
         .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json_str, &accrue_fees)())
-        .and_then(|hash| validate_debug_command_signature(db, &CoreType::BtcOnEos, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_submission_material_and_put_in_state(block_json_str, BtcState::init(db)))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(validate_btc_block_header_in_state)

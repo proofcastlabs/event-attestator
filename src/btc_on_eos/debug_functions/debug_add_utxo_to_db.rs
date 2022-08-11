@@ -1,5 +1,7 @@
+use function_name::named;
+
 use crate::{
-    btc_on_eos::check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
+    btc_on_eos::{check_core_is_initialized::check_core_is_initialized_and_return_btc_state, constants::CORE_TYPE},
     chains::btc::{
         btc_database_utils::end_btc_db_transaction,
         btc_state::BtcState,
@@ -17,7 +19,6 @@ use crate::{
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
     },
     constants::SUCCESS_JSON,
-    core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
     traits::DatabaseInterface,
     types::Result,
@@ -33,15 +34,16 @@ use crate::{
 ///
 /// ### NOTE:
 /// The core won't accept UTXOs it already has in its encrypted database.
+#[named]
 pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(
     db: &D,
     btc_submission_material_json: &str,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnEos, signature, debug_command_hash))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), &btc_submission_material_json)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_submission_material_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
         .and_then(check_core_is_initialized_and_return_btc_state)
         .and_then(validate_btc_block_header_in_state)
