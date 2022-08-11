@@ -12,6 +12,16 @@
 //! ptokens_core = { version = "1.0.0", features = ["debug"] }
 //! ```
 
+pub(crate) mod btc;
+pub(crate) mod check_core_is_initialized;
+pub(crate) mod debug_functions;
+pub(crate) mod eos;
+pub(crate) mod get_all_db_keys;
+pub(crate) mod get_enclave_state;
+pub(crate) mod get_latest_block_numbers;
+pub(crate) mod test_utils;
+pub(crate) mod utils;
+
 pub use crate::{
     btc_on_eos::{
         btc::submit_btc_block::submit_btc_block_to_core,
@@ -67,14 +77,3 @@ pub use crate::{
         debug_set_key_in_db_to_value,
     },
 };
-
-pub mod btc;
-pub mod debug_functions;
-pub mod eos;
-pub mod get_enclave_state;
-pub mod get_latest_block_numbers;
-
-pub(crate) mod check_core_is_initialized;
-pub(crate) mod get_all_db_keys;
-pub(crate) mod test_utils;
-pub(crate) mod utils;
