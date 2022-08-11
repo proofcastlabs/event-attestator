@@ -1,7 +1,7 @@
 pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 
 use crate::{
-    btc_on_eos::BtcOnEosRedeemInfos,
+    btc_on_eos::BtcOnEosBtcTxInfos,
     chains::{
         btc::{btc_database_utils::BtcDbUtils, utxo_manager::utxo_types::BtcUtxosAndValues},
         eos::{
@@ -53,7 +53,7 @@ pub struct EosState<'a, D: DatabaseInterface> {
     pub int_on_eos_int_tx_infos: IntOnEosIntTxInfos,
     pub eos_on_int_int_tx_infos: EosOnIntIntTxInfos,
     pub eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos,
-    pub btc_on_eos_redeem_infos: BtcOnEosRedeemInfos,
+    pub btc_on_eos_btc_tx_infos: BtcOnEosBtcTxInfos,
     pub active_schedule: Option<EosProducerScheduleV2>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub erc20_on_eos_redeem_infos: Erc20OnEosRedeemInfos,
@@ -83,7 +83,7 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos::new(vec![]),
             int_on_eos_int_tx_infos: IntOnEosIntTxInfos::new(vec![]),
             eos_on_int_int_tx_infos: EosOnIntIntTxInfos::new(vec![]),
-            btc_on_eos_redeem_infos: BtcOnEosRedeemInfos::new(vec![]),
+            btc_on_eos_btc_tx_infos: BtcOnEosBtcTxInfos::new(vec![]),
             erc20_on_eos_redeem_infos: Erc20OnEosRedeemInfos::new(vec![]),
         }
     }
@@ -112,8 +112,8 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
         Ok(self)
     }
 
-    pub fn add_btc_on_eos_redeem_infos(mut self, infos: BtcOnEosRedeemInfos) -> Result<EosState<'a, D>> {
-        self.btc_on_eos_redeem_infos = infos;
+    pub fn add_btc_on_eos_btc_tx_infos(mut self, infos: BtcOnEosBtcTxInfos) -> Result<EosState<'a, D>> {
+        self.btc_on_eos_btc_tx_infos = infos;
         Ok(self)
     }
 
@@ -173,9 +173,9 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
         Ok(self)
     }
 
-    pub fn replace_btc_on_eos_redeem_infos(mut self, replacements: BtcOnEosRedeemInfos) -> Result<EosState<'a, D>> {
+    pub fn replace_btc_on_eos_btc_tx_infos(mut self, replacements: BtcOnEosBtcTxInfos) -> Result<EosState<'a, D>> {
         info!("✔ Replacing redeem infos in state...");
-        self.btc_on_eos_redeem_infos = replacements;
+        self.btc_on_eos_btc_tx_infos = replacements;
         Ok(self)
     }
 
@@ -207,7 +207,7 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
         GlobalSequences::new(
             vec![
                 self.eos_on_eth_eos_tx_infos.get_global_sequences().to_vec(),
-                self.btc_on_eos_redeem_infos.get_global_sequences().to_vec(),
+                self.btc_on_eos_btc_tx_infos.get_global_sequences().to_vec(),
                 self.erc20_on_eos_redeem_infos.get_global_sequences().to_vec(),
             ]
             .concat(),

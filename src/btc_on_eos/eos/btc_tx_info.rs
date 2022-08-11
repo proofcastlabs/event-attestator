@@ -21,25 +21,25 @@ use crate::{
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
-pub struct BtcOnEosRedeemInfos(pub Vec<BtcOnEosRedeemInfo>);
+pub struct BtcOnEosBtcTxInfos(pub Vec<BtcOnEosBtcTxInfo>);
 
-impl BtcOnEosRedeemInfos {
+impl BtcOnEosBtcTxInfos {
     pub fn subtract_fees(&self, fee_basis_points: u64) -> Result<Self> {
         let (fees, _) = self.calculate_fees(sanity_check_basis_points_value(fee_basis_points)?);
-        info!("`BtcOnEosRedeemInfos` fees: {:?}", fees);
+        info!("`BtcOnEosBtcTxInfos` fees: {:?}", fees);
         Ok(Self::new(
             fees.iter()
                 .zip(self.iter())
-                .map(|(fee, redeem_info)| redeem_info.subtract_amount(*fee))
-                .collect::<Result<Vec<BtcOnEosRedeemInfo>>>()?,
+                .map(|(fee, btc_tx_info)| btc_tx_info.subtract_amount(*fee))
+                .collect::<Result<Vec<BtcOnEosBtcTxInfo>>>()?,
         ))
     }
 
     pub fn calculate_fees(&self, basis_points: u64) -> (Vec<u64>, u64) {
-        info!("✔ Calculating fees in `BtcOnEosRedeemInfos`...");
+        info!("✔ Calculating fees in `BtcOnEosBtcTxInfos`...");
         let fees = self
             .iter()
-            .map(|redeem_info| redeem_info.calculate_fee(basis_points))
+            .map(|btc_tx_info| btc_tx_info.calculate_fee(basis_points))
             .collect::<Vec<u64>>();
         let total_fee = fees.iter().sum();
         info!("✔      Fees: {:?}", fees);
@@ -60,30 +60,30 @@ impl BtcOnEosRedeemInfos {
         )
     }
 
-    pub fn from_action_proofs(action_proofs: &[EosActionProof]) -> Result<BtcOnEosRedeemInfos> {
-        Ok(BtcOnEosRedeemInfos::new(
+    pub fn from_action_proofs(action_proofs: &[EosActionProof]) -> Result<BtcOnEosBtcTxInfos> {
+        Ok(BtcOnEosBtcTxInfos::new(
             action_proofs
                 .iter()
-                .map(BtcOnEosRedeemInfo::from_action_proof)
-                .collect::<Result<Vec<BtcOnEosRedeemInfo>>>()?,
+                .map(BtcOnEosBtcTxInfo::from_action_proof)
+                .collect::<Result<Vec<BtcOnEosBtcTxInfo>>>()?,
         ))
     }
 
     pub fn filter_out_already_processed_txs(
         &self,
         processed_tx_ids: &ProcessedGlobalSequences,
-    ) -> Result<BtcOnEosRedeemInfos> {
-        Ok(BtcOnEosRedeemInfos::new(
+    ) -> Result<BtcOnEosBtcTxInfos> {
+        Ok(BtcOnEosBtcTxInfos::new(
             self.iter()
                 .filter(|info| !processed_tx_ids.contains(&info.global_sequence))
                 .cloned()
-                .collect::<Vec<BtcOnEosRedeemInfo>>(),
+                .collect::<Vec<BtcOnEosBtcTxInfo>>(),
         ))
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct BtcOnEosRedeemInfo {
+pub struct BtcOnEosBtcTxInfo {
     pub amount: u64,
     pub recipient: String,
     pub from: EosAccountName,
@@ -91,15 +91,15 @@ pub struct BtcOnEosRedeemInfo {
     pub global_sequence: GlobalSequence,
 }
 
-impl BtcOnEosRedeemInfo {
+impl BtcOnEosBtcTxInfo {
     pub fn subtract_amount(&self, subtrahend: u64) -> Result<Self> {
-        info!("✔ Subtracting {} from `BtcOnEosRedeemInfo`...", subtrahend);
+        info!("✔ Subtracting {} from `BtcOnEosBtcTxInfo`...", subtrahend);
         if subtrahend > self.amount {
             Err(format!("Cannot subtract {} from {}!", subtrahend, self.amount).into())
         } else {
             let new_amount = self.amount - subtrahend;
             info!(
-                "Subtracted amount of {} from current redeem info amount of {} to get final amount of {}",
+                "Subtracted amount of {} from current BTC tx info amount of {} to get final amount of {}",
                 subtrahend, self.amount, new_amount
             );
             Ok(Self {
@@ -118,13 +118,13 @@ impl BtcOnEosRedeemInfo {
 
     pub fn get_eos_amount_from_proof(proof: &EosActionProof) -> Result<u64> {
         proof
-            .check_proof_action_data_length(15, "Not enough data to parse `BtcOnEosRedeemInfo` amount from proof!")
+            .check_proof_action_data_length(15, "Not enough data to parse `BtcOnEosBtcTxInfo` amount from proof!")
             .and_then(|_| convert_bytes_to_u64(&proof.action.data[8..=15]))
     }
 
     pub fn get_action_sender_from_proof(proof: &EosActionProof) -> Result<EosAccountName> {
         proof
-            .check_proof_action_data_length(7, "Not enough data to parse `BtcOnEosRedeemInfo` sender from proof!")
+            .check_proof_action_data_length(7, "Not enough data to parse `BtcOnEosBtcTxInfo` sender from proof!")
             .and_then(|_| {
                 let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[..=7])?);
                 debug!("✔ Account name parsed from redeem action: {}", result);
@@ -134,12 +134,12 @@ impl BtcOnEosRedeemInfo {
 
     pub fn get_redeem_address_from_proof(proof: &EosActionProof) -> Result<String> {
         proof
-            .check_proof_action_data_length(25, "Not enough data to parse `BtcOnEosRedeemInfo` redeemer from proof!")
+            .check_proof_action_data_length(25, "Not enough data to parse `BtcOnEosBtcTxInfo` redeemer from proof!")
             .and_then(|_| Ok(from_utf8(&proof.action.data[25..])?.to_string()))
     }
 
     pub fn from_action_proof(proof: &EosActionProof) -> Result<Self> {
-        info!("✔ Converting action proof to `btc-on-eos` redeem info...");
+        info!("✔ Converting action proof to `btc-on-eos` BTC tx info...");
         Ok(Self {
             originating_tx_id: proof.tx_id,
             amount: Self::get_eos_amount_from_proof(proof)?,
@@ -150,40 +150,40 @@ impl BtcOnEosRedeemInfo {
     }
 }
 
-pub fn maybe_parse_redeem_infos_and_put_in_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    info!("✔ Parsing redeem infos from actions data...");
-    BtcOnEosRedeemInfos::from_action_proofs(&state.action_proofs).and_then(|redeem_infos| {
-        info!("✔ Parsed {} sets of redeem info!", redeem_infos.len());
-        state.add_btc_on_eos_redeem_infos(redeem_infos)
+pub fn maybe_parse_btc_tx_infos_and_put_in_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
+    info!("✔ Parsing BTC tx infos from actions data...");
+    BtcOnEosBtcTxInfos::from_action_proofs(&state.action_proofs).and_then(|btc_tx_infos| {
+        info!("✔ Parsed {} sets of BTC tx info!", btc_tx_infos.len());
+        state.add_btc_on_eos_btc_tx_infos(btc_tx_infos)
     })
 }
 
-pub fn filter_out_value_too_low_btc_on_eos_redeem_infos(
-    redeem_infos: &BtcOnEosRedeemInfos,
-) -> Result<BtcOnEosRedeemInfos> {
-    Ok(BtcOnEosRedeemInfos::new(
-        redeem_infos
+pub fn filter_out_value_too_low_btc_on_eos_btc_tx_infos(
+    btc_tx_infos: &BtcOnEosBtcTxInfos,
+) -> Result<BtcOnEosBtcTxInfos> {
+    Ok(BtcOnEosBtcTxInfos::new(
+        btc_tx_infos
             .iter()
-            .map(|redeem_info| redeem_info.amount)
-            .zip(redeem_infos.0.iter())
-            .filter_map(|(amount, redeem_info)| match amount >= MINIMUM_REQUIRED_SATOSHIS {
-                true => Some(redeem_info),
+            .map(|btc_tx_info| btc_tx_info.amount)
+            .zip(btc_tx_infos.0.iter())
+            .filter_map(|(amount, btc_tx_info)| match amount >= MINIMUM_REQUIRED_SATOSHIS {
+                true => Some(btc_tx_info),
                 false => {
-                    info!("✘ Filtering redeem redeem info ∵ value too low: {:?}", redeem_info);
+                    info!("✘ Filtering redeem BTC tx info ∵ value too low: {:?}", btc_tx_info);
                     None
                 },
             })
             .cloned()
-            .collect::<Vec<BtcOnEosRedeemInfo>>(),
+            .collect::<Vec<BtcOnEosBtcTxInfo>>(),
     ))
 }
 
-pub fn maybe_filter_value_too_low_redeem_infos_in_state<D: DatabaseInterface>(
+pub fn maybe_filter_value_too_low_btc_tx_infos_in_state<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
-    info!("✔ Filtering out any redeem infos below minimum # of Satoshis...");
-    filter_out_value_too_low_btc_on_eos_redeem_infos(&state.btc_on_eos_redeem_infos)
-        .and_then(|new_infos| state.replace_btc_on_eos_redeem_infos(new_infos))
+    info!("✔ Filtering out any BTC tx infos below minimum # of Satoshis...");
+    filter_out_value_too_low_btc_on_eos_btc_tx_infos(&state.btc_on_eos_btc_tx_infos)
+        .and_then(|new_infos| state.replace_btc_on_eos_btc_tx_infos(new_infos))
 }
 
 pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface>(
@@ -191,9 +191,9 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface
 ) -> Result<EosState<D>> {
     info!("✔ Filtering out already processed tx IDs...");
     state
-        .btc_on_eos_redeem_infos
+        .btc_on_eos_btc_tx_infos
         .filter_out_already_processed_txs(&state.processed_tx_ids)
-        .and_then(|filtered| state.add_btc_on_eos_redeem_infos(filtered))
+        .and_then(|filtered| state.add_btc_on_eos_btc_tx_infos(filtered))
 }
 
 #[cfg(test)]
@@ -202,7 +202,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        btc_on_eos::test_utils::{get_sample_redeem_info, get_sample_redeem_infos},
+        btc_on_eos::test_utils::{get_sample_btc_tx_info, get_sample_btc_tx_infos},
         chains::eos::{eos_test_utils::get_sample_eos_submission_material_n, eos_utils::convert_hex_to_checksum256},
         errors::AppError,
     };
@@ -211,7 +211,7 @@ mod tests {
     fn should_get_amount_from_proof() {
         let proof = &get_sample_eos_submission_material_n(1).action_proofs[0].clone();
         let expected_result: u64 = 5111;
-        let result = BtcOnEosRedeemInfo::get_eos_amount_from_proof(&proof).unwrap();
+        let result = BtcOnEosBtcTxInfo::get_eos_amount_from_proof(&proof).unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -219,7 +219,7 @@ mod tests {
     fn should_get_sender_from_proof() {
         let proof = &get_sample_eos_submission_material_n(1).action_proofs[0].clone();
         let expected_result = EosAccountName::from_str("provtestable").unwrap();
-        let result = BtcOnEosRedeemInfo::get_action_sender_from_proof(&proof).unwrap();
+        let result = BtcOnEosBtcTxInfo::get_action_sender_from_proof(&proof).unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -227,13 +227,13 @@ mod tests {
     fn should_get_redeem_address_from_proof() {
         let proof = &get_sample_eos_submission_material_n(1).action_proofs[0].clone();
         let expected_result = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
-        let result = BtcOnEosRedeemInfo::get_redeem_address_from_proof(&proof).unwrap();
+        let result = BtcOnEosBtcTxInfo::get_redeem_address_from_proof(&proof).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_get_btc_on_eos_redeem_infos_from_action_proof_2() {
-        let expected_result = BtcOnEosRedeemInfo {
+    fn should_get_btc_on_eos_btc_tx_infos_from_action_proof_2() {
+        let expected_result = BtcOnEosBtcTxInfo {
             global_sequence: 577606126,
             amount: 1,
             recipient: "mr6ioeUxNMoavbr2VjaSbPAovzzgDT7Su9".to_string(),
@@ -244,13 +244,13 @@ mod tests {
             .unwrap(),
         };
         let action_proof = get_sample_eos_submission_material_n(2).action_proofs[0].clone();
-        let result = BtcOnEosRedeemInfo::from_action_proof(&action_proof).unwrap();
+        let result = BtcOnEosBtcTxInfo::from_action_proof(&action_proof).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_get_btc_on_eos_redeem_infos_from_action_proof_3() {
-        let expected_result = BtcOnEosRedeemInfo {
+    fn should_get_btc_on_eos_btc_tx_infos_from_action_proof_3() {
+        let expected_result = BtcOnEosBtcTxInfo {
             global_sequence: 583774614,
             amount: 5666,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
@@ -261,13 +261,13 @@ mod tests {
             .unwrap(),
         };
         let action_proof = get_sample_eos_submission_material_n(3).action_proofs[0].clone();
-        let result = BtcOnEosRedeemInfo::from_action_proof(&action_proof).unwrap();
+        let result = BtcOnEosBtcTxInfo::from_action_proof(&action_proof).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_get_btc_on_eos_redeem_infos_from_action_proof_4() {
-        let expected_result = BtcOnEosRedeemInfo {
+    fn should_get_btc_on_eos_btc_tx_infos_from_action_proof_4() {
+        let expected_result = BtcOnEosBtcTxInfo {
             global_sequence: 579818529,
             amount: 5555,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
@@ -278,13 +278,13 @@ mod tests {
             .unwrap(),
         };
         let action_proof = get_sample_eos_submission_material_n(4).action_proofs[0].clone();
-        let result = BtcOnEosRedeemInfo::from_action_proof(&action_proof).unwrap();
+        let result = BtcOnEosBtcTxInfo::from_action_proof(&action_proof).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_get_btc_on_eos_redeem_infos_from_action_proof_5() {
-        let expected_result = BtcOnEosRedeemInfo {
+    fn should_get_btc_on_eos_btc_tx_infos_from_action_proof_5() {
+        let expected_result = BtcOnEosBtcTxInfo {
             global_sequence: 579838915,
             amount: 5111,
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
@@ -295,13 +295,13 @@ mod tests {
             .unwrap(),
         };
         let action_proof = get_sample_eos_submission_material_n(1).action_proofs[0].clone();
-        let result = BtcOnEosRedeemInfo::from_action_proof(&action_proof).unwrap();
+        let result = BtcOnEosBtcTxInfo::from_action_proof(&action_proof).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_calculate_fee_in_btc_on_eos_redeem_param() {
-        let infos = get_sample_redeem_info();
+        let infos = get_sample_btc_tx_info();
         let basis_points = 25;
         let result = infos.calculate_fee(basis_points);
         let expected_result = 12;
@@ -309,8 +309,8 @@ mod tests {
     }
 
     #[test]
-    fn should_calculate_fee_in_btc_on_eos_redeem_infos() {
-        let infos = get_sample_redeem_infos();
+    fn should_calculate_fee_in_btc_on_eos_btc_tx_infos() {
+        let infos = get_sample_btc_tx_infos();
         let basis_points = 25;
         let (fees, total_fee) = infos.calculate_fees(basis_points);
         let expected_fees = vec![12, 12];
@@ -320,8 +320,8 @@ mod tests {
     }
 
     #[test]
-    fn should_subtract_amount_from_btc_on_eos_redeem_infos() {
-        let infos = get_sample_redeem_info();
+    fn should_subtract_amount_from_btc_on_eos_btc_tx_infos() {
+        let infos = get_sample_btc_tx_info();
         let subtrahend = 1337;
         let result = infos.subtract_amount(subtrahend).unwrap();
         let expected_result = 3774;
@@ -329,8 +329,8 @@ mod tests {
     }
 
     #[test]
-    fn should_subtract_fees_from_btc_on_eos_redeem_infos() {
-        let infos = get_sample_redeem_infos();
+    fn should_subtract_fees_from_btc_on_eos_btc_tx_infos() {
+        let infos = get_sample_btc_tx_infos();
         let basis_points = 25;
         let result = infos.subtract_fees(basis_points).unwrap();
         let expected_amount = 5099;
@@ -338,8 +338,8 @@ mod tests {
     }
 
     #[test]
-    fn should_fail_to_subtact_too_large_an_amount_from_btc_on_eos_redeem_info() {
-        let info = get_sample_redeem_infos()[0].clone();
+    fn should_fail_to_subtact_too_large_an_amount_from_btc_on_eos_btc_tx_info() {
+        let info = get_sample_btc_tx_infos()[0].clone();
         let subtrahend = info.amount + 1;
         let expected_err = format!("Cannot subtract {} from {}!", subtrahend, info.amount);
         match info.subtract_amount(subtrahend) {

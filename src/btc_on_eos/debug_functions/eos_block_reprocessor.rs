@@ -10,8 +10,8 @@ use crate::{
             maybe_account_for_peg_out_fees,
             maybe_extract_btc_utxo_from_btc_tx_in_state,
             maybe_filter_btc_txs_in_state,
-            maybe_filter_value_too_low_redeem_infos_in_state,
-            maybe_parse_redeem_infos_and_put_in_state,
+            maybe_filter_value_too_low_btc_tx_infos_in_state,
+            maybe_parse_btc_tx_infos_and_put_in_state,
             maybe_save_btc_utxos_to_db,
             maybe_sign_txs_and_add_to_state,
         },
@@ -71,8 +71,8 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
         .and_then(maybe_filter_proofs_for_v1_redeem_actions)
-        .and_then(maybe_parse_redeem_infos_and_put_in_state)
-        .and_then(maybe_filter_value_too_low_redeem_infos_in_state)
+        .and_then(maybe_parse_btc_tx_infos_and_put_in_state)
+        .and_then(maybe_filter_value_too_low_btc_tx_infos_in_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
         .and_then(|state| {
             if accrue_fees {
@@ -80,8 +80,8 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
             } else {
                 info!("✔ Accounting for fees in signing params but NOT accruing them!");
                 let basis_points = FeeDatabaseUtils::new_for_btc_on_eos().get_peg_out_basis_points_from_db(state.db)?;
-                let updated_redeem_infos = state.btc_on_eos_redeem_infos.subtract_fees(basis_points)?;
-                state.replace_btc_on_eos_redeem_infos(updated_redeem_infos)
+                let updated_btc_tx_infos = state.btc_on_eos_btc_tx_infos.subtract_fees(basis_points)?;
+                state.replace_btc_on_eos_btc_tx_infos(updated_btc_tx_infos)
             }
         })
         .and_then(maybe_sign_txs_and_add_to_state)

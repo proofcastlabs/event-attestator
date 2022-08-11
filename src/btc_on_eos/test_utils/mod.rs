@@ -4,7 +4,7 @@ use bitcoin::hashes::{sha256d, Hash};
 use crate::{
     btc_on_eos::{
         btc::{BtcOnEosEosTxInfo, BtcOnEosEosTxInfos},
-        eos::{BtcOnEosRedeemInfo, BtcOnEosRedeemInfos},
+        eos::{BtcOnEosBtcTxInfo, BtcOnEosBtcTxInfos},
         utils::convert_u64_to_x_decimal_eos_asset,
     },
     chains::{
@@ -13,13 +13,13 @@ use crate::{
     },
 };
 
-pub fn get_sample_redeem_info() -> BtcOnEosRedeemInfo {
+pub fn get_sample_btc_tx_info() -> BtcOnEosBtcTxInfo {
     let action_proof = get_sample_eos_submission_material_n(1).action_proofs[0].clone();
-    BtcOnEosRedeemInfo::from_action_proof(&action_proof).unwrap()
+    BtcOnEosBtcTxInfo::from_action_proof(&action_proof).unwrap()
 }
 
-pub fn get_sample_redeem_infos() -> BtcOnEosRedeemInfos {
-    BtcOnEosRedeemInfos::new(vec![get_sample_redeem_info(), get_sample_redeem_info()])
+pub fn get_sample_btc_tx_infos() -> BtcOnEosBtcTxInfos {
+    BtcOnEosBtcTxInfos::new(vec![get_sample_btc_tx_info(), get_sample_btc_tx_info()])
 }
 
 pub fn get_sample_btc_on_eos_eos_tx_infos() -> BtcOnEosEosTxInfos {

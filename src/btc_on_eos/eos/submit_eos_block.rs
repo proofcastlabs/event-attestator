@@ -3,14 +3,14 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
         eos::{
             account_for_fees::maybe_account_for_fees,
+            btc_tx_info::{
+                maybe_filter_out_already_processed_tx_ids_from_state,
+                maybe_filter_value_too_low_btc_tx_infos_in_state,
+                maybe_parse_btc_tx_infos_and_put_in_state,
+            },
             extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
             filter_btc_txs_in_state::maybe_filter_btc_txs_in_state,
             get_eos_output::get_eos_output,
-            redeem_info::{
-                maybe_filter_out_already_processed_tx_ids_from_state,
-                maybe_filter_value_too_low_redeem_infos_in_state,
-                maybe_parse_redeem_infos_and_put_in_state,
-            },
             save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
             sign_transactions::maybe_sign_txs_and_add_to_state,
         },
@@ -73,8 +73,8 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
         .and_then(maybe_filter_proofs_for_v1_redeem_actions)
-        .and_then(maybe_parse_redeem_infos_and_put_in_state)
-        .and_then(maybe_filter_value_too_low_redeem_infos_in_state)
+        .and_then(maybe_parse_btc_tx_infos_and_put_in_state)
+        .and_then(maybe_filter_value_too_low_btc_tx_infos_in_state)
         .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
         .and_then(maybe_account_for_fees)

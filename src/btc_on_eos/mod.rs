@@ -24,7 +24,7 @@ mod test_utils;
 mod utils;
 
 // NOTE: These are because they're used in state. TODO Refactor to make these private again.
-pub(crate) use self::{btc::BtcOnEosEosTxInfos, eos::BtcOnEosRedeemInfos};
+pub(crate) use self::{btc::BtcOnEosEosTxInfos, eos::BtcOnEosBtcTxInfos};
 pub use crate::{
     btc_on_eos::{
         btc::submit_btc_block_to_core,
