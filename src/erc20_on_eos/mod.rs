@@ -11,6 +11,19 @@
 //! ```no_compile
 //! ptokens_core = { version = "3.1.0", features = ["debug"] }
 //! ```
+
+pub mod debug_functions;
+pub mod eos;
+pub mod eth;
+pub mod get_enclave_state;
+pub mod get_latest_block_numbers;
+
+pub(crate) mod add_vault_contract_address_to_db;
+pub(crate) mod check_core_is_initialized;
+pub(crate) mod fees_calculator;
+pub(crate) mod get_all_db_keys;
+pub(crate) mod test_utils;
+
 pub use crate::{
     chains::{
         eos::{
@@ -52,7 +65,6 @@ pub use crate::{
         add_vault_contract_address_to_db::maybe_add_vault_contract_address_to_db,
         debug_functions::{
             debug_get_add_supported_token_tx,
-            debug_get_all_db_keys,
             debug_get_erc20_vault_migration_tx as debug_get_perc20_migration_tx,
             debug_get_remove_supported_token_tx,
             debug_set_accrued_fees_in_dictionary,
@@ -71,18 +83,8 @@ pub use crate::{
             initialize_eth_core::maybe_initialize_eth_enclave as maybe_initialize_eth_core,
             submit_eth_block::submit_eth_block_to_core,
         },
+        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
     },
 };
-
-pub mod debug_functions;
-pub mod eos;
-pub mod eth;
-pub mod get_enclave_state;
-pub mod get_latest_block_numbers;
-
-pub(crate) mod add_vault_contract_address_to_db;
-pub(crate) mod check_core_is_initialized;
-pub(crate) mod fees_calculator;
-pub(crate) mod test_utils;

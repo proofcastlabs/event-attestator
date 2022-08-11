@@ -13,37 +13,20 @@ use crate::{
             eos_actions::PTokenPegOutAction,
             eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, PEGOUT_ACTION_NAME},
             eos_crypto::{eos_private_key::EosPrivateKey, eos_transaction::EosSignedTransaction},
-            eos_database_utils::{EosDatabaseKeysJson, EosDbUtils},
+            eos_database_utils::EosDbUtils,
             eos_utils::get_eos_tx_expiration_timestamp_with_offset,
         },
-        eth::{
-            eth_database_utils::{EthDatabaseKeysJson, EthDbUtils},
-            eth_utils::convert_hex_to_eth_address,
-        },
+        eth::{eth_database_utils::EthDbUtils, eth_utils::convert_hex_to_eth_address},
     },
-    constants::DB_KEY_PREFIX,
     core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
-    dictionaries::{dictionary_constants::EOS_ETH_DICTIONARY_KEY, eos_eth::EosEthTokenDictionary},
+    dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::check_core_is_initialized::check_core_is_initialized,
     fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-
-/// # Debug Get All Db Keys
-///
-/// This function will return a JSON formatted list of all the database keys used in the encrypted database.
-pub fn debug_get_all_db_keys() -> Result<String> {
-    check_debug_mode().and(Ok(json!({
-        "eth": EthDatabaseKeysJson::new(),
-        "eos": EosDatabaseKeysJson::new(),
-        "db-key-prefix": DB_KEY_PREFIX.to_string(),
-        "dictionary:": hex::encode(EOS_ETH_DICTIONARY_KEY.to_vec()),
-    })
-    .to_string()))
-}
 
 /// # Debug Set ETH Fee Basis Points
 ///

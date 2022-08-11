@@ -4,39 +4,29 @@ pub(crate) mod btc_block_reprocessor;
 pub(crate) mod eos_block_reprocessor;
 
 use crate::{
-    btc_on_eos::check_core_is_initialized::{
-        check_core_is_initialized,
-        check_core_is_initialized_and_return_btc_state,
-    },
-    chains::{
-        btc::{
-            btc_database_utils::{end_btc_db_transaction, BtcDatabaseKeysJson, BtcDbUtils},
-            btc_state::BtcState,
-            btc_submission_material::parse_submission_material_and_put_in_state,
-            btc_utils::{get_hex_tx_from_signed_btc_tx, get_pay_to_pub_key_hash_script},
-            extract_utxos_from_p2pkh_txs::{
-                extract_utxos_from_p2pkh_txs,
-                maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
-            },
-            extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
-            filter_p2pkh_deposit_txs::filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state,
-            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
-            filter_utxos::filter_out_utxos_extant_in_db_from_state,
-            get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
-            save_utxos_to_db::maybe_save_utxos_to_db,
-            utxo_manager::{
-                utxo_constants::get_utxo_constants_db_keys,
-                utxo_database_utils::save_utxos_to_db,
-                utxo_utils::get_all_utxos_as_json_string,
-            },
-            validate_btc_block_header::validate_btc_block_header_in_state,
-            validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
-            validate_btc_merkle_root::validate_btc_merkle_root,
-            validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
+    btc_on_eos::check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
+    chains::btc::{
+        btc_database_utils::{end_btc_db_transaction, BtcDbUtils},
+        btc_state::BtcState,
+        btc_submission_material::parse_submission_material_and_put_in_state,
+        btc_utils::{get_hex_tx_from_signed_btc_tx, get_pay_to_pub_key_hash_script},
+        extract_utxos_from_p2pkh_txs::{
+            extract_utxos_from_p2pkh_txs,
+            maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
         },
-        eos::eos_database_utils::{EosDatabaseKeysJson, EosDbUtils},
+        extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
+        filter_p2pkh_deposit_txs::filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state,
+        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
+        filter_utxos::filter_out_utxos_extant_in_db_from_state,
+        get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
+        save_utxos_to_db::maybe_save_utxos_to_db,
+        utxo_manager::utxo_database_utils::save_utxos_to_db,
+        validate_btc_block_header::validate_btc_block_header_in_state,
+        validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
+        validate_btc_merkle_root::validate_btc_merkle_root,
+        validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
     },
-    constants::{DB_KEY_PREFIX, SUCCESS_JSON},
+    constants::SUCCESS_JSON,
     core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
     fees::{
@@ -48,30 +38,6 @@ use crate::{
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-
-/// # Debug Get All Db Keys
-///
-/// This function will return a JSON formatted list of all the database keys used in the encrypted database.
-pub fn debug_get_all_db_keys() -> Result<String> {
-    check_debug_mode().map(|_| {
-        json!({
-            "btc": BtcDatabaseKeysJson::new(),
-            "eos": EosDatabaseKeysJson::new(),
-            "db-key-prefix": DB_KEY_PREFIX.to_string(),
-            "utxo-manager": get_utxo_constants_db_keys(),
-        })
-        .to_string()
-    })
-}
-
-/// # Debug Get All UTXOs
-///
-/// This function will return a JSON containing all the UTXOs the encrypted database currently has.
-pub fn debug_get_all_utxos<D: DatabaseInterface>(db: &D) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&BtcDbUtils::new(db), &EosDbUtils::new(db)))
-        .and_then(|_| get_all_utxos_as_json_string(db))
-}
 
 /// # Debug Maybe Add UTXO To DB
 ///

@@ -16,6 +16,7 @@ pub(crate) mod check_core_is_initialized;
 pub(crate) mod debug_functions;
 pub(crate) mod evm;
 pub(crate) mod fees_calculator;
+pub(crate) mod get_all_db_keys;
 pub(crate) mod get_enclave_state;
 pub(crate) mod get_latest_block_numbers;
 pub(crate) mod int;
@@ -47,7 +48,6 @@ pub use crate::{
         debug_functions::{
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
-            debug_get_all_db_keys,
             debug_get_remove_supported_token_tx,
             debug_remove_dictionary_entry,
             debug_set_accrued_fees_in_dictionary,
@@ -65,6 +65,7 @@ pub use crate::{
             },
         },
         evm::{initialize_evm_core::maybe_initialize_evm_core, submit_evm_block::submit_evm_block_to_core},
+        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
         int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},

@@ -12,7 +12,7 @@ use crate::{
     chains::{
         btc::{
             btc_block::parse_btc_block_and_id_and_put_in_state,
-            btc_database_utils::{end_btc_db_transaction, BtcDatabaseKeysJson, BtcDbUtils},
+            btc_database_utils::{end_btc_db_transaction, BtcDbUtils},
             btc_state::BtcState,
             btc_submission_material::parse_btc_submission_json_and_put_in_state,
             extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
@@ -23,7 +23,6 @@ use crate::{
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
             save_utxos_to_db::maybe_save_utxos_to_db,
             set_flags::set_any_sender_flag_in_state,
-            utxo_manager::{utxo_constants::get_utxo_constants_db_keys, utxo_utils::get_all_utxos_as_json_string},
             validate_btc_block_header::validate_btc_block_header_in_state,
             validate_btc_merkle_root::validate_btc_merkle_root,
             validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
@@ -38,47 +37,16 @@ use crate::{
                 erc777_token::get_signed_erc777_change_pnetwork_tx,
             },
             eth_crypto::eth_transaction::get_signed_minting_tx,
-            eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt},
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         },
     },
-    constants::{DB_KEY_PREFIX, SUCCESS_JSON},
+    constants::SUCCESS_JSON,
     core_type::CoreType,
-    debug_mode::{check_debug_mode, validate_debug_command_signature, DEBUG_SIGNATORIES_DB_KEY},
+    debug_mode::{check_debug_mode, validate_debug_command_signature},
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, prepend_debug_output_marker_to_string, strip_hex_prefix},
 };
-
-/// # Debug Get All Db Keys
-///
-/// This function will return a JSON formatted list of all the database keys used in the encrypted database.
-pub fn debug_get_all_db_keys() -> Result<String> {
-    check_debug_mode().map(|_| {
-        json!({
-            "btc": BtcDatabaseKeysJson::new(),
-            "eth": EthDatabaseKeysJson::new(),
-            "db_key_prefix": DB_KEY_PREFIX.to_string(),
-            "utxo_manager": get_utxo_constants_db_keys(),
-            "debug_signatories": format!("0x{}", hex::encode(&*DEBUG_SIGNATORIES_DB_KEY)),
-        })
-        .to_string()
-    })
-}
-
-/// # Debug Get All UTXOs
-///
-/// This function will return a JSON containing all the UTXOs the encrypted database currently has.
-pub fn debug_get_all_utxos<D: DatabaseInterface>(db: &D, signature: &str, debug_command_hash: &str) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &BtcDbUtils::new(db)))
-        .and_then(|_| {
-            let result = get_all_utxos_as_json_string(db)?;
-            db.end_transaction()?;
-            Ok(result)
-        })
-}
 
 /// # Debug Get Signed ERC777 change pNetwork Tx
 ///

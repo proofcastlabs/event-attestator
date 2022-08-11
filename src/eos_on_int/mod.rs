@@ -20,6 +20,7 @@ pub mod int;
 
 pub(crate) mod check_core_is_initialized;
 pub(crate) mod constants;
+pub(crate) mod get_all_db_keys;
 pub(crate) mod test_utils;
 
 pub use crate::{
@@ -54,11 +55,11 @@ pub use crate::{
     debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
     eos_on_int::{
         debug_functions::{
-            debug_get_all_db_keys,
             eos_block_reprocessor::{debug_reprocess_eos_block, debug_reprocess_eos_block_with_nonce},
             int_block_reprocessor::debug_reprocess_int_block,
         },
         eos::submit_eos_block::submit_eos_block_to_core,
+        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
         int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},

@@ -15,6 +15,7 @@
 pub(crate) mod algo;
 pub(crate) mod check_core_is_initialized;
 pub(crate) mod debug_functions;
+pub(crate) mod get_all_db_keys;
 pub(crate) mod get_enclave_state;
 pub(crate) mod get_latest_block_numbers;
 pub(crate) mod int;
@@ -37,13 +38,13 @@ pub use crate::{
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
             debug_get_algo_pay_tx,
-            debug_get_all_db_keys,
             debug_remove_dictionary_entry,
             debug_set_algo_account_nonce,
             int_block_reprocessor::debug_reprocess_int_block,
             opt_in_to_application::debug_opt_in_to_application,
             opt_in_to_asset::debug_opt_in_to_asset,
         },
+        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
         int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},

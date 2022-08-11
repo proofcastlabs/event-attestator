@@ -17,6 +17,7 @@ pub(crate) mod debug_functions;
 pub(crate) mod eth;
 pub(crate) mod evm;
 pub(crate) mod fees_calculator;
+pub(crate) mod get_all_db_keys;
 pub(crate) mod get_enclave_state;
 pub(crate) mod get_latest_block_numbers;
 pub(crate) mod test_utils;
@@ -52,7 +53,6 @@ pub use crate::{
         debug_functions::{
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
-            debug_get_all_db_keys,
             debug_get_erc20_on_evm_vault_migration_tx,
             debug_get_remove_supported_token_tx,
             debug_remove_dictionary_entry,
@@ -76,6 +76,7 @@ pub use crate::{
             submit_eth_block::submit_eth_block_to_core,
         },
         evm::{initialize_evm_core::maybe_initialize_evm_core, submit_evm_block::submit_evm_block_to_core},
+        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
     },

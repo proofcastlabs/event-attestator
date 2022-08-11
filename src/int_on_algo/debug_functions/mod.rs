@@ -10,21 +10,17 @@ use serde_json::json;
 
 use crate::{
     chains::{
-        algo::algo_database_utils::{AlgoDatabaseKeysJson, AlgoDbUtils},
+        algo::algo_database_utils::AlgoDbUtils,
         eth::{
             eth_contracts::erc20_vault::encode_erc20_vault_add_supported_token_fx_data,
             eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt},
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_utils::convert_hex_to_eth_address,
         },
     },
-    constants::DB_KEY_PREFIX,
     core_type::CoreType,
-    debug_mode::{check_debug_mode, validate_debug_command_signature, DEBUG_SIGNATORIES_DB_KEY},
-    dictionaries::{
-        dictionary_constants::EVM_ALGO_DICTIONARY_KEY,
-        evm_algo::{EvmAlgoTokenDictionary, EvmAlgoTokenDictionaryEntry},
-    },
+    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    dictionaries::evm_algo::{EvmAlgoTokenDictionary, EvmAlgoTokenDictionaryEntry},
     int_on_algo::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,
@@ -99,22 +95,6 @@ pub fn debug_set_algo_account_nonce<D: DatabaseInterface>(
         .and_then(|_| AlgoDbUtils::new(db).put_algo_account_nonce_in_db(nonce))
         .and_then(|_| db.end_transaction())
         .map(|_| json!({ "algo_account_nonce": nonce }).to_string())
-}
-
-/// # Debug Get All DB Keys
-///
-/// This function will return a JSON formatted list of all the database keys used in the encrypted database.
-pub fn debug_get_all_db_keys() -> Result<String> {
-    check_debug_mode().map(|_| {
-        json!({
-            "int": EthDatabaseKeysJson::new(),
-            "algo": AlgoDatabaseKeysJson::new(),
-            "db_key_prefix": DB_KEY_PREFIX.to_string(),
-            "dictionary": hex::encode(EVM_ALGO_DICTIONARY_KEY.to_vec()),
-            "debug_signatories": format!("0x{}", hex::encode(&*DEBUG_SIGNATORIES_DB_KEY)),
-        })
-        .to_string()
-    })
 }
 
 /// # Debug Get Add Supported Token Transaction

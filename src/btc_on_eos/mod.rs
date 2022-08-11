@@ -20,8 +20,6 @@ pub use crate::{
                 debug_reprocess_btc_block_for_stale_eos_tx,
                 debug_reprocess_btc_block_for_stale_eos_tx_with_fee_accrual,
             },
-            debug_get_all_db_keys,
-            debug_get_all_utxos,
             debug_get_fee_withdrawal_tx,
             debug_maybe_add_utxo_to_db,
             debug_put_btc_on_eos_peg_in_basis_points_in_db,
@@ -29,6 +27,7 @@ pub use crate::{
             eos_block_reprocessor::{debug_reprocess_eos_block, debug_reprocess_eos_block_with_fee_accrual},
         },
         eos::submit_eos_block::submit_eos_block_to_core,
+        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
     },
@@ -36,12 +35,15 @@ pub use crate::{
         btc::{
             btc_debug_functions::{debug_set_btc_account_nonce, debug_set_btc_fee, debug_set_btc_utxo_nonce},
             core_initialization::initialize_btc_core::maybe_initialize_btc_core,
-            utxo_manager::debug_utxo_utils::{
-                debug_add_multiple_utxos,
-                debug_clear_all_utxos,
-                debug_consolidate_utxos,
-                debug_get_child_pays_for_parent_btc_tx,
-                debug_remove_utxo,
+            utxo_manager::{
+                debug_utxo_utils::{
+                    debug_add_multiple_utxos,
+                    debug_clear_all_utxos,
+                    debug_consolidate_utxos,
+                    debug_get_child_pays_for_parent_btc_tx,
+                    debug_remove_utxo,
+                },
+                utxo_utils::get_all_utxos_as_json_string as get_all_utxos,
             },
         },
         eos::{
@@ -73,5 +75,6 @@ pub mod get_enclave_state;
 pub mod get_latest_block_numbers;
 
 pub(crate) mod check_core_is_initialized;
+pub(crate) mod get_all_db_keys;
 pub(crate) mod test_utils;
 pub(crate) mod utils;

@@ -17,8 +17,6 @@ pub use crate::{
         btc::submit_btc_block::submit_btc_block_to_core,
         debug_functions::{
             btc_block_reprocessor::{debug_reprocess_btc_block, debug_reprocess_btc_block_with_nonce},
-            debug_get_all_db_keys,
-            debug_get_all_utxos,
             debug_get_signed_erc777_change_pnetwork_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_tx,
@@ -26,6 +24,7 @@ pub use crate::{
             debug_mint_pbtc,
             int_block_reprocessor::debug_reprocess_int_block,
         },
+        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
         int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},
@@ -34,12 +33,15 @@ pub use crate::{
         btc::{
             btc_debug_functions::{debug_set_btc_account_nonce, debug_set_btc_fee, debug_set_btc_utxo_nonce},
             core_initialization::initialize_btc_core::maybe_initialize_btc_core,
-            utxo_manager::debug_utxo_utils::{
-                debug_add_multiple_utxos,
-                debug_clear_all_utxos,
-                debug_consolidate_utxos,
-                debug_get_child_pays_for_parent_btc_tx,
-                debug_remove_utxo,
+            utxo_manager::{
+                debug_utxo_utils::{
+                    debug_add_multiple_utxos,
+                    debug_clear_all_utxos,
+                    debug_consolidate_utxos,
+                    debug_get_child_pays_for_parent_btc_tx,
+                    debug_remove_utxo,
+                },
+                utxo_utils::get_all_utxos_as_json_string as get_all_utxos,
             },
         },
         eth::{
@@ -66,4 +68,5 @@ pub mod int;
 
 mod check_core_is_initialized;
 
+pub(crate) mod get_all_db_keys;
 pub(crate) mod test_utils;

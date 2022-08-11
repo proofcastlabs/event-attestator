@@ -13,37 +13,18 @@ use crate::{
             encode_erc20_vault_remove_supported_token_fx_data,
         },
         eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt, EvmDatabaseKeysJson, EvmDbUtils},
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
         eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
     },
-    constants::DB_KEY_PREFIX,
     core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
-    dictionaries::{
-        dictionary_constants::ETH_EVM_DICTIONARY_KEY,
-        eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
-    },
+    dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
     erc20_on_evm::check_core_is_initialized::check_core_is_initialized,
     fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-
-/// # Debug Get All DB Keys
-///
-/// This function will return a JSON formatted list of all the database keys used in the encrypted database.
-pub fn debug_get_all_db_keys() -> Result<String> {
-    check_debug_mode().map(|_| {
-        json!({
-            "eth": EthDatabaseKeysJson::new(),
-            "evm": EvmDatabaseKeysJson::new(),
-            "db-key-prefix": DB_KEY_PREFIX.to_string(),
-            "dictionary": hex::encode(ETH_EVM_DICTIONARY_KEY.to_vec()),
-        })
-        .to_string()
-    })
-}
 
 /// # Debug Add Dictionary Entry
 ///

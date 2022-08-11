@@ -21,6 +21,7 @@ pub mod get_latest_block_numbers;
 pub(crate) mod check_core_is_initialized;
 pub(crate) mod constants;
 pub(crate) mod fees_calculator;
+pub(crate) mod get_all_db_keys;
 pub(crate) mod test_utils;
 
 pub use crate::{
@@ -61,7 +62,6 @@ pub use crate::{
     },
     eos_on_eth::{
         debug_functions::{
-            debug_get_all_db_keys,
             debug_set_accrued_fees_in_dictionary,
             debug_set_eos_fee_basis_points,
             debug_set_eth_fee_basis_points,
@@ -75,6 +75,7 @@ pub use crate::{
         },
         eos::submit_eos_block::submit_eos_block_to_core,
         eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
+        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
     },

@@ -11,6 +11,16 @@
 //! ```no_compile
 //! ptokens_core = { version = "3.1.0", features = ["debug"] }
 //! ```
+
+pub(crate) mod check_core_is_initialized;
+pub(crate) mod debug_functions;
+pub(crate) mod eos;
+pub(crate) mod get_all_db_keys;
+pub(crate) mod get_enclave_state;
+pub(crate) mod get_latest_block_numbers;
+pub(crate) mod int;
+pub(crate) mod test_utils;
+
 pub use crate::{
     chains::{
         eos::{
@@ -45,23 +55,14 @@ pub use crate::{
     int_on_eos::{
         debug_functions::{
             debug_get_add_supported_token_tx,
-            debug_get_all_db_keys,
             debug_get_remove_supported_token_tx,
             eos_block_reprocessor::{debug_reprocess_eos_block, debug_reprocess_eos_block_with_nonce},
             int_block_reprocessor::debug_reprocess_int_block,
         },
         eos::submit_eos_block::submit_eos_block_to_core,
+        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
         int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},
     },
 };
-
-pub mod debug_functions;
-pub mod eos;
-pub mod get_enclave_state;
-pub mod get_latest_block_numbers;
-pub mod int;
-
-pub(crate) mod check_core_is_initialized;
-pub(crate) mod test_utils;

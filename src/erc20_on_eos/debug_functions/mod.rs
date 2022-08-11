@@ -9,7 +9,7 @@ use serde_json::json;
 
 use crate::{
     chains::{
-        eos::eos_database_utils::{EosDatabaseKeysJson, EosDbUtils},
+        eos::eos_database_utils::EosDbUtils,
         eth::{
             eth_contracts::erc20_vault::{
                 encode_erc20_vault_add_supported_token_fx_data,
@@ -18,33 +18,19 @@ use crate::{
                 encode_erc20_vault_remove_supported_token_fx_data,
             },
             eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt},
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_utils::{convert_hex_to_eth_address, get_eth_address_from_str},
         },
     },
-    constants::DB_KEY_PREFIX,
     core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
-    dictionaries::{dictionary_constants::EOS_ETH_DICTIONARY_KEY, eos_eth::EosEthTokenDictionary},
+    dictionaries::eos_eth::EosEthTokenDictionary,
     erc20_on_eos::check_core_is_initialized::check_core_is_initialized,
     fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-
-/// # Debug Get All Db Keys
-///
-/// This function will return a JSON formatted list of all the database keys used in the encrypted database.
-pub fn debug_get_all_db_keys() -> Result<String> {
-    check_debug_mode().and(Ok(json!({
-        "eth": EthDatabaseKeysJson::new(),
-        "eos": EosDatabaseKeysJson::new(),
-        "db-key-prefix": DB_KEY_PREFIX.to_string(),
-        "dictionary": hex::encode(EOS_ETH_DICTIONARY_KEY.to_vec()),
-    })
-    .to_string()))
-}
 
 /// # Debug Get ERC20_VAULT Migration Transaction
 ///

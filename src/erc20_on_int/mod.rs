@@ -16,6 +16,7 @@ pub(crate) mod check_core_is_initialized;
 pub(crate) mod debug_functions;
 pub(crate) mod eth;
 pub(crate) mod fees_calculator;
+pub(crate) mod get_all_db_keys;
 pub(crate) mod get_enclave_state;
 pub(crate) mod get_latest_block_numbers;
 pub(crate) mod int;
@@ -48,7 +49,6 @@ pub use crate::{
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
             debug_get_add_weth_unwrapper_address_tx,
-            debug_get_all_db_keys,
             debug_get_remove_supported_token_tx,
             debug_remove_dictionary_entry,
             debug_set_accrued_fees_in_dictionary,
@@ -66,6 +66,7 @@ pub use crate::{
             },
         },
         eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
+        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
         int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},
