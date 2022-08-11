@@ -25,23 +25,23 @@ pub use crate::{
 #[macro_use]
 mod macros;
 mod address;
+mod chains;
+mod constants;
 mod core_type;
+mod crypto_utils;
+mod database_utils;
+mod debug_mode;
 mod dictionaries;
+mod enclave_info;
+mod errors;
 mod fees;
 mod metadata;
 mod safe_addresses;
-mod errors;
-mod traits;
-mod types;
-mod chains;
-mod constants;
-mod crypto_utils;
-mod database_utils;
-mod enclave_info;
-mod utils;
-mod debug_mode;
 #[cfg(test)]
 mod test_utils;
+mod traits;
+mod types;
+mod utils;
 
 pub mod btc_on_eos;
 pub mod btc_on_eth;

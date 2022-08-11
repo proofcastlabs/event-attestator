@@ -1,7 +1,7 @@
 pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 
 use crate::{
-    btc_on_eos::eos::redeem_info::BtcOnEosRedeemInfos,
+    btc_on_eos::BtcOnEosRedeemInfos,
     chains::{
         btc::{btc_database_utils::BtcDbUtils, utxo_manager::utxo_types::BtcUtxosAndValues},
         eos::{

@@ -12,31 +12,33 @@
 //! ptokens_core = { version = "1.0.0", features = ["debug"] }
 //! ```
 
-pub(crate) mod btc;
-pub(crate) mod check_core_is_initialized;
-pub(crate) mod debug_functions;
-pub(crate) mod eos;
-pub(crate) mod get_all_db_keys;
-pub(crate) mod get_enclave_state;
-pub(crate) mod get_latest_block_numbers;
-pub(crate) mod test_utils;
-pub(crate) mod utils;
+mod btc;
+mod check_core_is_initialized;
+mod constants;
+mod debug_functions;
+mod eos;
+mod get_all_db_keys;
+mod get_enclave_state;
+mod get_latest_block_numbers;
+mod test_utils;
+mod utils;
 
+// NOTE: These are because they're used in state. TODO Refactor to make these private again.
+pub(crate) use self::{btc::BtcOnEosEosTxInfos, eos::BtcOnEosRedeemInfos};
 pub use crate::{
     btc_on_eos::{
-        btc::submit_btc_block::submit_btc_block_to_core,
+        btc::submit_btc_block_to_core,
         debug_functions::{
-            btc_block_reprocessor::{
-                debug_reprocess_btc_block_for_stale_eos_tx,
-                debug_reprocess_btc_block_for_stale_eos_tx_with_fee_accrual,
-            },
             debug_get_fee_withdrawal_tx,
             debug_maybe_add_utxo_to_db,
             debug_put_btc_on_eos_peg_in_basis_points_in_db,
             debug_put_btc_on_eos_peg_out_basis_points_in_db,
-            eos_block_reprocessor::{debug_reprocess_eos_block, debug_reprocess_eos_block_with_fee_accrual},
+            debug_reprocess_btc_block_for_stale_eos_tx,
+            debug_reprocess_btc_block_for_stale_eos_tx_with_fee_accrual,
+            debug_reprocess_eos_block,
+            debug_reprocess_eos_block_with_fee_accrual,
         },
-        eos::submit_eos_block::submit_eos_block_to_core,
+        eos::submit_eos_block_to_core,
         get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,

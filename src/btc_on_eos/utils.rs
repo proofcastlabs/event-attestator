@@ -3,7 +3,11 @@ fn get_x_num_zeroes_string(num_zeroes: usize) -> String {
     zeroes.iter().fold(String::new(), |acc, e| format!("{acc}{e}"))
 }
 
-pub fn convert_u64_to_x_decimal_eos_asset(value: u64, num_decimals: usize, token_symbol: &str) -> String {
+pub(in crate::btc_on_eos) fn convert_u64_to_x_decimal_eos_asset(
+    value: u64,
+    num_decimals: usize,
+    token_symbol: &str,
+) -> String {
     let mut amount_string = value.to_string();
     let amount_string_length = amount_string.len();
     let asset = if amount_string_length == 0 {

@@ -14,7 +14,7 @@ use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    btc_on_eos::btc::eos_tx_info::BtcOnEosEosTxInfos,
+    btc_on_eos::BtcOnEosEosTxInfos,
     btc_on_eth::btc::eth_tx_info::BtcOnEthEthTxInfos,
     btc_on_int::btc::int_tx_info::BtcOnIntIntTxInfos,
     chains::btc::{
