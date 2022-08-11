@@ -1,4 +1,6 @@
 #![recursion_limit = "256"] // NOTE: Because of the error macro.
+#![allow(clippy::match_bool)]
+#![allow(clippy::too_many_arguments)]
 
 //! # The __`pToken`__ Core
 //!
@@ -11,9 +13,6 @@
 //! with the provided argument. Via this, database key clashes can be avoided
 //! if running multiple instances on one machine.
 
-#![allow(clippy::match_bool)]
-#![allow(clippy::too_many_arguments)]
-
 pub use crate::{
     core_type::CoreType,
     debug_mode::{debug_add_debug_signer, debug_remove_debug_signer, get_debug_signature_info},
@@ -24,41 +23,40 @@ pub use crate::{
 };
 
 #[macro_use]
-pub(crate) mod macros;
-pub(crate) mod address;
-pub mod btc_on_eos;
-pub mod btc_on_eth;
-pub mod btc_on_int;
-pub mod chains;
-pub(crate) mod core_type;
-mod debug_mode;
-pub(crate) mod dictionaries;
-pub mod eos_on_eth;
-pub mod eos_on_int;
-pub mod erc20_on_eos;
-pub mod erc20_on_evm;
-pub mod erc20_on_int;
-pub mod errors;
-pub(crate) mod fees;
-pub mod int_on_algo;
-pub mod int_on_eos;
-pub mod int_on_evm;
-pub(crate) mod metadata;
-pub(crate) mod safe_addresses;
-pub mod traits;
-pub mod types;
-
+mod macros;
+mod address;
+mod core_type;
+mod dictionaries;
+mod fees;
+mod metadata;
+mod safe_addresses;
+mod errors;
+mod traits;
+mod types;
+mod chains;
 mod constants;
 mod crypto_utils;
 mod database_utils;
 mod enclave_info;
 mod utils;
-
+mod debug_mode;
 #[cfg(test)]
 mod test_utils;
+
+pub mod btc_on_eos;
+pub mod btc_on_eth;
+pub mod btc_on_int;
+pub mod eos_on_eth;
+pub mod eos_on_int;
+pub mod erc20_on_eos;
+pub mod erc20_on_evm;
+pub mod erc20_on_int;
+pub mod int_on_algo;
+pub mod int_on_eos;
+pub mod int_on_evm;
+
 #[cfg(test)]
 extern crate simple_logger;
-
 #[macro_use]
 extern crate log;
 #[macro_use]
