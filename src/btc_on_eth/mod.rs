@@ -14,6 +14,7 @@
 
 mod btc;
 mod check_core_is_initialized;
+mod constants;
 mod debug_functions;
 mod eth;
 mod get_all_db_keys;
