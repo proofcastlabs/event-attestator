@@ -7,8 +7,8 @@ use crate::{
             maybe_account_for_fees,
             maybe_create_btc_txs_and_add_to_state,
             maybe_increment_btc_nonce_in_db_and_return_state,
-            subtract_fees_from_redeem_infos,
-            BtcOnEthRedeemInfos,
+            subtract_fees_from_btc_tx_infos,
+            BtcOnEthBtcTxInfos,
             EthOutput,
         },
     },
@@ -40,23 +40,23 @@ fn reprocess_eth_block<D: DatabaseInterface>(db: &D, eth_block_json: &str, accru
             state
                 .get_eth_submission_material()
                 .and_then(|material| {
-                    BtcOnEthRedeemInfos::from_eth_submission_material(
+                    BtcOnEthBtcTxInfos::from_eth_submission_material(
                         material,
                         &state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
                     )
                 })
-                .and_then(|params| state.add_btc_on_eth_redeem_infos(params))
+                .and_then(|params| state.add_btc_on_eth_btc_tx_infos(params))
         })
         .and_then(|state| {
             if accrue_fees {
                 maybe_account_for_fees(state)
             } else {
                 info!("✘ Not accruing fees during ETH block reprocessing...");
-                let redeem_infos_minus_fees = subtract_fees_from_redeem_infos(
-                    &state.btc_on_eth_redeem_infos,
+                let btc_tx_infos_minus_fees = subtract_fees_from_btc_tx_infos(
+                    &state.btc_on_eth_btc_tx_infos,
                     FeeDatabaseUtils::new_for_btc_on_eth().get_peg_out_basis_points_from_db(state.db)?,
                 )?;
-                state.replace_btc_on_eth_redeem_infos(redeem_infos_minus_fees)
+                state.replace_btc_on_eth_btc_tx_infos(btc_tx_infos_minus_fees)
             }
         })
         .and_then(maybe_create_btc_txs_and_add_to_state)
@@ -70,7 +70,7 @@ fn reprocess_eth_block<D: DatabaseInterface>(db: &D, eth_block_json: &str, accru
                     Some(txs) => get_btc_signed_tx_info_from_btc_txs(
                         state.btc_db_utils.get_btc_account_nonce_from_db()?,
                         txs,
-                        &state.btc_on_eth_redeem_infos,
+                        &state.btc_on_eth_btc_tx_infos,
                     )?,
                     None => vec![],
                 },

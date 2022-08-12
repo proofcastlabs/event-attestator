@@ -174,13 +174,13 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
     }
 
     pub fn replace_btc_on_eos_btc_tx_infos(mut self, replacements: BtcOnEosBtcTxInfos) -> Result<EosState<'a, D>> {
-        info!("✔ Replacing redeem infos in state...");
+        info!("✔ Replacing BTC tx infos in state...");
         self.btc_on_eos_btc_tx_infos = replacements;
         Ok(self)
     }
 
     pub fn replace_erc20_on_eos_redeem_infos(mut self, replacements: Erc20OnEosRedeemInfos) -> Result<EosState<'a, D>> {
-        info!("✔ Replacing redeem infos in state...");
+        info!("✔ Replacing BTC tx infos in state...");
         self.erc20_on_eos_redeem_infos = replacements;
         Ok(self)
     }

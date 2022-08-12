@@ -24,7 +24,7 @@ mod utils;
 
 #[cfg(test)]
 pub(crate) use self::btc::BtcOnEthEthTxInfo; // FIXME Current used in `chains::btc::btc_test_utils`
-pub(crate) use self::{btc::BtcOnEthEthTxInfos, eth::BtcOnEthRedeemInfos}; // FIXME Currently used in `State`.
+pub(crate) use self::{btc::BtcOnEthEthTxInfos, eth::BtcOnEthBtcTxInfos}; // FIXME Currently used in `State`.
 pub use crate::{
     btc_on_eth::{
         btc::submit_btc_block_to_enclave,

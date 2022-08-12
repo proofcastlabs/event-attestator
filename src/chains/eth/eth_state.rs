@@ -1,7 +1,7 @@
 use ethereum_types::H256 as EthHash;
 
 use crate::{
-    btc_on_eth::BtcOnEthRedeemInfos,
+    btc_on_eth::BtcOnEthBtcTxInfos,
     btc_on_int::int::btc_tx_info::BtcOnIntBtcTxInfos,
     chains::{
         algo::{algo_database_utils::AlgoDbUtils, algo_signed_group_txs::AlgoSignedGroupTxs},
@@ -53,11 +53,11 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos,
     pub int_on_eos_eos_tx_infos: IntOnEosEosTxInfos,
     pub btc_on_int_btc_tx_infos: BtcOnIntBtcTxInfos,
+    pub btc_on_eth_btc_tx_infos: BtcOnEthBtcTxInfos,
     pub erc20_on_evm_evm_signed_txs: EthTransactions,
     pub erc20_on_evm_eth_signed_txs: EthTransactions,
     pub erc20_on_int_int_signed_txs: EthTransactions,
     pub erc20_on_int_eth_signed_txs: EthTransactions,
-    pub btc_on_eth_redeem_infos: BtcOnEthRedeemInfos,
     pub int_on_algo_algo_tx_infos: IntOnAlgoAlgoTxInfos,
     pub erc20_on_evm_eth_tx_infos: Erc20OnEvmEthTxInfos,
     pub erc20_on_evm_evm_tx_infos: Erc20OnEvmEvmTxInfos,
@@ -97,12 +97,12 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             eos_on_int_eos_tx_infos: EosOnIntEosTxInfos::new(vec![]),
             int_on_eos_eos_tx_infos: IntOnEosEosTxInfos::new(vec![]),
             int_on_evm_int_tx_infos: IntOnEvmIntTxInfos::new(vec![]),
+            btc_on_eth_btc_tx_infos: BtcOnEthBtcTxInfos::new(vec![]),
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
             erc20_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
             erc20_on_evm_eth_signed_txs: EthTransactions::new(vec![]),
             erc20_on_int_int_signed_txs: EthTransactions::new(vec![]),
             erc20_on_int_eth_signed_txs: EthTransactions::new(vec![]),
-            btc_on_eth_redeem_infos: BtcOnEthRedeemInfos::new(vec![]),
             int_on_algo_algo_tx_infos: IntOnAlgoAlgoTxInfos::default(),
             erc20_on_evm_evm_tx_infos: Erc20OnEvmEvmTxInfos::new(vec![]),
             erc20_on_evm_eth_tx_infos: Erc20OnEvmEthTxInfos::new(vec![]),
@@ -205,10 +205,10 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         }
     }
 
-    pub fn add_btc_on_eth_redeem_infos(self, mut infos: BtcOnEthRedeemInfos) -> Result<Self> {
-        let mut new_infos = self.btc_on_eth_redeem_infos.clone().0;
+    pub fn add_btc_on_eth_btc_tx_infos(self, mut infos: BtcOnEthBtcTxInfos) -> Result<Self> {
+        let mut new_infos = self.btc_on_eth_btc_tx_infos.clone().0;
         new_infos.append(&mut infos.0);
-        self.replace_btc_on_eth_redeem_infos(BtcOnEthRedeemInfos::new(new_infos))
+        self.replace_btc_on_eth_btc_tx_infos(BtcOnEthBtcTxInfos::new(new_infos))
     }
 
     pub fn add_btc_on_int_btc_tx_infos(self, mut infos: BtcOnIntBtcTxInfos) -> Result<Self> {
@@ -279,8 +279,8 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         Ok(self)
     }
 
-    pub fn replace_btc_on_eth_redeem_infos(mut self, replacements: BtcOnEthRedeemInfos) -> Result<Self> {
-        self.btc_on_eth_redeem_infos = replacements;
+    pub fn replace_btc_on_eth_btc_tx_infos(mut self, replacements: BtcOnEthBtcTxInfos) -> Result<Self> {
+        self.btc_on_eth_btc_tx_infos = replacements;
         Ok(self)
     }
 
