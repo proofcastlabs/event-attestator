@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     btc_on_eos::BtcOnEosEosTxInfos,
     btc_on_eth::BtcOnEthEthTxInfos,
-    btc_on_int::btc::int_tx_info::BtcOnIntIntTxInfos,
+    btc_on_int::BtcOnIntIntTxInfos,
     chains::btc::{
         btc_state::BtcState,
         btc_submission_material::BtcSubmissionMaterialJson,

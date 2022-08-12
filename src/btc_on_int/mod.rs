@@ -12,19 +12,21 @@
 //! ptokens_core = { version = "1.0.0", features = ["debug"] }
 //! ```
 
-pub(crate) mod btc;
-pub(crate) mod check_core_is_initialized;
+mod btc;
+mod check_core_is_initialized;
 mod constants;
-pub(crate) mod debug_functions;
-pub(crate) mod get_all_db_keys;
-pub(crate) mod get_enclave_state;
-pub(crate) mod get_latest_block_numbers;
-pub(crate) mod int;
-pub(crate) mod test_utils;
+mod debug_functions;
+mod get_all_db_keys;
+mod get_enclave_state;
+mod get_latest_block_numbers;
+mod int;
+mod test_utils;
 
+// FIXME Used in `State`.
+pub(crate) use self::{btc::BtcOnIntIntTxInfos, int::BtcOnIntBtcTxInfos};
 pub use crate::{
     btc_on_int::{
-        btc::submit_btc_block::submit_btc_block_to_core,
+        btc::submit_btc_block_to_core,
         debug_functions::{
             debug_get_signed_erc777_change_pnetwork_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
@@ -38,7 +40,7 @@ pub use crate::{
         get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
-        int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},
+        int::{maybe_initialize_int_core, submit_int_block_to_core},
     },
     chains::{
         btc::{

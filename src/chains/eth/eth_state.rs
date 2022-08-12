@@ -2,7 +2,7 @@ use ethereum_types::H256 as EthHash;
 
 use crate::{
     btc_on_eth::BtcOnEthBtcTxInfos,
-    btc_on_int::int::btc_tx_info::BtcOnIntBtcTxInfos,
+    btc_on_int::BtcOnIntBtcTxInfos,
     chains::{
         algo::{algo_database_utils::AlgoDbUtils, algo_signed_group_txs::AlgoSignedGroupTxs},
         btc::{

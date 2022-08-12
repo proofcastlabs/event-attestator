@@ -100,7 +100,7 @@ mod tests {
     use crate::{
         btc_on_int::{
             btc::get_btc_output::BtcOutput,
-            int::initialize_int_core::init_int_core,
+            int::init_int_core,
             test_utils::{
                 get_sample_btc_submission_material_json_str_n,
                 get_sample_int_submission_material_json_str_n,

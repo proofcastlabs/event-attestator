@@ -74,8 +74,8 @@ mod tests {
     use super::*;
     use crate::{
         btc_on_int::{
-            btc::submit_btc_block::submit_btc_block_to_core,
             int::{get_int_output::IntOutput, initialize_int_core::init_int_core},
+            submit_btc_block_to_core,
             test_utils::{
                 get_sample_btc_submission_material_json_str_n,
                 get_sample_int_submission_material_json_str_n,
