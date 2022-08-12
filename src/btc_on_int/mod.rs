@@ -25,13 +25,14 @@ pub use crate::{
     btc_on_int::{
         btc::submit_btc_block::submit_btc_block_to_core,
         debug_functions::{
-            btc_block_reprocessor::{debug_reprocess_btc_block, debug_reprocess_btc_block_with_nonce},
             debug_get_signed_erc777_change_pnetwork_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_tx,
             debug_maybe_add_utxo_to_db,
             debug_mint_pbtc,
-            int_block_reprocessor::debug_reprocess_int_block,
+            debug_reprocess_btc_block,
+            debug_reprocess_btc_block_with_nonce,
+            debug_reprocess_int_block,
         },
         get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
