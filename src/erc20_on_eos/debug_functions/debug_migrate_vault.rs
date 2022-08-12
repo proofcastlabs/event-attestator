@@ -1,3 +1,4 @@
+use function_name::named;
 use serde_json::json;
 
 use crate::{
@@ -10,9 +11,8 @@ use crate::{
             eth_utils::get_eth_address_from_str,
         },
     },
-    core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
-    erc20_on_eos::check_core_is_initialized::check_core_is_initialized,
+    erc20_on_eos::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -31,21 +31,24 @@ use crate::{
 /// ### BEWARE:
 /// This function outputs a signed transaction which if NOT broadcast will result in the enclave no
 /// longer working.  Use with extreme caution and only if you know exactly what you are doing!
+#[named]
 pub fn debug_get_erc20_vault_migration_tx<D: DatabaseInterface>(
     db: &D,
-    new_eos_erc20_smart_contract_address_string: &str,
+    new_eos_erc20_smart_contract_address_str: &str,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
-    db.start_transaction()?;
     info!("✔ Debug getting migration transaction...");
     let eth_db_utils = EthDbUtils::new(db);
+
+    db.start_transaction()?;
+    check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(db))?;
+
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let current_eos_erc20_smart_contract_address = eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?;
-    let new_eos_erc20_smart_contract_address = get_eth_address_from_str(new_eos_erc20_smart_contract_address_string)?;
+    let new_eos_erc20_smart_contract_address = get_eth_address_from_str(new_eos_erc20_smart_contract_address_str)?;
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(db)))
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnEos, signature, debug_command_hash))
+        .and_then(|_| get_debug_command_hash!(function_name!(), new_eos_erc20_smart_contract_address_str)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| eth_db_utils.put_erc20_on_eos_smart_contract_address_in_db(&new_eos_erc20_smart_contract_address))
         .and_then(|_| encode_erc20_vault_migrate_fxn_data(new_eos_erc20_smart_contract_address))

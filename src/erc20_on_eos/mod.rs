@@ -14,6 +14,7 @@
 
 pub(crate) mod add_vault_contract_address_to_db;
 pub(crate) mod check_core_is_initialized;
+mod constants;
 pub(crate) mod debug_functions;
 pub(crate) mod eos;
 pub(crate) mod eth;
