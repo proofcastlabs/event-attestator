@@ -5,7 +5,7 @@ use crate::{
         eos::eos_database_utils::EosDbUtils,
         eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     },
-    eos_on_eth::check_core_is_initialized::check_core_is_initialized,
+    eos_on_int::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,
 };

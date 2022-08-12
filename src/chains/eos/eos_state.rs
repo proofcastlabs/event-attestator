@@ -18,7 +18,7 @@ use crate::{
         eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils::EthDbUtils},
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
-    eos_on_eth::eos::eos_tx_info::EosOnEthEosTxInfos,
+    eos_on_eth::EosOnEthEosTxInfos,
     eos_on_int::eos::int_tx_info::EosOnIntIntTxInfos,
     erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfos,
     int_on_eos::eos::int_tx_info::IntOnEosIntTxInfos,

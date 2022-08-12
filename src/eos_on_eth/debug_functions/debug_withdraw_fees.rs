@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use eos_chain::{Action as EosAction, PermissionLevel, Transaction as EosTransaction};
 use function_name::named;
 use serde_json::json;

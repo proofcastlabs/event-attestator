@@ -18,7 +18,7 @@ use crate::{
         },
     },
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary, evm_algo::EvmAlgoTokenDictionary},
-    eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfos,
+    eos_on_eth::EosOnEthEthTxInfos,
     eos_on_int::int::eos_tx_info::EosOnIntEosTxInfos,
     erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
     erc20_on_evm::{eth::evm_tx_info::Erc20OnEvmEvmTxInfos, evm::eth_tx_info::Erc20OnEvmEthTxInfos},

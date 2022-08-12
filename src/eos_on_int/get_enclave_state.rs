@@ -10,7 +10,7 @@ use crate::{
         },
     },
     enclave_info::EnclaveInfo,
-    eos_on_eth::check_core_is_initialized::check_core_is_initialized,
+    eos_on_int::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,
 };
