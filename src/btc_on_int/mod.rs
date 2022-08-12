@@ -14,6 +14,7 @@
 
 pub(crate) mod btc;
 pub(crate) mod check_core_is_initialized;
+mod constants;
 pub(crate) mod debug_functions;
 pub(crate) mod get_all_db_keys;
 pub(crate) mod get_enclave_state;

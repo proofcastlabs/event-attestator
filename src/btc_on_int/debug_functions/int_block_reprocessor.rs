@@ -1,6 +1,9 @@
+use function_name::named;
+
 use crate::{
     btc_on_int::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
+        constants::CORE_TYPE,
         int::{
             btc_tx_info::BtcOnIntBtcTxInfos,
             filter_receipts_in_state::filter_receipts_for_btc_on_int_redeem_events_in_state,
@@ -19,22 +22,18 @@ use crate::{
             validate_block_in_state::validate_block_in_state,
         },
     },
-    core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
 
-fn reprocess_int_block<D: DatabaseInterface>(
-    db: &D,
-    block_json: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::BtcOnInt, signature, debug_command_hash))
+#[named]
+fn reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature: &str) -> Result<String> {
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), block_json)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(validate_block_in_state)
@@ -89,11 +88,6 @@ fn reprocess_int_block<D: DatabaseInterface>(
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
 /// fail due to the core having an incorret set of UTXOs!
-pub fn debug_reprocess_int_block<D: DatabaseInterface>(
-    db: &D,
-    block_json: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    reprocess_int_block(db, block_json, signature, debug_command_hash)
+pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature: &str) -> Result<String> {
+    reprocess_int_block(db, block_json, signature)
 }
