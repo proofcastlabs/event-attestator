@@ -1,6 +1,9 @@
+use function_name::named;
+
 use crate::{
     btc_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
+        constants::CORE_TYPE,
         eth::{
             filter_receipts_for_btc_on_eth_redeem_events_in_state,
             get_btc_signed_tx_info_from_btc_txs,
@@ -13,27 +16,32 @@ use crate::{
         },
     },
     chains::eth::{
-        eth_database_transactions::{
-            end_eth_db_transaction_and_return_state,
-            start_eth_db_transaction_and_return_state,
-        },
+        eth_database_transactions::end_eth_db_transaction_and_return_state,
         eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::validate_block_in_state,
     },
-    debug_mode::check_debug_mode,
+    debug_mode::{check_debug_mode, validate_debug_command_signature},
     fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
 
-fn reprocess_eth_block<D: DatabaseInterface>(db: &D, eth_block_json: &str, accrue_fees: bool) -> Result<String> {
-    check_debug_mode()
+#[named]
+fn reprocess_eth_block<D: DatabaseInterface>(
+    db: &D,
+    eth_block_json: &str,
+    accrue_fees: bool,
+    signature: &str,
+) -> Result<String> {
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), eth_block_json, &accrue_fees)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
-        .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
         .and_then(filter_receipts_for_btc_on_eth_redeem_events_in_state)
         .and_then(|state| {
@@ -98,8 +106,12 @@ fn reprocess_eth_block<D: DatabaseInterface>(db: &D, eth_block_json: &str, accru
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future BTC transactions will
 /// fail due to the core having an incorret set of UTXOs!
-pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: &D, eth_block_json: &str) -> Result<String> {
-    reprocess_eth_block(db, eth_block_json, false)
+pub fn debug_reprocess_eth_block<D: DatabaseInterface>(
+    db: &D,
+    eth_block_json: &str,
+    signature: &str,
+) -> Result<String> {
+    reprocess_eth_block(db, eth_block_json, false, signature)
 }
 
 /// # Debug Reprocess ETH Block With Fee Accrual
@@ -123,6 +135,7 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: &D, eth_block_json: &
 pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(
     db: &D,
     eth_block_json: &str,
+    signature: &str,
 ) -> Result<String> {
-    reprocess_eth_block(db, eth_block_json, true)
+    reprocess_eth_block(db, eth_block_json, true, signature)
 }

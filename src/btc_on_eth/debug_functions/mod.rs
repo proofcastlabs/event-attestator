@@ -1,7 +1,6 @@
 mod btc_block_reprocessor;
 mod debug_add_utxo_to_db;
 mod debug_change_pnetwork;
-mod debug_get_change_pnetwork_tx;
 mod debug_mint_pbtc;
 mod debug_set_accrued_fees;
 mod debug_set_basis_points;
@@ -16,10 +15,10 @@ pub use self::{
     },
     debug_add_utxo_to_db::debug_maybe_add_utxo_to_db,
     debug_change_pnetwork::{
+        debug_get_signed_erc777_change_pnetwork_tx,
         debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
         debug_get_signed_erc777_proxy_change_pnetwork_tx,
     },
-    debug_get_change_pnetwork_tx::debug_get_signed_erc777_change_pnetwork_tx,
     debug_mint_pbtc::debug_mint_pbtc,
     debug_set_accrued_fees::debug_set_accrued_fees,
     debug_set_basis_points::{
