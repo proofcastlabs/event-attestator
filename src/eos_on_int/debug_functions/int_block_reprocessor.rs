@@ -1,4 +1,4 @@
-pub use serde_json::json;
+use function_name::named;
 
 use crate::{
     chains::eth::{
@@ -10,11 +10,11 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
-    core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
     dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
     eos_on_int::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
+        constants::CORE_TYPE,
         int::{
             divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
             eos_tx_info::EosOnIntEosTxInfos,
@@ -32,17 +32,14 @@ use crate::{
     utils::prepend_debug_output_marker_to_string,
 };
 
-fn reprocess_int_block<D: DatabaseInterface>(
-    db: &D,
-    block_json_string: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
+#[named]
+fn reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature: &str) -> Result<String> {
     info!("✔ Debug reprocessing INT block...");
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::EosOnInt, signature, debug_command_hash))
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db)))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), block_json)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(validate_block_in_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
@@ -88,11 +85,6 @@ fn reprocess_int_block<D: DatabaseInterface>(
 /// should understand what this means when inserting the report outputted from this debug function.
 /// If this output is to _replace_ an existing report, the nonces in the report and in the core's
 /// database should be modified accordingly.
-pub fn debug_reprocess_int_block<D: DatabaseInterface>(
-    db: &D,
-    block_json_string: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    reprocess_int_block(db, block_json_string, signature, debug_command_hash)
+pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature: &str) -> Result<String> {
+    reprocess_int_block(db, block_json, signature)
 }

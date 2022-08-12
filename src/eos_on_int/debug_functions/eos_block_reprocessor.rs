@@ -1,4 +1,4 @@
-pub use serde_json::json;
+use function_name::named;
 
 use crate::{
     chains::{
@@ -27,11 +27,11 @@ use crate::{
             eth_debug_functions::check_custom_nonce,
         },
     },
-    core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
     dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
     eos_on_int::{
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
+        constants::CORE_TYPE,
         eos::{
             divert_to_safe_address::{
                 divert_tx_infos_to_safe_address_if_destination_is_router_address,
@@ -49,17 +49,18 @@ use crate::{
     utils::prepend_debug_output_marker_to_string,
 };
 
+#[named]
 fn reprocess_eos_block<D: DatabaseInterface>(
     db: &D,
     block_json: &str,
     maybe_nonce: Option<u64>,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug reprocessing EOS block...");
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::EosOnInt, signature, debug_command_hash))
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
+        .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &maybe_nonce)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
@@ -157,13 +158,8 @@ fn reprocess_eos_block<D: DatabaseInterface>(
 /// This function will incrememnt the INT nonce in the encrypted database, and so not broadcasting
 /// any outputted transactions will result in all future transactions failing. Use only with
 /// extreme caution and when you know exactly what you are doing and why.
-pub fn debug_reprocess_eos_block<D: DatabaseInterface>(
-    db: &D,
-    block_json: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    reprocess_eos_block(db, block_json, None, signature, debug_command_hash)
+pub fn debug_reprocess_eos_block<D: DatabaseInterface>(db: &D, block_json: &str, signature: &str) -> Result<String> {
+    reprocess_eos_block(db, block_json, None, signature)
 }
 
 /// # Debug Reprocess EOS Block With Nonce
@@ -184,8 +180,7 @@ pub fn debug_reprocess_eos_block_with_nonce<D: DatabaseInterface>(
     block_json: &str,
     nonce: u64,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     check_custom_nonce(&EthDbUtils::new(db), nonce)
-        .and_then(|_| reprocess_eos_block(db, block_json, Some(nonce), signature, debug_command_hash))
+        .and_then(|_| reprocess_eos_block(db, block_json, Some(nonce), signature))
 }
