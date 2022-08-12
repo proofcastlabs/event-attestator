@@ -14,7 +14,7 @@
 
 pub(crate) mod check_core_is_initialized;
 pub(crate) mod constants;
-pub(crate) mod debug_functions;
+mod debug_functions;
 pub(crate) mod eos;
 pub(crate) mod eth;
 pub(crate) mod fees_calculator;
@@ -61,16 +61,15 @@ pub use crate::{
     },
     eos_on_eth::{
         debug_functions::{
+            debug_reprocess_eos_block,
+            debug_reprocess_eos_block_with_fee_accrual,
+            debug_reprocess_eos_block_with_nonce,
+            debug_reprocess_eth_block,
+            debug_reprocess_eth_block_with_fee_accrual,
             debug_set_accrued_fees_in_dictionary,
             debug_set_eos_fee_basis_points,
             debug_set_eth_fee_basis_points,
             debug_withdraw_fees,
-            eos_block_reprocessor::{
-                debug_reprocess_eos_block,
-                debug_reprocess_eos_block_with_fee_accrual,
-                debug_reprocess_eos_block_with_nonce,
-            },
-            eth_block_reprocessor::{debug_reprocess_eth_block, debug_reprocess_eth_block_with_fee_accrual},
         },
         eos::submit_eos_block::submit_eos_block_to_core,
         eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
