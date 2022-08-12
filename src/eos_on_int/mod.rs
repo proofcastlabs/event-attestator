@@ -12,16 +12,18 @@
 //! ptokens_core = { version = "5.30.0", features = ["debug"] }
 //! ```
 
-pub(crate) mod check_core_is_initialized;
-pub(crate) mod constants;
-pub(crate) mod debug_functions;
-pub(crate) mod eos;
-pub(crate) mod get_all_db_keys;
-pub(crate) mod get_enclave_state;
-pub(crate) mod get_latest_block_numbers;
-pub(crate) mod int;
-pub(crate) mod test_utils;
+mod check_core_is_initialized;
+mod constants;
+mod debug_functions;
+mod eos;
+mod get_all_db_keys;
+mod get_enclave_state;
+mod get_latest_block_numbers;
+mod int;
+mod test_utils;
 
+// FIXME Used in `State`
+pub(crate) use self::{eos::EosOnIntIntTxInfos, int::EosOnIntEosTxInfos};
 pub use crate::{
     chains::{
         eos::{
@@ -54,10 +56,10 @@ pub use crate::{
     debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
     eos_on_int::{
         debug_functions::{debug_reprocess_eos_block, debug_reprocess_eos_block_with_nonce, debug_reprocess_int_block},
-        eos::submit_eos_block::submit_eos_block_to_core,
+        eos::submit_eos_block_to_core,
         get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
-        int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},
+        int::{maybe_initialize_int_core, submit_int_block_to_core},
     },
 };

@@ -19,7 +19,7 @@ use crate::{
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::EosOnEthEosTxInfos,
-    eos_on_int::eos::int_tx_info::EosOnIntIntTxInfos,
+    eos_on_int::EosOnIntIntTxInfos,
     erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfos,
     int_on_eos::eos::int_tx_info::IntOnEosIntTxInfos,
     traits::DatabaseInterface,
