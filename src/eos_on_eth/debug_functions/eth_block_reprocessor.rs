@@ -1,4 +1,4 @@
-pub use serde_json::json;
+use function_name::named;
 
 use crate::{
     chains::eth::{
@@ -10,11 +10,11 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
-    core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
     dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
     eos_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
+        constants::CORE_TYPE,
         eth::{
             account_for_fees::{
                 account_for_fees_in_eth_tx_infos_in_state,
@@ -36,18 +36,19 @@ use crate::{
     utils::prepend_debug_output_marker_to_string,
 };
 
+#[named]
 fn reprocess_eth_block<D: DatabaseInterface>(
     db: &D,
-    block_json_string: &str,
+    block_json: &str,
     accrue_fees: bool,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
     db.start_transaction()
         .and_then(|_| check_debug_mode())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::EosOnEth, signature, debug_command_hash))
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db)))
+        .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &accrue_fees)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(db)))
         .and_then(check_core_is_initialized_and_return_eth_state)
         .and_then(validate_block_in_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
@@ -108,13 +109,8 @@ fn reprocess_eth_block<D: DatabaseInterface>(
 /// should understand what this means when inserting the report outputted from this debug function.
 /// If this output is to _replace_ an existing report, the nonces in the report and in the core's
 /// database should be modified accordingly.
-pub fn debug_reprocess_eth_block<D: DatabaseInterface>(
-    db: &D,
-    block_json_string: &str,
-    signature: &str,
-    debug_command_hash: &str,
-) -> Result<String> {
-    reprocess_eth_block(db, block_json_string, false, signature, debug_command_hash)
+pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: &D, block_json: &str, signature: &str) -> Result<String> {
+    reprocess_eth_block(db, block_json, false, signature)
 }
 
 /// # Debug Reprocess ETH Block For Stale EOS Transaction With Fee Accrual
@@ -136,9 +132,8 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(
 /// database should be modified accordingly.
 pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(
     db: &D,
-    block_json_string: &str,
+    block_json: &str,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
-    reprocess_eth_block(db, block_json_string, true, signature, debug_command_hash)
+    reprocess_eth_block(db, block_json, true, signature)
 }

@@ -13,7 +13,7 @@
 //! ```
 
 pub(crate) mod check_core_is_initialized;
-pub(crate) mod constants;
+mod constants;
 mod debug_functions;
 pub(crate) mod eos;
 pub(crate) mod eth;
