@@ -1,5 +1,5 @@
 #![cfg(test)]
-use std::{fs::read_to_string, str::FromStr};
+use std::fs::read_to_string;
 
 use bitcoin::{
     blockdata::{
@@ -7,27 +7,19 @@ use bitcoin::{
         transaction::{OutPoint as BtcOutPoint, Transaction as BtcTransaction, TxIn as BtcUtxo},
     },
     hashes::{sha256d, Hash},
-    Txid,
 };
 
 use crate::{
-    btc_on_eth::{
-        btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
-        utils::convert_satoshis_to_wei,
-    },
-    chains::{
-        btc::{
-            btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
-            btc_constants::MINIMUM_REQUIRED_SATOSHIS,
-            btc_crypto::btc_private_key::BtcPrivateKey,
-            btc_database_utils::BtcDbUtils,
-            btc_submission_material::BtcSubmissionMaterialJson,
-            btc_types::BtcPubKeySlice,
-            btc_utils::{create_unsigned_utxo_from_tx, get_p2sh_redeem_script_sig, get_pay_to_pub_key_hash_script},
-            deposit_address_info::DepositAddressInfoJson,
-            utxo_manager::utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
-        },
-        eth::eth_types::EthAddress,
+    btc_on_eth::BtcOnEthEthTxInfos, // FIXME We'll need this removing eventually.
+    chains::btc::{
+        btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
+        btc_crypto::btc_private_key::BtcPrivateKey,
+        btc_database_utils::BtcDbUtils,
+        btc_submission_material::BtcSubmissionMaterialJson,
+        btc_types::BtcPubKeySlice,
+        btc_utils::{create_unsigned_utxo_from_tx, get_p2sh_redeem_script_sig, get_pay_to_pub_key_hash_script},
+        deposit_address_info::DepositAddressInfoJson,
+        utxo_manager::utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
     },
     errors::AppError,
     traits::DatabaseInterface,
@@ -78,26 +70,6 @@ pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_12: &str = "src/chains/btc/btc_test
 
 pub const SAMPLE_SERIALIZED_BTC_UTXO: &str = "0e8d588f88d5624148070a8cd79508da8cb76625e4fcdb19a5fc996aa843bf04000000001976a91454102783c8640c5144d039cea53eb7dbb470081488acffffffff";
 
-pub fn get_btc_block_in_db_format(
-    btc_block_and_id: BtcBlockAndId,
-    eth_minting_params: BtcOnEthEthTxInfos,
-    extra_data: Bytes,
-) -> Result<BtcBlockInDbFormat> {
-    Ok(BtcBlockInDbFormat::new(
-        btc_block_and_id.height,
-        btc_block_and_id.id,
-        extra_data,
-        None,
-        if eth_minting_params.is_empty() {
-            None
-        } else {
-            Some(eth_minting_params)
-        },
-        None,
-        btc_block_and_id.block.header.prev_blockhash,
-    ))
-}
-
 pub fn create_p2pkh_btc_utxo_and_value_from_tx_output(tx: &BtcTransaction, output_index: u32) -> BtcUtxoAndValue {
     BtcUtxoAndValue::new(
         tx.output[output_index as usize].value,
@@ -118,48 +90,6 @@ where
 {
     trace!("✔ Putting BTC tail block in db...");
     BtcDbUtils::new(db).put_special_btc_block_in_db(block, "tail")
-}
-
-pub fn get_sample_eth_tx_infos() -> BtcOnEthEthTxInfos {
-    let originating_tx_address_1 = "335cC6c8e77ECD56402Fa7d4007622A6841a8B6A".to_string();
-    let originating_tx_address_2 = "c2f16d5040deDa48Fe9292c183c5D76321e83467".to_string();
-    let originating_tx_address_3 = "6635F83421Bf059cd8111f180f0727128685BaE4".to_string();
-    let eth_address_1 = EthAddress::from_str(&originating_tx_address_1).unwrap();
-    let eth_address_2 = EthAddress::from_str(&originating_tx_address_2).unwrap();
-    let eth_address_3 = EthAddress::from_str(&originating_tx_address_3).unwrap();
-    let amount_1 = convert_satoshis_to_wei(MINIMUM_REQUIRED_SATOSHIS);
-    let amount_2 = convert_satoshis_to_wei(MINIMUM_REQUIRED_SATOSHIS + 1);
-    let amount_3 = convert_satoshis_to_wei(MINIMUM_REQUIRED_SATOSHIS - 1);
-    let originating_tx_hash_1 = Txid::hash(b"something_1");
-    let originating_tx_hash_2 = Txid::hash(b"something_2");
-    let originating_tx_hash_3 = Txid::hash(b"something_3");
-    let eth_token_address = EthAddress::default();
-    let user_data = None;
-    let minting_params_1 = BtcOnEthEthTxInfo {
-        amount: amount_1,
-        destination_address: eth_address_1,
-        originating_tx_hash: originating_tx_hash_1,
-        originating_tx_address: originating_tx_address_1,
-        user_data: user_data.clone(),
-        eth_token_address: eth_token_address.clone(),
-    };
-    let minting_params_2 = BtcOnEthEthTxInfo {
-        amount: amount_2,
-        destination_address: eth_address_2,
-        originating_tx_hash: originating_tx_hash_2,
-        originating_tx_address: originating_tx_address_2,
-        user_data: user_data.clone(),
-        eth_token_address: eth_token_address.clone(),
-    };
-    let minting_params_3 = BtcOnEthEthTxInfo {
-        amount: amount_3,
-        destination_address: eth_address_3,
-        originating_tx_hash: originating_tx_hash_3,
-        originating_tx_address: originating_tx_address_3,
-        user_data,
-        eth_token_address: eth_token_address.clone(),
-    };
-    BtcOnEthEthTxInfos::new(vec![minting_params_1, minting_params_2, minting_params_3])
 }
 
 pub fn get_sample_sequential_btc_blocks_in_db_format() -> Vec<BtcBlockInDbFormat> {
@@ -387,4 +317,24 @@ pub fn get_sample_p2sh_utxo_and_value_3() -> Result<BtcUtxoAndValue> {
             None,
         )
     })
+}
+
+pub fn get_btc_block_in_db_format(
+    btc_block_and_id: BtcBlockAndId,
+    eth_minting_params: BtcOnEthEthTxInfos,
+    extra_data: Bytes,
+) -> Result<BtcBlockInDbFormat> {
+    Ok(BtcBlockInDbFormat::new(
+        btc_block_and_id.height,
+        btc_block_and_id.id,
+        extra_data,
+        None,
+        if eth_minting_params.is_empty() {
+            None
+        } else {
+            Some(eth_minting_params)
+        },
+        None,
+        btc_block_and_id.block.header.prev_blockhash,
+    ))
 }

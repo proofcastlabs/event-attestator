@@ -71,11 +71,8 @@ mod tests {
 
     use super::*;
     use crate::{
-        btc_on_eth::utils::convert_satoshis_to_wei,
-        chains::{
-            btc::{btc_chain_id::BtcChainId, btc_test_utils::get_sample_eth_tx_infos},
-            eth::eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
-        },
+        btc_on_eth::{test_utils::get_sample_eth_tx_infos, utils::convert_satoshis_to_wei},
+        chains::{btc::btc_chain_id::BtcChainId, eth::eth_constants::MAX_BYTES_FOR_ETH_USER_DATA},
         metadata::metadata_protocol_id::MetadataProtocolId,
     };
 

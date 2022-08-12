@@ -1,7 +1,7 @@
 use serde_json::json;
 
 use crate::{
-    btc_on_eth::eth::create_btc_transactions::extract_change_utxo_from_btc_tx_and_save_in_db,
+    btc_on_eth::eth::extract_change_utxo_from_btc_tx_and_save_in_db,
     chains::btc::{btc_database_utils::BtcDbUtils, btc_utils::get_hex_tx_from_signed_btc_tx},
     core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},

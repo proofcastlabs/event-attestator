@@ -1,6 +1,6 @@
 use crate::{
     btc_on_eos::BtcOnEosEosTxInfos,
-    btc_on_eth::btc::eth_tx_info::BtcOnEthEthTxInfos,
+    btc_on_eth::BtcOnEthEthTxInfos,
     btc_on_int::btc::int_tx_info::BtcOnIntIntTxInfos,
     chains::{
         btc::{

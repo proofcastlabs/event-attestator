@@ -12,19 +12,22 @@
 //! ptokens_core = { version = "1.0.0", features = ["debug"] }
 //! ```
 
-pub(crate) mod btc;
-pub(crate) mod check_core_is_initialized;
-pub(crate) mod debug_functions;
-pub(crate) mod eth;
-pub(crate) mod get_all_db_keys;
-pub(crate) mod get_enclave_state;
-pub(crate) mod get_latest_block_numbers;
-pub(crate) mod test_utils;
-pub(crate) mod utils;
+mod btc;
+mod check_core_is_initialized;
+mod debug_functions;
+mod eth;
+mod get_all_db_keys;
+mod get_enclave_state;
+mod get_latest_block_numbers;
+mod test_utils;
+mod utils;
 
+#[cfg(test)]
+pub(crate) use self::btc::BtcOnEthEthTxInfo; // FIXME Current used in `chains::btc::btc_test_utils`
+pub(crate) use self::{btc::BtcOnEthEthTxInfos, eth::BtcOnEthRedeemInfos}; // FIXME Currently used in `State`.
 pub use crate::{
     btc_on_eth::{
-        btc::submit_btc_block::submit_btc_block_to_enclave,
+        btc::submit_btc_block_to_enclave,
         debug_functions::{
             debug_get_fee_withdrawal_tx,
             debug_get_signed_erc777_change_pnetwork_tx,
@@ -41,11 +44,7 @@ pub use crate::{
             debug_reprocess_eth_block_with_fee_accrual,
             debug_set_accrued_fees,
         },
-        eth::{
-            add_erc777_contract_address::maybe_add_erc777_contract_address,
-            initialize_eth_core::maybe_initialize_eth_enclave,
-            submit_eth_block::submit_eth_block_to_enclave,
-        },
+        eth::{maybe_add_erc777_contract_address, maybe_initialize_eth_enclave, submit_eth_block_to_enclave},
         get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,

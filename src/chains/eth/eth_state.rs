@@ -1,7 +1,7 @@
 use ethereum_types::H256 as EthHash;
 
 use crate::{
-    btc_on_eth::eth::redeem_info::BtcOnEthRedeemInfos,
+    btc_on_eth::BtcOnEthRedeemInfos,
     btc_on_int::int::btc_tx_info::BtcOnIntBtcTxInfos,
     chains::{
         algo::{algo_database_utils::AlgoDbUtils, algo_signed_group_txs::AlgoSignedGroupTxs},
