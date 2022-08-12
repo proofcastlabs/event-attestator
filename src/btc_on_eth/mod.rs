@@ -26,11 +26,6 @@ pub use crate::{
     btc_on_eth::{
         btc::submit_btc_block::submit_btc_block_to_enclave,
         debug_functions::{
-            btc_block_reprocessor::{
-                debug_reprocess_btc_block,
-                debug_reprocess_btc_block_with_fee_accrual,
-                debug_reprocess_btc_block_with_nonce,
-            },
             debug_get_fee_withdrawal_tx,
             debug_get_signed_erc777_change_pnetwork_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
@@ -39,8 +34,12 @@ pub use crate::{
             debug_mint_pbtc,
             debug_put_btc_on_eth_peg_in_basis_points_in_db,
             debug_put_btc_on_eth_peg_out_basis_points_in_db,
+            debug_reprocess_btc_block,
+            debug_reprocess_btc_block_with_fee_accrual,
+            debug_reprocess_btc_block_with_nonce,
+            debug_reprocess_eth_block,
+            debug_reprocess_eth_block_with_fee_accrual,
             debug_set_accrued_fees,
-            eth_block_reprocessor::{debug_reprocess_eth_block, debug_reprocess_eth_block_with_fee_accrual},
         },
         eth::{
             add_erc777_contract_address::maybe_add_erc777_contract_address,
