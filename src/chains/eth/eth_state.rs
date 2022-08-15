@@ -21,7 +21,7 @@ use crate::{
     eos_on_eth::EosOnEthEthTxInfos,
     eos_on_int::EosOnIntEosTxInfos,
     erc20_on_eos::Erc20OnEosEosTxInfos,
-    erc20_on_evm::{eth::evm_tx_info::Erc20OnEvmEvmTxInfos, evm::eth_tx_info::Erc20OnEvmEthTxInfos},
+    erc20_on_evm::{Erc20OnEvmEthTxInfos, Erc20OnEvmEvmTxInfos},
     erc20_on_int::{eth::int_tx_info::Erc20OnIntIntTxInfos, int::eth_tx_info::Erc20OnIntEthTxInfos},
     int_on_algo::int::algo_tx_info::IntOnAlgoAlgoTxInfos,
     int_on_eos::int::eos_tx_info::IntOnEosEosTxInfos,
