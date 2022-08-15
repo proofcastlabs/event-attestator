@@ -12,16 +12,18 @@
 //! ptokens_core = { version = <version-here>, features = ["debug"] }
 //! ```
 
-pub(crate) mod algo;
-pub(crate) mod check_core_is_initialized;
+mod algo;
+mod check_core_is_initialized;
 mod constants;
 mod debug_functions;
-pub(crate) mod get_all_db_keys;
-pub(crate) mod get_enclave_state;
-pub(crate) mod get_latest_block_numbers;
-pub(crate) mod int;
-pub(crate) mod test_utils;
+mod get_all_db_keys;
+mod get_enclave_state;
+mod get_latest_block_numbers;
+mod int;
+mod test_utils;
 
+// FIXME Used in `State`.
+pub(crate) use self::{algo::IntOnAlgoIntTxInfos, int::IntOnAlgoAlgoTxInfos};
 pub use crate::{
     chains::{
         algo::{algo_debug_functions::debug_reset_algo_chain, algo_note_metadata::encode_algo_note_metadata},
@@ -33,7 +35,7 @@ pub use crate::{
     },
     debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
     int_on_algo::{
-        algo::{initialize_algo_core::maybe_initialize_algo_core, submit_algo_block::submit_algo_block_to_core},
+        algo::{maybe_initialize_algo_core, submit_algo_block_to_core},
         debug_functions::{
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
@@ -49,6 +51,6 @@ pub use crate::{
         get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
-        int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},
+        int::{maybe_initialize_int_core, submit_int_block_to_core},
     },
 };

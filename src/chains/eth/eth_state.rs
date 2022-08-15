@@ -23,7 +23,7 @@ use crate::{
     erc20_on_eos::Erc20OnEosEosTxInfos,
     erc20_on_evm::{Erc20OnEvmEthTxInfos, Erc20OnEvmEvmTxInfos},
     erc20_on_int::{Erc20OnIntEthTxInfos, Erc20OnIntIntTxInfos},
-    int_on_algo::int::algo_tx_info::IntOnAlgoAlgoTxInfos,
+    int_on_algo::IntOnAlgoAlgoTxInfos,
     int_on_eos::int::eos_tx_info::IntOnEosEosTxInfos,
     int_on_evm::{evm::int_tx_info::IntOnEvmIntTxInfos, int::evm_tx_info::IntOnEvmEvmTxInfos},
     traits::DatabaseInterface,

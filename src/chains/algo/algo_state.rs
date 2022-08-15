@@ -8,7 +8,7 @@ use crate::{
         eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils::EthDbUtils},
     },
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
-    int_on_algo::algo::int_tx_info::IntOnAlgoIntTxInfos,
+    int_on_algo::IntOnAlgoIntTxInfos,
     traits::DatabaseInterface,
     types::Result,
 };
