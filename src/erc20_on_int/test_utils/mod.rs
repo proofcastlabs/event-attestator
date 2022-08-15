@@ -13,10 +13,7 @@ use crate::{
         eth_utils::convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
-    erc20_on_int::{
-        eth::int_tx_info::{Erc20OnIntIntTxInfo, Erc20OnIntIntTxInfos},
-        int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos},
-    },
+    erc20_on_int::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos, Erc20OnIntIntTxInfo, Erc20OnIntIntTxInfos},
     types::Result,
 };
 

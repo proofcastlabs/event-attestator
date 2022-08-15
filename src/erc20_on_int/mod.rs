@@ -12,17 +12,21 @@
 //! ptokens_core = { version = <version-here>, features = ["debug"] }
 //! ```
 
-pub(crate) mod check_core_is_initialized;
+mod check_core_is_initialized;
 mod constants;
 mod debug_functions;
-pub(crate) mod eth;
-pub(crate) mod fees_calculator;
-pub(crate) mod get_all_db_keys;
-pub(crate) mod get_enclave_state;
-pub(crate) mod get_latest_block_numbers;
-pub(crate) mod int;
-pub(crate) mod test_utils;
+mod eth;
+mod fees_calculator;
+mod get_all_db_keys;
+mod get_enclave_state;
+mod get_latest_block_numbers;
+mod int;
+mod test_utils;
 
+// FIXME Used in `State`.
+#[cfg(test)]
+pub(in crate::erc20_on_int) use self::{eth::Erc20OnIntIntTxInfo, int::Erc20OnIntEthTxInfo};
+pub(crate) use self::{eth::Erc20OnIntIntTxInfos, int::Erc20OnIntEthTxInfos};
 pub use crate::{
     chains::eth::{
         eth_debug_functions::{
@@ -62,10 +66,10 @@ pub use crate::{
             debug_set_fee_basis_points,
             debug_withdraw_fees_and_save_in_db,
         },
-        eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
+        eth::{maybe_initialize_eth_core, submit_eth_block_to_core},
         get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
-        int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},
+        int::{maybe_initialize_int_core, submit_int_block_to_core},
     },
 };
