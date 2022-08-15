@@ -13,7 +13,7 @@
 //! ```
 
 pub(crate) mod check_core_is_initialized;
-pub(crate) mod debug_functions;
+mod debug_functions;
 pub(crate) mod eth;
 pub(crate) mod fees_calculator;
 pub(crate) mod get_all_db_keys;
@@ -51,19 +51,15 @@ pub use crate::{
             debug_get_add_weth_unwrapper_address_tx,
             debug_get_remove_supported_token_tx,
             debug_remove_dictionary_entry,
+            debug_reprocess_eth_block,
+            debug_reprocess_eth_block_with_fee_accrual,
+            debug_reprocess_eth_block_with_nonce,
+            debug_reprocess_int_block,
+            debug_reprocess_int_block_with_fee_accrual,
+            debug_reprocess_int_block_with_nonce,
             debug_set_accrued_fees_in_dictionary,
             debug_set_fee_basis_points,
             debug_withdraw_fees_and_save_in_db,
-            eth_block_reprocessor::{
-                debug_reprocess_eth_block,
-                debug_reprocess_eth_block_with_fee_accrual,
-                debug_reprocess_eth_block_with_nonce,
-            },
-            int_block_reprocessor::{
-                debug_reprocess_int_block,
-                debug_reprocess_int_block_with_fee_accrual,
-                debug_reprocess_int_block_with_nonce,
-            },
         },
         eth::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core},
         get_all_db_keys::get_all_db_keys,
