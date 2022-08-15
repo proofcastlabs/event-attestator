@@ -1,3 +1,4 @@
+use function_name::named;
 use serde_json::json;
 
 use crate::{
@@ -7,10 +8,9 @@ use crate::{
         eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
         eth_utils::convert_hex_to_eth_address,
     },
-    core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    erc20_on_int::check_core_is_initialized::check_core_is_initialized,
+    erc20_on_int::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -25,19 +25,20 @@ use crate::{
 ///
 /// #### NOTE: This function will increment the ETH nonce and so the output transation MUST be
 /// broadcast otherwise future transactions are liable to fail.
+#[named]
 pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
     db: &D,
     token_address: &str,
     recipient_address: &str,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     let eth_db_utils = EthDbUtils::new(db);
     let evm_db_utils = EvmDbUtils::new(db);
-    check_debug_mode()
+    db.start_transaction()
+        .and_then(|_| check_debug_mode())
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::Erc20OnInt, signature, debug_command_hash))
+        .and_then(|_| get_debug_command_hash!(function_name!(), token_address, recipient_address)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| EthEvmTokenDictionary::get_from_db(db))
         .and_then(|dictionary| dictionary.withdraw_fees_and_save_in_db(db, &convert_hex_to_eth_address(token_address)?))
         .and_then(|(token_address, fee_amount)| {
