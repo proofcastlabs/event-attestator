@@ -1,3 +1,5 @@
+use function_name::named;
+
 use crate::{
     chains::{
         algo::{
@@ -10,7 +12,6 @@ use crate::{
         },
         eth::eth_database_utils::EthDbUtilsExt,
     },
-    core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_algo_state,
     int_on_algo::{
@@ -29,22 +30,24 @@ use crate::{
             validate_relevant_txs::filter_out_invalid_txs_and_update_in_state,
         },
         check_core_is_initialized::check_core_is_initialized_and_return_algo_state,
+        constants::CORE_TYPE,
     },
     traits::DatabaseInterface,
     types::Result,
 };
 
+#[named]
 fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
     db: &D,
     block_json_string: &str,
     maybe_nonce: Option<u64>,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug reprocessing ALGO block...");
     check_debug_mode()
         .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::IntOnAlgo, signature, debug_command_hash))
+        .and_then(|_| get_debug_command_hash!(function_name!(), block_json_string, &maybe_nonce)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db)))
         .and_then(check_core_is_initialized_and_return_algo_state)
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
@@ -150,9 +153,8 @@ pub fn debug_reprocess_algo_block<D: DatabaseInterface>(
     db: &D,
     block_json_string: &str,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
-    debug_reprocess_algo_block_maybe_with_nonce(db, block_json_string, None, signature, debug_command_hash)
+    debug_reprocess_algo_block_maybe_with_nonce(db, block_json_string, None, signature)
 }
 
 /// # Debug Reprocess ALGO Block With Nonce
@@ -174,7 +176,6 @@ pub fn debug_reprocess_algo_block_with_nonce<D: DatabaseInterface>(
     block_json_string: &str,
     nonce: u64,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
-    debug_reprocess_algo_block_maybe_with_nonce(db, block_json_string, Some(nonce), signature, debug_command_hash)
+    debug_reprocess_algo_block_maybe_with_nonce(db, block_json_string, Some(nonce), signature)
 }

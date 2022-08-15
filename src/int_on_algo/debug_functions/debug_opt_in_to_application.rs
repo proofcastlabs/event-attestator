@@ -1,11 +1,11 @@
+use function_name::named;
 use rust_algorand::{AlgorandAddress, AlgorandHash, AlgorandKeys, AlgorandTransaction, MicroAlgos};
 use serde_json::json;
 
 use crate::{
     chains::{algo::algo_database_utils::AlgoDbUtils, eth::eth_database_utils::EthDbUtils},
-    core_type::CoreType,
     debug_mode::validate_debug_command_signature,
-    int_on_algo::check_core_is_initialized::check_core_is_initialized,
+    int_on_algo::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -31,19 +31,20 @@ fn get_application_opt_in_tx_hex(
 /// broadcast, this transaction allows the core's account to interact with that application.
 /// The function requires a first-valid-round parameter to be passed in which defines whence
 /// the transaction is broadcastable.
+#[named]
 pub fn debug_opt_in_to_application<D: DatabaseInterface>(
     db: &D,
     app_id: u64,
     first_valid_round: u64,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Opting in to ALGO asset...");
     let int_db_utils = EthDbUtils::new(db);
     let algo_db_utils = AlgoDbUtils::new(db);
-    check_core_is_initialized(&int_db_utils, &algo_db_utils)
-        .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::IntOnAlgo, signature, debug_command_hash))
+    db.start_transaction()
+        .and_then(|_| check_core_is_initialized(&int_db_utils, &algo_db_utils))
+        .and_then(|_| get_debug_command_hash!(function_name!(), &app_id, &first_valid_round)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| {
             get_application_opt_in_tx_hex(
                 app_id,

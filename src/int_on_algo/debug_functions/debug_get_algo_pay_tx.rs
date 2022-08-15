@@ -1,12 +1,12 @@
 use std::str::FromStr;
 
+use function_name::named;
 use rust_algorand::{AlgorandAddress, AlgorandGenesisId, AlgorandTransaction, MicroAlgos};
 
 use crate::{
     chains::{algo::algo_database_utils::AlgoDbUtils, eth::eth_database_utils::EthDbUtils},
-    core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
-    int_on_algo::check_core_is_initialized::check_core_is_initialized,
+    int_on_algo::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
     traits::DatabaseInterface,
     types::Result,
     utils::strip_hex_prefix,
@@ -18,6 +18,7 @@ use crate::{
 /// by the algorand key saved in the encrypted database.
 ///
 /// __NOTE:__ This function will _not_ increment the ALGO signature nonce!
+#[named]
 pub fn debug_get_algo_pay_tx<D: DatabaseInterface>(
     db: &D,
     first_valid: u64,
@@ -27,15 +28,25 @@ pub fn debug_get_algo_pay_tx<D: DatabaseInterface>(
     note: &str,
     amount: u64,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Getting ALGO pay tx...");
     let algo_db_utils = AlgoDbUtils::new(db);
     // TODO If the note is valid hex, use it raw, else if is valid utf8, convert it to bytes.
     check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &algo_db_utils))
         .and_then(|_| db.start_transaction())
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::IntOnAlgo, signature, debug_command_hash))
+        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &algo_db_utils))
+        .and_then(|_| {
+            get_debug_command_hash!(
+                function_name!(),
+                &first_valid,
+                genesis_id,
+                &fee,
+                receiver,
+                note,
+                &amount
+            )()
+        })
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| {
             let pk = algo_db_utils.get_algo_private_key()?;
             let note_bytes = hex::decode(strip_hex_prefix(note))?;
