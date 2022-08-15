@@ -14,7 +14,7 @@
 
 pub(crate) mod algo;
 pub(crate) mod check_core_is_initialized;
-pub(crate) mod debug_functions;
+mod debug_functions;
 pub(crate) mod get_all_db_keys;
 pub(crate) mod get_enclave_state;
 pub(crate) mod get_latest_block_numbers;
@@ -34,15 +34,16 @@ pub use crate::{
     int_on_algo::{
         algo::{initialize_algo_core::maybe_initialize_algo_core, submit_algo_block::submit_algo_block_to_core},
         debug_functions::{
-            algo_block_reprocessor::{debug_reprocess_algo_block, debug_reprocess_algo_block_with_nonce},
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
             debug_get_algo_pay_tx,
+            debug_opt_in_to_application,
+            debug_opt_in_to_asset,
             debug_remove_dictionary_entry,
+            debug_reprocess_algo_block,
+            debug_reprocess_algo_block_with_nonce,
+            debug_reprocess_int_block,
             debug_set_algo_account_nonce,
-            int_block_reprocessor::debug_reprocess_int_block,
-            opt_in_to_application::debug_opt_in_to_application,
-            opt_in_to_asset::debug_opt_in_to_asset,
         },
         get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
