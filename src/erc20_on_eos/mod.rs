@@ -12,18 +12,22 @@
 //! ptokens_core = { version = "3.1.0", features = ["debug"] }
 //! ```
 
-pub(crate) mod add_vault_contract_address_to_db;
-pub(crate) mod check_core_is_initialized;
+mod add_vault_contract_address_to_db;
+mod check_core_is_initialized;
 mod constants;
-pub(crate) mod debug_functions;
-pub(crate) mod eos;
-pub(crate) mod eth;
-pub(crate) mod fees_calculator;
-pub(crate) mod get_all_db_keys;
-pub(crate) mod get_enclave_state;
-pub(crate) mod get_latest_block_numbers;
-pub(crate) mod test_utils;
+mod debug_functions;
+mod eos;
+mod eth;
+mod fees_calculator;
+mod get_all_db_keys;
+mod get_enclave_state;
+mod get_latest_block_numbers;
+mod test_utils;
 
+// FIXME Used in `State`.
+#[cfg(test)]
+pub(in crate::erc20_on_eos) use self::eth::Erc20OnEosPegInInfo;
+pub(crate) use self::{eos::Erc20OnEosRedeemInfos, eth::Erc20OnEosPegInInfos};
 pub use crate::{
     chains::{
         eos::{
@@ -77,11 +81,8 @@ pub use crate::{
             debug_set_eth_fee_basis_points,
             debug_withdraw_fees_and_save_in_db,
         },
-        eos::submit_eos_block::submit_eos_block_to_core,
-        eth::{
-            initialize_eth_core::maybe_initialize_eth_enclave as maybe_initialize_eth_core,
-            submit_eth_block::submit_eth_block_to_core,
-        },
+        eos::submit_eos_block_to_core,
+        eth::{maybe_initialize_eth_core, submit_eth_block_to_core},
         get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,

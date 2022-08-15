@@ -42,7 +42,7 @@ use crate::{
 /// The function also takes an ETH `gas_price` param, express in `Wei`, along with a `canon_to_tip`
 /// length param. This latter defines how many `confirmations` of a transactions are required before
 /// a signature is signed.
-pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
+pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
     db: &D,
     block_json: &str,
     chain_id: u8,

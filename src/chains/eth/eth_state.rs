@@ -20,7 +20,7 @@ use crate::{
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary, evm_algo::EvmAlgoTokenDictionary},
     eos_on_eth::EosOnEthEthTxInfos,
     eos_on_int::EosOnIntEosTxInfos,
-    erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfos,
+    erc20_on_eos::Erc20OnEosPegInInfos,
     erc20_on_evm::{eth::evm_tx_info::Erc20OnEvmEvmTxInfos, evm::eth_tx_info::Erc20OnEvmEthTxInfos},
     erc20_on_int::{eth::int_tx_info::Erc20OnIntIntTxInfos, int::eth_tx_info::Erc20OnIntEthTxInfos},
     int_on_algo::int::algo_tx_info::IntOnAlgoAlgoTxInfos,
