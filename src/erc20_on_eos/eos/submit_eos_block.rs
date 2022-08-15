@@ -39,12 +39,12 @@ use crate::{
                 maybe_divert_txs_to_safe_address_if_destination_is_token_address,
                 maybe_divert_txs_to_safe_address_if_destination_is_vault_address,
             },
+            eth_tx_info::{
+                maybe_filter_out_already_processed_tx_ids_from_state,
+                maybe_parse_eth_tx_infos_and_put_in_state,
+            },
             get_eos_output::get_eos_output,
             increment_eth_nonce::maybe_increment_eth_nonce_in_db_and_return_eos_state,
-            redeem_info::{
-                maybe_filter_out_already_processed_tx_ids_from_state,
-                maybe_parse_redeem_infos_and_put_in_state,
-            },
             sign_normal_eth_txs::maybe_sign_normal_eth_txs_and_add_to_state,
         },
     },
@@ -80,7 +80,7 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
         .and_then(maybe_filter_proofs_for_v1_redeem_actions)
-        .and_then(maybe_parse_redeem_infos_and_put_in_state)
+        .and_then(maybe_parse_eth_tx_infos_and_put_in_state)
         .and_then(maybe_filter_out_already_processed_tx_ids_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
         .and_then(maybe_account_for_fees)

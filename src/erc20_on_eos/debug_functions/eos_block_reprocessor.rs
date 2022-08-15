@@ -33,11 +33,11 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
         constants::CORE_TYPE,
         eos::{
-            account_for_fees_in_redeem_infos_in_state,
+            account_for_fees_in_eth_tx_infos_in_state,
             get_eth_signed_tx_info_from_eth_txs,
             get_eth_signed_txs,
             maybe_increment_eth_nonce_in_db_and_return_eos_state,
-            maybe_parse_redeem_infos_and_put_in_state,
+            maybe_parse_eth_tx_infos_and_put_in_state,
             update_accrued_fees_in_dictionary_and_return_eos_state,
             EosOutput,
         },
@@ -73,8 +73,8 @@ fn reprocess_eos_block<D: DatabaseInterface>(
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
         .and_then(maybe_filter_proofs_for_v1_redeem_actions)
-        .and_then(maybe_parse_redeem_infos_and_put_in_state)
-        .and_then(account_for_fees_in_redeem_infos_in_state)
+        .and_then(maybe_parse_eth_tx_infos_and_put_in_state)
+        .and_then(account_for_fees_in_eth_tx_infos_in_state)
         .and_then(|state| {
             if accrue_fees {
                 update_accrued_fees_in_dictionary_and_return_eos_state(state)
@@ -84,12 +84,12 @@ fn reprocess_eos_block<D: DatabaseInterface>(
             }
         })
         .and_then(|state| {
-            if state.erc20_on_eos_redeem_infos.len() == 0 {
+            if state.erc20_on_eos_eth_tx_infos.len() == 0 {
                 info!("✔ No redeem infos in state ∴ no ETH transactions to sign!");
                 Ok(state)
             } else {
                 get_eth_signed_txs(
-                    &state.erc20_on_eos_redeem_infos,
+                    &state.erc20_on_eos_eth_tx_infos,
                     &state.eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
                     match maybe_nonce {
                         Some(nonce) => {
@@ -132,7 +132,7 @@ fn reprocess_eos_block<D: DatabaseInterface>(
                 } else {
                     get_eth_signed_tx_info_from_eth_txs(
                         &txs,
-                        &state.erc20_on_eos_redeem_infos,
+                        &state.erc20_on_eos_eth_tx_infos,
                         match maybe_nonce {
                             // NOTE: We inrement the passed in nonce ∵ of the way the report nonce is calculated.
                             Some(nonce) => nonce + num_txs as u64,

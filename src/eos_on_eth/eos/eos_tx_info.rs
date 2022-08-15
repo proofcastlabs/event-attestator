@@ -270,7 +270,7 @@ pub struct EosOnEthEosTxInfos(pub Vec<EosOnEthEosTxInfo>);
 
 impl FeesCalculator for EosOnEthEosTxInfos {
     fn get_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
-        debug!("Calculating fees in `Erc20OnEosRedeemInfos`...");
+        debug!("Calculating fees in `Erc20OnEosEthTxInfos`...");
         self.iter()
             .map(|info| info.calculate_peg_in_fee_via_dictionary(dictionary))
             .collect()

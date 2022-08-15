@@ -614,7 +614,7 @@ mod tests {
     }
 
     #[test]
-    fn should_get_get_erc20_redeem_infos_from_receipt() {
+    fn should_get_get_erc20_eth_tx_infos_from_receipt() {
         let eth_token_decimals = 18;
         let eos_token_decimals = 9;
         let eth_symbol = "SAM".to_string();
@@ -647,7 +647,7 @@ mod tests {
     }
 
     #[test]
-    fn should_not_get_get_erc20_redeem_infos_from_receipt_if_token_not_supported() {
+    fn should_not_get_get_erc20_eth_tx_infos_from_receipt_if_token_not_supported() {
         let token_dictionary = EosEthTokenDictionary::new(vec![]);
         let expected_num_results = 0;
         let origin_chain_id = EthChainId::Mainnet;

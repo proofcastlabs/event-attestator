@@ -29,10 +29,10 @@ use crate::{
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, Deref, Constructor)]
-pub struct Erc20OnEosRedeemInfos(pub Vec<Erc20OnEosRedeemInfo>);
+pub struct Erc20OnEosEthTxInfos(pub Vec<Erc20OnEosEthTxInfo>);
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Constructor)]
-pub struct Erc20OnEosRedeemInfo {
+pub struct Erc20OnEosEthTxInfo {
     pub amount: U256,
     pub from: EosAccountName,
     pub destination_address: EthAddress,
@@ -46,9 +46,9 @@ pub struct Erc20OnEosRedeemInfo {
     pub eth_vault_address: EthAddress,
 }
 
-impl FeesCalculator for Erc20OnEosRedeemInfos {
+impl FeesCalculator for Erc20OnEosEthTxInfos {
     fn get_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
-        debug!("Calculating fees in `Erc20OnEosRedeemInfos`...");
+        debug!("Calculating fees in `Erc20OnEosEthTxInfos`...");
         self.iter()
             .map(|info| info.calculate_peg_out_fee_via_dictionary(dictionary))
             .collect()
@@ -67,13 +67,13 @@ impl FeesCalculator for Erc20OnEosRedeemInfos {
                             info.subtract_amount(*fee)
                         }
                     })
-                    .collect::<Result<Vec<Erc20OnEosRedeemInfo>>>()?,
+                    .collect::<Result<Vec<Erc20OnEosEthTxInfo>>>()?,
             ))
         })
     }
 }
 
-impl Erc20OnEosRedeemInfos {
+impl Erc20OnEosEthTxInfos {
     pub fn get_global_sequences(&self) -> GlobalSequences {
         GlobalSequences::new(
             self.iter()
@@ -87,35 +87,30 @@ impl Erc20OnEosRedeemInfos {
         dictionary: &EosEthTokenDictionary,
         origin_chain_id: &EosChainId,
         eth_vault_address: &EthAddress,
-    ) -> Result<Erc20OnEosRedeemInfos> {
-        Ok(Erc20OnEosRedeemInfos::new(
+    ) -> Result<Erc20OnEosEthTxInfos> {
+        Ok(Erc20OnEosEthTxInfos::new(
             action_proofs
                 .iter()
                 .map(|action_proof| {
-                    Erc20OnEosRedeemInfo::from_action_proof(
-                        action_proof,
-                        dictionary,
-                        origin_chain_id,
-                        eth_vault_address,
-                    )
+                    Erc20OnEosEthTxInfo::from_action_proof(action_proof, dictionary, origin_chain_id, eth_vault_address)
                 })
-                .collect::<Result<Vec<Erc20OnEosRedeemInfo>>>()?,
+                .collect::<Result<Vec<Erc20OnEosEthTxInfo>>>()?,
         ))
     }
 
     pub fn filter_out_already_processed_txs(&self, processed_tx_ids: &ProcessedGlobalSequences) -> Result<Self> {
-        Ok(Erc20OnEosRedeemInfos::new(
+        Ok(Erc20OnEosEthTxInfos::new(
             self.iter()
                 .filter(|info| !processed_tx_ids.contains(&info.global_sequence))
                 .cloned()
-                .collect::<Vec<Erc20OnEosRedeemInfo>>(),
+                .collect::<Vec<Erc20OnEosEthTxInfo>>(),
         ))
     }
 }
 
-impl FeeCalculator for Erc20OnEosRedeemInfo {
+impl FeeCalculator for Erc20OnEosEthTxInfo {
     fn get_amount(&self) -> U256 {
-        info!("✔ Getting token amount in `Erc20OnEosRedeemInfo` of {}", self.amount);
+        info!("✔ Getting token amount in `Erc20OnEosEthTxInfo` of {}", self.amount);
         self.amount
     }
 
@@ -137,11 +132,11 @@ impl FeeCalculator for Erc20OnEosRedeemInfo {
 
     fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
         if subtrahend >= self.amount {
-            Err("Cannot subtract amount from `Erc20OnEosRedeemInfo`: subtrahend too large!".into())
+            Err("Cannot subtract amount from `Erc20OnEosEthTxInfo`: subtrahend too large!".into())
         } else {
             let new_amount = self.amount - subtrahend;
             debug!(
-                "Subtracting {} from {} to get final amount of {} in `Erc20OnEosRedeemInfo`!",
+                "Subtracting {} from {} to get final amount of {} in `Erc20OnEosEthTxInfo`!",
                 subtrahend, self.amount, new_amount
             );
             let mut new_self = self.clone();
@@ -151,7 +146,7 @@ impl FeeCalculator for Erc20OnEosRedeemInfo {
     }
 }
 
-impl ToMetadata for Erc20OnEosRedeemInfo {
+impl ToMetadata for Erc20OnEosEthTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         let user_data = if self.user_data.len() > MAX_BYTES_FOR_ETH_USER_DATA {
             info!(
@@ -173,10 +168,10 @@ impl ToMetadata for Erc20OnEosRedeemInfo {
     }
 }
 
-impl Erc20OnEosRedeemInfo {
+impl Erc20OnEosEthTxInfo {
     fn get_memo_string_from_proof(proof: &EosActionProof) -> Result<String> {
         proof
-            .check_proof_action_data_length(25, "Not enough data to parse `Erc20OnEosRedeemInfo` memo from proof!")
+            .check_proof_action_data_length(25, "Not enough data to parse `Erc20OnEosEthTxInfo` memo from proof!")
             .and_then(|_| Ok(from_utf8(&proof.action.data[25..])?.to_string()))
     }
 
@@ -205,7 +200,7 @@ impl Erc20OnEosRedeemInfo {
         dictionary_entry: &EosEthTokenDictionaryEntry,
     ) -> Result<U256> {
         proof
-            .check_proof_action_data_length(15, "Not enough data to parse `Erc20OnEosRedeemInfo` amount from proof!")
+            .check_proof_action_data_length(15, "Not enough data to parse `Erc20OnEosEthTxInfo` amount from proof!")
             .and_then(|_| {
                 Ok(dictionary_entry.convert_u64_to_eos_asset(convert_bytes_to_u64(&proof.action.data[8..=15])?))
             })
@@ -241,17 +236,17 @@ impl Erc20OnEosRedeemInfo {
     }
 }
 
-pub fn maybe_parse_redeem_infos_and_put_in_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
+pub fn maybe_parse_eth_tx_infos_and_put_in_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Parsing redeem params from actions data...");
-    Erc20OnEosRedeemInfos::from_action_proofs(
+    Erc20OnEosEthTxInfos::from_action_proofs(
         &state.action_proofs,
         state.get_eos_eth_token_dictionary()?,
         &state.eos_db_utils.get_eos_chain_id_from_db()?,
         &state.eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
     )
-    .and_then(|redeem_infos| {
-        info!("✔ Parsed {} redeem infos!", redeem_infos.len());
-        state.add_erc20_on_eos_redeem_infos(redeem_infos)
+    .and_then(|eth_tx_infos| {
+        info!("✔ Parsed {} redeem infos!", eth_tx_infos.len());
+        state.add_erc20_on_eos_eth_tx_infos(eth_tx_infos)
     })
 }
 
@@ -260,9 +255,9 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface
 ) -> Result<EosState<D>> {
     info!("✔ Filtering out already processed tx IDs...");
     state
-        .erc20_on_eos_redeem_infos
+        .erc20_on_eos_eth_tx_infos
         .filter_out_already_processed_txs(&state.processed_tx_ids)
-        .and_then(|filtered| state.add_erc20_on_eos_redeem_infos(filtered))
+        .and_then(|filtered| state.add_erc20_on_eos_eth_tx_infos(filtered))
 }
 
 #[cfg(test)]
@@ -280,11 +275,11 @@ mod tests {
         get_sample_eos_submission_material_n(10).action_proofs[0].clone()
     }
 
-    fn get_sample_erc20_on_eos_redeem_info() -> Erc20OnEosRedeemInfo {
+    fn get_sample_erc20_on_eos_eth_tx_info() -> Erc20OnEosEthTxInfo {
         let user_data = vec![];
         let origin_chain_id = EosChainId::EosMainnet;
         let eos_account_name = "testpethxxxx".to_string();
-        Erc20OnEosRedeemInfo::new(
+        Erc20OnEosEthTxInfo::new(
             U256::from_dec_str("1337000000000").unwrap(),
             EosAccountName::from_str("t11ptokens11").unwrap(),
             EthAddress::from_slice(&hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap()),
@@ -299,10 +294,10 @@ mod tests {
         )
     }
 
-    fn get_sample_erc20_on_eos_redeem_infos() -> Erc20OnEosRedeemInfos {
-        Erc20OnEosRedeemInfos::new(vec![
-            get_sample_erc20_on_eos_redeem_info(),
-            get_sample_erc20_on_eos_redeem_info(),
+    fn get_sample_erc20_on_eos_eth_tx_infos() -> Erc20OnEosEthTxInfos {
+        Erc20OnEosEthTxInfos::new(vec![
+            get_sample_erc20_on_eos_eth_tx_info(),
+            get_sample_erc20_on_eos_eth_tx_info(),
         ])
     }
 
@@ -325,7 +320,7 @@ mod tests {
             "".to_string(),
         );
         let proof = get_sample_action_proof_for_erc20_redeem();
-        let result = Erc20OnEosRedeemInfo::get_redeem_amount_from_proof(&proof, &dictionary_entry).unwrap();
+        let result = Erc20OnEosEthTxInfo::get_redeem_amount_from_proof(&proof, &dictionary_entry).unwrap();
         let expected_result = U256::from_dec_str("1337000000000").unwrap();
         assert_eq!(result, expected_result);
     }
@@ -334,14 +329,14 @@ mod tests {
     fn should_get_erc20_on_eos_eth_redeem_address() {
         let expected_result = EthAddress::from_slice(&hex::decode("fEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap());
         let proof = get_sample_action_proof_for_erc20_redeem();
-        let result = Erc20OnEosRedeemInfo::get_redeem_address_from_proof_or_default_to_safe_address(&proof).unwrap();
+        let result = Erc20OnEosEthTxInfo::get_redeem_address_from_proof_or_default_to_safe_address(&proof).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_convert_proof_to_erc20_on_eos_redeem_info() {
+    fn should_convert_proof_to_erc20_on_eos_eth_tx_info() {
         let eos_account_name = "testpethxxxx".to_string();
-        let expected_result = get_sample_erc20_on_eos_redeem_info();
+        let expected_result = get_sample_erc20_on_eos_eth_tx_info();
         let origin_chain_id = EosChainId::EosMainnet;
         let eth_basis_points = 0;
         let eos_basis_points = 0;
@@ -362,28 +357,28 @@ mod tests {
         let proof = get_sample_action_proof_for_erc20_redeem();
         let vault_address = EthAddress::default();
         let result =
-            Erc20OnEosRedeemInfo::from_action_proof(&proof, &dictionary, &origin_chain_id, &vault_address).unwrap();
+            Erc20OnEosEthTxInfo::from_action_proof(&proof, &dictionary, &origin_chain_id, &vault_address).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_convert_erc20_on_eos_redeem_info_to_metadata() {
-        let info = get_sample_erc20_on_eos_redeem_info();
+    fn should_convert_erc20_on_eos_eth_tx_info_to_metadata() {
+        let info = get_sample_erc20_on_eos_eth_tx_info();
         let result = info.to_metadata();
         assert!(result.is_ok());
     }
 
     #[test]
-    fn should_convert_erc20_on_eos_redeem_info_to_metadata_bytes() {
-        let info = get_sample_erc20_on_eos_redeem_info();
+    fn should_convert_erc20_on_eos_eth_tx_info_to_metadata_bytes() {
+        let info = get_sample_erc20_on_eos_eth_tx_info();
         let result = info.to_metadata_bytes().unwrap();
         let expected_result = "0100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008002e7261c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000810029e0ad25c43c8000000000000000000000000000000000000000000000000";
         assert_eq!(hex::encode(result), expected_result);
     }
 
     #[test]
-    fn should_subtract_amount_from_erc20_on_eos_redeem_info() {
-        let info = get_sample_erc20_on_eos_redeem_info();
+    fn should_subtract_amount_from_erc20_on_eos_eth_tx_info() {
+        let info = get_sample_erc20_on_eos_eth_tx_info();
         let subtrahend = U256::from(1);
         let expected_result = U256::from_dec_str("1336999999999").unwrap();
         let result = info.subtract_amount(subtrahend).unwrap().amount;
@@ -391,9 +386,9 @@ mod tests {
     }
 
     #[test]
-    fn should_fail_to_subtract_too_large_amount_from_erc20_on_eos_redeem_info() {
-        let info = get_sample_erc20_on_eos_redeem_info();
-        let expected_err = "Cannot subtract amount from `Erc20OnEosRedeemInfo`: subtrahend too large!".to_string();
+    fn should_fail_to_subtract_too_large_amount_from_erc20_on_eos_eth_tx_info() {
+        let info = get_sample_erc20_on_eos_eth_tx_info();
+        let expected_err = "Cannot subtract amount from `Erc20OnEosEthTxInfo`: subtrahend too large!".to_string();
         let subtrahend = info.amount + 1;
         match info.subtract_amount(subtrahend) {
             Ok(_) => panic!("Should not have succeeded!"),
@@ -403,17 +398,17 @@ mod tests {
     }
 
     #[test]
-    fn should_calculate_fee_in_erc20_on_eos_redeem_info() {
+    fn should_calculate_fee_in_erc20_on_eos_eth_tx_info() {
         let basis_points = 25;
-        let info = get_sample_erc20_on_eos_redeem_info();
+        let info = get_sample_erc20_on_eos_eth_tx_info();
         let expected_result = U256::from_dec_str("3342500000").unwrap();
         let result = info.calculate_fee(basis_points).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_calculate_fees_in_erc20_on_eos_redeem_infos() {
-        let infos = get_sample_erc20_on_eos_redeem_infos();
+    fn should_calculate_fees_in_erc20_on_eos_eth_tx_infos() {
+        let infos = get_sample_erc20_on_eos_eth_tx_infos();
         let expected_fee = U256::from_dec_str("3342500000").unwrap();
         let dictionary = get_sample_eos_eth_token_dictionary();
         let result = infos.get_fees(&dictionary).unwrap();

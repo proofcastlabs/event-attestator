@@ -27,7 +27,7 @@ mod test_utils;
 // FIXME Used in `State`.
 #[cfg(test)]
 pub(in crate::erc20_on_eos) use self::eth::Erc20OnEosPegInInfo;
-pub(crate) use self::{eos::Erc20OnEosRedeemInfos, eth::Erc20OnEosPegInInfos};
+pub(crate) use self::{eos::Erc20OnEosEthTxInfos, eth::Erc20OnEosPegInInfos};
 pub use crate::{
     chains::{
         eos::{
