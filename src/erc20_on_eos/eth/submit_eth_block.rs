@@ -24,13 +24,13 @@ use crate::{
         eth::{
             account_for_fees::maybe_account_for_fees,
             divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
-            get_output_json::get_output_json,
-            peg_in_info::{
-                filter_out_zero_value_peg_ins_from_state,
+            eos_tx_info::{
+                filter_out_zero_value_eos_tx_infos_from_state,
                 filter_submission_material_for_peg_in_events_in_state,
-                maybe_parse_peg_in_info_from_canon_block_and_add_to_state,
+                maybe_parse_eos_tx_info_from_canon_block_and_add_to_state,
                 maybe_sign_eos_txs_and_add_to_eth_state,
             },
+            get_output_json::get_output_json,
         },
     },
     traits::DatabaseInterface,
@@ -59,9 +59,9 @@ pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
         .and_then(maybe_update_eth_canon_block_hash_and_return_state)
         .and_then(maybe_update_eth_tail_block_hash_and_return_state)
         .and_then(maybe_update_eth_linker_hash_and_return_state)
-        .and_then(maybe_parse_peg_in_info_from_canon_block_and_add_to_state)
+        .and_then(maybe_parse_eos_tx_info_from_canon_block_and_add_to_state)
         .and_then(maybe_account_for_fees)
-        .and_then(filter_out_zero_value_peg_ins_from_state)
+        .and_then(filter_out_zero_value_eos_tx_infos_from_state)
         .and_then(maybe_divert_txs_to_safe_address_if_destination_is_token_address)
         .and_then(maybe_sign_eos_txs_and_add_to_eth_state)
         .and_then(maybe_increment_eos_account_nonce_and_return_state)

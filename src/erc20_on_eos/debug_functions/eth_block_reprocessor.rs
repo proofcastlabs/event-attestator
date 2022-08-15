@@ -16,13 +16,13 @@ use crate::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         constants::CORE_TYPE,
         eth::{
-            account_for_fees_in_peg_in_infos_in_state,
-            filter_out_zero_value_peg_ins_from_state,
+            account_for_fees_in_eos_tx_infos_in_state,
+            filter_out_zero_value_eos_tx_infos_from_state,
             filter_submission_material_for_peg_in_events_in_state,
             get_output_json,
             maybe_sign_eos_txs_and_add_to_eth_state,
             update_accrued_fees_in_dictionary_and_return_eth_state,
-            Erc20OnEosPegInInfos,
+            Erc20OnEosEosTxInfos,
         },
     },
     traits::DatabaseInterface,
@@ -61,19 +61,19 @@ fn reprocess_eth_block<D: DatabaseInterface>(
                     );
                     EosEthTokenDictionary::get_from_db(state.db)
                         .and_then(|token_dictionary| {
-                            Erc20OnEosPegInInfos::from_submission_material(
+                            Erc20OnEosEosTxInfos::from_submission_material(
                                 &submission_material,
                                 &token_dictionary,
                                 &EthDbUtils::new(db).get_eth_chain_id_from_db()?,
                             )
                         })
-                        .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
-                        .and_then(filter_out_zero_value_peg_ins_from_state)
+                        .and_then(|eos_tx_infos| state.add_erc20_on_eos_eos_tx_infos(eos_tx_infos))
+                        .and_then(filter_out_zero_value_eos_tx_infos_from_state)
                 },
             }
         })
-        .and_then(account_for_fees_in_peg_in_infos_in_state)
-        .and_then(filter_out_zero_value_peg_ins_from_state)
+        .and_then(account_for_fees_in_eos_tx_infos_in_state)
+        .and_then(filter_out_zero_value_eos_tx_infos_from_state)
         .and_then(|state| {
             if accrue_fees {
                 update_accrued_fees_in_dictionary_and_return_eth_state(state)

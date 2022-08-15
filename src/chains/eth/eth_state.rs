@@ -20,7 +20,7 @@ use crate::{
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary, evm_algo::EvmAlgoTokenDictionary},
     eos_on_eth::EosOnEthEthTxInfos,
     eos_on_int::EosOnIntEosTxInfos,
-    erc20_on_eos::Erc20OnEosPegInInfos,
+    erc20_on_eos::Erc20OnEosEosTxInfos,
     erc20_on_evm::{eth::evm_tx_info::Erc20OnEvmEvmTxInfos, evm::eth_tx_info::Erc20OnEvmEthTxInfos},
     erc20_on_int::{eth::int_tx_info::Erc20OnIntIntTxInfos, int::eth_tx_info::Erc20OnIntEthTxInfos},
     int_on_algo::int::algo_tx_info::IntOnAlgoAlgoTxInfos,
@@ -63,7 +63,7 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub erc20_on_evm_evm_tx_infos: Erc20OnEvmEvmTxInfos,
     pub erc20_on_int_eth_tx_infos: Erc20OnIntEthTxInfos,
     pub erc20_on_int_int_tx_infos: Erc20OnIntIntTxInfos,
-    pub erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos,
+    pub erc20_on_eos_eos_tx_infos: Erc20OnEosEosTxInfos,
     pub eos_transactions: Option<EosSignedTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
@@ -108,7 +108,7 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             erc20_on_evm_eth_tx_infos: Erc20OnEvmEthTxInfos::new(vec![]),
             erc20_on_int_eth_tx_infos: Erc20OnIntEthTxInfos::new(vec![]),
             erc20_on_int_int_tx_infos: Erc20OnIntIntTxInfos::new(vec![]),
-            erc20_on_eos_peg_in_infos: Erc20OnEosPegInInfos::new(vec![]),
+            erc20_on_eos_eos_tx_infos: Erc20OnEosEosTxInfos::new(vec![]),
         }
     }
 
@@ -217,10 +217,10 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         self.replace_btc_on_int_btc_tx_infos(BtcOnIntBtcTxInfos::new(new_infos))
     }
 
-    pub fn add_erc20_on_eos_peg_in_infos(self, mut infos: Erc20OnEosPegInInfos) -> Result<Self> {
-        let mut new_infos = self.erc20_on_eos_peg_in_infos.clone().0;
+    pub fn add_erc20_on_eos_eos_tx_infos(self, mut infos: Erc20OnEosEosTxInfos) -> Result<Self> {
+        let mut new_infos = self.erc20_on_eos_eos_tx_infos.clone().0;
         new_infos.append(&mut infos.0);
-        self.replace_erc20_on_eos_peg_in_infos(Erc20OnEosPegInInfos::new(new_infos))
+        self.replace_erc20_on_eos_eos_tx_infos(Erc20OnEosEosTxInfos::new(new_infos))
     }
 
     pub fn add_eos_on_eth_eth_tx_infos(self, mut infos: EosOnEthEthTxInfos) -> Result<Self> {
@@ -284,8 +284,8 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         Ok(self)
     }
 
-    pub fn replace_erc20_on_eos_peg_in_infos(mut self, replacements: Erc20OnEosPegInInfos) -> Result<Self> {
-        self.erc20_on_eos_peg_in_infos = replacements;
+    pub fn replace_erc20_on_eos_eos_tx_infos(mut self, replacements: Erc20OnEosEosTxInfos) -> Result<Self> {
+        self.erc20_on_eos_eos_tx_infos = replacements;
         Ok(self)
     }
 

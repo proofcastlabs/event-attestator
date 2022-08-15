@@ -42,7 +42,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Constructor)]
-pub struct Erc20OnEosPegInInfo {
+pub struct Erc20OnEosEosTxInfo {
     pub token_amount: U256,
     pub token_sender: EthAddress,
     pub eth_token_address: EthAddress,
@@ -54,7 +54,7 @@ pub struct Erc20OnEosPegInInfo {
     pub origin_chain_id: EthChainId,
 }
 
-impl ToMetadata for Erc20OnEosPegInInfo {
+impl ToMetadata for Erc20OnEosEosTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         Ok(Metadata::new(
             &self.user_data,
@@ -67,9 +67,9 @@ impl ToMetadata for Erc20OnEosPegInInfo {
     }
 }
 
-impl FeesCalculator for Erc20OnEosPegInInfos {
+impl FeesCalculator for Erc20OnEosEosTxInfos {
     fn get_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
-        debug!("Calculating fees in `Erc20OnEosPegInInfos`...");
+        debug!("Calculating fees in `Erc20OnEosEosTxInfos`...");
         self.iter()
             .map(|info| info.calculate_peg_in_fee_via_dictionary(dictionary))
             .collect()
@@ -94,10 +94,10 @@ impl FeesCalculator for Erc20OnEosPegInInfos {
     }
 }
 
-impl FeeCalculator for Erc20OnEosPegInInfo {
+impl FeeCalculator for Erc20OnEosEosTxInfo {
     fn get_amount(&self) -> U256 {
         info!(
-            "✔ Getting token amount in `Erc20OnEosPegInInfo` of {}",
+            "✔ Getting token amount in `Erc20OnEosEosTxInfo` of {}",
             self.token_amount
         );
         self.token_amount
@@ -105,7 +105,7 @@ impl FeeCalculator for Erc20OnEosPegInInfo {
 
     fn get_eth_token_address(&self) -> EthAddress {
         debug!(
-            "Getting EOS token address in `Erc20OnEosPegInInfo` of {}",
+            "Getting EOS token address in `Erc20OnEosEosTxInfo` of {}",
             self.eth_token_address
         );
         self.eth_token_address
@@ -113,7 +113,7 @@ impl FeeCalculator for Erc20OnEosPegInInfo {
 
     fn get_eos_token_address(&self) -> Result<EosAccountName> {
         debug!(
-            "Getting EOS token address in `Erc20OnEosPegInInfo` of {}",
+            "Getting EOS token address in `Erc20OnEosEosTxInfo` of {}",
             self.eos_token_address
         );
         Ok(EosAccountName::from_str(&self.eos_token_address)?)
@@ -121,11 +121,11 @@ impl FeeCalculator for Erc20OnEosPegInInfo {
 
     fn subtract_amount(&self, subtrahend: U256) -> Result<Self> {
         if subtrahend >= self.token_amount {
-            Err("Cannot subtract amount from `Erc20OnEosPegInInfo`: subtrahend too large!".into())
+            Err("Cannot subtract amount from `Erc20OnEosEosTxInfo`: subtrahend too large!".into())
         } else {
             let new_amount = self.token_amount - subtrahend;
             debug!(
-                "Subtracting {} from {} to get final amount of {} in `Erc20OnEosPegInInfo`!",
+                "Subtracting {} from {} to get final amount of {} in `Erc20OnEosEosTxInfo`!",
                 subtrahend, self.token_amount, new_amount
             );
             let mut new_self = self.clone();
@@ -135,7 +135,7 @@ impl FeeCalculator for Erc20OnEosPegInInfo {
     }
 }
 
-impl Erc20OnEosPegInInfo {
+impl Erc20OnEosEosTxInfo {
     pub fn is_zero_eos_amount(&self, dictionary: &EosEthTokenDictionary) -> Result<bool> {
         let entry = dictionary.get_entry_via_eos_address(&EosAccountName::from_str(&self.eos_token_address)?)?;
         let eos_amount = remove_symbol_from_eos_asset(&entry.convert_u256_to_eos_asset_string(&self.token_amount)?)
@@ -152,7 +152,7 @@ impl Erc20OnEosPegInInfo {
         timestamp: u32,
         dictionary: &EosEthTokenDictionary,
     ) -> Result<EosSignedTransaction> {
-        info!("✔ Signing EOS tx from `Erc20OnEosPegInInfo`: {:?}", self);
+        info!("✔ Signing EOS tx from `Erc20OnEosEosTxInfo`: {:?}", self);
         let dictionary_entry =
             dictionary.get_entry_via_eos_address(&EosAccountName::from_str(&self.eos_token_address)?)?;
         let eos_amount = dictionary_entry.convert_u256_to_eos_asset_string(&self.token_amount)?;
@@ -168,7 +168,7 @@ impl Erc20OnEosPegInInfo {
             if self.user_data.is_empty() {
                 None
             } else {
-                info!("✔ Wrapping `user_data` in metadata for `Erc20OnEosPegInInfo¬");
+                info!("✔ Wrapping `user_data` in metadata for `Erc20OnEosEosTxInfo¬");
                 Some(
                     self.to_metadata()?
                         .to_bytes_for_protocol(&chain_id.to_metadata_chain_id().to_protocol_id())?,
@@ -179,9 +179,9 @@ impl Erc20OnEosPegInInfo {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
-pub struct Erc20OnEosPegInInfos(pub Vec<Erc20OnEosPegInInfo>);
+pub struct Erc20OnEosEosTxInfos(pub Vec<Erc20OnEosEosTxInfo>);
 
-impl Erc20OnEosPegInInfos {
+impl Erc20OnEosEosTxInfos {
     pub fn to_eos_signed_txs(
         &self,
         ref_block_num: u16,
@@ -211,25 +211,25 @@ impl Erc20OnEosPegInInfos {
     pub fn filter_out_zero_eos_values(&self, dictionary: &EosEthTokenDictionary) -> Result<Self> {
         Ok(Self::new(
             self.iter()
-                .map(|peg_in_info| {
-                    let is_zero_eos_amount = peg_in_info.is_zero_eos_amount(dictionary)?;
-                    Ok((peg_in_info.clone(), is_zero_eos_amount))
+                .map(|eos_tx_info| {
+                    let is_zero_eos_amount = eos_tx_info.is_zero_eos_amount(dictionary)?;
+                    Ok((eos_tx_info.clone(), is_zero_eos_amount))
                 })
-                .collect::<Result<Vec<(Erc20OnEosPegInInfo, bool)>>>()?
+                .collect::<Result<Vec<(Erc20OnEosEosTxInfo, bool)>>>()?
                 .iter()
-                .filter_map(|(peg_in_info, is_zero_amount)| {
+                .filter_map(|(eos_tx_info, is_zero_amount)| {
                     if *is_zero_amount {
                         info!(
                             "✘ Filtering out peg in info due to zero EOS asset amount: {:?}",
-                            peg_in_info
+                            eos_tx_info
                         );
                         None
                     } else {
-                        Some(peg_in_info)
+                        Some(eos_tx_info)
                     }
                 })
                 .cloned()
-                .collect::<Vec<Erc20OnEosPegInInfo>>(),
+                .collect::<Vec<Erc20OnEosEosTxInfo>>(),
         ))
     }
 
@@ -275,7 +275,7 @@ impl Erc20OnEosPegInInfos {
                 .iter()
                 .map(|log| {
                     let params = Erc20VaultPegInEventParams::from_eth_log(log)?;
-                    let peg_in_info = Erc20OnEosPegInInfo {
+                    let eos_tx_info = Erc20OnEosEosTxInfo {
                         token_sender: params.token_sender,
                         originating_tx_hash: receipt.transaction_hash,
                         destination_address: safely_convert_str_to_eos_address(&params.destination_address).to_string(),
@@ -288,14 +288,14 @@ impl Erc20OnEosPegInInfos {
                         user_data: params.user_data,
                         origin_chain_id: origin_chain_id.clone(),
                     };
-                    info!("✔ Parsed peg in info: {:?}", peg_in_info);
-                    Ok(peg_in_info)
+                    info!("✔ Parsed peg in info: {:?}", eos_tx_info);
+                    Ok(eos_tx_info)
                 })
-                .collect::<Result<Vec<Erc20OnEosPegInInfo>>>()?,
+                .collect::<Result<Vec<Erc20OnEosEosTxInfo>>>()?,
         ))
     }
 
-    fn filter_eth_sub_mat_for_supported_peg_ins(
+    fn filter_eth_sub_mat_for_supported_eos_tx_infos(
         submission_material: &EthSubmissionMaterial,
         token_dictionary: &EosEthTokenDictionary,
     ) -> Result<EthSubmissionMaterial> {
@@ -309,7 +309,7 @@ impl Erc20OnEosPegInInfos {
                 .receipts
                 .iter()
                 .filter(|receipt| {
-                    Erc20OnEosPegInInfos::receipt_contains_supported_erc20_peg_in(receipt, token_dictionary)
+                    Erc20OnEosEosTxInfos::receipt_contains_supported_erc20_peg_in(receipt, token_dictionary)
                 })
                 .cloned()
                 .collect(),
@@ -328,22 +328,22 @@ impl Erc20OnEosPegInInfos {
         eos_eth_token_dictionary: &EosEthTokenDictionary,
         origin_chain_id: &EthChainId,
     ) -> Result<Self> {
-        info!("✔ Getting `Erc20OnEosPegInInfos` from submission material...");
+        info!("✔ Getting `Erc20OnEosEosTxInfos` from submission material...");
         Ok(Self::new(
             submission_material
                 .get_receipts()
                 .iter()
                 .map(|receipt| Self::from_eth_receipt(receipt, eos_eth_token_dictionary, origin_chain_id))
-                .collect::<Result<Vec<Erc20OnEosPegInInfos>>>()?
+                .collect::<Result<Vec<Erc20OnEosEosTxInfos>>>()?
                 .iter()
                 .map(|infos| infos.iter().cloned().collect())
-                .collect::<Vec<Vec<Erc20OnEosPegInInfo>>>()
+                .collect::<Vec<Vec<Erc20OnEosEosTxInfo>>>()
                 .concat(),
         ))
     }
 }
 
-pub fn maybe_parse_peg_in_info_from_canon_block_and_add_to_state<D: DatabaseInterface>(
+pub fn maybe_parse_eos_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Maybe parsing `erc20-on-eos` peg-in infos...");
@@ -362,27 +362,27 @@ pub fn maybe_parse_peg_in_info_from_canon_block_and_add_to_state<D: DatabaseInte
                 );
                 EosEthTokenDictionary::get_from_db(state.db)
                     .and_then(|account_names| {
-                        Erc20OnEosPegInInfos::from_submission_material(
+                        Erc20OnEosEosTxInfos::from_submission_material(
                             &submission_material,
                             &account_names,
                             &state.eth_db_utils.get_eth_chain_id_from_db()?,
                         )
                     })
-                    .and_then(|peg_in_infos| state.add_erc20_on_eos_peg_in_infos(peg_in_infos))
-                    .and_then(filter_out_zero_value_peg_ins_from_state)
+                    .and_then(|eos_tx_infos| state.add_erc20_on_eos_eos_tx_infos(eos_tx_infos))
+                    .and_then(filter_out_zero_value_eos_tx_infos_from_state)
             },
         })
 }
 
-pub fn filter_out_zero_value_peg_ins_from_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
+pub fn filter_out_zero_value_eos_tx_infos_from_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Maybe filtering `erc20-on-eos` peg-in infos...");
-    debug!("✔ Num peg-in infos before: {}", state.erc20_on_eos_peg_in_infos.len());
+    debug!("✔ Num peg-in infos before: {}", state.erc20_on_eos_eos_tx_infos.len());
     state
-        .erc20_on_eos_peg_in_infos
+        .erc20_on_eos_eos_tx_infos
         .filter_out_zero_eos_values(&EosEthTokenDictionary::get_from_db(state.db)?)
-        .and_then(|filtered_peg_ins| {
-            debug!("✔ Num peg-in infos after: {}", filtered_peg_ins.len());
-            state.replace_erc20_on_eos_peg_in_infos(filtered_peg_ins)
+        .and_then(|filtered_eos_tx_infos| {
+            debug!("✔ Num peg-in infos after: {}", filtered_eos_tx_infos.len());
+            state.replace_erc20_on_eos_eos_tx_infos(filtered_eos_tx_infos)
         })
 }
 
@@ -400,7 +400,7 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
             ],
         )
         .and_then(|filtered_submission_material| {
-            Erc20OnEosPegInInfos::filter_eth_sub_mat_for_supported_peg_ins(
+            Erc20OnEosEosTxInfos::filter_eth_sub_mat_for_supported_eos_tx_infos(
                 &filtered_submission_material,
                 state.get_eos_eth_token_dictionary()?,
             )
@@ -412,7 +412,7 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
     info!("✔ Maybe signing `erc20-on-eos` peg in txs...");
     let submission_material = state.get_eth_submission_material()?;
     state
-        .erc20_on_eos_peg_in_infos
+        .erc20_on_eos_eos_tx_infos
         .to_eos_signed_txs(
             submission_material.get_eos_ref_block_num()?,
             submission_material.get_eos_ref_block_prefix()?,
@@ -441,15 +441,15 @@ mod tests {
         dictionaries::eos_eth::{test_utils::get_sample_eos_eth_token_dictionary, EosEthTokenDictionaryEntry},
         erc20_on_eos::test_utils::{
             get_sample_eos_eth_dictionary,
-            get_sample_erc20_on_eos_peg_in_info,
-            get_sample_erc20_on_eos_peg_in_infos,
-            get_sample_erc20_on_eos_peg_in_infos_2,
+            get_sample_erc20_on_eos_eos_tx_info,
+            get_sample_erc20_on_eos_eos_tx_infos,
+            get_sample_erc20_on_eos_eos_tx_infos_2,
         },
     };
 
-    fn get_sample_zero_eos_asset_peg_in_info() -> Erc20OnEosPegInInfo {
+    fn get_sample_zero_eos_asset_eos_tx_info() -> Erc20OnEosEosTxInfo {
         let user_data = vec![0xde, 0xca, 0xff];
-        Erc20OnEosPegInInfo::new(
+        Erc20OnEosEosTxInfo::new(
             U256::from_dec_str("1337").unwrap(),
             EthAddress::from_slice(&hex::decode("edB86cd455ef3ca43f0e227e00469C3bDFA40628").unwrap()),
             EthAddress::from_slice(&hex::decode("d879D3C8782aB95a43C69Fa73d8DCC50C8815d5e").unwrap()),
@@ -465,11 +465,11 @@ mod tests {
     }
 
     #[test]
-    fn should_filter_out_zero_eos_asset_peg_ins() {
-        let expected_num_peg_ins_before = 1;
-        let expected_num_peg_ins_after = 0;
-        let peg_ins = Erc20OnEosPegInInfos::new(vec![get_sample_zero_eos_asset_peg_in_info()]);
-        assert_eq!(peg_ins.len(), expected_num_peg_ins_before);
+    fn should_filter_out_zero_eos_asset_eos_tx_infos() {
+        let expected_num_eos_tx_infos_before = 1;
+        let expected_num_eos_tx_infos_after = 0;
+        let eos_tx_infos = Erc20OnEosEosTxInfos::new(vec![get_sample_zero_eos_asset_eos_tx_info()]);
+        assert_eq!(eos_tx_infos.len(), expected_num_eos_tx_infos_before);
         let dictionary = EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::from_str(
             &json!({
                 "eth_token_decimals": 18,
@@ -482,8 +482,8 @@ mod tests {
             .to_string(),
         )
         .unwrap()]);
-        let result = peg_ins.filter_out_zero_eos_values(&dictionary).unwrap();
-        assert_eq!(result.len(), expected_num_peg_ins_after);
+        let result = eos_tx_infos.filter_out_zero_eos_values(&dictionary).unwrap();
+        assert_eq!(result.len(), expected_num_eos_tx_infos_after);
     }
 
     #[test]
@@ -511,7 +511,7 @@ mod tests {
             "".to_string(),
         )]);
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::is_log_supported_erc20_peg_in(&log, &token_dictionary).unwrap();
+        let result = Erc20OnEosEosTxInfos::is_log_supported_erc20_peg_in(&log, &token_dictionary).unwrap();
         assert!(result);
     }
 
@@ -540,7 +540,7 @@ mod tests {
             "".to_string(),
         )]);
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::is_log_supported_erc20_peg_in(&log, &token_dictionary).unwrap();
+        let result = Erc20OnEosEosTxInfos::is_log_supported_erc20_peg_in(&log, &token_dictionary).unwrap();
         assert!(!result);
     }
 
@@ -571,14 +571,14 @@ mod tests {
             "".to_string(),
         )]);
         let log = get_sample_log_with_erc20_peg_in_event_2().unwrap();
-        let result = Erc20OnEosPegInInfos::is_log_supported_erc20_peg_in(&log, &token_dictionary).unwrap();
+        let result = Erc20OnEosEosTxInfos::is_log_supported_erc20_peg_in(&log, &token_dictionary).unwrap();
         assert!(result);
     }
 
     #[test]
     fn erc20_log_with_peg_in_should_be_erc20_log_with_peg_in() {
         let log = get_sample_log_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::is_log_erc20_peg_in(&log).unwrap();
+        let result = Erc20OnEosEosTxInfos::is_log_erc20_peg_in(&log).unwrap();
         assert!(result);
     }
 
@@ -586,7 +586,7 @@ mod tests {
     fn should_return_true_if_receipt_contains_log_with_erc20_peg_in() {
         let dictionary = get_sample_eos_eth_token_dictionary();
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::receipt_contains_supported_erc20_peg_in(&receipt, &dictionary);
+        let result = Erc20OnEosEosTxInfos::receipt_contains_supported_erc20_peg_in(&receipt, &dictionary);
         assert!(result);
     }
 
@@ -594,7 +594,7 @@ mod tests {
     fn should_return_false_if_receipt_does_not_contain_log_with_erc20_peg_in() {
         let dictionary = EosEthTokenDictionary::new(vec![]);
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::receipt_contains_supported_erc20_peg_in(&receipt, &dictionary);
+        let result = Erc20OnEosEosTxInfos::receipt_contains_supported_erc20_peg_in(&receipt, &dictionary);
         assert!(!result);
     }
 
@@ -608,7 +608,7 @@ mod tests {
         let expected_num_logs = 1;
         let dictionary = get_sample_eos_eth_token_dictionary();
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::get_supported_erc20_peg_in_logs_from_receipt(&receipt, &dictionary);
+        let result = Erc20OnEosEosTxInfos::get_supported_erc20_peg_in_logs_from_receipt(&receipt, &dictionary);
         assert_eq!(result.len(), expected_num_logs);
         assert_eq!(result, expected_result);
     }
@@ -638,10 +638,10 @@ mod tests {
             "".to_string(),
         )]);
         let expected_num_results = 1;
-        let expected_result = get_sample_erc20_on_eos_peg_in_info().unwrap();
+        let expected_result = get_sample_erc20_on_eos_eos_tx_info().unwrap();
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
         let origin_chain_id = EthChainId::Mainnet;
-        let result = Erc20OnEosPegInInfos::from_eth_receipt(&receipt, &token_dictionary, &origin_chain_id).unwrap();
+        let result = Erc20OnEosEosTxInfos::from_eth_receipt(&receipt, &token_dictionary, &origin_chain_id).unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result.0[0], expected_result);
     }
@@ -652,27 +652,29 @@ mod tests {
         let expected_num_results = 0;
         let origin_chain_id = EthChainId::Mainnet;
         let receipt = get_sample_receipt_with_erc20_peg_in_event().unwrap();
-        let result = Erc20OnEosPegInInfos::from_eth_receipt(&receipt, &token_dictionary, &origin_chain_id).unwrap();
+        let result = Erc20OnEosEosTxInfos::from_eth_receipt(&receipt, &token_dictionary, &origin_chain_id).unwrap();
         assert_eq!(result.len(), expected_num_results);
     }
 
     #[test]
-    fn should_filter_submission_material_for_receipts_containing_supported_erc20_peg_ins() {
+    fn should_filter_submission_material_for_receipts_containing_supported_erc20_eos_tx_infos() {
         let expected_num_receipts_after = 1;
         let expected_num_receipts_before = 69;
         let token_dictionary = get_sample_eos_eth_token_dictionary();
         let submission_material = get_sample_submission_material_with_erc20_peg_in_event().unwrap();
         let num_receipts_before = submission_material.receipts.len();
         assert_eq!(num_receipts_before, expected_num_receipts_before);
-        let filtered_submission_material =
-            Erc20OnEosPegInInfos::filter_eth_sub_mat_for_supported_peg_ins(&submission_material, &token_dictionary)
-                .unwrap();
+        let filtered_submission_material = Erc20OnEosEosTxInfos::filter_eth_sub_mat_for_supported_eos_tx_infos(
+            &submission_material,
+            &token_dictionary,
+        )
+        .unwrap();
         let num_receipts_after = filtered_submission_material.receipts.len();
         assert_eq!(num_receipts_after, expected_num_receipts_after);
     }
 
     #[test]
-    fn should_get_erc20_on_eos_peg_in_infos() {
+    fn should_get_erc20_on_eos_eos_tx_infos() {
         let eth_token_decimals = 18;
         let eos_token_decimals = 9;
         let eth_symbol = "SAM".to_string();
@@ -698,33 +700,33 @@ mod tests {
         let expected_num_results = 1;
         let submission_material = get_sample_submission_material_with_erc20_peg_in_event().unwrap();
         let origin_chain_id = EthChainId::Mainnet;
-        let expected_result = get_sample_erc20_on_eos_peg_in_infos().unwrap();
+        let expected_result = get_sample_erc20_on_eos_eos_tx_infos().unwrap();
         let result =
-            Erc20OnEosPegInInfos::from_submission_material(&submission_material, &token_dictionary, &origin_chain_id)
+            Erc20OnEosEosTxInfos::from_submission_material(&submission_material, &token_dictionary, &origin_chain_id)
                 .unwrap();
         assert_eq!(result.len(), expected_num_results);
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_convert_erc20_on_eos_peg_in_info_to_metadata() {
-        let info = get_sample_erc20_on_eos_peg_in_info().unwrap();
+    fn should_convert_erc20_on_eos_eos_tx_info_to_metadata() {
+        let info = get_sample_erc20_on_eos_eos_tx_info().unwrap();
         let result = info.to_metadata();
         assert!(result.is_ok());
     }
 
     #[test]
-    fn should_convert_erc20_on_eos_peg_in_info_to_metadata_bytes() {
-        let info = get_sample_zero_eos_asset_peg_in_info();
+    fn should_convert_erc20_on_eos_eos_tx_info_to_metadata_bytes() {
+        let info = get_sample_zero_eos_asset_eos_tx_info();
         let result = info.to_metadata_bytes().unwrap();
         let expected_result = "0103decaff04005fe7f92a307865646238366364343535656633636134336630653232376530303436396333626466613430363238";
         assert_eq!(hex::encode(result), expected_result);
     }
 
     #[test]
-    fn should_get_eos_signed_txs_from_peg_in_infos() {
+    fn should_get_eos_signed_txs_from_eos_tx_infos() {
         let user_data = vec![];
-        let info = Erc20OnEosPegInInfo::new(
+        let info = Erc20OnEosEosTxInfo::new(
             U256::from_dec_str("1337").unwrap(),
             EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
             EthAddress::from_slice(&hex::decode("9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap()),
@@ -737,7 +739,7 @@ mod tests {
             user_data,
             EthChainId::Mainnet,
         );
-        let infos = Erc20OnEosPegInInfos::new(vec![info]);
+        let infos = Erc20OnEosEosTxInfos::new(vec![info]);
         let pk = get_sample_eos_private_key();
         let ref_block_num = 1;
         let ref_block_prefix = 2;
@@ -752,8 +754,8 @@ mod tests {
     }
 
     #[test]
-    fn should_subtract_amount_from_eos_on_eth_peg_in_info() {
-        let info = get_sample_erc20_on_eos_peg_in_info().unwrap();
+    fn should_subtract_amount_from_eos_on_eth_eos_tx_info() {
+        let info = get_sample_erc20_on_eos_eos_tx_info().unwrap();
         let subtrahend = U256::from(337);
         let info_after = info.subtract_amount(subtrahend).unwrap();
         let result = info_after.get_amount();
@@ -762,21 +764,21 @@ mod tests {
     }
 
     #[test]
-    fn should_get_fees_from_eos_on_eth_peg_in_infos() {
+    fn should_get_fees_from_eos_on_eth_eos_tx_infos() {
         let eth_address = EthAddress::from_slice(&hex::decode("9e57CB2a4F462a5258a49E88B4331068a391DE66").unwrap());
         let expected_result = vec![
             (eth_address, U256::from_dec_str("3342500000").unwrap()),
             (eth_address, U256::from_dec_str("1665000000").unwrap()),
         ];
-        let infos = get_sample_erc20_on_eos_peg_in_infos_2();
+        let infos = get_sample_erc20_on_eos_eos_tx_infos_2();
         let dictionary = get_sample_eos_eth_token_dictionary();
         let result = infos.get_fees(&dictionary).unwrap();
         assert_eq!(result, expected_result);
     }
 
     #[test]
-    fn should_subtract_fees_from_eos_on_eth_peg_in_infos() {
-        let infos = get_sample_erc20_on_eos_peg_in_infos_2();
+    fn should_subtract_fees_from_eos_on_eth_eos_tx_infos() {
+        let infos = get_sample_erc20_on_eos_eos_tx_infos_2();
         let dictionary = get_sample_eos_eth_token_dictionary();
         let result = infos.subtract_fees(&dictionary).unwrap();
         let expected_amount_1 = U256::from_dec_str("1333657500000").unwrap();
