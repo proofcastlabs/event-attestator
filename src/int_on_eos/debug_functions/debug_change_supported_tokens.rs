@@ -1,3 +1,4 @@
+use function_name::named;
 use serde_json::json;
 
 use crate::{
@@ -13,9 +14,8 @@ use crate::{
             eth_utils::get_eth_address_from_str,
         },
     },
-    core_type::CoreType,
     debug_mode::{check_debug_mode, validate_debug_command_signature},
-    int_on_eos::check_core_is_initialized::check_core_is_initialized,
+    int_on_eos::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -33,11 +33,11 @@ use crate::{
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
 /// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
 /// and only if you know exactly what you are doing and why!
+#[named]
 pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(
     db: &D,
     eth_address_str: &str,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug getting `addSupportedToken` contract tx...");
     db.start_transaction()?;
@@ -46,7 +46,8 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(
     let eth_address = get_eth_address_from_str(eth_address_str)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(db)))
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::IntOnEos, signature, debug_command_hash))
+        .and_then(|_| get_debug_command_hash!(function_name!(), eth_address_str)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_add_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {
@@ -82,11 +83,11 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(
 /// This function will increment the core's ETH nonce, and so if the transaction is not broadcast
 /// successfully, the core's ETH side will no longer function correctly. Use with extreme caution
 /// and only if you know exactly what you are doing and why!
+#[named]
 pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(
     db: &D,
     eth_address_str: &str,
     signature: &str,
-    debug_command_hash: &str,
 ) -> Result<String> {
     info!("✔ Debug getting `removeSupportedToken` contract tx...");
     db.start_transaction()?;
@@ -95,7 +96,8 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(
     let eth_address = get_eth_address_from_str(eth_address_str)?;
     check_debug_mode()
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(db)))
-        .and_then(|_| validate_debug_command_signature(db, &CoreType::IntOnEos, signature, debug_command_hash))
+        .and_then(|_| get_debug_command_hash!(function_name!(), eth_address_str)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_remove_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {

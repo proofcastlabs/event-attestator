@@ -13,7 +13,8 @@
 //! ```
 
 pub(crate) mod check_core_is_initialized;
-pub(crate) mod debug_functions;
+mod constants;
+mod debug_functions;
 pub(crate) mod eos;
 pub(crate) mod get_all_db_keys;
 pub(crate) mod get_enclave_state;
