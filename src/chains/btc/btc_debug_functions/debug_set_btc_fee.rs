@@ -36,8 +36,7 @@ pub fn debug_set_btc_fee<D: DatabaseInterface>(
 mod tests {
     use super::*;
     use crate::{
-        chains::btc::utxo_manager::utxo_database_utils::get_utxo_nonce_from_db,
-        test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_HASH, DUMMY_SIGNATURE},
+        test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE},
     };
 
     #[test]
@@ -48,12 +47,11 @@ mod tests {
         db_utils.put_btc_fee_in_db(fee).unwrap();
         assert_eq!(db_utils.get_btc_fee_from_db().unwrap(), fee);
         let new_fee = 4;
-        debug_put_btc_fee_in_db(
+        debug_set_btc_fee(
             &db,
             new_fee,
             &CoreType::BtcOnInt,
-            &DUMMY_SIGNATURE,
-            &DUMMY_DEBUG_COMMAND_HASH,
+            &DUMMY_DEBUG_COMMAND_SIGNATURE,
         )
         .unwrap();
         assert_eq!(db_utils.get_btc_fee_from_db().unwrap(), new_fee);

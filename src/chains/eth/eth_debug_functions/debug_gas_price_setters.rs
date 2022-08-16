@@ -74,7 +74,6 @@ pub fn debug_set_evm_gas_price<D: DatabaseInterface>(
 mod tests {
     use super::*;
     use crate::{
-        errors::AppError,
         test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE},
     };
 

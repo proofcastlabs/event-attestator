@@ -36,7 +36,7 @@ mod tests {
     use super::*;
     use crate::{
         chains::btc::utxo_manager::utxo_database_utils::get_utxo_nonce_from_db,
-        test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_HASH, DUMMY_SIGNATURE},
+        test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE},
     };
 
     #[test]
@@ -50,8 +50,7 @@ mod tests {
             &db,
             new_nonce,
             &CoreType::BtcOnInt,
-            &DUMMY_SIGNATURE,
-            &DUMMY_DEBUG_COMMAND_HASH,
+            &DUMMY_DEBUG_COMMAND_SIGNATURE,
         )
         .unwrap();
         assert_eq!(get_utxo_nonce_from_db(&db).unwrap(), new_nonce);
