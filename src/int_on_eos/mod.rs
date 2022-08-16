@@ -56,8 +56,9 @@ pub use crate::{
         debug_functions::{
             debug_get_add_supported_token_tx,
             debug_get_remove_supported_token_tx,
-            eos_block_reprocessor::{debug_reprocess_eos_block, debug_reprocess_eos_block_with_nonce},
-            int_block_reprocessor::debug_reprocess_int_block,
+            debug_reprocess_eos_block,
+            debug_reprocess_eos_block_with_nonce,
+            debug_reprocess_int_block,
         },
         eos::submit_eos_block::submit_eos_block_to_core,
         get_all_db_keys::get_all_db_keys,
