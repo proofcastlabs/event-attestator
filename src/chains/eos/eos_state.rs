@@ -21,7 +21,7 @@ use crate::{
     eos_on_eth::EosOnEthEosTxInfos,
     eos_on_int::EosOnIntIntTxInfos,
     erc20_on_eos::Erc20OnEosEthTxInfos,
-    int_on_eos::eos::int_tx_info::IntOnEosIntTxInfos,
+    int_on_eos::IntOnEosIntTxInfos,
     traits::DatabaseInterface,
     types::Result,
     utils::get_not_in_state_err,

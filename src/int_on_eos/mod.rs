@@ -12,16 +12,18 @@
 //! ptokens_core = { version = "3.1.0", features = ["debug"] }
 //! ```
 
-pub(crate) mod check_core_is_initialized;
+mod check_core_is_initialized;
 mod constants;
 mod debug_functions;
-pub(crate) mod eos;
-pub(crate) mod get_all_db_keys;
-pub(crate) mod get_enclave_state;
-pub(crate) mod get_latest_block_numbers;
-pub(crate) mod int;
-pub(crate) mod test_utils;
+mod eos;
+mod get_all_db_keys;
+mod get_enclave_state;
+mod get_latest_block_numbers;
+mod int;
+mod test_utils;
 
+// FIXME Used in `State`.
+pub(crate) use self::{eos::IntOnEosIntTxInfos, int::IntOnEosEosTxInfos};
 pub use crate::{
     chains::{
         eos::{
@@ -61,10 +63,10 @@ pub use crate::{
             debug_reprocess_eos_block_with_nonce,
             debug_reprocess_int_block,
         },
-        eos::submit_eos_block::submit_eos_block_to_core,
+        eos::submit_eos_block_to_core,
         get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
-        int::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core},
+        int::{maybe_initialize_int_core, submit_int_block_to_core},
     },
 };
