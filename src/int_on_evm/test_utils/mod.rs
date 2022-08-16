@@ -11,7 +11,7 @@ use crate::{
         eth_utils::convert_hex_to_eth_address,
     },
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
-    int_on_evm::int::evm_tx_info::{IntOnEvmEvmTxInfo, IntOnEvmEvmTxInfos},
+    int_on_evm::{IntOnEvmEvmTxInfo, IntOnEvmEvmTxInfos},
     types::Result,
 };
 

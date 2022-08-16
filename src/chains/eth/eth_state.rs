@@ -25,7 +25,7 @@ use crate::{
     erc20_on_int::{Erc20OnIntEthTxInfos, Erc20OnIntIntTxInfos},
     int_on_algo::IntOnAlgoAlgoTxInfos,
     int_on_eos::IntOnEosEosTxInfos,
-    int_on_evm::{evm::int_tx_info::IntOnEvmIntTxInfos, int::evm_tx_info::IntOnEvmEvmTxInfos},
+    int_on_evm::{IntOnEvmEvmTxInfos, IntOnEvmIntTxInfos},
     traits::DatabaseInterface,
     types::Result,
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
