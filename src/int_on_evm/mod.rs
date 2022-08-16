@@ -13,6 +13,7 @@
 //! ```
 
 pub(crate) mod check_core_is_initialized;
+mod constants;
 pub(crate) mod debug_functions;
 pub(crate) mod evm;
 pub(crate) mod fees_calculator;
