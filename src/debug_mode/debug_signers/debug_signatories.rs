@@ -74,7 +74,7 @@ impl DebugSignatories {
         });
 
         let error_key = "error".to_string();
-        let error_value = if maybe_signature != None && maybe_signature != Some(&EthSignature::empty()) {
+        let error_value = if maybe_signature.is_some() && maybe_signature != Some(&EthSignature::empty()) {
             JsonValue::String("Could not validate signature!".to_string())
         } else {
             JsonValue::String("A signature is required to run this function!".to_string())
