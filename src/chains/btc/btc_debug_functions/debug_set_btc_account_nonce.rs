@@ -34,9 +34,7 @@ pub fn debug_set_btc_account_nonce<D: DatabaseInterface>(
 #[cfg(all(test, feature = "debug"))]
 mod tests {
     use super::*;
-    use crate::{
-        test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE},
-    };
+    use crate::test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE};
 
     #[test]
     fn should_set_btc_account_nonce() {
@@ -46,13 +44,7 @@ mod tests {
         db_utils.put_btc_account_nonce_in_db(nonce).unwrap();
         assert_eq!(db_utils.get_btc_account_nonce_from_db().unwrap(), nonce);
         let new_nonce = 4;
-        debug_set_btc_account_nonce(
-            &db,
-            new_nonce,
-            &CoreType::BtcOnInt,
-            &DUMMY_DEBUG_COMMAND_SIGNATURE,
-        )
-        .unwrap();
+        debug_set_btc_account_nonce(&db, new_nonce, &CoreType::BtcOnInt, &DUMMY_DEBUG_COMMAND_SIGNATURE).unwrap();
         assert_eq!(db_utils.get_btc_account_nonce_from_db().unwrap(), new_nonce);
     }
 }

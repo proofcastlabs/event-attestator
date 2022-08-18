@@ -35,9 +35,7 @@ pub fn debug_set_btc_fee<D: DatabaseInterface>(
 #[cfg(all(test, feature = "debug"))]
 mod tests {
     use super::*;
-    use crate::{
-        test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE},
-    };
+    use crate::test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE};
 
     #[test]
     fn should_put_btc_fee_in_db() {
@@ -47,13 +45,7 @@ mod tests {
         db_utils.put_btc_fee_in_db(fee).unwrap();
         assert_eq!(db_utils.get_btc_fee_from_db().unwrap(), fee);
         let new_fee = 4;
-        debug_set_btc_fee(
-            &db,
-            new_fee,
-            &CoreType::BtcOnInt,
-            &DUMMY_DEBUG_COMMAND_SIGNATURE,
-        )
-        .unwrap();
+        debug_set_btc_fee(&db, new_fee, &CoreType::BtcOnInt, &DUMMY_DEBUG_COMMAND_SIGNATURE).unwrap();
         assert_eq!(db_utils.get_btc_fee_from_db().unwrap(), new_fee);
     }
 }

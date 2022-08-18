@@ -73,9 +73,7 @@ pub fn debug_set_evm_gas_price<D: DatabaseInterface>(
 #[cfg(all(test, feature = "debug"))]
 mod tests {
     use super::*;
-    use crate::{
-        test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE},
-    };
+    use crate::test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE};
 
     #[test]
     fn should_set_eth_gas_price_in_db() {
