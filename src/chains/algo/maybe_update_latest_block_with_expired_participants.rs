@@ -50,7 +50,6 @@ fn update_latest_block_with_expired_participants<D: DatabaseInterface>(
     let tail_block_hash = algo_db_utils.get_tail_block_hash()?;
     let canon_block_hash = algo_db_utils.get_canon_block_hash()?;
     let anchor_block_hash = algo_db_utils.get_anchor_block_hash()?;
-    let linker_block_hash = algo_db_utils.get_linker_block_hash()?;
     let genesis_block_hash = algo_db_utils.get_genesis_block_hash()?;
     if tail_block_hash == old_latest_block_hash {
         algo_db_utils.put_tail_block_hash_in_db(&new_latest_block_hash)?;
@@ -60,9 +59,6 @@ fn update_latest_block_with_expired_participants<D: DatabaseInterface>(
     }
     if anchor_block_hash == old_latest_block_hash {
         algo_db_utils.put_anchor_block_hash_in_db(&new_latest_block_hash)?;
-    }
-    if linker_block_hash == old_latest_block_hash {
-        algo_db_utils.put_linker_block_hash_in_db(&new_latest_block_hash)?;
     }
     if genesis_block_hash == old_latest_block_hash {
         algo_db_utils.put_genesis_block_hash_in_db(&new_latest_block_hash)?;
