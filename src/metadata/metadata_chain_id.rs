@@ -46,6 +46,7 @@ pub enum MetadataChainId {
     PhoenixTestnet,   // 0x02a75f2c
     PhoenixMainnet,   // 0x026776fa
     EthereumGoerli,   // 0x00b4f6c5
+    EthereumSepolia,  // 0x0030d6b5
 }
 
 impl Default for MetadataChainId {
@@ -75,6 +76,7 @@ impl MetadataChainId {
             | Self::FantomMainnet
             | Self::EthereumGoerli
             | Self::EthereumMainnet
+            | Self::EthereumSepolia
             | Self::EthereumRinkeby
             | Self::EthereumRopsten
             | Self::ArbitrumMainnet
@@ -96,6 +98,7 @@ impl MetadataChainId {
             Self::BitcoinTestnet => Box::new(BtcChainId::Testnet),
             Self::EthereumMainnet => Box::new(EthChainId::Mainnet),
             Self::EthereumRinkeby => Box::new(EthChainId::Rinkeby),
+            Self::EthereumSepolia => Box::new(EthChainId::Sepolia),
             Self::EthereumRopsten => Box::new(EthChainId::Ropsten),
             Self::XDaiMainnet => Box::new(EthChainId::XDaiMainnet),
             Self::AlgorandMainnet => Box::new(AlgoChainId::Mainnet),
@@ -205,6 +208,7 @@ impl fmt::Display for MetadataChainId {
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", hex),
             Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: {}", hex),
             Self::AlgorandMainnet => write!(f, "AlgorandMainnet: {}", hex),
+            Self::EthereumSepolia => write!(f, "Sepolia Testnet: {}", hex),
             Self::ArbitrumMainnet => write!(f, "Arbitrum Mainnet: {}", hex),
             Self::EthereumMainnet => write!(f, "Ethereum Mainnet: {}", hex),
             Self::EthereumRinkeby => write!(f, "Ethereum Rinkeby: {}", hex),
@@ -258,7 +262,7 @@ mod tests {
             "02174f20", "02b5a4d6", "00000000", "01000000",
             "02000000", "ffffffff", "00ce98c4", "00d5beb0",
             "0022af98", "03c38e67", "02a75f2c", "026776fa",
-            "00b4f6c5"
+            "00b4f6c5", "0030d6b5",
         ]
         .iter()
         .map(|ref hex| hex::decode(hex).unwrap())
