@@ -58,6 +58,10 @@ pub fn get_sample_peg_in_1_submission_string() -> String {
     read_to_string("src/erc20_on_int/test_utils/eth-peg-in-block-1.json").unwrap()
 }
 
+pub fn get_sample_goerli_peg_in_submission_string() -> String {
+    read_to_string("src/erc20_on_int/test_utils/goerli-peg-in-block.json").unwrap()
+}
+
 pub fn get_sample_token_dictionary() -> EthEvmTokenDictionary {
     EthEvmTokenDictionary::new(vec![get_sample_token_dictionary_entry()])
 }
@@ -73,6 +77,23 @@ pub fn get_sample_token_dictionary_entry() -> EthEvmTokenDictionaryEntry {
             "evm_symbol":"tiPNT",
             "evm_address":"0xa83446f219baec0b6fd6b3031c5a49a54543045b",
             "eth_address":"0xc63ab9437f5589e2c67e04c00a98506b43127645",
+            "eth_fee_basis_points":10,
+            "evm_fee_basis_points":25,
+            "eth_token_decimals":18,
+            "evm_token_decimals":18
+        })
+        .to_string(),
+    )
+    .unwrap()
+}
+
+pub fn get_sample_goerli_token_dictionary_entry() -> EthEvmTokenDictionaryEntry {
+    EthEvmTokenDictionaryEntry::from_str(
+        &json!({
+            "eth_symbol":"PNT",
+            "evm_symbol":"tiPNT",
+            "evm_address":"0xa83446f219baec0b6fd6b3031c5a49a54543045b",
+            "eth_address":"0x5eb802aBE474290aacC1EF2786431E1FF6C03191",
             "eth_fee_basis_points":10,
             "evm_fee_basis_points":25,
             "eth_token_decimals":18,
@@ -129,6 +150,10 @@ pub fn get_sample_evm_private_key() -> EthPrivateKey {
 
 pub fn get_sample_eth_init_block_json_string() -> String {
     read_to_string("src/erc20_on_int/test_utils/eth-core-init-block.json").unwrap()
+}
+
+pub fn get_sample_goerli_peg_in_init_block_json_string() -> String {
+    read_to_string("src/erc20_on_int/test_utils/goerli-core-peg-in-init-block.json").unwrap()
 }
 
 pub fn get_sample_int_init_block_json_string() -> String {
