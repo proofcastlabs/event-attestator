@@ -45,6 +45,7 @@ pub enum MetadataChainId {
     AlgorandMainnet,  // 0x03c38e67
     PhoenixTestnet,   // 0x02a75f2c
     PhoenixMainnet,   // 0x026776fa
+    EthereumGoerli,   // 0x00b4f6c5
 }
 
 impl Default for MetadataChainId {
@@ -72,6 +73,7 @@ impl MetadataChainId {
             | Self::XDaiMainnet
             | Self::InterimChain
             | Self::FantomMainnet
+            | Self::EthereumGoerli
             | Self::EthereumMainnet
             | Self::EthereumRinkeby
             | Self::EthereumRopsten
@@ -83,11 +85,12 @@ impl MetadataChainId {
 
     fn to_chain_id(self) -> Box<dyn ChainId> {
         match self {
-            Self::EosMainnet => Box::new(EosChainId::EosMainnet),
-            Self::FioMainnet => Box::new(EosChainId::FioMainnet),
             Self::BtcUnknown => Box::new(BtcChainId::unknown()),
             Self::EosUnknown => Box::new(EosChainId::unknown()),
             Self::EthUnknown => Box::new(EthChainId::unknown()),
+            Self::EthereumGoerli => Box::new(EthChainId::Goerli),
+            Self::EosMainnet => Box::new(EosChainId::EosMainnet),
+            Self::FioMainnet => Box::new(EosChainId::FioMainnet),
             Self::BscMainnet => Box::new(EthChainId::BscMainnet),
             Self::BitcoinMainnet => Box::new(BtcChainId::Bitcoin),
             Self::BitcoinTestnet => Box::new(BtcChainId::Testnet),
@@ -195,6 +198,7 @@ impl fmt::Display for MetadataChainId {
             Self::UltraMainnet => write!(f, "Ultra Mainnet: {}", hex),
             Self::InterimChain => write!(f, "Interim Chain: {}", hex),
             Self::FantomMainnet => write!(f, "Fantom Mainnet: {}", hex),
+            Self::EthereumGoerli => write!(f, "Goerli Testnet: {}", hex),
             Self::PhoenixTestnet => write!(f, "Phoenix Testnet: {}", hex),
             Self::PhoenixMainnet => write!(f, "Phoenix Mainnet: {}", hex),
             Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: {}", hex),
@@ -253,7 +257,8 @@ mod tests {
             "0282317f", "00f1918e", "0075dd4c", "025d3c68",
             "02174f20", "02b5a4d6", "00000000", "01000000",
             "02000000", "ffffffff", "00ce98c4", "00d5beb0",
-            "0022af98", "03c38e67", "02a75f2c", "026776fa"
+            "0022af98", "03c38e67", "02a75f2c", "026776fa",
+            "00b4f6c5"
         ]
         .iter()
         .map(|ref hex| hex::decode(hex).unwrap())
