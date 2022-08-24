@@ -11,7 +11,7 @@ use crate::{
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         increment_int_account_nonce::maybe_increment_int_account_nonce_and_return_eth_state,
-        validate_block_in_state::validate_block_in_state,
+        validate_block_in_state::validate_eth_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
     core_type::CoreType,
@@ -54,7 +54,7 @@ fn reprocess_eth_block<D: DatabaseInterface>(
         .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(db)))
         .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
-        .and_then(validate_block_in_state)
+        .and_then(validate_eth_block_in_state)
         .and_then(validate_receipts_in_state)
         .and_then(get_eth_evm_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(filter_submission_material_for_peg_in_events_in_state)

@@ -11,7 +11,12 @@ fn validate_block_in_state<D: DatabaseInterface>(state: EthState<D>, is_for_eth:
         info!("✔ Skipping {} block header validaton!", symbol);
         Ok(state)
     } else {
-        let chain_id = state.eth_db_utils.get_eth_chain_id_from_db()?;
+        let chain_id = if is_for_eth {
+            state.eth_db_utils.get_eth_chain_id_from_db()?
+        } else {
+            state.evm_db_utils.get_eth_chain_id_from_db()?
+        };
+        info!("✔ Validating block in {} state using chain ID: {}", symbol, chain_id);
         if chain_id == EthChainId::Rinkeby {
             // NOTE: We cannot validate Rinkeby blocks. However it's been deprecated now so
             // this no longer matters.
@@ -22,7 +27,7 @@ fn validate_block_in_state<D: DatabaseInterface>(state: EthState<D>, is_for_eth:
             state
                 .get_eth_submission_material()?
                 .get_block()?
-                .is_valid(&state.eth_db_utils.get_eth_chain_id_from_db()?)
+                .is_valid(&chain_id)
                 .and_then(|is_valid| {
                     if is_valid {
                         Ok(state)
@@ -32,4 +37,14 @@ fn validate_block_in_state<D: DatabaseInterface>(state: EthState<D>, is_for_eth:
                 })
         }
     }
+}
+
+pub fn validate_evm_block_in_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
+    info!("✔ Validating EVM block in state...");
+    validate_block_in_state(state, false)
+}
+
+pub fn validate_eth_block_in_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
+    info!("✔ Validating ETH block in state...");
+    validate_block_in_state(state, true)
 }

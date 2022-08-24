@@ -15,7 +15,7 @@ use crate::{
         update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
         update_eth_tail_block_hash::maybe_update_eth_tail_block_hash_and_return_state,
         update_latest_block_hash::maybe_update_latest_eth_block_hash_and_return_state,
-        validate_block_in_state::validate_block_in_state,
+        validate_block_in_state::validate_eth_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
     core_type::CoreType,
@@ -45,7 +45,7 @@ pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
     parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
         .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
-        .and_then(validate_block_in_state)
+        .and_then(validate_eth_block_in_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(check_for_parent_of_eth_block_in_state)
         .and_then(validate_receipts_in_state)
