@@ -20,7 +20,7 @@ impl Eip1559 {
             EthChainId::Mainnet | EthChainId::Ropsten => {
                 Ok(block_number >= self.get_activation_block_number(eth_chain_id)?)
             },
-            EthChainId::Goerli => Ok(true),
+            EthChainId::Goerli | EthChainId::Sepolia => Ok(true),
             _ => Ok(false),
         }
     }
