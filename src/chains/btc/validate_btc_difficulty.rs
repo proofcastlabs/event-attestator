@@ -2,7 +2,7 @@ use bitcoin::{blockdata::block::BlockHeader as BtcBlockHeader, network::constant
 
 use crate::{
     chains::btc::btc_state::BtcState,
-    constants::{CORE_IS_VALIDATING, DEBUG_MODE, NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR},
+    constants::CORE_IS_VALIDATING,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -48,10 +48,7 @@ pub fn validate_difficulty_of_btc_block_in_state<D: DatabaseInterface>(state: Bt
         .and(Ok(state))
     } else {
         info!("✔ Skipping BTC block difficulty validation!");
-        match DEBUG_MODE {
-            true => Ok(state),
-            false => Err(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.into()),
-        }
+        Ok(state)
     }
 }
 

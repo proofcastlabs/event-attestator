@@ -13,7 +13,7 @@ use crate::{
         eos_state::EosState,
         protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
     },
-    constants::{CORE_IS_VALIDATING, DEBUG_MODE, NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR},
+    constants::CORE_IS_VALIDATING,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
@@ -160,10 +160,7 @@ pub fn check_block_signature_is_valid(
 pub fn validate_block_header_signature<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     if !CORE_IS_VALIDATING {
         info!("✔ Skipping EOS block header signature validation");
-        match DEBUG_MODE {
-            true => Ok(state),
-            false => Err(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.into()),
-        }
+        Ok(state)
     } else if state.get_eos_block_header()?.new_producer_schedule.is_some() {
         // NOTE/FIXME; To be cleaned up once validation for these has been fixed!
         info!("✔ New producer schedule exists in EOS block ∴ skipping validation check...");

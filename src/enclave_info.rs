@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
 use crate::{
-    constants::{CORE_IS_VALIDATING, DB_KEY_PREFIX, DEBUG_MODE},
+    constants::{CORE_IS_VALIDATING, DB_KEY_PREFIX},
     debug_functions::DebugSignatories,
     fees::fee_constants::MAX_FEE_BASIS_POINTS,
     traits::DatabaseInterface,
@@ -12,7 +12,6 @@ use crate::{
 
 #[derive(Serialize, Deserialize)]
 pub struct EnclaveInfo {
-    debug_mode: bool,
     db_key_prefix: String,
     core_is_validating: bool,
     core_version: String,
@@ -23,7 +22,6 @@ pub struct EnclaveInfo {
 impl EnclaveInfo {
     pub fn new<D: DatabaseInterface>(db: &D) -> Result<Self> {
         Ok(Self {
-            debug_mode: DEBUG_MODE,
             core_version: get_core_version(),
             core_is_validating: CORE_IS_VALIDATING,
             db_key_prefix: DB_KEY_PREFIX.to_string(),

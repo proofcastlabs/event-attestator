@@ -5,7 +5,7 @@ use crate::{
         eos_producer_schedule::EosProducerScheduleV2,
         eos_state::EosState,
     },
-    constants::{CORE_IS_VALIDATING, DEBUG_MODE, NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR},
+    constants::CORE_IS_VALIDATING,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -32,19 +32,13 @@ fn validate_producer_slot(schedule: &EosProducerScheduleV2, block: &EosBlockHead
     }
 }
 
-pub fn validate_producer_slot_of_block_in_state<D>(state: EosState<D>) -> Result<EosState<D>>
-where
-    D: DatabaseInterface,
-{
+pub fn validate_producer_slot_of_block_in_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     if CORE_IS_VALIDATING {
         info!("✔ Validating slot of producer of block...");
         validate_producer_slot(state.get_active_schedule()?, state.get_eos_block_header()?).and(Ok(state))
     } else {
         info!("✔ Skipping producer slot validation!");
-        match DEBUG_MODE {
-            true => Ok(state),
-            false => Err(NOT_VALIDATING_WHEN_NOT_IN_DEBUG_MODE_ERROR.into()),
-        }
+        Ok(state)
     }
 }
 
