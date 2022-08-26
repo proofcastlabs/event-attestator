@@ -31,7 +31,7 @@ pub fn debug_set_btc_utxo_nonce<D: DatabaseInterface>(
         .map(prepend_debug_output_marker_to_string)
 }
 
-#[cfg(all(test, feature = "debug"))]
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::{

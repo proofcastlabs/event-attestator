@@ -35,7 +35,7 @@ fn get_address_and_amounts_from_btc_tx_infos(btc_tx_infos: &BtcOnEosBtcTxInfos) 
 }
 
 fn sign_txs_from_btc_tx_infos<D: DatabaseInterface>(
-    btc_db_utils: &BtcDbUtils<D>, // FIXME Make utxo DB Utils for this.
+    btc_db_utils: &BtcDbUtils<D>,
     sats_per_byte: u64,
     btc_network: BtcNetwork,
     btc_tx_infos: &BtcOnEosBtcTxInfos,
@@ -82,10 +82,7 @@ pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>)
                 &state.btc_db_utils.get_btc_private_key_from_db()?,
             )
             .and_then(|signed_tx| {
-                #[cfg(feature = "debug")]
-                {
-                    debug!("✔ Signed transaction: {:?}", signed_tx);
-                }
+                debug!("✔ Signed transaction: {:?}", signed_tx);
                 state.add_btc_on_eos_signed_txs(vec![signed_tx])
             })
         },

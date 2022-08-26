@@ -117,7 +117,7 @@ pub fn debug_reset_algo_chain<D: DatabaseInterface>(
         .map(|_| json!({"algo-chain-reset-success":true}).to_string())
 }
 
-#[cfg(all(test, feature = "debug"))]
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::{chains::algo::test_utils::get_sample_contiguous_submission_material, test_utils::get_test_database};

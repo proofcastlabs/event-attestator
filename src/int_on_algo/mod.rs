@@ -4,13 +4,6 @@
 //! the pToken Interim Chain ERC20 tokens and their pToken counterparts on Algorand.
 //! This core consists of two light clients that manage the state of the two chains,
 //! along with the creation and signing of transactions related to each chain.
-//!
-//! __NOTE:__ All `debug_` prefixed functions can only be used if the core is
-//! built with the `debug` feaure flag enabled in the `Cargo.toml`:
-//!
-//! ```no_compile
-//! ptokens_core = { version = <version-here>, features = ["debug"] }
-//! ```
 
 mod algo;
 mod check_core_is_initialized;

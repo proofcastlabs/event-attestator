@@ -132,7 +132,7 @@ pub fn debug_set_evm_any_sender_nonce<D: DatabaseInterface>(
     debug_set_any_sender_nonce(db, new_nonce, false, core_type, signature)
 }
 
-#[cfg(all(test, feature = "debug"))]
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::{

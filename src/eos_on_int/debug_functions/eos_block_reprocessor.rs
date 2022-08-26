@@ -99,10 +99,7 @@ fn reprocess_eos_block<D: DatabaseInterface>(
                         &state.eth_db_utils.get_eth_private_key_from_db()?,
                     )
                     .and_then(|signed_txs| {
-                        #[cfg(feature = "debug")]
-                        {
-                            debug!("✔ Signed transactions: {:?}", signed_txs);
-                        }
+                        debug!("✔ Signed transactions: {:?}", signed_txs);
                         state.add_eth_signed_txs(signed_txs)
                     })
             }

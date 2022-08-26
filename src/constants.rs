@@ -1,4 +1,7 @@
-pub const DEBUG_MODE: bool = cfg!(feature = "debug");
+// NOTE: The debug feature flag has been removed, and this now always returns true.
+// Eventually, this will be refactored away altogether.
+pub const DEBUG_MODE: bool = true;
+
 pub const CORE_IS_VALIDATING: bool = !cfg!(feature = "non-validating");
 pub const CORE_VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
 

@@ -241,10 +241,7 @@ pub fn maybe_sign_algo_txs_and_add_to_state<D: DatabaseInterface>(state: EthStat
                 &state.algo_db_utils.get_algo_private_key()?,
             )
             .and_then(|signed_txs| {
-                #[cfg(feature = "debug")]
-                {
-                    debug!("✔ Signed transactions: {:?}", signed_txs);
-                }
+                debug!("✔ Signed transactions: {:?}", signed_txs);
                 state.add_algo_signed_group_txs(&signed_txs)
             })
     }

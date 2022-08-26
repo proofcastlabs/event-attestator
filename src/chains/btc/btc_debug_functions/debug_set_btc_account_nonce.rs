@@ -31,7 +31,7 @@ pub fn debug_set_btc_account_nonce<D: DatabaseInterface>(
         .map(prepend_debug_output_marker_to_string)
 }
 
-#[cfg(all(test, feature = "debug"))]
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE};

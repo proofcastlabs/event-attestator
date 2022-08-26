@@ -31,7 +31,7 @@ pub fn debug_set_eos_account_nonce<D: DatabaseInterface>(
         .map(prepend_debug_output_marker_to_string)
 }
 
-#[cfg(all(test, feature = "debug"))]
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::{chains::eos::eos_database_utils::EosDbUtils, test_utils::get_test_database};

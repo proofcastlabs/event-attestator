@@ -54,10 +54,7 @@ pub fn maybe_sign_any_sender_canon_block_txs_and_add_to_state<D: DatabaseInterfa
         &state.btc_db_utils.get_btc_canon_block_from_db()?.get_eth_tx_infos(),
     )
     .and_then(|signed_txs| {
-        #[cfg(feature = "debug")]
-        {
-            debug!("✔ Signed AnySender transactions: {:?}", signed_txs);
-        }
+        debug!("✔ Signed AnySender transactions: {:?}", signed_txs);
         state.add_any_sender_signed_txs(signed_txs)
     })
 }

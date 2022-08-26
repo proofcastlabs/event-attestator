@@ -110,10 +110,7 @@ fn reprocess_eth_block<D: DatabaseInterface>(
                         &EthEvmTokenDictionary::get_from_db(state.db)?,
                     )
                     .and_then(|signed_txs| {
-                        #[cfg(feature = "debug")]
-                        {
-                            debug!("✔ Signed transactions: {:?}", signed_txs);
-                        }
+                        debug!("✔ Signed transactions: {:?}", signed_txs);
                         state.add_erc20_on_int_int_signed_txs(signed_txs)
                     })
             }

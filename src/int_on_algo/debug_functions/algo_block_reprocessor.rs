@@ -100,10 +100,7 @@ fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
                     state.eth_db_utils.get_eth_gas_price_from_db()?,
                     &state.eth_db_utils.get_eth_private_key_from_db()?,
                 )?;
-                #[cfg(feature = "debug")]
-                {
-                    debug!("✔ Signed transactions: {:?}", signed_txs);
-                }
+                debug!("✔ Signed transactions: {:?}", signed_txs);
                 state.add_eth_signed_txs(signed_txs)
             }
         })

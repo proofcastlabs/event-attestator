@@ -68,10 +68,7 @@ pub fn maybe_sign_btc_txs_and_add_to_state<D: DatabaseInterface>(state: EthState
             &btc_tx_infos,
         )
         .and_then(|signed_txs| {
-            #[cfg(feature = "debug")]
-            {
-                debug!("✔ Signed transactions: {:?}", signed_txs);
-            }
+            debug!("✔ Signed transactions: {:?}", signed_txs);
             state.add_btc_transactions(signed_txs)
         })
     }

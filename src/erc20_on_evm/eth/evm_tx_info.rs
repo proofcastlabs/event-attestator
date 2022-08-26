@@ -417,10 +417,7 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
                 &EthEvmTokenDictionary::get_from_db(state.db)?,
             )
             .and_then(|signed_txs| {
-                #[cfg(feature = "debug")]
-                {
-                    debug!("✔ Signed transactions: {:?}", signed_txs);
-                }
+                debug!("✔ Signed transactions: {:?}", signed_txs);
                 state.add_erc20_on_evm_evm_signed_txs(signed_txs)
             })
     }

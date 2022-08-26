@@ -4,13 +4,6 @@
 //! native EOS tokens and INT ERC777 pToken equivalents. This core consists of two
 //! light clients that manage the state of the two chains, along with the creation
 //! and signing of transactions related to each chain.
-//!
-//! __NOTE:__ All `debug_` prefixed functions can only be used if the core is
-//! built with the `debug` feaure flag enabled in the `Cargo.toml`:
-//!
-//! ```no_compile
-//! ptokens_core = { version = "5.30.0", features = ["debug"] }
-//! ```
 
 mod check_core_is_initialized;
 mod constants;

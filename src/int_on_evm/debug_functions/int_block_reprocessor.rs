@@ -107,10 +107,7 @@ fn reprocess_int_block<D: DatabaseInterface>(
                         &EthEvmTokenDictionary::get_from_db(state.db)?,
                     )
                     .and_then(|signed_txs| {
-                        #[cfg(feature = "debug")]
-                        {
-                            debug!("✔ Signed transactions: {:?}", signed_txs);
-                        }
+                        debug!("✔ Signed transactions: {:?}", signed_txs);
                         state.add_int_on_evm_evm_signed_txs(signed_txs)
                     })
             }

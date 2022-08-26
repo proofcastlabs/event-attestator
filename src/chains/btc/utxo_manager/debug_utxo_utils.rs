@@ -230,7 +230,7 @@ pub fn debug_add_multiple_utxos<D: DatabaseInterface>(
         })
 }
 
-#[cfg(all(features = "debug", test))]
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
@@ -241,7 +241,7 @@ mod tests {
                 utxo_utils::get_all_utxos_as_json_string,
             },
         },
-        test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_HASH, DUMMY_SIGNATURE},
+        test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE},
     };
 
     #[test]
@@ -253,7 +253,7 @@ mod tests {
         save_utxos_to_db(&db, &utxos).unwrap();
         let mut balance = get_total_utxo_balance_from_db(&db).unwrap();
         assert_eq!(expected_balance, balance);
-        debug_clear_all_utxos(&db, &CoreType::default(), DUMMY_SIGNATURE, DUMMY_DEBUG_COMMAND_HASH).unwrap();
+        debug_clear_all_utxos(&db, &CoreType::default(), DUMMY_DEBUG_COMMAND_SIGNATURE).unwrap();
         balance = get_total_utxo_balance_from_db(&db).unwrap();
         assert_eq!(0, balance);
     }
@@ -269,10 +269,10 @@ mod tests {
         assert_eq!(expected_balance, balance);
         let json = get_all_utxos_as_json_string(&db).unwrap();
         let core_type = CoreType::default();
-        debug_clear_all_utxos(&db, &core_type, DUMMY_SIGNATURE, DUMMY_DEBUG_COMMAND_HASH).unwrap();
+        debug_clear_all_utxos(&db, &core_type, DUMMY_DEBUG_COMMAND_SIGNATURE).unwrap();
         balance = get_total_utxo_balance_from_db(&db).unwrap();
         assert_eq!(0, balance);
-        debug_add_multiple_utxos(&db, &json, &core_type, DUMMY_SIGNATURE, DUMMY_DEBUG_COMMAND_HASH).unwrap();
+        debug_add_multiple_utxos(&db, &json, &core_type, DUMMY_DEBUG_COMMAND_SIGNATURE).unwrap();
         balance = get_total_utxo_balance_from_db(&db).unwrap();
         assert_eq!(expected_balance, balance);
     }
