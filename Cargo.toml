@@ -10,9 +10,10 @@ keywords = ["provable", "defi", "crypto"]
 authors = ["Provable Things <provable.xyz>", "Greg Kapka <greg@oraclize.it>"]
 
 [features]
-debug = []
-disable-fees = ["debug"]
-non-validating = ["debug"]
+# NOTE: Turns off fee-taking capabilities.
+disable-fees = []
+# NOTE: Turns off block header & chain validation.
+non-validating = []
 
 [profile.dev]
 split-debuginfo = "unpacked"
