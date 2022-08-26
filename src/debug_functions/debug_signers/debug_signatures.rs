@@ -4,7 +4,7 @@ use crate::{
     chains::eth::eth_crypto::eth_signature::EthSignature,
     core_type::CoreType,
     crypto_utils::keccak_hash_bytes,
-    debug_mode::debug_signers::debug_signatory::DebugSignatory,
+    debug_functions::debug_signers::debug_signatory::DebugSignatory,
     types::{Bytes, Result},
     utils::strip_hex_prefix,
 };
@@ -120,7 +120,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        debug_mode::debug_signers::test_utils::{
+        debug_functions::debug_signers::test_utils::{
             get_sample_debug_command_hash,
             get_sample_debug_signatory,
             get_sample_private_key,

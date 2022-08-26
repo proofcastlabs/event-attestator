@@ -1,5 +1,3 @@
-#![allow(dead_code)] // FIXME rm!
-
 use ethereum_types::{Address as EthAddress, H256};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
@@ -94,7 +92,10 @@ impl DebugSignatory {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::debug_mode::debug_signers::test_utils::{get_sample_debug_command_hash, get_sample_debug_signatory};
+    use crate::debug_functions::debug_signers::test_utils::{
+        get_sample_debug_command_hash,
+        get_sample_debug_signatory,
+    };
 
     #[test]
     fn should_serde_debug_signatory_to_and_from_bytes() {

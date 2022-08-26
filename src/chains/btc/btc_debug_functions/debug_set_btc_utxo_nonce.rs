@@ -4,7 +4,7 @@ use serde_json::json;
 use crate::{
     chains::btc::utxo_manager::utxo_database_utils::put_utxo_nonce_in_db,
     core_type::CoreType,
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -22,7 +22,6 @@ pub fn debug_set_btc_utxo_nonce<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Debug setting BTC UTXO nonce...");
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), &new_nonce, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| put_utxo_nonce_in_db(db, new_nonce))

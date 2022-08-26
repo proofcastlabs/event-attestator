@@ -6,7 +6,7 @@ use crate::{
         eth::eth_database_utils::EthDatabaseKeysJson,
     },
     constants::DB_KEY_PREFIX,
-    debug_mode::DEBUG_SIGNATORIES_DB_KEY,
+    debug_functions::DEBUG_SIGNATORIES_DB_KEY,
     fees::fee_constants::BTC_ON_ETH_FEE_DB_KEYS,
     types::Result,
 };

@@ -6,7 +6,7 @@ use crate::{
         eth_database_utils::{EthDbUtils, EvmDbUtils},
         eth_utils::convert_hex_to_eth_address,
     },
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
     erc20_on_int::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
     traits::DatabaseInterface,
@@ -29,7 +29,6 @@ use crate::{
 #[named]
 pub fn debug_add_dictionary_entry<D: DatabaseInterface>(db: &D, json_str: &str, signature: &str) -> Result<String> {
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &EvmDbUtils::new(db)))
         .and_then(|_| get_debug_command_hash!(function_name!(), json_str)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
@@ -51,7 +50,6 @@ pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(
     signature: &str,
 ) -> Result<String> {
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &EvmDbUtils::new(db)))
         .and_then(|_| get_debug_command_hash!(function_name!(), eth_address_str)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))

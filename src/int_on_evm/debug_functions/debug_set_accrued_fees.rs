@@ -7,7 +7,7 @@ use crate::{
         eth_database_utils::{EthDbUtils, EvmDbUtils},
         eth_utils::convert_hex_to_eth_address,
     },
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     int_on_evm::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
     traits::DatabaseInterface,
@@ -29,8 +29,7 @@ pub fn debug_set_accrued_fees_in_dictionary<D: DatabaseInterface>(
     info!("✔ Debug setting accrued fees in dictionary...");
     let dictionary = EthEvmTokenDictionary::get_from_db(db)?;
     let dictionary_entry_eth_address = convert_hex_to_eth_address(token_address)?;
-    check_debug_mode()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &EvmDbUtils::new(db)))
+    check_core_is_initialized(&EthDbUtils::new(db), &EvmDbUtils::new(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), token_address, fee_amount)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| {

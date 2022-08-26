@@ -3,7 +3,7 @@ use serde_json::json;
 use crate::{
     chains::{eos::eos_database_utils::EosDatabaseKeysJson, eth::eth_database_utils::EthDatabaseKeysJson},
     constants::DB_KEY_PREFIX,
-    debug_mode::DEBUG_SIGNATORIES_DB_KEY,
+    debug_functions::DEBUG_SIGNATORIES_DB_KEY,
     dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
     types::Result,
 };

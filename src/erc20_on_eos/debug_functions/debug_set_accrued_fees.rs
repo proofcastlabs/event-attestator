@@ -7,7 +7,7 @@ use crate::{
         eos::eos_database_utils::EosDbUtils,
         eth::{eth_database_utils::EthDbUtils, eth_utils::convert_hex_to_eth_address},
     },
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     dictionaries::eos_eth::EosEthTokenDictionary,
     erc20_on_eos::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
     traits::DatabaseInterface,
@@ -27,7 +27,6 @@ pub fn debug_set_accrued_fees_in_dictionary<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Debug setting accrued fees in dictionary...");
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db)))
         .and_then(|_| get_debug_command_hash!(function_name!(), token_address, &fee_amount)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))

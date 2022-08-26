@@ -26,7 +26,7 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
     },
     core_type::CoreType,
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -166,7 +166,6 @@ fn debug_reset_chain<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("Debug resetting ETH chain...");
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| {
             get_debug_command_hash!(
                 function_name!(),

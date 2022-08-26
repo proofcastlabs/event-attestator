@@ -12,7 +12,7 @@ use crate::{
         remove_all_txs_from_submission_material_in_state::remove_all_txs_from_submission_material_in_state,
     },
     core_type::CoreType,
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::{check_debug_mode, validate_debug_command_signature},
     traits::DatabaseInterface,
     types::Result,
 };

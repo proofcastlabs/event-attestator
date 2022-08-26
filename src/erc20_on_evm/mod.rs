@@ -39,7 +39,7 @@ pub use crate::{
             sign_hex_msg_with_evm_key_with_prefix,
         },
     },
-    debug_mode::{
+    debug_functions::{
         debug_add_debug_signer,
         debug_get_key_from_db,
         debug_remove_debug_signer,

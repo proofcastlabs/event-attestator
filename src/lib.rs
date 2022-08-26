@@ -15,7 +15,7 @@
 
 pub use crate::{
     core_type::CoreType,
-    debug_mode::{debug_add_debug_signer, debug_remove_debug_signer, get_debug_signature_info},
+    debug_functions::{debug_add_debug_signer, debug_remove_debug_signer, get_debug_signature_info},
     errors::AppError,
     traits::DatabaseInterface,
     types::{Bytes, Result},
@@ -30,7 +30,7 @@ mod constants;
 mod core_type;
 mod crypto_utils;
 mod database_utils;
-mod debug_mode;
+mod debug_functions;
 mod dictionaries;
 mod enclave_info;
 mod errors;

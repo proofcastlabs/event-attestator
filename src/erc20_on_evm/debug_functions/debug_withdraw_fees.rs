@@ -8,7 +8,7 @@ use crate::{
         eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
         eth_utils::convert_hex_to_eth_address,
     },
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_evm::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
     traits::DatabaseInterface,
@@ -35,7 +35,6 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
     let eth_db_utils = EthDbUtils::new(db);
     let evm_db_utils = EvmDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
         .and_then(|_| get_debug_command_hash!(function_name!(), token_address, recipient_address)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))

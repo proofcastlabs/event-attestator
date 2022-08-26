@@ -3,10 +3,7 @@ use serde_json::Value as JsonValue;
 use crate::{
     chains::eth::eth_utils::convert_hex_to_h256,
     core_type::CoreType,
-    debug_mode::{
-        check_debug_mode,
-        debug_signers::debug_signatories::{DebugSignatories, SAFE_DEBUG_SIGNATORIES},
-    },
+    debug_functions::debug_signers::debug_signatories::{DebugSignatories, SAFE_DEBUG_SIGNATORIES},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -21,8 +18,7 @@ pub fn get_debug_signature_info<D: DatabaseInterface>(
     core_type: &CoreType,
     debug_command_hash_str: &str,
 ) -> Result<JsonValue> {
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
+    db.start_transaction()
         .and_then(|_| DebugSignatories::get_from_db(db))
         .and_then(|debug_signatories| {
             db.end_transaction()?;

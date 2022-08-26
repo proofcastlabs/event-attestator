@@ -52,7 +52,7 @@ pub use crate::{
             },
         },
     },
-    debug_mode::{
+    debug_functions::{
         debug_add_debug_signer,
         debug_get_key_from_db,
         debug_remove_debug_signer,

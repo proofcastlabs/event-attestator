@@ -4,7 +4,7 @@ use ethereum_types::{Address as EthAddress, H256};
 use crate::{
     chains::eth::eth_utils::{convert_eth_address_to_string, convert_h256_to_string},
     core_type::CoreType,
-    debug_mode::debug_signers::debug_signatory::DebugSignatory,
+    debug_functions::debug_signers::debug_signatory::DebugSignatory,
     types::Result,
 };
 
@@ -69,7 +69,10 @@ impl DebugSignatory {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::debug_mode::debug_signers::test_utils::{get_sample_debug_command_hash, get_sample_debug_signatory};
+    use crate::debug_functions::debug_signers::test_utils::{
+        get_sample_debug_command_hash,
+        get_sample_debug_signatory,
+    };
 
     #[test]
     fn should_get_debug_signatory_hash() {

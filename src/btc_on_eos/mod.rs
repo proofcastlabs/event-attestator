@@ -65,7 +65,7 @@ pub use crate::{
             get_processed_actions_list::get_processed_actions_list,
         },
     },
-    debug_mode::{
+    debug_functions::{
         debug_add_debug_signer,
         debug_get_key_from_db,
         debug_remove_debug_signer,

@@ -10,7 +10,7 @@ use crate::{
         get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
     },
     core_type::CoreType,
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -28,7 +28,6 @@ pub fn debug_disable_eos_protocol_feature<D: DatabaseInterface>(
     info!("✔ Maybe disabling EOS protocol feature w/ hash: {}", feature_hash);
     let hash = hex::decode(feature_hash)?;
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), &feature_hash, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| check_eos_core_is_initialized(&EosDbUtils::new(db)))

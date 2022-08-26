@@ -4,7 +4,7 @@ use serde_json::json;
 use crate::{
     chains::btc::btc_database_utils::BtcDbUtils,
     core_type::CoreType,
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -23,7 +23,6 @@ pub fn debug_set_btc_fee<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Debug putting BTC fee in db...");
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), &fee, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| BtcDbUtils::new(db).put_btc_fee_in_db(fee))

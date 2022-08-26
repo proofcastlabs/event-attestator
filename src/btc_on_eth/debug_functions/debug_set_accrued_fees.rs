@@ -3,7 +3,7 @@ use serde_json::json;
 
 use crate::{
     btc_on_eth::constants::CORE_TYPE,
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
     types::Result,
@@ -15,7 +15,6 @@ use crate::{
 #[named]
 pub fn debug_set_accrued_fees<D: DatabaseInterface>(db: &D, amount: u64, signature: &str) -> Result<String> {
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), &amount)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| {

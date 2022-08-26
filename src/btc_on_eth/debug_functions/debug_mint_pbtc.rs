@@ -12,7 +12,7 @@ use crate::{
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         },
     },
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, prepend_debug_output_marker_to_string, strip_hex_prefix},
@@ -44,7 +44,6 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
     let eth_db_utils = EthDbUtils::new(db);
 
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), &amount, &nonce, eth_network, &gas_price, recipient)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db)))

@@ -12,7 +12,7 @@ use crate::{
         },
         eth::eth_database_utils::EthDbUtilsExt,
     },
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_algo_state,
     int_on_algo::{
         algo::{
@@ -43,8 +43,7 @@ fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
     signature: &str,
 ) -> Result<String> {
     info!("✔ Debug reprocessing ALGO block...");
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
+    db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json_string, &maybe_nonce)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db)))

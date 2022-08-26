@@ -11,7 +11,7 @@ use crate::{
             eth_utils::get_eth_address_from_str,
         },
     },
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     erc20_on_eos::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
     traits::DatabaseInterface,
     types::Result,
@@ -46,8 +46,8 @@ pub fn debug_get_erc20_vault_migration_tx<D: DatabaseInterface>(
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let current_eos_erc20_smart_contract_address = eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?;
     let new_eos_erc20_smart_contract_address = get_eth_address_from_str(new_eos_erc20_smart_contract_address_str)?;
-    check_debug_mode()
-        .and_then(|_| get_debug_command_hash!(function_name!(), new_eos_erc20_smart_contract_address_str)())
+
+    get_debug_command_hash!(function_name!(), new_eos_erc20_smart_contract_address_str)()
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| eth_db_utils.put_erc20_on_eos_smart_contract_address_in_db(&new_eos_erc20_smart_contract_address))

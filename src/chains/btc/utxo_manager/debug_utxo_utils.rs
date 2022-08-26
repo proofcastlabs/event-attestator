@@ -25,7 +25,7 @@ use crate::{
     },
     constants::SUCCESS_JSON,
     core_type::CoreType,
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -39,7 +39,6 @@ use crate::{
 #[named]
 pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D, core_type: &CoreType, signature: &str) -> Result<String> {
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .map(|_| get_all_utxo_db_keys(db).to_vec())
@@ -71,7 +70,6 @@ pub fn debug_remove_utxo<D: DatabaseInterface>(
     signature: &str,
 ) -> Result<String> {
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), tx_id, &v_out, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| get_btc_tx_id_from_str(tx_id))
@@ -103,7 +101,6 @@ pub fn debug_consolidate_utxos<D: DatabaseInterface>(
     };
     let btc_db_utils = BtcDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), &fee, &num_utxos, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| get_x_utxos(db, num_utxos))
@@ -156,7 +153,6 @@ pub fn debug_get_child_pays_for_parent_btc_tx<D: DatabaseInterface>(
 ) -> Result<String> {
     let btc_db_utils = BtcDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), &fee, tx_id, &v_out, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| get_btc_tx_id_from_str(tx_id))
@@ -214,7 +210,6 @@ pub fn debug_add_multiple_utxos<D: DatabaseInterface>(
     signature: &str,
 ) -> Result<String> {
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), json_str, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| BtcUtxosAndValues::from_str(json_str))

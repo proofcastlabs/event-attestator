@@ -3,7 +3,7 @@ use serde_json::json;
 use crate::{
     chains::eth::eth_database_utils::{EthDatabaseKeysJson, EvmDatabaseKeysJson},
     constants::DB_KEY_PREFIX,
-    debug_mode::DEBUG_SIGNATORIES_DB_KEY,
+    debug_functions::DEBUG_SIGNATORIES_DB_KEY,
     dictionaries::dictionary_constants::ETH_EVM_DICTIONARY_KEY,
     types::Result,
 };

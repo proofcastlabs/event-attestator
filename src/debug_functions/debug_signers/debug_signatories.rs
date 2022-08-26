@@ -7,7 +7,7 @@ use crate::{
     chains::eth::eth_crypto::eth_signature::EthSignature,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     core_type::CoreType,
-    debug_mode::debug_signers::debug_signatory::DebugSignatory,
+    debug_functions::debug_signers::debug_signatory::DebugSignatory,
     errors::AppError,
     safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
@@ -235,7 +235,7 @@ mod tests {
     use super::*;
     use crate::{
         chains::eth::eth_utils::convert_hex_to_eth_address,
-        debug_mode::debug_signers::test_utils::{
+        debug_functions::debug_signers::test_utils::{
             get_n_random_debug_signatories,
             get_sample_debug_command_hash,
             get_sample_debug_signatories,

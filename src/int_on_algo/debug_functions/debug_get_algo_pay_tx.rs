@@ -5,7 +5,7 @@ use rust_algorand::{AlgorandAddress, AlgorandGenesisId, AlgorandTransaction, Mic
 
 use crate::{
     chains::{algo::algo_database_utils::AlgoDbUtils, eth::eth_database_utils::EthDbUtils},
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     int_on_algo::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
     traits::DatabaseInterface,
     types::Result,
@@ -32,8 +32,7 @@ pub fn debug_get_algo_pay_tx<D: DatabaseInterface>(
     info!("✔ Getting ALGO pay tx...");
     let algo_db_utils = AlgoDbUtils::new(db);
     // TODO If the note is valid hex, use it raw, else if is valid utf8, convert it to bytes.
-    check_debug_mode()
-        .and_then(|_| db.start_transaction())
+    db.start_transaction()
         .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &algo_db_utils))
         .and_then(|_| {
             get_debug_command_hash!(

@@ -16,7 +16,7 @@ use crate::{
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         },
     },
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -24,8 +24,8 @@ use crate::{
 
 fn check_erc777_proxy_address_is_set<D: DatabaseInterface>(db: &D) -> Result<()> {
     info!("✔ Checking if the ERC777 proxy address is set...");
-    check_debug_mode()
-        .and_then(|_| EthDbUtils::new(db).get_erc777_proxy_contract_address_from_db())
+    EthDbUtils::new(db)
+        .get_erc777_proxy_contract_address_from_db()
         .and_then(|address| {
             if address.is_zero() {
                 Err("✘ No ERC777 proxy address set in db - not signing tx!".into())
@@ -55,7 +55,6 @@ pub fn debug_get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(
 ) -> Result<String> {
     let eth_db_utils = EthDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db)))
         .and_then(|_| get_debug_command_hash!(function_name!(), new_address)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
@@ -89,7 +88,6 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
 ) -> Result<String> {
     let eth_db_utils = EthDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db)))
         .and_then(|_| get_debug_command_hash!(function_name!(), new_address)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
@@ -127,7 +125,6 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D: DatabaseInte
 ) -> Result<String> {
     let eth_db_utils = EthDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db)))
         .and_then(|_| get_debug_command_hash!(function_name!(), new_address)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))

@@ -3,7 +3,7 @@ use std::str::FromStr;
 use crate::{
     chains::eth::{eth_crypto::eth_signature::EthSignature, eth_utils::convert_hex_to_h256},
     core_type::CoreType,
-    debug_mode::debug_signers::debug_signatories::DebugSignatories,
+    debug_functions::debug_signers::debug_signatories::DebugSignatories,
     traits::DatabaseInterface,
     types::Result,
 };

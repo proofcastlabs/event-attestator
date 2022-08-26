@@ -4,7 +4,7 @@ use serde_json::json;
 use crate::{
     chains::eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
     core_type::CoreType,
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -23,7 +23,6 @@ fn debug_set_account_nonce<D: DatabaseInterface>(
         if is_for_eth { "ETH" } else { "EVM" }
     );
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), &new_nonce, &is_for_eth, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| {
@@ -49,7 +48,6 @@ fn debug_set_any_sender_nonce<D: DatabaseInterface>(
     signature: &str,
 ) -> Result<String> {
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), &new_nonce, &is_for_eth, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| {

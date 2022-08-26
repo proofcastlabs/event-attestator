@@ -3,7 +3,7 @@ use serde_json::json;
 
 use crate::{
     btc_on_eth::constants::CORE_TYPE,
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     fees::{fee_database_utils::FeeDatabaseUtils, fee_utils::sanity_check_basis_points_value},
     traits::DatabaseInterface,
     types::Result,
@@ -23,7 +23,6 @@ fn debug_put_btc_on_eth_basis_points_in_db<D: DatabaseInterface>(
         suffix, basis_points
     );
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), &basis_points, &is_peg_in)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| sanity_check_basis_points_value(basis_points))

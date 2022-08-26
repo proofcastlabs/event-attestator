@@ -9,7 +9,7 @@ use crate::{
     },
     constants::MAX_DATA_SENSITIVITY_LEVEL,
     core_type::CoreType,
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::{Byte, Result},
 };
@@ -34,7 +34,6 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Setting key: {} in DB to value: {}", key, value);
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), key, value, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| {
@@ -62,7 +61,6 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Maybe getting key: {} from DB...", key);
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), key, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| {

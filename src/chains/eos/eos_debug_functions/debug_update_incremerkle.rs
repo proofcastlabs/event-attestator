@@ -10,7 +10,7 @@ use crate::{
         eos_database_utils::EosDbUtils,
     },
     core_type::CoreType,
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -37,7 +37,6 @@ pub fn debug_update_incremerkle<D: DatabaseInterface>(
     let init_json = EosInitJson::from_json_string(eos_init_json_str)?;
     let eos_db_utils = EosDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), &init_json, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| put_eos_latest_block_info_in_db(&eos_db_utils, &init_json.block))

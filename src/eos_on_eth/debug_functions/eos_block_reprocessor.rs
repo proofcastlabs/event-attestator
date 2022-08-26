@@ -27,7 +27,7 @@ use crate::{
             eth_debug_functions::check_custom_nonce,
         },
     },
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
     eos_on_eth::{
         check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
@@ -58,7 +58,6 @@ fn reprocess_eos_block<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Debug reprocessing EOS block...");
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &accrue_fees, &maybe_nonce)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))

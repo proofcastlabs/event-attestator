@@ -3,7 +3,7 @@ use serde_json::Value as JsonValue;
 
 use crate::{
     constants::{CORE_IS_VALIDATING, DB_KEY_PREFIX, DEBUG_MODE},
-    debug_mode::DebugSignatories,
+    debug_functions::DebugSignatories,
     fees::fee_constants::MAX_FEE_BASIS_POINTS,
     traits::DatabaseInterface,
     types::Result,

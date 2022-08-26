@@ -9,12 +9,9 @@ use crate::{
         eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256},
     },
     core_type::CoreType,
-    debug_mode::{
-        check_debug_mode,
-        debug_signers::{
-            debug_signatories::{DebugSignatories, SAFE_DEBUG_SIGNATORIES},
-            debug_signatory::DebugSignatory,
-        },
+    debug_functions::debug_signers::{
+        debug_signatories::{DebugSignatories, SAFE_DEBUG_SIGNATORIES},
+        debug_signatory::DebugSignatory,
     },
     safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
@@ -48,7 +45,6 @@ pub fn debug_add_debug_signer<D: DatabaseInterface>(
     };
 
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| DebugSignatories::get_from_db(db))
         .and_then(|debug_signatories| {
             let debug_command_hash = convert_hex_to_h256(&get_debug_command_hash!(
@@ -89,7 +85,6 @@ pub fn debug_remove_debug_signer<D: DatabaseInterface>(
     signature_str: &str,
 ) -> Result<String> {
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| DebugSignatories::get_from_db(db))
         .and_then(|debug_signatories| {
             let signature = EthSignature::from_str(signature_str)?;

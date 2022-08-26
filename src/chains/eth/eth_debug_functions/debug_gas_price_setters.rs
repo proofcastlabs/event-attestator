@@ -2,11 +2,10 @@ use function_name::named;
 use serde_json::json;
 
 #[allow(unused_imports)]
-use crate::debug_mode::validate_debug_command_signature;
+use crate::debug_functions::validate_debug_command_signature;
 use crate::{
     chains::eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
     core_type::CoreType,
-    debug_mode::check_debug_mode,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -21,7 +20,6 @@ fn debug_set_gas_price_in_db<D: DatabaseInterface>(
     _signature: &str,
 ) -> Result<String> {
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), &gas_price, &is_for_eth, core_type)())
         .map(|_hash| {
             warn!("DEBUG FUNCTTION SIGNATURE VALIDATION DISABLED FOR GAS PRICE SETTER!");

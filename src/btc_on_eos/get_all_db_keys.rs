@@ -6,7 +6,7 @@ use crate::{
         eos::eos_database_utils::EosDatabaseKeysJson,
     },
     constants::DB_KEY_PREFIX,
-    debug_mode::DEBUG_SIGNATORIES_DB_KEY,
+    debug_functions::DEBUG_SIGNATORIES_DB_KEY,
     types::Result,
 };
 

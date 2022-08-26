@@ -3,7 +3,7 @@ use serde_json::json;
 
 use crate::{
     core_type::CoreType,
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     traits::DatabaseInterface,
     types::Result,
@@ -34,7 +34,6 @@ pub fn debug_add_token_dictionary_entry<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Debug adding entry to `EosEthTokenDictionary`...");
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), dictionary_entry_json_string, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| {

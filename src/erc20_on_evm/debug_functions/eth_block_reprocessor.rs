@@ -11,7 +11,7 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     dictionaries::eth_evm::{get_eth_evm_token_dictionary_from_db_and_add_to_eth_state, EthEvmTokenDictionary},
     erc20_on_evm::{
         check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
@@ -42,7 +42,6 @@ fn reprocess_eth_block<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json_str, &accrue_fees, &maybe_nonce)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json_str, EthState::init(db)))

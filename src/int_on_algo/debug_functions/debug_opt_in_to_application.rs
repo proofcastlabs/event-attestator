@@ -4,7 +4,7 @@ use serde_json::json;
 
 use crate::{
     chains::{algo::algo_database_utils::AlgoDbUtils, eth::eth_database_utils::EthDbUtils},
-    debug_mode::validate_debug_command_signature,
+    debug_functions::validate_debug_command_signature,
     int_on_algo::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
     traits::DatabaseInterface,
     types::Result,

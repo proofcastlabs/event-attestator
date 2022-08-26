@@ -41,7 +41,7 @@ pub use crate::{
             sign_hex_msg_with_evm_key_with_prefix as sign_hex_msg_with_int_key_with_prefix,
         },
     },
-    debug_mode::{debug_get_key_from_db, debug_set_key_in_db_to_value},
+    debug_functions::{debug_get_key_from_db, debug_set_key_in_db_to_value},
     erc20_on_int::{
         debug_functions::{
             debug_add_dictionary_entry,

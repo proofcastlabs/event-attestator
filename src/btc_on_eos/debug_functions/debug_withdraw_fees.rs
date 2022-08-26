@@ -9,7 +9,7 @@ use crate::{
         extract_utxos_from_p2pkh_txs::extract_utxos_from_p2pkh_txs,
         utxo_manager::utxo_database_utils::save_utxos_to_db,
     },
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     fees::fee_withdrawals::get_btc_on_eos_fee_withdrawal_tx,
     traits::DatabaseInterface,
     types::Result,
@@ -26,7 +26,6 @@ pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: &D, btc_address: &s
     info!("✔ Debug getting `BtcOnEos` withdrawal tx...");
     let btc_db_utils = BtcDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), btc_address)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| get_btc_on_eos_fee_withdrawal_tx(db, btc_address))

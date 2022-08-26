@@ -13,7 +13,7 @@ use crate::{
         remove_all_txs_from_submission_material_in_state::remove_all_txs_from_submission_material_in_state,
     },
     core_type::CoreType,
-    debug_mode::{check_debug_mode, validate_debug_command_signature},
+    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -108,7 +108,6 @@ pub fn debug_reset_algo_chain<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("Debug resetting ALGO chain...");
     db.start_transaction()
-        .and_then(|_| check_debug_mode())
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json_string, &canon_to_tip_length, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db)))
