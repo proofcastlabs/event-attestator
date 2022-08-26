@@ -5,19 +5,20 @@ use crate::{
     types::Result,
 };
 
-pub fn validate_block_in_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
+fn validate_block_in_state<D: DatabaseInterface>(state: EthState<D>, is_for_eth: bool) -> Result<EthState<D>> {
+    let symbol = if is_for_eth { "ETH" } else { "EVM" };
     if !CORE_IS_VALIDATING {
-        info!("✔ Skipping ETH block header validaton!");
+        info!("✔ Skipping {} block header validaton!", symbol);
         Ok(state)
     } else {
         let chain_id = state.eth_db_utils.get_eth_chain_id_from_db()?;
         if chain_id == EthChainId::Rinkeby {
             // NOTE: We cannot validate Rinkeby blocks. However it's been deprecated now so
             // this no longer matters.
-            info!("✔ Skipping RINKEBY block header validaton!");
+            info!("✔ Skipping RINKEBY {} block header validaton!", symbol);
             Ok(state)
         } else {
-            info!("✔ Validating block header...");
+            info!("✔ Validating {} block header...", symbol);
             state
                 .get_eth_submission_material()?
                 .get_block()?
@@ -26,7 +27,7 @@ pub fn validate_block_in_state<D: DatabaseInterface>(state: EthState<D>) -> Resu
                     if is_valid {
                         Ok(state)
                     } else {
-                        Err("✘ Not accepting ETH block - header hash not valid!".into())
+                        Err(format!("✘ Not accepting {} block - header hash not valid!", symbol).into())
                     }
                 })
         }
