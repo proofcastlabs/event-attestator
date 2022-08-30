@@ -60,6 +60,7 @@ pub use crate::{
     },
     erc20_on_eos::{
         add_vault_contract_address_to_db::maybe_add_vault_contract_address_to_db,
+        constants::CORE_TYPE,
         debug_functions::{
             debug_get_add_supported_token_tx,
             debug_get_erc20_vault_migration_tx as debug_get_perc20_migration_tx,

@@ -21,6 +21,7 @@ pub(crate) use self::{btc::BtcOnEosEosTxInfos, eos::BtcOnEosBtcTxInfos};
 pub use crate::{
     btc_on_eos::{
         btc::submit_btc_block_to_core,
+        constants::CORE_TYPE,
         debug_functions::{
             debug_get_fee_withdrawal_tx,
             debug_maybe_add_utxo_to_db,

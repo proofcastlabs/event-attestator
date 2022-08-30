@@ -20,6 +20,7 @@ pub(crate) use self::{btc::BtcOnIntIntTxInfos, int::BtcOnIntBtcTxInfos};
 pub use crate::{
     btc_on_int::{
         btc::submit_btc_block_to_core,
+        constants::CORE_TYPE,
         debug_functions::{
             debug_get_signed_erc777_change_pnetwork_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,

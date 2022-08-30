@@ -48,6 +48,7 @@ pub use crate::{
     },
     debug_functions::{debug_get_key_from_db, debug_set_key_in_db_to_value},
     eos_on_int::{
+        constants::CORE_TYPE,
         debug_functions::{debug_reprocess_eos_block, debug_reprocess_eos_block_with_nonce, debug_reprocess_int_block},
         eos::submit_eos_block_to_core,
         get_all_db_keys::get_all_db_keys,

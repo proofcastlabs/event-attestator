@@ -54,6 +54,7 @@ pub use crate::{
         debug_set_key_in_db_to_value,
     },
     eos_on_eth::{
+        constants::CORE_TYPE,
         debug_functions::{
             debug_reprocess_eos_block,
             debug_reprocess_eos_block_with_fee_accrual,

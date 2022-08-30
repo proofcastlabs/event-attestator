@@ -43,6 +43,7 @@ pub use crate::{
     },
     debug_functions::{debug_get_key_from_db, debug_set_key_in_db_to_value},
     erc20_on_int::{
+        constants::CORE_TYPE,
         debug_functions::{
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,

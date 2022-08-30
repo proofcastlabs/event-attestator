@@ -22,6 +22,7 @@ pub(crate) use self::{btc::BtcOnEthEthTxInfos, eth::BtcOnEthBtcTxInfos}; // FIXM
 pub use crate::{
     btc_on_eth::{
         btc::submit_btc_block_to_enclave,
+        constants::CORE_TYPE,
         debug_functions::{
             debug_get_fee_withdrawal_tx,
             debug_get_signed_erc777_change_pnetwork_tx,
