@@ -8,10 +8,10 @@ use crate::{
     types::Result,
 };
 
-/// # Get All DB Keys
+/// # Debug Get All DB Keys
 ///
 /// This function will return a JSON formatted list of all the database keys used in the encrypted database.
-pub fn get_all_db_keys() -> Result<String> {
+pub fn debug_get_all_db_keys() -> Result<String> {
     Ok(json!({
         "eth": EthDatabaseKeysJson::new(),
         "evm": EvmDatabaseKeysJson::new(),

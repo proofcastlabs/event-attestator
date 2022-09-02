@@ -11,7 +11,6 @@ mod debug_functions;
 mod eos;
 mod eth;
 mod fees_calculator;
-mod get_all_db_keys;
 mod get_enclave_state;
 mod get_latest_block_numbers;
 mod test_utils;
@@ -56,6 +55,7 @@ pub use crate::{
     eos_on_eth::{
         constants::CORE_TYPE,
         debug_functions::{
+            debug_get_all_db_keys,
             debug_reprocess_eos_block,
             debug_reprocess_eos_block_with_fee_accrual,
             debug_reprocess_eos_block_with_nonce,
@@ -68,7 +68,6 @@ pub use crate::{
         },
         eos::submit_eos_block_to_core,
         eth::{maybe_initialize_eth_core, submit_eth_block_to_core},
-        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
     },

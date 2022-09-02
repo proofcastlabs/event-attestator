@@ -10,7 +10,6 @@ mod check_core_is_initialized;
 mod constants;
 mod debug_functions;
 mod eth;
-mod get_all_db_keys;
 mod get_enclave_state;
 mod get_latest_block_numbers;
 mod test_utils;
@@ -24,6 +23,7 @@ pub use crate::{
         btc::submit_btc_block_to_enclave,
         constants::CORE_TYPE,
         debug_functions::{
+            debug_get_all_db_keys,
             debug_get_fee_withdrawal_tx,
             debug_get_signed_erc777_change_pnetwork_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
@@ -40,7 +40,6 @@ pub use crate::{
             debug_set_accrued_fees,
         },
         eth::{maybe_add_erc777_contract_address, maybe_initialize_eth_enclave, submit_eth_block_to_enclave},
-        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
     },

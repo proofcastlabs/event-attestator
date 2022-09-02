@@ -9,7 +9,6 @@ mod check_core_is_initialized;
 mod constants;
 mod debug_functions;
 mod eos;
-mod get_all_db_keys;
 mod get_enclave_state;
 mod get_latest_block_numbers;
 mod int;
@@ -52,13 +51,13 @@ pub use crate::{
         constants::CORE_TYPE,
         debug_functions::{
             debug_get_add_supported_token_tx,
+            debug_get_all_db_keys,
             debug_get_remove_supported_token_tx,
             debug_reprocess_eos_block,
             debug_reprocess_eos_block_with_nonce,
             debug_reprocess_int_block,
         },
         eos::submit_eos_block_to_core,
-        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
         int::{maybe_initialize_int_core, submit_int_block_to_core},

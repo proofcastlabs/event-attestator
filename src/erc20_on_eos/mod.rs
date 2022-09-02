@@ -12,7 +12,6 @@ mod debug_functions;
 mod eos;
 mod eth;
 mod fees_calculator;
-mod get_all_db_keys;
 mod get_enclave_state;
 mod get_latest_block_numbers;
 mod test_utils;
@@ -63,6 +62,7 @@ pub use crate::{
         constants::CORE_TYPE,
         debug_functions::{
             debug_get_add_supported_token_tx,
+            debug_get_all_db_keys,
             debug_get_erc20_vault_migration_tx as debug_get_perc20_migration_tx,
             debug_get_remove_supported_token_tx,
             debug_reprocess_eos_block,
@@ -77,7 +77,6 @@ pub use crate::{
         },
         eos::submit_eos_block_to_core,
         eth::{maybe_initialize_eth_core, submit_eth_block_to_core},
-        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
     },

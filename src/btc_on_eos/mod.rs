@@ -10,7 +10,6 @@ mod check_core_is_initialized;
 mod constants;
 mod debug_functions;
 mod eos;
-mod get_all_db_keys;
 mod get_enclave_state;
 mod get_latest_block_numbers;
 mod test_utils;
@@ -23,6 +22,7 @@ pub use crate::{
         btc::submit_btc_block_to_core,
         constants::CORE_TYPE,
         debug_functions::{
+            debug_get_all_db_keys,
             debug_get_fee_withdrawal_tx,
             debug_maybe_add_utxo_to_db,
             debug_put_btc_on_eos_peg_in_basis_points_in_db,
@@ -33,7 +33,6 @@ pub use crate::{
             debug_reprocess_eos_block_with_fee_accrual,
         },
         eos::submit_eos_block_to_core,
-        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
     },

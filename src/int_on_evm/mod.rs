@@ -10,7 +10,6 @@ mod constants;
 mod debug_functions;
 mod evm;
 mod fees_calculator;
-mod get_all_db_keys;
 mod get_enclave_state;
 mod get_latest_block_numbers;
 mod int;
@@ -47,6 +46,7 @@ pub use crate::{
         debug_functions::{
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
+            debug_get_all_db_keys,
             debug_get_remove_supported_token_tx,
             debug_remove_dictionary_entry,
             debug_reprocess_evm_block,
@@ -60,7 +60,6 @@ pub use crate::{
             debug_withdraw_fees_and_save_in_db,
         },
         evm::{maybe_initialize_evm_core, submit_evm_block_to_core},
-        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
         int::{maybe_initialize_int_core, submit_int_block_to_core},

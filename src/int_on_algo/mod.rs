@@ -9,7 +9,6 @@ mod algo;
 mod check_core_is_initialized;
 mod constants;
 mod debug_functions;
-mod get_all_db_keys;
 mod get_enclave_state;
 mod get_latest_block_numbers;
 mod int;
@@ -34,6 +33,7 @@ pub use crate::{
             debug_add_dictionary_entry,
             debug_get_add_supported_token_tx,
             debug_get_algo_pay_tx,
+            debug_get_all_db_keys,
             debug_opt_in_to_application,
             debug_opt_in_to_asset,
             debug_remove_dictionary_entry,
@@ -42,7 +42,6 @@ pub use crate::{
             debug_reprocess_int_block,
             debug_set_algo_account_nonce,
         },
-        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
         int::{maybe_initialize_int_core, submit_int_block_to_core},

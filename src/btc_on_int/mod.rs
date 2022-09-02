@@ -9,7 +9,6 @@ mod btc;
 mod check_core_is_initialized;
 mod constants;
 mod debug_functions;
-mod get_all_db_keys;
 mod get_enclave_state;
 mod get_latest_block_numbers;
 mod int;
@@ -22,6 +21,7 @@ pub use crate::{
         btc::submit_btc_block_to_core,
         constants::CORE_TYPE,
         debug_functions::{
+            debug_get_all_db_keys,
             debug_get_signed_erc777_change_pnetwork_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
             debug_get_signed_erc777_proxy_change_pnetwork_tx,
@@ -31,7 +31,6 @@ pub use crate::{
             debug_reprocess_btc_block_with_nonce,
             debug_reprocess_int_block,
         },
-        get_all_db_keys::get_all_db_keys,
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
         int::{maybe_initialize_int_core, submit_int_block_to_core},
