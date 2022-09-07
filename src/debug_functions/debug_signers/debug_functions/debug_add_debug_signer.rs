@@ -13,7 +13,6 @@ use crate::{
         debug_signatories::{DebugSignatories, SAFE_DEBUG_SIGNATORIES},
         debug_signatory::DebugSignatory,
     },
-    safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -34,16 +33,7 @@ pub fn debug_add_debug_signer<D: DatabaseInterface>(
     signature_str: &str,
 ) -> Result<String> {
     info!("✔ Adding debug signer to list...");
-
     let eth_address = convert_hex_to_eth_address(eth_address_str)?;
-    if eth_address == *SAFE_ETH_ADDRESS {
-        return Err(
-            json!({"error": "Cannot add the ETH safe address as a debug signatory!"})
-                .to_string()
-                .into(),
-        );
-    };
-
     db.start_transaction()
         .and_then(|_| DebugSignatories::get_from_db(db))
         .and_then(|debug_signatories| {

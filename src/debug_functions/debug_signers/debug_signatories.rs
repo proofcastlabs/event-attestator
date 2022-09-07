@@ -115,7 +115,11 @@ impl DebugSignatories {
         let mut mutable_self = self.0.clone();
         let name = debug_signatory.name();
         let eth_address = debug_signatory.eth_address();
-        if self.contains_name(&name) {
+
+        if debug_signatory.eth_address == *SAFE_ETH_ADDRESS {
+            warn!("✘ Not adding debug signatory because it's address is the safe ETH address!");
+            Self(mutable_self)
+        } else if self.contains_name(&name) {
             warn!("✘ Debug signatory with name '{}' already in list!", name);
             Self(mutable_self)
         } else if self.contains_eth_address(&eth_address) {
