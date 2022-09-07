@@ -128,6 +128,14 @@ impl DebugSignatories {
         }
     }
 
+    fn add_multi(&self, debug_signatories_to_add: Vec<DebugSignatory>) -> Self {
+        debug_signatories_to_add
+            .iter()
+            .fold(self.clone(), |existing_debug_signatories: Self, debug_signatory| {
+                existing_debug_signatories.add(debug_signatory)
+            })
+    }
+
     fn remove(&self, eth_address: &EthAddress) -> Self {
         Self(
             self.iter()
@@ -163,6 +171,14 @@ impl DebugSignatories {
 
     pub fn add_and_update_in_db<D: DatabaseInterface>(&self, db: &D, debug_signatory: &DebugSignatory) -> Result<()> {
         self.add(debug_signatory).put_in_db(db)
+    }
+
+    pub fn add_multi_and_update_in_db<D: DatabaseInterface>(
+        &self,
+        db: &D,
+        debug_signatories_to_add: Vec<DebugSignatory>,
+    ) -> Result<()> {
+        self.add_multi(debug_signatories_to_add).put_in_db(db)
     }
 
     pub fn remove_and_update_in_db<D: DatabaseInterface>(&self, db: &D, eth_address: &EthAddress) -> Result<()> {
